@@ -108,6 +108,36 @@ def group_b():
           [f["step"] for f in d["factors"]]
           == list(range(1, len(d["factors"]) + 1)),
           f"steps 1..{len(d['factors'])}")
+    # The simplified view: only what participated, in computation order,
+    # ending in the premium.
+    rt = d["rating"]
+    check("B8 a simplified rating chain is returned",
+          len(rt["coverages"]) >= 2 and rt["premium"] == d["premium"],
+          f"{len(rt['coverages'])} coverages, policy {rt['premium']}")
+    prem_ops = next(c for c in rt["coverages"] if "PremOps" in c["coverage"])
+    names = [f["factor"] for f in prem_ops["factors"]]
+    check("B9 it is far shorter than the full trace",
+          len(names) < len(d["factors"]) / 3,
+          f"{len(names)} factors vs {len(d['factors'])} trace steps")
+    check("B10 it reads in computation order, ending at the premium",
+          names.index("PremOpsLossCost") < names.index("BaseRate")
+          < names.index("FinalRate") < names.index("Premium"),
+          " -> ".join(["PremOpsLossCost", "BaseRate", "FinalRate", "Premium"]))
+    check("B11 the milestones are marked",
+          {f["factor"] for f in prem_ops["factors"] if f.get("milestone")}
+          >= {"BaseRate", "FinalRate", "Premium"},
+          str(sorted(f["factor"] for f in prem_ops["factors"]
+                     if f.get("milestone"))))
+    # Zeros are omitted from the chain but NAMED, never silently dropped --
+    # this corpus has eight meanings of zero and a zero where a rate belonged
+    # is the defect the engine exists to refuse.
+    check("B12 omitted zero factors are named, not silently dropped",
+          prem_ops["omitted_zero"]
+          and all(isinstance(x, str) for x in prem_ops["omitted_zero"]),
+          f"{len(prem_ops['omitted_zero'])} named")
+    check("B13 no statistical code is presented as a rating factor",
+          not any(n.endswith("StatCode") or n == "Subline" for n in names),
+          "stat codes excluded from the chain")
     check("B7 the submission check runs alongside the rating",
           isinstance(d.get("findings"), list), f"{len(d.get('findings', []))} findings")
 

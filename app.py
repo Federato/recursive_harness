@@ -82,6 +82,72 @@ def _subline_premiums(rating) -> list:
             for v in sorted(out.values(), key=lambda x: x["subline"])]
 
 
+#: Written onto a coverage but not part of the price -- statistical reporting
+#: codes and the subline they belong to.
+def _is_stat(tag: str) -> bool:
+    return tag.endswith("StatCode") or tag == "Subline"
+
+
+#: The named milestones in a coverage's chain, so the eye can follow it.
+MILESTONES = ("BaseRate", "FinalILF", "FinalRate", "BasicLimitPremium",
+              "MedicalPaymentsCharge", "MinPremium", "Premium")
+
+
+def _chain(cov) -> dict:
+    """One coverage's rating chain, in the order the engine computed it.
+
+    **Tree order is computation order** -- a node is appended when a rule
+    writes it -- so the chain reads as the narrative it actually was:
+    loss cost, LCM, base rate, ILF, deductible, size of risk, basic limit
+    premium, final rate, premium.
+
+    Zero-valued steps are omitted from `factors` and **named in `omitted`**
+    rather than dropped silently. That distinction matters here more than
+    most places: this corpus has eight meanings of zero, and a zero where a
+    rate belonged is the defect this whole engine exists to refuse. A
+    simplified view may not be the thing that hides one.
+    """
+    factors, omitted = [], []
+    for ch in cov.children:
+        if ch.children or _is_stat(ch.tag) or ch.text in (None, ""):
+            continue
+        try:
+            v = Decimal(ch.text)
+        except Exception:                                   # noqa: BLE001
+            continue
+        if v == 0:
+            omitted.append(ch.tag)
+            continue
+        factors.append({"factor": ch.tag, "value": str(v),
+                        **({"milestone": True} if ch.tag in MILESTONES else {})})
+    prem = tree.read("Premium", cov)
+    return {"coverage": cov.tag, "premium": prem,
+            "subline": tree.read("Subline", cov),
+            "factors": factors,
+            "omitted_zero": omitted}
+
+
+def _rating(rating) -> dict:
+    """The simplified view: what actually rated, and what it came to."""
+    covs = []
+    for risk in tree.select("GeneralLiabilityTable/GeneralLiability",
+                            rating.tree):
+        for loc in tree.select("GeneralLiabilityLocationTable/"
+                               "GeneralLiabilityLocation", risk):
+            for cls in tree.select("GeneralLiabilityClassificationTable/"
+                                   "GeneralLiabilityClassification", loc):
+                for cov in cls.children:
+                    if not cov.children:
+                        continue
+                    prem = tree.read("Premium", cov)
+                    if prem in (None, "", "0"):
+                        continue
+                    c = _chain(cov)
+                    c["class_code"] = tree.read("ClassCode", cls)
+                    covs.append(c)
+    return {"coverages": covs, "premium": str(rating.premium)}
+
+
 def _factors(rating) -> list:
     """Every rating factor, in the order it was used, as structured data.
 
@@ -127,6 +193,7 @@ def rate(payload: dict, mode: str, rounding: str) -> dict:
                         for k, v in sorted(r.by_coverage.items(),
                                            key=lambda x: -x[1])],
         "by_subline": _subline_premiums(r),
+        "rating": _rating(r),
         "factors": _factors(r),
         "factor_count": len(_factors(r)),
         "referrals": [{"code": x.code, "condition": x.condition,
@@ -147,9 +214,11 @@ margin:0;background:#f6f7f9;color:#1a1d21}
 header{background:#1f2933;color:#fff;padding:14px 22px}
 header h1{margin:0;font-size:17px;font-weight:600}
 header span{opacity:.7;font-size:13px}
-.wrap{display:flex;gap:18px;padding:18px;align-items:flex-start}
-.col{flex:1;min-width:0}
-.card{background:#fff;border:1px solid #dde1e6;border-radius:6px;margin-bottom:14px}
+.wrap{display:flex;gap:18px;padding:18px;align-items:flex-start;
+max-width:1600px;margin:0 auto}
+.col{flex:1 1 0;min-width:0}
+.card{background:#fff;border:1px solid #dde1e6;border-radius:6px;margin-bottom:14px;
+overflow:hidden}
 .card h2{margin:0;padding:9px 14px;font-size:13px;font-weight:600;
 background:#eef1f4;border-bottom:1px solid #dde1e6;border-radius:6px 6px 0 0}
 .card .body{padding:12px 14px}
@@ -162,7 +231,8 @@ button:disabled{opacity:.55;cursor:default}
 .row{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
 .premium{font-size:30px;font-weight:700}
 .muted{color:#66727f;font-size:12px}
-table{width:100%;border-collapse:collapse;font-size:13px}
+table{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed}
+td{overflow-wrap:anywhere}
 td,th{padding:5px 7px;border-bottom:1px solid #eef1f4;text-align:left;
 vertical-align:top}
 th{font-size:11px;text-transform:uppercase;color:#66727f;font-weight:600}
@@ -177,7 +247,7 @@ font-weight:600}
 .info{background:#e0f2fe;color:#075985}
 .stopped{background:#fee2e2;border:1px solid #fca5a5;padding:11px;border-radius:4px}
 .scroll{max-height:340px;overflow:auto}
-pre.json{margin:0;font:12px/1.5 ui-monospace,Consolas,monospace;background:#1f2933;
+pre.json{margin:0;max-width:100%;font:12px/1.5 ui-monospace,Consolas,monospace;background:#1f2933;
 color:#d7dde3;padding:12px;border-radius:4px;max-height:560px;overflow:auto;
 white-space:pre;tab-size:2}
 pre.json .k{color:#8fd0ff}pre.json .s{color:#c3e88d}pre.json .n{color:#f7c66b}
@@ -186,6 +256,12 @@ pre.json .k{color:#8fd0ff}pre.json .s{color:#c3e88d}pre.json .n{color:#f7c66b}
 padding:5px 10px;font-size:13px}
 .tabs button.on{background:#2b6cb0;color:#fff;border-color:#2b6cb0;font-weight:600}
 .copy{float:right;font-size:11px;padding:3px 8px;font-weight:500}
+tr.ms td{font-weight:700;background:#f7fafc}
+tr.total td{font-weight:700;border-top:2px solid #cbd2d9;background:#eef6ff}
+.covhead{font-weight:600;margin:12px 0 4px;font-size:13px}
+.covhead:first-child{margin-top:0}
+.covhead small{font-weight:400;color:#66727f}
+.om{font-size:11px;color:#8a94a0;margin-top:5px}
 </style></head><body>
 <header><h1>GL Rating Engine</h1>
 <span>ISO content, executed &mdash; every number carries its source</span></header>
@@ -214,9 +290,21 @@ padding:5px 10px;font-size:13px}
 <script>
 const $=s=>document.querySelector(s), out=$('#out');
 const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+// `?sample=OK&mode=underwriting` preloads, so a view can be linked to.
+const Q=new URLSearchParams(location.search);
 fetch('/api/samples').then(r=>r.json()).then(d=>{
   d.modes.forEach(m=>$('#mode').add(new Option(m,m)));
   d.jurisdictions.forEach(j=>$('#sample').add(new Option(j,j)));
+  if(Q.get('mode')) $('#mode').value=Q.get('mode');
+  if(Q.get('rounding')) $('#rounding').value=Q.get('rounding');
+  const j=Q.get('sample');
+  if(j && d.jurisdictions.includes(j)){
+    $('#sample').value=j;
+    fetch('/api/sample/'+j).then(r=>r.text()).then(t=>{
+      $('#payload').value=t;
+      if(Q.has('rate')) $('#go').click();
+    });
+  }
 });
 $('#sample').onchange=e=>{ if(!e.target.value) return;
   fetch('/api/sample/'+e.target.value).then(r=>r.text())
@@ -239,10 +327,11 @@ $('#go').onclick=()=>{
 // The result panel. Factors are the reason it exists: a rating factor is a
 // table, a set of keys, a value and the package it came from, and a table cell
 // cannot show that. JSON can, and it can be copied straight into a ticket.
-let LAST={}, VIEW='factors';
-const VIEWS=[['factors','Factors'],['premiums','Premiums'],
+let LAST={}, VIEW='rating';
+const VIEWS=[['rating','Rating'],['factors','All steps'],['premiums','Premiums'],
               ['referrals','Referrals'],['all','Everything']];
 function slice(d,v){
+  if(v==='rating') return d.rating;
   if(v==='factors') return {factors:d.factors};
   if(v==='premiums') return {premium:d.premium, by_subline:d.by_subline,
     by_coverage:d.by_coverage, jurisdiction:d.jurisdiction, asof:d.asof,
@@ -261,6 +350,7 @@ function paint(){
   document.getElementById('tabs').innerHTML=VIEWS.map(([v,label])=>
     '<button data-v="'+v+'" class="'+(v===VIEW?'on':'')+'">'+label+
     (v==='factors'&&LAST.factors?' ('+LAST.factors.length+')':'')+
+    (v==='rating'&&LAST.rating?' ('+LAST.rating.coverages.length+')':'')+
     (v==='referrals'&&LAST.referrals?' ('+LAST.referrals.length+')':'')+
     '</button>').join('');
   document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>{
@@ -286,13 +376,29 @@ function render(d){
       '<div class="muted">The engine refuses rather than guessing.</div>');
     out.innerHTML=h; return; }
   h+=card('Premium', '<div class="premium">'+esc(d.premium)+'</div>'+head);
-  h+=card('By subline', table(['Subline','Coverages','Premium'],
-    d.by_subline.map(s=>'<tr><td><b>'+esc(s.subline)+'</b></td><td class="muted">'+
-      s.coverages.map(c=>esc(c.coverage)+' '+esc(c.premium)).join('<br>')+
-      '</td><td class="n">'+esc(s.premium)+'</td></tr>')));
-  h+=card('By coverage', table(['Coverage','Premium'],
-    d.by_coverage.map(c=>'<tr><td>'+esc(c.coverage)+'</td><td class="n">'+
-      esc(c.premium)+'</td></tr>')));
+  // How it rated: only the factors that participated, in the order the
+  // engine computed them, ending in the premium. Zero-valued steps are
+  // counted, not hidden -- a zero where a rate belonged is the defect this
+  // engine exists to refuse, and a simplified view may not conceal one.
+  h+=card('How it rated', (d.rating.coverages||[]).map(c=>
+    '<div class="covhead">'+esc(c.coverage.replace(
+      'GeneralLiabilityClassification',''))+
+    ' <small>subline '+esc(c.subline||'-')+
+    ', class '+esc(c.class_code||'-')+'</small></div>'+
+    table(['Factor','Value'],
+      c.factors.map(f=>'<tr'+(f.milestone?' class="ms"':'')+'><td>'+
+        esc(f.factor)+'</td><td class="n">'+esc(f.value)+'</td></tr>')
+      .concat(['<tr class="total"><td>Coverage premium</td><td class="n">'+
+        esc(c.premium)+'</td></tr>']))+
+    (c.omitted_zero.length?'<div class="om">'+c.omitted_zero.length+
+      ' factors were zero and are omitted here: '+
+      c.omitted_zero.map(esc).join(', ')+'</div>':'')
+  ).join('')+
+   '<table><tr class="total"><td>Policy premium</td><td class="n">'+
+   esc(d.premium)+'</td></tr></table>');
+  h+=card('By subline', table(['Subline','Premium'],
+    d.by_subline.map(s=>'<tr><td><b>'+esc(s.subline)+'</b></td>'+
+      '<td class="n">'+esc(s.premium)+'</td></tr>')));
   h+=card('Referrals ('+d.referrals.length+')', d.referrals.length?
     d.referrals.map(r=>'<div style="margin-bottom:9px"><span class="pill refer">'+
       esc(r.code)+'</span> '+esc(r.condition)+
