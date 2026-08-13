@@ -11,6 +11,12 @@ do not the pair is not one submission:
   P1 identity   the `State` on the input, the output, and the folder name
   P2 echoes     every scalar the input supplies at policy level, compared with
                 the same field on the output
+  P3 edition    **ISO names the package it rated with**, in the response header:
+                `"Scheme": "GL OK 20260801 V01 Scheme"`. That is the strongest
+                provenance signal in these files and it went unused for a day.
+                It settles two things at once -- whether our as-of resolution
+                (N4/N5) picked the same edition ISO did, and whether the corpus
+                even contains that edition
 
 An unpaired output is **not an oracle**, and comparing against it manufactures a
 defect that is not there. That is exactly what happened with AZ (+511) and AK
@@ -21,11 +27,16 @@ defect that is not there. That is exactly what happened with AZ (+511) and AK
 from __future__ import annotations
 
 import json
+import re
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
 PAYLOADS = ROOT / "Payloads"
+
+#: `"Scheme": "GL OK 20260801 V01 Scheme"`
+_SCHEME = re.compile(r"GL (?P<juris>[A-Z]{2}) (?P<edition>\d{8}) (?P<version>V\d+)")
 
 #: Known and separately recorded: 34 pairs dispute this one field (OI-77).
 #: Listed so it is reported apart from anything new rather than hidden.
@@ -50,6 +61,10 @@ def nested_scalars(obj: dict, prefix: str = "") -> dict:
 
 
 def main() -> int:
+    from gl_engine import EditionResolver
+    resolver = EditionResolver()
+    known = {p.pkg_id for p in resolver.packages}
+
     rows = []
     for d in sorted(p for p in PAYLOADS.iterdir() if p.is_dir()):
         fi, fo = d / "1. Input.json", d / "1. Output.json"
@@ -76,6 +91,27 @@ def main() -> int:
                 problems.append(f"{k}: input {v!r}, output {no[k]!r}")
             elif k not in no:
                 problems.append(f"{k}: input {v!r}, ABSENT from output")
+
+        # P3 -- the edition ISO actually rated with.
+        raw = json.loads(fo.read_text(encoding="utf-8-sig"))
+        scheme = raw.get("Header", {}).get("Scheme", "")
+        m = _SCHEME.search(scheme)
+        if m:
+            iso_pkg = (f"GL_{m.group('juris')}_{m.group('edition')}"
+                       f"_{m.group('version')}")
+            eff = json.loads(fi.read_text(encoding="utf-8-sig"))["body"][
+                "SchemeKeys"]["EffectiveDateTime"][:10].replace("-", "")
+            try:
+                ours = resolver.resolve(d.name, eff).state.pkg_id
+            except Exception as exc:                      # noqa: BLE001
+                ours = f"({type(exc).__name__})"
+            if iso_pkg not in known:
+                problems.append(
+                    f"EDITION: ISO rated with {iso_pkg}, which is NOT in the "
+                    f"corpus (we resolved {ours})")
+            elif ours != iso_pkg:
+                problems.append(
+                    f"EDITION: ISO rated with {iso_pkg}, we resolved {ours}")
 
         rows.append((d.name, problems, disputed))
 
