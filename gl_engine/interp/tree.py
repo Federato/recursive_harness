@@ -17,6 +17,8 @@ manufactures the node it was looking for can never report a missing input.
 """
 from __future__ import annotations
 
+import re
+
 from .values import InterpretError, to_text
 
 
@@ -96,8 +98,33 @@ class Node:
 
 # ------------------------------------------------------------------ addressing
 
-def _steps(path: str) -> list[str]:
-    return [s for s in path.split("/") if s != ""]
+#: `GeneralLiabilityTerrorismTable/GeneralLiabilityTerrorism[1]`
+#:
+#: The dialect has exactly one predicate and it is always `[1]`: 18,796
+#: occurrences across all 567 packages, and not one other form. It carries
+#: 88.9% of `AtOutputDataDef` paths, which is how ISO addresses the single row
+#: it appends for a coverage.
+#:
+#: This was missed on the first pass, and it failed silently in the worst way:
+#: an unparsed `X[1]` looks for a child literally tagged `X[1]`, matches
+#: nothing, and a `Locate` onto nothing simply does nothing. The terrorism
+#: premium came out 18 short with no error anywhere.
+_STEP = re.compile(r"^(?P<name>[^\[\]]+)(?:\[(?P<index>\d+)\])?$")
+
+
+def _steps(path: str) -> list[tuple[str, int | None]]:
+    """Split a path into (name, 1-based index or None) steps."""
+    out = []
+    for s in path.split("/"):
+        if s == "":
+            continue
+        m = _STEP.match(s)
+        if not m:
+            raise InterpretError(
+                f"path step {s!r} is not a name or name[n]", "§9", path)
+        idx = m.group("index")
+        out.append((m.group("name"), int(idx) if idx else None))
+    return out
 
 
 def select(path: str, context: Node) -> list[Node]:
@@ -113,26 +140,30 @@ def select(path: str, context: Node) -> list[Node]:
     here = [context.root] if absolute else [context]
     steps = _steps(path)
 
-    if absolute and steps and steps[0] == "*":
+    if absolute and steps and steps[0][0] == "*":
         steps = steps[1:]
 
-    for step in steps:
+    for name, index in steps:
         nxt: list[Node] = []
-        if step == ".":
+        if name == ".":
             nxt = here
-        elif step == "..":
+        elif name == "..":
             for n in here:
                 if n.parent is None:
                     raise InterpretError(
                         f"path {path!r} steps above the tree root", "§9",
                         context.path)
                 nxt.append(n.parent)
-        elif step == "*":
+        elif name == "*":
             for n in here:
                 nxt.extend(n.children)
         else:
             for n in here:
-                nxt.extend(n.kids(step))
+                kids = n.kids(name)
+                if index is None:
+                    nxt.extend(kids)
+                elif len(kids) >= index:
+                    nxt.append(kids[index - 1])      # 1-based
         here = nxt
         if not here:
             return []
@@ -164,24 +195,30 @@ def ensure(path: str, context: Node) -> Node:
     absolute = path.startswith("/")
     here = context.root if absolute else context
     steps = _steps(path)
-    if absolute and steps and steps[0] == "*":
+    if absolute and steps and steps[0][0] == "*":
         steps = steps[1:]
 
-    for step in steps:
-        if step == ".":
+    for name, index in steps:
+        if name == ".":
             continue
-        if step == "..":
+        if name == "..":
             if here.parent is None:
                 raise InterpretError(
                     f"write path {path!r} steps above the tree root", "§9",
                     context.path)
             here = here.parent
             continue
-        if step == "*":
+        if name == "*":
             raise InterpretError(
                 f"write path {path!r} contains a wildcard", "§9", context.path)
-        nxt = here.first(step)
-        here = nxt if nxt is not None else here.add(step)
+        if index is None:
+            nxt = here.first(name)
+            here = nxt if nxt is not None else here.add(name)
+        else:
+            kids = here.kids(name)
+            while len(kids) < index:                 # grow to the addressed row
+                kids.append(here.add(name))
+            here = kids[index - 1]
     return here
 
 

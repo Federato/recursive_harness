@@ -90,6 +90,10 @@ class Program:
     def pkg_id(self) -> str:
         return self.package.pkg_id
 
+    def has_file(self, name: str) -> bool:
+        """Does this package hold this rule file? Asked before inheriting."""
+        return (self.dir / f"{name}{_SUFFIX}").exists()
+
     def file(self, name: str) -> RuleFile:
         if name not in self._files:
             path = self.dir / f"{name}{_SUFFIX}"

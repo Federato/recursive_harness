@@ -467,14 +467,17 @@ def group_e() -> None:
           book.resolution.parent.pkg_id)
     check("E4 writes land on the tree", kinds.get("write", 0) >= 50,
           f"{kinds.get('write', 0)} writes")
-    # Stopping here is correct and expected: the submission tree is not yet
-    # built by stage 4, so a required value is genuinely absent. What matters
-    # is that it stops on a NAMED contract clause rather than inventing a
-    # number -- a silent zero here is the failure this engine exists to refuse.
-    check("E5 stops on a named contract clause, never on a guess",
-          stopped is not None and bool(stopped.clause),
-          f"{stopped.clause} ({stopped})" if stopped
-          else "ran to completion -- update this test")
+    # E5 originally asserted that the run STOPPED on a named contract clause,
+    # because at stage 2 the submission tree was not yet built and completing
+    # would have meant inventing values. It was written to fail the moment
+    # completion became meaningful, and stage 3 made it so -- the submission
+    # mapper, positional predicates and rule-file inheritance between them
+    # carry Alaska all the way through. The assertion is inverted rather than
+    # deleted, so the transition is on the record.
+    check("E5 completes now that stage 3 builds the tree (was: stops)",
+          stopped is None,
+          f"stopped on {stopped.clause}: {stopped}" if stopped
+          else f"{kinds.get('call', 0)} calls, no refusal")
 
 
 def main() -> int:

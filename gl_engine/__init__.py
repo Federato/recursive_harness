@@ -23,8 +23,19 @@ the third thing that block calls.
     ip = Interpreter(book)
     ip.run(Node.from_dict("GeneralLiabilityRequest", {"EffDate": "06/01/2026"}))
 
-It executes rules; it does not yet orchestrate a rating. Mapping a submission
-onto the data tree is stage 4 and the premium kernel is stage 3.
+STAGE 3: the kernel. A submission goes in, a premium comes out, in one of two
+modes -- `strict-erc` reproduces ISO exactly, `underwriting` additionally
+enforces the referral register. One code path.
+
+    from gl_engine.rating import Kernel
+    r = Kernel().rate("Payloads/OK/1. Input.json")
+    r.premium        # Decimal('7839') -- the golden case, to the penny
+    r.by_coverage    # the parts
+    r.trace          # every value, with where it came from
+
+Measured against ISO's own 50 priced examples: all 50 rate end to end and 22
+agree to the penny. Every difference is our defect until proven otherwise --
+`python scripts/rate_all_payloads.py`.
 """
 from .domain import Cell, Citation, Disposition
 from .errors import (AssertionFailure, EngineError, IdentityError, LoadError,
@@ -32,7 +43,7 @@ from .errors import (AssertionFailure, EngineError, IdentityError, LoadError,
 from .erc import Package, Population, Shape, Table, discover
 from .resolve import EditionResolver, ResolvedBook, Resolution
 
-__version__ = "0.2.0-stage2"
+__version__ = "0.3.0-stage3"
 
 __all__ = [
     "Cell", "Citation", "Disposition",

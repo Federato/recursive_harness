@@ -16,8 +16,8 @@ import datetime as _dt
 from decimal import Decimal
 
 from . import tree
-from .values import (InterpretError, coerce, equal, to_decimal, to_text,
-                     truthy)
+from .values import (InterpretError, Multi, coerce, equal, flatten,
+                     to_decimal, to_text, truthy)
 
 #: node name -> evaluator. Populated by the decorator below.
 EVAL: dict = {}
@@ -167,9 +167,9 @@ def _first_non_null(ip, el, fr):
     wants a guaranteed value it appends a total fallback itself.
     """
     for ch in _kids(el):
-        v = ip.eval(ch, fr)
-        if v is not None and v != "":
-            return v
+        for v in flatten(ip.eval(ch, fr)):
+            if v is not None and v != "":
+                return v
     ip.trace_exhausted(el)
     return None
 
@@ -442,15 +442,20 @@ def _for_each(ip, el, fr):
         raise InterpretError(
             "ForEach without @AtDataDef or @AtInputDataDef", "§9",
             ip.where(el))
-    out = None
+    yielded = []
     for item in tree.select(path, fr.data):
         inner = fr.at(item)
+        out = None
         try:
             for ch in _kids(el):
                 out = ip.eval(ch, inner)
         except BreakLoop:
+            yielded.append(out)
             break
-    return out
+        yielded.append(out)
+    # A collection, not the last value: `Sum` over a `ForEach` must total every
+    # iteration. Statement contexts discard it, so this is free there.
+    return Multi(yielded)
 
 
 @node("GetList")
@@ -485,11 +490,17 @@ def _locate(ip, el, fr):
     if path is None:
         raise InterpretError("Locate without a path", "§9", where)
 
-    if action == "Append":
+    if action == "Append" and not path.endswith("]"):
+        # An unpredicated Append genuinely adds a row -- the `Policy` node in
+        # the Default block is the case.
         parent_path, _, leaf = path.rpartition("/")
         base = tree.ensure(parent_path, fr.data) if parent_path else fr.data
         target = base.add(leaf)
     else:
+        # A predicated Append addresses one specific row, and 8,014 of the
+        # 9,012 Append paths carry `[1]`. It means "make sure row 1 is there",
+        # which has to be idempotent: ISO appends and then immediately reads
+        # the same `[1]` back, and its own output carries exactly one row.
         target = tree.ensure(path, fr.data)
 
     inner = fr.at(target)
@@ -550,12 +561,13 @@ def _guid(ip, el, fr):
 
 @node("Sum")
 def _sum(ip, el, fr):
+    """Total every operand, spreading a `ForEach` over its iterations (§6)."""
     total = Decimal(0)
     for ch in _kids(el):
-        v = ip.eval(ch, fr)
-        if v is None:
-            continue                       # an absent addend contributes nothing
-        total += to_decimal(v, ip.where(ch))
+        for v in flatten(ip.eval(ch, fr)):
+            if v is None:
+                continue                   # an absent addend contributes nothing
+            total += to_decimal(v, ip.where(ch))
     return total
 
 
@@ -587,9 +599,18 @@ def _divide(ip, el, fr):
 
 @node("Max")
 def _max(ip, el, fr):
-    a, b = _two(el, ip)
-    return max(to_decimal(ip.eval(a, fr), ip.where(el)),
-               to_decimal(ip.eval(b, fr), ip.where(el)))
+    """Largest operand, spreading a `ForEach` (§6).
+
+    The corpus idiom is `Max(ForEach(...), Constant 0)` -- the highest minimum
+    premium across every classification, floored at zero. With no locations the
+    `ForEach` yields nothing and the constant carries it, which is why an empty
+    iteration must contribute no operands rather than one null.
+    """
+    vals = [v for ch in _kids(el) for v in flatten(ip.eval(ch, fr))
+            if v is not None]
+    if not vals:
+        return None
+    return max(to_decimal(v, ip.where(el)) for v in vals)
 
 
 @node("Round")

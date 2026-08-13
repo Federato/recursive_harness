@@ -47,8 +47,8 @@ One entry per working session, in the style of `PROCESS_LOG.md` and with the sam
 | Stage | | |
 |---|---|---|
 | **1** | Load and resolve | ✅ **built 2026-08-12** — 20/20 acceptance, 13/13 assertions at **two** dates |
-| **2** | The interpreter | ✅ **built 2026-08-13** on branch `stage2-interpreter` — 52/52 acceptance, all 54 nodes, executes real ISO rules 269 calls deep |
-| **3** | Kernel and the two modes | — |
+| **2** | The interpreter | ✅ **built 2026-08-13** — 52/52 acceptance, all 54 nodes |
+| **3** | Kernel and the two modes | ✅ **built 2026-08-13** — 31/31 acceptance. **Oklahoma golden case reproduces 7,839 exactly**; 50 of 50 payloads rate, 22 match ISO to the penny |
 | **4** | Schemas and payloads | — |
 | **5** | The enum workbook | — |
 | **6** | The UI | — |
@@ -365,7 +365,7 @@ disappoints. Nothing about the contract favours either — it is the shared inpu
 
 ---
 
-## Entry 4 — Stage 2 built: the interpreter. **NEXT SESSION STARTS HERE.**
+## Entry 4 — Stage 2 built: the interpreter. ~~NEXT SESSION STARTS HERE.~~ *(the live handoff is **Entry 5**)*
 
 - **Date:** 2026-08-13
 - **Directed:** *"finish the interpreter first and only fork if it disappoints"* — so no
@@ -479,3 +479,113 @@ target is Oklahoma's golden case, `976 + 6,845 + 18 = 7,839`.
 Three things stage 2 leaves on the table for it, all named above: **the submission-to-tree mapping**
 (formally stage 4, but stage 3 needs enough of it to rate), **banded lookups**, and **the referral
 register wired into `strict-erc` and `underwriting` modes**.
+
+---
+
+## Entry 5 — Stage 3 built: the kernel. A premium comes out. **NEXT SESSION STARTS HERE.**
+
+- **Date:** 2026-08-13
+- **Directed:** *"move on to stage 3"*
+- **Built:** `gl_engine/rating/` — `submission.py`, `kernel.py`.
+- **Verified:** `tests/verify_stage3.py` **31/31** · `verify_interp` **52/52** · six prior suites
+  unchanged · `check 20260811 --deep` **13/13**.
+
+### The headline
+
+**The Oklahoma golden case reproduces exactly: 976 + 6,845 + 2 + 16 = 7,839.**
+
+And not only the total. Compared field by field against ISO's own `1. Output.json`, **all 83
+policy-level numbers ISO published agree, and none is missing from our tree.** That distinction
+matters: a total can be right for the wrong reasons, and checking only the total would not have
+noticed.
+
+Then the breadth question, which is the one that actually tests an engine:
+
+| Against ISO's 50 priced examples | |
+|---|---|
+| Rate end to end | **50 of 50** |
+| Agree with ISO **to the penny** | **22 of 50** |
+| Disagree | 28 |
+
+`python scripts/rate_all_payloads.py` is the report, and it writes
+`out/reconciliation.csv` so runs can be diffed. **This is the offline half of Phase 2, running
+now** — the plan always said it could start before the RAaS connection exists, and it has.
+
+**Every one of those 28 differences is our defect until proven otherwise.** That is not modesty, it
+is the doctrine that makes strict mode worth having. They are the next session's work. Both
+thresholds are frozen into `verify_stage3.py` group F as a **ratchet, not a target**: 50 must still
+rate and 22 must still match, so a change that quietly breaks half the country fails the suite.
+
+### Four things had to be true, and three of them were wrong
+
+**1. The submission-to-tree mapping is one rule.** ISO's rules address repeated elements through a
+container — `GeneralLiabilityTable/GeneralLiability` — and a RAaS request has a bare list. **Every
+JSON list `X` becomes `XTable` holding repeated `X`.** That is not a convention we chose; it is what
+ISO's own paths require.
+
+**2. `ForEach` in a value position yields a collection, not a scalar — and stage 2 had this
+wrong.** `Sum` takes a `ForEach` child **18,918 times**; my evaluator returned only the last
+iteration, so a `Sum` over five locations would have quietly totalled one of them. **A silent wrong
+answer, not an error.** Now `ForEach` yields a `Multi` and the three aggregators — `Sum`, `Max`,
+`FirstNonNull` — flatten it, recursively, because `ForEach` nests 3,494 times. A `Multi` reaching a
+scalar position is a hard failure.
+
+**3. The path dialect has a predicate, and missing it cost exactly 18.** Paths carry `[1]`:
+**18,796 occurrences across all 567 packages, and not one other form** — it is on 88.9% of
+`AtOutputDataDef`. Unparsed, `X[1]` looks for a child literally named `X[1]`, matches nothing, and a
+`Locate` onto nothing does nothing at all.
+
+> **The failure mode is the one this whole project is built to fear.** No error, no warning — the
+> terrorism rows were simply never created, and the premium came out **7,821 against 7,839**. A
+> plausible number, short by 18, with nothing anywhere to say so. It was found only because we had
+> an oracle to compare against, which is the entire argument for Phase 2.
+
+**4. Rule files are inherited from the parent, and they were not.** 29 `GeneralLiability*Rules`
+files are called by state packages that do not hold them — `InitializeRuleSet` on a coverage the
+state does not deviate on. They live in the countrywide parent, and the same wholesale-by-name
+inheritance N3 gives tables applies to rules. **Without it, 32 of 50 payloads stopped dead.**
+
+### The corpus is not self-contained, and now we can prove it
+
+**`MessageHelper` is called 4,347 times and exists in no package anywhere.** Always
+`AddErrorMessage`, always with a message string. ISO's rating service provides it: what it collects
+is the `RatingMessages` object in a RAaS response.
+
+So the engine provides it as a declared builtin rather than failing on a missing file, and the
+messages are surfaced on the rating. **This is a real limit on the "ERC is the source" doctrine** —
+not a large one, but it is the first thing found that ISO's machine-readable content genuinely does
+not contain, and it was invisible until something tried to execute the content rather than read it.
+
+Measured properly: **30 rule files are referenced but not filed. 29 of them are ordinary parent
+inheritance. Exactly one is host-provided.**
+
+### The two modes, and a register that does not overstate itself
+
+`strict-erc` and `underwriting` are **one code path**; a second implementation would be a second
+thing to be wrong. On a clean risk both return 7,839.
+
+The referral register loads all 28 entries. **This build detects exactly one of them (R03, the refer
+sentinel), and `Kernel.unenforced` names the other 27.** That is deliberate and it is tested: a
+register that claims 28 conditions and silently checks 1 reads as coverage it does not have, which
+is the same defect as the stage-1 check that passed while blind. The remaining 27 need load-time
+table inspection or hooks inside the rating path — stage 3 work still to do, recorded as such rather
+than declared done.
+
+Dispositions are monotonic (D02) and tested: a referral, once raised, is not removed or duplicated.
+
+### A test that was written to fail, and did
+
+`verify_interp` E5 asserted the interpreter **stops** on a named contract clause, phrased so that
+running to completion would fail *"update this test"*. Stage 3 made completion meaningful and it
+duly failed. The assertion is **inverted rather than deleted**, so the transition from "executes but
+cannot rate" to "rates" is on the record rather than tidied away.
+
+### ▶ Next session
+
+**The 28 differences.** Each is our defect until proven otherwise, and they cluster suspiciously:
+most are small and positive (+27 to +40 — AL, GA, IA, IN, KY, MN, WY), which reads like one coverage
+being added that ISO does not add. A handful are large and mixed (AZ +542, CA −741, IL −419, CO
+−158) and are probably distinct causes.
+
+Also still open from stage 3: **banded lookups** (`Range` key columns) still raise rather than step a
+range, and the **27 un-enforced register entries**.

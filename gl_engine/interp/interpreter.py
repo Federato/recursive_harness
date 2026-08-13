@@ -85,6 +85,33 @@ class Frame:
         return self.params[name]
 
 
+def _message_helper(ip, rule_name: str, args: dict, frame, where: str):
+    """`MessageHelper` -- the one rule file ISO does not ship.
+
+    **The corpus is not self-contained, and this is the proof.** `MessageHelper`
+    is called 4,347 times, always as `AddErrorMessage`, and exists in no package
+    anywhere. ISO's rating service provides it: the messages it collects are the
+    `RatingMessages` object in a RAaS response.
+
+    So the engine provides it too, rather than treating a validation message as
+    a missing file. Getting this wrong is not cosmetic -- it stopped 32 of the
+    50 payloads we hold, because a real submission routinely trips at least one
+    of ISO's own validation rules.
+    """
+    if rule_name != "AddErrorMessage":
+        raise InterpretError(
+            f"MessageHelper.{rule_name} is not provided; only AddErrorMessage "
+            f"is called in the corpus, 4,347 times", "§8", where)
+    text = args.get("Message")
+    ip.messages.append(str(text) if text is not None else "")
+    ip.note("message", str(text)[:160], "MessageHelper")
+    return None
+
+
+#: Rule files the host engine provides rather than ISO filing them.
+_BUILTINS = {"MessageHelper": _message_helper}
+
+
 @dataclass
 class TraceEntry:
     kind: str
@@ -109,6 +136,9 @@ class Interpreter:
         self.rounding = ROUNDING_MODES[rounding]
         self.tracing = trace
         self.trace: list[TraceEntry] = []
+        #: ISO's own validation messages, in the order the rules raised them.
+        #: These are the `RatingMessages` of a RAaS response.
+        self.messages: list[str] = []
         self._guid = 0
         self._programs: dict[str, Program] = {}
         self.state_program = self._program_for(book.resolution.state)
@@ -205,6 +235,22 @@ class Interpreter:
             program, parent_scope = self.parent_program, True
         else:
             program, parent_scope = frame.program, False
+
+        # A rule file the current package does not hold is INHERITED from the
+        # countrywide parent -- the same wholesale-by-name override that N3
+        # gives tables. 29 rule files are called this way, `InitializeRuleSet`
+        # on a coverage the state does not deviate on. Without the fallback the
+        # call is a hard failure and two thirds of real submissions stop dead.
+        if not program.has_file(file_name) and project is None:
+            if self.parent_program is not None \
+                    and self.parent_program.has_file(file_name):
+                program, parent_scope = self.parent_program, True
+                self.note("inherit", f"{file_name} from the parent package",
+                          program.pkg_id)
+
+        builtin = _BUILTINS.get(file_name)
+        if builtin is not None and not program.has_file(file_name):
+            return builtin(self, rule_name, args, frame, where)
 
         el = program.rule(file_name, rule_name)
         inner = frame.in_rule(program, file_name, args, parent_scope)

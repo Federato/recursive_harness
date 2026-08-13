@@ -42,6 +42,41 @@ class InterpretError(EngineError):
         super().__init__(" -- ".join(bits))
 
 
+class Multi(tuple):
+    """The values one `ForEach` yielded, one per iteration.
+
+    `ForEach` is not only a statement. In a value position it feeds an
+    aggregator -- `Sum` takes a `ForEach` child 18,918 times, and `Max` and
+    `FirstNonNull` take one too -- and the aggregator wants **every** iteration,
+    not the last.
+
+    Returning a scalar there is a silent wrong answer rather than an error: a
+    `Sum` over five locations would quietly total one of them. So iteration
+    yields this, and every aggregator flattens it explicitly. A `Multi` that
+    reaches a scalar context is a hard failure, because that is a place the
+    corpus never puts one and guessing which element was meant is unthinkable.
+    """
+
+    def __repr__(self) -> str:            # pragma: no cover - display only
+        return f"Multi({list(self)!r})"
+
+
+def flatten(v) -> list:
+    """One operand as a list of scalars. A `Multi` spreads; anything else is one.
+
+    Recursive, because `ForEach` nests 3,494 times in the corpus -- locations
+    inside a risk, classifications inside a location -- and each outer iteration
+    then yields the inner iteration's whole collection. Flattening one level
+    would put a `Multi` into arithmetic.
+    """
+    if not isinstance(v, Multi):
+        return [v]
+    out: list = []
+    for item in v:
+        out.extend(flatten(item))
+    return out
+
+
 #: The five types the corpus declares. A sixth is a hard failure (contract §12).
 TYPES = frozenset({"string", "decimal", "integer", "long", "dateTime", "none"})
 
@@ -123,6 +158,10 @@ def to_text(v) -> str:
 
 def to_decimal(v, where: str = "") -> Decimal:
     """The only way a number enters arithmetic. Null does not become zero."""
+    if isinstance(v, Multi):
+        raise InterpretError(
+            f"a ForEach yielding {len(v)} values reached a scalar position; "
+            f"only Sum, Max and FirstNonNull aggregate one", "§9", where)
     if v is None:
         raise InterpretError(
             "null reached arithmetic; the engine does not coerce it to zero",
