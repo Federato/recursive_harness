@@ -254,10 +254,30 @@ until something needed it.
   actually needs — and we expect the 53 real submissions to answer that better than the corpus does.
 
 ### Actually used
-*To be written after stage 5.*
+*Written 2026-08-13, after stage 5.*
+
+| Expected | What happened |
+|---|---|
+| The domain tables supply the legal values directly | **Held.** `DataValue` is the stored value in every domain table, and 1,910 legal values were listed for the countrywide spine without interpretation. The only judgement was where to stop: domains over 60 values are summarised rather than listed, because `ZipCode` at 765 is a lookup, not a choice a human makes |
+| **The hard part is scope, not extraction** — which of 1,906 fields a payload actually needs, and the real submissions answer it better than the corpus does | **Held exactly, and it is the most useful prediction in this document.** ISO declares **1,259 fields countrywide**; the 50 real submissions between them use **77 (6.1%)**, of which **41 are used by all 50**, and a single submission carries **43–54**. The corpus says what is *possible*; only the submissions say what is *sent* |
+
+**What the stage gained that was not expected at all:** Rule #1 had just been adopted, and applying
+it found `DOC/*.xlsx` — ISO's own workbook in every package. It supplied the **data types**
+(`Base RaaS Overrides`, 63,327 rows) that stage 4 had recorded as needing to come from the DataDefs,
+and **2,489 class codes with descriptions**. Neither was in the plan for this stage.
 
 ### Verdict
-*To be written after stage 5.*
+**Load-bearing, and uniquely so: this is the one stage whose `Expected` column named the real
+difficulty in advance.**
+
+Every other stage's surprise was something the analysis had not thought to look for. Here the plan
+said *the hard part is scope* before any of it was built, and it was right — extraction took an
+afternoon and the scope question is the whole value of the deliverable.
+
+**Would we have got there anyway?** The extraction, yes. **The scope answer, no** — not without the
+50 priced submissions, which existed only because the analysis phase went looking for an oracle and
+found them (OI-67). A team building this from the corpus alone would have shipped a 1,259-row
+reference and called it complete.
 
 ---
 

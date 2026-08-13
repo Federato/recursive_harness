@@ -70,7 +70,7 @@ and that is this project's signature failure wearing a different coat.
 | **2** | The interpreter | ✅ **built 2026-08-13** — 52/52 acceptance, all 54 nodes |
 | **3** | Kernel and the two modes | ✅ **COMPLETE 2026-08-13** — 37/37 acceptance. Golden case exact; **49 of 49 usable oracles agree to the penny**. Banded and interpolated lookups built; every register entry has an explicit disposition |
 | **4** | Schemas and payloads | ✅ **COMPLETE 2026-08-13** — 23/23 acceptance. The schema is **read from ISO**, not designed; **51 of 51 jurisdictions rate the same risk**, GA 6,845 to NY 12,141 |
-| **5** | The enum workbook | — |
+| **5** | The enum workbook | ✅ **COMPLETE 2026-08-13** — 18/18. `GL-Submission-Fields.xlsx`, standard library only. ISO declares 1,259 fields; real submissions use **77** |
 | **6** | The UI | — |
 
 Full detail: [`docs/BUILD-STAGES.md`](docs/BUILD-STAGES.md). Every command that exercises a stage: [`TESTING.md`](TESTING.md). The plain-English account of the day stage 1 was built: [`docs/WHERE-WE-PAUSED-2026-08-12.md`](docs/WHERE-WE-PAUSED-2026-08-12.md).
@@ -924,7 +924,7 @@ Also open: OI-81's five substantive conditions, and Arizona's missing output fil
 
 ---
 
-## Entry 9 — Stage 4 complete: the schema was filed, not ours to design. **NEXT SESSION STARTS HERE.**
+## Entry 9 — Stage 4 complete: the schema was filed, not ours to design. ~~NEXT SESSION STARTS HERE.~~ *(the live handoff is **Entry 10**)*
 
 - **Date:** 2026-08-13
 - **Directed:** *"Move on to Stage 4"*
@@ -1018,3 +1018,102 @@ the workbook itself and cross-referencing against what the 50 real submissions a
 covers what is used rather than everything conceivable.
 
 Then **stage 6 — the UI**, and **Phase 2** against live RAaS.
+
+---
+
+## Entry 10 — Rule #1, then stages 4 and 5 finished. **NEXT SESSION STARTS HERE.**
+
+- **Date:** 2026-08-13
+- **Directed:** *"this should be the #1 rule moving forward"* · *"lets resolve form related fields
+  first"* · *"move on to Stage 5"*
+- **Verified:** ten suites green — `verify_stage4` **28/28**, `verify_stage5` **18/18** — deep check
+  **13/13**.
+
+### Rule #1
+
+**Before deriving anything from examples, enumerate the directories and ask what each one is for.**
+Recorded in the standing constraints **above the stage gates**, because it outranks them: a gate
+checks that the work was done, this checks that the right work was started.
+
+It earned the place three times before being written down — the `Default` block, the response header
+naming the edition, and the submission schema. **Applied immediately, it earned it a fourth time.**
+
+`48_directory_census.py` enumerates all 12 directories in an ISO package. **The engine reads 7 and
+had never opened 5.** `49_doc_workbook.py` then read the largest of them:
+
+| In `DOC/*.xlsx`, one workbook per package | |
+|---|---|
+| `Refer to Company` | **5,642 rows, 838 distinct conditions, 38 jurisdictions**, each with the manual rule number and *Customer Implementation Guidelines* |
+| `Base RaaS Overrides` | **63,327 rows over 435 fields, carrying the DATA TYPE** — which stage 4 had recorded as needing to come from the DataDefs |
+| `Class Description` | **2,489 class codes** with descriptions |
+| `Not Supported` | 428 rows naming what ERC does not do |
+| `Special Consideration` | 1,126 rows across 47 jurisdictions |
+
+**Our referral register is 28 conditions derived by hand. ISO declares 838.** Different populations
+— ours are rating failure modes — but OI-81's 14 pending conditions must be checked against ISO's
+declaration before another is derived. Recorded as OI-82 and OI-83.
+
+### Form related fields, resolved — and the coverage measured first
+
+A field's legal values can depend on another field's value. ISO files that dependency; we had never
+read it, so stage 4 validated against the **union** of every possibility.
+
+**The coverage measurement came before the implementation, and it changed what got built.** Of 319
+fields naming a domain table, **90 are dependent, and ISO declares the relationship for 29 (32.2%)**
+— not all. Had it been built first and measured after, it would have shipped looking complete.
+
+- **The 29 resolve exactly.** The declared path is evaluated against the submission using the same
+  `../../` dialect stage 2 already implements. On a 1,000,000 CSL policy the terrorism aggregate
+  narrows from 15 values to 13; on a 25,000 CSL policy the drone aggregate narrows from 15 to **4**.
+- **The other 61 stay on the union** — a safe superset, which can never reject a legal value, only
+  accept an illegal one — **and every finding now says which of the two it is.** *A validator that is
+  exact for some fields and a superset for others, without saying which, is worse than one that is
+  always a superset.*
+- Measured over ISO's 50 submissions: **100 checks exact, 637 superset.**
+
+**A shortcut was available and was rejected on evidence.** The dependency column usually looks like a
+field name — `PremOpsBIPDDeductible` is keyed by `PremOpsBIDeductible`, a sibling — so resolving by
+name would have claimed all 90. But **`GeneralAggregateLimit` is keyed by `EachOccurrenceLimit` and
+no such field exists**; the real one is `PremOpsProdsEachOccurrenceLimit`. A name lookup would have
+failed silently on a subset while appearing to work. Four cases were checked before deciding and one
+of the four broke it. Recorded as OI-84.
+
+### Stage 5 — the workbook, and the number that justifies it
+
+`GL-Submission-Fields.xlsx`, seven sheets, **written with the standard library only**
+(`scripts/xlsx.py`) — the engine has no third-party dependency and a deliverable should not
+introduce one.
+
+**The plan predicted the hard part would be scope rather than extraction, and it was right.** That
+is the only stage in this build whose `Expected` column named the real difficulty in advance.
+
+| | |
+|---|---|
+| Fields ISO declares, countrywide | **1,259** |
+| Used by the 50 real submissions between them | **77 — 6.1%** |
+| Used by all 50 | **41** |
+| Carried by any single submission | **43–54** |
+
+The `Used in practice` sheet is ordered by how often a field is actually sent, so it opens on what
+matters rather than on an alphabet. **The corpus says what is possible; only the submissions say what
+is sent.**
+
+Every column names the ISO file it came from, and a domain over 60 values is **summarised rather than
+silently truncated** — `ZipCode` at 765 is a lookup, not a choice.
+
+### One correction
+
+The read-me first said a real submission uses *"about 4%"* of the declared surface. The measured
+figure is **77 of 1,259 = 6.1%**, and any single submission about 3%. Corrected before commit —
+a rounded number that nobody would have checked is exactly the kind that survives into a slide.
+
+### ▶ Next session
+
+**Stage 6 — the UI.** Paste a submission, rate it, read the result: every factor in order with its
+source, premiums per coverage and per subline, referrals shown as referrals with what would clear
+them, and a mode switch. **Strictly separate from the engine** — the engine must never import it, and
+notebook use comes free if that separation holds.
+
+Also open: **OI-81's 14 pending referral conditions, now checkable against ISO's 838 declared ones**;
+OI-84's 61 undeclared dependencies; and **the 508 STC submissions**, reserved for form-attachment
+testing.

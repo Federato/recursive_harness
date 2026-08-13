@@ -58,9 +58,17 @@ def sheets(path: Path) -> dict:
         for row in ET.fromstring(z.read(p)).iter(f"{NS}row"):
             cells = []
             for cell in row.findall(f"{NS}c"):
-                v = cell.find(f"{NS}v")
-                txt = "" if v is None else (
-                    shared[int(v.text)] if cell.get("t") == "s" else v.text)
+                t = cell.get("t")
+                if t == "inlineStr":
+                    # An inline string carries its text in <is><t>, not <v>.
+                    # Reading only <v> silently returns blank for every string
+                    # cell -- which is exactly what it did the first time.
+                    node = cell.find(f"{NS}is")
+                    txt = "".join(x.text or "" for x in node.iter(f"{NS}t"))                         if node is not None else ""
+                else:
+                    v = cell.find(f"{NS}v")
+                    txt = "" if v is None else (
+                        shared[int(v.text)] if t == "s" else v.text)
                 cells.append((txt or "").strip())
             if any(cells):
                 rows.append(cells)
@@ -72,7 +80,7 @@ def main() -> None:
     pkgs, _, _ = rules_packages()
     sheet_names = Counter()
     refer_rows, type_rows = [], []
-    not_supported, special = [], []
+    not_supported, special, class_rows = [], [], []
     n_docs = 0
     per_sheet_rows = defaultdict(list)
 
@@ -104,6 +112,17 @@ def main() -> None:
             elif name == "Base RaaS Overrides":
                 for r in body:
                     type_rows.append([pk.juris] + r[:5])
+            elif name.startswith("Class Description"):
+                # (code, description) in either order depending on the sheet;
+                # the code is the numeric one.
+                for r in body:
+                    cells = [x for x in r[:3] if x]
+                    if len(cells) < 2:
+                        continue
+                    code = next((x for x in cells if x.replace(",", "").isdigit()), "")
+                    desc = next((x for x in cells if x != code), "")
+                    if code:
+                        class_rows.append([pk.juris, name, code, desc])
 
     for fname, header, rows in (
         ("doc_refer.csv",
@@ -112,6 +131,8 @@ def main() -> None:
         ("doc_types.csv",
          ["juris", "table", "column", "data_type", "state", "countrywide"],
          type_rows),
+        ("doc_class_codes.csv", ["juris", "sheet", "code", "description"],
+         class_rows),
     ):
         with open(c.OUT / fname, "w", newline="", encoding="utf-8") as fh:
             w = csv.writer(fh)
@@ -152,7 +173,11 @@ def main() -> None:
     A(f"    total rows: {len(special)}  "
       f"jurisdictions: {len(Counter(r[0] for r in special))}")
     A("")
-    A("W5  BASE RAAS OVERRIDES -- the DATA TYPES")
+    A("W5  CLASS DESCRIPTIONS")
+    A(f"    rows: {len(class_rows)}   distinct codes: "
+      f"{len({r[2] for r in class_rows})}")
+    A("")
+    A("W6  BASE RAAS OVERRIDES -- the DATA TYPES")
     A(f"    total rows: {len(type_rows)}")
     A(f"    distinct (table, column): "
       f"{len({(r[1], r[2]) for r in type_rows})}")

@@ -174,7 +174,7 @@ because it cannot be derived and an unmatched one refers (R22).
 
 ---
 
-## Stage 5 — The enum workbook
+## Stage 5 — The enum workbook  ✅ COMPLETE 2026-08-13
 
 **Deliverable:** an Excel workbook listing every field a payload can carry and its legal values.
 
@@ -182,6 +182,26 @@ Sourced from ISO's own domain tables — 417 countrywide plus state overrides �
 a limit"* is answered by ISO's filing rather than by us. Cross-referenced against the **1,906 input
 fields** measured in the corpus, and against the 53 real submissions, so the workbook covers what is
 actually used rather than everything conceivable.
+
+**Built and verified. 18/18.** `GL-Submission-Fields.xlsx`, seven sheets, written with the
+**standard library only** — the engine has no third-party dependency and a deliverable should not
+introduce one (`scripts/xlsx.py`).
+
+**The plan predicted the hard part correctly, and it was scope.** ISO declares **1,259 fields**
+countrywide; the 50 real submissions between them use **77 — 6.1%** — of which **41 are used by all
+50**, and a single submission carries **43–54**. The `Used in practice` sheet is ordered by how often
+a field is actually sent, so the workbook opens on what matters rather than on an alphabet.
+
+**Every column names the ISO file it came from**, and the `Read me` sheet lists them: fields and
+requiredness from `Form Fields`, legal values from `Domain Tables` (`DataValue`), declared
+dependencies from `Form Related Fields`, required-to-rate from `Ratebook Columns`, and — found by
+Rule #1 during this stage — **data types and 2,489 class codes from ISO's own `DOC` workbook**.
+
+**A large domain is summarised, never silently truncated:** `ZipCode` at 765 values is a lookup, not
+a choice, and the sheet says so rather than listing it.
+
+The workbook is **gitignored with the rest of the ISO-derived content**; the generator is committed
+and rebuilds it in seconds.
 
 ---
 
