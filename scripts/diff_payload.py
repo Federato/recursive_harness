@@ -94,12 +94,25 @@ def main(argv) -> int:
         print(f"no payload pair for {juris}")
         return 1
 
-    r = Kernel().rate(src)
+    iso_body = json.loads(out.read_text(encoding="utf-8-sig"))["Body"]
+
+    # OI-77: 34 of 50 pairs dispute `TerrorismCoverage`. Diagnosing anything
+    # else on top of that artefact wastes the run, so this is on by default
+    # here -- `--as-filed` turns it off. The reconciliation report is the place
+    # that must show both; this tool exists to localise a cause.
+    payload = json.loads(src.read_text(encoding="utf-8-sig"))
+    if "--as-filed" not in argv:
+        want_t = iso_body["GeneralLiability"][0].get("TerrorismCoverage")
+        for gl in payload.get("body", {}).get("GeneralLiability", []):
+            if want_t is not None and gl.get("TerrorismCoverage") != want_t:
+                gl["TerrorismCoverage"] = want_t
+                print(f"[OI-77] TerrorismCoverage taken from ISO's output: "
+                      f"{want_t!r}")
+
+    r = Kernel().rate(payload)
     if not r.complete:
         print(f"{juris}: did not rate -- {r.stopped}")
         return 1
-
-    iso_body = json.loads(out.read_text(encoding="utf-8-sig"))["Body"]
     want = {normalise(k): v
             for k, v in iso_numbers(iso_body["GeneralLiability"][0]).items()}
     ours_root = tree.select_one("GeneralLiabilityTable/GeneralLiability", r.tree)

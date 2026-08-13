@@ -49,6 +49,26 @@ OUT = ROOT / "scripts" / "erc" / "out" / "reconciliation.csv"
 #: defect the day one appears here.
 ECHOED_DISPUTE = "TerrorismCoverage"
 
+#: Pairs whose output is not an oracle for the input beside it (OI-78). Each is
+#: established by `scripts/check_payload_pairs.py` from the files themselves --
+#: never from the premium, which would be fitting the answer.
+#:
+#: `Payloads/AZ/1. Output.json` carries `State: AK`. It is Alaska's output,
+#: mis-filed, and it is the one CONSISTENT with Alaska's input: the file in the
+#: AK folder is missing `GeneralLiabilityMedPayCoverage/Limit`, which the input
+#: supplies, and that single field is the whole of the difference between the
+#: two (403 of 412 fields are identical).
+ORACLE_OVERRIDE = {"AK": "AZ"}
+
+#: No usable oracle exists, with the reason. Excluded from the comparable
+#: population rather than counted as a difference -- comparing against an
+#: output that did not come from this input manufactures a defect.
+NO_ORACLE = {
+    "AZ": "its output file is Alaska's (State: AK); no AZ output exists",
+    "OK": "ISO rated it against an OK edition not in the corpus -- its base "
+          "rate 0.093 appears in neither edition we hold",
+}
+
 
 def iso_body(path: Path):
     if not path.exists():
@@ -110,11 +130,11 @@ def main() -> int:
             r = kernel.rate(src)
         except Exception as exc:                            # noqa: BLE001
             rows.append([d.name, "STOP", "", want or "",
-                         f"{type(exc).__name__}: {exc}", "", "", "", ""])
+                         f"{type(exc).__name__}: {exc}", "", "", "", "", ""])
             continue
         if not r.complete:
             rows.append([d.name, "STOP", "", want or "", str(r.stopped),
-                         "", "", "", ""])
+                         "", "", "", "", ""])
             continue
         if want is None:
             status, delta = "RATED", ""
@@ -122,6 +142,22 @@ def main() -> int:
             status, delta = "MATCH", "0"
         else:
             status, delta = "DIFF", str(r.premium - want)
+
+        # Third view: against the oracle that actually corresponds to this
+        # input, excluding the pairs where none does.
+        if d.name in NO_ORACLE:
+            comparable = ""
+        else:
+            oracle = (PAYLOADS / ORACLE_OVERRIDE[d.name] / "1. Output.json"
+                      if d.name in ORACLE_OVERRIDE else d / "1. Output.json")
+            alt2 = reconciled(src, oracle)
+            try:
+                r3 = kernel.rate(alt2) if alt2 is not None else r
+                w3 = iso_premium(oracle)
+                comparable = ("MATCH" if r3.complete and r3.premium == w3
+                              else f"DIFF {r3.premium} vs {w3}")
+            except Exception as exc:                        # noqa: BLE001
+                comparable = f"STOP {type(exc).__name__}"
 
         # Second run, only where the pair disputes TerrorismCoverage.
         recon = ""
@@ -135,13 +171,14 @@ def main() -> int:
                 recon = f"STOP {type(exc).__name__}"
 
         rows.append([d.name, status, str(r.premium), str(want or ""), "",
-                     delta, " over ".join(r.packages), len(r.messages), recon])
+                     delta, " over ".join(r.packages), len(r.messages), recon,
+                     comparable])
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
     with open(OUT, "w", newline="", encoding="utf-8") as fh:
         w = csv.writer(fh)
         w.writerow(["juris", "status", "ours", "iso", "stopped", "delta",
-                    "packages", "iso_messages", "reconciled"])
+                    "packages", "iso_messages", "reconciled", "comparable"])
         w.writerows(rows)
 
     tally = Counter(r[1] for r in rows)
@@ -168,7 +205,14 @@ def main() -> int:
     print(f"    WITH ISO'S OWN TerrorismCoverage: {with_iso} of {n} match  "
           f"({disputed} pairs dispute that one field -- OI-77)")
     print()
-    print("    Every DIFF that survives the second column is our defect until")
+    comp = [r for r in rows if r[9]]
+    comp_match = sum(1 for r in comp if r[9] == "MATCH")
+    print(f"    AGAINST USABLE ORACLES ONLY     : {comp_match} of {len(comp)} match"
+          f"   ({len(NO_ORACLE)} excluded, OI-78)")
+    for s2, why in sorted(NO_ORACLE.items()):
+        print(f"        {s2}: {why}")
+    print()
+    print("    Every DIFF that survives the third line is our defect until")
     print("    proven otherwise. That is what strict-erc mode is for.")
     print(f"\n[wrote {OUT}]")
     return 0

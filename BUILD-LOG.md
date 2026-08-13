@@ -48,7 +48,7 @@ One entry per working session, in the style of `PROCESS_LOG.md` and with the sam
 |---|---|---|
 | **1** | Load and resolve | ✅ **built 2026-08-12** — 20/20 acceptance, 13/13 assertions at **two** dates |
 | **2** | The interpreter | ✅ **built 2026-08-13** — 52/52 acceptance, all 54 nodes |
-| **3** | Kernel and the two modes | ✅ **built 2026-08-13** — 32/32 acceptance. **Oklahoma golden case reproduces 7,839 exactly**; 50 of 50 payloads rate, **47 of 50 match ISO to the penny** (28 as filed — see OI-77) |
+| **3** | Kernel and the two modes | ✅ **built 2026-08-13** — 33/33 acceptance. **Oklahoma golden case reproduces 7,839 exactly**; 50 of 50 payloads rate and **48 of 48 usable oracles agree to the penny** (OI-77, OI-78). Owed: banded lookups, 27 referral conditions |
 | **4** | Schemas and payloads | — |
 | **5** | The enum workbook | — |
 | **6** | The UI | — |
@@ -592,7 +592,7 @@ range, and the **27 un-enforced register entries**.
 
 ---
 
-## Entry 6 — The 28 differences: 25 explained, 3 left. **NEXT SESSION STARTS HERE.**
+## Entry 6 — The 28 differences: 25 explained, 3 left. ~~NEXT SESSION STARTS HERE.~~ *(the live handoff is **Entry 7**)*
 
 - **Date:** 2026-08-13
 - **Directed:** *"make sure we are logging all of these, and then chase the 28 differences"*
@@ -707,3 +707,97 @@ looks like a failure. Corrected against actual output, per that file's standing 
 
 Then the rest of stage 3's remainder: **banded (`Range`) lookups**, still refusing rather than
 stepping a range, and the **27 referral conditions** carried but not enforced.
+
+---
+
+## Entry 7 — OI-78 closed: 48 of 48 usable oracles agree. **NEXT SESSION STARTS HERE.**
+
+- **Date:** 2026-08-13
+- **Directed:** *"Log, and move on to OI-78"*
+- **Verified:** eight suites green · `verify_stage3` **33/33** · `check 20260811 --deep` **13/13**.
+
+### The result
+
+| | |
+|---|---|
+| As filed | 28 of 50 |
+| With ISO's own `TerrorismCoverage` (OI-77) | 47 of 50 |
+| **Against the oracle that actually corresponds to each input** | **48 of 48** |
+
+**Zero surviving differences. All three were the oracle, and not one needed a change to the
+engine.**
+
+### Each one, and how it was established
+
+**Every one was found from the files, never from the premium.** That distinction is the whole
+discipline here: an explanation reached by working backwards from a number we wanted is not
+evidence, it is fitting. `scripts/check_payload_pairs.py` finds all three without looking at a
+premium at all — it compares the fields ISO **echoes** rather than computes, on the principle that
+if the engine cannot change a field then the input and the output must agree on it.
+
+**AZ — there is no Arizona output.** `Payloads/AZ/1. Output.json` carries **`State: AK`**. It is
+Alaska's output, mis-filed. Arizona therefore cannot be evaluated at all, and the +511 was never a
+defect: we were comparing Arizona's rates against Alaska's answer.
+
+**AK — two conflicting Alaska outputs, and we match the right one.** With the mis-filed copy
+identified, Alaska has two. They are **identical in 403 of 412 fields.** The whole difference:
+the AK-folder copy lacks `GeneralLiabilityMedPayCoverage/Limit`, which Alaska's **input supplies**.
+That one field decides a branch in `SetMedicalPaymentsCharge`, which turns `0.945` into a charge of
+1 rather than 0, and the premium into 7,386 rather than 7,385. **The correctly-paired output — the
+one mis-filed under AZ — is 7,386, exactly what the engine produces.**
+
+**OK — ISO rated it against content we do not have.** Base rate `0.093` and ILF `2.14`. We hold two
+candidate editions, `GL_OK_20250601_V01` and `GL_OK_20270401_V02`, and **both file `0.095`.** The
+payload's effective date is 2026-08-01 and the newest applicable edition in the corpus is dated
+2025-06-01, so ISO almost certainly rated it against a 2026 Oklahoma filing we have not been given.
+Not reconcilable, and not a defect.
+
+### What was ruled out, and why that matters
+
+**The rounding mode is not the cause, and OI-70 is untouched.** Alaska's difference was exactly 1
+and looked like the tie-break question finally surfacing. It is not:
+
+- AK is +1 under `ROUND_HALF_UP`, `ROUND_HALF_EVEN` **and** `ROUND_DOWN` — `0.945` at 0dp is not a
+  tie, so every half-rule gives 1 and only truncation gives 0
+- Truncating **all** `Product`/`Divide` sites scored **11 of 50**; truncating only at 0 decimal
+  places scored **18**. Against **47** for round-half-up. **ISO rounds.**
+
+> **This is the more useful half of the result.** A cheap explanation was available — *"ISO
+> truncates"* — and it fitted the one case in front of me perfectly. Measuring it across all 50
+> killed it in one run. **A hypothesis that explains the case you are looking at and nothing else is
+> the most expensive kind of wrong**, because it gets written into an engine and quietly moves every
+> premium.
+
+### The tooling this produced
+
+| | |
+|---|---|
+| `scripts/check_payload_pairs.py` | **validates the pairing before any premium is compared.** Identity (`State` on folder, input and output) and every echoed scalar. Finds AK, AZ and GA |
+| `scripts/diff_payload.py` | field-level differ, deepest-first; applies the OI-77 correction by default so the artefact does not mask the cause |
+| `scripts/rate_all_payloads.py` | now reports **three** views — as filed, terrorism-corrected, and against usable oracles — and names the exclusions with reasons |
+
+**Three views, always, and the headline is never the best one alone.** The exclusions are declared
+on the same line as the number they improve.
+
+### Ratchets
+
+`verify_stage3` group F now pins all four: **50 rate**, **28 as filed**, **47 terrorism-corrected**,
+**48 of 48 comparable**. F4 additionally requires that comparable matches *equal* comparable pairs —
+it fails if a difference appears at all, not merely if the count drops.
+
+> **Third time this project's oracle has been wrong about itself** — OI-67, OI-77, and now OI-78.
+> The lesson has earned permanent status: **validate the pairing before comparing the answer.** A
+> reconciliation harness that assumes its own inputs are matched will report the engine as broken and
+> be believed.
+
+### ▶ Next session
+
+**Stage 3's remainder, now that nothing is disagreeing.** Two named items: **banded (`Range`)
+lookups**, which still refuse rather than stepping a range, and the **27 referral conditions**
+carried but not enforced (`Kernel.unenforced` names them).
+
+Then **stage 4 — schemas and payloads**, where the submission mapping written for stage 3 becomes a
+documented format per jurisdiction.
+
+**`OI-70` (the rounding mode) is now the oldest open question the corpus cannot answer**, and it
+needs RAaS or an ISO clarification. Everything offline agrees with `ROUND_HALF_UP`.

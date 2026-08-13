@@ -270,6 +270,9 @@ def group_e():
 BASELINE_RATED = 50
 BASELINE_MATCH = 28
 BASELINE_RECONCILED = 47
+#: Against the oracle that actually corresponds to each input, excluding the two
+#: pairs where none does (OI-78). This is the honest headline and it is exact.
+BASELINE_COMPARABLE = 48
 
 
 def group_f():
@@ -332,8 +335,36 @@ def group_f():
     check(f"F3 agreement with ISO's own TerrorismCoverage does not regress "
           f"(>= {BASELINE_RECONCILED})",
           reconciled >= BASELINE_RECONCILED,
-          f"{reconciled} of {rated}; the {rated - reconciled} survivors are "
-          f"ours until proven otherwise")
+          f"{reconciled} of {rated}")
+
+    # F4 is the honest headline: every pair whose output actually came from its
+    # input. The two exclusions are established from the files by
+    # scripts/check_payload_pairs.py, never from the premium.
+    from importlib import util as _u
+    spec = _u.spec_from_file_location(
+        "rap", ROOT / "scripts" / "rate_all_payloads.py")
+    rap = _u.module_from_spec(spec); spec.loader.exec_module(rap)
+    comp_match = comp_total = 0
+    for d in sorted(p for p in payloads.iterdir() if p.is_dir()):
+        src = d / "1. Input.json"
+        if not src.exists() or d.name in rap.NO_ORACLE:
+            continue
+        oracle = ((payloads / rap.ORACLE_OVERRIDE[d.name] / "1. Output.json")
+                  if d.name in rap.ORACLE_OVERRIDE else d / "1. Output.json")
+        if not oracle.exists():
+            continue
+        comp_total += 1
+        alt = rap.reconciled(src, oracle)
+        try:
+            rr = kernel.rate(alt if alt is not None else src)
+            if rr.complete and rr.premium == rap.iso_premium(oracle):
+                comp_match += 1
+        except Exception:                                 # noqa: BLE001
+            pass
+    check(f"F4 every usable oracle agrees (>= {BASELINE_COMPARABLE} of "
+          f"{BASELINE_COMPARABLE})",
+          comp_match >= BASELINE_COMPARABLE and comp_match == comp_total,
+          f"{comp_match} of {comp_total} comparable pairs match to the penny")
 
 
 def main() -> int:
