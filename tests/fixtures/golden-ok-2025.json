@@ -1,0 +1,163 @@
+{
+  "id": "golden-ok-2025",
+  "description": "The Oklahoma golden case: a real ISO-rated GL policy with published expected output. The only end-to-end oracle available without RAaS.",
+  "provenance": {
+    "input": "OK/GL_OK 20250601 V01/GL OK 20250601 V01/STC/1. Input.json",
+    "expected": "OK/GL_OK 20250601 V01/GL OK 20250601 V01/STC/1. Output.json",
+    "corpus_root": "C:\\Projects\\ISO_ERC_Files\\General_Liability",
+    "package": "GL_OK_20250601_V01",
+    "package_identity_from": "DataDefs/MasterGLOK.DataDef.xsd targetNamespace",
+    "countrywide_parent": "GL_CW_20231201_V03",
+    "parent_resolved_from": "DataDefs/MasterGLOK.DataDef.xsd xs:import/@schemaLocation",
+    "note": "The parent is NOT the newest countrywide package (that is GL_CW_20270401_V01). Resolving it correctly is load-bearing: CW 2027 computes medical payments differently and yields 975, not 976. See docs/gates/GATE-334-PREMISES-OPERATIONS.md sec.0."
+  },
+
+  "submission": {
+    "effective_date": "2025-08-01",
+    "state": "OK",
+    "subline": "Premises/Operations and Products/Completed Operations",
+    "coverage_form": "Occurrence",
+    "each_occurrence_limit": "1,000,000 CSL",
+    "general_aggregate_limit": "2,000,000 CSL",
+    "prods_compld_ops_aggregate_limit": "2,000,000 CSL",
+    "medical_payments_limit": "10,000",
+    "package_mod_factor": 1.0,
+    "size_of_risk_rating_applies": "No",
+    "experience_rating_applies": "No",
+    "schedule_rating_modification_applies": "No",
+    "governmental_subdivision": "No",
+    "deductibles": "No Deductible (all six BI/PD/BIPD x PremOps/Prods)",
+    "locations": [
+      {
+        "premises_operations_territory": "501",
+        "prods_compld_ops_territory": "999",
+        "classifications": [
+          {
+            "class_code": "50017",
+            "class_description": "Abrasives or Abrasive Products Mfg.",
+            "other_than_prods_compld_ops_cov": "Premises/Operations",
+            "prods_compld_ops_cov": "Products/Completed Operations",
+            "prem_ops_premium_basis": "Gross Sales",
+            "prem_ops_cov_exposure": 5000000.0,
+            "prods_compld_ops_premium_basis": "Gross Sales",
+            "prods_compld_ops_cov_exposure": 5000000.0,
+            "if_any_basis": "No"
+          }
+        ]
+      }
+    ]
+  },
+
+  "table_cells_consumed": [
+    {"table": "PremOpsIncrdLimitTableAssignment", "layer": "state", "key": ["OK", "50017"], "value": "3"},
+    {"table": "PremOpsLossCost", "layer": "state", "key": ["OK", "501", "50017"], "value": 0.095},
+    {"table": "PremOpsELPText", "layer": "state", "key": ["OK", "50017"], "value": "Rate/Loss Cost Applies", "role": "rating-basis selector - confirms the loss-cost path"},
+    {"table": "ILFPremOps", "layer": "state", "key": ["OK", 3, "1,000,000 CSL", "2,000,000 CSL"], "value": 2.05},
+    {"table": "MedPayFactor", "layer": "countrywide", "key": ["CW", "50017"], "value": 1.003},
+    {"table": "PremOpsMinPremium", "layer": "countrywide", "key": ["CW", "3"], "value": 0},
+    {"table": "ProdsCompldOpsLossCost", "layer": "state", "key": ["OK", "999", "50017"], "value": 0, "role": "a PUBLISHED zero - the documented switch to the ELP path, not a rate"},
+    {"table": "ProdsCompldOpsELPText", "layer": "state", "key": ["OK", "50017"], "value": "Industry", "role": "rating-basis selector - confirms the ELP path"},
+    {"table": "ProdsCompldOpsELPFactor", "layer": "state", "key": ["OK", "50017"], "value": 0.82},
+    {"table": "ILFProds", "layer": "state", "key": ["OK", "B", "1,000,000 CSL", "2,000,000 CSL"], "value": 1.67}
+  ],
+
+  "expected": {
+    "policy": {
+      "Premium": 7839.0,
+      "ErcCalculatedTotalPremium": 7839.0,
+      "AnnualBasicLimitsCoPremiumPremOps": 475.0,
+      "AnnualBasicLimitsCoPremiumProdCompldOps": 4100.0,
+      "_note": "The two AnnualBasicLimits* figures are reported, not consumed by any rule. They are NOT the subline premiums."
+    },
+    "subline_334_premises_operations": {
+      "Subline": "334",
+      "ClassCode": "50017",
+      "PremiumBasis": "Gross Sales",
+      "LCM": 1.0,
+      "PremOpsLossCost": 0.095,
+      "PremOpsELP": 0.0,
+      "ClaimsMadeMultiplier": 1.0,
+      "BringYourOwnAlcoholExclusionFactor": 1.0,
+      "BaseRate": 0.095,
+      "FinalPremOpsIncrdLimitTableAssignment": "3",
+      "FinalPremOpsIncrdLimitTableAssignmentInt": 3,
+      "CSLILF": 2.05,
+      "MedicalPaymentsFactor": 1.003,
+      "DeductibleFactor": 0.0,
+      "FinalDeductibleFactor": 0.0,
+      "FinalILF": 2.05,
+      "PremOpsSizeOfRiskFinalRelativity": 0.0,
+      "FinalRate": 0.195,
+      "AdditionalInterestFactor": 1.0,
+      "BasicLimitPremium": 475.0,
+      "MedicalPaymentsCharge": 1.0,
+      "MinPremium": 0.0,
+      "Premium": 976.0,
+      "PremiumIndicator": 1
+    },
+    "subline_336_products_completed_operations": {
+      "Subline": "336",
+      "ClassCode": "50017",
+      "Territory": "999",
+      "PremiumBasis": "Gross Sales",
+      "LCM": 1.0,
+      "ProdsCompldOpsLossCost": 0.0,
+      "ProdsCompldOpsELP": 0.82,
+      "ClaimsMadeMultiplier": 1.0,
+      "DefenseWithinLimitsBasicLimitMultiplier": 1.0,
+      "BaseRate": 0.82,
+      "FinalProdsCompldOpsIncrdLimitTableAssignment": "B",
+      "CSLILF": 1.67,
+      "DeductibleFactor": 0.0,
+      "FinalDeductibleFactor": 0.0,
+      "FinalILF": 1.67,
+      "ProdsCompldOpsSizeOfRiskFinalRelativity": 0.0,
+      "FinalRate": 1.369,
+      "AdditionalInterestFactor": 1.0,
+      "BasicLimitPremium": 4100.0,
+      "MinimumPremium": 0.0,
+      "MinPremium": 0.0,
+      "Premium": 6845.0,
+      "PremiumIndicator": 1,
+      "SplitLimitWeightFactorProdsBI": 0.87,
+      "SplitLimitWeightFactorProdsPD": 0.17,
+      "SplitLimitWeightFactorProdsConstant": 0.01
+    },
+    "terrorism": {
+      "_note": "Out of scope for gates 334/336 (build-order item 9). Recorded because it contributes to the policy total and because ERC DID supply the factors - see PROCESS_LOG Step 28.",
+      "CertifiedActsOfTerrorismExposureClassFactorPremises": 0.004,
+      "CertifiedActsOfTerrorismExposureClassFactorProducts": 0.004,
+      "CertifiedActsOfTerrorismNuclBioChemRadioFactor": 0.58,
+      "prem_ops_Premium": 2.0,
+      "prods_compld_ops_Premium": 16.0,
+      "total": 18.0
+    },
+    "reconciliation": "976 + 6845 + 2 + 16 = 7839"
+  },
+
+  "rounding_sites_exercised": [
+    {"site": "334 BaseRate", "dp": 3, "value": "0.095 x 1.0 = 0.095", "is_tie": false},
+    {"site": "334 FinalILF", "dp": 3, "value": "2.05 - 0.0 = 2.05", "is_tie": false},
+    {"site": "334 FinalRate", "dp": 3, "value": "0.095 x 2.05 = 0.19475 -> 0.195", "is_tie": false, "note": "0.19475 > 0.1945, so every rounding mode agrees. NOT evidence for a tie-break mode."},
+    {"site": "334 MedicalPaymentsCharge", "dp": 0, "value": "0.095 x 0.003 x 5000 = 1.425 -> 1", "is_tie": false},
+    {"site": "334 Premium", "dp": 0, "value": "0.195 x 5000 + 1 = 976.0", "is_tie": false},
+    {"site": "336 BaseRate", "dp": 3, "value": "0.82 x 1.0 = 0.82", "is_tie": false},
+    {"site": "336 FinalILF", "dp": 3, "value": "1.67 - 0.0 = 1.67", "is_tie": false},
+    {"site": "336 FinalRate", "dp": 3, "value": "0.82 x 1.67 = 1.3694 -> 1.369", "is_tie": false},
+    {"site": "336 Premium", "dp": 0, "value": "1.369 x 5000 = 6845.0", "is_tie": false}
+  ],
+  "rounding_verdict": "No rounding site in this case is a tie. The golden case yields NO evidence on the tie-break mode (E1 / OI-09), exactly as the build plan records.",
+
+  "does_not_exercise": [
+    "any deductible (all six are 'No Deductible')",
+    "size-of-risk rating",
+    "the claims-made form",
+    "experience rating, schedule rating, expense modification (all 1.0)",
+    "a company LCM other than 1.0",
+    "increased-limits table assignment = 'Refer To Co.'",
+    "multi-class or multi-location allocation",
+    "a minimum-premium top-up (both min premiums are 0)",
+    "the CW 2027 medical-payments fold, or the CW 2027 $1 premium floor",
+    "any of the 19 jurisdictions that override the 334 rules"
+  ]
+}

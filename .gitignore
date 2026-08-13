@@ -35,11 +35,14 @@ GL_ERC_Edition_Hierarchy.html
 *.docx
 
 # -----------------------------------------------------------------------------
-#  JUDGEMENT CALL — a real ISO-rated policy, copied from ISO's own package.
-#  Excluding it makes tests/verify_golden.py unrunnable from a fresh clone.
-#  Comment this line out ONLY if the repository is private.
+#  tests/fixtures/ holds ONE real ISO-rated policy, copied from ISO's own
+#  package. It is included because THIS REPOSITORY IS PRIVATE and without it
+#  tests/verify_golden.py cannot run from a clean clone.
+#
+#  IF THIS REPOSITORY IS EVER MADE PUBLIC, uncomment the line below AND purge it
+#  from history — a `git rm` alone leaves it in every prior commit.
 # -----------------------------------------------------------------------------
-tests/fixtures/
+# tests/fixtures/
 
 # =============================================================================
 #  Ordinary noise

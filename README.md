@@ -4,21 +4,52 @@
 proof at every step that it matches what ISO actually filed — and a harness that checks itself
 against ISO's own rating service.
 
-### 📖 Read the documents: **[federato.github.io/recursive_harness](https://federato.github.io/recursive_harness/)**
+## 📖 Start here
 
-| Start here | |
+**Everything below renders in GitHub. Read it in the browser — no clone required.**
+
+| | |
 |---|---|
-| **[The build, end to end](https://federato.github.io/recursive_harness/THE-BUILD-END-TO-END.html)** | Executive summary, then the whole plan in plain English: the engine, testing against ISO's service, the self-correcting harness, and carrier deviations. **Read this one.** |
-| [The plan, in plain English](https://federato.github.io/recursive_harness/THE-PLAN-IN-PLAIN-ENGLISH.html) | Why this is hard and what changed the design |
-| [All technical documents](https://federato.github.io/recursive_harness/GL-RATING-ENGINE-DOCS.html) | Every plan and gate document, 24 tabs |
-| **[TESTING.md](TESTING.md)** | **Every command, phase by phase** — each one run and its output verified |
+| **[docs/EXECUTIVE-SUMMARY.md](docs/EXECUTIVE-SUMMARY.md)** | **Read this one.** What we are building, why it is hard, where we are, the architecture decision *and the honest case against it*, how it gets proved against ISO's own service, the self-correcting harness, and how carrier deviations layer on top |
+| [docs/WHERE-WE-PAUSED-2026-08-12.md](docs/WHERE-WE-PAUSED-2026-08-12.md) | The most recent working session, written to be read cold |
+| [docs/BUILD-STAGES.md](docs/BUILD-STAGES.md) | The six build stages and the phases that follow them |
+| [TESTING.md](TESTING.md) | **Every command, phase by phase.** Each one has been run and its stated output verified |
+| [BUILD-LOG.md](BUILD-LOG.md) | The build diary — what was built, what broke, what the fix revealed |
+| [docs/OPEN-ITEMS.md](docs/OPEN-ITEMS.md) | Everything unresolved — 69 tracked items |
+| [docs/PRD-GL-RATING-ENGINE.md](docs/PRD-GL-RATING-ENGINE.md) | Full status and history. §0 is the latest update |
+| [docs/GL-RATING-ENGINE-BUILD-PLAN.md](docs/GL-RATING-ENGINE-BUILD-PLAN.md) | The technical plan — architecture, the 18 non-negotiables, deviation constraints C1–C3 |
+| [docs/FROM-PLANNING-TO-BUILD.md](docs/FROM-PLANNING-TO-BUILD.md) | Did the analysis pay off? Written *before* each stage, so it is allowed to be wrong |
+| [PROCESS_LOG.md](PROCESS_LOG.md) | The full analysis record, 51 steps. Long, and complete |
+
+### The formatted HTML versions
+
+There are nicer, self-contained HTML versions of the main documents. **GitHub displays HTML as
+source rather than rendering it**, and GitHub Pages is not enabled on this repository, so these have
+to be **downloaded and opened in a browser**:
+
+| File | |
+|---|---|
+| `docs/THE-BUILD-END-TO-END.html` | The executive summary and the whole build, with contents sidebar. Same content as `EXECUTIVE-SUMMARY.md` |
+| `docs/THE-PLAN-IN-PLAIN-ENGLISH.html` | Why this is hard and what changed the design |
+| `docs/GL-RATING-ENGINE-DOCS.html` | Every technical and gate document in one page, 24 tabs |
+| `docs/index.html` | A landing page linking all of the above |
+
+**Quickest way to read them:** clone the repository and open the file, or use the "Download raw
+file" button on the GitHub file page and open the download.
+
+```bash
+git clone https://github.com/Federato/recursive_harness.git
+cd recursive_harness
+start docs/index.html          # Windows
+open  docs/index.html          # macOS
+```
 
 ---
 
 ## ⚠️ ISO's licensed content is not in this repository
 
 The manuals, the machine-readable rating packages, the text extracted from them, and ISO's rated
-example policies are **all excluded** — see [`.gitignore`](.gitignore).
+example policies are **all excluded** — see [`.gitignore`](.gitignore), which explains each exclusion.
 
 The engine reads the ERC corpus from **outside** the repository, at a path set by the `GL_ERC_ROOT`
 environment variable:
@@ -30,6 +61,11 @@ python -m gl_engine.cli check 20260811 --deep
 
 **Without a licensed copy of that corpus the code will not run.** The documents, the method and the
 reasoning are what this repository is for.
+
+**This repository is private, and the documents in it quote specific ISO loss costs and factors —
+that is what makes them evidence rather than assertion. It must stay private.** One file,
+`tests/fixtures/golden-ok-2025.json`, is a real ISO-rated policy; if this ever needs to be made
+public, that file and 33 of the 65 documents would have to be scrubbed *and purged from history*.
 
 ---
 

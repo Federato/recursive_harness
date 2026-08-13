@@ -3,9 +3,10 @@
 **Progress briefing. 12 August 2026.** Plain language; no insurance or engineering background
 assumed.
 
-> **There is a formatted version of this document with the full end-to-end build walkthrough:**
-> [`THE-BUILD-END-TO-END.html`](THE-BUILD-END-TO-END.html) — engine → RAaS proof → self-correcting
-> harness → company deviations.
+> **This is the canonical document and it renders here on GitHub.** There is a formatted HTML
+> version of the same content — [`THE-BUILD-END-TO-END.html`](THE-BUILD-END-TO-END.html) — which must
+> be downloaded and opened in a browser, because GitHub shows HTML as source rather than rendering
+> it.
 
 ---
 
@@ -316,7 +317,38 @@ and should be found on a real deviation rather than guessed at.**
 
 ---
 
-## 7. The ultimate goal — the recursive harness
+## 7. Proving it against ISO's own service
+
+**RAaS — Rating as a Service — is ISO executing its own content.** Send it a submission, get back a
+premium. Run the same submission through our engine in strict mode, and compare.
+
+```
+   submission ──┬──→  ISO RAaS          ──→  ISO's premium
+                │
+                └──→  our engine        ──→  our premium
+                       (strict mode)
+                                              │
+                                              ▼
+                                    DIFFERENCE?  →  our defect,
+                                                    until proven otherwise
+```
+
+**Most of this can start before the connection exists.** The 54 ISO-priced example policies covering
+50 jurisdictions are already on disk — enough to find systemic errors offline.
+
+### The honest gap in the test set
+
+**None of the 54 carries loss history**, so experience rating — the part that prices on a customer's
+own claims record — **has no offline answer key at all.** It can only ever be checked against the
+live service.
+
+And a measurement owed before stage 2 ships: **which instructions and coverages do those 54 actually
+exercise?** They are the safety net under the biggest architectural risk in section 4, and we have
+not yet measured how wide the net is.
+
+---
+
+## 8. The ultimate goal — the recursive harness
 
 ```
         ┌──────────────────────────┐
@@ -350,6 +382,27 @@ and should be found on a real deviation rather than guessed at.**
 first, and **strict mode exists precisely so the comparison is meaningful when the connection is
 made.**
 
+### "Self-learning" and "self-fixing" — what those honestly mean
+
+The phrase covers four different things with very different difficulty. Being precise matters,
+because **only the first two are ordinary engineering.**
+
+| Level | What it does | Realistic? |
+|---|---|---|
+| **1 · Self-checking** | Notices that our answer differs from ISO's, and records it with full provenance | **Yes.** Ordinary engineering. The trace layer is already designed for it |
+| **2 · Self-diagnosing** | Localises *which rule, which table, which instruction* produced the difference — not just that the total is wrong | **Yes**, and this is where the interpreter earns its keep: every number knows what computed it |
+| **3 · Self-fixing** | Proposes — and for a bounded class, applies — a correction: an instruction's semantics, a sentinel's meaning, a rounding rule | **Yes, for a bounded class.** Because the engine executes content, a fix is usually a change to a semantics table rather than to logic scattered across a codebase |
+| **4 · Self-learning** | Generalises a correction into a rule that prevents the whole class — e.g. *"any factor that breaks monotonicity is a sentinel until proven otherwise"* | **Aspirational, but already happening by hand.** That exact rule was written this week, from one Texas table |
+
+**Two limits to state before anyone assumes otherwise:**
+
+- **It can only ever self-correct against ISO content.** The oracle is ISO's service, which rates
+  ISO's rules. **Nothing external can score a carrier deviation** — see section 6.
+- **Not every difference is our defect.** Some are findings about ISO's own content; three turned up
+  on the first day of coding. The harness must be able to conclude *"we are right and this needs
+  escalating"*, which is why the two expert reviewers sit in the loop rather than an automatic
+  patcher.
+
 ### Why this matters more than the rating engine itself
 
 The rating engine is the **first** line of business. The harness is the **method**, and it is
@@ -366,7 +419,7 @@ transferable:
 
 ---
 
-## 8. Risks, stated honestly
+## 9. Risks, stated honestly
 
 | Risk | Mitigation | Residual |
 |---|---|---|
@@ -385,7 +438,7 @@ its name, and the second one passed while blind.
 
 ---
 
-## 9. Where I would most want to be told I am wrong
+## 10. Where I would most want to be told I am wrong
 
 **Nothing here is blocked and nothing needs a decision.** These are the four places where an outside
 view is worth more than another week of my own work.
@@ -414,7 +467,7 @@ actually be used, that is worth knowing before the referral logic is built into 
 Two low-cost items before stage 2 commits, both measurable against files already held:
 
 1. **Measure what the 54 priced policies actually exercise** — which instructions, coverages and
-   states. It is the missing safety net under the biggest risk in section 8.
+   states. It is the missing safety net under the biggest risk in section 9.
 2. **Spike the ten hardest instructions first, not the twenty commonest.** The common ones are almost
    certainly fine. This either validates the architecture in a week or kills it cheaply.
 
@@ -427,7 +480,7 @@ what it does, what it was checked against, and what it cannot yet do.
 
 | For | Document |
 |---|---|
-| **The whole build, end to end, formatted** | **`docs/THE-BUILD-END-TO-END.html`** |
+| The same content as formatted HTML *(download to view)* | `docs/THE-BUILD-END-TO-END.html` |
 | Plain-English account of the current state | `docs/WHERE-WE-PAUSED-2026-08-12.md` |
 | Full status and history | `docs/PRD-GL-RATING-ENGINE.md` |
 | The six stages in detail | `docs/BUILD-STAGES.md` |
