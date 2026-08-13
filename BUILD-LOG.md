@@ -49,7 +49,7 @@ One entry per working session, in the style of `PROCESS_LOG.md` and with the sam
 | **1** | Load and resolve | ✅ **built 2026-08-12** — 20/20 acceptance, 13/13 assertions at **two** dates |
 | **2** | The interpreter | ✅ **built 2026-08-13** — 52/52 acceptance, all 54 nodes |
 | **3** | Kernel and the two modes | ✅ **COMPLETE 2026-08-13** — 37/37 acceptance. Golden case exact; **49 of 49 usable oracles agree to the penny**. Banded and interpolated lookups built; every register entry has an explicit disposition |
-| **4** | Schemas and payloads | — |
+| **4** | Schemas and payloads | ✅ **COMPLETE 2026-08-13** — 23/23 acceptance. The schema is **read from ISO**, not designed; **51 of 51 jurisdictions rate the same risk**, GA 6,845 to NY 12,141 |
 | **5** | The enum workbook | — |
 | **6** | The UI | — |
 
@@ -804,7 +804,7 @@ needs RAaS or an ISO clarification. Everything offline agrees with `ROUND_HALF_U
 
 ---
 
-## Entry 8 — Stage 3 complete, and three filings arrive. **NEXT SESSION STARTS HERE.**
+## Entry 8 — Stage 3 complete, and three filings arrive. ~~NEXT SESSION STARTS HERE.~~ *(the live handoff is **Entry 9**)*
 
 - **Date:** 2026-08-13
 - **Directed:** *"Added the files"* · *"Finish stage 3"*
@@ -901,3 +901,100 @@ request format per jurisdiction, with a worked example each. Four states carry a
 field (E8); **Hawaii is not in the corpus and cannot be rated**.
 
 Also open: OI-81's five substantive conditions, and Arizona's missing output file (OI-78).
+
+---
+
+## Entry 9 — Stage 4 complete: the schema was filed, not ours to design. **NEXT SESSION STARTS HERE.**
+
+- **Date:** 2026-08-13
+- **Directed:** *"Move on to Stage 4"*
+- **Built:** `gl_engine/schema/` and `scripts/build_sample_payloads.py`.
+- **Verified:** `tests/verify_stage4.py` **23/23**; nine suites green; deep check **13/13**.
+
+### The finding that made the stage smaller
+
+The plan expected stage 4 to **derive** a submission format from the 53 RAaS payloads. It did not
+have to. **ISO files the schema**, in a directory no analysis step had opened:
+
+`Form Fields/Fields.FormField.csv` declares, per jurisdiction and per field, its control, its label,
+whether it is required on a policy or a quote, its default, its minimum and maximum, the condition
+under which it applies at all, and **the domain table naming its legal values**.
+`Ratebook Columns/RatebookColumns.FormPage.csv` adds `RatingRequiredCondition` — required *to rate*,
+which is a stricter and different question from required on a form.
+
+**Countrywide declares 1,381 fields over 429 tables**; each jurisdiction resolves to **1,252–1,321**.
+**No field is required in every jurisdiction**, which is why the schema is per-jurisdiction rather
+than one shape with exceptions.
+
+> **Third time this build has found the answer already in the corpus** — the `Default` block, the
+> response header naming the edition, and now the field schema. Each was in a file nobody had a
+> reason to open until something needed it. **The transferable instruction is blunt: before deriving
+> anything from examples, enumerate the directories in the package and ask what each is for.**
+
+### Two things the field data itself corrected
+
+**`Type` is a form control, not a data type.** `TEXT`, `SELECT`, `CHECKBOX`, `HIDDEN`, `TEXTAREA`,
+`BUTTON`, `ANCHOR` — it says how ISO's screen renders the field. **A validator reading `TEXT` as
+"string" would accept an exposure of `"banana"`.** Data types come from the DataDefs and legal
+values from the domain table; the module says so where it would otherwise be assumed.
+
+**`DataValue` is the stored value; `DisplayValue` is what the screen shows.** The obvious
+implementation — *"take the first column that is not the state"* — was written first and was wrong:
+on a ZIP-to-territory table it returns the **ZIP**, so **every real territory came back illegal**.
+It reported 8 errors on a submission ISO itself priced without complaint. Reading `DataValue`
+cleared all 8. Domains with leading dependency columns are unioned rather than resolved, which makes
+the answer a **safe superset** — stated in the code, because a superset presented as exact is a lie
+about coverage.
+
+### E8 restated from measurement
+
+The plan says *"four states resolve territory by county or place"*. **The count is right and the
+mechanism was not. There is no county field anywhere in the corpus** — the first search for one
+matched `PremiumPlaceHolder`.
+
+What is actually filed: **exactly four jurisdictions — CA, FL, NY, TX — declare `TerrorismTerritory`
+against a state-specific `TerrorismTerritoryCode` domain**, while **11 others derive it from a ZIP**
+(`TerritoryCodeByZipCode`), and **NY alone** adds a Manhattan flag and a territory indicator. E8's
+"by county or place" is better read as **"by a code that cannot be derived"** — which is exactly why
+R22 refers on an unmatched one and forbids a fuzzy match.
+
+### The deliverable
+
+**One sample submission per jurisdiction, carrying the identical risk** — class `50017`, 5,000,000
+of gross sales, 1M/2M CSL, no deductibles, no rating plans — so a price difference is attributable to
+the jurisdiction and nothing else. Only what *must* vary does: the jurisdiction, and the territory
+codes, which are a state's own and cannot be held constant.
+
+| | |
+|---|---|
+| Jurisdictions with a sample | **51 of 51** |
+| Rate end to end | **51 of 51** |
+| Schema errors across all of them | **0** |
+| Same risk, cheapest | **GA 6,845** |
+| Same risk, dearest | **NY 12,141** |
+
+**Puerto Rico has no RAaS payload of its own** — the plan records it as the only such jurisdiction —
+so **its sample is built from ISO's own domain tables**, which file exactly one premises/operations
+territory and one products territory. Nothing about it is invented.
+
+**ISO's own 50 submissions validate with zero errors** and 225 warnings, all of them envelope fields
+ISO's form does not declare. Validation returns **findings, not exceptions**: a submission with three
+problems reports three, and validation never decides whether a rating happens — the engine's own
+refusals are stricter and better placed.
+
+### The quiet success
+
+**All 51 jurisdictions rate the same risk with no jurisdiction-specific code anywhere**, including
+the four sliced loss-cost states. Stage 4's `Expected` column predicted that state table-shape
+differences would be absorbed by the interpreter *or* would surface as a late stage-2 defect.
+**They were absorbed. No stage-2 defect surfaced.**
+
+### ▶ Next session
+
+**Stage 5 — the enum workbook.** An Excel listing every field a payload can carry and its legal
+values. **Most of it now exists as data**: `Schema.legal_values()` reads ISO's domain tables and
+`scripts/erc/47_input_schema.py` has already emitted the field surface as CSV. The remaining work is
+the workbook itself and cross-referencing against what the 50 real submissions actually use, so it
+covers what is used rather than everything conceivable.
+
+Then **stage 6 — the UI**, and **Phase 2** against live RAaS.

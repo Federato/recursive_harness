@@ -216,10 +216,32 @@ penny.
   cases**, and if they are not, that is a stage 2 defect surfacing late.
 
 ### Actually used
-*To be written after stage 4.*
+*Written 2026-08-13, after stage 4.*
+
+| Expected | What happened |
+|---|---|
+| The 53 RAaS payloads give the submission shape; derive rather than design | **Neither.** **ISO *files* the schema** — `Form Fields/Fields.FormField.csv` declares every field per jurisdiction with its control, requiredness, default, bounds, condition and **the domain table naming its legal values**. The payloads were used only as territory sources and as subjects to validate. **The decisive asset was in the corpus the whole time and was not on this list** |
+| The 1,906-field input surface bounds what the schema must express | **A different measurement, both true.** 1,906 counts the *rating* input surface; the form schema is **1,381 countrywide fields over 429 tables**, plus a state delta, giving **1,252–1,321 per jurisdiction**. Neither bounds the other |
+| Four states need a county or place field (E8) | **The count is right and the mechanism was not.** There is no county field anywhere — a first search for one matched `PremiumPlaceHolder`. **Exactly four (CA, FL, NY, TX) declare `TerrorismTerritory` against a state-specific `TerrorismTerritoryCode`**, while **11 others derive it from a ZIP** and NY alone adds a Manhattan flag. E8's *"by county or place"* is better read as *"by a code that cannot be derived"* |
+| Hawaii cannot be rated | **Right.** Not in the corpus; 51 jurisdictions and no HI |
+| State table-shape differences handled by the interpreter without special cases, or it is a late stage-2 defect | **Right, and it is the quiet success of this stage.** All **51 jurisdictions rate the same risk** with no jurisdiction-specific code anywhere — including the four sliced loss-cost states. **No stage-2 defect surfaced late** |
 
 ### Verdict
-*To be written after stage 4.*
+**Partially load-bearing, and the most useful thing was not inherited at all.**
+
+The analysis correctly predicted **what the hard parts would be** — the four special jurisdictions,
+Hawaii's absence, and that the interpreter should absorb state shape differences — and the last of
+those is a real prediction that held under test.
+
+But **the schema itself was never going to come from the payloads**, and the plan assumed it would.
+It is filed content, sitting in a directory no analysis step had opened. **That is the third time
+this project has found the answer already in the corpus** (the `Default` block, the response header
+naming the edition, and now `Form Fields`) — each time in a file that no one had a reason to open
+until something needed it.
+
+> **The lesson for the next line of business is specific: before deriving anything from examples,
+> enumerate the directories in the package and ask what each one is for.** Three of this build's
+> largest shortcuts were sitting in one.
 
 ---
 

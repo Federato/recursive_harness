@@ -133,7 +133,7 @@ error message we reproduce verbatim**.
 
 ---
 
-## Stage 4 — Schemas and payloads
+## Stage 4 — Schemas and payloads  ✅ COMPLETE 2026-08-13
 
 **Deliverable:** `gl_engine/schema/`, and `Engine_Payloads/` with one sample per jurisdiction.
 
@@ -150,6 +150,27 @@ error message we reproduce verbatim**.
 state — California and New Jersey put the territory in the filename with three columns, Ohio and
 Texas use four columns, New York uses its own column names. **The interpreter handles this by
 construction**, which makes stage 4 an early proof that stage 2 was built right.
+
+**Built and verified. 23/23.**
+
+**The schema is read, not designed.** `Form Fields/Fields.FormField.csv` is ISO's own declaration of
+every field per jurisdiction — control, requiredness, default, bounds, condition, and the domain
+table naming its legal values. Countrywide declares **1,381 fields over 429 tables**; each
+jurisdiction resolves to **1,252–1,321**. `gl_engine/schema/` loads it; `validate()` reports findings
+rather than raising, and **ISO's own 50 submissions validate with zero errors**.
+
+**One sample submission per jurisdiction, the same risk in every one** — class `50017`, £5m gross
+sales, 1M/2M CSL — so a price difference is attributable to the jurisdiction and nothing else.
+**All 51 rate end to end**, and the spread on identical risk is **GA 6,845 to NY 12,141**.
+Puerto Rico has no ISO payload of its own, so **its sample is built from ISO's domain tables** rather
+than invented. `python scripts/build_sample_payloads.py`.
+
+**E8 restated from measurement.** There is no county field. **Exactly four jurisdictions — CA, FL,
+NY, TX — code terrorism territory explicitly (`TerrorismTerritoryCode`)**; 11 others derive it from
+a ZIP, and NY alone adds a Manhattan flag. The four are warned about when the field is absent,
+because it cannot be derived and an unmatched one refers (R22).
+
+**Hawaii is confirmed absent from the corpus** and stated as a test rather than a footnote.
 
 ---
 
