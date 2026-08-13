@@ -51,15 +51,16 @@ def _():
 
 @case("identity comes from the XSD namespace, never the directory (N6)")
 def _():
-    # 568 packages, each identified by its own targetNamespace. The directory
+    # 570 packages, each identified by its own targetNamespace. The directory
     # names use spaces where the namespace uses underscores, so a path-derived
     # id would not even be the same string.
     #
-    # Was 567 until 2026-08-13, when `GL_OK_20261001_V01` was supplied and
-    # unpacked (OI-79). The count is pinned deliberately: a package appearing
+    # Was 567 until 2026-08-13, when three packages were supplied and unpacked
+    # (OI-79): GL_OK_20261001_V01, then GL_CW_20261001_V01 and
+    # GL_OK_20260801_V01. The count is pinned deliberately: a package appearing
     # or vanishing should be a decision, not a surprise.
     pkgs = R.packages
-    assert len(pkgs) == 568, len(pkgs)
+    assert len(pkgs) == 570, len(pkgs)
     for p in pkgs:
         assert len(p.namespaces) == 1, (p.pkg_id, p.namespaces)
         assert p.identity.raw in p.namespaces
@@ -71,11 +72,15 @@ def _():
     parents = R.declared_parents(TODAY)
     assert len(parents) == 3, parents
     # California alone declares GL_CW_20231201_V02. If this ever collapses to
-    # one parent, the resolver has started taking the newest and five states are
+    # one parent, the resolver has started taking the newest and four states are
     # being rated against rules they never adopted.
+    #
+    # Oklahoma left this group on 2026-08-13, when GL_OK_20260801_V01 was
+    # supplied (OI-79): it declares GL_CW_20260101_V01, so at today's date OK
+    # now resolves to the current parent rather than to V03.
     assert parents["GL_CW_20231201_V02"] == ["CA"], parents
-    assert parents["GL_CW_20231201_V03"] == ["NJ", "OK", "TX", "VT"], parents
-    assert len(parents["GL_CW_20260101_V01"]) == 46, parents
+    assert parents["GL_CW_20231201_V03"] == ["NJ", "TX", "VT"], parents
+    assert len(parents["GL_CW_20260101_V01"]) == 47, parents
     cw = [p for p in R.by_juris["CW"] if p.identity.edition <= TODAY]
     assert cw[-1].pkg_id == "GL_CW_20260101_V01"
 

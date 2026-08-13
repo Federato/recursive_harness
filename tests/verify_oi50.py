@@ -155,12 +155,12 @@ def _():
         "DoMessageTheLimitedProductWithdrawalCoveragepremiumCannotBeANegativePremium"], allneg
 
 
-@case("N8 at its cleanest: 0 of 10 countrywide editions, 51 of 51 jurisdictions")
+@case("N8 at its cleanest: 0 of 11 countrywide editions, 51 of 51 jurisdictions")
 def _():
     T = "ProductWithdrawalExpensesAndLiabilityIncrdLimitFactor.RateTable.csv"
     pk = A.discover()
     cw = {p: c for _e, p, _x, c in pk["CW"]}
-    assert len(cw) == 10, len(cw)
+    assert len(cw) == 11, len(cw)   # 11 since GL_CW_20261001_V01 (OI-79)
     for p, c in cw.items():
         assert A.table(c, "Rate Tables", T) == [], p
     res = {j: r for j in pk if j != "CW" for r in [A.resolve(pk[j], ASOF)] if r}

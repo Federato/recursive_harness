@@ -269,10 +269,10 @@ def group_e():
 #: tracked and neither is allowed to fall.
 BASELINE_RATED = 50
 BASELINE_MATCH = 28
-BASELINE_RECONCILED = 47
+BASELINE_RECONCILED = 48
 #: Against the oracle that actually corresponds to each input, excluding the two
 #: pairs where none does (OI-78). This is the honest headline and it is exact.
-BASELINE_COMPARABLE = 48
+BASELINE_COMPARABLE = 49
 
 
 def group_f():

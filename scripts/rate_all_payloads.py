@@ -65,9 +65,12 @@ ORACLE_OVERRIDE = {"AK": "AZ"}
 #: output that did not come from this input manufactures a defect.
 NO_ORACLE = {
     "AZ": "its output file is Alaska's (State: AK); no AZ output exists",
-    "OK": "ISO rated it against an OK edition not in the corpus -- its base "
-          "rate 0.093 appears in neither edition we hold",
 }
+# OK was excluded until 2026-08-13: ISO rated it with GL_OK_20260801_V01, which
+# the corpus did not hold. That filing was supplied and unpacked (OI-79), the
+# resolver now picks exactly the package ISO's header names, and OK reconciles
+# to the penny. The exclusion was a statement about the corpus, not the engine,
+# and it was removed the moment the corpus changed.
 
 
 def iso_body(path: Path):
