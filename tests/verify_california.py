@@ -292,8 +292,9 @@ def _():
                     recursive=True)
     assert len(erc) == 1, [os.path.relpath(o, ROOT) for o in erc]
     assert os.path.relpath(erc[0], ROOT).split(os.sep)[0] == "OK"
+    # 518 since 2026-08-13: GL_OK_20261001_V01 ships one STC file (OI-79).
     assert len(glob.glob(os.path.join(ROOT, "**", "STC", "*.json"),
-                         recursive=True)) == 517
+                         recursive=True)) == 518
 
     pay = sorted(glob.glob(os.path.join(PROJ, "Payloads", "*", "*Output*.json")))
     assert len(pay) == 53, len(pay)

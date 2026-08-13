@@ -51,11 +51,15 @@ def _():
 
 @case("identity comes from the XSD namespace, never the directory (N6)")
 def _():
-    # 567 packages, each identified by its own targetNamespace. The directory
+    # 568 packages, each identified by its own targetNamespace. The directory
     # names use spaces where the namespace uses underscores, so a path-derived
     # id would not even be the same string.
+    #
+    # Was 567 until 2026-08-13, when `GL_OK_20261001_V01` was supplied and
+    # unpacked (OI-79). The count is pinned deliberately: a package appearing
+    # or vanishing should be a decision, not a surprise.
     pkgs = R.packages
-    assert len(pkgs) == 567, len(pkgs)
+    assert len(pkgs) == 568, len(pkgs)
     for p in pkgs:
         assert len(p.namespaces) == 1, (p.pkg_id, p.namespaces)
         assert p.identity.raw in p.namespaces
