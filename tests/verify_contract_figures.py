@@ -42,9 +42,15 @@ PATTERNS = (
 
 
 def main() -> int:
-    if not SRC.exists():
-        print(f"FAIL  {SRC} missing -- run scripts/erc/42_node_surface.py")
-        return 1
+    # scripts/erc/out/ is gitignored -- it is derived from licensed content --
+    # so on a fresh clone these are absent and the failure must say why.
+    for path, script in ((SRC, "42_node_surface.py"),
+                         (KIDS, "42_node_surface.py"),
+                         (QS, "44_contract_questions.py")):
+        if not path.exists():
+            print(f"FAIL  {path} missing -- run scripts/erc/{script} first "
+                  f"(scripts/erc/out/ is not committed)")
+            return 1
     csv.field_size_limit(1 << 24)
     truth = {r["node"]: int(r["occurrences"])
              for r in csv.DictReader(open(SRC, encoding="utf-8"))}
