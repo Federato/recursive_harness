@@ -24,6 +24,9 @@ from __future__ import annotations
 
 import json
 import sys
+import threading
+import time
+import uuid
 import webbrowser
 from decimal import Decimal
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -39,12 +42,126 @@ from gl_engine.rating import Kernel, MODES, STRICT          # noqa: E402
 from gl_engine.schema import Schema, validate               # noqa: E402
 from gl_engine.resolve import ResolvedBook                  # noqa: E402
 
+sys.path.insert(0, str(ROOT / "scripts"))
+try:
+    from raas import RaaS, RaaSError                        # noqa: E402
+except Exception:                                           # noqa: BLE001
+    RaaS = None                                             # ISO comparison off
+
+    class RaaSError(RuntimeError):
+        pass
+
 SAMPLES = ROOT / "Engine_Payloads"
 HOST, PORT = "127.0.0.1", 8765
 
 #: Built once. Discovery is ~1s and every rating would otherwise pay it.
 RESOLVER = EditionResolver()
 KERNELS = {m: Kernel(mode=m, resolver=RESOLVER) for m in MODES}
+
+#: One shared RAaS client. Authenticating per request would spend a token
+#: handshake on every rating; the client refreshes its own token when it
+#: expires.
+_ISO_LOCK = threading.Lock()
+_ISO = {"client": None, "error": None}
+
+
+def iso_client():
+    """The live ISO client, or None with the reason recorded.
+
+    **Never raises.** ISO being unreachable must degrade the page to
+    engine-only, not break rating -- the engine is the product and the
+    comparison is the check.
+    """
+    with _ISO_LOCK:
+        if _ISO["client"] is None and _ISO["error"] is None:
+            if RaaS is None:
+                _ISO["error"] = "scripts/raas.py not importable"
+            else:
+                try:
+                    _ISO["client"] = RaaS()
+                except Exception as exc:                    # noqa: BLE001
+                    _ISO["error"] = str(exc)[:200]
+        return _ISO["client"]
+
+
+def compare_with_iso(payload: dict, ours) -> dict:
+    """Rate the same submission through ISO and say whether they agree.
+
+    The verdict is on the premium, because that is what a reader wants first;
+    the field-level difference is reported alongside it so a total that is
+    right for the wrong reasons is still visible.
+    """
+    client = iso_client()
+    if client is None:
+        return {"available": False, "reason": _ISO["error"] or "not configured"}
+    try:
+        live = client.rate(payload)
+    except Exception as exc:                                # noqa: BLE001
+        return {"available": False, "reason": f"{type(exc).__name__}: {exc}"[:200]}
+
+    body = live.get("Body", {})
+    gl = (body.get("GeneralLiability") or [{}])[0]
+    iso_premium = gl.get("Premium")
+    scheme = live.get("Header", {}).get("Scheme", "")
+    parts = scheme.split()
+    iso_pkg = f"GL_{parts[1]}_{parts[2]}_{parts[3]}" if len(parts) >= 4 else ""
+    agrees = (iso_premium is not None
+              and Decimal(str(iso_premium)) == ours.premium)
+    return {
+        "available": True,
+        "premium": str(iso_premium) if iso_premium is not None else None,
+        "agrees": agrees,
+        "delta": str(ours.premium - Decimal(str(iso_premium)))
+                 if iso_premium is not None else "",
+        "package": iso_pkg,
+        "edition_agrees": iso_pkg == ours.packages[0] if iso_pkg else None,
+        "messages": body.get("RatingMessages", {}) or {},
+    }
+
+
+#: Batch jobs, keyed by id. A batch of 51 makes 51 live calls at roughly ten
+#: seconds each, so it runs in a thread and the page polls -- a request that
+#: takes nine minutes to answer is a request that times out.
+JOBS: dict = {}
+JOBS_LOCK = threading.Lock()
+
+
+def _batch_worker(job_id: str, jurisdictions: list, mode: str, rounding: str,
+                  compare: bool) -> None:
+    kernel = KERNELS[mode] if rounding == "ROUND_HALF_UP" else Kernel(
+        mode=mode, rounding=rounding, resolver=RESOLVER)
+    for i, juris in enumerate(jurisdictions, start=1):
+        src = SAMPLES / juris / "submission.json"
+        row = {"n": i, "juris": juris}
+        try:
+            payload = json.loads(src.read_text(encoding="utf-8"))
+            r = kernel.rate(payload)
+            if not r.complete:
+                row.update(status="ENGINE STOPPED",
+                           detail=str(r.stopped)[:140])
+            else:
+                row.update(engine=str(r.premium),
+                           packages=" over ".join(r.packages),
+                           referrals=len(r.referrals))
+                if compare:
+                    c = compare_with_iso(payload, r)
+                    if not c["available"]:
+                        row.update(status="ISO UNAVAILABLE",
+                                   detail=c["reason"])
+                    else:
+                        row.update(iso=c["premium"], delta=c["delta"],
+                                   status="PASS" if c["agrees"] else "FAIL")
+                else:
+                    row.update(status="RATED")
+        except Exception as exc:                            # noqa: BLE001
+            row.update(status="ERROR", detail=f"{type(exc).__name__}: {exc}"[:140])
+        with JOBS_LOCK:
+            JOBS[job_id]["rows"].append(row)
+            JOBS[job_id]["done"] = i
+    with JOBS_LOCK:
+        JOBS[job_id]["finished"] = True
+        JOBS[job_id]["ended"] = time.time()
+
 
 #: Trace kinds that are a rating FACTOR -- a number that entered the premium
 #: and can be pointed at. The rest of the trace is control flow.
@@ -165,7 +282,7 @@ def _factors(rating) -> list:
     return out
 
 
-def rate(payload: dict, mode: str, rounding: str) -> dict:
+def rate(payload: dict, mode: str, rounding: str, compare: bool = False) -> dict:
     kernel = KERNELS[mode] if rounding == "ROUND_HALF_UP" else Kernel(
         mode=mode, rounding=rounding, resolver=RESOLVER)
     r = kernel.rate(payload)
@@ -186,6 +303,9 @@ def rate(payload: dict, mode: str, rounding: str) -> dict:
     except Exception as exc:                                # noqa: BLE001
         findings = []
         result["schema_error"] = str(exc)
+
+    if compare:
+        result["iso"] = compare_with_iso(payload, r)
 
     result.update({
         "premium": str(r.premium),
@@ -262,6 +382,23 @@ tr.total td{font-weight:700;border-top:2px solid #cbd2d9;background:#eef6ff}
 .covhead:first-child{margin-top:0}
 .covhead small{font-weight:400;color:#66727f}
 .om{font-size:11px;color:#8a94a0;margin-top:5px}
+label.chk{display:inline-flex;align-items:center;gap:6px;font-size:13px;
+padding:7px 11px;border:1px solid #cbd2d9;border-radius:4px;background:#fff;
+cursor:pointer}
+.verdict{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.vs{font-size:13px;color:#66727f}
+.badge{display:inline-block;padding:3px 12px;border-radius:12px;font-size:13px;
+font-weight:700;letter-spacing:.02em}
+.pass{background:#d1fae5;color:#065f46}.fail{background:#fee2e2;color:#991b1b}
+.na{background:#e5e7eb;color:#4b5563}
+.bar{height:26px;border-radius:4px;overflow:hidden;display:flex;
+background:#e5e7eb;margin:10px 0 4px}
+.bar span{display:block;height:100%}
+.bar .p{background:#34d399}.bar .f{background:#f87171}.bar .u{background:#cbd5e1}
+.big{font-size:26px;font-weight:700}
+tr.rowfail td{background:#fff5f5}
+.legend{font-size:12px;color:#66727f;margin-top:2px}
+progress{width:100%;height:14px}
 </style></head><body>
 <header><h1>GL Rating Engine</h1>
 <span>ISO content, executed &mdash; every number carries its source</span></header>
@@ -274,10 +411,22 @@ tr.total td{font-weight:700;border-top:2px solid #cbd2d9;background:#eef6ff}
     <select id="rounding">
      <option>ROUND_HALF_UP</option><option>ROUND_HALF_EVEN</option>
      <option>ROUND_DOWN</option></select>
+    <label class="chk"><input type="checkbox" id="cmp"> Compare with ISO</label>
     <button id="go">Rate</button>
    </div>
    <textarea id="payload" spellcheck="false"
      placeholder="Paste a RAaS submission, or load a sample"></textarea>
+  </div></div>
+  <div class="card"><h2>Test every jurisdiction</h2><div class="body">
+   <div class="row">
+    <label class="chk"><input type="checkbox" id="bcmp" checked>
+     Also rate through ISO</label>
+    <button id="brun">Run the full test</button>
+    <span class="muted" id="bnote">51 submissions, the same risk in every
+     state. With ISO this takes several minutes.</span>
+   </div>
+   <div id="bprog" style="display:none"><progress id="bbar"></progress>
+    <div class="muted" id="bmsg"></div></div>
   </div></div>
   <div class="card" id="jsoncard" style="display:none"><h2>Result
    <button class="copy" id="copy">Copy</button></h2><div class="body">
@@ -285,7 +434,7 @@ tr.total td{font-weight:700;border-top:2px solid #cbd2d9;background:#eef6ff}
    <pre class="json" id="jsonout"></pre>
   </div></div>
  </div>
- <div class="col" id="out"></div>
+ <div class="col"><div id="bout"></div><div id="out"></div></div>
 </div>
 <script>
 const $=s=>document.querySelector(s), out=$('#out');
@@ -297,6 +446,7 @@ fetch('/api/samples').then(r=>r.json()).then(d=>{
   d.jurisdictions.forEach(j=>$('#sample').add(new Option(j,j)));
   if(Q.get('mode')) $('#mode').value=Q.get('mode');
   if(Q.get('rounding')) $('#rounding').value=Q.get('rounding');
+  if(Q.has('compare')) $('#cmp').checked=Q.get('compare')!=='0';
   const j=Q.get('sample');
   if(j && d.jurisdictions.includes(j)){
     $('#sample').value=j;
@@ -319,7 +469,8 @@ $('#go').onclick=()=>{
   catch(e){ out.innerHTML=card('Not JSON','<div class="stopped">'+esc(e)+'</div>'); return; }
   $('#go').disabled=true; out.innerHTML='<div class="muted">Rating&hellip;</div>';
   fetch('/api/rate',{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({payload:p,mode:$('#mode').value,rounding:$('#rounding').value})})
+    body:JSON.stringify({payload:p,mode:$('#mode').value,
+      rounding:$('#rounding').value,compare:$('#cmp').checked})})
    .then(r=>r.json()).then(render).catch(e=>{
      out.innerHTML=card('Failed','<div class="stopped">'+esc(e)+'</div>');})
    .finally(()=>{$('#go').disabled=false;});
@@ -363,6 +514,74 @@ document.getElementById('copy').onclick=()=>{
   navigator.clipboard.writeText(JSON.stringify(slice(LAST,VIEW),null,2));
   const b=document.getElementById('copy'); b.textContent='Copied';
   setTimeout(()=>b.textContent='Copy',1200); };
+// A full run: start it, poll it, and show the result as a table anyone can
+// read -- test number, both premiums, and whether they agree.
+let POLL=null;
+document.getElementById('brun').onclick=()=>{
+  const btn=document.getElementById('brun');
+  btn.disabled=true; document.getElementById('bprog').style.display='';
+  fetch('/api/batch',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({mode:$('#mode').value,rounding:$('#rounding').value,
+      compare:document.getElementById('bcmp').checked})})
+   .then(r=>r.json()).then(j=>{
+     const bar=document.getElementById('bbar'); bar.max=j.total; bar.value=0;
+     POLL=setInterval(()=>poll(j.id,btn),1500); poll(j.id,btn);
+   });
+};
+function poll(id,btn){
+  fetch('/api/batch/'+id).then(r=>r.json()).then(j=>{
+    const bar=document.getElementById('bbar');
+    bar.max=j.total; bar.value=j.done;
+    document.getElementById('bmsg').textContent=
+      j.done+' of '+j.total+(j.finished?' — finished':' — running…');
+    batchOut(j);
+    if(j.finished){ clearInterval(POLL); btn.disabled=false;
+      document.getElementById('bprog').style.display='none'; }
+  });
+}
+function batchOut(j){
+  const rows=j.rows, pass=rows.filter(r=>r.status==='PASS').length,
+        fail=rows.filter(r=>r.status==='FAIL').length,
+        other=rows.filter(r=>r.status!=='PASS'&&r.status!=='FAIL').length,
+        done=rows.length, total=j.total;
+  const pct=x=>total?(100*x/total)+'%':'0%';
+  // A plain-English headline first, then the bar, then the detail.
+  let head;
+  if(j.compare){
+    head='<div class="big">'+pass+' of '+done+' match ISO exactly</div>'+
+      (fail?'<div class="muted">'+fail+' differ — every difference is our '+
+        'defect until proven otherwise</div>':
+       (done===total?'<div class="muted">No differences.</div>':''));
+  } else {
+    head='<div class="big">'+rows.filter(r=>r.engine).length+' of '+done+
+      ' rated</div><div class="muted">Engine only — ISO not called</div>';
+  }
+  const bar='<div class="bar"><span class="p" style="width:'+pct(pass)+
+    '"></span><span class="f" style="width:'+pct(fail)+
+    '"></span><span class="u" style="width:'+pct(total-pass-fail)+
+    '"></span></div><div class="legend">green: agree &middot; red: differ '+
+    '&middot; grey: not yet run</div>';
+  const body=table(
+    j.compare?['#','State','Our engine','ISO','Difference','Result']
+             :['#','State','Our engine','Packages','Referrals'],
+    rows.map(r=>{
+      const bad=r.status==='FAIL'||r.status.indexOf('ERROR')>=0||
+                r.status.indexOf('STOPPED')>=0||r.status.indexOf('UNAVAIL')>=0;
+      const verdict=r.status==='PASS'?'<span class="badge pass">Match</span>':
+        r.status==='FAIL'?'<span class="badge fail">Differs</span>':
+        '<span class="badge na">'+esc(r.status)+'</span>';
+      return '<tr'+(bad?' class="rowfail"':'')+'><td>'+r.n+'</td><td><b>'+
+        esc(r.juris)+'</b></td><td class="n">'+esc(r.engine||'—')+'</td>'+
+        (j.compare
+          ?'<td class="n">'+esc(r.iso||'—')+'</td><td class="n">'+
+             esc(r.delta&&r.delta!=='0'?r.delta:'')+'</td><td>'+verdict+
+             (r.detail?'<div class="muted">'+esc(r.detail)+'</div>':'')+'</td>'
+          :'<td class="muted">'+esc(r.packages||'')+'</td><td class="n">'+
+             (r.referrals||0)+'</td>')+'</tr>';
+    }));
+  document.getElementById('bout').innerHTML=
+    card('Test results', head+bar+'<div class="scroll">'+body+'</div>');
+}
 function render(d){
   if(d.error){ out.innerHTML=card('Refused','<div class="stopped">'+esc(d.error)+'</div>'); return; }
   let h='';
@@ -375,7 +594,23 @@ function render(d){
     h+=card('Did not rate', head+'<div class="stopped">'+esc(d.stopped)+'</div>'+
       '<div class="muted">The engine refuses rather than guessing.</div>');
     out.innerHTML=h; return; }
-  h+=card('Premium', '<div class="premium">'+esc(d.premium)+'</div>'+head);
+  // The comparison, said plainly: two numbers and whether they agree.
+  let cmp='';
+  if(d.iso){
+    if(!d.iso.available){
+      cmp='<div class="muted">ISO comparison unavailable: '+esc(d.iso.reason)+'</div>';
+    } else {
+      cmp='<div class="verdict"><span class="vs">Our engine</span>'+
+        '<b>'+esc(d.premium)+'</b><span class="vs">ISO</span><b>'+
+        esc(d.iso.premium)+'</b><span class="badge '+
+        (d.iso.agrees?'pass':'fail')+'">'+
+        (d.iso.agrees?'They agree':'They differ by '+esc(d.iso.delta))+
+        '</span></div>'+
+        (d.iso.edition_agrees===false?'<div class="muted">ISO rated with '+
+          esc(d.iso.package)+', we resolved '+esc(d.packages[0])+'</div>':'');
+    }
+  }
+  h+=card('Premium', '<div class="premium">'+esc(d.premium)+'</div>'+head+cmp);
   // How it rated: only the factors that participated, in the order the
   // engine computed them, ending in the premium. Zero-valued steps are
   // counted, not hidden -- a zero where a rate belonged is the defect this
@@ -442,6 +677,18 @@ class Handler(BaseHTTPRequestHandler):
                 if SAMPLES.is_dir() else []
             return self._send(200, json.dumps({"jurisdictions": js,
                                                "modes": list(MODES)}))
+        if path.startswith("/api/batch/"):
+            job_id = path.rsplit("/", 1)[-1]
+            with JOBS_LOCK:
+                job = JOBS.get(job_id)
+                if job is None:
+                    return self._send(404, json.dumps({"error": "no such run"}))
+                return self._send(200, json.dumps({
+                    "id": job_id, "total": job["total"], "done": job["done"],
+                    "finished": job["finished"], "compare": job["compare"],
+                    "started": job["started"], "ended": job.get("ended"),
+                    "rows": list(job["rows"]),
+                }))
         if path.startswith("/api/sample/"):
             f = SAMPLES / path.rsplit("/", 1)[-1] / "submission.json"
             if not f.exists():
@@ -450,7 +697,8 @@ class Handler(BaseHTTPRequestHandler):
         return self._send(404, json.dumps({"error": "not found"}))
 
     def do_POST(self):
-        if urlparse(self.path).path != "/api/rate":
+        path = urlparse(self.path).path
+        if path not in ("/api/rate", "/api/batch"):
             return self._send(404, json.dumps({"error": "not found"}))
         n = int(self.headers.get("Content-Length") or 0)
         try:
@@ -460,9 +708,29 @@ class Handler(BaseHTTPRequestHandler):
         mode = req.get("mode", STRICT)
         if mode not in MODES:
             return self._send(400, json.dumps({"error": f"unknown mode {mode}"}))
+
+        if path == "/api/batch":
+            js = req.get("jurisdictions")
+            if not js:
+                js = sorted(p.name for p in SAMPLES.iterdir()
+                            if p.is_dir() and (p / "submission.json").exists())
+            compare = bool(req.get("compare"))
+            job_id = uuid.uuid4().hex[:12]
+            with JOBS_LOCK:
+                JOBS[job_id] = {"total": len(js), "done": 0, "rows": [],
+                                "finished": False, "compare": compare,
+                                "started": time.time()}
+            threading.Thread(
+                target=_batch_worker, daemon=True,
+                args=(job_id, js, mode, req.get("rounding", "ROUND_HALF_UP"),
+                      compare)).start()
+            return self._send(200, json.dumps({"id": job_id, "total": len(js),
+                                               "compare": compare}))
+
         try:
             result = rate(req.get("payload") or {}, mode,
-                          req.get("rounding", "ROUND_HALF_UP"))
+                          req.get("rounding", "ROUND_HALF_UP"),
+                          compare=bool(req.get("compare")))
         except Exception as exc:                            # noqa: BLE001
             # A refusal is a legitimate answer and is shown as one, not as a
             # server error -- the engine declining to guess is the product.

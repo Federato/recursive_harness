@@ -3,9 +3,9 @@
 **A plain-language document.** What we are building, why it is harder than it sounds, every step
 we have taken to get here, what we found along the way, and what remains.
 
-**Last updated 2026-08-12.** If you read this before, **§0 below is the summary of what has
-changed** — the analysis is finished, the architecture is decided, and **the first stage of the
-engine is built, tested and running.**
+**Last updated 2026-08-13.** If you read this before, **§0 below is the summary of what has
+changed** — **all six stages of the engine are built**, and it now agrees with ISO's own live rating
+service on fifty jurisdictions.
 
 No prior knowledge of insurance rating or of this project is assumed. Technical detail lives in
 the documents referenced at the end.
@@ -14,124 +14,56 @@ the documents referenced at the end.
 
 ## 0. What changed today
 
-**Updated 2026-08-12, second update of the day.** The morning's entry recorded that the analysis was
-complete and the build specified. **By the end of the day the first stage of the engine exists, runs,
-and is tested.** This is the first day of this project on which working software was produced.
+**Updated 2026-08-13.** The previous entry recorded that stage one of six existed. **By the end of
+today all six stages are built, and the engine has been checked against ISO's own live rating
+service.**
 
-### The analysis is finished
+### It prices policies, and ISO agrees
 
-All fourteen rating items in the build order are walked through, the last three owed side-pieces are
-done, and every outstanding question has an answer. **Thirteen decisions were taken with you, one at
-a time.** Nothing is waiting on the business.
+The engine takes a submission and returns a premium, with every factor and its source. Then we sent
+the same fifty-one submissions to **ISO's own rating service** and compared:
 
-### The architecture was decided on a measurement, not a preference
+| | |
+|---|---|
+| Sent to ISO | **51 attempted, 50 answered** |
+| Premium **and every field ISO publishes** agree | **50 of 50** |
+| ISO used the same rulebook edition we chose | **50 of 50** |
+| Not answered | **Puerto Rico** — our subscription does not include it |
 
-The open question was whether the engine should **run ISO's filed rules** or **rewrite them in
-Python**. It was settled by counting: ISO's rules are written in a small instruction language of
-**58 kinds of instruction over 809,088 uses, and the twenty commonest cover 94%**.
+**Not merely the total. Every number ISO publishes.** A total can be right for the wrong reasons;
+this is the check that catches that.
 
-**So we implement that language once, and every state, every coverage and every future ISO filing
-comes free.** The alternative was hand-writing 4,461 rules per rulebook — plus 345 more for
-California, which is on a different one — and doing it again each time ISO files. That number was
-only measurable because the corpus had already been mapped, which is the clearest single return on
-the three weeks of analysis.
+Separately, the engine reproduces the Oklahoma policy we have had a published answer for since the
+analysis phase — **7,839, to the penny** — and agrees with 49 of 49 usable stored examples.
 
-### Stage 1 of the engine is built
+### The six stages
 
-**`gl_engine/` — 1,814 lines of Python, eleven modules, no third-party libraries.** It answers one
-question: *given a state and a date, which rulebook applies?* It reads all 567 ISO packages in under
-a second, and every number it returns is tagged with the ISO file it came from.
-
-That sounds modest and it is not. **Almost every way this project could produce a confidently wrong
-price starts here** — wrong edition, wrong national rulebook underneath a state, or an empty table
-read as "zero" instead of "not sold here". Each produces a complete, plausible, wrong premium with
-nothing to flag it. Stage 1 is mostly a machine for refusing to guess:
-
-* **Ask for a date before September 2022** and it stops. The files do not cover every state that far
-  back, and a partial answer would look like a real one.
-* **California uses an older national rulebook than everyone else** and is the only state on it. The
-  engine takes the parent each state names *for itself*, never the newest. **Five states today**
-  would otherwise be rated against rules they never adopted.
-* **An empty table is an answer, not a gap.** If a rate table has no rows, that means *"we do not
-  sell this here"*. The engine will show it to you, and refuses to price with it.
-
-**Verified: 20 of 20 acceptance cases and 13 of 13 load-time safety checks, at two different dates**
-— today, and the 2027-04-01 cliff where 43 states change classification basis on one morning. Every
-test built before today still passes unchanged.
-
-### Building it found things reading it could not
-
-**Six corrections during the build, two of which change what we know about ISO's content.**
-
-**1. Some states hide their loss costs, and our own test said everything was fine.**
-In California, New Jersey and Ohio the main premises/operations rate table **is not in the state's
-package at all** — the rates sit in ten to fifteen separate per-territory files. Reading the obvious
-name returns zero rows and no error. A version of this was already a filed open item; **the real
-shape was wider than recorded, and the first check written for it passed — because it counted only
-the cases it could already see.** A green test certifying a false claim is worse than no test. Fixed
-by listing all **75** naming variants in the corpus instead of the handful we had noticed. **66,573
-rows of rates recovered** across the four states.
-
-**2. ISO is withdrawing size-of-risk rating, and this closes an open question.**
-We had recorded that the 2027 national edition empties the size-of-risk tables, and that the files
-could not distinguish a **withdrawal** from an **incomplete filing** — noting that no state had
-adopted that edition yet. At the cliff, 43 do:
-
-| | today | 2027-04-01 |
+| | | |
 |---|---|---|
-| states carrying premises/operations size-of-risk rates | **35 of 51** | **2 of 51** |
+| 1 | Which rulebook applies | given a state and a date, the exact ISO content, refusing to guess |
+| 2 | The interpreter | executes ISO's own rules — all 54 instructions of their language |
+| 3 | The kernel | a submission in, a premium out, in either of two modes |
+| 4 | Submission formats | what a request looks like in each state, **read from ISO's own filings** |
+| 5 | The field workbook | every field and its legal values, in Excel |
+| 6 | The interface | paste a submission, see the price and how it was reached |
 
-Both survivors are among the eight still on an older national rulebook, and **every one of the 43
-adopting the 2027 edition empties its own tables too**. Ohio files 11,880 rows across ten territory
-files today, and the same ten files with **zero rows** at the cliff. **Forty-nine states and the
-national layer emptying the same thing in step is a coordinated withdrawal; an incomplete filing does
-not coordinate.**
+### Three things worth knowing about how it went
 
-**The answer was in *who adopts the edition*** — a question the engine can ask and three weeks of
-reading could not.
+**The hardest defects were silent, not loud.** Three times the engine produced a complete, plausible,
+*wrong* premium with no error anywhere: a sum that totalled one location out of five, a path notation
+we did not implement so terrorism was never priced, and a rule that made every state-specific
+override unreachable. **None would have been caught by a program that merely ran.** They were caught
+because we had independent answers to check against.
 
-**3. A placeholder that looks like a real number.** Texas's elevator contractor table shows a factor
-of exactly **1.00 on 26 of its 30 rows**, and a genuine 1.69–1.72 on the other four — so a $20
-million limit prices identically to a $50,000 one. The project had already catalogued **eight
-different meanings of zero** in these files. **Nobody thought to ask what *one* might mean, because
-nothing multiplies when you are only reading.** Multiply by a fake zero and you get a $0 premium
-somebody questions; multiply by a fake one and you get a wrong premium nobody questions. It appears
-in **all seven Texas editions from 2021 to the 2027 filing**, so it is far more likely to be
-deliberate than a typo — but ISO gives no way to be sure, so it refers to a human rather than being
-guessed at.
+**Three answers were already in ISO's files, unread.** Where the program starts, which edition ISO
+rated with, and the entire submission format — each was declared outright in a directory nobody had
+opened. That is now the project's **first rule**: *before deriving anything from examples, enumerate
+the directories and ask what each one is for.*
 
-**That the engine found a class of defect the reading could not is the premise of the self-correcting
-harness, arriving a stage earlier than planned.**
-
-### One honest process note
-
-While writing the testing guide I **typed an expected result into the file before running the
-command.** It was wrong — and wrong in the direction that looks fine: a page of green numbers, one of
-which was fiction. Running it for real produced both of the findings above. **Every command in that
-guide has now been executed and its stated output is what it actually produced.** That is a standing
-rule for the file.
-
-### Where the numbers stand
-
-| | Yesterday | Today |
-|---|---|---|
-| Coverages walked through | 7 of 14 | **all 14 in the build order, plus the three owed side-pieces** |
-| Engine code | none | **stage 1 of 6 built, 1,814 lines** |
-| Engine tests | none | **20 acceptance cases, 13 safety checks, green at two dates** |
-| Manual documents held | 975 ingested | **1,122 — all of them** |
-| Priced example policies known | 1 | **54** |
-| Questions for the business | 17 raised | **20 raised, 13 answered, 1 closed by the build** |
-| Tracked open items | 50 | **69** |
-
-### What happens next
-
-**Stage 2 — the interpreter — on your sign-off.** It is the heart of the build and the only genuinely
-new engineering: the piece that executes ISO's rules. Then the kernel and the two modes, the state
-submission formats, the enum workbook, and a simple interface. Six stages, each shown to you before
-the next begins.
-
-**Full detail:** [`../TESTING.md`](../TESTING.md) for every command · [`../BUILD-LOG.md`](../BUILD-LOG.md)
-for the build diary · [`BUILD-STAGES.md`](BUILD-STAGES.md) for the staged plan.
+**One question we cannot answer, and we say so.** ISO never states which way to round a half-penny.
+We have now proved against the live service that ISO **rounds rather than truncates**. Whether it
+rounds half-up or half-even is still unproven — the difference has not arisen in any submission we
+hold. It is recorded on every rounded value, so whichever it is, every answer stays traceable.
 
 ---
 
@@ -474,79 +406,35 @@ walkthroughs**, including one finished the same morning.
 
 ## 8. Where we stand
 
-**Updated 2026-08-12.**
+**Updated 2026-08-13.**
 
-**The build rule is set** (§3, stage six): data files are the source, manuals confirm, nothing is
-assumed, open questions come to the business. **Today it was refined once, deliberately.** Asking
-the broker a question that can only ever *stop* a quote — never change a price — is now allowed even
-where ISO's data has no field for it, because declining to price takes nothing from the manual. The
-limit is written down more prominently than the permission: an input that could move a number still
-may not come from the manual.
+**All six stages are built and tested.** Eleven test suites, plus a twelfth for the live comparison.
+The engine has no third-party dependency — not one — and neither does the interface or the ISO
+client.
 
-**All fourteen coverages in the build order are walked through and accepted**, along with the three
-owed side-pieces. Two coverages together reproduce a real ISO-priced policy to the dollar, and that
-check runs today as an automated test.
+**What it can do today.** Price a General Liability submission in any of 51 jurisdictions from
+September 2022 onward; show every factor in the order it was used with the ISO file it came from;
+tell you when ISO declines to price something rather than inventing a number; reproduce ISO's own
+validation messages; and compare itself against ISO's live service, one submission or all of them,
+from a browser.
 
-**Every question about when to stop and ask a human has been answered.** Thirteen decisions,
-recorded with the evidence behind each. Of the eleven that looked open, **three had already been
-decided earlier in the project** and were being put to you a second time; **four turned out not to
-be referrals at all**; and **two shrank by an order of magnitude once measured** — one from "188
-classifications" to ten, all of them cannabis and hemp, and one from "railroad operations" to a
-single class out of four.
+**What it cannot do yet.** Rate Hawaii — ISO does not publish it. Apply your own rates instead of
+ISO's — that is deliberately last. Rate anything more complicated than the test risk with the same
+confidence: **every one of the 51 verified submissions is the same shape** — one location, one
+classification, no deductible, no rating plans. That was chosen so differences between states would
+be attributable, and it worked, but **fifty matches on one risk shape is a narrower claim than it
+sounds.** Widening it is the next work.
 
-**We can check far more of this than we thought.** The project holds **54 fully-priced example
-policies covering 50 states**, not one. That is the strongest single change in our testing position
-and it was found by you, not by us.
+**What is confirmed by someone other than us.** ISO's live service agrees on fifty jurisdictions.
+ISO's own response header confirms we picked the right rulebook edition in all fifty. Our reading of
+their rules produces their validation messages word for word. **Puerto Rico alone has no external
+confirmation of any kind** — no subscription entitlement and no published example — and that is
+recorded rather than glossed.
 
-**What still has no answer key:** loss history for experience rating. None of the 54 examples
-carries it, so that one input can only ever be checked against ISO's live service.
-
-**Done:** both source sets collected, converted and analysed; **all 1,122 manual documents ingested
-and searchable**; two independent specifications written and adjudicated; two automated expert
-reviewers built, tested and now reading the whole library; every figure re-measured against a date;
-eleven coverage walkthroughs; the referral register with thirteen decisions; the technical build
-plan; every step reproducible from scripts kept in the repository.
-
-**And, as of this evening, working software.** **Stage 1 of the engine is built** — 1,814 lines
-answering *which rulebook applies to this state on this date*, with every value carrying the ISO file
-it came from. **20 acceptance cases and 13 load-time safety checks, green at two dates.** Six test
-suites now run, not four.
-
-**The instruction to hold has been honoured and is now spent.** No engine code existed until you gave
-the word; from here the rule is **stage gates** — each of the six stages is shown to you, with what it
-does, what it was checked against and what it cannot yet do, before the next begins.
-
-**Not done: stages 2 through 6.** No ISO rule is executed yet. That is stage 2, the interpreter, and
-it is the only genuinely new engineering in the whole build.
-
-### The build is under way, one signed-off stage at a time
-
-**Decided 2026-08-12, after the analysis was done. Stage 1 was built the same day.** The engine will **execute ISO's rules directly**
-rather than re-implement them in code. That was chosen on a measurement, not a preference: ISO's
-instruction language is **58 kinds of instruction across 809,088 uses, and the twenty commonest
-cover 94%**. Implementing that language once means every state, every coverage and every future ISO
-filing comes free — against the alternative of hand-writing 4,461 rules per package and **345 more
-for California alone**, then repeating it each time ISO files.
-
-**It will run in two modes, sharing one code path.** One reproduces ISO exactly, for proving the
-engine correct against ISO's own service, where any difference is our defect. The other enforces the
-referral rules you set, which is what would actually be shipped. **The difference between the two
-modes is itself a report** — every risk where ISO would quote and we would not.
-
-**Six stages, each signed off before the next**, exactly as the analysis was:
-[`BUILD-STAGES.md`](BUILD-STAGES.md). **Load and resolve — built** · the interpreter · the kernel and
-the two modes · state schemas and sample payloads · the enum workbook · a simple interface.
-**Stage 2 awaits your approval.**
-
-**Worth doing early, and still owed:** measuring what those 54 example policies actually cover, so
-we know which coverages can be checked against ISO's own answers and which cannot. That becomes
-urgent at stage 3, when the engine first produces a premium to compare.
-
-The standing recommendation held to the end and you ruled on it twice: **finish the walkthroughs
-before writing code.** Every one changed the architecture, including three on the last day — and the
-measurement that chose the architecture was taken on the final day of analysis.
-
----
+**What we got wrong and corrected.** Every one is in the build log with the evidence. The pattern is
+consistent and worth stating: **almost all of them were something measured in one place and stated
+about everything.** Not a knowledge problem, and more analysis would not have fixed them; enumerating
+the population before making the claim does.
 
 ## 9. A note on how this project has worked
 

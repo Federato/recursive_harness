@@ -1225,7 +1225,7 @@ declare; and **the 508 STC submissions**, reserved for form-attachment testing.
 
 ---
 
-## Entry 12 — Phase 2 is live. 50 of 50 agree with ISO. **NEXT SESSION STARTS HERE.**
+## Entry 12 — Phase 2 is live. 50 of 50 agree with ISO. ~~NEXT SESSION STARTS HERE.~~ *(the live handoff is **Entry 13**)*
 
 - **Date:** 2026-08-13
 - **Directed:** *"lets do phase 2, we should be able to see a prior build that worked for ISO RAAS
@@ -1315,3 +1315,86 @@ and on one risk shape there are none.
 Also open: **OI-70's remaining tie-break**, which needs one engineered submission and would close the
 oldest question in the project; **OI-86**, Puerto Rico's entitlement; **OI-81's 14 referral
 conditions** against ISO's 838 declared; and the **508 STC submissions** for form attachment.
+
+---
+
+## Entry 13 — ISO comparison in the interface, and a full test run anyone can read. **NEXT SESSION STARTS HERE.**
+
+- **Date:** 2026-08-13
+- **Directed:** *"I want to be able to rate a submission with the engine, and get RAAS results back
+  as well from within the UI. I also want to be able to kick off a large run of tests (engine and
+  raas) from the UI, and get a clear UI return of all results (Test #, Engine Premium, RAAS Premium,
+  Pass or Fail), in a visualization that will make sense to a layman."*
+- **Verified:** `verify_stage6` **30/30** · twelve suites green.
+
+### One submission, both answers
+
+A **Compare with ISO** checkbox next to `Rate`. The premium card then reads:
+
+> Our engine **8229** ISO **8229.0** — **They agree**
+
+and, when they do not, *"They differ by ..."* with the delta. If ISO named a different rulebook
+edition from the one we resolved, that is shown too — **a resolution difference must never be
+mistaken for an arithmetic one.**
+
+**ISO being unreachable degrades the page to engine-only rather than breaking it.** The engine is
+the product; the comparison is the check. A missing credential or a dead gateway shows a reason, not
+a stack trace.
+
+### A full run, in language that does not assume the reader knows any of this
+
+**Test every jurisdiction** → *Run the full test*. 51 submissions, each rated by the engine and then
+by ISO. It reports, in this order:
+
+1. **`50 of 51 match ISO exactly`** — the headline, before any detail
+2. a **green / red / grey bar**, labelled *agree · differ · not yet run*
+3. a table: **# · State · Our engine · ISO · Difference · Result**, with a green **Match** or a red
+   **Differs** badge and failing rows tinted
+
+**It runs in a thread and the page polls it.** 51 live calls at roughly ten seconds each is nine
+minutes; a request that takes nine minutes to answer is a request that times out. Rows appear as
+they finish, so the table fills in front of you rather than arriving at the end.
+
+> **The wording is deliberate.** Not `PASS`/`FAIL` in the abstract but *"50 of 51 match ISO
+> exactly"*, and under a failure, *"every difference is our defect until proven otherwise"* — the
+> project's doctrine, said where someone reading a red row will actually see it.
+
+**The result of record remains the command-line run** — `scripts/phase2_compare.py --all`, 50 of 51,
+PR refused on entitlement (OI-86). The page was watched through the first 28 jurisdictions of its own
+live run and agreed with that record on every one. **A full live run through the page takes twenty
+minutes or so**, because each jurisdiction is a real call; the command line stays the faster route,
+and the page exists so the answer can be read by someone who would never run either.
+
+### Also
+
+`?sample=OK&compare=1&rate=1` preloads, ticks the comparison and rates, so a specific view can be
+linked to — and, incidentally, so browser automation stops depending on a native `<select>` that
+would not take keystrokes reliably. **That should have been the first move rather than the fifth.**
+
+### Documentation brought current
+
+**`docs/PRD-GL-RATING-ENGINE.md`** — §0 rewritten for today and §8 *Where we stand* replaced. It now
+opens on the fact that matters: **all six stages exist, and ISO's own service agrees on fifty
+jurisdictions on every published field.** It states plainly what the engine cannot do, and that
+**fifty matches on one risk shape is a narrower claim than it sounds.**
+
+**`docs/BACKLOG-2026-08-14.md`** — tomorrow's work, ordered, with the open item each closes:
+
+1. **Breadth against the live service (OI-87)** — deductibles, multi-location, size-of-risk,
+   claims-made, the rating plans, the other sublines. *Expect it to find defects; that is the point.*
+2. **Close the rounding question (OI-70)** — one engineered submission producing `x.5` with `x` even,
+   one call, and the oldest question in the project is answered
+3. **Puerto Rico's entitlement (OI-86)** — the one jurisdiction with no external check of any kind
+4. **Our 28 referral conditions against ISO's 838 declared (OI-81, OI-82)**
+5. **Dependent-domain validation, the remaining 61 (OI-84)**
+6. **Form attachment, using the 508 STC submissions (OI-83)**
+
+Phase 3 is explicitly *not* first, and the reason is recorded: **a harness that adjudicates
+differences is worth building once there are differences to adjudicate.** On one risk shape there
+are none.
+
+### ▶ Next session
+
+**Item 1 of the backlog — breadth.** Everything needed is already there:
+`scripts/phase2_compare.py` takes any submission, `Schema.legal_values()` says what each field may
+contain, and the interface will run and display whatever is generated.
