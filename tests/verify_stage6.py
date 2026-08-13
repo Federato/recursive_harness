@@ -91,13 +91,23 @@ def group_b():
           sum(int(s["premium"]) for s in subs) <= int(d["premium"]),
           f"{sum(int(s['premium']) for s in subs)} of {d['premium']} "
           f"(the rest is policy-level)")
-    check("B5 every factor carries where it came from",
-          d["factors"] and all(f["source"] for f in d["factors"]),
-          f"{len(d['factors'])} factors, all sourced")
-    check("B6 the factors are in the order they were used",
-          d["factors"][0]["kind"] in ("lookup", "lookup-banded",
-                                      "lookup-interpolated", "round"),
-          d["factors"][0]["detail"][:48])
+    # A factor is a table, a set of keys, a value and the package it came
+    # from. It is returned as those parts, not as a sentence -- rendering it
+    # as one cramped table cell was the original UI's worst failure.
+    lookups = [f for f in d["factors"] if f["kind"].startswith("lookup")]
+    check("B5 every lookup factor names its table, keys, value and package",
+          lookups and all({"table", "keys", "value", "package"} <= set(f)
+                          for f in lookups),
+          f"{len(lookups)} lookups, all structured")
+    rounds = [f for f in d["factors"] if f["kind"] == "round"]
+    check("B6 every rounding names its places and the mode used",
+          rounds and all({"decimal_places", "mode", "was", "now"} <= set(f)
+                         for f in rounds),
+          f"{len(rounds)} roundings, all structured")
+    check("B6b the factors are numbered in the order they were used",
+          [f["step"] for f in d["factors"]]
+          == list(range(1, len(d["factors"]) + 1)),
+          f"steps 1..{len(d['factors'])}")
     check("B7 the submission check runs alongside the rating",
           isinstance(d.get("findings"), list), f"{len(d.get('findings', []))} findings")
 

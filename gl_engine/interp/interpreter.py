@@ -114,9 +114,20 @@ _BUILTINS = {"MessageHelper": _message_helper}
 
 @dataclass
 class TraceEntry:
+    """One recorded step. `detail` reads; `data` is for machines.
+
+    The detail string was the only thing here until stage 6 asked to render
+    factors on a screen and could not, because a sentence like
+    `PremOpsLossCost[Rate] keys=['OK','501','50017'] -> 0.095` has to be
+    re-parsed to be used. **A trace that can only be read is half a trace** --
+    the Phase 2 diff and the Phase 3 harness both need the parts, not the
+    prose. `data` carries them; `detail` stays exactly as it was.
+    """
+
     kind: str
     detail: str
     source: str = ""
+    data: dict = field(default_factory=dict)
 
     def __str__(self) -> str:              # pragma: no cover - display only
         tail = f"  <{self.source}>" if self.source else ""
@@ -159,9 +170,9 @@ class Interpreter:
     def where(self, el) -> str:
         return self.tag(el)
 
-    def note(self, kind: str, detail: str, source: str = "") -> None:
+    def note(self, kind: str, detail: str, source: str = "", **data) -> None:
         if self.tracing:
-            self.trace.append(TraceEntry(kind, detail, source))
+            self.trace.append(TraceEntry(kind, detail, source, data))
 
     def trace_exhausted(self, el) -> None:
         """Contract C6: an exhausted FirstNonNull is recorded, not raised."""
@@ -191,7 +202,8 @@ class Interpreter:
         out = value.quantize(Decimal(1).scaleb(-n), rounding=self.rounding)
         self.note("round",
                   f"{value} -> {out} at {n}dp using {self.rounding_name}",
-                  where)
+                  where, node=where, was=str(value), now=str(out),
+                  decimal_places=n, mode=self.rounding_name)
         return out
 
     # ------------------------------------------------------------------ eval
@@ -348,7 +360,10 @@ class Interpreter:
         value = hits[0][out_i]
         self.note("lookup", f"{name}[{col}] keys={keys!r} -> {value!r}",
                   str(Citation(table.package, f"{kind} Tables", name,
-                               repr(keys))))
+                               repr(keys))),
+                  table=name, column=col, keys=[str(k) for k in keys],
+                  value=str(value), package=table.package, category=kind,
+                  rows=len(table.rows), result_mode=mode)
         return coerce(value, typ, where)
 
     # ------------------------------------------------------------ banded
@@ -437,7 +452,12 @@ class Interpreter:
                       f"{name}[{col}] {x} in [{lo},{hi}) -> {out} "
                       f"between {v_lo} and {v_hi}",
                       str(Citation(table.package, f"{kind} Tables", name,
-                                   repr(keys))))
+                                   repr(keys))),
+                      table=name, column=col, keys=[str(k) for k in keys],
+                      value=str(out), package=table.package, category=kind,
+                      band_from=str(lo), band_to=str(hi),
+                      between=[str(v_lo), str(v_hi)], at=str(x),
+                      interpolate="Linear")
             return coerce(out, typ, where)
 
         if col not in table.header:
@@ -448,7 +468,10 @@ class Interpreter:
         self.note("lookup-banded",
                   f"{name}[{col}] {x} in band [{lo},{hi}] -> {value!r}",
                   str(Citation(table.package, f"{kind} Tables", name,
-                               repr(keys))))
+                               repr(keys))),
+                  table=name, column=col, keys=[str(k) for k in keys],
+                  value=str(value), package=table.package, category=kind,
+                  band_from=str(lo), band_to=str(hi), banded_on=rng.name)
         return coerce(value, typ, where)
 
     # ------------------------------------------------------------------- run

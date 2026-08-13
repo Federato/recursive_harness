@@ -83,12 +83,19 @@ def _subline_premiums(rating) -> list:
 
 
 def _factors(rating) -> list:
-    """Every rating factor, in the order it was used, with where it came from."""
+    """Every rating factor, in the order it was used, as structured data.
+
+    The trace carries `data` for exactly this: a factor is a table, a set of
+    keys, a value and the package it came from, and squeezing that into a
+    sentence made it unreadable on a screen. `detail` is kept as a one-line
+    summary; the parts are what the JSON panel renders.
+    """
     out = []
-    for t in rating.trace:
+    for i, t in enumerate(rating.trace):
         if t.kind not in FACTOR_KINDS:
             continue
-        out.append({"kind": t.kind, "detail": t.detail, "source": t.source})
+        out.append({"step": len(out) + 1, "kind": t.kind, **t.data,
+                    "summary": t.detail})
     return out
 
 
@@ -121,6 +128,7 @@ def rate(payload: dict, mode: str, rounding: str) -> dict:
                                            key=lambda x: -x[1])],
         "by_subline": _subline_premiums(r),
         "factors": _factors(r),
+        "factor_count": len(_factors(r)),
         "referrals": [{"code": x.code, "condition": x.condition,
                        "clears_with": x.needs or "", "where": x.where}
                       for x in r.referrals],
@@ -132,7 +140,7 @@ def rate(payload: dict, mode: str, rounding: str) -> dict:
     return result
 
 
-PAGE = """<!doctype html><html><head><meta charset="utf-8">
+PAGE = r"""<!doctype html><html><head><meta charset="utf-8">
 <title>GL Rating Engine</title><style>
 *{box-sizing:border-box}body{font:14px/1.5 -apple-system,Segoe UI,Roboto,sans-serif;
 margin:0;background:#f6f7f9;color:#1a1d21}
@@ -145,7 +153,7 @@ header span{opacity:.7;font-size:13px}
 .card h2{margin:0;padding:9px 14px;font-size:13px;font-weight:600;
 background:#eef1f4;border-bottom:1px solid #dde1e6;border-radius:6px 6px 0 0}
 .card .body{padding:12px 14px}
-textarea{width:100%;height:340px;font:12px/1.45 ui-monospace,Consolas,monospace;
+textarea{width:100%;height:190px;font:12px/1.45 ui-monospace,Consolas,monospace;
 border:1px solid #cbd2d9;border-radius:4px;padding:9px}
 select,button{font:14px inherit;padding:7px 11px;border:1px solid #cbd2d9;
 border-radius:4px;background:#fff}
@@ -169,6 +177,15 @@ font-weight:600}
 .info{background:#e0f2fe;color:#075985}
 .stopped{background:#fee2e2;border:1px solid #fca5a5;padding:11px;border-radius:4px}
 .scroll{max-height:340px;overflow:auto}
+pre.json{margin:0;font:12px/1.5 ui-monospace,Consolas,monospace;background:#1f2933;
+color:#d7dde3;padding:12px;border-radius:4px;max-height:560px;overflow:auto;
+white-space:pre;tab-size:2}
+pre.json .k{color:#8fd0ff}pre.json .s{color:#c3e88d}pre.json .n{color:#f7c66b}
+.tabs{display:flex;gap:6px;margin-bottom:9px;flex-wrap:wrap}
+.tabs button{background:#fff;color:#1a1d21;border:1px solid #cbd2d9;font-weight:500;
+padding:5px 10px;font-size:13px}
+.tabs button.on{background:#2b6cb0;color:#fff;border-color:#2b6cb0;font-weight:600}
+.copy{float:right;font-size:11px;padding:3px 8px;font-weight:500}
 </style></head><body>
 <header><h1>GL Rating Engine</h1>
 <span>ISO content, executed &mdash; every number carries its source</span></header>
@@ -185,6 +202,11 @@ font-weight:600}
    </div>
    <textarea id="payload" spellcheck="false"
      placeholder="Paste a RAaS submission, or load a sample"></textarea>
+  </div></div>
+  <div class="card" id="jsoncard" style="display:none"><h2>Result
+   <button class="copy" id="copy">Copy</button></h2><div class="body">
+   <div class="tabs" id="tabs"></div>
+   <pre class="json" id="jsonout"></pre>
   </div></div>
  </div>
  <div class="col" id="out"></div>
@@ -214,13 +236,52 @@ $('#go').onclick=()=>{
      out.innerHTML=card('Failed','<div class="stopped">'+esc(e)+'</div>');})
    .finally(()=>{$('#go').disabled=false;});
 };
+// The result panel. Factors are the reason it exists: a rating factor is a
+// table, a set of keys, a value and the package it came from, and a table cell
+// cannot show that. JSON can, and it can be copied straight into a ticket.
+let LAST={}, VIEW='factors';
+const VIEWS=[['factors','Factors'],['premiums','Premiums'],
+              ['referrals','Referrals'],['all','Everything']];
+function slice(d,v){
+  if(v==='factors') return {factors:d.factors};
+  if(v==='premiums') return {premium:d.premium, by_subline:d.by_subline,
+    by_coverage:d.by_coverage, jurisdiction:d.jurisdiction, asof:d.asof,
+    packages:d.packages, rounding:d.rounding, mode:d.mode};
+  if(v==='referrals') return {referrals:d.referrals, messages:d.messages,
+    findings:d.findings};
+  return d;
+}
+function colour(j){
+  return esc(j)
+    .replace(/&quot;([^&]*?)&quot;(\s*:)/g,'<span class="k">&quot;$1&quot;</span>$2')
+    .replace(/:\s*&quot;([^&]*?)&quot;/g,': <span class="s">&quot;$1&quot;</span>')
+    .replace(/:\s*(-?\d+(?:\.\d+)?)/g,': <span class="n">$1</span>');
+}
+function paint(){
+  document.getElementById('tabs').innerHTML=VIEWS.map(([v,label])=>
+    '<button data-v="'+v+'" class="'+(v===VIEW?'on':'')+'">'+label+
+    (v==='factors'&&LAST.factors?' ('+LAST.factors.length+')':'')+
+    (v==='referrals'&&LAST.referrals?' ('+LAST.referrals.length+')':'')+
+    '</button>').join('');
+  document.querySelectorAll('#tabs button').forEach(b=>b.onclick=()=>{
+    VIEW=b.dataset.v; paint(); });
+  document.getElementById('jsonout').innerHTML=
+    colour(JSON.stringify(slice(LAST,VIEW),null,2));
+  document.getElementById('jsoncard').style.display='';
+}
+document.getElementById('copy').onclick=()=>{
+  navigator.clipboard.writeText(JSON.stringify(slice(LAST,VIEW),null,2));
+  const b=document.getElementById('copy'); b.textContent='Copied';
+  setTimeout(()=>b.textContent='Copy',1200); };
 function render(d){
   if(d.error){ out.innerHTML=card('Refused','<div class="stopped">'+esc(d.error)+'</div>'); return; }
   let h='';
   const head='<div class="muted">'+esc(d.jurisdiction)+' as of '+esc(d.asof)+
     ' &middot; '+esc(d.mode)+' &middot; '+esc(d.rounding)+'</div>'+
     '<div class="muted">'+d.packages.map(esc).join(' over ')+'</div>';
+  LAST=d; if(d.complete) paint();
   if(!d.complete){
+    document.getElementById('jsoncard').style.display='none';
     h+=card('Did not rate', head+'<div class="stopped">'+esc(d.stopped)+'</div>'+
       '<div class="muted">The engine refuses rather than guessing.</div>');
     out.innerHTML=h; return; }
@@ -245,10 +306,9 @@ function render(d){
       '<tr><td><span class="pill '+(f.level=='error'?'err':f.level=='warning'?'warn':'info')+
       '">'+esc(f.code)+'</span></td><td><code>'+esc(f.where)+'</code></td><td class="muted">'+
       esc(f.detail)+'</td></tr>'))+'</div>');
-  h+=card('Factors, in order ('+d.factors.length+' of '+d.trace_len+' trace entries)',
-    '<div class="scroll">'+table(['Step','Value','Source'], d.factors.map(f=>
-      '<tr><td class="muted">'+esc(f.kind)+'</td><td>'+esc(f.detail)+
-      '</td><td class="muted"><code>'+esc(f.source)+'</code></td></tr>'))+'</div>');
+  h+=card('Factors', '<div class="muted">'+d.factors.length+
+    ' rating factors of '+d.trace_len+
+    ' trace entries &mdash; see the Result panel below the submission.</div>');
   out.innerHTML=h;
 }
 </script></body></html>"""
