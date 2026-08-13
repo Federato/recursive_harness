@@ -71,7 +71,7 @@ and that is this project's signature failure wearing a different coat.
 | **3** | Kernel and the two modes | ✅ **COMPLETE 2026-08-13** — 37/37 acceptance. Golden case exact; **49 of 49 usable oracles agree to the penny**. Banded and interpolated lookups built; every register entry has an explicit disposition |
 | **4** | Schemas and payloads | ✅ **COMPLETE 2026-08-13** — 23/23 acceptance. The schema is **read from ISO**, not designed; **51 of 51 jurisdictions rate the same risk**, GA 6,845 to NY 12,141 |
 | **5** | The enum workbook | ✅ **COMPLETE 2026-08-13** — 18/18. `GL-Submission-Fields.xlsx`, standard library only. ISO declares 1,259 fields; real submissions use **77** |
-| **6** | The UI | — |
+| **6** | The UI | ✅ **COMPLETE 2026-08-13** — 23/23. `app.py`, one file, standard library only. The separation held; asking for per-subline premiums found a real engine defect (OI-85) |
 
 Full detail: [`docs/BUILD-STAGES.md`](docs/BUILD-STAGES.md). Every command that exercises a stage: [`TESTING.md`](TESTING.md). The plain-English account of the day stage 1 was built: [`docs/WHERE-WE-PAUSED-2026-08-12.md`](docs/WHERE-WE-PAUSED-2026-08-12.md).
 
@@ -1021,7 +1021,7 @@ Then **stage 6 — the UI**, and **Phase 2** against live RAaS.
 
 ---
 
-## Entry 10 — Rule #1, then stages 4 and 5 finished. **NEXT SESSION STARTS HERE.**
+## Entry 10 — Rule #1, then stages 4 and 5 finished. ~~NEXT SESSION STARTS HERE.~~ *(the live handoff is **Entry 11**)*
 
 - **Date:** 2026-08-13
 - **Directed:** *"this should be the #1 rule moving forward"* · *"lets resolve form related fields
@@ -1117,3 +1117,108 @@ notebook use comes free if that separation holds.
 Also open: **OI-81's 14 pending referral conditions, now checkable against ISO's 838 declared ones**;
 OI-84's 61 undeclared dependencies; and **the 508 STC submissions**, reserved for form-attachment
 testing.
+
+---
+
+## Entry 11 — Stage 6 built. **All six stages are complete.** NEXT SESSION STARTS HERE.
+
+- **Date:** 2026-08-13
+- **Directed:** *"On to Stage 6"*
+- **Built:** `app.py` — one file, standard library only, no framework, no build step.
+- **Verified:** `tests/verify_stage6.py` **23/23** · **eleven suites green** · deep check **13/13** ·
+  reconciliation unchanged at **49 of 49**.
+
+### The interface
+
+`python app.py`, then `http://127.0.0.1:8765`. Load a sample or paste a submission, pick a mode and a
+rounding rule, rate it. The result shows the premium, **premiums per subline and per coverage in
+their own arrays**, every rating factor in the order it was used **with the ISO file it came from**,
+referrals with what would clear them, ISO's own validation messages, and the submission check.
+
+### The claim the plan made, and how it turned out
+
+The plan wrote this before any of it existed:
+
+> *"We expect it to prove the separation rather than build anything: if the UI needs the engine to
+> change, the engine's interface was wrong."*
+
+**The interface held.** No engine change was needed — the whole UI is assembled from `premium`,
+`by_coverage`, `referrals`, `messages`, `trace`, `tree` and `packages`. The suite checks the
+separation by **reading the engine's source for an import of the UI** rather than trusting that
+nobody added one, and confirms `Kernel().rate(path).premium` works with the UI never imported.
+
+**The implementation did not hold, and that is the finding.**
+
+### A whole class of ISO output was missing, and nothing had noticed
+
+The deliverable asks for *premiums per subline*. The subline is a statistical code — `334` for
+premises/operations, `336` for products — that ISO writes on every coverage. **We were writing none
+of the statistical codes at all.**
+
+`ErcSetStatisticalCodes` is guarded by:
+
+```xml
+<rul:Exist AtInputDataDef="ancestor::MasterGLCW/Policy" />
+```
+
+`interp/tree.py` implemented `..`, `.`, `*`, `name` and `name[n]` — **not the `ancestor::` axis**. An
+unimplemented axis matches nothing, `Exist` reads false, and the entire block was skipped **with the
+premium still exactly right**.
+
+Measured before fixing anything (`scripts/erc/51_path_axes.py`): **942 paths carry an axis, every one
+of them `ancestor::`, in 34 forms, targeting `Policy`, `EffDate` or `ExpDate`. There is no other axis
+anywhere in the corpus.**
+
+**The name after `::` identifies the schema, not a node to match.** Countrywide rules say
+`ancestor::MasterGLCW` while executing inside Oklahoma, whose own master is `MasterGLOK`; a name
+match would fail for all 50 states, so it cannot be what ISO does. It means *at the document root*.
+
+With it implemented, **every statistical code matches ISO's golden output exactly — 0 mismatches** —
+and not one premium moved.
+
+> **Four stages of tests and 49 of 49 exact premiums had not caught it, because every check so far
+> compared numbers and a statistical code is a string.** A deliverable that renders *everything*
+> finds things a deliverable that asserts something *specific* never will. The UI was the first
+> consumer that wanted all of the output rather than the parts we knew to check.
+
+### All six stages are complete
+
+| | | |
+|---|---|---|
+| 1 | Load and resolve | 20/20 |
+| 2 | The interpreter | 58/58 |
+| 3 | Kernel and the two modes | 37/37 |
+| 4 | Schemas and payloads | 28/28 |
+| 5 | The enum workbook | 18/18 |
+| 6 | The UI | 23/23 |
+
+**Eleven suites, 13/13 load-time assertions at two dates, and 49 of 49 usable oracles agreeing with
+ISO to the penny.**
+
+### `FROM-PLANNING-TO-BUILD.md` is finished
+
+Its last section — *"of the twenty-odd analysis steps that preceded this build, which would you
+repeat for Commercial Property, which would you do differently, and which would you skip?"* — was
+written from the six verdicts, as the file required. In short: **repeat** the counting discipline,
+finding the oracle first, and the doctrine work; **do differently** by taking the
+instruction-language measurement on day one, enumerating package directories before deriving
+anything, and budgeting specification separately from sizing; **skip** deriving control flow
+entirely, and read ISO's 838 declared refer conditions before hand-deriving a register.
+
+Its closing observation is the one worth carrying:
+
+> **Every significant defect in this build was the same shape — something measured in one place and
+> stated about everything.** It appears in the analysis phase, in stage 1's assertions, in stage 2's
+> contract, in stage 3's dispatch and in stage 6's path dialect. **It is not a knowledge problem and
+> more analysis does not fix it.** What fixes it is enumerating the population before making the
+> claim.
+
+### ▶ Next session
+
+**Phase 2 — proof against ISO's live service.** The offline half is clean at 49 of 49; connecting
+RAaS extends it past these examples and is the only thing that can settle **OI-70, the rounding
+mode**, which the filed content genuinely cannot answer.
+
+Before or alongside it, three known pieces of work: **OI-81's 14 pending referral conditions**, now
+checkable against ISO's **838 declared** ones (OI-82); **OI-84's 61 dependent domains** ISO does not
+declare; and **the 508 STC submissions**, reserved for form-attachment testing.

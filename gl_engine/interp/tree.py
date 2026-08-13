@@ -111,12 +111,38 @@ class Node:
 #: premium came out 18 short with no error anywhere.
 _STEP = re.compile(r"^(?P<name>[^\[\]]+)(?:\[(?P<index>\d+)\])?$")
 
+#: `ancestor::MasterGLCW/Policy` -- the one XPath axis the corpus uses, 942
+#: paths across 570 packages and no other axis at all.
+#:
+#: **The name after `::` identifies the schema, not a node to match.** The
+#: countrywide rules say `ancestor::MasterGLCW` and are executed while rating
+#: Oklahoma, whose own master is `MasterGLOK`; a name match would fail for all
+#: 50 states, so it cannot be what ISO does. It means *at the document root*.
+#:
+#: Missing it was silent and expensive: `ErcSetStatisticalCodes` is guarded by
+#: `Exist ancestor::MasterGLCW/Policy`, an unimplemented axis matches nothing,
+#: and **every statistical code ISO publishes was simply absent** -- with the
+#: premium still exactly right.
+_AXIS = re.compile(r"^(?P<axis>\w+)::(?P<name>.*)$")
+
+
+#: The sentinel step meaning "restart at the document root".
+_ROOT = "::ROOT::"
+
 
 def _steps(path: str) -> list[tuple[str, int | None]]:
     """Split a path into (name, 1-based index or None) steps."""
     out = []
     for s in path.split("/"):
         if s == "":
+            continue
+        ax = _AXIS.match(s)
+        if ax:
+            if ax.group("axis") != "ancestor":
+                raise InterpretError(
+                    f"path axis {ax.group('axis')}:: is not filed anywhere in "
+                    f"the corpus and will not be guessed", "§9", path)
+            out.append((_ROOT, None))
             continue
         m = _STEP.match(s)
         if not m:
@@ -145,6 +171,9 @@ def select(path: str, context: Node) -> list[Node]:
 
     for name, index in steps:
         nxt: list[Node] = []
+        if name == _ROOT:
+            here = [context.root]
+            continue
         if name == ".":
             nxt = here
         elif name == "..":
@@ -199,6 +228,9 @@ def ensure(path: str, context: Node) -> Node:
         steps = steps[1:]
 
     for name, index in steps:
+        if name == _ROOT:
+            here = here.root
+            continue
         if name == ".":
             continue
         if name == "..":

@@ -205,7 +205,7 @@ and rebuilds it in seconds.
 
 ---
 
-## Stage 6 — The UI
+## Stage 6 — The UI  ✅ COMPLETE 2026-08-13
 
 **Deliverable:** a separate application file. Paste a payload, rate it, read the result.
 
@@ -217,6 +217,26 @@ and rebuilds it in seconds.
 **Strictly separate from the engine.** The engine must never import the UI, and must be fully usable
 from a notebook — which is the secondary integration you asked for, and comes free if the separation
 holds.
+
+**Built and verified. 23/23.** `app.py` — one file, **standard library only**, no framework and no
+build step. `python app.py`, then open `http://127.0.0.1:8765`.
+
+**The separation held.** No engine change was needed to build it: the whole UI is assembled from
+`premium`, `by_coverage`, `referrals`, `messages`, `trace`, `tree` and `packages`. The test suite
+checks this by **reading the engine's source** for an import of the UI rather than trusting that
+nobody added one, and confirms `Kernel().rate(path).premium` works with the UI never imported.
+
+**But asking for one item on this list found a real engine defect.** *Premiums per subline* needs the
+subline statistical code ISO writes on each coverage — and we were writing **none of the statistical
+codes**, because `ErcSetStatisticalCodes` is guarded by `Exist ancestor::MasterGLCW/Policy` and the
+**`ancestor::` axis was not implemented**. An unimplemented axis matches nothing, the guard reads
+false, and the block was skipped **with the premium still exactly right**. Measured before fixing:
+**942 paths, one axis, 34 forms, no other axis anywhere in the corpus.** With it implemented, every
+statistical code matches ISO's golden output — **0 mismatches**.
+
+> **A deliverable that renders everything finds things a deliverable that asserts something specific
+> never will.** Four stages of tests and 49 of 49 exact premiums had not noticed, because every check
+> so far compared numbers and a statistical code is a string.
 
 ---
 

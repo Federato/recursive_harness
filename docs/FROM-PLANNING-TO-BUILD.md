@@ -291,22 +291,102 @@ reference and called it complete.
   change, the engine's interface was wrong.
 
 ### Actually used
-*To be written after stage 6.*
+*Written 2026-08-13, after stage 6.*
+
+| Expected | What happened |
+|---|---|
+| Nothing from the analysis | **Held.** No domain knowledge was consulted. `app.py` is one file, standard library only, no framework and no build step |
+| It should **prove the separation** — if the UI needs the engine to change, the engine's interface was wrong | **The interface held. The implementation did not.** No new engine API was needed: the whole UI is assembled from `premium`, `by_coverage`, `referrals`, `messages`, `trace`, `tree` and `packages`. **But asking for one item on the deliverable list — *premiums per subline* — exposed a real engine defect** |
+
+**The defect, because the distinction matters.** The plan asked for premiums *per subline*. The
+subline is a statistical code (`334`, `336`) that ISO writes on each coverage, and we were writing
+none of them — because `ErcSetStatisticalCodes` is guarded by
+
+```xml
+<rul:Exist AtInputDataDef="ancestor::MasterGLCW/Policy" />
+```
+
+and `interp/tree.py` implemented `..`, `.`, `*`, `name` and `name[n]` but **not the `ancestor::`
+axis**. An unimplemented axis matches nothing, `Exist` returns false, and the entire block was
+skipped **with the premium still exactly right**. Measured before fixing: **942 paths, one axis, 34
+forms, no other axis anywhere**. With it implemented, every statistical code matches ISO's golden
+output exactly — 0 mismatches.
 
 ### Verdict
-*To be written after stage 6.*
+**Load-bearing as a test, not as a build.**
+
+The UI took an afternoon and needed no engine change, which is the result the stage existed to
+produce. **The separation is real**: the engine has never heard of the UI, and
+`Kernel().rate(path).premium` works in a notebook with nothing else imported.
+
+**But the stage still earned its place, and not in the way predicted.** *"Prove the separation"*
+assumed the only failure mode was a missing API. The actual failure was **a missing behaviour that
+nothing had asked for until a UI listed it on a screen.** Four stages of tests, 49 of 49 exact
+premiums, and a whole class of ISO output was absent — because every check so far compared
+**numbers**, and a statistical code is a string.
+
+> **The transferable lesson: a deliverable that renders everything finds things a deliverable that
+> asserts something specific never will.** The UI was the first consumer that wanted *all* of the
+> output rather than the parts we knew to check.
 
 ---
 
 ## For a future line of business
 
-*To be written at the end, from the six verdicts above. The question it must answer:*
+*Written 2026-08-13, from the six verdicts above, with all six stages complete.*
 
 > **Of the twenty-odd analysis steps that preceded this build, which would you repeat for Commercial
 > Property, which would you do differently, and which would you skip?**
 
-Two candidate answers are already visible and are recorded here so they can be tested rather than
-invented later:
+### Repeat, without hesitation
+
+1. **The counting discipline.** *Every count is "n of N", with N enumerated from the source.* It
+   caught defects in four completed walkthroughs within hours of being automated, and every stage
+   since has found at least one figure that was stated more broadly than it was measured.
+2. **Find the oracle first.** The 50 priced examples are why stage 3 could be trusted. They are also
+   what proved three of them unusable (OI-77, OI-78). **A build without an oracle cannot tell a
+   defect from a difference.**
+3. **The doctrine work** — an empty table means *not offered here*, a zero has eight meanings, a
+   sentinel is not a number. **None of this is derivable from the files**, and a team starting cold
+   would write the fallback, ship it, and never see it fail.
+
+### Do differently
+
+4. **Take the instruction-language measurement on day one, not the last day.** It chose the
+   architecture. Taken first, every walkthrough would have been written as an *acceptance test*
+   rather than a *specification*, which is a different document.
+5. **Enumerate the package directories before deriving anything** — now Rule #1. Three of this
+   build's largest shortcuts were filed in directories no analysis step had opened: the entry point,
+   the edition ISO rated with, and the submission schema. **The analysis phase derived from examples
+   what ISO had declared outright.**
+6. **Budget the specification separately from the sizing.** Stage 2's verdict is the sharpest
+   sentence in this document: **an analysis phase can size a language reliably and cannot specify
+   it.** The node census was right about scale and silent about meaning.
+
+### Skip
+
+7. **Deriving control flow.** E18's coverage-ordering work and the terrorism-last analysis were
+   **never used** — the architecture executes ISO's rules, so ISO's own order applies. *If you
+   interpret, you do not need to derive the control flow.* That is a large, direct saving.
+8. **Hand-deriving a referral register from the manuals.** ISO ships **838 declared refer conditions**
+   in a workbook in every package (OI-82). Ours has 28, built by hand. They are not the same
+   population, but the declared one should be read **first** and the derivation scoped to what it
+   does not cover.
+
+### The pattern under all of it
+
+**Every significant defect in this build was the same shape: something measured in one place and
+stated about everything.** One edition, one directory, one element type, one relation, one census
+that walked `Rule` and could not see what was not inside a `Rule`. It appears in the analysis phase,
+in stage 1's assertions, in stage 2's contract, in stage 3's dispatch, and in stage 6's path dialect.
+
+**It is not a knowledge problem and more analysis does not fix it.** What fixes it is enumerating
+the population before making the claim — which is why the counting discipline and Rule #1 are the
+two rules worth carrying to another line of business ahead of any domain finding in this document.
+
+---
+
+*The two candidate answers recorded before the build, kept for comparison:*
 
 1. **The instruction-language measurement should come first, not last.** It was taken on the final
    day of analysis and it chose the architecture. Taken on day one it would have shaped every
