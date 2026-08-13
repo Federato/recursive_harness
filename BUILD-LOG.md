@@ -801,3 +801,103 @@ documented format per jurisdiction.
 
 **`OI-70` (the rounding mode) is now the oldest open question the corpus cannot answer**, and it
 needs RAaS or an ISO clarification. Everything offline agrees with `ROUND_HALF_UP`.
+
+---
+
+## Entry 8 — Stage 3 complete, and three filings arrive. **NEXT SESSION STARTS HERE.**
+
+- **Date:** 2026-08-13
+- **Directed:** *"Added the files"* · *"Finish stage 3"*
+- **Verified:** eight suites green — `verify_interp` **58/58**, `verify_stage3` **37/37** — both deep
+  checks **13/13**, reconciliation **49 of 49 usable oracles**.
+
+### Part 1 — the corpus grew, and the engine got louder before it got righter
+
+Three Oklahoma-related packages were supplied: `GL_OK_20261001_V01`, then on request
+`GL_CW_20261001_V01` and `GL_OK_20260801_V01`. **Corpus 567 → 570.**
+
+**The middle step is the one worth recording.** Unpacking the October filing alone made the engine
+**refuse Oklahoma for 2026-10-01 through 2027-03-31**, because that filing declares a countrywide
+parent the corpus did not yet hold and N5 forbids substituting the newest. **Before it was unpacked
+that window had been silently priced against the June 2025 rulebook.** Adding content made the
+engine visibly *less* capable for a day, and that was the correct direction: a loud refusal
+replaced a quiet wrong answer.
+
+With all three present, `Payloads/OK` resolves to **`GL_OK_20260801_V01 over GL_CW_20260101_V01` —
+exactly the package ISO's own response header names — and reconciles to 8,229 with zero differing
+fields.**
+
+**The coordinated change was done in full, and mechanically.** All four censuses re-run; the
+evaluation contract's figures **remapped from the old census to the new by program** — a number is
+rewritten only when it equals the old value for that node in a specific role, and only to the new
+value for the same role, with anything ambiguous reported and left alone. **Doing it by eye is how
+seven wrong edge counts got in the previous round.** Five pins updated and *kept* rather than
+relaxed: packages `567→570`, STC files `517→519`, countrywide editions `10→11`, and the N5 parent
+groups — **Oklahoma left the `GL_CW_20231201_V03` group**, now `NJ/TX/VT`.
+
+> **A pin that fires on a legitimate change has not failed; it has worked.** Each of these was a
+> real fact about the corpus changing under the engine, and each was seen because something asserted
+> it.
+
+### Part 2 — banded and interpolated lookups
+
+Measured before built (`scripts/erc/46_banded_lookups.py`). The population is **11 table names,
+every one reachable**, each with **exactly one key range** alongside plain equality columns, **two
+boundary types** — `FromInclusiveToExclusive` (115 definitions) and `FromExclusiveToInclusive` (78)
+— and **two interpolated tables**, both size-of-risk relativity, both `Linear`.
+
+- Boundaries are exact: `10878 → 0`, `10879 → 0.03` on a `FromInclusive` band
+- Interpolation is linear along the key band **and traced**, so a factor can be re-derived
+- A value outside every band returns **null**, never the nearest
+
+**P5's open question is closed by the corpus, not by a decision.** It asked how `RangeType` and
+`InterpolateMode="Linear"` combine at an exact boundary. **Interpolation only ever occurs on
+`FromInclusiveToExclusive` ranges**, where `x == lo` gives position 0 and `x == hi` belongs to the
+next band. The awkward combination does not exist in the filed content.
+
+### Part 3 — the referral register, with no silent middle
+
+Loading the register was never the hard half. **The conditions are prose written for a human**, and
+the previous build detected **one** of 28 while reporting all 28 as loaded.
+
+Every entry now carries an explicit disposition:
+
+| | | |
+|---|---|---|
+| **DETECTED** | **9** | a detector runs on every rating in `underwriting` mode |
+| **NOT_REFERRAL** | **4** | decided not to be referrals — the engine's silence is a *behaviour* |
+| **CONFIG** | **1** | answered when the engine is configured, not per rating |
+| **PENDING** | **14** | genuinely not built, **named individually** |
+
+`Kernel.coverage()` returns the four buckets and `verify_stage3` **D6 fails if `unenforced` ever
+returns a bare count instead of names**.
+
+**Detectors observe; they never re-derive.** Each reads the rated tree, the trace or the resolved
+book. A detector that recomputes a premium is a second implementation and therefore a second thing
+to be wrong.
+
+**The one that fired is real, and ISO agrees with it.** Across all 50 payloads both modes return
+**identical premiums** and detectors fire on **exactly one** submission. Alaska's attorney's-fee
+limit is below its subline limit; the endorsement prices at **−70**; **ISO's own response carries
+the same −70 and an error message our `MessageHelper` builtin reproduces verbatim.** The detector
+found a negative factor without being told anything about attorney's fees.
+
+> **That is three independent confirmations in one case** — we reproduce ISO's premium, ISO's
+> validation text, and we flag it for a human. It is the clearest single demonstration so far that
+> the interpreter is executing ISO's content rather than approximating it.
+
+### What is honestly still missing
+
+**OI-81: 14 conditions carried and not detected.** Recorded as a number that can be read rather than
+left implicit. **Most are load-time statements about deviations the engine already handles
+correctly** (R05, R07 — CA/NY disable a coverage by rule; R06 — NY withdraws claims-made); they are
+`fail=n/a` and a detector would report a condition rather than prevent a wrong number. **Five can
+produce a wrong number and need specific rating-path hooks: R12, R15, R17, R25, R26.**
+
+### ▶ Next session
+
+**Stage 4 — schemas and payloads.** The submission mapping written for stage 3 becomes a documented
+request format per jurisdiction, with a worked example each. Four states carry a county-or-place
+field (E8); **Hawaii is not in the corpus and cannot be rated**.
+
+Also open: OI-81's five substantive conditions, and Arizona's missing output file (OI-78).
