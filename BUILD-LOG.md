@@ -47,7 +47,7 @@ One entry per working session, in the style of `PROCESS_LOG.md` and with the sam
 | Stage | | |
 |---|---|---|
 | **1** | Load and resolve | ✅ **built 2026-08-12** — 20/20 acceptance, 13/13 assertions at **two** dates |
-| **2** | The interpreter | ⏸ awaiting sign-off |
+| **2** | The interpreter | 🔵 **started 2026-08-13** on branch `stage2-interpreter`. The evaluation contract is written; no interpreter code yet |
 | **3** | Kernel and the two modes | — |
 | **4** | Schemas and payloads | — |
 | **5** | The enum workbook | — |
@@ -83,7 +83,7 @@ Recorded now so it cannot be adjusted later to match whatever gets built:
 
 ---
 
-## Entry 2 — Stage 1 built: load and resolve. **NEXT SESSION STARTS HERE.**
+## Entry 2 — Stage 1 built: load and resolve. ~~NEXT SESSION STARTS HERE.~~ *(the live handoff is **Entry 3**)*
 
 - **Date:** 2026-08-12
 - **Directed:** *"Build, when done, log, and then present TLDR in laymens term"*
@@ -227,3 +227,138 @@ corrected against actual output.
 **Stage 2 — the interpreter — on approval.** The largest single piece of new specification work in
 the build is the **evaluation contract**, which E3 closed as *"only if interpreting"* and which was
 therefore never written.
+
+---
+
+## Entry 3 — Stage 2 opened: the evaluation contract. **NEXT SESSION STARTS HERE.**
+
+- **Date:** 2026-08-13
+- **Directed:** *"can we create a branch, so that if we want to do a full code build instead of
+  interpreter, we can compare the two? And then start working on stage 2"*
+- **Branch:** `stage2-interpreter`, cut from `883d9a1` — the same commit a transliteration branch
+  would fork from, so the two remain comparable. `main` is untouched.
+- **Built:** no interpreter code. Three measurement scripts, one specification, one check.
+
+### What was directed, and what it means for the branch
+
+The comparison the branch exists for is **interpret vs transliterate**, and the honest way to hold
+it open is for both to fork from the same commit rather than for the second to be cut later from a
+`main` that has drifted. That is done. **Nothing in this entry is interpreter-specific** — the
+evaluation contract specifies what ISO's language *means*, and a transliteration branch would need
+exactly the same document to know what it was transliterating.
+
+### The deliverable
+
+**[`docs/rating-engine/14-EVALUATION-CONTRACT.md`](docs/rating-engine/14-EVALUATION-CONTRACT.md)** —
+E3's residual, closed. 54 language nodes, each with its arity, attribute domains, legal parents and
+evaluation rule; twelve decisions marked **ANSWERED**, **CONSTRAINED** or **OPEN**; six things the
+engine refuses to do rather than guess.
+
+New scripts, all reading the whole corpus rather than a sample:
+
+| | |
+|---|---|
+| `scripts/erc/42_node_surface.py` | every element, attribute, value domain, child and parent. 567 packages, 20,673 rule files, 2,041,679 elements, 21s |
+| `scripts/erc/43_default_block.py` | the entry point, across all 567 packages |
+| `scripts/erc/44_contract_questions.py` | the named open semantics, answered or declared open |
+| `tests/verify_contract_figures.py` | every figure quoted in the contract must be one the corpus produced |
+
+### 1. The entry point is not where every previous analysis said it was
+
+`23_rule_program.py` P3 derived the program's entry as `(GeneralLiabilityRules, ErcProcess)`, by
+taking the rules no `RunRule` targets. That is a true statement about **rules**, and it is not the
+top of the program.
+
+**Every package carries a `Default` block, a child of the document root `Rules` rather than of any
+`Rule`, and `ErcProcess` is the third thing it calls.** Before it: `Renewal` defaults to 0, the
+state code and name are seeded, **`ExpDate` is computed as `EffDate` + 1 year** — nothing else in
+the corpus computes it — and a `Policy` node is appended, ISO's own comment saying this assumes a
+policy rather than a quote **for a Rating as a Service request**. After it:
+`ErcCalculateTotalPremium`, a separate top-level call. All three run **once per `GeneralLiability`
+row**, which is where multi-risk submissions are actually iterated.
+
+**An interpreter entered at `ErcProcess` would have produced a complete, plausible premium with no
+expiry date and no total.** It is the stage-1 failure mode exactly, one layer up.
+
+**Why every census missed it: they all walked `Rule` elements, and this is not inside one.** So the
+prior operator census reported **52** of the **54** language nodes and looked complete — `Default`
+and `DateAdd` are the two, and both are in all 567 packages. **This is the project's signature error
+for the third recorded time**, so the rule is promoted: *a census states the element it walked and
+the population it walked over, or it does not get quoted.*
+
+Uniformity is what makes it a contract: **567 of 567 packages, one block each, one file, one call
+sequence, one iteration target, and zero variation across editions within a jurisdiction.**
+
+### 2. Four "unspecified" semantics turned out to have one answer in the content
+
+P5 listed these as things an implementer must pin down. They are unspecified in ISO's *schema*; they
+are not unspecified in ISO's *content*.
+
+| | |
+|---|---|
+| `FirstValue` four-way precedence | **`FromInput` and `FromParam` are never filed. Not once.** All 171,189 nodes carry exactly `(FromDataDef, FromConstant)`. The four-way collapses to two |
+| `RunRule@ClearCache` | **`true` on all 173,204.** There is nothing to specify: the corpus never asks for a cached call, so the interpreter never memoises |
+| Empty `Constant` — null or empty string? | **All 20,520 are `Type="string"`.** No numeric or date constant is ever empty. It is the empty string |
+| `Remove@RemoveMultiple` | **`true` on all 7,304.** Removal is always all-matching |
+
+**The language ISO declares is materially larger than the language ISO uses, and the difference is
+exactly where an interpreter would have had to guess.** Each of these is now a hard failure if a
+future filing exercises it, rather than a silently invented behaviour.
+
+### 3. What stays open, and why that is the right answer
+
+**The rounding mode (OI-70).** Places in use are {0, 2, 3, 4, 8} — the 8dp found on 12 August is on
+`Divide` — but **no node anywhere declares half-up, half-even or truncate.** They differ on exactly
+the input a rating engine hits constantly, a half-cent. Contract: one engine-wide setting defaulting
+to `ROUND_HALF_UP`, **recorded in the trace on every rounded value**, and **the first thing the
+Phase 2 RAaS diff should be pointed at** — a mode mismatch is small, systematic and everywhere,
+which is what that comparison is good at and what reading the files never will be.
+
+**`FirstNonNull` exhaustion is real, not hypothetical.** 32,601 of 36,605 end in a `Constant` and
+cannot exhaust; **4,004 can, across 327 of 567 packages.** It returns null and is traced, because
+ISO's own idiom is to append a total fallback when it wants a guaranteed value.
+
+**`Break` (OI-74).** 68 of its 84 occurrences are inside `Sum`, not inside a loop, which the name
+does not explain. Hard failure until something needs it.
+
+### 4. A correction, caught by machine and not by eye
+
+**I drafted the contract quoting a mixture of the superseded P5 census and the new de-duplicated
+enumeration.** On the page every number looked equally plausible — the same failure as writing an
+expected test output before running the command, which is Entry 2's process note.
+
+`tests/verify_contract_figures.py` caught **five** wrong figures. It also proves it can fail, which
+is the standing rule for a new check here: it failed on its first run, was corrected, and passes
+now. **It does not catch a figure that is valid for a node but quoted in the wrong context, and its
+docstring says so** rather than letting a green run read as more than it is.
+
+### 5. And a smaller one, upstream
+
+The corpus holds **572 package directories but 567 packages**: five are unpacked twice, once bare
+and once under a `_MachineReadableContent` wrapper. **Verified byte-identical, all five.** Stage 1
+already de-duplicates and documents it; the new scripts now do it the same way, so the analysis
+population and the engine's population agree by construction. Recorded as OI-73 so no future count
+reports 572.
+
+### Also corrected
+
+- The plan's *"14 node types under 500 occurrences"* is **9** (OI-72). *"One appears twice"* is
+  right — `GetList`
+- Top-20 coverage re-measured at **94.03%**, against the plan's 94.1%. The architectural decision it
+  justified stands
+
+### Verification
+
+Six suites green — `verify_stage1`, `verify_golden`, `verify_california`, `verify_new_york`,
+`verify_oi50`, `verify_contract_figures` — and `check 20260811 --deep` still **13/13**. Stage 1 was
+not touched.
+
+### ▶ Next session
+
+**`gl_engine/interp/` — the node evaluators, written against the contract, top 20 first** (94.03% of
+the corpus), then the 30 that follow, then the 9-node tail. The eleven coverage walkthroughs are the
+acceptance target.
+
+**The open question for you:** whether to cut `stage2-transliteration` from `883d9a1` now and build
+the comparison in parallel, or to finish the interpreter first and fork the comparison only if it
+disappoints. Nothing about the contract favours either — it is the shared input to both.
