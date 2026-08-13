@@ -261,8 +261,15 @@ def group_e():
 #: The reconciliation baseline, recorded 2026-08-13. Not a target -- a ratchet.
 #: Every payload must still RATE, and the number matching ISO exactly must not
 #: fall. Raising it is the work of Phase 2; lowering it is a regression.
+#:
+#: Two figures, because the `Payloads/` pairs dispute one field. 34 of 50 carry
+#: `TerrorismCoverage="Yes"` on the input and `"No"` on ISO's own output, while
+#: every other echoed field agrees (OI-77). Taking ISO's echoed value lifts
+#: agreement from 28 to 47, which a wrong engine could not do -- so both are
+#: tracked and neither is allowed to fall.
 BASELINE_RATED = 50
-BASELINE_MATCH = 22
+BASELINE_MATCH = 28
+BASELINE_RECONCILED = 47
 
 
 def group_f():
@@ -270,7 +277,7 @@ def group_f():
     print("\nF  BREADTH -- all 50 ISO-priced examples (the offline half of Phase 2)")
     payloads = ROOT / "Payloads"
     kernel = Kernel()
-    rated = matched = 0
+    rated = matched = reconciled = 0
     stopped = []
     for d in sorted(p for p in payloads.iterdir() if p.is_dir()):
         src = d / "1. Input.json"
@@ -286,20 +293,47 @@ def group_f():
             continue
         rated += 1
         out = d / "1. Output.json"
-        if out.exists():
-            try:
-                iso = json.loads(out.read_text(encoding="utf-8-sig"))
-                want = Decimal(str(iso["Body"]["GeneralLiability"][0]["Premium"]))
-                if want == r.premium:
-                    matched += 1
-            except Exception:                             # noqa: BLE001
-                pass
+        if not out.exists():
+            continue
+        try:
+            iso = json.loads(out.read_text(encoding="utf-8-sig"))
+            gl0 = iso["Body"]["GeneralLiability"][0]
+            want = Decimal(str(gl0["Premium"]))
+        except Exception:                                 # noqa: BLE001
+            continue
+        if want == r.premium:
+            matched += 1
+            reconciled += 1
+            continue
+        # The disputed field, taken from ISO's own output rather than the
+        # input. Never used to report a headline number on its own -- see
+        # scripts/rate_all_payloads.py.
+        payload = json.loads(src.read_text(encoding="utf-8-sig"))
+        terror = gl0.get("TerrorismCoverage")
+        changed = False
+        for gl in payload.get("body", {}).get("GeneralLiability", []):
+            if terror is not None and gl.get("TerrorismCoverage") != terror:
+                gl["TerrorismCoverage"] = terror
+                changed = True
+        if not changed:
+            continue
+        try:
+            r2 = kernel.rate(payload)
+            if r2.complete and r2.premium == want:
+                reconciled += 1
+        except Exception:                                 # noqa: BLE001
+            pass
 
     check(f"F1 every payload rates end to end (>= {BASELINE_RATED})",
           rated >= BASELINE_RATED,
           f"{rated} rated" + (f"; stopped: {stopped[:3]}" if stopped else ""))
-    check(f"F2 exact agreement with ISO does not regress (>= {BASELINE_MATCH})",
+    check(f"F2 exact agreement as filed does not regress (>= {BASELINE_MATCH})",
           matched >= BASELINE_MATCH, f"{matched} of {rated} match to the penny")
+    check(f"F3 agreement with ISO's own TerrorismCoverage does not regress "
+          f"(>= {BASELINE_RECONCILED})",
+          reconciled >= BASELINE_RECONCILED,
+          f"{reconciled} of {rated}; the {rated - reconciled} survivors are "
+          f"ours until proven otherwise")
 
 
 def main() -> int:

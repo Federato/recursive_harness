@@ -223,34 +223,41 @@ class Interpreter:
                 "§8", f"{file_name}.{rule_name}")
 
         if project is not None:
+            # An explicit call-super. It targets the parent's copy of THIS rule
+            # and nothing else -- 4,598 rules are "do what the parent does,
+            # then this", and naming the package is how they avoid calling
+            # themselves.
             if self.parent_program is None:
                 raise InterpretError(
                     f"@ProjectName={project!r} but this book has no parent "
                     f"layer", "§8", where)
             program, parent_scope = self.parent_program, True
-        elif frame.parent_scope:
-            # Already running inside the parent. A bare call stays there --
-            # this is the clause that stops the 4,598 call-super rules from
-            # recursing back into the state override.
-            program, parent_scope = self.parent_program, True
         else:
-            program, parent_scope = frame.program, False
-
-        # A rule file the current package does not hold is INHERITED from the
-        # countrywide parent -- the same wholesale-by-name override that N3
-        # gives tables. 29 rule files are called this way, `InitializeRuleSet`
-        # on a coverage the state does not deviate on. Without the fallback the
-        # call is a hard failure and two thirds of real submissions stop dead.
-        if not program.has_file(file_name) and project is None:
-            if self.parent_program is not None \
-                    and self.parent_program.has_file(file_name):
-                program, parent_scope = self.parent_program, True
-                self.note("inherit", f"{file_name} from the parent package",
+            # **A bare call always resolves state-first, per RULE, whichever
+            # package the caller is in.** This is the override mechanism and it
+            # is not optional: the parent's `ErcProcess` bare-calls
+            # `SetPremOpsLossCost`, and in NJ, CA, NY and OH that rule is
+            # overridden by the state to read the per-territory sliced loss-cost
+            # tables. Keeping a parent-scope caller inside the parent makes
+            # every one of those overrides unreachable -- the countrywide rule
+            # runs, its lookup misses a header-only table, and **the premises/
+            # operations premium silently comes out zero**. That is what CA, NJ
+            # and NY were doing: pricing products only.
+            program, parent_scope = None, False
+            for cand in (self.state_program, self.parent_program):
+                if cand is not None and cand.has_rule(file_name, rule_name):
+                    program = cand
+                    parent_scope = cand is self.parent_program
+                    break
+            if program is None:
+                builtin = _BUILTINS.get(file_name)
+                if builtin is not None:
+                    return builtin(self, rule_name, args, frame, where)
+                program = frame.program            # let it raise where it is
+            elif parent_scope and self.state_program.has_file(file_name):
+                self.note("inherit-rule",
+                          f"{file_name}.{rule_name} from the parent",
                           program.pkg_id)
-
-        builtin = _BUILTINS.get(file_name)
-        if builtin is not None and not program.has_file(file_name):
-            return builtin(self, rule_name, args, frame, where)
 
         el = program.rule(file_name, rule_name)
         inner = frame.in_rule(program, file_name, args, parent_scope)

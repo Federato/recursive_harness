@@ -94,6 +94,18 @@ class Program:
         """Does this package hold this rule file? Asked before inheriting."""
         return (self.dir / f"{name}{_SUFFIX}").exists()
 
+    def has_rule(self, file_name: str, rule_name: str) -> bool:
+        """Does this package define this rule? Override resolution is per RULE.
+
+        A state file often exists and defines only the handful of rules the
+        state deviates on -- NJ's `GeneralLiabilityClassificationPremOpsCoverage`
+        overrides `SetPremOpsLossCost` and inherits the rest -- so asking only
+        whether the FILE exists resolves to a package that does not have the
+        rule.
+        """
+        return (self.has_file(file_name)
+                and rule_name in self.file(file_name).rules)
+
     def file(self, name: str) -> RuleFile:
         if name not in self._files:
             path = self.dir / f"{name}{_SUFFIX}"

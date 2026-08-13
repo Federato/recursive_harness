@@ -125,10 +125,39 @@ starting from the corpus would have written the fallback, and it would have look
   that must not recurse.
 
 ### Actually used
-*To be written after stage 2.*
+*Written 2026-08-13, after stage 2.*
+
+| Expected | What happened |
+|---|---|
+| 58 types, 54 executable, top 20 = 94.1% | **Right, and it was the one thing that held.** Re-measured from the XML: 58 elements, 4 structural, **54 language nodes**, top 20 = **94.03%**. The architecture decision stands |
+| The 14 rare types will cost more than their frequency suggests | **The count was wrong — it is 9, not 14** — and the prediction was untestable because none of them was reached. `GetList` (2 occurrences) is a `Constant` and a `Break`; nothing unusual, and nothing exercises it |
+| The walkthroughs serve as acceptance tests without modification | **Not used at all.** This was flagged as *"the strongest claim in this document and the one most likely to be wrong"*, and it was not so much wrong as bypassed: acceptance came from the corpus census, the refusal set and **real ISO payloads**. The claim remains untested |
+| The evaluation contract is not inherited | **Right, and it was the largest single piece of new work**, exactly as predicted |
+| N2's parent dispatch will be the hardest mechanism | **Wrong.** It was one boolean on the frame. It took an afternoon and never misbehaved |
+
+**What actually cost the time was not on the list at all:**
+
+1. **The entry point.** Every prior census walked `Rule` elements and so could not see the `Default`
+   block. The analysis had the entry point wrong, and nothing in the *Expected* column suspected it.
+2. **`ForEach` in a value position yields a collection.** Not anticipated; it made `Sum` silently
+   total one iteration of five.
+3. **Positional predicates** — `[1]`, 18,796 occurrences. Not anticipated, and it cost exactly 18 on
+   the golden case with no error anywhere.
+4. **The `Value` nullability clause**, which the contract got wrong from the attribute's name and
+   only a real payload falsified.
 
 ### Verdict
-*To be written after stage 2.*
+**Load-bearing for the decision, not for the semantics.**
+
+The node census chose the architecture and was worth every hour — **without it the interpret-vs-
+transliterate fork would have been decided on taste.** Nothing else the analysis produced told us
+what the language *means*.
+
+**The semantics had to be measured from the XML, and three of the four hardest problems were
+invisible to every prior analysis because each had asked a slightly wrong question** — walk `Rule`
+elements, count direct parents, read attributes by name. **The pattern is consistent enough to be a
+rule for the next line of business: an analysis phase can size a language reliably and cannot
+specify it.** Budget for the specification separately, and write it against the source.
 
 ---
 
@@ -147,10 +176,32 @@ starting from the corpus would have written the fallback, and it would have look
   `tests/verify_golden.py`.
 
 ### Actually used
-*To be written after stage 3.*
+*Written 2026-08-13, after stage 3.*
+
+| Expected | What happened |
+|---|---|
+| The referral register is usable as data, not prose | **True and insufficient.** It loads as JSON and all 28 entries are addressable — but the *conditions* are prose written for a human, and the engine can currently detect **1 of 28**. Emitting it as JSON solved the wrong half of the problem |
+| E18 and the terrorism gate specify evaluation order across coverage groups | **Not needed.** ISO's own rules encode the order, and the architecture executes them. Ordering never became a decision we had to make |
+| D01 propagation and D02 monotonicity need no further thought | **Right.** Implemented straight from the decisions, no re-litigation |
+| The golden case passes early, because 334 and 336 are the most thoroughly derived coverages | **Wrong, and instructively so.** It did not pass early — it passed *last*. It was the instrument that found all three stage-3 defects, and the depth of the prior derivation is exactly why: because 7,839 was known to the penny, a result of **7,821** was a defect rather than a plausible answer |
 
 ### Verdict
-*To be written after stage 3.*
+**Half the inherited analysis was made moot by the architecture, and the half that mattered mattered
+enormously.**
+
+The coverage-order work (E18, terrorism-last) was **genuinely not needed** — a consequence of
+choosing to execute ISO's rules rather than re-implement them, and a real saving to record for the
+next line of business: *if you interpret, you do not need to derive the control flow.*
+
+But **the golden case earned the entire analysis phase back on its own.** Three defects — a silent
+one-of-five sum, an unparsed path predicate, and missing rule inheritance — produced complete,
+plausible premiums. **Two of the three were invisible without an oracle**, and the oracle existed
+only because Steps 27–47 had derived 976 and 6,845 and 7,839 independently, in advance, to the
+penny.
+
+> **That is the strongest argument in this document for doing the analysis at all**, and it is not
+> the argument we expected to be making. The value was not that the analysis told the build what to
+> do. It was that the analysis could tell the build it was **wrong**.
 
 ---
 

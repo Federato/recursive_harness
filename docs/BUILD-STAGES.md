@@ -55,7 +55,7 @@ recorded).** See [`BUILD-LOG.md`](../BUILD-LOG.md) Entry 2.
 
 ---
 
-## Stage 2 — The interpreter  ⏸ AWAITING SIGN-OFF
+## Stage 2 — The interpreter  ✅ BUILT 2026-08-13
 
 **Deliverable:** `gl_engine/interp/`. Executes ERC rules.
 
@@ -79,9 +79,19 @@ arithmetic; the interpreter should reproduce them without any coverage-specific 
 **The honest risk:** the long tail. 14 node types appear fewer than 500 times each and one appears
 twice. They are cheap individually but they are where surprises live.
 
+**Built and verified.** `gl_engine/interp/` — 6 modules, no third-party dependency. All **54**
+language nodes have an evaluator, and `tests/verify_interp.py` reads the list of 54 from the corpus
+census rather than from the test, so a 55th node in a future filing fails the suite. **52/52.**
+
+**The long-tail risk did not materialise; the risk was elsewhere.** The tail is **9** nodes, not 14,
+and none was reached. What actually cost the time was the **entry point** (the `Default` block, which
+every prior census was structurally unable to see), **`ForEach` yielding a collection**, and
+**positional predicates**. See [`14-EVALUATION-CONTRACT.md`](../rating-engine/14-EVALUATION-CONTRACT.md)
+and `BUILD-LOG.md` Entries 3 and 4.
+
 ---
 
-## Stage 3 — The kernel and the two modes
+## Stage 3 — The kernel and the two modes  ✅ BUILT 2026-08-13
 
 **Deliverable:** `gl_engine/rating/kernel.py`, `escalate/`, `trace/`. A submission goes in, a premium
 and its factors come out.
@@ -95,6 +105,21 @@ and its factors come out.
 - **The trace**: every number carries where it came from, and records referrals raised *and* resolved
 
 **How you check it:** rate Oklahoma's golden case and reproduce `976 + 6,845 + 18 = 7,839` exactly.
+
+**Built and verified.** `gl_engine/rating/` — `submission.py` and `kernel.py`. **31/31.**
+
+**The golden case reproduces exactly**, and every one of the **83 policy-level numbers ISO
+published** agrees field by field — a total can be right for the wrong reasons, so the total alone
+was never going to be the test.
+
+**Breadth, against ISO's own 50 priced examples: 50 of 50 rate end to end, 22 agree to the penny.**
+Both figures are frozen in `verify_stage3.py` group F as a **ratchet, not a target**.
+`python scripts/rate_all_payloads.py` is the report. **Every one of the 28 differences is our defect
+until proven otherwise** — that is what strict mode is for, and it is the next work.
+
+**Still owed by this stage:** banded (`Range`) lookups still refuse rather than stepping a range, and
+**27 of the 28 referral conditions are carried but not enforced** — named by `Kernel.unenforced`
+rather than silently dropped.
 
 ---
 

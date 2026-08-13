@@ -363,3 +363,92 @@ The plain-English overview is separate and hand-written:
 **Corrections are kept, never tidied away.** Anything found here belongs in
 [`BUILD-LOG.md`](BUILD-LOG.md) with what it revealed — that record is the raw material for the
 self-correcting harness, which is the end goal.
+
+---
+
+## Stages 2 and 3 — the interpreter and the kernel
+
+**Added 2026-08-13. Every command below has been executed and every stated output is what it
+actually produced** — the rule this file adopted after an expected output was once written before
+the command was run.
+
+### Rate the golden case
+
+```
+python -c "from gl_engine.rating import Kernel; print(Kernel().rate(r'C:\Projects\ISO_ERC_Files\General_Liability\OK\GL_OK 20250601 V01\GL OK 20250601 V01\STC\1. Input.json').premium)"
+```
+```
+7839
+```
+
+Oklahoma's real ISO submission, priced end to end. `976 + 6845 + 2 + 16 = 7839`, which is what ISO's
+own `1. Output.json` beside it publishes.
+
+> **Note the path.** The golden case is the **STC** input inside the corpus, *not*
+> `Payloads/OK/1. Input.json` — that is a different submission, it prices to `7852` against ISO's
+> `8229`, and it is one of the 28 open differences (`OI-76`). The first draft of this section pointed
+> at the wrong file and would have printed a number that looked like a failure.
+
+### The acceptance suites
+
+```
+python tests/verify_interp.py
+```
+```
+52/52 passed
+```
+
+Four groups: every one of the **54** language nodes has an evaluator (the list is read from the
+corpus census, not typed into the test, so a 55th node in a future filing fails here); the semantics
+of each node group against its contract clause; a real ISO package executed; and every hard failure
+in contract §12 actually firing.
+
+```
+python tests/verify_stage3.py
+```
+```
+31/31 passed
+```
+
+The golden case, **all 83 policy-level numbers compared field by field against ISO's own output**,
+the kernel surface, both modes, the refusals, and breadth across all 50 priced examples.
+
+```
+python tests/verify_contract_figures.py
+```
+```
+OK  every figure quoted in the contract is one the corpus produced
+    (node_surface.csv, node_children.csv, contract_questions.txt)
+```
+
+Checks the evaluation contract against the corpus. **Requires the analysis output first** —
+`scripts/erc/out/` is not committed:
+
+```
+python scripts/erc/42_node_surface.py
+python scripts/erc/44_contract_questions.py
+```
+
+### Reconcile against ISO's own answers
+
+```
+python scripts/rate_all_payloads.py
+```
+```
+RECONCILIATION AGAINST ISO'S OWN PRICED EXAMPLES  (50 payloads)
+
+    MATCH   22 of 50
+    DIFF    28 of 50
+```
+
+**This is the offline half of Phase 2.** Writes `scripts/erc/out/reconciliation.csv` so runs can be
+diffed. **Every DIFF is our defect until proven otherwise** — see `OI-76`.
+
+### The other stage-2 measurements
+
+```
+python scripts/erc/43_default_block.py        # the entry point, all 567 packages
+python scripts/erc/45_nillable_vs_allownull.py # who decides whether a read may be null
+```
+
+Both read the whole corpus and take about half a minute each.

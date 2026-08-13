@@ -48,7 +48,7 @@ One entry per working session, in the style of `PROCESS_LOG.md` and with the sam
 |---|---|---|
 | **1** | Load and resolve | ✅ **built 2026-08-12** — 20/20 acceptance, 13/13 assertions at **two** dates |
 | **2** | The interpreter | ✅ **built 2026-08-13** — 52/52 acceptance, all 54 nodes |
-| **3** | Kernel and the two modes | ✅ **built 2026-08-13** — 31/31 acceptance. **Oklahoma golden case reproduces 7,839 exactly**; 50 of 50 payloads rate, 22 match ISO to the penny |
+| **3** | Kernel and the two modes | ✅ **built 2026-08-13** — 32/32 acceptance. **Oklahoma golden case reproduces 7,839 exactly**; 50 of 50 payloads rate, **47 of 50 match ISO to the penny** (28 as filed — see OI-77) |
 | **4** | Schemas and payloads | — |
 | **5** | The enum workbook | — |
 | **6** | The UI | — |
@@ -482,7 +482,7 @@ register wired into `strict-erc` and `underwriting` modes**.
 
 ---
 
-## Entry 5 — Stage 3 built: the kernel. A premium comes out. **NEXT SESSION STARTS HERE.**
+## Entry 5 — Stage 3 built: the kernel. A premium comes out. ~~NEXT SESSION STARTS HERE.~~ *(the live handoff is **Entry 6**)*
 
 - **Date:** 2026-08-13
 - **Directed:** *"move on to stage 3"*
@@ -589,3 +589,121 @@ being added that ISO does not add. A handful are large and mixed (AZ +542, CA �
 
 Also still open from stage 3: **banded lookups** (`Range` key columns) still raise rather than step a
 range, and the **27 un-enforced register entries**.
+
+---
+
+## Entry 6 — The 28 differences: 25 explained, 3 left. **NEXT SESSION STARTS HERE.**
+
+- **Date:** 2026-08-13
+- **Directed:** *"make sure we are logging all of these, and then chase the 28 differences"*
+- **Verified:** eight suites green · `verify_stage3` now **32/32** · `check 20260811 --deep` **13/13**.
+
+### The result
+
+| | as filed | with ISO's own `TerrorismCoverage` |
+|---|---|---|
+| Agree with ISO to the penny | **28 of 50** | **47 of 50** |
+
+**Two were our defects. One was the oracle's.**
+
+### Defect 1 — state overrides were unreachable from parent code (CA, NJ, NY, OH)
+
+Three jurisdictions produced **exactly the products premium and nothing else** — premises/operations
+came out **zero**, silently.
+
+Stage 2's dispatch rule said: once a call carries `@ProjectName`, everything downstream stays in the
+parent package. That was written to stop the 4,598 call-super rules recursing, and it is **too
+strong**. The countrywide `ErcProcess` bare-calls `SetPremOpsLossCost`; **NJ, CA, NY and OH override
+exactly that rule**, because their loss costs live in per-territory sliced tables and the override
+names each slice explicitly. Keeping a parent-scope caller inside the parent makes **every state
+override unreachable from countrywide code** — the countrywide rule runs, its lookup misses a
+header-only table, and the premium is short by a whole subline.
+
+**Corrected rule: a bare call always resolves state-first, per RULE, whichever package the caller is
+in. `@ProjectName` targets the parent's copy of that one rule and nothing else.** That is what makes
+call-super terminate *and* overrides reachable; the two are the same mechanism seen from both ends.
+Resolution is also **per rule, not per file** — NJ's coverage file defines the one rule it deviates
+on and inherits the rest, so asking whether the *file* exists lands in a package that does not have
+the *rule*.
+
+**22 → 28 matches.**
+
+> **This is OI-69's lesson arriving in a new place.** The sliced loss-cost tables were found in stage
+> 1 and pinned by an assertion; the rows were reachable the whole time. **What was unreachable was
+> the rule that reads them** — and no table-level test could see that.
+
+### Defect 2 — the diff tool buried the answer under its own noise
+
+The first field-level differ reported **130 fields ISO published that we never wrote** and 61 we
+wrote that ISO did not. Almost all of it was an artefact: **our tree carries the `XTable` containers
+ISO's rule paths require and ISO's response does not.** Normalising them away left **5 differing
+fields**, of which one mattered. A diagnostic that reports 130 findings where there is 1 is worse
+than none, because nobody reads the 131st line.
+
+### The oracle defect — OI-77
+
+The remaining 20 states clustered at **+16 to +40**, which reads like one coverage being added that
+ISO does not add. It was: we created a classification-level `GeneralLiabilityTerrorism` row where
+ISO created none.
+
+Chasing the guard led somewhere unexpected. **34 of 50 `Payloads/` pairs carry
+`TerrorismCoverage="Yes"` on the input and `"No"` on ISO's own output** — and **every other echoed
+field agrees**: subline, limits, coverage form, class code, exposure, the rating-plan flags. No rule
+in any package writes that field, so the output is an echo rather than a computation.
+
+Three lines of evidence, and they agree:
+
+1. **Taking ISO's echoed value lifts agreement from 28 of 50 to 47 of 50.** Nothing an engine gets
+   wrong produces that.
+2. The untouched **STC** pair inside the corpus carries `"No"` on the input and reproduces to the
+   penny.
+3. `Payloads/OK`, reconciled, prices to **7,839 — the golden answer derived independently three
+   weeks ago** — against a filed output of **8,229**. That pair is mismatched beyond this one field.
+
+**Conclusion: the `Payloads/` inputs were altered after the outputs were generated.**
+
+**The tooling reports both runs and never substitutes ISO's answer silently.** That restraint is the
+point: quietly copying the oracle's input into our own would raise the headline number and **hide the
+first real defect that appears there**. `verify_stage3` group F now ratchets *both* figures — 28 as
+filed, 47 reconciled — and neither may fall.
+
+> **Second time this project's oracle has been wrong about itself** (OI-67 was the first). **A
+> comparison run is only as good as the pairing, and the pairing is now something to check rather
+> than assume.**
+
+### What is left — OI-78
+
+**AK +1, AZ +511, and OK unusable.** Both survivors are ours until proven otherwise.
+
+**AK is not the rounding mode.** It is +1 under `ROUND_HALF_UP`, `ROUND_HALF_EVEN` **and**
+`ROUND_DOWN` — so OI-70 is untouched by this evidence and remains open on its own terms. The
+difference localises to `GeneralLiabilityPremOpsPremiumToReachMinCoverage/CoveragePremium`, 611
+against 610.
+
+### Logging brought current
+
+The user asked for this first, and it was owed. **`docs/FROM-PLANNING-TO-BUILD.md` had been
+neglected for two whole stages** — the one file whose entire value is being written *alongside* the
+build rather than after it. Stages 2 and 3 are now filled in, including where the *Expected* column
+was wrong, which is what it is for:
+
+- **Stage 2:** the node census was right and chose the architecture; **N2's parent dispatch, predicted
+  as the hardest mechanism, was one boolean**, while the three things that actually cost the time —
+  the entry point, `ForEach` as a collection, positional predicates — **were not on the list at all**.
+  *Verdict: an analysis phase can size a language reliably and cannot specify it.*
+- **Stage 3:** half the inherited analysis was **made moot by the architecture** (coverage ordering
+  never became a decision), and the golden case, predicted to *"pass early"*, **passed last** — it was
+  the instrument that found every stage-3 defect. *Verdict: the value of the analysis was not that it
+  told the build what to do, but that it could tell the build it was wrong.*
+
+Also brought current: `docs/BUILD-STAGES.md` (stages 2 and 3 marked built, with what each actually
+cost), `docs/OPEN-ITEMS.md` (**OI-70 through OI-78**), and `TESTING.md` — where the golden-case
+command in the first draft **pointed at the wrong file** and would have printed `7852`, a number that
+looks like a failure. Corrected against actual output, per that file's standing rule.
+
+### ▶ Next session
+
+**OI-78: AK's +1 and AZ's +511.** `python scripts/diff_payload.py AK` localises in seconds now.
+
+Then the rest of stage 3's remainder: **banded (`Range`) lookups**, still refusing rather than
+stepping a range, and the **27 referral conditions** carried but not enforced.
