@@ -1120,7 +1120,7 @@ testing.
 
 ---
 
-## Entry 11 — Stage 6 built. **All six stages are complete.** NEXT SESSION STARTS HERE.
+## Entry 11 — Stage 6 built. **All six stages are complete.** ~~NEXT SESSION STARTS HERE.~~ *(the live handoff is **Entry 12**)*
 
 - **Date:** 2026-08-13
 - **Directed:** *"On to Stage 6"*
@@ -1222,3 +1222,96 @@ mode**, which the filed content genuinely cannot answer.
 Before or alongside it, three known pieces of work: **OI-81's 14 pending referral conditions**, now
 checkable against ISO's **838 declared** ones (OI-82); **OI-84's 61 dependent domains** ISO does not
 declare; and **the 508 STC submissions**, reserved for form-attachment testing.
+
+---
+
+## Entry 12 — Phase 2 is live. 50 of 50 agree with ISO. **NEXT SESSION STARTS HERE.**
+
+- **Date:** 2026-08-13
+- **Directed:** *"lets do phase 2, we should be able to see a prior build that worked for ISO RAAS
+  here C:\\Projects\\Will_Dan_Collab_dev"*
+- **Verified:** `tests/verify_phase2.py` **11/11** · twelve suites green.
+
+### The result
+
+| | |
+|---|---|
+| Jurisdictions sent to ISO's live service | **51 attempted, 50 answered** |
+| Premium **and every published field** agree | **50 of 50** |
+| ISO used the edition we resolved | **50 of 50**, from its own response header |
+| Not answered | **PR** — entitlement, not a defect (OI-86) |
+
+**Our engine and ISO's own rating service now agree on fifty jurisdictions, on every number ISO
+publishes, not merely on the total.**
+
+### Rule #1, again, and it saved the whole stage
+
+The prior build was enumerated before anything was written: 12 top-level entries, `iso_rater_harness/`
+with twelve modules, `Sample Payloads/`, a Postman collection. **The protocol turned out to be OAuth
+2.0 client credentials and a JSON POST** — and the sample request/response shapes are **exactly** what
+this project already produces and diffs.
+
+So Phase 2 was not an integration. It was a client and a comparison:
+
+* `scripts/raas.py` — **standard library only.** The prior client uses `httpx`; the protocol does not
+  require it, and this project has no third-party dependency to spend. Credentials come from the
+  environment, never from a file in this repository.
+* `scripts/phase2_compare.py` — rate locally, rate live, diff **every published field**, and report
+  the edition ISO used alongside the one we resolved so a resolution difference can never be mistaken
+  for an arithmetic one.
+
+**Our samples needed no reshaping at all.** Stage 4's generated submissions go to ISO as filed, with
+only the authorisation block added.
+
+### What Phase 2 settled about the rounding mode — and what it did not
+
+OI-70 has been the oldest question the filed content cannot answer. **Phase 2 answered half of it,
+and the half it could not answer is stated rather than glossed.**
+
+**Truncation is ruled out.** `ROUND_DOWN` changes the premium in **37 of 51** jurisdictions, and ISO
+agrees with rounding in all 50 answered. Arkansas exercises a genuine tie — a `Product` of exactly
+`1.5000` at 0dp — where truncation gives **7,871** and ISO gives **7,872**.
+
+**Half-up versus half-even is still open.** They differ on **0 of 51** submissions. Searching all
+1,529 rounding operations across every sample found **exactly one** true tie, and it is `1.5`, where
+both modes give 2. **No submission we hold can separate them.** Settling it needs one engineered to
+produce `x.5` with `x` even.
+
+> **It would have been easy to write "Phase 2 confirms ROUND_HALF_UP".** Fifty of fifty match and the
+> default is half-up. The honest statement is narrower: *ISO rounds rather than truncates, and the
+> tie-break between the two rounding modes remains unevidenced.* The mode is recorded on every
+> rounded value in the trace, so whichever it turns out to be, every answer stays attributable.
+
+### Two things the live run exposed
+
+**Puerto Rico has no external confirmation of any kind (OI-86).** RAaS returns
+`401 "Permission is not granted to GL PR for rating. Please check subscription."` PR also has no
+stored priced example (OI-79), and its sample had to be built from ISO's own domain tables. **It is
+the one jurisdiction shipping wholly unverified**, and that should be an explicit decision rather
+than a gap nobody names.
+
+**The population is now the limit, not the engine (OI-87).** All 51 submissions are the *same risk* —
+one location, one classification, class `50017`, gross sales, no deductible, no rating plans,
+terrorism off. Stage 4 chose that deliberately so state differences would be attributable, and it
+did its job. But **50 of 50 on one risk shape is a narrower claim than it sounds**, and the live
+service will rate anything. Breadth — deductibles, claims-made, size-of-risk, multi-location,
+multi-class, the rating plans — is the next work, and `phase2_compare.py` already takes any
+submission.
+
+### A note on the tests
+
+`verify_phase2.py` **skips cleanly without credentials**, because a suite that needs a paid external
+service to pass is a suite people stop running. Its offline group checks the client by **parsing the
+source**, not grepping it — the first two versions failed on their own naivety, flagging the
+docstring that explains why `httpx` is *not* used, and then a hostname and the literal string
+*"(token withheld)"*. Both were the test reading prose as code.
+
+### ▶ Next session
+
+**Phase 3 — the self-correcting loop**, or **breadth first (OI-87)**. The argument for breadth first:
+a harness that adjudicates differences is worth building once there are differences to adjudicate,
+and on one risk shape there are none.
+
+Also open: **OI-70's remaining tie-break**, which needs one engineered submission and would close the
+oldest question in the project; **OI-86**, Puerto Rico's entitlement; **OI-81's 14 referral
+conditions** against ISO's 838 declared; and the **508 STC submissions** for form attachment.

@@ -244,7 +244,7 @@ statistical code matches ISO's golden output — **0 mismatches**.
 
 The six stages above build **the ISO engine**. Three phases follow, in this order and for a reason.
 
-### Phase 2 — Proof against RAaS
+### Phase 2 — Proof against RAaS  ✅ CONNECTED 2026-08-13
 
 Run the same submission through the engine in `strict-erc` mode and through ISO's own service, and
 compare. **Any difference is our defect until proven otherwise.** This is the whole point of strict
@@ -252,6 +252,35 @@ mode existing.
 
 Doable partly offline first: **54 ISO-priced example policies covering 50 jurisdictions** are already
 on disk, which is enough to find systemic errors before the connection exists.
+
+**Connected and run. `verify_phase2.py` 11/11.**
+
+| | |
+|---|---|
+| Jurisdictions rated through ISO's live service | **51 attempted, 50 answered** |
+| Premium **and every published field** agree | **50 of 50** |
+| ISO used the edition we resolved | **50 of 50**, confirmed by its own response header |
+| Not answered | **PR** — `401 "Permission is not granted to GL PR for rating"`, an entitlement on the ISO account (OI-86) |
+
+`scripts/raas.py` is the client — **standard library only**, so the project still has no third-party
+dependency. A working `httpx` client existed in a prior build; the protocol is OAuth 2.0
+client-credentials and a JSON POST, which `urllib` does without adding a dependency. Credentials come
+from the environment and **nothing logs a secret** — asserted by parsing the source rather than
+grepping it.
+
+**Our request needed no reshaping.** The samples stage 4 generated are sent to ISO exactly as filed,
+with only the authorisation block added.
+
+**What Phase 2 settled about the rounding mode (OI-70), and what it did not.** *Truncation is ruled
+out*: `ROUND_DOWN` changes the premium in **37 of 51** jurisdictions and ISO agrees with rounding in
+all 50. Arkansas exercises a genuine tie — a `Product` of exactly `1.5000` at 0dp — where truncation
+gives 7,871 and ISO gives 7,872. *Half-up versus half-even remains open*: they differ on **0 of 51**,
+because the only tie in the population is `1.5`, where both give 2. **Separating them needs a
+submission engineered to produce `x.5` with `x` even.** Recorded rather than glossed.
+
+**The limit is now the population, not the engine (OI-87).** All 51 submissions are the same risk —
+one location, one class, no deductible, no rating plans — chosen in stage 4 so state differences
+would be attributable. The live service will rate anything, so breadth is the next work.
 
 ### Phase 3 — The harness closes the loop
 
