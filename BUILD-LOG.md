@@ -30,6 +30,26 @@ One entry per working session, in the style of `PROCESS_LOG.md` and with the sam
 
 ## The standing constraints
 
+### Rule #1 — enumerate the directories before deriving anything from examples
+
+**Designated by the user on 2026-08-13 as this project's first rule.** Before deriving a format, a
+schema or a behaviour from examples, **list every directory in the source and write one line on what
+each is for — including the ones that look irrelevant.**
+
+It is rule #1 because this build hit it three times, and every time the answer was already filed in
+a directory nobody had opened:
+
+| | |
+|---|---|
+| **The entry point** | every census walked `Rule` elements, so none could see the `Default` block — a child of the document root. An interpreter started where the analysis said would have returned a complete premium with no expiry date and no total |
+| **The edition ISO rated with** | the response header says so outright: `"Scheme": "GL OK 20260801 V01"`. It went unread for a day while the same question was answered indirectly and, twice, wrongly |
+| **The submission schema** | stage 4 was planned as *derive the format from 53 example payloads*. `Form Fields/Fields.FormField.csv` declares it — every field, per jurisdiction, with requiredness, bounds, conditions and its legal values |
+
+**Deriving from examples produces something that fits the examples.** Reading the declaration
+produces the thing itself, and the difference only ever shows up on the case the examples did not
+cover — which is exactly the case nobody checks. An unopened directory is an unmeasured population,
+and that is this project's signature failure wearing a different coat.
+
 | | |
 |---|---|
 | **Stage gates** | Each stage is presented and signed off before the next begins |
