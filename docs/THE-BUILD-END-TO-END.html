@@ -1,0 +1,664 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GL Rating Engine — executive summary and the build, end to end</title>
+<style>
+:root{--bg:#fbfbfd;--fg:#1d1d20;--mut:#63636b;--line:#e3e3e8;--accent:#1f3864;
+--code-bg:#f4f4f7;--tbl-head:#1f3864;--good:#1c6b45;--warn:#8a5a00;--open:#7a2222}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font:16.5px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+background:var(--bg);color:var(--fg)}
+header{background:var(--accent);color:#fff;padding:34px 32px 30px}
+header .in{max-width:1180px;margin:0 auto}
+header h1{margin:0 0 6px;font-size:27px;font-weight:660;letter-spacing:-.02em}
+header .sub{opacity:.78;font-size:14.5px;max-width:74ch}
+.wrap{display:grid;grid-template-columns:250px minmax(0,1fr);gap:40px;
+max-width:1180px;margin:0 auto;padding:34px 32px 100px}
+aside{position:sticky;top:22px;align-self:start;max-height:calc(100vh - 50px);overflow:auto;
+font-size:13.5px;border-left:2px solid var(--line);padding-left:15px}
+aside .lbl{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--mut);
+font-weight:700;margin:14px 0 8px}
+aside .lbl:first-child{margin-top:0}
+aside a{color:var(--mut);text-decoration:none;display:block;padding:4px 0;line-height:1.4}
+aside a:hover{color:var(--accent)}
+main{min-width:0}
+section{background:#fff;border:1px solid var(--line);border-radius:11px;
+padding:28px 38px 34px;margin-bottom:22px}
+h2{font-size:21px;margin:0 0 4px;letter-spacing:-.015em}
+h2 .n{color:var(--mut);font-weight:500;font-size:15px;margin-right:9px}
+.lede{color:var(--mut);font-size:15px;margin:0 0 20px;max-width:76ch}
+h3{font-size:16.5px;margin:26px 0 8px}
+h4{font-size:14.5px;margin:20px 0 6px;color:var(--accent)}
+p,li{max-width:78ch}
+table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14.5px;
+display:block;overflow-x:auto}
+th{background:var(--tbl-head);color:#fff;text-align:left;font-weight:600;padding:9px 13px}
+td{border-bottom:1px solid var(--line);padding:9px 13px;vertical-align:top}
+tr:nth-child(even) td{background:#fafafc}
+code{background:var(--code-bg);padding:.12em .38em;border-radius:4px;
+font:13.5px/1.5 "SF Mono",Consolas,"Liberation Mono",Menlo,monospace}
+pre{background:var(--code-bg);border-radius:9px;padding:16px 18px;overflow-x:auto;
+font:13px/1.55 "SF Mono",Consolas,"Liberation Mono",Menlo,monospace;margin:16px 0}
+pre code{background:none;padding:0;font-size:inherit}
+blockquote{margin:18px 0;padding:14px 20px;background:#f6f8fc;
+border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.4em 0}
+.pill{display:inline-block;font-size:11.5px;font-weight:700;letter-spacing:.05em;
+text-transform:uppercase;padding:3px 9px;border-radius:20px;vertical-align:2px}
+.done{background:#e4f2ea;color:var(--good)}
+.prog{background:#fdf3dd;color:var(--warn)}
+.todo{background:#f0f0f4;color:var(--mut)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(178px,1fr));gap:12px;margin:18px 0}
+.stat{background:var(--code-bg);border-radius:9px;padding:14px 16px}
+.stat b{display:block;font-size:25px;letter-spacing:-.02em;line-height:1.15}
+.stat span{font-size:13px;color:var(--mut)}
+.callout{border:1px solid var(--line);border-left:4px solid var(--open);
+border-radius:0 8px 8px 0;padding:16px 20px;margin:18px 0;background:#fffdfd}
+.callout h4{margin:0 0 6px;font-size:15.5px;color:var(--open)}
+.callout.ok{border-left-color:var(--good);background:#fbfefc}
+.callout.ok h4{color:var(--good)}
+.callout.note{border-left-color:var(--accent);background:#f8fafd}
+.callout.note h4{color:var(--accent)}
+hr{border:0;border-top:1px solid var(--line);margin:28px 0}
+footer{max-width:1180px;margin:0 auto;padding:0 32px 60px;color:var(--mut);font-size:13.5px}
+@media(max-width:940px){.wrap{grid-template-columns:1fr;padding:20px}aside{display:none}
+section{padding:22px 20px 26px}}
+</style></head><body>
+
+<header><div class="in">
+<h1>The General Liability Rating Engine</h1>
+<div class="sub">Executive summary, and the whole build in plain English — from the engine, through
+testing against ISO's own service, to a harness that checks and corrects itself, and finally to
+carrier deviations layered on top. 12 August 2026.</div>
+</div></header>
+
+<div class="wrap">
+<aside>
+  <div class="lbl">Executive summary</div>
+  <a href="#why">Why you are reading this</a>
+  <a href="#what">1 · What we are building</a>
+  <a href="#hard">2 · Why it is hard</a>
+  <a href="#now">3 · Where we are</a>
+  <a href="#arch">4 · The architecture, defended</a>
+  <div class="lbl">The build, end to end</div>
+  <a href="#j1">A · The engine — six stages</a>
+  <a href="#j2">B · Proof against RAaS</a>
+  <a href="#j3">C · The self-correcting harness</a>
+  <a href="#j4">D · Company deviations</a>
+  <div class="lbl">Closing</div>
+  <a href="#risks">Risks, stated honestly</a>
+  <a href="#wrong">Where to tell me I'm wrong</a>
+  <a href="#more">Where to read more</a>
+</aside>
+
+<main>
+
+<section id="why">
+<h2>Why you are reading this</h2>
+<p class="lede">A progress briefing and a sanity check. Nothing here asks for a decision.</p>
+
+<p><strong>No approval, budget or sign-off is being sought.</strong> The purpose is to make the
+reasoning visible early enough that it can be challenged. If the direction is wrong, or aimed at the
+wrong problem, that is far cheaper to discover now than after the remaining five stages exist.</p>
+
+<h3>In one paragraph</h3>
+<p>We are turning ISO's General Liability pricing rules — the industry-standard rulebook every
+carrier licenses — into something a machine can execute, with proof at every step that it matches
+what ISO actually filed. <strong>This is not the production system.</strong> It is a working
+reference implementation plus a complete, evidenced specification, so that when engineering builds
+the real thing they are implementing a known answer rather than discovering one. The destination is
+a <strong>self-checking harness</strong> that compares itself against ISO's own live rating service
+and reports its own defects.</p>
+
+<div class="grid">
+  <div class="stat"><b>3 weeks</b><span>analysis, complete</span></div>
+  <div class="stat"><b>1 of 6</b><span>build stages working</span></div>
+  <div class="stat"><b>0</b><span>decisions needed today</span></div>
+</div>
+</section>
+
+<section id="what">
+<h2><span class="n">1</span>What we are building</h2>
+<p class="lede">A system that takes a General Liability submission and produces a premium, the way
+ISO says to — and shows its working.</p>
+
+<p>ISO publishes commercial pricing rules two ways: <strong>manuals</strong> written for people, and
+<strong>data files</strong> written for machines. We hold both — roughly 87,000 data files covering
+all 51 jurisdictions, and 1,122 manual documents.</p>
+
+<p>For any risk, at any date, in any state, the engine should produce the same number ISO's own
+service would, and name the file every number came from. <strong>Where ISO declines to price
+something, the engine must decline too, rather than guess.</strong> That turns out to be a large part
+of the job.</p>
+</section>
+
+<section id="hard">
+<h2><span class="n">2</span>Why it is hard</h2>
+<p class="lede">Not the arithmetic — that is multiplication. The difficulty is that almost nothing
+means what its name suggests, and the failure mode is not a crash.</p>
+
+<table>
+<tr><th>The trap</th><th>What it costs if missed</th></tr>
+<tr><td><strong>A zero is usually not a number.</strong> Zeros in these files have <strong>eight</strong>
+distinct meanings. Sometimes zero is a price. More often it means <em>refer to an underwriter</em>,
+<em>not eligible</em>, or <em>price this another way</em></td>
+<td>Multiply by it and you write a <strong>free policy</strong> on exactly the risks meant for human
+review</td></tr>
+<tr><td><strong>States rewrite national rules, and "empty" is a decision.</strong> A state can replace
+a national rule with nothing at all, meaning <em>"we don't do this here"</em> — not <em>"use the
+national one"</em>. New York does it 151 times</td>
+<td>Falling back to the national rule applies coverage the state has withdrawn</td></tr>
+<tr><td><strong>The rules change by date.</strong> On <strong>1 April 2027</strong>, 43 states change
+classification basis on the same morning</td>
+<td>An engine that caches "the current rules" breaks that day</td></tr>
+<tr><td><strong>Names lie, consistently.</strong> One rule is named for one classification, tests a
+second, and writes to a field named after a third</td>
+<td>Any logic keyed on names is wrong in ways testing does not surface</td></tr>
+</table>
+
+<p><strong>Every one of those was found by measurement, not anticipated.</strong> That is why the
+work has been analysis-first.</p>
+</section>
+
+<section id="now">
+<h2><span class="n">3</span>Where we are</h2>
+<p class="lede">Analysis finished. Stage 1 of the engine built and tested.</p>
+
+<pre><code>ANALYSIS                                    BUILD
+├─ Sources collected &amp; converted   ✔ done   ├─ 1. Load &amp; resolve      ✔ DONE
+├─ Two independent specifications  ✔ done   ├─ 2. The interpreter     ▶ next
+├─ 14 coverage walkthroughs        ✔ done   ├─ 3. Produce a premium   ·
+├─ Every count re-measured by date ✔ done   ├─ 4. State input formats ·
+├─ Referral rules + 13 decisions   ✔ done   ├─ 5. Field/value catalog ·
+└─ Architecture decision           ✔ done   └─ 6. Simple interface    ·</code></pre>
+
+<table>
+<tr><th>What exists today</th><th>Size</th></tr>
+<tr><td>ISO data corpus, mapped and indexed</td><td><strong>567 packages</strong>, 51 jurisdictions + national layer</td></tr>
+<tr><td>ISO manual corpus, searchable</td><td><strong>1,122 documents</strong>, fully text-extracted</td></tr>
+<tr><td>Coverage specifications</td><td><strong>14</strong>, each independently evidenced</td></tr>
+<tr><td>Design rules that cannot be violated</td><td><strong>18</strong>, each measured rather than asserted</td></tr>
+<tr><td>Questions escalated to the business</td><td><strong>20</strong> raised, 13 decided</td></tr>
+<tr><td>Tracked open items</td><td><strong>69</strong></td></tr>
+<tr><td><strong>Real ISO-priced policies to test against</strong></td><td><strong>54</strong>, covering 50 states</td></tr>
+<tr><td>Automated expert reviewers</td><td><strong>2</strong>, 107 self-checks between them</td></tr>
+<tr><td><strong>Working engine code</strong></td><td><strong>1,814 lines</strong> — stage 1</td></tr>
+<tr><td><strong>Engine tests</strong></td><td>20 acceptance cases, 13 safety checks, green at two dates</td></tr>
+</table>
+
+<h3>Building it found things reading it could not</h3>
+<table>
+<tr><th>Finding</th><th>Why it matters</th></tr>
+<tr><td><strong>Three states hide their rates</strong> in per-territory files with different names,
+leaving the obvious table empty. <strong>66,573 rows</strong> were being missed</td>
+<td>An engine reading the obvious name prices from nothing, silently</td></tr>
+<tr><td><strong>ISO is withdrawing an entire rating method.</strong> We had filed this as
+unanswerable. At the 2027 date, states carrying it drop from <strong>35 of 51 to 2 of 51</strong></td>
+<td>Coordinated withdrawal, not an incomplete filing. <strong>The answer was in <em>who adopts the
+rulebook</em></strong> — a question only the engine could ask</td></tr>
+<tr><td><strong><code>1.00</code> is being used as a placeholder</strong> in a Texas table — 26 of 30
+rows — so a $20m limit prices identically to a $50,000 one</td>
+<td>We had catalogued <strong>eight meanings of zero</strong> and never asked what <em>one</em>
+meant, because <strong>nothing multiplies when you are only reading</strong></td></tr>
+</table>
+
+<div class="callout note">
+<h4>That last row is the whole thesis in miniature</h4>
+<p>Running the content finds a class of defect that reading it cannot. <strong>That is what the
+harness is for</strong> — and it showed up a stage early, on the first day of coding.</p>
+</div>
+</section>
+
+<section id="arch">
+<h2><span class="n">4</span>The architecture decision, defended</h2>
+<p class="lede">Should the engine <em>run</em> ISO's filed rules, or should engineers <em>read them
+and rewrite them</em> in code? Rewriting is how most rating engines get built. We chose to run them.</p>
+
+<h3>The measurement</h3>
+<pre><code>58 kinds of instruction · 809,088 uses across the corpus
+top 20 instructions ........ 94% of all uses
+top 30 instructions ........ 98.5%</code></pre>
+
+<p>Implement that language once and <strong>every state, every coverage and every future ISO filing
+comes free.</strong> The alternative is hand-writing roughly <strong>4,461 rules per rulebook</strong>
+— plus 345 more for California, which is on a different one — and repeating it each time ISO
+files.</p>
+
+<div class="callout">
+<h4>That measurement is weaker than it looks, and we should say so</h4>
+<p><strong>It measures how <em>broad</em> the language is, not how <em>hard</em> it is.</strong>
+Frequency is not difficulty. The 14 instruction types appearing fewer than 500 times could easily be
+the majority of the work — rare constructs exist precisely because they do unusual things.</p>
+<p><strong>Honest statement: the language is small enough that implementing it is tractable. Whether
+it is cheap is not yet proven.</strong> The decision rests better on maintenance economics than on
+the 94%.</p>
+</div>
+
+<h3>The three arguments that actually hold</h3>
+
+<h4>1. The maintenance treadmill is the whole game</h4>
+<p>ISO files continuously — this corpus already holds filings dated into 2027. With hand-written
+rules, <strong>every filing is a development project, a regression cycle and a release.</strong> With
+an interpreter, a filing is a <strong>file drop.</strong> Over a five-year life that dwarfs the build
+cost.</p>
+
+<h4>2. The precedent runs this way — with one honest caveat</h4>
+<table>
+<tr><th>Who</th><th>How they do it</th></tr>
+<tr><td><strong>ISO's own RAaS</strong></td><td>ISO executes ERC as a service. <strong>This is the
+existence proof, from the party that authored the format</strong></td></tr>
+<tr><td><strong>Duck Creek</strong></td><td>Manuscript-driven — business logic including rating lives
+in XML the platform executes at runtime. The closest analogue</td></tr>
+<tr><td><strong>Guidewire</strong></td><td>Rating <em>specifically</em> is configured metadata — rate
+tables and rating routines — executed by a rating engine. The wider platform is code (Gosu), so this
+is a hybrid, not a pure evaluator</td></tr>
+<tr><td>Tax, for comparison</td><td>Nobody hard-codes sales tax. Vertex and Avalara are data-driven
+for the same reason: high-churn, externally authored, regulator-filed content</td></tr>
+</table>
+
+<div class="callout">
+<h4>The caveat, stated plainly</h4>
+<p><strong>None of the commercial platforms interprets ISO's ERC format natively.</strong> They
+interpret <em>their own</em> format, and ISO content is imported and converted into it — a conversion
+that is itself a product or a project someone pays for. We should not assume that is an oversight: a
+vendor format designed for execution is probably more tractable than a filing format designed for
+distribution.</p>
+<p><strong>That gives us a cheaper fallback than "rewrite it all."</strong> If ERC proves painful to
+evaluate directly, the retreat is to <strong>normalise ISO's content into a simpler internal form
+first, then execute that</strong> — which is what the vendors effectively do.</p>
+<p style="color:var(--mut);font-size:14px"><em>These are public architectural descriptions, not
+verified internals — unlike every other number in this document, which is measured.</em></p>
+</div>
+
+<h4>3. It is the only version that reaches the stated destination</h4>
+<p>A self-correcting harness can adjust an interpreter's semantics. It cannot meaningfully
+self-correct 100,000 lines of hand-written business logic. <strong>If the destination is
+self-checking, rewriting is a dead end you would have to walk back out of.</strong></p>
+
+<h3>The costs, stated as costs</h3>
+<table>
+<tr><th>Cost</th><th>Severity</th><th>Where we stand</th></tr>
+<tr><td><strong>Correlated failure.</strong> One instruction's semantics wrong = wrong
+<strong>everywhere</strong>, silently. Hand-written rules fail locally and independently</td>
+<td><span class="pill todo" style="background:#f7e6e6;color:var(--open)">Serious</span></td>
+<td>Mitigated by 54 real ISO-priced policies — a systemic error shows up across many at once.
+<strong>But we have not yet measured what those 54 exercise.</strong> Owed before stage 2 ships</td></tr>
+<tr><td><strong>Debugging inverts.</strong> A wrong premium points into <em>data</em>, not code</td>
+<td>Moderate</td><td>The provenance trace is designed for exactly this</td></tr>
+<tr><td><strong>Business logic is not readable in the codebase.</strong> An engineer sees
+<code>evaluate(node)</code>; the pricing lives in ISO's files</td>
+<td>Moderate</td><td>Real tension with "a template for engineers". Answered by the specification
+being written down first, in English</td></tr>
+<tr><td><strong>Performance.</strong> Tree-walking is slower than compiled logic</td>
+<td>Low</td><td>Irrelevant at quote volume; possibly relevant for batch re-rating</td></tr>
+</table>
+
+<h3>How this would be challenged</h3>
+<table>
+<tr><th>Challenge</th><th>Response</th></tr>
+<tr><td><em>"You're building a compiler. That's where projects die."</em></td>
+<td>It is not a compiler. It is a tree-walking evaluator over a fixed vocabulary — closer to a
+spreadsheet formula engine than a language runtime</td></tr>
+<tr><td><em>"Can we hire for this?"</em></td>
+<td>Yes. Once the semantics are written down it is mid-level work. <strong>Writing them down is the
+senior work, and that is exactly what stage 2 produces</strong> — which is the deliverable
+engineering needs</td></tr>
+<tr><td><em>"What's the bus factor?"</em></td>
+<td>Genuinely worse than rewriting. Mitigated only by specifying before coding, which is the standing
+rule here</td></tr>
+<tr><td><em>"Can we explain a price to a regulator?"</em></td>
+<td>Better than the alternative. Every number carries the ISO file it came from — a stronger audit
+story than "here is our Python"</td></tr>
+<tr><td><em>"What if it doesn't work?"</em></td>
+<td><strong>It is not a one-way door.</strong> An interpreter that works can emit compiled code, and
+the semantics you had to write down become that code's specification</td></tr>
+</table>
+
+<blockquote>
+<p><strong>The argument for a board is not the 94%.</strong> It is: <em>vendor content updates become
+a configuration change instead of a release.</em></p>
+<p><strong>The argument a sponsor should hear plainly:</strong> we are taking <strong>correlated
+risk</strong> to buy <strong>maintenance leverage</strong>. That is a defensible trade. It is not a
+free win, and it has not been presented as one.</p>
+</blockquote>
+</section>
+
+<hr>
+
+<section id="j1">
+<h2><span class="n">A</span>The engine — six stages <span class="pill prog">phase 1</span></h2>
+<p class="lede">Build ISO's content, and nothing else, until it is proven.</p>
+
+<h3>Stage 1 — Which rulebook applies <span class="pill done">built</span></h3>
+<p>Given a state and a date, return the exact rules and rate tables ISO says apply. Sounds
+administrative; it is where <strong>almost every catastrophic pricing error originates</strong> —
+wrong edition, wrong national rulebook under a state, or an empty table read as zero. Each produces a
+finished, confident, wrong number.</p>
+<p>So it is mostly a machine for refusing to guess:</p>
+<ul>
+<li><strong>It will not price before September 2022.</strong> The files do not cover every state that
+far back, and a partial answer would look like a complete one</li>
+<li><strong>It takes the national rulebook each state names for itself</strong>, never the newest.
+Five states today would otherwise be priced against rules they never adopted</li>
+<li><strong>An empty rate table is an answer, not a gap.</strong> It will show it to you; it refuses
+to calculate with it</li>
+</ul>
+<p><strong>20 of 20 acceptance cases; 13 of 13 safety checks, green at two dates</strong> — today and
+the 2027 cliff.</p>
+
+<h3>Stage 2 — The interpreter <span class="pill prog">next</span></h3>
+<p>The piece that executes ISO's rules. <strong>The only genuinely new engineering in the build</strong>,
+and its largest single deliverable is not code — it is <strong>writing down what each of ISO's 54
+instructions means.</strong> That written specification is the main thing engineering inherits, and it
+is worth more than the code around it.</p>
+<p><strong>How it gets checked:</strong> the fourteen coverage walkthroughs each state a rule order and
+its arithmetic. If the interpreter is right, they should pass <em>with no coverage-specific code at
+all.</em> That is the strongest claim in this project and the one most likely to be wrong.</p>
+
+<h3>Stages 3 to 6</h3>
+<table>
+<tr><th>Stage</th><th>What it delivers</th></tr>
+<tr><td><strong>3 · Premium and referrals</strong></td><td>A submission goes in, a price and every
+component come out. Two behaviours: <strong>strict</strong> (reproduce ISO exactly) and
+<strong>underwriting</strong> (enforce the carrier's referral rules). One code path</td></tr>
+<tr><td><strong>4 · State input formats</strong></td><td>One sample submission per state, same class
+and exposure everywhere, so state differences are visible and attributable</td></tr>
+<tr><td><strong>5 · Field and value catalogue</strong></td><td>Every field a submission can carry and
+its legal values, taken from ISO's own tables rather than invented</td></tr>
+<tr><td><strong>6 · Simple interface</strong></td><td>Paste a submission, price it, read every factor
+with its source</td></tr>
+</table>
+
+<div class="callout note">
+<h4>The difference between the two modes is itself a deliverable</h4>
+<p>Rate the same risk both ways and every difference is <strong>a risk ISO would quote and the
+carrier would stop and ask a human about.</strong> That report is a business artifact, not a
+diagnostic.</p>
+</div>
+</section>
+
+<section id="j2">
+<h2><span class="n">B</span>Proof against RAaS <span class="pill prog">phase 2</span></h2>
+<p class="lede">ISO's own service is the gold standard. Any difference is our defect until proven
+otherwise.</p>
+
+<p>RAaS — Rating as a Service — is ISO executing its own content. Send it a submission, get back a
+premium. <strong>Run the same submission through our engine in strict mode, and compare.</strong></p>
+
+<pre><code>   submission ──┬──→  ISO RAaS          ──→  ISO's premium
+                │
+                └──→  our engine        ──→  our premium
+                       (strict mode)
+                                              │
+                                              ▼
+                                    DIFFERENCE?  →  our defect,
+                                                    until proven
+                                                    otherwise</code></pre>
+
+<p><strong>Most of this can start before the connection exists.</strong> 54 ISO-priced example
+policies covering 50 jurisdictions are already on disk — enough to find systemic errors offline.</p>
+
+<div class="callout">
+<h4>The honest gap in the test set</h4>
+<p><strong>None of the 54 carries loss history</strong>, so experience rating — the part that prices
+on a customer's own claims record — has no offline answer key. It can only ever be checked against
+the live service.</p>
+<p>And a measurement we owe ourselves before stage 2 ships: <strong>which instructions and coverages
+do those 54 actually exercise?</strong> They are the safety net under the biggest architectural risk,
+and we have not yet measured how wide the net is.</p>
+</div>
+</section>
+
+<section id="j3">
+<h2><span class="n">C</span>The self-correcting harness <span class="pill prog">phase 3</span></h2>
+<p class="lede">Turn that comparison into a loop that runs itself. This is the actual destination.</p>
+
+<pre><code>        ┌──────────────────────────┐
+        │   ISO's live service     │   the gold standard
+        └───────────┬──────────────┘
+                    │  same submission
+                    ▼
+   ┌────────────────────────────────────┐
+   │   our engine, STRICT mode          │
+   └───────────┬────────────────────────┘
+               ▼
+   ┌────────────────────────────────────┐
+   │  DIFFERENCE                        │
+   │  every gap is either our defect    │
+   │  or a finding about ISO's content  │
+   └───────────┬────────────────────────┘
+               ▼
+   ┌────────────────────────────────────┐
+   │  two automated expert reviewers    │
+   │  adjudicate against the manual     │
+   │  and the data files                │
+   └───────────┬────────────────────────┘
+               │
+               └──→  fix · re-run · record.  Repeat.</code></pre>
+
+<h3>"Self-learning" and "self-fixing" — what those honestly mean</h3>
+<p>The phrase covers four different things with very different difficulty. Being precise matters,
+because only the first two are ordinary engineering.</p>
+
+<table>
+<tr><th>Level</th><th>What it does</th><th>Realistic?</th></tr>
+<tr><td><strong>1 · Self-checking</strong></td><td>Notices that our answer differs from ISO's, and
+records it with full provenance</td><td><strong>Yes.</strong> Ordinary engineering. The trace layer
+is already designed for it</td></tr>
+<tr><td><strong>2 · Self-diagnosing</strong></td><td>Localises <em>which rule, which table, which
+instruction</em> produced the difference — not just that the total is wrong</td>
+<td><strong>Yes</strong>, and this is where the interpreter earns its keep: every number knows what
+computed it</td></tr>
+<tr><td><strong>3 · Self-fixing</strong></td><td>Proposes — and for a bounded class, applies — a
+correction: an instruction's semantics, a sentinel's meaning, a rounding rule</td>
+<td><strong>Yes, for a bounded class.</strong> Because the engine executes content, a fix is usually
+a change to a semantics table rather than to logic scattered across a codebase</td></tr>
+<tr><td><strong>4 · Self-learning</strong></td><td>Generalises a correction into a rule that prevents
+the whole class — e.g. <em>"any factor that breaks monotonicity is a sentinel until proven
+otherwise"</em></td><td><strong>Aspirational, but already happening by hand.</strong> That exact rule
+was written this week, from one Texas table</td></tr>
+</table>
+
+<div class="callout">
+<h4>Two limits to state before anyone assumes otherwise</h4>
+<p><strong>It can only ever self-correct against ISO content.</strong> The oracle is ISO's service,
+which rates ISO's rules. Nothing external can score a carrier deviation — see section D.</p>
+<p><strong>Not every difference is our defect.</strong> Some are findings about ISO's own content —
+three turned up on the first day of coding. The harness must be able to conclude <em>"we are right and
+this needs escalating"</em>, which is why the two expert reviewers sit in the loop rather than an
+automatic patcher.</p>
+</div>
+
+<h3>Why the method matters more than this line of business</h3>
+<p>The rating engine is the <strong>first</strong> line of business. The harness is the
+<strong>method</strong>, and it transfers:</p>
+<ul>
+<li><strong>It finds defects reading cannot</strong> — demonstrated on day one of coding</li>
+<li><strong>It produces a specification, not just software.</strong> Engineering inherits decisions
+with reasons, not code to reverse-engineer</li>
+<li><strong>It generalises.</strong> A companion document records, for each stage, what the analysis
+was <em>expected</em> to supply against what it <em>actually</em> supplied — written <strong>before</strong>
+each stage, so it is allowed to be wrong. That is what tells a future team which of these steps to
+repeat for Commercial Property, and which to skip</li>
+</ul>
+</section>
+
+<section id="j4">
+<h2><span class="n">D</span>Company deviations <span class="pill prog">phase 4</span></h2>
+<p class="lede">Built last. Designed for from stage 2. Those are not in tension — here is why.</p>
+
+<p><strong>No carrier rates pure ISO.</strong> Every one files deviations: its own loss cost
+multiplier, class relativities, increased-limit factors, coverages ISO does not offer, rules ISO does
+not have. <strong>A rating engine that cannot express those is a demonstration, not a system.</strong></p>
+
+<div class="callout">
+<h4>Why they are not in phase 1: deviations break the oracle</h4>
+<p>ISO's RAaS rates <em>ISO content</em>. The moment company content is layered on, <strong>no
+external service can confirm the answer is right.</strong></p>
+<p><strong>Deviating from a foundation you have not yet proven means you can never attribute a
+difference</strong> — is that the deviation working, or the engine failing? The ISO baseline has to
+be trusted before anything sits on top of it.</p>
+</div>
+
+<h3>Why the design cannot wait</h3>
+<p><strong>Layering is already how the engine works.</strong> A state's rules override the national
+rulebook today — by name, wholesale, and an override may deliberately be empty, meaning <em>"we do
+not do this here."</em> Those are exactly the semantics a carrier deviation needs. <strong>A company
+layer is the same mechanism with one more level, not a new concept.</strong></p>
+
+<p>And because the engine executes content rather than code:</p>
+<table>
+<tr><th></th><th>A company deviation is…</th></tr>
+<tr><td>Hand-written rating code</td><td><strong>A code change.</strong> Edited, reviewed,
+regression-tested, released</td></tr>
+<tr><td><strong>This design</strong></td><td><strong>Content.</strong> The same shape as ISO's own —
+diffable, reviewable by actuaries, effective-dated, and inheriting every safety check already
+built</td></tr>
+</table>
+
+<p>The commonest deviation shape — <em>ISO's answer × our factor</em> — is already the shape of
+<strong>4,598 rules in ISO's own content</strong>, so the machinery arrives free.</p>
+
+<h3>Three decisions taken now, before the interpreter is written</h3>
+
+<h4>C1 — Two layers become an ordered chain</h4>
+<pre><code>company-state        most specific
+company-countrywide
+ISO-state
+ISO-countrywide      least specific</code></pre>
+<p>Cheap to build in now, invasive once stage 2 is written against a two-layer assumption.
+<strong>The hard part is not the code — it is the precedence question:</strong> does a company
+<em>national</em> deviation outrank an ISO <em>state</em> exception? That is a filing decision with no
+correct default, answered per carrier, and it must be configuration.</p>
+
+<h4>C2 — ISO's rules keep ISO's meaning <span class="pill todo" style="background:#f7e6e6;color:var(--open)">the dangerous one</span></h4>
+<p>When an ISO rule says <em>"do what my parent does, then adjust"</em> — and 4,598 of them do — it
+means <strong>ISO's national package</strong>, a meaning ISO fixed when it filed. If a company layer
+were inserted in the middle and that instruction resolved through it, <strong>we would silently
+rewrite ISO's own rules</strong>, and the premium would come out finished, plausible and wrong.</p>
+<table>
+<tr><th>Two ideas that must never be conflated</th><th></th></tr>
+<tr><td><strong>ISO's declared parent</strong></td><td>Semantic. Fixed by the filing. Never
+reinterpreted by our layering</td></tr>
+<tr><td><strong>Our layer chain</strong></td><td>Compositional. Ours to define and reorder per
+carrier</td></tr>
+</table>
+
+<h4>C3 — Behaviour and content are independent axes</h4>
+<table>
+<tr><th></th><th>ISO content only</th><th>ISO + company layers</th></tr>
+<tr><td><strong>Strict</strong></td><td>The RAaS comparison baseline — <strong>must stay permanently
+runnable</strong></td><td>Company rating, no referral policy</td></tr>
+<tr><td><strong>Underwriting</strong></td><td>ISO rating under the referral rules</td>
+<td><strong>What would actually ship</strong></td></tr>
+</table>
+<p>Keeping strict-over-ISO-only permanently runnable is what lets the foundation go on being verified
+against RAaS <em>forever</em>, even once deviations sit on top of it.</p>
+
+<h3>Two questions deliberately left open</h3>
+<p><strong>How deviations get authored.</strong> In ISO's own format — best for the engine, verbose
+for humans — or in a simpler overlay we convert. Worth deciding against a real deviation, not in the
+abstract.</p>
+<p><strong>Whether ISO's vocabulary can express everything a carrier wants.</strong> ISO's 58
+instructions express what ISO needed. A tier factor, a model score, or a rating step ISO does not
+have may not be expressible, and would need a vocabulary extension or an escape hatch to code.
+<strong>That limit is real and should be found on a real deviation rather than guessed at.</strong></p>
+</section>
+
+<hr>
+
+<section id="risks">
+<h2>Risks, stated honestly</h2>
+<table>
+<tr><th>Risk</th><th>Mitigation</th><th>Residual</th></tr>
+<tr><td><strong>Correlated semantic error</strong> in the interpreter</td>
+<td>54 real ISO-priced policies; strict mode; two expert reviewers</td>
+<td><strong>Real.</strong> We must first measure what those 54 exercise</td></tr>
+<tr><td><strong>Rare instructions cost more than common ones</strong></td>
+<td>Spike the hardest ten first, not the commonest twenty</td><td>Unproven either way</td></tr>
+<tr><td><strong>ISO content we cannot interpret at all</strong></td>
+<td>20 escalations so far; the engine <strong>refers to a human</strong> rather than guessing</td>
+<td>By design, not eliminated</td></tr>
+<tr><td><strong>Deviations have no oracle</strong></td>
+<td>Phase ordering: prove ISO first; keep strict/ISO-only permanently runnable</td>
+<td><strong>Permanent.</strong> Deviations validate against the carrier's own filed examples and
+actuarial review, never against RAaS</td></tr>
+<tr><td><strong>Key-person concentration</strong></td>
+<td>Specification written in English before code; everything reproducible from scripts</td>
+<td>Higher than a rewrite. Accepted knowingly</td></tr>
+<tr><td><strong>Hawaii absent from every source</strong></td>
+<td>Documented scope boundary; the engine fails loudly if asked</td><td>Out of scope, stated</td></tr>
+</table>
+
+<h3>One discipline is doing most of the risk work</h3>
+<p>Sixteen corrections are recorded across this project and <strong>nearly all are the same mistake:
+something measured in one place, then stated about everything.</strong></p>
+<blockquote>
+<p><strong>Every count is stated as "n of N", and N must be enumerated from the source rather than
+assumed.</strong></p>
+<p>And, added this week: <strong>when a new safety check passes on the first run, suspect it.</strong>
+Twice a check's condition has been narrower than its name, and the second one passed while blind.</p>
+</blockquote>
+</section>
+
+<section id="wrong">
+<h2>Where I would most want to be told I am wrong</h2>
+<p class="lede">Nothing is blocked and nothing needs a decision. These are the four places an outside
+view is worth more than another week of my own work.</p>
+
+<p><strong>1 · Is the destination right?</strong> This is aimed at a self-checking harness that
+produces a specification, on the premise that engineering's expensive problem is not writing rating
+code — it is knowing exactly what to write, and knowing when it is wrong. <strong>If the real
+constraint sits somewhere else, the shape of this is wrong however well it is executed.</strong></p>
+
+<p><strong>2 · Is the architecture trade acceptable?</strong> Correlated risk bought in exchange for
+maintenance leverage. The reasoning is laid out above including the parts that weaken it. It is the
+single most consequential decision made so far.</p>
+
+<p><strong>3 · Is "not the production system" being taken seriously enough?</strong> The value here is
+the specification and the evidence, not the code. If this is being read as an attempt to build a
+shadow production system, that expectation needs correcting now.</p>
+
+<p><strong>4 · Is the pace of escalation right?</strong> Anything ISO's files cannot settle
+<strong>stops and asks a human</strong> rather than being guessed at. That is deliberately
+conservative. If it is too conservative for how this would actually be used, better to know before
+referral logic goes into stage 3.</p>
+
+<h3>What happens next regardless</h3>
+<ol>
+<li><strong>Measure what the 54 priced policies actually exercise</strong> — the missing safety net
+under the biggest risk</li>
+<li><strong>Spike the ten hardest instructions first, not the twenty commonest.</strong> The common
+ones are almost certainly fine. This either validates the architecture in a week or kills it
+cheaply</li>
+<li><strong>Then stage 2</strong>, on the same terms as everything so far — each stage shown before
+the next begins: what it does, what it was checked against, and what it cannot yet do</li>
+</ol>
+</section>
+
+<section id="more">
+<h2>Where to read more</h2>
+<table>
+<tr><th>For</th><th>Document</th></tr>
+<tr><td>This document, as markdown</td><td><a href="https://github.com/Federato/recursive_harness/blob/main/docs/EXECUTIVE-SUMMARY.md"><code>EXECUTIVE-SUMMARY.md</code></a></td></tr>
+<tr><td>Plain-English account of the current state</td><td><a href="https://github.com/Federato/recursive_harness/blob/main/docs/WHERE-WE-PAUSED-2026-08-12.md"><code>WHERE-WE-PAUSED-2026-08-12.md</code></a></td></tr>
+<tr><td>Full status and history</td><td><a href="https://github.com/Federato/recursive_harness/blob/main/docs/PRD-GL-RATING-ENGINE.md"><code>PRD-GL-RATING-ENGINE.md</code></a></td></tr>
+<tr><td>The six stages and the phases after them</td><td><a href="https://github.com/Federato/recursive_harness/blob/main/docs/BUILD-STAGES.md"><code>BUILD-STAGES.md</code></a></td></tr>
+<tr><td>Technical build plan, incl. deviation constraints C1–C3</td><td><a href="https://github.com/Federato/recursive_harness/blob/main/docs/GL-RATING-ENGINE-BUILD-PLAN.md"><code>GL-RATING-ENGINE-BUILD-PLAN.md</code></a> §5</td></tr>
+<tr><td>Every command, to run any of it yourself</td><td><a href="https://github.com/Federato/recursive_harness/blob/main/TESTING.md"><code>TESTING.md</code></a></td></tr>
+<tr><td>What was built, what broke, what it revealed</td><td><a href="https://github.com/Federato/recursive_harness/blob/main/BUILD-LOG.md"><code>BUILD-LOG.md</code></a></td></tr>
+<tr><td>Did the analysis pay off? <em>(written before each stage)</em></td><td><a href="https://github.com/Federato/recursive_harness/blob/main/docs/FROM-PLANNING-TO-BUILD.md"><code>FROM-PLANNING-TO-BUILD.md</code></a></td></tr>
+<tr><td>Everything unresolved — 69 items</td><td><a href="https://github.com/Federato/recursive_harness/blob/main/docs/OPEN-ITEMS.md"><code>OPEN-ITEMS.md</code></a></td></tr>
+</table>
+</section>
+
+</main>
+</div>
+
+<footer>
+Every figure in this document is measured from the ISO corpus and reproducible from scripts in the
+repository, with one stated exception: the descriptions of Duck Creek and Guidewire are public
+architectural summaries, not verified internals.
+</footer>
+
+</body></html>

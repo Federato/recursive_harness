@@ -1,0 +1,57 @@
+# =============================================================================
+#  LICENSED ISO CONTENT — NEVER COMMIT
+# =============================================================================
+#  ISO's manuals, machine-readable rating content and rated example payloads are
+#  licensed material. They are excluded here rather than in a review step,
+#  because a push cannot be taken back: once content reaches a remote it may be
+#  cached, forked or indexed even after deletion.
+#
+#  The ERC corpus itself lives OUTSIDE this repository, at C:\Projects\ISO_ERC_Files,
+#  and is reached through the GL_ERC_ROOT environment variable. Keep it that way.
+# -----------------------------------------------------------------------------
+
+# ISO manuals and circulars (~4 GB of source PDFs)
+Commercial Line Manuals/
+
+# Text extracted from those manuals — derived licensed content, 1,122 documents
+Agentic/*/text/
+
+# Knowledge bases built from ISO manuals: loss costs, territories, factors
+Agentic/*/knowledge/
+
+# ISO / RAaS rated example policies — 54 real priced policies
+Payloads/
+Engine_Payloads/
+
+# Bulk extractions of ISO rating content (~305 MB of CSV dumps)
+scripts/erc/out/
+scripts/erc/census_334.json
+
+# ISO-derived workbooks and generated hierarchies
+*.xlsx
+GL_ERC_Edition_Hierarchy.html
+
+# Working documents
+*.docx
+
+# -----------------------------------------------------------------------------
+#  JUDGEMENT CALL — a real ISO-rated policy, copied from ISO's own package.
+#  Excluding it makes tests/verify_golden.py unrunnable from a fresh clone.
+#  Comment this line out ONLY if the repository is private.
+# -----------------------------------------------------------------------------
+tests/fixtures/
+
+# =============================================================================
+#  Ordinary noise
+# =============================================================================
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.log
+*.tmp

@@ -1,0 +1,407 @@
+# Open Items Register
+
+Consolidated register of everything still unresolved across both derivations of the ISO
+General Liability program — the PDF manuals and the ERC packages — plus the three rating plans
+added on 2026-08-10.
+
+> **A counting discipline was added 2026-08-11 (Step 40)** after five wrong figures in one day, all
+> of them aggregates or negatives. Build plan §9 **habit 8**: *a search predicate must never define a
+> population.* Enforced by **`scripts/erc/34_crosscheck.py`**, now part of the verification routine —
+> it found **OI-50** on its first run and demoted two earlier "orphan table" findings to unremarkable.
+>
+> **OI-48 closed 2026-08-11 (Step 39)** by the user: the unmanned-aircraft highest-modifier rule is a
+> **broker question** — one resolved category per axis, with `Unknown` as ERC's own filed escape hatch.
+> **OI-49 reduced to one instance** — the drone half was withdrawn when the discriminator turned out to
+> exist on an axis the gate had not counted, which also revised the drone sentinel from 8 cells to **18**.
+>
+> **Item 12 step 1 run 2026-08-12 (Step 48)** — the referral census ([`scripts/erc/40_referral_census.py`](../scripts/erc/40_referral_census.py)) found referral conditions by scanning rather than by re-reading gate prose, **and amended four filed gates on its first run** (**OI-65**). Terrorism gate corrected: **15 of 51 jurisdictions file their own territory-keyed factors**, not the countrywide pair.
+>
+> **Build-order item 11 gated 2026-08-12 (Step 47)** — [`gates/GATE-STATE-SPECIFIC.md`](gates/GATE-STATE-SPECIFIC.md). **Scope corrected from four coverages in three states to five in four, 88 rules**: Rhode Island's lead coverage rates and `PHASE-SIZING` §5 said it did not. **OI-63** and **OI-64** opened.
+>
+> **Build-order item 10 gated 2026-08-12 (Step 46)** — [`gates/GATE-RATING-PLANS.md`](gates/GATE-RATING-PLANS.md), **the first gate where the manual is the richer source**. **OI-01, OI-02, OI-03 and OI-55 closed**; **OI-61** and **OI-62** opened; **PDF gap G6 retired**. The three rating plans were recorded as *"`[PDF]` absent"* and were on disk throughout — **142 documents, 654 pages**, now ingested and routable by the expert agent.
+>
+> **All three owed items closed 2026-08-12 (Steps 43–45).** **California** — 345 of 4,461 rule
+> bodies differ between the two parents in force, 341 of them one change of write semantics
+> (OI-58, `tests/verify_california.py` 11/11). **New York** — 698 overrides, claims-made withdrawn
+> across 5 coverage groups, rating switched off for 83 endorsements (OI-59, OI-60,
+> `tests/verify_new_york.py` 10/10). **OI-50** — Limited Product Withdrawal Expense derived and
+> closed (gate 365 §9, `tests/verify_oi50.py` 7/7).
+>
+> **Owed work ordered 2026-08-12 (Step 43), at the user's direction to recommend a sequence.**
+> **1. California** — the only item that risks *already-passed* work: **341 of 345** differing rule
+> bodies between the two 2023-12-01 countrywide parents are one change of write semantics, and
+> California is the sole jurisdiction on the older one. **2. New York** — largest surface (698
+> overrides, rank 1 of 51 by 2.6x), with a specific hole in the freshly-filed terrorism gate (178
+> overrides in `GeneralLiabilityTerrorismEndorsementCoverage`); partially deferred because
+> `SpecialProtectiveHighwayCoverage` belongs to item 11. **3. OI-50** — **0 of 51** jurisdictions
+> override any of its 11 rules, so it has no deviation surface and no dependencies; the one item
+> where lateness costs nothing.
+>
+> **Gate terrorism filed 2026-08-12 (Step 42)** — build-order item 9, the ninth gate. **OI-37
+> closed**: the population audit ran and `RECONCILIATION.md` R3's prohibition is lifted — terrorism
+> premium *can* be computed. **OI-51 closed as a wrong diagnosis** (a `pdftotext` failure, not
+> image-only documents). **OI-54, OI-55, OI-56 and OI-57 opened.** **Build order resequenced again at
+> the user's direction: Refer-to-company moves from 9 to 12**, after State-specific rating coverages.
+>
+> **Gate size-of-risk filed 2026-08-12 (Step 41)** — build-order item 8, the eighth gate and the
+> first that is not a subline. **OI-04 closed**, its open clause corrected as an undated count that
+> is false of all three parents in force. **OI-51, OI-52 and OI-53 opened**; **E19** raised. **OI-20
+> confirmed a second time in a sharper form**: NJ and OH shard by territory, but the override is on
+> the **setter** rule, and **0 of 35** shipping jurisdictions override a size-of-risk *lookup* — so
+> binding a concept to a table or lookup name is wrong in both.
+>
+> **Resequenced 2026-08-11 (Step 37)** at the user's direction: **Size-Of-Risk becomes build-order
+> item 8** and items 8–13 move down one, so the build order now has **fourteen** items. **OI-46 closed**
+> by that decision. Crosswalk in build plan §8; earlier documents keep the numbering they were filed under.
+>
+> **Extended again 2026-08-11 (Step 36)** by the **subline-370 Unmanned Aircraft gate** —
+> [`gates/GATE-370-UNMANNED-AIRCRAFT.md`](gates/GATE-370-UNMANNED-AIRCRAFT.md). **N13's oldest sentinel
+> is decoded and closed as a question**: 24/24 cells against manual Table 37.E, `0` = `RTC` exactly,
+> **five** BI/PD zeros not three, and **no in-corpus discriminator — verified exhaustively.**
+> **OI-48** added; **OI-45 merged into OI-49**. E1 shown not to bite on this subline.
+>
+> **Extended again 2026-08-11 (Step 35)** by the **item-6 gate** (Product Withdrawal · LoED · Cyber) —
+> [`gates/GATE-365-WITHDRAWAL-LOED-CYBER.md`](gates/GATE-365-WITHDRAWAL-LOED-CYBER.md). **OI-46** and
+> **OI-47** added, **E18** raised, **N7** extended to *presence ≠ population ≠ purpose*, and
+> **item 6's phase sizing corrected** from 320/178/42 to **150/17/9** — a substring match had swept in
+> 19 endorsement groups and driven a plan recommendation.
+>
+> **Extended again 2026-08-11 (Step 34)** by the **subline-335 Railroad Protective gate** —
+> [`gates/GATE-335-RAILROAD-PROTECTIVE.md`](gates/GATE-335-RAILROAD-PROTECTIVE.md). **OI-45** added;
+> **OI-21 confirmed from the manual** (subline codes 325, 335 and 350 each cover two rules).
+> **N17 narrowed on a counterexample** — railroad has no `*ELPText` selector — and **N7** and **N11**
+> extended. **E15** and **E16** generalised to a second subline.
+>
+> **Extended 2026-08-11 (Step 32)** by the **subline-332 Liquor gate** —
+> [`gates/GATE-332-LIQUOR-LIABILITY.md`](gates/GATE-332-LIQUOR-LIABILITY.md). **OI-43** (an ISO
+> defect: CW 2027 liquor statistical exposure is reported 1,000× too large) and **OI-44** (a
+> `DoMessage` guard covering 10 of its 21 zero factors) added. Three new escalations — **E15**, **E16**,
+> **E17** — and **E14 reframed** from a one-off to a corpus habit on a third and fourth instance.
+>
+> **OI-40 closed 2026-08-11 (Step 32)** by the as-of recount —
+> [`gates/OI-40-ASOF-RECOUNT.md`](gates/OI-40-ASOF-RECOUNT.md). **OI-19 and OI-20 closed with it**,
+> both by running the sweep each had recorded as outstanding. **OI-41 opened** (the corpus cannot
+> resolve all 51 jurisdictions before 2022-09-01). Territory and the rate-driven group set survived
+> the re-test; N7's table counts and the class-code split did not. **The rate-driven count itself was
+> separately found to be two short** — `16 · 383 · 78` → **`18 · 383 · 76`**, see OI-42.
+>
+> **Reconciled 2026-08-11 (Step 30)** across both specifications. A single record of what the gates
+> superseded now lives in `docs/gates/RECONCILIATION.md`; the two derivations are **annotated, not
+> rewritten**, so their independence survives. **OI-39's own answer was corrected** and **OI-40**
+> opened — every "latest edition" count in the project is an end-state figure until re-measured
+> as-of a date.
+>
+> **Extended again 2026-08-11 (Step 29)** by the subline-335 gate: the **Workers Compensation
+> external dependency closed** (an input field, not a gap), **OI-38** and **OI-39** added, and
+> OI-09's priority raised by the first real rounding midpoint.
+>
+> **Extended again 2026-08-11 (Step 28)** by the subline-336 gate: **OI-36 closed** (dissolved on
+> reading — the eighth), **OI-35 narrowed**, **OI-37 added**, and OI-17's zero-taxonomy extended to
+> four meanings of which two now have an in-corpus discriminator.
+>
+> **Extended 2026-08-11 (Step 27)** by the subline-334 gate — the first time an item was raised
+> by *deriving an algorithm end to end* rather than by surveying the corpus. Two new items
+> (**OI-35**, **OI-36**), a second confirmed sentinel under **OI-17**, and a re-verification of
+> **OI-09**'s midpoint claim. Details in `docs/gates/GATE-334-PREMISES-OPERATIONS.md`.
+>
+> **Reconciled 2026-08-10** against the build-plan escalation register (E1–E10) after a pass that
+> re-tested every open item **by opening the file** rather than reasoning from a name. **Eight
+> entries changed state**; seven of the ten escalations dissolved on being read. The pattern that
+> produced them is recorded as a standing criterion in `PROCESS_LOG.md`.
+>
+> **This document is standalone.** Nothing here has been folded into
+> `docs/rating-engine/`, `docs/erc/`, or either agent's knowledge base. Those documents still
+> say what they said. This is the tracking list; reconciling it into the specifications is a
+> separate decision.
+
+**Sources.** `[PDF]` = derived from the manual corpus · `[ERC]` = derived from the ERC packages
+in isolation · `[CMP]` = surfaced by the cross-derivation comparison · `[NEW]` = added at the
+user's direction, 2026-08-10 · `[TEST]` = raised by building the RAAS baseline test payloads,
+2026-08-10.
+
+**Status vocabulary.**
+
+| Status | Meaning |
+|---|---|
+| `OPEN` | Not answerable from either corpus |
+| `PARTIAL` | One source supplies content the other lacks; not yet fully characterised |
+| `AUDIT` | Content located but its completeness/population is unverified |
+| `BY-DESIGN` | Genuinely external — not a gap to close, an input to source |
+| `HYGIENE` | Housekeeping, not a knowledge gap |
+| `CLOSED` | Answered, decided, or dissolved — retained with the evidence that settled it |
+| `BUILD WORK` | Not a question for anyone; a requirement the engine must implement |
+
+---
+
+## A. Rating plans
+
+Added at the user's direction. **Checking these produced the most consequential result in this
+register: the PDF-side gap register recorded all of them as unavailable, and ERC carries
+substantial populated content for every one.**
+
+| # | Item | Status | Detail |
+|---|---|---|---|
+| ~~**OI-01**~~ | ~~**Schedule Rating**~~ `[NEW]` | `CLOSED` **2026-08-12 by [gate rating plans](gates/GATE-RATING-PLANS.md)** | **The manual was never absent** — 52 `CGLES` documents on disk, now ingested. **Manual Rule 9 Table 9 against ERC's 8 `DomainScheduleRatingModification*Pct` domains: 8 of 8 agree on BOTH the ±n% range and the row count**, every domain being enumerated in 1% steps so a ±n% range is exactly `2n+1` rows — 11/11/21/21/21/13/5/5. **Both open questions answered:** the maximum credit/debit is filed countrywide as data (`-25` / `25`, one row each), and the **liquor variants are 0 rows because the plan has no liquor provision at all** — `liquor` appears 0 times in `GL-MU-2023-CGLES-001`. N7, not a gap. **7 of 51 jurisdictions deviate**, all by overriding rules rather than caps. |
+| ~~**OI-02**~~ | ~~**Experience Rating**~~ `[NEW]` | `CLOSED` **2026-08-12 by [gate rating plans](gates/GATE-RATING-PLANS.md)** | **Manual Rule 5.G gives the formula ERC implements**: `((AER − EER) ÷ EER) × Credibility`, matched by `SetExperienceModification`'s `Round · Product · Divide · Subtract` over the same three DataDefs. **E10 gains the manual citation it closed without.** **Rule 16 is one printed table and three filed ones** — `CredibilityFactor`, `ExpectedExperienceRatio`, `MaximumSingleLoss`, 99 rows each on a shared band key: **97 of 97 printed bands agree on all three columns, 291 cells, 0 mismatches.** The 2 extra ERC rows are a `[0, 10879) → 0` **eligibility floor** — Rule 2 encoded as data, and N13's eighth meaning of `0`, a legitimate one. **The original entry's surviving half is right and unchanged:** the mod factor needs loss history the corpus does not contain, so it is a submission input. *(A first pass looked for a table named `ExperienceCredibilityFactor`, found 0 rows and nearly filed a missing-table gap; the rule is `LookupExperienceCredibilityFactor` and the table is `CredibilityFactor`.)* |
+| ~~**OI-03**~~ | ~~**Composite Rating**~~ `[NEW]` | `CLOSED` **2026-08-12 by [gate rating plans](gates/GATE-RATING-PLANS.md)** | **The rule file is read and the plan is executable: 3 rules.** `CalcCompositeRate = round(TotalClassificationsPremium ÷ CompositeExposure, 8)` at inception; `FinalCompositeRatingPremium = round(CalcCompositeRate × FinalAdjustedCompositeExposure, 0)` at audit — and `GL-MU-2007-CRP-001` Rule 3 states exactly that shape in one sentence. **90 manual documents, and the reason they stayed invisible: Composite Rating moved to the *Interline* manual in 2017, so 51 of the 90 begin `IL-` and a `GL-*` sweep finds 39.** **0 of 51 jurisdictions deviate** — the second countrywide-only chain in the project. Composite rating is an **audit** mechanism, not a rate derivation. |
+| ~~**OI-04**~~ | ~~**Size-Of-Risk**~~ `[PDF]`→`[ERC]` | `CLOSED` **2026-08-12 by [gate size-of-risk](gates/GATE-SIZE-OF-RISK.md)** | Was bundled with the above in the PDF gap register. The confirmed half stands: `PremOpsSizeOfRiskRelativity` **8,330 rows**, `ProdsCompldOpsSizeOfRiskRelativity` **4,214**, loss costs state-supplied (**0 of 3** declared parents carry a row, **35 of 51** jurisdictions do), NJ and OH sharded. **Its open clause was wrong, and wrong in the way OI-40 exists to prevent.** *"The `Maximum`/`Minimum` relativity and `TableAssignment` tables are 0 rows countrywide; source unknown"* was an **undated** count: it is true of the three 2020–2022 editions and of `GL_CW_20270401_V01`, and **false of all three parents in force on 2026-08-12**, where each carries **1,188 rows**. The rows were never missing; the claim had no as-of date. The genuine forward-dated version of the concern is re-filed as **OI-53**. |
+
+> **Consequence.** PDF gap **G6** — *"CGLES / Composite Rating / Size-Of-Risk plans … Modification
+> factors unavailable"* — is **retired as of 2026-08-12, and it was wrong twice over.**
+>
+> It was first shown wrong about ERC: the modification apparatus was all there. It is now shown
+> wrong about the **PDF corpus it was actually a statement about** — the CGLES plan (52 documents)
+> and the Composite Rating plan (90) were on disk the whole time, and Size-Of-Risk was gated as
+> build-order item 8. **Every one of G6's four claims is false.**
+>
+> The failure was never re-tested because nobody looked in the folders: one of the two plan
+> families does not begin `GL-` at all (Composite Rating moved to the Interline manual in 2017),
+> and the expert agent — the thing the project asks when it wants to know what the manual says —
+> had been built over two of the five corpora. **A gap asserted from one source, generalised, and
+> then protected from correction by the tool built to check it.**
+
+---
+
+## B. External inputs
+
+| # | Item | Status | Detail |
+|---|---|---|---|
+| **OI-05** | **Company loss cost multiplier** | `BY-DESIGN` | Confirmed by both. `[ERC]` slots it structurally — `LCM.RateTable.csv` and `LCMCompany.RateTable.csv` both exist and are **0 rows**, with `DomainPremLCMTier` / `DomainProdLCMTier` likewise empty. Every stored value in both corpora is pre-LCM. Not a gap: the carrier supplies it. |
+| **OI-06** | **Workers Compensation loss costs** | `OPEN` | Needed only for OCP class `15191`, priced as *"75% of the otherwise applicable Workers Compensation loss costs"* in 51/51 jurisdictions `[PDF]`. A cross-line dependency; neither corpus can supply it. |
+| ~~**OI-07**~~ | ~~Experience mod input~~ | `CLOSED` | **Resolved 2026-08-10 by reading.** ERC computes the whole chain in `GeneralLiabilityRules.Rule.xml`: `SetActualExperienceRatio` → `SetExperienceCredibilityFactor` → `SetExperienceModification` → `SetExperienceRatingModificationRatesandFactors`, with an `ERPExperienceModificationOverride` path. Loss history is an **input**, like exposure — not a missing mechanism. |
+
+---
+
+## C. Terrorism
+
+| # | Item | Status | Detail |
+|---|---|---|---|
+| **OI-08** | **Terrorism Supplement** | `AUDIT` | Recorded as absent from both by `[PDF]` and `[CMP]`. **That is wrong for ERC.** CW 20270401 carries **64 terrorism files**, including `DomainTerrorismAggregateLimit` at **138 rows**; `[ERC]`'s first report separately noted `CertifiedActsOfTerrorismExposureClassFactor` rate tables. But several are empty (`DomainTerrorismTerritory` 0, `DomainYear2003TerrorismFactor` 0). **Needs a full population audit before any claim about terrorism rateability.** |
+
+---
+
+## D. ERC mechanics
+
+| # | Item | Status | Detail |
+|---|---|---|---|
+| **OI-09** | **Rounding — tie-break mode only** | `OPEN` | **Largely resolved 2026-08-10 by reading the rules.** `rul:Round DecimalPlaces=n [ToDataDef=X]` at **648 sites** (3dp ×290 · 0dp ×238 · 4dp ×32 · 2dp ×22). The earlier claim cited `@DecimalPlaces` on *table definitions* — column precision, the wrong artifact. Chain verified against ISO's own output. **Residual: no mode attribute on any of the 648 sites**, and the golden case does not hit a midpoint — **re-verified 2026-08-11 at all four subline-334 rounding sites; none is a tie** (`0.19475 > 0.1945`, so every mode agrees). ≤ $1/line at 0dp. Escalation **E1**; settled by RAaS. |
+| **OI-10** | **`Status` A/C/D vocabulary** | `OPEN` | Undefined across 2,865 metadata files **and all six DOC workbook sheets** (searched 2026-08-10). Empirically static and absorbing. Escalation **E4** — cosmetic. Store it, never act on it; never drop `D` rows (99.9% rateable). |
+| ~~**OI-11**~~ | ~~`ErcCore`~~ | `CLOSED` | **Downgraded 2026-08-10 by reading the import.** `xs:import erc://ErcCore/CoreRecordEntry` supplies **2 of 28,233** elements (`CoreRecordEntry`, `Scheme`) — a transaction envelope, not the rating engine's core. Affects XSD validation of the envelope only; **does not gate rating**. |
+| ~~**OI-12**~~ | ~~`MessageHelper` + 6 operator semantics~~ | `CLOSED` | **Downgraded 2026-08-10 by reading the values.** `FirstValue @Order` = `DataDefInputParamConstant` (**one** value, 18,516×); `@OutputAction` = `Append` (**one** value); no `MessageHelper` method calls. No branching to misinterpret. Residual — the operator evaluation contract — matters only on the interpret path, which the doctrine does not take. |
+| ~~**OI-13**~~ | ~~`ModToUse` / `ExpenseModification` / `PremiumDiscountCharge`~~ | `CLOSED` | **Resolved 2026-08-10 by reading the rules.** All three are **rule-computed**, each defaulting to `1.0`: `SetModToUse` (schedule-rating factor, else CPP IRPM, else 1.0); `SetExpenseVariationFactor` (`ERPExpectedLossRatio ÷ ERPActualExpectedLossRatio` at 3dp, else 1.0); `SetPremiumDiscountCharge` (`round(1 − pct × 0.01, 3)`, else 1.0). "No rate table" was confused with "no source". |
+| **OI-14** | **Semantic sufficiency** | `OPEN` | `[ERC]`'s own caveat: 100.000% reference closure proves no dangling pointer, **not** that a rating terminates with a premium for every valid input. Settling it needs an engine, not analysis. |
+| ~~**OI-15**~~ | ~~**Territory for 25 jurisdictions**~~ | `CLOSED` | **Resolved 2026-08-10 — the premise was wrong.** The 24 jurisdictions without a ZIP map do not *need* one. See §H. |
+| **OI-16** | **`ProdsCompldOpsTerr` = `{999}`** | `OPEN` | Exactly one value corpus-wide. Products rating is geographically degenerate everywhere; whether that is intentional or a publication artifact is unknown. |
+
+---
+
+## E. Cross-source findings
+
+Raised by the comparison; **stated by neither derivation** and not yet acted on.
+
+| # | Item | Status | Detail |
+|---|---|---|---|
+| **OI-17** | **`0` as a refer-to-company sentinel** | `BUILD WORK` | **Reframed 2026-08-10.** A sweep does not work: zeros occur in **31 of 79** tables and are usually legitimate (`DedFactor` 0 = no credit). Decisive evidence — `UnmannedAircraftUsageBIPDRatingModifiers` carries `0` for firefighting / crop-spraying / internet access, and `ErcSetRatesAndFactors` reads it **with no guard**. ERC cannot distinguish a sentinel from a real zero; the engine must. Now build-plan non-negotiable **N13**, not an escalation. **Second confirmed sentinel, 2026-08-11 (Step 27), on the primary rating path:** all 15 *"Per Claim"* Premises/Operations deductible factors are `0` countrywide while every *"Per Occurrence"* row is real. ERC's only guard is a **validation rule**, `DoMessageMustEnterPremOpsBIPDDeductibleFactorOverride` — not a rating rule. Direction differs: an unguarded `0` here **overcharges** by withholding the credit. Generalised to new **N15** — the `DoMessage*` rules are part of the algorithm. **Fourth meaning found 2026-08-11 (Step 28):** a *published* `0` in a loss-cost table is a documented switch to the ELP path. That one **is** discriminated in-corpus, by the `*ELPText` selector — 620,856 agreements, 0 disagreements — now **N17**. **Fifth meaning found 2026-08-11 (Step 29):** a `0` ELP that switches to an *input-derived* computation — OCP class `15191` → `0.75 × WorkersCompensationRate` — discriminated by a hardcoded class branch in `SetELP`. **Four of the five now have an in-corpus discriminator**; only the drone case still needs the manual. |
+| **OI-18** | **ERC ILF tables carry no interpolation machinery** | `OPEN` | An ERC-only build cannot rate an off-table limit. `[PDF]` Rule 56.A.4 supplies the procedure. Neither derivation stated this. |
+| ~~**OI-19**~~ | ~~138 empty countrywide rate tables~~ | `CLOSED` | **Sweep done 2026-08-11 across all ten countrywide editions** (`scripts/erc/32_asof_recount.py`, OI-40). The `138 of 272` was **CW 20270401 only — a future edition**. In force **today** it is **111 of 266**; the 2027 edition adds six tables and empties 27 more, taking the empty share from 42% to 51%. Every rating table the three gates cite is header-only in **all ten** editions, so no gate claim changed. N7's evidence line re-dated. |
+| ~~**OI-20**~~ | ~~Per-territory loss-cost sharding~~ | `CLOSED` | **Measured corpus-wide and as-of 2026-08-11** (OI-40 §6), which is what this item asked for. `PremOpsLossCost` is header-only in **CA, NJ, NY and OH**, which carry **66,573 rows** under `PremOpsLossCost<ST>Terr<nnn>`; NJ and OH shard `PremOpsSizeOfRiskLossCost` the same way. Stable at every as-of date. The predicted empty shadow is confirmed **and is not only NY** — all four leave the base table present and empty, which under N3 is a correct wholesale override of an already-empty countrywide table. Folded into **N7**; the load-time assertion *"no empty table in a rating path"* is now qualified. **Re-derived from the files before this register entry was read — the sixth rediscovery.** |
+| **OI-21** | **ERC `Subline` ≠ ISO statistical subline** | `OPEN`, **confirmed from the manual** | ERC's `Subline` enumeration has 9 countrywide values and excludes Unmanned Aircraft. Joining the two vocabularies on "subline" will mis-join. **Gate 335-RR confirms the collision from the manual side: a statistical subline code covers more than one rule.** `GL-MU-2027-RU-001-C` shares **325** across Rules 42 (Electronic Data) and 43 (Employee Benefits), **335** across Rules 46 (Owners/Contractors Protective) and 49 (Railroad Protective), and **350** across Rules 47 (Pollution) and 53 (UST). So "subline 335" names two coverages with different algorithms — and they share rate tables, which is why railroad reads `OwnersContractorsLossCost`. **A coverage is identified by its DataDefGroup, never by its subline code.** |
+| **OI-22** | **Class-code crosswalk** | `OPEN` | The 229-retired / 204-new revision has no mapping in either corpus. Re-rating a pre-revision risk under a post-revision edition is undefined. |
+
+---
+
+## F. Hygiene
+
+| # | Item | Status | Detail |
+|---|---|---|---|
+| **OI-23** | **Hawaii** | `OPEN` | Absent from both corpora. Unknown whether a download gap or a filing fact. |
+| **OI-24** | **Two truncated PDFs** | `HYGIENE` | `GL-MO-2027-RU-003`, `GL-MI-2027-LC-003`. Both have a usable prior notice; re-download. |
+| **OI-25** | **Upstream misfiling will recur** | `HYGIENE` | The DE and PR packages were misfiled **including their `.zip`s**, so it originated at ISO. Corrected locally 2026-08-10 (PR moved to `PR/`; DE stray quarantined). **The next delivery will likely reintroduce it.** Mitigation: key ingestion off the XSD `targetNamespace`, which is 567/567 accurate. |
+| **OI-26** | **`A3-ENDORSEMENT-CATALOG.md` not regenerable** | `HYGIENE` | Produced by scripts from an early session that were never persisted. The catalog is intact and sourced but cannot be re-derived without rewriting the extraction. |
+| **OI-27** | **5 duplicate ERC package directories** | `HYGIENE` | Byte-identical. Handle on read (dedupe by `targetNamespace`), not on disk. |
+
+---
+
+## G. Test harness — the RAAS baseline payload set
+
+Added 2026-08-10. `Payloads/<ST>/1. Input.json` + `1. Output.json` are ISO RAAS General
+Liability request/response pairs for **50 jurisdictions** (all states + DC, no HI — see OI-23).
+They are intended as the **first regression suite run against this engine**, with the RAAS
+output as the expected-result oracle.
+
+The set is a *control*: the risk is held identical across jurisdictions so that any premium
+delta is attributable to state rating content — loss costs, territories, ILFs, state exceptions
+— and not to input drift. **Alabama is the designated baseline.** Common shape: single
+location, single classification, ClassCode `50017` (Abrasives or Abrasive Products Mfg.),
+Prem/Ops and Prods/CompOps exposure 5,000,000 on Gross Sales, limits 1M/2M/2M CSL, no
+deductibles, no schedule / experience / composite / size-of-risk modification, MedPay 10,000,
+terrorism accepted.
+
+Normalised to that baseline on 2026-08-10: GA was missing its MedPay limit; 31 of 50 states
+(Alabama included) carried `TerrorismCoverage: "No"` and were flipped to `"Yes"`. Class code and
+exposure were already uniform across all 50.
+
+| # | Item | Status | Detail |
+|---|---|---|---|
+| **OI-28** | **Fidelity target vs. RAAS** | `OPEN` `[TEST]` | The suite cannot assert anything until this is decided: does the engine match RAAS **to the cent, or to a tolerance**, and **which fields are the answer** — final premium only, or every intermediate factor (territory relativity, ILF, size-of-risk, terrorism class factor, each rounding step)? Asserting on intermediates is the only way this suite can localise a defect rather than just detect one; it also makes the suite fail on every benign presentation difference. Directly downstream of **OI-09 (rounding)** — a cent-exact target is unreachable while the rounding mode is unsettled. |
+| **OI-29** | **Effective date ≠ available editions** | `OPEN` `[TEST]` | ~~AL, the baseline, was **2026-07-01** against 2026-08-01 in the other 49.~~ **Aligned to 2026-08-01 on 2026-08-10 at the user's direction — all 50 inputs now carry the same effective date.** `AL/1. Output.json` still records `EffectiveDt: 2026-07-01` and is therefore **a stale oracle until re-run through RAAS** — the one payload whose expected result no longer corresponds to its input. What remains open: the corpora analysed to date are editions **20270401 / 20270101**, i.e. *later than every payload's effective date*. Which edition RAAS actually rated these against is unrecorded, so the oracle's governing edition is unknown. Until it is, a premium mismatch cannot be attributed between "engine wrong" and "engine rating a different edition". **Highest-priority item in this section.** |
+| **OI-30** | **Engine scope vs. payload schema** | `OPEN` `[TEST]` | The payloads are Prem/Ops + Prods/CompOps only, with liquor, pollution, OCP, railroad, UST, cyber / electronic-data and unmanned-aircraft coverage blocks present but **empty**, and all four rating plans switched off. Whether that reflects the engine's intended **v1 scope** or just the first test case is undecided. Determines both the build order and how many more payload sets are needed. Interacts with **OI-01…04** (the plans exist in ERC) and **OI-21** (subline vocabularies do not align). |
+| **OI-31** | **Terrorism inputs are not baselined** | `OPEN` `[TEST]` | Now that terrorism is accepted in all 50, the exposure-class factor becomes live. 22 payloads carry an input-level `GeneralLiabilityTerrorismEndorsementCoverage.CertifiedActsofTerrorismExposureClassFactor` (0.0–0.004, state-specific); the rest, Alabama included, carry none. The AR output shows RAAS **deriving its own** class-level factors (0.004 Premises/Products) regardless, so no value was fabricated for the newly-accepted states — but **whether that input is an override or an echo is untested**, and three states (MT, OK, OR) carry a terrorism aggregate-limit cap the others lack. Blocked behind **OI-08** (terrorism population audit). |
+| **OI-32** | **Deliberate off-baseline residue** | `HYGIENE` `[TEST]` | Left in place, each needing a keep-or-align decision: **NV** rates 100,000/200,000 CSL where every other state is 1M/2M; **`DE/3. Input.json`** (a variant scenario outside the `1. Input` set) uses ClassCode `10100` with the Abrasives description, where `AZ/2` and `DE/2` use 50017 — possibly a typo, possibly a crosswalk probe (**OI-22**); territory codes necessarily vary (501 in AL vs 001 elsewhere) and several states carry mandated extra questions (StopGap, GovernmentalSubdivision, lead, pesticide). Only the last of these is legitimate variation. |
+| **OI-33** | **Coverage of the suite is one cell** | `OPEN` `[TEST]` | 50 jurisdictions × **one** class, one exposure basis, one limit set, one effective date. It will not exercise ILF interpolation (**OI-18**), off-table limits, multi-location or multi-class allocation, deductible credits, minimum premiums, or the `0`-as-refer-to-company sentinel (**OI-17**). A pass proves the state-content plumbing works; it proves nothing about the algorithms. Second-wave payload sets need designing — and each needs a RAAS round-trip to obtain its oracle. |
+
+**Project context not yet recorded anywhere.** Three questions shape all of the above and are
+answerable only by the user, not by either corpus: **why** the engine is being built rather than
+RAAS consumed (which sets every accuracy/cost tradeoff); how the **"Recursive Harness"** of the
+build plan relates to the runner for these payloads — same component or separate; and whether
+**Hawaii** (OI-23) is permanently out of scope or merely unbuilt. To be settled as the build
+proceeds.
+
+---
+
+## What was verified on 2026-08-10, and how far
+
+Scope discipline, since several entries above overturn earlier claims:
+
+| Checked | Method | Scope |
+|---|---|---|
+| Rating-plan content (OI-01…04) | Row counts on every matching CSV | **CW 20270401 only**, plus one NJ 20270101 package |
+| Terrorism content (OI-08) | File enumeration + row counts | **CW 20270401 only** |
+| LCM emptiness (OI-05) | Row counts | **CW 20270401 only** |
+| ~~Empty countrywide tables (OI-19)~~ | Row counts on all rate tables | ~~**CW 20270401 only**~~ → **all ten countrywide editions, 2026-08-11.** Closed |
+| `0` sentinel (OI-17) | Read both drone loss-cost tables | **CW 20270401 only** |
+| Payload baseline uniformity (OI-28…33) | Field-by-field diff of all 50 `1. Input.json` against `AL` | **All 50 payloads, inputs only** — the paired outputs were not re-diffed, and none has been re-run through RAAS since the edit |
+
+**None of these is a corpus-wide result.** Every one of them was checked in a single countrywide
+edition. The pattern each reveals is real; its extent is not established. Treat the counts as
+existence proofs, not inventories.
+
+---
+
+## The recurring failure mode
+
+Three entries here — G6 (rating plans), terrorism, and the earlier territory error — share one
+shape: **a gap was established against one source and then stated as a general fact.** Each
+survived review. Each was caught only when something forced a re-test against the other source.
+
+The register's own guard against repeating it: every entry names the source it was derived from,
+and every verification above states the scope it actually covered.
+
+---
+
+## H. Resolved items
+
+### OI-15 — Territory. **Closed 2026-08-10.**
+
+Both derivations, and this register, framed the absence of a ZIP→territory table as a gap.
+It is not. A user hypothesis — *"many states either default to 001 or 002, with no zip code
+look up"* — was tested against the corpus and confirmed exactly.
+
+**Every one of the 51 jurisdictions resolves territory from ERC. Three schemes, not one:**
+
+| Scheme | Jurisdictions | Mechanism |
+|---|---|---|
+| **ZIP table** | **27** | `DomainTerritoryCodeByZipCode` — 93 rows (RI) to 2,174 (PA) |
+| **Single territory** | **20** | No lookup exists because none is needed |
+| **County / place name** | **4** — CA, FL, NY, TX | Domain tables mapping place names to codes |
+
+**The 20 single-territory jurisdictions** — AK, AR, DC, DE, ID, ME, MS, MT, NC, ND, NH, NM, NV,
+PR, SC, SD, UT, VT, WV, WY — carry exactly one Premises/Operations territory each across all
+1,163–1,188 class codes:
+
+- **19 use `001`**
+- **NC uses `002`** — the single exception, and precisely the "001 or 002" the hypothesis predicted
+- All 20 use `999` for Products/Completed Operations, consistent with OI-16
+
+AR expresses it through `DomainPremisesOperationsTerr` (one row, `001`) rather than a territory
+column, but resolves identically.
+
+**The 4 county/place jurisdictions carry their definitions in ERC after all** — as place-name
+domain tables, not ZIP tables: CA (11 codes / 21 place names), FL (5 / 8), NY (20 / 66),
+TX (8 / 15). Examples: `Houston Within Harris County`, `Los Angeles Suburban`,
+`Westchester County South`.
+
+**What actually remains** is not a data gap but an **input** requirement: those 4 jurisdictions
+need the risk's county or place name, which means geocoding an address rather than reading a ZIP.
+Tracked as **OI-34** below, at a far lower severity than the gap it replaces.
+
+**Three claims this corrects.** `[PDF]`: territory definitions for CA/FL/NY/TX are in the manual —
+true, but ERC has them too, so no cross-source dependency exists. `[ERC]`: *"all 52 jurisdictions
+are multi-territory once resolved, minimum 4"* — **wrong**; 20 have exactly one. `[CMP]` and this
+register: *"21 jurisdictions cannot determine territory"* — **wrong**; zero cannot.
+
+**Method:** latest package per jurisdiction; ZIP-map presence and row count; distinct values in
+every territory-bearing rate-table column; territory domain tables for the four county/place
+jurisdictions. Verified across all 51.
+
+| # | Item | Status | Detail |
+|---|---|---|---|
+| ~~**OI-34**~~ | ~~County/place geocoding for CA, FL, NY, TX~~ | `CLOSED` | **Decided 2026-08-10: county is a required submission field** in those four jurisdictions. ERC already carries the place-name → territory tables (CA 11/21, FL 5/8, NY 20/66, TX 8/15); only address resolution was external, and this removes the dependency. Missing or unmatched county → `REFER`, never a fuzzy match. |
+
+### Raised by the subline-334 gate, 2026-08-11
+
+Both were found by reading rules, not by inferring from names — and neither moves a premium today.
+
+| # | Item | Status | Detail |
+|---|---|---|---|
+| **OI-35** | **`AdditionalInterestFactor` is computed and never consumed** | `OPEN` `[ERC]` | `SetAdditionalInterestFactor` runs inside `ErcRate` on every Premises/Operations quote — taking the policy-level input, else defaulting to `1.0` — and the golden case emits `1.0`. **No rule in either the CW 2023 V03 or CW 2027 V01 PremOps rule set reads it** in the premium chain. Consumed downstream, retired, or a defect in the published rule set? The engine carries it in the trace and **never multiplies by it**; inventing a use would be exactly the assumption the doctrine forbids. Escalation **E11**. Worth asking ISO alongside E1 and E4; does not gate the build. |
+| **OI-36** | **`PremOpsELP` is compared as two different types in one rule** | `OPEN` `[ERC]` | In CW 2023 V03, `SetMedicalPaymentsCharge` tests `../PremOpsELP` as a **string** against `"Rate/Loss Cost Applies"` in one branch arm and as a **decimal** against `0.0` in another. Both arms are implemented exactly as written rather than normalised — normalising is an assumption about which reading is intended, and the branch selects between two different med-pay formulas. Flagged for the recursive harness. Escalation **E12**. |
+
+### Raised or resolved by the subline-336 gate, 2026-08-11
+
+| # | Item | Status | Detail |
+|---|---|---|---|
+| ~~**OI-36**~~ | ~~`PremOpsELP` compared as two types~~ | `CLOSED` | **Dissolved on reading, 2026-08-11.** They are two different DataDefs at two levels and the `../` prefix says so: `../PremOpsELP` is the classification-level **string** rating-basis selector; `PremOpsELP` is the coverage-level decimal factor. The rule correctly asks *"does this class rate off a loss cost?"* Escalation **E12** closed — the eighth to dissolve on being read. It had been raised from a name without the sibling table being opened. |
+| **OI-35** | **`AdditionalInterestFactor`** | `OPEN`, **narrowed** | **336 consumes it**: `MinPremium = round(MinimumPremium × FinalILF × AdditionalInterestFactor, 0)`. The field is live and 334's chain genuinely does not read it. Question shrinks to: is 334's omission intended? Escalation **E11**. |
+| ~~**OI-37**~~ | ~~**Terrorism is rated from ERC content**~~ | `CLOSED` **2026-08-12 by [gate terrorism](gates/GATE-TERRORISM.md)** | The golden case produced `18.00` of terrorism premium with **every factor supplied by ERC** — exposure-class `0.004`, NBCR `0.58`, `TerrorismILF 0.94` — none present in the input. The suspicion was right and understated. **The audit ran.** Population: the **477** premium-writing groups, classified by whether their *rules* touch one of the 20 enumerated terrorism tables — **20 groups**, of which **2 were found by content and would have been missed by name** (`GeneralLiability`, `GeneralLiabilityClassification`) and **13 matched by name carry no rating table at all**. Verdicts 12 CAPTURE / 7 OTHER / 1 RATE_DRIVEN. **Every `OTHER` has a named premium source, and four of them compute `Premium` from other groups' finished `Premium`** — a rate source `25_rating_vs_capture.RATE_SRC` does not list, which is why terrorism never appeared in the 18 RATE_DRIVEN headline. **And the Terrorism Supplement was never absent**: 3 notices, 113–118 pages, on disk throughout and simply never ingested (OI-55). Manual against ERC: **4 of 4** factor cells and **142 of 142** above-average classes. ***"Terrorism premium cannot be computed" is retired.*** `RECONCILIATION.md` R3's prohibition is discharged. |
+
+### Raised or resolved by the subline-335 gate, 2026-08-11
+
+| # | Item | Status | Detail |
+|---|---|---|---|
+| **OI-38** | **`LookupPrincipalsProtvLiabFactor` has no caller in CW 2027** | `OPEN` `[ERC]` | The lookup survives in the 2027 countrywide OCP rule set, but `SetPrincipalsProtvLiabFactor` — its only caller — was deleted in the same edition. Vestigial, or a deletion defect? **Same shape as OI-35/E11**: a callable artifact with no consumer, which may indicate the published rule set lags the program change. Not implemented; zero premium effect. Escalation **E14**. |
+| ~~**Workers Compensation loss costs**~~ | ~~external dependency: one OCP class priced at 75% of the applicable WC loss cost~~ | `CLOSED` | **Not a gap.** The 75% is in ERC as a countrywide cell (`PrincipalsProtvLiabFactor = 0.75`); `WorkersCompensationRate` is a **declared submission field** (`MasterGLCW.DataDef.xsd`, `xs:decimal`) and real STC submissions supply it. A submission requirement, not a missing publication — and **retired entirely by the 2027 program**, which drops class `15191`. Second "missing input" to dissolve this way after geocoding (OI-34). |
+| ~~**OI-39**~~ | ~~README finding #4's 15/36 class-basis split may be an edition split~~ | `CLOSED` | **Raised, mis-answered and correctly answered on 2026-08-11.** First answer — *"8 / 43, and the 43 are exactly those on the `2027-04-01` edition"* — was taken over the **latest** package per jurisdiction, and **82 state packages are effective after today**, so it described the end state, not now. Re-measured **as-of a date** (`scripts/erc/31_migration_asof.py`): **today 51 jurisdictions are pre-2027 and 0 have migrated; on 2027-04-01, 43 migrate at once; 8 remain.** The same boundary withdraws the OCP loss costs. 238 Prem/Ops class codes are pre-2027 only, 204 are 2027-only, 959 both. **It is a cliff, not a migration in progress** — and a single national class list is therefore *right today* and wrong from 2027-04-01, inverting the conclusion on record. The PDF derivation's *"15 / 36"* has the same defect over a different corpus; its own note that the withdrawal is *"sharply dated"* was the correct reading. `README.md` finding #4 rewritten; specs annotated `[R1]`. |
+| ~~**OI-40**~~ | ~~Every "latest edition" count in this project needs re-testing as-of a date~~ | `CLOSED` | **Audit run 2026-08-11** — `scripts/erc/32_asof_recount.py`, full record in [`gates/OI-40-ASOF-RECOUNT.md`](gates/OI-40-ASOF-RECOUNT.md). Five figures re-measured at today / 2027-04-01 / end state. **Survived:** territory 27·20·4 (identical at every date the corpus covers, so the phase 3 exit criterion stands) and the **16** rate-driven groups (identical *set* at all four measurements, not merely the same count). **Re-dated:** N7's `138 of 272` → `111 of 266` today (OI-19 closed); the 238/204/959 class split, which does not exist today — one list of **1,197** codes. **Re-framed:** `477/383/78` is a union over every edition ever filed; in force today it is `458` groups, `16/356/86`. Two further defects found that are **not** as-of defects but the same error in different clothing: DE's territory constant lives under a fifth table name, and three countrywide parents are in force on any single day. **New: OI-41.** |
+| ~~**OI-42**~~ | ~~The rate-driven headline was 16; it is 18~~ | `CLOSED` `[NEW]` | **Found and fixed 2026-08-11**, while enumerating the remaining gates. `25_rating_vs_capture.py` decides *rate-driven* by matching the premium-writing rule against a list of rate-shaped source names — `FinalRate`, `BaseRate`, `LossCost`, `ELP`, `AdjustedBaseRate` — and **`AdjustedRate` was not on it.** Two Unmanned Aircraft coverages compute `Premium = AdjustedRate × (ILF − DeductibleFactor) × mods` and were filed as aggregators for that reason alone. Re-run corpus-wide over the same 572 directories: **exactly two groups move, `18 · 383 · 76`.** `GeneralLiabilityCompositeRating` also matches a rate-shaped name but is a genuine aggregator (`FinalCompositeRatingPremium − TotalClassificationsPremium`) and stays — read, not pattern-matched. **Not an as-of defect**: OI-40's date-stability finding is unaffected. **The lesson is about OI-40's method** — re-testing a figure with the instrument that produced it can only find dating errors, never method errors. This was found by comparing the build order against the rate-driven list and asking why they disagreed. Regex corrected in `25_` and `32_`; all docs updated. |
+| **OI-43** | **ISO defect: CW 2027 liquor statistical coding is 1,000× wrong** | `REPORT UPSTREAM` `[NEW]` | Found by gate 332 §4, by reading a rule that has nothing to do with premium. `SetLiquorExposureStatCode` in `GL_CW_20270401_V01` makes **three string comparisons against the pre-2027 premium-basis vocabulary**, none of which can match 2027 data: `"Gross Sales"` (2027 has `Gross Sales of Alcoholic Beverages` / `…Food and Beverages`) selects the ÷1000 reporting divisor, so **the divisor falls to 1 and reported exposure is 1,000× too large** on exactly the bases `SetPremium` divides by 1,000; `"Each"` and `"Refer To Co."` should blank the stat code and never match. **The premium is correct; the statistical report is not.** `SetPremium` was updated to the new vocabulary in the same edition and the same file — an incomplete rename. **The first defect this project has found inside a filed ISO artifact rather than inside its own reading of one.** Do **not** patch it: the engine implements the rules as filed, and a "fix" would disagree with RAaS. Raise with ISO. |
+| **OI-44** | **A `DoMessage` guard that covers less than half its defect** | `BUILD WORK` `[NEW]` | Gate 332 §8. All **21** published liquor deductible factors are `0`; `DoMessageMustEnterLiquorDeductibleFactorOverride` fires for only the **10** *Per Claim* options. `No Deductible` is legitimately `0`; the remaining **ten *Per Common Cause* options are zero and unguarded**, so those risks are **overcharged** — full price for coverage they have agreed to share — with no error message. Identical in all three countrywide parents in force; no state overrides the table or the guard. The manual (`GL-MU-2027-RU-001-C` p.102, Rule 45.J.3) requires a referral for **all** liquor deductible factors, so referring on all 21 is ERC's data plus tier-2 confirmation of what its `0` means, not sourcing. **334 found this pattern with the guard matching the defect exactly; this is the first time the guard under-covers.** Generalised into N15: measure a guard's coverage against the defect. |
+| ~~**OI-45**~~ | ~~Non-construction railroad operations are a manual-only referral~~ | `MERGED` | Folded into **OI-49** on 2026-08-11 when gate 370 found the second instance of the same pattern. |
+| ~~**OI-46**~~ | ~~Build-order item 6 cannot complete before Size-Of-Risk~~ | `CLOSED` | **Decided 2026-08-11 by the user: Size-Of-Risk becomes build-order item 8 and everything below moves down one; thirteen items become fourteen.** Gate 365 §2 found that Loss Of Electronic Data and Cyber read **`PremOpsSizeOfRiskFinalRelativity`** out of their host coverage group, so the build order had a data dependency running four items backwards to the rating-plans bundle. Size-Of-Risk is now pulled out of that bundle and placed **first in the build queue**, ahead of everything not yet gated. Items 1–7 are already gated so nothing that has landed moves. Crosswalk in build plan §8. |
+| **OI-47** | **ERC's "ProductWithdrawl" misspelling is load-bearing** | `BUILD WORK` `[NEW]` | Gate 365 §1. Counted across the countrywide rule set: **16 misspelled occurrences against 10 correct**, and the misspelling reaches DataDef names (`ProductWithdrawlExpenseFactor`) **and a rate table name** (`ProductWithdrawlFactor`). That table is **not** a duplicate — it is keyed on `IncreasedLimitsTableAssignmentProdsCompldOpsFinal` with values A 0.20 / B 0.15 / C 0.10, while `ProductWithdrawalExpensesFactor` is keyed on `FinalProductWithdrawalIncrdLimitTableAssignment` with 0.25 / 0.19 / 0.13. **All three factor tables have readers.** And the *misspelled* one is the one the filed manual prints — `GL-MU-2027-RU-001-C` p.93, Table 44.B.3.b, exact on values and key axis. **Never normalise the spelling**; assert at load time that both resolve to distinct artifacts. |
+| ~~**OI-48**~~ | ~~ERC implements no "highest modifier wins" rule for unmanned aircraft~~ | `CLOSED` | **Decided 2026-08-11 by the user: broker question.** The submission arrives with **one resolved category per axis** — Ownership & Operation, Usage, Primary Place of Operation — and the engine never takes a set and picks a maximum, which ERC does not license. **Third "missing input" to resolve as a submission requirement**, after county/place (OI-34) and `WorkersCompensationRate`. **It is implementable with no assumption because ERC already ships the escape hatch:** `Unknown` and `Not Applicable` are filed domain values on all three axes and both price as `0` — refer to company. So the requirement is precise: one category per axis; if several apply send the one highest-wins selects; **if any applicable category is a referral category send that one** (a referral outranks a number, and "highest" is undefined across a number and an `RTC`); if it cannot be resolved send **`Unknown`**, which is filed and refers. Gate 370 §7a. |
+| ~~**OI-50**~~ | ~~**Limited Product Withdrawal Expense is not derived**~~ | `CLOSED` **2026-08-12 by [gate 365 §9](gates/GATE-365-WITHDRAWAL-LOED-CYBER.md)** · pinned by [`tests/verify_oi50.py`](../tests/verify_oi50.py) **7/7** | **Derived end to end.** `BaseRate = (ProdsCompldOpsLossCost | FinalProdsCompldOpsELP) × LmtdLCM × ProductWithdrawalFactor` → `FinalILF = CSLILF − DeductibleFactor` → `FinalRate = round(BaseRate × FinalILF × PackageModFactor, 3)` → `Premium = round(FinalRate × exposure [÷1000], 0)`, then `× ProductWithdrawalParticipationPercentage` at coverage level. **Two counts in the original entry needed correcting, both the same shape.** (1) *"An 11-rule chain"* — 11 is the **rating** chain; the coverage is **54 rules across five DataDefGroups**. §6a's point stands: the 11 are the ones hidden in the shared container. (2) *"0 of 51 override any of it"* — right, and stronger than it looked: **0 of 51** touch the 11 rating rules and only **Texas** touches the coverage groups at all (`InitializeRuleSet` + 2 stat-code lookups). *A re-measurement that said 27 of 51 had matched `ErcProcess`/`InitializeRuleSet` **by name** across the whole package.* **Three findings worth keeping:** the misspelled `ProductWithdrawlFactor` (0.20/0.15/0.10) is **this** coverage's table and differs on values from `ProductWithdrawalExpensesFactor` (0.25/0.19/0.13) — OI-47's reader, named; **E18's third instance**, reading the sibling group's loss cost; and **the corpus's only negative-premium guard**, alongside a `DeductibleFactor ≤ ILF` guard that is the sole floor under `FinalILF` (N15). **N8 at its cleanest: 0 of 10 countrywide editions carry the ILF table, 51 of 51 jurisdictions carry 36 rows each.** |
+| ~~**OI-49**~~ | ~~**A manual-only referral condition with no ERC discriminator**~~ | `CLOSED` **2026-08-12 by decision (register `R25`)** | **(a) Non-construction railroad operations** — ELP Supplement Procedure 5.E.1.b and 5.E.3.d, *"For operations other than construction, refer to company"* (gate 335-RR §7, was OI-45). ERC carries no test; the doctrine forbids sourcing the rule from the manual. A **known unguarded referral**: the engine will rate a risk ISO says to refer. Accept and document, or make it a submission field as OI-48 did. ~~**(b) Non-owned unmanned aircraft**~~ — **withdrawn 2026-08-11. ERC does carry the discriminator**: `UnmannedAircraftOwnershipAndOperation{BIPD,PAI}RatingModifiers` each hold a `0` against the row *"Non-owned unmanned aircraft operated by other parties"*, exactly the manual's Rule 37.C.2.a condition. It was filed as manual-only because the gate checked the usage axis and not the neighbouring ownership axis (gate 370 §7a). **DECIDED 2026-08-12 — and the scope was four times narrower than recorded.** Not railroad generally: Railroad Protective has a **closed 4-class domain**, two of which carry `Construction` in the description, and the ELP Supplement's referral sits entirely inside **class 40014** — *for construction operations* the ELP is 150% of class 16292, *for operations other than construction, refer to company*. **ERC implements only the first branch**, and `RailroadClassDescription` — the one field that looked like a discriminator — is tested for **non-emptiness, never content**. **Disposition A: a submission field on class 40014; `no` refers.** It is the **first of five submission requirements with no filed ISO value behind it**, allowed because an input that can only produce a `REFER` takes no price from the manual — a licence explicitly limited to referral-only inputs (build plan §5). |
+| ~~**OI-51**~~ | ~~**187 of 1,030 manual documents cannot be searched**~~ | `CLOSED — THE DIAGNOSIS WAS WRONG` | **Filed and withdrawn the same day.** The sweep that established *"the manual never mentions size-of-risk"* reported **187 of 1,030 documents with no text layer** and the gate wrote that up as an 82% bound. **They are not image-only.** This build of `pdftotext` returns **zero bytes** on those files and `pypdf` reads them in full — `GL-CT-2026-LC-001-C` gives 0 bytes against **218,978**. The project's own `scripts/02_extract_dualmode_losscosts.py` had carried that fallback since 2026-08-10; `36_manual_sweep.py` did not, and **nothing compared the two**. Re-run dual-mode: **0 of 1,030 match, 1,028 carry text, 2 fail entirely.** The size-of-risk conclusion is unchanged and now much better supported. **The lesson is not "use two extractors" — it is that a tool's silence was accepted as the corpus's silence**, which is habit 8 with the tool, rather than a query, defining the population. Superseded by **OI-55**, which is the real corpus gap. |
+| **OI-52** | **Kansas ships a class code the countrywide relativity apparatus does not know** | `RAISE UPSTREAM` `[NEW]` | Gate size-of-risk §10. `KS PremOpsSizeOfRiskLossCost` is **2,376 rows = 2 territories × 1,188 classes** but carries **1,189 distinct class codes**: territory `501` has `10211`, territory `502` has `10212`, each once, both with loss cost `0`. **`10212` is in no declared parent's `PremOpsSizeOfRiskRelativityTableAssignment`** — checked against all three, whose 1,188-class sets are identical, and against KS's own package, which overrides no size-of-risk table or rule. A territory-502 risk on `10212` with the flag set gets no table assignment → preliminary, min and max all `0` → **basic limit premium `0`**. Practical impact nil because the loss cost is `0` anyway. **An ISO filing inconsistency to raise, not to patch** — the OI-43 precedent. It is **1 of 70** (jurisdiction, subline) size-of-risk loss cost tables; the other **69 of 70** are complete. |
+| **OI-53** | **`GL_CW_20270401_V01` strips the size-of-risk relativity apparatus** | `OPEN`, **dated** `[NEW]` | Gate size-of-risk §11. Measured across all **10** countrywide packages: the 2027-04-01 edition keeps `*SizeOfRiskRelativity` (12,544 rows) and drops `*SizeOfRiskRelativityTableAssignment`, `*Minimum` and `*Maximum` to **0 rows**. Under the gate's §5 failure analysis that is a **silent zero premium for every size-of-risk risk** in any jurisdiction that adopts it: no assignment → preliminary `0`, and no min/max to clamp it back up → final relativity `0` → basic limit premium `0`. **Withdrawal of the rating mode, or an incomplete filing — the corpus cannot say, and the manual is silent (OI-51).** **It binds when the first jurisdiction declares that parent; as of 2026-08-12, 0 of 51 do.** A load-time assertion is owed: if the resolved parent populates the relativity table but not the assignment table, fail loudly. **ANSWERED 2026-08-12 by stage 1 of the build — it is a WITHDRAWAL, and the evidence is the states, not the countrywide package.** Resolving all 51 jurisdictions *as of the cliff* rather than reading the countrywide edition alone: **35 of 51 carry premises/operations size-of-risk loss costs today; 2 of 51 do at 2027-04-01** — and **both are among the eight jurisdictions still on an older parent** (`NJ`, `WA`, both on `GL_CW_20260101_V01`). **Every one of the 43 adopting `GL_CW_20270401_V01` empties its own size-of-risk loss costs as well**, including Ohio, which today files **11,880 rows across 10 per-territory slices** and at the cliff files the same 10 slices with **0 rows**. **The withdrawal tracks the declared parent exactly.** Forty-nine jurisdictions and the countrywide layer emptying the same apparatus in step is a coordinated withdrawal; an incomplete filing does not coordinate. **The owed assertion is built and is not the one described:** stage 1's A9 asserts the safe property directly — a split family must carry rows **or read as unavailable so a rating attempt fails loudly** — which holds at both dates and does not go red merely because a coverage was withdrawn. Pinned by `tests/verify_stage1.py`. **What remains open is only the manual side**: ISO has withdrawn a rating mode and nothing in the 1,122 manual documents says so. |
+| **OI-54** | **Hawaii is named by ISO and absent from every project source** | `SCOPE BOUNDARY` `[NEW]` | Gate terrorism §5. The Terrorism Supplement's assignment table covers **52 jurisdictions** — 50 states + DC + Puerto Rico — and Hawaii is one of them (`TEV001`/`PEV001`). This project holds **no ERC package** for HI (51 jurisdictions resolve) and **0 of 1,066** manual documents. Consistently absent from both derivations, so it is a **scope boundary to state**, not a gap to fill: the engine covers 51 of the 52 jurisdictions ISO addresses, and must fail loudly rather than fall back to countrywide if asked for HI. |
+| ~~**OI-55**~~ | ~~**Manual documents outside the expert agent's corpus**~~ | `CLOSED` **2026-08-12** | Opened at 88 of 1,066 when the Terrorism Supplement was ingested; the Composite Rating folder then grew and it peaked at **142 of 1,120**. **All ingested.** `text/scheduleexperience` (52) and `text/compositerating` (90) added by `scripts/15_extract_manual_family.py` — **142 of 142 extracted, 654 pages, zero unreadable.** `iso.py` routes five corpora (`--kind SE | CR | PLANS`), `notices.json` registers **1,119** notices in five groups, and two smoke tests pin it (19/19). **The agent's corpus is now every document on disk.** |
+| **OI-56** | **The two truncated source PDFs are handled inconsistently by the agent** | `HYGIENE` `[NEW]` | The corpus has **two** unreadable documents, both already known and both recorded in `README.md`: `GL-MO-2027-RU-003` and `GL-MI-2027-LC-003`, truncated at source. Each has a **0-byte** placeholder in `text/`. **The two streams then treat them differently:** the rules one **is** registered in `knowledge/notices.json` (503 of 503) and the loss-cost one **is not** (471 of 472). So `iso.py notice GL-MO-2027-RU-003` resolves to a notice with no text, and `iso.py notice GL-MI-2027-LC-003` reports "not found" — two different wrong answers to the same question. **Register both, with an explicit `readable: false`**, so the agent can say *"this notice exists, is truncated at source, and has a usable prior notice"* rather than either quoting nothing or denying the document. *(First filed as "text but no metadata", which was wrong — the text file is empty. Corrected on reading it.)* **Corroboration worth keeping:** these two are exactly the `2 of 1,120` that fail both extractors in `36_manual_sweep.py`, which is independent confirmation that the dual-mode sweep now finds everything the corpus actually contains. |
+| **OI-57** | **Conditional-exclusion prorating is manual-only** | `OPEN` `[NEW]` | Gate terrorism §8. PEV001 A.2 requires the TRIA additional premium to be **pro-rated by day count** when a conditional exclusion is attached — the manual's own example is `214/365 = 59%` for a policy incepting 6/1/27 against a 1/1/28 termination — and offers the insurer two treatments (pro-rate now and re-rate, or charge full and refund). **ERC carries no rule for either.** Under the doctrine the manual cannot be the source of an algorithm, so this is an escalation, not an implementation: a policy spanning the federal Program's scheduled end (**2027-12-31**) must **refer** until decided. Note the date — this becomes live business well inside the engine's expected life. |
+| **OI-58** | **California evaluates under different write semantics and the effect is unprovable here** | `OPEN` `[NEW]` | [`gates/CALIFORNIA-DIFFERENTIAL.md`](gates/CALIFORNIA-DIFFERENTIAL.md). The two countrywide parents in force carry **the same 547 files and the same 4,461 rule names with 345 different bodies**, and California is the only jurisdiction on the older one. **341 of the 345 are one change**: V03 wraps writes in `if (target IsNull)` over 210 further DataDefs, making them **write-once**, where V02 **recomputes on every evaluation** — and nothing else prevents recomputation, because **5,601 of 5,601** `RunRule` calls carry `ClearCache="true"`. Re-evaluation is real: **14 `PremiumToReachMinCoverage` groups**, and three of the four non-guard differences are the iteration totals inside three of them. **What cannot be said is whether any premium changes** — recomputation from unchanged inputs is idempotent, and proving otherwise needs the engine. **It cannot be settled from the corpus at all: 1 of 517 STC payloads is a rated output and it is Oklahoma's.** Pinned by 11 assertions in `tests/verify_california.py` so a future edition cannot move it silently. **CORRECTED 2026-08-12:** this item said the effect was *"unprovable from this corpus — 1 of 517 STC payloads is a rated output and it is Oklahoma's."* **Wrong. `Payloads/CA` holds a rated output** (total premium `7,586`), one of **53 across 50 states** in the RAAS baseline set this very register documents in §G. **So the effect is provable** — it needs the engine, because a rated output gives the answer and not the mechanism, but the evidence exists. See OI-67. **Split and half-settled 2026-08-12 (`D02`).** The **premium** question is testable — `Payloads/CA` is a rated output — and remains open until the engine can run it. The **referral-stability** question is not testable by any oracle, because RAaS returns a premium and has no notion of a referral; it is therefore decided by design: **a raised referral is monotonic and a recalculation can never cancel it.** |
+| **OI-59** | **New York withdraws claims-made General Liability entirely** | `BUILD WORK` `[NEW]` | [`gates/NEW-YORK-DIFFERENTIAL.md`](gates/NEW-YORK-DIFFERENTIAL.md) §2. `SetClaimsMadeMultiplier` is stubbed to a constant `1.0` in **5 coverage groups** — Prem/Ops, Products/Completed Operations, Liquor, Unmanned Aircraft Cov A and Cov B — `SetYearInClaimsMade` to `0` in **3**, and **all 4** claims-made multiplier tables are overridden to **0 rows**. The countrywide originals are real: `PremOpsClaimsMadeMultiplier` is **5,940 rows, 0.34–0.98**. **0 of the other 50 jurisdictions do any of it.** Gate 332 recorded the liquor third and its conclusion stands — the scope did not. **The engine risk is specific: N16's countrywide row-fallback must not fire**, because N3's package-layer override removed the *table*, not a row, and falling through applies a discount New York has withdrawn. |
+| **OI-60** | **New York empties `ErcRate` for 83 endorsements** | `BUILD WORK` `[NEW]` | Same document, §4. Of New York's **151** empty-body overrides, **83** are `ErcRate` — an endorsement group's rating entry point — and **130 of the 151** replace a non-trivial countrywide body. The endorsement stays attachable and its premium capturable; it loses the ability to rate. **Largest instance of N3's *empty ≠ absent ≠ inherit* in the corpus.** Each of the 83 needs a capture-not-rate disposition in build-order **item 13**'s harness. Note the companion class: **98 constant-stub overrides** that a check for empty bodies does not find. |
+| **OI-61** | **Puerto Rico is rated by ERC and covered by neither rating-plan manual** | `SCOPE` `[NEW]` | [Gate rating plans](gates/GATE-RATING-PLANS.md) §1. Both plan corpora cover the same **50** jurisdictions plus `MU`; the two absentees are **Hawaii** (absent from every source — OI-54) and **Puerto Rico**. PR is the inverse shape and the more awkward one: **ERC rates it under the plans** — it inherits the countrywide schedule-rating domains and is the **only jurisdiction of 51 to ship its own `ExpectedExperienceRatio`** (99 rows) — while the manual side has nothing to confirm against. Cannot be told from the corpus whether ISO files PR plans elsewhere or not at all. **Until answered, a Puerto Rico risk with schedule or experience rating applied has no tier-2 confirmation available**, which under the evidence hierarchy means ERC alone. |
+| **OI-62** | **N10's rounding vocabulary was one value short** | `BUILD WORK` `[NEW]` | Same gate, §4. N10 records the rounding sites as *3dp / 0dp / 4dp / 2dp*. **There is an 8dp precision, at 3 sites, in all 10 countrywide editions and 0 of 51 jurisdictions**: `GeneralLiabilityCompositeRating::SetCompositeRate` — the composite rate genuinely needs 8 places, being a premium divided by an exposure count — **and two in Railroad**, `SetContractCostFactorWOHzd` and `SetContractCostFactorWithHzd`. **Gate 335-RR derived Railroad without recording its rounding precision.** A `Decimal` context configured from the four-value list rounds all three silently. N10 corrected in place. |
+| **OI-63** | **The rate-driven count is a floor, not a measurement** | `AUDIT` `[NEW]` | [Gate state-specific](gates/GATE-STATE-SPECIFIC.md) §0. `25_rating_vs_capture.RATE_SRC` matches a premium rule against the name list `FinalRate | BaseRate | LossCost | ELP | AdjustedBaseRate | AdjustedRate`. **It has been found short four times in two days:** `AdjustedRate` (both drone coverages, 2026-08-11), a **sibling group's `Premium`** (four terrorism groups), **`EndorsementPremium`** (the terrorism endorsement group), and now **`LeadLiabilityRate`** (Rhode Island's whole lead coverage). **So `18 / 383 / 76` is a floor.** Every *"N coverages rate"* figure in the project carries an unstated *"at least"* until a re-measurement classifies by **what the premium rule reads** rather than by a list of names. Not urgent — each miss has been caught by the gate that needed it — but it should not be caught a fifth time. |
+| **OI-64** | **NY Special Protective and Highway is an elaborate referral** | `BUILD WORK` `[NEW]` | Same gate, §3. **35 rules** — borrowing OCP's ILF and Prem/Ops's LCM and minimum premium — over filed data that cannot produce a premium: `SpecialProtectiveHighwayLossCost` **`0`,`0`,`0`**, `…ELP` **`0`,`0`,`0`**, and **`…ELPText` = `Company` on all three classes**, which N17 establishes means *refer to company*. `SetBaseRate` branches on `LossCost == 0` to the ELP path and finds `0` there too, so the chain computes **`0`**. **Railroad Protective's shape exactly — the project's second structurally elaborate referral.** The rules must still be built (limits, ILF, minimum premium, statistical coding); the *rate* is the carrier's. **Add to the confirmed-sentinel register on the SELECTOR, not the zero** — the selector is the declaration, the zero is the symptom. Belongs in **item 12**'s population. |
+| **OI-65** | **Referral census: four gates checked a countrywide table and not who reads it** | `BUILD WORK` `[NEW]` | [`scripts/erc/40_referral_census.py`](../scripts/erc/40_referral_census.py), built as build-order item 12 step 1, scans for referral conditions instead of re-reading gate prose. **Probe 6 — a jurisdiction that overrides a table to ZERO ROWS while the reading rule stays in force — returned 75 (rule, table, state) triples over 43 tables, and four of them amend a filed gate.** (1) **Terrorism**: **15 of 51** jurisdictions empty `CertifiedActsOfTerrorismExposureClassFactor` and redirect the lookups to a state table keyed on **Territory** — **15 distinct factors from 0.004 to 0.133, a 33x spread** against the countrywide pair's 2.25x; **NY files a Manhattan table** (up to **10.9x** the countrywide above-average factor) and **CA a RemainderOfTerritory001 table**. Gate terrorism §3a; pinned as check 3a (5/5). (2) **Gate 365**: **California withdraws Loss Of Electronic Data and Cyber Incident Liability entirely** — 13 tables emptied and `SetCoverageOnPolicyIndicator` stubbed to `0` in all six groups. Guarded, deliberate, and coherent with CA disabling size-of-risk, which is what those two coverages read across the group boundary (E18). Gate 365 §10. (3) **Rating plans**: **Nebraska empties both schedule-rating cap tables** and overrides `ScheduleRatingModificationLogic` — the ±25% cap is countrywide data with one state filing its own mechanism. (4) Smaller withdrawals still to characterise: `LiquorLiabGrade` (IA, MO, OK), `BringYourOwnAlcoholExclusionFactor` (MA, TX), `Subline` (VA, VT), `PolicyAdjustmentFactorB/C` (NY). **The shared defect: a gate measured a countrywide table against the manual and did not ask which jurisdictions read it.** `SetCoverageOnPolicyIndicator` is the mechanism states use to switch a coverage off and is now the most load-bearing stub in the corpus. **Step 1 completed 2026-08-12.** The four remaining withdrawals characterised, and they are three different things: **IA/MO/OK redirect** the liquor grade to `LiquorLiabilityGradeOnOffPremises` (14 rows each) and **NY redirects** the policy adjustment factors by overriding six `SetPolicyAdjustmentFactor*` rules — both safe; **MA/TX empty `BringYourOwnAlcoholExclusionFactor`** but the setter fires only for classes `16905`/`16906` with the liquor-exclusion amendment attached, so the exposure is narrow and guarded; and **VA/VT empty `Subline`**, which is harmless — **0 rules read the DataDef it feeds**, making it an output field rather than a rating input (E14's shape). **The reconciliation now runs in the script**: of **20** referral conditions recorded across eleven gates, **9 are reachable by a probe and 11 are not** — and those 11 are precisely the cases where ERC carries no discriminator, so each is a decision rather than code. **Step 2 completed 2026-08-12**: the population is classified into the four kinds and emitted as `out/referral_register.json` by [`41_referral_register.py`](../scripts/erc/41_referral_register.py) (4/4). **28 entries — 9 DECLARED (load-time), 4 MISSING, 4 GUARD, 11 NONE.** **11 need a decision before they can be implemented** (`R18`–`R28`). Silent-zero failures outnumber loud nulls **7 to 3**. **First decision taken 2026-08-12 — `R18`, the `LCM` placeholder.** Disposition **A**: a required carrier parameter. **This is a single-carrier build and the LCM is configured to `1.0` to match RAaS**, so engine output is directly comparable with the oracle and any difference is a rating defect rather than a company deviation. **The referral moves from rate time to configuration time** — refuse to rate when the parameter was never supplied, never refer merely because it resolved to `1`. **E15 closed onto E9**, which stands reaffirmed with a reason. Register: **10 DECLARED · 4 MISSING · 4 GUARD · 10 NONE**, **10 still awaiting decision** (`R19`–`R28`). **Decision 2 taken 2026-08-12 — `R19`, the 18 zero drone modifiers.** **Refer to company, resolvable by an underwriter-supplied rate.** All 18 zeros across the six tables are markers with no legitimate zero among them, and the filed factors are discontinuous — `0.4` to `1.5`, nothing between `0` and `0.4` — so the rule is derivable from ERC alone and the manual confirms it 24/24 rather than sourcing it. **Registered on (table, row)**, not on *any zero in this table*, so a zero appearing on an unrecognised row fails loudly at load time. **This introduced a mechanism the register did not have: a resolvable referral.** `REFER` names the value it needs and rating resumes when given — distinct from `R18`'s carrier parameter, which is supplied once at configuration. Build plan §5 now carries both. **STEP 3 COMPLETE 2026-08-12 — all 13 decisions taken.** Eleven register entries (`R18`–`R28`) plus two design decisions: **`D01`** the propagation rule (*anything downstream of a resolvable referral pauses with it*; the first formulation, absorbing-under-multiplication, was wrong and terrorism exposed it) and **`D02`** disposition monotonicity. **Outcomes: 16 DECLARED · 4 MISSING · 4 GUARD · 4 NOT-REFERRAL · 0 NONE.** Of the eleven, **three were already decided elsewhere in the project** and the register was asking the user to re-decide them, **four turned out not to be referrals at all**, and **two shrank by an order of magnitude on measurement** — E19's 188 classes to ten cannabis classes, and *"railroad non-construction operations"* to one class of four. |
+| **OI-66** | **Can RAaS be instructed to rate a full policy term?** | `VERIFY` `[NEW]` | Raised by decision `R27`, 2026-08-12. The manual gives the insurer two filed treatments for a policy that spans the federal terrorism programme's scheduled end (**2027-12-31**): pro-rate by day count now, or **charge the TRIA factors for the entire term and refund if the Program terminates**. **The full-term option is the one taken**, and it is what ERC already does — it declares 9 pro-rate / day-count fields and **no rule writes any of them**. **The open question is the oracle, not the engine:** if RAaS pro-rates and cannot be told not to, then every 2027-inception policy running past year-end will differ from the engine **by design**, and the comparison baseline needs separate treatment for that cohort. Cheap to answer once RAaS access exists; expensive to discover during a diff. **Also deferred here:** option (b)'s pro-rated REFUND on actual termination is a mid-term change transaction, out of scope until the engine handles policy changes. |
+| **OI-67** | **"The project has one oracle" was false, and two green tests asserted it** | `HYGIENE` `[NEW]` | Raised 2026-08-12 by the user pointing at `Payloads/CA`. The claim *"1 of 517 STC payloads is a rated output and it is Oklahoma's"* was **measured over the ERC corpus at `ISO_ERC_Files/**/STC/` and then stated about the project**. **`Payloads/` holds 53 rated outputs across 50 states, every one paired with its input** — the RAAS baseline set, added 2026-08-10 and documented in **this register's own section G**. **The worst form of the recurring defect:** a search scoped to one directory, generalised, written into four documents, and then **asserted by two passing tests** — `verify_california.py` *"California ships no oracle"* and `verify_new_york.py` *"New York ships no oracle either"*, both green because both globbed only the ERC root. **A test that certifies a false claim is worse than no test.** Corrected: both fixtures now assert the true population (1 ERC + 53 RAaS, 50 states, PR the only ERC jurisdiction without one) and say so in their docstrings. **Consequence:** California and New York can be ORACLE-tested once the engine exists, and OI-58 is provable rather than unprovable. **Standing lesson for the census discipline: enumerate the FILE SYSTEM, not one root that happens to be the one you were thinking about.** **One claim survived the correction, confirmed by the user:** the RAaS payloads carry **no experience-rating loss history**, so loss history remains the one item-10 input with no oracle at all — schedule and composite rating can be checked against a rated output once the engine exists, experience rating cannot. |
+| **OI-41** | **The corpus has an as-of floor of 2022-09-01** | `BUILD WORK` `[NEW]` | All 51 jurisdictions resolve only from **2022-09-01** onward — Wisconsin is the last to appear, and at 2021-06-01 just **9** of 51 resolve. Earliest state edition is 2020-12-01. A resolver asked for an earlier effective date **must fail loudly**, not fall back to the earliest available edition: falling back would rate a 2021 Wisconsin risk on a 2022 filing with no signal. A load-time assertion, one line, and a real one — back-dated and re-rated policies are ordinary business. |
+| **OI-09** | rounding tie-break | `OPEN`, **priority raised** | **First genuine midpoint found 2026-08-11**: AR OCP class `15192`, `0.95 × 1.75 = 1.6625`, an exact 3dp tie (`HALF_UP → 1.663`, `HALF_EVEN → 1.662`). The premium is `249` either way at that exposure so it does not settle E1 — but midpoints **do** occur on real submissions, which the golden case had suggested they might not. |
+
+| **OI-68** | **`1.00` is used as a factor sentinel, and it is worse than `0`** | `ESCALATED` **E20** `[NEW]` | Raised 2026-08-12 by **stage 1 of the build**, by an assertion looking for something else. `GL_TX_20250801_V01/ILFElevatorContractor` publishes a factor of exactly **`1.00` at 26 of its 30 rows** and a genuine **1.69–1.72 at four** — so a `20,000,000` general aggregate prices **identically to a `50,000`** one, while `3,000,000` carries a 1.72x load. Either `1.00` means *"no increased-limit load applies at this combination"* or it is a placeholder for *"not filed"*. **ERC cannot arbitrate it** and the shape is N13's exactly — except that N13's catalogue is entirely about **zero**. **This is the more dangerous sentinel of the two: multiplying by a sentinel `0` produces a visible nil premium that anyone would question; multiplying by a sentinel `1` produces a plausible wrong one that nobody would.** **Population measured: 1 of 19,236 ILF series** across all 51 jurisdictions at 2026-08-11 — it is the *only* non-monotonic series in the corpus once sentinel zeros are set aside. **AMENDED THE SAME DAY, and the amendment reverses the reading.** Checking the other editions rather than the one resolved today: **all seven Texas editions carry it** — 26 of 30 rows at `1.00` in every edition from **2021-06-01 through 2025-08-01**, and **11 of 15** in `GL_TX_20270401_V01`, which halves the table while preserving **all four** genuine factors. **A pattern stable across seven consecutive filings over six years is not a typo.** So *"placeholder for not-filed"* is now the **weaker** reading and *"no increased-limit load applies at this combination"* the **stronger** one. **The disposition is unchanged and the reason it is unchanged matters more than the reading:** the series is still non-monotonic, ERC still carries no discriminator, and a wrong guess in the permissive direction is invisible. It refers either way. **The methodological point is the transferable one — the first measurement asked one edition and generalised across the corpus; the corrected one asked every edition of one jurisdiction.** Same defect as OI-67, one axis over. Registered by name in `gl_engine/assertions.py::KNOWN_NONMONOTONIC` so it is **allowed past by decision rather than by silence**, and any second instance fails the load. **Companion finding, same assertion:** **60 of 53,241** ILF factor cells are `0`, in **3 of 54** resolved packages and **3 table names only** (`ILFLiquorWithSubLimit` 48, `ILFElevatorContractors` 10, `ILFElevatorContractorsOrInspectors` 2) — now assertion **A13**, which pins the *set of tables* rather than the count, because the count moves with the as-of date and the set should not. |
+| **OI-69** | **The split loss-cost defect is wider than OI-20 recorded, and a green test hid it** | `CLOSED` **2026-08-12** `[NEW]` | Raised and closed inside stage 1. OI-20 records four jurisdictions filing loss costs under suffixed table names. **The build found the real shape is worse: in CA, NJ and OH the base table is not in the state package at all**, so `PremOpsLossCost` resolves **upward** to a header-only countrywide table — **zero rows, no error, a finished premium.** The engine's first split-family detector required the base name to exist locally, which makes exactly those three states invisible, **and its load-time assertion passed** because it counted only the families it could see: 1 family where there are 6. **Second instance in this project of an assertion whose condition was narrower than its name, and the first where the narrow one went green.** Fixed by enumerating **all 75 loss-cost suffixes in the corpus**, which separates two classes that had been conflated: `Terr<n>`, `<ST>Terr<n>`, `<n>`, `<ST>` are territory slices, while `OverOneHundred` and `OverOneMillion` (**54 packages each**) are **separate high-limit tables and not slices at all**. Sibling lookup now searches the state layer independently of which layer owns the base name. **13,068 · 17,805 · 23,820 · 11,880 rows recovered in CA, NJ, NY and OH**, and Texas retained as the control — it files a populated 9,504-row base and no slices. Pinned by `tests/verify_stage1.py`. **Standing lesson: a finding recorded as an anecdote (*"four states do this"*) does not survive into code; only an enumerated population does.** |
+
+### The lesson, again
+
+This is the **fourth** time in this project a gap was asserted and later found not to exist —
+after the territory definitions (Step 8), the reproducibility gap (Step 11) and the rating plans
+(Step 15). The shape is identical every time: *absence of the expected mechanism* was read as
+*absence of the capability*.
+
+Here, "no ZIP table" was read as "cannot determine territory," when it actually meant "needs no
+ZIP table." Nobody checked what the states without one actually contained until a domain expert
+said the obvious thing out loud.

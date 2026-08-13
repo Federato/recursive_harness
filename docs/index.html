@@ -1,0 +1,146 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Recursive Harness — GL Rating Engine</title>
+<style>
+:root{--bg:#fbfbfd;--fg:#1d1d20;--mut:#63636b;--line:#e3e3e8;--accent:#1f3864;
+--code-bg:#f4f4f7;--good:#1c6b45;--warn:#8a5a00;--open:#7a2222}
+*{box-sizing:border-box}
+body{margin:0;font:16.5px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+background:var(--bg);color:var(--fg)}
+header{background:var(--accent);color:#fff;padding:44px 32px 38px}
+header .in{max-width:1000px;margin:0 auto}
+header h1{margin:0 0 8px;font-size:30px;font-weight:660;letter-spacing:-.02em}
+header .sub{opacity:.8;font-size:15px;max-width:70ch}
+.wrap{max-width:1000px;margin:0 auto;padding:34px 32px 90px}
+h2{font-size:19px;margin:38px 0 4px;letter-spacing:-.015em}
+h2:first-child{margin-top:0}
+.note{color:var(--mut);font-size:14.5px;margin:0 0 16px;max-width:76ch}
+p,li{max-width:78ch}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:14px;margin:18px 0}
+a.card{display:block;background:#fff;border:1px solid var(--line);border-radius:11px;
+padding:20px 22px;text-decoration:none;color:inherit;transition:border-color .12s,transform .12s}
+a.card:hover{border-color:var(--accent);transform:translateY(-1px)}
+a.card b{display:block;font-size:16.5px;color:var(--accent);margin-bottom:5px}
+a.card span{font-size:14px;color:var(--mut);line-height:1.55}
+a.card.lead{grid-column:1/-1;background:#f8fafd;border-color:#c9d6ea}
+table{border-collapse:collapse;width:100%;margin:14px 0;font-size:14.5px;
+display:block;overflow-x:auto}
+th{background:var(--accent);color:#fff;text-align:left;font-weight:600;padding:9px 13px}
+td{border-bottom:1px solid var(--line);padding:9px 13px;vertical-align:top}
+tr:nth-child(even) td{background:#fafafc}
+td a{color:var(--accent);font-weight:600;text-decoration:none}
+td a:hover{text-decoration:underline}
+code{background:var(--code-bg);padding:.12em .38em;border-radius:4px;
+font:13.5px/1.5 "SF Mono",Consolas,"Liberation Mono",Menlo,monospace}
+.callout{border:1px solid var(--line);border-left:4px solid var(--warn);
+border-radius:0 8px 8px 0;padding:16px 20px;margin:20px 0;background:#fffdf7}
+.callout h4{margin:0 0 6px;font-size:15.5px;color:var(--warn)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:18px 0}
+.stat{background:var(--code-bg);border-radius:9px;padding:14px 16px}
+.stat b{display:block;font-size:24px;letter-spacing:-.02em;line-height:1.15}
+.stat span{font-size:12.5px;color:var(--mut)}
+footer{border-top:1px solid var(--line);margin-top:50px;padding-top:22px;
+color:var(--mut);font-size:13.5px}
+@media(max-width:700px){.wrap,header{padding-left:20px;padding-right:20px}}
+</style></head><body>
+
+<header><div class="in">
+<h1>Recursive Harness — General Liability Rating Engine</h1>
+<div class="sub">Turning ISO's filed General Liability rating content into something a machine can
+execute, with proof at every step that it matches what ISO actually filed — and a harness that
+checks itself against ISO's own service.</div>
+</div></header>
+
+<div class="wrap">
+
+<div class="grid">
+  <div class="stat"><b>567</b><span>ISO packages mapped</span></div>
+  <div class="stat"><b>51</b><span>jurisdictions</span></div>
+  <div class="stat"><b>1 of 6</b><span>build stages complete</span></div>
+  <div class="stat"><b>20 / 13</b><span>acceptance / safety checks</span></div>
+</div>
+
+<h2>Start here</h2>
+<p class="note">If you read one thing, read the first card. It is the executive summary and the whole
+build in plain English — no insurance or engineering background assumed.</p>
+
+<div class="cards">
+  <a class="card lead" href="THE-BUILD-END-TO-END.html">
+    <b>The build, end to end &nbsp;→</b>
+    <span>Executive summary, then the whole plan in plain English: the engine, testing against ISO's
+    own service, the self-correcting harness, and carrier deviations layered on top. Includes the
+    architecture decision and the honest case against it.</span>
+  </a>
+
+  <a class="card" href="THE-PLAN-IN-PLAIN-ENGLISH.html">
+    <b>The plan, in plain English</b>
+    <span>Why this is hard, what we learned that changed the design, and when the engine stops and
+    asks a human.</span>
+  </a>
+
+  <a class="card" href="GL-RATING-ENGINE-DOCS.html">
+    <b>All technical documents</b>
+    <span>Every plan, gate and reconciliation document in one page — 24 tabs. This is the deep
+    detail.</span>
+  </a>
+</div>
+
+<h2>Context and working record</h2>
+<p class="note">Rendered by GitHub. These are the files the documents above refer to.</p>
+
+<table>
+<tr><th>Document</th><th>What it is</th></tr>
+<tr><td><a href="https://github.com/Federato/recursive_harness/blob/main/docs/EXECUTIVE-SUMMARY.md">EXECUTIVE-SUMMARY.md</a></td>
+<td>The executive summary as markdown</td></tr>
+<tr><td><a href="https://github.com/Federato/recursive_harness/blob/main/docs/WHERE-WE-PAUSED-2026-08-12.md">WHERE-WE-PAUSED.md</a></td>
+<td>The most recent working session, written to be read cold</td></tr>
+<tr><td><a href="https://github.com/Federato/recursive_harness/blob/main/docs/PRD-GL-RATING-ENGINE.md">PRD-GL-RATING-ENGINE.md</a></td>
+<td>Full status and history in plain language. §0 is the latest update</td></tr>
+<tr><td><a href="https://github.com/Federato/recursive_harness/blob/main/docs/BUILD-STAGES.md">BUILD-STAGES.md</a></td>
+<td>The six build stages, and the phases that follow them</td></tr>
+<tr><td><a href="https://github.com/Federato/recursive_harness/blob/main/docs/GL-RATING-ENGINE-BUILD-PLAN.md">GL-RATING-ENGINE-BUILD-PLAN.md</a></td>
+<td>The technical plan — architecture, the 18 non-negotiables, and the deviation constraints C1–C3</td></tr>
+<tr><td><a href="https://github.com/Federato/recursive_harness/blob/main/TESTING.md">TESTING.md</a></td>
+<td><strong>Every command, phase by phase.</strong> Each one has been run and its stated output verified</td></tr>
+<tr><td><a href="https://github.com/Federato/recursive_harness/blob/main/BUILD-LOG.md">BUILD-LOG.md</a></td>
+<td>The build diary — what was built, what broke, and what the fix revealed</td></tr>
+<tr><td><a href="https://github.com/Federato/recursive_harness/blob/main/docs/FROM-PLANNING-TO-BUILD.md">FROM-PLANNING-TO-BUILD.md</a></td>
+<td>Did the analysis pay off? Written <em>before</em> each stage, so it is allowed to be wrong</td></tr>
+<tr><td><a href="https://github.com/Federato/recursive_harness/blob/main/docs/OPEN-ITEMS.md">OPEN-ITEMS.md</a></td>
+<td>Everything unresolved — 69 tracked items</td></tr>
+<tr><td><a href="https://github.com/Federato/recursive_harness/blob/main/PROCESS_LOG.md">PROCESS_LOG.md</a></td>
+<td>The full analysis record, 51 steps. Long, and complete</td></tr>
+</table>
+
+<h2>The code</h2>
+<table>
+<tr><th>Path</th><th>What it is</th></tr>
+<tr><td><a href="https://github.com/Federato/recursive_harness/tree/main/gl_engine">gl_engine/</a></td>
+<td><strong>The engine.</strong> Stage 1: given a state and a date, which rulebook applies. 1,814 lines, no third-party dependencies</td></tr>
+<tr><td><a href="https://github.com/Federato/recursive_harness/tree/main/tests">tests/</a></td>
+<td>Acceptance fixtures. Every case pinned to something measured before the code existed</td></tr>
+<tr><td><a href="https://github.com/Federato/recursive_harness/tree/main/scripts">scripts/</a></td>
+<td>57 re-runnable analysis scripts. Every figure in the documents came from one of these</td></tr>
+<tr><td><a href="https://github.com/Federato/recursive_harness/tree/main/Agentic">Agentic/</a></td>
+<td>Two automated expert reviewers — one for ISO's manuals, one for the machine-readable content</td></tr>
+</table>
+
+<div class="callout">
+<h4>What is deliberately not in this repository</h4>
+<p><strong>ISO's licensed content.</strong> The manuals, the machine-readable rating packages, the
+text extracted from them, and ISO's rated example policies are all excluded — see
+<a href="https://github.com/Federato/recursive_harness/blob/main/.gitignore"><code>.gitignore</code></a>.</p>
+<p>The engine reads the ERC corpus from outside the repository, at a path set by the
+<code>GL_ERC_ROOT</code> environment variable. <strong>Without a licensed copy of that corpus the
+code will not run</strong> — the documents, the method and the reasoning are what this repository is
+for.</p>
+</div>
+
+<footer>
+Every figure in these documents is measured from the ISO corpus and reproducible from the scripts in
+this repository, with one stated exception: the descriptions of Duck Creek and Guidewire are public
+architectural summaries, not verified internals.
+</footer>
+
+</div>
+</body></html>

@@ -1,0 +1,9816 @@
+{
+ "generated_from": "ISO Commercial Lines Manual Division Six - General Liability: Rules notices (503 PDFs) and Loss Cost notices (472 PDFs)",
+ "corpus": {
+  "pdf_count": 503,
+  "extracted": 502,
+  "failed": [
+   "GL-MO-2027-RU-003-C (truncated PDF, no xref/EOF)"
+  ],
+  "jurisdictions": 51,
+  "multistate_notices": [
+   "GL-MU-2022-RU-001-C",
+   "GL-MU-2023-RU-001-C",
+   "GL-MU-2023-RU-002-C",
+   "GL-MU-2027-RU-001-C"
+  ],
+  "per_state": {
+   "AK": 9,
+   "AL": 14,
+   "AR": 9,
+   "AZ": 12,
+   "CA": 5,
+   "CO": 11,
+   "CT": 7,
+   "DC": 7,
+   "DE": 11,
+   "FL": 13,
+   "GA": 14,
+   "IA": 8,
+   "ID": 8,
+   "IL": 17,
+   "IN": 11,
+   "KS": 6,
+   "KY": 14,
+   "LA": 7,
+   "MA": 12,
+   "MD": 10,
+   "ME": 10,
+   "MI": 10,
+   "MN": 13,
+   "MO": 7,
+   "MS": 6,
+   "MT": 10,
+   "MU": 4,
+   "NC": 6,
+   "ND": 12,
+   "NE": 8,
+   "NH": 10,
+   "NJ": 9,
+   "NM": 7,
+   "NV": 10,
+   "NY": 7,
+   "OH": 13,
+   "OK": 9,
+   "OR": 9,
+   "PA": 12,
+   "PR": 9,
+   "RI": 9,
+   "SC": 8,
+   "SD": 7,
+   "TN": 7,
+   "TX": 8,
+   "UT": 12,
+   "VA": 10,
+   "VT": 7,
+   "WA": 8,
+   "WI": 12,
+   "WV": 8,
+   "WY": 8
+  },
+  "years": [
+   2021,
+   2022,
+   2023,
+   2024,
+   2025,
+   2026,
+   2027
+  ]
+ },
+ "cw_rules_2022": {
+  "1": "APPLICATION OF THIS DIVISION",
+  "2": "REFERRALS TO COMPANY",
+  "3": "EFFECTIVE DATE",
+  "4": "POLICY TERM",
+  "5": "PREMIUM COMPUTATION",
+  "6": "FACTORS OR MULTIPLIERS",
+  "7": "ROUNDING PROCEDURE",
+  "8": "POLICY WRITING MINIMUM PREMIUM",
+  "9": "ADDITIONAL PREMIUM CHANGES",
+  "10": "RETURN PREMIUM CHANGES",
+  "11": "POLICY CANCELLATIONS",
+  "12": "RESERVED FOR FUTURE USE",
+  "13": "RESIDENT AGENT COUNTERSIGNATURE",
+  "14": "MINIMUM PREMIUMS",
+  "15": "DEDUCTIBLES",
+  "16": "ADDITIONAL INTERESTS",
+  "22": "DESCRIPTION OF COMMERCIAL GENERAL LIABILITY COVERAGE",
+  "23": "COMPANY RATES OR ISO LOSS COSTS",
+  "24": "BASES OF PREMIUM",
+  "25": "CLASSIFICATIONS",
+  "26": "CLASSIFICATIONS  SCOPE OF APPLICATION",
+  "27": "MANUFACTURING AND PROCESSING RISKS  CLASSIFICATION ASSIGNMENT AND PREMIUM COMPUTATION PROCEDURES",
+  "28": "CONTRACTING OR SERVICING RISKS  CLASSIFICATION ASSIGNMENT AND PREMIUM COMPUTATION PROCEDURES",
+  "29": "MERCANTILE RISKS  CLASSIFICATION ASSIGNMENT AND PREMIUM COMPUTATION PROCEDURES",
+  "30": "RESERVED FOR FUTURE USE",
+  "31": "BUILDING OR PREMISES  OFFICES OR RESIDENTIAL OCCUPANCY OR LEASED TO OTHERS  CLASSIFICATION ASSIGNMENT AND PREMIUM COMPUTATION PROCEDURES",
+  "32": "MISCELLANEOUS RISKS  CLASSIFICATION ASSIGNMENT AND PREMIUM COMPUTATION PROCEDURES",
+  "33": "SPECIAL RULES APPLICABLE TO THE CLAIMS-MADE COVERAGE FORM CG 00 02",
+  "34": "SPECIAL RULE FOR INDIVIDUAL RISK SITUATIONS",
+  "35": "PREMIUM DETERMINATION",
+  "36": "DESCRIPTION OF ADDITIONAL OPTIONAL ENDORSEMENTS",
+  "37": "DESCRIPTION OF UNMANNED AIRCRAFT ENDORSEMENTS",
+  "41": "ABUSE OR MOLESTATION ENDORSEMENTS",
+  "42": "ELECTRONIC DATA LIABILITY COVERAGE",
+  "43": "EMPLOYEE BENEFITS LIABILITY COVERAGE",
+  "44": "PRODUCT WITHDRAWAL COVERAGE",
+  "45": "LIQUOR LIABILITY COVERAGE (Subline Code 332)",
+  "46": "OWNERS AND CONTRACTORS PROTECTIVE LIABILITY INSURANCE AND PRINCIPALS PROTECTIVE LIABILITY INSURANCE (Subline Code 335)",
+  "47": "POLLUTION LIABILITY COVERAGE (Subline Code 350)",
+  "48": "PRODUCTS/COMPLETED OPERATIONS LIABILITY COVERAGE (Subline Code 336)",
+  "49": "RAILROAD PROTECTIVE LIABILITY (Subline Code 335)",
+  "50": "SPORTS PARTICIPANTS",
+  "51": "ELEVATOR OR ESCALATOR INSPECTION CHARGE (Subline Code 334)",
+  "52": "COVERAGE FOR INSUREDS FOR INJURY TO LEASED WORKERS",
+  "53": "UNDERGROUND STORAGE TANK (UST) COVERAGE (Subline Code 350)",
+  "54": "YEAR 2000 COMPUTER-RELATED ENDORSEMENTS",
+  "55": "TERRORISM ENDORSEMENT OPTIONS  FEDERAL BACKSTOP",
+  "56": "INCREASED LIMITS TABLES"
+ },
+ "cw_rules_2027": {
+  "1": "OVERVIEW OF THE GENERAL LIABILITY PROGRAM",
+  "2": "REFERRALS TO COMPANY",
+  "3": "RESERVED FOR FUTURE USE",
+  "4": "POLICY TERM",
+  "5": "PREMIUM COMPUTATION",
+  "6": "FACTORS OR MULTIPLIERS",
+  "7": "ROUNDING PROCEDURE",
+  "8": "POLICYWRITING MINIMUM PREMIUM",
+  "9": "ADDITIONAL PREMIUM CHANGES",
+  "10": "RETURN PREMIUM CHANGES",
+  "11": "POLICY CANCELLATIONS",
+  "12": "RESERVED FOR FUTURE USE",
+  "13": "RESIDENT AGENT COUNTERSIGNATURE",
+  "14": "RESERVED FOR FUTURE USE",
+  "15": "DEDUCTIBLES",
+  "16": "ADDITIONAL INSURED ENDORSEMENTS",
+  "17": "COVERAGE PART",
+  "20": "DESCRIPTION OF COMMERCIAL GENERAL LIABILITY COVERAGE",
+  "21": "PREMIUM DETERMINATION",
+  "22": "MANDATORY ENDORSEMENTS",
+  "23": "COMPANY RATES OR ISO LOSS COSTS",
+  "24": "BASES OF PREMIUM",
+  "25": "CLASSIFICATIONS",
+  "26": "CLASSIFICATIONS  SCOPE OF APPLICATION",
+  "27": "MANUFACTURING OR PROCESSING RISKS  CLASSIFICATION ASSIGNMENT AND PREMIUM COMPUTATION PROCEDURES",
+  "28": "CONTRACTING OR SERVICING RISKS  CLASSIFICATION ASSIGNMENT AND PREMIUM COMPUTATION PROCEDURES",
+  "29": "MERCANTILE RISKS  CLASSIFICATION ASSIGNMENT AND PREMIUM COMPUTATION PROCEDURES",
+  "30": "RESERVED FOR FUTURE USE",
+  "31": "BUILDINGS OR PREMISES  OFFICES OR RESIDENTIAL OCCUPANCY OR LEASED TO OTHERS  CLASSIFICATION ASSIGNMENT AND PREMIUM COMPUTATION PROCEDURES",
+  "32": "MISCELLANEOUS RISKS  CLASSIFICATION ASSIGNMENT AND PREMIUM COMPUTATION PROCEDURES",
+  "33": "SPECIAL RULES APPLICABLE TO THE CLAIMS-MADE COVERAGE FORM CG 00 02",
+  "34": "SPECIAL RULE FOR INDIVIDUAL RISK SITUATIONS",
+  "35": "RESERVED FOR FUTURE USE",
+  "36": "DESCRIPTION OF ADDITIONAL OPTIONAL ENDORSEMENTS",
+  "37": "DESCRIPTION OF UNMANNED AIRCRAFT ENDORSEMENTS",
+  "40": "CYBER INCIDENT LIABILITY AND LOSS OF ELECTRONIC DATA COVERAGE",
+  "41": "ABUSE OR MOLESTATION ENDORSEMENTS",
+  "42": "ELECTRONIC DATA LIABILITY COVERAGE (Subline Code 325)",
+  "43": "EMPLOYEE BENEFITS LIABILITY COVERAGE (Subline Code 325)",
+  "44": "PRODUCT WITHDRAWAL COVERAGE (Subline Code 365)",
+  "45": "LIQUOR LIABILITY COVERAGE (Subline Code 332)",
+  "46": "OWNERS AND CONTRACTORS PROTECTIVE LIABILITY INSURANCE AND PRINCIPALS PROTECTIVE LIABILITY INSURANCE (Subline Code 335)",
+  "47": "POLLUTION LIABILITY COVERAGE (Subline Code 350)",
+  "48": "PRODUCTS/COMPLETED OPERATIONS LIABILITY COVERAGE (Subline Code 336)",
+  "49": "RAILROAD PROTECTIVE LIABILITY (Subline Code 335)",
+  "53": "UNDERGROUND STORAGE TANK (UST) COVERAGE (Subline Code 350)",
+  "54": "RESERVED FOR FUTURE USE",
+  "55": "TERRORISM",
+  "56": "INCREASED LIMITS TABLES"
+ },
+ "renumbered": [
+  "1",
+  "3",
+  "8",
+  "14",
+  "16",
+  "17",
+  "20",
+  "21",
+  "22",
+  "27",
+  "31",
+  "35",
+  "40",
+  "42",
+  "43",
+  "44",
+  "50",
+  "51",
+  "52",
+  "54",
+  "55"
+ ],
+ "never_deviated": [
+  "3",
+  "6",
+  "7",
+  "14",
+  "25",
+  "26",
+  "27",
+  "29",
+  "31",
+  "32",
+  "35",
+  "50",
+  "51"
+ ],
+ "deviated_rules": [
+  "1",
+  "2",
+  "4",
+  "5",
+  "8",
+  "9",
+  "10",
+  "11",
+  "13",
+  "15",
+  "16",
+  "22",
+  "23",
+  "24",
+  "28",
+  "33",
+  "34",
+  "36",
+  "37",
+  "41",
+  "42",
+  "43",
+  "44",
+  "45",
+  "46",
+  "47",
+  "48",
+  "49",
+  "52",
+  "53",
+  "54",
+  "55",
+  "56"
+ ],
+ "rules": {
+  "1": {
+   "title_2027": "OVERVIEW OF THE GENERAL LIABILITY PROGRAM",
+   "title_2022": "APPLICATION OF THIS DIVISION",
+   "states": [
+    "NY",
+    "TX",
+    "VA",
+    "VT"
+   ],
+   "n_states": 4,
+   "kinds": {
+    "REPLACE": 4,
+    "DELETE": 1
+   }
+  },
+  "2": {
+   "title_2027": "REFERRALS TO COMPANY",
+   "title_2022": "REFERRALS TO COMPANY",
+   "states": [
+    "AK",
+    "AR",
+    "AZ",
+    "CA",
+    "CO",
+    "DC",
+    "GA",
+    "IN",
+    "KS",
+    "KY",
+    "MI",
+    "MN",
+    "MO",
+    "MS",
+    "MT",
+    "NC",
+    "NE",
+    "NJ",
+    "NY",
+    "OH",
+    "PA",
+    "RI",
+    "SD",
+    "TN",
+    "TX",
+    "UT",
+    "VA"
+   ],
+   "n_states": 27,
+   "kinds": {
+    "REPLACE": 27,
+    "DELETE": 3
+   }
+  },
+  "4": {
+   "title_2027": "POLICY TERM",
+   "title_2022": "POLICY TERM",
+   "states": [
+    "MA",
+    "MI",
+    "MN",
+    "NC"
+   ],
+   "n_states": 4,
+   "kinds": {
+    "DELETE": 2,
+    "REPLACE": 2,
+    "ADD": 3
+   }
+  },
+  "5": {
+   "title_2027": "PREMIUM COMPUTATION",
+   "title_2022": "PREMIUM COMPUTATION",
+   "states": [
+    "CA",
+    "LA",
+    "NY",
+    "WA",
+    "WV"
+   ],
+   "n_states": 5,
+   "kinds": {
+    "DELETE": 2,
+    "REPLACE": 3,
+    "ADD": 3
+   }
+  },
+  "8": {
+   "title_2027": "POLICYWRITING MINIMUM PREMIUM",
+   "title_2022": "POLICY WRITING MINIMUM PREMIUM",
+   "states": [
+    "MD"
+   ],
+   "n_states": 1,
+   "kinds": {
+    "ADD": 1
+   }
+  },
+  "9": {
+   "title_2027": "ADDITIONAL PREMIUM CHANGES",
+   "title_2022": "ADDITIONAL PREMIUM CHANGES",
+   "states": [
+    "FL",
+    "LA"
+   ],
+   "n_states": 2,
+   "kinds": {
+    "REPLACE": 2,
+    "ADD": 1,
+    "DELETE": 1
+   }
+  },
+  "10": {
+   "title_2027": "RETURN PREMIUM CHANGES",
+   "title_2022": "RETURN PREMIUM CHANGES",
+   "states": [
+    "CA",
+    "FL",
+    "KS",
+    "LA",
+    "NH",
+    "VA",
+    "WA"
+   ],
+   "n_states": 7,
+   "kinds": {
+    "DELETE": 4,
+    "REPLACE": 7,
+    "ADD": 1
+   }
+  },
+  "11": {
+   "title_2027": "POLICY CANCELLATIONS",
+   "title_2022": "POLICY CANCELLATIONS",
+   "states": [
+    "AK",
+    "CA",
+    "CT",
+    "FL",
+    "GA",
+    "LA",
+    "MD",
+    "ME",
+    "MI",
+    "MN",
+    "MT",
+    "NV",
+    "NY",
+    "OR",
+    "SC",
+    "SD",
+    "TN",
+    "TX",
+    "WA",
+    "WI",
+    "WY"
+   ],
+   "n_states": 21,
+   "kinds": {
+    "DELETE": 9,
+    "REPLACE": 13,
+    "ADD": 12
+   }
+  },
+  "13": {
+   "title_2027": "RESIDENT AGENT COUNTERSIGNATURE",
+   "title_2022": "RESIDENT AGENT COUNTERSIGNATURE",
+   "states": [
+    "AK",
+    "CA",
+    "FL",
+    "IA",
+    "IL",
+    "MA",
+    "MI",
+    "MN",
+    "SD",
+    "VA",
+    "WV",
+    "WY"
+   ],
+   "n_states": 12,
+   "kinds": {
+    "DELETE": 12,
+    "REPLACE": 11,
+    "ADD": 2
+   }
+  },
+  "15": {
+   "title_2027": "DEDUCTIBLES",
+   "title_2022": "DEDUCTIBLES",
+   "states": [
+    "NH",
+    "NY",
+    "VA"
+   ],
+   "n_states": 3,
+   "kinds": {
+    "REPLACE": 2,
+    "ADD": 1
+   }
+  },
+  "16": {
+   "title_2027": "ADDITIONAL INSURED ENDORSEMENTS",
+   "title_2022": "ADDITIONAL INTERESTS",
+   "states": [
+    "NY",
+    "OK",
+    "TX",
+    "VA",
+    "VT"
+   ],
+   "n_states": 5,
+   "kinds": {
+    "DELETE": 4,
+    "REPLACE": 5,
+    "ADD": 2
+   }
+  },
+  "22": {
+   "title_2027": "MANDATORY ENDORSEMENTS",
+   "title_2022": "DESCRIPTION OF COMMERCIAL GENERAL LIABILITY COVERAGE",
+   "states": [
+    "AK",
+    "AR",
+    "AZ",
+    "CA",
+    "CO",
+    "CT",
+    "DC",
+    "DE",
+    "FL",
+    "GA",
+    "IA",
+    "ID",
+    "IL",
+    "IN",
+    "KS",
+    "KY",
+    "LA",
+    "MA",
+    "MD",
+    "ME",
+    "MI",
+    "MN",
+    "MO",
+    "MS",
+    "MT",
+    "NC",
+    "ND",
+    "NE",
+    "NH",
+    "NJ",
+    "NM",
+    "NV",
+    "NY",
+    "OH",
+    "OK",
+    "OR",
+    "PA",
+    "PR",
+    "RI",
+    "SC",
+    "SD",
+    "TN",
+    "TX",
+    "UT",
+    "VA",
+    "VT",
+    "WA",
+    "WI",
+    "WY"
+   ],
+   "n_states": 49,
+   "kinds": {
+    "DELETE": 3,
+    "REPLACE": 49,
+    "ADD": 17
+   }
+  },
+  "23": {
+   "title_2027": "COMPANY RATES OR ISO LOSS COSTS",
+   "title_2022": "COMPANY RATES OR ISO LOSS COSTS",
+   "states": [
+    "NY",
+    "TX"
+   ],
+   "n_states": 2,
+   "kinds": {
+    "DELETE": 2,
+    "REPLACE": 2,
+    "ADD": 1
+   }
+  },
+  "24": {
+   "title_2027": "BASES OF PREMIUM",
+   "title_2022": "BASES OF PREMIUM",
+   "states": [
+    "AK",
+    "AL",
+    "AR",
+    "AZ",
+    "CA",
+    "CO",
+    "CT",
+    "DC",
+    "DE",
+    "FL",
+    "GA",
+    "IA",
+    "ID",
+    "IL",
+    "IN",
+    "KS",
+    "KY",
+    "LA",
+    "MA",
+    "MD",
+    "ME",
+    "MI",
+    "MN",
+    "MO",
+    "MS",
+    "MT",
+    "NC",
+    "ND",
+    "NE",
+    "NH",
+    "NJ",
+    "NM",
+    "NV",
+    "NY",
+    "OH",
+    "OK",
+    "OR",
+    "PA",
+    "PR",
+    "RI",
+    "SC",
+    "SD",
+    "TN",
+    "TX",
+    "UT",
+    "VA",
+    "VT",
+    "WA",
+    "WI",
+    "WV",
+    "WY"
+   ],
+   "n_states": 51,
+   "kinds": {
+    "ADD": 45,
+    "REPLACE": 36,
+    "DELETE": 1
+   }
+  },
+  "28": {
+   "title_2027": "CONTRACTING OR SERVICING RISKS  CLASSIFICATION ASSIGNMENT AND PREMIUM COMPUTATION PROCEDURES",
+   "title_2022": "CONTRACTING OR SERVICING RISKS  CLASSIFICATION ASSIGNMENT AND PREMIUM COMPUTATION PROCEDURES",
+   "states": [
+    "VA"
+   ],
+   "n_states": 1,
+   "kinds": {
+    "REPLACE": 1
+   }
+  },
+  "33": {
+   "title_2027": "SPECIAL RULES APPLICABLE TO THE CLAIMS-MADE COVERAGE FORM CG 00 02",
+   "title_2022": "SPECIAL RULES APPLICABLE TO THE CLAIMS-MADE COVERAGE FORM CG 00 02",
+   "states": [
+    "AR",
+    "CO",
+    "CT",
+    "DE",
+    "MA",
+    "MI",
+    "MT",
+    "NC",
+    "NY",
+    "PA",
+    "VA"
+   ],
+   "n_states": 11,
+   "kinds": {
+    "REPLACE": 10,
+    "OTHER": 4,
+    "ADD": 2,
+    "DELETE": 2
+   }
+  },
+  "34": {
+   "title_2027": "SPECIAL RULE FOR INDIVIDUAL RISK SITUATIONS",
+   "title_2022": "SPECIAL RULE FOR INDIVIDUAL RISK SITUATIONS",
+   "states": [
+    "AK",
+    "AL",
+    "AR",
+    "AZ",
+    "CA",
+    "CO",
+    "DC",
+    "FL",
+    "GA",
+    "IN",
+    "KS",
+    "KY",
+    "LA",
+    "MA",
+    "ME",
+    "MI",
+    "MN",
+    "MO",
+    "MS",
+    "MT",
+    "NC",
+    "NE",
+    "NH",
+    "NJ",
+    "NY",
+    "OH",
+    "PA",
+    "PR",
+    "RI",
+    "SD",
+    "TN",
+    "TX",
+    "UT",
+    "VA",
+    "VT",
+    "WA",
+    "WI"
+   ],
+   "n_states": 37,
+   "kinds": {
+    "REPLACE": 35,
+    "ADD": 4,
+    "OTHER": 6,
+    "DELETE": 3
+   }
+  },
+  "36": {
+   "title_2027": "DESCRIPTION OF ADDITIONAL OPTIONAL ENDORSEMENTS",
+   "title_2022": "DESCRIPTION OF ADDITIONAL OPTIONAL ENDORSEMENTS",
+   "states": [
+    "AK",
+    "AR",
+    "AZ",
+    "CA",
+    "DE",
+    "FL",
+    "GA",
+    "IL",
+    "IN",
+    "KY",
+    "LA",
+    "MA",
+    "ME",
+    "MI",
+    "MN",
+    "MO",
+    "MT",
+    "NC",
+    "NE",
+    "NH",
+    "NV",
+    "NY",
+    "OH",
+    "OK",
+    "OR",
+    "PR",
+    "RI",
+    "SC",
+    "SD",
+    "TX",
+    "UT",
+    "VA",
+    "VT",
+    "WA",
+    "WV"
+   ],
+   "n_states": 35,
+   "kinds": {
+    "OTHER": 3,
+    "REPLACE": 28,
+    "ADD": 10,
+    "DELETE": 6
+   }
+  },
+  "37": {
+   "title_2027": "DESCRIPTION OF UNMANNED AIRCRAFT ENDORSEMENTS",
+   "title_2022": "DESCRIPTION OF UNMANNED AIRCRAFT ENDORSEMENTS",
+   "states": [
+    "AK",
+    "NY",
+    "VT",
+    "WA"
+   ],
+   "n_states": 4,
+   "kinds": {
+    "REPLACE": 3,
+    "ADD": 1
+   }
+  },
+  "41": {
+   "title_2027": "ABUSE OR MOLESTATION ENDORSEMENTS",
+   "title_2022": "ABUSE OR MOLESTATION ENDORSEMENTS",
+   "states": [
+    "AR",
+    "CO",
+    "CT",
+    "GA",
+    "LA",
+    "MI",
+    "MN",
+    "MT",
+    "NC",
+    "NY",
+    "PR",
+    "RI",
+    "SD",
+    "TX",
+    "UT",
+    "VA",
+    "VT",
+    "WA",
+    "WY"
+   ],
+   "n_states": 19,
+   "kinds": {
+    "REPLACE": 18,
+    "ADD": 1,
+    "DELETE": 1
+   }
+  },
+  "42": {
+   "title_2027": "ELECTRONIC DATA LIABILITY COVERAGE (Subline Code 325)",
+   "title_2022": "ELECTRONIC DATA LIABILITY COVERAGE",
+   "states": [
+    "AK",
+    "AR",
+    "AZ",
+    "CA",
+    "CO",
+    "CT",
+    "DC",
+    "DE",
+    "FL",
+    "GA",
+    "IA",
+    "ID",
+    "IL",
+    "IN",
+    "KS",
+    "KY",
+    "LA",
+    "MD",
+    "ME",
+    "MI",
+    "MN",
+    "MO",
+    "MS",
+    "MT",
+    "NC",
+    "ND",
+    "NE",
+    "NH",
+    "NJ",
+    "NM",
+    "NV",
+    "NY",
+    "OH",
+    "OK",
+    "OR",
+    "PA",
+    "PR",
+    "RI",
+    "SC",
+    "SD",
+    "TN",
+    "UT",
+    "VA",
+    "VT",
+    "WA",
+    "WI",
+    "WY"
+   ],
+   "n_states": 47,
+   "kinds": {
+    "REPLACE": 46,
+    "DELETE": 5,
+    "ADD": 2
+   }
+  },
+  "43": {
+   "title_2027": "EMPLOYEE BENEFITS LIABILITY COVERAGE (Subline Code 325)",
+   "title_2022": "EMPLOYEE BENEFITS LIABILITY COVERAGE",
+   "states": [
+    "CO",
+    "CT",
+    "MI",
+    "MT",
+    "NC",
+    "NH",
+    "NY",
+    "VA",
+    "WY"
+   ],
+   "n_states": 9,
+   "kinds": {
+    "REPLACE": 9,
+    "DELETE": 2
+   }
+  },
+  "44": {
+   "title_2027": "PRODUCT WITHDRAWAL COVERAGE (Subline Code 365)",
+   "title_2022": "PRODUCT WITHDRAWAL COVERAGE",
+   "states": [
+    "AK",
+    "AR",
+    "AZ",
+    "CA",
+    "CO",
+    "CT",
+    "DC",
+    "DE",
+    "FL",
+    "GA",
+    "IA",
+    "ID",
+    "IL",
+    "IN",
+    "KS",
+    "KY",
+    "LA",
+    "MD",
+    "ME",
+    "MI",
+    "MN",
+    "MO",
+    "MS",
+    "MT",
+    "NC",
+    "ND",
+    "NE",
+    "NH",
+    "NJ",
+    "NM",
+    "NV",
+    "NY",
+    "OH",
+    "OK",
+    "OR",
+    "PA",
+    "PR",
+    "RI",
+    "SC",
+    "SD",
+    "TN",
+    "TX",
+    "UT",
+    "VA",
+    "VT",
+    "WA",
+    "WI",
+    "WY"
+   ],
+   "n_states": 48,
+   "kinds": {
+    "REPLACE": 48,
+    "ADD": 4,
+    "DELETE": 4
+   }
+  },
+  "45": {
+   "title_2027": "LIQUOR LIABILITY COVERAGE (Subline Code 332)",
+   "title_2022": "LIQUOR LIABILITY COVERAGE (Subline Code 332)",
+   "states": [
+    "AK",
+    "AL",
+    "AR",
+    "AZ",
+    "CA",
+    "CO",
+    "CT",
+    "DC",
+    "DE",
+    "FL",
+    "GA",
+    "IA",
+    "ID",
+    "IL",
+    "IN",
+    "KS",
+    "KY",
+    "LA",
+    "MA",
+    "MD",
+    "ME",
+    "MI",
+    "MN",
+    "MO",
+    "MS",
+    "MT",
+    "NC",
+    "ND",
+    "NE",
+    "NH",
+    "NJ",
+    "NM",
+    "NV",
+    "NY",
+    "OH",
+    "OK",
+    "OR",
+    "PA",
+    "PR",
+    "RI",
+    "SC",
+    "SD",
+    "TN",
+    "TX",
+    "UT",
+    "VA",
+    "VT",
+    "WA",
+    "WI",
+    "WV",
+    "WY"
+   ],
+   "n_states": 51,
+   "kinds": {
+    "REPLACE": 51,
+    "OTHER": 11,
+    "ADD": 3,
+    "DELETE": 1,
+    "TABLE": 1
+   }
+  },
+  "46": {
+   "title_2027": "OWNERS AND CONTRACTORS PROTECTIVE LIABILITY INSURANCE AND PRINCIPALS PROTECTIVE LIABILITY INSURANCE (Subline Code 335)",
+   "title_2022": "OWNERS AND CONTRACTORS PROTECTIVE LIABILITY INSURANCE AND PRINCIPALS PROTECTIVE LIABILITY INSURANCE (Subline Code 335)",
+   "states": [
+    "AK",
+    "AR",
+    "AZ",
+    "CA",
+    "CO",
+    "CT",
+    "DC",
+    "DE",
+    "FL",
+    "GA",
+    "IA",
+    "ID",
+    "IL",
+    "IN",
+    "KS",
+    "KY",
+    "LA",
+    "MD",
+    "ME",
+    "MI",
+    "MN",
+    "MO",
+    "MS",
+    "MT",
+    "NC",
+    "ND",
+    "NE",
+    "NH",
+    "NJ",
+    "NM",
+    "NV",
+    "NY",
+    "OH",
+    "OK",
+    "OR",
+    "PA",
+    "PR",
+    "RI",
+    "SC",
+    "SD",
+    "TN",
+    "TX",
+    "UT",
+    "VA",
+    "VT",
+    "WA",
+    "WI",
+    "WY"
+   ],
+   "n_states": 48,
+   "kinds": {
+    "DELETE": 4,
+    "REPLACE": 48,
+    "ADD": 4,
+    "OTHER": 1,
+    "TABLE": 1
+   }
+  },
+  "47": {
+   "title_2027": "POLLUTION LIABILITY COVERAGE (Subline Code 350)",
+   "title_2022": "POLLUTION LIABILITY COVERAGE (Subline Code 350)",
+   "states": [
+    "AK",
+    "AR",
+    "AZ",
+    "CA",
+    "CO",
+    "CT",
+    "DC",
+    "DE",
+    "FL",
+    "GA",
+    "IA",
+    "ID",
+    "IL",
+    "IN",
+    "KS",
+    "KY",
+    "LA",
+    "MD",
+    "ME",
+    "MI",
+    "MN",
+    "MO",
+    "MS",
+    "MT",
+    "NC",
+    "ND",
+    "NE",
+    "NH",
+    "NJ",
+    "NM",
+    "NV",
+    "NY",
+    "OH",
+    "OK",
+    "OR",
+    "PA",
+    "PR",
+    "RI",
+    "SC",
+    "SD",
+    "TN",
+    "TX",
+    "UT",
+    "VA",
+    "VT",
+    "WA",
+    "WI",
+    "WY"
+   ],
+   "n_states": 48,
+   "kinds": {
+    "REPLACE": 48,
+    "DELETE": 7,
+    "ADD": 3,
+    "TABLE": 3,
+    "OTHER": 1
+   }
+  },
+  "48": {
+   "title_2027": "PRODUCTS/COMPLETED OPERATIONS LIABILITY COVERAGE (Subline Code 336)",
+   "title_2022": "PRODUCTS/COMPLETED OPERATIONS LIABILITY COVERAGE (Subline Code 336)",
+   "states": [
+    "AK",
+    "AR",
+    "AZ",
+    "CA",
+    "CO",
+    "CT",
+    "DC",
+    "DE",
+    "FL",
+    "GA",
+    "IA",
+    "ID",
+    "IL",
+    "IN",
+    "KS",
+    "KY",
+    "LA",
+    "MA",
+    "MD",
+    "ME",
+    "MI",
+    "MN",
+    "MO",
+    "MS",
+    "MT",
+    "NC",
+    "ND",
+    "NE",
+    "NH",
+    "NJ",
+    "NM",
+    "NV",
+    "NY",
+    "OH",
+    "OK",
+    "OR",
+    "PA",
+    "PR",
+    "RI",
+    "SC",
+    "SD",
+    "TN",
+    "TX",
+    "UT",
+    "VA",
+    "VT",
+    "WA",
+    "WI",
+    "WY"
+   ],
+   "n_states": 49,
+   "kinds": {
+    "OTHER": 7,
+    "REPLACE": 48,
+    "DELETE": 11,
+    "TABLE": 3,
+    "ADD": 5
+   }
+  },
+  "49": {
+   "title_2027": "RAILROAD PROTECTIVE LIABILITY (Subline Code 335)",
+   "title_2022": "RAILROAD PROTECTIVE LIABILITY (Subline Code 335)",
+   "states": [
+    "AK",
+    "AR",
+    "AZ",
+    "CA",
+    "CO",
+    "CT",
+    "DC",
+    "DE",
+    "FL",
+    "GA",
+    "IA",
+    "ID",
+    "IL",
+    "IN",
+    "KS",
+    "KY",
+    "LA",
+    "MD",
+    "ME",
+    "MI",
+    "MN",
+    "MO",
+    "MS",
+    "MT",
+    "NC",
+    "ND",
+    "NE",
+    "NH",
+    "NJ",
+    "NM",
+    "NV",
+    "NY",
+    "OH",
+    "OK",
+    "OR",
+    "PA",
+    "PR",
+    "RI",
+    "SC",
+    "SD",
+    "TN",
+    "TX",
+    "UT",
+    "VA",
+    "VT",
+    "WA",
+    "WI",
+    "WV",
+    "WY"
+   ],
+   "n_states": 49,
+   "kinds": {
+    "REPLACE": 49,
+    "TABLE": 5,
+    "DELETE": 8,
+    "ADD": 2
+   }
+  },
+  "52": {
+   "title_2027": null,
+   "title_2022": "COVERAGE FOR INSUREDS FOR INJURY TO LEASED WORKERS",
+   "states": [
+    "LA",
+    "MI",
+    "MO",
+    "NY",
+    "TX",
+    "VA",
+    "VT"
+   ],
+   "n_states": 7,
+   "kinds": {
+    "DELETE": 7,
+    "REPLACE": 7,
+    "TABLE": 3,
+    "ADD": 1
+   }
+  },
+  "53": {
+   "title_2027": "UNDERGROUND STORAGE TANK (UST) COVERAGE (Subline Code 350)",
+   "title_2022": "UNDERGROUND STORAGE TANK (UST) COVERAGE (Subline Code 350)",
+   "states": [
+    "AK",
+    "AR",
+    "AZ",
+    "CA",
+    "CO",
+    "CT",
+    "DC",
+    "DE",
+    "FL",
+    "GA",
+    "IA",
+    "ID",
+    "IL",
+    "IN",
+    "KS",
+    "KY",
+    "LA",
+    "MD",
+    "ME",
+    "MI",
+    "MN",
+    "MO",
+    "MS",
+    "MT",
+    "NC",
+    "ND",
+    "NE",
+    "NH",
+    "NJ",
+    "NM",
+    "NV",
+    "NY",
+    "OH",
+    "OK",
+    "OR",
+    "PA",
+    "PR",
+    "RI",
+    "SC",
+    "SD",
+    "TN",
+    "TX",
+    "UT",
+    "VA",
+    "VT",
+    "WA",
+    "WI",
+    "WY"
+   ],
+   "n_states": 48,
+   "kinds": {
+    "DELETE": 9,
+    "REPLACE": 48,
+    "TABLE": 8,
+    "OTHER": 2,
+    "ADD": 5
+   }
+  },
+  "54": {
+   "title_2027": "RESERVED FOR FUTURE USE",
+   "title_2022": "YEAR 2000 COMPUTER-RELATED ENDORSEMENTS",
+   "states": [
+    "AK",
+    "IA",
+    "LA",
+    "ME",
+    "NE",
+    "NJ",
+    "SD"
+   ],
+   "n_states": 7,
+   "kinds": {
+    "DELETE": 1,
+    "REPLACE": 6,
+    "ADD": 3,
+    "TABLE": 3,
+    "OTHER": 2
+   }
+  },
+  "55": {
+   "title_2027": "TERRORISM",
+   "title_2022": "TERRORISM ENDORSEMENT OPTIONS  FEDERAL BACKSTOP",
+   "states": [
+    "AK",
+    "CA",
+    "FL",
+    "GA",
+    "LA",
+    "NY",
+    "TX"
+   ],
+   "n_states": 7,
+   "kinds": {
+    "REPLACE": 7,
+    "TABLE": 7,
+    "ADD": 1
+   }
+  },
+  "56": {
+   "title_2027": "INCREASED LIMITS TABLES",
+   "title_2022": "INCREASED LIMITS TABLES",
+   "states": [
+    "AK",
+    "AL",
+    "AR",
+    "AZ",
+    "CA",
+    "CO",
+    "CT",
+    "DC",
+    "DE",
+    "FL",
+    "GA",
+    "IA",
+    "ID",
+    "IL",
+    "IN",
+    "KS",
+    "KY",
+    "LA",
+    "MA",
+    "MD",
+    "ME",
+    "MI",
+    "MN",
+    "MO",
+    "MS",
+    "MT",
+    "NC",
+    "ND",
+    "NE",
+    "NH",
+    "NJ",
+    "NM",
+    "NV",
+    "NY",
+    "OH",
+    "OK",
+    "OR",
+    "PA",
+    "PR",
+    "RI",
+    "SC",
+    "SD",
+    "TN",
+    "TX",
+    "UT",
+    "VA",
+    "VT",
+    "WA",
+    "WI",
+    "WV",
+    "WY"
+   ],
+   "n_states": 51,
+   "kinds": {
+    "OTHER": 39,
+    "REPLACE": 50,
+    "TABLE": 50,
+    "ADD": 1
+   }
+  }
+ },
+ "states": {
+  "AK": {
+   "notice": "GL-AK-2026-RU-001-C",
+   "notice_count": 9,
+   "first_year": 2022,
+   "last_year": 2026,
+   "numeric_rules": [
+    "2",
+    "11",
+    "13",
+    "22",
+    "24",
+    "34",
+    "36",
+    "37",
+    "42",
+    "44",
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "53",
+    "54",
+    "55",
+    "56"
+   ],
+   "additional_rules": {
+    "A1": "AMENDMENT \u2013 ALASKA ATTORNEY'S FEES \u2013 IL 01 21",
+    "A2": "TERRORISM PREMIUM DETERMINATION",
+    "A3": "DESCRIPTION OF MANDATORY AND OPTIONAL"
+   },
+   "kinds": {
+    "A1": [
+     "OTHER"
+    ],
+    "A2": [
+     "OTHER"
+    ],
+    "A3": [
+     "OTHER"
+    ],
+    "2": [
+     "REPLACE"
+    ],
+    "11": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "13": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "22": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "24": [
+     "ADD",
+     "REPLACE"
+    ],
+    "34": [
+     "REPLACE"
+    ],
+    "36": [
+     "OTHER",
+     "REPLACE"
+    ],
+    "37": [
+     "REPLACE"
+    ],
+    "42": [
+     "REPLACE"
+    ],
+    "44": [
+     "REPLACE"
+    ],
+    "45": [
+     "REPLACE"
+    ],
+    "46": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "47": [
+     "REPLACE"
+    ],
+    "48": [
+     "OTHER",
+     "REPLACE"
+    ],
+    "49": [
+     "REPLACE"
+    ],
+    "53": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "54": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "55": [
+     "REPLACE",
+     "TABLE"
+    ],
+    "56": [
+     "OTHER",
+     "REPLACE",
+     "TABLE"
+    ]
+   },
+   "deviation_count": 19,
+   "payroll": {
+    "notice": "GL-AK-2026-RU-001-C",
+    "annual_exec": "56,800",
+    "annual_indiv": "56,800",
+    "annual_each_indiv_copartner": null,
+    "weekly_max": null,
+    "weekly_min": null,
+    "seasonal_reduction": null,
+    "shape": "ANNUAL_CAP_BOTH"
+   },
+   "liquor_grades": [
+    8
+   ],
+   "ilf_table_count": 7,
+   "ilf_by_subline": {
+    "334": 3,
+    "336": 3,
+    "335": 1
+   },
+   "territory_rating": false,
+   "zip_territory": false,
+   "stopgap": false,
+   "elp": true,
+   "basic_limits": [
+    "100/200"
+   ]
+  },
+  "AL": {
+   "notice": "GL-AL-2027-RU-004-C",
+   "notice_count": 14,
+   "first_year": 2021,
+   "last_year": 2027,
+   "numeric_rules": [
+    "24",
+    "34",
+    "45",
+    "56"
+   ],
+   "additional_rules": {
+    "A1": "TERRORISM PREMIUM DETERMINATION",
+    "A2": "RATING TERRITORIES FOR PREMISES AND",
+    "A3": "DESCRIPTION OF MANDATORY AND OPTIONAL"
+   },
+   "kinds": {
+    "A1": [
+     "OTHER"
+    ],
+    "A2": [
+     "OTHER"
+    ],
+    "A3": [
+     "OTHER"
+    ],
+    "24": [
+     "ADD"
+    ],
+    "34": [
+     "ADD"
+    ],
+    "45": [
+     "REPLACE"
+    ],
+    "56": [
+     "OTHER",
+     "REPLACE",
+     "TABLE"
+    ]
+   },
+   "deviation_count": 4,
+   "payroll": {
+    "notice": "GL-AL-2027-RU-004-C",
+    "annual_exec": "42,300",
+    "annual_indiv": "42,300",
+    "annual_each_indiv_copartner": null,
+    "weekly_max": null,
+    "weekly_min": null,
+    "seasonal_reduction": null,
+    "shape": "ANNUAL_CAP_BOTH"
+   },
+   "liquor_grades": [
+    5
+   ],
+   "ilf_table_count": 7,
+   "ilf_by_subline": {
+    "334": 3,
+    "336": 3,
+    "335": 1
+   },
+   "territory_rating": true,
+   "zip_territory": true,
+   "stopgap": false,
+   "elp": false,
+   "basic_limits": [
+    "100/200"
+   ]
+  },
+  "AR": {
+   "notice": "GL-AR-2027-RU-003-C",
+   "notice_count": 9,
+   "first_year": 2021,
+   "last_year": 2027,
+   "numeric_rules": [
+    "2",
+    "22",
+    "24",
+    "33",
+    "34",
+    "36",
+    "41",
+    "42",
+    "44",
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "53",
+    "56"
+   ],
+   "additional_rules": {
+    "A1": "TERRORISM PREMIUM DETERMINATION",
+    "A2": "DESCRIPTION OF MANDATORY AND OPTIONAL"
+   },
+   "kinds": {
+    "A1": [
+     "OTHER"
+    ],
+    "A2": [
+     "OTHER"
+    ],
+    "2": [
+     "REPLACE"
+    ],
+    "22": [
+     "REPLACE"
+    ],
+    "24": [
+     "ADD"
+    ],
+    "33": [
+     "REPLACE"
+    ],
+    "34": [
+     "REPLACE"
+    ],
+    "36": [
+     "REPLACE"
+    ],
+    "41": [
+     "REPLACE"
+    ],
+    "42": [
+     "REPLACE"
+    ],
+    "44": [
+     "REPLACE"
+    ],
+    "45": [
+     "REPLACE"
+    ],
+    "46": [
+     "REPLACE"
+    ],
+    "47": [
+     "REPLACE"
+    ],
+    "48": [
+     "REPLACE"
+    ],
+    "49": [
+     "REPLACE"
+    ],
+    "53": [
+     "REPLACE"
+    ],
+    "56": [
+     "OTHER",
+     "REPLACE",
+     "TABLE"
+    ]
+   },
+   "deviation_count": 16,
+   "payroll": {
+    "notice": "GL-AR-2027-RU-003-C",
+    "annual_exec": "30,000",
+    "annual_indiv": "30,000",
+    "annual_each_indiv_copartner": null,
+    "weekly_max": null,
+    "weekly_min": null,
+    "seasonal_reduction": null,
+    "shape": "ANNUAL_CAP_BOTH"
+   },
+   "liquor_grades": [
+    3
+   ],
+   "ilf_table_count": 7,
+   "ilf_by_subline": {
+    "334": 3,
+    "336": 3,
+    "335": 1
+   },
+   "territory_rating": false,
+   "zip_territory": false,
+   "stopgap": false,
+   "elp": true,
+   "basic_limits": [
+    "100/200"
+   ]
+  },
+  "AZ": {
+   "notice": "GL-AZ-2027-RU-003-C",
+   "notice_count": 12,
+   "first_year": 2022,
+   "last_year": 2027,
+   "numeric_rules": [
+    "2",
+    "22",
+    "24",
+    "34",
+    "36",
+    "42",
+    "44",
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "53",
+    "56"
+   ],
+   "additional_rules": {
+    "A1": "TERRORISM PREMIUM DETERMINATION",
+    "A2": "RATING TERRITORIES FOR PREMISES AND",
+    "A3": "DESCRIPTION OF MANDATORY AND OPTIONAL"
+   },
+   "kinds": {
+    "A1": [
+     "OTHER"
+    ],
+    "A2": [
+     "OTHER"
+    ],
+    "A3": [
+     "OTHER"
+    ],
+    "2": [
+     "REPLACE"
+    ],
+    "22": [
+     "ADD",
+     "REPLACE"
+    ],
+    "24": [
+     "ADD"
+    ],
+    "34": [
+     "OTHER",
+     "REPLACE"
+    ],
+    "36": [
+     "REPLACE"
+    ],
+    "42": [
+     "REPLACE"
+    ],
+    "44": [
+     "REPLACE"
+    ],
+    "45": [
+     "OTHER",
+     "REPLACE"
+    ],
+    "46": [
+     "REPLACE"
+    ],
+    "47": [
+     "REPLACE"
+    ],
+    "48": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "49": [
+     "REPLACE"
+    ],
+    "53": [
+     "REPLACE"
+    ],
+    "56": [
+     "OTHER",
+     "REPLACE",
+     "TABLE"
+    ]
+   },
+   "deviation_count": 14,
+   "payroll": {
+    "notice": "GL-AZ-2027-RU-003-C",
+    "annual_exec": "26,400",
+    "annual_indiv": "26,400",
+    "annual_each_indiv_copartner": null,
+    "weekly_max": null,
+    "weekly_min": null,
+    "seasonal_reduction": null,
+    "shape": "ANNUAL_CAP_BOTH"
+   },
+   "liquor_grades": [
+    5
+   ],
+   "ilf_table_count": 7,
+   "ilf_by_subline": {
+    "334": 3,
+    "336": 3,
+    "335": 1
+   },
+   "territory_rating": true,
+   "zip_territory": true,
+   "stopgap": false,
+   "elp": true,
+   "basic_limits": [
+    "100/200"
+   ]
+  },
+  "CA": {
+   "notice": "GL-CA-2023-RU-003-C",
+   "notice_count": 5,
+   "first_year": 2022,
+   "last_year": 2023,
+   "numeric_rules": [
+    "2",
+    "5",
+    "10",
+    "11",
+    "13",
+    "22",
+    "24",
+    "34",
+    "36",
+    "42",
+    "44",
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "53",
+    "55",
+    "56"
+   ],
+   "additional_rules": {
+    "A1": "TERRORISM PREMIUM DETERMINATION",
+    "A2": "TRANSITION RULE FOR PREMIUM CHANGES RESULTING FROM AUTOMOBILE SERVICE RISKS MOVING FROM THE COMMERCIAL AUTOMOBILE PROGRAM TO THE GENERAL LIABILITY PROGRAM"
+   },
+   "kinds": {
+    "A1": [
+     "OTHER"
+    ],
+    "A2": [
+     "OTHER"
+    ],
+    "2": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "5": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "10": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "11": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "13": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "22": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "34": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "36": [
+     "ADD"
+    ],
+    "24": [
+     "ADD"
+    ],
+    "42": [
+     "REPLACE"
+    ],
+    "46": [
+     "ADD",
+     "REPLACE"
+    ],
+    "44": [
+     "ADD",
+     "REPLACE"
+    ],
+    "45": [
+     "ADD",
+     "REPLACE"
+    ],
+    "47": [
+     "REPLACE"
+    ],
+    "48": [
+     "REPLACE",
+     "TABLE"
+    ],
+    "49": [
+     "REPLACE",
+     "TABLE"
+    ],
+    "53": [
+     "REPLACE",
+     "TABLE"
+    ],
+    "55": [
+     "REPLACE",
+     "TABLE"
+    ],
+    "56": [
+     "TABLE"
+    ]
+   },
+   "deviation_count": 19,
+   "payroll": {
+    "notice": "GL-CA-2023-RU-003-C",
+    "annual_exec": "33,600",
+    "annual_indiv": "33,600",
+    "annual_each_indiv_copartner": null,
+    "weekly_max": null,
+    "weekly_min": null,
+    "seasonal_reduction": null,
+    "shape": "ANNUAL_CAP_BOTH"
+   },
+   "liquor_grades": [
+    3
+   ],
+   "ilf_table_count": 7,
+   "ilf_by_subline": {
+    "334": 3,
+    "336": 3,
+    "335": 1
+   },
+   "territory_rating": false,
+   "zip_territory": false,
+   "stopgap": false,
+   "elp": true,
+   "basic_limits": []
+  },
+  "CO": {
+   "notice": "GL-CO-2027-RU-003-C",
+   "notice_count": 11,
+   "first_year": 2021,
+   "last_year": 2027,
+   "numeric_rules": [
+    "2",
+    "22",
+    "24",
+    "33",
+    "34",
+    "41",
+    "42",
+    "43",
+    "44",
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "53",
+    "56"
+   ],
+   "additional_rules": {
+    "A1": "TERRORISM PREMIUM DETERMINATION",
+    "A2": "RATING TERRITORIES FOR PREMISES AND",
+    "A3": "DESCRIPTION OF MANDATORY AND OPTIONAL"
+   },
+   "kinds": {
+    "A1": [
+     "OTHER"
+    ],
+    "A2": [
+     "OTHER"
+    ],
+    "A3": [
+     "OTHER"
+    ],
+    "2": [
+     "REPLACE"
+    ],
+    "22": [
+     "REPLACE"
+    ],
+    "24": [
+     "ADD",
+     "REPLACE"
+    ],
+    "33": [
+     "OTHER",
+     "REPLACE"
+    ],
+    "34": [
+     "REPLACE"
+    ],
+    "41": [
+     "ADD"
+    ],
+    "42": [
+     "REPLACE"
+    ],
+    "43": [
+     "REPLACE"
+    ],
+    "44": [
+     "REPLACE"
+    ],
+    "45": [
+     "OTHER",
+     "REPLACE"
+    ],
+    "46": [
+     "REPLACE"
+    ],
+    "47": [
+     "REPLACE"
+    ],
+    "48": [
+     "OTHER",
+     "REPLACE"
+    ],
+    "49": [
+     "REPLACE"
+    ],
+    "53": [
+     "REPLACE"
+    ],
+    "56": [
+     "OTHER",
+     "REPLACE",
+     "TABLE"
+    ]
+   },
+   "deviation_count": 16,
+   "payroll": {
+    "notice": "GL-CO-2027-RU-003-C",
+    "annual_exec": "39,300",
+    "annual_indiv": "39,300",
+    "annual_each_indiv_copartner": null,
+    "weekly_max": null,
+    "weekly_min": null,
+    "seasonal_reduction": null,
+    "shape": "ANNUAL_CAP_BOTH"
+   },
+   "liquor_grades": [
+    3
+   ],
+   "ilf_table_count": 7,
+   "ilf_by_subline": {
+    "334": 3,
+    "336": 3,
+    "335": 1
+   },
+   "territory_rating": true,
+   "zip_territory": true,
+   "stopgap": false,
+   "elp": true,
+   "basic_limits": [
+    "100/200"
+   ]
+  },
+  "CT": {
+   "notice": "GL-CT-2026-RU-002-C",
+   "notice_count": 7,
+   "first_year": 2021,
+   "last_year": 2026,
+   "numeric_rules": [
+    "11",
+    "22",
+    "24",
+    "33",
+    "41",
+    "42",
+    "43",
+    "44",
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "53",
+    "56"
+   ],
+   "additional_rules": {
+    "A1": "TERRORISM PREMIUM DETERMINATION",
+    "A2": "RATING TERRITORIES FOR PREMISES AND",
+    "A3": "DESCRIPTION OF MANDATORY AND OPTIONAL"
+   },
+   "kinds": {
+    "A1": [
+     "OTHER"
+    ],
+    "A2": [
+     "OTHER"
+    ],
+    "A3": [
+     "OTHER"
+    ],
+    "11": [
+     "ADD"
+    ],
+    "22": [
+     "REPLACE"
+    ],
+    "24": [
+     "REPLACE"
+    ],
+    "33": [
+     "OTHER",
+     "REPLACE"
+    ],
+    "41": [
+     "REPLACE"
+    ],
+    "42": [
+     "REPLACE"
+    ],
+    "43": [
+     "REPLACE"
+    ],
+    "44": [
+     "REPLACE"
+    ],
+    "45": [
+     "OTHER",
+     "REPLACE"
+    ],
+    "46": [
+     "REPLACE"
+    ],
+    "47": [
+     "REPLACE"
+    ],
+    "48": [
+     "DELETE",
+     "OTHER",
+     "REPLACE"
+    ],
+    "49": [
+     "REPLACE"
+    ],
+    "53": [
+     "OTHER",
+     "REPLACE"
+    ],
+    "56": [
+     "OTHER",
+     "REPLACE",
+     "TABLE"
+    ]
+   },
+   "deviation_count": 15,
+   "payroll": {
+    "notice": "GL-CT-2026-RU-002-C",
+    "annual_exec": null,
+    "annual_indiv": null,
+    "annual_each_indiv_copartner": "10,400",
+    "weekly_max": "300",
+    "weekly_min": "100",
+    "seasonal_reduction": "2% per week beyond twelve",
+    "shape": "WEEKLY_MINMAX_EXEC + ANNUAL_INDIV"
+   },
+   "liquor_grades": [
+    5
+   ],
+   "ilf_table_count": 7,
+   "ilf_by_subline": {
+    "334": 3,
+    "336": 3,
+    "335": 1
+   },
+   "territory_rating": true,
+   "zip_territory": true,
+   "stopgap": false,
+   "elp": false,
+   "basic_limits": [
+    "100/200"
+   ]
+  },
+  "DC": {
+   "notice": "GL-DC-2026-RU-002-C",
+   "notice_count": 7,
+   "first_year": 2022,
+   "last_year": 2026,
+   "numeric_rules": [
+    "2",
+    "22",
+    "24",
+    "34",
+    "42",
+    "44",
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "53",
+    "56"
+   ],
+   "additional_rules": {
+    "A1": "TERRORISM PREMIUM DETERMINATION",
+    "A2": "DESCRIPTION OF MANDATORY AND OPTIONAL"
+   },
+   "kinds": {
+    "A1": [
+     "OTHER"
+    ],
+    "A2": [
+     "OTHER"
+    ],
+    "2": [
+     "REPLACE"
+    ],
+    "22": [
+     "ADD",
+     "REPLACE"
+    ],
+    "24": [
+     "ADD",
+     "REPLACE"
+    ],
+    "34": [
+     "REPLACE"
+    ],
+    "42": [
+     "REPLACE"
+    ],
+    "44": [
+     "REPLACE"
+    ],
+    "45": [
+     "REPLACE"
+    ],
+    "46": [
+     "REPLACE"
+    ],
+    "47": [
+     "REPLACE"
+    ],
+    "48": [
+     "REPLACE"
+    ],
+    "49": [
+     "REPLACE"
+    ],
+    "53": [
+     "REPLACE"
+    ],
+    "56": [
+     "REPLACE",
+     "TABLE"
+    ]
+   },
+   "deviation_count": 13,
+   "payroll": {
+    "notice": "GL-DC-2026-RU-002-C",
+    "annual_exec": "30,000",
+    "annual_indiv": "30,000",
+    "annual_each_indiv_copartner": null,
+    "weekly_max": null,
+    "weekly_min": null,
+    "seasonal_reduction": null,
+    "shape": "ANNUAL_CAP_BOTH"
+   },
+   "liquor_grades": [
+    5
+   ],
+   "ilf_table_count": 7,
+   "ilf_by_subline": {
+    "334": 3,
+    "336": 3,
+    "335": 1
+   },
+   "territory_rating": false,
+   "zip_territory": false,
+   "stopgap": false,
+   "elp": true,
+   "basic_limits": [
+    "100/200"
+   ]
+  },
+  "DE": {
+   "notice": "GL-DE-2027-RU-003-C",
+   "notice_count": 11,
+   "first_year": 2021,
+   "last_year": 2027,
+   "numeric_rules": [
+    "22",
+    "24",
+    "33",
+    "36",
+    "42",
+    "44",
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "53",
+    "56"
+   ],
+   "additional_rules": {
+    "A1": "TERRORISM PREMIUM DETERMINATION",
+    "A2": "DESCRIPTION OF MANDATORY AND OPTIONAL"
+   },
+   "kinds": {
+    "A1": [
+     "OTHER"
+    ],
+    "A2": [
+     "OTHER"
+    ],
+    "22": [
+     "ADD",
+     "REPLACE"
+    ],
+    "24": [
+     "ADD"
+    ],
+    "33": [
+     "ADD",
+     "REPLACE"
+    ],
+    "36": [
+     "OTHER",
+     "REPLACE"
+    ],
+    "42": [
+     "REPLACE"
+    ],
+    "44": [
+     "REPLACE"
+    ],
+    "45": [
+     "REPLACE"
+    ],
+    "46": [
+     "REPLACE"
+    ],
+    "47": [
+     "REPLACE"
+    ],
+    "48": [
+     "ADD",
+     "REPLACE"
+    ],
+    "49": [
+     "REPLACE"
+    ],
+    "53": [
+     "REPLACE"
+    ],
+    "56": [
+     "OTHER",
+     "REPLACE",
+     "TABLE"
+    ]
+   },
+   "deviation_count": 13,
+   "payroll": {
+    "notice": "GL-DE-2027-RU-003-C",
+    "annual_exec": "49,300",
+    "annual_indiv": "49,300",
+    "annual_each_indiv_copartner": null,
+    "weekly_max": null,
+    "weekly_min": null,
+    "seasonal_reduction": null,
+    "shape": "ANNUAL_CAP_BOTH"
+   },
+   "liquor_grades": [
+    0
+   ],
+   "ilf_table_count": 7,
+   "ilf_by_subline": {
+    "334": 3,
+    "336": 3,
+    "335": 1
+   },
+   "territory_rating": false,
+   "zip_territory": false,
+   "stopgap": false,
+   "elp": false,
+   "basic_limits": [
+    "100/200"
+   ]
+  },
+  "FL": {
+   "notice": "GL-FL-2027-RU-003-C",
+   "notice_count": 13,
+   "first_year": 2021,
+   "last_year": 2027,
+   "numeric_rules": [
+    "9",
+    "10",
+    "11",
+    "13",
+    "22",
+    "24",
+    "34",
+    "36",
+    "42",
+    "44",
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "53",
+    "55",
+    "56"
+   ],
+   "additional_rules": {
+    "A1": "DESCRIPTION OF MANDATORY AND OPTIONAL"
+   },
+   "kinds": {
+    "A1": [
+     "OTHER"
+    ],
+    "9": [
+     "REPLACE"
+    ],
+    "10": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "11": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "13": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "22": [
+     "REPLACE"
+    ],
+    "24": [
+     "ADD",
+     "REPLACE"
+    ],
+    "34": [
+     "REPLACE"
+    ],
+    "36": [
+     "ADD"
+    ],
+    "42": [
+     "REPLACE"
+    ],
+    "44": [
+     "REPLACE"
+    ],
+    "45": [
+     "REPLACE"
+    ],
+    "46": [
+     "REPLACE"
+    ],
+    "47": [
+     "REPLACE"
+    ],
+    "48": [
+     "REPLACE"
+    ],
+    "49": [
+     "REPLACE"
+    ],
+    "53": [
+     "REPLACE"
+    ],
+    "55": [
+     "REPLACE",
+     "TABLE"
+    ],
+    "56": [
+     "OTHER",
+     "REPLACE",
+     "TABLE"
+    ]
+   },
+   "deviation_count": 18,
+   "payroll": {
+    "notice": "GL-FL-2027-RU-003-C",
+    "annual_exec": "40,600",
+    "annual_indiv": "40,600",
+    "annual_each_indiv_copartner": null,
+    "weekly_max": null,
+    "weekly_min": null,
+    "seasonal_reduction": null,
+    "shape": "ANNUAL_CAP_BOTH"
+   },
+   "liquor_grades": [
+    3
+   ],
+   "ilf_table_count": 7,
+   "ilf_by_subline": {
+    "334": 3,
+    "336": 3,
+    "335": 1
+   },
+   "territory_rating": false,
+   "zip_territory": false,
+   "stopgap": false,
+   "elp": false,
+   "basic_limits": [
+    "100/200"
+   ]
+  },
+  "GA": {
+   "notice": "GL-GA-2026-RU-003-C",
+   "notice_count": 14,
+   "first_year": 2022,
+   "last_year": 2026,
+   "numeric_rules": [
+    "2",
+    "11",
+    "22",
+    "24",
+    "34",
+    "36",
+    "41",
+    "42",
+    "44",
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "53",
+    "55",
+    "56"
+   ],
+   "additional_rules": {
+    "A1": "TERRORISM PREMIUM DETERMINATION",
+    "A2": "RATING TERRITORIES FOR PREMISES AND",
+    "A3": "DESCRIPTION OF MANDATORY AND OPTIONAL",
+    "A4": "NOTICE OF REDUCTION IN COVERAGE"
+   },
+   "kinds": {
+    "A1": [
+     "OTHER"
+    ],
+    "A2": [
+     "OTHER"
+    ],
+    "A3": [
+     "OTHER"
+    ],
+    "A4": [
+     "OTHER"
+    ],
+    "2": [
+     "REPLACE"
+    ],
+    "11": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "22": [
+     "ADD",
+     "REPLACE"
+    ],
+    "24": [
+     "ADD",
+     "REPLACE"
+    ],
+    "34": [
+     "REPLACE"
+    ],
+    "36": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "41": [
+     "REPLACE"
+    ],
+    "42": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "44": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "45": [
+     "REPLACE"
+    ],
+    "46": [
+     "ADD",
+     "OTHER",
+     "REPLACE"
+    ],
+    "47": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "48": [
+     "REPLACE"
+    ],
+    "49": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "53": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "55": [
+     "REPLACE",
+     "TABLE"
+    ],
+    "56": [
+     "OTHER",
+     "REPLACE",
+     "TABLE"
+    ]
+   },
+   "deviation_count": 17,
+   "payroll": {
+    "notice": "GL-GA-2026-RU-003-C",
+    "annual_exec": "30,500",
+    "annual_indiv": "30,500",
+    "annual_each_indiv_copartner": null,
+    "weekly_max": null,
+    "weekly_min": null,
+    "seasonal_reduction": null,
+    "shape": "ANNUAL_CAP_BOTH"
+   },
+   "liquor_grades": [
+    4
+   ],
+   "ilf_table_count": 7,
+   "ilf_by_subline": {
+    "334": 3,
+    "336": 3,
+    "335": 1
+   },
+   "territory_rating": true,
+   "zip_territory": true,
+   "stopgap": false,
+   "elp": true,
+   "basic_limits": [
+    "100/200"
+   ]
+  },
+  "IA": {
+   "notice": "GL-IA-2026-RU-001-C",
+   "notice_count": 8,
+   "first_year": 2022,
+   "last_year": 2026,
+   "numeric_rules": [
+    "13",
+    "22",
+    "24",
+    "42",
+    "44",
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "53",
+    "54",
+    "56"
+   ],
+   "additional_rules": {
+    "A1": "TERRORISM PREMIUM DETERMINATION",
+    "A2": "RATING TERRITORIES FOR PREMISES AND",
+    "A3": "OWNERS AND POSSESSORS OF DANGEROUS WILD",
+    "A4": "DESCRIPTION OF MANDATORY AND OPTIONAL"
+   },
+   "kinds": {
+    "A1": [
+     "OTHER"
+    ],
+    "A2": [
+     "OTHER"
+    ],
+    "A3": [
+     "OTHER"
+    ],
+    "A4": [
+     "OTHER"
+    ],
+    "13": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "22": [
+     "ADD",
+     "REPLACE"
+    ],
+    "24": [
+     "ADD",
+     "REPLACE"
+    ],
+    "42": [
+     "REPLACE"
+    ],
+    "44": [
+     "REPLACE"
+    ],
+    "45": [
+     "REPLACE"
+    ],
+    "46": [
+     "REPLACE"
+    ],
+    "47": [
+     "REPLACE"
+    ],
+    "48": [
+     "REPLACE"
+    ],
+    "49": [
+     "REPLACE"
+    ],
+    "53": [
+     "ADD",
+     "REPLACE"
+    ],
+    "54": [
+     "ADD",
+     "REPLACE"
+    ],
+    "56": [
+     "OTHER",
+     "REPLACE",
+     "TABLE"
+    ]
+   },
+   "deviation_count": 13,
+   "payroll": {
+    "notice": "GL-IA-2026-RU-001-C",
+    "annual_exec": "36,000",
+    "annual_indiv": "36,000",
+    "annual_each_indiv_copartner": null,
+    "weekly_max": null,
+    "weekly_min": null,
+    "seasonal_reduction": null,
+    "shape": "ANNUAL_CAP_BOTH"
+   },
+   "liquor_grades": [
+    0
+   ],
+   "ilf_table_count": 7,
+   "ilf_by_subline": {
+    "334": 3,
+    "336": 3,
+    "335": 1
+   },
+   "territory_rating": true,
+   "zip_territory": true,
+   "stopgap": false,
+   "elp": false,
+   "basic_limits": [
+    "100/200"
+   ]
+  },
+  "ID": {
+   "notice": "GL-ID-2027-RU-003-C",
+   "notice_count": 8,
+   "first_year": 2022,
+   "last_year": 2027,
+   "numeric_rules": [
+    "22",
+    "24",
+    "42",
+    "44",
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "53",
+    "56"
+   ],
+   "additional_rules": {
+    "A1": "TERRORISM PREMIUM DETERMINATION",
+    "A2": "DESCRIPTION OF MANDATORY AND OPTIONAL"
+   },
+   "kinds": {
+    "A1": [
+     "OTHER"
+    ],
+    "A2": [
+     "OTHER"
+    ],
+    "22": [
+     "ADD",
+     "REPLACE"
+    ],
+    "24": [
+     "ADD",
+     "REPLACE"
+    ],
+    "42": [
+     "REPLACE"
+    ],
+    "44": [
+     "REPLACE"
+    ],
+    "45": [
+     "OTHER",
+     "REPLACE"
+    ],
+    "46": [
+     "REPLACE"
+    ],
+    "47": [
+     "REPLACE"
+    ],
+    "48": [
+     "REPLACE"
+    ],
+    "49": [
+     "REPLACE"
+    ],
+    "53": [
+     "REPLACE"
+    ],
+    "56": [
+     "OTHER",
+     "REPLACE",
+     "TABLE"
+    ]
+   },
+   "deviation_count": 11,
+   "payroll": {
+    "notice": "GL-ID-2027-RU-003-C",
+    "annual_exec": "32,800",
+    "annual_indiv": "32,800",
+    "annual_each_indiv_copartner": null,
+    "weekly_max": null,
+    "weekly_min": null,
+    "seasonal_reduction": null,
+    "shape": "ANNUAL_CAP_BOTH"
+   },
+   "liquor_grades": [
+    4
+   ],
+   "ilf_table_count": 7,
+   "ilf_by_subline": {
+    "334": 3,
+    "336": 3,
+    "335": 1
+   },
+   "territory_rating": false,
+   "zip_territory": false,
+   "stopgap": false,
+   "elp": false,
+   "basic_limits": [
+    "100/200"
+   ]
+  },
+  "IL": {
+   "notice": "GL-IL-2027-RU-004-C",
+   "notice_count": 17,
+   "first_year": 2021,
+   "last_year": 2027,
+   "numeric_rules": [
+    "13",
+    "22",
+    "24",
+    "36",
+    "42",
+    "44",
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "53",
+    "56"
+   ],
+   "additional_rules": {
+    "A1": "CHANGES  CONTRACTORS  HOME REPAIR AND REMODELING",
+    "A2": "SCAFFOLDING OPERATORS IN THE CITY OF CHICAGO",
+    "A3": "TERRORISM PREMIUM DETERMINATION",
+    "A4": "RATING TERRITORIES FOR PREMISES AND OPERATIONS (Subline Code 334) AND LIQUOR LIABILITY (Subline Code 332)",
+    "A5": "ENERGY EFFICIENCY INSTALLERS",
+    "A6": "DESCRIPTION OF MANDATORY AND OPTIONAL ENDORSEMENTS"
+   },
+   "kinds": {
+    "A1": [
+     "OTHER"
+    ],
+    "A2": [
+     "OTHER"
+    ],
+    "A3": [
+     "OTHER"
+    ],
+    "A4": [
+     "OTHER"
+    ],
+    "A5": [
+     "OTHER"
+    ],
+    "A6": [
+     "OTHER"
+    ],
+    "13": [
+     "ADD",
+     "DELETE",
+     "REPLACE"
+    ],
+    "22": [
+     "ADD",
+     "REPLACE"
+    ],
+    "24": [
+     "ADD"
+    ],
+    "36": [
+     "ADD",
+     "DELETE",
+     "REPLACE"
+    ],
+    "42": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "44": [
+     "REPLACE"
+    ],
+    "45": [
+     "REPLACE"
+    ],
+    "46": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "47": [
+     "REPLACE"
+    ],
+    "48": [
+     "ADD",
+     "DELETE",
+     "REPLACE"
+    ],
+    "49": [
+     "REPLACE"
+    ],
+    "53": [
+     "ADD",
+     "REPLACE"
+    ],
+    "56": [
+     "REPLACE",
+     "TABLE"
+    ]
+   },
+   "deviation_count": 13,
+   "payroll": {
+    "notice": "GL-IL-2027-RU-004-C",
+    "annual_exec": "67,100",
+    "annual_indiv": "67,100",
+    "annual_each_indiv_copartner": null,
+    "weekly_max": null,
+    "weekly_min": null,
+    "seasonal_reduction": null,
+    "shape": "ANNUAL_CAP_BOTH"
+   },
+   "liquor_grades": [
+    3
+   ],
+   "ilf_table_count": 8,
+   "ilf_by_subline": {
+    "334": 3,
+    "336": 3,
+    "335": 1,
+    "332": 1
+   },
+   "territory_rating": true,
+   "zip_territory": true,
+   "stopgap": false,
+   "elp": false,
+   "basic_limits": []
+  },
+  "IN": {
+   "notice": "GL-IN-2027-RU-003-C",
+   "notice_count": 11,
+   "first_year": 2021,
+   "last_year": 2027,
+   "numeric_rules": [
+    "2",
+    "22",
+    "24",
+    "34",
+    "36",
+    "42",
+    "44",
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "53",
+    "56"
+   ],
+   "additional_rules": {
+    "A1": "TERRORISM PREMIUM DETERMINATION",
+    "A2": "RATING TERRITORIES FOR PREMISES AND",
+    "A3": "DESCRIPTION OF MANDATORY AND OPTIONAL"
+   },
+   "kinds": {
+    "A1": [
+     "OTHER"
+    ],
+    "A2": [
+     "OTHER"
+    ],
+    "A3": [
+     "OTHER"
+    ],
+    "2": [
+     "REPLACE"
+    ],
+    "22": [
+     "REPLACE"
+    ],
+    "24": [
+     "ADD",
+     "REPLACE"
+    ],
+    "34": [
+     "REPLACE"
+    ],
+    "36": [
+     "REPLACE"
+    ],
+    "42": [
+     "REPLACE"
+    ],
+    "44": [
+     "REPLACE"
+    ],
+    "45": [
+     "OTHER",
+     "REPLACE"
+    ],
+    "46": [
+     "REPLACE"
+    ],
+    "47": [
+     "REPLACE"
+    ],
+    "48": [
+     "REPLACE"
+    ],
+    "49": [
+     "ADD",
+     "REPLACE"
+    ],
+    "53": [
+     "REPLACE"
+    ],
+    "56": [
+     "OTHER",
+     "REPLACE",
+     "TABLE"
+    ]
+   },
+   "deviation_count": 14,
+   "payroll": {
+    "notice": "GL-IN-2027-RU-003-C",
+    "annual_exec": "50,300",
+    "annual_indiv": "50,300",
+    "annual_each_indiv_copartner": null,
+    "weekly_max": null,
+    "weekly_min": null,
+    "seasonal_reduction": null,
+    "shape": "ANNUAL_CAP_BOTH"
+   },
+   "liquor_grades": [
+    5
+   ],
+   "ilf_table_count": 8,
+   "ilf_by_subline": {
+    "334": 4,
+    "336": 3,
+    "335": 1
+   },
+   "territory_rating": true,
+   "zip_territory": true,
+   "stopgap": false,
+   "elp": true,
+   "basic_limits": [
+    "100/200"
+   ]
+  },
+  "KS": {
+   "notice": "GL-KS-2026-RU-002-C",
+   "notice_count": 6,
+   "first_year": 2022,
+   "last_year": 2026,
+   "numeric_rules": [
+    "2",
+    "10",
+    "22",
+    "24",
+    "34",
+    "42",
+    "44",
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "53",
+    "56"
+   ],
+   "additional_rules": {
+    "A1": "TERRORISM PREMIUM DETERMINATION",
+    "A2": "RATING TERRITORIES FOR PREMISES AND",
+    "A3": "TRANSITION RULE FOR PREMIUM CHANGES",
+    "A4": "DESCRIPTION OF MANDATORY AND OPTIONAL"
+   },
+   "kinds": {
+    "A1": [
+     "OTHER"
+    ],
+    "A2": [
+     "OTHER"
+    ],
+    "A3": [
+     "OTHER"
+    ],
+    "A4": [
+     "OTHER"
+    ],
+    "2": [
+     "REPLACE"
+    ],
+    "10": [
+     "REPLACE"
+    ],
+    "22": [
+     "REPLACE"
+    ],
+    "24": [
+     "ADD",
+     "REPLACE"
+    ],
+    "34": [
+     "OTHER",
+     "REPLACE"
+    ],
+    "42": [
+     "REPLACE"
+    ],
+    "44": [
+     "REPLACE"
+    ],
+    "45": [
+     "REPLACE"
+    ],
+    "46": [
+     "REPLACE"
+    ],
+    "47": [
+     "REPLACE"
+    ],
+    "48": [
+     "REPLACE"
+    ],
+    "49": [
+     "REPLACE"
+    ],
+    "53": [
+     "REPLACE"
+    ],
+    "56": [
+     "OTHER",
+     "REPLACE",
+     "TABLE"
+    ]
+   },
+   "deviation_count": 14,
+   "payroll": {
+    "notice": "GL-KS-2026-RU-002-C",
+    "annual_exec": "30,300",
+    "annual_indiv": "13,300",
+    "annual_each_indiv_copartner": null,
+    "weekly_max": null,
+    "weekly_min": null,
+    "seasonal_reduction": null,
+    "shape": "ANNUAL_CAP_BOTH"
+   },
+   "liquor_grades": [
+    0
+   ],
+   "ilf_table_count": 7,
+   "ilf_by_subline": {
+    "334": 3,
+    "336": 3,
+    "335": 1
+   },
+   "territory_rating": true,
+   "zip_territory": true,
+   "stopgap": false,
+   "elp": true,
+   "basic_limits": [
+    "100/200"
+   ]
+  },
+  "KY": {
+   "notice": "GL-KY-2027-RU-004-C",
+   "notice_count": 14,
+   "first_year": 2021,
+   "last_year": 2027,
+   "numeric_rules": [
+    "2",
+    "22",
+    "24",
+    "34",
+    "36",
+    "42",
+    "44",
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "53",
+    "56"
+   ],
+   "additional_rules": {
+    "A1": "TERRORISM PREMIUM DETERMINATION",
+    "A2": "RATING TERRITORIES FOR PREMISES AND",
+    "A3": "RADON MEASUREMENT AND MITIGATION",
+    "A4": "AERIAL RECREATIONAL DEVICES AND FACILITIES",
+    "A5": "DESCRIPTION OF MANDATORY AND OPTIONAL"
+   },
+   "kinds": {
+    "A1": [
+     "OTHER"
+    ],
+    "A2": [
+     "OTHER"
+    ],
+    "A3": [
+     "OTHER"
+    ],
+    "A4": [
+     "OTHER"
+    ],
+    "A5": [
+     "OTHER"
+    ],
+    "2": [
+     "REPLACE"
+    ],
+    "22": [
+     "REPLACE"
+    ],
+    "24": [
+     "ADD",
+     "REPLACE"
+    ],
+    "34": [
+     "REPLACE"
+    ],
+    "36": [
+     "ADD"
+    ],
+    "42": [
+     "ADD",
+     "REPLACE"
+    ],
+    "44": [
+     "ADD",
+     "REPLACE"
+    ],
+    "45": [
+     "REPLACE"
+    ],
+    "46": [
+     "ADD",
+     "REPLACE"
+    ],
+    "47": [
+     "ADD",
+     "REPLACE"
+    ],
+    "48": [
+     "REPLACE"
+    ],
+    "49": [
+     "ADD",
+     "REPLACE"
+    ],
+    "53": [
+     "ADD",
+     "REPLACE"
+    ],
+    "56": [
+     "OTHER",
+     "REPLACE",
+     "TABLE"
+    ]
+   },
+   "deviation_count": 14,
+   "payroll": {
+    "notice": "GL-KY-2027-RU-004-C",
+    "annual_exec": "47,000",
+    "annual_indiv": "47,000",
+    "annual_each_indiv_copartner": null,
+    "weekly_max": null,
+    "weekly_min": null,
+    "seasonal_reduction": null,
+    "shape": "ANNUAL_CAP_BOTH"
+   },
+   "liquor_grades": [
+    3
+   ],
+   "ilf_table_count": 8,
+   "ilf_by_subline": {
+    "334": 4,
+    "336": 3,
+    "335": 1
+   },
+   "territory_rating": true,
+   "zip_territory": true,
+   "stopgap": false,
+   "elp": true,
+   "basic_limits": [
+    "100/200"
+   ]
+  },
+  "LA": {
+   "notice": "GL-LA-2027-RU-003-C",
+   "notice_count": 7,
+   "first_year": 2022,
+   "last_year": 2027,
+   "numeric_rules": [
+    "5",
+    "9",
+    "10",
+    "11",
+    "22",
+    "24",
+    "34",
+    "36",
+    "41",
+    "42",
+    "44",
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "52",
+    "53",
+    "54",
+    "55",
+    "56"
+   ],
+   "additional_rules": {
+    "A1": "TERRORISM PREMIUM DETERMINATION",
+    "A2": "LIQUEFIED PETROLEUM GAS DEALERS",
+    "A3": "RATING TERRITORIES FOR PREMISES AND OPERATIONS (Subline Code 334) AND LIQUOR LIABILITY (Subline Code 332)",
+    "A4": "DESCRIPTION OF MANDATORY AND OPTIONAL ENDORSEMENTS"
+   },
+   "kinds": {
+    "A1": [
+     "OTHER"
+    ],
+    "A2": [
+     "OTHER"
+    ],
+    "A3": [
+     "OTHER"
+    ],
+    "A4": [
+     "OTHER"
+    ],
+    "5": [
+     "ADD"
+    ],
+    "9": [
+     "ADD",
+     "DELETE",
+     "REPLACE"
+    ],
+    "10": [
+     "ADD",
+     "DELETE",
+     "REPLACE"
+    ],
+    "11": [
+     "ADD",
+     "REPLACE"
+    ],
+    "22": [
+     "ADD",
+     "REPLACE"
+    ],
+    "24": [
+     "ADD",
+     "REPLACE"
+    ],
+    "34": [
+     "REPLACE"
+    ],
+    "36": [
+     "REPLACE"
+    ],
+    "41": [
+     "REPLACE"
+    ],
+    "42": [
+     "REPLACE"
+    ],
+    "44": [
+     "REPLACE"
+    ],
+    "45": [
+     "REPLACE"
+    ],
+    "46": [
+     "REPLACE"
+    ],
+    "47": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "48": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "49": [
+     "DELETE",
+     "REPLACE",
+     "TABLE"
+    ],
+    "52": [
+     "DELETE",
+     "REPLACE",
+     "TABLE"
+    ],
+    "54": [
+     "REPLACE",
+     "TABLE"
+    ],
+    "55": [
+     "REPLACE",
+     "TABLE"
+    ],
+    "56": [
+     "REPLACE",
+     "TABLE"
+    ],
+    "53": [
+     "REPLACE"
+    ]
+   },
+   "deviation_count": 21,
+   "payroll": {
+    "notice": "GL-LA-2027-RU-003-C",
+    "annual_exec": "15,600",
+    "annual_indiv": "15,600",
+    "annual_each_indiv_copartner": null,
+    "weekly_max": null,
+    "weekly_min": null,
+    "seasonal_reduction": null,
+    "shape": "ANNUAL_CAP_BOTH"
+   },
+   "liquor_grades": [
+    3
+   ],
+   "ilf_table_count": 7,
+   "ilf_by_subline": {
+    "334": 3,
+    "336": 3,
+    "335": 1
+   },
+   "territory_rating": true,
+   "zip_territory": true,
+   "stopgap": false,
+   "elp": false,
+   "basic_limits": []
+  },
+  "MA": {
+   "notice": "GL-MA-2027-RU-003-C",
+   "notice_count": 12,
+   "first_year": 2021,
+   "last_year": 2027,
+   "numeric_rules": [
+    "4",
+    "13",
+    "22",
+    "24",
+    "33",
+    "34",
+    "36",
+    "45",
+    "48",
+    "56"
+   ],
+   "additional_rules": {
+    "A1": "COVERAGE FOR LEAD POISONING",
+    "A2": "TERRORISM PREMIUM DETERMINATION",
+    "A3": "RATING TERRITORIES FOR PREMISES AND",
+    "A4": "RESIDENTIAL FUEL TANK COVERAGE",
+    "A5": "DESCRIPTION OF MANDATORY AND OPTIONAL"
+   },
+   "kinds": {
+    "A1": [
+     "OTHER"
+    ],
+    "A2": [
+     "OTHER"
+    ],
+    "A3": [
+     "OTHER"
+    ],
+    "A4": [
+     "OTHER"
+    ],
+    "A5": [
+     "OTHER"
+    ],
+    "4": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "13": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "22": [
+     "ADD",
+     "REPLACE"
+    ],
+    "24": [
+     "ADD"
+    ],
+    "33": [
+     "REPLACE"
+    ],
+    "34": [
+     "ADD"
+    ],
+    "36": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "45": [
+     "REPLACE"
+    ],
+    "48": [
+     "ADD",
+     "REPLACE"
+    ],
+    "56": [
+     "OTHER",
+     "REPLACE",
+     "TABLE"
+    ]
+   },
+   "deviation_count": 10,
+   "payroll": {
+    "notice": "GL-MA-2027-RU-003-C",
+    "annual_exec": "63,700",
+    "annual_indiv": "63,700",
+    "annual_each_indiv_copartner": null,
+    "weekly_max": null,
+    "weekly_min": null,
+    "seasonal_reduction": null,
+    "shape": "ANNUAL_CAP_BOTH"
+   },
+   "liquor_grades": [
+    6
+   ],
+   "ilf_table_count": 7,
+   "ilf_by_subline": {
+    "334": 3,
+    "336": 3,
+    "335": 1
+   },
+   "territory_rating": true,
+   "zip_territory": true,
+   "stopgap": false,
+   "elp": false,
+   "basic_limits": [
+    "100/200"
+   ]
+  },
+  "MD": {
+   "notice": "GL-MD-2027-RU-003-C",
+   "notice_count": 10,
+   "first_year": 2022,
+   "last_year": 2027,
+   "numeric_rules": [
+    "8",
+    "11",
+    "22",
+    "24",
+    "42",
+    "44",
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "53",
+    "56"
+   ],
+   "additional_rules": {
+    "A1": "TERRORISM PREMIUM DETERMINATION",
+    "A2": "LIABILITY FOR HAZARDS OF LEAD",
+    "A3": "RATING TERRITORIES FOR PREMISES AND",
+    "A4": "TRANSITION RULE FOR PREMIUM CHANGES",
+    "A5": "DESCRIPTION OF MANDATORY AND OPTIONAL"
+   },
+   "kinds": {
+    "A1": [
+     "OTHER"
+    ],
+    "A2": [
+     "OTHER"
+    ],
+    "A3": [
+     "OTHER"
+    ],
+    "A4": [
+     "OTHER"
+    ],
+    "A5": [
+     "OTHER"
+    ],
+    "8": [
+     "ADD"
+    ],
+    "11": [
+     "ADD"
+    ],
+    "22": [
+     "ADD",
+     "REPLACE"
+    ],
+    "24": [
+     "ADD",
+     "REPLACE"
+    ],
+    "42": [
+     "REPLACE"
+    ],
+    "44": [
+     "REPLACE"
+    ],
+    "45": [
+     "REPLACE"
+    ],
+    "46": [
+     "REPLACE"
+    ],
+    "47": [
+     "REPLACE"
+    ],
+    "48": [
+     "REPLACE"
+    ],
+    "49": [
+     "REPLACE"
+    ],
+    "53": [
+     "REPLACE"
+    ],
+    "56": [
+     "OTHER",
+     "REPLACE",
+     "TABLE"
+    ]
+   },
+   "deviation_count": 13,
+   "payroll": {
+    "notice": "GL-MD-2027-RU-003-C",
+    "annual_exec": "35,100",
+    "annual_indiv": "35,100",
+    "annual_each_indiv_copartner": null,
+    "weekly_max": null,
+    "weekly_min": null,
+    "seasonal_reduction": null,
+    "shape": "ANNUAL_CAP_BOTH"
+   },
+   "liquor_grades": [
+    0
+   ],
+   "ilf_table_count": 7,
+   "ilf_by_subline": {
+    "334": 3,
+    "336": 3,
+    "335": 1
+   },
+   "territory_rating": true,
+   "zip_territory": true,
+   "stopgap": false,
+   "elp": false,
+   "basic_limits": [
+    "100/200"
+   ]
+  },
+  "ME": {
+   "notice": "GL-ME-2027-RU-003-C",
+   "notice_count": 10,
+   "first_year": 2021,
+   "last_year": 2027,
+   "numeric_rules": [
+    "11",
+    "22",
+    "24",
+    "34",
+    "36",
+    "42",
+    "44",
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "53",
+    "54",
+    "56"
+   ],
+   "additional_rules": {
+    "A1": "TERRORISM PREMIUM DETERMINATION",
+    "A2": "DESCRIPTION OF MANDATORY AND OPTIONAL"
+   },
+   "kinds": {
+    "A1": [
+     "OTHER"
+    ],
+    "A2": [
+     "OTHER"
+    ],
+    "11": [
+     "ADD"
+    ],
+    "22": [
+     "REPLACE"
+    ],
+    "24": [
+     "ADD",
+     "REPLACE"
+    ],
+    "34": [
+     "OTHER",
+     "REPLACE"
+    ],
+    "36": [
+     "REPLACE"
+    ],
+    "42": [
+     "REPLACE"
+    ],
+    "44": [
+     "REPLACE"
+    ],
+    "45": [
+     "REPLACE"
+    ],
+    "46": [
+     "REPLACE"
+    ],
+    "47": [
+     "REPLACE"
+    ],
+    "48": [
+     "REPLACE"
+    ],
+    "49": [
+     "REPLACE"
+    ],
+    "53": [
+     "ADD",
+     "REPLACE"
+    ],
+    "54": [
+     "ADD",
+     "REPLACE",
+     "TABLE"
+    ],
+    "56": [
+     "OTHER",
+     "REPLACE",
+     "TABLE"
+    ]
+   },
+   "deviation_count": 15,
+   "payroll": {
+    "notice": "GL-ME-2027-RU-003-C",
+    "annual_exec": "43,500",
+    "annual_indiv": "43,500",
+    "annual_each_indiv_copartner": null,
+    "weekly_max": null,
+    "weekly_min": null,
+    "seasonal_reduction": null,
+    "shape": "ANNUAL_CAP_BOTH"
+   },
+   "liquor_grades": [
+    4
+   ],
+   "ilf_table_count": 7,
+   "ilf_by_subline": {
+    "334": 3,
+    "336": 3,
+    "335": 1
+   },
+   "territory_rating": false,
+   "zip_territory": false,
+   "stopgap": false,
+   "elp": false,
+   "basic_limits": [
+    "100/200"
+   ]
+  },
+  "MI": {
+   "notice": "GL-MI-2027-RU-003-C",
+   "notice_count": 10,
+   "first_year": 2021,
+   "last_year": 2027,
+   "numeric_rules": [
+    "2",
+    "4",
+    "11",
+    "13",
+    "22",
+    "24",
+    "33",
+    "34",
+    "36",
+    "41",
+    "42",
+    "43",
+    "44",
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "52",
+    "53",
+    "56"
+   ],
+   "additional_rules": {
+    "A1": "TERRORISM PREMIUM DETERMINATION",
+    "A2": "RATING TERRITORIES FOR PREMISES AND OPERATIONS (Subline Code 334) AND LIQUOR LIABILITY (Subline Code 332)",
+    "A3": "DESCRIPTION OF MANDATORY AND OPTIONAL ENDORSEMENTS"
+   },
+   "kinds": {
+    "A1": [
+     "OTHER"
+    ],
+    "A2": [
+     "OTHER"
+    ],
+    "A3": [
+     "OTHER"
+    ],
+    "2": [
+     "REPLACE"
+    ],
+    "4": [
+     "ADD",
+     "DELETE",
+     "REPLACE"
+    ],
+    "11": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "22": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "13": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "24": [
+     "ADD",
+     "REPLACE"
+    ],
+    "33": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "34": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "36": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "41": [
+     "REPLACE"
+    ],
+    "42": [
+     "REPLACE"
+    ],
+    "43": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "44": [
+     "REPLACE"
+    ],
+    "45": [
+     "REPLACE"
+    ],
+    "46": [
+     "REPLACE"
+    ],
+    "47": [
+     "REPLACE"
+    ],
+    "48": [
+     "REPLACE"
+    ],
+    "49": [
+     "DELETE",
+     "REPLACE",
+     "TABLE"
+    ],
+    "52": [
+     "DELETE",
+     "REPLACE",
+     "TABLE"
+    ],
+    "53": [
+     "REPLACE",
+     "TABLE"
+    ],
+    "56": [
+     "REPLACE",
+     "TABLE"
+    ]
+   },
+   "deviation_count": 21,
+   "payroll": {
+    "notice": "GL-MI-2027-RU-003-C",
+    "annual_exec": "51,300",
+    "annual_indiv": "51,300",
+    "annual_each_indiv_copartner": null,
+    "weekly_max": null,
+    "weekly_min": null,
+    "seasonal_reduction": null,
+    "shape": "ANNUAL_CAP_BOTH"
+   },
+   "liquor_grades": [
+    5
+   ],
+   "ilf_table_count": 7,
+   "ilf_by_subline": {
+    "334": 3,
+    "336": 3,
+    "335": 1
+   },
+   "territory_rating": true,
+   "zip_territory": true,
+   "stopgap": false,
+   "elp": true,
+   "basic_limits": []
+  },
+  "MN": {
+   "notice": "GL-MN-2027-RU-004-C",
+   "notice_count": 13,
+   "first_year": 2021,
+   "last_year": 2027,
+   "numeric_rules": [
+    "2",
+    "4",
+    "11",
+    "13",
+    "22",
+    "24",
+    "34",
+    "36",
+    "41",
+    "42",
+    "44",
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "53",
+    "56"
+   ],
+   "additional_rules": {
+    "A1": "TERRORISM PREMIUM DETERMINATION",
+    "A2": "RATING TERRITORIES FOR PREMISES AND",
+    "A3": "DESCRIPTION OF MANDATORY AND OPTIONAL"
+   },
+   "kinds": {
+    "A1": [
+     "OTHER"
+    ],
+    "A2": [
+     "OTHER"
+    ],
+    "A3": [
+     "OTHER"
+    ],
+    "2": [
+     "REPLACE"
+    ],
+    "4": [
+     "ADD"
+    ],
+    "11": [
+     "ADD"
+    ],
+    "13": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "22": [
+     "REPLACE"
+    ],
+    "24": [
+     "ADD",
+     "REPLACE"
+    ],
+    "34": [
+     "REPLACE"
+    ],
+    "36": [
+     "REPLACE"
+    ],
+    "41": [
+     "REPLACE"
+    ],
+    "42": [
+     "REPLACE"
+    ],
+    "44": [
+     "REPLACE"
+    ],
+    "45": [
+     "OTHER",
+     "REPLACE"
+    ],
+    "46": [
+     "REPLACE"
+    ],
+    "47": [
+     "ADD",
+     "REPLACE"
+    ],
+    "48": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "49": [
+     "REPLACE"
+    ],
+    "53": [
+     "REPLACE"
+    ],
+    "56": [
+     "OTHER",
+     "REPLACE",
+     "TABLE"
+    ]
+   },
+   "deviation_count": 18,
+   "payroll": {
+    "notice": "GL-MN-2027-RU-004-C",
+    "annual_exec": "59,600",
+    "annual_indiv": "59,600",
+    "annual_each_indiv_copartner": null,
+    "weekly_max": null,
+    "weekly_min": null,
+    "seasonal_reduction": null,
+    "shape": "ANNUAL_CAP_BOTH"
+   },
+   "liquor_grades": [
+    4
+   ],
+   "ilf_table_count": 8,
+   "ilf_by_subline": {
+    "334": 3,
+    "336": 3,
+    "335": 1,
+    "332": 1
+   },
+   "territory_rating": true,
+   "zip_territory": true,
+   "stopgap": false,
+   "elp": true,
+   "basic_limits": [
+    "100/200"
+   ]
+  },
+  "MO": {
+   "notice": "GL-MO-2026-RU-001-C",
+   "notice_count": 7,
+   "first_year": 2022,
+   "last_year": 2026,
+   "numeric_rules": [
+    "2",
+    "22",
+    "24",
+    "34",
+    "36",
+    "42",
+    "44",
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "52",
+    "53",
+    "56"
+   ],
+   "additional_rules": {
+    "A1": "TERRORISM PREMIUM DETERMINATION",
+    "A2": "RATING TERRITORIES FOR PREMISES AND",
+    "A3": "DESCRIPTION OF MANDATORY AND OPTIONAL"
+   },
+   "kinds": {
+    "A1": [
+     "OTHER"
+    ],
+    "A2": [
+     "OTHER"
+    ],
+    "A3": [
+     "OTHER"
+    ],
+    "2": [
+     "REPLACE"
+    ],
+    "22": [
+     "REPLACE"
+    ],
+    "24": [
+     "ADD",
+     "REPLACE"
+    ],
+    "34": [
+     "REPLACE"
+    ],
+    "36": [
+     "REPLACE"
+    ],
+    "42": [
+     "REPLACE"
+    ],
+    "44": [
+     "REPLACE"
+    ],
+    "45": [
+     "REPLACE"
+    ],
+    "46": [
+     "REPLACE"
+    ],
+    "47": [
+     "ADD",
+     "REPLACE"
+    ],
+    "48": [
+     "REPLACE"
+    ],
+    "49": [
+     "REPLACE"
+    ],
+    "52": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "53": [
+     "REPLACE"
+    ],
+    "56": [
+     "OTHER",
+     "REPLACE",
+     "TABLE"
+    ]
+   },
+   "deviation_count": 15,
+   "payroll": {
+    "notice": "GL-MO-2026-RU-001-C",
+    "annual_exec": "28,400",
+    "annual_indiv": "28,400",
+    "annual_each_indiv_copartner": null,
+    "weekly_max": null,
+    "weekly_min": null,
+    "seasonal_reduction": null,
+    "shape": "ANNUAL_CAP_BOTH"
+   },
+   "liquor_grades": [
+    0
+   ],
+   "ilf_table_count": 8,
+   "ilf_by_subline": {
+    "334": 4,
+    "336": 3,
+    "335": 1
+   },
+   "territory_rating": true,
+   "zip_territory": true,
+   "stopgap": false,
+   "elp": true,
+   "basic_limits": [
+    "100/200"
+   ]
+  },
+  "MS": {
+   "notice": "GL-MS-2027-RU-003-C",
+   "notice_count": 6,
+   "first_year": 2022,
+   "last_year": 2027,
+   "numeric_rules": [
+    "2",
+    "22",
+    "24",
+    "34",
+    "42",
+    "44",
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "53",
+    "56"
+   ],
+   "additional_rules": {
+    "A1": "TERRORISM PREMIUM DETERMINATION",
+    "A2": "DESCRIPTION OF MANDATORY AND OPTIONAL ENDORSEMENTS"
+   },
+   "kinds": {
+    "A1": [
+     "OTHER"
+    ],
+    "A2": [
+     "OTHER"
+    ],
+    "2": [
+     "REPLACE"
+    ],
+    "22": [
+     "REPLACE"
+    ],
+    "24": [
+     "REPLACE"
+    ],
+    "34": [
+     "REPLACE"
+    ],
+    "42": [
+     "REPLACE"
+    ],
+    "44": [
+     "REPLACE"
+    ],
+    "45": [
+     "REPLACE"
+    ],
+    "46": [
+     "REPLACE"
+    ],
+    "47": [
+     "REPLACE",
+     "TABLE"
+    ],
+    "48": [
+     "REPLACE",
+     "TABLE"
+    ],
+    "53": [
+     "REPLACE",
+     "TABLE"
+    ],
+    "56": [
+     "REPLACE",
+     "TABLE"
+    ],
+    "49": [
+     "REPLACE"
+    ]
+   },
+   "deviation_count": 13,
+   "payroll": {
+    "notice": "GL-MS-2027-RU-003-C",
+    "annual_exec": null,
+    "annual_indiv": null,
+    "annual_each_indiv_copartner": "10,400",
+    "weekly_max": "500",
+    "weekly_min": "100",
+    "seasonal_reduction": "2% per week beyond twelve",
+    "shape": "WEEKLY_MINMAX_EXEC + ANNUAL_INDIV"
+   },
+   "liquor_grades": [
+    4
+   ],
+   "ilf_table_count": 8,
+   "ilf_by_subline": {
+    "334": 4,
+    "336": 3,
+    "335": 1
+   },
+   "territory_rating": false,
+   "zip_territory": false,
+   "stopgap": false,
+   "elp": true,
+   "basic_limits": []
+  },
+  "MT": {
+   "notice": "GL-MT-2027-RU-003-C",
+   "notice_count": 10,
+   "first_year": 2022,
+   "last_year": 2027,
+   "numeric_rules": [
+    "2",
+    "11",
+    "22",
+    "24",
+    "33",
+    "34",
+    "36",
+    "41",
+    "42",
+    "43",
+    "44",
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "53",
+    "56"
+   ],
+   "additional_rules": {
+    "A1": "AMENDATORY ENDORSEMENTS",
+    "A2": "TERRORISM PREMIUM DETERMINATION",
+    "A3": "DESCRIPTION OF MANDATORY AND OPTIONAL"
+   },
+   "kinds": {
+    "A1": [
+     "OTHER"
+    ],
+    "A2": [
+     "OTHER"
+    ],
+    "A3": [
+     "OTHER"
+    ],
+    "2": [
+     "REPLACE"
+    ],
+    "11": [
+     "ADD",
+     "REPLACE"
+    ],
+    "22": [
+     "REPLACE"
+    ],
+    "24": [
+     "ADD",
+     "REPLACE"
+    ],
+    "33": [
+     "REPLACE"
+    ],
+    "34": [
+     "REPLACE"
+    ],
+    "36": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "41": [
+     "REPLACE"
+    ],
+    "42": [
+     "REPLACE"
+    ],
+    "43": [
+     "REPLACE"
+    ],
+    "44": [
+     "REPLACE"
+    ],
+    "45": [
+     "OTHER",
+     "REPLACE"
+    ],
+    "46": [
+     "REPLACE"
+    ],
+    "47": [
+     "REPLACE"
+    ],
+    "48": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "49": [
+     "REPLACE"
+    ],
+    "53": [
+     "REPLACE"
+    ],
+    "56": [
+     "OTHER",
+     "REPLACE",
+     "TABLE"
+    ]
+   },
+   "deviation_count": 18,
+   "payroll": {
+    "notice": "GL-MT-2027-RU-003-C",
+    "annual_exec": "18,800",
+    "annual_indiv": "15,700",
+    "annual_each_indiv_copartner": null,
+    "weekly_max": null,
+    "weekly_min": null,
+    "seasonal_reduction": null,
+    "shape": "ANNUAL_CAP_BOTH"
+   },
+   "liquor_grades": [
+    5
+   ],
+   "ilf_table_count": 8,
+   "ilf_by_subline": {
+    "334": 4,
+    "336": 3,
+    "335": 1
+   },
+   "territory_rating": false,
+   "zip_territory": false,
+   "stopgap": false,
+   "elp": true,
+   "basic_limits": [
+    "100/200"
+   ]
+  },
+  "NC": {
+   "notice": "GL-NC-2026-RU-002-C",
+   "notice_count": 6,
+   "first_year": 2022,
+   "last_year": 2026,
+   "numeric_rules": [
+    "2",
+    "4",
+    "22",
+    "24",
+    "33",
+    "34",
+    "36",
+    "41",
+    "42",
+    "43",
+    "44",
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "53",
+    "56"
+   ],
+   "additional_rules": {
+    "A1": "TERRORISM PREMIUM DETERMINATION",
+    "A2": "CHALLENGE COURSE AND ZIP LINE FACILITIES",
+    "A3": "DESCRIPTION OF MANDATORY AND OPTIONAL"
+   },
+   "kinds": {
+    "A1": [
+     "OTHER"
+    ],
+    "A2": [
+     "OTHER"
+    ],
+    "A3": [
+     "OTHER"
+    ],
+    "2": [
+     "REPLACE"
+    ],
+    "4": [
+     "ADD"
+    ],
+    "22": [
+     "REPLACE"
+    ],
+    "24": [
+     "ADD",
+     "REPLACE"
+    ],
+    "33": [
+     "OTHER",
+     "REPLACE"
+    ],
+    "34": [
+     "REPLACE"
+    ],
+    "36": [
+     "REPLACE"
+    ],
+    "41": [
+     "REPLACE"
+    ],
+    "42": [
+     "REPLACE"
+    ],
+    "43": [
+     "REPLACE"
+    ],
+    "44": [
+     "REPLACE"
+    ],
+    "45": [
+     "OTHER",
+     "REPLACE"
+    ],
+    "46": [
+     "REPLACE"
+    ],
+    "47": [
+     "OTHER",
+     "REPLACE"
+    ],
+    "48": [
+     "REPLACE"
+    ],
+    "49": [
+     "REPLACE"
+    ],
+    "53": [
+     "REPLACE"
+    ],
+    "56": [
+     "OTHER",
+     "REPLACE",
+     "TABLE"
+    ]
+   },
+   "deviation_count": 18,
+   "payroll": {
+    "notice": "GL-NC-2026-RU-002-C",
+    "annual_exec": "24,800",
+    "annual_indiv": "24,800",
+    "annual_each_indiv_copartner": null,
+    "weekly_max": null,
+    "weekly_min": null,
+    "seasonal_reduction": null,
+    "shape": "ANNUAL_CAP_BOTH"
+   },
+   "liquor_grades": [
+    6
+   ],
+   "ilf_table_count": 7,
+   "ilf_by_subline": {
+    "334": 3,
+    "336": 3,
+    "335": 1
+   },
+   "territory_rating": false,
+   "zip_territory": false,
+   "stopgap": false,
+   "elp": true,
+   "basic_limits": [
+    "100/200"
+   ]
+  },
+  "ND": {
+   "notice": "GL-ND-2027-RU-003-C",
+   "notice_count": 12,
+   "first_year": 2021,
+   "last_year": 2027,
+   "numeric_rules": [
+    "22",
+    "24",
+    "42",
+    "44",
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "53",
+    "56"
+   ],
+   "additional_rules": {
+    "A1": "TERRORISM PREMIUM DETERMINATION",
+    "A2": "STOP GAP \u2013 EMPLOYERS LIABILITY COVERAGE",
+    "A3": "DESCRIPTION OF MANDATORY AND OPTIONAL"
+   },
+   "kinds": {
+    "A1": [
+     "OTHER"
+    ],
+    "A2": [
+     "OTHER"
+    ],
+    "A3": [
+     "OTHER"
+    ],
+    "22": [
+     "REPLACE"
+    ],
+    "24": [
+     "ADD",
+     "REPLACE"
+    ],
+    "42": [
+     "REPLACE"
+    ],
+    "44": [
+     "REPLACE"
+    ],
+    "45": [
+     "REPLACE"
+    ],
+    "46": [
+     "REPLACE"
+    ],
+    "47": [
+     "REPLACE"
+    ],
+    "48": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "49": [
+     "REPLACE"
+    ],
+    "53": [
+     "REPLACE"
+    ],
+    "56": [
+     "OTHER",
+     "REPLACE",
+     "TABLE"
+    ]
+   },
+   "deviation_count": 11,
+   "payroll": {
+    "notice": "GL-ND-2027-RU-003-C",
+    "annual_exec": "55,500",
+    "annual_indiv": "55,500",
+    "annual_each_indiv_copartner": null,
+    "weekly_max": null,
+    "weekly_min": null,
+    "seasonal_reduction": null,
+    "shape": "ANNUAL_CAP_BOTH"
+   },
+   "liquor_grades": [
+    5
+   ],
+   "ilf_table_count": 8,
+   "ilf_by_subline": {
+    "334": 4,
+    "336": 3,
+    "335": 1
+   },
+   "territory_rating": false,
+   "zip_territory": false,
+   "stopgap": true,
+   "elp": false,
+   "basic_limits": [
+    "100/200"
+   ]
+  },
+  "NE": {
+   "notice": "GL-NE-2027-RU-003-C",
+   "notice_count": 8,
+   "first_year": 2022,
+   "last_year": 2027,
+   "numeric_rules": [
+    "2",
+    "22",
+    "24",
+    "34",
+    "36",
+    "42",
+    "44",
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "53",
+    "54",
+    "56"
+   ],
+   "additional_rules": {
+    "A1": "TERRORISM PREMIUM DETERMINATION",
+    "A2": "RATING TERRITORIES FOR PREMISES AND",
+    "A3": "DESCRIPTION OF MANDATORY AND OPTIONAL"
+   },
+   "kinds": {
+    "A1": [
+     "OTHER"
+    ],
+    "A2": [
+     "OTHER"
+    ],
+    "A3": [
+     "OTHER"
+    ],
+    "2": [
+     "REPLACE"
+    ],
+    "22": [
+     "ADD",
+     "REPLACE"
+    ],
+    "24": [
+     "ADD",
+     "REPLACE"
+    ],
+    "34": [
+     "OTHER",
+     "REPLACE"
+    ],
+    "36": [
+     "REPLACE"
+    ],
+    "42": [
+     "REPLACE"
+    ],
+    "44": [
+     "REPLACE"
+    ],
+    "45": [
+     "REPLACE"
+    ],
+    "46": [
+     "REPLACE"
+    ],
+    "47": [
+     "REPLACE"
+    ],
+    "48": [
+     "REPLACE"
+    ],
+    "49": [
+     "REPLACE"
+    ],
+    "53": [
+     "REPLACE"
+    ],
+    "54": [
+     "OTHER",
+     "REPLACE"
+    ],
+    "56": [
+     "OTHER",
+     "REPLACE",
+     "TABLE"
+    ]
+   },
+   "deviation_count": 15,
+   "payroll": {
+    "notice": "GL-NE-2027-RU-003-C",
+    "annual_exec": "34,200",
+    "annual_indiv": "34,200",
+    "annual_each_indiv_copartner": null,
+    "weekly_max": null,
+    "weekly_min": null,
+    "seasonal_reduction": null,
+    "shape": "ANNUAL_CAP_BOTH"
+   },
+   "liquor_grades": [
+    3
+   ],
+   "ilf_table_count": 7,
+   "ilf_by_subline": {
+    "334": 3,
+    "336": 3,
+    "335": 1
+   },
+   "territory_rating": true,
+   "zip_territory": true,
+   "stopgap": false,
+   "elp": true,
+   "basic_limits": [
+    "100/200"
+   ]
+  },
+  "NH": {
+   "notice": "GL-NH-2027-RU-003-C",
+   "notice_count": 10,
+   "first_year": 2021,
+   "last_year": 2027,
+   "numeric_rules": [
+    "10",
+    "15",
+    "22",
+    "24",
+    "34",
+    "36",
+    "42",
+    "43",
+    "44",
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "53",
+    "56"
+   ],
+   "additional_rules": {
+    "A1": "TERRORISM PREMIUM DETERMINATION",
+    "A2": "DESCRIPTION OF MANDATORY AND OPTIONAL"
+   },
+   "kinds": {
+    "A1": [
+     "OTHER"
+    ],
+    "A2": [
+     "OTHER"
+    ],
+    "10": [
+     "REPLACE"
+    ],
+    "15": [
+     "REPLACE"
+    ],
+    "22": [
+     "REPLACE"
+    ],
+    "24": [
+     "ADD"
+    ],
+    "34": [
+     "REPLACE"
+    ],
+    "36": [
+     "OTHER",
+     "REPLACE"
+    ],
+    "42": [
+     "REPLACE"
+    ],
+    "43": [
+     "REPLACE"
+    ],
+    "44": [
+     "REPLACE"
+    ],
+    "45": [
+     "REPLACE"
+    ],
+    "46": [
+     "REPLACE"
+    ],
+    "47": [
+     "REPLACE"
+    ],
+    "48": [
+     "REPLACE"
+    ],
+    "49": [
+     "REPLACE"
+    ],
+    "53": [
+     "REPLACE"
+    ],
+    "56": [
+     "OTHER",
+     "REPLACE",
+     "TABLE"
+    ]
+   },
+   "deviation_count": 16,
+   "payroll": {
+    "notice": "GL-NH-2027-RU-003-C",
+    "annual_exec": "48,400",
+    "annual_indiv": "48,400",
+    "annual_each_indiv_copartner": null,
+    "weekly_max": null,
+    "weekly_min": null,
+    "seasonal_reduction": null,
+    "shape": "ANNUAL_CAP_BOTH"
+   },
+   "liquor_grades": [
+    7
+   ],
+   "ilf_table_count": 8,
+   "ilf_by_subline": {
+    "334": 4,
+    "336": 3,
+    "335": 1
+   },
+   "territory_rating": false,
+   "zip_territory": false,
+   "stopgap": false,
+   "elp": false,
+   "basic_limits": [
+    "100/200"
+   ]
+  },
+  "NJ": {
+   "notice": "GL-NJ-2027-RU-001-C",
+   "notice_count": 9,
+   "first_year": 2021,
+   "last_year": 2027,
+   "numeric_rules": [
+    "2",
+    "22",
+    "24",
+    "34",
+    "42",
+    "44",
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "53",
+    "54",
+    "56"
+   ],
+   "additional_rules": {
+    "A1": "RESERVED FOR FUTURE USE",
+    "A2": "COVERAGE AND EXCLUSION FOR LEAD LIABILITY",
+    "A3": "TERRORISM PREMIUM DETERMINATION",
+    "A4": "RATING TERRITORIES FOR PREMISES AND",
+    "A5": "TRANSITION RULE FOR PREMIUM CHANGES"
+   },
+   "kinds": {
+    "A1": [
+     "OTHER"
+    ],
+    "A2": [
+     "OTHER"
+    ],
+    "A3": [
+     "OTHER"
+    ],
+    "A4": [
+     "OTHER"
+    ],
+    "A5": [
+     "OTHER"
+    ],
+    "2": [
+     "REPLACE"
+    ],
+    "22": [
+     "REPLACE"
+    ],
+    "24": [
+     "ADD",
+     "REPLACE"
+    ],
+    "34": [
+     "REPLACE"
+    ],
+    "42": [
+     "REPLACE"
+    ],
+    "44": [
+     "REPLACE"
+    ],
+    "45": [
+     "REPLACE"
+    ],
+    "46": [
+     "REPLACE"
+    ],
+    "47": [
+     "REPLACE"
+    ],
+    "48": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "49": [
+     "REPLACE"
+    ],
+    "53": [
+     "REPLACE"
+    ],
+    "54": [
+     "OTHER"
+    ],
+    "56": [
+     "OTHER",
+     "REPLACE",
+     "TABLE"
+    ]
+   },
+   "deviation_count": 14,
+   "payroll": {
+    "notice": "GL-NJ-2027-RU-001-C",
+    "annual_exec": "32,300",
+    "annual_indiv": "32,300",
+    "annual_each_indiv_copartner": null,
+    "weekly_max": null,
+    "weekly_min": null,
+    "seasonal_reduction": null,
+    "shape": "ANNUAL_CAP_BOTH"
+   },
+   "liquor_grades": [
+    4
+   ],
+   "ilf_table_count": 7,
+   "ilf_by_subline": {
+    "334": 3,
+    "336": 3,
+    "335": 1
+   },
+   "territory_rating": true,
+   "zip_territory": true,
+   "stopgap": false,
+   "elp": true,
+   "basic_limits": [
+    "100/200"
+   ]
+  },
+  "NM": {
+   "notice": "GL-NM-2027-RU-003-C",
+   "notice_count": 7,
+   "first_year": 2022,
+   "last_year": 2027,
+   "numeric_rules": [
+    "22",
+    "24",
+    "42",
+    "44",
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "53",
+    "56"
+   ],
+   "additional_rules": {
+    "A1": "TERRORISM PREMIUM DETERMINATION",
+    "A2": "DESCRIPTION OF MANDATORY AND OPTIONAL"
+   },
+   "kinds": {
+    "A1": [
+     "OTHER"
+    ],
+    "A2": [
+     "OTHER"
+    ],
+    "22": [
+     "ADD",
+     "REPLACE"
+    ],
+    "24": [
+     "ADD"
+    ],
+    "42": [
+     "REPLACE"
+    ],
+    "44": [
+     "REPLACE"
+    ],
+    "45": [
+     "REPLACE"
+    ],
+    "46": [
+     "REPLACE"
+    ],
+    "47": [
+     "REPLACE"
+    ],
+    "48": [
+     "OTHER",
+     "REPLACE"
+    ],
+    "49": [
+     "REPLACE"
+    ],
+    "53": [
+     "REPLACE"
+    ],
+    "56": [
+     "OTHER",
+     "REPLACE",
+     "TABLE"
+    ]
+   },
+   "deviation_count": 11,
+   "payroll": {
+    "notice": "GL-NM-2027-RU-003-C",
+    "annual_exec": "27,900",
+    "annual_indiv": "27,900",
+    "annual_each_indiv_copartner": null,
+    "weekly_max": null,
+    "weekly_min": null,
+    "seasonal_reduction": null,
+    "shape": "ANNUAL_CAP_BOTH"
+   },
+   "liquor_grades": [
+    5
+   ],
+   "ilf_table_count": 7,
+   "ilf_by_subline": {
+    "334": 3,
+    "336": 3,
+    "335": 1
+   },
+   "territory_rating": false,
+   "zip_territory": false,
+   "stopgap": false,
+   "elp": false,
+   "basic_limits": [
+    "100/200"
+   ]
+  },
+  "NV": {
+   "notice": "GL-NV-2027-RU-003-C",
+   "notice_count": 10,
+   "first_year": 2021,
+   "last_year": 2027,
+   "numeric_rules": [
+    "11",
+    "22",
+    "24",
+    "36",
+    "42",
+    "44",
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "53",
+    "56"
+   ],
+   "additional_rules": {
+    "A1": "TERRORISM PREMIUM DETERMINATION",
+    "A2": "DESCRIPTION OF MANDATORY AND OPTIONAL"
+   },
+   "kinds": {
+    "A1": [
+     "OTHER"
+    ],
+    "A2": [
+     "OTHER"
+    ],
+    "11": [
+     "ADD"
+    ],
+    "22": [
+     "ADD",
+     "REPLACE"
+    ],
+    "24": [
+     "ADD"
+    ],
+    "36": [
+     "REPLACE"
+    ],
+    "42": [
+     "REPLACE"
+    ],
+    "44": [
+     "REPLACE"
+    ],
+    "45": [
+     "REPLACE"
+    ],
+    "46": [
+     "REPLACE"
+    ],
+    "47": [
+     "REPLACE"
+    ],
+    "48": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "49": [
+     "REPLACE"
+    ],
+    "53": [
+     "REPLACE"
+    ],
+    "56": [
+     "OTHER",
+     "REPLACE",
+     "TABLE"
+    ]
+   },
+   "deviation_count": 13,
+   "payroll": {
+    "notice": "GL-NV-2027-RU-003-C",
+    "annual_exec": "36,600",
+    "annual_indiv": "36,600",
+    "annual_each_indiv_copartner": null,
+    "weekly_max": null,
+    "weekly_min": null,
+    "seasonal_reduction": null,
+    "shape": "ANNUAL_CAP_BOTH"
+   },
+   "liquor_grades": [
+    0
+   ],
+   "ilf_table_count": 7,
+   "ilf_by_subline": {
+    "334": 3,
+    "336": 3,
+    "335": 1
+   },
+   "territory_rating": false,
+   "zip_territory": false,
+   "stopgap": false,
+   "elp": false,
+   "basic_limits": [
+    "100/200"
+   ]
+  },
+  "NY": {
+   "notice": "GL-NY-2025-RU-001-C",
+   "notice_count": 7,
+   "first_year": 2022,
+   "last_year": 2025,
+   "numeric_rules": [
+    "1",
+    "2",
+    "5",
+    "11",
+    "15",
+    "16",
+    "22",
+    "23",
+    "24",
+    "33",
+    "34",
+    "36",
+    "37",
+    "41",
+    "42",
+    "43",
+    "44",
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "52",
+    "53",
+    "55",
+    "56"
+   ],
+   "additional_rules": {
+    "A1": "TERRORISM PREMIUM DETERMINATION",
+    "A2": "RESERVED FOR FUTURE USE",
+    "A3": "DESCRIPTION OF SPECIAL PROTECTIVE AND HIGHWAY LIABILITY COVERAGE",
+    "A4": "POLICY CHANGES"
+   },
+   "kinds": {
+    "A1": [
+     "OTHER"
+    ],
+    "A2": [
+     "OTHER"
+    ],
+    "A3": [
+     "OTHER"
+    ],
+    "A4": [
+     "OTHER"
+    ],
+    "1": [
+     "REPLACE"
+    ],
+    "2": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "5": [
+     "ADD",
+     "DELETE",
+     "REPLACE"
+    ],
+    "11": [
+     "ADD",
+     "REPLACE"
+    ],
+    "15": [
+     "ADD"
+    ],
+    "16": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "22": [
+     "REPLACE"
+    ],
+    "23": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "24": [
+     "ADD",
+     "REPLACE"
+    ],
+    "34": [
+     "REPLACE"
+    ],
+    "33": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "36": [
+     "REPLACE"
+    ],
+    "37": [
+     "REPLACE"
+    ],
+    "41": [
+     "REPLACE"
+    ],
+    "42": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "43": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "44": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "45": [
+     "REPLACE"
+    ],
+    "46": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "47": [
+     "REPLACE"
+    ],
+    "48": [
+     "REPLACE"
+    ],
+    "49": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "52": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "53": [
+     "DELETE",
+     "REPLACE",
+     "TABLE"
+    ],
+    "55": [
+     "REPLACE",
+     "TABLE"
+    ],
+    "56": [
+     "REPLACE",
+     "TABLE"
+    ]
+   },
+   "deviation_count": 26,
+   "payroll": {
+    "notice": "GL-NY-2025-RU-001-C",
+    "annual_exec": "34,300",
+    "annual_indiv": "34,300",
+    "annual_each_indiv_copartner": null,
+    "weekly_max": null,
+    "weekly_min": null,
+    "seasonal_reduction": null,
+    "shape": "ANNUAL_CAP_BOTH"
+   },
+   "liquor_grades": [
+    6
+   ],
+   "ilf_table_count": 7,
+   "ilf_by_subline": {
+    "334": 3,
+    "336": 3,
+    "335": 1
+   },
+   "territory_rating": false,
+   "zip_territory": false,
+   "stopgap": false,
+   "elp": true,
+   "basic_limits": []
+  },
+  "OH": {
+   "notice": "GL-OH-2027-RU-004-C",
+   "notice_count": 13,
+   "first_year": 2021,
+   "last_year": 2027,
+   "numeric_rules": [
+    "2",
+    "22",
+    "24",
+    "34",
+    "36",
+    "42",
+    "44",
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "53",
+    "56"
+   ],
+   "additional_rules": {
+    "A1": "TERRORISM PREMIUM DETERMINATION",
+    "A2": "STOP GAP \u2013 EMPLOYERS LIABILITY COVERAGE",
+    "A3": "RATING TERRITORIES FOR PREMISES AND",
+    "A4": "DESCRIPTION OF MANDATORY AND OPTIONAL"
+   },
+   "kinds": {
+    "A1": [
+     "OTHER"
+    ],
+    "A2": [
+     "OTHER"
+    ],
+    "A3": [
+     "OTHER"
+    ],
+    "A4": [
+     "OTHER"
+    ],
+    "2": [
+     "REPLACE"
+    ],
+    "22": [
+     "ADD",
+     "REPLACE"
+    ],
+    "24": [
+     "ADD",
+     "REPLACE"
+    ],
+    "34": [
+     "REPLACE"
+    ],
+    "36": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "42": [
+     "REPLACE"
+    ],
+    "44": [
+     "REPLACE"
+    ],
+    "45": [
+     "REPLACE"
+    ],
+    "46": [
+     "REPLACE"
+    ],
+    "47": [
+     "REPLACE"
+    ],
+    "48": [
+     "REPLACE"
+    ],
+    "49": [
+     "REPLACE"
+    ],
+    "53": [
+     "REPLACE"
+    ],
+    "56": [
+     "OTHER",
+     "REPLACE",
+     "TABLE"
+    ]
+   },
+   "deviation_count": 14,
+   "payroll": {
+    "notice": "GL-OH-2027-RU-004-C",
+    "annual_exec": "46,100",
+    "annual_indiv": "46,100",
+    "annual_each_indiv_copartner": null,
+    "weekly_max": null,
+    "weekly_min": null,
+    "seasonal_reduction": null,
+    "shape": "ANNUAL_CAP_BOTH"
+   },
+   "liquor_grades": [
+    4
+   ],
+   "ilf_table_count": 7,
+   "ilf_by_subline": {
+    "334": 3,
+    "336": 3,
+    "335": 1
+   },
+   "territory_rating": true,
+   "zip_territory": true,
+   "stopgap": true,
+   "elp": true,
+   "basic_limits": [
+    "100/200"
+   ]
+  },
+  "OK": {
+   "notice": "GL-OK-2027-RU-003-C",
+   "notice_count": 9,
+   "first_year": 2022,
+   "last_year": 2027,
+   "numeric_rules": [
+    "16",
+    "22",
+    "24",
+    "36",
+    "42",
+    "44",
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "53",
+    "56"
+   ],
+   "additional_rules": {
+    "A1": "TERRORISM PREMIUM DETERMINATION",
+    "A2": "RATING TERRITORIES FOR PREMISES AND",
+    "A3": "DESCRIPTION OF MANDATORY AND OPTIONAL"
+   },
+   "kinds": {
+    "A1": [
+     "OTHER"
+    ],
+    "A2": [
+     "OTHER"
+    ],
+    "A3": [
+     "OTHER"
+    ],
+    "16": [
+     "ADD",
+     "REPLACE"
+    ],
+    "22": [
+     "REPLACE"
+    ],
+    "24": [
+     "REPLACE"
+    ],
+    "36": [
+     "REPLACE"
+    ],
+    "42": [
+     "REPLACE"
+    ],
+    "44": [
+     "REPLACE"
+    ],
+    "45": [
+     "OTHER",
+     "REPLACE"
+    ],
+    "46": [
+     "REPLACE"
+    ],
+    "47": [
+     "REPLACE"
+    ],
+    "48": [
+     "OTHER",
+     "REPLACE"
+    ],
+    "49": [
+     "REPLACE"
+    ],
+    "53": [
+     "REPLACE"
+    ],
+    "56": [
+     "OTHER",
+     "REPLACE",
+     "TABLE"
+    ]
+   },
+   "deviation_count": 13,
+   "payroll": {
+    "notice": "GL-OK-2027-RU-003-C",
+    "annual_exec": null,
+    "annual_indiv": "19,200",
+    "annual_each_indiv_copartner": null,
+    "weekly_max": null,
+    "weekly_min": null,
+    "seasonal_reduction": "2% per week beyond twelve",
+    "shape": "ANNUAL_INDIV_ONLY"
+   },
+   "liquor_grades": [
+    1
+   ],
+   "ilf_table_count": 8,
+   "ilf_by_subline": {
+    "334": 4,
+    "336": 3,
+    "335": 1
+   },
+   "territory_rating": true,
+   "zip_territory": true,
+   "stopgap": false,
+   "elp": false,
+   "basic_limits": [
+    "100/200"
+   ]
+  },
+  "OR": {
+   "notice": "GL-OR-2026-RU-002-C",
+   "notice_count": 9,
+   "first_year": 2021,
+   "last_year": 2026,
+   "numeric_rules": [
+    "11",
+    "22",
+    "24",
+    "36",
+    "42",
+    "44",
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "53",
+    "56"
+   ],
+   "additional_rules": {
+    "A1": "TERRORISM PREMIUM DETERMINATION",
+    "A2": "RATING TERRITORIES FOR PREMISES AND",
+    "A3": "DESCRIPTION OF MANDATORY AND OPTIONAL"
+   },
+   "kinds": {
+    "A1": [
+     "OTHER"
+    ],
+    "A2": [
+     "OTHER"
+    ],
+    "A3": [
+     "OTHER"
+    ],
+    "11": [
+     "ADD"
+    ],
+    "22": [
+     "REPLACE"
+    ],
+    "24": [
+     "ADD",
+     "REPLACE"
+    ],
+    "36": [
+     "REPLACE"
+    ],
+    "42": [
+     "REPLACE"
+    ],
+    "44": [
+     "REPLACE"
+    ],
+    "45": [
+     "REPLACE"
+    ],
+    "46": [
+     "REPLACE"
+    ],
+    "47": [
+     "REPLACE"
+    ],
+    "48": [
+     "ADD",
+     "REPLACE"
+    ],
+    "49": [
+     "REPLACE"
+    ],
+    "53": [
+     "REPLACE"
+    ],
+    "56": [
+     "OTHER",
+     "REPLACE",
+     "TABLE"
+    ]
+   },
+   "deviation_count": 13,
+   "payroll": {
+    "notice": "GL-OR-2026-RU-002-C",
+    "annual_exec": "54,200",
+    "annual_indiv": "54,200",
+    "annual_each_indiv_copartner": null,
+    "weekly_max": null,
+    "weekly_min": null,
+    "seasonal_reduction": null,
+    "shape": "ANNUAL_CAP_BOTH"
+   },
+   "liquor_grades": [
+    4
+   ],
+   "ilf_table_count": 7,
+   "ilf_by_subline": {
+    "334": 3,
+    "336": 3,
+    "335": 1
+   },
+   "territory_rating": true,
+   "zip_territory": true,
+   "stopgap": false,
+   "elp": false,
+   "basic_limits": [
+    "100/200"
+   ]
+  },
+  "PA": {
+   "notice": "GL-PA-2027-RU-004-C",
+   "notice_count": 12,
+   "first_year": 2021,
+   "last_year": 2027,
+   "numeric_rules": [
+    "2",
+    "22",
+    "24",
+    "33",
+    "34",
+    "42",
+    "44",
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "53",
+    "56"
+   ],
+   "additional_rules": {
+    "A1": "TERRORISM PREMIUM DETERMINATION",
+    "A2": "RATING TERRITORIES FOR PREMISES AND",
+    "A3": "TRANSITION RULE FOR PREMIUM CHANGES",
+    "A4": "DESCRIPTION OF MANDATORY AND OPTIONAL"
+   },
+   "kinds": {
+    "A1": [
+     "OTHER"
+    ],
+    "A2": [
+     "OTHER"
+    ],
+    "A3": [
+     "OTHER"
+    ],
+    "A4": [
+     "OTHER"
+    ],
+    "2": [
+     "REPLACE"
+    ],
+    "22": [
+     "REPLACE"
+    ],
+    "24": [
+     "REPLACE"
+    ],
+    "33": [
+     "ADD"
+    ],
+    "34": [
+     "REPLACE"
+    ],
+    "42": [
+     "REPLACE"
+    ],
+    "44": [
+     "REPLACE"
+    ],
+    "45": [
+     "REPLACE"
+    ],
+    "46": [
+     "REPLACE"
+    ],
+    "47": [
+     "REPLACE"
+    ],
+    "48": [
+     "REPLACE"
+    ],
+    "49": [
+     "REPLACE"
+    ],
+    "53": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "56": [
+     "OTHER",
+     "REPLACE",
+     "TABLE"
+    ]
+   },
+   "deviation_count": 14,
+   "payroll": {
+    "notice": "GL-PA-2027-RU-004-C",
+    "annual_exec": null,
+    "annual_indiv": null,
+    "annual_each_indiv_copartner": "5,200",
+    "weekly_max": "200",
+    "weekly_min": "40",
+    "seasonal_reduction": "2% per week beyond twelve",
+    "shape": "WEEKLY_MINMAX_EXEC + ANNUAL_INDIV"
+   },
+   "liquor_grades": [
+    7
+   ],
+   "ilf_table_count": 7,
+   "ilf_by_subline": {
+    "334": 3,
+    "336": 3,
+    "335": 1
+   },
+   "territory_rating": true,
+   "zip_territory": true,
+   "stopgap": false,
+   "elp": true,
+   "basic_limits": [
+    "100/200"
+   ]
+  },
+  "PR": {
+   "notice": "GL-PR-2027-RU-003-C",
+   "notice_count": 9,
+   "first_year": 2022,
+   "last_year": 2027,
+   "numeric_rules": [
+    "22",
+    "24",
+    "34",
+    "36",
+    "41",
+    "42",
+    "44",
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "53",
+    "56"
+   ],
+   "additional_rules": {
+    "A1": "COVERAGE FOR INJURY TO CO-EMPLOYEE(S)",
+    "A2": "STOP GAP \u2013 EMPLOYERS LIABILITY COVERAGE",
+    "A3": "DESCRIPTION OF MANDATORY AND OPTIONAL"
+   },
+   "kinds": {
+    "A1": [
+     "OTHER"
+    ],
+    "A2": [
+     "OTHER"
+    ],
+    "A3": [
+     "OTHER"
+    ],
+    "22": [
+     "REPLACE"
+    ],
+    "24": [
+     "ADD",
+     "REPLACE"
+    ],
+    "34": [
+     "REPLACE"
+    ],
+    "36": [
+     "REPLACE"
+    ],
+    "41": [
+     "REPLACE"
+    ],
+    "42": [
+     "DELETE"
+    ],
+    "44": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "45": [
+     "REPLACE"
+    ],
+    "46": [
+     "REPLACE"
+    ],
+    "47": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "48": [
+     "REPLACE"
+    ],
+    "49": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "53": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "56": [
+     "OTHER",
+     "REPLACE",
+     "TABLE"
+    ]
+   },
+   "deviation_count": 14,
+   "payroll": {
+    "notice": "GL-PR-2027-RU-003-C",
+    "annual_exec": "28,000",
+    "annual_indiv": "28,000",
+    "annual_each_indiv_copartner": null,
+    "weekly_max": null,
+    "weekly_min": null,
+    "seasonal_reduction": null,
+    "shape": "ANNUAL_CAP_BOTH"
+   },
+   "liquor_grades": [
+    0
+   ],
+   "ilf_table_count": 7,
+   "ilf_by_subline": {
+    "334": 3,
+    "336": 3,
+    "335": 1
+   },
+   "territory_rating": false,
+   "zip_territory": false,
+   "stopgap": true,
+   "elp": false,
+   "basic_limits": [
+    "100/200"
+   ]
+  },
+  "RI": {
+   "notice": "GL-RI-2026-RU-002-C",
+   "notice_count": 9,
+   "first_year": 2021,
+   "last_year": 2026,
+   "numeric_rules": [
+    "2",
+    "22",
+    "24",
+    "34",
+    "36",
+    "41",
+    "42",
+    "44",
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "53",
+    "56"
+   ],
+   "additional_rules": {
+    "A1": "TERRORISM PREMIUM DETERMINATION",
+    "A2": "COVERAGE FOR LEAD POISONING",
+    "A3": "RATING TERRITORIES FOR PREMISES AND",
+    "A4": "DESCRIPTION OF MANDATORY AND OPTIONAL"
+   },
+   "kinds": {
+    "A1": [
+     "OTHER"
+    ],
+    "A2": [
+     "OTHER"
+    ],
+    "A3": [
+     "OTHER"
+    ],
+    "A4": [
+     "OTHER"
+    ],
+    "2": [
+     "REPLACE"
+    ],
+    "22": [
+     "REPLACE"
+    ],
+    "24": [
+     "ADD",
+     "REPLACE"
+    ],
+    "34": [
+     "REPLACE"
+    ],
+    "36": [
+     "ADD"
+    ],
+    "41": [
+     "REPLACE"
+    ],
+    "42": [
+     "REPLACE"
+    ],
+    "44": [
+     "REPLACE"
+    ],
+    "45": [
+     "REPLACE"
+    ],
+    "46": [
+     "REPLACE"
+    ],
+    "47": [
+     "REPLACE"
+    ],
+    "48": [
+     "REPLACE"
+    ],
+    "49": [
+     "REPLACE"
+    ],
+    "53": [
+     "OTHER",
+     "REPLACE"
+    ],
+    "56": [
+     "OTHER",
+     "REPLACE",
+     "TABLE"
+    ]
+   },
+   "deviation_count": 15,
+   "payroll": {
+    "notice": "GL-RI-2026-RU-002-C",
+    "annual_exec": "52,000",
+    "annual_indiv": "52,000",
+    "annual_each_indiv_copartner": null,
+    "weekly_max": null,
+    "weekly_min": null,
+    "seasonal_reduction": null,
+    "shape": "ANNUAL_CAP_BOTH"
+   },
+   "liquor_grades": [
+    6
+   ],
+   "ilf_table_count": 7,
+   "ilf_by_subline": {
+    "334": 3,
+    "336": 3,
+    "335": 1
+   },
+   "territory_rating": true,
+   "zip_territory": true,
+   "stopgap": false,
+   "elp": true,
+   "basic_limits": [
+    "100/200"
+   ]
+  },
+  "SC": {
+   "notice": "GL-SC-2027-RU-003-C",
+   "notice_count": 8,
+   "first_year": 2022,
+   "last_year": 2027,
+   "numeric_rules": [
+    "11",
+    "22",
+    "24",
+    "36",
+    "42",
+    "44",
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "53",
+    "56"
+   ],
+   "additional_rules": {
+    "A1": "TERRORISM PREMIUM DETERMINATION",
+    "A2": "DESCRIPTION OF MANDATORY AND OPTIONAL"
+   },
+   "kinds": {
+    "A1": [
+     "OTHER"
+    ],
+    "A2": [
+     "OTHER"
+    ],
+    "11": [
+     "ADD"
+    ],
+    "22": [
+     "REPLACE"
+    ],
+    "24": [
+     "ADD",
+     "REPLACE"
+    ],
+    "36": [
+     "REPLACE"
+    ],
+    "42": [
+     "REPLACE"
+    ],
+    "44": [
+     "REPLACE"
+    ],
+    "45": [
+     "REPLACE"
+    ],
+    "46": [
+     "REPLACE"
+    ],
+    "47": [
+     "REPLACE"
+    ],
+    "48": [
+     "REPLACE"
+    ],
+    "49": [
+     "REPLACE"
+    ],
+    "53": [
+     "REPLACE"
+    ],
+    "56": [
+     "OTHER",
+     "REPLACE",
+     "TABLE"
+    ]
+   },
+   "deviation_count": 13,
+   "payroll": {
+    "notice": "GL-SC-2027-RU-003-C",
+    "annual_exec": "24,100",
+    "annual_indiv": "24,100",
+    "annual_each_indiv_copartner": null,
+    "weekly_max": null,
+    "weekly_min": null,
+    "seasonal_reduction": null,
+    "shape": "ANNUAL_CAP_BOTH"
+   },
+   "liquor_grades": [
+    6
+   ],
+   "ilf_table_count": 7,
+   "ilf_by_subline": {
+    "334": 3,
+    "336": 3,
+    "335": 1
+   },
+   "territory_rating": false,
+   "zip_territory": false,
+   "stopgap": false,
+   "elp": false,
+   "basic_limits": [
+    "100/200"
+   ]
+  },
+  "SD": {
+   "notice": "GL-SD-2027-RU-003-C",
+   "notice_count": 7,
+   "first_year": 2022,
+   "last_year": 2027,
+   "numeric_rules": [
+    "2",
+    "11",
+    "13",
+    "22",
+    "24",
+    "34",
+    "36",
+    "41",
+    "42",
+    "44",
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "53",
+    "54",
+    "56"
+   ],
+   "additional_rules": {
+    "A1": "TERRORISM PREMIUM DETERMINATION",
+    "A2": "DESCRIPTION OF MANDATORY AND OPTIONAL ENDORSEMENTS"
+   },
+   "kinds": {
+    "A1": [
+     "OTHER"
+    ],
+    "A2": [
+     "OTHER"
+    ],
+    "2": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "11": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "13": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "22": [
+     "ADD",
+     "REPLACE"
+    ],
+    "34": [
+     "ADD",
+     "REPLACE"
+    ],
+    "24": [
+     "ADD"
+    ],
+    "36": [
+     "REPLACE"
+    ],
+    "41": [
+     "REPLACE"
+    ],
+    "42": [
+     "REPLACE"
+    ],
+    "44": [
+     "ADD",
+     "REPLACE"
+    ],
+    "45": [
+     "ADD",
+     "REPLACE"
+    ],
+    "46": [
+     "REPLACE"
+    ],
+    "47": [
+     "REPLACE"
+    ],
+    "48": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "49": [
+     "REPLACE"
+    ],
+    "53": [
+     "REPLACE"
+    ],
+    "54": [
+     "ADD",
+     "REPLACE",
+     "TABLE"
+    ],
+    "56": [
+     "REPLACE",
+     "TABLE"
+    ]
+   },
+   "deviation_count": 18,
+   "payroll": {
+    "notice": "GL-SD-2027-RU-003-C",
+    "annual_exec": "25,800",
+    "annual_indiv": "25,800",
+    "annual_each_indiv_copartner": null,
+    "weekly_max": null,
+    "weekly_min": null,
+    "seasonal_reduction": null,
+    "shape": "ANNUAL_CAP_BOTH"
+   },
+   "liquor_grades": [
+    0
+   ],
+   "ilf_table_count": 7,
+   "ilf_by_subline": {
+    "334": 3,
+    "336": 3,
+    "335": 1
+   },
+   "territory_rating": false,
+   "zip_territory": false,
+   "stopgap": false,
+   "elp": true,
+   "basic_limits": []
+  },
+  "TN": {
+   "notice": "GL-TN-2026-RU-002-C",
+   "notice_count": 7,
+   "first_year": 2022,
+   "last_year": 2026,
+   "numeric_rules": [
+    "2",
+    "11",
+    "22",
+    "24",
+    "34",
+    "42",
+    "44",
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "53",
+    "56"
+   ],
+   "additional_rules": {
+    "A1": "TERRORISM PREMIUM DETERMINATION",
+    "A2": "RATING TERRITORIES FOR PREMISES AND OPERATIONS (Subline Code 334) AND LIQUOR LIABILITY (Subline Code 332)",
+    "A3": "DESCRIPTION OF MANDATORY AND OPTIONAL ENDORSEMENTS"
+   },
+   "kinds": {
+    "A1": [
+     "OTHER"
+    ],
+    "A2": [
+     "OTHER"
+    ],
+    "A3": [
+     "OTHER"
+    ],
+    "2": [
+     "REPLACE"
+    ],
+    "11": [
+     "REPLACE"
+    ],
+    "22": [
+     "REPLACE"
+    ],
+    "24": [
+     "REPLACE"
+    ],
+    "34": [
+     "REPLACE"
+    ],
+    "42": [
+     "REPLACE"
+    ],
+    "44": [
+     "REPLACE"
+    ],
+    "45": [
+     "REPLACE"
+    ],
+    "48": [
+     "REPLACE"
+    ],
+    "49": [
+     "REPLACE"
+    ],
+    "46": [
+     "REPLACE",
+     "TABLE"
+    ],
+    "47": [
+     "REPLACE",
+     "TABLE"
+    ],
+    "53": [
+     "REPLACE",
+     "TABLE"
+    ],
+    "56": [
+     "REPLACE",
+     "TABLE"
+    ]
+   },
+   "deviation_count": 14,
+   "payroll": {
+    "notice": "GL-TN-2026-RU-002-C",
+    "annual_exec": null,
+    "annual_indiv": null,
+    "annual_each_indiv_copartner": "13,300",
+    "weekly_max": "500",
+    "weekly_min": "100",
+    "seasonal_reduction": "2% per week beyond twelve",
+    "shape": "WEEKLY_MINMAX_EXEC + ANNUAL_INDIV"
+   },
+   "liquor_grades": [
+    3
+   ],
+   "ilf_table_count": 8,
+   "ilf_by_subline": {
+    "334": 4,
+    "336": 3,
+    "335": 1
+   },
+   "territory_rating": true,
+   "zip_territory": true,
+   "stopgap": false,
+   "elp": true,
+   "basic_limits": []
+  },
+  "TX": {
+   "notice": "GL-TX-2025-RU-001-C",
+   "notice_count": 8,
+   "first_year": 2021,
+   "last_year": 2025,
+   "numeric_rules": [
+    "1",
+    "2",
+    "11",
+    "16",
+    "22",
+    "23",
+    "24",
+    "34",
+    "36",
+    "41",
+    "44",
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "52",
+    "53",
+    "55",
+    "56"
+   ],
+   "additional_rules": {
+    "A1": "TERRORISM PREMIUM DETERMINATION Refer to the Terrorism Supplement to the CLM."
+   },
+   "kinds": {
+    "A1": [
+     "ADD",
+     "REPLACE"
+    ],
+    "11": [
+     "ADD",
+     "DELETE",
+     "REPLACE"
+    ],
+    "1": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "16": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "2": [
+     "REPLACE"
+    ],
+    "22": [
+     "REPLACE"
+    ],
+    "23": [
+     "ADD",
+     "DELETE",
+     "REPLACE"
+    ],
+    "24": [
+     "ADD",
+     "DELETE",
+     "REPLACE"
+    ],
+    "34": [
+     "ADD",
+     "DELETE",
+     "REPLACE"
+    ],
+    "36": [
+     "ADD"
+    ],
+    "41": [
+     "REPLACE"
+    ],
+    "44": [
+     "REPLACE"
+    ],
+    "45": [
+     "REPLACE"
+    ],
+    "46": [
+     "ADD",
+     "REPLACE"
+    ],
+    "47": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "48": [
+     "REPLACE"
+    ],
+    "49": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "52": [
+     "ADD",
+     "DELETE",
+     "REPLACE",
+     "TABLE"
+    ],
+    "53": [
+     "ADD",
+     "DELETE",
+     "REPLACE",
+     "TABLE"
+    ],
+    "55": [
+     "ADD",
+     "REPLACE",
+     "TABLE"
+    ],
+    "56": [
+     "ADD",
+     "REPLACE",
+     "TABLE"
+    ]
+   },
+   "deviation_count": 20,
+   "payroll": {
+    "notice": "GL-TX-2025-RU-001-C",
+    "annual_exec": "39,800",
+    "annual_indiv": "39,800",
+    "annual_each_indiv_copartner": null,
+    "weekly_max": null,
+    "weekly_min": null,
+    "seasonal_reduction": null,
+    "shape": "ANNUAL_CAP_BOTH"
+   },
+   "liquor_grades": [
+    6
+   ],
+   "ilf_table_count": 7,
+   "ilf_by_subline": {
+    "334": 3,
+    "336": 3,
+    "335": 1
+   },
+   "territory_rating": false,
+   "zip_territory": false,
+   "stopgap": false,
+   "elp": true,
+   "basic_limits": []
+  },
+  "UT": {
+   "notice": "GL-UT-2027-RU-003-C",
+   "notice_count": 12,
+   "first_year": 2022,
+   "last_year": 2027,
+   "numeric_rules": [
+    "2",
+    "22",
+    "24",
+    "34",
+    "36",
+    "41",
+    "42",
+    "44",
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "53",
+    "56"
+   ],
+   "additional_rules": {
+    "A1": "TERRORISM PREMIUM DETERMINATION",
+    "A2": "DESCRIPTION OF MANDATORY AND OPTIONAL"
+   },
+   "kinds": {
+    "A1": [
+     "OTHER"
+    ],
+    "A2": [
+     "OTHER"
+    ],
+    "2": [
+     "REPLACE"
+    ],
+    "22": [
+     "REPLACE"
+    ],
+    "24": [
+     "ADD",
+     "REPLACE"
+    ],
+    "34": [
+     "OTHER",
+     "REPLACE"
+    ],
+    "36": [
+     "REPLACE"
+    ],
+    "41": [
+     "REPLACE"
+    ],
+    "42": [
+     "REPLACE"
+    ],
+    "44": [
+     "REPLACE"
+    ],
+    "45": [
+     "OTHER",
+     "REPLACE"
+    ],
+    "46": [
+     "REPLACE"
+    ],
+    "47": [
+     "REPLACE"
+    ],
+    "48": [
+     "REPLACE"
+    ],
+    "49": [
+     "REPLACE"
+    ],
+    "53": [
+     "REPLACE"
+    ],
+    "56": [
+     "OTHER",
+     "REPLACE",
+     "TABLE"
+    ]
+   },
+   "deviation_count": 15,
+   "payroll": {
+    "notice": "GL-UT-2027-RU-003-C",
+    "annual_exec": "38,300",
+    "annual_indiv": "38,300",
+    "annual_each_indiv_copartner": null,
+    "weekly_max": null,
+    "weekly_min": null,
+    "seasonal_reduction": null,
+    "shape": "ANNUAL_CAP_BOTH"
+   },
+   "liquor_grades": [
+    0
+   ],
+   "ilf_table_count": 9,
+   "ilf_by_subline": {
+    "334": 4,
+    "336": 3,
+    "335": 1,
+    "332": 1
+   },
+   "territory_rating": false,
+   "zip_territory": false,
+   "stopgap": false,
+   "elp": true,
+   "basic_limits": [
+    "100/200"
+   ]
+  },
+  "VA": {
+   "notice": "GL-VA-2026-RU-002-C",
+   "notice_count": 10,
+   "first_year": 2021,
+   "last_year": 2026,
+   "numeric_rules": [
+    "1",
+    "2",
+    "10",
+    "13",
+    "15",
+    "16",
+    "22",
+    "24",
+    "28",
+    "33",
+    "34",
+    "36",
+    "41",
+    "42",
+    "43",
+    "44",
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "52",
+    "53",
+    "56"
+   ],
+   "additional_rules": {
+    "A1": "RESERVED FOR FUTURE USE",
+    "A2": "RATES/LOSS COSTS",
+    "A3": "TERRORISM PREMIUM DETERMINATION",
+    "A4": "RATING TERRITORIES FOR PREMISES AND",
+    "A5": "DESCRIPTION OF MANDATORY AND OPTIONAL"
+   },
+   "kinds": {
+    "A1": [
+     "OTHER"
+    ],
+    "A2": [
+     "OTHER"
+    ],
+    "A3": [
+     "OTHER"
+    ],
+    "A4": [
+     "OTHER"
+    ],
+    "A5": [
+     "OTHER"
+    ],
+    "1": [
+     "REPLACE"
+    ],
+    "2": [
+     "REPLACE"
+    ],
+    "10": [
+     "REPLACE"
+    ],
+    "13": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "15": [
+     "REPLACE"
+    ],
+    "16": [
+     "ADD",
+     "DELETE",
+     "REPLACE"
+    ],
+    "22": [
+     "ADD",
+     "REPLACE"
+    ],
+    "24": [
+     "ADD"
+    ],
+    "28": [
+     "REPLACE"
+    ],
+    "33": [
+     "OTHER",
+     "REPLACE"
+    ],
+    "34": [
+     "OTHER",
+     "REPLACE"
+    ],
+    "36": [
+     "ADD"
+    ],
+    "41": [
+     "REPLACE"
+    ],
+    "42": [
+     "REPLACE"
+    ],
+    "43": [
+     "REPLACE"
+    ],
+    "44": [
+     "REPLACE"
+    ],
+    "45": [
+     "REPLACE"
+    ],
+    "46": [
+     "REPLACE"
+    ],
+    "47": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "48": [
+     "OTHER",
+     "REPLACE"
+    ],
+    "49": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "52": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "53": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "56": [
+     "OTHER",
+     "REPLACE"
+    ]
+   },
+   "deviation_count": 24,
+   "payroll": {
+    "notice": "GL-VA-2026-RU-002-C",
+    "annual_exec": "45,500",
+    "annual_indiv": "45,500",
+    "annual_each_indiv_copartner": null,
+    "weekly_max": null,
+    "weekly_min": null,
+    "seasonal_reduction": null,
+    "shape": "ANNUAL_CAP_BOTH"
+   },
+   "liquor_grades": [
+    0
+   ],
+   "ilf_table_count": 7,
+   "ilf_by_subline": {
+    "334": 3,
+    "336": 3,
+    "335": 1
+   },
+   "territory_rating": true,
+   "zip_territory": true,
+   "stopgap": false,
+   "elp": true,
+   "basic_limits": [
+    "100/200"
+   ]
+  },
+  "VT": {
+   "notice": "GL-VT-2025-RU-001-C",
+   "notice_count": 7,
+   "first_year": 2022,
+   "last_year": 2025,
+   "numeric_rules": [
+    "1",
+    "16",
+    "22",
+    "24",
+    "34",
+    "36",
+    "37",
+    "41",
+    "42",
+    "44",
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "52",
+    "53",
+    "56"
+   ],
+   "additional_rules": {
+    "A1": "TERRORISM PREMIUM DETERMINATION",
+    "A2": "COVERAGE FOR INJURY TO CO-EMPLOYEE(S)"
+   },
+   "kinds": {
+    "A1": [
+     "OTHER"
+    ],
+    "A2": [
+     "REPLACE"
+    ],
+    "1": [
+     "REPLACE"
+    ],
+    "16": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "22": [
+     "REPLACE"
+    ],
+    "24": [
+     "REPLACE"
+    ],
+    "34": [
+     "REPLACE"
+    ],
+    "36": [
+     "ADD",
+     "REPLACE"
+    ],
+    "37": [
+     "ADD"
+    ],
+    "41": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "42": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "44": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "45": [
+     "REPLACE"
+    ],
+    "46": [
+     "REPLACE"
+    ],
+    "47": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "48": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "49": [
+     "REPLACE"
+    ],
+    "52": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "53": [
+     "DELETE",
+     "REPLACE",
+     "TABLE"
+    ],
+    "56": [
+     "OTHER",
+     "REPLACE",
+     "TABLE"
+    ]
+   },
+   "deviation_count": 18,
+   "payroll": {
+    "notice": "GL-VT-2025-RU-001-C",
+    "annual_exec": null,
+    "annual_indiv": null,
+    "annual_each_indiv_copartner": "10,400",
+    "weekly_max": "300",
+    "weekly_min": "100",
+    "seasonal_reduction": null,
+    "shape": "WEEKLY_MINMAX_EXEC + ANNUAL_INDIV"
+   },
+   "liquor_grades": [
+    5
+   ],
+   "ilf_table_count": 7,
+   "ilf_by_subline": {
+    "334": 3,
+    "336": 3,
+    "335": 1
+   },
+   "territory_rating": false,
+   "zip_territory": false,
+   "stopgap": false,
+   "elp": false,
+   "basic_limits": [
+    "100/200"
+   ]
+  },
+  "WA": {
+   "notice": "GL-WA-2026-RU-001-C",
+   "notice_count": 8,
+   "first_year": 2022,
+   "last_year": 2026,
+   "numeric_rules": [
+    "5",
+    "10",
+    "11",
+    "22",
+    "24",
+    "34",
+    "36",
+    "37",
+    "41",
+    "42",
+    "44",
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "53",
+    "56"
+   ],
+   "additional_rules": {
+    "A1": "TERRORISM PREMIUM DETERMINATION",
+    "A2": "STOP GAP \u2013 EMPLOYERS LIABILITY COVERAGE",
+    "A3": "RATING TERRITORIES FOR PREMISES AND",
+    "A4": "WASHINGTON EFFICIENT PROXIMATE CAUSE",
+    "A5": "DESCRIPTION OF MANDATORY AND OPTIONAL"
+   },
+   "kinds": {
+    "A1": [
+     "OTHER"
+    ],
+    "A2": [
+     "OTHER"
+    ],
+    "A3": [
+     "OTHER"
+    ],
+    "A4": [
+     "OTHER"
+    ],
+    "A5": [
+     "OTHER"
+    ],
+    "5": [
+     "REPLACE"
+    ],
+    "10": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "11": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "22": [
+     "REPLACE"
+    ],
+    "24": [
+     "ADD"
+    ],
+    "34": [
+     "REPLACE"
+    ],
+    "36": [
+     "ADD"
+    ],
+    "37": [
+     "REPLACE"
+    ],
+    "41": [
+     "REPLACE"
+    ],
+    "42": [
+     "REPLACE"
+    ],
+    "44": [
+     "REPLACE"
+    ],
+    "45": [
+     "DELETE",
+     "OTHER",
+     "REPLACE"
+    ],
+    "46": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "47": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "48": [
+     "ADD"
+    ],
+    "49": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "53": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "56": [
+     "OTHER",
+     "REPLACE",
+     "TABLE"
+    ]
+   },
+   "deviation_count": 18,
+   "payroll": {
+    "notice": "GL-WA-2026-RU-001-C",
+    "annual_exec": "17,800",
+    "annual_indiv": "17,800",
+    "annual_each_indiv_copartner": null,
+    "weekly_max": null,
+    "weekly_min": null,
+    "seasonal_reduction": null,
+    "shape": "ANNUAL_CAP_BOTH"
+   },
+   "liquor_grades": [
+    5
+   ],
+   "ilf_table_count": 7,
+   "ilf_by_subline": {
+    "334": 3,
+    "336": 3,
+    "335": 1
+   },
+   "territory_rating": true,
+   "zip_territory": true,
+   "stopgap": true,
+   "elp": false,
+   "basic_limits": [
+    "100/200"
+   ]
+  },
+  "WI": {
+   "notice": "GL-WI-2027-RU-004-C",
+   "notice_count": 12,
+   "first_year": 2021,
+   "last_year": 2027,
+   "numeric_rules": [
+    "11",
+    "22",
+    "24",
+    "34",
+    "42",
+    "44",
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "53",
+    "56"
+   ],
+   "additional_rules": {
+    "A1": "TERRORISM PREMIUM DETERMINATION",
+    "A2": "RATING TERRITORIES FOR PREMISES AND OPERATIONS (Subline Code 334) AND LIQUOR LIABILITY (Subline Code 332)",
+    "A3": "LIQUEFIED PETROLEUM GAS RETAIL SUPPLIERS",
+    "A4": "HIRED AUTO AND NON-OWNED AUTO LIABILITY COVERAGE",
+    "A5": "DESCRIPTION OF MANDATORY AND OPTIONAL ENDORSEMENTS"
+   },
+   "kinds": {
+    "A1": [
+     "OTHER"
+    ],
+    "A2": [
+     "OTHER"
+    ],
+    "A3": [
+     "OTHER"
+    ],
+    "A4": [
+     "OTHER"
+    ],
+    "A5": [
+     "OTHER"
+    ],
+    "11": [
+     "ADD"
+    ],
+    "22": [
+     "ADD",
+     "REPLACE"
+    ],
+    "42": [
+     "ADD",
+     "REPLACE"
+    ],
+    "44": [
+     "ADD",
+     "REPLACE"
+    ],
+    "24": [
+     "ADD",
+     "REPLACE"
+    ],
+    "34": [
+     "REPLACE"
+    ],
+    "45": [
+     "REPLACE"
+    ],
+    "46": [
+     "REPLACE"
+    ],
+    "47": [
+     "REPLACE",
+     "TABLE"
+    ],
+    "48": [
+     "REPLACE",
+     "TABLE"
+    ],
+    "49": [
+     "REPLACE",
+     "TABLE"
+    ],
+    "53": [
+     "REPLACE",
+     "TABLE"
+    ],
+    "56": [
+     "REPLACE",
+     "TABLE"
+    ]
+   },
+   "deviation_count": 13,
+   "payroll": {
+    "notice": "GL-WI-2027-RU-004-C",
+    "annual_exec": "53,900",
+    "annual_indiv": "53,900",
+    "annual_each_indiv_copartner": null,
+    "weekly_max": null,
+    "weekly_min": null,
+    "seasonal_reduction": null,
+    "shape": "ANNUAL_CAP_BOTH"
+   },
+   "liquor_grades": [
+    2
+   ],
+   "ilf_table_count": 7,
+   "ilf_by_subline": {
+    "334": 3,
+    "336": 3,
+    "335": 1
+   },
+   "territory_rating": true,
+   "zip_territory": true,
+   "stopgap": false,
+   "elp": false,
+   "basic_limits": []
+  },
+  "WV": {
+   "notice": "GL-WV-2026-RU-002-C",
+   "notice_count": 8,
+   "first_year": 2022,
+   "last_year": 2026,
+   "numeric_rules": [
+    "5",
+    "13",
+    "24",
+    "36",
+    "45",
+    "49",
+    "56"
+   ],
+   "additional_rules": {
+    "A1": "TERRORISM PREMIUM DETERMINATION",
+    "A2": "WEST VIRGINIA CHANGES  CANCELLATION ENDORSEMENT IL 02 81",
+    "A3": "DESCRIPTION OF MANDATORY AND OPTIONAL ENDORSEMENTS"
+   },
+   "kinds": {
+    "A1": [
+     "OTHER"
+    ],
+    "A2": [
+     "OTHER"
+    ],
+    "A3": [
+     "OTHER"
+    ],
+    "5": [
+     "ADD"
+    ],
+    "13": [
+     "ADD",
+     "DELETE"
+    ],
+    "24": [
+     "ADD"
+    ],
+    "36": [
+     "ADD",
+     "REPLACE"
+    ],
+    "45": [
+     "ADD",
+     "REPLACE",
+     "TABLE"
+    ],
+    "49": [
+     "REPLACE",
+     "TABLE"
+    ],
+    "56": [
+     "REPLACE",
+     "TABLE"
+    ]
+   },
+   "deviation_count": 7,
+   "payroll": {
+    "notice": "GL-WV-2026-RU-002-C",
+    "annual_exec": "39,700",
+    "annual_indiv": "39,700",
+    "annual_each_indiv_copartner": null,
+    "weekly_max": null,
+    "weekly_min": null,
+    "seasonal_reduction": null,
+    "shape": "ANNUAL_CAP_BOTH"
+   },
+   "liquor_grades": [
+    6
+   ],
+   "ilf_table_count": 7,
+   "ilf_by_subline": {
+    "334": 3,
+    "336": 3,
+    "335": 1
+   },
+   "territory_rating": false,
+   "zip_territory": false,
+   "stopgap": false,
+   "elp": false,
+   "basic_limits": []
+  },
+  "WY": {
+   "notice": "GL-WY-2026-RU-002-C",
+   "notice_count": 8,
+   "first_year": 2022,
+   "last_year": 2026,
+   "numeric_rules": [
+    "11",
+    "13",
+    "22",
+    "24",
+    "41",
+    "42",
+    "43",
+    "44",
+    "45",
+    "46",
+    "47",
+    "48",
+    "49",
+    "53",
+    "56"
+   ],
+   "additional_rules": {
+    "A1": "TERRORISM PREMIUM DETERMINATION",
+    "A2": "STOP GAP \u2013 EMPLOYERS LIABILITY COVERAGE",
+    "A3": "DESCRIPTION OF MANDATORY AND OPTIONAL"
+   },
+   "kinds": {
+    "A1": [
+     "OTHER"
+    ],
+    "A2": [
+     "OTHER"
+    ],
+    "A3": [
+     "OTHER"
+    ],
+    "11": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "13": [
+     "DELETE",
+     "REPLACE"
+    ],
+    "22": [
+     "REPLACE"
+    ],
+    "24": [
+     "ADD"
+    ],
+    "41": [
+     "REPLACE"
+    ],
+    "42": [
+     "REPLACE"
+    ],
+    "43": [
+     "REPLACE"
+    ],
+    "44": [
+     "REPLACE"
+    ],
+    "45": [
+     "REPLACE"
+    ],
+    "46": [
+     "REPLACE"
+    ],
+    "47": [
+     "REPLACE"
+    ],
+    "48": [
+     "OTHER",
+     "REPLACE"
+    ],
+    "49": [
+     "REPLACE"
+    ],
+    "53": [
+     "REPLACE"
+    ],
+    "56": [
+     "OTHER",
+     "REPLACE",
+     "TABLE"
+    ]
+   },
+   "deviation_count": 15,
+   "payroll": {
+    "notice": "GL-WY-2026-RU-002-C",
+    "annual_exec": "19,500",
+    "annual_indiv": "16,200",
+    "annual_each_indiv_copartner": null,
+    "weekly_max": null,
+    "weekly_min": null,
+    "seasonal_reduction": null,
+    "shape": "ANNUAL_CAP_BOTH"
+   },
+   "liquor_grades": [
+    5
+   ],
+   "ilf_table_count": 7,
+   "ilf_by_subline": {
+    "334": 3,
+    "336": 3,
+    "335": 1
+   },
+   "territory_rating": false,
+   "zip_territory": false,
+   "stopgap": true,
+   "elp": false,
+   "basic_limits": [
+    "100/200"
+   ]
+  }
+ },
+ "sublines": {
+  "334": "Premises-Operations",
+  "336": "Products/Completed Operations",
+  "325": "Electronic Data Liability / Employee Benefits Liability",
+  "332": "Liquor Liability",
+  "335": "OCP / Principals Protective / Railroad Protective",
+  "350": "Pollution Liability / Underground Storage Tank",
+  "365": "Product Withdrawal",
+  "370": "Unmanned Aircraft"
+ },
+ "coverages": [
+  {
+   "key": "PREM_OPS",
+   "label": "Premises-Operations",
+   "subline": "334",
+   "rule": 21,
+   "premium_para": "\u2014",
+   "archetype": "A1",
+   "steps": 9,
+   "host": null,
+   "deductible": true,
+   "refer_to_company": false
+  },
+  {
+   "key": "PROD_COMPOPS",
+   "label": "Products/Completed Operations",
+   "subline": "336",
+   "rule": 48,
+   "premium_para": "I",
+   "archetype": "A1",
+   "steps": 9,
+   "host": null,
+   "deductible": true,
+   "refer_to_company": false
+  },
+  {
+   "key": "LIQUOR",
+   "label": "Liquor Liability",
+   "subline": "332",
+   "rule": 45,
+   "premium_para": "I",
+   "archetype": "A1",
+   "steps": 9,
+   "host": null,
+   "deductible": true,
+   "refer_to_company": false
+  },
+  {
+   "key": "OCP",
+   "label": "Owners & Contractors Protective",
+   "subline": "335",
+   "rule": 46,
+   "premium_para": "J",
+   "archetype": "A2",
+   "steps": 8,
+   "host": null,
+   "deductible": false,
+   "refer_to_company": false
+  },
+  {
+   "key": "PRINCIPALS",
+   "label": "Principals Protective",
+   "subline": "335",
+   "rule": 46,
+   "premium_para": "J",
+   "archetype": "A2",
+   "steps": 8,
+   "host": null,
+   "deductible": false,
+   "refer_to_company": false
+  },
+  {
+   "key": "CPM_PROTECTIVE",
+   "label": "Construction Project Mgmt Protective",
+   "subline": "335",
+   "rule": 46,
+   "premium_para": "J",
+   "archetype": "A2",
+   "steps": 8,
+   "host": null,
+   "deductible": false,
+   "refer_to_company": false
+  },
+  {
+   "key": "RAILROAD",
+   "label": "Railroad Protective",
+   "subline": "335",
+   "rule": 49,
+   "premium_para": "H",
+   "archetype": "A2",
+   "steps": 8,
+   "host": null,
+   "deductible": false,
+   "refer_to_company": false
+  },
+  {
+   "key": "PROD_WITHDRAWAL",
+   "label": "Product Withdrawal",
+   "subline": "365",
+   "rule": 44,
+   "premium_para": "A.5",
+   "archetype": "A3",
+   "steps": 9,
+   "host": "PROD_COMPOPS",
+   "deductible": true,
+   "refer_to_company": false
+  },
+  {
+   "key": "LOED",
+   "label": "Loss Of Electronic Data",
+   "subline": "\u2014",
+   "rule": 40,
+   "premium_para": "B.1",
+   "archetype": "A3",
+   "steps": 11,
+   "host": "PROD_COMPOPS",
+   "deductible": true,
+   "refer_to_company": false
+  },
+  {
+   "key": "CYBER",
+   "label": "Cyber Incident Liability",
+   "subline": "\u2014",
+   "rule": 40,
+   "premium_para": "B.2",
+   "archetype": "A3",
+   "steps": 11,
+   "host": "PROD_COMPOPS",
+   "deductible": true,
+   "refer_to_company": false
+  },
+  {
+   "key": "UNMANNED",
+   "label": "Unmanned Aircraft",
+   "subline": "370",
+   "rule": 37,
+   "premium_para": "C",
+   "archetype": "A4",
+   "steps": 5,
+   "host": null,
+   "deductible": false,
+   "refer_to_company": true
+  },
+  {
+   "key": "EDL",
+   "label": "Electronic Data Liability",
+   "subline": "325",
+   "rule": 42,
+   "premium_para": "F",
+   "archetype": "A5",
+   "steps": 0,
+   "host": null,
+   "deductible": false,
+   "refer_to_company": true
+  },
+  {
+   "key": "EBL",
+   "label": "Employee Benefits Liability",
+   "subline": "325",
+   "rule": 43,
+   "premium_para": "D",
+   "archetype": "A5",
+   "steps": 0,
+   "host": null,
+   "deductible": false,
+   "refer_to_company": true
+  },
+  {
+   "key": "POLLUTION",
+   "label": "Pollution Liability",
+   "subline": "350",
+   "rule": 47,
+   "premium_para": "G",
+   "archetype": "A5",
+   "steps": 0,
+   "host": null,
+   "deductible": false,
+   "refer_to_company": true
+  },
+  {
+   "key": "UST",
+   "label": "Underground Storage Tank",
+   "subline": "350",
+   "rule": 53,
+   "premium_para": "E",
+   "archetype": "A5",
+   "steps": 0,
+   "host": null,
+   "deductible": false,
+   "refer_to_company": true
+  },
+  {
+   "key": "ABUSE",
+   "label": "Abuse Or Molestation",
+   "subline": "\u2014",
+   "rule": 41,
+   "premium_para": "C",
+   "archetype": "A5",
+   "steps": 0,
+   "host": null,
+   "deductible": false,
+   "refer_to_company": true
+  },
+  {
+   "key": "TERRORISM",
+   "label": "Terrorism (certified acts)",
+   "subline": "\u2014",
+   "rule": 55,
+   "premium_para": "F",
+   "archetype": "A5",
+   "steps": 0,
+   "host": null,
+   "deductible": false,
+   "refer_to_company": true
+  }
+ ],
+ "archetypes": {
+  "A1": {
+   "name": "Full nine-step",
+   "note": "classify -> base -> rate -> coverage adj -> ILF+deductible -> x exposure -> +other -> total -> minimum premium"
+  },
+  "A2": {
+   "name": "Eight-step, no premium-base step",
+   "note": "exposure base fixed by the coverage; no deductible mechanism at all"
+  },
+  "A3": {
+   "name": "Factor on a host subline",
+   "note": "computes a host subline rate first, then applies a published factor"
+  },
+  "A4": {
+   "name": "Modifier chain",
+   "note": "rate x three categorical modifiers (MAX within each), then ILF"
+  },
+  "A5": {
+   "name": "Refer to company",
+   "note": "structure fully specified; premium explicitly not"
+  }
+ },
+ "factor_tables": {
+  "Table 40.C \u2014 Loss Of Electronic Data Factors (CG 04 37)": {
+   "key": "Hazard Grade",
+   "rows": [
+    [
+     "1",
+     "0.0010"
+    ],
+    [
+     "2",
+     "0.0030"
+    ],
+    [
+     "3",
+     "0.0050"
+    ],
+    [
+     "4",
+     "0.0070"
+    ]
+   ]
+  },
+  "Table 40.D \u2014 Loss Of Electronic Data Factors (CG 04 71)": {
+   "key": "Hazard Grade",
+   "rows": [
+    [
+     "1",
+     "0.0008"
+    ],
+    [
+     "2",
+     "0.0024"
+    ],
+    [
+     "3",
+     "0.0040"
+    ],
+    [
+     "4",
+     "0.0056"
+    ]
+   ]
+  },
+  "Table 40.E \u2014 Cyber Incident Liability Factors (CG 04 25)": {
+   "key": "Hazard Grade",
+   "rows": [
+    [
+     "1",
+     "0.0010"
+    ],
+    [
+     "2",
+     "0.0040"
+    ],
+    [
+     "3",
+     "0.0070"
+    ],
+    [
+     "4",
+     "0.0100"
+    ]
+   ]
+  },
+  "Table 44.A.5.a.(5) \u2014 Product Withdrawal Factors": {
+   "key": "Prod/CompOps ILTA",
+   "rows": [
+    [
+     "A \u2014 expense / liability",
+     "0.25 / 0.13"
+    ],
+    [
+     "B \u2014 expense / liability",
+     "0.19 / 0.10"
+    ],
+    [
+     "C \u2014 expense / liability",
+     "0.13 / 0.07"
+    ]
+   ]
+  },
+  "Table 23.D.3 \u2014 Medical Payments (per class group)": {
+   "key": "Limit",
+   "rows": [
+    [
+     "$10,000",
+     "1.007 / 1.011"
+    ],
+    [
+     "$15,000",
+     "1.011 / 1.017"
+    ],
+    [
+     "$20,000",
+     "1.014 / 1.022"
+    ],
+    [
+     "$25,000",
+     "1.016 / 1.026"
+    ]
+   ]
+  }
+ },
+ "endorsements": {
+  "distinct_forms": 328,
+  "placements": 447,
+  "by_role": {
+   "REFERENCED": 45,
+   "ADDITIONAL_INSURED": 53,
+   "COVERAGE_FORM": 26,
+   "MANDATORY_MULTISTATE": 18,
+   "ADDITIONAL_OPTIONAL_RTC": 125,
+   "OPTIONAL_RTC": 179,
+   "CONDITIONAL_MANDATORY_MULTISTATE": 1
+  },
+  "by_rule": {
+   "15": 1,
+   "16": 55,
+   "20": 2,
+   "22": 2,
+   "36": 128,
+   "37": 7,
+   "40": 5,
+   "41": 7,
+   "42": 21,
+   "43": 2,
+   "44": 20,
+   "45": 20,
+   "46": 40,
+   "47": 25,
+   "48": 65,
+   "49": 15,
+   "53": 14,
+   "55": 18
+  },
+  "added_2027": [
+   "CG 04 25",
+   "CG 04 95",
+   "CG 21 70",
+   "CG 21 71",
+   "CG 21 73",
+   "CG 21 75",
+   "CG 21 76",
+   "CG 21 80",
+   "CG 21 82",
+   "CG 21 84",
+   "CG 21 85",
+   "CG 21 87",
+   "CG 21 88",
+   "CG 21 89",
+   "CG 21 90",
+   "CG 21 91",
+   "CG 21 92",
+   "CG 21 93",
+   "CG 23 07",
+   "CG 24 55",
+   "CG 24 56",
+   "CG 31 74",
+   "CG 34 88",
+   "CG 34 89",
+   "CG 34 90",
+   "CG 34 91",
+   "CG 34 92",
+   "CG 34 95",
+   "CG 34 96",
+   "CG 34 97",
+   "CG 34 98",
+   "CG 34 99",
+   "CG 40 27",
+   "CG 40 30",
+   "CG 40 32",
+   "CG 40 33",
+   "CG 40 34",
+   "IL 09 85",
+   "IL 09 98",
+   "IL 09 99"
+  ],
+  "dropped_after_2022": [
+   "CG 04 31",
+   "CG 04 32",
+   "CG 04 72",
+   "CG 20 41",
+   "CG 21 06",
+   "CG 21 07",
+   "CG 21 08",
+   "CG 21 47",
+   "CG 21 60",
+   "CG 21 61",
+   "CG 21 62",
+   "CG 21 63",
+   "CG 21 64",
+   "CG 22 40",
+   "CG 22 41",
+   "CG 22 75",
+   "CG 22 77",
+   "CG 22 91",
+   "CG 22 98",
+   "CG 22 99",
+   "CG 33 59"
+  ],
+  "state_mandatory_counts": {
+   "AK": 18,
+   "AL": 0,
+   "AR": 11,
+   "AZ": 0,
+   "CA": 0,
+   "CO": 7,
+   "CT": 8,
+   "DC": 0,
+   "DE": 4,
+   "FL": 3,
+   "GA": 3,
+   "IA": 0,
+   "ID": 0,
+   "IL": 9,
+   "IN": 7,
+   "KS": 3,
+   "KY": 3,
+   "LA": 9,
+   "MA": 0,
+   "MD": 3,
+   "ME": 0,
+   "MI": 2,
+   "MN": 8,
+   "MO": 6,
+   "MS": 0,
+   "MT": 7,
+   "NC": 0,
+   "ND": 0,
+   "NE": 0,
+   "NH": 15,
+   "NJ": 3,
+   "NM": 3,
+   "NV": 3,
+   "NY": 13,
+   "OH": 0,
+   "OK": 7,
+   "OR": 3,
+   "PA": 10,
+   "PR": 4,
+   "RI": 10,
+   "SC": 0,
+   "SD": 6,
+   "TN": 3,
+   "TX": 11,
+   "UT": 3,
+   "VA": 11,
+   "VT": 17,
+   "WA": 12,
+   "WI": 0,
+   "WV": 0,
+   "WY": 5
+  }
+ },
+ "editions": {
+  "countrywide": [
+   "GL-MU-2022-RU-001",
+   "GL-MU-2023-RU-001",
+   "GL-MU-2023-RU-002",
+   "GL-MU-2027-RU-001"
+  ],
+  "notices_by_year": {
+   "2021": 31,
+   "2022": 99,
+   "2023": 165,
+   "2024": 38,
+   "2025": 55,
+   "2026": 63,
+   "2027": 39
+  },
+  "notices_per_jurisdiction": {
+   "min": 5,
+   "max": 17,
+   "max_state": "IL",
+   "total": 490
+  }
+ },
+ "loss_costs": {
+  "corpus": {
+   "pdf_count": 472,
+   "extracted": 471,
+   "failed": [
+    "GL-MI-2027-LC-003-C (truncated PDF, no xref/EOF)"
+   ],
+   "jurisdictions": 51,
+   "multistate_notices": 0,
+   "years": {
+    "2020": 54,
+    "2021": 141,
+    "2022": 37,
+    "2023": 57,
+    "2024": 49,
+    "2025": 48,
+    "2026": 27,
+    "2027": 58
+   },
+   "notices_per_state_min": 4,
+   "notices_per_state_max": 11,
+   "extractor": {
+    "pdftotext_layout": 389,
+    "pypdf_required": 83,
+    "latest_needing_pypdf": 41
+   },
+   "erc_matched_on_citation": 415
+  },
+  "cell_vocabulary": {
+   "numeric": 276329,
+   "not_offered_dash": 79758,
+   "refer_a": 73661,
+   "total": 429748
+  },
+  "elp_vocabulary": {
+   "po:Manual": 10702,
+   "pc:$ELP": 8595,
+   "po:$ELP": 6192,
+   "pc:Incl.": 6011,
+   "pc:RTC": 5013,
+   "po:RTC": 3698,
+   "pc:Manual": 153
+  },
+  "vintage": {
+   "PRE_2027": [
+    "AK",
+    "CA",
+    "CT",
+    "DC",
+    "GA",
+    "KS",
+    "MA",
+    "MI",
+    "NC",
+    "NJ",
+    "NY",
+    "RI",
+    "TX",
+    "VT",
+    "WA"
+   ],
+   "V2027": [
+    "AL",
+    "AR",
+    "AZ",
+    "CO",
+    "DE",
+    "FL",
+    "IA",
+    "ID",
+    "IL",
+    "IN",
+    "KY",
+    "LA",
+    "MD",
+    "ME",
+    "MN",
+    "MO",
+    "MS",
+    "MT",
+    "ND",
+    "NE",
+    "NH",
+    "NM",
+    "NV",
+    "OH",
+    "OK",
+    "OR",
+    "PA",
+    "PR",
+    "SC",
+    "SD",
+    "TN",
+    "UT",
+    "VA",
+    "WI",
+    "WV",
+    "WY"
+   ]
+  },
+  "ocp_withdrawal_by_year": {
+   "2020": [
+    54,
+    54
+   ],
+   "2021": [
+    141,
+    141
+   ],
+   "2022": [
+    37,
+    37
+   ],
+   "2023": [
+    57,
+    57
+   ],
+   "2024": [
+    49,
+    49
+   ],
+   "2025": [
+    48,
+    48
+   ],
+   "2026": [
+    27,
+    27
+   ],
+   "2027": [
+    22,
+    58
+   ]
+  },
+  "class_codes": {
+   "in_all_51": 947,
+   "pre2027_only": 229,
+   "v2027_only": 204,
+   "union": 1396
+  },
+  "subline_rate_source": {
+   "334": {
+    "label": "Premises/Operations",
+    "loss_costs": 51,
+    "elp": 51,
+    "basic_limit": "100/200"
+   },
+   "336": {
+    "label": "Products/Completed Operations",
+    "loss_costs": 51,
+    "elp": 51,
+    "basic_limit": "100/200"
+   },
+   "335 OCP": {
+    "label": "OCP / Principals Protective",
+    "loss_costs": 15,
+    "elp": 51,
+    "basic_limit": "100/200"
+   },
+   "335 RRP": {
+    "label": "Railroad Protective",
+    "loss_costs": 0,
+    "elp": 51,
+    "basic_limit": "100/300"
+   },
+   "332": {
+    "label": "Liquor Liability",
+    "loss_costs": 0,
+    "elp": 51,
+    "basic_limit": "100/200"
+   },
+   "370": {
+    "label": "Unmanned Aircraft",
+    "loss_costs": 51,
+    "elp": 0,
+    "basic_limit": "100/200"
+   }
+  },
+  "territory": {
+   "distribution": {
+    "1": 20,
+    "2": 9,
+    "3": 7,
+    "4": 5,
+    "5": 1,
+    "7": 1,
+    "8": 2,
+    "9": 1,
+    "10": 1,
+    "11": 2,
+    "15": 1,
+    "20": 1
+   },
+   "multi_territory": [
+    "AL",
+    "AZ",
+    "CA",
+    "CO",
+    "CT",
+    "FL",
+    "GA",
+    "IA",
+    "IL",
+    "IN",
+    "KS",
+    "KY",
+    "LA",
+    "MA",
+    "MD",
+    "MI",
+    "MN",
+    "MO",
+    "NE",
+    "NJ",
+    "NY",
+    "OH",
+    "OK",
+    "OR",
+    "PA",
+    "RI",
+    "TN",
+    "TX",
+    "VA",
+    "WA",
+    "WI"
+   ],
+   "a_rule_states": [
+    "AL",
+    "AZ",
+    "CO",
+    "CT",
+    "GA",
+    "IA",
+    "IL",
+    "IN",
+    "KS",
+    "KY",
+    "LA",
+    "MA",
+    "MD",
+    "MI",
+    "MN",
+    "MO",
+    "NE",
+    "NJ",
+    "OH",
+    "OK",
+    "OR",
+    "PA",
+    "RI",
+    "TN",
+    "VA",
+    "WA",
+    "WI"
+   ],
+   "territory_rated_without_a_rule": [
+    "CA",
+    "FL",
+    "NY",
+    "TX"
+   ],
+   "schemes": {
+    "ZIP_TABLE": [
+     "AL",
+     "AZ",
+     "CO",
+     "CT",
+     "GA",
+     "IA",
+     "IL",
+     "IN",
+     "KS",
+     "KY",
+     "LA",
+     "MA",
+     "MD",
+     "MI",
+     "MN",
+     "MO",
+     "NE",
+     "NJ",
+     "OH",
+     "OK",
+     "OR",
+     "PA",
+     "RI",
+     "TN",
+     "VA",
+     "WA",
+     "WI"
+    ],
+    "COUNTY_CITY": [
+     "CA",
+     "FL",
+     "NY",
+     "TX"
+    ],
+    "ENTIRE_STATE": [
+     "AK",
+     "AR",
+     "DC",
+     "DE",
+     "ID",
+     "ME",
+     "MS",
+     "MT",
+     "NC",
+     "ND",
+     "NH",
+     "NM",
+     "NV",
+     "PR",
+     "SC",
+     "SD",
+     "UT",
+     "VT",
+     "WV",
+     "WY"
+    ]
+   }
+  },
+  "states": {
+   "AK": {
+    "notice": "GL-AK-2026-LC-001",
+    "notices": 9,
+    "territories": 1,
+    "territory_list": [
+     "001"
+    ],
+    "lc_pages": 9,
+    "classes": 1188,
+    "elp_classes": 404,
+    "vintage": "PRE_2027",
+    "ocp_loss_costs": true,
+    "extractor": "pypdf",
+    "erc_edition": "GL AK 20260801 V02"
+   },
+   "AL": {
+    "notice": "GL-AL-2027-LC-003",
+    "notices": 10,
+    "territories": 2,
+    "territory_list": [
+     "501",
+     "503"
+    ],
+    "lc_pages": 17,
+    "classes": 1163,
+    "elp_classes": 404,
+    "vintage": "V2027",
+    "ocp_loss_costs": false,
+    "extractor": "pypdf",
+    "erc_edition": "GL AL 20270401 V04"
+   },
+   "AR": {
+    "notice": "GL-AR-2027-LC-003",
+    "notices": 10,
+    "territories": 1,
+    "territory_list": [
+     "001"
+    ],
+    "lc_pages": 9,
+    "classes": 1163,
+    "elp_classes": 404,
+    "vintage": "V2027",
+    "ocp_loss_costs": false,
+    "extractor": "pypdf",
+    "erc_edition": null
+   },
+   "AZ": {
+    "notice": "GL-AZ-2027-LC-003",
+    "notices": 10,
+    "territories": 3,
+    "territory_list": [
+     "502",
+     "503",
+     "504"
+    ],
+    "lc_pages": 25,
+    "classes": 1163,
+    "elp_classes": 404,
+    "vintage": "V2027",
+    "ocp_loss_costs": false,
+    "extractor": "pypdf",
+    "erc_edition": null
+   },
+   "CA": {
+    "notice": "GL-CA-2024-LC-001",
+    "notices": 4,
+    "territories": 11,
+    "territory_list": [
+     "001",
+     "002",
+     "003",
+     "004",
+     "005",
+     "006",
+     "007",
+     "009",
+     "010",
+     "011",
+     "012"
+    ],
+    "lc_pages": 89,
+    "classes": 1188,
+    "elp_classes": 404,
+    "vintage": "PRE_2027",
+    "ocp_loss_costs": true,
+    "extractor": "pdftotext",
+    "erc_edition": "GL CA 20241101 V01"
+   },
+   "CO": {
+    "notice": "GL-CO-2027-LC-003",
+    "notices": 10,
+    "territories": 2,
+    "territory_list": [
+     "501",
+     "502"
+    ],
+    "lc_pages": 17,
+    "classes": 1163,
+    "elp_classes": 404,
+    "vintage": "V2027",
+    "ocp_loss_costs": false,
+    "extractor": "pypdf",
+    "erc_edition": "GL CO 20270401 V02"
+   },
+   "CT": {
+    "notice": "GL-CT-2026-LC-001",
+    "notices": 8,
+    "territories": 8,
+    "territory_list": [
+     "501",
+     "503",
+     "504",
+     "505",
+     "506",
+     "507",
+     "508",
+     "509"
+    ],
+    "lc_pages": 65,
+    "classes": 1188,
+    "elp_classes": 404,
+    "vintage": "PRE_2027",
+    "ocp_loss_costs": true,
+    "extractor": "pypdf",
+    "erc_edition": "GL CT 20260401 V03"
+   },
+   "DC": {
+    "notice": "GL-DC-2026-LC-001",
+    "notices": 6,
+    "territories": 1,
+    "territory_list": [
+     "001"
+    ],
+    "lc_pages": 9,
+    "classes": 1188,
+    "elp_classes": 404,
+    "vintage": "PRE_2027",
+    "ocp_loss_costs": true,
+    "extractor": "pypdf",
+    "erc_edition": "GL DC 20260601 V01"
+   },
+   "DE": {
+    "notice": "GL-DE-2027-LC-003",
+    "notices": 10,
+    "territories": 1,
+    "territory_list": [
+     "001"
+    ],
+    "lc_pages": 9,
+    "classes": 1163,
+    "elp_classes": 404,
+    "vintage": "V2027",
+    "ocp_loss_costs": false,
+    "extractor": "pypdf",
+    "erc_edition": null
+   },
+   "FL": {
+    "notice": "GL-FL-2027-LC-002",
+    "notices": 11,
+    "territories": 5,
+    "territory_list": [
+     "001",
+     "002",
+     "004",
+     "005",
+     "006"
+    ],
+    "lc_pages": 41,
+    "classes": 1163,
+    "elp_classes": 404,
+    "vintage": "V2027",
+    "ocp_loss_costs": false,
+    "extractor": "pypdf",
+    "erc_edition": null
+   },
+   "GA": {
+    "notice": "GL-GA-2026-LC-001",
+    "notices": 10,
+    "territories": 2,
+    "territory_list": [
+     "502",
+     "503"
+    ],
+    "lc_pages": 17,
+    "classes": 1188,
+    "elp_classes": 404,
+    "vintage": "PRE_2027",
+    "ocp_loss_costs": true,
+    "extractor": "pdftotext",
+    "erc_edition": "GL GA 20260301 V02"
+   },
+   "IA": {
+    "notice": "GL-IA-2027-LC-002",
+    "notices": 9,
+    "territories": 2,
+    "territory_list": [
+     "501",
+     "502"
+    ],
+    "lc_pages": 17,
+    "classes": 1163,
+    "elp_classes": 404,
+    "vintage": "V2027",
+    "ocp_loss_costs": false,
+    "extractor": "pypdf",
+    "erc_edition": "GL IA 20270401 V03"
+   },
+   "ID": {
+    "notice": "GL-ID-2027-LC-003",
+    "notices": 10,
+    "territories": 1,
+    "territory_list": [
+     "001"
+    ],
+    "lc_pages": 9,
+    "classes": 1163,
+    "elp_classes": 404,
+    "vintage": "V2027",
+    "ocp_loss_costs": false,
+    "extractor": "pypdf",
+    "erc_edition": null
+   },
+   "IL": {
+    "notice": "GL-IL-2027-LC-002",
+    "notices": 10,
+    "territories": 7,
+    "territory_list": [
+     "501",
+     "504",
+     "506",
+     "507",
+     "508",
+     "509",
+     "514"
+    ],
+    "lc_pages": 57,
+    "classes": 1163,
+    "elp_classes": 404,
+    "vintage": "V2027",
+    "ocp_loss_costs": false,
+    "extractor": "pypdf",
+    "erc_edition": "GL IL 20270401 V04"
+   },
+   "IN": {
+    "notice": "GL-IN-2027-LC-002",
+    "notices": 10,
+    "territories": 4,
+    "territory_list": [
+     "501",
+     "502",
+     "504",
+     "506"
+    ],
+    "lc_pages": 33,
+    "classes": 1163,
+    "elp_classes": 404,
+    "vintage": "V2027",
+    "ocp_loss_costs": false,
+    "extractor": "pypdf",
+    "erc_edition": "GL IN 20270401 V03"
+   },
+   "KS": {
+    "notice": "GL-KS-2025-LC-001",
+    "notices": 7,
+    "territories": 2,
+    "territory_list": [
+     "501",
+     "502"
+    ],
+    "lc_pages": 17,
+    "classes": 1188,
+    "elp_classes": 388,
+    "vintage": "PRE_2027",
+    "ocp_loss_costs": true,
+    "extractor": "pdftotext",
+    "erc_edition": "GL KS 20250301 V01"
+   },
+   "KY": {
+    "notice": "GL-KY-2027-LC-002",
+    "notices": 10,
+    "territories": 2,
+    "territory_list": [
+     "501",
+     "503"
+    ],
+    "lc_pages": 17,
+    "classes": 1163,
+    "elp_classes": 404,
+    "vintage": "V2027",
+    "ocp_loss_costs": false,
+    "extractor": "pypdf",
+    "erc_edition": null
+   },
+   "LA": {
+    "notice": "GL-LA-2027-LC-002",
+    "notices": 10,
+    "territories": 4,
+    "territory_list": [
+     "501",
+     "502",
+     "503",
+     "504"
+    ],
+    "lc_pages": 33,
+    "classes": 1163,
+    "elp_classes": 404,
+    "vintage": "V2027",
+    "ocp_loss_costs": false,
+    "extractor": "pypdf",
+    "erc_edition": null
+   },
+   "MA": {
+    "notice": "GL-MA-2026-LC-001",
+    "notices": 9,
+    "territories": 9,
+    "territory_list": [
+     "506",
+     "507",
+     "508",
+     "509",
+     "510",
+     "514",
+     "515",
+     "516",
+     "517"
+    ],
+    "lc_pages": 73,
+    "classes": 1188,
+    "elp_classes": 404,
+    "vintage": "PRE_2027",
+    "ocp_loss_costs": true,
+    "extractor": "pypdf",
+    "erc_edition": "GL MA 20260101 V01"
+   },
+   "MD": {
+    "notice": "GL-MD-2027-LC-003",
+    "notices": 10,
+    "territories": 3,
+    "territory_list": [
+     "501",
+     "502",
+     "503"
+    ],
+    "lc_pages": 25,
+    "classes": 1163,
+    "elp_classes": 404,
+    "vintage": "V2027",
+    "ocp_loss_costs": false,
+    "extractor": "pdftotext",
+    "erc_edition": null
+   },
+   "ME": {
+    "notice": "GL-ME-2027-LC-003",
+    "notices": 9,
+    "territories": 1,
+    "territory_list": [
+     "001"
+    ],
+    "lc_pages": 9,
+    "classes": 1163,
+    "elp_classes": 404,
+    "vintage": "V2027",
+    "ocp_loss_costs": false,
+    "extractor": "pypdf",
+    "erc_edition": null
+   },
+   "MI": {
+    "notice": "GL-MI-2027-LC-002",
+    "notices": 8,
+    "territories": 4,
+    "territory_list": [
+     "501",
+     "503",
+     "504",
+     "505"
+    ],
+    "lc_pages": 33,
+    "classes": 1188,
+    "elp_classes": 408,
+    "vintage": "PRE_2027",
+    "ocp_loss_costs": true,
+    "extractor": "pypdf",
+    "erc_edition": "GL MI 20260401 V01"
+   },
+   "MN": {
+    "notice": "GL-MN-2027-LC-002",
+    "notices": 10,
+    "territories": 3,
+    "territory_list": [
+     "501",
+     "502",
+     "503"
+    ],
+    "lc_pages": 25,
+    "classes": 1163,
+    "elp_classes": 404,
+    "vintage": "V2027",
+    "ocp_loss_costs": false,
+    "extractor": "pypdf",
+    "erc_edition": "GL MN 20270401 V03"
+   },
+   "MO": {
+    "notice": "GL-MO-2027-LC-003",
+    "notices": 10,
+    "territories": 3,
+    "territory_list": [
+     "501",
+     "502",
+     "503"
+    ],
+    "lc_pages": 25,
+    "classes": 1163,
+    "elp_classes": 404,
+    "vintage": "V2027",
+    "ocp_loss_costs": false,
+    "extractor": "pdftotext",
+    "erc_edition": "GL MO 20270401 V02"
+   },
+   "MS": {
+    "notice": "GL-MS-2027-LC-002",
+    "notices": 9,
+    "territories": 1,
+    "territory_list": [
+     "001"
+    ],
+    "lc_pages": 9,
+    "classes": 1163,
+    "elp_classes": 404,
+    "vintage": "V2027",
+    "ocp_loss_costs": false,
+    "extractor": "pypdf",
+    "erc_edition": "GL MS 20270401 V04"
+   },
+   "MT": {
+    "notice": "GL-MT-2027-LC-003",
+    "notices": 10,
+    "territories": 1,
+    "territory_list": [
+     "001"
+    ],
+    "lc_pages": 9,
+    "classes": 1163,
+    "elp_classes": 404,
+    "vintage": "V2027",
+    "ocp_loss_costs": false,
+    "extractor": "pypdf",
+    "erc_edition": "GL MT 20270401 V03"
+   },
+   "NC": {
+    "notice": "GL-NC-2026-LC-001",
+    "notices": 8,
+    "territories": 1,
+    "territory_list": [
+     "002"
+    ],
+    "lc_pages": 9,
+    "classes": 1188,
+    "elp_classes": 404,
+    "vintage": "PRE_2027",
+    "ocp_loss_costs": true,
+    "extractor": "pypdf",
+    "erc_edition": "GL NC 20260301 V02"
+   },
+   "ND": {
+    "notice": "GL-ND-2027-LC-003",
+    "notices": 10,
+    "territories": 1,
+    "territory_list": [
+     "001"
+    ],
+    "lc_pages": 9,
+    "classes": 1163,
+    "elp_classes": 404,
+    "vintage": "V2027",
+    "ocp_loss_costs": false,
+    "extractor": "pypdf",
+    "erc_edition": null
+   },
+   "NE": {
+    "notice": "GL-NE-2027-LC-002",
+    "notices": 9,
+    "territories": 2,
+    "territory_list": [
+     "501",
+     "502"
+    ],
+    "lc_pages": 17,
+    "classes": 1163,
+    "elp_classes": 404,
+    "vintage": "V2027",
+    "ocp_loss_costs": false,
+    "extractor": "pypdf",
+    "erc_edition": "GL NE 20270401 V03"
+   },
+   "NH": {
+    "notice": "GL-NH-2027-LC-003",
+    "notices": 10,
+    "territories": 1,
+    "territory_list": [
+     "001"
+    ],
+    "lc_pages": 9,
+    "classes": 1163,
+    "elp_classes": 404,
+    "vintage": "V2027",
+    "ocp_loss_costs": false,
+    "extractor": "pypdf",
+    "erc_edition": null
+   },
+   "NJ": {
+    "notice": "GL-NJ-2027-LC-001",
+    "notices": 9,
+    "territories": 15,
+    "territory_list": [
+     "501",
+     "502",
+     "503",
+     "504",
+     "505",
+     "506",
+     "507",
+     "508",
+     "509",
+     "511",
+     "512",
+     "513",
+     "515",
+     "516",
+     "517"
+    ],
+    "lc_pages": 121,
+    "classes": 1187,
+    "elp_classes": 404,
+    "vintage": "PRE_2027",
+    "ocp_loss_costs": true,
+    "extractor": "pypdf",
+    "erc_edition": "GL NJ 20270101 V01"
+   },
+   "NM": {
+    "notice": "GL-NM-2027-LC-003",
+    "notices": 10,
+    "territories": 1,
+    "territory_list": [
+     "001"
+    ],
+    "lc_pages": 9,
+    "classes": 1163,
+    "elp_classes": 404,
+    "vintage": "V2027",
+    "ocp_loss_costs": false,
+    "extractor": "pypdf",
+    "erc_edition": "GL NM 20270401 V03"
+   },
+   "NV": {
+    "notice": "GL-NV-2027-LC-003",
+    "notices": 10,
+    "territories": 1,
+    "territory_list": [
+     "001"
+    ],
+    "lc_pages": 9,
+    "classes": 1163,
+    "elp_classes": 404,
+    "vintage": "V2027",
+    "ocp_loss_costs": false,
+    "extractor": "pypdf",
+    "erc_edition": null
+   },
+   "NY": {
+    "notice": "GL-NY-2025-LC-001",
+    "notices": 8,
+    "territories": 20,
+    "territory_list": [
+     "001",
+     "002",
+     "003",
+     "004",
+     "005",
+     "006",
+     "007",
+     "008",
+     "009",
+     "010",
+     "012",
+     "014",
+     "016",
+     "017",
+     "018",
+     "020",
+     "021",
+     "022",
+     "023",
+     "024"
+    ],
+    "lc_pages": 161,
+    "classes": 1181,
+    "elp_classes": 404,
+    "vintage": "PRE_2027",
+    "ocp_loss_costs": true,
+    "extractor": "pdftotext",
+    "erc_edition": "GL NY 20250401 V03"
+   },
+   "OH": {
+    "notice": "GL-OH-2027-LC-002",
+    "notices": 10,
+    "territories": 10,
+    "territory_list": [
+     "501",
+     "502",
+     "503",
+     "504",
+     "505",
+     "506",
+     "507",
+     "508",
+     "509",
+     "510"
+    ],
+    "lc_pages": 81,
+    "classes": 1163,
+    "elp_classes": 404,
+    "vintage": "V2027",
+    "ocp_loss_costs": false,
+    "extractor": "pypdf",
+    "erc_edition": null
+   },
+   "OK": {
+    "notice": "GL-OK-2027-LC-003",
+    "notices": 10,
+    "territories": 3,
+    "territory_list": [
+     "501",
+     "502",
+     "503"
+    ],
+    "lc_pages": 25,
+    "classes": 1163,
+    "elp_classes": 404,
+    "vintage": "V2027",
+    "ocp_loss_costs": false,
+    "extractor": "pypdf",
+    "erc_edition": null
+   },
+   "OR": {
+    "notice": "GL-OR-2027-LC-002",
+    "notices": 9,
+    "territories": 2,
+    "territory_list": [
+     "501",
+     "502"
+    ],
+    "lc_pages": 17,
+    "classes": 1163,
+    "elp_classes": 404,
+    "vintage": "V2027",
+    "ocp_loss_costs": false,
+    "extractor": "pypdf",
+    "erc_edition": "GL OR 20270401 V03"
+   },
+   "PA": {
+    "notice": "GL-PA-2027-LC-003",
+    "notices": 10,
+    "territories": 11,
+    "territory_list": [
+     "501",
+     "502",
+     "503",
+     "504",
+     "505",
+     "507",
+     "509",
+     "510",
+     "511",
+     "512",
+     "513"
+    ],
+    "lc_pages": 89,
+    "classes": 1163,
+    "elp_classes": 404,
+    "vintage": "V2027",
+    "ocp_loss_costs": false,
+    "extractor": "pypdf",
+    "erc_edition": null
+   },
+   "PR": {
+    "notice": "GL-PR-2027-LC-002",
+    "notices": 5,
+    "territories": 1,
+    "territory_list": [
+     "001"
+    ],
+    "lc_pages": 9,
+    "classes": 1163,
+    "elp_classes": 404,
+    "vintage": "V2027",
+    "ocp_loss_costs": false,
+    "extractor": "pypdf",
+    "erc_edition": null
+   },
+   "RI": {
+    "notice": "GL-RI-2027-LC-002",
+    "notices": 9,
+    "territories": 3,
+    "territory_list": [
+     "501",
+     "502",
+     "503"
+    ],
+    "lc_pages": 25,
+    "classes": 1188,
+    "elp_classes": 404,
+    "vintage": "PRE_2027",
+    "ocp_loss_costs": true,
+    "extractor": "pdftotext",
+    "erc_edition": null
+   },
+   "SC": {
+    "notice": "GL-SC-2027-LC-003",
+    "notices": 10,
+    "territories": 1,
+    "territory_list": [
+     "001"
+    ],
+    "lc_pages": 9,
+    "classes": 1163,
+    "elp_classes": 404,
+    "vintage": "V2027",
+    "ocp_loss_costs": false,
+    "extractor": "pypdf",
+    "erc_edition": null
+   },
+   "SD": {
+    "notice": "GL-SD-2027-LC-003",
+    "notices": 10,
+    "territories": 1,
+    "territory_list": [
+     "001"
+    ],
+    "lc_pages": 9,
+    "classes": 1163,
+    "elp_classes": 404,
+    "vintage": "V2027",
+    "ocp_loss_costs": false,
+    "extractor": "pypdf",
+    "erc_edition": "GL SD 20270401 V03"
+   },
+   "TN": {
+    "notice": "GL-TN-2027-LC-002",
+    "notices": 10,
+    "territories": 4,
+    "territory_list": [
+     "501",
+     "503",
+     "504",
+     "505"
+    ],
+    "lc_pages": 33,
+    "classes": 1163,
+    "elp_classes": 404,
+    "vintage": "V2027",
+    "ocp_loss_costs": false,
+    "extractor": "pypdf",
+    "erc_edition": "GL TN 20270401 V02"
+   },
+   "TX": {
+    "notice": "GL-TX-2025-LC-001",
+    "notices": 9,
+    "territories": 8,
+    "territory_list": [
+     "001",
+     "002",
+     "003",
+     "004",
+     "005",
+     "006",
+     "007",
+     "008"
+    ],
+    "lc_pages": 65,
+    "classes": 1188,
+    "elp_classes": 404,
+    "vintage": "PRE_2027",
+    "ocp_loss_costs": true,
+    "extractor": "pdftotext",
+    "erc_edition": "GL TX 20250801 V01"
+   },
+   "UT": {
+    "notice": "GL-UT-2027-LC-002",
+    "notices": 10,
+    "territories": 1,
+    "territory_list": [
+     "001"
+    ],
+    "lc_pages": 9,
+    "classes": 1163,
+    "elp_classes": 404,
+    "vintage": "V2027",
+    "ocp_loss_costs": false,
+    "extractor": "pypdf",
+    "erc_edition": "GL UT 20270401 V03"
+   },
+   "VA": {
+    "notice": "GL-VA-2027-LC-002",
+    "notices": 10,
+    "territories": 4,
+    "territory_list": [
+     "501",
+     "502",
+     "503",
+     "504"
+    ],
+    "lc_pages": 33,
+    "classes": 1163,
+    "elp_classes": 404,
+    "vintage": "V2027",
+    "ocp_loss_costs": false,
+    "extractor": "pypdf",
+    "erc_edition": null
+   },
+   "VT": {
+    "notice": "GL-VT-2027-LC-002",
+    "notices": 11,
+    "territories": 1,
+    "territory_list": [
+     "001"
+    ],
+    "lc_pages": 9,
+    "classes": 1188,
+    "elp_classes": 404,
+    "vintage": "PRE_2027",
+    "ocp_loss_costs": true,
+    "extractor": "pdftotext",
+    "erc_edition": "GL VT 20261201 V01"
+   },
+   "WA": {
+    "notice": "GL-WA-2026-LC-001",
+    "notices": 6,
+    "territories": 2,
+    "territory_list": [
+     "501",
+     "502"
+    ],
+    "lc_pages": 17,
+    "classes": 1188,
+    "elp_classes": 404,
+    "vintage": "PRE_2027",
+    "ocp_loss_costs": true,
+    "extractor": "pypdf",
+    "erc_edition": "GL WA 20260101 V02"
+   },
+   "WI": {
+    "notice": "GL-WI-2027-LC-002",
+    "notices": 10,
+    "territories": 3,
+    "territory_list": [
+     "501",
+     "502",
+     "503"
+    ],
+    "lc_pages": 25,
+    "classes": 1163,
+    "elp_classes": 404,
+    "vintage": "V2027",
+    "ocp_loss_costs": false,
+    "extractor": "pypdf",
+    "erc_edition": "GL WI 20270401 V03"
+   },
+   "WV": {
+    "notice": "GL-WV-2027-LC-002",
+    "notices": 9,
+    "territories": 1,
+    "territory_list": [
+     "001"
+    ],
+    "lc_pages": 9,
+    "classes": 1163,
+    "elp_classes": 404,
+    "vintage": "V2027",
+    "ocp_loss_costs": false,
+    "extractor": "pdftotext",
+    "erc_edition": "GL WV 20270401 V03"
+   },
+   "WY": {
+    "notice": "GL-WY-2027-LC-002",
+    "notices": 10,
+    "territories": 1,
+    "territory_list": [
+     "001"
+    ],
+    "lc_pages": 9,
+    "classes": 1163,
+    "elp_classes": 404,
+    "vintage": "V2027",
+    "ocp_loss_costs": false,
+    "extractor": "pypdf",
+    "erc_edition": "GL WY 20270401 V02"
+   }
+  }
+ },
+ "territory_definitions": {
+  "source": "Rules notices, Territory Pages CG-T-1..n",
+  "jurisdictions_with_territory_pages": 51,
+  "schemes": {
+   "ZIP_TABLE": [
+    "AL",
+    "AZ",
+    "CO",
+    "CT",
+    "GA",
+    "IA",
+    "IL",
+    "IN",
+    "KS",
+    "KY",
+    "LA",
+    "MA",
+    "MD",
+    "MI",
+    "MN",
+    "MO",
+    "NE",
+    "NJ",
+    "OH",
+    "OK",
+    "OR",
+    "PA",
+    "RI",
+    "TN",
+    "VA",
+    "WA",
+    "WI"
+   ],
+   "COUNTY_CITY": [
+    "CA",
+    "FL",
+    "NY",
+    "TX"
+   ],
+   "ENTIRE_STATE": [
+    "AK",
+    "AR",
+    "DC",
+    "DE",
+    "ID",
+    "ME",
+    "MS",
+    "MT",
+    "NC",
+    "ND",
+    "NH",
+    "NM",
+    "NV",
+    "PR",
+    "SC",
+    "SD",
+    "UT",
+    "VT",
+    "WV",
+    "WY"
+   ]
+  },
+  "zip_rows_total": 23719,
+  "place_rows_total": 432,
+  "cross_corpus_match": {
+   "checked": 51,
+   "exact": 51,
+   "mismatches": 0
+  },
+  "nonterritorial_sublines": [
+   "335",
+   "336",
+   "350"
+  ],
+  "territorial_sublines": [
+   "334",
+   "332"
+  ],
+  "states": {
+   "AK": {
+    "notice": "GL-AK-2026-RU-001",
+    "scheme": "ENTIRE_STATE",
+    "cgt_pages": 1,
+    "zip_rows": 0,
+    "place_rows": 0,
+    "territories_cgt": 1,
+    "territories_lc": 1,
+    "match": null
+   },
+   "AL": {
+    "notice": "GL-AL-2027-RU-004",
+    "scheme": "ZIP_TABLE",
+    "cgt_pages": 11,
+    "zip_rows": 799,
+    "place_rows": 0,
+    "territories_cgt": 2,
+    "territories_lc": 2,
+    "match": true
+   },
+   "AR": {
+    "notice": "GL-AR-2027-RU-003",
+    "scheme": "ENTIRE_STATE",
+    "cgt_pages": 1,
+    "zip_rows": 0,
+    "place_rows": 0,
+    "territories_cgt": 1,
+    "territories_lc": 1,
+    "match": null
+   },
+   "AZ": {
+    "notice": "GL-AZ-2027-RU-003",
+    "scheme": "ZIP_TABLE",
+    "cgt_pages": 8,
+    "zip_rows": 519,
+    "place_rows": 0,
+    "territories_cgt": 3,
+    "territories_lc": 3,
+    "match": true
+   },
+   "CA": {
+    "notice": "GL-CA-2023-RU-003",
+    "scheme": "COUNTY_CITY",
+    "cgt_pages": 4,
+    "zip_rows": 0,
+    "place_rows": 275,
+    "territories_cgt": 11,
+    "territories_lc": 11,
+    "match": null
+   },
+   "CO": {
+    "notice": "GL-CO-2027-RU-003",
+    "scheme": "ZIP_TABLE",
+    "cgt_pages": 9,
+    "zip_rows": 640,
+    "place_rows": 0,
+    "territories_cgt": 2,
+    "territories_lc": 2,
+    "match": true
+   },
+   "CT": {
+    "notice": "GL-CT-2026-RU-002",
+    "scheme": "ZIP_TABLE",
+    "cgt_pages": 7,
+    "zip_rows": 422,
+    "place_rows": 0,
+    "territories_cgt": 8,
+    "territories_lc": 8,
+    "match": true
+   },
+   "DC": {
+    "notice": "GL-DC-2026-RU-002",
+    "scheme": "ENTIRE_STATE",
+    "cgt_pages": 1,
+    "zip_rows": 0,
+    "place_rows": 0,
+    "territories_cgt": 1,
+    "territories_lc": 1,
+    "match": null
+   },
+   "DE": {
+    "notice": "GL-DE-2027-RU-003",
+    "scheme": "ENTIRE_STATE",
+    "cgt_pages": 1,
+    "zip_rows": 0,
+    "place_rows": 0,
+    "territories_cgt": 1,
+    "territories_lc": 1,
+    "match": null
+   },
+   "FL": {
+    "notice": "GL-FL-2027-RU-003",
+    "scheme": "COUNTY_CITY",
+    "cgt_pages": 1,
+    "zip_rows": 0,
+    "place_rows": 25,
+    "territories_cgt": 5,
+    "territories_lc": 5,
+    "match": null
+   },
+   "GA": {
+    "notice": "GL-GA-2026-RU-003",
+    "scheme": "ZIP_TABLE",
+    "cgt_pages": 13,
+    "zip_rows": 941,
+    "place_rows": 0,
+    "territories_cgt": 2,
+    "territories_lc": 2,
+    "match": true
+   },
+   "IA": {
+    "notice": "GL-IA-2026-RU-001",
+    "scheme": "ZIP_TABLE",
+    "cgt_pages": 15,
+    "zip_rows": 1055,
+    "place_rows": 0,
+    "territories_cgt": 2,
+    "territories_lc": 2,
+    "match": true
+   },
+   "ID": {
+    "notice": "GL-ID-2027-RU-003",
+    "scheme": "ENTIRE_STATE",
+    "cgt_pages": 1,
+    "zip_rows": 0,
+    "place_rows": 0,
+    "territories_cgt": 1,
+    "territories_lc": 1,
+    "match": null
+   },
+   "IL": {
+    "notice": "GL-IL-2027-RU-004",
+    "scheme": "ZIP_TABLE",
+    "cgt_pages": 21,
+    "zip_rows": 1569,
+    "place_rows": 0,
+    "territories_cgt": 7,
+    "territories_lc": 7,
+    "match": true
+   },
+   "IN": {
+    "notice": "GL-IN-2027-RU-003",
+    "scheme": "ZIP_TABLE",
+    "cgt_pages": 13,
+    "zip_rows": 958,
+    "place_rows": 0,
+    "territories_cgt": 4,
+    "territories_lc": 4,
+    "match": true
+   },
+   "KS": {
+    "notice": "GL-KS-2026-RU-002",
+    "scheme": "ZIP_TABLE",
+    "cgt_pages": 11,
+    "zip_rows": 747,
+    "place_rows": 0,
+    "territories_cgt": 2,
+    "territories_lc": 2,
+    "match": true
+   },
+   "KY": {
+    "notice": "GL-KY-2027-RU-004",
+    "scheme": "ZIP_TABLE",
+    "cgt_pages": 13,
+    "zip_rows": 946,
+    "place_rows": 0,
+    "territories_cgt": 2,
+    "territories_lc": 2,
+    "match": true
+   },
+   "LA": {
+    "notice": "GL-LA-2027-RU-003",
+    "scheme": "ZIP_TABLE",
+    "cgt_pages": 10,
+    "zip_rows": 719,
+    "place_rows": 0,
+    "territories_cgt": 4,
+    "territories_lc": 4,
+    "match": true
+   },
+   "MA": {
+    "notice": "GL-MA-2027-RU-003",
+    "scheme": "ZIP_TABLE",
+    "cgt_pages": 10,
+    "zip_rows": 679,
+    "place_rows": 0,
+    "territories_cgt": 9,
+    "territories_lc": 9,
+    "match": true
+   },
+   "MD": {
+    "notice": "GL-MD-2027-RU-003",
+    "scheme": "ZIP_TABLE",
+    "cgt_pages": 9,
+    "zip_rows": 608,
+    "place_rows": 0,
+    "territories_cgt": 3,
+    "territories_lc": 3,
+    "match": true
+   },
+   "ME": {
+    "notice": "GL-ME-2027-RU-003",
+    "scheme": "ENTIRE_STATE",
+    "cgt_pages": 1,
+    "zip_rows": 0,
+    "place_rows": 0,
+    "territories_cgt": 1,
+    "territories_lc": 1,
+    "match": null
+   },
+   "MI": {
+    "notice": "GL-MI-2027-RU-003",
+    "scheme": "ZIP_TABLE",
+    "cgt_pages": 16,
+    "zip_rows": 1159,
+    "place_rows": 0,
+    "territories_cgt": 4,
+    "territories_lc": 4,
+    "match": true
+   },
+   "MN": {
+    "notice": "GL-MN-2027-RU-004",
+    "scheme": "ZIP_TABLE",
+    "cgt_pages": 13,
+    "zip_rows": 953,
+    "place_rows": 0,
+    "territories_cgt": 3,
+    "territories_lc": 3,
+    "match": true
+   },
+   "MO": {
+    "notice": "GL-MO-2026-RU-001",
+    "scheme": "ZIP_TABLE",
+    "cgt_pages": 16,
+    "zip_rows": 1155,
+    "place_rows": 0,
+    "territories_cgt": 3,
+    "territories_lc": 3,
+    "match": true
+   },
+   "MS": {
+    "notice": "GL-MS-2027-RU-003",
+    "scheme": "ENTIRE_STATE",
+    "cgt_pages": 1,
+    "zip_rows": 0,
+    "place_rows": 0,
+    "territories_cgt": 1,
+    "territories_lc": 1,
+    "match": null
+   },
+   "MT": {
+    "notice": "GL-MT-2027-RU-003",
+    "scheme": "ENTIRE_STATE",
+    "cgt_pages": 1,
+    "zip_rows": 0,
+    "place_rows": 0,
+    "territories_cgt": 1,
+    "territories_lc": 1,
+    "match": null
+   },
+   "NC": {
+    "notice": "GL-NC-2026-RU-002",
+    "scheme": "ENTIRE_STATE",
+    "cgt_pages": 1,
+    "zip_rows": 0,
+    "place_rows": 0,
+    "territories_cgt": 1,
+    "territories_lc": 1,
+    "match": null
+   },
+   "ND": {
+    "notice": "GL-ND-2027-RU-003",
+    "scheme": "ENTIRE_STATE",
+    "cgt_pages": 1,
+    "zip_rows": 0,
+    "place_rows": 0,
+    "territories_cgt": 1,
+    "territories_lc": 1,
+    "match": null
+   },
+   "NE": {
+    "notice": "GL-NE-2027-RU-003",
+    "scheme": "ZIP_TABLE",
+    "cgt_pages": 9,
+    "zip_rows": 618,
+    "place_rows": 0,
+    "territories_cgt": 2,
+    "territories_lc": 2,
+    "match": true
+   },
+   "NH": {
+    "notice": "GL-NH-2027-RU-003",
+    "scheme": "ENTIRE_STATE",
+    "cgt_pages": 1,
+    "zip_rows": 0,
+    "place_rows": 0,
+    "territories_cgt": 1,
+    "territories_lc": 1,
+    "match": null
+   },
+   "NJ": {
+    "notice": "GL-NJ-2027-RU-001",
+    "scheme": "ZIP_TABLE",
+    "cgt_pages": 11,
+    "zip_rows": 721,
+    "place_rows": 0,
+    "territories_cgt": 15,
+    "territories_lc": 15,
+    "match": true
+   },
+   "NM": {
+    "notice": "GL-NM-2027-RU-003",
+    "scheme": "ENTIRE_STATE",
+    "cgt_pages": 1,
+    "zip_rows": 0,
+    "place_rows": 0,
+    "territories_cgt": 1,
+    "territories_lc": 1,
+    "match": null
+   },
+   "NV": {
+    "notice": "GL-NV-2027-RU-003",
+    "scheme": "ENTIRE_STATE",
+    "cgt_pages": 1,
+    "zip_rows": 0,
+    "place_rows": 0,
+    "territories_cgt": 1,
+    "territories_lc": 1,
+    "match": null
+   },
+   "NY": {
+    "notice": "GL-NY-2025-RU-001",
+    "scheme": "COUNTY_CITY",
+    "cgt_pages": 2,
+    "zip_rows": 0,
+    "place_rows": 83,
+    "territories_cgt": 20,
+    "territories_lc": 20,
+    "match": null
+   },
+   "OH": {
+    "notice": "GL-OH-2027-RU-004",
+    "scheme": "ZIP_TABLE",
+    "cgt_pages": 19,
+    "zip_rows": 1413,
+    "place_rows": 0,
+    "territories_cgt": 10,
+    "territories_lc": 10,
+    "match": true
+   },
+   "OK": {
+    "notice": "GL-OK-2027-RU-003",
+    "scheme": "ZIP_TABLE",
+    "cgt_pages": 11,
+    "zip_rows": 764,
+    "place_rows": 0,
+    "territories_cgt": 3,
+    "territories_lc": 3,
+    "match": true
+   },
+   "OR": {
+    "notice": "GL-OR-2026-RU-002",
+    "scheme": "ZIP_TABLE",
+    "cgt_pages": 7,
+    "zip_rows": 479,
+    "place_rows": 0,
+    "territories_cgt": 2,
+    "territories_lc": 2,
+    "match": true
+   },
+   "PA": {
+    "notice": "GL-PA-2027-RU-004",
+    "scheme": "ZIP_TABLE",
+    "cgt_pages": 29,
+    "zip_rows": 2162,
+    "place_rows": 0,
+    "territories_cgt": 11,
+    "territories_lc": 11,
+    "match": true
+   },
+   "PR": {
+    "notice": "GL-PR-2027-RU-003",
+    "scheme": "ENTIRE_STATE",
+    "cgt_pages": 1,
+    "zip_rows": 0,
+    "place_rows": 0,
+    "territories_cgt": 1,
+    "territories_lc": 1,
+    "match": null
+   },
+   "RI": {
+    "notice": "GL-RI-2026-RU-002",
+    "scheme": "ZIP_TABLE",
+    "cgt_pages": 3,
+    "zip_rows": 90,
+    "place_rows": 0,
+    "territories_cgt": 3,
+    "territories_lc": 3,
+    "match": true
+   },
+   "SC": {
+    "notice": "GL-SC-2027-RU-003",
+    "scheme": "ENTIRE_STATE",
+    "cgt_pages": 1,
+    "zip_rows": 0,
+    "place_rows": 0,
+    "territories_cgt": 1,
+    "territories_lc": 1,
+    "match": null
+   },
+   "SD": {
+    "notice": "GL-SD-2027-RU-003",
+    "scheme": "ENTIRE_STATE",
+    "cgt_pages": 1,
+    "zip_rows": 0,
+    "place_rows": 0,
+    "territories_cgt": 1,
+    "territories_lc": 1,
+    "match": null
+   },
+   "TN": {
+    "notice": "GL-TN-2026-RU-002",
+    "scheme": "ZIP_TABLE",
+    "cgt_pages": 11,
+    "zip_rows": 787,
+    "place_rows": 0,
+    "territories_cgt": 4,
+    "territories_lc": 4,
+    "match": true
+   },
+   "TX": {
+    "notice": "GL-TX-2025-RU-001",
+    "scheme": "COUNTY_CITY",
+    "cgt_pages": 2,
+    "zip_rows": 0,
+    "place_rows": 49,
+    "territories_cgt": 8,
+    "territories_lc": 8,
+    "match": null
+   },
+   "UT": {
+    "notice": "GL-UT-2027-RU-003",
+    "scheme": "ENTIRE_STATE",
+    "cgt_pages": 1,
+    "zip_rows": 0,
+    "place_rows": 0,
+    "territories_cgt": 1,
+    "territories_lc": 1,
+    "match": null
+   },
+   "VA": {
+    "notice": "GL-VA-2026-RU-002",
+    "scheme": "ZIP_TABLE",
+    "cgt_pages": 17,
+    "zip_rows": 1223,
+    "place_rows": 0,
+    "territories_cgt": 4,
+    "territories_lc": 4,
+    "match": true
+   },
+   "VT": {
+    "notice": "GL-VT-2025-RU-001",
+    "scheme": "ENTIRE_STATE",
+    "cgt_pages": 1,
+    "zip_rows": 0,
+    "place_rows": 0,
+    "territories_cgt": 1,
+    "territories_lc": 1,
+    "match": null
+   },
+   "WA": {
+    "notice": "GL-WA-2026-RU-001",
+    "scheme": "ZIP_TABLE",
+    "cgt_pages": 10,
+    "zip_rows": 716,
+    "place_rows": 0,
+    "territories_cgt": 2,
+    "territories_lc": 2,
+    "match": true
+   },
+   "WI": {
+    "notice": "GL-WI-2027-RU-004",
+    "scheme": "ZIP_TABLE",
+    "cgt_pages": 12,
+    "zip_rows": 877,
+    "place_rows": 0,
+    "territories_cgt": 3,
+    "territories_lc": 3,
+    "match": true
+   },
+   "WV": {
+    "notice": "GL-WV-2026-RU-002",
+    "scheme": "ENTIRE_STATE",
+    "cgt_pages": 1,
+    "zip_rows": 0,
+    "place_rows": 0,
+    "territories_cgt": 1,
+    "territories_lc": 1,
+    "match": null
+   },
+   "WY": {
+    "notice": "GL-WY-2026-RU-002",
+    "scheme": "ENTIRE_STATE",
+    "cgt_pages": 1,
+    "zip_rows": 0,
+    "place_rows": 0,
+    "territories_cgt": 1,
+    "territories_lc": 1,
+    "match": null
+   }
+  }
+ }
+}

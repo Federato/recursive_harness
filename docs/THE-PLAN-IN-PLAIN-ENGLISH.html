@@ -1,0 +1,373 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GL Rating Engine — the plan, in plain English</title>
+<style>
+:root{--bg:#fbfbfd;--fg:#1d1d20;--mut:#63636b;--line:#e3e3e8;--accent:#1f3864;
+--code-bg:#f4f4f7;--tbl-head:#1f3864;--good:#1c6b45;--warn:#8a5a00;--open:#7a2222}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font:16.5px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+background:var(--bg);color:var(--fg)}
+header{background:var(--accent);color:#fff;padding:34px 32px 30px}
+header .in{max-width:1180px;margin:0 auto}
+header h1{margin:0 0 6px;font-size:27px;font-weight:660;letter-spacing:-.02em}
+header .sub{opacity:.75;font-size:14.5px;max-width:70ch}
+.wrap{display:grid;grid-template-columns:236px minmax(0,1fr);gap:40px;
+max-width:1180px;margin:0 auto;padding:34px 32px 100px}
+aside{position:sticky;top:22px;align-self:start;max-height:calc(100vh - 50px);overflow:auto;
+font-size:13.5px;border-left:2px solid var(--line);padding-left:15px}
+aside .lbl{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--mut);
+font-weight:700;margin-bottom:10px}
+aside a{color:var(--mut);text-decoration:none;display:block;padding:4px 0;line-height:1.4}
+aside a:hover{color:var(--accent)}
+main{min-width:0}
+section{background:#fff;border:1px solid var(--line);border-radius:11px;
+padding:28px 38px 34px;margin-bottom:22px}
+h2{font-size:21px;margin:0 0 4px;letter-spacing:-.015em}
+h2 .n{color:var(--mut);font-weight:500;font-size:15px;margin-right:9px}
+.lede{color:var(--mut);font-size:15px;margin:0 0 20px;max-width:74ch}
+h3{font-size:16.5px;margin:26px 0 8px}
+p,li{max-width:76ch}
+table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14.5px;
+display:block;overflow-x:auto}
+th{background:var(--tbl-head);color:#fff;text-align:left;font-weight:600;padding:9px 13px}
+td{border-bottom:1px solid var(--line);padding:9px 13px;vertical-align:top}
+tr:nth-child(even) td{background:#fafafc}
+code{background:var(--code-bg);padding:.12em .38em;border-radius:4px;
+font:13.5px/1.5 "SF Mono",Consolas,"Liberation Mono",Menlo,monospace}
+blockquote{margin:18px 0;padding:14px 20px;background:#f6f8fc;
+border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote p{margin:.4em 0}
+.pill{display:inline-block;font-size:11.5px;font-weight:700;letter-spacing:.05em;
+text-transform:uppercase;padding:3px 9px;border-radius:20px;vertical-align:2px}
+.done{background:#e4f2ea;color:var(--good)}
+.prog{background:#fdf3dd;color:var(--warn)}
+.todo{background:#f7e6e6;color:var(--open)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(178px,1fr));gap:12px;margin:18px 0}
+.stat{background:var(--code-bg);border-radius:9px;padding:14px 16px}
+.stat b{display:block;font-size:25px;letter-spacing:-.02em;line-height:1.15}
+.stat span{font-size:13px;color:var(--mut)}
+.callout{border:1px solid var(--line);border-left:4px solid var(--open);
+border-radius:0 8px 8px 0;padding:16px 20px;margin:18px 0;background:#fffdfd}
+.callout h4{margin:0 0 6px;font-size:15.5px;color:var(--open)}
+hr{border:0;border-top:1px solid var(--line);margin:28px 0}
+footer{max-width:1180px;margin:0 auto;padding:0 32px 60px;color:var(--mut);font-size:13.5px}
+@media(max-width:940px){.wrap{grid-template-columns:1fr;padding:20px}aside{display:none}
+section{padding:22px 20px 26px}}
+</style></head><body>
+
+<header><div class="in">
+<h1>The General Liability Rating Engine</h1>
+<div class="sub">Where the plan stands, in plain English — for reading before deciding what the
+build should look like. Current as of 12 August 2026. No engine code has been written.</div>
+</div></header>
+
+<div class="wrap">
+<aside>
+  <div class="lbl">Contents</div>
+  <a href="#what">1 · What we're building</a>
+  <a href="#hard">2 · Why it's hard</a>
+  <a href="#rule">3 · The one rule everything follows</a>
+  <a href="#where">4 · Where we are</a>
+  <a href="#learned">5 · What we learned that changed the design</a>
+  <a href="#refer">6 · When the engine stops and asks</a>
+  <a href="#decided">7 · What you decided</a>
+  <a href="#check">8 · How we'll know it's right</a>
+  <a href="#open">9 · What is not decided</a>
+  <a href="#next">10 · What happens next</a>
+</aside>
+
+<main>
+
+<section id="what">
+<h2><span class="n">1</span>What we're building</h2>
+<p class="lede">A system that takes a General Liability submission and produces a premium, the way
+ISO says to.</p>
+
+<p>ISO publishes the rules for pricing commercial insurance. They arrive two ways: as
+<strong>manuals</strong> written for people to read, and as <strong>data files</strong> written for
+machines. We hold both — around 87,000 files of data covering all 51 jurisdictions, and 1,122
+manual documents.</p>
+
+<p>The engine reads the data files and does what they say. For any risk, at any date, in any state,
+it should produce the same number ISO's own service would — and show its working, so anyone can see
+which file each number came from.</p>
+
+<p>Where ISO declines to put a price on something, the engine must decline too, rather than guess.
+That turns out to be a large part of the job.</p>
+</section>
+
+<section id="hard">
+<h2><span class="n">2</span>Why it's hard</h2>
+<p class="lede">Not the arithmetic. The arithmetic is multiplication. The difficulty is that
+almost nothing means what its name suggests.</p>
+
+<h3>The rules change by date, and one date changes almost everything</h3>
+<p>The data files contain filings that haven't taken effect yet. Any count taken over "the latest
+version" describes the future, not today. On <strong>1 April 2027</strong>, forty-three states
+change classification basis on the same morning and one rate table disappears with it. An engine
+that caches "the current rules" breaks that day; one that picks rules by effective date never
+notices.</p>
+
+<h3>Every state can rewrite any rule, and "empty" is a decision</h3>
+<p>A state can replace a national rule with nothing at all — and that means <em>"we don't do
+this here"</em>, not <em>"use the national one"</em>. New York does it 151 times. It can also
+replace a rule with a harmless-looking constant, which does the same thing while looking like
+ordinary code — New York does that 98 times.</p>
+
+<h3>A zero is usually not a number</h3>
+<p>Zeros in these files have eight distinct meanings. Sometimes zero is a price. More often it
+means <em>"refer this to an underwriter"</em>, or <em>"price this a different way"</em>, or
+<em>"this class isn't eligible"</em>. Multiply by it without checking and you write a free policy
+on exactly the risks meant for human review.</p>
+
+<h3>Names lie, consistently</h3>
+<p>Rules are named for the calculation they perform, not the thing they calculate. One railroad
+rule is named for class 40014, tests class 40011, and writes to a field named after class 40006 —
+which is an unrelated classification. Two rulebooks in force today share the same 4,461 rule names
+with 345 different behaviours between them.</p>
+</section>
+
+<section id="rule">
+<h2><span class="n">3</span>The one rule everything follows</h2>
+<p class="lede">Adopted early, tested hard, and it has held.</p>
+
+<blockquote>
+<p><strong>The data files are the source. The manuals confirm and never source. Nothing is assumed.
+Anything unresolved comes to you rather than to a default.</strong></p>
+</blockquote>
+
+<p>Concretely: if the data files say a factor is 0.85, that's the factor. If the manual says
+something different, that's an escalation, not a correction. And if a calculation can only be found
+in the manual, the engine <strong>doesn't do it</strong> — it stops and asks.</p>
+
+<p>This rule was refined once, deliberately, on 12 August. Asking a broker a question that can only
+ever <em>stop</em> a quote — never change a price — is now allowed even where ISO's data has no
+field for it, because declining to price takes nothing from the manual. <strong>The limit matters
+more than the permission:</strong> an input that could move a number still may not come from the
+manual.</p>
+
+<p>The discipline has paid for itself repeatedly. Eighteen questions have been escalated; eight of
+them dissolved the moment somebody opened the file they were about.</p>
+</section>
+
+<section id="where">
+<h2><span class="n">4</span>Where we are</h2>
+<p class="lede">Analysis and specification are nearly complete. No engine code exists, and none will
+be written until you say so.</p>
+
+<div class="grid">
+  <div class="stat"><b>11 of 14</b><span>coverages fully walked through</span></div>
+  <div class="stat"><b>1,122</b><span>manual documents, all searchable</span></div>
+  <div class="stat"><b>54</b><span>priced example policies to check against</span></div>
+  <div class="stat"><b>28</b><span>situations that stop and ask a human</span></div>
+  <div class="stat"><b>13</b><span>decisions you've taken</span></div>
+  <div class="stat"><b>0</b><span>questions outstanding</span></div>
+</div>
+
+<table>
+<tr><th>Coverage</th><th></th><th>Note</th></tr>
+<tr><td>Premises / Operations</td><td><span class="pill done">done</span></td><td>The primary path. Reproduces a real ISO-priced policy to the dollar</td></tr>
+<tr><td>Products / Completed Operations</td><td><span class="pill done">done</span></td><td>Same — the two together match ISO exactly</td></tr>
+<tr><td>Owners &amp; Contractors Protective</td><td><span class="pill done">done</span></td><td>All 51 states publish rates today; 43 withdraw them on one date in 2027</td></tr>
+<tr><td>Liquor Liability</td><td><span class="pill done">done</span></td><td>No published rates at all — the company sets them</td></tr>
+<tr><td>Railroad Protective</td><td><span class="pill done">done</span></td><td>Rates confirmed against the manual to the cent</td></tr>
+<tr><td>Product Withdrawal · Electronic Data · Cyber</td><td><span class="pill done">done</span></td><td>The largest single item. California withdraws two of the three</td></tr>
+<tr><td>Unmanned Aircraft (drones)</td><td><span class="pill done">done</span></td><td>Nearly a third of the pricing grid is a referral marker</td></tr>
+<tr><td>Size-Of-Risk</td><td><span class="pill done">done</span></td><td>Changes the rate at the <em>start</em> of the calculation, not the end</td></tr>
+<tr><td>Terrorism</td><td><span class="pill done">done</span></td><td>Runs last — it prices off the other premiums added together</td></tr>
+<tr><td>Rating plans — schedule, experience, composite</td><td><span class="pill done">done</span></td><td>The manuals were on disk all along</td></tr>
+<tr><td>State-specific coverages</td><td><span class="pill done">done</span></td><td>Five coverages in four states, two of which we'd missed</td></tr>
+<tr><td>Refer-to-company workflow</td><td><span class="pill prog">in progress</span></td><td>Half done; every decision it needed has been taken</td></tr>
+<tr><td>Capture handling — 383 coverages</td><td><span class="pill todo">to do</span></td><td>Coverages where a premium is entered rather than calculated</td></tr>
+<tr><td>Whole-policy assembly</td><td><span class="pill todo">to do</span></td><td>Adding it all up, minimum premiums, statistical coding</td></tr>
+</table>
+
+<p><strong>Only 18 of the 477 coverages in the data actually calculate a price.</strong> 383 capture
+a premium somebody else worked out, and 76 add things up. That is the honest ceiling of what an
+automated rater can do with this material — and it's worth knowing before anyone expects more.</p>
+</section>
+
+<section id="learned">
+<h2><span class="n">5</span>What we learned that changed the design</h2>
+<p class="lede">Each of these came out of a walkthrough, and each would have produced a wrong engine
+if assumed otherwise.</p>
+
+<h3>Coverages can't be priced independently</h3>
+<p>We assumed each coverage was self-contained. Three of them aren't. Cyber and Electronic Data
+read five values <em>computed inside</em> another coverage. Terrorism reads four coverages'
+<em>finished premiums</em>. So the order things are calculated in is part of the rules, not an
+implementation detail — and terrorism has to go last.</p>
+
+<h3>A state's rulebook is not a patch on the national one</h3>
+<p>It replaces named pieces wholesale. California is the only state on an older national rulebook,
+and <strong>345 rules behave differently</strong> for it under identical names. An engine that
+merges the two layers, or takes the newest, is wrong for a whole state.</p>
+
+<h3>The same table is filed under different names in different states</h3>
+<p>New Jersey and Ohio split one rate table into fifteen and ten, one per territory. New York does
+the same and also splits the <em>instruction</em> that says how to price. Ask for a table by name
+and you find an empty one; follow the rule instead and you find the rates.</p>
+
+<h3>Validation messages are part of the pricing</h3>
+<p>Several bounds exist <em>only</em> inside rules whose entire job is to raise a warning. One
+calculation can produce a negative premium and the only thing preventing it is a message rule. Port
+the arithmetic without the warnings and the engine quotes negative numbers.</p>
+</section>
+
+<section id="refer">
+<h2><span class="n">6</span>When the engine stops and asks</h2>
+<p class="lede">This turned out to be a whole item of work in its own right, and it is now
+catalogued rather than scattered.</p>
+
+<p>Every situation in which the engine must stop is in one register — <strong>28 of them</strong>,
+each with the evidence behind it. They fall into four kinds, and the difference is <em>when we can
+see them coming</em>:</p>
+
+<table>
+<tr><th>Kind</th><th>How many</th><th>When we can tell</th></tr>
+<tr><td><strong>ISO says so outright</strong> — a marker in the data, or a coverage with no rates at all</td><td>16</td><td>Before pricing even starts</td></tr>
+<tr><td><strong>The rate simply isn't there</strong> — a state ships no figures for something</td><td>4</td><td>During pricing</td></tr>
+<tr><td><strong>Only a warning rule knows</strong> — the bound exists nowhere else</td><td>4</td><td>During pricing, and only as far as the warning reaches</td></tr>
+<tr><td><strong>Decided not to be a referral after all</strong> — bad input, or a plan we won't offer</td><td>4</td><td>—</td></tr>
+</table>
+
+<p>Seven of them fail <em>silently</em> — they'd produce a zero that multiplies cleanly through to a
+premium and looks like a real answer. Only three fail loudly. That imbalance is the whole reason the
+register exists: <strong>a marker is indistinguishable from a real zero by looking at it.</strong></p>
+</section>
+
+<section id="decided">
+<h2><span class="n">7</span>What you decided</h2>
+<p class="lede">Thirteen decisions on 12 August. Three of them changed how the engine has to be
+built, not just what it prices.</p>
+
+<h3>The engine is built for one carrier, and set to match ISO's own service</h3>
+<p>The company's loss-cost multiplier is fixed at 1.0 so that engine output is directly comparable
+with ISO's rating service. Any difference is then <strong>a defect in our engine and never a
+difference in company filings</strong> — which makes every future comparison meaningful. It also
+means the engine refuses to start until it has been told its company parameters, rather than
+quietly defaulting.</p>
+
+<h3>"Refer to company" means stop, say what you need, and resume</h3>
+<p>Where ISO declines to price something, the engine now names the value it wants, an underwriter
+supplies it, and pricing continues. <strong>A referral is a pause, not a dead end.</strong></p>
+<p>That created two different kinds of company input — one set once when the engine is configured,
+one supplied per risk at the moment of referral — and the architecture carries both.</p>
+
+<h3>Which then invalidated a rule we'd already written</h3>
+<p>We had said a referral blocks anything multiplied by it, but not anything added to it. Terrorism
+is calculated by adding several premiums together and <em>then</em> multiplying — so under that rule
+it would have quietly priced on an incomplete total.</p>
+<p>Because referrals now resume, <strong>the missing number is coming</strong> — so anything
+depending on it waits and is calculated once, properly. The rule is now about whether the answer is
+on its way, not about the arithmetic. The rest of the policy still prices: twenty classifications
+with one referral still quote the other nineteen.</p>
+
+<p>One more, small and worth keeping: <strong>once something has gone to an underwriter, it stays
+gone.</strong> A recalculation can never quietly cancel it.</p>
+</section>
+
+<section id="check">
+<h2><span class="n">8</span>How we'll know it's right</h2>
+<p class="lede">Better than we thought a week ago, because of something you spotted.</p>
+
+<p>We had recorded that the project held <strong>one</strong> fully-priced example policy to check
+against. It holds <strong>54, covering 50 states</strong> — they had been sitting in a folder,
+described in our own tracking register, and a claim measured in one place had been stated about
+everything.</p>
+
+<p>What that changes: most completed coverages can be checked against ISO's own answers
+<strong>on day one</strong>, rather than only the two the single example exercises. California and
+New York — the two states we'd singled out as untestable — both have answer keys.</p>
+
+<p>Two things still have none. <strong>Loss history</strong> for experience rating appears in no
+example, and the <strong>rounding tie-break</strong> — what happens at an exact halfway point —
+isn't stated anywhere in the data. Both need ISO's live service, and that is now worth connecting
+to earlier than planned rather than last.</p>
+
+<blockquote><p>Detailed testing strategy is deliberately deferred — it comes after the build shape
+is settled.</p></blockquote>
+</section>
+
+<section id="open">
+<h2><span class="n">9</span>What is not decided</h2>
+<p class="lede">The insurance content is specified. The software shape is not, and one question
+governs the rest.</p>
+
+<div class="callout" style="border-left-color:#1c6b45;background:#fbfefc">
+<h4 style="color:#1c6b45">DECIDED 12 August — run ISO's rules directly</h4>
+<p><strong>Chosen on a measurement rather than a preference.</strong> ISO's instruction language
+turns out to be <strong>58 kinds of instruction across 809,088 uses, and the twenty commonest cover
+94%</strong>. Implementing that language once — roughly twenty instructions for a working version,
+54 for a complete one — means every state, every coverage and every future ISO filing comes free.
+The alternative was hand-writing 4,461 rules per package plus 345 more for California alone, then
+repeating it every time ISO files.</p>
+<p>The build is now specified in six signed-off stages — see <code>docs/BUILD-STAGES.md</code>. The
+original framing of the choice is kept below, because it is why the answer was not obvious.</p>
+</div>
+
+<div class="callout">
+<h4>The fork, as it stood before the decision</h4>
+<p>ISO's data files don't just hold rates — they hold the <em>rules</em>, about 4,500 per package,
+written as structured instructions a machine can follow. There are two ways to build against that,
+and the plan has never chosen.</p>
+<p><strong>Run them.</strong> Build something that executes ISO's instructions directly. Then
+California's 345 differences cost nothing, and so does every future filing — but we have to
+implement ISO's instruction language exactly, including the awkward parts.</p>
+<p><strong>Rewrite them.</strong> Hand-write each calculation in ordinary code, guided by the eleven
+walkthroughs. Far easier to read and debug — but California needs 345 hand-written differences, and
+every new ISO edition needs another pass.</p>
+<p><strong>This was the decision that unblocked writing code.</strong> It is now taken.</p>
+</div>
+
+<p>Three smaller gaps, all specification rather than judgement:</p>
+<ul>
+<li><strong>No defined submission format.</strong> We know the engine needs around 1,900 possible
+input fields and we have 517 real submissions to shape it from — but nobody has written down what a
+request looks like.</li>
+<li><strong>No defined audit trail format.</strong> Several decisions now depend on it — recording
+that terrorism was <em>withheld</em> rather than zero, and that a referral was raised
+<em>and</em> resolved.</li>
+<li><strong>Two coverages aren't walked through yet</strong> — capture handling and whole-policy
+assembly.</li>
+</ul>
+</section>
+
+<section id="next">
+<h2><span class="n">10</span>What happens next</h2>
+<p class="lede">In the order that unblocks the most.</p>
+<ol>
+<li><strong>Decided:</strong> the engine runs ISO's rules directly. Six build stages are specified
+in <code>docs/BUILD-STAGES.md</code>, awaiting sign-off on stage 1.</li>
+<li><strong>Write the submission format and the audit trail format.</strong> Specification, not
+judgement — draftable once the fork above is settled.</li>
+<li><strong>Finish the referral workflow, then the last two coverages.</strong> No decisions
+outstanding on any of them.</li>
+<li><strong>Measure what the 54 example policies actually cover</strong>, so we know on day one
+which coverages can be checked against ISO's answers and which cannot.</li>
+<li><strong>Then build</strong> — and only then work up the testing strategy in detail.</li>
+</ol>
+
+<p>The standing recommendation, which you've ruled on twice: <strong>finish the walkthroughs before
+writing code.</strong> Every one so far has changed the architecture, including three of the four
+completed on 12 August.</p>
+</section>
+
+</main>
+</div>
+
+<footer>
+<hr>
+<p><strong>Where the detail lives.</strong>
+<code>docs/PRD-GL-RATING-ENGINE.md</code> — the fuller plain-language account ·
+<code>docs/GL-RATING-ENGINE-BUILD-PLAN.md</code> — the technical plan ·
+<code>docs/gates/</code> — the eleven coverage walkthroughs, plus the California and New York
+studies · <code>scripts/erc/out/referral_register.json</code> — all 28 stop-and-ask situations with
+the thirteen decisions · <code>docs/OPEN-ITEMS.md</code> — 67 tracked items ·
+<code>PROCESS_LOG.md</code> — every step with its reasoning and its corrections.</p>
+<p>Generated 12 August 2026. Every figure on this page is measured from the corpora and reproducible
+from the scripts in <code>scripts/</code>.</p>
+</footer>
+
+</body></html>
