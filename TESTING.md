@@ -1,8 +1,12 @@
 # How to test this, phase by phase
 
-**Current as of 2026-08-12.** Every command on this page has been run and its stated output is what
-it actually produced. Commands for stages that do not exist yet are marked **NOT BUILT** and will
-fail — they are listed so the file stays a complete map rather than growing one stage at a time.
+**Current as of 2026-08-13.** Every command on this page has been run and its stated output is what
+it actually produced. **All six stages are built, and Phase 2 — the comparison against ISO's live
+service — is live.** Nothing on this page is marked NOT BUILT any more.
+
+One thing to know before you start: **the command-line tool is stage 1 only** — `resolve`, `parents`,
+`table`, `check`, `census`. Rating is reached through the library, the web interface (`app.py`) or
+the scripts, and this page uses whichever is real. There is no `cli rate`.
 
 Run everything from the project root:
 
@@ -20,18 +24,28 @@ PDF scripts need `pypdf`; nothing else does.
 If you only run one thing, run this. It is every fixture and both expert agents.
 
 ```
-python tests/verify_stage1.py
-python tests/verify_golden.py
-python tests/verify_california.py
-python tests/verify_new_york.py
-python tests/verify_oi50.py
-python Agentic/iso-circular-expert/tools/smoke_test.py
-python Agentic/iso-erc-expert/tools/smoke_test.py
-python -m gl_engine.cli check 20260811 --deep
+python tests/verify_stage1.py                    20/20   which rulebook applies
+python tests/verify_golden.py                    80/80   a real ISO-rated policy, no engine needed
+python tests/verify_california.py                11/11   the sole GL_CW_20231201_V02 jurisdiction
+python tests/verify_new_york.py                  10/10   the most-deviating jurisdiction
+python tests/verify_oi50.py                        7/7   the one chain with no state deviation
+python tests/verify_contract_figures.py             OK   every figure quoted in the contract
+python tests/verify_interp.py                    58/58   the interpreter, node by node
+python tests/verify_stage3.py                    38/38   premium, the two modes, referrals
+python tests/verify_stage4.py                    28/28   input schemas and 51 sample submissions
+python tests/verify_stage5.py                    18/18   the field catalogue and its legal values
+python tests/verify_stage6.py                    30/30   the interface, over HTTP
+python tests/verify_phase2.py                    11/11   against ISO's live service (see below)
+python Agentic/iso-circular-expert/tools/smoke_test.py     19/19
+python Agentic/iso-erc-expert/tools/smoke_test.py       88 checks
+python -m gl_engine.cli check 20260811 --deep              13/13
 ```
 
-**Expected, in order:** `20/20` · `80/80` · `11/11` · `10/10` · `7/7` · `19/19` · `88 checks` ·
-`13/13`. Total run time about three minutes, most of it the last one.
+Total run time about four minutes, most of it the last one.
+
+**`verify_phase2` skips its live groups unless you pass `--live`**, and skips them cleanly when
+`RAAS_*` is not configured. **A suite that needs a paid external service to pass is a suite people
+stop running**, so the offline group always runs and reports `11/11, 1 skipped`.
 
 Any other numbers mean something moved. **Nothing here is expected to be flaky** — every count is
 pinned to a measured property of the corpus, so a change is a real change.
@@ -154,91 +168,110 @@ book.inventory()
 
 ---
 
-# Stage 2 — The interpreter ⏸ NOT BUILT
+# Stage 2 — The interpreter ✅ BUILT
 
 *Executing ISO's rules rather than re-implementing them.*
 
-When it exists, these will work:
-
 ```
-python -m gl_engine.cli rule NJ 20260811 PremisesOperations::SetBaseRate --trace
-python tests/verify_interpreter.py
+python tests/verify_interp.py                    # 58/58
 ```
 
-**How you will check it:** the eleven coverage walkthroughs in `docs/gates/` each state the rule
-order and the arithmetic for one coverage. If the interpreter is right, **they should pass with no
-coverage-specific code at all.** That is the strongest claim in
+**54 language nodes**, each with an evaluator, plus the path dialect ISO's rules navigate with.
+The suite is organised node by node, so a failure names the construct rather than the premium.
+
+**The claim it was built to test — and it held.** The coverage walkthroughs in `docs/gates/` each
+state the rule order and the arithmetic for one coverage, and the interpreter reproduces them
+**with no coverage-specific code at all.** That was the strongest claim in
 `docs/FROM-PLANNING-TO-BUILD.md` and the one most likely to be wrong.
 
-Until then, the walkthroughs are checked by reading, and the ERC content behind them by:
+The ERC content behind any single rule is still readable directly, which is what to reach for when
+a trace does not look like the filed rule:
 
 ```
 python Agentic/iso-erc-expert/tools/erc.py rule PremisesOperations SetBaseRate --st NJ
 python scripts/erc/27_dump_rule.py
 ```
 
+> **Four defects in this stage were silent rather than loud**, and each is worth knowing about
+> because the shape recurs: `Sum` over a `ForEach` returned only the last iteration; the `[1]`
+> path predicate went unparsed, so terrorism rows were never created; parent-scope dispatch made
+> every state override unreachable; and the `ancestor::` axis was unimplemented, so statistical
+> codes were absent. **None raised. All four produced a plausible number.**
+
 ---
 
-# Stage 3 — Kernel and the two modes ⏸ NOT BUILT
+# Stage 3 — Kernel and the two modes ✅ BUILT
 
 *A submission goes in, a premium and its factors come out.*
 
 ```
-python -m gl_engine.cli rate Engine_Payloads/OK.json --mode strict-erc
-python -m gl_engine.cli rate Engine_Payloads/OK.json --mode underwriting
-python tests/verify_kernel.py
-```
-
-**How you will check it:** Oklahoma's real ISO-rated policy must come back
-`976 + 6,845 + 18 = 7,839` exactly. That case is already re-derived in `Decimal` today and passes
-as arithmetic:
-
-```
+python tests/verify_stage3.py                    # 38/38
 python tests/verify_golden.py                    # 80/80, three layers
+python scripts/rate_all_payloads.py              # every stored example
 ```
 
-**The two modes are themselves a test.** Rate the same risk both ways; every difference is a risk
-ISO would quote and we would refer. That report is a deliverable, not a diagnostic.
+**The check it had to pass, and did:** Oklahoma's real ISO-rated policy comes back
+`976 + 6,845 + 18 = 7,839` exactly, and the engine agrees with **49 of 49 usable stored examples**.
+
+**The two modes are themselves a test.** `strict-erc` and `underwriting` run the same code path;
+rate the same risk both ways and every difference is a risk ISO would quote and we would refer.
+That report is a deliverable, not a diagnostic.
+
+> **Three of the differences chased here turned out to be defects in the oracle, not the engine** —
+> an ISO output filed under the wrong state, a jurisdiction rated against an edition that is not in
+> the corpus, and a terrorism field ISO's own examples disagree with in 34 of 50 pairs. **Each was
+> only provable because the engine was assumed wrong first** and the evidence was made to say
+> otherwise. `docs/OPEN-ITEMS.md` OI-77 to OI-79 carry the account.
 
 ---
 
-# Stage 4 — Schemas and payloads ⏸ NOT BUILT
+# Stage 4 — Schemas and payloads ✅ BUILT
 
 *One sample submission per state, same class code and exposure everywhere.*
 
 ```
-python -m gl_engine.cli schema NJ 20260811
-python -m gl_engine.cli payload NJ --out Engine_Payloads/NJ.json
-python tests/verify_payloads.py
+python scripts/build_sample_payloads.py          # writes Engine_Payloads/<ST>/submission.json
+python tests/verify_stage4.py                    # 28/28
+python scripts/check_payload_pairs.py            # the stored examples, input paired to output
+python scripts/diff_payload.py <ST>              # ours against ISO's, field by field
 ```
 
-**How you will check it:** rate all 51 and every difference must name the state deviation
-responsible. Four states need an extra field — California, Florida, New York and Texas resolve
-territory by county or place. **Hawaii is not in the corpus and must fail loudly.**
+**What it produced:** 51 submissions, **the same risk in every state** — one location, one
+classification, class `50017`, gross sales. That was chosen so any difference between states is
+attributable to a state deviation and nothing else, and it worked. Four states need an extra field,
+because California, Florida, New York and Texas resolve territory by county or place. **Hawaii is
+not in the corpus and fails loudly rather than falling back to countrywide.**
 
-The 53 real ISO-rated examples this will be built from are already on disk:
+The 53 real ISO-rated examples it was built against are on disk and still checked:
 
 ```
-dir Payloads
 python tests/verify_california.py                # 11/11 -- uses Payloads/CA
 python tests/verify_new_york.py                  # 10/10
 ```
 
+> **That one risk shape is now the limiting factor, not the engine** (OI-87). Fifty matches against
+> ISO on a single shape is a narrower claim than it sounds, and widening it is the next work.
+
 ---
 
-# Stage 5 — The enum workbook ⏸ NOT BUILT
+# Stage 5 — The enum workbook ✅ BUILT
 
 *Every field a payload can carry, and its legal values, from ISO's own tables.*
 
 ```
-python -m gl_engine.cli enums --out GL_Payload_Enums.xlsx
-python tests/verify_enums.py
+python scripts/build_enum_workbook.py            # writes GL_Payload_Enums.xlsx
+python tests/verify_stage5.py                    # 18/18
 ```
 
-**How you will check it:** every value in the 53 real submissions must appear in the workbook. A
-value ISO accepted that our workbook rejects is a defect in the workbook.
+**The check it had to pass:** every value in the 53 real submissions appears in the workbook. **A
+value ISO accepted that our workbook rejects is a defect in the workbook**, not in the submission —
+so validation reports whether a field's legal values were resolved *exactly* or from a superset that
+can accept an illegal value but never reject a legal one. 29 of 90 dependent domains resolve
+exactly; every finding says which of the two it is (OI-84).
 
-The underlying domain tables are readable today:
+The workbook is written by `scripts/xlsx.py`, **standard library only** — like everything else here.
+
+The underlying domain tables are readable directly:
 
 ```
 python -m gl_engine.cli census 20260811
@@ -247,17 +280,64 @@ python -m gl_engine.cli table NJ 20260811 DomainScheduleType --kind Domain --row
 
 ---
 
-# Stage 6 — The UI ⏸ NOT BUILT
+# Stage 6 — The interface ✅ BUILT
 
-*Paste a payload, rate it, read every factor.*
+*Paste a submission, rate it, read every factor — and compare it with ISO.*
 
 ```
-python ui/app.py
+python app.py 8776                               # then open http://127.0.0.1:8776
+python tests/verify_stage6.py                    # 30/30, exercised over HTTP
 ```
 
-**How you will check it:** it must need no change to the engine. **If the UI requires the engine to
-change, the engine's interface was wrong** — that is the whole point of keeping them in separate
-files.
+**It needed no change to the engine, which was the test.** If the interface had required the engine
+to change, the engine's interface was wrong — that is the whole point of keeping them separate.
+`http.server`, no framework.
+
+**What it shows:** the premium, then *How it rated* — only the factors that actually fed the number
+— with the full trace, the per-coverage premiums, referrals and the raw JSON behind tabs. **Every
+number carries its source**, including which package and table it came from.
+
+A view can be linked to, which is also how it is driven in tests:
+
+```
+http://127.0.0.1:8776/?sample=OK&mode=strict-erc&rounding=ROUND_HALF_UP&compare=1&rate=1
+```
+
+---
+
+# Phase 2 — against ISO's live service ✅ LIVE
+
+*The same submission through our engine and through ISO, compared on every published field.*
+
+```
+python tests/verify_phase2.py                    # 11/11 offline, live groups skipped
+python tests/verify_phase2.py --live             # makes live calls
+python scripts/phase2_compare.py OK              # one jurisdiction
+python scripts/phase2_compare.py --all           # 50, and writes scripts/erc/out/phase2.csv
+```
+
+**Credentials come from the environment** (`RAAS_*`), never from a file in this repository.
+`scripts/raas.py` is a standard-library OAuth2 client — no `httpx`, no dependency — and **it logs no
+secret or token**, which `verify_phase2` asserts by parsing the source rather than grepping it.
+
+**The result of record:**
+
+| | |
+|---|---|
+| Sent to ISO | **50 of the 51** |
+| Premium **and every field ISO publishes** agree | **50 of 50** |
+| ISO used the edition we resolved | **50 of 50**, from its own response header |
+| Never sent | **PR** — not on the subscription, and that entitlement is not available (OI-86) |
+
+**Puerto Rico is excluded from comparisons, not from the engine.** It still rates; there is simply
+no external answer to check it against — no entitlement and no stored priced example either. **Every
+count of live agreement is `n of 50`, never `of 51`.** Naming `PR` explicitly on the command line
+still runs it, so this reverses in one command if the subscription changes.
+
+The same run is available in the interface — *Test every jurisdiction* → **Run the full test** —
+which reports `50 of 51 match ISO exactly` with a pass/fail bar and a row per state. **It takes
+about twenty minutes**, because each jurisdiction is a real call; the command line is faster and the
+page exists so the answer can be read by someone who would run neither.
 
 ---
 
@@ -366,11 +446,10 @@ self-correcting harness, which is the end goal.
 
 ---
 
-## Stages 2 and 3 — the interpreter and the kernel
+## Appendix — stages 2 and 3 in more detail
 
-**Added 2026-08-13. Every command below has been executed and every stated output is what it
-actually produced** — the rule this file adopted after an expected output was once written before
-the command was run.
+**Every command below has been executed and every stated output is what it actually produced** — the
+rule this file adopted after an expected output was once written before the command was run.
 
 ### Rate the golden case
 
@@ -385,9 +464,11 @@ Oklahoma's real ISO submission, priced end to end. `976 + 6845 + 2 + 16 = 7839`,
 own `1. Output.json` beside it publishes.
 
 > **Note the path.** The golden case is the **STC** input inside the corpus, *not*
-> `Payloads/OK/1. Input.json` — that is a different submission, it prices to `7852` against ISO's
-> `8229`, and it is one of the 28 open differences (`OI-76`). The first draft of this section pointed
-> at the wrong file and would have printed a number that looked like a failure.
+> `Payloads/OK/1. Input.json` — that is a different submission and prices to `8229`. The first draft
+> of this section pointed at the wrong file and would have printed a number that looked like a
+> failure. *(When it was written that second submission priced to `7852`, which is what made it one
+> of the 28 open differences under `OI-76`; the defect behind it — an unparsed `[1]` path predicate,
+> so terrorism rows were never created — has since been fixed, and it now agrees with ISO.)*
 
 ### The acceptance suites
 
@@ -395,7 +476,7 @@ own `1. Output.json` beside it publishes.
 python tests/verify_interp.py
 ```
 ```
-52/52 passed
+58/58 passed
 ```
 
 Four groups: every one of the **54** language nodes has an evaluator (the list is read from the
@@ -407,7 +488,7 @@ in contract §12 actually firing.
 python tests/verify_stage3.py
 ```
 ```
-31/31 passed
+38/38 passed
 ```
 
 The golden case, **all 83 policy-level numbers compared field by field against ISO's own output**,
@@ -435,14 +516,28 @@ python scripts/erc/44_contract_questions.py
 python scripts/rate_all_payloads.py
 ```
 ```
-RECONCILIATION AGAINST ISO'S OWN PRICED EXAMPLES  (50 payloads)
+    AS FILED                        : 28 of 50 match
+    WITH ISO'S OWN TerrorismCoverage: 48 of 50 match  (34 pairs dispute that one field -- OI-77)
 
-    MATCH   22 of 50
-    DIFF    28 of 50
+    AGAINST USABLE ORACLES ONLY     : 49 of 49 match   (1 excluded, OI-78)
+        AZ: its output file is Alaska's (State: AK); no AZ output exists
 ```
 
 **This is the offline half of Phase 2.** Writes `scripts/erc/out/reconciliation.csv` so runs can be
-diffed. **Every DIFF is our defect until proven otherwise** — see `OI-76`.
+diffed. **Every DIFF that survives the third line is our defect until proven otherwise** — that is
+what `strict-erc` mode is for.
+
+**Read the three lines in order, because the first one understates it badly.** The gap between line
+1 and line 2 is a **single field the oracles disagree with themselves about**: 34 of the 50 stored
+pairs carry a `TerrorismCoverage` value ISO's own rating does not reproduce (OI-77). The gap between
+2 and 3 is **Arizona's output file being Alaska's** — there is no AZ oracle at all (OI-78). Neither
+was accepted on argument; both were established from ISO's own files, after the engine was assumed
+wrong first.
+
+> **`22 of 50` was the honest number when this section was written**, and the count moved to 28 as
+> real defects were fixed. **It is kept here rather than quietly overwritten** — the arc from 22 to
+> 49 of 49 is the evidence that the method works, and a file that only ever shows the current
+> number cannot show that.
 
 ### The other stage-2 measurements
 

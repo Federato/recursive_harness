@@ -4597,7 +4597,7 @@ terms.
 
 ---
 
-## Step 51 — Analysis closes; the build begins. **NEXT SESSION STARTS HERE.**
+## Step 51 — Analysis closes; the build begins. ~~NEXT SESSION STARTS HERE.~~ *(this log is closed — the live handoff is [`BUILD-LOG.md`](BUILD-LOG.md) **Entry 13**)*
 
 - **Date:** 2026-08-12
 - **Directed:** *"Build, when done, log, and then present TLDR in laymens term"*

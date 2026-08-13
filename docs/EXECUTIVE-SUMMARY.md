@@ -62,12 +62,24 @@ not anticipated.
 ```
 ANALYSIS                                          BUILD
 ├─ Source collection & conversion       ████ done  ├─ 1. Load & resolve      ████ DONE
-├─ Two independent specifications       ████ done  ├─ 2. The interpreter     ░░░░ next
-├─ 14 coverage walkthroughs             ████ done  ├─ 3. Produce a premium   ░░░░
-├─ Every count re-measured by date      ████ done  ├─ 4. State input formats ░░░░
-├─ Referral rules + 13 decisions        ████ done  ├─ 5. Field/value catalog ░░░░
-└─ Architecture decision                ████ done  └─ 6. Simple interface    ░░░░
+├─ Two independent specifications       ████ done  ├─ 2. The interpreter     ████ DONE
+├─ 14 coverage walkthroughs             ████ done  ├─ 3. Produce a premium   ████ DONE
+├─ Every count re-measured by date      ████ done  ├─ 4. State input formats ████ DONE
+├─ Referral rules + 13 decisions        ████ done  ├─ 5. Field/value catalog ████ DONE
+└─ Architecture decision                ████ done  └─ 6. Simple interface    ████ DONE
+
+                                                   PROOF
+                                                   ├─ Against ISO's service  ████ 50 of 50
+                                                   ├─ Self-correcting loop   ░░░░ phase 3
+                                                   └─ Company deviations     ░░░░ phase 4
 ```
+
+**As of 2026-08-13: all six stages are built, and the engine has been checked against ISO's own
+rating service on fifty jurisdictions — agreeing on the premium and on every field ISO publishes.**
+
+**The caveat belongs next to the number.** All 51 test submissions are **the same risk shape**, so
+fifty matches is a narrower claim than it sounds. Widening it is the next work, and it is expected
+to find defects.
 
 **Three weeks. Zero production code until the specification was finished and signed off** — a
 deliberate constraint set by the project sponsor and held to.
@@ -81,12 +93,13 @@ deliberate constraint set by the project sponsor and held to.
 | Coverage specifications ("walkthroughs") | **14**, one per rating item, each independently evidenced |
 | Design rules that cannot be violated | **18**, each measured rather than asserted |
 | Questions escalated to the business | **20** raised, 13 decided, rest tracked |
-| Tracked open items | **69** |
+| Tracked open items | **87** — resolved ones kept and marked, not deleted |
 | **Real ISO-priced example policies to test against** | **54**, covering 50 states |
 | Automated expert reviewers (manual + data) | **2**, 107 self-checks between them |
 | Reproducible analysis scripts | **57** |
-| **Working engine code** | **1,814 lines** — stage 1 |
-| **Engine tests** | 20 acceptance cases, 13 safety checks, green at two dates |
+| **Working engine code** | All six stages — resolve, interpret, rate, plus the interface |
+| **Engine tests** | **Twelve suites, all green** — 20+80+11+10+7+58+38+28+18+30+11 checks, plus 13 load-time assertions |
+| **Agreement with ISO's live service** | **50 of 50 jurisdictions**, on every field ISO publishes |
 
 ---
 
@@ -221,24 +234,31 @@ presented as one.
 | Stage | What it delivers | Status |
 |---|---|---|
 | **1 · Load and resolve** | Which rulebook applies, for any state and date | **✅ Built and tested** |
-| **2 · The interpreter** | Executes ISO's rules. **The only genuinely new engineering** | ▶ Next |
-| **3 · Premium and referrals** | A submission goes in, a price and its components come out — in two modes | — |
-| **4 · State input formats** | One sample submission per state, so differences are visible and attributable | — |
-| **5 · Field and value catalogue** | Every field a submission can carry and its legal values, from ISO's own tables | — |
-| **6 · Simple interface** | Paste a submission, price it, read every factor | — |
+| **2 · The interpreter** | Executes ISO's rules. **The only genuinely new engineering** | **✅ Built and tested** |
+| **3 · Premium and referrals** | A submission goes in, a price and its components come out — in two modes | **✅ Built and tested** |
+| **4 · State input formats** | One sample submission per state, so differences are visible and attributable | **✅ Built and tested** |
+| **5 · Field and value catalogue** | Every field a submission can carry and its legal values, from ISO's own tables | **✅ Built and tested** |
+| **6 · Simple interface** | Paste a submission, price it, read every factor | **✅ Built and tested** |
 
 **Then, and only then:**
 
 | Phase | What it delivers | When |
 |---|---|---|
-| **Proof against RAaS** | The engine's answer compared against ISO's own live service, risk by risk. Any difference is our defect until proven otherwise | After stage 6 |
-| **The self-correcting harness** | That comparison run continuously and automatically, with findings fed back as fixes | After proof |
+| **Proof against RAaS** | The engine's answer compared against ISO's own live service, risk by risk. Any difference is our defect until proven otherwise | **✅ Live — 50 of 50 agree** |
+| **The self-correcting harness** | That comparison run continuously and automatically, with findings fed back as fixes | **Next but one** — see below |
 | **Company deviations** | The carrier's own loss costs, factors, rules and coverages layered on top of ISO's | **Only once the ISO baseline is trusted** |
 
-**Stage 2 is the critical path.** Its largest single piece is writing down what each of ISO's 54
-instructions means — deferred deliberately during analysis because it was only needed if we chose to
-run the rules. We chose to run them, so it is now due. **That written-down specification is the main
-thing engineering inherits**, and it is worth more than the code around it.
+**Stage 2 was the critical path, and the bet paid.** Its largest single piece was writing down what
+each of ISO's 54 instructions means — deferred deliberately during analysis because it was only
+needed if we chose to run the rules. **That written-down specification is the main thing engineering
+inherits, and it is worth more than the code around it.** The claim it was built to test held: the
+coverage walkthroughs are reproduced **with no coverage-specific code at all**.
+
+**What comes next is breadth, not the harness.** Every submission tested so far is one location, one
+classification, no deductible, no rating plans. **A harness that adjudicates differences is worth
+building once there are differences to adjudicate** — and on a single risk shape there are none. So
+the next work widens the population deliberately, expecting it to find defects. Ordered in
+[`BACKLOG-2026-08-14.md`](BACKLOG-2026-08-14.md).
 
 **Two modes, one code path**, from stage 3 onward:
 

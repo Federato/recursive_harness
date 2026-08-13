@@ -56,8 +56,8 @@ checks itself against ISO's own service.</div>
 <div class="grid">
   <div class="stat"><b>567</b><span>ISO packages mapped</span></div>
   <div class="stat"><b>51</b><span>jurisdictions</span></div>
-  <div class="stat"><b>1 of 6</b><span>build stages complete</span></div>
-  <div class="stat"><b>20 / 13</b><span>acceptance / safety checks</span></div>
+  <div class="stat"><b>6 of 6</b><span>build stages complete</span></div>
+  <div class="stat"><b>50 of 50</b><span>agree with ISO's live service</span></div>
 </div>
 
 <h2>Start here</h2>
@@ -93,7 +93,7 @@ build in plain English — no insurance or engineering background assumed.</p>
 <tr><td><a href="https://github.com/Federato/recursive_harness/blob/main/docs/EXECUTIVE-SUMMARY.md">EXECUTIVE-SUMMARY.md</a></td>
 <td>The executive summary as markdown</td></tr>
 <tr><td><a href="https://github.com/Federato/recursive_harness/blob/main/docs/WHERE-WE-PAUSED-2026-08-12.md">WHERE-WE-PAUSED.md</a></td>
-<td>The most recent working session, written to be read cold</td></tr>
+<td>The 12 August session, read cold. <strong>Superseded</strong> — everything after it is in the build diary</td></tr>
 <tr><td><a href="https://github.com/Federato/recursive_harness/blob/main/docs/PRD-GL-RATING-ENGINE.md">PRD-GL-RATING-ENGINE.md</a></td>
 <td>Full status and history in plain language. §0 is the latest update</td></tr>
 <tr><td><a href="https://github.com/Federato/recursive_harness/blob/main/docs/BUILD-STAGES.md">BUILD-STAGES.md</a></td>
@@ -101,22 +101,24 @@ build in plain English — no insurance or engineering background assumed.</p>
 <tr><td><a href="https://github.com/Federato/recursive_harness/blob/main/docs/GL-RATING-ENGINE-BUILD-PLAN.md">GL-RATING-ENGINE-BUILD-PLAN.md</a></td>
 <td>The technical plan — architecture, the 18 non-negotiables, and the deviation constraints C1–C3</td></tr>
 <tr><td><a href="https://github.com/Federato/recursive_harness/blob/main/TESTING.md">TESTING.md</a></td>
-<td><strong>Every command, phase by phase.</strong> Each one has been run and its stated output verified</td></tr>
+<td><strong>Every command, stage by stage.</strong> Each one has been run and its stated output verified</td></tr>
 <tr><td><a href="https://github.com/Federato/recursive_harness/blob/main/BUILD-LOG.md">BUILD-LOG.md</a></td>
-<td>The build diary — what was built, what broke, and what the fix revealed</td></tr>
+<td><strong>The build diary — what was built, what broke, and what the fix revealed. Entry 13 is the current handoff</strong></td></tr>
 <tr><td><a href="https://github.com/Federato/recursive_harness/blob/main/docs/FROM-PLANNING-TO-BUILD.md">FROM-PLANNING-TO-BUILD.md</a></td>
 <td>Did the analysis pay off? Written <em>before</em> each stage, so it is allowed to be wrong</td></tr>
 <tr><td><a href="https://github.com/Federato/recursive_harness/blob/main/docs/OPEN-ITEMS.md">OPEN-ITEMS.md</a></td>
-<td>Everything unresolved — 69 tracked items</td></tr>
+<td>OI-1 to OI-87. Resolved items are kept and marked, not deleted</td></tr>
 <tr><td><a href="https://github.com/Federato/recursive_harness/blob/main/PROCESS_LOG.md">PROCESS_LOG.md</a></td>
-<td>The full analysis record, 51 steps. Long, and complete</td></tr>
+<td>The full analysis record, 51 steps. Long, and complete — and closed: the build has its own diary</td></tr>
+<tr><td><a href="https://github.com/Federato/recursive_harness/blob/main/docs/BACKLOG-2026-08-14.md">BACKLOG-2026-08-14.md</a></td>
+<td>What to do next, ordered, each item naming the open item it closes</td></tr>
 </table>
 
 <h2>The code</h2>
 <table>
 <tr><th>Path</th><th>What it is</th></tr>
 <tr><td><a href="https://github.com/Federato/recursive_harness/tree/main/gl_engine">gl_engine/</a></td>
-<td><strong>The engine.</strong> Stage 1: given a state and a date, which rulebook applies. 1,814 lines, no third-party dependencies</td></tr>
+<td><strong>The engine.</strong> All six stages: resolve the rulebook, execute ISO's rules, produce a premium and its factors. No third-party dependencies</td></tr>
 <tr><td><a href="https://github.com/Federato/recursive_harness/tree/main/tests">tests/</a></td>
 <td>Acceptance fixtures. Every case pinned to something measured before the code existed</td></tr>
 <tr><td><a href="https://github.com/Federato/recursive_harness/tree/main/scripts">scripts/</a></td>

@@ -1,6 +1,8 @@
 # The Build — staged plan, for sign-off
 
-**Written 2026-08-12. No code exists. Nothing below is built until you approve the stage.**
+**Written 2026-08-12, when no code existed. Updated 2026-08-13: all six stages are built and Phase 2
+is live.** The plan is kept in its original shape rather than rewritten as a description of what was
+built — the point of a plan is to be checkable against the outcome afterwards.
 
 This is the plan for the engine itself. It follows the twelve directives of 2026-08-12 and the
 architecture decided with them: **execute ISO's filed rules rather than re-implement them**, two
@@ -257,10 +259,10 @@ on disk, which is enough to find systemic errors before the connection exists.
 
 | | |
 |---|---|
-| Jurisdictions rated through ISO's live service | **51 attempted, 50 answered** |
+| Jurisdictions rated through ISO's live service | **50 of the 51** |
 | Premium **and every published field** agree | **50 of 50** |
 | ISO used the edition we resolved | **50 of 50**, confirmed by its own response header |
-| Not answered | **PR** — `401 "Permission is not granted to GL PR for rating"`, an entitlement on the ISO account (OI-86) |
+| Never sent | **PR** — `401 "Permission is not granted to GL PR for rating"`, an entitlement on the ISO account. **Decided 2026-08-13: that entitlement is not available, so PR is out of the comparison from here on** (OI-86). It still rates; it is simply the one jurisdiction with no external check of any kind |
 
 `scripts/raas.py` is the client — **standard library only**, so the project still has no third-party
 dependency. A working `httpx` client existed in a prior build; the protocol is OAuth 2.0
@@ -334,4 +336,7 @@ Each stage is presented before the next begins, exactly as the analysis gates we
 what it was checked against, and what it cannot yet do.** You run tests, corrections get recorded,
 and we move on.
 
-**Stage 1 is built. Awaiting your approval of stage 2.**
+**All six stages are built and Phase 2 is live** (2026-08-13). The current handoff is
+[`BUILD-LOG.md`](../BUILD-LOG.md) Entry 13, and the next work is ordered in
+[`BACKLOG-2026-08-14.md`](BACKLOG-2026-08-14.md) — **breadth first**, because every submission tested
+so far is the same risk shape.
