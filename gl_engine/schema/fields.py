@@ -35,6 +35,11 @@ from ..erc.discovery import read_text
 
 FIELD_FILE = Path("Form Fields") / "Fields.FormField.csv"
 RATEBOOK_FILE = Path("Ratebook Columns") / "RatebookColumns.FormPage.csv"
+RELATED_FILE = Path("Form Related Fields") / "RelatedFields.FormField.csv"
+
+#: Columns of a domain table that are never the dependency.
+_DOMAIN_STRUCTURAL = frozenset({"StateCode", "Status", "MetadataCodes",
+                                "DisplayValue", "DataValue"})
 
 #: Form-control types, not data types. Kept so the distinction is explicit
 #: rather than implied by the absence of a comment.
@@ -112,6 +117,9 @@ class Schema:
         self.book = book
         self.juris = book.juris
         self._fields: dict[tuple[str, str], Field] = {}
+        #: (table, column) -> the path to the field this one's legal values
+        #: depend on. ISO files it; 29 of the 90 dependent domains carry one.
+        self._related: dict[tuple[str, str], str] = {}
         self._load()
 
     @classmethod
@@ -130,6 +138,14 @@ class Schema:
                 cond = (r.get("RatingRequiredCondition") or "").strip()
                 if cond:
                     rating_required[(r["TableName"], r["ColumnName"])] = cond
+
+        for layer in layers:
+            if layer is None:
+                continue
+            for r in _rows(layer.package.content / RELATED_FILE):
+                xp = (r.get("RelatedXPath") or "").strip()
+                if xp:
+                    self._related[(r["TableName"], r["ColumnName"])] = xp
 
         for layer in layers:
             if layer is None:
@@ -241,6 +257,87 @@ class Schema:
             seen.add(v)
             out.append(v)
         return tuple(out)
+
+    def domain_table(self, table: str, column: str):
+        """The loaded domain table for a field, or None."""
+        f = self.get(table, column)
+        if f is None or not f.domain:
+            return None
+        for candidate in (f"Domain{f.domain}", f.domain):
+            try:
+                return self.book.table(candidate, "Domain")
+            except Exception:                            # noqa: BLE001
+                continue
+        return None
+
+    def dependency_columns(self, table: str, column: str) -> tuple[str, ...]:
+        """The columns a dependent domain is keyed by, in declared order."""
+        t = self.domain_table(table, column)
+        if t is None:
+            return ()
+        return tuple(h for h in t.header if h not in _DOMAIN_STRUCTURAL)
+
+    def related_path(self, table: str, column: str) -> str:
+        """The path to the field this one depends on, as ISO declares it.
+
+        Empty when ISO declares no relationship -- **29 of the 90 dependent
+        domains carry one**, so the empty case is the common one and the
+        caller must handle it rather than assume exactness.
+        """
+        return self._related.get((table, column), "")
+
+    def resolved_values(self, table: str, column: str, node=None):
+        """`(values, exact)` -- the legal values, and whether they are exact.
+
+        Three outcomes, and the second element says which:
+
+        * **not a dependent domain** -> the plain list, `exact=True`
+        * **dependent, ISO declares the path, and a node is supplied** ->
+          the path is resolved against the submission and the rows filtered to
+          that dependency, `exact=True`
+        * **anything else** -> the union across every dependency, `exact=False`
+
+        The union is a **safe superset**: it can never reject a legal value,
+        only accept an illegal one. That is why it shipped, and why the flag
+        exists -- *a validator that is exact for some fields and a superset for
+        others, without saying which, is worse than one that is always a
+        superset.*
+        """
+        base = self.legal_values(table, column)
+        deps = self.dependency_columns(table, column)
+        if not base or not deps:
+            return base, True
+
+        path = self.related_path(table, column)
+        t = self.domain_table(table, column)
+        if not path or node is None or t is None:
+            return base, False
+
+        from ..interp import tree as _t
+        found = _t.select(path, node)
+        if not found or found[0].text is None:
+            return base, False
+        want = str(found[0].text)
+
+        dep = deps[0]
+        if dep not in t.header:
+            return base, False
+        di, vi = t.col(dep), t.col("DataValue")
+        state_i = t.col("StateCode") if "StateCode" in t.header else None
+        seen, out = set(), []
+        for row in t.rows:
+            if state_i is not None and row[state_i] not in (self.juris, "CW"):
+                continue
+            if str(row[di]) != want:
+                continue
+            v = row[vi]
+            if v is None or str(v) in seen:
+                continue
+            seen.add(str(v))
+            out.append(str(v))
+        # A dependency value the table does not carry is not a licence to
+        # accept anything: fall back to the superset and say so.
+        return (tuple(out), True) if out else (base, False)
 
     def dependent_domain(self, table: str, column: str) -> bool:
         """True when the legal set depends on another field's value.

@@ -2,10 +2,16 @@
 
 **Findings, not exceptions.** A submission with three problems should report
 three, not the first one; and validation must never be the thing that decides
-whether a rating happens, because the engine's own refusals (stages 1–3) are
+whether a rating happens, because the engine's own refusals (stages 1-3) are
 stricter and better placed. This tells a caller what ISO would object to.
 
-Four checks, and each says what it does *not* cover:
+**It walks the ERC data tree, not the raw JSON.** The tree is what stage 3
+builds and stage 2 rates, so a table name here is the one ISO's field file uses
+-- including the dotted names nested tables carry -- and a `RelatedXPath` can
+actually be resolved, because the tree has parents and the `../../` dialect is
+the one `interp/tree.py` already implements.
+
+Five checks, and each says what it does *not* cover:
 
   V1 unknown field     a field ISO does not declare for this jurisdiction.
                        **A warning, not an error** -- ISO's own request format
@@ -14,15 +20,23 @@ Four checks, and each says what it does *not* cover:
                        Conditionally-required fields are NOT reported: the
                        condition dialect is not evaluated, and guessing would
                        report a field ISO does not want
-  V3 illegal value     a value outside the domain table ISO names for it
+  V3 illegal value     a value outside the domain ISO names. **Exact when ISO
+                       declares the dependency, a safe superset when it does
+                       not, and the finding says which** -- see V5
   V4 the four          CA, FL, NY and TX declare `TerrorismTerritory` against a
                        state-specific `TerrorismTerritoryCode` domain rather
                        than the ZIP-derived one 11 other jurisdictions use.
                        **It cannot be derived from a ZIP** -- E8 and R22
+  V5 superset in use   reported once per rating: how many dependent domains
+                       were checked exactly and how many only as a superset,
+                       so the strength of V3 is never assumed
 """
 from __future__ import annotations
 
 from dataclasses import dataclass
+
+from ..interp import tree
+from ..rating.submission import from_raas
 
 #: Measured, not asserted: exactly these four declare `TerrorismTerritory`
 #: against `TerrorismTerritoryCode`. Eleven others use `TerritoryCodeByZipCode`
@@ -31,6 +45,7 @@ PLACE_CODED = ("CA", "FL", "NY", "TX")
 
 ERROR = "error"
 WARNING = "warning"
+INFO = "info"
 
 
 @dataclass(frozen=True)
@@ -44,71 +59,96 @@ class Finding:
         return f"[{self.level.upper()} {self.code}] {self.where}: {self.detail}"
 
 
-def _walk(obj, table: str, path: str, out: list):
-    """Yield (table, column, value, path) for every scalar in the payload.
+def _is_wrapper(node) -> bool:
+    """`XTable` holding repeated `X` -- a container ISO's field file omits."""
+    return (node.tag.endswith("Table")
+            and any(c.tag == node.tag[:-5] for c in node.children))
 
-    **Nested tables carry a DOTTED name in ISO's field file** --
-    `GeneralLiability.GeneralLiabilityTerrorismEndorsementCoverage` -- so the
-    table name accumulates as the walk descends. Passing only the innermost
-    name makes every nested field look undeclared, which is how the first run
-    of this reported five spurious warnings.
+
+def _walk(node, table: str, out: list) -> None:
+    """Yield (table, column, node) for every leaf, with ISO's table naming.
+
+    A repeated element starts a **new** table under its own bare name; a nested
+    single object is **dotted** onto its parent. That is exactly how
+    `Fields.FormField.csv` names them.
     """
-    if isinstance(obj, dict):
-        for k, v in obj.items():
-            if isinstance(v, dict):
-                _walk(v, f"{table}.{k}", f"{path}/{k}", out)
-            elif isinstance(v, list):
-                for i, item in enumerate(v):
-                    _walk(item, k, f"{path}/{k}[{i}]", out)
-            else:
-                out.append((table, k, v, path))
-    return out
+    for c in node.children:
+        if _is_wrapper(c):
+            for item in c.children:
+                _walk(item, c.tag[:-5], out)
+        elif c.children:
+            _walk(c, f"{table}.{c.tag}" if table else c.tag, out)
+        elif c.text not in (None, ""):
+            # Only leaves that CARRY A VALUE are fields. An empty object in the
+            # request -- `"GeneralLiabilityMedPayCoverage": {}` -- arrives as a
+            # childless node with no text, and reporting it as an undeclared
+            # field is an artefact of the walk, not a finding.
+            out.append((table, c.tag, c))
 
 
 def validate(payload: dict, schema) -> list:
     """Every finding, in payload order. Never raises on a bad submission."""
-    body = payload.get("body", payload)
-    risks = body.get("GeneralLiability") or []
+    try:
+        root, _juris, _asof = from_raas(payload)
+    except ValueError as exc:
+        return [Finding(ERROR, "V0", "submission", str(exc))]
+
     findings: list[Finding] = []
+    leaves: list = []
+    for risk in tree.select("GeneralLiabilityTable/GeneralLiability", root):
+        _walk(risk, "GeneralLiability", leaves)
 
-    scalars: list = []
-    for i, risk in enumerate(risks):
-        _walk(risk, "GeneralLiability", f"GeneralLiability[{i}]", scalars)
-
-    present: set = set()
-    for table, column, value, path in scalars:
+    present = set()
+    exact_n = superset_n = 0
+    for table, column, node in leaves:
         present.add((table, column))
         f = schema.get(table, column)
         if f is None:
             findings.append(Finding(
-                WARNING, "V1", f"{path}/{column}",
+                WARNING, "V1", f"{table}.{column}",
                 f"not declared for {schema.juris}; it may be an envelope field "
                 f"or a field this jurisdiction does not use"))
             continue
-        legal = schema.legal_values(table, column)
+        if not f.domain:
+            continue
+
+        legal, exact = schema.resolved_values(table, column, node)
+        if schema.dependency_columns(table, column):
+            exact_n += 1 if exact else 0
+            superset_n += 0 if exact else 1
+        value = node.text
         if legal and value not in ("", None) and str(value) not in legal:
             findings.append(Finding(
-                ERROR, "V3", f"{path}/{column}",
+                ERROR, "V3", f"{table}.{column}",
                 f"{value!r} is not in {f.domain} "
-                f"({len(legal)} legal values, e.g. {list(legal)[:3]})"))
+                f"({len(legal)} legal value(s), "
+                f"{'exact' if exact else 'superset -- dependency not declared'}"
+                f"; e.g. {list(legal)[:3]})"))
 
     for f in schema.required():
         if not f.is_input:
             continue
         if f.key not in present and f.table == "GeneralLiability":
             findings.append(Finding(
-                ERROR, "V2", f"GeneralLiability/{f.column}",
+                ERROR, "V2", f"GeneralLiability.{f.column}",
                 f"required on a policy in {schema.juris} and not supplied"))
 
     if schema.juris in PLACE_CODED:
-        for i, risk in enumerate(risks):
-            locs = risk.get("GeneralLiabilityLocation") or []
-            for j, loc in enumerate(locs):
-                if not loc.get("TerrorismTerritory"):
-                    findings.append(Finding(
-                        WARNING, "V4",
-                        f"GeneralLiability[{i}]/GeneralLiabilityLocation[{j}]",
-                        f"{schema.juris} codes terrorism territory explicitly "
-                        f"(TerrorismTerritoryCode) and it cannot be derived "
-                        f"from a ZIP -- E8; an unmatched one refers, R22"))
+        for i, loc in enumerate(tree.select(
+                "GeneralLiabilityTable/GeneralLiability/"
+                "GeneralLiabilityLocationTable/GeneralLiabilityLocation",
+                root)):
+            if not tree.read("TerrorismTerritory", loc):
+                findings.append(Finding(
+                    WARNING, "V4", f"GeneralLiabilityLocation[{i}]",
+                    f"{schema.juris} codes terrorism territory explicitly "
+                    f"(TerrorismTerritoryCode) and it cannot be derived from a "
+                    f"ZIP -- E8; an unmatched one refers, R22"))
+
+    if exact_n or superset_n:
+        findings.append(Finding(
+            INFO, "V5", "dependent domains",
+            f"{exact_n} checked exactly against ISO's declared dependency, "
+            f"{superset_n} against a superset because ISO declares none "
+            f"(29 of 90 dependent domains carry a RelatedXPath)"))
     return findings

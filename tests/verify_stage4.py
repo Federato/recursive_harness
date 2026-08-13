@@ -101,6 +101,45 @@ def group_b():
           == (), "()")
 
 
+def group_b2():
+    """Dependent domains, resolved through ISO's own declared relationship."""
+    print("\nB2 DEPENDENT DOMAINS -- exact where ISO declares the dependency")
+    import json as _json
+    from gl_engine.rating.submission import from_raas
+    from gl_engine.interp import tree as _t
+
+    s = schema_for("OK")
+    tbl = ("GeneralLiabilityCertifiedActsOfTerrorismAggregateLimitCapOn"
+           "LossesFromCertifiedActsOfTerrorismPremOps")
+    check("B5 ISO declares the dependency path for this field",
+          s.related_path(tbl, "AggregateLimit").endswith(
+              "PremOpsProdsEachOccurrenceLimit"),
+          s.related_path(tbl, "AggregateLimit"))
+    check("B6 the domain is keyed by another field's value",
+          s.dependency_columns(tbl, "AggregateLimit")[0]
+          == "PolicyEachOccurrenceLimit",
+          str(s.dependency_columns(tbl, "AggregateLimit")))
+
+    p = _json.loads((PAYLOADS / "OK" / "1. Input.json").read_text(
+        encoding="utf-8-sig"))
+    root, _, _ = from_raas(p)
+    gl = _t.select_one("GeneralLiabilityTable/GeneralLiability", root)
+    node = _t.select_one(f"{tbl}Table/{tbl}", gl)
+    union, u_exact = s.resolved_values(tbl, "AggregateLimit", None)
+    exact, is_exact = s.resolved_values(tbl, "AggregateLimit", node)
+    check("B7 with no context it is a superset, and says so",
+          not u_exact and len(union) > 0, f"{len(union)} values, exact=False")
+    check("B8 with the submission it resolves exactly",
+          is_exact and len(exact) < len(union),
+          f"{len(exact)} of {len(union)} -- policy limit "
+          f"{_t.read('PremOpsProdsEachOccurrenceLimit', gl)!r}")
+    # A field whose domain has no dependency is exact either way -- the flag
+    # must not claim precision it does not have, nor withhold it.
+    plain, p_exact = s.resolved_values("GeneralLiability", "Subline", None)
+    check("B9 a plain list is exact with or without context",
+          p_exact and len(plain) >= 8, f"{len(plain)} values")
+
+
 def group_c():
     print("\nC  ISO'S OWN 50 SUBMISSIONS VALIDATE")
     errs, warns, n = 0, 0, 0
@@ -209,7 +248,7 @@ def group_f():
 
 def main() -> int:
     print("Stage 4 acceptance -- schemas and payloads")
-    group_a(); group_b(); group_c(); group_d(); group_e(); group_f()
+    group_a(); group_b(); group_b2(); group_c(); group_d(); group_e(); group_f()
     total = len(PASS) + len(FAIL)
     print(f"\n{len(PASS)}/{total} passed")
     if FAIL:
