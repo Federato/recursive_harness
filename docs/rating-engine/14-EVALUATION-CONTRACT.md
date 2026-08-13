@@ -169,17 +169,39 @@ not fall back to a rule.**
 |---|---|---|
 | `Rule` | — | a named body in a file, addressed as (file, name); `@Type` gives its return type, `none` meaning it returns nothing and runs for effect |
 | `Sequence` | 182,751 | evaluate children **left to right, all of them**; the value is the last child's if any. Observed width **0 to 438** — an empty `Sequence` is legal and is a no-op |
-| `Break` | 84 | **semantics not yet pinned — see below** |
+| `Break` | 84 | terminate the **nearest enclosing iteration** |
 
-**`Break` is the one node in the tail whose meaning the corpus does not make obvious.** Its parents
-are **`Sum` (68), `Sequence` (14), `GetList` (2)** — so the dominant use, 68 of 84, is inside an
-arithmetic aggregation rather than inside a loop, which is not what the name suggests. It is a leaf
-(0 children) and appears in 58 of 567 packages.
+**`Break` took two measurements to read, and the first one was the wrong axis.** By *direct parent*
+it looks incoherent: `Sum` (68), `Sequence` (14), `GetList` (2) — dominated by an arithmetic
+aggregation rather than by a loop, which the name does not explain. That was recorded as OI-74, an
+open question.
 
-**Contract, for now: `Break` is a hard failure.** It is 0.004% of the language, it is in the
-9-node tail, and none of the eleven acceptance walkthroughs reach it. Guessing that it means
-"terminate the enclosing aggregation" would be a guess about arithmetic, which is the worst place to
-hold one. Recorded as **OI-74**.
+**By *nearest enclosing loop* it is completely uniform: `ForEach` 82, `GetList` 2 — 84 of 84.**
+There is no occurrence anywhere in the corpus outside a loop. The `Sum` cases are aggregations that
+themselves sit inside a `ForEach`; the direct parent was never the semantically relevant relation.
+
+Seen in context the idiom is unmistakable — this is ISO scanning locations for the highest ILF and
+stopping once it knows the answer:
+
+```xml
+<rul:ForEach AtInputDataDef="GeneralLiabilityClassificationTable/GeneralLiabilityClassification">
+  <rul:If>
+    <rul:Test><rul:GreaterThan> … </rul:GreaterThan></rul:Test>
+    <rul:Then><rul:Sequence>
+      <rul:Constant Type="string" ToDataDef="HighestLmtdProdsWithdrawalFinalILFFlag">No</rul:Constant>
+      <rul:Break />
+    </rul:Sequence></rul:Then>
+  </rul:If>
+</rul:ForEach>
+```
+
+**Contract: `Break` terminates the nearest enclosing `ForEach` or `GetList`, and a `Break` with no
+enclosing loop is a hard failure** — which the corpus says cannot happen. **OI-74 is closed.**
+
+> **The lesson is the one this project keeps relearning, rotated again.** The direct parent and the
+> nearest enclosing loop are different questions, and the node's meaning lives in the second. **A
+> census measures the relation it was asked for, not the relation that matters** — which is the same
+> error as measuring one edition, one directory, or one element type and generalising.
 
 `Sequence` nests inside `Rule`, `Then`, `Else`, `Locate`, `Otherwise`, `Default` and itself.
 
@@ -196,9 +218,28 @@ present on 25,536 makes it a write.
 Reads a DataDef by path. `@AllowNullReturn="true"` on **7,557 nodes — always exactly that value,
 never `false`** *(script 42, N3)*.
 
-**Contract.** Without `@AllowNullReturn`, a `Value` that resolves to nothing is an error the
-interpreter raises. With it, the null is returned and the caller is expected to handle it. *(Q4)*
-The nulls are concentrated where you would expect a coverage to be genuinely absent —
+> **This clause was wrong in the first draft and is corrected here.** The draft made the rule
+> attribute the sole authority on nullability: without `@AllowNullReturn`, a `Value` resolving to
+> nothing raised. That was inferred from the attribute's *name* rather than measured, and it stopped
+> a real ISO payload dead on `TRIAExpirationDate` — which ISO's own rules read with a bare `Value`
+> and which the schema declares `nillable="true"`.
+>
+> Measured across all 567 packages *(script 45)*: **48,785 of 64,788 element declarations (75.30%)
+> are nillable, and not one `Value` read anywhere — bare or otherwise — targets a non-nillable
+> element.** 28,347 bare reads address an explicitly nillable one. Nullability is close to universal
+> in this schema, so it cannot be what `@AllowNullReturn` gates.
+
+**Contract.** **A `Value` that resolves to nothing returns null and does not raise**, with or
+without `@AllowNullReturn`. The attribute records the author's intent that a null is expected here;
+it is not a permission gate, and treating it as one makes 28,347 legitimate reads fail.
+
+**The guard against nulls sits at the arithmetic boundary instead (§12.3), which is the right place
+for it** — a null that is read and then tested by `IsNull` is ISO working as designed, whereas a
+null that reaches a multiplication is a wrong premium. Guarding the read protects nothing and breaks
+the common case; guarding the arithmetic catches the damage where it happens.
+
+*(Q4)* The `@AllowNullReturn` nulls are concentrated where you would expect a coverage to be
+genuinely absent —
 `GeneralLiabilityClassification*` (947), `GeneralLiabilityRules` (867), the two classification
 coverage files (760 and 739), `GeneralLiabilityUnmannedAircraft*` (680 and 665) and
 `GeneralLiabilityTerrorism` (552). By type: 4,629 decimal, 1,647 string, 1,281 integer.
@@ -220,8 +261,15 @@ down. **The corpus settles it.** *(Q2, script 44)*
 `@Order` itself carries **one value corpus-wide**.
 
 **Contract.** `FirstValue` returns the DataDef value if it is non-null, otherwise the constant.
-**`FromInput` and `FromParam` are not implemented, and encountering either is a hard failure rather
-than a guess** — the engine must never invent a precedence it has never seen exercised.
+**On `FirstValue`, `FromInput` and `FromParam` are not implemented, and encountering either is a
+hard failure rather than a guess** — the engine must never invent a precedence it has never seen
+exercised.
+
+> **This is a statement about `FirstValue` and nothing else. Parameters are real.** `Value` carries
+> `@FromParam` on **60,948 of 127,468 nodes — 47.81%**, nearly as often as `@FromDataDef` (66,520).
+> Read carelessly, C2 says "params don't exist" and an implementer skips half the reads in the
+> language. **The four-source precedence is unused; the parameter mechanism is heavily used.** They
+> are different claims and this note exists because the first draft did not separate them. (C13)
 
 `@FromConstant` values are themselves telling: `(empty)` 94,152, `0` 47,172, `0.0` 28,223 and
 `01/01/0001` 1,642 — the last being the dateTime zero, which is a sentinel and **not a date to
@@ -442,7 +490,8 @@ positives.
 | C9 | Parent dispatch and recursion (N2) | **CONSTRAINED** — explicit package frame, no re-parenting, bounded depth | 51,267 cross-package calls, 10 parents, acyclic |
 | C10 | **Rounding mode** | **OPEN** — engine-wide `ROUND_HALF_UP`, traced on every rounded value, first target of the RAaS diff | no mode declared anywhere |
 | C11 | `And`/`Or` short-circuit | **OPEN but inert** — short-circuit, left to right; nothing in the corpus can observe the difference | decision, recorded against future filings |
-| C12 | `Break` | **OPEN** — hard failure; 68 of 84 occurrences are inside `Sum`, which the name does not explain | OI-74 |
+| C12 | `Break` | **ANSWERED** — terminates the nearest enclosing loop | 84 of 84 are inside one (`ForEach` 82, `GetList` 2). OI-74 closed |
+| C13 | `Value@FromParam` | **ANSWERED** — parameters are real and must be implemented; **C2's finding is about `FirstValue` only** | 60,948 of 127,468 `Value` nodes, 47.81% |
 
 **Four questions P5 called unspecified turned out to have exactly one answer in the content.** The
 language ISO *declares* is materially larger than the language ISO *uses*, and the difference is
@@ -493,7 +542,7 @@ packages, may reasonably be left as a hard failure until something needs it.
 | **OI-71** | `23_rule_program.py` P5's operator census is missing `Default` and `DateAdd`; any figure quoting "52 operators" is superseded by the 54 here |
 | **OI-72** | The plan's "14 node types under 500 occurrences" is 9. Correct where quoted |
 | **OI-73** | Five packages are unpacked twice under a `_MachineReadableContent` wrapper. Byte-identical, and both the engine and these scripts de-duplicate — recorded so no future count reports 572 |
-| **OI-74** | `Break`'s semantics are undetermined. 68 of 84 occurrences are inside `Sum`, not inside a loop. Hard failure until something needs it |
+| ~~OI-74~~ | **Closed the day it was raised.** `Break` terminates the nearest enclosing loop — 84 of 84 occurrences sit inside one. The open question was an artefact of measuring the direct parent instead |
 
 ---
 

@@ -275,8 +275,14 @@ class Table:
                 f"{self.population.value} {len(self.rows)} rows>")
 
 
+#: `FormPage` was added for stage 2. The interpreter's single most common
+#: `Lookup` target is `Pages`, which lives in `Form Pages/` and not in either
+#: table directory -- 22,694 lookups for a form's `Name` and 22,694 for its
+#: `Number`, out of 54,716 in the corpus. It arrives as a bare CSV with no
+#: definition file, which `load_table` already supports.
 _SUFFIX = {"Rate": (".RateTableDef.xml", ".RateTable.csv", "Rate Tables"),
-           "Domain": (".DomainTableDef.xml", ".DomainTable.csv", "Domain Tables")}
+           "Domain": (".DomainTableDef.xml", ".DomainTable.csv", "Domain Tables"),
+           "FormPage": (".FormPageDef.xml", ".FormPage.csv", "Form Pages")}
 
 
 def load_table(content: Path, kind: str, name: str, package: str,

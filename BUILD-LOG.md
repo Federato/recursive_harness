@@ -47,7 +47,7 @@ One entry per working session, in the style of `PROCESS_LOG.md` and with the sam
 | Stage | | |
 |---|---|---|
 | **1** | Load and resolve | ✅ **built 2026-08-12** — 20/20 acceptance, 13/13 assertions at **two** dates |
-| **2** | The interpreter | 🔵 **started 2026-08-13** on branch `stage2-interpreter`. The evaluation contract is written; no interpreter code yet |
+| **2** | The interpreter | ✅ **built 2026-08-13** on branch `stage2-interpreter` — 52/52 acceptance, all 54 nodes, executes real ISO rules 269 calls deep |
 | **3** | Kernel and the two modes | — |
 | **4** | Schemas and payloads | — |
 | **5** | The enum workbook | — |
@@ -230,7 +230,7 @@ therefore never written.
 
 ---
 
-## Entry 3 — Stage 2 opened: the evaluation contract. **NEXT SESSION STARTS HERE.**
+## Entry 3 — Stage 2 opened: the evaluation contract. ~~NEXT SESSION STARTS HERE.~~ *(the live handoff is **Entry 4**)*
 
 - **Date:** 2026-08-13
 - **Directed:** *"can we create a branch, so that if we want to do a full code build instead of
@@ -362,3 +362,120 @@ acceptance target.
 **The open question for you:** whether to cut `stage2-transliteration` from `883d9a1` now and build
 the comparison in parallel, or to finish the interpreter first and fork the comparison only if it
 disappoints. Nothing about the contract favours either — it is the shared input to both.
+
+---
+
+## Entry 4 — Stage 2 built: the interpreter. **NEXT SESSION STARTS HERE.**
+
+- **Date:** 2026-08-13
+- **Directed:** *"finish the interpreter first and only fork if it disappoints"* — so no
+  transliteration branch is cut. `main` and `stage2-interpreter` still share `883d9a1` if that
+  changes.
+- **Built:** `gl_engine/interp/` — 6 modules. No third-party dependency.
+- **Verified:** `tests/verify_interp.py` **52/52** · six prior suites unchanged ·
+  `check 20260811 --deep` **13/13**, 35.6s (unchanged; a 118s reading mid-session was a cold cache,
+  re-timed twice to be sure rather than assumed).
+
+### What it does
+
+Executes ISO's filed rule language. **All 54 nodes have an evaluator** — the list is read from
+`out/node_surface.csv` by the test rather than typed into it, so a 55th node in a future filing
+fails the suite rather than passing unnoticed.
+
+| Module | |
+|---|---|
+| `values.py` | five types, `Decimal` never float (N10), and a null that is neither zero nor the empty string |
+| `tree.py` | the data tree and its path dialect, including the `../../../` forms (E18). Reads never create; writes do |
+| `program.py` | rule files indexed lazily, and `entry()` — the `Default` block, hard failure if absent |
+| `nodes.py` | the 54 evaluators, each naming the contract clause it implements |
+| `interpreter.py` | frames, dispatch, lookup, rounding, trace |
+
+### It runs real ISO content, not just fixtures
+
+Against **Alaska's real RAaS input** (`Payloads/AK/1. Input.json`) resolved to
+`GL_AK_20260801_V02` over `GL_CW_20260101_V01`:
+
+| | |
+|---|---|
+| Rule calls executed | **269** |
+| Writes onto the tree | **125** |
+| Table lookups | **12 hits, 28 misses** |
+| Cross-package dispatch to the countrywide parent (N2) | **yes** |
+
+The misses are not defects — they are ISO's own state-then-countrywide idiom, visible in the trace
+as a miss on `['AK', 'Yes']` followed by a hit on `['CW', 'Yes']`.
+
+**It then stops, on `§12.3 null reached arithmetic`, and stopping is the correct outcome.** Stage 2
+is the interpreter, not the kernel: mapping a submission onto the ERC data tree is stage 4 and
+orchestrating a rating is stage 3, so a required value is genuinely absent. **What matters is that
+it stopped on a named contract clause instead of multiplying by a zero it invented.** That is
+recorded as test E5, phrased so that running to completion *fails* the test until stages 3 and 4
+make completion meaningful.
+
+### The correction that matters, and it came from a real payload
+
+**The contract's `Value` clause was wrong, and only executing real content exposed it.**
+
+The first draft said: a `Value` without `@AllowNullReturn` that resolves to nothing is an error.
+**I inferred that from the attribute's name and never measured it.** It stopped Alaska dead on
+`TRIAExpirationDate` — which ISO's own rules read with a bare `Value`, and which the schema declares
+`nillable="true"`.
+
+`scripts/erc/45_nillable_vs_allownull.py`, over all 567 packages:
+
+| | |
+|---|---|
+| Element declarations across all DataDefs | 64,788 |
+| Declared `nillable="true"` | **48,785 — 75.30%** |
+| `Value` reads targeting a **non-nillable** element | **0. Not one, bare or otherwise** |
+| Bare reads targeting an explicitly nillable element | **28,347** |
+
+Nullability is close to universal in this schema, so it cannot be what `@AllowNullReturn` gates, and
+raising on a bare read breaks 28,347 legitimate ones.
+
+**Corrected contract: a `Value` that resolves to nothing returns null and does not raise. The guard
+against nulls sits at the arithmetic boundary (§12.3) instead** — which is the better place on the
+merits, not merely the workable one. A null that is read and then tested by `IsNull` is ISO working
+as designed; a null that reaches a multiplication is a wrong premium. **Guarding the read protects
+nothing and breaks the common case; guarding the arithmetic catches the damage where it happens.**
+
+> **This is the clearest evidence yet for the harness thesis.** Three weeks of reading produced a
+> plausible clause. **One real payload falsified it in seconds.** That is the same lesson as the
+> stage-1 findings and the same lesson Phase 3 is built on — running the content finds a class of
+> defect that reading it cannot.
+
+### Two smaller findings from execution
+
+**`Break` was answered the same day it was raised, by measuring the right relation.** By *direct
+parent* it looks incoherent — `Sum` 68, `Sequence` 14, `GetList` 2 — and was filed as OI-74. By
+*nearest enclosing loop* it is **84 of 84** (`ForEach` 82, `GetList` 2). The `Sum` cases are
+aggregations that themselves sit inside a `ForEach`. **OI-74 closed.** The error was mine and it is
+the signature one rotated once more: *a census measures the relation it was asked for, not the
+relation that matters.*
+
+**Undeclared tables needed an explicit decision.** 3,056 CSVs in the corpus have no definition file,
+including `Pages` — **the single most common lookup target in the language**, 45,388 of 54,716
+lookups. Stage 1 honestly marks every column a key when it cannot know. The interpreter matches the
+leading columns in filed order, which is the only reading the data supports, **and writes
+`lookup-undeclared` into the trace so the inference is attributable rather than silent.**
+
+**One stage-1 change:** `Form Pages` added as a third table kind. `Pages` lives there and neither
+table directory holds it, so without it the dominant lookup in the language cannot resolve.
+
+### Also recorded
+
+- **C13** added to the contract. C2's finding — `FromInput`/`FromParam` never filed — is about
+  **`FirstValue` only**. `Value` carries `@FromParam` on **47.81%** of its nodes. Read carelessly C2
+  says "params don't exist" and an implementer skips half the reads in the language. The two claims
+  are now separated on the page, because the first draft did not separate them.
+- Banded lookups (`Range` key columns) are **not built** and raise rather than stepping a range,
+  which would be wrong by up to the band width. Needed before a premium comes out.
+
+### ▶ Next session
+
+**Stage 3 — the kernel and the two modes.** A submission goes in, a premium comes out. The first
+target is Oklahoma's golden case, `976 + 6,845 + 18 = 7,839`.
+
+Three things stage 2 leaves on the table for it, all named above: **the submission-to-tree mapping**
+(formally stage 4, but stage 3 needs enough of it to rate), **banded lookups**, and **the referral
+register wired into `strict-erc` and `underwriting` modes**.
