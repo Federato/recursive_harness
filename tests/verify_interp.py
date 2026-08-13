@@ -480,6 +480,60 @@ def group_e() -> None:
           else f"{kinds.get('call', 0)} calls, no refusal")
 
 
+def group_f() -> None:
+    """Banded and interpolated lookups, against real ISO tables.
+
+    The whole population is 11 table names, every one reachable, each with
+    exactly one key range and two boundary types
+    (`scripts/erc/46_banded_lookups.py`). Two are interpolated, both
+    size-of-risk relativity, both Linear.
+    """
+    print("\nF  BANDED LOOKUPS -- boundaries and interpolation")
+    from decimal import Decimal
+    book = ResolvedBook(EditionResolver().resolve("OK", "20260801"))
+    ip = Interpreter(book)
+
+    def look(name, col, keys):
+        return ip.lookup(name, col, keys, "FirstResult", "decimal", "test")
+
+    # CredibilityFactor is FromInclusiveToExclusive: [0,10879) -> 0,
+    # [10879,15388) -> 0.03. The boundary is the whole point -- a stepped or
+    # off-by-one reading lands in the wrong band and the factor is silently
+    # wrong.
+    check("F1 a value below the boundary stays in the lower band",
+          look("CredibilityFactor", "Factor", ["CW", Decimal(10878)])
+          == Decimal("0"), "10878 -> 0")
+    check("F2 the boundary itself belongs to the UPPER band (FromInclusive)",
+          look("CredibilityFactor", "Factor", ["CW", Decimal(10879)])
+          == Decimal("0.03"), "10879 -> 0.03")
+    check("F3 a value outside every band returns null, not the nearest",
+          look("CredibilityFactor", "Factor", ["CW", Decimal(-1)]) is None,
+          "-1 -> null")
+
+    # PremOpsSizeOfRiskRelativity interpolates Relativity linearly along the
+    # exposure band. Take a band whose endpoints differ, so a stepped reading
+    # would be visibly wrong.
+    t = book.table("PremOpsSizeOfRiskRelativity")
+    band = next((r for r in t.rows if r[0] == "CW" and r[4] != r[5]), None)
+    if band is None:
+        check("F4 an interpolated band exists to test", False, "none found")
+        return
+    lo, hi, v_lo, v_hi = band[2], band[3], band[4], band[5]
+    at_lo = look("PremOpsSizeOfRiskRelativity", "Relativity",
+                 ["CW", band[1], lo])
+    mid_x = lo + (hi - lo) / 2
+    at_mid = look("PremOpsSizeOfRiskRelativity", "Relativity",
+                  ["CW", band[1], mid_x])
+    check("F4 at the band's lower bound, the value is the band's lower value",
+          at_lo == v_lo, f"{at_lo}")
+    check("F5 midway along the band, the value is midway between the bounds",
+          at_mid == v_lo + (v_hi - v_lo) / 2,
+          f"{at_mid} between {v_lo} and {v_hi}")
+    check("F6 interpolation is traced, so a factor can be re-derived",
+          any(t2.kind == "lookup-interpolated" for t2 in ip.trace),
+          f"{sum(1 for t2 in ip.trace if t2.kind == 'lookup-interpolated')} traced")
+
+
 def main() -> int:
     print(f"Stage 2 acceptance -- the interpreter   (as of {ASOF})")
     group_a()
@@ -487,6 +541,7 @@ def main() -> int:
     group_c()
     group_d()
     group_e()
+    group_f()
     total = len(PASS) + len(FAIL)
     print(f"\n{len(PASS)}/{total} passed")
     if FAIL:

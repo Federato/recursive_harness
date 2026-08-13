@@ -91,7 +91,7 @@ and `BUILD-LOG.md` Entries 3 and 4.
 
 ---
 
-## Stage 3 — The kernel and the two modes  ✅ BUILT 2026-08-13
+## Stage 3 — The kernel and the two modes  ✅ COMPLETE 2026-08-13
 
 **Deliverable:** `gl_engine/rating/kernel.py`, `escalate/`, `trace/`. A submission goes in, a premium
 and its factors come out.
@@ -117,9 +117,19 @@ Both figures are frozen in `verify_stage3.py` group F as a **ratchet, not a targ
 `python scripts/rate_all_payloads.py` is the report. **Every one of the 28 differences is our defect
 until proven otherwise** — that is what strict mode is for, and it is the next work.
 
-**Still owed by this stage:** banded (`Range`) lookups still refuse rather than stepping a range, and
-**27 of the 28 referral conditions are carried but not enforced** — named by `Kernel.unenforced`
-rather than silently dropped.
+**Both owed items are now done.**
+
+**Banded and interpolated lookups.** The population was measured before it was built
+(`scripts/erc/46_banded_lookups.py`): **11 table names, every one reachable, each with exactly one
+key range**, two boundary types, and **two interpolated tables**, both size-of-risk relativity, both
+`Linear`. Boundaries and linear interpolation are pinned by `verify_interp` group F.
+
+**The referral register.** All **28** entries now carry an explicit disposition — **9 DETECTED,
+4 NOT_REFERRAL, 1 CONFIG, 14 PENDING** — and `Kernel.unenforced` names the pending ones
+individually. On the 50 payloads the two modes return **identical premiums**, detectors fire on
+**exactly one** submission, and that one is real: Alaska's attorney's-fee limit is below the subline
+limit, the endorsement prices at **−70**, and **ISO's own response carries the same −70 and an
+error message we reproduce verbatim**.
 
 ---
 

@@ -31,7 +31,7 @@ from ..erc.tables import Shape, Table
 from . import nodes, tree
 from .program import Program
 from .tree import Node
-from .values import InterpretError, coerce, compare_key
+from .values import InterpretError, coerce, compare_key, to_decimal
 
 #: Contract C10. Named so a caller can change it explicitly and the trace says
 #: which was used -- it is never picked per node.
@@ -294,10 +294,9 @@ class Interpreter:
         defn = table.definition
 
         if defn.key_ranges:
-            raise InterpretError(
-                f"table {name!r} is banded and banded lookup is not built yet; "
-                f"a stepped reading of a range is wrong by up to the band width",
-                "§7", where)
+            return self._lookup_banded(table, kind, name, col, keys, mode,
+                                       typ, where)
+
         if col not in table.header:
             raise InterpretError(
                 f"table {name!r} has no column {col!r}", "§7", where)
@@ -348,6 +347,106 @@ class Interpreter:
 
         value = hits[0][out_i]
         self.note("lookup", f"{name}[{col}] keys={keys!r} -> {value!r}",
+                  str(Citation(table.package, f"{kind} Tables", name,
+                               repr(keys))))
+        return coerce(value, typ, where)
+
+    # ------------------------------------------------------------ banded
+
+    def _lookup_banded(self, table, kind, name, col, keys, mode, typ, where):
+        """A lookup whose key is a band, and possibly whose value is too.
+
+        Measured over 570 packages (`scripts/erc/46_banded_lookups.py`), the
+        whole population is 11 table names, every one of them reachable:
+
+        * **exactly one key range each**, always alongside plain equality key
+          columns, so the supplied `Keys` map positionally onto
+          `key_cols + key_ranges` in declared order -- the same order the CSV
+          header is built in
+        * **two boundary types**: `FromInclusiveToExclusive` (115 definitions)
+          and `FromExclusiveToInclusive` (78)
+        * **two interpolated tables**, both size-of-risk relativity, both
+          `Linear`
+
+        **A stepped reading of an interpolated band is wrong by up to the width
+        of the band**, which is why this refused rather than approximated until
+        it was specified.
+        """
+        defn = table.definition
+        rng = defn.key_ranges[0]
+        eq = [c.name for c in defn.key_cols]
+
+        if len(keys) != len(eq) + 1:
+            raise InterpretError(
+                f"banded table {name!r} takes {len(eq)} equality keys plus a "
+                f"band value; the lookup supplied {len(keys)}", "§7", where)
+
+        idx = [table.col(k) for k in eq]
+        want = [compare_key(k) for k in keys[:len(eq)]]
+        lo_i, hi_i = table.col(rng.lo_col), table.col(rng.hi_col)
+        x = to_decimal(keys[-1], where)
+
+        hits = []
+        for row in table.rows:
+            if any(compare_key(row[i]) != w for i, w in zip(idx, want)):
+                continue
+            lo, hi = row[lo_i], row[hi_i]
+            if lo is None or hi is None:
+                continue
+            lo, hi = Decimal(lo), Decimal(hi)
+            below = lo <= x if rng.lo_inclusive else lo < x
+            above = x <= hi if rng.hi_inclusive else x < hi
+            if below and above:
+                hits.append((row, lo, hi))
+
+        if not hits:
+            self.note("lookup-miss",
+                      f"{name}[{col}] keys={keys!r} fell outside every band",
+                      table.package)
+            return None
+        if mode == "SingleResult" and len(hits) > 1:
+            raise InterpretError(
+                f"SingleResult matched {len(hits)} bands in {name!r}; the "
+                f"bands overlap and ISO asserts they do not", "§7", where)
+        if len(hits) > 1:
+            self.note("lookup-nonunique",
+                      f"{name}[{col}] keys={keys!r} matched {len(hits)} "
+                      f"overlapping bands; took the first in filed order",
+                      table.package)
+
+        row, lo, hi = hits[0]
+
+        # The value may itself be a range, interpolated along the key band.
+        for vr in defn.value_ranges:
+            if vr.name != col:
+                continue
+            v_lo = Decimal(row[table.col(vr.lo_col)])
+            v_hi = Decimal(row[table.col(vr.hi_col)])
+            if vr.interpolate != "Linear":
+                raise InterpretError(
+                    f"value range {col!r} declares InterpolateMode="
+                    f"{vr.interpolate!r}; only Linear is filed", "§12.2", where)
+            # Interpolation only ever occurs on FromInclusiveToExclusive bands
+            # in this corpus, where `x == lo` gives position 0 and `x == hi`
+            # belongs to the next band -- so the boundary is unambiguous and
+            # P5's open question about the two combined does not arise.
+            span = hi - lo
+            pos = (x - lo) / span if span else Decimal(0)
+            out = v_lo + (v_hi - v_lo) * pos
+            self.note("lookup-interpolated",
+                      f"{name}[{col}] {x} in [{lo},{hi}) -> {out} "
+                      f"between {v_lo} and {v_hi}",
+                      str(Citation(table.package, f"{kind} Tables", name,
+                                   repr(keys))))
+            return coerce(out, typ, where)
+
+        if col not in table.header:
+            raise InterpretError(
+                f"table {name!r} has no column or value range {col!r}",
+                "§7", where)
+        value = row[table.col(col)]
+        self.note("lookup-banded",
+                  f"{name}[{col}] {x} in band [{lo},{hi}] -> {value!r}",
                   str(Citation(table.package, f"{kind} Tables", name,
                                repr(keys))))
         return coerce(value, typ, where)

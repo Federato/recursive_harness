@@ -31,6 +31,7 @@ from ..errors import EngineError
 from ..interp import Interpreter, Node
 from ..interp import tree
 from ..resolve import EditionResolver, ResolvedBook
+from . import referrals
 from .submission import from_raas, load as load_submission
 
 #: The two behavioural modes. One engine, one code path, two policies.
@@ -116,9 +117,7 @@ class Rating:
 
 
 def _load_register() -> list:
-    if not REGISTER.exists():
-        return []
-    return json.loads(REGISTER.read_text(encoding="utf-8")).get("entries", [])
+    return referrals.load_register()
 
 
 class Kernel:
@@ -212,32 +211,42 @@ class Kernel:
     def _apply_register(self, result: Rating) -> None:
         """Enforce the referral register (underwriting mode only).
 
-        **Only the register entries whose condition the engine can actually
-        detect are enforced**, and the rest are reported as un-enforced rather
-        than quietly dropped. A register that claims 28 conditions and silently
-        checks 4 is worse than no register, because it reads as coverage.
+        Detectors observe the rated tree, the trace and the resolved book.
+        Every register entry has an explicit disposition -- see
+        `gl_engine/rating/referrals.py` -- so nothing is silently skipped.
         """
-        for entry in self.register:
-            hook = _DETECTORS.get(entry["id"])
-            if hook is None:
-                continue
-            hit = hook(result)
-            if hit:
-                result.raise_referral(Referral(
-                    code=entry["id"], condition=entry["condition"],
-                    kind=entry.get("kind", ""), needs=entry.get("needs"),
-                    where=hit))
+        by_code = {e["id"]: e for e in self.register}
+        for f in referrals.run_detectors(result):
+            entry = by_code.get(f.code, {})
+            result.raise_referral(Referral(
+                code=f.code,
+                condition=entry.get("condition", f.detail),
+                kind=entry.get("kind", ""),
+                needs=entry.get("needs"),
+                where=f"{f.where}: {f.detail}"))
+
+    # ------------------------------------------------- register transparency
+
+    def coverage(self) -> dict:
+        """How much of the register this build actually enforces.
+
+        Returned rather than asserted, because the honest number is small and
+        hiding it would make the register read as coverage it does not have.
+        """
+        out = {referrals.DETECTED: [], referrals.NOT_REFERRAL: [],
+               referrals.CONFIG: [], referrals.PENDING: []}
+        for e in self.register:
+            out[referrals.disposition(e["id"])].append(e["id"])
+        return {k: tuple(sorted(v)) for k, v in out.items()}
 
     @property
     def enforced(self) -> tuple[str, ...]:
-        """Which register entries this build can actually detect."""
-        return tuple(sorted(_DETECTORS))
+        return self.coverage()[referrals.DETECTED]
 
     @property
     def unenforced(self) -> tuple[str, ...]:
-        """Register entries carried but NOT checked. Named, never hidden."""
-        return tuple(sorted(e["id"] for e in self.register
-                            if e["id"] not in _DETECTORS))
+        """Carried but NOT checked. Named individually, never a count."""
+        return self.coverage()[referrals.PENDING]
 
 
 # --------------------------------------------------------------- detectors

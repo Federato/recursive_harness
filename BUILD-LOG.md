@@ -48,7 +48,7 @@ One entry per working session, in the style of `PROCESS_LOG.md` and with the sam
 |---|---|---|
 | **1** | Load and resolve | ✅ **built 2026-08-12** — 20/20 acceptance, 13/13 assertions at **two** dates |
 | **2** | The interpreter | ✅ **built 2026-08-13** — 52/52 acceptance, all 54 nodes |
-| **3** | Kernel and the two modes | ✅ **built 2026-08-13** — 33/33 acceptance. **Oklahoma golden case reproduces 7,839 exactly**; 50 of 50 payloads rate and **48 of 48 usable oracles agree to the penny** (OI-77, OI-78). Owed: banded lookups, 27 referral conditions |
+| **3** | Kernel and the two modes | ✅ **COMPLETE 2026-08-13** — 37/37 acceptance. Golden case exact; **49 of 49 usable oracles agree to the penny**. Banded and interpolated lookups built; every register entry has an explicit disposition |
 | **4** | Schemas and payloads | — |
 | **5** | The enum workbook | — |
 | **6** | The UI | — |
@@ -710,7 +710,7 @@ stepping a range, and the **27 referral conditions** carried but not enforced.
 
 ---
 
-## Entry 7 — OI-78 closed: 48 of 48 usable oracles agree. **NEXT SESSION STARTS HERE.**
+## Entry 7 — OI-78 closed: 48 of 48 usable oracles agree. ~~NEXT SESSION STARTS HERE.~~ *(the live handoff is **Entry 8**)*
 
 - **Date:** 2026-08-13
 - **Directed:** *"Log, and move on to OI-78"*

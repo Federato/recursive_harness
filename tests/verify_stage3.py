@@ -203,19 +203,44 @@ def group_d():
     k = Kernel(mode=UNDERWRITING)
     check("D3 the register is loaded", len(k.register) == 28,
           f"{len(k.register)} entries")
-    # The honesty check: the register must never look like more coverage than
-    # it has. 1 of 28 is a small number and it is stated, not hidden.
-    check("D4 un-enforced register entries are named, not silently dropped",
-          len(k.enforced) + len(k.unenforced) == len(k.register)
-          and len(k.unenforced) == 27,
-          f"enforced {k.enforced}, {len(k.unenforced)} not yet enforced")
+
+    # The honesty check: every entry has an explicit disposition and the four
+    # buckets account for all 28. A register that reports "28 loaded" while
+    # checking a handful reads as coverage it does not have.
+    cov = k.coverage()
+    total = sum(len(v) for v in cov.values())
+    check("D4 every register entry has an explicit disposition",
+          total == len(k.register),
+          " ".join(f"{key}={len(v)}" for key, v in sorted(cov.items())))
+    check("D5 nothing decided NOT to be a referral can raise",
+          set(cov["NOT_REFERRAL"]) == {"R21", "R24", "R27", "R28"},
+          str(cov["NOT_REFERRAL"]))
+    check("D6 un-enforced entries are named individually, never a count",
+          all(c.startswith("R") for c in k.unenforced) and k.unenforced,
+          f"{len(k.unenforced)} pending: {', '.join(k.unenforced)}")
+
+    # A real referral, on a real submission, that ISO itself errors on:
+    # Alaska's attorney's-fee limit is below the subline limit, ISO returns
+    # "Attorneys Fee Limit must be Greater than or Equal To Each Sublines
+    # Limit", and the endorsement prices at -70. The detector finds the
+    # negative without being told about attorney's fees (R16).
+    ak = Kernel(mode=UNDERWRITING).rate(ROOT / "Payloads" / "AK" / "1. Input.json")
+    check("D7 a negative premium component raises R16 on a real submission",
+          any(r.code == "R16" for r in ak.referrals),
+          "; ".join(r.code for r in ak.referrals) or "none")
+    check("D8 ISO's own validation message is captured verbatim",
+          any("Attorneys Fee Limit" in m for m in ak.messages),
+          f"{len(ak.messages)} messages")
+    check("D9 detectors do not fire on clean risks",
+          not Kernel(mode=UNDERWRITING).rate(ISO_IN).referrals,
+          "the golden case raises none")
 
     # Monotonicity (D02): a referral, once raised, cannot be removed.
     from gl_engine.rating import Referral
     uw.raise_referral(Referral("R99", "test", "TEST"))
     n = len(uw.referrals)
     uw.raise_referral(Referral("R99", "test again", "TEST"))
-    check("D5 dispositions are monotonic and not duplicated (D02)",
+    check("D10 dispositions are monotonic and not duplicated (D02)",
           len(uw.referrals) == n, f"{len(uw.referrals)} referrals")
 
 
