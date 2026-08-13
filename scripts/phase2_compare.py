@@ -41,7 +41,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from raas import RaaS, RaaSError                              # noqa: E402
+from raas import NO_ISO, RaaS, RaaSError                      # noqa: E402
 from gl_engine import EditionResolver                         # noqa: E402
 from gl_engine.rating import Kernel, STRICT                   # noqa: E402
 
@@ -134,6 +134,13 @@ def main(argv) -> int:
     if "--all" in argv:
         which = sorted(p.name for p in SAMPLES.iterdir()
                        if p.is_dir() and (p / "submission.json").exists())
+        # NO_ISO jurisdictions rate offline but cannot be compared -- ISO has
+        # nothing to say about them. Naming one explicitly still runs it, so
+        # the 401 can be re-checked if the subscription ever changes.
+        skipped = [j for j in which if j in NO_ISO]
+        which = [j for j in which if j not in NO_ISO]
+        if skipped:
+            print(f"[not on the ISO subscription, left out: {', '.join(skipped)}]")
     if not which:
         which = ["OK"]
 

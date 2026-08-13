@@ -44,9 +44,10 @@ from gl_engine.resolve import ResolvedBook                  # noqa: E402
 
 sys.path.insert(0, str(ROOT / "scripts"))
 try:
-    from raas import RaaS, RaaSError                        # noqa: E402
+    from raas import NO_ISO, RaaS, RaaSError                # noqa: E402
 except Exception:                                           # noqa: BLE001
     RaaS = None                                             # ISO comparison off
+    NO_ISO = frozenset()
 
     class RaaSError(RuntimeError):
         pass
@@ -57,6 +58,11 @@ HOST, PORT = "127.0.0.1", 8765
 #: Built once. Discovery is ~1s and every rating would otherwise pay it.
 RESOLVER = EditionResolver()
 KERNELS = {m: Kernel(mode=m, resolver=RESOLVER) for m in MODES}
+
+#: `NO_ISO` -- jurisdictions the subscription does not cover -- is defined in
+#: `scripts/raas.py`, next to the client that hits the boundary. They still rate
+#: offline and still appear in an engine-only run; they are left out only of a
+#: comparison, where there is nothing to compare against.
 
 #: One shared RAaS client. Authenticating per request would spend a token
 #: handshake on every rating; the client refreshes its own token when it
@@ -91,6 +97,14 @@ def compare_with_iso(payload: dict, ours) -> dict:
     the field-level difference is reported alongside it so a total that is
     right for the wrong reasons is still visible.
     """
+    # Ask first whether ISO can be asked at all. Sending a submission we know
+    # will be refused spends a call to produce a 401 that reads like a fault.
+    juris = ((payload.get("body", {}).get("SchemeKeys", {})
+              .get("ProductName") or "").split() or [""])[-1]
+    if juris in NO_ISO:
+        return {"available": False,
+                "reason": f"{juris} is not on the ISO subscription, so there "
+                          f"is no external answer to compare against"}
     client = iso_client()
     if client is None:
         return {"available": False, "reason": _ISO["error"] or "not configured"}
@@ -422,8 +436,7 @@ progress{width:100%;height:14px}
     <label class="chk"><input type="checkbox" id="bcmp" checked>
      Also rate through ISO</label>
     <button id="brun">Run the full test</button>
-    <span class="muted" id="bnote">51 submissions, the same risk in every
-     state. With ISO this takes several minutes.</span>
+    <span class="muted" id="bnote"></span>
    </div>
    <div id="bprog" style="display:none"><progress id="bbar"></progress>
     <div class="muted" id="bmsg"></div></div>
@@ -447,6 +460,18 @@ fetch('/api/samples').then(r=>r.json()).then(d=>{
   if(Q.get('mode')) $('#mode').value=Q.get('mode');
   if(Q.get('rounding')) $('#rounding').value=Q.get('rounding');
   if(Q.has('compare')) $('#cmp').checked=Q.get('compare')!=='0';
+  // The batch caption counts what will actually run. Jurisdictions ISO will
+  // not answer for are left out of a comparison run rather than reported as
+  // permanent failures, and the caption says which and why.
+  const all=d.jurisdictions.length, skip=d.no_iso||[];
+  const setNote=()=>{
+    const cmp=$('#bcmp').checked, n=cmp?all-skip.length:all;
+    $('#bnote').textContent=n+' submissions, the same risk in every state.'
+      +(cmp?' With ISO this takes several minutes.':'')
+      +(cmp&&skip.length?' '+skip.join(', ')+' left out — not on the ISO '
+        +'subscription, so there is nothing to compare against.':'');
+  };
+  $('#bcmp').onchange=setNote; setNote();
   const j=Q.get('sample');
   if(j && d.jurisdictions.includes(j)){
     $('#sample').value=j;
@@ -675,8 +700,9 @@ class Handler(BaseHTTPRequestHandler):
             js = sorted(p.name for p in SAMPLES.iterdir()
                         if p.is_dir() and (p / "submission.json").exists()) \
                 if SAMPLES.is_dir() else []
-            return self._send(200, json.dumps({"jurisdictions": js,
-                                               "modes": list(MODES)}))
+            return self._send(200, json.dumps({
+                "jurisdictions": js, "modes": list(MODES),
+                "no_iso": sorted(NO_ISO & set(js))}))
         if path.startswith("/api/batch/"):
             job_id = path.rsplit("/", 1)[-1]
             with JOBS_LOCK:
@@ -710,11 +736,16 @@ class Handler(BaseHTTPRequestHandler):
             return self._send(400, json.dumps({"error": f"unknown mode {mode}"}))
 
         if path == "/api/batch":
+            compare = bool(req.get("compare"))
             js = req.get("jurisdictions")
             if not js:
                 js = sorted(p.name for p in SAMPLES.iterdir()
                             if p.is_dir() and (p / "submission.json").exists())
-            compare = bool(req.get("compare"))
+                # A jurisdiction ISO will not answer for cannot be compared.
+                # Leaving it in would report a permanent red row and read as an
+                # engine failure, which it is not.
+                if compare:
+                    js = [j for j in js if j not in NO_ISO]
             job_id = uuid.uuid4().hex[:12]
             with JOBS_LOCK:
                 JOBS[job_id] = {"total": len(js), "done": 0, "rows": [],

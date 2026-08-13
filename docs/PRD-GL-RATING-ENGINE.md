@@ -25,10 +25,16 @@ the same fifty-one submissions to **ISO's own rating service** and compared:
 
 | | |
 |---|---|
-| Sent to ISO | **51 attempted, 50 answered** |
+| Sent to ISO | **50 of the 51** |
 | Premium **and every field ISO publishes** agree | **50 of 50** |
 | ISO used the same rulebook edition we chose | **50 of 50** |
-| Not answered | **Puerto Rico** — our subscription does not include it |
+| Never sent | **Puerto Rico** — our subscription does not cover it, and that entitlement is not available to us |
+
+**Puerto Rico is therefore out of the comparison from here on** (decided 2026-08-13, OI-86). It still
+rates, and the number it produces is built entirely from ISO's own tables — but **it is the one
+jurisdiction with nothing external to check it against**, and that is said wherever its premium
+appears rather than left for a reader to discover. Every count of live agreement in this document is
+**out of 50**.
 
 **Not merely the total. Every number ISO publishes.** A total can be right for the wrong reasons;
 this is the check that catches that.

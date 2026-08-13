@@ -97,6 +97,28 @@ def group_a():
     check("A4 missing credentials fail with a named list, not a stack trace",
           "missing credentials" in src, "RaaSError names what is absent")
 
+    # OI-86, decided 2026-08-13: PR is not on the subscription and the
+    # entitlement is not available, so it is left out of comparisons. Two
+    # things have to stay true, and the second is the one worth guarding:
+    # it is excluded from the COMPARISON, and it still RATES.
+    check("A5 an unentitled jurisdiction is excluded from a comparison",
+          raas.NO_ISO == frozenset({"PR"}), f"NO_ISO = {set(raas.NO_ISO)}")
+    import app                                                # noqa: PLC0415
+    check("A6 one definition of it, not a copy per caller",
+          app.NO_ISO is raas.NO_ISO, "app.py reads scripts/raas.py")
+    fake = type("R", (), {"premium": Decimal(0), "packages": ["x"]})()
+    pr = json.loads((SAMPLES / "PR" / "submission.json").read_text(encoding="utf-8"))
+    verdict = app.compare_with_iso(pr, fake)
+    # Refuse BEFORE the call: spending a request to produce a 401 renders a
+    # subscription boundary as a fault.
+    check("A7 the refusal says which jurisdiction and why, without calling",
+          verdict["available"] is False and "PR" in verdict["reason"]
+          and "subscription" in verdict["reason"], verdict["reason"][:70])
+    priced = Kernel(resolver=EditionResolver()).rate(pr)
+    check("A8 it is still rated -- disregarded means uncompared, not unsupported",
+          priced.complete and priced.premium > 0,
+          f"PR prices at {priced.premium} with no external check of any kind")
+
 
 def group_b(live: bool):
     print("\nB  LIVE -- the same submission through both")

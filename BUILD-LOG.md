@@ -1360,10 +1360,31 @@ they finish, so the table fills in front of you rather than arriving at the end.
 > project's doctrine, said where someone reading a red row will actually see it.
 
 **The result of record remains the command-line run** — `scripts/phase2_compare.py --all`, 50 of 51,
-PR refused on entitlement (OI-86). The page was watched through the first 28 jurisdictions of its own
-live run and agreed with that record on every one. **A full live run through the page takes twenty
+PR refused on entitlement (OI-86). **The page ran all 51 through the live service itself and landed on
+the same place** — `50 of 51 match ISO exactly`, *No differences*. **A full live run through the page takes twenty
 minutes or so**, because each jurisdiction is a real call; the command line stays the faster route,
 and the page exists so the answer can be read by someone who would never run either.
+
+### Then Puerto Rico was ruled out, and it is implemented rather than noted
+
+*"disregard Puerto Rico moving forward, we don't have access."* **OI-86 is a decision now, not an
+open question.** The subscription does not cover GL PR and the entitlement is not obtainable.
+
+`NO_ISO` in **`scripts/raas.py`** is the single definition — it belongs next to the client that hits
+the boundary, not copied into each caller. `phase2_compare.py --all`, the batch runner and the
+single-submission comparison all read it, leave PR out of a comparison, and **say which jurisdiction
+and why** rather than dropping it silently. The single-submission path refuses *before* the call:
+spending a request to produce a `401` renders a subscription boundary as a fault.
+
+**Naming PR explicitly still runs it**, so the day the subscription changes this reverses in one
+command. And **PR still rates** — being disregarded means *not compared*, not *not supported*.
+
+> **The consequence outlives the decision and must not go quiet.** PR is the one jurisdiction with
+> **no external confirmation of any kind** — no entitlement, and no stored priced example either
+> (OI-79). Its number comes entirely from ISO's own tables and nothing independent has ever checked
+> it. Every count of live agreement is now **`n of 50`**, never `of 51`, and a PR premium has to
+> carry that caveat where a reader will see it. **The easy version of this change was to delete the
+> red row.** That would have made the gap invisible, which is the opposite of the point.
 
 ### Also
 
@@ -1384,7 +1405,7 @@ jurisdictions on every published field.** It states plainly what the engine cann
    claims-made, the rating plans, the other sublines. *Expect it to find defects; that is the point.*
 2. **Close the rounding question (OI-70)** — one engineered submission producing `x.5` with `x` even,
    one call, and the oldest question in the project is answered
-3. **Puerto Rico's entitlement (OI-86)** — the one jurisdiction with no external check of any kind
+3. ~~Puerto Rico's entitlement (OI-86)~~ — *decided the same day, see above*
 4. **Our 28 referral conditions against ISO's 838 declared (OI-81, OI-82)**
 5. **Dependent-domain validation, the remaining 61 (OI-84)**
 6. **Form attachment, using the 508 STC submissions (OI-83)**

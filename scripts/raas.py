@@ -42,6 +42,19 @@ REFRESH_MARGIN = 60.0
 REQUIRED = ("RAAS_ACCESS_TOKEN_URL", "RAAS_API_ENDPOINT", "RAAS_CLIENT_ID",
             "RAAS_CLIENT_SECRET")
 
+#: Jurisdictions this subscription does not cover. **The boundary is on the ISO
+#: account, not on the engine** -- these still rate offline, they simply have no
+#: external answer to be compared against, so a comparison run leaves them out
+#: rather than reporting a permanent failure.
+#:
+#: `PR` -- RAaS answers `401 "Permission is not granted to GL PR for rating.
+#: Please check subscription."` Recorded as OI-86 and **closed by decision on
+#: 2026-08-13: the entitlement is not available to this project.** Puerto Rico
+#: therefore ships with no external confirmation of any kind (it has no stored
+#: priced example either -- OI-79), and that must be said wherever its premium
+#: is presented rather than left for a reader to discover.
+NO_ISO = frozenset({"PR"})
+
 
 class RaaSError(RuntimeError):
     """The service refused, or answered with something unusable."""
