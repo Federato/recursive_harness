@@ -11,11 +11,11 @@ against ISO's own rating service.
 | | |
 |---|---|
 | **[docs/EXECUTIVE-SUMMARY.md](docs/EXECUTIVE-SUMMARY.md)** | **Read this one.** What we are building, why it is hard, where we are, the architecture decision *and the honest case against it*, how it gets proved against ISO's own service, the self-correcting harness, and how carrier deviations layer on top |
-| **[BUILD-LOG.md](BUILD-LOG.md)** | **The build diary — what was built, what broke, what the fix revealed. Entry 13 is the current handoff** |
+| **[BUILD-LOG.md](BUILD-LOG.md)** | **The build diary — what was built, what broke, what the fix revealed. Entry 14 is the current handoff** |
 | [docs/BACKLOG-2026-08-14.md](docs/BACKLOG-2026-08-14.md) | What to do next, ordered, each item naming the open item it closes |
 | [docs/BUILD-STAGES.md](docs/BUILD-STAGES.md) | The six build stages and the phases that follow them |
 | [TESTING.md](TESTING.md) | **Every command, stage by stage.** Each one has been run and its stated output verified |
-| [docs/OPEN-ITEMS.md](docs/OPEN-ITEMS.md) | **OI-1 to OI-87.** Resolved items are kept and marked, not deleted |
+| [docs/OPEN-ITEMS.md](docs/OPEN-ITEMS.md) | **OI-1 to OI-90.** Resolved items are kept and marked, not deleted |
 | [docs/WHERE-WE-PAUSED-2026-08-12.md](docs/WHERE-WE-PAUSED-2026-08-12.md) | The 12 August session, read cold. **Superseded** — everything after it is in the build log |
 | [docs/PRD-GL-RATING-ENGINE.md](docs/PRD-GL-RATING-ENGINE.md) | Full status and history. §0 is the latest update |
 | [docs/GL-RATING-ENGINE-BUILD-PLAN.md](docs/GL-RATING-ENGINE-BUILD-PLAN.md) | The technical plan — architecture, the 18 non-negotiables, deviation constraints C1–C3 |
@@ -72,7 +72,7 @@ public, that file and 33 of the 65 documents would have to be scrubbed *and purg
 
 ## Status
 
-**As of 2026-08-13.**
+**As of 2026-08-14.**
 
 | | |
 |---|---|
@@ -85,7 +85,7 @@ public, that file and 33 of the 65 documents would have to be scrubbed *and purg
 | **Stage 6 — the interface** | ✅ Built. Paste a submission, read every factor and its source |
 | **Phase 2 — proof against ISO's live service** | ✅ Live. **50 of 50 agree, on every field ISO publishes** |
 | Then | Phase 3 — the self-correcting harness → Phase 4 — company deviations |
-| Tests | **Twelve suites, all green** — see [`TESTING.md`](TESTING.md) |
+| Tests | **Thirteen suites, all green** — see [`TESTING.md`](TESTING.md) |
 
 **The honest caveat, stated where the good number is.** All 51 submissions are **the same risk** —
 one location, one classification, class `50017`, gross sales, no deductible, no rating plans. That
@@ -93,9 +93,57 @@ was chosen so differences between states would be attributable, and it worked, b
 on one risk shape is a narrower claim than it sounds.** Widening it is the next work (OI-87), and it
 is expected to find defects.
 
+**Breadth began 2026-08-14, and it did find one.** `scripts/breadth.py` varies the *submission*
+instead of the state — 17 variants over 7 groups, every value taken from ISO's own declared domains
+and refused at build time if it is not in one. Run live: **OK 16 of 16, NY 15 of 15** agree with ISO
+on the premium and every published field, now including deductibles, two locations, two
+classifications, a non-Gross-Sales basis, both directions of the ILF table, claims-made, schedule
+rating and terrorism on. It raised **OI-88** — a real engine defect, the first found by an external
+oracle: size-of-risk refuses in OK where **ISO rates it at 8816** — plus **OI-89**, a filed gate
+tying schedule rating to experience credibility, and **OI-90**, closed the same day.
+
 **Puerto Rico is excluded from the comparison** — not on the ISO subscription and that entitlement is
 not available to us (OI-86). It still rates; it is simply the one jurisdiction with **no external
 check of any kind**. Every count of live agreement here is out of 50.
+
+---
+
+## Running the app
+
+A viewer for the engine's output — paste a submission, read the premium and every factor behind it.
+**Python 3 is the only requirement**; the app uses the standard library, so there is nothing to
+install.
+
+**Windows**
+
+```
+start.bat
+```
+
+**macOS**
+
+```
+./start.command
+```
+
+Or double-click either file. The app serves on <http://127.0.0.1:8765> and opens a browser
+automatically. `Ctrl-C` in the terminal stops it.
+
+| | |
+|---|---|
+| `start.bat 9000` / `./start.command 9000` | serve on a different port |
+| `start.bat --no-browser` | serve without opening a browser |
+
+**It needs ISO's ERC files, which are not in this repository.** The engine reads them from
+`C:\Projects\ISO_ERC_Files\General_Liability`; point `GL_ERC_ROOT` at your own copy to change that:
+
+```
+set GL_ERC_ROOT=D:\path\to\General_Liability      &:: Windows
+export GL_ERC_ROOT=/path/to/General_Liability     #   macOS
+```
+
+Sample submissions to paste are in `Engine_Payloads/<STATE>/submission.json`. The first rating in a
+process takes about two seconds while ISO's content loads, and about one second thereafter.
 
 ---
 
@@ -105,7 +153,7 @@ check of any kind**. Every count of live agreement here is out of 50.
 |---|---|
 | **Reading it cold, in one sitting** | [`docs/THE-PLAN-IN-PLAIN-ENGLISH.html`](docs/THE-PLAN-IN-PLAIN-ENGLISH.html) — the whole plan on one page, plain English, ~2,500 words. Open it in a browser. **Start here** |
 | **New to the project** | [`docs/PRD-GL-RATING-ENGINE.md`](docs/PRD-GL-RATING-ENGINE.md) — what we're building, every step taken to get here, requirements and risks. Plain language, no insurance or technical background assumed |
-| **Tracking what's unresolved** | [`docs/OPEN-ITEMS.md`](docs/OPEN-ITEMS.md) — OI-1 to OI-87, source-tagged and reconciled against the escalation register |
+| **Tracking what's unresolved** | [`docs/OPEN-ITEMS.md`](docs/OPEN-ITEMS.md) — OI-1 to OI-90, source-tagged and reconciled against the escalation register |
 | **Wanting the earlier overview** | [`docs/BUILD-PLAN-PLAIN-ENGLISH.md`](docs/BUILD-PLAN-PLAIN-ENGLISH.md) — plain-English build plan written before the ERC work; PDF-only scope |
 | **About to build the engine** | [`docs/BUILD-STAGES.md`](docs/BUILD-STAGES.md) — the staged build plan, **all six now built** · [`docs/GL-RATING-ENGINE-BUILD-PLAN.md`](docs/GL-RATING-ENGINE-BUILD-PLAN.md) — architecture, doctrine, the 18 non-negotiables |
 | **The engine** | [`gl_engine/`](gl_engine/) — all six stages. `python -m gl_engine.cli check 20260811 --deep` for the load-time checks; `python app.py 8776` to rate something and read every factor |
@@ -127,7 +175,7 @@ check of any kind**. Every count of live agreement here is out of 50.
 | **Reading the manual spec** | [`docs/rating-engine/README.md`](docs/rating-engine/README.md) — 14 documents + 4 appendices, PDF-derived |
 | **Reading the ERC spec** | [`docs/erc/`](docs/erc/) — 6 documents, derived in isolation from the ERC packages |
 | **Checking a premium against the manual** | [`Agentic/iso-circular-expert/`](Agentic/iso-circular-expert/) — a working expert agent with a query tool |
-| **Resuming work** | [`BUILD-LOG.md`](BUILD-LOG.md) **Entry 13** — 2026-08-13. All six stages built; Phase 2 live, 50 of 50 against ISO's own service. Next is **breadth** — [`docs/BACKLOG-2026-08-14.md`](docs/BACKLOG-2026-08-14.md) item 1. *(`PROCESS_LOG.md` Step 51 closes the analysis phase; everything after it is in the build log)* |
+| **Resuming work** | [`BUILD-LOG.md`](BUILD-LOG.md) **Entry 14** — 2026-08-14. All six stages built; Phase 2 live, 50 of 50 against ISO's own service; **breadth run in OK and NY, 31 of 31, and it found OI-88.** Next is the decision on **OI-88's null-in-`FirstNonNull` semantics**, then experience rating, then the other 48 jurisdictions. *(`PROCESS_LOG.md` Step 51 closes the analysis phase; everything after it is in the build log)* |
 | **Wondering how a number was derived** | [`PROCESS_LOG.md`](PROCESS_LOG.md) — every step, its reasoning, its findings, and its corrections |
 | **Re-deriving the analysis** | [`scripts/README.md`](scripts/README.md) — the pipeline, in order |
 

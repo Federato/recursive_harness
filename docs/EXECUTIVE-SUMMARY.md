@@ -325,10 +325,15 @@ reasonable.
 Keeping strict/ISO-only permanently runnable is what allows the ISO foundation to go on being
 verified against RAaS forever, even after deviations exist on top of it.
 
-### Two questions deliberately left open
+### Two questions left open — the first is now answered
 
-**How deviations get authored.** In ISO's own format — best for the engine, verbose for humans — or
-in a simpler overlay we convert. Worth deciding against a real deviation, not in the abstract.
+**How deviations get authored. — ANSWERED 2026-08-14: a friendlier format that compiles to ISO's
+shape**, and deviations are stored **per jurisdiction always**, because a carrier files a national
+deviation state by state. *"Applies to all jurisdictions"* is an authoring affordance that fans out,
+never a distinct kind of object. See [backlog item 7](BACKLOG-2026-08-14.md), which also records the
+consequence for decision 1's precedence question.
+
+**Whether ISO's vocabulary can express everything a carrier wants** — still open, below.
 
 **Whether ISO's vocabulary can express everything a carrier wants.** ISO's 58 instructions express
 what ISO needed. A tier factor, a model score, or a rating step ISO does not have may not be

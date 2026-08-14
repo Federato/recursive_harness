@@ -1,0 +1,293 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Loom walkthrough — GL rating engine</title>
+<style>
+:root{--bg:#fbfbfd;--fg:#1d1d20;--mut:#63636b;--line:#e3e3e8;--accent:#1f3864;
+--code-bg:#f4f4f7;--tbl-head:#1f3864;--do:#8a5a00;--do-bg:#fdfaf2;--say:#1f3864;--say-bg:#f4f7fc}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font:16.5px/1.7 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+background:var(--bg);color:var(--fg)}
+header{background:var(--accent);color:#fff;padding:34px 32px 30px}
+header .in{max-width:1180px;margin:0 auto}
+header h1{margin:0 0 6px;font-size:27px;font-weight:660;letter-spacing:-.02em}
+header .sub{opacity:.78;font-size:14.5px;max-width:74ch}
+.wrap{display:grid;grid-template-columns:214px minmax(0,1fr);gap:40px;
+max-width:1180px;margin:0 auto;padding:34px 32px 100px}
+aside{position:sticky;top:22px;align-self:start;font-size:13.5px;
+border-left:2px solid var(--line);padding-left:15px}
+aside .lbl{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--mut);
+font-weight:700;margin-bottom:10px}
+aside a{color:var(--mut);text-decoration:none;display:block;padding:4px 0;line-height:1.4}
+aside a:hover{color:var(--accent)}
+main{min-width:0}
+section{background:#fff;border:1px solid var(--line);border-radius:11px;
+padding:26px 34px 30px;margin-bottom:22px}
+h2{font-size:21px;margin:0 0 18px;letter-spacing:-.015em}
+h2 .n{color:var(--mut);font-weight:500;font-size:15px;margin-right:9px}
+p,li{max-width:78ch}
+code{background:var(--code-bg);padding:.12em .38em;border-radius:4px;
+font:13.5px/1.5 "SF Mono",Consolas,"Liberation Mono",Menlo,monospace}
+table{border-collapse:collapse;width:100%;margin:6px 0 4px;font-size:14.5px;
+display:block;overflow-x:auto}
+th{background:var(--tbl-head);color:#fff;text-align:left;font-weight:600;padding:9px 13px}
+td{border-bottom:1px solid var(--line);padding:9px 13px;vertical-align:top}
+tr:nth-child(even) td{background:#fafafc}
+
+/* the two kinds of block */
+.blk{border-radius:0 8px 8px 0;padding:13px 18px 14px 17px;margin:12px 0}
+.blk .tag{display:block;font-size:10.5px;font-weight:800;letter-spacing:.1em;
+text-transform:uppercase;margin-bottom:7px}
+.blk ul{margin:0;padding-left:20px}
+.blk li{margin:3px 0}
+.blk p{margin:3px 0}
+.do{background:var(--do-bg);border-left:4px solid var(--do)}
+.do .tag{color:var(--do)}
+.say{background:var(--say-bg);border-left:4px solid var(--say)}
+.say .tag{color:var(--say)}
+.say li,.say p{font-size:16.5px}
+
+.legend{display:flex;gap:10px;flex-wrap:wrap;margin:0 0 6px}
+.legend div{flex:1 1 260px;border-radius:0 8px 8px 0;padding:11px 16px;font-size:14px}
+.legend b{display:block;font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:3px}
+hr{border:0;border-top:1px solid var(--line);margin:22px 0}
+footer{max-width:1180px;margin:0 auto;padding:0 32px 60px;color:var(--mut);font-size:13.5px}
+@media(max-width:940px){.wrap{grid-template-columns:1fr;padding:20px}aside{display:none}
+section{padding:20px 18px 24px}}
+@media print{aside,header{display:none}section{break-inside:avoid;border:0;padding:0 0 18px}}
+</style></head><body>
+
+<header><div class="in">
+<h1>Loom walkthrough — GL rating engine</h1>
+<div class="sub">Four parts: what it is, why it's an interpreter, the code that matters, how we test
+and improve it. Amber blocks are what you do on screen. Blue blocks are what you say.</div>
+</div></header>
+
+<div class="wrap">
+<aside>
+  <div class="lbl">Contents</div>
+  <a href="#setup">Setup</a>
+  <a href="#s1">1 · What it is</a>
+  <a href="#s2">2 · Why it's an interpreter</a>
+  <a href="#s3">3 · The code that matters</a>
+  <a href="#s4">4 · How we test and improve</a>
+</aside>
+
+<main>
+
+<section id="setup">
+<h2>Setup</h2>
+<div class="legend">
+  <div class="do"><b>Do</b>What to have on screen, and what to click.</div>
+  <div class="say"><b>Say</b>The facts to state. Not a word-for-word script.</div>
+</div>
+<div class="blk do"><span class="tag">Do — before recording</span>
+<ul>
+<li><code>start.bat</code> run once, browser tab open at the app</li>
+<li>A sample submission ready to paste, and a second one from another state</li>
+<li>File explorer open at <code>C:\Projects\ISO_ERC_Files\General_Liability</code></li>
+<li>Editor open with <code>nodes.py</code>, <code>interpreter.py</code>, <code>resolver.py</code>,
+    <code>tables.py</code>, <code>kernel.py</code></li>
+<li><code>PROCESS_LOG.md</code> and <code>docs/BACKLOG-2026-08-14.md</code> open</li>
+<li>Fonts up two steps, notifications off</li>
+</ul>
+</div>
+</section>
+
+<section id="s1">
+<h2><span class="n">1</span>What it is</h2>
+
+<div class="blk do"><span class="tag">Do</span>
+<ul>
+<li>Show the app, empty</li>
+<li>Paste the sample submission and rate it</li>
+<li>Point at the premium</li>
+</ul>
+</div>
+
+<div class="blk say"><span class="tag">Say</span>
+<ul>
+<li>It's a General Liability rating engine, written in Python.</li>
+<li>Input is a submission. Output is a premium.</li>
+</ul>
+</div>
+
+<div class="blk do"><span class="tag">Do</span>
+<ul>
+<li>Open the step-by-step view and scroll it</li>
+</ul>
+</div>
+
+<div class="blk say"><span class="tag">Say</span>
+<ul>
+<li>Every factor that applied, in order, ending in the premium.</li>
+</ul>
+</div>
+
+<div class="blk do"><span class="tag">Do</span>
+<ul>
+<li>Rate the second state</li>
+</ul>
+</div>
+
+<div class="blk say"><span class="tag">Say</span>
+<ul>
+<li>Same engine. There is no state-specific code.</li>
+<li>It rates 51 jurisdictions.</li>
+<li>50 of those can be compared against ISO's live rating service. All 50 match — on the premium
+    and on every published field.</li>
+<li>Hawaii isn't in our ISO delivery, so it isn't rated. Puerto Rico is rated but isn't on our
+    subscription, so it can't be compared.</li>
+<li>About one second per rating. Not optimised.</li>
+<li>The app is a viewer for inspecting engine output. It isn't a product.</li>
+</ul>
+</div>
+</section>
+
+<section id="s2">
+<h2><span class="n">2</span>Why it's an interpreter</h2>
+
+<div class="blk say"><span class="tag">Say</span>
+<ul>
+<li>ISO publishes its rating content as a program, not as a document — 20,673 rule files across 567
+    packages.</li>
+<li>There are two ways to use that. Rewrite ISO's rules in our own code, in which case every ISO
+    release means re-coding. Or read and execute ISO's files directly, in which case every ISO
+    release is a file drop.</li>
+<li>We do the second.</li>
+</ul>
+</div>
+
+<div class="blk do"><span class="tag">Do</span>
+<ul>
+<li>Switch to the file explorer at ISO's folder</li>
+<li>Open <code>NJ</code> to show the editions inside it</li>
+</ul>
+</div>
+
+<div class="blk say"><span class="tag">Say</span>
+<ul>
+<li>89,065 files, under a gigabyte. One folder per state, one folder per edition inside it.</li>
+<li>Old editions are kept, which is how a backdated rating resolves to the version that was in force
+    at the time.</li>
+</ul>
+</div>
+
+<div class="blk do"><span class="tag">Do</span>
+<ul>
+<li>Open a rate table CSV in Excel</li>
+</ul>
+</div>
+
+<div class="blk say"><span class="tag">Say</span>
+<ul>
+<li>ISO's tables are CSVs. They aren't copied into a database — the engine reads them where they
+    sit.</li>
+<li>So ISO updates need no code changes, and one engine covers every jurisdiction.</li>
+<li>The cost is that every ISO instruction had to be specified before anything could run. There are
+    54 of them.</li>
+</ul>
+</div>
+
+<div class="blk say"><span class="tag">Say — carriers on older editions</span>
+<ul>
+<li>Carriers don't all adopt every ERC edition. A carrier may be filed to use one from years ago.</li>
+<li>The engine never assumes the newest edition. It selects the edition in force, and it pairs each
+    state package with the countrywide edition that package declares — not the newest one.</li>
+<li>So running a carrier on an older edition is configuration, not an engine change: pin the edition
+    per carrier and per state, since a carrier can be current in one state and behind in another.</li>
+<li>Not built yet. The mechanism it needs is already there, and already used for backdated
+    ratings.</li>
+</ul>
+</div>
+</section>
+
+<section id="s3">
+<h2><span class="n">3</span>The code that matters</h2>
+
+<div class="blk do"><span class="tag">Do</span>
+<ul>
+<li>Switch to the editor</li>
+<li>Open each of the five files in turn as you name it</li>
+</ul>
+</div>
+
+<div class="blk say"><span class="tag">Say</span>
+<table>
+<tr><th>File</th><th>What it does</th></tr>
+<tr><td><code>interp/nodes.py</code></td><td>ISO's 54 instructions, one function each — <code>if</code>, <code>and</code>, <code>or</code>, <code>equal</code>, <code>choose</code>, and the rest</td></tr>
+<tr><td><code>interp/interpreter.py</code></td><td>Executes them. On an instruction it doesn't recognise, it stops rather than continuing</td></tr>
+<tr><td><code>resolve/resolver.py</code></td><td>Decides which ISO package applies for a jurisdiction and date — state layered over countrywide</td></tr>
+<tr><td><code>erc/tables.py</code></td><td>Reads ISO's tables, typed from ISO's own definition files rather than inferred from the data</td></tr>
+<tr><td><code>rating/kernel.py</code></td><td>Entry point. Submission in, rating out</td></tr>
+</table>
+<ul>
+<li>About 5,000 lines in total.</li>
+<li>No jurisdictional content is in the code. All of it is in ISO's files.</li>
+</ul>
+</div>
+</section>
+
+<section id="s4">
+<h2><span class="n">4</span>How we test and improve it</h2>
+
+<div class="blk do"><span class="tag">Do</span>
+<ul>
+<li>Open <code>PROCESS_LOG.md</code> at the standing criteria</li>
+</ul>
+</div>
+
+<div class="blk say"><span class="tag">Say</span>
+<ul>
+<li>The build ran in six stages. Each stage had acceptance tests that had to pass before the next
+    began. There are thirteen test suites.</li>
+<li>The evidence rules were set before any code was written:</li>
+</ul>
+<ul>
+<li>ISO's files are the only source of a value.</li>
+<li>The manuals may confirm what something means. They may not supply anything the files lack.</li>
+<li>Anything neither settles is escalated to a person.</li>
+<li>Nothing is invented. If a value can't be sourced, the engine returns a referral instead of a
+    number.</li>
+</ul>
+<ul>
+<li>These are enforced in code, not by review — a value that can't name its ISO source can't be
+    constructed.</li>
+</ul>
+</div>
+
+<div class="blk say"><span class="tag">Say — the recursive part</span>
+<ul>
+<li>Rules were added during the build, from the build. When the same class of error recurred, it was
+    written up as a standing rule with every instance listed underneath it.</li>
+<li>53 analysis steps preceded the engine code. 90 open items are tracked; resolved ones are marked,
+    not deleted.</li>
+</ul>
+</div>
+
+<div class="blk do"><span class="tag">Do</span>
+<ul>
+<li>Switch to the backlog</li>
+</ul>
+</div>
+
+<div class="blk say"><span class="tag">Say — current method and next steps</span>
+<ul>
+<li>Every submission is rated by both our engine and ISO's live service, then compared field by
+    field.</li>
+<li>Until last week every comparison used one risk shape. Widening began on 14 August — 17 variants
+    across 7 groups, and 31 of 31 comparable variants matched in Oklahoma and New York.</li>
+<li>That widening found three defects, including one where our engine accepted a submission ISO
+    rejects.</li>
+<li>Next: keep widening the comparison population until it stops finding defects.</li>
+<li>After that, carrier deviations — which layer on top of ISO's content the same way a state layers
+    over countrywide. Not built.</li>
+</ul>
+</div>
+</section>
+
+</main>
+</div>
+
+<footer>Loom walkthrough · GL rating engine · 14 August 2026</footer>
+</body></html>
