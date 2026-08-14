@@ -67,3 +67,6 @@ Thumbs.db
 .vscode/
 *.log
 *.tmp
+
+# Jupyter autosaves -- duplicates of notebooks/, and they can hold outputs
+.ipynb_checkpoints/

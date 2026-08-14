@@ -1,0 +1,4 @@
+# Notebook outputs are stripped before commit: a run notebook holds ISO's
+# licensed values (loss costs, factors, premiums) inside its JSON, and this
+# repository deliberately excludes ISO content. See notebooks/README.md.
+*.ipynb filter=nbstripout diff=ipynb

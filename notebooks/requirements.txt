@@ -1,0 +1,4 @@
+# Only the notebooks need these. The engine itself is standard library only.
+jupyterlab>=4.0
+nbstripout>=0.7      # strips outputs before commit -- see notebooks/README.md
+nbclient>=0.9        # used by tests/verify_notebooks.py to execute headless
