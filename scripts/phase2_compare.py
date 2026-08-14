@@ -173,9 +173,18 @@ def main(argv) -> int:
         if r.get("first_differences"):
             print(f"         {r['first_differences'][:150]}")
 
-    OUT.parent.mkdir(parents=True, exist_ok=True)
+    # **A one-jurisdiction check must not destroy the record of fifty-one.**
+    # `phase2.csv` is the result of record -- `verify_phase2` group C reads it
+    # to assert that a full live comparison has been run, and to answer the
+    # rounding question (OI-70) over the whole population. Running
+    # `phase2_compare.py GA` used to overwrite it with a single row, which
+    # silently turned "50 of 51 match" into "1 of 1" and failed the suite for a
+    # reason that had nothing to do with the engine. Found on 2026-08-14 by
+    # doing exactly that.
+    out_path = OUT if "--all" in argv else OUT.with_name("phase2-partial.csv")
+    out_path.parent.mkdir(parents=True, exist_ok=True)
     keys = sorted({k for r in rows for k in r})
-    with open(OUT, "w", newline="", encoding="utf-8") as fh:
+    with open(out_path, "w", newline="", encoding="utf-8") as fh:
         w = csv.DictWriter(fh, fieldnames=keys)
         w.writeheader()
         w.writerows(rows)
