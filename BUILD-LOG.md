@@ -1422,7 +1422,7 @@ contain, and the interface will run and display whatever is generated.
 
 ---
 
-## Entry 14 — Breadth: the risk varies now, and it found a defect. **NEXT SESSION STARTS HERE.**
+## Entry 14 — Breadth: the risk varies now, and it found a defect. ~~NEXT SESSION STARTS HERE.~~ *(the live handoff is **Entry 15**)*
 
 - **Date:** 2026-08-14
 - **Directed:** *"leave it be, it's unrelated for now. Start with breadth against live service"*
@@ -1530,3 +1530,159 @@ which neither side shows alone.
 3. **The other 48 entitled jurisdictions**, one run each — `python scripts/breadth.py --juris XX
    --live`. NY already proved the variants are not OK-specific and that the declaration catches
    state narrowing before a call is spent.
+
+---
+
+## Entry 15 — The variable tester: dropdowns, all 51 states, and a memory. **NEXT SESSION STARTS HERE.**
+
+- **Date:** 2026-08-14
+- **Directed:** *"be able to select, from dropdowns, from things like deductibles, classifications,
+  limits, etc., core things, and then run tests on all available states... Need read results for all
+  tests, and some of long term visualization capabilities as well. Code for UI should live outside
+  code used for the actual rating engines."*
+- **Chosen, from three offered forks:** all 10 controls · engine-only default with ISO opt-in · show
+  the union of legal values and flag per state.
+- **Verified:** `verify_tester` **30/30** · `verify_breadth` 18/18 · `verify_stage6` 30/30 · every
+  prior suite green · one 51-jurisdiction run and one ISO-compared run driven through the page.
+
+### What it is
+
+`python app.py` → **`/tester`**. **19 controls in 8 groups**, and every option in every dropdown is
+read from **ISO's declared domain for that jurisdiction** — six deductibles, the occurrence limit,
+premium basis, class code, exposure, coverage form, claims-made year, subline, locations,
+size-of-risk, experience rating, schedule rating, the scheduled percentage, terrorism.
+
+**The dropdowns are not a list somebody typed.** `Declared.require` refuses a value ISO does not
+declare, before anything is sent. That is the same rule breadth already ran on, moved to where a
+person can drive it.
+
+### Three behaviours worth the build
+
+**A keyed domain collapses when its key is answered.** Choose a PD deductible and the combined BI/PD
+dropdown drops from **31 options to one** — `No Deductible` — because ISO declares them mutually
+exclusive across 961 dependency keys. Driven in the browser and confirmed: `31 -> ['No Deductible']`.
+Without it the page would offer thirty illegal values and the rejections would read as engine faults.
+
+**`NOT APPLICABLE` is a third outcome, and it is grey.** Answered from the declaration **without
+rating anything**: claims-made applies in **50 of 51** (NY declares `Occurrence` only), two locations
+in **31 of 51** (20 jurisdictions declare a single prem/ops territory). Merging that into *disagrees*
+would report twenty failures for a risk ISO never permitted.
+
+**A run that does not move the premium is called out.** Agreement on an unchanged number proves both
+engines can do nothing.
+
+### It found something on its first real run
+
+A 5,000 per-occurrence PD deductible across all 51, engine-only, 157 seconds: **every jurisdiction
+rated, and Georgia alone did not move.** Three live calls settled it — **ISO agrees GA does not
+move** (6845 both sides, against 8209/8209 in OK and 12051/12051 in NY). An ISO-confirmed no-op, not
+a defect, and the tester surfaced it without being asked to look.
+
+### The long view, and why the store is append-only
+
+Every run appends one line to `results/runs-YYYY-MM.jsonl` with the configuration, the summary, every
+jurisdiction row, the engine version and the resolved packages. Four views, drawn as **inline SVG
+with no chart library** — the engine has no third-party dependency and a chart is not a good enough
+reason to acquire one:
+
+* **Coverage** — controls × jurisdictions ever exercised. **The honest answer to *how narrow is the
+  claim*, and it is the one chart that is interesting when empty.** It currently reads *1 of 19*.
+* **Agreement over time** · **Premium response** (premium against the varied value, every
+  jurisdiction overlaid; a curve that kinks alone is a defect you can see before you can explain) ·
+  **Defects** with first-seen, last-seen and run count.
+
+**A results file that is rewritten cannot answer *when did this start disagreeing*** — which is the
+question the charts exist for. Nothing updates or deletes a line.
+
+### Where the code lives, and the test that keeps it there
+
+    ui/  ->  scripts/variants.py, scripts/sweep.py  ->  gl_engine
+
+* **`scripts/variants.py`** — what may be varied, what each option legally holds, how to apply it.
+  No UI, no HTML. `breadth.py`, `sweep.py` and the page all read this one definition, because a
+  second list of legal values would drift and the drift would look like a rating defect.
+* **`scripts/sweep.py`** — one configuration across jurisdictions. **It does not define agreement**;
+  it calls `phase2_compare.compare_payload`, the same function the phase 2 command line uses.
+* **`ui/`** — `variables.py`, `tester.py`, `store.py`, `charts.py`. Presentation and history.
+* **`app.py`** — mounts it in four lines and knows nothing about variables or premiums.
+
+**`verify_tester` asserts the direction by parsing the imports rather than trusting a docstring —
+and it immediately caught a leak I had written**: `ui/tester.py` imported `gl_engine` to stamp a
+version string onto a stored run. A version string is a small thing to reach across a boundary for,
+and reaching for small things is how a boundary stops meaning anything. Moved to
+`sweep.engine_version()`; the assertion now passes on the code rather than on the intention.
+
+### Also raised
+
+**OI-91.** Building the tester forced the question *what do I send to locate this risk for terrorism*
+in all 51, and it could not be answered from the record. **E8/R22 says four jurisdictions code it
+explicitly and eleven derive it from a ZIP; measured as "resolves a legal value as of 2026-08-01" it
+is 15, 16 and 20-with-neither.** The two readings have not been run side by side. The tester declines
+to guess — `terrorism_place` returns nothing and the run reports `NOT APPLICABLE` with the reason.
+
+### The tester's first question back — OI-92
+
+*"Any explanation why GA's deductible didn't have a price impact?"* Traced rather than guessed, and
+the answer was not in the deductible chain at all.
+
+**ISO's own example input for Georgia omits `PremisesOperationsTerritory`** — GA is the only one of
+51 — and `build_sample_payloads.py` carries the territory fields over from that input, so our base
+inherited the hole. GA declares the field **rating-required with two legal values**. Without it
+`SetPremOpsLossCost` never looks anything up and writes `0.0`, so **the prem/ops basic limit premium
+is zero and GA's whole premium is the products side.** The deductible worked perfectly the entire
+time: factor `0.044`, prem/ops ILF cut from `1.920` to `1.876`. **4.4% of nothing is nothing.**
+
+Supply a declared territory and every step comes back: loss cost `0.054`, premium **7366**, the same
+deductible taking **−15** — and **ISO agrees at every point** (6845 deficient, 7366 and 7351
+corrected). **Not an engine defect; the oracle's input, the OI-77/OI-78 family again.**
+
+> **What it costs is scope, and it cost it silently.** GA counts toward *50 of 50 agree*, and what
+> GA proves is agreement on a **products-only risk**. Its prem/ops loss cost and territory factor
+> have never been checked against ISO. **The tester found this on its first cross-state run, from
+> the one row that did not move** — which is the entire argument for reporting an unmoved premium
+> as a finding rather than a pass.
+
+### OI-92 closed the same day, at the generator
+
+*"Lets make sure the ISO test cases also include the territory, as this led to a false fail."*
+
+**One correction to the framing, because it changes what to hunt for: it was a false _pass_, not a
+false fail.** GA reported `MATCH` throughout — nothing was ever red. The test agreed with ISO on a
+number the deductible could not move. Red rows announce themselves; this had to be found by asking
+why something *didn't* change.
+
+Fixed in `build_sample_payloads.fill_required_territories`, **not by editing the file**: a
+rating-required territory ISO's own example omits is now supplied from that jurisdiction's own
+declared domain, so the next example shipped with a hole is closed on generation.
+
+> **The first version of the fix was wrong, and the measurement caught it.** Filling *every*
+> rating-required territory also supplies `LiquorLiabTerritory` and `TerrorismTerritory`, and
+> **Oregon's premium moved by 14** — a terrorism charge on a sample whose `TerrorismCoverage` is
+> `No`. Supplying a Liquor territory to a risk with no Liquor subline is inventing input, which is
+> the one thing this module exists not to do. Narrowed to the territories of the sublines these
+> samples actually rate, and re-measured: **exactly two files change and exactly one premium moves.**
+
+**GA `6845 → 7366`** — its prem/ops loss cost resolves at `0.054` — and **PR** gains a
+rating-required `PremisesOperationsTerr` with no price effect. Re-verified live: **GA `MATCH` at
+7366**, and the deductible that started all this now takes `−15` there as it does everywhere else.
+GA's baseline of record is 7366; the cached baselines were cleared. Runs recorded before this keep
+the old number, by design — the store is append-only.
+
+**Guarded, as a property rather than as a jurisdiction.** `verify_stage4` group **G** asserts that
+no sample omits a rating-required territory it could supply (51 checked), and that Georgia resolves
+a prem/ops loss cost and prices both sides.
+
+### ▶ Next session
+
+1. **OI-88 — the null-in-`FirstNonNull` decision**, unchanged and still first. Measure how many
+   `FirstNonNull` branches wrap a nullable `Lookup` in arithmetic, then fix. **It changes rating
+   semantics for all 51 and needs an explicit go.** The tester makes it a one-click reproduction:
+   set `Size-of-risk = Yes`, run all states.
+2. **Fill the coverage grid.** It reads *1 of 19*. Each control run at two or three values across
+   all 51, engine-only, is about ninety seconds a configuration — and the response curves need at
+   least two values per control before they draw anything.
+3. **OI-89's prerequisite** — experience rating needs about twenty dated fields before schedule
+   rating can be exercised on prem/ops.
+4. **The seven sublines that need their own base submission** — Liquor, OCP, Pollution, Product
+   Withdrawal, Railroad, UST, EDL. The tester offers them and says plainly that this base cannot
+   express them, which is the honest version of *1 of 10 sublines tested*.

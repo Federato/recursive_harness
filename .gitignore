@@ -27,6 +27,15 @@ Engine_Payloads/
 scripts/erc/out/
 scripts/erc/census_334.json
 
+# The tester's option cache — ISO's declared class codes, deductible amounts
+# and limit values for all 51 jurisdictions. Derived from licensed content, so
+# it is excluded for the same reason the corpus itself is.
+ui/cache/
+
+# Sweep results — every stored run carries ISO premiums and the configuration
+# that produced them.
+results/
+
 # ISO-derived workbooks and generated hierarchies
 *.xlsx
 GL_ERC_Edition_Hierarchy.html

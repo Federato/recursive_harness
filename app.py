@@ -31,7 +31,7 @@ import webbrowser
 from decimal import Decimal
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import parse_qsl, urlparse
 
 ROOT = Path(__file__).resolve().parent
 sys.path.insert(0, str(ROOT))
@@ -345,7 +345,8 @@ PAGE = r"""<!doctype html><html><head><meta charset="utf-8">
 <title>GL Rating Engine</title><style>
 *{box-sizing:border-box}body{font:14px/1.5 -apple-system,Segoe UI,Roboto,sans-serif;
 margin:0;background:#f6f7f9;color:#1a1d21}
-header{background:#1f2933;color:#fff;padding:14px 22px}
+header{background:#1f2933;color:#fff;padding:14px 22px;display:flex;
+align-items:baseline;gap:16px;flex-wrap:wrap}
 header h1{margin:0;font-size:17px;font-weight:600}
 header span{opacity:.7;font-size:13px}
 .wrap{display:flex;gap:18px;padding:18px;align-items:flex-start;
@@ -415,7 +416,10 @@ tr.rowfail td{background:#fff5f5}
 progress{width:100%;height:14px}
 </style></head><body>
 <header><h1>GL Rating Engine</h1>
-<span>ISO content, executed &mdash; every number carries its source</span></header>
+<span>ISO content, executed &mdash; every number carries its source</span>
+<a href="/tester" style="margin-left:auto;font-size:13px;text-decoration:none;
+color:#2b6cb0;background:#fff;border:1px solid #cbd2d9;border-radius:6px;
+padding:5px 10px">Variable tester &rarr;</a></header>
 <div class="wrap">
  <div class="col">
   <div class="card"><h2>Submission</h2><div class="body">
@@ -692,8 +696,36 @@ class Handler(BaseHTTPRequestHandler):
     def log_message(self, *a):                    # pragma: no cover - quiet
         pass
 
+    def _tester(self, method, path, query, body=None):
+        """Hand the request to `ui.tester`, or return False to keep looking.
+
+        **The tester's routes are not written here.** `ui/` owns its page, its
+        charts and its history; this file owns the socket. The whole point of
+        keeping them apart is that neither grows the other's concerns -- so the
+        mount is four lines and knows nothing about variables or premiums.
+        """
+        try:
+            from ui import tester as ui_tester
+        except Exception as exc:                              # noqa: BLE001
+            if path.startswith("/api/tester") or path == "/tester":
+                self._send(500, json.dumps(
+                    {"error": f"tester unavailable: {type(exc).__name__}: {exc}"}))
+                return True
+            return False
+        out = ui_tester.dispatch(method, path, query, body)
+        if out is None:
+            return False
+        code, payload, kind = out
+        self._send(code, payload,
+                   "text/html" if kind == "html" else "application/json")
+        return True
+
     def do_GET(self):
-        path = urlparse(self.path).path
+        parsed = urlparse(self.path)
+        path = parsed.path
+        query = dict(parse_qsl(parsed.query))
+        if self._tester("GET", path, query):
+            return
         if path == "/":
             return self._send(200, PAGE, "text/html")
         if path == "/api/samples":
@@ -723,14 +755,17 @@ class Handler(BaseHTTPRequestHandler):
         return self._send(404, json.dumps({"error": "not found"}))
 
     def do_POST(self):
-        path = urlparse(self.path).path
-        if path not in ("/api/rate", "/api/batch"):
-            return self._send(404, json.dumps({"error": "not found"}))
+        parsed = urlparse(self.path)
+        path = parsed.path
         n = int(self.headers.get("Content-Length") or 0)
         try:
             req = json.loads(self.rfile.read(n) or b"{}")
         except ValueError as exc:
             return self._send(400, json.dumps({"error": f"bad JSON: {exc}"}))
+        if self._tester("POST", path, dict(parse_qsl(parsed.query)), req):
+            return
+        if path not in ("/api/rate", "/api/batch"):
+            return self._send(404, json.dumps({"error": "not found"}))
         mode = req.get("mode", STRICT)
         if mode not in MODES:
             return self._send(400, json.dumps({"error": f"unknown mode {mode}"}))

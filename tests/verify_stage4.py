@@ -6,6 +6,7 @@
   D  the four       CA, FL, NY, TX code terrorism territory explicitly (E8)
   E  the samples    one per jurisdiction, same risk, all of them rate
   F  what is absent Hawaii is not in the corpus and cannot be rated
+  G  territories    no sample omits a rating-required territory (OI-92)
 
 Run: python tests/verify_stage4.py
 """
@@ -14,10 +15,12 @@ from __future__ import annotations
 import csv
 import json
 import sys
+from decimal import Decimal
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
+sys.path.insert(0, str(ROOT / "scripts"))
 
 from gl_engine import EditionResolver, ResolvedBook, discover   # noqa: E402
 from gl_engine.rating import Kernel                             # noqa: E402
@@ -246,9 +249,61 @@ def group_f():
           "sample present, source payload absent")
 
 
+def group_g():
+    """OI-92: a sample that omits a rating-required territory rates half a risk.
+
+    ISO's own stored input for Georgia carried no `PremisesOperationsTerritory`
+    and the generator copied the hole. The prem/ops loss cost then never
+    resolved, GA's premium was **products only**, and **it still matched ISO**,
+    because ISO rates the same deficient submission the same way. It presented
+    as a `MATCH` for as long as nobody varied anything.
+
+    This is the guard. It asserts the property rather than the one jurisdiction,
+    so the next example ISO ships with a hole fails here instead of quietly
+    halving a risk.
+    """
+    print("\nG  EVERY SAMPLE SUPPLIES ITS RATING-REQUIRED TERRITORIES (OI-92)")
+    import json as _json
+    from build_sample_payloads import SUBLINE_TERRITORY_FIELDS
+    missing = []
+    for d in sorted(p for p in SAMPLES.iterdir() if p.is_dir()):
+        f = d / "submission.json"
+        if not f.exists():
+            continue
+        juris = d.name
+        schema = schema_for(juris)
+        loc = (_json.loads(f.read_text(encoding="utf-8"))["body"]
+               ["GeneralLiability"][0]["GeneralLiabilityLocation"][0])
+        for col in SUBLINE_TERRITORY_FIELDS:
+            fl = schema.get("GeneralLiabilityLocation", col)
+            if fl is None or not fl.rating_required:
+                continue
+            if not schema.legal_values("GeneralLiabilityLocation", col):
+                continue                     # nothing declared to supply
+            if loc.get(col) in (None, ""):
+                missing.append(f"{juris}.{col}")
+    check("G1 no sample omits a rating-required territory it could supply",
+          not missing,
+          "; ".join(missing) if missing
+          else f"{len(list(SAMPLES.iterdir()))} samples checked")
+
+    # And the consequence, pinned on the jurisdiction that had it: GA must
+    # price its prem/ops side, not only its products side.
+    ga = _json.loads((SAMPLES / "GA" / "submission.json").read_text(
+        encoding="utf-8"))
+    r = Kernel(resolver=RESOLVER).rate(ga)
+    has_lc = any(e.kind == "lookup" and "PremOpsLossCost" in e.detail
+                 for e in r.trace)
+    check("G2 Georgia resolves a prem/ops loss cost and prices both sides",
+          has_lc and r.premium == Decimal("7366"),
+          f"premium {r.premium}, prem/ops loss cost "
+          f"{'looked up' if has_lc else 'NEVER LOOKED UP'}")
+
+
 def main() -> int:
     print("Stage 4 acceptance -- schemas and payloads")
-    group_a(); group_b(); group_b2(); group_c(); group_d(); group_e(); group_f()
+    group_a(); group_b(); group_b2(); group_c(); group_d(); group_e()
+    group_f(); group_g()
     total = len(PASS) + len(FAIL)
     print(f"\n{len(PASS)}/{total} passed")
     if FAIL:

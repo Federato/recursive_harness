@@ -71,6 +71,13 @@ TERRITORY_FIELDS = ("PremisesOperationsTerritory", "PremisesOperationsTerr",
                     "ProdsCompldOpsTerritory", "LiquorLiabTerritory",
                     "LiquorLiabTerr", "TerrorismTerritory", "ZipCode")
 
+#: The territories belonging to the sublines these samples actually rate.
+#: **Only these are filled in when ISO's own example omits them** -- see
+#: `fill_required_territories`.
+SUBLINE_TERRITORY_FIELDS = ("PremisesOperationsTerritory",
+                            "PremisesOperationsTerr",
+                            "ProdsCompldOpsTerritory")
+
 
 #: The jurisdiction whose payload is used as the STRUCTURAL template when a
 #: jurisdiction has none of its own. Oklahoma, because its shape is the one
@@ -114,7 +121,46 @@ def from_domains(juris: str, schema) -> dict | None:
     return out
 
 
-def build(juris: str, src: dict) -> dict:
+def fill_required_territories(loc: dict, schema, juris: str) -> list:
+    """Supply a rating-required territory ISO's own example leaves out.
+
+    **OI-92.** ISO's stored input for Georgia carries no
+    `PremisesOperationsTerritory` -- the only one of 51 -- and GA declares that
+    field **rating-required with two legal values**. Carrying the hole over
+    produced a sample where `SetPremOpsLossCost` never looks anything up, the
+    prem/ops basic limit premium is **zero**, and **GA's whole premium is the
+    products side**. ISO rates that submission the same way we do, so it
+    matched at 6845 and looked healthy for as long as nobody varied anything:
+    the deductible test that found it reported `MATCH` while exercising
+    nothing. **A false pass, not a false fail** -- which is the harder kind to
+    see.
+
+    Filled from the jurisdiction's own declared domain, so nothing is invented.
+
+    **Only the territories of the sublines these samples rate.** Filling every
+    rating-required territory was tried first and rejected on measurement: it
+    also supplies `LiquorLiabTerritory` and `TerrorismTerritory`, and **Oregon's
+    premium moved by 14** as a result -- a terrorism charge on a sample whose
+    `TerrorismCoverage` is `No`. Supplying a Liquor territory to a risk with no
+    Liquor subline is inventing input, and inventing input is the thing this
+    whole module exists not to do.
+    """
+    filled = []
+    for col in SUBLINE_TERRITORY_FIELDS:
+        f = schema.get("GeneralLiabilityLocation", col)
+        if f is None or not f.rating_required:
+            continue
+        if loc.get(col) not in (None, ""):
+            continue
+        legal = schema.legal_values("GeneralLiabilityLocation", col)
+        if not legal:
+            continue
+        loc[col] = legal[0]
+        filled.append(f"{col}={legal[0]}")
+    return filled
+
+
+def build(juris: str, src: dict, schema=None) -> dict:
     """One sample, from that jurisdiction's own payload, normalised."""
     risk = deepcopy(src["body"]["GeneralLiability"][0])
 
@@ -139,6 +185,8 @@ def build(juris: str, src: dict) -> dict:
         new_loc = {k: v for k, v in loc.items()
                    if k not in ("GeneralLiabilityClassification",)}
         new_loc.update(keep)
+        if schema is not None:
+            fill_required_territories(new_loc, schema, juris)   # OI-92
         new_loc["GeneralLiabilityClassification"] = [cls]
         risk["GeneralLiabilityLocation"] = [new_loc]
 
@@ -172,7 +220,7 @@ def main() -> int:
         if src is None:
             rows.append([juris, "", "", "", "no source payload", "", ""])
             continue
-        sample = build(juris, src)
+        sample = build(juris, src, schema)
         d = OUT / juris
         d.mkdir(exist_ok=True)
         (d / "submission.json").write_text(

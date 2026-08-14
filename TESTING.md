@@ -1,6 +1,6 @@
 # How to test this, phase by phase
 
-**Current as of 2026-08-13.** Every command on this page has been run and its stated output is what
+**Current as of 2026-08-14.** Every command on this page has been run and its stated output is what
 it actually produced. **All six stages are built, and Phase 2 — the comparison against ISO's live
 service — is live.** Nothing on this page is marked NOT BUILT any more.
 
@@ -38,6 +38,8 @@ python tests/verify_stage6.py                    30/30   the interface, over HTT
 python tests/verify_phase2.py                    11/11   against ISO's live service (see below)
 python tests/verify_breadth.py                   18/18   the variant harness, and the risk shapes
                                                          it varies -- no live calls
+python tests/verify_tester.py                    30/30   the variable tester: its controls, its
+                                                         routes and the UI/engine separation
 python Agentic/iso-circular-expert/tools/smoke_test.py     19/19
 python Agentic/iso-erc-expert/tools/smoke_test.py       88 checks
 python -m gl_engine.cli check 20260811 --deep              13/13
@@ -342,6 +344,46 @@ premium and on every published field. Breadth found **one engine defect (OI-88 �
 refuses in OK where ISO rates it at 8816)**, one filed gate (**OI-89**) and one harness defect
 (**OI-90**, closed). `verify_breadth` **asserts OI-88 is still open**, so closing it breaks that test
 on purpose.
+
+---
+
+## The variable tester — dropdowns, all 51 states, and the long view
+
+*Breadth from the interface: pick values, run every jurisdiction, keep the result.*
+
+```
+python app.py 8765            # then open http://127.0.0.1:8765/tester
+python tests/verify_tester.py                    # 30/30, no server, no calls
+python scripts/sweep.py --controls               # the same controls, on the command line
+python scripts/sweep.py --set occurrence_limit="500,000 CSL"
+python scripts/sweep.py --set size_of_risk=Yes --juris OK --live
+```
+
+**19 controls in 8 groups** — six deductibles, the occurrence limit, premium basis, class code,
+exposure, coverage form, claims-made year, subline, locations, size-of-risk, experience rating,
+schedule rating, the scheduled percentage, and terrorism. **Every option is read from ISO's declared
+domain for that jurisdiction**; a value ISO does not declare is refused before anything is sent.
+
+| It does this | Because |
+|---|---|
+| A keyed domain **collapses when its key is answered** — set a PD deductible and the combined BI/PD dropdown drops from 31 options to `No Deductible` | ISO declares them mutually exclusive across 961 dependency keys, and offering the other 30 would be offering illegal values |
+| **`NOT APPLICABLE` is a third outcome**, grey, never counted as a failure | Claims-made is undeclarable in NY; two locations is undeclarable in the 20 single-territory jurisdictions. **`Check where it applies` answers that for all 51 without rating anything** |
+| The results table is **Engine premium · ISO premium · Difference**, in that order | That comparison *is* the test. Whether a configuration moved the premium away from the unvaried base is a property of the configuration, not a result — it survives as a marker on the engine figure and a footnote |
+| **The ISO comparison is on by default**, and states its call count and wall clock before it runs | You cannot get an ISO premium with it off. 50 live calls is about twenty minutes; untick it for the free ~90s engine-only run while iterating on dropdowns |
+
+**The long view** is four tabs, drawn as inline SVG with no chart library: **coverage** (controls ×
+jurisdictions ever exercised — the honest answer to *how narrow is the claim*, and it starts nearly
+empty), **agreement over time**, **premium response** (premium against the varied value, every
+jurisdiction overlaid), and **defects** (first seen, last seen, run count).
+
+Runs append to `results/runs-YYYY-MM.jsonl`, one line per run, stamped with the configuration, the
+engine version and the resolved packages. **Append-only** — a results file that is rewritten cannot
+answer *when did this start disagreeing*, which is the question the charts exist for.
+
+**Where the code lives.** `ui/` is presentation and history; `scripts/variants.py` is what is legal
+and how to apply it; `scripts/sweep.py` runs a configuration across jurisdictions. The dependency
+runs **`ui` → `variants`/`sweep` → `gl_engine`**, and `verify_tester` **asserts the direction by
+parsing the imports** — no file in `ui/` imports the engine or builds a `Kernel`.
 
 **Credentials come from the environment** (`RAAS_*`), never from a file in this repository.
 `scripts/raas.py` is a standard-library OAuth2 client — no `httpx`, no dependency — and **it logs no
