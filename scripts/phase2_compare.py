@@ -63,7 +63,17 @@ def compare(juris: str, kernel, client, dp) -> dict:
     if not src.exists():
         return {"juris": juris, "status": "NO SAMPLE"}
     payload = json.loads(src.read_text(encoding="utf-8"))
+    return compare_payload(juris, payload, kernel, client, dp)
 
+
+def compare_payload(juris: str, payload: dict, kernel, client, dp) -> dict:
+    """The comparison itself, for a submission held in memory.
+
+    Split out from `compare` so **breadth** (`scripts/breadth.py`) can put a
+    generated submission through the identical path. A second comparison
+    written alongside this one would be a second definition of *agreement*, and
+    the two would drift.
+    """
     try:
         ours = kernel.rate(payload)
     except Exception as exc:                                  # noqa: BLE001

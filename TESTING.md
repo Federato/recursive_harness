@@ -36,6 +36,8 @@ python tests/verify_stage4.py                    28/28   input schemas and 51 sa
 python tests/verify_stage5.py                    18/18   the field catalogue and its legal values
 python tests/verify_stage6.py                    30/30   the interface, over HTTP
 python tests/verify_phase2.py                    11/11   against ISO's live service (see below)
+python tests/verify_breadth.py                   18/18   the variant harness, and the risk shapes
+                                                         it varies -- no live calls
 python Agentic/iso-circular-expert/tools/smoke_test.py     19/19
 python Agentic/iso-erc-expert/tools/smoke_test.py       88 checks
 python -m gl_engine.cli check 20260811 --deep              13/13
@@ -315,6 +317,31 @@ python tests/verify_phase2.py --live             # makes live calls
 python scripts/phase2_compare.py OK              # one jurisdiction
 python scripts/phase2_compare.py --all           # 50, and writes scripts/erc/out/phase2.csv
 ```
+
+**Breadth — the same comparison over risks the samples never contain** (OI-87). One jurisdiction,
+one risk shape is what phase 2 proves; this varies the submission instead of the state.
+
+```
+python scripts/breadth.py --list                 # the catalogue: 17 variants, 7 groups
+python scripts/breadth.py                        # build, schema-check, rate ours -- no calls
+python scripts/breadth.py --live                 # ...and compare against ISO
+python scripts/breadth.py --juris NY --live       # any jurisdiction
+python scripts/breadth.py --group deductible --live
+python tests/verify_breadth.py                   # 18/18, offline
+```
+
+**Every value comes from ISO's declared domains**, and a variant whose value is not in one is
+**refused at build time** rather than sent. Live calls are opt-in for the same reason `--all` is:
+a script that quietly makes thirty-four calls to a rating service is a surprise nobody asked for.
+
+> **A variant whose premium equals the base is reported as a finding, not a pass.** It means the
+> chain the variant exists to exercise did not move the number.
+
+**The result of record:** **OK 16 of 16 · NY 15 of 15** buildable variants agree with ISO on the
+premium and on every published field. Breadth found **one engine defect (OI-88 — size-of-risk
+refuses in OK where ISO rates it at 8816)**, one filed gate (**OI-89**) and one harness defect
+(**OI-90**, closed). `verify_breadth` **asserts OI-88 is still open**, so closing it breaks that test
+on purpose.
 
 **Credentials come from the environment** (`RAAS_*`), never from a file in this repository.
 `scripts/raas.py` is a standard-library OAuth2 client — no `httpx`, no dependency — and **it logs no

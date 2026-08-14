@@ -1318,7 +1318,7 @@ conditions** against ISO's 838 declared; and the **508 STC submissions** for for
 
 ---
 
-## Entry 13 — ISO comparison in the interface, and a full test run anyone can read. **NEXT SESSION STARTS HERE.**
+## Entry 13 — ISO comparison in the interface, and a full test run anyone can read. ~~NEXT SESSION STARTS HERE.~~ *(the live handoff is **Entry 14**)*
 
 - **Date:** 2026-08-13
 - **Directed:** *"I want to be able to rate a submission with the engine, and get RAAS results back
@@ -1419,3 +1419,114 @@ are none.
 **Item 1 of the backlog — breadth.** Everything needed is already there:
 `scripts/phase2_compare.py` takes any submission, `Schema.legal_values()` says what each field may
 contain, and the interface will run and display whatever is generated.
+
+---
+
+## Entry 14 — Breadth: the risk varies now, and it found a defect. **NEXT SESSION STARTS HERE.**
+
+- **Date:** 2026-08-14
+- **Directed:** *"leave it be, it's unrelated for now. Start with breadth against live service"*
+- **Verified:** OK **16 of 16** buildable variants agree with ISO · NY **15 of 15** · one engine
+  defect raised (**OI-88**), one filed gate found (**OI-89**), one harness defect closed (**OI-90**).
+
+### Rule #1 first, and it paid immediately
+
+**Enumerate the declaration before deriving anything.** Before a single variant was written, three
+enumerations were run against ISO's own field and domain files: what each breadth-relevant field
+legally holds, what each *combination* holds, and what turning a switch on **drags in with it**.
+
+Two constraints came out that a plausible-looking variant would have got wrong:
+
+* **The split and combined deductibles are mutually exclusive.** `PremOpsBIPDDeductible` is keyed on
+  the BI/PD pair across **961 dependency keys**, and they say: with BI and PD both `No Deductible`
+  the combined value may be any of 31; with **either** one set, the only legal combined value is
+  `No Deductible`. A variant setting all three would have been rejected, **and the rejection would
+  have looked like an engine defect.**
+* **Terrorism drags in a place.** ISO declares `ZipCode` to apply when `TerrorismCoverage='Yes'`,
+  and the base submissions carry no ZIP because they never turn terrorism on. **NY and CA declare no
+  `ZipCode` domain at all** — they take an explicit `TerrorismTerritory`, which is E8/R22 arriving as
+  a build-time fact rather than a note. The harness asks the declaration which of the two a
+  jurisdiction uses; it does not consult a list of state codes.
+
+### `scripts/breadth.py` — 17 variants over 7 groups
+
+Every value comes from a domain table, a declared minimum or ISO's own default, and
+**`Declared.require` refuses to build a variant whose value is not in the declared set.** That is
+the point: a submission ISO would reject teaches nothing about our arithmetic, and sending one
+spends a call to learn something the filing already said.
+
+**Live calls are opt-in.** Without `--live` the harness builds, checks each variant against ISO's own
+schema and rates it through our engine — enough to find a variant we cannot rate at all, at no cost.
+
+> **A variant whose premium equals the base is a finding, not a pass.** It means the chain the
+> variant exists to exercise did not move the number. The report has a column for it, and on the
+> first run that column was the most informative thing on the page.
+
+### The result
+
+**OK: 16 of 16. NY: 15 of 15.** Premium *and* every published field, through the same
+`compare_payload` phase 2 uses — split out rather than copied, because a second comparison would be
+a second definition of *agreement* and the two would drift.
+
+What now has an external answer that never did: **six deductible shapes** (BI, PD and combined, on
+both the prem/ops and the products side, and both at once), **two locations** in different
+territories, **two classifications** in one location, a **premium basis that is not Gross Sales**,
+**both directions of the ILF table**, **claims-made at two maturities**, the **schedule rating
+plan**, and **terrorism on**.
+
+**NY is not OK with different rates.** It declares **`Occurrence` as the only legal coverage form**,
+so the claims-made variants are unbuildable there and the harness says so from the declaration
+rather than discovering it from a 400. Its schedule rating moves the premium where OK's does not
+(OI-89). This is why the same 17 variants have to run in every jurisdiction, not one.
+
+### The defect — OI-88
+
+`SizeOfRiskRatingApplies='Yes'` in OK: **ISO rates it at `8816`; our engine refuses.**
+
+The cause is exact, and it is in ISO's own rule. `LookupPremOpsSizeOfRiskRelativity` is a
+`FirstNonNull` of two `Round(Lookup)` branches — the first keyed on the state, the second on a
+literal `CW`. The table holds **8,330 rows, every one `CW`**, so branch one *must* miss and ISO's
+design is that **branch two answers**. Our `Round` raises on the null under contract §12.3, and the
+exception escapes the `FirstNonNull` before branch two is evaluated.
+
+**§12.3 is not wrong. C6 already says an exhausted `FirstNonNull` returns null rather than raising
+— the gap is that a branch cannot *become* null through arithmetic.** And the engine must not grow
+a `CW` fallback of its own: **ISO files the fallback; the only bug is that we cannot reach it.**
+
+Not fixed on sight, deliberately: `Round` is everywhere, and the narrow reading needs measuring over
+the corpus before it is chosen. **Left as a decision to take, not a patch to apply.**
+
+### The gate nothing had noticed — OI-89
+
+Schedule rating at `10%` in OK moved the premium **not at all, and ISO agreed to the cent.** The
+trace shows the plan running correctly and then writing `ScheduleRatingModificationFactor = 1.0`.
+`SetScheduleRatingModificationFactor` says why: on the three prem/ops-and-products sublines the
+modification applies **only when `ERPCredibilityFactor >= 0.03`** — schedule rating on prem/ops
+requires experience credibility. **So the experience-rating variant is a prerequisite, not a peer.**
+
+And the dependency is **invisible to stage 4**: the field file declares `SRPClassificationPct` as
+applying whenever the switch is `Yes`, while the real precondition lives in a rule the schema never
+reads. `1.0` as the no-op factor is **E20/OI-68 in a third place**.
+
+### The harness's own defect — OI-90
+
+ISO returned **400**: *"Element value 'YearInClaimsMade' has unexpected type of 'String' (was
+expecting 'Int32')"*. `fields.py` opens with that exact warning — **`Type` is a form control, not a
+data type** — written the day before from the field data and never yet tested against the service.
+**Our engine rated the string version happily**, so on that field we are more permissive than ISO,
+which neither side shows alone.
+
+### ▶ Next session
+
+**Three things, in this order.**
+
+1. **OI-88 — decide the null-in-`FirstNonNull` semantics and fix it.** Measure first: how many
+   `FirstNonNull` branches in the corpus wrap a nullable `Lookup` in arithmetic. That number decides
+   whether the fix is *`Round` propagates null* or *arithmetic inside a `FirstNonNull` branch
+   propagates null*. **This is a rating-semantics change affecting all 51 jurisdictions and it needs
+   an explicit go.**
+2. **Experience rating as a variant**, which OI-89 makes a prerequisite for exercising schedule
+   rating properly, and which needs about twenty dated fields ISO declares.
+3. **The other 48 entitled jurisdictions**, one run each — `python scripts/breadth.py --juris XX
+   --live`. NY already proved the variants are not OK-specific and that the declaration catches
+   state narrowing before a call is spent.
