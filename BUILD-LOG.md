@@ -1533,7 +1533,7 @@ which neither side shows alone.
 
 ---
 
-## Entry 15 — The variable tester: dropdowns, all 51 states, and a memory. **NEXT SESSION STARTS HERE.**
+## Entry 15 — The variable tester: dropdowns, all 51 states, and a memory. ~~NEXT SESSION STARTS HERE.~~ *(the live handoff is **Entry 16**)*
 
 - **Date:** 2026-08-14
 - **Directed:** *"be able to select, from dropdowns, from things like deductibles, classifications,
@@ -1686,3 +1686,117 @@ a prem/ops loss cost and prices both sides.
 4. **The seven sublines that need their own base submission** — Liquor, OCP, Pollution, Product
    Withdrawal, Railroad, UST, EDL. The tester offers them and says plainly that this base cannot
    express them, which is the honest version of *1 of 10 sublines tested*.
+
+---
+
+## Entry 16 — Answering for it: a walkthrough, two carrier questions, and an agent that reads the code. **NEXT SESSION STARTS HERE.**
+
+- **Date:** 2026-08-14
+- **Directed:** a launcher for the UI · a plain-English case for the interpreter · a walkthrough
+  script to record · *"has a carrier adopted every ERC version?"* · *"create an agent that is an
+  expert in the code"*
+- **Built:** no engine code. Two launchers, four documents, one agent definition, three backlog
+  items and one defects section.
+- **Verified:** `start.bat` smoke-tested on a spare port (HTTP 200, 17,442 bytes) · warm and cold
+  rating latency measured for the first time · the agent tested on a real question and its two
+  load-bearing claims independently re-checked.
+
+### The session's subject was explaining the build, not extending it
+
+Nothing here changes a premium. That is the point of the entry: **the build reached the stage where
+what it needs is to be answerable**, and answering it surfaced two design questions that had never
+been asked, plus one measurement nobody had taken.
+
+### 1. Performance, measured — and a number in the docs was wrong
+
+Nothing had ever timed a rating. **Warm: ~1.2 seconds** (0.97, 1.32, 1.15, 1.42, 1.58s across five
+runs). **Cold, one jurisdiction: ~2 seconds.** It does *not* speed up when warm, so **interpretation
+is the cost, not file I/O** — the tables are already cached per `Layer` after first read.
+
+**A figure quoted in conversation earlier the same day — "95 second cold start" — was wrong.** That
+is `cli check --deep` scanning all 567 packages; a single rating loads only what it resolves.
+Corrected wherever it had been repeated.
+
+### 2. Two carrier questions, both answered into the backlog
+
+Asked in conversation, and neither had a written answer anywhere:
+
+**How deviations get authored** — §6 of the executive summary had left this explicitly open. Closed:
+a **friendlier format that compiles** to ISO's shape, and **stored per jurisdiction, always**,
+because a carrier files a national deviation state by state and the build should mirror the filing.
+*"Applies to all jurisdictions"* is an authoring affordance that fans out to 51, never a distinct
+kind of object. **This may dissolve C1's precedence question** — if a national deviation *is* 51
+state filings, there is no national layer for a state exception to be weighed against and the
+four-deep chain flattens to three. Recorded to confirm when Phase 4 opens rather than decided.
+
+**Whether a carrier can be pinned to an older ERC edition** — backlog item 8, and the answer is
+*yes, and most of it already exists*. Editions are all retained, `editions()` already returns
+non-current ones, and **the countrywide parent already follows the state package's own declaration
+rather than the newest (N5)** — which is precisely the rule that makes pinning safe rather than
+plausible-and-wrong. What is missing is one input: `(carrier, jurisdiction, as-of)` instead of
+`(jurisdiction, as-of)`. **Built for backdating, and it turns out to be the same machinery.**
+
+### 3. The three known defects moved above the numbered backlog
+
+`OI-88`, `OI-91` **HIGH**; `OI-89` **MEDIUM**. The distinction the section makes: these are **known
+wrong**, where everything numbered is **not yet known**. Items 1–8 keep their numbers, because
+`EXECUTIVE-SUMMARY.md:333` points at item 7 and renumbering would have broken it silently.
+
+### 4. `gl-engine-code-expert` — an agent whose evidence is the source
+
+`.claude/agents/gl-engine-code-expert.md`. Answers from the Python only: **markdown and docs are
+explicitly not evidence**, docstrings are, and where code and document disagree **the code wins and
+the conflict is reported**. Two registers by default — plain English, then the mechanism with
+`file:line` on every behavioural claim.
+
+**The definition spends its length on one trap.** The engine contains no rating concepts. Grep
+`deductible` across it and you get **one hit, in `referrals.py`, and it is a referral message**. An
+agent that greps, finds that, and concludes the engine barely handles deductibles is **wrong in a
+way that sounds researched**. So rating questions are answered in two halves: the mechanism, which
+is entirely in the code, and the boundary, where the values live in ISO's corpus.
+
+**Tested on *"how is a GL deductible used in Georgia?"*** It found that **Georgia files no
+deductible factors of its own** — all fourteen `Ded*` tables are owned by countrywide and every row
+is `CW` — rated six variants to show the effect, and proved the state→countrywide retry is **ISO's
+filed rule and not ours** by grepping `'CW'` across `gl_engine/interp/` and getting **zero matches**.
+Both load-bearing claims were independently re-verified before the answer was accepted.
+
+**It also found what its own inputs had done to it:** two early runs returned 6,845 because
+`Engine_Payloads/GA/submission.json` was rewritten underneath it mid-session. It reported the
+contamination rather than averaging it away.
+
+**And it corroborated D1 from a second direction.** Georgia reaching countrywide for *every*
+deductible factor is exactly the path OI-88 breaks. The defect is in the mechanism the layering
+depends on.
+
+### 5. Concurrent writes to this working tree
+
+Three incidents in one session: the GA payload rewritten at 15:35:50, two files vanishing from
+`Loom-Share/` between commands, and `README.md` gaining edits mid-session. All explained by a second
+session working in the same tree. **Recorded because it corrupted an agent's measurements once
+already**, and because anything staged blindly while it happens can pick up half-finished work. The
+tester work was committed only after `verify_tester` 30/30 and `verify_stage4` 30/30 were re-run.
+
+### What was written
+
+| | |
+|---|---|
+| `start.bat` · `start.command` | Windows and macOS launchers. Python 3 only; `app.py` is standard library |
+| `docs/WHY-AN-INTERPRETER.md` | The interpreter case in under 200 words, in the user's own voice |
+| `docs/LOOM-WALKTHROUGH-SCRIPT.md` · `.html` | The recording script. The HTML separates what you do on screen from what you say |
+| `Loom-Share/` | Twelve files numbered in reading order, for an audience. ISO's corpus deliberately not included — licensed |
+| `README.md` §Running the app | Both platforms, the port and `--no-browser` flags, `GL_ERC_ROOT` |
+| `.claude/agents/gl-engine-code-expert.md` | The agent |
+
+### ▶ Next session
+
+**Unchanged from Entry 15, and now corroborated twice.**
+
+1. **OI-88 / D1 — the null-in-`FirstNonNull` decision.** Still first. **It changes rating semantics
+   for all 51 and needs an explicit go.** One-click reproduction in the tester: size-of-risk = Yes,
+   run all states.
+2. **OI-91 / D2** — run the two terrorism-location measurements side by side over the same packages
+   and dates. Terrorism breadth is blocked in 20 jurisdictions until it is settled.
+3. **Fill the coverage grid** — it still reads *1 of 19*.
+4. **OI-89 / D3** — experience rating needs about twenty dated fields before schedule rating can be
+   exercised on prem/ops.

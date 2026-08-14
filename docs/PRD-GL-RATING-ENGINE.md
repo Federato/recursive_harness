@@ -14,9 +14,35 @@ the documents referenced at the end.
 
 ## 0. What changed today
 
-**Updated 2026-08-13.** The previous entry recorded that stage one of six existed. **By the end of
-today all six stages are built, and the engine has been checked against ISO's own live rating
-service.**
+**Updated 2026-08-14.** Three things, and none of them is a new premium.
+
+**The risk varies now, and it found defects.** Every live comparison until this point used *the same
+risk* in all 51 states. `scripts/breadth.py` varies the submission instead — 17 variants over 7
+groups, every value taken from ISO's own declared domains — and `/tester` gives it a front door:
+19 controls in 8 groups, run across all 51, with our premium, ISO's premium and the difference as
+the three columns. **It raised three open items, one of them a real engine defect** (OI-88), the
+first found by an external oracle. **This is the expected result, not a setback** — the earlier
+figures were clean because the population was narrow.
+
+**Two carrier questions were answered, and neither had a written answer before.** How deviations get
+authored — a friendlier format that compiles to ISO's shape, stored **per jurisdiction always**,
+because carriers file national deviations state by state. And whether a carrier can be pinned to an
+older ERC edition — **yes, and the machinery already exists**, built for backdating. Both are in
+[`BACKLOG-2026-08-14.md`](BACKLOG-2026-08-14.md) items 7 and 8.
+
+**Performance was measured for the first time:** about **1.2 seconds** per rating warm, **2 seconds**
+cold for a jurisdiction. It does not speed up when warm, so interpretation is the cost rather than
+file access. Unoptimised, and never profiled.
+
+**The backlog now opens with three known defects** — D1 (OI-88) and D2 (OI-91) high, D3 (OI-89)
+medium — placed above the numbered work, because those are *known wrong* where everything numbered
+is *not yet known*.
+
+---
+
+**Previously, 2026-08-13.** The entry before that recorded that stage one of six existed. **By the
+end of 2026-08-13 all six stages were built, and the engine had been checked against ISO's own live
+rating service.**
 
 ### It prices policies, and ISO agrees
 

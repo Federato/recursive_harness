@@ -333,7 +333,14 @@ deviation state by state. *"Applies to all jurisdictions"* is an authoring affor
 never a distinct kind of object. See [backlog item 7](BACKLOG-2026-08-14.md), which also records the
 consequence for decision 1's precedence question.
 
-**Whether ISO's vocabulary can express everything a carrier wants** — still open, below.
+**A third question, raised and answered 2026-08-14: can a carrier be pinned to an older ERC
+edition?** Carriers do not all adopt every edition; one may be filed on something from years ago.
+**Yes, and most of the machinery already exists** — every edition is retained, the resolver already
+returns non-current ones, and **the countrywide parent already follows the state package's own
+declaration rather than the newest** (N5), which is exactly the rule that stops a pin pairing an old
+state package with a current national one. What is missing is one input: `(carrier, jurisdiction,
+as-of)` in place of `(jurisdiction, as-of)`. Built for backdating, and the same machinery serves
+both. See [backlog item 8](BACKLOG-2026-08-14.md).
 
 **Whether ISO's vocabulary can express everything a carrier wants.** ISO's 58 instructions express
 what ISO needed. A tier factor, a model score, or a rating step ISO does not have may not be
