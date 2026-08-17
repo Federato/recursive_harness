@@ -2399,7 +2399,7 @@ verdict.
 
 ---
 
-## Entry 22 — Breadth widened to seven jurisdictions, and it found what it was for. **NEXT SESSION STARTS HERE.**
+## Entry 22 — Breadth widened to seven jurisdictions, and it found what it was for. ~~NEXT SESSION STARTS HERE.~~ *(the live handoff is **Entry 23**)*
 
 - **Date:** 2026-08-17
 - **Directed:** *"do it"* — widen breadth live beyond two jurisdictions
@@ -2499,3 +2499,83 @@ layer, as a refusal on a null loss cost.
    between them.
 5. **Fill the coverage grid** — still *1 of 19*.
 6. **Property exploration, reading pace only.** Unchanged since Entry 17.
+
+
+---
+
+## Entry 23 — OI-94 closed, and the day's findings written up as what they are. **NEXT SESSION STARTS HERE.**
+
+- **Date:** 2026-08-17
+- **Directed:** *"do it, log what we have discovered so far, highlight that you, as the harness, are
+  discovering and resolving this"*
+- **Built:** `Kernel._refuse_null_loss_cost`, two tests, and `docs/THE-HARNESS-FOUND-THESE.md`.
+- **Verified:** **37 of 51 rate, 14 refuse — exactly the fourteen measured.** Every suite green:
+  breadth 22/22 · interp 61/61 · golden 80/80 · tester 33/33 · stages 1/3/4/5/6 · phase2 14/14 ·
+  CA 11/11 · NY 10/10 · oi50 7/7 · notebooks 20/20.
+
+### 1. The refusal, and where it deliberately does not go
+
+**Not in `FirstNonNull`. Not in C6.** An exhausted `FirstNonNull` yielding null is correct, ISO
+relies on it, and **4,327 corpus sites can exhaust**. Changing a language rule to catch a
+rating-level mistake is the blunt instrument OI-88's measurement rejected once already, eight hours
+earlier.
+
+**Only the rating layer knows that *this* null makes the risk unratable.** A missing loss cost is not
+a zero-rated risk.
+
+**Zero is left alone, and that is the part most likely to be got wrong later.** OK writes
+`ProdsCompldOpsLossCost = 0` on a risk that rates and matches ISO. So the refusal is on **null**,
+never on falsy — and `verify_breadth` **E7** exists because *"refuse when the loss cost is falsy"* is
+the obvious wrong fix, and it would pass E6.
+
+**A side effect worth having:** GA now refuses **without making the call at all**. The engine reaches
+ISO's conclusion independently rather than spending a request to be told it.
+
+### 2. `docs/THE-HARNESS-FOUND-THESE.md`
+
+The day written up as what it was. **Five defects closed, one raised and closed the same day, one
+question settled — and not one of them found by reading code.**
+
+Five things they have in common, recorded because the pattern is more reusable than the fixes:
+
+1. **Every one was found by running something against something else.** ISO against us (OI-88,
+   OI-94), one measurement against another (OI-91), an engineered input against a prediction (OI-70),
+   **the harness against itself** (OI-93).
+2. **Not one needed a decision. Every one needed a measurement.** OI-88 waited three entries for a go
+   it never needed — the read-only pass was always available.
+3. **Closing a defect exposes the next.** OI-88 made size-of-risk reachable, which made OI-94
+   reachable. OI-91 unblocked terrorism, which produced OI-93 within minutes. **The queue was a
+   stack, and the top item was hiding the rest.**
+4. **The measurement changed the fix twice.** Fixing on sight would have been wrong both times.
+5. **The harness's own defects count.** OI-93 was in the measuring apparatus, and OI-91's twenty
+   `NOT APPLICABLE` verdicts were our own refusal wearing a good explanation. **A harness never
+   suspected of being wrong is not a harness; it is an assumption with tests.**
+
+The document also states what the day does **not** claim: seven jurisdictions is not fifty-one,
+eleven of OI-94's fourteen are **inferred** rather than confirmed, and the coverage grid still reads
+*1 of 19*.
+
+### Where the numbers stand
+
+| | Before today | After |
+|---|---|---|
+| Size-of-risk rating correctly | **0 of 51** | 37 of 51, **14 refusing as ISO does** |
+| Terrorism | 31 of 51 | **51 of 51** |
+| Breadth against ISO | 31 of 31, two jurisdictions | **112 of 115, seven** |
+| Rounding | evidenced against truncation only | **half-up, four engineered ties** |
+| Known defects | 3 | **1** |
+
+**92 live calls, every one aimed by an offline measurement that cost nothing.**
+
+### ▶ Next session
+
+1. **Keep widening breadth. 44 jurisdictions remain**, ~17 calls each. Seven found a `HIGH` defect on
+   day one. **The eleven inferred OI-94 jurisdictions are the cheapest confirmations available** —
+   they now refuse before calling, so confirming them costs nothing but a payload ISO will reject.
+2. **OI-89 / D3** — the last known defect. Needs the ~20 dated experience-rating fields.
+3. **Give `breadth.py` the OI-93 probe, or retire its `Declared`.** Two harnesses with one behaviour
+   between them is how the next silent no-op gets through.
+4. **Fill the coverage grid** — still *1 of 19*.
+5. **Property exploration, reading pace only.** Unchanged since Entry 17.
+6. **Cheap:** `567 → 570`; `verify_contract_figures` re-measuring rather than reading cached output;
+   an 8dp rounding site closes OI-70's last corner.
