@@ -1689,7 +1689,7 @@ a prem/ops loss cost and prices both sides.
 
 ---
 
-## Entry 16 — Answering for it: a walkthrough, two carrier questions, and an agent that reads the code. **NEXT SESSION STARTS HERE.**
+## Entry 16 — Answering for it: a walkthrough, two carrier questions, and an agent that reads the code. ~~NEXT SESSION STARTS HERE.~~ *(the live handoff is **Entry 17**)*
 
 - **Date:** 2026-08-14
 - **Directed:** a launcher for the UI · a plain-English case for the interpreter · a walkthrough
@@ -1800,3 +1800,145 @@ tester work was committed only after `verify_tester` 30/30 and `verify_stage4` 3
 3. **Fill the coverage grid** — it still reads *1 of 19*.
 4. **OI-89 / D3** — experience rating needs about twenty dated fields before schedule rating can be
    exercised on prem/ops.
+
+---
+
+## Entry 17 — Twenty notebooks, an agent that crosses the walls, and Property opened as exploration. **NEXT SESSION STARTS HERE.**
+
+- **Date:** work done 2026-08-14, **logged 2026-08-17**
+- **Directed:** *"create an agent that spans the content, the manuals and the code"* · notebooks
+  explaining the engine one file at a time · then, on 2026-08-17: *"Property will be a next
+  direction, but I don't want to build anything there until more exploration"*
+- **Built:** no engine code, for the second entry running. One agent definition, twenty notebooks,
+  one test, one entry-point document.
+- **Verified:** `tests/verify_notebooks.py` executes **every code cell of all twenty notebooks** and
+  fails on any exception. It caught **eight errors** on its first run.
+
+### Why this entry is late
+
+**Two commits landed on 2026-08-14 and were never logged** — `a0782bd` (the `gl-authority` agent)
+and `07e1519` (the notebooks). Entry 16 was written before them and kept the *NEXT SESSION STARTS
+HERE* marker for three days while two substantial pieces of work sat below it unrecorded. Recorded
+now rather than folded silently into a later entry, because **the handoff marker pointing at work
+that has already been superseded is exactly the failure this log exists to prevent.**
+
+### 1. `gl-authority` — one agent across all three sources
+
+`.claude/agents/gl-authority.md`, 198 lines. Three specialists already existed and **each is walled
+off on purpose** — ERC content, ISO's manuals, our Python. **Real questions do not respect the
+walls.** *"Is a deductible used in Georgia"*, *"which form attaches here"*, *"why is this premium
+what it is"* touch two or three at once, and asking a single specialist gets **a third of an answer
+delivered confidently** — which is worse than no answer.
+
+**The design constraint came from the existing definitions, not from convenience.** `iso-erc-expert`
+is forbidden from reading `iso-circular-expert` — *"a parallel product built from a different
+source; consulting it destroys the independence of this one."* **That independence is what makes
+agreement between the two corpora evidence at all**, and an agent holding both in one head can
+destroy it by accident. So the definition spends a section on preserving it: never reason from one
+source into the other, **measure ERC first and check the manual second** rather than the reverse,
+and **report disagreement rather than tidying it**.
+
+Otherwise it is the project's standing evidence criteria made operational — **tier 1 ERC supplies,
+tier 2 manuals confirm and may never source, tier 3 is a person, and the code is none of them: it is
+the thing being checked.** Every claim names its source, as an ERC path, a notice and page, or
+`file.py:line`.
+
+**It does not delegate.** Nesting risks a specialist's refusal being flattened into a summary, and
+**"unverifiable" surviving intact matters more here than convenience.**
+
+`Agentic/` folders were added for both new agents, matching how the two ISO experts are laid out.
+**Neither carries a `knowledge/` directory, deliberately** — the ISO experts pre-compute JSON
+because their corpora are large, external and slow to measure, whereas **pre-computing facts about
+code that changes every session is how a knowledge file starts lying.**
+
+### 2. Twenty notebooks — the engine explained one file at a time
+
+`notebooks/`, one per Python file in `gl_engine/`, plus an index. **They import the engine and run
+it; nothing imports them**, and nothing there is needed to rate a submission.
+
+**Same six cells every time, so the twentieth reads like the first:** what the file is for, its
+public surface *(generated from the module, so it cannot drift)*, the smallest thing that works, the
+interesting case, what it refuses, and try it yourself. **The refusals cell is not filler** — this
+engine stops rather than guessing in a great many places, and **the exception text is usually the
+clearest statement of a module's contract available.**
+
+Read in dependency order: where the content lives, how failures work, the typed cell, discovery and
+resolution, tables, then the interpreter's value model, tree, program, 54 instructions and machine,
+then schema, submission, kernel, referrals, assertions and the CLI.
+
+### 3. The notebook test, and what it caught immediately
+
+`tests/verify_notebooks.py` executes every code cell of every notebook and fails on any exception —
+so **a notebook that stops matching the code becomes a red suite rather than quietly wrong
+documentation.**
+
+**It does not compare outputs**, and that is a decision rather than an omission: pinning the prose
+to one corpus edition would turn the suite red **every time ISO files anything.**
+
+**It earned its keep on the first run, catching eight errors that read as plausible prose and did
+not run:** `Package.dir` is a method, `key_cols` holds `Column` objects, `"date"` is not one of
+ISO's four declared types, `Node.root` is a property, `Value` reads via `@FromDataDef`,
+`gl_engine.schema.validate` resolves to the *function* because the package re-exports it under the
+module's name, `Report.add` builds its own `Check`, and **the index misreported how many notebooks
+run without a corpus — six, not four**, measured by pointing `GL_ERC_ROOT` at nothing.
+
+**Outputs are stripped before commit and `.gitattributes` enforces it with `nbstripout`.** A
+notebook that has run holds **ISO's licensed values inside its JSON**, and this repository
+deliberately excludes ISO content. One stray error output was caught and cleared during the commit
+itself, which is why the filter is **configured rather than left to discipline.**
+
+### 4. Notebook churn found in the tree and reverted
+
+Twelve notebooks were modified in the working tree with **no content change** — cell `id` fields
+added and key order rewritten by an nbformat writer that had opened them. **Reverted, not
+committed.** Worth a line because it is the third recorded instance of this tree changing underneath
+a session *(Entry 16 §5)*, and because a diffstat reading `566 insertions` is easy to stage blindly.
+
+### 5. Property opened — as exploration, explicitly not as a build
+
+`CF_Algorithm/CauseOfLoss_Building_RatingAlgorithms.md`, 1,120 lines, written 2026-08-13 from
+`CFCW20260601V01` — **Commercial Property, countrywide, edition 06-01-2026.** It documents building
+rating across **all four cause-of-loss forms** (Basic Group I, Basic Group II, Broad, Special) as
+they run from `SetBlanketRatesAndFactors`: the rate build-up step by step, the premium branches
+*(scheduled, Legal Liability, blanket)*, and an end-to-end quick reference per form.
+
+**It had been sitting untracked and unmentioned in either log for four days.** Recorded now.
+
+**The direction is confirmed and the scope is not.** Property is a next direction. **Nothing is to
+be built there until exploration is further along** — no engine code, no schema work, no package
+resolution against CF. What exists is a reading of one countrywide package, and **the GL build's own
+history is the argument for waiting**: fifty-one process-log steps of analysis preceded stage 1, and
+the two findings that most changed the engine *(E20/OI-68's `1.00` sentinel, OI-69's split loss
+costs)* came from **running** the content, not reading it. **A Property build started off one
+document would be starting where GL started, minus the fifty-one steps.**
+
+### What was written
+
+| | |
+|---|---|
+| `.claude/agents/gl-authority.md` | The cross-source agent. `Agentic/gl-authority/` carries a copy and a README; `.claude/agents/` stays the live definition |
+| `Agentic/gl-engine-code-expert/` | The same two files for Entry 16's agent, which had shipped without them |
+| `notebooks/00-index.ipynb` … `19-cli.ipynb` | Twenty notebooks, one per engine file, plus the index |
+| `notebooks/START-HERE.md` | The one-page entry point: how to open them, which three to read when short on time, and why the cells are blank until you run them |
+| `tests/verify_notebooks.py` | Executes every cell of every notebook; no output comparison, by design |
+| `start-notebooks.bat` · `.command` | Windows and macOS launchers for Jupyter |
+| `CF_Algorithm/…md` | Commercial Property building rating, all four cause-of-loss forms. **Exploration — nothing builds on it yet** |
+
+### ▶ Next session
+
+**Items 1–4 are unchanged from Entry 16 and are now three entries old.** Two consecutive entries
+have been about explaining the build rather than extending it; **the defects have not moved.**
+
+1. **OI-88 / D1 — the null-in-`FirstNonNull` decision.** Still first, still **needs an explicit go**,
+   because it changes rating semantics for all 51. **The measuring pass does not need the go** —
+   the blast radius of `Round(null) → null` can be counted over the corpus before anything is
+   decided, and that count is what the decision is currently missing.
+2. **OI-91 / D2** — run the two terrorism-location measurements side by side over the same packages
+   and dates. Terrorism breadth is blocked in 20 jurisdictions until it is settled.
+3. **Fill the coverage grid** — it still reads *1 of 19*.
+4. **OI-89 / D3** — experience rating needs about twenty dated fields before schedule rating can be
+   exercised on prem/ops.
+5. **Property exploration, at reading pace and no further.** The next honest step is **breadth of
+   reading, not code**: what a CF *state* package changes against the countrywide one already
+   documented, and whether the four-form structure survives contact with a second jurisdiction.
+   **No build until that is answered.**
