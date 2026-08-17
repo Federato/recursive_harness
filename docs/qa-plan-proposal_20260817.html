@@ -1,0 +1,841 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>QA Plan Proposal — GL Rating Engine — 17 August 2026</title>
+<style>
+:root{--bg:#fbfbfd;--fg:#1d1d20;--mut:#63636b;--line:#e3e3e8;--accent:#1f3864;
+--code-bg:#f4f4f7;--tbl-head:#1f3864;--ok:#1e7b45;--warn:#b7791f;--bad:#a11;
+--wire:#8a8f98;--wirebg:#fff}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--fg);
+font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+header{background:#fff;border-bottom:1px solid var(--line);padding:1.6rem 1.5rem 1.3rem}
+header .in{max-width:62rem;margin:0 auto}
+header h1{margin:0 0 .3rem;font-size:1.7rem;color:var(--accent);letter-spacing:-.01em}
+header .sub{color:var(--mut);font-size:.95rem}
+.wrap{max-width:62rem;margin:0 auto;padding:0 1.5rem 6rem}
+h2{margin:3rem 0 1rem;padding-top:1.5rem;border-top:2px solid var(--line);
+font-size:1.35rem;color:var(--accent)}
+h3{margin:2rem 0 .6rem;font-size:1.08rem}
+h4{margin:1.4rem 0 .4rem;font-size:.98rem;color:var(--accent)}
+p,li{max-width:56rem}
+code{background:var(--code-bg);padding:.1em .35em;border-radius:3px;
+font:.88em ui-monospace,"Cascadia Code",Consolas,monospace}
+pre{background:var(--code-bg);padding:.9rem 1rem;border-radius:6px;overflow-x:auto;
+font:.85rem/1.5 ui-monospace,"Cascadia Code",Consolas,monospace;border:1px solid var(--line)}
+pre code{background:none;padding:0}
+table{border-collapse:collapse;width:100%;margin:1rem 0;font-size:.92rem}
+th{background:var(--tbl-head);color:#fff;text-align:left;padding:.5rem .7rem;font-weight:600}
+td{border-bottom:1px solid var(--line);padding:.45rem .7rem;vertical-align:top}
+tbody tr:nth-child(even){background:#f7f7fa}
+.scroll{overflow-x:auto}
+.toc{border:1px solid var(--line);border-radius:8px;background:#fff;padding:1rem 1.3rem;margin:1.6rem 0 2rem}
+.toc ol{margin:.3rem 0;padding-left:1.3rem}
+.toc li{margin:.15rem 0}
+.lede{font-size:1.06rem;background:#fff;border-left:4px solid var(--accent);
+padding:1rem 1.2rem;border-radius:0 6px 6px 0;margin:1.4rem 0}
+.note{background:#fff;border:1px solid var(--line);border-left:4px solid var(--warn);
+padding:.85rem 1.1rem;border-radius:0 6px 6px 0;margin:1.2rem 0;font-size:.95rem}
+.note.bad{border-left-color:var(--bad)}
+.note.ok{border-left-color:var(--ok)}
+.note b{color:var(--accent)}
+.k{font-weight:600;color:var(--accent)}
+.src{color:var(--mut);font-size:.85rem;font-style:italic}
+.pill{display:inline-block;font-size:.72rem;font-weight:700;letter-spacing:.04em;
+padding:.13rem .45rem;border-radius:3px;vertical-align:.08em}
+.p-erc{background:#e8eef8;color:#1f3864}
+.p-man{background:#f3ecdf;color:#7a5a10}
+.p-code{background:#e7f2ea;color:#1e7b45}
+.p-new{background:#fbe9e9;color:#a11}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem}
+@media(max-width:760px){.grid2{grid-template-columns:1fr}}
+.card{background:#fff;border:1px solid var(--line);border-radius:8px;padding:.9rem 1.1rem}
+.card h4{margin-top:0}
+.big{font-size:1.9rem;font-weight:700;color:var(--accent);line-height:1.1}
+.big small{display:block;font-size:.72rem;font-weight:400;color:var(--mut);
+letter-spacing:.03em;text-transform:uppercase;margin-top:.25rem}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(9rem,1fr));gap:.8rem;margin:1.2rem 0}
+/* wireframes */
+.wf{background:var(--wirebg);border:2px solid var(--wire);border-radius:8px;
+margin:1.2rem 0;overflow:hidden;font-size:.86rem}
+.wf .bar{background:#eef0f3;border-bottom:1px solid var(--wire);padding:.45rem .8rem;
+font-weight:600;color:#4a4f57;display:flex;gap:.9rem;align-items:center;flex-wrap:wrap}
+.wf .bar .tab{font-weight:400;color:var(--mut);padding:.1rem .4rem;border-radius:3px}
+.wf .bar .tab.on{background:#fff;border:1px solid var(--wire);color:var(--fg);font-weight:600}
+.wf .body{padding:.9rem 1rem}
+.wf .cols{display:grid;gap:.9rem}
+.wf .c2{grid-template-columns:minmax(0,1fr) minmax(0,1.5fr)}
+@media(max-width:760px){.wf .c2{grid-template-columns:1fr}}
+.box{border:1.5px dashed var(--wire);border-radius:5px;padding:.6rem .7rem;margin:.45rem 0;
+background:#fcfcfd}
+.box .lbl{font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--mut);
+margin-bottom:.35rem;font-weight:600}
+.ctl{display:flex;justify-content:space-between;gap:.6rem;border:1px solid #d7dae0;
+border-radius:4px;padding:.25rem .5rem;margin:.22rem 0;background:#fff;font-size:.82rem}
+.ctl .v{color:var(--mut)}
+.btn{display:inline-block;background:var(--accent);color:#fff;border-radius:5px;
+padding:.35rem .85rem;font-size:.83rem;font-weight:600;margin:.3rem .3rem .3rem 0}
+.btn.ghost{background:#fff;color:var(--accent);border:1.5px solid var(--accent)}
+.meter{height:9px;border-radius:5px;background:#e6e8ec;overflow:hidden;margin:.35rem 0;display:flex}
+.meter i{display:block;height:100%}
+.m-ok{background:#1e7b45}.m-na{background:#b6bcc4}.m-bad{background:#a11}.m-warn{background:#b7791f}
+.legend{font-size:.75rem;color:var(--mut);display:flex;gap:.9rem;flex-wrap:wrap;margin-top:.3rem}
+.legend b{display:inline-block;width:.6rem;height:.6rem;border-radius:2px;margin-right:.25rem}
+.hm{display:grid;grid-template-columns:5.5rem repeat(12,1fr);gap:2px;font-size:.68rem;align-items:center}
+.hm .rl{color:var(--mut);text-align:right;padding-right:.3rem}
+.hm i{display:block;height:14px;border-radius:2px;background:#e6e8ec}
+.hm i.f{background:#1e7b45}.hm i.p{background:#8fc4a5}.hm i.n{background:#c9ced6}
+.hm i.d{background:#a11}
+.wfcap{font-size:.83rem;color:var(--mut);margin:-.5rem 0 1.6rem;padding-left:.2rem}
+.fake{color:var(--mut);font-size:.78rem}
+ul.tight li{margin:.2rem 0}
+.rank{font-weight:700;color:var(--accent)}
+footer{border-top:2px solid var(--line);margin-top:3rem;padding-top:1.2rem;
+color:var(--mut);font-size:.88rem}
+</style></head><body>
+
+<header><div class="in">
+<h1>QA Plan Proposal — full-coverage testing of the GL rating engine</h1>
+<div class="sub">ISO General Liability · Recursive Harness 2.0 · 17 August 2026 ·
+<b>Proposal only — nothing in this document has been built</b></div>
+</div></header>
+
+<div class="wrap">
+
+<div class="lede">
+<b>What this proposes.</b> A test programme that covers all 51 jurisdictions across multiple
+locations, multiple classifications, varied limits, varied classes and varied exposure amounts —
+sized from ISO's own declared content rather than from guesswork, run either from a terminal command
+or a single button, reviewed automatically by the harness itself, and reported in a form a
+non-technical reader can act on.
+<br><br>
+<b>The central recommendation.</b> Do not build one test matrix. Build <span class="k">two, with
+different purposes and very different sizes</span> — a <span class="k">value sweep</span> that checks
+every filed rate comes back correctly, and a <span class="k">logic matrix</span> that checks the
+engine behaves correctly. Conflating them is what makes people propose a cross-product of
+<code>1.9 × 10<sup>16</sup></code> and then never run it.
+</div>
+
+<div class="toc"><b>Contents</b>
+<ol>
+<li><a href="#basis">Basis of this proposal — who measured what</a></li>
+<li><a href="#exists">What already exists</a></li>
+<li><a href="#two">The two test objectives, sized separately</a></li>
+<li><a href="#sample">Test sample overview</a></li>
+<li><a href="#trigger">How tests are triggered — terminal and UI</a></li>
+<li><a href="#viz">Visualisation of results</a></li>
+<li><a href="#review">Recursive harness review of the results</a></li>
+<li><a href="#analysis">Analysis of results</a></li>
+<li><a href="#defects">Defects and potential solutions</a></li>
+<li><a href="#prereq">Prerequisites — what must exist before the matrix can run</a></li>
+<li><a href="#cost">Cost, schedule and phasing</a></li>
+<li><a href="#claims">What this proposal does not claim</a></li>
+</ol></div>
+
+<h2 id="basis">1 · Basis of this proposal — who measured what</h2>
+
+<p>Every number in this document was measured today by one of three specialist agents, each reading a
+different source. Nothing is estimated. Where the sources disagree, the disagreement is reported
+rather than smoothed over.</p>
+
+<div class="scroll"><table>
+<thead><tr><th>Agent</th><th>Source it reads</th><th>What it supplied here</th></tr></thead>
+<tbody>
+<tr><td><code>gl-engine-code-expert</code></td><td>our Python only</td>
+<td>Existing entry points, the 19-control surface, result schema, UI routes, measured timings, and what blocks a 51-state matrix today</td></tr>
+<tr><td><code>gl-authority</code></td><td>ISO's machine-readable content (ERC) + our code</td>
+<td>Class codes, premium bases, territories, limit and deductible domains, sublines, exposure banding, and which axes are independent</td></tr>
+<tr><td><code>iso-circular-expert</code></td><td>ISO's filed manuals and circulars</td>
+<td>Which rules vary most by state, which are combination-sensitive, and a ranked list of the ten behaviours most likely to be implemented wrongly</td></tr>
+</tbody></table></div>
+
+<p><span class="pill p-erc">ERC</span> = measured from ISO's machine-readable files ·
+<span class="pill p-man">MANUAL</span> = from ISO's filed manuals ·
+<span class="pill p-code">CODE</span> = measured from our engine ·
+<span class="pill p-new">NEW</span> = proposed, does not exist yet</p>
+
+<h2 id="exists">2 · What already exists</h2>
+
+<p>This matters because it changes the proposal from <em>"build a test system"</em> to <em>"extend
+one."</em> The following is all working today.</p>
+
+<div class="scroll"><table>
+<thead><tr><th>Capability</th><th>Where</th><th>State</th></tr></thead>
+<tbody>
+<tr><td>19 variable controls in 10 groups, each reading its legal values live from ISO's own domain tables, per state</td><td><code>scripts/variants.py</code></td><td><span class="pill p-code">CODE</span> works</td></tr>
+<tr><td>Run one configuration across all 51 jurisdictions, engine-only or against ISO</td><td><code>scripts/sweep.py</code></td><td>works</td></tr>
+<tr><td>17 pre-built risk variants in 7 groups</td><td><code>scripts/breadth.py</code></td><td>works</td></tr>
+<tr><td>One definition of "agree" — premium <em>and</em> every published field</td><td><code>phase2_compare.compare_payload</code></td><td>works, and reuse is asserted by a test</td></tr>
+<tr><td><b>Start a run from a button</b>, background thread, live polling</td><td><code>POST /api/tester/run</code></td><td>works</td></tr>
+<tr><td>Permanent append-only run store with a defect register</td><td><code>ui/store.py</code> → <code>results/runs-*.jsonl</code></td><td>works, 18 runs stored</td></tr>
+<tr><td>Four inline-SVG charts incl. a coverage grid, no chart library</td><td><code>ui/charts.py</code></td><td>works</td></tr>
+<tr><td><b>No-op diagnosis</b> — tells "ISO's filing does nothing" apart from "we picked a dud value"</td><td><code>variants.probe_no_op</code></td><td>works, added today</td></tr>
+<tr><td>Legality check without rating — <em>"where does this configuration even apply?"</em></td><td><code>POST /api/tester/legality</code></td><td>works</td></tr>
+</tbody></table></div>
+
+<div class="note ok"><b>Design consequence.</b> Every wireframe in section 6 extends the existing
+<code>/tester</code> page and the existing store. No new service, no new database, no chart library,
+no parallel results format. The proposal adds axes, a scheduler and a review layer — not a system.</div>
+
+<h2 id="two">3 · The two test objectives, sized separately</h2>
+
+<p>This is the structural decision the whole plan rests on. There are two different questions, and
+they need different machinery.</p>
+
+<div class="grid2">
+<div class="card"><h4>A · Value coverage — <em>"is every filed rate returned correctly?"</em></h4>
+<p class="big">278,054<small>filed rate cells to verify</small></p>
+<p>A data-comparison job, not a scenario matrix. <span class="pill p-erc">ERC</span>
+<b>217,461</b> premises/operations loss-cost cells and <b>60,593</b> products cells across the 51
+jurisdictions — exactly classes × territories, no gaps.</p>
+<p>One rating per <code>(state, territory, class)</code>. Mostly mechanical, highly parallelisable,
+and it answers a question a carrier will absolutely ask: <em>does it get my class right?</em></p>
+</div>
+<div class="card"><h4>B · Logic coverage — <em>"does the engine behave correctly?"</em></h4>
+<p class="big">~2,000–4,000<small>scenarios, pairwise over binned axes</small></p>
+<p>A scenario matrix. This is where deductible ordering, limit keying, multi-location aggregation,
+minimum premiums and the rating plans get exercised.</p>
+<p>The number is small <em>because</em> the axes were measured: most of them are keyed on each
+other, so the honest degrees of freedom are far fewer than the raw cardinalities suggest.</p>
+</div>
+</div>
+
+<div class="note bad"><b>Why not a cross-product.</b> <span class="pill p-erc">ERC</span> The full
+cross product for a single subline at one location and one classification is
+<b>1.94 × 10<sup>16</sup></b>. That figure is not a target — it is the argument against the design.
+Quoting it, and then quoting the 464 legal limit combinations that replace 11,700 naive ones, is how
+this plan justifies a sample instead of an enumeration.</div>
+
+<h2 id="sample">4 · Test sample overview</h2>
+
+<h3>4.1 The population</h3>
+
+<div class="stats">
+<div class="card"><div class="big">51<small>jurisdictions in corpus</small></div></div>
+<div class="card"><div class="big">50<small>comparable against ISO</small></div></div>
+<div class="card"><div class="big">1,188<small>class codes per state</small></div></div>
+<div class="card"><div class="big">558<small>distinct rating behaviours</small></div></div>
+<div class="card"><div class="big">183<small>territories, all states</small></div></div>
+<div class="card"><div class="big">464<small>legal limit combinations</small></div></div>
+</div>
+
+<div class="note"><b>Two facts to state up front, because both break a naive matrix.</b>
+<span class="pill p-erc">ERC</span>
+<b>Hawaii is not in the corpus at all</b> — the 51 are 49 states + DC + Puerto Rico. And
+<b>Puerto Rico rates but cannot be compared</b>: there is no ISO entitlement on this subscription.
+So a "50-state" live matrix is precisely <b>50 comparable of 51 runnable</b>, and every headline
+figure should read <code>n of 50</code>.</div>
+
+<h3>4.2 The axes, and which are real</h3>
+
+<p>The critical measurement: <b>most axes are keyed on another axis</b>, so they carry no independent
+degrees of freedom. This is what collapses the matrix to something runnable.</p>
+
+<div class="scroll"><table>
+<thead><tr><th>Axis</th><th>Raw size</th><th>Independent?</th><th>What that means for the sample</th></tr></thead>
+<tbody>
+<tr><td><b>Jurisdiction</b></td><td>51</td><td><b>Yes</b></td><td>Outermost axis. Drives edition, countrywide parent, territory scheme, subline set</td></tr>
+<tr><td><b>Territory</b></td><td>1–20 (Σ 183)</td><td><b>Yes</b>, within a state</td><td><b>20 states are capped at 1</b> — multi-location is undeclarable there</td></tr>
+<tr><td><b>Class code</b></td><td>1,188</td><td><b>Yes</b> for values</td><td>Collapses to <b>558 behaviour classes</b> for logic — see 4.3</td></tr>
+<tr><td>Premium basis</td><td>59</td><td><b>No</b> — keyed on class</td><td>One basis per class. <b>Zero extra freedom</b>; pick classes to reach bases</td></tr>
+<tr><td><b>Each-occurrence limit</b></td><td>13</td><td><b>Yes</b></td><td>A full axis; 13 values is cheap to cover completely</td></tr>
+<tr><td>General aggregate</td><td>30</td><td><b>No</b> — keyed on occurrence limit</td><td>72 legal pairs, not 390</td></tr>
+<tr><td>Products aggregate</td><td>30</td><td><b>No</b> — keyed on occurrence limit</td><td><b>464 legal triples total, identical in all 51</b></td></tr>
+<tr><td>ILF factor</td><td>—</td><td><b>No</b> — keyed on class × limits</td><td>Not an axis; it is the thing being tested <em>through</em> the others</td></tr>
+<tr><td><b>Prem/ops deductible</b></td><td>991</td><td><b>Yes</b></td><td>Three structural shapes × 31 amounts — see 4.4</td></tr>
+<tr><td><b>Products deductible</b></td><td>991</td><td><b>Yes</b>, of prem/ops</td><td>Fully independent of the prem/ops side</td></tr>
+<tr><td>Deductible factor</td><td>—</td><td><b>No</b> — keyed on ILF assignment</td><td><b>2.9× spread on the same $5,000 deductible</b> across tables 1/2/3</td></tr>
+<tr><td><b>Exposure amount</b></td><td>unbounded</td><td><b>Yes</b></td><td>Bites only through <b>98 interpolated bands</b>, and only when size-of-risk is on</td></tr>
+<tr><td><b>Size-of-risk on/off</b></td><td>2</td><td><b>Yes</b></td><td>A hard gate on the entire exposure axis</td></tr>
+<tr><td>Subline</td><td>8–11</td><td><b>Yes</b></td><td><b>7 of 11 have no buildable base submission today</b> — see section 10</td></tr>
+<tr><td><b>Effective date</b></td><td>2</td><td><b>Yes</b></td><td><b>Does not exist as an axis today.</b> See 4.6 — this is the biggest gap</td></tr>
+</tbody></table></div>
+
+<h3>4.3 Sampling class codes — the measurement that makes it tractable</h3>
+
+<p><span class="pill p-erc">ERC</span> Grouping every class code by its actual rating behaviour —
+premium basis, both ILF table assignments, and both size-of-risk table assignments — gives:</p>
+
+<ul class="tight">
+<li><b>1,188 class codes → 558 distinct behaviour classes</b></li>
+<li><b>376 of the 558 are singletons</b> — one class code each</li>
+<li>Constituents: 59 bases, 4 prem/ops ILF assignments, 5 products assignments, 84 prem/ops size-of-risk tables, 43 products tables</li>
+</ul>
+
+<div class="note"><b>The tail is the trap.</b> Gross Sales, Payroll and Area cover <b>87%</b> of class
+codes (685 / 268 / 82). But <b>49 of the 59 premium bases carry five class codes or fewer, and 33
+carry exactly one</b> — "No Exposure", "Vehicles (Toll Bridges)", "Passenger Days".
+<b>A sample drawn uniformly at random would effectively never touch them.</b> The plan therefore
+draws <span class="k">stratified by behaviour class, not by class code</span>.</div>
+
+<h4>Proposed class sample</h4>
+<div class="scroll"><table>
+<thead><tr><th>Stratum</th><th>Draw</th><th>Rationale</th></tr></thead>
+<tbody>
+<tr><td>Every premium basis</td><td><b>59</b> — one class per basis, minimum</td><td>The divisor differs per basis; <code>Each</code> and <code>Units</code> have <em>no</em> divisor. A universal ÷1000 is wrong for two of eight documented bases</td></tr>
+<tr><td>Every ILF assignment combination</td><td><b>20</b> — 4 prem/ops × 5 products</td><td>Drives both the ILF and the deductible factor</td></tr>
+<tr><td>The refer-to-company classes</td><td><b>2</b> — <code>54444</code>, <code>94444</code></td><td>These <em>refer</em> rather than rate. Mandatory negative path</td></tr>
+<tr><td>No-products classes</td><td><b>3</b> sampled from 478 at <code>N/A</code></td><td>No products ILF at all — a whole side of the calculation absent</td></tr>
+<tr><td>High-volume behaviour classes</td><td><b>40</b> largest by member count</td><td>Covers the business a carrier actually writes</td></tr>
+<tr><td>Singleton behaviours</td><td><b>30</b> sampled from 376, rotating each cycle</td><td>The long tail gets reached over time rather than never</td></tr>
+</tbody></table></div>
+<p class="src">≈ 120–150 class codes per cycle, chosen to span every basis and every assignment, rather
+than 1,188 chosen for completeness.</p>
+
+<h3>4.4 Deductibles — three shapes, not a grid</h3>
+
+<p><span class="pill p-erc">ERC</span> 31 legal values per side (No Deductible, plus 15 amounts ×
+{Per Claim, Per Occurrence}). The combined BI/PD domain has 991 rows, and they decompose exactly:
+<b>960 of the 961 (BI, PD) pairs admit only <code>No Deductible</code> as the combined value</b>; only
+the (none, none) pair admits all 31.</p>
+
+<p>So the deductible axis is <span class="k">three structural cases</span>, not a free grid:</p>
+<ol class="tight">
+<li>Split BI and PD set, combined necessarily none</li>
+<li>Combined set, both splits necessarily none</li>
+<li>Nothing set</li>
+</ol>
+<p>Sampled at <b>3 shapes × 6 amounts × 2 sides (prem/ops, products, independent)</b> = <b>36</b>
+deductible configurations, plus the <b>refer-to-company band above $5,000</b>
+<span class="pill p-man">MANUAL</span> which must be tested as a <em>referral</em>, not as a premium.</p>
+
+<h3>4.5 Exposure — 98 bands and a gate</h3>
+
+<p><span class="pill p-erc">ERC</span> Size-of-risk relativity is <b>interpolated over 98 bands</b>
+(8,330 prem/ops rows, 4,214 products rows), from 1,000 up to a top band closing at the 64-bit
+maximum. Two things gate it:</p>
+
+<ol class="tight">
+<li><code>SizeOfRiskRatingApplies</code> must be <code>Yes</code>, or the band key is zero and
+banding never fires.</li>
+<li><b>The band key is scaled by premium basis.</b> For nine bases the key is
+<code>floor(exposure/1000) × 1000</code>; for the other fifty it is <code>exposure × 1000</code>.
+So band <em>1,000–2,000</em> means <b>$1,000–$2,000 of sales</b> on Gross Sales but <b>1–2 units</b>
+on a count basis.</li>
+</ol>
+
+<p><b>Proposed exposure sample: three points per band boundary</b> — <code>edge − 1</code>,
+<code>edge</code>, <code>edge + 1</code> — on a rotating subset of bands, plus both scaling regimes.
+Boundary-adjacent values are where interpolation and banding defects live; a midpoint tells you
+almost nothing.</p>
+
+<div class="note bad"><b>A defect found while measuring this.</b>
+<span class="pill p-code">CODE</span> ISO declares an exposure range of <code>1 … 9,999,999,999</code>.
+Our engine <b>reads that bound and discards it</b> — <code>MinimumValue</code>/<code>MaximumValue</code>
+appear nowhere in <code>gl_engine/</code>, and <code>Field.minimum</code>/<code>.maximum</code> are
+parsed but read by nothing. <b>We accept any exposure at all.</b> Listed as D-4 in section 9.</div>
+
+<h3>4.6 Effective date — the axis that does not exist</h3>
+
+<div class="note bad"><b>The most consequential finding in this proposal.</b>
+<span class="pill p-man">MANUAL</span> All 51 jurisdictions are on the pre-2027 basis today.
+<b>43 migrate on a single morning — 1 April 2027.</b> It is not a renumbering:
+<b>Rule 14, classification-level minimum premiums, is deleted outright</b> — the per-subline,
+highest-of apparatus, the "if any" provision and ~25 special combined mercantile classes all vanish.
+Premium changes for small risks. The class list also moves from <b>1,188 to 1,163</b> — 25 codes
+withdrawn.
+<br><br>
+<span class="pill p-code">CODE</span> <b>Our harness has no as-of axis.</b> <code>sweep.py</code> has
+no <code>--asof</code> flag, the tester never sends one, and the rating date comes from the payload
+while the <em>options</em> come from a separately-passed as-of — so setting one today changes which
+values are offered while the engine still rates at 2026-08-01. That is a live inconsistency, not
+merely a missing feature.
+<br><br>
+<b>Recommendation: effective date becomes a first-class axis, and every fixture is pinned to
+<code>(jurisdiction, as-of)</code> — never to a global class list.</b></div>
+
+<h3>4.7 The proposed sample, in one table</h3>
+
+<div class="scroll"><table>
+<thead><tr><th>Tier</th><th>What it covers</th><th>Scenarios</th><th>Live calls</th><th>Cadence</th></tr></thead>
+<tbody>
+<tr><td><b>T0 · Smoke</b></td><td>Base risk, all 51, unvaried</td><td>51</td><td>50</td><td>Every change</td></tr>
+<tr><td><b>T1 · Core logic</b></td><td>Pairwise over binned axes: limits × deductible shapes × size-of-risk × 2 locations × 2 classes, in 12 structurally-chosen states</td><td>~600</td><td>~600</td><td>Nightly</td></tr>
+<tr><td><b>T2 · Full logic</b></td><td>T1 extended to all 51 and the full class-behaviour stratification</td><td>~2,500–4,000</td><td>~2,500</td><td>Weekly</td></tr>
+<tr><td><b>T3 · Value sweep</b></td><td>Every filed rate cell — 217,461 prem/ops + 60,593 products</td><td>278,054</td><td>sampled</td><td>Monthly / on ISO filing</td></tr>
+<tr><td><b>T4 · Edition cliff</b></td><td>T1 run at both sides of 2027-04-01 and diffed</td><td>~1,200</td><td>~1,200</td><td>Before Apr 2027, then quarterly</td></tr>
+</tbody></table></div>
+
+<h3>4.8 Jurisdiction selection for T1 — chosen to be awkward</h3>
+
+<p>Twelve states, each present for a measured structural reason rather than for size:</p>
+<div class="scroll"><table>
+<thead><tr><th>States</th><th>Why they are in the core set</th></tr></thead>
+<tbody>
+<tr><td><b>NY</b></td><td>20 territories; only state with the Special Protective &amp; Highway subline; declares no claims-made form; loss costs in 20 renamed sibling tables; <b>an open ERC-vs-manual class-count disagreement (1,191 vs 1,181)</b></td></tr>
+<tr><td><b>CA, NJ, OH</b></td><td>Loss costs live in split sibling tables — the base table has <b>zero rows</b>. A reader querying the base name gets a finished, wrong answer</td></tr>
+<tr><td><b>CA, NJ, TX, VT</b></td><td>Declare a <b>different countrywide parent</b> from the other 47 — three live parents exist</td></tr>
+<tr><td><b>CA, FL, NY, TX</b></td><td>Territory by <b>county and place name</b>, not ZIP. A ZIP-only resolver fails silently in the four largest territory-rated states</td></tr>
+<tr><td><b>PA</b></td><td>11 territories; declares territory <b>506 with no ZIP mapping and no rate</b>; and its live notice amends paragraph addresses that do not exist in the parent it names</td></tr>
+<tr><td><b>GA</b></td><td>Files <b>no deductible factors of its own</b> — all fourteen tables come from countrywide. Tests the layering</td></tr>
+<tr><td><b>FL, NY, RI</b></td><td>The only three where schedule rating moves the premium without experience rating</td></tr>
+<tr><td><b>MT, WY</b></td><td>Single territory, no terrorism location filed — the "nothing to send" path</td></tr>
+<tr><td><b>DE</b></td><td>Territory scheme visible only under a fifth table name; a classifier keyed to the common name loses it silently</td></tr>
+</tbody></table></div>
+
+<h2 id="trigger">5 · How tests are triggered</h2>
+
+<p>Two routes, one engine underneath. Both already have most of their plumbing.</p>
+
+<h3>5.1 From the terminal</h3>
+
+<p><span class="pill p-new">NEW</span> A single <code>qa</code> entry point wrapping the existing
+runners, so a tier is one command:</p>
+
+<pre><code># run a whole tier
+python scripts/qa.py --tier T1                    # ~600 scenarios, live
+python scripts/qa.py --tier T1 --offline          # free, no ISO calls
+python scripts/qa.py --tier T0                    # smoke, all 51
+
+# narrow it
+python scripts/qa.py --tier T2 --juris NY --juris CA
+python scripts/qa.py --tier T2 --axis deductible --axis limits
+python scripts/qa.py --tier T4 --asof 20270401    # the edition cliff
+
+# what would it do, and what would it cost?
+python scripts/qa.py --tier T2 --plan             # print the matrix, run nothing
+python scripts/qa.py --estimate                   # calls, wall-clock, per tier
+
+# re-run only what failed last time
+python scripts/qa.py --rerun-failures &lt;run-id&gt;</code></pre>
+
+<div class="note"><b>Design rule.</b> <code>--plan</code> and <code>--estimate</code> are not
+conveniences. A tier that makes thousands of billable calls must be able to show exactly what it
+intends to do <b>before</b> it does it, and every run must report calls spent alongside results.</div>
+
+<h3>5.2 From a button</h3>
+
+<p>The existing tester page gains a <b>QA</b> tab. The launcher below is one screen; everything on it
+maps to machinery that already exists (<code>POST /api/tester/run</code>, the legality check, the
+estimator).</p>
+
+<div class="wf">
+<div class="bar">GL Rating Engine — Tester
+<span class="tab">Risk</span><span class="tab on">QA</span><span class="tab">History</span>
+<span class="tab">Coverage</span><span class="tab">Defects</span></div>
+<div class="body">
+<div class="cols c2">
+<div>
+<div class="box"><div class="lbl">Choose a tier</div>
+<div class="ctl"><span>○ T0 · Smoke — base risk, all states</span><span class="v">51 · ~7 min</span></div>
+<div class="ctl"><span><b>● T1 · Core logic</b> — 12 states, pairwise</span><span class="v">600 · ~1.4 hr</span></div>
+<div class="ctl"><span>○ T2 · Full logic — all 51</span><span class="v">2,500 · ~5.8 hr</span></div>
+<div class="ctl"><span>○ T3 · Value sweep — every filed rate</span><span class="v">278,054 · sampled</span></div>
+<div class="ctl"><span>○ T4 · Edition cliff — both sides of Apr 2027</span><span class="v">1,200 · ~2.8 hr</span></div>
+</div>
+<div class="box"><div class="lbl">Options</div>
+<div class="ctl"><span>☑ Compare each against ISO</span><span class="v">live</span></div>
+<div class="ctl"><span>☐ Engine only</span><span class="v">free</span></div>
+<div class="ctl"><span>☑ Diagnose every no-op</span><span class="v">offline</span></div>
+<div class="ctl"><span>☑ Run the harness review afterwards</span><span class="v">§7</span></div>
+<div class="ctl"><span>As-of date</span><span class="v">2026-08-01 ▾</span></div>
+</div>
+</div>
+<div>
+<div class="box"><div class="lbl">Before you start</div>
+<p class="fake" style="margin:.2rem 0 .5rem"><b>T1 · Core logic</b> — 600 scenarios across 12
+jurisdictions, varying limits, deductible shapes, size-of-risk, two locations and two classifications.</p>
+<div class="ctl"><span>Live ISO calls</span><span class="v"><b>600</b> — Puerto Rico excluded, no entitlement</span></div>
+<div class="ctl"><span>Estimated wall-clock</span><span class="v"><b>1 hr 24 min</b> at 8.4 s/call, serial</span></div>
+<div class="ctl"><span>Scenarios not applicable</span><span class="v">48 — reasons listed</span></div>
+<div class="ctl"><span>Last run of this tier</span><span class="v">2 days ago · 597 of 600 agreed</span></div>
+<span class="btn">Start T1 — 600 live calls</span>
+<span class="btn ghost">Show the matrix first</span>
+<span class="btn ghost">Run offline instead</span>
+</div>
+<div class="box"><div class="lbl">Schedule</div>
+<div class="ctl"><span>T0 smoke</span><span class="v">on every change ▾</span></div>
+<div class="ctl"><span>T1 core</span><span class="v">nightly 02:00 ▾</span></div>
+<div class="ctl"><span>T2 full</span><span class="v">Sundays 01:00 ▾</span></div>
+</div>
+</div>
+</div>
+</div></div>
+<p class="wfcap"><b>Wireframe 1 — the launcher.</b> The cost is stated before the button, not after.
+"Show the matrix first" is <code>--plan</code>; "Run offline instead" is the free path.</p>
+
+<h3>5.3 While it runs</h3>
+
+<div class="wf">
+<div class="bar">T1 · Core logic — running</div>
+<div class="body">
+<div class="box"><div class="lbl">Progress — 341 of 600</div>
+<div class="meter"><i class="m-ok" style="width:54%"></i><i class="m-na" style="width:4%"></i><i class="m-bad" style="width:1%"></i><i style="width:41%;background:#eef0f3"></i></div>
+<div class="legend"><span><b class="m-ok" style="background:#1e7b45"></b>agrees 335</span>
+<span><b style="background:#b6bcc4"></b>not applicable 3</span>
+<span><b style="background:#a11"></b>needs review 3</span>
+<span>elapsed 47 min · remaining ~36 min · 341 calls spent</span></div>
+</div>
+<div class="box"><div class="lbl">Latest — newest first</div>
+<div class="ctl"><span>NY · 2 locations · $2M/$4M · products ded $5,000</span><span class="v" style="color:#a11"><b>DIFFERS</b> — ours 41,208 · ISO 41,190</span></div>
+<div class="ctl"><span>GA · 2 classes · size-of-risk on · exposure 250,000</span><span class="v" style="color:#1e7b45">agrees</span></div>
+<div class="ctl"><span>MT · 2 locations</span><span class="v">not applicable — MT declares 1 territory</span></div>
+<div class="ctl"><span>PA · territory 506</span><span class="v" style="color:#b7791f">refused — no rate filed for 506</span></div>
+</div>
+<span class="btn ghost">Pause</span><span class="btn ghost">Stop and keep results</span>
+</div></div>
+<p class="wfcap"><b>Wireframe 2 — the run view.</b> Extends the existing polling view. <b>Not applicable
+is grey and never counted as a failure</b> — that rule already exists in the charts and must survive
+into QA reporting.</p>
+
+<h2 id="viz">6 · Visualisation of results — for a non-technical reader</h2>
+
+<div class="note"><b>The design rule for every visual here:</b> a reader who does not know what an ILF
+is should be able to tell, in ten seconds, <b>whether we are in good shape and what the worst problem
+is.</b> Detail is available on click, never on arrival.</div>
+
+<h3>6.1 The one-screen verdict</h3>
+
+<div class="wf">
+<div class="bar">QA — Summary · T1 Core logic · run 2026-08-17 02:00</div>
+<div class="body">
+<div class="cols c2">
+<div>
+<div class="box"><div class="lbl">Where we stand</div>
+<div style="font-size:2.4rem;font-weight:700;color:#1e7b45;line-height:1.1">99.5%</div>
+<div class="fake" style="margin-bottom:.5rem">597 of 600 scenarios agree with ISO on the premium
+<b>and every published figure</b></div>
+<div class="meter"><i class="m-ok" style="width:95%"></i><i class="m-na" style="width:4%"></i><i class="m-bad" style="width:1%"></i></div>
+<div class="legend"><span><b style="background:#1e7b45"></b>Agrees 597</span>
+<span><b style="background:#b6bcc4"></b>Not offered in that state 48</span>
+<span><b style="background:#a11"></b>Needs review 3</span></div>
+</div>
+<div class="box"><div class="lbl">What changed since last run</div>
+<div class="ctl"><span>New problems</span><span class="v" style="color:#a11"><b>1</b> — New York, two locations</span></div>
+<div class="ctl"><span>Problems fixed</span><span class="v" style="color:#1e7b45"><b>2</b></span></div>
+<div class="ctl"><span>Still open from before</span><span class="v">2</span></div>
+<div class="ctl"><span>Newly covered ground</span><span class="v">+41 scenarios never tested before</span></div>
+</div>
+</div>
+<div>
+<div class="box"><div class="lbl">Coverage — what we have actually exercised</div>
+<div class="hm">
+<span class="rl">Limits</span><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="p"></i><i class="p"></i>
+<span class="rl">Deductibles</span><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="f"></i><i class="p"></i><i class="p"></i><i class="p"></i><i></i><i></i><i></i>
+<span class="rl">Locations</span><i class="f"></i><i class="f"></i><i class="f"></i><i class="n"></i><i class="n"></i><i class="f"></i><i class="n"></i><i class="f"></i><i class="n"></i><i class="n"></i><i class="n"></i><i class="n"></i>
+<span class="rl">Classes</span><i class="f"></i><i class="f"></i><i class="p"></i><i class="p"></i><i class="p"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+<span class="rl">Exposure</span><i class="f"></i><i class="f"></i><i class="f"></i><i class="p"></i><i class="p"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+<span class="rl">Rating plans</span><i class="f"></i><i class="d"></i><i class="f"></i><i class="f"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+<span class="rl">Sublines</span><i class="f"></i><i class="f"></i><i class="f"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+</div>
+<div class="legend" style="margin-top:.5rem">
+<span><b style="background:#1e7b45"></b>tested &amp; agrees</span>
+<span><b style="background:#8fc4a5"></b>partly tested</span>
+<span><b style="background:#c9ced6"></b>not offered there</span>
+<span><b style="background:#a11"></b>problem</span>
+<span><b style="background:#e6e8ec"></b>never tested</span></div>
+<p class="fake" style="margin:.5rem 0 0">Columns are jurisdictions. <b>Grey is not a gap</b> — it is
+ISO declining to offer that combination in that state.</p>
+</div>
+</div>
+</div>
+</div></div>
+<p class="wfcap"><b>Wireframe 3 — the summary.</b> The coverage grid already exists in
+<code>ui/charts.py</code>; this extends it from controls to QA axes and adds the
+tested / partly / not-offered / never distinction.</p>
+
+<h3>6.2 The map — where does it work?</h3>
+
+<div class="wf">
+<div class="bar">Coverage by state · T1 · hover a state for detail</div>
+<div class="body">
+<div class="box" style="text-align:center;padding:1.6rem">
+<div class="fake" style="margin-bottom:.7rem">[ choropleth map of the United States ]</div>
+<div style="display:inline-grid;grid-template-columns:repeat(11,1.5rem);gap:3px">
+<i class="hm f" style="height:15px;border-radius:2px;background:#1e7b45"></i><i style="height:15px;border-radius:2px;background:#1e7b45"></i><i style="height:15px;border-radius:2px;background:#1e7b45"></i><i style="height:15px;border-radius:2px;background:#8fc4a5"></i><i style="height:15px;border-radius:2px;background:#1e7b45"></i><i style="height:15px;border-radius:2px;background:#1e7b45"></i><i style="height:15px;border-radius:2px;background:#a11"></i><i style="height:15px;border-radius:2px;background:#1e7b45"></i><i style="height:15px;border-radius:2px;background:#1e7b45"></i><i style="height:15px;border-radius:2px;background:#8fc4a5"></i><i style="height:15px;border-radius:2px;background:#1e7b45"></i>
+<i style="height:15px;border-radius:2px;background:#1e7b45"></i><i style="height:15px;border-radius:2px;background:#8fc4a5"></i><i style="height:15px;border-radius:2px;background:#1e7b45"></i><i style="height:15px;border-radius:2px;background:#1e7b45"></i><i style="height:15px;border-radius:2px;background:#1e7b45"></i><i style="height:15px;border-radius:2px;background:#1e7b45"></i><i style="height:15px;border-radius:2px;background:#1e7b45"></i><i style="height:15px;border-radius:2px;background:#1e7b45"></i><i style="height:15px;border-radius:2px;background:#8fc4a5"></i><i style="height:15px;border-radius:2px;background:#1e7b45"></i><i style="height:15px;border-radius:2px;background:#c9ced6"></i>
+</div>
+<div class="legend" style="justify-content:center;margin-top:.7rem">
+<span><b style="background:#1e7b45"></b>all scenarios agree</span>
+<span><b style="background:#8fc4a5"></b>agrees, some not offered</span>
+<span><b style="background:#a11"></b>needs review</span>
+<span><b style="background:#c9ced6"></b>cannot be compared (PR)</span></div>
+</div>
+<div class="box"><div class="lbl">New York — 48 scenarios</div>
+<div class="ctl"><span>Agrees</span><span class="v">45</span></div>
+<div class="ctl"><span>Needs review</span><span class="v" style="color:#a11">1 — two locations, $18 difference</span></div>
+<div class="ctl"><span>Not offered here</span><span class="v">2 — NY declares Occurrence only, so claims-made cannot be tested</span></div>
+</div>
+</div></div>
+<p class="wfcap"><b>Wireframe 4 — the map.</b> The single most legible artefact for a lay reader.
+<b>Puerto Rico is grey and labelled</b>, never counted as a failure.</p>
+
+<h3>6.3 The premium response curve — "does it move the way it should?"</h3>
+
+<div class="wf">
+<div class="bar">Premium response · Each-occurrence limit · 12 states</div>
+<div class="body"><div class="box" style="padding:1.4rem">
+<div class="fake">[ line chart — premium on the vertical, limit on the horizontal, one line per state,
+points that disagree with ISO drawn red and larger ]</div>
+<p class="fake" style="margin:.6rem 0 0">Already implemented as <code>charts.response_curve</code>.
+For a lay reader this answers a question no table does: <b>the premium should rise with the limit,
+smoothly, in every state.</b> A kink, a flat run or a step is visible instantly and usually means a
+lookup missed and something fell back.</p>
+</div></div></div>
+<p class="wfcap"><b>Wireframe 5 — response curves.</b> Proposed additions: exposure across the 98
+bands (interpolation should be visibly linear), and deductible amount (should descend monotonically).</p>
+
+<h2 id="review">7 · Recursive harness review of the results</h2>
+
+<div class="lede">The harness reviews its own output before a human sees it. <b>This is the part of
+the proposal with the most evidence behind it</b> — of the six defects resolved on 17 August 2026,
+<b>every one was found by running something against something else, and one was a defect in the
+measuring apparatus itself.</b></div>
+
+<h3>7.1 Four review passes, in order</h3>
+
+<div class="scroll"><table>
+<thead><tr><th>Pass</th><th>Question</th><th>Status</th></tr></thead>
+<tbody>
+<tr><td><b>1 · Did it exercise anything?</b></td>
+<td>For every scenario whose premium equalled the base: is this <b>ISO's filing doing nothing</b>
+(<code>INERT CONTROL</code>) or <b>did we pick a value that does nothing</b> (<code>INERT VALUE</code>)?</td>
+<td><span class="pill p-code">CODE</span> <b>Exists</b> — <code>probe_no_op</code></td></tr>
+<tr><td><b>2 · Is a refusal correct?</b></td>
+<td>When our engine refuses, does ISO refuse too — and <em>for the same reason</em>? A refusal that
+matches for the wrong reason is not agreement</td>
+<td><span class="pill p-new">NEW</span></td></tr>
+<tr><td><b>3 · Is a "not applicable" real?</b></td>
+<td>Re-derive the undeclarability from ISO's declaration independently. <b>This is the pass that would
+have caught OI-91</b>, where twenty jurisdictions were refused for three days by our own rule wearing
+a well-written explanation</td>
+<td><span class="pill p-new">NEW</span></td></tr>
+<tr><td><b>4 · Adversarial read</b></td>
+<td>The specialist agents read the run and try to <b>refute</b> the result: <code>gl-authority</code>
+against ISO's content, <code>iso-circular-expert</code> against the filed manual,
+<code>gl-engine-code-expert</code> against our own source</td>
+<td><span class="pill p-new">NEW</span></td></tr>
+</tbody></table></div>
+
+<div class="note bad"><b>Pass 3 exists because of a real failure.</b> The harness reported
+<code>NOT APPLICABLE</code> in twenty jurisdictions <b>with a reason attached</b>, and that is exactly
+why nobody questioned it. It was our own fallback, not ISO's filing. <b>A refusal with a good
+explanation is still a refusal</b>, and nothing was checking the explanation.</div>
+
+<h3>7.2 What the review emits</h3>
+
+<div class="wf">
+<div class="bar">Harness review · T1 run 2026-08-17 02:00 · 3 findings</div>
+<div class="body">
+<div class="box"><div class="lbl" style="color:#a11">Finding 1 — needs a human · <b>confirmed by 3 of 3 reviewers</b></div>
+<div class="ctl"><span>NY · two locations · $2M/$4M · products deductible $5,000</span><span class="v">ours 41,208 · ISO 41,190 · <b>$18</b></span></div>
+<p class="fake" style="margin:.4rem 0"><b>In plain English:</b> with two locations in different
+territories and a products deductible, our premium is $18 high in New York only.<br>
+<b>What the reviewers said:</b> <code>gl-authority</code> — the products deductible factor is keyed to
+the class's ILF table assignment, and the two locations resolve different assignments;
+<code>iso-circular-expert</code> — Rule 15.D.2 requires the factor to follow the table assignment,
+not the deductible amount; <code>gl-engine-code-expert</code> — our applier sets one factor for the
+whole risk.<br>
+<b>Suspected cause:</b> deductible factor resolved once per risk instead of once per classification.</p>
+</div>
+<div class="box"><div class="lbl" style="color:#b7791f">Finding 2 — exercised nothing</div>
+<div class="ctl"><span>NY · terrorism on</span><span class="v">INERT VALUE</span></div>
+<p class="fake" style="margin:.4rem 0">Territory <code>001</code> carries no terrorism charge in NY;
+<code>002</code> would have moved the premium by 110. <b>The scenario reported as tested and tested
+nothing.</b> Auto-fix available: re-draw the territory.</p>
+</div>
+<div class="box"><div class="lbl" style="color:#1e7b45">Finding 3 — agreement, but not evidence</div>
+<div class="ctl"><span>OK · schedule rating on</span><span class="v">INERT CONTROL</span></div>
+<p class="fake" style="margin:.4rem 0">No declared value moves the premium in Oklahoma — that is
+ISO's own credibility gate, not our defect. <b>Recorded so this scenario is never counted as
+coverage of schedule rating.</b></p>
+</div>
+</div></div>
+<p class="wfcap"><b>Wireframe 6 — the review.</b> Every finding carries a plain-English sentence, the
+independent reviewers' verdicts, and a suspected cause. <b>Agreement that proves nothing is reported
+as loudly as disagreement.</b></p>
+
+<h2 id="analysis">8 · Analysis of results</h2>
+
+<h3>8.1 The four outcomes — and why three-way beats pass/fail</h3>
+
+<div class="scroll"><table>
+<thead><tr><th>Outcome</th><th>Means</th><th>Counts as</th></tr></thead>
+<tbody>
+<tr><td><b>Agrees</b></td><td>Same premium <em>and</em> every published figure matches</td><td>Success</td></tr>
+<tr><td><b>Differs</b></td><td>Premium or a published figure differs</td><td><b>Our defect until proven otherwise</b></td></tr>
+<tr><td><b>Not applicable</b></td><td>ISO's filing does not offer this combination in this state</td><td><b>Neither</b> — never a failure</td></tr>
+<tr><td><b>Both refuse</b></td><td>We decline and ISO declines, same reason</td><td>Agreement, <b>counted separately</b> from "agrees"</td></tr>
+</tbody></table></div>
+
+<div class="note"><b>Why "both refuse" is not folded into the pass count.</b> It is genuine agreement —
+but calling a refusal a match inflates the number that matters. On 17 August a seven-jurisdiction run
+reported <b>181 matches + 3 mutual refusals + 3 not-applicable = 184 of 184 agreeing</b>, with the
+categories kept apart. That is the reporting standard this plan adopts.</div>
+
+<h3>8.2 The analyses each run produces</h3>
+
+<ul class="tight">
+<li><b>Did coverage grow?</b> Scenarios newly exercised, and axis values still never touched.</li>
+<li><b>Did anything regress?</b> Defects keyed by <code>(state, status, configuration)</code> with
+first-seen and last-seen — <span class="pill p-code">CODE</span> the register already exists.</li>
+<li><b>Is a difference systematic or isolated?</b> One state at $18 is a state rule; twelve states at
+a constant ratio is a factor applied in the wrong place.</li>
+<li><b>Does the premium respond sensibly?</b> Monotonic in limits, descending in deductibles, linear
+between exposure band edges.</li>
+<li><b>How much did it cost, and what did it buy?</b> Calls spent against defects found and coverage
+gained — the number that decides whether a tier keeps earning its place.</li>
+</ul>
+
+<h3>8.3 Reading a difference — the triage order</h3>
+<ol class="tight">
+<li><b>Is the scenario legal?</b> If ISO would reject the submission, the difference is ours to fix in
+the harness, not the engine.</li>
+<li><b>Is it one state or many?</b> One → a state exception. Many → a countrywide rule.</li>
+<li><b>Is it constant or proportional?</b> A fixed amount → an additive charge. A ratio → a factor.</li>
+<li><b>What does the trace say?</b> Every rating returns the full factor chain with each value's source
+in ISO's files.</li>
+<li><b>Does the manual agree with the content?</b> Where they disagree, <b>that is the finding.</b></li>
+</ol>
+
+<h2 id="defects">9 · Defects and potential solutions</h2>
+
+<h3>9.1 Open defects in our engine and harness, found while preparing this plan</h3>
+
+<div class="scroll"><table>
+<thead><tr><th>#</th><th>Defect</th><th>Impact</th><th>Proposed solution</th></tr></thead>
+<tbody>
+<tr><td><b>D-1</b></td><td><b>No effective-date axis</b>, and the one that exists is inconsistent — options come from the as-of, the rating comes from the payload date</td>
+<td><b>High.</b> 43 jurisdictions change on 2027-04-01 and we cannot test either side</td>
+<td>Add <code>--asof</code> through <code>sweep.py</code>, the tester and the payload builder; make the rating date and the option date the same value; pin every fixture to <code>(jurisdiction, as-of)</code></td></tr>
+<tr><td><b>D-2</b></td><td><b>Multi-class is not a control at all.</b> The applier sets every classification in every location to the same code</td>
+<td><b>High.</b> A stated goal of this plan cannot be tested today</td>
+<td>Add a <code>classifications</code> control and per-classification class/exposure. Requires new base payloads (§10)</td></tr>
+<tr><td><b>D-3</b></td><td><b>Locations cannot differ except by territory</b> — extra locations are deep copies</td>
+<td><b>Medium.</b> Allocation and per-location rules go untested</td>
+<td>Allow per-location class, exposure and deductible overrides in the variant builder</td></tr>
+<tr><td><b>D-4</b></td><td><b>Exposure bounds read from ISO and discarded.</b> ISO declares 1 … 9,999,999,999; we accept anything</td>
+<td><b>Medium.</b> We accept submissions ISO would reject</td>
+<td>Enforce <code>MinimumValue</code>/<code>MaximumValue</code> in <code>schema/validate.py</code>. Small fix; already-parsed fields are simply unread</td></tr>
+<tr><td><b>D-5</b></td><td><b>Two <code>Declared</code> implementations that disagree</b> — one matches all dependency columns, the other only the first</td>
+<td><b>Medium.</b> The two harnesses can legally disagree about what is legal</td>
+<td>Retire <code>breadth.Declared</code> in favour of <code>variants.Declared</code>; one definition, as with "agree"</td></tr>
+<tr><td><b>D-6</b></td><td><b>A test that reads cached output instead of re-measuring</b> — it passed against stale numbers on 17 Aug</td>
+<td><b>Medium.</b> A test that cannot fail when it should</td>
+<td>Re-measure in the test, or fail when the cache is older than the corpus</td></tr>
+<tr><td><b>D-7</b></td><td><b>Timing constants are wrong high</b> — code says 20 s/call, measured is 8.4 s</td>
+<td>Low, but it misprices every estimate the launcher shows</td>
+<td>Derive the estimate from the stored run history rather than a constant</td></tr>
+<tr><td><b>D-8</b></td><td><b>A fifth status vocabulary</b> in <code>app.py</code>'s batch runner that cannot enter the run store</td>
+<td>Low</td>
+<td>Route it through <code>sweep.run_config</code>, or retire it</td></tr>
+</tbody></table></div>
+
+<h3>9.2 Where the rules are most likely to be got wrong <span class="pill p-man">MANUAL</span></h3>
+
+<p>Ranked by probability × blast radius. <b>The top four are all combination-sensitive — precisely
+what one-variable-at-a-time testing passes.</b> Each becomes a mandatory scenario family in T1.</p>
+
+<div class="scroll"><table>
+<thead><tr><th>#</th><th>Failure mode</th><th>Authority</th><th>How the plan tests it</th></tr></thead>
+<tbody>
+<tr><td><span class="rank">1</span></td><td><b>Loss-cost tokens <code>–</code> and <code>(a)</code> coerced to 0.00.</b> <code>–</code> means "not offered", <code>(a)</code> means "refer". <b>35.7% of 429,748 cells</b> are one of the two</td><td>Rules 23.E.1-2, 48.D.4, 48.F.1</td><td>Sample classes whose cells carry each token; assert <b>refusal or absence, never a zero premium</b></td></tr>
+<tr><td><span class="rank">2</span></td><td><b>Territory resolved by ZIP alone.</b> CA, FL, NY and TX use county + place name</td><td>Territory pages CG-T-1</td><td>Those four are permanent members of the core set</td></tr>
+<tr><td><span class="rank">3</span></td><td><b>Deductible applied after the ILF, or multiplicatively.</b> It is <b>subtractive in the factor domain</b>: <code>(ILF − ded) × basic rate</code></td><td>Rule 15.G, 15.D.4</td><td>Cross deductible × limit in every core state — the defect is invisible at either alone</td></tr>
+<tr><td><span class="rank">4</span></td><td><b>Deductible factor keyed to amount alone</b> rather than the class's ILF assignment — a <b>2.9× spread</b> on the same $5,000</td><td>Rule 15.D.2, Tables 15.E.1-6</td><td>Same deductible against classes in assignments 1, 2 and 3; assert three different factors</td></tr>
+<tr><td><span class="rank">5</span></td><td><b>Minimum premiums applied per class instead of highest-per-subline</b> — and the 2027 deletion not modelled</td><td>Rule 14.C/D/E/F (2023); Reserved (2027)</td><td>Multi-class at low exposure, run at both as-of dates (T4)</td></tr>
+<tr><td><span class="rank">6</span></td><td><b>Rules addressed by printed number across editions.</b> Rule 22 and Rule 35 change meaning; a live PA notice amends paragraphs that do not exist in the parent it names</td><td>CW 2023 vs CW 2027; PA notice</td><td>Assert every state overlay resolves; <b>fail loudly when it does not</b></td></tr>
+<tr><td><span class="rank">7</span></td><td><b>Split-limit weights wrong, or prem/ops weights used on products</b></td><td>Rule 23.D.5.c</td><td>Split limits × class group × subline, all four combinations</td></tr>
+<tr><td><span class="rank">8</span></td><td><b>One territory rule for all industry groups.</b> Three exist: production site, <b>headquarters</b> (contractors), each location</td><td>Rules 27.C, 28.C, 29.B.2</td><td>Multi-location with a manufacturing, a mercantile and a contracting class</td></tr>
+<tr><td><span class="rank">9</span></td><td><b>Refer-to-company treated as an error</b> rather than a modelled outcome</td><td>Rules 41-43, 45.E, 47, 53</td><td>Deliberate referral scenarios; assert a <em>referral</em>, not a failure and not a premium</td></tr>
+<tr><td><span class="rank">10</span></td><td><b>ELP treated as a loss cost.</b> <code>Incl.</code> charged separately double-counts</td><td>ELP Supplement Proc. 1.D-E, 5.A</td><td>Sample classes carrying each ELP token</td></tr>
+</tbody></table></div>
+
+<h3>9.3 Open questions this plan cannot settle by itself</h3>
+
+<div class="scroll"><table>
+<thead><tr><th>Question</th><th>Status</th><th>What settles it</th></tr></thead>
+<tbody>
+<tr><td><b>New York class count: ERC says 1,191, the manual profile says 1,181</b></td><td><b>Genuine source disagreement</b>, same vintage — not an as-of artefact</td><td>A decision, or a direct read of NY's loss-cost pages. <b>The engine rates on ERC's 1,191; the gap is reported, not reconciled</b></td></tr>
+<tr><td>Does ISO accept an exposure above 9,999,999,999?</td><td>ERC declares the bound, the manual is silent, our engine ignores it</td><td><b>One live call</b></td></tr>
+<tr><td>Is PA territory <code>506</code> an ISO data defect or an unreachable placeholder?</td><td>Selectable, no ZIP maps to it, no rate filed</td><td><b>One live call</b>, or ask ISO</td></tr>
+<tr><td>Maximum locations or classifications per submission</td><td><b>Nothing in ISO's content declares one</b></td><td>Establish empirically; treat as unbounded in design</td></tr>
+<tr><td>Schedule rating, experience credibility and size-of-risk plans</td><td><b>Not in the manual corpus at all</b> — Rule 2.A.1 says only "refer to company"</td><td>Nothing. <b>These have no manual authority to check against</b> and are testable only against ISO's live service</td></tr>
+</tbody></table></div>
+
+<h2 id="prereq">10 · Prerequisites — what must exist before the matrix can run</h2>
+
+<div class="note bad"><b>Stated plainly because it changes the schedule.</b> Three of this plan's four
+headline goals cannot be tested today, and none of the three is a small fix.</div>
+
+<div class="scroll"><table>
+<thead><tr><th>Prerequisite</th><th>Why</th><th>Size</th></tr></thead>
+<tbody>
+<tr><td><b>Multi-location and multi-class base payloads</b></td><td><b>All 51 stored submissions are one location, one classification.</b> The multi-location and multi-class halves of the matrix have no starting payload</td><td>Medium — 51 states × 2 shapes, generated from ISO's declaration</td></tr>
+<tr><td><b>A per-classification variant builder</b> (D-2, D-3)</td><td>Today every classification gets the same class and exposure</td><td>Medium</td></tr>
+<tr><td><b>An effective-date axis</b> (D-1)</td><td>The 2027 cliff cannot be tested at all</td><td>Small–medium, and it exposes an existing inconsistency</td></tr>
+<tr><td><b>Base payloads for the other sublines</b></td><td><b>7 of 11 sublines have no buildable base.</b> Liquor needs liquor classes, a liquor coverage form and its own class domain</td><td>Large — one per subline family</td></tr>
+<tr><td>Parallel ISO calls</td><td><b>No concurrency, no rate limiting, no backoff today.</b> Wall-clock is the binding constraint on T2 and above</td><td>Small to write; <b>must be agreed with ISO before use</b></td></tr>
+</tbody></table></div>
+
+<h2 id="cost">11 · Cost, schedule and phasing</h2>
+
+<h3>11.1 Measured unit costs <span class="pill p-code">CODE</span></h3>
+<div class="scroll"><table>
+<thead><tr><th>Operation</th><th>Measured</th><th>Note</th></tr></thead>
+<tbody>
+<tr><td>One offline rating</td><td><b>~0.5 s</b></td><td>Interpretation is the cost, not file I/O</td></tr>
+<tr><td>51-state offline sweep</td><td><b>85–157 s</b></td><td>Free; finds refusals and build errors</td></tr>
+<tr><td>One live ISO call</td><td><b>8.4 s</b></td><td>Measured from stored runs. <b>Code says 20 s — wrong high</b> (D-7)</td></tr>
+<tr><td>50-state live comparison</td><td><b>393–425 s</b></td><td>Strictly serial</td></tr>
+</tbody></table></div>
+
+<h3>11.2 Per-tier cost</h3>
+<div class="scroll"><table>
+<thead><tr><th>Tier</th><th>Scenarios</th><th>Live calls</th><th>Wall-clock (serial)</th><th>Offline first?</th></tr></thead>
+<tbody>
+<tr><td>T0 Smoke</td><td>51</td><td>50</td><td>~7 min</td><td>always</td></tr>
+<tr><td>T1 Core</td><td>~600</td><td>~600</td><td><b>~1 hr 24 min</b></td><td>always</td></tr>
+<tr><td>T2 Full</td><td>~2,500</td><td>~2,500</td><td><b>~5 hr 50 min</b></td><td>always</td></tr>
+<tr><td>T3 Value sweep</td><td>278,054</td><td>sampled</td><td>offline ~39 hr, parallelisable</td><td>offline is the point</td></tr>
+<tr><td>T4 Edition cliff</td><td>~1,200</td><td>~1,200</td><td>~2 hr 48 min</td><td>always</td></tr>
+</tbody></table></div>
+
+<div class="note"><b>Run offline first, always.</b> An offline pass costs nothing and finds every
+build error, every refusal and every not-applicable <em>before</em> a single billable call. On
+17 August this is exactly how the fourteen jurisdictions of one defect were identified before any
+call was spent — and ten inferences were then converted to confirmations for ten calls.</div>
+
+<h3>11.3 Phasing</h3>
+<div class="scroll"><table>
+<thead><tr><th>Phase</th><th>Delivers</th><th>Depends on</th></tr></thead>
+<tbody>
+<tr><td><b>1</b></td><td><code>qa.py</code>, the tier definitions, <code>--plan</code> and <code>--estimate</code>, T0 and T1 over existing axes</td><td>Nothing — all machinery exists</td></tr>
+<tr><td><b>2</b></td><td>The QA tab, launcher, run view and summary screen</td><td>Phase 1</td></tr>
+<tr><td><b>3</b></td><td>Multi-location and multi-class payloads and controls; T1 reaches its stated scope</td><td>Prerequisites 1–2</td></tr>
+<tr><td><b>4</b></td><td>Harness review passes 2–4, including the adversarial agent read</td><td>Phase 2</td></tr>
+<tr><td><b>5</b></td><td>Effective-date axis and T4; the 2027 cliff becomes testable</td><td>D-1</td></tr>
+<tr><td><b>6</b></td><td>T3 value sweep, and the other subline families</td><td>Prerequisite 4</td></tr>
+</tbody></table></div>
+
+<h2 id="claims">12 · What this proposal does not claim</h2>
+
+<ul class="tight">
+<li><b>It is a proposal. Nothing here has been built</b> — no <code>qa.py</code>, no QA tab, no new
+payloads, no review passes. This document and its wireframes are the entire deliverable.</li>
+<li><b>Counts are as-of 1 August 2026.</b> The 2027 filing withdraws 25 class codes (1,188 → 1,163)
+and deletes Rule 14. Any fixture list pinned to today's date will be wrong next April.</li>
+<li><b>One genuine source disagreement is unresolved</b> — New York, 1,191 ERC vs 1,181 manual, at the
+same vintage. It is reported, not reconciled.</li>
+<li><b>Three answers are unverifiable from the corpora</b> and need a live call or an ISO decision: the
+exposure ceiling, PA territory 506, and the maximum locations per submission.</li>
+<li><b>Schedule rating, experience credibility and size-of-risk have no manual authority.</b> They
+exist only in ISO's machine-readable content, so for those the live service is the <em>only</em>
+oracle — there is no second source to check against.</li>
+<li><b>Scenario counts for T1–T4 are design targets, not measurements.</b> They follow from the
+stratification in section 4, and they will move once the pairwise generator exists and the
+not-applicable rate is known per axis.</li>
+<li><b>Wall-clock assumes serial calls</b>, because that is what exists today. Parallelism would
+change every figure in 11.2 and <b>must be agreed with ISO before it is used.</b></li>
+</ul>
+
+<footer>
+<b>QA Plan Proposal — GL Rating Engine.</b> Prepared 17 August 2026 from measurements taken the same
+day by <code>gl-engine-code-expert</code> (our source), <code>gl-authority</code> (ISO's
+machine-readable content) and <code>iso-circular-expert</code> (ISO's filed manuals).
+Every figure is measured; estimates are labelled as such. Proposal only — nothing described here has
+been built.
+</footer>
+
+</div></body></html>
