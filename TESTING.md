@@ -1,8 +1,19 @@
 # How to test this, phase by phase
 
-**Current as of 2026-08-14.** Every command on this page has been run and its stated output is what
+**Current as of 2026-08-17.** Every command on this page has been run and its stated output is what
 it actually produced. **All six stages are built, and Phase 2 — the comparison against ISO's live
 service — is live.** Nothing on this page is marked NOT BUILT any more.
+
+**What changed on 2026-08-17.** Four defects closed and one raised-and-closed, so several suites now
+assert the opposite of what they asserted the day before. `verify_breadth` E4 used to assert
+*"OI-88 is still open"* and now asserts it is closed against ISO's own figure; C2 used to assert a
+ZIP fallback that turned out to be inert. **A test written to fail when a defect is fixed is a
+pattern worth repeating** — it cost nothing while the defect was open and told whoever closed it what
+to do next.
+
+**A QA programme covering all 51 jurisdictions is proposed** in
+[`docs/qa-plan-proposal_20260817.html`](docs/qa-plan-proposal_20260817.html). **It is a proposal —
+none of it is built**, and nothing on this page depends on it. The commands below are what exists.
 
 One thing to know before you start: **the command-line tool is stage 1 only** — `resolve`, `parents`,
 `table`, `check`, `census`. Rating is reached through the library, the web interface (`app.py`) or
@@ -496,6 +507,32 @@ python scripts/build_docs_html.py
 Regenerates `docs/GL-RATING-ENGINE-DOCS.html` — 21 tabs, every plan and gate document in one page.
 The plain-English overview is separate and hand-written:
 `docs/THE-PLAN-IN-PLAIN-ENGLISH.html`.
+
+---
+
+# The live call budget — read before running anything with `--live`
+
+**Standing budget: 60 live ISO calls a day** (decision A6, 2026-08-17), **150 absolute ceiling**,
+business hours, weekdays, **none at weekends**. Above 60 in a day, or any new tier, needs an explicit
+go.
+
+**These are our own policy, not an ISO-published limit.** No rate limit is documented in
+`scripts/raas.py` or in the subscription terms we hold. The ceiling exists so our traffic keeps
+looking like ordinary use, because `raas.py` is **strictly serial** — no concurrency, no rate
+limiting, no backoff — and a large burst is the pattern that gets noticed.
+
+**Two rules that reduce the count more than any budget does:**
+
+1. **Run offline first, always.** `sweep.py` and `breadth.py` both rate everything through our engine
+   before comparing. That removes build errors, refusals and not-applicable cases from the live set
+   before a call is spent — and on 2026-08-17 it identified all fourteen jurisdictions of a defect
+   for nothing, after which ten calls converted ten inferences into confirmations.
+2. **Never re-ask a settled question.** A confirmed answer becomes a stored golden checked offline
+   forever. **Live calls buy new truth; offline runs defend it.**
+
+Measured, not assumed: **one live call is ~8.4 seconds** (the 20 s in `ui/tester.py` and `sweep.py`
+is wrong high); an offline rating is **~0.5 s**; a 51-state offline sweep is **85–157 s** and costs
+nothing.
 
 ---
 

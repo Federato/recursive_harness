@@ -12,10 +12,15 @@ against ISO's own rating service.
 |---|---|
 | **[docs/EXECUTIVE-SUMMARY.md](docs/EXECUTIVE-SUMMARY.md)** | **Read this one.** What we are building, why it is hard, where we are, the architecture decision *and the honest case against it*, how it gets proved against ISO's own service, the self-correcting harness, and how carrier deviations layer on top |
 | **[BUILD-LOG.md](BUILD-LOG.md)** | **The build diary — what was built, what broke, what the fix revealed. Entry 16 is the current handoff** |
+| **[docs/qa-plan-proposal_20260817.html](docs/qa-plan-proposal_20260817.html)** | **The QA programme, proposed 2026-08-17.** Full 51-jurisdiction coverage sized from ISO's own declared content — two matrices not one, wireframes for terminal and button, the ISO call budget, and what can and cannot be proven. **Nothing in it is built** |
+| **[docs/WHATS-LEFT-PLAIN-ENGLISH.md](docs/WHATS-LEFT-PLAIN-ENGLISH.md)** | What is left, for people who do not read code. Rendered as [`backlog_20260817.html`](docs/backlog_20260817.html) |
+| [docs/WHAT-I-NEED-FROM-YOU.md](docs/WHAT-I-NEED-FROM-YOU.md) | The asks: what only a person can supply, what each unblocks, and the default if it is never answered. **Section A all decided 2026-08-17** |
+| [docs/THE-HARNESS-FOUND-THESE.md](docs/THE-HARNESS-FOUND-THESE.md) | The 17 August session — five defects closed and how each was found. Not one by reading code |
+| [docs/BACKLOG-FEATURE-SETS.md](docs/BACKLOG-FEATURE-SETS.md) | The backlog grouped into seven feature sets — what you are choosing between, rather than what is next |
 | [docs/BACKLOG-2026-08-14.md](docs/BACKLOG-2026-08-14.md) | What to do next, ordered. **Opens with the three known defects** — D1/D2 high, D3 medium — then the numbered work, each item naming the open item it closes |
 | [docs/BUILD-STAGES.md](docs/BUILD-STAGES.md) | The six build stages and the phases that follow them |
 | [TESTING.md](TESTING.md) | **Every command, stage by stage.** Each one has been run and its stated output verified |
-| [docs/OPEN-ITEMS.md](docs/OPEN-ITEMS.md) | **OI-1 to OI-92.** Resolved items are kept and marked, not deleted |
+| [docs/OPEN-ITEMS.md](docs/OPEN-ITEMS.md) | **OI-1 to OI-94.** Resolved items are kept and marked, not deleted |
 | [docs/WHERE-WE-PAUSED-2026-08-12.md](docs/WHERE-WE-PAUSED-2026-08-12.md) | The 12 August session, read cold. **Superseded** — everything after it is in the build log |
 | [docs/PRD-GL-RATING-ENGINE.md](docs/PRD-GL-RATING-ENGINE.md) | Full status and history. §0 is the latest update |
 | [docs/GL-RATING-ENGINE-BUILD-PLAN.md](docs/GL-RATING-ENGINE-BUILD-PLAN.md) | The technical plan — architecture, the 18 non-negotiables, deviation constraints C1–C3 |
@@ -33,6 +38,8 @@ to be **downloaded and opened in a browser**:
 | `docs/THE-BUILD-END-TO-END.html` | The executive summary and the whole build, with contents sidebar. Same content as `EXECUTIVE-SUMMARY.md` |
 | `docs/THE-PLAN-IN-PLAIN-ENGLISH.html` | Why this is hard and what changed the design |
 | `docs/GL-RATING-ENGINE-DOCS.html` | Every technical and gate document in one page, 24 tabs |
+| `docs/qa-plan-proposal_20260817.html` | The QA programme proposal, self-contained, with six wireframes |
+| `docs/backlog_20260817.html` | The plain-English backlog, rendered by `scripts/build_backlog_html.py` |
 | `docs/index.html` | A landing page linking all of the above |
 
 **Quickest way to read them:** clone the repository and open the file, or use the "Download raw

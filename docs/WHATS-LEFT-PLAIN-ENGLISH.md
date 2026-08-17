@@ -7,6 +7,12 @@ The technical version is [`BACKLOG-FEATURE-SETS.md`](BACKLOG-FEATURE-SETS.md); t
 open question is [`OPEN-ITEMS.md`](OPEN-ITEMS.md). Nothing here contradicts them — this is the same
 work, said differently and at more length.
 
+**Two companion documents, added 2026-08-17.** The
+[QA programme proposal](qa-plan-proposal_20260817.html) sizes item 1 properly — how many tests, how
+many hits on ISO, and what can and cannot be proven at all.
+[`WHAT-I-NEED-FROM-YOU.md`](WHAT-I-NEED-FROM-YOU.md) lists what only you can supply to unblock the
+rest; **section A of it was decided on 17 August.**
+
 ---
 
 ## First, what we actually have

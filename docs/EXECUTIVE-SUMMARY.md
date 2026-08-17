@@ -1,5 +1,22 @@
 # General Liability Rating Engine — Executive Summary
 
+> **Status note — 17 August 2026.** Four defects closed, one raised and closed the same day, and the
+> project's oldest open question settled. **Size-of-risk went from rating correctly in zero of 51
+> jurisdictions to 37, refusing in 14 exactly as ISO does. Terrorism went from 31 to 51. ISO rounds
+> half-up**, settled on four engineered ties. Breadth widened from two jurisdictions to eleven:
+> **184 of 184 comparable outcomes agree.**
+>
+> A QA programme covering all 51 jurisdictions is proposed in
+> [`qa-plan-proposal_20260817.html`](qa-plan-proposal_20260817.html) — sized from ISO's own declared
+> content, and **not built**. What is still unproven is set out plainly in
+> [`WHATS-LEFT-PLAIN-ENGLISH.md`](WHATS-LEFT-PLAIN-ENGLISH.md); the decisions taken on how the
+> programme runs are in [`WHAT-I-NEED-FROM-YOU.md`](WHAT-I-NEED-FROM-YOU.md).
+>
+> **The honest caveat, unchanged in shape and sharper in detail:** the population is still **one class
+> family**. The coverage grid reads **1 of 19**. We have proven the engine across *geography*, not
+> across *the variety of business a carrier writes*.
+
+
 **Progress briefing. 12 August 2026.** Plain language; no insurance or engineering background
 assumed.
 

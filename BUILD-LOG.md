@@ -2583,7 +2583,7 @@ eleven of OI-94's fourteen are **inferred** rather than confirmed, and the cover
 
 ---
 
-## Entry 24 — Eleven jurisdictions live: 184 of 184, and OI-94 goes from inferred to confirmed. **NEXT SESSION STARTS HERE.**
+## Entry 24 — Eleven jurisdictions live: 184 of 184, and OI-94 goes from inferred to confirmed. ~~NEXT SESSION STARTS HERE.~~ *(the live handoff is **Entry 25**)*
 
 - **Date:** 2026-08-17
 - **Directed:** *"keep widening breadth"*
@@ -2654,3 +2654,124 @@ still **one class family**, and that is now the honest limit rather than the jur
 5. **Property exploration, reading pace only.** Unchanged since Entry 17.
 6. **Cheap:** `567 → 570`; `verify_contract_figures` re-measuring; an 8dp rounding site closes
    OI-70's last corner.
+
+---
+
+## Entry 25 — A QA programme proposed, six decisions taken, and every document brought current. **NEXT SESSION STARTS HERE.**
+
+- **Date:** 2026-08-17 *(same session as Entries 18–24)*
+- **Directed:** design a full QA plan using the agents · answer the volume and ISO-budget questions ·
+  list what is needed from a person · work through those decisions one at a time · update all docs
+- **Built:** **no engine code and no test machinery.** Four documents, six recorded decisions, and
+  every existing document brought current.
+- **Verified:** nothing new rated. This entry is planning and record-keeping, and says so.
+
+### 1. The proposal, and the three agents that sized it
+
+`docs/qa-plan-proposal_20260817.html` — 14 sections, six wireframes, self-contained.
+
+**Three specialist agents measured the ground first, each from a different source**, and every figure
+in the document is measured rather than estimated:
+
+| Agent | Source | Supplied |
+|---|---|---|
+| `gl-engine-code-expert` | our Python | entry points, the 19-control surface, result schema, UI routes, measured timings, what blocks a 51-state matrix |
+| `gl-authority` | ISO's machine-readable content | class codes, premium bases, territories, limit and deductible domains, sublines, exposure banding, axis independence |
+| `iso-circular-expert` | ISO's filed manuals | which rules vary most by state, which are combination-sensitive, and the ten most likely to be implemented wrongly |
+
+**Note for next time:** `iso-erc-expert` exists in `Agentic/` but is **not registered as a runnable
+subagent** — only `gl-authority`, `gl-engine-code-expert` and `iso-circular-expert` are. Worth fixing
+or worth deleting the folder; carrying a definition nobody can invoke is how the next person loses an
+afternoon.
+
+### 2. The central finding — two matrices, not one
+
+**~282,000 tests, ~4,350 hits on ISO for a complete cycle**, and the gap between those numbers is the
+whole design.
+
+- **Value coverage** — every filed rate cell, **278,054** of them, **offline, zero ISO calls**,
+  because ISO's own files are the source of truth for a rate.
+- **Logic coverage** — **~2,500 scenarios**, small *because the axes were measured*: premium basis is
+  a function of class code, both aggregates are keyed on the occurrence limit so 11,700 naive limit
+  combinations are really **464**, and the deductible factor is keyed on the class's ILF assignment.
+
+**The naive cross product is 1.94 × 10¹⁶** and is quoted only as the argument against itself. The
+class axis collapses from **1,188 codes to 558 distinct rating behaviours**, 376 of them singletons,
+so the sample is stratified by behaviour — **49 of the 59 premium bases carry five class codes or
+fewer** and would otherwise never be touched.
+
+### 3. Three findings that change the schedule rather than the design
+
+1. **No effective-date axis exists**, and **43 jurisdictions change basis on 1 April 2027** with
+   Rule 14 minimum premiums deleted outright and the class list dropping 1,188 → 1,163.
+2. **Multi-class is not a control at all** — the applier sets every classification in every location
+   to the same code.
+3. **All 51 stored payloads are one location, one classification**, so two of the four headline goals
+   have no starting payload.
+
+### 4. The economics, and a paced week
+
+**Live calls buy new truth; offline runs defend it.** A call is needed once per fact; the answer then
+becomes a stored golden checked free forever. So the real budget is **~1,050 calls once, then ~220 a
+week** — not 4,350 per cycle.
+
+**The constraint on pacing is not cost, it is traffic pattern.** A thousand calls in an afternoon is
+worth a phone call from ISO; the same thousand over weeks in blocks the size of a normal comparison
+run is indistinguishable from ordinary use, because that is what it is.
+
+### 5. Six decisions, taken one at a time
+
+Recorded in `docs/WHAT-I-NEED-FROM-YOU.md`, which lists what only a person can supply — **and a
+default for every item, so nothing is blocked waiting on an answer.**
+
+| | Decision |
+|---|---|
+| **A1** | Read ISO's shipped sample submissions **as reference**, rebuild our own payloads. Nothing of ISO's enters this repository |
+| **A2** | Anchor test shapes on **ISO's own 116 multi-class worked examples**, then extend to multi-location |
+| **A3** | Fix the effective-date axis now; **probe with one call** whether ISO will rate a future date before committing to any 2027 tier |
+| **A4** | **Exclude New York's ten disputed class codes** from testing |
+| **A5** | **Synthetic loss histories spanning the credibility threshold**, not sitting at one point |
+| **A6** | **Standing budget of 60 live calls a day**, weekly report |
+
+**A1 corrected a claim I had made before measuring.** The first draft said the sample submissions
+would unblock "seven sublines". **They unblock four of eight, thinly** — Owners & Contractors and
+Railroad at 8 examples, Liquor at 3, Product Withdrawal at 2 — and **Pollution, Electronic Data,
+Underground Storage Tank and Special Protective have no example at all.** They also do **not** unblock
+multi-location (508 of 510 are single-location), though they are better than claimed for multi-class
+(**116 files carry 2–4 classifications**).
+
+**A4 carries a consequence worth restating:** excluding those ten codes from *testing* does not remove
+them from the *engine*, which still rates on ISO's machine-readable 1,191. They are **reachable and
+unverified**, so New York results must read *"agrees on the 1,181 codes both ISO sources confirm"* and
+never as an unqualified pass.
+
+**A6 re-paced the week** from the 110/day the first draft assumed to **60/day — 240 new calls this
+week**, Tuesday opening with the 2027 probe. Calibration now spreads over four to five weeks rather
+than two and a half. Today's 92 calls **predate** the standing budget and are recorded as such rather
+than retrofitted.
+
+### 6. Every document brought current
+
+| | |
+|---|---|
+| `docs/PRD-GL-RATING-ENGINE.md` | §0 rewritten for 17 Aug; **§5 rewritten because it still said there was no external oracle** — there is, and the four-outcome reporting standard is now stated there; §8 rewritten with what is confirmed by someone else and what is not |
+| `TESTING.md` | Dated forward; a new **live call budget** section before the failure section; records that several suites now assert the opposite of the day before |
+| `docs/EXECUTIVE-SUMMARY.md` | Status note at the top with the day's figures and the standing caveat |
+| `README.md` · `docs/index.html` | The four new documents listed and linked |
+| `docs/WHATS-LEFT-PLAIN-ENGLISH.md` · `backlog_20260817.html` | Cross-referenced and re-rendered |
+| `docs/OPEN-ITEMS.md` · both backlogs | OI-88, 91, 70, 93, 94 closed; OI-89 measured at 3 of 51 |
+
+### ▶ Next session
+
+**Tuesday 18 August, 60 live calls.**
+
+1. **First call: the 2027 probe** (A3) — will ISO rate a future effective date? The answer decides
+   whether the 2027 tier has an oracle or is a self-consistency exercise.
+2. **Mechanism matrix, group 1** — CA, NY, TX, FL. Deductible ordering × ILF keying, the two
+   top-ranked failure modes, both invisible at one variable at a time.
+3. **Offline all week, unlimited:** the T1 matrix rated and triaged before any call is spent.
+4. **Still owed from section B and C** — a loss cost multiplier, and **telling ISO about the
+   validation programme before the week's calls start.** C1 is one email and removes a risk that
+   costs nothing to remove.
+5. **Unchanged:** OI-89 needs the synthetic loss histories now authorised; `breadth.py` still lacks
+   the OI-93 probe; the coverage grid still reads *1 of 19*.

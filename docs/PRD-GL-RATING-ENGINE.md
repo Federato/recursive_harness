@@ -14,90 +14,42 @@ the documents referenced at the end.
 
 ## 0. What changed today
 
-**Updated 2026-08-14.** Three things, and none of them is a new premium.
+**Updated 2026-08-17.** Four defects closed, one raised and closed the same day, the project's oldest
+open question settled — and a QA programme proposed to cover all 51 jurisdictions properly.
 
-**The risk varies now, and it found defects.** Every live comparison until this point used *the same
-risk* in all 51 states. `scripts/breadth.py` varies the submission instead — 17 variants over 7
-groups, every value taken from ISO's own declared domains — and `/tester` gives it a front door:
-19 controls in 8 groups, run across all 51, with our premium, ISO's premium and the difference as
-the three columns. **It raised three open items, one of them a real engine defect** (OI-88), the
-first found by an external oracle. **This is the expected result, not a setback** — the earlier
-figures were clean because the population was narrow.
-
-**Two carrier questions were answered, and neither had a written answer before.** How deviations get
-authored — a friendlier format that compiles to ISO's shape, stored **per jurisdiction always**,
-because carriers file national deviations state by state. And whether a carrier can be pinned to an
-older ERC edition — **yes, and the machinery already exists**, built for backdating. Both are in
-[`BACKLOG-2026-08-14.md`](BACKLOG-2026-08-14.md) items 7 and 8.
-
-**Performance was measured for the first time:** about **1.2 seconds** per rating warm, **2 seconds**
-cold for a jurisdiction. It does not speed up when warm, so interpretation is the cost rather than
-file access. Unoptimised, and never profiled.
-
-**The backlog now opens with three known defects** — D1 (OI-88) and D2 (OI-91) high, D3 (OI-89)
-medium — placed above the numbered work, because those are *known wrong* where everything numbered
-is *not yet known*.
-
----
-
-**Previously, 2026-08-13.** The entry before that recorded that stage one of six existed. **By the
-end of 2026-08-13 all six stages were built, and the engine had been checked against ISO's own live
-rating service.**
-
-### It prices policies, and ISO agrees
-
-The engine takes a submission and returns a premium, with every factor and its source. Then we sent
-the same fifty-one submissions to **ISO's own rating service** and compared:
+**Four defects closed, and not one of them needed a decision — every one needed a measurement.**
 
 | | |
 |---|---|
-| Sent to ISO | **50 of the 51** |
-| Premium **and every field ISO publishes** agree | **50 of 50** |
-| ISO used the same rulebook edition we chose | **50 of 50** |
-| Never sent | **Puerto Rico** — our subscription does not cover it, and that entitlement is not available to us |
+| **OI-88** | A countrywide fallback that could never be reached. **Size-of-risk was rating correctly in zero of 51 jurisdictions**; it now rates in 37 and refuses in 14, exactly as ISO does |
+| **OI-91** | Two terrorism counts recorded as irreconcilable for three days. They reconcile exactly — **4 + 11 = 15**, one population and not two. **Terrorism went from 31 jurisdictions to 51** |
+| **OI-70** | The oldest open question in the project. **ISO rounds half-up**, settled on four engineered ties. A competing *"truncate to four digits"* hypothesis was tested and changes **0 of 432** operations |
+| **OI-93** | Raised and closed the same day — **a defect in the measuring apparatus itself.** A variant could rate, report as tested, and exercise nothing |
+| **OI-94** | The mirror of OI-88: **we rated where ISO refuses.** A null loss cost produced a finished premium in 14 jurisdictions; 13 now confirmed against ISO's own 400 |
 
-**Puerto Rico is therefore out of the comparison from here on** (decided 2026-08-13, OI-86). It still
-rates, and the number it produces is built entirely from ISO's own tables — but **it is the one
-jurisdiction with nothing external to check it against**, and that is said wherever its premium
-appears rather than left for a reader to discover. Every count of live agreement in this document is
-**out of 50**.
+**Breadth went from two jurisdictions to eleven.** **184 of 184 comparable outcomes agree** — 181
+matches on the premium *and every published field*, 3 mutual refusals counted separately, 3 not
+applicable. **The discovery rate is falling**, which is itself information: the population is still
+**one class family**, and that is now the narrowest axis rather than the jurisdiction count.
 
-**Not merely the total. Every number ISO publishes.** A total can be right for the wrong reasons;
-this is the check that catches that.
+**A QA programme is proposed** — [`qa-plan-proposal_20260817.html`](qa-plan-proposal_20260817.html),
+sized from ISO's own declared content by three specialist agents reading three different sources.
+Its central finding: **build two matrices, not one.** A value sweep verifies every filed rate cell
+(**278,054**, offline, no ISO calls); a logic matrix verifies behaviour (**~2,500 scenarios**,
+because most axes turn out to be keyed on another). The naive cross-product is **1.94 × 10¹⁶** and is
+quoted only as the argument against itself.
 
-Separately, the engine reproduces the Oklahoma policy we have had a published answer for since the
-analysis phase — **7,839, to the penny** — and agrees with 49 of 49 usable stored examples.
+**Six decisions were taken on how that programme runs** — recorded in
+[`WHAT-I-NEED-FROM-YOU.md`](WHAT-I-NEED-FROM-YOU.md): ISO's shipped sample submissions are read as
+reference but never copied into this repository; test shapes anchor on ISO's own 116 multi-class
+worked examples; the effective-date axis is fixed now but the 2027 basis is probed before it is
+tested; New York's ten disputed class codes are excluded from testing; loss histories are synthetic
+and **span the credibility threshold** rather than sitting at one point; and live ISO calls run to a
+**standing budget of 60 a day** with a weekly report.
 
-### The six stages
-
-| | | |
-|---|---|---|
-| 1 | Which rulebook applies | given a state and a date, the exact ISO content, refusing to guess |
-| 2 | The interpreter | executes ISO's own rules — all 54 instructions of their language |
-| 3 | The kernel | a submission in, a premium out, in either of two modes |
-| 4 | Submission formats | what a request looks like in each state, **read from ISO's own filings** |
-| 5 | The field workbook | every field and its legal values, in Excel |
-| 6 | The interface | paste a submission, see the price and how it was reached |
-
-### Three things worth knowing about how it went
-
-**The hardest defects were silent, not loud.** Three times the engine produced a complete, plausible,
-*wrong* premium with no error anywhere: a sum that totalled one location out of five, a path notation
-we did not implement so terrorism was never priced, and a rule that made every state-specific
-override unreachable. **None would have been caught by a program that merely ran.** They were caught
-because we had independent answers to check against.
-
-**Three answers were already in ISO's files, unread.** Where the program starts, which edition ISO
-rated with, and the entire submission format — each was declared outright in a directory nobody had
-opened. That is now the project's **first rule**: *before deriving anything from examples, enumerate
-the directories and ask what each one is for.*
-
-**One question we cannot answer, and we say so.** ISO never states which way to round a half-penny.
-We have now proved against the live service that ISO **rounds rather than truncates**. Whether it
-rounds half-up or half-even is still unproven — the difference has not arisen in any submission we
-hold. It is recorded on every rounded value, so whichever it is, every answer stays traceable.
-
----
+**One thing found that is ISO's, not ours.** In **13 jurisdictions ISO's own rating service returns a
+400** — not a validation complaint but its rule engine failing to find a row in its own table. Our
+engine now refuses the same submissions for the same reason. **ISO probably does not know.**
 
 ## 1. What we are building, in short
 
@@ -341,23 +293,35 @@ every coverage should know now that no amount of engineering on this material pr
 
 ## 5. How we will know it works
 
-There is no external system to check our answers against — yet. So correctness is established
-several ways at once:
+**This section was written before there was an external oracle. There is one now, and the answer has
+changed.**
 
-| Method | What it proves |
-|---|---|
-| **The manual's own worked examples** | Where ISO publishes a sample calculation, we reproduce it exactly |
-| **Same risk, every jurisdiction** | Price one identical business in all 51 jurisdictions; **every difference must name the rule responsible.** An unexplained difference is a bug |
-| **Cross-source agreement** | The checks where our two independent analyses agreed become automated tests |
-| **Automated review** | Two expert reviewers — one for the manuals, one for the data files — audit each price and cite the authority for every objection |
-| **ISO's own worked example** | The data files contain **one fully rated policy** (Oklahoma) — inputs and the answer. We reproduce it exactly. Available today |
-| **ISO's own service** *(later)* | The broader external check, across many risks |
+| Method | What it proves | State |
+|---|---|---|
+| **ISO's own live service** | The broadest external check. Same submission through both, compared on the premium **and every published field** | **Live.** 50 of 50 jurisdictions on a standard risk; **184 of 184** comparable outcomes across 11 jurisdictions on varied risks |
+| **ISO's own worked example** | One fully rated policy (Oklahoma) — inputs and answer | Reproduced exactly |
+| **The manual's own worked examples** | Where ISO publishes a sample calculation, we reproduce it | Used, with a caveat: **the manual's own examples are sometimes internally inconsistent with its own tables**, so they are evidence and not gospel |
+| **Same risk, every jurisdiction** | Every difference must name the rule responsible | Done; and it is now the *limiting* factor rather than the proof |
+| **Cross-source agreement** | Where ISO's machine-readable content and its filed manuals agree independently | Used. **Where they disagree, that is the finding** — see New York in §7 |
+| **Automated review** | Expert agents audit each price and cite the authority for every objection | Four agents, one per source, plus one that spans them |
+| **The harness reviewing itself** | That a test *exercised* something, rather than merely rating | **Added 2026-08-17.** `INERT CONTROL` / `INERT VALUE` / `MOVED` |
 
-**One design point worth understanding.** The dangerous failures here are silent — they produce a
-believable number rather than an error message. That is why the plan leans on automated checks
-and audit trails rather than on testing and code review alone. A human reviewing a price cannot
-tell that a factor came from the wrong state's table; a machine comparing it against the cited
-document can.
+**The design point still holds, and got sharper.** The dangerous failures are silent — they produce a
+believable number rather than an error. Two examples from a single day:
+
+- **OI-94** produced a *finished premium* from a missing loss cost in 14 jurisdictions. Eight of them
+  returned the identical number on different base premiums. Complete, plausible, and wrong.
+- **OI-93** was a defect in the *test harness*: a variant that rated, reported as tested, and
+  exercised nothing.
+
+**Which is why "it agrees" is not sufficient on its own, and the reporting keeps four outcomes apart:**
+agrees · differs · **not applicable** (ISO does not offer this here — never a failure) · **both
+refuse** (agreement, but counted separately, because calling a refusal a match inflates the number
+that matters).
+
+**The proposed QA programme** ([`qa-plan-proposal_20260817.html`](qa-plan-proposal_20260817.html))
+extends this to all 51 jurisdictions across multiple locations, classes, limits and exposures. It is
+a proposal; nothing in it is built.
 
 ---
 
@@ -438,35 +402,47 @@ walkthroughs**, including one finished the same morning.
 
 ## 8. Where we stand
 
-**Updated 2026-08-13.**
+**Updated 2026-08-17.**
 
-**All six stages are built and tested.** Eleven test suites, plus a twelfth for the live comparison.
-The engine has no third-party dependency — not one — and neither does the interface or the ISO
-client.
+**All six stages are built and tested.** Fifteen test suites. The engine has no third-party
+dependency — not one — and neither does the interface or the ISO client.
 
 **What it can do today.** Price a General Liability submission in any of 51 jurisdictions from
 September 2022 onward; show every factor in the order it was used with the ISO file it came from;
-tell you when ISO declines to price something rather than inventing a number; reproduce ISO's own
-validation messages; and compare itself against ISO's live service, one submission or all of them,
-from a browser.
+**refuse rather than invent a number when ISO's content cannot answer**; reproduce ISO's own
+validation messages; and compare itself against ISO's live service from a browser or the command
+line.
 
-**What it cannot do yet.** Rate Hawaii — ISO does not publish it. Apply your own rates instead of
-ISO's — that is deliberately last. Rate anything more complicated than the test risk with the same
-confidence: **every one of the 51 verified submissions is the same shape** — one location, one
-classification, no deductible, no rating plans. That was chosen so differences between states would
-be attributable, and it worked, but **fifty matches on one risk shape is a narrower claim than it
-sounds.** Widening it is the next work.
+**What is confirmed by someone other than us.**
 
-**What is confirmed by someone other than us.** ISO's live service agrees on fifty jurisdictions.
-ISO's own response header confirms we picked the right rulebook edition in all fifty. Our reading of
-their rules produces their validation messages word for word. **Puerto Rico alone has no external
-confirmation of any kind** — no subscription entitlement and no published example — and that is
-recorded rather than glossed.
+| | |
+|---|---|
+| Standard risk, all entitled jurisdictions | **50 of 50** agree on the premium and every published field |
+| Varied risks, 11 jurisdictions | **184 of 184** comparable outcomes agree |
+| Rulebook edition | ISO's own response header confirms we picked the right one in all 50 |
+| Validation messages | Our reading of their rules produces their wording |
+| **Puerto Rico** | **No external confirmation of any kind** — no entitlement, no published example. Every count is honestly *n of 50* |
 
-**What we got wrong and corrected.** Every one is in the build log with the evidence. The pattern is
-consistent and worth stating: **almost all of them were something measured in one place and stated
-about everything.** Not a knowledge problem, and more analysis would not have fixed them; enumerating
-the population before making the claim does.
+**What it cannot do yet, stated plainly.**
+
+- **Hawaii is absent from ISO's corpus entirely** — not empty, absent. We do not yet know whether ISO
+  does not file GL there or our subscription excludes it.
+- **The population is still one class family.** Eleven jurisdictions is broad; class `50017`,
+  premises and products, is not. **The coverage grid reads 1 of 19.**
+- **7 of 11 sublines have no buildable base submission**, so most of a GL policy has never been
+  priced.
+- **Multi-location and multi-class have no starting payload**, and 20 jurisdictions declare a single
+  territory so they cannot host a two-location test at all.
+- **No effective-date axis** — and **43 jurisdictions change basis on 1 April 2027**, with
+  classification minimum premiums deleted outright.
+- **Your own rates instead of ISO's** — deliberately last, and the reason is now sharper: the moment
+  carrier content is layered on, **no external service can confirm the answer.**
+
+**What we got wrong and corrected.** Every one is in the build log with the evidence. The pattern was
+*"something measured in one place and stated about everything"*. **2026-08-17 added a second
+pattern, and it is more useful:** five items sat on the backlog waiting for a decision when what each
+one needed was a **measurement**. Closing one made the next reachable — OI-88 exposed OI-94; OI-91
+produced OI-93 within minutes. **The queue was a stack, and the top item was hiding the rest.**
 
 ## 9. A note on how this project has worked
 
