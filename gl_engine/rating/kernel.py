@@ -208,13 +208,30 @@ class Kernel:
                 walk(child, here)
 
         walk(result.tree)
-        if bad:
-            raise RatingError(
-                f"{bad[0].rsplit('/', 1)[-1]} resolved to null, so this risk "
-                f"has no filed loss cost and cannot be rated -- ISO's own "
-                f"service refuses the same submission (OI-94). "
-                f"{len(bad)} null loss cost(s): "
-                f"{', '.join(b.rsplit('/', 1)[-1] for b in bad[:4])}")
+        if not bad:
+            return
+
+        names = [b.rsplit("/", 1)[-1] for b in bad]
+        # Name the table that actually came back empty, not the node the null
+        # was written into. An adversarial review on 2026-08-17 caught this
+        # message blaming `PremOpsLossCost` -- a healthy 9,504-row table in
+        # Texas that had resolved 0.095 perfectly well -- when the empty table
+        # was `PremOpsSizeOfRiskLossCost`, which Texas never filed. An
+        # investigator following the old wording went to the wrong file.
+        empty = [t.data.get("table") or t.detail.split("[")[0]
+                 for t in (result.trace or [])
+                 if t.kind == "lookup-miss"]
+        sor = sorted({e for e in empty if "SizeOfRisk" in str(e)})
+        why = ""
+        if sor:
+            why = (f" The lookup that came back empty is {sor[0]}, not the "
+                   f"loss-cost table itself: this jurisdiction has not filed "
+                   f"the size-of-risk rating plan, so no classification can "
+                   f"rate under it.")
+        raise RatingError(
+            f"{names[0]} resolved to null and the risk cannot be rated.{why} "
+            f"{len(bad)} null loss cost node(s): {', '.join(names[:4])}. "
+            f"(OI-94)")
 
     # --------------------------------------------------------------- results
 

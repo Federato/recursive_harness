@@ -9,7 +9,7 @@ Four passes were proposed. This module holds them as they are built:
                                           `variants.probe_no_op`
     Pass 2  is a refusal correct?       -- not built
     Pass 3  is a NOT APPLICABLE real?   -- **this file**
-    Pass 4  adversarial agent read      -- not built
+    Pass 4  adversarial agent read      -- **this file**, the brief half
 
 ### Why pass 3 was built first, and it is not because it was easiest
 
@@ -36,6 +36,28 @@ package** -- `Fields.FormField.csv` for the domain a field declares, then
 Where it cannot honestly re-derive a refusal it returns **`UNVERIFIED` and says
 what would settle it**, rather than returning `CONFIRMED` and meaning
 *"I did not check"*. That distinction is the whole value of the pass.
+
+### Pass 4, and the line this file will not cross
+
+**A Python script cannot invoke the specialist agents.** They are a capability of
+the harness this project is driven from, not a library that can be imported. So
+pass 4 is split honestly: **this file assembles the brief** -- the evidence, and
+one refutation prompt per agent -- and the operator dispatches them.
+
+Two rules are built into the prompts rather than left to whoever runs them:
+
+* **Each agent is asked to refute, never to confirm.** An agent asked *"is this
+  right?"* tends to agree; asked *"find what is wrong with this"* it does real
+  work. The prompts state the claim and instruct the reader to break it.
+* **Each agent sees only its own source.** `iso-erc-expert`'s own definition
+  forbids it from reading the manual expert, because agreement between two
+  independently-built corpora is only evidence while they stay independent.
+  A brief that handed one agent the other's conclusion would destroy exactly the
+  thing it was trying to measure.
+
+**Pass 4 never gates a run.** It is the least deterministic thing in the
+programme and it will be wrong sometimes; it generates findings, and a finding
+is for a person to weigh.
 """
 from __future__ import annotations
 
@@ -260,13 +282,138 @@ def review_runs(tier: str = "", juris: str = "", limit: int = 60) -> dict:
     return {"reviewed": len(out), "counts": counts, "results": out}
 
 
+
+
+# ---------------------------------------------------- pass 4: the adversarial brief
+
+#: One agent per source, and the source is the point. Each is asked about the
+#: thing it alone can see, so three agreements are three independent readings
+#: rather than one reading repeated.
+REVIEWERS = {
+    "gl-authority": (
+        "ISO's machine-readable content (ERC), and our code where it must be "
+        "compared against it"),
+    "iso-circular-expert": (
+        "ISO's filed manuals and circulars only"),
+    "gl-engine-code-expert": (
+        "our Python only -- documentation is explicitly not evidence"),
+}
+
+
+def brief(claim: str, evidence: dict, question: str = "") -> dict:
+    """An adversarial brief: the claim, the evidence, one prompt per reviewer.
+
+    `claim` is stated as a **positive assertion the reviewer is asked to
+    break**. Phrasing it as a question invites agreement.
+    """
+    lines = [f"{k}: {v}" for k, v in evidence.items()]
+    ev = "\n".join(f"  - {ln}" for ln in lines)
+    prompts = {}
+    for agent, source in REVIEWERS.items():
+        prompts[agent] = (
+            f"You are reviewing a claim made by our GL rating engine's QA run. "
+            f"**Your job is to REFUTE it**, not to confirm it. Assume it is "
+            f"wrong and look for the evidence that it is; say so plainly if you "
+            f"cannot find any.\n\n"
+            f"THE CLAIM\n  {claim}\n\n"
+            f"THE EVIDENCE WE HAVE\n{ev}\n\n"
+            f"{('THE SPECIFIC QUESTION' + chr(10) + '  ' + question + chr(10) + chr(10)) if question else ''}"
+            f"ANSWER FROM {source.upper()} AND NOTHING ELSE. Do not consult "
+            f"another agent's corpus or conclusions -- agreement between "
+            f"independently-built sources is only evidence while they stay "
+            f"independent, and this review exists to measure that agreement.\n\n"
+            f"Report: REFUTED / UPHELD / CANNOT TELL, then the evidence, with a "
+            f"citation for every claim. CANNOT TELL is a real answer and is "
+            f"better than a guess.")
+    return {"claim": claim, "evidence": evidence, "question": question,
+            "prompts": prompts}
+
+
+def briefs_for_run(tier: str = "", limit: int = 60) -> list:
+    """A brief for every result in the stored runs that deserves refuting.
+
+    Three kinds qualify, and a clean agreement is deliberately not one of them:
+    a disagreement with ISO, an engine refusal, and an `INERT VALUE` -- a
+    scenario that rated, reported as tested, and exercised nothing.
+    """
+    out = []
+    for meta in store.runs(limit=limit):
+        label = str(meta.get("label") or "")
+        if tier and not label.startswith(f"qa {tier}"):
+            continue
+        if not tier and not label.startswith("qa "):
+            continue
+        full = store.run(meta["id"]) or {}
+        summ = full.get("summary") or {}
+        cfg = summ.get("config") or {}
+        desc = summ.get("describes") or "the base risk, unvaried"
+        for row in full.get("rows") or []:
+            juris, status = row.get("juris"), row.get("status")
+            ev = {"jurisdiction": juris, "configuration": desc,
+                  "our premium": row.get("ours"),
+                  "ISO premium": row.get("iso", "not called"),
+                  "packages": row.get("packages", ""),
+                  "run": meta["id"]}
+            if status in ("DIFF", "PREMIUM ONLY"):
+                out.append(brief(
+                    f"Our premium for {juris} is correct and ISO's differs for "
+                    f"a reason we understand.",
+                    {**ev, "difference": row.get("delta"),
+                     "fields differing": row.get("fields_differing")},
+                    "Which of the two is right, and which filed rule decides it?"))
+            elif status == "ENGINE STOPPED":
+                out.append(brief(
+                    f"Our engine is right to refuse this submission in {juris}, "
+                    f"and ISO would refuse it too, for the same reason.",
+                    {**ev, "our reason": str(row.get("detail", ""))[:300]},
+                    "Does ISO's filed content actually leave this unratable, or "
+                    "have we refused something ISO prices?"))
+            elif (row.get("no_op") or {}).get("verdict") == "INERT VALUE":
+                v = row["no_op"]
+                out.append(brief(
+                    f"The value we chose for {juris} is a legitimate test value "
+                    f"even though it moved nothing.",
+                    {**ev, "chosen": f"{v.get('column')}={v.get('chosen')}",
+                     "would have moved": f"{v.get('moves_with')} -> "
+                                         f"{v.get('premium')}"},
+                    "Is our chosen value one a real submission would carry, or "
+                    "did we test a value ISO files but nobody uses?"))
+    return out
+
+
 def main(argv) -> int:
     ap = argparse.ArgumentParser(
         description="Pass 3: is a NOT APPLICABLE real, or is it ours?")
     ap.add_argument("--tier", default="")
     ap.add_argument("--juris", default="")
     ap.add_argument("--limit", type=int, default=60)
+    ap.add_argument("--pass4", action="store_true",
+                    help="assemble adversarial briefs instead of running pass 3")
+    ap.add_argument("--max", type=int, default=3,
+                    help="how many briefs to print")
     a = ap.parse_args(argv)
+
+    if a.pass4:
+        bs = briefs_for_run(a.tier, a.limit)
+        print(f"Pass 4 -- {len(bs)} result(s) worth refuting\n")
+        if not bs:
+            print("  Nothing to review. A clean agreement is deliberately not\n"
+                  "  a brief: there is no claim to break.")
+            return 0
+        for b in bs[:a.max]:
+            print("=" * 74)
+            print(f"CLAIM   {b['claim']}")
+            for k, v in b["evidence"].items():
+                print(f"        {k:18s} {str(v)[:70]}")
+            print(f"\n  {len(b['prompts'])} reviewers, each on its own source:")
+            for agent in b["prompts"]:
+                print(f"    - {agent}")
+        if len(bs) > a.max:
+            print("=" * 74)
+            print(f"  ...and {len(bs) - a.max} more. Raise --max to see them.")
+        print("\n  Pass 4 never gates a run. Dispatch these to the agents; a\n"
+              "  finding is for a person to weigh.")
+        return 0
 
     r = review_runs(a.tier, a.juris.upper(), a.limit)
     print("Pass 3 -- every NOT APPLICABLE, re-derived from ISO's own files\n")

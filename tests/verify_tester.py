@@ -214,6 +214,39 @@ def main() -> int:
           and mixed["cause"]["control"] == "locations",
           f"cause: {mixed['cause']['why'][:70] if mixed['cause'] else None}")
 
+    # --- pass 4: the adversarial brief. Its value is entirely in how it asks.
+    b = QR.brief("Our premium for OK is correct.",
+                 {"jurisdiction": "OK", "our premium": "8229"},
+                 "Which filed rule decides it?")
+    check("R6 pass 4 asks every reviewer to REFUTE, never to confirm",
+          all("REFUTE" in t and "Assume it is wrong" in t
+              for t in b["prompts"].values()),
+          "an agent asked 'is this right?' tends to agree")
+    check("R7 ...and forbids each reviewer the other's corpus",
+          all("independent" in t and "Do not consult" in t
+              for t in b["prompts"].values()),
+          "agreement between two corpora is evidence only while they stay "
+          "independent")
+    check("R8 ...and allows CANNOT TELL as a real answer",
+          all("CANNOT TELL is a real answer" in t
+              for t in b["prompts"].values()),
+          "a forced verdict is a guess wearing a citation")
+    check("R9 one reviewer per source, and the source is named in the prompt",
+          set(b["prompts"]) == set(QR.REVIEWERS)
+          and all(QR.REVIEWERS[a].split()[0].upper() in t.upper()
+                  for a, t in b["prompts"].items()),
+          ", ".join(sorted(QR.REVIEWERS)))
+
+    # A clean agreement must NOT generate a brief: there is no claim to break,
+    # and a review queue full of confirmations is a review queue nobody reads.
+    briefs = QR.briefs_for_run("T1")
+    kinds = {("refuse" in x["claim"]) for x in briefs}
+    check("R10 only results worth refuting become briefs",
+          all(("refuse" in x["claim"] or "differs" in x["claim"]
+               or "moved nothing" in x["claim"]) for x in briefs),
+          f"{len(briefs)} brief(s) from disagreements, refusals and inert "
+          f"values -- never from a clean agreement")
+
     # Everything the stored runs actually refused must be ISO's narrowing.
     rev = QR.review_runs("T1")
     check("R4 every NOT APPLICABLE on record is ISO's, not ours",
