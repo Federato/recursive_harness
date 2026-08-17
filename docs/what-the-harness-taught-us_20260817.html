@@ -1,0 +1,266 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>What the harness taught us — 17 August 2026</title>
+<style>
+:root{--bg:#fbfbfd;--fg:#1d1d20;--mut:#63636b;--line:#e3e3e8;--accent:#1f3864;
+--code-bg:#f4f4f7;--tbl-head:#1f3864;--mark:#fff3cd;--del:#a11}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+background:var(--bg);color:var(--fg)}
+header{background:var(--accent);color:#fff;padding:22px 32px 0}
+header h1{margin:0 0 4px;font-size:20px;font-weight:650;letter-spacing:-.01em}
+header .sub{opacity:.72;font-size:13px;margin-bottom:16px}
+nav{display:flex;gap:4px}
+nav button{appearance:none;border:0;background:rgba(255,255,255,.10);color:#fff;cursor:pointer;
+font:inherit;font-size:14px;padding:10px 18px;border-radius:7px 7px 0 0;opacity:.75}
+nav button:hover{opacity:1;background:rgba(255,255,255,.18)}
+nav button[aria-selected="true"]{background:var(--bg);color:var(--accent);font-weight:640;opacity:1}
+.wrap{display:grid;grid-template-columns:250px minmax(0,1fr);gap:34px;
+max-width:1360px;margin:0 auto;padding:30px 32px 90px}
+aside{position:sticky;top:22px;align-self:start;max-height:calc(100vh - 50px);overflow:auto;
+font-size:13.5px;border-left:2px solid var(--line);padding-left:14px}
+aside .lbl{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--mut);
+font-weight:700;margin-bottom:9px}
+aside ul{list-style:none;margin:0;padding:0}
+aside ul ul{padding-left:13px}
+aside a{color:var(--mut);text-decoration:none;display:block;padding:3px 0;line-height:1.4}
+aside a:hover{color:var(--accent)}
+article{min-width:0;background:#fff;border:1px solid var(--line);border-radius:11px;padding:34px 42px 54px}
+article h1{font-size:27px;margin:0 0 8px;letter-spacing:-.02em}
+article h2{font-size:20px;margin:38px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--line);
+letter-spacing:-.01em}
+article h3{font-size:16.5px;margin:26px 0 9px}
+article h4{font-size:15px;margin:20px 0 7px;color:var(--mut)}
+p,li{max-width:74ch}
+code{background:var(--code-bg);padding:.13em .38em;border-radius:4px;
+font:13.5px/1.5 "SF Mono",Consolas,"Liberation Mono",Menlo,monospace}
+pre{background:var(--code-bg);border:1px solid var(--line);border-radius:8px;padding:14px 17px;
+overflow-x:auto}
+pre code{background:none;padding:0;font-size:13px;line-height:1.55}
+table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14.2px;display:block;overflow-x:auto}
+th{background:var(--tbl-head);color:#fff;text-align:left;font-weight:600;padding:9px 12px;
+white-space:nowrap}
+td{border-bottom:1px solid var(--line);padding:9px 12px;vertical-align:top}
+tr:nth-child(even) td{background:#fafafc}
+blockquote{margin:16px 0;padding:12px 18px;background:#f6f8fc;border-left:4px solid var(--accent);
+border-radius:0 7px 7px 0}
+blockquote p{margin:.45em 0}
+del{color:var(--del);text-decoration-thickness:1px}
+hr{border:0;border-top:1px solid var(--line);margin:30px 0}
+a{color:var(--accent)}
+.meta{font-size:12.5px;color:var(--mut);margin:0 0 22px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.panel[hidden]{display:none}
+@media(max-width:1000px){.wrap{grid-template-columns:1fr;padding:20px}aside{display:none}
+article{padding:24px 20px 40px}}
+@media print{header,aside,nav{display:none}.wrap{display:block;padding:0}
+article{border:0;padding:0}.panel[hidden]{display:block!important}}
+
+.wrap{display:block;max-width:60rem;margin:0 auto;padding:0 1.5rem 5rem}
+article{max-width:none}
+.toc-box{border:1px solid var(--line);border-radius:8px;padding:1rem 1.25rem;
+margin:1.5rem 0 2.5rem;background:#fff}
+.toc-box .lbl{font-weight:600;color:var(--accent);margin-bottom:.4rem}
+.toc-box ul{margin:.2rem 0;padding-left:1.1rem}
+.toc-box>ul>li{margin:.15rem 0}
+h2{margin-top:2.6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h1+p+h2,h2:first-of-type{border-top:none}
+table{font-size:.95em}
+@media print{header{position:static}.toc-box{break-inside:avoid}}
+</style></head><body>
+<header><h1>What the harness taught us — 17 August 2026</h1>
+<div class="sub">ISO General Liability Rating Engine · Recursive Harness 2.0 · seven defects in one day, and the pattern underneath them</div></header>
+<div class="wrap"><article>
+<p class="meta">Source: <code>docs/WHAT-THE-HARNESS-TAUGHT-US.md</code> &nbsp;·&nbsp; 1,856 words &nbsp;·&nbsp; rendered 2026-08-17</p>
+<div class="toc-box"><div class="lbl">On this page</div><div class="toc">
+<ul>
+<li><a href="#first-the-thing-that-makes-this-different">First, the thing that makes this different</a></li>
+<li><a href="#the-seven">The seven</a></li>
+<li><a href="#the-pattern-underneath-all-seven">The pattern underneath all seven</a></li>
+<li><a href="#where-that-leaves-the-engine">Where that leaves the engine</a></li>
+<li><a href="#what-we-still-cannot-say">What we still cannot say</a></li>
+</ul>
+</div>
+</div>
+<h1 id="what-the-harness-taught-us-17-august-2026">What the harness taught us — 17 August 2026</h1>
+<p><strong>Who this is for:</strong> anyone who wants to know whether this engine can be trusted, without reading
+code. No jargon that isn't explained the first time it appears.</p>
+<p><strong>One day. Seven defects found, six fixed, one escalated to a person.</strong> What follows is what each one
+taught, and the pattern underneath them — which is more reusable than any of the fixes.</p>
+<hr />
+<h2 id="first-the-thing-that-makes-this-different">First, the thing that makes this different</h2>
+<p><strong>Most rating engines are tested by people who already believe they work.</strong> Someone writes a test,
+the test passes, everyone moves on. The trouble is that a rating engine's worst failures don't look
+like failures. <strong>They look like a number.</strong></p>
+<p>This project is built the other way round. The engine, ISO's own files, ISO's live service and the
+test harness are pointed <em>at each other</em> until they disagree — and <strong>the disagreements are the
+product.</strong> A day where everything agrees has taught us nothing.</p>
+<p>Today they disagreed seven times.</p>
+<hr />
+<h2 id="the-seven">The seven</h2>
+<h3 id="1-a-fallback-that-could-never-happen">1 · A fallback that could never happen</h3>
+<p><strong>In plain English.</strong> ISO's rules constantly say <em>"use this state's number; if the state hasn't filed
+one, use the national number."</em> We handled that fine — right up until the answer had to be worked out
+through a calculation first. Then the engine treated <em>"the state has nothing"</em> as an error and
+stopped, instead of shrugging and going to look for the national number.</p>
+<p><strong>How bad.</strong> A whole rating feature — size-of-risk — was working correctly in <strong>zero of 51 states.</strong>
+Forty-nine refused outright and the other two silently did nothing.</p>
+<p><strong>How it was found.</strong> By varying the <em>submission</em> instead of the <em>state</em>. Every test before this used
+the same risk everywhere.</p>
+<p><strong>What it taught.</strong> <em>A feature can be completely broken in every state and still pass every test, if
+no test ever turns it on.</em></p>
+<hr />
+<h3 id="2-a-contradiction-that-turned-out-to-be-arithmetic">2 · A contradiction that turned out to be arithmetic</h3>
+<p><strong>In plain English.</strong> To price terrorism cover, the engine has to tell ISO where the risk is. Some
+states want a territory code, some want a ZIP. We had two counts of which states wanted which, taken
+two different ways, and they didn't line up. It sat on the record for three days described as
+<em>"they do not obviously reconcile."</em></p>
+<p><strong>They reconcile perfectly. 4 + 11 = 15.</strong> They were never two groups plus a remainder — they were
+one group of fifteen, counted twice.</p>
+<p><strong>And then the real finding.</strong> The thing actually blocking us was <strong>our own code</strong>. We had a fallback
+that did nothing at all, and it was the only reason twenty states looked unsupported.</p>
+<p><strong>How bad.</strong> Terrorism was blocked in <strong>zero</strong> states, not twenty. It now prices in all 51.</p>
+<p><strong>What it taught.</strong> <em>A refusal with a well-written explanation is still a refusal.</em> The message said
+<em>"this state declares neither option"</em> — reasonable, specific, and wrong. Nobody questioned it
+<strong>because it explained itself.</strong></p>
+<hr />
+<h3 id="3-the-oldest-open-question-settled-in-four-phone-calls">3 · The oldest open question, settled in four phone calls</h3>
+<p><strong>In plain English.</strong> When a premium calculation lands exactly halfway — 2,164.5 — does it round up
+or down? Every engine has to decide. We'd never been able to prove which ISO does, because <strong>out of
+every submission we held, not one landed exactly on a halfway point.</strong></p>
+<p><strong>How it was settled.</strong> By building a submission that had to. Four of them, then asking ISO.
+<strong>ISO rounds up. Four out of four.</strong></p>
+<p><strong>A second idea was tested too.</strong> It was suggested ISO might chop numbers to four decimal places
+first and then round. Plausible, and it would have looked exactly like rounding down. <strong>It changes
+nothing — 0 out of 432 calculations</strong> — and there's a structural reason why it can't.</p>
+<p><strong>What it taught.</strong> <em>You cannot find a rare case by collecting more ordinary ones.</em> And one attempt
+failed instructively: a submission that hit the halfway point five times still produced the same
+premium either way, because those particular halves never reached the total. <strong>A test that fires is
+not a test that proves anything.</strong></p>
+<hr />
+<h3 id="4-the-harness-caught-itself">4 · The harness caught itself</h3>
+<p><strong>In plain English.</strong> We turned terrorism on in New York. The premium didn't change — <strong>and ISO
+agreed with us to the penny.</strong> So nothing was wrong.</p>
+<p>Except the test had reported itself as <em>passed</em>. The territory we'd picked happens to carry <strong>no
+terrorism charge at all</strong>, while five others charge 110. <strong>The test ran, reported success, and
+exercised nothing.</strong></p>
+<p><strong>What it taught, and this is the important one.</strong> <em>The defect was not in the engine. It was in the
+thing measuring the engine.</em> Every coverage figure that test contributed to was overstated, and
+nothing would ever have said so.</p>
+<p>The harness now tells two things apart that used to look identical: <strong>"ISO's own rules mean this
+genuinely does nothing here"</strong> versus <strong>"we picked a value that does nothing."</strong> The first is a real
+finding. The second is our mistake.</p>
+<hr />
+<h3 id="5-where-we-produced-a-number-and-iso-refused">5 · Where we produced a number and ISO refused</h3>
+<p><strong>In plain English.</strong> The mirror image of the first defect. There, we refused where ISO priced. Here,
+<strong>we produced a premium where ISO's own service returns an error.</strong></p>
+<p>The engine looked for a rate, didn't find one, wrote down "nothing" — and then carried on and
+finished the calculation anyway.</p>
+<p><strong>How bad.</strong> Fourteen states. And the giveaway: <strong>eight of them returned the <em>identical</em> premium</strong>
+despite starting from completely different base premiums. A premium that doesn't depend on the
+state's own rate is <strong>complete, plausible and wrong</strong> — which is precisely the failure this engine
+exists to prevent.</p>
+<p><strong>What it taught.</strong> <em>Fixing one defect makes the next one reachable.</em> This code had never run before
+that morning, because defect 1 was stopping everything before it got there. <strong>The backlog wasn't a
+queue — it was a stack, and the top item was hiding the rest.</strong></p>
+<hr />
+<h3 id="6-the-review-refuted-the-fix-eight-hours-after-we-made-it">6 · The review refuted the fix, eight hours after we made it</h3>
+<p><strong>In plain English.</strong> We built a review step whose whole job is to attack our own results — three
+independent specialists, each reading a different source, each told <em>"assume this is wrong and prove
+it."</em></p>
+<p>We pointed it at the fix from defect 5, made that same morning. <strong>It came back split, and both halves
+mattered.</strong></p>
+<p><strong>The fix was right</strong> — and better supported than when we made it. Texas has never filed the
+size-of-risk plan at all, and <strong>two completely separate ISO sources agree on exactly which 35 states
+did</strong>, with no difference either way. No amount of engineering can price it in Texas, and none
+should try.</p>
+<p><strong>But the reason we'd written down was wrong.</strong> We'd claimed ISO's error message proved ISO refused
+for the same reason we did. It doesn't — it's an error about a <em>different</em> lookup, and the message we
+quoted was <strong>captured in Georgia, not Texas.</strong> That wrong claim had been copied into three documents.</p>
+<p><strong>And our error message pointed at the wrong file.</strong> It blamed a table that, in Texas, is perfectly
+healthy — 9,504 rows, working correctly. The table that was actually empty is a different one, a file
+containing nothing but a header. <strong>Anyone investigating would have gone to the wrong place.</strong></p>
+<p><strong>What it taught.</strong> <em>Tests check what the engine does. Nothing was checking what the engine says.</em>
+Both errors were in explanations, not behaviour — so every test passed, and would have kept passing.</p>
+<hr />
+<h3 id="7-something-we-cannot-decide-ourselves">7 · Something we cannot decide ourselves</h3>
+<p><strong>In plain English.</strong> ISO publishes the same information twice: as documents for people, and as data
+files for computers. On one point they say different things.</p>
+<p>Where the printed manual says <strong>"refer this to an underwriter — we're not publishing a price"</strong>, the
+data file says <strong>zero</strong>. In Texas alone that happens <strong>178 times</strong>, and the two sources otherwise
+agree on all 1,188 classifications with no mismatches at all.</p>
+<p>Our engine reads the data files. So it prices those as <strong>zero, and tells nobody.</strong> We added one such
+classification to a Texas risk and the premium moved from 7,821 to 8,973 with <strong>no referral and no
+warning.</strong></p>
+<p><strong>But — and this matters — ISO's own live service does the same thing.</strong> We have a recorded, verified
+match against it on a risk that contains exactly this situation.</p>
+<p><strong>So this is not a bug report. It's a question for a person:</strong> is <em>"the service prices a
+refer-to-underwriter class as zero"</em> intended behaviour, or a seam everyone has quietly lived with?
+<strong>Neither ISO document answers it, and it isn't ours to decide.</strong></p>
+<hr />
+<h2 id="the-pattern-underneath-all-seven">The pattern underneath all seven</h2>
+<p><strong>1 · Not one was found by reading code.</strong> Every single one came from running something against
+something else — ISO's service against our engine, one measurement against another, a purpose-built
+input against a prediction, and in two cases <strong>the harness against itself.</strong></p>
+<p><strong>2 · Not one needed a decision. Every one needed a measurement.</strong> The first defect sat at the top of
+the list for three sessions waiting for someone to approve a fix. What it was actually waiting for
+was a <em>number</em> — and the work that produced that number was free, read-only, and available the whole
+time.</p>
+<p><strong>3 · The measurement changed the fix, twice.</strong> Both times the obvious one-line change would have
+been wrong. In one case the count showed that <strong>51 of 69 affected places had something standing ready
+to quietly absorb the mistake</strong> — so the careless fix would have converted a loud failure into a
+silent wrong number.</p>
+<p><strong>4 · Closing a defect exposes the next.</strong> Twice in one day.</p>
+<p><strong>5 · The harness's own defects count.</strong> Two of the seven were in the <em>measuring</em> apparatus, not the
+engine. <strong>A harness nobody suspects of being wrong isn't a harness — it's an assumption with tests
+attached.</strong></p>
+<p><strong>6 · Being right is not the same as being explainable.</strong> Two of the day's findings were correct
+behaviour with a wrong explanation attached. No test caught them, because tests check behaviour.
+<strong>A review that reads the explanations is a different instrument, and it found things nothing else
+could.</strong></p>
+<hr />
+<h2 id="where-that-leaves-the-engine">Where that leaves the engine</h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Start of day</th>
+<th>End of day</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Size-of-risk working correctly</td>
+<td><strong>0 of 51 states</strong></td>
+<td>37 rate, 14 correctly refuse</td>
+</tr>
+<tr>
+<td>Terrorism</td>
+<td>31 of 51</td>
+<td><strong>51 of 51</strong></td>
+</tr>
+<tr>
+<td>Checked against ISO on varied risks</td>
+<td>31 comparisons, 2 states</td>
+<td><strong>184 comparisons, 11 states</strong></td>
+</tr>
+<tr>
+<td>Rounding</td>
+<td>unproven</td>
+<td><strong>settled, four ways</strong></td>
+</tr>
+<tr>
+<td>Known defects</td>
+<td>3</td>
+<td><strong>1</strong>, plus one question for a person</td>
+</tr>
+</tbody>
+</table>
+<p><strong>92 calls to ISO all day</strong>, each one aimed by a free offline measurement first.</p>
+<hr />
+<h2 id="what-we-still-cannot-say">What we still cannot say</h2>
+<p><strong>We have proven this engine across geography. We have not proven it across the variety of business a
+carrier actually writes.</strong> Every test still uses broadly one kind of risk. Our internal coverage
+measure reads <strong>1 of 19</strong>.</p>
+<p>That is the honest headline, and it is the next piece of work.</p>
+</article></div></body></html>

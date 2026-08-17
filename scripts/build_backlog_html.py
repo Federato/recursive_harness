@@ -54,8 +54,22 @@ table{font-size:.95em}
 """
 
 
+PAGES = {
+    "backlog": (SOURCE, OUT, TITLE, SUBTITLE),
+    "taught": ("docs/WHAT-THE-HARNESS-TAUGHT-US.md",
+               "docs/what-the-harness-taught-us_20260817.html",
+               "What the harness taught us — 17 August 2026",
+               "ISO General Liability Rating Engine · Recursive Harness 2.0 · "
+               "seven defects in one day, and the pattern underneath them"),
+}
+
+
 def main() -> None:
-    src_path = os.path.join(ROOT, SOURCE)
+    which = sys.argv[1] if len(sys.argv) > 1 else "backlog"
+    if which not in PAGES:
+        raise SystemExit(f"unknown page {which!r}; try {', '.join(PAGES)}")
+    source, out_rel, title, subtitle = PAGES[which]
+    src_path = os.path.join(ROOT, source)
     src = open(src_path, encoding="utf-8").read()
 
     md = markdown.Markdown(extensions=EXT,
@@ -64,23 +78,23 @@ def main() -> None:
     # ~~strike~~ is not in core python-markdown, same fix build_docs_html makes
     body = re.sub(r"~~(.+?)~~", r"<del>\1</del>", body, flags=re.S)
 
-    meta = (f'Source: <code>{html.escape(SOURCE)}</code> &nbsp;·&nbsp; '
+    meta = (f'Source: <code>{html.escape(source)}</code> &nbsp;·&nbsp; '
             f'{len(src.split()):,} words &nbsp;·&nbsp; rendered '
             f'{datetime.date.today().isoformat()}')
 
     page = f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>{html.escape(TITLE)}</title>
+<title>{html.escape(title)}</title>
 <style>{house_css()}{EXTRA}</style></head><body>
-<header><h1>{html.escape(TITLE)}</h1>
-<div class="sub">{html.escape(SUBTITLE)}</div></header>
+<header><h1>{html.escape(title)}</h1>
+<div class="sub">{html.escape(subtitle)}</div></header>
 <div class="wrap"><article>
 <p class="meta">{meta}</p>
 <div class="toc-box"><div class="lbl">On this page</div>{md.toc}</div>
 {body}
 </article></div></body></html>"""
 
-    out = os.path.join(ROOT, OUT)
+    out = os.path.join(ROOT, out_rel)
     open(out, "w", encoding="utf-8").write(page)
     print(f"wrote {out}  ({os.path.getsize(out) / 1024:.0f} KB)")
 
