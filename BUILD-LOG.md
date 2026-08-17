@@ -2657,7 +2657,7 @@ still **one class family**, and that is now the honest limit rather than the jur
 
 ---
 
-## Entry 25 — A QA programme proposed, six decisions taken, and every document brought current. **NEXT SESSION STARTS HERE.**
+## Entry 25 — A QA programme proposed, six decisions taken, and every document brought current. ~~NEXT SESSION STARTS HERE.~~ *(the live handoff is **Entry 26**)*
 
 - **Date:** 2026-08-17 *(same session as Entries 18–24)*
 - **Directed:** design a full QA plan using the agents · answer the volume and ISO-budget questions ·
@@ -2775,3 +2775,105 @@ than retrofitted.
    costs nothing to remove.
 5. **Unchanged:** OI-89 needs the synthetic loss histories now authorised; `breadth.py` still lacks
    the OI-93 probe; the coverage grid still reads *1 of 19*.
+
+---
+
+## Entry 26 — The QA programme built: tiers on the command line, a launcher in the browser. **NEXT SESSION STARTS HERE.**
+
+- **Date:** 2026-08-17
+- **Directed:** *"yes, build according to the plan"*
+- **Built:** `scripts/qa.py`, three QA routes and a QA card on `/tester`, and one file moved.
+- **Verified:** every suite green — tester **33/33** · interp 61/61 · golden 80/80 · breadth 22/22 ·
+  stages 1/3/4/5/6 · phase2 14/14 · CA 11/11 · NY 10/10 · oi50 7/7 · notebooks 20/20. **T1 run
+  offline end to end: 22 scenarios, 264 ratings, two minutes, no cost.**
+
+### 1. Phase 1 — the tiers are real, and two of them refuse
+
+`scripts/qa.py`. Five tiers, and **T3 and T4 decline to run while naming what they need** — the
+per-class payload builder, and the as-of probe from decision A3 — rather than pretending to exist.
+
+| Tier | Scenarios | ISO calls | Live time |
+|---|---|---|---|
+| T0 Smoke | 1 | 50 | 7 min |
+| **T1 Core logic** | **22** | **264** | **36 min** |
+| T2 Full logic | 22 | 1,100 | 2h 34m |
+| T3 Value sweep | — | — | **not built** |
+| T4 Edition cliff | 22 | 264 | **blocked on A3** |
+
+**T1 came out at 22 scenarios against the proposal's ~600.** Pairwise beat the design target, and the
+proposal's figure should be read as the estimate it was rather than a measurement.
+
+**Pairwise, not every combination, and the reason is empirical:** every measured defect so far needed
+**two** things set at once to appear — a deductible *and* a limit, size-of-risk *and* a state whose
+table is countrywide. **None needed three.** `_allpairs` is a plain greedy covering algorithm, not
+minimal, deterministic, and short enough to read.
+
+### 2. The budget guard, and the gap that writing it exposed
+
+Decision A6 sets **60 live calls a day standing, 150 absolute**. A tier over the standing budget
+**refuses to start** rather than warning; `--force` reaches the ceiling and nothing reaches past it.
+
+**Then the guard reported zero on a day that had spent ninety-two.** Neither `sweep.py`'s CLI nor
+`breadth.py` had *ever* written to the run store — only the browser did. **A budget that counts from a
+store the command line never writes to is not a budget.** `sweep.py` now records every run. Today's
+92 predate the fix and stay invisible, which is stated rather than backfilled.
+
+### 3. Phase 2 — the same thing behind a button
+
+Three routes: `GET /api/tester/qa` for tiers, costs and budget; `POST /api/tester/qa/plan` for the
+matrix without running it; `POST /api/tester/qa/run` to start a tier. **All three compute from
+`scripts/qa.py`** — a second list of tiers maintained next to the first would drift, and the drift
+would look like a rating defect.
+
+**The guard is enforced on the button too, and that was deliberate.** A tier over budget returns
+**429** with what it needs and what remains; offline is always allowed. **A guard that held on only
+one door would make the budget a matter of which door you came in by.** Verified both ways.
+
+The card shows cost **before** the button, marks a tier red when it would be refused, and lists
+findings as the run goes — disagreements *and* inert values — so a long tier is useful before it
+finishes.
+
+### 4. A test caught me, and it was right
+
+`verify_tester` **A5 — "no script imports the UI"** — failed, because recording a CLI run had made
+`scripts/sweep.py` import `ui`. That inverts the one-way dependency the project enforces.
+
+**The fix was the code, not the assertion.** `ui/store.py` → `scripts/runstore.py`, because **a run
+store is a results store and not an interface concern**: the command line writes to it, the browser
+writes to it, and the live-call budget counts from it. `ui/__init__` no longer re-exports it, and the
+UI imports it exactly as it already imports `variants` and `sweep`.
+
+**Second time today an assertion written to hold a boundary caught the boundary being crossed** —
+`verify_breadth` E7 was the other, pinning that a loss cost of **zero** still rates while only a
+**null** refuses. Both times the assertion was right and the code was wrong.
+
+### 5. The offline run earned its keep immediately
+
+**264 ratings, two minutes, nothing spent. 17 engine refusals — every one the known OI-94 null loss
+cost**, in TX, FL, GA and DE, all four inside the confirmed fourteen. **Nothing new, and not one of
+them would have been worth a live call.** That is the *offline first* rule made concrete rather than
+asserted.
+
+### What was written
+
+| | |
+|---|---|
+| `scripts/qa.py` | Tiers, the pairwise generator, cost estimation, the budget guard |
+| `scripts/runstore.py` | Moved from `ui/store.py`; the docstring says why it moved and which test caught it |
+| `ui/tester.py` | Three QA routes, a multi-scenario worker, the QA card and its script |
+| `scripts/sweep.py` | Records every CLI run, so the budget can see it |
+| `ui/__init__.py` · `tests/verify_tester.py` | Follow the move |
+
+### ▶ Next session
+
+**Phase 3 next — the summary verdict and the map.** Then the one that matters:
+
+1. **Phase 3** — one-screen verdict and a US map. Cosmetic in the sense that the data already
+   exists; valuable because it is what a non-technical reader can act on.
+2. **Phase 4 — multi-location and multi-class payloads and controls.** **The largest piece, and
+   engine-side rather than UI.** Two of the four stated coverage goals depend on it and on nothing
+   else. Decisions A1 and A2 have already settled how the shapes are chosen.
+3. **Phase 5** — harness review passes 2–4, including the adversarial agent read.
+4. **Tuesday's 60 calls:** the 2027 probe first (A3), then the mechanism matrix in CA, NY, TX, FL.
+5. **Still owed:** a loss cost multiplier (B1), and **telling ISO about the programme before the
+   week's calls start** (C1).
