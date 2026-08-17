@@ -91,6 +91,18 @@ second jurisdiction. **Small to start. No build until that is answered.**
 
 ---
 
+## UA · User-acceptance backlog — raised while building
+
+*Work that is understood, scoped, and deliberately not done yet.*
+
+| | What | Why it was deferred |
+|---|---|---|
+| **UA-1 · Per-location variation** `NEW 2026-08-17` | Today a second location is a **deep copy of the first**, differing only by territory. Class, exposure and deductible cannot vary *per location*. | **Multi-class was the cheaper half and is done** — it is the class array twice, with different codes and bases in it. Per-location variation needs the payload builder to treat locations as independent, which is a larger change. Rules that only engage above one location — allocation, the miscellaneous-employee assignment to the largest-payroll class, the 90%-owner-occupied split — stay untested until it lands |
+| **UA-2 · The three territory-assignment rules** `NEW 2026-08-17` | ISO assigns territory three different ways: **production site** for manufacturing, **headquarters** for contracting, **each location** for mercantile. We only ever exercise the third | Needs UA-1 plus a contracting and a manufacturing class in the same submission |
+| **UA-3 · Exotic premium bases** `NEW 2026-08-17` | The multi-class variant prefers **Payroll** as the second basis, because it is money like Gross Sales and an inherited exposure stays plausible. **`Each` and `Units` have no divisor at all** and are the sharpest test of the per-basis divisor — reachable, not yet aimed at | The inherited exposure makes them implausible risks (5,000,000 *units*), so they need an exposure chosen per basis rather than copied |
+
+---
+
 ## F · Housekeeping — *cheap, and one of them is a real blind spot*
 
 - **`567 → 570`** through the docstrings and the docs. Three packages arrived since the figure was

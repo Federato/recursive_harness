@@ -95,6 +95,7 @@ AXES = {
     "size_of_risk": ["No", "Yes"],
     "terrorism": ["No", "Yes"],
     "locations": [1, 2],
+    "classifications": [1, 2],
 }
 
 #: Run alongside the pairwise set rather than inside it: each needs a partner
@@ -157,7 +158,7 @@ def _clean(cfg: dict) -> dict:
     """Drop no-op values so a scenario is described by what it actually sets."""
     return {k: v for k, v in cfg.items()
             if not (k in ("size_of_risk", "terrorism") and v == "No")
-            and not (k == "locations" and v == 1)
+            and not (k in ("locations", "classifications") and v == 1)
             and not (k.endswith("deductible") and v == "No Deductible")}
 
 

@@ -62,6 +62,23 @@ SUBLINES_FROM_THIS_BASE = (
 )
 
 
+#: When a second classification needs a different premium basis, prefer these,
+#: **in this order**. They are the bases ISO's own multi-class samples actually
+#: mix -- their four-class Alaska sample puts Payroll beside Gross Sales at the
+#: same 1,500,000 exposure.
+#:
+#: **Payroll is first because it is money, like Gross Sales.** An extra
+#: classification inherits the first one's exposure, which stays plausible
+#: between two dollar-denominated bases and stops being plausible the moment it
+#: is not: 5,000,000 of Gross Sales is an ordinary mid-size risk, 5,000,000
+#: square feet of Area is a hundred city blocks. Both are *legal*, and ISO will
+#: price either, so this is about the variant resembling a real risk rather than
+#: about correctness. The exotic tail -- Gallons has 11 classes, Acres 8,
+#: "Passenger Days" 1 -- is reachable by asking for more classifications, and
+#: is deliberately not the default shape.
+PREFERRED_SECOND_BASIS = ("Payroll", "Area")
+
+
 class VariantError(RuntimeError):
     """A value outside the declaration, or a shape this base cannot express."""
 
@@ -412,6 +429,17 @@ CONTROLS: tuple[Control, ...] = (
                  "unbuildable from this base rather than hidden."),
 
     # ------------------------------------------------------ 7. structure (1)
+    Control("classifications", "Classifications", "Structure",
+            "two or more classifications in ONE location -- the class loop, "
+            "the per-class premium basis divisor, and the aggregation that "
+            "sums a premium across classes rather than rating one",
+            kind="number", cast="int",
+            note="Each extra classification takes a DIFFERENT declared class "
+                 "code, and where the jurisdiction declares one, a different "
+                 "premium BASIS -- 99 of ISO's own 114 multi-class locations "
+                 "use different codes, and their examples mix Payroll with "
+                 "Gross Sales in a single location. Two classes on the same "
+                 "code and basis exercise the loop and nothing else."),
     Control("locations", "Locations", "Structure",
             "location allocation and the ForEach aggregation that was "
             "silently wrong once; each location takes the next declared "
@@ -588,6 +616,87 @@ def _apply_subline(p, value, d, config):
     _gl(p)["Subline"] = value
 
 
+def _apply_classifications(p, value, d, config):
+    """Put `value` classifications in the first location.
+
+    **The array twice is the easy half.** The half that matters is that the
+    entries differ: ISO's own sample submissions use **different class codes in
+    99 of their 114 multi-class locations**, and their examples mix premium
+    bases inside one location -- Payroll next to Gross Sales. Two identical
+    classifications exercise the loop and nothing else, which is exactly the
+    kind of variant OI-93 exists to catch.
+
+    So each extra classification takes a different declared class code, and
+    **prefers one whose premium basis differs from the first**. That is the
+    trap worth aiming at: the exposure divisor is per basis -- per $1,000 for
+    Gross Sales and Payroll, per 1,000 square feet for Area, and **no divisor at
+    all for `Each` and `Units`** -- so a single divisor applied across a
+    location is wrong the moment the bases differ.
+
+    Refuses rather than inventing when the jurisdiction cannot supply enough
+    distinct codes, which is the third outcome and not a failure.
+    """
+    n = int(value)
+    if n < 1:
+        raise VariantError("classifications must be at least 1")
+    locs = _locations(p)
+    if not locs:
+        raise VariantError(f"{d.juris}'s base submission carries no location")
+    first_loc = locs[0]
+    existing = _classes(first_loc)
+    if not existing:
+        raise VariantError(f"{d.juris}'s base location carries no "
+                           f"classification to copy")
+    template = existing[0]
+    base_code = str(template.get("ClassCode"))
+    base_basis = d.basis_for(base_code, "PremOps") if base_code else ""
+
+    if n <= len(existing):
+        del existing[n:]
+        return
+
+    # Codes whose basis differs come first: the divisor is the point. Ask the
+    # declaration by basis rather than scanning every class code, because
+    # scanning stops at the first different basis it happens to meet -- which
+    # is how this picked Area (5,000,000 square feet) over Payroll.
+    wanted = n - len(existing)
+    picks = []
+    for basis in PREFERRED_SECOND_BASIS:
+        if basis == base_basis:
+            continue
+        for code in d.codes_for_basis(basis):
+            code = str(code)
+            if code != base_code and code not in [c for c, _ in picks]:
+                picks.append((code, basis))
+            if len(picks) >= wanted:
+                break
+        if len(picks) >= wanted:
+            break
+    if len(picks) < wanted:                       # fall back to the same basis
+        for code in d.codes_for_basis(base_basis):
+            code = str(code)
+            if code != base_code and code not in [c for c, _ in picks]:
+                picks.append((code, base_basis))
+            if len(picks) >= wanted:
+                break
+    if len(picks) < wanted:
+        raise VariantError(
+            f"{d.juris} declares only {len(picks) + len(existing)} usable "
+            f"classification codes; {n} were asked for")
+
+    for code, basis in picks:
+        extra = copy.deepcopy(template)
+        extra["ClassCode"] = code
+        extra["ClassDescription"] = d.description(code)
+        extra["PremOpsPremiumBasis"] = basis
+        prods = d.dependent(CLS, "ProdsCompldOpsPremiumBasis",
+                            {"ClassCode": code})
+        if prods:
+            extra["ProdsCompldOpsPremiumBasis"] = d.pick(
+                CLS, "ProdsCompldOpsPremiumBasis", prods)
+        existing.append(extra)
+
+
 def _apply_locations(p, value, d, config):
     terrs = d.territories()
     n = int(value)
@@ -649,6 +758,7 @@ APPLIERS = {
     "coverage_form": _apply_coverage_form,
     "claims_made_year": _apply_claims_made_year,
     "subline": _apply_subline,
+    "classifications": _apply_classifications,
     "locations": _apply_locations,
     "size_of_risk": _apply_risk_field("SizeOfRiskRatingApplies"),
     "experience_rating": _apply_risk_field("ExperienceRatingApplies"),
@@ -661,7 +771,7 @@ APPLIERS = {
 #: it. The coverage form writes a default claims-made year, so the year runs
 #: later and overwrites it; the class code sets the basis, so the basis runs
 #: first and defers.
-ORDER = ("subline", "premium_basis", "class_code", "exposure", "locations",
+ORDER = ("subline", "premium_basis", "class_code", "exposure", "classifications", "locations",
          "occurrence_limit", "premops_bi_deductible", "premops_pd_deductible",
          "premops_bipd_deductible", "prods_bi_deductible",
          "prods_pd_deductible", "prods_bipd_deductible", "coverage_form",
@@ -801,7 +911,9 @@ def options_for(d: Declared, config: dict | None = None) -> dict:
     out = {}
     for control in CONTROLS:
         if control.kind == "number":
-            if control.id == "locations":
+            if control.id == "classifications":
+                out[control.id] = {"kind": "number", "min": 1, "max": 4}
+            elif control.id == "locations":
                 out[control.id] = {"kind": "number", "min": 1,
                                    "max": len(d.territories())}
             elif control.id == "claims_made_year":

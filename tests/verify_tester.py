@@ -182,6 +182,49 @@ def main() -> int:
           ok_terr["verdict"] == V.MOVED,
           f"OK terrorism moved to {ok_terr.get('premium')}")
 
+    print("\nM  MULTI-CLASS -- THE ARRAY TWICE, WITH DIFFERENT VALUES IN IT")
+    ok = V.Declared("OK")
+    base_prem = None
+    from gl_engine.rating import Kernel as _K, STRICT as _S
+    from gl_engine import EditionResolver as _R
+    _k = _K(mode=_S, resolver=_R())
+    base_prem = _k.rate(ok.base()).premium
+
+    two = V.build({"classifications": 2}, ok)
+    cls = V._classes(V._locations(two)[0])
+    check("M1 asking for two classifications produces two",
+          len(cls) == 2, f"{len(cls)} in the first location")
+    codes = [str(c.get("ClassCode")) for c in cls]
+    check("M2 they carry DIFFERENT class codes",
+          len(set(codes)) == 2,
+          f"{codes} -- 99 of ISO's own 114 multi-class locations differ")
+    bases = [c.get("PremOpsPremiumBasis") for c in cls]
+    check("M3 and different premium bases, which is where the divisor bites",
+          len(set(bases)) == 2,
+          f"{bases} -- per $1,000 for both, but Each and Units have no divisor "
+          f"at all, so one divisor per location is wrong here")
+    check("M4 the second basis is money, like the first, so the inherited "
+          "exposure stays plausible",
+          bases[1] in V.PREFERRED_SECOND_BASIS,
+          f"{bases[1]}; 5,000,000 of Payroll is a real risk, 5,000,000 square "
+          f"feet is a hundred city blocks")
+    r2 = _k.rate(two)
+    check("M5 it rates, and the premium moves",
+          r2.complete and r2.premium != base_prem,
+          f"base {base_prem} -> {r2.premium}")
+
+    # Three must add a third distinct code, not repeat the second.
+    three = V.build({"classifications": 3}, ok)
+    codes3 = [str(c.get("ClassCode")) for c in V._classes(V._locations(three)[0])]
+    check("M6 a third classification is distinct again",
+          len(set(codes3)) == 3, str(codes3))
+
+    # Fewer than the base carries must truncate rather than raise.
+    one = V.build({"classifications": 1}, ok)
+    check("M7 asking for one leaves one",
+          len(V._classes(V._locations(one)[0])) == 1)
+
+
     print("\nQ  THE QA PROGRAMME -- TIERS, BUDGET, VERDICT AND MAP")
     import qa                                                 # noqa: E402
     code, body, _ = tester.dispatch("GET", "/api/tester/qa", {}, None)

@@ -15,6 +15,7 @@ Nothing here decides legality. It asks `variants.union_options`, which asks
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import sys
 import time
@@ -35,12 +36,27 @@ def _cache_file(asof: str) -> Path:
     return CACHE / f"options-{asof}.json"
 
 
+def _controls_fingerprint() -> str:
+    """What the cache was built from, so a stale one can be recognised.
+
+    **A cache that survives a change to the thing it caches is worse than no
+    cache.** Adding the `classifications` control on 2026-08-17 left this file
+    serving 19 controls while the code declared 20, and the only reason it was
+    noticed is that `verify_tester` G2 compares the served spec against
+    `V.CONTROLS` rather than against a number. The fingerprint turns that from a
+    caught mistake into one that cannot happen.
+    """
+    ids = "|".join(f"{c.id}:{c.kind}:{c.group}" for c in V.CONTROLS)
+    return hashlib.sha256(ids.encode()).hexdigest()[:12]
+
+
 def build(asof: str = V.DEFAULT_ASOF, save: bool = True) -> dict:
     """Resolve every jurisdiction and describe every control. Slow on purpose."""
     t0 = time.time()
     union = V.union_options(asof=asof)
     spec = {
         "asof": asof,
+        "controls_fingerprint": _controls_fingerprint(),
         "built_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
         "built_in_seconds": round(time.time() - t0, 1),
         "jurisdictions": union["jurisdictions"],
@@ -76,8 +92,11 @@ def specs(asof: str = V.DEFAULT_ASOF, refresh: bool = False) -> dict:
     if not refresh and f.exists():
         try:
             spec = json.loads(f.read_text(encoding="utf-8"))
-            _MEM[asof] = spec
-            return spec
+            if spec.get("controls_fingerprint") == _controls_fingerprint():
+                _MEM[asof] = spec
+                return spec
+            # Built from a different control set. Rebuild rather than serve a
+            # spec the code no longer agrees with.
         except ValueError:
             pass                       # rebuild rather than serve a torn cache
     spec = build(asof)
