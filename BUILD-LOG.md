@@ -1803,7 +1803,7 @@ tester work was committed only after `verify_tester` 30/30 and `verify_stage4` 3
 
 ---
 
-## Entry 17 — Twenty notebooks, an agent that crosses the walls, and Property opened as exploration. **NEXT SESSION STARTS HERE.**
+## Entry 17 — Twenty notebooks, an agent that crosses the walls, and Property opened as exploration. ~~NEXT SESSION STARTS HERE.~~ *(the live handoff is **Entry 18**)*
 
 - **Date:** work done 2026-08-14, **logged 2026-08-17**
 - **Directed:** *"create an agent that spans the content, the manuals and the code"* · notebooks
@@ -1942,3 +1942,123 @@ have been about explaining the build rather than extending it; **the defects hav
    reading, not code**: what a CF *state* package changes against the countrywide one already
    documented, and whether the four-form structure survives contact with a second jurisdiction.
    **No build until that is answered.**
+
+---
+
+## Entry 18 — OI-88 measured, then closed. Size-of-risk goes from 2 jurisdictions to 51. **NEXT SESSION STARTS HERE.**
+
+- **Date:** 2026-08-17
+- **Directed:** *"explain OI-88 decision to me"* → *"run the measuring pass"* → **the go**
+- **Built:** one analysis script, one new error type, one trace method, ~15 lines of interpreter
+  change, four tests.
+- **Verified:** **51 of 51 jurisdictions rate**, up from 2. **OK = 8816 offline and `MATCH` against
+  ISO live on the premium and every published field.** interp 61/61 · breadth 19/19 · golden 80/80 ·
+  stage1 20/20 · stage3 38/38 · stage4 30/30 · stage5 18/18 · stage6 30/30 · phase2 11/11 ·
+  notebooks 20/20 · tester 30/30 · CA 11/11 · NY 10/10 · oi50 7/7.
+
+### The measurement changed the fix, which is the whole point of taking it first
+
+**OI-88 had been first on the list for three entries and had never been touched**, because the
+backlog said it changes rating semantics for all 51 and needs an explicit go. What it was actually
+missing was **a number**. The measuring pass is read-only and never needed the go; nobody had run
+it.
+
+### 1. What the corpus said
+
+`scripts/erc/45_oi88_blast_radius.py`. Three questions, asked of all **570 packages**:
+
+| | |
+|---|---|
+| `FirstNonNull` sites in the corpus | **38,378** |
+| ...with refusing arithmetic inside a branch *(upper bound)* | **276** — 0.72%, in 72 packages |
+| ...narrowed to arithmetic over a **plausibly-null** operand | **69** — 0.18%, in 29 packages |
+| of those 69, **carrying a trailing `Constant`** | **51 — 73.9%** |
+
+By node, in the at-risk branches: **`Round` 60, `Product` 23, `Divide` 20, `Subtract` 19,
+`GreaterThan` 3.**
+
+**The first two rows argued for the fix and the third argued against the obvious version of it.**
+Under 1% of sites is surgical, not sweeping — that killed the reason for hesitating. But **three
+at-risk sites in four have a constant standing by to answer**, so a blunt `Round(null) → null` would
+have turned a genuinely missing value into a plausible premium **with nothing recorded**. The blast
+radius is not wide, it is **deep** — concentrated exactly where a swallowed defect is invisible.
+
+### 2. And what the engine said
+
+`sweep.py --set size_of_risk=Yes`, engine-only, 29 seconds: **49 of 51 refused.** The two that rated,
+**CA and NY, came back *unchanged from base***, because their state rule sets override countrywide
+wholesale (N3).
+
+**So it was not 49 broken and 2 working. Size-of-risk was exercised correctly in zero of 51.**
+
+### 3. The fix, and the condition attached to it
+
+`NullInArithmetic`, an `InterpretError` subclass raised **only** for the null case in `to_decimal`.
+`FirstNonNull` catches **only that type**, per branch, and treats it as a null argument.
+
+**Every other refusal still escapes** — a `Multi` in a scalar position, a non-numeric string, a
+missing table. A bare `except InterpretError` around the branch would have been three characters
+shorter and would have **gutted the property the whole engine is built on.**
+
+**The 51 masking sites made tracing a condition of the fix rather than a nicety.**
+`Interpreter.trace_branch_abandoned` mirrors `trace_exhausted`, which already does exactly this for
+C6 exhaustion — **there was already a facility for "this `FirstNonNull` produced nothing, and it is
+recorded."** Rating OK with size-of-risk on emits **two** such entries, both `argument 0`: the state
+branch missing, exactly as ISO designed it to.
+
+### 4. The test that was built to fail
+
+`verify_breadth` E4 read *"OI-88 is still open: size-of-risk refuses in OK"*, with the detail
+*"ISO rates it at 8816 — **when this FAILS, OI-88 is fixed and the assertion becomes a
+comparison**."* It failed on the first run after the fix, exactly as written, and is now that
+comparison: **E4b, ours=8816 ISO=8816.**
+
+**Pinning a known defect as a passing assertion, with its own closure instructions in the failure
+message, is worth repeating.** It cost nothing while the defect was open, made silent regression
+impossible, and told the person who closed it what to do next.
+
+`verify_interp` gains **B6a** (the branch is abandoned), **B6b** (the abandonment is traced) and
+**B6c** — the load-bearing negative: **a branch that fails for any other reason must still refuse.**
+If B6c ever passes by absorbing the refusal, the fix has become the defect it was meant to close.
+
+### 5. What closing it made visible
+
+**CA and NY still rate unchanged from base.** The refusal had been hiding that. Their state rule
+sets override countrywide wholesale, so *"does size-of-risk apply"* is a per-jurisdiction question —
+**the same shape as OI-89**, and it belongs to D3 now rather than here.
+
+**A stale census, found in passing.** `nodes.py`'s `FirstNonNull` docstring quoted **36,605 sites and
+4,004 exhaustible across 327 packages**; the corpus now reads **38,378 and 4,327 over 570 packages,
+not the 567 quoted throughout the docs.** Three packages have arrived since. The docstring is
+corrected; **the wider `567` is not chased**, and `verify_contract_figures` passes against cached
+output in `scripts/erc/out/`, so it would not have caught this.
+
+### What was written
+
+| | |
+|---|---|
+| `scripts/erc/45_oi88_blast_radius.py` | The measuring pass. Read-only, decides nothing, emits to gitignored `out/` |
+| `gl_engine/interp/values.py` | `NullInArithmetic`; `to_decimal` raises it for the null case |
+| `gl_engine/interp/nodes.py` | `FirstNonNull` catches only that type, per branch; docstring census corrected |
+| `gl_engine/interp/interpreter.py` | `trace_branch_abandoned` |
+| `tests/verify_interp.py` | B6a, B6b, B6c |
+| `tests/verify_breadth.py` | E4 becomes the comparison it predicted; E4b checks ISO's number |
+| `docs/OPEN-ITEMS.md` · `docs/BACKLOG-2026-08-14.md` | OI-88 and D1 closed with the evidence |
+
+### ▶ Next session
+
+**The defect list is down to two.** D1 is closed; D2 and D3 are unchanged.
+
+1. **OI-91 / D2** `HIGH` — run the two terrorism-location measurements side by side over the same
+   packages and dates. **Terrorism breadth is still blocked in 20 jurisdictions.** Now the top item.
+2. **OI-89 / D3** `MEDIUM` — experience rating needs about twenty dated fields before schedule
+   rating can be exercised on prem/ops. **Closing OI-88 sharpened this**: CA and NY rating unchanged
+   is the same per-jurisdiction question in a second place.
+3. **Fill the coverage grid** — it still reads *1 of 19*.
+4. **Re-run breadth in OK and NY against ISO live.** Size-of-risk now rates in 51 jurisdictions and
+   **only OK has been compared live**. The 31-of-31 figure predates the fix.
+5. **Property exploration, at reading pace and no further.** Unchanged from Entry 17: what a CF
+   *state* package changes against the countrywide one, and whether the four-form structure survives
+   a second jurisdiction. **No build until that is answered.**
+6. **Optional, cheap:** chase `567 → 570` through the docs, and make `verify_contract_figures`
+   re-measure rather than read cached output — it passed against stale numbers this session.
