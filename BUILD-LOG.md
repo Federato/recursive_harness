@@ -2183,7 +2183,7 @@ exactly like a working one.**
 
 ---
 
-## Entry 20 — OI-70 closed. The oldest question in the project, settled in four calls. **NEXT SESSION STARTS HERE.**
+## Entry 20 — OI-70 closed. The oldest question in the project, settled in four calls. ~~NEXT SESSION STARTS HERE.~~ *(the live handoff is **Entry 21**)*
 
 - **Date:** 2026-08-17 *(third closure of the same session)*
 - **Directed:** *"let's do OI-70. I believe 5 rounds up. It's possible it truncates to four digits
@@ -2280,3 +2280,119 @@ All three needed a measurement.** That is the pattern worth naming.
 5. **Property exploration, reading pace only.** Unchanged since Entry 17.
 6. **Cheap:** `567 → 570` through the docs; `verify_contract_figures` re-measuring rather than
    reading cached output. **An 8dp rounding site would close OI-70's last corner** if one turns up.
+
+---
+
+## Entry 21 — OI-93 closed, and breadth re-run: 32 of 32 against ISO. **NEXT SESSION STARTS HERE.**
+
+- **Date:** 2026-08-17 *(fourth closure of the same session)*
+- **Directed:** *"do as you suggest"* — OI-93 first, then the breadth re-run, in that order and for
+  that reason
+- **Built:** `Declared.pick`, `probe_no_op`, the sweep's verdict line, three tests.
+- **Verified:** **32 of 32 comparable variants agree with ISO across OK and NY** · **41 live calls**,
+  all `MATCH` on the premium and every published field · tester 33/33, and every other suite green.
+
+### Why OI-93 came first, and it was the right order
+
+**A breadth run would have reported 51 rated where several exercised nothing.** *Rated* and
+*exercised* are different claims that read identically in every report, and the run was about to
+produce the largest set of those claims the project has made.
+
+### 1. `Declared.pick` — the choice is recorded, and it is pinnable
+
+Four bare `[0]` picks — premium basis, prods basis, the aggregate limits, the terrorism territory —
+now go through one place that **records that a choice was made** and takes a **pin** so a caller can
+ask what a different legal value would have done.
+
+**The first value is not a neutral default.** NY's `TerrorismTerritory` `001` carries no terrorism
+charge; `002`–`006` each charge 110. In CA, `001` is the *most* expensive of eleven.
+
+### 2. `probe_no_op` — three verdicts, and the middle one is the point
+
+| | |
+|---|---|
+| **`INERT CONTROL`** | no declared value moves the premium. **A fact about ISO's filing**, and a real finding |
+| **`INERT VALUE`** | this value does nothing; another would have moved it. **A fact about our harness**, and it silently weakens every breadth figure it appears in |
+| **`MOVED`** | it moved after all |
+
+**Nothing distinguished the first two before today.** The sweep now runs the probe on every unmoved
+row, so the diagnosis arrives *with* the finding:
+
+> `INERT VALUE -- NY: TerrorismTerritory=001 does nothing; 002 gives 12251 (of 19 alternatives)`
+
+**It costs nothing on the ISO-side answers** — those configurations record no choice sites at all, so
+`INERT CONTROL` is reached having rated exactly once.
+
+`verify_tester` D4/D5/D6. **D6 matters as much as the other two:** a variant that *does* move must
+not be reported as either.
+
+### 3. Breadth re-run — 32 of 32
+
+| | Result |
+|---|---|
+| **OK** | **17 of 17 MATCH**, including `size-of-risk` at **8816** — which *refused outright* this morning |
+| **NY** | **15 of 15 MATCH**; the two claims-made variants are `NOT BUILT` because NY declares `Occurrence` as its only coverage form, which is the third outcome and not a disagreement |
+
+**The previous figure was 31 of 31 and it predated three closures.** The population now includes
+size-of-risk, which could not rate anywhere, and terrorism, which was refused in 20 jurisdictions.
+
+### 4. Widening it, and a measurement that advances OI-89
+
+Five configurations swept across all 51 offline, which costs nothing and finds refusals:
+
+| Configuration | Rated |
+|---|---|
+| prem/ops PD deductible 5,000 | **51 of 51** |
+| occurrence limit 500,000 CSL | **51 of 51** |
+| two locations | **31 of 51** — the other 20 declare one prem/ops territory |
+| claims-made | **50 of 51** — NY declares `Occurrence` only |
+| schedule rating | **51 of 51** |
+
+**And the last one produced the session's best new fact.** `schedule_rating=Yes` **with**
+`schedule_pct=10%` moves the premium in exactly **three jurisdictions — FL, NY and RI — and in 48 of
+51 it does not.** Verified live: **FL 9542, NY 13357, RI 8807, all `MATCH`**, with OK confirming the
+no-op at 8229.
+
+**OI-89 had this as a New York curiosity. It is three jurisdictions filing a state rule set that
+overrides countrywide wholesale (N3), against 48 holding the countrywide credibility condition.** The
+item stays open — the ~20 dated experience-rating fields are still needed to exercise the *other*
+side of the gate — but **the size of the effect is no longer unknown.**
+
+### 5. A limit of the probe, stated now rather than discovered later
+
+**The probe varies pick sites, not other controls.** So a configuration that is inert because it is
+**incomplete** reads as `INERT CONTROL`.
+
+`schedule_rating=Yes` *without* `schedule_pct` is exactly that: inert in all 51, and the probe says
+`INERT CONTROL` in all 51 — **correct by its own definition and misleading if read as "ISO never
+applies schedule rating."** It is why the real measurement was taken with both set. Recorded here
+because a verdict that is right and misleading is worse than one that is simply absent.
+
+**A second gap:** `scripts/breadth.py` carries its own `Declared` and **does not get the probe**. Two
+parallel harnesses is pre-existing, and breadth still reports *unchanged from base* without the
+verdict.
+
+### What was written
+
+| | |
+|---|---|
+| `scripts/variants.py` | `Declared.pick`, `Declared.pins`/`picks`, `probe_no_op`, the three verdicts |
+| `scripts/sweep.py` | probes every unmoved row; `inert_control` / `inert_value` in the summary and the CLI |
+| `tests/verify_tester.py` | D4 inert value · D5 inert control · D6 moved |
+| `docs/OPEN-ITEMS.md` | OI-93 closed with its limit stated; **OI-89 gains the 3-of-51 measurement** |
+
+### ▶ Next session
+
+**Four items closed in one session — OI-88, OI-91, OI-70, OI-93 — and one measured further.**
+
+1. **Widen breadth live beyond two jurisdictions.** OK and NY are 32 of 32, and **that is still one
+   class family in two states.** The offline sweeps say 51 of 51 build and rate for the deductible
+   and limit groups; **live confirmation is the missing half**, and it is ~17 calls per jurisdiction.
+2. **OI-89 / D3** — now the only known defect, and better specified than it was. Needs the ~20 dated
+   experience-rating fields to exercise the other side of the gate.
+3. **Give `breadth.py` the OI-93 probe**, or retire its `Declared` in favour of `variants.Declared`.
+   Two harnesses with one behaviour between them is how the next silent no-op gets through.
+4. **Fill the coverage grid** — still *1 of 19*, and four coverages moved today.
+5. **Property exploration, reading pace only.** Unchanged since Entry 17.
+6. **Cheap:** `567 → 570` through the docs; `verify_contract_figures` re-measuring rather than
+   reading cached output; an 8dp rounding site would close OI-70's last corner.

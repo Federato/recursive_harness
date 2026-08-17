@@ -22,7 +22,7 @@ evidence.
 
 | | What it buys | Size |
 |---|---|---|
-| **Re-run breadth live, OK + NY** | The 31-of-31 figure **predates OI-88's closure**. Size-of-risk now rates in 51 jurisdictions and only OK has been checked live | **Small** — ~35 live calls |
+| ~~**Re-run breadth live, OK + NY**~~ | ✅ **Done 2026-08-17 — 32 of 32 MATCH**, up from 31 and now including size-of-risk and terrorism. **Widening beyond two jurisdictions is the live gap**, ~17 calls each | **Next: medium** |
 | **Fill the coverage grid** | Still reads *1 of 19*. The honest measure of how much of the engine has ever been exercised | **Medium** |
 | ~~**Close the rounding question — OI-70**~~ | ✅ **CLOSED 2026-08-17.** Four engineered ties, four live calls, four agreements — **ISO rounds half-up**. The *"truncate to four digits then round"* hypothesis was tested too: **0 of 432** operations change | **Done** |
 | **Form attachment — item 6, OI-83** | **508 of 570 packages ship sample submissions**, 510 JSON files, and **nothing currently tests form attachment at all** | **Medium–large** |
@@ -40,8 +40,8 @@ terrorism work raised one new one.
 
 | | Why it matters | Size |
 |---|---|---|
-| **OI-89 / D3 — schedule rating gate** `MEDIUM` | Not a wrong number — ISO's own rule. But a plan can be **requested and silently not applied**, and no field declaration can reveal the condition. **Two closures sharpened it:** CA and NY rate size-of-risk unchanged from base, and NY rates terrorism unchanged too — the same per-jurisdiction question in three places now | **Medium** — needs ~20 dated experience-rating fields first |
-| **OI-93 — the variant generator picks `values()[0]`, which can be a no-op** `NEW` | Raised 2026-08-17 the moment OI-91 unblocked terrorism. NY territory `001` carries **no** terrorism charge where `002`–`006` charge 110, so the NY variant **exercises nothing while reporting as rated**. Nothing but the sweep's per-run *"unchanged from base"* line notices. Same kind as E20/OI-68: **a legal value that does nothing looks exactly like a working one** | **Small–medium** |
+| **OI-89 / D3 — schedule rating gate** `MEDIUM` | Not a wrong number — ISO's own rule. But a plan can be **requested and silently not applied**, and no field declaration can reveal the condition. **Now measured across all 51:** with the switch *and* a percentage set, schedule rating moves the premium in exactly **FL, NY and RI** and in **48 of 51 it does not** — all three confirmed live. Three jurisdictions override countrywide wholesale (N3); 48 hold the credibility condition. **The size of the effect is no longer unknown**; the ~20 dated experience-rating fields still are | **Medium** — needs ~20 dated experience-rating fields first |
+| ~~**OI-93 — `values()[0]` can be a no-op**~~ | ✅ **Raised and closed 2026-08-17.** `probe_no_op` returns `INERT CONTROL` / `INERT VALUE` / `MOVED`, and the sweep prints the verdict with the finding | **Done** |
 
 **Not to be fixed by picking a value that moves the premium** — that is choosing a value to make a
 test pass. Either rate every declared value where the domain is small, or report the no-op with the
