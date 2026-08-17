@@ -147,6 +147,7 @@ def main() -> int:
     check("E1 the base submission rates", b.complete, f"base premium {b.premium}")
 
     rated, stopped, flat = [], [], []
+    premium: dict = {}
     for v in cat:
         try:
             p = v.payload(base, ok)
@@ -157,6 +158,7 @@ def main() -> int:
             stopped.append(v.name)
             continue
         rated.append(v.name)
+        premium[v.name] = r.premium
         if r.premium == b.premium:
             flat.append(v.name)
     check("E2 the deductible chain moves the premium",
@@ -169,13 +171,16 @@ def main() -> int:
               ("two-locations", "two-classifications", "area-basis-class",
                "occurrence-limit-500k", "occurrence-limit-5m")),
           f"{len(rated)} variants rated")
-    # **This is the known defect, asserted so it cannot regress silently and so
-    # closing it breaks this test on purpose.** OI-88: ISO rates the same
-    # submission at 8816.
-    check("E4 OI-88 is still open: size-of-risk refuses in OK",
-          "size-of-risk" in stopped,
-          "ISO rates it at 8816 -- when this FAILS, OI-88 is fixed and the "
-          "assertion becomes a comparison")
+    # **OI-88 is closed, and this is now the comparison the old assertion said
+    # it would become.** It stayed an assertion for as long as the defect was
+    # open so it could not regress silently; 8816 is ISO's own figure for this
+    # submission, recorded when the live service found the defect.
+    check("E4 OI-88 is closed: size-of-risk rates in OK",
+          "size-of-risk" not in stopped,
+          "was ENGINE STOPPED on a null inside a FirstNonNull branch")
+    check("E4b ...and it lands on ISO's number",
+          premium.get("size-of-risk") == 8816,
+          f"ours={premium.get('size-of-risk')} ISO=8816 (base {b.premium})")
     check("E5 the no-op variants are the ones on record (OI-89)",
           set(flat) <= {"premops-bi-1000-claim", "if-any-basis",
                         "schedule-rating-credit", "schedule-rating-stacked"},

@@ -152,6 +152,40 @@ def group_b() -> None:
                   "</rul:FirstNonNull>")
     check("B6 FirstNonNull takes the total fallback", v == "fallback", repr(v))
 
+    # OI-88. ISO writes state-to-countrywide fallbacks as Round(Lookup(state))
+    # then Round(Lookup('CW')), and branch one is *designed* to miss. Branch one
+    # here is a Round over an absent data def, which is exactly that shape.
+    v, _, ip = run('<rul:FirstNonNull Type="decimal">'
+                   '<rul:Round DecimalPlaces="3">'
+                   '<rul:Value Type="decimal" FromDataDef="Missing"'
+                   ' AllowNullReturn="true"/></rul:Round>'
+                   '<rul:Constant Type="decimal">0.85</rul:Constant>'
+                   "</rul:FirstNonNull>")
+    check("B6a a branch that reaches null through arithmetic is abandoned, "
+          "not raised (OI-88)",
+          v == Decimal("0.85"), repr(v))
+    check("B6b ...and the abandonment is traced, so an absorbed null leaves "
+          "evidence",
+          any(t.kind == "first-non-null-branch-abandoned" for t in ip.trace),
+          f"{len(ip.trace)} trace entries")
+
+    # The load-bearing half. If this ever passes by absorbing the refusal, the
+    # engine has started answering where it should stop, and OI-88's fix has
+    # become the defect it was meant to close.
+    try:
+        run('<rul:FirstNonNull Type="decimal">'
+            '<rul:Round DecimalPlaces="3">'
+            '<rul:Constant Type="string">not-a-number</rul:Constant>'
+            "</rul:Round>"
+            '<rul:Constant Type="decimal">0.85</rul:Constant>'
+            "</rul:FirstNonNull>")
+        absorbed = True
+    except InterpretError:
+        absorbed = False
+    check("B6c a branch that fails for any OTHER reason still refuses",
+          not absorbed,
+          "only NullInArithmetic is absorbed; a non-numeric string is not")
+
     v, _, _ = run("<rul:If><rul:Test>"
                   "<rul:Equal><rul:Constant Type=\"integer\">1</rul:Constant>"
                   '<rul:Constant Type="integer">2</rul:Constant></rul:Equal>'

@@ -6,7 +6,7 @@ all 54 nodes of the language from the corpus rather than from the schema.
 from .interpreter import Frame, Interpreter, TraceEntry
 from .program import Program, RuleFile
 from .tree import Node
-from .values import InterpretError
+from .values import InterpretError, NullInArithmetic
 
 __all__ = ["Frame", "Interpreter", "TraceEntry", "Program", "RuleFile",
-           "Node", "InterpretError"]
+           "Node", "InterpretError", "NullInArithmetic"]

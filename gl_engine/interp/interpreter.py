@@ -179,6 +179,20 @@ class Interpreter:
         self.note("first-non-null-exhausted",
                   "every argument was null; null returned", self.tag(el))
 
+    def trace_branch_abandoned(self, el, idx: int, exc) -> None:
+        """OI-88: a branch that hit null in arithmetic is recorded, not raised.
+
+        Recorded for the same reason C6 exhaustion is. Of the 69 sites in the
+        corpus where this can fire, **51 carry a trailing `Constant`** that will
+        answer once the branch is abandoned -- so a genuinely missing value
+        would otherwise leave no evidence at all, and a defect in our own table
+        loading would read as a normal rating. Silence here is the failure mode;
+        the trace is what keeps it auditable.
+        """
+        self.note("first-non-null-branch-abandoned",
+                  f"argument {idx} reached null in arithmetic; "
+                  f"trying the next -- {exc}", self.tag(el), arg=idx)
+
     def next_guid(self) -> str:
         self._guid += 1
         return f"{self._guid:08x}-0000-0000-0000-000000000000"

@@ -42,6 +42,21 @@ class InterpretError(EngineError):
         super().__init__(" -- ".join(bits))
 
 
+class NullInArithmetic(InterpretError):
+    """A null reached arithmetic -- §12.3, and the one refusal `FirstNonNull`
+    is allowed to absorb.
+
+    Its own type for one reason: `FirstNonNull` must be able to treat *this*
+    failure as "the branch produced nothing, try the next one" **without**
+    absorbing any other refusal. A bare `except InterpretError` around a branch
+    would also swallow a `Multi` in a scalar position, a non-numeric string and
+    a missing table, and the engine would answer where it should stop (OI-88).
+
+    Nothing else catches it. Outside a `FirstNonNull` branch this stays exactly
+    what it was: a refusal with its clause and location intact.
+    """
+
+
 class Multi(tuple):
     """The values one `ForEach` yielded, one per iteration.
 
@@ -163,7 +178,7 @@ def to_decimal(v, where: str = "") -> Decimal:
             f"a ForEach yielding {len(v)} values reached a scalar position; "
             f"only Sum, Max and FirstNonNull aggregate one", "§9", where)
     if v is None:
-        raise InterpretError(
+        raise NullInArithmetic(
             "null reached arithmetic; the engine does not coerce it to zero",
             "§12.3", where)
     if isinstance(v, Decimal):

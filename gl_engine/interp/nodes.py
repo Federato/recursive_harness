@@ -16,8 +16,8 @@ import datetime as _dt
 from decimal import Decimal
 
 from . import tree
-from .values import (InterpretError, Multi, coerce, equal, flatten,
-                     to_decimal, to_text, truthy)
+from .values import (InterpretError, Multi, NullInArithmetic, coerce, equal,
+                     flatten, to_decimal, to_text, truthy)
 
 #: node name -> evaluator. Populated by the decorator below.
 EVAL: dict = {}
@@ -162,12 +162,29 @@ def _first_value(ip, el, fr):
 def _first_non_null(ip, el, fr):
     """First non-null child; null if all are null (contract C6).
 
-    Exhaustion is legal and traced rather than raised: 32,601 of 36,605 end in a
-    `Constant` and cannot exhaust, but 4,004 can, across 327 packages. Where ISO
-    wants a guaranteed value it appends a total fallback itself.
+    Exhaustion is legal and traced rather than raised: 34,051 of 38,378 end in a
+    `Constant` and cannot exhaust, but 4,327 can. Where ISO wants a guaranteed
+    value it appends a total fallback itself.
+
+    **A branch may also *become* null through arithmetic (OI-88).** ISO writes
+    state-to-countrywide fallbacks as `Round(Lookup(state))` then
+    `Round(Lookup('CW'))`, and the first lookup is *designed* to miss --
+    `PremOpsSizeOfRiskRelativity` holds 8,330 rows, every one of them `CW`.
+    Letting `Round`'s refusal escape made branch two unreachable and stopped
+    size-of-risk in 49 of 51 jurisdictions.
+
+    So `NullInArithmetic` -- and **only** that type -- is caught per branch and
+    treated as a null argument. Every other refusal still escapes: this is the
+    one construct that declares a null branch legal, and it is not a licence to
+    answer where the engine should stop.
     """
-    for ch in _kids(el):
-        for v in flatten(ip.eval(ch, fr)):
+    for idx, ch in enumerate(_kids(el)):
+        try:
+            vals = flatten(ip.eval(ch, fr))
+        except NullInArithmetic as exc:
+            ip.trace_branch_abandoned(el, idx, exc)
+            continue
+        for v in vals:
             if v is not None and v != "":
                 return v
     ip.trace_exhausted(el)
