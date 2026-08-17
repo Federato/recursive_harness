@@ -2778,7 +2778,7 @@ than retrofitted.
 
 ---
 
-## Entry 26 — The QA programme built: tiers on the command line, a launcher in the browser. **NEXT SESSION STARTS HERE.**
+## Entry 26 — The QA programme built: tiers on the command line, a launcher in the browser. ~~NEXT SESSION STARTS HERE.~~ *(the live handoff is **Entry 27**)*
 
 - **Date:** 2026-08-17
 - **Directed:** *"yes, build according to the plan"*
@@ -2877,3 +2877,115 @@ asserted.
 4. **Tuesday's 60 calls:** the 2027 probe first (A3), then the mechanism matrix in CA, NY, TX, FL.
 5. **Still owed:** a loss cost multiplier (B1), and **telling ISO about the programme before the
    week's calls start** (C1).
+
+---
+
+## Entry 27 — Phase 3 and multi-class: the verdict, the map, and the class array twice. **NEXT SESSION STARTS HERE.**
+
+- **Date:** 2026-08-17
+- **Directed:** *"log details, move on to phase 3"* → *"lets focus on multi-class for now, it's just
+  the class array twice. We can make multi-location a backlog ua item"*
+- **Built:** two charts, a per-jurisdiction rollup, the `classifications` control, and a cache that
+  can no longer go stale.
+- **Verified:** `verify_tester` **48/48** — Q1–Q8 for the QA programme, M1–M7 for multi-class. Every
+  other suite green.
+
+### 1. Phase 3 — a map that does not lie about size
+
+`charts.usa_map` is a **tile grid, not a projection.** Every jurisdiction gets the same square,
+because Rhode Island and Texas carry **one submission each** and drawing Texas two hundred times
+larger would say something untrue about where the testing went.
+
+**Hawaii is drawn and permanently blank.** It is not in ISO's corpus at all, and leaving it off the
+map would hide that. **Q7 asserts every jurisdiction we can rate has a tile**, because a missing tile
+silently drops a state from the picture.
+
+`charts.verdict` computes its percentage over **comparable outcomes only**, and `runstore.qa_rollup`
+carries the same rule further: a *not applicable* result can only soften a jurisdiction to `partial`
+and **can never colour it as failing**. The rollup is worst-first — a state that disagreed anywhere
+reads as disagreeing however much else agreed, because a summary exists to surface the worst thing
+rather than average it away.
+
+### 2. Multi-class — the array twice was right, and ISO's files said what goes in it
+
+**The instruction was correct: it is the class array twice.** What ISO's own sample submissions
+settled is what has to differ inside it.
+
+| | |
+|---|---|
+| Multi-class locations in ISO's samples using **different** class codes | **99 of 114** |
+| Their four-class Alaska example | mixes **Payroll with Gross Sales in one location** |
+| Exposure | reused across bases in 93 of 114 |
+
+**Two identical classifications exercise the loop and nothing else** — precisely the variant OI-93
+exists to catch. So each extra classification takes a different declared code and, where one exists,
+a **different premium basis**: the divisor is per basis, **per $1,000 for Gross Sales and Payroll but
+no divisor at all for `Each` and `Units`**, so one divisor across a location is wrong the moment the
+bases differ.
+
+### 3. The pick took three attempts, and the failures are the useful part
+
+| Attempt | Chose | What went wrong |
+|---|---|---|
+| Scan every class code | **Gallons** | Stopped at the first different basis it happened to meet — an 11-class exotic |
+| Add a preference list | **Area** | *Membership is not ordering.* And **5,000,000 square feet is a hundred city blocks**: premium went **8,229 → 288,894** |
+| Ask the declaration **by basis, in preference order** | **41675 Computer Consulting, Payroll** | Money like Gross Sales, so the inherited exposure stays plausible: **8,229 → 9,478** |
+
+**The second failure is the one worth keeping.** The variant was *legal* and ISO would have priced
+it — nothing was broken. It was simply not a risk anyone writes, and a coverage grid full of those
+reads as more assurance than it is. That is decision A2 doing work rather than sitting in a document.
+
+### 4. A near-miss on a finding that was not there
+
+T1 offline went from **17 refusals to 19**, and the run store appeared to show a scenario with **no
+size-of-risk** hitting a null loss cost — which would have been a new manifestation of OI-94.
+
+**It was not.** The store held both the pre-axis and post-axis T1 runs under the same label, and I
+was reading across them. Rating the configurations directly proved **all 19 come from the five
+size-of-risk scenarios**, the known defect, and that multi-class alone rates cleanly everywhere.
+
+**Recorded because reading a label nearly produced a false finding**, and the thing that prevented it
+was re-deriving the result rather than trusting the summary.
+
+### 5. A cache that survived a change to the thing it caches
+
+`verify_tester` **G2 failed**: `ui/cache/` was serving a spec built from **19 controls while the code
+declared 20**.
+
+Deleting the file would have fixed the symptom. **The cache now carries a fingerprint of the control
+set and rebuilds when it changes.** G2 only caught this because it compares the served spec against
+`V.CONTROLS` rather than against a number — the same reason `verify_contract_figures` reading cached
+output is on the housekeeping list, and the second stale-cache problem found in two days.
+
+### 6. Multi-location deferred, with its consequences named
+
+| | |
+|---|---|
+| **UA-1** | Per-location variation. A second location is a **deep copy differing only by territory**, so class, exposure and deductible cannot vary per location. Allocation, the miscellaneous-employee assignment to the largest-payroll class, and the 90%-owner-occupied split stay untested |
+| **UA-2** | ISO's **three** territory-assignment rules — production site, **headquarters**, each location. We only ever exercise the third |
+| **UA-3** | `Each` and `Units` — **no divisor at all**, the sharpest test of the per-basis divisor. Needs an exposure chosen per basis rather than inherited |
+
+### What was written
+
+| | |
+|---|---|
+| `ui/charts.py` | `usa_map`, `verdict` |
+| `scripts/runstore.py` | `qa_rollup` — worst-first, and not-applicable can never fail a tile |
+| `ui/tester.py` | `/api/tester/qa/summary`, the QA summary view, made the default tab |
+| `scripts/variants.py` | The `classifications` control, its applier, `PREFERRED_SECOND_BASIS` |
+| `scripts/qa.py` | `classifications` in the pairwise axes — **absorbed with no extra scenario** |
+| `ui/variables.py` | The spec cache self-invalidates on a control change |
+| `tests/verify_tester.py` | Q1–Q8, M1–M7 |
+| `docs/BACKLOG-FEATURE-SETS.md` | The UA backlog |
+
+### ▶ Next session
+
+**Tuesday 18 August, 60 live calls, and multi-class gets its first live exercise.**
+
+1. **First call: the 2027 probe** (A3).
+2. **Mechanism matrix group 1** — CA, NY, TX, FL, now including the multi-class scenarios.
+3. **Phase 5 — the harness review passes.** Pass 1 exists; passes 2, 3 and 4 do not. **Pass 3 is the
+   one with a real failure behind it**: twenty jurisdictions were refused for three days by our own
+   rule wearing a good explanation (OI-91).
+4. **Still owed:** a loss cost multiplier (B1); **telling ISO about the programme before the week's
+   calls start** (C1).
