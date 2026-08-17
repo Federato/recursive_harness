@@ -2880,7 +2880,7 @@ asserted.
 
 ---
 
-## Entry 27 — Phase 3 and multi-class: the verdict, the map, and the class array twice. **NEXT SESSION STARTS HERE.**
+## Entry 27 — Phase 3 and multi-class: the verdict, the map, and the class array twice. ~~NEXT SESSION STARTS HERE.~~ *(the live handoff is **Entry 28**)*
 
 - **Date:** 2026-08-17
 - **Directed:** *"log details, move on to phase 3"* → *"lets focus on multi-class for now, it's just
@@ -2988,4 +2988,122 @@ output is on the housekeeping list, and the second stale-cache problem found in 
    one with a real failure behind it**: twenty jurisdictions were refused for three days by our own
    rule wearing a good explanation (OI-91).
 4. **Still owed:** a loss cost multiplier (B1); **telling ISO about the programme before the week's
+   calls start** (C1).
+
+---
+
+## Entry 28 — Phase 5 passes 3 and 4. The review refuted the fix I had written that morning. **NEXT SESSION STARTS HERE.**
+
+- **Date:** 2026-08-17
+- **Directed:** *"work in order"* — pass 3, then pass 4
+- **Built:** `scripts/qa_review.py` — pass 3 in full, pass 4's brief half — and the corrections its
+  first real use produced.
+- **Verified:** `verify_tester` **58/58** (R1–R10 new). Every other suite green.
+
+### 1. Pass 3 — is a `NOT APPLICABLE` real, or is it ours?
+
+**`NOT APPLICABLE` is the only outcome never counted as a failure**, which makes it the one place a
+defect can sit indefinitely without moving a number anyone watches. **It already did**: OI-91, where
+twenty jurisdictions were refused for three days by our own inert fallback **wearing a readable
+reason** — and the reason is exactly why nobody questioned it.
+
+So the pass re-derives every `NOT APPLICABLE` **without calling `variants.build`,
+`Control.options`, `Declared.values` or `gl_engine.schema`**. It reads ISO's own CSVs out of the
+resolved package. **R5 asserts that independence by reading this file's source**, because a docstring
+claiming independence is not evidence.
+
+**Three verdicts, and the third is the point:** `CONFIRMED` · `CONTRADICTED` · **`UNVERIFIED`, which
+names what would settle it** rather than saying `CONFIRMED` and meaning *"I did not check"*.
+
+**The first run produced twenty-plus false findings and they were mine.** A configuration is refused
+when **one** control cannot be expressed; every other control in it being legal is the normal case.
+Aggregating worst-first reported Montana as wrongly refusing a `100,000 CSL` limit it declares
+perfectly well, when the cause was `locations=2` against its single territory. **A review pass that
+cries wolf is worse than no review pass**, because the next real finding reads as noise.
+
+**Verified the detector detects.** Fed the exact OI-91 configuration it returns `CONTRADICTED`; fed
+NY's genuine claims-made narrowing it returns `CONFIRMED`. All **40** `NOT APPLICABLE` results on
+record are ISO's narrowing, none ours.
+
+### 2. Pass 4 — and the line the file will not cross
+
+**A Python script cannot invoke the specialist agents.** So pass 4 splits honestly: the script
+assembles the brief, the operator dispatches it. Three rules live in the prompts:
+
+| | |
+|---|---|
+| **Refute, never confirm** | An agent asked *"is this right?"* tends to agree |
+| **Each reviewer forbidden the other's corpus** | Agreement between independently-built sources is evidence **only while they stay independent** |
+| **`CANNOT TELL` allowed** | A forced verdict is a guess wearing a citation |
+
+**A clean agreement never becomes a brief** — there is no claim to break, and a review queue full of
+confirmations is one nobody reads.
+
+### 3. Its first real use refuted OI-94, which I had built that morning
+
+Dispatched deliberately at **my own most recent fix**, on the claim most likely to be wrong.
+
+**UPHELD, and better evidenced than when I wrote it.** Texas never filed ISO's size-of-risk plan at
+all. **The two corpora agree independently:** the **35** jurisdictions whose ERC size-of-risk table
+is populated are **exactly** the 35 states with a *Size Of Risk Rating Supplement* circular — no
+difference in either direction, ERC measured first. **No engine change can rate size-of-risk in
+Texas, and none should try.** Nor does the rule over-refuse: base, multi-class, deductible, limit and
+terrorism configurations all rate **51 of 51**.
+
+**REFUTED, and this half is mine.**
+
+> I wrote that ISO's 400 shows ISO *"refuses the same submission for the same reason."* **It does
+> not.** ISO's error is a miss on `PremOpsSizeOfRiskLossCost` with keys `CW, 502, 50017` — and
+> **`502` is Georgia's territory.** The body I quoted is the **GA** call; TX and FL were never
+> captured in full. The 400 confirms ISO **also fails** on size-of-risk, not that its reason matches
+> ours. **That claim was repeated in OI-94, the build log and a commit message.**
+
+**And the refusal message named the wrong table.** It blamed `PremOpsLossCost` — in Texas a healthy
+**9,504-row** table that had resolved `0.095` perfectly well. The empty table is
+`PremOpsSizeOfRiskLossCost`, **a 53-byte header-only file**. Anyone following that message went to
+the wrong file. Now fixed to name the lookup that actually came back empty.
+
+**Neither would have been caught by a test**, because the engine's *behaviour* is right and its
+*explanation* was wrong. Tests check behaviour.
+
+### 4. Two code findings recorded, deliberately not acted on
+
+- **`_refuse_null_loss_cost` walks the whole tree** and would refuse on
+  `ERPTotalBasicLimitsCoSubjectLossCost`, for which there is **no evidence**. It does not over-fire
+  in any of the 51 today; **nothing constrains it not to.**
+- **It raises at `kernel.py:163` before the referral register runs at `:170`**, so
+  `d_size_of_risk_without_costs` (R10/R11) — **the precise pre-written diagnosis for exactly this
+  case** — can never fire. The engine emits the general message and discards the accurate one.
+
+### 5. OI-95 — the first escalation the two corpora produced together
+
+**ISO's content files `0` where ISO's manual files `(a) — refer to company`.** In Texas, **1,188 of
+1,188 classes agree** between the two sources, including **178 `(a)`↔`0` correspondences with zero
+mismatches**. We price those as zero and **raise no referral**: adding class 41675 moved Texas
+**7,821 → 8,973 with 0 referrals and 0 messages**.
+
+**The countervailing evidence is strong and is recorded first.** The Texas base risk — whose products
+side is itself an `(a)` — rates **7,821 and is a recorded live `MATCH` against ISO**. So **ISO's own
+service also computes zero for an `(a)`.** Whether that is intended or a known industry seam is **not
+a question either corpus settles. It needs a person.**
+
+### What was written
+
+| | |
+|---|---|
+| `scripts/qa_review.py` | Pass 3 in full; pass 4's brief generator and prompts |
+| `gl_engine/rating/kernel.py` | The refusal message names the lookup that actually came back empty |
+| `tests/verify_tester.py` | R1–R5 (pass 3, including *the detector detects*), R6–R10 (pass 4's prompt rules) |
+| `docs/OPEN-ITEMS.md` | **OI-94 corrected** with all three findings; **OI-95 raised** |
+
+### ▶ Next session
+
+1. **Pass 2 — is a refusal correct?** The last of the four, and the one that spends calls re-asking
+   questions we have already decided. It is also the only way to settle *"would ISO refuse **this**
+   submission, and with which error"* — the half of the OI-94 claim that remains `CANNOT TELL`.
+2. **The two open code findings** above — both message-quality, neither premium-affecting.
+3. **OI-95 needs a decision**, not a fix.
+4. **Tuesday's 60 calls:** the 2027 probe (A3), then the mechanism matrix in CA, NY, TX, FL — now
+   with multi-class in the pairwise set.
+5. **Still owed:** a loss cost multiplier (B1); **telling ISO about the programme before the week's
    calls start** (C1).
