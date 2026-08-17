@@ -2065,7 +2065,7 @@ output in `scripts/erc/out/`, so it would not have caught this.
 
 ---
 
-## Entry 19 — OI-91 closed: the two counts never disagreed, and the blocking was ours. **NEXT SESSION STARTS HERE.**
+## Entry 19 — OI-91 closed: the two counts never disagreed, and the blocking was ours. ~~NEXT SESSION STARTS HERE.~~ *(the live handoff is **Entry 20**)*
 
 - **Date:** 2026-08-17 *(same session as Entry 18)*
 - **Directed:** *"save this backlog, and then let's start with B"* → **the go**
@@ -2180,3 +2180,103 @@ exactly like a working one.**
 5. **Property exploration, reading pace only.** Unchanged from Entry 17.
 6. **Cheap:** the rounding experiment (one live call, oldest open question); `567 → 570` through the
    docs; `verify_contract_figures` re-measuring instead of reading cached output.
+
+---
+
+## Entry 20 — OI-70 closed. The oldest question in the project, settled in four calls. **NEXT SESSION STARTS HERE.**
+
+- **Date:** 2026-08-17 *(third closure of the same session)*
+- **Directed:** *"let's do OI-70. I believe 5 rounds up. It's possible it truncates to four digits
+  and then rounds"* — **a belief and a competing hypothesis, both testable**
+- **Built:** no engine change. The default was already right. Three tests.
+- **Verified:** **four engineered ties, four live calls, four agreements.** `verify_phase2` 14/14.
+
+### The belief was right, and the hypothesis was worth raising
+
+**Both halves of the instruction were load-bearing.** *"5 rounds up"* named the answer, and *"possible
+it truncates to four digits then rounds"* named a **third behaviour that would have looked like
+half-even if it had been true.** Testing only the binary would have produced a defensible wrong
+answer.
+
+### 1. The engineered tie was one line of arithmetic, not the med-pay chain
+
+The backlog had proposed solving the medical-payments charge — `loss cost × 0.003 × exposure ÷ 1000`
+— for an exposure landing the product on `2.5`. **Not needed.**
+
+**`exposure / 1000` is itself rounded at 0dp.** So the tie is available directly, and the only
+constraint is that the integer part be **even** — half-up gives `x+1`, half-even gives `x`, and they
+agree whenever `x` is odd.
+
+Derived exactly rather than by search: every 0dp site's value was taken as an exact `Fraction` of
+exposure across two ratings, which gives `1443·E / 10⁶` for the premium-driving product. **`E =
+1,500,000` puts it on `2164.5`.**
+
+**The first attempt failed instructively.** `E = 2,500` also ties — `2.5` at the same site, five
+times — and **half-up and half-even still give the same premium**, because that tie does not reach
+the total. *A tie that fires is not a tie that separates*, and the test had to be the premium rather
+than the trace.
+
+### 2. Four ties, four calls
+
+| Exposure | Half-up | Half-even | **ISO** |
+|---|---|---|---|
+| 1,500,000 | **2469** | 2467 | **2469** |
+| 2,500,000 | **4116** | 4115 | **4116** |
+| 3,500,000 | **5761** | 5760 | **5761** |
+| 5,500,000 | **9054** | 9052 | **9054** |
+
+**Four of four. ISO rounds half-up.** The engine's `ROUND_HALF_UP` default has been correct since
+stage 2 and is now **evidenced rather than assumed** — which was the entire content of OI-70's open
+half.
+
+### 3. The truncation hypothesis, tested rather than argued
+
+*"Truncate to four digits, then round."* **It changes 0 of 432 rounding operations** across five
+jurisdictions and three configurations — **including the 30 whose input carries more than four
+decimals.**
+
+**And there is a structural reason, which matters more than the count.** The threshold for rounding
+at `n` decimal places is a `5` at position `n+1`. For `n ≤ 3` that threshold is **exactly
+representable at 4dp**, so truncating to four digits *cannot* move a value across it. **Every
+rounding operation in these ratings is at 0dp or 3dp** — 306 and 126 respectively.
+
+Where it could bite:
+
+- **At 4dp**, truncate-then-round *is* plain truncation — **already ruled out 2026-08-13**, where
+  `ROUND_DOWN` changes the premium in 38 of 51 jurisdictions and Arkansas supplies a genuine
+  `1.5000` tie that ISO rates at `7,872` rather than `7,871`.
+- **At 8dp**, it would matter, and **no rating in hand exercises an 8dp site.** 33 `Divide` nodes
+  corpus-wide. Recorded as the one untested corner rather than swept in with the rest.
+
+### 4. The tests, and why C4 exists
+
+`verify_phase2` C3 stays — the stored population still cannot separate the two modes, which was never
+the defect and is exactly why an *engineered* submission was needed rather than a wider sweep.
+
+**C4 asserts the two modes DO separate at the engineered ties, and it exists so that C5 cannot pass
+vacuously.** Without it, a future change that made the modes agree everywhere would leave C5 green
+while proving nothing. C6 pins the truncation result.
+
+### What was written
+
+| | |
+|---|---|
+| `tests/verify_phase2.py` | C4 the ties separate · C5 ISO rounds half-up on all four · C6 four-digit truncation changes nothing |
+| `docs/OPEN-ITEMS.md` | OI-70 `PARTLY CLOSED` → **`CLOSED`**, with both hypotheses and the 8dp corner recorded |
+| both backlogs | Item 2, and set A's rounding row |
+
+### ▶ Next session
+
+**Three items closed in one session — OI-88, OI-91, OI-70 — and not one of them needed a decision.
+All three needed a measurement.** That is the pattern worth naming.
+
+1. **Re-run and widen breadth against ISO live. Still the top item, and now more so.** Size-of-risk
+   rates in 51 jurisdictions where it rated in 2; terrorism in 51 where it rated in 31. **Only OK and
+   five terrorism jurisdictions have been checked live.** The 31-of-31 figure predates all of it.
+2. **OI-93** — the variant generator's `values()[0]` no-op. Cheap, and until it is settled *rated* and
+   *exercised* are different claims that read identically in every report.
+3. **OI-89 / D3** — the last known defect. Needs ~20 dated experience-rating fields.
+4. **Fill the coverage grid** — still *1 of 19*, and three coverages moved today.
+5. **Property exploration, reading pace only.** Unchanged since Entry 17.
+6. **Cheap:** `567 → 570` through the docs; `verify_contract_figures` re-measuring rather than
+   reading cached output. **An 8dp rounding site would close OI-70's last corner** if one turns up.

@@ -189,11 +189,70 @@ def group_c(live: bool):
           diff_dn >= 30 and len(matched) >= 50,
           f"ROUND_DOWN differs in {diff_dn} of {n}; ISO matches HALF_UP in "
           f"{len(matched)}")
-    # Half-up versus half-even is NOT settled, and saying so is the point.
+    # The stored population still cannot separate them -- that was never the
+    # defect, it is why OI-70 needed an engineered submission rather than
+    # another sweep.
     check("C3 half-up and half-even are indistinguishable on this population",
           diff_ev == 0,
-          f"they differ on {diff_ev} of {n} -- OI-70's tie-break stays open "
-          f"until a submission is engineered that separates them")
+          f"they differ on {diff_ev} of {n} -- which is why OI-70 needed a "
+          f"submission engineered to tie, not a wider sweep")
+
+    # C4: the engineered submissions, and ISO's answer to each. OI-70 CLOSED
+    # 2026-08-17. `exposure/1000` is rounded at 0dp, so an exposure of the form
+    # 1,500,000 puts a rating product on exactly x.5 with x EVEN -- where
+    # half-up gives x+1 and half-even gives x. Four of them, all rated live.
+    # ISO's figures are recorded here; re-deriving them costs a call each.
+    ISO_AT_TIES = {1500000: 2469, 2500000: 4116, 3500000: 5761, 5500000: 9054}
+    ok_base = SAMPLES / "OK" / "submission.json"
+    if not ok_base.exists():
+        return skip("C4 the engineered ties", "no OK base submission")
+    import variants as V
+    d = V.Declared("OK")
+    agree = separated = 0
+    detail = []
+    for exposure, iso in sorted(ISO_AT_TIES.items()):
+        payload = V.build({"exposure": exposure}, d)
+        a, c = up.rate(payload), ev.rate(payload)
+        if not (a.complete and c.complete):
+            continue
+        agree += a.premium == iso
+        separated += a.premium != c.premium
+        detail.append(f"{exposure}: up={a.premium} even={c.premium} iso={iso}")
+    check("C4 at an engineered tie the two modes DO separate",
+          separated == len(ISO_AT_TIES),
+          f"{separated} of {len(ISO_AT_TIES)} separate -- without this C5 "
+          f"would pass vacuously")
+    check("C5 and ISO rounds half-up, on all four (OI-70 CLOSED)",
+          agree == len(ISO_AT_TIES), "; ".join(detail))
+
+    # C6: the "truncate to four digits, then round" hypothesis, tested rather
+    # than argued. It cannot bite at 0dp or 3dp -- the .5 threshold at those
+    # places is exactly representable at 4dp, so truncating there can never
+    # move a value across it -- and those are the only DecimalPlaces these
+    # ratings exercise. At 4dp the hypothesis reduces to plain truncation,
+    # already ruled out by C2.
+    from decimal import ROUND_DOWN, ROUND_HALF_UP as HU
+    from gl_engine.interp import Interpreter
+    from gl_engine.rating.submission import from_raas
+    from gl_engine.resolve import ResolvedBook
+    book = ResolvedBook(res.resolve("OK", "20260801"))
+    examined = changed = 0
+    for cfg in ({}, {"exposure": 1500000}, {"exposure": 3500000}):
+        data, _, _ = from_raas(V.build(cfg, d))
+        ip = Interpreter(book, trace=True)
+        ip.run(data)
+        for t in ip.trace:
+            if t.kind != "round":
+                continue
+            was = Decimal(t.data["was"])
+            q = Decimal(1).scaleb(-t.data["decimal_places"])
+            t4 = was.quantize(Decimal("0.0001"), rounding=ROUND_DOWN)
+            examined += 1
+            changed += was.quantize(q, rounding=HU) != t4.quantize(q,
+                                                                  rounding=HU)
+    check("C6 truncating to four digits first changes nothing",
+          examined > 100 and changed == 0,
+          f"{changed} of {examined} rounding operations would change")
 
 
 def main(argv) -> int:

@@ -24,7 +24,7 @@ evidence.
 |---|---|---|
 | **Re-run breadth live, OK + NY** | The 31-of-31 figure **predates OI-88's closure**. Size-of-risk now rates in 51 jurisdictions and only OK has been checked live | **Small** — ~35 live calls |
 | **Fill the coverage grid** | Still reads *1 of 19*. The honest measure of how much of the engine has ever been exercised | **Medium** |
-| **Close the rounding question — OI-70** | The project's oldest open question. Half-up and half-even differ on **0 of 51** submissions today; one crafted submission settles it. The med-pay charge is the promising site — solve for an exposure landing the product on `2.5` | **Very small** — one live call |
+| ~~**Close the rounding question — OI-70**~~ | ✅ **CLOSED 2026-08-17.** Four engineered ties, four live calls, four agreements — **ISO rounds half-up**. The *"truncate to four digits then round"* hypothesis was tested too: **0 of 432** operations change | **Done** |
 | **Form attachment — item 6, OI-83** | **508 of 570 packages ship sample submissions**, 510 JSON files, and **nothing currently tests form attachment at all** | **Medium–large** |
 | **Referral register vs ISO's own — items OI-81, OI-82** | Ours is **28 hand-derived conditions**; ISO declares **838** in a workbook inside every package. Five of the fourteen we carry and do not detect can produce a wrong number: `R12, R15, R17, R25, R26` | **Medium** |
 
@@ -124,8 +124,9 @@ Size-of-risk rates in 51 where it rated in 2; terrorism rates in 51 where it rat
 five terrorism jurisdictions have been checked against ISO. **The breadth re-run is no longer a
 tidying task — it is the largest block of unverified new coverage in the project.**
 
-**Cheapest useful thing, unchanged:** A's rounding experiment. One live call could close the oldest
-open question in the project.
+~~**Cheapest useful thing:** A's rounding experiment.~~ **Done 2026-08-17** — four calls, and the
+project's oldest open question is closed. **ISO rounds half-up**, the engine's default all along, now
+evidenced.
 
 **Argued against starting yet, unchanged:** C. The largest single block, and the one place where no
 external oracle can confirm the answer. Set A's evidence should be broader before the ISO baseline
