@@ -182,6 +182,80 @@ def _qa_summary(query) -> tuple:
     }), "json"
 
 
+def _qa_review(query) -> tuple:
+    """What the harness found when it reviewed its own results.
+
+    **A reader, not a workflow.** Pass 3's verdicts are computed here and are
+    definitive. Pass 4's briefs are *questions*, and the answers come from
+    specialist agents a person dispatches -- the server cannot invoke them, and
+    a screen that implied otherwise would be claiming a review had happened when
+    it had not.
+    """
+    import qa_review as QR
+    tier = (query or {}).get("tier") or ""
+    if isinstance(tier, list):
+        tier = tier[0] if tier else ""
+    limit = 30
+
+    pass3 = QR.review_runs(tier, "", limit)
+    briefs = QR.briefs_for_run(tier, limit)
+
+    # Group the briefs by the question they ask, because twenty scenarios
+    # asking one question is one thing to look at, not twenty.
+    by_kind: dict = {}
+    for b in briefs:
+        head = b["claim"].split(" in ")[0][:70]
+        by_kind.setdefault(head, {"claim": b["claim"], "n": 0, "states": set(),
+                                  "question": b["question"],
+                                  "reviewers": sorted(b["prompts"])})
+        g = by_kind[head]
+        g["n"] += 1
+        j = b["evidence"].get("jurisdiction")
+        if j:
+            g["states"].add(j)
+    groups = sorted(by_kind.values(), key=lambda g: -g["n"])
+    for g in groups:
+        g["states"] = sorted(g["states"])
+
+    # Refused payloads already on disk, if they have been exported.
+    payloads = []
+    d = QR.REFUSED_DIR
+    if d.is_dir():
+        payloads = sorted(x.name for x in d.iterdir() if x.is_dir())
+
+    return 200, json.dumps({
+        "pass3": {"reviewed": pass3["reviewed"], "counts": pass3["counts"],
+                  "contradicted": [
+                      {"juris": x["juris"],
+                       "describes": V.describe(x["config"]),
+                       "why": next((f["why"] for f in x["findings"]
+                                    if f["verdict"] == QR.CONTRADICTED), "")}
+                      for x in pass3["results"]
+                      if x["verdict"] == QR.CONTRADICTED][:20],
+                  "causes": _pass3_causes(pass3)},
+        "briefs": groups,
+        "payload_dir": str(d),
+        "payloads": payloads,
+    }), "json"
+
+
+def _pass3_causes(pass3) -> list:
+    """The distinct reasons a jurisdiction could not express a configuration."""
+    seen: dict = {}
+    for x in pass3["results"]:
+        c = x.get("cause")
+        if not c:
+            continue
+        seen.setdefault(c["why"][:110], {"why": c["why"][:110], "n": 0,
+                                         "states": set()})
+        seen[c["why"][:110]]["n"] += 1
+        seen[c["why"][:110]]["states"].add(x["juris"])
+    out = sorted(seen.values(), key=lambda g: -g["n"])
+    for g in out:
+        g["states"] = sorted(g["states"])
+    return out[:12]
+
+
 def _qa_plan(body) -> tuple:
     """The matrix a tier would run, without running it -- the button's `--plan`."""
     import qa
@@ -381,6 +455,8 @@ def dispatch(method: str, path: str, query: dict, body):
             return _qa_spec(query)
         if path == "/api/tester/qa/summary":
             return _qa_summary(query)
+        if path == "/api/tester/qa/review":
+            return _qa_review(query)
         if path.startswith("/api/tester/curve/"):
             return _curve(unquote(path.rsplit("/", 1)[-1]))
         if path.startswith("/api/tester/run/"):
@@ -817,8 +893,9 @@ function check(){
 }
 
 // ---- the long view
-const VIEWS=[['qa','QA summary'],['history','Agreement over time'],
-  ['coverage','Coverage'],['curve','Premium response'],['defects','Defects']];
+const VIEWS=[['qa','QA summary'],['review','What the review found'],
+  ['history','Agreement over time'],['coverage','Coverage'],
+  ['curve','Premium response'],['defects','Defects']];
 let CURRENT='qa';
 function tabs(){
   $('views').innerHTML=VIEWS.map(([v,l])=>'<button data-v="'+v+'"'+
@@ -843,6 +920,77 @@ function loadView(v){
         +'each, and drawing Texas 200 times larger would say something untrue about where '
         +'the testing went. <b>Hawaii is drawn and permanently blank</b> — it is not in '
         +'ISO’s corpus at all, and leaving it off would hide that.</div>';
+    });
+  if(v==='review') return fetch('/api/tester/qa/review').then(r=>r.json())
+    .then(j=>{
+      const p3=j.pass3, c=p3.counts;
+      let h='<div class="hint" style="margin-bottom:8px">The harness checking '
+        +'its own results. <b>Two different things are on this page</b>: what it '
+        +'has already settled, and what still needs a human.</div>';
+
+      h+='<h3 style="margin:10px 0 4px;font-size:14px">1. Settled &mdash; every '
+        +'&ldquo;not offered here&rdquo; was checked against ISO&rsquo;s own files</h3>';
+      h+='<div class="hint">A jurisdiction reporting <b>not applicable</b> is the '
+        +'one outcome never counted as a failure, so it is the one place a '
+        +'mistake can hide. Each was re-derived from ISO&rsquo;s files using '
+        +'different code.</div>';
+      h+='<table style="margin:6px 0"><tr><th>Verdict</th><th class="n">Count</th>'
+        +'<th>Means</th></tr>'
+        +'<tr><td><b>Confirmed</b></td><td class="n">'+c.CONFIRMED+'</td>'
+        +'<td>ISO&rsquo;s files agree &mdash; genuinely not offered there</td></tr>'
+        +'<tr><td style="color:var(--red)"><b>Contradicted</b></td><td class="n">'
+        +p3.contradicted.length+'</td><td><b>ISO does offer it. The refusal is '
+        +'ours</b> &mdash; this is a defect</td></tr>'
+        +'<tr><td>Unverified</td><td class="n">'+c.UNVERIFIED+'</td>'
+        +'<td>Could not be settled from the files, and says so</td></tr></table>';
+      if(p3.contradicted.length){
+        h+='<div class="hint" style="color:var(--red)"><b>Findings:</b></div><ul>'
+          +p3.contradicted.map(x=>'<li><b>'+esc(x.juris)+'</b> &middot; '
+          +esc(x.describes)+'<br><span style="color:var(--muted)">'+esc(x.why)
+          +'</span></li>').join('')+'</ul>';
+      } else {
+        h+='<div class="hint"><b>No findings.</b> Every refusal on record is '
+          +'ISO&rsquo;s narrowing, not ours.</div>';
+      }
+      if(p3.causes && p3.causes.length){
+        h+='<div class="hint" style="margin-top:6px">Why jurisdictions could not '
+          +'express a configuration:</div><ul>'
+          +p3.causes.map(g=>'<li>'+esc(g.why)+' <span style="color:var(--muted)">'
+          +'&mdash; '+g.n+' time(s): '+esc(g.states.join(' '))+'</span></li>')
+          .join('')+'</ul>';
+      }
+
+      h+='<h3 style="margin:16px 0 4px;font-size:14px">2. Needs a person &mdash; '
+        +'claims worth attacking</h3>';
+      h+='<div class="hint">Each of these is a claim <b>we</b> are making. The '
+        +'review asks three specialists to <b>disprove</b> it, each reading a '
+        +'different source. <b>They are dispatched by hand, not from this page</b> '
+        +'&mdash; so nothing here says a review has happened.</div>';
+      if(!j.briefs.length){
+        h+='<div class="hint">Nothing to attack. A clean agreement is not a '
+          +'claim &mdash; there is nothing to disprove.</div>';
+      } else {
+        h+='<ul>'+j.briefs.map(g=>'<li><b>'+esc(g.claim)+'</b><br>'
+          +'<span style="color:var(--muted)">'+g.n+' scenario(s) &middot; '
+          +esc(g.states.join(' '))+'<br>Ask: '+esc(g.question||'')+'<br>'
+          +'Reviewers: '+esc(g.reviewers.join(', '))+'</span></li>').join('')
+          +'</ul>';
+      }
+
+      h+='<h3 style="margin:16px 0 4px;font-size:14px">3. The calls we did not '
+        +'make</h3>';
+      if(!j.payloads.length){
+        h+='<div class="hint">None exported yet. Run '
+          +'<code>python scripts/qa_review.py --payloads</code>.</div>';
+      } else {
+        h+='<div class="hint">When our engine refuses, ISO never sees the '
+          +'submission &mdash; so <b>&ldquo;ISO would refuse it too&rdquo; is a '
+          +'guess.</b> These are those submissions, ready to send by hand. '
+          +'<b>'+j.payloads.length+'</b> in <code>'+esc(j.payload_dir)+'</code>'
+          +'</div><div class="hint">'+j.payloads.slice(0,24).map(esc).join(' &middot; ')
+          +(j.payloads.length>24?' &hellip;':'')+'</div>';
+      }
+      box.innerHTML=h;
     });
   if(v==='history') return fetch('/api/tester/history').then(r=>r.json())
     .then(j=>{ box.innerHTML=j.chart+

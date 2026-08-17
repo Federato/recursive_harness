@@ -56,6 +56,11 @@ table{font-size:.95em}
 
 PAGES = {
     "backlog": (SOURCE, OUT, TITLE, SUBTITLE),
+    "howto": ("docs/HOW-TO-USE-THE-TESTER.md",
+              "docs/how-to-use-the-tester.html",
+              "How to use the tester — a walkthrough",
+              "ISO General Liability Rating Engine · Recursive Harness 2.0 · "
+              "run the tests and read the results, no coding"),
     "tomorrow": ("docs/START-HERE-TOMORROW.md",
                  "docs/start-here-tomorrow_20260818.html",
                  "Start here tomorrow — Tuesday 18 August 2026",

@@ -214,6 +214,23 @@ def main() -> int:
           and mixed["cause"]["control"] == "locations",
           f"cause: {mixed['cause']['why'][:70] if mixed['cause'] else None}")
 
+    # W6 -- the review has a screen. It is a READER: pass 3's verdicts are
+    # computed and definitive, pass 4's briefs are questions whose answers come
+    # from agents a person dispatches. A screen implying the server had run them
+    # would claim a review that never happened.
+    code, body, _ = tester.dispatch("GET", "/api/tester/qa/review", {}, None)
+    rev = json.loads(body)
+    check("R11 the review has a route, and it separates settled from unsettled",
+          code == 200 and "pass3" in rev and "briefs" in rev,
+          f"{rev['pass3']['reviewed']} reviewed, {len(rev['briefs'])} claim "
+          f"group(s) still open")
+    page = tester.dispatch("GET", "/tester", {}, None)[1]
+    check("R12 ...and a tab, so a finding is not only a terminal line",
+          "What the review found" in page and "qa/review" in page)
+    check("R13 the screen never implies the agents were run from it",
+          "dispatched by hand, not from this page" in page,
+          "pass 4's answers come from a person, and the page says so")
+
     # --- pass 4: the adversarial brief. Its value is entirely in how it asks.
     b = QR.brief("Our premium for OK is correct.",
                  {"jurisdiction": "OK", "our premium": "8229"},

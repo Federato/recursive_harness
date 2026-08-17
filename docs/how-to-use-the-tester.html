@@ -1,0 +1,278 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>How to use the tester — a walkthrough</title>
+<style>
+:root{--bg:#fbfbfd;--fg:#1d1d20;--mut:#63636b;--line:#e3e3e8;--accent:#1f3864;
+--code-bg:#f4f4f7;--tbl-head:#1f3864;--mark:#fff3cd;--del:#a11}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+background:var(--bg);color:var(--fg)}
+header{background:var(--accent);color:#fff;padding:22px 32px 0}
+header h1{margin:0 0 4px;font-size:20px;font-weight:650;letter-spacing:-.01em}
+header .sub{opacity:.72;font-size:13px;margin-bottom:16px}
+nav{display:flex;gap:4px}
+nav button{appearance:none;border:0;background:rgba(255,255,255,.10);color:#fff;cursor:pointer;
+font:inherit;font-size:14px;padding:10px 18px;border-radius:7px 7px 0 0;opacity:.75}
+nav button:hover{opacity:1;background:rgba(255,255,255,.18)}
+nav button[aria-selected="true"]{background:var(--bg);color:var(--accent);font-weight:640;opacity:1}
+.wrap{display:grid;grid-template-columns:250px minmax(0,1fr);gap:34px;
+max-width:1360px;margin:0 auto;padding:30px 32px 90px}
+aside{position:sticky;top:22px;align-self:start;max-height:calc(100vh - 50px);overflow:auto;
+font-size:13.5px;border-left:2px solid var(--line);padding-left:14px}
+aside .lbl{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--mut);
+font-weight:700;margin-bottom:9px}
+aside ul{list-style:none;margin:0;padding:0}
+aside ul ul{padding-left:13px}
+aside a{color:var(--mut);text-decoration:none;display:block;padding:3px 0;line-height:1.4}
+aside a:hover{color:var(--accent)}
+article{min-width:0;background:#fff;border:1px solid var(--line);border-radius:11px;padding:34px 42px 54px}
+article h1{font-size:27px;margin:0 0 8px;letter-spacing:-.02em}
+article h2{font-size:20px;margin:38px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--line);
+letter-spacing:-.01em}
+article h3{font-size:16.5px;margin:26px 0 9px}
+article h4{font-size:15px;margin:20px 0 7px;color:var(--mut)}
+p,li{max-width:74ch}
+code{background:var(--code-bg);padding:.13em .38em;border-radius:4px;
+font:13.5px/1.5 "SF Mono",Consolas,"Liberation Mono",Menlo,monospace}
+pre{background:var(--code-bg);border:1px solid var(--line);border-radius:8px;padding:14px 17px;
+overflow-x:auto}
+pre code{background:none;padding:0;font-size:13px;line-height:1.55}
+table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14.2px;display:block;overflow-x:auto}
+th{background:var(--tbl-head);color:#fff;text-align:left;font-weight:600;padding:9px 12px;
+white-space:nowrap}
+td{border-bottom:1px solid var(--line);padding:9px 12px;vertical-align:top}
+tr:nth-child(even) td{background:#fafafc}
+blockquote{margin:16px 0;padding:12px 18px;background:#f6f8fc;border-left:4px solid var(--accent);
+border-radius:0 7px 7px 0}
+blockquote p{margin:.45em 0}
+del{color:var(--del);text-decoration-thickness:1px}
+hr{border:0;border-top:1px solid var(--line);margin:30px 0}
+a{color:var(--accent)}
+.meta{font-size:12.5px;color:var(--mut);margin:0 0 22px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.panel[hidden]{display:none}
+@media(max-width:1000px){.wrap{grid-template-columns:1fr;padding:20px}aside{display:none}
+article{padding:24px 20px 40px}}
+@media print{header,aside,nav{display:none}.wrap{display:block;padding:0}
+article{border:0;padding:0}.panel[hidden]{display:block!important}}
+
+.wrap{display:block;max-width:60rem;margin:0 auto;padding:0 1.5rem 5rem}
+article{max-width:none}
+.toc-box{border:1px solid var(--line);border-radius:8px;padding:1rem 1.25rem;
+margin:1.5rem 0 2.5rem;background:#fff}
+.toc-box .lbl{font-weight:600;color:var(--accent);margin-bottom:.4rem}
+.toc-box ul{margin:.2rem 0;padding-left:1.1rem}
+.toc-box>ul>li{margin:.15rem 0}
+h2{margin-top:2.6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h1+p+h2,h2:first-of-type{border-top:none}
+table{font-size:.95em}
+@media print{header{position:static}.toc-box{break-inside:avoid}}
+</style></head><body>
+<header><h1>How to use the tester — a walkthrough</h1>
+<div class="sub">ISO General Liability Rating Engine · Recursive Harness 2.0 · run the tests and read the results, no coding</div></header>
+<div class="wrap"><article>
+<p class="meta">Source: <code>docs/HOW-TO-USE-THE-TESTER.md</code> &nbsp;·&nbsp; 1,462 words &nbsp;·&nbsp; rendered 2026-08-17</p>
+<div class="toc-box"><div class="lbl">On this page</div><div class="toc">
+<ul>
+<li><a href="#the-qa-programme-box-top">The QA programme box (top)</a></li>
+<li><a href="#the-risk-box-below-it">The risk box (below it)</a></li>
+<li><a href="#this-run">"This run"</a></li>
+<li><a href="#the-tabs-underneath">The tabs underneath</a></li>
+<li><a href="#1-settled">1. Settled</a></li>
+<li><a href="#2-needs-a-person">2. Needs a person</a></li>
+<li><a href="#3-the-calls-we-did-not-make">3. The calls we did not make</a></li>
+</ul>
+</div>
+</div>
+<h1 id="how-to-use-the-tester-a-walkthrough">How to use the tester — a walkthrough</h1>
+<p><strong>Who this is for:</strong> anyone who wants to run the tests and read the results. No coding, no jargon
+that isn't explained.</p>
+<p><strong>What the tool is.</strong> A rating engine has one job: work out the premium for an insurance submission.
+Ours does it by reading ISO's own rulebook files. This tool checks whether it got the answer right —
+by sending the same submission to ISO's own service and comparing, figure by figure.</p>
+<hr />
+<h1 id="opening-it">Opening it</h1>
+<p>Double-click <strong><code>start.bat</code></strong> (Windows) or <strong><code>start.command</code></strong> (Mac). A browser window opens.</p>
+<p>Click <strong>Tester</strong> — or go to <code>http://localhost:8000/tester</code>.</p>
+<p>You'll see two columns. <strong>Left is what you're testing. Right is what happened.</strong></p>
+<hr />
+<h1 id="the-five-minute-version">The five minute version</h1>
+<ol>
+<li>Left column, top box: pick <strong>T0 · Smoke</strong>.</li>
+<li>Untick <strong>Compare each against ISO</strong>. <em>(This makes it free — see "What things cost" below.)</em></li>
+<li>Click <strong>Start</strong>.</li>
+<li>Wait about a minute. Watch the right column.</li>
+<li>Click the <strong>QA summary</strong> tab underneath.</li>
+</ol>
+<p>That's a complete test run of all 51 US jurisdictions.</p>
+<hr />
+<h1 id="the-left-column-what-youre-testing">The left column — what you're testing</h1>
+<h2 id="the-qa-programme-box-top">The QA programme box (top)</h2>
+<p><strong>This runs whole pre-built test plans.</strong> Five of them, called tiers:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>What it does</th>
+<th>Roughly</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>T0 · Smoke</strong></td>
+<td>One standard risk, priced in every jurisdiction</td>
+<td>1 minute</td>
+</tr>
+<tr>
+<td><strong>T1 · Core logic</strong></td>
+<td>22 different risks across 12 carefully chosen states</td>
+<td>3 minutes offline</td>
+</tr>
+<tr>
+<td><strong>T2 · Full logic</strong></td>
+<td>The same 22 risks across all 51</td>
+<td>10 minutes offline</td>
+</tr>
+<tr>
+<td><strong>T3 · Value sweep</strong></td>
+<td><em>Greyed out.</em> Not built yet, and it says so</td>
+<td></td>
+</tr>
+<tr>
+<td><strong>T4 · Edition cliff</strong></td>
+<td><em>Greyed out.</em> Blocked, and it says why</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>A greyed-out tier is deliberate.</strong> It tells you what it needs rather than pretending to work.</p>
+<p><strong>Before you press Start, read the line under the buttons.</strong> It tells you how many calls to ISO the
+run will make and how many you have left today. <strong>If it would go over budget it turns red and the
+run refuses to start</strong> — you have to choose offline, or narrow it.</p>
+<p><strong>"Show the matrix first"</strong> prints the list of risks the tier would test, without testing anything.
+Useful when you want to know what you're about to spend money on.</p>
+<h2 id="the-risk-box-below-it">The risk box (below it)</h2>
+<p><strong>This is for testing one thing at a time.</strong> Every dropdown is read live from ISO's own files, per
+state — so <strong>you cannot pick something illegal.</strong> If a value only exists in some states, the dropdown
+says so: <em>"— 31/51 states."</em></p>
+<p>Set what you want, click <strong>Run all states</strong>.</p>
+<p><strong>"Check where it applies"</strong> answers <em>"which states even allow this?"</em> without pricing anything. Free
+and instant.</p>
+<hr />
+<h1 id="the-right-column-what-happened">The right column — what happened</h1>
+<h2 id="this-run">"This run"</h2>
+<p>A coloured bar and a table, one row per jurisdiction. The four outcomes:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>What it means</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Agrees</strong></td>
+<td>Our premium matches ISO's — <strong>and so does every other figure</strong>, not just the total</td>
+</tr>
+<tr>
+<td><strong>Disagrees</strong></td>
+<td>They differ. <strong>Treated as our fault until proven otherwise</strong></td>
+</tr>
+<tr>
+<td><strong>Not applicable</strong></td>
+<td>ISO doesn't offer this combination in that state. <strong>Never a failure</strong> — grey, always</td>
+</tr>
+<tr>
+<td><strong>Engine refused</strong></td>
+<td>We declined to price it. Sometimes right, sometimes not — see the review tab</td>
+</tr>
+</tbody>
+</table>
+<p><strong>"Not applicable" being grey matters.</strong> Twenty states can't host a two-location test because they
+only have one rating territory. That's ISO's filing, not our bug, and counting it as a failure would
+make the tool lie to you.</p>
+<h2 id="the-tabs-underneath">The tabs underneath</h2>
+<h3 id="qa-summary">QA summary</h3>
+<p><strong>The one screen to look at first.</strong> A big percentage, and a <strong>map of the US</strong>.</p>
+<p>Every state is the same size square. That's on purpose: Rhode Island and Texas carry one test each,
+and drawing Texas 200 times bigger would suggest we tested it 200 times harder.</p>
+<p><strong>Hawaii is always blank.</strong> ISO doesn't publish rules for it. Leaving it off the map would hide that.</p>
+<h3 id="what-the-review-found">What the review found</h3>
+<p><strong>The harness checking its own work.</strong> Three sections — explained in detail below.</p>
+<h3 id="agreement-over-time">Agreement over time</h3>
+<p>One bar per run. Lets you see whether something that used to work stopped working.</p>
+<h3 id="coverage">Coverage</h3>
+<p><strong>The honest picture of what we've never tested.</strong> Filled squares are tested, grey is <em>ISO doesn't
+offer it there</em>, empty is <strong>never tried</strong>. Expect a lot of empty. That's the point of showing it.</p>
+<h3 id="premium-response">Premium response</h3>
+<p>Lines showing how the premium moves as you change one thing. <strong>The premium should rise smoothly as
+the coverage limit rises, in every state.</strong> A kink or a flat stretch usually means something failed
+to look up and quietly fell back — visible before it's explainable.</p>
+<h3 id="defects">Defects</h3>
+<p>Problems seen before, with when they first appeared and when they were last seen.</p>
+<hr />
+<h1 id="what-the-review-found-the-important-tab">"What the review found" — the important tab</h1>
+<p>This is the harness checking <strong>itself</strong>. Three sections, and they're different in kind.</p>
+<h2 id="1-settled">1. Settled</h2>
+<p>When we report <em>"not applicable"</em>, that's the one result never counted as a failure — <strong>so it's where
+a mistake could hide forever.</strong> This section re-checks every one of them against ISO's files, using
+different code.</p>
+<ul>
+<li><strong>Confirmed</strong> — ISO's files agree. Genuinely not offered there.</li>
+<li><strong>Contradicted</strong> — <strong>ISO does offer it. The refusal is ours.</strong> This is a defect.</li>
+<li><strong>Unverified</strong> — couldn't be settled, and says so rather than guessing.</li>
+</ul>
+<p><strong>This exists because of a real mistake.</strong> For three days the tool reported twenty states as unable
+to do terrorism cover, with a perfectly reasonable explanation attached. <strong>The explanation was wrong
+and it was our own code.</strong> Nothing was checking the explanations.</p>
+<h2 id="2-needs-a-person">2. Needs a person</h2>
+<p><strong>Claims we are making that someone should try to disprove.</strong> Each one gets sent to three specialists
+— one reads ISO's data files, one reads ISO's printed manuals, one reads our code — and each is told
+<em>"assume this is wrong and prove it."</em></p>
+<p><strong>They're dispatched by hand, not from this page.</strong> The screen shows what's worth attacking; it never
+claims a review has happened.</p>
+<p><strong>Why "prove it wrong" rather than "check it".</strong> Asked <em>"is this right?"</em>, a reviewer tends to agree.
+Asked <em>"find what's wrong with this"</em>, it does real work. On its first use this refuted a fix we'd
+made eight hours earlier.</p>
+<h2 id="3-the-calls-we-did-not-make">3. The calls we did not make</h2>
+<p>When our engine refuses to price something, <strong>ISO never sees it</strong> — so <em>"ISO would refuse it too"</em> is
+a guess.</p>
+<p>This lists the submissions we refused, exported as files ready to send by hand. Each folder has the
+exact request and a note explaining what to look for in the answer.</p>
+<p>To produce them: <code>python scripts/qa_review.py --payloads</code></p>
+<hr />
+<h1 id="what-things-cost">What things cost</h1>
+<p><strong>Anything offline is free and unlimited.</strong> Our engine runs on your machine.</p>
+<p><strong>Every comparison against ISO is a paid call</strong>, about 8 seconds each. So:</p>
+<ul>
+<li><strong>Untick "Compare each against ISO"</strong> and you can run anything, as often as you like, for nothing.</li>
+<li><strong>Tick it</strong> and you're spending. The budget is <strong>60 calls a day</strong>, and the tool enforces it.</li>
+</ul>
+<p><strong>Always run offline first.</strong> It finds the broken and inapplicable cases for free, before you spend
+anything on them. Yesterday that identified a defect across fourteen states for zero cost.</p>
+<hr />
+<h1 id="running-it-from-the-command-line">Running it from the command line</h1>
+<p>Same thing without the browser:</p>
+<pre><code>python scripts/qa.py --tiers                  what the tiers are
+python scripts/qa.py --estimate               what each costs, and today's budget
+python scripts/qa.py --tier T1 --plan         the list of risks, runs nothing
+python scripts/qa.py --tier T1 --offline      run it, free
+python scripts/qa.py --tier T1                run it against ISO
+python scripts/qa_review.py --tier T1         the review, section 1
+python scripts/qa_review.py --pass4           the claims worth attacking
+python scripts/qa_review.py --payloads        export the refused submissions
+</code></pre>
+<hr />
+<h1 id="reading-a-result-honestly">Reading a result honestly</h1>
+<p><strong>Four things worth knowing so the numbers don't mislead you.</strong></p>
+<p><strong>1. "Agrees" means every figure, not just the premium.</strong> ISO publishes hundreds of intermediate
+values back and all of them are compared.</p>
+<p><strong>2. Puerto Rico is never compared.</strong> No subscription entitlement. <strong>Every count is out of 50, not
+51</strong>, and the tool says so rather than quietly rounding up.</p>
+<p><strong>3. "Rated" is not "tested".</strong> A test can run, report success, and exercise nothing — if the value
+we picked happens to have no effect. The tool now spots this and reports it, but it's worth knowing
+the difference exists.</p>
+<p><strong>4. Breadth is still narrow.</strong> Every test uses broadly one kind of business. The Coverage tab reads
+<strong>1 of 19</strong>. We've proven the engine across <em>geography</em>, not across <em>the variety of business a
+carrier writes</em>. That's the next piece of work, and it's the honest caveat on everything else here.</p>
+</article></div></body></html>
