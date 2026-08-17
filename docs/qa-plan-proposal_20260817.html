@@ -130,6 +130,8 @@ engine behaves correctly. Conflating them is what makes people propose a cross-p
 <li><a href="#defects">Defects and potential solutions</a></li>
 <li><a href="#prereq">Prerequisites — what must exist before the matrix can run</a></li>
 <li><a href="#cost">Cost, schedule and phasing</a></li>
+<li><a href="#volume">Test volume, ISO budget, and the limits of proof</a></li>
+<li><a href="#week">This week — a paced plan, not a burst</a></li>
 <li><a href="#claims">What this proposal does not claim</a></li>
 </ol></div>
 
@@ -809,7 +811,197 @@ call was spent — and ten inferences were then converted to confirmations for t
 <tr><td><b>6</b></td><td>T3 value sweep, and the other subline families</td><td>Prerequisite 4</td></tr>
 </tbody></table></div>
 
-<h2 id="claims">12 · What this proposal does not claim</h2>
+
+<h2 id="volume">12 · Test volume, ISO budget, and the limits of proof</h2>
+
+<h3>12.1 How many tests, and how many hits on ISO</h3>
+
+<div class="scroll"><table>
+<thead><tr><th>Tier</th><th>Scenarios</th><th>ISO calls</th><th>ISO time (serial)</th></tr></thead>
+<tbody>
+<tr><td>T0 Smoke</td><td>51</td><td>50</td><td>7 min</td></tr>
+<tr><td>T1 Core logic</td><td>600</td><td>600</td><td>1 h 24 m</td></tr>
+<tr><td>T2 Full logic</td><td>2,500</td><td>2,500</td><td>5 h 50 m</td></tr>
+<tr><td>T4 Edition cliff</td><td>1,200</td><td>1,200</td><td>2 h 48 m</td></tr>
+<tr><td><b>T3 Value sweep</b></td><td><b>278,054</b></td><td><b>0</b></td><td>38 h 37 m <b>offline</b></td></tr>
+<tr><td><b>Total</b></td><td><b>282,405</b></td><td><b>4,350</b></td><td><b>10 h 09 m</b></td></tr>
+</tbody></table></div>
+
+<div class="note ok"><b>The headline: ~282,000 tests, ~4,350 hits on ISO.</b> The largest tier by far
+— the value sweep that checks every filed rate — <b>never calls ISO at all</b>, because ISO's own
+files are the source of truth for a rate. And 4,350 is a <em>complete cycle</em>, not a recurring
+weekly cost. See 12.3.</div>
+
+<h3>12.2 The economics — why limited scale can still be robust</h3>
+
+<div class="lede"><b>Live calls buy new truth. Offline runs defend it.</b><br>
+A live call is needed <b>once per fact</b>. The moment ISO confirms a configuration produces 8,816,
+that becomes a stored golden and is checked free, on every run, forever. Re-asking the same question
+weekly buys nothing except drift detection.</div>
+
+<p>An offline rating costs <b>0.5 s and nothing</b>. A live one costs <b>8.4 s and money</b>. So the
+rule is: <span class="k">spend calls on establishing truth, spend compute on defending it.</span></p>
+
+<p>Three reasons a small live budget still gives real confidence:</p>
+<ol class="tight">
+<li><b>Offline localises defects; the oracle only confirms them.</b> On 17 August every defect was
+found and its blast radius measured offline before a single call was spent — 14 jurisdictions
+identified from traces, then 13 calls to confirm.</li>
+<li><b>Self-consistency needs no oracle.</b> Premium must rise with limits, fall with deductibles and
+interpolate linearly between band edges. A kink is a defect whether or not ISO is asked.</li>
+<li><b>Mechanisms generalise; values do not.</b> Deductible ordering is one mechanism, confirmable in
+a handful of states. A <em>rate</em> is state-specific across 278,054 cells and generalises to
+nothing — which is why those are verified offline against ISO's files rather than by call.</li>
+</ol>
+
+<h3>12.3 The recommended budget</h3>
+
+<div class="scroll"><table>
+<thead><tr><th>One-time calibration — establishes the golden set</th><th>Calls</th></tr></thead>
+<tbody>
+<tr><td>Base risk, all 50 comparable states</td><td>50</td></tr>
+<tr><td>Mechanism matrix in the 12 structurally-chosen states</td><td>480</td></tr>
+<tr><td>Each mechanism spot-checked in the other 38</td><td>228</td></tr>
+<tr><td>Boundary and negative cases — referrals, band edges, refusals</td><td>150</td></tr>
+<tr><td>Multi-location and multi-class in 12 states <span class="src">(once payloads exist)</span></td><td>144</td></tr>
+<tr><td><b>Total — spread over weeks, never in one burst</b></td><td><b>1,052</b> · 2 h 27 m of ISO time</td></tr>
+</tbody></table></div>
+
+<div class="scroll"><table>
+<thead><tr><th>Recurring, per week</th><th>Calls</th></tr></thead>
+<tbody>
+<tr><td>Smoke — base risk, all 50</td><td>50</td></tr>
+<tr><td>Rotating slice of the matrix — a different sixth each week</td><td>150</td></tr>
+<tr><td>Drift canaries — has ISO changed underneath us?</td><td>20</td></tr>
+<tr><td><b>Per week</b></td><td><b>220</b> · 30 min</td></tr>
+<tr><td>Per year</td><td>11,440</td></tr>
+</tbody></table></div>
+
+<div class="note ok"><b>So the real answer is ~1,050 calls once, then ~220 a week</b> — not 4,350 per
+cycle. Against that, the <b>nightly offline run does 4,000 scenarios in 33 minutes for nothing.</b>
+The offline suite is where the volume lives; ISO is consulted only where nothing else can answer.</div>
+
+<h3>12.4 In plain English — what we can test, and what we cannot</h3>
+
+<h4 style="color:#1e7b45">Can test properly</h4>
+<ul class="tight">
+<li><b>Every rate ISO filed</b> — 217,461 premises/operations and 60,593 products cells, offline,
+against ISO's own files.</li>
+<li><b>The arithmetic</b> — deductibles, limits, increased-limit factors, size-of-risk banding,
+territory assignment, aggregation across locations and classes.</li>
+<li><b>All 50 comparable jurisdictions</b> against a live independent oracle, on the premium
+<em>and every published figure</em> — not just the total.</li>
+<li><b>Refusals</b> — that we decline what ISO declines, and for the same reason.</li>
+<li><b>That a test tested something</b> — the difference between "rated" and "exercised".</li>
+<li><b>Regression</b> — that today's answer matches yesterday's, everywhere, for free.</li>
+</ul>
+
+<h4 style="color:#b7791f">Can test only partly, today</h4>
+<ul class="tight">
+<li><b>The other sublines</b> — Liquor, contractors, pollution, railroad and the rest. <b>7 of 11 have
+no starting payload</b>; buildable, but real work per family.</li>
+<li><b>Multi-location and multi-class</b> — no payloads today, and <b>20 jurisdictions cannot host
+multi-location at all</b> because they declare a single territory.</li>
+<li><b>The 2027 rules</b> — 43 states change basis next April with minimum premiums deleted outright,
+and <b>we have no effective-date axis to test either side.</b></li>
+</ul>
+
+<h4 style="color:#a11">Cannot test, and will not be able to</h4>
+<ul class="tight">
+<li><b>Puerto Rico</b> — rates fine, no ISO entitlement. Every figure is honestly <em>n of 50</em>.</li>
+<li><b>Hawaii</b> — not in ISO's corpus at all.</li>
+<li><b>The final premium a policyholder pays.</b> Everything ISO files is pre-multiplier; the
+carrier's loss cost multiplier is an input by design.</li>
+<li><b>Amounts ISO leaves to the carrier</b> — policywriting minimums, classification minimums,
+anything marked <em>refer to company</em>. We can test that we <em>refer</em>; not the number.</li>
+<li><b>Whether ISO itself is right.</b> ISO is the oracle — if ISO is wrong, we agree with a wrong
+answer. It happens: three jurisdictions returned a <b>400 from ISO's own rule engine</b> failing a
+lookup in its own table. The only partial defence is the second corpus — where the machine-readable
+content and the filed manual disagree, <b>that is the finding.</b></li>
+<li><b>Carrier deviations, once built.</b> The moment carrier content is layered on, <b>no external
+service can confirm the answer</b> — the check that found every defect so far stops working.</li>
+<li><b>Schedule rating, experience credibility and size-of-risk against the manual</b> — they are not
+in the manual corpus at all. ISO's service will rate them, so they are testable, but <b>there is only
+ever one source and no cross-check.</b></li>
+</ul>
+
+<h2 id="week">13 · This week — a paced plan, not a burst</h2>
+
+<div class="lede"><b>The constraint is not cost. It is looking like a person, not a scraper.</b>
+A thousand calls in one afternoon is a traffic pattern worth a phone call from ISO. The same thousand
+across three weeks, in daily blocks comparable to a normal comparison run, is indistinguishable from
+ordinary use — <b>because that is what it is.</b></div>
+
+<h3>13.1 The pacing rules</h3>
+
+<div class="scroll"><table>
+<thead><tr><th>Rule</th><th>Value</th><th>Why</th></tr></thead>
+<tbody>
+<tr><td><b>Daily ceiling</b></td><td><b>150 calls</b>, hard stop</td><td>Comparable to three existing all-states comparison runs — a volume already established as normal on this account</td></tr>
+<tr><td><b>Inter-call spacing</b></td><td><b>20–30 s</b> average, jittered</td><td>Natural rate is 8.4 s serial. Slowing to ~25 s makes a 110-call block take ~46 min, which reads as interactive work rather than a batch</td></tr>
+<tr><td><b>Session size</b></td><td><b>≤ 60 calls</b> per sitting, two sittings a day</td><td>Two moderate blocks look like two work sessions; one long block looks like a job</td></tr>
+<tr><td><b>Hours</b></td><td>Business hours, weekdays</td><td>Overnight bulk traffic is the pattern that gets noticed</td></tr>
+<tr><td><b>Weekends</b></td><td><b>Zero calls</b></td><td>Same reason</td></tr>
+<tr><td><b>Offline first, always</b></td><td>Every scenario rated offline before any call</td><td>Removes build errors, refusals and not-applicables from the live set — typically 10–20% fewer calls</td></tr>
+<tr><td><b>Never re-ask a settled question</b></td><td>Goldens are checked offline</td><td>The single biggest reducer of call volume</td></tr>
+</tbody></table></div>
+
+<h3>13.2 The week of 17 August 2026</h3>
+
+<p><b>92 calls have already been spent today</b> (Monday), closing three defects and widening breadth
+to eleven jurisdictions. The plan below starts from that.</p>
+
+<div class="scroll"><table>
+<thead><tr><th>Day</th><th>Live calls</th><th>Purpose</th><th>Offline work that day</th></tr></thead>
+<tbody>
+<tr><td><b>Mon 17</b></td><td><b>0 more</b><br><span class="src">92 already spent</span></td>
+<td><b>Stop calling today.</b> The day's budget is used</td>
+<td>Build the offline golden baseline from the 11 jurisdictions already confirmed; identify exactly which facts still need an oracle</td></tr>
+<tr><td><b>Tue 18</b></td><td><b>110</b><br><span class="src">2 × 55, ~46 min each</span></td>
+<td><b>Mechanism matrix, group 1</b> — CA, NY, TX, FL. Deductible ordering × ILF keying: the two top-ranked failure modes</td>
+<td>Rate the full T1 matrix offline; triage everything that refuses or does nothing before spending a call on it</td></tr>
+<tr><td><b>Wed 19</b></td><td><b>110</b></td>
+<td><b>Mechanism matrix, group 2</b> — NJ, OH, PA, GA. The split-sibling-table states, plus the countrywide-fallback state</td>
+<td>Response-curve checks: monotonic in limits, descending in deductibles. Any kink investigated offline first</td></tr>
+<tr><td><b>Thu 20</b></td><td><b>110</b></td>
+<td><b>Boundaries and negatives</b> — referral bands above $5,000, exposure band edges, the two refer-to-company class codes, the 478 no-products classes</td>
+<td>Confirm each refusal reason is derived from ISO's declaration rather than from our own fallback</td></tr>
+<tr><td><b>Fri 21</b></td><td><b>90</b></td>
+<td><b>Cross-state spot checks</b> — each confirmed mechanism sampled in 6 of the remaining 38 states, to catch state overrides</td>
+<td>Week's regression; harness review pass; write up findings</td></tr>
+<tr><td>Sat 22 – Sun 23</td><td><b>0</b></td><td>—</td><td>The offline value sweep can run all weekend at zero cost</td></tr>
+<tr><td><b>Week total</b></td><td><b>420 new</b><br><span class="src">512 incl. today</span></td>
+<td colspan="2"><b>Two hours of ISO time across five days</b>, peak 110/day — under the ceiling, and less in a day than a single T1 run done in one sitting</td></tr>
+</tbody></table></div>
+
+<div class="note"><b>What this week buys.</b> By Friday the two highest-ranked failure modes —
+deductible ordering and deductible-factor keying — are confirmed or refuted in eight structurally
+different jurisdictions, the referral paths are exercised for the first time, and roughly 40% of the
+one-time calibration is banked as permanent goldens. <b>The remaining calibration spreads across the
+following two weeks at the same pace.</b></div>
+
+<h3>13.3 If ISO does ask</h3>
+
+<p>The honest answer is short, and worth having ready:</p>
+<ul class="tight">
+<li>We are a licensed subscriber validating our implementation of ISO's own filed content against
+ISO's own service.</li>
+<li>Traffic is <b>strictly serial</b> — no concurrency, one request at a time.</li>
+<li><b>Under 150 requests a day</b>, business hours, weekdays only.</li>
+<li>Every request is a <b>schema-valid submission built from ISO's own declared legal values</b> — we
+do not send anything ISO's filing would reject, and invalid combinations are refused by our harness
+before they reach the service.</li>
+<li>We never re-ask a question already answered; confirmed results are cached permanently.</li>
+<li><b>Findings flow back.</b> Three jurisdictions returned a 400 from ISO's own rule engine on a
+missing loss-cost row — that is reportable to ISO as a data issue, and we should report it.</li>
+</ul>
+
+<div class="note ok"><b>Worth proposing to ISO proactively rather than waiting to be asked.</b> A short
+note describing the validation programme, the daily ceiling and the serial pattern turns unusual
+traffic into an expected activity — and opens the door to raising the
+<code>PremOpsSizeOfRiskLossCost</code> gap as a content question rather than a support ticket.</div>
+
+<h2 id="claims">14 · What this proposal does not claim</h2>
 
 <ul class="tight">
 <li><b>It is a proposal. Nothing here has been built</b> — no <code>qa.py</code>, no QA tab, no new
@@ -826,6 +1018,7 @@ oracle — there is no second source to check against.</li>
 <li><b>Scenario counts for T1–T4 are design targets, not measurements.</b> They follow from the
 stratification in section 4, and they will move once the pairwise generator exists and the
 not-applicable rate is known per axis.</li>
+<li><b>The daily ceiling and pacing figures in section 13 are our own policy, not an ISO-published limit.</b> No rate limit is documented in our client or in the subscription terms we hold; 150/day is chosen to stay comparable to established usage, not to satisfy a known rule.</li>
 <li><b>Wall-clock assumes serial calls</b>, because that is what exists today. Parallelism would
 change every figure in 11.2 and <b>must be agreed with ISO before it is used.</b></li>
 </ul>
