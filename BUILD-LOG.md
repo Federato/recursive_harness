@@ -1945,7 +1945,7 @@ have been about explaining the build rather than extending it; **the defects hav
 
 ---
 
-## Entry 18 — OI-88 measured, then closed. Size-of-risk goes from 2 jurisdictions to 51. **NEXT SESSION STARTS HERE.**
+## Entry 18 — OI-88 measured, then closed. Size-of-risk goes from 2 jurisdictions to 51. ~~NEXT SESSION STARTS HERE.~~ *(the live handoff is **Entry 19**)*
 
 - **Date:** 2026-08-17
 - **Directed:** *"explain OI-88 decision to me"* → *"run the measuring pass"* → **the go**
@@ -2062,3 +2062,121 @@ output in `scripts/erc/out/`, so it would not have caught this.
    a second jurisdiction. **No build until that is answered.**
 6. **Optional, cheap:** chase `567 → 570` through the docs, and make `verify_contract_figures`
    re-measure rather than read cached output — it passed against stale numbers this session.
+
+---
+
+## Entry 19 — OI-91 closed: the two counts never disagreed, and the blocking was ours. **NEXT SESSION STARTS HERE.**
+
+- **Date:** 2026-08-17 *(same session as Entry 18)*
+- **Directed:** *"save this backlog, and then let's start with B"* → **the go**
+- **Built:** one analysis script, one deleted fallback, two docstrings that were wrong, two tests.
+- **Verified:** **terrorism rates in 51 of 51**, up from 31. **AK 7415 · VT 7400 · WY 8501 · MT 7908
+  — all `MATCH` against ISO live** on the premium and every published field, and all four had been
+  refused outright that morning. Every suite green: interp 61/61 · breadth 20/20 · tester 30/30 ·
+  golden 80/80 · stage1 20/20 · stage3 38/38 · stage4 30/30 · stage5 18/18 · stage6 30/30 ·
+  phase2 11/11 · CA 11/11 · NY 10/10 · oi50 7/7 · notebooks 20/20.
+
+### Two defects closed in one day, and both by measuring rather than deciding
+
+**Entry 18's lesson repeated immediately.** OI-88 sat untouched for three entries waiting for a
+decision it did not need; OI-91 had sat since 2026-08-14 described as *"they do not obviously
+reconcile"*. **Run side by side, they reconcile exactly.**
+
+### 1. `4 + 11 = 15`
+
+`scripts/erc/52_oi91_terrorism_place.py`. One edition per jurisdiction, as-of `20260801` for **both**
+measurements, so a difference between them could not be a difference of edition.
+
+| M1 (which domain table the field names) | M2 (does a legal value resolve) | Count |
+|---|---|---|
+| `TerrorismTerritoryCode` | resolves | **4** — CA, FL, NY, TX |
+| `TerritoryCodeByZipCode` | resolves | **11** — CO, CT, IL, MA, MD, MI, NJ, OR, PA, VA, WA |
+| neither | ZIP present | 16 |
+| neither | neither | 20 |
+
+**The four and the eleven are not two camps plus a remainder. They are one population of fifteen,
+and M2's fifteen is the same fifteen** — jurisdiction for jurisdiction, no off-diagonal at all in
+those rows. **All fifteen declare the same field**, `GeneralLiabilityLocation.TerrorismTerritory`;
+the split is only which domain table supplies its legal values.
+
+**Nobody had lined them up, so a subdivision read as a contradiction for three days.**
+
+### 2. And then the part that mattered more
+
+Reconciling the counts said the numbers agreed. **Two further checks said what a caller should
+actually send**, and this is where the real finding was:
+
+**Countrywide references `TerrorismTerritory` in zero of its rule files.** Terrorism territory is a
+**state-level concept only**. The 36 jurisdictions that file none are not missing an input — *there
+is no input to miss.*
+
+**The `ZipCode` fallback was inert.** `Declared.terrorism_place` fell back to any ZIP in the
+location; AL, OK, GA, IA, MO and TN rate terrorism **identically** with it and without it. It was
+the general premises/operations ZIP, never a terrorism input.
+
+**So the 16/20 split described our own code, not ISO's content** — and the refusal built on it was
+refusing for no reason.
+
+### 3. Terrorism was blocked in zero jurisdictions, not twenty
+
+The backlog had said *"terrorism breadth is blocked in 20 jurisdictions"* since 2026-08-14, and the
+harness reported `NOT APPLICABLE` there **with a reason attached, which is why it looked correct.**
+
+Rating proves otherwise: **AK, VT, WY and MT rate terrorism with no location field at all, and the
+premium moves** — 7386→7415, 7371→7400, 8467→8501, 7892→7908. **ISO agrees with all four to the
+cent.**
+
+**A refusal with a well-written reason is still a refusal, and this one had been believed because it
+explained itself.**
+
+### 4. A citation that pointed at the wrong measurement
+
+`validate.PLACE_CODED` cited `scripts/erc/47_input_schema.py` S7 as its source. **S7 does not
+produce four and eleven.** It is a substring search for County/Place/Town/Borough/Parish in column
+names, and its own three hits are `PremiumPlaceHolder` — **matching on "Place".**
+
+**The four are right; the source was not.** M1 is re-measured from `DomainTableName` directly, and
+the constant now cites the measurement that produces it.
+
+### 5. What it raised — OI-93
+
+**NY rates terrorism unchanged from base, 12141, and ISO agrees to the cent.** Not a rating defect.
+**NY territory `001` genuinely carries no terrorism charge**, while `002`–`006` all charge 110.
+Compare **CA, where `001` is the most expensive of the eleven** (+379).
+
+`Declared.values()[0]` returns the lowest-numbered code, so **on NY the terrorism variant exercises
+nothing while reporting as rated.** The sweep's *"premium unchanged from base"* line catches it per
+run; **no test does.**
+
+**Deliberately not fixed by choosing a value that moves the premium** — that is picking a value to
+make a test pass. Raised instead. **Same kind as E20/OI-68: a legal value that does nothing looks
+exactly like a working one.**
+
+### What was written
+
+| | |
+|---|---|
+| `scripts/erc/52_oi91_terrorism_place.py` | Both measurements side by side, plus the two checks that decided what to send |
+| `scripts/variants.py` · `scripts/breadth.py` | `terrorism_place` returns the field for 15 and `None` for 36; `None` means send nothing, not refuse. ZIP fallback deleted |
+| `gl_engine/schema/validate.py` | `PLACE_CODED`'s citation corrected, and what it actually means stated |
+| `tests/verify_breadth.py` | C2 rewritten to the corrected truth; **C2b** rates terrorism with no place in four jurisdictions and requires the premium to move |
+| `docs/OPEN-ITEMS.md` · both backlogs | OI-91 closed with its evidence; **OI-93** raised |
+| `docs/BACKLOG-FEATURE-SETS.md` | The backlog regrouped into seven sets — the standing format from here |
+
+### ▶ Next session
+
+**One defect left, and set A is now the largest block of unverified work in the project.**
+
+1. **Re-run breadth in OK and NY against ISO live — and widen it.** **This is now the top item, and
+   it is no longer tidying.** Size-of-risk rates in 51 jurisdictions where it rated in 2; terrorism
+   rates in 51 where it rated in 31. **Only OK and five terrorism jurisdictions have been checked
+   live.** The 31-of-31 figure predates both closures.
+2. **OI-93** — the variant generator's `values()[0]` no-op. Cheap, and it undermines every breadth
+   figure until it is settled: *rated* and *exercised* are not the same claim.
+3. **OI-89 / D3** `MEDIUM` — the last known defect. Needs ~20 dated experience-rating fields.
+   **Three jurisdictions now show the same per-jurisdiction override** (CA/NY size-of-risk, NY
+   terrorism), which is more evidence than it had.
+4. **Fill the coverage grid** — still *1 of 19*, and two coverages moved today.
+5. **Property exploration, reading pace only.** Unchanged from Entry 17.
+6. **Cheap:** the rounding experiment (one live call, oldest open question); `567 → 570` through the
+   docs; `verify_contract_figures` re-measuring instead of reading cached output.

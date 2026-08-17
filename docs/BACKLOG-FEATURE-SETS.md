@@ -33,14 +33,19 @@ differences to adjudicate. On one risk shape there are none.
 
 ---
 
-## B · The last two defects
+## B · The last defect
 
-**D1/OI-88 closed 2026-08-17.** These are what remains of *known wrong*, as against *not yet known*.
+**D1/OI-88 and D2/OI-91 both closed 2026-08-17.** One item remains of *known wrong*, and the
+terrorism work raised one new one.
 
 | | Why it matters | Size |
 |---|---|---|
-| **OI-91 / D2 — terrorism location** `HIGH` | Two measurements — *4 and 11* by which domain table the field names, *15 / 16 / 20* by whether the jurisdiction resolves a legal value — and nobody has written down which a caller should trust. **Terrorism breadth is blocked in 20 jurisdictions.** The figures are quoted in `validate.PLACE_CODED`, the E8 escalation and R22, so whichever reading wins, more than one document moves | **Small–medium** — a measurement, not a fix |
-| **OI-89 / D3 — schedule rating gate** `MEDIUM` | Not a wrong number — ISO's own rule. But a plan can be **requested and silently not applied**, and no field declaration can reveal the condition. **OI-88's closure sharpened it:** CA and NY now rate size-of-risk unchanged from base, the same per-jurisdiction override in a second place | **Medium** — needs ~20 dated experience-rating fields first |
+| **OI-89 / D3 — schedule rating gate** `MEDIUM` | Not a wrong number — ISO's own rule. But a plan can be **requested and silently not applied**, and no field declaration can reveal the condition. **Two closures sharpened it:** CA and NY rate size-of-risk unchanged from base, and NY rates terrorism unchanged too — the same per-jurisdiction question in three places now | **Medium** — needs ~20 dated experience-rating fields first |
+| **OI-93 — the variant generator picks `values()[0]`, which can be a no-op** `NEW` | Raised 2026-08-17 the moment OI-91 unblocked terrorism. NY territory `001` carries **no** terrorism charge where `002`–`006` charge 110, so the NY variant **exercises nothing while reporting as rated**. Nothing but the sweep's per-run *"unchanged from base"* line notices. Same kind as E20/OI-68: **a legal value that does nothing looks exactly like a working one** | **Small–medium** |
+
+**Not to be fixed by picking a value that moves the premium** — that is choosing a value to make a
+test pass. Either rate every declared value where the domain is small, or report the no-op with the
+value that caused it.
 
 ---
 
@@ -110,13 +115,18 @@ service can confirm the answer.
 
 ## The recommendation on 2026-08-17
 
-**B first, and OI-91 within it.** It is a measurement rather than a fix, it is the last `HIGH`, and
-it is the only item actively blocking something — terrorism breadth in 20 jurisdictions. Closing it
-makes set A meaningfully wider the same day.
+~~**B first, and OI-91 within it.**~~ **Done the same day.** It reconciled rather than needing a
+decision — `4 + 11 = 15` — and the blocking turned out to be ours, so terrorism went from 31
+jurisdictions to 51.
 
-**Cheapest useful thing:** A's rounding experiment. One live call could close the oldest open
-question in the project.
+**Now: A.** Both closures widened what can be rated and **nothing has been re-compared live since.**
+Size-of-risk rates in 51 where it rated in 2; terrorism rates in 51 where it rated in 31; only OK and
+five terrorism jurisdictions have been checked against ISO. **The breadth re-run is no longer a
+tidying task — it is the largest block of unverified new coverage in the project.**
 
-**Argued against starting yet:** C. The largest single block, and the one place where no external
-oracle can confirm the answer. Set A's evidence should be broader before the ISO baseline has to be
-trusted alone.
+**Cheapest useful thing, unchanged:** A's rounding experiment. One live call could close the oldest
+open question in the project.
+
+**Argued against starting yet, unchanged:** C. The largest single block, and the one place where no
+external oracle can confirm the answer. Set A's evidence should be broader before the ISO baseline
+has to be trusted alone.
