@@ -292,6 +292,18 @@ def main(argv) -> int:
         return 1
 
     s = out["summary"]
+
+    # Record every CLI run, not only the ones started from the browser.
+    # The daily live-call budget (`scripts/qa.py`, decision A6) counts calls by
+    # reading this store, and a run that never lands here is a call the budget
+    # cannot see -- which is how a guard ends up reporting zero on a day that
+    # spent ninety.
+    try:
+        from ui import store as _store
+        _store.append(s, out["rows"], label="sweep cli")
+    except Exception as exc:                                  # noqa: BLE001
+        print(f"    (run not recorded: {type(exc).__name__}: {exc})")
+
     print()
     if s["compared"]:
         print(f"    agree with ISO on premium and every field : "
