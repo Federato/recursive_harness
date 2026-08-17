@@ -159,10 +159,62 @@ class Kernel:
             result.stopped = exc
             return result
 
-        self._collect(result)
+        try:
+            self._refuse_null_loss_cost(result)
+            self._collect(result)
+        except EngineError as exc:
+            result.complete = False
+            result.stopped = exc
+            return result
         if self.mode == UNDERWRITING:
             self._apply_register(result)
         return result
+
+    # ------------------------------------------------------ OI-94, the refusal
+
+    def _refuse_null_loss_cost(self, result: Rating) -> None:
+        """A loss cost that resolved to null makes the risk unratable. **OI-94.**
+
+        ISO's own service refuses here. Its 400 is not a validation complaint
+        but its rule engine failing: *"Matrix: PremOpsSizeOfRiskLossCost, Keys:
+        CW, 502, 50017. No results have been found."* We reached the identical
+        miss -- state, then the countrywide retry -- and then carried on,
+        because the `FirstNonNull` exhausted and **C6 correctly returns null
+        rather than raising**.
+
+        **C6 is not the bug and must not be changed.** An exhausted
+        `FirstNonNull` yielding null is what ISO relies on, at 4,327 sites that
+        can exhaust. The mistake is downstream of the language: **a missing loss
+        cost is not a zero-rated risk, it is an unratable one**, and only the
+        rating layer knows the difference.
+
+        `0` is a legal, filed loss cost and is left alone -- OK writes
+        `ProdsCompldOpsLossCost = 0` on a risk that rates correctly. **Only a
+        null is refused**, which is the distinction E20/OI-68 is about in a
+        different place.
+
+        Measured before it was written: **14 of 51 jurisdictions returned a
+        premium this way with size-of-risk on, 0 of 51 without it**, and eight
+        of the fourteen returned the identical `6845` on different base
+        premiums -- a premium that does not depend on the state's loss cost.
+        """
+        bad = []
+
+        def walk(node, path=""):
+            for child in node.children:
+                here = f"{path}/{child.tag}"
+                if child.tag.endswith("LossCost") and child.text is None:
+                    bad.append(here)
+                walk(child, here)
+
+        walk(result.tree)
+        if bad:
+            raise RatingError(
+                f"{bad[0].rsplit('/', 1)[-1]} resolved to null, so this risk "
+                f"has no filed loss cost and cannot be rated -- ISO's own "
+                f"service refuses the same submission (OI-94). "
+                f"{len(bad)} null loss cost(s): "
+                f"{', '.join(b.rsplit('/', 1)[-1] for b in bad[:4])}")
 
     # --------------------------------------------------------------- results
 

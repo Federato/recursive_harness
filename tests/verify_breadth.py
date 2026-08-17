@@ -50,6 +50,23 @@ def base_for(juris: str) -> dict:
     return json.loads(p.read_text(encoding="utf-8"))
 
 
+def _loss_cost_nodes(kernel, juris):
+    """Every `*LossCost` node in a rated tree, for the zero-is-legal check."""
+    import variants as VV
+    from gl_engine.interp import tree as _t
+    r = kernel.rate(VV.build({"size_of_risk": "Yes"}, VV.Declared(juris)))
+    out = []
+
+    def walk(n):
+        for c in n.children:
+            if c.tag.endswith("LossCost"):
+                out.append(c)
+            walk(c)
+
+    walk(r.tree)
+    return out
+
+
 def _terrorism_rates_without_a_place() -> bool:
     """OI-91: terrorism on, no location field sent, premium must move.
 
@@ -205,6 +222,24 @@ def main() -> int:
     check("E4 OI-88 is closed: size-of-risk rates in OK",
           "size-of-risk" not in stopped,
           "was ENGINE STOPPED on a null inside a FirstNonNull branch")
+    # OI-94: the three ISO refuses must refuse here too, and for the stated
+    # reason. `0` is a legal filed loss cost -- only a NULL is unratable -- so
+    # this must not become "refuse when the loss cost is falsy".
+    kern94 = Kernel(mode=STRICT, resolver=EditionResolver())
+    import variants as VV
+    refused, rated94 = [], []
+    for juris in ("GA", "TX", "FL", "OK", "CA", "RI"):
+        dd = VV.Declared(juris)
+        rr = kern94.rate(VV.build({"size_of_risk": "Yes"}, dd))
+        (rated94 if rr.complete else refused).append(juris)
+    check("E6 a null loss cost refuses, in exactly the jurisdictions ISO "
+          "refuses (OI-94)",
+          refused == ["GA", "TX", "FL"] and rated94 == ["OK", "CA", "RI"],
+          f"refused {refused}; rated {rated94} -- ISO 400s on the first three")
+    check("E7 ...and a loss cost of ZERO still rates, because 0 is filed",
+          "0" in [str(n.text) for n in _loss_cost_nodes(kern94, "OK")],
+          "OK writes ProdsCompldOpsLossCost=0 on a risk that rates")
+
     check("E4b ...and it lands on ISO's number",
           premium.get("size-of-risk") == 8816,
           f"ours={premium.get('size-of-risk')} ISO=8816 (base {b.premium})")
