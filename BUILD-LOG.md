@@ -2503,7 +2503,7 @@ layer, as a refusal on a null loss cost.
 
 ---
 
-## Entry 23 — OI-94 closed, and the day's findings written up as what they are. **NEXT SESSION STARTS HERE.**
+## Entry 23 — OI-94 closed, and the day's findings written up as what they are. ~~NEXT SESSION STARTS HERE.~~ *(the live handoff is **Entry 24**)*
 
 - **Date:** 2026-08-17
 - **Directed:** *"do it, log what we have discovered so far, highlight that you, as the harness, are
@@ -2579,3 +2579,78 @@ eleven of OI-94's fourteen are **inferred** rather than confirmed, and the cover
 5. **Property exploration, reading pace only.** Unchanged since Entry 17.
 6. **Cheap:** `567 → 570`; `verify_contract_figures` re-measuring rather than reading cached output;
    an 8dp rounding site closes OI-70's last corner.
+
+
+---
+
+## Entry 24 — Eleven jurisdictions live: 184 of 184, and OI-94 goes from inferred to confirmed. **NEXT SESSION STARTS HERE.**
+
+- **Date:** 2026-08-17
+- **Directed:** *"keep widening breadth"*
+- **Built:** nothing. **A widening run should mostly produce evidence, and this one did.**
+- **Verified:** **184 of 184 comparable outcomes agree across 11 jurisdictions**, and **OI-94's blast
+  radius went from 3 confirmed and 11 inferred to 13 confirmed and 1 unconfirmable.**
+
+### 1. The cheapest calls available were the inferences
+
+**OI-94's fix created a problem for its own evidence.** Eleven jurisdictions were *inferred* to be in
+the blast radius from an identical trace. After the fix, our engine refuses those before calling —
+so **breadth would never confirm them.** The refusal hides the evidence for the refusal.
+
+So the payloads were sent to ISO **directly, bypassing our own refusal**, which is the only way to
+ask the question:
+
+> **AR, DE, IL, KY, LA, MA, MN, NM, NV, SC — all ten returned the identical 400**, same matrix, same
+> *"No results have been found."*
+
+**13 of OI-94's 14 are now confirmed against ISO.** The fourteenth is **PR, and it cannot be
+confirmed by design** — no entitlement (OI-86). It stays labelled as the one remaining inference
+rather than quietly counted.
+
+### 2. Four new jurisdictions, chosen to be awkward
+
+| | Chosen because | Result |
+|---|---|---|
+| **NJ** | OI-69 — the base loss-cost table is **absent from the state package entirely** | **17 of 17** |
+| **OH** | the same | **17 of 17** |
+| **WA** | a ZIP-domain terrorism state, and a different region | **17 of 17** |
+| **MT** | single prem/ops territory, **files no terrorism location at all** | **16 of 16** comparable; `two-locations` `NOT BUILT` |
+
+**The two OI-69 states were the ones most likely to break** — a base table resolving upward to a
+header-only countrywide table is exactly the shape that once yielded a finished premium from zero
+rows. Both clean.
+
+### 3. The tally, with the categories kept apart
+
+| | |
+|---|---|
+| Jurisdictions live-compared | **11** |
+| `MATCH` on the premium **and every published field** | **181** |
+| **Both refuse, same reason** (OI-94, TX/GA/FL) | **3** |
+| `NOT BUILT` — undeclarable there (NY ×2, MT ×1) | 3 |
+| **Comparable outcomes agreeing** | **184 of 184** |
+
+**The three mutual refusals are counted separately and not folded into `MATCH`.** They *are*
+agreement — both sides refuse the same submission for the same reason — but calling a refusal a match
+would inflate the number that matters, and this project has spent two entries on the difference
+between *rated* and *exercised*.
+
+**`NOT BUILT` is the third outcome, not a failure:** NY declares `Occurrence` as its only coverage
+form, MT declares one prem/ops territory.
+
+### Where breadth stands
+
+**Two jurisdictions this morning. Eleven tonight.** 40 remain, at ~17 calls each. The population is
+still **one class family**, and that is now the honest limit rather than the jurisdiction count.
+
+### ▶ Next session
+
+1. **Keep widening — 40 jurisdictions remain.** Eleven have found one `HIGH` defect; the rate of
+   discovery is falling, which is itself information. **Consider whether the next tranche should vary
+   the class family instead**, since jurisdiction breadth is no longer the narrowest axis.
+2. **OI-89 / D3** — the last known defect. Needs the ~20 dated experience-rating fields.
+3. **Give `breadth.py` the OI-93 probe, or retire its `Declared`.** Two harnesses, one behaviour.
+4. **Fill the coverage grid** — still *1 of 19*.
+5. **Property exploration, reading pace only.** Unchanged since Entry 17.
+6. **Cheap:** `567 → 570`; `verify_contract_figures` re-measuring; an 8dp rounding site closes
+   OI-70's last corner.

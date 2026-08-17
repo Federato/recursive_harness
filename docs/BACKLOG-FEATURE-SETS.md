@@ -22,7 +22,7 @@ evidence.
 
 | | What it buys | Size |
 |---|---|---|
-| **Keep widening breadth live** | ✅ **Seven jurisdictions done 2026-08-17 — 112 of 115 MATCH**, and the three misses are all one defect (OI-94), found on day one of widening. **44 jurisdictions remain**, ~17 calls each | **Medium, and it pays** |
+| **Keep widening breadth live** | **Eleven jurisdictions done 2026-08-17 — 184 of 184 comparable outcomes agree.** OI-94 confirmed in 13 of 14. **40 remain**, ~17 calls each — but the discovery rate is falling and the population is still **one class family**, which is now the narrowest axis | **Medium; consider varying class family next** |
 | **Fill the coverage grid** | Still reads *1 of 19*. The honest measure of how much of the engine has ever been exercised | **Medium** |
 | ~~**Close the rounding question — OI-70**~~ | ✅ **CLOSED 2026-08-17.** Four engineered ties, four live calls, four agreements — **ISO rounds half-up**. The *"truncate to four digits then round"* hypothesis was tested too: **0 of 432** operations change | **Done** |
 | **Form attachment — item 6, OI-83** | **508 of 570 packages ship sample submissions**, 510 JSON files, and **nothing currently tests form attachment at all** | **Medium–large** |
