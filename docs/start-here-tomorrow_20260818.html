@@ -71,9 +71,11 @@ table{font-size:.95em}
 <header><h1>Start here tomorrow — Tuesday 18 August 2026</h1>
 <div class="sub">ISO General Liability Rating Engine · Recursive Harness 2.0 · what to pick up, what is waiting on you, and how far a UI is</div></header>
 <div class="wrap"><article>
-<p class="meta">Source: <code>docs/START-HERE-TOMORROW.md</code> &nbsp;·&nbsp; 1,681 words &nbsp;·&nbsp; rendered 2026-08-17</p>
+<p class="meta">Source: <code>docs/START-HERE-TOMORROW.md</code> &nbsp;·&nbsp; 2,547 words &nbsp;·&nbsp; rendered 2026-08-17</p>
 <div class="toc-box"><div class="lbl">On this page</div><div class="toc">
 <ul>
+<li><a href="#1-finish-the-ui-the-proposal-promised">1 · Finish the UI the proposal promised</a></li>
+<li><a href="#2-put-the-harness-into-the-notebook-set">2 · Put the harness into the notebook set</a></li>
 <li><a href="#the-one-known-defect">The one known defect</a></li>
 <li><a href="#the-proving-work-the-big-one">The proving work — the big one</a></li>
 <li><a href="#also-open-in-rough-order-of-value">Also open, in rough order of value</a></li>
@@ -90,7 +92,158 @@ blocked. This is what to pick up, in the order I would pick it up.</p>
 <p>The full diary is <a href="../BUILD-LOG.md"><code>BUILD-LOG.md</code></a> Entry 28. The plain-English version of what the
 day taught is <a href="what-the-harness-taught-us_20260817.html"><code>what-the-harness-taught-us_20260817.html</code></a>.</p>
 <hr />
-<h1 id="1-the-first-thing-and-it-takes-one-call">1 · The first thing, and it takes one call</h1>
+<h1 id="the-two-things-you-named-first">The two things you named, first</h1>
+<h2 id="1-finish-the-ui-the-proposal-promised">1 · Finish the UI the proposal promised</h2>
+<p><strong>The proposal has six wireframes. All six exist. Twelve of the eighteen named features are built,
+six are not</strong> — measured against the wireframes rather than remembered.</p>
+<h3 id="what-is-missing-with-sizes">What is missing, with sizes</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Gap</th>
+<th>Size</th>
+<th>Gated on</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>W1</strong></td>
+<td><strong>"Run the harness review afterwards"</strong> checkbox — pass 3 should run when a tier finishes, not only when someone types a command</td>
+<td><strong>Small</strong></td>
+<td>nothing</td>
+</tr>
+<tr>
+<td><strong>W1</strong></td>
+<td><strong>As-of date selector</strong></td>
+<td><strong>Small to wire, but</strong></td>
+<td><strong>Blocked on D-1.</strong> The engine has no effective-date axis: options come from one date while rating uses the payload's. Adding the control before fixing that would offer a choice that does not work</td>
+</tr>
+<tr>
+<td><strong>W1</strong></td>
+<td><strong>Schedule</strong> — nightly T0, weekly T1</td>
+<td><strong>Medium</strong></td>
+<td>nothing, but it needs a scheduler and a decision about unattended live calls</td>
+</tr>
+<tr>
+<td><strong>W2</strong></td>
+<td><strong>Pause / stop a running tier</strong></td>
+<td><strong>Small–medium</strong></td>
+<td>needs a cancel flag the worker checks between scenarios</td>
+</tr>
+<tr>
+<td><strong>W3</strong></td>
+<td><strong>"What changed since last run"</strong> — new problems, fixed problems, newly covered ground</td>
+<td><strong>Small</strong></td>
+<td>nothing; both rollups already exist</td>
+</tr>
+<tr>
+<td><strong>W6</strong></td>
+<td><strong>Reviewer verdicts recorded</strong> — the wireframe shows <em>"confirmed by 3 of 3 reviewers"</em></td>
+<td><strong>Medium</strong></td>
+<td><strong>A decision.</strong> The agents cannot be invoked from the server, so a verdict has to be pasted back. That makes W6 a <em>workflow</em>, not a <em>reader</em>, and needs somewhere to store them</td>
+</tr>
+</tbody>
+</table>
+<h3 id="where-i-would-start-and-the-one-decision-to-take-first">Where I would start, and the one decision to take first</h3>
+<p><strong>Take the W6 decision before writing anything.</strong> Today's W6 is a <strong>reader</strong> — it shows what is worth
+attacking and says plainly that dispatch happens by hand. The wireframe implies a <strong>workflow</strong> where
+verdicts come back and are stored. Both are defensible; they are different products:</p>
+<ul>
+<li><strong>Reader</strong> <em>(what exists)</em> — honest, no state to maintain, and it never claims a review happened
+  that did not.</li>
+<li><strong>Workflow</strong> — more useful over time, and it needs a store for verdicts, a way to mark a finding
+  resolved, and care that a stale verdict is never shown as current.</li>
+</ul>
+<p><strong>Then, in this order:</strong> <em>"what changed since last run"</em> (small, and the most-read screen) → <em>"run the
+review afterwards"</em> (small, closes the loop) → pause/stop → schedule. <strong>Leave the as-of selector
+until D-1 is fixed.</strong></p>
+<hr />
+<h2 id="2-put-the-harness-into-the-notebook-set">2 · Put the harness into the notebook set</h2>
+<p><strong>Twenty notebooks exist, one per file in <code>gl_engine/</code>, and <code>tests/verify_notebooks.py</code> executes
+every cell of every one.</strong> The new work is in <code>scripts/</code>, which the set does not currently cover.</p>
+<h3 id="the-design-question-to-settle-first">The design question to settle first</h3>
+<p>The set's premise is <em>"one per Python file in <code>gl_engine/</code>"</em> — the <strong>engine</strong>. The harness is a
+different thing: <code>qa.py</code>, <code>qa_review.py</code>, <code>runstore.py</code>, <code>variants.py</code>, <code>sweep.py</code>, <code>charts.py</code>.
+Three options:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Extend the set</strong></td>
+<td>20 → ~26, and the index's premise changes from <em>the engine</em> to <em>the engine and the harness</em></td>
+<td>Simplest to find; blurs a distinction the project has been careful about</td>
+</tr>
+<tr>
+<td><strong>A second set</strong></td>
+<td><code>notebooks/harness/</code> with its own index</td>
+<td>Keeps <em>"the engine contains no rating concepts"</em> clean, which is the point notebook 00 opens with</td>
+</tr>
+<tr>
+<td><strong>Only the QA pair</strong></td>
+<td><code>qa.py</code> and <code>qa_review.py</code> as two additions</td>
+<td>Smallest; leaves <code>variants</code>/<code>sweep</code> undocumented, and those are the ones people actually need to read</td>
+</tr>
+</tbody>
+</table>
+<p><strong>My recommendation: a second set.</strong> The engine notebooks make a specific claim — <em>search it for
+"deductible" and you get one result, and it isn't arithmetic</em> — and mixing the harness in weakens it.
+A harness set can make its own claim: <strong>every defect found today came from something in these files.</strong></p>
+<h3 id="what-each-notebook-has-to-do">What each notebook has to do</h3>
+<p>Same six cells as the existing twenty, because the twentieth reads like the first: what the file is
+for · its public surface, generated from the module so it cannot drift · the smallest thing that
+works · the interesting case · what it refuses · try it yourself.</p>
+<p><strong>Two constraints that will bite:</strong></p>
+<ol>
+<li><strong><code>verify_notebooks.py</code> runs every cell and fails on any exception.</strong> A notebook that calls ISO,
+   or that needs a run in the store, will fail on a clean machine. <strong>Everything must work offline
+   and with an empty <code>results/</code>.</strong></li>
+<li><strong>Outputs are stripped before commit</strong> and <code>.gitattributes</code> enforces it, because a run notebook
+   holds ISO's licensed values in its JSON.</li>
+</ol>
+<h3 id="candidates-in-the-order-i-would-write-them">Candidates, in the order I would write them</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Why it earns a notebook</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>variants.py</code></td>
+<td>The 20 controls and where their values come from. <strong>The most-read file in the harness</strong></td>
+</tr>
+<tr>
+<td><code>qa.py</code></td>
+<td>Tiers, the pairwise generator, the budget. Explains why 22 scenarios and not 600</td>
+</tr>
+<tr>
+<td><code>qa_review.py</code></td>
+<td>The three verdicts, and why the pass reads ISO's CSVs rather than asking our own code</td>
+</tr>
+<tr>
+<td><code>sweep.py</code></td>
+<td>One configuration across 51, and the four outcomes</td>
+</tr>
+<tr>
+<td><code>runstore.py</code></td>
+<td>Why the store is append-only, and what a run record holds</td>
+</tr>
+<tr>
+<td><code>charts.py</code></td>
+<td>Why the map is a tile grid and Hawaii is drawn blank</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h1 id="3-the-one-call-that-settles-the-most">3 · The one call that settles the most</h1>
 <p><strong><code>results/refused-payloads/TX-714439816b85/request.json</code></strong></p>
 <p>Send it. That single call settles <strong>36 payloads across 4 states</strong>, and it closes the half of OI-94
 that is currently <em>unproven</em>.</p>
@@ -124,7 +277,7 @@ Texas, and describes a different lookup.</strong> So the claim is an inference.<
 <p><code>what-to-ask.md</code> sits beside it. The payload validates against ISO's own schema with <strong>zero errors</strong>,
 so it posts unchanged.</p>
 <hr />
-<h1 id="2-tuesdays-60-calls-in-order">2 · Tuesday's 60 calls, in order</h1>
+<h1 id="4-the-days-60-calls-in-order">4 · The day's 60 calls, in order</h1>
 <p>The standing budget is <strong>60 a day</strong> (your decision A6), two sittings, business hours.</p>
 <table>
 <thead>
@@ -165,7 +318,7 @@ so it posts unchanged.</p>
 <p><strong>Run offline first, always:</strong> <code>python scripts/qa.py --tier T1 --offline</code> costs nothing, takes three
 minutes, and removes build errors and refusals from the live set before a call is spent.</p>
 <hr />
-<h1 id="3-waiting-on-you-five-things-none-blocking">3 · Waiting on you — five things, none blocking</h1>
+<h1 id="5-waiting-on-you-five-things-none-blocking">5 · Waiting on you — five things, none blocking</h1>
 <table>
 <thead>
 <tr>
@@ -203,7 +356,7 @@ minutes, and removes build errors and refusals from the live set before a call i
 </tbody>
 </table>
 <hr />
-<h1 id="4-what-is-left-in-the-backlog">4 · What is left in the backlog</h1>
+<h1 id="6-what-is-left-in-the-backlog">6 · What is left in the backlog</h1>
 <h2 id="the-one-known-defect">The one known defect</h2>
 <p><strong>OI-89 — schedule rating can be requested, accepted, and silently not applied.</strong> Not our bug: ISO
 only applies it when the account's claims experience is credible enough. We now know it moves the
@@ -284,7 +437,7 @@ Protective have no example at all</strong> and must be built from the declaratio
 </tbody>
 </table>
 <hr />
-<h1 id="5-how-far-are-we-from-a-ui">5 · How far are we from a UI?</h1>
+<h1 id="7-how-far-are-we-from-a-ui">7 · How far are we from a UI?</h1>
 <p><strong>Further than "there is no UI" and closer than "it is ready." There is a working one — the honest
 question is what kind you mean.</strong></p>
 <h2 id="what-exists-today-and-works">What exists today, and works</h2>
@@ -366,7 +519,7 @@ lands, <strong>the independent check that found every defect so far stops workin
 the interface. Building the interface first would mean polishing a tool whose underlying answer is
 not yet the one a carrier needs.</p>
 <hr />
-<h1 id="6-if-you-only-do-three-things-tomorrow">6 · If you only do three things tomorrow</h1>
+<h1 id="8-if-you-only-do-three-things-tomorrow">8 · If you only do three things tomorrow</h1>
 <ol>
 <li><strong>Send <code>results/refused-payloads/TX-714439816b85/request.json</code>.</strong> One call, settles 36 payloads
    and closes an open question about our own fix.</li>

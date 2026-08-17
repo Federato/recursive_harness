@@ -8,7 +8,90 @@ day taught is [`what-the-harness-taught-us_20260817.html`](what-the-harness-taug
 
 ---
 
-# 1 · The first thing, and it takes one call
+# The two things you named, first
+
+## 1 · Finish the UI the proposal promised
+
+**The proposal has six wireframes. All six exist. Twelve of the eighteen named features are built,
+six are not** — measured against the wireframes rather than remembered.
+
+### What is missing, with sizes
+
+| | Gap | Size | Gated on |
+|---|---|---|---|
+| **W1** | **"Run the harness review afterwards"** checkbox — pass 3 should run when a tier finishes, not only when someone types a command | **Small** | nothing |
+| **W1** | **As-of date selector** | **Small to wire, but** | **Blocked on D-1.** The engine has no effective-date axis: options come from one date while rating uses the payload's. Adding the control before fixing that would offer a choice that does not work |
+| **W1** | **Schedule** — nightly T0, weekly T1 | **Medium** | nothing, but it needs a scheduler and a decision about unattended live calls |
+| **W2** | **Pause / stop a running tier** | **Small–medium** | needs a cancel flag the worker checks between scenarios |
+| **W3** | **"What changed since last run"** — new problems, fixed problems, newly covered ground | **Small** | nothing; both rollups already exist |
+| **W6** | **Reviewer verdicts recorded** — the wireframe shows *"confirmed by 3 of 3 reviewers"* | **Medium** | **A decision.** The agents cannot be invoked from the server, so a verdict has to be pasted back. That makes W6 a *workflow*, not a *reader*, and needs somewhere to store them |
+
+### Where I would start, and the one decision to take first
+
+**Take the W6 decision before writing anything.** Today's W6 is a **reader** — it shows what is worth
+attacking and says plainly that dispatch happens by hand. The wireframe implies a **workflow** where
+verdicts come back and are stored. Both are defensible; they are different products:
+
+- **Reader** *(what exists)* — honest, no state to maintain, and it never claims a review happened
+  that did not.
+- **Workflow** — more useful over time, and it needs a store for verdicts, a way to mark a finding
+  resolved, and care that a stale verdict is never shown as current.
+
+**Then, in this order:** *"what changed since last run"* (small, and the most-read screen) → *"run the
+review afterwards"* (small, closes the loop) → pause/stop → schedule. **Leave the as-of selector
+until D-1 is fixed.**
+
+---
+
+## 2 · Put the harness into the notebook set
+
+**Twenty notebooks exist, one per file in `gl_engine/`, and `tests/verify_notebooks.py` executes
+every cell of every one.** The new work is in `scripts/`, which the set does not currently cover.
+
+### The design question to settle first
+
+The set's premise is *"one per Python file in `gl_engine/`"* — the **engine**. The harness is a
+different thing: `qa.py`, `qa_review.py`, `runstore.py`, `variants.py`, `sweep.py`, `charts.py`.
+Three options:
+
+| | | |
+|---|---|---|
+| **Extend the set** | 20 → ~26, and the index's premise changes from *the engine* to *the engine and the harness* | Simplest to find; blurs a distinction the project has been careful about |
+| **A second set** | `notebooks/harness/` with its own index | Keeps *"the engine contains no rating concepts"* clean, which is the point notebook 00 opens with |
+| **Only the QA pair** | `qa.py` and `qa_review.py` as two additions | Smallest; leaves `variants`/`sweep` undocumented, and those are the ones people actually need to read |
+
+**My recommendation: a second set.** The engine notebooks make a specific claim — *search it for
+"deductible" and you get one result, and it isn't arithmetic* — and mixing the harness in weakens it.
+A harness set can make its own claim: **every defect found today came from something in these files.**
+
+### What each notebook has to do
+
+Same six cells as the existing twenty, because the twentieth reads like the first: what the file is
+for · its public surface, generated from the module so it cannot drift · the smallest thing that
+works · the interesting case · what it refuses · try it yourself.
+
+**Two constraints that will bite:**
+
+1. **`verify_notebooks.py` runs every cell and fails on any exception.** A notebook that calls ISO,
+   or that needs a run in the store, will fail on a clean machine. **Everything must work offline
+   and with an empty `results/`.**
+2. **Outputs are stripped before commit** and `.gitattributes` enforces it, because a run notebook
+   holds ISO's licensed values in its JSON.
+
+### Candidates, in the order I would write them
+
+| | Why it earns a notebook |
+|---|---|
+| `variants.py` | The 20 controls and where their values come from. **The most-read file in the harness** |
+| `qa.py` | Tiers, the pairwise generator, the budget. Explains why 22 scenarios and not 600 |
+| `qa_review.py` | The three verdicts, and why the pass reads ISO's CSVs rather than asking our own code |
+| `sweep.py` | One configuration across 51, and the four outcomes |
+| `runstore.py` | Why the store is append-only, and what a run record holds |
+| `charts.py` | Why the map is a tile grid and Hawaii is drawn blank |
+
+---
+
+# 3 · The one call that settles the most
 
 **`results/refused-payloads/TX-714439816b85/request.json`**
 
@@ -33,7 +116,7 @@ so it posts unchanged.
 
 ---
 
-# 2 · Tuesday's 60 calls, in order
+# 4 · The day's 60 calls, in order
 
 The standing budget is **60 a day** (your decision A6), two sittings, business hours.
 
@@ -49,7 +132,7 @@ minutes, and removes build errors and refusals from the live set before a call i
 
 ---
 
-# 3 · Waiting on you — five things, none blocking
+# 5 · Waiting on you — five things, none blocking
 
 | | | Effort |
 |---|---|---|
@@ -61,7 +144,7 @@ minutes, and removes build errors and refusals from the live set before a call i
 
 ---
 
-# 4 · What is left in the backlog
+# 6 · What is left in the backlog
 
 ## The one known defect
 
@@ -104,7 +187,7 @@ Protective have no example at all** and must be built from the declaration.
 
 ---
 
-# 5 · How far are we from a UI?
+# 7 · How far are we from a UI?
 
 **Further than "there is no UI" and closer than "it is ready." There is a working one — the honest
 question is what kind you mean.**
@@ -150,7 +233,7 @@ not yet the one a carrier needs.
 
 ---
 
-# 6 · If you only do three things tomorrow
+# 8 · If you only do three things tomorrow
 
 1. **Send `results/refused-payloads/TX-714439816b85/request.json`.** One call, settles 36 payloads
    and closes an open question about our own fix.
