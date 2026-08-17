@@ -358,11 +358,32 @@ def main() -> int:
             "POST", "/api/tester/qa/run", {}, {"tier": "T1", "offline": True})
     finally:
         qa._spent_today = real
-    check("Q3 a tier over the daily budget is refused through the UI too",
-          code_over == 429,
+    check("Q3 a tier over the daily budget WARNS, and does not silently spend",
+          code_over == 409,
           f"HTTP {code_over}: {json.loads(body_over).get('detail', '')[:58]}")
     check("Q4 ...and offline is always allowed, because it costs nothing",
           code_off == 200, f"HTTP {code_off}")
+
+    # The warning must be overridable. The budget is our own policy, not a limit
+    # ISO publishes, and the person holding the subscription is better placed to
+    # weigh one run than a constant in a file is. What the guard owes is the
+    # number BEFORE the decision, not the decision itself.
+    real2 = qa._spent_today
+    try:
+        qa._spent_today = lambda: qa.DAILY_STANDING - 1
+        code_forced, _, _ = tester.dispatch(
+            "POST", "/api/tester/qa/run", {},
+            {"tier": "T1", "offline": True, "force": True})
+    finally:
+        qa._spent_today = real2
+    check("Q4b ...and the warning can be overridden, deliberately",
+          code_forced == 200,
+          "force:true runs it, and the run is labelled OVER BUDGET afterwards")
+    qa_page = tester.dispatch("GET", "/tester", {}, None)[1]
+    check("Q4c the page arms a second click rather than spending on the first",
+          "QAARMED=true" in qa_page and "Nothing was sent" in qa_page,
+          "no dialog; the number stays on screen while you decide")
+
 
     code, body, _ = tester.dispatch("POST", "/api/tester/qa/plan", {}, {"tier": "T1"})
     plan = json.loads(body)

@@ -298,13 +298,22 @@ def _qa_start(body) -> tuple:
     sc = qa.scenarios_for(tier, js)
     cost = qa.cost(tier, js, offline)
 
+    forced = bool(body.get("force"))
+    label_extra = ""
     if not offline:
-        ok, room, why = qa._budget_check(cost["live_calls"], bool(body.get("force")))
-        if not ok:
-            return 429, json.dumps({
-                "error": "over the daily live-call budget",
-                "needs": cost["live_calls"], "remaining": max(0, room),
-                "detail": why}), "json"
+        b = qa._budget_check(cost["live_calls"], forced)
+        if not b["ok"] and not forced:
+            # 409, not 429: this is a warning the caller can act on, not a
+            # refusal. The budget is our own policy and the person holding the
+            # subscription is better placed to weigh one run than a constant is.
+            return 409, json.dumps({
+                "warning": "over the daily live-call budget",
+                "budget": b,
+                "detail": b["why"],
+                "confirm": "send the same request with force: true to run it"
+            }), "json"
+        if not b["ok"]:
+            label_extra = " [OVER BUDGET, forced]"
 
     job_id = uuid.uuid4().hex[:12]
     total = sum(len(j) for _, j in sc)
@@ -313,10 +322,12 @@ def _qa_start(body) -> tuple:
                         "rows": [], "finished": False, "compare": not offline,
                         "scenarios": len(sc), "scenario_done": 0,
                         "describes": f"{tier} -- {spec['name']}",
-                        "config": {}, "started": time.time(), "findings": []}
+                        "config": {}, "started": time.time(),
+                        "findings": [], "forced": bool(label_extra)}
     threading.Thread(target=_qa_worker, daemon=True,
                      args=(job_id, tier, sc, offline,
-                           body.get("mode") or "strict-erc")).start()
+                           body.get("mode") or "strict-erc",
+                           label_extra)).start()
     return 200, json.dumps({
         "id": job_id, "tier": tier, "total": total, "scenarios": len(sc),
         "compare": not offline,
@@ -324,7 +335,7 @@ def _qa_start(body) -> tuple:
         else cost["offline_seconds"]}), "json"
 
 
-def _qa_worker(job_id, tier, scenarios, offline, mode):
+def _qa_worker(job_id, tier, scenarios, offline, mode, label_extra=""):
     agree = differ = na = stopped = calls = 0
     findings = []
     for idx, (cfg, js) in enumerate(scenarios, 1):
@@ -350,7 +361,7 @@ def _qa_worker(job_id, tier, scenarios, offline, mode):
         na += len(s["not_applicable"])
         stopped += len(s["engine_stopped"])
         calls += s["live_calls"]
-        store.append(s, out["rows"], label=f"qa {tier}")
+        store.append(s, out["rows"], label=f"qa {tier}{label_extra}")
 
         # Findings are collected as the run goes, so a long tier is useful
         # before it finishes rather than only after.
@@ -636,7 +647,9 @@ function qaTiers(){
   }).join('');
   document.querySelectorAll('.qat').forEach(el=>{
     if(el.classList.contains('off'))return;
-    el.onclick=()=>{QATIER=el.dataset.t;qaTiers();qaBudget();};
+    el.onclick=()=>{QATIER=el.dataset.t;QAARMED=false;
+      $('qarun').textContent='Start';$('qarun').style.background='';
+      qaTiers();qaBudget();};
   });
 }
 function qaBudget(){
@@ -647,8 +660,8 @@ function qaBudget(){
   if(t&&t.runnable&&live){
     msg+=' This tier needs <b>'+t.live_calls+'</b>.';
     if(t.live_calls>b.remaining)
-      msg+=' <b style="color:var(--red)">Over budget \u2014 it will refuse. '
-        +'Run offline, or narrow it.</b>';
+      msg+=' <b style="color:var(--red)">Over budget \u2014 it warns first, '
+        +'and you can override.</b>';
   } else if(live===false){ msg+=' <b>Offline \u2014 free, no calls.</b>'; }
   $('qabudget').innerHTML=msg;
 }
@@ -664,18 +677,33 @@ function qaPlan(){
          +x.jurisdictions.length+' jurisdictions</span></li>').join('')+'</ol>';
    });
 }
+let QAARMED=false;
 function qaRun(){
   const offline=!$('qalive').checked;
   $('qastatus').textContent='starting\u2026';
   fetch('/api/tester/qa/run',{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({tier:QATIER,offline:offline})})
+    body:JSON.stringify({tier:QATIER,offline:offline,force:QAARMED})})
    .then(r=>r.json().then(d=>({code:r.status,d:d}))).then(({code,d})=>{
-     if(code===429){
-       $('qastatus').innerHTML='<b style="color:var(--red)">Refused \u2014 over the daily '
-         +'budget.</b> '+esc(d.detail)+' This tier needs '+d.needs+'.';
+     if(code===409){
+       // A warning you can act on, not a refusal. Arm the button rather
+       // than pop a dialog: the second click is then a deliberate choice,
+       // and the number stays on screen while you make it.
+       const b=d.budget;
+       QAARMED=true;
+       $('qarun').textContent='Run anyway \u2014 '+b.over_by+' over budget';
+       $('qarun').style.background='var(--red)';
+       $('qastatus').innerHTML='<b style="color:var(--red)">Over budget.</b> '
+         +esc(d.detail)+'<br><b>Nothing was sent.</b> Press the red button '
+         +'to run it anyway, or untick <i>Compare each against ISO</i> to '
+         +'run it free. The budget is <b>our own policy</b>, not a limit '
+         +'ISO publishes \u2014 it exists so our traffic keeps looking like '
+         +'ordinary use.';
        return;
      }
      if(d.error){$('qastatus').textContent=d.error+(d.why?' \u2014 '+d.why:'');return;}
+     QAARMED=false;
+     $('qarun').textContent='Start';
+     $('qarun').style.background='';
      QAJOB=d.id;
      $('qastatus').textContent=d.tier+' running \u2014 '+d.scenarios+' scenarios, '
        +d.total+' ratings'+(offline?', offline':', '+d.total+' ISO calls');
@@ -1040,7 +1068,9 @@ function post(url,body){
 }
 $('qarun').onclick=qaRun;
 $('qaplan').onclick=qaPlan;
-$('qalive').onchange=qaBudget;
+$('qalive').onchange=()=>{QAARMED=false;
+  $('qarun').textContent='Start';$('qarun').style.background='';
+  qaBudget();};
 qaLoad();
 $('run').onclick=run; $('check').onclick=check;
 $('compare').onchange=cost;

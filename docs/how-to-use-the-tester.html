@@ -71,7 +71,7 @@ table{font-size:.95em}
 <header><h1>How to use the tester — a walkthrough</h1>
 <div class="sub">ISO General Liability Rating Engine · Recursive Harness 2.0 · run the tests and read the results, no coding</div></header>
 <div class="wrap"><article>
-<p class="meta">Source: <code>docs/HOW-TO-USE-THE-TESTER.md</code> &nbsp;·&nbsp; 1,462 words &nbsp;·&nbsp; rendered 2026-08-17</p>
+<p class="meta">Source: <code>docs/HOW-TO-USE-THE-TESTER.md</code> &nbsp;·&nbsp; 1,634 words &nbsp;·&nbsp; rendered 2026-08-17</p>
 <div class="toc-box"><div class="lbl">On this page</div><div class="toc">
 <ul>
 <li><a href="#the-qa-programme-box-top">The QA programme box (top)</a></li>
@@ -147,8 +147,18 @@ by sending the same submission to ISO's own service and comparing, figure by fig
 </table>
 <p><strong>A greyed-out tier is deliberate.</strong> It tells you what it needs rather than pretending to work.</p>
 <p><strong>Before you press Start, read the line under the buttons.</strong> It tells you how many calls to ISO the
-run will make and how many you have left today. <strong>If it would go over budget it turns red and the
-run refuses to start</strong> — you have to choose offline, or narrow it.</p>
+run will make and how many you have left today.</p>
+<p><strong>If it would go over budget, it warns you — and lets you decide.</strong> Nothing is sent on the first
+click. The button turns red and says <em>"Run anyway — N over budget"</em>, and the numbers stay on screen
+while you make up your mind. <strong>Press it again and it runs.</strong> Change anything — the tier, the offline
+tick — and it disarms, so an override can never carry over into a run you didn't mean.</p>
+<p><strong>Why there's a budget at all.</strong> It is <strong>our own policy, not a limit ISO publishes.</strong> There is no
+documented rate limit. The number exists so our traffic keeps looking like ordinary use rather than
+like a script — 60 calls a day is comparable to what this account already does, and a thousand in an
+afternoon is the pattern that earns a phone call. <strong>You are better placed than a constant in a file
+to judge whether a particular run is worth it</strong>, which is why it warns rather than refuses.</p>
+<p><strong>Every override is recorded.</strong> A run made over budget is labelled as such, so a heavy day shows up
+in the weekly report rather than on an invoice.</p>
 <p><strong>"Show the matrix first"</strong> prints the list of risks the tier would test, without testing anything.
 Useful when you want to know what you're about to spend money on.</p>
 <h2 id="the-risk-box-below-it">The risk box (below it)</h2>

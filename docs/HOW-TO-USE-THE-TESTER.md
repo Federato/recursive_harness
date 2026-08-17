@@ -48,8 +48,21 @@ That's a complete test run of all 51 US jurisdictions.
 **A greyed-out tier is deliberate.** It tells you what it needs rather than pretending to work.
 
 **Before you press Start, read the line under the buttons.** It tells you how many calls to ISO the
-run will make and how many you have left today. **If it would go over budget it turns red and the
-run refuses to start** — you have to choose offline, or narrow it.
+run will make and how many you have left today.
+
+**If it would go over budget, it warns you — and lets you decide.** Nothing is sent on the first
+click. The button turns red and says *"Run anyway — N over budget"*, and the numbers stay on screen
+while you make up your mind. **Press it again and it runs.** Change anything — the tier, the offline
+tick — and it disarms, so an override can never carry over into a run you didn't mean.
+
+**Why there's a budget at all.** It is **our own policy, not a limit ISO publishes.** There is no
+documented rate limit. The number exists so our traffic keeps looking like ordinary use rather than
+like a script — 60 calls a day is comparable to what this account already does, and a thousand in an
+afternoon is the pattern that earns a phone call. **You are better placed than a constant in a file
+to judge whether a particular run is worth it**, which is why it warns rather than refuses.
+
+**Every override is recorded.** A run made over budget is labelled as such, so a heavy day shows up
+in the weekly report rather than on an invoice.
 
 **"Show the matrix first"** prints the list of risks the tier would test, without testing anything.
 Useful when you want to know what you're about to spend money on.

@@ -27,12 +27,20 @@ None needed three. All-pairs covers every pair of axis values in a few hundred
 scenarios where the cross product needs millions, and `_allpairs` below is a
 plain greedy algorithm with no dependency.
 
-### The budget guard is not advisory
+### The budget warns; it does not decide
 
-Decision A6 (2026-08-17) sets **60 live calls a day standing, 150 absolute**.
-`_spent_today` reads the real run store, and a tier that would exceed the
-standing budget **refuses to start** rather than warning. `--force` raises it to
-the ceiling; nothing raises it past the ceiling.
+Decision A6 (2026-08-17) sets **60 live calls a day standing, 150 as the point
+above which traffic stops looking like ordinary use**. `_spent_today` reads the
+real run store.
+
+**A tier over budget warns, states exactly what it would cost, and stops -- and
+`--force` runs it anyway.** The numbers are our own policy, not an ISO-published
+limit, and the person holding the subscription is better placed to weigh a
+particular run than a constant in a file is. What the guard owes you is the
+number *before* you decide, not a decision made for you.
+
+**Every override is recorded** in the run label, so a week that ran hot is
+visible in the weekly report rather than discovered on an invoice.
 """
 from __future__ import annotations
 
@@ -212,15 +220,47 @@ def _spent_today() -> int:
     return n
 
 
-def _budget_check(calls: int, force: bool) -> tuple:
+#: What the guard concluded. `OK` needs nothing; the other two need a person.
+BUDGET_OK = "OK"
+BUDGET_OVER_STANDING = "OVER_STANDING"
+BUDGET_OVER_CEILING = "OVER_CEILING"
+
+
+def _budget_check(calls: int, force: bool = False) -> dict:
+    """How this run sits against the day's budget. **Advice, not a verdict.**
+
+    Returns the numbers and a level. The caller decides -- and with `--force`
+    or `force: true` the caller is a person who has read the warning.
+    """
     spent = _spent_today()
-    cap = DAILY_CEILING if force else DAILY_STANDING
-    room = cap - spent
-    ok = calls <= room
-    why = (f"{spent} live calls already spent today; "
-           f"{'ceiling' if force else 'standing budget'} is {cap}, "
-           f"so {max(0, room)} remain")
-    return ok, room, why
+    after = spent + calls
+    if after <= DAILY_STANDING:
+        level = BUDGET_OK
+    elif after <= DAILY_CEILING:
+        level = BUDGET_OVER_STANDING
+    else:
+        level = BUDGET_OVER_CEILING
+    return {
+        "level": level, "ok": level == BUDGET_OK, "forced": bool(force),
+        "spent_today": spent, "needs": calls, "after": after,
+        "standing": DAILY_STANDING, "ceiling": DAILY_CEILING,
+        "remaining": max(0, DAILY_STANDING - spent),
+        "over_by": max(0, after - DAILY_STANDING),
+        "why": _budget_sentence(level, spent, calls, after),
+    }
+
+
+def _budget_sentence(level: str, spent: int, calls: int, after: int) -> str:
+    if level == BUDGET_OK:
+        return (f"{spent} spent today + {calls} = {after}, within the "
+                f"{DAILY_STANDING} standing budget")
+    if level == BUDGET_OVER_STANDING:
+        return (f"{spent} spent today + {calls} = {after}, which is "
+                f"{after - DAILY_STANDING} OVER the {DAILY_STANDING} standing "
+                f"budget (still under the {DAILY_CEILING} ceiling)")
+    return (f"{spent} spent today + {calls} = {after}, which is "
+            f"{after - DAILY_CEILING} OVER the {DAILY_CEILING} ceiling -- the "
+            f"point above which our traffic stops resembling ordinary use")
 
 
 # -------------------------------------------------------------------- plans
@@ -270,8 +310,8 @@ def main(argv) -> int:
                     help="cost every tier and run nothing")
     ap.add_argument("--tiers", action="store_true", help="describe the tiers")
     ap.add_argument("--force", action="store_true",
-                    help=f"raise the daily budget from {DAILY_STANDING} to the "
-                         f"{DAILY_CEILING} ceiling. Never above it")
+                    help="run despite the budget warning. Recorded in the run "
+                         "label so an over-budget day is visible afterwards")
     ap.add_argument("--label", default="")
     a = ap.parse_args(argv)
 
@@ -335,15 +375,34 @@ def main(argv) -> int:
         print("\n  nothing was run.")
         return 0
 
+    forced_note = ""
     if not a.offline:
-        ok, room, why = _budget_check(c["live_calls"], a.force)
-        print(f"\n  budget: {why}")
-        if not ok:
-            print(f"\n  REFUSED. This tier needs {c['live_calls']} calls and "
-                  f"{max(0, room)} remain today.")
-            print(f"  Run with --offline (free), narrow with --juris, or "
-                  f"--force to use the {DAILY_CEILING} ceiling.")
-            return 1
+        b = _budget_check(c["live_calls"], a.force)
+        print(f"\n  budget: {b['why']}")
+        if not b["ok"]:
+            bar = "!" * 62
+            print(f"\n  {bar}")
+            if b["level"] == BUDGET_OVER_CEILING:
+                print(f"  OVER THE CEILING by {b['after'] - DAILY_CEILING} "
+                      f"call(s).")
+                print(f"  {DAILY_CEILING}/day is the point above which our "
+                      f"traffic stops looking")
+                print(f"  like ordinary use. That is a judgement about ISO's "
+                      f"view of us,")
+                print(f"  not a technical limit -- there is no published rate "
+                      f"limit.")
+            else:
+                print(f"  OVER THE STANDING BUDGET by {b['over_by']} call(s).")
+                print(f"  Still under the {DAILY_CEILING}/day ceiling.")
+            print(f"  {bar}")
+            if not a.force:
+                print(f"\n  Not run. To run it anyway:")
+                print(f"    python scripts/qa.py --tier {a.tier} --force"
+                      + (" ".join(f" --juris {j}" for j in a.juris)))
+                print(f"  Or free: --offline. Or smaller: --juris XX")
+                return 1
+            forced_note = " [OVER BUDGET, forced]"
+            print(f"\n  --force given. Running anyway, and recording it.")
 
     started = time.time()
     runs, agree, differ, na, stopped = [], 0, 0, 0, 0
@@ -356,7 +415,8 @@ def main(argv) -> int:
         differ += len(s["differ"]) + len(s["premium_only"])
         na += len(s["not_applicable"])
         stopped += len(s["engine_stopped"])
-        store.append(s, out["rows"], label=a.label or f"qa {a.tier}")
+        store.append(s, out["rows"],
+                     label=(a.label or f"qa {a.tier}") + forced_note)
         runs.append(s)
         bits = [f"rated {s['rated']}/{s['total']}"]
         if not a.offline:
