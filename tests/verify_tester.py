@@ -36,7 +36,8 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
 
 import variants as V                                          # noqa: E402
-from ui import charts, store, tester, variables               # noqa: E402
+import runstore as store                                      # noqa: E402
+from ui import charts, tester, variables                      # noqa: E402
 
 PASS, FAIL = [], []
 

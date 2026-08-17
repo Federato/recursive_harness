@@ -299,7 +299,7 @@ def main(argv) -> int:
     # cannot see -- which is how a guard ends up reporting zero on a day that
     # spent ninety.
     try:
-        from ui import store as _store
+        import runstore as _store
         _store.append(s, out["rows"], label="sweep cli")
     except Exception as exc:                                  # noqa: BLE001
         print(f"    (run not recorded: {type(exc).__name__}: {exc})")

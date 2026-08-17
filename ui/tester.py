@@ -43,8 +43,9 @@ sys.path.insert(0, str(ROOT / "scripts"))
 import variants as V                                          # noqa: E402
 import sweep                                                  # noqa: E402
 from raas import NO_ISO                                       # noqa: E402
+import runstore as store                                      # noqa: E402
 
-from . import charts, store, variables                        # noqa: E402
+from . import charts, variables                        # noqa: E402
 
 #: Seconds per live ISO call, measured over the phase 2 runs. Used only to warn
 #: before a long run -- a twenty-minute wait a person did not expect is the
@@ -134,6 +135,158 @@ def _start_run(body) -> tuple:
                             if compare else len(js) * 2}), "json"
 
 
+def _qa_spec(query=None) -> tuple:
+    """The tiers, what each costs, and how much budget is left today.
+
+    Everything here is computed by `scripts/qa.py`, which is the single
+    definition of a tier. A second list of tiers maintained next to the first
+    would drift, and the drift would look like a rating defect -- the same
+    argument that keeps one definition of "agree".
+    """
+    import qa
+    tiers = []
+    for key in sorted(qa.TIERS):
+        spec = qa.TIERS[key]
+        row = {"id": key, "name": spec["name"], "what": spec["what"],
+               "runnable": spec["build"] is not None}
+        if row["runnable"]:
+            row.update(qa.cost(key))
+        tiers.append(row)
+    spent = qa._spent_today()
+    return 200, json.dumps({
+        "tiers": tiers,
+        "core": list(qa.CORE),
+        "why_core": qa.WHY_CORE,
+        "budget": {"spent_today": spent,
+                   "standing": qa.DAILY_STANDING,
+                   "ceiling": qa.DAILY_CEILING,
+                   "remaining": max(0, qa.DAILY_STANDING - spent)},
+        "seconds_per_call": qa.SECONDS_PER_LIVE_CALL,
+    }), "json"
+
+
+def _qa_plan(body) -> tuple:
+    """The matrix a tier would run, without running it -- the button's `--plan`."""
+    import qa
+    tier = (body or {}).get("tier")
+    if tier not in qa.TIERS:
+        return 400, json.dumps({"error": "unknown tier"}), "json"
+    if qa.TIERS[tier]["build"] is None:
+        return 400, json.dumps({"error": f"{tier} is not built",
+                                "why": qa.TIERS[tier]["what"]}), "json"
+    js = (body or {}).get("jurisdictions") or None
+    offline = bool((body or {}).get("offline"))
+    sc = qa.scenarios_for(tier, js)
+    return 200, json.dumps({
+        "tier": tier,
+        "cost": qa.cost(tier, js, offline),
+        "scenarios": [{"describes": V.describe(c) or "the base risk, unvaried",
+                       "config": c, "jurisdictions": j} for c, j in sc],
+    }), "json"
+
+
+def _qa_start(body) -> tuple:
+    """Start a whole tier. Unlike a single run, this walks many scenarios.
+
+    **The budget guard is enforced here, not only in the CLI.** A button that
+    could spend more than the standing budget while the command line refused
+    would make the budget a matter of which door you came in by.
+    """
+    import qa
+    body = body or {}
+    tier = body.get("tier")
+    if tier not in qa.TIERS:
+        return 400, json.dumps({"error": "unknown tier"}), "json"
+    spec = qa.TIERS[tier]
+    if spec["build"] is None:
+        return 400, json.dumps({"error": f"{tier} is not built",
+                                "why": spec["what"]}), "json"
+
+    offline = bool(body.get("offline"))
+    js = body.get("jurisdictions") or None
+    sc = qa.scenarios_for(tier, js)
+    cost = qa.cost(tier, js, offline)
+
+    if not offline:
+        ok, room, why = qa._budget_check(cost["live_calls"], bool(body.get("force")))
+        if not ok:
+            return 429, json.dumps({
+                "error": "over the daily live-call budget",
+                "needs": cost["live_calls"], "remaining": max(0, room),
+                "detail": why}), "json"
+
+    job_id = uuid.uuid4().hex[:12]
+    total = sum(len(j) for _, j in sc)
+    with JOBS_LOCK:
+        JOBS[job_id] = {"id": job_id, "qa": tier, "total": total, "done": 0,
+                        "rows": [], "finished": False, "compare": not offline,
+                        "scenarios": len(sc), "scenario_done": 0,
+                        "describes": f"{tier} -- {spec['name']}",
+                        "config": {}, "started": time.time(), "findings": []}
+    threading.Thread(target=_qa_worker, daemon=True,
+                     args=(job_id, tier, sc, offline,
+                           body.get("mode") or "strict-erc")).start()
+    return 200, json.dumps({
+        "id": job_id, "tier": tier, "total": total, "scenarios": len(sc),
+        "compare": not offline,
+        "estimate_seconds": cost["live_seconds"] if not offline
+        else cost["offline_seconds"]}), "json"
+
+
+def _qa_worker(job_id, tier, scenarios, offline, mode):
+    agree = differ = na = stopped = calls = 0
+    findings = []
+    for idx, (cfg, js) in enumerate(scenarios, 1):
+        def progress(done, total, row, _idx=idx):
+            with JOBS_LOCK:
+                job = JOBS.get(job_id)
+                if job is None:
+                    return
+                job["done"] += 1
+                job["scenario_done"] = _idx
+                job["rows"].append(row)
+        try:
+            out = sweep.run_config(cfg, js, compare=not offline, mode=mode,
+                                   progress=progress)
+        except Exception as exc:                              # noqa: BLE001
+            findings.append({"kind": "run failed",
+                             "describes": V.describe(cfg),
+                             "detail": f"{type(exc).__name__}: {exc}"[:200]})
+            continue
+        s = out["summary"]
+        agree += s["agree"]
+        differ += len(s["differ"]) + len(s["premium_only"])
+        na += len(s["not_applicable"])
+        stopped += len(s["engine_stopped"])
+        calls += s["live_calls"]
+        store.append(s, out["rows"], label=f"qa {tier}")
+
+        # Findings are collected as the run goes, so a long tier is useful
+        # before it finishes rather than only after.
+        for j in s["differ"] + s["premium_only"]:
+            findings.append({"kind": "disagrees with ISO", "juris": j,
+                             "describes": V.describe(cfg)})
+        for row in out["rows"]:
+            v = (row.get("no_op") or {})
+            if v.get("verdict") == "INERT VALUE":
+                findings.append({
+                    "kind": "exercised nothing", "juris": row["juris"],
+                    "describes": V.describe(cfg),
+                    "detail": f"{v.get('column')}={v.get('chosen')} does "
+                              f"nothing; {v.get('moves_with')} gives "
+                              f"{v.get('premium')}"})
+    with JOBS_LOCK:
+        job = JOBS.get(job_id)
+        if job is not None:
+            job["finished"] = True
+            job["findings"] = findings
+            job["summary"] = {
+                "tier": tier, "scenarios": len(scenarios), "agree": agree,
+                "differ": differ, "not_applicable": na, "engine_stopped": stopped,
+                "live_calls": calls,
+                "seconds": round(time.time() - job["started"], 1)}
+
+
 def _run_state(job_id: str) -> tuple:
     with JOBS_LOCK:
         job = JOBS.get(job_id)
@@ -207,6 +360,8 @@ def dispatch(method: str, path: str, query: dict, body):
             return _coverage()
         if path == "/api/tester/defects":
             return _defects()
+        if path == "/api/tester/qa":
+            return _qa_spec(query)
         if path.startswith("/api/tester/curve/"):
             return _curve(unquote(path.rsplit("/", 1)[-1]))
         if path.startswith("/api/tester/run/"):
@@ -220,6 +375,10 @@ def dispatch(method: str, path: str, query: dict, body):
             return _legality(body)
         if path == "/api/tester/run":
             return _start_run(body)
+        if path == "/api/tester/qa/plan":
+            return _qa_plan(body)
+        if path == "/api/tester/qa/run":
+            return _qa_start(body)
         return 404, json.dumps({"error": "not found"}), "json"
     return None
 
@@ -289,6 +448,14 @@ font-weight:650}
 code{background:#f0f3f6;padding:1px 4px;border-radius:3px;font-size:11.5px}
 .note{font-size:11.5px;color:var(--muted);border-left:2px solid var(--line);
 padding-left:8px;margin-top:5px}
+.qat{border:1px solid var(--line);border-radius:6px;padding:7px 10px;margin:5px 0;
+cursor:pointer;background:#fff;display:block}
+.qat.on{border-color:var(--blue);box-shadow:0 0 0 1px var(--blue) inset}
+.qat.off{opacity:.5;cursor:not-allowed}
+.qat b{display:block;font-size:13px}
+.qat span{display:block;font-size:11.5px;color:var(--blue);margin-top:1px}
+.qat i{display:block;font-size:11px;color:var(--muted);font-style:normal;margin-top:2px}
+#qaprog{height:100%;width:0;background:var(--blue);transition:width .3s}
 </style></head><body>
 <header>
   <h1>Variable tester</h1>
@@ -297,6 +464,22 @@ padding-left:8px;margin-top:5px}
 </header>
 <main>
  <div>
+  <div class="card" id="qacard">
+   <h2>QA programme</h2>
+   <div class="hint">Whole tiers, sized from ISO's own declared content. The
+     cost is shown <b>before</b> the button, and a tier over the daily
+     live-call budget refuses to start.</div>
+   <div id="qatiers"></div>
+   <label style="margin-top:10px"><input type="checkbox" id="qalive" checked>
+     Compare each against ISO</label>
+   <div class="row" style="margin-top:8px">
+     <button id="qarun">Start</button>
+     <button class="ghost" id="qaplan">Show the matrix first</button>
+   </div>
+   <div class="hint" id="qabudget"></div>
+   <div class="bar"><div id="qaprog"></div></div>
+   <div class="hint" id="qastatus"></div>
+  </div>
   <div class="card">
    <h2>The risk</h2>
    <div id="controls"></div>
@@ -332,6 +515,105 @@ padding-left:8px;margin-top:5px}
 </main>
 <script>
 const $=id=>document.getElementById(id);
+let QA=null, QATIER=null, QAJOB=null, QATIMER=null;
+
+// ---- QA programme. Every figure comes from /api/tester/qa, which computes it
+// ---- from scripts/qa.py. Nothing about a tier is defined twice.
+function qaLoad(){
+  fetch('/api/tester/qa').then(r=>r.json()).then(d=>{
+    QA=d;
+    if(!QATIER){const f=d.tiers.find(t=>t.id==='T1'&&t.runnable)||d.tiers.find(t=>t.runnable);
+      QATIER=f?f.id:null;}
+    qaTiers(); qaBudget();
+  }).catch(()=>{});
+}
+function qaTiers(){
+  $('qatiers').innerHTML=QA.tiers.map(t=>{
+    const on=t.id===QATIER, dis=!t.runnable;
+    const cost=t.runnable
+      ? t.scenarios+' scenarios &middot; '+t.live_calls+' ISO calls &middot; '
+        +Math.round(t.live_seconds/60)+' min'
+      : 'not built';
+    return '<div class="qat'+(on?' on':'')+(dis?' off':'')+'" data-t="'+t.id+'">'
+      +'<b>'+t.id+' &middot; '+esc(t.name)+'</b>'
+      +'<span>'+cost+'</span>'
+      +'<i>'+esc(t.what)+'</i></div>';
+  }).join('');
+  document.querySelectorAll('.qat').forEach(el=>{
+    if(el.classList.contains('off'))return;
+    el.onclick=()=>{QATIER=el.dataset.t;qaTiers();qaBudget();};
+  });
+}
+function qaBudget(){
+  const b=QA.budget, t=QA.tiers.find(x=>x.id===QATIER);
+  const live=$('qalive').checked;
+  let msg='<b>'+b.spent_today+'</b> of '+b.standing+' live calls spent today &middot; '
+    +'<b>'+b.remaining+'</b> remain (ceiling '+b.ceiling+').';
+  if(t&&t.runnable&&live){
+    msg+=' This tier needs <b>'+t.live_calls+'</b>.';
+    if(t.live_calls>b.remaining)
+      msg+=' <b style="color:var(--red)">Over budget \u2014 it will refuse. '
+        +'Run offline, or narrow it.</b>';
+  } else if(live===false){ msg+=' <b>Offline \u2014 free, no calls.</b>'; }
+  $('qabudget').innerHTML=msg;
+}
+function qaPlan(){
+  $('qastatus').textContent='building the matrix\u2026';
+  fetch('/api/tester/qa/plan',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({tier:QATIER,offline:!$('qalive').checked})})
+   .then(r=>r.json()).then(d=>{
+     if(d.error){$('qastatus').textContent=d.error+(d.why?' \u2014 '+d.why:'');return;}
+     $('qastatus').innerHTML='<b>'+d.scenarios.length+' scenarios</b>, nothing run:'
+       +'<ol style="margin:6px 0 0 18px;padding:0">'
+       +d.scenarios.map(x=>'<li>'+esc(x.describes)+' <span style="color:var(--muted)">&rarr; '
+         +x.jurisdictions.length+' jurisdictions</span></li>').join('')+'</ol>';
+   });
+}
+function qaRun(){
+  const offline=!$('qalive').checked;
+  $('qastatus').textContent='starting\u2026';
+  fetch('/api/tester/qa/run',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({tier:QATIER,offline:offline})})
+   .then(r=>r.json().then(d=>({code:r.status,d:d}))).then(({code,d})=>{
+     if(code===429){
+       $('qastatus').innerHTML='<b style="color:var(--red)">Refused \u2014 over the daily '
+         +'budget.</b> '+esc(d.detail)+' This tier needs '+d.needs+'.';
+       return;
+     }
+     if(d.error){$('qastatus').textContent=d.error+(d.why?' \u2014 '+d.why:'');return;}
+     QAJOB=d.id;
+     $('qastatus').textContent=d.tier+' running \u2014 '+d.scenarios+' scenarios, '
+       +d.total+' ratings'+(offline?', offline':', '+d.total+' ISO calls');
+     if(QATIMER)clearInterval(QATIMER);
+     QATIMER=setInterval(qaPoll,900); qaPoll();
+   });
+}
+function qaPoll(){
+  if(!QAJOB)return;
+  fetch('/api/tester/run/'+QAJOB).then(r=>r.json()).then(j=>{
+    const pct=j.total?Math.round(100*j.done/j.total):0;
+    $('qaprog').style.width=pct+'%';
+    let msg='scenario <b>'+(j.scenario_done||0)+'</b> of '+j.scenarios
+      +' &middot; '+j.done+' of '+j.total+' ratings';
+    if(j.finished){
+      clearInterval(QATIMER);QATIMER=null;
+      const s=j.summary||{};
+      msg='<b>'+j.qa+' complete</b> in '+Math.round((s.seconds||0)/60)+' min &middot; '
+        +'agree '+(s.agree||0)+' &middot; disagree <b>'+(s.differ||0)+'</b> &middot; '
+        +'not applicable '+(s.not_applicable||0)+' &middot; refused '
+        +(s.engine_stopped||0)+' &middot; '+(s.live_calls||0)+' ISO calls';
+      if(j.findings&&j.findings.length)
+        msg+='<ol style="margin:6px 0 0 18px;padding:0">'+j.findings.slice(0,12).map(f=>
+          '<li><b>'+esc(f.kind)+'</b>'+(f.juris?' &middot; '+esc(f.juris):'')+' &middot; '
+          +esc(f.describes||'')+(f.detail?'<br><span style="color:var(--muted)">'
+          +esc(f.detail)+'</span>':'')+'</li>').join('')+'</ol>';
+      else if(j.finished) msg+='<br><b>No findings.</b>';
+      qaLoad();
+    }
+    $('qastatus').innerHTML=msg;
+  });
+}
+
 let SPEC=null, CONFIG={}, JOB=null, TIMER=null;
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>
   ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
@@ -573,6 +855,10 @@ function post(url,body){
     body:JSON.stringify(body)}).then(r=>r.json()).then(j=>{
       if(j.error) throw j.error; return j; });
 }
+$('qarun').onclick=qaRun;
+$('qaplan').onclick=qaPlan;
+$('qalive').onchange=qaBudget;
+qaLoad();
 $('run').onclick=run; $('check').onclick=check;
 $('compare').onchange=cost;
 $('reset').onclick=()=>{ CONFIG={}; panel(); cost();

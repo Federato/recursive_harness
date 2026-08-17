@@ -13,10 +13,18 @@ engine version, the as-of date, the mode, whether ISO was called, and the
 resolved package ids per jurisdiction. A premium without its rulebook edition is
 not evidence.
 
-    from ui import store
+    import runstore as store
     store.append(summary, rows)
     store.runs()                       # newest first
     store.coverage()                   # controls x jurisdictions ever exercised
+
+**It lives in `scripts/` and not in `ui/`, and that is deliberate.** The run
+store is a results store, not an interface concern: the command line writes to
+it, the browser writes to it, and the live-call budget in `scripts/qa.py` counts
+from it. Keeping it under `ui/` forced `sweep.py` to import the interface in
+order to record a run, which inverts the one-way dependency this project
+enforces -- `ui -> scripts -> gl_engine`. `tests/verify_tester.py` A5 caught it,
+which is the whole reason that assertion exists.
 """
 from __future__ import annotations
 

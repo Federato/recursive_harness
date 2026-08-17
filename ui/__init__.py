@@ -21,6 +21,6 @@ prove it.
     from ui import tester
     tester.routes()          # (method, path) -> handler, mounted by app.py
 """
-from . import charts, store, tester, variables
+from . import charts, tester, variables
 
-__all__ = ["charts", "store", "tester", "variables"]
+__all__ = ["charts", "tester", "variables"]

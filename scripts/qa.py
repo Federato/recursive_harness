@@ -51,7 +51,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 import sweep                                                   # noqa: E402
 import variants as V                                           # noqa: E402
 from raas import NO_ISO                                        # noqa: E402
-from ui import store                                           # noqa: E402
+import runstore as store                                       # noqa: E402
 
 #: Decision A6, 2026-08-17. Standing budget, then the absolute ceiling.
 DAILY_STANDING = 60
