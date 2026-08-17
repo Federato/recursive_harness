@@ -56,6 +56,11 @@ table{font-size:.95em}
 
 PAGES = {
     "backlog": (SOURCE, OUT, TITLE, SUBTITLE),
+    "tomorrow": ("docs/START-HERE-TOMORROW.md",
+                 "docs/start-here-tomorrow_20260818.html",
+                 "Start here tomorrow — Tuesday 18 August 2026",
+                 "ISO General Liability Rating Engine · Recursive Harness 2.0 · "
+                 "what to pick up, what is waiting on you, and how far a UI is"),
     "taught": ("docs/WHAT-THE-HARNESS-TAUGHT-US.md",
                "docs/what-the-harness-taught-us_20260817.html",
                "What the harness taught us — 17 August 2026",
