@@ -256,10 +256,21 @@ def main() -> int:
           f"{rev['counts'][QR.UNVERIFIED]} unverified")
 
     # The pass reads ISO's CSVs, never the code that made the decision.
+    #
+    # Scoped to the VERDICT path, not the whole module. Pass 4's payload export
+    # legitimately calls `V.build` -- it regenerates an input so a person can
+    # send it, which is not re-deriving a conclusion. Asserting over the file
+    # rather than the function conflated the two and failed on a legitimate
+    # use, which is how a good assertion turns into one people delete.
     src = (ROOT / "scripts" / "qa_review.py").read_text(encoding="utf-8")
-    borrowed = [n for n in ("V.build(", "control.options(", ".resolved_values(")
-                if n in src]
-    check("R5 it re-derives independently rather than asking the same code",
+    start = src.index("def review_not_applicable(")
+    verdict_path = src[:src.index("def review_runs(")]
+    verdict_path = verdict_path[verdict_path.index("def _declared_domain("):]
+    borrowed = [n for n in ("V.build(", "control.options(", ".resolved_values(",
+                            "Declared(")
+                if n in verdict_path]
+    check("R5 the verdict path re-derives independently rather than asking "
+          "the same code",
           not borrowed,
           "reads Fields.FormField.csv and the domain CSVs directly"
           if not borrowed else f"borrows: {borrowed}")

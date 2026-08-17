@@ -57,7 +57,22 @@ NO_ISO = frozenset({"PR"})
 
 
 class RaaSError(RuntimeError):
-    """The service refused, or answered with something unusable."""
+    """The service refused, or answered with something unusable.
+
+    **Carries the request as well as the response.** A 400 whose payload has
+    been thrown away cannot be investigated, cannot be reproduced, and cannot be
+    sent to ISO -- and ISO's 400s are not always about us: on 2026-08-17 the
+    body turned out to be ISO's own rule engine failing to find a row in ISO's
+    own table. That is reportable, and reporting it needs the exact request.
+    """
+
+    def __init__(self, message: str, status: int | None = None,
+                 body: str = "", payload: dict | None = None, url: str = ""):
+        super().__init__(message)
+        self.status = status
+        self.body = body
+        self.payload = payload
+        self.url = url
 
 
 def load_env(path: str | Path | None = None) -> dict:
@@ -189,25 +204,85 @@ class RaaS:
                     self.calls += 1
                     return json.loads(r.read())
             except urllib.error.HTTPError as exc:
-                text = exc.read()[:400].decode("utf-8", "replace")
+                # 4,000 rather than 400: ISO's rule-engine errors name the
+                # matrix, the project and the keys that missed, and the useful
+                # part is past the first 400 characters.
+                text = exc.read()[:4000].decode("utf-8", "replace")
                 if exc.code == 401 and attempt == 1:
                     continue                      # token rotated mid-flight
-                raise RaaSError(f"rate endpoint returned {exc.code}: {text}") from None
+                err = RaaSError(
+                    f"rate endpoint returned {exc.code}: {text[:300]}",
+                    status=exc.code, body=text, payload=payload,
+                    url=self.rate_url)
+                capture(err)
+                raise err from None
             except urllib.error.URLError as exc:
-                raise RaaSError(f"cannot reach the rate endpoint: {exc.reason}") from None
+                raise RaaSError(f"cannot reach the rate endpoint: {exc.reason}",
+                                payload=payload, url=self.rate_url) from None
         raise RaaSError("unreachable")
 
 
-if __name__ == "__main__":                      # a one-call connectivity check
-    import sys
-    c = RaaS()
-    print(f"token endpoint : {urllib.parse.urlparse(c.token_url).netloc}")
-    print(f"rate endpoint  : {urllib.parse.urlparse(c.endpoint).netloc}")
-    c.token()
-    print("authenticated  : yes (token withheld)")
-    if len(sys.argv) > 1:
-        p = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8-sig"))
-        r = c.rate(p)
-        gl = r.get("Body", {}).get("GeneralLiability", [{}])[0]
-        print(f"scheme         : {r.get('Header', {}).get('Scheme')}")
-        print(f"premium        : {gl.get('Premium')}")
+#: Where a failed call is written so a person can pick it up.
+FAILED = Path(__file__).resolve().parent.parent / "results" / "failed-calls"
+
+
+def capture(err: "RaaSError") -> Path | None:
+    """Write a failed call to disk: the exact request, and the exact response.
+
+    **Automatic, and on by default.** A 400 that is only a log line has to be
+    reproduced before it can be investigated, and by then the payload that
+    caused it has usually been regenerated with a different exposure or a
+    different date. Written the moment it happens, it is evidence.
+    """
+    if err.payload is None:
+        return None
+    try:
+        # A RaaS request is {header, body}; SchemeKeys is inside body. Reading
+        # it off the top level silently yielded "unknown" for every capture.
+        inner = err.payload.get("body") or err.payload
+        juris = ((inner.get("SchemeKeys") or {}).get("ProductName")
+                 or "unknown").split()[-1]
+    except Exception:                                         # noqa: BLE001
+        juris = "unknown"
+    stamp = time.strftime("%Y%m%dT%H%M%S")
+    d = FAILED / f"{stamp}-{juris}-{err.status or 'err'}"
+    try:
+        d.mkdir(parents=True, exist_ok=True)
+        (d / "request.json").write_text(
+            json.dumps(err.payload, indent=2), encoding="utf-8")
+        (d / "response.txt").write_text(err.body or "", encoding="utf-8")
+        note = [
+            f"# {juris} - HTTP {err.status}",
+            "",
+            f"**Sent to** `{err.url}`",
+            f"**At** {time.strftime('%Y-%m-%d %H:%M:%S')}",
+            "",
+            "## What we sent",
+            "",
+            "`request.json` in this folder, exactly as posted. It can be",
+            "re-sent unchanged.",
+            "",
+            "## What came back",
+            "",
+            "```",
+            (err.body or "")[:1500],
+            "```",
+            "",
+            "## Worth checking before assuming it is ours",
+            "",
+            "An HTTP 400 from this service is **not always a complaint about",
+            "the submission**. On 2026-08-17 three jurisdictions returned a 400",
+            "whose body was ISO's own rule engine failing to find a row in",
+            "ISO's own table:",
+            "",
+            "> Matrix: PremOpsSizeOfRiskLossCost, Keys: CW, 502, 50017.",
+            "> No results have been found.",
+            "",
+            "That is reportable to ISO, not a defect in the payload. **Read the",
+            "body before concluding whose problem it is.**",
+            "",
+        ]
+        (d / "what-happened.md").write_text("\n".join(note), encoding="utf-8")
+        return d
+    except Exception:                                         # noqa: BLE001
+        return None

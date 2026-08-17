@@ -63,6 +63,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import json
 import sys
 from pathlib import Path
 
@@ -381,6 +382,199 @@ def briefs_for_run(tier: str = "", limit: int = 60) -> list:
     return out
 
 
+
+
+# ------------------------------------------- pass 2, first half: the payloads
+
+#: Not every failure is a question for ISO. Sorting them is the difference
+#: between a folder someone opens and a folder someone ignores.
+#:
+#: `ISO`   -- a rating refusal or a real 400. Sending the payload settles it.
+#: `LOCAL` -- our own environment: a corpus package that will not load, a
+#:            harness bug. **ISO cannot help, and sending it wastes a call.**
+ISO_QUESTION = "ISO"
+LOCAL_PROBLEM = "LOCAL"
+
+#: Substrings that mark a failure as ours rather than ISO's. Deliberately a
+#: short, explicit list: anything unrecognised is treated as an ISO question,
+#: because wrongly withholding a payload hides a defect while wrongly including
+#: one only costs a reading.
+_LOCAL_MARKERS = (
+    "has no Rules directory",
+    "no base submission",
+    "cannot be read as ERC",
+    "IdentityError",
+    "ResolutionError",
+    "no such file",
+)
+
+
+def classify(reason: str) -> str:
+    r = str(reason or "")
+    return LOCAL_PROBLEM if any(m in r for m in _LOCAL_MARKERS) else ISO_QUESTION
+
+
+#: Where a refused-before-calling payload is written for a person to send.
+REFUSED_DIR = ROOT / "results" / "refused-payloads"
+
+
+def export_refusals(tier: str = "", limit: int = 60, out: Path = None) -> list:
+    """Write out the exact payload behind every refusal, ready to be sent.
+
+    **Our own refusals are self-concealing, and that is the problem this
+    solves.** Once OI-94 landed, fourteen jurisdictions began refusing
+    size-of-risk *before* the call was made -- which is correct, saves money,
+    and means **we never learn what ISO would have said**. The fix removed the
+    evidence for the fix.
+
+    Each folder holds the request exactly as it would be posted, what we
+    refused and why, and what to look for in the answer. Nothing is sent from
+    here; sending is a person's decision and a person's budget.
+    """
+    out = Path(out or REFUSED_DIR)
+    written = []
+    seen = set()
+    for meta in store.runs(limit=limit):
+        label = str(meta.get("label") or "")
+        if tier and not label.startswith(f"qa {tier}"):
+            continue
+        full = store.run(meta["id"]) or {}
+        summ = full.get("summary") or {}
+        cfg = summ.get("config") or {}
+        for row in full.get("rows") or []:
+            if row.get("status") not in ("ENGINE STOPPED", "ENGINE ERROR",
+                                         "RAAS FAILED"):
+                continue
+            juris = row.get("juris")
+            # One folder per (jurisdiction, configuration). The same refusal
+            # arriving from twenty scenarios is one thing to investigate, not
+            # twenty -- a directory of duplicates is a directory nobody opens.
+            key = (juris, V.fingerprint(cfg))
+            if key in seen:
+                continue
+            seen.add(key)
+            reason = str(row.get("detail", ""))
+            kind = classify(reason)
+            try:
+                payload = V.build(cfg, V.Declared(juris))
+            except Exception:                                 # noqa: BLE001
+                continue
+            if kind != ISO_QUESTION:
+                # Recorded in the index, not written to disk. 153 folders that
+                # say "our corpus would not load three days ago" is 153 folders
+                # nobody should open, and they bury the 36 that matter.
+                written.append((out / f"{juris}-{V.fingerprint(cfg)}", juris,
+                                V.describe(cfg), reason, kind))
+                continue
+            d = out / f"{juris}-{V.fingerprint(cfg)}"
+            d.mkdir(parents=True, exist_ok=True)
+            (d / "request.json").write_text(json.dumps(payload, indent=2),
+                                            encoding="utf-8")
+            note = [
+                f"# {juris} - our engine refused this, so ISO never saw it",
+                "",
+                f"**Configuration** {V.describe(cfg) or 'the base risk, unvaried'}",
+                f"**Status** {row.get('status')}",
+                f"**Run** {meta['id']}",
+                "",
+                "## What we refused, and why",
+                "",
+                "```",
+                reason[:900],
+                "```",
+                "",
+                "## Why this folder exists",
+                "",
+                "We refuse this **before** calling ISO. That is correct and it",
+                "saves a call -- but it means **we have never asked ISO what it",
+                "would do with this submission**, so the claim *\"ISO would",
+                "refuse it too\"* is an inference, not a measurement.",
+                "",
+                "`request.json` is the exact payload, ready to post unchanged.",
+                "",
+                "## What to look for in the answer",
+                "",
+                "1. **Does ISO rate it?** Then our refusal is wrong and this is",
+                "   a defect in us -- the shape of OI-88.",
+                "2. **Does ISO refuse, naming the same table we did?** Then the",
+                "   refusal is confirmed, cause and all.",
+                "3. **Does ISO refuse, naming something else?** Then we agree on",
+                "   the outcome and not on the reason. That happened on",
+                "   2026-08-17: we blamed `PremOpsLossCost`, ISO's error was",
+                "   about `PremOpsSizeOfRiskLossCost`, and the message we had",
+                "   quoted as proof was captured in a different state.",
+                "",
+                "A 400 here is **not automatically a complaint about the",
+                "payload** -- ISO's own rule engine failing to find a row in",
+                "ISO's own table returns one too, and that is reportable to",
+                "ISO rather than fixable by us.",
+                "",
+            ]
+            (d / "what-to-ask.md").write_text("\n".join(note),
+                                              encoding="utf-8")
+            written.append((d, juris, V.describe(cfg), reason, kind))
+
+    # An index, grouped by cause. Thirty-six folders that all say the same
+    # thing is thirty-six folders nobody opens; the point of the export is that
+    # a person can see at a glance how many DISTINCT questions are in it.
+    if written:
+        by_cause = {}
+        for d, juris, desc, reason, kind in written:
+            head = reason.split(".")[0][:120] or "(no reason recorded)"
+            by_cause.setdefault((kind, head), []).append(
+                (d.name, juris, desc))
+        n_iso = sum(1 for _, _, _, _, k in written if k == ISO_QUESTION)
+        n_local = len(written) - n_iso
+        lines = [
+            "# Refused payloads - the calls we did not make",
+            "",
+            f"{len(written)} payload(s), **{len(by_cause)} distinct cause(s)**.",
+            "",
+            f"- **{n_iso} are questions for ISO** - a rating refusal or a real "
+            f"400. Sending the payload settles it.",
+            f"- **{n_local} are ours** - a corpus package that will not load, or "
+            f"a harness problem. **ISO cannot help with these and sending them "
+            f"wastes a call**, so they are listed below but no folder is "
+            f"written for them.",
+            "",
+            "Every folder holds `request.json` exactly as it would be posted -",
+            "**validated against ISO's own declared schema, zero errors** - and",
+            "a `what-to-ask.md`. Nothing here was sent.",
+            "",
+            "**Read the causes, not the folders.** Most of these are the same",
+            "question asked from different configurations; one answer settles a",
+            "whole group.",
+            "",
+        ]
+        ordered = sorted(by_cause.items(),
+                         key=lambda kv: (kv[0][0] != ISO_QUESTION, -len(kv[1])))
+        for i, ((kind, cause), items) in enumerate(ordered, 1):
+            states = sorted({j for _, j, _ in items})
+            tag = ("**Ask ISO**" if kind == ISO_QUESTION
+                   else "**Ours - do not send**")
+            lines += [f"## Cause {i} - {tag} - {len(items)} payload(s), "
+                      f"{len(states)} jurisdiction(s)", "",
+                      "```", cause, "```", "",
+                      f"**States:** {', '.join(states)}", "",
+                      "| folder | jurisdiction | configuration |",
+                      "|---|---|---|"]
+            for name, juris, desc in sorted(items):
+                lines.append(f"| `{name}` | {juris} | {desc[:70]} |")
+            lines.append("")
+        lines += [
+            "---",
+            "",
+            "**Note on the reasons above.** They are quoted as the run recorded",
+            "them. A run made before 2026-08-17 18:00 carries the older wording,",
+            "which named `PremOpsLossCost` - a table that is healthy in these",
+            "states. The lookup that actually came back empty is",
+            "`PremOpsSizeOfRiskLossCost`. The payloads are unaffected.",
+            "",
+        ]
+        (out / "INDEX.md").write_text("\n".join(lines), encoding="utf-8")
+    return [d for d, _, _, _, k in written if k == ISO_QUESTION]
+
+
 def main(argv) -> int:
     ap = argparse.ArgumentParser(
         description="Pass 3: is a NOT APPLICABLE real, or is it ours?")
@@ -391,7 +585,21 @@ def main(argv) -> int:
                     help="assemble adversarial briefs instead of running pass 3")
     ap.add_argument("--max", type=int, default=3,
                     help="how many briefs to print")
+    ap.add_argument("--payloads", action="store_true",
+                    help="write out the payload behind every refusal, so the "
+                         "call we never made can be made by hand")
     a = ap.parse_args(argv)
+
+    if a.payloads:
+        ds = export_refusals(a.tier, a.limit)
+        print(f"Wrote {len(ds)} refused payload(s) to results/refused-payloads/\n")
+        for d in ds:
+            print(f"  {d.name}")
+        if ds:
+            print("\n  Each folder holds request.json exactly as it would be\n"
+                  "  posted, and what-to-ask.md. Nothing was sent: these are\n"
+                  "  the calls we refused to make, ready for you to make.")
+        return 0
 
     if a.pass4:
         bs = briefs_for_run(a.tier, a.limit)
