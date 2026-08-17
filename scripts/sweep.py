@@ -90,7 +90,7 @@ def baselines(kernel, jurisdictions) -> dict:
 
 def run_config(config: dict, jurisdictions=None, compare: bool = False,
                mode: str = STRICT, asof: str = V.DEFAULT_ASOF,
-               progress=None) -> dict:
+               progress=None, probe: bool = True) -> dict:
     """Rate one configuration everywhere. Returns rows and a summary.
 
     `progress(done, total, row)` is called after each jurisdiction so a caller
@@ -172,6 +172,24 @@ def run_config(config: dict, jurisdictions=None, compare: bool = False,
         if progress:
             progress(i, len(js), row)
 
+    # OI-93: a variant that rated and left the premium alone reads exactly like
+    # one that worked. Ask why -- is no declared value able to move it (a fact
+    # about ISO), or did we choose one that does nothing (a fact about us)?
+    # Offline, no live calls, and cheap: the ISO-side answer costs no ratings
+    # at all because those configurations record no choice sites.
+    if probe:
+        for r in rows:
+            if r.get("moved") is not False:
+                continue
+            try:
+                d = declared(r["juris"], asof)
+                v = V.probe_no_op(cfg, d, kernel,
+                                  Decimal(base_premiums[r["juris"]]))
+            except Exception as exc:                          # noqa: BLE001
+                v = {"verdict": "PROBE FAILED",
+                     "detail": f"{type(exc).__name__}: {exc}"[:160]}
+            r["no_op"] = v
+
     def count(*statuses):
         return [r["juris"] for r in rows if r.get("status") in statuses]
 
@@ -193,6 +211,12 @@ def run_config(config: dict, jurisdictions=None, compare: bool = False,
         "engine_stopped": count("ENGINE STOPPED"),
         "errors": count("ENGINE ERROR", "BUILD ERROR", "RAAS FAILED"),
         "unmoved": [r["juris"] for r in rows if r.get("moved") is False],
+        "inert_control": [r["juris"] for r in rows
+                          if (r.get("no_op") or {}).get("verdict")
+                          == V.INERT_CONTROL],
+        "inert_value": [r["juris"] for r in rows
+                        if (r.get("no_op") or {}).get("verdict")
+                        == V.INERT_VALUE],
         "iso_not_subscribed": skipped_iso,
     }
     return {"summary": summary, "rows": rows}
@@ -284,6 +308,17 @@ def main(argv) -> int:
     if s["unmoved"]:
         print(f"    premium unchanged from base : {len(s['unmoved'])} "
               f"({', '.join(s['unmoved'])})")
+        if s.get("inert_control"):
+            print(f"      INERT CONTROL -- no declared value moves it, so this "
+                  f"is ISO's filing, not our pick : "
+                  f"{', '.join(s['inert_control'])}")
+        for r in out["rows"]:
+            v = r.get("no_op") or {}
+            if v.get("verdict") == V.INERT_VALUE:
+                print(f"      INERT VALUE   -- {r['juris']}: "
+                      f"{v['column']}={v['chosen']} does nothing; "
+                      f"{v['moves_with']} gives {v['premium']} "
+                      f"(of {v['alternatives']} alternatives). OI-93")
         print("      -- a configuration that does not move the premium "
               "exercised nothing; that is a finding, not a pass.")
     if s["live_calls"]:

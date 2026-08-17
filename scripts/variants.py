@@ -83,6 +83,38 @@ class Declared:
         self.asof = asof
         self.book = ResolvedBook(Declared._resolver.resolve(juris, asof))
         self.schema = Schema.for_book(self.book)
+        #: Every place a variant had to choose one value out of several, as
+        #: `(table, column) -> (chosen, all_legal)`. Recorded because the choice
+        #: is arbitrary and **an arbitrary choice can be a no-op** -- OI-93.
+        self.picks: dict = {}
+        #: Overrides for those choices, `(table, column) -> value`. The probe
+        #: sets these to ask *"would a different legal value have moved the
+        #: premium?"*, which is the question that separates an inert control
+        #: from an inert value.
+        self.pins: dict = {}
+
+    # ------------------------------------------------------------ the choice
+
+    def pick(self, table: str, col: str, legal) -> str:
+        """Choose one of ISO's declared values, recording that a choice was made.
+
+        **The first value is not a neutral default.** In NY,
+        `TerrorismTerritory` `001` carries no terrorism charge while `002`-`006`
+        each charge 110, so taking `legal[0]` produces a variant that rates,
+        reports as rated, and **exercises nothing** (OI-93). The pick is
+        recorded so a caller can ask what the alternatives would have done, and
+        pinnable so it can find out.
+        """
+        legal = tuple(legal)
+        if not legal:
+            raise VariantError(f"{self.juris} declares no legal value for "
+                               f"{table}.{col}")
+        chosen = self.pins.get((table, col), legal[0])
+        if str(chosen) not in [str(x) for x in legal]:
+            raise VariantError(f"pinned {table}.{col}={chosen!r} is not one of "
+                               f"{len(legal)} declared values in {self.juris}")
+        self.picks[(table, col)] = (chosen, legal)
+        return chosen
 
     @classmethod
     def resolver(cls):
@@ -219,7 +251,8 @@ class Declared:
         if not vals:
             raise VariantError(f"no {which} premium basis declared for class "
                                f"{code} in {self.juris}")
-        return vals[0]
+        return self.pick("GeneralLiabilityClassification",
+                         f"{which}PremiumBasis", vals)
 
     def territories(self) -> tuple[str, ...]:
         return self.values("GeneralLiabilityLocation",
@@ -245,7 +278,10 @@ class Declared:
         sole cause of the 16/20 split, which says nothing about terrorism.
         """
         tt = self.values("GeneralLiabilityLocation", "TerrorismTerritory")
-        return ("TerrorismTerritory", tt[0]) if tt else None
+        if not tt:
+            return None
+        return ("TerrorismTerritory",
+                self.pick("GeneralLiabilityLocation", "TerrorismTerritory", tt))
 
 
 # ------------------------------------------------------------------ controls
@@ -486,7 +522,7 @@ def _apply_occurrence_limit(p, value, d, config):
         if not legal:
             raise VariantError(f"{d.juris} declares no {col} legal with "
                                f"{value}")
-        _gl(p)[col] = legal[0]
+        _gl(p)[col] = d.pick(GL, col, legal)
 
 
 def _apply_class(p, value, d, config):
@@ -500,7 +536,8 @@ def _apply_class(p, value, d, config):
             cls["ClassDescription"] = desc
             cls["PremOpsPremiumBasis"] = prem
             if prods:
-                cls["ProdsCompldOpsPremiumBasis"] = prods[0]
+                cls["ProdsCompldOpsPremiumBasis"] = d.pick(
+                    CLS, "ProdsCompldOpsPremiumBasis", prods)
 
 
 def _apply_exposure(p, value, d, config):
@@ -680,6 +717,77 @@ def build(config: dict, d: Declared, base: dict | None = None) -> dict:
                     + f"; {len(legal)} legal: {list(legal)[:5]}")
         APPLIERS[cid](p, value, d, c)
     return p
+
+
+#: What `probe_no_op` concluded about a variant that did not move the premium.
+INERT_CONTROL = "INERT CONTROL"      # no declared value moves it: about ISO
+INERT_VALUE = "INERT VALUE"          # this one does not, another would: about us
+MOVED = "MOVED"                      # it moved after all
+
+
+def probe_no_op(config: dict, d: Declared, kernel, base_premium,
+                limit: int = 12) -> dict:
+    """Why did this variant not move the premium -- ISO's content, or our pick?
+
+    **OI-93.** A variant that rates and leaves the premium alone reads exactly
+    like one that worked. Two very different things produce it:
+
+    * **`INERT CONTROL`** -- no declared value moves the premium. That is a fact
+      about ISO's filing and a real finding (OI-89's schedule rating gate is
+      one).
+    * **`INERT VALUE`** -- the value we happened to choose does nothing, and
+      another declared value would have moved it. That is a fact about **our
+      harness**, and it silently weakens every breadth figure it appears in.
+
+    Nothing distinguished them before this. The probe re-rates the same
+    configuration with each alternative at every recorded `pick` site, offline,
+    and names the first value that moves the premium.
+
+    `limit` caps the alternatives tried per site, because a domain can hold
+    thousands of class codes and this is a diagnostic rather than a sweep.
+    Whatever it skips is reported rather than dropped.
+    """
+    d.picks.clear()
+    d.pins.clear()
+    try:
+        first = kernel.rate(build(config, d))
+    except VariantError as exc:
+        return {"verdict": "NOT APPLICABLE", "detail": str(exc)[:200]}
+    if not first.complete:
+        return {"verdict": "ENGINE STOPPED", "detail": str(first.stopped)[:200]}
+    if base_premium is not None and first.premium != base_premium:
+        return {"verdict": MOVED, "premium": str(first.premium)}
+
+    sites = dict(d.picks)
+    tried = movers = 0
+    skipped = []
+    for (table, col), (chosen, legal) in sorted(sites.items()):
+        others = [v for v in legal if str(v) != str(chosen)]
+        if len(others) > limit:
+            skipped.append(f"{table}.{col} ({len(others)} alternatives, "
+                           f"{limit} tried)")
+            others = others[:limit]
+        for alt in others:
+            d.pins = {(table, col): alt}
+            d.picks.clear()
+            try:
+                r = kernel.rate(build(config, d))
+            except Exception:                                 # noqa: BLE001
+                continue
+            tried += 1
+            if r.complete and r.premium != first.premium:
+                movers += 1
+                d.pins.clear()
+                return {"verdict": INERT_VALUE, "table": table, "column": col,
+                        "chosen": str(chosen), "moves_with": str(alt),
+                        "premium": str(r.premium), "was": str(first.premium),
+                        "alternatives": len(legal) - 1, "tried": tried,
+                        "skipped": skipped}
+    d.pins.clear()
+    return {"verdict": INERT_CONTROL, "sites": len(sites), "tried": tried,
+            "skipped": skipped,
+            "detail": f"{tried} alternative values across {len(sites)} choice "
+                      f"sites, none moved the premium"}
 
 
 def options_for(d: Declared, config: dict | None = None) -> dict:

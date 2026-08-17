@@ -155,6 +155,32 @@ def main() -> int:
           "territor" in next(iter(two["not_applicable"].values())).lower(),
           next(iter(two["not_applicable"].values()))[:80])
 
+    # D4-D6: OI-93. A variant that rates and leaves the premium alone reads
+    # exactly like one that worked, and two very different things cause it.
+    # Nothing distinguished them until 2026-08-17.
+    from gl_engine.rating import Kernel, STRICT
+    kern = Kernel(mode=STRICT, resolver=V.Declared.resolver())
+
+    def probe(juris, cfg):
+        d = V.Declared(juris)
+        return V.probe_no_op(cfg, d, kern, kern.rate(d.base()).premium)
+
+    ny = probe("NY", {"terrorism": "Yes"})
+    check("D4 an INERT VALUE is named, with the value that would have moved it",
+          ny["verdict"] == V.INERT_VALUE and ny["chosen"] == "001"
+          and ny["moves_with"] == "002",
+          f"NY {ny.get('column')}={ny.get('chosen')} does nothing; "
+          f"{ny.get('moves_with')} gives {ny.get('premium')}")
+    ok_sched = probe("OK", {"schedule_rating": "Yes"})
+    check("D5 an INERT CONTROL is distinguished from it -- that one is ISO's "
+          "filing, not our pick",
+          ok_sched["verdict"] == V.INERT_CONTROL,
+          f"OK schedule rating: {ok_sched['verdict']} (OI-89's gate)")
+    ok_terr = probe("OK", {"terrorism": "Yes"})
+    check("D6 and a variant that does move is not reported as either",
+          ok_terr["verdict"] == V.MOVED,
+          f"OK terrorism moved to {ok_terr.get('premium')}")
+
     print("\nE  THE STORE, AND THE LONG VIEW BUILT FROM IT")
     tmp = Path(tempfile.mkdtemp(prefix="tester-store-"))
     real = store.RESULTS
