@@ -232,3 +232,64 @@ def defects() -> list:
                 e["first_seen"] = at
     return sorted(seen.values(), key=lambda e: (e["last_seen"], e["juris"]),
                   reverse=True)
+
+# ------------------------------------------------------------- the QA rollup
+
+#: Worst-first. A jurisdiction that disagreed anywhere is reported as
+#: disagreeing however much else agreed, because the summary exists to surface
+#: the worst thing rather than to average it away.
+_RANK = ("differs", "refused", "uncompared", "partial", "agrees", "untested")
+
+
+def qa_rollup(tier: str = "", limit: int = 60) -> dict:
+    """Per-jurisdiction outcome across recent runs, for the map and the verdict.
+
+    Reads whole runs rather than summaries, because the per-jurisdiction status
+    is on the rows. `tier` narrows to one tier's runs by label.
+    """
+    status, counts = {}, {"agrees": 0, "differs": 0, "not_applicable": 0,
+                          "refused": 0, "uncompared": 0}
+    seen_runs, scenarios, calls = [], 0, 0
+
+    def worse(a, b):
+        return a if _RANK.index(a) <= _RANK.index(b) else b
+
+    for meta in runs(limit=limit):
+        label = str(meta.get("label") or "")
+        if tier and not label.startswith(f"qa {tier}"):
+            continue
+        if not tier and not label.startswith("qa "):
+            continue
+        full = run(meta["id"]) or {}
+        rows = full.get("rows") or []
+        if not rows:
+            continue
+        scenarios += 1
+        calls += int((full.get("summary") or {}).get("live_calls", 0) or 0)
+        seen_runs.append(meta["id"])
+        for r in rows:
+            j, st = r.get("juris"), r.get("status")
+            if not j:
+                continue
+            if st in ("DIFF", "PREMIUM ONLY"):
+                here, key = "differs", "differs"
+            elif st in ("ENGINE STOPPED", "ENGINE ERROR", "BUILD ERROR",
+                        "RAAS FAILED"):
+                here, key = "refused", "refused"
+            elif st == "MATCH":
+                here, key = "agrees", "agrees"
+            elif st == "RATED":
+                here, key = "uncompared", "uncompared"
+            elif st == "NOT APPLICABLE":
+                # Never a failure, and never the reason a tile is coloured: it
+                # only softens an otherwise-clean jurisdiction to "partial".
+                counts["not_applicable"] += 1
+                status[j] = worse(status.get(j, "untested"), "partial")
+                continue
+            else:
+                continue
+            counts[key] += 1
+            status[j] = worse(status.get(j, "untested"), here)
+
+    return {"status": status, "counts": counts, "scenarios": scenarios,
+            "live_calls": calls, "runs": len(seen_runs)}

@@ -240,3 +240,133 @@ def status_bars(summary: dict) -> str:
         out.append(_t(lx + 13, h - 10, f"{label} ({n})", 10, MUTED))
         lx += 26 + 6.0 * len(label)
     return _svg(w, h, "".join(out), "Outcomes for this run")
+
+# --------------------------------------------------------------------- map
+
+#: A tile grid, not a projection. Every jurisdiction gets the **same size
+#: square**, which is the point: Rhode Island and Texas carry one submission
+#: each, and a geographic map would draw Texas 200 times larger and say
+#: something untrue about where the testing effort went. Rough US geography is
+#: preserved so it is still findable at a glance.
+#:
+#: **Hawaii is drawn and permanently blank.** It is not in ISO's corpus at all,
+#: and leaving it off the map would hide that; a grey tile labelled "not filed"
+#: is the honest version.
+TILES = {
+    "AK": (0, 0),  "ME": (0, 10),
+    "VT": (1, 8),  "NH": (1, 9),
+    "WA": (2, 0),  "ID": (2, 1),  "MT": (2, 2),  "ND": (2, 3),  "MN": (2, 4),
+    "IL": (2, 5),  "WI": (2, 6),  "MI": (2, 7),  "NY": (2, 8),  "RI": (2, 9),
+    "MA": (2, 10),
+    "OR": (3, 0),  "NV": (3, 1),  "WY": (3, 2),  "SD": (3, 3),  "IA": (3, 4),
+    "IN": (3, 5),  "OH": (3, 6),  "PA": (3, 7),  "NJ": (3, 8),  "CT": (3, 9),
+    "CA": (4, 0),  "UT": (4, 1),  "CO": (4, 2),  "NE": (4, 3),  "MO": (4, 4),
+    "KY": (4, 5),  "WV": (4, 6),  "VA": (4, 7),  "MD": (4, 8),  "DC": (4, 9),
+    "AZ": (5, 1),  "NM": (5, 2),  "KS": (5, 3),  "AR": (5, 4),  "TN": (5, 5),
+    "NC": (5, 6),  "SC": (5, 7),  "DE": (5, 8),
+    "OK": (6, 3),  "LA": (6, 4),  "MS": (6, 5),  "AL": (6, 6),  "GA": (6, 7),
+    "HI": (7, 0),  "TX": (7, 3),  "FL": (7, 8),  "PR": (7, 9),
+}
+
+#: What a tile can say. Ordered worst-first: a jurisdiction with any
+#: disagreement is drawn as disagreeing, however much else agreed.
+MAP_STATES = (
+    ("differs", RED, "disagrees with ISO"),
+    ("refused", AMBER, "our engine refused"),
+    ("agrees", BLUE, "every scenario agrees"),
+    ("partial", "#8fb4d8", "agrees; some not offered here"),
+    ("uncompared", GREY, "rated, never compared"),
+    ("untested", "#e6e8ec", "never tested"),
+    ("absent", "#f2f3f5", "not filed by ISO"),
+)
+
+
+def usa_map(status: dict, title: str = "") -> str:
+    """One square per jurisdiction, coloured by the worst outcome seen there.
+
+    `status` maps a jurisdiction to one of `MAP_STATES`. Anything absent is
+    drawn `untested`, which is a real answer and the most common one early on.
+    """
+    cell, gap = 34, 4
+    cols, rows = 11, 8
+    w = cols * (cell + gap)
+    h = rows * (cell + gap) + 46
+    colour = {k: c for k, c, _ in MAP_STATES}
+    body = []
+    for juris, (r, c) in sorted(TILES.items()):
+        st = "absent" if juris == "HI" else status.get(juris, "untested")
+        fill = colour.get(st, colour["untested"])
+        x, y = c * (cell + gap), r * (cell + gap)
+        dark = st in ("differs", "refused", "agrees")
+        body.append(
+            f'<rect x="{x}" y="{y}" width="{cell}" height="{cell}" rx="4" '
+            f'fill="{fill}"><title>{escape(juris)} - '
+            f'{escape(dict((k, d) for k, _, d in MAP_STATES).get(st, st))}'
+            f'</title></rect>'
+            + _t(x + cell / 2, y + cell / 2 + 4, juris, 11,
+                 "#fff" if dark else MUTED, "middle", "600"))
+
+    # Legend, only for the states actually present, so it never explains a
+    # colour that is not on the map.
+    seen = {status.get(j, "untested") for j in TILES if j != "HI"} | {"absent"}
+    lx, ly = 0, rows * (cell + gap) + 16
+    for key, col, label in MAP_STATES:
+        if key not in seen:
+            continue
+        body.append(f'<rect x="{lx}" y="{ly - 8}" width="9" height="9" rx="2" '
+                    f'fill="{col}"/>')
+        body.append(_t(lx + 13, ly, label, 10.5, MUTED))
+        lx += 13 + 6.0 * len(label) + 14
+        if lx > w - 90:
+            lx, ly = 0, ly + 15
+    return _svg(w, max(h, ly + 12), "".join(body), title)
+
+
+def verdict(agree: int, differs: int, not_applicable: int, refused: int,
+            uncompared: int = 0) -> str:
+    """The one-screen answer: how much agrees, and what the worst problem is.
+
+    **`not applicable` is drawn in its own colour and never inside the failure
+    segment.** Conflating "ISO does not offer this here" with "we got it wrong"
+    is this tool's easiest lie, and the percentage is computed over *comparable*
+    outcomes only for the same reason.
+    """
+    comparable = agree + differs
+    pct = (100.0 * agree / comparable) if comparable else 0.0
+    total = max(1, agree + differs + not_applicable + refused + uncompared)
+    w, h = 520, 132
+    body = [_t(0, 40, f"{pct:.1f}%", 40, BLUE if not differs else RED,
+               "start", "700")]
+    body.append(_t(0, 60, f"{agree:,} of {comparable:,} comparable outcomes "
+                          f"agree with ISO", 12, MUTED))
+
+    x, y, bar = 0.0, 76.0, 14.0
+    for n, col, label in ((agree, BLUE, "agrees"),
+                          (uncompared, "#9fb8d4", "rated, not compared"),
+                          (not_applicable, GREY, "not offered there"),
+                          (refused, AMBER, "engine refused"),
+                          (differs, RED, "disagrees")):
+        if not n:
+            continue
+        seg = w * n / total
+        body.append(f'<rect x="{x:.1f}" y="{y}" width="{max(seg, 1.5):.1f}" '
+                    f'height="{bar}" fill="{col}"><title>{label}: {n}</title>'
+                    f'</rect>')
+        x += seg
+
+    lx, ly = 0.0, y + bar + 18
+    for n, col, label in ((agree, BLUE, "agrees"),
+                          (uncompared, "#9fb8d4", "rated, not compared"),
+                          (not_applicable, GREY, "not offered there"),
+                          (refused, AMBER, "engine refused"),
+                          (differs, RED, "disagrees")):
+        if not n:
+            continue
+        body.append(f'<rect x="{lx}" y="{ly - 8}" width="9" height="9" rx="2" '
+                    f'fill="{col}"/>')
+        txt = f"{label} {n:,}"
+        body.append(_t(lx + 13, ly, txt, 10.5, MUTED))
+        lx += 13 + 6.0 * len(txt) + 14
+        if lx > w - 110:
+            lx, ly = 0.0, ly + 15
+    return _svg(w, max(h, ly + 10), "".join(body))

@@ -182,6 +182,64 @@ def main() -> int:
           ok_terr["verdict"] == V.MOVED,
           f"OK terrorism moved to {ok_terr.get('premium')}")
 
+    print("\nQ  THE QA PROGRAMME -- TIERS, BUDGET, VERDICT AND MAP")
+    import qa                                                 # noqa: E402
+    code, body, _ = tester.dispatch("GET", "/api/tester/qa", {}, None)
+    spec = json.loads(body)
+    check("Q1 the tiers come from scripts/qa.py, not a second list",
+          [t["id"] for t in spec["tiers"]] == sorted(qa.TIERS),
+          f"{len(spec['tiers'])} tiers; one definition, as with 'agree'")
+    unbuilt = [t["id"] for t in spec["tiers"] if not t["runnable"]]
+    check("Q2 a tier that is not built says so rather than pretending",
+          "T3" in unbuilt, f"not runnable: {unbuilt} -- each names what it needs")
+
+    # The guard has to hold on the button as well as the command line, or the
+    # budget becomes a matter of which door you came in by.
+    real = qa._spent_today
+    try:
+        qa._spent_today = lambda: qa.DAILY_STANDING - 1
+        code_over, body_over, _ = tester.dispatch(
+            "POST", "/api/tester/qa/run", {}, {"tier": "T1"})
+        code_off, _, _ = tester.dispatch(
+            "POST", "/api/tester/qa/run", {}, {"tier": "T1", "offline": True})
+    finally:
+        qa._spent_today = real
+    check("Q3 a tier over the daily budget is refused through the UI too",
+          code_over == 429,
+          f"HTTP {code_over}: {json.loads(body_over).get('detail', '')[:58]}")
+    check("Q4 ...and offline is always allowed, because it costs nothing",
+          code_off == 200, f"HTTP {code_off}")
+
+    code, body, _ = tester.dispatch("POST", "/api/tester/qa/plan", {}, {"tier": "T1"})
+    plan = json.loads(body)
+    check("Q5 the matrix can be seen without running it",
+          code == 200 and len(plan["scenarios"]) == plan["cost"]["scenarios"],
+          f"{len(plan['scenarios'])} scenarios, {plan['cost']['live_calls']} "
+          f"calls if run live")
+
+    code, body, _ = tester.dispatch("GET", "/api/tester/qa/summary", {}, None)
+    summ = json.loads(body)
+    check("Q6 the verdict and the map are inline SVG with no external asset",
+          summ["verdict"].startswith("<svg") and summ["map"].startswith("<svg")
+          and "http" not in summ["map"],
+          f"verdict {len(summ['verdict'])}b, map {len(summ['map'])}b")
+
+    # A missing tile would silently drop a jurisdiction from the picture.
+    missing = sorted(set(V.Declared.jurisdictions()) - set(charts.TILES))
+    check("Q7 every jurisdiction has a tile on the map", not missing,
+          "HI is drawn and permanently blank because ISO does not file it"
+          if not missing else f"missing: {missing}")
+
+    # not-applicable must never colour a tile as a failure.
+    roll = store.qa_rollup()
+    softened = [j for j, v in roll["status"].items() if v == "partial"]
+    check("Q8 'not offered here' softens a tile, never fails it",
+          all(v in ("differs", "refused", "agrees", "uncompared", "partial",
+                    "untested") for v in roll["status"].values()),
+          f"{roll['counts']['not_applicable']} not-applicable outcomes; "
+          f"{len(softened)} tile(s) softened to 'partial'")
+
+
     print("\nE  THE STORE, AND THE LONG VIEW BUILT FROM IT")
     tmp = Path(tempfile.mkdtemp(prefix="tester-store-"))
     real = store.RESULTS

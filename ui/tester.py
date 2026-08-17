@@ -165,6 +165,23 @@ def _qa_spec(query=None) -> tuple:
     }), "json"
 
 
+def _qa_summary(query) -> tuple:
+    """The one-screen answer: a verdict, a map, and what changed since last time."""
+    tier = (query or {}).get("tier") or ""
+    if isinstance(tier, list):
+        tier = tier[0] if tier else ""
+    roll = store.qa_rollup(tier)
+    c = roll["counts"]
+    return 200, json.dumps({
+        **roll,
+        "verdict": charts.verdict(
+            agree=c["agrees"], differs=c["differs"],
+            not_applicable=c["not_applicable"], refused=c["refused"],
+            uncompared=c["uncompared"]),
+        "map": charts.usa_map(roll["status"]),
+    }), "json"
+
+
 def _qa_plan(body) -> tuple:
     """The matrix a tier would run, without running it -- the button's `--plan`."""
     import qa
@@ -362,6 +379,8 @@ def dispatch(method: str, path: str, query: dict, body):
             return _defects()
         if path == "/api/tester/qa":
             return _qa_spec(query)
+        if path == "/api/tester/qa/summary":
+            return _qa_summary(query)
         if path.startswith("/api/tester/curve/"):
             return _curve(unquote(path.rsplit("/", 1)[-1]))
         if path.startswith("/api/tester/run/"):
@@ -798,9 +817,9 @@ function check(){
 }
 
 // ---- the long view
-const VIEWS=[['history','Agreement over time'],['coverage','Coverage'],
-  ['curve','Premium response'],['defects','Defects']];
-let CURRENT='coverage';
+const VIEWS=[['qa','QA summary'],['history','Agreement over time'],
+  ['coverage','Coverage'],['curve','Premium response'],['defects','Defects']];
+let CURRENT='qa';
 function tabs(){
   $('views').innerHTML=VIEWS.map(([v,l])=>'<button data-v="'+v+'"'+
     (v===CURRENT?' class="on"':'')+'>'+l+'</button>').join('');
@@ -809,6 +828,22 @@ function tabs(){
 }
 function loadView(v){
   const box=$('view'); box.innerHTML='<span class="hint">loading...</span>';
+  if(v==='qa') return fetch('/api/tester/qa/summary').then(r=>r.json())
+    .then(j=>{
+      const c=j.counts, comparable=c.agrees+c.differs;
+      box.innerHTML=j.verdict
+        +'<div class="hint" style="margin:6px 0 2px">Across <b>'+j.runs+'</b> QA run(s), '
+        +'<b>'+j.scenarios+'</b> scenario(s), <b>'+j.live_calls+'</b> ISO call(s). '
+        +(comparable?'':'<b>Nothing compared against ISO yet</b> — these were offline runs, '
+          +'so there is nothing to agree with. ')
+        +'</div>'
+        +j.map
+        +'<div class="hint"><b>The map is a tile grid, not a projection.</b> Every '
+        +'jurisdiction gets the same square: Rhode Island and Texas carry one submission '
+        +'each, and drawing Texas 200 times larger would say something untrue about where '
+        +'the testing went. <b>Hawaii is drawn and permanently blank</b> — it is not in '
+        +'ISO’s corpus at all, and leaving it off would hide that.</div>';
+    });
   if(v==='history') return fetch('/api/tester/history').then(r=>r.json())
     .then(j=>{ box.innerHTML=j.chart+
       '<div class="hint">'+j.runs.length+' stored run(s). Only ISO-compared '+
