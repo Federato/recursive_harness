@@ -66,92 +66,130 @@ written before the files were measured.
 | **Four sublines** | Owners & Contractors, Railroad, Liquor, Product Withdrawal |
 | **Still blocked** | Pollution, Electronic Data, Underground Storage Tank, Special Protective — no example exists; these must be built from the declaration alone, or left until ISO supplies one |
 
-## A2 · Is an invented-but-legal risk acceptable as a test subject?
+## A2 · ~~Is an invented-but-legal risk acceptable?~~ ✅ **DECIDED 2026-08-17**
 
-**What's blocked:** multi-location, multi-class, varied exposure — three of your four stated goals.
+> **Decision: anchor on ISO's own worked examples, then extend them.**
+> Multi-class shapes follow the pattern of the **116 STC submissions carrying 2–4 classifications**;
+> multi-location is built by extending those into a second declared territory.
 
-**The situation.** Every stored submission is one location, one classification. To test multi-location
-I must **invent** a risk: two locations in different territories, two classifications, chosen
-exposures. Every value would come from ISO's declared legal set, so ISO will price it — but **it
-corresponds to no real policy anyone has written.**
+**What this means in practice.** Not real business, but **not arbitrary either** — shaped the way ISO
+shapes its own examples. Every value still comes from ISO's declared legal set, so the submission is
+one ISO will price and the comparison stays valid.
 
-**The question:** is "legal but synthetic" acceptable, or do you want these shapes to resemble
-business we actually write?
+**How results must be labelled.** *ISO-derived synthetic.* Strong enough to say *"the arithmetic is
+correct on shapes ISO itself considers representative"*; **not** strong enough to say *"we tested
+business like yours"* to a carrier. That second claim needs real profiles (see A2-follow-up below).
 
-**What it unblocks:** multi-location and multi-class testing, immediately.
+**Why not free invention.** A defect in deductible ordering is wrong on an invented risk and a real
+one identically, so free invention would find defects just as well. It is the *reporting* that
+differs: a coverage grid full of arbitrary shapes reads as more assurance than it is.
 
-**If you don't answer:** I proceed with synthetic-but-legal and label it as such. **This is the
-default I'd recommend anyway** — the arithmetic doesn't care whether the risk is real, and waiting
-for realistic shapes would block the work for weeks.
-
----
-
-## A3 · Do we test the 2027 basis now, or wait?
-
-**What's blocked:** the whole effective-date axis.
-
-**The situation.** **43 jurisdictions change basis on 1 April 2027** — minimum premiums deleted
-outright, 25 class codes withdrawn. The content is already in the corpus. We could test it today,
-seven months early.
-
-**The trade-off.** Testing early finds problems while there's time to fix them. It also spends effort
-on rules that may be amended before they take effect.
-
-**What it unblocks:** T4, and the ability to tell a carrier what changes for them next April.
-
-**If you don't answer:** I build the axis (it's needed regardless — the current inconsistency is a
-defect either way) but **do not run the 2027 tier** until you say so.
+**Left open, deliberately.** If a carrier later asks *"have you tested what I write?"*, the answer is
+still no. Re-running the same matrix against real profiles is a **second pass**, not a redesign —
+the matrix is the same, only the shapes change. Cost is roughly the live calls on the overlap.
 
 ---
 
-## A4 · New York: whose class count wins?
+## A3 · ~~Do we test the 2027 basis now, or wait?~~ ✅ **DECIDED 2026-08-17**
 
-**What's blocked:** nothing today, but every NY figure carries an asterisk.
+> **Decision: fix the effective-date axis now; probe ISO with one call before committing to any
+> 2027 testing.**
 
-**The situation.** **ISO's machine-readable content declares 1,191 class codes for New York. ISO's own
-filed manual profile says 1,181.** Same vintage, so it isn't an edition artefact. **The two sources
-ISO publishes disagree with each other by ten codes.**
+**Two things were separated, because they had different answers.**
 
-Our engine follows the machine-readable content, because that's the standing rule — the content is
-what actually rates.
+**The axis is not optional and is being fixed regardless.** Today's behaviour is inconsistent — the
+legal values offered come from one date while the engine rates at another. That is a defect whether
+or not 2027 is ever tested.
 
-**The question:** do we (a) keep rating on 1,191 and report the gap, (b) exclude the ten disputed
-codes from NY testing, or (c) raise it with ISO first?
+**Whether we then run tests at the 2027 date is deferred until one fact is known:**
+**will ISO's live service rate a future effective date at all?** If it will not, the 2027 tier has
+**no oracle** and becomes a self-consistency exercise — a completely different piece of work, and one
+that should be scoped differently. Building the tier before knowing that would be guessing.
 
-**If you don't answer:** (a) — continue on 1,191, report the discrepancy on every NY result. It's the
-current behaviour and it's honest.
+**Scheduled as Tuesday 18 August's first live call.** Today's budget is spent (92 of 150), and the
+pacing rule in §13 of the proposal says zero more today. Making an exception an hour after writing
+the rule would make the rule decorative, and waiting a day costs nothing while decisions are still
+being taken.
 
----
-
-## A5 · How real does a loss history need to be?
-
-**What's blocked:** experience rating, and therefore **schedule rating on premises/operations** —
-the last known defect (OI-89).
-
-**The situation.** Schedule rating only applies when the account's own claims experience is credible
-enough. To exercise that we need about **twenty dated fields of claims history** — losses, dates,
-policy periods.
-
-**The question:** may I generate a synthetic loss history that satisfies ISO's declared field rules,
-or do you want it based on a real (anonymised) account?
-
-**What it unblocks:** OI-89, the last item on the known-defect list.
-
-**If you don't answer:** synthetic, built from ISO's declared field rules, labelled as synthetic.
+**What is at stake, for context.** On 1 April 2027, **43 of 51 jurisdictions change basis on the same
+morning.** Rule 14 is deleted outright — classification-level minimum premiums, the per-subline
+highest-of rule, the "if any" provision and ~25 special combined mercantile classes all vanish, which
+**changes the premium on small risks.** The class list drops from **1,188 to 1,163**. Rules renumber,
+with Rule 22 and Rule 35 changing meaning entirely.
 
 ---
 
-## A6 · Am I authorised to spend the ISO call budget without asking each time?
+## A4 · ~~New York: whose class count wins?~~ ✅ **DECIDED 2026-08-17**
 
-**What's blocked:** the pace of everything.
+> **Decision: exclude the ten disputed class codes from testing.**
+> New York is tested on the **1,181 codes both ISO sources confirm**.
 
-**The situation.** §13 of the proposal sets **150 calls/day, ~220/week recurring**. Today I asked
-before each live batch. That's the right instinct for a first day and the wrong pattern for a
-programme.
+**The disagreement.** ISO's machine-readable content declares **1,191** GL class codes for New York;
+ISO's own filed manual profile says **1,181**. Same vintage — not an edition artefact, and not our
+misreading. All 20 NY territory tables carry the identical 1,191 set, so it is not a partial-table
+problem either. **This is the first case where ISO's two publications contradict each other on a
+matter of fact.**
 
-**The question:** a standing budget I work within, or explicit approval per run?
+**The consequence, stated because it is easy to miss.** Excluding the ten from the *test set* does
+not remove them from the *engine* — **our engine still rates on 1,191**, because the standing rule is
+that the machine-readable content governs. A real submission using one of those ten codes **will
+price, and will be untested.**
 
-**If you don't answer:** I keep asking before each live batch. Slower, and safe.
+**So New York results must say:** *"agrees on the 1,181 codes both ISO sources confirm"* — never an
+unqualified pass. The ten are **reachable but unverified**, and that phrasing is required on any
+New York coverage claim.
+
+**Still available later, cheaply.** The ten are testable directly: if ISO's live service prices them,
+the machine-readable content is vindicated and the manual profile is stale. About ten calls whenever
+someone wants the question closed rather than bounded.
+
+---
+
+## A5 · ~~How real does a loss history need to be?~~ ✅ **DECIDED 2026-08-17**
+
+> **Decision: synthetic, built from ISO's declared field rules, and constructed to span the
+> credibility threshold** — one history just below, one just above, one comfortably above.
+
+**Why spanning matters more than realism.** Experience rating is *statistical*: credibility depends
+on the size and volatility of the loss history relative to expected losses. **A single synthetic
+history could be constructed to produce whichever answer was wanted** — too clean and it sails past
+the threshold, too thin and it never reaches it. Testing at one point would prove nothing.
+
+Testing *across* the threshold tests the gate, which is what OI-89 is actually about: the condition
+is invisible to anyone building a submission, so a rating plan can be requested and silently not
+applied.
+
+**What this unblocks.** OI-89, the last item on the known-defect list, and with it the other side of
+the schedule-rating gate. Measured today: with the switch and a percentage set, schedule rating moves
+the premium in exactly **three jurisdictions — FL, NY and RI — and does nothing in the other 48**,
+all three confirmed against ISO's live service.
+
+**What it does not tell us.** Whether real accounts typically clear the credibility threshold. That is
+a different question, answerable only with real histories, and it is not what the defect is about.
+
+**Labelled synthetic on every result.**
+
+---
+
+## A6 · ~~Am I authorised to spend the ISO call budget without asking?~~ ✅ **DECIDED 2026-08-17**
+
+> **Decision: a standing budget of 60 live calls per day, with a weekly report.**
+> Above 60 in a day, or any new tier, needs an explicit go.
+
+**Why 60 rather than the plan's 150.** The pacing rules in §13 of the proposal set 150/day as the
+*ceiling* — the point above which traffic stops looking like ordinary use. 60 is the *working*
+budget. The constraint that matters is total spend, not per-batch permission, and a lower standing
+number preserves a real checkpoint without stalling work every time an approval is needed.
+
+**What I decide alone:** which jurisdictions, which combinations, and when within the day.
+**What I never decide:** how many. The ceiling is fixed.
+
+**What I report weekly:** calls spent, what they bought — defects found, coverage gained, questions
+settled — and a flag the moment a week runs over budget, rather than at the end of a month.
+
+**Consequence for the schedule.** The one-time calibration of ~1,050 calls now spreads over roughly
+**four to five weeks** instead of two and a half. Slower, and the pace is sustainable without anyone
+watching it.
 
 ---
 

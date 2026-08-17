@@ -937,9 +937,9 @@ ordinary use — <b>because that is what it is.</b></div>
 <div class="scroll"><table>
 <thead><tr><th>Rule</th><th>Value</th><th>Why</th></tr></thead>
 <tbody>
-<tr><td><b>Daily ceiling</b></td><td><b>150 calls</b>, hard stop</td><td>Comparable to three existing all-states comparison runs — a volume already established as normal on this account</td></tr>
+<tr><td><b>Daily working budget</b></td><td><b>60 calls</b> standing, <b>150</b> absolute ceiling</td><td>60 is authorised without asking (decision A6, 17 Aug); 150 is the point above which traffic stops resembling ordinary use. Both are our policy, not an ISO limit</td></tr>
 <tr><td><b>Inter-call spacing</b></td><td><b>20–30 s</b> average, jittered</td><td>Natural rate is 8.4 s serial. Slowing to ~25 s makes a 110-call block take ~46 min, which reads as interactive work rather than a batch</td></tr>
-<tr><td><b>Session size</b></td><td><b>≤ 60 calls</b> per sitting, two sittings a day</td><td>Two moderate blocks look like two work sessions; one long block looks like a job</td></tr>
+<tr><td><b>Session size</b></td><td><b>≤ 30 calls</b> per sitting, two sittings a day</td><td>Two moderate blocks look like two work sessions; one long block looks like a job</td></tr>
 <tr><td><b>Hours</b></td><td>Business hours, weekdays</td><td>Overnight bulk traffic is the pattern that gets noticed</td></tr>
 <tr><td><b>Weekends</b></td><td><b>Zero calls</b></td><td>Same reason</td></tr>
 <tr><td><b>Offline first, always</b></td><td>Every scenario rated offline before any call</td><td>Removes build errors, refusals and not-applicables from the live set — typically 10–20% fewer calls</td></tr>
@@ -955,30 +955,26 @@ to eleven jurisdictions. The plan below starts from that.</p>
 <thead><tr><th>Day</th><th>Live calls</th><th>Purpose</th><th>Offline work that day</th></tr></thead>
 <tbody>
 <tr><td><b>Mon 17</b></td><td><b>0 more</b><br><span class="src">92 already spent</span></td>
-<td><b>Stop calling today.</b> The day's budget is used</td>
+<td><b>Stop calling today.</b> The day's budget is used, and 92 predates the 60/day standing budget</td>
 <td>Build the offline golden baseline from the 11 jurisdictions already confirmed; identify exactly which facts still need an oracle</td></tr>
-<tr><td><b>Tue 18</b></td><td><b>110</b><br><span class="src">2 × 55, ~46 min each</span></td>
-<td><b>Mechanism matrix, group 1</b> — CA, NY, TX, FL. Deductible ordering × ILF keying: the two top-ranked failure modes</td>
+<tr><td><b>Tue 18</b></td><td><b>60</b><br><span class="src">2 × 30</span></td>
+<td><b>First call: the 2027 probe</b> — will ISO rate a future effective date at all? (decision A3). Then <b>mechanism matrix group 1</b> — CA, NY, TX, FL: deductible ordering × ILF keying</td>
 <td>Rate the full T1 matrix offline; triage everything that refuses or does nothing before spending a call on it</td></tr>
-<tr><td><b>Wed 19</b></td><td><b>110</b></td>
+<tr><td><b>Wed 19</b></td><td><b>60</b></td>
 <td><b>Mechanism matrix, group 2</b> — NJ, OH, PA, GA. The split-sibling-table states, plus the countrywide-fallback state</td>
 <td>Response-curve checks: monotonic in limits, descending in deductibles. Any kink investigated offline first</td></tr>
-<tr><td><b>Thu 20</b></td><td><b>110</b></td>
-<td><b>Boundaries and negatives</b> — referral bands above $5,000, exposure band edges, the two refer-to-company class codes, the 478 no-products classes</td>
+<tr><td><b>Thu 20</b></td><td><b>60</b></td>
+<td><b>Boundaries and negatives</b> — referral bands above $5,000, exposure band edges, the two refer-to-company class codes</td>
 <td>Confirm each refusal reason is derived from ISO's declaration rather than from our own fallback</td></tr>
-<tr><td><b>Fri 21</b></td><td><b>90</b></td>
-<td><b>Cross-state spot checks</b> — each confirmed mechanism sampled in 6 of the remaining 38 states, to catch state overrides</td>
-<td>Week's regression; harness review pass; write up findings</td></tr>
+<tr><td><b>Fri 21</b></td><td><b>60</b></td>
+<td><b>Cross-state spot checks</b> — each confirmed mechanism sampled in the remaining states, to catch state overrides</td>
+<td>Week's regression; harness review pass; <b>weekly report: calls spent and what they bought</b></td></tr>
 <tr><td>Sat 22 – Sun 23</td><td><b>0</b></td><td>—</td><td>The offline value sweep can run all weekend at zero cost</td></tr>
-<tr><td><b>Week total</b></td><td><b>420 new</b><br><span class="src">512 incl. today</span></td>
-<td colspan="2"><b>Two hours of ISO time across five days</b>, peak 110/day — under the ceiling, and less in a day than a single T1 run done in one sitting</td></tr>
+<tr><td><b>Week total</b></td><td><b>240 new</b><br><span class="src">332 incl. today</span></td>
+<td colspan="2"><b>Under 35 minutes of ISO time per day</b>, well inside the 150 ceiling. Calibration completes over four to five weeks rather than two and a half — slower, and sustainable without supervision</td></tr>
 </tbody></table></div>
 
-<div class="note"><b>What this week buys.</b> By Friday the two highest-ranked failure modes —
-deductible ordering and deductible-factor keying — are confirmed or refuted in eight structurally
-different jurisdictions, the referral paths are exercised for the first time, and roughly 40% of the
-one-time calibration is banked as permanent goldens. <b>The remaining calibration spreads across the
-following two weeks at the same pace.</b></div>
+<div class="note"><b>What this week buys.</b> The 2027 question is settled on Tuesday's first call. By Friday the two highest-ranked failure modes — deductible ordering and deductible-factor keying — are confirmed or refuted in eight structurally different jurisdictions, and the referral paths are exercised for the first time. <b>About a quarter of the one-time calibration is banked as permanent goldens</b>, with the rest spread across the following three to four weeks at the same pace.</div>
 
 <h3>13.3 If ISO does ask</h3>
 
@@ -987,7 +983,7 @@ following two weeks at the same pace.</b></div>
 <li>We are a licensed subscriber validating our implementation of ISO's own filed content against
 ISO's own service.</li>
 <li>Traffic is <b>strictly serial</b> — no concurrency, one request at a time.</li>
-<li><b>Under 150 requests a day</b>, business hours, weekdays only.</li>
+<li><b>Under 60 requests a day</b> in normal operation, never above 150, business hours, weekdays only.</li>
 <li>Every request is a <b>schema-valid submission built from ISO's own declared legal values</b> — we
 do not send anything ISO's filing would reject, and invalid combinations are refused by our harness
 before they reach the service.</li>
