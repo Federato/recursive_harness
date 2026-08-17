@@ -182,6 +182,56 @@ def main() -> int:
           ok_terr["verdict"] == V.MOVED,
           f"OK terrorism moved to {ok_terr.get('premium')}")
 
+    print("\nR  PASS 3 -- IS A 'NOT APPLICABLE' REAL, OR IS IT OURS?")
+    import qa_review as QR                                    # noqa: E402
+
+    # The detector must detect. Fed the exact shape that fooled this project
+    # for three days -- our own refusal wearing a readable reason, where ISO's
+    # files say the value is perfectly legal -- it has to say so.
+    oi91 = QR.review_not_applicable(
+        "MT", {"terrorism": "Yes"},
+        "MT declares neither a ZipCode nor a TerrorismTerritory domain")
+    check("R1 the OI-91 shape is caught: our refusal, ISO's blessing",
+          oi91["verdict"] == QR.CONTRADICTED,
+          "MT declares TerrorismCoverage=Yes, so a refusal there is ours")
+
+    # ...and it must not simply cry CONTRADICTED at everything.
+    ny = QR.review_not_applicable("NY", {"coverage_form": "Claims Made"},
+                                  "NY declares Occurrence only")
+    check("R2 ...and a real narrowing is still confirmed",
+          ny["verdict"] == QR.CONFIRMED,
+          "NY declares one coverage form, and it is not Claims Made")
+
+    # A configuration is refused when ONE control cannot be expressed. Every
+    # other control in it being legal is the normal case -- aggregating
+    # worst-first produced 20+ false findings on the first run.
+    mixed = QR.review_not_applicable(
+        "MT", {"locations": 2, "occurrence_limit": "100,000 CSL"},
+        "MT declares 1 prem/ops territory")
+    check("R3 one undeclarable control settles it; the legal ones are not "
+          "findings",
+          mixed["verdict"] == QR.CONFIRMED
+          and mixed["cause"]["control"] == "locations",
+          f"cause: {mixed['cause']['why'][:70] if mixed['cause'] else None}")
+
+    # Everything the stored runs actually refused must be ISO's narrowing.
+    rev = QR.review_runs("T1")
+    check("R4 every NOT APPLICABLE on record is ISO's, not ours",
+          rev["counts"][QR.CONTRADICTED] == 0,
+          f"{rev['reviewed']} reviewed: "
+          f"{rev['counts'][QR.CONFIRMED]} confirmed, "
+          f"{rev['counts'][QR.UNVERIFIED]} unverified")
+
+    # The pass reads ISO's CSVs, never the code that made the decision.
+    src = (ROOT / "scripts" / "qa_review.py").read_text(encoding="utf-8")
+    borrowed = [n for n in ("V.build(", "control.options(", ".resolved_values(")
+                if n in src]
+    check("R5 it re-derives independently rather than asking the same code",
+          not borrowed,
+          "reads Fields.FormField.csv and the domain CSVs directly"
+          if not borrowed else f"borrows: {borrowed}")
+
+
     print("\nM  MULTI-CLASS -- THE ARRAY TWICE, WITH DIFFERENT VALUES IN IT")
     ok = V.Declared("OK")
     base_prem = None
