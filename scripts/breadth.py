@@ -182,25 +182,25 @@ class Declared:
                 return v
         raise BreadthError(f"{self.juris} declares no numeric ZipCode")
 
-    def terrorism_place(self) -> tuple[str, str]:
-        """How this jurisdiction locates a risk for terrorism: `(field, value)`.
+    def terrorism_place(self) -> tuple[str, str] | None:
+        """How this jurisdiction locates a risk for terrorism, or None for none.
 
-        **Asked of the declaration, not of a list of state codes.** Four
-        jurisdictions -- CA, FL, NY and TX -- declare
-        `GeneralLiabilityLocation.TerrorismTerritory` against
-        `TerrorismTerritoryCode` and declare **no** `ZipCode` domain at all, so
-        their territory cannot be derived from a ZIP (E8, and an unmatched one
-        refers -- R22). The other eleven declare the ZIP and derive it.
+        **Asked of the declaration, not of a list of state codes**, so a filing
+        that moves a jurisdiction between camps changes this without an edit.
 
-        `validate.PLACE_CODED` names the same four from a measurement. Reading
-        the declaration here instead means a filing that moves a jurisdiction
-        from one camp to the other changes this without an edit.
+        **Fifteen jurisdictions file a terrorism location and all fifteen file
+        the same field**, `GeneralLiabilityLocation.TerrorismTerritory`. Four --
+        CA, FL, NY, TX -- back it with `TerrorismTerritoryCode`, whose values
+        cannot be derived from a ZIP (E8; an unmatched one refers, R22). The
+        other eleven back it with `TerritoryCodeByZipCode`. **Four plus eleven
+        is fifteen**: one population, not two (OI-91, closed 2026-08-17).
+
+        `None` is the other 36, and it means **send nothing** -- countrywide
+        reads no terrorism location, so there is no input to miss and terrorism
+        rates anyway.
         """
-        if self.values("GeneralLiabilityLocation", "TerrorismTerritory"):
-            return ("TerrorismTerritory",
-                    self.values("GeneralLiabilityLocation",
-                                "TerrorismTerritory")[0])
-        return ("ZipCode", self.zip_for())
+        tt = self.values("GeneralLiabilityLocation", "TerrorismTerritory")
+        return ("TerrorismTerritory", tt[0]) if tt else None
 
 
 # ------------------------------------------------------------------- editing
@@ -522,13 +522,17 @@ def catalogue(d: Declared) -> list[Variant]:
     # -- terrorism: the coverage that cost 18 and was missing for a week ----
 
     @add("terrorism-on", "terrorism",
-         "certified-acts terrorism, and the two ways ISO locates a risk for "
-         "it -- a declared ZIP in eleven jurisdictions, an explicit "
-         "TerrorismTerritory in the four that cannot derive one (E8/R22)")
+         "certified-acts terrorism, and the one field ISO locates a risk with "
+         "-- TerrorismTerritory in the fifteen that file it, four of them "
+         "against codes no ZIP can derive (E8/R22); nothing in the other 36, "
+         "which rate it anyway (OI-91)")
     def _(p, d):
         set_risk(p, "TerrorismCoverage",
                  d.require("GeneralLiability", "TerrorismCoverage", "Yes"))
-        field, value = d.terrorism_place()
+        place = d.terrorism_place()
+        if place is None:
+            return
+        field, value = place
         for loc in locations(p):
             loc[field] = value
 

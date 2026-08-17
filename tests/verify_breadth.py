@@ -50,6 +50,28 @@ def base_for(juris: str) -> dict:
     return json.loads(p.read_text(encoding="utf-8"))
 
 
+def _terrorism_rates_without_a_place() -> bool:
+    """OI-91: terrorism on, no location field sent, premium must move.
+
+    The claim this pins is that the 36 jurisdictions filing no
+    `TerrorismTerritory` are **not** blocked -- countrywide reads no terrorism
+    location, so there is nothing to send rather than something we cannot
+    supply. If this ever fails, the harness was right to refuse and OI-91's
+    closure was wrong.
+    """
+    import copy
+    kernel = Kernel(mode=STRICT, resolver=EditionResolver())
+    for juris in ("AK", "VT", "WY", "MT"):
+        base = base_for(juris)
+        on = copy.deepcopy(base)
+        gl(on)["TerrorismCoverage"] = "Yes"
+        before, after = kernel.rate(copy.deepcopy(base)), kernel.rate(on)
+        if not (after.complete and before.complete
+                and after.premium > before.premium):
+            return False
+    return True
+
+
 def main() -> int:
     print("Breadth acceptance -- the variant harness (no live calls)")
 
@@ -105,14 +127,19 @@ def main() -> int:
           len(with_none) > 1 and list(with_set) == ["No Deductible"],
           f"BI/PD none -> {len(with_none)} legal; PD set -> {list(with_set)}")
 
-    # C2: eleven jurisdictions locate terrorism by ZIP, four cannot (E8/R22),
-    # and the harness asks the declaration rather than a list of state codes.
-    field_ok, val_ok = ok.terrorism_place()
+    # C2: fifteen jurisdictions file a terrorism location and all fifteen file
+    # the SAME field; the other 36 file none and rate terrorism anyway (OI-91).
+    # Asked of the declaration rather than a list of state codes.
     ny = Declared("NY")
-    field_ny, val_ny = ny.terrorism_place()
+    place_ok, place_ny = ok.terrorism_place(), ny.terrorism_place()
     check("C2 terrorism is located by declaration, not by state code",
-          field_ok == "ZipCode" and field_ny == "TerrorismTerritory",
-          f"OK -> {field_ok}={val_ok}, NY -> {field_ny}={val_ny}")
+          place_ok is None and place_ny == ("TerrorismTerritory",
+                                            place_ny[1] if place_ny else None),
+          f"OK -> {place_ok}, NY -> {place_ny}")
+    check("C2b a jurisdiction that files no terrorism location rates it "
+          "anyway (OI-91)",
+          _terrorism_rates_without_a_place(),
+          "AK, VT, WY and MT: premium moves with no location field sent")
 
     # C3: a class code brings its own description and basis from ISO's tables.
     check("C3 a class code carries ISO's own description",

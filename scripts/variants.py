@@ -226,23 +226,26 @@ class Declared:
                            "PremisesOperationsTerritory")
 
     def terrorism_place(self) -> tuple[str, str] | None:
-        """`(field, value)` for locating a risk, or None if neither is declared.
+        """`(field, value)` locating a risk for terrorism, or None to send none.
 
-        Measured over all 51 as of 2026-08-01: **15 declare an explicit
-        `TerrorismTerritory`, 16 declare a `ZipCode` domain, and 20 declare
-        neither.** The four/eleven split recorded in E8/R22 was measured a
-        different way -- by which domain table the field names -- and the two
-        counts have not been reconciled (OI-91). Returning `None` is therefore
-        an honest *"this jurisdiction tells us nothing to send"*, not an
-        assertion that terrorism cannot be rated there.
+        **Exactly 15 jurisdictions file a terrorism location, and all 15 file
+        the same field** -- `GeneralLiabilityLocation.TerrorismTerritory`. Four
+        (CA, FL, NY, TX) back it with `TerrorismTerritoryCode`, whose values
+        cannot be derived from a ZIP (E8; an unmatched one refers, R22); the
+        other eleven back it with `TerritoryCodeByZipCode`. **That four/eleven
+        split is a subdivision of the fifteen, not a separate population** --
+        OI-91, closed 2026-08-17 by running both measurements side by side
+        (`scripts/erc/52_oi91_terrorism_place.py`).
+
+        `None` means **there is nothing to send, and terrorism still rates.**
+        Countrywide references `TerrorismTerritory` in zero of its rule files,
+        so the other 36 are not missing an input -- there is no input to miss.
+        The `ZipCode` fallback this used to apply was **inert**: AL, OK, GA, IA,
+        MO and TN rate terrorism identically with it and without it. It was the
+        sole cause of the 16/20 split, which says nothing about terrorism.
         """
         tt = self.values("GeneralLiabilityLocation", "TerrorismTerritory")
-        if tt:
-            return ("TerrorismTerritory", tt[0])
-        for v in self.values("GeneralLiabilityLocation", "ZipCode"):
-            if v.isdigit():
-                return ("ZipCode", v)
-        return None
+        return ("TerrorismTerritory", tt[0]) if tt else None
 
 
 # ------------------------------------------------------------------ controls
@@ -586,10 +589,10 @@ def _apply_terrorism(p, value, d, config):
         return
     place = d.terrorism_place()
     if place is None:
-        raise VariantError(
-            f"{d.juris} declares neither a ZipCode domain nor a "
-            f"TerrorismTerritory domain, so there is nothing to send that "
-            f"locates the risk (OI-91)")
+        # OI-91: 36 jurisdictions file no terrorism location and countrywide
+        # reads none, so there is nothing to send. That is not a refusal --
+        # terrorism rates, and the premium moves.
+        return
     field, val = place
     for loc in _locations(p):
         loc[field] = val

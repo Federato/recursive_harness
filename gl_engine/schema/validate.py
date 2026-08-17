@@ -38,9 +38,19 @@ from dataclasses import dataclass
 from ..interp import tree
 from ..rating.submission import from_raas
 
-#: Measured, not asserted: exactly these four declare `TerrorismTerritory`
-#: against `TerrorismTerritoryCode`. Eleven others use `TerritoryCodeByZipCode`
-#: (`scripts/erc/47_input_schema.py`, S7).
+#: Measured, not asserted: exactly these four back
+#: `GeneralLiabilityLocation.TerrorismTerritory` with `TerrorismTerritoryCode`,
+#: whose values no ZIP can derive. **Eleven others declare the same field**
+#: against `TerritoryCodeByZipCode`, and four plus eleven is the whole
+#: population of fifteen that file a terrorism location at all -- a
+#: subdivision, not two camps plus a remainder (OI-91, closed 2026-08-17).
+#: The other 36 file none, and countrywide reads none, so terrorism there is
+#: not located at all rather than located some other way.
+#:
+#: Source: `scripts/erc/52_oi91_terrorism_place.py`, M1. It previously cited
+#: `47_input_schema.py` S7, **which does not produce these numbers** -- S7 is a
+#: substring search for County/Place/Town/Borough/Parish whose own hits are
+#: `PremiumPlaceHolder` matching on "Place".
 PLACE_CODED = ("CA", "FL", "NY", "TX")
 
 ERROR = "error"
