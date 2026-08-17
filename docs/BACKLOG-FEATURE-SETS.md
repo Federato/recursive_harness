@@ -22,7 +22,7 @@ evidence.
 
 | | What it buys | Size |
 |---|---|---|
-| ~~**Re-run breadth live, OK + NY**~~ | ✅ **Done 2026-08-17 — 32 of 32 MATCH**, up from 31 and now including size-of-risk and terrorism. **Widening beyond two jurisdictions is the live gap**, ~17 calls each | **Next: medium** |
+| **Keep widening breadth live** | ✅ **Seven jurisdictions done 2026-08-17 — 112 of 115 MATCH**, and the three misses are all one defect (OI-94), found on day one of widening. **44 jurisdictions remain**, ~17 calls each | **Medium, and it pays** |
 | **Fill the coverage grid** | Still reads *1 of 19*. The honest measure of how much of the engine has ever been exercised | **Medium** |
 | ~~**Close the rounding question — OI-70**~~ | ✅ **CLOSED 2026-08-17.** Four engineered ties, four live calls, four agreements — **ISO rounds half-up**. The *"truncate to four digits then round"* hypothesis was tested too: **0 of 432** operations change | **Done** |
 | **Form attachment — item 6, OI-83** | **508 of 570 packages ship sample submissions**, 510 JSON files, and **nothing currently tests form attachment at all** | **Medium–large** |
@@ -33,13 +33,14 @@ differences to adjudicate. On one risk shape there are none.
 
 ---
 
-## B · The last defect
+## B · Defects
 
 **D1/OI-88 and D2/OI-91 both closed 2026-08-17.** One item remains of *known wrong*, and the
 terrorism work raised one new one.
 
 | | Why it matters | Size |
 |---|---|---|
+| **OI-94 — a null loss cost does not stop the rating** `HIGH` `NEW` | **Raised 2026-08-17 by widening breadth, and the mirror of OI-88** — there we refused where ISO rated; here **we rate where ISO refuses.** ISO's own engine 400s on the missing `PremOpsSizeOfRiskLossCost` row; we exhaust to null via C6 and finish the premium. **14 of 51 jurisdictions**, 3 confirmed live, 11 inferred. Eight return the identical `6845` on different bases. **Needs an explicit go** — it turns 14 jurisdictions from rating to refusing | **Small fix, large consequence** |
 | **OI-89 / D3 — schedule rating gate** `MEDIUM` | Not a wrong number — ISO's own rule. But a plan can be **requested and silently not applied**, and no field declaration can reveal the condition. **Now measured across all 51:** with the switch *and* a percentage set, schedule rating moves the premium in exactly **FL, NY and RI** and in **48 of 51 it does not** — all three confirmed live. Three jurisdictions override countrywide wholesale (N3); 48 hold the credibility condition. **The size of the effect is no longer unknown**; the ~20 dated experience-rating fields still are | **Medium** — needs ~20 dated experience-rating fields first |
 | ~~**OI-93 — `values()[0]` can be a no-op**~~ | ✅ **Raised and closed 2026-08-17.** `probe_no_op` returns `INERT CONTROL` / `INERT VALUE` / `MOVED`, and the sweep prints the verdict with the finding | **Done** |
 

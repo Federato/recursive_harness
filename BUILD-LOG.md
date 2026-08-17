@@ -2283,7 +2283,7 @@ All three needed a measurement.** That is the pattern worth naming.
 
 ---
 
-## Entry 21 — OI-93 closed, and breadth re-run: 32 of 32 against ISO. **NEXT SESSION STARTS HERE.**
+## Entry 21 — OI-93 closed, and breadth re-run: 32 of 32 against ISO. ~~NEXT SESSION STARTS HERE.~~ *(the live handoff is **Entry 22**)*
 
 - **Date:** 2026-08-17 *(fourth closure of the same session)*
 - **Directed:** *"do as you suggest"* — OI-93 first, then the breadth re-run, in that order and for
@@ -2396,3 +2396,106 @@ verdict.
 5. **Property exploration, reading pace only.** Unchanged since Entry 17.
 6. **Cheap:** `567 → 570` through the docs; `verify_contract_figures` re-measuring rather than
    reading cached output; an 8dp rounding site would close OI-70's last corner.
+
+---
+
+## Entry 22 — Breadth widened to seven jurisdictions, and it found what it was for. **NEXT SESSION STARTS HERE.**
+
+- **Date:** 2026-08-17
+- **Directed:** *"do it"* — widen breadth live beyond two jurisdictions
+- **Built:** nothing. **The session's most valuable output is a defect, not a fix.**
+- **Verified:** **112 of 115 comparable variants agree with ISO across seven jurisdictions**, on the
+  premium and every published field. **83 live calls.** The three that did not agree are all the same
+  defect, and it is ours.
+
+### The widening was worth it on the first day
+
+| | Result |
+|---|---|
+| **OK** | **17 of 17 MATCH** |
+| **CA** | **17 of 17 MATCH** |
+| **RI** | **17 of 17 MATCH** |
+| **NY** | **15 of 15 MATCH** — the two claims-made variants are `NOT BUILT`, NY declaring `Occurrence` as its only coverage form |
+| **TX** | 16 of 17 — **ISO refused `size-of-risk`** |
+| **GA** | 16 of 17 — **ISO refused `size-of-risk`** |
+| **FL** | 16 of 17 — **ISO refused `size-of-risk`** |
+
+**Two states in the morning, seven by the evening**, and the jurisdictions were chosen to differ
+structurally rather than to be easy: CA and TX file their own rule sets, GA takes all fourteen
+deductible tables from countrywide, FL and RI are two of the three where schedule rating applies.
+
+### 1. The 400 was not a validation complaint
+
+**ISO's own rule engine failed**, and said so:
+
+> `Error running Lookup Rule at line 5411 in RuleSet
+> GeneralLiabilityClassificationPremOpsCoverageRules: Matrix: PremOpsSizeOfRiskLossCost, Keys: CW,
+> 502, 50017. No results have been found`
+
+**Our engine hits precisely the same miss** — `['GA','502','50017']`, then the countrywide retry
+`['CW','502','50017']`, both `lookup-miss`.
+
+**And then we diverge.** The `FirstNonNull` exhausts, **C6 returns null rather than raising**,
+`PremOpsLossCost = None` is written, and the rating **continues to a finished premium.**
+
+### 2. It is not OI-88's fix, and checking that was the first thing done
+
+OI-88's fix emits `first-non-null-branch-abandoned`. **This is `first-non-null-exhausted` — C6, and
+the behaviour since stage 2.** Both appear in the same trace, and the divergence is at the second.
+
+**What OI-88 did was make the path reachable.** Size-of-risk refused in 49 of 51 jurisdictions until
+this morning, so this code had never run. **Closing one defect exposed another that had been
+unreachable behind it** — which is an argument for closing defects, not against.
+
+### 3. The blast radius, measured before anything was decided
+
+**14 of 51 jurisdictions write a null `PremOpsLossCost` and return a premium anyway** with
+size-of-risk on: **AR, DE, FL, GA, IL, KY, LA, MA, MN, NM, NV, PR, SC, TX.** **0 of 51 in the base
+configuration** — which is why nothing had ever seen it.
+
+**The premiums are the tell:**
+
+| Premium | Jurisdictions |
+|---|---|
+| **`6845`** | AR, DE, GA, MA, NM, NV, SC, TX |
+| **`7215`** | FL, IL, LA, MN |
+| `6560` · `6861` | KY · PR |
+
+**Eight states return the identical premium** on different base premiums — GA's base is 7366, TX's is
+7821. **A premium that does not depend on the state's loss cost is complete, plausible and wrong**,
+which is the exact failure mode this engine exists to refuse.
+
+Three of the fourteen are **confirmed** against ISO. The other eleven are **inferred** from an
+identical trace, and are labelled that way rather than counted as confirmed.
+
+### 4. Where the fix does not go
+
+**Not in `FirstNonNull`, and not in C6.** An exhausted `FirstNonNull` returning null is correct, ISO
+relies on it, and 4,327 sites in the corpus can exhaust. Changing a language rule to catch one
+rating-level mistake would be the blunt instrument OI-88's measurement already rejected once.
+
+**A missing loss cost is not a zero-rated risk. It is an unratable one.** That belongs in the rating
+layer, as a refusal on a null loss cost.
+
+**It needs an explicit go: it turns 14 jurisdictions from rating to refusing.**
+
+### What was written
+
+| | |
+|---|---|
+| `docs/OPEN-ITEMS.md` | **OI-94** raised `HIGH`, with the measurement, the three confirmations and the eleven inferences kept apart |
+| `scripts/erc/out/breadth.csv` | The seven-jurisdiction run |
+
+### ▶ Next session
+
+1. **OI-94 — needs your go.** The measurement is done. The fix is a refusal in the rating layer on a
+   null loss cost, **not** a change to `FirstNonNull`. Expect it to turn 14 jurisdictions from
+   *rating* to *refusing*, which is the correct direction and still a semantic change.
+2. **Keep widening breadth.** Seven jurisdictions found one defect on day one; **44 remain**, at ~17
+   calls each. The offline sweeps already say which configurations build everywhere, so the live
+   calls can be aimed rather than sprayed.
+3. **OI-89 / D3** — needs the ~20 dated experience-rating fields.
+4. **Give `breadth.py` the OI-93 probe**, or retire its `Declared`. Two harnesses, one behaviour
+   between them.
+5. **Fill the coverage grid** — still *1 of 19*.
+6. **Property exploration, reading pace only.** Unchanged since Entry 17.
