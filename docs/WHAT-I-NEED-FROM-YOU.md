@@ -21,26 +21,50 @@ size. Several take a single sentence from you.
 
 *These cost nothing but a sentence, and five of them unblock the largest items on the list.*
 
-## A1 · May I use ISO's own shipped sample submissions as the shape source? **← biggest single unlock**
+## A1 · ~~May I use ISO's own shipped sample submissions?~~ ✅ **DECIDED 2026-08-17**
 
-**What's blocked:** the seven unbuildable sublines *and* form-attachment testing.
+> **Decision: read them as reference, rebuild our own payloads from ISO's declared domains.**
+> Nothing of ISO's is copied into this repository.
 
-**The situation.** **508 of ISO's 570 packages ship real sample submissions — 510 files.** They are
-inside the packages we already licence. They contain realistic risk shapes for coverages we have
-never priced: liquor, contractors, pollution, railroad, product withdrawal, storage tanks.
+**Why that shape of answer.** This repo deliberately excludes ISO content — notebook outputs are
+stripped precisely because they would embed ISO's licensed values. Copying 513 ISO files into
+`Engine_Payloads/` would have reversed a principle the project already committed to. Reading them to
+learn what a real Liquor or Railroad risk *looks like*, then generating our own payload from ISO's
+declared legal values, keeps both the benefit and the principle.
 
-**Why I'm asking rather than proceeding.** They are ISO's content, and using them as the basis of our
-test corpus is a licensing judgement, not a technical one. I can read them; I don't know if we may
-*build on* them.
+### What they actually contain — measured 2026-08-17, and it is less than first claimed
 
-**What it unblocks:** subline coverage goes from **3 of 11 to potentially all 11**, and form
-attachment becomes testable for the first time. This is the single largest coverage gain available.
+**513 files across 508 packages, inputs only — no priced outputs, so they are not oracles.**
+Every case built from them still needs a live call to establish truth.
 
-**If you don't answer:** I build subline payloads from ISO's *declared domains* instead — legal, but
-the risk shapes will be plausible-looking inventions rather than ISO's own examples, and I'd have to
-say so on every result.
+| Subline | Files | Buildable today? |
+|---|---|---|
+| Premises/Operations **and** Products/Completed Operations | **473** | already buildable |
+| Premises/Operations · Products/Completed Operations | 8 each | already buildable |
+| Owners and Contractors · Railroad | 8 each | **no — this helps** |
+| Liquor | 3 | **no — this helps, thinly** |
+| Product Withdrawal | 2 | **no — this helps, very thinly** |
+| **Pollution · Electronic Data · Underground Storage Tank · Special Protective** | **0** | **no — and this does not help at all** |
 
----
+**Correction to the first draft of this document.** It claimed A1 would unblock "seven sublines".
+**It unblocks four of the eight, thinly, and leaves four with no example at all.** The figure was
+written before the files were measured.
+
+**Two further corrections:**
+
+- **Multi-location: this does *not* unblock it.** 508 of 510 submissions are single-location; exactly
+  **2** carry two locations.
+- **Multi-class: better than claimed.** **116 files carry more than one classification** — 84 with
+  two, 14 with three, 18 with four. Real evidence of how ISO shapes a multi-class risk, and the most
+  useful thing in the whole set.
+
+### What this decision unblocks
+
+| | |
+|---|---|
+| **Multi-class shapes** | 116 worked examples to model our generated payloads on |
+| **Four sublines** | Owners & Contractors, Railroad, Liquor, Product Withdrawal |
+| **Still blocked** | Pollution, Electronic Data, Underground Storage Tank, Special Protective — no example exists; these must be built from the declaration alone, or left until ISO supplies one |
 
 ## A2 · Is an invented-but-legal risk acceptable as a test subject?
 
