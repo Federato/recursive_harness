@@ -26,7 +26,7 @@ against ISO's own rating service.
 | [TESTING.md](TESTING.md) | **Every command, stage by stage.** Each one has been run and its stated output verified |
 | [docs/OPEN-ITEMS.md](docs/OPEN-ITEMS.md) | **OI-1 to OI-94.** Resolved items are kept and marked, not deleted |
 | [docs/WHERE-WE-PAUSED-2026-08-12.md](docs/WHERE-WE-PAUSED-2026-08-12.md) | The 12 August session, read cold. **Superseded** — everything after it is in the build log |
-| [docs/PRD-GL-RATING-ENGINE.md](docs/PRD-GL-RATING-ENGINE.md) | Full status and history. §0 is the latest update |
+| [docs/PRD-GL-RATING-ENGINE.md](docs/PRD-GL-RATING-ENGINE.md) | What's built, verified, and in scope today — for a third party getting up to speed. Not the backlog; see `OPEN-ITEMS.md` for that |
 | [docs/GL-RATING-ENGINE-BUILD-PLAN.md](docs/GL-RATING-ENGINE-BUILD-PLAN.md) | The technical plan — architecture, the 18 non-negotiables, deviation constraints C1–C3 |
 | [docs/FROM-PLANNING-TO-BUILD.md](docs/FROM-PLANNING-TO-BUILD.md) | Did the analysis pay off? Written *before* each stage, so it is allowed to be wrong |
 | [PROCESS_LOG.md](PROCESS_LOG.md) | The full analysis record, 51 steps. Closed — the build is logged in `BUILD-LOG.md` |

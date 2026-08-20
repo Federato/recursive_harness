@@ -1,70 +1,26 @@
-# General Liability Rating Engine — Product Requirements & Progress
+# General Liability Rating Engine — Product Requirements & Current Build
 
-**A plain-language document.** What we are building, why it is harder than it sounds, every step
-we have taken to get here, what we found along the way, and what remains.
+**A plain-language document, written for a third party picking this project up.** What this
+software does, why the problem is harder than it looks, how it was built and independently
+verified, exactly what is built and confirmed today, and how to reproduce that verification
+yourself.
 
-**Last updated 2026-08-13.** If you read this before, **§0 below is the summary of what has
-changed** — **all six stages of the engine are built**, and it now agrees with ISO's own live rating
-service on fifty jurisdictions.
+**This document describes the built system, not the backlog.** For what remains, see
+[`OPEN-ITEMS.md`](OPEN-ITEMS.md) and [`START-HERE-TOMORROW.md`](START-HERE-TOMORROW.md). For the
+day-by-day build history, see [`BUILD-LOG.md`](../BUILD-LOG.md).
 
-**Note, 2026-08-18:** §0 below still describes the engine's own progress and is current as far as it
-goes. What it does not cover is a day of harness/UI work done since — a layered test programme with
-its own page, an aggregate view with a verdict per layer, and a per-run review page that needs no API
-key. None of it changes what the engine does; all of it is in `BUILD-LOG.md` Entries 29–33 and
-`docs/UI-STRATEGY.md`.
-
-No prior knowledge of insurance rating or of this project is assumed. Technical detail lives in
-the documents referenced at the end.
+No prior knowledge of insurance rating or of this project is assumed.
 
 ---
 
-## 0. What changed today
-
-**Updated 2026-08-17.** Four defects closed, one raised and closed the same day, the project's oldest
-open question settled — and a QA programme proposed to cover all 51 jurisdictions properly.
-
-**Four defects closed, and not one of them needed a decision — every one needed a measurement.**
-
-| | |
-|---|---|
-| **OI-88** | A countrywide fallback that could never be reached. **Size-of-risk was rating correctly in zero of 51 jurisdictions**; it now rates in 37 and refuses in 14, exactly as ISO does |
-| **OI-91** | Two terrorism counts recorded as irreconcilable for three days. They reconcile exactly — **4 + 11 = 15**, one population and not two. **Terrorism went from 31 jurisdictions to 51** |
-| **OI-70** | The oldest open question in the project. **ISO rounds half-up**, settled on four engineered ties. A competing *"truncate to four digits"* hypothesis was tested and changes **0 of 432** operations |
-| **OI-93** | Raised and closed the same day — **a defect in the measuring apparatus itself.** A variant could rate, report as tested, and exercise nothing |
-| **OI-94** | The mirror of OI-88: **we rated where ISO refuses.** A null loss cost produced a finished premium in 14 jurisdictions; 13 now confirmed against ISO's own 400 |
-
-**Breadth went from two jurisdictions to eleven.** **184 of 184 comparable outcomes agree** — 181
-matches on the premium *and every published field*, 3 mutual refusals counted separately, 3 not
-applicable. **The discovery rate is falling**, which is itself information: the population is still
-**one class family**, and that is now the narrowest axis rather than the jurisdiction count.
-
-**A QA programme is proposed** — [`qa-plan-proposal_20260817.html`](qa-plan-proposal_20260817.html),
-sized from ISO's own declared content by three specialist agents reading three different sources.
-Its central finding: **build two matrices, not one.** A value sweep verifies every filed rate cell
-(**278,054**, offline, no ISO calls); a logic matrix verifies behaviour (**~2,500 scenarios**,
-because most axes turn out to be keyed on another). The naive cross-product is **1.94 × 10¹⁶** and is
-quoted only as the argument against itself.
-
-**Six decisions were taken on how that programme runs** — recorded in
-[`WHAT-I-NEED-FROM-YOU.md`](WHAT-I-NEED-FROM-YOU.md): ISO's shipped sample submissions are read as
-reference but never copied into this repository; test shapes anchor on ISO's own 116 multi-class
-worked examples; the effective-date axis is fixed now but the 2027 basis is probed before it is
-tested; New York's ten disputed class codes are excluded from testing; loss histories are synthetic
-and **span the credibility threshold** rather than sitting at one point; and live ISO calls run to a
-**standing budget of 60 a day** with a weekly report.
-
-**One thing found that is ISO's, not ours.** In **13 jurisdictions ISO's own rating service returns a
-400** — not a validation complaint but its rule engine failing to find a row in its own table. Our
-engine now refuses the same submissions for the same reason. **ISO probably does not know.**
-
-## 1. What we are building, in short
+## 1. What this is
 
 A piece of software that takes a description of a business — what it does, where it is, how big
 it is, how much coverage it wants — and returns the **price** for a General Liability insurance
 policy, along with a full explanation of how that price was reached.
 
-Today, producing that price requires a person to read a large printed manual and apply dozens of
-rules by hand. We are automating it.
+Producing that price has historically required a person to read a large printed manual and apply
+dozens of rules by hand. This automates it.
 
 **Two things make it more than a calculator.** First, the price must be *defensible* — an
 insurance regulator can ask why a policy cost what it cost, and the answer has to point at a
@@ -84,11 +40,10 @@ exception pages for each of 51 US jurisdictions, and a separate publication of t
 *prices* for each jurisdiction. All three are revised on different schedules. To price one
 policy you need the right version of all three, as of the right date.
 
-**The national layer has the method but almost none of the money.** This surprised us. The
-national rulebook explains *how* to calculate, and then says, in its own words, that the actual
-factors *"are displayed in the state exceptions."* We later confirmed this in the data: in the
-national package, the five key pricing tables contain **zero rows**. Every real number comes from
-a state.
+**The national layer has the method but almost none of the money.** The national rulebook
+explains *how* to calculate, and then says, in its own words, that the actual factors *"are
+displayed in the state exceptions."* This is confirmed in the data: in the national package, the
+five key pricing tables contain **zero rows**. Every real number comes from a state.
 
 **Blank does not mean zero.** The price tables are grids of business types against prices, and
 more than a third of the cells contain something other than a number — a dash meaning *"we do not
@@ -102,163 +57,120 @@ national list today.
 
 ---
 
-## 3. How we got here
+## 3. How it was built — the method
 
-Sixteen steps, grouped into five stages.
+The engine was built from two independent sources of ISO's content, cross-checked against each
+other and then against ISO's own live rating service. Anyone replicating this approach should
+expect to encounter the same structural traps; they are recorded here because each one changes
+how the software has to be written, not just what it computes.
 
-### Stage one — read the rulebooks (Steps 1–5)
+### Two sources, read independently, then compared
 
-We collected **503 rules manuals** covering all 51 jurisdictions from 2021 to 2027, converted
-them to searchable text, and worked out how the program is structured: which rules exist, how
-each state modifies them, and how the pieces fit together.
+ISO publishes the same rating program twice: as **printed manuals** (PDF, ~503 rules documents
+and ~472 loss-cost documents across 51 jurisdictions) and as **machine-readable data files**
+(567 packages, ~87,000 files — structured tables and executable rule definitions). Both were
+obtained and analysed **in isolation from each other** — the team reading the data files had no
+access to conclusions already drawn from the PDFs, and vice versa. Where the two independently
+reached the same conclusion, that agreement is real evidence rather than an echo: identical
+territory counts and lists, identical classification-revision numbers (229 codes retired, 204
+added), national factor tables matching digit for digit.
 
-The output was a build-ready specification — 14 documents plus appendices, with every claim
-traceable to a named page of a named document.
+Each source also corrected the other. The data files supply exact package identity and filing
+dates, closing a dating gap in the PDF-only analysis. The PDF manuals supply *meaning* the data
+files don't carry on their own — most importantly, that the data files encode **"refer to an
+underwriter" as the literal number `0`** in places (confirmed in at least eight places; for
+drones over 55 lbs specifically, the data file says `0` where the manual says *Refer To
+Company*). Software that trusts the data files alone will price those risks at $0.00 — precisely
+the risks meant to get human review.
 
-**The most important thing we found:** printed rule numbers are not reliable identifiers. The
-2027 national edition renumbered 21 rules *and reused numbers for different concepts* — Rule 22
-means one thing before 2027 and something entirely different after. Software that looks rules up
-by their printed number will one day apply the wrong rule and produce a wrong price, silently.
-
-### Stage two — find the actual prices (Step 6–7)
-
-The rules tell you how to calculate, but not what to calculate with. We then obtained **472 loss
-cost manuals** — the publications carrying the actual prices — and matched them to the rules
-manuals.
-
-*"Loss cost"* is the industry term for ISO's estimate of the expected claims cost, before an
-insurer adds its own expenses and profit margin. Each insurer applies its own multiplier on top.
-So these files get us most of the way to a price, but the final step is always the carrier's own.
-
-We also hit our first real hazard here. The standard tool for extracting tables from PDFs
-**silently scrambled the price grids** — numbers detached from their row and reattached to the
-one above. Every result looked like a plausible price. A different tool read them correctly. We
-proved which was right by arithmetic: Indiana should have 4 territories × 1,188 business types ×
-2 columns = 9,504 cells, and the correct tool returns exactly 9,504.
-
-### Stage three — a correction worth recording (Step 8)
-
-We reported that the geographic definitions — the mapping from ZIP code to rating territory —
-were missing from our source material entirely.
-
-**That was wrong, and a human caught it.** They were in the rules manuals all along, on pages we
-had not looked at. New Jersey alone carries 721 ZIP-code rows.
-
-The cause is worth stating plainly: we had searched *one* set of files, found nothing, and
-reported the result as if we had searched *both*. Every subsequent claim of "this is missing" now
-has to name what was actually searched. This became a standing rule, and it is the reason later
-stages were structured the way they were.
-
-### Stage four — a second, independent source (Steps 13–14)
-
-ISO also publishes the same program as **machine-readable data files** — structured tables and
-executable rules rather than printed pages. We obtained **567 of these packages**, about 87,000
-files.
-
-Here we did something deliberate. Rather than analyse them ourselves — knowing what we already
-believed from the PDFs, and therefore likely to go looking for confirmation — we ran the analysis
-**in isolation**. A separate process examined the data files with no access to any of the earlier
-work, and no hint about what it might expect to find.
-
-That isolation is what makes the result meaningful. When the two analyses independently reach the
-same conclusion, the agreement is evidence rather than an echo. And they did agree, repeatedly:
-
-- The national layer holds the method and none of the money — reached from prose in one, from
-  measurement in the other, then confirmed a third way.
-- The same 27 jurisdictions use ZIP-code territories — **identical lists**, no differences.
-- Territory counts match exactly (New York 20, New Jersey 15, California 11 …).
-- The classification revision — 229 codes retired, 204 added — **identical numbers** from both.
-- National factor tables match **digit for digit**.
-
-It also corrected each side. The data files closed our single biggest weakness: we had dated 264
-manuals by educated guesswork, and the data files state each package's identity and date
-exactly — **567 out of 567**.
-
-### Stage five — compare, then plan (Steps 14–16)
-
-A third independent review read both analyses, adjudicated the disagreements, and could go back
-to either source to settle them.
-
-**It found three things neither analysis had caught alone.** The most striking:
-
-> The data files encode *"refer to an underwriter"* as the number **`0`**.
->
-> For drones over 55 lbs, the manual says *Refer To Company*. The data file says `0`. Software
-> reading only the data files would price those policies at **$0.00** — precisely the risks that
-> are supposed to get human review.
-
-Neither source revealed this alone. The data file looks like a legitimate zero; the manual has no
-machine-readable form. Only holding them side by side shows what `0` actually means.
-
-We then wrote the technical build plan, and a register of everything still unresolved.
-
-### Stage six — the build rule (Step 20)
-
-A plan is only as good as its rule for what counts as evidence, and ours had not been stated. It
-has now been set, and it is deliberately strict:
+### The build rule
 
 > **Build from the data files. Use the manuals to confirm the build, not to source it. Assume
 > nothing that is not in the files. Where confirmation is needed, check the manuals. If that
 > fails, ask.**
 
-The distinction that does the work: the manual may tell us what something in the data files
-*means* — that a `0` means *refer to an underwriter*, for example. It may **not** supply a
-calculation the data files do not contain. That would be inventing a mechanism, and inventing is
-what this rule exists to prevent.
+The manuals may tell you what something in the data files *means*. They may not supply a
+calculation the data files don't contain — that would be inventing a mechanism. Following this
+rule produces a shorter build and a longer list of questions that go to the business rather than
+being answered by a silent default; that is a deliberate trade, not a shortfall.
 
-The effect is a **shorter build and a longer question list**. Ten questions now go to the
-business rather than being quietly answered by a default. That is the trade being made on
-purpose: every one of those ten is a real decision that would otherwise have been buried in
-code.
+### Coverage-by-coverage derivation
 
-### Stage seven — seven coverages, walked through one at a time (Steps 27–37)
+Each coverage (subline) is derived end-to-end from the data files, one at a time, and checked
+against the filed manual before moving to the next — never surveyed in bulk. Doing it this way
+surfaced traps that a bulk survey would have missed: the same coverage calculates differently
+depending on the policy's effective date; a state can switch a rule off by filing an *empty* one,
+and treating "empty" as "unchanged" charges a factor the state removed; validation messages carry
+parts of the calculation and cannot be skipped; a coverage may read another coverage's *working
+values*, so coverages cannot always be calculated in isolation; and the text label next to a rate
+tells you which pricing path applies — a check that has agreed with the data over 620,000 times
+without a single disagreement.
 
-**All on 2026-08-11.** With the rule set, each coverage was derived end to end from the data files
-and then checked against the filed manuals: **Premises/Operations, Products/Completed Operations,
-Owners & Contractors Protective, Liquor, Railroad Protective, the Product Withdrawal / Electronic
-Data / Cyber group, and Unmanned Aircraft.**
+### Effective-date discipline
 
-The point of doing them one at a time, rather than surveying them all, is that **each one changed
-the design**. Between them they established that the same coverage is calculated differently
-depending on the policy's effective date; that a state can switch a rule off by filing an empty
-one, and that treating "empty" as "unchanged" charges a factor the state removed; that validation
-messages carry parts of the calculation and cannot be skipped; that a coverage may read another
-coverage's *working values*, so they cannot be calculated in isolation; and that the text label
-next to a rate tells you which pricing path applies — a check that has now agreed with the data
-**over 620,000 times without a single disagreement**.
-
-**Three of the seven had no answer key** and were derived from the files alone with the manual as
-confirmation. **Two together reproduce a real ISO-priced Oklahoma policy to the dollar**, and that
-check runs as an automated test today.
-
-### Stage eight — re-measuring everything against a date (Steps 30–32)
-
-Midway through, a defect surfaced in a walkthrough filed the same morning: **every count in the
-project had been taken over each state's most recent filing**, and the data contain 82 filings that
-have not taken effect yet. Every such count described a **future** state of the world.
-
-Re-measuring against an explicit date changed conclusions, not just numbers — see §0. The defence
-built afterwards is mechanical rather than procedural: **the measurement scripts now refuse to run
-without being told what date to answer for.**
+Every measurement of "what the data contains" must be taken **as of an explicit date** — the
+corpus holds filings that have not taken effect yet, and counting them as current silently
+describes a future state of the world as the present one. The defence is mechanical: the
+project's own measurement scripts refuse to run without being told what date to answer for.
 
 ---
 
-## 4. What the product must do
+## 4. What's built and verified today
+
+**All six build stages are complete and tested** — fifteen test suites. The engine has no
+third-party dependency, and neither does the interface or the ISO comparison client.
+
+**What it can do today:**
+
+- Price a General Liability submission in any of 51 jurisdictions, for policies effective from
+  September 2022 onward.
+- Show every factor in the order it was used, with the ISO source file it came from.
+- Refuse rather than invent a number when ISO's content cannot answer.
+- Reproduce ISO's own validation messages.
+- Compare itself against ISO's live rating service, from a browser or the command line.
+
+**Seven sublines have been fully walked through, derived from the data files, and checked against
+the filed manuals:** Premises/Operations (334), Products/Completed Operations (336), Owners &
+Contractors Protective (335), Liquor Liability (332), Railroad Protective (335), the Product
+Withdrawal / Electronic Data / Cyber group (365), and Unmanned Aircraft (370). Three of the seven
+had no independent answer key and were derived from the files alone with the manual as
+confirmation; two together reproduce a real ISO-priced Oklahoma policy to the dollar, as an
+automated test.
+
+**Confirmed by ISO's own service, not just internally:**
+
+| Check | Result |
+|---|---|
+| Standard risk, all entitled jurisdictions | **50 of 50** agree on the premium and every published field |
+| Varied risks, 11 jurisdictions | **184 of 184** comparable outcomes agree |
+| Rulebook edition selection | ISO's own response header confirms the correct edition was picked, in all 50 |
+| Validation messages | Our reading of ISO's rules produces ISO's own wording |
+| ISO's own worked example (Oklahoma) | Reproduced exactly |
+| Puerto Rico | **No external confirmation of any kind** — no entitlement, no published example; every PR count is honestly *n of 50*, not *n of 51* |
+
+Outcomes are reported across four categories, kept separate on purpose: **agrees** · **differs**
+· **not applicable** (ISO does not offer this coverage here — never counted as a failure) ·
+**both refuse** (agreement, but counted separately, since calling a mutual refusal a "match"
+would inflate the number that matters).
+
+---
+
+## 5. Scope
 
 ### In scope
 
 | # | Requirement |
 |---|---|
 | R1 | Price a General Liability policy from a structured description of the risk |
-| R2 | Cover **all** sublines and coverages, built and reviewed **one at a time** — *7 of 14 walked through as of 2026-08-11* |
+| R2 | Cover sublines and coverages, built and reviewed **one at a time** — 7 walked through so far |
 | R3 | Select the correct rules and prices **as of the policy's effective date** — never "the newest" |
 | R4 | Resolve the national base and the state-specific overlay together, with the state package selecting its own national parent |
 | R5 | Produce a full audit trail: every component of the price cites the document that authorises it |
-| R6 | Treat *"refer to an underwriter"* as a normal, expected outcome — never an error, never a zero. **The data files express it *as* a zero in at least eight confirmed places**, so the engine must hold a register of those and never multiply by them |
+| R6 | Treat *"refer to an underwriter"* as a normal, expected outcome — never an error, never a zero. The engine holds a register of confirmed places the data files express this as a `0`, and never multiplies by them |
 | R7 | Run as a Python library and command-line tool |
 | R8 | Be checkable automatically against both source sets, and repairable from those findings |
-| **R9** | **Source every value from the data files.** A price component with no data-file origin cannot be produced — this is enforced by the software's own structure, not by review |
-| **R10** | **Escalate rather than assume.** Where the data files are silent and the manuals do not settle it, refer the risk and raise the question |
+| R9 | **Source every value from the data files.** A price component with no data-file origin cannot be produced — enforced by the software's structure, not by review |
+| R10 | **Escalate rather than assume.** Where the data files are silent and the manuals do not settle it, refer the risk and raise the question |
 
 ### Explicitly not in scope
 
@@ -266,274 +178,120 @@ without being told what date to answer for.**
 - **No claims, policy administration, or billing.**
 - **No pricing judgement.** The engine applies filed rules; it does not decide whether a price is
   adequate or competitive.
-- **No other lines of business yet** — though the approach is designed to extend, and most of what
-  we learned is about how ISO publishes rather than about General Liability specifically.
-- **No live connection to ISO's own rating service yet.** The connection point is designed in;
-  building it is a later phase.
-- **No filling of gaps by inference.** Where ISO's data does not say, we do not decide on its
-  behalf. Ten such questions are listed in the build plan and come to the business.
+- **No other lines of business yet** — the approach is designed to extend, and most of what was
+  learned is about how ISO publishes rather than about General Liability specifically. (This is
+  the same approach the sister Commercial Fire project, `CF_Algorithm/`, was ported to.)
+- **No live connection to ISO's own rating service for production pricing** — the connection
+  point used for verification exists; a production integration is a separate, later effort.
+- **No filling of gaps by inference.** Where ISO's data does not say, the engine does not decide
+  on its behalf.
 
 ### The honest ceiling
 
-This is the single most important expectation to set.
+This is the single most important expectation to set for anyone evaluating or extending this
+system.
 
 Of the 477 coverage units in the machine-readable data that produce a price, **18 calculate one
 from rates. 383 capture a price a human has already decided** and apply a modifier to it, and 76
-simply add other prices together. **Under 4% calculate.**
+simply add other prices together. **Under 4% calculate.** That is not a limitation of this
+software — it is what the source material contains. ISO's own data files declare roughly 5,300
+situations that must be referred to an underwriter.
 
-That is not a limitation of our software — it is what the source material contains. ISO's own
-data files declare roughly 5,300 situations that must be referred to an underwriter.
-
-**And "calculates a price" is not the same as "produces a final price."** Four of the seven
-coverages walked through so far are **company-rated**: the filed manual says, in one sentence,
+**"Calculates a price" is also not the same as "produces a final price."** Four of the seven
+sublines walked through so far are **company-rated**: the filed manual says, in one sentence,
 *"For rates, refer to company."* The data files supply a complete and correct calculation whose
 starting multiplier is a placeholder of `1`, waiting for a number only the insurer can provide.
-The engine will produce a structurally complete, fully cited figure that is **an ISO
-expected-loss value, not a market price**, until that multiplier is supplied.
+The engine produces a structurally complete, fully cited figure that is **an ISO expected-loss
+value, not a market price**, until that multiplier is supplied.
 
-**So the realistic outcome is: fully automated pricing for the core, high-volume coverages, and a
-structured, well-documented referral for the rest.** Anyone expecting end-to-end automation of
-every coverage should know now that no amount of engineering on this material produces it.
+**The realistic outcome is fully automated pricing for the core, high-volume coverages, and a
+structured, well-documented referral for the rest.** No amount of engineering on this material
+produces end-to-end automation of every coverage — the source content itself doesn't allow it.
 
 ---
 
-## 5. How we will know it works
+## 6. Verification methodology — how to reproduce these checks
 
-**This section was written before there was an external oracle. There is one now, and the answer has
-changed.**
-
-| Method | What it proves | State |
+| Method | What it proves | How to run it |
 |---|---|---|
-| **ISO's own live service** | The broadest external check. Same submission through both, compared on the premium **and every published field** | **Live.** 50 of 50 jurisdictions on a standard risk; **184 of 184** comparable outcomes across 11 jurisdictions on varied risks |
-| **ISO's own worked example** | One fully rated policy (Oklahoma) — inputs and answer | Reproduced exactly |
-| **The manual's own worked examples** | Where ISO publishes a sample calculation, we reproduce it | Used, with a caveat: **the manual's own examples are sometimes internally inconsistent with its own tables**, so they are evidence and not gospel |
-| **Same risk, every jurisdiction** | Every difference must name the rule responsible | Done; and it is now the *limiting* factor rather than the proof |
-| **Cross-source agreement** | Where ISO's machine-readable content and its filed manuals agree independently | Used. **Where they disagree, that is the finding** — see New York in §7 |
-| **Automated review** | Expert agents audit each price and cite the authority for every objection | Four agents, one per source, plus one that spans them |
-| **The harness reviewing itself** | That a test *exercised* something, rather than merely rating | **Added 2026-08-17.** `INERT CONTROL` / `INERT VALUE` / `MOVED` |
+| **ISO's own live service** | The broadest external check — same submission through both, compared on the premium *and every published field* | See `TESTING.md`; the ISO comparison client is in the CLI tooling |
+| **ISO's own worked examples** | Fully rated real policies (54 across 50 states, one per state) with inputs and answer | `Payloads/` holds the input for each; the Oklahoma case runs as an automated test |
+| **The manual's own worked examples** | Where ISO publishes a sample calculation, it's reproduced | Used as evidence, with a caveat: the manual's own examples are sometimes internally inconsistent with its own tables |
+| **Cross-source agreement** | Where ISO's machine-readable content and its filed manuals agree independently | Documented per-subline in `docs/gates/` and `GL_Algorithm/` |
+| **Same risk, every jurisdiction** | Every difference between the engine and ISO must name the rule responsible | Run via the test harness; see `docs/UI-STRATEGY.md` for the layered test programme and its review page |
+| **The harness reviewing itself** | That a test *exercised* something, rather than merely rating | Structural markers `INERT CONTROL` / `INERT VALUE` / `MOVED` flag tests that ran but proved nothing |
 
-**The design point still holds, and got sharper.** The dangerous failures are silent — they produce a
-believable number rather than an error. Two examples from a single day:
-
-- **OI-94** produced a *finished premium* from a missing loss cost in 14 jurisdictions. Eight of them
-  returned the identical number on different base premiums. Complete, plausible, and wrong.
-- **OI-93** was a defect in the *test harness*: a variant that rated, reported as tested, and
-  exercised nothing.
-
-**Which is why "it agrees" is not sufficient on its own, and the reporting keeps four outcomes apart:**
-agrees · differs · **not applicable** (ISO does not offer this here — never a failure) · **both
-refuse** (agreement, but counted separately, because calling a refusal a match inflates the number
-that matters).
-
-**The proposed QA programme** ([`qa-plan-proposal_20260817.html`](qa-plan-proposal_20260817.html))
-extends this to all 51 jurisdictions across multiple locations, classes, limits and exposures. It is
-a proposal; nothing in it is built.
+To set up an environment to run these checks yourself, see the **Environment** section of
+`README.md` — the engine reads the ERC data corpus from outside the repository (ISO's licensed
+content is never committed; see `.gitignore`), at a path set by the `GL_ERC_ROOT` environment
+variable.
 
 ---
 
-## 6. Delivery plan
+## 7. Documentation map
 
-| Phase | What happens | Reviewable output |
-|---|---|---|
-| **0–1** | Foundations: load all 567 data packages, verify every one | Load report; all checks passing |
-| **2** | Version resolution: the right national and state versions for any date | Proof that date-based selection is correct |
-| **3** | Meanings layer: what the symbols mean, geography, rounding | Territory resolution working |
-| **4** | **First coverage — Premises/Operations** | **Algorithm walkthrough + state deviations, presented to you** |
-| **5** | Automated review loop live | Findings on the first coverage, and their resolution |
-| **6** | **Size-Of-Risk** — moved here 2026-08-11 at your direction | Required before the Electronic Data and Cyber coverages can be built; they read its output |
-| **7–13** | Remaining coverages, one per phase | Same presentation for each |
-| **14–16** | State-specific coverages · capture handling · whole-policy assembly | End-to-end policy pricing |
-| **17** | Connection to ISO's service | *Later — but see below* |
+**Technical specification, derived from the source material:**
 
-> **Phase 17 is now worth bringing forward.** It was scheduled last because we believed there was
-> one priced example to check against. There are **54, covering 50 states**, already on disk. Most of
-> the completed coverages can therefore be checked against ISO's own answers **before** any
-> connection to their live service — which is the cheapest confidence available and does not depend
-> on anyone at ISO. The connection itself is still needed for the two things the examples cannot
-> settle: the rounding tie-break, and loss history for experience rating.
-
-**At each coverage phase you will be shown:** the calculation as ordered steps with its source
-citations; every input it needs; which lookups come from the national layer and which from the
-state; **which jurisdictions deviate and exactly how**; every situation that produces a referral;
-and what it cannot price, with the reason.
-
-Nothing is considered finished until that walkthrough is accepted.
-
----
-
-## 7. Risks and open questions
-
-| Risk | Plain meaning | How we handle it |
-|---|---|---|
-| **Rounding rules are not written down** | The data declares where to round 7,682 times but never says *how*. Rounding up versus to-even changes the final price | Make it a configurable setting, flag every place we had to choose, and let ISO's service settle it |
-| ~~21 jurisdictions have no geographic mapping~~ **Resolved** | We thought a fifth of the country couldn't be priced. In fact 20 of those states have only **one** territory, so there is nothing to look up — 19 use code `001`, North Carolina uses `002`. The other four (CA, FL, NY, TX) organise by county and city name, and those tables exist too | All 51 now resolve. The only remaining need is turning a street address into a county or city name for those four states |
-| ~~**`0` may mean "refer" elsewhere too**~~ **Largely resolved, and bigger than we thought** | A `0` in these files has turned out to have **seven distinct meanings** — a real factor, an unpublished one, a degraded referral, a switch to a different pricing path, an input-derived calculation, a genuine "no liability in this state", and a coverage the state does not offer. **Four now have a test inside the data itself**; the drone case provably does not and relies on the manual. **In the drone tables alone, 18 of 60 cells are referral markers** — nearly a third of the grid | A register of confirmed cases, consulted before any factor multiplies — never a scan, because a sentinel is indistinguishable from a real zero by inspection |
-| **Some price factors have no known source** | Three multipliers appear in the calculation with no table behind them | Default to no effect, flag as unverified in the audit trail |
-| **We cannot yet prove every input produces a price** | We proved nothing is *missing*; we have not proved every path *finishes* | Only a working engine and ISO's service can settle this |
-| **Misfiled source files will recur** | Two packages arrived filed under the wrong state — including in the original archives, so the error came from upstream | Identify packages by their internal content, not their folder |
-
-**Eighteen of those questions now go to the business rather than to a default** — the build plan
-lists them as E1–E19, one of which was withdrawn before it was filed; up from ten as the
-coverage walkthroughs surfaced more. **Eight have dissolved on someone opening a file.** Two are not engineering at all: **`ErcCore` and ISO's
-engine specification can only come from ISO**, and the lead time starts when we ask, not when we
-need them.
-
-**The last one was decided on 2026-08-11: it is a broker question.** For drones, the manual says
-that where more than one usage category applies, the highest modifier wins; the data files accept
-only one category. **The submission will arrive with one category already chosen** — we ask the
-broker — rather than the engine taking a list and picking the maximum, which the data files do not
-authorise.
-
-That decision is safe to implement because **ISO already publishes the answer for "we don't know."**
-`Unknown` and `Not Applicable` are filed categories on all three drone rating questions, and both
-price as *refer to an underwriter*. So a broker who genuinely cannot tell has a proper way to say
-so, and the risk goes to a person instead of getting a wrong price. **Four of the inputs we
-thought were missing have now turned out to be questions for the broker rather than gaps in the
-data** — the county for four states, a workers' compensation rate for one protective coverage,
-this, and whether size-of-risk rating applies at all. In each case ISO already publishes a way to
-say *"unresolved"*, so nothing has to be invented.
-
-**Everything unresolved is tracked in a single register** — 65 items, each tagged with which
-source it came from and what would settle it.
-
-**And as of 2026-08-12 the referral conditions have a register of their own**, because they were
-scattered across eleven coverage walkthroughs and an engine cannot read prose. It holds **28
-conditions in four kinds**, and the split that matters to the business is this: **9 can be detected
-before rating even starts, 6 during rating, and 11 cannot be detected at all** — for those eleven
-the data files carry no test, so each is a decision about how the business wants to behave rather
-than something the engine can work out. Building the register **found errors in four completed
-walkthroughs**, including one finished the same morning.
-
----
-
-## 8. Where we stand
-
-**Updated 2026-08-17.**
-
-**All six stages are built and tested.** Fifteen test suites. The engine has no third-party
-dependency — not one — and neither does the interface or the ISO client.
-
-**What it can do today.** Price a General Liability submission in any of 51 jurisdictions from
-September 2022 onward; show every factor in the order it was used with the ISO file it came from;
-**refuse rather than invent a number when ISO's content cannot answer**; reproduce ISO's own
-validation messages; and compare itself against ISO's live service from a browser or the command
-line.
-
-**What is confirmed by someone other than us.**
-
-| | |
+| Document | Contents |
 |---|---|
-| Standard risk, all entitled jurisdictions | **50 of 50** agree on the premium and every published field |
-| Varied risks, 11 jurisdictions | **184 of 184** comparable outcomes agree |
-| Rulebook edition | ISO's own response header confirms we picked the right one in all 50 |
-| Validation messages | Our reading of their rules produces their wording |
-| **Puerto Rico** | **No external confirmation of any kind** — no entitlement, no published example. Every count is honestly *n of 50* |
+| `docs/GL-RATING-ENGINE-BUILD-PLAN.md` | Architecture, phases, code structure, the 18 non-negotiables |
+| `docs/rating-engine/` | The manual-derived specification — 14 documents plus appendices |
+| `docs/erc/` | The data-file-derived specification — 6 documents |
+| `docs/COMPARISON-ERC-VS-PDF.md` | The two independent analyses, compared and adjudicated |
+| `docs/gates/` | The per-subline walkthroughs — 15 documents, including the California and New York differentials and the as-of re-measurement |
 
-**What it cannot do yet, stated plainly.**
+**Rate-build-up documentation, one pair of documents per subline:**
 
-- **Hawaii is absent from ISO's corpus entirely** — not empty, absent. We do not yet know whether ISO
-  does not file GL there or our subscription excludes it.
-- **The population is still one class family.** Eleven jurisdictions is broad; class `50017`,
-  premises and products, is not. **The coverage grid reads 1 of 19.**
-- **7 of 11 sublines have no buildable base submission**, so most of a GL policy has never been
-  priced.
-- **Multi-location and multi-class have no starting payload**, and 20 jurisdictions declare a single
-  territory so they cannot host a two-location test at all.
-- **No effective-date axis** — and **43 jurisdictions change basis on 1 April 2027**, with
-  classification minimum premiums deleted outright.
-- **Your own rates instead of ISO's** — deliberately last, and the reason is now sharper: the moment
-  carrier content is layered on, **no external service can confirm the answer.**
-
-**What we got wrong and corrected.** Every one is in the build log with the evidence. The pattern was
-*"something measured in one place and stated about everything"*. **2026-08-17 added a second
-pattern, and it is more useful:** five items sat on the backlog waiting for a decision when what each
-one needed was a **measurement**. Closing one made the next reachable — OI-88 exposed OI-94; OI-91
-produced OI-93 within minutes. **The queue was a stack, and the top item was hiding the rest.**
-
-## 9. A note on how this project has worked
-
-**Updated 2026-08-12, and the update is the point.**
-
-Two days ago this section said three things had been asserted confidently and turned out to be
-wrong. **Today alone added nine more**, several to work written the same morning.
-
-They are all the same mistake wearing different clothes: **something was measured in one place and
-then described as though it were true everywhere.** A folder. A filename pattern. A search term.
-The national rulebook instead of the fifty-one state ones. One directory instead of the file system.
-
-The list, in order of discovery: the geographic definitions "missing" when they were not; the
-analysis described as reproducible when the scripts lived in a temporary folder; a whole family of
-rating plans recorded as unavailable when the data files carry them in full; *"the latest filing"*
-taken to mean *"today's rules"*; a coverage's pricing basis reported absent because a search for its
-expected name found nothing; a build item measured at double its real size; a scope count two short.
-
-**And today:** a text-reading tool's failure mistaken for documents that could not be read; a
-terrorism factor checked nationally and reported as though it were the answer for all fifty-one
-states, when **fifteen file their own**; two whole coverages described without noticing California
-withdraws them; a cap described as universal when Nebraska replaces it; a state's coverage recorded
-as not pricing when it prices; **the same rating plans recorded as absent for a second time, from a
-second direction**; and — the one you caught — **fifty-three priced example policies described as
-one**, a claim that had reached two passing tests.
-
-**What is different now is that most of them were caught by a machine rather than by re-reading.**
-The counting discipline added on 11 August requires every count to name what it counted out of, and
-the referral survey built today looks for problems by scanning rather than by re-reading our own
-notes. That survey **corrected four completed walkthroughs on its first run**, one of them finished
-the same morning. The two mistakes it did not catch were both caught by you.
-
-**The honest summary is not that the project makes fewer mistakes.** It is that the mistakes are now
-usually found in hours by something automatic, rather than in months by something expensive.
-
-**The shape is identical every time.** Not carelessness, and not a conclusion drawn from too little
-evidence — a conclusion drawn from **the right evidence identified the wrong way**. A name was
-matched where a thing should have been named. Twice today the mistake was made *inside a document
-that criticises the same mistake elsewhere on the page.*
-
-Two things follow, and they pull in opposite directions.
-
-**The countermeasures work.** Every one of these was caught, none by luck: by re-deriving a figure
-instead of citing it, by two independent analyses disagreeing, or by a list contradicting another
-list. Nothing was found by review or by careful reading alone.
-
-**The rate has not fallen.** Seven coverage walkthroughs in one day produced four corrections. That
-is the argument for keeping the checks in place rather than declaring the material understood —
-and it is the honest reason the automated review loop sits at the centre of the build rather than
-at the end of it.
-
-**And the pattern was finally named precisely enough to be machine-checked.** "Reading the name
-instead of the file" was too vague — the project's own rules already said to read the file, and were
-followed. The sharper version: **a search was allowed to decide what the population was, and then a
-conclusion was drawn about that population.** Every one of the day's wrong figures was a **count or
-an absence**; not one was a misread rule. That distinction is what made a fix possible.
-
-The fix is mechanical rather than a resolution to be careful. **Every count must now be written
-"n of N", with N derived from the source rather than from the query** — a bare number hides its
-denominator and cannot be checked by a reader. A script enforces it, and on its first run it found a
-whole coverage nobody had noticed and corrected two earlier claims. **Then it caught its own fix
-making the same mistake**, which is the clearest argument available that the rule needed to be a
-machine and not a memo.
-
-**One further observation worth recording.** The single richest source of new findings today was
-**this project's own list of unfinished checks.** Two items had been written down as *"verified for
-one edition only"* and *"sampled, not corpus-wide"* — and both were re-discovered from scratch,
-at full cost, before anyone re-read the register. An audit item that says it is incomplete is a
-finding waiting to be collected cheaply.
-
----
-
-## Further reading
-
-| Document | For |
+| Document | Contents |
 |---|---|
-| `docs/GL-RATING-ENGINE-BUILD-PLAN.md` | The technical build plan — architecture, phases, code structure |
-| `docs/COMPARISON-ERC-VS-PDF.md` | The two analyses compared and adjudicated |
-| `docs/OPEN-ITEMS.md` | Everything unresolved, 67 items |
-| `docs/rating-engine/` | The manual-derived specification (14 documents + appendices) |
-| `docs/erc/` | The data-file-derived specification (6 documents) |
-| `docs/PHASE-SIZING.md` | What each build item actually contains, measured |
-| `docs/gates/` | The eleven coverage walkthroughs, the California and New York differentials, the as-of re-measurement and the reconciliation — 15 documents |
-| `GL_Algorithm/` | The seven rate-driven gates (334, 336, 335 OCP, 332, 335 Railroad, 365, 370), reformatted into a rate-build-up-and-premium documentation shape — a `RatingAlgorithms.md` and an `ERC_Tables.md` per subline, plus `gl-rating-chains.html`, 18 mermaid rate/premium flowcharts. **A reformat of the gates above, not a re-derivation** — every gap the gates hadn't settled is carried forward as a flagged node, not resolved by guessing |
-| `CF_Algorithm/` | The same documentation shape, for the sister Commercial Fire project — `GL_Algorithm`'s template |
-| `PROCESS_LOG.md` | Every step, with reasoning and corrections |
-| `scripts/erc/out/referral_register.json` | Every situation that stops and asks a human — 28 of them, with the thirteen decisions taken |
+| `GL_Algorithm/` | The seven rated GL sublines (334, 336, 335 OCP, 335 Railroad, 332, 365, 370), each as a `RatingAlgorithms.md` + `ERC_Tables.md` pair, reformatted from `docs/gates/` into a rate-build-up-and-premium shape, plus `gl-rating-chains.html` — 18 interactive mermaid flowcharts. A reformat of the gates, not a re-derivation: every gap the gates hadn't settled is carried forward as a flagged node, not resolved by guessing |
+| `CF_Algorithm/` | The same documentation shape for the sister Commercial Fire project — `GL_Algorithm`'s template |
+| `docs/GL-ALGORITHM-WRAPUP.html` | A single index page linking this PRD, the build plan, hand-off docs, and both documentation corpora |
+
+**Everything else that's built:**
+
+| Document | Contents |
+|---|---|
+| `TESTING.md` | Every command, stage by stage — each one run and its stated output verified |
+| `PROCESS_LOG.md` | The full analysis record, 51 steps |
+| `scripts/erc/out/referral_register.json` | Every situation that stops and asks a human — 28, with the decisions taken |
 | `Payloads/` | The 53 priced example policies, one per state, each with its input |
+
+**What remains, kept separately so this document stays about what's built:**
+[`OPEN-ITEMS.md`](OPEN-ITEMS.md) (the item register, OI-1 onward), [`START-HERE-TOMORROW.md`](START-HERE-TOMORROW.md)
+(pickup point and backlog), and [`WHAT-I-NEED-FROM-YOU.md`](WHAT-I-NEED-FROM-YOU.md) (decisions
+only a person can make).
+
+---
+
+## 8. Known limits of the current build
+
+Stated plainly, for anyone deciding whether this is ready for their purpose:
+
+- **Rounding is not fully settled.** The data declares *where* to round 7,682 times but not
+  always *how*; it's a configurable setting today, with every forced choice flagged in the audit
+  trail.
+- **A `0` in the data files has seven distinct meanings** — a real factor, an unpublished one, a
+  degraded referral, a switch to a different pricing path, an input-derived calculation, a
+  genuine "no liability in this state," and a coverage the state doesn't offer. Four of the seven
+  now have a test inside the data itself; not all do — see the register in `scripts/erc/`.
+- **Hawaii is absent from the corpus entirely** — not empty, absent. Whether ISO doesn't file GL
+  there or the licensed subscription excludes it is not yet known.
+- **The verified population is still narrow.** Eleven jurisdictions have been checked broadly, but
+  on one class family; seven sublines are documented in depth, out of the fuller subline list.
+  Multi-location and multi-class submissions have no starting payload yet, and 20 jurisdictions
+  declare only a single rating territory, so a two-location test can't be constructed there.
+- **No effective-date axis has been tested across an edition change** — 43 jurisdictions change
+  basis on 1 April 2027.
+- **Carrier-specific rating (your own rates instead of ISO's) is not built.** This is deliberate:
+  once carrier content is layered on top, no external service can confirm the answer independently
+  anymore, so it's the right thing to build last.
+
+None of these are hidden — each is enforced or flagged in the audit trail rather than silently
+absorbed, per R9 and R10 above.
+
+---
+
+**Document history:** originally written as a running progress log; restructured 2026-08-20 to
+describe the current build for a third party getting up to speed, rather than day-by-day change
+history. That history is preserved in full in `BUILD-LOG.md` and `PROCESS_LOG.md`.
