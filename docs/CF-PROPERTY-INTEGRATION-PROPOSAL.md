@@ -109,10 +109,16 @@ implicitly GL. Concretely, integrating CF means:
 
 | Item | Status |
 |---|---|
-| 1. Finish the groundwork (build out `cf-erc-expert`, independent cross-check, CF build plan + non-negotiables) | **Underway** |
-| 2. Reuse the engine's architecture (`cf_engine/` package) | Not started — blocked on item 1 |
+| 1. Finish the groundwork (build out `cf-erc-expert`, independent cross-check, CF build plan + non-negotiables) | **Complete** — see below |
+| 2. Reuse the engine's architecture (`cf_engine/` package) | Not started — blocked on item 1's next phase (see build plan) |
 | 3. One coverage at a time, gated | Not started — blocked on item 2 |
 | 4. Separate GL/CF testing and reporting | Not started — blocked on item 3 |
 
-**Proposed 2026-08-20. Item 1 begun the same day, at explicit direction. Nothing beyond item 1
-is authorized.**
+**Proposed and item 1 completed 2026-08-20.** `Agentic/cf-erc-expert/` now has a real,
+independently-mined knowledge base and CLI (`knowledge/*.json`, `tools/erc.py`,
+`tools/smoke_test.py`), built with no access to the manual/circular side. The first comparison
+between the two sides is `CF_Algorithm/ERC-VS-CIRCULAR-COMPARISON.md`; the resulting first-pass
+plan is `docs/CF-RATING-ENGINE-BUILD-PLAN.md`. **Nothing beyond item 1 is authorized** — the
+knowledge base itself flags that its own coverage is partial (one recent edition indexed in
+full, territory sampled not surveyed, one coverage chain traced) and should be extended before
+item 1's findings are treated as settled.
