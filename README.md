@@ -186,7 +186,7 @@ process takes about two seconds while ISO's content loads, and about one second 
 | **Running the tests** | [`TESTING.md`](TESTING.md) — **every command, phase by phase**, each one run and its output verified |
 | **Following the build** | [`BUILD-LOG.md`](BUILD-LOG.md) — the build diary · [`docs/FROM-PLANNING-TO-BUILD.md`](docs/FROM-PLANNING-TO-BUILD.md) — what each stage expected to inherit from the analysis, written **before** the stage |
 | **Building a subline** | [`docs/gates/`](docs/gates/) — the per-item gates, all filed before the build began |
-| **Browsing a subline's rate build-up visually** | [`GL_Algorithm/gl-rating-chains.html`](GL_Algorithm/gl-rating-chains.html) — 18 mermaid flowcharts across the seven rate-driven gates, open in a browser |
+| **Browsing a subline's rate build-up visually** | [`GL_Algorithm/gl-rating-chains.html`](GL_Algorithm/gl-rating-chains.html) — 23 mermaid flowcharts across the seven rate-driven gates plus Terrorism/TRIA, open in a browser |
 | **Checking a spec claim is current** | [`docs/gates/RECONCILIATION.md`](docs/gates/RECONCILIATION.md) — what the gates superseded in the two specifications, and why |
 | **Checking a *count* is current** | [`docs/gates/OI-40-ASOF-RECOUNT.md`](docs/gates/OI-40-ASOF-RECOUNT.md) — every load-bearing figure re-measured as of today, 2027-04-01 and the end state. Two survived, three needed their tense fixed |
 | **Planning the build** | [`docs/PHASE-SIZING.md`](docs/PHASE-SIZING.md) — what each build-order item actually contains, measured. **Three countrywide calculators, not two** |
@@ -222,7 +222,7 @@ Commercial Line Manuals/GL/     the source corpora — 4.1 GB, not derived from 
 C:\Projects\ISO_ERC_Files\General_Liability\   the ERC corpus — 567 packages, 87k files
                                 (separate root; 51 jurisdictions + countrywide)
 
-GL_Algorithm/                   the seven rate-driven gates, reformatted as rate-build-up
+GL_Algorithm/                   the seven rate-driven gates plus Terrorism/TRIA, reformatted as rate-build-up
                                  and premium docs plus gl-rating-chains.html (18 flowcharts) —
                                  a documentation port of docs/gates/, not new derivation
 CF_Algorithm/                   the same shape, for the sister Commercial Fire project

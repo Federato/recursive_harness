@@ -244,7 +244,7 @@ variable.
 
 | Document | Contents |
 |---|---|
-| `GL_Algorithm/` | The seven rated GL sublines (334, 336, 335 OCP, 335 Railroad, 332, 365, 370), each as a `RatingAlgorithms.md` + `ERC_Tables.md` pair, reformatted from `docs/gates/` into a rate-build-up-and-premium shape, plus `gl-rating-chains.html` — 18 interactive mermaid flowcharts. A reformat of the gates, not a re-derivation: every gap the gates hadn't settled is carried forward as a flagged node, not resolved by guessing |
+| `GL_Algorithm/` | The seven rated GL sublines (334, 336, 335 OCP, 335 Railroad, 332, 365, 370) plus Terrorism/TRIA, each as a `RatingAlgorithms.md` + `ERC_Tables.md` pair, reformatted from `docs/gates/` into a rate-build-up-and-premium shape, plus `gl-rating-chains.html` — 23 interactive mermaid flowcharts. A reformat of the gates, not a re-derivation: every gap the gates hadn't settled is carried forward as a flagged node, not resolved by guessing |
 | `CF_Algorithm/` | The same documentation shape for the sister Commercial Fire project — `GL_Algorithm`'s template |
 | `docs/GL-ALGORITHM-WRAPUP.html` | A single index page linking this PRD, the build plan, hand-off docs, and both documentation corpora |
 

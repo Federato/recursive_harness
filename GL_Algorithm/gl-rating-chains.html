@@ -268,6 +268,15 @@
       <button class="navlink" data-target="uav-cova">Coverage A · BI/PD<span class="chain-len">13-step chain</span></button>
       <button class="navlink" data-target="uav-covb">Coverage B · PAI<span class="chain-len">13-step chain, no deductible term</span></button>
     </div>
+    <hr>
+    <div class="group">
+      <div class="group-label">Terrorism (TRIA)</div>
+      <button class="navlink" data-target="terr-premops">Prem/Ops<span class="chain-len">3 siblings summed · 15-state branch</span></button>
+      <button class="navlink" data-target="terr-products">Products/Completed Ops<span class="chain-len">3 siblings summed · 15-state branch</span></button>
+      <button class="navlink" data-target="terr-allother">All Other Sublines<span class="chain-len">5 siblings summed · fixed Average class</span></button>
+      <button class="navlink" data-target="terr-uav">Unmanned Aircraft<span class="chain-len">2 siblings summed · Cov A/B</span></button>
+      <button class="navlink" data-target="terr-endorsement">Endorsement-only<span class="chain-len">user input x validated factor</span></button>
+    </div>
 
     <div class="legend">
       <h4>Reading the chains</h4>
@@ -290,13 +299,14 @@
       <table class="matrix">
         <caption>Click a cell to open its decision chain</caption>
         <thead>
-          <tr><th>Subline</th><th>Chain 1</th><th>Chain 2</th><th>Chain 3</th><th>Chain 4</th></tr>
+          <tr><th>Subline</th><th>Chain 1</th><th>Chain 2</th><th>Chain 3</th><th>Chain 4</th><th>Chain 5</th></tr>
         </thead>
         <tbody>
           <tr>
             <th>Premises/Operations</th>
             <td><button class="cell" data-target="premops-cw23">CW 2023 and earlier<span class="n">41 steps · golden 976</span></button></td>
             <td><button class="cell" data-target="premops-cw27">CW 2027 and later<span class="n">med-pay folds into ILF</span></button></td>
+            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
             <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
             <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
           </tr>
@@ -306,6 +316,7 @@
             <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">edition-stable — one chain</span></td>
             <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
             <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
+            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
           </tr>
           <tr>
             <th>Owners &amp; Contractors Protective</th>
@@ -313,11 +324,13 @@
             <td><button class="cell" data-target="ocp-15191">CW 2023, class 15191<span class="n">WC-derived ELP</span></button></td>
             <td><button class="cell" data-target="ocp-legacy">CW 2023, classes 27111/27112<span class="n">100-unit breakpoint</span></button></td>
             <td><button class="cell" data-target="ocp-cw27">CW 2027 and later<span class="n">12 steps</span></button></td>
+            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
           </tr>
           <tr>
             <th>Liquor Liability</th>
             <td><button class="cell" data-target="liquor-main">ELP-only chain<span class="n">16 steps · no loss cost</span></button></td>
             <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">edition delta noted in-page</span></td>
+            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
             <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
             <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
           </tr>
@@ -327,6 +340,7 @@
             <td><button class="cell" data-target="railroad-mixed">Class 40011, mixed-hazard<span class="n">weighted average</span></button></td>
             <td><button class="cell" data-target="railroad-40013">Class 40013<span class="n">highway, no add-on</span></button></td>
             <td><button class="cell" data-target="railroad-40014">Class 40014<span class="n">derived, not tabulated</span></button></td>
+            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
           </tr>
           <tr>
             <th>Product Withdrawal / Cyber</th>
@@ -334,6 +348,7 @@
             <td><button class="cell" data-target="pw-covb">Coverage B · Liability<span class="n">9 steps, own factor</span></button></td>
             <td><button class="cell" data-target="pw-limited">Limited Prod. Withdrawal<span class="n">11+43 rules</span></button></td>
             <td><button class="cell" data-target="pw-loedcyber">LoED / Cyber Incident Liab.<span class="n">2 hosts each</span></button></td>
+            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
           </tr>
           <tr>
             <th>Unmanned Aircraft</th>
@@ -341,6 +356,15 @@
             <td><button class="cell" data-target="uav-covb">Coverage B · PAI<span class="n">13 steps, no deductible</span></button></td>
             <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
             <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
+            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
+          </tr>
+          <tr>
+            <th>Terrorism (TRIA)</th>
+            <td><button class="cell" data-target="terr-premops">Prem/Ops<span class="n">3 siblings summed</span></button></td>
+            <td><button class="cell" data-target="terr-products">Products/CompldOps<span class="n">3 siblings summed</span></button></td>
+            <td><button class="cell" data-target="terr-allother">All Other Sublines<span class="n">5 siblings, fixed Average</span></button></td>
+            <td><button class="cell" data-target="terr-uav">Unmanned Aircraft<span class="n">2 siblings summed</span></button></td>
+            <td><button class="cell" data-target="terr-endorsement">Endorsement-only<span class="n">user input x factor</span></button></td>
           </tr>
         </tbody>
       </table>
@@ -1247,6 +1271,252 @@ flowchart TD
           </ul>
         </div>
         <div class="delta openq"><strong>Open question.</strong> The gate doc states only that "Coverage B drops the deductible term" from Coverage A's formula; it does not reproduce Coverage B's `SetPremium` expression verbatim. The formula shown assumes the term is simply omitted and `ILF` is used un-adjusted — confirm the literal expression if bit-exact reproduction is required.</div>
+      </div>
+    </section>
+
+    <!-- ============================= TERRORISM · PREM/OPS ============================= -->
+    <section class="sheet-view" id="view-terr-premops">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Terrorism / Certified Acts (TRIA) — Prem/Ops host (GL Rule 55)</span></div>
+        <div class="field"><span class="k">Edition</span><span class="v">GL_CW_20260101_V01, cross-checked against the other two declared parents (GATE-TERRORISM.md header)</span></div>
+        <div class="field"><span class="k">Master chain</span><span class="v">Premium-on-premium multiplier — no base rate, ELP, or loss-cost step; reads 3 sibling `Premium` values plus one sibling `FinalILF`</span></div>
+        <div class="field"><span class="k">Premium file</span><span class="v">GeneralLiabilityTerrorismPremOpsCoverage</span></div>
+        <div class="field wide"><span class="k">Coverage gate</span><span class="v">Must run last in the policy — it consumes finished, already-rated premiums of sibling coverage groups (GATE-TERRORISM.md § 2, escalation E18 generalized to policy scope)</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["Terrorism Prem/Ops coverage record"]) --> sumSib["ClassCoveragePremium = PremOps.Premium + LossOfElectronicDataPremOps.Premium + CyberIncidentLiabilityPremOps.Premium - 3 named siblings, summed (GATE-TERRORISM.md Sec 2)"]:::step
+    sumSib --> classLookup["ExposureClass = lookup TerrorismExposureClassesPremises(ClassCode) - CW 105 above-average; LA/NJ/NY override"]:::step
+    classLookup --> stateGate{"State in the 15-state override list? (CA,CO,CT,FL,IL,MA,MD,MI,NJ,NY,OR,PA,TX,VA,WA)"}
+    stateGate -->|"No, 36 states"| cwFactor["ExposureClassFactor = lookup CertifiedActsOfTerrorismExposureClassFactorPremises(State,TRIAIndicator,ExposureClass) - CW: Above Average .009 / Average .004, 2.25x spread"]:::step
+    stateGate -->|"Yes, 15 states"| stFactor["ExposureClassFactor = lookup state-suffixed table(State,TRIAIndicator,ExposureClass,Territory) - 15 values .004-.133, 33x spread; NY adds a Manhattan-specific FactorOtherManhattan split (.038-.098, 5-key incl. borough); CA adds a FactorRemainderOfTerritory001 vs FactorCA split"]:::step
+    cwFactor --> nbcrGate{"NBCR applicable?"}
+    stFactor --> nbcrGate
+    nbcrGate -->|"Yes"| nbcrTrigger["Trigger condition (which endorsement/coverage selection turns this on) - not resolved in source docs"]:::openq
+    nbcrTrigger --> nbcrApply["Premium_intermediate x= CertifiedActsOfTerrorismNuclBioChemRadioFactor - CW 0.58, manual A.1.b: 'multiply the additional premium by 0.58'"]:::step
+    nbcrGate -->|"No"| nbcrSkip["No NBCR factor applied"]:::step
+    nbcrApply --> ilfGate{"Sub-limit ILF ratio applicable?"}
+    nbcrSkip --> ilfGate
+    ilfGate -->|"Yes"| ilfApply["Premium_intermediate x= (TerrorismILF / PremOps.FinalILF) - TerrorismILF set by SetTerrorismILF per PEV001 A.1.c.(1)/(2) two-case limit selection"]:::step
+    ilfGate -->|"No"| ilfSkip["No sub-limit ratio applied"]:::step
+    ilfApply --> final["Premium = round(ClassCoveragePremium x ExposureClassFactor [x NBCR 0.58] [x TerrorismILF/FinalILF ratio], 0)"]:::final
+    ilfSkip --> final
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    class stateGate,nbcrGate,ilfGate gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>There is no rate build-up here at all — the "rate" input is the already-computed `Premium` and `FinalILF` of three sibling coverage groups, so this chain must be the last thing rated in the policy (GATE-TERRORISM.md § 8.1).</li>
+            <li>15 of 51 jurisdictions zero out the countrywide exposure-class-factor rows entirely and redirect to a state-suffixed, territory-keyed table with a 33x spread versus countrywide's 2.25x — this is a factor-resolution difference inside every aggregation path, not a separate premium chain.</li>
+            <li>`SetTerrorismILF` picks the sub-limit ILF two ways depending on whether the terrorism aggregate limit is at or below the policy per-occurrence limit (PEV001 A.1.c.(1)/(2)) — and the ratio divides by the host's `FinalILF`, not a terrorism-side value.</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>Open question.</strong> The exact trigger that turns the NBCR factor on (which endorsement or coverage selection) is not traced in GATE-TERRORISM.md beyond the manual citation for the 0.58 value itself — the branch condition shown is structural, not the literal test.</div>
+      </div>
+    </section>
+
+    <!-- ============================= TERRORISM · PRODUCTS/COMPLETED OPERATIONS ============================= -->
+    <section class="sheet-view" id="view-terr-products">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Terrorism / Certified Acts (TRIA) — Products/Completed Operations host (GL Rule 55)</span></div>
+        <div class="field"><span class="k">Edition</span><span class="v">GL_CW_20260101_V01, cross-checked against the other two declared parents</span></div>
+        <div class="field"><span class="k">Master chain</span><span class="v">Same shape as Prem/Ops — 3 sibling `Premium` values summed, Products-side exposure tables</span></div>
+        <div class="field"><span class="k">Premium file</span><span class="v">GeneralLiabilityTerrorismProdsCompldOpsCoverage</span></div>
+        <div class="field wide"><span class="k">Coverage gate</span><span class="v">Same policy-last, sibling-consuming gate as Prem/Ops — runs after every other rating item including Products/Completed Operations (336) itself</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["Terrorism Products/Completed Operations coverage record"]) --> sumSibP["ClassCoveragePremium = ProdsCompldOps.Premium + LossOfElectronicDataProdsCompldOps.Premium + CyberIncidentLiabilityProdsCompldOps.Premium - inferred from the PremOps/ProdsCompldOps naming pairing, NOT individually cited in GATE-TERRORISM.md"]:::openq
+    sumSibP --> classLookupP["ExposureClass = lookup TerrorismExposureClassesProducts(ClassCode) - CW 54 above-average"]:::step
+    classLookupP --> stateGateP{"State in the 15-state override list? (CA,CO,CT,FL,IL,MA,MD,MI,NJ,NY,OR,PA,TX,VA,WA)"}
+    stateGateP -->|"No, 36 states"| cwFactorP["ExposureClassFactor = lookup CertifiedActsOfTerrorismExposureClassFactorProducts(State,TRIAIndicator,ExposureClass) - analogous Products-side table, NOT individually re-confirmed in gate doc beyond the Premises example"]:::openq
+    stateGateP -->|"Yes, 15 states"| stFactorP["ExposureClassFactor = lookup state-suffixed table(State,TRIAIndicator,ExposureClass,Territory) - same 15-state redirect, NY Manhattan split, CA remainder-of-territory split as Prem/Ops"]:::step
+    cwFactorP --> nbcrGateP{"NBCR applicable?"}
+    stFactorP --> nbcrGateP
+    nbcrGateP -->|"Yes"| nbcrTriggerP["Trigger condition - not resolved in source docs (same unresolved trigger as Prem/Ops)"]:::openq
+    nbcrTriggerP --> nbcrApplyP["Premium_intermediate x= CertifiedActsOfTerrorismNuclBioChemRadioFactor - CW 0.58"]:::step
+    nbcrGateP -->|"No"| nbcrSkipP["No NBCR factor applied"]:::step
+    nbcrApplyP --> ilfGateP{"Sub-limit ILF ratio applicable?"}
+    nbcrSkipP --> ilfGateP
+    ilfGateP -->|"Yes"| ilfApplyP["Premium_intermediate x= (TerrorismILF / ProdsCompldOps.FinalILF) - same SetTerrorismILF two-case selection"]:::step
+    ilfGateP -->|"No"| ilfSkipP["No sub-limit ratio applied"]:::step
+    ilfApplyP --> finalP["Premium = round(ClassCoveragePremium x ExposureClassFactor [x NBCR 0.58] [x TerrorismILF/FinalILF ratio], 0)"]:::final
+    ilfSkipP --> finalP
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    class stateGateP,nbcrGateP,ilfGateP gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>The gate doc names Prem/Ops's three siblings explicitly but not Products/Completed Operations's — the three shown here follow the parallel `...PremOps/...ProdsCompldOps` naming convention confirmed elsewhere in the corpus, but should be verified against the rule file before being treated as filed fact.</li>
+            <li>The Products-side exposure-class-factor table is named in GATE-TERRORISM.md § 8.4 but its values are not individually re-confirmed the way the Premises table's `.009`/`.004` pair is.</li>
+            <li>Everything downstream of the sibling sum and the class-factor lookup — the 15-state redirect, the NBCR factor, the sub-limit ILF ratio — is structurally identical to Prem/Ops.</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>Open question.</strong> Both the sibling-group list and the countrywide Products exposure-class-factor values are inferred by analogy to Prem/Ops rather than individually cited in the gate doc — treat both as unverified until checked against the rule XML.</div>
+      </div>
+    </section>
+
+    <!-- ============================= TERRORISM · ALL OTHER SUBLINES ============================= -->
+    <section class="sheet-view" id="view-terr-allother">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Terrorism / Certified Acts (TRIA) — All Other Sublines (GL Rule 55)</span></div>
+        <div class="field"><span class="k">Edition</span><span class="v">GL_CW_20260101_V01, cross-checked against the other two declared parents</span></div>
+        <div class="field"><span class="k">Master chain</span><span class="v">Same shape as Prem/Ops but sums 5 sibling premiums, and exposure class is a fixed constant — never resolved per class code</span></div>
+        <div class="field"><span class="k">Premium file</span><span class="v">GeneralLiabilityTerrorismAllOtherSublineCoverage</span></div>
+        <div class="field wide"><span class="k">Coverage gate</span><span class="v">Same policy-last gate. Manual A.1.a: "For sublines other than premises/operations or products/completed operations, use the average exposure category" (GATE-TERRORISM.md § 1, § 8.3)</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["Terrorism All Other Sublines coverage record"]) --> sumSibA["ClassCoveragePremium = sum of 5 sibling Premium values - NOT individually named in GATE-TERRORISM.md"]:::openq
+    sumSibA --> classFixed["ExposureClass = 'Average Exposure Class', always - TerrorismExposureClassesOtherSublines, a 1-row constant table (manual A.1.a); no per-class-code lookup exists on this path"]:::step
+    classFixed --> stateGateA{"State in the 15-state override list? (CA,CO,CT,FL,IL,MA,MD,MI,NJ,NY,OR,PA,TX,VA,WA)"}
+    stateGateA -->|"No, 36 states"| cwFactorA["ExposureClassFactor = lookup CertifiedActsOfTerrorismExposureClassFactor(State,TRIAIndicator,'Average') - CW: Average .004 (no Above Average path exists here)"]:::step
+    stateGateA -->|"Yes, 15 states"| stFactorA["ExposureClassFactor = lookup state-suffixed table(State,TRIAIndicator,'Average',Territory) - same 15-state redirect, NY Manhattan split, CA remainder-of-territory split as the other three paths"]:::step
+    cwFactorA --> nbcrGateA{"NBCR applicable?"}
+    stFactorA --> nbcrGateA
+    nbcrGateA -->|"Yes"| nbcrTriggerA["Trigger condition - not resolved in source docs (same unresolved trigger as Prem/Ops)"]:::openq
+    nbcrTriggerA --> nbcrApplyA["Premium_intermediate x= CertifiedActsOfTerrorismNuclBioChemRadioFactor - CW 0.58"]:::step
+    nbcrGateA -->|"No"| nbcrSkipA["No NBCR factor applied"]:::step
+    nbcrApplyA --> ilfGateA{"Sub-limit ILF ratio applicable?"}
+    nbcrSkipA --> ilfGateA
+    ilfGateA -->|"Yes"| ilfApplyA["Premium_intermediate x= (TerrorismILF / FinalILF) - same SetTerrorismILF two-case selection, same pattern as Prem/Ops"]:::step
+    ilfGateA -->|"No"| ilfSkipA["No sub-limit ratio applied"]:::step
+    ilfApplyA --> finalA["Premium = round(ClassCoveragePremium x ExposureClassFactor [x NBCR 0.58] [x TerrorismILF/FinalILF ratio], 0)"]:::final
+    ilfSkipA --> finalA
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    class stateGateA,nbcrGateA,ilfGateA gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>The one branch of the four aggregation paths where the exposure class is fixed rather than resolved — confirmed in ERC as a 1-row constant table (`TerrorismExposureClassesOtherSublines`), always "Average Exposure Class."</li>
+            <li>Five sibling premiums feed this path, versus three for Prem/Ops and Products/Completed Operations and two for Unmanned Aircraft — the largest aggregation of the four, and the one whose members are least documented.</li>
+            <li>Because the exposure class never varies, the countrywide factor never takes the Above Average `.009` value on this path — only `.004`, before any state override.</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>Open question.</strong> The five specific sibling coverage groups summed into this path are not individually named anywhere in GATE-TERRORISM.md — only the count (5) and the fixed-Average behavior are confirmed.</div>
+      </div>
+    </section>
+
+    <!-- ============================= TERRORISM · UNMANNED AIRCRAFT ============================= -->
+    <section class="sheet-view" id="view-terr-uav">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Terrorism / Certified Acts (TRIA) — Unmanned Aircraft host (GL Rule 55 / Rule 37)</span></div>
+        <div class="field"><span class="k">Edition</span><span class="v">GL_CW_20260101_V01, cross-checked against the other two declared parents</span></div>
+        <div class="field"><span class="k">Master chain</span><span class="v">Same shape as Prem/Ops but sums 2 sibling premiums (Coverage A/B); exposure class, NBCR, and ILF ratio internals are the least-documented of the four aggregation paths</span></div>
+        <div class="field"><span class="k">Premium file</span><span class="v">GeneralLiabilityUnmannedAircraftTerrorismCoverage</span></div>
+        <div class="field wide"><span class="k">Coverage gate</span><span class="v">Same policy-last gate. Gate doc gives only the sibling count (2) — GATE-TERRORISM.md § 1</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["Terrorism Unmanned Aircraft coverage record"]) --> sumSibU["ClassCoveragePremium = sum of 2 sibling Premium values - presumably Unmanned Aircraft Coverage A (BI/PD) + Coverage B (PAI), but this pairing is NOT resolved in source docs"]:::openq
+    sumSibU --> classResolveU["ExposureClass resolution method - NOT resolved in source docs (which table, or whether fixed, is unspecified for this path)"]:::openq
+    classResolveU --> stateGateU{"State in the 15-state override list? (CA,CO,CT,FL,IL,MA,MD,MI,NJ,NY,OR,PA,TX,VA,WA)"}
+    stateGateU -->|"No, 36 states"| cwFactorU["ExposureClassFactor = lookup CertifiedActsOfTerrorismExposureClassFactor(...) - countrywide row; state-deviation section confirms the redirect mechanic applies across all four aggregation paths"]:::step
+    stateGateU -->|"Yes, 15 states"| stFactorU["ExposureClassFactor = lookup state-suffixed table(...,Territory) - same 15-state redirect, NY Manhattan split, CA remainder-of-territory split as the other three paths"]:::step
+    cwFactorU --> nbcrGateU["NBCR factor (0.58) - applicability and mechanics NOT resolved in source docs for Unmanned Aircraft"]:::openq
+    stFactorU --> nbcrGateU
+    nbcrGateU --> ilfGateU["Sub-limit ILF ratio - applicability and mechanics NOT resolved in source docs for Unmanned Aircraft"]:::openq
+    ilfGateU --> finalU["Premium = round(ClassCoveragePremium x ExposureClassFactor [x NBCR] [x ILF ratio], 0) - bracketed terms unconfirmed for this path"]:::final
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    class stateGateU gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>The least-documented of the four aggregation paths: the gate doc gives only the sibling count (2), not the sibling identities, not how exposure class resolves, and not whether NBCR or the sub-limit ILF ratio apply at all — every one of those is flagged "not resolved in source docs."</li>
+            <li>The 15-state territory redirect is still shown as a resolved branch here, because the state-deviation section states it explicitly "applies across all four aggregation paths" — that mechanic is confirmed even where the rest of the chain is not.</li>
+            <li>Unlike the other three paths, this diagram cannot show a two-way NBCR/ILF gate with confirmed step outcomes — both are collapsed to single dashed nodes because no source traces their internals for this coverage.</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>Open question.</strong> Four separate facts are unresolved for this path alone: the two summed sibling groups' identities, the exposure-class resolution method, whether/how NBCR applies, and whether/how the sub-limit ILF ratio applies. Treat this chain's shape past the state-redirect gate as structural inference from the other three paths, not confirmed fact.</div>
+      </div>
+    </section>
+
+    <!-- ============================= TERRORISM · ENDORSEMENT-ONLY ============================= -->
+    <section class="sheet-view" id="view-terr-endorsement">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Terrorism / Certified Acts (TRIA) — Endorsement-only (GL Rule 55, forms CG 21 80 / CG 21 89 / CG 21 92)</span></div>
+        <div class="field"><span class="k">Edition</span><span class="v">GL_CW_20260101_V01 — user-entered factor field retired from CW writers in GL_CW_20201201_V01/GL_CW_20210801_V01, 0 writers in force today, 28 readers</span></div>
+        <div class="field"><span class="k">Master chain</span><span class="v">No sibling aggregation — `EndorsementPremium` (user input) x a user-entered, validated exposure-class factor</span></div>
+        <div class="field"><span class="k">Premium file</span><span class="v">GeneralLiabilityTerrorismEndorsementCoverage.SetPremium</span></div>
+        <div class="field wide"><span class="k">Coverage gate</span><span class="v">No computed value to check the entered factor against — the validation message IS the algorithm (GATE-TERRORISM.md § 6)</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["Terrorism Endorsement-only coverage record (CG 21 80 / CG 21 89 / CG 21 92)"]) --> inputPrem["EndorsementPremium - user-entered input, no sibling aggregation"]:::step
+    inputPrem --> inputFactor["CertifiedActsofTerrorismExposureClassFactor (lowercase 'of') - a separate, user-entered DataDef, distinct from the table-driven capitalized factor used in the four aggregation paths"]:::step
+    inputFactor --> classCheck{"Any of TerrorismExposureClasses{Premises,Products,OtherSublines} = 'Above Average Exposure Class' for this policy?"}
+    classCheck -->|"Yes, an above-average class exists"| noBound["No filed bound enforced here - entered factor accepted as-is"]:::step
+    classCheck -->|"No above-average class on the policy"| boundGate{"0 < factor <= 0.004?"}
+    boundGate -->|"Yes"| boundOk["Factor passes the guard"]:::step
+    boundGate -->|"No"| boundFail["DoMessageWhenNoClassIsAnAboveAverageExposureClassTheExposureClassFactorCanBeFrom0to004 fires - the guard IS the algorithm, no computed value to check it against"]:::zero
+    noBound --> premium["Premium = round(EndorsementPremium x CertifiedActsofTerrorismExposureClassFactor, 0)"]:::final
+    boundOk --> premium
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    class classCheck,boundGate gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>The only one of the five chains with no sibling read at all — both `EndorsementPremium` and its exposure-class factor are user-entered submission inputs, not looked up or computed.</li>
+            <li>The capitalized `CertifiedActsOfTerrorismExposureClassFactor` used by the other four chains and this chain's lowercase `CertifiedActsofTerrorismExposureClassFactor` are two distinct, separately-declared DataDefs — "a distinct DataDef, not a typo."</li>
+            <li>The field's only writers countrywide are in retired editions (GL_CW_20201201_V01, GL_CW_20210801_V01) — in every edition currently in force it is purely user-entered, with 28 readers across the corpus.</li>
+          </ul>
+        </div>
+        <div class="delta"><strong>vs. the four aggregation paths.</strong> No sibling `Premium` sum, no `ExposureClass` lookup, no NBCR factor (not applicable here), and no `FinalILF` input for a sub-limit ratio — the only enforcement is the validation message when no class on the policy is Above Average.</div>
       </div>
     </section>
 
