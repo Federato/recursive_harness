@@ -12,6 +12,8 @@ Run: python tests/verify_layers.py       (offline; makes no ISO calls)
   E  run file     a run writes one self-contained file, under results/, with
                   nothing loaded from the network
   F  ticker       calls spent today are counted in one place
+  G  size         a reduced L3 grid is a real, named subset of the full one
+                  (corners plus center), not a resample or an approximation
 
 **Everything here runs offline and with an empty results directory**, which is
 the same constraint `verify_notebooks.py` works under and for the same reason: a
@@ -261,6 +263,41 @@ def f_ticker() -> None:
           isinstance(store.spent_today(), int))
 
 
+# ------------------------------------------------------------------------- G
+
+def g_size() -> None:
+    print("\nG  a reduced grid is a real subset, not a resample")
+    full = layers.plan("L3", offline=True)
+    reduced = layers.plan("L3", offline=True, size="reduced")
+    check("G1 full is unchanged: 12 configs", full["configs_planned"] == 12)
+    check("G2 reduced is 5 configs", reduced["configs_planned"] == 5)
+    check("G3 reduced ratings land near 240",
+          200 <= reduced["cost"]["ratings"] <= 260,
+          f"got {reduced['cost']['ratings']}")
+    check("G4 reduced still covers every jurisdiction",
+          all(len(s["jurisdictions"]) == len(V.Declared.jurisdictions())
+              for s in reduced["scenarios"]))
+    full_pairs = {(c["occurrence_limit"], c["general_aggregate"])
+                  for c in layers._configs("L3")}
+    reduced_pairs = {(c["occurrence_limit"], c["general_aggregate"])
+                     for c in layers.L3_REDUCED}
+    check("G5 every reduced pair is a real cell of the full grid",
+          reduced_pairs <= full_pairs)
+    check("G6 both ends of each axis appear in the reduced set",
+          {c["occurrence_limit"] for c in layers.L3_REDUCED}
+          >= {"500,000 CSL", "5,000,000 CSL"}
+          and {c["general_aggregate"] for c in layers.L3_REDUCED}
+          >= {"@lowest", "@highest"})
+    check("G7 the run record says which grid it used",
+          full["size"] == "full" and reduced["size"] == "reduced")
+    bad = False
+    try:
+        layers.plan("L3", offline=True, size="huge")
+    except layers.PlanError:
+        bad = True
+    check("G8 an unknown size is refused, not silently ignored", bad)
+
+
 def main() -> int:
     print("Layered programme -- offline verification")
     a_aggregate()
@@ -269,6 +306,7 @@ def main() -> int:
     d_differences()
     e_runfile()
     f_ticker()
+    g_size()
     print()
     if FAILED:
         print(f"{len(FAILED)} failed: {', '.join(FAILED)}")

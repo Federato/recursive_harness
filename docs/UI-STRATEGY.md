@@ -295,16 +295,44 @@ actually received.** A run that stores the request and not the answer cannot be 
 
 ---
 
+# 6a · A reduced L3 grid, added 2026-08-20
+
+**The full L3 grid is 12 configs × 51 jurisdictions = 612 ratings, 600 of them live calls.** That's
+correct but expensive to run often. `--size reduced` runs a fixed, named 5-config subset instead —
+the two ends of the occurrence axis crossed with the two ends of the aggregate axis, plus the
+as-filed default at the center — for 255 ratings, the nearest full-state design to a ~240 target.
+
+**States are still never cut.** The reduction is entirely in which configs run, the same axis the
+allowance already thins — `size` and `allowance` are two different levers on the same list and
+compose: a reduced-size run can still be given its own allowance on top.
+
+**Why corners-and-center and not an even sample of 5.** A keying error shows at the ends of a filed
+curve, which is why the full grid's own occurrence points were chosen to span the curve rather than
+walk it (§1). The reduced grid keeps that logic and drops the two interior occurrence points, since
+an interior reading mostly confirms what the corners already imply.
+
+```
+python scripts/layers.py --layer L3 --size reduced --allowance 240
+```
+
+Recorded in the run: every stored L3 run now says whether it used the full or the reduced grid, for
+the same reason a thinned run says what it dropped — two runs of the same layer are only comparable
+if you know they varied the same things.
+
+---
+
 # 7 · Verification
 
 ```
-python tests/verify_layers.py        30/30   offline, no ISO calls
+python tests/verify_layers.py        42/42   offline, no ISO calls
 ```
 
 Groups A–F: the aggregate axis and its refusals · the allowance thinning configs and never states ·
 basis grouping and *not filed* reported rather than filtered · the comparison returning every
 differing field · a run writing one self-contained file that loads nothing from the network · the
-ticker counted in one place.
+ticker counted in one place. **Group G, added with the reduced grid:** the reduced set is a genuine
+subset of the full grid's own cells (never a resample), lands in the 200–260 ratings band, still
+covers every jurisdiction, and an unrecognized size is refused rather than silently ignored.
 
 Every other suite still passes, including `verify_tester` — the QA tab is genuinely untouched.
 

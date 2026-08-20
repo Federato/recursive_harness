@@ -227,7 +227,8 @@ def _plan(body) -> tuple:
         p = layers.plan(
             body.get("layer") or "L1", body.get("class_code") or "",
             body.get("exposure"), body.get("jurisdictions") or None,
-            body.get("allowance"), offline=bool(body.get("offline")))
+            body.get("allowance"), offline=bool(body.get("offline")),
+            size=body.get("size") or "full")
     except layers.PlanError as exc:
         return 400, json.dumps({"error": str(exc)}), "json"
     except Exception as exc:                                  # noqa: BLE001

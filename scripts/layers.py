@@ -95,6 +95,25 @@ OCCURRENCE_POINTS = ("500,000 CSL", "1,000,000 CSL", "2,000,000 CSL",
 #: into that state's value, and the row records what it got.
 AGGREGATE_POSITIONS = ("@lowest", "@middle", "@highest")
 
+#: L3's reduced grid -- corners and the center, not the full 4x3 cross.
+#: The full grid is 12 configs x 51 jurisdictions = 612 ratings. This is 5 x 51
+#: = 255, the nearest full-state design to a ~240-rating target that still
+#: varies both axes together, which is the whole point of L3 (see above).
+#: Chosen as the two ends of the occurrence axis crossed with the two ends of
+#: the aggregate axis, plus the as-filed default (1,000,000 CSL) at
+#: @middle. The two interior occurrence points (1,000,000 and 2,000,000 CSL)
+#: are dropped from the corners and folded into one center point -- a keying
+#: error shows at the ends of a filed curve or not at all; an interior point
+#: mostly confirms what the corners already imply. This is a fixed, named
+#: subset of the full grid, not a random or evenly-spaced sample of it.
+L3_REDUCED = (
+    {"occurrence_limit": "500,000 CSL", "general_aggregate": "@lowest"},
+    {"occurrence_limit": "500,000 CSL", "general_aggregate": "@highest"},
+    {"occurrence_limit": "1,000,000 CSL", "general_aggregate": "@middle"},
+    {"occurrence_limit": "5,000,000 CSL", "general_aggregate": "@lowest"},
+    {"occurrence_limit": "5,000,000 CSL", "general_aggregate": "@highest"},
+)
+
 #: L4's six slots, and the one amount applied to each in turn.
 DEDUCTIBLE_SLOTS = ("premops_bi_deductible", "premops_pd_deductible",
                     "premops_bipd_deductible", "prods_bi_deductible",
@@ -169,17 +188,26 @@ def basis_groups(class_code: str, jurisdictions=None,
 
 # ------------------------------------------------------------------- the plan
 
-def _configs(layer: str) -> list:
+def _configs(layer: str, size: str = "full") -> list:
     """The configurations a layer varies, before a class or a group is applied.
 
     State-independent by construction: anything that cannot be named the same
     way in all 51 is carried as a position and resolved per state.
+
+    `size` only changes anything for L3 today: "full" is the 4x3 cross
+    (~612 ratings), "reduced" is the 5-config corners-plus-center subset
+    (~255 ratings, see `L3_REDUCED`). Other layers ignore it -- they have no
+    second size defined yet.
     """
+    if size not in ("full", "reduced"):
+        raise PlanError(f"unknown size {size!r}; known: full, reduced")
     if layer == "L1":
         return [{}]
     if layer == "L2":
         return [{}]                    # the class itself is the variation
     if layer == "L3":
+        if size == "reduced":
+            return [dict(c) for c in L3_REDUCED]
         return [{"occurrence_limit": occ, "general_aggregate": pos}
                 for occ in OCCURRENCE_POINTS for pos in AGGREGATE_POSITIONS]
     if layer == "L4":
@@ -189,7 +217,8 @@ def _configs(layer: str) -> list:
 
 def plan(layer: str, class_code: str = "", exposure=None,
          jurisdictions=None, allowance: int | None = None,
-         asof: str = V.DEFAULT_ASOF, offline: bool = False) -> dict:
+         asof: str = V.DEFAULT_ASOF, offline: bool = False,
+         size: str = "full") -> dict:
     """What a run would do, without doing any of it.
 
     `exposure` may be one number, or `{basis: number}` when a class turns out to
@@ -199,6 +228,14 @@ def plan(layer: str, class_code: str = "", exposure=None,
     **An allowance is denominated in live calls, so it cuts nothing offline.**
     An offline run costs no calls; thinning it to fit a call budget would
     discard coverage to save something it was never going to spend.
+
+    **`size` is a different lever from `allowance`, and does the opposite
+    kind of cutting.** An allowance thins the config list for the live pass
+    only and records what it dropped; `size="reduced"` shrinks the config
+    list itself, before either pass, so the offline run is smaller too. Use
+    `size` to run a deliberately smaller, named grid (see `L3_REDUCED`); use
+    `allowance` to run the full grid offline and a thinned slice of it live.
+    The two compose: a reduced-size run can still be given its own allowance.
     """
     if layer not in LAYERS:
         raise PlanError(f"unknown layer {layer!r}; known: {', '.join(LAYERS)}")
@@ -216,7 +253,7 @@ def plan(layer: str, class_code: str = "", exposure=None,
         grouping = {"groups": [], "undeclared": [], "unreadable": {}}
         groups = [{"basis": "", "jurisdictions": js}]
 
-    configs = _configs(layer)
+    configs = _configs(layer, size)
     scenarios = []
     for cfg in configs:
         for g in groups:
@@ -241,6 +278,7 @@ def plan(layer: str, class_code: str = "", exposure=None,
 
     out = {
         "layer": layer, "name": spec["name"], "what": spec["what"],
+        "size": size,
         "class_code": str(class_code), "exposure": exposure,
         "asof": asof,
         "jurisdictions": js,
@@ -585,6 +623,10 @@ def main(argv) -> int:
     ap.add_argument("--allowance", type=int, default=None,
                     help="live calls this run may spend. States are never cut "
                          "to fit it; the config list is thinned instead")
+    ap.add_argument("--size", choices=("full", "reduced"), default="full",
+                    help="L3 only: 'full' is the 12-config grid (~612 "
+                         "ratings), 'reduced' is the 5-config corners-plus-"
+                         "center subset (~255 ratings)")
     ap.add_argument("--offline", action="store_true")
     ap.add_argument("--plan", action="store_true",
                     help="print what would run, and run nothing")
@@ -609,12 +651,13 @@ def main(argv) -> int:
     exposure = float(a.exposure) if a.exposure not in (None, "") else None
     try:
         p = plan(a.layer, a.class_code, exposure, a.juris or None,
-                 a.allowance, offline=a.offline)
+                 a.allowance, offline=a.offline, size=a.size)
     except PlanError as exc:
         print(f"{exc}")
         return 2
 
-    print(f"{a.layer} -- {p['name']}")
+    size_note = f" ({p['size']} grid)" if p["size"] != "full" else ""
+    print(f"{a.layer} -- {p['name']}{size_note}")
     print(f"  {p['what']}\n")
     if p["groups"] and p["class_code"]:
         for g in p["groups"]:
