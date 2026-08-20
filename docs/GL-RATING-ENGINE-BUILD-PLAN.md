@@ -634,7 +634,7 @@ One subline at a time, each gated by §8.
 machinery cited to gate 334 rather than re-derived — which cost a fraction of the effort and still
 surfaced four things 334 could not show. That is the pattern for the remaining nine.
 
-**Eight habits carry forward.** The first seven are about *reading*. The eighth is about
+**Nine habits carry forward.** The first seven are about *reading*. The eighth is about
 *counting*, and it exists because seven gates in one day produced five wrong figures — **every one
 of them an aggregate or a negative, and not one of them a misread rule body**:
 
@@ -688,6 +688,26 @@ The seven reading habits:
   same shape and was measured the same way. **Both re-tested and closed under OI-40**
   ([`gates/OI-40-ASOF-RECOUNT.md`](gates/OI-40-ASOF-RECOUNT.md)): territory and the rate-driven
   group set survived the re-test; N7's table counts and the 238/204/959 class split did not.
+
+**Habit 9, added 2026-08-19 — read the directory before you escalate to a person.**
+`OI-95` sat as `OPEN — needs a person` for two days: ISO's manual and ISO's data file disagreed on
+178 Texas classes, both sources otherwise agreed everywhere else, and nothing in either corpus said
+which of us was supposed to arbitrate that — so it was written up as a genuine judgement call.
+
+**It was not one.** `PremOpsELPText.RateTable.csv` — sitting in the exact same `Rate Tables`
+directory as `PremOpsELP.RateTable.csv`, a file already read repeatedly for other items on this
+register — declares the discriminator directly: `Rate/Loss Cost Applies` / `Industry` / `Company`,
+one value per class per state. Cross-tabulated against the rate file, it resolves the 178 with **zero
+exceptions**. The escalation only lifted when a person named where to look; nothing about finding it
+required a person, and the file had been sitting there the whole time.
+
+**The instruction this produced, given directly:** *"you are not examining the files enough to have a
+full understanding of how the product works."* That is sharper than habit 1's *"read the file, not
+the name"* — habit 1 is about not trusting a table's name for what it contains. This is about not
+trusting **the set of files already cited** as the set worth reading. A gate, an escalation, or a
+`NEEDS A PERSON` label is a claim that the corpus was checked and came up empty. **Before writing that
+claim, list the directory the relevant table lives in and read what sits beside it** — not only the
+files a previous session already flagged.
 
 Presented to you before a subline is considered done:
 

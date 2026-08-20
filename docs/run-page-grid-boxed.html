@@ -1,0 +1,93 @@
+<!doctype html><html><head><meta charset="utf-8">
+<title>Grid style 2 -- boxed, spreadsheet feel</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+:root{--ink:#1a1d21;--muted:#6b7580;--line:#e3e8ee;--blue:#2b6cb0;
+--red:#c0392b;--amber:#b7791f;--grey:#9aa5b1;--bg:#f7f9fb}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+font:14px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+header{background:#fff;border-bottom:1px solid var(--line);padding:12px 20px}
+header h1{font-size:16px;margin:0;font-weight:650}
+header .sub{color:var(--muted);font-size:12.5px}
+main{padding:16px 20px;max-width:900px}
+.card{background:#fff;border:1px solid var(--line);border-radius:8px;
+padding:14px 16px;margin-bottom:16px}
+.card h2{font-size:12px;text-transform:uppercase;letter-spacing:.05em;
+color:var(--muted);margin:0 0 11px;font-weight:650}
+select,input{padding:6px 7px;border:1px solid #cbd2d9;
+border-radius:5px;font-size:12.5px;background:#fff;color:var(--ink);width:auto}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:11px}
+.note{font-size:11.5px;color:var(--muted);border-left:2px solid var(--line);
+padding-left:8px;margin-top:9px}
+
+/* ---- the grid style being tried: a real grid, ruled both ways ---- */
+.gridwrap{border:1px solid var(--line);border-radius:6px;overflow:hidden}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:left;font-weight:650;color:var(--muted);font-size:11px;
+text-transform:uppercase;letter-spacing:.04em;background:#f7f9fb;
+border-bottom:1px solid var(--line);border-right:1px solid var(--line);
+padding:7px 9px}
+th:last-child,td:last-child{border-right:0}
+th.n,td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;
+font-family:ui-monospace,"SF Mono",Consolas,monospace}
+td{padding:6px 9px;border-bottom:1px solid var(--line);
+border-right:1px solid var(--line)}
+tr:last-child td{border-bottom:0}
+tr.total td{font-weight:650;background:#f7f9fb}
+td.lbl{font-weight:650}
+.st{font-weight:650;font-size:11.5px;white-space:nowrap}
+.st.MATCH{color:var(--blue)}
+.st.DIFF{color:var(--red)}
+.st.PREMIUM{color:var(--amber)}
+.st.NOT,.st.BUILD{color:var(--grey)}
+.det{color:var(--muted);font-size:11.5px}
+</style></head><body>
+<header>
+  <h1>Layered tests</h1>
+  <div class="sub">Grid style 2 &middot; ruled both ways like a spreadsheet,
+    numbers in a monospace column so digits line up exactly</div>
+</header>
+<main>
+
+  <div class="card">
+    <h2>Aggregate</h2>
+    <div class="gridwrap"><table>
+      <tr><th>Layer</th><th class=n>Runs</th><th class=n>Scenarios</th>
+        <th class=n>Agree</th><th class=n>Differ</th><th class=n>N/A</th><th class=n>Refused</th></tr>
+      <tr><td class=lbl>L1 Smoke</td><td class=n>6</td><td class=n>18</td><td class=n>15</td><td class=n>1</td><td class=n>0</td><td class=n>2</td></tr>
+      <tr><td class=lbl>L2 Classification</td><td class=n>3</td><td class=n>9</td><td class=n>8</td><td class=n>0</td><td class=n>1</td><td class=n>0</td></tr>
+      <tr><td class=lbl>L3 Limits</td><td class=n>5</td><td class=n>60</td><td class=n>55</td><td class=n>3</td><td class=n>2</td><td class=n>0</td></tr>
+      <tr><td class=lbl>L4 Deductibles</td><td class=n>4</td><td class=n>24</td><td class=n>22</td><td class=n>0</td><td class=n>2</td><td class=n>0</td></tr>
+      <tr class="total"><td class=lbl>All layers</td><td class=n>18</td><td class=n>111</td><td class=n>100</td><td class=n>4</td><td class=n>5</td><td class=n>2</td></tr>
+    </table></div>
+  </div>
+
+  <div class="card">
+    <h2>Run files</h2>
+    <div class="row"><select><option>All runs</option></select>
+      <input placeholder="Filter by class" style="width:140px"></div>
+    <div class="gridwrap"><table>
+      <tr><th>When</th><th>Run</th><th>Class</th><th class=n>Agree</th><th class=n>Differ</th></tr>
+      <tr><td class=det>08-18 15:12</td><td>L1 Smoke</td><td>--</td><td class=n>3</td><td class=n>0</td></tr>
+      <tr><td class=det>08-18 14:37</td><td>L1 Smoke</td><td>--</td><td class=n>3</td><td class=n>0</td></tr>
+      <tr><td class=det>08-18 12:24</td><td>L4 Deductibles</td><td>--</td><td class=n>6</td><td class=n>0</td></tr>
+      <tr><td class=det>08-18 12:09</td><td>L3 Limits</td><td>--</td><td class=n>12</td><td class=n>1</td></tr>
+      <tr><td class=det>08-18 10:51</td><td>L2 Classification</td><td>13352</td><td class=n>3</td><td class=n>0</td></tr>
+    </table></div>
+    <div class="note">Each run is a standalone file that opens without the app.</div>
+  </div>
+
+  <div class="card">
+    <h2>Running -- live rows</h2>
+    <div class="gridwrap"><table>
+      <tr><th>State</th><th>Status</th><th class=n>Ours</th><th class=n>ISO</th><th class=n>Diff</th></tr>
+      <tr><td><b>TX</b></td><td class="st MATCH">MATCH</td><td class=n>8896</td><td class=n>8896</td><td class=n></td></tr>
+      <tr><td><b>NY</b></td><td class="st DIFF">DIFF</td><td class=n>12141</td><td class=n>12210</td><td class=n>69</td></tr>
+      <tr><td><b>MT</b></td><td class="st NOT">NOT APPLICABLE</td><td class=n>--</td><td class=n>--</td><td class=n></td></tr>
+      <tr><td><b>CA</b></td><td class="st MATCH">MATCH</td><td class=n>7811</td><td class=n>7811</td><td class=n></td></tr>
+    </table></div>
+  </div>
+
+</main>
+</body></html>

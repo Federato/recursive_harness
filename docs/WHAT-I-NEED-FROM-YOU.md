@@ -1,5 +1,12 @@
 # What I need from you to unblock the untestable — 17 August 2026
 
+> **Updated 2026-08-19 — four more answers, and one of them reframes an escalation into a build.**
+> **B1** is settled at `1.0` · **C1** is declined · **C2** is held pending more testing of our own ·
+> **A3's open half is answered** — ISO does rate a future effective date, so the effective date
+> becomes a test variable rather than a question. Separately, **OI-95 stops being a judgement call**:
+> the direction given names the discriminator, and the table that carries it exists and was measured
+> the same day. See each item below, and `OPEN-ITEMS.md` OI-95.
+
 **Purpose.** Section 12.4 of the [QA proposal](qa-plan-proposal_20260817.html) lists what we cannot
 test today. This is the other side of that list: **the specific things only you can supply**, what
 each one unblocks, and — importantly — **what I will do by default if you never answer**, so nothing
@@ -106,6 +113,23 @@ or not 2027 is ever tested.
 **no oracle** and becomes a self-consistency exercise — a completely different piece of work, and one
 that should be scoped differently. Building the tier before knowing that would be guessing.
 
+> ### ✅ The open half is answered — 2026-08-19
+>
+> **ISO will rate a future effective date.** So the 2027 tier has an oracle, and the question of
+> *whether* to build it is no longer gated on a probe.
+>
+> **What replaces it is smaller and better shaped: the effective date becomes a test variable.**
+> Not a separate tier run at a second date, but an axis alongside class, limit and deductible —
+> one control, set per scenario, carried into the payload and into the as-of resolution together so
+> the two cannot disagree. That is the same fix the axis defect needed anyway; making it a *variable*
+> rather than a *mode* means the 2027 cliff gets exercised by ordinary test cases instead of by a
+> parallel programme.
+>
+> **This unblocks the as-of date selector** in `START-HERE-TOMORROW.md` §1, which was held back
+> because a dropdown offering dates the rating ignores is worse than no dropdown.
+>
+> **Not built. Backlog only.**
+
 **Scheduled as Tuesday 18 August's first live call.** Today's budget is spent (92 of 150), and the
 pacing rule in §13 of the proposal says zero more today. Making an exception an hour after writing
 the rule would make the rule decorative, and waiting a day costs nothing while decisions are still
@@ -195,7 +219,24 @@ watching it.
 
 # B · Data or documents I need supplied
 
-## B1 · A loss cost multiplier
+## B1 · ~~A loss cost multiplier~~ ✅ **DECIDED 2026-08-19**
+
+> **Decision: hold the LCM at `1.0`.** What we are testing right now is **ISO's RAaS service against
+> our engine** — and every number on both sides of that comparison is a loss cost. **This is not a
+> client-facing application**, so there is no policyholder premium to be wrong about yet.
+
+**Why `1.0` is the right placeholder and not a fudge.** At `1.0` the multiplier is present in the
+chain, positioned correctly, and provably inert — so the day a real LCM arrives it is a value change,
+not a structural one. Picking an invented number like `1.55` instead would make every stored result
+carry a fabricated figure that looks like a rate, and comparisons against ISO would have to divide it
+back out. **The comparison stays exact at `1.0` and stops being exact at anything else.**
+
+**What this leaves open, stated on results rather than buried:** we can prove the loss cost is right
+and say nothing about the premium on a policy. That limitation is now a **decision**, not a gap —
+revisit it when there is a client application or a carrier filing to test against, and at that point
+the *shape* question still needs answering: single number, or varying by state / subline / class.
+
+<details><summary>The original ask, kept for the record</summary>
 
 **What's blocked:** testing the premium a policyholder actually pays.
 
@@ -210,6 +251,8 @@ is it a single number, or does it vary by state, by subline, by class?
 say nothing about the premium on the policy.
 
 **If you don't answer:** I keep testing at loss-cost level and state that limitation on every result.
+
+</details>
 
 ---
 
@@ -249,7 +292,21 @@ requirement with real examples, or an anticipated one.
 
 *These need someone with the ISO relationship. I can draft the message for any of them.*
 
-## C1 · Tell ISO we're running a validation programme **← do this first**
+## C1 · ~~Tell ISO we're running a validation programme~~ ❌ **DECLINED 2026-08-19**
+
+> **Decision: not sending it. Our usage is within what a subscriber does.**
+
+**What changes as a result: nothing operationally, and one thing in how I report.** The pacing rules
+stay exactly as they are — strictly serial, business hours, inside the daily standing budget — because
+those were adopted to keep the traffic unremarkable, and that reasoning is unaffected by whether a
+note went out. **What I stop doing is treating this as an open item**; it is closed by decision, not
+parked.
+
+**The residual risk, stated once and not repeated:** if ISO ever does query the volume, the answer is
+the run history, which is complete and timestamped. That is a good answer. It is simply arriving
+after the question rather than before it, which is the trade being made here deliberately.
+
+<details><summary>The original ask, kept for the record</summary>
 
 **What's blocked:** nothing yet. **This is insurance against a problem.**
 
@@ -265,22 +322,39 @@ you"* is a better first contact than a support ticket after someone notices our 
 **If you don't answer:** I stay within the pacing rules, which should keep us unremarkable. But the
 risk isn't zero and it's cheap to remove.
 
+</details>
+
 ---
 
-## C2 · Report the size-of-risk data gap to ISO
+## C2 · Report the size-of-risk data gap to ISO — ⏸ **HELD 2026-08-19, pending more testing of our own**
 
-**What's blocked:** nothing of ours — this is us being a good subscriber, and it's leverage.
+> **Decision: not yet. More testing first.** The finding stands; what is not yet established is its
+> full shape, and a report that has to be corrected afterwards is worse than one sent a week later.
 
-**The finding.** In **13 jurisdictions**, ISO's own rating service returns a 400 on a valid
-size-of-risk submission. Not a validation error — **ISO's rule engine failing to find a row in ISO's
-own table**: `Matrix: PremOpsSizeOfRiskLossCost, Keys: CW, 502, 50017. No results have been found.`
+**The finding, as it actually stands.** In **13 jurisdictions**, ISO's own rating service returns a
+400 on a valid size-of-risk submission. Not a validation error — **ISO's rule engine failing to find
+a row in ISO's own table**: `Matrix: PremOpsSizeOfRiskLossCost, Keys: CW, 502, 50017. No results have
+been found.` All 13 were confirmed by direct call, each bypassing our own refusal.
 
-Our engine now refuses the same submissions for the same reason, so we agree with ISO's behaviour.
-But **ISO probably doesn't know**, and it means size-of-risk cannot be rated at all for that class in
-those states.
+**Corrected 2026-08-19 — this section previously overstated the agreement.** It used to read *"our
+engine now refuses the same submissions for the same reason, so we agree with ISO's behaviour."*
+**OI-94's adversarial review refuted the "same reason" half:** the captured 400 body is the **Georgia**
+call (`502` is a Georgia territory) and names `PremOpsSizeOfRiskLossCost`, a *rating-plan* matrix,
+while our own refusal originally blamed `PremOpsLossCost` — which in Texas is a healthy 9,504-row
+table that resolved correctly. **We agree with ISO on the outcome. Whether we agree on the cause is
+proven for Georgia and inferred elsewhere.** Any report sent to ISO must claim only the former.
 
-**What I need:** someone to send it. I'll supply the exact request, the response, and the list of
-affected jurisdictions.
+### What the additional testing needs to establish before this goes out
+
+| | |
+|---|---|
+| **The TX refused payload** | `results/refused-payloads/TX-714439816b85/request.json` — one call. It is the cheapest way to turn *"ISO refuses for the same reason"* from inference into measurement in a second state, and it settles 36 payloads across 4 states besides |
+| **Capture the full 400 body per jurisdiction** | We have 13 confirmations that ISO returns a 400 and one body quoted in full. A report naming a table should quote that table from more than one state's response |
+| **Whether it is the class or the state** | Every confirmed call used class `50017`. Whether the gap is *"this plan is unfiled in these 13 states"* or *"this class is missing from the plan"* changes what ISO is being told, and no test has separated them |
+| **The corroboration we already have, and should lead with** | The 35 jurisdictions whose ERC size-of-risk table is populated are **exactly** the 35 with a *Size Of Risk Rating Supplement* circular — no difference in either direction, ERC measured first. **Two independent ISO sources agreeing is a stronger opening than a stack trace** |
+
+**Still not blocked on you.** When the testing above is done I will draft it and bring it back with
+the evidence attached, rather than leaving it as a standing ask.
 
 ---
 
@@ -362,12 +436,26 @@ them. There is no second source and no cross-check.
 
 # The short version
 
-**If you only do four things:**
+**As of 2026-08-19 the A and B lists are answered, and nothing on this page is waiting on you.**
+
+| | |
+|---|---|
+| **A1–A6** | All decided 2026-08-17 |
+| **A3's open half** | Answered 2026-08-19 — ISO rates a future date; the effective date becomes a test variable |
+| **B1** | Decided 2026-08-19 — LCM held at `1.0`, because RAaS comparison is loss-cost against loss-cost |
+| **C1** | Declined 2026-08-19 |
+| **C2** | Held 2026-08-19 — the finding stands, the report waits on our own testing, and I bring it back drafted |
+| **B2 · B3 · C3–C6 · D1 · D2** | Unchanged, all with working defaults |
+| **OI-95** | No longer a question for you — the direction given on 2026-08-19 names the discriminator, and it is a build item now. See `OPEN-ITEMS.md` |
+
+**Everything else has a working default**, and none of it is blocked waiting for you. Where I proceed
+on a default, the assumption is stated on the results rather than buried.
+
+<details><summary>The original four-item ask, kept for the record</summary>
 
 1. **A1** — say yes or no to using ISO's shipped sample submissions. *Unblocks seven sublines and form attachment.*
 2. **C1** — tell ISO we're running a validation programme. *Removes a risk that costs nothing to remove.*
 3. **A6** — give me a standing call budget or keep approving per run. *Sets the pace of everything.*
 4. **B1** — one loss cost multiplier. *Turns loss-cost testing into premium testing.*
 
-**Everything else has a working default**, and none of it is blocked waiting for you. Where I proceed
-on a default, the assumption is stated on the results rather than buried.
+</details>

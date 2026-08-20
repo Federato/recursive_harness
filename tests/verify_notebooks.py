@@ -44,7 +44,7 @@ def run_notebook(path: Path) -> tuple[bool, str]:
     cwd = Path.cwd()
     try:
         import os
-        os.chdir(NOTEBOOKS)              # notebooks assume they run from their own dir
+        os.chdir(path.parent)            # notebooks assume they run from their own dir
         for i, src in enumerate(cells, 1):
             if not src.strip() or src.strip() == "# your turn":
                 continue
@@ -64,7 +64,9 @@ def main(argv: list[str]) -> int:
         return 1
 
     pattern = argv[0] if argv else ""
-    paths = sorted(p for p in NOTEBOOKS.glob("*.ipynb") if pattern in p.name)
+    paths = sorted((p for p in NOTEBOOKS.rglob("*.ipynb")
+                    if pattern in p.name and ".ipynb_checkpoints" not in p.parts),
+                   key=lambda p: p.relative_to(NOTEBOOKS).parts)
     if not paths:
         print(f"no notebooks match {pattern!r}")
         return 1
@@ -72,14 +74,15 @@ def main(argv: list[str]) -> int:
     print(f"{len(paths)} notebook(s) in {NOTEBOOKS}\n")
     failed = []
     for p in paths:
+        name = str(p.relative_to(NOTEBOOKS)).replace("\\", "/")
         t0 = time.perf_counter()
         ok, detail = run_notebook(p)
         secs = time.perf_counter() - t0
         if ok:
-            print(f"  PASS  {p.name:<34} {detail}, {secs:.1f}s")
+            print(f"  PASS  {name:<44} {detail}, {secs:.1f}s")
         else:
-            failed.append(p.name)
-            print(f"  FAIL  {p.name:<34} {detail}")
+            failed.append(name)
+            print(f"  FAIL  {name:<44} {detail}")
 
     print()
     print(f"{len(paths) - len(failed)}/{len(paths)} passed")

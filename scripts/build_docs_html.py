@@ -18,6 +18,7 @@ DOCS = [
     ("stages","The Build — staged plan",             "docs/BUILD-STAGES.md"),
     ("blog", "Build diary",                        "BUILD-LOG.md"),
     ("test", "How to test it",                     "TESTING.md"),
+    ("uistrat", "The test page and the layered programme", "docs/UI-STRATEGY.md"),
     ("back", "Backlog - what is next",             "docs/BACKLOG-2026-08-14.md"),
     ("pause","Where we paused - 12 Aug",           "docs/WHERE-WE-PAUSED-2026-08-12.md"),
     ("p2b",  "From planning to build",             "docs/FROM-PLANNING-TO-BUILD.md"),

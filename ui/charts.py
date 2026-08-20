@@ -140,6 +140,31 @@ def agreement_over_time(series: list) -> str:
 
 # -------------------------------------------------------------------- curve
 
+def _axis_order(xs: list) -> list:
+    """Order the horizontal axis by magnitude when the values are amounts.
+
+    **`"500,000 CSL"` sorts after `"2,000,000 CSL"` as text**, which draws a
+    curve that climbs and then falls off a cliff -- a kink caused entirely by
+    the axis. This chart exists to make a kink mean *a lookup missed*, so an
+    ordering that invents one is worse than no chart. Values that do not all
+    parse as numbers keep their text order, which is right for a categorical
+    axis and is the only other kind this draws.
+    """
+    def amount(v):
+        digits = ""
+        for ch in str(v):
+            if ch.isdigit() or (ch == "," and digits):
+                digits += ch
+            elif digits:
+                break
+        return float(digits.replace(",", "")) if digits else None
+
+    keyed = [(amount(v), v) for v in xs]
+    if all(k is not None for k, _ in keyed):
+        return [v for _, v in sorted(keyed, key=lambda kv: kv[0])]
+    return sorted(xs, key=str)
+
+
 def response_curve(control_label: str, series: dict, max_states: int = 12) -> str:
     """Premium against the varied value, one line per jurisdiction."""
     series = {j: pts for j, pts in series.items() if len(pts) >= 2}
@@ -150,7 +175,7 @@ def response_curve(control_label: str, series: dict, max_states: int = 12) -> st
         for p in pts:
             if p["value"] not in xs:
                 xs.append(p["value"])
-    xs.sort()
+    xs = _axis_order(xs)
     w, h = 620, 210
     pad_l, pad_r, pad_b, pad_t = 56, 74, 46, 12
     prem = [float(p["ours"]) for pts in series.values() for p in pts]
@@ -370,3 +395,102 @@ def verdict(agree: int, differs: int, not_applicable: int, refused: int,
         if lx > w - 110:
             lx, ly = 0.0, ly + 15
     return _svg(w, max(h, ly + 10), "".join(body))
+
+
+# ------------------------------------------------- the layered programme (2)
+
+def premium_spread(points: list, title: str = "") -> str:
+    """One premium per jurisdiction, sorted, with the tail called out.
+
+    **The lead visual for a layer that holds one configuration.** L1 and L2 vary
+    nothing across the run except the state, so the variation *is* the geography
+    and a curve has no second axis to draw. A class being dearer in some states
+    than others is what a loss cost is; what is worth looking at is the shape of
+    the tail, where a state far outside the rest is either a real filed
+    difference or our bug.
+
+    `points` is `[{"juris", "ours", "iso"?, "status"?}]`. Order is imposed here,
+    not by the caller, because the sort *is* the chart.
+    """
+    pts = [p for p in points if p.get("ours") not in (None, "")]
+    if len(pts) < 2:
+        return empty("a spread needs two or more rated jurisdictions")
+    pts = sorted(pts, key=lambda p: float(p["ours"]))
+    w, h = 620, 190
+    pad_l, pad_r, pad_b, pad_t = 46, 12, 34, 16
+    vals = [float(p["ours"]) for p in pts]
+    lo, hi = min(vals), max(vals)
+    if hi == lo:
+        hi = lo + 1
+    # The median, because "far outside the rest" needs a rest to be outside of.
+    mid = vals[len(vals) // 2]
+    step = (w - pad_l - pad_r) / len(pts)
+    bw = max(2.0, step - 3)
+    out = [f'<line x1="{pad_l}" y1="{h - pad_b}" x2="{w - pad_r}" '
+           f'y2="{h - pad_b}" stroke="{GRID}"/>',
+           _t(pad_l - 6, pad_t + 6, f"{hi:,.0f}", 9.5, MUTED, "end"),
+           _t(pad_l - 6, h - pad_b, f"{lo:,.0f}", 9.5, MUTED, "end")]
+    for i, p in enumerate(pts):
+        v = float(p["ours"])
+        bh = max(1.0, (v - lo) * (h - pad_b - pad_t) / (hi - lo))
+        x = pad_l + i * step
+        y = h - pad_b - bh
+        # Twice the median is the callout, and it is a rule of thumb stated on
+        # the chart rather than a threshold hidden in the code.
+        tail = v >= mid * 2
+        differs = p.get("status") in ("DIFF", "PREMIUM ONLY")
+        col = RED if (tail or differs) else BLUE
+        out.append(
+            f'<rect x="{x:.1f}" y="{y:.1f}" width="{bw:.1f}" height="{bh:.1f}" '
+            f'fill="{col}" opacity="{0.95 if (tail or differs) else 0.55}">'
+            f'<title>{escape(p["juris"])}: {escape(str(p["ours"]))}'
+            + (f' — ISO {escape(str(p["iso"]))}' if p.get("iso") else "")
+            + "</title></rect>")
+        if tail:
+            out.append(_t(x + bw / 2, y - 4, p["juris"], 9, RED, "middle", "650"))
+    out.append(_t(pad_l, h - 6,
+                  f"{len(pts)} jurisdictions, cheapest first · "
+                  f"named above twice the median ({mid:,.0f})", 9.5, MUTED))
+    return _svg(w, h, "".join(out), title or "Premium by jurisdiction")
+
+
+def slot_bars(items: list, title: str = "") -> str:
+    """How far each named thing moved the premium. One bar, no ordering implied.
+
+    **The lead visual for L4.** Its six deductible slots are not a scale -- a
+    line through them would invent an ordering ISO does not file -- so the
+    question *is any slot ignored* is asked as six independent bars.
+
+    `items` is `[{"label", "pct", "states", "moved_in"}]`, where `pct` is the
+    mean change from the unvaried base. A bar that is zero everywhere is drawn
+    red: a slot that moved nothing in any state either is a fact about ISO's
+    filing or is a deductible we never applied, and those are very different.
+    """
+    items = list(items or [])
+    if not items:
+        return empty("no slots were exercised in this run")
+    w = 620
+    row_h, pad_t, pad_l = 26, 14, 200
+    h = pad_t + row_h * len(items) + 22
+    widest = max(abs(float(i.get("pct") or 0)) for i in items) or 1.0
+    span = w - pad_l - 90
+    out = []
+    for k, it in enumerate(items):
+        y = pad_t + k * row_h
+        pct = float(it.get("pct") or 0)
+        dead = not it.get("moved_in")
+        bw = max(2.0, abs(pct) / widest * span) if pct else 2.0
+        col = RED if dead else BLUE
+        out.append(_t(pad_l - 10, y + 12, it["label"], 11, INK, "end"))
+        out.append(f'<rect x="{pad_l}" y="{y + 3}" width="{bw:.1f}" height="13" '
+                   f'rx="2" fill="{col}" opacity="{0.95 if dead else 0.6}">'
+                   f'<title>{escape(it["label"])}: {pct:+.2f}% mean change, '
+                   f'moved in {it.get("moved_in", 0)} of '
+                   f'{it.get("states", 0)} jurisdictions</title></rect>')
+        label = (f"{pct:+.2f}%" if pct else "0.00%")
+        if dead:
+            label += "  — moved nothing anywhere"
+        out.append(_t(pad_l + bw + 7, y + 14, label, 10.5,
+                      RED if dead else MUTED, "start", "650" if dead else "400"))
+    out.append(_t(pad_l, h - 6, "mean change from the unvaried base", 9.5, MUTED))
+    return _svg(w, h, "".join(out), title or "Movement by slot")

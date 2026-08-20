@@ -15,6 +15,12 @@ jupyter lab notebooks/
 Start at [`00-index.ipynb`](00-index.ipynb). It checks your environment and links every other
 notebook in reading order.
 
+**A second set covers the QA harness** -- `qa.py`, `variants.py`, `sweep.py` and the rest of
+`scripts/` and the chart layer in `ui/` -- rather than the engine. It lives in
+[`harness/`](harness/00-index.ipynb), with its own index and the same shape of notebook, and it
+exists as a separate set on purpose: the engine notebooks make the claim that no rating concept
+lives in `gl_engine/` outside the interpreter, and mixing harness code into that set would blur it.
+
 **You need a licensed copy of ISO's ERC corpus**, at the path in `GL_ERC_ROOT` — the same
 requirement the engine has. `00-index` checks for it and says what's missing rather than letting
 each notebook fail obscurely.

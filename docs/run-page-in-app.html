@@ -1,0 +1,269 @@
+<!doctype html><html><head><meta charset="utf-8">
+<title>Run page — what the app shows when a run finishes</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+:root{--ink:#1a1d21;--muted:#6b7580;--line:#e3e8ee;--blue:#2b6cb0;
+--red:#c0392b;--amber:#b7791f;--grey:#9aa5b1;--green:#2f855a;--bg:#f7f9fb}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+font:14px/1.55 ui-sans-serif,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+header{background:#1f2933;color:#fff;padding:18px 24px}
+header h1{margin:0 0 4px;font-size:18px;font-weight:650}
+header p{margin:0;opacity:.75;font-size:13px;max-width:80ch}
+.warn{background:#fff8e6;border-bottom:1px solid #f0e0b8;padding:10px 24px;
+font-size:12.5px;color:#7a5c12}
+nav{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--line);
+padding:10px 24px;display:flex;gap:7px;flex-wrap:wrap;z-index:20}
+nav button{background:#fff;color:var(--ink);border:1px solid #cbd2d9;
+border-radius:6px;padding:6px 12px;font-size:13px;cursor:pointer}
+nav button.on{background:var(--blue);color:#fff;border-color:var(--blue);font-weight:650}
+main{padding:20px 24px;max-width:1020px}
+section{display:none} section.on{display:block}
+.lede{background:#fff;border:1px solid var(--line);border-left:3px solid var(--blue);
+border-radius:6px;padding:12px 15px;margin-bottom:16px;font-size:13px}
+.lede b{display:block;margin-bottom:3px}
+.lede .cost{color:var(--muted);font-size:12.5px;margin-top:6px}
+.browser{background:#dfe4ea;border:1px solid #c8d0d8;border-radius:9px;padding:9px}
+.chrome{display:flex;gap:6px;align-items:center;margin-bottom:8px}
+.dot{width:9px;height:9px;border-radius:50%;background:#c1c9d1}
+.url{flex:1;background:#fff;border-radius:5px;padding:3px 9px;font-size:11.5px;
+color:var(--muted);margin-left:6px}
+.inner{background:var(--bg);border-radius:6px;padding:12px}
+.apphdr{background:#fff;border:1px solid var(--line);border-radius:7px;
+padding:9px 12px;display:flex;gap:14px;align-items:baseline;margin-bottom:10px}
+.apphdr h3{margin:0;font-size:14px;font-weight:650}
+.apphdr .sub{font-size:11.5px;color:var(--muted)}
+.apphdr .tick{margin-left:auto;font-size:11.5px;color:var(--muted);
+border:1px solid var(--line);border-radius:6px;padding:3px 9px}
+.card{background:#fff;border:1px solid var(--line);border-radius:8px;
+padding:13px 15px;margin-bottom:10px}
+.card h2{font-size:11px;text-transform:uppercase;letter-spacing:.05em;
+color:var(--muted);margin:0 0 9px;font-weight:650}
+.big{font-size:15px;font-weight:650;margin:0 0 6px}
+.counts{display:flex;gap:22px;flex-wrap:wrap}
+.counts div{font-size:11.5px;color:var(--muted)}
+.counts b{display:block;font-size:20px;color:var(--ink);
+font-variant-numeric:tabular-nums;font-weight:650}
+.counts b.bad{color:var(--red)} .counts b.ok{color:var(--green)}
+.chg{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:9px}
+.chg > div{border:1px solid var(--line);border-radius:7px;padding:9px 11px}
+.chg .k{font-size:11px;color:var(--muted)}
+.chg .v{font-size:23px;font-weight:650;font-variant-numeric:tabular-nums;line-height:1.15}
+.chg .w{font-size:11px;color:var(--muted);margin-top:2px}
+.chg .v.bad{color:var(--red)} .chg .v.ok{color:var(--green)} .chg .v.new{color:var(--blue)}
+button.go{background:var(--blue);color:#fff;border:0;border-radius:6px;
+padding:8px 13px;font-size:13px;font-weight:600;cursor:pointer}
+button.ghost{background:#fff;color:var(--ink);border:1px solid #cbd2d9;
+border-radius:6px;padding:8px 13px;font-size:13px;cursor:pointer}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:left;font-weight:650;color:var(--muted);font-size:10.5px;
+text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--line);padding:6px 7px}
+td{padding:5px 7px;border-bottom:1px solid #f0f3f6}
+td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.st{font-weight:650;font-size:11.5px} .st.DIFF{color:var(--red)} .st.MATCH{color:var(--blue)}
+.det{color:var(--muted);font-size:11.5px}
+.note{font-size:11.5px;color:var(--muted);border-left:2px solid var(--line);
+padding-left:9px;margin-top:8px}
+.ok-note{border-left-color:var(--green);color:#1f6b45}
+.bad-note{border-left-color:var(--red);color:#8a2f27}
+.matrix{font-size:11.5px}
+.matrix th{font-size:10px;padding:3px 2px;text-align:center}
+.matrix td{text-align:center;padding:2px;border-bottom:1px solid #f6f8fa}
+.matrix td.rowhead,.matrix th.rowhead{text-align:left;white-space:nowrap;
+color:var(--ink);font-weight:600;padding-right:9px}
+.cell{display:inline-block;width:14px;height:14px;border-radius:3px}
+.c-ok{background:#bcd7ef} .c-bad{background:var(--red)}
+.c-amb{background:var(--amber)} .c-na{background:#e3e8ee}
+h3.sub{font-size:13px;margin:18px 0 8px;font-weight:650}
+</style></head><body>
+
+<header>
+  <h1>A run just finished — what does the app show?</h1>
+  <p>The run file is now a full interactive page: verdict, change block, lead
+     visual, matrix, table. The question is how much of that the
+     <code>/tests</code> page repeats when the run ends, given the file is one
+     click away.</p>
+</header>
+<div class="warn"><b>Mockup.</b> Invented numbers. Each panel is the
+  <code>/tests</code> page immediately after the L3 run completes.</div>
+
+<nav>
+  <button class="on" data-t="a">1 · Headline, then the file</button>
+  <button data-t="b">2 · The whole page, inline</button>
+  <button data-t="c">3 · A link only, as today</button>
+</nav>
+
+<main>
+
+<!-- ============================================================== 1 -->
+<section id="a" class="on">
+<div class="lede"><b>1 · The headline and the change block, then send you to the file</b>
+  The app answers “how did it go” without scrolling — counts, and what changed
+  since last time. Anything you have to <i>explore</i> — the matrix, the curve,
+  the per-state detail — lives in the file, which is one click away and is the
+  thing you would send anyway.
+  <div class="cost">Two places, and the boundary has to be obvious. In exchange
+    the app stays a launcher and the file stays the artefact, and neither grows
+    into the other.</div>
+</div>
+<div class="browser">
+  <div class="chrome"><i class="dot"></i><i class="dot"></i><i class="dot"></i>
+    <div class="url">127.0.0.1:8765/tests</div></div>
+  <div class="inner">
+    <div class="apphdr"><h3>Layered tests</h3>
+      <span class="sub">L3 Limits · class 91340 · finished 11:23</span>
+      <span class="tick">Today: <b>200</b> live calls</span></div>
+    <div class="card">
+      <h2>Result</h2>
+      <p class="big">186 agree · 11 differ · 3 not applicable</p>
+      <div class="counts">
+        <div><b class="ok">93.0%</b>agree</div><div><b class="bad">11</b>differ</div>
+        <div><b>3</b>not applicable</div><div><b>200</b>ISO calls</div>
+        <div><b>28m</b>elapsed</div></div>
+      <div class="chg" style="margin-top:12px">
+        <div><div class="k">New problems</div><div class="v bad">1</div>
+          <div class="w">NY</div></div>
+        <div><div class="k">No longer failing</div><div class="v ok">4</div>
+          <div class="w">CA, GA, OH, RI</div></div>
+        <div><div class="k">Still failing</div><div class="v">8</div>
+          <div class="w">oldest 12 Aug</div></div>
+        <div><div class="k">Newly covered</div><div class="v new">+51</div>
+          <div class="w">5M × highest</div></div>
+      </div>
+      <div class="row">
+        <button class="go">Open the run file →</button>
+        <button class="ghost">Run another</button>
+        <span class="det">results/runs/L3-91340-20260818T1120.html</span>
+      </div>
+      <div class="note">The matrix, the response curve and every state are in
+        the file.</div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- ============================================================== 2 -->
+<section id="b">
+<div class="lede"><b>2 · Render the whole run page inside the app</b>
+  Everything the file holds, shown in place — you never leave the page you
+  started the run from, and the file is still written for keeping and sending.
+  <div class="cost">One page to build, rendered twice — and that is the risk:
+    two renderers of the same run will drift, and the day they disagree you
+    will not know which one is right. Building it once and embedding it is
+    possible, and is more work than it sounds.</div>
+</div>
+<div class="browser">
+  <div class="chrome"><i class="dot"></i><i class="dot"></i><i class="dot"></i>
+    <div class="url">127.0.0.1:8765/tests</div></div>
+  <div class="inner">
+    <div class="apphdr"><h3>Layered tests</h3>
+      <span class="sub">L3 Limits · class 91340 · finished 11:23</span>
+      <span class="tick">Today: <b>200</b> live calls</span></div>
+    <div class="card">
+      <p class="big">186 agree · 11 differ · 3 not applicable</p>
+      <div class="counts">
+        <div><b class="ok">93.0%</b>agree</div><div><b class="bad">11</b>differ</div>
+        <div><b>200</b>ISO calls</div></div>
+    </div>
+    <div class="card"><h2>What changed since 15 August</h2>
+      <div class="chg">
+        <div><div class="k">New problems</div><div class="v bad">1</div><div class="w">NY</div></div>
+        <div><div class="k">No longer failing</div><div class="v ok">4</div><div class="w">CA, GA, OH, RI</div></div>
+        <div><div class="k">Still failing</div><div class="v">8</div><div class="w">oldest 12 Aug</div></div>
+        <div><div class="k">Newly covered</div><div class="v new">+51</div><div class="w">5M × highest</div></div>
+      </div></div>
+    <div class="card"><h2>Our premium against the each-occurrence limit</h2>
+      <svg viewBox="0 0 700 150" width="100%" height="150" role="img">
+        <line x1="52" y1="126" x2="680" y2="126" stroke="#e3e8ee"/>
+        <line x1="52" y1="12" x2="52" y2="126" stroke="#e3e8ee"/>
+        <text x="52" y="143" font-size="10" fill="#6b7580">500k</text>
+        <text x="252" y="143" font-size="10" fill="#6b7580">1M</text>
+        <text x="452" y="143" font-size="10" fill="#6b7580">2M</text>
+        <text x="640" y="143" font-size="10" fill="#6b7580">5M</text>
+        <polyline points="52,110 252,90 452,70 652,50" fill="none" stroke="#bcd7ef" stroke-width="1.6"/>
+        <polyline points="52,116 252,96 452,76 652,58" fill="none" stroke="#bcd7ef" stroke-width="1.6"/>
+        <polyline points="52,104 252,84 452,64 652,26" fill="none" stroke="#c0392b" stroke-width="2.2"/>
+        <circle cx="652" cy="26" r="5" fill="#c0392b"/>
+        <text x="612" y="20" font-size="11" fill="#c0392b" font-weight="650">LA</text>
+      </svg></div>
+    <div class="card"><h2>Configuration × jurisdiction</h2>
+      <div style="overflow-x:auto"><table class="matrix" id="m2"></table></div></div>
+    <div class="card"><h2>Every state, worst first</h2><table id="t2"></table>
+      <div class="row"><button class="ghost">Open the saved file →</button></div></div>
+  </div>
+</div>
+</section>
+
+<!-- ============================================================== 3 -->
+<section id="c">
+<div class="lede"><b>3 · A link and nothing else — what it does today</b>
+  The run finishes, the app says so and gives you the file. All reading happens
+  in the file.
+  <div class="cost">Nothing to build and no duplication at all. But a 28-minute
+    run ends with a sentence, and you have to open a second thing to learn
+    whether it went well — including on the days it plainly did.</div>
+</div>
+<div class="browser">
+  <div class="chrome"><i class="dot"></i><i class="dot"></i><i class="dot"></i>
+    <div class="url">127.0.0.1:8765/tests</div></div>
+  <div class="inner">
+    <div class="apphdr"><h3>Layered tests</h3>
+      <span class="sub">L3 Limits · class 91340 · finished 11:23</span>
+      <span class="tick">Today: <b>200</b> live calls</span></div>
+    <div class="card">
+      <h2>Result</h2>
+      <p class="big">186 rated · 11 differ</p>
+      <div class="row">
+        <button class="go">Open the run file →</button>
+        <span class="det">results/runs/L3-91340-20260818T1120.html</span></div>
+      <div class="note bad-note">Whether that is better or worse than last time
+        is not on this screen.</div>
+    </div>
+  </div>
+</div>
+</section>
+
+</main>
+<script>
+document.querySelectorAll('nav button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('nav button').forEach(x => x.classList.remove('on'));
+  document.querySelectorAll('section').forEach(x => x.classList.remove('on'));
+  b.classList.add('on');
+  document.getElementById(b.dataset.t).classList.add('on');
+  scrollTo(0,0);
+});
+const STATES=['AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','IA','IL',
+              'LA','MT','NY','OH','OK','RI','TX','WA'];
+const CONFIGS=['500,000 × lowest','1,000,000 × middle','2,000,000 × middle','5,000,000 × highest'];
+const BASE={AL:1980,AK:2240,AZ:2010,AR:2150,CA:3340,CO:2240,CT:2890,DE:2340,
+            FL:3010,GA:2480,IA:2110,IL:2610,LA:3140,MT:2300,NY:3470,OH:2660,
+            OK:2900,RI:3020,TX:2731,WA:2780};
+const BAD5=['AK','CO','FL','IL','LA','NY','OK','TX','WA'];
+const CELLS=[];
+CONFIGS.forEach((cfg,ci)=>STATES.forEach(st=>{
+  let s='MATCH',o=BASE[st];
+  if(ci===3&&st==='MT') s='NOT APPLICABLE';
+  else if(ci===3&&BAD5.includes(st)){s='DIFF';o=Math.round(BASE[st]*2.1);}
+  else if(ci===2&&st==='OK'){s='DIFF';o=BASE[st]+160;}
+  else if(ci===1&&st==='NY') s='PREMIUM ONLY';
+  CELLS.push({cfg,ci,st,status:s,ours:o,iso:BASE[st]});
+}));
+const K={'MATCH':'c-ok','DIFF':'c-bad','PREMIUM ONLY':'c-amb','NOT APPLICABLE':'c-na'};
+let h='<tr><th class="rowhead">Configuration</th>'+STATES.map(s=>`<th>${s}</th>`).join('')+'</tr>';
+CONFIGS.forEach((cfg,ci)=>{h+=`<tr><td class="rowhead">${cfg}</td>`;
+  STATES.forEach(st=>{const c=CELLS.find(x=>x.ci===ci&&x.st===st);
+    h+=`<td><i class="cell ${K[c.status]}" title="${st} · ${cfg} · ${c.status}"></i></td>`;});
+  h+='</tr>';});
+document.getElementById('m2').innerHTML=h;
+const rows=CELLS.filter(c=>c.status!=='MATCH').sort((a,b)=>Math.abs(b.ours-b.iso)-Math.abs(a.ours-a.iso));
+let t='<tr><th>State<th>Configuration<th>Status<th class="n">Ours<th class="n">ISO<th class="n">Difference</tr>';
+rows.slice(0,6).forEach(c=>{const d=c.ours-c.iso;
+  t+=`<tr><td><b>${c.st}</b><td class="det">${c.cfg}<td class="st ${c.status.split(' ')[0]}">${c.status}`
+   + `<td class="n">${c.status==='NOT APPLICABLE'?'—':c.ours.toLocaleString()}`
+   + `<td class="n">${c.status==='NOT APPLICABLE'?'—':c.iso.toLocaleString()}`
+   + `<td class="n">${d?(d>0?'+':'')+d.toLocaleString():'—'}</tr>`;});
+t+=`<tr><td colspan="6" class="det">… ${rows.length-6} more</tr>`;
+document.getElementById('t2').innerHTML=t;
+</script>
+</body></html>

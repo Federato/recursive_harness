@@ -11,8 +11,9 @@ against ISO's own rating service.
 | | |
 |---|---|
 | **[docs/EXECUTIVE-SUMMARY.md](docs/EXECUTIVE-SUMMARY.md)** | **Read this one.** What we are building, why it is hard, where we are, the architecture decision *and the honest case against it*, how it gets proved against ISO's own service, the self-correcting harness, and how carrier deviations layer on top |
-| **[BUILD-LOG.md](BUILD-LOG.md)** | **The build diary — what was built, what broke, what the fix revealed. Entry 16 is the current handoff** |
+| **[BUILD-LOG.md](BUILD-LOG.md)** | **The build diary — what was built, what broke, what the fix revealed. Entry 33 is the current handoff** |
 | **[docs/qa-plan-proposal_20260817.html](docs/qa-plan-proposal_20260817.html)** | **The QA programme, proposed 2026-08-17.** Full 51-jurisdiction coverage sized from ISO's own declared content — two matrices not one, wireframes for terminal and button, the ISO call budget, and what can and cannot be proven. **Nothing in it is built** |
+| **[docs/UI-STRATEGY.md](docs/UI-STRATEGY.md)** | **The test page and the layered programme, built 2026-08-18.** Four layers of test case, every state on every run, an allowance that thins configurations and never states, one standalone file per run, an aggregate view with a verdict per layer and a trend, and a per-run review page that needs no API key |
 | **[docs/HOW-TO-USE-THE-TESTER.md](docs/HOW-TO-USE-THE-TESTER.md)** | **How to run the tests and read the results**, for someone who does not code. Rendered as [`how-to-use-the-tester.html`](docs/how-to-use-the-tester.html) |
 | **[docs/START-HERE-TOMORROW.md](docs/START-HERE-TOMORROW.md)** | **Read this first if you are picking the project up.** What to do next, what is waiting on a person, the backlog as it stands, and how far off a product UI is. Rendered as [`start-here-tomorrow_20260818.html`](docs/start-here-tomorrow_20260818.html) |
 | **[docs/WHAT-THE-HARNESS-TAUGHT-US.md](docs/WHAT-THE-HARNESS-TAUGHT-US.md)** | **Seven defects in one day, in plain English** — what each taught and the pattern underneath. Rendered as [`what-the-harness-taught-us_20260817.html`](docs/what-the-harness-taught-us_20260817.html) |
@@ -96,7 +97,8 @@ public, that file and 33 of the 65 documents would have to be scrubbed *and purg
 | **Phase 2 — proof against ISO's live service** | ✅ Live. **50 of 50 agree, on every field ISO publishes** |
 | Then | Phase 3 — the self-correcting harness → Phase 4 — company deviations |
 | **The variable tester** | ✅ Built. Dropdowns from ISO's declared domains, every jurisdiction in one run, and the coverage view that says how narrow the claim still is |
-| Tests | **Fourteen suites, all green** — see [`TESTING.md`](TESTING.md) |
+| **The layered programme** | ✅ Built 2026-08-18. Four layers of test case, a `/tests` page to run them from, an allowance that thins configurations and never states, and one standalone file per run — see [`docs/UI-STRATEGY.md`](docs/UI-STRATEGY.md) |
+| Tests | **Fifteen suites, all green** — see [`TESTING.md`](TESTING.md) |
 
 **The honest caveat, stated where the good number is.** All 51 submissions are **the same risk** —
 one location, one classification, class `50017`, gross sales, no deductible, no rating plans. That
@@ -184,6 +186,7 @@ process takes about two seconds while ISO's content loads, and about one second 
 | **Running the tests** | [`TESTING.md`](TESTING.md) — **every command, phase by phase**, each one run and its output verified |
 | **Following the build** | [`BUILD-LOG.md`](BUILD-LOG.md) — the build diary · [`docs/FROM-PLANNING-TO-BUILD.md`](docs/FROM-PLANNING-TO-BUILD.md) — what each stage expected to inherit from the analysis, written **before** the stage |
 | **Building a subline** | [`docs/gates/`](docs/gates/) — the per-item gates, all filed before the build began |
+| **Browsing a subline's rate build-up visually** | [`GL_Algorithm/gl-rating-chains.html`](GL_Algorithm/gl-rating-chains.html) — 18 mermaid flowcharts across the seven rate-driven gates, open in a browser |
 | **Checking a spec claim is current** | [`docs/gates/RECONCILIATION.md`](docs/gates/RECONCILIATION.md) — what the gates superseded in the two specifications, and why |
 | **Checking a *count* is current** | [`docs/gates/OI-40-ASOF-RECOUNT.md`](docs/gates/OI-40-ASOF-RECOUNT.md) — every load-bearing figure re-measured as of today, 2027-04-01 and the end state. Two survived, three needed their tense fixed |
 | **Planning the build** | [`docs/PHASE-SIZING.md`](docs/PHASE-SIZING.md) — what each build-order item actually contains, measured. **Three countrywide calculators, not two** |
@@ -218,6 +221,11 @@ Commercial Line Manuals/GL/     the source corpora — 4.1 GB, not derived from 
 
 C:\Projects\ISO_ERC_Files\General_Liability\   the ERC corpus — 567 packages, 87k files
                                 (separate root; 51 jurisdictions + countrywide)
+
+GL_Algorithm/                   the seven rate-driven gates, reformatted as rate-build-up
+                                 and premium docs plus gl-rating-chains.html (18 flowcharts) —
+                                 a documentation port of docs/gates/, not new derivation
+CF_Algorithm/                   the same shape, for the sister Commercial Fire project
 
 docs/
   PRD-GL-RATING-ENGINE.md         plain-language PRD: the journey, requirements, risks

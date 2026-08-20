@@ -1,0 +1,486 @@
+<!doctype html><html><head><meta charset="utf-8">
+<title>Run page — layout options</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+:root{--ink:#1a1d21;--muted:#6b7580;--line:#e3e8ee;--blue:#2b6cb0;
+--red:#c0392b;--amber:#b7791f;--grey:#9aa5b1;--green:#2f855a;--bg:#f7f9fb}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+font:14px/1.55 ui-sans-serif,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+header{background:#1f2933;color:#fff;padding:18px 24px}
+header h1{margin:0 0 4px;font-size:18px;font-weight:650}
+header p{margin:0;opacity:.75;font-size:13px;max-width:70ch}
+.warn{background:#fff8e6;border-bottom:1px solid #f0e0b8;padding:10px 24px;
+font-size:12.5px;color:#7a5c12}
+nav{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--line);
+padding:10px 24px;display:flex;gap:7px;flex-wrap:wrap;z-index:5}
+nav button{background:#fff;color:var(--ink);border:1px solid #cbd2d9;
+border-radius:6px;padding:6px 12px;font-size:13px;cursor:pointer}
+nav button.on{background:var(--blue);color:#fff;border-color:var(--blue);
+font-weight:650}
+main{padding:20px 24px;max-width:1120px}
+section{display:none}
+section.on{display:block}
+.lede{background:#fff;border:1px solid var(--line);border-left:3px solid var(--blue);
+border-radius:6px;padding:12px 15px;margin-bottom:18px;font-size:13px}
+.lede b{display:block;margin-bottom:3px}
+.lede .cost{color:var(--muted);font-size:12.5px;margin-top:6px}
+.page{background:#eef1f5;border:1px solid var(--line);border-radius:10px;
+padding:14px}
+.page > .caption{font-size:11px;text-transform:uppercase;letter-spacing:.05em;
+color:var(--muted);margin-bottom:9px;font-weight:650}
+.card{background:#fff;border:1px solid var(--line);border-radius:8px;
+padding:14px 16px;margin-bottom:12px}
+.card h2{font-size:11px;text-transform:uppercase;letter-spacing:.05em;
+color:var(--muted);margin:0 0 10px;font-weight:650}
+.big{font-size:15px;font-weight:650;margin:0 0 6px}
+.counts{display:flex;gap:24px;flex-wrap:wrap;margin:8px 0 2px}
+.counts div{font-size:12px;color:var(--muted)}
+.counts b{display:block;font-size:21px;color:var(--ink);
+font-variant-numeric:tabular-nums;font-weight:650}
+.counts b.bad{color:var(--red)}
+.counts b.ok{color:var(--green)}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:left;font-weight:650;color:var(--muted);font-size:10.5px;
+text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--line);
+padding:6px 7px}
+td{padding:5px 7px;border-bottom:1px solid #f0f3f6;vertical-align:top}
+td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.st{font-weight:650;font-size:11.5px;white-space:nowrap}
+.st.MATCH{color:var(--blue)}
+.st.DIFF{color:var(--red)}
+.st.PREMIUM{color:var(--amber)}
+.st.NA{color:var(--grey)}
+.det{color:var(--muted);font-size:11.5px}
+details>summary{cursor:pointer;color:var(--blue);font-size:11.5px}
+.fields{margin:6px 0 2px;border-left:2px solid var(--line);padding-left:9px}
+.fields div{font-size:11.5px;color:var(--muted);
+font-family:ui-monospace,Menlo,Consolas,monospace}
+.note{font-size:11.5px;color:var(--muted);border-left:2px solid var(--line);
+padding-left:9px;margin-top:8px}
+.tag{display:inline-block;font-size:10.5px;padding:1px 7px;border-radius:99px;
+background:#eef2f6;color:var(--muted);margin-left:5px}
+.matrix{font-size:11.5px}
+.matrix th{font-size:10px;padding:4px 3px;text-align:center}
+.matrix th.rowhead{text-align:left;white-space:nowrap;padding-right:10px}
+.matrix td{text-align:center;padding:3px;border-bottom:1px solid #f6f8fa}
+.matrix td.rowhead{text-align:left;white-space:nowrap;color:var(--ink);
+font-weight:600;padding-right:10px}
+.cell{display:inline-block;width:15px;height:15px;border-radius:3px;
+line-height:15px;font-size:10px;color:#fff}
+.c-ok{background:#bcd7ef;color:#1f4f7a}
+.c-bad{background:var(--red)}
+.c-amb{background:var(--amber)}
+.c-na{background:#e3e8ee;color:var(--grey)}
+.rowflag{background:#fff5f5}
+.legend{font-size:11.5px;color:var(--muted);margin-top:8px;display:flex;
+gap:14px;flex-wrap:wrap;align-items:center}
+.legend span{display:flex;gap:5px;align-items:center}
+.bars td{padding:3px 7px}
+.bar{height:13px;border-radius:2px;background:#bcd7ef;display:inline-block}
+.bar.zero{background:var(--red)}
+.pill{font-size:11px;padding:2px 8px;border-radius:99px;background:#f0f3f6;
+color:var(--muted)}
+.verdictbar{display:flex;height:22px;border-radius:4px;overflow:hidden;
+margin:10px 0 6px}
+.verdictbar div{height:100%}
+h3.sub{font-size:13px;margin:20px 0 8px;font-weight:650}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:860px){.two{grid-template-columns:1fr}}
+</style></head><body>
+
+<header>
+  <h1>Run page — four layout options</h1>
+  <p>Same run in each: <b>L3 Limits</b>, class 91340, 4 of 12 configurations
+     (thinned to a 200-call allowance), 51 jurisdictions. What differs between
+     the options is what sits around the state table.</p>
+</header>
+<div class="warn"><b>Mockup.</b> The premiums, states and differences below are
+  invented and plausible, not measured. Nothing here has been run against ISO —
+  they exist so the layouts can be judged.</div>
+
+<nav>
+  <button class="on" data-t="a">A · Fixed set + layer row</button>
+  <button data-t="b">B · Lead visual per layer</button>
+  <button data-t="c">C · Table only</button>
+  <button data-t="d">D · Table + config matrix</button>
+</nav>
+
+<main>
+
+<!-- ============================================================ A -->
+<section id="a" class="on">
+<div class="lede"><b>A · One fixed frame, plus a row for whatever layer ran</b>
+  Verdict, what ran, and the state table appear in that order on every run page,
+  whatever the layer. Anything layer-specific is added <i>below</i> them rather
+  than replacing anything, so nothing ever moves between runs.
+  <div class="cost">Longest page of the four. Everything is always where you left it.</div>
+</div>
+
+<div class="page"><div class="caption">L3-91340-20260818T1120.html</div>
+
+  <div class="card">
+    <p class="big">186 agree · 11 differ · 3 not applicable</p>
+    <div class="verdictbar">
+      <div style="width:91.2%;background:#bcd7ef"></div>
+      <div style="width:5.4%;background:#c0392b"></div>
+      <div style="width:1.5%;background:#b7791f"></div>
+      <div style="width:1.9%;background:#e3e8ee"></div>
+    </div>
+    <div class="counts">
+      <div><b class="ok">93.0%</b>of comparable outcomes agree</div>
+      <div><b>200</b>compared with ISO</div>
+      <div><b class="bad">11</b>disagree</div>
+      <div><b>3</b>not applicable</div>
+      <div><b>0</b>engine refused</div>
+      <div><b>200</b>ISO calls</div>
+    </div>
+    <div class="note">Not applicable is a third outcome and never a failure: the
+      jurisdiction does not declare that configuration legal. Premium only means
+      the premium agreed and an underlying field did not.</div>
+  </div>
+
+  <div class="card">
+    <h2>What actually ran</h2>
+    <div>Class <b>91340</b> · exposure <b>1,500,000</b> · basis
+      <b>Payroll</b> in 51 jurisdictions</div>
+    <div><b>Thinned to fit an allowance of 200 live calls</b>: 4 of 12
+      configurations kept, every jurisdiction kept.
+      <div class="note">States are never cut; the config list was thinned to the
+        ends and an even spread between them. Dropped: 500k×middle,
+        1M×lowest, 1M×highest, 2M×lowest, 2M×highest, 5M×lowest, 5M×middle,
+        500k×highest.</div></div>
+  </div>
+
+  <div class="card">
+    <h2>Every state, worst first</h2>
+    <table>
+      <tr><th>State<th>Status<th class="n">Ours<th class="n">ISO<th class="n">Difference<th>What differs</tr>
+      <tr><td><b>LA</b><span class="tag">aggregate = 10,000,000</span>
+          <td class="st DIFF">DIFF<td class="n">9,870<td class="n">3,140<td class="n">+6,730
+          <td><details><summary>3 fields</summary><div class="fields">
+            <div>PremOpsCovILF: ours 3.14 · ISO 1.00</div>
+            <div>PremOpsCovPremium: ours 9,870 · ISO 3,140</div>
+            <div>Premium: ours 9,870 · ISO 3,140</div></div></details>
+      <tr><td><b>TX</b><span class="tag">aggregate = 10,000,000</span>
+          <td class="st DIFF">DIFF<td class="n">2,780<td class="n">2,731<td class="n">+49
+          <td><details><summary>2 fields</summary><div class="fields">
+            <div>PremOpsCovILF: ours 1.62 · ISO 1.59</div>
+            <div>Premium: ours 2,780 · ISO 2,731</div></div></details>
+      <tr><td><b>NY</b><td class="st PREMIUM">PREMIUM ONLY<td class="n">3,510<td class="n">3,510<td class="n">—
+          <td><details><summary>1 field</summary><div class="fields">
+            <div>ProdsCompldOpsCovILF: ours 1.40 · ISO 1.38</div></div></details>
+      <tr><td><b>CA</b><td class="st MATCH">MATCH<td class="n">3,340<td class="n">3,340<td class="n">—<td>
+      <tr><td><b>IA</b><td class="st MATCH">MATCH<td class="n">2,110<td class="n">2,110<td class="n">—<td>
+      <tr><td><b>MT</b><td class="st NA">NOT APPLICABLE<td class="n">—<td class="n">—<td class="n">—
+          <td><span class="det">MT declares no aggregate legal with 5,000,000 each-occurrence</span>
+      <tr><td colspan="6" class="det">… 45 more</tr>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>For this layer — does the premium move the way it should?</h2>
+    <svg viewBox="0 0 700 220" width="100%" height="220" role="img">
+      <line x1="52" y1="185" x2="680" y2="185" stroke="#e3e8ee"/>
+      <line x1="52" y1="18" x2="52" y2="185" stroke="#e3e8ee"/>
+      <text x="52" y="203" font-size="10" fill="#6b7580">500k</text>
+      <text x="252" y="203" font-size="10" fill="#6b7580">1M</text>
+      <text x="452" y="203" font-size="10" fill="#6b7580">2M</text>
+      <text x="640" y="203" font-size="10" fill="#6b7580">5M</text>
+      <text x="8" y="24" font-size="10" fill="#6b7580">premium</text>
+      <polyline points="52,160 252,132 452,104 652,74" fill="none" stroke="#bcd7ef" stroke-width="1.6"/>
+      <polyline points="52,168 252,141 452,115 652,88" fill="none" stroke="#bcd7ef" stroke-width="1.6"/>
+      <polyline points="52,152 252,124 452,96 652,66" fill="none" stroke="#bcd7ef" stroke-width="1.6"/>
+      <polyline points="52,174 252,148 452,120 652,95" fill="none" stroke="#bcd7ef" stroke-width="1.6"/>
+      <polyline points="52,163 252,136 452,110 652,40" fill="none" stroke="#c0392b" stroke-width="2.2"/>
+      <circle cx="652" cy="40" r="5" fill="#c0392b"/>
+      <text x="600" y="32" font-size="11" fill="#c0392b" font-weight="650">LA +6,730</text>
+      <polyline points="52,158 252,130 452,130 652,102" fill="none" stroke="#b7791f" stroke-width="2"/>
+      <circle cx="452" cy="130" r="4" fill="#b7791f"/>
+      <text x="392" y="146" font-size="11" fill="#b7791f">OK flat 1M→2M</text>
+    </svg>
+    <div class="note">Premium against the each-occurrence limit, one line per
+      jurisdiction, disagreements drawn red and larger. The premium should rise
+      with the limit, smoothly, everywhere. <b>A kink, a flat run or a step
+      usually means a lookup missed and something fell back</b> — which is
+      visible here without reading a single number.</div>
+  </div>
+</div>
+</section>
+
+<!-- ============================================================ B -->
+<section id="b">
+<div class="lede"><b>B · The lead visual is chosen by the layer that ran</b>
+  Verdict, then the one picture that answers <i>this layer's</i> question, then
+  the state table. Each layer leads with the shape its own question has.
+  <div class="cost">The page looks different depending on what you ran, which is
+    either the point or the problem.</div>
+</div>
+
+<h3 class="sub">L3 · Limits — leads with the response curve</h3>
+<div class="page"><div class="caption">L3-91340 · same curve as option A, but above the table</div>
+  <div class="card">
+    <p class="big">186 agree · 11 differ · 3 not applicable</p>
+    <div class="counts">
+      <div><b class="ok">93.0%</b>agree</div><div><b class="bad">11</b>differ</div>
+      <div><b>200</b>ISO calls</div></div>
+  </div>
+  <div class="card">
+    <h2>Premium against the each-occurrence limit</h2>
+    <svg viewBox="0 0 700 200" width="100%" height="200" role="img">
+      <line x1="52" y1="168" x2="680" y2="168" stroke="#e3e8ee"/>
+      <line x1="52" y1="14" x2="52" y2="168" stroke="#e3e8ee"/>
+      <text x="52" y="186" font-size="10" fill="#6b7580">500k</text>
+      <text x="252" y="186" font-size="10" fill="#6b7580">1M</text>
+      <text x="452" y="186" font-size="10" fill="#6b7580">2M</text>
+      <text x="640" y="186" font-size="10" fill="#6b7580">5M</text>
+      <polyline points="52,145 252,120 452,95 652,68" fill="none" stroke="#bcd7ef" stroke-width="1.6"/>
+      <polyline points="52,152 252,128 452,104 652,80" fill="none" stroke="#bcd7ef" stroke-width="1.6"/>
+      <polyline points="52,138 252,112 452,88 652,60" fill="none" stroke="#bcd7ef" stroke-width="1.6"/>
+      <polyline points="52,148 252,124 452,100 652,36" fill="none" stroke="#c0392b" stroke-width="2.2"/>
+      <circle cx="652" cy="36" r="5" fill="#c0392b"/>
+      <text x="600" y="28" font-size="11" fill="#c0392b" font-weight="650">LA</text>
+    </svg>
+  </div>
+  <div class="card"><h2>Every state, worst first</h2>
+    <table><tr><th>State<th>Status<th class="n">Ours<th class="n">ISO<th class="n">Difference</tr>
+    <tr><td><b>LA</b><td class="st DIFF">DIFF<td class="n">9,870<td class="n">3,140<td class="n">+6,730
+    <tr><td><b>TX</b><td class="st DIFF">DIFF<td class="n">2,780<td class="n">2,731<td class="n">+49
+    <tr><td colspan="5" class="det">… 49 more</tr></table></div>
+</div>
+
+<h3 class="sub">L4 · Deductibles — leads with one bar per slot</h3>
+<div class="page"><div class="caption">a line would imply the six slots are ordered; they are not</div>
+  <div class="card">
+    <h2>How far each slot moved the premium, averaged over 51 states</h2>
+    <table class="bars">
+      <tr><td style="width:190px">Prem/Ops BI</td>
+          <td><span class="bar" style="width:62%"></span></td>
+          <td class="n det">−4.1%</td></tr>
+      <tr><td>Prem/Ops PD</td>
+          <td><span class="bar" style="width:71%"></span></td>
+          <td class="n det">−4.7%</td></tr>
+      <tr><td>Prem/Ops combined BI/PD</td>
+          <td><span class="bar" style="width:88%"></span></td>
+          <td class="n det">−5.9%</td></tr>
+      <tr><td>Products BI</td>
+          <td><span class="bar" style="width:34%"></span></td>
+          <td class="n det">−2.3%</td></tr>
+      <tr class="rowflag"><td><b>Products PD</b></td>
+          <td><span class="bar zero" style="width:2px"></span></td>
+          <td class="n det"><b style="color:#c0392b">0.0% — moved nothing anywhere</b></td></tr>
+      <tr><td>Products combined BI/PD</td>
+          <td><span class="bar" style="width:41%"></span></td>
+          <td class="n det">−2.8%</td></tr>
+    </table>
+    <div class="note">The question this layer asks is <b>is any slot
+      ignored</b>. A slot that moved nothing in all 51 states is either a filed
+      fact about ISO or a deductible we never applied — and the probe already
+      distinguishes those two.</div>
+  </div>
+</div>
+
+<h3 class="sub">L2 · Classification — leads with the spread across states</h3>
+<div class="page"><div class="caption">one configuration, 51 states: the variation IS the geography</div>
+  <div class="card">
+    <h2>Premium per state, sorted — one class, one exposure</h2>
+    <svg viewBox="0 0 700 150" width="100%" height="150" role="img">
+      <line x1="40" y1="120" x2="690" y2="120" stroke="#e3e8ee"/>
+      <g fill="#bcd7ef">
+        <rect x="44" y="112" width="9" height="8"/><rect x="57" y="108" width="9" height="12"/>
+        <rect x="70" y="104" width="9" height="16"/><rect x="83" y="101" width="9" height="19"/>
+        <rect x="96" y="98" width="9" height="22"/><rect x="109" y="96" width="9" height="24"/>
+        <rect x="122" y="94" width="9" height="26"/><rect x="135" y="92" width="9" height="28"/>
+        <rect x="148" y="90" width="9" height="30"/><rect x="161" y="88" width="9" height="32"/>
+        <rect x="174" y="86" width="9" height="34"/><rect x="187" y="85" width="9" height="35"/>
+        <rect x="200" y="83" width="9" height="37"/><rect x="213" y="82" width="9" height="38"/>
+        <rect x="226" y="80" width="9" height="40"/><rect x="239" y="79" width="9" height="41"/>
+        <rect x="252" y="78" width="9" height="42"/><rect x="265" y="76" width="9" height="44"/>
+        <rect x="278" y="75" width="9" height="45"/><rect x="291" y="74" width="9" height="46"/>
+        <rect x="304" y="72" width="9" height="48"/><rect x="317" y="71" width="9" height="49"/>
+        <rect x="330" y="70" width="9" height="50"/><rect x="343" y="68" width="9" height="52"/>
+        <rect x="356" y="67" width="9" height="53"/><rect x="369" y="66" width="9" height="54"/>
+        <rect x="382" y="64" width="9" height="56"/><rect x="395" y="63" width="9" height="57"/>
+        <rect x="408" y="61" width="9" height="59"/><rect x="421" y="60" width="9" height="60"/>
+        <rect x="434" y="58" width="9" height="62"/><rect x="447" y="56" width="9" height="64"/>
+        <rect x="460" y="54" width="9" height="66"/><rect x="473" y="52" width="9" height="68"/>
+        <rect x="486" y="50" width="9" height="70"/><rect x="499" y="47" width="9" height="73"/>
+        <rect x="512" y="44" width="9" height="76"/><rect x="525" y="41" width="9" height="79"/>
+        <rect x="538" y="38" width="9" height="82"/><rect x="551" y="34" width="9" height="86"/>
+      </g>
+      <rect x="564" y="30" width="9" height="90" fill="#c0392b"/>
+      <rect x="577" y="14" width="9" height="106" fill="#c0392b"/>
+      <text x="556" y="10" font-size="11" fill="#c0392b" font-weight="650">LA · AK</text>
+      <rect x="600" y="116" width="9" height="4" fill="#9aa5b1"/>
+      <text x="614" y="124" font-size="10" fill="#9aa5b1">PR not compared</text>
+    </svg>
+    <div class="note">A class should be more expensive in some states than
+      others — that is what a loss cost is. <b>What is worth looking at is the
+      shape of the tail</b>: two states far outside the rest are either a real
+      filed difference or our bug, and only ISO can say which.</div>
+  </div>
+</div>
+</section>
+
+<!-- ============================================================ C -->
+<section id="c">
+<div class="lede"><b>C · Numbers only — no drawings at all</b>
+  Verdict counts and the state table, for every layer, forever. Fastest to read
+  and to build; two runs of any layers are directly comparable.
+  <div class="cost">Gives up the response curve — the one view where a missed
+    lookup shows as a kink you can see without reading numbers.</div>
+</div>
+
+<div class="page"><div class="caption">L3-91340-20260818T1120.html</div>
+  <div class="card">
+    <p class="big">186 agree · 11 differ · 3 not applicable</p>
+    <div class="counts">
+      <div><b class="ok">93.0%</b>agree</div>
+      <div><b>200</b>compared</div>
+      <div><b class="bad">11</b>differ</div>
+      <div><b>3</b>not applicable</div>
+      <div><b>200</b>ISO calls</div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Every state, worst first</h2>
+    <table>
+      <tr><th>State<th>Configuration<th>Status<th class="n">Ours<th class="n">ISO<th class="n">Difference<th class="n">Fields</tr>
+      <tr><td><b>LA</b><td class="det">5M × highest<td class="st DIFF">DIFF<td class="n">9,870<td class="n">3,140<td class="n">+6,730<td class="n">3
+      <tr><td><b>AK</b><td class="det">5M × highest<td class="st DIFF">DIFF<td class="n">8,410<td class="n">2,980<td class="n">+5,430<td class="n">3
+      <tr><td><b>OK</b><td class="det">2M × lowest<td class="st DIFF">DIFF<td class="n">4,180<td class="n">4,020<td class="n">+160<td class="n">2
+      <tr><td><b>TX</b><td class="det">5M × highest<td class="st DIFF">DIFF<td class="n">2,780<td class="n">2,731<td class="n">+49<td class="n">2
+      <tr><td><b>NY</b><td class="det">1M × middle<td class="st PREMIUM">PREMIUM ONLY<td class="n">3,510<td class="n">3,510<td class="n">—<td class="n">1
+      <tr><td><b>CA</b><td class="det">1M × middle<td class="st MATCH">MATCH<td class="n">3,340<td class="n">3,340<td class="n">—<td class="n">0
+      <tr><td><b>IA</b><td class="det">1M × middle<td class="st MATCH">MATCH<td class="n">2,110<td class="n">2,110<td class="n">—<td class="n">0
+      <tr><td><b>MT</b><td class="det">5M × highest<td class="st NA">NOT APPLICABLE<td class="n">—<td class="n">—<td class="n">—<td class="n">—
+      <tr><td colspan="7" class="det">… 196 more rows</tr>
+    </table>
+    <div class="note">204 rows — one per state per configuration — sorted by the
+      size of the difference. Everything the other options draw is in here as a
+      number.</div>
+  </div>
+</div>
+</section>
+
+<!-- ============================================================ D -->
+<section id="d">
+<div class="lede"><b>D · The state table, with a configuration grid above it</b>
+  A grid rather than a drawing: configurations down, states across, each cell
+  coloured by outcome. For L3 and L4 a run holds many configurations, and this
+  is the only view that says <i>which configuration</i> is the problem rather
+  than which state.
+  <div class="cost">Reads as a table, not a chart. Gets wide at 51 columns —
+    it scrolls sideways.</div>
+</div>
+
+<div class="page"><div class="caption">L3-91340-20260818T1120.html</div>
+  <div class="card">
+    <p class="big">186 agree · 11 differ · 3 not applicable</p>
+    <div class="counts">
+      <div><b class="ok">93.0%</b>agree</div><div><b class="bad">11</b>differ</div>
+      <div><b>3</b>not applicable</div><div><b>200</b>ISO calls</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Configuration × jurisdiction</h2>
+    <div style="overflow-x:auto">
+    <table class="matrix">
+      <tr><th class="rowhead">Configuration</th>
+        <th>AL</th><th>AK</th><th>AZ</th><th>AR</th><th>CA</th><th>CO</th><th>CT</th>
+        <th>DE</th><th>FL</th><th>GA</th><th>IA</th><th>ID</th><th>IL</th><th>IN</th>
+        <th>KS</th><th>KY</th><th>LA</th><th>MA</th><th>MD</th><th>ME</th><th>MI</th>
+        <th>MN</th><th>MO</th><th>MT</th><th>NC</th><th>NY</th><th>OH</th><th>OK</th>
+        <th>OR</th><th>PA</th><th>RI</th><th>TX</th><th>UT</th><th>VA</th><th>WA</th>
+        <th class="det">…</th></tr>
+      <tr><td class="rowhead">500,000 × lowest</td>
+        <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td>
+        <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td>
+        <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td>
+        <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td>
+        <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td>
+        <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td>
+        <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td>
+        <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td>
+        <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td>
+        <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td>
+        <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td>
+        <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td class="det">…</td></tr>
+      <tr><td class="rowhead">1,000,000 × middle</td>
+        <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td>
+        <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td>
+        <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td>
+        <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td>
+        <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td>
+        <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td>
+        <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td>
+        <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td>
+        <td><i class="cell c-ok"></i></td><td><i class="cell c-amb"></i></td><td><i class="cell c-ok"></i></td>
+        <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td>
+        <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td>
+        <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td class="det">…</td></tr>
+      <tr><td class="rowhead">2,000,000 × middle</td>
+        <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td>
+        <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td>
+        <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td>
+        <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td>
+        <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td>
+        <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td>
+        <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td>
+        <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td>
+        <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td>
+        <td><i class="cell c-bad"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td>
+        <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td>
+        <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td class="det">…</td></tr>
+      <tr class="rowflag"><td class="rowhead">5,000,000 × highest</td>
+        <td><i class="cell c-ok"></i></td><td><i class="cell c-bad"></i></td><td><i class="cell c-ok"></i></td>
+        <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-bad"></i></td>
+        <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-bad"></i></td>
+        <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td>
+        <td><i class="cell c-bad"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td>
+        <td><i class="cell c-ok"></i></td><td><i class="cell c-bad"></i></td><td><i class="cell c-ok"></i></td>
+        <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-bad"></i></td>
+        <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-na"></i></td>
+        <td><i class="cell c-ok"></i></td><td><i class="cell c-bad"></i></td><td><i class="cell c-ok"></i></td>
+        <td><i class="cell c-bad"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td>
+        <td><i class="cell c-ok"></i></td><td><i class="cell c-bad"></i></td><td><i class="cell c-ok"></i></td>
+        <td><i class="cell c-ok"></i></td><td><i class="cell c-bad"></i></td><td class="det">…</td></tr>
+    </table>
+    </div>
+    <div class="legend">
+      <span><i class="cell c-ok"></i> agrees</span>
+      <span><i class="cell c-amb"></i> premium only</span>
+      <span><i class="cell c-bad"></i> differs</span>
+      <span><i class="cell c-na"></i> not applicable</span>
+    </div>
+    <div class="note"><b>The finding is the row, not the states.</b> Ten of the
+      eleven disagreements sit in one configuration — the highest aggregate at
+      the 5,000,000 limit — and they are scattered across the country. A state
+      table sorted by difference shows those ten as ten separate problems in ten
+      separate states. This says it is one.</div>
+  </div>
+
+  <div class="card">
+    <h2>Every state, worst first</h2>
+    <table>
+      <tr><th>State<th>Configuration<th>Status<th class="n">Ours<th class="n">ISO<th class="n">Difference</tr>
+      <tr><td><b>LA</b><td class="det">5M × highest<td class="st DIFF">DIFF<td class="n">9,870<td class="n">3,140<td class="n">+6,730
+      <tr><td><b>AK</b><td class="det">5M × highest<td class="st DIFF">DIFF<td class="n">8,410<td class="n">2,980<td class="n">+5,430
+      <tr><td colspan="6" class="det">… 202 more</tr>
+    </table>
+  </div>
+</div>
+</section>
+
+</main>
+<script>
+document.querySelectorAll('nav button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('nav button').forEach(x => x.classList.remove('on'));
+  document.querySelectorAll('section').forEach(x => x.classList.remove('on'));
+  b.classList.add('on');
+  document.getElementById(b.dataset.t).classList.add('on');
+  window.scrollTo(0, 0);
+});
+</script>
+</body></html>

@@ -1,0 +1,1291 @@
+<title>GL Rating Decision Chains</title>
+<style>
+  @font-face {
+    font-family: 'system-mono';
+    src: local('Cascadia Code'), local('Consolas');
+  }
+  :root {
+    --ink: #101b24;
+    --paper: #edf0ec;
+    --paper-line: #c7d2ce;
+    --blueprint: #2e6e8e;
+    --blueprint-soft: #e4ebef;
+    --stamp: #c77f32;
+    --caution: #b14b39;
+    --ledger: #3f8f6e;
+    --surface: #f4f6f3;
+    --panel: #ffffff;
+    --sidebar: #e8ede8;
+    --text: var(--ink);
+    --muted: #5b6b72;
+    --border: #cdd6d2;
+    --font-display: Cambria, 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+    --font-body: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+    --font-mono: 'Cascadia Code', 'Cascadia Mono', Consolas, 'SFMono-Regular', ui-monospace, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --surface: #0b141a;
+      --panel: #101b22;
+      --sidebar: #0e1a20;
+      --text: #e7ece9;
+      --muted: #93a3a0;
+      --border: #223138;
+      --blueprint-soft: #16232b;
+    }
+  }
+  :root[data-theme="dark"] {
+    --surface: #0b141a;
+    --panel: #101b22;
+    --sidebar: #0e1a20;
+    --text: #e7ece9;
+    --muted: #93a3a0;
+    --border: #223138;
+    --blueprint-soft: #16232b;
+  }
+  :root[data-theme="light"] {
+    --surface: #f4f6f3;
+    --panel: #ffffff;
+    --sidebar: #e8ede8;
+    --text: #101b24;
+    --muted: #5b6b72;
+    --border: #cdd6d2;
+    --blueprint-soft: #e4ebef;
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; background: var(--surface); color: var(--text);
+    font-family: var(--font-body); -webkit-font-smoothing: antialiased;
+  }
+  body { display: flex; flex-direction: column; min-height: 100vh; }
+  a { color: inherit; }
+  ::selection { background: var(--stamp); color: #101b24; }
+
+  /* header */
+  header.masthead {
+    display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap;
+    padding: 1.1rem 1.6rem; border-bottom: 1px solid var(--border);
+    background: var(--panel);
+  }
+  header.masthead h1 {
+    font-family: var(--font-display); font-weight: 600; font-size: 1.35rem;
+    margin: 0; letter-spacing: 0.01em; text-wrap: balance;
+  }
+  header.masthead .rule {
+    width: 1px; align-self: stretch; background: var(--border);
+  }
+  header.masthead p {
+    margin: 0; font-size: 0.82rem; color: var(--muted); max-width: 46ch;
+  }
+  header.masthead .src {
+    margin-left: auto; font-family: var(--font-mono); font-size: 0.72rem;
+    color: var(--muted); text-align: right; line-height: 1.5;
+  }
+
+  /* shell */
+  .shell { display: flex; flex: 1; min-height: 0; }
+
+  nav.toc {
+    width: 258px; flex: none; background: var(--sidebar);
+    border-right: 1px solid var(--border);
+    padding: 1rem 0 2rem; overflow-y: auto;
+  }
+  nav.toc .group { margin-bottom: 0.35rem; }
+  nav.toc .group-label {
+    font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--muted); padding: 0.5rem 1.2rem 0.35rem;
+  }
+  nav.toc button.navlink {
+    display: block; width: 100%; text-align: left; background: none; border: none;
+    font-family: var(--font-body); font-size: 0.86rem; color: var(--text);
+    padding: 0.42rem 1.2rem 0.42rem 1.6rem; cursor: pointer; position: relative;
+    border-left: 3px solid transparent;
+  }
+  nav.toc button.navlink:hover { background: var(--blueprint-soft); }
+  nav.toc button.navlink.active {
+    background: var(--blueprint-soft); border-left-color: var(--blueprint);
+    font-weight: 600;
+  }
+  nav.toc button.navlink .chain-len {
+    display: block; font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); font-weight: 400;
+  }
+  nav.toc button.overview-link {
+    display: block; width: 100%; text-align: left; background: none; border: none;
+    font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.05em; text-transform: uppercase;
+    color: var(--blueprint); padding: 0.6rem 1.2rem; cursor: pointer; border-left: 3px solid transparent;
+  }
+  nav.toc button.overview-link.active { border-left-color: var(--blueprint); background: var(--blueprint-soft); }
+  nav.toc hr { border: none; border-top: 1px solid var(--border); margin: 0.6rem 1.2rem; }
+
+  nav.toc .legend {
+    margin: 1rem 1.2rem 0; padding: 0.8rem 0.9rem; border: 1px solid var(--border);
+    border-radius: 3px; background: var(--panel);
+  }
+  nav.toc .legend h4 {
+    margin: 0 0 0.5rem; font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--muted); font-weight: 600;
+  }
+  nav.toc .legend .row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.74rem; margin-bottom: 0.35rem; }
+  nav.toc .legend .swatch { width: 13px; height: 13px; flex: none; border-radius: 2px; border-width: 1.5px; border-style: solid; }
+  nav.toc .legend .sw-gate { background: #f4e4ce; border-color: #c77f32; }
+  nav.toc .legend .sw-zero { background: #f3dcd6; border-color: #b14b39; }
+  nav.toc .legend .sw-final { background: #dceee4; border-color: #3f8f6e; }
+  nav.toc .legend .sw-step { background: #e4ebef; border-color: #2e6e8e; }
+  nav.toc .legend .sw-openq { background: #f4e4ce; border-color: #b14b39; border-style: dashed; }
+
+  main { flex: 1; min-width: 0; overflow-y: auto; padding: 1.6rem 2rem 4rem; }
+
+  /* overview */
+  #view-overview .intro { max-width: 62ch; margin-bottom: 1.6rem; }
+  #view-overview .intro h2 { font-family: var(--font-display); font-size: 1.25rem; margin: 0 0 0.5rem; text-wrap: balance; }
+  #view-overview .intro p { font-size: 0.92rem; line-height: 1.6; color: var(--muted); margin: 0 0 0.6rem; }
+
+  table.matrix { border-collapse: collapse; width: 100%; max-width: 900px; }
+  table.matrix caption { text-align: left; font-family: var(--font-mono); font-size: 0.7rem; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem; }
+  table.matrix th, table.matrix td { border: 1px solid var(--border); padding: 0; }
+  table.matrix thead th {
+    font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em;
+    color: var(--muted); background: var(--panel); padding: 0.6rem 0.8rem; text-align: left;
+  }
+  table.matrix tbody th {
+    font-family: var(--font-body); font-weight: 600; font-size: 0.86rem; text-align: left;
+    padding: 0.6rem 0.8rem; background: var(--panel); white-space: nowrap;
+  }
+  table.matrix td button.cell {
+    display: block; width: 100%; height: 100%; background: var(--panel); border: none; cursor: pointer;
+    padding: 0.6rem 0.8rem; text-align: left; font-family: var(--font-body); color: var(--text);
+  }
+  table.matrix td button.cell:hover { background: var(--blueprint-soft); }
+  table.matrix td button.cell .n { font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); display: block; }
+
+  /* sheet */
+  .sheet-view { display: none; }
+  .sheet-view.active { display: block; }
+
+  .titleblock {
+    display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--border);
+    margin-bottom: 1.1rem; background: var(--panel);
+  }
+  .titleblock .field { padding: 0.6rem 0.9rem; border-right: 1px solid var(--border); }
+  .titleblock .field:last-child { border-right: none; }
+  .titleblock .field .k {
+    font-family: var(--font-mono); font-size: 0.63rem; text-transform: uppercase; letter-spacing: 0.07em;
+    color: var(--muted); display: block; margin-bottom: 0.15rem;
+  }
+  .titleblock .field .v { font-family: var(--font-mono); font-size: 0.82rem; color: var(--text); line-height: 1.35; }
+  .titleblock .field.wide { grid-column: span 4; border-top: 1px solid var(--border); }
+
+  .sheet {
+    background: var(--paper); border: 1px solid var(--paper-line); border-radius: 2px;
+    padding: 1.4rem 1.2rem 1rem; position: relative; overflow-x: auto;
+    background-image:
+      linear-gradient(var(--paper-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--paper-line) 1px, transparent 1px);
+    background-size: 28px 28px; background-position: -1px -1px;
+    background-color: var(--paper);
+  }
+  .sheet::before, .sheet::after,
+  .sheet .tick-tl, .sheet .tick-br { content: ""; }
+  .sheet .corner { position: absolute; width: 14px; height: 14px; border-color: #7d8f8a; }
+  .sheet .corner.tl { top: 6px; left: 6px; border-top: 1.5px solid #7d8f8a; border-left: 1.5px solid #7d8f8a; }
+  .sheet .corner.tr { top: 6px; right: 6px; border-top: 1.5px solid #7d8f8a; border-right: 1.5px solid #7d8f8a; }
+  .sheet .corner.bl { bottom: 6px; left: 6px; border-bottom: 1.5px solid #7d8f8a; border-left: 1.5px solid #7d8f8a; }
+  .sheet .corner.br { bottom: 6px; right: 6px; border-bottom: 1.5px solid #7d8f8a; border-right: 1.5px solid #7d8f8a; }
+  .sheet pre.mermaid { margin: 0; background: transparent; min-width: 640px; color: #101b24; }
+
+  .notes { margin-top: 1.1rem; display: grid; grid-template-columns: 1.4fr 1fr; gap: 1.2rem; }
+  @media (max-width: 900px) { .notes { grid-template-columns: 1fr; } }
+  .notes h3 {
+    font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--muted); margin: 0 0 0.5rem;
+  }
+  .notes ul { margin: 0; padding-left: 1.1rem; font-size: 0.86rem; line-height: 1.55; }
+  .notes ul li { margin-bottom: 0.4rem; }
+  .notes .delta { border: 1px solid var(--border); background: var(--panel); padding: 0.8rem 0.9rem; border-radius: 3px; }
+  .notes .delta.openq { border-color: var(--caution); }
+
+  footer.doc-footer {
+    padding: 1rem 2rem 2rem; font-size: 0.76rem; color: var(--muted); border-top: 1px solid var(--border);
+  }
+  footer.doc-footer strong { color: var(--text); }
+</style>
+
+<header class="masthead">
+  <h1>GL Rating Decision Chains</h1>
+  <div class="rule"></div>
+  <p>Every gate, branch, and terminal in ISO's Commercial General Liability rate build-up and premium calculation, for the seven sublines documented so far.</p>
+  <div class="src">GL_CW_20231201_V03 (+ GL_CW_20270401_V01 deltas) · Countrywide<br>companion to *_RatingAlgorithms.md, gate docs in docs/gates/</div>
+</header>
+
+<div class="shell">
+  <nav class="toc" id="toc">
+    <button class="overview-link active" data-target="overview">Overview matrix</button>
+    <hr>
+    <div class="group">
+      <div class="group-label">Premises/Operations (334)</div>
+      <button class="navlink" data-target="premops-cw23">CW 2023 and earlier<span class="chain-len">41-step chain · golden case 976</span></button>
+      <button class="navlink" data-target="premops-cw27">CW 2027 and later<span class="chain-len">med-pay folds into ILF · $1 floor</span></button>
+    </div>
+    <hr>
+    <div class="group">
+      <div class="group-label">Products/Completed Operations (336)</div>
+      <button class="navlink" data-target="prodscompldops-main">Loss Cost / ELP chain<span class="chain-len">35+6 step chain · edition-stable</span></button>
+    </div>
+    <hr>
+    <div class="group">
+      <div class="group-label">Owners &amp; Contractors Protective (335)</div>
+      <button class="navlink" data-target="ocp-standard">CW 2023, standard classes<span class="chain-len">21-step chain</span></button>
+      <button class="navlink" data-target="ocp-15191">CW 2023, class 15191<span class="chain-len">WC-derived ELP</span></button>
+      <button class="navlink" data-target="ocp-legacy">CW 2023, classes 27111/27112<span class="chain-len">100-unit breakpoint, retired 2027</span></button>
+      <button class="navlink" data-target="ocp-cw27">CW 2027 and later<span class="chain-len">12-step chain · loss-cost path deleted</span></button>
+    </div>
+    <hr>
+    <div class="group">
+      <div class="group-label">Liquor Liability (332)</div>
+      <button class="navlink" data-target="liquor-main">ELP-only chain<span class="chain-len">16-step chain · no loss-cost path</span></button>
+    </div>
+    <hr>
+    <div class="group">
+      <div class="group-label">Railroad Protective (335)</div>
+      <button class="navlink" data-target="railroad-standard">Classes 40011/40012<span class="chain-len">single-hazard</span></button>
+      <button class="navlink" data-target="railroad-mixed">Class 40011, mixed-hazard<span class="chain-len">weighted average branch</span></button>
+      <button class="navlink" data-target="railroad-40013">Class 40013<span class="chain-len">highway projects</span></button>
+      <button class="navlink" data-target="railroad-40014">Class 40014<span class="chain-len">derived, not tabulated</span></button>
+    </div>
+    <hr>
+    <div class="group">
+      <div class="group-label">Product Withdrawal / Cyber (365)</div>
+      <button class="navlink" data-target="pw-cova">Coverage A · Expense<span class="chain-len">9-step chain</span></button>
+      <button class="navlink" data-target="pw-covb">Coverage B · Liability<span class="chain-len">same shape, own factor</span></button>
+      <button class="navlink" data-target="pw-limited">Limited Prod. Withdrawal (CG 04 36)<span class="chain-len">11+43 rules, sibling read (E18)</span></button>
+      <button class="navlink" data-target="pw-loedcyber">LoED / Cyber Incident Liab.<span class="chain-len">host-dependent, 2 hosts each</span></button>
+    </div>
+    <hr>
+    <div class="group">
+      <div class="group-label">Unmanned Aircraft (370)</div>
+      <button class="navlink" data-target="uav-cova">Coverage A · BI/PD<span class="chain-len">13-step chain</span></button>
+      <button class="navlink" data-target="uav-covb">Coverage B · PAI<span class="chain-len">13-step chain, no deductible term</span></button>
+    </div>
+
+    <div class="legend">
+      <h4>Reading the chains</h4>
+      <div class="row"><span class="swatch sw-gate"></span> gate / branch condition</div>
+      <div class="row"><span class="swatch sw-step"></span> computed factor</div>
+      <div class="row"><span class="swatch sw-final"></span> premium resolves</div>
+      <div class="row"><span class="swatch sw-zero"></span> premium = 0.0</div>
+      <div class="row"><span class="swatch sw-openq"></span> flagged finding / open question</div>
+    </div>
+  </nav>
+
+  <main id="main">
+
+    <section class="sheet-view active" id="view-overview">
+      <div class="intro">
+        <h2>Eighteen chains across seven sublines, none of them a template</h2>
+        <p>Unlike CF's four cause-of-loss forms rated in parallel off one shared shape, GL's seven sublines share almost nothing structurally — Premises/Operations forks by countrywide edition, Products/Completed Operations forks by whether a published loss cost is filed as zero, Owners &amp; Contractors Protective forks by class code and by edition simultaneously, Railroad Protective forks by class code four ways with three "naming trap" rules whose names lie about which class they test, and Product Withdrawal / Cyber reads its host coverage's <em>already-computed</em> values rather than its own tables (escalation E18). Liquor Liability is the plainest of the seven: no loss-cost path exists at all, by rule — Rule 45.E says "for rates, refer to company," so the entire chain is an ELP-driven surrogate.</p>
+        <p>Dashed amber-and-rust nodes mark a flagged finding — an unresolved formula, a naming trap, a sibling-group dependency, a table that prices legitimately at zero — logged in each subline's own <code style="font-family:var(--font-mono)">RatingAlgorithms.md</code> and its source gate doc rather than guessed at. Where a gate doc did not reconstruct a step's internal branching, the node says so instead of inventing one.</p>
+      </div>
+      <table class="matrix">
+        <caption>Click a cell to open its decision chain</caption>
+        <thead>
+          <tr><th>Subline</th><th>Chain 1</th><th>Chain 2</th><th>Chain 3</th><th>Chain 4</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th>Premises/Operations</th>
+            <td><button class="cell" data-target="premops-cw23">CW 2023 and earlier<span class="n">41 steps · golden 976</span></button></td>
+            <td><button class="cell" data-target="premops-cw27">CW 2027 and later<span class="n">med-pay folds into ILF</span></button></td>
+            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
+            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
+          </tr>
+          <tr>
+            <th>Products/Completed Operations</th>
+            <td><button class="cell" data-target="prodscompldops-main">Loss Cost / ELP path<span class="n">41 steps · golden 6,845</span></button></td>
+            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">edition-stable — one chain</span></td>
+            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
+            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
+          </tr>
+          <tr>
+            <th>Owners &amp; Contractors Protective</th>
+            <td><button class="cell" data-target="ocp-standard">CW 2023, standard classes<span class="n">21 steps</span></button></td>
+            <td><button class="cell" data-target="ocp-15191">CW 2023, class 15191<span class="n">WC-derived ELP</span></button></td>
+            <td><button class="cell" data-target="ocp-legacy">CW 2023, classes 27111/27112<span class="n">100-unit breakpoint</span></button></td>
+            <td><button class="cell" data-target="ocp-cw27">CW 2027 and later<span class="n">12 steps</span></button></td>
+          </tr>
+          <tr>
+            <th>Liquor Liability</th>
+            <td><button class="cell" data-target="liquor-main">ELP-only chain<span class="n">16 steps · no loss cost</span></button></td>
+            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">edition delta noted in-page</span></td>
+            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
+            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
+          </tr>
+          <tr>
+            <th>Railroad Protective</th>
+            <td><button class="cell" data-target="railroad-standard">Classes 40011/40012<span class="n">single-hazard</span></button></td>
+            <td><button class="cell" data-target="railroad-mixed">Class 40011, mixed-hazard<span class="n">weighted average</span></button></td>
+            <td><button class="cell" data-target="railroad-40013">Class 40013<span class="n">highway, no add-on</span></button></td>
+            <td><button class="cell" data-target="railroad-40014">Class 40014<span class="n">derived, not tabulated</span></button></td>
+          </tr>
+          <tr>
+            <th>Product Withdrawal / Cyber</th>
+            <td><button class="cell" data-target="pw-cova">Coverage A · Expense<span class="n">9 steps</span></button></td>
+            <td><button class="cell" data-target="pw-covb">Coverage B · Liability<span class="n">9 steps, own factor</span></button></td>
+            <td><button class="cell" data-target="pw-limited">Limited Prod. Withdrawal<span class="n">11+43 rules</span></button></td>
+            <td><button class="cell" data-target="pw-loedcyber">LoED / Cyber Incident Liab.<span class="n">2 hosts each</span></button></td>
+          </tr>
+          <tr>
+            <th>Unmanned Aircraft</th>
+            <td><button class="cell" data-target="uav-cova">Coverage A · BI/PD<span class="n">13 steps</span></button></td>
+            <td><button class="cell" data-target="uav-covb">Coverage B · PAI<span class="n">13 steps, no deductible</span></button></td>
+            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
+            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- ============================= PREMISES/OPERATIONS · CW 2023 ============================= -->
+    <section class="sheet-view" id="view-premops-cw23">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Premises/Operations (subline 334)</span></div>
+        <div class="field"><span class="k">Edition</span><span class="v">CW 2023 V03 and earlier (10 parents live, this is the golden case's)</span></div>
+        <div class="field"><span class="k">Master chain</span><span class="v">ErcSetRatesAndFactors (8 class + 29 coverage steps) + ErcRate (4 steps)</span></div>
+        <div class="field"><span class="k">Premium file</span><span class="v">GeneralLiabilityClassificationPremOpsCoverageRules.Rule.xml</span></div>
+        <div class="field wide"><span class="k">Coverage gate</span><span class="v">No explicit gate flag — referrals degrade silently into computed numbers (ILTA "Refer To Co.", empty class/territory, empty premium basis)</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["Premises/Operations coverage record"]) --> expCalc{"PremiumBasis in nine /1000 bases?"}
+    expCalc -->|"Yes"| expDiv["PremOpsExposureCalc = truncate(Exposure/1000)"]:::step
+    expCalc -->|"No, empty basis falls here too"| expRaw["PremOpsExposureCalc = Exposure (raw) - 1000x overcharge risk"]:::openq
+    expDiv --> ilta{"PremOpsIncrdLimitTableAssignment = 'Refer To Co.'?"}
+    expRaw --> ilta
+    ilta -->|"Yes, no override supplied"| iltaNull["Assignment resolves null -> Int = 0"]:::openq
+    ilta -->|"No, or override supplied"| iltaOk["FinalPremOpsIncrdLimitTableAssignment resolved"]:::step
+    iltaNull --> ilfLookup{"ILF lookup: table#, occ limit, agg limit all set?"}
+    iltaOk --> ilfLookup
+    ilfLookup -->|"No, any key empty"| ilfZero["PremOpsIncrdLimitFactor = 0.0"]:::zero
+    ilfLookup -->|"Yes"| ilfOk["CSLILF = lookup ILFPremOps(state,table#,occ,agg)"]:::step
+    ilfOk --> lossCostGate{"ClassCode and Territory both non-empty?"}
+    ilfZero --> lossCostGate
+    lossCostGate -->|"No"| lossCostZero["PremOpsLossCost = 0.0 - silently routes to ELP path"]:::openq
+    lossCostGate -->|"Yes"| lossCostLookup["PremOpsLossCost = lookup (size-of-risk or standard)"]:::step
+    lossCostLookup --> baseRate{"LossCost <> 0?"}
+    lossCostZero --> baseRate
+    baseRate -->|"Yes"| baseFromLC["BaseRate = round(LossCost x BYOAExclFactor x LCM [x ClaimsMadeMult],3)"]:::step
+    baseRate -->|"No"| baseFromELP["BaseRate = round(ELP x LCM [x ClaimsMadeMult],3)"]:::step
+    baseFromLC --> medpay["MedicalPaymentsFactor = lookup MedPayFactor(CW,class)"]:::step
+    baseFromELP --> medpay
+    medpay --> dedFactor{"Deductible override supplied?"}
+    dedFactor -->|"Yes"| dedOverride["DeductibleFactor = override"]:::step
+    dedFactor -->|"No"| dedLookup["DeductibleFactor = lookup DedFactorPremOpsCSL, else 0.0"]:::step
+    dedOverride --> sentinel{"'Per Claim' deductible row?"}
+    dedLookup --> sentinel
+    sentinel -->|"Yes"| sentinelZero["Factor = 0 in table - guarded only by DoMessage, not the rating chain"]:::openq
+    sentinel -->|"No, Per Occurrence"| sentinelReal["Real factor applied (0.005-0.018)"]:::step
+    sentinelZero --> finalILF["FinalILF = round(CSLILF - FinalDeductibleFactor,3)"]:::step
+    sentinelReal --> finalILF
+    finalILF --> finalRate["FinalRate = round(BaseRate x FinalILF [x SizeOfRisk] x PackageMod x ExperienceMod x ExpenseMod x ModToUse,3)"]:::step
+    finalRate --> medCharge["MedicalPaymentsCharge = round(BaseRate x (MedPayFctr-1) x Exposure,0)"]:::step
+    medCharge --> premium["Premium = round(FinalRate x Exposure[/1000] + MedicalPaymentsCharge,0)"]:::final
+    premium --> zeroCheck{"Premium computes to 0?"}
+    zeroCheck -->|"Yes"| stays0["Stays 0.0 - no $1 floor exists in this edition"]:::zero
+    zeroCheck -->|"No"| doneFinal["Premium stands - golden case: 976"]:::final
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    class expCalc,ilta,ilfLookup,lossCostGate,baseRate,dedFactor,sentinel,zeroCheck gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>Two separate "silent referral" paths converge on the same rate build-up: a missing premium basis 1000x-overcharges (falls to the raw-exposure branch), and a missing class/territory silently routes onto the ELP path — neither raises a flag.</li>
+            <li>Every "Per Claim" deductible row publishes a real-looking `0` factor, guarded only by a validation rule that fires on override absence, not by the rating chain itself.</li>
+            <li>Medical payments is a separate, additive, 0-decimal charge in this edition — folded into the ILF only under CW 2027 (see that chain).</li>
+          </ul>
+        </div>
+        <div class="delta"><strong>Template form.</strong> This is the golden-case edition (parent GL_CW_20231201_V03) — every "differs from 334" note on other sublines' pages refers back to this shape.</div>
+      </div>
+    </section>
+
+    <!-- ============================= PREMISES/OPERATIONS · CW 2027 ============================= -->
+    <section class="sheet-view" id="view-premops-cw27">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Premises/Operations (subline 334)</span></div>
+        <div class="field"><span class="k">Edition</span><span class="v">CW 2027 V01 and later</span></div>
+        <div class="field"><span class="k">Master chain</span><span class="v">Same rule names, edition-specific SetFinalILF / SetPremium bodies</span></div>
+        <div class="field"><span class="k">Premium file</span><span class="v">GL CW 20270401 V01/Rules/GeneralLiabilityRules.Rule.xml — ErcCalculateTotalPremium</span></div>
+        <div class="field wide"><span class="k">Coverage gate</span><span class="v">Same silent-referral surface as CW 2023, plus: nine-base /1000 set drops Passenger Days; elevator/escalator inspection charge absent from the rule list entirely</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["Premises/Operations coverage record, CW 2027"]) --> baseChain["BaseRate = round(LossCost|ELP x BYOAExclFactor x LCM [x ClaimsMadeMult],3) - same build-up as CW 2023"]:::step
+    baseChain --> cslilf["CSLILF = lookup ILFPremOps(state,table#,occ,agg) - classification-level copy"]:::step
+    cslilf --> medpayFctr["MedicalPaymentsFactor = lookup IncreasedMedPayLimitFactor(...) - replaces MedPayFactor table"]:::step
+    medpayFctr --> dedFactor2{"Deductible override supplied?"}
+    dedFactor2 -->|"Yes"| dedOverride2["DeductibleFactor = override"]:::step
+    dedFactor2 -->|"No"| dedLookup2["DeductibleFactor = lookup DedFactorPremOpsCSL, else 0.0"]:::step
+    dedOverride2 --> finalILF2["FinalILF = round(CSLILF + MedicalPaymentsFactor - 1 - FinalDeductibleFactor,3) - med-pay folded in, no separate charge rule exists"]:::step
+    dedLookup2 --> finalILF2
+    finalILF2 --> clamp{"FinalILF <= 0?"}
+    clamp -->|"Yes"| clampZero["Clamped to 0.0"]:::zero
+    clamp -->|"No"| clampOk["FinalILF stands"]:::step
+    clampZero --> finalRate2["FinalRate = round(BaseRate x FinalILF [x SizeOfRisk] x PackageMod x ExperienceMod x ExpenseMod x ModToUse,3)"]:::step
+    clampOk --> finalRate2
+    finalRate2 --> premium2["Premium = round(FinalRate x Exposure[/1000, nine bases - Passenger Days dropped],0)"]:::step
+    premium2 --> floor{"Premium = 0 and PremOpsCovExposure > 0?"}
+    floor -->|"Yes"| floored["Premium = 1.0 - the $1 floor, undocumented in the manual, CW 2027 only"]:::final
+    floor -->|"No, Premium <> 0"| stands["Premium stands"]:::final
+    floor -->|"No, Exposure = 0 too"| staysZero["Premium stays 0.0"]:::zero
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    class dedFactor2,clamp,floor gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>Algebraically identical to CW 2023 — `BaseRate = LossCost x LCM x ClaimsMadeMultiplier` is common to both — but rounding lands at a different point, and that moves the answer: golden-case inputs yield 976 under CW 2023, 975 under CW 2027, one dollar apart on the same published risk.</li>
+            <li>No `SetMedicalPaymentsCharge` rule exists in this edition at all — medical payments is expressed purely as a term inside `FinalILF`.</li>
+            <li>The $1 floor is new and undocumented in the manual; CW 2023 has no equivalent — a genuinely zero-computing premium there just stays zero.</li>
+          </ul>
+        </div>
+        <div class="delta"><strong>vs. CW 2023 and earlier.</strong> Same rate sources, same rule names, different formula shape at three points: FinalILF folds med-pay in, SetPremium drops the separate charge term, and a $1 floor appears where none existed before.</div>
+      </div>
+    </section>
+
+    <!-- ============================= PRODUCTS/COMPLETED OPERATIONS ============================= -->
+    <section class="sheet-view" id="view-prodscompldops-main">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Products/Completed Operations (subline 336)</span></div>
+        <div class="field"><span class="k">Edition</span><span class="v">Identical under GL_CW_20231201_V03 and GL_CW_20270401_V01 — no medical-payments term to fork on</span></div>
+        <div class="field"><span class="k">Master chain</span><span class="v">ErcSetRatesAndFactors (35 steps) + ErcRate (6 steps)</span></div>
+        <div class="field"><span class="k">Premium file</span><span class="v">GeneralLiabilityClassificationProdsCompldOpsCoverageRules.Rule.xml</span></div>
+        <div class="field wide"><span class="k">Coverage gate</span><span class="v">ProdsCompldOpsCov must equal "Products/Completed Operations"; new rule N17 requires ProdsCompldOpsELPText to agree with the LossCost != 0 branch test (620,856/620,856 agreement, corpus-wide)</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["Products/Completed Operations coverage record"]) --> covGate{"ProdsCompldOpsCov = 'Products/Completed Operations'?"}
+    covGate -->|"No"| baseZero["BaseRate = 0.0"]:::zero
+    covGate -->|"Yes"| territory["Territory = ProdsCompldOpsTerritory - statewide 999 in all 51 jurisdictions"]:::step
+    territory --> ratingBasis{"ProdsCompldOpsLossCost <> 0.0? (N17: cross-checked against ELPText)"}
+    ratingBasis -->|"Yes - Loss Cost path"| lcPath["BaseRate = round(LossCost x LCM [x ClaimsMadeMult] [x DWLMultiplier],3)"]:::step
+    ratingBasis -->|"No, LossCost=0.0 (a published zero, not missing)"| elpText{"ProdsCompldOpsELPText = 'Not Applicable'?"}
+    elpText -->|"Yes - 21,021 of 60,063 rows, 35%"| notOffered["NOT_OFFERED - never a silent 0"]:::openq
+    elpText -->|"No, Industry/Company"| elpPath["BaseRate = round(ELP x LCM [x ClaimsMadeMult] [x DWLMultiplier],3)"]:::step
+    lcPath --> dwlNote["DefenseWithinLimitsBasicLimitMultiplier gated on ROW PRESENCE (Exist test), not a boolean flag"]:::openq
+    elpPath --> dwlNote
+    dwlNote --> ilta2{"IncreasedLimitsTableAssignmentProdsCompldOps (alphabetic A/B/C, no ...Int conversion rule)"}
+    ilta2 -->|"'Refer To Co.', no override - universal on classes 54444/94444"| iltaReferZero["Assignment empty -> ILF lookup misses -> Premium 0"]:::openq
+    ilta2 -->|"'N/A' - 21,021 rows"| notOffered2["Coverage not offered for this class"]:::zero
+    ilta2 -->|"resolved letter A/B/C"| ilfLookup2["CSLILF = lookup ILFProds(state,letter,occLimit,aggLimit)"]:::step
+    ilfLookup2 --> dedAdj["ProdsCompldOps{BIPD,PD}DeductibleFactorBeforeAdjustment - branch shape not resolved in source docs"]:::openq
+    dedAdj --> finalDed2["FinalDeductibleFactor: combined / split sum / one side / 0.0"]:::step
+    finalDed2 --> finalILF3{"FinalILF = round(CSLILF - FinalDeductibleFactor,3), clamp if <= 0 - no med-pay term, ever"}
+    finalILF3 --> finalRate3["FinalRate = round(BaseRate x FinalILF [x SizeOfRisk] x PackageMod x ExperienceMod x ExpenseMod x ModToUse,3)"]:::step
+    finalRate3 --> premium3["Premium = round(FinalRate x Exposure,0) - no /1000, no $1 floor, either edition"]:::final
+    premium3 --> minPrem["MinPremium = round(MinimumPremium x FinalILF x AdditionalInterestFactor,0) - computed inside ErcRate, answers 334's E11"]:::final
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    class covGate,ratingBasis,elpText,ilta2,finalILF3 gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>A published `0.0` loss cost is a documented path switch, not a missing value — the sibling `ELPText` selector agrees with the `!=0.0` branch test in 620,856/620,856 tested rows, becoming rule N17: a disagreement is a load-time hard failure, not a warning.</li>
+            <li>The increased-limits table assignment is alphabetic (A/B/C) here versus 334's numeric-as-string (1/2/3) — a shared `TableAssignment` type across the two sublines breaks on 336's golden-case value of `"B"`.</li>
+            <li>336 reads `AdditionalInterestFactor` inside its own `MinPremium` step — narrowing 334's open question E11 (computed but never consumed there) to "334's omission is real, not a hidden bug."</li>
+          </ul>
+        </div>
+        <div class="delta"><strong>vs. Premises/Operations (334).</strong> No medical-payments term in either edition — 336's `FinalILF` never gains the bracketed `+MedicalPaymentsFactor-1` term 334 picks up under CW 2027; 336's chain is edition-stable where 334's is not. 336 also has no $1 floor at all, in either edition, and computes its own minimum premium inside `ErcRate` — 334 has no minimum-premium step whatsoever.</div>
+      </div>
+    </section>
+
+    <!-- ============================= OCP · CW2023 STANDARD ============================= -->
+    <section class="sheet-view" id="view-ocp-standard">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Owners &amp; Contractors Protective / Principals Protective (subline 335, Rule 46)</span></div>
+        <div class="field"><span class="k">Edition</span><span class="v">CW 2023 and earlier, standard classes</span></div>
+        <div class="field"><span class="k">Master chain</span><span class="v">ErcSetRatesAndFactors (11 steps) + ErcRate (10 steps) — 21 total</span></div>
+        <div class="field"><span class="k">Premium file</span><span class="v">GeneralLiabilityClassificationOwnersContractorsCoverageRules (file/line not cited in source)</span></div>
+        <div class="field wide"><span class="k">Coverage gate</span><span class="v">SetPremium's outer test: OwnersContractorsClassCode blank -&gt; Premium 0.0. Rule 5 (standard Premium Computation) explicitly does not apply — OCP runs its own piecewise function. Gate status: passed with no oracle — this chain is a prediction confirmed only at 6 manual cross-check points, not against a published premium.</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["OCP/Principals Protective coverage record, standard classes"]) --> classGate{"OwnersContractorsClassCode blank?"}
+    classGate -->|"Yes"| elpZero["ELP = 0.0"]:::zero
+    classGate -->|"No, not class 15191"| elpLookup["ELP = lookup OwnersContractorsELP(state,class)"]:::step
+    elpZero --> lcGate{"LossCost (state-filed, only 8 of 51 jurisdictions) <> 0?"}
+    elpLookup --> lcGate
+    lcGate -->|"Yes"| baseFromLC2["BaseRate = round(LossCost x LCM,3)"]:::step
+    lcGate -->|"No, 43 of 51 jurisdictions"| baseFromELP2["BaseRate = round(ELP x LCM,3)"]:::step
+    baseFromLC2 --> ilfLookup3["ILF = lookup ILFOwnersContractors(state,occLimit,aggLimit) - vocabulary '1,000,000', NOT '...CSL' used elsewhere"]:::openq
+    baseFromELP2 --> ilfLookup3
+    ilfLookup3 --> finalRate4["FinalRate = round(BaseRate x ILF x ExperienceMod x ExpenseMod x ModToUse,3) (+ same for OverOneMillion band)"]:::step
+    finalRate4 --> descGate{"OwnersContractorsClassDescription supplied? (a DIFFERENT field than the class code)"}
+    descGate -->|"No"| zeroILF["ELP/ILF gate separately on description -> FinalRate x 0 -> Premium 0, not an error"]:::openq
+    descGate -->|"Yes"| premCalc["Premium = round(FinalRate x min(Exposure,1,000,000)/1000 + FinalRateOverOneMillion x max(0,Exposure-1,000,000)/1000,0)"]:::step
+    zeroILF --> premZero["Premium = 0.0"]:::zero
+    premCalc --> minPremGate{"Subline = 'Owners and Contractors'?"}
+    minPremGate -->|"Yes"| minPremCalc2["MinPremium = round(PremOpsMinPremium x ILF,0) — reused table, no AdditionalInterestFactor; Premium = max(Premium, MinPremium)"]:::openq
+    minPremGate -->|"No"| noMin["MinPremium = 0.0"]:::step
+    minPremCalc2 --> premFinal["Premium stands"]:::final
+    noMin --> premFinal
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    class classGate,lcGate,descGate,minPremGate gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>No `PackageModFactor` anywhere in this subline's `FinalRate` — the one point of the four sublines documented here that omits it entirely.</li>
+            <li>`SetELP` and `SetILF` gate on `OwnersContractorsClassDescription`, not `OwnersContractorsClassCode` — a submission carrying the code but not the description prices at zero silently, no error.</li>
+            <li>The ILF limit vocabulary (`"1,000,000"`) differs from 334/336's (`"...CSL"`) — a shared limit-normalization helper across sublines would miss every OCP ILF lookup.</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>Open question.</strong> Whether `MinPremium` is a floor (`max`) or an add-on to `Premium` is not stated explicitly in the gate doc — `max` is used here as the conventional, best-supported reading of "minimum premium," not a literal quote. See also the rounding-convention open question (Escalation E1) noted on this subline's other chains.</div>
+      </div>
+    </section>
+
+    <!-- ============================= OCP · 15191 ============================= -->
+    <section class="sheet-view" id="view-ocp-15191">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Owners &amp; Contractors Protective, class 15191 (Workers Compensation-derived)</span></div>
+        <div class="field"><span class="k">Edition</span><span class="v">CW 2023 and earlier only — class retired entirely by CW 2027</span></div>
+        <div class="field"><span class="k">Master chain</span><span class="v">Same 21-step chain as standard classes, ELP branch replaced</span></div>
+        <div class="field"><span class="k">Premium file</span><span class="v">GeneralLiabilityClassificationOwnersContractorsCoverageRules</span></div>
+        <div class="field wide"><span class="k">Coverage gate</span><span class="v">OwnersContractorsClassCode = "15191" exactly. WorkersCompensationRate is a declared submission input (xs:decimal), not an ERC table value — required whenever this class is present.</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["OCP coverage record, class 15191"]) --> wcFactor["PrincipalsProtvLiabFactor = 0.75 - single CW cell, confirmed against manual ELP Supplement Table 5.C"]:::step
+    wcFactor --> elpWC["ELP = PrincipalsProtvLiabFactor x WorkersCompensationRate - a submitted input, not looked up"]:::step
+    elpWC --> baseWC["BaseRate = round(ELP x LCM,3) - LossCost is always 0 for class 15191, no published rate"]:::step
+    baseWC --> ilfWC["ILF = lookup ILFOwnersContractors(state,occLimit,aggLimit)"]:::step
+    ilfWC --> finalWC["FinalRate = round(BaseRate x ILF x ExperienceMod x ExpenseMod x ModToUse,3)"]:::step
+    finalWC --> premWC["Premium = round(FinalRate x min(Exposure,1,000,000)/1000 + FinalRateOverOneMillion x max(0,Exposure-1,000,000)/1000,0)"]:::final
+    premWC --> example["Worked example (AR): ELP=0.75x1000.0=750.000, BaseRate=750.000, FinalRate=round(750x1.75,3)=1312.500, Premium=round(1312.5x10,0)=13,125 — derived, NOT confirmed against ISO arithmetic"]:::openq
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    class start gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>Only class in this subline whose ELP is computed rather than looked up — `PrincipalsProtvLiabFactor x WorkersCompensationRate`, where the second term is a field the submission itself must supply.</li>
+            <li>Confirmed independently against the manual's ELP Supplement: "15191 Percentage of otherwise applicable Workers Compensation loss costs: 75%" — an exact match.</li>
+            <li>Entirely removed at the CW 2027 cliff, along with the class code itself.</li>
+          </ul>
+        </div>
+        <div class="delta"><strong>vs. standard classes.</strong> Every downstream step (ILF, FinalRate, Premium formula) is identical to the standard-class chain — only the ELP source differs. `LookupPrincipalsProtvLiabFactor` survives in the CW 2027 rule set with no caller after `SetPrincipalsProtvLiabFactor` is deleted (Escalation E14).</div>
+      </div>
+    </section>
+
+    <!-- ============================= OCP · LEGACY 27111/27112 ============================= -->
+    <section class="sheet-view" id="view-ocp-legacy">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Owners &amp; Contractors Protective, classes 27111 / 27112</span></div>
+        <div class="field"><span class="k">Edition</span><span class="v">CW 2023 and earlier only — retired entirely by CW 2027, replaced by class 27113 with no special basis</span></div>
+        <div class="field"><span class="k">Master chain</span><span class="v">Same 21-step chain, OverOneHundred band instead of OverOneMillion</span></div>
+        <div class="field"><span class="k">Premium file</span><span class="v">GeneralLiabilityClassificationOwnersContractorsCoverageRules — these two class codes are hardcoded directly in SetPremium</span></div>
+        <div class="field wide"><span class="k">Coverage gate</span><span class="v">OwnersContractorsClassCode in {27111, 27112} — breakpoint is 100 units, not $1,000,000; no /1000 divisor, unlike every other OCP branch</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["OCP coverage record, class 27111 or 27112"]) --> lcGateL{"LossCost <> 0?"}
+    lcGateL -->|"Yes"| baseLCL["BaseRate = round(LossCost x LCM,3)"]:::step
+    lcGateL -->|"No"| baseELPL["BaseRate = round(ELP x LCM,3)"]:::step
+    baseLCL --> finalRateL["FinalRate = round(BaseRate x ILF x ExperienceMod x ExpenseMod x ModToUse,3) (and identically for the OverOneHundred band)"]:::step
+    baseELPL --> finalRateL
+    finalRateL --> premL["Premium = round(FinalRate x min(Units,100) + FinalRateOverOneHundred x max(0,Units-100),0) - breakpoint 100 units, NO /1000 divisor"]:::openq
+    premL --> retired["Branch retired entirely by CW 2027 - no equivalent exists in that edition's chain"]:::zero
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    class lcGateL gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>Only OCP branch rated on a unit breakpoint (100) instead of the standard $1,000,000 exposure breakpoint, and the only one with no ÷1000 divisor at all.</li>
+            <li>The two class codes are hardcoded directly inside `SetPremium` — not driven by a lookup table the way every other class-code fork in this subline is.</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>Open question.</strong> The gate doc gives the breakpoint (100 units) and confirms no divisor applies, and states the formula shape mirrors the standard branch, but does not spell out the Branch B formula symbol-for-symbol. The formula shown is constructed by substituting the stated breakpoint/divisor pair into the general piecewise pattern — treat the exact variable name (`Units` vs `Exposure`) as unconfirmed.</div>
+      </div>
+    </section>
+
+    <!-- ============================= OCP · CW2027 ============================= -->
+    <section class="sheet-view" id="view-ocp-cw27">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Owners &amp; Contractors Protective / Principals Protective</span></div>
+        <div class="field"><span class="k">Edition</span><span class="v">CW 2027 and later</span></div>
+        <div class="field"><span class="k">Master chain</span><span class="v">12 steps — loss-cost path, minimum premium, and OverOneHundred band all deleted</span></div>
+        <div class="field"><span class="k">Premium file</span><span class="v">GeneralLiabilityClassificationOwnersContractorsCoverageRules, CW 2027 body</span></div>
+        <div class="field wide"><span class="k">Coverage gate</span><span class="v">43 of 51 jurisdictions withdraw the OCP loss-cost table in one simultaneous program change effective 2027-04-01 — which algorithm runs is selected entirely by the resolved parent edition, not by jurisdiction</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["OCP/Principals Protective coverage record, CW 2027"]) --> classGate2{"OwnersContractorsClassCode blank?"}
+    classGate2 -->|"Yes"| elpZero2["ELP = 0.0"]:::zero
+    classGate2 -->|"No"| elpLookup2["ELP = lookup OwnersContractorsELP(state,class) - no class-15191 WC branch, that class is retired"]:::step
+    elpZero2 --> baseRate5["BaseRate = round(ELP x LCM,3) - loss-cost path deleted entirely, never non-zero in this edition"]:::step
+    elpLookup2 --> baseRate5
+    baseRate5 --> ilfLookup4["ILF = lookup ILFOwnersContractors(state,occLimit,aggLimit) - same table, same rule as CW 2023"]:::step
+    ilfLookup4 --> finalRate6["FinalRate = round(BaseRate x ILF x ExperienceMod x ExpenseMod x ModToUse,3) (+ OverOneMillion band only, no OverOneHundred)"]:::step
+    finalRate6 --> premium4["Premium = round(FinalRate x min(Exposure,1,000,000)/1000 + FinalRateOverOneMillion x max(0,Exposure-1,000,000)/1000,0)"]:::final
+    premium4 --> noMinPrem["No minimum-premium step in this edition - SetMinimumPremium/SetMinPremium both deleted, premium is not floored"]:::step
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    class classGate2 gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>Purely ELP-driven — the published loss-cost path, the minimum-premium steps, and the `OverOneHundred` band are all removed in one program change, along with the class-`15191` Workers Compensation special case (class itself retired).</li>
+            <li>`LookupPrincipalsProtvLiabFactor` survives as a dead artifact — still present in the rule set with no caller.</li>
+          </ul>
+        </div>
+        <div class="delta"><strong>vs. CW 2023 and earlier.</strong> 21 steps collapse to 12: no loss cost, no minimum premium, no OverOneHundred band, no class-15191 branch. Everything that remains (ELP lookup, ILF, FinalRate, Premium formula) is structurally identical to the CW 2023 standard-class branch.</div>
+      </div>
+    </section>
+
+    <!-- ============================= LIQUOR LIABILITY ============================= -->
+    <section class="sheet-view" id="view-liquor-main">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Liquor Liability (subline 332, Rule 45)</span></div>
+        <div class="field"><span class="k">Edition</span><span class="v">GL_CW_20231201_V03 / GL_CW_20260101_V01 (byte-identical) — see delta note for CW 2027</span></div>
+        <div class="field"><span class="k">Master chain</span><span class="v">ErcSetRatesAndFactors (12 steps) + ErcRate (4 steps) — 16 total, one chain, no form split</span></div>
+        <div class="field"><span class="k">Premium file</span><span class="v">GeneralLiabilityClassificationLiquorCoverageRules.Rule.xml</span></div>
+        <div class="field wide"><span class="k">Coverage gate</span><span class="v">CoverageOnPolicyIndicator == 0 -&gt; Premium 0.0, stop. Manual Rule 45.E: "For rates, refer to company" — ISO publishes no liquor rate by rule; the entire chain below is an ELP-driven surrogate</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["Liquor Liability classification record"]) --> covOn{"CoverageOnPolicyIndicator = 0?"}
+    covOn -->|"Yes"| premZeroL["Premium = 0.0, stop"]:::zero
+    covOn -->|"No"| classCheck{"LiquorClassDescription and LiquorClassCode both non-empty?"}
+    classCheck -->|"No"| elpZeroL["ELP = 0.0"]:::zero
+    classCheck -->|"Yes"| elpLookupL["ELP = lookup LiquorELP, or ELPOverride if non-zero"]:::step
+    elpZeroL --> formGate{"LiquorCoverageForm?"}
+    elpLookupL --> formGate
+    formGate -->|"Occurrence"| baseOcc["BaseRate = round(ELP x LCM,3) - NO loss-cost branch exists in this rule at all"]:::step
+    formGate -->|"Claims Made"| baseCM["BaseRate = round(ELP x LCM x ClaimsMadeMult,3)"]:::step
+    formGate -->|"other/absent"| baseZeroL["BaseRate = 0.0"]:::zero
+    baseOcc --> ilfGate{"ClassDescription, EachCommonCauseLimit, AggregateLimit all non-empty?"}
+    baseCM --> ilfGate
+    ilfGate -->|"Yes"| ilfLookupL["ILF = lookup ILFLiquor (IL overrides: ILFLiquorStException, keyed on AggregateLimit alone)"]:::step
+    ilfGate -->|"No"| ilfZeroL["ILF = 0.0"]:::zero
+    ilfLookupL --> dedGateL{"ClassDescription and LiquorDeductible both non-empty?"}
+    ilfZeroL --> dedGateL
+    dedGateL -->|"Yes"| dedLookupL["DeductibleFactor = lookup DedFactorLiquor - all 21 CW options price 0; guard covers only 10/21 (OI-44)"]:::openq
+    dedGateL -->|"No"| dedZeroL["DeductibleFactor = 0.0"]:::step
+    dedLookupL --> finalILFL["FinalILF = round(ILF - DeductibleFactor,3)"]:::step
+    dedZeroL --> finalILFL
+    finalILFL --> finalRateL2["FinalRate = round(BaseRate x FinalILF x PackageMod x ExperienceMod x ExpenseMod x ModToUse,3) - missing modifier zeroes the premium (FirstValue -> 0.0)"]:::step
+    finalRateL2 --> premGateL{"Subline='Liquor' AND PremiumBasis non-blank and not 'Refer To Co.'?"}
+    premGateL -->|"No"| premZeroL2["Premium = 0.0 - a referral, not a price"]:::zero
+    premGateL -->|"Yes, divisor basis"| premDiv["Premium = round(FinalRate x LiquorExposure / 1000,0)"]:::final
+    premGateL -->|"Yes, unit basis"| premUnit["Premium = round(FinalRate x LiquorExposure,0)"]:::final
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    class covOn,classCheck,formGate,ilfGate,dedGateL,premGateL gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>Eight distinct absent-input paths reach `Premium = 0` with no message — the largest silent-zero surface of any subline gated to date, a direct consequence of liquor having no second (loss-cost) route to a premium.</li>
+            <li>`DedFactorLiquor` publishes 21 deductible options, all with factor `0` — deliberate per manual 45.J.3 ("must be referred to the company"), but only 10 of the 21 zero rows carry a validation guard (OI-44).</li>
+            <li>New York disables claims-made liquor outright: `SetBaseRate` requires `Occurrence`, returning `0.0` for a claims-made submission with no message or referral.</li>
+          </ul>
+        </div>
+        <div class="delta"><strong>CW 2027-04-01 delta (not modeled above).</strong> Minimum premium withdrawn; a $1 floor arrives for a zero-computing premium with non-zero exposure; the premium-basis vocabulary is replaced (9 generic bases -&gt; 2 rateable + 3 unit bases + Refer To Company); the `Subline == "Liquor"` guard is dropped; `SetELP` drops the `ClassDescription` condition. Known CW 2027 defect OI-43: the statistical-code rule still tests pre-2027 vocabulary, inflating reported exposure 1000x — premium itself is unaffected.</div>
+      </div>
+    </section>
+
+    <!-- ============================= RAILROAD · STANDARD ============================= -->
+    <section class="sheet-view" id="view-railroad-standard">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Railroad Protective Liability (subline 335, Rule 49, form CG 00 35)</span></div>
+        <div class="field"><span class="k">Edition</span><span class="v">CW 2023/2026 (65 rules) — classes 40011/40012, no mixed-hazard split</span></div>
+        <div class="field"><span class="k">Master chain</span><span class="v">26-step interleaved rate+premium chain, presented split at #22/#23 per the gate doc</span></div>
+        <div class="field"><span class="k">Premium file</span><span class="v">Not resolved in source docs — gate doc gives rule names and manual citations only, no XML file/line</span></div>
+        <div class="field wide"><span class="k">Coverage gate</span><span class="v">CoverageOnPolicyIndicator == 0 -&gt; Premium 0.0. Rule 49.E.1: "Refer to company" for basic-limits rates — the actual procedure lives in ELP Supplement Procedure 5.E, not in the rules manual</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["Railroad Protective, class 40011/40012, single-hazard project"]) --> covOnR{"CoverageOnPolicyIndicator = 0?"}
+    covOnR -->|"Yes"| premZeroR["Premium = 0.0, stop"]:::zero
+    covOnR -->|"No"| constFactor["ConstructionOpsOwnerFactor = lookup OwnersContractorsLossCost(class '16292', HARDCODED) - reads OCP's table, not Railroad's own"]:::openq
+    constFactor --> lcmR["LCM = lookup RailroadLCM (CW: 1 row = 1, unsupplied company multiplier)"]:::step
+    lcmR --> adjFactor["ConstructionOpsOwnerAdjmtFactor = 1.5 (CW constant, matches manual '150%')"]:::step
+    adjFactor --> baseELPBand["BaseELPRR = lookup BaseELPRR(state,class,trains/day) - banded, 18-row table, excludes class 40014"]:::step
+    baseELPBand --> ilfR["ILF = lookup ILFRailroad(...) - Rule 56.B.7, 0 rows CW / 1,836 state rows"]:::step
+    ilfR --> adjBase["AdjustedBaseELPRR = f(BaseELPRR, LCM, ...) - exact combining formula not resolved in source docs"]:::openq
+    adjBase --> finalRateR["FinalRate = AdjustedBaseELPRR x ILF (SetFinalRate40011 for class 40012 - naming trap: tests 40012, writes FinalRate40011)"]:::step
+    finalRateR --> premR["Premium = FinalRate x TotalCost / 1000"]:::step
+    premR --> addOns["+ Supervisors/Inspectors premium (classes 40011/40012/40014) + WorkTrains premium (56.8 per $1,000, withdrawn CW 2027)"]:::step
+    addOns --> minPremR["Subject to MinPremiumRR = 0 (CW, 1 row) - structurally zero minimum premium"]:::final
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    class covOnR gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>Step 1 hardcodes class `16292` and reads Owners &amp; Contractors Protective's own loss-cost table — Railroad and OCP share the same subline code (335) but different rules (49 vs 46), and this is the one point they cross-reference each other's data.</li>
+            <li>`WorkTrainsOrOtherRREquipmtRate = 56.8` is a rare countrywide dollar rate, not a factor — confirmed exact against Procedure 5.E.2.c ("$56.80" per $1,000 of Total Cost).</li>
+            <li>No oracle exists for an end-to-end Railroad premium anywhere in the corpus — the golden case carries Railroad with `CoverageOnPolicyIndicator = 0`, confirming only the entry gate.</li>
+          </ul>
+        </div>
+        <div class="delta"><strong>vs. CW 2027 (46 rules).</strong> The largest edition rewrite of any subline gated so far. CW 2027 swaps Step 1's source to `LookupOwnersContractorsELP` (since OCP withdraws its own loss-cost table in 43 jurisdictions the same date), and withdraws the work-trains charge, the supervisors/inspectors extension, and minimum premium outright.</div>
+      </div>
+    </section>
+
+    <!-- ============================= RAILROAD · MIXED HAZARD ============================= -->
+    <section class="sheet-view" id="view-railroad-mixed">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Railroad Protective Liability, class 40011, mixed-hazard project</span></div>
+        <div class="field"><span class="k">Edition</span><span class="v">CW 2023/2026 — mixed-hazard machinery is entirely removed by CW 2027</span></div>
+        <div class="field"><span class="k">Master chain</span><span class="v">Steps 13, 15-20 of the 26-step chain — three "naming trap" rules in this branch alone</span></div>
+        <div class="field"><span class="k">Premium file</span><span class="v">Not resolved in source docs</span></div>
+        <div class="field wide"><span class="k">Coverage gate</span><span class="v">EstdContractCostWORRHzd &gt; 0 — a class-40011 project only partly clear of the tracks</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["Railroad class 40011 coverage record"]) --> hazGate{"EstdContractCostWORRHzd > 0?"}
+    hazGate -->|"No"| standardPath["Routes through the standard 40011/40012 chain (see that page)"]:::step
+    hazGate -->|"Yes"| noHazard["BaseELPRR400065orLess = round(ConstructionOpsOwnerFactor x ConstructionOpsOwnerAdjmtFactor,3) - NAMING TRAP: rule named '400145', tests class 40011, writes DataDef '400065orLess'"]:::openq
+    noHazard --> hazardPortion["BaseELPRR40011 = lookup BaseELPRR(state,'40011',trains/day) - the hazard portion"]:::step
+    hazardPortion --> weightFactors["ContractCostFactorWOHzd / ContractCostFactorWithHzd - the two weighting factors, Procedure 5.E.4 'weighted average'"]:::step
+    weightFactors --> weighted["PriorToFinalRateMixedHazard = weighted average of the two rates - exact combining formula not resolved in source docs"]:::openq
+    weighted --> continuation["SetBaseELPRR40014 - SECOND NAMING TRAP: rule named '40014', tests class 40011, writes DataDef 'BaseELPRR40006' (40006 = 'Miscellaneous', an unrelated class)"]:::openq
+    continuation --> finalRateM["SetFinalRate / SetFinalRate40011 - THIRD NAMING TRAP pattern: FinalRate = f(PriorToFinalRateMixedHazard, ILF)"]:::openq
+    finalRateM --> premM["Premium = FinalRate x TotalCost/1000 + supervisors/inspectors + work-trains add-ons"]:::final
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    class hazGate gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>The densest naming-trap concentration in the whole GL corpus: three separate rules in this one branch whose rule name references one class or DataDef number while the rule body tests and writes a different one — per the gate doc, "N11 at its purest."</li>
+            <li>An engine that maps `BaseELPRR40006` to class `40006` (which is "Miscellaneous" in `ClassificationType.RateTable.csv`) would produce nonsense — it's a mixed-hazard-path DataDef name, not a class identity.</li>
+          </ul>
+        </div>
+        <div class="delta"><strong>Only `SetILF40014` is naming-consistent end to end</strong> — every other class-40014-referencing rule in this branch turns out to test a different class. See the class-40014 chain for the one place the naming does line up.</div>
+      </div>
+    </section>
+
+    <!-- ============================= RAILROAD · 40013 ============================= -->
+    <section class="sheet-view" id="view-railroad-40013">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Railroad Protective Liability, class 40013 (state/federal highway projects)</span></div>
+        <div class="field"><span class="k">Edition</span><span class="v">CW 2023/2026</span></div>
+        <div class="field"><span class="k">Master chain</span><span class="v">Steps 1-4, 12, 17, 21 of the 26-step chain — no mixed-hazard split, that mechanic is 40011-only</span></div>
+        <div class="field"><span class="k">Premium file</span><span class="v">Not resolved in source docs</span></div>
+        <div class="field wide"><span class="k">Coverage gate</span><span class="v">OwnersContractorsLossCost(16292) feeds the ratio-adjusted ELP; no supervisors/inspectors add-on — class 40013 is not listed in Step 11's scope</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["Railroad class 40013 coverage record"]) --> constFactor2["ConstructionOpsOwnerFactor = lookup OwnersContractorsLossCost(class '16292', hardcoded)"]:::step
+    constFactor2 --> ratio["EstimatedContractCostRatio = at-hazard contract cost / total contract cost - Procedure 5.E.2.b, confirmed exact"]:::step
+    ratio --> baseELP13["BaseELPRR = lookup BaseELPRR(state,'40013',trains/day) - 18-row banded table"]:::step
+    baseELP13 --> adjBase13["AdjustedBaseELPRR = f(BaseELPRR, EstimatedContractCostRatio, LCM) - exact combining formula not resolved in source docs"]:::openq
+    adjBase13 --> finalRate13["FinalRate = AdjustedBaseELPRR x ILF"]:::step
+    finalRate13 --> prem13["Premium = FinalRate x TotalCost / 1000 - NO supervisors/inspectors add-on, class 40013 outside Step 11's scope"]:::final
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    class start gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>Shortest of the four Railroad branches — no mixed-hazard weighting, no supervisors/inspectors add-on, just a ratio applied to the ELP.</li>
+            <li>The estimated-contract-cost ratio is confirmed exact against manual Procedure 5.E.2.b, including its description as a ratio of at-hazard to total contract cost.</li>
+          </ul>
+        </div>
+        <div class="delta"><strong>vs. class 40011/40012.</strong> Trades the mixed-hazard weighted-average machinery for a single ratio factor, and drops the supervisors/inspectors premium add-on entirely — the simplest of Railroad's four branches.</div>
+      </div>
+    </section>
+
+    <!-- ============================= RAILROAD · 40014 ============================= -->
+    <section class="sheet-view" id="view-railroad-40014">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Railroad Protective Liability, class 40014 (no railroad-hazard exposure)</span></div>
+        <div class="field"><span class="k">Edition</span><span class="v">CW 2023/2026 — 40014 still exists at CW 2027, but rated on the ELP-sourced base by then</span></div>
+        <div class="field"><span class="k">Master chain</span><span class="v">SetILF40014, SetBaseELPRR40014 (naming-consistent), Step 11 include</span></div>
+        <div class="field"><span class="k">Premium file</span><span class="v">Not resolved in source docs</span></div>
+        <div class="field wide"><span class="k">Coverage gate</span><span class="v">Class 40014 is never tabulated in BaseELPRR (18 cells = 3 classes x 6 bands, confirmed against Alaska's filed table) — it is always derived</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["Railroad class 40014 coverage record"]) --> derived["BaseELPRR40014 - NOT tabulated, derived: round(OwnersContractorsLossCost(16292) x 1.5,3) - same formula as the 40011 mixed-hazard no-hazard portion"]:::openq
+    derived --> ilf40014["ILF40014 = lookup ILFRailroad(...) - class 40014's own ILF rule (SetILF40014 -> ILF40014, the ONE naming-consistent rule in this subline)"]:::step
+    ilf40014 --> finalRate14["FinalRate = BaseELPRR40014 x ILF40014"]:::step
+    finalRate14 --> prem14["Premium = FinalRate x TotalCost / 1000 + Supervisors/Inspectors premium (class 40014 IS included, per Step 11 scope)"]:::final
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    class start gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>The only class of the four whose base rate is never tabulated at all — it borrows 150% of OCP's class-16292 loss cost directly, exactly matching the no-hazard portion of the class-40011 mixed-hazard branch.</li>
+            <li>`SetILF40014 -&gt; ILF40014` is the single rule in this whole subline where the printed number in the rule name, the DataDef it writes, and the class it tests all agree — the exception the naming-trap pattern proves.</li>
+            <li>Verified cell-by-cell against Alaska's 2020 filed PDF: all 18 `BaseELPRR` cells match, and class 40014 is correctly absent from that table in both sources.</li>
+          </ul>
+        </div>
+        <div class="delta"><strong>vs. classes 40011-40013.</strong> No lookup at all for the base rate — a pure derivation off a sibling subline's (OCP's) hardcoded class 16292, times the same 1.5 constant used everywhere else in Railroad.</div>
+      </div>
+    </section>
+
+    <!-- ============================= PRODUCT WITHDRAWAL · COVERAGE A ============================= -->
+    <section class="sheet-view" id="view-pw-cova">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Product Withdrawal (subline 365) — Coverage A, Product Withdrawal Expense</span></div>
+        <div class="field"><span class="k">Edition</span><span class="v">GL_CW_20231201_V03 (edition not otherwise distinguished in source)</span></div>
+        <div class="field"><span class="k">Master chain</span><span class="v">GeneralLiabilityClassificationExclusionCoverageAProductWithdrawalExpenseRules — 27 rules, 9-step arithmetic reconstruction</span></div>
+        <div class="field"><span class="k">Premium file</span><span class="v">Same rule set, SetPremium</span></div>
+        <div class="field wide"><span class="k">Coverage gate</span><span class="v">SetCoverageOnPolicyIndicator switches the group on/off (stubbed to 0 in withdrawn-coverage states, e.g. all six CA LoED/Cyber groups elsewhere in this subline)</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["Product Withdrawal Coverage A - Expense"]) --> factorA["ProductWithdrawalExpenseFactor = lookup(FinalProductWithdrawalIncrdLimitTableAssignment) - A 0.25 / B 0.19 / C 0.13"]:::step
+    factorA --> lcmPW["LCM = lookup ProductWithdrawalLCM (CW: 1 row = 1)"]:::step
+    lcmPW --> selectorGate{"ProductWithdrawalELP (borrowed from Prod/CompOps's selector) = 'Company'?"}
+    selectorGate -->|"Yes"| elpOverride["ELP = override, else 0.0"]:::step
+    selectorGate -->|"No"| elpHost["ELP = lookup ProdsCompldOpsELPFactor(...) - the HOST subline's own ELP table"]:::openq
+    elpOverride --> ilfDed["CFLILF via ProductWithdrawalExpensesAndLiabilityIncrdLimitFactor; DeductibleFactor via LookupDedFactorProdsCSL (host table); FinalILF = combine - exact combining formula not resolved in source docs"]:::openq
+    elpHost --> ilfDed
+    ilfDed --> lossCostPW["LossCost = lookup ProdsCompldOpsLossCost(ProdsCompldOpsTerritory) - 0.0 if class or territory empty"]:::step
+    lossCostPW --> baseRatePW{"ELP path or LossCost path?"}
+    baseRatePW -->|"ELP"| baseELPpw["BaseRate = round(ELP x ExpenseFactor x LCM,3)"]:::step
+    baseRatePW -->|"LossCost"| baseLCpw["BaseRate = round(LossCost x ExpenseFactor x LCM,3) - the only coverage in this gate with BOTH a loss-cost and an ELP path"]:::step
+    baseELPpw --> discCharge["PremiumDiscountCharge - Participation % or Cut-off Date triggers manual 'refer to company' per Rule 44.B.3.b-c, formula not resolved in source docs"]:::openq
+    baseLCpw --> discCharge
+    discCharge --> finalRatePW["FinalRate = round(BaseRate x FinalILF x PackageMod x ExperienceMod x ExpenseMod x ModToUse x PremiumDiscountCharge,3)"]:::step
+    finalRatePW --> premPW{"exposure basis /1000?"}
+    premPW -->|"Yes"| premPWa["Premium = round(FinalRate x exposure/1000,0)"]:::final
+    premPW -->|"No"| premPWb["Premium = FinalRate x exposure"]:::final
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    class selectorGate,baseRatePW,premPW gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>This is a "factor-on-host" coverage — its base rate is a host subline's (Prod/CompOps, 336) rate times a small factor (0.13-0.25), not an independently-priced rate.</li>
+            <li>Product Withdrawal has no rating-basis selector table of its own — `ProductWithdrawalELP` is populated by calling Prod/CompOps's `ProdsCompldOpsELPText` directly.</li>
+            <li>The only one of the coverages in this gate carrying both a loss-cost path and an ELP path — Liquor and Railroad each have exactly one route to a base rate.</li>
+          </ul>
+        </div>
+        <div class="delta"><strong>vs. Coverage B.</strong> Structurally identical 9-step chain — only the factor table and its values differ (Coverage B: `ProductWithdrawalLiabilityFactor`, A 0.13/B 0.10/C 0.07).</div>
+      </div>
+    </section>
+
+    <!-- ============================= PRODUCT WITHDRAWAL · COVERAGE B ============================= -->
+    <section class="sheet-view" id="view-pw-covb">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Product Withdrawal (subline 365) — Coverage B, Products Withdrawal Liability</span></div>
+        <div class="field"><span class="k">Edition</span><span class="v">GL_CW_20231201_V03</span></div>
+        <div class="field"><span class="k">Master chain</span><span class="v">GeneralLiabilityClassificationExclusionCoverageBProductWithdrawalLiabilityRules — 27 rules, same 9-step shape as Coverage A</span></div>
+        <div class="field"><span class="k">Premium file</span><span class="v">Same rule set, SetPremium</span></div>
+        <div class="field wide"><span class="k">Coverage gate</span><span class="v">Same SetCoverageOnPolicyIndicator switch as Coverage A</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["Product Withdrawal Coverage B - Liability"]) --> factorB["ProductWithdrawalLiabilityFactor = lookup(FinalProductWithdrawalIncrdLimitTableAssignment) - A 0.13 / B 0.10 / C 0.07, same key axis as Coverage A's factor"]:::step
+    factorB --> lcmPWb["LCM = lookup ProductWithdrawalLCM (CW: 1 row = 1) - identical to Coverage A"]:::step
+    lcmPWb --> selectorGateB{"ProductWithdrawalELP (borrowed selector) = 'Company'?"}
+    selectorGateB -->|"Yes"| elpOverrideB["ELP = override, else 0.0"]:::step
+    selectorGateB -->|"No"| elpHostB["ELP = lookup ProdsCompldOpsELPFactor(...)"]:::openq
+    elpOverrideB --> ilfDedB["CFLILF / DeductibleFactor / FinalILF - identical shape to Coverage A"]:::openq
+    elpHostB --> ilfDedB
+    ilfDedB --> lossCostPWb["LossCost = lookup ProdsCompldOpsLossCost(ProdsCompldOpsTerritory)"]:::step
+    lossCostPWb --> baseRateB["BaseRate = round((ELP or LossCost) x ProductWithdrawalLiabilityFactor x LCM,3)"]:::step
+    baseRateB --> discChargeB["PremiumDiscountCharge - refer-to-company condition, not computed (not resolved in source docs)"]:::openq
+    discChargeB --> finalRateB["FinalRate = round(BaseRate x FinalILF x PackageMod x ExperienceMod x ExpenseMod x ModToUse x PremiumDiscountCharge,3)"]:::step
+    finalRateB --> premB{"exposure basis /1000?"}
+    premB -->|"Yes"| premBa["Premium = round(FinalRate x exposure/1000,0)"]:::final
+    premB -->|"No"| premBb["Premium = FinalRate x exposure"]:::final
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    class selectorGateB,premB gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>The gate doc documents Coverage A and B together and does not spell out Coverage B's steps rule-by-rule — it states the chains are "the same shape, differing only in which factor they apply."</li>
+            <li>Same key axis (`FinalProductWithdrawalIncrdLimitTableAssignment`) as Coverage A's factor table, but a different table with lower per-tier values (0.13/0.10/0.07 vs 0.25/0.19/0.13).</li>
+          </ul>
+        </div>
+        <div class="delta"><strong>Template form.</strong> Coverage A is the reference shape this chain reuses verbatim — every step besides the factor lookup is a substitution, not a redesign.</div>
+      </div>
+    </section>
+
+    <!-- ============================= LIMITED PRODUCT WITHDRAWAL ============================= -->
+    <section class="sheet-view" id="view-pw-limited">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Limited Product Withdrawal Expense (endorsement CG 04 36, hosted on Prod/CompOps 336)</span></div>
+        <div class="field"><span class="k">Edition</span><span class="v">GL_CW_20231201_V03</span></div>
+        <div class="field"><span class="k">Master chain</span><span class="v">GeneralLiabilityClassification container, 11 rating rules + 43 supporting rules across 4 more groups (54 total)</span></div>
+        <div class="field"><span class="k">Premium file</span><span class="v">...LimitedProductWithdrawalExpenseCoverage (7 rules) + ...EndtPolLvl (24 rules) + ...PremiumToReachMinCoveragePolLvl (8 rules)</span></div>
+        <div class="field wide"><span class="k">Coverage gate</span><span class="v">DoMessageLimitedProductWithdrawalEndt: a classification with Products coverage must be selected to attach this endorsement, plus ProdsWithdrawalCoverage == "Yes" and the policy-level endorsement row existing</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["Limited Product Withdrawal Expense endorsement (CG 04 36)"]) --> attachGate{"ProdsWithdrawalCoverage='Yes' AND Prod/CompOps coverage exists AND policy-level row exists?"}
+    attachGate -->|"No"| noAttach["DoMessageLimitedProductWithdrawalEndt fires - Products coverage must be selected to attach"]:::zero
+    attachGate -->|"Yes"| lmtdLCM["LmtdLCM = branch on ProdsWithdrawalCoverage / ProdsCompldOpsCov"]:::step
+    lmtdLCM --> lmtdFactor["LmtdProductWithdrawalFactor = lookup ProductWithdrawlFactor (MISSPELLED table name) - A 0.20 / B 0.15 / C 0.10"]:::step
+    lmtdFactor --> lmtdBase["LmtdBaseRate = (ProdsCompldOpsLossCost | FinalProdsCompldOpsELP) x LmtdLCM x LmtdProductWithdrawalFactor - reads the SIBLING coverage group's ALREADY-COMPUTED value (E18)"]:::openq
+    lmtdBase --> lmtdILF["LmtdIncreasedLimitsFactor = lookup ProductWithdrawalExpensesAndLiabilityIncrdLimitFactor(assignment, AggregateLimit); LmtdCSLILF = that value"]:::step
+    lmtdILF --> lmtdDed["LmtdDeductibleFactorForRating = lookup DedFactorProdsCSL, or supplied Override"]:::step
+    lmtdDed --> lmtdFinalILF{"LmtdFinalILF = CSLILF - DeductibleFactorForRating - NO arithmetic floor in the formula itself"}
+    lmtdFinalILF -->|"deductible exceeds ILF"| negGuard["DoMessageProdWithdrawalDedFactorCannotExceedPWILF fires - the ONLY negative-premium guard found anywhere in the GL corpus (N15)"]:::openq
+    lmtdFinalILF -->|"passes"| lmtdFinalRate["LmtdFinalRate = round(BaseRate x FinalILF x PackageMod,3)"]:::step
+    negGuard --> lmtdFinalRate
+    lmtdFinalRate --> lmtdPrem["LmtdPremium = round(FinalRate x ProdsCompldOpsCovExposure[/1000],0)"]:::step
+    lmtdPrem --> covPrem["CoveragePremium = ClassPremium x ParticipationPercentage x PackageMod - PremiumDiscountCharge, or ManualPremium"]:::step
+    covPrem --> negCheck{"CoveragePremium negative?"}
+    negCheck -->|"Yes"| negBlock["DoMessageTheLimitedProductWithdrawalCoveragepremiumCannotBeANegativePremium fires"]:::zero
+    negCheck -->|"No"| premStands["Premium stands"]:::final
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    class attachGate,lmtdFinalILF,negCheck gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>Not its own subline — it rates inside the shared `GeneralLiabilityClassification` container, attached to Prod/CompOps (336) by endorsement, and reads that sibling group's already-computed loss cost or ELP directly (E18, the third instance of this pattern in the gate).</li>
+            <li>`ProductWithdrawlFactor` is a genuinely misspelled table name in ERC (missing an "a") — and it has two readers: the full (365) coverage's correctly-spelled sibling tables serve Product Withdrawal A/B, while this misspelled one serves only Limited Product Withdrawal.</li>
+            <li>The only negative-premium guard anywhere in the GL corpus lives here — `FinalILF` has no arithmetic floor, so a deductible factor exceeding the ILF is caught only by a validation message, not by the math.</li>
+          </ul>
+        </div>
+        <div class="delta"><strong>vs. Product Withdrawal Coverage A/B.</strong> Coverage A/B each rate their own loss cost/ELP path independently; Limited Product Withdrawal has none of its own — it borrows the sibling group's finished number wholesale, the same cross-group dependency shape LoED/Cyber use.</div>
+      </div>
+    </section>
+
+    <!-- ============================= LOED / CYBER ============================= -->
+    <section class="sheet-view" id="view-pw-loedcyber">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Loss Of Electronic Data (CG 04 37/CG 04 71) and Cyber Incident Liability — new at CW 2027</span></div>
+        <div class="field"><span class="k">Edition</span><span class="v">CW 2027 only — does not exist in GL_CW_20231201_V03</span></div>
+        <div class="field"><span class="k">Master chain</span><span class="v">Two matched groups per coverage (Prem/Ops host, Prod/CompOps host): LoED 25 rules each, Cyber 23 rules each</span></div>
+        <div class="field"><span class="k">Premium file</span><span class="v">SetFinalRate -&gt; SetPremium -&gt; SetPremiumIndicator (literal formula not given in source)</span></div>
+        <div class="field wide"><span class="k">Coverage gate</span><span class="v">SetCoverageOnPolicyIndicator stubbed to constant 0 in all six CA groups (both classification groups per coverage, plus each min-premium iterator) — the coverage is withdrawn there entirely and the chain never runs</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["Loss Of Electronic Data / Cyber Incident Liability - Prem/Ops or Prod/CompOps host"]) --> onGate{"SetCoverageOnPolicyIndicator = 0? (stubbed in CA for all 6 groups)"}
+    onGate -->|"Yes, CA"| premZeroLC["Premium = 0.0 - chain never runs, 13 tables in that state package go unreached"]:::zero
+    onGate -->|"No"| limitStep["Limit(s): LossOfElectronicDataLimit (LoED, 1 limit) | EachCyberIncidentOccurrenceLimit + AggregateLimit (Cyber, 2 limits)"]:::step
+    limitStep --> ilfChain["ILF -> DeductibleFactor -> FinalILF - exact lookup table names not resolved in source docs"]:::openq
+    ilfChain --> hostGate{"Host = Prem/Ops (334) or Prod/CompOps (336)?"}
+    hostGate -->|"Prem/Ops host"| adjBaseP["AdjustedBaseRate = host LossCost|ELP x host LCM [x host ClaimsMadeMult] x host SizeOfRiskFinalRelativity x own FinalILF - reads the SIBLING group's COMPUTED values, not just its tables (E18)"]:::openq
+    hostGate -->|"Prod/CompOps host"| adjBaseC["AdjustedBaseRate - identical shape, reads sibling Prod/CompOps computed values instead"]:::openq
+    adjBaseP --> hazardGrade["HazardGrade = lookup {LossOfElectronicData|CyberIncidentLiability}PremOpsHazardGrade(ClassCode) - 1,188/1,163 rows CW, the LARGEST countrywide tables in the corpus; NY overrides"]:::step
+    adjBaseC --> hazardGrade
+    hazardGrade --> covFactor["CoverageFactor = lookup factor table keyed by endorsement form number (CG0437/CG0471, or Cyber's type-of-policy equivalent) - 4 rows each"]:::step
+    covFactor --> finalRateLC["FinalRate, Premium, PremiumIndicator - literal formula not resolved in source docs; gate doc gives rule names and 'identical shape' only"]:::openq
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    class onGate,hostGate gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>The architectural finding of the whole subline (escalation E18): LoED and Cyber read a sibling coverage group's already-computed intermediate values — not just its rate tables — so these groups cannot be evaluated independently of their host, and a host's edition-scoped behavior (like Prem/Ops's Claims-Made split) propagates silently.</li>
+            <li>Cyber's only structural difference from LoED is carrying two limits (occurrence + aggregate) where LoED carries one — everything else, including the hazard-grade table shape and the coverage-factor lookup, is step-for-step identical.</li>
+            <li>Pairwise rule-body overlap across all six rate-driven groups in this subline is zero identical bodies, despite 12-25 rules of name overlap per pair — documented together because the questions are shared, not the code.</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>Open question.</strong> The gate doc documents the `AdjustedBaseRate` and `HazardGrade` steps in formula detail but does not give the literal `SetFinalRate`/`SetPremium` arithmetic for LoED or Cyber — unlike Product Withdrawal Coverage A, where it's given explicitly. Treat the final rate/premium shape as "same skeleton as Product Withdrawal" until confirmed against the ERC rule XML directly.</div>
+      </div>
+    </section>
+
+    <!-- ============================= UNMANNED AIRCRAFT · COVERAGE A ============================= -->
+    <section class="sheet-view" id="view-uav-cova">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Unmanned Aircraft (subline 370, Rule 37) — Coverage A, Bodily Injury / Property Damage</span></div>
+        <div class="field"><span class="k">Edition</span><span class="v">GL_CW_20231201_V03</span></div>
+        <div class="field"><span class="k">Master chain</span><span class="v">…UnmannedAircraftCovABIPDCoverage — 13-rule chain</span></div>
+        <div class="field"><span class="k">Premium file</span><span class="v">Same rule set, SetPremium (item 13)</span></div>
+        <div class="field wide"><span class="k">Coverage gate</span><span class="v">CoverageOnPolicyIndicator == 0 -&gt; Premium 0.0. Company-rated in its entirety per manual C.2: every published number below is a REFERENCE value, not a usable filed price — the risk must still be referred</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["Unmanned Aircraft Coverage A (BI/PD)"]) --> covOnU{"CoverageOnPolicyIndicator = 0?"}
+    covOnU -->|"Yes"| premZeroU["Premium = 0.0"]:::zero
+    covOnU -->|"No"| ceiling["Ceiling = Convert&lt;int&gt;(round(MaxTakeoffWeight + 0.499,0)) - SetmaximumTakeoffWeightCeiling is an EMPTY rule, logic inlined elsewhere"]:::openq
+    ceiling --> lcGateU{"Ceiling <> 0?"}
+    lcGateU -->|"Yes"| lossCostU["LossCost = lookup UnmannedAircraftLimitedLiabilityBIPDLossCost(weight band): 0-1lb 66.11, 1-5lb 110.19, 5-15lb 154.26, 15-55lb 220.37, over 55lb = 0"]:::step
+    lcGateU -->|"No"| lossCostUnk["LossCost value when Ceiling=0 not resolved in source docs"]:::openq
+    lossCostU --> baseU["BaseRate = round(LossCost x LCM x ClaimsMadeMult,3) - LCM and ClaimsMadeMult borrowed WHOLESALE from Prem/Ops's own tables"]:::step
+    lossCostUnk --> baseU
+    baseU --> modGate{"Any of Ownership/Operation, Primary Place, Usage modifier = 0? (3 of 9, 2 of 9, 5 of 12 rows price 0)"}
+    modGate -->|"Yes"| referU["Engine rule: any 0 modifier must REFER before multiplying - ERC itself performs NO test; 'Unknown' is a filed value that also prices 0"]:::openq
+    modGate -->|"No"| adjRateU["AdjustedRate = round(BaseRate x OwnershipMod x PlaceMod x UsageMod,3) - order confirmed exact against manual C.2.d"]:::step
+    referU --> adjRateU
+    adjRateU --> ilfU["ILF = lookup ILFPremOps(...) - the Prem/Ops ILF table reused directly, 15,857-char rule body"]:::step
+    ilfU --> dedU["DeductibleFactor = lookup DedFactorPremOps{CSL,BI,PD} - Coverage A only, which of the three is selected not resolved in source docs"]:::openq
+    dedU --> premiumU["Premium = AdjustedRate x (ILF - DeductibleFactor) x PackageMod x ExperienceMod x ExpenseMod x ModToUse"]:::step
+    premiumU --> weightGuard{"MaximumTakeoffWeight <= 0?"}
+    weightGuard -->|"Yes"| errGuard["DoMessageWeightOfDroneCheck fires - an ERROR, not a rated 0"]:::zero
+    weightGuard -->|"No"| premStandsU["Premium stands (basis: each unmanned aircraft, no /1000)"]:::final
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    class covOnU,lcGateU,modGate,weightGuard gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>Drone borrows Premises/Operations's machinery wholesale — LCM, claims-made multiplier, ILF, and all three deductible tables are Prem/Ops lookups called directly. It borrows the *tables*, not already-computed values, so unlike LoED/Cyber it carries no E18 cross-coverage dependency.</li>
+            <li>The manual requires the *highest* rating modifier be assigned when more than one category applies per axis (C.2.d(1)-(3)); ERC has no max-of-many logic at all — resolved as a submission-level requirement (OI-48), not something ERC enforces.</li>
+            <li>`SetAjustedRate` is a misspelled rule name in ERC itself (the target DataDef `AdjustedRate` is spelled correctly) — confirmed cosmetic, not a functional defect.</li>
+          </ul>
+        </div>
+        <div class="delta"><strong>vs. Coverage B (PAI).</strong> Same 13-rule shape and same weight-banded loss-cost mechanic, but Coverage A carries a deductible-factor step and subtracts it from the ILF in the premium formula — Coverage B has neither.</div>
+      </div>
+    </section>
+
+    <!-- ============================= UNMANNED AIRCRAFT · COVERAGE B ============================= -->
+    <section class="sheet-view" id="view-uav-covb">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Unmanned Aircraft (subline 370, Rule 37) — Coverage B, Personal &amp; Advertising Injury</span></div>
+        <div class="field"><span class="k">Edition</span><span class="v">GL_CW_20231201_V03</span></div>
+        <div class="field"><span class="k">Master chain</span><span class="v">…UnmannedAircraftCovBPAICoverage — same 13-rule shape as Coverage A</span></div>
+        <div class="field"><span class="k">Premium file</span><span class="v">Same rule set, SetPremium — deductible term dropped</span></div>
+        <div class="field wide"><span class="k">Coverage gate</span><span class="v">Same CoverageOnPolicyIndicator gate and company-rated-in-entirety caveat as Coverage A</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["Unmanned Aircraft Coverage B (PAI)"]) --> covOnU2{"CoverageOnPolicyIndicator = 0?"}
+    covOnU2 -->|"Yes"| premZeroU2["Premium = 0.0"]:::zero
+    covOnU2 -->|"No"| ceilingB["Ceiling = Convert&lt;int&gt;(round(MaxTakeoffWeight + 0.499,0)) - same inlined-empty-rule pattern as Coverage A"]:::step
+    ceilingB --> lcGateB{"Ceiling <> 0?"}
+    lcGateB -->|"Yes"| lossCostB["LossCost = lookup UnmannedAircraftLimitedLiabilityPAILossCost(weight band): 0-55lb 87.63, over 55lb = 0 (2 rows only)"]:::step
+    lcGateB -->|"No"| lossCostUnkB["LossCost value not resolved in source docs"]:::openq
+    lossCostB --> baseB["BaseRate = round(LossCost x LCM x ClaimsMadeMult,3)"]:::step
+    lossCostUnkB --> baseB
+    baseB --> modGateB{"Any of Ownership/Op(PAI), Place(PAI), Usage(PAI) modifier = 0? SAME usage code means a DIFFERENT price per coverage (finding 3) - e.g. firefighting is RTC for BI/PD but 0.90 for PAI"}
+    modGateB -->|"Yes"| referB["Engine rule: REFER before multiplying - keyed on (table, column, row), not (table, value) alone"]:::openq
+    modGateB -->|"No"| adjRateB["AdjustedRate = round(BaseRate x OwnershipMod(PAI) x PlaceMod(PAI) x UsageMod(PAI),3)"]:::step
+    referB --> adjRateB
+    adjRateB --> ilfB["ILF = lookup ILFPremOps(...) - same Prem/Ops table as Coverage A"]:::step
+    ilfB --> premiumB["Premium = AdjustedRate x ILF x PackageMod x ExperienceMod x ExpenseMod x ModToUse - deductible term DROPPED entirely, no (ILF - DeductibleFactor)"]:::openq
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    class covOnU2,lcGateB,modGateB gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>Same usage code, different meaning per coverage: firefighting/search-and-rescue is a referral (RTC, price 0) on the BI/PD axis but a real 0.90 factor on the PAI axis — a sentinel register keyed only on `(table, value)` is wrong for this subline.</li>
+            <li>PAI's loss-cost table has just 2 rows (a flat 0-55lb rate plus the &gt;55lb zero row) versus BI/PD's 5-row weight banding — the coarsest loss-cost table in the subline.</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>Open question.</strong> The gate doc states only that "Coverage B drops the deductible term" from Coverage A's formula; it does not reproduce Coverage B's `SetPremium` expression verbatim. The formula shown assumes the term is simply omitted and `ILF` is used un-adjusted — confirm the literal expression if bit-exact reproduction is required.</div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="doc-footer">
+  Source: <strong>GL_CW_20231201_V03</strong> (golden-case parent), with <strong>GL_CW_20270401_V01</strong> deltas noted per subline where documented. Full citations, formulas, and open-item detail live in the companion markdown docs (<code style="font-family:var(--font-mono)">*_RatingAlgorithms.md</code>) and the source gate docs (<code style="font-family:var(--font-mono)">docs/gates/GATE-33*.md</code>, <code style="font-family:var(--font-mono)">GATE-365-*.md</code>, <code style="font-family:var(--font-mono)">GATE-370-*.md</code>), all in <code style="font-family:var(--font-mono)">C:\Projects\Recursive_Harness_2.0\GL_Algorithm</code>.
+</footer>
+
+<script>
+  (function () {
+    var toc = document.getElementById('toc');
+    var main = document.getElementById('main');
+
+    function activate(target) {
+      var views = main.querySelectorAll('.sheet-view');
+      for (var i = 0; i < views.length; i++) views[i].classList.remove('active');
+      var view = document.getElementById('view-' + target);
+      if (view) view.classList.add('active');
+
+      var links = toc.querySelectorAll('.navlink, .overview-link');
+      for (var j = 0; j < links.length; j++) links[j].classList.remove('active');
+      var activeLinks = toc.querySelectorAll('[data-target="' + target + '"]');
+      for (var k = 0; k < activeLinks.length; k++) activeLinks[k].classList.add('active');
+
+      main.scrollTop = 0;
+    }
+
+    toc.addEventListener('click', function (e) {
+      var btn = e.target.closest('[data-target]');
+      if (!btn) return;
+      activate(btn.getAttribute('data-target'));
+    });
+
+    main.addEventListener('click', function (e) {
+      var btn = e.target.closest('button.cell[data-target]');
+      if (!btn) return;
+      activate(btn.getAttribute('data-target'));
+    });
+  })();
+</script>

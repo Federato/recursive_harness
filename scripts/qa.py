@@ -210,14 +210,13 @@ TIERS = {
 # ------------------------------------------------------------------- budget
 
 def _spent_today() -> int:
-    """Live calls already made today, read from the real run store."""
-    today = dt.date.today().isoformat()
-    n = 0
-    for r in store.runs(limit=500):
-        at = (r.get("at_iso") or "")[:10]
-        if at == today:
-            n += int((r.get("summary") or {}).get("live_calls", 0) or 0)
-    return n
+    """Live calls already made today. The count lives in the store now.
+
+    It moved there when the layered programme needed the same number as a
+    ticker: two counts of the same thing drift, and the one on screen becomes
+    the one nobody trusts.
+    """
+    return store.spent_today(dt.date.today().isoformat())
 
 
 #: What the guard concluded. `OK` needs nothing; the other two need a person.

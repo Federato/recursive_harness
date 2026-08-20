@@ -57,7 +57,7 @@ article{border:0;padding:0}.panel[hidden]{display:block!important}}
 </style></head><body>
 <header><h1>ISO General Liability Rating Engine</h1>
 <div class="sub">Recursive Harness 2.0 — product requirements and build plan</div>
-<nav><button data-t="exec" aria-selected="true">Executive summary</button><button data-t="prd" aria-selected="false">Product Requirements (plain language)</button><button data-t="plan" aria-selected="false">Python Build Plan (technical)</button><button data-t="stages" aria-selected="false">The Build — staged plan</button><button data-t="blog" aria-selected="false">Build diary</button><button data-t="test" aria-selected="false">How to test it</button><button data-t="back" aria-selected="false">Backlog - what is next</button><button data-t="pause" aria-selected="false">Where we paused - 12 Aug</button><button data-t="p2b" aria-selected="false">From planning to build</button><button data-t="recon" aria-selected="false">Reconciliation — what the gates changed</button><button data-t="oi40" aria-selected="false">OI-40 — every count re-measured as-of a date</button><button data-t="sizing" aria-selected="false">Phase sizing, measured</button><button data-t="g334" aria-selected="false">Gate — 334 Premises/Operations</button><button data-t="g335" aria-selected="false">Gate — 335 OCP / Principals Protective</button><button data-t="g336" aria-selected="false">Gate — 336 Products/Compl. Operations</button><button data-t="g332" aria-selected="false">Gate — 332 Liquor Liability</button><button data-t="g335rr" aria-selected="false">Gate — 335 Railroad Protective</button><button data-t="g365" aria-selected="false">Gate — 365 Withdrawal / LoED / Cyber</button><button data-t="g370" aria-selected="false">Gate — 370 Unmanned Aircraft</button><button data-t="gsor" aria-selected="false">Gate — Size-Of-Risk</button><button data-t="gter" aria-selected="false">Gate — Terrorism</button><button data-t="ca" aria-selected="false">California differential</button><button data-t="ny" aria-selected="false">New York differential</button><button data-t="gplan" aria-selected="false">Gate — Rating plans</button><button data-t="gst" aria-selected="false">Gate — State-specific coverages</button></nav></header>
+<nav><button data-t="exec" aria-selected="true">Executive summary</button><button data-t="prd" aria-selected="false">Product Requirements (plain language)</button><button data-t="plan" aria-selected="false">Python Build Plan (technical)</button><button data-t="stages" aria-selected="false">The Build — staged plan</button><button data-t="blog" aria-selected="false">Build diary</button><button data-t="test" aria-selected="false">How to test it</button><button data-t="uistrat" aria-selected="false">The test page and the layered programme</button><button data-t="back" aria-selected="false">Backlog - what is next</button><button data-t="pause" aria-selected="false">Where we paused - 12 Aug</button><button data-t="p2b" aria-selected="false">From planning to build</button><button data-t="recon" aria-selected="false">Reconciliation — what the gates changed</button><button data-t="oi40" aria-selected="false">OI-40 — every count re-measured as-of a date</button><button data-t="sizing" aria-selected="false">Phase sizing, measured</button><button data-t="g334" aria-selected="false">Gate — 334 Premises/Operations</button><button data-t="g335" aria-selected="false">Gate — 335 OCP / Principals Protective</button><button data-t="g336" aria-selected="false">Gate — 336 Products/Compl. Operations</button><button data-t="g332" aria-selected="false">Gate — 332 Liquor Liability</button><button data-t="g335rr" aria-selected="false">Gate — 335 Railroad Protective</button><button data-t="g365" aria-selected="false">Gate — 365 Withdrawal / LoED / Cyber</button><button data-t="g370" aria-selected="false">Gate — 370 Unmanned Aircraft</button><button data-t="gsor" aria-selected="false">Gate — Size-Of-Risk</button><button data-t="gter" aria-selected="false">Gate — Terrorism</button><button data-t="ca" aria-selected="false">California differential</button><button data-t="ny" aria-selected="false">New York differential</button><button data-t="gplan" aria-selected="false">Gate — Rating plans</button><button data-t="gst" aria-selected="false">Gate — State-specific coverages</button></nav></header>
 <div class="wrap"><aside><div class="toc" id="t-exec"><div class="lbl">On this page</div><div class="toc">
 <ul>
 <li><a href="#why-you-are-reading-this">Why you are reading this</a><ul>
@@ -431,7 +431,7 @@ article{border:0;padding:0}.panel[hidden]{display:block!important}}
 <li><a href="#next-session_23">▶ Next session</a></li>
 </ul>
 </li>
-<li><a href="#entry-25-a-qa-programme-proposed-six-decisions-taken-and-every-document-brought-current-next-session-starts-here">Entry 25 — A QA programme proposed, six decisions taken, and every document brought current. NEXT SESSION STARTS HERE.</a><ul>
+<li><a href="#entry-25-a-qa-programme-proposed-six-decisions-taken-and-every-document-brought-current-next-session-starts-here-the-live-handoff-is-entry-26">Entry 25 — A QA programme proposed, six decisions taken, and every document brought current. ~~NEXT SESSION STARTS HERE.~~ (the live handoff is Entry 26)</a><ul>
 <li><a href="#1-the-proposal-and-the-three-agents-that-sized-it">1. The proposal, and the three agents that sized it</a></li>
 <li><a href="#2-the-central-finding-two-matrices-not-one">2. The central finding — two matrices, not one</a></li>
 <li><a href="#3-three-findings-that-change-the-schedule-rather-than-the-design">3. Three findings that change the schedule rather than the design</a></li>
@@ -439,6 +439,50 @@ article{border:0;padding:0}.panel[hidden]{display:block!important}}
 <li><a href="#5-six-decisions-taken-one-at-a-time">5. Six decisions, taken one at a time</a></li>
 <li><a href="#6-every-document-brought-current">6. Every document brought current</a></li>
 <li><a href="#next-session_24">▶ Next session</a></li>
+</ul>
+</li>
+<li><a href="#entry-26-the-qa-programme-built-tiers-on-the-command-line-a-launcher-in-the-browser-next-session-starts-here-the-live-handoff-is-entry-27">Entry 26 — The QA programme built: tiers on the command line, a launcher in the browser. ~~NEXT SESSION STARTS HERE.~~ (the live handoff is Entry 27)</a><ul>
+<li><a href="#1-phase-1-the-tiers-are-real-and-two-of-them-refuse">1. Phase 1 — the tiers are real, and two of them refuse</a></li>
+<li><a href="#2-the-budget-guard-and-the-gap-that-writing-it-exposed">2. The budget guard, and the gap that writing it exposed</a></li>
+<li><a href="#3-phase-2-the-same-thing-behind-a-button">3. Phase 2 — the same thing behind a button</a></li>
+<li><a href="#4-a-test-caught-me-and-it-was-right">4. A test caught me, and it was right</a></li>
+<li><a href="#5-the-offline-run-earned-its-keep-immediately">5. The offline run earned its keep immediately</a></li>
+<li><a href="#what-was-written_7">What was written</a></li>
+<li><a href="#next-session_25">▶ Next session</a></li>
+</ul>
+</li>
+<li><a href="#entry-27-phase-3-and-multi-class-the-verdict-the-map-and-the-class-array-twice-next-session-starts-here-the-live-handoff-is-entry-28">Entry 27 — Phase 3 and multi-class: the verdict, the map, and the class array twice. ~~NEXT SESSION STARTS HERE.~~ (the live handoff is Entry 28)</a><ul>
+<li><a href="#1-phase-3-a-map-that-does-not-lie-about-size">1. Phase 3 — a map that does not lie about size</a></li>
+<li><a href="#2-multi-class-the-array-twice-was-right-and-isos-files-said-what-goes-in-it">2. Multi-class — the array twice was right, and ISO's files said what goes in it</a></li>
+<li><a href="#3-the-pick-took-three-attempts-and-the-failures-are-the-useful-part">3. The pick took three attempts, and the failures are the useful part</a></li>
+<li><a href="#4-a-near-miss-on-a-finding-that-was-not-there">4. A near-miss on a finding that was not there</a></li>
+<li><a href="#5-a-cache-that-survived-a-change-to-the-thing-it-caches">5. A cache that survived a change to the thing it caches</a></li>
+<li><a href="#6-multi-location-deferred-with-its-consequences-named">6. Multi-location deferred, with its consequences named</a></li>
+<li><a href="#what-was-written_8">What was written</a></li>
+<li><a href="#next-session_26">▶ Next session</a></li>
+</ul>
+</li>
+<li><a href="#entry-28-phase-5-passes-3-and-4-the-review-refuted-the-fix-i-had-written-that-morning-next-session-starts-here-the-live-handoff-is-entry-29">Entry 28 — Phase 5 passes 3 and 4. The review refuted the fix I had written that morning. ~~NEXT SESSION STARTS HERE.~~ (the live handoff is Entry 29)</a><ul>
+<li><a href="#1-pass-3-is-a-not-applicable-real-or-is-it-ours">1. Pass 3 — is a NOT APPLICABLE real, or is it ours?</a></li>
+<li><a href="#2-pass-4-and-the-line-the-file-will-not-cross">2. Pass 4 — and the line the file will not cross</a></li>
+<li><a href="#3-its-first-real-use-refuted-oi-94-which-i-had-built-that-morning">3. Its first real use refuted OI-94, which I had built that morning</a></li>
+<li><a href="#4-two-code-findings-recorded-deliberately-not-acted-on">4. Two code findings recorded, deliberately not acted on</a></li>
+<li><a href="#5-oi-95-the-first-escalation-the-two-corpora-produced-together">5. OI-95 — the first escalation the two corpora produced together</a></li>
+<li><a href="#what-was-written_9">What was written</a></li>
+<li><a href="#next-session_27">▶ Next session</a></li>
+</ul>
+</li>
+<li><a href="#entry-29-a-layered-test-programme-and-a-page-to-run-it-from-next-session-starts-here">Entry 29 — A layered test programme, and a page to run it from. NEXT SESSION STARTS HERE.</a><ul>
+<li><a href="#1-the-aggregate-limit-was-never-an-axis-and-half-the-ilf-key-was-untested">1. The aggregate limit was never an axis, and half the ILF key was untested</a></li>
+<li><a href="#2-you-cannot-name-an-aggregate-as-a-figure-and-run-it-in-51-states">2. You cannot name an aggregate as a figure and run it in 51 states</a></li>
+<li><a href="#3-three-measurements-changed-the-design-mid-conversation">3. Three measurements changed the design mid-conversation</a></li>
+<li><a href="#4-the-budget-stopped-deciding-and-started-reporting">4. The budget stopped deciding and started reporting</a></li>
+<li><a href="#5-what-an-allowance-is-allowed-to-cut">5. What an allowance is allowed to cut</a></li>
+<li><a href="#6-a-stopped-run-is-not-a-failed-run">6. A stopped run is not a failed run</a></li>
+<li><a href="#7-compare_payload-had-been-keeping-three-differences-out-of-eleven">7. compare_payload had been keeping three differences out of eleven</a></li>
+<li><a href="#8-what-is-on-the-page">8. What is on the page</a></li>
+<li><a href="#9-the-test-count-and-the-inconsistency-it-exposed">9. The test count, and the inconsistency it exposed</a></li>
+<li><a href="#next-session_28">▶ Next session</a></li>
 </ul>
 </li>
 </ul>
@@ -454,7 +498,8 @@ article{border:0;padding:0}.panel[hidden]{display:block!important}}
 <li><a href="#using-it-as-a-library">Using it as a library</a></li>
 </ul>
 </li>
-<li><a href="#the-variable-tester-dropdowns-all-51-states-and-the-long-view">The variable tester — dropdowns, all 51 states, and the long view</a><ul>
+<li><a href="#the-variable-tester-dropdowns-all-51-states-and-the-long-view">The variable tester — dropdowns, all 51 states, and the long view</a></li>
+<li><a href="#the-layered-programme-four-layers-an-allowance-and-a-file-per-run">The layered programme — four layers, an allowance, and a file per run</a><ul>
 <li><a href="#the-manual-and-circular-authority-1122-documents">The manual and circular authority — 1,122 documents</a></li>
 <li><a href="#the-erc-authority-the-machine-readable-files">The ERC authority — the machine-readable files</a></li>
 </ul>
@@ -466,6 +511,12 @@ article{border:0;padding:0}.panel[hidden]{display:block!important}}
 <li><a href="#the-other-stage-2-measurements">The other stage-2 measurements</a></li>
 </ul>
 </li>
+</ul>
+</div>
+</div><div class="toc" id="t-uistrat" hidden><div class="lbl">On this page</div><div class="toc">
+<ul>
+<li><a href="#the-allowance-and-how-it-is-spent">The allowance, and how it is spent</a></li>
+<li><a href="#long-runs">Long runs</a></li>
 </ul>
 </div>
 </div><div class="toc" id="t-back" hidden><div class="lbl">On this page</div><div class="toc">
@@ -937,7 +988,7 @@ article{border:0;padding:0}.panel[hidden]{display:block!important}}
 <li><a href="#6-verification">6. Verification</a></li>
 </ul>
 </div>
-</div></aside><article><div class="panel" id="p-exec"><p class="meta">Source: <code>docs/EXECUTIVE-SUMMARY.md</code> &nbsp;·&nbsp; 5,206 words &nbsp;·&nbsp; rendered 2026-08-17</p><h1 id="general-liability-rating-engine-executive-summary">General Liability Rating Engine — Executive Summary</h1>
+</div></aside><article><div class="panel" id="p-exec"><p class="meta">Source: <code>docs/EXECUTIVE-SUMMARY.md</code> &nbsp;·&nbsp; 5,206 words &nbsp;·&nbsp; rendered 2026-08-18</p><h1 id="general-liability-rating-engine-executive-summary">General Liability Rating Engine — Executive Summary</h1>
 <blockquote>
 <p><strong>Status note — 17 August 2026.</strong> Four defects closed, one raised and closed the same day, and the
 project's oldest open question settled. <strong>Size-of-risk went from rating correctly in zero of 51
@@ -1677,7 +1728,7 @@ what it does, what it was checked against, and what it cannot yet do.</p>
 </tr>
 </tbody>
 </table>
-<p>Everything in one page: <code>docs/GL-RATING-ENGINE-DOCS.html</code>.</p></div><div class="panel" id="p-prd" hidden><p class="meta">Source: <code>docs/PRD-GL-RATING-ENGINE.md</code> &nbsp;·&nbsp; 5,862 words &nbsp;·&nbsp; rendered 2026-08-17</p><h1 id="general-liability-rating-engine-product-requirements-progress">General Liability Rating Engine — Product Requirements &amp; Progress</h1>
+<p>Everything in one page: <code>docs/GL-RATING-ENGINE-DOCS.html</code>.</p></div><div class="panel" id="p-prd" hidden><p class="meta">Source: <code>docs/PRD-GL-RATING-ENGINE.md</code> &nbsp;·&nbsp; 5,862 words &nbsp;·&nbsp; rendered 2026-08-18</p><h1 id="general-liability-rating-engine-product-requirements-progress">General Liability Rating Engine — Product Requirements &amp; Progress</h1>
 <p><strong>A plain-language document.</strong> What we are building, why it is harder than it sounds, every step
 we have taken to get here, what we found along the way, and what remains.</p>
 <p><strong>Last updated 2026-08-13.</strong> If you read this before, <strong>§0 below is the summary of what has
@@ -2333,7 +2384,7 @@ finding waiting to be collected cheaply.</p>
 <td>The 53 priced example policies, one per state, each with its input</td>
 </tr>
 </tbody>
-</table></div><div class="panel" id="p-plan" hidden><p class="meta">Source: <code>docs/GL-RATING-ENGINE-BUILD-PLAN.md</code> &nbsp;·&nbsp; 13,380 words &nbsp;·&nbsp; rendered 2026-08-17</p><h1 id="gl-rating-engine-python-build-plan">GL Rating Engine — Python Build Plan</h1>
+</table></div><div class="panel" id="p-plan" hidden><p class="meta">Source: <code>docs/GL-RATING-ENGINE-BUILD-PLAN.md</code> &nbsp;·&nbsp; 13,380 words &nbsp;·&nbsp; rendered 2026-08-18</p><h1 id="gl-rating-engine-python-build-plan">GL Rating Engine — Python Build Plan</h1>
 <p><strong>Governing doctrine, set 2026-08-10. This supersedes the prior framing, in which ERC and the
 manual PDFs were treated as co-equal sources in defined roles.</strong></p>
 <blockquote>
@@ -3635,7 +3686,7 @@ refer-to-company situations of its own. So this engine automates the core rating
 the rest.</p>
 <p>That is not a limitation of the build — it is what the source contains, and under this doctrine
 we do not paper over it with assumptions. Anyone expecting end-to-end automation of every
-coverage should know it now.</p></div><div class="panel" id="p-stages" hidden><p class="meta">Source: <code>docs/BUILD-STAGES.md</code> &nbsp;·&nbsp; 3,077 words &nbsp;·&nbsp; rendered 2026-08-17</p><h1 id="the-build-staged-plan-for-sign-off">The Build — staged plan, for sign-off</h1>
+coverage should know it now.</p></div><div class="panel" id="p-stages" hidden><p class="meta">Source: <code>docs/BUILD-STAGES.md</code> &nbsp;·&nbsp; 3,077 words &nbsp;·&nbsp; rendered 2026-08-18</p><h1 id="the-build-staged-plan-for-sign-off">The Build — staged plan, for sign-off</h1>
 <p><strong>Written 2026-08-12, when no code existed. Updated 2026-08-13: all six stages are built and Phase 2
 is live.</strong> The plan is kept in its original shape rather than rewritten as a description of what was
 built — the point of a plan is to be checkable against the outcome afterwards.</p>
@@ -3943,7 +3994,7 @@ and we move on.</p>
 <p><strong>All six stages are built and Phase 2 is live</strong> (2026-08-13). The current handoff is
 <a href="../BUILD-LOG.md"><code>BUILD-LOG.md</code></a> Entry 13, and the next work is ordered in
 <a href="BACKLOG-2026-08-14.md"><code>BACKLOG-2026-08-14.md</code></a> — <strong>breadth first</strong>, because every submission tested
-so far is the same risk shape.</p></div><div class="panel" id="p-blog" hidden><p class="meta">Source: <code>BUILD-LOG.md</code> &nbsp;·&nbsp; 26,188 words &nbsp;·&nbsp; rendered 2026-08-17</p><h1 id="build-log-the-gl-rating-engine">Build Log — the GL Rating Engine</h1>
+so far is the same risk shape.</p></div><div class="panel" id="p-blog" hidden><p class="meta">Source: <code>BUILD-LOG.md</code> &nbsp;·&nbsp; 30,865 words &nbsp;·&nbsp; rendered 2026-08-18</p><h1 id="build-log-the-gl-rating-engine">Build Log — the GL Rating Engine</h1>
 <p><strong>Opened 2026-08-12. No code has been written.</strong></p>
 <p>This is the diary of the <strong>build</strong>, and only the build. Everything before it — three weeks of
 corpus analysis, eleven coverage walkthroughs, the referral register and thirteen decisions — lives
@@ -6934,7 +6985,7 @@ still <strong>one class family</strong>, and that is now the honest limit rather
    OI-70's last corner.</li>
 </ol>
 <hr />
-<h2 id="entry-25-a-qa-programme-proposed-six-decisions-taken-and-every-document-brought-current-next-session-starts-here">Entry 25 — A QA programme proposed, six decisions taken, and every document brought current. <strong>NEXT SESSION STARTS HERE.</strong></h2>
+<h2 id="entry-25-a-qa-programme-proposed-six-decisions-taken-and-every-document-brought-current-next-session-starts-here-the-live-handoff-is-entry-26">Entry 25 — A QA programme proposed, six decisions taken, and every document brought current. <del>NEXT SESSION STARTS HERE.</del> <em>(the live handoff is </em><em>Entry 26</em><em>)</em></h2>
 <ul>
 <li><strong>Date:</strong> 2026-08-17 <em>(same session as Entries 18–24)</em></li>
 <li><strong>Directed:</strong> design a full QA plan using the agents · answer the volume and ISO-budget questions ·
@@ -7106,8 +7157,570 @@ than retrofitted.</p>
    costs nothing to remove.</li>
 <li><strong>Unchanged:</strong> OI-89 needs the synthetic loss histories now authorised; <code>breadth.py</code> still lacks
    the OI-93 probe; the coverage grid still reads <em>1 of 19</em>.</li>
-</ol></div><div class="panel" id="p-test" hidden><p class="meta">Source: <code>TESTING.md</code> &nbsp;·&nbsp; 4,649 words &nbsp;·&nbsp; rendered 2026-08-17</p><h1 id="how-to-test-this-phase-by-phase">How to test this, phase by phase</h1>
-<p><strong>Current as of 2026-08-17.</strong> Every command on this page has been run and its stated output is what
+</ol>
+<hr />
+<h2 id="entry-26-the-qa-programme-built-tiers-on-the-command-line-a-launcher-in-the-browser-next-session-starts-here-the-live-handoff-is-entry-27">Entry 26 — The QA programme built: tiers on the command line, a launcher in the browser. <del>NEXT SESSION STARTS HERE.</del> <em>(the live handoff is </em><em>Entry 27</em><em>)</em></h2>
+<ul>
+<li><strong>Date:</strong> 2026-08-17</li>
+<li><strong>Directed:</strong> <em>"yes, build according to the plan"</em></li>
+<li><strong>Built:</strong> <code>scripts/qa.py</code>, three QA routes and a QA card on <code>/tester</code>, and one file moved.</li>
+<li><strong>Verified:</strong> every suite green — tester <strong>33/33</strong> · interp 61/61 · golden 80/80 · breadth 22/22 ·
+  stages 1/3/4/5/6 · phase2 14/14 · CA 11/11 · NY 10/10 · oi50 7/7 · notebooks 20/20. <strong>T1 run
+  offline end to end: 22 scenarios, 264 ratings, two minutes, no cost.</strong></li>
+</ul>
+<h3 id="1-phase-1-the-tiers-are-real-and-two-of-them-refuse">1. Phase 1 — the tiers are real, and two of them refuse</h3>
+<p><code>scripts/qa.py</code>. Five tiers, and <strong>T3 and T4 decline to run while naming what they need</strong> — the
+per-class payload builder, and the as-of probe from decision A3 — rather than pretending to exist.</p>
+<table>
+<thead>
+<tr>
+<th>Tier</th>
+<th>Scenarios</th>
+<th>ISO calls</th>
+<th>Live time</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>T0 Smoke</td>
+<td>1</td>
+<td>50</td>
+<td>7 min</td>
+</tr>
+<tr>
+<td><strong>T1 Core logic</strong></td>
+<td><strong>22</strong></td>
+<td><strong>264</strong></td>
+<td><strong>36 min</strong></td>
+</tr>
+<tr>
+<td>T2 Full logic</td>
+<td>22</td>
+<td>1,100</td>
+<td>2h 34m</td>
+</tr>
+<tr>
+<td>T3 Value sweep</td>
+<td>—</td>
+<td>—</td>
+<td><strong>not built</strong></td>
+</tr>
+<tr>
+<td>T4 Edition cliff</td>
+<td>22</td>
+<td>264</td>
+<td><strong>blocked on A3</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>T1 came out at 22 scenarios against the proposal's ~600.</strong> Pairwise beat the design target, and the
+proposal's figure should be read as the estimate it was rather than a measurement.</p>
+<p><strong>Pairwise, not every combination, and the reason is empirical:</strong> every measured defect so far needed
+<strong>two</strong> things set at once to appear — a deductible <em>and</em> a limit, size-of-risk <em>and</em> a state whose
+table is countrywide. <strong>None needed three.</strong> <code>_allpairs</code> is a plain greedy covering algorithm, not
+minimal, deterministic, and short enough to read.</p>
+<h3 id="2-the-budget-guard-and-the-gap-that-writing-it-exposed">2. The budget guard, and the gap that writing it exposed</h3>
+<p>Decision A6 sets <strong>60 live calls a day standing, 150 absolute</strong>. A tier over the standing budget
+<strong>refuses to start</strong> rather than warning; <code>--force</code> reaches the ceiling and nothing reaches past it.</p>
+<p><strong>Then the guard reported zero on a day that had spent ninety-two.</strong> Neither <code>sweep.py</code>'s CLI nor
+<code>breadth.py</code> had <em>ever</em> written to the run store — only the browser did. <strong>A budget that counts from a
+store the command line never writes to is not a budget.</strong> <code>sweep.py</code> now records every run. Today's
+92 predate the fix and stay invisible, which is stated rather than backfilled.</p>
+<h3 id="3-phase-2-the-same-thing-behind-a-button">3. Phase 2 — the same thing behind a button</h3>
+<p>Three routes: <code>GET /api/tester/qa</code> for tiers, costs and budget; <code>POST /api/tester/qa/plan</code> for the
+matrix without running it; <code>POST /api/tester/qa/run</code> to start a tier. <strong>All three compute from
+<code>scripts/qa.py</code></strong> — a second list of tiers maintained next to the first would drift, and the drift
+would look like a rating defect.</p>
+<p><strong>The guard is enforced on the button too, and that was deliberate.</strong> A tier over budget returns
+<strong>429</strong> with what it needs and what remains; offline is always allowed. <strong>A guard that held on only
+one door would make the budget a matter of which door you came in by.</strong> Verified both ways.</p>
+<p>The card shows cost <strong>before</strong> the button, marks a tier red when it would be refused, and lists
+findings as the run goes — disagreements <em>and</em> inert values — so a long tier is useful before it
+finishes.</p>
+<h3 id="4-a-test-caught-me-and-it-was-right">4. A test caught me, and it was right</h3>
+<p><code>verify_tester</code> <strong>A5 — "no script imports the UI"</strong> — failed, because recording a CLI run had made
+<code>scripts/sweep.py</code> import <code>ui</code>. That inverts the one-way dependency the project enforces.</p>
+<p><strong>The fix was the code, not the assertion.</strong> <code>ui/store.py</code> → <code>scripts/runstore.py</code>, because <strong>a run
+store is a results store and not an interface concern</strong>: the command line writes to it, the browser
+writes to it, and the live-call budget counts from it. <code>ui/__init__</code> no longer re-exports it, and the
+UI imports it exactly as it already imports <code>variants</code> and <code>sweep</code>.</p>
+<p><strong>Second time today an assertion written to hold a boundary caught the boundary being crossed</strong> —
+<code>verify_breadth</code> E7 was the other, pinning that a loss cost of <strong>zero</strong> still rates while only a
+<strong>null</strong> refuses. Both times the assertion was right and the code was wrong.</p>
+<h3 id="5-the-offline-run-earned-its-keep-immediately">5. The offline run earned its keep immediately</h3>
+<p><strong>264 ratings, two minutes, nothing spent. 17 engine refusals — every one the known OI-94 null loss
+cost</strong>, in TX, FL, GA and DE, all four inside the confirmed fourteen. <strong>Nothing new, and not one of
+them would have been worth a live call.</strong> That is the <em>offline first</em> rule made concrete rather than
+asserted.</p>
+<h3 id="what-was-written_7">What was written</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>scripts/qa.py</code></td>
+<td>Tiers, the pairwise generator, cost estimation, the budget guard</td>
+</tr>
+<tr>
+<td><code>scripts/runstore.py</code></td>
+<td>Moved from <code>ui/store.py</code>; the docstring says why it moved and which test caught it</td>
+</tr>
+<tr>
+<td><code>ui/tester.py</code></td>
+<td>Three QA routes, a multi-scenario worker, the QA card and its script</td>
+</tr>
+<tr>
+<td><code>scripts/sweep.py</code></td>
+<td>Records every CLI run, so the budget can see it</td>
+</tr>
+<tr>
+<td><code>ui/__init__.py</code> · <code>tests/verify_tester.py</code></td>
+<td>Follow the move</td>
+</tr>
+</tbody>
+</table>
+<h3 id="next-session_25">▶ Next session</h3>
+<p><strong>Phase 3 next — the summary verdict and the map.</strong> Then the one that matters:</p>
+<ol>
+<li><strong>Phase 3</strong> — one-screen verdict and a US map. Cosmetic in the sense that the data already
+   exists; valuable because it is what a non-technical reader can act on.</li>
+<li><strong>Phase 4 — multi-location and multi-class payloads and controls.</strong> <strong>The largest piece, and
+   engine-side rather than UI.</strong> Two of the four stated coverage goals depend on it and on nothing
+   else. Decisions A1 and A2 have already settled how the shapes are chosen.</li>
+<li><strong>Phase 5</strong> — harness review passes 2–4, including the adversarial agent read.</li>
+<li><strong>Tuesday's 60 calls:</strong> the 2027 probe first (A3), then the mechanism matrix in CA, NY, TX, FL.</li>
+<li><strong>Still owed:</strong> a loss cost multiplier (B1), and <strong>telling ISO about the programme before the
+   week's calls start</strong> (C1).</li>
+</ol>
+<hr />
+<h2 id="entry-27-phase-3-and-multi-class-the-verdict-the-map-and-the-class-array-twice-next-session-starts-here-the-live-handoff-is-entry-28">Entry 27 — Phase 3 and multi-class: the verdict, the map, and the class array twice. <del>NEXT SESSION STARTS HERE.</del> <em>(the live handoff is </em><em>Entry 28</em><em>)</em></h2>
+<ul>
+<li><strong>Date:</strong> 2026-08-17</li>
+<li><strong>Directed:</strong> <em>"log details, move on to phase 3"</em> → <em>"lets focus on multi-class for now, it's just
+  the class array twice. We can make multi-location a backlog ua item"</em></li>
+<li><strong>Built:</strong> two charts, a per-jurisdiction rollup, the <code>classifications</code> control, and a cache that
+  can no longer go stale.</li>
+<li><strong>Verified:</strong> <code>verify_tester</code> <strong>48/48</strong> — Q1–Q8 for the QA programme, M1–M7 for multi-class. Every
+  other suite green.</li>
+</ul>
+<h3 id="1-phase-3-a-map-that-does-not-lie-about-size">1. Phase 3 — a map that does not lie about size</h3>
+<p><code>charts.usa_map</code> is a <strong>tile grid, not a projection.</strong> Every jurisdiction gets the same square,
+because Rhode Island and Texas carry <strong>one submission each</strong> and drawing Texas two hundred times
+larger would say something untrue about where the testing went.</p>
+<p><strong>Hawaii is drawn and permanently blank.</strong> It is not in ISO's corpus at all, and leaving it off the
+map would hide that. <strong>Q7 asserts every jurisdiction we can rate has a tile</strong>, because a missing tile
+silently drops a state from the picture.</p>
+<p><code>charts.verdict</code> computes its percentage over <strong>comparable outcomes only</strong>, and <code>runstore.qa_rollup</code>
+carries the same rule further: a <em>not applicable</em> result can only soften a jurisdiction to <code>partial</code>
+and <strong>can never colour it as failing</strong>. The rollup is worst-first — a state that disagreed anywhere
+reads as disagreeing however much else agreed, because a summary exists to surface the worst thing
+rather than average it away.</p>
+<h3 id="2-multi-class-the-array-twice-was-right-and-isos-files-said-what-goes-in-it">2. Multi-class — the array twice was right, and ISO's files said what goes in it</h3>
+<p><strong>The instruction was correct: it is the class array twice.</strong> What ISO's own sample submissions
+settled is what has to differ inside it.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Multi-class locations in ISO's samples using <strong>different</strong> class codes</td>
+<td><strong>99 of 114</strong></td>
+</tr>
+<tr>
+<td>Their four-class Alaska example</td>
+<td>mixes <strong>Payroll with Gross Sales in one location</strong></td>
+</tr>
+<tr>
+<td>Exposure</td>
+<td>reused across bases in 93 of 114</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Two identical classifications exercise the loop and nothing else</strong> — precisely the variant OI-93
+exists to catch. So each extra classification takes a different declared code and, where one exists,
+a <strong>different premium basis</strong>: the divisor is per basis, <strong>per $1,000 for Gross Sales and Payroll but
+no divisor at all for <code>Each</code> and <code>Units</code></strong>, so one divisor across a location is wrong the moment the
+bases differ.</p>
+<h3 id="3-the-pick-took-three-attempts-and-the-failures-are-the-useful-part">3. The pick took three attempts, and the failures are the useful part</h3>
+<table>
+<thead>
+<tr>
+<th>Attempt</th>
+<th>Chose</th>
+<th>What went wrong</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Scan every class code</td>
+<td><strong>Gallons</strong></td>
+<td>Stopped at the first different basis it happened to meet — an 11-class exotic</td>
+</tr>
+<tr>
+<td>Add a preference list</td>
+<td><strong>Area</strong></td>
+<td><em>Membership is not ordering.</em> And <strong>5,000,000 square feet is a hundred city blocks</strong>: premium went <strong>8,229 → 288,894</strong></td>
+</tr>
+<tr>
+<td>Ask the declaration <strong>by basis, in preference order</strong></td>
+<td><strong>41675 Computer Consulting, Payroll</strong></td>
+<td>Money like Gross Sales, so the inherited exposure stays plausible: <strong>8,229 → 9,478</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>The second failure is the one worth keeping.</strong> The variant was <em>legal</em> and ISO would have priced
+it — nothing was broken. It was simply not a risk anyone writes, and a coverage grid full of those
+reads as more assurance than it is. That is decision A2 doing work rather than sitting in a document.</p>
+<h3 id="4-a-near-miss-on-a-finding-that-was-not-there">4. A near-miss on a finding that was not there</h3>
+<p>T1 offline went from <strong>17 refusals to 19</strong>, and the run store appeared to show a scenario with <strong>no
+size-of-risk</strong> hitting a null loss cost — which would have been a new manifestation of OI-94.</p>
+<p><strong>It was not.</strong> The store held both the pre-axis and post-axis T1 runs under the same label, and I
+was reading across them. Rating the configurations directly proved <strong>all 19 come from the five
+size-of-risk scenarios</strong>, the known defect, and that multi-class alone rates cleanly everywhere.</p>
+<p><strong>Recorded because reading a label nearly produced a false finding</strong>, and the thing that prevented it
+was re-deriving the result rather than trusting the summary.</p>
+<h3 id="5-a-cache-that-survived-a-change-to-the-thing-it-caches">5. A cache that survived a change to the thing it caches</h3>
+<p><code>verify_tester</code> <strong>G2 failed</strong>: <code>ui/cache/</code> was serving a spec built from <strong>19 controls while the code
+declared 20</strong>.</p>
+<p>Deleting the file would have fixed the symptom. <strong>The cache now carries a fingerprint of the control
+set and rebuilds when it changes.</strong> G2 only caught this because it compares the served spec against
+<code>V.CONTROLS</code> rather than against a number — the same reason <code>verify_contract_figures</code> reading cached
+output is on the housekeeping list, and the second stale-cache problem found in two days.</p>
+<h3 id="6-multi-location-deferred-with-its-consequences-named">6. Multi-location deferred, with its consequences named</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>UA-1</strong></td>
+<td>Per-location variation. A second location is a <strong>deep copy differing only by territory</strong>, so class, exposure and deductible cannot vary per location. Allocation, the miscellaneous-employee assignment to the largest-payroll class, and the 90%-owner-occupied split stay untested</td>
+</tr>
+<tr>
+<td><strong>UA-2</strong></td>
+<td>ISO's <strong>three</strong> territory-assignment rules — production site, <strong>headquarters</strong>, each location. We only ever exercise the third</td>
+</tr>
+<tr>
+<td><strong>UA-3</strong></td>
+<td><code>Each</code> and <code>Units</code> — <strong>no divisor at all</strong>, the sharpest test of the per-basis divisor. Needs an exposure chosen per basis rather than inherited</td>
+</tr>
+</tbody>
+</table>
+<h3 id="what-was-written_8">What was written</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ui/charts.py</code></td>
+<td><code>usa_map</code>, <code>verdict</code></td>
+</tr>
+<tr>
+<td><code>scripts/runstore.py</code></td>
+<td><code>qa_rollup</code> — worst-first, and not-applicable can never fail a tile</td>
+</tr>
+<tr>
+<td><code>ui/tester.py</code></td>
+<td><code>/api/tester/qa/summary</code>, the QA summary view, made the default tab</td>
+</tr>
+<tr>
+<td><code>scripts/variants.py</code></td>
+<td>The <code>classifications</code> control, its applier, <code>PREFERRED_SECOND_BASIS</code></td>
+</tr>
+<tr>
+<td><code>scripts/qa.py</code></td>
+<td><code>classifications</code> in the pairwise axes — <strong>absorbed with no extra scenario</strong></td>
+</tr>
+<tr>
+<td><code>ui/variables.py</code></td>
+<td>The spec cache self-invalidates on a control change</td>
+</tr>
+<tr>
+<td><code>tests/verify_tester.py</code></td>
+<td>Q1–Q8, M1–M7</td>
+</tr>
+<tr>
+<td><code>docs/BACKLOG-FEATURE-SETS.md</code></td>
+<td>The UA backlog</td>
+</tr>
+</tbody>
+</table>
+<h3 id="next-session_26">▶ Next session</h3>
+<p><strong>Tuesday 18 August, 60 live calls, and multi-class gets its first live exercise.</strong></p>
+<ol>
+<li><strong>First call: the 2027 probe</strong> (A3).</li>
+<li><strong>Mechanism matrix group 1</strong> — CA, NY, TX, FL, now including the multi-class scenarios.</li>
+<li><strong>Phase 5 — the harness review passes.</strong> Pass 1 exists; passes 2, 3 and 4 do not. <strong>Pass 3 is the
+   one with a real failure behind it</strong>: twenty jurisdictions were refused for three days by our own
+   rule wearing a good explanation (OI-91).</li>
+<li><strong>Still owed:</strong> a loss cost multiplier (B1); <strong>telling ISO about the programme before the week's
+   calls start</strong> (C1).</li>
+</ol>
+<hr />
+<h2 id="entry-28-phase-5-passes-3-and-4-the-review-refuted-the-fix-i-had-written-that-morning-next-session-starts-here-the-live-handoff-is-entry-29">Entry 28 — Phase 5 passes 3 and 4. The review refuted the fix I had written that morning. <del>NEXT SESSION STARTS HERE.</del> <em>(the live handoff is </em><em>Entry 29</em><em>)</em></h2>
+<ul>
+<li><strong>Date:</strong> 2026-08-17</li>
+<li><strong>Directed:</strong> <em>"work in order"</em> — pass 3, then pass 4</li>
+<li><strong>Built:</strong> <code>scripts/qa_review.py</code> — pass 3 in full, pass 4's brief half — and the corrections its
+  first real use produced.</li>
+<li><strong>Verified:</strong> <code>verify_tester</code> <strong>58/58</strong> (R1–R10 new). Every other suite green.</li>
+</ul>
+<h3 id="1-pass-3-is-a-not-applicable-real-or-is-it-ours">1. Pass 3 — is a <code>NOT APPLICABLE</code> real, or is it ours?</h3>
+<p><strong><code>NOT APPLICABLE</code> is the only outcome never counted as a failure</strong>, which makes it the one place a
+defect can sit indefinitely without moving a number anyone watches. <strong>It already did</strong>: OI-91, where
+twenty jurisdictions were refused for three days by our own inert fallback <strong>wearing a readable
+reason</strong> — and the reason is exactly why nobody questioned it.</p>
+<p>So the pass re-derives every <code>NOT APPLICABLE</code> <strong>without calling <code>variants.build</code>,
+<code>Control.options</code>, <code>Declared.values</code> or <code>gl_engine.schema</code></strong>. It reads ISO's own CSVs out of the
+resolved package. <strong>R5 asserts that independence by reading this file's source</strong>, because a docstring
+claiming independence is not evidence.</p>
+<p><strong>Three verdicts, and the third is the point:</strong> <code>CONFIRMED</code> · <code>CONTRADICTED</code> · <strong><code>UNVERIFIED</code>, which
+names what would settle it</strong> rather than saying <code>CONFIRMED</code> and meaning <em>"I did not check"</em>.</p>
+<p><strong>The first run produced twenty-plus false findings and they were mine.</strong> A configuration is refused
+when <strong>one</strong> control cannot be expressed; every other control in it being legal is the normal case.
+Aggregating worst-first reported Montana as wrongly refusing a <code>100,000 CSL</code> limit it declares
+perfectly well, when the cause was <code>locations=2</code> against its single territory. <strong>A review pass that
+cries wolf is worse than no review pass</strong>, because the next real finding reads as noise.</p>
+<p><strong>Verified the detector detects.</strong> Fed the exact OI-91 configuration it returns <code>CONTRADICTED</code>; fed
+NY's genuine claims-made narrowing it returns <code>CONFIRMED</code>. All <strong>40</strong> <code>NOT APPLICABLE</code> results on
+record are ISO's narrowing, none ours.</p>
+<h3 id="2-pass-4-and-the-line-the-file-will-not-cross">2. Pass 4 — and the line the file will not cross</h3>
+<p><strong>A Python script cannot invoke the specialist agents.</strong> So pass 4 splits honestly: the script
+assembles the brief, the operator dispatches it. Three rules live in the prompts:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Refute, never confirm</strong></td>
+<td>An agent asked <em>"is this right?"</em> tends to agree</td>
+</tr>
+<tr>
+<td><strong>Each reviewer forbidden the other's corpus</strong></td>
+<td>Agreement between independently-built sources is evidence <strong>only while they stay independent</strong></td>
+</tr>
+<tr>
+<td><strong><code>CANNOT TELL</code> allowed</strong></td>
+<td>A forced verdict is a guess wearing a citation</td>
+</tr>
+</tbody>
+</table>
+<p><strong>A clean agreement never becomes a brief</strong> — there is no claim to break, and a review queue full of
+confirmations is one nobody reads.</p>
+<h3 id="3-its-first-real-use-refuted-oi-94-which-i-had-built-that-morning">3. Its first real use refuted OI-94, which I had built that morning</h3>
+<p>Dispatched deliberately at <strong>my own most recent fix</strong>, on the claim most likely to be wrong.</p>
+<p><strong>UPHELD, and better evidenced than when I wrote it.</strong> Texas never filed ISO's size-of-risk plan at
+all. <strong>The two corpora agree independently:</strong> the <strong>35</strong> jurisdictions whose ERC size-of-risk table
+is populated are <strong>exactly</strong> the 35 states with a <em>Size Of Risk Rating Supplement</em> circular — no
+difference in either direction, ERC measured first. <strong>No engine change can rate size-of-risk in
+Texas, and none should try.</strong> Nor does the rule over-refuse: base, multi-class, deductible, limit and
+terrorism configurations all rate <strong>51 of 51</strong>.</p>
+<p><strong>REFUTED, and this half is mine.</strong></p>
+<blockquote>
+<p>I wrote that ISO's 400 shows ISO <em>"refuses the same submission for the same reason."</em> <strong>It does
+not.</strong> ISO's error is a miss on <code>PremOpsSizeOfRiskLossCost</code> with keys <code>CW, 502, 50017</code> — and
+<strong><code>502</code> is Georgia's territory.</strong> The body I quoted is the <strong>GA</strong> call; TX and FL were never
+captured in full. The 400 confirms ISO <strong>also fails</strong> on size-of-risk, not that its reason matches
+ours. <strong>That claim was repeated in OI-94, the build log and a commit message.</strong></p>
+</blockquote>
+<p><strong>And the refusal message named the wrong table.</strong> It blamed <code>PremOpsLossCost</code> — in Texas a healthy
+<strong>9,504-row</strong> table that had resolved <code>0.095</code> perfectly well. The empty table is
+<code>PremOpsSizeOfRiskLossCost</code>, <strong>a 53-byte header-only file</strong>. Anyone following that message went to
+the wrong file. Now fixed to name the lookup that actually came back empty.</p>
+<p><strong>Neither would have been caught by a test</strong>, because the engine's <em>behaviour</em> is right and its
+<em>explanation</em> was wrong. Tests check behaviour.</p>
+<h3 id="4-two-code-findings-recorded-deliberately-not-acted-on">4. Two code findings recorded, deliberately not acted on</h3>
+<ul>
+<li><strong><code>_refuse_null_loss_cost</code> walks the whole tree</strong> and would refuse on
+  <code>ERPTotalBasicLimitsCoSubjectLossCost</code>, for which there is <strong>no evidence</strong>. It does not over-fire
+  in any of the 51 today; <strong>nothing constrains it not to.</strong></li>
+<li><strong>It raises at <code>kernel.py:163</code> before the referral register runs at <code>:170</code></strong>, so
+  <code>d_size_of_risk_without_costs</code> (R10/R11) — <strong>the precise pre-written diagnosis for exactly this
+  case</strong> — can never fire. The engine emits the general message and discards the accurate one.</li>
+</ul>
+<h3 id="5-oi-95-the-first-escalation-the-two-corpora-produced-together">5. OI-95 — the first escalation the two corpora produced together</h3>
+<p><strong>ISO's content files <code>0</code> where ISO's manual files <code>(a) — refer to company</code>.</strong> In Texas, <strong>1,188 of
+1,188 classes agree</strong> between the two sources, including <strong>178 <code>(a)</code>↔<code>0</code> correspondences with zero
+mismatches</strong>. We price those as zero and <strong>raise no referral</strong>: adding class 41675 moved Texas
+<strong>7,821 → 8,973 with 0 referrals and 0 messages</strong>.</p>
+<p><strong>The countervailing evidence is strong and is recorded first.</strong> The Texas base risk — whose products
+side is itself an <code>(a)</code> — rates <strong>7,821 and is a recorded live <code>MATCH</code> against ISO</strong>. So <strong>ISO's own
+service also computes zero for an <code>(a)</code>.</strong> Whether that is intended or a known industry seam is <strong>not
+a question either corpus settles. It needs a person.</strong></p>
+<h3 id="what-was-written_9">What was written</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>scripts/qa_review.py</code></td>
+<td>Pass 3 in full; pass 4's brief generator and prompts</td>
+</tr>
+<tr>
+<td><code>gl_engine/rating/kernel.py</code></td>
+<td>The refusal message names the lookup that actually came back empty</td>
+</tr>
+<tr>
+<td><code>tests/verify_tester.py</code></td>
+<td>R1–R5 (pass 3, including <em>the detector detects</em>), R6–R10 (pass 4's prompt rules)</td>
+</tr>
+<tr>
+<td><code>docs/OPEN-ITEMS.md</code></td>
+<td><strong>OI-94 corrected</strong> with all three findings; <strong>OI-95 raised</strong></td>
+</tr>
+</tbody>
+</table>
+<h3 id="next-session_27">▶ Next session</h3>
+<ol>
+<li><strong>Pass 2 — is a refusal correct?</strong> The last of the four, and the one that spends calls re-asking
+   questions we have already decided. It is also the only way to settle <em>"would ISO refuse </em><em>this</em><em>
+   submission, and with which error"</em> — the half of the OI-94 claim that remains <code>CANNOT TELL</code>.</li>
+<li><strong>The two open code findings</strong> above — both message-quality, neither premium-affecting.</li>
+<li><strong>OI-95 needs a decision</strong>, not a fix.</li>
+<li><strong>Tuesday's 60 calls:</strong> the 2027 probe (A3), then the mechanism matrix in CA, NY, TX, FL — now
+   with multi-class in the pairwise set.</li>
+<li><strong>Still owed:</strong> a loss cost multiplier (B1); <strong>telling ISO about the programme before the week's
+   calls start</strong> (C1).</li>
+</ol>
+<hr />
+<h2 id="entry-29-a-layered-test-programme-and-a-page-to-run-it-from-next-session-starts-here">Entry 29 — A layered test programme, and a page to run it from. <strong>NEXT SESSION STARTS HERE.</strong></h2>
+<ul>
+<li><strong>Date:</strong> 2026-08-18</li>
+<li><strong>Directed:</strong> a back-and-forth on UI strategy — <em>"a separate, new page for kicking off and tracking
+  results"</em>, starting from the order of test cases; then <em>"make the changes"</em>.</li>
+<li><strong>Built:</strong> <code>scripts/layers.py</code>, <code>ui/tests_page.py</code>, <code>ui/runfile.py</code>, a real aggregate-limit control,
+  and 30 offline checks over the lot.</li>
+<li><strong>Verified:</strong> <code>tests/verify_layers.py</code> <strong>30/30</strong>. Every other suite green, <code>verify_tester</code> included
+  — the QA tab was not touched.</li>
+</ul>
+<p>The whole design is written up in <a href="docs/UI-STRATEGY.md"><code>docs/UI-STRATEGY.md</code></a>. What follows is what
+the build taught, which is not the same thing.</p>
+<h3 id="1-the-aggregate-limit-was-never-an-axis-and-half-the-ilf-key-was-untested">1. The aggregate limit was never an axis, and half the ILF key was untested</h3>
+<p><code>_apply_occurrence_limit</code> set the occurrence limit and then <strong>derived</strong> both aggregates, taking the
+first value ISO declared legal with it. Every limit test ever run therefore varied one half of a
+two-part key and left the other on whatever came first in a table.</p>
+<p>ILF keying is one of the two top-ranked failure modes in the backlog. It has been half-tested the
+whole time, and nothing said so — the runs all passed, because passing was never the question.</p>
+<p><code>general_aggregate</code> is now a control of its own, keyed on the occurrence limit, setting both
+aggregates and refusing a pair ISO does not declare. The old derivation still runs when the aggregate
+is left alone, and <strong>stands aside when it is set</strong> rather than writing a value that would be
+overwritten — a <code>pick</code> recorded for a value that never reached the payload would have shown up in
+<code>probe_no_op</code> as a choice site nobody chose.</p>
+<h3 id="2-you-cannot-name-an-aggregate-as-a-figure-and-run-it-in-51-states">2. You cannot name an aggregate as a figure and run it in 51 states</h3>
+<p>The obvious plan was <em>"1,000,000 occurrence against 2,000,000 aggregate"</em>. Measuring killed it: the
+legal aggregate set is keyed on the occurrence limit <strong>and differs by state</strong> — four legal values at
+25,000 in Texas, eight at 1,000,000. A figure legal in one state is undeliverable in another, and a
+run that reported <code>NOT APPLICABLE</code> for half the country would have said nothing about limits.</p>
+<p>So the plan carries <strong>positions</strong> — <code>@lowest</code>, <code>@middle</code>, <code>@highest</code> — and <code>sweep.run_config</code> gained a
+<code>resolve</code> hook that turns a position into that state's declared value before the payload is built.</p>
+<p><strong>Each row records the figure it actually got.</strong> A run that stores the request and not the answer
+cannot be read back a week later, and <em>"the highest aggregate"</em> is a different number in every state.</p>
+<h3 id="3-three-measurements-changed-the-design-mid-conversation">3. Three measurements changed the design mid-conversation</h3>
+<p>Each of these was decided one way, measured, and then decided differently.</p>
+<ul>
+<li><strong>The basis split is a guard, not a routine event.</strong> We agreed a class filed on different premium
+  bases in different states must be split into separate sweeps and never compared across them. Then
+  we counted: <strong>1,188 class codes declared in each of TX, CA, NY, FL, OK and MT; 1,187 common to all
+  six; the basis differed for exactly one, and that one was simply undeclared in a state.</strong> The rule
+  is right and will almost never fire. It stays, because when it fires it matters.</li>
+<li><strong>ISO files no class families.</strong> Codes cluster by leading digit, but the data declares only codes,
+  descriptions and bases. A family picker would have been our taxonomy dressed as ISO's — so the
+  picker filters by <strong>basis</strong>, which is declared. (RULE #1 again: read the declaration.)</li>
+<li><strong>There are 59 premium bases and most are counts.</strong> <em>Number of Zoos</em>, <em>Each Pier</em>, <em>Number of
+  Drawbridges</em>, <em>Passenger Days</em> — no divisor at all. One default exposure figure across that set is
+  meaningless, which is the whole argument for choosing the basis before the class rather than after.</li>
+</ul>
+<h3 id="4-the-budget-stopped-deciding-and-started-reporting">4. The budget stopped deciding and started reporting</h3>
+<p>Decision A6's gate refused a tier that went over 60 calls a day. That was right for one-day tiers and
+wrong for this: a layer-3 run at the full matrix is about 600 calls, and a gate set for the old shape
+would refuse most useful runs of the new one.</p>
+<p>So the layered programme <strong>shows a ticker and runs what you asked for</strong>, with an allowance set per
+run. The tier runner keeps its gate, because leaving the QA tab alone was the point. <strong>Both read the
+same count</strong>, which moved into <code>runstore.spent_today</code> — two counts of the same number drift, and the
+one on screen becomes the one nobody trusts.</p>
+<h3 id="5-what-an-allowance-is-allowed-to-cut">5. What an allowance is allowed to cut</h3>
+<p>When the matrix does not fit the allowance, <strong>the configuration list is thinned and the state list
+never is.</strong> Every state appears in every run, so two runs stay comparable and no coverage figure is
+quietly built on a smaller country.</p>
+<p>The thinning keeps <strong>the ends and an even spread between them</strong>, because the ends of a filed table are
+where a keying error shows; a thinning that kept the middle would drop exactly the rows worth having.
+<strong>What it dropped is written into the run file</strong>, because two runs of the same layer at different
+allowances are different matrices, and one that does not say so invites a comparison that is not
+valid.</p>
+<h3 id="6-a-stopped-run-is-not-a-failed-run">6. A stopped run is not a failed run</h3>
+<p>Pause holds between states; stop ends after the current one. Either way the run is <strong>stored as a
+partial that names the scenarios and states it never reached</strong> (<code>stopped_early</code>, <code>not_reached</code>), and
+the run file says so at the top.</p>
+<p>The alternative — discarding a run because it did not finish — throws away two hundred calls' worth of
+answers to punish a change of mind about the last hundred.</p>
+<p>The same principle covers the offline pre-flight: a state whose payload cannot be built never reaches
+ISO, and it is carried into the result as <code>preflight_excluded</code> rather than dropped. <strong>A run that shows
+only what it called reports coverage it never had.</strong></p>
+<h3 id="7-compare_payload-had-been-keeping-three-differences-out-of-eleven">7. <code>compare_payload</code> had been keeping three differences out of eleven</h3>
+<p>It computed every differing field and returned <code>first_differences</code> — the first three, joined into a
+string for a terminal that has a width. Fine for a console line, useless for a page you review. It now
+returns the whole list, and the console still prints three.</p>
+<h3 id="8-what-is-on-the-page">8. What is on the page</h3>
+<p><code>/tests</code>, beside the QA tab, both writing to the same store. Layer picker · basis-first class picker
+with a filter · exposure labelled with its own unit · allowance · ticker · plan-before-you-run ·
+progress with pause, resume and stop · and every finished run listed as a standalone HTML file.</p>
+<p>Each run writes <code>results/runs/&lt;layer&gt;-&lt;class&gt;-&lt;stamp&gt;.html</code>: headline counts, what actually ran
+(groups, not-filed, thinning, early stop), then every state sorted by size of difference and
+expanding to the fields that differ. <strong>Git-ignored, and <code>.gitignore</code> now says why</strong> — a run file is a
+rendering of ISO's licensed premiums.</p>
+<h3 id="9-the-test-count-and-the-inconsistency-it-exposed">9. The test count, and the inconsistency it exposed</h3>
+<p>The allowance section shows <strong>how many tests the run would be</strong> before you press anything — <em>"204
+tests · 4 configurations × 51 jurisdictions · 200 against ISO"</em>, updating as you type. It is local
+arithmetic from the layer's configuration count and the jurisdiction list, so it costs nothing and
+never lags; it says <strong>about</strong> N against ISO because it assumes the class is filed everywhere.
+<strong><code>Plan it</code> reads the declaration in all 51 and replaces the estimate with the counted figure</strong>,
+which is smaller wherever ISO does not file the class.</p>
+<p>Writing it surfaced a real disagreement. The page said an allowance cuts nothing offline; the server
+thinned anyway. <strong>An allowance is denominated in live calls and an offline run spends none</strong>, so
+thinning one gives up coverage to save something it was never going to spend. <code>plan()</code> now takes
+<code>offline</code>, and the page, the HTTP route and the CLI all pass it — B7 and B8 assert it.</p>
+<p>A counter is a cheap thing to add and it made two implementations of the same rule state their
+answer side by side. That is worth remembering the next time a number is only visible after a
+button.</p>
+<h3 id="next-session_28">▶ Next session</h3>
+<ol>
+<li><strong>Run L2 live on one class.</strong> 50 calls, one class, and the first real use of the whole thing.
+   <code>--offline</code> first, always.</li>
+<li><strong>L5 and L6</strong> — the deductible amount ladder and combined-versus-separate — are designed in
+   §1 of the strategy document and not built.</li>
+<li><strong>Pass 2 — is a refusal correct?</strong> Still the last of the four, and still the only way to settle the
+   half of OI-94 that reads <code>CANNOT TELL</code>.</li>
+<li><strong>The index over run files</strong> lists everything newest-first but cannot filter to one class yet.</li>
+<li><strong>Still owed:</strong> a loss cost multiplier (B1); telling ISO about the programme before the week's
+   calls start (C1); OI-95 needs a decision, not a fix.</li>
+</ol></div><div class="panel" id="p-test" hidden><p class="meta">Source: <code>TESTING.md</code> &nbsp;·&nbsp; 5,226 words &nbsp;·&nbsp; rendered 2026-08-18</p><h1 id="how-to-test-this-phase-by-phase">How to test this, phase by phase</h1>
+<p><strong>Updated 2026-08-18: the layered programme is built</strong> — four layers, a <code>/tests</code> page, and one
+standalone file per run. It has its own section near the bottom, and its own suite
+(<code>verify_layers.py</code>, 30/30). The aggregate limit became a real control on the same day.</p>
+<p><strong>Otherwise current as of 2026-08-17.</strong> Every command on this page has been run and its stated output is what
 it actually produced. <strong>All six stages are built, and Phase 2 — the comparison against ISO's live
 service — is live.</strong> Nothing on this page is marked NOT BUILT any more.</p>
 <p><strong>What changed on 2026-08-17.</strong> Four defects closed and one raised-and-closed, so several suites now
@@ -7146,6 +7759,8 @@ python tests/verify_breadth.py                   18/18   the variant harness, an
                                                          it varies -- no live calls
 python tests/verify_tester.py                    30/30   the variable tester: its controls, its
                                                          routes and the UI/engine separation
+python tests/verify_layers.py                    30/30   the layered programme: the aggregate axis,
+                                                         the allowance, the run file -- no calls
 python Agentic/iso-circular-expert/tools/smoke_test.py     19/19
 python Agentic/iso-erc-expert/tools/smoke_test.py       88 checks
 python -m gl_engine.cli check 20260811 --deep              13/13
@@ -7405,10 +8020,15 @@ python scripts/sweep.py --controls               # the same controls, on the com
 python scripts/sweep.py --set occurrence_limit=&quot;500,000 CSL&quot;
 python scripts/sweep.py --set size_of_risk=Yes --juris OK --live
 </code></pre>
-<p><strong>19 controls in 8 groups</strong> — six deductibles, the occurrence limit, premium basis, class code,
-exposure, coverage form, claims-made year, subline, locations, size-of-risk, experience rating,
-schedule rating, the scheduled percentage, and terrorism. <strong>Every option is read from ISO's declared
-domain for that jurisdiction</strong>; a value ISO does not declare is refused before anything is sent.</p>
+<p><strong>20 controls in 8 groups</strong> — six deductibles, the occurrence limit, <strong>the aggregate limit</strong>, premium
+basis, class code, exposure, coverage form, claims-made year, subline, locations, size-of-risk,
+experience rating, schedule rating, the scheduled percentage, and terrorism. <strong>Every option is read
+from ISO's declared domain for that jurisdiction</strong>; a value ISO does not declare is refused before
+anything is sent.</p>
+<p><strong>The aggregate limit became a control on 2026-08-18.</strong> Before that it was derived from the
+occurrence limit and took whatever value ISO declared first — so every limit test varied one half of
+a two-part key. Setting it explicitly now stands the derivation aside, and an occurrence/aggregate
+pair ISO does not declare together is refused rather than sent.</p>
 <table>
 <thead>
 <tr>
@@ -7446,6 +8066,88 @@ answer <em>when did this start disagreeing</em>, which is the question the chart
 and how to apply it; <code>scripts/sweep.py</code> runs a configuration across jurisdictions. The dependency
 runs <strong><code>ui</code> → <code>variants</code>/<code>sweep</code> → <code>gl_engine</code></strong>, and <code>verify_tester</code> <strong>asserts the direction by
 parsing the imports</strong> — no file in <code>ui/</code> imports the engine or builds a <code>Kernel</code>.</p>
+<hr />
+<h2 id="the-layered-programme-four-layers-an-allowance-and-a-file-per-run">The layered programme — four layers, an allowance, and a file per run</h2>
+<p><em>One kind of variation per layer, every state on every run, and a result you can keep.</em></p>
+<pre><code>python app.py 8765            # then open http://127.0.0.1:8765/tests
+python tests/verify_layers.py                    # 30/30, no server, no calls
+python scripts/layers.py --layers
+python scripts/layers.py --layer L2 --class 91340 --exposure 1500000 --plan
+python scripts/layers.py --layer L2 --class 91340 --exposure 1500000 --offline
+python scripts/layers.py --layer L3 --allowance 200
+</code></pre>
+<p><strong>Four layers, each adding exactly one kind of variation</strong>, so a difference found at layer <em>n</em> is
+attributable to what layer <em>n</em> introduced.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>L1</strong></td>
+<td>Smoke</td>
+<td>the base risk, unvaried</td>
+</tr>
+<tr>
+<td><strong>L2</strong></td>
+<td>Classification</td>
+<td>one class code and its exposure; the premium basis comes from ISO's table per state, nobody types it</td>
+</tr>
+<tr>
+<td><strong>L3</strong></td>
+<td>Limits</td>
+<td>occurrence limit × aggregate limit — both halves of the increased-limit key</td>
+</tr>
+<tr>
+<td><strong>L4</strong></td>
+<td>Deductibles</td>
+<td>one amount applied to each of the six slots in turn: <em>is any slot ignored?</em></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>It does this</th>
+<th>Because</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Every state, every run</strong>, offline pre-flight then live</td>
+<td>The pre-flight costs nothing and keeps an unbuildable payload from spending a call. It settles nothing on its own — agreement needs ISO's actual response</td>
+</tr>
+<tr>
+<td><strong>An allowance thins configurations and never states</strong></td>
+<td>Every state in every run keeps two runs comparable. What was dropped is written into the run file, because two runs of the same layer at different allowances are different matrices</td>
+</tr>
+<tr>
+<td><strong>The budget is a ticker, not a gate</strong></td>
+<td>A full L3 run is about 600 calls. The tier runner in <code>qa.py</code> keeps its gate; both read the same count from <code>runstore.spent_today</code></td>
+</tr>
+<tr>
+<td><strong>The aggregate is a position, not a figure</strong> — <code>@lowest</code>, <code>@middle</code>, <code>@highest</code></td>
+<td>The legal set is keyed on the occurrence limit and differs by state: four legal aggregates at 25,000 in TX, eight at 1,000,000. <strong>Each row records the figure that state actually got</strong></td>
+</tr>
+<tr>
+<td><strong>A class ISO does not file somewhere is reported, not filtered</strong></td>
+<td><em>"Not filed in these states"</em> is a coverage fact nothing else in the harness tells you</td>
+</tr>
+<tr>
+<td><strong>Pause, resume, stop</strong> — and a stopped run is kept as a partial that names what it never reached</td>
+<td>Losing two hundred calls' worth of answers to a change of mind about the last hundred is not acceptable</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Every run writes <code>results/runs/&lt;layer&gt;-&lt;class&gt;-&lt;stamp&gt;.html</code></strong> — self-contained, opens by
+double-click, no server needed, with <code>index.html</code> linking them all. <strong>Git-ignored</strong>: a run file is a
+rendering of ISO's licensed premiums.</p>
+<p>The design, and the three measurements that changed it, are in
+<a href="docs/UI-STRATEGY.md"><code>docs/UI-STRATEGY.md</code></a>.</p>
 <p><strong>Credentials come from the environment</strong> (<code>RAAS_*</code>), never from a file in this repository.
 <code>scripts/raas.py</code> is a standard-library OAuth2 client — no <code>httpx</code>, no dependency — and <strong>it logs no
 secret or token</strong>, which <code>verify_phase2</code> asserts by parsing the source rather than grepping it.</p>
@@ -7678,7 +8380,263 @@ number cannot show that.</p>
 <pre><code>python scripts/erc/43_default_block.py        # the entry point, all 567 packages
 python scripts/erc/45_nillable_vs_allownull.py # who decides whether a read may be null
 </code></pre>
-<p>Both read the whole corpus and take about half a minute each.</p></div><div class="panel" id="p-back" hidden><p class="meta">Source: <code>docs/BACKLOG-2026-08-14.md</code> &nbsp;·&nbsp; 3,640 words &nbsp;·&nbsp; rendered 2026-08-17</p><h1 id="backlog-14-august-2026">Backlog — 14 August 2026</h1>
+<p>Both read the whole corpus and take about half a minute each.</p></div><div class="panel" id="p-uistrat" hidden><p class="meta">Source: <code>docs/UI-STRATEGY.md</code> &nbsp;·&nbsp; 2,014 words &nbsp;·&nbsp; rendered 2026-08-18</p><h1 id="the-test-page-and-the-layered-programme">The test page and the layered programme</h1>
+<p><strong>Decided and built 18 August 2026.</strong> This records what we settled and why, what was built, where the
+build departed from the plan, and what measuring the data changed about the design.</p>
+<p>The short version: <strong>a new <code>/tests</code> page, a four-layer ladder of test cases, every run covering every
+state, and one standalone HTML file per run that you can open, keep and send.</strong> It runs.</p>
+<hr />
+<h1 id="1-the-ladder-and-why-that-order">1 · The ladder, and why that order</h1>
+<p>The programme covers the <strong>Premises/Operations and Products/Completed Operations</strong> sublines. Each
+layer adds exactly one kind of variation, so a difference found at layer <em>n</em> is attributable to what
+layer <em>n</em> introduced.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Layer</th>
+<th>What varies</th>
+<th>What a failure means</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>L1</strong></td>
+<td><strong>Smoke</strong></td>
+<td>nothing — the base risk, unvaried</td>
+<td>the engine is wrong before any variation is involved</td>
+</tr>
+<tr>
+<td><strong>L2</strong></td>
+<td><strong>Classification</strong></td>
+<td>one class code and its exposure, in every state</td>
+<td>we price a kind of business wrongly, everywhere or somewhere</td>
+</tr>
+<tr>
+<td><strong>L3</strong></td>
+<td><strong>Limits</strong></td>
+<td>occurrence limit × general aggregate</td>
+<td>the increased-limit factor table, or the key we read it with</td>
+</tr>
+<tr>
+<td><strong>L4</strong></td>
+<td><strong>Deductibles</strong></td>
+<td>one amount, applied to each of the six slots in turn</td>
+<td>a deductible slot that never reaches the calculation</td>
+</tr>
+</tbody>
+</table>
+<p><strong>L3 varies two things, not one, and that is deliberate.</strong> ILF keying is one of the two top-ranked
+failure modes in the backlog, and the aggregate is half of that key. Before this build the aggregate
+was not an axis at all — it was derived from the occurrence limit and took whatever value ISO
+declared first.</p>
+<p><strong>L4 asks the cheapest question first: is any slot ignored?</strong> One amount, six slots. Mapping a credit
+curve before knowing every slot reaches the calculation is work in the wrong order. The amount ladder
+and the combined-versus-separate exclusion are <strong>L5</strong> and <strong>L6</strong> when this ladder has been walked.</p>
+<p>Run them:</p>
+<pre><code>python scripts/layers.py --layers
+python scripts/layers.py --layer L2 --class 91340 --exposure 1500000 --plan
+python scripts/layers.py --layer L2 --class 91340 --exposure 1500000 --offline
+python scripts/layers.py --layer L3 --allowance 200
+</code></pre>
+<hr />
+<h1 id="2-what-a-run-is">2 · What a run is</h1>
+<p><strong>Every run covers every state, offline and then live.</strong> No sampling of geography, no promotion step,
+no cleverness deciding which states deserve a call. 50 jurisdictions are compared; Puerto Rico rates
+but is never compared, because there is no RAaS entitlement for it.</p>
+<p><strong>The offline pass is a pre-flight, not a decision point.</strong> It runs first, costs nothing, and its only
+job is to keep a payload that cannot be built — or that our own engine refuses — from ever spending a
+live call. <strong>It cannot tell you who is right:</strong> agreement is defined by
+<code>phase2_compare.compare_payload</code> and needs ISO's actual response. A state excluded by the pre-flight
+is carried into the result as <code>preflight_excluded</code> rather than dropped, so a run never reports
+coverage it did not have.</p>
+<h2 id="the-allowance-and-how-it-is-spent">The allowance, and how it is spent</h2>
+<p><strong>The daily budget is a ticker, not a gate.</strong> It shows what today has spent and stops nothing. The
+real control is per run: <strong>you set an allowance</strong>, and the harness fits the largest useful slice of
+the matrix inside it.</p>
+<p><strong>When the matrix does not fit, states are never what gets cut.</strong> The configuration list is thinned
+instead — keeping the ends and an even spread between them, because the ends of a filed table are
+where a keying error shows. Every state appears in every run, so results stay comparable.</p>
+<p><strong>Which configurations survived the thinning is written into the run.</strong> Two runs of the same layer at
+different allowances are different matrices, and one that does not say so invites a comparison that
+is not valid.</p>
+<h2 id="long-runs">Long runs</h2>
+<p>A layer-3 run at the full matrix is around 600 calls, so a run can outlive a sitting. <strong>A run can be
+paused, resumed from exactly where it stopped, or stopped outright and kept as a partial</strong> — which
+names the scenarios and states it never reached. Losing two hundred calls' worth of answers to change
+your mind about the last hundred is not acceptable.</p>
+<hr />
+<h1 id="3-the-tests-page">3 · The <code>/tests</code> page</h1>
+<p><strong>A new page, alongside the existing QA tab, which is untouched.</strong> Both write to the same run store.
+The tier runner is working and being used; putting the new work beside it risked nothing.</p>
+<p><strong>The class is chosen basis-first.</strong> ISO declares <strong>59 distinct premium bases</strong> and about <strong>1,190
+class codes</strong>. Picking the basis first narrows the class list and means the exposure box knows its own
+unit before you type in it — most bases are counts (<em>Number of Zoos</em>, <em>Each Pier</em>, <em>Passenger Days</em>)
+with no divisor at all, so one default exposure figure is meaningless across the set.</p>
+<pre><code>Layer          [2 · classification            ▾]
+
+Premium basis  [Payroll                       ▾]   59 bases
+                 → 268 classes
+
+Class code     [carpentry                      ]   4 of 268 classes
+                 91340  Carpentry-construction of residential property
+                 91341  Carpentry – interior
+
+Exposure amount (Payroll)  [1500000]
+
+3 · ALLOWANCE
+  ┌────────────────────────────────────────────┐
+  │ 204 tests                                  │
+  │ 4 configurations × 51 jurisdictions ·      │
+  │ 200 against ISO                            │
+  │ Thinned to fit 200 calls: 4 of 12          │
+  │ configurations. Every jurisdiction kept.   │
+  └────────────────────────────────────────────┘
+Allowance      [200] live calls                    Today: 0 live calls
+
+               [Plan it]   [Run]
+</code></pre>
+<p><strong>The test count is live</strong>, not something you get after pressing a button. It is local arithmetic
+from the layer's configuration count and the jurisdiction list, so it moves as you type and never
+lags. It says <em>about N against ISO</em> because it assumes the class is filed everywhere — <strong><code>Plan it</code>
+reads the declaration in all 51 and replaces the estimate with the counted figure</strong>, which is smaller
+wherever ISO does not file the class.</p>
+<p><strong>An allowance cuts nothing offline.</strong> It is denominated in live calls, and an offline run spends
+none; thinning it to fit a call budget would give up coverage to save something it was never going to
+spend.</p>
+<p>While it runs: progress, results as they land, and <strong>pause · resume · stop</strong>. The run lives
+server-side, so closing the tab does not kill it.</p>
+<hr />
+<h1 id="4-the-run-file">4 · The run file</h1>
+<p><strong>Every run writes a standalone HTML file</strong> to <code>results/runs/</code>, self-contained, opening by
+double-click with no server running. <code>results/runs/index.html</code> links them all, newest first.</p>
+<p><strong>These files are git-ignored</strong>, and <code>.gitignore</code> now says why: a run holds ISO's licensed premium
+values, which is the same reason notebook outputs are stripped before commit.</p>
+<p><strong>What the file says</strong>, in this order:</p>
+<ol>
+<li><strong>The headline</strong> — <em>47 rated · 41 match · 6 differ</em>, with the scenario, call and refusal counts.</li>
+<li><strong>What actually ran</strong> — the basis groups, anything not filed, which configurations survived
+   thinning, and whether the run was stopped early and where.</li>
+<li><strong>Every state, sorted by size of difference</strong>, each expanding to the fields that differ.</li>
+</ol>
+<p><code>compare_payload</code> distinguishes the four outcomes that matter — <strong>MATCH</strong>, <strong>PREMIUM ONLY</strong> (the
+premium agrees but underlying fields do not), <strong>DIFF</strong>, and an <code>edition_agrees</code> flag so a difference
+caused by ISO using a different edition is never mistaken for arithmetic.</p>
+<hr />
+<h1 id="5-what-measuring-the-data-changed">5 · What measuring the data changed</h1>
+<p>Three things were designed one way, measured, and then designed differently. All three are in the
+code because of the measurement, not the plan.</p>
+<p><strong>The basis-group split is a guard, not a routine event.</strong> We decided a class filed on different
+premium bases in different states must be split into separate sweeps and never compared across them.
+Then we measured it: across TX, CA, NY, FL, OK and MT there are <strong>1,188 class codes each, 1,187 common
+to all six, and the basis differed for exactly one — which was simply undeclared in one state.</strong> The
+rule is right and will almost never fire. Layer 2 is simpler than it first looked.</p>
+<p><strong>ISO files no class families.</strong> Codes cluster by leading digit (63 at <code>10…</code>, 95 at <code>51…</code>) but the
+data declares only codes, descriptions and bases. Any family taxonomy would be ours, not ISO's, which
+is why the picker filters by <strong>basis</strong> — which <em>is</em> declared.</p>
+<p><strong>The aggregate cannot be named as a figure.</strong> The legal set is keyed on the occurrence limit and
+differs by state — four legal aggregates at 25,000 in Texas, eight at 1,000,000. A plan naming
+<code>5,000,000</code> would be undeliverable wherever that is not filed. So L3 carries <strong>positions</strong> —
+<code>@lowest</code>, <code>@middle</code>, <code>@highest</code> — resolved per state, and <strong>each row records the figure that state
+actually received.</strong> A run that stores the request and not the answer cannot be read back.</p>
+<hr />
+<h1 id="6-what-was-built-and-where-it-departed-from-the-plan">6 · What was built, and where it departed from the plan</h1>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>What</th>
+<th>Where</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>New</strong></td>
+<td><code>general_aggregate</code> control, keyed off the occurrence limit; sets both aggregates and refuses a pair ISO does not declare</td>
+<td><code>scripts/variants.py</code></td>
+</tr>
+<tr>
+<td><strong>New</strong></td>
+<td><code>Declared.aggregates_for()</code> — the legal aggregates for an occurrence limit in that state</td>
+<td><code>scripts/variants.py</code></td>
+</tr>
+<tr>
+<td><strong>New</strong></td>
+<td>The whole layered programme: layers, plan, thinning, per-state resolution, the runner and a CLI</td>
+<td><code>scripts/layers.py</code></td>
+</tr>
+<tr>
+<td><strong>New</strong></td>
+<td>The <code>/tests</code> page, its routes, and the pause/resume/stop job</td>
+<td><code>ui/tests_page.py</code></td>
+</tr>
+<tr>
+<td><strong>New</strong></td>
+<td>The standalone run file and the index</td>
+<td><code>ui/runfile.py</code></td>
+</tr>
+<tr>
+<td><strong>New</strong></td>
+<td>30 offline checks over all of it</td>
+<td><code>tests/verify_layers.py</code></td>
+</tr>
+<tr>
+<td>Changed</td>
+<td><code>run_config</code> gained <code>resolve</code> (per-state values) and <code>stop_check</code> (pause and stop), and now records <code>stopped_early</code> / <code>not_reached</code></td>
+<td><code>scripts/sweep.py</code></td>
+</tr>
+<tr>
+<td>Changed</td>
+<td><code>compare_payload</code> returns <strong>every</strong> differing field, not the first three</td>
+<td><code>scripts/phase2_compare.py</code></td>
+</tr>
+<tr>
+<td>Changed</td>
+<td><code>spent_today()</code> moved into the store so the ticker and the tier budget count the same number once</td>
+<td><code>scripts/runstore.py</code>, <code>scripts/qa.py</code></td>
+</tr>
+<tr>
+<td>Changed</td>
+<td><code>.gitignore</code> now says why run files are excluded</td>
+<td><code>.gitignore</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Two departures from the plan, both deliberate:</strong></p>
+<ol>
+<li><strong>The ladder went into <code>scripts/layers.py</code>, not <code>scripts/qa.py</code>.</strong> The plan said qa.py. But the
+   decision was that the QA tab stays untouched, and the tier runner is a different programme with a
+   different unit of work. Merging them would have meant editing the one thing nobody asked to
+   change. They share the run store, the variant definitions and the sweep.</li>
+<li><strong>The tier runner keeps its budget gate.</strong> The plan said demote the guard. Demoting it inside
+   <code>qa.py</code> would change how the existing QA tab behaves, which contradicts leaving it alone. So the
+   gate stays where it already was, the layered programme never gates, and <strong>both read the same count
+   from the store</strong> — which was the real point.</li>
+</ol>
+<hr />
+<h1 id="7-verification">7 · Verification</h1>
+<pre><code>python tests/verify_layers.py        30/30   offline, no ISO calls
+</code></pre>
+<p>Groups A–F: the aggregate axis and its refusals · the allowance thinning configs and never states ·
+basis grouping and <em>not filed</em> reported rather than filtered · the comparison returning every
+differing field · a run writing one self-contained file that loads nothing from the network · the
+ticker counted in one place.</p>
+<p>Every other suite still passes, including <code>verify_tester</code> — the QA tab is genuinely untouched.</p>
+<hr />
+<h1 id="8-still-open">8 · Still open</h1>
+<p><strong>The index over the run files is deliberately plain.</strong> It lists every run newest-first with its
+layer, class and counts. It does not yet answer <em>"show me every run of class 91340"</em> by filtering,
+which is worth adding once there are enough files to need it.</p>
+<p><strong>L5 and L6</strong> — the deductible amount ladder and the combined-versus-separate exclusion — are
+designed but not built, by the ordering decision in §1.</p>
+<p><strong>A products-only aggregate axis.</strong> The aggregate control sets both aggregates together, because ISO
+keys both on the occurrence limit and declares the same legal set for each. Varying the two against
+each other is a further axis and is not this one.</p>
+<hr />
+<h1 id="9-what-this-does-not-cover">9 · What this does not cover</h1>
+<p>This is the <strong>test programme and its page</strong>. It does not address the other UI gaps in
+<code>START-HERE-TOMORROW.md</code> — the as-of date selector (blocked on D-1), the W6 reviewer-verdict
+decision, scheduling, or <em>"what changed since last run"</em>. Those remain where they were.</p></div><div class="panel" id="p-back" hidden><p class="meta">Source: <code>docs/BACKLOG-2026-08-14.md</code> &nbsp;·&nbsp; 3,640 words &nbsp;·&nbsp; rendered 2026-08-18</p><h1 id="backlog-14-august-2026">Backlog — 14 August 2026</h1>
 <p><strong>Written 2026-08-13, at the end of the day all six stages were completed and the engine was first
 compared against ISO's live service.</strong></p>
 <p>Ordered by what I would do first and why. Every item names the open item it closes, so nothing here
@@ -8025,7 +8983,7 @@ always. Still last; better specified.</p>
 <li><strong>When a new check passes on its first run, suspect it.</strong> Confirm it can fail before believing it
    can pass.</li>
 <li><strong>No engine code is written without an explicit go.</strong></li>
-</ol></div><div class="panel" id="p-pause" hidden><p class="meta">Source: <code>docs/WHERE-WE-PAUSED-2026-08-12.md</code> &nbsp;·&nbsp; 2,190 words &nbsp;·&nbsp; rendered 2026-08-17</p><h1 id="where-we-paused-12-august-2026">Where we paused — 12 August 2026</h1>
+</ol></div><div class="panel" id="p-pause" hidden><p class="meta">Source: <code>docs/WHERE-WE-PAUSED-2026-08-12.md</code> &nbsp;·&nbsp; 2,190 words &nbsp;·&nbsp; rendered 2026-08-18</p><h1 id="where-we-paused-12-august-2026">Where we paused — 12 August 2026</h1>
 <p><strong>Plain English. No insurance or programming knowledge assumed.</strong></p>
 <p>This is the whole of what happened on the day the first working software appeared, written so it can
 be read cold. Everything here is also recorded in the formal documents; this one exists so you do not
@@ -8298,7 +9256,7 @@ the rules rather than rewrite them. We chose to run them, so it is now due.</p>
 <hr />
 <h2 id="8-the-one-decision-waiting-on-you">8. The one decision waiting on you</h2>
 <p><strong>Whether to start stage 2 — the interpreter.</strong></p>
-<p>Nothing else is blocked, and nothing else needs your input to proceed.</p></div><div class="panel" id="p-p2b" hidden><p class="meta">Source: <code>docs/FROM-PLANNING-TO-BUILD.md</code> &nbsp;·&nbsp; 4,280 words &nbsp;·&nbsp; rendered 2026-08-17</p><h1 id="from-planning-to-build">From Planning to Build</h1>
+<p>Nothing else is blocked, and nothing else needs your input to proceed.</p></div><div class="panel" id="p-p2b" hidden><p class="meta">Source: <code>docs/FROM-PLANNING-TO-BUILD.md</code> &nbsp;·&nbsp; 4,280 words &nbsp;·&nbsp; rendered 2026-08-18</p><h1 id="from-planning-to-build">From Planning to Build</h1>
 <p><strong>Skeleton written 2026-08-12, before stage 1. Filled in as each stage completes.</strong></p>
 <p>This document exists because of a decision made on 2026-08-12: <strong>write it alongside the build, not
 after it.</strong> Written retrospectively it becomes a tidy story in which every piece of analysis turned
@@ -8821,7 +9779,7 @@ two rules worth carrying to another line of business ahead of any domain finding
    a single day, and it caught defects in four completed walkthroughs within hours of being
    automated. <strong>Sixteen corrections are recorded across this project and almost all are the same
    mistake: something measured in one place and stated about everything.</strong></li>
-</ol></div><div class="panel" id="p-recon" hidden><p class="meta">Source: <code>docs/gates/RECONCILIATION.md</code> &nbsp;·&nbsp; 2,201 words &nbsp;·&nbsp; rendered 2026-08-17</p><h1 id="reconciliation-what-the-subline-gates-changed">Reconciliation — what the subline gates changed</h1>
+</ol></div><div class="panel" id="p-recon" hidden><p class="meta">Source: <code>docs/gates/RECONCILIATION.md</code> &nbsp;·&nbsp; 2,201 words &nbsp;·&nbsp; rendered 2026-08-18</p><h1 id="reconciliation-what-the-subline-gates-changed">Reconciliation — what the subline gates changed</h1>
 <p><strong>Updated 2026-08-11, after gates 334, 336 and 335.</strong></p>
 <p>The two specifications — <a href="../rating-engine/"><code>docs/rating-engine/</code></a> (PDF-derived) and
 <a href="../erc/"><code>docs/erc/</code></a> (ERC-derived, clean-room) — were produced <strong>independently and before any
@@ -9151,7 +10109,7 @@ date. 83 of 572 package directories are future-effective"</em>) — <strong>the 
 would have prevented §1, stated plainly, the whole time.</strong></p>
 <p><strong>Candidate invariants the gates add</strong> — the selector agreement (N17), the empty-override rule
 (N3), and the as-of cliff (§1) — are recorded here rather than injected, since adding an invariant
-changes an authority and is a decision to take deliberately.</p></div><div class="panel" id="p-oi40" hidden><p class="meta">Source: <code>docs/gates/OI-40-ASOF-RECOUNT.md</code> &nbsp;·&nbsp; 3,054 words &nbsp;·&nbsp; rendered 2026-08-17</p><h1 id="oi-40-every-load-bearing-count-re-measured-as-of-a-date">OI-40 — every load-bearing count, re-measured as of a date</h1>
+changes an authority and is a decision to take deliberately.</p></div><div class="panel" id="p-oi40" hidden><p class="meta">Source: <code>docs/gates/OI-40-ASOF-RECOUNT.md</code> &nbsp;·&nbsp; 3,054 words &nbsp;·&nbsp; rendered 2026-08-18</p><h1 id="oi-40-every-load-bearing-count-re-measured-as-of-a-date">OI-40 — every load-bearing count, re-measured as of a date</h1>
 <p><strong>Filed 2026-08-11.</strong> Closes <strong>OI-40</strong>, opened in Step 30 when the as-of defect was found in gate
 335. Reproduce with:</p>
 <pre><code>python scripts/erc/32_asof_recount.py 20260811 20270401 99999999
@@ -9654,7 +10612,7 @@ definitions, the reproducibility gap, the rating plans and the migration framing
 <p>The pattern is stable enough to name: <strong>this project's fastest source of new findings is its own
 back-catalogue of unfinished ones.</strong> Both were items that said, in writing, that they were
 incomplete. A pass over every <code>AUDIT</code>-status item asking only <em>"has the sweep this asked for
-actually been run?"</em> would likely be cheaper than the gate that rediscovers each one.</p></div><div class="panel" id="p-sizing" hidden><p class="meta">Source: <code>docs/PHASE-SIZING.md</code> &nbsp;·&nbsp; 2,456 words &nbsp;·&nbsp; rendered 2026-08-17</p><h1 id="phase-sizing-measured">Phase sizing, measured</h1>
+actually been run?"</em> would likely be cheaper than the gate that rediscovers each one.</p></div><div class="panel" id="p-sizing" hidden><p class="meta">Source: <code>docs/PHASE-SIZING.md</code> &nbsp;·&nbsp; 2,456 words &nbsp;·&nbsp; rendered 2026-08-18</p><h1 id="phase-sizing-measured">Phase sizing, measured</h1>
 <p><strong>Filed 2026-08-11</strong>, immediately after <a href="gates/OI-40-ASOF-RECOUNT.md"><code>gates/OI-40-ASOF-RECOUNT.md</code></a>
 closed the as-of audit that gated it. Reproduce with:</p>
 <pre><code>python scripts/erc/33_phase_sizing.py 20260811 20270401
@@ -10103,7 +11061,7 @@ keyed semantically, never by printed number, <strong>and never by name-plus-coun
 correction cost one line and changed the sizing of five phases.</p>
 <p><strong>OI-40 was worth running for a reason it was not opened for.</strong> It was opened to re-date counts. It
 also forced the discovery that <em>"the countrywide parent"</em> is never singular — and this document is
-what that turns into once the parents are counted per phase rather than per corpus.</p></div><div class="panel" id="p-g334" hidden><p class="meta">Source: <code>docs/gates/GATE-334-PREMISES-OPERATIONS.md</code> &nbsp;·&nbsp; 4,430 words &nbsp;·&nbsp; rendered 2026-08-17</p><h1 id="gate-subline-334-premisesoperations">Gate — Subline 334, Premises/Operations</h1>
+what that turns into once the parents are counted per phase rather than per corpus.</p></div><div class="panel" id="p-g334" hidden><p class="meta">Source: <code>docs/gates/GATE-334-PREMISES-OPERATIONS.md</code> &nbsp;·&nbsp; 4,430 words &nbsp;·&nbsp; rendered 2026-08-18</p><h1 id="gate-subline-334-premisesoperations">Gate — Subline 334, Premises/Operations</h1>
 <p><strong>Build-order item 1</strong> (<code>GL-RATING-ENGINE-BUILD-PLAN.md</code> §8). Presented against the eight-point
 per-subline gate in §9.</p>
 <p><strong>Status: PASSED.</strong> The algorithm is derived end to end from ERC, confirmed at four points by the
@@ -10980,7 +11938,7 @@ error that had been repeated across three documents.</p>
 <li><strong>Count table rows before trusting a lookup.</strong> Three of 334's countrywide tables are header-only.</li>
 <li><strong>Test every <code>0</code> against its consuming branch.</strong> One of the three zeros in 334 is legitimate, one
    is an unpublished factor, one is a degraded referral — and they are indistinguishable in the data.</li>
-</ol></div><div class="panel" id="p-g335" hidden><p class="meta">Source: <code>docs/gates/GATE-335-OWNERS-CONTRACTORS-PROTECTIVE.md</code> &nbsp;·&nbsp; 3,921 words &nbsp;·&nbsp; rendered 2026-08-17</p><h1 id="gate-subline-335-owners-contractors-protective-principals-protective">Gate — Subline 335, Owners &amp; Contractors Protective / Principals Protective</h1>
+</ol></div><div class="panel" id="p-g335" hidden><p class="meta">Source: <code>docs/gates/GATE-335-OWNERS-CONTRACTORS-PROTECTIVE.md</code> &nbsp;·&nbsp; 3,921 words &nbsp;·&nbsp; rendered 2026-08-18</p><h1 id="gate-subline-335-owners-contractors-protective-principals-protective">Gate — Subline 335, Owners &amp; Contractors Protective / Principals Protective</h1>
 <p><strong>Build-order item 3</strong> (<code>GL-RATING-ENGINE-BUILD-PLAN.md</code> §8). Presented against the eight-point
 per-subline gate in §9.</p>
 <p><strong>Status: PASSED, with one limitation stated up front — there is no oracle.</strong> The corpus holds
@@ -11651,7 +12609,7 @@ ELP-driven or refer"</em>. On the evidence of this gate that description deserve
 <code>LiquorELPText</code> selector has only <strong>two</strong> values corpus-wide (<code>Industry</code>, <code>Company</code>) and no
 <code>Rate/Loss Cost Applies</code> at all, so N17 predicts liquor is <strong>entirely</strong> ELP-or-refer — the first
 subline where the loss-cost path should not exist even in principle. That prediction is worth
-recording now and checking first.</p></div><div class="panel" id="p-g336" hidden><p class="meta">Source: <code>docs/gates/GATE-336-PRODUCTS-COMPLETED-OPERATIONS.md</code> &nbsp;·&nbsp; 3,616 words &nbsp;·&nbsp; rendered 2026-08-17</p><h1 id="gate-subline-336-productscompleted-operations">Gate — Subline 336, Products/Completed Operations</h1>
+recording now and checking first.</p></div><div class="panel" id="p-g336" hidden><p class="meta">Source: <code>docs/gates/GATE-336-PRODUCTS-COMPLETED-OPERATIONS.md</code> &nbsp;·&nbsp; 3,616 words &nbsp;·&nbsp; rendered 2026-08-18</p><h1 id="gate-subline-336-productscompleted-operations">Gate — Subline 336, Products/Completed Operations</h1>
 <p><strong>Build-order item 2</strong> (<code>GL-RATING-ENGINE-BUILD-PLAN.md</code> §8). Presented against the eight-point
 per-subline gate in §9.</p>
 <p><strong>Status: PASSED.</strong> Derived end to end from ERC, reproduces the Oklahoma golden case exactly —
@@ -12392,7 +13350,7 @@ sublines that established it.</p>
 <p>Gate 335 has since been written. The build plan's <em>"published in 15 jurisdictions, withdrawn in
 36"</em> turned out to be <strong>8 / 43, and an edition split rather than a jurisdiction split</strong> — see
 <a href="GATE-335-OWNERS-CONTRACTORS-PROTECTIVE.md"><code>GATE-335</code></a> §0.</p>
-</blockquote></div><div class="panel" id="p-g332" hidden><p class="meta">Source: <code>docs/gates/GATE-332-LIQUOR-LIABILITY.md</code> &nbsp;·&nbsp; 4,480 words &nbsp;·&nbsp; rendered 2026-08-17</p><h1 id="gate-liquor-liability-subline-332">Gate — Liquor Liability (subline 332)</h1>
+</blockquote></div><div class="panel" id="p-g332" hidden><p class="meta">Source: <code>docs/gates/GATE-332-LIQUOR-LIABILITY.md</code> &nbsp;·&nbsp; 4,480 words &nbsp;·&nbsp; rendered 2026-08-18</p><h1 id="gate-liquor-liability-subline-332">Gate — Liquor Liability (subline 332)</h1>
 <p><strong>Filed 2026-08-11. Build-order item 4. Fourth subline gate, written differentially</strong> against
 <a href="GATE-334-PREMISES-OPERATIONS.md">334</a>, <a href="GATE-336-PRODUCTS-COMPLETED-OPERATIONS.md">336</a> and
 <a href="GATE-335-OWNERS-CONTRACTORS-PROTECTIVE.md">335</a> — shared machinery is cited, not re-derived.</p>
@@ -13239,7 +14197,7 @@ migrated jurisdictions the liquor class list is <strong>replaced outright</stron
   inside a single file. Found by reading a rule that had nothing to do with premium, in a gate whose
   headline conclusion was already settled. <strong>§9 asks for statistical codes; this is the first time
   that section earned its place.</strong></li>
-</ul></div><div class="panel" id="p-g335rr" hidden><p class="meta">Source: <code>docs/gates/GATE-335-RAILROAD-PROTECTIVE.md</code> &nbsp;·&nbsp; 3,765 words &nbsp;·&nbsp; rendered 2026-08-17</p><h1 id="gate-railroad-protective-liability-subline-335-rule-49">Gate — Railroad Protective Liability (subline 335, Rule 49)</h1>
+</ul></div><div class="panel" id="p-g335rr" hidden><p class="meta">Source: <code>docs/gates/GATE-335-RAILROAD-PROTECTIVE.md</code> &nbsp;·&nbsp; 3,765 words &nbsp;·&nbsp; rendered 2026-08-18</p><h1 id="gate-railroad-protective-liability-subline-335-rule-49">Gate — Railroad Protective Liability (subline 335, Rule 49)</h1>
 <p><strong>Filed 2026-08-11. Build-order item 5. Fifth subline gate</strong>, differential against
 <a href="GATE-334-PREMISES-OPERATIONS.md">334</a>, <a href="GATE-336-PRODUCTS-COMPLETED-OPERATIONS.md">336</a>,
 <a href="GATE-335-OWNERS-CONTRACTORS-PROTECTIVE.md">335 OCP</a> and <a href="GATE-332-LIQUOR-LIABILITY.md">332</a>.</p>
@@ -14000,7 +14958,7 @@ discriminator).</p>
   rules, one uniform 18-row table — and the 2027 edition makes it cheaper still by deleting a third
   of it. <strong>The 2023 and 2027 railroads are close to different coverages</strong>, so the two-calculator
   requirement is not a convenience here; it is the whole design.</li>
-</ul></div><div class="panel" id="p-g365" hidden><p class="meta">Source: <code>docs/gates/GATE-365-WITHDRAWAL-LOED-CYBER.md</code> &nbsp;·&nbsp; 4,171 words &nbsp;·&nbsp; rendered 2026-08-17</p><h1 id="gate-product-withdrawal-365-loss-of-electronic-data-cyber-incident-liability">Gate — Product Withdrawal (365), Loss Of Electronic Data, Cyber Incident Liability</h1>
+</ul></div><div class="panel" id="p-g365" hidden><p class="meta">Source: <code>docs/gates/GATE-365-WITHDRAWAL-LOED-CYBER.md</code> &nbsp;·&nbsp; 4,171 words &nbsp;·&nbsp; rendered 2026-08-18</p><h1 id="gate-product-withdrawal-365-loss-of-electronic-data-cyber-incident-liability">Gate — Product Withdrawal (365), Loss Of Electronic Data, Cyber Incident Liability</h1>
 <p><strong>Filed 2026-08-11. Build-order item 6. Sixth subline gate</strong>, differential against
 <a href="GATE-334-PREMISES-OPERATIONS.md">334</a>, <a href="GATE-336-PRODUCTS-COMPLETED-OPERATIONS.md">336</a>,
 <a href="GATE-335-OWNERS-CONTRACTORS-PROTECTIVE.md">335 OCP</a>, <a href="GATE-332-LIQUOR-LIABILITY.md">332</a> and
@@ -14839,7 +15797,7 @@ one New York uses for claims-made and size-of-risk, applied to withdraw two whol
    evaluates a rating chain without consulting it first will read empty tables in California and
    hit nulls that mean nothing.</li>
 </ol>
-<p><strong>Recorded as OI-65.</strong></p></div><div class="panel" id="p-g370" hidden><p class="meta">Source: <code>docs/gates/GATE-370-UNMANNED-AIRCRAFT.md</code> &nbsp;·&nbsp; 3,432 words &nbsp;·&nbsp; rendered 2026-08-17</p><h1 id="gate-unmanned-aircraft-subline-370-rule-37">Gate — Unmanned Aircraft (subline 370, Rule 37)</h1>
+<p><strong>Recorded as OI-65.</strong></p></div><div class="panel" id="p-g370" hidden><p class="meta">Source: <code>docs/gates/GATE-370-UNMANNED-AIRCRAFT.md</code> &nbsp;·&nbsp; 3,432 words &nbsp;·&nbsp; rendered 2026-08-18</p><h1 id="gate-unmanned-aircraft-subline-370-rule-37">Gate — Unmanned Aircraft (subline 370, Rule 37)</h1>
 <p><strong>Filed 2026-08-11. Build-order item 7. Seventh subline gate</strong>, differential against
 <a href="GATE-334-PREMISES-OPERATIONS.md">334</a>, <a href="GATE-336-PRODUCTS-COMPLETED-OPERATIONS.md">336</a>,
 <a href="GATE-335-OWNERS-CONTRACTORS-PROTECTIVE.md">335 OCP</a>, <a href="GATE-332-LIQUOR-LIABILITY.md">332</a>,
@@ -15574,7 +16532,7 @@ non-construction case — which remains genuinely manual-only.</p>
 <li><strong>Eight states filing one deviation is one deviation.</strong> The state-rule counts in phase sizing
   count filings, not distinct behaviours — the same conflation, one level down, as the item-6
   substring error.</li>
-</ul></div><div class="panel" id="p-gsor" hidden><p class="meta">Source: <code>docs/gates/GATE-SIZE-OF-RISK.md</code> &nbsp;·&nbsp; 4,594 words &nbsp;·&nbsp; rendered 2026-08-17</p><h1 id="gate-size-of-risk-rating-build-order-item-8">Gate — Size-Of-Risk rating (build-order item 8)</h1>
+</ul></div><div class="panel" id="p-gsor" hidden><p class="meta">Source: <code>docs/gates/GATE-SIZE-OF-RISK.md</code> &nbsp;·&nbsp; 4,594 words &nbsp;·&nbsp; rendered 2026-08-18</p><h1 id="gate-size-of-risk-rating-build-order-item-8">Gate — Size-Of-Risk rating (build-order item 8)</h1>
 <p><strong>Filed 2026-08-12. Eighth gate</strong>, and the first that is <strong>not</strong> a subline. Differential against
 <a href="GATE-334-PREMISES-OPERATIONS.md">334</a>, <a href="GATE-336-PRODUCTS-COMPLETED-OPERATIONS.md">336</a>,
 <a href="GATE-335-OWNERS-CONTRACTORS-PROTECTIVE.md">335 OCP</a>, <a href="GATE-332-LIQUOR-LIABILITY.md">332</a>,
@@ -16384,7 +17342,7 @@ applied one item later than it should have been.</strong></p>
 </table>
 <p><strong>Two habit-8 catches inside this gate itself</strong>, both by a script rather than by re-reading:
 the truncated unsearchable-document list (§0), and the <code>2⁶³</code> sentinel inflating a band-alignment
-count (§3). Neither was found by inspection.</p></div><div class="panel" id="p-gter" hidden><p class="meta">Source: <code>docs/gates/GATE-TERRORISM.md</code> &nbsp;·&nbsp; 2,862 words &nbsp;·&nbsp; rendered 2026-08-17</p><h1 id="gate-terrorism-build-order-item-9">Gate — Terrorism (build-order item 9)</h1>
+count (§3). Neither was found by inspection.</p></div><div class="panel" id="p-gter" hidden><p class="meta">Source: <code>docs/gates/GATE-TERRORISM.md</code> &nbsp;·&nbsp; 2,862 words &nbsp;·&nbsp; rendered 2026-08-18</p><h1 id="gate-terrorism-build-order-item-9">Gate — Terrorism (build-order item 9)</h1>
 <p><strong>Filed 2026-08-12. Ninth gate.</strong> Differential against
 <a href="GATE-334-PREMISES-OPERATIONS.md">334</a>, <a href="GATE-336-PRODUCTS-COMPLETED-OPERATIONS.md">336</a>,
 <a href="GATE-335-OWNERS-CONTRACTORS-PROTECTIVE.md">335 OCP</a>, <a href="GATE-332-LIQUOR-LIABILITY.md">332</a>,
@@ -16891,7 +17849,7 @@ countrywide table is unread.</p>
 <td>80/80</td>
 </tr>
 </tbody>
-</table></div><div class="panel" id="p-ca" hidden><p class="meta">Source: <code>docs/gates/CALIFORNIA-DIFFERENTIAL.md</code> &nbsp;·&nbsp; 1,209 words &nbsp;·&nbsp; rendered 2026-08-17</p><h1 id="california-the-sole-gl_cw_20231201_v02-jurisdiction">California — the sole <code>GL_CW_20231201_V02</code> jurisdiction</h1>
+</table></div><div class="panel" id="p-ca" hidden><p class="meta">Source: <code>docs/gates/CALIFORNIA-DIFFERENTIAL.md</code> &nbsp;·&nbsp; 1,209 words &nbsp;·&nbsp; rendered 2026-08-18</p><h1 id="california-the-sole-gl_cw_20231201_v02-jurisdiction">California — the sole <code>GL_CW_20231201_V02</code> jurisdiction</h1>
 <p><strong>Filed 2026-08-12 (Step 43).</strong> Not a gate — California is a <em>jurisdiction</em>, not a build-order
 item. This is the differential fixture the gates have been carrying as owed work since Step 38,
 and it is runnable: <a href="../../tests/verify_california.py"><code>tests/verify_california.py</code></a>, <strong>11/11</strong>.</p>
@@ -17049,7 +18007,7 @@ California caveat.</strong> Both facts are assertions in the fixture.</p>
 <td>This closes the California item. <strong>New York is next</strong>; OI-50 last</td>
 </tr>
 </tbody>
-</table></div><div class="panel" id="p-ny" hidden><p class="meta">Source: <code>docs/gates/NEW-YORK-DIFFERENTIAL.md</code> &nbsp;·&nbsp; 1,276 words &nbsp;·&nbsp; rendered 2026-08-17</p><h1 id="new-york-the-most-deviating-jurisdiction">New York — the most-deviating jurisdiction</h1>
+</table></div><div class="panel" id="p-ny" hidden><p class="meta">Source: <code>docs/gates/NEW-YORK-DIFFERENTIAL.md</code> &nbsp;·&nbsp; 1,276 words &nbsp;·&nbsp; rendered 2026-08-18</p><h1 id="new-york-the-most-deviating-jurisdiction">New York — the most-deviating jurisdiction</h1>
 <p><strong>Filed 2026-08-12 (Step 44).</strong> Not a gate — New York is a <em>jurisdiction</em>. The second of the two
 differential fixtures the gates have carried as owed work since Step 38, and runnable:
 <a href="../../tests/verify_new_york.py"><code>tests/verify_new_york.py</code></a>, <strong>10/10</strong>.</p>
@@ -17261,7 +18219,7 @@ the names rather than the count.)</em></p>
 <td>This closes New York. <strong>OI-50 is the last of the three.</strong></td>
 </tr>
 </tbody>
-</table></div><div class="panel" id="p-gplan" hidden><p class="meta">Source: <code>docs/gates/GATE-RATING-PLANS.md</code> &nbsp;·&nbsp; 2,295 words &nbsp;·&nbsp; rendered 2026-08-17</p><h1 id="gate-rating-plans-schedule-experience-composite-build-order-item-10">Gate — Rating plans: Schedule · Experience · Composite (build-order item 10)</h1>
+</table></div><div class="panel" id="p-gplan" hidden><p class="meta">Source: <code>docs/gates/GATE-RATING-PLANS.md</code> &nbsp;·&nbsp; 2,295 words &nbsp;·&nbsp; rendered 2026-08-18</p><h1 id="gate-rating-plans-schedule-experience-composite-build-order-item-10">Gate — Rating plans: Schedule · Experience · Composite (build-order item 10)</h1>
 <p><strong>Filed 2026-08-12. Tenth gate.</strong> Differential against the nine before it, and the <strong>first gate in
 the project where the manual is the richer source.</strong></p>
 <p><strong>As-of date: 2026-08-12.</strong> Required, not assumed (N4). Derived against <strong><code>GL_CW_20270401_V01</code></strong>
@@ -17666,7 +18624,7 @@ which is why its 19 rules are worth less caution than item 6's 150.</p>
 <td>4/4 · 5/5 · 4/4</td>
 </tr>
 </tbody>
-</table></div><div class="panel" id="p-gst" hidden><p class="meta">Source: <code>docs/gates/GATE-STATE-SPECIFIC.md</code> &nbsp;·&nbsp; 1,468 words &nbsp;·&nbsp; rendered 2026-08-17</p><h1 id="gate-state-specific-rating-coverages-build-order-item-11">Gate — State-specific rating coverages (build-order item 11)</h1>
+</table></div><div class="panel" id="p-gst" hidden><p class="meta">Source: <code>docs/gates/GATE-STATE-SPECIFIC.md</code> &nbsp;·&nbsp; 1,468 words &nbsp;·&nbsp; rendered 2026-08-18</p><h1 id="gate-state-specific-rating-coverages-build-order-item-11">Gate — State-specific rating coverages (build-order item 11)</h1>
 <p><strong>Filed 2026-08-12. Eleventh gate.</strong> Differential against the ten before it.</p>
 <p><strong>As-of date: 2026-08-12.</strong> Required, not assumed (N4). Each coverage derived against its own
 jurisdiction's resolved package and that package's declared parent (N5/N6).</p>

@@ -124,6 +124,13 @@ def compare_payload(juris: str, payload: dict, kernel, client, dp) -> dict:
         "fields_compared": len(want),
         "fields_differing": len(differ),
         "fields_missing": len(missing),
+        # Every differing field, not a sample of them. The console prints the
+        # first few because a terminal has a width; a run page has to show the
+        # rest, and a summary that keeps three of eleven differences is a
+        # summary you cannot act on.
+        "differences": [{"field": k, "ours": str(a), "iso": str(b)}
+                        for k, a, b in differ],
+        "missing_fields": [str(k) for k in missing],
         "first_differences": "; ".join(
             f"{k}: ours {a} ISO {b}" for k, a, b in differ[:3]),
         "messages": len(body.get("RatingMessages", {}).get("Errors", []) or []),

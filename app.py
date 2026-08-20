@@ -349,6 +349,12 @@ header{background:#1f2933;color:#fff;padding:14px 22px;display:flex;
 align-items:baseline;gap:16px;flex-wrap:wrap}
 header h1{margin:0;font-size:17px;font-weight:600}
 header span{opacity:.7;font-size:13px}
+/* One `margin-left:auto` on the group, not on each link. Per-link auto margins
+   each consume the line's remaining space, which is how three right-aligned
+   links stop behaving like a set. */
+header nav{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
+header nav a{font-size:13px;text-decoration:none;color:#2b6cb0;background:#fff;
+border:1px solid #cbd2d9;border-radius:6px;padding:5px 10px;white-space:nowrap}
 .wrap{display:flex;gap:18px;padding:18px;align-items:flex-start;
 max-width:1600px;margin:0 auto}
 .col{flex:1 1 0;min-width:0}
@@ -417,9 +423,8 @@ progress{width:100%;height:14px}
 </style></head><body>
 <header><h1>GL Rating Engine</h1>
 <span>ISO content, executed &mdash; every number carries its source</span>
-<a href="/tester" style="margin-left:auto;font-size:13px;text-decoration:none;
-color:#2b6cb0;background:#fff;border:1px solid #cbd2d9;border-radius:6px;
-padding:5px 10px">Variable tester &rarr;</a></header>
+<nav><a href="/tests">Layered tests</a><a href="/tester">Variable tester</a>
+<a href="/runs/index.html" target="_blank">Run files</a></nav></header>
 <div class="wrap">
  <div class="col">
   <div class="card"><h2>Submission</h2><div class="body">

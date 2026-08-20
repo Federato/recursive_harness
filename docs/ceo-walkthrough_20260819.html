@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>CEO walkthrough — the GL rating engine, 19 August 2026</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+:root{
+  --ink:#1c1a17; --paper:#f6f3ee; --card:#ffffff; --line:#e4ddd0;
+  --muted:#726b5c; --faint:#a49b89;
+  --blue:#2b5f8a; --blue-soft:#e8f0f6;
+  --red:#a83c2e; --red-soft:#f7e9e6;
+  --amber:#a3711f; --amber-soft:#f5ecdc;
+  --shadow: 0 1px 2px rgba(28,26,23,.04), 0 8px 24px -12px rgba(28,26,23,.12);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --ink:#efe9df; --paper:#1b1815; --card:#242019; --line:#3a3428;
+    --muted:#b3a892; --faint:#8a8070;
+    --blue:#7fb2dd; --blue-soft:#22303c;
+    --red:#e5897a; --red-soft:#3a231f;
+    --amber:#dcb066; --amber-soft:#3a2f1c;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.5);
+  }
+}
+:root[data-theme="dark"]{
+  --ink:#efe9df; --paper:#1b1815; --card:#242019; --line:#3a3428;
+  --muted:#b3a892; --faint:#8a8070;
+  --blue:#7fb2dd; --blue-soft:#22303c;
+  --red:#e5897a; --red-soft:#3a231f;
+  --amber:#dcb066; --amber-soft:#3a2f1c;
+  --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px -12px rgba(0,0,0,.5);
+}
+:root[data-theme="light"]{
+  --ink:#1c1a17; --paper:#f6f3ee; --card:#ffffff; --line:#e4ddd0;
+  --muted:#726b5c; --faint:#a49b89;
+  --blue:#2b5f8a; --blue-soft:#e8f0f6;
+  --red:#a83c2e; --red-soft:#f7e9e6;
+  --amber:#a3711f; --amber-soft:#f5ecdc;
+  --shadow: 0 1px 2px rgba(28,26,23,.04), 0 8px 24px -12px rgba(28,26,23,.12);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font:16px/1.6 ui-sans-serif,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+.serif{font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif}
+::selection{background:var(--blue-soft)}
+a{color:var(--blue)}
+:focus-visible{outline:2px solid var(--blue); outline-offset:2px}
+
+header.top{
+  padding:52px 24px 34px; max-width:760px; margin:0 auto;
+  border-bottom:1px solid var(--line);
+}
+.eyebrow{
+  font-size:12px; letter-spacing:.09em; text-transform:uppercase; color:var(--amber);
+  font-weight:600; margin:0 0 14px;
+}
+h1{
+  font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,"Times New Roman",serif;
+  font-size:clamp(28px,4vw,38px); line-height:1.18; margin:0 0 12px; font-weight:600;
+  text-wrap:balance; letter-spacing:-.01em;
+}
+.dek{ font-size:16.5px; color:var(--muted); max-width:58ch; margin:0 0 22px; }
+.meta{
+  display:flex; gap:22px; flex-wrap:wrap; font-size:13px; color:var(--muted);
+  font-variant-numeric:tabular-nums;
+}
+.meta b{color:var(--ink); font-weight:600}
+
+main{max-width:760px; margin:0 auto; padding:38px 24px 100px}
+
+/* ---- the at-a-glance timeline ---- */
+.overview{
+  background:var(--card); border:1px solid var(--line); border-radius:10px;
+  box-shadow:var(--shadow); padding:22px 24px 20px; margin:0 0 46px;
+}
+.overview h2{
+  font-size:11.5px; text-transform:uppercase; letter-spacing:.08em; color:var(--muted);
+  margin:0 0 14px; font-weight:650;
+}
+.ov-row{
+  display:grid; grid-template-columns:52px 1fr 46px; gap:14px; align-items:baseline;
+  padding:7px 0; border-top:1px solid var(--line);
+}
+.ov-row:first-of-type{border-top:0}
+.ov-time{font-variant-numeric:tabular-nums; font-size:12.5px; color:var(--amber); font-weight:600}
+.ov-title{font-size:14.5px}
+.ov-dur{font-variant-numeric:tabular-nums; font-size:12.5px; color:var(--faint); text-align:right}
+
+/* ---- segments ---- */
+section.seg{
+  background:var(--card); border:1px solid var(--line); border-radius:10px;
+  box-shadow:var(--shadow); padding:26px 28px 24px; margin:0 0 20px;
+  scroll-margin-top:20px;
+}
+.seg-head{display:flex; align-items:baseline; gap:14px; flex-wrap:wrap; margin:0 0 6px}
+.seg-time{
+  font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  font-size:15px; color:var(--amber); font-variant-numeric:tabular-nums; font-weight:600;
+  white-space:nowrap;
+}
+.seg-title{
+  font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+  font-size:22px; font-weight:600; margin:0; text-wrap:balance;
+}
+.seg-sub{color:var(--muted); font-size:14px; margin:2px 0 16px}
+
+.onscreen{
+  display:flex; gap:10px; align-items:flex-start; background:var(--blue-soft);
+  border-radius:7px; padding:10px 13px; margin:0 0 16px; font-size:13.5px;
+}
+.onscreen .tag{
+  font-size:10.5px; text-transform:uppercase; letter-spacing:.07em; font-weight:700;
+  color:var(--blue); white-space:nowrap; padding-top:1px;
+}
+.onscreen .what{color:var(--ink)}
+.onscreen code{
+  background:rgba(0,0,0,.05); padding:1px 5px; border-radius:4px; font-size:.92em;
+  font-family:ui-monospace,"SF Mono",Consolas,monospace;
+}
+
+ul.talk{margin:0; padding:0; list-style:none}
+ul.talk li{
+  position:relative; padding:0 0 11px 22px; font-size:15.5px; line-height:1.55;
+}
+ul.talk li:last-child{padding-bottom:0}
+ul.talk li::before{
+  content:"—"; position:absolute; left:0; color:var(--faint);
+}
+ul.talk b{font-weight:650}
+ul.talk .num{font-variant-numeric:tabular-nums; font-weight:650; color:var(--blue)}
+
+.gap{
+  display:flex; gap:10px; align-items:flex-start; background:var(--red-soft);
+  border-radius:7px; padding:10px 13px; margin-top:14px; font-size:13.5px;
+}
+.gap .tag{
+  font-size:10.5px; text-transform:uppercase; letter-spacing:.07em; font-weight:700;
+  color:var(--red); white-space:nowrap; padding-top:1px;
+}
+
+/* ---- the closing card, deliberately different ---- */
+section.close{
+  background:var(--ink); color:var(--paper); border-radius:10px;
+  padding:32px 30px 30px; margin:30px 0 0; box-shadow:var(--shadow);
+}
+section.close .seg-time{color:var(--amber)}
+section.close .seg-title{color:var(--paper)}
+section.close .seg-sub{color:var(--faint)}
+section.close ul.talk li{color:var(--paper)}
+section.close ul.talk li::before{color:var(--faint)}
+section.close ul.talk b{color:#fff}
+section.close .onscreen{background:rgba(255,255,255,.08)}
+section.close .onscreen .tag{color:var(--amber)}
+section.close .onscreen .what{color:var(--paper)}
+section.close .onscreen code{background:rgba(255,255,255,.12); color:var(--paper)}
+
+.feature-sets{
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px;
+  margin-top:16px;
+}
+.fset{
+  border:1px solid rgba(255,255,255,.16); border-radius:7px; padding:10px 12px;
+  font-size:13px;
+}
+.fset b{display:block; font-size:13.5px; margin-bottom:3px; color:#fff}
+.fset span{color:var(--faint)}
+
+footer.foot{
+  max-width:760px; margin:0 auto; padding:0 24px 60px; color:var(--faint); font-size:12.5px;
+}
+
+@media (max-width:600px){
+  .seg-head{flex-direction:column; gap:2px}
+  ul.talk li{font-size:15px}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <p class="eyebrow">Walkthrough script &middot; ~20 minutes &middot; read live, don't hand it over</p>
+  <h1>The GL rating engine, and the harness that checks it</h1>
+  <p class="dek">Seven segments, timed to twenty minutes, ending with a deliberate handoff into the
+    working session. Each segment names what's on screen before the talking points, so you can run
+    this cold.</p>
+  <div class="meta">
+    <span><b>Audience</b> CEO</span>
+    <span><b>Setting</b> screen share, `app.py` already running</span>
+    <span><b>Goal</b> show it real, then hand off to improvements</span>
+  </div>
+</header>
+
+<main>
+
+  <div class="overview">
+    <h2>At a glance</h2>
+    <div class="ov-row"><span class="ov-time">0:00</span><span class="ov-title">What this is, in one breath</span><span class="ov-dur">1 min</span></div>
+    <div class="ov-row"><span class="ov-time">1:00</span><span class="ov-title">The bet: an interpreter, not a rulebook we wrote</span><span class="ov-dur">3 min</span></div>
+    <div class="ov-row"><span class="ov-time">4:00</span><span class="ov-title">Rate a real submission, live</span><span class="ov-dur">4 min</span></div>
+    <div class="ov-row"><span class="ov-time">8:00</span><span class="ov-title">The QA harness — layers, aggregate, verdict</span><span class="ov-dur">5 min</span></div>
+    <div class="ov-row"><span class="ov-time">13:00</span><span class="ov-title">Reviewing a failure, with no API key</span><span class="ov-dur">3 min</span></div>
+    <div class="ov-row"><span class="ov-time">16:00</span><span class="ov-title">The honest state — proven, not proven, and why</span><span class="ov-dur">3 min</span></div>
+    <div class="ov-row"><span class="ov-time">19:00</span><span class="ov-title">The handoff — what we build together next</span><span class="ov-dur">1 min</span></div>
+  </div>
+
+  <section class="seg" id="s1">
+    <div class="seg-head">
+      <span class="seg-time">0:00–1:00</span>
+      <h2 class="seg-title">What this is, in one breath</h2>
+    </div>
+    <p class="seg-sub">No screen yet — say this before you open anything.</p>
+    <ul class="talk">
+      <li>ISO publishes the General Liability rating rules every carrier in the country has to
+        follow. This engine <b>reads ISO's own filed content and executes it</b> — it doesn't
+        re-implement the rules in our own code.</li>
+      <li>We rate a submission and get a premium the same way ISO's own rating service would, and
+        then we <b>check our answer against ISO's live service</b>, jurisdiction by jurisdiction.</li>
+      <li>What you'll see today: the engine rating something real, the harness that keeps proving
+        it's right, and where that harness now helps <em>find and explain</em> problems, not just
+        count them.</li>
+    </ul>
+  </section>
+
+  <section class="seg" id="s2">
+    <div class="seg-head">
+      <span class="seg-time">1:00–4:00</span>
+      <h2 class="seg-title">The bet: an interpreter, not a rulebook we wrote</h2>
+    </div>
+    <div class="onscreen"><span class="tag">Show</span><span class="what">File explorer —
+      <code>ISO_ERC_Files\General_Liability</code>, one folder per state.</span></div>
+    <ul class="talk">
+      <li>ISO doesn't publish a document. It publishes a <b>program</b> — over
+        <span class="num">20,000</span> rule files across <span class="num">567</span> packages,
+        CSV tables and instruction files, one folder per state and edition.</li>
+      <li>The obvious move is to read ISO's rules once and hand-code the logic. The problem: every
+        time ISO refiles — and they refile constantly — that hand-coded logic goes stale, silently,
+        until someone notices a wrong premium.</li>
+      <li>We built the other thing: an <b>interpreter</b> for ISO's own instruction set —
+        <span class="num">54</span> instructions, fully specified, executed directly against ISO's
+        files. <b>An ISO update is a file drop, not a code change.</b></li>
+      <li>The tradeoff, said plainly: every one of those 54 instructions had to be nailed down before
+        anything could run at all. That's why this took real time up front.</li>
+    </ul>
+  </section>
+
+  <section class="seg" id="s3">
+    <div class="seg-head">
+      <span class="seg-time">4:00–8:00</span>
+      <h2 class="seg-title">Rate a real submission, live</h2>
+    </div>
+    <div class="onscreen"><span class="tag">Show</span><span class="what">
+      <code>app.py</code> at <code>/</code> — rate the sample submission.</span></div>
+    <ul class="talk">
+      <li>One submission in, one premium out — with <b>every factor that applied, in the order it
+        applied</b>, each one traced back to the exact ISO file it came from. Nothing is a black box
+        here on purpose.</li>
+      <li>Rate the same submission in a second state. <b>Same engine, zero state-specific code</b> —
+        that's the interpreter bet paying off.</li>
+      <li>Now the proof: <span class="num">51</span> jurisdictions rate. <span class="num">50</span>
+        of those are on our ISO subscription and get checked live against ISO's own rating service —
+        <b><span class="num">50 of 50</span> agree</b>, on the premium and on every field ISO
+        publishes back, not just the number.</li>
+      <li>The two exceptions, said out loud rather than glossed over: Hawaii isn't in our ISO
+        delivery at all, and Puerto Rico rates but isn't on our subscription, so there's nothing to
+        check it against.</li>
+    </ul>
+  </section>
+
+  <section class="seg" id="s4">
+    <div class="seg-head">
+      <span class="seg-time">8:00–13:00</span>
+      <h2 class="seg-title">The QA harness — layers, aggregate, verdict</h2>
+    </div>
+    <div class="onscreen"><span class="tag">Show</span><span class="what">
+      <code>/tests</code> — pick <b>L3 &middot; Limits</b>, then scroll to Aggregate.</span></div>
+    <ul class="talk">
+      <li>50 agreements on one submission is a start, not proof. So there's a second thing running
+        underneath: a harness that <b>varies the submission on purpose</b> and checks every result.</li>
+      <li>Four layers, each changing exactly one thing — the class of business, the limits, the
+        deductibles — so when something disagrees, <b>we know which variable caused it</b>, not just
+        that something's wrong somewhere.</li>
+      <li>Point at the <b>Aggregate</b> table: every scenario ever run, summed per layer, with a
+        colored dot reading the worst outcome at a glance — blue agrees, red needs a look.</li>
+      <li>Point at the <b>verdict cards</b>: one percentage per layer, not one blended number — so a
+        problem in one layer can't hide behind three clean ones.</li>
+      <li>This is the part that scales. Today it's this one product line; the same harness is how we
+        prove out every additional line and every carrier's own rates later.</li>
+    </ul>
+  </section>
+
+  <section class="seg" id="s5">
+    <div class="seg-head">
+      <span class="seg-time">13:00–16:00</span>
+      <h2 class="seg-title">Reviewing a failure, with no API key</h2>
+    </div>
+    <div class="onscreen"><span class="tag">Show</span><span class="what">Any run file &rarr;
+      <code>Review this run &rarr;</code>, built yesterday.</span></div>
+    <ul class="talk">
+      <li>When a scenario disagrees, someone has to work out why. That used to mean opening the run
+        file and reading data by hand.</li>
+      <li>Now the harness takes a first pass <b>automatically, for free, with no AI call involved</b>
+        — it sorts a refusal into "that's a question for ISO" versus "that's on us," and it checks
+        whether the exact same problem was already explained in a different run.</li>
+      <li>What it can't explain, it turns into <b>a short brief</b> — the evidence, formatted to
+        paste into a conversation like this one — and whatever comes back gets pasted in and kept
+        with the run, clearly marked as a person's answer, not a verified fact.</li>
+      <li>Built and shipped in one day, planned with a written risk list before a line of code — that
+        pace is representative of how this whole project has gone.</li>
+    </ul>
+  </section>
+
+  <section class="seg" id="s6">
+    <div class="seg-head">
+      <span class="seg-time">16:00–19:00</span>
+      <h2 class="seg-title">The honest state — proven, not proven, and why</h2>
+    </div>
+    <p class="seg-sub">No new screen — stay on <code>/tests</code>, talk over it.</p>
+    <ul class="talk">
+      <li><b>Proven:</b> the engine, one product line, live-checked in 50 states, with a harness that
+        catches its own mistakes before we do.</li>
+      <li><b>Not yet proven:</b> other lines of business, and — the big one — <b>our own rates</b>
+        rather than ISO's filed ones. The moment we layer in carrier deviations, this same
+        independent check stops being independent, which is exactly why it's sequenced last.</li>
+    </ul>
+    <div class="gap"><span class="tag">Said plainly</span><span class="what">This is a real internal
+      tool being used daily. It is not yet a product an underwriter opens every morning — no
+      accounts, no concurrency, no saved-quote workflow. That gap is known and sized, not
+      discovered today.</span></div>
+  </section>
+
+  <section class="close" id="s7">
+    <div class="seg-head">
+      <span class="seg-time">19:00–20:00</span>
+      <h2 class="seg-title">The handoff — what we build together next</h2>
+    </div>
+    <p class="seg-sub">Close the demo. This is the pivot into working time.</p>
+    <ul class="talk">
+      <li>Everything above is <b>what exists</b>. What we work on together next is <b>what's
+        chosen</b> — and it breaks into a small number of real directions, not one long list.</li>
+    </ul>
+    <div class="feature-sets">
+      <div class="fset"><b>Prove it wider</b><span>more lines, more carriers' rates</span></div>
+      <div class="fset"><b>Close defects</b><span>the ones the harness has already found</span></div>
+      <div class="fset"><b>Multi-carrier</b><span>the groundwork for deviations</span></div>
+      <div class="fset"><b>The product UI</b><span>from instrument to daily tool</span></div>
+    </div>
+  </section>
+
+</main>
+
+<footer class="foot">
+  Prepared 19 August 2026, from the live state of the build in <code>BUILD-LOG.md</code> Entry 33.
+  Longer versions of every claim here: <code>docs/EXECUTIVE-SUMMARY.md</code> and
+  <code>docs/BACKLOG-FEATURE-SETS.md</code>.
+</footer>
+
+</body>
+</html>

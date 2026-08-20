@@ -7,6 +7,12 @@ we have taken to get here, what we found along the way, and what remains.
 changed** — **all six stages of the engine are built**, and it now agrees with ISO's own live rating
 service on fifty jurisdictions.
 
+**Note, 2026-08-18:** §0 below still describes the engine's own progress and is current as far as it
+goes. What it does not cover is a day of harness/UI work done since — a layered test programme with
+its own page, an aggregate view with a verdict per layer, and a per-run review page that needs no API
+key. None of it changes what the engine does; all of it is in `BUILD-LOG.md` Entries 29–33 and
+`docs/UI-STRATEGY.md`.
+
 No prior knowledge of insurance rating or of this project is assumed. Technical detail lives in
 the documents referenced at the end.
 
@@ -526,6 +532,8 @@ finding waiting to be collected cheaply.
 | `docs/erc/` | The data-file-derived specification (6 documents) |
 | `docs/PHASE-SIZING.md` | What each build item actually contains, measured |
 | `docs/gates/` | The eleven coverage walkthroughs, the California and New York differentials, the as-of re-measurement and the reconciliation — 15 documents |
+| `GL_Algorithm/` | The seven rate-driven gates (334, 336, 335 OCP, 332, 335 Railroad, 365, 370), reformatted into a rate-build-up-and-premium documentation shape — a `RatingAlgorithms.md` and an `ERC_Tables.md` per subline, plus `gl-rating-chains.html`, 18 mermaid rate/premium flowcharts. **A reformat of the gates above, not a re-derivation** — every gap the gates hadn't settled is carried forward as a flagged node, not resolved by guessing |
+| `CF_Algorithm/` | The same documentation shape, for the sister Commercial Fire project — `GL_Algorithm`'s template |
 | `PROCESS_LOG.md` | Every step, with reasoning and corrections |
 | `scripts/erc/out/referral_register.json` | Every situation that stops and asks a human — 28 of them, with the thirteen decisions taken |
 | `Payloads/` | The 53 priced example policies, one per state, each with its input |

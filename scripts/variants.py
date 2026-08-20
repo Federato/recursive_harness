@@ -271,6 +271,25 @@ class Declared:
         return self.pick("GeneralLiabilityClassification",
                          f"{which}PremiumBasis", vals)
 
+    def aggregates_for(self, occurrence: str) -> tuple[str, ...]:
+        """The aggregate limits ISO declares legal with this occurrence limit.
+
+        Both `GeneralAggregateLimit` and `ProdsCompldOpsAggregateLimit` are
+        keyed on `EachOccurrenceLimit` and on nothing else, and at every
+        occurrence limit measured they declare the **same** legal set. One
+        lookup therefore serves both, and the aggregate can be a single axis
+        rather than two.
+
+        **The set is per jurisdiction and per occurrence limit.** At 25,000 in
+        TX there are four legal aggregates; at 1,000,000 there are eight. A plan
+        that names a position -- lowest, middle, highest -- rather than a figure
+        is the only kind that can be run in all 51, and what each position
+        resolved to has to be recorded, because it is a different number in
+        different states.
+        """
+        return self.dependent(GL, "GeneralAggregateLimit",
+                              {"EachOccurrenceLimit": occurrence})
+
     def territories(self) -> tuple[str, ...]:
         return self.values("GeneralLiabilityLocation",
                            "PremisesOperationsTerritory")
@@ -379,15 +398,24 @@ CONTROLS: tuple[Control, ...] = (
             keyed_by={"prods_bi_deductible": "ProdsCompldOpsBIDeductible",
                       "prods_pd_deductible": "ProdsCompldOpsPDDeductible"}),
 
-    # --------------------------------------------------------- 2. limits (1)
+    # --------------------------------------------------------- 2. limits (2)
     Control("occurrence_limit", "Each-occurrence limit", "Limits",
             "the increased-limit factor table, in both directions from the "
-            "1,000,000 default; both aggregates are re-derived from ISO's "
-            "dependent domain so the pair is always legal",
+            "1,000,000 default",
             table=GL, column="PremOpsProdsEachOccurrenceLimit",
-            note="Setting this also sets GeneralAggregateLimit and "
-                 "ProdsCompldOpsAggregateLimit to values ISO declares legal "
-                 "with it."),
+            note="Setting this alone also sets GeneralAggregateLimit and "
+                 "ProdsCompldOpsAggregateLimit to the first value ISO declares "
+                 "legal with it. Set the aggregate as well and that derivation "
+                 "stands aside -- the aggregate control is then authoritative."),
+    Control("general_aggregate", "Aggregate limit", "Limits",
+            "the other half of the increased-limit key: the same occurrence "
+            "limit against a low, ordinary and high aggregate",
+            table=GL, column="GeneralAggregateLimit",
+            keyed_by={"occurrence_limit": "EachOccurrenceLimit"},
+            note="Sets the products aggregate to match, because ISO keys both "
+                 "on the occurrence limit and declares the same legal set for "
+                 "each. Varying the two aggregates against each other is a "
+                 "further axis and is not this one."),
 
     # ------------------------------------------------- 3-4. classification (3)
     Control("premium_basis", "Premium basis", "Classification",
@@ -545,12 +573,43 @@ def _apply_deductible(field):
 
 def _apply_occurrence_limit(p, value, d, config):
     _gl(p)["PremOpsProdsEachOccurrenceLimit"] = value
+    if config.get("general_aggregate"):
+        # The aggregate control runs next and is authoritative. Deriving a
+        # value here first would be overwritten, and `pick` would record a
+        # choice that never reached the payload -- which is the kind of
+        # bookkeeping that makes `probe_no_op` report on a value nobody used.
+        return
     for col in ("GeneralAggregateLimit", "ProdsCompldOpsAggregateLimit"):
         legal = d.dependent(GL, col, {"EachOccurrenceLimit": value})
         if not legal:
             raise VariantError(f"{d.juris} declares no {col} legal with "
                                f"{value}")
         _gl(p)[col] = d.pick(GL, col, legal)
+
+
+def _apply_general_aggregate(p, value, d, config):
+    """Set both aggregates, checked against the occurrence limit in force.
+
+    The occurrence limit that governs is the one in the payload, not the one in
+    the configuration -- a run may vary the aggregate and leave the occurrence
+    limit at whatever the base submission carries, and the legal set is keyed on
+    the real value either way.
+    """
+    occurrence = _gl(p).get("PremOpsProdsEachOccurrenceLimit")
+    legal = d.aggregates_for(occurrence) if occurrence else ()
+    if legal and str(value) not in [str(x) for x in legal]:
+        raise VariantError(
+            f"{d.juris} declares {value!r} illegal as an aggregate with an "
+            f"each-occurrence limit of {occurrence}; {len(legal)} legal: "
+            f"{list(legal)[:5]}")
+    _gl(p)["GeneralAggregateLimit"] = value
+    prods = d.dependent(GL, "ProdsCompldOpsAggregateLimit",
+                        {"EachOccurrenceLimit": occurrence}) if occurrence else ()
+    if not prods or str(value) in [str(x) for x in prods]:
+        _gl(p)["ProdsCompldOpsAggregateLimit"] = value
+    else:
+        _gl(p)["ProdsCompldOpsAggregateLimit"] = d.pick(
+            GL, "ProdsCompldOpsAggregateLimit", prods)
 
 
 def _apply_class(p, value, d, config):
@@ -752,6 +811,7 @@ APPLIERS = {
     "prods_pd_deductible": _apply_deductible("ProdsCompldOpsPDDeductible"),
     "prods_bipd_deductible": _apply_deductible("ProdsCompldOpsBIPDDeductible"),
     "occurrence_limit": _apply_occurrence_limit,
+    "general_aggregate": _apply_general_aggregate,
     "premium_basis": _apply_premium_basis,
     "class_code": _apply_class,
     "exposure": _apply_exposure,
@@ -772,7 +832,8 @@ APPLIERS = {
 #: later and overwrites it; the class code sets the basis, so the basis runs
 #: first and defers.
 ORDER = ("subline", "premium_basis", "class_code", "exposure", "classifications", "locations",
-         "occurrence_limit", "premops_bi_deductible", "premops_pd_deductible",
+         "occurrence_limit", "general_aggregate",
+         "premops_bi_deductible", "premops_pd_deductible",
          "premops_bipd_deductible", "prods_bi_deductible",
          "prods_pd_deductible", "prods_bipd_deductible", "coverage_form",
          "claims_made_year", "size_of_risk", "experience_rating",

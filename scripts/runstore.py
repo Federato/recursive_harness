@@ -90,6 +90,22 @@ def _read_all() -> list:
     return out
 
 
+def spent_today(day: str = "") -> int:
+    """Live ISO calls made today, counted from the store rather than tracked.
+
+    **One definition, because it is a number two callers show.** The tier runner
+    weighs it against a standing budget; the layered programme shows it as a
+    ticker and weighs nothing. Two counts of the same thing would eventually
+    disagree, and the one on screen would be the one nobody trusted.
+    """
+    day = day or time.strftime("%Y-%m-%d")
+    n = 0
+    for r in runs(limit=2000):
+        if (r.get("at_iso") or "")[:10] == day:
+            n += int((r.get("summary") or {}).get("live_calls", 0) or 0)
+    return n
+
+
 def runs(limit: int = 200, fingerprint: str = "") -> list:
     """Stored runs, newest first, without their rows."""
     out = []

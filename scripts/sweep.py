@@ -90,12 +90,27 @@ def baselines(kernel, jurisdictions) -> dict:
 
 def run_config(config: dict, jurisdictions=None, compare: bool = False,
                mode: str = STRICT, asof: str = V.DEFAULT_ASOF,
-               progress=None, probe: bool = True) -> dict:
+               progress=None, probe: bool = True,
+               resolve=None, stop_check=None) -> dict:
     """Rate one configuration everywhere. Returns rows and a summary.
 
     `progress(done, total, row)` is called after each jurisdiction so a caller
     can show a run that takes ninety seconds -- or twenty minutes -- without
     holding a request open.
+
+    `resolve(config, declared) -> config` is called **per jurisdiction**, before
+    the payload is built, and lets a caller turn a value that has no fixed
+    figure into the one this state declares. The layered programme asks for *the
+    highest legal aggregate*, which is 10,000,000 in one state and 600,000 in
+    another; asking for a figure instead would make the run undeliverable in
+    half the country. What each state actually received is recorded on its row,
+    because a run that stores the request and not the answer cannot be read
+    back.
+
+    `stop_check()` is called before each jurisdiction. Returning a truthy value
+    ends the run there and marks it partial, naming the states never reached --
+    a run that stops is not a run that failed, and it must not read like one.
+    It may also block, which is how a pause is held.
     """
     cfg = V.clean(config)
     js = list(jurisdictions or V.Declared.jurisdictions())
@@ -115,11 +130,23 @@ def run_config(config: dict, jurisdictions=None, compare: bool = False,
         dp = _differ()
 
     rows, started = [], time.time()
+    stopped_at = None
+    per_state_cfg = {}
     for i, j in enumerate(js, start=1):
+        if stop_check is not None and stop_check():
+            stopped_at = j
+            break
         row = {"n": i, "juris": j, "base": base_premiums.get(j)}
+        cfg_j = cfg
         try:
             d = declared(j, asof)
-            payload = V.build(cfg, d)
+            if resolve is not None:
+                cfg_j = V.clean(resolve(cfg, d))
+                if cfg_j != cfg:
+                    row["resolved"] = {k: cfg_j[k] for k in cfg_j
+                                       if cfg.get(k) != cfg_j[k]}
+            per_state_cfg[j] = cfg_j
+            payload = V.build(cfg_j, d)
         except V.VariantError as exc:
             row.update(status="NOT APPLICABLE", detail=str(exc)[:220])
             rows.append(row)
@@ -165,7 +192,8 @@ def run_config(config: dict, jurisdictions=None, compare: bool = False,
             row["status"] = r["status"]
             for k in ("iso", "delta", "iso_package", "edition_agrees",
                       "fields_compared", "fields_differing",
-                      "first_differences", "detail"):
+                      "first_differences", "differences", "missing_fields",
+                      "detail"):
                 if r.get(k) not in (None, ""):
                     row[k] = r[k]
         rows.append(row)
@@ -183,7 +211,7 @@ def run_config(config: dict, jurisdictions=None, compare: bool = False,
                 continue
             try:
                 d = declared(r["juris"], asof)
-                v = V.probe_no_op(cfg, d, kernel,
+                v = V.probe_no_op(per_state_cfg.get(r["juris"], cfg), d, kernel,
                                   Decimal(base_premiums[r["juris"]]))
             except Exception as exc:                          # noqa: BLE001
                 v = {"verdict": "PROBE FAILED",
@@ -218,6 +246,12 @@ def run_config(config: dict, jurisdictions=None, compare: bool = False,
                         if (r.get("no_op") or {}).get("verdict")
                         == V.INERT_VALUE],
         "iso_not_subscribed": skipped_iso,
+        # A run that was stopped says so, and names what it never reached. The
+        # alternative is a run whose coverage looks complete because the states
+        # it skipped simply are not in it.
+        "stopped_early": stopped_at is not None,
+        "not_reached": ([j for j in js[js.index(stopped_at):]]
+                        if stopped_at is not None else []),
     }
     return {"summary": summary, "rows": rows}
 

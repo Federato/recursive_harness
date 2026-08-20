@@ -1,6 +1,18 @@
 # How to test this, phase by phase
 
-**Current as of 2026-08-17.** Every command on this page has been run and its stated output is what
+**Updated 2026-08-18: the layered programme is built** — four layers, a `/tests` page, and one
+standalone file per run. It has its own section near the bottom, and its own suite
+(`verify_layers.py`, 30/30). The aggregate limit became a real control on the same day.
+
+**Also 2026-08-18, later:** the `/tests` page gained an aggregate view (a table, a verdict per
+layer, a trend chart — `verify_layers.py` still covers it, 30/30) and a per-run review page,
+`/review/<run-file>` (`scripts/reviews.py`, `ui/review_page.py`). **The review page has no
+automated suite of its own yet** — it was exercised live in the browser (Entry 33) but nothing
+in this list asserts it stays working. Worth a `verify_reviews.py` before it gets relied on.
+`scripts/layers.py` gained a notebook set too, `notebooks/harness/`, covered by
+`verify_notebooks.py` (28/28, both sets).
+
+**Otherwise current as of 2026-08-17.** Every command on this page has been run and its stated output is what
 it actually produced. **All six stages are built, and Phase 2 — the comparison against ISO's live
 service — is live.** Nothing on this page is marked NOT BUILT any more.
 
@@ -46,11 +58,16 @@ python tests/verify_stage3.py                    38/38   premium, the two modes,
 python tests/verify_stage4.py                    28/28   input schemas and 51 sample submissions
 python tests/verify_stage5.py                    18/18   the field catalogue and its legal values
 python tests/verify_stage6.py                    30/30   the interface, over HTTP
-python tests/verify_phase2.py                    11/11   against ISO's live service (see below)
-python tests/verify_breadth.py                   18/18   the variant harness, and the risk shapes
+python tests/verify_phase2.py                 14/14, 1   against ISO's live service (see below);
+                                                 skip   the live group skips cleanly without --live
+python tests/verify_breadth.py                   22/22   the variant harness, and the risk shapes
                                                          it varies -- no live calls
-python tests/verify_tester.py                    30/30   the variable tester: its controls, its
+python tests/verify_tester.py                    63/63   the variable tester: its controls, its
                                                          routes and the UI/engine separation
+python tests/verify_layers.py                    30/30   the layered programme: the aggregate axis,
+                                                         the allowance, the run file -- no calls
+python tests/verify_notebooks.py                 28/28   every notebook cell, engine set and
+                                                         harness set, executes against the code
 python Agentic/iso-circular-expert/tools/smoke_test.py     19/19
 python Agentic/iso-erc-expert/tools/smoke_test.py       88 checks
 python -m gl_engine.cli check 20260811 --deep              13/13
@@ -364,16 +381,22 @@ on purpose.
 
 ```
 python app.py 8765            # then open http://127.0.0.1:8765/tester
-python tests/verify_tester.py                    # 30/30, no server, no calls
+python tests/verify_tester.py                    # 63/63, no server, no calls
 python scripts/sweep.py --controls               # the same controls, on the command line
 python scripts/sweep.py --set occurrence_limit="500,000 CSL"
 python scripts/sweep.py --set size_of_risk=Yes --juris OK --live
 ```
 
-**19 controls in 8 groups** — six deductibles, the occurrence limit, premium basis, class code,
-exposure, coverage form, claims-made year, subline, locations, size-of-risk, experience rating,
-schedule rating, the scheduled percentage, and terrorism. **Every option is read from ISO's declared
-domain for that jurisdiction**; a value ISO does not declare is refused before anything is sent.
+**20 controls in 8 groups** — six deductibles, the occurrence limit, **the aggregate limit**, premium
+basis, class code, exposure, coverage form, claims-made year, subline, locations, size-of-risk,
+experience rating, schedule rating, the scheduled percentage, and terrorism. **Every option is read
+from ISO's declared domain for that jurisdiction**; a value ISO does not declare is refused before
+anything is sent.
+
+**The aggregate limit became a control on 2026-08-18.** Before that it was derived from the
+occurrence limit and took whatever value ISO declared first — so every limit test varied one half of
+a two-part key. Setting it explicitly now stands the derivation aside, and an occurrence/aggregate
+pair ISO does not declare together is refused rather than sent.
 
 | It does this | Because |
 |---|---|
@@ -395,6 +418,47 @@ answer *when did this start disagreeing*, which is the question the charts exist
 and how to apply it; `scripts/sweep.py` runs a configuration across jurisdictions. The dependency
 runs **`ui` → `variants`/`sweep` → `gl_engine`**, and `verify_tester` **asserts the direction by
 parsing the imports** — no file in `ui/` imports the engine or builds a `Kernel`.
+
+---
+
+## The layered programme — four layers, an allowance, and a file per run
+
+*One kind of variation per layer, every state on every run, and a result you can keep.*
+
+```
+python app.py 8765            # then open http://127.0.0.1:8765/tests
+python tests/verify_layers.py                    # 30/30, no server, no calls
+python scripts/layers.py --layers
+python scripts/layers.py --layer L2 --class 91340 --exposure 1500000 --plan
+python scripts/layers.py --layer L2 --class 91340 --exposure 1500000 --offline
+python scripts/layers.py --layer L3 --allowance 200
+```
+
+**Four layers, each adding exactly one kind of variation**, so a difference found at layer *n* is
+attributable to what layer *n* introduced.
+
+| | | |
+|---|---|---|
+| **L1** | Smoke | the base risk, unvaried |
+| **L2** | Classification | one class code and its exposure; the premium basis comes from ISO's table per state, nobody types it |
+| **L3** | Limits | occurrence limit × aggregate limit — both halves of the increased-limit key |
+| **L4** | Deductibles | one amount applied to each of the six slots in turn: *is any slot ignored?* |
+
+| It does this | Because |
+|---|---|
+| **Every state, every run**, offline pre-flight then live | The pre-flight costs nothing and keeps an unbuildable payload from spending a call. It settles nothing on its own — agreement needs ISO's actual response |
+| **An allowance thins configurations and never states** | Every state in every run keeps two runs comparable. What was dropped is written into the run file, because two runs of the same layer at different allowances are different matrices |
+| **The budget is a ticker, not a gate** | A full L3 run is about 600 calls. The tier runner in `qa.py` keeps its gate; both read the same count from `runstore.spent_today` |
+| **The aggregate is a position, not a figure** — `@lowest`, `@middle`, `@highest` | The legal set is keyed on the occurrence limit and differs by state: four legal aggregates at 25,000 in TX, eight at 1,000,000. **Each row records the figure that state actually got** |
+| **A class ISO does not file somewhere is reported, not filtered** | *"Not filed in these states"* is a coverage fact nothing else in the harness tells you |
+| **Pause, resume, stop** — and a stopped run is kept as a partial that names what it never reached | Losing two hundred calls' worth of answers to a change of mind about the last hundred is not acceptable |
+
+**Every run writes `results/runs/<layer>-<class>-<stamp>.html`** — self-contained, opens by
+double-click, no server needed, with `index.html` linking them all. **Git-ignored**: a run file is a
+rendering of ISO's licensed premiums.
+
+The design, and the three measurements that changed it, are in
+[`docs/UI-STRATEGY.md`](docs/UI-STRATEGY.md).
 
 **Credentials come from the environment** (`RAAS_*`), never from a file in this repository.
 `scripts/raas.py` is a standard-library OAuth2 client — no `httpx`, no dependency — and **it logs no
@@ -418,6 +482,28 @@ The same run is available in the interface — *Test every jurisdiction* → **R
 which reports `50 of 51 match ISO exactly` with a pass/fail bar and a row per state. **It takes
 about twenty minutes**, because each jurisdiction is a real call; the command line is faster and the
 page exists so the answer can be read by someone who would run neither.
+
+### Aggregate, verdict, trend, and reviewing a run — added 2026-08-18, later
+
+`/tests` reads more than the run list now. **Aggregate** sums every stored scenario per layer into
+one table with a status dot; **Verdict by layer** is four `verdict()` charts, one per layer rather
+than one combined figure, so a bad layer can't hide behind three good ones; **Aggregate trend** is
+`agreement_over_time()` across every live-compared scenario. All still covered by
+`verify_layers.py` — no new suite, the existing one's `A`–`F` sections exercise the functions this
+reads.
+
+**Every run file gained a `Review this run →` link**, to `/review/<run-file>` — a new page, not part
+of the static file. It pattern-matches each failing row for free (a refusal sorted as ISO's question
+or ours, an inert-value pick already caught by `probe_no_op`, a dedup check against any prior review
+that explained the identical finding) and generates a markdown brief for anything it can't explain,
+meant to be pasted into a conversation and the answer pasted back. **No API key anywhere in it** —
+see `scripts/reviews.py`'s module docstring. **Not covered by an automated suite yet** (see the note
+at the top of this document) — exercised live in the browser, not asserted by anything that runs in
+the four minutes above.
+
+```
+python app.py 8765            # then open a run file and click "Review this run"
+```
 
 ---
 

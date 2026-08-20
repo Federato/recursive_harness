@@ -1,0 +1,243 @@
+<!doctype html><html><head><meta charset="utf-8">
+<title>Run page — what counts as the previous run</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+:root{--ink:#1a1d21;--muted:#6b7580;--line:#e3e8ee;--blue:#2b6cb0;
+--red:#c0392b;--amber:#b7791f;--grey:#9aa5b1;--green:#2f855a;--bg:#f7f9fb}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+font:14px/1.55 ui-sans-serif,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+header{background:#1f2933;color:#fff;padding:18px 24px}
+header h1{margin:0 0 4px;font-size:18px;font-weight:650}
+header p{margin:0;opacity:.75;font-size:13px;max-width:80ch}
+.warn{background:#fff8e6;border-bottom:1px solid #f0e0b8;padding:10px 24px;
+font-size:12.5px;color:#7a5c12}
+.setup{background:#fff;border-bottom:1px solid var(--line);padding:14px 24px}
+.setup h2{font-size:11px;text-transform:uppercase;letter-spacing:.05em;
+color:var(--muted);margin:0 0 8px;font-weight:650}
+.setup table{font-size:12.5px;border-collapse:collapse}
+.setup td,.setup th{padding:4px 12px 4px 0;text-align:left}
+.setup th{font-size:10.5px;text-transform:uppercase;color:var(--muted);
+letter-spacing:.04em;border-bottom:1px solid var(--line)}
+nav{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--line);
+padding:10px 24px;display:flex;gap:7px;flex-wrap:wrap;z-index:20}
+nav button{background:#fff;color:var(--ink);border:1px solid #cbd2d9;
+border-radius:6px;padding:6px 12px;font-size:13px;cursor:pointer}
+nav button.on{background:var(--blue);color:#fff;border-color:var(--blue);font-weight:650}
+main{padding:20px 24px;max-width:1020px}
+section{display:none} section.on{display:block}
+.lede{background:#fff;border:1px solid var(--line);border-left:3px solid var(--blue);
+border-radius:6px;padding:12px 15px;margin-bottom:16px;font-size:13px}
+.lede b{display:block;margin-bottom:3px}
+.lede .cost{color:var(--muted);font-size:12.5px;margin-top:6px}
+.page{background:#eef1f5;border:1px solid var(--line);border-radius:10px;padding:14px}
+.card{background:#fff;border:1px solid var(--line);border-radius:8px;
+padding:14px 16px;margin-bottom:12px}
+.card h2{font-size:11px;text-transform:uppercase;letter-spacing:.05em;
+color:var(--muted);margin:0 0 10px;font-weight:650}
+.big{font-size:15px;font-weight:650;margin:0 0 6px}
+.counts{display:flex;gap:24px;flex-wrap:wrap}
+.counts div{font-size:12px;color:var(--muted)}
+.counts b{display:block;font-size:21px;color:var(--ink);
+font-variant-numeric:tabular-nums;font-weight:650}
+.counts b.bad{color:var(--red)} .counts b.ok{color:var(--green)}
+.chg{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:10px}
+.chg > div{border:1px solid var(--line);border-radius:7px;padding:10px 12px}
+.chg .k{font-size:11.5px;color:var(--muted)}
+.chg .v{font-size:26px;font-weight:650;font-variant-numeric:tabular-nums;line-height:1.15}
+.chg .w{font-size:11.5px;color:var(--muted);margin-top:3px}
+.chg .v.bad{color:var(--red)} .chg .v.ok{color:var(--green)}
+.chg .v.new{color:var(--blue)} .chg .v.unk{color:var(--amber)}
+.chg > div.hl{border-color:var(--amber);background:#fffbf2}
+.prev{font-size:11.5px;color:var(--muted);margin-top:8px}
+.note{font-size:11.5px;color:var(--muted);border-left:2px solid var(--line);
+padding-left:9px;margin-top:8px}
+.bad-note{border-left-color:var(--red);color:#8a2f27}
+table.cmp{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:6px}
+table.cmp th{text-align:left;font-size:10.5px;text-transform:uppercase;
+letter-spacing:.04em;color:var(--muted);border-bottom:1px solid var(--line);
+padding:6px 7px}
+table.cmp td{padding:5px 7px;border-bottom:1px solid #f0f3f6}
+.tagx{display:inline-block;font-size:10px;font-weight:650;padding:1px 6px;
+border-radius:99px}
+.t-fix{background:#e6f4ec;color:#1f6b45}
+.t-new{background:#fdeaea;color:#a2312a}
+.t-unk{background:#fff3cd;color:#7a5c12}
+.t-nc{background:#f0f3f6;color:#6b7580}
+h3.sub{font-size:13px;margin:18px 0 8px;font-weight:650}
+</style></head><body>
+
+<header>
+  <h1>What counts as “the previous run” — and what to do when the two runs don't cover the same ground</h1>
+  <p>Agreed: a block under the verdict, computed at write time and frozen into
+     the file. This decides what the numbers in it are allowed to mean.</p>
+</header>
+<div class="warn"><b>Mockup.</b> Invented, but the awkward case is real: yesterday's
+  run was stopped early, so some ground it once covered was never re-tested today.</div>
+
+<div class="setup">
+  <h2>The situation all three options are handed</h2>
+  <table>
+    <tr><th>Run<th>When<th>Configurations<th>Jurisdictions<th>Outcome</tr>
+    <tr><td><b>this run</b><td>18 Aug 11:20<td>4 (500k×low, 1M×mid, 2M×mid, 5M×high)
+        <td>51<td>completed</tr>
+    <tr><td>the one before<td>15 Aug 09:10<td>3 (500k×low, 1M×mid, <b>1M×high</b>)
+        <td>51<td><b>stopped early</b> — 12 states never reached</tr>
+  </table>
+  <div class="note">So: two configurations are shared, one existed only last
+    time, one only this time — and last time, twelve states were never reached
+    at all. <b>GA and OH were broken on 15 August in a configuration this run
+    did not repeat. RI was broken and was never reached before the run stopped.</b></div>
+</div>
+
+<nav>
+  <button class="on" data-t="a">1 · Strict, with an unknown bucket</button>
+  <button data-t="b">2 · Strict, unknowns dropped</button>
+  <button data-t="c">3 · Loose — compare by state</button>
+</nav>
+
+<main>
+
+<!-- ============================================================== 1 -->
+<section id="a" class="on">
+<div class="lede"><b>1 · Compare only shared ground, and name what could not be compared</b>
+  A problem counts as <i>fixed</i> only if the identical configuration ran in
+  the identical state in both runs and passed this time. Anything else lands in
+  its own bucket and is shown rather than folded away.
+  <div class="cost">Five numbers instead of four, and one of them needs a
+    sentence of explanation. In exchange, no number in the block can ever be
+    wrong.</div>
+</div>
+
+<div class="page">
+  <div class="card">
+    <p class="big">186 agree · 11 differ · 3 not applicable</p>
+    <div class="counts">
+      <div><b class="ok">93.0%</b>agree</div><div><b class="bad">11</b>differ</div>
+      <div><b>200</b>ISO calls</div></div>
+  </div>
+
+  <div class="card">
+    <h2>What changed since 15 August</h2>
+    <div class="chg">
+      <div><div class="k">New problems</div><div class="v bad">1</div>
+        <div class="w">NY · 5M × highest</div></div>
+      <div><div class="k">Problems fixed</div><div class="v ok">1</div>
+        <div class="w">CA · 1M × middle</div></div>
+      <div><div class="k">Still open</div><div class="v">8</div>
+        <div class="w">oldest first seen 12 Aug</div></div>
+      <div class="hl"><div class="k">Cannot be compared</div><div class="v unk">3</div>
+        <div class="w">GA, OH, RI — see below</div></div>
+      <div><div class="k">Newly covered</div><div class="v new">+51</div>
+        <div class="w">5,000,000 × highest, never run before</div></div>
+    </div>
+    <table class="cmp">
+      <tr><th>Was broken on 15 Aug<th>Why it is not counted as fixed</tr>
+      <tr><td><b>GA</b> · 1M × highest<td><span class="tagx t-nc">not repeated</span>
+          this run did not include that configuration</tr>
+      <tr><td><b>OH</b> · 1M × highest<td><span class="tagx t-nc">not repeated</span>
+          this run did not include that configuration</tr>
+      <tr><td><b>RI</b> · 500k × lowest<td><span class="tagx t-unk">never reached</span>
+          the 15 Aug run stopped before RI, so there is nothing to compare</tr>
+    </table>
+    <div class="prev">Compared with <b>L3-91340-20260815T0910.html</b> across the
+      <b>2 configurations both runs hold</b>, in the <b>39 jurisdictions both
+      runs reached</b>. 5,000,000 × highest is new here and counted as newly
+      covered, not as a regression.</div>
+    <div class="note"><b>Fixed means measured, in both runs, on the same
+      thing.</b> A problem that simply was not re-tested is not fixed, and this
+      block will not say it was.</div>
+  </div>
+</div>
+</section>
+
+<!-- ============================================================== 2 -->
+<section id="b">
+<div class="lede"><b>2 · Compare only shared ground, and say nothing about the rest</b>
+  Same strict rule, but the awkward cases are silently excluded rather than
+  counted. Four clean numbers.
+  <div class="cost">Reads better. <b>GA, OH and RI were broken three days ago
+  and this block does not mention them at all</b> — the page looks better than
+  the state of the world.</div>
+</div>
+
+<div class="page">
+  <div class="card">
+    <p class="big">186 agree · 11 differ · 3 not applicable</p>
+    <div class="counts">
+      <div><b class="ok">93.0%</b>agree</div><div><b class="bad">11</b>differ</div>
+      <div><b>200</b>ISO calls</div></div>
+  </div>
+
+  <div class="card">
+    <h2>What changed since 15 August</h2>
+    <div class="chg">
+      <div><div class="k">New problems</div><div class="v bad">1</div>
+        <div class="w">NY · 5M × highest</div></div>
+      <div><div class="k">Problems fixed</div><div class="v ok">1</div>
+        <div class="w">CA · 1M × middle</div></div>
+      <div><div class="k">Still open</div><div class="v">8</div>
+        <div class="w">oldest first seen 12 Aug</div></div>
+      <div><div class="k">Newly covered</div><div class="v new">+51</div>
+        <div class="w">5,000,000 × highest</div></div>
+    </div>
+    <div class="prev">Compared across the configurations and jurisdictions both
+      runs hold.</div>
+    <div class="note bad-note">Three problems from 15 August are outside the
+      comparison and appear nowhere on this page. Nothing here is false; the
+      omission is what does the damage.</div>
+  </div>
+</div>
+</section>
+
+<!-- ============================================================== 3 -->
+<section id="c">
+<div class="lede"><b>3 · Compare by state, ignoring which configuration ran</b>
+  A state was broken last time and is not broken now, so it is fixed. Simple to
+  explain and it needs no shared-ground rule at all.
+  <div class="cost">It can say <i>fixed</i> about something nobody tested. GA
+  and OH were broken at 1M × highest — a configuration this run never ran —
+  and this block reports them as fixed because the state passed at other
+  limits.</div>
+</div>
+
+<div class="page">
+  <div class="card">
+    <p class="big">186 agree · 11 differ · 3 not applicable</p>
+    <div class="counts">
+      <div><b class="ok">93.0%</b>agree</div><div><b class="bad">11</b>differ</div>
+      <div><b>200</b>ISO calls</div></div>
+  </div>
+
+  <div class="card">
+    <h2>What changed since 15 August</h2>
+    <div class="chg">
+      <div><div class="k">New problems</div><div class="v bad">1</div>
+        <div class="w">NY</div></div>
+      <div><div class="k">Problems fixed</div><div class="v ok">4</div>
+        <div class="w">CA, GA, OH, RI</div></div>
+      <div><div class="k">Still open</div><div class="v">8</div>
+        <div class="w">oldest first seen 12 Aug</div></div>
+      <div><div class="k">Newly covered</div><div class="v new">+51</div>
+        <div class="w">a limit never run before</div></div>
+    </div>
+    <div class="prev">Compared by jurisdiction across both runs.</div>
+    <div class="note bad-note"><b>Three of those four are not fixed.</b> GA and
+      OH were broken in a configuration this run did not repeat; RI was never
+      reached by the previous run at all. The block reports four fixes and one
+      of them is real.</div>
+  </div>
+</div>
+</section>
+
+</main>
+<script>
+document.querySelectorAll('nav button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('nav button').forEach(x => x.classList.remove('on'));
+  document.querySelectorAll('section').forEach(x => x.classList.remove('on'));
+  b.classList.add('on');
+  document.getElementById(b.dataset.t).classList.add('on');
+  scrollTo(0,0);
+});
+</script>
+</body></html>

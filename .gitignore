@@ -33,7 +33,10 @@ scripts/erc/census_334.json
 ui/cache/
 
 # Sweep results — every stored run carries ISO premiums and the configuration
-# that produced them.
+# that produced them. That covers results/runs/, the standalone HTML file the
+# layered programme writes per run, and results/reviews/, the per-run review
+# record beside it: both are renderings of the same licensed premiums and are
+# named here so nobody has to work that out again.
 results/
 
 # ISO-derived workbooks and generated hierarchies

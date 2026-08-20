@@ -1,0 +1,598 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GL Rating Engine — Build Wrap-Up</title>
+<style>
+  :root {
+    --paper: #f1f3ef;
+    --card: #fbfcfa;
+    --ink: #1a2320;
+    --muted: #5b685f;
+    --faint: #8b968e;
+    --line: #d6dbd2;
+    --accent: #2f6f5e;
+    --accent-strong: #1f4b3f;
+    --accent-tint: #e3ede8;
+    --amber: #a8712b;
+    --amber-tint: #f3e9da;
+    --code-bg: #eef1ec;
+    --shadow: 0 1px 2px rgba(20, 30, 25, 0.06);
+  }
+  :root[data-theme="dark"] {
+    --paper: #121815;
+    --card: #171f1b;
+    --ink: #e8ece7;
+    --muted: #a3ada2;
+    --faint: #6f7b71;
+    --line: #2a332c;
+    --accent: #6fbe9e;
+    --accent-strong: #8fd4b6;
+    --accent-tint: #1c2a24;
+    --amber: #d9a25a;
+    --amber-tint: #2a2116;
+    --code-bg: #1c231e;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #121815;
+      --card: #171f1b;
+      --ink: #e8ece7;
+      --muted: #a3ada2;
+      --faint: #6f7b71;
+      --line: #2a332c;
+      --accent: #6fbe9e;
+      --accent-strong: #8fd4b6;
+      --accent-tint: #1c2a24;
+      --amber: #d9a25a;
+      --amber-tint: #2a2116;
+      --code-bg: #1c231e;
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
+    line-height: 1.55;
+  }
+  ::selection { background: var(--accent-tint); color: var(--accent-strong); }
+
+  .wrap {
+    max-width: 920px;
+    margin: 0 auto;
+    padding: 4.5rem 1.75rem 6rem;
+  }
+
+  header.masthead {
+    border-bottom: 3px double var(--line);
+    padding-bottom: 1.75rem;
+    margin-bottom: 2.25rem;
+  }
+  .eyebrow {
+    font-family: "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    font-weight: 600;
+    margin: 0 0 0.9rem;
+  }
+  h1 {
+    font-size: clamp(1.9rem, 4vw, 2.6rem);
+    line-height: 1.15;
+    margin: 0 0 0.6rem;
+    text-wrap: balance;
+    letter-spacing: -0.01em;
+  }
+  .dek {
+    font-size: 1.05rem;
+    color: var(--muted);
+    max-width: 62ch;
+    margin: 0 0 1rem;
+  }
+  .meta {
+    font-family: "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+    font-size: 0.82rem;
+    color: var(--faint);
+  }
+  .meta a { color: var(--faint); }
+
+  /* status ledger */
+  .ledger {
+    margin: 2.25rem 0 2.75rem;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    background: var(--card);
+    box-shadow: var(--shadow);
+    overflow-x: auto;
+  }
+  .ledger table { border-collapse: collapse; width: 100%; min-width: 640px; }
+  .ledger caption {
+    text-align: left;
+    font-family: "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 0.85rem 1rem 0.6rem;
+    border-bottom: 1px solid var(--line);
+  }
+  .ledger td {
+    padding: 0.9rem 1rem;
+    border-right: 1px solid var(--line);
+    vertical-align: top;
+  }
+  .ledger td:last-child { border-right: none; }
+  .ledger .fig {
+    font-family: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    font-variant-numeric: tabular-nums;
+    font-size: 1.35rem;
+    color: var(--accent-strong);
+    display: block;
+    margin-bottom: 0.2rem;
+  }
+  .ledger .cap {
+    font-family: "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+
+  p.lede {
+    font-size: 1rem;
+    max-width: 68ch;
+  }
+  p.lede + p.lede { margin-top: -0.6rem; }
+
+  a { color: var(--accent-strong); text-decoration-color: var(--line); text-underline-offset: 2px; }
+  a:hover { text-decoration-color: var(--accent); }
+  a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  code, .path {
+    font-family: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    font-size: 0.82em;
+    background: var(--code-bg);
+    padding: 0.08em 0.4em;
+    border-radius: 3px;
+    color: var(--muted);
+  }
+
+  section.group { margin-top: 3rem; }
+  .group-head {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 0.5rem;
+    margin-bottom: 1.1rem;
+  }
+  .group-head h2 {
+    font-size: 1.25rem;
+    margin: 0;
+    letter-spacing: -0.005em;
+  }
+  .group-head .tag {
+    font-family: "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--faint);
+    white-space: nowrap;
+  }
+  .group-note {
+    font-family: "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+    font-size: 0.88rem;
+    color: var(--muted);
+    max-width: 66ch;
+    margin: -0.4rem 0 1.1rem;
+  }
+
+  .cards { display: grid; gap: 0.65rem; }
+  .card {
+    display: block;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    padding: 0.85rem 1.05rem;
+    box-shadow: var(--shadow);
+    transition: border-color 120ms ease, transform 120ms ease;
+  }
+  .card:hover { border-color: var(--accent); }
+  a.card { text-decoration: none; color: inherit; }
+  a.card:hover { transform: translateX(2px); }
+  .card-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .card-title {
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--ink);
+  }
+  .card-title .ext {
+    font-family: "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+    font-size: 0.7rem;
+    color: var(--accent);
+    margin-left: 0.4rem;
+  }
+  .card-desc {
+    font-family: "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+    font-size: 0.86rem;
+    color: var(--muted);
+    margin-top: 0.15rem;
+  }
+
+  /* subline pair rows */
+  .subline {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    box-shadow: var(--shadow);
+    padding: 0.85rem 1.05rem 0.95rem;
+  }
+  .subline-head {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.5rem;
+  }
+  .subline-name { font-weight: 600; font-size: 1rem; }
+  .subline-code {
+    font-family: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    font-size: 0.74rem;
+    color: var(--amber);
+    background: var(--amber-tint);
+    padding: 0.05em 0.45em;
+    border-radius: 3px;
+  }
+  .subline-links {
+    display: flex;
+    gap: 1.1rem;
+    flex-wrap: wrap;
+    font-family: "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+    font-size: 0.86rem;
+  }
+  .subline-links a { white-space: nowrap; }
+  .subline-links .via {
+    color: var(--faint);
+    font-size: 0.78rem;
+  }
+
+  .cf-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.1rem;
+    font-family: "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+    font-size: 0.88rem;
+  }
+  .cf-strip a { white-space: nowrap; }
+
+  .gate-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .gate-list a {
+    font-family: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    font-size: 0.78rem;
+    text-decoration: none;
+    color: var(--muted);
+    background: var(--code-bg);
+    border: 1px solid var(--line);
+    padding: 0.3rem 0.55rem;
+    border-radius: 3px;
+  }
+  .gate-list a:hover { color: var(--accent-strong); border-color: var(--accent); }
+
+  footer {
+    margin-top: 4rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--line);
+    font-family: "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+    font-size: 0.8rem;
+    color: var(--faint);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+  footer a { color: var(--faint); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <p class="eyebrow">General Liability Rating Engine · Build Wrap-Up</p>
+    <h1>Where the rating documentation stands</h1>
+    <p class="dek">
+      A reading guide, not a new report: the plain-language PRD, the technical build plan, the
+      open-item register, and — new this pass — a full documentation layer for seven GL sublines,
+      ported from the same pattern already proven on Commercial Fire.
+    </p>
+    <p class="meta">
+      Repo: <a href="https://github.com/Federato/recursive_harness/" target="_blank" rel="noopener">github.com/Federato/recursive_harness</a>
+      · Branch: <code>stage2-interpreter</code>
+      · Links below open on GitHub — they resolve once this branch is pushed
+    </p>
+  </header>
+
+  <div class="ledger">
+    <table>
+      <caption>Engine status, per the PRD's own §0 — last updated 2026-08-13, addended 2026-08-18</caption>
+      <tr>
+        <td><span class="fig">6 / 6</span><span class="cap">build stages complete</span></td>
+        <td><span class="fig">51</span><span class="cap">jurisdictions compared against ISO's live service</span></td>
+        <td><span class="fig">184 / 184</span><span class="cap">comparable outcomes agree</span></td>
+        <td><span class="fig">7</span><span class="cap">GL sublines newly documented this pass</span></td>
+        <td><span class="fig">18</span><span class="cap">rate/premium chains now diagrammed</span></td>
+      </tr>
+    </table>
+  </div>
+
+  <p class="lede">
+    This page is an index, not a status report — the status lives in the PRD and stays there.
+    What follows is grouped the way you'd actually want to walk into it: planning documents first,
+    then hand-off notes, then the visual chain diagrams, then the new per-subline documentation
+    itself, then the Commercial Fire material it was patterned on, then the underlying gate docs
+    that are the actual source of truth.
+  </p>
+
+  <!-- CORE PLANNING -->
+  <section class="group">
+    <div class="group-head">
+      <h2>Core planning</h2>
+      <span class="tag">Start here</span>
+    </div>
+    <div class="cards">
+      <a class="card" href="https://github.com/Federato/recursive_harness/blob/stage2-interpreter/docs/PRD-GL-RATING-ENGINE.md" target="_blank" rel="noopener">
+        <div class="card-row">
+          <span class="card-title">PRD — Product Requirements &amp; Progress<span class="ext">↗</span></span>
+          <span class="path">docs/PRD-GL-RATING-ENGINE.md</span>
+        </div>
+        <div class="card-desc">The plain-language document. What's being built, why it's hard, every step taken, §0 is always the latest summary.</div>
+      </a>
+      <a class="card" href="https://github.com/Federato/recursive_harness/blob/stage2-interpreter/docs/GL-RATING-ENGINE-BUILD-PLAN.md" target="_blank" rel="noopener">
+        <div class="card-row">
+          <span class="card-title">Build plan — architecture &amp; non-negotiables<span class="ext">↗</span></span>
+          <span class="path">docs/GL-RATING-ENGINE-BUILD-PLAN.md</span>
+        </div>
+        <div class="card-desc">The technical plan: architecture, the 18 non-negotiables, deviation constraints C1–C3.</div>
+      </a>
+      <a class="card" href="https://github.com/Federato/recursive_harness/blob/stage2-interpreter/docs/OPEN-ITEMS.md" target="_blank" rel="noopener">
+        <div class="card-row">
+          <span class="card-title">Open items — OI-1 through OI-94<span class="ext">↗</span></span>
+          <span class="path">docs/OPEN-ITEMS.md</span>
+        </div>
+        <div class="card-desc">The item register. Resolved items are kept and marked, never deleted.</div>
+      </a>
+      <a class="card" href="https://github.com/Federato/recursive_harness/blob/stage2-interpreter/README.md" target="_blank" rel="noopener">
+        <div class="card-row">
+          <span class="card-title">README — repo entry point<span class="ext">↗</span></span>
+          <span class="path">README.md</span>
+        </div>
+        <div class="card-desc">The full reading map, everything below and beyond this page.</div>
+      </a>
+    </div>
+  </section>
+
+  <!-- HAND-OFF -->
+  <section class="group">
+    <div class="group-head">
+      <h2>Picking this up</h2>
+      <span class="tag">Hand-off</span>
+    </div>
+    <div class="cards">
+      <a class="card" href="https://github.com/Federato/recursive_harness/blob/stage2-interpreter/docs/START-HERE-TOMORROW.md" target="_blank" rel="noopener">
+        <div class="card-row">
+          <span class="card-title">Start here tomorrow<span class="ext">↗</span></span>
+          <span class="path">docs/START-HERE-TOMORROW.md</span>
+        </div>
+        <div class="card-desc">What to do next, what's waiting on a person, the backlog as it stands.</div>
+      </a>
+      <a class="card" href="https://github.com/Federato/recursive_harness/blob/stage2-interpreter/docs/WHAT-I-NEED-FROM-YOU.md" target="_blank" rel="noopener">
+        <div class="card-row">
+          <span class="card-title">What I need from you<span class="ext">↗</span></span>
+          <span class="path">docs/WHAT-I-NEED-FROM-YOU.md</span>
+        </div>
+        <div class="card-desc">The asks — what only a person can supply, what each unblocks.</div>
+      </a>
+      <a class="card" href="https://github.com/Federato/recursive_harness/blob/stage2-interpreter/BUILD-LOG.md" target="_blank" rel="noopener">
+        <div class="card-row">
+          <span class="card-title">Build log — the diary, kept as-is<span class="ext">↗</span></span>
+          <span class="path">BUILD-LOG.md</span>
+        </div>
+        <div class="card-desc">What was built, what broke, what the fix revealed. Not edited by this pass — its lessons stand as written.</div>
+      </a>
+    </div>
+  </section>
+
+  <!-- VISUAL REFERENCES -->
+  <section class="group">
+    <div class="group-head">
+      <h2>Rate &amp; premium chains, diagrammed</h2>
+      <span class="tag">Visual</span>
+    </div>
+    <p class="group-note">Self-contained HTML — GitHub shows these as source, not rendered. Download raw and open locally, or view the local copies linked below.</p>
+    <div class="cards">
+      <a class="card" href="https://github.com/Federato/recursive_harness/blob/stage2-interpreter/GL_Algorithm/gl-rating-chains.html" target="_blank" rel="noopener">
+        <div class="card-row">
+          <span class="card-title">GL rating chains — 18 flowcharts, 7 sublines<span class="ext">↗</span></span>
+          <span class="path">GL_Algorithm/gl-rating-chains.html</span>
+        </div>
+        <div class="card-desc">Every rate build-up and premium decision as a mermaid flowchart, gate/step/final/zero/open-question coded.</div>
+      </a>
+      <a class="card" href="https://github.com/Federato/recursive_harness/blob/stage2-interpreter/CF_Algorithm/cf-rating-chains.html" target="_blank" rel="noopener">
+        <div class="card-row">
+          <span class="card-title">CF rating chains — the pattern this was ported from<span class="ext">↗</span></span>
+          <span class="path">CF_Algorithm/cf-rating-chains.html</span>
+        </div>
+        <div class="card-desc">Commercial Fire's original chain visualization, five cause-of-loss coverages.</div>
+      </a>
+      <a class="card" href="https://github.com/Federato/recursive_harness/blob/stage2-interpreter/docs/GL-RATING-ENGINE-DOCS.html" target="_blank" rel="noopener">
+        <div class="card-row">
+          <span class="card-title">Every technical &amp; gate doc, one page<span class="ext">↗</span></span>
+          <span class="path">docs/GL-RATING-ENGINE-DOCS.html</span>
+        </div>
+        <div class="card-desc">24 tabs — the full technical corpus in one self-contained file.</div>
+      </a>
+    </div>
+  </section>
+
+  <!-- GL SUBLINE DOCS -->
+  <section class="group">
+    <div class="group-head">
+      <h2>GL subline documentation</h2>
+      <span class="tag">New this pass</span>
+    </div>
+    <p class="group-note">
+      Reformatted from <code>docs/gates/GATE-*.md</code> into rate-build-up + ERC-table-inventory
+      pairs, matching Commercial Fire's documentation shape. Every fact traces to the gate doc or
+      is flagged as an open question — nothing here is a fresh re-derivation.
+    </p>
+    <div class="cards">
+
+      <div class="subline">
+        <div class="subline-head">
+          <span class="subline-name">Premises / Operations</span>
+          <span class="subline-code">ISO 334</span>
+        </div>
+        <div class="subline-links">
+          <a href="https://github.com/Federato/recursive_harness/blob/stage2-interpreter/GL_Algorithm/PremisesOperations_RatingAlgorithms.md" target="_blank" rel="noopener">Rating algorithms ↗</a>
+          <a href="https://github.com/Federato/recursive_harness/blob/stage2-interpreter/GL_Algorithm/PremisesOperations_ERC_Tables.md" target="_blank" rel="noopener">ERC tables ↗</a>
+          <span class="via">via GATE-334</span>
+        </div>
+      </div>
+
+      <div class="subline">
+        <div class="subline-head">
+          <span class="subline-name">Products / Completed Operations</span>
+          <span class="subline-code">ISO 336</span>
+        </div>
+        <div class="subline-links">
+          <a href="https://github.com/Federato/recursive_harness/blob/stage2-interpreter/GL_Algorithm/ProductsCompletedOperations_RatingAlgorithms.md" target="_blank" rel="noopener">Rating algorithms ↗</a>
+          <a href="https://github.com/Federato/recursive_harness/blob/stage2-interpreter/GL_Algorithm/ProductsCompletedOperations_ERC_Tables.md" target="_blank" rel="noopener">ERC tables ↗</a>
+          <span class="via">via GATE-336</span>
+        </div>
+      </div>
+
+      <div class="subline">
+        <div class="subline-head">
+          <span class="subline-name">Owners &amp; Contractors Protective</span>
+          <span class="subline-code">ISO 335</span>
+        </div>
+        <div class="subline-links">
+          <a href="https://github.com/Federato/recursive_harness/blob/stage2-interpreter/GL_Algorithm/OwnersContractorsProtective_RatingAlgorithms.md" target="_blank" rel="noopener">Rating algorithms ↗</a>
+          <a href="https://github.com/Federato/recursive_harness/blob/stage2-interpreter/GL_Algorithm/OwnersContractorsProtective_ERC_Tables.md" target="_blank" rel="noopener">ERC tables ↗</a>
+          <span class="via">via GATE-335-OWNERS-CONTRACTORS-PROTECTIVE</span>
+        </div>
+      </div>
+
+      <div class="subline">
+        <div class="subline-head">
+          <span class="subline-name">Liquor Liability</span>
+          <span class="subline-code">ISO 332</span>
+        </div>
+        <div class="subline-links">
+          <a href="https://github.com/Federato/recursive_harness/blob/stage2-interpreter/GL_Algorithm/LiquorLiability_RatingAlgorithms.md" target="_blank" rel="noopener">Rating algorithms ↗</a>
+          <a href="https://github.com/Federato/recursive_harness/blob/stage2-interpreter/GL_Algorithm/LiquorLiability_ERC_Tables.md" target="_blank" rel="noopener">ERC tables ↗</a>
+          <span class="via">via GATE-332</span>
+        </div>
+      </div>
+
+      <div class="subline">
+        <div class="subline-head">
+          <span class="subline-name">Railroad Protective</span>
+          <span class="subline-code">ISO 335</span>
+        </div>
+        <div class="subline-links">
+          <a href="https://github.com/Federato/recursive_harness/blob/stage2-interpreter/GL_Algorithm/RailroadProtective_RatingAlgorithms.md" target="_blank" rel="noopener">Rating algorithms ↗</a>
+          <a href="https://github.com/Federato/recursive_harness/blob/stage2-interpreter/GL_Algorithm/RailroadProtective_ERC_Tables.md" target="_blank" rel="noopener">ERC tables ↗</a>
+          <span class="via">via GATE-335-RAILROAD-PROTECTIVE</span>
+        </div>
+      </div>
+
+      <div class="subline">
+        <div class="subline-head">
+          <span class="subline-name">Product Withdrawal / LOED / Cyber</span>
+          <span class="subline-code">ISO 365</span>
+        </div>
+        <div class="subline-links">
+          <a href="https://github.com/Federato/recursive_harness/blob/stage2-interpreter/GL_Algorithm/ProductWithdrawalCyber_RatingAlgorithms.md" target="_blank" rel="noopener">Rating algorithms ↗</a>
+          <a href="https://github.com/Federato/recursive_harness/blob/stage2-interpreter/GL_Algorithm/ProductWithdrawalCyber_ERC_Tables.md" target="_blank" rel="noopener">ERC tables ↗</a>
+          <span class="via">via GATE-365</span>
+        </div>
+      </div>
+
+      <div class="subline">
+        <div class="subline-head">
+          <span class="subline-name">Unmanned Aircraft</span>
+          <span class="subline-code">ISO 370</span>
+        </div>
+        <div class="subline-links">
+          <a href="https://github.com/Federato/recursive_harness/blob/stage2-interpreter/GL_Algorithm/UnmannedAircraft_RatingAlgorithms.md" target="_blank" rel="noopener">Rating algorithms ↗</a>
+          <a href="https://github.com/Federato/recursive_harness/blob/stage2-interpreter/GL_Algorithm/UnmannedAircraft_ERC_Tables.md" target="_blank" rel="noopener">ERC tables ↗</a>
+          <span class="via">via GATE-370</span>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- CF TEMPLATE -->
+  <section class="group">
+    <div class="group-head">
+      <h2>Commercial Fire — the pattern this was ported from</h2>
+      <span class="tag">Reference</span>
+    </div>
+    <div class="cards">
+      <div class="subline">
+        <div class="cf-strip">
+          <a href="https://github.com/Federato/recursive_harness/blob/stage2-interpreter/CF_Algorithm/CauseOfLoss_Building_RatingAlgorithms.md" target="_blank" rel="noopener">Building ↗</a>
+          <a href="https://github.com/Federato/recursive_harness/blob/stage2-interpreter/CF_Algorithm/CauseOfLoss_BusinessIncome_RatingAlgorithms.md" target="_blank" rel="noopener">Business Income ↗</a>
+          <a href="https://github.com/Federato/recursive_harness/blob/stage2-interpreter/CF_Algorithm/CauseOfLoss_PersonalProperty_RatingAlgorithms.md" target="_blank" rel="noopener">Personal Property ↗</a>
+          <a href="https://github.com/Federato/recursive_harness/blob/stage2-interpreter/CF_Algorithm/CauseOfLoss_SpecialClass_RatingAlgorithms.md" target="_blank" rel="noopener">Special Class ↗</a>
+          <a href="https://github.com/Federato/recursive_harness/blob/stage2-interpreter/CF_Algorithm/CauseOfLoss_SpecialClassBusinessIncome_RatingAlgorithms.md" target="_blank" rel="noopener">Special Class Business Income ↗</a>
+          <a href="https://github.com/Federato/recursive_harness/blob/stage2-interpreter/CF_Algorithm/Coverage_Inventory_And_Tracking.md" target="_blank" rel="noopener">Coverage inventory ↗</a>
+          <a href="https://github.com/Federato/recursive_harness/blob/stage2-interpreter/CF_Algorithm/Circular_Review_Tracking.md" target="_blank" rel="noopener">Circular review tracking ↗</a>
+          <a href="https://github.com/Federato/recursive_harness/blob/stage2-interpreter/CF_Algorithm/AGENTS.md" target="_blank" rel="noopener">Extraction methodology ↗</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GATE DOCS -->
+  <section class="group">
+    <div class="group-head">
+      <h2>Underlying gate docs</h2>
+      <span class="tag">Source of truth</span>
+    </div>
+    <p class="group-note">The seven GL sublines above are ports of these — if the two ever disagree, the gate doc wins.</p>
+    <div class="gate-list">
+      <a href="https://github.com/Federato/recursive_harness/blob/stage2-interpreter/docs/gates/GATE-334-PREMISES-OPERATIONS.md" target="_blank" rel="noopener">GATE-334-PREMISES-OPERATIONS.md</a>
+      <a href="https://github.com/Federato/recursive_harness/blob/stage2-interpreter/docs/gates/GATE-336-PRODUCTS-COMPLETED-OPERATIONS.md" target="_blank" rel="noopener">GATE-336-PRODUCTS-COMPLETED-OPERATIONS.md</a>
+      <a href="https://github.com/Federato/recursive_harness/blob/stage2-interpreter/docs/gates/GATE-335-OWNERS-CONTRACTORS-PROTECTIVE.md" target="_blank" rel="noopener">GATE-335-OWNERS-CONTRACTORS-PROTECTIVE.md</a>
+      <a href="https://github.com/Federato/recursive_harness/blob/stage2-interpreter/docs/gates/GATE-332-LIQUOR-LIABILITY.md" target="_blank" rel="noopener">GATE-332-LIQUOR-LIABILITY.md</a>
+      <a href="https://github.com/Federato/recursive_harness/blob/stage2-interpreter/docs/gates/GATE-335-RAILROAD-PROTECTIVE.md" target="_blank" rel="noopener">GATE-335-RAILROAD-PROTECTIVE.md</a>
+      <a href="https://github.com/Federato/recursive_harness/blob/stage2-interpreter/docs/gates/GATE-365-WITHDRAWAL-LOED-CYBER.md" target="_blank" rel="noopener">GATE-365-WITHDRAWAL-LOED-CYBER.md</a>
+      <a href="https://github.com/Federato/recursive_harness/blob/stage2-interpreter/docs/gates/GATE-370-UNMANNED-AIRCRAFT.md" target="_blank" rel="noopener">GATE-370-UNMANNED-AIRCRAFT.md</a>
+    </div>
+  </section>
+
+  <footer>
+    <span>Index page — no claims of its own. Every fact lives in the document it links to.</span>
+    <span><a href="https://github.com/Federato/recursive_harness/" target="_blank" rel="noopener">github.com/Federato/recursive_harness</a></span>
+  </footer>
+
+</div>
+</body>
+</html>

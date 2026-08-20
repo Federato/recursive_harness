@@ -448,7 +448,17 @@ def _defects() -> tuple:
 
 
 def dispatch(method: str, path: str, query: dict, body):
-    """Handle a tester route, or return None so the caller keeps looking."""
+    """Handle a tester route, or return None so the caller keeps looking.
+
+    The layered test page is tried first. It is a separate module with separate
+    routes and it shares nothing with the tier runner below except the run
+    store -- mounting it here rather than in `app.py` keeps that file's mount at
+    four lines, which was the point of the boundary.
+    """
+    from . import tests_page
+    out = tests_page.dispatch(method, path, query, body)
+    if out is not None:
+        return out
     if path == "/tester" and method == "GET":
         return 200, PAGE, "html"
     if not path.startswith("/api/tester"):
@@ -566,7 +576,7 @@ cursor:pointer;background:#fff;display:block}
 <header>
   <h1>Variable tester</h1>
   <span class="sub" id="sub">loading ISO's declared options...</span>
-  <nav><a href="/">Rate one submission</a><a href="/tester" class="on">Variable tester</a></nav>
+  <nav><a href="/">Rate one submission</a><a href="/tester" class="on">Variable tester</a><a href="/tests">Layered tests</a><a href="/runs/index.html" target="_blank">Run files</a></nav>
 </header>
 <main>
  <div>

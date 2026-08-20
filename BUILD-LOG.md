@@ -2992,7 +2992,7 @@ output is on the housekeeping list, and the second stale-cache problem found in 
 
 ---
 
-## Entry 28 — Phase 5 passes 3 and 4. The review refuted the fix I had written that morning. **NEXT SESSION STARTS HERE.**
+## Entry 28 — Phase 5 passes 3 and 4. The review refuted the fix I had written that morning. ~~NEXT SESSION STARTS HERE.~~ *(the live handoff is **Entry 29**)*
 
 - **Date:** 2026-08-17
 - **Directed:** *"work in order"* — pass 3, then pass 4
@@ -3107,3 +3107,527 @@ a question either corpus settles. It needs a person.**
    with multi-class in the pairwise set.
 5. **Still owed:** a loss cost multiplier (B1); **telling ISO about the programme before the week's
    calls start** (C1).
+
+---
+
+## Entry 29 — A layered test programme, and a page to run it from. ~~NEXT SESSION STARTS HERE.~~ *(the live handoff is **Entry 30**)*
+
+- **Date:** 2026-08-18
+- **Directed:** a back-and-forth on UI strategy — *"a separate, new page for kicking off and tracking
+  results"*, starting from the order of test cases; then *"make the changes"*.
+- **Built:** `scripts/layers.py`, `ui/tests_page.py`, `ui/runfile.py`, a real aggregate-limit control,
+  and 30 offline checks over the lot.
+- **Verified:** `tests/verify_layers.py` **30/30**. Every other suite green, `verify_tester` included
+  — the QA tab was not touched.
+
+The whole design is written up in [`docs/UI-STRATEGY.md`](docs/UI-STRATEGY.md). What follows is what
+the build taught, which is not the same thing.
+
+### 1. The aggregate limit was never an axis, and half the ILF key was untested
+
+`_apply_occurrence_limit` set the occurrence limit and then **derived** both aggregates, taking the
+first value ISO declared legal with it. Every limit test ever run therefore varied one half of a
+two-part key and left the other on whatever came first in a table.
+
+ILF keying is one of the two top-ranked failure modes in the backlog. It has been half-tested the
+whole time, and nothing said so — the runs all passed, because passing was never the question.
+
+`general_aggregate` is now a control of its own, keyed on the occurrence limit, setting both
+aggregates and refusing a pair ISO does not declare. The old derivation still runs when the aggregate
+is left alone, and **stands aside when it is set** rather than writing a value that would be
+overwritten — a `pick` recorded for a value that never reached the payload would have shown up in
+`probe_no_op` as a choice site nobody chose.
+
+### 2. You cannot name an aggregate as a figure and run it in 51 states
+
+The obvious plan was *"1,000,000 occurrence against 2,000,000 aggregate"*. Measuring killed it: the
+legal aggregate set is keyed on the occurrence limit **and differs by state** — four legal values at
+25,000 in Texas, eight at 1,000,000. A figure legal in one state is undeliverable in another, and a
+run that reported `NOT APPLICABLE` for half the country would have said nothing about limits.
+
+So the plan carries **positions** — `@lowest`, `@middle`, `@highest` — and `sweep.run_config` gained a
+`resolve` hook that turns a position into that state's declared value before the payload is built.
+
+**Each row records the figure it actually got.** A run that stores the request and not the answer
+cannot be read back a week later, and *"the highest aggregate"* is a different number in every state.
+
+### 3. Three measurements changed the design mid-conversation
+
+Each of these was decided one way, measured, and then decided differently.
+
+- **The basis split is a guard, not a routine event.** We agreed a class filed on different premium
+  bases in different states must be split into separate sweeps and never compared across them. Then
+  we counted: **1,188 class codes declared in each of TX, CA, NY, FL, OK and MT; 1,187 common to all
+  six; the basis differed for exactly one, and that one was simply undeclared in a state.** The rule
+  is right and will almost never fire. It stays, because when it fires it matters.
+- **ISO files no class families.** Codes cluster by leading digit, but the data declares only codes,
+  descriptions and bases. A family picker would have been our taxonomy dressed as ISO's — so the
+  picker filters by **basis**, which is declared. (RULE #1 again: read the declaration.)
+- **There are 59 premium bases and most are counts.** *Number of Zoos*, *Each Pier*, *Number of
+  Drawbridges*, *Passenger Days* — no divisor at all. One default exposure figure across that set is
+  meaningless, which is the whole argument for choosing the basis before the class rather than after.
+
+### 4. The budget stopped deciding and started reporting
+
+Decision A6's gate refused a tier that went over 60 calls a day. That was right for one-day tiers and
+wrong for this: a layer-3 run at the full matrix is about 600 calls, and a gate set for the old shape
+would refuse most useful runs of the new one.
+
+So the layered programme **shows a ticker and runs what you asked for**, with an allowance set per
+run. The tier runner keeps its gate, because leaving the QA tab alone was the point. **Both read the
+same count**, which moved into `runstore.spent_today` — two counts of the same number drift, and the
+one on screen becomes the one nobody trusts.
+
+### 5. What an allowance is allowed to cut
+
+When the matrix does not fit the allowance, **the configuration list is thinned and the state list
+never is.** Every state appears in every run, so two runs stay comparable and no coverage figure is
+quietly built on a smaller country.
+
+The thinning keeps **the ends and an even spread between them**, because the ends of a filed table are
+where a keying error shows; a thinning that kept the middle would drop exactly the rows worth having.
+**What it dropped is written into the run file**, because two runs of the same layer at different
+allowances are different matrices, and one that does not say so invites a comparison that is not
+valid.
+
+### 6. A stopped run is not a failed run
+
+Pause holds between states; stop ends after the current one. Either way the run is **stored as a
+partial that names the scenarios and states it never reached** (`stopped_early`, `not_reached`), and
+the run file says so at the top.
+
+The alternative — discarding a run because it did not finish — throws away two hundred calls' worth of
+answers to punish a change of mind about the last hundred.
+
+The same principle covers the offline pre-flight: a state whose payload cannot be built never reaches
+ISO, and it is carried into the result as `preflight_excluded` rather than dropped. **A run that shows
+only what it called reports coverage it never had.**
+
+### 7. `compare_payload` had been keeping three differences out of eleven
+
+It computed every differing field and returned `first_differences` — the first three, joined into a
+string for a terminal that has a width. Fine for a console line, useless for a page you review. It now
+returns the whole list, and the console still prints three.
+
+### 8. What is on the page
+
+`/tests`, beside the QA tab, both writing to the same store. Layer picker · basis-first class picker
+with a filter · exposure labelled with its own unit · allowance · ticker · plan-before-you-run ·
+progress with pause, resume and stop · and every finished run listed as a standalone HTML file.
+
+Each run writes `results/runs/<layer>-<class>-<stamp>.html`: headline counts, what actually ran
+(groups, not-filed, thinning, early stop), then every state sorted by size of difference and
+expanding to the fields that differ. **Git-ignored, and `.gitignore` now says why** — a run file is a
+rendering of ISO's licensed premiums.
+
+### 9. The test count, and the inconsistency it exposed
+
+The allowance section shows **how many tests the run would be** before you press anything — *"204
+tests · 4 configurations × 51 jurisdictions · 200 against ISO"*, updating as you type. It is local
+arithmetic from the layer's configuration count and the jurisdiction list, so it costs nothing and
+never lags; it says **about** N against ISO because it assumes the class is filed everywhere.
+**`Plan it` reads the declaration in all 51 and replaces the estimate with the counted figure**,
+which is smaller wherever ISO does not file the class.
+
+Writing it surfaced a real disagreement. The page said an allowance cuts nothing offline; the server
+thinned anyway. **An allowance is denominated in live calls and an offline run spends none**, so
+thinning one gives up coverage to save something it was never going to spend. `plan()` now takes
+`offline`, and the page, the HTTP route and the CLI all pass it — B7 and B8 assert it.
+
+A counter is a cheap thing to add and it made two implementations of the same rule state their
+answer side by side. That is worth remembering the next time a number is only visible after a
+button.
+
+### ▶ Next session
+
+1. **Run L2 live on one class.** 50 calls, one class, and the first real use of the whole thing.
+   `--offline` first, always.
+2. **L5 and L6** — the deductible amount ladder and combined-versus-separate — are designed in
+   §1 of the strategy document and not built.
+3. **Pass 2 — is a refusal correct?** Still the last of the four, and still the only way to settle the
+   half of OI-94 that reads `CANNOT TELL`.
+4. **The index over run files** lists everything newest-first but cannot filter to one class yet.
+5. **Still owed:** a loss cost multiplier (B1); telling ISO about the programme before the week's
+   calls start (C1); OI-95 needs a decision, not a fix.
+
+---
+
+## Entry 30 — The matrix got a hover panel and a click filter; one check hadn't caught up. ~~NEXT SESSION STARTS HERE.~~ *(the live handoff is **Entry 33**)*
+
+- **Date:** 2026-08-18
+- **Directed:** pick up the live browser verification of the interactive run-page matrix that Entry 29
+  left mid-check, then document it.
+- **Found:** `tests/verify_layers.py` **E3** failing — 29/30. The matrix grid gained a hover panel
+  (status, our premium, ISO's, delta, resolved values) and a click-to-filter into the state table,
+  built as one inline `<script>` block reading the run's own embedded data. E3 had been written before
+  that existed and banned any `<script>` tag outright, on the theory that a run file loads nothing.
+- **Fixed:** the theory was still right, the check was just testing the wrong thing. An inline script
+  with no `src`, no `fetch`, no `XMLHttpRequest` loads nothing from the network regardless of whether
+  a `<script>` tag is present. E3 now checks for those specifically instead of banning the tag.
+  30/30. `verify_tester` (63/63) and `verify_phase2` (14/14, 1 skipped — needs `--live`) both still
+  green, confirming nothing else moved.
+- **Documented:** `docs/UI-STRATEGY.md` §4 gained a subsection on the matrix — what hovering and
+  clicking a cell do, and why it is still a self-contained file.
+
+### ▶ Next session
+
+Entry 29's list still stands: run L2 live on one class, then L5/L6, then the TX refused-payload call
+that settles OI-94. The `docs/run-page-*.html` files in the working tree are exploratory prototypes
+for the matrix design, now superseded by the real thing in `ui/runfile.py` — worth a decision on
+whether to delete them or keep them as reference before they get committed by accident.
+
+---
+
+## Entry 31 — The harness gets its own notebook set. Seven files, one per, and a second index. ~~NEXT SESSION STARTS HERE.~~ *(the live handoff is **Entry 33**)*
+
+- **Date:** 2026-08-18
+- **Directed:** *"start the harness notebook set"* — the second of START-HERE-TOMORROW's two
+  named things, settled in favour of **a second set** (the doc's own recommendation) rather than
+  folding harness code into the twenty engine notebooks or covering only the QA pair.
+- **Built:** `notebooks/harness/`, seven notebooks — `01-variants`, `02-qa`, `03-qa_review`,
+  `04-sweep`, `05-runstore`, `06-charts` (`ui/charts.py`, not `scripts/`), `07-layers` — plus its own
+  `00-index.ipynb`. Same six-cell shape as the engine set, generated public surface included.
+  `notebooks/00-index.ipynb` and `notebooks/README.md` both gained a pointer to it.
+- **Verified:** `tests/verify_notebooks.py` **28/28** (20 engine + 8 harness).
+
+### What building it turned up
+
+**`verify_notebooks.py` assumed one flat directory.** It globbed `NOTEBOOKS/*.ipynb` and chdir'd to
+that one directory for every notebook, which is exactly wrong for a subdirectory: a harness notebook
+run from `notebooks/` (not `notebooks/harness/`) would resolve `Path.cwd().parent` one level short
+of the repo root. Fixed by chdir'ing to **each notebook's own parent** instead of a constant —
+which is also just a more honest match for what actually happens when a person opens the file
+directly in Jupyter Lab, cwd = the file's own directory. Switching `glob` to `rglob` to find the
+subdirectory surfaced a second thing: **`.ipynb_checkpoints/` was never excluded, because a flat
+glob never walked into it.** Jupyter's autosave copies started failing the moment they were
+discovered, for the same off-by-one-directory reason. Excluded explicitly; they were always
+gitignored, never meant to be run.
+
+**Two notebooks would have written into the real results store on every run, and didn't get to.**
+`H5 runstore.py` and `H7 layers.py` both demonstrate functions that append a run. A notebook that
+appends a demo run to `results/runs-*.jsonl` every time someone opens it corrupts the exact thing
+the append-only store exists to keep honest — the append count would include a run that rated
+nothing real. Both point `runstore.RESULTS` at a temporary directory before calling `append()` or
+`run()`, and restore it after; verified by hand that the real store's run count is unchanged before
+and after executing every cell.
+
+**The order confirmed something Entry 29 only asserted in prose.** Writing `H7`'s thinning cell
+against a live `plan()` call reproduced the exact claim from Entry 29 §5 — an allowance of 6 against
+L3's 12 configurations keeps the lowest and highest occurrence limit and drops the ten in between,
+never touching the state list. Nice to have that as a runnable cell rather than a described one.
+
+### ▶ Next session
+
+Same as Entry 30's: L2 live on one class, then L5/L6, then the TX refused-payload call for OI-94.
+Nothing about the notebook build changes that list — it documents work already done, it doesn't
+open new work.
+
+---
+
+## Entry 32 — The `/tests` page gets an aggregate: a table, a verdict per layer, a trend, and the
+## charts already built for the QA tab finally get used somewhere else. ~~NEXT SESSION STARTS HERE.~~
+## *(the live handoff is **Entry 33**)*
+
+- **Date:** 2026-08-18
+- **Directed:** design conversation over several rounds — an aggregate view, a placement decision
+  (mockups compared, a separate card chosen over folding into Run files), a grid style decision
+  (mockups compared, the ruled/boxed style chosen over zebra rows and a borderless style), then a
+  set of visualization options (mockups again — status dots, `status_bars`, `verdict`, `usa_map`,
+  `agreement_over_time`, all real `ui/charts.py` output, not hand-drawn approximations), and a final
+  composition: dots on the existing tables, one `verdict` card per layer instead of one combined
+  card, the trend chart, and `status_bars` + `usa_map` moved into the Result card. Then: *"let's
+  build, then log, and update all relevant docs."*
+- **Built:** `layers.stored_rollup()`, `layers.stored_history()`, `layers.run_map()`; a `charts`
+  import into `ui/tests_page.py`; an Aggregate card (status dots, click-to-filter, already built
+  last session); a Verdict-by-layer card (one `verdict()` chart per layer, 2-up grid); an Aggregate
+  trend card (`agreement_over_time()` across every stored layer scenario); `status_bars()` and
+  `usa_map()` wired into the Result card, scoped to the run that just finished.
+- **Verified:** `verify_layers.py` 30/30, `verify_tester.py` 63/63. Exercised live in the browser —
+  seeded real (offline) scenarios, watched the Aggregate table, four verdict cards and the trend
+  render from the real store, ran an actual offline scenario through the UI end to end and watched
+  the Result card's outcome bar and coverage map populate from that run's own rows.
+
+### The `/tests` page had never used a single chart from `ui/charts.py`
+
+All eight chart functions — `verdict`, `usa_map`, `status_bars`, `agreement_over_time`,
+`coverage_grid`, `response_curve`, `premium_spread`, `slot_bars` — were built for the QA tab
+(`ui/tester.py`) and none of them had ever been called from `tests_page.py`. Four of the eight are
+now in use on `/tests`; the pattern from `tester.py` carried over exactly — the server renders the
+SVG string and ships it in the JSON, the client does `el.innerHTML = svg`, nothing is drawn twice.
+
+### A run-file entry doesn't carry a `not_applicable` count, and the dot logic had to work around it
+
+The Aggregate table's dot is trivial: the store's per-layer totals already separate differ, refused
+and not-applicable, so the worst-first rule reads straight off them. The Run files table's dot is
+not, because `runfile.entries()` — the index a rendered run file writes to `results/runs/index.json`
+— only ever stored `rated`, `agree`, `differ` and a `refusing` list; nothing about not-applicable
+rows survived into the index. `histDot()` approximates: an offline run reads grey outright, a
+live run with any differ or refusal reads red, `agree === rated` reads blue, and everything else
+(live, no differ, not fully agreeing) is read as not-applicable softening an otherwise clean run.
+It is an approximation stated as one, not a silent guess dressed as data — worth widening
+`runfile.entries()`'s stored fields if the dot needs to be exact later.
+
+### The dot logic almost shipped a wrong default, and offline data caught it in the first screenshot
+
+The first version of `aggDot()` fell through to `'agree'` (blue) whenever nothing else matched —
+which is correct when a scenario actually agreed, and wrong when it was never compared at all.
+Every seeded scenario today was offline (no live ISO calls spent on a UI polish session), so every
+layer showed a confident blue dot for data that had agreed with nothing. Fixed by computing the same
+`uncompared = rated - agree - differ - not_applicable - refused` the verdict chart already computes,
+and reading a `rated`-but-`agree === 0` layer as grey, not blue. The empty store from Entry 30's
+clear-out is what made this visible immediately instead of after real data papered over it.
+
+### `status_bars` wants lists; a summed rollup only has counts
+
+`charts.status_bars` calls `len()` on `differ`, `premium_only`, `engine_stopped`, `not_applicable`
+and `errors` — it was written for a single scenario's summary, where those are lists of jurisdiction
+codes. `layers.rollup()` already reduces a whole run's scenarios to counts. `_bars_summary()` bridges
+the two with placeholder lists (`["x"] * n`) rather than widening `rollup()` to keep both shapes —
+`status_bars` never reads an element, only the length, so the placeholder is exact and nothing about
+`rollup()`'s existing callers had to change.
+
+### Every live server test ran with the store emptied first, and emptied again after
+
+Same discipline as Entry 30/31: nothing in this session's testing was allowed to land in the real
+`results/` store. Seeded scenarios were offline only — a live comparison costs a real ISO call, and
+spending one to check whether a chart renders is not what the budget is for. The store was reset to
+empty at the end, same as it was at the start of the day.
+
+### ▶ Next session
+
+Untouched by any of this: L2 live on one class, then L5/L6, then the TX refused-payload call for
+OI-94. Two small things worth a decision if the aggregate view gets used for real: whether
+`runfile.entries()` should carry a `not_applicable` count so `histDot()` stops approximating, and
+whether the trend chart should be filterable by layer the way Run files already is — flagged during
+design and deliberately left as a follow-on rather than built blind.
+
+---
+
+## Entry 33 — A run can be reviewed now: a mechanical pass for free, a brief for what it can't
+## explain, and a place to paste back what a person said. No API key anywhere in it.
+## **NEXT SESSION STARTS HERE.**
+
+- **Date:** 2026-08-18
+- **Directed:** a planning conversation, explicitly *not* a build request — "I want to be able to go
+  into an individual run and get analysis... without an API key. Otherwise, could we generate an md
+  file... and I share it here." Landed on the same split `qa_review.py`'s pass 4 already committed to
+  (the harness assembles evidence, a person dispatches it), applied per run, with the one piece pass
+  4 left open — where the answer lives — resolved as a second store keyed to the run file's name.
+  Wireframed first (`docs/run-review-wireframe.html`, five states), risks named before a line of code:
+  unverified pasted text read as fact, a stale analysis shown as current, an XSS surface in the
+  posted-text render, licensed content formatted for easy copy-paste. Then: *"let's build this, make
+  sure we are logging and updating docs along the way."*
+- **Built:** `scripts/reviews.py` (storage, pattern match, brief generation, dedup against prior
+  reviews) and `ui/review_page.py` (`/review/<run-file>`, four API routes), mounted ahead of
+  `tests_page`'s own routes the same way `tests_page` is mounted ahead of `tester`'s. `runfile.py`
+  gained one outbound link, `Review this run →`, in the run file's header — nothing else about the
+  run file changed. `tests_page.py`'s Run files table gained a second, independent tag.
+- **Verified:** `verify_layers.py` 30/30, `verify_tester.py` 63/63, `verify_notebooks.py` 2/2 (index
+  pair). Exercised live in the browser end to end — a synthetic run with one genuinely novel DIFF and
+  one refusal matching a known local-problem signature, generated a brief, posted a paste-back
+  analysis, watched the run file's link, the review page's per-finding state, and the Run files
+  table's tag all update and agree with each other.
+
+### The scope that got cut, and why cutting it was the honest call
+
+The wireframe showed named defects — "OI-88," "OI-89" — tagged directly onto failing rows. Building
+that for real would have meant inventing detection logic for each one right now, much of it from
+memory of what the defect *was* rather than a re-derivable check against the row in front of it —
+exactly the shape of mistake this project has been burned by before (OI-91's false 20-state count,
+the review pass that cried wolf on Montana before worst-first aggregation fixed it). So the pattern
+match layer that got built is narrower and more honest: reuse `qa_review.classify` on a refusal
+(already mechanical, already in the codebase), recognize an `INERT VALUE` pick `probe_no_op` already
+computed, and check whether the *exact* same finding — jurisdiction, status, differing fields — was
+explained in a different run's review before. Everything else says `no known pattern` rather than a
+guess dressed as one. `UNVERIFIED` beats a guess is `qa_review.py`'s own rule; this just applies it
+to itself before it applies it to anything else.
+
+### The dedup signature broke on its first real test, and JSON is why
+
+`_signature(row)` returns `(juris, status, tuple(differing_fields))` — a tuple nested inside a tuple,
+perfectly hashable in memory. Round-tripped through `json.dumps`/`json.loads` once, the inner tuple
+comes back as a list, and `list` is not hashable — `_prior_by_signature` crashed the moment a second
+run actually tried to dedup against a first one's posted analysis, which only a real two-run test
+caught. Fixed by rebuilding the signature's inner element back into a tuple explicitly on read,
+rather than trusting a round-trip to preserve a type JSON doesn't have.
+
+### `quick_status` almost shipped a claim it couldn't back up, in the very first screenshot
+
+The Run files table needs a status per run without a store round-trip per row — forty runs, each a
+full JSONL scan, on every page load, was the cost being avoided. The first version read the saved
+review record and called it `reviewed` when every finding *in the record* had a posted analysis. The
+gap: a pattern-matched finding nobody ever clicked into is never written to the record at all, so a
+run with one real answer and one silently-explained refusal read as fully reviewed on the table while
+the review page itself — which does pay for the round-trip — correctly said `explained`, not
+`reviewed`. Caught by comparing the two pages side by side in the first live test, same as the
+Aggregate dot's offline-defaults-to-blue bug in Entry 32. Fixed by renaming the claim to what the
+cheap check can actually support: `has_notes`, not `reviewed` — a run can have a real answer sitting
+on it and still be understated by the table, on purpose, because overstating it the other way is the
+worse failure.
+
+### Every live test ran against a synthetic run, and the store was reset after
+
+Same discipline as every session today. The DIFF and the refusal used to exercise the review flow
+were injected into a real offline run's rows by hand, not produced by an actual disagreement with
+ISO — no live call was spent manufacturing something to review. `results/runs-*.jsonl`,
+`results/runs/` and `results/reviews/` were all cleared at the end.
+
+### ▶ Next session
+
+Unchanged: L2 live on one class, then L5/L6, then the TX refused-payload call for OI-94, plus
+Entry 32's two follow-ons. Nothing about the review page opens new priority work — it is there for
+whenever the backlog above actually produces a finding worth reviewing.
+
+---
+
+## Entry 34 — Four decisions, one direction, and the direction turned out to be measurable in ten
+## minutes. No code. **NEXT SESSION STARTS HERE.**
+
+- **Date:** 2026-08-19
+- **Directed:** an explicit backlog-only instruction — *"Don't build, update backlog."* Four answers
+  to the five standing asks (B1, C1, C2, A3) plus a direction on OI-95.
+- **Changed:** `docs/WHAT-I-NEED-FROM-YOU.md` (B1 decided, C1 declined, C2 held, A3's open half
+  answered, the short version rewritten), `docs/OPEN-ITEMS.md` (OI-95 amended and reclassified
+  `OPEN` → `BUILD WORK`), `docs/START-HERE-TOMORROW.md` (§5 rewritten, §1's as-of row unblocked, §6
+  gained two items, §8's second item superseded).
+- **Not changed:** any Python. No engine, no UI, no scripts, no tests.
+
+### The four decisions, and why each is the right shape rather than just an answer
+
+**B1 — the loss cost multiplier stays at `1.0`.** The reasoning given is the part worth keeping:
+*"we want to test ISO RAaS right now, this isn't a client app."* Both sides of that comparison are
+loss costs, so a multiplier has nothing to do. **`1.0` is better than a plausible placeholder like
+`1.55` precisely because it is inert** — the factor sits in the chain, positioned correctly, and every
+stored result stays exactly comparable against ISO. An invented number would have to be divided back
+out of every comparison, and would leave figures on disk that look like rates and are not.
+Premium-level testing becomes a **deferred decision** rather than an open gap.
+
+**C1 — the note to ISO is not being sent.** Closed by decision, not parked. Nothing operational
+changes: the pacing rules were adopted to keep the traffic unremarkable and that reasoning does not
+depend on whether a note went out.
+
+**C2 — the size-of-risk report is held for more testing of our own.** This one changes priorities
+rather than just status: **the TX refused-payload call is now the cheapest thing on the board**,
+because it is what turns *"ISO refuses for the same reason"* from an inference into a measurement in a
+second state. **And it forced a stale claim out of a document.** C2's section still read *"our engine
+now refuses the same submissions for the same reason, so we agree with ISO's behaviour"* — the exact
+sentence OI-94's adversarial review refuted two days earlier. The refutation had been written into
+the register and never propagated to the page a person would actually send from. **A correction that
+lives in one document is half a correction.**
+
+**A3 — ISO rates future effective dates, so the effective date becomes a variable.** The probe
+question is answered without spending the probe. What matters is the shape the direction gave it:
+*"we should have an effective date variable"* — **an axis, not a mode.** A second tier run at a second
+date would have doubled the programme; a control set per scenario means the 2027 cliff gets exercised
+by ordinary test cases. And it is the same fix the axis defect needed anyway, which **unblocks the
+as-of date selector** that had been held back because a dropdown offering dates the rating ignores is
+worse than no dropdown.
+
+### OI-95 stops being a judgement call, and the file was sitting in the corpus the whole time
+
+The direction: *"there should be a table that indicates classcodes use loss costs, company, or
+industry. Company is equivalent to A Rated, which is a refer to company, in those cases, we should
+input a company rate. If it's industry, that's an ELP being used."*
+
+**Checked before writing it down, and it is exactly right.** `PremOpsELPText.RateTable.csv`, in every
+package, declares one of three values per class per state. Measured in `GL_TX 20250801 V01`, all 1,188
+classes, cross-tabulated against `PremOpsELP.RateTable.csv`, **zero exceptions**:
+
+| `PremOpsELPText` | count | its ELP rate |
+|---|---|---|
+| `Rate/Loss Cost Applies` | 1,010 | `0`, every one |
+| `Industry` | 110 | **non-zero, every one** |
+| `Company` | 68 | `0`, every one |
+
+**68 + 110 = 178 — the exact count of `(a)` classes this item was raised about.** So ISO's manual has
+been using one symbol for two structurally different regimes, and the register entry could not tell
+them apart **because it only ever compared the manual against the rate, and never against the text
+table sitting in the same directory.** The products side declares a fourth value, `Not Applicable`,
+on 474 of 1,188.
+
+**The engine reads none of it.** `grep -rn "ELP" gl_engine/*.py` returns nothing; the only mention in
+our Python is a docstring in `scripts/variants.py:426`. So the correct behaviour per regime is now
+*specified* rather than guessed: leave `Rate/Loss Cost Applies` alone · use the published ELP for
+`Industry` instead of the zero we currently multiply by · **refer** on `Company` and take a carrier
+rate as input. **`Company` is where B1's `1.0` is load-bearing** — a company rate is exactly the
+carrier input B1 defers, so those classes stay unrateable-without-input by design and the engine's job
+is to say so out loud.
+
+**What must be measured before any of it is written:** the three-way split is from **one state, one
+edition**. Generalising from that is the precise error OI-68 and OI-04 both were, and this project has
+paid for it twice. All 51 jurisdictions and multiple editions first, read-only.
+
+### A label that pointed at nothing
+
+The as-of selector had been marked *"blocked on D-1"* since 2026-08-17. **`D-1` is defined nowhere in
+this repository** — two occurrences, both uses, no entry. It is not `D1` in `WHAT-I-NEED-FROM-YOU.md`
+(minimum premium amounts, needs a carrier) and not the closed defect `D1` in this log (the OI-88
+decision). **The blocker was real; only the identifier was invented.** The row now names the gap. The
+transferable point is that **a code with no entry is worse than prose**, because prose cannot look
+authoritative while being empty — which is the counting discipline of the register turned on the
+planning documents, where it had not been applied.
+
+### ▶ Next session
+
+**Reordered by today's decisions.** The TX refused-payload call moves up — it now serves OI-94 *and*
+C2's evidence pack. Then: **measure the ELP regime split across all 51** (read-only, no calls, and the
+prerequisite for the highest-value backlog item there now is), then L2 live on one class, then L5/L6.
+The effective-date variable and the three ELP regimes are the two new build items, both medium, both
+in `START-HERE-TOMORROW.md` §5 with their unmeasured preconditions named. Entry 32's two follow-ons
+are unchanged and still small.
+
+---
+
+## Entry 35 — OI-95 measured across the whole corpus: the pattern holds, with one narrow real
+## exception, and the drift itself turned out to matter for how the fix must be built.
+
+- **Date:** 2026-08-19
+- **Directed:** "Let's do OI-95." Per the backlog's own precondition ("measure across all 51 first")
+  and yesterday's habit-9 finding, treated as a go for the read-only measurement, not the engine
+  fix — no code path in `gl_engine` was touched.
+- **Built:** `scripts/erc/53_oi95_elp_regimes.py`, matching the shape of `45_oi88_blast_radius.py` —
+  measures and decides nothing. Enumerates every package `find_packages()` returns (575, across 52
+  jurisdictions including the countrywide parent), reads `PremOpsELPText`/`PremOpsELP` and
+  `ProdsCompldOpsELPText`/`ProdsCompldOpsELPFactor` where both exist, and checks three things: does
+  the zero/nonzero pairing hold everywhere, does a class's category stay stable across editions of
+  the same jurisdiction, and are there categories in the data the Texas reading never saw.
+
+### What held
+
+**The pairing is essentially exact.** Prem/ops side: **zero exceptions across 668,303 rows** —
+`Rate/Loss Cost Applies` and `Company` are zero every time, `Industry` is non-zero every time, in
+every jurisdiction and every edition that files the table (52 of 52). This is the number OI-95's
+build-work reclassification was resting on, and it holds at full scale, not just in one state's one
+edition.
+
+### What didn't, narrowly, and what it might mean
+
+**28 rows out of the same 668,303, on the products-completed-operations side only, and they reduce to
+exactly two class codes** — `10012` (rate `0.078`) and `10027` (rate `0.043`) — carrying a non-zero
+ELP while labelled `Rate/Loss Cost Applies`, and **only in Idaho and Virginia**, stable across every
+edition either files. Small, real, and not explained by anything read so far — logged rather than
+folded silently into the branch logic the fix will need. Also: **`Not Applicable` exists on the
+prem/ops side too**, not only products as the Texas reading suggested — 2 rows total, both zero,
+negligible in size but worth the branch logic covering all four observed values rather than three.
+
+### The finding that changes the shape of the fix, not whether to build it
+
+**The classification is not static across time**, and the drift is large: 1,171 prem/ops classes and
+4,110 products classes change category across editions of the same jurisdiction. **But it is not
+jurisdiction noise — the same roughly two dozen class codes move in lockstep in nearly every state**,
+which is the exact shape habit 7 names: what looks like a jurisdiction split is really a calendar
+split, in this case ISO adding or withdrawing a published rate for specific classes at a point in
+time, countrywide. **Consequence for the build:** the ELP tables have to be read from whichever
+edition the engine resolves for the rating's as-of date, the same as every other loss-cost lookup —
+never cached from one snapshot taken during design. The engine already does this for every other
+rate table, so this is a confirmed constraint, not a new one, but it would have been a real defect if
+the fix had read the tables once and reused the classification.
+
+### ▶ Next session
+
+**OI-95 is now measured, not inferred, and ready to build on your go.** The two-class exception (ID,
+VA, `10012`/`10027`) is worth a closer read before the fix ships, if only to decide whether the
+branch logic should special-case it or simply use whichever value each table actually publishes
+regardless of the category label — the safer default, and probably the right one, since it makes the
+exception irrelevant rather than requiring it to be understood first. Unchanged otherwise: the TX
+refused-payload call, the effective-date variable, L2 live, L5/L6.
