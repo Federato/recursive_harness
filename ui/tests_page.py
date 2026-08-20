@@ -169,7 +169,10 @@ def _spec() -> tuple:
     js = list(V.Declared.jurisdictions())
     agg = layers.stored_rollup()
     return 200, json.dumps({
-        "layers": [{"id": k, **v, "configs": len(layers._configs(k))}
+        "layers": [{"id": k, **v,
+                    "configs": len(layers._configs(k)),
+                    "sizes": {"full": len(layers._configs(k, "full")),
+                              "reduced": len(layers._configs(k, "reduced"))}}
                    for k, v in sorted(layers.LAYERS.items())],
         "jurisdictions": js,
         # The page counts tests before anything is planned, so it needs to know
@@ -492,6 +495,14 @@ font-weight:600}
     <div class="note">States are never cut to fit an allowance. The
       configuration list is thinned instead, and what was dropped is written
       into the run file.</div>
+    <div id="sizewrap" style="display:none">
+      <label>Grid</label>
+      <select id="size">
+        <option value="full">Full</option>
+        <option value="reduced">Reduced (~240)</option>
+      </select>
+      <div class="note" id="sizenote"></div>
+    </div>
     <div class="row">
       <label style="margin:0"><input type="checkbox" id="offline"
         style="width:auto"> offline only (free)</label>
@@ -564,12 +575,33 @@ async function post(u,b){ const r = await fetch(u,{method:'POST',
 
 function needsClass(){ return (SPEC.layers.find(l=>l.id===LAYER)||{}).needs_class; }
 
+// Only a layer whose reduced grid actually differs from its full one gets the
+// control -- L3 today. Showing it for every layer would offer a choice that
+// does nothing everywhere else.
+function hasSizeChoice(){
+  const s = (SPEC.layers.find(l=>l.id===LAYER)||{}).sizes;
+  return !!(s && s.reduced !== s.full);
+}
+
 function drawLayers(){
   $('#layers').innerHTML = SPEC.layers.map(l =>
     `<div class="lay${l.id===LAYER?' on':''}" data-id="${l.id}">
        <b>${l.id} &middot; ${l.name}</b><span>${l.what}</span></div>`).join('');
   document.querySelectorAll('.lay').forEach(el => el.onclick = () => {
-    LAYER = el.dataset.id; drawLayers(); syncClassCard(); drawCount(); });
+    LAYER = el.dataset.id; drawLayers(); syncClassCard(); syncSizeCard();
+    drawCount(); });
+}
+
+function syncSizeCard(){
+  const has = hasSizeChoice();
+  $('#sizewrap').style.display = has ? '' : 'none';
+  if(!has){ $('#size').value = 'full'; return; }
+  const s = (SPEC.layers.find(l=>l.id===LAYER)||{}).sizes;
+  $('#sizenote').textContent = $('#size').value === 'reduced'
+    ? `Corners and center of the full grid: ${s.reduced} configurations `
+    + `instead of ${s.full}. States are never cut.`
+    : `${s.full} configurations, every combination of the axes this layer `
+    + `varies.`;
 }
 
 function syncClassCard(){
@@ -610,7 +642,8 @@ function drawClasses(){
 // the exact figure. Saying "about" until then is the honest version.
 function estimate(){
   const spec = (SPEC.layers.find(l => l.id === LAYER) || {});
-  const configs = spec.configs || 1;
+  const size = hasSizeChoice() ? ($('#size').value || 'full') : 'full';
+  const configs = (spec.sizes && spec.sizes[size]) || spec.configs || 1;
   const states = (SPEC.jurisdictions || []).length;
   const noIso = (SPEC.no_iso || []).length;
   const offline = $('#offline').checked;
@@ -651,6 +684,7 @@ function body(){
   if($('#exposure').value) b.exposure = parseFloat($('#exposure').value);
   if($('#allowance').value) b.allowance = parseInt($('#allowance').value);
   b.offline = $('#offline').checked;
+  b.size = hasSizeChoice() ? ($('#size').value || 'full') : 'full';
   return b;
 }
 
@@ -660,6 +694,8 @@ $('#plan').onclick = async () => {
   if(p.error){ $('#planout').innerHTML = '<span class="err">'+p.error+'</span>'; return; }
   let s = `<b>${p.cost.scenarios}</b> scenario(s), <b>${p.cost.ratings}</b> engine ratings, `
         + `<b>${p.cost.live_calls}</b> ISO calls.`;
+  if(p.size === 'reduced')
+    s += ` <span class="warn">Reduced grid.</span>`;
   (p.groups||[]).forEach(g => { if(g.basis)
     s += `<br>basis <b>${g.basis}</b> in ${g.jurisdictions.length} jurisdictions.`; });
   if(p.undeclared && p.undeclared.length)
@@ -979,10 +1015,11 @@ async function refresh(){
 (async () => {
   SPEC = await get('/api/tests/spec');
   $('#tick').textContent = SPEC.spent_today;
-  drawLayers(); syncClassCard(); drawCount();
+  drawLayers(); syncClassCard(); syncSizeCard(); drawCount();
   await loadBases(); await refresh();
   $('#basis').onchange = loadClasses;
   $('#filter').oninput = drawClasses;
+  $('#size').onchange = () => { syncSizeCard(); drawCount(); };
   // Anything that changes the number of tests redraws it. The estimate is
   // local arithmetic, so this costs nothing and never lags the typing.
   ['#allowance', '#offline', '#cls', '#exposure'].forEach(sel => {
