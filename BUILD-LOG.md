@@ -4478,3 +4478,57 @@ OI-97's coverage-drop symptom is fixed as a stopgap; the underlying question (sh
 be forced to answer `ProdsCompldOpsExclusion` explicitly, and should the engine refuse rather than
 default when it doesn't) is still open and is a build/process decision, not made here. The
 `package_version` control's browser pass is still outstanding too.
+
+## Entry 57 — The mechanism the corrected lesson called for: an edition-review sweep that runs
+## instead of waiting on a person to look.
+
+- **Date:** 2026-08-31
+- **Directed:** *"Lets create a mechanism for new edition review of field and table changes (new,
+  replaced, removed)"* — direct follow-through on the corrected Entry 56 lesson, not a new finding.
+- **Built:** `scripts/erc/56_edition_review.py`, read-only, no engine change. For one jurisdiction
+  code (a state, or `CW`), diffs its two most recent DISTINCT filed editions (auto-detected from
+  the corpus, or an explicit `--old`/`--new` pair):
+  - **Fields added/removed/changed** — `Form Fields/Fields.FormField.csv`, read per package
+    (never merged state-over-countrywide, so a change is attributed to the layer that actually
+    made it). "Changed" flags a difference in `Type`, `DomainTableName`, `PolicyRequired`,
+    `QuoteRequired`, `Condition` or `RequiredCondition` — the attributes that decide whether a
+    field is legal, required, or gates another field's coverage. This is exactly OI-97's shape.
+  - **Rate/domain tables added or removed** — every `*.RateTable.csv`/`*.DomainTable.csv` filename
+    present in one edition and not the other.
+  - **Column headers changed** on a table present in both editions — a cheap structural signal,
+    not a full value diff.
+  - `--all` runs every jurisdiction plus `CW` in one pass.
+- **Verified against the exact case that raised it.** `--juris CW --old 20260101 --new 20270401`
+  lists `GeneralLiability.ProdsCompldOpsExclusion` under "fields ADDED" — the tool would have
+  surfaced OI-97 on its own, the day the edition landed, instead of needing a person to ask "does
+  that number look right" weeks later.
+- **A real gap found building it, documented rather than silently worked around:** `--juris TX`
+  at the same cliff does **NOT** show `ProdsCompldOpsExclusion` — that field is filed at the
+  countrywide layer, and this tool deliberately reviews each package against its OWN edition
+  history only, never merged with its declared parent (mirrors N5: state and countrywide are
+  versioned independently, and merging them would misattribute a countrywide change to whichever
+  state happened to be asked about). **Consequence, stated in the docstring and the report, not
+  left implicit:** a full review after a new edition lands means running this once per package
+  that actually changed, including `CW` — `--all` already does. A state that inherits a
+  countrywide change without refiling its own package will never show it under its own code; that
+  is by design, not a blind spot to fix quietly.
+- **Scope stated, not implied complete:** does not diff table contents cell-by-cell (OI-96's
+  shape — `54_oi96_csl_suffix.py` or similar remains the tool for that; a general cell-by-cell
+  diff over the whole corpus is a different cost tradeoff than this structural sweep). Does not
+  read Rules or DataDefs XSDs directly — `Fields.FormField.csv` is ISO's own business-level
+  declaration of the same information and is what the engine's own `Schema` class already reads.
+- **Run once already, corpus-wide:** `--all` reviewed 52 jurisdiction codes (51 states + CW), 49
+  with something to report — mostly ordinary edition-to-edition churn (endorsement forms added or
+  retired, condition-string reformatting), with `ProdsCompldOpsExclusion` inside CW's block being
+  the one that matters. Not triaged item-by-item here — that is the next session's work, not this
+  one's.
+- **Not built:** any automatic trigger (a hook that runs this whenever the corpus directory
+  changes). This is the standing tool the process needed; wiring it to run itself is a separate,
+  smaller decision.
+
+### ▶ Next session
+
+The corpus-wide `--all` output from this entry (49 of 52 jurisdictions flagged) has not been
+triaged — most is likely ordinary edition churn, but it hasn't been read line by line to confirm
+nothing else is OI-97-shaped. That triage, and whether to wire this into an automatic trigger, are
+both open.
