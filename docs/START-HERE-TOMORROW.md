@@ -140,18 +140,21 @@ day taught is [`what-the-harness-taught-us_20260817.html`](what-the-harness-taug
 
 ## 1 · Finish the UI the proposal promised
 
-**The proposal has six wireframes. All six exist. Twelve of the eighteen named features are built,
-six are not** — measured against the wireframes rather than remembered.
+**The proposal has six wireframes. All six exist.** Twelve of the eighteen named features were
+built as of the last count; **three more closed 2026-08-31** (the small-UI backlog: the review
+checkbox, pause/stop, and "what changed" for the QA tab) — **fifteen of eighteen now**, measured
+against the wireframes rather than remembered. What's left: the as-of date-picker's UI rendering
+(axis now built), the schedule feature, and W6's reviewer-verdicts decision below.
 
 ### What is missing, with sizes
 
 | | Gap | Size | Gated on |
 |---|---|---|---|
-| **W1** | **"Run the harness review afterwards"** checkbox — pass 3 should run when a tier finishes, not only when someone types a command | **Small** | nothing |
-| **W1** | **As-of date selector** | **Small to wire, and now unblocked** | ~~Blocked on D-1.~~ **The blocker is real and the label was not — see the note below.** The engine has no effective-date axis: the options offered come from one date while rating uses the payload's, so the control would offer a choice that does not work. **2026-08-19 turned this into build work:** ISO rates future effective dates, and the direction given is *"we should have an effective-date variable."* Fix the axis as a variable and the selector is the same fix's user interface. §5 |
+| ~~**W1**~~ | ~~**"Run the harness review afterwards"** checkbox~~ — **✅ built 2026-08-31**, `BUILD-LOG.md` Entry 50 | **Small** | nothing |
+| **W1** | **As-of date selector** — the actual date-picker control on the page | **Small to wire, and now unblocked** | ~~Blocked on D-1.~~ **The blocker is real and the label was not — see the note below.** **The blocker itself is closed, 2026-08-31**: the `effective_date` control, `Declared.for_config()`, and per-row resolution are built and tested (`BUILD-LOG.md` Entries 45–48) — the axis this selector would sit on top of exists now. **What remains is UI rendering only**: reusing the generic control machinery every other dropdown already uses. |
 | **W1** | **Schedule** — nightly T0, weekly T1 | **Medium** | nothing, but it needs a scheduler and a decision about unattended live calls |
-| **W2** | **Pause / stop a running tier** | **Small–medium** | needs a cancel flag the worker checks between scenarios |
-| **W3** | **"What changed since last run"** — new problems, fixed problems, newly covered ground | **Small** | nothing; both rollups already exist |
+| ~~**W2**~~ | ~~**Pause / stop a running tier**~~ — **✅ built 2026-08-31**, `BUILD-LOG.md` Entry 51. Found and fixed two real bugs along the way (a server crash polling a finished QA job, a stop mid-scenario misreporting as "done") | **Small–medium** | needs a cancel flag the worker checks between scenarios |
+| ~~**W3**~~ | ~~**"What changed since last run"**~~ — **✅ built 2026-08-31**, `BUILD-LOG.md` Entry 49, for the QA tab (the `/tests` page already had it) | **Small** | nothing; both rollups already exist |
 | **W6** | **Reviewer verdicts recorded** — the wireframe shows *"confirmed by 3 of 3 reviewers"* | **Medium** | **A decision.** The agents cannot be invoked from the server, so a verdict has to be pasted back. That makes W6 a *workflow*, not a *reader*, and needs somewhere to store them |
 
 > **A label that pointed at nothing — recorded 2026-08-19.** The as-of row above cited **"D-1"** as
@@ -175,10 +178,12 @@ verdicts come back and are stored. Both are defensible; they are different produ
 - **Workflow** — more useful over time, and it needs a store for verdicts, a way to mark a finding
   resolved, and care that a stale verdict is never shown as current.
 
-**Then, in this order:** *"what changed since last run"* (small, and the most-read screen) → *"run the
-review afterwards"* (small, closes the loop) → pause/stop → schedule. ~~**Leave the as-of selector
-until D-1 is fixed.**~~ **Amended 2026-08-19: the as-of selector now has a place in the queue** — it
-ships with the effective-date variable (§5), because they are one fix seen from two sides.
+~~**Then, in this order:** *"what changed since last run"* (small, and the most-read screen) → *"run the
+review afterwards"* (small, closes the loop) → pause/stop → schedule.~~ **All three done, 2026-08-31**
+— `BUILD-LOG.md` Entries 49–51. ~~**Leave the as-of selector until D-1 is fixed.**~~ **Amended
+2026-08-19: the as-of selector now has a place in the queue** — it ships with the effective-date
+variable (§5), because they are one fix seen from two sides. **The variable itself is built
+2026-08-31; only the date-picker's UI rendering and the schedule feature are still open.**
 
 ---
 

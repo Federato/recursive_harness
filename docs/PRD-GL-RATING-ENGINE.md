@@ -117,7 +117,7 @@ project's own measurement scripts refuse to run without being told what date to 
 
 ## 4. What's built and verified today
 
-**All six build stages are complete and tested** — fifteen test suites. The engine has no
+**All six build stages are complete and tested** — sixteen test suites. The engine has no
 third-party dependency, and neither does the interface or the ISO comparison client.
 
 **What it can do today:**
@@ -128,6 +128,10 @@ third-party dependency, and neither does the interface or the ISO comparison cli
 - Refuse rather than invent a number when ISO's content cannot answer.
 - Reproduce ISO's own validation messages.
 - Compare itself against ISO's live rating service, from a browser or the command line.
+- Vary the effective date and resolve the corresponding rulebook edition, with the same date
+  written into the payload and used to resolve it so the two cannot disagree (decision A3,
+  2026-08-31) — the test harness can now exercise both sides of the 2027-04-01 edition cliff as an
+  ordinary scenario rather than a special case.
 
 **Seven sublines have been fully walked through, derived from the data files, and checked against
 the filed manuals:** Premises/Operations (334), Products/Completed Operations (336), Owners &
@@ -254,7 +258,7 @@ variable.
 |---|---|
 | `TESTING.md` | Every command, stage by stage — each one run and its stated output verified |
 | `PROCESS_LOG.md` | The full analysis record, 51 steps |
-| `scripts/erc/out/referral_register.json` | Every situation that stops and asks a human — 28, with the decisions taken |
+| `scripts/erc/out/referral_register.json` | Every situation that stops and asks a human — 28, with the decisions taken, from the 2026-08-12 analysis phase. A 29th detector (`R29`, 2026-08-31) lives only in `gl_engine/rating/referrals.py` — a `Company`-rated class with no carrier-supplied override, in `underwriting` mode only — deliberately not added to this frozen file; see `BUILD-LOG.md` Entry 44 |
 | `Payloads/` | The 53 priced example policies, one per state, each with its input |
 
 **What remains, kept separately so this document stays about what's built:**
@@ -281,8 +285,16 @@ Stated plainly, for anyone deciding whether this is ready for their purpose:
   on one class family; seven sublines are documented in depth, out of the fuller subline list.
   Multi-location and multi-class submissions have no starting payload yet, and 20 jurisdictions
   declare only a single rating territory, so a two-location test can't be constructed there.
-- **No effective-date axis has been tested across an edition change** — 43 jurisdictions change
-  basis on 1 April 2027.
+- **The 2027-04-01 edition cliff is tested, and it found a real gap, since fixed for the fields
+  exercised today.** The ISO filing that takes effect that date dropped a unit suffix (`" CSL"`)
+  from every limit value, in every one of the 44 jurisdictions measured so far (OI-96,
+  2026-08-31) — a stored payload built against the old format missed every lookup keyed on it.
+  Fixed on the payload side, not inside the engine's own lookup code: renormalized against
+  whatever the resolved edition actually declares, refusing to guess when a figure is genuinely
+  ambiguous. **Not yet confirmed against ISO live** — the fix stops the crash; a live call would
+  confirm the resulting premium is also the *correct* one (`WHAT-I-NEED-FROM-YOU.md` §C8). A more
+  general, lookup-side version of the same fix remains a live option if a future edition
+  reformats a field this narrower fix doesn't cover.
 - **Carrier-specific rating (your own rates instead of ISO's) is not built.** This is deliberate:
   once carrier content is layered on top, no external service can confirm the answer independently
   anymore, so it's the right thing to build last.
@@ -294,4 +306,5 @@ absorbed, per R9 and R10 above.
 
 **Document history:** originally written as a running progress log; restructured 2026-08-20 to
 describe the current build for a third party getting up to speed, rather than day-by-day change
-history. That history is preserved in full in `BUILD-LOG.md` and `PROCESS_LOG.md`.
+history. That history is preserved in full in `BUILD-LOG.md` and `PROCESS_LOG.md`. Updated
+2026-08-31 for OI-94/95/96 and the effective-date variable (`BUILD-LOG.md` Entries 43–51).
