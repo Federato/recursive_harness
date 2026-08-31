@@ -439,26 +439,24 @@ curiosity items, not blockers; call 1 is the only one that could change existing
 
 ---
 
-## C8 · One live call to confirm OI-96's fixed premiums are also the correct ones
+## C8 · ~~One live call to confirm OI-96's fixed premiums are also the correct ones~~ ✅ **ANSWERED, 2026-08-31 — and the answer was "no," which is a real defect (OI-97)**
 
-**Not blocking anything** — the rating-stops symptom is fixed and pinned as a standing regression
-test (`verify_breadth` E12/E13, `BUILD-LOG.md` Entry 48). What's left is a different question: is the
-*number* right, not just present.
+**The call was made.** TX's base submission at `2027-04-01` was sent to ISO live: it returned
+**895**, matching our engine exactly. At first read that looked like confirmation. **It wasn't.**
 
-**The situation.** The 2027 filing dropped the `" CSL"` suffix from limit values in every jurisdiction
-measured (44 of 44). `variants.py` now renormalizes the three limit fields our test submissions carry
-to match, and TX's cliff premium moved from **~8,229** pre-cliff to **895** at `2027-04-01`. That's a
-large, real move, and nothing has confirmed it against ISO — it could be exactly right (a genuinely
-different 2027 rate structure) or it could mean the renormalization landed on the wrong legal value
-somewhere downstream of the three fields this fix touches.
+Chasing why 895 "seemed super low" found that ISO's 2027-04-01 filing added a new required field,
+`ProdsCompldOpsExclusion`, and made Products/Completed Operations pricing conditional on it being
+present. Our submission never sends it — it didn't exist before this edition — so Products/
+CompldOps silently prices at zero, with **no message, no referral**. 895 is a real, correctly-
+computed **Premises/Operations-only** number; ISO matched us because we sent ISO the same
+incomplete submission, not because 895 is the right answer for the risk actually being asked
+about. Adding the field and re-rating moves the premium to **7,740**, back in range next to the
+pre-cliff 7,821.
 
-| Payload | What it settles |
-|---|---|
-| TX's base submission, `effective_date` set to `2027-04-01` (or any date in that edition's window), sent as-is | Does ISO's live service return **895** for this exact submission? If yes, the fix is confirmed correct, not just non-crashing. If it returns something else, the mismatch tells us where the renormalization (or something else in the 2027 edition) is still wrong |
-
-**If you don't answer:** the fix stands as built — verified to stop the crash, not verified against
-ISO's own number. That distinction is stated plainly in `BUILD-LOG.md` Entry 47 and the status
-artifact, not glossed over.
+**So the OI-96 renormalization itself is not in question** — it did what it was supposed to do, and
+this is a second, independent gap the 2027 edition opened. Logged as **OI-97**
+(`docs/OPEN-ITEMS.md`), same fix shape as OI-96, in the same file (`variants.py`
+`_apply_effective_date`). **Needs a go before it's built** — see `BUILD-LOG.md` Entries 53–55.
 
 ---
 
@@ -496,6 +494,8 @@ them. There is no second source and no cross-check.
 | **C2** | Held 2026-08-19 — the finding stands, the report waits on our own testing, and I bring it back drafted |
 | **B2 · B3 · C3–C6 · D1 · D2** | Unchanged, all with working defaults |
 | **OI-95** | No longer a question for you — the direction given on 2026-08-19 names the discriminator, and it is a build item now. See `OPEN-ITEMS.md` |
+| **C8** | Answered 2026-08-31 — the call was made, and the answer surfaced a real defect (OI-97) rather than confirming the number. Awaiting a go to build |
+| **OI-97** | New 2026-08-31 — a coverage-dropping defect, not a question. Ready to build once you say go. See `OPEN-ITEMS.md` |
 
 **Everything else has a working default**, and none of it is blocked waiting for you. Where I proceed
 on a default, the assumption is stated on the results rather than buried.

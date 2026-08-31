@@ -340,6 +340,7 @@ Protective have no example at all** and must be built from the declaration.
 
 | | |
 |---|---|
+| **`ProdsCompldOpsExclusion` (OI-97)** | **New 2026-08-31, and the highest-value item on this table now.** Found while confirming a 2027-04-01 premium against ISO: the filing added a new required field, and its absence silently zeroes the entire Products/Completed Operations side with **no message, no referral**. Causally confirmed (adding the field moves TX 895 → 7,740). Same file, same fix shape as OI-96 (`variants.py` `_apply_effective_date`). **Ready to build once you say go** |
 | **The three ELP regimes (OI-95)** | **New 2026-08-19, and the highest-value one on this table. Measured across the whole corpus the same day** — `scripts/erc/53_oi95_elp_regimes.py`, 575 packages, 52 jurisdictions, zero calls. **The pattern holds almost everywhere**: prem/ops side, zero exceptions across 668,303 rows. **One narrow real exception** on the products side — two class codes, `10012` and `10027`, in Idaho and Virginia only, carry a non-zero ELP despite being labelled the zero-expected category — flagged, not explained yet. **The classification drifts across editions** (the same ~2 dozen classes move in lockstep in nearly every state), which is a calendar effect, not a jurisdiction one, and means the fix must read the resolved edition live rather than cache one snapshot — which the engine already does for every other rate table. **Ready to build** once you say go |
 | **An effective-date variable** | **New 2026-08-19.** One control threaded through payload *and* as-of resolution. Unblocks the as-of selector and makes the 2027 cliff — 43 jurisdictions changing basis in one morning — testable by ordinary scenarios rather than a parallel tier |
 | **Widen breadth live** | 11 jurisdictions done, 40 remain. **Consider varying class family instead** — the discovery rate per state is falling |
@@ -412,9 +413,10 @@ not yet the one a carrier needs.
 
 # 8 · If you only do three things tomorrow
 
-1. **Regenerate, then send, the TX refused payload** (see the correction in §3 — the original file
-   is gone, one QA re-run and a re-export away). One call, settles 36 payloads and closes an open
-   question about our own fix. **Now doubly worth it** — C2's report waits on exactly this evidence.
+1. ~~**Regenerate, then send, the TX refused payload.**~~ **✅ Done, 2026-08-31** (§3). **Next
+   single highest-value action: say go on OI-97** — `ProdsCompldOpsExclusion`, a coverage-dropping
+   defect found *while confirming a 2027 premium against ISO*, same file/fix shape as OI-96
+   (`OPEN-ITEMS.md` OI-97, `BUILD-LOG.md` Entries 53–55).
 2. ~~**Email ISO** (C1 and C2 together).~~ **Superseded 2026-08-19.** C1 is declined and C2 is held
    for more testing. **Replaced by: measure the ELP regime split across all 51 jurisdictions** —
    read-only, no calls, and it is the prerequisite for the highest-value item now on the backlog.
