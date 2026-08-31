@@ -111,8 +111,14 @@ def for_juris(juris: str, config: dict | None = None,
     This is the exact set -- the union is for populating a dropdown before a
     jurisdiction is chosen; this is what that jurisdiction will actually accept,
     with dependent domains resolved against the current answers.
+
+    **A config that has already set `effective_date` resolves at ITS date, not
+    the caller's `asof`.** Once a person has picked a date, every other
+    dropdown must reflect what's legal on that date, not the page's original
+    load-time default -- `Declared.for_config` is what makes that automatic.
     """
-    d = V.Declared(juris, asof)
+    d = V.Declared.for_config(juris, config) if config and config.get(
+        "effective_date") else V.Declared(juris, asof)
     return {
         "juris": juris,
         "territories": list(d.territories()),
@@ -130,9 +136,10 @@ def legality(config: dict, asof: str = V.DEFAULT_ASOF) -> dict:
     tester most easily gets wrong.
     """
     ok, no = [], {}
+    row_asof = str(config.get("effective_date") or asof)
     for j in V.Declared.jurisdictions():
         try:
-            d = V.Declared(j, asof)
+            d = V.Declared(j, row_asof)
             V.build(config, d)
             ok.append(j)
         except V.VariantError as exc:

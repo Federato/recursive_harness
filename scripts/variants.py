@@ -44,6 +44,7 @@ ROOT = Path(__file__).resolve().parent.parent
 SAMPLES = ROOT / "Engine_Payloads"
 
 from gl_engine import EditionResolver, ResolvedBook          # noqa: E402
+from gl_engine.config import CLASS_BASIS_CLIFF, MIN_ASOF     # noqa: E402
 from gl_engine.schema import Schema                          # noqa: E402
 
 #: The as-of date the stored base submissions carry.
@@ -138,6 +139,21 @@ class Declared:
         if cls._resolver is None:
             cls._resolver = EditionResolver()
         return cls._resolver
+
+    @classmethod
+    def for_config(cls, juris: str, config: dict | None = None) -> "Declared":
+        """`Declared` at the date a config's own `effective_date` implies.
+
+        **The one correct way to construct `Declared` once a config might set
+        `effective_date`.** Falls back to `DEFAULT_ASOF` when it doesn't, same
+        as calling `Declared(juris)` directly. Reading "what's legal" and
+        rating "what gets sent" from two different dates is decision A3's
+        whole defect -- this closes it by construction: the same string
+        resolves the rulebook here and gets written into the payload by
+        `_apply_effective_date`, so they cannot diverge within one call.
+        """
+        asof = str((config or {}).get("effective_date") or DEFAULT_ASOF)
+        return cls(juris, asof)
 
     @classmethod
     def jurisdictions(cls) -> tuple[str, ...]:
@@ -354,6 +370,21 @@ class Control:
             if basis:
                 return d.codes_for_basis(str(basis))
             return d.all_class_codes()
+        if self.derive == "effective_dates":
+            # No ISO field declares a domain of legal effective dates -- a date
+            # isn't a rated value. The nearest thing to a declaration is the
+            # corpus's own edition history: the dates on which this
+            # jurisdiction's own rulebook actually changed, read from
+            # `EditionResolver`, not invented. `MIN_ASOF` and
+            # `CLASS_BASIS_CLIFF` are added because both are already-proven
+            # landmarks -- the resolution floor and the 2027 basis cliff --
+            # even where they don't happen to be one of this state's own
+            # filing dates.
+            pkgs = Declared.resolver().by_juris.get(d.juris.upper(), [])
+            dates = {p.identity.edition for p in pkgs
+                    if p.identity.edition >= MIN_ASOF}
+            dates |= {MIN_ASOF, CLASS_BASIS_CLIFF}
+            return tuple(sorted(dates))
         if not self.column:
             return ()
         if self.keyed_by and config:
@@ -507,6 +538,18 @@ CONTROLS: tuple[Control, ...] = (
             table=GL, column="TerrorismCoverage",
             note="The ZIP or territory is supplied from the declaration. 20 "
                  "jurisdictions declare neither (OI-91)."),
+
+    # ------------------------------------------------------------ 11. timing (1)
+    Control("effective_date", "Effective date", "Timing",
+            "which rulebook edition prices the risk -- the resolution floor, "
+            "the 2027 basis cliff, and every edition boundary in between",
+            kind="select", derive="effective_dates",
+            note="Decision A3, 2026-08-19: carried into the payload's "
+                 "SchemeKeys.EffectiveDateTime AND used to resolve the legal "
+                 "values of every other control in the same build, so the two "
+                 "cannot disagree. Callers that build a config containing this "
+                 "must construct `Declared` at this date -- `Declared.for_config()` "
+                 "does that."),
 )
 
 BY_ID = {c.id: c for c in CONTROLS}
@@ -803,6 +846,23 @@ def _apply_terrorism(p, value, d, config):
         loc[field] = val
 
 
+def _apply_effective_date(p, value, d, config):
+    """Write the SAME date `d` was resolved at -- see `Declared.for_config()`.
+
+    This applier only writes the payload; it does not choose the edition.
+    A caller that constructs `Declared(juris, some_other_asof)` and then
+    applies `effective_date` here has already made the two disagree -- this
+    cannot catch that from inside `build()`, because by the time an applier
+    runs, `d.book` is already resolved. `Declared.for_config()` is the one correct
+    way to avoid it.
+    """
+    v = str(value)
+    if len(v) != 8 or not v.isdigit():
+        raise VariantError(f"effective date must be YYYYMMDD, got {value!r}")
+    iso = f"{v[0:4]}-{v[4:6]}-{v[6:8]}T00:00:00"
+    p.setdefault("body", {}).setdefault("SchemeKeys", {})["EffectiveDateTime"] = iso
+
+
 APPLIERS = {
     "premops_bi_deductible": _apply_deductible("PremOpsBIDeductible"),
     "premops_pd_deductible": _apply_deductible("PremOpsPDDeductible"),
@@ -825,19 +885,23 @@ APPLIERS = {
     "schedule_rating": _apply_risk_field("ScheduleRatingModificationApplies"),
     "schedule_pct": _apply_schedule_pct,
     "terrorism": _apply_terrorism,
+    "effective_date": _apply_effective_date,
 }
 
 #: Order matters: a control whose applier reads another's answer must run after
 #: it. The coverage form writes a default claims-made year, so the year runs
 #: later and overwrites it; the class code sets the basis, so the basis runs
-#: first and defers.
+#: first and defers. `effective_date` reads nothing another applier sets, so
+#: its position here doesn't matter -- what matters is that `Declared` was
+#: already constructed at this same date before `build()` was ever called
+#: (`Declared.for_config()`).
 ORDER = ("subline", "premium_basis", "class_code", "exposure", "classifications", "locations",
          "occurrence_limit", "general_aggregate",
          "premops_bi_deductible", "premops_pd_deductible",
          "premops_bipd_deductible", "prods_bi_deductible",
          "prods_pd_deductible", "prods_bipd_deductible", "coverage_form",
          "claims_made_year", "size_of_risk", "experience_rating",
-         "schedule_rating", "schedule_pct", "terrorism")
+         "schedule_rating", "schedule_pct", "terrorism", "effective_date")
 
 
 # ------------------------------------------------------------------ building

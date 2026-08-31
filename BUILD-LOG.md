@@ -3879,3 +3879,75 @@ and the actual remaining question: should `Company` be a hard refusal (OI-94's s
 referral, and does ISO's *live* RAaS service enforce this validation as a hard 400 rather than
 completing with the message carried — the STC sample is ISO's own worked example, not a live call,
 so it cannot settle that question. `docs/OPEN-ITEMS.md` OI-95 updated in place with the correction.
+
+---
+
+## Entry 45 — The effective-date variable, built: one control, one date, threaded through both
+## the payload and the as-of resolution so they cannot disagree. Immediately found OI-96.
+
+- **Date:** 2026-08-31
+- **Directed:** *"Lets do build the effective date variable."* Decision A3, 2026-08-19: *"ISO will
+  rate a future effective date... one control, set per scenario, carried into the payload and the
+  as-of resolution together so they cannot disagree."* Sizing: medium.
+- **Traced first.** The two dates don't diverge *inside* `Kernel.rate()` — `SchemeKeys.EffectiveDateTime`
+  is read once and used both to stamp the payload and to resolve the edition
+  (`gl_engine/rating/submission.py`). The divergence is one layer up, in the test harness:
+  `scripts/variants.py`'s `Declared` resolves ISO's rulebook at a hardcoded `DEFAULT_ASOF`
+  (`"20260801"`) to compute "what's legal," and no control ever wrote to the payload's own date field
+  — the two only ever agreed because the stored base submissions happen to carry that exact date too.
+  The moment anything let a scenario ask for a different date without changing the payload to match,
+  the harness would silently report options legal under one rulebook while rating under another.
+- **Built:**
+  - `scripts/variants.py` — new control `effective_date` (`derive="effective_dates"`; no ISO field
+    declares a domain of legal dates, so the options are the corpus's own edition-boundary dates for
+    the jurisdiction, from `EditionResolver.by_juris`, plus the two already-proven landmarks
+    `MIN_ASOF` and `CLASS_BASIS_CLIFF` — read from the corpus, not invented). Applier writes
+    `SchemeKeys.EffectiveDateTime`. New classmethod `Declared.for_config(juris, config)` — **the one
+    correct way** to construct `Declared` once a config might carry `effective_date`: resolves at the
+    config's own date instead of `DEFAULT_ASOF`, so the same string ends up in both the resolution and
+    the payload by construction, not by two places happening to agree.
+  - `scripts/sweep.py` `run_config` — per-row `asof` now prefers `cfg.get("effective_date")` over the
+    run-level default. This is the actual fix for the divergence: previously every row in a sweep
+    resolved at one `asof` regardless of what a scenario's own config said.
+  - `scripts/qa.py` `tier_t4` — rewritten from a no-op wrapper around `tier_t1()` (the literal
+    "NOT RUNNABLE until the as-of probe answers" placeholder) into T1's matrix emitted twice per
+    config, dated the day before and the day of `CLASS_BASIS_CLIFF` (real date arithmetic, not string
+    subtraction). 44 rows from 22 T1 configs.
+  - `scripts/layers.py` `plan()` — the existing `asof` parameter now also writes `effective_date`
+    into every scenario when it's away from the default, so **any layer at any `--asof` is already a
+    self-consistent run** — no separate cliff layer needed, matching how the docs framed this as
+    replacing a parallel tier rather than adding one. `L5`/`L6` stay reserved for the deductible
+    ladder, per the module's own docstring — effective date is a cross-cutting axis like `size`, not
+    a numbered rung.
+  - `ui/variables.py` `for_juris`/`legality` — prefer a config's own `effective_date` over the
+    caller's `asof`, so a page that lets someone pick a date has every other dropdown update to match
+    automatically.
+- **Verified:** `tests/verify_tester.py` gains group **H** (6 checks) — pins that the option list is
+  the corpus's own boundaries (not invented), that `Declared.for_config` resolves at the config's
+  date, that the built payload carries the same date, and the load-bearing one: **H4** rates the
+  payload through a real `Kernel` and asserts the resolved package tuple is byte-identical to what
+  `Declared` itself resolved — the actual property decision A3 asked for, not just that the code
+  runs. Plus **Q2b**, pinning `tier_t4` now produces a genuinely different, dated matrix. 70/70.
+  `tests/verify_breadth.py` 26/26, `tests/verify_layers.py` all green, `tests/verify_stage6.py` 30/30
+  — nothing else moved.
+- **Found immediately, and NOT fixed — OI-96.** Rating T1's base configuration at `CLASS_BASIS_CLIFF`
+  across the 12 CORE states: **5 rate fine (NY, CA, NJ, FL, GA), 7 fail (OH, TX, PA, RI, MT, WY,
+  DE).** Traced with the trace log: `ILFPremOps`/`ILFProds` miss on both the state and countrywide
+  layers for the stored base's own table-assignment key in the 2027 edition. Worse, the two coverage
+  sides disagree on how to fail: Prem/Ops's `SetCSLILF` writes `None` and `SetFinalILF` still produces
+  a plausible non-null number anyway (`0.007` in TX — a null silently becoming a figure, N13's shape
+  again); Prods/CompldOps correctly refuses rather than coerce the null. **This is exactly what T4 was
+  supposed to be for** — the docs said the cliff wasn't testable by ordinary scenarios before this
+  control existed, and the first ordinary scenario run at the cliff found something real. Logged as
+  `OPEN-ITEMS.md` OI-96, not built — a measurement from the new capability landing, not a go to fix
+  an engine defect.
+
+### ▶ Next session
+
+**The effective-date variable itself needs nothing further** — control, applier, per-row resolution,
+`tier_t4`, and the layer-grid axis are all built and tested. **OI-96 is the real next item**: it's a
+defect in the 2027 countrywide edition's ILF resolution (or in what the stored 2026-shaped base
+submissions carry into it), found the moment this control made the cliff reachable by an ordinary
+run. Worth root-causing before deciding whether it's a table-key rename in the 2027 filing or a gap
+in what the base submissions carry — `docs/rating-engine/13-LOSS-COSTS-AND-ELP.md` §13.7's class-basis
+migration is the most likely shape, unconfirmed.

@@ -58,8 +58,15 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 import sweep                                                   # noqa: E402
 import variants as V                                           # noqa: E402
+from gl_engine.config import CLASS_BASIS_CLIFF                 # noqa: E402
 from raas import NO_ISO                                        # noqa: E402
 import runstore as store                                       # noqa: E402
+
+#: The day before the 43-jurisdiction basis cliff -- T4's "before" row. Real
+#: date arithmetic, not string subtraction: `CLASS_BASIS_CLIFF` minus one
+#: calendar day, computed once at import time.
+_DAY_BEFORE_CLIFF = (dt.datetime.strptime(CLASS_BASIS_CLIFF, "%Y%m%d")
+                     - dt.timedelta(days=1)).strftime("%Y%m%d")
 
 #: Decision A6, 2026-08-17. Standing budget, then the absolute ceiling.
 DAILY_STANDING = 60
@@ -187,7 +194,20 @@ def tier_t2():
 
 
 def tier_t4():
-    return [(c, CORE) for c, _ in tier_t1()]
+    """T1's matrix, each config dated on both sides of the 2027-04-01 cliff.
+
+    Decision A3, 2026-08-19, built 2026-08-31: the effective-date control
+    (`variants.py` `effective_date`) makes this an ordinary scenario axis
+    rather than a parallel tier needing its own harness -- `sweep.run_config`
+    resolves each row at ITS OWN `effective_date`, not the run's default, so
+    a difference between a config's two rows is attributable to the edition
+    change and nothing else.
+    """
+    out = []
+    for c, _ in tier_t1():
+        out.append(({**c, "effective_date": _DAY_BEFORE_CLIFF}, CORE))
+        out.append(({**c, "effective_date": CLASS_BASIS_CLIFF}, CORE))
+    return out
 
 
 TIERS = {
@@ -202,8 +222,9 @@ TIERS = {
            "what": "every filed rate cell -- 278,054 -- offline, no ISO calls. "
                    "NOT BUILT: needs the per-class payload builder"},
     "T4": {"name": "Edition cliff", "build": tier_t4, "live": True,
-           "what": "the T1 matrix at both sides of 2027-04-01. NOT RUNNABLE "
-                   "until the as-of probe answers (decision A3)"},
+           "what": f"the T1 matrix on both sides of {CLASS_BASIS_CLIFF} "
+                   f"({_DAY_BEFORE_CLIFF} and {CLASS_BASIS_CLIFF}) -- twice "
+                   f"the T1 row count. Runnable since 2026-08-31 (decision A3)"},
 }
 
 

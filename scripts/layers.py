@@ -236,6 +236,14 @@ def plan(layer: str, class_code: str = "", exposure=None,
     `size` to run a deliberately smaller, named grid (see `L3_REDUCED`); use
     `allowance` to run the full grid offline and a thinned slice of it live.
     The two compose: a reduced-size run can still be given its own allowance.
+
+    **`asof` now does more than pick a class-basis grouping (decision A3,
+    built 2026-08-31).** Away from `V.DEFAULT_ASOF`, it is written into every
+    scenario as `effective_date` too, so ANY layer can be pointed at the
+    2027-04-01 cliff -- or any other edition boundary -- and get a
+    self-consistent run: the same date resolves what's legal and gets rated.
+    There is no separate cliff layer; any `--layer` at `--asof 20270401` is
+    already the ordinary scenario decision A3 asked for.
     """
     if layer not in LAYERS:
         raise PlanError(f"unknown layer {layer!r}; known: {', '.join(LAYERS)}")
@@ -259,6 +267,14 @@ def plan(layer: str, class_code: str = "", exposure=None,
         for g in groups:
             full = {"subline": SUBLINE}
             full.update(cfg)
+            if asof != V.DEFAULT_ASOF:
+                # Decision A3: the same `asof` that grouped these classes by
+                # basis (above) is written into the scenario itself, so
+                # `sweep.run_config` resolves "what's legal" and rates "what
+                # gets sent" from the SAME date. Left off at the default so an
+                # ordinary run's `describe()` stays as plain as it was before
+                # this control existed.
+                full["effective_date"] = asof
             if class_code:
                 full["class_code"] = str(class_code)
                 amount = _exposure_for(exposure, g["basis"])
@@ -313,7 +329,7 @@ def describe(config: dict) -> str:
         c["general_aggregate"] = f"{pos[1:]} legal aggregate"
     bits = []
     for k in ("class_code", "exposure", "occurrence_limit",
-              "general_aggregate"):
+              "general_aggregate", "effective_date"):
         if k in c:
             bits.append(f"{V.BY_ID[k].label}={c[k]}")
     for k in DEDUCTIBLE_SLOTS:

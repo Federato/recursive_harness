@@ -106,6 +106,27 @@ day taught is [`what-the-harness-taught-us_20260817.html`](what-the-harness-taug
 
 ---
 
+> ## Written 31 August, later the same day — the effective-date variable is built
+>
+> **§1's "As-of date selector" row and every "effective-date variable" mention in §5/§6 below are
+> done, not pending.** `scripts/variants.py` gained the `effective_date` control; `Declared.for_config`
+> is the one correct way to construct `Declared` once a config carries it; `sweep.run_config` resolves
+> each row at its own date instead of one date for the whole run; `scripts/qa.py`'s `tier_t4` — the
+> literal "NOT RUNNABLE until the as-of probe answers" placeholder — now actually rates both sides of
+> the 2027 cliff instead of silently doubling T1. `tests/verify_tester.py` group H (6 checks) pins the
+> load-bearing property directly: the package `Kernel.rate()` resolves is byte-identical to what
+> `Declared` resolved for the same config. **The UI's as-of *selector* itself — an actual date-picker
+> control on the page — is still not built**; what's done is the axis it would sit on top of, which
+> was the entire blocker named in §1.
+>
+> **Immediately found something real: OI-96.** The first ordinary scenario run at the cliff —
+> exactly what this control was for — found that 7 of the 12 CORE states fail to rate at all past
+> `2027-04-01`, and the two coverage sides disagree on how to fail: one refuses on a null, the other
+> silently turns the same null into a plausible number. **Not fixed.** Full trace:
+> [`BUILD-LOG.md`](../BUILD-LOG.md) Entry 45; [`OPEN-ITEMS.md`](OPEN-ITEMS.md) OI-96.
+
+---
+
 # The two things you named, first
 
 ## 1 · Finish the UI the proposal promised

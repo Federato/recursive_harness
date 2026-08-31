@@ -139,7 +139,15 @@ def run_config(config: dict, jurisdictions=None, compare: bool = False,
         row = {"n": i, "juris": j, "base": base_premiums.get(j)}
         cfg_j = cfg
         try:
-            d = declared(j, asof)
+            # A config that sets `effective_date` resolves at ITS date, not
+            # the run's -- otherwise "what's legal" and "what gets rated" are
+            # two different rulebooks, decision A3's whole defect. `asof`
+            # stays the run-level default for every config that leaves it
+            # unset, same as before.
+            row_asof = str(cfg.get("effective_date") or asof)
+            d = declared(j, row_asof)
+            if row_asof != asof:
+                row["asof"] = row_asof
             if resolve is not None:
                 cfg_j = V.clean(resolve(cfg, d))
                 if cfg_j != cfg:

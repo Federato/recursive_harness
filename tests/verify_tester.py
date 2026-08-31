@@ -11,6 +11,9 @@
                     otherwise offer 31 illegal values
   D  applicability  a jurisdiction that cannot express a configuration is
                     counted separately from one that disagrees
+  H  effective date the payload and the as-of resolution are the same date,
+                    by construction (decision A3) -- not two things that
+                    happen to agree today
   E  store          runs round-trip, and the long view is computed from them
   F  charts         every chart returns SVG, and an empty one says what would
                     fill it
@@ -141,6 +144,52 @@ def main() -> int:
         both = False
     check("C2 setting both split and combined is refused", not both,
           "ISO declares them mutually exclusive")
+
+    print("\nH  THE EFFECTIVE DATE CANNOT DISAGREE WITH ITSELF (decision A3)")
+    from gl_engine.config import CLASS_BASIS_CLIFF, MIN_ASOF     # noqa: E402
+    from gl_engine.rating import Kernel, STRICT                  # noqa: E402
+    ed_opts = V.BY_ID["effective_date"].options(d, {})
+    check("H1 the options are the corpus's own edition boundaries, not an "
+          "invented list",
+          MIN_ASOF in ed_opts and CLASS_BASIS_CLIFF in ed_opts
+          and all(len(x) == 8 and x.isdigit() for x in ed_opts),
+          f"{len(ed_opts)} dates for OK, floor and cliff both present")
+
+    cfg_cliff = {"effective_date": CLASS_BASIS_CLIFF}
+    d_cliff = V.Declared.for_config("NY", cfg_cliff)
+    check("H2 Declared.for_config resolves at the config's date, not "
+          "DEFAULT_ASOF",
+          d_cliff.asof == CLASS_BASIS_CLIFF and d_cliff.asof != V.DEFAULT_ASOF,
+          f"resolved asof={d_cliff.asof}")
+
+    payload_cliff = V.build(cfg_cliff, d_cliff)
+    check("H3 the same date lands in the payload's own SchemeKeys",
+          payload_cliff["body"]["SchemeKeys"]["EffectiveDateTime"]
+          == "2027-04-01T00:00:00",
+          payload_cliff["body"]["SchemeKeys"]["EffectiveDateTime"])
+
+    kernel_h = Kernel(mode=STRICT, resolver=V.Declared.resolver())
+    r_cliff = kernel_h.rate(payload_cliff)
+    d_pkgs = (d_cliff.book.resolution.state.pkg_id,) + (
+        (d_cliff.book.resolution.parent.pkg_id,)
+        if d_cliff.book.resolution.parent else ())
+    check("H4 the engine resolves the SAME edition Declared did -- the "
+          "defect decision A3 named, closed by construction",
+          r_cliff.complete and r_cliff.packages == d_pkgs,
+          f"Declared={d_pkgs}, Kernel={r_cliff.packages if r_cliff.complete else r_cliff.stopped}")
+
+    d_before = V.Declared.for_config("NY", {})
+    check("H5 leaving effective_date unset still resolves DEFAULT_ASOF, "
+          "unchanged from before this control existed",
+          d_before.asof == V.DEFAULT_ASOF, d_before.asof)
+
+    try:
+        V.build({"effective_date": "not-a-date"}, d)
+        bad_date_refused = False
+    except V.VariantError:
+        bad_date_refused = True
+    check("H6 a malformed date is refused, not silently written",
+          bad_date_refused)
 
     print("\nD  NOT APPLICABLE IS NOT DISAGREEMENT")
     cm = variables.legality({"coverage_form": "Claims Made"})
@@ -346,6 +395,14 @@ def main() -> int:
     unbuilt = [t["id"] for t in spec["tiers"] if not t["runnable"]]
     check("Q2 a tier that is not built says so rather than pretending",
           "T3" in unbuilt, f"not runnable: {unbuilt} -- each names what it needs")
+
+    t4_rows = qa.tier_t4()
+    t4_dates = {c.get("effective_date") for c, _ in t4_rows}
+    check("Q2b T4 is a real cliff run now (decision A3), not T1 doubled "
+          "in name only",
+          len(t4_rows) == 2 * len(qa.tier_t1())
+          and t4_dates == {qa._DAY_BEFORE_CLIFF, qa.CLASS_BASIS_CLIFF},
+          f"{len(t4_rows)} rows, dated {sorted(t4_dates)}")
 
     # The guard has to hold on the button as well as the command line, or the
     # budget becomes a matter of which door you came in by.
