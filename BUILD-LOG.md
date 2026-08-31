@@ -4203,3 +4203,47 @@ Item 2 of 3 done. Item 3, pause/stop on a running tier, is what's left of the sm
 
 **The small-UI backlog (3 items) is closed.** Nothing queued from this thread. The two bugs found
 while building item 3 are already fixed, not carried forward as open items.
+
+---
+
+## Entry 52 — The TX size-of-risk call, finally sent. OI-94's cause is now confirmed in a second
+## state, not inferred from one. A live-client bug found and fixed along the way.
+
+- **Date:** 2026-08-31
+- **Directed:** *"Regenerate and send the TX call."* The standing ask since `START-HERE-TOMORROW.md`
+  §3 (2026-08-18): the original evidence file no longer existed (Entry 43), regenerable but never
+  regenerated until now.
+- **Regenerated:** built `{"size_of_risk": "Yes"}` for TX offline, confirmed the OI-94 refusal fires
+  exactly as documented (`PremOpsSizeOfRiskLossCost` lookup miss, state then countrywide), stored it
+  through `runstore.append` so `scripts/qa_review.py --payloads` could find it. Validated the exported
+  `request.json` against ISO's own schema first — zero errors, six warnings/info, same as the
+  original evidence file's own claim.
+- **Sent.** Hit a real bug in `scripts/raas.py` on the first attempt: `RaaS.rate()`'s own error path
+  referenced `self.rate_url`, an attribute that has never existed (`self.endpoint` is the real name)
+  — so the very call meant to capture a 400's body crashed on `AttributeError` before doing so,
+  discarding the response ISO had already sent. **This means the call was made twice**: once that
+  reached ISO and got a 400 the client then threw away, and once more after the one-line fix to
+  actually see it. Both are real ISO calls against today's budget; logged as 2 spent, not 1, rather
+  than let the bug's own cost go unrecorded. Fixed in place (`self.rate_url` → `self.endpoint`, both
+  occurrences) — `results/failed-calls/` now captures correctly again, confirmed by this exact call.
+- **The answer:**
+  ```
+  Error running Lookup Rule at line 5411 in RuleSet GeneralLiabilityClassificationPremOpsCoverageRules
+  (Project GL CW 20231201 V03): Matrix: PremOpsSizeOfRiskLossCost, Project: GL CW 20231201 V03,
+  Keys: CW, 001, 50017. No results have been returned.
+  ```
+  **The same table our own refusal names, the same state→countrywide miss our own trace walks.**
+  The 2026-08-17 adversarial review had proven this only for Georgia (the one 400 body captured in
+  full); TX was one of the ten confirmed by *outcome* the next day but never by *cause*. **It now is.**
+  Two independent states, two identical rule-engine failures on the identical table — this is no
+  longer "ISO also refuses," it's "ISO refuses for the reason we said."
+- **Verified:** `tests/verify_phase2.py` re-run after the `raas.py` fix, to confirm the one-line
+  change didn't touch anything the offline suite depends on — clean.
+- **Logged:** `docs/OPEN-ITEMS.md` OI-94 updated in place with the TX confirmation.
+
+### ▶ Next session
+
+**OI-94 is now fully settled — outcome in 13 of 14, cause in 2 of 14, and PR excluded by design.**
+Nothing further needed for it. The `raas.py` fix is small and self-contained; worth a glance next
+time any live call throws, since it's the first time that error path has actually been exercised
+successfully.

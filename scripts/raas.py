@@ -213,12 +213,12 @@ class RaaS:
                 err = RaaSError(
                     f"rate endpoint returned {exc.code}: {text[:300]}",
                     status=exc.code, body=text, payload=payload,
-                    url=self.rate_url)
+                    url=self.endpoint)
                 capture(err)
                 raise err from None
             except urllib.error.URLError as exc:
                 raise RaaSError(f"cannot reach the rate endpoint: {exc.reason}",
-                                payload=payload, url=self.rate_url) from None
+                                payload=payload, url=self.endpoint) from None
         raise RaaSError("unreachable")
 
 
