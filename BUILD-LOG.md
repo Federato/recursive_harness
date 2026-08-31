@@ -4304,3 +4304,50 @@ OI-96 (`variants.py` `_apply_effective_date`), a second field the 2027 cliff sil
 **The corpus-staleness pattern (ND/NH/VT/SD) still needs the exposure measurement the user asked
 for** — a read-only scan of every state/edition's on-disk version against what's currently live at
 ISO, to know whether this is four states or forty.
+
+## Entry 54 — Corpus-freshness measurement, then the drift it measured got closed by direct
+## evidence instead: a fresher pull, and ND/NH now match ISO exactly.
+
+- **Date:** 2026-08-31
+- **Directed:** *"start that now"* (the corpus-freshness measurement), then, once it came back
+  inconclusive, *"see 2027-04-01 editions at
+  C:\Projects\ISO_ERC_Files\General_Liability\20270401"*.
+- **Measured first, per Rule #1** (enumerate before deriving): `scripts/erc/55_corpus_freshness.py`,
+  new, read-only. Tried two offline signals to rank which of the 43 states holding the 2027-04-01
+  edition were most likely already behind ISO's live filings the way ND/NH turned out to be
+  (Entry 53). **Both failed to discriminate** — pull recency was nearly uniform across the corpus
+  (50 of 51 jurisdictions pulled the same week), and ND/NH's historical mid-edition bump rate was
+  0%, identical to VT/SD, which matched anyway despite the same version gap. Logged as a negative
+  result folded into OI-97 rather than a separate item, per direction.
+- **Then the user pointed at new data, not asked for by name — enumerated rather than assumed
+  irrelevant.** `C:\Projects\ISO_ERC_Files\General_Liability\20270401\{V1,V2}` held 46 zip files
+  (43 distinct after de-duplicating one accidental double-download of AL's), covering 40
+  jurisdictions plus two countrywide versions — a materially more current pull of the same
+  2027-04-01 edition the whole session has been testing.
+- **Unpacked in place**, matching the corpus's own existing convention exactly (`GL_<ST> <edition>
+  <version>_MachineReadableContent.zip` → a same-named folder, one level of internal wrapping,
+  verified against an existing ND package before extracting anything): 42 new package directories
+  extracted, 4 already present and skipped, zero errors. Corpus grew **569 → 611 packages**.
+  Confirmed via `discover()`: **ND now holds V01 and V04; NH now holds V02 and V05** — exactly the
+  versions ISO's live service had already been returning.
+- **Re-ran the two live calls from Entry 53 rather than assume the fix.** Same configuration,
+  same classifications=2/exposure=$25,000,000/effective_date=20270401: **ND `MATCH` at 42825, NH
+  `MATCH` at 41150, every field.** Version drift was the entire cause in both states — nothing else
+  wrong underneath. 2 more live calls spent (8 total across Entries 53–54 today).
+- **Re-ran the corpus-wide OI-96 CSL-suffix scan** (`54_oi96_csl_suffix.py`) since the corpus grew
+  materially and three previously-unmeasurable states (FL, MA, NV) now carry a 2027-04-01 edition.
+  **47 of 47 jurisdictions with a 2027 edition now filed still drop the suffix — universal held**,
+  up from 44 of 44. Remaining unmeasurable: CA, GA, NJ, NY, WA (still no 2027 edition on disk).
+- **Logged:** `docs/OPEN-ITEMS.md` OI-96 addendum (47/47, updated unfiled list) and OI-97's
+  version-drift half marked `CLOSED` by direct evidence, with the risk-ranked-but-unconfirmed
+  remainder (DC, NC, TX, WI, WV, AK — still single-version, this pull didn't touch them) named
+  explicitly rather than implied settled.
+- **What this does NOT touch:** OI-97's other half, the `ProdsCompldOpsExclusion` coverage drop.
+  TX was not part of this pull (still V01) and the defect is a submission-builder gap, not a
+  version-drift one — a fresher TX package would not fix it. Still `OPEN`, still awaiting a go.
+
+### ▶ Next session
+
+**OI-97 is now scoped to exactly one open question: the `ProdsCompldOpsExclusion` fix**, same file
+and mechanism as OI-96's own fix (`variants.py` `_apply_effective_date`). The version-drift half
+that opened alongside it is closed. Needs a go before anything is built.
