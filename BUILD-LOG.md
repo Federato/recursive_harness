@@ -4111,3 +4111,45 @@ lookup-side fix is worth building anyway against the *next* reformatting.
 
 Item 1 of 3 done. Next: item 2, the auto-run-review checkbox (run the review pass automatically when
 a tier finishes). Item 3, pause/stop on a running tier, after that.
+
+---
+
+## Entry 50 — Item 2 of 3: the auto-run-review checkbox. Pass 3 runs when a tier finishes, not only
+## when someone types a command.
+
+- **Date:** 2026-08-31
+- **Directed:** *"go"*, continuing the small-UI backlog's own stated order.
+- **Traced first.** `qa_review.py` has three distinct things sharing one file: pass 2's
+  `export_refusals` (writes to disk), **pass 3** `review_runs(tier, juris, limit)` (fully mechanical,
+  re-reads ISO's own CSVs independently of the engine, no side effect, no agent), and **pass 4**
+  `briefs_for_run` (prompts for a *person* to hand to reviewer agents — the module's own docstring:
+  *"a Python script cannot invoke the specialist agents"*). Only pass 3 is a safe automatic-trigger
+  candidate. `ui/tester.py`'s `/api/tester/qa/review` route already computes pass 3 fresh on every
+  request (`QR.review_runs(tier, "", 30)`) rather than reading a stored artifact — so "run it
+  automatically" means calling that same function when a tier's background worker finishes, not
+  inventing a new storage path.
+- **Built:**
+  - `ui/tester.py` — `_pass3_view(pass3)` extracted from `_qa_review`'s dict-building, so the tab and
+    an automatic run compute the identical shape from `pass3["results"]` rather than two readings of it.
+  - `_qa_start`/`_qa_worker` gain `review_after` (from the request body, stored on the job). The
+    worker calls `QR.review_runs(tier, "", 30)` **after** `job["finished"] = True` is set (so the
+    scenario-progress UI isn't blocked on it) and attaches the result to `job["review"]` under a
+    second lock acquisition. Wrapped in `try/except` — a review failure is reported on the job, never
+    silently swallowed and never crashes the worker thread.
+  - A new checkbox, **"Run the harness review afterwards,"** under "Compare each against ISO,"
+    unchecked by default (opt-in — pass 3 over up to 30 runs is real computation, not free).
+  - `qaPoll()` keeps polling past `finished:true` until the review has also landed when
+    `review_after` was requested — stopping at `finished` would otherwise freeze the screen on
+    "reviewing…" forever, since nothing would fetch again.
+- **Verified:** `tests/verify_tester.py` gains **Q9/Q10** (78/78 total) — a hand-built one-jurisdiction
+  scenario (not a real 51-state sweep, to keep the test fast) confirms `review_after=True` populates
+  `job["review"]` with the same shape the tab uses, and `review_after=False` leaves it `None` — no
+  cost paid when the box is left unchecked. `verify_breadth` 28/28 unaffected. **Checked in an actual
+  browser**: started `app.py`, ran T0 offline with the box checked, watched the progress counter (a
+  51-state offline sweep takes ~2 minutes — `sweep.run_config`'s own `probe_no_op` re-rating, not new
+  from this change), and confirmed the finished screen rendered *"Review ran automatically — 0 NOT
+  APPLICABLE row(s) checked against ISO's own files, none contradicted."* Zero new console errors.
+
+### ▶ Next session
+
+Item 2 of 3 done. Item 3, pause/stop on a running tier, is what's left of the small-UI backlog.

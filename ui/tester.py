@@ -224,19 +224,25 @@ def _qa_review(query) -> tuple:
         payloads = sorted(x.name for x in d.iterdir() if x.is_dir())
 
     return 200, json.dumps({
-        "pass3": {"reviewed": pass3["reviewed"], "counts": pass3["counts"],
-                  "contradicted": [
-                      {"juris": x["juris"],
-                       "describes": V.describe(x["config"]),
-                       "why": next((f["why"] for f in x["findings"]
-                                    if f["verdict"] == QR.CONTRADICTED), "")}
-                      for x in pass3["results"]
-                      if x["verdict"] == QR.CONTRADICTED][:20],
-                  "causes": _pass3_causes(pass3)},
+        "pass3": {**_pass3_view(pass3), "causes": _pass3_causes(pass3)},
         "briefs": groups,
         "payload_dir": str(d),
         "payloads": payloads,
     }), "json"
+
+
+def _pass3_view(pass3) -> dict:
+    """The `_qa_review` route's shape for one pass-3 result, factored out so
+    an automatic run (`_qa_worker`) and a person opening the tab compute the
+    same summary rather than two readings of `pass3["results"]`."""
+    import qa_review as QR
+    return {"reviewed": pass3["reviewed"], "counts": pass3["counts"],
+           "contradicted": [
+               {"juris": x["juris"], "describes": V.describe(x["config"]),
+                "why": next((f["why"] for f in x["findings"]
+                            if f["verdict"] == QR.CONTRADICTED), "")}
+               for x in pass3["results"] if x["verdict"] == QR.CONTRADICTED
+           ][:20]}
 
 
 def _pass3_causes(pass3) -> list:
@@ -315,6 +321,7 @@ def _qa_start(body) -> tuple:
         if not b["ok"]:
             label_extra = " [OVER BUDGET, forced]"
 
+    review_after = bool(body.get("review_after"))
     job_id = uuid.uuid4().hex[:12]
     total = sum(len(j) for _, j in sc)
     with JOBS_LOCK:
@@ -323,11 +330,12 @@ def _qa_start(body) -> tuple:
                         "scenarios": len(sc), "scenario_done": 0,
                         "describes": f"{tier} -- {spec['name']}",
                         "config": {}, "started": time.time(),
-                        "findings": [], "forced": bool(label_extra)}
+                        "findings": [], "forced": bool(label_extra),
+                        "review_after": review_after, "review": None}
     threading.Thread(target=_qa_worker, daemon=True,
                      args=(job_id, tier, sc, offline,
                            body.get("mode") or "strict-erc",
-                           label_extra)).start()
+                           label_extra, review_after)).start()
     return 200, json.dumps({
         "id": job_id, "tier": tier, "total": total, "scenarios": len(sc),
         "compare": not offline,
@@ -335,7 +343,8 @@ def _qa_start(body) -> tuple:
         else cost["offline_seconds"]}), "json"
 
 
-def _qa_worker(job_id, tier, scenarios, offline, mode, label_extra=""):
+def _qa_worker(job_id, tier, scenarios, offline, mode, label_extra="",
+               review_after=False):
     agree = differ = na = stopped = calls = 0
     findings = []
     for idx, (cfg, js) in enumerate(scenarios, 1):
@@ -388,6 +397,21 @@ def _qa_worker(job_id, tier, scenarios, offline, mode, label_extra=""):
                 "differ": differ, "not_applicable": na, "engine_stopped": stopped,
                 "live_calls": calls,
                 "seconds": round(time.time() - job["started"], 1)}
+
+    # W1: "pass 3 should run when a tier finishes, not only when someone
+    # types a command." Same computation `_qa_review` already exposes on the
+    # tab (`_pass3_view`) -- run here, not re-derived, and never pass 4: that
+    # one needs a person to dispatch an agent and cannot run automatically.
+    if review_after:
+        try:
+            import qa_review as QR
+            review = _pass3_view(QR.review_runs(tier, "", 30))
+        except Exception as exc:                              # noqa: BLE001
+            review = {"error": f"{type(exc).__name__}: {exc}"[:200]}
+        with JOBS_LOCK:
+            job = JOBS.get(job_id)
+            if job is not None:
+                job["review"] = review
 
 
 def _run_state(job_id: str) -> tuple:
@@ -627,6 +651,8 @@ cursor:pointer;background:#fff;display:block}
    <div id="qatiers"></div>
    <label style="margin-top:10px"><input type="checkbox" id="qalive" checked>
      Compare each against ISO</label>
+   <label style="margin-top:4px"><input type="checkbox" id="qareview">
+     Run the harness review afterwards</label>
    <div class="row" style="margin-top:8px">
      <button id="qarun">Start</button>
      <button class="ghost" id="qaplan">Show the matrix first</button>
@@ -731,7 +757,8 @@ function qaRun(){
   const offline=!$('qalive').checked;
   $('qastatus').textContent='starting\u2026';
   fetch('/api/tester/qa/run',{method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({tier:QATIER,offline:offline,force:QAARMED})})
+    body:JSON.stringify({tier:QATIER,offline:offline,force:QAARMED,
+      review_after:$('qareview').checked})})
    .then(r=>r.json().then(d=>({code:r.status,d:d}))).then(({code,d})=>{
      if(code===409){
        // A warning you can act on, not a refusal. Arm the button rather
@@ -818,7 +845,10 @@ function qaPoll(){
     let msg='scenario <b>'+(j.scenario_done||0)+'</b> of '+j.scenarios
       +' &middot; '+j.done+' of '+j.total+' ratings';
     if(j.finished){
-      clearInterval(QATIMER);QATIMER=null;
+      // Keep polling past "finished" until the review (if asked for) has
+      // also landed -- stopping at "finished" would freeze the screen on
+      // "reviewing..." forever, since nothing else would ever fetch again.
+      if(!j.review_after || j.review!==null){clearInterval(QATIMER);QATIMER=null;}
       const s=j.summary||{};
       msg='<b>'+j.qa+' complete</b> in '+Math.round((s.seconds||0)/60)+' min &middot; '
         +'agree '+(s.agree||0)+' &middot; disagree <b>'+(s.differ||0)+'</b> &middot; '
@@ -830,6 +860,23 @@ function qaPoll(){
           +esc(f.describes||'')+(f.detail?'<br><span style="color:var(--muted)">'
           +esc(f.detail)+'</span>':'')+'</li>').join('')+'</ol>';
       else if(j.finished) msg+='<br><b>No findings.</b>';
+      if(j.review_after){
+        if(j.review===null) msg+='<div class="hint" style="margin-top:6px">'
+          +'reviewing&hellip;</div>';
+        else if(j.review.error) msg+='<div class="hint" style="margin-top:6px">'
+          +'<b>Review failed:</b> '+esc(j.review.error)+'</div>';
+        else {
+          const r=j.review;
+          msg+='<div class="hint" style="margin-top:6px"><b>Review ran '
+            +'automatically</b> &mdash; '+r.reviewed+' NOT APPLICABLE row(s) '
+            +'checked against ISO’s own files';
+          if(r.contradicted&&r.contradicted.length)
+            msg+=', <b style="color:var(--red)">'+r.contradicted.length
+              +' contradicted</b> (see &ldquo;What the review found&rdquo;).';
+          else msg+=', none contradicted.';
+          msg+='</div>';
+        }
+      }
       qaLoad();
     }
     $('qastatus').innerHTML=msg;

@@ -496,6 +496,53 @@ def main() -> int:
           f"{roll['counts']['not_applicable']} not-applicable outcomes; "
           f"{len(softened)} tile(s) softened to 'partial'")
 
+    # W1: pass 3 running automatically when a tier finishes, not only when
+    # someone types a command. A tiny hand-built scenario (one jurisdiction)
+    # rather than a real 51-state T0 sweep, so this test stays fast.
+    # Redirected to a temp store -- _qa_worker writes through store.append.
+    import time as _time
+    review_tmp = Path(tempfile.mkdtemp(prefix="tester-review-"))
+    review_real = store.RESULTS
+    store.RESULTS = review_tmp
+    try:
+        job_id = "verify-review-after"
+        with tester.JOBS_LOCK:
+            tester.JOBS[job_id] = {
+                "id": job_id, "qa": "T0", "total": 1, "done": 0, "rows": [],
+                "finished": False, "compare": False, "scenarios": 1,
+                "scenario_done": 0, "describes": "T0 test", "config": {},
+                "started": _time.time(), "findings": [], "forced": False,
+                "review_after": True, "review": None}
+        tester._qa_worker(job_id, "T0", [({}, ["OK"])], True, "strict-erc",
+                          "", True)
+        with tester.JOBS_LOCK:
+            finished_job = dict(tester.JOBS.pop(job_id))
+        check("Q9 review_after runs pass 3 automatically once the tier "
+              "finishes",
+              finished_job["finished"] and finished_job["review"] is not None
+              and "counts" in finished_job["review"],
+              finished_job["review"])
+
+        job_id2 = "verify-review-off"
+        with tester.JOBS_LOCK:
+            tester.JOBS[job_id2] = {
+                "id": job_id2, "qa": "T0", "total": 1, "done": 0, "rows": [],
+                "finished": False, "compare": False, "scenarios": 1,
+                "scenario_done": 0, "describes": "T0 test", "config": {},
+                "started": _time.time(), "findings": [], "forced": False,
+                "review_after": False, "review": None}
+        tester._qa_worker(job_id2, "T0", [({}, ["OK"])], True, "strict-erc",
+                          "", False)
+        with tester.JOBS_LOCK:
+            no_review_job = dict(tester.JOBS.pop(job_id2))
+        check("Q10 ...and leaving the checkbox unset costs nothing extra -- "
+              "no review computed",
+              no_review_job["finished"] and no_review_job["review"] is None,
+              no_review_job["review"])
+    finally:
+        store.RESULTS = review_real
+        shutil.rmtree(review_tmp, ignore_errors=True)
+
 
     print("\nE  THE STORE, AND THE LONG VIEW BUILT FROM IT")
     tmp = Path(tempfile.mkdtemp(prefix="tester-store-"))
