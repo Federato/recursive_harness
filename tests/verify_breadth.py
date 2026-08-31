@@ -33,7 +33,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 from breadth import (BreadthError, Declared, catalogue,      # noqa: E402
                      classifications, gl, locations)
 from gl_engine import EditionResolver                        # noqa: E402
-from gl_engine.config import CORPUS_ROOT                     # noqa: E402
+from gl_engine.config import CLASS_BASIS_CLIFF, CORPUS_ROOT   # noqa: E402
 from gl_engine.rating import Kernel, STRICT, UNDERWRITING    # noqa: E402
 from gl_engine.schema import validate                        # noqa: E402
 
@@ -299,6 +299,38 @@ def main() -> int:
           r_premops_uw.complete
           and any(ref.code == "R29" for ref in r_premops_uw.referrals),
           f"referrals={r_premops_uw.referrals}")
+
+    # OI-96: the 2027 filing dropped " CSL" from limit values; 7 of the 12
+    # CORE states stopped outright before variants.py started renormalizing
+    # the base's own limit fields against the resolved edition. Pinned as a
+    # standing regression case, not just a one-time check -- exact premiums,
+    # not just "it completes", the same discipline as E4b/E6/E9-E11 above.
+    import qa
+    kern_cliff = Kernel(mode=STRICT, resolver=EditionResolver())
+    cliff_premiums = {}
+    cliff_stopped = []
+    for juris in qa.CORE:
+        cfg = {"effective_date": CLASS_BASIS_CLIFF}
+        d = VV.Declared.for_config(juris, cfg)
+        r = kern_cliff.rate(VV.build(cfg, d))
+        if r.complete:
+            cliff_premiums[juris] = str(r.premium)
+        else:
+            cliff_stopped.append(juris)
+    check("E12 OI-96: every CORE state rates at the 2027 cliff, none stopped "
+          "on the CSL lookup miss",
+          not cliff_stopped, f"stopped: {cliff_stopped}" if cliff_stopped
+          else f"{len(cliff_premiums)} of {len(qa.CORE)} rated")
+    expected_cliff = {
+        "NY": "12141", "CA": "7586", "NJ": "9444", "OH": "435", "TX": "895",
+        "FL": "8672", "PA": "2830", "GA": "7366", "RI": "1165", "MT": "1066",
+        "WY": "1030", "DE": "825",
+    }
+    check("E13 ...and the premiums are the exact figures measured when this "
+          "was fixed, not just SOME number",
+          cliff_premiums == expected_cliff,
+          f"{cliff_premiums}" if cliff_premiums != expected_cliff else
+          "all 12 match")
 
     print(f"\n{len(PASS)}/{len(PASS) + len(FAIL)} passed")
     for f in FAIL:

@@ -4040,3 +4040,30 @@ doing before treating the cliff as fully proven: confirm at least one 2027-dated
 directly (a live call, when there's budget for one), and decide whether option 1 (generic
 suffix-tolerant lookup matching) is worth building anyway as a defense against the next reformatting
 — this fix answers today's known case, not the general problem.
+
+---
+
+## Entry 48 — OI-96 made a standing regression case, not just a one-time check.
+
+- **Date:** 2026-08-31
+- **Directed:** *"log all of this, and lets make this a part of our set of test cases."*
+- **Built:** `tests/verify_breadth.py` **E12/E13** — rates all 12 `qa.CORE` states at
+  `CLASS_BASIS_CLIFF` and pins two things: **E12** that none stop (the symptom OI-96 was), **E13**
+  the exact premium for each of the 12, not just "some number" — same discipline as E4b/E6/E9–E11
+  above it, which is the project's own standing rule for a defect once it's closed: pin the figure,
+  not just the outcome, so a regression shows as a wrong number rather than a silent pass. 28/28 in
+  that file now; `verify_tester` unaffected, 73/73.
+- **Why a regression test and not just the fix:** the fix (Entry 47) proved the symptom is gone
+  *today*. Nothing before this pinned it going forward — a future change to `_renormalize_limit`, the
+  `effective_date` control, or the corpus itself could silently reopen exactly this failure and no
+  suite would say so. E12/E13 are that guard.
+- **Logged:** this entry; `docs/WHAT-I-NEED-FROM-YOU.md` gains **§C8** — the one live call that would
+  confirm the fixed premiums are also the *correct* ones, framed the same way §C7 frames OI-95's open
+  questions. `docs/START-HERE-TOMORROW.md` gains a dated addendum marking OI-96 fixed and pointing at
+  both.
+
+### ▶ Next session
+
+Nothing left to build for OI-96's known symptom. What's still open is unchanged from Entry 47: an ISO
+call to confirm the fixed premiums (§C8), and the standing question of whether the generic,
+lookup-side fix is worth building anyway against the *next* reformatting.

@@ -431,6 +431,29 @@ curiosity items, not blockers; call 1 is the only one that could change existing
 
 ---
 
+## C8 · One live call to confirm OI-96's fixed premiums are also the correct ones
+
+**Not blocking anything** — the rating-stops symptom is fixed and pinned as a standing regression
+test (`verify_breadth` E12/E13, `BUILD-LOG.md` Entry 48). What's left is a different question: is the
+*number* right, not just present.
+
+**The situation.** The 2027 filing dropped the `" CSL"` suffix from limit values in every jurisdiction
+measured (44 of 44). `variants.py` now renormalizes the three limit fields our test submissions carry
+to match, and TX's cliff premium moved from **~8,229** pre-cliff to **895** at `2027-04-01`. That's a
+large, real move, and nothing has confirmed it against ISO — it could be exactly right (a genuinely
+different 2027 rate structure) or it could mean the renormalization landed on the wrong legal value
+somewhere downstream of the three fields this fix touches.
+
+| Payload | What it settles |
+|---|---|
+| TX's base submission, `effective_date` set to `2027-04-01` (or any date in that edition's window), sent as-is | Does ISO's live service return **895** for this exact submission? If yes, the fix is confirmed correct, not just non-crashing. If it returns something else, the mismatch tells us where the renormalization (or something else in the 2027 edition) is still wrong |
+
+**If you don't answer:** the fix stands as built — verified to stop the crash, not verified against
+ISO's own number. That distinction is stated plainly in `BUILD-LOG.md` Entry 47 and the status
+artifact, not glossed over.
+
+---
+
 # D · Things that need a carrier
 
 ## D1 · Minimum premium amounts

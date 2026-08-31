@@ -122,8 +122,17 @@ day taught is [`what-the-harness-taught-us_20260817.html`](what-the-harness-taug
 > **Immediately found something real: OI-96.** The first ordinary scenario run at the cliff —
 > exactly what this control was for — found that 7 of the 12 CORE states fail to rate at all past
 > `2027-04-01`, and the two coverage sides disagree on how to fail: one refuses on a null, the other
-> silently turns the same null into a plausible number. **Not fixed.** Full trace:
+> silently turns the same null into a plausible number. Full trace:
 > [`BUILD-LOG.md`](../BUILD-LOG.md) Entry 45; [`OPEN-ITEMS.md`](OPEN-ITEMS.md) OI-96.
+>
+> **OI-96 fixed the same day (Entry 47), and made a standing test case (Entry 48).** Root cause:
+> ISO's 2027 filing dropped the `" CSL"` suffix from limit values, measured universal — 44 of 44
+> jurisdictions with a 2027 edition filed. Fixed on the payload side: `variants.py` renormalizes the
+> three limit fields the base submissions carry against the resolved edition's own declared spelling.
+> **All 12 CORE states now rate at the cliff.** `tests/verify_breadth.py` E12/E13 pin it going
+> forward — every CORE state's exact premium at the cliff, not just "it completes" — so a future
+> regression shows as a wrong number, not a silent pass. **Still open:** the fixed premiums aren't
+> confirmed against ISO (TX moved from ~8,229 to 895) — one live call, `WHAT-I-NEED-FROM-YOU.md` §C8.
 
 ---
 
