@@ -4247,3 +4247,60 @@ while building item 3 are already fixed, not carried forward as open items.
 Nothing further needed for it. The `raas.py` fix is small and self-contained; worth a glance next
 time any live call throws, since it's the first time that error path has actually been exercised
 successfully.
+
+## Entry 53 — Confirming a 2027 premium against ISO found two new things instead: a stale
+## corpus (not a bug) and a real coverage-dropping defect (OI-97, a bug).
+
+- **Date:** 2026-08-31
+- **Directed:** *"Confirm a 2027 premium against ISO."* Then *"and do 5 smaller states with a max
+  of classes and exposures."*
+- **First call — TX, base config, effective date 2027-04-01.** `MATCH`: ours 895, ISO 895.0, every
+  field agreed. **Reported as confirmed. This was wrong to call confirmed** — see below.
+- **Five more calls — VT, SD, ND, AK, NH, effective date 2027-04-01, classifications=2 (mixed
+  premium bases), exposure=$25,000,000.** (`locations=2` was tried first and correctly refused
+  offline in all five — single-territory states — at zero live-call cost, then dropped.) **3 of 5
+  matched** (VT, SD, AK); **2 disagreed** (ND, NH).
+- **The ND/NH disagreement traced to a package-version mismatch, not a resolver bug.** Every row's
+  `iso_package` field (ISO's own response header) named a *newer* version than the one we
+  resolved: ND ours `V01` vs ISO's `V04`; NH ours `V02` vs ISO's `V05`. VT and SD showed the same
+  pattern (ours behind ISO) but matched anyway, because those particular version bumps didn't
+  touch rate/ILF tables. **`gl-engine-code-expert` confirmed read-only: the resolver
+  (`gl_engine/resolve/resolver.py`) already does the right thing — it deterministically takes the
+  highest `(edition, version)` it has on disk.** The gap is that the disk copy is behind ISO's
+  live filings: ND's `20270401` package was pulled 2026-06-03 as `V01`; ISO has since amended it
+  to `V04`. NH's snapshot stopped at `V02`; ISO is at `V05`. **Not edition-specific and not a code
+  defect** — any state/edition where ISO has filed a version bump since that state's corpus pull
+  (dated June–August 2026, per-state) will show the identical symptom. The fix is an operational
+  corpus re-sync, outside this repo's scope; no change needed in `resolver.py` once the corpus is
+  current. **Not logged as its own open item per this session's direction — the user chose to
+  measure full exposure (all states/editions, not just these 4) before deciding whether/how to
+  log it; that measurement is the next step, not yet run.**
+- **The TX "confirmed" call turned out to be the bigger finding, once questioned.** The user's
+  *"premium seems super low"* prompted a second look, sent to `gl-authority`. **ISO's 2027-04-01
+  countrywide filing added a new field, `ProdsCompldOpsExclusion`**, and made
+  `GeneralLiabilityClassificationProdsCompldOpsCoverageRules.SetCoverageOnPolicyIndicator`
+  additionally require it present and not `"Yes"` — the pre-2027 rule needed only the subline.
+  **Our stored submissions never send it**, because it didn't exist before this edition. Result:
+  `CoverageOnPolicyIndicator` writes `0` for Products/CompldOps, the whole branch short-circuits
+  to a `0.0` constant, and **nothing downstream runs — no message, no referral.** TX's 895 is a
+  real, correctly-computed **Premises/Operations-only** premium; Products/CompldOps — over a third
+  of the pre-cliff total — silently disappeared. **Causally confirmed, not inferred:** adding
+  `"ProdsCompldOpsExclusion": "No"` (the value ISO's own certified TX 2027-04-01 STC sample uses)
+  and re-rating offline moves the premium **895 → 7,740**, back in range next to the pre-cliff
+  7,821. **ISO's live service matching us at 895 was never independent confirmation — it confirms
+  we sent RAaS the same incomplete submission, and both sides dropped coverage identically because
+  both received identical bad input.** Two systems agreeing on the output of the same bad input is
+  not evidence the output is right; this is the mistake in reporting it as "confirmed" the first
+  time. Likely affects all ~44 jurisdictions on the 2027-04-01 edition (field is declared once at
+  the countrywide layer), not confirmed per-state.
+- **Logged:** `docs/OPEN-ITEMS.md` OI-97, opened, `OPEN`, awaiting a go to build.
+- **Live calls spent today:** 6 (1 TX base + 5 small-state sweep). None wasted — the
+  `locations=2` attempts on single-territory states were caught offline before reaching ISO.
+
+### ▶ Next session
+
+**OI-97 needs a go before anything is built** — the fix is the same shape and the same file as
+OI-96 (`variants.py` `_apply_effective_date`), a second field the 2027 cliff silently requires.
+**The corpus-staleness pattern (ND/NH/VT/SD) still needs the exposure measurement the user asked
+for** — a read-only scan of every state/edition's on-disk version against what's currently live at
+ISO, to know whether this is four states or forty.
