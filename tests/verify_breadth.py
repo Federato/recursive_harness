@@ -323,13 +323,17 @@ def main() -> int:
           else f"{len(cliff_premiums)} of {len(qa.CORE)} rated")
     # Re-measured 2026-08-31 (OI-97, BUILD-LOG.md Entry 54): OH, FL, PA, RI
     # and DE moved when the corpus refresh bumped the countrywide parent from
-    # GL_CW_20270401_V01 to V02 for most CORE states. NY, CA, NJ, TX, GA, MT
-    # and WY are unchanged -- either their own state package or a V01 parent
-    # (TX) didn't move in this particular refresh.
+    # GL_CW_20270401_V01 to V02 for most CORE states.
+    #
+    # Re-measured again the same day (OI-97's fix, Entry 56): every state that
+    # declares `ProdsCompldOpsExclusion` jumped hard -- OH, TX, FL, PA, RI,
+    # MT, WY, DE were all silently pricing Products/Completed Operations at
+    # zero until now. NY, CA, NJ, GA are unchanged -- they have no 2027
+    # edition filed and never reach the field at all.
     expected_cliff = {
-        "NY": "12141", "CA": "7586", "NJ": "9444", "OH": "455", "TX": "895",
-        "FL": "1395", "PA": "3355", "GA": "7366", "RI": "1255", "MT": "1066",
-        "WY": "1030", "DE": "860",
+        "NY": "12141", "CA": "7586", "NJ": "9444", "OH": "7670", "TX": "7740",
+        "FL": "8610", "PA": "10570", "GA": "7366", "RI": "8715", "MT": "8539",
+        "WY": "8245", "DE": "8320",
     }
     check("E13 ...and the premiums are the exact figures measured when this "
           "was fixed, not just SOME number",

@@ -4430,3 +4430,51 @@ that opened alongside it is closed. Needs a go before anything is built.
 OI-97's `ProdsCompldOpsExclusion` fix is still the only open build item, awaiting a go. The new
 `package_version` control is built and tested at the CLI/engine layer; a quick browser pass on
 `/tester` would close the loop on the UI half.
+
+## Entry 56 — OI-97's fix: default to including the coverage. A stopgap, and a lesson worth
+## keeping longer than the fix.
+
+- **Date:** 2026-08-31
+- **Directed:** *"lets fix it, for now including the coverage. Log this as a learning."*
+- **Built.** `_apply_effective_date` (`scripts/variants.py`, the same site OI-96 patched) now
+  supplies `ProdsCompldOpsExclusion: "No"` whenever the resolved edition declares the field
+  (`d.values(GL, "ProdsCompldOpsExclusion")` is non-empty — data-driven, not hardcoded to
+  `CLASS_BASIS_CLIFF`, same discipline as OI-96's renormalization) and the submission doesn't
+  already answer it. `"No"` means *don't exclude* — the coverage the submission actually asked
+  for keeps pricing, same as every pre-2027 edition did with no such field to answer.
+- **Verified:** TX moves 895 → **7,740**, matching the causal test from Entry 53. Pre-2027 payloads
+  are untouched — the field is never written when the resolved edition doesn't declare it.
+- **The blast radius turned out to be every CORE state that declares the field, not just Texas.**
+  Re-running `verify_breadth` E13 (the CORE cliff-premium regression pins) found seven more jumps:
+  OH 455→7670, FL 1395→8610, PA 3355→10570, RI 1255→8715, MT 1066→8539, WY 1030→8245, DE 860→8320.
+  All eight were silently pricing Products/Completed Operations at zero. NY/CA/NJ/GA unchanged —
+  no 2027 edition filed, never reach the field. Re-pinned to the new figures.
+- **This is a stopgap, not a resolved answer, and the docstring says so in place.** Defaulting to
+  "include the coverage" is itself an invented answer — a real submission needs to say
+  deliberately whether Products/CompldOps is excluded, and picking "No" silently is the same class
+  of default this project otherwise refuses to make (B1's LCM held at 1.0 rather than guessed;
+  Company ELP referred rather than silently zeroed). It is the safer side to be wrong on — a
+  silent exclusion loses coverage nobody asked to drop, a silent inclusion at worst overprices —
+  but "safer to be wrong on" is not "right," and nothing here should be read as closing the
+  question of what a submission SHOULD say.
+- **The learning, for the record:** when ISO adds a new required field mid-filing, the OLD rule's
+  exact same subline/coverage-form condition can quietly gain a hard gate with nothing but the new
+  field's own absence to notice. The failure has no symptom that looks like a failure — no message,
+  no referral, no stopped rating — it looks exactly like the coverage still being priced, only
+  cheaper. OI-96 (a reformatted value) and OI-97 (a newly-required field) are two different shapes
+  of the same edition-transition risk, and this project already has a script for OI-96's shape
+  (`scripts/erc/54_oi96_csl_suffix.py`, corpus-wide, read-only) but not yet one for OI-97's —
+  finding it required a person asking "does that number look right," not an automated check. **What
+  would generalize this:** for any edition that adds a genuinely new field (not renamed, not
+  reformatted — a field with zero prior-edition history at all), check what a pre-existing
+  submission's silence on it resolves to, before trusting that submission's numbers at the new
+  edition. Not built here; recorded so the next edition transition starts from a question instead
+  of a surprise.
+- **Logged:** `docs/OPEN-ITEMS.md` OI-97 → `PARTIALLY BUILT`.
+
+### ▶ Next session
+
+OI-97's coverage-drop symptom is fixed as a stopgap; the underlying question (should a submission
+be forced to answer `ProdsCompldOpsExclusion` explicitly, and should the engine refuse rather than
+default when it doesn't) is still open and is a build/process decision, not made here. The
+`package_version` control's browser pass is still outstanding too.

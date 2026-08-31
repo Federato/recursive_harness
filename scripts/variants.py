@@ -931,6 +931,21 @@ def _apply_effective_date(p, value, d, config):
     figures (OI-96) -- see `_renormalize_limit`. Skipped for any field a
     control in this same config already owns, since that control resolves
     the value fresh against `d` on its own turn.
+
+    **OI-97: also supplies `ProdsCompldOpsExclusion` when the resolved
+    edition declares it and the submission doesn't already answer it.** The
+    2027-04-01 filing added this field and made Products/Completed
+    Operations pricing conditional on it being present and not `"Yes"` --
+    left absent (every base submission predates this field), ISO's own rule
+    reads that as "exclude," and the whole coverage silently drops to zero
+    with no message and no referral. Defaulting to `"No"` keeps pricing the
+    coverage the submission actually asked for, the same as every pre-2027
+    edition did with no such field to answer -- **this is a stopgap that
+    picks a side, not a fix for the underlying gap**: a real submission
+    still needs to say deliberately whether Products/CompldOps is excluded,
+    and silently answering "No" here is exactly the kind of default this
+    project otherwise refuses to invent. Logged as a standing lesson, not
+    just a fix -- BUILD-LOG.md Entry 56.
     """
     v = str(value)
     if len(v) != 8 or not v.isdigit():
@@ -945,6 +960,13 @@ def _apply_effective_date(p, value, d, config):
         current = risk.get(field)
         if isinstance(current, str):
             risk[field] = _renormalize_limit(d, field, current)
+
+    # OI-97: see the docstring above -- this is a stopgap default, not a
+    # resolved answer.
+    if "ProdsCompldOpsExclusion" not in risk:
+        legal_excl = d.values(GL, "ProdsCompldOpsExclusion")
+        if "No" in legal_excl:
+            risk["ProdsCompldOpsExclusion"] = "No"
 
 
 def _apply_package_version(p, value, d, config):
