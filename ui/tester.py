@@ -45,7 +45,7 @@ import sweep                                                  # noqa: E402
 from raas import NO_ISO                                       # noqa: E402
 import runstore as store                                      # noqa: E402
 
-from . import charts, variables                        # noqa: E402
+from . import charts, runfile, variables                # noqa: E402
 
 #: Seconds per live ISO call, measured over the phase 2 runs. Used only to warn
 #: before a long run -- a twenty-minute wait a person did not expect is the
@@ -361,7 +361,8 @@ def _qa_worker(job_id, tier, scenarios, offline, mode, label_extra=""):
         na += len(s["not_applicable"])
         stopped += len(s["engine_stopped"])
         calls += s["live_calls"]
-        store.append(s, out["rows"], label=f"qa {tier}{label_extra}")
+        store.append(s, out["rows"], label=f"qa {tier}{label_extra}",
+                     batch=job_id)
 
         # Findings are collected as the run goes, so a long tier is useful
         # before it finishes rather than only after.
@@ -447,6 +448,42 @@ def _defects() -> tuple:
     return 200, json.dumps({"defects": store.defects()}), "json"
 
 
+def _as_results(lines: list) -> list:
+    """Store lines, in the shape `runfile.diff_results` already reads."""
+    return [{"scenario": {"describes": (line.get("summary") or {}).get("describes", "")},
+             "rows": line.get("rows") or []} for line in lines]
+
+
+def _what_changed(tier: str) -> tuple:
+    """What changed since the last execution of this tier, as data.
+
+    Reuses `runfile.diff_results` -- the exact computation the `/tests` page
+    already ships -- rather than a second reading of *failing*/*refusing*/
+    *seen*. The two executions being compared are found by `batch`
+    (`runstore.batches`), not by a timestamp gap: every scenario one `qa.py`
+    run (or one QA-tab run) writes shares one batch id.
+    """
+    if not tier:
+        return 400, json.dumps({"error": "tier required"}), "json"
+    ids = store.batches(tier, limit=2)
+    if len(ids) < 2:
+        return 200, json.dumps({"first_run": True, "tier": tier,
+                                "executions_on_record": len(ids)}), "json"
+    now_lines = store.batch_lines(ids[0])
+    prev_lines = store.batch_lines(ids[1])
+    offline_now = not any((l.get("summary") or {}).get("compared")
+                          for l in now_lines)
+    offline_prev = not any((l.get("summary") or {}).get("compared")
+                           for l in prev_lines)
+    diff = runfile.diff_results(_as_results(now_lines), _as_results(prev_lines),
+                                offline_now, offline_prev)
+    return 200, json.dumps({
+        "first_run": False, "tier": tier,
+        "against_batch": ids[1], "this_batch": ids[0],
+        **diff,
+    }), "json"
+
+
 def dispatch(method: str, path: str, query: dict, body):
     """Handle a tester route, or return None so the caller keeps looking.
 
@@ -478,6 +515,8 @@ def dispatch(method: str, path: str, query: dict, body):
             return _qa_summary(query)
         if path == "/api/tester/qa/review":
             return _qa_review(query)
+        if path == "/api/tester/qa/changed":
+            return _what_changed(query.get("tier", ""))
         if path.startswith("/api/tester/curve/"):
             return _curve(unquote(path.rsplit("/", 1)[-1]))
         if path.startswith("/api/tester/run/"):
@@ -631,7 +670,7 @@ cursor:pointer;background:#fff;display:block}
 </main>
 <script>
 const $=id=>document.getElementById(id);
-let QA=null, QATIER=null, QAJOB=null, QATIMER=null;
+let QA=null, QATIER=null, QAJOB=null, QATIMER=null, CHTIER=null;
 
 // ---- QA programme. Every figure comes from /api/tester/qa, which computes it
 // ---- from scripts/qa.py. Nothing about a tier is defined twice.
@@ -720,6 +759,56 @@ function qaRun(){
      if(QATIMER)clearInterval(QATIMER);
      QATIMER=setInterval(qaPoll,900); qaPoll();
    });
+}
+function loadChanged(){
+  const box=$('view');
+  const tierOpts=(QA?QA.tiers:[]).filter(t=>t.runnable)
+    .map(t=>'<option value="'+t.id+'"'+(t.id===CHTIER?' selected':'')+'>'+t.id+'</option>').join('');
+  box.innerHTML='<div class="hint" style="margin-bottom:8px">Tier: '
+    +'<select id="chtier">'+tierOpts+'</select></div><div id="chbody">loading&hellip;</div>';
+  $('chtier').value=CHTIER||QATIER||'';
+  $('chtier').onchange=()=>{CHTIER=$('chtier').value; renderChanged();};
+  if(!CHTIER)CHTIER=QATIER;
+  renderChanged();
+}
+function renderChanged(){
+  const tier=CHTIER||QATIER;
+  if(!tier){$('chbody').textContent='no runnable tier';return;}
+  fetch('/api/tester/qa/changed?tier='+tier).then(r=>r.json()).then(j=>{
+    const b=$('chbody');
+    if(j.error){b.textContent=j.error;return;}
+    if(j.first_run){
+      b.innerHTML='<div class="hint"><b>First run on record for '+tier+'.</b> '
+        +'Nothing to compare against yet &mdash; run it again to see what changed.</div>';
+      return;
+    }
+    const list=(a,empty)=>a&&a.length?'<ul style="margin:4px 0 0 18px;padding:0">'
+      +a.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul>'
+      :'<div class="hint" style="margin:2px 0 0">'+empty+'</div>';
+    let h='<div class="hint" style="margin-bottom:8px">Since the previous run of <b>'+tier
+      +'</b> ('+esc(j.against_batch)+').</div>';
+    if(j.mode==='live'){
+      h+='<h3 style="margin:8px 0 2px;font-size:13px;color:var(--red)">New problems</h3>'
+        +list(j.new_problems,'none');
+      h+='<h3 style="margin:8px 0 2px;font-size:13px;color:var(--green)">No longer failing</h3>'
+        +list(j.no_longer_failing,'none — nothing measured as fixed this run');
+      h+='<h3 style="margin:8px 0 2px;font-size:13px">Still failing</h3>'
+        +list(j.still_failing,'none');
+    } else {
+      h+='<h3 style="margin:8px 0 2px;font-size:13px;color:var(--red)">Newly refusing</h3>'
+        +list(j.newly_refusing,'none');
+      h+='<h3 style="margin:8px 0 2px;font-size:13px;color:var(--green)">No longer refusing</h3>'
+        +list(j.no_longer_refusing,'none');
+      h+='<h3 style="margin:8px 0 2px;font-size:13px">Premium changed, same config</h3>'
+        +list(j.premium_changed,'none — checked '+j.compared_pairs+' comparable pair(s)');
+    }
+    h+='<h3 style="margin:8px 0 2px;font-size:13px">Newly covered</h3>'
+      +list(j.newly_covered,'none');
+    if(j.new_configs&&j.new_configs.length)
+      h+='<h3 style="margin:8px 0 2px;font-size:13px">New configurations</h3>'
+        +list(j.new_configs,'');
+    b.innerHTML=h;
+  });
 }
 function qaPoll(){
   if(!QAJOB)return;
@@ -931,7 +1020,8 @@ function check(){
 }
 
 // ---- the long view
-const VIEWS=[['qa','QA summary'],['review','What the review found'],
+const VIEWS=[['qa','QA summary'],['changed','What changed'],
+  ['review','What the review found'],
   ['history','Agreement over time'],['coverage','Coverage'],
   ['curve','Premium response'],['defects','Defects']];
 let CURRENT='qa';
@@ -959,6 +1049,7 @@ function loadView(v){
         +'the testing went. <b>Hawaii is drawn and permanently blank</b> — it is not in '
         +'ISO’s corpus at all, and leaving it off would hide that.</div>';
     });
+  if(v==='changed') return loadChanged();
   if(v==='review') return fetch('/api/tester/qa/review').then(r=>r.json())
     .then(j=>{
       const p3=j.pass3, c=p3.counts;

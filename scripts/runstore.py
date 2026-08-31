@@ -47,8 +47,16 @@ def _month_file(when: float) -> Path:
 
 
 def append(summary: dict, rows: list, engine_version: str = "",
-           label: str = "") -> dict:
-    """Record one run. Returns the stored line, including its id."""
+           label: str = "", batch: str = "") -> dict:
+    """Record one run. Returns the stored line, including its id.
+
+    `batch` groups the many scenario-lines one QA tier execution writes (one
+    `append()` per scenario, per `qa.py`) into the single "run" a person means
+    by *this run of T1* -- optional and blank by default, so every line
+    written before this existed reads the same as before. `batches()` and
+    `batch_lines()` are what "what changed since last run" reads instead of
+    guessing execution boundaries from timestamps.
+    """
     now = time.time()
     line = {
         "v": LINE_VERSION,
@@ -57,6 +65,7 @@ def append(summary: dict, rows: list, engine_version: str = "",
         "at": now,
         "at_iso": time.strftime("%Y-%m-%dT%H:%M:%S", time.localtime(now)),
         "label": label,
+        "batch": batch,
         "engine_version": engine_version,
         "summary": summary,
         "rows": rows,
@@ -248,6 +257,46 @@ def defects() -> list:
                 e["first_seen"] = at
     return sorted(seen.values(), key=lambda e: (e["last_seen"], e["juris"]),
                   reverse=True)
+
+def batches(tier: str = "", limit: int = 5) -> list:
+    """Batch ids for a tier's executions, most recent first.
+
+    One `qa.py` invocation writes many lines, one per scenario, all sharing a
+    `batch`. This is how "since last run" finds the boundary between *this*
+    execution and the one before it, rather than guessing from a timestamp gap.
+    Lines with no batch (written before this existed, or from `--offline`
+    single-scenario tools that never set one) are excluded -- an empty batch
+    id would otherwise silently merge every un-batched line into one blob.
+    """
+    order: list = []
+    for line in _read_all():
+        label = str((line.get("label") or ""))
+        if tier and not label.startswith(f"qa {tier}"):
+            continue
+        if not tier and not label.startswith("qa "):
+            continue
+        b = line.get("batch") or ""
+        if not b:
+            continue
+        if b not in order:
+            order.append(b)
+    # `_read_all` is file order, not time order; batches sort by their own
+    # lines' earliest timestamp so a batch written across a month boundary
+    # still lands in the right place.
+    stamped = {}
+    for line in _read_all():
+        b = line.get("batch") or ""
+        if b and (b not in stamped or line.get("at", 0) < stamped[b]):
+            stamped[b] = line.get("at", 0)
+    order.sort(key=lambda b: stamped.get(b, 0), reverse=True)
+    return order[:limit]
+
+
+def batch_lines(batch_id: str) -> list:
+    """Every stored line from one tier execution, in the shape `defects()`
+    and `coverage()` already read -- `{summary, rows, ...}` per scenario."""
+    return [line for line in _read_all() if line.get("batch") == batch_id]
+
 
 # ------------------------------------------------------------- the QA rollup
 

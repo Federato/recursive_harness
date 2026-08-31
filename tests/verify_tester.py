@@ -527,6 +527,36 @@ def main() -> int:
         store.append(summary, rows, engine_version="test")
         check("E5 the store is append-only", len(store.runs()) == 2,
               "a corrected run is a new line; the old one stays as the record")
+
+        # "What changed since last run" -- one tier, two batches.
+        base = {"fingerprint": "fp1", "compared": True, "live_calls": 1,
+               "describes": "base", "agree": 0, "differ": [],
+               "premium_only": [], "not_applicable": [], "engine_stopped": []}
+        store.append(base, [{"juris": "TX", "status": "DIFF"},
+                            {"juris": "NY", "status": "MATCH"}],
+                    label="qa T1", batch="T1-older")
+        store.append(base, [{"juris": "TX", "status": "MATCH"},
+                            {"juris": "NY", "status": "MATCH"},
+                            {"juris": "CA", "status": "DIFF"}],
+                    label="qa T1", batch="T1-newer")
+        check("E6 batches groups a tier's executions, most recent first",
+              store.batches("T1", limit=2) == ["T1-newer", "T1-older"],
+              store.batches("T1", limit=2))
+        code, body, _ = tester.dispatch("GET", "/api/tester/qa/changed",
+                                        {"tier": "T1"}, None)
+        changed = json.loads(body)
+        check("E7 what changed: fixed and new are told apart, not blurred "
+              "into one list",
+              code == 200 and not changed["first_run"]
+              and changed["new_problems"] == ["CA"]
+              and changed["no_longer_failing"] == ["TX"],
+              changed)
+        code0, body0, _ = tester.dispatch("GET", "/api/tester/qa/changed",
+                                          {"tier": "T4"}, None)
+        check("E8 a tier with no prior execution says FIRST RUN, not four "
+              "zeros",
+              code0 == 200 and json.loads(body0)["first_run"] is True,
+              body0)
     finally:
         store.RESULTS = real
         shutil.rmtree(tmp, ignore_errors=True)

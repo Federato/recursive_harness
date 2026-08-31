@@ -356,6 +356,47 @@ def change_counts(plan: dict, results: list) -> dict | None:
             "still_failing": sorted(now_bad & was_bad)}
 
 
+def diff_results(results_now: list, results_prev: list,
+                 offline_now: bool = False, offline_prev: bool = False) -> dict:
+    """What changed between two results lists, computed directly rather than
+    through the run-file index `change_counts` reads.
+
+    Same shape, same rules as `change_counts` -- for a caller holding two live
+    results lists rather than a cached index entry, e.g. the QA tab diffing
+    two `runstore` batches (`store.batches`/`store.batch_lines`). Built from
+    the same `_states_*` helpers `change_counts` uses, so *failing*,
+    *refusing* and *seen* cannot drift between the two readers even though
+    the orchestration differs -- **one computation, two readers**, same as
+    the module docstring promises, just entered from a different door.
+    """
+    seen_now = _states_seen(results_now)
+    seen_prev = _states_seen(results_prev)
+    newly_covered = sorted(seen_now - seen_prev)
+    cfgs_now = {r["scenario"]["describes"] for r in results_now}
+    cfgs_prev = {r["scenario"]["describes"] for r in results_prev}
+    new_cfgs = sorted(cfgs_now - cfgs_prev)
+    common = {"newly_covered": newly_covered, "new_configs": new_cfgs}
+
+    if offline_now or offline_prev:
+        now_ref = set(_refusing(results_now))
+        was_ref = set(_refusing(results_prev))
+        now_p, was_p = _premiums(results_now), _premiums(results_prev)
+        shared = sorted(set(now_p) & set(was_p))
+        moved = [k for k in shared if now_p[k] != was_p[k]]
+        return {**common, "mode": "offline",
+                "newly_refusing": sorted(now_ref - was_ref),
+                "no_longer_refusing": sorted(was_ref - now_ref),
+                "premium_changed": [m.split("|")[-1] for m in moved],
+                "compared_pairs": len(shared)}
+
+    now_bad = set(_states_failing(results_now))
+    was_bad = set(_states_failing(results_prev))
+    return {**common, "mode": "live",
+            "new_problems": sorted(now_bad - was_bad),
+            "no_longer_failing": sorted(was_bad - now_bad),
+            "still_failing": sorted(now_bad & was_bad)}
+
+
 def _box(k, v, cls, w) -> str:
     return (f'<div><div class="k">{_e(k)}</div>'
             f'<div class="v {cls}">{_e(v)}</div>'

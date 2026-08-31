@@ -4067,3 +4067,47 @@ suffix-tolerant lookup matching) is worth building anyway as a defense against t
 Nothing left to build for OI-96's known symptom. What's still open is unchanged from Entry 47: an ISO
 call to confirm the fixed premiums (§C8), and the standing question of whether the generic,
 lookup-side fix is worth building anyway against the *next* reformatting.
+
+---
+
+## Entry 49 — "What changed since last run" built for the QA tab. Item 1 of 3 in the small-UI
+## backlog.
+
+- **Date:** 2026-08-31
+- **Directed:** *"lets do 'Small UI closes'. Preview them to me in plain english... Save as an
+  order"* — three items, this one first per `START-HERE-TOMORROW.md`'s own stated priority (small,
+  most-read screen).
+- **Found before building:** "what changed since last run" already existed — for the `/tests`
+  (layered) page only, `ui/runfile.py` `change_counts()`, shipped in Entry 32. The QA tab (`/tester`)
+  had none. The gap: the store writes one line per *scenario*, with nothing grouping "all the
+  scenarios one tier execution wrote" into one thing to diff against — `qa_rollup()` aggregates every
+  matching line ever, not per-execution. Asked the user how far to take it rather than build a
+  fuzzy version or quietly skip the QA tab; **chose to add the grouping properly.**
+- **Built:**
+  - `scripts/runstore.py` — `append()` gains an optional `batch` field (blank by default, so every
+    line written before this exists reads unchanged). New `batches(tier, limit)` and
+    `batch_lines(batch_id)` — the grouping the store never had.
+  - `scripts/qa.py` — one `run_batch` id generated per CLI tier execution, threaded into every
+    `store.append()` call in the loop.
+  - `ui/tester.py` — `_qa_worker` (the UI-triggered tier runner, a separate code path from `qa.py`'s
+    CLI loop) tagged with its own `job_id` as the batch, so both entry points group correctly.
+  - `ui/runfile.py` — new `diff_results(results_now, results_prev, offline_now, offline_prev)`,
+    extracted from `change_counts()`'s tail so the QA tab and the `/tests` page compute *failing*,
+    *refusing* and *seen* from the same small helpers rather than a second definition that could
+    drift. `change_counts()` itself is untouched — zero risk to the shipped page.
+  - `ui/tester.py` — new `_what_changed(tier)` / `/api/tester/qa/changed`, a new **"What changed"**
+    tab (second position, right after QA summary) with its own tier picker, rendering new problems,
+    no-longer-failing, still-failing (live mode) or newly/no-longer-refusing and premium-changed
+    (offline mode), plus newly-covered jurisdictions either way. First execution of a tier reports
+    "first run on record" rather than four zeros, matching `change_counts()`'s own contract.
+- **Verified:** `tests/verify_tester.py` gains **E6–E8** (76/76 total) — batches groups correctly,
+  a two-batch tier tells fixed and new apart without blurring them, an unrun tier says first-run.
+  Full suite re-checked: `verify_breadth` 28/28, `verify_layers` all green, import-boundary checks
+  (A1–A5) unaffected by the new `ui/tester.py` → `ui/runfile.py` import. **Also checked in an actual
+  browser**, not just the offline suites: started `app.py`, clicked through to the new tab, confirmed
+  it rendered "first run on record for T1" and the tier dropdown worked, zero console errors.
+
+### ▶ Next session
+
+Item 1 of 3 done. Next: item 2, the auto-run-review checkbox (run the review pass automatically when
+a tier finishes). Item 3, pause/stop on a running tier, after that.

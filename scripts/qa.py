@@ -425,6 +425,11 @@ def main(argv) -> int:
             print(f"\n  --force given. Running anyway, and recording it.")
 
     started = time.time()
+    # One id, shared by every scenario this execution writes -- how "what
+    # changed since last run" (runstore.batches/batch_lines) tells this
+    # execution apart from the one before it, rather than guessing from a
+    # timestamp gap.
+    run_batch = f"{a.tier}-{time.strftime('%Y%m%dT%H%M%S', time.localtime(started))}"
     runs, agree, differ, na, stopped = [], 0, 0, 0, 0
     for i, (cfg, js) in enumerate(sc, 1):
         desc = V.describe(cfg) or "the base risk, unvaried"
@@ -436,7 +441,8 @@ def main(argv) -> int:
         na += len(s["not_applicable"])
         stopped += len(s["engine_stopped"])
         store.append(s, out["rows"],
-                     label=(a.label or f"qa {a.tier}") + forced_note)
+                     label=(a.label or f"qa {a.tier}") + forced_note,
+                     batch=run_batch)
         runs.append(s)
         bits = [f"rated {s['rated']}/{s['total']}"]
         if not a.offline:
