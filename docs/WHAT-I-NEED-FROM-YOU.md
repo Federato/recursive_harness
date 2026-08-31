@@ -326,10 +326,18 @@ risk isn't zero and it's cheap to remove.
 
 ---
 
-## C2 · Report the size-of-risk data gap to ISO — ⏸ **HELD 2026-08-19, pending more testing of our own**
+## C2 · Report the size-of-risk data gap to ISO — ⏸ **HELD, and the TX evidence it was waiting on is now in hand (2026-08-31)**
 
 > **Decision: not yet. More testing first.** The finding stands; what is not yet established is its
 > full shape, and a report that has to be corrected afterwards is worse than one sent a week later.
+
+> **2026-08-31 — the first row of the table below is now closed.** The TX call was sent
+> (`BUILD-LOG.md` Entry 52). ISO's live 400 names the identical table our own refusal names —
+> `Matrix: PremOpsSizeOfRiskLossCost, ... Keys: CW, 001, 50017. No results have been returned.` —
+> confirming cause-agreement in a **second** state, not inferred from Georgia alone. **This does
+> not change the HELD decision on its own** — sending a report to ISO is still your call, not
+> something built or sent on inference — but the evidence C2 said it would come back with is now
+> real, not pending.
 
 **The finding, as it actually stands.** In **13 jurisdictions**, ISO's own rating service returns a
 400 on a valid size-of-risk submission. Not a validation error — **ISO's rule engine failing to find
@@ -348,7 +356,7 @@ proven for Georgia and inferred elsewhere.** Any report sent to ISO must claim o
 
 | | |
 |---|---|
-| **The TX refused payload** | ~~`results/refused-payloads/TX-714439816b85/request.json`~~ **That file no longer exists — checked 2026-08-31, see `BUILD-LOG.md` Entry 43.** `results/` was cleaned during a test session (an allowed cleanup, not a regression) and none of the 11 runs currently stored exercise size-of-risk. Still one call once regenerated: re-run a size-of-risk-triggering QA tier for TX, then `scripts/qa_review.py --payloads` re-exports it. It remains the cheapest way to turn *"ISO refuses for the same reason"* from inference into measurement in a second state, and would settle 36 payloads across 4 states besides |
+| ~~**The TX refused payload**~~ | **✅ Done, 2026-08-31.** Regenerated (`scripts/qa_review.py --payloads`) and sent. ISO's 400 names `PremOpsSizeOfRiskLossCost` — the identical table — confirming cause-agreement in TX, a second state. `BUILD-LOG.md` Entry 52 |
 | **Capture the full 400 body per jurisdiction** | We have 13 confirmations that ISO returns a 400 and one body quoted in full. A report naming a table should quote that table from more than one state's response |
 | **Whether it is the class or the state** | Every confirmed call used class `50017`. Whether the gap is *"this plan is unfiled in these 13 states"* or *"this class is missing from the plan"* changes what ISO is being told, and no test has separated them |
 | **The corroboration we already have, and should lead with** | The 35 jurisdictions whose ERC size-of-risk table is populated are **exactly** the 35 with a *Size Of Risk Rating Supplement* circular — no difference in either direction, ERC measured first. **Two independent ISO sources agreeing is a stronger opening than a stack trace** |
