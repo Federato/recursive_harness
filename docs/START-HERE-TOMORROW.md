@@ -82,6 +82,30 @@ day taught is [`what-the-harness-taught-us_20260817.html`](what-the-harness-taug
 
 ---
 
+> ## Written 31 August — OI-95 built, and the framing above was half wrong
+>
+> **The line above — *"the engine reads neither table"* — is corrected, not retracted.** Before
+> building, traced whether ISO's own filed rules populate the ELP value at all. They do:
+> `SetFinalProdsCompldOpsELP` already runs the lookup generically, and the interpreter already
+> executes it. Ran OK's own ISO-certified sample submission through the engine unmodified — `0.82`,
+> exact match to ISO's own published output. **`Industry` was never a defect.** The grep that found
+> no Python was true and irrelevant: the interpreter doesn't need Python per table, it runs whatever
+> ISO filed.
+>
+> **`Company` was real, but not a silent zero — it was an ignored message.** ISO's own filed rules
+> already emit *"Must enter Estimated Loss Potential Override..."* for exactly this case, through the
+> same generic mechanism every other validation message uses, and the engine already captured it.
+> Nothing consulted it. **Built:** `gl_engine/rating/referrals.py::d_elp_override_needed`, code
+> **R29** — reads that message, raises a referral in `underwriting` mode only, `strict-erc`
+> untouched. `tests/verify_breadth.py` E8–E11 pin both halves (26/26); full suite re-run clean.
+>
+> **What's left is three cheap ISO calls, none blocking** — see
+> [`WHAT-I-NEED-FROM-YOU.md`](WHAT-I-NEED-FROM-YOU.md) §C7. Full trace:
+> [`BUILD-LOG.md`](../BUILD-LOG.md) Entry 44; [`OPEN-ITEMS.md`](OPEN-ITEMS.md) OI-95 corrected in
+> place. §6's OI-95 row below is now stale in the same way and should be read against this note.
+
+---
+
 # The two things you named, first
 
 ## 1 · Finish the UI the proposal promised
