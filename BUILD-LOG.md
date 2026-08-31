@@ -4153,3 +4153,53 @@ a tier finishes). Item 3, pause/stop on a running tier, after that.
 ### ▶ Next session
 
 Item 2 of 3 done. Item 3, pause/stop on a running tier, is what's left of the small-UI backlog.
+
+---
+
+## Entry 51 — Item 3 of 3: pause/stop on a running QA tier. The small-UI backlog is closed. Found
+## and fixed a pre-existing crash along the way.
+
+- **Date:** 2026-08-31
+- **Directed:** *"Go"*, closing the small-UI backlog's own stated order.
+- **Traced first, found the mechanism already exists.** `sweep.run_config` already accepts a
+  `stop_check` callable — "called before each jurisdiction... may also block, which is how a pause
+  is held" — and `ui/tests_page.py` (the `/tests` layered page) already has a complete, proven
+  implementation: a `state` field (`running`/`paused`/`stopping`), `_stop_check(job_id)` that blocks
+  on pause and returns truthy on stop, and `_control(body)` for pause/resume/stop. The QA tab's
+  `_qa_worker` never passed `stop_check` at all. Mirrored the exact same shape rather than inventing
+  a second one — the module docstring's own words: *"the QA tab is untouched... they share the run
+  store"* — kept true; the two job registries stay separate, only the *shape* is now shared.
+- **Built:** `ui/tester.py` — `_qa_stop_check(job_id)` (identical logic to `tests_page._stop_check`),
+  `_qa_control(body)` (identical shape to `tests_page._control`), a new `/api/tester/qa/control`
+  route, `state`/`stopped_after` fields on the QA job dict, `stop_check=check` threaded into
+  `sweep.run_config`, and a between-scenario check at the top of the loop. Pause/Stop buttons appear
+  next to Start once a run begins.
+- **Found live, in a browser, testing this exact feature — a real pre-existing bug:** polling a
+  finished QA job's state crashed the server (`TypeError: object of type 'int' has no len()` in
+  `charts.status_bars`) whenever any count was nonzero. `_qa_worker`'s summary stores whole-tier
+  **counts** (`"engine_stopped": 3`); `status_bars` was written for `sweep.run_config`'s own
+  per-scenario summary, where the same field names hold **lists** of jurisdiction codes. My own T0
+  test happened to have all-zero counts and never hit it; a T1 run with one real difference did.
+  **Fixed**: `_run_state` now only calls `status_bars` for non-QA jobs (`_start_run`'s jobs, which
+  carry the list-shaped summary `status_bars` was actually written for) — the two summary shapes
+  were never reconcilable without reworking a chart function every other reader depends on, so the
+  fix is scoping the call, not reshaping the data.
+- **Found a second gap the SAME browser test surfaced:** a stop mid-scenario (not between scenarios)
+  reported `state: "done"` instead of `"stopped"` for any tier with exactly one scenario (T0), because
+  the outer loop only re-checks between scenarios and a one-scenario tier never gets a second
+  iteration to notice. Fixed with a second `check()` immediately after each scenario's
+  `sweep.run_config` call, before moving to the next.
+- **Verified:** `tests/verify_tester.py` gains **Q11–Q13** (81/81 total) — stop-before-any-scenario
+  keeps what rated, pause genuinely blocks a real background thread and resume releases it (not a
+  flag nobody reads), and Q13 pins the exact bug just found: stopping partway through a tier's only
+  scenario reports `"stopped"`, not `"done"`. Full suite re-checked: `verify_breadth` 28/28. **Checked
+  live in a browser** — this is the entry where that practice caught two real bugs a suite run
+  offline never would have, because the crash only ever fires once a real HTTP client polls a
+  finished job with a nonzero count, and the single-scenario undercounting only shows with a real
+  T0 run stopped mid-flight. Neither was reachable from `verify_tester.py`'s synchronous
+  `_qa_worker()` calls alone.
+
+### ▶ Next session
+
+**The small-UI backlog (3 items) is closed.** Nothing queued from this thread. The two bugs found
+while building item 3 are already fixed, not carried forward as open items.

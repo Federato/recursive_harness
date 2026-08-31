@@ -539,6 +539,97 @@ def main() -> int:
               "no review computed",
               no_review_job["finished"] and no_review_job["review"] is None,
               no_review_job["review"])
+
+        # W2: pause/stop, mirroring ui/tests_page.py's own proven mechanism
+        # (same "state" field, same _stop_check shape).
+        import threading as _threading
+
+        job_id3 = "verify-stop"
+        with tester.JOBS_LOCK:
+            tester.JOBS[job_id3] = {
+                "id": job_id3, "qa": "T0", "total": 3, "done": 0, "rows": [],
+                "finished": False, "compare": False, "scenarios": 3,
+                "scenario_done": 0, "describes": "T0 test", "config": {},
+                "started": _time.time(), "findings": [], "forced": False,
+                "review_after": False, "review": None,
+                "state": "stopping", "stopped_after": None}
+        tester._qa_worker(job_id3, "T0",
+                          [({}, ["OK"]), ({}, ["NY"]), ({}, ["CA"])],
+                          True, "strict-erc", "", False)
+        with tester.JOBS_LOCK:
+            stopped_job = dict(tester.JOBS.pop(job_id3))
+        check("Q11 stop ends the run where it is, keeping what already rated "
+              "rather than discarding it",
+              stopped_job["finished"] and stopped_job["state"] == "stopped"
+              and stopped_job["stopped_after"] == 0,
+              stopped_job)
+
+        # Pause genuinely blocks the worker thread -- proven with a real
+        # background thread, not simulated by inspecting a flag.
+        job_id4 = "verify-pause"
+        with tester.JOBS_LOCK:
+            tester.JOBS[job_id4] = {
+                "id": job_id4, "qa": "T0", "total": 1, "done": 0, "rows": [],
+                "finished": False, "compare": False, "scenarios": 1,
+                "scenario_done": 0, "describes": "T0 test", "config": {},
+                "started": _time.time(), "findings": [], "forced": False,
+                "review_after": False, "review": None,
+                "state": "paused", "stopped_after": None}
+        th = _threading.Thread(
+            target=tester._qa_worker,
+            args=(job_id4, "T0", [({}, ["OK"])], True, "strict-erc", "",
+                 False), daemon=True)
+        th.start()
+        th.join(timeout=1.5)
+        with tester.JOBS_LOCK:
+            still_paused = not tester.JOBS[job_id4]["finished"]
+        code, _, _ = tester.dispatch("POST", "/api/tester/qa/control", {},
+                                     {"id": job_id4, "action": "resume"})
+        th.join(timeout=45)
+        with tester.JOBS_LOCK:
+            resumed_job = dict(tester.JOBS.pop(job_id4))
+        check("Q12 pause genuinely blocks the worker (not just a flag "
+              "nobody reads), and resume releases it",
+              still_paused and code == 200 and resumed_job["finished"]
+              and resumed_job["state"] == "done",
+              f"still_paused={still_paused}, resume_code={code}, "
+              f"resumed_finished={resumed_job['finished']}")
+
+        # A stop mid-scenario (not just between scenarios, Q11's case) must
+        # still mark the job "stopped" -- found live, in a browser, testing
+        # this exact feature: a single-scenario tier (T0) stopped mid-way
+        # through its 51 jurisdictions reported "done" instead of "stopped",
+        # because the outer loop only ever re-checks BETWEEN scenarios and a
+        # one-scenario tier never gets a second iteration to notice.
+        job_id5 = "verify-stop-mid-scenario"
+        with tester.JOBS_LOCK:
+            tester.JOBS[job_id5] = {
+                "id": job_id5, "qa": "T0", "total": 51, "done": 0, "rows": [],
+                "finished": False, "compare": False, "scenarios": 1,
+                "scenario_done": 0, "describes": "T0 test", "config": {},
+                "started": _time.time(), "findings": [], "forced": False,
+                "review_after": False, "review": None,
+                "state": "running", "stopped_after": None}
+        th2 = _threading.Thread(
+            target=tester._qa_worker,
+            args=(job_id5, "T0", [({}, sorted(V.Declared.jurisdictions()))],
+                 True, "strict-erc", "", False), daemon=True)
+        th2.start()
+        th2.join(timeout=0.3)
+        code2, _, _ = tester.dispatch("POST", "/api/tester/qa/control", {},
+                                      {"id": job_id5, "action": "stop"})
+        th2.join(timeout=45)
+        with tester.JOBS_LOCK:
+            mid_stop_job = dict(tester.JOBS.pop(job_id5))
+        check("Q13 stopping partway through a tier's ONLY scenario still "
+              "reports 'stopped', not 'done'",
+              code2 == 200 and mid_stop_job["finished"]
+              and mid_stop_job["state"] == "stopped"
+              and mid_stop_job["stopped_after"] is not None
+              and 0 < mid_stop_job["done"] < 51,
+              f"state={mid_stop_job['state']}, "
+              f"stopped_after={mid_stop_job['stopped_after']}, "
+              f"done={mid_stop_job['done']}")
     finally:
         store.RESULTS = review_real
         shutil.rmtree(review_tmp, ignore_errors=True)

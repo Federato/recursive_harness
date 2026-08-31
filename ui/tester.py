@@ -55,6 +55,33 @@ SECONDS_PER_CALL = 20
 JOBS: dict = {}
 JOBS_LOCK = threading.Lock()
 
+#: A paused QA job checks this often -- same value and same reasoning as
+#: `ui/tests_page.py`'s `PAUSE_POLL`, kept as its own constant rather than
+#: imported: the two job registries are deliberately separate (module
+#: docstring there: "the QA tab is untouched"), and this is the one place
+#: they now share a *shape*, not a *store*.
+PAUSE_POLL = 0.25
+
+
+def _qa_stop_check(job_id: str):
+    """Return a callable `sweep.run_config` can ask between states.
+
+    Mirrors `ui/tests_page.py`'s `_stop_check` exactly: blocks while paused,
+    so a pause is held without `sweep` knowing what a pause is; returns
+    truthy once stopped, so the caller ends the run there rather than
+    raising -- whatever rated already is kept, never discarded.
+    """
+    def check():
+        while True:
+            with JOBS_LOCK:
+                job = JOBS.get(job_id) or {}
+                state = job.get("state")
+            if state == "paused":
+                time.sleep(PAUSE_POLL)
+                continue
+            return state == "stopping"
+    return check
+
 
 def _engine_version() -> str:
     """Asked of `sweep`, never of the engine -- see `ui/__init__.py`."""
@@ -331,7 +358,8 @@ def _qa_start(body) -> tuple:
                         "describes": f"{tier} -- {spec['name']}",
                         "config": {}, "started": time.time(),
                         "findings": [], "forced": bool(label_extra),
-                        "review_after": review_after, "review": None}
+                        "review_after": review_after, "review": None,
+                        "state": "running", "stopped_after": None}
     threading.Thread(target=_qa_worker, daemon=True,
                      args=(job_id, tier, sc, offline,
                            body.get("mode") or "strict-erc",
@@ -347,7 +375,12 @@ def _qa_worker(job_id, tier, scenarios, offline, mode, label_extra="",
                review_after=False):
     agree = differ = na = stopped = calls = 0
     findings = []
+    check = _qa_stop_check(job_id)
+    stopped_after = None
     for idx, (cfg, js) in enumerate(scenarios, 1):
+        if check():
+            stopped_after = idx - 1
+            break
         def progress(done, total, row, _idx=idx):
             with JOBS_LOCK:
                 job = JOBS.get(job_id)
@@ -358,7 +391,7 @@ def _qa_worker(job_id, tier, scenarios, offline, mode, label_extra="",
                 job["rows"].append(row)
         try:
             out = sweep.run_config(cfg, js, compare=not offline, mode=mode,
-                                   progress=progress)
+                                   progress=progress, stop_check=check)
         except Exception as exc:                              # noqa: BLE001
             findings.append({"kind": "run failed",
                              "describes": V.describe(cfg),
@@ -387,10 +420,23 @@ def _qa_worker(job_id, tier, scenarios, offline, mode, label_extra="",
                     "detail": f"{v.get('column')}={v.get('chosen')} does "
                               f"nothing; {v.get('moves_with')} gives "
                               f"{v.get('premium')}"})
+
+        # `stop_check` above only catches a stop BETWEEN scenarios. A stop
+        # mid-scenario (sweep.run_config's own per-jurisdiction stop_check)
+        # already cut this scenario's rows short -- kept and stored above,
+        # same as any partial scenario -- but without this check the job
+        # would report "done" rather than "stopped" for a tier with exactly
+        # one scenario, since the outer loop would never see idx advance
+        # again to notice the stop.
+        if check():
+            stopped_after = idx
+            break
     with JOBS_LOCK:
         job = JOBS.get(job_id)
         if job is not None:
             job["finished"] = True
+            job["state"] = "stopped" if stopped_after is not None else "done"
+            job["stopped_after"] = stopped_after
             job["findings"] = findings
             job["summary"] = {
                 "tier": tier, "scenarios": len(scenarios), "agree": agree,
@@ -414,6 +460,35 @@ def _qa_worker(job_id, tier, scenarios, offline, mode, label_extra="",
                 job["review"] = review
 
 
+def _qa_control(body) -> tuple:
+    """Pause, resume or stop a running QA-tier job.
+
+    Same shape as `ui/tests_page.py`'s `_control` -- a person learns the
+    verb once. `stop` keeps whatever rated already, same as there: every
+    scenario's rows are stored the moment it finishes, not held back for a
+    final write, so stopping never discards an answer already earned.
+    """
+    body = body or {}
+    job_id = body.get("id") or ""
+    action = body.get("action") or ""
+    with JOBS_LOCK:
+        job = JOBS.get(job_id)
+        if job is None:
+            return 404, json.dumps({"error": "no such run"}), "json"
+        if job.get("finished"):
+            return 400, json.dumps({"error": "that run has finished"}), "json"
+        if action == "pause":
+            job["state"] = "paused"
+        elif action == "resume":
+            job["state"] = "running"
+        elif action == "stop":
+            job["state"] = "stopping"
+        else:
+            return 400, json.dumps(
+                {"error": f"unknown action {action!r}"}), "json"
+        return 200, json.dumps({"id": job_id, "state": job["state"]}), "json"
+
+
 def _run_state(job_id: str) -> tuple:
     with JOBS_LOCK:
         job = JOBS.get(job_id)
@@ -421,7 +496,15 @@ def _run_state(job_id: str) -> tuple:
             return 404, json.dumps({"error": "no such run"}), "json"
         out = dict(job)
         out["rows"] = list(job["rows"])
-    if out.get("summary"):
+    # `status_bars` reads `sweep.run_config`'s own per-scenario summary shape
+    # (differ/engine_stopped/etc. as lists of jurisdiction codes) -- a single
+    # `/api/tester/run` job (`_worker`) carries exactly that. A QA-tier job
+    # (`_qa_worker`, has "qa") carries the SAME field names holding a whole
+    # tier's aggregate COUNTS instead, which `len()` cannot take -- a real
+    # pre-existing bug, found while testing pause/stop, that crashed every
+    # poll of a finished QA run with any nonzero count. Fixed here rather
+    # than reshaping either summary, which other readers already depend on.
+    if out.get("summary") and "qa" not in out:
         out["bars"] = charts.status_bars(out["summary"])
     return 200, json.dumps(out), "json"
 
@@ -558,6 +641,8 @@ def dispatch(method: str, path: str, query: dict, body):
             return _qa_plan(body)
         if path == "/api/tester/qa/run":
             return _qa_start(body)
+        if path == "/api/tester/qa/control":
+            return _qa_control(body)
         return 404, json.dumps({"error": "not found"}), "json"
     return None
 
@@ -656,6 +741,8 @@ cursor:pointer;background:#fff;display:block}
    <div class="row" style="margin-top:8px">
      <button id="qarun">Start</button>
      <button class="ghost" id="qaplan">Show the matrix first</button>
+     <button class="ghost" id="qapause" style="display:none">Pause</button>
+     <button class="ghost" id="qastop" style="display:none">Stop</button>
    </div>
    <div class="hint" id="qabudget"></div>
    <div class="bar"><div id="qaprog"></div></div>
@@ -783,10 +870,26 @@ function qaRun(){
      QAJOB=d.id;
      $('qastatus').textContent=d.tier+' running \u2014 '+d.scenarios+' scenarios, '
        +d.total+' ratings'+(offline?', offline':', '+d.total+' ISO calls');
+     $('qapause').style.display='';$('qapause').textContent='Pause';
+     $('qapause').disabled=false;
+     $('qastop').style.display='';$('qastop').disabled=false;
+     $('qastop').textContent='Stop';
      if(QATIMER)clearInterval(QATIMER);
      QATIMER=setInterval(qaPoll,900); qaPoll();
    });
 }
+$('qapause').onclick=()=>{
+  const action=$('qapause').textContent==='Pause'?'pause':'resume';
+  fetch('/api/tester/qa/control',{method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({id:QAJOB,action:action})});
+};
+$('qastop').onclick=()=>{
+  fetch('/api/tester/qa/control',{method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({id:QAJOB,action:'stop'})});
+  $('qastop').disabled=true;$('qastop').textContent='Stopping\u2026';
+};
 function loadChanged(){
   const box=$('view');
   const tierOpts=(QA?QA.tiers:[]).filter(t=>t.runnable)
@@ -844,16 +947,23 @@ function qaPoll(){
     $('qaprog').style.width=pct+'%';
     let msg='scenario <b>'+(j.scenario_done||0)+'</b> of '+j.scenarios
       +' &middot; '+j.done+' of '+j.total+' ratings';
+    if(j.state==='paused') msg+=' &middot; <b>paused</b>';
+    $('qapause').textContent=j.state==='paused'?'Resume':'Pause';
     if(j.finished){
       // Keep polling past "finished" until the review (if asked for) has
       // also landed -- stopping at "finished" would freeze the screen on
       // "reviewing..." forever, since nothing else would ever fetch again.
       if(!j.review_after || j.review!==null){clearInterval(QATIMER);QATIMER=null;}
+      $('qapause').style.display='none';$('qastop').style.display='none';
       const s=j.summary||{};
-      msg='<b>'+j.qa+' complete</b> in '+Math.round((s.seconds||0)/60)+' min &middot; '
+      msg='<b>'+j.qa+(j.state==='stopped'?' stopped':' complete')+'</b> in '
+        +Math.round((s.seconds||0)/60)+' min &middot; '
         +'agree '+(s.agree||0)+' &middot; disagree <b>'+(s.differ||0)+'</b> &middot; '
         +'not applicable '+(s.not_applicable||0)+' &middot; refused '
         +(s.engine_stopped||0)+' &middot; '+(s.live_calls||0)+' ISO calls';
+      if(j.state==='stopped')
+        msg+='<br><b>Stopped after '+(j.stopped_after==null?0:j.stopped_after)
+          +' of '+j.scenarios+' scenario(s).</b> What rated before then is kept.';
       if(j.findings&&j.findings.length)
         msg+='<ol style="margin:6px 0 0 18px;padding:0">'+j.findings.slice(0,12).map(f=>
           '<li><b>'+esc(f.kind)+'</b>'+(f.juris?' &middot; '+esc(f.juris):'')+' &middot; '
