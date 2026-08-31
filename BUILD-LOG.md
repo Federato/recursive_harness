@@ -3812,3 +3812,70 @@ of 14 jurisdictions. The one open question is a **decision, not a build item**: 
 call, given the outcome is already settled everywhere it can be? If yes: re-run the size-of-risk tier
 for TX, re-export with `qa_review.py --payloads`, then send. `OPEN-ITEMS.md` and
 `WHAT-I-NEED-FROM-YOU.md` still point at the now-missing file directly and need the same correction.
+
+---
+
+## Entry 44 — OI-95: the `Industry` half needed no fix, the `Company` half was a real gap but not
+## the one described — ISO's own filed rule already flags it, and nothing was reading the flag.
+
+- **Date:** 2026-08-31
+- **Directed:** discussed OI-95's build readiness; user approved building the `Company`→refer half
+  now and holding `Industry` for the ISO call that would settle it (per the prior turn's proposed
+  options A/B/C). Before writing that referral, traced whether ISO's own filed rules populate the
+  ELP value at all, since the premise ("we multiply by zero where we shouldn't") had never been
+  checked against the actual rule XML — only against `grep ELP gl_engine/*.py`, which is silent
+  about generic interpreter behaviour by construction.
+- **Found — the premise was wrong for `Industry`, in a specific and checkable way.** ISO's filed
+  countrywide rules (`GeneralLiabilityClassificationRules.Rule.xml`) contain
+  `SetFinalProdsCompldOpsELP`/`SetFinalPremOpsELP`, which call `LookupProdsCompldOpsELPFactor`
+  against the exact `PremOpsELP`/`ProdsCompldOpsELPFactor` tables OI-95 measured. **The generic
+  interpreter already executes this rule, because it executes every filed rule generically.** Ran
+  OK's own ISO-certified STC sample (`GL_OK 20250601 V01/STC`) through `Kernel.rate()` unmodified:
+  `FinalProdsCompldOpsELP` resolves to `0.82`, `Premium` lands on `7839` — both match ISO's own
+  published STC output to the cent. **No `Industry` defect exists. The engine has been computing
+  this correctly the whole time**, and "the engine reads none of it" (true of `gl_engine/*.py`, the
+  Python) was read as "the engine doesn't do it" (false — the corpus does it, and the interpreter
+  runs the corpus).
+- **`Company` was real, but not what was described.** ISO's filed rules also contain
+  `DoMessageMustEnterEstimatedLossPotentialFactorOverride` — when a class resolves `Company` and no
+  `*ELPOverride` submission field is supplied, ISO's own rules call `MessageHelper.AddErrorMessage`
+  with *"Must enter Estimated Loss Potential Override for Premises/Operations"* (or
+  *"...for Products/Completed Operations"*) — the same generic mechanism every one of the corpus's
+  4,347 validation-message sites uses, and already captured verbatim in `Rating.messages` by the
+  existing interpreter. **`Kernel.rate()` never reads `result.messages` for anything.** Confirmed by
+  swapping OK's own STC submission's `ClassCode` to `10011` (Prods/CompldOps, `Company` in OK) and
+  `10119` (Prem/Ops, `Company` in OK): both produce the exact ISO message, `complete=True`,
+  `stopped=None`, and a premium computed with that classification priced at the `(a)` table's filed
+  `0` — the free-policy failure mode `docs/rating-engine/13-LOSS-COSTS-AND-ELP.md` §13.4 names.
+- **Built:** `gl_engine/rating/referrals.py` `d_elp_override_needed`, registered as **R29** in
+  `DETECTORS`. Reads `rating.messages` for the substring *"Must enter Estimated Loss Potential
+  Override"* and raises a referral — no rate-table reads, no re-derivation of the `Industry`/
+  `Company` classification, because ISO's own message already says which class needs it. Fires only
+  in `underwriting` mode, via the existing `Kernel._apply_register` gate — `strict-erc` is
+  byte-for-byte unchanged, so every ISO-comparison test stays a comparison against ISO's *actual*
+  filed behaviour (message present, rating completes, no referral) rather than a deviation.
+  **R29 is deliberately not added to `scripts/erc/out/referral_register.json`** — that file is a
+  frozen output of the 2026-08-12 analysis phase; hand-editing it would look like a finding that
+  script never produced, and re-running its generator would discard the edit anyway. It lives in
+  `DETECTORS` only, the same way OI-94's `_refuse_null_loss_cost` already sits entirely outside the
+  register mechanism. `Kernel.coverage()`'s tallies (28 frozen entries) won't count it; `disposition()`
+  still reports it `DETECTED` because that check is on `DETECTORS`, not the frozen list.
+- **Verified:** `tests/verify_breadth.py` gains E8–E11 (26/26 total) — E8 pins the `Industry` case
+  against ISO's own STC output (no fix, no regression risk). E9 pins that `strict-erc` stays a pure
+  mirror: message present, zero referrals. E10/E11 pin R29 firing in `underwriting` mode, both
+  coverage sides. Also re-ran `verify_golden` 80/80, `verify_stage1` 20/20, `verify_california` 11/11,
+  `verify_new_york` 10/10, `verify_oi50` 7/7, `verify_interp` 61/61, `verify_stage3` 38/38,
+  `verify_stage4` 30/30, `verify_stage5` 18/18, `verify_stage6` 30/30 — all green, nothing else moved.
+- **Also found, and left alone:** `kernel.py`'s own `_refer_marker`/`_DETECTORS` (lines ~323–348) are
+  dead code, superseded by `referrals.py`'s identical-in-spirit `d_refer_sentinel`/`DETECTORS` and
+  never called from anywhere. Pre-existing, not touched — flagged rather than opportunistically
+  cleaned up mid-fix.
+
+### ▶ Next session
+
+**OI-95 is now genuinely two closed halves and one open question**, not one open build item. Closed:
+`Industry` (no defect) and `Company` (referral built, tested, isolated to `underwriting` mode). Open,
+and the actual remaining question: should `Company` be a hard refusal (OI-94's shape) rather than a
+referral, and does ISO's *live* RAaS service enforce this validation as a hard 400 rather than
+completing with the message carried — the STC sample is ISO's own worked example, not a live call,
+so it cannot settle that question. `docs/OPEN-ITEMS.md` OI-95 updated in place with the correction.

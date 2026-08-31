@@ -413,6 +413,24 @@ change that gets noticed, and §13's whole argument is that we look like ordinar
 
 ---
 
+## C7 · Three live calls that settle what's left of OI-95
+
+**Not blocking anything** — `Industry` needed no fix (confirmed against ISO's own STC output,
+2026-08-31) and `Company` now referrals in `underwriting` mode. What's left is genuinely three
+separate small questions, each cheap and each removing an asterisk from `BUILD-LOG.md` Entry 44:
+
+| # | Payload | What it settles |
+|---|---|---|
+| **1** | OK's own STC submission, `ClassCode` swapped to `10011` (Prods/CompldOps, `Company` in OK) — no `ProdsCompldOpsELPOverride` supplied | Does ISO's *live* service also complete with the *"Must enter Estimated Loss Potential Override"* message and a zero-priced classification (matching our `strict-erc` mode exactly), or does it return a hard 400? If it's a 400, `Company` should be a refusal (OI-94's shape), not a referral — a real change to what was just built |
+| **2** | The same payload, but with `ProdsCompldOpsELPOverride` set to a nonzero test value (e.g. `0.5`) | Confirms the override mechanism works as the filed rule (`SetFinalProdsCompldOpsELP`) says it should — `FinalProdsCompldOpsELP` should equal the override, unadjusted. Our engine already honors this field generically (it's a declared schema field, no code needed); this call would just confirm ISO's live side agrees |
+| **3** | A submission in **Idaho or Virginia**, class `10012` or `10027` — the two-class exception where the table carries a non-zero ELP despite being labelled `Rate/Loss Cost Applies` | Does ISO's live service apply that non-zero ELP (matching "trust the table over the label," the design already adopted for when the `Industry` substitution is eventually revisited) or treat it as an ordinary filed rate and ignore the ELP table entirely? |
+
+**If you don't answer:** the `Company` referral stays as built — a conservative middle ground that
+doesn't claim to match ISO exactly, just flags the condition for a human. Calls 2 and 3 are pure
+curiosity items, not blockers; call 1 is the only one that could change existing behaviour.
+
+---
+
 # D · Things that need a carrier
 
 ## D1 · Minimum premium amounts

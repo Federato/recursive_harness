@@ -203,6 +203,37 @@ def d_zero_rating_factor(rating) -> list:
     return out
 
 
+def d_elp_override_needed(rating) -> list:
+    """R29 -- OI-95: ISO's own filed rules already ask for the input we never
+    supply, and nothing acts on the answer.
+
+    A class filed `(a)` -- refer to company -- falls through to an Estimated
+    Loss Potential. Where ISO publishes one (`Industry`), the countrywide rules
+    already resolve it correctly: confirmed against OK's own STC fixture,
+    class `50017`, `FinalProdsCompldOpsELP` lands on `0.82` exactly as ISO's
+    own certified output does, with no code here doing anything ELP-specific
+    -- the generic interpreter running ISO's filed `Lookup` is enough.
+
+    Where no ELP is published (`Company`, ISO's `RTC`), ISO's own filed rules
+    call `MessageHelper.AddErrorMessage` with *"Must enter Estimated Loss
+    Potential Override for ..."* -- the same generic mechanism every one of
+    the corpus's 4,347 validation-message sites uses. **The message already
+    exists in `rating.messages`; nothing here re-derives the classification
+    from a rate table.** What was missing is that nothing consulted it: the
+    rating completes anyway and prices that classification at the `(a)`
+    table's filed `0` -- the free-policy failure mode
+    `docs/rating-engine/13-LOSS-COSTS-AND-ELP.md` S13.4 names.
+
+    Deliberately narrow, matching this one message family rather than all
+    4,347 possible `AddErrorMessage` sites -- treating every filed message as
+    referral-worthy is a measurement this project has not done, and would be
+    the same blunt-instrument mistake OI-88's `FirstNonNull` fix was rejected
+    for.
+    """
+    text = "Must enter Estimated Loss Potential Override"
+    return [Finding("R29", "messages", m) for m in rating.messages if text in m]
+
+
 def d_split_base_table(rating) -> list:
     """R13 -- a base loss-cost table present and EMPTY where rows are sharded.
 
@@ -220,6 +251,11 @@ def d_split_base_table(rating) -> list:
 
 
 #: code -> detector. Everything not here and not classified above is PENDING.
+#: R29 is not one of the 28 entries the analysis phase produced (`REGISTER_PATH`,
+#: as-of 2026-08-12) -- it is OI-95, found afterward. `Kernel.coverage()` only
+#: counts codes present in that frozen register, so R29 runs and raises but
+#: does not appear in its tallies -- the same way OI-94's `_refuse_null_loss_cost`
+#: sits outside this dict entirely. `disposition()` still reports it DETECTED.
 DETECTORS = {
     "R03": d_refer_sentinel,
     "R16": d_negative_factor,
@@ -227,6 +263,7 @@ DETECTORS = {
     "R10": d_size_of_risk_without_costs,
     "R14": d_zero_rating_factor,
     "R13": d_split_base_table,
+    "R29": d_elp_override_needed,
 }
 
 #: Detectors that report under more than one code.

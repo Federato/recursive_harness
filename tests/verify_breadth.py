@@ -33,7 +33,8 @@ sys.path.insert(0, str(ROOT / "scripts"))
 from breadth import (BreadthError, Declared, catalogue,      # noqa: E402
                      classifications, gl, locations)
 from gl_engine import EditionResolver                        # noqa: E402
-from gl_engine.rating import Kernel, STRICT                  # noqa: E402
+from gl_engine.config import CORPUS_ROOT                     # noqa: E402
+from gl_engine.rating import Kernel, STRICT, UNDERWRITING    # noqa: E402
 from gl_engine.schema import validate                        # noqa: E402
 
 PASS, FAIL = [], []
@@ -48,6 +49,21 @@ def check(name, cond, detail=""):
 def base_for(juris: str) -> dict:
     p = ROOT / "Engine_Payloads" / juris / "submission.json"
     return json.loads(p.read_text(encoding="utf-8"))
+
+
+def _ok_stc_input(class_code: str | None = None) -> dict:
+    """The OK golden fixture's own ISO-filed sample submission, optionally
+    with its classification's `ClassCode` swapped -- for OI-95, to reach a
+    class ISO's own tables mark `Company` (no published ELP) rather than the
+    fixture's own `50017` (`Industry`, ELP `0.82`, already confirmed correct)."""
+    p = (CORPUS_ROOT / "OK" / "GL_OK 20250601 V01" / "GL OK 20250601 V01"
+         / "STC" / "1. Input.json")
+    data = json.loads(p.read_text(encoding="utf-8-sig"))
+    if class_code is not None:
+        cls = (data["body"]["GeneralLiability"][0]["GeneralLiabilityLocation"][0]
+               ["GeneralLiabilityClassification"][0])
+        cls["ClassCode"] = class_code
+    return data
 
 
 def _loss_cost_nodes(kernel, juris):
@@ -247,6 +263,42 @@ def main() -> int:
           set(flat) <= {"premops-bi-1000-claim", "if-any-basis",
                         "schedule-rating-credit", "schedule-rating-stacked"},
           f"unchanged from base: {sorted(flat)}")
+
+    # OI-95: the `Industry` ELP path is already correct -- confirmed against
+    # ISO's own certified STC output, no fix needed. The `Company` (RTC) path
+    # completes with ISO's own filed validation message unread; R29 reads it.
+    kern_strict = Kernel(mode=STRICT, resolver=EditionResolver())
+    kern_uw = Kernel(mode=UNDERWRITING, resolver=EditionResolver())
+
+    r_industry = kern_strict.rate(_ok_stc_input())
+    check("E8 OI-95 the `Industry` ELP path needs no fix -- matches ISO's own "
+          "STC output exactly",
+          r_industry.complete and r_industry.premium == 7839,
+          f"premium={r_industry.premium}, ISO's own STC output=7839")
+
+    msg = "Must enter Estimated Loss Potential Override"
+    r_company_strict = kern_strict.rate(_ok_stc_input("10011"))
+    check("E9 strict mode stays a pure mirror: ISO's own message is captured, "
+          "no referral raised, same as ISO's own filed rules would score it",
+          r_company_strict.complete
+          and any(msg in m for m in r_company_strict.messages)
+          and r_company_strict.referrals == [],
+          f"messages={r_company_strict.messages}, "
+          f"referrals={r_company_strict.referrals}")
+
+    r_company_uw = kern_uw.rate(_ok_stc_input("10011"))
+    check("E10 underwriting mode raises R29 on that exact message (OI-95)",
+          r_company_uw.complete
+          and [ref.code for ref in r_company_uw.referrals] == ["R29"]
+          and msg in r_company_uw.referrals[0].where,
+          f"referrals={r_company_uw.referrals}")
+
+    r_premops_uw = kern_uw.rate(_ok_stc_input("10119"))
+    check("E11 ...and the Premises/Operations side of the same message fires "
+          "R29 too, not only Products/Completed Operations",
+          r_premops_uw.complete
+          and any(ref.code == "R29" for ref in r_premops_uw.referrals),
+          f"referrals={r_premops_uw.referrals}")
 
     print(f"\n{len(PASS)}/{len(PASS) + len(FAIL)} passed")
     for f in FAIL:
