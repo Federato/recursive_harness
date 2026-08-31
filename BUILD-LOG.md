@@ -4532,3 +4532,38 @@ The corpus-wide `--all` output from this entry (49 of 52 jurisdictions flagged) 
 triaged — most is likely ordinary edition churn, but it hasn't been read line by line to confirm
 nothing else is OI-97-shaped. That triage, and whether to wire this into an automatic trigger, are
 both open.
+
+## Entry 58 — Entry 57 reviewed a jurisdiction against its own file only. Directed to fix it:
+## review the resolved rulebook, state over its declared parent.
+
+- **Date:** 2026-08-31
+- **Directed:** *"CW should be a part of the review."* Correcting Entry 57's own documented scope
+  boundary (`--juris TX` didn't show `ProdsCompldOpsExclusion` because that field is filed at the
+  countrywide layer and the tool only ever diffed one package against its own history).
+- **Built.** `56_edition_review.py` now resolves each snapshot the way the engine itself does:
+  `resolved_parent()` reads the package's OWN `declared_parent` (N5 — the exact countrywide
+  package it imports, never "whichever CW shares a date"), and `_merged_fields`/`_merged_tables`
+  layer parent under state, state overriding by key — the same precedence `Schema._load` already
+  gives the engine's resolved rulebook. Old and new snapshots are each resolved independently
+  before diffing, so a state that switched countrywide parents between the two editions is
+  compared correctly rather than assumed constant.
+- **Every finding is tagged with which layer produced it** (`[state]` or `[CW]`), so a state's own
+  change and an inherited one are never conflated even though both now surface under the same
+  jurisdiction code. The report header also names both packages' resolved parent
+  (`GL_TX_20250801_V01 over GL_CW_20231201_V03 -> GL_TX_20270401_V01 over GL_CW_20270401_V01`).
+- **Verified against the exact gap that was found and documented in Entry 57:**
+  `--juris TX` now lists `GeneralLiability.ProdsCompldOpsExclusion [CW]` under "fields ADDED" —
+  the tool would have surfaced OI-97 from a Texas-scoped review alone, not only from `--juris CW`.
+  `--juris CW` on its own is unaffected (no parent to merge) and re-checked to confirm it still
+  matches its pre-fix output exactly.
+- **`--all` re-run corpus-wide:** 52 jurisdiction codes reviewed, 50 with something to report (was
+  49 before the fix — one more jurisdiction now shows a change it inherits from its parent rather
+  than reading clean). Full test suite still green; this is a read-only analysis script and
+  touches nothing the engine or UI depends on.
+- **Not done:** the corpus-wide output — now larger, since every state's report includes its
+  parent's changes — is still untriaged. Same open item as Entry 57, larger population.
+
+### ▶ Next session
+
+Same as Entry 57's: triage the `--all` output (now 50 of 52 flagged, state-plus-parent), and
+decide whether to wire this into an automatic trigger. Nothing else pending on this thread.

@@ -39,20 +39,26 @@ business-level declaration of the same information and is what the engine's
 `Schema` class already reads, so a change invisible there is a change the
 engine's own schema layer would not see either.
 
-**Each jurisdiction code is reviewed against its OWN edition history only --
-`--juris TX` diffs Texas's own filed package, never its countrywide
-parent.** This mirrors how ISO actually files the corpus (a state package
-and its countrywide parent are versioned independently, N5) rather than
-merging them, which would attribute a countrywide change to whichever state
-happened to be asked about. **The consequence, confirmed while building
-this: `--juris TX` at the 2027 cliff does NOT show `ProdsCompldOpsExclusion`
--- that field is countrywide, and only shows up under `--juris CW`.** A full
-review after a new edition lands means running this once per package that
-actually changed, including `CW` whenever the countrywide parent refiles --
-`--all` already includes `CW` alongside every state code. A state that
-inherits a countrywide change without refiling its own package will not
-show it under its own code, by design; the review is per FILED package, not
-per resolved rulebook.
+**Each jurisdiction is reviewed as its RESOLVED rulebook, state over its own
+DECLARED parent (N5) -- `--juris TX` merges Texas's own filed package with
+whichever countrywide package TX's OWN edition actually declares as parent
+(`declared_parent`, read from the state package's `xs:import`, never
+"whichever CW happens to share a date"), old snapshot and new snapshot each
+resolved independently.** This is deliberately NOT a per-file diff: two
+different questions -- "did TX's own filing change" and "did TX's effective
+rulebook change" -- have different answers whenever TX inherits a countrywide
+change without refiling, and the second is the one a review has to answer,
+because it's the one that changes a premium. **First cut of this tool
+diffed each package against its own history only and missed exactly this:
+`--juris TX` at the 2027 cliff didn't show `ProdsCompldOpsExclusion`,
+because that field is filed at the countrywide layer and TX's own package
+never mentions it either way.** Every finding below is tagged with WHICH
+layer it came from (`[state]` or `[CW]`), so a state-declared change and an
+inherited one are never confused with each other even though both now
+appear under the same jurisdiction code. `--juris CW` on its own still
+reviews the countrywide package in isolation (it has no parent), and
+remains the direct source for anything a state-level review attributes to
+`[CW]`.
 
 Run:
     python scripts/erc/56_edition_review.py --juris TX
@@ -107,41 +113,80 @@ def _header(path: Path) -> tuple[str, ...]:
     return tuple(rows[0]) if rows else ()
 
 
-def edition_review(old: Package, new: Package) -> dict:
-    """Every structural change between two packages of the SAME jurisdiction,
-    old -> new. Neither package's own content is modified or assumed --
-    every finding is read fresh from both."""
-    of, nf = _fields(old), _fields(new)
+def resolved_parent(pkg: Package, by_id: dict[str, Package]) -> Package | None:
+    """The package THIS ONE actually declares as parent (N5) -- never the
+    newest countrywide edition, never one sharing its date by coincidence."""
+    if pkg.is_countrywide or not pkg.declared_parent:
+        return None
+    return by_id.get(pkg.declared_parent)
+
+
+def _merged_fields(pkg: Package, parent: Package | None
+                   ) -> dict[tuple[str, str], tuple[dict, str]]:
+    """Parent's fields first, state's own override by key -- same precedence
+    `Schema._load` gives the engine's own resolved rulebook. Each value
+    carries which layer supplied it, for attribution in the report."""
+    out = {}
+    if parent is not None:
+        for k, v in _fields(parent).items():
+            out[k] = (v, parent.identity.juris)
+    for k, v in _fields(pkg).items():
+        out[k] = (v, pkg.identity.juris)
+    return out
+
+
+def _merged_tables(pkg: Package, parent: Package | None
+                   ) -> dict[str, tuple[Path, str]]:
+    def own(p: Package) -> dict[str, Path]:
+        return {**_tables(p, "Rate Tables", "RateTable"),
+                **_tables(p, "Domain Tables", "DomainTable")}
+    out = {}
+    if parent is not None:
+        for name, path in own(parent).items():
+            out[name] = (path, parent.identity.juris)
+    for name, path in own(pkg).items():
+        out[name] = (path, pkg.identity.juris)
+    return out
+
+
+def edition_review(old: Package, new: Package,
+                   old_parent: Package | None, new_parent: Package | None) -> dict:
+    """Every structural change between two RESOLVED snapshots of the SAME
+    jurisdiction, old -> new -- state merged over its own declared parent at
+    each snapshot, never a raw single-file diff. Neither package's own
+    content is modified or assumed -- every finding is read fresh."""
+    of, nf = (_merged_fields(old, old_parent), _merged_fields(new, new_parent))
     added_fields = sorted(set(nf) - set(of))
     removed_fields = sorted(set(of) - set(nf))
     changed_fields = []
     for key in sorted(set(of) & set(nf)):
-        o, n = of[key], nf[key]
+        (o, _osrc), (n, nsrc) = of[key], nf[key]
         diffs = [(a, o.get(a, ""), n.get(a, "")) for a in _WATCHED_ATTRS
                 if (o.get(a) or "") != (n.get(a) or "")]
         if diffs:
-            changed_fields.append((key, diffs))
+            changed_fields.append((key, nsrc, diffs))
 
-    o_rt, n_rt = (_tables(old, "Rate Tables", "RateTable"),
-                 _tables(new, "Rate Tables", "RateTable"))
-    o_dt, n_dt = (_tables(old, "Domain Tables", "DomainTable"),
-                 _tables(new, "Domain Tables", "DomainTable"))
-    o_tables, n_tables = {**o_rt, **o_dt}, {**n_rt, **n_dt}
-    added_tables = sorted(set(n_tables) - set(o_tables))
-    removed_tables = sorted(set(o_tables) - set(n_tables))
+    ot, nt = (_merged_tables(old, old_parent), _merged_tables(new, new_parent))
+    added_tables = sorted(set(nt) - set(ot))
+    removed_tables = sorted(set(ot) - set(nt))
 
     header_changed = []
-    for name in sorted(set(o_tables) & set(n_tables)):
-        oh, nh = _header(o_tables[name]), _header(n_tables[name])
+    for name in sorted(set(ot) & set(nt)):
+        (opath, _osrc), (npath, nsrc) = ot[name], nt[name]
+        oh, nh = _header(opath), _header(npath)
         if oh != nh:
-            header_changed.append((name, oh, nh))
+            header_changed.append((name, nsrc, oh, nh))
 
     return {
         "juris": new.identity.juris,
         "old": old.pkg_id, "new": new.pkg_id,
-        "added_fields": added_fields, "removed_fields": removed_fields,
+        "old_parent": old_parent.pkg_id if old_parent else None,
+        "new_parent": new_parent.pkg_id if new_parent else None,
+        "added_fields": [(k, nf[k][1]) for k in added_fields],
+        "removed_fields": [(k, of[k][1]) for k in removed_fields],
         "changed_fields": changed_fields,
-        "added_tables": added_tables, "removed_tables": removed_tables,
+        "added_tables": [(n, nt[n][1]) for n in added_tables],
+        "removed_tables": [(n, ot[n][1]) for n in removed_tables],
         "header_changed": header_changed,
     }
 
@@ -169,23 +214,25 @@ def latest_two_editions(packages: list[Package]) -> tuple[Package | None, Packag
 
 
 def render(r: dict) -> str:
-    lines = [f"{r['juris']}: {r['old']} -> {r['new']}"]
+    old_full = r["old"] + (f" over {r['old_parent']}" if r["old_parent"] else "")
+    new_full = r["new"] + (f" over {r['new_parent']}" if r["new_parent"] else "")
+    lines = [f"{r['juris']}: {old_full} -> {new_full}"]
     if r["added_fields"]:
         lines.append(f"  fields ADDED ({len(r['added_fields'])}): " +
-                     ", ".join(f"{t}.{c}" for t, c in r["added_fields"]))
+                     ", ".join(f"{t}.{c} [{src}]" for (t, c), src in r["added_fields"]))
     if r["removed_fields"]:
         lines.append(f"  fields REMOVED ({len(r['removed_fields'])}): " +
-                     ", ".join(f"{t}.{c}" for t, c in r["removed_fields"]))
-    for (t, c), diffs in r["changed_fields"]:
+                     ", ".join(f"{t}.{c} [{src}]" for (t, c), src in r["removed_fields"]))
+    for (t, c), src, diffs in r["changed_fields"]:
         for attr, o, n in diffs:
-            lines.append(f"  field CHANGED {t}.{c}: {attr} {o!r} -> {n!r}")
+            lines.append(f"  field CHANGED {t}.{c} [{src}]: {attr} {o!r} -> {n!r}")
     if r["added_tables"]:
         lines.append(f"  tables ADDED ({len(r['added_tables'])}): " +
-                     ", ".join(r["added_tables"]))
+                     ", ".join(f"{n} [{src}]" for n, src in r["added_tables"]))
     if r["removed_tables"]:
         lines.append(f"  tables REMOVED ({len(r['removed_tables'])}): " +
-                     ", ".join(r["removed_tables"]))
-    for name, oh, nh in r["header_changed"]:
+                     ", ".join(f"{n} [{src}]" for n, src in r["removed_tables"]))
+    for name, src, oh, nh in r["header_changed"]:
         added = [c for c in nh if c not in oh]
         removed = [c for c in oh if c not in nh]
         detail = []
@@ -193,7 +240,8 @@ def render(r: dict) -> str:
             detail.append(f"+{','.join(added)}")
         if removed:
             detail.append(f"-{','.join(removed)}")
-        lines.append(f"  table COLUMNS CHANGED {name}: {'; '.join(detail) or 'reordered'}")
+        lines.append(f"  table COLUMNS CHANGED {name} [{src}]: "
+                     f"{'; '.join(detail) or 'reordered'}")
     return "\n".join(lines)
 
 
@@ -212,8 +260,10 @@ def main(argv) -> int:
 
     packages = discover()
     by_juris: dict[str, list[Package]] = {}
+    by_id: dict[str, Package] = {}
     for p in packages:
         by_juris.setdefault(p.identity.juris, []).append(p)
+        by_id[p.pkg_id] = p
 
     jurisdictions = [a.juris.upper()] if a.juris else sorted(by_juris)
     results, skipped = [], []
@@ -235,7 +285,17 @@ def main(argv) -> int:
             if old is None:
                 skipped.append((j, "fewer than 2 editions on file"))
                 continue
-        results.append(edition_review(old, new))
+        old_parent = resolved_parent(old, by_id)
+        new_parent = resolved_parent(new, by_id)
+        if not old.is_countrywide and old.declared_parent and old_parent is None:
+            skipped.append((j, f"{old.pkg_id} declares parent "
+                              f"{old.declared_parent!r}, not in the corpus"))
+            continue
+        if not new.is_countrywide and new.declared_parent and new_parent is None:
+            skipped.append((j, f"{new.pkg_id} declares parent "
+                              f"{new.declared_parent!r}, not in the corpus"))
+            continue
+        results.append(edition_review(old, new, old_parent, new_parent))
 
     flagged = [r for r in results if has_findings(r)]
     print(f"reviewed {len(results)} jurisdiction(s), "
