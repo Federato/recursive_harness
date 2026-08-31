@@ -3951,3 +3951,47 @@ submissions carry into it), found the moment this control made the cliff reachab
 run. Worth root-causing before deciding whether it's a table-key rename in the 2027 filing or a gap
 in what the base submissions carry — `docs/rating-engine/13-LOSS-COSTS-AND-ELP.md` §13.7's class-basis
 migration is the most likely shape, unconfirmed.
+
+---
+
+## Entry 46 — OI-96 root-caused and measured corpus-wide: the 2027 filing dropped the `" CSL"`
+## suffix from limit values, in 44 of 44 states so far, not an isolated table quirk.
+
+- **Date:** 2026-08-31
+- **Directed:** two prompts — *"if its eff 05/01/2027 it should use 04/01/2027 factors"* (a hypothesis
+  to test: is this a date-resolution bug), then *"review table names to see if it's been renamed"*,
+  then *"for 2027, how many states do this... this is something that should be reviewed for all
+  tables for all new editions."*
+- **Ruled out first:** resolving `TX`/`OH` at both `20270401` and `20270501` picks the identical
+  package pair both times (`GL_TX_20270401_V01` over `GL_CW_20270401_V01`) and fails identically —
+  **not** a boundary-date bug. N4's "latest edition on or before the date" rule is already correct.
+- **Root cause, found by hand first:** `ILFPremOps.RateTable.csv` in TX's 2025 edition carries
+  `EachOccurrenceLimit = "1,000,000 CSL"`; the identical table, column and factor in the 2027 edition
+  carries `"1,000,000"` — no rename, no re-keying, ISO dropped a unit suffix from the value itself.
+  The stored (2026-shaped) base payloads still send the old format, so the lookup misses.
+- **Measured corpus-wide, read-only, no calls:** `scripts/erc/54_oi96_csl_suffix.py` — for every
+  jurisdiction, diffs the last pre-cliff edition against the first 2027-vintage edition, table by
+  table, flagging any column where `" CSL"` is present in every old row and absent from every new
+  one. **44 of 44 jurisdictions with a 2027 edition filed so far are affected** — universal, not a
+  handful of states. `ILFPremOps`/`ILFProds` in all 43 (+ empty on the CW parent, header-only).
+  Also hits, in fewer states: `LimitNumeric` (7 + CW), `CyberCoverageLimitStatCode` (2 + CW),
+  `PolicyLimitsPremOpsProdsStatCode` (CW), `ILFElevatorContractor`/`ILFElevatorContractorsOrInspectors`
+  (3 states), two Maryland boiler/pressure-vessel tables. CA, FL, GA, MA, NJ, NV, NY, WA have no 2027
+  edition filed yet and were excluded rather than guessed at. Full output:
+  `scripts/erc/out/oi96_csl_suffix.txt`.
+- **The instruction behind the script, recorded because it's a standing habit, not a one-off:** a
+  value-format change like this should be checked across every jurisdiction and every shared table
+  whenever a new edition lands — the same discipline OI-95 already applied to the ELP regime split,
+  now applied on request to an edition-transition question instead of a within-edition one.
+- **Not built.** `docs/OPEN-ITEMS.md` OI-96 updated with the corpus-wide measurement. The fix shape is
+  still a decision, not yet made: normalize the suffix generically at lookup time (tolerant of either
+  format, forward-compatible with the next reformatting ISO does) versus updating how variant/test
+  payloads are built once `effective_date` crosses an edition that reformatted a value they carry.
+
+### ▶ Next session
+
+**A decision, not a build item yet:** which of the two fix shapes above for OI-96. Generic
+suffix-tolerant lookup is more defensive (survives the *next* reformatting too) but is a change to
+`Interpreter.lookup()`'s matching behavior, which every lookup in the engine goes through — must not
+be done lightly. Payload-side normalization is narrower and lower-risk but only fixes what's already
+been seen. Everything else from Entry 45 is unchanged and still stands.
