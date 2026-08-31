@@ -4457,19 +4457,19 @@ OI-97's `ProdsCompldOpsExclusion` fix is still the only open build item, awaitin
   silent exclusion loses coverage nobody asked to drop, a silent inclusion at worst overprices —
   but "safer to be wrong on" is not "right," and nothing here should be read as closing the
   question of what a submission SHOULD say.
-- **The learning, for the record:** when ISO adds a new required field mid-filing, the OLD rule's
-  exact same subline/coverage-form condition can quietly gain a hard gate with nothing but the new
-  field's own absence to notice. The failure has no symptom that looks like a failure — no message,
-  no referral, no stopped rating — it looks exactly like the coverage still being priced, only
-  cheaper. OI-96 (a reformatted value) and OI-97 (a newly-required field) are two different shapes
-  of the same edition-transition risk, and this project already has a script for OI-96's shape
-  (`scripts/erc/54_oi96_csl_suffix.py`, corpus-wide, read-only) but not yet one for OI-97's —
-  finding it required a person asking "does that number look right," not an automated check. **What
-  would generalize this:** for any edition that adds a genuinely new field (not renamed, not
-  reformatted — a field with zero prior-edition history at all), check what a pre-existing
-  submission's silence on it resolves to, before trusting that submission's numbers at the new
-  edition. Not built here; recorded so the next edition transition starts from a question instead
-  of a surprise.
+- **The learning, corrected by direction after the first pass logged it too narrowly.** The first
+  cut of this entry framed the lesson as "watch for a newly-required field silently gating an old
+  rule" — a real pattern, but a checklist item, not the actual gap. **The real gap is that neither
+  OI-96 nor OI-97 was found by a standing process step.** OI-96 surfaced because a person happened
+  to hand-test the 2027 cliff; OI-97 surfaced because a person happened to ask "does that number
+  look right" about OI-96's own result. Both are one edition, one field shape, found by luck of
+  attention rather than by anything that runs automatically. **The generalizable fix is process:
+  every time a new edition lands in the corpus, run enough tests — corpus-wide, automatic, not
+  person-triggered — to surface, log and correct issues like these on their own,** the same
+  discipline `scripts/erc/54_oi96_csl_suffix.py` already applies to OI-96's shape (reformatted
+  values) but nothing yet applies to OI-97's shape (newly-required fields) or to whatever the next
+  edition's shape turns out to be. Not built here; recorded so the next edition transition is met
+  by a standing check, not another person asking the right question by chance.
 - **Logged:** `docs/OPEN-ITEMS.md` OI-97 → `PARTIALLY BUILT`.
 
 ### ▶ Next session
