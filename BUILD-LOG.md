@@ -3995,3 +3995,48 @@ suffix-tolerant lookup is more defensive (survives the *next* reformatting too) 
 `Interpreter.lookup()`'s matching behavior, which every lookup in the engine goes through — must not
 be done lightly. Payload-side normalization is narrower and lower-risk but only fixes what's already
 been seen. Everything else from Entry 45 is unchanged and still stands.
+
+---
+
+## Entry 47 — OI-96 fix built: option 2, renormalize the payload's own limit figures against the
+## resolved edition's declared spelling.
+
+- **Date:** 2026-08-31
+- **Directed:** *"2"* — the payload-side fix, chosen over the generic lookup-tolerant option.
+- **Built:** `scripts/variants.py` `_apply_effective_date` now renormalizes the three limit fields
+  the stored base submissions actually carry — `PremOpsProdsEachOccurrenceLimit`,
+  `GeneralAggregateLimit`, `ProdsCompldOpsAggregateLimit` — against `Declared.values()` for the
+  RESOLVED edition, matching on the bare number rather than assuming which suffix (or none) the
+  target edition uses. **Deliberately conservative on ambiguity**: `"2,000,000 BI"` and
+  `"2,000,000 CSL"` are two real, different pre-2027 values (bodily-injury-only vs.
+  combined-single-limit), not two spellings of the same thing — the new `_renormalize_limit` only
+  acts when exactly one legal value shares the bare number, and leaves the field untouched otherwise,
+  so an ambiguous case fails the ordinary legality check rather than getting guessed. A control that
+  already owns the same field in the same config (`occurrence_limit`/`general_aggregate`) stays
+  authoritative — renormalization is skipped for it, since that control already resolves its value
+  fresh against the same `d`.
+- **Verified:** all 12 CORE states now rate at `2027-04-01` — the 7 that previously stopped (OH, TX,
+  PA, RI, MT, WY, DE) complete; the 5 that already rated (NY, CA, NJ, FL, GA) are byte-identical to
+  before, because those five have no 2027 edition filed yet and the resolver never reaches a
+  reformatted table for them. Confirmed through the actual harness path, not just `build()`+`rate()`
+  in isolation: `qa.tier_t4()`'s own cliff-dated row run through `sweep.run_config` rates TX and OH
+  both. `tests/verify_tester.py` gains **H7–H9** (73/73 total): the renormalization happens, TX rates
+  instead of stopping, and a control that owns the same field is never overwritten. Full suite
+  re-checked: `verify_breadth` 26/26, `verify_layers` all green.
+- **What this does NOT establish, stated rather than left implicit:** the resulting premiums are not
+  verified against ISO. TX moved from its pre-cliff **8,229** to **895** at the cliff — a real,
+  large move, and this build makes no claim about whether 895 is the *correct* 2027 premium, only
+  that the engine no longer stops on the known suffix mismatch. Confirming the number would need a
+  live ISO call at a 2027 date or a full diff of everything else the 2027 filing changed. This fix
+  also only covers the three fields the current base submissions exercise — `LimitNumeric`,
+  `CyberCoverageLimitStatCode` and the other tables `54_oi96_csl_suffix.py` found are untouched
+  because nothing in the stored bases reaches them today. The generic, lookup-side fix (option 1)
+  remains the more complete answer for a future reformatting this narrow fix wouldn't cover.
+
+### ▶ Next session
+
+**OI-96's rating-stops-at-the-cliff symptom is closed for the 12 CORE states.** Two things worth
+doing before treating the cliff as fully proven: confirm at least one 2027-dated premium against ISO
+directly (a live call, when there's budget for one), and decide whether option 1 (generic
+suffix-tolerant lookup matching) is worth building anyway as a defense against the next reformatting
+— this fix answers today's known case, not the general problem.

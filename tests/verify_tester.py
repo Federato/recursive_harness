@@ -191,6 +191,31 @@ def main() -> int:
     check("H6 a malformed date is refused, not silently written",
           bad_date_refused)
 
+    # OI-96: the 2027 filing dropped " CSL" from limit values in most states'
+    # ILF tables. TX is one of the 7 CORE states that stopped outright before
+    # this was fixed by renormalizing the base's own limit fields.
+    cfg_96 = {"effective_date": CLASS_BASIS_CLIFF}
+    d_96 = V.Declared.for_config("TX", cfg_96)
+    p_96 = V.build(cfg_96, d_96)
+    check("H7 OI-96: a stored limit figure is renormalized to the resolved "
+          "edition's own spelling",
+          p_96["body"]["GeneralLiability"][0]["PremOpsProdsEachOccurrenceLimit"]
+          == "1,000,000",
+          p_96["body"]["GeneralLiability"][0]["PremOpsProdsEachOccurrenceLimit"])
+    r_96 = kernel_h.rate(p_96)
+    check("H8 ...and TX rates past the cliff instead of stopping on the "
+          "lookup miss",
+          r_96.complete, f"stopped={r_96.stopped}" if not r_96.complete else "")
+
+    cfg_96b = {"effective_date": CLASS_BASIS_CLIFF, "occurrence_limit": "500,000"}
+    d_96b = V.Declared.for_config("TX", cfg_96b)
+    p_96b = V.build(cfg_96b, d_96b)
+    check("H9 ...and a control that sets the SAME field stays authoritative "
+          "-- renormalization never overwrites a value someone chose",
+          p_96b["body"]["GeneralLiability"][0]["PremOpsProdsEachOccurrenceLimit"]
+          == "500,000",
+          p_96b["body"]["GeneralLiability"][0]["PremOpsProdsEachOccurrenceLimit"])
+
     print("\nD  NOT APPLICABLE IS NOT DISAGREEMENT")
     cm = variables.legality({"coverage_form": "Claims Made"})
     check("D1 claims-made is applicable in 50 of 51, and NY is the exception",

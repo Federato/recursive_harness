@@ -846,6 +846,46 @@ def _apply_terrorism(p, value, d, config):
         loc[field] = val
 
 
+#: Fields the stored base submissions carry a limit figure in, mapped to the
+#: control id that -- IF set in the same config -- already resolves them
+#: fresh against `d` and makes renormalizing here redundant. OI-96: the 2027
+#: filing dropped the `" CSL"` suffix from every one of these (measured
+#: corpus-wide, `scripts/erc/54_oi96_csl_suffix.py`) -- same table, same
+#: column, same factor, reformatted value. A base submission built for a
+#: pre-2027 edition carries the old format and misses every lookup keyed on
+#: it once the resolved edition has moved past the cliff.
+_LIMIT_FIELDS = {
+    "PremOpsProdsEachOccurrenceLimit": "occurrence_limit",
+    "GeneralAggregateLimit": "general_aggregate",
+    "ProdsCompldOpsAggregateLimit": "general_aggregate",
+}
+
+
+def _renormalize_limit(d: Declared, column: str, value: str) -> str:
+    """Match `value` to the resolved edition's OWN declared spelling of the
+    same figure, tolerant of a unit suffix an edition transition added or
+    dropped.
+
+    **Reads the resolved book's own domain, never guesses a format.** A
+    figure can legally appear more than once with different suffixes in the
+    same edition -- `"2,000,000 BI"` and `"2,000,000 CSL"` are two distinct
+    declared values pre-2027, a real distinction (bodily-injury-only versus
+    combined-single-limit), not formatting noise. Renormalizing is only safe
+    when exactly one legal value shares the bare number; more than one is
+    genuine ambiguity this function must not resolve by picking one, and
+    leaving the value alone lets the ordinary legality check catch it rather
+    than silently guessing.
+    """
+    legal = d.values(GL, column)
+    if not legal or value in legal:
+        return value
+    bare = value.split(" ", 1)[0]
+    matches = [v for v in legal if v.split(" ", 1)[0] == bare]
+    if len(matches) == 1:
+        return matches[0]
+    return value
+
+
 def _apply_effective_date(p, value, d, config):
     """Write the SAME date `d` was resolved at -- see `Declared.for_config()`.
 
@@ -855,12 +895,25 @@ def _apply_effective_date(p, value, d, config):
     cannot catch that from inside `build()`, because by the time an applier
     runs, `d.book` is already resolved. `Declared.for_config()` is the one correct
     way to avoid it.
+
+    Also renormalizes `_LIMIT_FIELDS` still carrying the base submission's own
+    figures (OI-96) -- see `_renormalize_limit`. Skipped for any field a
+    control in this same config already owns, since that control resolves
+    the value fresh against `d` on its own turn.
     """
     v = str(value)
     if len(v) != 8 or not v.isdigit():
         raise VariantError(f"effective date must be YYYYMMDD, got {value!r}")
     iso = f"{v[0:4]}-{v[4:6]}-{v[6:8]}T00:00:00"
     p.setdefault("body", {}).setdefault("SchemeKeys", {})["EffectiveDateTime"] = iso
+
+    risk = _gl(p)
+    for field, owner in _LIMIT_FIELDS.items():
+        if owner in config:
+            continue                      # that control is authoritative
+        current = risk.get(field)
+        if isinstance(current, str):
+            risk[field] = _renormalize_limit(d, field, current)
 
 
 APPLIERS = {
