@@ -139,14 +139,27 @@ class Kernel:
 
     # ------------------------------------------------------------------ rate
 
-    def rate(self, payload: dict | str | Path) -> Rating:
-        """Rate one RAaS-shaped submission."""
+    def rate(self, payload: dict | str | Path,
+            version: str | None = None) -> Rating:
+        """Rate one RAaS-shaped submission.
+
+        `version`, if given, pins the SAME package version the payload was
+        built against instead of letting the resolver take the newest again.
+        **The payload itself carries no such field** -- ISO's own live
+        service has no equivalent input to pin its own version choice -- so
+        a caller that built a submission at a pinned version (`variants.py`
+        `package_version`) and then rates it here without passing `version`
+        silently re-resolves to newest, which is not the same submission it
+        looks like: the values were built against one rulebook and priced
+        against another. `sweep.run_config` is the one place both are read
+        from the same config together.
+        """
         if isinstance(payload, (str, Path)):
             data, juris, asof = load_submission(payload)
         else:
             data, juris, asof = from_raas(payload)
 
-        book = ResolvedBook(self.resolver.resolve(juris, asof))
+        book = ResolvedBook(self.resolver.resolve(juris, asof, version))
         interp = Interpreter(book, rounding=self.rounding)
 
         result = Rating(juris=juris, asof=asof, mode=self.mode, book=book,

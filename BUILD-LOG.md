@@ -4351,3 +4351,82 @@ ISO, to know whether this is four states or forty.
 **OI-97 is now scoped to exactly one open question: the `ProdsCompldOpsExclusion` fix**, same file
 and mechanism as OI-96's own fix (`variants.py` `_apply_effective_date`). The version-drift half
 that opened alongside it is closed. Needs a go before anything is built.
+
+## Entry 55 — A test-run control to pin a package version, not just an effective date. Building
+## it found a second bug the corpus refresh alone didn't surface: the rating step was silently
+## ignoring the pin.
+
+- **Date:** 2026-08-31
+- **Directed:** *"can we put an effective date test run, with a drop down to select approriate
+  erc version"* — proposed with a plain-English scope preview first (new resolver axis, new UI
+  dropdown, same shape as the `effective_date` build), user asked one clarifying question about how
+  "newest" is defined (answered: identity from the XSD, never the directory or a timestamp — N6;
+  confirmed correct, no change needed there), then *"yes"*.
+- **Built, the axis:**
+  - `EditionResolver.resolve(juris, asof, version=None)` — `version`, if given, pins the resolved
+    edition to a specific filed `Vnn` instead of the newest on disk. Still N4/N3: the edition
+    choice is unaffected, only which version of it. A version the edition never filed is a hard
+    failure naming what's available, never a silent fallback (`gl_engine/resolve/resolver.py`).
+  - `EditionResolver.versions(juris, edition)` — every version filed for one state's edition, for
+    populating the dropdown.
+  - `variants.py`: `Declared.__init__`/`Declared.for_config` thread `version` through to the
+    resolver; new Control `package_version` (group "Timing", `derive="package_versions"`, reads
+    `d.book.resolution.state.identity.edition` so its options always match whatever edition the
+    chosen effective date resolves to); `_apply_package_version` is a deliberate no-op — the
+    control changes which rulebook `Declared` resolves against, not a payload field, and ISO's own
+    live service has no equivalent input to send it.
+  - `sweep.declared()`/`run_config()` read `package_version` from the config the same way
+    `effective_date` already is, and record it on the row when set.
+  - `ui/variables.py` `for_juris`/`legality` construct `Declared` with the pin; `legality` notes
+    in-line that a version is state-specific (`"V04"` means whatever ND filed, nothing about any
+    other state), so most jurisdictions failing to resolve it is the correct answer, not a bug.
+  - `ui/tester.py`: the dropdown needed no new rendering code — the control panel is already
+    spec-driven over every `Control`, so `package_version` appeared automatically once registered.
+    One small addition: `refreshKeyed` now explicitly re-fetches it when `effective_date` changes,
+    since it isn't a real ISO domain dependency (`keyed_by` names real column names; this control
+    has none) and piggybacking on that mechanism would have been dishonest labeling.
+- **Found while testing the pin end-to-end, not by inspection.** Pinning ND to `V01` and `V04` and
+  rating both gave the **same premium (42825) for both** — silently wrong; `V01` should reproduce
+  the pre-refresh 36875. Root cause: `Kernel.rate()` re-resolves `(juris, asof)` from the payload
+  itself with **no version parameter**, so the pin only ever reached the *builder* (`Declared`,
+  legal values, the payload's own fields) and never the *rater* — a submission built at one
+  version priced against another, silently, exactly the shape a "pin a version and test it"
+  control exists to prevent. **Fixed the same way it was found: by using the feature, not by
+  reading the diff.** `Kernel.rate(payload, version=None)` and `phase2_compare.compare_payload(...,
+  version=None)` both now accept and forward the pin; `sweep.run_config` passes `row_version` to
+  both the rating call and the comparison call. Before the fix, a pinned `V01` live-compared
+  against ISO read `MATCH` (comparing ISO against an internally re-resolved `V04` rating, not the
+  pinned one) — after, it correctly reads `DIFF` (`ours=36875 iso=42825`), which is exactly the
+  divergence the whole feature exists to make visible on demand instead of by accident.
+- **Verified live, not just offline:** `--set package_version=V01 --juris ND --live` → `DIFF`
+  (36875 vs 42825); `--set package_version=V04 --juris ND --live` → `MATCH`. One live call spent.
+- **Test-suite fallout from the 2026-08-31 corpus refresh (Entry 54), found while re-running
+  suites for this feature — not caused by this feature, but left red until now.** Four pinned
+  regression figures had drifted because the refresh changed which package versions several states
+  resolve to:
+  - `verify_stage1.py`: package count 570→611; countrywide parents at the cliff 3→4 (`GL_CW_
+    20270401_V02` added, 38 of the original 43 states moved onto it, 8 stayed on V01); OH's
+    parent at the cliff V01→V02 (same withdrawal, same row count, different pkg id).
+  - `verify_breadth.py` E13: 5 of 12 CORE cliff premiums moved (OH, FL, PA, RI, DE) when their
+    countrywide parent bumped; NY/CA/NJ/TX/GA/MT/WY unchanged.
+  - `verify_california.py`: STC file count 519→560 (41 new STC files across the 42 new packages);
+    still exactly one Output oracle (OK), unchanged.
+  - `verify_oi50.py`: distinct countrywide packages 11→12 (`GL_CW_20270401_V02`).
+  - All four re-measured from the actual corpus, not guessed, same discipline as OI-79's own
+    mechanical re-pin.
+- **Full suite green:** verify_tester 81/81, verify_breadth 28/28, verify_stage1 20/20,
+  verify_phase2 14/14 (+1 skipped, live comparison not spent), verify_golden 80/80, verify_stage4
+  30/30, verify_stage3 38/38, verify_new_york 10/10, verify_layers all, verify_oi50 7/7,
+  verify_contract_figures OK, verify_stage5 18/18, verify_interp 61/61, verify_california 11/11.
+  `verify_notebooks.py` not run — unrelated to this change, pre-existing modified notebooks in the
+  working tree from before this session.
+- **Not done:** browser verification of the `/tester` page rendering. The control panel is fully
+  spec-driven (same generic code path every other control already uses) and the served spec was
+  checked directly, but nobody clicked it. Worth a look before calling the UI half finished.
+- **Live calls spent today:** 1 more (10 total across Entries 53–55).
+
+### ▶ Next session
+
+OI-97's `ProdsCompldOpsExclusion` fix is still the only open build item, awaiting a go. The new
+`package_version` control is built and tested at the CLI/engine layer; a quick browser pass on
+`/tester` would close the loop on the UI half.

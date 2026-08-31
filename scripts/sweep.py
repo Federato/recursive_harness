@@ -59,10 +59,11 @@ def engine_version() -> str:
     return getattr(gl_engine, "__version__", "")
 
 
-def declared(juris: str, asof: str = V.DEFAULT_ASOF) -> V.Declared:
-    key = (juris, asof)
+def declared(juris: str, asof: str = V.DEFAULT_ASOF,
+            version: str | None = None) -> V.Declared:
+    key = (juris, asof, version)
     if key not in _DECLARED:
-        _DECLARED[key] = V.Declared(juris, asof)
+        _DECLARED[key] = V.Declared(juris, asof, version)
     return _DECLARED[key]
 
 
@@ -145,9 +146,12 @@ def run_config(config: dict, jurisdictions=None, compare: bool = False,
             # stays the run-level default for every config that leaves it
             # unset, same as before.
             row_asof = str(cfg.get("effective_date") or asof)
-            d = declared(j, row_asof)
+            row_version = cfg.get("package_version") or None
+            d = declared(j, row_asof, row_version)
             if row_asof != asof:
                 row["asof"] = row_asof
+            if row_version:
+                row["package_version"] = row_version
             if resolve is not None:
                 cfg_j = V.clean(resolve(cfg, d))
                 if cfg_j != cfg:
@@ -170,7 +174,7 @@ def run_config(config: dict, jurisdictions=None, compare: bool = False,
             continue
 
         try:
-            ours = kernel.rate(payload)
+            ours = kernel.rate(payload, version=row_version)
         except Exception as exc:                              # noqa: BLE001
             row.update(status="ENGINE ERROR",
                        detail=f"{type(exc).__name__}: {exc}"[:220])
@@ -196,7 +200,8 @@ def run_config(config: dict, jurisdictions=None, compare: bool = False,
         if not compare:
             row["status"] = "RATED"
         else:
-            r = compare_payload(j, payload, kernel, client, dp)
+            r = compare_payload(j, payload, kernel, client, dp,
+                               version=row_version)
             row["status"] = r["status"]
             for k in ("iso", "delta", "iso_package", "edition_agrees",
                       "fields_compared", "fields_differing",

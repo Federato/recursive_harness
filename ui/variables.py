@@ -112,13 +112,17 @@ def for_juris(juris: str, config: dict | None = None,
     jurisdiction is chosen; this is what that jurisdiction will actually accept,
     with dependent domains resolved against the current answers.
 
-    **A config that has already set `effective_date` resolves at ITS date, not
-    the caller's `asof`.** Once a person has picked a date, every other
-    dropdown must reflect what's legal on that date, not the page's original
-    load-time default -- `Declared.for_config` is what makes that automatic.
+    **A config that has already set `effective_date` (or `package_version`)
+    resolves at ITS date/version, not the caller's `asof`.** Once a person
+    has picked a date, every other dropdown must reflect what's legal on
+    that date, not the page's original load-time default -- and once they've
+    pinned a version, the `package_version` dropdown itself must offer that
+    edition's own versions, not the default one's. `Declared.for_config` is
+    what makes both automatic.
     """
-    d = V.Declared.for_config(juris, config) if config and config.get(
-        "effective_date") else V.Declared(juris, asof)
+    d = V.Declared.for_config(juris, config) if config and (
+        config.get("effective_date") or config.get("package_version")
+    ) else V.Declared(juris, asof)
     return {
         "juris": juris,
         "territories": list(d.territories()),
@@ -137,9 +141,16 @@ def legality(config: dict, asof: str = V.DEFAULT_ASOF) -> dict:
     """
     ok, no = [], {}
     row_asof = str(config.get("effective_date") or asof)
+    row_version = config.get("package_version") or None
     for j in V.Declared.jurisdictions():
         try:
-            d = V.Declared(j, row_asof)
+            # A pinned version is state-specific -- "V04" means whatever ND's
+            # own filing history made it mean, nothing about any other
+            # state's. Most jurisdictions will legitimately fail to resolve
+            # it and land in `no[j]`, which is the correct answer here, not
+            # a bug: this was never meant to run breadth, only the one state
+            # a version was chosen for.
+            d = V.Declared(j, row_asof, row_version)
             V.build(config, d)
             ok.append(j)
         except V.VariantError as exc:

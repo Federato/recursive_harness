@@ -93,7 +93,27 @@ class EditionResolver:
         return [p for p in self.by_juris.get(juris.upper(), [])
                 if p.identity.edition <= asof]
 
-    def resolve(self, juris: str, asof: str) -> Resolution:
+    def versions(self, juris: str, edition: str) -> list[str]:
+        """Every version filed for one jurisdiction's edition, sorted.
+
+        For populating a version-pin dropdown once an edition is known --
+        never used by `resolve()` itself, which still defaults to the newest.
+        """
+        pool = self.by_juris.get(juris.upper(), [])
+        return sorted({p.identity.version for p in pool
+                       if p.identity.edition == edition})
+
+    def resolve(self, juris: str, asof: str, version: str | None = None) -> Resolution:
+        """`version`, if given, pins the RESOLVED edition to a specific filed
+        version instead of the newest one on disk (still the default).
+
+        **Still N4/N3: the edition choice is unaffected.** `version` only
+        chooses among versions of whichever edition `asof` already resolves
+        to -- it cannot select a different edition's package, and a version
+        that edition never filed is a hard failure, not a fallback to
+        whatever exists (the same discipline N5 already applies to a missing
+        parent).
+        """
         juris = juris.upper()
         asof = _valid_date(asof)
         pool = self.by_juris.get(juris)
@@ -109,6 +129,17 @@ class EditionResolver:
                 f"{juris} has no edition in force on {asof}; its earliest is "
                 f"{first}")
         state = eligible[-1]                      # sorted by (edition, version)
+
+        if version:
+            edition = state.identity.edition
+            pinned = [p for p in pool if p.identity.edition == edition
+                     and p.identity.version == version]
+            if not pinned:
+                available = self.versions(juris, edition)
+                raise ResolutionError(
+                    f"{juris} {edition} has no version {version!r} on disk; "
+                    f"available: {', '.join(available) or '(none)'}")
+            state = pinned[0]
 
         if state.is_countrywide:
             return Resolution(juris, asof, state, None)

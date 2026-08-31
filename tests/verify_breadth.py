@@ -321,10 +321,15 @@ def main() -> int:
           "on the CSL lookup miss",
           not cliff_stopped, f"stopped: {cliff_stopped}" if cliff_stopped
           else f"{len(cliff_premiums)} of {len(qa.CORE)} rated")
+    # Re-measured 2026-08-31 (OI-97, BUILD-LOG.md Entry 54): OH, FL, PA, RI
+    # and DE moved when the corpus refresh bumped the countrywide parent from
+    # GL_CW_20270401_V01 to V02 for most CORE states. NY, CA, NJ, TX, GA, MT
+    # and WY are unchanged -- either their own state package or a V01 parent
+    # (TX) didn't move in this particular refresh.
     expected_cliff = {
-        "NY": "12141", "CA": "7586", "NJ": "9444", "OH": "435", "TX": "895",
-        "FL": "8672", "PA": "2830", "GA": "7366", "RI": "1165", "MT": "1066",
-        "WY": "1030", "DE": "825",
+        "NY": "12141", "CA": "7586", "NJ": "9444", "OH": "455", "TX": "895",
+        "FL": "1395", "PA": "3355", "GA": "7366", "RI": "1255", "MT": "1066",
+        "WY": "1030", "DE": "860",
     }
     check("E13 ...and the premiums are the exact figures measured when this "
           "was fixed, not just SOME number",

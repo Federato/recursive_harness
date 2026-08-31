@@ -91,7 +91,8 @@ class Declared:
 
     _resolver = None
 
-    def __init__(self, juris: str, asof: str = DEFAULT_ASOF):
+    def __init__(self, juris: str, asof: str = DEFAULT_ASOF,
+                version: str | None = None):
         if Declared._resolver is None:
             # One corpus scan per process: it costs about four seconds and
             # every jurisdiction after the first costs about eighty
@@ -99,7 +100,8 @@ class Declared:
             Declared._resolver = EditionResolver()
         self.juris = juris
         self.asof = asof
-        self.book = ResolvedBook(Declared._resolver.resolve(juris, asof))
+        self.version = version
+        self.book = ResolvedBook(Declared._resolver.resolve(juris, asof, version))
         self.schema = Schema.for_book(self.book)
         #: Every place a variant had to choose one value out of several, as
         #: `(table, column) -> (chosen, all_legal)`. Recorded because the choice
@@ -151,9 +153,17 @@ class Declared:
         whole defect -- this closes it by construction: the same string
         resolves the rulebook here and gets written into the payload by
         `_apply_effective_date`, so they cannot diverge within one call.
+
+        **`package_version`, if the config sets it, pins the resolved edition
+        to a specific filed version instead of the newest on disk** -- the
+        same closure applied to a second axis: a test run that pins a
+        version and a rulebook resolved at a different one is exactly the
+        silent-drift shape OI-97 found, so this is the one place both are
+        read from the same config together.
         """
         asof = str((config or {}).get("effective_date") or DEFAULT_ASOF)
-        return cls(juris, asof)
+        version = (config or {}).get("package_version") or None
+        return cls(juris, asof, version)
 
     @classmethod
     def jurisdictions(cls) -> tuple[str, ...]:
@@ -385,6 +395,15 @@ class Control:
                     if p.identity.edition >= MIN_ASOF}
             dates |= {MIN_ASOF, CLASS_BASIS_CLIFF}
             return tuple(sorted(dates))
+        if self.derive == "package_versions":
+            # Not a domain of ISO's -- ISO's live service has no "which
+            # version" input; this asks the corpus what it holds. Keyed off
+            # `d` rather than `config['effective_date']` directly: `d` was
+            # already constructed at whatever date is currently chosen (or
+            # DEFAULT_ASOF if none), so this always answers for the edition
+            # that date actually resolves to, not the raw date string.
+            edition = d.book.resolution.state.identity.edition
+            return tuple(Declared.resolver().versions(d.juris, edition))
         if not self.column:
             return ()
         if self.keyed_by and config:
@@ -550,6 +569,18 @@ CONTROLS: tuple[Control, ...] = (
                  "cannot disagree. Callers that build a config containing this "
                  "must construct `Declared` at this date -- `Declared.for_config()` "
                  "does that."),
+    Control("package_version", "Package version", "Timing",
+            "pin the specific filed version of the resolved edition, instead "
+            "of the newest one on disk -- OI-97's ND/NH drift was invisible "
+            "until a live call happened to catch it",
+            kind="select", derive="package_versions",
+            note="Not a submission field -- ISO's live service has no "
+                 "equivalent input, so this writes nothing to the payload. "
+                 "It only changes which rulebook `Declared` resolves against. "
+                 "Options depend on which effective date is selected: they "
+                 "are every version the corpus holds for that date's own "
+                 "resolved edition. Leaving this unset keeps today's default "
+                 "-- the newest version on disk."),
 )
 
 BY_ID = {c.id: c for c in CONTROLS}
@@ -916,6 +947,17 @@ def _apply_effective_date(p, value, d, config):
             risk[field] = _renormalize_limit(d, field, current)
 
 
+def _apply_package_version(p, value, d, config):
+    """No-op on purpose. `package_version` has already done its only job by
+    the time an applier runs: `Declared.for_config()` read it and resolved
+    `d.book` against that specific version. There is no submission field to
+    write -- ISO's live service has no equivalent input to pin its own
+    version choice, so a live comparison run always tests our pinned version
+    against whatever ISO currently resolves, which is the point of the
+    control (catching exactly the drift OI-97 found), not a mismatch to
+    paper over."""
+
+
 APPLIERS = {
     "premops_bi_deductible": _apply_deductible("PremOpsBIDeductible"),
     "premops_pd_deductible": _apply_deductible("PremOpsPDDeductible"),
@@ -939,6 +981,7 @@ APPLIERS = {
     "schedule_pct": _apply_schedule_pct,
     "terrorism": _apply_terrorism,
     "effective_date": _apply_effective_date,
+    "package_version": _apply_package_version,
 }
 
 #: Order matters: a control whose applier reads another's answer must run after
@@ -954,7 +997,8 @@ ORDER = ("subline", "premium_basis", "class_code", "exposure", "classifications"
          "premops_bipd_deductible", "prods_bi_deductible",
          "prods_pd_deductible", "prods_bipd_deductible", "coverage_form",
          "claims_made_year", "size_of_risk", "experience_rating",
-         "schedule_rating", "schedule_pct", "terrorism", "effective_date")
+         "schedule_rating", "schedule_pct", "terrorism", "effective_date",
+         "package_version")
 
 
 # ------------------------------------------------------------------ building

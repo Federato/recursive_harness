@@ -57,10 +57,13 @@ def _():
     #
     # Was 567 until 2026-08-13, when three packages were supplied and unpacked
     # (OI-79): GL_OK_20261001_V01, then GL_CW_20261001_V01 and
-    # GL_OK_20260801_V01. The count is pinned deliberately: a package appearing
-    # or vanishing should be a decision, not a surprise.
+    # GL_OK_20260801_V01. Was 570 until 2026-08-31, when a fresher pull of the
+    # 2027-04-01 edition (OI-97, BUILD-LOG.md Entry 54) added 41 more state
+    # packages plus a second countrywide version. The count is pinned
+    # deliberately: a package appearing or vanishing should be a decision,
+    # not a surprise.
     pkgs = R.packages
-    assert len(pkgs) == 570, len(pkgs)
+    assert len(pkgs) == 611, len(pkgs)
     for p in pkgs:
         assert len(p.namespaces) == 1, (p.pkg_id, p.namespaces)
         assert p.identity.raw in p.namespaces
@@ -85,11 +88,18 @@ def _():
     assert cw[-1].pkg_id == "GL_CW_20260101_V01"
 
 
-@case("three parents are live at the 2027 cliff too, and 43 states move")
+@case("four parents are live at the 2027 cliff too, and 46 states move")
 def _():
+    # Was three parents, 43 states on GL_CW_20270401_V01, until 2026-08-31
+    # (OI-97, BUILD-LOG.md Entry 54): the fresher corpus pull added
+    # GL_CW_20270401_V02, and 38 of the original 43 states' own packages
+    # declare IT as their parent now, leaving only 8 still on V01.
+    # 38 + 8 = 46 -- the same 46 as before, split across two versions of the
+    # same edition rather than one.
     parents = R.declared_parents(CLASS_BASIS_CLIFF)
-    assert len(parents) == 3, parents
-    assert len(parents["GL_CW_20270401_V01"]) == 43, parents
+    assert len(parents) == 4, parents
+    assert len(parents["GL_CW_20270401_V01"]) == 8, parents
+    assert len(parents["GL_CW_20270401_V02"]) == 38, parents
     assert parents["GL_CW_20231201_V02"] == ["CA"], parents
     # There is no date at which one countrywide edition suffices.
     for d in (TODAY, CLASS_BASIS_CLIFF):
@@ -290,7 +300,9 @@ def _():
         assert p != "GL_CW_20270401_V01", (j, p)
     # and the countrywide apparatus goes with it
     b = ResolvedBook(R.resolve("OH", CLASS_BASIS_CLIFF))
-    assert b.parent.pkg_id == "GL_CW_20270401_V01"
+    # OH's parent moved V01 -> V02 in the 2026-08-31 corpus refresh (OI-97,
+    # Entry 54); the withdrawal itself is unchanged -- same row count.
+    assert b.parent.pkg_id == "GL_CW_20270401_V02"
     assert len(b.table("PremOpsSizeOfRiskRelativity")) == 8330
     for t in ("PremOpsSizeOfRiskRelativityTableAssignment",
               "PremOpsSizeOfRiskMinimumRelativity",

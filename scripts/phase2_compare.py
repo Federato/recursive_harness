@@ -66,16 +66,23 @@ def compare(juris: str, kernel, client, dp) -> dict:
     return compare_payload(juris, payload, kernel, client, dp)
 
 
-def compare_payload(juris: str, payload: dict, kernel, client, dp) -> dict:
+def compare_payload(juris: str, payload: dict, kernel, client, dp,
+                    version: str | None = None) -> dict:
     """The comparison itself, for a submission held in memory.
 
     Split out from `compare` so **breadth** (`scripts/breadth.py`) can put a
     generated submission through the identical path. A second comparison
     written alongside this one would be a second definition of *agreement*, and
     the two would drift.
+
+    `version`, if given, pins our OWN rating to the same package version the
+    payload was built against (`variants.py` `package_version`) -- without
+    it, our side silently re-resolves to newest here even when the caller
+    pinned an older one to build the payload, which makes `status` compare
+    ISO against a rating nobody actually asked for.
     """
     try:
-        ours = kernel.rate(payload)
+        ours = kernel.rate(payload, version=version)
     except Exception as exc:                                  # noqa: BLE001
         return {"juris": juris, "status": "OURS FAILED",
                 "detail": f"{type(exc).__name__}: {exc}"}

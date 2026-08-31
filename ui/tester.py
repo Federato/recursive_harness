@@ -1041,7 +1041,15 @@ function panel(){
 // changes -- the combined deductible collapses to No Deductible once BI or PD
 // is set, and offering the stale 31 would be offering illegal values.
 function refreshKeyed(changed){
-  const dependents=SPEC.controls.filter(c=>c.keyed_by.includes(changed));
+  // package_version isn't a domain-table dependency (keyed_by names real
+  // ISO columns; this control has none), so it's listed here explicitly
+  // rather than faking one -- its options are every version the corpus
+  // holds for whichever edition the chosen effective date resolves to.
+  let dependents=SPEC.controls.filter(c=>c.keyed_by.includes(changed));
+  if(changed==='effective_date'){
+    const pv=SPEC.controls.find(c=>c.id==='package_version');
+    if(pv && !dependents.includes(pv)) dependents=dependents.concat(pv);
+  }
   if(!dependents.length) return;
   const juris=SPEC.jurisdictions.includes('OK')?'OK':SPEC.jurisdictions[0];
   post('/api/tester/options',{juris:juris,config:CONFIG}).then(j=>{
