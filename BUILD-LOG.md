@@ -3631,3 +3631,184 @@ branch logic should special-case it or simply use whichever value each table act
 regardless of the category label — the safer default, and probably the right one, since it makes the
 exception irrelevant rather than requiring it to be understood first. Unchanged otherwise: the TX
 refused-payload call, the effective-date variable, L2 live, L5/L6.
+
+---
+
+> ## A note on Entries 36–42
+>
+> **Reconstructed 2026-08-31, from commit history, not written live during the sessions they
+> describe.** Ten commits landed between Entry 35 (2026-08-19) and this note with nothing recorded
+> in this log — a real gap, found while walking through OI-94. Where the commit message states a
+> fact (files touched, counts, what was verified), it's kept; where it doesn't (what was actually
+> said to start the session, whether every suite was re-run), that's stated as **not recorded**
+> rather than guessed. Treat these seven entries as a index of what shipped, not a diary of how it
+> went.
+
+---
+
+## Entry 36 — GL's per-subline docs ported to CF's shape; eight sublines' worth of chain
+## visualization; a wrap-up index. *(reconstructed — see note above)*
+
+- **Date:** 2026-08-20
+- **Directed:** not recorded.
+- **Built:** GL's `docs/gates/GATE-*.md` pages ported into CF's `RatingAlgorithms`/`ERC_Tables`
+  document pair, for seven sublines — Premises/Operations, Products/Completed Operations, OCP/
+  Principals Protective, Liquor Liability, Railroad Protective, Product Withdrawal/LOED/Cyber, and
+  Unmanned Aircraft. An 18-chain `gl-rating-chains.html` interactive visualization, matching the
+  existing `CF_Algorithm/cf-rating-chains.html` shape. `docs/GL-ALGORITHM-WRAPUP.html` as a
+  reading-order index into the PRD, build plan, hand-off docs, and both subline corpora. Also
+  brought in, per the commit message, "prior pending work accumulated across sessions": a
+  `CF_Algorithm` mirror, `Agentic` subagent scaffolding, run-page UI mockups, and assorted script/
+  notebook changes — plus this log's own Entries 29–35, committed here after being written earlier.
+- **Verified:** not recorded in the commit message.
+- **Also:** this is the commit that introduced the `CFBranch/` tree in bulk (AGENTS.md, its own
+  `BUILD-LOG.md`/`BUILD-LOG-PLAIN-ENGLISH.md`, five `RatingAlgorithms`/`ERC_Tables` pairs, tracking
+  docs, `cf-rating-chains.html`) — see the near-duplicate-directory note already flagged in
+  `docs/PROPERTY-INTEGRATION-STATUS.md` (`CFBranch/` vs `CF_Algorithm/`).
+
+---
+
+## Entry 37 — The PRD rewritten for a third party, and the wrap-up page cleaned up.
+## *(reconstructed — see note above)*
+
+- **Date:** 2026-08-20 (three commits, 08:32–08:36, one sitting)
+- **Directed:** not recorded.
+- **Built:** `docs/PRD-GL-RATING-ENGINE.md` restructured around *what's built and how to replicate
+  it* — two independent sources, the build rule, coverage-by-coverage derivation, effective-date
+  discipline, current verification results, scope, a verification-methodology section, a
+  documentation map, known limits stated plainly rather than as a roadmap — instead of the
+  day-by-day log framing (that log stays where it belongs, in this file and `PROCESS_LOG.md`).
+  Dropped the "Picking this up" hand-off section from `GL-ALGORITHM-WRAPUP.html` — the page's job is
+  planning docs and visual references, not hand-off pointers. Linked that page's HTML docs
+  (`gl-rating-chains.html`, `cf-rating-chains.html`, `GL-RATING-ENGINE-DOCS.html`) to their own
+  published Claude Artifacts instead of GitHub blob views, which render HTML as source rather than
+  rendering it.
+- **Verified:** not recorded.
+
+---
+
+## Entry 38 — The plan for integrating CF/Property, proposed. *(reconstructed — see note above)*
+
+- **Date:** 2026-08-20
+- **Directed:** not recorded.
+- **Built:** `docs/CF-PROPERTY-INTEGRATION-PROPOSAL.md` — records CF's state at the time (docs only,
+  zero engine code, no independent ERC-side cross-check yet) and proposes four gated steps mirroring
+  how GL was actually built: finish the groundwork · reuse the interpreter architecture without
+  assuming code can be shared · build coverage-by-coverage with gates · keep GL/CF testing and
+  reporting namespaced separately. **Nothing beyond item 1 authorized** — consistent with
+  [[no-build-without-explicit-go]].
+- **Verified:** n/a — proposal only, no code.
+
+---
+
+## Entry 39 — CF/Property item 1: `cf-erc-expert` built blind, cross-checked, first build plan.
+## *(reconstructed — see note above)*
+
+- **Date:** 2026-08-20
+- **Directed:** not recorded.
+- **Built:** CF's ERC corpus mined (`scripts/erc/cf_01`–`cf_08`) into a knowledge base and CLI for
+  `Agentic/cf-erc-expert/` — built with **zero access to `CF_Algorithm/`, `CFBranch/`, or
+  `cf-circular-expert`** while the mining ran, so the result is a genuine independent second source,
+  same discipline as how `iso-erc-expert` was built for GL.
+- **Result:** `CF_Algorithm/ERC-VS-CIRCULAR-COMPARISON.md` — the cross-check confirms the same
+  "countrywide holds method, not money" pattern GL found, reached independently by both sides. It
+  also surfaced something **neither side had caught alone**: the manual-side ledger tracks four
+  known-missing states (ID/LA/MS/WA) but has no row for Hawaii at all, and the blind ERC census found
+  Hawaii structurally absent from the corpus too. `docs/CF-RATING-ENGINE-BUILD-PLAN.md` records a
+  first-pass non-negotiables list, explicitly scoped smaller than GL's and marked a starting point,
+  not a finished architecture. Per the Entry 38 proposal, **item 1 is now complete; items 2–4 remain
+  unauthorized.**
+- **Verified:** `Agentic/*/knowledge/` stays gitignored project-wide, matching GL's `iso-erc-expert` —
+  no knowledge-base JSON committed.
+
+---
+
+## Entry 40 — GL Terrorism/TRIA ported to the same doc pair as the other eight sublines.
+## *(reconstructed — see note above)*
+
+- **Date:** 2026-08-20
+- **Directed:** not recorded.
+- **Built:** `docs/gates/GATE-TERRORISM.md` reformatted into the `RatingAlgorithms` + `ERC_Tables`
+  pair used for the other seven GL sublines. Five chains added to `gl-rating-chains.html` —
+  Prem/Ops, Products/CompOps, All Other Sublines, Unmanned Aircraft, Endorsement-only — with the
+  15-state territory redirect depicted as a branch inside each aggregation chain rather than a
+  separate one. Every "not resolved in source docs" flag from the reformat renders as an `openq`
+  node rather than being silently dropped. Wrap-up page, PRD, and README counts updated to match
+  (7→8 sublines/coverages, 18→23 chains).
+- **Verified:** not recorded beyond the chain/count updates themselves.
+
+---
+
+## Entry 41 — A reduced ~240-rating L3 grid, and the `/tests` page learns to offer it.
+## *(reconstructed — see note above)*
+
+- **Date:** 2026-08-20 (two commits, 10:16–10:29, one sitting)
+- **Directed:** not recorded.
+- **Built:** `scripts/layers.py` gains `--size {full,reduced}`. Full is unchanged (12 configs × 51
+  jurisdictions = 612 ratings). Reduced is a **fixed, named 5-config subset** — both ends of the
+  occurrence axis crossed with both ends of the aggregate axis, plus the as-filed default at the
+  center — for 255 ratings, the nearest full-state design to a ~240 target; **states are never cut**,
+  size and the existing allowance thinning are two different levers on the same config list and
+  compose. Threaded through `ui/tests_page.py`'s plan API, and recorded on every run (which grid was
+  used, same reasoning as recording what a thinned run dropped). A "Grid" select added to the
+  `/tests` page's Allowance card, shown only for a layer whose reduced grid actually differs from its
+  full one (L3 today) — hidden entirely elsewhere rather than offering a choice that does nothing.
+  Picking it updates the live client-side estimate the same way choosing a layer or typing an
+  allowance already did, and is sent through so the server-side count and the stored run agree with
+  what the page showed.
+- **Verified:** `tests/verify_layers.py` gains group G, **8 checks, 42 total** — the reduced set is a
+  genuine subset of the full grid's own cells, lands in the 200–260 ratings band, still covers every
+  jurisdiction, an unknown size is refused rather than silently ignored. The UI side was verified
+  in-browser per the commit message: selecting L3 shows "Full" (612 tests) by default; switching to
+  "Reduced (~240)" updates the estimate to 255 before any server round-trip; Plan confirms 255 engine
+  ratings / 250 ISO calls with "Reduced grid" noted; selecting L1 hides the control and shows 51
+  tests. `docs/UI-STRATEGY.md` documents the addition and why corners-and-center rather than an even
+  sample of five.
+
+---
+
+## Entry 42 — Plain-language docs: the recursive validation loop, and a Property status page.
+## *(reconstructed — see note above)*
+
+- **Date:** 2026-08-21
+- **Directed:** not recorded.
+- **Built:** `docs/THE-RECURSIVE-LOOP.md` — explains the ISO RAaS comparison loop, what's built
+  versus aspirational. `docs/PROPERTY-INTEGRATION-STATUS.md` — a brief, gated status update on the
+  CF/Property integration (this is the page the current status artifact draws from): item 1 complete,
+  items 2–4 not started and each blocked on the one before it, three open decisions flagged, and the
+  `CFBranch/`/`CF_Algorithm/` near-duplicate-directory note.
+- **Verified:** n/a — docs only.
+
+---
+
+## Entry 43 — OI-94 walked through end to end; the evidence file behind the TX call turned out not
+## to exist anymore.
+
+- **Date:** 2026-08-31
+- **Directed:** *"Let's start with a full walk through of OI-94."*
+- **Action:** No code touched. Traced OI-94 from raised (2026-08-17, Entry 23) through the
+  adversarial correction (same day — the captured 400 body was Georgia's, not Texas's, so "same
+  cause" is proven for GA only) through Entry 24's ten live confirmations (13 of 14 confirmed by
+  outcome; PR is the one that can't be, no RAaS entitlement — [[puerto-rico-out-of-scope-for-iso-comparison]])
+  to the standing next step named in `WHAT-I-NEED-FROM-YOU.md` §C2 and `START-HERE-TOMORROW.md` §3:
+  send `results/refused-payloads/TX-714439816b85/request.json` to turn "same cause" from inference
+  into a second measurement.
+- **Found:** **that file no longer exists.** `results/` is gitignored and currently holds only 11
+  `/tests` L1-base runs from 2026-08-18/19 — consistent with [[ok-to-delete-results-during-testing]],
+  it looks like a test-session cleanup removed it. It's **not lost work** — `results/refused-payloads/`
+  is generated by `scripts/qa_review.py --payloads` (`export_refusals`) from stored QA runs carrying
+  an `ENGINE STOPPED`/refused size-of-risk row — but none of the 11 runs currently on disk exercise
+  size-of-risk, so there is nothing to export from right now. The TX call is unchanged in value; it
+  now needs one extra step first (re-run a size-of-risk-triggering QA tier for TX, then re-export).
+- **Also found, unrelated to OI-94 itself:** `BUILD-LOG.md` had a nine-commit gap between Entry 35
+  (2026-08-19) and this entry — backfilled above as Entries 36–42, explicitly marked as reconstructed
+  rather than live-written.
+
+### ▶ Next session
+
+**OI-94 itself needs no further work** — the fix is closed, correct, and confirmed by outcome in 13
+of 14 jurisdictions. The one open question is a **decision, not a build item**: is confirming the
+*cause* (same missing table) in a second state, beyond Georgia, still worth a QA re-run and a live
+call, given the outcome is already settled everywhere it can be? If yes: re-run the size-of-risk tier
+for TX, re-export with `qa_review.py --payloads`, then send. `OPEN-ITEMS.md` and
+`WHAT-I-NEED-FROM-YOU.md` still point at the now-missing file directly and need the same correction.
