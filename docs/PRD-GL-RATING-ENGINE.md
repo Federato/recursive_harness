@@ -307,7 +307,9 @@ absorbed, per R9 and R10 above.
 **Document history:** originally written as a running progress log; restructured 2026-08-20 to
 describe the current build for a third party getting up to speed, rather than day-by-day change
 history. That history is preserved in full in `BUILD-LOG.md` and `PROCESS_LOG.md`. Updated
-2026-08-31 for OI-94/95/96/97 and the effective-date variable (`BUILD-LOG.md` Entries 43–55),
+2026-08-31 for OI-94/95/96/97 and the effective-date variable (`BUILD-LOG.md` Entries 43–58),
 including the TX live-call confirmation of OI-94's cause, the `raas.py` error-path fix it turned
-up, a 2027-04-01 corpus refresh that closed OI-97's version-drift half, and a new `package_version`
-test control (which found and fixed a real bug in `Kernel.rate()` along the way).
+up, a 2027-04-01 corpus refresh that closed OI-97's version-drift half, a new `package_version`
+test control (which found and fixed a real bug in `Kernel.rate()` along the way), OI-97's own
+stopgap fix, and a standing mechanism (`56_edition_review.py`) to catch this shape of defect at
+future editions automatically.

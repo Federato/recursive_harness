@@ -456,7 +456,11 @@ pre-cliff 7,821.
 **So the OI-96 renormalization itself is not in question** — it did what it was supposed to do, and
 this is a second, independent gap the 2027 edition opened. Logged as **OI-97**
 (`docs/OPEN-ITEMS.md`), same fix shape as OI-96, in the same file (`variants.py`
-`_apply_effective_date`). **Needs a go before it's built** — see `BUILD-LOG.md` Entries 53–55.
+`_apply_effective_date`). **✅ Fixed as a stopgap, 2026-08-31** — defaults to including the
+coverage when a submission doesn't answer the field; every CORE state that declares it jumped,
+not just Texas. **Still open: the underlying question** — should a submission be forced to answer
+`ProdsCompldOpsExclusion` deliberately, and should the engine refuse rather than default when it
+doesn't. See `BUILD-LOG.md` Entries 53–56.
 
 ---
 
@@ -494,8 +498,8 @@ them. There is no second source and no cross-check.
 | **C2** | Held 2026-08-19 — the finding stands, the report waits on our own testing, and I bring it back drafted |
 | **B2 · B3 · C3–C6 · D1 · D2** | Unchanged, all with working defaults |
 | **OI-95** | No longer a question for you — the direction given on 2026-08-19 names the discriminator, and it is a build item now. See `OPEN-ITEMS.md` |
-| **C8** | Answered 2026-08-31 — the call was made, and the answer surfaced a real defect (OI-97) rather than confirming the number. Awaiting a go to build |
-| **OI-97** | New 2026-08-31 — a coverage-dropping defect, not a question. Ready to build once you say go. See `OPEN-ITEMS.md` |
+| **C8** | Answered 2026-08-31 — the call was made, and the answer surfaced a real defect (OI-97) rather than confirming the number. Fixed as a stopgap the same day |
+| **OI-97** | New 2026-08-31, fixed as a stopgap the same day — the underlying question (should a submission answer the field explicitly) is still open. See `OPEN-ITEMS.md` |
 
 **Everything else has a working default**, and none of it is blocked waiting for you. Where I proceed
 on a default, the assumption is stated on the results rather than buried.

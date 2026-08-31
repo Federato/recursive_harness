@@ -136,6 +136,58 @@ day taught is [`what-the-harness-taught-us_20260817.html`](what-the-harness-taug
 
 ---
 
+> ## Written 31 August, still later — §C8's call was made, found a second defect instead of
+> confirming the first, and both are now fixed. A new standing mechanism exists. **Start here
+> tomorrow.**
+>
+> **§C8's call was sent.** TX rated 895 at the 2027 cliff, ISO's live service also said 895, and
+> that was reported as confirmed. **It wasn't.** ISO's 2027-04-01 filing added a new required
+> field, `ProdsCompldOpsExclusion` — absent, ISO's own rule reads it as "exclude," and the whole
+> Products/Completed Operations side was silently pricing at zero with no message and no referral.
+> ISO matched us at 895 only because we sent it the same incomplete submission. Logged as **OI-97**.
+> Adding the field moved TX 895 → 7,740. **Fixed as a stopgap the same day** — `variants.py` now
+> defaults the field to "include the coverage" whenever a submission doesn't answer it, and every
+> CORE state that declares the field jumped the same way (OH, FL, PA, RI, MT, WY, DE — not just
+> Texas). **This is a chosen default, not a resolved answer** — a real submission still needs to
+> say this deliberately, the same class of open question as B1's LCM. Full trace: `BUILD-LOG.md`
+> Entries 53, 56; `OPEN-ITEMS.md` OI-97.
+>
+> **The corrected lesson, and the mechanism built from it.** Neither OI-96 nor OI-97 was found by
+> anything automatic — both surfaced because a person happened to look closely at a number. **The
+> gap is process, not a checklist item**, and a standing mechanism now exists for it:
+> `scripts/erc/56_edition_review.py`, read-only, diffs any jurisdiction's two most recent filed
+> editions for fields and tables added/removed/changed. It reviews the RESOLVED rulebook — state
+> merged over its own declared countrywide parent (N5), each layer's contribution tagged `[state]`
+> or `[CW]` — so `--juris TX` alone now surfaces `ProdsCompldOpsExclusion` the way a real review
+> would need to. Verified against the case that raised it. Full trace: `BUILD-LOG.md` Entries 57–58.
+>
+> **Also built, same day:** a `package_version` control (alongside `effective_date` in `/tester`'s
+> "Timing" group) that pins a jurisdiction's rulebook to a specific filed version instead of always
+> taking the newest on disk — building it caught and fixed a real bug where `Kernel.rate()` was
+> silently ignoring the pin. `BUILD-LOG.md` Entries 53, 55.
+>
+> **A fresher 2027-04-01 corpus pull (user-supplied) closed a separate finding the same day:** ND
+> and NH's live disagreement traced to a stale local corpus (not a resolver bug), and re-syncing
+> those two packages made both match ISO exactly. Corpus grew 569 → 611 packages. `BUILD-LOG.md`
+> Entries 53–54.
+>
+> **What is actually left, in the order I would pick it up:**
+> 1. **Triage `56_edition_review.py --all`'s output.** 52 jurisdiction codes reviewed, 50 flagged —
+>    mostly ordinary edition churn (endorsement forms, condition-string reformatting), but nobody
+>    has read it line by line to confirm nothing else is OI-97-shaped. `BUILD-LOG.md` Entry 58.
+> 2. **The underlying OI-97 question is still open**: should a submission be forced to answer
+>    `ProdsCompldOpsExclusion` explicitly, and should the engine refuse rather than default when it
+>    doesn't? A build/process decision, not made here.
+> 3. **A browser pass on `/tester`** to confirm the `package_version` dropdown renders and behaves
+>    as the served spec says — checked directly, never clicked.
+> 4. **Whether to wire `56_edition_review.py` into an automatic trigger** (run itself when the
+>    corpus changes) rather than by hand.
+>
+> Everything above §8 below predates today and should be read as history, not a live queue — the
+> current state of every item it names is in this block or the ones just above it.
+
+---
+
 # The two things you named, first
 
 ## 1 · Finish the UI the proposal promised
