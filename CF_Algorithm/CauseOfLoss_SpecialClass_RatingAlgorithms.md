@@ -209,7 +209,7 @@ Premium =
 
 No Legal Liability branch, no Builders Risk Reporting Form gate, no `CovType` `Choose` at all — Special Class items don't carry the Building-specific `CovType` taxonomy (Builders Risk / Improvements & Betterments / Condominium Association / Leasehold Interest / Legal Liability). This is consistent with Special Class covering discrete scheduled property, which is always either scheduled individually or folded into a blanket — there is no "leasehold interest in a building" analogue.
 
-Both branches use nested `Round DecimalPlaces="0"` wrappers (matching Building's Basic/Broad rounding convention, not Special-form's `Product`-only convention), applied around six factors instead of Building's five (Special Class has no separate `PackageModFactor`-before-`MultiPremium` ordering distinction worth noting — order here is Limit → Rate → PackageMod → MultiPremium → IRPM, then the two cyber factors outside the round).
+Both branches are nested `Product DecimalPlaces="0"` with **zero `rul:Round` wrappers** — Building's *Special-form* convention, not its Basic/Broad one. **Corrected 2026-09-18 by chunk 6 task C6-27** — this page had it backwards. Counted directly: all four Special Class premium files carry 0 `rul:Round` and 12 `DecimalPlaces="0"`; Building's Basic Group I, Basic Group II and Broad files carry **6 `rul:Round` each**. The premium therefore **rounds to 0 decimal places at six nested levels**, and PackageMod, the multi-premium credit, IRPM and both cyber factors each multiply an already-rounded dollar figure. All five are read from the **policy** record, five levels up, through `FromConstant="0.0"`. Applied around six factors instead of Building's five (Special Class has no separate `PackageModFactor`-before-`MultiPremium` ordering distinction worth noting — order here is Limit → Rate → PackageMod → MultiPremium → IRPM, then the two cyber factors outside the round).
 
 ### Premium indicator / total
 `SetPremiumIndicator` (line 134) and `CalculateTotalPremium` (line 10) are byte-identical in logic to Building's: `PremiumIndicator = 1` iff `Premium <> 0.0`; `CalculateTotalPremium` returns `Premium` only when both the indicator is 1 and `Premium <> 0`.
@@ -387,7 +387,7 @@ FinalBroadRate = AdjustedBroadRate x DeductibleByLocationFactor x DeductibleFact
 `SetCoverageOnPolicyIndicator` tests `CauseOfLossToUse = "Broad"` exactly (confirmed by direct read) — same exact-match pattern Building uses for its Broad gate, and different from Special Class's own Basic Group I/II gates (hard-coded 1).
 
 ### Two-branch structure (blanket / scheduled)
-Same shape as Basic Group I/II above — `IncludedInBlkt = "Yes"` branches to a blanket formula using `BlktBroadAvgRate` and `FullSpecialClassValue / BlktTotalFullValueAmount`; otherwise a scheduled formula using `FinalBroadRate` and `Limit`. No Legal Liability branch. Same nested-`Round`-to-0 convention as Basic Group I/II, and the `CyberIncidentExclusionFactorBroad` / `CyberIncidentExclusionCOLExcptnsFactorBroad` pair.
+Same shape as Basic Group I/II above — `IncludedInBlkt = "Yes"` branches to a blanket formula using `BlktBroadAvgRate` and `FullSpecialClassValue / BlktTotalFullValueAmount`; otherwise a scheduled formula using `FinalBroadRate` and `Limit`. No Legal Liability branch. Same nested-`Product DecimalPlaces="0"` convention as Basic Group I/II (**no `rul:Round` anywhere** — corrected 2026-09-18, C6-27), and the `CyberIncidentExclusionFactorBroad` / `CyberIncidentExclusionCOLExcptnsFactorBroad` pair.
 
 ```
 Premium =
@@ -492,8 +492,8 @@ FinalSpecialRate = AdjustedSpecialRate x DeductibleByLocationFactor x Deductible
 ### Gate — exact cause-of-loss match
 `SetCoverageOnPolicyIndicator` (line 32): `CoverageOnPolicyIndicator = 1` iff `CauseOfLossToUse = "Special"` — same exact-match pattern as Special Class's Broad gate and Building's Special gate.
 
-### Two-branch structure — but NOT Building's nested-`Product`-no-`Round` pattern
-Building's Special premium file is the one form whose rounding differs from the Basic/Broad pattern (nested `Product DecimalPlaces="0"` with no `Round` wrappers). **Special Class's Special premium file uses the standard nested-`Round`-to-0 pattern**, matching its own Basic Group I/II/Broad siblings — confirmed by direct read of `SetPremium` (lines 60-150): every branch wraps its factor chain in `Product ToDataDef="Premium" DecimalPlaces="0"` nests, identical in shape to the Basic Group I file above. Special Class does **not** carry forward Building's Special-specific rounding quirk.
+### Two-branch structure — and it IS Building's nested-`Product`-no-`Round` pattern
+Building's Special premium file is the one form whose rounding differs from the Basic/Broad pattern (nested `Product DecimalPlaces="0"` with no `Round` wrappers). **Special Class carries that same pattern on ALL FOUR forms.** **Corrected 2026-09-18 by chunk 6 task C6-27** — this page had it backwards. Every Special Class premium file is `Product ToDataDef="Premium" DecimalPlaces="0"` nests with **zero `rul:Round` wrappers**. The earlier text read the `Product DecimalPlaces="0"` nests as "nested Round" and drew the opposite conclusion. **What is actually Building-specific is the Basic/Broad use of `rul:Round`**, which Special Class does not share anywhere.
 
 ```
 Premium (scheduled) =
@@ -533,7 +533,7 @@ No Legal Liability branch (Special Class has no `CovType = "Legal Liability"` co
 | Basic Group I/II coverage gate | "not blank / not Not Applicable" test on `CauseOfLossToUse` | **hard-coded to `1`** (always on) for BGI and BGII; Broad and Special use an exact `CauseOfLossToUse` match |
 | Broad base-rate construction key | `ConstructionTypeToUse` (varies 0.015 combustible / 0.010 fire-resistive) | **hard-coded literal `"Frame"`** — always reads the 0.015 row regardless of actual construction |
 | Special-form Builders Risk branch | `ClassCodeToUse = "1150"` → separate `SpecialBuildersRiskRate` table (CW 0.015) | **no such branch** — `SpecialBaseRate` always resolves through `LookupSpecialBuildingRate`, which shares Building's unfilled `SpecialBuildingRate` table (no CW row) |
-| Special-form premium rounding | nested `Product`, **no** `Round` wrappers (a documented Building-only quirk) | standard nested `Round DecimalPlaces="0"` — same convention as its own BGI/BGII/Broad siblings |
+| Premium rounding | Basic/Broad use `rul:Round` (6 each); **Special uses nested `Product` only** | **nested `Product DecimalPlaces="0"` on ALL FOUR forms, zero `rul:Round`** — Building's Special-form convention everywhere (corrected 2026-09-18, C6-27) |
 | Earthquake | separate/outside this datadef group (not traced here) | **native fifth chain** (`SetEQRatesAndFactors`) inside the same `CommercialPropertySpecialClassRules.Rule.xml` file — out of scope for this pass but structurally notable |
 | Chain length (BGI / BGII / Broad / Special) | 8 / 11 / 6 / 9 | **7 / 10 / 5 / 9** — Special Class is shorter or equal in every form except Special itself |
 
@@ -561,7 +561,7 @@ A full trace of Personal Property was out of scope for this pass, but the file i
 | Coverage gate (premium file) | hard-coded 1 | hard-coded 1 | `CauseOfLossToUse = "Broad"` exactly | `CauseOfLossToUse = "Special"` exactly |
 | Premium branches | 2 (blanket / scheduled) | 2 (blanket / scheduled) | 2 (blanket / scheduled) | 2 (blanket / scheduled) |
 | Legal Liability branch | none | none | none | none |
-| Premium rounding | nested `Round` × several | nested `Round` × several | nested `Round` × several | nested `Round` × several (no Building-style Product-only quirk) |
+| Premium rounding | nested `Product DecimalPlaces="0"` × 6 | same | same | same — **no `rul:Round` on any form** (corrected 2026-09-18, C6-27) |
 
 ---
 
@@ -649,7 +649,8 @@ FinalRate       = AdjustedRate x SpecialDeductibleByLocationFactor x DeductibleF
 
 Premium         = round((Limit/100) x FinalRate x PackageMod x MultiPremiumDispersion x IRPM, 0)
                   x CyberExclFactorSpecial x CyberExclCOLExcptnsFactorSpecial
-                  (standard nested-Round convention — NOT Building's Product-only quirk)
+                  (nested Product DecimalPlaces="0" x6 — the SAME convention as
+                   Building's Special form; corrected 2026-09-18, C6-27)
 ```
 
 All intermediate rate products carry 3 decimal places; the premium product carries 0.

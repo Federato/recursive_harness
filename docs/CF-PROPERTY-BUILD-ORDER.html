@@ -1,0 +1,272 @@
+<title>Property — build order, by coverage</title>
+<meta charset="utf-8">
+<style>
+  body { font-family: Georgia, "Times New Roman", serif; max-width: 1060px; margin: 0 auto; padding: 32px 24px 80px; line-height: 1.55; color: #1c2733; background: #fff; }
+  @media (prefers-color-scheme: dark) {
+    body { background: #14181d; color: #dfe4e9; }
+    table, th, td { border-color: #3a4048 !important; }
+    thead th { background: #24313a !important; color: #eef4f3 !important; }
+    code { background: #262c33 !important; color: #dfe4e9; }
+    pre { background: #262c33 !important; border-color: #3a4048 !important; color: #dfe4e9; }
+    .note { background: #2c2a1c !important; color: #e0c064 !important; }
+    .note.good { background: #1b3226 !important; color: #63c090 !important; }
+    .note.shared { background: #1d2b33 !important; color: #9fd4dc !important; }
+    .chunk { border-color: #2b3742 !important; background: #171d24 !important; }
+    .chunk.fnd { border-left-color: #59a9ac !important; }
+    .chunk.big { border-left-color: #dd9a5c !important; }
+    .n { background: #1d3535 !important; color: #7fd3d0 !important; }
+    .tag { background: #222a32 !important; color: #a3aebb !important; }
+    .tag.done { background: #1b3226 !important; color: #63c090 !important; }
+    .tag.warn { background: #3a3319 !important; color: #e0c064 !important; }
+  }
+  h1 { font-size: 26px; font-weight: 400; margin-bottom: 4px; }
+  h2 { font-size: 19px; font-weight: 700; margin-top: 40px; border-bottom: 2px solid #1e3a45; padding-bottom: 4px; }
+  .meta { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13px; color: #55606b; margin: 6px 0 4px; }
+  code { font-family: ui-monospace, Consolas, monospace; font-size: 0.9em; background: #eef1f4; padding: 1px 5px; border-radius: 3px; }
+  table { border-collapse: collapse; width: 100%; margin: 14px 0 22px; font-size: 13.5px; }
+  th, td { border: 1px solid #d7dce2; padding: 7px 10px; text-align: left; vertical-align: top; }
+  thead th { background: #1e3a45; color: #eef4f3; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 11.5px; text-transform: uppercase; letter-spacing: .03em; }
+  .note { background: #f7ddd4; color: #a53d26; padding: 12px 16px; border-radius: 6px; margin: 16px 0; font-size: 14px; }
+  .note.good { background: #dcefe4; color: #2f7d5a; }
+  .note.shared { background: #dde9ee; color: #1e5567; }
+  ol, ul { padding-left: 22px; }
+  hr { border: none; border-top: 1px solid #d7dce2; margin: 38px 0; }
+  .chunk { border: 1px solid #d7dce2; border-left: 5px solid #1e3a45; border-radius: 8px; padding: 14px 18px; margin: 14px 0; background: #fcfcfd; }
+  .chunk.fnd { border-left-color: #1e5567; }
+  .chunk.big { border-left-color: #b96a2c; }
+  .chunk h3 { margin: 0 0 6px; font-size: 16px; font-weight: 700; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .n { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 12px; font-weight: 700; background: #cfe0e0; color: #14484a; padding: 2px 9px; border-radius: 99px; }
+  .tag { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; background: #eef1f4; color: #55606b; padding: 2px 7px; border-radius: 4px; }
+  .tag.done { background: #dcefe4; color: #2f7d5a; }
+  .tag.warn { background: #f2e6c4; color: #a67c1e; }
+  .chunk p { margin: 8px 0; font-size: 14px; }
+  .chunk .lab { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; color: #8b95a1; }
+</style>
+
+<h1>Property &mdash; build order, by coverage</h1>
+<p class="meta"><b>Written 2026-09-16.</b> Item 3 of <code>CF-PROPERTY-INTEGRATION-PROPOSAL.md</code>
+&mdash; <i>"a coverage-by-coverage gated build order"</i> &mdash; unauthorized since 2026-08-20.
+This is the plan, not the authorization. Markdown companion:
+<code>CF-PROPERTY-BUILD-ORDER.md</code>.</p>
+
+<div class="note shared"><b>Scope: this is the harness, not the Excel rater.</b> The deliverable is a
+<code>cf_engine/</code> package in <code>Recursive_Harness_2.0</code> that executes ISO's ERC rules, alongside
+<code>gl_engine/</code> &mdash; golden cases, gates, an interpreter. It is <b>not</b> a plan for
+<code>CFRater1.01.xlsb</code> in <code>C:\Projects\Spreadsheet_Rater</code>. The two share evidence and
+nothing else: the Excel-rater tracing and the extracted Supporting Tables appear below as inputs that save
+work, because the ERC reading behind them is the same reading the engine needs. Where a chunk says
+&ldquo;traced&rdquo;, that means the rules are understood &mdash; not that any code or formula exists.</div>
+
+<div class="note"><b>Nothing here gets built until you say so.</b> The order is sequenced on data
+dependency, not on size, and every claim is drawn from work already filed in <code>CF_Algorithm/</code>.</div>
+
+<h2>What the GL build taught us</h2>
+<table>
+<thead><tr><th>Carry over</th><th>Why</th></tr></thead>
+<tbody>
+<tr><td>One coverage at a time, each ending at a <b>gate</b></td><td>GL ran fourteen items and filed twelve gates. A gate is a document with a golden case, not a checkbox</td></tr>
+<tr><td>ERC is the source; the manual confirms and never sources</td><td>Held for all twelve GL gates; CF's own ERC-vs-circular comparison says the same</td></tr>
+<tr><td>Differential gates after the first</td><td>GL's gate 2 cited gate 1's shared machinery instead of re-deriving &mdash; a fraction of the effort, and it still surfaced four things gate 1 could not show</td></tr>
+<tr><td>&ldquo;n of N&rdquo;, never a bare count</td><td>Seven GL gates in one day produced five wrong figures &mdash; every one an aggregate or a negative. The denominator must come from the corpus, not the search</td></tr>
+<tr><td>Enumerate the population, then classify every member</td><td>The machine check caught its own author repeating the substring error an hour after the habit was written</td></tr>
+</tbody>
+</table>
+<div class="note warn" style="background:#f2e6c4;color:#a67c1e"><b>Do not carry over GL's territory
+resolver.</b> CF territory tables are keyed <b>county/place</b> in every state sampled, not ZIP. And CF's
+multiply operator is <code>rul:Product</code>, not <code>rul:Multiply</code> &mdash; an interpreter reused
+unchanged will silently under-count CF's arithmetic.</div>
+
+<h2>The shape of the problem</h2>
+<p><b>882 countrywide rule files.</b> By family, with where the tracing stands today:</p>
+<table>
+<thead><tr><th>Family</th><th>CW rule files</th><th>Status</th></tr></thead>
+<tbody>
+<tr><td>Structure / Building</td><td>21</td><td><span class="tag done">four forms + Legal Liability traced</span></td></tr>
+<tr><td>Personal Property (Contents)</td><td>44</td><td><span class="tag done">four forms + Legal Liability traced</span></td></tr>
+<tr><td>Business Income</td><td>96</td><td><span class="tag done">four forms + the Factor chain traced</span></td></tr>
+<tr><td>Special Class</td><td>110</td><td><span class="tag done">four forms traced</span></td></tr>
+<tr><td>Special Class Business Income</td><td>111</td><td><span class="tag done">four forms traced</span></td></tr>
+<tr><td>Earthquake</td><td>97</td><td><span class="tag warn">untraced &mdash; gates the most</span></td></tr>
+<tr><td>Leasehold Interest</td><td>32</td><td><span class="tag">surveyed only</span></td></tr>
+<tr><td>Ordinance or Law</td><td>55</td><td><span class="tag">untraced</span></td></tr>
+<tr><td>Terrorism</td><td>16</td><td><span class="tag">untraced</span></td></tr>
+<tr><td>Non-Owned Trailers</td><td>6</td><td><span class="tag">surveyed only</span></td></tr>
+</tbody>
+</table>
+<div class="note"><b>103 of 460 countrywide rate tables are header-only &mdash; 22.4%.</b> Not a corpus
+defect: several of the biggest are state-filed by design. But it means a chunk is not done just because
+the lookup chain resolves.</div>
+
+<h2>The order</h2>
+
+<div class="chunk fnd">
+<h3><span class="n">0</span> Foundation &mdash; not a coverage, gates every coverage</h3>
+<p><span class="lab">Deliver</span> a <code>cf_engine/</code> that can load, resolve and execute a CF package.</p>
+<ul>
+<li>Interpreter parity: <code>rul:Product</code>, <code>rul:Power</code> (Leasehold needs it &mdash; the only
+use in the package), <code>rul:FirstNonNull</code>, and <code>rul:Choose</code> <b>first-match semantics</b>,
+which Legal Liability depends on.</li>
+<li>Resolver: countrywide base, state child, <b>edition chain</b>. CF state packages ship only what changed,
+so a table absent from the current edition is still in force from the last edition that filed it.</li>
+<li>A <b>county/place</b> territory resolver. Not ZIP.</li>
+<li>A header-only-table detector that fails loudly rather than resolving to zero.</li>
+</ul>
+<p><span class="lab">Unblocks</span> everything. No gate of its own &mdash; it is proved by chunk 1's gate.</p>
+</div>
+
+<div class="chunk">
+<h3><span class="n">1</span> Building &mdash; Basic Group I, class-rated, scheduled</h3>
+<p>The spine: base rate &rarr; territory &rarr; protection class &rarr; cause-of-loss adjustment &rarr;
+coinsurance &rarr; LOI &rarr; deductible &rarr; premium.</p>
+<p><span class="lab">Why first</span> every other coverage is described <i>relative</i> to this one. Contents,
+Business Income, Special Class and SCBI all copy its rate, borrow its keys, or diff against its formula.</p>
+<p><span class="lab">Known traps</span> <code>DeductibleFactor</code> keys on the <b>location total</b>
+(Building + Contents), not the building limit. Sprinkler leakage has two mutually exclusive terms and an LCM
+rounding quirk.</p>
+</div>
+
+<div class="chunk">
+<h3><span class="n">2</span> Building &mdash; Basic Group II</h3>
+<p><span class="lab">Why separate</span> it needs machinery chunk 1 does not.
+<b><code>BasicGroupIIRate</code> and <code>LowestBasicGroupIIRate</code> have zero countrywide rows.</b>
+45 states file the first, 39 the second; <b>FL and PR file neither</b>, and AR, DC, KS, NY, RI and TX also
+lack the lowest table. There is no CW fallback &mdash; the state row is the only row. This chunk proves the
+state-table loader for real.</p>
+<p><span class="lab">Known traps</span> the wind/hail-excluded branch rebuilds from the lowest base rate and
+silently drops the class hazard load. <code>BasicGroupIISymbol</code> is a <b>submission input</b> on Special
+Class &mdash; no rule derives it.</p>
+</div>
+
+<div class="chunk">
+<h3><span class="n">3</span> Building &mdash; Broad and Special</h3>
+<p>Short chains, and where two more behaviours appear: hardcoded literal lookup keys (<code>"Frame"</code>,
+<code>"Bldg"</code>) and the theft-exclusion factor.</p>
+<p><span class="lab">Known trap</span> <code>SpecialBuildingRate</code> is another zero-CW-row table &mdash;
+45 states file it, FL and PR do not.</p>
+</div>
+
+<div class="chunk">
+<h3><span class="n">4</span> Contents (Personal Property) &mdash; all four forms</h3>
+<p>Build <b>differentially</b> against chunks 1&ndash;3; most of the chain is shared and what differs is
+already documented.</p>
+<p><span class="lab">Known trap</span> <code>CovForm</code>, not <code>CovType</code>, drives the Contents
+branch &mdash; and it is <b>inherited from the occupancy class</b>, so contents items cannot differ within a
+class.</p>
+</div>
+
+<div class="chunk">
+<h3><span class="n">5</span> Business Income &mdash; the <code>Factor</code> chain and all four forms</h3>
+<p><span class="lab">New machinery</span> <code>SetFactor</code> is a four-way <code>Choose</code> that picks
+<b>exactly one</b> of MaxPeriod, MonthlyLimit, ExtraExpense or TypeOfRisk. Multiplying them would overstate
+the premium by a large multiple. Plus the combination blends and the educational branch.</p>
+<p><span class="tag done">data already extracted</span> all seven Factor tables are in
+<code>BusinessIncome_FactorAndEnums_Tables.xlsx</code>.</p>
+<p><span class="lab">Known traps</span> BI has <b>no deductible, no LOI and no coinsurance factor</b> &mdash;
+its <code>Factor</code> is the coinsurance analogue. The educational branch defaults to <code>0.0</code>,
+not <code>1.0</code>.</p>
+</div>
+
+<div class="chunk">
+<h3><span class="n">6</span> Special Class &mdash; building side</h3>
+<p><span class="lab">Two fewer paths</span> <code>RatingType</code> (Specific/Tentative) and Legal Liability
+are both <b>confirmed structurally absent</b>.</p>
+<p><span class="lab">Known trap</span> the base rate keys on <b>class <i>description</i></b> via
+<code>SpecialClassDescConvertedOption</code>, not class code &mdash; and FL files 11 description strings that
+do not exist countrywide, so a CW-derived list silently misses in Florida.</p>
+</div>
+
+<div class="chunk">
+<h3><span class="n">7</span> Special Class Business Income</h3>
+<p>The most differential chunk in the plan &mdash; a reuse map already gives a per-value verdict of copy,
+share the table, or build own.</p>
+<p><span class="lab">Known traps</span> BGI <i>copies</i> the parent's finished rate while BGII runs its own
+lookup; Broad reads the same table as Building at a <b>different row</b> (0.015 vs 0.011 / 0.023); Special
+reads entirely different tables despite identical rule <i>and</i> datadef names.</p>
+</div>
+
+<div class="chunk">
+<h3><span class="n">8</span> Legal Liability &mdash; Building and Contents <span class="tag done">already traced</span></h3>
+<p>Implementation, not derivation: both coverages, all four forms each, with an eleven-point divergence map
+and only two of the eleven moving money.</p>
+<p><span class="lab">The shape</span> the fork is in <code>SetPremium</code>, not the rate chain &mdash; it
+starts three steps earlier and discards coinsurance, LOI and deductible. Blanket is unreachable on this path.</p>
+</div>
+
+<div class="chunk big">
+<h3><span class="n">9</span> Blanket rating <span class="tag warn">widest remaining gap</span></h3>
+<p>Branch B is a stub in every premium file built in chunks 1&ndash;8, across every coverage. Doing it once,
+late, is cheaper than doing it five times early &mdash; but nothing above this line is <i>finished</i> until
+it lands.</p>
+</div>
+
+<div class="chunk big">
+<h3><span class="n">10</span> Earthquake &mdash; the fifth form, all coverages <span class="tag warn">largest unblocking item</span></h3>
+<p>97 rule files, and it gates more than itself: roughly <b>29 Special Class files</b> ship an Earthquake
+wrapper, Legal Liability has <b>8 Earthquake endorsement variants</b>, and Non-Owned Trailers has its own. Its
+own <code>EQFactor</code>, EQ territory, EQ class, sub-limit and flat-dollar-deductible variants.</p>
+</div>
+
+<div class="chunk">
+<h3><span class="n">11</span> Leasehold Interest &mdash; a sixth coverage, not a fifth path</h3>
+<p>32 rule files, its own datadef group, four sub-coverages (Tenants Lease, Bonus Payments, Improvements
+&amp; Betterments, Prepaid Rent) &times; five forms.</p>
+<p><span class="lab">Its exposure is computed, not entered</span> a present-value annuity &mdash;
+<code>AnnuityConstant &times; (1 &minus; DiscFactor<sup>months</sup>)</code>, averaged inception-to-expiration
+&mdash; driving the <b>only <code>rul:Power</code> in the package</b>. No coinsurance, LOI or deductible
+anywhere in it, and <b>no blanket branch at all</b> (confirmed, not assumed).</p>
+</div>
+
+<div class="chunk">
+<h3><span class="n">12</span> The endorsement families</h3>
+<p>Sized, not sequenced &mdash; take them by family once the core is proved: Ordinance or Law (55),
+dependent properties, utility services, green upgrades, debris removal, unmanned aircraft.</p>
+</div>
+
+<div class="chunk">
+<h3><span class="n">13</span> Terrorism / TRIA</h3>
+<p>16 rule files. Reads other groups' finished premiums, so &mdash; as in GL &mdash; it runs <b>last</b>.</p>
+</div>
+
+<div class="chunk">
+<h3><span class="n">14</span> Policy assembly</h3>
+<p>Aggregation, minimum premium, statistical coding.</p>
+</div>
+
+<h2>The per-coverage gate</h2>
+<p>Mirrors GL's, with the evidence Property actually needs. A chunk passes when <b>all nine</b> hold.</p>
+<table>
+<thead><tr><th>#</th><th>Gate condition</th><th>Why it exists</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>A golden case rates end to end, every intermediate traced to a named rule and a named table row</td><td>GL's standard; nothing weaker caught GL's edition split</td></tr>
+<tr><td>2</td><td>Every table the chain touches has its row count stated, and any header-only table is explained</td><td>22.4% of CW tables are header-only</td></tr>
+<tr><td>3</td><td>Every state enumerated, not sampled &mdash; &ldquo;n of N&rdquo; with N from the corpus</td><td>GL's five wrong figures were all aggregates or negatives</td></tr>
+<tr><td>4</td><td>Every <code>0</code> tested against its consuming branch</td><td>CF already has three meanings, one of which <b>collapses the premium</b></td></tr>
+<tr><td>5</td><td>Every hardcoded literal key listed</td><td><code>"Frame"</code>, <code>"Bldg"</code>, <code>"Other than Apartments and Condominiums"</code>, class <code>1180</code> &mdash; each makes filed rows unreachable from that chain</td></tr>
+<tr><td>6</td><td>Shared-name traps diffed, not assumed</td><td>Same rule name <i>and</i> datadef name already found reading different tables</td></tr>
+<tr><td>7</td><td>Every exclusion's endorsement record identified per datadef group</td><td>Vandalism, wind/hail and theft each file a separate record per coverage (S-1/S-2/S-3)</td></tr>
+<tr><td>8</td><td>The edition basis stated; any table from an older edition says so</td><td>Several live tables exist only in earlier packages</td></tr><tr><td>9</td><td>The golden case comes back with <b>no unexplained validation message</b> &mdash; each one designed out, or logged in <code>CF_Message_Register.md</code> with its rule, its cause and the check that was missing</td><td>A CF submission can <b>rate correctly and still return errors</b>: ISO has one severity, not three. 1,621 <code>DoMessage</code> rules across 48 jurisdictions, and <b>316 are switched off by a state</b> &mdash; so the countrywide set is not the applicable set. Some rules come in <b>mirrored pairs</b>, so attaching a form to silence one can raise its opposite. Diagnose with <code>scripts/cf/07_diagnose_message.py</code></td></tr>
+</tbody>
+</table>
+
+<h2>What is already done, and worth not redoing</h2>
+<table>
+<thead><tr><th>Asset</th><th>What it saves</th></tr></thead>
+<tbody>
+<tr><td><code>CauseOfLoss_*_RatingAlgorithms.md</code> &times; 5</td><td>the rate chains for all five core coverages, rule-by-rule with line numbers</td></tr>
+<tr><td><code>Excel_Rater_*_HowItWorks.html</code> + the reuse map</td><td>per-coverage narrative, and a copy / share-the-table / build-own verdict per value</td></tr>
+<tr><td><code>CF_RatingPath_Switches.md</code> / <code>.html</code></td><td>every enum and election that selects a path, with the values actually tested</td></tr>
+<tr><td><code>CF_DataDef_Tree.html</code></td><td>the containment tree &mdash; what a <code>../</code> path walks</td></tr>
+<tr><td>Supporting Tables <code>*.xlsx</code></td><td>~30 extracted tables, all states expanded, edition-resolved</td></tr>
+<tr><td><code>Rater_Simplifications_Backlog.md</code></td><td>the accepted divergences, so they are not rediscovered as bugs</td></tr>
+</tbody>
+</table>
+
+<div class="note good"><b>Recommendation.</b> <b>Chunks 0 &rarr; 1 &rarr; 2 is the smallest sequence that
+proves the architecture</b> &mdash; 0 proves the loader, 1 proves the interpreter against a full chain, and
+2 proves the state-table resolution that 22.4% of the corpus depends on. Everything after that is repetition
+with known traps. <b>If only one thing is authorized, make it chunk 0 plus chunk 1's gate</b>: a passing gate
+on Building Basic Group I answers whether GL's architecture transfers to Property at all, which is still the
+open question from the August proposal.</div>
+
+<hr>
+<p class="meta">Plan only. No code, no authorization implied.</p>

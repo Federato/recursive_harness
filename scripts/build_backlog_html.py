@@ -66,11 +66,62 @@ PAGES = {
                  "Start here tomorrow — Tuesday 18 August 2026",
                  "ISO General Liability Rating Engine · Recursive Harness 2.0 · "
                  "what to pick up, what is waiting on you, and how far a UI is"),
+    # The CF request specification — what a payload carries vs what the engine derives.
+    "cfpayload": ("CF_Algorithm/CF_Payload_ClassRated_Bldg_PP_Alabama.md",
+               "CF_Algorithm/CF_Payload_ClassRated_Bldg_PP_Alabama.html",
+               "CF rating payload — class-rated Building and Personal Property",
+               "Commercial Property · Alabama, generalised across the district states · "
+               "derived from ISO's own STC test payloads"),
+    # The DoMessage validation-rule analysis.
+    "cfmessages": ("CF_Algorithm/CF_Validation_Messages.md",
+               "CF_Algorithm/CF_Validation_Messages.html",
+               "CF validation messages — the DoMessage rules",
+               "Commercial Property · 1,621 rules across 48 jurisdictions · "
+               "why a payload can rate and still return errors"),
+    # The running log of validation messages ISO has actually returned.
+    "cfregister": ("CF_Algorithm/CF_Message_Register.md",
+               "CF_Algorithm/CF_Message_Register.html",
+               "CF validation message register",
+               "Commercial Property · every message ISO returned, what caused it, "
+               "and the check that was missing"),
+    # The GL premium derivation and roll-up map.
+    "glpremium": ("GL_Algorithm/GL_Premium_Map.md",
+               "GL_Algorithm/GL_Premium_Map.html",
+               "GL premium map — derivation and roll-up to the account total",
+               "General Liability · GL CW 20270401 V01 · "
+               "571 groups, every one reaching ErcCalculatedTotalPremium"),
+    # The CF premium derivation and roll-up map.
+    "cfpremium": ("CF_Algorithm/CF_Premium_Map.md",
+               "CF_Algorithm/CF_Premium_Map.html",
+               "CF premium map — derivation and roll-up to the account total",
+               "Commercial Property · CFCW20260601V01 · "
+               "881 groups, seven levels, 213 formulas rewritten by states"),
+    # Full premium trace for GL's two core coverages.
+    "gltrace": ("GL_Algorithm/GL_PremOps_Prods_Premium_Trace.md",
+               "GL_Algorithm/GL_PremOps_Prods_Premium_Trace.html",
+               "Premises/Operations and Products/Completed Operations — full premium trace",
+               "General Liability · every premium value computed, and which one is money"),
+    # Worked scenario: six coverages into one policy premium.
+    "glscenario": ("GL_Algorithm/GL_Scenario_Premium_Buildup.md",
+               "GL_Algorithm/GL_Scenario_Premium_Buildup.html",
+               "A worked scenario — how six coverages become one policy premium",
+               "General Liability · Prem/Ops, Products, Liquor, Med Pay $10,000, TRIA accepted, "
+               "and the minimum-premium slot ISO leaves for you"),
+    # The standing workflow for premium analysis.
+    "premiumwf": ("docs/PREMIUM-ANALYSIS-WORKFLOW.md",
+               "docs/premium-analysis-workflow.html",
+               "Premium analysis — standing workflow",
+               "Read first for any premium analysis request · method, what exists, "
+               "ISO's premium model, and the traps that have already cost a wrong answer"),
+    # NOTE: docs/what-the-harness-taught-us_20260817.html is a frozen August-only
+    # snapshot with no live source; it is not regenerated. "taught" below is the
+    # running record and supersedes it.
+    # The running record. One dated section per session; TOC shows sessions and lessons.
     "taught": ("docs/WHAT-THE-HARNESS-TAUGHT-US.md",
-               "docs/what-the-harness-taught-us_20260817.html",
-               "What the harness taught us — 17 August 2026",
-               "ISO General Liability Rating Engine · Recursive Harness 2.0 · "
-               "seven defects in one day, and the pattern underneath them"),
+               "docs/what-the-harness-taught-us.html",
+               "What the harness taught us",
+               "Recursive Harness 2.0 · a running record · "
+               "one dated section per session, and the pattern underneath each"),
 }
 
 
@@ -82,8 +133,10 @@ def main() -> None:
     src_path = os.path.join(ROOT, source)
     src = open(src_path, encoding="utf-8").read()
 
+    # The running-record page uses H1 per session, so its TOC needs to start at 1.
+    depth = "1-2" if which == "taught" else "2-2"
     md = markdown.Markdown(extensions=EXT,
-                           extension_configs={"toc": {"toc_depth": "2-2"}})
+                           extension_configs={"toc": {"toc_depth": depth}})
     body = md.convert(src)
     # ~~strike~~ is not in core python-markdown, same fix build_docs_html makes
     body = re.sub(r"~~(.+?)~~", r"<del>\1</del>", body, flags=re.S)

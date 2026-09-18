@@ -1,0 +1,304 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Premises/Operations and Products/Completed Operations — full premium trace</title>
+<style>
+:root{--bg:#fbfbfd;--fg:#1d1d20;--mut:#63636b;--line:#e3e3e8;--accent:#1f3864;
+--code-bg:#f4f4f7;--tbl-head:#1f3864;--mark:#fff3cd;--del:#a11}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+background:var(--bg);color:var(--fg)}
+header{background:var(--accent);color:#fff;padding:22px 32px 0}
+header h1{margin:0 0 4px;font-size:20px;font-weight:650;letter-spacing:-.01em}
+header .sub{opacity:.72;font-size:13px;margin-bottom:16px}
+nav{display:flex;gap:4px}
+nav button{appearance:none;border:0;background:rgba(255,255,255,.10);color:#fff;cursor:pointer;
+font:inherit;font-size:14px;padding:10px 18px;border-radius:7px 7px 0 0;opacity:.75}
+nav button:hover{opacity:1;background:rgba(255,255,255,.18)}
+nav button[aria-selected="true"]{background:var(--bg);color:var(--accent);font-weight:640;opacity:1}
+.wrap{display:grid;grid-template-columns:250px minmax(0,1fr);gap:34px;
+max-width:1360px;margin:0 auto;padding:30px 32px 90px}
+aside{position:sticky;top:22px;align-self:start;max-height:calc(100vh - 50px);overflow:auto;
+font-size:13.5px;border-left:2px solid var(--line);padding-left:14px}
+aside .lbl{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--mut);
+font-weight:700;margin-bottom:9px}
+aside ul{list-style:none;margin:0;padding:0}
+aside ul ul{padding-left:13px}
+aside a{color:var(--mut);text-decoration:none;display:block;padding:3px 0;line-height:1.4}
+aside a:hover{color:var(--accent)}
+article{min-width:0;background:#fff;border:1px solid var(--line);border-radius:11px;padding:34px 42px 54px}
+article h1{font-size:27px;margin:0 0 8px;letter-spacing:-.02em}
+article h2{font-size:20px;margin:38px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--line);
+letter-spacing:-.01em}
+article h3{font-size:16.5px;margin:26px 0 9px}
+article h4{font-size:15px;margin:20px 0 7px;color:var(--mut)}
+p,li{max-width:74ch}
+code{background:var(--code-bg);padding:.13em .38em;border-radius:4px;
+font:13.5px/1.5 "SF Mono",Consolas,"Liberation Mono",Menlo,monospace}
+pre{background:var(--code-bg);border:1px solid var(--line);border-radius:8px;padding:14px 17px;
+overflow-x:auto}
+pre code{background:none;padding:0;font-size:13px;line-height:1.55}
+table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14.2px;display:block;overflow-x:auto}
+th{background:var(--tbl-head);color:#fff;text-align:left;font-weight:600;padding:9px 12px;
+white-space:nowrap}
+td{border-bottom:1px solid var(--line);padding:9px 12px;vertical-align:top}
+tr:nth-child(even) td{background:#fafafc}
+blockquote{margin:16px 0;padding:12px 18px;background:#f6f8fc;border-left:4px solid var(--accent);
+border-radius:0 7px 7px 0}
+blockquote p{margin:.45em 0}
+del{color:var(--del);text-decoration-thickness:1px}
+hr{border:0;border-top:1px solid var(--line);margin:30px 0}
+a{color:var(--accent)}
+.meta{font-size:12.5px;color:var(--mut);margin:0 0 22px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.panel[hidden]{display:none}
+@media(max-width:1000px){.wrap{grid-template-columns:1fr;padding:20px}aside{display:none}
+article{padding:24px 20px 40px}}
+@media print{header,aside,nav{display:none}.wrap{display:block;padding:0}
+article{border:0;padding:0}.panel[hidden]{display:block!important}}
+
+.wrap{display:block;max-width:60rem;margin:0 auto;padding:0 1.5rem 5rem}
+article{max-width:none}
+.toc-box{border:1px solid var(--line);border-radius:8px;padding:1rem 1.25rem;
+margin:1.5rem 0 2.5rem;background:#fff}
+.toc-box .lbl{font-weight:600;color:var(--accent);margin-bottom:.4rem}
+.toc-box ul{margin:.2rem 0;padding-left:1.1rem}
+.toc-box>ul>li{margin:.15rem 0}
+h2{margin-top:2.6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h1+p+h2,h2:first-of-type{border-top:none}
+table{font-size:.95em}
+@media print{header{position:static}.toc-box{break-inside:avoid}}
+</style></head><body>
+<header><h1>Premises/Operations and Products/Completed Operations — full premium trace</h1>
+<div class="sub">General Liability · every premium value computed, and which one is money</div></header>
+<div class="wrap"><article>
+<p class="meta">Source: <code>GL_Algorithm/GL_PremOps_Prods_Premium_Trace.md</code> &nbsp;·&nbsp; 1,078 words &nbsp;·&nbsp; rendered 2026-09-17</p>
+<div class="toc-box"><div class="lbl">On this page</div><div class="toc">
+<ul>
+<li><a href="#1-the-two-coverages-are-structurally-identical">1. The two coverages are structurally identical</a></li>
+<li><a href="#2-the-chain-in-order">2. The chain, in order</a></li>
+<li><a href="#3-what-survives-and-what-does-not">3. What survives, and what does not</a></li>
+<li><a href="#4-minimum-premium-looked-up-and-nothing-more">4. Minimum premium — looked up, and nothing more</a></li>
+<li><a href="#5-summary">5. Summary</a></li>
+<li><a href="#6-limits">6. Limits</a></li>
+</ul>
+</div>
+</div>
+<h1 id="premisesoperations-and-productscompleted-operations-full-premium-trace">Premises/Operations and Products/Completed Operations — full premium trace</h1>
+<p><strong>What this traces:</strong> for GL's two core coverages, every premium value computed along the way,
+and which of them survive into the account total.</p>
+<p><strong>The headline:</strong> each coverage computes <strong>two</strong> premium figures, and <strong>only one of them is
+money.</strong> The other travels all the way to policy level and is never added to anything.</p>
+<p><strong>Source:</strong> <code>GL CW 20270401 V01</code> —
+<code>GeneralLiabilityClassificationPremOpsCoverageRules.Rule.xml</code> and
+<code>GeneralLiabilityClassificationProdsCompldOpsCoverageRules.Rule.xml</code>.
+<strong>Companion:</strong> <code>GL_Premium_Map.md</code> (the whole line), <code>GL_Premium_Tree.html</code> (navigable).</p>
+<p><strong>Written:</strong> 2026-09-17.</p>
+<hr />
+<h2 id="1-the-two-coverages-are-structurally-identical">1. The two coverages are structurally identical</h2>
+<p>Both sit at depth 3, both are leaves, and both carry the same seven rules. Every difference
+between them is a substituted field name:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Premises/Operations</th>
+<th>Products/Completed Operations</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Loss cost</td>
+<td><code>PremOpsLossCost</code></td>
+<td><code>ProdsCompldOpsLossCost</code></td>
+</tr>
+<tr>
+<td>Company ELP</td>
+<td><code>PremOpsELP</code></td>
+<td><code>ProdsCompldOpsELP</code></td>
+</tr>
+<tr>
+<td>Exposure</td>
+<td><code>../PremOpsCovExposure</code></td>
+<td><code>../ProdsCompldOpsCovExposure</code></td>
+</tr>
+<tr>
+<td>Size-of-risk</td>
+<td><code>PremOpsSizeOfRiskFinalRelativity</code></td>
+<td><code>ProdsCompldOpsSizeOfRiskFinalRelativity</code></td>
+</tr>
+<tr>
+<td>Minimum premium lookup</td>
+<td><code>LookupPremOpsMinPremium</code>, <code>LookupSpecialCombinedMinPremium</code></td>
+<td><code>LookupProdsCompldOpsMinPremium</code></td>
+</tr>
+</tbody>
+</table>
+<p>Prem/Ops carries one extra rule — <code>LookupSpecialCombinedMinPremium</code> — and one extra base-rate
+branch for class codes <code>16905</code> / <code>16906</code>, which apply a
+<code>BringYourOwnAlcoholExclusionFactor</code>. Otherwise the two files are the same program.</p>
+<hr />
+<h2 id="2-the-chain-in-order">2. The chain, in order</h2>
+<h3 id="step-1-setbaserate">Step 1 — <code>SetBaseRate</code></h3>
+<pre><code>BaseRate = LossCost × LCM
+</code></pre>
+<p>or, where a company files its own expected loss premium, <code>ELP × LCM</code>. Prem/Ops has the third
+branch for the alcohol-exclusion classes. Assigned only when currently null, so a supplied
+<code>BaseRate</code> survives.</p>
+<h3 id="step-2-setfinalrate">Step 2 — <code>SetFinalRate</code></h3>
+<pre><code>FinalRate = BaseRate
+          × FinalILF                              increased limits (the deductible credit is folded in here)
+          × SizeOfRiskFinalRelativity
+          × PackageModFactor                      ┐
+          × ExperienceRatingModificationFactor    │ all four read from policy level,
+          × ExpenseModification                   │ five levels up
+          × ModToUse                              ┘
+</code></pre>
+<h3 id="step-3-setbasiclimitpremium-the-sub-premium">Step 3 — <code>SetBasicLimitPremium</code>  ← <strong>the sub-premium</strong></h3>
+<pre><code>BasicLimitPremium = BaseRate
+                  × (1 − FinalDeductibleFactor)
+                  × SizeOfRiskFinalRelativity      (only when SizeOfRiskRatingApplies = Yes)
+                  × PackageModFactor
+                  × (Exposure / 1000)
+</code></pre>
+<p><strong>Note what is absent: <code>FinalILF</code>, the experience mod, the expense mod and <code>ModToUse</code>.</strong> This
+is deliberate — it is the <em>basic limits</em> premium, the figure before increased limits and before
+the account's own modifications. It is a different quantity from the premium, not an
+intermediate step toward it.</p>
+<h3 id="step-4-setpremium-the-money">Step 4 — <code>SetPremium</code>  ← <strong>the money</strong></h3>
+<pre><code>Premium = round( FinalRate × Exposure / 1000 , 0 )
+</code></pre>
+<p>for the nine per-thousand bases (Admissions, Area, Gallons, Gross Sales, Kilowatt-hours,
+Payroll, Total Cost, Total Operating Expenses, Vehicles); otherwise <code>FinalRate × Exposure</code>
+undivided. Rounded to <strong>whole dollars at the coverage</strong>, not at the total.</p>
+<blockquote>
+<p><strong>A floor almost nobody knows about.</strong> If the calculation produces <strong>0</strong> while exposure is
+<strong>greater than 0</strong>, the rule writes <code>Premium = 1.0</code>. A real exposure can never rate to
+nothing — it rates to one dollar. This matters because the roll-up treats 0 as "no coverage"
+(§3), so the floor is what keeps a real-but-tiny risk visible.</p>
+</blockquote>
+<h3 id="step-5-setpremiumindicator">Step 5 — <code>SetPremiumIndicator</code></h3>
+<pre><code>PremiumIndicator = 1 if Premium ≠ 0, else 0
+</code></pre>
+<h3 id="gate-setcoverageonpolicyindicator">Gate — <code>SetCoverageOnPolicyIndicator</code></h3>
+<p><code>1</code> only when the policy's <code>Subline</code> is <em>Premises/Operations and Products/Completed
+Operations</em>. If the subline says otherwise, the whole coverage is off before any of the above
+matters.</p>
+<hr />
+<h2 id="3-what-survives-and-what-does-not">3. What survives, and what does not</h2>
+<p><strong><code>Premium</code> survives. <code>BasicLimitPremium</code> does not — but it still travels.</strong></p>
+<h3 id="the-money-track">The money track</h3>
+<pre><code>Premium  (coverage, depth 3)
+   │   CalculateTotalPremium: contribute Premium only if
+   │   PremiumIndicator = 1 AND Premium ≠ 0, else contribute 0
+   ▼
+GeneralLiabilityClassification.ErcCalculatedTotalPremium      depth 2
+   │   summed with its 18 sibling children — Terrorism, Liquor, Pollution,
+   │   Cyber Prem/Ops and Prods, Loss of Electronic Data, Railroad,
+   │   Owners &amp; Contractors, Underground Storage Tank, Snowplow,
+   │   Unmanned Aircraft, Med Pay Exclusion C, and the classification's own Premium
+   ▼
+GeneralLiabilityLocation.ErcCalculatedTotalPremium            depth 1
+   ▼
+GeneralLiability.ErcCalculatedTotalPremium                    depth 0  ← THE ACCOUNT TOTAL
+</code></pre>
+<p>Three summations from coverage to account. Nothing re-reads a stored subtotal — each level
+passes its value up as a <code>RunRule</code> return, so the stored <code>ErcCalculatedTotalPremium</code> at each
+level is an output for the caller, not an input to the level above.</p>
+<h3 id="the-statistical-track">The statistical track</h3>
+<p><code>BasicLimitPremium</code> is read <strong>nine times</strong> — five times inside Prem/Ops, four inside
+Prods/Completed Ops, and <strong>four times at policy level</strong>, by exactly two rules:</p>
+<table>
+<thead>
+<tr>
+<th>Rule (on <code>GeneralLiability</code>)</th>
+<th>Writes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>SetAnnualBasicLimitsCoPremiumPremOps</code></td>
+<td><code>AnnualBasicLimitsCoPremiumPremOps</code></td>
+</tr>
+<tr>
+<td><code>SetAnnualBasicLimitsCoPremiumProdCompldOps</code></td>
+<td><code>AnnualBasicLimitsCoPremiumProdCompldOps</code></td>
+</tr>
+</tbody>
+</table>
+<p>Both read <code>BasicLimitPremium</code> and the <code>Subline</code>, and write a policy-level annual basic-limits
+figure. <strong>Neither feeds <code>CalculateTotalPremium</code>.</strong> The basic-limits premium reaches the top of
+the policy and lands in its own field, for statistical and company reporting — it is never
+added to what the insured pays.</p>
+<p><strong>So the answer to "which sub-premiums persist": one does, and it persists into a parallel
+figure rather than into the total.</strong></p>
+<hr />
+<h2 id="4-minimum-premium-looked-up-and-nothing-more">4. Minimum premium — looked up, and nothing more</h2>
+<p>Both coverages own minimum-premium lookups: <code>LookupPremOpsMinPremium</code>,
+<code>LookupProdsCompldOpsMinPremium</code>, and Prem/Ops's <code>LookupSpecialCombinedMinPremium</code>. Two related
+datadefs exist on every record — <code>PremiumToReachMin</code> and <code>TotPremiumPriorToMin</code>.</p>
+<p><strong>Measured across the corpus: both are written 0 times and read 0 times.</strong> <code>MinPremium</code> itself
+is written 4 times and read 10, but every reader is a different coverage —
+<code>…CyberIncidentLiabilityPremiumToReachMinCoverage</code>,
+<code>…LossOfElectronicDataPremiumToReachMinCoverage</code>,
+<code>…LimitedProductWithdrawalExpenseEndtPremiumToReachMinCoveragePolLvl</code>.</p>
+<p><strong>Neither Prem/Ops nor Prods/Completed Ops applies a minimum to its own premium.</strong> The lookups
+resolve a value that those two coverages never consume. Minimum-premium enforcement for this
+pair, if it is wanted, is not in the filed content.</p>
+<hr />
+<h2 id="5-summary">5. Summary</h2>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Where computed</th>
+<th>Survives to the account total?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>BaseRate</code></td>
+<td>coverage</td>
+<td>no — a rate, consumed by <code>FinalRate</code> and <code>BasicLimitPremium</code></td>
+</tr>
+<tr>
+<td><code>FinalRate</code></td>
+<td>coverage</td>
+<td>no — a rate, consumed by <code>Premium</code></td>
+</tr>
+<tr>
+<td><strong><code>BasicLimitPremium</code></strong></td>
+<td>coverage</td>
+<td><strong>no</strong> — reaches policy level as <code>AnnualBasicLimitsCoPremium…</code>, a reported figure</td>
+</tr>
+<tr>
+<td><strong><code>Premium</code></strong></td>
+<td>coverage</td>
+<td><strong>yes</strong> — the only value that becomes money, via three summations</td>
+</tr>
+<tr>
+<td><code>PremiumIndicator</code></td>
+<td>coverage</td>
+<td>not a premium — the gate that decides whether <code>Premium</code> counts</td>
+</tr>
+<tr>
+<td><code>MinPremium</code></td>
+<td>coverage</td>
+<td>no — resolved, never applied by these two coverages</td>
+</tr>
+<tr>
+<td><code>PremiumToReachMin</code>, <code>TotPremiumPriorToMin</code></td>
+<td>—</td>
+<td>never written, never read</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="6-limits">6. Limits</h2>
+<ul>
+<li><strong>Countrywide.</strong> Six states rewrite <code>SetPremium</code> on GL, all of them Terrorism, so neither
+  coverage traced here is affected — but state packages were not re-traced rule by rule.</li>
+<li><strong>Structural.</strong> Read from rule XML; no premium was computed and no path exercised live.</li>
+<li><strong>Conditions flattened.</strong> Each rule's branches are summarised; a live rating takes one path
+  through them, not all.</li>
+</ul>
+</article></div></body></html>

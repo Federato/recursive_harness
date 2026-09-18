@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Business Income — Broad</title>
+<style>
+  body { font-family: Georgia, "Iowan Old Style", serif; max-width: 980px; margin: 0 auto; padding: 40px 24px 80px; color: #1b232e; background: #f5f6f4; line-height: 1.55; }
+  h1 { font-size: 26px; margin-bottom: 4px; }
+  .subtitle { font-family: -apple-system, "Segoe UI", sans-serif; color: #55606e; font-size: 15px; margin-bottom: 28px; }
+  .banner { background: #eef3ee; border: 1px solid #b9cdb9; border-radius: 6px; padding: 14px 16px; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13.5px; margin-bottom: 32px; }
+  .banner b { color: #2f6b4f; }
+  h2 { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 21px; border-bottom: 3px solid #b9a577; padding-bottom: 8px; margin-top: 52px; }
+  h2 .count { font-size: 12px; letter-spacing: .05em; text-transform: uppercase; color: #8a5a1f; background: #f4e7d4; padding: 2px 9px; border-radius: 10px; margin-left: 10px; vertical-align: middle; }
+  h3 { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 16px; margin-top: 28px; }
+  p.section-intro { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13.5px; color: #444; background: #fff; border-left: 3px solid #b9a577; padding: 10px 16px; margin: 14px 0 20px; }
+  p.note { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13.5px; color: #55606e; }
+  table { width: 100%; border-collapse: collapse; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13px; margin: 16px 0 28px; }
+  th, td { border: 1px solid #d5d9d0; padding: 8px 10px; text-align: left; vertical-align: top; }
+  th { background: #e2e6dc; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
+  td.factor { font-weight: 600; }
+  .confirmed { color: #2f6b4f; }
+  .gap { color: #9a5b1f; font-weight: 600; }
+  .missing { color: #999; font-style: italic; }
+  code { font-family: ui-monospace, Consolas, monospace; background: #eceee8; padding: 1px 5px; border-radius: 3px; font-size: .92em; }
+  .algo { background: #101720; color: #dbe6ee; border-radius: 8px; padding: 18px 20px; font-family: ui-monospace, Consolas, monospace; font-size: 13px; line-height: 1.7; overflow-x: auto; margin: 14px 0 24px; white-space: pre; }
+  .algo .kw { color: #e3b873; }
+  .algo .tbl { color: #9fd4c4; }
+  .algo .cm { color: #7f8b98; font-style: italic; }
+  .stepnum { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; background: #8a5a1f; color: #fff; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 12px; font-weight: 700; margin-right: 8px; }
+  blockquote { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13px; background: #fff; border-left: 3px solid #b9a577; padding: 8px 14px; margin: 10px 0; color: #444; }
+
+  .tag { display: inline-block; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; padding: 2px 8px; border-radius: 10px; margin-left: 8px; vertical-align: middle; }
+  .tag.copy { background: #eef3ee; color: #2f6b4f; }
+  .tag.own { background: #e2e6dc; color: #445; }
+  .copybox { border: 1px solid #b9cdb9; background: #f4f9f4; border-radius: 6px; padding: 12px 16px; margin: 10px 0 20px; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13.5px; color: #2f5c40; }
+  .copybox b { color: #234a30; }
+</style>
+</head>
+<body>
+
+<h1>Business Income — Broad</h1>
+<p class="subtitle">The shortest of the five Business Income forms — two steps, no Factor, no LOI, no coinsurance, no deductible · CFRater1.01.xlsb build reference</p>
+
+<div class="banner">
+  <b>Source.</b> Traced directly against <code>SetBroadRatesAndFactors</code> (line 3956),
+  <code>SetBroadBaseRate</code> (line 3962), <code>SetBroadRate</code> (line 4042),
+  <code>SetFinalBroadRate</code> (line 8064), and <code>LookupBroadFormBaseRate</code> (line 13600) in
+  <code>CommercialPropertyBusinessIncomeRules.Rule.xml</code>, plus
+  <code>CommercialPropertyBusinessIncomeBroadCoverageRules.Rule.xml</code> for the premium file, 2026-09-11.
+  Cross-checked against <code>CauseOfLoss_BusinessIncome_RatingAlgorithms.md</code> §"Broad — rate build-up" /
+  §"Broad — premium". Same visual format as
+  <code>Excel_Rater_BusinessIncome_BasicGroupI.html</code> / <code>...BasicGroupII.html</code>.
+</div>
+
+<h2>1. The headline finding — there's almost nothing here</h2>
+<p class="section-intro">
+  Every other Business Income form has at least a cause-of-loss adjustment, and Basic Group I/II add a
+  coinsurance/type-of-risk <code>Factor</code> on top of that. Broad has neither. Confirmed by reading
+  <code>SetBroadRatesAndFactors</code> directly: it calls exactly two sub-rules,
+  <code>SetBroadBaseRate</code> and <code>SetBroadRate</code>, and <code>FinalBroadRate</code> is a literal
+  <code>Copy</code> of <code>BroadRate</code> — no <code>SetFactor</code> call touches this form's final
+  rate at all (confirmed earlier: <code>Factor</code> is Basic Group I/II only, computed once and never
+  read by Broad's or Special's <code>FinalRate</code> step).
+</p>
+
+<table>
+<tr><th>Stage</th><th>Basic Group I / II</th><th>Broad</th></tr>
+<tr><td>Base rate source</td><td>borrowed from or re-derived against Building's own value</td><td>its own dedicated table rows — <span class="tag own">not</span> a cross-reference to Building's <code>BroadBaseRate</code></td></tr>
+<tr><td>Cause-of-loss adjustment</td><td>sprinkler/vandalism (BGI) or wind/hail-exclusion (BGII), plus <code>BuildersRiskFactor</code></td><td><span class="missing">none — doesn't exist for this form</span></td></tr>
+<tr><td>Coinsurance / type-of-risk <code>Factor</code></td><td>the six-branch shared helper</td><td><span class="missing">never read — confirmed, this form's <code>FinalRate</code> skips straight from <code>BaseRate × LCM</code></span></td></tr>
+<tr><td>LOI, deductible</td><td>n/a for either BGI/BGII (folded into <code>Factor</code>)</td><td><span class="missing">also absent — this form never had them to begin with</span></td></tr>
+<tr><td>Chain length</td><td>3 steps (BGI) / 5 steps (BGII)</td><td><b>2 steps</b> — the shortest of all five forms</td></tr>
+</table>
+
+<div class="copybox">
+  <b>Practical takeaway:</b> this is by far the easiest Business Income form to build. One lookup, one
+  multiplication, done. The only thing worth double-checking before building it is
+  <code>ConstructionTypeToUse</code> — see §2 — which is a <span class="tag copy">copy</span> from Building,
+  same pattern as every other Building-owned key we've traced in this coverage.
+</div>
+
+<h2>2. Required inputs</h2>
+<table>
+<tr><th>Field</th><th>Feeds</th><th>Note</th></tr>
+<tr><td class="factor"><code>Calc_Building_Broad.ConstructionTypeToUse</code></td><td><code>BroadBaseRate</code> lookup key</td><td><span class="tag copy">copy</span> — confirmed set entirely inside <code>CommercialPropertyStructureRules.Rule.xml</code> (<code>SetConstructionTypeToUse</code>, line 1019); Business Income never computes this, only reads it via <code>../../</code></td></tr>
+<tr><td class="factor"><code>CauseOfLossToUse</code></td><td>the gate on both steps</td><td>Must equal <code>"Broad"</code> exactly — every branch defaults to <code>0.0</code> otherwise, no partial credit</td></tr>
+<tr><td class="factor"><code>BI_CovType</code></td><td><code>BroadBaseRate</code> lookup key selection</td><td>Only two outcomes matter here: <code>"Business Income Without Extra Expense"</code> gets its own table row; every other value (including <code>"With Extra Expense"</code> and <code>"Extra Expense Only"</code>) collapses into <code>"All Other"</code></td></tr>
+</table>
+
+<h2>3. Required tables</h2>
+<table>
+<tr><th>Table</th><th>Keys</th><th>Note</th></tr>
+<tr>
+  <td class="factor">BroadFormBaseRate</td>
+  <td>State, ConstructionTypeToUse, covTypeBroadForm ("Business Income Without Extra Expense" / "All Other")</td>
+  <td><span class="confirmed">Shared table.</span> Same physical table Building's own Broad rate reads — Building, Builders Risk, Personal Property, and both Business Income keys all live in one table, partitioned by the <code>covType</code>-shaped key column. Confirmed CW rows exist for both Business Income keys (e.g. 0.011 Frame/Joisted Masonry/Non-Combustible/Masonry Non-Combustible, 0.007 Modified Fire Resistive — same two-tier construction pattern Building's own rows use).</td>
+</tr>
+</table>
+<p class="note">Unlike Basic Group I/II, this is genuinely a shared table with shared data, not a shared table with a Business-Income-only slice that happens to be empty. Business Income's rows sit right next to Building's in the same file.</p>
+
+<h2>4. The algorithm</h2>
+
+<h3><span class="stepnum">1</span>BroadBaseRate</h3>
+<div class="algo"><span class="kw">if</span> CauseOfLossToUse = "Broad":
+    <span class="kw">if</span> BI_CovType = "Business Income Without Extra Expense":
+        <span class="kw">Lookup</span>(<span class="tbl">BroadFormBaseRate</span>: State, ConstructionTypeToUse, <span class="cm">"Business Income Without Extra Expense"</span>)
+    <span class="kw">else</span>:
+        <span class="kw">Lookup</span>(<span class="tbl">BroadFormBaseRate</span>: State, ConstructionTypeToUse, <span class="cm">"All Other"</span>)
+        &rarr; falls back to (CW, ...) if the state has no row
+
+<span class="kw">else</span> (CauseOfLossToUse &ne; "Broad"): 0.0</div>
+
+<h3><span class="stepnum">2</span>BroadRate</h3>
+<div class="algo"><span class="kw">if</span> CauseOfLossToUse = "Broad":
+    BroadBaseRate &times; LossCostMultiplier
+    <span class="cm">-- round to 3dp</span>
+<span class="kw">else</span>: 0.0</div>
+
+<h3><span class="stepnum">3</span>FinalBroadRate</h3>
+<div class="algo">FinalBroadRate = BroadRate   <span class="cm">-- literal Copy, confirmed line 8064 --
+that's the entire final-rate step, no multiplier of any kind</span></div>
+
+<h2>5. Premium</h2>
+<div class="algo"><span class="cm">-- gate differs in shape from Basic Group I/II's hardcoded-1 gate:</span>
+CoverageOnPolicyIndicator = 1  <span class="kw">if</span> CauseOfLossToUse = "Broad"  <span class="cm">-- exact equality, not blank/Not-Applicable</span>
+
+<span class="kw">if</span> BI_IncludedInBlkt = "No":
+    <span class="kw">ROUND</span>(<span class="kw">ROUND</span>(IRPMFactor &times; PackageModFactor &times; FinalBroadRate &times; (BI_Limit / 100), 0), 0)
+      &times; CyberIncidentExclusionFactorBroad
+      &times; CyberIncidentExclusionCOLExcptnsFactorBusnIncomeBroadToUse
+
+<span class="kw">elif</span> BI_IncludedInBlkt = "Yes" <span class="kw">and</span> BlktTotalFullValueAmount &gt; 0:
+    <span class="cm">-- blanket branch, out of scope, needs BlktBroadAvgRate</span>
+
+<span class="kw">else</span>: 0.0</div>
+<p class="note">Structurally identical to Basic Group I's premium formula otherwise — same two-branch shape
+  (scheduled / blanket), no Legal Liability carve-out, no Leasehold Interest branch. Only the datadef names
+  and the gate's exact-equality test differ.</p>
+
+<h2>6. Inputs → output, the full picture</h2>
+<table>
+<tr><th>Stage</th><th>Reads from</th><th>Produces</th><th>Relationship</th></tr>
+<tr><td>0 — construction type, borrowed</td><td><code>Calc_Building_Broad.ConstructionTypeToUse</code></td><td><em>not recomputed</em></td><td><span class="tag copy">copy</span></td></tr>
+<tr><td>1 — the loss cost</td><td><code>BroadFormBaseRate</code> table, own covType key</td><td><code>BroadBaseRate</code></td><td><span class="tag own">own</span> — genuinely independent, not a cross-reference into Building's value</td></tr>
+<tr><td>2 — turn it into a rate</td><td><code>BroadBaseRate</code>, LCM</td><td><code>BroadRate</code></td><td><span class="tag own">own</span></td></tr>
+<tr><td>3 — final rate</td><td><code>BroadRate</code></td><td><code>FinalBroadRate</code></td><td><span class="tag copy">copy</span> — of its own prior step, not Building's</td></tr>
+<tr><td>4 — turn the rate into a dollar premium</td><td><code>FinalBroadRate</code>, <code>BI_Limit</code>, IRPM, PackageMod</td><td>premium</td><td>same shape as BGI</td></tr>
+</table>
+
+<h2>7. Deliberately out of scope for the first build</h2>
+<ul style="font-family: -apple-system, 'Segoe UI', sans-serif; font-size: 13.5px; line-height: 1.9;">
+  <li>The blanket premium branch — needs <code>BlktBroadAvgRate</code>, <code>BlktTotalFullValueAmount</code>, same open items every other Business Income form's blanket branch needs.</li>
+  <li>Nothing else is out of scope — this is the only Business Income form with no COLAdj-equivalent, no Factor-equivalent, and no per-branch complexity left to trace. Everything in §4 is the complete chain.</li>
+</ul>
+
+<blockquote>
+Traced 2026-09-11 directly against the rule XML, cross-checked against
+<code>CauseOfLoss_BusinessIncome_RatingAlgorithms.md</code>. Same visual format as
+<code>Excel_Rater_BusinessIncome_BasicGroupI.html</code> / <code>...BasicGroupII.html</code>. Next: Special,
+the last of the five forms — or the all-batch per-state check on <code>BroadFormBaseRate</code>'s two
+Business Income keys, since that hasn't been re-verified across all 8 ERC batches yet. Nothing gets built
+until you say go.
+</blockquote>
+
+</body>
+</html>

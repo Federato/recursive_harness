@@ -1,0 +1,72 @@
+<title>How one policy's premium is built — a worked example, in plain English</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  body { font-family: Georgia, "Times New Roman", serif; max-width: 640px; margin: 0 auto;
+         padding: 48px 24px 90px; line-height: 1.7; color: #1c2733; background: #fff;
+         font-size: 17px; }
+  @media (prefers-color-scheme: dark) { body { background: #14181d; color: #dfe4e9; } }
+  h1 { font-size: 24px; font-weight: 400; line-height: 1.3; margin-bottom: 6px; }
+  .meta { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 14px;
+          color: #55606b; margin: 0 0 34px; }
+  @media (prefers-color-scheme: dark) { .meta { color: #93a0ad; } }
+  h2 { font-size: 18px; font-weight: 700; margin: 34px 0 8px; }
+  p { margin: 0 0 18px; }
+  b { font-weight: 700; }
+</style>
+
+<h1>How one policy's premium is built</h1>
+<p class="meta">A shop with a liquor licence: premises and products cover, liquor liability,
+medical payments at $10,000, terrorism accepted. Written 17 September 2026.
+The detailed version is <i>GL_Scenario_Premium_Buildup.md</i>.</p>
+
+<p>You would expect six charges on this policy. There are four, and one of the things you
+expected to be a charge turns out not to be one.</p>
+
+<h2>Medical payments is not a charge</h2>
+
+<p>Every General Liability policy already includes $5,000 of medical payments cover. Asking for
+$10,000 does not add a line to the bill — it makes the <b>premises and operations rate slightly
+more expensive</b>, by about seven tenths of one percent. Nothing else on the policy changes.</p>
+
+<p>So if someone asks "what did the medical payments cost", there is no number to point at. It
+is baked into another charge.</p>
+
+<h2>Three coverages are priced the same way</h2>
+
+<p>Premises and operations, products, and liquor liability are each priced identically: take
+the claims cost ISO publishes for that trade, apply the insurer's own multiplier, adjust for
+the limits bought and the size and history of the business, then multiply by the exposure —
+the sales, payroll or whatever that trade is measured on.</p>
+
+<p>Three separate charges, three times the same arithmetic.</p>
+
+<h2>Terrorism is a slice of the other three</h2>
+
+<p>The terrorism charge is not priced from scratch. It is a <b>percentage of the premium
+already worked out</b> for the other coverages. That has a quiet consequence: because the
+medical payments upgrade raised the premises charge, it also raised the terrorism charge on
+top of it. The $10,000 election costs a little more than it first appears.</p>
+
+<p>It also means terrorism has to be calculated last. Nothing else on the policy depends on
+what comes before it in this way.</p>
+
+<h2>Adding it up</h2>
+
+<p>The four charges are added together for the classification, then for the location, then for
+the policy. That total is the premium.</p>
+
+<p>One rule decides whether a coverage joins in: it must have produced a premium, and that
+premium must not be zero. A coverage priced at nothing and a coverage never bought look
+identical in the total — which is why, if there is real exposure but the maths comes to zero,
+the rules force the charge to $1 rather than leave it at nought.</p>
+
+<h2>The minimum premium is only half there</h2>
+
+<p>Every policy has minimum premiums, and ISO publishes them. It also provides a place on the
+policy to put the shortfall if the premium comes in under the minimum, and it will add that
+shortfall to the total.</p>
+
+<p>What it does <b>not</b> do is the comparison. Nothing checks the premium against the
+minimum, works out the difference, or fills that box in. Somebody else has to — and if nobody
+does, the policy simply prices below its own minimum and nothing objects.</p>

@@ -80,6 +80,7 @@ plan would have absorbed quietly.
 | Identity | XSD `targetNamespace` yields jurisdiction/edition/version, **567/567** |
 | Composition | State package names its own countrywide parent; **51,987** rule refs, zero disagreements |
 | Override model | By name, wholesale. **100.0%** of 23,404 `Overridden` shadow a same-named parent; **0.0%** of 23,755 `StateSpecific` do |
+| **What it prices** | **One full-term premium at the effective date supplied — and nothing transactional.** A 14-field pro-rata / written / earned / endorsement-change block sits on all 1,025 datadef groups and is written **0** times and read **0** times across all 52 jurisdictions. See **OI-98** |
 | **What actually rates** | **18 coverage groups**, verified corpus-wide. **383** capture a user-entered `ManualPremium`; 76 are aggregators. Of 477 groups writing a Premium |
 | Premium chain | Derived from 73,990 dataflow edges (§6) |
 | Territory | All 51 resolvable — 27 ZIP · 20 single (19×`001`, NC `002`) · 4 county/place. **Re-verified as-of** today, 2027-04-01 and the end state: identical at all three ([`gates/OI-40-ASOF-RECOUNT.md`](gates/OI-40-ASOF-RECOUNT.md) §2) |
@@ -118,6 +119,34 @@ sized 383 deliberately — the harness must handle every group the engine may me
 Maryland lead-hazard liability, two Massachusetts lead-poisoning coverages, and **New York's
 Special Protective and Highway coverage**, which exists in no countrywide edition and whose group
 name carries no state ([`PHASE-SIZING.md`](PHASE-SIZING.md) §5). They are in the build order below.
+
+---
+
+### What ERC does **not** give us, and what that costs
+
+**ISO prices a policy. It does not administer one.** The measurement is in the table above and
+in `GL_Algorithm/GL_Premium_Map.md` §5: proration, mid-term endorsement pricing,
+written-vs-earned splits and cancellation returns are absent from the filed content, and the
+fields that look like they hold them are inert carriers for a policy system to fill.
+
+**The architectural consequence is about proof, not features.** Section 1's evidence hierarchy
+and this project's whole method rest on having an oracle — ISO's own service — to disagree
+with. **That oracle stops at the full-term number.** Anything this engine computes above it
+— a pro-rata endorsement delta, an earned figure, a cancellation return — cannot be confirmed
+or refuted by ISO, because ISO does not produce it. Every defect found in this project so far
+was a *disagreement*; a lifecycle layer would be the first body of arithmetic with nothing to
+disagree with.
+
+So the scope of the engine is a **decision to take deliberately**, and it should be taken
+before the layer is built rather than discovered while building it:
+
+- **Stop at the full-term premium** — everything stays inside the oracle, and the policy
+  system owns the lifecycle. This is what is built today, by default rather than by choice.
+- **Go further** — then the non-negotiables above need a companion set governing arithmetic
+  that cannot be externally validated, and the harness needs a different kind of test
+  (invariants and self-consistency) because comparison is unavailable.
+
+Not decided here. Logged as **OI-98**.
 
 ---
 

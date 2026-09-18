@@ -23,8 +23,8 @@ All tables follow the two-pass `FirstNonNull(state row, "CW" row)` lookup patter
 | `FireSafeVaultFactor` | PP-only vault storage credit | State\|CW, "Y" | **PP-only — no Building equivalent** | Yes — CW = 0.50 |
 | `SubStdConditionRate` | Substandard-condition rate addend | State\|CW, condition args | yes | Yes (31 rows) |
 | `SprinklerLeakageNotExcluded` | Specific/Tentative rating factor | State\|CW, "Y" | yes (Building keys differently) | Yes — CW = 0.5 (`PersProp` row confirmed in `LegalLiabilityFactor`, see below; `SprinklerLeakageNotExcluded` itself carries a flat CW row) |
-| `SprinklerLeakageExclNonSprinkleredRate` | COL adjustment subtraction | State\|CW, "Y" | yes | Yes |
-| `SprinklerLeakageExclSprinkleredFactor` | COL adjustment factor | State\|CW, ConstructionCode, "PrsnlProp" | yes (PP passes its own const) | Yes (13 rows) |
+| `SprinklerLeakageExclNonSprinkleredRate` | COL adjustment subtraction (this table feeds `SprinklerLeakageExclNonSprinkleredBaseRate`; this datadef group's own `...Rate` name is the LCM-scaled result — see note below) | State\|CW, "Y" | yes | Yes |
+| `SprinklerLeakageExclSprinkleredFactor` | COL adjustment factor — **only ever non-1.0 for Specific/Tentative rating; the "Rated as Sprinklered" SprinklerSystem options don't exist under Class rating at all, confirmed universal across CovForms** | State\|CW, ConstructionCode, "PrsnlProp" | yes (PP passes its own const) | Yes (13 rows) |
 | `VandalismExclFactor` | COL adjustment factor | State\|CW, classCode arg | yes | Yes (162 rows) |
 | `StdPropPolGroupIFactor` | COL adjustment factor | State\|CW, "Y" | yes | Yes |
 
@@ -127,3 +127,16 @@ All tables named above were confirmed present as `<TableName>.RateTable.csv` wit
 Every other table checked (`BasicGroupILOIFactorPersProp`, `BasicGroupIILOIFactorPersProp`, `BroadSpecialLOIFactorPrsnlProp`, `ProtectionClassFactor`, `SubStdConditionRate`, `FireSafeVaultFactor`, `SprinklerLeakage*`, `VandalismExclFactor`, `StdPropPolGroupIFactor`/`II`, `CoinsuranceFactor`, `LessThan80PctMultiplicativeFactor`, `DeductibleByLocationFactor`, `DeductibleFactor`, `Deductible250Factor`, `GroupIINumericValue`, `GroupIIOpenSidesNumericValue`, `BasicGroupIIConstructionSymbol`, `BCEGFactor`, `WindstormOrHailExclFactor`, `BasicGroupIIFlatCoinsuranceFactor`, `BroadFormBaseRate`, `LegalLiabilityFactor`, `CyberIncidentExclusionFactors`, `CyberIncidentExclusionWithEnsuingCauseOfLossExceptionsFactors`) carries actual CW data rows (row counts ranged 2–325).
 
 **Do not treat the six empty tables as resolvable at countrywide level.** Any state implementation that has not filed its own override for these will produce a null/zero base rate for Basic Group I, Basic Group II, or Special Personal Property, and the affected form's rate chain will collapse to zero from that point forward.
+
+> **Note, 2026-09-04, corrected:** an earlier pass over this file wrongly renamed
+> `SprinklerLeakageExclNonSprinkleredRate` to `...BldgRate`, copying Structure's naming convention.
+> That's wrong for THIS datadef group. Personal Property is a separate ERC datadef group from
+> Structure (`CommercialPropertyPersonalPropertyRules.Rule.xml`, not
+> `CommercialPropertyStructureRules.Rule.xml`) with its own copy of the sprinkler-exclusion logic and
+> its own naming: the raw filed rate here is `SprinklerLeakageExclNonSprinkleredBaseRate`, and
+> `SprinklerLeakageExclNonSprinkleredRate` (no suffix) is already the LCM-scaled value that gets
+> subtracted from `BasicGroupIRate` — the plain name in this file's original formulas was correct.
+> All three datadef groups (Structure, Business Income, Personal Property) read the same filed CW
+> rate (0.0006) but each names its own local LCM-scaled version differently — see
+> `CauseOfLoss_Building_RatingAlgorithms.md` Step 3 for Structure's version of this, and the LCM
+> rounding behavior (0.0006 → 0.001 at LCM = 1.0) that applies regardless of which datadef group.

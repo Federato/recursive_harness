@@ -5,6 +5,7 @@
 **Derived against:** `GL_CW_20260101_V01`, cross-checked against the other two declared parents (per GATE-TERRORISM.md, header)
 **Manual:** `GL-MU-2022-TERXV-001`, *Terrorism Premium Determination*, Table A#.A.1.a, plus the Terrorism Supplement to the CLM (3 notices, PEV001–PEV016, TEV001–TEV008)
 **Documented:** 2026-08-20
+**Forms added:** 2026-09-01, from direct read of `GL-MU-2022-TERXV-001-C.pdf` (Division Six, Terrorism Supplement)
 
 Terrorism does not fit the shape of the other GL sublines. It has **no base rate, no ELP, and no
 loss-cost table of its own.** It is a *premium-on-premium* multiplier: it reads the **finished,
@@ -31,6 +32,51 @@ This document covers all five.
 
 ---
 
+## NEW: Which endorsement form triggers which rating flow
+
+The manual organizes coverage as elective **endorsement options** layered on top of the mandatory
+TRIA-required baseline. Which form is attached to the policy — not a hidden condition in the rating
+math — is what switches on the NBCR factor, the sub-limit ILF ratio, or takes the policy out of the
+aggregation chain entirely. Confirmed by direct read of the manual's Terrorism Supplement, Division
+Six (forms below are as printed there; state-suffixed equivalents exist for AK/WA and are structurally
+identical to the countrywide numbers unless noted):
+
+| Form | What it does | Effect on the rating flow | Program-status window |
+|---|---|---|---|
+| **CG 21 70** | Cap on losses only; full certified-acts coverage | Baseline **A.1.a** math only — no optional factor fires | TRIA in effect |
+| **CG 21 71** | Excludes non-certified acts committed outside the US | Does not touch the certified-acts premium calc | TRIA in effect |
+| **CG 21 73** | Excludes certified acts of terrorism entirely (other-acts coverage stays) | **No terrorism premium computed** — the chain doesn't run | TRIA in effect |
+| **CG 21 75** | Excludes certified acts *and* non-certified acts outside the US | Same as CG 21 73 — no terrorism premium | TRIA in effect |
+| **CG 21 76** | Add-on excluding punitive damages | Riders onto CG 21 80/82/84; no premium-math effect of its own | TRIA in effect |
+| **CG 21 80** | Certified-acts coverage capped at a Terrorism Aggregate Limit (Prem/Ops) | **Fires the sub-limit ILF ratio** (A.1.c Steps 1–6) — creates the aggregate-limit-vs-per-occurrence-limit mismatch that ratio prices | TRIA in effect |
+| **CG 21 82** | Same as CG 21 80, Products/Completed Ops version | Same ILF-ratio trigger, Prods/CompldOps chain | TRIA in effect |
+| **CG 21 84** | Excludes NBCR from certified-acts coverage, subject to statutory cap; only offerable if insured first rejected standard coverage | **Fires the 0.58 NBCR factor** (A.1.b) | TRIA in effect |
+| **CG 21 87** | Conditional exclusion of all terrorism | No terrorism premium, contingent on Program disposition | Last calendar year of Program, term extends past it |
+| **CG 21 88** | Conditional exclusion of NBCR terrorism (broader "terrorism," not just certified acts) | Different mechanism from CG 21 84 — this excludes the peril outright rather than discounting it | Last calendar year of Program |
+| **CG 21 89** | Conditional aggregate-limit terrorism coverage | Conditional counterpart to CG 21 80/82's ILF-ratio trigger | Last calendar year of Program |
+| **CG 21 93** | Extended reporting period for terrorism (claims-made policies) | Required alongside CG 21 87/88 on claims-made policies; no premium-math effect | Last calendar year of Program |
+| **CG 21 90** | Exclusion of terrorism (post-termination) | No terrorism premium | After Program termination |
+| **CG 21 91** | Exclusion of NBCR terrorism (post-termination) | Excludes the peril outright, like CG 21 88 | After Program termination |
+| **CG 21 92** | Aggregate-limit terrorism coverage (post-termination) | Post-termination counterpart to CG 21 80/82's ILF-ratio trigger | After Program termination |
+
+**Key distinction worth flagging:** CG 21 84 (0.58 factor) and CG 21 88/91 (conditional/post-termination
+NBCR exclusion) are *not* the same lever. CG 21 84 keeps certified-acts coverage in force and
+**discounts** the premium for narrowing out NBCR. CG 21 88/91 **excludes NBCR terrorism outright**
+(a broader "terrorism" definition, not limited to certified acts) — those forms don't feed the 0.58
+factor at all, since there's no NBCR premium left to discount.
+
+The **endorsement-only coverage group** (`GeneralLiabilityTerrorismEndorsementCoverage`) corresponds
+to the aggregate-limit family across all three program-status windows — **CG 21 80 / CG 21 89 / CG
+21 92** (per GATE-TERRORISM.md § 8.5, confirmed against the manual's three parallel aggregate-limit
+options). When one of those is the operative form, the premium comes from a user-entered
+`EndorsementPremium` rather than through the sibling-aggregation chain.
+
+**Not resolved from the manual:** the actual policy-level DataDef or flag the rating engine reads to
+determine "which form is attached" isn't visible in the manual text — that mapping would need to come
+from the rule file (`GL_CW_20260101_V01`) itself, not the Terrorism Supplement.
+
+---
+
 ## Master orchestration
 
 Per GATE-TERRORISM.md § 1–2, the 20-table terrorism population in the countrywide package classifies
@@ -48,12 +94,13 @@ ClassCoveragePremium = GeneralLiabilityClassificationPremOpsCoverage/Premium
 
 Premium = round( ClassCoveragePremium
                  x CertifiedActsOfTerrorismExposureClassFactorPremises
-                 [x CertifiedActsOfTerrorismNuclBioChemRadioFactor]
-                 [x TerrorismILF / GeneralLiabilityClassificationPremOpsCoverage/FinalILF]
+                 [x CertifiedActsOfTerrorismNuclBioChemRadioFactor]      # fires if CG 21 84 attached
+                 [x TerrorismILF / GeneralLiabilityClassificationPremOpsCoverage/FinalILF]  # fires if CG 21 80/89/92 attached
                , 0)
 ```
 
-The bracketed terms are conditional multipliers — see Steps 3 and 4 in each branch below.
+The bracketed terms are conditional multipliers — see Steps 3 and 4 in each branch below, and the
+form-trigger table above for what switches each one on.
 
 Three structural facts follow (per GATE-TERRORISM.md § 2):
 
@@ -67,7 +114,8 @@ Three structural facts follow (per GATE-TERRORISM.md § 2):
 `SetTerrorismILF` implements the manual's sub-limit selection exactly (PEV001 A.1.c.(1) and (2)):
 when the terrorism aggregate limit is ≤ the policy per-occurrence limit, the ILF is taken with the
 aggregate limit as **both** occurrence and aggregate; when it is greater, with the **policy
-per-occurrence limit** and the terrorism aggregate (per GATE-TERRORISM.md § 2).
+per-occurrence limit** and the terrorism aggregate (per GATE-TERRORISM.md § 2). This branch only
+runs at all when CG 21 80 (or 82/89/92) has put a Terrorism Aggregate Limit on the policy.
 
 ---
 
@@ -79,11 +127,13 @@ per-occurrence limit** and the terrorism aggregate (per GATE-TERRORISM.md § 2).
 | Products/Completed Ops premium | `GeneralLiabilityTerrorismProdsCompldOpsCoverage` | Sums 3 sibling `Premium` values — group names not individually cited in the gate doc; see Products/Completed Operations section below |
 | All Other Sublines premium | `GeneralLiabilityTerrorismAllOtherSublineCoverage` | Sums 5 sibling `Premium` values; always *Average* exposure class per manual A.1.a |
 | Unmanned Aircraft premium | `GeneralLiabilityUnmannedAircraftTerrorismCoverage` | Sums 2 sibling `Premium` values |
-| Endorsement-only premium | `GeneralLiabilityTerrorismEndorsementCoverage` | User-entered `EndorsementPremium` x factor — no sibling aggregation |
+| Endorsement-only premium | `GeneralLiabilityTerrorismEndorsementCoverage` | User-entered `EndorsementPremium` x factor — no sibling aggregation. Operative when **CG 21 80 / CG 21 89 / CG 21 92** is the attached form |
 | Aggregator-only, writes no `Premium` | `GeneralLiabilityTerrorism` | Per GATE-TERRORISM.md § 1 table |
 | Policy-level total | `GeneralLiability` | The policy-level total, per GATE-TERRORISM.md § 1 table |
-| Sub-limit ILF rule | `SetTerrorismILF` | PEV001 A.1.c.(1)/(2) two-case limit selection |
+| Sub-limit ILF rule | `SetTerrorismILF` | PEV001 A.1.c.(1)/(2) two-case limit selection; triggered by **CG 21 80 / 82 / 89 / 92** |
 | Endorsement factor validation | `DoMessageWhenNoClassIsAnAboveAverageExposureClassTheExposureClassFactorCanBeFrom0to004` | Only filed bound on the user-entered endorsement factor |
+| NBCR discount | `CertifiedActsOfTerrorismNuclBioChemRadioFactor` (0.58) | Triggered by **CG 21 84** — see form table above |
+| No terrorism premium | — | Triggered by **CG 21 73 / 75 / 87 / 90** — the chain doesn't run at all |
 | Manual corpus | `Commercial Line Manuals/GL/Terrorism/` — 3 notices, 113–118 pages each | Ingested as `text/terrorism/`, `knowledge/terrorism.json` per GATE-TERRORISM.md § 0 |
 | Population/verification script | `scripts/erc/37_terrorism_align.py` | 5/5 as of the correction in § 3a |
 | 12 `CAPTURE`-classified groups | endorsement capture groups, no rating table | Per GATE-TERRORISM.md § 1, "found by name and not by content" |
@@ -114,7 +164,8 @@ ClassCoveragePremium = GeneralLiabilityClassificationPremOpsCoverage/Premium
                      + GeneralLiabilityClassificationLossOfElectronicDataPremOpsCoverage/Premium
                      + GeneralLiabilityClassificationCyberIncidentLiabilityPremOpsCoverage/Premium
 ```
-Per GATE-TERRORISM.md § 2. Three named groups, summed.
+Per GATE-TERRORISM.md § 2. Three named groups, summed. Runs only if the policy's certified-acts
+coverage is *not* excluded outright — i.e., **CG 21 73 / 75 / 87 / 90 are not attached**.
 
 ### Step 2 — Exposure class factor
 ```
@@ -129,7 +180,8 @@ A#.A.1.a). The `PolicyEffectiveWhileTRIAInEffectIndicator` key distinguishes the
 an engine that ignored the indicator would still be right today (§ 3).
 
 **15 of 51 jurisdictions** override this to zero countrywide rows and redirect to a state-suffixed
-table keyed additionally on `Territory` — see State deviations below (§ 3a).
+table keyed additionally on `Territory` — see State deviations below (§ 3a). This is a jurisdiction
+effect, not a form/endorsement effect.
 
 The exposure class itself is resolved per class code from `TerrorismExposureClassesPremises` in the
 resolved package (countrywide plus LA/NJ/NY overrides — see § "The above-average class list" below).
@@ -139,10 +191,16 @@ resolved package (countrywide plus LA/NJ/NY overrides — see § "The above-aver
 if applicable:
     Premium_intermediate = Premium_intermediate x CertifiedActsOfTerrorismNuclBioChemRadioFactor
 ```
-CW value **0.58** — manual A.1.b: *"Multiply the additional premium by 0.58"* (per GATE-TERRORISM.md
-§ 3). Condition for when this factor applies is not further specified in the gate doc beyond the
-manual citation — **not resolved in source docs**: the exact trigger (which endorsement/coverage
-selection turns this on) is not traced in GATE-TERRORISM.md.
+CW value **0.58** — manual A.1.b confirms multiplying the additional premium by that factor for the
+NBCR-excluded coverage option (per GATE-TERRORISM.md § 3).
+
+**Resolved (2026-09-01):** the trigger is **CG 21 84** — "Exclusion Of Certified Nuclear, Biological,
+Chemical Or Radiological Acts Of Terrorism; Cap On Losses From Certified Acts Of Terrorism." Per the
+manual, this option provides certified-acts coverage with NBCR carved out, and it may only be offered
+after the insured has first rejected the standard A.1.a coverage. When CG 21 84 is the operative form,
+Step 3 fires; otherwise it does not. (Previously logged as "not resolved in source docs" — this closes
+that gap against the manual text, though the exact DataDef/flag the *engine* checks for form selection
+is still not visible from the manual alone.)
 
 ### Step 4 — Sub-limit ILF ratio (conditional)
 ```
@@ -153,6 +211,11 @@ if applicable:
 `TerrorismILF` is set by `SetTerrorismILF` per the manual's two-case limit selection (PEV001
 A.1.c.(1)/(2) — see Master orchestration). Divides by the **host group's `FinalILF`**, not a
 terrorism-side value — E18 exposure, generalized to policy scope (per GATE-TERRORISM.md § 2).
+
+**Trigger:** **CG 21 80** (Prem/Ops) puts a Terrorism Aggregate Limit on the policy that differs from
+the per-occurrence limit; that mismatch is exactly what Steps 1–6 of A.1.c price. Absent CG 21 80 (or
+its conditional/post-termination counterparts, CG 21 89 / CG 21 92), there is no separate aggregate
+limit to reconcile and Step 4 does not fire.
 
 ### Step 5 — Final premium
 ```
@@ -190,6 +253,10 @@ Exposure class factor uses `CertifiedActsOfTerrorismExposureClassFactorProducts`
 `TerrorismExposureClassesProducts` (the Products-side counterparts named in GATE-TERRORISM.md § 8.4),
 keyed the same way as Prem/Ops.
 
+**Forms:** same trigger logic as Prem/Ops, with **CG 21 82** as the Products/Completed Ops
+counterpart to CG 21 80 for the ILF sub-limit ratio. CG 21 84's NBCR carve-out is written generically
+across certified-acts coverage and applies to this chain the same way.
+
 ---
 
 ## All Other Sublines — differences from Prem/Ops
@@ -203,11 +270,12 @@ Premium = round(ClassCoveragePremium x ExposureClassFactor
 ```
 
 Per GATE-TERRORISM.md § 1 and § 8.3, this path **always uses the Average exposure category** —
-manual A.1.a: *"For sublines other than premises/operations or products/completed operations, use
-the average exposure category."* Confirmed in ERC as `TerrorismExposureClassesOtherSublines`, a
+manual A.1.a specifies the average exposure category for sublines other than premises/operations or
+products/completed operations. Confirmed in ERC as `TerrorismExposureClassesOtherSublines`, a
 **1-row constant table** (per § 3, table row 6): `Average Exposure Class`, always. There is no
 per-class-code lookup for this path — it is the one branch where the exposure class is fixed rather
-than resolved.
+than resolved. This is a structural fact of A.1.a, not a form trigger — the same CG 21 84 / CG 21
+80-family triggers described above still apply to the conditional factors.
 
 **Not resolved in source docs:** the five specific sibling coverage groups summed into this path are
 not individually named in GATE-TERRORISM.md.
@@ -226,7 +294,8 @@ Premium = round(ClassCoveragePremium x ExposureClassFactor
 
 Per GATE-TERRORISM.md § 1. The two summed groups are presumably Unmanned Aircraft's Coverage A and
 Coverage B (rated separately per `docs/rating-engine/03-SUBLINE-COVERAGE-PLAN.md` § 3.2.9), but this
-pairing is **not resolved in source docs** — the gate doc gives only the count.
+pairing is **not resolved in source docs** — the gate doc gives only the count. Form triggers follow
+the same shape as the other three aggregation paths.
 
 ---
 
@@ -258,6 +327,13 @@ none evaluates to `Above Average Exposure Class`, requires the entered factor to
 `≤ 0.004` (per GATE-TERRORISM.md § 6). "The guard *is* the algorithm" for this branch — there is no
 computed value to check it against.
 
+**Forms triggering this branch:** **CG 21 80 / CG 21 89 / CG 21 92** — the aggregate-limit-only family
+across all three program-status windows (per `docs/rating-engine/03-SUBLINE-COVERAGE-PLAN.md` § 3.2.10
+/ GATE-TERRORISM.md § 8.5). Note CG 21 80 also appears in the Prem/Ops ILF-ratio trigger above — the
+same form can put a policy on the aggregate-limit path, and whether that resolves to *this* branch or
+to the sibling-aggregation-plus-ILF-ratio branch is a rule-file-level distinction not resolved from the
+manual or gate doc alone.
+
 Applicable forms per `docs/rating-engine/03-SUBLINE-COVERAGE-PLAN.md` § 3.2.10 / GATE-TERRORISM.md
 § 8.5: **CG 21 80 / CG 21 89 / CG 21 92**.
 
@@ -269,8 +345,8 @@ Applicable forms per `docs/rating-engine/03-SUBLINE-COVERAGE-PLAN.md` § 3.2.10 
 |---|---|---|---|---|---|
 | Premium source | 3 sibling `Premium`, named | 3 sibling `Premium`, not individually named | 5 sibling `Premium`, not named | 2 sibling `Premium`, not named | user-entered `EndorsementPremium` |
 | Exposure class | resolved per class code (`...Premises`) | resolved per class code (`...Products`) | **fixed: Average, always** | not resolved in source docs | user-entered factor, validated |
-| ILF sub-limit ratio | conditional, per Master orchestration | conditional, same pattern | conditional, same pattern | not resolved in source docs | none — no `FinalILF` input |
-| NBCR factor (0.58) | conditional | conditional | conditional | not resolved in source docs | not applicable |
+| ILF sub-limit ratio | conditional; **CG 21 80** triggers | conditional; **CG 21 82** triggers | conditional, same pattern | not resolved in source docs | none — no `FinalILF` input |
+| NBCR factor (0.58) | conditional; **CG 21 84** triggers | conditional; **CG 21 84** triggers | conditional; **CG 21 84** triggers | not resolved in source docs | not applicable |
 | Group | `GeneralLiabilityTerrorismPremOpsCoverage` | `...ProdsCompldOpsCoverage` | `...AllOtherSublineCoverage` | `GeneralLiabilityUnmannedAircraftTerrorismCoverage` | `...EndorsementCoverage` |
 
 ---
@@ -321,9 +397,9 @@ Two go further:
 - **California** adds `…FactorRemainderOfTerritory001` alongside `…FactorCA`.
 
 So terrorism is **territory-rated in 15 states**, applicable across all four aggregation paths (this
-is a factor-resolution difference, not a separate premium chain). This was found by
-`scripts/erc/40_referral_census.py` probe 6, not by re-reading gate prose, and is pinned as check 3a
-in `scripts/erc/37_terrorism_align.py`.
+is a factor-resolution difference, not a separate premium chain, and not a form/endorsement effect —
+it fires purely on risk jurisdiction). This was found by `scripts/erc/40_referral_census.py` probe 6,
+not by re-reading gate prose, and is pinned as check 3a in `scripts/erc/37_terrorism_align.py`.
 
 The Terrorism Supplement's rules are organized by version, not by state exception page — **8 `TEV`
 endorsement-option versions** (`TEV001` used by 43 of 52), **16 `PEV`** premium-determination versions
@@ -347,6 +423,10 @@ indicator, and raises an 18,901-character `TerrorismUnderwritingLogic` message. 
 pro-rated refund on actual Program termination is a mid-term change transaction (deferred, out of
 scope here), and **whether RAaS can be told to rate the full term is unverified (OI-66)**.
 
+This section is about the conditional endorsements (**CG 21 87 / 88 / 89 / 93**) that exist
+specifically to handle the Program's anticipated termination mid-policy-term — see the form table
+above for what each one does.
+
 ---
 
 ## Supporting lookups
@@ -358,15 +438,15 @@ scope here), and **whether RAaS can be told to rate the full term is unverified 
 | `TerrorismExposureClassesPremises` | class-code lookup, per jurisdiction | ClassCode | CW 105 above-average; LA/NJ/NY override |
 | `TerrorismExposureClassesProducts` | class-code lookup, per jurisdiction | ClassCode | CW 54 above-average |
 | `TerrorismExposureClassesOtherSublines` | 1-row constant | — | `Average Exposure Class`, always |
-| `CertifiedActsOfTerrorismNuclBioChemRadioFactor` | filed value | — | `0.58` |
-| `CertifiedActsofTerrorismExposureClassFactor` (lowercase "of") | **not a table** — user-entered input | — | validated `>0` and `≤0.004` when no above-average class present |
-| `SetTerrorismILF` / `TerrorismILF` | sub-limit selection per PEV001 A.1.c.(1)/(2) | policy per-occurrence limit, terrorism aggregate limit | — |
+| `CertifiedActsOfTerrorismNuclBioChemRadioFactor` | filed value | — | `0.58`; triggered by **CG 21 84** |
+| `CertifiedActsofTerrorismExposureClassFactor` (lowercase "of") | **not a table** — user-entered input | — | validated `>0` and `≤0.004` when no above-average class present; operative under **CG 21 80/89/92** |
+| `SetTerrorismILF` / `TerrorismILF` | sub-limit selection per PEV001 A.1.c.(1)/(2) | policy per-occurrence limit, terrorism aggregate limit | triggered by **CG 21 80 / 82 / 89 / 92** |
 | `...FactorOtherManhattan` | NY Manhattan-specific | 5-key, incl. borough | `0.038`–`0.098` |
 | `…FactorRemainderOfTerritory001` / `…FactorCA` | CA-specific | Territory | — |
 
 Ten `DomainYear200{3,4,5}Terrorism*Factor*` domain tables exist countrywide at **0 rows each** —
-per GATE-TERRORISM.md § 7, obsolete-year stubs the 2022 notice describes as deleted ("referencing
-obsolete years and outdated federal share percentages"), not evidence of a rating path.
+per GATE-TERRORISM.md § 7, obsolete-year stubs the 2022 notice describes as deleted (referencing
+obsolete years and outdated federal share percentages), not evidence of a rating path.
 
 ---
 
@@ -382,12 +462,12 @@ ExposureClassFactor   = lookup CertifiedActsOfTerrorismExposureClassFactorPremis
                              State, TRIAIndicator, ExposureClass [, Territory in 15 states])
                          [CW: Above Average .009 / Average .004]
 
-TerrorismILF          = PEV001 A.1.c.(1)/(2) two-case limit selection
+TerrorismILF          = PEV001 A.1.c.(1)/(2) two-case limit selection   [only if CG 21 80/89/92 attached]
 
 Premium = round( ClassCoveragePremium
                 x ExposureClassFactor
-                [x 0.58                                     if NBCR applies]
-                [x (TerrorismILF / PremOps.FinalILF)         if sub-limit applies]
+                [x 0.58                                     if CG 21 84 attached]
+                [x (TerrorismILF / PremOps.FinalILF)         if CG 21 80/89/92 attached]
               , 0)
 ```
 
@@ -396,13 +476,22 @@ Premium = round( ClassCoveragePremium
 ```
 Premium = round(EndorsementPremium x CertifiedActsofTerrorismExposureClassFactor, 0)
 
+# Operative when CG 21 80 / CG 21 89 / CG 21 92 is the attached form.
 # CertifiedActsofTerrorismExposureClassFactor is user-entered (lowercase "of"), validated:
 #   if no class on the policy is Above Average Exposure Class:
 #       0 < factor <= 0.004
 ```
 
+## Quick reference — no premium computed
+
+```
+If CG 21 73, CG 21 75, CG 21 87, or CG 21 90 is attached:
+    the certified-acts terrorism chain does not run at all.
+    Premium (certified acts) = $0
+```
+
 All other paths (Products/Completed Operations, All Other Sublines, Unmanned Aircraft) follow the
 Prem/Ops shape with the sibling-group substitutions and exposure-class fixing noted in their
-respective sections above.
+respective sections above; form triggers follow the same table given at the top of this document.
 
 ---

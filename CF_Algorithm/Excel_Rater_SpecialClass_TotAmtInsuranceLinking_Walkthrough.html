@@ -1,0 +1,329 @@
+<title>Wiring Special Class's TotAmtInsuranceToUse — Step by Step</title>
+<style>
+  :root {
+    --bg: #eef1f4; --paper: #ffffff; --ink: #1c2733; --ink-soft: #55606b; --ink-faint: #8b95a1;
+    --grid-line: #d7dce2; --header-fill: #e4e8ed; --header-fill-strong: #1e3a45; --header-text-strong: #eef4f3;
+    --accent: #1e3a45; --accent-soft: #cfe0e0; --accent-warm: #b96a2c; --accent-warm-soft: #f3e2cf;
+    --good: #2f7d5a; --good-soft: #dcefe4; --warn: #a53d26; --warn-soft: #f7ddd4;
+    --shadow: 0 1px 2px rgba(28,39,51,0.06), 0 8px 24px rgba(28,39,51,0.07);
+    --font-display: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+    --font-body: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+    --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, "Liberation Mono", monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #10151b; --paper: #161d25; --ink: #e7ecf1; --ink-soft: #a3aebb; --ink-faint: #6d7885;
+      --grid-line: #2b3742; --header-fill: #1b242d; --header-fill-strong: #21504f; --header-text-strong: #eaf3f1;
+      --accent: #59a9ac; --accent-soft: #1d3535; --accent-warm: #dd9a5c; --accent-warm-soft: #372a1c;
+      --good: #63c090; --good-soft: #1b3226; --warn: #e0806a; --warn-soft: #3a2019;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 28px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #10151b; --paper: #161d25; --ink: #e7ecf1; --ink-soft: #a3aebb; --ink-faint: #6d7885;
+    --grid-line: #2b3742; --header-fill: #1b242d; --header-fill-strong: #21504f; --header-text-strong: #eaf3f1;
+    --accent: #59a9ac; --accent-soft: #1d3535; --accent-warm: #dd9a5c; --accent-warm-soft: #372a1c;
+    --good: #63c090; --good-soft: #1b3226; --warn: #e0806a; --warn-soft: #3a2019;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 28px rgba(0,0,0,0.35);
+  }
+  :root[data-theme="light"] {
+    --bg: #eef1f4; --paper: #ffffff; --ink: #1c2733; --ink-soft: #55606b; --ink-faint: #8b95a1;
+    --grid-line: #d7dce2; --header-fill: #e4e8ed; --header-fill-strong: #1e3a45; --header-text-strong: #eef4f3;
+    --accent: #1e3a45; --accent-soft: #cfe0e0; --accent-warm: #b96a2c; --accent-warm-soft: #f3e2cf;
+    --good: #2f7d5a; --good-soft: #dcefe4; --warn: #a53d26; --warn-soft: #f7ddd4;
+    --shadow: 0 1px 2px rgba(28,39,51,0.06), 0 8px 24px rgba(28,39,51,0.07);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); line-height: 1.55; overflow-x: hidden; }
+  a { color: var(--accent); }
+  a:focus-visible, button:focus-visible, .jump:focus-visible { outline: 2px solid var(--accent-warm); outline-offset: 2px; }
+  .wrap { max-width: 1020px; margin: 0 auto; padding: 0 24px 96px; }
+
+  header.masthead { padding: 56px 24px 28px; max-width: 1020px; margin: 0 auto; }
+  .eyebrow { font-family: var(--font-ui); font-size: 12px; letter-spacing: 0.11em; text-transform: uppercase; color: var(--accent-warm); font-weight: 600; margin: 0 0 10px; }
+  h1.title { font-family: var(--font-display); font-size: clamp(26px, 4vw, 38px); font-weight: 400; margin: 0 0 14px; text-wrap: balance; color: var(--ink); }
+  .dek { font-size: 16px; color: var(--ink-soft); max-width: 72ch; margin: 0 0 6px; }
+  .dek + .dek { margin-top: 10px; }
+  .dek code { font-family: var(--font-mono); font-size: 14px; background: var(--header-fill); padding: 1px 5px; border-radius: 3px; }
+
+  nav.jumpbar { position: sticky; top: 0; z-index: 20; background: var(--header-fill-strong); border-bottom: 1px solid var(--grid-line); }
+  .jumpbar-inner { max-width: 1020px; margin: 0 auto; display: flex; align-items: stretch; overflow-x: auto; scrollbar-width: thin; }
+  .jumpbar-label { font-family: var(--font-ui); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--header-text-strong); opacity: 0.6; align-self: center; padding: 0 12px 0 20px; white-space: nowrap; flex: none; }
+  .jump { font-family: var(--font-ui); font-size: 13px; color: var(--header-text-strong); text-decoration: none; white-space: nowrap; padding: 13px 16px; border-bottom: 3px solid transparent; opacity: 0.72; flex: none; }
+  .jump:hover { opacity: 1; }
+  .jump .step-no { font-family: var(--font-mono); opacity: 0.7; margin-right: 6px; }
+
+  section.step-block { padding-top: 64px; scroll-margin-top: 56px; }
+  .step-heading { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 6px; }
+  .step-index { font-family: var(--font-mono); font-size: 13px; color: var(--accent-warm); font-variant-numeric: tabular-nums; }
+  h2.step-title { font-family: var(--font-display); font-size: 25px; font-weight: 400; margin: 0; color: var(--ink); }
+  .step-role { font-family: var(--font-ui); font-size: 13px; color: var(--ink-soft); margin: 0 0 22px; }
+
+  .xl-window { background: var(--paper); border: 1px solid var(--grid-line); border-radius: 6px; box-shadow: var(--shadow); overflow: hidden; }
+  .xl-titlebar { display: flex; align-items: center; gap: 10px; padding: 9px 14px; background: var(--header-fill-strong); color: var(--header-text-strong); font-family: var(--font-ui); font-size: 12.5px; }
+  .xl-dots { display: flex; gap: 5px; flex: none; }
+  .xl-dots span { width: 8px; height: 8px; border-radius: 50%; background: currentColor; opacity: 0.35; }
+  .xl-filename { opacity: 0.92; }
+  .xl-filename b { font-weight: 600; }
+  .xl-titlebar-spacer { flex: 1; }
+  .xl-mode { font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.55; }
+  .xl-scroll { overflow-x: auto; }
+  table.xl-grid { border-collapse: collapse; width: 100%; font-family: var(--font-mono); font-size: 12.5px; }
+  table.xl-grid th, table.xl-grid td { border: 1px solid var(--grid-line); padding: 6px 10px; text-align: left; white-space: nowrap; }
+  .colletters th { background: var(--header-fill); color: var(--ink-faint); font-family: var(--font-ui); font-size: 10.5px; text-align: center; padding: 3px 10px; font-weight: 600; position: sticky; top: 0; }
+  .rownum { background: var(--header-fill); color: var(--ink-faint); font-family: var(--font-ui); font-size: 11px; text-align: center !important; font-weight: 600; width: 1%; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  td.formula-cell { background: var(--accent-warm-soft); color: var(--accent-warm); font-weight: 600; }
+  td.warn-cell { background: var(--warn-soft); color: var(--warn); font-weight: 600; }
+  td.good-cell { background: var(--good-soft); color: var(--good); }
+  td.total-cell { background: var(--header-fill); font-weight: 700; }
+  .subtle { color: var(--ink-faint); font-style: italic; }
+
+  .instructions { margin-top: 22px; display: grid; gap: 14px; }
+  .instructions p { margin: 0; font-size: 15.5px; color: var(--ink); max-width: 74ch; }
+  .instructions p.lede { font-size: 16.5px; }
+  .field-notes { margin: 4px 0 0; padding: 0; list-style: none; display: grid; gap: 9px; max-width: 74ch; }
+  .field-notes li { font-size: 14.5px; color: var(--ink-soft); padding-left: 16px; border-left: 2px solid var(--grid-line); }
+  .field-notes b { font-family: var(--font-mono); font-size: 13px; color: var(--ink); background: var(--header-fill); padding: 1px 5px; border-radius: 3px; }
+
+  .callout { display: flex; gap: 10px; padding: 12px 14px; border-radius: 5px; max-width: 74ch; font-size: 14.5px; margin-top: 14px; }
+  .callout.warn { background: var(--warn-soft); color: var(--warn); }
+  .callout.warm { background: var(--accent-warm-soft); color: var(--accent-warm); }
+  .callout.good { background: var(--good-soft); color: var(--good); }
+  .callout b { font-weight: 700; }
+  .callout-mark { flex: none; font-family: var(--font-ui); font-weight: 700; }
+
+  .formula-label { font-family: var(--font-ui); font-size: 11px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--ink-faint); margin: 28px 0 10px; }
+  .formula-label:first-child { margin-top: 0; }
+  .formula-panel { background: var(--header-fill-strong); color: var(--header-text-strong); border-radius: 6px; padding: 16px 18px; font-family: var(--font-mono); font-size: 12px; line-height: 1.75; overflow-x: auto; }
+  .formula-panel pre { margin: 0; white-space: pre; }
+  .formula-panel .kw { color: var(--accent-warm); font-weight: 700; }
+  .formula-panel .fn { color: #a9d6d8; }
+  .formula-panel .cm { opacity: 0.55; font-style: italic; }
+
+  .progress-rail { display: flex; gap: 6px; margin: 4px 0 26px; }
+  .progress-rail .dot { height: 4px; flex: 1; border-radius: 2px; background: var(--grid-line); }
+  .progress-rail .dot.done { background: var(--accent-warm); }
+
+  hr.divider { border: none; border-top: 1px solid var(--grid-line); margin: 64px 0 0; }
+
+  footer.closing { max-width: 1020px; margin: 72px auto 0; padding: 0 24px 64px; }
+  footer.closing h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0 0 12px; }
+  footer.closing ol { padding-left: 20px; display: grid; gap: 8px; max-width: 68ch; }
+  footer.closing li { font-size: 15px; color: var(--ink-soft); }
+  footer.closing p.note { margin-top: 20px; font-size: 13px; color: var(--ink-faint); font-family: var(--font-ui); }
+</style>
+
+<header class="masthead">
+  <p class="eyebrow">CF_Algorithm &middot; Special Class &middot; review, not a build</p>
+  <h1 class="title">Wiring <code>TotAmtInsuranceToUse</code> into the Deductible Factor</h1>
+  <p class="dek">A Special Class item's deductible band isn't always driven by its own <code>Limit</code>. When the
+    item is linked to a specific building, ISO's own rule copies that <b>building's</b> combined total instead
+    (Building + Contents + Special Class amounts). This walkthrough works through what that means for the live
+    rater's existing architecture — <code>Location Inputs</code> for raw fields, <code>CoreScratchpad</code> for the
+    real SUMPRODUCT/INDEX formulas, one calc tab per coverage.</p>
+  <p class="dek">Source: <code>CommercialPropertySpecialClassRules.Rule.xml</code> — <code>SetTotAmtInsuranceToUse</code>
+    (line 2129), <code>SetTotAmtInsurance</code> (line 1049). Reviewed against <code>CFRater1.01.xlsb</code>
+    read-only, 2026-09-14.</p>
+  <div class="callout warm">
+    <span class="callout-mark">&#9888;</span>
+    <span><b>Review only — nothing built.</b> Cell addresses shown are placeholders in the same spirit as this
+      project's other walkthroughs (<code>Excel_Rater_BGII_DeductibleFactor_Walkthrough.html</code>'s <code>C40</code>/
+      <code>C41</code> convention) — confirm real layout before building anything. Per standing project rule, nothing
+      gets entered into the live workbook until you say go.</span>
+  </div>
+</header>
+
+<nav class="jumpbar" aria-label="Jump to step">
+  <div class="jumpbar-inner">
+    <span class="jumpbar-label">Steps</span>
+    <a class="jump" href="#s1"><span class="step-no">1</span>Inputs</a>
+    <a class="jump" href="#s2"><span class="step-no">2</span>Item's own total</a>
+    <a class="jump" href="#s3"><span class="step-no">3</span>Building's total needs a 3rd term</a>
+    <a class="jump" href="#s4"><span class="step-no">4</span>Per-building lookup</a>
+    <a class="jump" href="#s5"><span class="step-no">5</span>Resolve TotAmtInsuranceToUse</a>
+    <a class="jump" href="#s6"><span class="step-no">6</span>Wire into the deductible factor</a>
+    <a class="jump" href="#s7"><span class="step-no">7</span>Worked examples</a>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <!-- STEP 1 -->
+  <section class="step-block" id="s1">
+    <div class="step-heading"><span class="step-index">STEP 1 / 7</span><h2 class="step-title">Two new inputs on the Special Class item tab</h2></div>
+    <p class="step-role">These are the raw fields ISO's own rule branches on — everything downstream depends on getting these two right.</p>
+    <div class="progress-rail"><div class="dot done"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+    <div class="xl-window">
+      <div class="xl-titlebar"><div class="xl-dots"><span></span><span></span><span></span></div><div class="xl-filename">CFRater1.01.xlsb &mdash; <b>Special Class Item Inputs</b> (new tab)</div><div class="xl-titlebar-spacer"></div><div class="xl-mode">Configure</div></div>
+      <div class="xl-scroll">
+        <table class="xl-grid">
+          <tr class="colletters"><th></th><th>B</th><th>C</th><th>D</th></tr>
+          <tr><td class="rownum">1</td><td>Location #</td><td>1</td><td>1</td></tr>
+          <tr><td class="rownum">2</td><td>Item #</td><td>1</td><td>2</td></tr>
+          <tr><td class="rownum">3</td><td>Limit</td><td class="num">25,000</td><td class="num">10,000</td></tr>
+          <tr><td class="rownum">4</td><td>Deductible</td><td>1,000</td><td>1,000</td></tr>
+          <tr><td class="rownum">5</td><td class="formula-cell">Included in Building?</td><td class="formula-cell">Yes</td><td class="formula-cell">No</td></tr>
+          <tr><td class="rownum">6</td><td class="formula-cell">Linked Building #</td><td class="formula-cell">1</td><td class="formula-cell">&mdash;</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="instructions">
+      <ul class="field-notes">
+        <li><b>Included in Building?</b> &mdash; direct translation of the source rule's <code>IncludedInBuilding = "Yes"</code> test. Item 1 is scheduled as attached to a specific building on this location; item 2 is not.</li>
+        <li><b>Linked Building #</b> &mdash; the source rule's <code>BuildingIDNumber</code>, gated on <code>&gt; 0</code>. Only meaningful when the field above is "Yes"; leave blank otherwise, same convention as <code>Excel_Rater_SpecialClass_InputWireframe.html</code>'s other conditional fields.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- STEP 2 -->
+  <section class="step-block" id="s2">
+    <div class="step-heading"><span class="step-index">STEP 2 / 7</span><h2 class="step-title">The item's own <code>TotAmtInsurance</code> &mdash; the fallback path</h2></div>
+    <p class="step-role">Confirmed by <code>SetTotAmtInsurance</code>: an item's own total, before any building-linking is considered, is just its own scheduled value.</p>
+    <div class="progress-rail"><div class="dot done"></div><div class="dot done"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+    <div class="formula-label">Cell C7 &mdash; this item's own total, ignoring linkage for now</div>
+    <div class="formula-panel"><pre><span class="kw">=IF</span>(C_IncludedInBlkt=<span class="fn">"Yes"</span>, C_FullSpecialClassValue, C3)  <span class="cm">' C3 = this item's own Limit</span></pre></div>
+    <div class="instructions">
+      <p>Straight from the rule: <code>TotAmtInsurance = FullSpecialClassValue</code> if blanketed, else
+        <code>Limit</code>. Nothing about building-linking enters into this cell at all &mdash; it's purely this
+        item's own scheduled data. The blanket branch reads the same <code>FullSpecialClassValue</code> field
+        already flagged as blocked in <code>Excel_Rater_SpecialClass_InputWireframe.html</code>'s Mockup 2 — this
+        formula can be built now, but it can't produce a real number for a blanketed item until that mechanism
+        exists.</p>
+    </div>
+  </section>
+
+  <!-- STEP 3 -->
+  <section class="step-block" id="s3">
+    <div class="step-heading"><span class="step-index">STEP 3 / 7</span><h2 class="step-title">Building's own combined total is missing its third term</h2></div>
+    <p class="step-role">The blocking issue, found by reviewing <code>CoreScratchpad</code> directly — this has to be fixed before Step 4 can produce a correct number for linked items.</p>
+    <div class="progress-rail"><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+    <div class="formula-label">ISO's own definition (Building's rule, confirmed)</div>
+    <div class="formula-panel"><pre>TotAmtInsurance = StructureLimitToUse + OccupancyTotAmtInsuranceSum + SpecialClassRiskTotAmtInsurance
+                  <span class="cm">'          (Building)              (Contents)              (Special Class -- the missing term)</span></pre></div>
+    <div class="formula-label">CoreScratchpad's current combined-total cell (row ~137, "TOTAL LIMIT")</div>
+    <div class="formula-panel"><pre><span class="cm">' as reviewed -- Building limit + Contents limit only, two of the three ISO terms</span>
+CoreScratchpad!C138 = <span class="kw">Bldg_Limit</span> + <span class="kw">Contents_Limit</span></pre></div>
+    <div class="callout warn"><span class="callout-mark">&#9888;</span><span><b>This gap already existed before Special
+      Class entered the picture</b> — flagged previously as project memory
+      <code>project_deductiblefactor-uses-location-total-not-building-limit</code>, and confirmed again on this
+      review. It didn't matter in practice because nothing fed a Special Class amount into it. It matters now: a
+      Special Class item linking to a building expects to <em>read</em> that building's full three-term total, but
+      the cell it would read from is still only two terms.</span></div>
+  </section>
+
+  <!-- STEP 4 -->
+  <section class="step-block" id="s4">
+    <div class="step-heading"><span class="step-index">STEP 4 / 7</span><h2 class="step-title">Close the loop: sum linked items back into <code>CoreScratchpad</code></h2></div>
+    <p class="step-role">One-directional linking (Special Class reads Building) isn't enough — Building's own total needs to gain a third term once Special Class items can link to it.</p>
+    <div class="progress-rail"><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+    <div class="formula-label">CoreScratchpad!C139 (new) &mdash; sum of every Special Class item linked to this building</div>
+    <div class="formula-panel"><pre><span class="kw">=SUMPRODUCT</span>(
+  (<span class="fn">'Special Class Item Inputs'</span>!$LocationCol=CoreScratchpad!$LocationCol_ThisRow)*
+  (<span class="fn">'Special Class Item Inputs'</span>!$IncludedInBuildingCol=<span class="fn">"Yes"</span>)*
+  (<span class="fn">'Special Class Item Inputs'</span>!$LinkedBuildingCol=CoreScratchpad!$BuildingIDCol_ThisRow)*
+  <span class="fn">'Special Class Item Inputs'</span>!$LimitCol)</pre></div>
+    <div class="formula-label">CoreScratchpad!C138 (revised) &mdash; now the full three-term total</div>
+    <div class="formula-panel"><pre>=<span class="kw">Bldg_Limit</span> + <span class="kw">Contents_Limit</span> + C139   <span class="cm">' third term now present</span></pre></div>
+    <div class="callout warm"><span class="callout-mark">&#9888;</span><span><b>Order of computation matters, but
+      it's not circular.</b> A Special Class item's own <code>TotAmtInsurance</code> (Step 2) never depends on this
+      sum — only Building's total gains a term from Special Class, never the reverse. Compute Step 2 for every item
+      first, then this <code>SUMPRODUCT</code>, then Step 5 below. No iterative/circular reference needed.</span></div>
+  </section>
+
+  <!-- STEP 5 -->
+  <section class="step-block" id="s5">
+    <div class="step-heading"><span class="step-index">STEP 5 / 7</span><h2 class="step-title">Resolve <code>TotAmtInsuranceToUse</code> per item</h2></div>
+    <p class="step-role">The actual branch from <code>SetTotAmtInsuranceToUse</code>, translated directly.</p>
+    <div class="progress-rail"><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot"></div><div class="dot"></div></div>
+    <div class="formula-label">Calc_SpecialClass_BGI, one row per item</div>
+    <div class="formula-panel"><pre><span class="kw">=IF</span>(<span class="kw">AND</span>(C5=<span class="fn">"Yes"</span>, C6&gt;0),
+   <span class="cm">' linked -- pull the LINKED BUILDING's own combined total, not this item's</span>
+   <span class="kw">XLOOKUP</span>(C6, CoreScratchpad!$BuildingIDCol, CoreScratchpad!$C$138_PerBuilding),
+   C7)   <span class="cm">' not linked -- this item's own total from Step 2</span></pre></div>
+    <div class="instructions">
+      <p class="lede">This is the one formula that actually decides which of the two paths from the source rule
+        fires. Everything before this step (Steps 1&ndash;4) was building the two candidate values; this step
+        picks between them per item, exactly the way <code>SetTotAmtInsuranceToUse</code>'s own <code>If</code>/
+        <code>Else</code> does.</p>
+    </div>
+    <div class="callout good"><span class="callout-mark">&#8226;</span><span>Note this reads a <em>per-building</em>
+      version of <code>C138</code> — Step 4's revised total lives once per building, but a location can have several
+      buildings (per the existing <code>Locations_Buildings</code> row-per-building layout already used by
+      Building/Contents/BI). The lookup needs to key on the specific linked <code>BuildingID</code>, not just grab
+      whichever building happens to be in the active row.</span></div>
+  </section>
+
+  <!-- STEP 6 -->
+  <section class="step-block" id="s6">
+    <div class="step-heading"><span class="step-index">STEP 6 / 7</span><h2 class="step-title">Wire into <code>DeductibleFactorBasicGroupI</code></h2></div>
+    <p class="step-role">Same row-offset/INDEX pattern already used for Building's and Basic Group II's own deductible factors — only the AOI input changes.</p>
+    <div class="progress-rail"><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot"></div></div>
+    <div class="formula-label">Row offset within SpecialClass_DeductibleByLocationFactor_x_DeductibleFactorBasicGroupI.xlsx's 80-row table</div>
+    <div class="formula-panel"><pre><span class="kw">=SUMPRODUCT</span>(
+  (DedFactorBGI!$A$2:$A$81=$C$2)*                        <span class="cm">' State</span>
+  (DedFactorBGI!$B$2:$B$81=$C$4)*                        <span class="cm">' Deductible</span>
+  (DedFactorBGI!$C$2:$C$81&lt;$C$8)*                        <span class="cm">' C8 = resolved TotAmtInsuranceToUse, Step 5</span>
+  (DedFactorBGI!$D$2:$D$81&gt;=$C$8)*
+  (<span class="fn">ROW</span>(DedFactorBGI!$A$2:$A$81)-<span class="fn">ROW</span>(DedFactorBGI!$A$2)+1))</pre></div>
+    <div class="formula-label">Resolved factor</div>
+    <div class="formula-panel"><pre><span class="kw">=IF</span>(C4=<span class="fn">"250"</span>, Deductible250Factor_Lookup,   <span class="cm">' shared, keyed "Basic" -- see the Coinsurance/Deductible workbook</span>
+   <span class="kw">IF</span>(C4=<span class="fn">""</span>, 0,
+      <span class="kw">INDEX</span>(DedFactorBGI!$E:$E, &lt;row offset above&gt;)))</pre></div>
+    <div class="instructions">
+      <p>This is exactly the shape <code>Excel_Rater_BGII_DeductibleFactor_Walkthrough.html</code> already
+        established for Building's own tabs — a <code>SUMPRODUCT</code> row-offset into a pre-filtered table, then
+        an <code>INDEX</code> pull. The only thing genuinely new here is the AOI input feeding the third and fourth
+        conditions: it's Step 5's resolved value, not a plain <code>Limit</code> cell.</p>
+    </div>
+  </section>
+
+  <!-- STEP 7 -->
+  <section class="step-block" id="s7">
+    <div class="step-heading"><span class="step-index">STEP 7 / 7</span><h2 class="step-title">Worked example, two items at one location</h2></div>
+    <p class="step-role">Same location, one linked to a building, one not — showing why the resolved AOI genuinely differs.</p>
+    <div class="progress-rail"><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div></div>
+    <div class="xl-scroll">
+      <table class="xl-grid">
+        <tr class="colletters"><th></th><th>Item 1</th><th>Item 2</th></tr>
+        <tr><td class="rownum">Limit</td><td class="num">25,000</td><td class="num">10,000</td></tr>
+        <tr><td class="rownum">Included in Building?</td><td>Yes</td><td>No</td></tr>
+        <tr><td class="rownum">Linked Building #</td><td>1</td><td>&mdash;</td></tr>
+        <tr><td class="rownum">Item's own TotAmtInsurance (Step 2)</td><td class="num">25,000</td><td class="num">10,000</td></tr>
+        <tr><td class="rownum">Building 1's own combined total (Step 4)</td><td class="num total-cell">315,000 + 40,000 (Contents) + 25,000 (this item) = 380,000</td><td class="subtle">not read</td></tr>
+        <tr><td class="rownum">Resolved TotAmtInsuranceToUse (Step 5)</td><td class="num good-cell">380,000</td><td class="num good-cell">10,000</td></tr>
+        <tr><td class="rownum">Deductible</td><td>1,000</td><td>1,000</td></tr>
+        <tr><td class="rownum">DeductibleFactorBasicGroupI (Step 6)</td><td class="num formula-cell">reads the 1,000,000&ndash;3,500,000 band</td><td class="num formula-cell">reads the &lt;50,000 band</td></tr>
+      </table>
+    </div>
+    <div class="callout good"><span class="callout-mark">&#8226;</span><span>Item 1's deductible factor is driven by
+      a $380,000 combined total — 15&times; its own $25,000 limit — purely because it's scheduled against a
+      building that already carries $355,000 of its own Building+Contents+other-Special-Class exposure. Item 2, not
+      linked to anything, gets exactly what its own limit implies. Same coverage, same deductible selection, two
+      genuinely different resolved factors — this is the concrete case the whole walkthrough exists to get right.</span></div>
+  </section>
+
+  <hr class="divider" />
+
+  <footer class="closing">
+    <h2>Remaining steps</h2>
+    <ol>
+      <li>Confirm real cell/tab layout before building anything — every address above is a placeholder, same
+        convention as this project's other walkthroughs.</li>
+      <li>Step 3/4's fix to <code>CoreScratchpad!C138</code> affects Building's <em>existing</em> deductible factor
+        too, not just Special Class's new one — review whether Building's own BGI/Broad deductible factors should
+        pick up the third term immediately, or only once Special Class items actually exist to populate it.</li>
+      <li>The blanket branch (Step 2's <code>FullSpecialClassValue</code> reference) still depends on the
+        blanket-rating mechanism flagged as blocked everywhere else in this project — this walkthrough's formulas
+        are correct but inert for blanketed items until that's built.</li>
+      <li>Nothing gets built into the live workbook until you say go.</li>
+    </ol>
+    <p class="note">Written 2026-09-14. Companion to <code>Excel_Rater_SpecialClass_HowItWorks.html</code>,
+      <code>Excel_Rater_SpecialClass_InputWireframe.html</code>, and
+      <code>SpecialClass_DeductibleByLocationFactor_x_DeductibleFactorBasicGroupI.xlsx</code>.</p>
+  </footer>
+
+</div>

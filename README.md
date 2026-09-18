@@ -16,7 +16,7 @@ against ISO's own rating service.
 | **[docs/UI-STRATEGY.md](docs/UI-STRATEGY.md)** | **The test page and the layered programme, built 2026-08-18.** Four layers of test case, every state on every run, an allowance that thins configurations and never states, one standalone file per run, an aggregate view with a verdict per layer and a trend, and a per-run review page that needs no API key |
 | **[docs/HOW-TO-USE-THE-TESTER.md](docs/HOW-TO-USE-THE-TESTER.md)** | **How to run the tests and read the results**, for someone who does not code. Rendered as [`how-to-use-the-tester.html`](docs/how-to-use-the-tester.html) |
 | **[docs/START-HERE-TOMORROW.md](docs/START-HERE-TOMORROW.md)** | **Read this first if you are picking the project up.** What to do next, what is waiting on a person, the backlog as it stands, and how far off a product UI is. Rendered as [`start-here-tomorrow_20260818.html`](docs/start-here-tomorrow_20260818.html) |
-| **[docs/WHAT-THE-HARNESS-TAUGHT-US.md](docs/WHAT-THE-HARNESS-TAUGHT-US.md)** | **Seven defects in one day, in plain English** — what each taught and the pattern underneath. Rendered as [`what-the-harness-taught-us_20260817.html`](docs/what-the-harness-taught-us_20260817.html) |
+| **[docs/WHAT-THE-HARNESS-TAUGHT-US.md](docs/WHAT-THE-HARNESS-TAUGHT-US.md)** | **The running learnings record, in plain English** — one dated section per session, each with the pattern underneath. **17 Aug 2026:** seven defects in one day against ISO. **17 Sep 2026:** reading ISO's corpus for Commercial Property — why the schema cannot tell you what is required, and why test fixtures are not a test suite. Rendered as [`what-the-harness-taught-us.html`](docs/what-the-harness-taught-us.html) — regenerate with `python scripts/build_backlog_html.py taught`. The older `_20260817.html` is a frozen August-only snapshot |
 | **[docs/WHATS-LEFT-PLAIN-ENGLISH.md](docs/WHATS-LEFT-PLAIN-ENGLISH.md)** | What is left, for people who do not read code. Rendered as [`backlog_20260817.html`](docs/backlog_20260817.html) |
 | [docs/WHAT-I-NEED-FROM-YOU.md](docs/WHAT-I-NEED-FROM-YOU.md) | The asks: what only a person can supply, what each unblocks, and the default if it is never answered. **Section A all decided 2026-08-17** |
 | [docs/THE-HARNESS-FOUND-THESE.md](docs/THE-HARNESS-FOUND-THESE.md) | The 17 August session — five defects closed and how each was found. Not one by reading code |
@@ -26,10 +26,32 @@ against ISO's own rating service.
 | [TESTING.md](TESTING.md) | **Every command, stage by stage.** Each one has been run and its stated output verified |
 | [docs/OPEN-ITEMS.md](docs/OPEN-ITEMS.md) | **OI-1 to OI-94.** Resolved items are kept and marked, not deleted |
 | [docs/WHERE-WE-PAUSED-2026-08-12.md](docs/WHERE-WE-PAUSED-2026-08-12.md) | The 12 August session, read cold. **Superseded** — everything after it is in the build log |
+| **[docs/PREMIUM-ANALYSIS-WORKFLOW.md](docs/PREMIUM-ANALYSIS-WORKFLOW.md)** | **Read first for any premium analysis.** The method, what is already built (so it is not rebuilt), ISO's premium model in both lines, where coverage totals do and do not exist, and the eight traps that have already produced a wrong answer. Rendered as [`premium-analysis-workflow.html`](docs/premium-analysis-workflow.html) |
+| **[GL_Algorithm/GL_Account_Premium_Bracket.html](GL_Algorithm/GL_Account_Premium_Bracket.html)** | **The roll-up drawn as a bracket** — two locations, three classifications, liquor on two of them, terrorism accepted. Every box is a real datadef field; each merge is one `CalculateTotalPremium`. Amounts are placeholders, labelled as such |
+| **[GL_Algorithm/GL_Scenario_Premium_Buildup.md](GL_Algorithm/GL_Scenario_Premium_Buildup.md)** | **A worked scenario** — Premises/Operations + Products + Liquor + Med Pay $10,000 + TRIA, and exactly how they combine into one policy premium. **Med Pay is not a premium**; terrorism is a percentage of the others; the minimum-premium top-up is yours to compute  Plain-English version, no jargon: [`…_PlainEnglish.html`](GL_Algorithm/GL_Scenario_Premium_Buildup_PlainEnglish.html) |
+| **[GL_Algorithm/GL_PremOps_Prods_Premium_Trace.md](GL_Algorithm/GL_PremOps_Prods_Premium_Trace.md)** | **Full trace of the two core coverages** — Premises/Operations and Products/Completed Operations, every premium value computed and which one becomes money. Plain-English version, no jargon: [`…_PlainEnglish.html`](GL_Algorithm/GL_PremOps_Prods_Premium_Trace_PlainEnglish.html) |
+| **[GL_Algorithm/GL_Premium_Tree.html](GL_Algorithm/GL_Premium_Tree.html)** | **The premium tree, navigable** — 571 groups, collapsible and searchable, with a jurisdiction selector showing what each of the 51 states adds or rewrites. Self-contained; download and open |
+| **[GL_Algorithm/GL_Premium_Map.md](GL_Algorithm/GL_Premium_Map.md)** | **Where every GL premium comes from and how it reaches the account total** — 571 groups, all four levels, every one reaching `ErcCalculatedTotalPremium`. Rate and premium are separate phases and `FinalRate` is the seam. Data in [`GL_Premium_Map.xlsx`](GL_Algorithm/GL_Premium_Map.xlsx); rendered as [`GL_Premium_Map.html`](GL_Algorithm/GL_Premium_Map.html) |
 | [docs/PRD-GL-RATING-ENGINE.md](docs/PRD-GL-RATING-ENGINE.md) | What's built, verified, and in scope today — for a third party getting up to speed. Not the backlog; see `OPEN-ITEMS.md` for that |
 | [docs/GL-RATING-ENGINE-BUILD-PLAN.md](docs/GL-RATING-ENGINE-BUILD-PLAN.md) | The technical plan — architecture, the 18 non-negotiables, deviation constraints C1–C3 |
 | [docs/FROM-PLANNING-TO-BUILD.md](docs/FROM-PLANNING-TO-BUILD.md) | Did the analysis pay off? Written *before* each stage, so it is allowed to be wrong |
 | [PROCESS_LOG.md](PROCESS_LOG.md) | The full analysis record, 51 steps. Closed — the build is logged in `BUILD-LOG.md` |
+
+### Commercial Property (CF)
+
+| | |
+|---|---|
+| **[CF_Algorithm/CF_Payload_ClassRated_Bldg_PP_Alabama.md](CF_Algorithm/CF_Payload_ClassRated_Bldg_PP_Alabama.md)** | **What a CF rating request looks like** — class-rated Building and Personal Property, Alabama. Derived from ISO's own STC payloads, not from the schema; says what a submission carries versus what the engine derives. **Removes the blocker on `cf_engine/schema/fields.py`** |
+| **[CF_Algorithm/CF_Payload_Completion_Tracker.md](CF_Algorithm/CF_Payload_Completion_Tracker.md)** | **What remains before that spec is complete**, by feature set, status per item. Rendered as [`CF_Payload_Completion_Tracker.html`](CF_Algorithm/CF_Payload_Completion_Tracker.html) |
+| **[STC_Corpus_Index.xlsx](STC_Corpus_Index.xlsx)** | **Every ISO-authored rating payload shipped inside the ERC packages, indexed** — 921 cases (364 CF, 557 GL), one row each: jurisdiction, edition, record counts per level, and the rating-path switches each case exercises. **Inputs only — ISO ships no expected outputs**, so these are request fixtures, not a regression suite; the oracle is still ISO's rating service |
+| **[CF_Algorithm/CF_Account_Premium_Bracket.html](CF_Algorithm/CF_Account_Premium_Bracket.html)** | **The CF roll-up drawn as a bracket** — two locations, three buildings, four occupancy classes, business income, TRIA accepted. Columns are **depth**, because Building, Business Income and Contents enter at depths 3, 4 and 5 |
+| **[CF_Algorithm/CF_Premium_Map.md](CF_Algorithm/CF_Premium_Map.md)** | **Where every CF premium comes from and how it reaches the account total** — 881 groups, **seven** levels deep, and **213 formulas that some state rewrites** (GL rewrites 4). Data in [`CF_Premium_Map.xlsx`](CF_Algorithm/CF_Premium_Map.xlsx); rendered as [`CF_Premium_Map.html`](CF_Algorithm/CF_Premium_Map.html) |
+| **[CF_Algorithm/CF_Premium_Tree.html](CF_Algorithm/CF_Premium_Tree.html)** | **The CF premium tree, navigable** — collapsible and searchable, with a jurisdiction selector. Self-contained; download and open |
+| [docs/CF-PROPERTY-BUILD-ORDER.md](docs/CF-PROPERTY-BUILD-ORDER.md) | The CF build order, by coverage |
+| [docs/CF-CHUNK0-BUILD-SPEC.md](docs/CF-CHUNK0-BUILD-SPEC.md) | Chunk 0 specified file by file. **The spec, not the authorization** |
+| **[CF_Algorithm/CF_Message_Register.md](CF_Algorithm/CF_Message_Register.md)** | **Every validation message ISO has actually returned**, what caused it, how it was fixed, and the check that was missing. Diagnose a new one with `python scripts/cf/07_diagnose_message.py` |
+| [CF_Algorithm/CF_Validation_Messages.md](CF_Algorithm/CF_Validation_Messages.md) | **The whole `DoMessage` rule set analysed** — 1,621 rules, 48 jurisdictions. Why a payload can rate *and* return errors, and how states switch messages off |
+| [CF_Algorithm/CF_Data_Dictionary.xlsx](CF_Algorithm/CF_Data_Dictionary.xlsx) | Every datadef group and field across countrywide and all 47 state packages. GL's equivalent is [GL_Data_Dictionary.xlsx](GL_Algorithm/GL_Data_Dictionary.xlsx) |
 
 ### The formatted HTML versions
 
@@ -44,6 +66,7 @@ to be **downloaded and opened in a browser**:
 | `docs/GL-RATING-ENGINE-DOCS.html` | Every technical and gate document in one page, 24 tabs |
 | `docs/qa-plan-proposal_20260817.html` | The QA programme proposal, self-contained, with six wireframes |
 | `docs/backlog_20260817.html` | The plain-English backlog, rendered by `scripts/build_backlog_html.py` |
+| `docs/what-the-harness-taught-us.html` | The running learnings record, both sessions, with a per-session contents sidebar |
 | `docs/index.html` | A landing page linking all of the above |
 
 **Quickest way to read them:** clone the repository and open the file, or use the "Download raw

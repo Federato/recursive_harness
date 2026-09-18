@@ -13,11 +13,16 @@ Implementation order follows the corpus, not the alphabet: the top 20 nodes are
 from __future__ import annotations
 
 import datetime as _dt
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 
 from . import tree
-from .values import (InterpretError, Multi, NullInArithmetic, coerce, equal,
-                     flatten, to_decimal, to_text, truthy)
+from .values import (TYPES, InterpretError, Multi, NullInArithmetic, coerce,
+                     equal, flatten, to_text, truthy)
+
+# NOTE: `to_decimal` is deliberately NOT imported here any more. Every
+# conversion into arithmetic goes through `ip.num(...)`, the interpreter's
+# single door, so that the null-in-arithmetic policy is one decision in one
+# place rather than sixteen call sites that could drift apart.
 
 #: node name -> evaluator. Populated by the decorator below.
 EVAL: dict = {}
@@ -263,19 +268,57 @@ def _when(ip, el, fr):                       # reached only if nested oddly
 
 # ------------------------------------------------------------------ predicates
 
+def _operand_bools(ip, el, ch, fr) -> list:
+    """One `And`/`Or` operand as a list of booleans.
+
+    Normally one boolean. But an operand may be a `ForEach`, in which case it
+    is a quantifier over the iteration: `Or(ForEach(...))` is "any structure
+    has this endorsement", `And(ForEach(...))` is "every one does".
+
+    **General Liability never files this shape** -- 0 of its 58,752 `And`/`Or`
+    elements has a `ForEach` child -- which is why the first version of these
+    two evaluators passed each operand straight to `truthy()` and a `Multi`
+    reaching a condition was a hard failure. Commercial Property files it 369
+    times (317 `Or`, 52 `And`), typically as an `Or` wrapping a single nested
+    `ForEach` over locations and structures. So this is a shape the language
+    always had and one corpus happened never to use.
+    """
+    v = ip.eval(ch, fr)
+    if not isinstance(v, Multi):
+        return [truthy(v, ip.where(ch))]
+    vals = flatten(v)
+    if not vals:
+        # Zero iterations. `any([])` is False and `all([])` is True, which is
+        # the ordinary reading of a quantifier over an empty set -- but it is a
+        # reading, and on an `And` it makes the condition TRUE for a submission
+        # that simply has no locations. Traced rather than silent, because a
+        # validation message that fires on an empty policy should be visible as
+        # this decision rather than look like data.
+        ip.note("quantifier-empty",
+                f"{ip.tag(el)} over an iteration that yielded nothing; "
+                f"{'vacuously true' if ip.tag(el) == 'And' else 'false'}",
+                ip.where(ch))
+    return [truthy(x, ip.where(ch)) for x in vals]
+
+
 @node("And")
 def _and(ip, el, fr):
-    """Variadic, short-circuiting left to right (contract C11)."""
+    """Variadic, short-circuiting left to right (contract C11).
+
+    An operand that is an iteration means "every iteration" -- see
+    `_operand_bools`.
+    """
     for ch in _kids(el):
-        if not truthy(ip.eval(ch, fr), ip.where(ch)):
+        if not all(_operand_bools(ip, el, ch, fr)):
             return False
     return True
 
 
 @node("Or")
 def _or(ip, el, fr):
+    """Variadic, short-circuiting. An iteration operand means "any"."""
     for ch in _kids(el):
-        if truthy(ip.eval(ch, fr), ip.where(ch)):
+        if any(_operand_bools(ip, el, ch, fr)):
             return True
     return False
 
@@ -294,8 +337,8 @@ def _not_equal(ip, el, fr):
 
 def _cmp(ip, el, fr, op):
     a, b = _two(el, ip)
-    x = to_decimal(ip.eval(a, fr), ip.where(el))
-    y = to_decimal(ip.eval(b, fr), ip.where(el))
+    x = ip.num(ip.eval(a, fr), ip.where(el))
+    y = ip.num(ip.eval(b, fr), ip.where(el))
     return op(x, y)
 
 
@@ -584,7 +627,7 @@ def _sum(ip, el, fr):
         for v in flatten(ip.eval(ch, fr)):
             if v is None:
                 continue                   # an absent addend contributes nothing
-            total += to_decimal(v, ip.where(ch))
+            total += ip.num(v, ip.where(ch))
     return total
 
 
@@ -592,7 +635,7 @@ def _sum(ip, el, fr):
 def _product(ip, el, fr):
     out = None
     for ch in _kids(el):
-        v = to_decimal(ip.eval(ch, fr), ip.where(ch))
+        v = ip.num(ip.eval(ch, fr), ip.where(ch))
         out = v if out is None else out * v
     return ip.round_to(out, el, ip.where(el))
 
@@ -600,15 +643,15 @@ def _product(ip, el, fr):
 @node("Subtract")
 def _subtract(ip, el, fr):
     a, b = _two(el, ip)
-    return (to_decimal(ip.eval(a, fr), ip.where(el))
-            - to_decimal(ip.eval(b, fr), ip.where(el)))
+    return (ip.num(ip.eval(a, fr), ip.where(el))
+            - ip.num(ip.eval(b, fr), ip.where(el)))
 
 
 @node("Divide")
 def _divide(ip, el, fr):
     a, b = _two(el, ip)
-    x = to_decimal(ip.eval(a, fr), ip.where(el))
-    y = to_decimal(ip.eval(b, fr), ip.where(el))
+    x = ip.num(ip.eval(a, fr), ip.where(el))
+    y = ip.num(ip.eval(b, fr), ip.where(el))
     if y == 0:
         raise InterpretError("division by zero", "§12.5", ip.where(el))
     return ip.round_to(x / y, el, ip.where(el))
@@ -627,18 +670,18 @@ def _max(ip, el, fr):
             if v is not None]
     if not vals:
         return None
-    return max(to_decimal(v, ip.where(el)) for v in vals)
+    return max(ip.num(v, ip.where(el)) for v in vals)
 
 
 @node("Round")
 def _round(ip, el, fr):
-    v = to_decimal(ip.eval(_only(el, ip), fr), ip.where(el))
+    v = ip.num(ip.eval(_only(el, ip), fr), ip.where(el))
     return ip.round_to(v, el, ip.where(el), required=True)
 
 
 @node("Truncate")
 def _truncate(ip, el, fr):
-    v = to_decimal(ip.eval(_only(el, ip), fr), ip.where(el))
+    v = ip.num(ip.eval(_only(el, ip), fr), ip.where(el))
     return Decimal(int(v))
 
 
@@ -670,7 +713,7 @@ def _pad_left(ip, el, fr):
             f"PadLeft takes three children, found {len(ch)}", "§10",
             ip.where(el))
     text = to_text(ip.eval(ch[0], fr))
-    width = int(to_decimal(ip.eval(ch[1], fr), ip.where(el)))
+    width = int(ip.num(ip.eval(ch[1], fr), ip.where(el)))
     fill = to_text(ip.eval(ch[2], fr)) or " "
     return text.rjust(width, fill[0])
 
@@ -714,7 +757,7 @@ def _date_add(ip, el, fr):
     if not isinstance(d, _dt.date):
         raise InterpretError(
             f"DateAdd on a {type(d).__name__}", "§10", ip.where(el))
-    n = int(to_decimal(ip.eval(b, fr), ip.where(el)))
+    n = int(ip.num(ip.eval(b, fr), ip.where(el)))
     unit = _unit(el, ip)
     if unit == "Days":
         return d + _dt.timedelta(days=n)
@@ -736,7 +779,7 @@ def _date_create(ip, el, fr):
         raise InterpretError(
             f"DateCreate takes three children, found {len(ch)}", "§10",
             ip.where(el))
-    y, m, d = (int(to_decimal(ip.eval(c, fr), ip.where(el))) for c in ch)
+    y, m, d = (int(ip.num(ip.eval(c, fr), ip.where(el))) for c in ch)
     return _dt.date(y, m, d)
 
 
@@ -752,3 +795,182 @@ def _date_difference(ip, el, fr):
             "DateDifference @UnitType is Days on all 30 occurrences",
             "§12.2", ip.where(el))
     return (x - y).days
+
+
+# ======================================================================
+# Commercial Property
+# ======================================================================
+#
+# ISO files one rule language, not one per line of business, and the Property
+# corpus proves it: 60 distinct `rul:` element names against General
+# Liability's 58, with the same semantics everywhere the two overlap. The five
+# below are what Property files and GL does not.
+#
+# **Adding them cannot change a GL rating.** None of the five occurs anywhere
+# in the GL corpus -- enumerated over both corpora, every edition -- so each of
+# these evaluators is unreachable from a GL book. That is the argument for
+# extending this module rather than forking it, and it is measured rather than
+# hoped.
+#
+# Two of the five are refusals. A refusal here is not a stub: it is a named
+# error at the exact element, which is the only outcome that keeps contract
+# 12.1's promise when ISO files something the engine has not been taught.
+#
+# Per-edition census of the Property corpus, all eight edition folders:
+#
+#     element        2019  2020  2022  23v1  23v2  23v3  23v4  2026
+#     Power             2     4     2     2     2     2     2     2
+#     LastNonNull       0     3     0     1     0     1     2     3
+#     Custom            0     0     2     0     2     2     2     2
+#     Null             12     3     0    20     0     0     0     0
+#     FromList          0     6     2     2     4     4     0     0
+#
+# `Null` and `FromList` are retired -- absent from the current edition
+# entirely. They are still handled because the engine resolves by as-of date,
+# and an as-of before 2022-10 lands on an edition that files them.
+
+
+@node("Null")
+def _null(ip, el, fr):
+    """An explicit typed null literal (Property only).
+
+    Worth being exact about why this needs an evaluator rather than being read
+    as "nothing here": the element is how ISO writes *deliberately absent*, as
+    against a branch that merely happened not to assign. It declares a `@Type`,
+    and the value it produces is `None` -- which `IsNull` answers true for and
+    which arithmetic refuses, exactly as contract 12.3 requires.
+
+    Returning `None` is the whole behaviour. Returning zero would be the
+    specific corruption `values.py` exists to prevent.
+    """
+    typ = el.attrib.get("Type", "none")
+    if typ not in TYPES:
+        raise InterpretError(f"Null declares @Type={typ!r}", "§12.2",
+                             ip.where(el))
+    if _kids(el):
+        raise InterpretError(
+            f"Null holds {len(_kids(el))} children; it is a literal", "§4",
+            ip.where(el))
+    ip.note("null-literal", f"explicit null typed {typ}", ip.where(el))
+    return None
+
+
+@node("Power")
+def _power(ip, el, fr):
+    """`base ** exponent` -- the only exponentiation in either corpus.
+
+    Two children, base then exponent, in filed order. Every occurrence is
+    Leasehold Interest discounting a lease's remaining months to present value
+    (`DiscFactor ** NumOfMonthsRemaining`), and the exponent arrives through a
+    `Convert Type="decimal"` rather than as an integer -- so a whole-number-only
+    implementation would be wrong for the one thing this element is used for.
+
+    `Decimal.__pow__` takes a fractional exponent only for a positive base,
+    which is all the corpus files: a discount factor. A non-positive base with
+    a fractional exponent is refused rather than approximated through floats,
+    because N10 applies here more than anywhere -- this is the one operator
+    whose error compounds.
+    """
+    a, b = _two(el, ip)
+    where = ip.where(el)
+    base = ip.num(ip.eval(a, fr), where)
+    exp = ip.num(ip.eval(b, fr), where)
+    if base <= 0 and exp != int(exp):
+        raise InterpretError(
+            f"Power with base {base} and fractional exponent {exp} is not "
+            f"real-valued; the corpus files only positive bases", "§6", where)
+    try:
+        out = base ** exp
+    except (InvalidOperation, OverflowError, ValueError) as exc:
+        raise InterpretError(f"Power({base}, {exp}) is undefined: {exc}",
+                             "§6", where) from None
+    return ip.round_to(out, el, where)
+
+
+@node("LastNonNull")
+def _last_non_null(ip, el, fr):
+    """The LAST non-null value across every child, or null if there is none.
+
+    `FirstNonNull`'s mirror, and the difference is not cosmetic. Every
+    occurrence wraps a nested `ForEach` over locations and structures -- the
+    idiom is "the last structure that named a mine-subsidence limit" -- so the
+    element exists precisely to reach past the first answer to the final one.
+    Short-circuiting on the first non-null, which is how this gets written by
+    analogy, returns a different row's value and raises nothing.
+
+    So every child is evaluated, in filed order, and nothing is skipped.
+
+    `NullInArithmetic` is absorbed per branch for the same reason C6 absorbs it
+    in `FirstNonNull` (OI-88): this construct declares a null branch legal, and
+    a branch that reached null through arithmetic produced nothing rather than
+    failed. Every other refusal still escapes.
+    """
+    found = None
+    seen = False
+    for idx, ch in enumerate(_kids(el)):
+        try:
+            vals = flatten(ip.eval(ch, fr))
+        except NullInArithmetic as exc:
+            ip.trace_branch_abandoned(el, idx, exc)
+            continue
+        for v in vals:
+            if v is not None and v != "":
+                found, seen = v, True
+    if not seen:
+        ip.trace_exhausted(el)
+    return found
+
+
+@node("Custom")
+def _custom(ip, el, fr):
+    """A call into ISO's own .NET runtime. Refused by name, never guessed.
+
+    Every occurrence in the corpus is the same method::
+
+        AssemblyName="Mscl.RuleBook.Runtime"
+        Namespace="Mscl.RuleBook.Runtime.RuleSet.Custom.DateFunctions"
+        ClassName="DateFunctionManager" MethodName="GetLeapDays"
+
+    This is not an operator with filed semantics -- it is a host function whose
+    body ISO ships as compiled code and does not publish. Reimplementing it
+    from its name is the guess this engine refuses to make: a leap-day count
+    has several defensible conventions over a policy term, they disagree by a
+    day, and a Builders Risk premium adjustment pro-rates on the answer.
+
+    Reachable only from Builders Risk premium adjustment. Refusing costs that
+    one coverage and protects every other.
+    """
+    method = el.attrib.get("MethodName", "?")
+    cls = el.attrib.get("ClassName", "?")
+    raise InterpretError(
+        f"Custom calls {cls}.{method} in {el.attrib.get('AssemblyName', '?')}, "
+        f"a host function ISO ships as compiled code and does not publish. The "
+        f"engine does not reimplement it from its name",
+        "§12.1", ip.where(el))
+
+
+@node("FromList")
+def _from_list(ip, el, fr):
+    """A loop-variable binder for a bare `ForEach`. Refused, with the reason.
+
+    The shape is always the same: a `ForEach` carrying NO `@AtDataDef`, whose
+    first child is this element, which names a `@Param` and holds a `GetList`
+    of the values to iterate. So it is not a value-producing operator at all --
+    it iterates a *parameter list* rather than a path into the data tree, and
+    binds each element to a new parameter for the loop body.
+
+    Supporting it means extending `ForEach`'s iteration model to a second
+    source, which is a change to an evaluator GL shares. That change is not
+    made on speculation: `FromList` is retired -- zero occurrences in the
+    current edition -- and every live use is Blanket rating, which is its own
+    build chunk. It gets built when that chunk needs it, against that chunk's
+    evidence.
+
+    Until then this raises rather than returning something. A bare `ForEach`
+    already refuses by name, so neither half of the construct passes silently.
+    """
+    raise InterpretError(
+        f"FromList binds @Param={el.attrib.get('Param')!r} for a bare ForEach "
+        f"over a parameter list; that iteration model is not built. Reachable "
+        f"only from Blanket rating, and only at editions before 20230801 V04",
+        "§12.1", ip.where(el))

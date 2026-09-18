@@ -1,0 +1,351 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>A worked scenario — how six coverages become one policy premium</title>
+<style>
+:root{--bg:#fbfbfd;--fg:#1d1d20;--mut:#63636b;--line:#e3e3e8;--accent:#1f3864;
+--code-bg:#f4f4f7;--tbl-head:#1f3864;--mark:#fff3cd;--del:#a11}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+background:var(--bg);color:var(--fg)}
+header{background:var(--accent);color:#fff;padding:22px 32px 0}
+header h1{margin:0 0 4px;font-size:20px;font-weight:650;letter-spacing:-.01em}
+header .sub{opacity:.72;font-size:13px;margin-bottom:16px}
+nav{display:flex;gap:4px}
+nav button{appearance:none;border:0;background:rgba(255,255,255,.10);color:#fff;cursor:pointer;
+font:inherit;font-size:14px;padding:10px 18px;border-radius:7px 7px 0 0;opacity:.75}
+nav button:hover{opacity:1;background:rgba(255,255,255,.18)}
+nav button[aria-selected="true"]{background:var(--bg);color:var(--accent);font-weight:640;opacity:1}
+.wrap{display:grid;grid-template-columns:250px minmax(0,1fr);gap:34px;
+max-width:1360px;margin:0 auto;padding:30px 32px 90px}
+aside{position:sticky;top:22px;align-self:start;max-height:calc(100vh - 50px);overflow:auto;
+font-size:13.5px;border-left:2px solid var(--line);padding-left:14px}
+aside .lbl{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--mut);
+font-weight:700;margin-bottom:9px}
+aside ul{list-style:none;margin:0;padding:0}
+aside ul ul{padding-left:13px}
+aside a{color:var(--mut);text-decoration:none;display:block;padding:3px 0;line-height:1.4}
+aside a:hover{color:var(--accent)}
+article{min-width:0;background:#fff;border:1px solid var(--line);border-radius:11px;padding:34px 42px 54px}
+article h1{font-size:27px;margin:0 0 8px;letter-spacing:-.02em}
+article h2{font-size:20px;margin:38px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--line);
+letter-spacing:-.01em}
+article h3{font-size:16.5px;margin:26px 0 9px}
+article h4{font-size:15px;margin:20px 0 7px;color:var(--mut)}
+p,li{max-width:74ch}
+code{background:var(--code-bg);padding:.13em .38em;border-radius:4px;
+font:13.5px/1.5 "SF Mono",Consolas,"Liberation Mono",Menlo,monospace}
+pre{background:var(--code-bg);border:1px solid var(--line);border-radius:8px;padding:14px 17px;
+overflow-x:auto}
+pre code{background:none;padding:0;font-size:13px;line-height:1.55}
+table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14.2px;display:block;overflow-x:auto}
+th{background:var(--tbl-head);color:#fff;text-align:left;font-weight:600;padding:9px 12px;
+white-space:nowrap}
+td{border-bottom:1px solid var(--line);padding:9px 12px;vertical-align:top}
+tr:nth-child(even) td{background:#fafafc}
+blockquote{margin:16px 0;padding:12px 18px;background:#f6f8fc;border-left:4px solid var(--accent);
+border-radius:0 7px 7px 0}
+blockquote p{margin:.45em 0}
+del{color:var(--del);text-decoration-thickness:1px}
+hr{border:0;border-top:1px solid var(--line);margin:30px 0}
+a{color:var(--accent)}
+.meta{font-size:12.5px;color:var(--mut);margin:0 0 22px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.panel[hidden]{display:none}
+@media(max-width:1000px){.wrap{grid-template-columns:1fr;padding:20px}aside{display:none}
+article{padding:24px 20px 40px}}
+@media print{header,aside,nav{display:none}.wrap{display:block;padding:0}
+article{border:0;padding:0}.panel[hidden]{display:block!important}}
+
+.wrap{display:block;max-width:60rem;margin:0 auto;padding:0 1.5rem 5rem}
+article{max-width:none}
+.toc-box{border:1px solid var(--line);border-radius:8px;padding:1rem 1.25rem;
+margin:1.5rem 0 2.5rem;background:#fff}
+.toc-box .lbl{font-weight:600;color:var(--accent);margin-bottom:.4rem}
+.toc-box ul{margin:.2rem 0;padding-left:1.1rem}
+.toc-box>ul>li{margin:.15rem 0}
+h2{margin-top:2.6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h1+p+h2,h2:first-of-type{border-top:none}
+table{font-size:.95em}
+@media print{header{position:static}.toc-box{break-inside:avoid}}
+</style></head><body>
+<header><h1>A worked scenario — how six coverages become one policy premium</h1>
+<div class="sub">General Liability · Prem/Ops, Products, Liquor, Med Pay $10,000, TRIA accepted, and the minimum-premium slot ISO leaves for you</div></header>
+<div class="wrap"><article>
+<p class="meta">Source: <code>GL_Algorithm/GL_Scenario_Premium_Buildup.md</code> &nbsp;·&nbsp; 1,230 words &nbsp;·&nbsp; rendered 2026-09-17</p>
+<div class="toc-box"><div class="lbl">On this page</div><div class="toc">
+<ul>
+<li><a href="#1-first-correction-that-is-five-premium-bearing-things-not-six">1. First correction: that is five premium-bearing things, not six</a></li>
+<li><a href="#2-the-five-premiums-and-where-each-is-computed">2. The five premiums, and where each is computed</a></li>
+<li><a href="#3-terrorism-is-a-percentage-of-the-other-premiums">3. Terrorism is a percentage of the other premiums</a></li>
+<li><a href="#4-minimum-premium-a-slot-iso-leaves-for-you-to-fill">4. Minimum premium — a slot ISO leaves for you to fill</a></li>
+<li><a href="#5-how-it-all-comes-together">5. How it all comes together</a></li>
+<li><a href="#6-what-is-computed-and-what-you-must-supply">6. What is computed, and what you must supply</a></li>
+<li><a href="#7-limits">7. Limits</a></li>
+</ul>
+</div>
+</div>
+<h1 id="a-worked-scenario-how-six-coverages-become-one-policy-premium">A worked scenario — how six coverages become one policy premium</h1>
+<p><strong>The risk.</strong> One location, one classification (Mercantile), written on the
+<em>Premises/Operations and Products/Completed Operations</em> subline, with:</p>
+<ul>
+<li><strong>Premises/Operations</strong> coverage</li>
+<li><strong>Products/Completed Operations</strong> coverage</li>
+<li><strong>Liquor Liability</strong></li>
+<li><strong>Medical Payments at $10,000</strong></li>
+<li><strong>Terrorism (TRIA) accepted</strong></li>
+<li><strong>Minimum premiums</strong> in play</li>
+</ul>
+<p><strong>Source:</strong> <code>GL CW 20270401 V01</code>. <strong>Companions:</strong> <code>GL_Premium_Map.md</code> (the whole line),
+<code>GL_PremOps_Prods_Premium_Trace.md</code> (the two core coverages in detail),
+<code>GL_Premium_Tree.html</code> (navigable).</p>
+<p><strong>Written:</strong> 2026-09-17.</p>
+<hr />
+<h2 id="1-first-correction-that-is-five-premium-bearing-things-not-six">1. First correction: that is five premium-bearing things, not six</h2>
+<p><strong>Medical Payments does not produce a premium.</strong> There is a <code>GeneralLiabilityMedPayCoverage</code>
+record, and it does sit in the roll-up — but its rule file contains only <code>InitializeRuleSet</code>,
+<code>CalculateTotalPremium</code> and <code>ErcProcess</code>. <strong>No <code>SetPremium</code>, no rating logic of any kind.</strong> The
+one thing that ever writes its <code>Premium</code> is a line in <code>ErcProcess</code> that forces it to <code>0.0</code> when
+the coverage is off.</p>
+<p>Medical Payments is priced as a <strong>factor inside the Premises/Operations rate</strong>:</p>
+<pre><code>if MedPayCoverage/Limit = &quot;5,000&quot;:            MedicalPaymentsFactor = 1.0     (the included limit)
+otherwise:                                     MedicalPaymentsFactor = LookupIncreasedMedPayLimitFactor(
+                                                    State|CW, ClassificationType, MedPayLimit )
+</code></pre>
+<p>and then, in <code>SetFinalILF</code> on the Prem/Ops coverage:</p>
+<pre><code>FinalILF = round( (CSLILF + MedicalPaymentsFactor − 1) − FinalDeductibleFactor )
+</code></pre>
+<p>At <strong>$10,000, Mercantile</strong>, the countrywide factor is <strong>1.007</strong> — so Med Pay adds <strong>0.007 to
+the ILF</strong>, roughly a 0.7% uplift on the Premises/Operations rate and nothing else. Contracting
+or Servicing pays 1.011 for the same limit.</p>
+<table>
+<thead>
+<tr>
+<th>Increased Med Pay limit</th>
+<th>Most classification types</th>
+<th>Contracting or Servicing</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>10,000</td>
+<td>1.007</td>
+<td>1.011</td>
+</tr>
+<tr>
+<td>15,000</td>
+<td>1.011</td>
+<td>1.017</td>
+</tr>
+<tr>
+<td>20,000</td>
+<td>1.014</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Consequences worth knowing.</strong> Med Pay never appears as a line item. It touches
+<strong>Premises/Operations only</strong> — not Products, not Liquor. And because it lands inside <code>FinalILF</code>,
+it is inside the terrorism base too (§4).</p>
+<hr />
+<h2 id="2-the-five-premiums-and-where-each-is-computed">2. The five premiums, and where each is computed</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Coverage</th>
+<th>DataDef group</th>
+<th>Depth</th>
+<th>Computed by</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Premises/Operations</td>
+<td><code>GeneralLiabilityClassificationPremOpsCoverage</code></td>
+<td>3</td>
+<td><code>SetPremium</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td>Products/Completed Ops</td>
+<td><code>GeneralLiabilityClassificationProdsCompldOpsCoverage</code></td>
+<td>3</td>
+<td><code>SetPremium</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td>Liquor Liability</td>
+<td><code>GeneralLiabilityClassificationLiquorCoverage</code></td>
+<td>3</td>
+<td><code>SetPremium</code></td>
+</tr>
+<tr>
+<td>4</td>
+<td>Terrorism — Prem/Ops</td>
+<td><code>GeneralLiabilityTerrorismPremOpsCoverage</code></td>
+<td><strong>4</strong></td>
+<td><code>SetPremium</code></td>
+</tr>
+<tr>
+<td>5</td>
+<td>Terrorism — Prods/CompldOps</td>
+<td><code>GeneralLiabilityTerrorismProdsCompldOpsCoverage</code></td>
+<td><strong>4</strong></td>
+<td><code>SetPremium</code></td>
+</tr>
+<tr>
+<td>(5b)</td>
+<td>Terrorism — all other sublines</td>
+<td><code>GeneralLiabilityTerrorismAllOtherSublineCoverage</code></td>
+<td><strong>4</strong></td>
+<td><code>SetPremium</code> — this is where <strong>Liquor's</strong> terrorism charge lands</td>
+</tr>
+</tbody>
+</table>
+<p>Coverages 1–3 are siblings under the classification. The terrorism coverages sit one level
+deeper, under a <code>GeneralLiabilityTerrorism</code> record that is itself a child of the classification.</p>
+<h3 id="13-share-one-formula">1–3 share one formula</h3>
+<pre><code>BaseRate  = LossCost × LCM
+FinalRate = BaseRate × FinalILF × SizeOfRisk × PackageMod
+                     × ExperienceMod × ExpenseMod × ModToUse
+Premium   = round( FinalRate × Exposure / 1000 , 0 )
+</code></pre>
+<p>Only the field names differ — <code>PremOpsCovExposure</code>, <code>ProdsCompldOpsCovExposure</code>,
+<code>LiquorExposure</code>. Liquor has no size-of-risk term.</p>
+<blockquote>
+<p><strong>The $1 floor.</strong> If the arithmetic gives 0 while exposure is above 0, <code>Premium</code> is forced to
+<code>1.0</code>. Zero is reserved for "not covered".</p>
+</blockquote>
+<hr />
+<h2 id="3-terrorism-is-a-percentage-of-the-other-premiums">3. Terrorism is a percentage of the other premiums</h2>
+<p>This is the part that makes the scenario order-dependent.</p>
+<p><code>SetClassCoveragePremium</code> on the terrorism coverage <strong>sums the premiums of the underlying
+coverages for that subline</strong> — Prem/Ops, Loss of Electronic Data, Cyber Incident Liability and
+the rest — then:</p>
+<pre><code>Premium = ClassCoveragePremium × TerrorismILF × exposure-class factors
+                                × NuclearBiologicalChemicalRadiological factor
+</code></pre>
+<p><strong>So terrorism cannot be computed until coverages 1–3 are final.</strong> It is a charge <em>on</em> the
+premium, not a parallel one. Three consequences:</p>
+<ol>
+<li><strong>The Med Pay uplift is inside the terrorism base.</strong> A higher Med Pay limit raises Prem/Ops,
+   which raises <code>ClassCoveragePremium</code>, which raises the terrorism charge. The $10,000 election
+   costs slightly more than the 0.7% it appears to.</li>
+<li><strong>Liquor's terrorism goes to a different record</strong> — <code>…TerrorismAllOtherSublineCoverage</code>,
+   not the Prem/Ops one.</li>
+<li><strong><code>TerrorismCoverage</code> must be accepted at policy level</strong> — <code>SetPremium</code> reads it seven
+   levels up. Declined, the charge is zero and the record still exists.</li>
+</ol>
+<hr />
+<h2 id="4-minimum-premium-a-slot-iso-leaves-for-you-to-fill">4. Minimum premium — a slot ISO leaves for you to fill</h2>
+<p>Each of the three coverages owns a minimum-premium lookup — <code>LookupPremOpsMinPremium</code>,
+<code>LookupProdsCompldOpsMinPremium</code>, <code>LookupLiquorMinPremium</code>, plus Prem/Ops's
+<code>LookupSpecialCombinedMinPremium</code>. And there are three dedicated records at <strong>policy level</strong>:</p>
+<ul>
+<li><code>GeneralLiabilityPremOpsPremiumToReachMinCoverage</code></li>
+<li><code>GeneralLiabilityProdsCompldOpsPremiumToReachMinCoverage</code></li>
+<li><code>GeneralLiabilityLiquorPremiumToReachMinCoverage</code></li>
+</ul>
+<p>Each is a leaf at depth 1 that <strong>is summed into the account total</strong>.</p>
+<p><strong>But nothing computes what goes in them.</strong> Their rule files hold only <code>InitializeRuleSet</code>,
+<code>CalculateTotalPremium</code>, <code>SetCoverageOnPolicyIndicator</code> and <code>ErcProcess</code> — no <code>SetPremium</code>. The
+only write to <code>Premium</code> forces it to <code>0.0</code> when the coverage is off. The related datadefs
+<code>PremiumToReachMin</code> and <code>TotPremiumPriorToMin</code> are, corpus-wide, <strong>written 0 times and read 0
+times</strong>.</p>
+<blockquote>
+<p><strong>So ISO gives you the minimum premium, a place to put the shortfall, and a roll-up that will
+add it — but not the comparison in between.</strong> Deciding that the premium fell short, computing
+the top-up and supplying it is the caller's job. A submission that ignores these records
+produces a total with no minimum applied, and nothing flags it.</p>
+</blockquote>
+<hr />
+<h2 id="5-how-it-all-comes-together">5. How it all comes together</h2>
+<pre><code>                                        GeneralLiability.ErcCalculatedTotalPremium   ← POLICY TOTAL
+                                                      ▲
+        ┌─────────────────────────────────────────────┼──────────────────────────────────┐
+        │                                             │                                  │
+  PremOpsPremiumToReachMin              GeneralLiabilityLocation                 (400+ other
+  ProdsCompldOpsPremiumToReachMin       .ErcCalculatedTotalPremium                policy-level
+  LiquorPremiumToReachMin                          ▲  depth 1                     endorsements)
+  — depth 1, caller-supplied —                     │
+                                       GeneralLiabilityClassification
+                                          .ErcCalculatedTotalPremium
+                                                   ▲  depth 2
+        ┌──────────────┬───────────────┬───────────┴──────────────┐
+        │              │               │                          │
+   Prem/Ops        Prods/CompldOps   Liquor              GeneralLiabilityTerrorism
+   Premium         Premium           Premium                .ErcCalculatedTotalPremium
+   depth 3         depth 3           depth 3                      ▲  depth 3
+   ▲                                                   ┌──────────┼──────────┐
+   │                                              Terr PremOps  Terr Prods  Terr AllOther
+   └── Med Pay $10,000 enters here,               depth 4       depth 4     depth 4
+       as +0.007 on FinalILF                           (each = ClassCoveragePremium × factors)
+</code></pre>
+<p><strong>Order of computation:</strong></p>
+<ol>
+<li>Rate and price Prem/Ops, Products and Liquor — Med Pay's 1.007 is inside Prem/Ops's ILF.</li>
+<li>Sum those into <code>ClassCoveragePremium</code> per subline; compute the three terrorism charges.</li>
+<li>Roll the terrorism record up into the classification alongside 1–3.</li>
+<li>Classification → location → policy.</li>
+<li><strong>Separately</strong>, the caller compares each subline's premium against its minimum and puts any
+   shortfall into the matching <code>…PremiumToReachMinCoverage</code> record at policy level, which the
+   policy total adds directly.</li>
+</ol>
+<p><strong>Every contribution passes the same gate:</strong> a coverage's premium counts only when
+<code>PremiumIndicator = 1</code> <strong>and</strong> <code>Premium ≠ 0</code>. A coverage priced at zero and a coverage never
+bought are indistinguishable in the total.</p>
+<hr />
+<h2 id="6-what-is-computed-and-what-you-must-supply">6. What is computed, and what you must supply</h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Computed by ISO's rules</th>
+<th>Supplied by the caller</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Prem/Ops, Products, Liquor premium</td>
+<td>✔</td>
+<td>exposures, class code, limits, deductible</td>
+</tr>
+<tr>
+<td>Med Pay charge</td>
+<td>✔ (as an ILF factor)</td>
+<td>the Med Pay <strong>limit</strong></td>
+</tr>
+<tr>
+<td>Terrorism premium</td>
+<td>✔</td>
+<td><code>TerrorismCoverage</code> acceptance</td>
+</tr>
+<tr>
+<td>Package / experience / expense mods</td>
+<td>—</td>
+<td>all four, at policy level</td>
+</tr>
+<tr>
+<td>Loss cost multiplier</td>
+<td>—</td>
+<td>the carrier's LCM</td>
+</tr>
+<tr>
+<td><strong>Minimum premium top-up</strong></td>
+<td><strong>the minimum only</strong></td>
+<td><strong>the comparison and the top-up amount</strong></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="7-limits">7. Limits</h2>
+<ul>
+<li><strong>Countrywide.</strong> Six GL states rewrite <code>SetPremium</code>, all of them terrorism — so a state run
+  of this scenario may price terrorism differently. Nothing else in the scenario is
+  state-rewritten.</li>
+<li><strong>Structural.</strong> Read from rule XML; nothing was rated. No dollar figures are asserted beyond
+  the filed Med Pay factors.</li>
+<li><strong>Conditions flattened.</strong> Each rule's branches are summarised; a live rating takes one path.</li>
+</ul>
+</article></div></body></html>

@@ -87,7 +87,7 @@ completeness, since a couple of them turned out to matter (see the Unmanned Airc
 | Building / Structure | `CommercialPropertyStructure` | `CauseOfLoss_Building_RatingAlgorithms.md` | `BasicGroupI_ERC_Tables.md` | Yes — 4 forms |
 | Personal Property | `CommercialPropertyPersonalProperty` | `CauseOfLoss_PersonalProperty_RatingAlgorithms.md` | `PersonalProperty_ERC_Tables.md` | Yes — 4 forms |
 | Special Class | `CommercialPropertySpecialClass` | `CauseOfLoss_SpecialClass_RatingAlgorithms.md` | `SpecialClass_ERC_Tables.md` | Yes — 4 forms |
-| Business Income | `CommercialPropertyBusinessIncome` | `CauseOfLoss_BusinessIncome_RatingAlgorithms.md` | `BusinessIncome_ERC_Tables.md` | Yes — 5 forms (incl. Earthquake) |
+| Business Income | `CommercialPropertyBusinessIncome` | `CauseOfLoss_BusinessIncome_RatingAlgorithms.md` **+ 6 granular sub-docs, 2026-09-11** (`Excel_Rater_BusinessIncome_BasicGroupI/II/Broad/Special.html`, `...FactorDecisionTree.html`, `...AlgorithmGrid_AllForms.html`) | `BusinessIncome_ERC_Tables.md` **+ 9 Supporting Tables workbooks** (`Spreadsheet_Rater\CF\Supporting Tables\`, all-8-batch per-state checked) | Yes — 5 forms (incl. Earthquake) |
 | Special Class Business Income | `CommercialPropertySpecialClassBusnIncome` | `CauseOfLoss_SpecialClassBusinessIncome_RatingAlgorithms.md` | `SpecialClassBusinessIncome_ERC_Tables.md` | Yes — 5 forms (incl. Earthquake) |
 
 These are the only five families in the 97 with a *master* `Set*RatesAndFactors`-orchestrator file
@@ -95,6 +95,31 @@ These are the only five families in the 97 with a *master* `Set*RatesAndFactors`
 directory — exactly these five files, no others). Every remaining family below is an endorsement or
 add-on that modifies or supplements one of these five rather than introducing a sixth independent base
 coverage.
+
+> **Correction, 2026-09-11 — a stale cross-reference caught while re-checking this doc.**
+> `CauseOfLoss_BusinessIncome_RatingAlgorithms.md` (this same coverage's own algorithm doc, one row up)
+> contains a line reading "Special Class Business Income (existence only — not traced in depth)." That
+> line is stale — `CauseOfLoss_SpecialClassBusinessIncome_RatingAlgorithms.md` is a real, complete
+> 53KB document, same 2026-08-19 build date, likely written *after* that note and never looped back to
+> remove it. Treat the Business Income doc's own "not traced" comment as outdated; this table's "Yes"
+> is correct. Not fixed in place in that doc as part of this pass — flagged here so a future reader
+> doesn't get confused by the contradiction.
+
+> **A second correction, same pass — "Rating basis" is a real cross-cutting dimension this document
+> doesn't track at all.** Everything above and below is organized by *coverage/endorsement family*.
+> Orthogonal to that: every core coverage in Part A supports (or is supposed to support) multiple
+> **rating bases** — Class Rated, Specific Rated, Tentative Rated, and Blanket Rated, plus Agreed Value
+> as a valuation-basis overlay (already tracked as its own family, B1). None of these are separately
+> itemized as their own rows anywhere in this document, because they're not separate ERC coverage
+> families — they're branches *inside* each family's own rate build-up. A 2026-09-11 live-rater audit
+> (`Excel_Rater_AllRatingPaths_BuildStatus.html`, `BUILD-LOG.md` Entries 28-29) found **Specific/
+> Tentative rating confirmed unbuilt in `CFRater1.01.xlsb` for every form, every coverage** — a single
+> project-wide gap inside otherwise-complete Class-rated paths, not a documentation gap in this
+> inventory (the *algorithm* for Specific/Tentative is documented, e.g. `Excel_Rater_BasicGroupI.md` §9
+> — it's the workbook build that's missing). Blanket Rated is a similar story: every algorithm doc
+> written so far explicitly flags its own blanket-rated branch as "not built this pass." Worth adding a
+> dedicated "rating basis" cross-reference table to this document in a future pass rather than relying
+> on readers to notice the pattern across many separate docs.
 
 ---
 
@@ -327,21 +352,183 @@ either way — flagged, not asserted): `CommercialPropertyFloodCovEndtBlanketRat
 
 ---
 
+## Part D — the ~146 remainder, now named (2026-09-11)
+
+Reproduced the corrected sweep's exact method (`grep -lE '"SetPremium"' *.xml` across the whole `Rules`
+directory — **546 files**, confirmed identical to the original count) and re-ran the same
+suffix-stripping normalization independently, without access to the original script. Result: **230
+distinct normalized families** total (vs. the original pass's 243 — expected drift, different regex,
+same "approximate boundaries" caveat the Method section already carries). Diffed against every family
+name already itemized in Parts A/B/B11/C above: **145 did not match**, almost exactly the "~146"
+estimate this document has carried since 2026-08-19. Two of those are normalization artifacts (`Structure`
+/ `StructureBuilding`, over-stripped duplicates of the already-documented Building family in Part A,
+excluded below) — **143 genuinely new family names**, grouped by theme the same way Parts B1-B10 are.
+
+**Caveat carried forward unchanged from the Method section: these are names, not traced coverages.**
+Nobody has opened any of these 143 rule files to confirm what they actually price or how. A handful
+below are flagged as *likely* already conceptually covered by an existing Part B row under a looser
+name (e.g. `CivilAuthorityIncreasedCoveragePeriodRadius` vs. B2's "`CivilAuthorityIncreasedCoveragePeriod`
+(+ `Radius` variant)") — kept as their own lines here because they're real, distinct file-level names the
+diff surfaced, not because they're confirmed to be separate coverages.
+
+### D1 — Cannabis Exclusion (9)
+
+Plain and "With Hemp Exception" variants, each across Building/Business Income/Personal Property/Special
+Class Business Income (Special Class itself uses a bare name with no coverage suffix).
+
+`CannabisExclusionBuilding`, `CannabisExclusionBusinessIncome`, `CannabisExclusionPersonalProperty`,
+`CannabisExclusionSpecialClassBusinessIncome`, `CannabisExclusionWithHempException` (Special Class),
+`CannabisExclusionWithHempExceptionBuilding`, `CannabisExclusionWithHempExceptionBusinessIncome`,
+`CannabisExclusionWithHempExceptionPersonalProperty`,
+`CannabisExclusionWithHempExceptionSpecialClassBusinessIncome`
+
+### D2 — Increased Cost Of Loss And Related Expenses For Green Upgrades Endorsement (21)
+
+The single largest newly-named cluster — one file per coverage (Building/Business Income/Personal
+Property/Special Class/Special Class Business Income) per cause-of-loss form (BGI/BGII/Broad/Special/
+Earthquake), 5×5 minus 4 not filed = 21 files, all one family conceptually, listed as the raw
+coverage×form matrix since no single collapsed name captures it cleanly:
+
+`IncreasedCostOfLossAndRelatedExpensesForGreenUpgradesEndtBldg{BasicGroupI,BasicGroupII,Broad,Special,Earthquake}Cov`,
+`...BusInc{same 5}Cov`, `...PersProp{same 5}Cov`, `...SpecialClass{same 5}Cov`,
+`...SpclClassBusnIncome{same 5}Cov`
+
+### D3 — Increase In Rebuilding Expenses Following Disaster (10)
+
+Plain and Special-Class variant, each across BGI/BGII/Broad/Special/Earthquake:
+
+`IncreaseInRebuildingExpensesFollowingDisaster{BasicGroupI,BasicGroupII,Broad,Special,Earthquake}Cov`,
+`IncreaseInRebuildingExpensesFollowingDisasterSpecialClass{same 5}Cov`
+
+### D4 — Scheduled / Unscheduled Building Property, Tenants Policy (20)
+
+Glass vs. Other-Than-Glass, Scheduled vs. Unscheduled, each across BGI/BGII/Broad/Special/Earthquake —
+a real 2×2×5 matrix, no coverage this size was previously itemized in this document:
+
+`ScheduledBuildingPropertyTenantsPolicyBuildingGlass{5 COL forms}Cov`,
+`ScheduledBuildingPropertyTenantsPolicyDetailBuildingPropertyOtherThanGlass{5 COL forms}Cov`,
+`UnscheduledBuildingPropertyTenantsPolicyBuildingGlass{5 COL forms}Cov`,
+`UnscheduledBuildingPropertyTenantsPolicyBuildingPropertyOtherThanGlass{5 COL forms}Cov`
+
+### D5 — Leased Property Detail (10)
+
+Plain and Agreed Value variant, each across BGI/BGII/Broad/Special/Earthquake:
+
+`LeasedPropertyDetail{5 COL forms}Cov`, `LeasedPropertyDetailAgreedValue{5 COL forms}Cov`
+
+### D6 — Ordinance or Law, Tenants' Interest in Improvements and Betterments — file-level variants (12)
+
+**Cross-reference, not a new coverage:** Part B3 above already lists this family conceptually
+(`OrdinanceOrLawCoverageForTenantsInterestInImprovementsAndBettermentsCovA` "(+ BGI/BGII/EQ variants)"
+etc.). This sweep's normalization didn't collapse the BGI/BGII/EQ suffix on these four specific file
+names the way it did elsewhere, surfacing the literal 4 coverages × 3 forms = 12 file names individually.
+Listed here for completeness of the file-level count, not as 12 additional undocumented families beyond
+what B3 already flags: `OrdinanceOrLawCoverageForTenantsInterestInImprovementsAndBettermentsCov{A,B,C,BandC}{BGI,BGII,EQ}`.
+
+### D7 — Specified Business Personal Property Temporarily Away From Premises (5)
+
+`SpecifiedBusnPrsnlPropTempAwayFromPremisesDetail{5 COL forms}Cov`
+
+### D8 — Off-Premises Interruption of Business — Vehicles and Mobile Equipment (4)
+
+Collision vs. Other-Than-Collision, plain and Special Class Business Income variant — first appeared in
+chat as a Form Pages entry (see BUILD-LOG.md Entry 28's endorsement list), now confirmed to have its own
+`SetPremium` rating definition, not just a form-page listing:
+
+`OffPremInterruptionOfBusnVehsMobileEquipmtBusnIncDetail{Collision,OTC}`,
+`OffPremInterruptionOfBusnVehsMobileEquipmtSpclClassBusnIncomeDetail{Collision,OTC}`
+
+### D9 — Food Contamination (4)
+
+Additional Advertising vs. Food Only, plain and Special Class Business Income variant:
+
+`FoodContaminationBusinessInterruptionAndExtraExpense{AddlAdv,FoodOnly}Cov`,
+`FoodContaminationBusinessInterruptionAndExtraExpenseSpclClassBusnIncome{AddlAdv,FoodOnly}Cov`
+
+### D10 — Limited Coverage For Unmanned Aircraft — Drone / EQ split (10)
+
+**Refines, doesn't replace, the existing Part C exception.** Part C above already flags this family as
+"5 attaching-coverage variants, own rate chain" (Building/Business Income/Personal Property/Special
+Class/Special Class Business Income). This sweep found each of those 5 actually splits into two —
+a Drone sub-form and an EQ sub-form — 10 file-level variants, not 5. Correct Part C's count in a future
+pass: `LimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoverage{Detail,BusnIncomeDetail,PrsnlPropDetail,SpecialClassDetail,SpclClassBusnIncomeDtl}{Drone,EQ}Cov`
+
+### D11 — Equipment Breakdown, additional variants (4)
+
+Part B2 already itemizes `EquipmentBreakdownCauseOfLossBusnInc` (+ `WaitingPeriod` variant) for Business
+Income. These are Building-side variants not previously listed:
+`EquipmentBreakdownCauseOfLossBldg{AmmoniaContamination,EB,HazardousSubstanceOtherThanAmmonia}Cov`,
+plus confirming Business Income's own `EquipmentBreakdownCauseOfLossBusnIncWaitingPeriod` file exists
+distinctly from the plain `EquipmentBreakdownCauseOfLossBusnInc` B2 already names.
+
+### D12 — Radioactive Contamination / Molten Material, standalone (2 families, 10 files)
+
+Part B7 already itemizes `VacancyPermitRadioactiveContamination` and `VacancyPermitMoltenMaterial` — the
+Vacancy-Permit-gated versions. These are the general, non-vacancy-gated versions, each filed once per
+attaching coverage (5 files apiece): `RadioactiveContamination`, `MoltenMaterial`.
+
+### D13 — Personal Property Special Cause-of-Loss, scheduled valuable-item classes (4)
+
+`PersonalPropertySpecialCOLFursFurGarmentsAndGarmentsTrimmedWithFur`,
+`PersonalPropertySpecialCOLJewelryWatchesPearlsBullionGoldSilverPlatinumAndOtherPreciousMetals`,
+`PersonalPropertySpecialCOLPatternsDiesMoldsAndForms`,
+`PersonalPropertySpecialCOLStampsTicketsAndLettersOfCredit`
+
+### D14 — Small remainder families (17)
+
+`PierAndWharfAdditionalCoveredCausesOfLoss` (+ `Struct` variant, 2 families),
+`ElectronicCommerceLossOfBusinessIncomeCov`, `ElectronicCommerceLossOfDataCov` (2),
+`ZzDisclosureOfPremiumEstimatedPremiumCertifiedActsTerrorismPursuantTerrorismAct2002`,
+`ZzDisclosureOfPremiumThrough123105CertifiedActsTerrorismPursuantTerrorismAct2002`,
+`ZzDisclosurePursuantToTerrorismRiskInsAct2002` (3 — terrorism/TRIA disclosure, likely $0-premium
+administrative records rather than real rating, unconfirmed),
+`BusnIncomeFromDependentPropertiesLimitedInternationalCov`,
+`ExtraExpenseFromDependentPropertiesLimitedInternationalCov` (2 — International sub-variant of the
+already-itemized B2 Dependent Properties family), `PropInProcessOfMfrByOthersLimitedInternationalCov`,
+`AdditionalCoveredPropertyDetail` (+ `SpecialClassDetail` variant, 2), `LocationFireDepartmentCharge`,
+`LocationNewlyAcquiredLocationTimeElement`, `MortgageholdersErrorsAndOmissionsCoverageForm`,
+`NewlyAcquiredOrConstructedPropertyIncreasedLimit`, `OccupClassTemporarilyInPortableStorageUnits`,
+`StructureBuildersRiskBuildingMaterialsAndSuppliesOfOthers`,
+`TheftOfBuildingMaterialsAndSuppliesOtherThanBuildersRisk`, `ValueReportingFormGeneralInformation`.
+Two entries here (`CivilAuthorityIncreasedCoveragePeriodRadius`,
+`ExtraExpenseFromDependentPropertiesSpclClassBusnIncomeDetail`) are likely near-duplicates of existing
+B2 rows under a slightly different derived name — flagged, not removed, pending a closer read.
+
+---
+
+## Correction, 2026-09-11 — Business Income's Earthquake chain was already documented; a BUILD-LOG entry overstated the gap
+
+`BUILD-LOG.md` Entry 28 (2026-09-11) described Business Income's Earthquake rate chain as "confirmed to
+exist... not opened in the rater" and grouped it with genuinely untraced items. That's accurate about
+the **live-rater build status** (never checked against `CFRater1.01.xlsb`) but overstates the
+**documentation** gap — `CauseOfLoss_BusinessIncome_RatingAlgorithms.md` §"Earthquake — rate build-up"
+and §"Earthquake — premium: the Agreed Value asymmetry" (lines 528-642) already trace the full 8-step
+chain, the Agreed-Value-only premium mechanism, and the surcharge shape shared with Extended Period of
+Indemnity — read directly, in detail, during this same session. What's genuinely still open: (1) the
+**standalone Earthquake endorsement** that attaches EQ coverage in the first place (Part B11 above — a
+different question from "given EQ coverage exists, how does the rate compute," never traced); (2)
+whether any of this is **built in the live rater** (unchecked); (3) the same level of standalone
+HTML/granular treatment Basic Group I/II/Broad/Special got this session (not done for Earthquake).
+Recorded here so a future pass trusts this document's "documented" column over a session summary's
+looser framing.
+
+---
+
 ## What's still not itemized
 
-The corrected sweep found **243 families**, not 97. This document itemizes, by name, the original 97
-(Parts A/B1–B10) plus Earthquake and Flood (Part B11) — **roughly 146 families surfaced by the corrected,
-unrestricted sweep are not yet individually listed here.** A sample from the corrected family list, to
-give a sense of what's in that remainder without claiming to have categorized it: `CannabisExclusion`
-(and a `WithHempException` variant, each × 5 attaching coverages), `ChangesFungusWetRotDryRotBacteria`,
-`DiscretionaryPayrollExpense`, `IncreasedCostOfLossAndRelatedExpensesForGreenUpgradesEndt`,
-`IncreaseInRebuildingExpensesFollowingDisaster`, `LeasedPropertyDetail`,
-`ScheduledBuildingPropertyTenantsPolicyBuildingGlass`, `SpecifiedBusnPrsnlPropTempAwayFromPremisesDetail`,
-`BuildersRiskCollapseDuringConstruction`, `BuildersRiskTheftOfBuildingMaterialsFixturesMachineryEquipment`,
-`BusinessIncomeAndOrExtraExpnCovForY2KComputerRelatedAndOtherElectronicProblems` (yes, still filed),
-`BusnPrsnlPropLimitedInternationalCov`. **Finishing this itemization properly is the next step**, not
-done in this pass — the full corrected, normalized list is reproducible with the command in the Method
-section's correction note above, run without the `*CoverageRules.Rule.xml` restriction.
+**Update 2026-09-11: this section is now resolved — see Part D above.** The corrected sweep found
+**~243 families**, not 97; as of the original 2026-08-19 pass, ~146 of those were not individually named
+anywhere in this document. Part D (added 2026-09-11) names 143 of them, independently re-deriving the
+sweep and diffing against everything already itemized above. A few names from the original sample list
+here turned out to belong to families already covered elsewhere once actually checked
+(`DiscretionaryPayrollExpense`, `ChangesFungusWetRotDryRotBacteria`,
+`BuildersRiskCollapseDuringConstruction`,
+`BuildersRiskTheftOfBuildingMaterialsFixturesMachineryEquipment`,
+`BusinessIncomeAndOrExtraExpnCovForY2KComputerRelatedAndOtherElectronicProblems`,
+`BusnPrsnlPropLimitedInternationalCov` did not appear in Part D's diff — likely already matched against
+an existing Part B row by the stricter normalization used this pass; not independently re-verified,
+flagged for a future pass rather than asserted either way). **Naming is done. Tracing is not** — every
+family in Part D is still a name, not a read rule file.
 
 ---
 
@@ -350,17 +537,17 @@ section's correction note above, run without the `*CoverageRules.Rule.xml` restr
 | | Count |
 |---|---|
 | Core coverages, fully documented (doc + tables + diagrams) | 5 |
-| Endorsement/rider families individually itemized in this document, not yet documented | 93 (91 from the original sweep + Earthquake + Flood) |
+| Endorsement/rider families individually itemized in this document, not yet documented (Parts B1-B10) | 93 (91 from the original sweep + Earthquake + Flood) |
 | Endorsement families partially covered (mechanism described inside a parent doc, not independently traced) | 3 (`BusinessIncomeAgreedVal`, `SpecialClassBusnIncomeAgreedVal`, `BusinessIncomeExtendedPeriodOfIndemnityCoverage`/`SpecialClassBusnIncomeExtendedPeriodOfIndemnityCoverage` treated as one shared caveat) |
 | Attach-only dispatch files (excluded from the rating-definition count) | 27+ files → 0 additional coverages, except the Unmanned Aircraft exception above |
-| **Families surfaced by the corrected sweep but not yet individually itemized** | **~146** — see "What's still not itemized" above |
-| **Total distinct coverage/endorsement families in the package (corrected count)** | **243** |
+| **Remainder families, now individually named (Part D, added 2026-09-11)** | **143** — named, not traced; see Part D above |
+| **Total distinct coverage/endorsement families in the package** | **~241-243** (5 + 93 + 143, ±2 for the normalization-artifact/near-duplicate caveats noted in Part D) |
 
-**Only 5 of 243 real coverage/endorsement families in this package are fully documented — roughly 2%.**
-This number is now built on the corrected, unrestricted sweep rather than the original filename-limited
-one. Ordinance or Law (18 families) and the Business Income time-element extensions (17 families) remain
-the two largest *itemized* undocumented clusters; Earthquake (up to 20 files across its four form
-variants and five attaching coverages) is comparably large and was entirely missed until this correction.
-The ~146 not-yet-itemized families are an unknown quantity in size — some of the sampled names above
-(Cannabis Exclusion × 2 variants × 5 coverages, for instance) suggest more sizeable clusters are still
-hiding in that remainder.
+**Still only 5 of ~243 real coverage/endorsement families in this package are fully documented — roughly
+2%.** Naming Part D's 143 families (2026-09-11) did not reduce this number — none of them have been
+traced, only identified. Ordinance or Law (18 families) and the Business Income time-element extensions
+(17 families) remain the two largest *itemized-and-at-least-partially-understood* undocumented clusters.
+Within Part D, Green Upgrades (21 files) and the Scheduled/Unscheduled Tenants Policy Building Property
+family (20 files) are now the two largest individually-named-but-untraced clusters — bigger than
+Ordinance or Law once file count is the measure, though neither has had even a first read yet the way
+Ordinance or Law's structure has been sketched from filenames alone.

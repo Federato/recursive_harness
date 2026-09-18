@@ -12,6 +12,10 @@
 
 # ISO manuals and circulars (~4 GB of source PDFs)
 Commercial Line Manuals/
+#  The same content also lands WITHOUT the spaces. The spaced spelling above did
+#  not match `CommercialLineManuals/`, and 5.1 GB of ISO manuals sat untracked
+#  and stageable for eight chunks. Found 2026-09-18 while staging chunk 8.
+CommercialLineManuals/
 
 # Text extracted from those manuals — derived licensed content, 1,122 documents
 Agentic/*/text/
@@ -73,3 +77,6 @@ Thumbs.db
 
 # Jupyter autosaves -- duplicates of notebooks/, and they can hold outputs
 .ipynb_checkpoints/
+
+# Working scratch -- throwaway scripts, not part of the build record.
+.scratch/

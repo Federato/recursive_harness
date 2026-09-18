@@ -1,0 +1,449 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CF validation messages — the DoMessage rules</title>
+<style>
+:root{--bg:#fbfbfd;--fg:#1d1d20;--mut:#63636b;--line:#e3e3e8;--accent:#1f3864;
+--code-bg:#f4f4f7;--tbl-head:#1f3864;--mark:#fff3cd;--del:#a11}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+background:var(--bg);color:var(--fg)}
+header{background:var(--accent);color:#fff;padding:22px 32px 0}
+header h1{margin:0 0 4px;font-size:20px;font-weight:650;letter-spacing:-.01em}
+header .sub{opacity:.72;font-size:13px;margin-bottom:16px}
+nav{display:flex;gap:4px}
+nav button{appearance:none;border:0;background:rgba(255,255,255,.10);color:#fff;cursor:pointer;
+font:inherit;font-size:14px;padding:10px 18px;border-radius:7px 7px 0 0;opacity:.75}
+nav button:hover{opacity:1;background:rgba(255,255,255,.18)}
+nav button[aria-selected="true"]{background:var(--bg);color:var(--accent);font-weight:640;opacity:1}
+.wrap{display:grid;grid-template-columns:250px minmax(0,1fr);gap:34px;
+max-width:1360px;margin:0 auto;padding:30px 32px 90px}
+aside{position:sticky;top:22px;align-self:start;max-height:calc(100vh - 50px);overflow:auto;
+font-size:13.5px;border-left:2px solid var(--line);padding-left:14px}
+aside .lbl{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--mut);
+font-weight:700;margin-bottom:9px}
+aside ul{list-style:none;margin:0;padding:0}
+aside ul ul{padding-left:13px}
+aside a{color:var(--mut);text-decoration:none;display:block;padding:3px 0;line-height:1.4}
+aside a:hover{color:var(--accent)}
+article{min-width:0;background:#fff;border:1px solid var(--line);border-radius:11px;padding:34px 42px 54px}
+article h1{font-size:27px;margin:0 0 8px;letter-spacing:-.02em}
+article h2{font-size:20px;margin:38px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--line);
+letter-spacing:-.01em}
+article h3{font-size:16.5px;margin:26px 0 9px}
+article h4{font-size:15px;margin:20px 0 7px;color:var(--mut)}
+p,li{max-width:74ch}
+code{background:var(--code-bg);padding:.13em .38em;border-radius:4px;
+font:13.5px/1.5 "SF Mono",Consolas,"Liberation Mono",Menlo,monospace}
+pre{background:var(--code-bg);border:1px solid var(--line);border-radius:8px;padding:14px 17px;
+overflow-x:auto}
+pre code{background:none;padding:0;font-size:13px;line-height:1.55}
+table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14.2px;display:block;overflow-x:auto}
+th{background:var(--tbl-head);color:#fff;text-align:left;font-weight:600;padding:9px 12px;
+white-space:nowrap}
+td{border-bottom:1px solid var(--line);padding:9px 12px;vertical-align:top}
+tr:nth-child(even) td{background:#fafafc}
+blockquote{margin:16px 0;padding:12px 18px;background:#f6f8fc;border-left:4px solid var(--accent);
+border-radius:0 7px 7px 0}
+blockquote p{margin:.45em 0}
+del{color:var(--del);text-decoration-thickness:1px}
+hr{border:0;border-top:1px solid var(--line);margin:30px 0}
+a{color:var(--accent)}
+.meta{font-size:12.5px;color:var(--mut);margin:0 0 22px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.panel[hidden]{display:none}
+@media(max-width:1000px){.wrap{grid-template-columns:1fr;padding:20px}aside{display:none}
+article{padding:24px 20px 40px}}
+@media print{header,aside,nav{display:none}.wrap{display:block;padding:0}
+article{border:0;padding:0}.panel[hidden]{display:block!important}}
+
+.wrap{display:block;max-width:60rem;margin:0 auto;padding:0 1.5rem 5rem}
+article{max-width:none}
+.toc-box{border:1px solid var(--line);border-radius:8px;padding:1rem 1.25rem;
+margin:1.5rem 0 2.5rem;background:#fff}
+.toc-box .lbl{font-weight:600;color:var(--accent);margin-bottom:.4rem}
+.toc-box ul{margin:.2rem 0;padding-left:1.1rem}
+.toc-box>ul>li{margin:.15rem 0}
+h2{margin-top:2.6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h1+p+h2,h2:first-of-type{border-top:none}
+table{font-size:.95em}
+@media print{header{position:static}.toc-box{break-inside:avoid}}
+</style></head><body>
+<header><h1>CF validation messages — the DoMessage rules</h1>
+<div class="sub">Commercial Property · 1,621 rules across 48 jurisdictions · why a payload can rate and still return errors</div></header>
+<div class="wrap"><article>
+<p class="meta">Source: <code>CF_Algorithm/CF_Validation_Messages.md</code> &nbsp;·&nbsp; 1,376 words &nbsp;·&nbsp; rendered 2026-09-17</p>
+<div class="toc-box"><div class="lbl">On this page</div><div class="toc">
+<ul>
+<li><a href="#1-everything-is-an-error">1. Everything is an "Error"</a></li>
+<li><a href="#2-how-big-the-surface-is">2. How big the surface is</a></li>
+<li><a href="#3-states-switch-countrywide-messages-off">3. States switch countrywide messages off</a></li>
+<li><a href="#4-what-the-rules-actually-check">4. What the rules actually check</a></li>
+<li><a href="#5-the-message-the-sample-payload-hit-as-a-worked-example">5. The message the sample payload hit, as a worked example</a></li>
+<li><a href="#6-what-this-means-for-building-submissions">6. What this means for building submissions</a></li>
+<li><a href="#7-what-has-not-been-done">7. What has not been done</a></li>
+</ul>
+</div>
+</div>
+<h1 id="cf-validation-messages-the-domessage-rules">CF validation messages — the <code>DoMessage</code> rules</h1>
+<p><strong>What this is.</strong> ISO's Commercial Property ruleset carries a second body of logic alongside
+rating: a large set of <code>DoMessage*</code> rules that check a submission for internal consistency
+and return text. A payload can <strong>rate correctly and still come back with messages</strong> — that
+is exactly what happened to the first sample payload built from
+<code>CF_Payload_ClassRated_Bldg_PP_Alabama.md</code>.</p>
+<p><strong>Companion data:</strong> <code>CF_Algorithm/CF_Validation_Messages.xlsx</code> — one row per rule instance,
+1,621 rows, filterable by jurisdiction, datadef group, check kind and the fields each rule
+reads.</p>
+<p><strong>Source:</strong> the latest package of all 48 CF jurisdictions.
+<strong>Written:</strong> 2026-09-17.</p>
+<hr />
+<h2 id="1-everything-is-an-error">1. Everything is an "Error"</h2>
+<p>There is <strong>one</strong> message helper in the entire line — <code>AddErrorMessage</code>, called 621 times in
+the countrywide ruleset. There is no <code>AddWarningMessage</code>, no informational variant, no
+severity argument.</p>
+<p><strong>So "Errors" in a RAaS response does not mean rating failed.</strong> The response that prompted
+this analysis rated <em>and</em> returned an error. Anything ISO wants to tell you about a
+submission arrives in the same bucket, whether it is "this endorsement is mandatory here"
+or "these two deductibles disagree".</p>
+<p>Consumers of the API have to classify severity themselves. ISO does not.</p>
+<hr />
+<h2 id="2-how-big-the-surface-is">2. How big the surface is</h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Count</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Countrywide <code>DoMessage</code> rules</td>
+<td><strong>434</strong></td>
+</tr>
+<tr>
+<td>Rule instances across all 48 jurisdictions</td>
+<td><strong>1,621</strong></td>
+</tr>
+<tr>
+<td>Rules existing <strong>only</strong> in state packages</td>
+<td><strong>233</strong></td>
+</tr>
+<tr>
+<td>Distinct message texts</td>
+<td>~650 (971 of the 1,621 instances repeat a text used elsewhere)</td>
+</tr>
+</tbody>
+</table>
+<p>By record, countrywide:</p>
+<table>
+<thead>
+<tr>
+<th>DataDefGroup</th>
+<th>Rules</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CommercialPropertyStructure</code></td>
+<td>554</td>
+</tr>
+<tr>
+<td><code>CommercialPropertyPersonalProperty</code></td>
+<td>296</td>
+</tr>
+<tr>
+<td><code>CommercialPropertySpecialClass</code></td>
+<td>185</td>
+</tr>
+<tr>
+<td><code>CommercialPropertyBusinessIncome</code></td>
+<td>134</td>
+</tr>
+<tr>
+<td><code>CommercialProperty</code> (policy)</td>
+<td>112</td>
+</tr>
+<tr>
+<td><code>CommercialPropertySpecialClassBusnIncome</code></td>
+<td>110</td>
+</tr>
+<tr>
+<td><code>CommercialPropertyLocation</code></td>
+<td>37</td>
+</tr>
+<tr>
+<td><code>CommercialPropertyOccupClass</code></td>
+<td>12</td>
+</tr>
+</tbody>
+</table>
+<p><strong>305 of the countrywide rules sit on the class-rated Building / Personal Property spine</strong> —
+the exact scope of the payload specification. The spec tells you what to <em>send</em>; these rules
+decide whether what you sent is <em>coherent</em>. They are a separate body of knowledge and the
+spec does not cover them.</p>
+<hr />
+<h2 id="3-states-switch-countrywide-messages-off">3. States switch countrywide messages off</h2>
+<p>This is the finding that matters most, and it is invisible if you read countrywide alone.</p>
+<p><strong>A state can suppress a countrywide message by overriding the rule with an empty body.</strong>
+Alaska, for example:</p>
+<pre><code class="language-xml">&lt;rul:Rule Name=&quot;DoMessageFormCP1065NeedsAnUnderlyingCoverageSelectedToApply&quot;
+          Type=&quot;none&quot; DataDefGroup=&quot;CommercialPropertyBusinessIncome&quot;
+          MetadataCodes=&quot;RuleTypeOverridden&quot;&gt;
+  &lt;rul:Sequence /&gt;
+&lt;/rul:Rule&gt;
+</code></pre>
+<p>The countrywide version of that rule is 1,796 characters and emits <em>"Form CP 10 65 needs an
+underlying coverage selected to apply"</em>. Alaska replaces it with nothing.</p>
+<p><strong>316 such no-op overrides exist across the corpus</strong>, and they are concentrated:</p>
+<table>
+<thead>
+<tr>
+<th>State</th>
+<th>Suppressed</th>
+<th>Added</th>
+<th>Overridden (real logic)</th>
+<th><strong>Effective messages</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FL</td>
+<td><strong>63</strong></td>
+<td>25</td>
+<td>10</td>
+<td>406</td>
+</tr>
+<tr>
+<td>PR</td>
+<td>49</td>
+<td>15</td>
+<td>45</td>
+<td>400</td>
+</tr>
+<tr>
+<td>NY</td>
+<td>34</td>
+<td>13</td>
+<td>8</td>
+<td>413</td>
+</tr>
+<tr>
+<td>KS</td>
+<td>20</td>
+<td>12</td>
+<td>9</td>
+<td>426</td>
+</tr>
+<tr>
+<td>VT</td>
+<td>18</td>
+<td>3</td>
+<td>8</td>
+<td>419</td>
+</tr>
+<tr>
+<td>TX</td>
+<td>10</td>
+<td>4</td>
+<td>6</td>
+<td>428</td>
+</tr>
+<tr>
+<td>AK</td>
+<td>6</td>
+<td>7</td>
+<td>2</td>
+<td>435</td>
+</tr>
+<tr>
+<td>CA</td>
+<td>3</td>
+<td>24</td>
+<td>12</td>
+<td>455</td>
+</tr>
+<tr>
+<td><strong>AL</strong></td>
+<td><strong>0</strong></td>
+<td><strong>18</strong></td>
+<td>2</td>
+<td><strong>452</strong></td>
+</tr>
+</tbody>
+</table>
+<p>Across all 47 states: <strong>240 suppressions and 356 additions.</strong> The effective message count
+ranges from <strong>400 (PR) to 455 (CA)</strong>, median 437.</p>
+<p><strong>Consequence:</strong> you cannot answer "will this submission produce a message?" from the
+countrywide ruleset. The question is only answerable per jurisdiction, after applying the
+state's overrides — including the ones that delete a rule rather than change it.</p>
+<p>Alabama suppresses nothing and adds 18, six of which concern
+<code>PublicInstitutionalPlanApply</code>.</p>
+<hr />
+<h2 id="4-what-the-rules-actually-check">4. What the rules actually check</h2>
+<p>Classifying the countrywide 610 instances by the shape of their condition:</p>
+<table>
+<thead>
+<tr>
+<th>Check kind</th>
+<th>Count</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>endorsement present/absent <strong>+</strong> value combination</td>
+<td>263</td>
+<td>"given these values, this form must / must not be attached"</td>
+</tr>
+<tr>
+<td>value combination</td>
+<td>178</td>
+<td>two or more fields disagree</td>
+</tr>
+<tr>
+<td>endorsement present/absent</td>
+<td>60</td>
+<td>a record is simply required, or forbidden</td>
+</tr>
+<tr>
+<td>threshold + value combination</td>
+<td>41</td>
+<td>a limit or percentage is out of range for the selection</td>
+</tr>
+<tr>
+<td>threshold</td>
+<td>26</td>
+<td>a pure numeric bound</td>
+</tr>
+<tr>
+<td>other</td>
+<td>4</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>The dominant pattern is form attachment.</strong> Over half the rules are of the form <em>"you
+chose X, therefore endorsement Y is mandatory (or prohibited)"</em>. That is what the sample
+payload hit: differing deductibles make CP 03 20 mandatory.</p>
+<h3 id="the-fields-that-most-often-trigger-a-message">The fields that most often trigger a message</h3>
+<p>Counting across the 305 spine rules:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Rules</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CovType</code></td>
+<td>59</td>
+<td>by far the most contested field</td>
+</tr>
+<tr>
+<td><code>IncludedInBlkt</code></td>
+<td>47</td>
+<td>blanket vs scheduled</td>
+</tr>
+<tr>
+<td><code>CovForm</code></td>
+<td>29</td>
+<td></td>
+</tr>
+<tr>
+<td><code>EQCovIndicator</code></td>
+<td>27</td>
+<td>earthquake</td>
+</tr>
+<tr>
+<td><code>PolicyType</code></td>
+<td>25</td>
+<td></td>
+</tr>
+<tr>
+<td><code>CauseOfLossToUse</code></td>
+<td>25</td>
+<td></td>
+</tr>
+<tr>
+<td><code>EQCauseOfLossForm</code></td>
+<td>16</td>
+<td></td>
+</tr>
+<tr>
+<td><code>ClassCode</code></td>
+<td>15</td>
+<td></td>
+</tr>
+<tr>
+<td><code>Limit</code></td>
+<td>15</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><code>CovType</code> topping the list is consistent with what the rating analysis already found: it is
+the field with four different value universes depending on the coverage
+(<code>CF_RatingPath_Switches.md</code>). It is both the most rating-significant switch and the most
+validation-significant one.</p>
+<hr />
+<h2 id="5-the-message-the-sample-payload-hit-as-a-worked-example">5. The message the sample payload hit, as a worked example</h2>
+<p><code>DoMessageCP0320MustBeAttachedWhenFixedDollarAmountDeductibleForEachLocationAreDifferentThanWindstormOrHailDeductibleOrTheftDeductible</code>
+fires when <strong>all three</strong> hold:</p>
+<ol>
+<li><code>CovType</code> ∈ {<code>Building</code>, <code>Condominium Association</code>, <code>Builders Risk</code>,
+   <code>Improvements and Betterments</code>} <strong>or</strong> the occupancy's <code>CovForm</code> is in a listed set; <strong>and</strong></li>
+<li><strong>any</strong> of —
+   - <code>WindstormOrHailDeductible</code> is a dollar amount (not <code>1%</code> / <code>2%</code> / <code>5%</code> /
+     <code>Not Applicable</code>) <strong>and</strong> ≠ <code>Deductible</code>
+   - <code>TheftDeductible</code> ≠ <code>Not Applicable</code> <strong>and</strong> ≠ <code>Deductible</code>
+   - <code>OccupClassTheftDedConditionsMet</code> = <code>true</code> — itself derived by comparing each
+     <strong>occupancy class's</strong> <code>TheftDeductible</code> against the <strong>structure's</strong> <code>Deductible</code>; <strong>and</strong></li>
+<li>no <code>CommercialPropertyMultipleDeductibleFormFixedDollarDeductibles</code> record is attached.</li>
+</ol>
+<p>Two valid resolutions, and they are mirror images:</p>
+<ul>
+<li><strong>Align the deductibles.</strong> Set <code>TheftDeductible</code> = <code>Deductible</code> at <em>both</em> Structure and
+  OccupClass. Condition 2 goes false. This is what the sample now does.</li>
+<li><strong>Attach CP 03 20.</strong> Keep them different and add the
+  <code>CommercialPropertyMultipleDeductibleFormFixedDollarDeductibles</code> record. Condition 3 goes
+  false.</li>
+</ul>
+<blockquote>
+<p><strong>They cannot be mixed.</strong> A mirror rule,
+<code>DoMessageMultipleDeductibleFormCP0320ShouldNotBeAttachedWithTheSameFixedDollarAmountDeductiblesForEachLocation</code>,
+fires if you attach the form while the deductibles <em>are</em> the same. Different deductibles
+<strong>and</strong> the form, or the same deductibles <strong>and</strong> no form — nothing in between.</p>
+</blockquote>
+<p>This shape — a rule and its mirror — recurs throughout the set, and is why "just attach
+every endorsement" is not a strategy.</p>
+<hr />
+<h2 id="6-what-this-means-for-building-submissions">6. What this means for building submissions</h2>
+<ol>
+<li><strong>Treat "Errors" as "messages".</strong> Severity is the caller's judgement, not ISO's. A
+   premium can be returned alongside an error.</li>
+<li><strong>Validation is per-jurisdiction, like rating.</strong> The countrywide set is a starting point
+   that 47 states then edit — including by deletion.</li>
+<li><strong>Most messages are about form attachment, not bad data.</strong> They usually mean a coverage
+   selection implies an endorsement the submission did not include.</li>
+<li><strong>Some rules come in mirrored pairs.</strong> Attaching a form to silence one message can raise
+   its opposite.</li>
+<li><strong>The payload spec does not cover this.</strong> It describes a <em>well-formed</em> request. A
+   well-formed request can still be internally inconsistent by ISO's rules.</li>
+</ol>
+<hr />
+<h2 id="7-what-has-not-been-done">7. What has not been done</h2>
+<ul>
+<li><strong>No reachability analysis.</strong> 1,621 rules were inventoried by reading their conditions;
+  none were evaluated against a submission. Which of the 452 messages live in Alabama could
+  fire for a given payload is not answered here.</li>
+<li><strong>Condition parsing is structural, not semantic.</strong> The "Fields tested" and "Check kind"
+  columns come from pattern-matching the XML. Nested conditions are flattened, so a rule
+  reading eight fields may only need two of them in any given branch.</li>
+<li><strong>Messages were not deduplicated by text.</strong> 971 of the 1,621 instances repeat a text used
+  elsewhere, usually the same check applied to a different coverage.</li>
+<li><strong>The mirrored-pair relationships are not mapped.</strong> CP 03 20's pair was found by hand
+  while chasing one message. There is no systematic list of which rules oppose each other,
+  and that is probably the most useful next step.</li>
+</ul>
+</article></div></body></html>

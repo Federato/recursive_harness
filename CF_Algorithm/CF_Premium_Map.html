@@ -1,0 +1,454 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CF premium map — derivation and roll-up to the account total</title>
+<style>
+:root{--bg:#fbfbfd;--fg:#1d1d20;--mut:#63636b;--line:#e3e3e8;--accent:#1f3864;
+--code-bg:#f4f4f7;--tbl-head:#1f3864;--mark:#fff3cd;--del:#a11}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+background:var(--bg);color:var(--fg)}
+header{background:var(--accent);color:#fff;padding:22px 32px 0}
+header h1{margin:0 0 4px;font-size:20px;font-weight:650;letter-spacing:-.01em}
+header .sub{opacity:.72;font-size:13px;margin-bottom:16px}
+nav{display:flex;gap:4px}
+nav button{appearance:none;border:0;background:rgba(255,255,255,.10);color:#fff;cursor:pointer;
+font:inherit;font-size:14px;padding:10px 18px;border-radius:7px 7px 0 0;opacity:.75}
+nav button:hover{opacity:1;background:rgba(255,255,255,.18)}
+nav button[aria-selected="true"]{background:var(--bg);color:var(--accent);font-weight:640;opacity:1}
+.wrap{display:grid;grid-template-columns:250px minmax(0,1fr);gap:34px;
+max-width:1360px;margin:0 auto;padding:30px 32px 90px}
+aside{position:sticky;top:22px;align-self:start;max-height:calc(100vh - 50px);overflow:auto;
+font-size:13.5px;border-left:2px solid var(--line);padding-left:14px}
+aside .lbl{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--mut);
+font-weight:700;margin-bottom:9px}
+aside ul{list-style:none;margin:0;padding:0}
+aside ul ul{padding-left:13px}
+aside a{color:var(--mut);text-decoration:none;display:block;padding:3px 0;line-height:1.4}
+aside a:hover{color:var(--accent)}
+article{min-width:0;background:#fff;border:1px solid var(--line);border-radius:11px;padding:34px 42px 54px}
+article h1{font-size:27px;margin:0 0 8px;letter-spacing:-.02em}
+article h2{font-size:20px;margin:38px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--line);
+letter-spacing:-.01em}
+article h3{font-size:16.5px;margin:26px 0 9px}
+article h4{font-size:15px;margin:20px 0 7px;color:var(--mut)}
+p,li{max-width:74ch}
+code{background:var(--code-bg);padding:.13em .38em;border-radius:4px;
+font:13.5px/1.5 "SF Mono",Consolas,"Liberation Mono",Menlo,monospace}
+pre{background:var(--code-bg);border:1px solid var(--line);border-radius:8px;padding:14px 17px;
+overflow-x:auto}
+pre code{background:none;padding:0;font-size:13px;line-height:1.55}
+table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14.2px;display:block;overflow-x:auto}
+th{background:var(--tbl-head);color:#fff;text-align:left;font-weight:600;padding:9px 12px;
+white-space:nowrap}
+td{border-bottom:1px solid var(--line);padding:9px 12px;vertical-align:top}
+tr:nth-child(even) td{background:#fafafc}
+blockquote{margin:16px 0;padding:12px 18px;background:#f6f8fc;border-left:4px solid var(--accent);
+border-radius:0 7px 7px 0}
+blockquote p{margin:.45em 0}
+del{color:var(--del);text-decoration-thickness:1px}
+hr{border:0;border-top:1px solid var(--line);margin:30px 0}
+a{color:var(--accent)}
+.meta{font-size:12.5px;color:var(--mut);margin:0 0 22px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.panel[hidden]{display:none}
+@media(max-width:1000px){.wrap{grid-template-columns:1fr;padding:20px}aside{display:none}
+article{padding:24px 20px 40px}}
+@media print{header,aside,nav{display:none}.wrap{display:block;padding:0}
+article{border:0;padding:0}.panel[hidden]{display:block!important}}
+
+.wrap{display:block;max-width:60rem;margin:0 auto;padding:0 1.5rem 5rem}
+article{max-width:none}
+.toc-box{border:1px solid var(--line);border-radius:8px;padding:1rem 1.25rem;
+margin:1.5rem 0 2.5rem;background:#fff}
+.toc-box .lbl{font-weight:600;color:var(--accent);margin-bottom:.4rem}
+.toc-box ul{margin:.2rem 0;padding-left:1.1rem}
+.toc-box>ul>li{margin:.15rem 0}
+h2{margin-top:2.6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h1+p+h2,h2:first-of-type{border-top:none}
+table{font-size:.95em}
+@media print{header{position:static}.toc-box{break-inside:avoid}}
+</style></head><body>
+<header><h1>CF premium map — derivation and roll-up to the account total</h1>
+<div class="sub">Commercial Property · CFCW20260601V01 · 881 groups, seven levels, 213 formulas rewritten by states</div></header>
+<div class="wrap"><article>
+<p class="meta">Source: <code>CF_Algorithm/CF_Premium_Map.md</code> &nbsp;·&nbsp; 1,597 words &nbsp;·&nbsp; rendered 2026-09-17</p>
+<div class="toc-box"><div class="lbl">On this page</div><div class="toc">
+<ul>
+<li><a href="#1-the-same-three-mechanisms-at-twice-the-scale">1. The same three mechanisms, at twice the scale</a></li>
+<li><a href="#2-where-cf-and-gl-genuinely-differ-the-shape">2. Where CF and GL genuinely differ: the shape</a></li>
+<li><a href="#3-cf-computes-far-more-premium-concepts">3. CF computes far more premium concepts</a></li>
+<li><a href="#4-interim-premium-and-where-cf-differs-from-gl">4. Interim premium — and where CF differs from GL</a></li>
+<li><a href="#5-what-the-state-packages-do-and-cf-is-nothing-like-gl-here">5. What the state packages do — and CF is nothing like GL here</a></li>
+<li><a href="#6-reading-this-for-a-specific-premium">6. Reading this for a specific premium</a></li>
+<li><a href="#7-limits-of-this-map">7. Limits of this map</a></li>
+</ul>
+</div>
+</div>
+<h1 id="cf-premium-map-every-premium-field-what-feeds-it-where-it-ends-up">CF premium map — every premium field, what feeds it, where it ends up</h1>
+<p><strong>The question this answers:</strong> for Commercial Property, where does every premium number come
+from, and how does it reach the one figure that is the account's premium?</p>
+<p><strong>The answer in one line:</strong>
+<code>CommercialProperty.ErcCalculatedTotalPremium</code> is the account total, and <strong>every one of the
+881 groups that carry a premium reaches it</strong> — through as many as <strong>seven</strong> levels of summation.</p>
+<p><strong>Source:</strong> <code>CFCW20260601V01</code>, countrywide, 882 rule files, plus the latest package of all 47
+states for the jurisdiction analysis.</p>
+<p><strong>Navigable version:</strong> <code>CF_Algorithm/CF_Premium_Tree.html</code> — collapsible, searchable, with a
+jurisdiction selector.
+<strong>Companion data:</strong> <code>CF_Algorithm/CF_Premium_Map.xlsx</code> — <code>Summary</code>, <code>RollUpTree</code> (881 rows),
+<code>PremiumSources</code> (546 rows), <code>PremiumFields</code> (212 rows).</p>
+<p><strong>Companion for GL:</strong> <code>GL_Algorithm/GL_Premium_Map.md</code>. The two lines share a mechanism and
+almost nothing else; the differences are the point of this document.</p>
+<p><strong>Written:</strong> 2026-09-17.</p>
+<hr />
+<h2 id="1-the-same-three-mechanisms-at-twice-the-scale">1. The same three mechanisms, at twice the scale</h2>
+<table>
+<thead>
+<tr>
+<th>Rule</th>
+<th>CF</th>
+<th>GL</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>SetPremium</code> — rate into dollars on one record</td>
+<td><strong>546</strong></td>
+<td>322</td>
+</tr>
+<tr>
+<td><code>SetPremiumIndicator</code> — did this record produce a premium</td>
+<td><strong>546</strong></td>
+<td>322</td>
+</tr>
+<tr>
+<td><code>CalculateTotalPremium</code> — collect upward one level</td>
+<td><strong>881</strong></td>
+<td>571</td>
+</tr>
+</tbody>
+</table>
+<p>Identical architecture. A leaf contributes its <code>Premium</code> only when <code>PremiumIndicator = 1</code>
+<strong>and</strong> <code>Premium ≠ 0</code>; an aggregator sums its children into <code>ErcCalculatedTotalPremium</code>;
+children are reached by <code>ForEach</code> over an <code>&lt;X&gt;Table</code> when repeating and by <code>Locate</code> when
+singleton. Nothing about the mechanism is CF-specific.</p>
+<p><strong><code>ErcCalculatedTotalPremium</code> is written 261 times across the corpus and read zero times</strong> —
+exactly as in GL. Every stored subtotal is an output for the caller, never an input to the
+level above.</p>
+<hr />
+<h2 id="2-where-cf-and-gl-genuinely-differ-the-shape">2. Where CF and GL genuinely differ: the shape</h2>
+<p><strong>GL is wide and shallow. CF is deep and narrow.</strong></p>
+<table>
+<thead>
+<tr>
+<th>Depth below the account total</th>
+<th>CF groups</th>
+<th>GL groups</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0 — the account</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>1</td>
+<td>45</td>
+<td><strong>419</strong></td>
+</tr>
+<tr>
+<td>2</td>
+<td>23</td>
+<td>110</td>
+</tr>
+<tr>
+<td>3</td>
+<td>167</td>
+<td>34</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>304</strong></td>
+<td>7</td>
+</tr>
+<tr>
+<td>5</td>
+<td>230</td>
+<td>—</td>
+</tr>
+<tr>
+<td>6</td>
+<td>79</td>
+<td>—</td>
+</tr>
+<tr>
+<td>7</td>
+<td>32</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p>GL puts 419 of 571 groups directly on the policy — endorsements that price at policy level.
+<strong>CF puts only 45 there and pushes the mass to depths 4 and 5</strong>, because Property's premium
+follows the property: policy → location → building → occupancy class → contents, and
+endorsements attach to whichever of those they modify rather than to the policy.</p>
+<p>The practical consequence: <strong>a CF premium can be seven summations away from the account
+total.</strong> Anything that walks this tree — a UI, a reconciliation, a trace — has to handle
+depth it will never see in GL.</p>
+<hr />
+<h2 id="3-cf-computes-far-more-premium-concepts">3. CF computes far more premium concepts</h2>
+<p><strong>212 distinct premium-named fields are declared; 69 are written by a rule</strong> — against GL's
+163 declared and 22 written. CF does three times as much premium arithmetic.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Writes</th>
+<th>What it is</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Premium</code></td>
+<td>1,355</td>
+<td>the record's own premium</td>
+</tr>
+<tr>
+<td><code>PremiumIndicator</code></td>
+<td>1,092</td>
+<td>did it produce one</td>
+</tr>
+<tr>
+<td><code>ErcCalculatedTotalPremium</code></td>
+<td>130</td>
+<td>a subtotal at each aggregating level</td>
+</tr>
+<tr>
+<td><code>TerrorismPremium</code></td>
+<td>30</td>
+<td></td>
+</tr>
+<tr>
+<td><code>RelatedExpensesPremium</code></td>
+<td>18</td>
+<td></td>
+</tr>
+<tr>
+<td><code>GreenUpgradesPremium</code></td>
+<td>18</td>
+<td></td>
+</tr>
+<tr>
+<td><code>PreTRIAPremium</code> / <code>PostTRIAPremium</code></td>
+<td>15 each</td>
+<td>the TRIA split</td>
+</tr>
+<tr>
+<td><code>AnnualPremiumOfPrecedingReportingPeriod</code></td>
+<td>10</td>
+<td><strong>see §4</strong></td>
+</tr>
+<tr>
+<td><code>FormAnnualPremium</code></td>
+<td>10</td>
+<td><strong>see §4</strong></td>
+</tr>
+<tr>
+<td><code>TotalAgreedValuePremium</code></td>
+<td>5</td>
+<td></td>
+</tr>
+<tr>
+<td>…58 more</td>
+<td>1–9 each</td>
+<td>coverage-specific totals</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="4-interim-premium-and-where-cf-differs-from-gl">4. Interim premium — and where CF differs from GL</h2>
+<p>For GL the finding was blunt: a fourteen-field pro-rata / written / earned / endorsement block
+sits on every record and <strong>nothing reads or writes any of it</strong>, in any of 52 jurisdictions
+(<code>OI-98</code>). CF was measured the same way, across all <strong>48</strong> jurisdictions, and the answer is
+<em>nearly</em> the same — with three real exceptions that are worth understanding.</p>
+<h3 id="still-completely-inert-in-cf">Still completely inert in CF</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Writes</th>
+<th>Reads</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>AnnualPremium</code> · <code>PolicyTermPremium</code> · <code>PriorPremium</code></td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td><code>ProRatedPremium</code> · <code>ProRatedPriorPremium</code> · <code>ProRatedChangePremium</code> · <code>TotalProRatedChangePremium</code></td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td><code>ChangePremium</code> · <code>EvaluatedPremium</code> · <code>OverridePremium</code></td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td><code>TermFactorIndicator</code> · <code>EarnedInFullIndicator</code></td>
+<td>0</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<p><strong>The policy-level administration block is as dead in CF as in GL.</strong> No mid-term endorsement
+pricing, no written-vs-earned split, no cancellation return arithmetic.</p>
+<h3 id="but-three-mechanisms-are-live">But three mechanisms <em>are</em> live</h3>
+<p>Unlike GL, CF files genuine term arithmetic — in exactly the places where a coverage is
+<strong>intrinsically part-term or intrinsically reported</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Writes / reads</th>
+<th>Where</th>
+<th>Why it exists</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ProRateFactor</code></td>
+<td>4 / 4</td>
+<td><code>SetVacancyPermitProRateFactor</code> on <code>CommercialPropertyVacancyPermitPrsnlProp</code></td>
+<td>a Vacancy Permit covers part of a term by definition</td>
+</tr>
+<tr>
+<td><code>ProRateIndicator</code></td>
+<td>19 / 19</td>
+<td><code>SetProRateIndicator</code> on <code>CommercialPropertyPeakSeasonLimitOfInsuranceDetail</code></td>
+<td>a Peak Season limit applies for part of the year by definition</td>
+</tr>
+<tr>
+<td><code>FormAnnualPremium</code>, <code>AnnualPremiumOfPrecedingReportingPeriod</code></td>
+<td>10 / 25, 10 / 20</td>
+<td><code>CommercialPropertyBuildersRiskPremiumAdjustmentForm</code> (CW, and FL files its own)</td>
+<td>a reporting form adjusts against the prior reporting period</td>
+</tr>
+</tbody>
+</table>
+<p><strong>This refines OI-98 rather than contradicting it.</strong> ISO still does not administer a policy —
+there is no general proration engine, no transaction model, no earned/written split. What it
+does file is <strong>coverage-intrinsic term arithmetic</strong>: where the <em>coverage itself</em> is defined as
+partial-term or as a reporting form, the proration is part of the rating content because it is
+part of the rate.</p>
+<p>The line to hold: <strong>proration belongs to ISO when it is part of what the coverage <em>is</em>, and to
+the policy system when it is a consequence of <em>when the transaction happened</em>.</strong> CF has the
+first. Neither line has the second.</p>
+<hr />
+<h2 id="5-what-the-state-packages-do-and-cf-is-nothing-like-gl-here">5. What the state packages do — and CF is nothing like GL here</h2>
+<p>This is the largest CF/GL divergence in the whole map.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>CF</th>
+<th>GL</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Groups whose <code>SetPremium</code> some state rewrites</td>
+<td><strong>213</strong></td>
+<td>4</td>
+</tr>
+<tr>
+<td>Total override instances</td>
+<td><strong>479</strong></td>
+<td>12</td>
+</tr>
+<tr>
+<td>States that rewrite at least one</td>
+<td><strong>21 of 47</strong></td>
+<td>6 of 51</td>
+</tr>
+<tr>
+<td>Premium groups existing only in state packages</td>
+<td>223</td>
+<td>457</td>
+</tr>
+</tbody>
+</table>
+<p><strong>GL states rewrite exactly one thing — Terrorism. CF states rewrite the rating itself, at
+scale.</strong></p>
+<p>Heaviest rewriters: <strong>FL 122, PR 64, CA 61, KS 46, NY 43, RI 40, AL 31.</strong> Florida alone
+rewrites more premium formulas than every GL state combined, ten times over.</p>
+<p>The most contested formulas:</p>
+<table>
+<thead>
+<tr>
+<th>Group</th>
+<th>States</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CommercialPropertySpoilageCoverage</code></td>
+<td>8 — AL FL GA KS NC RI SC VA</td>
+</tr>
+<tr>
+<td><code>…OutdoorTreesShrubsAndPlantsBasicGroupIICoverage</code></td>
+<td>7 — AR DC FL KS NY PR RI</td>
+</tr>
+<tr>
+<td><code>…RadioOrTelevisionAntennasDetailBasicGroupICoverage</code></td>
+<td>7 — AR DC FL KS NY PR RI</td>
+</tr>
+<tr>
+<td><code>CommercialPropertyPostTRIACoverage</code></td>
+<td>6 — CA DC IL MD NY VA</td>
+</tr>
+</tbody>
+</table>
+<p><strong>What this does <em>not</em> mean.</strong> It is not a finding that CF needs state-over-countrywide
+resolution. That was measured long ago — 100.0% of 23,404 <code>Overridden</code> rules shadow a
+same-named parent — it is non-negotiable <strong>N5</strong>, and <code>cf_engine/resolve/resolver.py</code> already
+implements it. Any correctly built engine composes the layers regardless of how many rules sit
+in each.</p>
+<p><strong>What it does mean is a testing number.</strong> It says how much a single-state proof is worth.
+A GL coverage proven in one state is very nearly proven everywhere — only Terrorism varies.
+<strong>A CF coverage proven in one state proves much less</strong>, because 213 formulas differ somewhere.
+That is a claim about where to spend state test cases, not about architecture: start with the
+contested formulas above, because those are where a countrywide-derived expectation is most
+likely to be wrong.</p>
+<p><strong>Neither line ever deletes a premium rule.</strong> Zero empty-body premium overrides in CF, as in
+GL — the opposite of CF's <em>validation messages</em>, where 316 countrywide rules are switched off
+by an empty state override. Premium rules are added to or replaced, never silently removed.</p>
+<hr />
+<h2 id="6-reading-this-for-a-specific-premium">6. Reading this for a specific premium</h2>
+<ol>
+<li><strong>Find the group in <code>RollUpTree</code></strong> — <code>Path to account total</code> is the full chain of
+   summations between that record and the account figure. Expect up to seven links.</li>
+<li><strong>Check the state first.</strong> Unlike GL, the odds that a CF premium formula is state-rewritten
+   are material: 213 groups, 21 states. The tree page's jurisdiction selector flags it.</li>
+<li><strong>If it is a leaf</strong>, its <code>Premium</code> came from <code>SetPremium</code> — <code>PremiumSources</code> lists the
+   fields that rule reads.</li>
+<li><strong>If a premium is missing rather than wrong</strong>, check <code>PremiumIndicator</code> before the
+   arithmetic. A coverage that rated to zero and a coverage that was never on the policy both
+   contribute 0; the indicator is the only discriminator.</li>
+</ol>
+<hr />
+<h2 id="7-limits-of-this-map">7. Limits of this map</h2>
+<ul>
+<li><strong>The roll-up tree is countrywide.</strong> State overrides of <code>SetPremium</code> are counted and
+  attributed, but the tree <em>shape</em> is CW's. A state adding a premium-bearing group adds a node
+  this tree does not draw; the jurisdiction panel lists them instead.</li>
+<li><strong>Structural, not evaluated.</strong> Read from rule XML. No premium was computed and no path was
+  exercised against a live rating.</li>
+<li><strong><code>SetPremium</code> inputs are flattened</strong> from nested conditions — a rule reading eight fields
+  may need only two in any given branch.</li>
+<li><strong>Rate resolution is out of scope</strong>, as in GL. This map covers rate-to-dollars and the
+  aggregation above it; how a rate is built is the rating chain.</li>
+</ul>
+</article></div></body></html>

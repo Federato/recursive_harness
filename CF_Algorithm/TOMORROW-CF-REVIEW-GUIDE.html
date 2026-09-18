@@ -1,0 +1,623 @@
+<title>Pick This Back Up — Finishing CF's Rating-Specification Review</title>
+<style>
+  :root {
+    --bg: #eef1f4;
+    --paper: #ffffff;
+    --ink: #1c2733;
+    --ink-soft: #55606b;
+    --ink-faint: #8b95a1;
+    --grid-line: #d7dce2;
+    --header-fill: #e4e8ed;
+    --accent: #1e3a45;
+    --accent-soft: #cfe0e0;
+    --accent-warm: #b96a2c;
+    --accent-warm-soft: #f3e2cf;
+    --good: #2f7d5a;
+    --good-soft: #dcefe4;
+    --warn: #a53d26;
+    --warn-soft: #f7ddd4;
+    --slate: #5b6b78;
+    --slate-soft: #e7ebee;
+    --shadow: 0 1px 2px rgba(28,39,51,0.06), 0 10px 28px rgba(28,39,51,0.08);
+    --font-display: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+    --font-body: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+    --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, "Liberation Mono", monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #10151b;
+      --paper: #161d25;
+      --ink: #e7ecf1;
+      --ink-soft: #a3aebb;
+      --ink-faint: #6d7885;
+      --grid-line: #2b3742;
+      --header-fill: #1b242d;
+      --accent: #59a9ac;
+      --accent-soft: #1d3535;
+      --accent-warm: #dd9a5c;
+      --accent-warm-soft: #372a1c;
+      --good: #63c090;
+      --good-soft: #1b3226;
+      --warn: #e0806a;
+      --warn-soft: #3a2019;
+      --slate: #93a2ae;
+      --slate-soft: #202a33;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 14px 32px rgba(0,0,0,0.4);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #10151b; --paper: #161d25; --ink: #e7ecf1; --ink-soft: #a3aebb; --ink-faint: #6d7885;
+    --grid-line: #2b3742; --header-fill: #1b242d; --accent: #59a9ac; --accent-soft: #1d3535;
+    --accent-warm: #dd9a5c; --accent-warm-soft: #372a1c; --good: #63c090; --good-soft: #1b3226;
+    --warn: #e0806a; --warn-soft: #3a2019; --slate: #93a2ae; --slate-soft: #202a33;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 14px 32px rgba(0,0,0,0.4);
+  }
+  :root[data-theme="light"] {
+    --bg: #eef1f4; --paper: #ffffff; --ink: #1c2733; --ink-soft: #55606b; --ink-faint: #8b95a1;
+    --grid-line: #d7dce2; --header-fill: #e4e8ed; --accent: #1e3a45; --accent-soft: #cfe0e0;
+    --accent-warm: #b96a2c; --accent-warm-soft: #f3e2cf; --good: #2f7d5a; --good-soft: #dcefe4;
+    --warn: #a53d26; --warn-soft: #f7ddd4; --slate: #5b6b78; --slate-soft: #e7ebee;
+    --shadow: 0 1px 2px rgba(28,39,51,0.06), 0 10px 28px rgba(28,39,51,0.08);
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    line-height: 1.6;
+  }
+
+  a { color: var(--accent); }
+  a:focus-visible, .navlink:focus-visible, .optcard:focus-visible {
+    outline: 2px solid var(--accent-warm);
+    outline-offset: 2px;
+  }
+
+  .page {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 24px 100px;
+  }
+
+  /* ---------- Masthead ---------- */
+  header.masthead {
+    padding: 56px 24px 8px;
+    max-width: 760px;
+    margin: 0 auto;
+  }
+  .eyebrow {
+    font-family: var(--font-ui);
+    font-size: 12px;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    color: var(--accent-warm);
+    font-weight: 600;
+    margin: 0 0 10px;
+  }
+  h1.title {
+    font-family: var(--font-display);
+    font-size: clamp(28px, 4.4vw, 38px);
+    font-weight: 400;
+    margin: 0 0 16px;
+    text-wrap: balance;
+    color: var(--ink);
+    line-height: 1.18;
+  }
+  .dek {
+    font-size: 17px;
+    color: var(--ink-soft);
+    max-width: 66ch;
+    margin: 0 0 10px;
+  }
+  .byline {
+    font-family: var(--font-ui);
+    font-size: 12.5px;
+    color: var(--ink-faint);
+    margin: 18px 0 0;
+  }
+
+  /* ---------- Nav ---------- */
+  nav.jumpbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(6px);
+    border-bottom: 1px solid var(--grid-line);
+    margin-top: 32px;
+  }
+  .jumpbar-inner {
+    max-width: 760px;
+    margin: 0 auto;
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    padding: 0 24px;
+  }
+  .navlink {
+    font-family: var(--font-ui);
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    text-decoration: none;
+    white-space: nowrap;
+    padding: 12px 10px;
+    border-bottom: 2px solid transparent;
+    flex: none;
+  }
+  .navlink:hover { color: var(--ink); }
+  .navlink.current {
+    color: var(--accent);
+    border-bottom-color: var(--accent-warm);
+    font-weight: 600;
+  }
+
+  /* ---------- Sections ---------- */
+  section.block {
+    padding-top: 56px;
+    scroll-margin-top: 52px;
+  }
+  .sect-num {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    color: var(--accent-warm);
+    font-variant-numeric: tabular-nums;
+    display: block;
+    margin-bottom: 6px;
+  }
+  h2.sect-title {
+    font-family: var(--font-display);
+    font-size: 25px;
+    font-weight: 400;
+    margin: 0 0 16px;
+    color: var(--ink);
+    text-wrap: balance;
+  }
+  h3.sub-title {
+    font-family: var(--font-ui);
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--ink);
+    margin: 28px 0 12px;
+  }
+  p { margin: 0 0 14px; max-width: 68ch; }
+  p:last-child { margin-bottom: 0; }
+  .lede { font-size: 16.5px; }
+  ol.steps, ul.plain { padding-left: 22px; max-width: 68ch; display: grid; gap: 8px; }
+  ol.steps li, ul.plain li { padding-left: 2px; }
+
+  code, .mono { font-family: var(--font-mono); font-size: 0.92em; }
+  code {
+    background: var(--header-fill);
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+
+  /* ---------- Stat row ---------- */
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--grid-line);
+    border: 1px solid var(--grid-line);
+    border-radius: 8px;
+    overflow: hidden;
+    margin: 20px 0 8px;
+  }
+  .stat-tile {
+    background: var(--paper);
+    padding: 18px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .stat-num {
+    font-family: var(--font-mono);
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--ink);
+    font-variant-numeric: tabular-nums;
+  }
+  .stat-tile.done .stat-num { color: var(--good); }
+  .stat-tile.named .stat-num { color: var(--accent-warm); }
+  .stat-tile.unitemized .stat-num { color: var(--warn); }
+  .stat-label {
+    font-family: var(--font-ui);
+    font-size: 11px;
+    letter-spacing: 0.03em;
+    color: var(--ink-faint);
+    line-height: 1.35;
+  }
+  .stat-caption {
+    font-family: var(--font-ui);
+    font-size: 12px;
+    color: var(--ink-faint);
+    margin-top: 4px;
+  }
+
+  /* ---------- Method steps ---------- */
+  .method-list { display: grid; gap: 14px; margin: 20px 0; }
+  .method-item {
+    display: grid;
+    grid-template-columns: 28px 1fr;
+    gap: 14px;
+    align-items: start;
+  }
+  .method-num {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--paper);
+    background: var(--accent);
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    flex: none;
+  }
+  .method-body b { color: var(--ink); }
+  .method-body p { margin: 0; font-size: 15px; color: var(--ink-soft); }
+
+  .callout {
+    display: flex;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: 6px;
+    margin: 20px 0;
+    font-size: 14.5px;
+  }
+  .callout.warn { background: var(--warn-soft); color: var(--warn); }
+  .callout.warm { background: var(--accent-warm-soft); color: var(--accent-warm); }
+  .callout b { font-weight: 700; }
+  .callout-mark { flex: none; font-family: var(--font-ui); font-weight: 700; }
+
+  /* ---------- Option cards ---------- */
+  .opt-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 14px;
+    margin: 22px 0 8px;
+  }
+  .optcard {
+    background: var(--paper);
+    border: 1px solid var(--grid-line);
+    border-radius: 8px;
+    padding: 18px 18px 16px;
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    position: relative;
+  }
+  .optcard.recommended { border-color: var(--accent-warm); }
+  .opt-head {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .opt-letter {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--paper);
+    background: var(--slate);
+    width: 24px;
+    height: 24px;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+  }
+  .optcard.recommended .opt-letter { background: var(--accent-warm); }
+  .opt-title {
+    font-family: var(--font-ui);
+    font-size: 14.5px;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .opt-badge {
+    margin-left: auto;
+    font-family: var(--font-ui);
+    font-size: 10px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--accent-warm);
+    background: var(--accent-warm-soft);
+    padding: 3px 8px;
+    border-radius: 999px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .opt-buys {
+    font-family: var(--font-ui);
+    font-size: 11px;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-top: 2px;
+  }
+  .opt-body { font-size: 14px; color: var(--ink-soft); margin: 0; }
+
+  /* ---------- Table ---------- */
+  .tbl-wrap { overflow-x: auto; margin: 18px 0; }
+  table.status {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 14px;
+  }
+  table.status th, table.status td {
+    border: 1px solid var(--grid-line);
+    padding: 8px 12px;
+    text-align: left;
+    vertical-align: top;
+  }
+  table.status th {
+    background: var(--header-fill);
+    font-family: var(--font-ui);
+    font-size: 12px;
+    color: var(--ink-soft);
+    font-weight: 700;
+  }
+  .chip {
+    display: inline-block;
+    font-family: var(--font-ui);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 999px;
+  }
+  .chip.done { background: var(--good-soft); color: var(--good); }
+  .chip.formula { background: var(--accent-warm-soft); color: var(--accent-warm); }
+  .chip.none { background: var(--slate-soft); color: var(--slate); }
+
+  hr.divider { border: none; border-top: 1px solid var(--grid-line); margin: 56px 0 0; }
+
+  footer.closing {
+    max-width: 760px;
+    margin: 64px auto 0;
+    padding: 0 24px 64px;
+  }
+  footer.closing h2 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 22px;
+    margin: 0 0 14px;
+  }
+  footer.closing ol { padding-left: 20px; display: grid; gap: 8px; max-width: 62ch; }
+  footer.closing li { font-size: 15px; color: var(--ink-soft); }
+  footer.closing p.note {
+    margin-top: 22px;
+    font-size: 13px;
+    color: var(--ink-faint);
+    font-family: var(--font-ui);
+  }
+</style>
+
+<header class="masthead">
+  <p class="eyebrow">CF_Algorithm &middot; Continuation Guide</p>
+  <h1 class="title">Pick this back up — finishing CF's rating-specification review</h1>
+  <p class="dek">Self-contained: everything you need to restart tomorrow lives on this page, pointing at the source files rather than repeating them.</p>
+  <p class="dek"><b>The goal, plainly.</b> GL's rating specifications are fully reviewed — a matched pair of docs for all ten of its coverage/endorsement families. CF isn't there yet: five core coverages are done, and roughly 90 more named families plus Earthquake and Flood are still untraced. This page is the runbook for closing that gap, the same way it was closed for GL.</p>
+  <p class="byline">Written 2026-09-02</p>
+</header>
+
+<nav class="jumpbar" aria-label="Jump to section">
+  <div class="jumpbar-inner">
+    <a class="navlink" href="#status">Where things stand</a>
+    <a class="navlink" href="#method">The method</a>
+    <a class="navlink" href="#order">Starting order</a>
+    <a class="navlink" href="#done">What "done" looks like</a>
+    <a class="navlink" href="#remaining">Remaining steps</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- ============ 1. STATUS ============ -->
+  <section class="block" id="status">
+    <span class="sect-num">01</span>
+    <h2 class="sect-title">Where CF actually stands</h2>
+    <p class="lede">Full picture is in <span class="mono">Excel_Rater_FullBuildout_Scope.md</span> — this is the count that matters for tomorrow.</p>
+
+    <div class="stat-row">
+      <div class="stat-tile done">
+        <span class="stat-num">5</span>
+        <span class="stat-label">Fully documented — algorithm&nbsp;doc&nbsp;+ tables&nbsp;doc</span>
+      </div>
+      <div class="stat-tile named">
+        <span class="stat-num">~92</span>
+        <span class="stat-label">Named, itemized, not&nbsp;traced</span>
+      </div>
+      <div class="stat-tile unitemized">
+        <span class="stat-num">~146</span>
+        <span class="stat-label">Found by the corrected sweep, not even&nbsp;named yet</span>
+      </div>
+      <div class="stat-tile">
+        <span class="stat-num">243</span>
+        <span class="stat-label">Real coverage/endorsement families, corrected&nbsp;count</span>
+      </div>
+    </div>
+    <p class="stat-caption">Building, Personal Property, Special Class, Business Income, Special Class Business Income are the five done. Everything else is somewhere between "named" and "not even itemized."</p>
+
+    <div class="callout warm">
+      <span class="callout-mark">&#9670;</span>
+      <p>Separately, this project also built a spreadsheet-build-guide layer (<code>Excel_Rater_*.md</code>) on top of the five documented coverages. That layer is <b>downstream</b> of this review — it consumes the algorithm docs, it doesn't advance them. Progress on <code>Excel_Rater_*.md</code> is not progress on this sweep; don't let the two tracks blur together tomorrow.</p>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- ============ 2. METHOD ============ -->
+  <section class="block" id="method">
+    <span class="sect-num">02</span>
+    <h2 class="sect-title">The method — already proven, don't reinvent it</h2>
+    <p class="lede"><span class="mono">AGENTS.md</span> Part 2 documents the exact briefing pattern that produced all five of today's fully-documented coverages. Use it again, verbatim.</p>
+
+    <div class="method-list">
+      <div class="method-item">
+        <span class="method-num">1</span>
+        <div class="method-body"><p><b>Read the template first</b> — the Building doc for structure and depth; for anything structurally close to an already-documented family, also read that sibling doc. An Earthquake pass should start with Business Income's own EQ section, since that's the one place in this project an EQ chain has already been traced.</p></div>
+      </div>
+      <div class="method-item">
+        <span class="method-num">2</span>
+        <div class="method-body"><p><b>Enumerate before assuming</b> — grep the real <code>Rules</code> directory for actual file names before tracing anything. This project's own rule #1, and the reason the original 97-family count turned out to be less than half the real 243.</p></div>
+      </div>
+      <div class="method-item">
+        <span class="method-num">3</span>
+        <div class="method-body"><p><b>Cite everything</b> — file name + line number for every rule reference; table name + confirmed file path + <b>row count</b>, not just existence, for every data claim.</p></div>
+      </div>
+      <div class="method-item">
+        <span class="method-num">4</span>
+        <div class="method-body"><p><b>Never guess</b> — anything genuinely unresolvable from the ERC files alone goes into the report as an open question. See <code>SpecificGroupIRate</code> in <span class="mono">Excel_Rater_BasicGroupI.md</span> §9 for a recent example done correctly: no rule was found for it anywhere, and that absence was reported as-is.</p></div>
+      </div>
+      <div class="method-item">
+        <span class="method-num">5</span>
+        <div class="method-body"><p><b>Report back structurally</b> — files written, the biggest structural differences versus the closest documented sibling, and a bullet list of open questions. Every time.</p></div>
+      </div>
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-mark">!</span>
+      <p><b>Two standing corrections, learned the hard way twice already.</b> "Table exists" and "table has a usable data row" are different claims — verify both, every time. And when a search returns zero results for something you'd expect to exist, that's a prompt to widen the search, not a reportable absence — the original 97-family undercount happened because one filename pattern was trusted without checking whether ISO used a second one, which is exactly where Earthquake and Flood turned out to be hiding.</p>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- ============ 3. STARTING ORDER ============ -->
+  <section class="block" id="order">
+    <span class="sect-num">03</span>
+    <h2 class="sect-title">Tomorrow's starting order</h2>
+    <p class="lede">Feature sets, not a flat queue — pick one, not all. Each is independently valuable and none blocks the others.</p>
+
+    <div class="opt-grid">
+      <div class="optcard recommended">
+        <div class="opt-head">
+          <span class="opt-letter">B</span>
+          <span class="opt-title">Trace Earthquake</span>
+          <span class="opt-badge">Default</span>
+        </div>
+        <span class="opt-buys">Buys</span>
+        <p class="opt-body">Up to 20 files, touches every core coverage. Business Income's own internal EQ chain is already traced — what's missing is the <i>standalone endorsement</i> that attaches EQ coverage in the first place, and whether it feeds that chain. The single most valuable open question in the backlog.</p>
+      </div>
+
+      <div class="optcard">
+        <div class="opt-head">
+          <span class="opt-letter">A</span>
+          <span class="opt-title">Finish the itemization gap</span>
+        </div>
+        <span class="opt-buys">Buys</span>
+        <p class="opt-body">Run the corrected, unrestricted sweep and individually name the ~146 families it found but nobody's listed yet. Bookkeeping, not tracing — makes every future "what's left" question answerable by name.</p>
+      </div>
+
+      <div class="optcard">
+        <div class="opt-head">
+          <span class="opt-letter">C</span>
+          <span class="opt-title">Trace Flood</span>
+        </div>
+        <span class="opt-buys">Buys</span>
+        <p class="opt-body">Smaller — 5 form variants — and genuinely untouched. One trap already flagged: <code>DischargeFromSewerDrainOrSumpNotFloodReltd</code> looks flood-related by name and explicitly isn't.</p>
+      </div>
+
+      <div class="optcard">
+        <div class="opt-head">
+          <span class="opt-letter">D</span>
+          <span class="opt-title">Trace Ordinance or Law</span>
+        </div>
+        <span class="opt-buys">Buys</span>
+        <p class="opt-body">The largest itemized cluster — 18 families, Coverage A/B/C/B-and-C split three ways again for Tenants' Interest. Manual rule number unconfirmed — a good first target for circular verification too.</p>
+      </div>
+
+      <div class="optcard">
+        <div class="opt-head">
+          <span class="opt-letter">E</span>
+          <span class="opt-title">Trace Business Income's time-element extensions</span>
+        </div>
+        <span class="opt-buys">Buys</span>
+        <p class="opt-body">Second-largest cluster — 17 families — all attach to the most thoroughly documented of the five core coverages, so the "read the closest sibling first" step is unusually strong here.</p>
+      </div>
+
+      <div class="optcard">
+        <div class="opt-head">
+          <span class="opt-letter">F</span>
+          <span class="opt-title">Add Special Class(es) to the rater layer</span>
+        </div>
+        <span class="opt-buys">Buys</span>
+        <p class="opt-body">Not ERC tracing at all — both algorithm docs already exist. Cheapest item here, if you'd rather advance the spreadsheet-rater track instead of this review.</p>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- ============ 4. WHAT DONE LOOKS LIKE ============ -->
+  <section class="block" id="done">
+    <span class="sect-num">04</span>
+    <h2 class="sect-title">What "done" looks like for one family</h2>
+    <p>Mirror the shape every existing <span class="mono">CauseOfLoss_*_RatingAlgorithms.md</span> already has: master orchestration, file map, rate build-up per form/branch, premium calc per form/branch, a comparison table against the closest sibling, supporting-lookups tables, a quick-reference end-to-end block.</p>
+    <p>Pair it with a <span class="mono">*_ERC_Tables.md</span> doc listing every required table, each verified for <b>both</b> existence and row count, with header-only tables flagged loudly the way <span class="mono">BasicGroupI_ERC_Tables.md</span>'s own correction note does.</p>
+
+    <div class="tbl-wrap">
+      <table class="status">
+        <tr><th>When finished</th><th>Update</th></tr>
+        <tr><td>Family moves from "not yet documented" to documented</td><td><span class="mono">Coverage_Inventory_And_Tracking.md</span> Part A/B tables</td></tr>
+        <tr><td>Family status flips in the count above</td><td>This page's §01, next time it's read</td></tr>
+      </table>
+    </div>
+
+    <h3 class="sub-title">For reference — how the five core coverages sit today</h3>
+    <div class="tbl-wrap">
+      <table class="status">
+        <tr><th>Coverage</th><th>Algorithm doc</th><th>Rater build docs</th></tr>
+        <tr><td>Building / Personal Property</td><td><span class="chip done">Documented</span></td><td><span class="chip done">Built — all 4 forms</span></td></tr>
+        <tr><td>Business Income</td><td><span class="chip done">Documented</span></td><td><span class="chip done">Built — 4 of 5 forms</span></td></tr>
+        <tr><td>Special Class</td><td><span class="chip done">Documented</span></td><td><span class="chip none">Not started</span></td></tr>
+        <tr><td>Special Class Business Income</td><td><span class="chip done">Documented</span></td><td><span class="chip none">Not started</span></td></tr>
+        <tr><td>Earthquake &amp; Volcanic Eruption endt.</td><td><span class="chip none">Not traced</span></td><td><span class="chip none">Not started</span></td></tr>
+        <tr><td>Flood endorsement</td><td><span class="chip none">Not traced</span></td><td><span class="chip none">Not started</span></td></tr>
+        <tr><td>~90 remaining endorsement families</td><td><span class="chip formula">Named only</span></td><td><span class="chip none">Not started</span></td></tr>
+      </table>
+    </div>
+  </section>
+
+</div>
+
+<footer class="closing">
+  <h2>Remaining steps</h2>
+  <ol>
+    <li>Pick a starting family from §03 — B (Earthquake) if nothing else forces a different priority.</li>
+    <li>Dispatch the trace using the §02 method — background agent or direct session work, whichever fits; the four original core-coverage passes mixed both.</li>
+    <li>Nothing gets built into a workbook or engine from any of this — this guide is about finishing the <i>specification</i> review, one family at a time, per this project's standing rule.</li>
+  </ol>
+  <p class="note">Companion document: <span class="mono">CF_Algorithm/TOMORROW-CF-REVIEW-GUIDE.md</span>. Referenced throughout: <span class="mono">AGENTS.md</span>, <span class="mono">Coverage_Inventory_And_Tracking.md</span>, <span class="mono">Excel_Rater_FullBuildout_Scope.md</span>, <span class="mono">BUILD-LOG.md</span>.</p>
+</footer>
+
+<script>
+  (function () {
+    var links = Array.prototype.slice.call(document.querySelectorAll('.navlink'));
+    var sections = links.map(function (a) {
+      return document.querySelector(a.getAttribute('href'));
+    });
+    function onScroll() {
+      var pos = window.scrollY + 80;
+      var current = 0;
+      for (var i = 0; i < sections.length; i++) {
+        if (sections[i] && sections[i].offsetTop <= pos) current = i;
+      }
+      links.forEach(function (a, i) {
+        a.classList.toggle('current', i === current);
+      });
+    }
+    document.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+</script>

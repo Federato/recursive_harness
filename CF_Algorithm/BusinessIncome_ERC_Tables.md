@@ -52,8 +52,8 @@ layered on top of *both* the Building's base rate table and Business Income's ow
 | `MaxPeriodOfIndemnityFactor` | `Factor`, max-period branch | State\|CW, ... | 22 CW rows |
 | `MonthlyLimitOfIndemnityFactor` | `Factor`, monthly-limit branch | State\|CW, ... | 60 CW rows |
 | `ExtraExpenseFactor` | `Factor`, Extra-Expense-Only branch | State\|CW, ExtraExpnLimitOnLossPymts | 4 data rows |
-| `SprinklerLeakageExclNonSprinkleredRate` | BGI COL adjustment subtraction | State\|CW | 1 data row (single statewide constant) |
-| `SprinklerLeakageExclSprinkleredFactor` | BGI COL adjustment factor | State\|CW | 12 data rows |
+| `SprinklerLeakageExclNonSprinkleredRate` | BGI COL adjustment subtraction — feeds this datadef group's `SprinklerLeakageExclNonSprinkleredBaseRate`; Business Income's own `...Rate` datadef (no suffix) is the LCM-scaled result actually subtracted — **different naming from Structure's `...BldgRate`, see `CauseOfLoss_BusinessIncome_RatingAlgorithms.md` Step 3** | State\|CW | 1 data row (single statewide constant) |
+| `SprinklerLeakageExclSprinkleredFactor` | BGI COL adjustment factor — **only ever non-1.0 for Specific/Tentative rating, never Class — see `BasicGroupI_ERC_Tables.md`'s correction** | State\|CW | 12 data rows |
 | `VandalismExclFactor` | BGI/BGII COL adjustment factor | State\|CW | 161 data rows |
 | `WindstormOrHailExclFactor` | BGII wind/hail-excluded rebuild | State\|CW | 4 data rows |
 | `BldrsRiskFactorBusnIncome` | Builders Risk rate modifier (BGI/BGII/EQ COL adjustment) | State\|CW, "Y" | 1 data row |

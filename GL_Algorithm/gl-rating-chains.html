@@ -277,6 +277,11 @@
       <button class="navlink" data-target="terr-uav">Unmanned Aircraft<span class="chain-len">2 siblings summed · Cov A/B</span></button>
       <button class="navlink" data-target="terr-endorsement">Endorsement-only<span class="chain-len">user input x validated factor</span></button>
     </div>
+    <hr>
+    <div class="group">
+      <div class="group-label">Stop Gap Employers Liability (state-only)</div>
+      <button class="navlink" data-target="stopgap-main">ND/OH/PR/WA/WY, Rule A2<span class="chain-len">E18 dependency on Prem/Ops · 5-state chain</span></button>
+    </div>
 
     <div class="legend">
       <h4>Reading the chains</h4>
@@ -292,8 +297,8 @@
 
     <section class="sheet-view active" id="view-overview">
       <div class="intro">
-        <h2>Eighteen chains across seven sublines, none of them a template</h2>
-        <p>Unlike CF's four cause-of-loss forms rated in parallel off one shared shape, GL's seven sublines share almost nothing structurally — Premises/Operations forks by countrywide edition, Products/Completed Operations forks by whether a published loss cost is filed as zero, Owners &amp; Contractors Protective forks by class code and by edition simultaneously, Railroad Protective forks by class code four ways with three "naming trap" rules whose names lie about which class they test, and Product Withdrawal / Cyber reads its host coverage's <em>already-computed</em> values rather than its own tables (escalation E18). Liquor Liability is the plainest of the seven: no loss-cost path exists at all, by rule — Rule 45.E says "for rates, refer to company," so the entire chain is an ELP-driven surrogate.</p>
+        <h2>Nineteen chains across eight sublines, none of them a template</h2>
+        <p>Unlike CF's four cause-of-loss forms rated in parallel off one shared shape, GL's eight sublines share almost nothing structurally — Premises/Operations forks by countrywide edition, Products/Completed Operations forks by whether a published loss cost is filed as zero, Owners &amp; Contractors Protective forks by class code and by edition simultaneously, Railroad Protective forks by class code four ways with three "naming trap" rules whose names lie about which class they test, and Product Withdrawal / Cyber reads its host coverage's <em>already-computed</em> values rather than its own tables (escalation E18). Liquor Liability is the plainest of the eight: no loss-cost path exists at all, by rule — Rule 45.E says "for rates, refer to company," so the entire chain is an ELP-driven surrogate. Stop Gap Employers Liability is the only one with no ISO subline code and no countrywide rating package at all — it is filed state-only, in exactly five monopolistic-fund jurisdictions, and its rate build-up reads Premises/Operations' own already-computed <code style="font-family:var(--font-mono)">BaseRate</code> and exposure count directly, the same E18 pattern Product Withdrawal / Cyber uses but at the level of computed values rather than borrowed tables.</p>
         <p>Dashed amber-and-rust nodes mark a flagged finding — an unresolved formula, a naming trap, a sibling-group dependency, a table that prices legitimately at zero — logged in each subline's own <code style="font-family:var(--font-mono)">RatingAlgorithms.md</code> and its source gate doc rather than guessed at. Where a gate doc did not reconstruct a step's internal branching, the node says so instead of inventing one.</p>
       </div>
       <table class="matrix">
@@ -365,6 +370,14 @@
             <td><button class="cell" data-target="terr-allother">All Other Sublines<span class="n">5 siblings, fixed Average</span></button></td>
             <td><button class="cell" data-target="terr-uav">Unmanned Aircraft<span class="n">2 siblings summed</span></button></td>
             <td><button class="cell" data-target="terr-endorsement">Endorsement-only<span class="n">user input x factor</span></button></td>
+          </tr>
+          <tr>
+            <th>Stop Gap Employers Liability</th>
+            <td><button class="cell" data-target="stopgap-main">ND/OH/PR/WA/WY, Rule A2<span class="n">reads Prem/Ops' own BaseRate + exposure</span></button></td>
+            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">no rating-mechanism deviation among the 5 states</span></td>
+            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
+            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
+            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
           </tr>
         </tbody>
       </table>
@@ -1288,17 +1301,18 @@ flowchart TD
         <pre class="mermaid">
 %%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
 flowchart TD
-    start(["Terrorism Prem/Ops coverage record"]) --> sumSib["ClassCoveragePremium = PremOps.Premium + LossOfElectronicDataPremOps.Premium + CyberIncidentLiabilityPremOps.Premium - 3 named siblings, summed (GATE-TERRORISM.md Sec 2)"]:::step
+    start(["Terrorism Prem/Ops coverage record"]) --> formGate{"CG 21 73 / 75 / 87 / 90 attached? (certified acts excluded outright)"}
+    formGate -->|"Yes"| noRun["Chain does not run at all - Premium (certified acts) = 0"]:::zero
+    formGate -->|"No"| sumSib["ClassCoveragePremium = PremOps.Premium + LossOfElectronicDataPremOps.Premium + CyberIncidentLiabilityPremOps.Premium - 3 named siblings, summed (GATE-TERRORISM.md Sec 2)"]:::step
     sumSib --> classLookup["ExposureClass = lookup TerrorismExposureClassesPremises(ClassCode) - CW 105 above-average; LA/NJ/NY override"]:::step
     classLookup --> stateGate{"State in the 15-state override list? (CA,CO,CT,FL,IL,MA,MD,MI,NJ,NY,OR,PA,TX,VA,WA)"}
     stateGate -->|"No, 36 states"| cwFactor["ExposureClassFactor = lookup CertifiedActsOfTerrorismExposureClassFactorPremises(State,TRIAIndicator,ExposureClass) - CW: Above Average .009 / Average .004, 2.25x spread"]:::step
     stateGate -->|"Yes, 15 states"| stFactor["ExposureClassFactor = lookup state-suffixed table(State,TRIAIndicator,ExposureClass,Territory) - 15 values .004-.133, 33x spread; NY adds a Manhattan-specific FactorOtherManhattan split (.038-.098, 5-key incl. borough); CA adds a FactorRemainderOfTerritory001 vs FactorCA split"]:::step
-    cwFactor --> nbcrGate{"NBCR applicable?"}
+    cwFactor --> nbcrGate{"CG 21 84 attached? (NBCR carve-out, offerable only after insured rejects standard A.1.a coverage)"}
     stFactor --> nbcrGate
-    nbcrGate -->|"Yes"| nbcrTrigger["Trigger condition (which endorsement/coverage selection turns this on) - not resolved in source docs"]:::openq
-    nbcrTrigger --> nbcrApply["Premium_intermediate x= CertifiedActsOfTerrorismNuclBioChemRadioFactor - CW 0.58, manual A.1.b: 'multiply the additional premium by 0.58'"]:::step
+    nbcrGate -->|"Yes"| nbcrApply["Premium_intermediate x= CertifiedActsOfTerrorismNuclBioChemRadioFactor - CW 0.58, manual A.1.b: 'multiply the additional premium by 0.58'"]:::step
     nbcrGate -->|"No"| nbcrSkip["No NBCR factor applied"]:::step
-    nbcrApply --> ilfGate{"Sub-limit ILF ratio applicable?"}
+    nbcrApply --> ilfGate{"CG 21 80 / 89 / 92 attached? (Terrorism Aggregate Limit differs from per-occurrence limit)"}
     nbcrSkip --> ilfGate
     ilfGate -->|"Yes"| ilfApply["Premium_intermediate x= (TerrorismILF / PremOps.FinalILF) - TerrorismILF set by SetTerrorismILF per PEV001 A.1.c.(1)/(2) two-case limit selection"]:::step
     ilfGate -->|"No"| ilfSkip["No sub-limit ratio applied"]:::step
@@ -1310,7 +1324,7 @@ flowchart TD
     classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
     classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
     classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
-    class stateGate,nbcrGate,ilfGate gate
+    class formGate,stateGate,nbcrGate,ilfGate gate
         </pre>
       </div>
       <div class="notes">
@@ -1320,9 +1334,10 @@ flowchart TD
             <li>There is no rate build-up here at all — the "rate" input is the already-computed `Premium` and `FinalILF` of three sibling coverage groups, so this chain must be the last thing rated in the policy (GATE-TERRORISM.md § 8.1).</li>
             <li>15 of 51 jurisdictions zero out the countrywide exposure-class-factor rows entirely and redirect to a state-suffixed, territory-keyed table with a 33x spread versus countrywide's 2.25x — this is a factor-resolution difference inside every aggregation path, not a separate premium chain.</li>
             <li>`SetTerrorismILF` picks the sub-limit ILF two ways depending on whether the terrorism aggregate limit is at or below the policy per-occurrence limit (PEV001 A.1.c.(1)/(2)) — and the ratio divides by the host's `FinalILF`, not a terrorism-side value.</li>
+            <li><strong>Resolved 2026-09-01:</strong> which form fires the NBCR factor is now known from a direct read of the manual's Terrorism Supplement — CG 21 84, offerable only after the insured first rejects standard A.1.a coverage. Which form kills the chain outright (CG 21 73/75/87/90) and which puts the aggregate-limit mismatch on the policy (CG 21 80/89/92) are resolved the same way.</li>
           </ul>
         </div>
-        <div class="delta openq"><strong>Open question.</strong> The exact trigger that turns the NBCR factor on (which endorsement or coverage selection) is not traced in GATE-TERRORISM.md beyond the manual citation for the 0.58 value itself — the branch condition shown is structural, not the literal test.</div>
+        <div class="delta openq"><strong>Open question.</strong> The manual names which endorsement form does what; it does not say which policy-level DataDef or flag the rating engine actually reads to determine "which form is attached" — that mapping would need the rule file itself, not the Terrorism Supplement.</div>
       </div>
     </section>
 
@@ -1340,17 +1355,18 @@ flowchart TD
         <pre class="mermaid">
 %%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
 flowchart TD
-    start(["Terrorism Products/Completed Operations coverage record"]) --> sumSibP["ClassCoveragePremium = ProdsCompldOps.Premium + LossOfElectronicDataProdsCompldOps.Premium + CyberIncidentLiabilityProdsCompldOps.Premium - inferred from the PremOps/ProdsCompldOps naming pairing, NOT individually cited in GATE-TERRORISM.md"]:::openq
+    start(["Terrorism Products/Completed Operations coverage record"]) --> formGateP{"CG 21 73 / 75 / 87 / 90 attached? (certified acts excluded outright)"}
+    formGateP -->|"Yes"| noRunP["Chain does not run at all - Premium (certified acts) = 0"]:::zero
+    formGateP -->|"No"| sumSibP["ClassCoveragePremium = ProdsCompldOps.Premium + LossOfElectronicDataProdsCompldOps.Premium + CyberIncidentLiabilityProdsCompldOps.Premium - inferred from the PremOps/ProdsCompldOps naming pairing, NOT individually cited in GATE-TERRORISM.md"]:::openq
     sumSibP --> classLookupP["ExposureClass = lookup TerrorismExposureClassesProducts(ClassCode) - CW 54 above-average"]:::step
     classLookupP --> stateGateP{"State in the 15-state override list? (CA,CO,CT,FL,IL,MA,MD,MI,NJ,NY,OR,PA,TX,VA,WA)"}
     stateGateP -->|"No, 36 states"| cwFactorP["ExposureClassFactor = lookup CertifiedActsOfTerrorismExposureClassFactorProducts(State,TRIAIndicator,ExposureClass) - analogous Products-side table, NOT individually re-confirmed in gate doc beyond the Premises example"]:::openq
     stateGateP -->|"Yes, 15 states"| stFactorP["ExposureClassFactor = lookup state-suffixed table(State,TRIAIndicator,ExposureClass,Territory) - same 15-state redirect, NY Manhattan split, CA remainder-of-territory split as Prem/Ops"]:::step
-    cwFactorP --> nbcrGateP{"NBCR applicable?"}
+    cwFactorP --> nbcrGateP{"CG 21 84 attached? (NBCR carve-out, same trigger as Prem/Ops)"}
     stFactorP --> nbcrGateP
-    nbcrGateP -->|"Yes"| nbcrTriggerP["Trigger condition - not resolved in source docs (same unresolved trigger as Prem/Ops)"]:::openq
-    nbcrTriggerP --> nbcrApplyP["Premium_intermediate x= CertifiedActsOfTerrorismNuclBioChemRadioFactor - CW 0.58"]:::step
+    nbcrGateP -->|"Yes"| nbcrApplyP["Premium_intermediate x= CertifiedActsOfTerrorismNuclBioChemRadioFactor - CW 0.58"]:::step
     nbcrGateP -->|"No"| nbcrSkipP["No NBCR factor applied"]:::step
-    nbcrApplyP --> ilfGateP{"Sub-limit ILF ratio applicable?"}
+    nbcrApplyP --> ilfGateP{"CG 21 82 attached? (Products/Completed Ops counterpart to CG 21 80's aggregate-limit mismatch)"}
     nbcrSkipP --> ilfGateP
     ilfGateP -->|"Yes"| ilfApplyP["Premium_intermediate x= (TerrorismILF / ProdsCompldOps.FinalILF) - same SetTerrorismILF two-case selection"]:::step
     ilfGateP -->|"No"| ilfSkipP["No sub-limit ratio applied"]:::step
@@ -1362,7 +1378,7 @@ flowchart TD
     classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
     classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
     classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
-    class stateGateP,nbcrGateP,ilfGateP gate
+    class formGateP,stateGateP,nbcrGateP,ilfGateP gate
         </pre>
       </div>
       <div class="notes">
@@ -1371,7 +1387,7 @@ flowchart TD
           <ul>
             <li>The gate doc names Prem/Ops's three siblings explicitly but not Products/Completed Operations's — the three shown here follow the parallel `...PremOps/...ProdsCompldOps` naming convention confirmed elsewhere in the corpus, but should be verified against the rule file before being treated as filed fact.</li>
             <li>The Products-side exposure-class-factor table is named in GATE-TERRORISM.md § 8.4 but its values are not individually re-confirmed the way the Premises table's `.009`/`.004` pair is.</li>
-            <li>Everything downstream of the sibling sum and the class-factor lookup — the 15-state redirect, the NBCR factor, the sub-limit ILF ratio — is structurally identical to Prem/Ops.</li>
+            <li>Everything downstream of the sibling sum and the class-factor lookup — the 15-state redirect, the NBCR factor, the sub-limit ILF ratio — is structurally identical to Prem/Ops, including which forms trigger the NBCR carve-out (CG 21 84) and the outright exclusions (CG 21 73/75/87/90). CG 21 82 is the Products-side counterpart of Prem/Ops's CG 21 80 for the ILF sub-limit ratio.</li>
           </ul>
         </div>
         <div class="delta openq"><strong>Open question.</strong> Both the sibling-group list and the countrywide Products exposure-class-factor values are inferred by analogy to Prem/Ops rather than individually cited in the gate doc — treat both as unverified until checked against the rule XML.</div>
@@ -1397,12 +1413,11 @@ flowchart TD
     classFixed --> stateGateA{"State in the 15-state override list? (CA,CO,CT,FL,IL,MA,MD,MI,NJ,NY,OR,PA,TX,VA,WA)"}
     stateGateA -->|"No, 36 states"| cwFactorA["ExposureClassFactor = lookup CertifiedActsOfTerrorismExposureClassFactor(State,TRIAIndicator,'Average') - CW: Average .004 (no Above Average path exists here)"]:::step
     stateGateA -->|"Yes, 15 states"| stFactorA["ExposureClassFactor = lookup state-suffixed table(State,TRIAIndicator,'Average',Territory) - same 15-state redirect, NY Manhattan split, CA remainder-of-territory split as the other three paths"]:::step
-    cwFactorA --> nbcrGateA{"NBCR applicable?"}
+    cwFactorA --> nbcrGateA{"CG 21 84 attached? (NBCR carve-out, same trigger as Prem/Ops)"}
     stFactorA --> nbcrGateA
-    nbcrGateA -->|"Yes"| nbcrTriggerA["Trigger condition - not resolved in source docs (same unresolved trigger as Prem/Ops)"]:::openq
-    nbcrTriggerA --> nbcrApplyA["Premium_intermediate x= CertifiedActsOfTerrorismNuclBioChemRadioFactor - CW 0.58"]:::step
+    nbcrGateA -->|"Yes"| nbcrApplyA["Premium_intermediate x= CertifiedActsOfTerrorismNuclBioChemRadioFactor - CW 0.58"]:::step
     nbcrGateA -->|"No"| nbcrSkipA["No NBCR factor applied"]:::step
-    nbcrApplyA --> ilfGateA{"Sub-limit ILF ratio applicable?"}
+    nbcrApplyA --> ilfGateA{"CG 21 80-family attached? (aggregate-limit mismatch trigger, same pattern as Prem/Ops)"}
     nbcrSkipA --> ilfGateA
     ilfGateA -->|"Yes"| ilfApplyA["Premium_intermediate x= (TerrorismILF / FinalILF) - same SetTerrorismILF two-case selection, same pattern as Prem/Ops"]:::step
     ilfGateA -->|"No"| ilfSkipA["No sub-limit ratio applied"]:::step
@@ -1517,6 +1532,62 @@ flowchart TD
           </ul>
         </div>
         <div class="delta"><strong>vs. the four aggregation paths.</strong> No sibling `Premium` sum, no `ExposureClass` lookup, no NBCR factor (not applicable here), and no `FinalILF` input for a sub-limit ratio — the only enforcement is the validation message when no class on the policy is Above Average.</div>
+      </div>
+    </section>
+
+    <!-- ============================= STOP GAP EMPLOYERS LIABILITY ============================= -->
+    <section class="sheet-view" id="view-stopgap-main">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Stop Gap Employers Liability — state-only Additional Rule A2</span></div>
+        <div class="field"><span class="k">Edition</span><span class="v">ND, OH, PR, WA, WY — no ISO subline code, no countrywide rating package (CW `StopGapRate` is header-only, 0 rows, every edition checked)</span></div>
+        <div class="field"><span class="k">Master chain</span><span class="v">4 rules added into classification-level `ErcRate` + a policy-level endorsement rule group, one instance per attached Stop Gap endorsement</span></div>
+        <div class="field"><span class="k">Premium file</span><span class="v">GeneralLiabilityStopGapEmployersLiabilityCoverageEndorsementPolLvlRules.Rule.xml + GeneralLiabilityClassificationRules.Rule.xml override</span></div>
+        <div class="field wide"><span class="k">Coverage gate</span><span class="v">Genuine cross-coverage (E18) dependency, not a table borrow — reads Premises/Operations' own already-computed classification `BaseRate` and `PremOpsExposureCalc` directly, so Stop Gap cannot rate a classification until Prem/Ops has already rated it (GATE-STOPGAP-EMPLOYERS-LIABILITY.md § 2)</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["Stop Gap classification record, run inside Prem/Ops classification's ErcRate override"]) --> ilfStep["SetStopGapIncrdLimitFactor: StopGapIncrdLimitFactor = LookupILFPremOpsWithArgs(ILTA assignment, Stop Gap's own BI-by-accident and BI-by-disease-aggregate limits) - same Prem/Ops ILF lookup, guarded IsNull -> 0.0 if unresolved"]:::step
+    ilfStep --> factorStep["SetStopGapFactor: StopGapFactor = LookupStopGapRate(StateCode, ClassificationType) - 0.03 Mfg/Contracting/Servicing, 0.02 Buildings/Mercantile/Misc; CW layer is 0 rows so FirstNonNull(state,CW) can never resolve through CW -> 0.0 if the state files no row"]:::step
+    factorStep --> baseRead["calcBaseRateStopGap = StopGapFactor x PremOpsCoverage.BaseRate - Prem/Ops' OWN already-computed classification base rate, not an independent lookup (E18 dependency)"]:::openq
+    baseRead --> overrideGate{"StopGapIncrdLimitFactorOverride populated (non-zero)?"}
+    overrideGate -->|"Yes"| overrideBranch["StopGapFinalRate = round(Override x calcBaseRateStopGap x PackageModFactor x ExperienceRatingModificationFactor x ModToUse, 3) - what populates the override, or under what submission condition, is not resolved in source docs"]:::openq
+    overrideGate -->|"No"| normalBranch["StopGapFinalRate = round(StopGapIncrdLimitFactor x calcBaseRateStopGap x PackageModFactor x ExperienceRatingModificationFactor x ModToUse, 3)"]:::step
+    overrideBranch --> limitGateClass{"LimitBodilyInjuryByAccident == LimitBodilyInjuryByDiseaseEachEmployee?"}
+    normalBranch --> limitGateClass
+    limitGateClass -->|"Yes"| stopGapPremium["StopGapPremium = round(StopGapFinalRate x PremOpsExposureCalc, 0) - Prem/Ops' OWN already-computed exposure count (second half of the E18 dependency)"]:::step
+    limitGateClass -->|"No"| classZero["StopGapPremium = 0.0 - classification-level premium forced to zero when limits differ"]:::zero
+    stopGapPremium --> policyGate{"Policy level, per attached Stop Gap endorsement instance: LimitBodilyInjuryByAccident == LimitBodilyInjuryByDiseaseEachEmployee?"}
+    classZero --> policyGate
+    policyGate -->|"Yes - Branch A, the algorithmic path"| sumBranch["Premium = sum(StopGapPremium across every classification, every location)"]:::step
+    policyGate -->|"No - Branch B, refer-to-company"| manualBranch["Premium = round(ManualPremium x PackageModFactor, 0) - ManualPremium is submission-supplied, not computed anywhere in this chain (manual B.2: 'refer to company for rating')"]:::openq
+    sumBranch --> indicator["SetPremiumIndicator: PremiumIndicator = 1 if Premium != 0.0, else 0"]:::step
+    manualBranch --> indicator
+    indicator --> totalGuard{"PremiumIndicator == 1 AND Premium != 0?"}
+    totalGuard -->|"Yes"| contributes["CalculateTotalPremium returns this instance's Premium into the policy sum"]:::final
+    totalGuard -->|"No"| contributesZero["CalculateTotalPremium returns 0 for this instance - guards against a stray null reaching the policy sum"]:::zero
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    class overrideGate,limitGateClass,policyGate,totalGuard gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>Two separate E18 reads, not one: Step 3 reads Prem/Ops' own classification `BaseRate` directly (not a lookup table), and Step 4 reads Prem/Ops' own `PremOpsExposureCalc` — Stop Gap has no exposure base or base rate of its own at all. This is a deeper form of the pattern Product Withdrawal / Cyber uses (which borrows tables but not already-computed sibling values).</li>
+            <li>The classification-level limit-equality branch (Step 4) and the policy-level branch (Premium aggregator) test the identical condition twice, at two different levels — when limits differ, every classification's `StopGapPremium` is forced to 0.0 <em>and</em> the policy-level aggregator abandons the sum entirely in favor of the submission-supplied `ManualPremium` path.</li>
+            <li>The countrywide `StopGapRate` table is confirmed 0 rows at every edition checked — there is no countrywide fallback for the rate factor; all five rating states must carry their own row for every `ClassificationType`, and 25/25 cells across the five states match the manual's two-bucket table exactly.</li>
+            <li>No rating-mechanism deviation was found among the five states beyond the endorsement form number itself (CG 04 40/41/42/44/51) — same rule names, same call order, same two factor values, same ILF borrow, same refer-to-company mechanism in all five.</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>Open question.</strong> Three things are unresolved in source docs: what populates `StopGapIncrdLimitFactorOverride` and under what submission condition; whether `PackageModFactor`, `ExperienceRatingModificationFactor`, and `ModToUse` are filed rate tables or policy-level copied values (the same open question the Unmanned Aircraft docs record for the identically-named fields); and whether WA's newest package on disk reflects a live 2027-04-01 filing that simply wasn't pulled into this corpus.</div>
       </div>
     </section>
 

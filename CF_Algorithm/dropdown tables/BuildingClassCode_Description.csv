@@ -1,0 +1,883 @@
+ClassCode,Description,RatingType
+0074,"Boarding and Lodging Houses, Rooming Houses, Fraternities and Sororities, Dormitories - Up to 10 Units",Class
+0075,"Boarding and Lodging Houses, Rooming Houses, Fraternities and Sororities, Dormitories - 11 to 30 Units",Class
+0076,"Boarding and Lodging Houses, Rooming Houses, Fraternities and Sororities, Dormitories - Over 30 Units",Class
+0077,Convents or Monasteries - Up to 10 units,Class
+0078,Convents or Monasteries - 11 to 30 units,Class
+0079,Convents or Monasteries - Over 30 units,Class
+0196,Dwellings Written in Conjunction with Commercial Risks from the Commercial Lines Manual (lessor's risk only) - 1 Family,Class
+0197,Dwellings Written in Conjunction with Commercial Risks from the Commercial Lines Manual (lessor's risk only) - 2 Family,Class
+0198,Dwellings Written in Conjunction with Commercial Risks from the Commercial Lines Manual (lessor's risk only) - 3 or 4 Family,Class
+0300,Large Area Housing Developments (Special Rating Treatment),Specific
+0311,Apartments without Mercantile Occupancies - Up to 10 Units,Class
+0312,Apartments without Mercantile Occupancies - 11 to 30 Units,Class
+0313,Apartments without Mercantile Occupancies - Over 30 Units,Class
+0321,Apartments with Mercantile Occupancies - Up to 10 Units,Class
+0322,Apartments with Mercantile Occupancies - 11 to 30 Units,Class
+0323,Apartments with Mercantile Occupancies - Over 30 Units,Class
+0331,Condominiums - residential (association risk only) - without mercantile occupancies - Up to 10 units,Class
+0332,Condominiums - residential (association risk only) - without mercantile occupancies - 11 to 30 units,Class
+0333,Condominiums - residential (association risk only) - without mercantile occupancies - Over 30 units,Class
+0341,Condominiums - residential (association risk only) - with mercantile occupancies - Up to 10 units,Class
+0342,Condominiums - residential (association risk only) - with mercantile occupancies - 11 to 30 units,Class
+0343,Condominiums - residential (association risk only) - with mercantile occupancies - Over 30 units,Class
+0431,"Mercantile - Sole occupant - Other Than Food Risks - Large area (over 15,000 sq. ft.) - Not class rated",Specific
+0432,"Food Products - Sales, Storage and Distributors - Sole occupant and over 15,000 sq. ft.",Specific
+0432,"Mercantile - Sole occupant - Food Products - Large area (over 15,000 sq. ft.) - Not class rated",Specific
+0433,"Mercantile - Multiple occupancy - Large area (over 15,000 sq. ft.) - Not class rated",Specific
+0434,"Mercantile - Multiple occupancy - Not large area (15,000 sq. ft. or less) - Not class rated",Specific
+0511,Hide Dealers and Distributors - raw,Class
+0511,Marble Products - Sales or storage,Class
+0511,"Mercantile NOC - Sole occupant - Risks having low susceptibility personal property - Not large area (15,000 sq. ft. or less)",Class
+0511,"Metal Dealers or Distributors - Ingots, pigs, pipe, bars, rail, rods, plates, sheets, and uninsulated wire",Class
+0511,"Monuments, Tombstones and Statuary - Sales and/or storage",Class
+0511,"Rubber - sales and/or storage - Crude rubber, heavy industrial goods and belts",Class
+0511,Trailer Dealers - sales,Class
+0512,Automobile Parts and Supplies Distributors or Stores,Class
+0512,Automobile Repair or Service Shops - Seat cover padding and trim work or top repair exclusively,Class
+0512,Rubber - sales and/or storage - Rubber tires,Class
+0512,Tire Dealers - Sales or storage,Class
+0520,Carpet or Rug - Sales,Class
+0520,Clothing Mfg. - Stores,Class
+0520,Cotton or Wool Merchants - Cotton cloth,Class
+0520,Fabric - Distributors,Class
+0520,Fabric - Stores,Class
+0520,Floor Covering Stores - Carpets,Class
+0520,Formal Wear or Costumes - rental agencies,Class
+0520,Fur Distributors - garments and pelts,Class
+0520,Laundry and Dry Cleaning or Dyeing Receiving Stations - No pressing,Class
+0520,Shoe Stores - No repair,Class
+0520,Tailor Merchants; Tailoring or Dressmaking Establishments - custom - With 10 employees or less engaged in custom alterations or custom tailoring of wearing apparel after sale to customer,Class
+0531,Beverage Distributors - Alcoholic beverages including beer; or beer primarily,Class
+0531,Beverage Stores - Alcoholic beverages other than beer,Class
+0531,Beverage Stores - Beer is principal stock,Class
+0532,Bakeries - No baking on premises - sales only,Class
+0532,Beverage Distributors - Nonalcoholic beverages (and beer if not primary),Class
+0532,Beverage Stores - Nonalcoholic beverages (and beer if not principal stock),Class
+0532,Candy or Confectionery Products - Stores,Class
+0532,Convenience Food Stores,Class
+0532,Dairy Products or Butter and Egg Stores,Class
+0532,Delicatessens - Without cooking,Class
+0532,"Food Products - Sales, Storage and Distributors - No baking or cooking",Class
+0532,Frozen Food - distributors,Class
+0532,Fruit or Vegetable Dealers or Distributors,Class
+0532,Grocery Distributors,Class
+0532,Grocery Stores,Class
+0532,Health or Natural Food Stores,Class
+0532,Ice Cream Stores - No cooking,Class
+0532,"Meat, Fish, Poultry or Seafood - Distributors",Class
+0532,"Meat, Fish, Poultry or Seafood - Stores",Class
+0532,Produce - Storage,Class
+0532,Restaurants - No cooking,Class
+0532,Supermarkets,Class
+0532,Warehouses - Cold individual storage lockers,Class
+0533,Bakeries - Baking on premises - no delivery to other outlets,Class
+0534,"Food Products - Sales, Storage and Distributors - Limited cooking (other than bakeries)",Class
+0535,Bakeries – Baking on premises – no delivery to other outlets – using cannabis as ingredient,Class
+0541,Bars and Taverns,Class
+0542,Caterers,Specific
+0542,Children's Playcenters - indoor - With cooking facilities,Specific
+0542,Delicatessens - With cooking,Specific
+0542,Ice Cream Stores - With cooking,Specific
+0542,Restaurants - With cooking,Specific
+0545,Restaurants - With limited cooking,Class
+0550,Automobile Distributors - showrooms with no repair or service,Class
+0550,Boat Dealers - sales and/or storage with or without repair,Class
+0550,Boat Storage and Moorage - In buildings,Class
+0550,Boats - canoes or rowboats without motors - rental with storage,Class
+0550,Camper or Travel Trailers without Motors; Motor Homes - Sales only,Class
+0561,Boat and Marine Supply Stores,Class
+0562,Drug Distributors,Class
+0562,Drugstores,Class
+0562,Mail Order or Online Drugstores,Class
+0563,Air Conditioning Equipment - dealers or distributors only - sales and/or storage with or without repair,Class
+0563,"Appliance Distributors - other than radios, TV's, compact disc and DVD players (with or without repair) - household type",Class
+0563,"Appliance Stores - other than radios, TV's, compact disc and DVD players (with or without repair) - household type",Class
+0563,"Concrete Construction - contractors storage facilities - Electrical, plumbing, heating, air conditioning or sheet metal storage",Class
+0563,Contractors Equipment - heavy machinery without motors over 6 horsepower - Without repair,Class
+0563,"Electrical Apparatus - Installation, servicing or repair - With sales or storage",Class
+0563,Electrical Equipment Distributors - Sales or storage with or without repair or service,Class
+0563,Electrical and Lighting Stores,Class
+0563,"Elevator or Escalator Equipment sales or storage, with or without repair",Class
+0563,Farm Machinery - contractors storage,Class
+0563,Gas Dealers or Distributors - Hardware sales and storage,Class
+0563,"Hardware and Tool Distributors, and Hardware Stores",Class
+0563,"Heating or Combined Heating and Air Conditioning Equipment - dealers or distributors with or without installation, servicing or repair",Class
+0563,Machinery or Equipment Dealers - No repair,Class
+0563,Office Machines or Appliances - Retail or wholesale - no repair,Class
+0563,Plumbing - contractors storage - Commercial and industrial,Class
+0563,Plumbing - contractors storage - Residential or domestic,Class
+0563,Plumbing Supplies and Fixtures Dealers and Distributors,Class
+0563,Refrigeration Equipment - contractors storage,Class
+0563,Refrigeration Systems or Equipment - Dealers and distributors - commercial - sales and storage with or without repair,Class
+0563,Solar Energy Contractors - contractors storage,Class
+0563,Vending Machines - Sales with or without storage,Class
+0564,Antique Stores,Class
+0564,"Equipment, Fixtures or Supplies - for bars, hotels, offices, restaurants or stores - distributors - With furniture",Class
+0564,Furniture Stores,Class
+0564,Home Furnishings Stores - other than appliances,Class
+0564,Mattress or Box Spring - Sales outlets,Class
+0564,Pawn Shops,Class
+0564,Secondhand Goods Dealers and Distributors - sales or storage,Class
+0565,Gemstone Cutting or Polishing,Class
+0565,Jewelry Stores or Distributors,Class
+0566,Sporting Goods or Athletic Equipment - Distributors,Class
+0566,Sporting Goods or Athletic Equipment - Stores,Class
+0567,Airports - Passenger terminals,Class
+0567,"Alarms and Alarm Systems - Sales or storage with or without installation, servicing or repair",Class
+0567,"Appliance Distributors and Stores - radios, TV's, compact disc and/or DVD players only (with or without repair) - household type",Class
+0567,Army and Navy Stores,Class
+0567,Art Galleries - Commercial,Class
+0567,Barber or Beauty Shop Supplies Distributors,Class
+0567,"Beach Chairs and Umbrellas - warehouses, storage or sales",Class
+0567,Bicycle Stores - Sales only,Class
+0567,"Bone, Horn and Ivory Products - Sales and/or storage",Class
+0567,Book Distributors,Class
+0567,Books and Magazines Stores,Class
+0567,Building Structure - raising or moving - contractors storage or sale outlet,Class
+0567,Bus Stations or Terminals,Class
+0567,Caisson or Cofferdam Work - contractors storage,Class
+0567,Camera and Photographic Equipment Stores,Class
+0567,Carpentry - Contractors storage,Class
+0567,"Carpet, Rug, Furniture or Upholstery Cleaning - storage of cleaning equipment and supplies",Class
+0567,Catalog or Premium Coupon Redemption Stores,Class
+0567,Ceiling or Wall Installation - metal - contractors storage,Class
+0567,Ceramics - Sales and/or storage only,Class
+0567,Chairs - rented to others - storage,Class
+0567,Chimney Cleaning - contractors storage,Class
+0567,Cleaning - outside surfaces of buildings and other exterior surfaces - contractors storage,Class
+0567,Clothing or Wearing Apparel - Distributors,Class
+0567,Collectibles and Memorabilia Stores,Class
+0567,Communication Equipment Installation - industrial or commercial - Sales and/or storage with no repair,Class
+0567,"Concrete Construction - contractors storage facilities - Other than electrical, plumbing, heating, air conditioning or sheet met",Class
+0567,Contractors NOC - equipment storage,Class
+0567,Copying and Duplicating Equipment - Sales with or without repair,Class
+0567,"Cosmetic, Hair or Skin Preparation Stores",Class
+0567,Crop Spraying - contractors storage - Mixed storage,Class
+0567,Department or Discount Stores,Class
+0567,"Door, Window or Assembled Millwork - installation - metal or wood",Class
+0567,"Dry Goods Dealers - Retail (Including Fabrics, Yarn and Piece Goods)",Class
+0567,Dry Wall or Wallboard Installation - contractors storage,Class
+0567,"Equipment, Fixtures or Supplies - for bars, hotels, offices, restaurants or stores - distributors - Without furniture",Class
+0567,"Feed, Grain or Hay Dealers - Stores with or without occasional grinding; Feed warehouses not on premises of processing plants",Class
+0567,Fence Dealers,Class
+0567,Fence Erection - contractors storage,Class
+0567,Fire Protection Equipment Dealers and Distributors,Class
+0567,"Fire Suppression Systems - installation, service or repair - contractors storage",Class
+0567,Floor Covering Distributors,Class
+0567,Floor Covering Installation (other than ceramic tile or stone) - contractors storage,Class
+0567,"Floor Covering Stores - Tiles, linoleum or mixed merchandise",Class
+0567,Fuel Oil or Kerosene Dealers,Class
+0567,Fuel Oil or Kerosene Distributors,Class
+0567,Gardening and Light Farming Supply Distributors and Retail Dealers,Class
+0567,Gift Shops,Class
+0567,"Glass Dealers and Glaziers - No grinding, polishing or glazing; or up to 5 employees engaged in such operations",Class
+0567,Guniting or Shot-crete - contractors storage,Class
+0567,Hearing Aid - distributors or stores,Class
+0567,"Hobby, Craft or Artists' Supply - stores or distributors",Class
+0567,Home Improvement Stores,Class
+0567,Insulation Work - contractors storage,Class
+0567,Irrigation Works Operations - contractors storage,Class
+0567,Irrigation or Drainage System Construction - contractors storage,Class
+0567,Janitorial Supplies - dealers or distributors,Class
+0567,Jetty or Breakwater Construction - Contractors Storage,Class
+0567,Landscape Gardening - contractors storage,Class
+0567,Lawn Care Services - contractors storage,Class
+0567,Leather Goods - Finished products - storage or sales,Class
+0567,Leather Goods - Leather goods or hides stores,Class
+0567,Luggage Goods Stores,Class
+0567,Machinery or Equipment - contractors storage - Farm,Class
+0567,Machinery or Equipment - contractors storage - Industrial,Class
+0567,Mail Order Houses,Class
+0567,Masonry - contractors storage,Class
+0567,"Medical, Hospital and Surgical Supply Stores",Class
+0567,"Mercantile NOC - Sole occupant - Risks having moderate susceptibility personal property - Not large area (15,000 sq. ft. or less)",Class
+0567,Metal Dealers or Distributors - Other metal products,Class
+0567,Museums - Commercial,Class
+0567,Music Stores - Sheet music,Class
+0567,Musical Instrument - Stores,Class
+0567,Newspaper or Magazine Distributors,Class
+0567,Newsstands,Class
+0567,Oil Rig or Derrick Erecting or Dismantling -Contractors equipment storage,Class
+0567,Oil Still Erection or Repair - Contractors equipment storage,Class
+0567,Oil or Gas Well Supplies or Equipment Dealers,Class
+0567,Optical Goods - Distributors and Stores - not addressed above,Class
+0567,Paper Products Distributors - Other,Class
+0567,Paperhanging - contractors storage,Class
+0567,Periodicals Distributors,Class
+0567,Pest Control Services - Miscellaneous storage,Class
+0567,Pile Driving - contractors storage,Class
+0567,Pipeline Construction - contractors storage,Class
+0567,Plastering or Stucco Work - contractors storage,Class
+0567,Plastic Supply Goods Distributors,Class
+0567,Powered Equipment Dealers - retail,Class
+0567,Precision and Scientific Tools and Instruments - retail,Class
+0567,Prefabricated Building Erection - contractors storage,Class
+0567,Printers or Electrotypers Supplies - distributors,Class
+0567,Railroad Construction - contractors storage,Class
+0567,Renovating - outside surfaces of buildings - Contractors equipment storage only,Class
+0567,Rental Stores,Class
+0567,Roofing - contractors storage or sales outlet,Class
+0567,Rubber - sales and/or storage - Other rubber products,Class
+0567,Safe Deposit Companies,Class
+0567,Salvage Operations - contractors storage,Class
+0567,Seed Merchants,Class
+0567,"Septic Tank Systems - cleaning, installation, servicing or repair - contractors storage",Class
+0567,Sewer Cleaning - contractors storage,Class
+0567,Sewer Mains or Connections Construction - contractors storage,Class
+0567,Sewing Machines - sales outlets or storage buildings not on premises of manufacturer,Class
+0567,Shaft Sinking - contractors storage,Class
+0567,Sheet Metal Work - Contractors storage,Class
+0567,Ship Chandler Stores,Class
+0567,Siding Installation - contractors storage (including wood siding),Class
+0567,"Sign Erection, Installation or Repair - Contractors storage",Class
+0567,Sign Painting or Lettering - Contractors storage other than paint,Class
+0567,Snow and Ice Removal - contractors storage,Class
+0567,Stationery or Paper Products Distributors or Stores,Class
+0567,Steam Mains or Connections Construction - contractors storage,Class
+0567,Steam Pipe or Boiler Insulation - contractors storage,Class
+0567,"Street or Road Construction or Reconstruction; Street or Road Paving or Repaving, Surfacing or Resurfacing or Scraping - contractors storage",Class
+0567,Subway Construction - contractors storage,Class
+0567,Surveyors - land - contractors storage,Class
+0567,"Swimming Pools - Installation, servicing or repair - above and below ground - contractors storage",Class
+0567,Swimming Pools - Sales outlets,Class
+0567,"Tank Construction, Installation, Erection or Repair - contractors storage",Class
+0567,"Telephone, Telegraph or Cable Television Line Construction - contractors storage",Class
+0567,Tent or Canvas Goods - contractors storage,Class
+0567,"Tile, Stone, Marble, Mosaic or Terrazzo Work - contractors storage and sales outlets",Class
+0567,Tobacco Products Distributors,Class
+0567,Tobacco Products Stores,Class
+0567,Toy - Distributors,Class
+0567,Toy - Stores,Class
+0567,"Tree Pruning, Dusting, Spraying, Repairing, Trimming or Fumigating - Other storage",Class
+0567,Underpinning Buildings or Structure - contractors storage,Class
+0567,Variety Stores,Class
+0567,Water Mains or Connections Construction - contractors storage,Class
+0567,"Water Softening Equipment - Sales and/or storage, no repair",Class
+0567,Waterproofing - contractors storage,Class
+0567,Welding or Cutting - contractors storage,Class
+0567,"Wicker, Rattan, Willow or Twisted Fiber Products - Sales outlets",Class
+0567,Window Cleaning - contractors storage,Class
+0567,Window Decorating - sales and/or storage,Class
+0567,Wrecking - contractors storage,Class
+0570,Anhydrous Ammonia Dealers and Distributors,Class
+0570,Chemical Distributors,Class
+0570,Clubs - Horseback riding (with or without commercial riding instruction and hiring of horses),Class
+0570,Computer - Stores,Class
+0570,Crop Spraying - contractors storage - Chemical storage,Class
+0570,Electronics Store,Class
+0570,Fertilizer Dealers and Distributors,Class
+0570,Florists - Sales outlets,Class
+0570,Fuel Dealers or Distributors - coal or wood,Class
+0570,Fumigating - contractors storage,Class
+0570,Gas Dealers or Distributors - LPG sales and storage,Class
+0570,Gasoline Distributors,Class
+0570,Hatcheries,Class
+0570,Hay or Straw - Sales and/or Storage Including Hay/Straw Products,Class
+0570,Kennels - Sales,Class
+0570,Livestock Dealers or Commission Merchants,Class
+0570,"Mercantile NOC - Sole occupant - Risks having high susceptibility personal property - Not large area (15,000 sq. ft. or less)",Class
+0570,Motion Pictures - Film distribution or exchanges - not located at motion picture studios,Class
+0570,"Music Stores - Compact discs, DVDs, records and tapes",Class
+0570,Nursery - garden - Sales outlet,Class
+0570,"Paint, Wallpaper or Wallcovering Stores",Class
+0570,Painting Contractors storage,Class
+0570,"Painting, Picture or Frame Stores",Class
+0570,"Paper Products Distributors - Paper decorations, papier-mache, sensitized paper, wall paper, waxed paper",Class
+0570,Pest Control Services - Chemicals storage,Class
+0570,Pet Stores,Class
+0570,Riding Academies,Class
+0570,Sign Painting or Lettering - Contractors storage - paint,Class
+0570,Stables - Stabling insured's own horses in connection with his or her own business,Class
+0570,Straw and Straw Products - Sales and/or storage,Class
+0570,"Tanks - Fuel, liquid propane, gas or gasoline dealers tanks",Class
+0570,"Tree Pruning, Dusting, Spraying, Repairing, Trimming or Fumigating - Contractors storage, primarily chemicals",Class
+0570,Video Stores,Class
+0570,Wigs or Hair Pieces - Sales outlets,Class
+0574,Bakeries – No baking on premises – sales only – using cannabis as ingredient,Class
+0574,Cannabis – Retail sales – cannabis-containing products distributors NOC,Class
+0575,Cannabis – Growers other than greenhouses – including hydroponics,Class
+0580,Florists - Greenhouses,Class
+0580,Greenhouses,Class
+0580,Nursery - garden - Greenhouses,Class
+0581,"Mercantile - Multiple occupancy without class code 0564 (Furniture and Home Furnishings Other Than Appliances) occupant - Not large area (15,000 sq. ft. or less) - Class rated",Class
+0582,"Mercantile - Multiple occupancy with class code 0564 (Furniture and Home Furnishings Other Than Appliances) occupant - Not large area (15,000 sq. ft. or less) - Class rated",Class
+0585,Cannabis – Greenhouses – traditional soil,Class
+0701,"Governmental Subdivisions - Town halls, offices, morgues, post offices, court houses",Class
+0701,"Health Care Facilities - Government clinics, dispensaries or infirmaries treating outpatients only - no regular bed and board facilities",Class
+0701,Home Health Care Services - Governmental,Class
+0701,Offices - Governmental,Class
+0702,Airport Control Towers - not operated exclusively by the Federal Aviation Administration,Class
+0702,"Health Care Facilities - Non-government clinics, dispensaries or infirmaries treating outpatients only - no regular bed and board facilities",Class
+0702,Home Health Care Services - Non-governmental,Class
+0702,Interior Decorators,Class
+0702,Model Homes - used as office,Class
+0702,Offices - Non-Governmental,Class
+0742,Hotels and Motels - with restaurant - Up to 10 Units,Class
+0743,Hotels and Motels - with restaurant - 11 to 30 Units,Class
+0744,Hotels and Motels - with restaurant - Over 30 Units,Class
+0745,Hotels and Motels - without restaurant - Up to 10 Units,Class
+0746,Hotels and Motels - without restaurant - 11 to 30 units,Class
+0747,Hotels and Motels - without restaurant - Over 30 units,Class
+0755,"Clubs - Sports clubs, with cooking; country clubs with cooking",Class
+0756,"Clubs - Sports clubs, without cooking; country clubs without cooking",Class
+0757,"Clubs - NOC, including fraternal and union halls",Class
+0831,Motion Pictures - Production - studios or outside - all operations prior to the development of negatives,Class
+0832,Radio or TV Broadcasting Stations with stage or with scenery storage,Class
+0832,Recording Studios,Class
+0832,Theaters - Other than drive-in,Class
+0833,Theaters - Drive-in,Class
+0834,Skating Rinks - Roller,Class
+0841,Bowling Lanes,Class
+0843,Auditoriums and Halls,Class
+0843,Exhibition or Convention Buildings,Class
+0843,Gymnasiums - commercial,Class
+0844,Amusement Centers,Class
+0844,Amusement Parks - enclosed buildings used for recreational purposes,Class
+0844,Archery Ranges - indoor,Class
+0844,Arenas - Sports,Class
+0844,Bathhouses or Bathing Pavilions,Class
+0844,Billiard or Pool Halls,Class
+0844,Campgrounds - Recreational Vehicle Parks - Recreational facilities,Class
+0844,Caves - tourist attraction,Class
+0844,Children's Playcenters - indoor - Without cooking facilities,Class
+0844,Community Recreational Facilities - not operated by governmental agency,Class
+0844,Fairgrounds - buildings other than restaurants,Class
+0844,Golf Courses - miniature,Class
+0844,Grandstands or Bleachers - In buildings,Class
+0844,Health or Exercise Clubs or Facilities,Class
+0844,Parks or Playgrounds - enclosed buildings used for recreational purposes,Class
+0844,Picnic Grounds - commercially operated,Class
+0844,Race Tracks,Class
+0844,Racquet Sports and Handball Facilities - commercially operated,Class
+0844,Recreational Facilities - NOC,Class
+0844,Rifle or Pistol Ranges,Class
+0844,Saunas and Baths - public,Class
+0844,Skating Rinks - Ice,Class
+0844,Skeet Shooting or Trap Shooting Ranges,Class
+0844,Spas or Personal Enhancement Facilities,Class
+0844,Stadiums,Class
+0844,Sun Tanning Salons,Class
+0844,Swim Clubs,Class
+0844,Swimming Pools - Indoor,Class
+0844,"YMCA, YWCA, Youth Recreation Programs or Similar Institutions",Class
+0844,Zoos,Class
+0845,"Campgrounds - girl scout, boy scout, church and YMCA camps, etc.",Class
+0846,"Dance Halls, Ballrooms or Discotheques - no cooking",Class
+0851,Blood Banks,Class
+0851,Health Care Facilities - Hospitals,Class
+0852,Health Care Facilities - Homes for the aged and homes for the physically handicapped or orphaned,Class
+0852,Health Care Facilities - Inpatient alcohol and drug treatment; convalescent or nursing homes (not mental or psychopathic institutions),Class
+0852,Health Care Facilities - Mental - psychopathic institutions,Class
+0900,Churches or Other Houses of Worship,Class
+0911,Laundries and Dry Cleaning Plants - Dry Cleaning including dyeing,Class
+0911,Laundry and Dry Cleaning or Dyeing Receiving Stations - With pressing,Class
+0911,Textile Bleaching and Dyeing,Class
+0912,Laundries and Dry Cleaning Plants - Commercial Laundries,Class
+0912,Laundry Rental Service - no laundry or dry cleaning on premises,Class
+0913,Laundries and Dry Cleaners - self-service,Class
+0913,Laundry and Dry Cleaning Stores,Class
+0921,Art Studios,Class
+0921,Barber Shops,Class
+0921,Beauty Parlors and Hair Styling Salons,Class
+0921,Ceramics - With shop work - hobby or instructional,Class
+0921,Copying and Duplicating Services - retail,Class
+0921,Crematories,Class
+0921,Dental Laboratories,Class
+0921,Diagnostic Testing Laboratories,Class
+0921,"Laboratories - X-Ray, Dental, or Medical",Class
+0921,Light Hazard Service Occupancies,Class
+0921,Mail Box or Packaging Stores,Class
+0921,Mailing or Addressing Companies,Class
+0921,Mausoleums,Class
+0921,"Motion Pictures - Development of negatives, printing and all subsequent operations",Class
+0921,Music Studios,Class
+0921,Nail Salons,Class
+0921,Pet Grooming,Class
+0921,Pet Training,Class
+0921,Photo Finishing Laboratories,Class
+0921,Photographers,Class
+0921,"Printing - Addressing, blueprinting and duplicating services",Class
+0921,Schools - Trade or vocational,Class
+0921,Shoe Shine Stands,Class
+0921,Tattoo Parlors,Class
+0921,Teleproduction Studios,Class
+0921,Veterinarian or Veterinary Hospitals,Class
+0922,"Air Conditioning Systems or Equipment - installation, servicing or repair - no sales or storage",Class
+0922,"Alarms and Alarm Systems - Installation, servicing or repair only",Class
+0922,"Appliances and Accessories - installation, service and/or repair only - Commercial",Class
+0922,"Appliances and Accessories - installation, service and/or repair only - Household type",Class
+0922,Automobile Rustproofing,Class
+0922,"Bicycle Stores - Repair, service or storage with or without sales",Class
+0922,Bicycles - rented to others,Class
+0922,Boat Repair and Servicing,Class
+0922,Camper or Travel Trailers without Motors; Motor Homes - Sales and repair,Class
+0922,Campgrounds - Recreational Vehicle Parks - Laundries for tenants only,Class
+0922,Communication Equipment Installation - industrial or commercial - Repair only with no sales or storage,Class
+0922,Computer - Service or Repair,Class
+0922,Copying and Duplicating Equipment - Repair with no sales or storage,Class
+0922,Cutlery Sharpening,Class
+0922,"Electrical Apparatus - Installation, servicing or repair - With no sales or storage",Class
+0922,Elevator or Escalator Servicing - Equipment repair only,Class
+0922,Engine or Turbine Repair - not aircraft - small engine repair shops only,Class
+0922,Engraving - Other than Photoengraving,Class
+0922,"Fire Extinguishers - Servicing, refilling or testing",Class
+0922,"Furniture or Woodwork Stripping, Painting or Refinishing",Class
+0922,Gunsmiths,Class
+0922,"Heating or Combined Heating and Air Conditioning Systems or Equipment - installation, servicing or repair (no sales or storage)",Class
+0922,Kennels - Breeding or boarding,Class
+0922,Laboratories - General Research Testing,Class
+0922,Locksmiths,Class
+0922,Machinery or Equipment Dealers - Repair of light machinery without motors or with motors of 6 horsepower or less,Class
+0922,"Office Machines or Appliances - Installation, inspection, adjustment or repair - no sales or storage",Class
+0922,Office Machines or Appliances - Retail or wholesale - with repair,Class
+0922,Painting Shop only - except auto spray painting,Class
+0922,Refrigeration Systems or Equipment - Repair and service only,Class
+0922,Rubber Stamp - Preparation,Class
+0922,"Service Occupancies, other than Light Hazard",Class
+0922,Shoe Repair Shops,Class
+0922,Shoe Stores - With repair,Class
+0922,"Sign Erection, Installation or Repair - Sign painting",Class
+0922,Sign Painting or Lettering - Shopwork,Class
+0922,"Stables - Commercial boarding, livery or racing stables",Class
+0922,Taxidermists,Class
+0922,Television or Radio Receiving Set - repair only,Class
+0922,"Vending Machines - Repair, with or without sales or storage",Class
+0922,"Water Softening Equipment - Installation, servicing or repair - with or without sales or storage",Class
+0923,Funeral Homes or Chapels,Class
+0931,"Ambulance Service, First Aid or Rescue Squads - Commercial - vehicle storage without repair",Class
+0931,Automobile Storage - parking garages - business or public - no repair or service,Class
+0931,Car Washes,Class
+0931,Convenience Food/Gasoline Stores - full service - No repair,Class
+0931,Convenience Food/Gasoline Stores - self and full service combined - No repair,Class
+0931,Convenience Food/Gasoline Stores - self-service - no repair,Class
+0931,"Gasoline Stations - full service, self and full service combined - No repair",Class
+0931,Gasoline Stations - self service,Class
+0931,Parking - public,Class
+0932,Automobile Quick Lubrication Services,Class
+0932,"Automobile Repair or Service Shops - Auto glass replacement, battery replacement, brake adjustment, tire changing, tune ups (points, plugs and carburetor adjustment) oil changing, lubrications, speedometer adjustments and similar services.",Class
+0932,Convenience Food/Gasoline Stores - full service - Limited repair,Class
+0932,Convenience Food/Gasoline Stores - self and full service combined - Limited repair,Class
+0932,"Gasoline Stations - full service, self and full service combined - Limited Repair",Class
+0932,"Tire Dealers - Tire changing, wheel alignment",Class
+0933,Airports - Hangars with repairing or servicing,Class
+0933,"Ambulance Service, First Aid or Rescue Squads - Commercial - vehicle storage with repair",Class
+0933,Automobile Repair or Service Shops - Major engine or body repair,Class
+0933,Contractors Equipment - heavy machinery without motors over 6 horsepower - With repair,Class
+0933,Convenience Food/Gasoline Stores - full service - Major engine repair,Class
+0933,Convenience Food/Gasoline Stores - self and full service combined - Major engine repair,Class
+0933,"Gasoline Stations - full service, self and full service combined - Major engine repair or body repair",Class
+0933,Machinery or Equipment Dealers - Repair of heavy machinery without motors or with motors over 6 horsepower,Class
+0933,Painting Shop only - auto spray painting,Class
+0934,Tire - Retreading or recapping,Class
+0940,Airports - Hangars without repairing or servicing,Class
+0951,Gambling - casinos- With restaurant,Class
+0952,Gambling - casinos- Without restaurant,Class
+1000,Governmental Subdivisions - Jails,Class
+1000,Penal Institutions,Class
+1051,Art Galleries - Non-profit,Class
+1051,Libraries,Class
+1051,Museums - Other than commercial,Class
+1052,Adult Day Care,Class
+1052,Day Care Centers,Class
+1052,"Schools - Colleges, universities, junior colleges or college preparatory",Class
+1052,"Schools - Public or private - elementary, kindergarten or junior high",Class
+1052,Schools - Public or private - high school,Class
+1070,"Ambulance Service, First Aid or Rescue Squads - Municipal",Class
+1070,Cemeteries - buildings except private dwellings and mausoleums,Class
+1070,Firehouses,Class
+1070,"Governmental Subdivisions - Police stations, municipal garages, highway departments, maintenance buildings, repair shops, and storage buildings",Class
+1070,"Sewage Treatment Plants - pump houses, chlorinators, digesters, filters, etc., including auxiliary buildings and associated tanks, and garbage disposals",Class
+1070,Tanks - Sewage and Water Treatment tanks,Class
+1070,"Water Treatment Plants - pumping stations, water tanks and auxiliary buildings",Class
+1150,Builders' Risks,Class
+1211,"Freight Forwarders or Handlers - Other than packing, handling or shipping explosives or ammunition under contract",Class
+1211,"Freight Forwarders or Handlers - Packing, handling or shipping explosives or ammunition under contract",Class
+1211,"Warehouses - Public - Freight terminals, freight depots, including airport, railroad, truck, transfer stations, etc.",Class
+1212,Warehouses - Public - NOC,Class
+1213,Warehouses - Public - Mini-warehousing of personal property,Class
+1220,"Warehouses - Public - Household goods storage but with no storage of fibers, oils, petroleum products, rags, fireworks, matches or explosives",Class
+1230,Ice Houses - Storage only,Class
+1230,Warehouses - Public - Cold storage,Class
+1251,"Distributors - wholesale or warehouse stock - farm products other than grain, seeds, beans, cotton or tobacco",Specific
+1252,"Feed, Grain or Hay Dealers - Feed warehouses on premises of processing plants",Specific
+1255,Cannabis – Distributors – wholesale or warehouse stock of cultivated cannabis products,Specific
+1300,Cotton Compressing,Specific
+1300,Cotton or Wool Merchants - Cotton batting,Specific
+1300,Tanks - Cotton and Cotton seed tanks,Specific
+1300,Yard Storage - Cotton and Cotton Seed Storage Yards,Specific
+1400,Automobile Dismantling,Class
+1400,Cotton Waste Mfg.,Class
+1400,"Garbage Works - separation for recycling, reduction or incineration",Class
+1400,Junk Dealers,Class
+1400,Metal Scrap Dealers,Class
+1400,"Paper, Rag or Rubber Stock Dealers and Distributors - secondhand",Class
+1400,Recycling Collection Centers and Recycling Plants,Class
+1400,Waste and Reclaimed Materials,Class
+1400,Yard Storage - Waste and Reclaiming Material Yards,Class
+1450,Warehouses - Whiskey and Liquor Warehouses in connection with Distilleries,Specific
+1501,"Tobacco Warehouses - Storage - storage only, or rehandling or sorting with drying by natural air method",Specific
+1502,Tobacco Warehouses - Sales warehouses,Specific
+1502,Tobacco Warehouses - Storage - rehandling or sorting with no drying or with drying other than by natural air method,Specific
+1550,Grain Elevator Operations - Primarily serviced by railroad or water transportation,Specific
+1550,Tanks - Grain or Seed tanks - primarily serviced by railroad or water transportation,Specific
+1610,Grain Elevator Operations - Primarily serviced by road transportation,Specific
+1610,Tanks - Grain or Seed tanks - primarily serviced by road transportation,Specific
+1650,Building Material Dealers and Distributors - Other than secondhand material,Class
+1650,Building Material Dealers and Distributors - Secondhand material,Class
+1650,"Building Supply Yards, Including Retail Lumberyards, Coal and Coke Yards",Class
+1650,Lumberyards,Class
+1650,"Tie, Post or Pole Yard",Class
+1650,"Yard Storage - Building Supply Yards, Lumber Yards, Coal Yards",Class
+1700,Saw Mills or Planing Mills - Mill yards,Class
+1700,Yard Storage - Mill Yards,Class
+1751,Oil Distributing - Oil Terminals and LPG Tank Farms - Including stock,Class
+1751,"Tanks - Oil Distributing, Oil Terminals and LPG Tank Farms - Including stock",Class
+1752,Oil Distributing - Oil Terminals and LPG Tank Farms - Excluding stock,Class
+1752,"Tanks - Oil Distributing, Oil Terminals and LPG Tank Farms - Excluding stock",Class
+2000,Dairy Products Mfg.,Specific
+2000,Ice Houses - Manufacturing or manufacturing with storage,Specific
+2000,Milk Depots or Dealers; Milk Processing,Specific
+2059,"Food Products Mfg. - Seafood products, meat processing",Specific
+2059,"Meat, Fish, Poultry or Seafood - Curing or processing",Specific
+2059,Pet Food Mfg.,Specific
+2059,Rendering Works,Specific
+2150,Feed Mfg.,Specific
+2150,"Feed, Grain or Hay Dealers - Stores with processing, grinding or milling; Feed or grist mills",Specific
+2150,Grain Milling,Specific
+2200,Bakeries - Baking on premises - delivery to other outlets,Class
+2200,Bakery Plants,Class
+2200,Candy or Confectionery Products - Mfg.,Class
+2205,Bakeries – Baking on premises – delivery to other outlets – using cannabis as ingredient,Class
+2205,Cannabis – Food products mfg. using cannabis as ingredient,Class
+2215,Cannabis Processing or Mfg. – No extraction,Specific
+2250,Dextrine Mfg.,Specific
+2250,"Food Products Mfg. - Fish oils mfg., fruits processing, vegetables processing, nut processing, spices processing",Specific
+2250,Packing Houses,Specific
+2250,Produce - Packing or Processing,Specific
+2250,Vegetable Oil Mfg. - not by solvent extraction,Specific
+2250,Vegetable and Fruit Packing,Specific
+2300,Extracts Mfg. With no flammable solvents,Specific
+2300,"Food Products Mfg. - Flavor extracts mfg. (with no flammables); molasses, sugar, honey and syrup mfg.",Specific
+2300,Honey Extracting,Specific
+2300,Sugar Refining,Specific
+2300,"Syrups or Molasses - refining, blending or mfg.",Specific
+2350,Beverage Bottlers - soft drinks,Class
+2350,Water Bottling,Class
+2400,"Beer, Ale or Malt Liquor Mfg.",Specific
+2400,"Food Products Mfg. - Yeast factories, malt mills other than breweries",Specific
+2459,Liquor Mfg.,Class
+2459,Wine Mfg.,Class
+2550,Food Products Mfg. - Tobacco products,Specific
+2550,Tobacco Products Mfg. - Cigars or cigarettes,Specific
+2550,Tobacco Products Mfg. - Other,Specific
+2550,Tobacco Products Mfg. - Plug or snuff,Specific
+2600,Food Products Mfg. - NOC,Specific
+2750,Cotton Gin Operations,Specific
+2800,Carpet or Rug - Mfg.,Class
+2800,Cotton Batting and Wadding Mfg.,Class
+2800,"Fiber Mfg. - Acetate, rayon",Class
+2800,"Fiber Mfg. - Acrilan, Dacron, Dynel, Fiberglass, Nylon, Orlon, Saran and similar synthetics; Plush; Satin or Silk; Velours; Velveteens; Velvets; Woolens",Class
+2800,"Fiber Mfg. - Celanese, linens",Class
+2800,"Fiber Mfg. - Cotton, felt",Class
+2800,Mattress or Box Spring - Mfg.,Class
+2800,Parachute Mfg.,Class
+2800,Rope Mfg.,Class
+2800,Sail Making,Class
+2800,Tent or Canopy - Mfg.,Class
+2800,"Textile Mfg. other than wearing apparel; Textile Spinning, Weaving or Knitting Mills",Class
+2800,Twine or Cordage Mfg.,Class
+2800,Wigs or Hair Pieces - Mfg.,Class
+2800,"Wool - Combing, Scouring or Separating from Cotton",Class
+2800,Wool - Pulling,Class
+2805,Sail Maker Shops – Massachusetts only,Specific
+3009,Clothing Mfg. - Children's and infants' wear,Specific
+3009,Clothing Mfg. - Haberdashery and men's furnishings,Specific
+3009,Clothing Mfg. - Hosiery,Specific
+3009,"Clothing Mfg. - Ladies' and girls' coats, suits and dresses",Specific
+3009,Clothing Mfg. - Ladies' undergarments and lingerie,Specific
+3009,Clothing Mfg. - Men's and boys' coats & suits,Specific
+3009,Clothing Mfg. - Millinery and trimmings,Specific
+3009,Clothing Mfg. - Wigs,Specific
+3009,Fur Garment Mfg.,Specific
+3009,Fur or Pelt Processing,Specific
+3009,Tailor Merchants; Tailoring or Dressmaking Establishments - custom - Over 10 employees engaged in sewing or tailoring other than above,Specific
+3009,Textile Products Mfg. - wearing apparel,Specific
+3009,Upholstering,Specific
+3409,Leather Goods - Leather goods mfg.,Class
+3409,Tanning - animal hides,Class
+3809,"Plywood, Veneer or Veneer Products Mfg.",Specific
+3809,Saw Mills or Planing Mills,Specific
+3809,Wood Preserving,Specific
+3809,"Wood Products Mfg. - Excelsior mills; plywood, laminated wood or veneer manufacturing; wood floor mills and wood preserving plants",Specific
+3959,Boxes or Containers Mfg. - Wood,Specific
+3959,Carpentry - Shop,Specific
+3959,Door or Window Mfg. - wood,Specific
+3959,Furniture Mfg. or Assembling - wood,Specific
+3959,Ladder Mfg. - wood,Specific
+3959,Prefabricated Building Mfg. - Wood,Specific
+3959,"Sign Erection, Installation or Repair - Woodworking repair",Specific
+3959,Straw and Straw Products - Manufacturing,Specific
+3959,"Wicker, Rattan, Willow or Twisted Fiber Products - Mfg.",Specific
+3959,Wood Products Mfg. - NOC,Specific
+4400,Paper Mfg.,Specific
+4400,Pulp Mfg.,Specific
+4450,Boxes or Containers Mfg. - Corrugated or fiberboard,Specific
+4450,Carbon Paper or Inked Ribbon Mfg.,Specific
+4450,Paper Coating or Finishing,Specific
+4450,Paper Goods Mfg.,Specific
+4450,Pattern Mfg. - Paper,Specific
+4809,Bookbinding and Printers Supplies,Class
+4809,Engraving - Photoengraving,Class
+4809,Lithographing,Class
+4809,Printing - Other printing services,Class
+4809,Publishers - Books or magazines,Class
+4809,Publishers - Newspapers,Class
+4809,Textile Printing and Silk Screening,Class
+5000,Adhesive or Adhesive Tape Mfg. - Non-combustible,Specific
+5000,"Asphalt or Tar Distilling or Refining, or Asphalt Works - Non-combustible",Specific
+5000,"Caulking Compounds, Putty or Similar Products Mfg.",Specific
+5000,Charcoal or Coal Briquette Mfg.,Specific
+5000,Chemical Mfg. - Non-combustible,Specific
+5000,Coke Mfg.,Specific
+5000,Color or Pigment Preparation - Non-combustible,Specific
+5000,Cosmetics Mfg.,Specific
+5000,"Drug, Medicine or Pharmaceutical Preparations Mfg. (including biological products) - Noncombustible",Specific
+5000,Fertilizer Mfg. - Noncombustible,Specific
+5000,Gas Manufacturing - Inert,Specific
+5000,Ink Mfg.,Specific
+5000,Lead Mfg. - red or white,Specific
+5000,Plastic Mfg. - raw material - Noncombustible chemicals,Specific
+5000,Rubber Mfg. - bulk - Noncombustible,Specific
+5000,Salt Mfg. - Not used as food product,Specific
+5000,"Salt, Borax, Potash or Phosphate - producing or refining - Noncombustible",Specific
+5000,Soap Mfg.,Specific
+5000,Vegetable Oil Mfg. - by solvent extraction - Non-combustible,Specific
+5000,Wood Products Mfg. - Charcoal manufacturing,Specific
+5050,Adhesive or Adhesive Tape Mfg. - Combustible or free burning,Specific
+5050,"Asphalt or Tar Distilling or Refining, or Asphalt Works - Combustible or free burning",Specific
+5050,Candle Mfg.,Specific
+5050,Chemical Mfg. - Combustible or free burning,Specific
+5050,Color or Pigment Preparation - Combustible or free burning,Specific
+5050,"Drug, Medicine or Pharmaceutical Preparations Mfg. (including biological products) - Combustible or free burning",Specific
+5050,Extracts Mfg. With flammable solvents,Specific
+5050,Fertilizer Mfg. - Combustible or free burning,Specific
+5050,Food Products Mfg. - Flavor extracts mfg. (with flammables),Specific
+5050,Lubricants Mfg. - grease,Specific
+5050,"Plastic Mfg. - raw material - Combustible, free-burning chemicals",Specific
+5050,Rubber Mfg. - bulk - Combustible or free-burning,Specific
+5050,"Salt, Borax, Potash or Phosphate - producing or refining - Combustible or free-burning",Specific
+5050,Vegetable Oil Mfg. - by solvent extraction - Combustible or free burning,Specific
+5050,Wax or Wax Products Mfg.,Specific
+5050,"Wax, Wax Products or Polish Mfg. - floor",Specific
+5100,Adhesive or Adhesive Tape Mfg. - Rapid burning,Specific
+5100,Aerosol Containers - filling or charging for others,Specific
+5100,Alcohol Mfg. - not beverage,Specific
+5100,Ammunition Mfg.,Specific
+5100,"Asphalt or Tar Distilling or Refining, or Asphalt Works - Rapid burning",Specific
+5100,Cellophane and Cellophane Products Mfg.,Specific
+5100,Chemical Mfg. - Rapid burning,Specific
+5100,Color or Pigment Preparation - Rapid burning,Specific
+5100,"Drug, Medicine or Pharmaceutical Preparations Mfg. (including biological products) - Rapid burning",Specific
+5100,Explosives or Fireworks Mfg.,Specific
+5100,Fertilizer Mfg. - Rapid burning,Specific
+5100,Firearms Mfg. - Ammunition mfg.,Specific
+5100,"Gas Manufacturing - Primarily flammable, explosive or reactive, with or without toxicity",Specific
+5100,Gas Manufacturing - Primarily toxic or presenting a health hazard and NOC,Specific
+5100,Match Mfg.,Specific
+5100,"Paint, Varnish, Shellac or Lacquer Mfg.",Specific
+5100,Plastic Mfg. - raw material - Rapid burning chemicals,Specific
+5100,Rubber Mfg. - bulk - Rapid burning,Specific
+5100,"Salt, Borax, Potash or Phosphate - producing or refining - Rapid burning",Specific
+5100,Turpentine or Resin Mfg.,Specific
+5100,Vegetable Oil Mfg. - by solvent extraction - Rapid burning,Specific
+5105,Cannabis Processing or Mfg. – Extraction using noncombustible gases or chemicals,Specific
+5155,"Cannabis Processing or Mfg. – Extraction using combustible gases or chemicals, or rapid burning",Specific
+5500,Air Conditioning Equipment Mfg. - Plastic parts,Specific
+5500,Aircraft or Aircraft Parts Mfg. - Plastic parts,Specific
+5500,"Alarm Mfg. - Burglar, fire or smoke - Plastic parts",Specific
+5500,"Automobile, Bus and Truck Body Mfg. - Plastic parts",Specific
+5500,"Automobile, Bus or Truck Parts Mfg. - Plastic parts",Specific
+5500,"Bone, Horn and Ivory Products - Mfg.",Specific
+5500,Bottle and Jar Mfg. - Plastic,Specific
+5500,Communication or Recording Systems or Equipment Mfg. - Plastic parts,Specific
+5500,Drums or Containers Mfg. - Plastic,Specific
+5500,Electronic Games Mfg. - Plastic parts,Specific
+5500,Firearms Mfg. - Plastic parts,Specific
+5500,Insulating Material Mfg. - Plastic,Specific
+5500,Machinery or Machinery Parts Mfg. - Plastic parts,Specific
+5500,Media Mfg. - Blank,Specific
+5500,Media Mfg. - Pre-recorded,Specific
+5500,"Medical, Dental or Surgical Diagnostic or Treatment Machines or Devices Mfg. - Plastic parts",Specific
+5500,"Medical, Dental, Hospital or Surgical Instruments Mfg. - Plastic parts",Specific
+5500,Musical Products Mfg. - pre-recorded,Specific
+5500,Photographic Equipment Mfg. - Plastic parts,Specific
+5500,Pipes or Tubes Mfg. - Plastic,Specific
+5500,Plastic Goods Mfg. - Household,Specific
+5500,Plastic Goods Mfg. - Other than household,Specific
+5500,"Radio, Television or Sound System Mfg. - Plastic parts",Specific
+5500,Sewing Machines Mfg. - Plastic parts,Specific
+5500,Tool Mfg. - Plastic parts,Specific
+5759,Inner Tubes Mfg.,Specific
+5759,Rubber Mfg. and Reclaiming - other than bulk,Specific
+5759,Rubber Stamp - Manufacturing,Specific
+5759,Sponge Processing,Specific
+5759,Tire - Mfg.,Specific
+6009,Abrasive Wheel Mfg.,Specific
+6009,Asbestos Goods Mfg.,Specific
+6009,"Asphalt or Tar Distilling or Refining, or Asphalt Works - Road mix plants",Specific
+6009,Bottle and Jar Mfg. - Glass,Specific
+6009,Brick Mfg.,Specific
+6009,"Cement, Concrete Mix or Plaster Mfg. - packaged or bulk",Specific
+6009,Ceramics - With shop work - other than hobby or instructional,Specific
+6009,"China, Porcelain or Earthenware Mfg.",Specific
+6009,Clay Products Mfg.,Specific
+6009,Concrete or Plaster Products Mfg.; Concrete Mixed in Transit,Specific
+6009,Diamond Manufacturing - industrial,Specific
+6009,Fiberglass Mfg.,Specific
+6009,"Glass Dealers and Glaziers - More than 5 employees engaged in grinding, polishing or glazing",Specific
+6009,Glass or Glassware Mfg.,Specific
+6009,"Hone, Oilstone or Whetstone Mfg.",Specific
+6009,Insulating Material Mfg. - Mineral,Specific
+6009,Light Bulbs or Tubes Mfg.,Specific
+6009,Lime Mfg. - Processing or mfg. operations in building,Specific
+6009,Marble Products - Mfg.,Specific
+6009,Mica Goods Mfg.,Specific
+6009,Mineral Powder or Mineral Polish Mfg.,Specific
+6009,"Monuments, Tombstones and Statuary - Monument works",Specific
+6009,Optical Goods - Distributors and Stores - if over 5 employees engaged in grinding or polishing,Specific
+6009,Optical Goods - Mfg.,Specific
+6009,Ore Milling or Processing - Processing or manufacturing operations in buildings,Specific
+6009,Salt Mfg. - Used as food product,Specific
+6009,"Salt, Borax, Potash or Phosphate - mineral product processing",Specific
+6009,"Slate Milling, Slate Splitting or Slate Roofing Mfg.",Specific
+6009,"Stone Crushing, Cutting or Polishing",Specific
+6210,Clay or Shale Digging,Specific
+6210,Dredging - Gold,Specific
+6210,Dredging - Other than gold,Specific
+6210,Drilling,Specific
+6210,Lime Mfg. - Mining,Specific
+6210,Mining - Other,Specific
+6210,Oil or Gas Wells,Specific
+6210,Ore Mining,Specific
+6210,Quarries - Other than coal,Specific
+6210,"Salt, Borax, Potash or Phosphate Mining",Specific
+6210,Slate Quarrying,Specific
+6210,Stone Quarrying,Specific
+6250,Mining - Coal,Specific
+6250,Quarries - Coal,Specific
+6810,Air Conditioning Equipment Mfg. - Heavy metal parts,Specific
+6810,Aircraft or Aircraft Parts Mfg. - Heavy metal parts,Specific
+6810,"Automobile, Bus and Truck Body Mfg. - Heavy metal products",Specific
+6810,"Automobile, Bus or Truck Parts Mfg. - Heavy metal products",Specific
+6810,Communication or Recording Systems or Equipment Mfg. - Heavy metal,Specific
+6810,Die Casting Mfg.,Specific
+6810,Electrical Generating Machinery Mfg.,Specific
+6810,Electronic Games Mfg. - Heavy metal parts,Specific
+6810,Elevator Mfg.,Specific
+6810,Engine or Turbine Mfg. - not aircraft,Specific
+6810,Forging Work,Specific
+6810,Foundries,Specific
+6810,Heating Equipment Mfg. - Heavy metal working,Specific
+6810,Machinery or Machinery Parts Mfg. - Heavy metalworking,Specific
+6810,Metal Goods Mfg. - Heavy metalworking,Specific
+6810,Metal Works - shop - Heavy metalworking,Specific
+6810,Metals - extraction or refining - Of refining of nonferrous metals - blast furnace or other pyrometallurgical processes,Specific
+6810,Metals - extraction or refining - Other,Specific
+6810,"Radio, Television or Sound System Mfg. - Metal parts, heavy",Specific
+6810,Railroad Engine Mfg.,Specific
+6810,Railroad or Other Public Conveyance Cars or Car Parts Mfg. - heavy metal,Specific
+6810,Rolling Mills - cold or hot process,Specific
+6810,Safes or Safe Vaults Mfg.,Specific
+6810,Tank Building or Mfg. - metal - Pressurized,Specific
+6810,Truck Mfg. or Assembling,Specific
+6850,Aerosol Container Mfg. - Metal,Specific
+6850,Air Conditioning Equipment Mfg. - Metal parts other than heavy metal,Specific
+6850,Aircraft or Aircraft Parts Mfg. - Metal parts other than heavy metal,Specific
+6850,"Alarm Mfg. - Burglar, fire or smoke - Metal parts other than precision parts",Specific
+6850,"Automobile, Bus and Truck Body Mfg. - Metal products other than heavy metal",Specific
+6850,"Automobile, Bus or Truck Parts Mfg. - Metal products other than heavy metal",Specific
+6850,Bicycle Mfg. - not motorized,Specific
+6850,Blacksmithing,Specific
+6850,"Bolt, Nut, Rivet, Screw or Washer Mfg.",Specific
+6850,Cable or Wire Mfg.,Specific
+6850,Can Mfg. - metal,Specific
+6850,Communication or Recording Systems or Equipment Mfg. - Metal other than heavy metal,Specific
+6850,Cutlery (not powered) and Flatware Mfg.,Specific
+6850,Drums or Containers Mfg. - Metal,Specific
+6850,Electrical Parts Mfg.,Specific
+6850,Electrical Power Distribution or Transmission Equipment Mfg. - Electrical parts,Specific
+6850,Electrical Wire or Cable Mfg.,Specific
+6850,Electronic Games Mfg. - Light metal parts,Specific
+6850,Electroplating,Specific
+6850,Escalator or Moving Sidewalk Mfg.,Specific
+6850,Fire Extinguishers - Mfg.,Specific
+6850,Firearms Mfg. - Metal working,Specific
+6850,Galvanizing or Tinning,Specific
+6850,Heating Equipment Mfg. - Light metal working,Specific
+6850,"Lead Works - sheet, pipe or shot",Specific
+6850,Machine Shops,Specific
+6850,Machinery or Machinery Parts Mfg. - Light metalworking,Specific
+6850,"Medical, Dental or Surgical Diagnostic or Treatment Machines or Devices Mfg. - Other metal parts",Specific
+6850,"Medical, Dental, Hospital or Surgical Instruments Mfg. - Other metal parts",Specific
+6850,Metal Goods Mfg. - All other metalworking,Specific
+6850,Metal Works - shop - All other metalworking,Specific
+6850,Modular Units Mfg. - metal,Specific
+6850,Nails or Spikes Mfg.,Specific
+6850,"Needles, Pins or Tacks Mfg.",Specific
+6850,Pattern Mfg. - Metal,Specific
+6850,"Photographic Equipment Mfg. - Metal parts, other",Specific
+6850,Pipes or Tubes Mfg. - Metal,Specific
+6850,Plumbing Fixtures Mfg. - metal,Specific
+6850,Plumbing Supplies Mfg. - metal,Specific
+6850,Prefabricated Building Mfg. - Metal,Specific
+6850,Pumps or Compressors Mfg.,Specific
+6850,"Radio, Television or Sound System Mfg. - Metal parts, light",Specific
+6850,Sewing Machines Mfg. - Metal parts,Specific
+6850,Sheet Metal Work - Shop only,Specific
+6850,Tank Building or Mfg. - metal - Not pressurized,Specific
+6850,Tool Mfg. - Other,Specific
+6850,Valves Mfg. - Metal parts,Specific
+6850,Welding shops,Specific
+6850,Wheel Mfg.,Specific
+6850,Wire Rope or Cable Mfg. - metal,Specific
+6900,Air Conditioning Equipment Mfg. - Precision parts,Specific
+6900,Aircraft or Aircraft Parts Mfg. - Precision parts,Specific
+6900,"Alarm Mfg. - Burglar, fire or smoke - Precision metal parts",Specific
+6900,Bearing Mfg.,Specific
+6900,Communication or Recording Systems or Equipment Mfg. - Electronic components,Specific
+6900,Computer - Mfg.,Specific
+6900,Computer - Software Mfg. - pre-packaged,Specific
+6900,Electrical Power Distribution or Transmission Equipment Mfg. - Electronic components,Specific
+6900,Electronic Components Mfg.,Specific
+6900,Electronic Games Mfg. - Electronic components,Specific
+6900,Instrument Mfg. (precision products),Specific
+6900,Jewelry Mfg.,Specific
+6900,Machinery or Machinery Parts Mfg. - Precision products,Specific
+6900,"Medical, Dental or Surgical Diagnostic or Treatment Machines or Devices Mfg. - Precision metal parts",Specific
+6900,"Medical, Dental, Hospital or Surgical Instruments Mfg. - Precision metal parts",Specific
+6900,Metal Foil Mfg.,Specific
+6900,Metal Goods Mfg. - Precision products,Specific
+6900,Metal Works - shop - Precision products,Specific
+6900,Musical Instrument - Mfg.,Specific
+6900,Office Machines Mfg.,Specific
+6900,"Photographic Equipment Mfg. - Metal parts, precision",Specific
+6900,"Precision Metal Products Mfg. - including highly polished metal sheets, cameras, photographic equipment, electrical parts and equipment (other than motors)",Specific
+6900,"Radio, Television or Sound System Mfg. - Electronic components",Specific
+6900,Razor or Razor Blades Mfg.,Specific
+6900,Sewing Machines Mfg. - Precision parts,Specific
+6900,Silverware Mfg.,Specific
+6900,Steel Wool or Wire Wool Mfg.,Specific
+6900,Telecommunication Equipment Mfg.,Specific
+6900,Tool Mfg. - Precision parts,Specific
+6900,Valves Mfg. - Precision parts,Specific
+6900,Vending Machines - Mfg.,Specific
+6900,Watch Mfg.,Specific
+7300,Electric Traction Properties,Specific
+7350,Electric Generating Stations - Public Utilities,Specific
+7409,Gas Companies,Specific
+7409,Oil or Natural Gas Lease Operations,Specific
+7409,Pipelines - operation,Specific
+7500,Railroads - scheduled railroad property,Specific
+7600,Oil Refineries,Specific
+7700,Petrochemical Plants,Specific

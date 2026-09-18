@@ -1,0 +1,141 @@
+# CF validation message register
+
+**A running log of every validation message ISO has actually returned to us**, what caused
+it, how it was resolved, and what the resolution generalises to.
+
+The point is not the diary. The point is that each message should make the *next* payload
+better — either by changing how payloads are built, or by adding a check that catches the
+same class of problem before a request is sent.
+
+**Related:**
+`CF_Validation_Messages.md` (what the whole rule set looks like) ·
+`CF_Validation_Messages.xlsx` (all 1,621 rules) ·
+`CF_Payload_ClassRated_Bldg_PP_Alabama.md` (the request spec) ·
+`scripts/cf/07_diagnose_message.py` (the diagnostic)
+
+**Opened:** 2026-09-17.
+
+---
+
+## The loop
+
+**1 · Observe.** Paste the message into the register below — verbatim, with `TableName`,
+the state, and the payload that produced it. `TableName` matters: the same message text is
+filed on several coverages, and without it you will read the wrong rule.
+
+**2 · Diagnose.** Run the rule down rather than guessing:
+
+```bash
+python scripts/cf/07_diagnose_message.py \
+    --message "CP 03 20 Must Be Attached When Fixed Dollar" \
+    --table   CommercialPropertyStructure \
+    --state   AL \
+    --payload CF_Algorithm/sample_payloads/AL_class_rated_bldg_pp_special.json
+```
+
+It finds the rule, decodes the condition, and prints every comparison with the value the
+payload supplies and whether it is true — including field-to-field comparisons, which are
+usually the deciding half and the easiest to miss by eye.
+
+**3 · Classify.** Which of these is it?
+
+| Class | Meaning | Typical fix |
+|---|---|---|
+| **Payload defect** | we sent something incoherent | fix the payload; consider a pre-flight check |
+| **Spec gap** | the spec did not say a field was required or constrained | update the spec |
+| **Missing endorsement** | a selection implies a form we did not attach | attach it — but check for the mirror rule first |
+| **State-specific** | the rule exists only in that state's package | note it in the state's section of the spec |
+| **ISO data defect** | the rule or the data behind it is wrong | log it, raise it, do not code around it |
+
+**4 · Fix, and check the mirror.** Over half the rules are form-attachment checks, and some
+come in opposing pairs: one fires if a form is missing, its mirror if the same form is
+attached when it should not be. Before attaching anything, search the inventory for the
+opposite message.
+
+**5 · Generalise.** Write the lesson as a **missing check**, not as a thing to remember.
+"Watch out for deductibles" is not a lesson. "Nothing compares the theft deductible against
+the base deductible before we send" is.
+
+---
+
+## Register
+
+| # | Date | State | Message (abbreviated) | TableName | Class | Status |
+|---|---|---|---|---|---|---|
+| M-001 | 2026-09-17 | AL | CP 03 20 Must Be Attached When Fixed Dollar Amount Deductible For Each Location Are Different Than Windstorm Or Hail Deductible Or Theft Deductible | `CommercialPropertyStructure` | Payload defect | **Resolved** |
+
+---
+
+### M-001 — CP 03 20 must be attached
+
+**Reported:** 2026-09-17, Alabama, from the first sample payload. **The submission rated**
+and returned this alongside the premium.
+
+**Rule:**
+`DoMessageCP0320MustBeAttachedWhenFixedDollarAmountDeductibleForEachLocationAreDifferentThanWindstormOrHailDeductibleOrTheftDeductible`,
+`CommercialPropertyStructureRules.Rule.xml`, countrywide — Alabama does not override it.
+
+**Condition** — fires when all three hold:
+
+1. `CovType` ∈ {`Building`, `Condominium Association`, `Builders Risk`,
+   `Improvements and Betterments`} **or** `OccupClassCovFormInList` = `true`; **and**
+2. **any** of —
+   - `WindstormOrHailDeductible` not in {`1%`, `2%`, `5%`, `Not Applicable`} **and**
+     ≠ `Deductible`
+   - `TheftDeductible` ≠ `Not Applicable` **and** ≠ `Deductible`
+   - `OccupClassTheftDedConditionsMet` = `true` — derived by comparing each **occupancy
+     class's** `TheftDeductible` against the **structure's** `Deductible`; **and**
+3. no `CommercialPropertyMultipleDeductibleFormFixedDollarDeductibles` record attached.
+
+**Root cause — ours, not ISO's.** The sample carried `Deductible: "1,000"` with
+`TheftDeductible: "2,500"` at both Structure and OccupClass. Two of the three sub-conditions
+in (2) fired: the structure comparison directly, and the occupancy comparison through the
+derived flag. The value `2,500` was chosen for realism with no thought about coherence.
+
+**Fix applied.** Aligned `TheftDeductible` to `"1,000"` at both levels — verified legal in
+`DomainBuildingTheftDeductible` for AL. All three arms of (2) now evaluate false.
+
+**The alternative, for a risk that genuinely wants a separate theft deductible:** keep the
+deductibles different and attach the CP 03 20 record, which makes (3) false instead.
+
+> **Mirror rule exists.**
+> `DoMessageMultipleDeductibleFormCP0320ShouldNotBeAttachedWithTheSameFixedDollarAmountDeductiblesForEachLocation`
+> fires if the form is attached while the deductibles *are* the same. Different deductibles
+> **and** the form, or the same deductibles **and** no form. Nothing in between.
+
+**Lesson — stated as the missing check.** *Nothing compares a payload's deductible fields
+against each other before the request is sent.* Three deductible fields
+(`Deductible`, `TheftDeductible`, `WindstormOrHailDeductible`) exist at two levels, and
+their coherence is a precondition ISO enforces but our builder does not test. The
+generalisation is wider than deductibles: **the payload spec validates each field in
+isolation — name, group, legal enum value — and nothing validates fields against each
+other.** That is the gap M-001 exposed.
+
+**Also produced:** the diagnostic script, because working this out by hand took about an
+hour and should take a minute.
+
+---
+
+## Standing checks this register has produced
+
+Each one is a check that does not exist yet. They are listed so that the next person builds
+the check rather than re-learning the lesson.
+
+| # | Check | From | Built? |
+|---|---|---|---|
+| C-1 | Deductible coherence: `TheftDeductible` and `WindstormOrHailDeductible` vs `Deductible`, at Structure **and** OccupClass, with CP 03 20 attached iff they differ | M-001 | **no** |
+| C-2 | Mirror-pair awareness: before attaching any endorsement to silence a message, assert its opposite rule will not fire | M-001 | **no** |
+
+---
+
+## What a pre-flight validator would be
+
+The destination this register points at is a local check that runs the applicable
+`DoMessage` conditions against a payload **before** it is sent, so messages are designed out
+rather than discovered. The inventory needed for it already exists
+(`CF_Validation_Messages.xlsx`, 1,621 rules with their conditions).
+
+It is **not built, and should not be started without an explicit go** — evaluating rule
+conditions is engine work, and the engine is deliberately unstarted. Until then this
+register plus the diagnostic script is the loop: observe, diagnose in a minute, fix, and
+record the check that was missing.

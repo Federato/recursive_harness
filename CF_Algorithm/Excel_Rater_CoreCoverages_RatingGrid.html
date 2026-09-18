@@ -1,0 +1,160 @@
+<title>Core Coverages — Rating Paths Grid</title>
+<meta charset="utf-8">
+<style>
+  body { font-family: Georgia, "Times New Roman", serif; max-width: 1080px; margin: 0 auto; padding: 32px 24px 80px; line-height: 1.55; color: #1c2733; background: #fff; }
+  @media (prefers-color-scheme: dark) {
+    body { background: #14181d; color: #dfe4e9; }
+    table, th, td { border-color: #3a4048 !important; }
+    thead th { background: #24313a !important; color: #eef4f3 !important; }
+    code { background: #262c33 !important; color: #dfe4e9; }
+    .note { background: #2c2a1c !important; color: #e0c064 !important; }
+    td.done { background: #1b3226 !important; color: #63c090 !important; }
+    td.partial { background: #3a3319 !important; color: #e0c064 !important; }
+    td.none { background: #262c33 !important; color: #8b95a1 !important; }
+    td.absent { background: #1b242d !important; color: #6d7885 !important; }
+  }
+  h1 { font-size: 26px; font-weight: 400; margin-bottom: 4px; }
+  h2 { font-size: 18px; font-weight: 700; margin-top: 36px; }
+  .meta { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13px; color: #55606b; margin: 6px 0 4px; }
+  code { font-family: ui-monospace, Consolas, monospace; font-size: 0.92em; background: #eef1f4; padding: 1px 5px; border-radius: 3px; }
+  table { border-collapse: collapse; width: 100%; margin: 18px 0 10px; font-size: 14px; }
+  th, td { border: 1px solid #d7dce2; padding: 10px 12px; text-align: left; vertical-align: top; }
+  thead th { background: #1e3a45; color: #eef4f3; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 12px; text-transform: uppercase; letter-spacing: 0.03em; }
+  td.cov { font-family: -apple-system, "Segoe UI", sans-serif; font-weight: 700; width: 15%; }
+  td.status { text-align: center; font-family: -apple-system, "Segoe UI", sans-serif; }
+  td.status .lbl { display: block; font-weight: 700; font-size: 13px; margin-bottom: 3px; }
+  td.status .sub { display: block; font-size: 11.5px; font-weight: 400; opacity: 0.9; }
+  td.done { background: #dcefe4; color: #2f7d5a; }
+  td.partial { background: #f2e6c4; color: #a67c1e; }
+  td.none { background: #eef1f4; color: #8b95a1; }
+  td.absent { background: #e4e8ed; color: #8b95a1; font-style: italic; }
+  .legend { display: flex; flex-wrap: wrap; gap: 16px; margin: 14px 0 6px; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 12.5px; }
+  .legend .sw { display: inline-flex; align-items: center; gap: 6px; }
+  .legend .box { width: 14px; height: 14px; border-radius: 3px; display: inline-block; }
+  .note { background: #f7ddd4; color: #a53d26; padding: 12px 16px; border-radius: 6px; margin: 16px 0; font-size: 14px; }
+  .note b { font-weight: 700; }
+  hr { border: none; border-top: 1px solid #d7dce2; margin: 36px 0; }
+</style>
+
+<h1>Core Coverages — Rating Paths Grid</h1>
+<p class="meta"><b>Written:</b> 2026-09-14. <b>Updated:</b> 2026-09-16 &mdash; the Special Class and Special
+Class Business Income rows moved off "not started"; their Specific/Tentative and Legal Liability cells are now
+<b>confirmed structurally absent</b> from a direct sweep of the rule files, not presumed by analogy.
+<b>Source:</b> <code>Excel_Rater_RatingPaths_Checklist.md</code>, the three BGI Specific/Tentative build-process
+docs, and (new) <code>Excel_Rater_SpecialClassBusinessIncome_BGI/BGII_HowItWorks.html</code> plus
+<code>Excel_Rater_SpecialClassBusinessIncome_ReuseMap.html</code>.
+Coverage-level view &mdash; see <code>Excel_Rater_CoreCoverages_RatingPaths.html</code> for the full form-by-form
+breakdown this rolls up.</p>
+
+<div class="legend">
+  <span class="sw"><span class="box" style="background:#dcefe4;"></span> Completed</span>
+  <span class="sw"><span class="box" style="background:#f2e6c4;"></span> Formula traced, not built into calc tab</span>
+  <span class="sw"><span class="box" style="background:#eef1f4;border:1px solid #d7dce2;"></span> Not started</span>
+  <span class="sw"><span class="box" style="background:#e4e8ed;"></span> Structurally absent</span>
+</div>
+
+<table>
+<thead><tr><th>Core coverage</th><th>Class-rated</th><th>Specific / Tentative</th><th>Legal Liability</th><th>Blanket-rated</th></tr></thead>
+<tbody>
+<tr>
+  <td class="cov">Building</td>
+  <td class="status done"><span class="lbl">Completed</span><span class="sub">all 4 forms — BGI, BGII, Broad, Special</span></td>
+  <td class="status done"><span class="lbl">Completed</span><span class="sub">BGI only — confirmed structurally absent for BGII/Broad/Special</span></td>
+  <td class="status done"><span class="lbl">Completed</span><span class="sub">all 4 forms. The fork is in <code>SetPremium</code>, not the rate chain: it starts from <code>BasicGroupICauseOfLossAdjustment</code> instead of <code>FinalBasicGroupIRate</code>, so coinsurance, LOI and deductible are computed and ignored, and no MultiPremium credit applies. Gates on <code>CovType</code>; factor 0.25. Blanket unreachable. <code>Excel_Rater_LegalLiability_vs_ClassRated_Building.html</code></span></td>
+  <td class="status partial"><span class="lbl">Formula only</span><span class="sub">referenced, not built — all 4 forms</span></td>
+</tr>
+<tr>
+  <td class="cov">Personal Property</td>
+  <td class="status done"><span class="lbl">Completed</span><span class="sub">all 4 forms — BGI, BGII, Broad, Special</span></td>
+  <td class="status done"><span class="lbl">Completed</span><span class="sub">BGI only — confirmed structurally absent for BGII/Broad/Special</span></td>
+  <td class="status done"><span class="lbl">Completed</span><span class="sub">all 4 forms. Same premium-level fork as Building but <b>a different mechanism, not a copy</b>: gates on <code>CovForm</code> (inherited from the occupancy class), datadef <code>LegalLiabFactor</code>, factor <b>0.50</b>. Of eleven Building-vs-Contents differences only two move money. <code>Excel_Rater_LegalLiability_vs_ClassRated_PersonalProperty.html</code></span></td>
+  <td class="status partial"><span class="lbl">Formula only</span><span class="sub">referenced, not built — all 4 forms</span></td>
+</tr>
+<tr>
+  <td class="cov">Special Class</td>
+  <td class="status done"><span class="lbl">Completed</span><span class="sub">BGI, BGII, Broad, Special — Earthquake's 5th chain not started</span></td>
+  <td class="status absent"><span class="lbl">Structurally absent</span><span class="sub">confirmed 2026-09-16, no longer by analogy — <code>RatingType</code>, <code>SpecificGroupIRate</code> and <code>TentativeRate</code> appear <b>zero</b> times in <code>CommercialPropertySpecialClassRules.Rule.xml</code></span></td>
+  <td class="status absent"><span class="lbl">Structurally absent</span><span class="sub">confirmed — no <code>LegalLiability</code> or <code>LeaseholdInterest</code> anywhere in the ruleset; Special Class has no CovType taxonomy at all, which is why its premium files have only two branches</span></td>
+  <td class="status partial"><span class="lbl">Formula only</span><span class="sub">traced, not built — <code>BlktBasicGroupIAvgRate</code> branch present in all 4 forms</span></td>
+</tr>
+<tr>
+  <td class="cov">Business Income</td>
+  <td class="status done"><span class="lbl">Completed</span><span class="sub">BGI, BGII, Broad, Special — Earthquake's 5th chain not started</span></td>
+  <td class="status done"><span class="lbl">Completed</span><span class="sub">BGI only, with its own extra <code>BGIBaseRateAdjustmentFactor</code> multiplier — absent for BGII/Broad/Special, no <code>RatingType</code> concept for Earthquake</span></td>
+  <td class="status absent"><span class="lbl">Structurally absent</span><span class="sub">confirmed — no Legal Liability coverage type exists for Business Income at all, any form</span></td>
+  <td class="status partial"><span class="lbl">Formula only</span><span class="sub">referenced, not built — Earthquake's blanket path also not started</span></td>
+</tr>
+<tr>
+  <td class="cov">Special Class Business Income</td>
+  <td class="status done"><span class="lbl">Completed</span><span class="sub">BGI, BGII, Broad, Special — Earthquake's 5th chain not started. BGI copies the parent item's rate; BGII/Broad/Special run their own lookups off borrowed keys</span></td>
+  <td class="status absent"><span class="lbl">Structurally absent</span><span class="sub">confirmed 2026-09-16 — same zero-hit sweep as the Special Class item; no <code>RatingType</code> concept on this group</span></td>
+  <td class="status absent"><span class="lbl">Structurally absent</span><span class="sub">confirmed — absent on both axes at once: Business Income never carries Legal Liability, and Special Class has no CovType taxonomy</span></td>
+  <td class="status partial"><span class="lbl">Formula only</span><span class="sub">traced, not built — <code>BlktBasicGroupIAvgRate</code> branch present in all 4 forms</span></td>
+</tr>
+<tr>
+  <td class="cov">Leasehold Interest</td>
+  <td class="status none"><span class="lbl">Not started</span><span class="sub">surveyed only 2026-09-16 &mdash; 32 rule files, its own datadef group, 4 sub-coverages (Tenants Lease, Bonus Payments, Improvements &amp; Betterments, Prepaid Rent) &times; 5 forms. <b>Not a path under Building</b>: <code>CovType = "Leasehold Interest"</code> is excluded from the Building premium file and rates in its own ruleset</span></td>
+  <td class="status absent"><span class="lbl">Structurally absent</span><span class="sub">confirmed &mdash; <code>RatingType</code>, <code>SpecificGroupIRate</code>, <code>TentativeRate</code> appear <b>zero</b> times across all 32 leasehold rule files</span></td>
+  <td class="status absent"><span class="lbl">Structurally absent</span><span class="sub">Legal Liability is a sibling CovType, not a sub-path of this one</span></td>
+  <td class="status absent"><span class="lbl">Structurally absent</span><span class="sub">confirmed &mdash; <b>no <code>IncludedInBlkt</code> and no <code>BlktBasicGroupIAvgRate</code> anywhere</b> in the 32 files. This coverage has no blanket branch at all, unlike every other row here</span></td>
+</tr>
+</tbody>
+</table>
+
+<div class="note"><b>Leasehold Interest does not fit this grid's four columns, and that is the finding.</b>
+Its exposure is <i>computed</i>, not entered &mdash; a present-value annuity
+(<code>AnnuityConstant &times; (1 &minus; DiscFactor<sup>months remaining</sup>)</code>, averaged between
+inception and expiration, summed across the four sub-coverages) driving the only <code>&lt;rul:Power&gt;</code>
+in the CF package. Basic Group I and II then <code>Copy</code> the parent building's
+<code>BasicGroupICauseOfLossAdjustment</code>; Broad and Special run their own lookups against
+<code>LeaseholdInterestBroadSpecialRate</code> and <code>SpecialFormIncldgTheftLeaseHoldBaseRate</code>.
+There is no coinsurance, LOI or deductible factor anywhere in it. Treat it as a sixth coverage with its own
+inventory rather than a fifth rating path.</div>
+
+<div class="note"><b>"Completed" here means documented and built with calc-tab columns and example rows</b> — for
+Specific/Tentative specifically, it also now includes the full factor-by-factor neutralization grid (which
+Class-rated factors drop to 0/1.0 vs. which carry through unchanged) worked out in the three companion build-process
+docs. It does <b>not</b> mean every open question inside that path is resolved — <code>SpecificGroupIRate</code>'s
+own source (user-entered vs. some undiscovered lookup) is still unconfirmed for all three coverages, and Business
+Income additionally has an undocumented fourth <code>RatingType</code> branch. Those are analysis gaps inside a
+completed path, not reasons to downgrade the status.</div>
+
+<h2>What "Class" and "Specific/Tentative" being done actually covers</h2>
+<table>
+<thead><tr><th>Coverage</th><th>Where the detail lives</th></tr></thead>
+<tbody>
+<tr><td>Building</td><td><code>Excel_Rater_BasicGroupI.md</code> §4 (Class), §9 and
+  <code>Excel_Rater_BGI_SpecificTentative_BuildProcess.html</code> (Specific/Tentative)</td></tr>
+<tr><td>Personal Property</td><td><code>Excel_Rater_BasicGroupI.md</code> §5 (Class), §9 and
+  <code>Excel_Rater_BGI_PersonalProperty_SpecificTentative_BuildProcess.html</code> (Specific/Tentative)</td></tr>
+<tr><td>Business Income</td><td><code>Excel_Rater_BusinessIncome_BasicGroupI.md</code> §4 (Class), §8 and
+  <code>Excel_Rater_BGI_BusinessIncome_SpecificTentative_BuildProcess.html</code> (Specific/Tentative)</td></tr>
+</tbody>
+</table>
+<p style="font-family: -apple-system, 'Segoe UI', sans-serif; font-size: 13px; color: #55606b;">Basic Group II,
+Broad, and Special's Class-rated chains are documented in their own <code>Excel_Rater_BasicGroupII.md</code>,
+<code>Excel_Rater_Broad.md</code>, and <code>Excel_Rater_Special.md</code> — Specific/Tentative doesn't apply to any
+of the three, confirmed structurally absent rather than simply undocumented.</p>
+
+<hr>
+
+<h2>Remaining steps</h2>
+<ol>
+<li><b>Earthquake is now the only missing form</b>, and it blocks the most. All five coverages show a fifth
+chain that has never been traced, and roughly 29 Special Class rule files ship an Earthquake wrapper that cannot be
+built until it exists. Do this before any endorsement work.</li>
+<li><b>Blanket-rated is the widest remaining gap</b> &mdash; every coverage sits at "formula only". Branch B is a
+stub in each premium file already built, so this is calc-tab work, not re-tracing.</li>
+<li><b>Legal Liability is closed.</b> Traced end to end for Building and Contents, all four forms each, with
+an eleven-point divergence map between them &mdash; only two of the eleven move money. Confirmed structurally
+absent for Business Income, Special Class and Special Class Business Income, so the whole column is now either
+done or answered. <b>Still unread:</b> the same branch on Non-Owned Trailers (5 files) and the Earthquake
+endorsements (8), both queued behind Earthquake.</li>
+<li>Two accepted simplifications are live on the Special Class Business Income rows &mdash; S-1 (vandalism) and
+S-2 (wind/hail), both the same separate-endorsement-record pattern. See
+<code>Rater_Simplifications_Backlog.md</code>. The theft exclusion has the same split and is not yet logged.</li>
+<li><b>Leasehold Interest needs its own trace</b>, not a column in this grid &mdash; 32 rule files, four
+sub-coverages, three tables of its own, and an annuity mechanism that appears nowhere else in the line.
+Surveyed 2026-09-16; nothing below the survey level is verified.</li>
+<li>Nothing gets built into the live workbook until you say go.</li>
+</ol>

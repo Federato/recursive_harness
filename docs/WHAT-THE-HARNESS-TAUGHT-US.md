@@ -1,4 +1,11 @@
-# What the harness taught us — 17 August 2026
+# What the harness taught us
+
+**A running record.** Each session that teaches something reusable gets a dated section.
+So far: **17 August 2026** — the GL engine, seven defects found against ISO. **17 September 2026** — reading ISO's corpus for Commercial Property, before any CF engine exists.
+
+---
+
+# 17 August 2026 — the GL engine
 
 **Who this is for:** anyone who wants to know whether this engine can be trusted, without reading
 code. No jargon that isn't explained the first time it appears.
@@ -220,3 +227,254 @@ carrier actually writes.** Every test still uses broadly one kind of risk. Our i
 measure reads **1 of 19**.
 
 That is the honest headline, and it is the next piece of work.
+
+---
+
+# 17 September 2026 — reading ISO's corpus, before any CF engine exists
+
+**No code was written this session.** The work was documents and data: two data dictionaries
+covering countrywide *and* every state package, an index of ISO's own rating payloads, and a
+specification of what a Commercial Property rating request actually contains. The CF rating
+engine is still unstarted, deliberately.
+
+That makes this a different kind of lesson from August's. August was *the harness disagreeing
+with ISO*. September was *us disagreeing with ourselves* — and the pattern underneath is that
+**almost every wrong answer came from reading a description of the data instead of the data
+itself.**
+
+---
+
+## The one that reframed everything
+
+**ISO ships its own test payloads, and nobody had opened them.** Inside the ERC packages, many
+folders contain an `STC/` directory of ISO-authored rating requests. There are **921** of them
+across GL and CF.
+
+Before finding them, a payload specification had been reasoned out from the XML schema plus the
+existing GL request. The STC files corrected it on **six** counts within minutes: there is no
+`header`/`body` wrapper; there is no state field at all (the state comes from the product name);
+coverage records are objects, not arrays; construction *type* is sent while construction *code*
+is derived; the location field is `ProtectClass`, not `ProtectionClass`; and the contents record
+carries none of the rating fields we had listed for it — they are all inherited from its parents.
+
+**The lesson.** When a vendor ships examples, they outrank your reading of their schema. Go
+looking for them *first*. The rule now: **before specifying any request format, search the
+corpus for a real example of it.**
+
+---
+
+## Why the schema could never have answered it
+
+We checked rather than assumed: across **all 56,207 CF field definitions, every single one is
+marked optional-and-nullable.** There is exactly one optionality setting in the entire line of
+business.
+
+**The lesson.** The schema describes what is *possible*, never what is *required*. Only the
+rules say what is required, and they say it through gates rather than declarations. **A schema
+cannot be the source of a required-fields list.** Anyone building a submission form from the
+DataDef alone will build the wrong form.
+
+---
+
+## Fixtures are not a test suite — check before you plan around them
+
+The obvious next thought after finding 921 test payloads was "we have a regression suite." We
+checked instead of assuming, and the answer is **no**: every STC folder contains inputs only.
+Not one ISO file carries a premium.
+
+Worse, the first scan *appeared* to find rated premiums — until they traced back to **three of
+our own files** that had been dropped into ISO's directory tree at some point, using this
+project's own naming convention.
+
+**Two lessons.** First, **"they gave us test cases" and "they gave us answers" are different
+claims** — verify which one you have before building a plan on it. These fixtures tell you what
+a valid request looks like; ISO's live service is still the only oracle for whether a premium is
+right. Second, **keep your files out of the vendor's corpus.** Ours contaminated a scan of ISO
+content within minutes of the question being asked.
+
+---
+
+## Coverage: count what the examples actually exercise
+
+Indexing the payloads was routine. Reading the index was not. Across all **364** Commercial
+Property examples:
+
+- **every one** is the same policy type
+- **every one** is class-rated — none specific, none tentative
+- **every one** is non-blanket
+- **357 of 364** use one cause-of-loss form; only **3** use Basic — and all three of those are
+  Builders Risk, which rates off a different branch entirely
+
+The three switches previously identified as the most far-reaching in the whole line are each
+exercised at exactly **one value**.
+
+**The lesson.** A large corpus is not a broad one. **Measure coverage against the switches that
+change behaviour, not against file count.** 364 examples that all take the same branch prove one
+branch.
+
+---
+
+## Things that look like inputs and are not
+
+Three separate traps, all the same shape:
+
+- A **dropdown with no options.** Alaska files a district-selection list that is a header row and
+  nothing else — in all nine of its editions — for a field Alaska's rules never read.
+- A **field no rule consumes.** A district-territory field is declared countrywide and read by
+  nothing.
+- A **guard against an impossible value.** Three rules test whether a coverage type equals
+  "Tobacco Sales Warehouses"; that exact value is offered by **zero rows in all 23 packages**
+  that file the list. The test can never fire.
+
+**The lesson.** Existence is not usage, in either direction. **A declared field with no rule
+consumer, and a domain table with no rows, should be flagged — not surfaced as an input.** This
+is the same lesson as "a table exists ≠ the table is usable", now with three more shapes to
+recognise.
+
+---
+
+## Same name, different thing — twice in one session
+
+The location record has both `ProtectClass` and `ProtectionClass`. Only one is used. Send the
+other and nothing errors.
+
+Worse: a rate table's key column is `OccupCategorySeverity`, while the field that feeds it is
+`OccupCategoryRiskSeverity`. They bind by **position**, not by name. Searching the rules for the
+column name returns nothing at all — which reads as *"nothing uses this"*, the exact opposite of
+the truth.
+
+**The lesson.** **A name match is not an identity, and a name mismatch is not an absence.** When
+a search comes back empty, consider that you searched for the wrong string before concluding the
+thing is unused.
+
+---
+
+## When a prior finding disagrees with you, reconcile — do not overwrite
+
+A note on record said New York picks its base-rate table from **county**. The rules plainly
+showed it testing **territory codes**. Easy to assume the old note was stale.
+
+Checking showed both were right: the five territory codes map one-to-one to the five New York
+City boroughs, via a county-keyed table. County → code → table. The reconciliation produced a
+sharper result than either finding alone — and a live warning, because that territory code is
+*supplied in the request*, so a Brooklyn risk submitted with the wrong code rates off the wrong
+table and nothing errors.
+
+**The lesson.** **A contradiction between a prior finding and fresh evidence is usually a missing
+link, not an error.** Spend the ten minutes.
+
+---
+
+## Do not trust a plural
+
+"The District states — AK, CA, NY" had been recorded as a single category. Checking each one
+separately showed **three different mechanisms**: California reads a district field from the
+request; Alaska and New York each derive it from territory, using different code sets.
+
+The practical payoff was large and reassuring: **only one of the three needs a field the others
+do not.** The record shape holds across all of them. That is a much better answer than the
+grouping implied — and it was only visible because each was checked on its own.
+
+**The lesson.** **A group name hides variation.** When a note says "these N are the same", that
+is a claim to test, not a fact to inherit.
+
+---
+
+---
+
+## The biggest one: ISO prices a policy, it does not administer one
+
+**Mapping GL's premium chain end to end produced one finding that outranks the rest**, and it
+only surfaced because someone asked a direct question the map had glossed: *does this include
+interim premium fields, like pro-rata, written?*
+
+The map had listed those fields and asserted they were "policy-administration values a policy
+system supplies." That assertion had **not been measured**, and it had been checked against
+countrywide only. Measuring it properly changed how large the finding was.
+
+**Across all 52 jurisdictions, a fourteen-field block declared on all 1,025 record types is
+written zero times and read zero times by any rule.** Ten premium fields — annual, policy-term,
+prior, pro-rated, pro-rated prior, pro-rated change, total pro-rated change, change, evaluated,
+override — plus four proration controls that only appeared when we searched for the *concept*
+rather than the word "premium": pro-rate factor, pro-rate indicator, term-factor indicator,
+earned-in-full indicator.
+
+Nothing computes them. Nothing reads them. They are **inert carriers** — a shape shipped inside
+ISO's schema so a round-tripped record has somewhere to put values that something *else* is
+expected to produce.
+
+### What ISO actually gives you
+
+**One number: the full-term premium at the effective date you asked for.**
+
+Proration, mid-term endorsement pricing, written-versus-earned, cancellation returns — none of
+it exists in the filed content. The only transaction mechanism available is to rate twice at two
+effective dates and subtract, and **that is our construction, not ISO's**.
+
+### Why this has to be contemplated as we build
+
+**1 · Above the full-term number, there is no oracle.**
+Every defect this project has found so far was a *disagreement* — our number against ISO's. The
+moment we compute a pro-rata endorsement delta, we leave the oracle behind completely. ISO
+cannot confirm or refute it, because ISO does not produce it. That is a different and harder
+risk class than anything in the August list, and the harness's whole method — point systems at
+each other until they disagree — does not reach it.
+
+**2 · The schema actively misleads anyone generating from it.**
+A submission UI or payload builder built off the DataDef would render fourteen fields on every
+record that do nothing at all. This is the same trap as the empty dropdown and the
+consumer-less field found on the Property side, at roughly a thousand times the scale. **A field
+existing in the schema says nothing about whether anything uses it** — and this is now the
+third distinct shape that lesson has taken in one session.
+
+**3 · The scope question is a decision, not a discovery.**
+Nothing here is broken. The engine is right, the corpus is right, the map is right. What is open
+is **how far up the policy lifecycle this project intends to go** — and if the answer is
+"further than the full-term premium", then a whole layer has to be built with no reference
+implementation to check it against. Better decided deliberately than arrived at.
+
+### The trap inside the finding
+
+`EndorsementPremium` *is* live, and looks like a counter-example to all of the above. It is not.
+It sits on the terrorism endorsement coverage and sums the terrorism contributions of about forty
+endorsements — *premium for the terrorism endorsement*, not *premium change from an endorsement
+transaction*. Same word, unrelated concept, and it would comfortably fool a search.
+
+**The lesson, stated as the missing check:** nothing in this project distinguishes *a field ISO
+declares* from *a field ISO populates*. Every artefact built from the schema so far — the data
+dictionaries, the payload spec, the submission shape — inherits that blindness. The measurement
+is one pass over the rules per field; it had simply never been run until a question forced it.
+
+---
+
+## What this session produced
+
+| | |
+|---|---|
+| Data dictionaries, GL + CF | countrywide **and** all state packages; 46,650 / 56,207 field rows |
+| State-specific field lists | 19,522 GL / 9,915 CF rows, with the jurisdictions for each |
+| `STC_Corpus_Index.xlsx` | 921 ISO payloads, with the switches each exercises |
+| CF payload specification | class-rated Building + Personal Property, all four forms, Alabama, generalised across the district states |
+| Completion tracker | MD + HTML, wired into the README and the CF build docs |
+
+**A parser defect was fixed along the way**: 104 GL and 614 CF child-group references were being
+listed as though they were ordinary fields. ISO's own payloads independently confirmed the fix —
+the two kinds serialise differently.
+
+**One defect was found in ISO's filed data**: a rate in the current Alabama filing is ten times
+its value in all seven prior editions, and the branch that uses it would over-rate the affected
+risks by roughly that factor. Raised rather than worked around.
+
+---
+
+## What we still cannot say
+
+**Nothing here has been executed.** There is no CF rating engine, so every claim in the
+specification is a careful *reading* of ISO's files, not a tested contract. The August lesson
+still stands and now cuts the other way: **a document that agrees with itself has taught us
+nothing either.** These findings become real when something runs them.
+
+One question is worth flagging above the rest: a field required by the contents rate in **45 of
+47 jurisdictions** has no list of legal values anywhere in the corpus, and appears in **none** of
+ISO's 364 examples. We cannot tell from the files whether the engine defaults it or whether ISO's
+own examples are underspecified. That one needs an answer from ISO.

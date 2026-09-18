@@ -1,0 +1,403 @@
+<title>Legal Liability vs Class / Specific — Building</title>
+<meta charset="utf-8">
+<style>
+  body { font-family: Georgia, "Times New Roman", serif; max-width: 1000px; margin: 0 auto; padding: 32px 24px 80px; line-height: 1.55; color: #1c2733; background: #fff; }
+  @media (prefers-color-scheme: dark) {
+    body { background: #14181d; color: #dfe4e9; }
+    table, th, td { border-color: #3a4048 !important; }
+    thead th { background: #24313a !important; color: #eef4f3 !important; }
+    code { background: #262c33 !important; color: #dfe4e9; }
+    pre { background: #262c33 !important; border-color: #3a4048 !important; color: #dfe4e9; }
+    .note { background: #2c2a1c !important; color: #e0c064 !important; }
+    .note.good { background: #1b3226 !important; color: #63c090 !important; }
+    .note.warn2 { background: #2a1f2c !important; color: #d69ad0 !important; }
+    .note.shared { background: #1d2b33 !important; color: #9fd4dc !important; }
+    td.same { background: #1b3226 !important; color: #63c090 !important; }
+    td.diff { background: #33201f !important; color: #e08b7a !important; }
+    td.gone { background: #1b242d !important; color: #6d7885 !important; }
+  }
+  h1 { font-size: 26px; font-weight: 400; margin-bottom: 4px; }
+  h2 { font-size: 19px; font-weight: 700; margin-top: 42px; border-bottom: 2px solid #1e3a45; padding-bottom: 4px; }
+  h3 { font-size: 15px; font-weight: 700; margin-top: 26px; }
+  .meta { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13px; color: #55606b; margin: 6px 0 4px; }
+  code { font-family: ui-monospace, Consolas, monospace; font-size: 0.92em; background: #eef1f4; padding: 1px 5px; border-radius: 3px; }
+  table { border-collapse: collapse; width: 100%; margin: 14px 0 22px; font-size: 14px; }
+  th, td { border: 1px solid #d7dce2; padding: 8px 10px; text-align: left; vertical-align: top; }
+  thead th { background: #1e3a45; color: #eef4f3; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 12px; text-transform: uppercase; letter-spacing: 0.03em; }
+  .note { background: #f7ddd4; color: #a53d26; padding: 12px 16px; border-radius: 6px; margin: 16px 0; font-size: 14px; }
+  .note.warn2 { background: #f2e6c4; color: #a67c1e; }
+  .note.good { background: #dcefe4; color: #2f7d5a; }
+  .note.shared { background: #dde9ee; color: #1e5567; }
+  .note b { font-weight: 700; }
+  pre { background: #eef1f4; border: 1px solid #d7dce2; border-radius: 6px; padding: 14px 16px; overflow-x: auto; font-family: ui-monospace, Consolas, monospace; font-size: 13px; }
+  ol, ul { padding-left: 22px; }
+  hr { border: none; border-top: 1px solid #d7dce2; margin: 40px 0; }
+  td.same, td.diff, td.gone { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 12px; font-weight: 700; text-align: center; white-space: nowrap; }
+  td.same { background: #dcefe4; color: #2f7d5a; }
+  td.diff { background: #f7ddd4; color: #a53d26; }
+  td.gone { background: #e4e8ed; color: #8b95a1; font-style: italic; }
+</style>
+
+<h1>Legal Liability vs Class / Specific &mdash; Building</h1>
+<p class="meta"><b>Written:</b> 2026-09-16. <b>Source:</b>
+<code>CommercialPropertyStructureRules.Rule.xml</code> and
+<code>CommercialPropertyStructureBuildingBasicGroupICoverageRules.Rule.xml</code> (CW 20260601 V01), read
+directly. Companion page for Personal Property:
+<code>Excel_Rater_LegalLiability_vs_ClassRated_PersonalProperty.html</code> &mdash; the two mechanisms are
+<b>not</b> the same, despite the shared table.</p>
+<div class="note good"><b>Status: traced, not built.</b> Legal Liability sits at "formula only" for Building
+in <code>Excel_Rater_CoreCoverages_RatingGrid.html</code>.</div>
+
+<h2>1. The one-sentence version</h2>
+<p><b>The rate chain is identical. The premium formula is not.</b> Legal Liability runs the same base rate,
+the same territory, protection class and cause-of-loss adjustment as any Class-rated building &mdash; and then
+the premium formula picks the rate up <b>three steps earlier</b> than the Class-rated branch does, throwing
+away the limit, coinsurance and deductible layer entirely, and multiplies in two factors that exist nowhere
+else.</p>
+
+<div class="note shared"><b>Where the fork actually is.</b> Not in <code>SetBGIRatesAndFactors</code>. Not in
+<code>SetFinalRates</code>. It is a <code>Choose</code> branch inside <code>SetPremium</code>, in the
+coverage file. Everything upstream of that branch is shared code that has already run.</div>
+
+<h2>2. Where they diverge, step by step</h2>
+<table>
+<thead><tr><th>Step</th><th>Class-rated / Specific</th><th>Legal Liability</th><th></th></tr></thead>
+<tbody>
+<tr><td>Base rate, territory, protection class</td><td colspan="2">identical &mdash; same rules, same tables, same keys</td><td class="same">SAME</td></tr>
+<tr><td><code>BasicGroupIRate</code></td><td colspan="2">identical</td><td class="same">SAME</td></tr>
+<tr><td><code>BasicGroupICauseOfLossAdjustment</code></td><td colspan="2">identical &mdash; sprinkler leakage, vandalism, Std Prop Pol all apply</td><td class="same">SAME</td></tr>
+<tr><td><code>AdjustedBasicGroupIRate</code><br><span style="font-size:12px">&times; coinsurance &times; LOI factor</span></td>
+  <td>computed and used</td><td><b>computed and ignored</b></td><td class="diff">DIVERGES</td></tr>
+<tr><td><code>FinalBasicGroupIRate</code><br><span style="font-size:12px">&times; deductible factors</span></td>
+  <td>the number the premium uses</td><td><b>never referenced</b></td><td class="diff">DIVERGES</td></tr>
+<tr><td>Premium starts from</td><td><code>FinalBasicGroupIRate</code></td><td><code>BasicGroupICauseOfLossAdjustment</code></td><td class="diff">DIVERGES</td></tr>
+<tr><td><code>LegalLiabilityFactor</code></td><td class="gone">n/a &mdash; forced to 0.0</td><td>&times; <b>0.25</b> (State + <code>"Bldg"</code>)</td><td class="diff">LL only</td></tr>
+<tr><td><code>LegalLiabAddlInsurableIntFactor</code></td><td class="gone">n/a &mdash; forced to 0.0</td><td>&times; 1.25 / 1.25 / 1.0 / 1.0 by option</td><td class="diff">LL only</td></tr>
+<tr><td><code>MultiPremiumAndDispersionCreditFactor</code></td><td>applied</td><td><b>not applied</b></td><td class="diff">DIVERGES</td></tr>
+<tr><td><code>IRPMFactor</code>, <code>PackageModFactor</code></td><td>applied before the limit</td><td>applied <b>after</b> the limit</td><td class="diff">order differs</td></tr>
+<tr><td>Cyber factors</td><td colspan="2">identical &mdash; both policy-level, both outside the rounding</td><td class="same">SAME</td></tr>
+<tr><td>Blanket branch</td><td>reached when <code>IncludedInBlkt = "Yes"</code></td><td><b>unreachable</b> &mdash; see &sect;7</td><td class="diff">DIVERGES</td></tr>
+</tbody>
+</table>
+
+<h2>3. The two formulas, side by side &mdash; Basic Group I</h2>
+<pre>CLASS-RATED / SPECIFIC   (CovType = Building, Builders Risk, Improvements and Betterments,
+                          Condominium Association; IncludedInBlkt = "No")
+
+Premium = round(round(round(
+              IRPMFactor
+            x MultiPremiumAndDispersionCreditFactor
+            x PackageModFactor
+            x FinalBasicGroupIRate          &lt;- the fully adjusted rate
+            x (Limit / 100)
+          , 0), 0), 0)
+          x CyberIncidentExclusionFactorBGI
+          x CyberIncidentExclusionCOLExcptnsFactorBGI
+
+
+LEGAL LIABILITY          (CovType = "Legal Liability")
+
+Premium = round0( round0( round0( round0(
+              round3( round3( BasicGroupICauseOfLossAdjustment    &lt;- three steps earlier
+                              x LegalLiabilityFactor )            &lt;- 0.25
+                              x LegalLiabAddlInsurableIntFactor )
+            x (Limit / 100) )
+            x PackageModFactor )
+            x IRPMFactor )
+          x CyberIncidentExclusionFactorBGI )
+          x CyberIncidentExclusionCOLExcptnsFactorBGI
+
+          no MultiPremiumAndDispersionCreditFactor
+          no coinsurance, no LOI factor, no deductible factor, no roof-surfacing ACV</pre>
+
+<h2>4. The two factors that only exist here</h2>
+<table>
+<thead><tr><th>Factor</th><th>Matrix</th><th>Keys</th><th>CW values</th></tr></thead>
+<tbody>
+<tr><td><code>LegalLiabilityFactor</code></td><td><code>LegalLiabilityFactor</code></td>
+<td>State + the literal <code>"Bldg"</code></td>
+<td><b>0.25</b>. The table's only other row is <code>PersProp</code> at 0.50 &mdash; the Personal Property
+side reads it. Two rows, one table, two coverages. <b>No state files its own.</b></td></tr>
+<tr><td><code>LegalLiabAddlInsurableIntFactor</code></td><td><code>AddlInsurableInterestFactor</code></td>
+<td>State + <code>AddlInsurableIntOption</code> off the Legal Liability Coverage Form record</td>
+<td>Option1 1.25 &middot; Option2 1.25 &middot; Option3 1.0 &middot; Option4 1.0. <b>No state filings.</b></td></tr>
+</tbody>
+</table>
+
+<div class="note"><b>The trap: a missing option zeroes the premium.</b>
+<code>SetLegalLiabAddlInsurableIntFactor</code> requires <i>all three</i> of &mdash; CovType is Legal
+Liability, a <code>CommercialPropertyLegalLiabilityCoverageForm</code> record exists, and
+<code>AddlInsurableIntOption</code> is non-blank. Fail any one and the factor is set to <b>0.0</b>, not 1.0.
+Since the Legal Liability premium multiplies by it unconditionally, a Legal Liability item with no additional
+insurable interest elected produces a premium of <b>zero</b>. Options 3 and 4 are already 1.0, so a neutral
+value exists in the table &mdash; the rule just doesn't reach for it. Reproduce the 0.0 as filed; do not
+"fix" it to 1.0 in the rater without a circular check.</div>
+
+
+<h2>5. The full algorithm, end to end</h2>
+<p>Everything Building's Legal Liability path does, across all four forms, in one block. The rate chain above
+it is the shared Class-rated chain, unchanged &mdash; summarised here only where a Legal Liability branch
+reaches into it.</p>
+<pre>════════════════════════════════════════════════════════════════════════════════
+PREP — the two Legal Liability factors
+════════════════════════════════════════════════════════════════════════════════
+SetLegalLiabilityFactor
+    if CovType = "Legal Liability":
+         LegalLiabilityFactor = Lookup(State|CW, "Bldg")           -&gt; 0.25
+    else
+         LegalLiabilityFactor = 0.0          &lt;- harmless; only the LL branch reads it
+
+SetLegalLiabAddlInsurableIntFactor
+    if CovType = "Legal Liability"
+       AND a CommercialPropertyLegalLiabilityCoverageForm record exists
+       AND AddlInsurableIntOption &lt;&gt; "":
+         LegalLiabAddlInsurableIntFactor = Lookup(State|CW, AddlInsurableIntOption)
+    else
+         LegalLiabAddlInsurableIntFactor = 0.0                     &lt;- NOT 1.0
+
+    the record sits on the ITEM (Contents reads an occupancy-class record instead)
+
+    AddlInsurableInterestFactor — what the four options mean (Bureau rule 66.D.1.b):
+      Option1  General Lessees, Mgrs or Operators of Prem, in policies covering
+               Tenants or Lessees of such premises                      1.25
+      Option2  Employees other than Executive Officers or Partners,
+               in policies covering their Employers                     1.25
+      Option3  Other                                                    1.00
+      Option4  None                                                     1.00
+
+    LegalLiabilityFactor table:  Bldg 0.25 · PersProp 0.50
+    Both tables are countrywide only — no state files its own.
+
+════════════════════════════════════════════════════════════════════════════════
+WHICH FORMS FIRE   — Building tests cause of loss in BOTH places
+════════════════════════════════════════════════════════════════════════════════
+SetCoverageOnPolicyIndicator          and then again inside the premium branch
+    BGI     : CauseOfLossToUse not ""     BGI     : CovType = "Legal Liability"
+              and not "Not Applicable"
+    BGII    : same                        BGII    : CovType = "Legal Liability"
+    Broad   : CauseOfLossToUse = "Broad"  Broad   : CovType = "Legal Liability"
+                                                    AND CauseOfLoss = "Broad"
+    Special : CauseOfLossToUse = "Special" Special: CovType = "Legal Liability"
+                                                    AND CauseOfLoss = "Special"
+
+    Contents puts this test in ONE place (the indicator only). Building double-gates
+    Broad and Special. Same net effect; do not mirror one structure onto the other.
+
+OUTER GATE on the whole SetPremium rule, all four forms:
+    NotExist(BuildersRiskReportingForm)  OR  CovType &lt;&gt; "Builders Risk"
+    Special adds:  AND CovType &lt;&gt; "Leasehold Interest"
+    fail it -&gt; Premium = 0.0
+
+════════════════════════════════════════════════════════════════════════════════
+THE RATE EACH BRANCH REACHES FOR
+════════════════════════════════════════════════════════════════════════════════
+    BGI     -&gt; BasicGroupICauseOfLossAdjustment
+    BGII    -&gt; BasicGroupIICauseOfLossAdjustment
+    Broad   -&gt; BroadRate      &lt;- raw rate; Broad has no cause-of-loss adjustment
+    Special -&gt; SpecialRate    &lt;- raw rate, one line ABOVE the adjustment, so it
+                                 drops BOTH  SpecialTheftExclusionFactor  and
+                                 LimitationsOnCovForRoofSurfacingACVFactor
+                                 (Contents reaches for SpecialCauseOfLossAdjustment
+                                  and therefore keeps the theft credit)
+                                 Both default to 1.0, so the two coverages agree on
+                                 an unendorsed risk and diverge only when elected.
+
+    In every case the Adjusted/Final rate — coinsurance, LOI, deductible — is
+    computed upstream and then ignored.
+
+════════════════════════════════════════════════════════════════════════════════
+PREMIUM — all four forms, one shape
+════════════════════════════════════════════════════════════════════════════════
+Premium = round0( round0( round0( round0(
+              round3( round3( &lt;rate&gt; x LegalLiabilityFactor )
+                              x LegalLiabAddlInsurableIntFactor )
+            x (../Limit / 100) )                 &lt;- ../Limit in ALL four forms
+            x ../PackageModFactor )
+            x IRPMFactor )                       [policy, 5 levels up]
+          x CyberIncidentExclusionFactor&lt;Form&gt; ) [policy]
+          x CyberIncidentExclusionCOLExcptnsFactor&lt;Form&gt;
+
+    &lt;rate&gt; = BasicGroupICauseOfLossAdjustment | BasicGroupIICauseOfLossAdjustment
+           | BroadRate | SpecialRate
+    &lt;Form&gt; = BGI | BGII | Broad | Special
+
+    Contents differs here: its Special branch divides by a LOCAL Limit on the
+    coverage node, because only that node declares one. Building has no such
+    field on any of its four — ../Limit every time.
+
+PremiumIndicator / CalculateTotalPremium as everywhere else: the total is the
+Premium only when the indicator is 1 and the Premium is non-zero.
+
+════════════════════════════════════════════════════════════════════════════════
+TRUE OF ALL FOUR FORMS
+════════════════════════════════════════════════════════════════════════════════
+· No coinsurance, no LOI factor, no deductible factor.
+· No MultiPremiumAndDispersionCreditFactor — the Class-rated branch applies it.
+· Rate side rounds to 3 dp, money side to 0 dp.
+· Cyber factors sit outside the rounding, so the premium keeps cents.
+· Blanket is unreachable — Choose is first-match and the LL test precedes it (§6).
+· A blank AddlInsurableIntOption drives the premium to zero (see below).
+════════════════════════════════════════════════════════════════════════════════</pre>
+
+<div class="note warn2"><b>Read the zero-premium default correctly.</b> <code>Option4</code> <i>is</i>
+&ldquo;None&rdquo;, and it returns <b>1.00</b>. So a risk with no additional insurable interest is meant to be
+coded as Option4 and gets a neutral factor. The <code>0.0</code> fires only when the field is left
+<b>blank</b>, or the Legal Liability Coverage Form record is missing altogether &mdash; in other words this
+input is <b>mandatory</b> once Legal Liability is selected, not optional with an unfortunate default.
+Build it as a required field with the four options, and keep a check cell for the blank case.</div>
+
+<div class="note"><b>The option mapping is not in the current edition.</b>
+<code>DomainAddlInsurableIntOption</code> &mdash; the table that maps the plain-language selection to
+<code>Option1</code>&ndash;<code>Option4</code> &mdash; is header-only from the <b>20221001</b> package
+onward. The only edition carrying the mapping is <b>20191201</b>. The plain-language list itself
+(<code>DomainAddlInsurableInt</code>) is still current. Pull the mapping from the 2019 package; do not
+conclude it does not exist because the current package ships it empty.</div>
+
+
+<h2>6. Where Building and Personal Property diverge</h2>
+<p>Eleven differences, every one of them survivable by copy-paste. The companion page
+<code>Excel_Rater_LegalLiability_vs_ClassRated_PersonalProperty.html</code> carries the same table.</p>
+<table>
+<thead><tr><th>#</th><th>What differs</th><th>Building</th><th>Personal Property</th><th>Why it matters</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>Gate field &mdash; <b>and the level it is chosen at</b></td>
+  <td><code>CovType = "Legal Liability"</code>, set <b>on the building item</b></td>
+  <td><code>CovForm = "Legal Liability Coverage Form"</code>, inherited from the
+      <b>occupancy class</b></td>
+  <td>Not just a different field &mdash; a different level. A CovType test finds nothing on Contents, and a
+      per-item input would not match how Contents is actually switched on. See the note below.</td></tr>
+
+<tr><td>2</td><td>Factor datadef</td>
+  <td><code>LegalLiabilityFactor</code></td><td><code>LegalLiabFactor</code></td>
+  <td>Different name for the same idea, in sibling files. Grep the wrong one and you find nothing.</td></tr>
+
+<tr><td>3</td><td>Factor value</td>
+  <td>key <code>"Bldg"</code> &rarr; <b>0.25</b></td><td>key <code>"PersProp"</code> &rarr; <b>0.50</b></td>
+  <td>Same two-row table, different row. Contents is double.</td></tr>
+
+<tr><td>4</td><td>Factor setter</td>
+  <td>gated on CovType; <b>0.0</b> otherwise</td><td><b>unconditional</b> &mdash; no gate at all</td>
+  <td>On Contents the factor is always populated; only the premium branch decides whether it is read.</td></tr>
+
+<tr><td>5</td><td>Addl-insurable-interest record</td>
+  <td>on the <b>item</b><br><code>&hellip;LegalLiabilityCoverageFormTable</code></td>
+  <td>on the <b>occupancy class</b> (<code>../../</code>)<br><code>&hellip;CoverageFormOccupClassTable</code></td>
+  <td>One Contents item cannot carry a different option from its neighbours in the same occupancy class.</td></tr>
+
+<tr><td>6</td><td>Special's rate source</td>
+  <td><code>SpecialRate</code> &mdash; drops <b>both</b> <code>SpecialTheftExclusionFactor</code> and
+      <code>LimitationsOnCovForRoofSurfacingACVFactor</code></td>
+  <td><code>SpecialCauseOfLossAdjustment</code> &mdash; <b>keeps</b> the theft credit</td>
+  <td><b>The one that moves money.</b> Both factors default to 1.0, so the two agree on an unendorsed risk
+      and diverge only when the theft exclusion is actually elected.</td></tr>
+
+<tr><td>7</td><td>Cause-of-loss gate</td>
+  <td><code>SetCoverageOnPolicyIndicator</code> <b>and again</b> inside the premium branch (Broad, Special)</td>
+  <td>the indicator <b>only</b></td>
+  <td>Same net effect. Mirror one structure onto the other and you double-gate or lose the gate.</td></tr>
+
+<tr><td>8</td><td>Limit reference</td>
+  <td><code>../Limit</code> in all four forms &mdash; no Building coverage node declares a local one</td>
+  <td><code>../Limit</code> for BGI/BGII/Broad; <b>local <code>Limit</code></b> for Special, which is the only
+      node that declares one (plus its own <code>LimitToUse</code> for the Class-rated branch)</td>
+  <td>Deliberate on both sides, not an inconsistency.</td></tr>
+
+<tr><td>9</td><td>Why blanket never applies</td>
+  <td>by <b>ordering</b> &mdash; <code>Choose</code> is first-match and the LL branch precedes the blanket branch</td>
+  <td>by <b>explicit test</b> &mdash; the blanket branch excludes the LL CovForm by name</td>
+  <td>Same outcome, two different reasons. Neither coverage blankets a Legal Liability item.</td></tr>
+
+<tr><td>10</td><td>Outer gate on <code>SetPremium</code></td>
+  <td>an outer <code>If</code>: <code>NotExist(BuildersRiskReportingForm) OR CovType &lt;&gt; "Builders Risk"</code>;
+      Special adds <code>AND CovType &lt;&gt; "Leasehold Interest"</code></td>
+  <td>no outer If &mdash; three excluded CovForms are tested inside each branch instead</td>
+  <td>Building can return 0.0 before the <code>Choose</code> is even reached.</td></tr>
+
+<tr><td>11</td><td>Premium nesting order in the XML</td>
+  <td>operands written rate-first</td>
+  <td>operands written IRPM-first</td>
+  <td><b>Not premium-bearing &mdash; verified operand by operand.</b> The association is identical on both
+      sides: <code>round3(round3(rate &times; LLfactor) &times; Addl)</code>, then <code>round0</code> after
+      each of &times;&nbsp;Limit/100, &times;&nbsp;PackageMod, &times;&nbsp;IRPM and the two cyber factors.
+      Only the left/right order inside each <code>Product</code> node differs, which is commutative. Same
+      rounding points, same answer.</td></tr>
+</tbody>
+</table>
+
+<div class="note warn2"><b>Which of the eleven actually move money.</b> Given the same election on the same
+risk, only <b>two</b> change the number: <b>#3</b>, the 0.25 vs 0.50 factor, and <b>#6</b>, Special's rate
+source &mdash; Building drops the theft-exclusion credit and the roof-surfacing ACV factor, Contents keeps
+the theft credit. Both of #6's factors default to 1.0, so it bites only on an endorsed risk.
+<b>#8</b> is equal by construction today (Contents seeds its local <code>Limit</code> from
+<code>../Limit</code>) and is a latent risk rather than a live difference. The remaining eight are wiring:
+they change how you build it, not what it costs.</div>
+
+<div class="note good"><b>Identical on both sides.</b> The two Legal Liability factors and their
+tables (<code>AddlInsurableInterestFactor</code>: Option1 1.25 &middot; Option2 1.25 &middot; Option3 1.0
+&middot; Option4 1.0, countrywide, no state filings) &middot; no coinsurance, LOI or deductible factor
+&middot; no <code>MultiPremiumAndDispersionCreditFactor</code> &middot; rate side rounds to 3&nbsp;dp and
+money side to 0&nbsp;dp &middot; cyber factors applied outside the rounding &middot; a blank
+<code>AddlInsurableIntOption</code> forcing the factor to 0.0 and the premium to zero.</div>
+
+<div class="note shared"><b>How Legal Liability actually gets selected &mdash; and it is not the same act on
+the two coverages.</b>
+<ul>
+<li><b>Building:</b> <code>CovType</code> is set on the building item itself. One item can be Legal
+Liability while the item beside it is Building or Builders Risk.</li>
+<li><b>Contents:</b> <code>SetCovForm</code> is a plain <code>Copy</code> of
+<code>../../CovForm</code>, and <code>../../</code> from the Personal Property record resolves to
+<code>CommercialPropertyOccupClass</code>. <b>The choice is made once at the occupancy class and every
+contents item beneath it inherits it</b> &mdash; there is no per-item override, so Legal Liability and
+Building-and-Personal-Property contents cannot be mixed inside one occupancy class.</li>
+</ul>
+The list itself is <code>DomainCovForm</code>, keyed <b>State + PolicyType + RatingType</b>, six entries:
+Building and Personal Property &middot; Condominium Association &middot; Condominium Commercial Unit Owners
+&middot; <b>Legal Liability</b> &middot; Tobacco Sales Warehouse &middot; Class Rated Building Only.
+Two constraints fall straight out of the keys: Legal Liability is offered on a
+<b>Commercial Property Policy only</b> (the Standard Property Policy rows do not include it), and it is
+available under <b>Class, Specific and Tentative</b> rating types &mdash; it is not confined to class-rated
+risks.
+<br><br>This is also why the additional-insurable-interest record sits at occupancy-class level on the
+Contents side (difference&nbsp;5): it is at the same level as the form choice, which makes the pair
+consistent rather than arbitrary.
+<br><br><b>For the rater:</b> a dropdown per building item drives Building; a single dropdown per occupancy
+class drives every contents item under it.</div>
+
+<h2>7. Blanket, and why Legal Liability never reaches it</h2>
+<p><code>SetPremium</code> is a <code>Choose</code>, so the <b>first matching branch wins</b>. The Legal
+Liability test sits at branch 2; the blanket test sits at branch 3. A Legal Liability item marked
+<code>IncludedInBlkt = "Yes"</code> still matches branch 2 and rates as scheduled &mdash;
+<code>BlktBasicGroupIAvgRate</code> is never consulted.</p>
+<p>Whether that is intent or an ordering accident is a manual question, not an ERC one. What matters for the
+build: <b>do not add a blanket path to the Legal Liability column.</b> It cannot be reached.</p>
+
+<h2>8. What else falls out of the same Choose</h2>
+<table>
+<thead><tr><th>CovType</th><th>Branch</th><th>Result</th></tr></thead>
+<tbody>
+<tr><td>Building, Builders Risk, Improvements and Betterments, Condominium Association</td><td>1 (scheduled) or 3 (blanket)</td><td>normal premium</td></tr>
+<tr><td>Legal Liability</td><td>2</td><td>the formula above, scheduled or not</td></tr>
+<tr><td><b>Leasehold Interest</b></td><td>explicitly excluded from branch 3, matches nothing</td><td><b>Premium = 0.0</b> in this file &mdash; it rates elsewhere</td></tr>
+<tr><td>Builders Risk <i>with</i> a Reporting Form record</td><td>outer <code>If</code> fails</td><td><b>Premium = 0.0</b> &mdash; the reporting form carries it</td></tr>
+</tbody>
+</table>
+
+<h2>9. What to build</h2>
+<ol>
+<li><b>Do not branch the rate chain.</b> Every rate row through
+<code>BasicGroupICauseOfLossAdjustment</code> is shared &mdash; point at the cells you already built.</li>
+<li><b>Branch at the premium row only</b>, on <code>CovType = "Legal Liability"</code>.</li>
+<li><b>Two new lookup blocks</b>, both tiny and both countrywide: a 2-row
+<code>LegalLiabilityFactor</code> and a 4-row <code>AddlInsurableInterestFactor</code>. Pull the
+plain-language&rarr;Option mapping from the <b>20191201</b> package; the current one ships it empty.</li>
+<li><b>Build all four forms.</b> The premium shape is identical; only the rate datadef changes. Broad takes
+<code>BroadRate</code> and Special takes <code>SpecialRate</code> &mdash; both raw, neither a cause-of-loss
+adjustment.</li>
+<li><b>Reproduce the 0.0 defaults</b> on both factors, and add a visible check cell so a zero premium is
+obvious rather than silent.</li>
+<li><b>Leave the blanket cell empty</b> for this CovType, and leave Leasehold Interest out of this file
+entirely.</li>
+</ol>
+
+<hr>
+<p class="meta">Traced from ERC rule XML and rate tables only. The live rater was not opened.</p>

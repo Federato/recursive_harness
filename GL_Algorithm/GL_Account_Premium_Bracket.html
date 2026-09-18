@@ -1,0 +1,257 @@
+<title>Account premium bracket &mdash; leaf Premium fields to policy total</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+ margin:0;padding:30px 26px 80px;color:#1c2733;background:#fbfbfd;line-height:1.55}
+ @media(prefers-color-scheme:dark){body{background:#14181d;color:#dfe4e9}
+  svg text[fill="#55606b"]{fill:#93a0ad}
+  svg rect{filter:brightness(.34) saturate(1.5)} svg path{stroke:#3a434e}}
+ h1{font-size:21px;font-weight:600;margin:0 0 4px}
+ .sub{font-size:13.5px;color:#55606b;margin:0 0 4px;max-width:900px}
+ @media(prefers-color-scheme:dark){.sub{color:#93a0ad}}
+ .wrap{margin:22px 0 10px}
+ svg{width:100%;height:auto;display:block}
+ code{font-family:ui-monospace,Consolas,monospace;font-size:12.5px;background:#eef1f4;
+ padding:1px 5px;border-radius:3px}
+ @media(prefers-color-scheme:dark){code{background:#222a33}}
+ .key{display:flex;flex-wrap:wrap;gap:16px;margin:14px 0 0;font-size:12.5px}
+ .key i{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:6px;
+ vertical-align:-1px;border:1.2px solid}
+ table{border-collapse:collapse;margin:16px 0;font-size:13px}
+ th,td{border:1px solid #d7dce2;padding:6px 10px;text-align:left}
+ @media(prefers-color-scheme:dark){th,td{border-color:#2f3740}}
+ th{background:#1f3864;color:#fff;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+ td.n{text-align:right;font-family:ui-monospace,Consolas,monospace}
+ .warn{background:#f7ddd4;color:#a53d26;padding:10px 14px;border-radius:6px;font-size:13px;
+ margin:16px 0;max-width:900px}
+ @media(prefers-color-scheme:dark){.warn{background:#2c221c;color:#e09a80}}
+</style>
+
+<h1>Account premium bracket</h1>
+<p class="sub">Two locations, three classifications, liquor liability on two of them, terrorism
+accepted. Every box is a real datadef field from <code>GL CW 20270401 V01</code>. Read left to
+right: each leaf holds a <code>Premium</code>; each merge is one
+<code>CalculateTotalPremium</code> writing an <code>ErcCalculatedTotalPremium</code>.</p>
+
+<div class="warn"><b>The amounts are placeholders.</b> They exist to make the summation legible
+and are not rated values &mdash; no premium was computed. The <i>structure</i>, the field names
+and the arithmetic of the roll-up are real.</div>
+
+<div class="key">
+ <span><i style="background:#e8edf5;border-color:#1f3864"></i>coverage <code>Premium</code></span>
+ <span><i style="background:#efeaf7;border-color:#6b4c9a"></i>terrorism <code>Premium</code></span>
+ <span><i style="background:#e4f1ea;border-color:#2f7d5a"></i><code>ErcCalculatedTotalPremium</code></span>
+ <span><i style="background:#f7ece0;border-color:#a35a1e"></i>caller-supplied slot</span>
+ <span><i style="background:#eef0f2;border-color:#8b95a1"></i>never computed (always 0)</span>
+</div>
+
+<div class="wrap"><svg viewBox="0 0 1480 1078" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet" font-family="ui-monospace,Consolas,monospace">
+<text x="20" y="78" font-size="11" font-weight="700" fill="#55606b" font-family="-apple-system,Segoe UI,sans-serif" letter-spacing="0.06em">LEAF RECORDS — FIELD: PREMIUM</text>
+<text x="304" y="78" font-size="11" font-weight="700" fill="#55606b" font-family="-apple-system,Segoe UI,sans-serif" letter-spacing="0.06em">TERRORISM SUBTOTAL</text>
+<text x="588" y="78" font-size="11" font-weight="700" fill="#55606b" font-family="-apple-system,Segoe UI,sans-serif" letter-spacing="0.06em">CLASSIFICATION SUBTOTAL</text>
+<text x="872" y="78" font-size="11" font-weight="700" fill="#55606b" font-family="-apple-system,Segoe UI,sans-serif" letter-spacing="0.06em">LOCATION SUBTOTAL / POLICY LEAVES</text>
+<text x="1156" y="78" font-size="11" font-weight="700" fill="#55606b" font-family="-apple-system,Segoe UI,sans-serif" letter-spacing="0.06em">POLICY TOTAL</text>
+<path d="M270.0 243.0 H287.0 V283.0 H304.0" fill="none" stroke="#c3cad3" stroke-width="1.2"/>
+<path d="M270.0 283.0 H287.0 V283.0 H304.0" fill="none" stroke="#c3cad3" stroke-width="1.2"/>
+<path d="M270.0 323.0 H287.0 V283.0 H304.0" fill="none" stroke="#c3cad3" stroke-width="1.2"/>
+<path d="M270.0 123.0 H429.0 V203.0 H588.0" fill="none" stroke="#c3cad3" stroke-width="1.2"/>
+<path d="M270.0 163.0 H429.0 V203.0 H588.0" fill="none" stroke="#c3cad3" stroke-width="1.2"/>
+<path d="M270.0 203.0 H429.0 V203.0 H588.0" fill="none" stroke="#c3cad3" stroke-width="1.2"/>
+<path d="M554.0 283.0 H571.0 V203.0 H588.0" fill="none" stroke="#c3cad3" stroke-width="1.2"/>
+<path d="M270.0 457.0 H287.0 V477.0 H304.0" fill="none" stroke="#c3cad3" stroke-width="1.2"/>
+<path d="M270.0 497.0 H287.0 V477.0 H304.0" fill="none" stroke="#c3cad3" stroke-width="1.2"/>
+<path d="M270.0 377.0 H429.0 V427.0 H588.0" fill="none" stroke="#c3cad3" stroke-width="1.2"/>
+<path d="M270.0 417.0 H429.0 V427.0 H588.0" fill="none" stroke="#c3cad3" stroke-width="1.2"/>
+<path d="M554.0 477.0 H571.0 V427.0 H588.0" fill="none" stroke="#c3cad3" stroke-width="1.2"/>
+<path d="M838.0 203.0 H855.0 V315.0 H872.0" fill="none" stroke="#c3cad3" stroke-width="1.2"/>
+<path d="M838.0 427.0 H855.0 V315.0 H872.0" fill="none" stroke="#c3cad3" stroke-width="1.2"/>
+<path d="M270.0 693.0 H287.0 V733.0 H304.0" fill="none" stroke="#c3cad3" stroke-width="1.2"/>
+<path d="M270.0 733.0 H287.0 V733.0 H304.0" fill="none" stroke="#c3cad3" stroke-width="1.2"/>
+<path d="M270.0 773.0 H287.0 V733.0 H304.0" fill="none" stroke="#c3cad3" stroke-width="1.2"/>
+<path d="M270.0 573.0 H429.0 V653.0 H588.0" fill="none" stroke="#c3cad3" stroke-width="1.2"/>
+<path d="M270.0 613.0 H429.0 V653.0 H588.0" fill="none" stroke="#c3cad3" stroke-width="1.2"/>
+<path d="M270.0 653.0 H429.0 V653.0 H588.0" fill="none" stroke="#c3cad3" stroke-width="1.2"/>
+<path d="M554.0 733.0 H571.0 V653.0 H588.0" fill="none" stroke="#c3cad3" stroke-width="1.2"/>
+<path d="M838.0 653.0 H855.0 V653.0 H872.0" fill="none" stroke="#c3cad3" stroke-width="1.2"/>
+<path d="M1122.0 315.0 H1139.0 V647.0 H1156.0" fill="none" stroke="#c3cad3" stroke-width="1.2"/>
+<path d="M1122.0 653.0 H1139.0 V647.0 H1156.0" fill="none" stroke="#c3cad3" stroke-width="1.2"/>
+<path d="M1122.0 859.0 H1139.0 V647.0 H1156.0" fill="none" stroke="#c3cad3" stroke-width="1.2"/>
+<path d="M1122.0 899.0 H1139.0 V647.0 H1156.0" fill="none" stroke="#c3cad3" stroke-width="1.2"/>
+<path d="M1122.0 939.0 H1139.0 V647.0 H1156.0" fill="none" stroke="#c3cad3" stroke-width="1.2"/>
+<path d="M1122.0 979.0 H1139.0 V647.0 H1156.0" fill="none" stroke="#c3cad3" stroke-width="1.2"/>
+<rect x="20" y="112.0" width="250" height="22" rx="4" fill="#e8edf5" stroke="#1f3864" stroke-width="1.2"/>
+<text x="27" y="126.0" font-size="9.5" fill="#1f3864">Prem/Ops</text>
+<text x="263" y="126.0" font-size="9.5" font-weight="700" fill="#1f3864" text-anchor="end">4,820</text>
+<rect x="20" y="152.0" width="250" height="22" rx="4" fill="#e8edf5" stroke="#1f3864" stroke-width="1.2"/>
+<text x="27" y="166.0" font-size="9.5" fill="#1f3864">Products/Compl Ops</text>
+<text x="263" y="166.0" font-size="9.5" font-weight="700" fill="#1f3864" text-anchor="end">1,140</text>
+<rect x="20" y="192.0" width="250" height="22" rx="4" fill="#e8edf5" stroke="#1f3864" stroke-width="1.2"/>
+<text x="27" y="206.0" font-size="9.5" fill="#1f3864">Liquor</text>
+<text x="263" y="206.0" font-size="9.5" font-weight="700" fill="#1f3864" text-anchor="end">2,310</text>
+<rect x="20" y="232.0" width="250" height="22" rx="4" fill="#efeaf7" stroke="#6b4c9a" stroke-width="1.2"/>
+<text x="27" y="246.0" font-size="9.5" fill="#6b4c9a">Terrorism · Prem/Ops</text>
+<text x="263" y="246.0" font-size="9.5" font-weight="700" fill="#6b4c9a" text-anchor="end">24</text>
+<rect x="20" y="272.0" width="250" height="22" rx="4" fill="#efeaf7" stroke="#6b4c9a" stroke-width="1.2"/>
+<text x="27" y="286.0" font-size="9.5" fill="#6b4c9a">Terrorism · Products</text>
+<text x="263" y="286.0" font-size="9.5" font-weight="700" fill="#6b4c9a" text-anchor="end">6</text>
+<rect x="20" y="312.0" width="250" height="22" rx="4" fill="#efeaf7" stroke="#6b4c9a" stroke-width="1.2"/>
+<text x="27" y="326.0" font-size="9.5" fill="#6b4c9a">Terrorism · All Other</text>
+<text x="263" y="326.0" font-size="9.5" font-weight="700" fill="#6b4c9a" text-anchor="end">12</text>
+<rect x="304" y="272.0" width="250" height="22" rx="4" fill="#e4f1ea" stroke="#2f7d5a" stroke-width="1.2"/>
+<text x="311" y="286.0" font-size="9.5" fill="#2f7d5a">GL·Terrorism</text>
+<text x="547" y="286.0" font-size="9.5" font-weight="700" fill="#2f7d5a" text-anchor="end">42</text>
+<rect x="588" y="186.0" width="250" height="34" rx="4" fill="#e4f1ea" stroke="#2f7d5a" stroke-width="1.2"/>
+<text x="595" y="200.0" font-size="9.5" fill="#2f7d5a">GL·Classification</text>
+<text x="831" y="200.0" font-size="9.5" font-weight="700" fill="#2f7d5a" text-anchor="end">8,312</text>
+<text x="595" y="213.0" font-size="8.5" fill="#2f7d5a" opacity="0.78" font-family="-apple-system,Segoe UI,sans-serif">Classification 1A · class 16905 · restau</text>
+<rect x="20" y="366.0" width="250" height="22" rx="4" fill="#e8edf5" stroke="#1f3864" stroke-width="1.2"/>
+<text x="27" y="380.0" font-size="9.5" fill="#1f3864">Prem/Ops</text>
+<text x="263" y="380.0" font-size="9.5" font-weight="700" fill="#1f3864" text-anchor="end">1,960</text>
+<rect x="20" y="406.0" width="250" height="22" rx="4" fill="#e8edf5" stroke="#1f3864" stroke-width="1.2"/>
+<text x="27" y="420.0" font-size="9.5" fill="#1f3864">Products/Compl Ops</text>
+<text x="263" y="420.0" font-size="9.5" font-weight="700" fill="#1f3864" text-anchor="end">640</text>
+<rect x="20" y="446.0" width="250" height="22" rx="4" fill="#efeaf7" stroke="#6b4c9a" stroke-width="1.2"/>
+<text x="27" y="460.0" font-size="9.5" fill="#6b4c9a">Terrorism · Prem/Ops</text>
+<text x="263" y="460.0" font-size="9.5" font-weight="700" fill="#6b4c9a" text-anchor="end">10</text>
+<rect x="20" y="486.0" width="250" height="22" rx="4" fill="#efeaf7" stroke="#6b4c9a" stroke-width="1.2"/>
+<text x="27" y="500.0" font-size="9.5" fill="#6b4c9a">Terrorism · Products</text>
+<text x="263" y="500.0" font-size="9.5" font-weight="700" fill="#6b4c9a" text-anchor="end">3</text>
+<rect x="304" y="466.0" width="250" height="22" rx="4" fill="#e4f1ea" stroke="#2f7d5a" stroke-width="1.2"/>
+<text x="311" y="480.0" font-size="9.5" fill="#2f7d5a">GL·Terrorism</text>
+<text x="547" y="480.0" font-size="9.5" font-weight="700" fill="#2f7d5a" text-anchor="end">13</text>
+<rect x="588" y="410.0" width="250" height="34" rx="4" fill="#e4f1ea" stroke="#2f7d5a" stroke-width="1.2"/>
+<text x="595" y="424.0" font-size="9.5" fill="#2f7d5a">GL·Classification</text>
+<text x="831" y="424.0" font-size="9.5" font-weight="700" fill="#2f7d5a" text-anchor="end">2,613</text>
+<text x="595" y="437.0" font-size="8.5" fill="#2f7d5a" opacity="0.78" font-family="-apple-system,Segoe UI,sans-serif">Classification 1B · class 18206 · retail</text>
+<rect x="872" y="298.0" width="250" height="34" rx="4" fill="#e4f1ea" stroke="#2f7d5a" stroke-width="1.2"/>
+<text x="879" y="312.0" font-size="9.5" fill="#2f7d5a">GL·Location</text>
+<text x="1115" y="312.0" font-size="9.5" font-weight="700" fill="#2f7d5a" text-anchor="end">10,925</text>
+<text x="879" y="325.0" font-size="8.5" fill="#2f7d5a" opacity="0.78" font-family="-apple-system,Segoe UI,sans-serif">Location 1 · Downtown</text>
+<rect x="20" y="562.0" width="250" height="22" rx="4" fill="#e8edf5" stroke="#1f3864" stroke-width="1.2"/>
+<text x="27" y="576.0" font-size="9.5" fill="#1f3864">Prem/Ops</text>
+<text x="263" y="576.0" font-size="9.5" font-weight="700" fill="#1f3864" text-anchor="end">3,450</text>
+<rect x="20" y="602.0" width="250" height="22" rx="4" fill="#e8edf5" stroke="#1f3864" stroke-width="1.2"/>
+<text x="27" y="616.0" font-size="9.5" fill="#1f3864">Products/Compl Ops</text>
+<text x="263" y="616.0" font-size="9.5" font-weight="700" fill="#1f3864" text-anchor="end">820</text>
+<rect x="20" y="642.0" width="250" height="22" rx="4" fill="#e8edf5" stroke="#1f3864" stroke-width="1.2"/>
+<text x="27" y="656.0" font-size="9.5" fill="#1f3864">Liquor</text>
+<text x="263" y="656.0" font-size="9.5" font-weight="700" fill="#1f3864" text-anchor="end">1,875</text>
+<rect x="20" y="682.0" width="250" height="22" rx="4" fill="#efeaf7" stroke="#6b4c9a" stroke-width="1.2"/>
+<text x="27" y="696.0" font-size="9.5" fill="#6b4c9a">Terrorism · Prem/Ops</text>
+<text x="263" y="696.0" font-size="9.5" font-weight="700" fill="#6b4c9a" text-anchor="end">17</text>
+<rect x="20" y="722.0" width="250" height="22" rx="4" fill="#efeaf7" stroke="#6b4c9a" stroke-width="1.2"/>
+<text x="27" y="736.0" font-size="9.5" fill="#6b4c9a">Terrorism · Products</text>
+<text x="263" y="736.0" font-size="9.5" font-weight="700" fill="#6b4c9a" text-anchor="end">4</text>
+<rect x="20" y="762.0" width="250" height="22" rx="4" fill="#efeaf7" stroke="#6b4c9a" stroke-width="1.2"/>
+<text x="27" y="776.0" font-size="9.5" fill="#6b4c9a">Terrorism · All Other</text>
+<text x="263" y="776.0" font-size="9.5" font-weight="700" fill="#6b4c9a" text-anchor="end">9</text>
+<rect x="304" y="722.0" width="250" height="22" rx="4" fill="#e4f1ea" stroke="#2f7d5a" stroke-width="1.2"/>
+<text x="311" y="736.0" font-size="9.5" fill="#2f7d5a">GL·Terrorism</text>
+<text x="547" y="736.0" font-size="9.5" font-weight="700" fill="#2f7d5a" text-anchor="end">30</text>
+<rect x="588" y="636.0" width="250" height="34" rx="4" fill="#e4f1ea" stroke="#2f7d5a" stroke-width="1.2"/>
+<text x="595" y="650.0" font-size="9.5" fill="#2f7d5a">GL·Classification</text>
+<text x="831" y="650.0" font-size="9.5" font-weight="700" fill="#2f7d5a" text-anchor="end">6,175</text>
+<text x="595" y="663.0" font-size="8.5" fill="#2f7d5a" opacity="0.78" font-family="-apple-system,Segoe UI,sans-serif">Classification 2A · class 16905 · restau</text>
+<rect x="872" y="636.0" width="250" height="34" rx="4" fill="#e4f1ea" stroke="#2f7d5a" stroke-width="1.2"/>
+<text x="879" y="650.0" font-size="9.5" fill="#2f7d5a">GL·Location</text>
+<text x="1115" y="650.0" font-size="9.5" font-weight="700" fill="#2f7d5a" text-anchor="end">6,175</text>
+<text x="879" y="663.0" font-size="8.5" fill="#2f7d5a" opacity="0.78" font-family="-apple-system,Segoe UI,sans-serif">Location 2 · Airport</text>
+<rect x="872" y="848.0" width="250" height="22" rx="4" fill="#eef0f2" stroke="#8b95a1" stroke-width="1.2"/>
+<text x="879" y="862.0" font-size="9.5" fill="#8b95a1">MedPay (never computed)</text>
+<text x="1115" y="862.0" font-size="9.5" font-weight="700" fill="#8b95a1" text-anchor="end">0</text>
+<rect x="872" y="888.0" width="250" height="22" rx="4" fill="#f7ece0" stroke="#a35a1e" stroke-width="1.2"/>
+<text x="879" y="902.0" font-size="9.5" fill="#a35a1e">Min top-up · Prem/Ops</text>
+<text x="1115" y="902.0" font-size="9.5" font-weight="700" fill="#a35a1e" text-anchor="end">0</text>
+<rect x="872" y="928.0" width="250" height="22" rx="4" fill="#f7ece0" stroke="#a35a1e" stroke-width="1.2"/>
+<text x="879" y="942.0" font-size="9.5" fill="#a35a1e">Min top-up · Products</text>
+<text x="1115" y="942.0" font-size="9.5" font-weight="700" fill="#a35a1e" text-anchor="end">0</text>
+<rect x="872" y="968.0" width="250" height="22" rx="4" fill="#f7ece0" stroke="#a35a1e" stroke-width="1.2"/>
+<text x="879" y="982.0" font-size="9.5" fill="#a35a1e">Min top-up · Liquor</text>
+<text x="1115" y="982.0" font-size="9.5" font-weight="700" fill="#a35a1e" text-anchor="end">815</text>
+<rect x="1156" y="630.0" width="250" height="34" rx="4" fill="#cfd9e6" stroke="#0f2740" stroke-width="1.2"/>
+<text x="1163" y="644.0" font-size="9.5" fill="#0f2740">GeneralLiability</text>
+<text x="1399" y="644.0" font-size="9.5" font-weight="700" fill="#0f2740" text-anchor="end">17,915</text>
+<text x="1163" y="657.0" font-size="8.5" fill="#0f2740" opacity="0.78" font-family="-apple-system,Segoe UI,sans-serif">POLICY TOTAL</text>
+</svg></div>
+
+<h2 style="font-size:16px;margin-top:26px">What each merge is</h2>
+<table>
+<thead><tr><th>Level</th><th>Field written</th><th>Rule</th><th>Inputs</th></tr></thead>
+<tbody>
+<tr><td>leaf</td><td><code>Premium</code></td><td><code>SetPremium</code></td>
+ <td><code>FinalRate &times; Exposure &divide; 1000</code>, rounded to whole dollars</td></tr>
+<tr><td>terrorism</td><td><code>GeneralLiabilityTerrorism.ErcCalculatedTotalPremium</code></td>
+ <td><code>CalculateTotalPremium</code></td><td>its three coverage <code>Premium</code> fields</td></tr>
+<tr><td>classification</td><td><code>GeneralLiabilityClassification.ErcCalculatedTotalPremium</code></td>
+ <td><code>CalculateTotalPremium</code></td>
+ <td>Prem/Ops + Products + Liquor + the terrorism subtotal</td></tr>
+<tr><td>location</td><td><code>GeneralLiabilityLocation.ErcCalculatedTotalPremium</code></td>
+ <td><code>CalculateTotalPremium</code></td><td>its classification subtotals</td></tr>
+<tr><td>policy</td><td><code>GeneralLiability.ErcCalculatedTotalPremium</code></td>
+ <td><code>CalculateTotalPremium</code></td>
+ <td>location subtotals <b>+</b> the policy-level leaves</td></tr>
+</tbody>
+</table>
+
+<h2 style="font-size:16px;margin-top:30px">Per-coverage totals &mdash; where they exist</h2>
+<p class="sub">The bracket above aggregates by <b>record hierarchy</b>: classification, then
+location, then policy. It never aggregates by <b>coverage</b>. With three classifications
+across two locations there are three Prem/Ops <code>Premium</code> values and, on an ordinary
+policy, <b>no field anywhere holding their sum</b>.</p>
+
+<p class="sub">ISO does compute per-coverage account totals &mdash; in two places, both
+conditional, and neither of them on the path the bracket draws.</p>
+
+<table>
+<thead><tr><th>Where</th><th>What</th><th>Form</th><th>When it runs</th></tr></thead>
+<tbody>
+<tr><td><code>GeneralLiabilityCompositeRating</code></td>
+ <td><b>Twelve per-coverage totals</b>, one per coverage &mdash;
+ <code>premOpsCoverageTotalPremium</code>, <code>prodsCompldOpsCoverageTotalPremium</code>,
+ <code>liquorCoverageTotalPremium</code>, the three terrorism ones, Owners&amp;Contractors,
+ Railroad, Snowplow, Canoes, and both Product Withdrawal exclusions. Each is
+ <code>Sum(ForEach location &rarr; ForEach classification &rarr; that coverage's Premium)</code></td>
+ <td><b>Rules, not fields.</b> They return a value; only their sum is stored, as
+ <code>TotalClassificationsPremium</code></td>
+ <td><b>Only when <code>CompositeRating = "Yes"</code></b></td></tr>
+<tr><td>the <code>&hellip;PremiumToReachMinCoverage</code> records</td>
+ <td><b>Four stored coverage totals</b> &mdash;
+ <code>TotalCyberIncidentLiabilityPremium</code>,
+ <code>TotalLossOfElectronicDataPremium</code>, <code>TotalUnmannedAircraftPremium</code>,
+ <code>LimitedProductWithdrawalClassPremium</code></td>
+ <td>Real datadef fields, written by a <code>Set&hellip;</code> rule</td>
+ <td>When that coverage is on the policy &mdash; they exist to be compared against a minimum</td></tr>
+<tr><td>Prem/Ops, Products, Liquor on an ordinary policy</td>
+ <td><b>Nothing</b></td><td>&mdash;</td>
+ <td>Never. No <code>TotalPremOpsPremium</code> or <code>TotalProdsCompldOpsPremium</code>
+ field is declared anywhere in the DataDef</td></tr>
+</tbody>
+</table>
+
+<div class="warn"><b>Read that carefully before concluding ISO does not total by coverage.</b>
+A search over datadef <i>field names</i> says it does not. That is wrong &mdash; the totals are
+<i>rules</i> that return values without ever writing a field, so a field-name search cannot see
+them. What is true is narrower: <b>per-coverage totals are computed only under composite
+rating, or where a coverage needs one to test a minimum premium.</b> On the ordinary policy the
+bracket draws, no per-coverage total is produced or stored.</div>
+
+<p class="sub">Two related figures do sit on <code>GeneralLiability</code> and are easy to
+mistake for the answer: <code>AnnualBasicLimitsCoPremiumPremOps</code> and
+<code>AnnualBasicLimitsCoPremiumProdCompldOps</code>. They are built from
+<code>BasicLimitPremium</code>, not <code>Premium</code> &mdash; basic-limits sums for
+statistical reporting, a different quantity from what the coverage cost.</p>
+
+<h2 style="font-size:16px;margin-top:26px">Three things the bracket shows</h2>
+<p class="sub"><b>1 &middot; Liquor is per classification, not per policy.</b> It appears only
+where a classification has liquor exposure &mdash; 1A and 2A here, not 1B. There is no
+policy-level liquor premium; the account's liquor cost is the sum of its classifications'.</p>
+<p class="sub"><b>2 &middot; The policy-level leaves bypass the location chain.</b> Med Pay and
+the three <code>PremiumToReachMin</code> records attach directly to
+<code>GeneralLiability</code>, so they are added <i>after</i> every location has been totalled.
+The liquor minimum top-up of 815 shown here is <b>supplied by the caller</b> &mdash; no rule
+computes it.</p>
+<p class="sub"><b>3 &middot; Every merge applies the same gate.</b> A leaf contributes its
+<code>Premium</code> only when <code>PremiumIndicator = 1</code> <b>and</b>
+<code>Premium &ne; 0</code>. <code>MedPayCoverage.Premium</code> sits at 0 because nothing ever
+computes it &mdash; Med Pay is priced as a factor inside the Prem/Ops <code>FinalILF</code>.</p>

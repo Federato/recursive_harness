@@ -1,0 +1,208 @@
+<title>CF Property — Master Rating Grid</title>
+<style>
+  :root {
+    --bg: #eef1f4; --paper: #ffffff; --ink: #1c2733; --ink-soft: #55606b; --ink-faint: #8b95a1;
+    --grid-line: #d7dce2; --header-fill: #e4e8ed; --header-fill-strong: #1e3a45; --header-text-strong: #eef4f3;
+    --accent: #1e3a45; --accent-soft: #cfe0e0; --accent-warm: #b96a2c; --accent-warm-soft: #f3e2cf;
+    --good: #2f7d5a; --good-soft: #dcefe4; --warn: #a53d26; --warn-soft: #f7ddd4;
+    --unk: #7a6a1f; --unk-soft: #f5edd0; --na: #8b95a1; --na-soft: #eceef0;
+    --shadow: 0 1px 2px rgba(28,39,51,0.06), 0 8px 24px rgba(28,39,51,0.07);
+    --font-display: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+    --font-body: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+    --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, "Liberation Mono", monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #10151b; --paper: #161d25; --ink: #e7ecf1; --ink-soft: #a3aebb; --ink-faint: #6d7885;
+      --grid-line: #2b3742; --header-fill: #1b242d; --header-fill-strong: #21504f; --header-text-strong: #eaf3f1;
+      --accent: #59a9ac; --accent-soft: #1d3535; --accent-warm: #dd9a5c; --accent-warm-soft: #372a1c;
+      --good: #63c090; --good-soft: #1b3226; --warn: #e0806a; --warn-soft: #3a2019;
+      --unk: #d9c164; --unk-soft: #3a331a; --na: #6d7885; --na-soft: #1b242d;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 28px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #10151b; --paper: #161d25; --ink: #e7ecf1; --ink-soft: #a3aebb; --ink-faint: #6d7885;
+    --grid-line: #2b3742; --header-fill: #1b242d; --header-fill-strong: #21504f; --header-text-strong: #eaf3f1;
+    --accent: #59a9ac; --accent-soft: #1d3535; --accent-warm: #dd9a5c; --accent-warm-soft: #372a1c;
+    --good: #63c090; --good-soft: #1b3226; --warn: #e0806a; --warn-soft: #3a2019;
+    --unk: #d9c164; --unk-soft: #3a331a; --na: #6d7885; --na-soft: #1b242d;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 28px rgba(0,0,0,0.35);
+  }
+  :root[data-theme="light"] {
+    --bg: #eef1f4; --paper: #ffffff; --ink: #1c2733; --ink-soft: #55606b; --ink-faint: #8b95a1;
+    --grid-line: #d7dce2; --header-fill: #e4e8ed; --header-fill-strong: #1e3a45; --header-text-strong: #eef4f3;
+    --accent: #1e3a45; --accent-soft: #cfe0e0; --accent-warm: #b96a2c; --accent-warm-soft: #f3e2cf;
+    --good: #2f7d5a; --good-soft: #dcefe4; --warn: #a53d26; --warn-soft: #f7ddd4;
+    --unk: #7a6a1f; --unk-soft: #f5edd0; --na: #8b95a1; --na-soft: #eceef0;
+    --shadow: 0 1px 2px rgba(28,39,51,0.06), 0 8px 24px rgba(28,39,51,0.07);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); line-height: 1.6; overflow-x: hidden; }
+  a { color: var(--accent); }
+  .wrap { max-width: 1280px; margin: 0 auto; padding: 0 24px 96px; }
+
+  header.masthead { padding: 56px 24px 28px; max-width: 1280px; margin: 0 auto; }
+  .eyebrow { font-family: var(--font-ui); font-size: 12px; letter-spacing: 0.11em; text-transform: uppercase; color: var(--accent-warm); font-weight: 600; margin: 0 0 10px; }
+  h1.title { font-family: var(--font-display); font-size: clamp(26px, 4vw, 38px); font-weight: 400; margin: 0 0 14px; text-wrap: balance; }
+  .dek { font-size: 16px; color: var(--ink-soft); max-width: 96ch; margin: 0 0 6px; }
+  .dek code { font-family: var(--font-mono); font-size: 14px; background: var(--header-fill); padding: 1px 5px; border-radius: 3px; }
+
+  section.sect { padding-top: 44px; }
+  .sect-heading { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 6px; }
+  .sect-index { font-family: var(--font-mono); font-size: 13px; color: var(--accent-warm); }
+  h2.sect-title { font-family: var(--font-display); font-size: 22px; font-weight: 400; margin: 0; }
+  .sect-role { font-family: var(--font-ui); font-size: 13px; color: var(--ink-soft); margin: 0 0 16px; max-width: 100ch; }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 8px 18px; margin: 6px 0 20px; padding: 12px 16px; background: var(--paper); border: 1px solid var(--grid-line); border-radius: 8px; box-shadow: var(--shadow); font-family: var(--font-ui); font-size: 12.5px; }
+  .legend-item { display: flex; align-items: center; gap: 8px; }
+  .dot { width: 11px; height: 11px; border-radius: 50%; flex: none; }
+  .dot.built { background: var(--good); }
+  .dot.notbuilt { background: var(--warn); }
+  .dot.unchecked { background: var(--unk); }
+  .dot.na { background: var(--na); }
+
+  .tblscroll { overflow-x: auto; border-radius: 8px; box-shadow: var(--shadow); margin-bottom: 8px; }
+  table.grid { border-collapse: collapse; width: 100%; min-width: 960px; font-size: 12.5px; background: var(--paper); }
+  table.grid th, table.grid td { border: 1px solid var(--grid-line); padding: 7px 10px; text-align: left; vertical-align: top; }
+  table.grid thead th { background: var(--header-fill-strong); color: var(--header-text-strong); font-family: var(--font-ui); font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; position: sticky; top: 0; }
+  table.grid td.coverage { font-family: var(--font-ui); font-weight: 700; font-size: 12px; }
+  table.grid td.form { font-family: var(--font-mono); font-size: 11.5px; }
+  table.grid td.cell { text-align: center; white-space: nowrap; width: 1%; }
+  tr.group-start td { border-top: 2px solid var(--accent); }
+  .badge { display: inline-flex; align-items: center; gap: 4px; font-family: var(--font-ui); font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.02em; padding: 2px 7px; border-radius: 9px; }
+  .badge.built { background: var(--good-soft); color: var(--good); }
+  .badge.notbuilt { background: var(--warn-soft); color: var(--warn); }
+  .badge.unchecked { background: var(--unk-soft); color: var(--unk); }
+  .badge.na { background: var(--na-soft); color: var(--na); }
+
+  .callout { display: flex; gap: 10px; padding: 12px 14px; border-radius: 5px; max-width: 100ch; font-size: 14px; margin-top: 14px; }
+  .callout.warn { background: var(--warn-soft); color: var(--warn); }
+  .callout.unk { background: var(--unk-soft); color: var(--unk); }
+  .callout.good { background: var(--good-soft); color: var(--good); }
+  .callout b { font-weight: 700; }
+  .callout-mark { flex: none; font-weight: 700; }
+
+  table.summary { border-collapse: collapse; width: 100%; font-size: 13px; background: var(--paper); margin: 16px 0 28px; }
+  table.summary th, table.summary td { border: 1px solid var(--grid-line); padding: 8px 11px; text-align: left; }
+  table.summary th { background: var(--header-fill); font-family: var(--font-ui); font-size: 11px; text-transform: uppercase; letter-spacing: .03em; }
+
+  hr.divider { border: none; border-top: 1px solid var(--grid-line); margin: 44px 0 0; }
+  footer.closing { max-width: 1280px; margin: 52px auto 0; padding: 0 24px 64px; }
+  footer.closing h2 { font-family: var(--font-display); font-weight: 400; font-size: 20px; margin: 0 0 10px; }
+  footer.closing p.note-foot { margin-top: 14px; font-size: 13px; color: var(--ink-faint); font-family: var(--font-ui); }
+</style>
+
+<header class="masthead">
+  <p class="eyebrow">CF_Algorithm &middot; whole Property line &middot; ERC + manual cross-reference</p>
+  <h1 class="title">Every CF rating element, granular — coverage &times; form &times; rating basis</h1>
+  <p class="dek">Two layers, on purpose. The core grid below is deliberately granular the way it was asked
+    for — each row is one coverage's one cause-of-loss form, each column a rating basis. Underneath that,
+    a rolled-up view of everything else ISO files for this line (243 distinct coverage/endorsement
+    families, confirmed by sweeping every <code>Rule.xml</code> in the ERC package for a
+    <code>SetPremium</code> rule) — full detail lives in <code>Coverage_Inventory_And_Tracking.md</code>,
+    not repeated here row-by-row. Built 2026-09-11, updating that document's own findings in place rather
+    than forking a second source of truth.</p>
+</header>
+
+<div class="wrap">
+
+  <section class="sect" id="legend">
+    <div class="legend">
+      <div class="legend-item"><span class="dot built"></span>Built &mdash; confirmed real formulas in <code>CFRater1.01.xlsb</code></div>
+      <div class="legend-item"><span class="dot notbuilt"></span>Confirmed not built &mdash; checked directly, genuinely absent</div>
+      <div class="legend-item"><span class="dot unchecked"></span>Unverified &mdash; not checked against the rater this session</div>
+      <div class="legend-item"><span class="dot na"></span>N/A &mdash; this rating basis doesn't apply to this form (ISO doesn't file it)</div>
+    </div>
+  </section>
+
+  <section class="sect" id="s1">
+    <div class="sect-heading"><span class="sect-index">&#9670;</span><h2 class="sect-title">The core grid — coverage &times; form &times; rating basis</h2></div>
+    <p class="sect-role">The 5 coverages with their own master <code>Set*RatesAndFactors</code> orchestrator
+      (confirmed the only 5 in the whole package — <code>Coverage_Inventory_And_Tracking.md</code> Part A).
+      <b>Specific/Tentative rating only exists as a branch on Basic Group I</b> in every coverage that has
+      one — confirmed via <code>Excel_Rater_BasicGroupI_AlgorithmGrid.html</code>'s own callout ("Basic
+      Group I is the only form in this project with a <code>RatingType</code> branch at all") and
+      independently re-confirmed for Business Income's own BGI (<code>Excel_Rater_BusinessIncome_
+      BasicGroupI.md</code> &sect;8/&sect;9) — so BGII/Broad/Special/Earthquake rows show N/A there, not a
+      gap. Blanket Rated is marked unverified everywhere: every algorithm doc written so far flags its own
+      blanket branch as "not built this pass" at the <i>documentation</i> level, but none have been checked
+      against the live rater specifically for blanket handling.</p>
+    <div class="tblscroll">
+      <table class="grid">
+        <thead>
+          <tr><th>Coverage</th><th>Form</th><th class="cell">Class Rated</th><th class="cell">Specific Rated</th><th class="cell">Tentative Rated</th><th class="cell">Blanket Rated</th></tr>
+        </thead>
+        <tbody>
+          <tr class="group-start"><td class="coverage" rowspan="4">Building<br><span style="font-weight:400;color:var(--ink-faint);font-size:10.5px;">CommercialPropertyStructure</span></td><td class="form">Basic Group I</td><td class="cell"><span class="badge built">Built</span></td><td class="cell"><span class="badge notbuilt">Not built</span></td><td class="cell"><span class="badge notbuilt">Not built</span></td><td class="cell"><span class="badge unchecked">Unverified</span></td></tr>
+          <tr><td class="form">Basic Group II</td><td class="cell"><span class="badge built">Built</span></td><td class="cell"><span class="badge na">N/A</span></td><td class="cell"><span class="badge na">N/A</span></td><td class="cell"><span class="badge unchecked">Unverified</span></td></tr>
+          <tr><td class="form">Broad</td><td class="cell"><span class="badge built">Built</span></td><td class="cell"><span class="badge na">N/A</span></td><td class="cell"><span class="badge na">N/A</span></td><td class="cell"><span class="badge unchecked">Unverified</span></td></tr>
+          <tr><td class="form">Special</td><td class="cell"><span class="badge built">Built</span></td><td class="cell"><span class="badge na">N/A</span></td><td class="cell"><span class="badge na">N/A</span></td><td class="cell"><span class="badge unchecked">Unverified</span></td></tr>
+
+          <tr class="group-start"><td class="coverage" rowspan="4">Contents<br><span style="font-weight:400;color:var(--ink-faint);font-size:10.5px;">CommercialPropertyPersonalProperty</span></td><td class="form">Basic Group I</td><td class="cell"><span class="badge built">Built</span></td><td class="cell"><span class="badge notbuilt">Not built</span></td><td class="cell"><span class="badge notbuilt">Not built</span></td><td class="cell"><span class="badge unchecked">Unverified</span></td></tr>
+          <tr><td class="form">Basic Group II</td><td class="cell"><span class="badge built">Built</span></td><td class="cell"><span class="badge na">N/A</span></td><td class="cell"><span class="badge na">N/A</span></td><td class="cell"><span class="badge unchecked">Unverified</span></td></tr>
+          <tr><td class="form">Broad</td><td class="cell"><span class="badge built">Built</span></td><td class="cell"><span class="badge na">N/A</span></td><td class="cell"><span class="badge na">N/A</span></td><td class="cell"><span class="badge unchecked">Unverified</span></td></tr>
+          <tr><td class="form">Special</td><td class="cell"><span class="badge unchecked">Unverified</span></td><td class="cell"><span class="badge na">N/A</span></td><td class="cell"><span class="badge na">N/A</span></td><td class="cell"><span class="badge unchecked">Unverified</span></td></tr>
+
+          <tr class="group-start"><td class="coverage" rowspan="4">Special Class<br><span style="font-weight:400;color:var(--ink-faint);font-size:10.5px;">CommercialPropertySpecialClass</span></td><td class="form">Basic Group I</td><td class="cell"><span class="badge unchecked">Unverified</span></td><td class="cell"><span class="badge unchecked">Unverified</span></td><td class="cell"><span class="badge unchecked">Unverified</span></td><td class="cell"><span class="badge unchecked">Unverified</span></td></tr>
+          <tr><td class="form">Basic Group II</td><td class="cell"><span class="badge unchecked">Unverified</span></td><td class="cell"><span class="badge na">N/A</span></td><td class="cell"><span class="badge na">N/A</span></td><td class="cell"><span class="badge unchecked">Unverified</span></td></tr>
+          <tr><td class="form">Broad</td><td class="cell"><span class="badge unchecked">Unverified</span></td><td class="cell"><span class="badge na">N/A</span></td><td class="cell"><span class="badge na">N/A</span></td><td class="cell"><span class="badge unchecked">Unverified</span></td></tr>
+          <tr><td class="form">Special</td><td class="cell"><span class="badge unchecked">Unverified</span></td><td class="cell"><span class="badge na">N/A</span></td><td class="cell"><span class="badge na">N/A</span></td><td class="cell"><span class="badge unchecked">Unverified</span></td></tr>
+
+          <tr class="group-start"><td class="coverage" rowspan="5">Business Income<br><span style="font-weight:400;color:var(--ink-faint);font-size:10.5px;">CommercialPropertyBusinessIncome</span></td><td class="form">Basic Group I</td><td class="cell"><span class="badge built">Built</span></td><td class="cell"><span class="badge notbuilt">Not built</span></td><td class="cell"><span class="badge notbuilt">Not built</span></td><td class="cell"><span class="badge unchecked">Unverified</span></td></tr>
+          <tr><td class="form">Basic Group II</td><td class="cell"><span class="badge built">Built</span></td><td class="cell"><span class="badge na">N/A</span></td><td class="cell"><span class="badge na">N/A</span></td><td class="cell"><span class="badge unchecked">Unverified</span></td></tr>
+          <tr><td class="form">Broad</td><td class="cell"><span class="badge built">Built</span></td><td class="cell"><span class="badge na">N/A</span></td><td class="cell"><span class="badge na">N/A</span></td><td class="cell"><span class="badge unchecked">Unverified</span></td></tr>
+          <tr><td class="form">Special</td><td class="cell"><span class="badge built">Built</span></td><td class="cell"><span class="badge na">N/A</span></td><td class="cell"><span class="badge na">N/A</span></td><td class="cell"><span class="badge unchecked">Unverified</span></td></tr>
+          <tr><td class="form">Earthquake</td><td class="cell"><span class="badge unchecked">Unverified</span></td><td class="cell"><span class="badge na">N/A</span></td><td class="cell"><span class="badge na">N/A</span></td><td class="cell"><span class="badge unchecked">Unverified <span style="font-weight:400;">(no plain premium path — Agreed Value only)</span></span></td></tr>
+
+          <tr class="group-start"><td class="coverage" rowspan="5">Special Class Business Income<br><span style="font-weight:400;color:var(--ink-faint);font-size:10.5px;">CommercialPropertySpecialClassBusnIncome</span></td><td class="form">Basic Group I</td><td class="cell"><span class="badge unchecked">Unverified</span></td><td class="cell"><span class="badge unchecked">Unverified</span></td><td class="cell"><span class="badge unchecked">Unverified</span></td><td class="cell"><span class="badge unchecked">Unverified</span></td></tr>
+          <tr><td class="form">Basic Group II</td><td class="cell"><span class="badge unchecked">Unverified</span></td><td class="cell"><span class="badge na">N/A</span></td><td class="cell"><span class="badge na">N/A</span></td><td class="cell"><span class="badge unchecked">Unverified</span></td></tr>
+          <tr><td class="form">Broad</td><td class="cell"><span class="badge unchecked">Unverified</span></td><td class="cell"><span class="badge na">N/A</span></td><td class="cell"><span class="badge na">N/A</span></td><td class="cell"><span class="badge unchecked">Unverified</span></td></tr>
+          <tr><td class="form">Special</td><td class="cell"><span class="badge unchecked">Unverified</span></td><td class="cell"><span class="badge na">N/A</span></td><td class="cell"><span class="badge na">N/A</span></td><td class="cell"><span class="badge unchecked">Unverified</span></td></tr>
+          <tr><td class="form">Earthquake</td><td class="cell"><span class="badge unchecked">Unverified</span></td><td class="cell"><span class="badge na">N/A</span></td><td class="cell"><span class="badge na">N/A</span></td><td class="cell"><span class="badge unchecked">Unverified</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout warn"><span class="callout-mark">&#9888;</span><span><b>22 rows, 4 rating bases each — but most of the grid is "Unverified," not "documented and unverified" vs. "never even opened."</b> Building/Contents/Business Income's Class-rated rows are backed by full algorithm docs (Part A of the inventory doc) whether or not the live rater has been checked. Special Class and Special Class Business Income <i>are</i> fully documented too (same Part A) — "Unverified" on those rows means specifically "not checked against <code>CFRater1.01.xlsb</code>," not "undocumented." Don't conflate the two.</span></div>
+  </section>
+
+  <hr class="divider" />
+
+  <section class="sect" id="s2">
+    <div class="sect-heading"><span class="sect-index">&#9670;</span><h2 class="sect-title">Everything else ISO files for this line — rolled up</h2></div>
+    <p class="sect-role">Full detail, family by family, lives in <code>Coverage_Inventory_And_Tracking.md</code>
+      — this section is the roll-up, not a replacement. That document's own sweep method: every
+      <code>Rule.xml</code> in the ERC package checked for a <code>SetPremium</code> rule, normalized to
+      collapse cause-of-loss-form and coverage-type suffixes into one family per distinct endorsement.</p>
+    <table class="summary">
+      <tr><th>Layer</th><th>Count</th><th>Documented</th><th>Live-rater build status</th></tr>
+      <tr><td>Core coverages (Part A)</td><td>5</td><td>5 of 5 — full algorithm + tables docs</td><td>3 of 5 checked this session (Building, Contents, Business Income) — see grid above</td></tr>
+      <tr><td>Itemized endorsement families (Part B1-B10)</td><td>92</td><td>0 fully independent — 3 partially covered inside a parent doc (Agreed Value mechanism, Extended Period surcharge shape)</td><td>Not checked</td></tr>
+      <tr><td>Earthquake &amp; Flood standalone endorsements (Part B11)</td><td>~22 files across 6 form/deductible variants</td><td>0 — distinct from the already-documented EQ <i>rate chain</i> inside Business Income/Special Class Business Income</td><td>Not checked</td></tr>
+      <tr><td>Unmanned Aircraft (Part C exception)</td><td>5 variants</td><td>0</td><td>Not checked</td></tr>
+      <tr><td>Not yet individually itemized</td><td>~146</td><td>0 — names only, not traced</td><td>Not checked</td></tr>
+      <tr><td><b>Total distinct families in the package</b></td><td><b>243</b></td><td><b>5 fully + 3 partial (~2-3%)</b></td><td><b>Core Class-rated paths only</b></td></tr>
+    </table>
+    <div class="callout unk"><span class="callout-mark">?</span><span><b>The ~146 not-yet-itemized families are the single largest unknown in the whole Property line.</b> A representative sample (Cannabis Exclusion, Fungus/Wet Rot/Dry Rot/Bacteria changes, Green Upgrades cost increase, Y2K electronic-problems coverage, international limited-coverage variants) is in the inventory doc's own "What's still not itemized" section — sized enough that some individual clusters inside that remainder are plausibly comparable to Ordinance or Law (18 families) or Business Income's time-element extensions (17 families), the two largest itemized clusters found so far.</span></div>
+  </section>
+
+  <hr class="divider" />
+
+  <footer class="closing">
+    <h2>Remaining steps</h2>
+    <p class="note-foot">Sources: <code>Coverage_Inventory_And_Tracking.md</code> (whole-package ERC sweep,
+      2026-08-19, corrected same day), <code>BUILD-LOG.md</code> Entries 27-29, five
+      <code>Excel_Rater_BusinessIncome_*.html</code> docs, <code>Excel_Rater_AllRatingPaths_BuildStatus.html</code>
+      (the Business-Income-only version of this grid's top section), all 2026-09-11. Two corrections made
+      to the inventory doc in this same pass: a stale "not traced" note for Special Class Business Income
+      (a real 53KB doc already exists), and a BUILD-LOG framing of Business Income's Earthquake chain as
+      more untraced than it actually is (the algorithm is documented; only the live-rater check and
+      standalone-endorsement question remain open). Next: finish itemizing the ~146 unlisted families, or
+      pick a row from the core grid's "Unverified" column and actually check it. Nothing gets built until
+      you say go.</p>
+  </footer>
+
+</div>

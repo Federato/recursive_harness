@@ -142,7 +142,7 @@ else:
 This factor has **no Building equivalent** — it is a contents-specific credit for property stored in a fire-rated vault. It multiplies directly into the Basic Group I rate (step 4).
 
 ### Step 3 — Protection class factor
-`SetProtectionClassFactor` (line 3320) — same idea as Building's, but the gate additionally excludes `Group = "YARD"` (unless `YardPropertyIndicator = "Yard Property - Non Combustible"`) and `BldgClassCode` 1751/1752. `LookupProtectionClassFactor` reads matrix `ProtectionClassFactor` keyed on State\|CW, `ProtectClass` (read from 6 levels up — the location), `ConstructionCode`. Falls back to `0.0` if the gate's inner condition fails, `1.0` if the outer gate fails entirely.
+`SetProtectionClassFactor` (line 3320) — same idea as Building's, but the gate additionally excludes `Group = "YARD"` **when** `YardPropertyIndicator = "Yard Property - Non Combustible"` — **corrected 2026-09-18, this page previously said "unless", which is backwards.** The filed test is `Group <> "YARD" OR YardPropertyIndicator <> "Yard Property - Non Combustible"`, so the lookup is skipped only for a NON-combustible yard: a combustible yard keeps the credit (0.96 in Oregon) and a non-combustible one loses it (1.0). Measured in `scripts/cf/27_chunk4_bgi_structure.py` — $246 against $25 on class 1400 and `BldgClassCode` 1751/1752. `LookupProtectionClassFactor` reads matrix `ProtectionClassFactor` keyed on State\|CW, `ProtectClass` (read from 6 levels up — the location), `ConstructionCode`. Falls back to `0.0` if the gate's inner condition fails, `1.0` if the outer gate fails entirely.
 
 ### Step 4 — Rate
 `SetBasicGroupIRate` (line 3418), 3 decimals, only when currently null:
@@ -180,6 +180,15 @@ else:
       x VandalismExclFactor
       x StdPropPolGroupIFactor
 ```
+
+**Note, 2026-09-04:** this file covers the separate `CommercialPropertyPersonalProperty` ERC datadef
+group — a distinct coverage form from Structure's own Contents-at-location. In this datadef group,
+`SprinklerLeakageExclNonSprinkleredRate` is itself already the LCM-scaled value
+(`CommercialPropertyPersonalPropertyRules.Rule.xml`: computed from a separate raw datadef,
+`SprinklerLeakageExclNonSprinkleredBaseRate × LossCostMultiplier`, rounded 3dp) — this file's
+original naming was already correct; don't rename it to `...BldgRate`, that's Structure's naming
+only. All datadef groups (Structure, Business Income, Personal Property) read the same filed CW rate
+(0.0006), each with its own local copy of the LCM-scaling logic and its own naming convention.
 
 The `Valuable Papers` gate has **no Building equivalent** — Building has no such `CovType`. This is a recurring pattern across all four PP chains (see Broad and Special below): coverage types that are separately rated (Valuable Papers, and elsewhere Tobacco Sales Warehouses) get zeroed out of the standard COL-adjustment math so they don't double-rate.
 

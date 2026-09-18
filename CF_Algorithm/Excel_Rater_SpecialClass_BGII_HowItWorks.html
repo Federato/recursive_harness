@@ -1,0 +1,204 @@
+<title>How Special Class Basic Group II Rating Works</title>
+<meta charset="utf-8">
+<style>
+  body { font-family: Georgia, "Times New Roman", serif; max-width: 980px; margin: 0 auto; padding: 32px 24px 80px; line-height: 1.55; color: #1c2733; background: #fff; }
+  @media (prefers-color-scheme: dark) {
+    body { background: #14181d; color: #dfe4e9; }
+    a { color: #7fb6b8; }
+    table, th, td { border-color: #3a4048 !important; }
+    thead th { background: #24313a !important; color: #eef4f3 !important; }
+    code { background: #262c33 !important; color: #dfe4e9; }
+    .note { background: #2c2a1c !important; color: #e0c064 !important; }
+    .note.good { background: #1b3226 !important; color: #63c090 !important; }
+    .note.warn2 { background: #2a1f2c !important; color: #d69ad0 !important; }
+  }
+  h1 { font-size: 26px; font-weight: 400; margin-bottom: 4px; }
+  h2 { font-size: 19px; font-weight: 700; margin-top: 42px; border-bottom: 2px solid #1e3a45; padding-bottom: 4px; }
+  h3 { font-size: 15px; font-weight: 700; margin-top: 26px; }
+  .meta { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13px; color: #55606b; margin: 6px 0 4px; }
+  code { font-family: ui-monospace, Consolas, monospace; font-size: 0.92em; background: #eef1f4; padding: 1px 5px; border-radius: 3px; }
+  table { border-collapse: collapse; width: 100%; margin: 14px 0 22px; font-size: 14px; }
+  th, td { border: 1px solid #d7dce2; padding: 8px 10px; text-align: left; vertical-align: top; }
+  thead th { background: #1e3a45; color: #eef4f3; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 12px; text-transform: uppercase; letter-spacing: 0.03em; }
+  table.grid td:nth-child(1) { font-family: ui-monospace, Consolas, monospace; font-size: 12px; text-align: center; }
+  tr.open td:nth-child(3) { color: #8b95a1; font-style: italic; }
+  .note { background: #f7ddd4; color: #a53d26; padding: 12px 16px; border-radius: 6px; margin: 16px 0; font-size: 14px; }
+  .note.warn2 { background: #f2e6c4; color: #a67c1e; }
+  .note.good { background: #dcefe4; color: #2f7d5a; }
+  .note b { font-weight: 700; }
+  pre { background: #eef1f4; border: 1px solid #d7dce2; border-radius: 6px; padding: 14px 16px; overflow-x: auto; font-family: ui-monospace, Consolas, monospace; font-size: 13px; }
+  ol, ul { padding-left: 22px; }
+  hr { border: none; border-top: 1px solid #d7dce2; margin: 40px 0; }
+</style>
+
+<h1>How Special Class Basic Group II Rating Works</h1>
+<p class="meta"><b>Written:</b> 2026-09-14. <b>Source:</b> <code>CauseOfLoss_SpecialClass_RatingAlgorithms.md</code>,
+"Basic Group II — differences" section (traced 2026-08-19), plus this session's live confirmation that
+<code>BaseRate</code> and <code>LowestBaseRate</code> read the exact same shared tables Building's own Basic Group
+II uses. Companion to <code>Excel_Rater_SpecialClass_HowItWorks.html</code> (Basic Group I) and
+<code>Excel_Rater_BGII_Building_HowItWorks.html</code> (Building's own Basic Group II) — this page is Special
+Class's own Basic Group II, standalone, not a comparison to either.</p>
+<div class="note good"><b>Status: traced, not built.</b> No <code>Excel_Rater_SpecialClass.md</code> build guide
+exists yet — same standing as the Basic Group I page. Nothing here has been entered into the live workbook.</div>
+
+<h2>1. What's different about Special Class's Basic Group II, in plain English</h2>
+<p>Same perils as Building's Basic Group II — windstorm/hail, riot/civil commotion, vandalism, sprinkler leakage,
+sinkhole. The rate build-up is 10 steps, one shorter than Building's 11, because Special Class never derives its
+own construction symbol the way Building does — there's no <code>SetBasicGroupIISymbol</code> rule anywhere in
+<code>CommercialPropertySpecialClassRules.Rule.xml</code> at all.</p>
+<div class="note warn2"><b>Open question, confirmed by grep, not resolved:</b> <code>BasicGroupIISymbol</code> is
+read directly wherever this chain needs it, but nothing in this ruleset ever assigns it. It's either a raw
+data-entry field on the Special Class item, or copied down from somewhere outside this ruleset — unresolved from
+the rule file alone.</div>
+
+<h2>2. The rating chain, step by step</h2>
+<table class="grid">
+<thead><tr><th>#</th><th>Step</th><th>What it does</th></tr></thead>
+<tbody>
+<tr><td>1</td><td><code>BasicGroupIINumericValue</code></td>
+  <td>If no <code>CommercialPropertyWindstormOrHailExclusionSpecialClass</code> record exists:
+  <code>= BasicGroupIISymbolNum</code>. Otherwise <code>1.0</code>. <code>BasicGroupIISymbolNum</code> is set during
+  shared prep via <code>LookupSpecialClassBasicGroupIINumber</code>, keyed on <b>State|CW + the raw
+  <code>ClassDescription</code></b> (not the converted option) against matrix
+  <code>SpecialClassBasicGroupIINumber</code> — a named-class lookup, not Building's <code>ClassCode</code>/
+  <code>ConstructionCode</code>/<code>OpenSides</code> logic.</td></tr>
+<tr><td>2</td><td><code>BaseRate</code></td>
+  <td>Requires <code>BasicGroupIIRatingTerr</code> and <code>BasicGroupIISymbol</code> both non-blank, else
+  <code>0.0</code>. <code>LookupBasicGroupIIRate</code> keys on State|CW/Territory/Symbol/<code>"Bldg"</code> —
+  <b>the exact same <code>BasicGroupIIRate</code> table Building's own chain reads</b>, confirmed by matching
+  <code>MatrixFromConstant</code> name. Everything already built in
+  <code>BGII_BaseRate_Building.xlsx</code>/<code>_FL.xlsx</code> (per-state correct-edition resolution, the FL
+  zero-rows finding, Montana's <code>BaseRate</code> data) applies here directly, no separate pull needed.</td></tr>
+<tr><td>3</td><td><code>LowestBaseRate</code></td>
+  <td>Same shape as Building — <b>shared</b> <code>LowestBasicGroupIIRate</code> matrix, keyed on State|CW/Symbol/
+  <code>"Bldg"</code> (no territory). Only consumed by the wind/hail-excluded branch of <code>COLAdj</code>, step 5
+  below.</td></tr>
+<tr><td>4</td><td><code>Rate</code></td>
+  <td><code>BasicGroupIIBaseRate × LossCostMultiplier × BasicGroupIINumericValue</code> — three factors, not
+  Building's six. <b>No roof-surfacing ACV factor, no roof-surfacing cosmetic-exclusion factor, no BCEG factor</b>
+  — confirmed absent, Special Class carries no roof-condition or building-code-effectiveness dimension anywhere in
+  this datadef group.</td></tr>
+<tr><td>5</td><td><code>COLAdj</code></td>
+  <td>Gate is <b>narrower than Building's</b> — checks only <code>"Fire"</code> and <code>"Fire and Vandalism"</code>
+  (no <code>"...and Sprinkler Leakage"</code> variants, consistent with Special Class's Basic Group I having no
+  sprinkler-leakage dimension either). If matched: <code>0.0</code>. Else if no wind/hail exclusion:
+  <code>BasicGroupIIRate × StdPropPolGroupIIFactor</code>. Else (wind/hail excluded): a rebuild —
+  <code>LowestBasicGroupIIBaseRate × LossCostMultiplier × WindstormOrHailExclFactor × StdPropPolGroupIIFactor</code>
+  — same two-path shape as Building, but without the roof-surfacing/cosmetic factors Building applies in that
+  branch, since Special Class never introduced them upstream.</td></tr>
+<tr><td>6</td><td><code>CoinsuranceFactor</code></td>
+  <td>Same shape as Building: flat lookup (<code>LookupBasicGroupIIFlatCoinsuranceFactor</code>, State|CW +
+  <code>"Y"</code>) when <code>Coinsurance</code> is 50%/60%/70%/None; else copies the shared
+  <code>CoinsuranceFactor</code> this item's own Basic Group I chain already computed. CW flat value <b>1.5</b> —
+  a surcharge, not a credit. Already captured in <code>SpecialClass_CoinsuranceFactor_Tables.xlsx</code>,
+  <code>BGIIFlatCoinsuranceFactor</code> sheet.</td></tr>
+<tr><td>7</td><td><code>AdjustedRate</code></td>
+  <td><code>COLAdj × CoinsuranceFactor</code> — two factors, same shape as Basic Group I (no LOI factor,
+  consistent chain-wide across this whole coverage).</td></tr>
+<tr><td>8</td><td><code>BGIIDeductibleByLocationFactor</code></td>
+  <td>Same conditions as Building (<code>WindstormHailIndicator = 0</code> and a by-location record with a real
+  <code>WindstormOrHailDeductible</code>), but reads <code>CommercialPropertyDeductiblesByLocationSpecialClassTable</code>
+  — Special Class's own by-location deductible datadef, not Building's.</td></tr>
+<tr><td>9</td><td><code>DeductibleFactorBasicGroupII</code></td>
+  <td>Same two-level structure as Building — outer test on whether a distinct wind/hail deductible applies, inner
+  <code>Choose</code> on <code>Deductible</code>/<code>WindstormOrHailDeductible</code>.</td></tr>
+<tr><td>10</td><td><code>FinalRate</code></td>
+  <td><code>AdjustedBasicGroupIIRate × BGIIDeductibleByLocationFactor × DeductibleFactorBasicGroupII</code> — three
+  factors, <b>no <code>MultiResidentialPropSpecialCreditFactor</code></b>, consistent with the whole Special Class
+  datadef group.</td></tr>
+</tbody>
+</table>
+
+<h2>3. The full formula, end to end</h2>
+<pre>BasicGroupIINumericValue =
+    BasicGroupIISymbolNum      if no CommercialPropertyWindstormOrHailExclusionSpecialClass record exists
+    else 1.0
+
+BasicGroupIISymbolNum =
+    LookupSpecialClassBasicGroupIINumber(State|CW, ClassDescription)
+    &lt;computed once, during shared prep&gt;
+
+BaseRate =
+    LookupBasicGroupIIRate(State|CW, BasicGroupIIRatingTerr, BasicGroupIISymbol, "Bldg")
+        if BasicGroupIIRatingTerr and BasicGroupIISymbol are both non-blank
+    else 0.0
+
+LowestBaseRate =
+    LookupLowestBasicGroupIIRate(State|CW, BasicGroupIISymbol, "Bldg")
+
+Rate =
+    BasicGroupIIBaseRate &times; LossCostMultiplier &times; BasicGroupIINumericValue
+    (round to 3 dp)
+
+COLAdj =
+    0.0    if CauseOfLossToUse in ("Fire", "Fire and Vandalism")
+    elif no windstorm/hail exclusion:
+        BasicGroupIIRate &times; StdPropPolGroupIIFactor
+    else:
+        LowestBasicGroupIIBaseRate &times; LossCostMultiplier &times; WindstormOrHailExclFactor &times; StdPropPolGroupIIFactor
+
+CoinsuranceFactor =
+    LookupBasicGroupIIFlatCoinsuranceFactor(State|CW, "Y")   if Coinsurance in ("50%","60%","70%","None")
+    else CoinsuranceFactor   # this item's own Basic Group I result, copied in
+
+AdjustedRate = COLAdj &times; CoinsuranceFactor
+
+BGIIDeductibleByLocationFactor =
+    LookupDeductibleByLocationFactor(...)
+        if WindstormHailIndicator = 0
+           and a CommercialPropertyDeductiblesByLocationSpecialClassTable record exists with a non-blank
+           WindstormOrHailDeductible value
+    else 1.0
+
+DeductibleFactorBasicGroupII =
+    &lt;Deductible-keyed Choose, same two-level structure as Building&gt;
+        if WindstormOrHailDeductible is blank, "Not Applicable", or = Deductible
+    else &lt;branch on WindstormOrHailDeductible instead&gt;
+
+FinalBasicGroupIIRate = AdjustedRate &times; BGIIDeductibleByLocationFactor &times; DeductibleFactorBasicGroupII
+
+Premium (scheduled, IncludedInBlkt &lt;&gt; "Yes") =
+    round((Limit/100) &times; FinalBasicGroupIIRate &times; PackageModFactor
+          &times; MultiPremiumAndDispersionCreditFactor &times; IRPMFactor, 0)
+      &times; CyberIncidentExclusionFactorBGII &times; CyberIncidentExclusionCOLExcptnsFactorBGII
+
+Premium (blanket, IncludedInBlkt = "Yes", zero if BlktTotalFullValueAmount = 0) =
+    round((BlktLimit/100) &times; (FullSpecialClassValue/BlktTotalFullValueAmount) &times; BlktBasicGroupIIAvgRate
+          &times; PackageModFactor &times; MultiPremiumAndDispersionCreditFactor &times; IRPMFactor, 0)
+      &times; CyberIncidentExclusionFactorBGII &times; CyberIncidentExclusionCOLExcptnsFactorBGII</pre>
+<p style="font-family: -apple-system, 'Segoe UI', sans-serif; font-size: 13px; color: #55606b;">Ten rating-chain
+steps total, one shorter than Building's own Basic Group II (11 steps) — Special Class never derives its own
+construction symbol, per the open question in §1.</p>
+
+<h2>4. Premium</h2>
+<p><code>CommercialPropertySpecialClassBasicGroupIICoverageRules.Rule.xml</code> — structurally identical to Special
+Class's own Basic Group I premium file, confirmed by direct read: <code>SetCoverageOnPolicyIndicator</code> is
+hard-coded to <code>1</code>, <code>SetPremium</code> has the same two branches (blanket / scheduled) with
+<code>BlktBasicGroupIIAvgRate</code> and <code>FinalBasicGroupIIRate</code> substituted for the Group I datadefs,
+and the <code>CyberIncidentExclusionFactorBGII</code>/<code>CyberIncidentExclusionCOLExcptnsFactorBGII</code> pair
+applied outside the rounded product, exactly as shown at the bottom of §3's formula block. No Legal Liability
+branch here either.</p>
+
+<h2>5. What's shared with Building vs. genuinely Special-Class-specific</h2>
+<table>
+<thead><tr><th>Piece</th><th>Status</th><th>Note</th></tr></thead>
+<tbody>
+<tr><td><code>BaseRate</code></td><td>Fully shared</td><td>Same <code>BasicGroupIIRate</code> table, every state finding (FL's Residential/Non-Residential mechanism, Montana's values, the 47-state resolvability sweep) applies directly.</td></tr>
+<tr><td><code>LowestBaseRate</code></td><td>Fully shared</td><td>Same <code>LowestBasicGroupIIRate</code> table.</td></tr>
+<tr><td><code>NumericValue</code></td><td><b>Not shared</b></td><td>Building keys on <code>ClassCode</code>/<code>ConstructionCode</code>/<code>OpenSides</code> (<code>GroupIINumericValue</code>, <code>GroupIIOpenSidesNumericValue</code> — including the confirmed Montana deviation on those two tables). Special Class instead keys on the raw <code>ClassDescription</code> against <code>SpecialClassBasicGroupIINumber</code> — a completely different table. <b>Montana's Building-specific NumericValue deviation does not carry over</b> — Special Class's own version of this table hasn't been checked for state deviations yet.</td></tr>
+<tr><td><code>CoinsuranceFactor</code>'s flat-lookup branch</td><td>Shared mechanism, own value</td><td>Same rule shape as Building, but Special Class's chain multiplies a CW value of 1.5 for this branch specifically — confirmed already in <code>SpecialClass_CoinsuranceFactor_Tables.xlsx</code>.</td></tr>
+<tr><td><code>BGIIDeductibleByLocationFactor</code></td><td>Same mechanism, own table</td><td>Reads <code>CommercialPropertyDeductiblesByLocationSpecialClassTable</code>, not Building's equivalent.</td></tr>
+<tr><td>Construction symbol origin</td><td>Open question, unique to Special Class</td><td>Building derives its own symbol from <code>ConstructionType</code>+<code>NumStories</code>. Special Class never does — see the callout in §1.</td></tr>
+</tbody></table>
+
+<hr>
+
+<h2>Remaining steps</h2>
+<ol>
+<li>Resolve where <code>BasicGroupIISymbol</code> actually comes from for a Special Class item — the one open
+question this page can't close from the rule file alone.</li>
+<li>Check <code>SpecialClassBasicGroupIINumber</code> for state deviations, the same way Building's
+<code>GroupIINumericValue</code>/<code>GroupIIOpenSidesNumericValue</code> were swept (Montana found to deviate on
+those) — not yet done for Special Class's own version.</li>
+<li>Nothing gets built into the live workbook until you say go.</li>
+</ol>

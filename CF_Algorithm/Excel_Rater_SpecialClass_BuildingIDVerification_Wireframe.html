@@ -1,0 +1,313 @@
+<title>Special Class — Building ID Scheme &amp; Total Verification Wireframe</title>
+<meta charset="utf-8">
+<style>
+  :root {
+    --bg: #eef1f4; --paper: #ffffff; --ink: #1c2733; --ink-soft: #55606b; --ink-faint: #8b95a1;
+    --grid-line: #d7dce2; --header-fill: #e4e8ed; --header-fill-strong: #1e3a45; --header-text-strong: #eef4f3;
+    --accent: #1e3a45; --accent-soft: #cfe0e0; --accent-warm: #b96a2c; --accent-warm-soft: #f3e2cf;
+    --good: #2f7d5a; --good-soft: #dcefe4; --warn: #a53d26; --warn-soft: #f7ddd4;
+    --mid: #a67c1e; --mid-soft: #f2e6c4;
+    --font-display: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+    --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, "Liberation Mono", monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #10151b; --paper: #161d25; --ink: #e7ecf1; --ink-soft: #a3aebb; --ink-faint: #6d7885;
+      --grid-line: #2b3742; --header-fill: #1b242d; --header-fill-strong: #21504f; --header-text-strong: #eaf3f1;
+      --accent: #59a9ac; --accent-soft: #1d3535; --accent-warm: #dd9a5c; --accent-warm-soft: #372a1c;
+      --good: #63c090; --good-soft: #1b3226; --warn: #e0806a; --warn-soft: #3a2019;
+      --mid: #e0c064; --mid-soft: #3a3319;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #10151b; --paper: #161d25; --ink: #e7ecf1; --ink-soft: #a3aebb; --ink-faint: #6d7885;
+    --grid-line: #2b3742; --header-fill: #1b242d; --header-fill-strong: #21504f; --header-text-strong: #eaf3f1;
+    --accent: #59a9ac; --accent-soft: #1d3535; --accent-warm: #dd9a5c; --accent-warm-soft: #372a1c;
+    --good: #63c090; --good-soft: #1b3226; --warn: #e0806a; --warn-soft: #3a2019;
+    --mid: #e0c064; --mid-soft: #3a3319;
+  }
+  :root[data-theme="light"] {
+    --bg: #eef1f4; --paper: #ffffff; --ink: #1c2733; --ink-soft: #55606b; --ink-faint: #8b95a1;
+    --grid-line: #d7dce2; --header-fill: #e4e8ed; --header-fill-strong: #1e3a45; --header-text-strong: #eef4f3;
+    --accent: #1e3a45; --accent-soft: #cfe0e0; --accent-warm: #b96a2c; --accent-warm-soft: #f3e2cf;
+    --good: #2f7d5a; --good-soft: #dcefe4; --warn: #a53d26; --warn-soft: #f7ddd4;
+    --mid: #a67c1e; --mid-soft: #f2e6c4;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-display); line-height: 1.55; }
+  .wrap { max-width: 1360px; margin: 0 auto; padding: 0 24px 96px; }
+  header.masthead { padding: 48px 24px 24px; max-width: 1360px; margin: 0 auto; }
+  .eyebrow { font-family: var(--font-ui); font-size: 12px; letter-spacing: 0.11em; text-transform: uppercase; color: var(--accent-warm); font-weight: 600; margin: 0 0 10px; }
+  h1.title { font-size: clamp(24px, 3.2vw, 33px); font-weight: 400; margin: 0 0 14px; }
+  .dek { font-size: 15.5px; color: var(--ink-soft); max-width: 108ch; margin: 0 0 6px; }
+  .dek code { font-family: var(--font-mono); font-size: 13px; background: var(--header-fill); padding: 1px 5px; border-radius: 3px; }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; margin: 18px 0 4px; font-family: var(--font-ui); font-size: 12px; }
+  .legend .sw { display: inline-flex; align-items: center; gap: 6px; }
+  .legend .box { width: 14px; height: 14px; border-radius: 3px; display: inline-block; border: 1px solid var(--grid-line); }
+
+  section.sect { padding-top: 34px; }
+  h2.sect-title { font-size: 20px; font-weight: 400; margin: 0 0 4px; }
+  .sect-role { font-family: var(--font-ui); font-size: 13px; color: var(--ink-soft); margin: 0 0 16px; max-width: 110ch; }
+  .sect-role code { font-family: var(--font-mono); font-size: 12px; background: var(--header-fill); padding: 1px 5px; border-radius: 3px; }
+
+  .sheet-frame { border-radius: 8px; box-shadow: 0 1px 2px rgba(28,39,51,0.06), 0 8px 24px rgba(28,39,51,0.07); overflow: hidden; margin-bottom: 12px; }
+  .sheet-tabbar { background: var(--header-fill-strong); padding: 8px 14px 0; display: flex; gap: 4px; font-family: var(--font-ui); font-size: 11.5px; flex-wrap: wrap; }
+  .sheet-tab { padding: 7px 14px; border-radius: 6px 6px 0 0; color: var(--ink-faint); background: rgba(255,255,255,0.06); }
+  .sheet-tab.active { background: var(--paper); color: var(--ink); font-weight: 700; }
+  .tblscroll { overflow-x: auto; background: var(--paper); }
+  table.mock { border-collapse: collapse; width: 100%; min-width: 900px; font-size: 12px; }
+  table.mock th, table.mock td { border: 1px solid var(--grid-line); padding: 6px 9px; text-align: left; vertical-align: middle; white-space: nowrap; }
+  table.mock thead th { background: var(--header-fill); font-family: var(--font-ui); font-size: 10.5px; font-weight: 700; color: var(--ink-soft); text-align: center; }
+  table.mock td.lbl { font-family: var(--font-ui); font-size: 11.5px; font-weight: 600; width: 240px; white-space: normal; }
+  td.id-cell { font-family: var(--font-mono); font-weight: 700; text-align: center; background: var(--accent-soft); color: var(--accent); }
+  tr.good td.chk { background: var(--good-soft); color: var(--good); font-weight: 700; }
+  tr.bad td.chk { background: var(--warn-soft); color: var(--warn); font-weight: 700; }
+  tr.new td.lbl { border-left: 4px solid var(--mid); }
+  tr.new td.val { background: var(--mid-soft); color: var(--mid); font-weight: 600; }
+
+  .callout { display: flex; gap: 10px; padding: 12px 14px; border-radius: 5px; max-width: 110ch; font-size: 13px; margin: 14px 0; font-family: var(--font-ui); }
+  .callout.warn { background: var(--warn-soft); color: var(--warn); }
+  .callout.good { background: var(--good-soft); color: var(--good); }
+  .callout.mid { background: var(--mid-soft); color: var(--mid); }
+  .callout b { font-weight: 700; }
+  .callout-mark { flex: none; font-weight: 700; }
+
+  .formula-panel { background: var(--header-fill-strong); color: var(--header-text-strong); border-radius: 6px; padding: 14px 16px; font-family: var(--font-mono); font-size: 12px; line-height: 1.7; overflow-x: auto; margin: 10px 0 16px; }
+  .formula-panel pre { margin: 0; white-space: pre; }
+  .formula-panel .cm { opacity: 0.55; font-style: italic; }
+
+  hr.divider { border: none; border-top: 1px solid var(--grid-line); margin: 44px 0 0; }
+  footer.closing { max-width: 1360px; margin: 52px auto 0; padding: 0 24px 64px; }
+  footer.closing h2 { font-weight: 400; font-size: 20px; margin: 0 0 10px; }
+  footer.closing p.note-foot { margin-top: 14px; font-size: 13px; color: var(--ink-faint); font-family: var(--font-ui); }
+</style>
+
+<header class="masthead">
+  <p class="eyebrow">CF_Algorithm &middot; Special Class &middot; reviewed against CFRater1.01.xlsb, read-only</p>
+  <h1 class="title">Wiring up Item ID linking and verifying the total — real cells, real formulas</h1>
+  <p class="dek"><b>Re-read the live rater before writing this.</b> A lot has already been built since the last
+    review: <code>Location Inputs</code> and <code>Special Class Inputs</code> both now have an <code>Item ID:</code>
+    row (row 5 on each) built exactly as discussed — <code>Location# &amp; " - " &amp; Building#</code> on
+    <code>Location Inputs</code>, <code>Location# &amp; " - " &amp; Item#</code> on <code>Special Class Inputs</code>.
+    <code>Special Class Worksheet</code> has <code>BaseRate</code> through <code>ADJUSTEDRTATE</code> built (rows
+    1&ndash;9); rows 10&ndash;11, <code>DeductibleByLocationFactor</code> and
+    <code>DeductibleFactorBasicGroupI</code>, are still blank. The reference tables are already loaded on a
+    <code>Special Class</code> data tab. Every formula below uses these real tab and row names, not placeholders.</p>
+  <div class="legend">
+    <span class="sw"><span class="box" style="background:#cfe0e0;"></span> Already built, confirmed live</span>
+    <span class="sw"><span class="box" style="background:#f2e6c4;"></span> New — what this page proposes adding</span>
+    <span class="sw"><span class="box" style="background:#dcefe4;"></span> Check passes</span>
+    <span class="sw"><span class="box" style="background:#f7ddd4;"></span> Check fails &mdash; needs attention</span>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <section class="sect" id="idscheme">
+    <h2 class="sect-title">1. What's already there — the two <code>Item ID</code> rows</h2>
+    <p class="sect-role">Both already exist and already work as a formula-built ID, exactly the pattern that avoids
+      hand-typed duplicates. The one thing missing: nothing on <code>Special Class Inputs</code> yet points a Special
+      Class item <em>at</em> a building's own Item ID.</p>
+    <div class="sheet-frame">
+      <div class="sheet-tabbar">
+        <div class="sheet-tab active">Location Inputs</div>
+        <div class="sheet-tab">Special Class Inputs</div>
+      </div>
+      <div class="tblscroll">
+        <table class="mock">
+          <thead><tr><th></th><th>B (Bldg 1)</th><th>C (Bldg 2)</th></tr></thead>
+          <tbody>
+            <tr><td class="lbl">Row 3 &mdash; Location #:</td><td>1</td><td>1</td></tr>
+            <tr><td class="lbl">Row 4 &mdash; Building #:</td><td>1</td><td>2</td></tr>
+            <tr class="new"><td class="lbl">Row 5 &mdash; Item ID: <span style="font-weight:400;">(already built, confirmed live)</span></td>
+              <td class="id-cell">1 - 1</td><td class="id-cell">1 - 2</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="formula-panel"><pre><span class="cm">' 'Location Inputs'!B5 -- confirmed already a formula, not typed</span>
+='Location Inputs'!B3 &amp; " - " &amp; 'Location Inputs'!B4</pre></div>
+    <p class="sect-role" style="margin-top:14px;">Same pattern, same row number, on the Special Class side — but the
+      second half of the ID is the <em>item</em> number, not a building number. This is the item's own identity, not
+      a link to anything yet.</p>
+    <div class="sheet-frame">
+      <div class="sheet-tabbar"><div class="sheet-tab active">Special Class Inputs</div></div>
+      <div class="tblscroll">
+        <table class="mock">
+          <thead><tr><th></th><th>B (Item 1)</th><th>C (Item 2)</th></tr></thead>
+          <tbody>
+            <tr><td class="lbl">Row 3 &mdash; Location #:</td><td>1</td><td>2</td></tr>
+            <tr><td class="lbl">Row 4 &mdash; Item #:</td><td>1</td><td>1</td></tr>
+            <tr class="new"><td class="lbl">Row 5 &mdash; Item ID: <span style="font-weight:400;">(already built, confirmed live)</span></td>
+              <td class="id-cell">1 - 1</td><td class="id-cell">2 - 1</td></tr>
+            <tr><td class="lbl">Row 16 &mdash; Special Class Limit:</td><td>0 <span class="subtle">(unfilled in current sample data)</span></td><td>&mdash;</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout warn"><span class="callout-mark">&#9888;</span><span><b>Same field name, two different
+      meanings — worth flagging so nobody confuses them while reading the file.</b> <code>Location Inputs!B5</code>
+      is "which building is this." <code>Special Class Inputs!B5</code> is "which Special Class item is this." They
+      happen to both read <code>1 - 1</code> for the current sample data because both are Item/Building #1 at
+      Location #1 — that's a coincidence of the sample data, not a link between the two cells.</span></div>
+  </section>
+
+  <section class="sect" id="linking">
+    <h2 class="sect-title">2. The missing field: which building does this item actually link to?</h2>
+    <p class="sect-role">Nothing on <code>Special Class Inputs</code> currently answers this. Two new rows, placed
+      right after the existing <code>Item Information</code> block (rows 1&ndash;9).</p>
+    <div class="sheet-frame">
+      <div class="sheet-tabbar"><div class="sheet-tab active">Special Class Inputs</div></div>
+      <div class="tblscroll">
+        <table class="mock">
+          <thead><tr><th></th><th>B (Item 1)</th><th>C (Item 2)</th><th>D (Item 3)</th></tr></thead>
+          <tbody>
+            <tr><td class="lbl">Row 5 &mdash; Item ID: <span class="subtle">(existing)</span></td><td class="id-cell">1 - 1</td><td class="id-cell">2 - 1</td><td class="id-cell">1 - 2</td></tr>
+            <tr><td class="lbl">Row 16 &mdash; Special Class Limit: <span class="subtle">(existing)</span></td><td>25,000</td><td>5,000</td><td>10,000</td></tr>
+            <tr class="new"><td class="lbl">Row 21 (new) &mdash; Included in Building?</td><td>Yes</td><td>No</td><td>Yes</td></tr>
+            <tr class="new"><td class="lbl">Row 22 (new) &mdash; Linked Building Item ID</td><td class="id-cell">1 - 1</td><td class="id-cell">&mdash;</td><td class="id-cell">1 - 1</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="formula-panel"><pre><span class="cm">' 'Special Class Inputs'!B22 -- typed/selected by the user, matched against 'Location Inputs'!row 5</span>
+<span class="cm">' (a data-validation dropdown sourced from 'Location Inputs'!$B$5:$K$5 would prevent most typos here)</span></pre></div>
+    <div class="callout good"><span class="callout-mark">&#8226;</span><span>Items 1 and 3 above both link to
+      <code>1 - 1</code> — Building 1 at Location 1. That's the case worth designing for from the start: more than
+      one Special Class item can attach to the same building, and the sum in the next section has to pick up both.</span></div>
+  </section>
+
+  <section class="sect" id="corescratchpad">
+    <h2 class="sect-title">3. What <code>CoreScratchpad</code> already computes, and what it's missing</h2>
+    <p class="sect-role">Confirmed on this read: <code>CoreScratchpad</code> row 137, labeled <code>TOTAL LIMIT</code>,
+      is the real combined-total figure Building's own <code>DeductibleFactorBasicGroupI</code> lookup (rows
+      138&ndash;141) already keys against. Column B = Building 1, column C = Building 2, same column-per-building
+      convention as every other tab.</p>
+    <div class="sheet-frame">
+      <div class="sheet-tabbar"><div class="sheet-tab active">CoreScratchpad</div></div>
+      <div class="tblscroll">
+        <table class="mock">
+          <thead><tr><th></th><th>B (Bldg 1, FL)</th><th>C (Bldg 2, NY)</th></tr></thead>
+          <tbody>
+            <tr><td class="lbl">Row 137 &mdash; TOTAL LIMIT <span class="subtle">(confirmed live value)</span></td><td>1,190,000</td><td>981,246</td></tr>
+            <tr><td class="lbl">Row 138 &mdash; Row Offset</td><td>1,338</td><td>4,446</td></tr>
+            <tr><td class="lbl">Row 139 &mdash; Factor <span class="subtle">(the resolved DeductibleFactorBasicGroupI)</span></td><td>0.96</td><td>0.96</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="callout warn"><span class="callout-mark">&#9888;</span><span><b>Row 137's current formula has no
+      Special Class term.</b> Whatever built it summed Building + Contents only — correct at the time, since nothing
+      else existed to add. Once items 1 and 3 above are scheduled against Building 1, row 137's <code>1,190,000</code>
+      for that building needs to become <code>1,190,000 + 35,000</code> (item 1's 25,000 + item 3's 10,000), or the
+      deductible factor keeps reading a total that's now too low.</span></div>
+    <div class="formula-label">New row, e.g. CoreScratchpad row 137b &mdash; sum of linked Special Class items, per building</div>
+    <div class="formula-panel"><pre><span class="cm">' CoreScratchpad!B137b (Building 1's column) -- matches 'Location Inputs'!B5 against every linked item</span>
+=SUMIF('Special Class Inputs'!$B$22:$K$22, 'Location Inputs'!B5, 'Special Class Inputs'!$B$16:$K$16)</pre></div>
+    <div class="formula-label">Row 137, revised</div>
+    <div class="formula-panel"><pre><span class="cm">' old: =Bldg_Limit + Contents_Limit  (whatever the existing formula actually is)</span>
+<span class="cm">' new:</span> =Bldg_Limit + Contents_Limit + B137b</pre></div>
+    <div class="instructions">
+      <p>Why this particular <code>SUMIF</code> shape works: <code>'Special Class Inputs'!$B$22:$K$22</code> is the
+        full row of every item's <code>Linked Building Item ID</code> (up to 10 items, same layout convention as
+        every other tab in this workbook). <code>'Location Inputs'!B5</code> is <em>this specific building's own</em>
+        Item ID — since row 137b sits in column B, it's asking "which Special Class items link to Building 1
+        specifically." Column C's version of this formula would reference <code>'Location Inputs'!C5</code>
+        instead, matching Building 2.</p>
+    </div>
+  </section>
+
+  <section class="sect" id="verify">
+    <h2 class="sect-title">4. Verifying it — three checks, using the fields above</h2>
+    <p class="sect-role">A correct-looking row 137 can still be wrong if an item's link silently failed to match.</p>
+
+    <h3 style="font-family:var(--font-ui); font-size:14px; margin:22px 0 6px;">Check 1 — does every linked item's ID resolve to a real building?</h3>
+    <div class="sheet-frame">
+      <div class="sheet-tabbar"><div class="sheet-tab active">Special Class Inputs</div></div>
+      <div class="tblscroll">
+        <table class="mock">
+          <thead><tr><th></th><th>B (Item 1)</th><th>C (Item 2)</th><th>D (Item 3)</th><th>E (Item 4)</th></tr></thead>
+          <tbody>
+            <tr><td class="lbl">Row 22 &mdash; Linked Building Item ID</td><td class="id-cell">1 - 1</td><td class="id-cell">&mdash;</td><td class="id-cell">1 - 1</td><td class="id-cell">1 - 3</td></tr>
+            <tr class="good"><td class="lbl chk">Row 23 (new) &mdash; Building ID Found?</td>
+              <td class="chk">TRUE</td><td class="chk" style="background:var(--header-fill);color:var(--ink-faint);">n/a</td><td class="chk">TRUE</td><td class="chk"></td></tr>
+            <tr class="bad"><td class="lbl chk"></td><td></td><td></td><td></td><td class="chk">FALSE &mdash; no building "1 - 3" exists</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="formula-panel"><pre><span class="cm">' 'Special Class Inputs'!B23</span>
+=IF(B21&lt;&gt;"Yes", "n/a",
+   IF(COUNTIF('Location Inputs'!$B$5:$K$5, B22)&gt;0, "TRUE", "FALSE"))</pre></div>
+    <div class="callout warn"><span class="callout-mark">&#9888;</span><span><b>This is the failure mode that's easy
+      to miss.</b> Item 4 typed <code>1 - 3</code> — Location 1 only has two buildings, so this is either a typo for
+      <code>1 - 2</code> or a building that hasn't been added yet. Without this check, the item silently contributes
+      nothing to any building's row 137b — <code>SUMIF</code> just never matches — and the workbook doesn't error,
+      it quietly undercounts. A filterable <code>TRUE</code>/<code>FALSE</code>/<code>"n/a"</code> row catches this
+      at the item level.</span></div>
+
+    <h3 style="font-family:var(--font-ui); font-size:14px; margin:22px 0 6px;">Check 2 — no duplicate Item IDs on Location Inputs</h3>
+    <div class="formula-panel"><pre><span class="cm">' one cell, e.g. Location Inputs row 6 in a summary column, or a dedicated dashboard tab</span>
+=IF(SUMPRODUCT(1/COUNTIF('Location Inputs'!$B$5:$K$5,'Location Inputs'!$B$5:$K$5))=COUNTA('Location Inputs'!$B$5:$K$5),
+   "OK -- all Item IDs unique", "DUPLICATE FOUND -- check Location Inputs")</pre></div>
+    <div class="callout good"><span class="callout-mark">&#8226;</span><span>Since <code>Location Inputs!B5</code> is
+      already a formula off <code>Location #</code> and <code>Building #</code> (confirmed in §1), this should never
+      actually fire in practice — it's cheap insurance against a copy-pasted row that duplicated its Location/Building
+      numbers along with everything else.</span></div>
+
+    <h3 style="font-family:var(--font-ui); font-size:14px; margin:22px 0 6px;">Check 3 — grand-total reconciliation</h3>
+    <div class="formula-panel"><pre><span class="cm">' claimed: every item that says it's linked, regardless of whether the link actually resolved</span>
+=SUMIF('Special Class Inputs'!$B$21:$K$21, "Yes", 'Special Class Inputs'!$B$16:$K$16)
+
+<span class="cm">' landed: sum of every building's own row 137b across all 10 building columns</span>
+=SUM(CoreScratchpad!$B$137b:$K$137b)
+
+<span class="cm">' the check itself</span>
+=IF(Claimed=Landed, "OK -- every linked item accounted for",
+   "MISMATCH -- " &amp; (Claimed-Landed) &amp; " unaccounted for -- check Row 23 for FALSE")</pre></div>
+    <div class="callout good"><span class="callout-mark">&#8226;</span><span>With Item 4's bad link from Check 1,
+      "claimed" would include its 5,000 (it did say "Yes") but "landed" wouldn't, since <code>SUMIF</code> never
+      matched it — reporting a <code>5,000</code> mismatch. This is the backstop: even if someone ignores Check 1's
+      row-level flag, this one cell reports the exact dollar amount that fell through. Put it on a summary tab, not
+      buried inside <code>Special Class Inputs</code>.</span></div>
+  </section>
+
+  <hr class="divider" />
+
+  <section class="sect" id="summary">
+    <h2 class="sect-title">Putting it together — every new piece, with its real location</h2>
+    <div class="tblscroll">
+      <table class="mock" style="min-width:0;">
+        <thead><tr><th>What</th><th>Where</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td class="lbl">Item ID (building's own)</td><td>Location Inputs!row 5</td><td>Already built, confirmed live</td></tr>
+          <tr><td class="lbl">Item ID (Special Class item's own)</td><td>Special Class Inputs!row 5</td><td>Already built, confirmed live</td></tr>
+          <tr><td class="lbl">Included in Building?</td><td>Special Class Inputs!row 21 (new)</td><td>Not yet built</td></tr>
+          <tr><td class="lbl">Linked Building Item ID</td><td>Special Class Inputs!row 22 (new)</td><td>Not yet built</td></tr>
+          <tr><td class="lbl">Check 1 &mdash; ID resolves?</td><td>Special Class Inputs!row 23 (new)</td><td>Not yet built</td></tr>
+          <tr><td class="lbl">Sum of linked items, per building</td><td>CoreScratchpad!row 137b (new)</td><td>Not yet built</td></tr>
+          <tr><td class="lbl">TOTAL LIMIT, revised</td><td>CoreScratchpad!row 137</td><td>Exists, needs its 3rd term added</td></tr>
+          <tr><td class="lbl">Check 2 &mdash; no duplicate IDs</td><td>a summary/dashboard cell</td><td>Not yet built</td></tr>
+          <tr><td class="lbl">Check 3 &mdash; grand-total reconciliation</td><td>a summary/dashboard cell</td><td>Not yet built</td></tr>
+          <tr><td class="lbl">DeductibleByLocationFactor</td><td>Special Class Worksheet!row 10</td><td>Blank, confirmed on this read</td></tr>
+          <tr><td class="lbl">DeductibleFactorBasicGroupI</td><td>Special Class Worksheet!row 11</td><td>Blank, confirmed on this read &mdash; needs row 137's revised total to be correct first</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <footer class="closing">
+    <h2>Remaining steps</h2>
+    <p class="note-foot">Reviewed against <code>CFRater1.01.xlsb</code> read-only, 2026-09-14 — no writes, no COM,
+      nothing entered. Next: confirm the exact free row numbers on <code>Special Class Inputs</code> and
+      <code>CoreScratchpad</code> before building (rows 21/22/23 and 137b above are the first available slots based
+      on this read, but re-check immediately before building in case the file has changed again). Decide whether
+      Check 1's <code>FALSE</code> should also block that item's premium from computing, or just warn. Nothing gets
+      built into the live workbook until you say go.</p>
+  </footer>
+
+</div>

@@ -1,0 +1,238 @@
+<title>How Special Class Special Form Rating Works</title>
+<meta charset="utf-8">
+<style>
+  body { font-family: Georgia, "Times New Roman", serif; max-width: 980px; margin: 0 auto; padding: 32px 24px 80px; line-height: 1.55; color: #1c2733; background: #fff; }
+  @media (prefers-color-scheme: dark) {
+    body { background: #14181d; color: #dfe4e9; }
+    a { color: #7fb6b8; }
+    table, th, td { border-color: #3a4048 !important; }
+    thead th { background: #24313a !important; color: #eef4f3 !important; }
+    code { background: #262c33 !important; color: #dfe4e9; }
+    pre { background: #262c33 !important; border-color: #3a4048 !important; color: #dfe4e9; }
+    .note { background: #2c2a1c !important; color: #e0c064 !important; }
+    .note.good { background: #1b3226 !important; color: #63c090 !important; }
+    .note.warn2 { background: #2a1f2c !important; color: #d69ad0 !important; }
+  }
+  h1 { font-size: 26px; font-weight: 400; margin-bottom: 4px; }
+  h2 { font-size: 19px; font-weight: 700; margin-top: 42px; border-bottom: 2px solid #1e3a45; padding-bottom: 4px; }
+  h3 { font-size: 15px; font-weight: 700; margin-top: 26px; }
+  .meta { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13px; color: #55606b; margin: 6px 0 4px; }
+  code { font-family: ui-monospace, Consolas, monospace; font-size: 0.92em; background: #eef1f4; padding: 1px 5px; border-radius: 3px; }
+  table { border-collapse: collapse; width: 100%; margin: 14px 0 22px; font-size: 14px; }
+  th, td { border: 1px solid #d7dce2; padding: 8px 10px; text-align: left; vertical-align: top; }
+  thead th { background: #1e3a45; color: #eef4f3; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 12px; text-transform: uppercase; letter-spacing: 0.03em; }
+  table.grid td:nth-child(1) { font-family: ui-monospace, Consolas, monospace; font-size: 12px; text-align: center; }
+  .note { background: #f7ddd4; color: #a53d26; padding: 12px 16px; border-radius: 6px; margin: 16px 0; font-size: 14px; }
+  .note.warn2 { background: #f2e6c4; color: #a67c1e; }
+  .note.good { background: #dcefe4; color: #2f7d5a; }
+  .note b { font-weight: 700; }
+  pre { background: #eef1f4; border: 1px solid #d7dce2; border-radius: 6px; padding: 14px 16px; overflow-x: auto; font-family: ui-monospace, Consolas, monospace; font-size: 13px; }
+  ol, ul { padding-left: 22px; }
+  hr { border: none; border-top: 1px solid #d7dce2; margin: 40px 0; }
+</style>
+
+<h1>How Special Class Special Form Rating Works</h1>
+<p class="meta"><b>Written:</b> 2026-09-15. <b>Source:</b> <code>CommercialPropertySpecialClassRules.Rule.xml</code>
+and <code>CommercialPropertySpecialClassSpecialCoverageRules.Rule.xml</code>, read directly this session, plus a
+full 46-state sweep of both the rate tables <b>and</b> the state rule files. Companion to the Basic Group I,
+Basic Group II and Broad pages &mdash; this is Special Class's own Special form, standalone.</p>
+<div class="note good"><b>Status: traced, not built.</b> On <code>Special Class Worksheet</code>, Basic Group I
+and Basic Group II are complete through premium and Broad runs to <code>DeductibleFactorBroad</code>.
+<b>Special has no rows at all.</b></div>
+
+<h2>1. What's different about Special Class's Special form, in plain English</h2>
+<p>Nine steps &mdash; longer than Broad's five, shorter than Basic Group II's ten. Two things make it
+genuinely different from every other form in this coverage.</p>
+<p><b>First, there is no countrywide rate.</b> The <code>SpecialBuildingRate</code> table ships with a header
+row and <b>no CW data row at all</b>. Every other base rate in this coverage has a countrywide fallback;
+this one does not. If a state has not filed its own rate, the lookup returns nothing and the Special premium
+is zero. 45 of the 46 states do file one, and they vary enormously &mdash; <b>0.023 to 0.108</b>, roughly a
+five-fold spread. This is the most state-dependent number in the whole coverage.</p>
+<p><b>Second, theft is a dimension of its own.</b> Special form is the only Special Class form where theft
+appears at all. It shows up twice: as a rate credit when theft is excluded, and as a second, separate
+deductible that can differ from the main one. Basic Group I, Basic Group II and Broad have no theft concept
+whatsoever.</p>
+<div class="note warn2"><b>Consequence worth understanding:</b> because there is no CW row, a missing state
+filing produces a <b>silent zero premium</b>, not a fallback rate. That is a different failure mode from every
+other step in this coverage, where a miss lands on a countrywide default.</div>
+
+<h2>2. The rating chain, step by step</h2>
+<table class="grid">
+<thead><tr><th>#</th><th>Step</th><th>What it does</th></tr></thead>
+<tbody>
+<tr><td>1</td><td><code>SpecialTheftExclusionIndicator</code></td>
+  <td>Pure existence test: is there a <code>CommercialPropertyTheftExclusionSpecialClass</code> record on this
+  item? That record is form <b>CP 10 33 10 12</b> &mdash; Theft Exclusion, optional, attached at
+  <b>Special Class Detail</b> level, so it is per item, not per policy.</td></tr>
+<tr><td>2</td><td><code>SpecialTheftExclusionFactor</code></td>
+  <td>If <code>CauseOfLossToUse = "Special"</code> <b>and</b> the indicator is set:
+  <code>LookupSpecialBldgTheftExclusionFactor</code> (State|CW + <code>"Y"</code>). Otherwise <code>1.0</code>.
+  CW value <b>0.88</b>; 31 states file their own, mostly 0.94 or 0.91.</td></tr>
+<tr><td>3</td><td><code>SpecialBaseRate</code></td>
+  <td>Two conditions, both required: <code>CauseOfLossToUse = "Special"</code> <b>and</b>
+  <code>PolicyType = "Commercial Property Policy"</code>. If either fails, <code>0.0</code>. Otherwise
+  <code>LookupSpecialBuildingRate</code> on State|CW + <code>"Y"</code> &mdash; <b>no construction, no class,
+  no territory, no protection class</b>. One flat rate per state.</td></tr>
+<tr><td>4</td><td><code>SpecialRate</code></td>
+  <td><code>SpecialBaseRate &times; LossCostMultiplier</code>, 3 dp.</td></tr>
+<tr><td>5</td><td><code>SpecialCauseOfLossAdjustment</code></td>
+  <td><code>SpecialRate &times; SpecialTheftExclusionFactor</code>. <b>Note what is absent:</b> unlike Basic
+  Group II's COL adjustment, there is <b>no cause-of-loss gate here at all</b> &mdash; no
+  <code>"Fire"</code> test, no zeroing branch. It is a plain product.</td></tr>
+<tr><td>6</td><td><code>AdjustedSpecialRate</code></td>
+  <td><code>SpecialCauseOfLossAdjustment &times; CoinsuranceFactor</code> &mdash; the shared coinsurance result
+  the item's Basic Group I chain already computed.</td></tr>
+<tr><td>7</td><td><code>SpecialDeductibleByLocationFactor</code></td>
+  <td>Computed from the by-location record's <code>TheftDeductible</code> &rarr; <b>0.995</b> or
+  <code>1.0</code>. <b>And then never used</b> &mdash; see the callout below §3.</td></tr>
+<tr><td>8</td><td><code>DeductibleFactorSpecial</code></td>
+  <td>A three-way <code>Choose</code>, and the only place in this coverage where a <b>second</b> deductible
+  can drive the factor. Detailed in §3.</td></tr>
+<tr><td>9</td><td><code>FinalSpecialRate</code></td>
+  <td><code>AdjustedSpecialRate &times; DeductibleByLocationFactor &times; DeductibleFactorSpecial</code> &mdash;
+  reading the <b>shared</b> <code>DeductibleByLocationFactor</code> (Basic Group I's), not the
+  Special-specific one computed at step 7.</td></tr>
+</tbody>
+</table>
+
+<h2>3. The full formula, end to end</h2>
+<pre>SpecialTheftExclusionIndicator =
+    1  if a CommercialPropertyTheftExclusionSpecialClass record exists (CP 10 33)
+    0  otherwise
+
+SpecialTheftExclusionFactor =
+    LookupSpecialBldgTheftExclusionFactor(State|CW, "Y")     # CW 0.88
+        if CauseOfLossToUse = "Special" and indicator is set
+    else 1.0
+
+SpecialBaseRate =
+    LookupSpecialBuildingRate(State|CW, "Y")                 # NO CW ROW EXISTS
+        if CauseOfLossToUse = "Special" and PolicyType = "Commercial Property Policy"
+    else 0.0
+
+SpecialRate =
+    SpecialBaseRate &times; LossCostMultiplier                     (round to 3 dp)
+
+SpecialCauseOfLossAdjustment =
+    SpecialRate &times; SpecialTheftExclusionFactor
+
+AdjustedSpecialRate =
+    SpecialCauseOfLossAdjustment &times; CoinsuranceFactor         (round to 3 dp)
+
+DeductibleFactorSpecial =
+    # 1. a genuinely separate theft deductible, theft NOT excluded
+    LookupDeductibleFactor(TheftDeductible,
+                           SpecialIncludingTheftTotAmtInsuranceToUse,
+                           "Other Cause Of Loss")
+        if indicator = 0
+           and TheftDeductible is not blank, not "Not Applicable", not "250"
+           and TheftDeductible &lt;&gt; Deductible
+
+    # 2. either deductible is 250
+    elif Deductible = "250" or TheftDeductible = "250":
+        LookupDeductible250Factor("Special")                 # CW 1.10
+
+    # 3. ordinary case &mdash; main deductible
+    elif Deductible is not "250" and not blank:
+        LookupDeductibleFactor(Deductible,
+                               SpecialTotAmtInsuranceToUse,
+                               "Other Cause Of Loss")
+
+    else 0.0
+
+FinalSpecialRate =
+    AdjustedSpecialRate &times; DeductibleByLocationFactor &times; DeductibleFactorSpecial
+    (round to 3 dp)
+
+Premium (scheduled, IncludedInBlkt &lt;&gt; "Yes") =
+    round((Limit/100) &times; FinalSpecialRate &times; PackageModFactor
+          &times; MultiPremiumAndDispersionCreditFactor &times; IRPMFactor, 0)
+      &times; CyberIncidentExclusionFactorSpecial &times; CyberIncidentExclusionCOLExcptnsFactorSpecial
+
+Premium (blanket, IncludedInBlkt = "Yes", zero if BlktTotalFullValueAmount = 0) =
+    round((BlktLimit/100) &times; (FullSpecialClassValue/BlktTotalFullValueAmount) &times; BlktSpecialAvgRate
+          &times; PackageModFactor &times; MultiPremiumAndDispersionCreditFactor &times; IRPMFactor, 0)
+      &times; CyberIncidentExclusionFactorSpecial &times; CyberIncidentExclusionCOLExcptnsFactorSpecial</pre>
+
+<div class="note"><b><code>SpecialDeductibleByLocationFactor</code> is computed and never consumed.</b>
+<code>SetSpecialRatesAndFactors</code> calls it at step 7, it does its own lookup on the by-location
+<code>TheftDeductible</code>, and then <code>SetFinalSpecialRate</code> reads <code>DeductibleByLocationFactor</code>
+instead &mdash; Basic Group I's shared field. Confirmed by direct search: the name appears six times in this
+ruleset, all inside its own rule and the call to it, and <b>zero</b> times in the Special premium file. Either
+it is dead, or it is consumed by an endorsement ruleset outside this pass. Do not build it into the rate.</div>
+
+<h2>4. Premium</h2>
+<p><code>CommercialPropertySpecialClassSpecialCoverageRules.Rule.xml</code> is structurally identical to the
+other three premium files: same two branches, <code>BlktSpecialAvgRate</code> and
+<code>FinalSpecialRate</code> substituted, and the cyber pair applied outside the rounded product.
+<b>No state overrides the Special premium rule.</b></p>
+<p><b>Special is the cyber outlier.</b> Where Basic Group I, Basic Group II and Broad all share identical
+cyber values, Special does not:</p>
+<table>
+<thead><tr><th>Factor</th><th>BGI / BGII / Broad</th><th>Special</th></tr></thead>
+<tbody>
+<tr><td>CP 10 75 attached</td><td>0.995</td><td><b>0.995</b> (same)</td></tr>
+<tr><td>CP 10 76 &mdash; Full Limit, no aggregate</td><td>1.000</td><td><b>0.998</b></td></tr>
+<tr><td>CP 10 76 &mdash; Full Limit, aggregate</td><td>1.000</td><td><b>0.997</b></td></tr>
+<tr><td>CP 10 76 &mdash; Sublimit, no aggregate</td><td>0.998</td><td><b>0.996</b></td></tr>
+<tr><td>CP 10 76 &mdash; Sublimit, aggregate</td><td>0.997</td><td><b>0.996</b></td></tr>
+</tbody></table>
+<p>Special is the only form where CP 10 76 gives a credit even at full limit. <b>Do not point Special's
+premium cells at the cells the other three forms share.</b> New York overrides both cyber rules for Special
+the same way it does for the other forms &mdash; CP 10 75 credit killed, CP 10 76 becomes a flat 1.005
+surcharge.</p>
+
+<h2>5. What's shared vs. genuinely Special-form-specific</h2>
+<table>
+<thead><tr><th>Piece</th><th>Status</th><th>Note</th></tr></thead>
+<tbody>
+<tr><td><code>SpecialBuildingRate</code></td><td>Shared table, own key</td><td>Building's Special form reads the same table. <b>No CW row exists</b>, so the two-pass state/CW fallback has nothing to fall back to.</td></tr>
+<tr><td><code>SpecialBldgTheftExclusionFactor</code></td><td>Shared table</td><td>CW 0.88. 31 states file their own (0.94 &times;15, 0.91 &times;14, 0.88 &times;2); 15 fall through to CW.</td></tr>
+<tr><td><code>CoinsuranceFactor</code></td><td>Fully shared</td><td>Basic Group I's result, reused. All the state coinsurance variations documented for Basic Group I flow straight through.</td></tr>
+<tr><td><code>DeductibleByLocationFactor</code></td><td>Fully shared</td><td>Basic Group I's, CW 0.995, no state deviates on value.</td></tr>
+<tr><td><code>DeductibleFactor</code>, cause-of-loss key</td><td>Shared with <b>Broad</b></td><td>Both pass <code>"Other Cause Of Loss"</code>. So the extraction already done for Broad (<code>SpecialClass_Broad_DeductibleFactors.xlsx</code>) <b>covers Special too</b> &mdash; no re-pull needed.</td></tr>
+<tr><td><code>Deductible250Factor</code></td><td>Shared table, own key</td><td>Special passes <code>"Special"</code> &rarr; CW <b>1.10</b>, not Broad's and Basic's 1.05.</td></tr>
+<tr><td>Theft exclusion &amp; theft deductible</td><td><b>Special-form only</b></td><td>No other Special Class form has any theft dimension.</td></tr>
+<tr><td>Cause-of-loss zeroing gate</td><td><b>Absent</b></td><td>Basic Group II zeroes on <code>"Fire"</code>/<code>"Fire and Vandalism"</code>. Special's COL adjustment has no such test.</td></tr>
+</tbody></table>
+
+<h2>6. State deviations &mdash; swept, not assumed</h2>
+<p>Rate tables and all 46 state <b>rule</b> files compared against countrywide.</p>
+<table>
+<thead><tr><th>State(s)</th><th>What deviates</th><th>Effect</th></tr></thead>
+<tbody>
+<tr><td><b>45 of 46</b></td><td><code>SpecialBuildingRate</code></td><td>Every state except Florida files its own base rate. Range <b>0.023 &ndash; 0.108</b>, median 0.052. There is no countrywide value to compare against &mdash; the state filing <i>is</i> the rate.</td></tr>
+<tr><td><b>31 of 46</b></td><td><code>SpecialBldgTheftExclusionFactor</code></td><td>Own theft credit: 0.94 (15 states), 0.91 (14), 0.88 (2). The other 15 take CW's 0.88.</td></tr>
+<tr><td><b>FL</b></td><td><code>LookupSpecialBuildingRate</code> rule</td><td>Reads an entirely different table, <code>SpecialBuildingRateNonResidential</code> = <b>0.035</b>. Florida also ships <code>SpecialBuildingRateResidential</code> (0.030), but the Special Class rule <b>never reads it</b> &mdash; Special Class in Florida always rates non-residential.</td></tr>
+<tr><td><b>FL</b></td><td><code>SetSpecialDeductibleByLocationFactor</code>, <code>SetFinalSpecialRate</code></td><td>The by-location rule is blanked to an empty sequence, and <code>FinalSpecialRate</code> drops the term: <code>AdjustedSpecialRate &times; DeductibleFactorSpecial</code>. Same pattern Florida applies to Basic Group I and Broad. <b>No by-location credit on Special in Florida.</b></td></tr>
+<tr><td><b>AL, KS, RI</b></td><td><code>SetSpecialRate</code> rule</td><td>Adds a third multiplier: <code>&times; PublicInstitutionalPlanFactor</code> &mdash; <b>0.85</b> in all three, when the public/institutional plan applies and coinsurance is 90% or 100%.</td></tr>
+<tr><td><b>KS</b></td><td><code>SetSpecialBaseRate</code> rule</td><td>Drops the <code>PolicyType</code> half of the gate; the test is just <code>CauseOfLossToUse = "Special"</code>. Redundant in practice &mdash; KS does not offer Standard Property Policy for Special Class.</td></tr>
+<tr><td>All others</td><td>&mdash;</td><td>Countrywide rules throughout.</td></tr>
+</tbody></table>
+
+<h2>7. What a build would need</h2>
+<ul>
+<li><b>One new table:</b> <code>SpecialBuildingRate</code>, 46 states, one rate each &mdash; plus Florida's
+<code>SpecialBuildingRateNonResidential</code> as a 46th row rather than a separate mechanism.</li>
+<li><b>One new small table:</b> <code>SpecialBldgTheftExclusionFactor</code>, 46 states.</li>
+<li><b>One new input:</b> a Theft Exclusion (CP 10 33) yes/no per item, and a Theft Deductible dropdown
+separate from the main deductible.</li>
+<li><b>Two new premium cells:</b> Special's own cyber pair &mdash; <b>not</b> the ones shared by the other
+three forms.</li>
+<li><b>No new deductible pull:</b> Special shares Broad's <code>"Other Cause Of Loss"</code> column, already
+extracted.</li>
+<li><b>Reuse as-is:</b> coinsurance, by-location, loss cost multiplier &mdash; all already built for Basic
+Group I.</li>
+</ul>
+
+<hr>
+
+<h2>Remaining steps</h2>
+<ol>
+<li>Build the two new tables (<code>SpecialBuildingRate</code>, <code>SpecialBldgTheftExclusionFactor</code>)
+for all 46 states.</li>
+<li>Resolve whether <code>SpecialDeductibleByLocationFactor</code> is consumed by any endorsement ruleset
+outside this pass, or is genuinely dead.</li>
+<li>Broad still stops at <code>DeductibleFactorBroad</code> on the worksheet; Special has no rows at all.</li>
+<li>Nothing gets built into the live workbook until you say go.</li>
+</ol>

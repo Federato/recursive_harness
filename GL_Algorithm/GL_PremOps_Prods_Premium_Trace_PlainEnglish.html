@@ -1,0 +1,70 @@
+<title>How the two main General Liability premiums are built — in plain English</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+  body { font-family: Georgia, "Times New Roman", serif; max-width: 640px; margin: 0 auto;
+         padding: 48px 24px 90px; line-height: 1.7; color: #1c2733; background: #fff;
+         font-size: 17px; }
+  @media (prefers-color-scheme: dark) { body { background: #14181d; color: #dfe4e9; } }
+  h1 { font-size: 24px; font-weight: 400; line-height: 1.3; margin-bottom: 6px; }
+  .meta { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 14px;
+          color: #55606b; margin: 0 0 34px; }
+  @media (prefers-color-scheme: dark) { .meta { color: #93a0ad; } }
+  h2 { font-size: 18px; font-weight: 700; margin: 34px 0 8px; }
+  p { margin: 0 0 18px; }
+  b { font-weight: 700; }
+</style>
+
+<h1>How the two main General Liability premiums are built</h1>
+<p class="meta">Premises/Operations and Products/Completed Operations, in plain English.
+Written 17 September 2026. The detailed version is <i>GL_PremOps_Prods_Premium_Trace.md</i>.</p>
+
+<p>These two coverages are the core of a General Liability policy. In ISO's rules they are
+built by the same program twice, with different field names swapped in. Whatever is true of
+one is true of the other.</p>
+
+<h2>Four steps from a filed rate to a dollar amount</h2>
+
+<p>It starts with ISO's <b>loss cost</b> — the raw cost of claims for that class of business.
+The carrier's own multiplier is applied to turn it into a <b>base rate</b>. That is the only
+place the carrier's pricing enters.</p>
+
+<p>The base rate is then adjusted for everything specific to the account: the limits bought,
+the size of the risk, the package discount, the experience modification, the expense
+modification. That produces the <b>final rate</b>.</p>
+
+<p>The final rate is multiplied by the <b>exposure</b> — the payroll, sales, floor area or
+whatever that class is rated on — and rounded to whole dollars. <b>That is the premium.</b></p>
+
+<h2>A second number that is not money</h2>
+
+<p>Alongside the premium, each coverage also works out a <b>basic limits premium</b>. It uses
+the same base rate and exposure, but deliberately leaves out the limits charge and the
+account's modifications.</p>
+
+<p>This second number travels all the way up to policy level and is stored there. <b>It is
+never added to what the customer pays.</b> It exists for statistical and regulatory reporting —
+it answers "what would this have cost at standard limits", which insurers must report.</p>
+
+<p>This is worth knowing because anyone reading the data will find two premium figures per
+coverage and has to know which one is the bill.</p>
+
+<h2>How the premium reaches the account total</h2>
+
+<p>The premium is added up three times: first with everything else on that classification —
+terrorism, liquor, pollution, cyber and a dozen more — then with the other classifications at
+that location, then with every other location and policy-level charge. That final figure is
+the account premium.</p>
+
+<p>One rule governs whether a coverage joins in at all: it must be marked as having produced a
+premium, <i>and</i> that premium must not be zero. A coverage priced at zero and a coverage
+that was never bought both add nothing, and look identical in the total.</p>
+
+<h2>Two things that surprise people</h2>
+
+<p><b>A tiny risk still costs a dollar.</b> If the arithmetic produces zero but there is real
+exposure, the rules force the premium to $1. Zero is reserved for "not covered".</p>
+
+<p><b>Minimum premiums are looked up but never applied.</b> Both coverages find their minimum
+premium and then do nothing with it. If a minimum is meant to be enforced on these two
+coverages, it is not in ISO's filed rules — somebody else has to do it.</p>

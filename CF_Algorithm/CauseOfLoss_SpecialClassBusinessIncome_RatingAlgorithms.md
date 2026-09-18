@@ -670,7 +670,7 @@ multi-unit-blanket-rated submissions.
 | COL adjustment step | yes — `x VandalismExclFactor` only | yes (wind/hail rebuild, no BuildersRisk/StdPropPol factor) | none | yes (theft only) | yes (gate-only: 0 or straight copy) |
 | Shared coinsurance `Factor` applied | **yes** | **yes** | **no** | **no** | no (own `EQFactor` instead) |
 | Construction dependency | via Special Class item's rate (indirect) | via Special Class item's symbol (indirect) | **none — hard-coded "Frame"** | **none — hard-coded "Frame"** | via Special Class item's rate (indirect) |
-| ApartmentCondoIndicator dependency | n/a | n/a | n/a | **theft-factor lookup yes; base-rate lookup no (hard-coded)** | n/a |
+| ApartmentCondoIndicator dependency | n/a | n/a | n/a | **neither — BOTH lookups are hard-coded** (base rate to "Other than Apartments and Condominiums", theft factor to "No"). Corrected 2026-09-18, C7-20 | n/a |
 | Deductible factor | none | none | none | none | flat-dollar EQ deductible/sub-limit endorsements only |
 | Final-rate formula | COLAdj x Factor | COLAdj x Factor | straight copy of `BroadRate` | straight copy of `SpecialCauseOfLossAdjustment` | COLAdj x EQFactor |
 | Standalone (non-Agreed-Value) premium coverage file | yes | yes | yes | yes | **no — Agreed Value only** |
@@ -777,16 +777,23 @@ multi-unit-blanket-rated submissions.
 
 ## Open questions
 
-- **`SpecialFormIncldgTheftTimeElementBaseRate`'s hard-coded "Other than Apartments and Condominiums" key**
-  (Special form, `SetSpecialBaseRate`, line 3312-3390; `LookupSpecialFormIncldgTheftTimeElementBaseRate`,
-  line 11711-11730): this permanently blocks the "Apartments and Condominiums" rows of the shared base-rate
-  table from ever being selected by this coverage group, even when a theft-exclusion factor lookup two steps
-  earlier (`SetSpecialTheftExclusionFactor`) still varies by `ApartmentCondoIndicator`. Whether this is an
-  intentional ISO simplification (Special Class scheduled property arguably has no apartment/condo occupancy
-  concept) or an authoring inconsistency within the ERC package could not be resolved from the rules file
-  alone.
-- **`SpecialLeaseHoldTimeElementTheftExclusionFactor` CW values (0.96 / 0.86) were not cross-checked against
-  the value(s) the plain Business Income pass would read from the same-named table** — the plain-BI doc notes
+- ~~**`SpecialFormIncldgTheftTimeElementBaseRate`'s hard-coded "Other than Apartments and Condominiums"
+  key** ... even when a theft-exclusion factor lookup two steps earlier still varies by
+  `ApartmentCondoIndicator`~~ — **ANSWERED and half WRONG, 2026-09-18 by chunk 7 task C7-20.**
+  The base-rate pin is real: the "Apartments and Condominiums" rows (0.029 / 0.016) are unreachable from
+  this coverage group, and the literals census confirms the pin applies *"from the pinned site only — the
+  same column is also read live elsewhere"*, which is plain Business Income reading the same physical table.
+  **But the theft-exclusion factor does NOT still vary by `ApartmentCondoIndicator`.**
+  `LookupSpecialTheftExclusionFactor` keys that column on a hard-coded `"No"`, so
+  `SpecialLeaseHoldTimeElementTheftExclusionFactor`'s `Yes` row (0.96) is unreachable too. **Both
+  dimensions are dead, not one** — proven by running it: moving the indicator on the record, and the parent's
+  class code to an apartments class, moves neither the theft factor (0.86 throughout) nor the base rate
+  (0.047 throughout). There is no authoring inconsistency here to explain; the apartment concept is switched
+  off in this group at **both** sites. See `docs/CF-CHUNK7-PER-FORM.md`.
+- **ANSWERED 2026-09-18 (C7-20/C7-28):** the table files exactly two countrywide rows — `Yes` 0.96 and
+  `No` 0.86 — and this group can reach only the `No` row. ~~**`SpecialLeaseHoldTimeElementTheftExclusionFactor`
+  CW values (0.96 / 0.86) were not cross-checked against the value(s) the plain Business Income pass would
+  read from the same-named table**~~ — the plain-BI doc notes
   "3 total lines including header: 2 data rows" for this table without quoting the values. If the plain-BI
   and Special-Class-BI passes are reading the exact same physical CSV file (same table name, same directory),
   the values should match; this was not independently re-verified against the plain-BI doc's own source read.

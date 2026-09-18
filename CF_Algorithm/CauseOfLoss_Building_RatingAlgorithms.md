@@ -135,6 +135,10 @@ BasicGroupICauseOfLossAdjustment =
   x StdPropPolGroupIFactor
 ```
 
+`SprinklerLeakageExclNonSprinkleredBldgRate` is itself `round(SprinklerLeakageExclNonSprinkleredRate x LossCostMultiplier, 3)` — same pattern as `VacantBuildingRate` two steps up (a raw filed loss cost, scaled by LCM once, rounded to 3dp, before combining). Worth flagging: at LCM = 1.0 that rounding step inflates the filed CW rate (0.0006) to 0.001 — a ~67% jump, purely from a sub-thousandth rate crossing the 3-decimal rounding boundary, not a data error. `SprinklerLeakageExclSprinkleredFactor` and `SprinklerLeakageExclNonSprinkleredBldgRate` are mutually exclusive in practice — each only resolves nonzero/non-1.0 for the opposite `SprinklerSystem` selection, so exactly one of the two terms is ever actually "live" for a given risk; the other sits at its no-op default (0.0 / 1.0).
+
+**`SprinklerLeakageExclSprinkleredFactor` can never actually be live for a Class-rated building.** Checked the `SprinklerSystem` field's own domain list (`DomainSprinklerSystemBldg`) directly: under `RatingType = "Class"` the only options are `None` and `Sprinklered Building, but Not Rated as Sprinklered` — the two "Rated as Sprinklered; <50%/>50%" options that trigger this factor only exist under `RatingType = "Specific"` or `"Tentative"`. Confirmed this isn't specific to Building — a second, broader domain table (`DomainSprinklerSystemOccupClass`, covering every CovForm variant: Building and PP, Condo, Legal Liability, SPP, Tobacco Warehouse) shows the identical restriction across all of them. So this factor only ever multiplies to something other than `1.0` on a Specific/Tentative-rated risk — not a gap in any pull, a structural fact about which rating types even offer the triggering input.
+
 ### Step 4 — Coinsurance and limit of insurance
 `SetCoinsuranceFactor` (line 7717) and `SetBasicGroupILOIFactor` (line 7907) feed `SetAdjustedBasicGroupIRate` (line 8104):
 
@@ -343,6 +347,23 @@ BasicGroupIICauseOfLossAdjustment =
 
 Note this second form drops `BasicGroupIINumericValue` and `BCEGFactor` entirely — consistent with step 1, which already forces the numeric value to 1.0 when the exclusion is present.
 
+**`CauseOfLossToUse`'s own valid options are a cascaded domain (confirmed 2026-09-08)**, keyed jointly on
+`PolicyType` (set once for the whole policy) and `CovType` (set per building): a Commercial Property
+Policy offers `Basic`/`Broad`/`Special` (+ blanket where applicable); a Standard Property Policy offers
+eight fire-combination options instead. The fire-only gate above matches only 4 of SPP's 8 options — the
+4 *without* "Allied Lines." The other 4 (`Fire and Allied Lines`, `Fire, Vandalism and Allied Lines`,
+`Fire, Sprinkler Leakage and Allied Lines`, `Fire, Vandalism, Sprinkler Leakage and Allied Lines`)
+correctly fall through to one of the two real branches instead of zeroing out, consistent with Allied
+Lines including windstorm/hail under ISO's standard definition.
+
+**The windstorm/hail-exclusion branch is unresolvable in 8 states.** `AR`, `DC`, `FL`, `KS`, `NY`, `PR`,
+`RI`, and `TX` each file zero rows for both `LowestBasicGroupIIRate` *and* `WindstormOrHailExclFactor` —
+the two tables this branch depends on, missing together in the same 8 states, not independently. This
+reads as a deliberate filing choice (plausibly these states don't permit excluding wind/hail from a CPP
+at all) rather than a coincidence, though the regulatory reason itself hasn't been confirmed against the
+manual text for these specific states. See `Excel_Rater_BGII_WindHailExclusionEligibility_Walkthrough.html`
+for the rater-side mechanism this implies (a state-eligibility gate before the branch is ever reachable).
+
 ### Step 6 — Coinsurance
 `SetBasicGroupIICoinsuranceFactor` (line 8540)
 
@@ -546,7 +567,9 @@ else:
     DeductibleFactorBroad = 0.0
 ```
 
-Note the `Otherwise` branch yields **0.0**, not 1.0 — a blank `Deductible` zeroes the Broad rate entirely. Special's equivalent fall-through behaves differently, and it uses `SpecialTotAmtInsurance` where Broad uses the plain `TotAmtInsurance`.
+Note the `Otherwise` branch yields **0.0**, not 1.0 — a blank `Deductible` zeroes the Broad rate entirely. ~~Special's equivalent fall-through behaves differently~~ — **corrected 2026-09-18: Special's fall-through is identical**, an `Otherwise` worth `0.0`. What does differ is the lookup key: Special uses `SpecialTotAmtInsurance` where Broad uses the plain `TotAmtInsurance`, and Special has a theft dimension Broad has none of.
+
+`TotAmtInsurance` (`SetTotAmtInsurance`, `CommercialPropertyStructure` level) = `StructureLimitToUse + OccupancyTotAmtInsuranceSum + SpecialClassRiskTotAmtInsurance` — the Building's own limit, plus every Contents/Personal Property item's limit rolled up from `CommercialPropertyOccupClassTable`, plus Special Class Risk amounts, at that location. `SpecialTotAmtInsurance` (`SetSpecialTotAmtInsurance`) is the same shape with the Special-scoped rollup fields. **Not** the Building's own limit alone — every Excel_Rater_*.md build doc in this project previously simplified this to `Bldg_Limit`, which was wrong; corrected across those docs, backlogged as a live-rater fix until Contents is built (see project memory `project_deductiblefactor-uses-location-total-not-building-limit`).
 
 ### Step 6 — Final rate
 `SetFinalBroadRate` (line 9506)
@@ -757,7 +780,7 @@ DeductibleFactorSpecial = LookupDeductibleFactor(
     causeOfLossType = "Other Cause Of Loss")
 ```
 
-**Branch 2 — flat $250.** When `Deductible = "250"` and `TheftDeductible = "250"`:
+**Branch 2 — flat $250.** When `Deductible = "250"` **or** `TheftDeductible = "250"` — the filed test is an `<rul:Or>`, and this page previously read it as an `And` (corrected 2026-09-18, chunk 3 task 3):
 
 ```
 DeductibleFactorSpecial = LookupDeductible250Factor("Special", ...)
@@ -773,6 +796,8 @@ DeductibleFactorSpecial = LookupDeductibleFactor(
     amtInsurance    = SpecialTotAmtInsurance,
     causeOfLossType = "Other Cause Of Loss")
 ```
+
+**Branch 5 — `Otherwise` → `0.0`.** Added 2026-09-18: this page previously listed four branches and stated that Special's fall-through "behaves differently" from Broad's. **It does not.** `SetDeductibleFactorSpecial` ends in an `<rul:Otherwise>` assigning `0.0`, identical in shape to `SetDeductibleFactorBroad`'s, so a blank `Deductible` zeroes the Special rate exactly as it zeroes the Broad one. The error was caught by chunk 3's zero cases (`scripts/cf/16_chunk3_zero_cases.py`), which predicted a null premium from this page and got a zero from the engine; the filed XML settles it for the engine.
 
 All assignments guarded by `IsNull` on `DeductibleFactorSpecial`. The key difference from Groups I and II: the deductible factor can be driven by the **theft** deductible and a **theft-inclusive** amount-of-insurance band.
 

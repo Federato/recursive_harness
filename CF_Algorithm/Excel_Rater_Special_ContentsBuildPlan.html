@@ -1,0 +1,266 @@
+<title>Special — Contents Build Plan</title>
+<style>
+  :root {
+    --bg: #eef1f4; --paper: #ffffff; --ink: #1c2733; --ink-soft: #55606b; --ink-faint: #8b95a1;
+    --grid-line: #d7dce2; --header-fill: #e4e8ed; --header-fill-strong: #1e3a45; --header-text-strong: #eef4f3;
+    --accent: #1e3a45; --accent-soft: #cfe0e0; --accent-warm: #b96a2c; --accent-warm-soft: #f3e2cf;
+    --good: #2f7d5a; --good-soft: #dcefe4; --warn: #a53d26; --warn-soft: #f7ddd4;
+    --shadow: 0 1px 2px rgba(28,39,51,0.06), 0 8px 24px rgba(28,39,51,0.07);
+    --font-display: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+    --font-body: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+    --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, "Liberation Mono", monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #10151b; --paper: #161d25; --ink: #e7ecf1; --ink-soft: #a3aebb; --ink-faint: #6d7885;
+      --grid-line: #2b3742; --header-fill: #1b242d; --header-fill-strong: #21504f; --header-text-strong: #eaf3f1;
+      --accent: #59a9ac; --accent-soft: #1d3535; --accent-warm: #dd9a5c; --accent-warm-soft: #372a1c;
+      --good: #63c090; --good-soft: #1b3226; --warn: #e0806a; --warn-soft: #3a2019;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 28px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #10151b; --paper: #161d25; --ink: #e7ecf1; --ink-soft: #a3aebb; --ink-faint: #6d7885;
+    --grid-line: #2b3742; --header-fill: #1b242d; --header-fill-strong: #21504f; --header-text-strong: #eaf3f1;
+    --accent: #59a9ac; --accent-soft: #1d3535; --accent-warm: #dd9a5c; --accent-warm-soft: #372a1c;
+    --good: #63c090; --good-soft: #1b3226; --warn: #e0806a; --warn-soft: #3a2019;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 28px rgba(0,0,0,0.35);
+  }
+  :root[data-theme="light"] {
+    --bg: #eef1f4; --paper: #ffffff; --ink: #1c2733; --ink-soft: #55606b; --ink-faint: #8b95a1;
+    --grid-line: #d7dce2; --header-fill: #e4e8ed; --header-fill-strong: #1e3a45; --header-text-strong: #eef4f3;
+    --accent: #1e3a45; --accent-soft: #cfe0e0; --accent-warm: #b96a2c; --accent-warm-soft: #f3e2cf;
+    --good: #2f7d5a; --good-soft: #dcefe4; --warn: #a53d26; --warn-soft: #f7ddd4;
+    --shadow: 0 1px 2px rgba(28,39,51,0.06), 0 8px 24px rgba(28,39,51,0.07);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); line-height: 1.6; overflow-x: hidden; }
+  a { color: var(--accent); }
+  a:focus-visible, button:focus-visible, .jump:focus-visible { outline: 2px solid var(--accent-warm); outline-offset: 2px; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 24px 96px; }
+
+  header.masthead { padding: 56px 24px 28px; max-width: 980px; margin: 0 auto; }
+  .eyebrow { font-family: var(--font-ui); font-size: 12px; letter-spacing: 0.11em; text-transform: uppercase; color: var(--accent-warm); font-weight: 600; margin: 0 0 10px; }
+  h1.title { font-family: var(--font-display); font-size: clamp(28px, 4vw, 40px); font-weight: 400; margin: 0 0 14px; text-wrap: balance; color: var(--ink); }
+  .dek { font-size: 17px; color: var(--ink-soft); max-width: 70ch; margin: 0 0 6px; }
+  .dek + .dek { margin-top: 10px; }
+  .dek code { font-family: var(--font-mono); font-size: 14.5px; background: var(--header-fill); padding: 1px 5px; border-radius: 3px; }
+
+  nav.jumpbar { position: sticky; top: 0; z-index: 20; background: var(--header-fill-strong); border-bottom: 1px solid var(--grid-line); }
+  .jumpbar-inner { max-width: 980px; margin: 0 auto; display: flex; align-items: stretch; overflow-x: auto; scrollbar-width: thin; }
+  .jumpbar-label { font-family: var(--font-ui); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--header-text-strong); opacity: 0.6; align-self: center; padding: 0 12px 0 20px; white-space: nowrap; flex: none; }
+  .jump { font-family: var(--font-ui); font-size: 13px; color: var(--header-text-strong); text-decoration: none; white-space: nowrap; padding: 13px 16px; border-bottom: 3px solid transparent; opacity: 0.72; flex: none; }
+  .jump:hover { opacity: 1; }
+
+  section.sect { padding-top: 56px; scroll-margin-top: 56px; }
+  .sect-heading { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 6px; }
+  .sect-index { font-family: var(--font-mono); font-size: 13px; color: var(--accent-warm); font-variant-numeric: tabular-nums; }
+  h2.sect-title { font-family: var(--font-display); font-size: 25px; font-weight: 400; margin: 0; color: var(--ink); }
+  .sect-role { font-family: var(--font-ui); font-size: 13px; color: var(--ink-soft); margin: 0 0 20px; }
+
+  table.scope-table { border-collapse: collapse; width: 100%; font-size: 14px; margin: 10px 0 4px; }
+  table.scope-table th, table.scope-table td { border: 1px solid var(--grid-line); padding: 8px 11px; text-align: left; vertical-align: top; }
+  table.scope-table th { background: var(--header-fill); font-family: var(--font-ui); font-size: 12px; font-weight: 700; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.02em; }
+  table.scope-table td code { font-family: var(--font-mono); font-size: 12.5px; background: var(--header-fill); padding: 1px 4px; border-radius: 3px; }
+  .status-ok { color: var(--good); font-weight: 700; }
+  .status-partial { color: var(--accent-warm); font-weight: 700; }
+  .status-none { color: var(--warn); font-weight: 700; }
+  .status-na { color: var(--ink-faint); }
+  .tblscroll { overflow-x: auto; }
+
+  .callout { display: flex; gap: 10px; padding: 12px 14px; border-radius: 5px; max-width: 74ch; font-size: 14.5px; margin-top: 14px; }
+  .callout.warn { background: var(--warn-soft); color: var(--warn); }
+  .callout.warm { background: var(--accent-warm-soft); color: var(--accent-warm); }
+  .callout.good { background: var(--good-soft); color: var(--good); }
+  .callout b { font-weight: 700; }
+  .callout-mark { flex: none; font-family: var(--font-ui); font-weight: 700; }
+
+  .formula-panel { background: var(--header-fill-strong); color: var(--header-text-strong); border-radius: 6px; padding: 16px 18px; font-family: var(--font-mono); font-size: 12px; line-height: 1.75; overflow-x: auto; margin: 10px 0; }
+  .formula-panel pre { margin: 0; white-space: pre; }
+  .formula-panel .kw { color: var(--accent-warm); font-weight: 700; }
+  .formula-panel .fn { color: #a9d6d8; }
+  .formula-panel .cm { opacity: 0.55; font-style: italic; }
+
+  .filecard { background: var(--paper); border: 1px solid var(--grid-line); border-radius: 6px; padding: 14px 16px; box-shadow: var(--shadow); margin: 10px 0; max-width: 74ch; }
+  .filecard .fname { font-family: var(--font-mono); font-size: 13.5px; font-weight: 700; color: var(--accent); }
+  .filecard .fdesc { font-size: 14px; color: var(--ink-soft); margin-top: 4px; }
+
+  .featureset { background: var(--paper); border: 1px solid var(--grid-line); border-radius: 6px; padding: 16px 18px; box-shadow: var(--shadow); margin: 14px 0; }
+  .featureset .fs-letter { font-family: var(--font-mono); font-size: 13px; color: var(--accent-warm); font-weight: 700; }
+  .featureset .fs-title { font-family: var(--font-ui); font-weight: 700; font-size: 15px; margin: 2px 0 6px; }
+  .featureset .fs-buys { font-size: 14px; color: var(--ink-soft); }
+  .featureset .fs-buys b { color: var(--ink); font-weight: 700; }
+
+  hr.divider { border: none; border-top: 1px solid var(--grid-line); margin: 56px 0 0; }
+
+  footer.closing { max-width: 980px; margin: 64px auto 0; padding: 0 24px 64px; }
+  footer.closing h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0 0 12px; }
+  footer.closing ol { padding-left: 20px; display: grid; gap: 8px; max-width: 66ch; }
+  footer.closing li { font-size: 15px; color: var(--ink-soft); }
+  footer.closing p.note { margin-top: 20px; font-size: 13px; color: var(--ink-faint); font-family: var(--font-ui); }
+</style>
+
+<header class="masthead">
+  <p class="eyebrow">CF_Algorithm &middot; Commercial Property &middot; Special &middot; Contents Build Plan</p>
+  <h1 class="title">Building is done. What does that actually buy Contents?</h1>
+  <p class="dek">Building's full 9-step chain is built, live-wired, and audited (<code>Excel_Rater_Special.md</code> &sect;0). Contents is a genuinely different, longer chain (14 steps) — richer, not a rename. This page sorts Contents' needs into three honest buckets: what transfers as-is with zero new work, what needs a new data pull but no new mechanism, and what needs both. The goal is the cheapest real path through it, not a false shortcut.</p>
+</header>
+
+<nav class="jumpbar" aria-label="Jump to section">
+  <div class="jumpbar-inner">
+    <span class="jumpbar-label">Sections</span>
+    <a class="jump" href="#s1">1&nbsp;The&nbsp;honest&nbsp;split</a>
+    <a class="jump" href="#s2">2&nbsp;Direct&nbsp;reuse</a>
+    <a class="jump" href="#s3">3&nbsp;Pattern&nbsp;reuse</a>
+    <a class="jump" href="#s4">4&nbsp;New&nbsp;pulls&nbsp;needed</a>
+    <a class="jump" href="#s5">5&nbsp;Schedule&nbsp;fields</a>
+    <a class="jump" href="#s6">6&nbsp;Build&nbsp;order</a>
+    <a class="jump" href="#s7">7&nbsp;Backlog</a>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <!-- SECTION 1 -->
+  <section class="sect" id="s1">
+    <div class="sect-heading"><span class="sect-index">1</span><h2 class="sect-title">The honest split — Contents is not "Building, renamed"</h2></div>
+    <p class="sect-role">Excel_Rater_Special.md &sect;1 already says this outright: Special is the one form in this project where Building and Contents don't track each other. Building is the plainest chain built so far; Contents is the richest. Four of Contents' 12 computed steps have no Building equivalent at all.</p>
+    <div class="tblscroll">
+      <table class="scope-table">
+        <tr><th>Contents step (Calc_Contents_Special)</th><th>Building equivalent?</th><th>Bucket</th></tr>
+        <tr><td>1. DeductibleByLocationFactor</td><td>Yes — same table, same simplification</td><td><span class="status-ok">Direct reuse</span> — &sect;2</td></tr>
+        <tr><td>2. DeductibleFactor</td><td>Yes — <b>literally the same two tables</b>, same "Other Cause Of Loss" key</td><td><span class="status-ok">Direct reuse</span> — &sect;2</td></tr>
+        <tr><td>3. TheftExclusionFactor</td><td>Different table entirely (occupancy-keyed, not state-flat)</td><td><span class="status-none">New pull</span> — &sect;4</td></tr>
+        <tr><td>4. BaseRate</td><td>Different table entirely (occupancy-keyed, not state-flat)</td><td><span class="status-none">New pull</span> — &sect;4</td></tr>
+        <tr><td>5. TerrMultiplier</td><td><b>None</b> — no Building equivalent at all</td><td><span class="status-none">New pull</span> — &sect;4</td></tr>
+        <tr><td>6. Rate</td><td>Same shape, different inputs</td><td><span class="status-partial">Pattern reuse</span> — &sect;3</td></tr>
+        <tr><td>7. COLAdj</td><td>Similar shape (no roof factor, one extra Valuable-Papers gate)</td><td><span class="status-partial">Pattern reuse</span> — &sect;3</td></tr>
+        <tr><td>8. WatchmanCreditFactor</td><td><b>None</b> — Contents-only, not a rate table at all</td><td><span class="status-partial">Schedule field</span> — &sect;5</td></tr>
+        <tr><td>9. BurglaryAlarmCreditFactor</td><td><b>None</b> — Contents-only, not a rate table at all</td><td><span class="status-partial">Schedule field</span> — &sect;5</td></tr>
+        <tr><td>10. LOIFactor</td><td>Related table (<code>BroadSpecialLOIFactorPrsnlProp</code> vs. Building's <code>...Bldg</code>) — different table, same shape</td><td><span class="status-none">New pull</span> — &sect;4</td></tr>
+        <tr><td>11. AdjustedRate</td><td>Same shape, more multiplicands</td><td><span class="status-partial">Pattern reuse</span> — &sect;3</td></tr>
+        <tr><td>12. FinalRate</td><td>Same shape, no multi-res multiplier</td><td><span class="status-partial">Pattern reuse</span> — &sect;3</td></tr>
+      </table>
+    </div>
+    <div class="callout good"><span class="callout-mark">&#10003;</span><span><b>The one genuinely free win:</b> step 2, <code>DeductibleFactor</code>, needs zero new data. Special is the only Personal Property form across this entire project where <code>DeductibleFactor</code> is computed locally rather than <code>Copy</code>'d from an ancestor — and it uses the exact same two tables Building's step 8 already has built, live, and audited. See &sect;2.</span></div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- SECTION 2 -->
+  <section class="sect" id="s2">
+    <div class="sect-heading"><span class="sect-index">2</span><h2 class="sect-title">Direct reuse — zero new tables, zero new pulls</h2></div>
+    <p class="sect-role">These two steps can be wired for Contents today, off tables that already exist on <code>BldgSpecialRating</code>.</p>
+
+    <div class="filecard">
+      <div class="fname">DeductibleByLocationFactor (Contents step 1)</div>
+      <div class="fdesc">
+        Per <code>Excel_Rater_Special.md</code> &sect;5 step 1, this is <code>Copy</code>'d from an ancestor in ISO's own rules — the source doc already says to build it as "the same local logic Building's tab uses." Building's own version is itself a simplification: <code>=C19</code>, a direct copy of BGI's already-computed <code>DeductibleByLocationFactor</code> cell, since the underlying table (<code>DeductibleByLocationFactor</code>, State|CW,"Y", flat 0.995, zero state variation) and gate are the same regardless of form. Contents can copy the exact same cell — <code>=C19</code> again, or equivalently <code>=<i>[Building's Special row 89]</i></code> once that's live. No new table, no new CoreScratchpad block.
+      </div>
+    </div>
+
+    <div class="filecard">
+      <div class="fname">DeductibleFactor (Contents step 2) — the real prize</div>
+      <div class="fdesc">
+        Per <code>Excel_Rater_Special.md</code> &sect;5 step 2: "this one is genuinely computed locally in ISO's own rules, the only deductible factor of any Contents form that is." Same four-branch shape as Building's step 8, same two tables (<code>DeductibleFactor</code> "Other Cause Of Loss" slice, <code>Deductible250Factor</code> causeOfLoss="Special") — already pulled, verified, and live in <code>Special_DeductibleFactor.xlsx</code> / <code>BldgSpecialRating!W:AE</code>. The only differences: Contents keys the theft-branch gate on <code>SpecialTheftExclusionIndicator = 0</code> instead of reading <code>TheftExclusionAttached</code> directly (same underlying concept, different field), and reads <code>OccupSpecialTotAmtInsurance</code>-family limits instead of the Building-scoped ones. The lookup tables themselves don't need to move or be re-pulled — Contents' CoreScratchpad block just needs its own row offset/INDEX chain pointing at the <b>same</b> <code>W:AE</code> range, fed by Contents' own State/Deductible/Limit inputs instead of Building's.
+      </div>
+    </div>
+
+    <div class="callout warm"><span class="callout-mark">&#9888;</span><span>Both of these still carry Building's own documented simplifications forward: <code>DeductibleByLocationFactor</code> borrows BGI's <code>Per Location Deductible</code> gate rather than a true theft-specific one, and <code>DeductibleFactor</code>'s Branch 1 (separate theft deductible) can't be built until <code>TheftDeductible</code> exists as its own field on <code>Location Inputs</code> — same gap Building has, not a new one Contents introduces.</span></div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- SECTION 3 -->
+  <section class="sect" id="s3">
+    <div class="sect-heading"><span class="sect-index">3</span><h2 class="sect-title">Pattern reuse — same shape, needs its own CoreScratchpad block</h2></div>
+    <p class="sect-role">These steps don't reuse Building's actual cells (the math depends on Contents-specific inputs), but they reuse the exact row-offset/INDEX/interpolation pattern already proven correct in Building's audit — no new technique to invent.</p>
+    <div class="tblscroll">
+      <table class="scope-table">
+        <tr><th>Step</th><th>What Building already proved</th><th>What changes for Contents</th></tr>
+        <tr><td><code>Rate</code></td><td>Simple product, round 3dp</td><td><code>TerrMultiplier × (BaseRate × LCM)</code> instead of <code>BaseRate × LCM</code> alone — multiplier applies to the whole product, per &sect;5 step 6's own note</td></tr>
+        <tr><td><code>COLAdj</code></td><td><code>Rate × TheftExclusionFactor × RoofSurfacingACVFactor</code></td><td>No roof factor (Contents never has one, consistent with every Contents chain in this project) — and a Valuable-Papers zero-gate Building doesn't have</td></tr>
+        <tr><td><code>AdjustedRate</code></td><td>3-term product</td><td>5-term product — adds <code>WatchmanCreditFactor × BurglaryAlarmCreditFactor</code>, the two schedule-copied credits (&sect;5)</td></tr>
+        <tr><td><code>FinalRate</code></td><td>4-term product incl. <code>MultiResidentialPropSpecialCreditFactor</code></td><td>3-term product — <b>no</b> multi-res multiplier, consistent with every Contents form in this project</td></tr>
+      </table>
+    </div>
+    <div class="callout good"><span class="callout-mark">&#10003;</span><span>None of this needs new lookup infrastructure — every one of these is plain arithmetic on cells that either already exist (once &sect;4's new pulls are done) or are simple schedule copies (&sect;5). The row-offset + <code>INDEX</code> + interpolation pattern used for Building's <code>LOIFactor</code> and <code>DeductibleFactor</code> blocks is the same pattern Contents' own <code>BaseRate</code>, <code>TerrMultiplier</code>, and <code>LOIFactor</code> blocks will need — copy the shape, not the data.</span></div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- SECTION 4 -->
+  <section class="sect" id="s4">
+    <div class="sect-heading"><span class="sect-index">4</span><h2 class="sect-title">New pulls needed — the real work</h2></div>
+    <p class="sect-role">Four tables, three of them confirmed CW header-only with zero row-count done at all — the worst data-gap count of any form/coverage combination in this project (<code>Excel_Rater_Special_Scope.html</code> &sect;1).</p>
+    <div class="tblscroll">
+      <table class="scope-table">
+        <tr><th>Table</th><th>Keys</th><th>Status</th><th>Feeds</th></tr>
+        <tr><td><code>SpecialPrsnlPropRate</code></td><td>State|CW, <code>PP_OccupCategory</code>, <code>PP_OccupCategoryRiskSeverity</code></td><td><span class="status-none">CW header-only, no row count done</span></td><td><code>BaseRate</code> (step 4)</td></tr>
+        <tr><td><code>SpecialPrsnlPropTheftExclusionFactor</code></td><td>State|CW, <code>PP_OccupCategory</code></td><td><span class="status-none">CW header-only, no row count done</span></td><td><code>TheftExclusionFactor</code> (step 3)</td></tr>
+        <tr><td><code>PrsnlPropTerrMultiplier</code></td><td>State|CW, <code>PP_SpecialRatingTerr</code></td><td><span class="status-none">CW header-only, no row count done</span></td><td><code>TerrMultiplier</code> (step 5) — no Building equivalent, Contents-only dimension</td></tr>
+        <tr><td><code>BroadSpecialLOIFactorPrsnlProp</code></td><td>State|CW, Limit</td><td><span class="status-partial">Not row-counted — shared with Broad's Contents, also unbuilt</span></td><td><code>LOIFactor</code> (step 10)</td></tr>
+      </table>
+    </div>
+    <div class="callout warn"><span class="callout-mark">&#9888;</span><span><b>Don't assume these follow Building's happy pattern.</b> Building's own <code>SpecialBuildingRate</code> looked CW-header-only and turned out to resolve in 45 of 46 states once pulled per-state — but that's not a guarantee these four will too. <code>SpecialPrsnlPropRate</code> and <code>SpecialPrsnlPropTheftExclusionFactor</code> are occupancy-keyed, a structurally different (and historically thinner-filed) kind of table than the flat State|"Y" tables that turned out fine for Building. Pull and check before assuming either way — same discipline this project applied to <code>SpecialBuildingRate</code> and to FL's residential/non-residential mechanism.</span></div>
+    <div class="callout good"><span class="callout-mark">&#10003;</span><span><b>One shortcut worth taking:</b> <code>BroadSpecialLOIFactorPrsnlProp</code> is shared with Broad's own Contents chain (same relationship Building's <code>BroadSpecialLOIFactorBldg</code> has with Broad's Building chain, already confirmed and reused). Pulling this table once unblocks <b>both</b> Broad's and Special's Contents <code>LOIFactor</code> steps — same leverage <code>Special_LOIFactor_Bldg.xlsx</code> already got from Broad's Building pull.</span></div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- SECTION 5 -->
+  <section class="sect" id="s5">
+    <div class="sect-heading"><span class="sect-index">5</span><h2 class="sect-title">Schedule-copied fields — not rate tables at all</h2></div>
+    <p class="sect-role"><code>PP_WatchmanCreditFactor</code> and <code>PP_BurglaryAlarmCreditFactor</code>, per <code>Excel_Rater_Special.md</code> &sect;3: "not rate-table lookups — copied directly from the insured's protective-safeguards schedule entry." No <code>Rate_Tables</code> block, no CW/state pull, nothing to verify against ISO filings.</p>
+    <div class="formula-panel"><pre><span class="kw">WatchmanCreditFactor</span> = PP_WatchmanCreditFactor       <span class="kw">if</span> SpecialTheftExclusionIndicator = 0 <span class="kw">and</span> PP_ProtectiveSafeguardsOnFile = "Y"
+    <span class="kw">else</span>: 1.0
+
+<span class="kw">BurglaryAlarmCreditFactor</span> = PP_BurglaryAlarmCreditFactor   <span class="cm">(same gate as above)</span></pre></div>
+    <p class="sect-role" style="margin-top:14px;">The only prerequisite is adding <code>PP_ProtectiveSafeguardsOnFile</code>, <code>PP_WatchmanCreditFactor</code>, and <code>PP_BurglaryAlarmCreditFactor</code> as fields on <code>Location Inputs</code> — user-entered values off the insured's own schedule, the same category of gap as the still-missing <code>Coverage Type</code>, <code>TheftDeductible</code>, and Builders Risk reporting-form-limit fields Building already flagged. Cheapest of the four remaining gap-classes to close, since there's no ISO data to pull at all — just three new input rows.</p>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- SECTION 6 -->
+  <section class="sect" id="s6">
+    <div class="sect-heading"><span class="sect-index">6</span><h2 class="sect-title">Easiest path through it, in order</h2></div>
+    <p class="sect-role">Ordered by cheapest-to-most-expensive, not by ISO's own step numbering.</p>
+    <div class="tblscroll">
+      <table class="scope-table">
+        <tr><th>Order</th><th>Step</th><th>Why here</th></tr>
+        <tr><td>1</td><td>Wire <code>DeductibleByLocationFactor</code> and <code>DeductibleFactor</code> (&sect;2)</td><td>Zero new data. Same tables Building already has live and audited — this is copy-the-pattern, not build-something-new. Closes 2 of Contents' 12 steps immediately.</td></tr>
+        <tr><td>2</td><td>Add the three schedule fields (&sect;5) and wire <code>WatchmanCreditFactor</code>/<code>BurglaryAlarmCreditFactor</code></td><td>No ISO data to pull, no table to verify — just new <code>Location Inputs</code> rows and a two-branch <code>IF</code>. Closes 2 more steps.</td></tr>
+        <tr><td>3</td><td>Pull and row-count <code>BroadSpecialLOIFactorPrsnlProp</code></td><td>Unblocks Broad's Contents <code>LOIFactor</code> at the same time — the one new pull with a second beneficiary.</td></tr>
+        <tr><td>4</td><td>Pull and row-count <code>SpecialPrsnlPropRate</code>, <code>SpecialPrsnlPropTheftExclusionFactor</code>, <code>PrsnlPropTerrMultiplier</code></td><td>The real unknowns — do these last precisely because they're unverified; don't let easy wins upstream create false momentum before the hardest, most uncertain part is actually checked.</td></tr>
+        <tr><td>5</td><td>Wire <code>Rate</code>, <code>COLAdj</code>, <code>AdjustedRate</code>, <code>FinalRate</code> (&sect;3)</td><td>Pure arithmetic once every input above resolves — the CoreScratchpad pattern is already proven, this is assembly, not discovery.</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- SECTION 7 -->
+  <section class="sect" id="s7">
+    <div class="sect-heading"><span class="sect-index">7</span><h2 class="sect-title">What this doesn't cover</h2></div>
+    <p class="sect-role">Same exclusions Building's own build carried, plus one Contents-specific one.</p>
+    <div class="filecard"><div class="fdesc">Legal Liability and blanket premium branches — out of scope for both coverages, per <code>Excel_Rater_Special.md</code> &sect;7. Worth re-flagging Contents' own wrinkle here: its Legal Liability branch uses <code>SpecialCauseOfLossAdjustment</code> (already theft-adjusted), not the raw rate Building's branch uses — a real formula divergence, not a naming one.</div></div>
+    <div class="filecard"><div class="fdesc">The theft-specific branches (Building's <code>DeductibleFactor</code> Branch 1, Contents' equivalent) — both need <code>TheftDeductible</code> as its own field, still absent from <code>Location Inputs</code>.</div></div>
+    <div class="filecard"><div class="fdesc">The combined-location-total correction (<code>SpecialTotAmtInsurance</code> / <code>OccupSpecialTotAmtInsurance</code> vs. Building-limit-only) — deliberately backlogged project-wide until Contents exists to make the gap visible, per project memory. Building this out for Special's Contents is actually the point at which that backlog item becomes concrete and fixable, not just theoretical.</div></div>
+  </section>
+
+  <hr class="divider" />
+
+  <footer class="closing">
+    <h2>Remaining steps</h2>
+    <ol>
+      <li>Sections 2 and 5 above are buildable with zero new ISO data — the cheapest possible next session on this form.</li>
+      <li>Section 4's three unverified occupancy/territory tables are the real open question for Contents, and per &sect;6, deliberately last in the recommended order, not first — resolve them once, not twice.</li>
+      <li>Nothing gets built until you say go.</li>
+    </ol>
+    <p class="note">Consolidated from Excel_Rater_Special.md, Excel_Rater_Special_Scope.html, Excel_Rater_Broad_Scope.html &middot; CFCW20260601V01</p>
+  </footer>
+
+</div>

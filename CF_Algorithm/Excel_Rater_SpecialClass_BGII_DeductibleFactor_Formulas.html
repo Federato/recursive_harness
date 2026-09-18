@@ -1,0 +1,357 @@
+<title>Special Class Basic Group II &mdash; Deductible Factor Formulas</title>
+<meta charset="utf-8">
+<style>
+  :root {
+    --bg: #eef1f4; --paper: #ffffff; --ink: #1c2733; --ink-soft: #55606b; --ink-faint: #8b95a1;
+    --grid-line: #d7dce2; --header-fill: #e4e8ed; --header-fill-strong: #1e3a45; --header-text-strong: #eef4f3;
+    --accent: #1e3a45; --accent-soft: #cfe0e0; --accent-warm: #b96a2c; --accent-warm-soft: #f3e2cf;
+    --good: #2f7d5a; --good-soft: #dcefe4; --warn: #a53d26; --warn-soft: #f7ddd4;
+    --shadow: 0 1px 2px rgba(28,39,51,0.06), 0 8px 24px rgba(28,39,51,0.07);
+    --font-display: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+    --font-body: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+    --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, "Liberation Mono", monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #10151b; --paper: #161d25; --ink: #e7ecf1; --ink-soft: #a3aebb; --ink-faint: #6d7885;
+      --grid-line: #2b3742; --header-fill: #1b242d; --header-fill-strong: #21504f; --header-text-strong: #eaf3f1;
+      --accent: #59a9ac; --accent-soft: #1d3535; --accent-warm: #dd9a5c; --accent-warm-soft: #372a1c;
+      --good: #63c090; --good-soft: #1b3226; --warn: #e0806a; --warn-soft: #3a2019;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 28px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #10151b; --paper: #161d25; --ink: #e7ecf1; --ink-soft: #a3aebb; --ink-faint: #6d7885;
+    --grid-line: #2b3742; --header-fill: #1b242d; --header-fill-strong: #21504f; --header-text-strong: #eaf3f1;
+    --accent: #59a9ac; --accent-soft: #1d3535; --accent-warm: #dd9a5c; --accent-warm-soft: #372a1c;
+    --good: #63c090; --good-soft: #1b3226; --warn: #e0806a; --warn-soft: #3a2019;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 28px rgba(0,0,0,0.35);
+  }
+  :root[data-theme="light"] {
+    --bg: #eef1f4; --paper: #ffffff; --ink: #1c2733; --ink-soft: #55606b; --ink-faint: #8b95a1;
+    --grid-line: #d7dce2; --header-fill: #e4e8ed; --header-fill-strong: #1e3a45; --header-text-strong: #eef4f3;
+    --accent: #1e3a45; --accent-soft: #cfe0e0; --accent-warm: #b96a2c; --accent-warm-soft: #f3e2cf;
+    --good: #2f7d5a; --good-soft: #dcefe4; --warn: #a53d26; --warn-soft: #f7ddd4;
+    --shadow: 0 1px 2px rgba(28,39,51,0.06), 0 8px 24px rgba(28,39,51,0.07);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); line-height: 1.55; overflow-x: hidden; }
+  a { color: var(--accent); }
+  a:focus-visible, button:focus-visible, .jump:focus-visible { outline: 2px solid var(--accent-warm); outline-offset: 2px; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 24px 96px; }
+
+  header.masthead { padding: 56px 24px 28px; max-width: 980px; margin: 0 auto; }
+  .eyebrow { font-family: var(--font-ui); font-size: 12px; letter-spacing: 0.11em; text-transform: uppercase; color: var(--accent-warm); font-weight: 600; margin: 0 0 10px; }
+  h1.title { font-family: var(--font-display); font-size: clamp(28px, 4vw, 40px); font-weight: 400; margin: 0 0 14px; text-wrap: balance; color: var(--ink); }
+  .dek { font-size: 17px; color: var(--ink-soft); max-width: 66ch; margin: 0 0 6px; }
+  .dek + .dek { margin-top: 10px; }
+  .dek code { font-family: var(--font-mono); font-size: 14.5px; background: var(--header-fill); padding: 1px 5px; border-radius: 3px; }
+
+  nav.jumpbar { position: sticky; top: 0; z-index: 20; background: var(--header-fill-strong); border-bottom: 1px solid var(--grid-line); }
+  .jumpbar-inner { max-width: 980px; margin: 0 auto; display: flex; align-items: stretch; overflow-x: auto; scrollbar-width: thin; }
+  .jumpbar-label { font-family: var(--font-ui); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--header-text-strong); opacity: 0.6; align-self: center; padding: 0 12px 0 20px; white-space: nowrap; flex: none; }
+  .jump { font-family: var(--font-ui); font-size: 13px; color: var(--header-text-strong); text-decoration: none; white-space: nowrap; padding: 13px 16px; border-bottom: 3px solid transparent; opacity: 0.72; flex: none; }
+  .jump:hover { opacity: 1; }
+  .jump .step-no { font-family: var(--font-mono); opacity: 0.7; margin-right: 6px; }
+
+  section.step-block { padding-top: 64px; scroll-margin-top: 56px; }
+  .step-heading { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 6px; }
+  .step-index { font-family: var(--font-mono); font-size: 13px; color: var(--accent-warm); font-variant-numeric: tabular-nums; }
+  h2.step-title { font-family: var(--font-display); font-size: 26px; font-weight: 400; margin: 0; color: var(--ink); }
+  .step-role { font-family: var(--font-ui); font-size: 13px; color: var(--ink-soft); margin: 0 0 22px; }
+
+  .xl-window { background: var(--paper); border: 1px solid var(--grid-line); border-radius: 6px; box-shadow: var(--shadow); overflow: hidden; }
+  .xl-titlebar { display: flex; align-items: center; gap: 10px; padding: 9px 14px; background: var(--header-fill-strong); color: var(--header-text-strong); font-family: var(--font-ui); font-size: 12.5px; }
+  .xl-dots { display: flex; gap: 5px; flex: none; }
+  .xl-dots span { width: 8px; height: 8px; border-radius: 50%; background: currentColor; opacity: 0.35; }
+  .xl-filename { opacity: 0.92; }
+  .xl-filename b { font-weight: 600; }
+  .xl-titlebar-spacer { flex: 1; }
+  .xl-mode { font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.55; }
+  .xl-formulabar { display: flex; align-items: center; gap: 10px; padding: 6px 12px; background: var(--header-fill); border-bottom: 1px solid var(--grid-line); font-family: var(--font-mono); font-size: 12px; }
+  .xl-cellref { background: var(--paper); border: 1px solid var(--grid-line); border-radius: 3px; padding: 2px 8px; color: var(--accent); font-weight: 600; flex: none; min-width: 46px; text-align: center; }
+  .xl-fx { color: var(--ink-faint); flex: none; font-style: italic; }
+  .xl-formula { color: var(--ink-soft); overflow-x: auto; white-space: nowrap; padding-right: 4px; }
+  .xl-scroll { overflow-x: auto; }
+  table.xl-grid { border-collapse: collapse; width: 100%; font-family: var(--font-mono); font-size: 12.5px; }
+  table.xl-grid th, table.xl-grid td { border: 1px solid var(--grid-line); padding: 6px 10px; text-align: left; white-space: nowrap; }
+  .colletters th { background: var(--header-fill); color: var(--ink-faint); font-family: var(--font-ui); font-size: 10.5px; text-align: center; padding: 3px 10px; font-weight: 600; position: sticky; top: 0; }
+  .rownum { background: var(--header-fill); color: var(--ink-faint); font-family: var(--font-ui); font-size: 11px; text-align: center !important; font-weight: 600; width: 1%; }
+  .fieldrow th { background: var(--accent); color: var(--header-text-strong); font-family: var(--font-ui); font-size: 11.5px; font-weight: 600; text-align: left; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  td.formula-cell { background: color-mix(in srgb, var(--accent-warm-soft) 100%, transparent); color: var(--accent-warm); font-weight: 600; }
+  td.warn-cell { background: var(--warn-soft); color: var(--warn); font-weight: 600; }
+  td.good-cell { background: var(--good-soft); color: var(--good); }
+  td.total-cell { background: var(--header-fill); font-weight: 700; }
+  .subtle { color: var(--ink-faint); font-style: italic; }
+
+  .instructions { margin-top: 22px; display: grid; gap: 14px; }
+  .instructions p { margin: 0; font-size: 15.5px; color: var(--ink); max-width: 70ch; }
+  .instructions p.lede { font-size: 16.5px; }
+  .field-notes { margin: 4px 0 0; padding: 0; list-style: none; display: grid; gap: 9px; max-width: 70ch; }
+  .field-notes li { font-size: 14.5px; color: var(--ink-soft); padding-left: 16px; border-left: 2px solid var(--grid-line); }
+  .field-notes b { font-family: var(--font-mono); font-size: 13px; color: var(--ink); background: var(--header-fill); padding: 1px 5px; border-radius: 3px; }
+
+  .callout { display: flex; gap: 10px; padding: 12px 14px; border-radius: 5px; max-width: 70ch; font-size: 14.5px; margin-top: 14px; }
+  .callout.warn { background: var(--warn-soft); color: var(--warn); }
+  .callout.warm { background: var(--accent-warm-soft); color: var(--accent-warm); }
+  .callout.good { background: var(--good-soft); color: var(--good); }
+  .callout b { font-weight: 700; }
+  .callout-mark { flex: none; font-family: var(--font-ui); font-weight: 700; }
+
+  .formula-label { font-family: var(--font-ui); font-size: 11px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--ink-faint); margin: 28px 0 10px; }
+  .formula-label:first-child { margin-top: 0; }
+  .formula-panel { background: var(--header-fill-strong); color: var(--header-text-strong); border-radius: 6px; padding: 16px 18px; font-family: var(--font-mono); font-size: 12px; line-height: 1.75; overflow-x: auto; }
+  .formula-panel pre { margin: 0; white-space: pre; }
+  .formula-panel .kw { color: var(--accent-warm); font-weight: 700; }
+  .formula-panel .fn { color: #a9d6d8; }
+  .formula-panel .cm { opacity: 0.55; font-style: italic; }
+
+  .progress-rail { display: flex; gap: 6px; margin: 4px 0 26px; }
+  .progress-rail .dot { height: 4px; flex: 1; border-radius: 2px; background: var(--grid-line); }
+  .progress-rail .dot.done { background: var(--accent-warm); }
+
+  hr.divider { border: none; border-top: 1px solid var(--grid-line); margin: 64px 0 0; }
+
+  footer.closing { max-width: 980px; margin: 72px auto 0; padding: 0 24px 64px; }
+  footer.closing h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0 0 12px; }
+  footer.closing ol { padding-left: 20px; display: grid; gap: 8px; max-width: 64ch; }
+  footer.closing li { font-size: 15px; color: var(--ink-soft); }
+  footer.closing p.note { margin-top: 20px; font-size: 13px; color: var(--ink-faint); font-family: var(--font-ui); }
+</style>
+<header class="masthead">
+  <p class="eyebrow">CF_Algorithm &middot; Special Class &middot; Basic Group II &middot; Step 9 of the rating chain</p>
+  <h1 class="title">Suggested formulas for <code>DeductibleFactorBasicGroupII</code> &mdash; dollar, percentage, and the indicator gate</h1>
+  <p class="dek"><b>Revised 2026-09-15.</b> This version drops the two simplifications the first pass carried: the separate <b>dollar</b> wind/hail deductible is now modelled, and so is the <code>WindstormHailIndicator</code> gate that decides whether the percentage path is even allowed to fire.</p>
+  <p class="dek"><b>Read read-only</b> via <code>pyxlsb</code> straight from disk &mdash; no COM, no Excel attach, nothing written. Every cell address is <b>real</b>, read out of the live workbook. Column <code>C</code> is item&nbsp;1; copy right for items 2&ndash;9.</p>
+  <div class="callout warm">
+    <span class="callout-mark">&#9888;</span>
+    <span><b>This is the live frontier.</b> <code>'Special Class Worksheet'!B36</code> holds the label
+    <code>DeductibleFactorBasicGroupII</code> and <b>nothing else</b> &mdash; no formula, and no rows after it.
+    Basic Group II for Special Class stops dead at this cell.</span>
+  </div>
+</header>
+
+<nav class="jumpbar" aria-label="Jump to step">
+  <div class="jumpbar-inner">
+    <span class="jumpbar-label">Steps</span>
+    <a class="jump" href="#s1"><span class="step-no">1</span>Tables already in</a>
+    <a class="jump" href="#s2"><span class="step-no">2</span>Inputs</a>
+    <a class="jump" href="#s3"><span class="step-no">3</span>Extend the dropdown</a>
+    <a class="jump" href="#s4"><span class="step-no">4</span>Indicator gate</a>
+    <a class="jump" href="#s5"><span class="step-no">5</span>Percentage factor</a>
+    <a class="jump" href="#s6"><span class="step-no">6</span>W/H dollar factor</a>
+    <a class="jump" href="#s7"><span class="step-no">7</span>Combine W/H</a>
+    <a class="jump" href="#s8"><span class="step-no">8</span>Final + wire up</a>
+    <a class="jump" href="#s9"><span class="step-no">9</span>What&rsquo;s left</a>
+  </div>
+</nav>
+
+<div class="wrap">
+  <section class="step-block" id="s1">
+    <div class="step-heading"><span class="step-index">STEP 1 / 9</span><h2 class="step-title">The tables are already pasted in</h2></div>
+    <p class="step-role">This session&rsquo;s extracts are already loaded into the <code>Special Class</code> tab. Nothing new to import &mdash; these are the ranges the formulas point at.</p><div class="progress-rail"><div class="dot done"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+
+    <div class="xl-window">
+      <div class="xl-titlebar"><div class="xl-dots"><span></span><span></span><span></span></div><div class="xl-filename">CFRater1.01.xlsb &mdash; <b>Special Class</b></div><div class="xl-titlebar-spacer"></div><div class="xl-mode">Read-only</div></div>
+      <div class="xl-scroll">
+        <table class="xl-grid">
+          <tr class="colletters"><th></th><th>Range</th><th>Columns</th><th>Rows</th><th>What it is</th></tr>
+          <tr><td class="good-cell">BA:BE</td><td>State &middot; Deductible &middot; Limit_Over &middot; Limit_UpTo &middot; Factor</td><td>2&ndash;6776</td><td>Dollar deductible factor, Basic Group II only, 47 states</td></tr>
+          <tr><td class="good-cell">BK:BO</td><td>State &middot; WindHailDeductiblePct &middot; Limit_From &middot; Limit_LessThan &middot; Factor</td><td>2&ndash;1100</td><td>Percentage (1/2/5%) wind-hail factor, 47 states</td></tr>
+          <tr><td>BH:BI</td><td>CauseOfLoss &middot; Factor</td><td>2 only</td><td>$250 surcharge &mdash; one row (<code>Basic</code> 1.05)</td></tr>
+          <tr><td>AK:AO</td><td>Code &middot; State &middot; Description &middot; NumericValue &middot; Symbol</td><td>2&ndash;3335</td><td>Already wired to row 28</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="instructions"><p><b>A format note that matters.</b> <code>BB</code> (dollar deductible) holds <i>text</i> &mdash; <code>"2,500"</code> &mdash; matching the input cell exactly, so direct comparison works. <code>BL</code> (percentage) became a <i>number</i> on paste: <code>1%</code> is stored as <code>0.01</code>, while the input cell holds the text <code>"1%"</code>. Step&nbsp;5 bridges that with <code>TEXT()</code> rather than arithmetic.</p></div>
+  </section>
+  <section class="step-block" id="s2">
+    <div class="step-heading"><span class="step-index">STEP 2 / 9</span><h2 class="step-title">The inputs, with their real addresses</h2></div>
+    <p class="step-role">Four exist today. One more has to be added &mdash; see the note below.</p><div class="progress-rail"><div class="dot done"></div><div class="dot done"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+
+    <div class="xl-window">
+      <div class="xl-titlebar"><div class="xl-dots"><span></span><span></span><span></span></div><div class="xl-filename">CFRater1.01.xlsb &mdash; <b>Special Class Inputs / CoreScratchpad</b></div><div class="xl-titlebar-spacer"></div><div class="xl-mode">Item 1 = column C</div></div>
+      <div class="xl-scroll">
+        <table class="xl-grid">
+          <tr class="colletters"><th></th><th>Cell</th><th>Label</th><th>Current value</th></tr>
+          <tr><td class="good-cell">'Special Class Inputs'!C9</td><td>State</td><td>FL</td></tr>
+          <tr><td class="good-cell">'Special Class Inputs'!C22</td><td>Deductible</td><td>2,500</td></tr>
+          <tr><td class="good-cell">'Special Class Inputs'!C31</td><td>Windstorm/Hail Deductible</td><td>Not Applicable</td></tr>
+          <tr><td class="good-cell">CoreScratchpad!C217</td><td>Final Special Class Limit</td><td>513,000</td></tr>
+          <tr><td>CoreScratchpad!C2</td><td>State (already derived)</td><td>FL</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout warm"><span class="callout-mark">&#9888;</span><span><b>One genuine substitution.</b> The ERC gate tests <code>WindstormOrHailTotAmtInsuranceToUse</code> &mdash; the amount insured <i>against wind and hail</i>, which can differ from the item limit. The workbook has no such field, so the formulas below use <code>CoreScratchpad!C217</code> (Final Special Class Limit) as a stand-in. Correct whenever wind/hail is written at the full item limit; wrong if it ever isn&rsquo;t.</span></div>
+  </section>
+  <section class="step-block" id="s3">
+    <div class="step-heading"><span class="step-index">STEP 3 / 9</span><h2 class="step-title">Extend the wind/hail deductible dropdown</h2></div>
+    <p class="step-role">Today <code>PolicyDropdowns!K2:K5</code> offers only <b>Not Applicable, 1%, 2%, 5%</b>. The dollar path is unreachable until this list grows &mdash; this is backlog item&nbsp;K.</p><div class="progress-rail"><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+
+    <div class="xl-window">
+      <div class="xl-titlebar"><div class="xl-dots"><span></span><span></span><span></span></div><div class="xl-filename">CFRater1.01.xlsb &mdash; <b>PolicyDropdowns</b></div><div class="xl-titlebar-spacer"></div><div class="xl-mode">Add rows</div></div>
+      <div class="xl-scroll">
+        <table class="xl-grid">
+          <tr class="colletters"><th></th><th>K &mdash; WindstormOrHailDeductible</th><th>Status</th></tr>
+          <tr><td class="rownum">2</td><td>Not Applicable</td><td>existing</td></tr>
+          <tr><td class="rownum">3</td><td>1%</td><td>existing</td></tr>
+          <tr><td class="rownum">4</td><td>2%</td><td>existing</td></tr>
+          <tr><td class="rownum">5</td><td>5%</td><td>existing</td></tr>
+          <tr><td class="rownum">6</td><td class="good-cell">250</td><td>add</td></tr>
+          <tr><td class="rownum">7</td><td class="good-cell">500</td><td>add</td></tr>
+          <tr><td class="rownum">8</td><td class="good-cell">1,000</td><td>add</td></tr>
+          <tr><td class="rownum">9</td><td class="good-cell">2,500</td><td>add</td></tr>
+          <tr><td class="rownum">10</td><td class="good-cell">5,000</td><td>add</td></tr>
+          <tr><td class="rownum">11</td><td class="good-cell">10,000</td><td>add</td></tr>
+          <tr><td class="rownum">12</td><td class="good-cell">25,000</td><td>add</td></tr>
+          <tr><td class="rownum">13</td><td class="good-cell">50,000</td><td>add</td></tr>
+          <tr><td class="rownum">14</td><td class="good-cell">75,000</td><td>add</td></tr>
+          <tr><td class="rownum">15</td><td class="good-cell">100,000</td><td>add</td></tr>
+          <tr><td class="rownum">16</td><td class="good-cell">150,000</td><td>add</td></tr>
+          <tr><td class="rownum">17</td><td class="good-cell">250,000</td><td>add</td></tr>
+          <tr><td class="rownum">18</td><td class="good-cell">500,000</td><td>add</td></tr>
+          <tr><td class="rownum">19</td><td class="good-cell">750,000</td><td>add</td></tr>
+          <tr><td class="rownum">20</td><td class="good-cell">1,000,000</td><td>add</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="instructions"><p><b>Type the values as text, formatted exactly as shown</b> &mdash; with the thousands comma, no currency symbol. That is how they appear in column <code>BB</code> of the pasted table, and the lookup in step&nbsp;6 is a direct string comparison.</p>
+    <p><b>The 14-value list is what 43 states file.</b> New York files only the original eight (500 through 75,000) &mdash; a NY risk choosing 100,000 or above will find no row and land on the zero-flag in step&nbsp;8. That is faithful: those deductibles genuinely are not filed in NY.</p></div>
+  </section>
+  <section class="step-block" id="s4">
+    <div class="step-heading"><span class="step-index">STEP 4 / 9</span><h2 class="step-title">Model the <code>WindstormHailIndicator</code> gate</h2></div>
+    <p class="step-role">The percentage path is only allowed to fire when the percentage deductible is actually doing meaningful work &mdash; that is what the indicator decides. Put the new block on <code>CoreScratchpad</code> from row&nbsp;225; the sheet is populated through 223, so nothing is displaced.</p><div class="progress-rail"><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+
+    <div class="xl-window">
+      <div class="xl-titlebar"><div class="xl-dots"><span></span><span></span><span></span></div><div class="xl-filename">CFRater1.01.xlsb &mdash; <b>CoreScratchpad</b></div><div class="xl-titlebar-spacer"></div><div class="xl-mode">New rows</div></div>
+      <div class="xl-formulabar"><span class="xl-cellref">C225</span><span class="xl-fx">fx</span><span class="xl-formula">=OR('Special Class Inputs'!C$31="1%",'Special Class Inputs'!C$31="2%",'Special Class Inputs'!C$31="5%")</span></div>
+      <div class="xl-formulabar"><span class="xl-cellref">C226</span><span class="xl-fx">fx</span><span class="xl-formula">=IF(NOT(C$225),0,IF('Special Class Inputs'!C$31="1%",IF(C$2="FL",50001,100000),IF('Special Class Inputs'!C$31="2%",IF(C$2="FL",25001,50000),IF(C$2="FL",10001,20000))))</span></div>
+      <div class="xl-formulabar"><span class="xl-cellref">C227</span><span class="xl-fx">fx</span><span class="xl-formula">=IF(AND(C$225,C$217&gt;=C$226),1,0)</span></div>
+      <div class="xl-scroll">
+        <table class="xl-grid">
+          <tr class="colletters"><th></th><th>B</th><th>C</th></tr>
+          <tr><td class="rownum">225</td><td>SC BGII &mdash; W/H Ded is Percentage?</td><td class="good-cell">FALSE</td></tr>
+          <tr><td class="rownum">226</td><td>SC BGII &mdash; Indicator Threshold</td><td class="good-cell">0</td></tr>
+          <tr><td class="rownum">227</td><td>SC BGII &mdash; WindstormHailIndicator</td><td class="good-cell">0</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="instructions"><p><b>The thresholds, in plain English.</b> A 1% deductible counts as meaningful at 100,000 of insured value or more; 2% at 50,000; 5% at 20,000. Florida sets the bar at roughly half &mdash; 50,001 / 25,001 / 10,001 &mdash; so Florida risks trip the indicator sooner.</p>
+    <p><b>Note the odd Florida numbers.</b> ISO filed <code>50,001</code>, not <code>50,000</code>, which makes Florida&rsquo;s test strictly &ldquo;more than&rdquo; where countrywide is &ldquo;at or above&rdquo;. The <code>&gt;=</code> in C227 combined with the 50,001 threshold reproduces that exactly &mdash; do not round it to 50,000.</p>
+    <p><b>This same indicator already governs step&nbsp;8 of the chain.</b> <code>BGIIDeductibleByLocationFactor</code> (worksheet row 35) is forced to 1.0 whenever the indicator is 1. The two credits are mutually exclusive by design: you get the large percentage credit or the small by-location credit, never both. Once C227 exists, row 35 should point at it rather than assuming 0.</p></div>
+  </section>
+  <section class="step-block" id="s5">
+    <div class="step-heading"><span class="step-index">STEP 5 / 9</span><h2 class="step-title">Percentage factor</h2></div>
+    <p class="step-role">Fires only when the indicator is 1. Band operators here are <b>inclusive-from, exclusive-to</b>.</p><div class="progress-rail"><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+
+    <div class="xl-window">
+      <div class="xl-titlebar"><div class="xl-dots"><span></span><span></span><span></span></div><div class="xl-filename">CFRater1.01.xlsb &mdash; <b>CoreScratchpad</b></div><div class="xl-titlebar-spacer"></div><div class="xl-mode">New rows</div></div>
+      <div class="xl-formulabar"><span class="xl-cellref">C228</span><span class="xl-fx">fx</span><span class="xl-formula">=IF(C$227&lt;&gt;1,0,SUMPRODUCT(('Special Class'!$BK$2:$BK$1100=C$2)*(TEXT('Special Class'!$BL$2:$BL$1100,"0%")='Special Class Inputs'!C$31)*('Special Class'!$BM$2:$BM$1100&lt;=C$217)*('Special Class'!$BN$2:$BN$1100&gt;C$217)*'Special Class'!$BO$2:$BO$1100))</span></div>
+      <div class="xl-scroll">
+        <table class="xl-grid">
+          <tr class="colletters"><th></th><th>B</th><th>C</th></tr>
+          <tr><td class="rownum">228</td><td>SC BGII &mdash; W/H Percentage Factor</td><td class="good-cell">0.00</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="instructions"><p>Gating on <code>C227</code> rather than on <code>C225</code> is the whole point of this revision. A 5% deductible on a 15,000 item now correctly produces <b>nothing</b> from this row, because the indicator never tripped &mdash; not because the table happened to have no matching band.</p></div>
+  </section>
+  <section class="step-block" id="s6">
+    <div class="step-heading"><span class="step-index">STEP 6 / 9</span><h2 class="step-title">Wind/hail <b>dollar</b> factor</h2></div>
+    <p class="step-role">This is the path that did not exist before. It reads the same dollar table as the policy deductible, but keyed on the <b>wind/hail</b> value instead. Band operators are <b>exclusive-from, inclusive-to</b> &mdash; the opposite of step&nbsp;5.</p><div class="progress-rail"><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+
+    <div class="xl-window">
+      <div class="xl-titlebar"><div class="xl-dots"><span></span><span></span><span></span></div><div class="xl-filename">CFRater1.01.xlsb &mdash; <b>CoreScratchpad</b></div><div class="xl-titlebar-spacer"></div><div class="xl-mode">New rows</div></div>
+      <div class="xl-formulabar"><span class="xl-cellref">C229</span><span class="xl-fx">fx</span><span class="xl-formula">=IF(OR(C$225,'Special Class Inputs'!C$31="",'Special Class Inputs'!C$31="Not Applicable",'Special Class Inputs'!C$31='Special Class Inputs'!C$22),0,IF('Special Class Inputs'!C$31="250",'Special Class'!$BI$2,SUMPRODUCT(('Special Class'!$BA$2:$BA$6776=C$2)*('Special Class'!$BB$2:$BB$6776='Special Class Inputs'!C$31)*('Special Class'!$BC$2:$BC$6776&lt;C$217)*('Special Class'!$BD$2:$BD$6776&gt;=C$217)*'Special Class'!$BE$2:$BE$6776)))</span></div>
+      <div class="xl-scroll">
+        <table class="xl-grid">
+          <tr class="colletters"><th></th><th>B</th><th>C</th></tr>
+          <tr><td class="rownum">229</td><td>SC BGII &mdash; W/H Dollar Factor</td><td class="good-cell">0.00</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout warm"><span class="callout-mark">&#9888;</span><span><b>Do not copy the band operators between steps 5 and 6.</b> The dollar table uses <code>Limit_Over &lt; limit &lt;= Limit_UpTo</code>; the percentage table uses <code>Limit_From &lt;= limit &lt; Limit_LessThan</code>. Both sets of boundaries are round numbers &mdash; 100,000, 250,000, 1,000,000 &mdash; exactly where real limits cluster.</span></div>
+    <div class="instructions"><p><b>Why the leading exclusions.</b> This row must return 0 whenever the wind/hail deductible is a percentage, is absent, or simply matches the policy deductible &mdash; in all three cases the filed rule sends the item down the main-deductible path instead (step&nbsp;8). Getting this wrong would double-count the credit.</p>
+    <p><b>The 250 branch reads <code>'Special Class'!$BI$2</code></b> rather than a hard-coded 1.05, so if that block is ever state-expanded the formula follows it.</p></div>
+  </section>
+  <section class="step-block" id="s7">
+    <div class="step-heading"><span class="step-index">STEP 7 / 9</span><h2 class="step-title">Combine into <code>WindstormOrHailDeductibleFactor</code></h2></div>
+    <p class="step-role">One cell that mirrors the filed rule&rsquo;s own intermediate value, so the logic stays auditable against the XML.</p><div class="progress-rail"><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot"></div><div class="dot"></div></div>
+
+    <div class="xl-window">
+      <div class="xl-titlebar"><div class="xl-dots"><span></span><span></span><span></span></div><div class="xl-filename">CFRater1.01.xlsb &mdash; <b>CoreScratchpad</b></div><div class="xl-titlebar-spacer"></div><div class="xl-mode">New rows</div></div>
+      <div class="xl-formulabar"><span class="xl-cellref">C230</span><span class="xl-fx">fx</span><span class="xl-formula">=IF(C$227=1,C$228,IF('Special Class Inputs'!C$31&lt;&gt;'Special Class Inputs'!C$22,C$229,0))</span></div>
+      <div class="xl-scroll">
+        <table class="xl-grid">
+          <tr class="colletters"><th></th><th>B</th><th>C</th></tr>
+          <tr><td class="rownum">230</td><td>SC BGII &mdash; WindstormOrHailDeductibleFactor</td><td class="good-cell">0.00</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="instructions"><p>Reads exactly as the rule does: <b>if</b> the indicator tripped, take the percentage factor; <b>else if</b> the wind/hail deductible differs from the policy deductible, take the dollar factor; <b>otherwise</b> zero &mdash; which step&nbsp;8 then reads as &ldquo;no separate wind/hail deductible applies.&rdquo;</p>
+    <p><b>The case worth understanding:</b> a percentage deductible selected but <i>below</i> its threshold lands here at 0, and step&nbsp;8 turns that into a zero factor and a zero premium. That is not a bug in these formulas &mdash; it is what ISO filed. The check row in step&nbsp;8 surfaces it.</p></div>
+  </section>
+  <section class="step-block" id="s8">
+    <div class="step-heading"><span class="step-index">STEP 8 / 9</span><h2 class="step-title">Main deductible factor, the final pick, and the wire-up</h2></div>
+    <p class="step-role">The outer branch of the filed rule, then the cell that has been sitting empty.</p><div class="progress-rail"><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot"></div></div>
+
+    <div class="xl-window">
+      <div class="xl-titlebar"><div class="xl-dots"><span></span><span></span><span></span></div><div class="xl-filename">CFRater1.01.xlsb &mdash; <b>CoreScratchpad</b></div><div class="xl-titlebar-spacer"></div><div class="xl-mode">New rows</div></div>
+      <div class="xl-formulabar"><span class="xl-cellref">C231</span><span class="xl-fx">fx</span><span class="xl-formula">=IF('Special Class Inputs'!C$22="250",'Special Class'!$BI$2,IF('Special Class Inputs'!C$22="Not Applicable",1,IF('Special Class Inputs'!C$22="",0,SUMPRODUCT(('Special Class'!$BA$2:$BA$6776=C$2)*('Special Class'!$BB$2:$BB$6776='Special Class Inputs'!C$22)*('Special Class'!$BC$2:$BC$6776&lt;C$217)*('Special Class'!$BD$2:$BD$6776&gt;=C$217)*'Special Class'!$BE$2:$BE$6776))))</span></div>
+      <div class="xl-formulabar"><span class="xl-cellref">C232</span><span class="xl-fx">fx</span><span class="xl-formula">=IF(OR('Special Class Inputs'!C$31="",'Special Class Inputs'!C$31="Not Applicable",'Special Class Inputs'!C$31='Special Class Inputs'!C$22),C$231,C$230)</span></div>
+      <div class="xl-formulabar"><span class="xl-cellref">C233</span><span class="xl-fx">fx</span><span class="xl-formula">=IF(C$232=0,"ZERO - no filed factor found; check deductible, %, state, limit","OK")</span></div>
+      <div class="xl-scroll">
+        <table class="xl-grid">
+          <tr class="colletters"><th></th><th>B</th><th>C</th></tr>
+          <tr><td class="rownum">231</td><td>SC BGII &mdash; Main Deductible Factor</td><td class="good-cell">0.96</td></tr>
+          <tr><td class="rownum">232</td><td>DeductibleFactorBasicGroupII (FINAL)</td><td class="good-cell">0.96</td></tr>
+          <tr><td class="rownum">233</td><td>&mdash; check</td><td class="good-cell">OK</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="xl-window" style="margin-top:18px">
+      <div class="xl-titlebar"><div class="xl-dots"><span></span><span></span><span></span></div><div class="xl-filename">CFRater1.01.xlsb &mdash; <b>Special Class Worksheet</b></div><div class="xl-titlebar-spacer"></div><div class="xl-mode">The empty cell</div></div>
+      <div class="xl-formulabar"><span class="xl-cellref">C36</span><span class="xl-fx">fx</span><span class="xl-formula">=CoreScratchpad!C232</span></div>
+      <div class="xl-scroll">
+        <table class="xl-grid">
+          <tr class="colletters"><th></th><th>B</th><th>C</th></tr>
+          <tr><td class="rownum">35</td><td>BGIIDeductibleByLocationFactor</td><td>0.995</td></tr>
+          <tr><td class="rownum">36</td><td>DeductibleFactorBasicGroupII</td><td class="good-cell">0.96</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="instructions"><p><b>The 250 and &ldquo;Not Applicable&rdquo; branches are not optional.</b> A <code>250</code> deductible has <b>no row</b> in the dollar table &mdash; ISO prices it through the separate surcharge table. Without that branch a 250 deductible returns 0 and zeroes the premium.</p>
+    <p><b>On leaving a miss at 0 rather than defaulting to 1:</b> that is what the rule does &mdash; it falls through to <code>0.0</code>. Row&nbsp;233 makes it visible instead of silent. If you would rather fail safe, wrap C36 as <code>=IF(CoreScratchpad!C232=0,1,CoreScratchpad!C232)</code> &mdash; but that prices a broken lookup as though no deductible credit applied, which is a real quote going out wrong. The check row is the better trade.</p>
+    <p><b>While you are in there:</b> worksheet row 35 (<code>BGIIDeductibleByLocationFactor</code>) should now read <code>=IF(CoreScratchpad!C227=1,1,0.995)</code> rather than assuming the indicator is always 0. The two credits are mutually exclusive, and until now the workbook had no indicator to test.</p></div>
+  </section>
+  <section class="step-block" id="s9">
+    <div class="step-heading"><span class="step-index">STEP 9 / 9</span><h2 class="step-title">What is still left out</h2></div>
+    <p class="step-role">Shorter than it was. Two of the previous four gaps are now closed.</p><div class="progress-rail"><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div></div>
+
+    <div class="xl-scroll">
+      <table class="xl-grid">
+        <tr class="colletters"><th>Item</th><th>Status</th><th>Detail</th></tr>
+        <tr><td><b>W/H dollar deductible</b></td><td class="good-cell">Now modelled</td><td>Steps 3 and 6. Requires the dropdown extension to be reachable.</td></tr>
+        <tr><td><b><code>WindstormHailIndicator</code> gate</b></td><td class="good-cell">Now modelled</td><td>Step 4, including Florida&rsquo;s halved thresholds.</td></tr>
+        <tr><td><b>RI, NC, PR</b></td><td>Still wrong</td><td>These three replace the percentage mechanism entirely &mdash; RI and NC read a Named Storm percentage from a separate input field (<code>NamedStormPctDeductible</code>), PR uses a proportionate calculation with its own table. They will pick up countrywide-shaped rows. <b>The one remaining gap that produces a wrong number on real business.</b></td></tr>
+        <tr><td><b>Wind/hail insured amount</b></td><td>Substituted</td><td>The gate should test <code>WindstormOrHailTotAmtInsuranceToUse</code>; the workbook has no such field, so the item limit stands in. Correct whenever wind/hail is written at the full item limit.</td></tr>
+        <tr><td><b>$250 factor not state-expanded</b></td><td>Unverified</td><td><code>BH:BI</code> holds a single <code>Basic</code> 1.05 row. Formulas reference the cell, so expanding the block later needs no formula change.</td></tr>
+        <tr><td><b>Downstream chain</b></td><td>Not built</td><td>Rows 37+ on <code>Special Class Worksheet</code> do not exist. <code>FinalBasicGroupIIRate = AdjustedRate &times; ByLocationFactor &times; DeductibleFactor</code>, then premium.</td></tr>
+      </table>
+    </div>
+    <div class="callout warm"><span class="callout-mark">&#9888;</span><span>With the dollar path and the indicator gate in, this now follows the filed logic branch for branch in 44 states. Rhode Island, North Carolina and Puerto Rico still need their own treatment before they price correctly.</span></div>
+  </section>
+</div>

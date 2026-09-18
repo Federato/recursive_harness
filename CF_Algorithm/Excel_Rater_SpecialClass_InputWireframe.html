@@ -1,0 +1,387 @@
+<title>Special Class — Input Tab Wireframe (All Four Forms)</title>
+<meta charset="utf-8">
+<style>
+  :root {
+    --bg: #eef1f4; --paper: #ffffff; --ink: #1c2733; --ink-soft: #55606b; --ink-faint: #8b95a1;
+    --grid-line: #d7dce2; --header-fill: #e4e8ed; --header-fill-strong: #1e3a45; --header-text-strong: #eef4f3;
+    --accent: #1e3a45; --accent-soft: #cfe0e0; --accent-warm: #b96a2c; --accent-warm-soft: #f3e2cf;
+    --good: #2f7d5a; --good-soft: #dcefe4; --warn: #a53d26; --warn-soft: #f7ddd4;
+    --mid: #a67c1e; --mid-soft: #f2e6c4;
+    --font-display: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+    --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, "Liberation Mono", monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #10151b; --paper: #161d25; --ink: #e7ecf1; --ink-soft: #a3aebb; --ink-faint: #6d7885;
+      --grid-line: #2b3742; --header-fill: #1b242d; --header-fill-strong: #21504f; --header-text-strong: #eaf3f1;
+      --accent: #59a9ac; --accent-soft: #1d3535; --accent-warm: #dd9a5c; --accent-warm-soft: #372a1c;
+      --good: #63c090; --good-soft: #1b3226; --warn: #e0806a; --warn-soft: #3a2019;
+      --mid: #e0c064; --mid-soft: #3a3319;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #10151b; --paper: #161d25; --ink: #e7ecf1; --ink-soft: #a3aebb; --ink-faint: #6d7885;
+    --grid-line: #2b3742; --header-fill: #1b242d; --header-fill-strong: #21504f; --header-text-strong: #eaf3f1;
+    --accent: #59a9ac; --accent-soft: #1d3535; --accent-warm: #dd9a5c; --accent-warm-soft: #372a1c;
+    --good: #63c090; --good-soft: #1b3226; --warn: #e0806a; --warn-soft: #3a2019;
+    --mid: #e0c064; --mid-soft: #3a3319;
+  }
+  :root[data-theme="light"] {
+    --bg: #eef1f4; --paper: #ffffff; --ink: #1c2733; --ink-soft: #55606b; --ink-faint: #8b95a1;
+    --grid-line: #d7dce2; --header-fill: #e4e8ed; --header-fill-strong: #1e3a45; --header-text-strong: #eef4f3;
+    --accent: #1e3a45; --accent-soft: #cfe0e0; --accent-warm: #b96a2c; --accent-warm-soft: #f3e2cf;
+    --good: #2f7d5a; --good-soft: #dcefe4; --warn: #a53d26; --warn-soft: #f7ddd4;
+    --mid: #a67c1e; --mid-soft: #f2e6c4;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-display); line-height: 1.55; }
+  .wrap { max-width: 1440px; margin: 0 auto; padding: 0 24px 96px; }
+  header.masthead { padding: 48px 24px 24px; max-width: 1440px; margin: 0 auto; }
+  .eyebrow { font-family: var(--font-ui); font-size: 12px; letter-spacing: 0.11em; text-transform: uppercase; color: var(--accent-warm); font-weight: 600; margin: 0 0 10px; }
+  h1.title { font-size: clamp(24px, 3.2vw, 33px); font-weight: 400; margin: 0 0 14px; }
+  .dek { font-size: 15.5px; color: var(--ink-soft); max-width: 105ch; margin: 0 0 6px; }
+  .dek code { font-family: var(--font-mono); font-size: 13px; background: var(--header-fill); padding: 1px 5px; border-radius: 3px; }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; margin: 18px 0 4px; font-family: var(--font-ui); font-size: 12px; }
+  .legend .sw { display: inline-flex; align-items: center; gap: 6px; }
+  .legend .box { width: 14px; height: 14px; border-radius: 3px; display: inline-block; border: 1px solid var(--grid-line); }
+  .legend .badge { font-weight: 700; padding: 1px 6px; border-radius: 8px; font-size: 9.5px; color: #fff; }
+
+  section.sect { padding-top: 34px; }
+  h2.sect-title { font-size: 20px; font-weight: 400; margin: 0 0 4px; }
+  .sect-role { font-family: var(--font-ui); font-size: 13px; color: var(--ink-soft); margin: 0 0 16px; max-width: 110ch; }
+  .sect-role code { font-family: var(--font-mono); font-size: 12px; background: var(--header-fill); padding: 1px 5px; border-radius: 3px; }
+
+  .sheet-frame { border-radius: 8px; box-shadow: 0 1px 2px rgba(28,39,51,0.06), 0 8px 24px rgba(28,39,51,0.07); overflow: hidden; margin-bottom: 12px; }
+  .sheet-tabbar { background: var(--header-fill-strong); padding: 8px 14px 0; display: flex; gap: 4px; font-family: var(--font-ui); font-size: 11.5px; flex-wrap: wrap; }
+  .sheet-tab { padding: 7px 14px; border-radius: 6px 6px 0 0; color: var(--ink-faint); background: rgba(255,255,255,0.06); }
+  .sheet-tab.active { background: var(--paper); color: var(--ink); font-weight: 700; }
+  .tblscroll { overflow-x: auto; background: var(--paper); }
+  table.mock { border-collapse: collapse; width: 100%; min-width: 1100px; font-size: 12px; }
+  table.mock th, table.mock td { border: 1px solid var(--grid-line); padding: 5px 9px; text-align: left; vertical-align: middle; white-space: nowrap; }
+  table.mock thead th { background: var(--header-fill); font-family: var(--font-ui); font-size: 10.5px; font-weight: 700; color: var(--ink-soft); text-align: center; }
+  table.mock td.lbl { font-family: var(--font-ui); font-size: 11.5px; font-weight: 600; width: 280px; white-space: normal; }
+  table.mock td.val { font-family: var(--font-ui); font-size: 11.5px; color: var(--ink-soft); }
+  tr.existing td.lbl { border-left: 4px solid var(--good); }
+  tr.existing td.val { background: var(--good-soft); color: var(--good); }
+  tr.new td.lbl { border-left: 4px solid var(--mid); }
+  tr.new td.val { background: var(--mid-soft); color: var(--mid); font-weight: 600; }
+  tr.noimpact td.lbl { border-left: 4px solid var(--accent-warm); }
+  tr.noimpact td.val { background: var(--accent-warm-soft); color: var(--accent-warm); font-style: italic; }
+  tr.blocked td.lbl { border-left: 4px solid var(--ink-faint); opacity: 0.55; }
+  tr.blocked td.val { background: var(--header-fill); color: var(--ink-faint); font-style: italic; }
+  tr.open td.lbl { border-left: 4px dashed var(--warn); }
+  tr.open td.val { background: var(--warn-soft); color: var(--warn); }
+  tr.section-hdr td { background: var(--accent); color: var(--header-text-strong); font-family: var(--font-ui); font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 5px 10px; }
+  .pill { display: inline-block; font-family: var(--font-ui); font-size: 8.5px; font-weight: 700; text-transform: uppercase; padding: 2px 6px; border-radius: 8px; margin-left: 5px; vertical-align: middle; color: #fff; }
+  .pill.new { background: var(--mid); }
+  .pill.blocked { background: var(--ink-faint); }
+  .pill.open { background: var(--warn); }
+  .pill.noimpact { background: var(--accent-warm); }
+  .fbadge { display: inline-block; font-family: var(--font-ui); font-size: 8px; font-weight: 800; padding: 1px 5px; border-radius: 4px; margin-right: 3px; color: #fff; }
+  .fbadge.bgi { background: #1e3a45; }
+  .fbadge.bgii { background: #3b6b6e; }
+  .fbadge.broad { background: #6b8f3b; }
+  .fbadge.special { background: #8f5a3b; }
+  .fbadge.blkt { background: #8b95a1; }
+  .fbadge.all { background: #55606b; }
+  .fbadge.bi { background: #7a3b8f; }
+
+  .callout { display: flex; gap: 10px; padding: 12px 14px; border-radius: 5px; max-width: 110ch; font-size: 13px; margin: 14px 0; font-family: var(--font-ui); }
+  .callout.warn { background: var(--warn-soft); color: var(--warn); }
+  .callout.good { background: var(--good-soft); color: var(--good); }
+  .callout.mid { background: var(--mid-soft); color: var(--mid); }
+  .callout.orange { background: var(--accent-warm-soft); color: var(--accent-warm); }
+  .callout b { font-weight: 700; }
+  .callout-mark { flex: none; font-weight: 700; }
+
+  hr.divider { border: none; border-top: 1px solid var(--grid-line); margin: 44px 0 0; }
+  footer.closing { max-width: 1440px; margin: 52px auto 0; padding: 0 24px 64px; }
+  footer.closing h2 { font-weight: 400; font-size: 20px; margin: 0 0 10px; }
+  footer.closing p.note-foot { margin-top: 14px; font-size: 13px; color: var(--ink-faint); font-family: var(--font-ui); }
+</style>
+
+<header class="masthead">
+  <p class="eyebrow">CF_Algorithm &middot; Special Class &middot; input-tab mockup, not a build &middot; supersedes the merged-into-Location-Inputs option</p>
+  <h1 class="title">Special Class Item Inputs — its own tab, covering all four cause-of-loss forms</h1>
+  <p class="dek">Redone per your call: Special Class gets its <b>own tab</b>, not conditions folded into
+    <code>Location Inputs</code>. This version also goes wider than the earlier Basic-Group-I-only pass — it
+    includes what Basic Group II, Broad, and Special each actually need, traced from
+    <code>CauseOfLoss_SpecialClass_RatingAlgorithms.md</code> in full. Columns are <b>items</b>, not buildings — a
+    single location can carry several scheduled Special Class items at once (see the multi-item discussion earlier
+    in this conversation), so this tab repeats the one-row-per-building pattern at the item level instead.</p>
+  <div class="legend">
+    <span class="sw"><span class="box" style="background:#dcefe4;"></span> Already in the live rater — reused as-is</span>
+    <span class="sw"><span class="box" style="background:#f2e6c4;"></span> New — doesn't exist anywhere yet</span>
+    <span class="sw"><span class="box" style="background:#f3e2cf;"></span> Collected, but confirmed <b>zero rating impact</b> for that form</span>
+    <span class="sw"><span class="box" style="background:#f7ddd4;"></span> Open question — origin/mechanism unresolved</span>
+    <span class="sw"><span class="box" style="background:#e4e8ed;opacity:.6;"></span> Blocked — needs the blanket mechanism, whole-workbook gap</span>
+  </div>
+  <div class="legend" style="margin-top:2px;">
+    <span class="sw"><span class="fbadge bgi">BGI</span> Basic Group I</span>
+    <span class="sw"><span class="fbadge bgii">BGII</span> Basic Group II</span>
+    <span class="sw"><span class="fbadge broad">BROAD</span> Broad</span>
+    <span class="sw"><span class="fbadge special">SPECIAL</span> Special</span>
+    <span class="sw"><span class="fbadge all">ALL</span> every form</span>
+    <span class="sw"><span class="fbadge blkt">BLKT</span> blanket branch, any form</span>
+    <span class="sw"><span class="fbadge bi">BI</span> Business Income &mdash; separate datadef group</span>
+  </div>
+  <p class="dek" style="margin-top:14px;"><b>Updated 2026-09-15:</b> adds the Business Income section.
+    Special Class Business Income is a <b>separate datadef group</b>
+    (<code>CommercialPropertySpecialClassBusnIncome</code>), not extra fields on the Special Class item &mdash;
+    it hangs off the item as its own child, with its own five form chains. The fields below are traced from
+    <code>CommercialPropertySpecialClassBusnIncomeRules.Rule.xml</code>; all domain values shown are the
+    filed ones.</p>
+</header>
+
+<div class="wrap">
+
+  <section class="sect" id="lesson">
+    <div class="callout orange"><span class="callout-mark">&#9679;</span><span><b>Learned from the last pass:</b> a
+      field only belongs on this wireframe if it's traced to actually feed a rate. Broad and Special's base rates
+      turned out to be <b>state/policy-only — they don't key on <code>ClassDescription</code> or
+      <code>ProtectionClass</code> at all</b> (Broad's base rate is a hard-coded <code>"Frame"</code> literal;
+      Special's is a flat statewide constant). Those two rows still appear below because an item still needs a
+      class description for scheduling/identification, but they're marked "no rating impact for this form" rather
+      than implied to matter everywhere just because they matter for Basic Group I.</span></div>
+  </section>
+
+  <section class="sect" id="tab">
+    <h2 class="sect-title">The tab, item by item</h2>
+    <p class="sect-role">Three example items shown side by side specifically because each picks a different Cause
+      of Loss — that's what makes clear which rows actually light up per form, instead of implying every row
+      matters for every item.</p>
+    <div class="sheet-frame">
+      <div class="sheet-tabbar">
+        <div class="sheet-tab">Location Inputs</div>
+        <div class="sheet-tab active">Special Class Item Inputs<span class="pill new">new tab</span></div>
+        <div class="sheet-tab">Calc_SpecialClass_BGI/II/Broad/Special</div>
+      </div>
+      <div class="tblscroll">
+        <table class="mock">
+          <thead><tr><th style="width:280px;"></th>
+            <th>1<br><span style="font-weight:400;">Cause of Loss: Basic</span></th>
+            <th>2<br><span style="font-weight:400;">Cause of Loss: Broad</span></th>
+            <th>3<br><span style="font-weight:400;">Cause of Loss: Special</span></th>
+          </tr></thead>
+          <tbody>
+            <tr class="section-hdr"><td colspan="4">Item Identification <span class="fbadge all">ALL</span></td></tr>
+            <tr><td class="lbl">Item #: / Location #:</td><td class="val">1 / 1</td><td class="val">2 / 1</td><td class="val">3 / 2</td></tr>
+            <tr class="existing"><td class="lbl">State:</td><td class="val">FL</td><td class="val">FL</td><td class="val">NY</td></tr>
+            <tr class="new"><td class="lbl">Class Description:<span class="pill new">new</span></td>
+              <td class="val">Aircraft Stored in the Open</td>
+              <td class="val">Billboards and Signs</td>
+              <td class="val">Yard Storage &mdash; Lumber</td></tr>
+
+            <tr class="section-hdr"><td colspan="4">Coverage Terms <span class="fbadge all">ALL</span></td></tr>
+            <tr class="new"><td class="lbl">Cause of Loss:<span class="pill new">new (per-item, not shared)</span></td>
+              <td class="val">Basic <span style="font-size:10px;opacity:.7;">&rarr; fires BGI + BGII</span></td>
+              <td class="val">Broad <span style="font-size:10px;opacity:.7;">&rarr; fires Broad only</span></td>
+              <td class="val">Special <span style="font-size:10px;opacity:.7;">&rarr; fires Special only</span></td></tr>
+            <tr class="existing"><td class="lbl">Policy Type: <span style="font-weight:400;">(policy-level, not per-item)</span></td>
+              <td class="val" colspan="3">Commercial Property Policy</td></tr>
+            <tr class="new"><td class="lbl">Included in Blanket?<span class="pill new">new</span></td>
+              <td class="val">No</td><td class="val">No</td><td class="val">No</td></tr>
+            <tr class="new"><td class="lbl">Special Class Coinsurance:<span class="pill new">new</span></td>
+              <td class="val">80%</td><td class="val">80%</td><td class="val">90%</td></tr>
+            <tr class="new"><td class="lbl">Special Class Limit:<span class="pill new">new</span></td>
+              <td class="val">$25,000</td><td class="val">$10,000</td><td class="val">$5,000</td></tr>
+            <tr class="new"><td class="lbl">Deductible:<span class="pill new">new (Special-Class-scoped)</span></td>
+              <td class="val">$1,000</td><td class="val">$1,000</td><td class="val">$2,500</td></tr>
+
+            <tr class="section-hdr"><td colspan="4">Basic Group I inputs <span class="fbadge bgi">BGI</span></td></tr>
+            <tr class="existing"><td class="lbl">Protection Class:</td><td class="val">4</td><td class="val" style="opacity:.4;">not read by this item</td><td class="val" style="opacity:.4;">not read by this item</td></tr>
+            <tr class="existing"><td class="lbl">Vandalism Exclusion:</td><td class="val">No</td><td class="val" style="opacity:.4;">not read</td><td class="val" style="opacity:.4;">not read</td></tr>
+
+            <tr class="section-hdr"><td colspan="4">Basic Group II inputs <span class="fbadge bgii">BGII</span></td></tr>
+            <tr class="existing"><td class="lbl">BGII Territory: <span style="font-weight:400;">(shared prep, same as Building's)</span></td>
+              <td class="val">Inland</td><td class="val" style="opacity:.4;">not read</td><td class="val" style="opacity:.4;">not read</td></tr>
+            <tr class="open"><td class="lbl">Construction Symbol (BGII):<span class="pill open">open question</span></td>
+              <td class="val">?</td><td class="val" style="opacity:.4;">not read</td><td class="val" style="opacity:.4;">not read</td></tr>
+            <tr class="new"><td class="lbl">Windstorm/Hail Exclusion (Special Class):<span class="pill new">new</span></td>
+              <td class="val">No</td><td class="val" style="opacity:.4;">not read</td><td class="val" style="opacity:.4;">not read</td></tr>
+            <tr class="new"><td class="lbl">Windstorm/Hail Deductible (Special Class):<span class="pill new">new</span></td>
+              <td class="val">Not Applicable</td><td class="val" style="opacity:.4;">not read</td><td class="val" style="opacity:.4;">not read</td></tr>
+
+            <tr class="section-hdr"><td colspan="4">Broad inputs <span class="fbadge broad">BROAD</span></td></tr>
+            <tr class="noimpact"><td class="lbl">(none &mdash; see callout above)<span class="pill noimpact">no rating impact</span></td>
+              <td class="val" style="opacity:.4;">not read</td><td class="val">Base rate is state-only; <code>Class Description</code> above is schedule-only for this item</td><td class="val" style="opacity:.4;">not read</td></tr>
+
+            <tr class="section-hdr"><td colspan="4">Special inputs <span class="fbadge special">SPECIAL</span></td></tr>
+            <tr class="new"><td class="lbl">Theft Exclusion Form Attached?<span class="pill new">new</span></td>
+              <td class="val" style="opacity:.4;">not read</td><td class="val" style="opacity:.4;">not read</td><td class="val">Yes</td></tr>
+            <tr class="new"><td class="lbl">Theft Deductible:<span class="pill new">new</span></td>
+              <td class="val" style="opacity:.4;">not read</td><td class="val" style="opacity:.4;">not read</td><td class="val">$500</td></tr>
+
+            <tr class="section-hdr"><td colspan="4">Shared policy-level values <span class="fbadge all">ALL</span></td></tr>
+            <tr class="existing"><td class="lbl">Loss Cost Multiplier, IRPM, PackageMod, MultiPremiumDispersion</td>
+              <td class="val" colspan="3">&hellip; already exist, shared with Building/Contents/BI &hellip;</td></tr>
+
+            <tr class="section-hdr"><td colspan="4">Blanket branch, if "Included in Blanket?" = Yes <span class="fbadge blkt">BLKT</span></td></tr>
+            <tr class="blocked"><td class="lbl">Blanket Coinsurance / Blanket Limit<span class="pill blocked">blocked</span></td>
+              <td class="val" colspan="3">disabled until the blanket-rating mechanism exists, any coverage</td></tr>
+            <tr class="blocked"><td class="lbl">Full Special Class Value<span class="pill blocked">blocked</span></td>
+              <td class="val" colspan="3">this item's contribution to the blanket total &mdash; disabled, same root cause</td></tr>
+            <tr class="blocked"><td class="lbl">Blanket Total Full Value Amount<span class="pill blocked">blocked</span></td>
+              <td class="val" colspan="3">policy-level aggregate across every blanketed item &mdash; disabled, same root cause</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="sect" id="busninc">
+    <h2 class="sect-title">Business Income — a child of the item, not more rows on it</h2>
+    <p class="sect-role">Special Class Business Income is its own datadef group with its own Basic Group I /
+      Basic Group II / Broad / Special / Earthquake chains. It <b>does not compute a rate</b> &mdash; step 1 of
+      its Basic Group I chain is a straight <code>Copy</code> of the parent item's
+      <code>BasicGroupIRate</code>. Everything below exists to produce <b>one factor</b> that multiplies that
+      inherited rate. So this belongs as a separate block keyed to the parent item, not as extra rows in the
+      table above &mdash; one Special Class item can carry Business Income or not.</p>
+
+    <div class="callout warn"><span class="callout-mark">&#9888;</span><span><b>The single most important thing
+      about these inputs:</b> Maximum Period of Indemnity, Monthly Limit of Indemnity, Extra Expense limits and
+      Type of Risk look like four factors that multiply together. They do not. <code>SetFactor</code> is a
+      four-way <code>Choose</code> that picks <b>exactly one</b>, first match wins, and discards the other
+      three. That is why the rows below are ordered as they are &mdash; the order <i>is</i> the precedence.</span></div>
+
+    <div class="sheet-frame">
+      <div class="sheet-tabbar">
+        <div class="sheet-tab">Location Inputs</div>
+        <div class="sheet-tab">Special Class Item Inputs</div>
+        <div class="sheet-tab active">Special Class BI Inputs<span class="pill new">new block</span></div>
+      </div>
+      <div class="tblscroll">
+        <table class="mock">
+          <thead><tr><th style="width:300px;"></th>
+            <th>1<br><span style="font-weight:400;">ordinary Type-of-Risk path</span></th>
+            <th>2<br><span style="font-weight:400;">Maximum Period elected</span></th>
+            <th>3<br><span style="font-weight:400;">Extra Expense Only</span></th>
+          </tr></thead>
+          <tbody>
+            <tr class="section-hdr"><td colspan="4">Linkage <span class="fbadge bi">BI</span></td></tr>
+            <tr class="new"><td class="lbl">Parent Special Class Item ID:<span class="pill new">new</span></td>
+              <td class="val">1 &ndash; 1</td><td class="val">2 &ndash; 1</td><td class="val">3 &ndash; 2</td></tr>
+            <tr class="noimpact"><td class="lbl">Basic Group I Rate <span style="font-weight:400;">(inherited, not entered)</span></td>
+              <td class="val" colspan="3">copied from the parent item &mdash; <code>../../BasicGroupIRate</code>. <b>Not an input.</b></td></tr>
+
+            <tr class="section-hdr"><td colspan="4">Coverage Terms <span class="fbadge bi">BI</span></td></tr>
+            <tr class="new"><td class="lbl">BI Coverage Type:<span class="pill new">new</span></td>
+              <td class="val">Business Income With Extra Expense</td>
+              <td class="val">Business Income Without Extra Expense</td>
+              <td class="val">Extra Expense Only</td></tr>
+            <tr class="new"><td class="lbl">BI Limit:<span class="pill new">new</span></td>
+              <td class="val">$250,000</td><td class="val">$100,000</td><td class="val">$40,000</td></tr>
+            <tr class="new"><td class="lbl">Included in Blanket?<span class="pill new">new</span></td>
+              <td class="val">No</td><td class="val">No</td><td class="val">No</td></tr>
+            <tr class="new"><td class="lbl">BI Coinsurance:<span class="pill new">new</span></td>
+              <td class="val">80%</td><td class="val">&mdash;</td><td class="val">&mdash;</td></tr>
+            <tr><td class="lbl" style="font-weight:400;padding-left:22px;">filed values</td>
+              <td class="val" colspan="3" style="font-size:11.5px;">50% &middot; 60% &middot; 70% &middot; 80% &middot; 90% &middot; 100% &middot; 125% &middot; No Coinsurance &middot; Not Applicable</td></tr>
+
+            <tr class="section-hdr"><td colspan="4">The factor pick &mdash; in precedence order <span class="fbadge bi">BI</span></td></tr>
+            <tr class="new"><td class="lbl"><b>1.</b> Maximum Period of Indemnity?<span class="pill new">new</span></td>
+              <td class="val">No</td><td class="val"><b>Yes</b> <span style="font-size:10px;opacity:.7;">&rarr; wins outright</span></td><td class="val">No</td></tr>
+            <tr class="new"><td class="lbl"><b>2.</b> Monthly Limit of Indemnity:<span class="pill new">new</span></td>
+              <td class="val">Not Applicable</td>
+              <td class="val" style="opacity:.55;">1/4 <span style="font-size:10px;">&mdash; ignored, row 1 already won</span></td>
+              <td class="val">Not Applicable</td></tr>
+            <tr><td class="lbl" style="font-weight:400;padding-left:22px;">filed values</td>
+              <td class="val" colspan="3" style="font-size:11.5px;">1/3 &middot; 1/4 &middot; 1/6 &middot; Not Applicable</td></tr>
+            <tr class="new"><td class="lbl"><b>3.</b> Extra Expense &mdash; Limits on Loss Payments:<span class="pill new">new</span></td>
+              <td class="val">&mdash;</td><td class="val">&mdash;</td><td class="val">40%,80%,100%</td></tr>
+            <tr><td class="lbl" style="font-weight:400;padding-left:22px;">filed values</td>
+              <td class="val" colspan="3" style="font-size:11.5px;">100%,100%,100% (3.40) &middot; 40%,80%,100% (1.70) &middot; 35%,70%,100% (1.62) &middot; Expanded Limits on Loss Payments &middot; Not Applicable</td></tr>
+            <tr class="new"><td class="lbl"><b>4.</b> Type of Risk:<span class="pill new">new</span> <span style="font-weight:400;">(the default path)</span></td>
+              <td class="val">Mercantile and Non-manufacturing</td>
+              <td class="val">Manufacturing</td>
+              <td class="val">Not Applicable</td></tr>
+            <tr><td class="lbl" style="font-weight:400;padding-left:22px;">filed values</td>
+              <td class="val" colspan="3" style="font-size:11.5px;">Mercantile and Non-manufacturing &middot; Manufacturing &middot; Mining &middot; Rental Properties &middot; Educational Institutions &middot; Seasonal Leases with Monthly Limit &middot; four Combined&hellip; options &middot; Not Applicable</td></tr>
+
+            <tr class="section-hdr"><td colspan="4">Combined Type of Risk &mdash; only when a Combined option is picked <span class="fbadge bi">BI</span></td></tr>
+            <tr class="new"><td class="lbl">Mercantile %:<span class="pill new">new</span></td>
+              <td class="val" colspan="3">percentage split across categories; feeds the Combination1/Combination2 factor paths inside <code>SetTypeOfRiskFactor</code></td></tr>
+            <tr class="new"><td class="lbl">Manufacturing % / Rental % / Educational %:<span class="pill new">new</span></td>
+              <td class="val" colspan="3">same &mdash; four percentage fields, one per category</td></tr>
+            <tr class="open"><td class="lbl">Tuition and Fees<span class="pill open">open</span></td>
+              <td class="val" colspan="3">feeds <code>SetTuitionAndFeesFactor</code>, consumed by <code>SetTypeOfRiskFactor</code>. Educational risks only. <b>Field origin not traced</b> &mdash; <code>SetTypeOfRiskFactor</code> is 14,000 characters and was not opened branch by branch.</td></tr>
+            <tr class="open"><td class="lbl">Educational Institutions &mdash; Extension of Recovery<span class="pill open">open</span></td>
+              <td class="val" colspan="3">feeds <code>SetChangesEducationalInstitutionsExtensionOfRecoveryFactor</code>. Same open question.</td></tr>
+
+            <tr class="section-hdr"><td colspan="4">Exclusions &amp; premium-level <span class="fbadge bi">BI</span></td></tr>
+            <tr class="new"><td class="lbl">Vandalism Exclusion:<span class="pill new">new (BI's own, not the item's)</span></td>
+              <td class="val">No</td><td class="val">No</td><td class="val">No</td></tr>
+            <tr><td class="lbl" style="font-weight:400;padding-left:22px;">Florida note</td>
+              <td class="val" colspan="3" style="font-size:11.5px;">FL <b>subtracts a rate</b> here rather than multiplying a factor &mdash; <code>BasicGroupIRate &minus; VandalismExclRate</code>. Different operation, not just a different number.</td></tr>
+            <tr class="existing"><td class="lbl">Package Mod Factor / IRPM <span style="font-weight:400;">(policy-level)</span></td>
+              <td class="val" colspan="3">reused as-is from the policy</td></tr>
+            <tr class="noimpact"><td class="lbl">Multi-Premium &amp; Dispersion Credit</td>
+              <td class="val" colspan="3"><b>Not in the BI premium formula</b> &mdash; confirmed absent by direct read, unlike every building-side Special Class premium. Do not carry it down.</td></tr>
+            <tr class="existing"><td class="lbl">CP 10 75 attached? <span style="font-weight:400;">(policy-level)</span></td>
+              <td class="val" colspan="3">same cell the building side uses &mdash; BI reads <code>CyberIncidentExclusionFactorBGI</code> from the policy</td></tr>
+            <tr class="open"><td class="lbl">CP 10 76 &mdash; BI-specific factor<span class="pill open">open</span></td>
+              <td class="val" colspan="3">BI reads <code>CyberIncidentExclusionCOLExcptnsFactorBusnIncomeBGI<b>ToUse</b></code> from its own parent, <b>not</b> the building-side factor. What the <code>ToUse</code> rule resolves to is untraced &mdash; do not point this at the shared cell.</td></tr>
+
+            <tr class="section-hdr"><td colspan="4">Blanket <span class="fbadge blkt">BLKT</span></td></tr>
+            <tr class="blocked"><td class="lbl">Blkt Basic Group I Avg Rate<span class="pill blocked">blocked</span></td>
+              <td class="val" colspan="3">disabled until the blanket-rating mechanism exists &mdash; same whole-workbook gap as the item above</td></tr>
+            <tr class="blocked"><td class="lbl">Full Business Income Value<span class="pill blocked">blocked</span></td>
+              <td class="val" colspan="3">this BI record's contribution to the blanket total &mdash; disabled, same root cause</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <p class="note-foot">Only the Basic Group I chain has been traced. Business Income's Basic Group II, Broad,
+      Special and Earthquake chains run from the same <code>SetFinalRates</code> call and will almost certainly
+      reuse the same <code>Factor</code> &mdash; but that is an expectation, not a finding, and the inputs above
+      may not be the complete set once those four are traced.</p>
+  </section>
+
+  <section class="sect" id="perform">
+    <h2 class="sect-title">What each Cause of Loss selection actually turns on</h2>
+    <p class="sect-role">The "Cause of Loss" field isn't a label — it's the gate. <code>Basic</code> is the odd one:
+      it fires <em>both</em> Basic Group I and Basic Group II simultaneously (both premium files hard-code their
+      coverage-on-policy indicator to <code>1</code>), where <code>Broad</code> and <code>Special</code> each
+      require an exact match and fire alone.</p>
+    <table>
+      <thead><tr><th>Cause of Loss value</th><th>Fires</th><th>Gate mechanism</th></tr></thead>
+      <tbody>
+        <tr><td>Basic</td><td><span class="fbadge bgi">BGI</span> + <span class="fbadge bgii">BGII</span>, together</td><td>Both premium files hard-code <code>CoverageOnPolicyIndicator = 1</code> &mdash; always on, not gated by this selection at all; cause-of-loss enforcement happens by which coverage record exists upstream</td></tr>
+        <tr><td>Broad</td><td><span class="fbadge broad">BROAD</span> only</td><td>Exact match: <code>CauseOfLossToUse = "Broad"</code></td></tr>
+        <tr><td>Special</td><td><span class="fbadge special">SPECIAL</span> only</td><td>Exact match: <code>CauseOfLossToUse = "Special"</code></td></tr>
+      </tbody>
+    </table>
+    <div class="callout warn"><span class="callout-mark">&#9888;</span><span><b>This means "Basic" items need both
+      BGI's and BGII's inputs filled in at once</b> &mdash; Protection Class and Vandalism Exclusion for the BGI
+      side, BGII Territory and the Construction Symbol open question for the BGII side. A UI that only shows BGI's
+      fields when "Basic" is selected would silently leave Basic Group II's chain unable to compute.</span></div>
+  </section>
+
+  <section class="sect" id="open">
+    <h2 class="sect-title">Open questions this wireframe can't resolve on its own</h2>
+    <table>
+      <thead><tr><th>Field</th><th>Question</th></tr></thead>
+      <tbody>
+        <tr><td>Construction Symbol (Basic Group II)</td><td><code>CommercialPropertySpecialClassRules.Rule.xml</code> contains no rule that assigns <code>BasicGroupIISymbol</code> at all &mdash; confirmed by grep, zero matches. It's read directly wherever needed, implying it's either a raw data-entry field on the item or copied down from somewhere outside this ruleset. Shown above as an input because there's nowhere else for it to come from, but its actual source is unresolved.</td></tr>
+        <tr><td>Windstorm/Hail Exclusion (Special Class)</td><td>Basic Group II's Step 1 tests for a <code>CommercialPropertyWindstormOrHailExclusionSpecialClass</code> record &mdash; a Special-Class-scoped table, distinct by name from Building's own windstorm/hail exclusion. Whether this needs its own separate input (shown above) or actually resolves to the same shared value Building already collects was not fully reconciled in this pass.</td></tr>
+        <tr><td>Broad's <code>"Frame"</code>-literal base rate</td><td>Confirmed in the rule XML, not a misread &mdash; but whether this is an intentional simplification for scheduled property or an ERC-package placeholder couldn't be determined from the rules file alone.</td></tr>
+        <tr><td><code>SpecialBuildingRate</code> table (Special form)</td><td>Same table Building's own Special form reads &mdash; header row only, no CW data row filed. <code>SpecialBaseRate</code> resolves to null at CW for Special Class too, identical gap to Building's.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <hr class="divider" />
+
+  <footer class="closing">
+    <h2>Remaining steps</h2>
+    <p class="note-foot">This is a layout sketch, not a build — no tab, column, or formula shown here exists in the
+      live workbook. It supersedes the earlier "fold into <code>Location Inputs</code>" mockup per your direction
+      that this should be its own tab. Next: resolve the two open questions above (Construction Symbol origin,
+      Windstorm/Hail Exclusion scoping) before treating this as buildable, and confirm whether Broad/Special's
+      class-description field should even be required at entry time given it has no rating impact for those two
+      forms specifically. Nothing gets built into the live workbook until you say go.</p>
+  </footer>
+
+</div>

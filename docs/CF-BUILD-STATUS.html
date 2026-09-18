@@ -1,0 +1,941 @@
+<title>Property build &mdash; every chunk, every task, status</title>
+<meta charset="utf-8">
+<style>
+  body { font-family: Georgia, "Times New Roman", serif; max-width: 1060px; margin: 0 auto; padding: 32px 24px 80px; line-height: 1.55; color: #1c2733; background: #fff; }
+  @media (prefers-color-scheme: dark) {
+    body { background: #14181d; color: #dfe4e9; }
+    table, th, td { border-color: #3a4048 !important; }
+    thead th { background: #24313a !important; color: #eef4f3 !important; }
+    code { background: #262c33 !important; color: #dfe4e9; }
+    .note { background: #2c2a1c !important; color: #e0c064 !important; }
+    .note.good { background: #1b3226 !important; color: #63c090 !important; }
+    .note.shared { background: #1d2b33 !important; color: #9fd4dc !important; }
+    .chunk { border-color: #2b3742 !important; background: #171d24 !important; }
+    .chunk.done { border-left-color: #3f8f66 !important; }
+    .chunk.now { border-left-color: #dd9a5c !important; }
+    .chunk.todo { border-left-color: #3a4048 !important; }
+    .chunk.todo { opacity: .82; }
+    .n { background: #1d3535 !important; color: #7fd3d0 !important; }
+    .tag { background: #222a32 !important; color: #a3aebb !important; }
+    .tag.done { background: #1b3226 !important; color: #63c090 !important; }
+    .tag.warn { background: #3a3319 !important; color: #e0c064 !important; }
+    .tag.open { background: #2a2f36 !important; color: #9aa5b1 !important; }
+    tr.d td:first-child { color: #63c090; }
+    .bar { background: #262c33 !important; }
+  }
+  h1 { font-size: 26px; font-weight: 400; margin-bottom: 4px; }
+  h2 { font-size: 19px; font-weight: 700; margin-top: 40px; border-bottom: 2px solid #1e3a45; padding-bottom: 4px; }
+  .meta { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13px; color: #55606b; margin: 6px 0 4px; }
+  code { font-family: ui-monospace, Consolas, monospace; font-size: 0.88em; background: #eef1f4; padding: 1px 5px; border-radius: 3px; }
+  table { border-collapse: collapse; width: 100%; margin: 12px 0 8px; font-size: 13.5px; }
+  th, td { border: 1px solid #d7dce2; padding: 6px 9px; text-align: left; vertical-align: top; }
+  thead th { background: #1e3a45; color: #eef4f3; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 11.5px; text-transform: uppercase; letter-spacing: .03em; }
+  td.st { text-align: center; width: 46px; font-size: 15px; }
+  td.num { text-align: center; width: 34px; color: #8b95a1; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 12px; }
+  .note { background: #f7ddd4; color: #a53d26; padding: 12px 16px; border-radius: 6px; margin: 16px 0; font-size: 14px; }
+  .note.good { background: #dcefe4; color: #2f7d5a; }
+  .note.shared { background: #dde9ee; color: #1e5567; }
+  .chunk { border: 1px solid #d7dce2; border-left: 5px solid #1e3a45; border-radius: 8px; padding: 14px 18px; margin: 16px 0; background: #fcfcfd; }
+  .chunk.done { border-left-color: #2f7d5a; }
+  .chunk.now { border-left-color: #b96a2c; }
+  .chunk.todo { border-left-color: #b8c0c9; background: #fbfbfc; }
+  .chunk h3 { margin: 0 0 6px; font-size: 16px; font-weight: 700; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .n { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 12px; font-weight: 700; background: #cfe0e0; color: #14484a; padding: 2px 9px; border-radius: 99px; }
+  .tag { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; background: #eef1f4; color: #55606b; padding: 2px 7px; border-radius: 4px; }
+  .tag.done { background: #dcefe4; color: #2f7d5a; }
+  .tag.warn { background: #f2e6c4; color: #a67c1e; }
+  .tag.open { background: #eef1f4; color: #7d8792; }
+  .chunk p { margin: 8px 0; font-size: 14px; }
+  .lab { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; color: #8b95a1; }
+  .bar { height: 8px; background: #e7eaee; border-radius: 99px; overflow: hidden; margin: 10px 0 2px; }
+  .bar span { display: block; height: 100%; background: #2f7d5a; }
+  .sub { font-size: 12.5px; color: #8b95a1; font-family: -apple-system, "Segoe UI", sans-serif; }
+</style>
+
+<h1>Property build &mdash; every chunk, every task, status</h1>
+<p class="meta"><b>As of 2026-09-18.</b> One page for the whole 15-chunk plan. Sources, and what to edit
+when something changes: <code>CF-START-HERE.md</code> (resume point),
+<code>CF-PROPERTY-BUILD-ORDER.md</code> (the plan and the gate),
+<code>CF-CHUNK2-TASKS.md</code> through <code>CF-CHUNK5-TASKS.md</code>
+(the task lists), <code>CF-CHUNK1-GATE.md</code> / <code>CF-CHUNK2-GATE.md</code> /
+<code>CF-CHUNK3-GATE.md</code> (the filed gates).<br>
+&#42; on a gate cell means passed, but re-tested later under a stronger check &mdash; see the note below.</p>
+
+<div class="note good"><b>Where to pick up: chunk 6 &mdash; Special Class.</b> <b>Chunk 5 is gated at 8 of 9</b>: all 28 tasks closed, four forms rating, 44 of 47 jurisdictions exact, 6 ISO calls all matching, and <b>no engine code written</b> &mdash; the fifth coverage in a row on chunk 0's foundation. <b>Chunk 4 is gated at 8 of 9</b>: all 32 tasks closed, four Contents forms rating, 46 of 47 jurisdictions, 6 ISO calls all matching, and <b>no engine code written</b> &mdash; the fourth coverage in a row on chunk 0's foundation.
+<b>Chunk 3 is gated at 8 of 9 as of 2026-09-18</b>, with all 24 of its tasks closed and
+<b>no engine code written</b> &mdash; the third coverage in a row to run on chunk 0's foundation unchanged.
+Broad&nbsp;$16 and Special&nbsp;$54 ISO-confirmed, 47 of 47 jurisdictions with nothing skipped, 7 further
+ISO calls all matching. Gate point 9 (validation messages) is the one outstanding point, and it is owed
+on chunks 1 and 2 equally. Full gate: <code>CF-CHUNK3-GATE.md</code>.</div>
+
+<div class="note"><b>Gate point 6's check was blind, and chunks 1 and 2 passed under it.</b>
+<code>04_shared_names.py</code> collected only the rate tables named <i>directly</i> inside a rule &mdash;
+but ISO's <code>Set*</code> rules delegate their lookups via <code>RunRule</code>, so the two
+<i>documented</i> trap cases, defined in 16 and 6 datadef groups, each reported <b>zero</b> tables and
+could never have been flagged. Following <code>RunRule</code> transitively takes the chunk&nbsp;1 chain
+from 1 ambiguous name to <b>6</b>, chunk&nbsp;2 from 1 to <b>4</b>, chunk&nbsp;3 from 1 to <b>9</b>, and
+the corpus from 9 to <b>83</b>. All nineteen are now adjudicated and matching &mdash; but those two
+gates were passed on a weaker check than the one they now stand on. Third time a defect has been found
+in the instrument rather than the corpus. Full write-up: <code>CF-CHUNK3-SHARED-NAMES.md</code>.</div>
+
+<div class="note"><b>The sweep's finding: Florida and Puerto Rico rate Special by their own rule.</b>
+The first pass skipped both as &ldquo;no rate filed&rdquo;, because the countrywide table name finds no
+row there &mdash; and the engine rated Florida at $38 anyway. Both override <code>SetSpecialBaseRate</code>
+to read a <b>differently-named table</b>: FL splits residential / non-residential on 21 hardcoded class
+codes; PR gates on <code>"Special Including Theft"</code> / <code>"Special Excluding Theft"</code>, two
+cause-of-loss values that do not exist countrywide, and keys the rate on <b>construction type</b>. A
+submission saying <code>Special</code> is off-domain in Puerto Rico and prices at zero in silence.
+Full write-up: <code>CF-CHUNK3-STATE-SWEEP.md</code>.</div>
+
+<div class="note"><b>A construction type that is spelled right and prices at zero.</b>
+<code>ConstructionType</code> is a <b>25-value submission domain</b> that maps onto the six rating types,
+and <code>Frame</code> is the only one of the six that is also a valid input. Submitting
+<code>Joisted Masonry</code> &mdash; the name the rate table itself is keyed on &mdash; misses the domain
+lookup and prices the whole Broad chain at <b>zero with nothing raised</b>. The eighth member of the
+absent-means-zero family, and the first where the input is present, correctly spelled and semantically
+right. Full write-up: <code>CF-CHUNK3-BROAD-STRUCTURE.md</code>.</div>
+
+<div class="note"><b>Two zero-case predictions were wrong, and both are worth carrying.</b>
+Special's deductible fall-through was documented as having no <code>Otherwise</code> branch; the filed
+XML has one, so a blank deductible zeroes Special exactly as it zeroes Broad &mdash; a defect in our own
+notes, now corrected in <code>CauseOfLoss_Building_RatingAlgorithms.md</code>. And a missing
+<code>Limit</code> does <b>not</b> price at zero: the null-premium guard refuses the submission. That
+makes it the only one of seven known missing inputs that fails loudly.
+Full write-up: <code>CF-CHUNK3-ZERO-CASES.md</code>.</div>
+
+<div class="note"><b>ISO refused four Contents payloads that our engine rates.</b>
+Every submission without a <code>WindstormOrHailDeductible</code> came back
+<code>Matrix: WindstormOrHailDeductibleAsNumber &hellip; No results have been returned.</code> &mdash; and
+our engine prices it happily. That is a fresh instance of the open
+<code>SingleResult</code>-with-zero-hits question, where chunk 2 measured blanket strictness and
+<b>disproved</b> it because it broke VA and VT, which ISO rates. <b>This is the first same-corpus pair of
+a refusal and a tolerance</b>, and the best material yet for the targeted probes that open item needs.</div>
+
+<div class="note shared"><b>Three instrument defects in two days, and none in the corpus.</b>
+Gate point 6's check was blind to delegating rules; gate point 7's census was blind to theft; the state
+sweep's first pass was blind to rule overrides. <b>Each returned a clean result that was really an empty
+search.</b> The habit that caught all three is the same: predict a specific number, and treat the
+disagreement as the finding &mdash; including when the disagreement is with our own notes.</div>
+
+<div class="note shared"><b>Puerto Rico can never be confirmed against ISO, and it is the state that most
+needs it.</b> The RAaS subscription does not cover PR (OI-86, closed 2026-08-13) &mdash; and PR is the
+jurisdiction with the most unusual Special reading in the corpus: its own cause-of-loss domain, its own
+construction-keyed rate table, its own theft rule, its own Broad base rate and its own LOI table. Every
+PR premium rests on a reading of the filed rules and nothing else, and that has to be said wherever a PR
+premium is presented.</div>
+
+<div class="note"><b>Nothing is committed.</b> All of <code>cf_engine/</code>, <code>scripts/cf/</code>,
+the <code>docs/CF-*</code> files and the <code>gl_engine/</code> edits are working-tree only.</div>
+
+<h2>The whole plan at a glance</h2>
+
+<div class="bar"><span style="width:44%"></span></div>
+<p class="sub">8 of 15 chunks gated &middot; chunks 6, 7 and 8 all closed 2026-09-18 &middot; point 9 (validation messages) is owed project-wide, and <b>chunk 8 additionally holds point 8 open</b> on three jurisdictions whose zeros are not yet explained &mdash; named rather than waved past</p>
+
+<table>
+<thead><tr><th class="num">#</th><th>Chunk</th><th>Status</th><th>Where it stands</th></tr></thead>
+<tbody>
+<tr class="d"><td class="num">0</td><td>Foundation &mdash; loader, resolver, interpreter</td><td><span class="tag done">Built</span></td><td>Proved by chunk 1's gate. No engine code written since</td></tr>
+<tr class="d"><td class="num">1</td><td>Building &mdash; Basic Group I</td><td><span class="tag done">Gate 8 of 8</span></td><td>$261 / $263 / $288, ISO-confirmed</td></tr>
+<tr class="d"><td class="num">2</td><td>Building &mdash; Basic Group II</td><td><span class="tag done">Gate 8 of 8</span></td><td>$261 + $32 from one submission, ISO-confirmed</td></tr>
+<tr class="d"><td class="num">3</td><td>Building &mdash; Broad and Special</td><td><span class="tag done">Gate 8 of 9</span></td><td>Broad $16 / Special $54, ISO-confirmed; 47 of 47 states; 24 of 24 tasks</td></tr>
+<tr><td class="num">4</td><td>Contents (Personal Property) &mdash; four forms</td><td><span class="tag done">Gated 8 of 9 &mdash; 15 of 32 tasks</span></td><td>$223 / $24 / $16 / $137, ISO-confirmed; 46 of 47 states; all 32 tasks done. First chunk to rate a <b>repeating group</b> &mdash; and ISO sums it the way we do</td></tr>
+<tr><td class="num">5</td><td>Business Income &mdash; <code>Factor</code> chain + four forms</td><td><span class="tag done">Gate 8 of 9 &mdash; all 28 tasks</span></td><td>Four forms rating: <b>$112 / $13 / $23 / $47</b>. <b>The first coverage that is arithmetically downstream of another</b>: three of five forms read Building's computed rate rather than their own</td></tr>
+<tr class="d"><td class="num">6</td><td>Special Class &mdash; building side</td><td><span class="tag done">Gate 8 of 9 &mdash; all 29 tasks</span></td><td>Four forms rating: <b>$66 / $209 / $14 / $44</b>; <b>47 of 47 states</b>, the first complete sweep since chunk 3. The first coverage that is <b>not inside a building record</b> &mdash; Special Class hangs off the Location. Rating driver is a free-text class <b>description</b> through two lookups in series</td></tr>
+<tr class="d"><td class="num">7</td><td>Special Class Business Income</td><td><span class="tag done">Gate 8 of 9 &mdash; all 28 tasks</span></td><td>Four forms rating: <b>$39 / $123 / $23 / $47</b>; <b>47 of 47 states</b>. <b>The first coverage that borrows a FULLY RATED rate</b> &mdash; eleven values cross the boundary and not one is a base rate. Deepest nesting in the project</td></tr>
+<tr class="d"><td class="num">8</td><td>Legal Liability &mdash; Building and Contents</td><td><span class="tag done">Gate 7 of 9 &mdash; all 26 tasks</span></td><td>Building <b>$60 / $7 / $4 / $12</b>, Contents <b>$132 / $15 / $11 / $93</b>; <b>47 of 47 states</b>. <b>The traced eleven-point map scored: 8 confirmed, 3 corrected</b>, plus a cross-coverage leak it does not mention. <b>Point 8 held open</b> on CA, FL and PR</td></tr>
+<tr><td class="num">9</td><td>Blanket rating</td><td><span class="tag open">Not opened</span></td><td>A stub in every premium file built so far</td></tr>
+<tr><td class="num">10</td><td>Earthquake &mdash; the fifth form</td><td><span class="tag open">Untraced</span></td><td>97 rule files; the largest unblocking item in the plan</td></tr>
+<tr><td class="num">11</td><td>Leasehold Interest</td><td><span class="tag open">Surveyed only</span></td><td>32 rule files; the only <code>rul:Power</code> in the package</td></tr>
+<tr><td class="num">12</td><td>The endorsement families</td><td><span class="tag open">Sized only</span></td><td>Ordinance or Law (55) and the rest &mdash; not sequenced</td></tr>
+<tr><td class="num">13</td><td>Terrorism / TRIA</td><td><span class="tag open">Untraced</span></td><td>16 rule files; runs last, reads finished premiums</td></tr>
+<tr><td class="num">14</td><td>Policy assembly</td><td><span class="tag open">Not opened</span></td><td>First partial check already passed inside chunk 3's task 23</td></tr>
+</tbody>
+</table>
+
+<h2>The gate &mdash; what every chunk has to satisfy</h2>
+<p>Nine points in the plan. Chunks 1 and 2 were filed against the first eight; point 9 (validation
+messages) was added afterwards and is owed retroactively on all five closed chunks &mdash; it is the only
+point outstanding anywhere.</p>
+
+<table>
+<thead><tr><th class="num">#</th><th>Gate point</th><th class="st">C1</th><th class="st">C2</th><th class="st">C3</th><th class="st">C4</th><th class="st">C5</th><th class="st">C6</th><th class="st">C7</th><th class="st">C8</th></tr></thead>
+<tbody>
+<tr><td class="num">1</td><td>A golden case rates end to end, every intermediate traced to a named rule and table row</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td></tr>
+<tr><td class="num">2</td><td>Every table's row count stated; header-only tables explained</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#11036;</td><td class="st">&#9989;</td><td class="st">&#11036;</td></tr>
+<tr><td class="num">3</td><td>Every state enumerated, not sampled &mdash; "n of N", N from the corpus</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td></tr>
+<tr><td class="num">4</td><td>Every <code>0</code> tested against its consuming branch</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td></tr>
+<tr><td class="num">5</td><td>Every hardcoded literal key listed</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td></tr>
+<tr><td class="num">6</td><td>Shared-name traps diffed, not assumed</td><td class="st">&#9989;&#42;</td><td class="st">&#9989;&#42;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td></tr>
+<tr><td class="num">7</td><td>Every exclusion's endorsement record identified per datadef group</td><td class="st">&#9989;&#42;</td><td class="st">&#9989;&#42;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td></tr>
+<tr><td class="num">8</td><td>The edition basis stated; any table from an older edition says so</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#11036;</td></tr>
+<tr><td class="num">9</td><td>No unexplained validation message on the golden case</td><td class="st">&#11036;</td><td class="st">&#11036;</td><td class="st">&#11036;</td><td class="st">&#11036;</td><td class="st">&#11036;</td><td class="st">&#11036;</td><td class="st">&#11036;</td><td class="st">&#11036;</td></tr>
+</tbody>
+</table>
+<p class="sub">&#9989; passed &middot; &#11036; not yet done &middot; &#9989;&#42; passed, then re-tested under a
+stronger check (see the note above). <b>Points 1&ndash;8 hold on all five closed chunks; point 9 holds on none.</b> Chunk 6 is open; none of its nine are answered yet.
+Chunk 1 fires three ISO validation messages on every case and chunk 4 adds a fourth &mdash;
+<i>"Full Value cannot be lower than the Limit"</i>. The premium is right regardless, but point 9 is not
+satisfied until each is designed out or logged in
+<code>CF_Algorithm/CF_Message_Register.md</code>. Encouraging sign: ISO's message count matched the
+engine's on all seven chunk 3 calls.</p>
+
+<h2>Chunk by chunk</h2>
+
+<div class="chunk done">
+<h3><span class="n">0</span> Foundation <span class="tag done">Built</span></h3>
+<p>Not a coverage &mdash; it gates every coverage, and has no gate of its own. Proved by chunk 1.</p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th>Task</th><th>Evidence</th></tr></thead>
+<tbody>
+<tr><td class="st">&#9989;</td><td>Interpreter parity &mdash; <code>rul:Product</code>, <code>rul:Power</code>, <code>rul:FirstNonNull</code>, <code>rul:Choose</code> first-match</td><td>five nodes added, three corrections; nothing since</td></tr>
+<tr><td class="st">&#9989;</td><td>Resolver &mdash; countrywide base, state child, edition chain</td><td><code>cf_engine/resolve/resolver.py</code></td></tr>
+<tr><td class="st">&#9989;</td><td>County/place territory resolver (not ZIP)</td><td>built</td></tr>
+<tr><td class="st">&#9989;</td><td>Header-only-table detector that fails loudly</td><td>built</td></tr>
+<tr><td class="st">&#9989;</td><td>Foundation checks pass</td><td><code>scripts/cf/00_chunk0_checks.py</code></td></tr>
+<tr><td class="st">&#11036;</td><td>Housekeeping: <code>cf_engine</code> imports <code>gl_engine</code>; the shared core wants a neutral home</td><td>deferred &mdash; <b>never bundle with a rating change</b></td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="chunk done">
+<h3><span class="n">1</span> Building &mdash; Basic Group I <span class="tag done">Gate 8 of 8</span></h3>
+<p>The spine. Base rate &rarr; territory &rarr; protection class &rarr; cause-of-loss &rarr; coinsurance
+&rarr; LOI &rarr; deductible &rarr; premium. Golden case $261 / $263 / $288, ISO-confirmed.</p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th>Task</th><th>Evidence</th></tr></thead>
+<tbody>
+<tr><td class="st">&#9989;</td><td>Golden case, hand-derived before code</td><td><code>01_golden_case.py</code></td></tr>
+<tr><td class="st">&#9989;</td><td>Zero cases</td><td>Z1&ndash;Z5</td></tr>
+<tr><td class="st">&#9989;</td><td>47-jurisdiction sweep, each premium predicted</td><td>43 exact; override census qualifies the figure</td></tr>
+<tr><td class="st">&#9989;</td><td>Shared-name adjudication</td><td><code>04_shared_names.py</code></td></tr>
+<tr><td class="st">&#9989;</td><td>Hardcoded literal census</td><td>covers the whole Building coverage &mdash; reused by chunks 2 and 3</td></tr>
+<tr><td class="st">&#9989;</td><td>Exclusion records per datadef group</td><td>gate point 7</td></tr>
+<tr><td class="st">&#9989;</td><td><b>Rounding mode settled</b> &mdash; <code>ROUND_HALF_UP</code>, proven at both scales</td><td><code>07_rounding_tie.py</code>; 58,656 combinations searched, two ties asked of ISO</td></tr>
+<tr><td class="st">&#9989;</td><td><b>Null policy settled</b> &mdash; <code>propagate</code>, plus a null-premium guard</td><td>two rival hypotheses built and disproven</td></tr>
+<tr><td class="st">&#9989;</td><td>Gate document filed</td><td><code>CF-CHUNK1-GATE.md</code></td></tr>
+<tr><td class="st">&#11036;</td><td>Gate point 9 &mdash; three ISO validation messages fire on every case</td><td>owed retroactively</td></tr>
+<tr><td class="st">&#11036;</td><td>Input validation &mdash; Arizona's <code>BasicGroupIReductionCredit</code> and an unrecognised <code>ConstructionType</code> price at zero</td><td>carried to the open-items list</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="chunk done">
+<h3><span class="n">2</span> Building &mdash; Basic Group II <span class="tag done">Gate 8 of 8</span></h3>
+<p>The chunk that proved the state-table loader for real: <code>BasicGroupIIRate</code> has <b>zero</b>
+countrywide rows. Group I $261 <b>and</b> Group II $32 from one submission, both ISO-confirmed.
+No engine code written for it.</p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th><th>Evidence</th></tr></thead>
+<tbody>
+<tr><td class="st">&#9989;</td><td class="num">&mdash;</td><td>Golden case, hand-derived before code</td><td><code>09_chunk2_golden_case.py</code></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">1</td><td>Zero cases</td><td><code>10_chunk2_zero_cases.py</code> &mdash; 5 cases</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">2</td><td>47-jurisdiction sweep, each premium predicted</td><td><code>11_chunk2_enumerate_states.py</code> &mdash; 41 of 47 exact, 0 failures</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">3</td><td>Wind/hail-excluded branch</td><td><code>12_chunk2_windhail.py</code> &mdash; 5 cases</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">4</td><td>Class-specific symbol overrides</td><td><code>13_chunk2_symbol_and_numeric.py</code></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">5</td><td><code>BasicGroupIINumericValue</code> doing something</td><td>same script &mdash; $32 &rarr; $127</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">6</td><td>Fire-only cause-of-loss gate, all 8 SPP options</td><td><code>14_chunk2_fire_only_gate.py</code> &mdash; a clean 2&times;2, two corners ISO-confirmed</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">7</td><td>Shared names &middot; exclusion records &middot; literals &middot; gate doc</td><td><code>CF-CHUNK2-GATE.md</code></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">8</td><td><code>SingleResult</code> with zero hits &mdash; <b>measured, and NOT adopted</b></td><td>blanket strictness breaks VA and VT, which ISO rates. Disproven, not open</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">&mdash;</td><td>Gate point 9 &mdash; validation messages</td><td>owed retroactively</td></tr>
+</tbody>
+</table>
+<p><span class="lab">Still owed, not blocking</span> TX's wind/hail shape untraced &middot; DC and IL have no
+<code>BCEGFactor</code> row for their own Group II territory &middot; MT, NY and PR resolve to an empty
+Group II symbol table (NY files 120 rate rows, so it rates by some other route).</p>
+</div>
+
+<div class="chunk done">
+<h3><span class="n">3</span> Building &mdash; Broad and Special <span class="tag done">Gated 8 of 9 &mdash; 24 of 24 tasks</span></h3>
+<p>Broad is the shortest chain in the coverage (6 steps); Special is 9 but structurally the simplest.
+Each form gates its base rate on <code>CauseOfLossToUse</code>, so chunk 3 needs a separate submission per
+form. Golden cases: Broad <b>$16</b>, Special <b>$54</b> &mdash; both exact on the first run, both
+ISO-confirmed.</p>
+
+<p><span class="lab">Gate-level tasks &mdash; all nine done, gate filed at 8 of 9</span></p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th><th>Result</th></tr></thead>
+<tbody>
+<tr><td class="st">&#9989;</td><td class="num">1</td><td>Golden case, hand-derived before code &mdash; one per form</td><td>Broad <b>$16</b>, Special <b>$54</b>, both exact on the first run, both ISO-confirmed</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">2</td><td>Chain runs</td><td>again with no engine code</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">3</td><td>Zero cases</td><td>5 cases &times; 2 forms. <b>Two predictions wrong</b>: Special's deductible fall-through (a defect in our own notes) and a missing <code>Limit</code>, which <b>raises</b> rather than pricing at zero</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">4</td><td>47-jurisdiction sweep, each premium predicted</td><td><b>Broad 47 of 47, Special 47 of 47</b>, none skipped. FL and PR rate Special through their own overriding rule and a differently-named table</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">5</td><td>Shared-name adjudication</td><td><b>9 of 9 adjudicated</b>. The check itself was found blind to <code>Set*</code> rules and fixed; chunks 1 and 2 re-opened and re-closed</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">6</td><td>Exclusion records</td><td>Theft is <b>5 records across 7 datadef groups</b>; electing ours prices $54 &rarr; <b>$47</b>, Broad unmoved</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">7</td><td>Hardcoded literals</td><td>covered by chunk 1's census, which scans the whole Building coverage</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">8</td><td>ISO confirmation</td><td><b>7 calls, 7 matches</b> &mdash; and the <b>message counts matched exactly in all seven</b></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">9</td><td>Gate document</td><td><code>CF-CHUNK3-GATE.md</code> &mdash; <b>8 of 9</b></td></tr>
+</tbody>
+</table>
+
+<p><span class="lab">Broad-specific</span></p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#9989;</td><td class="num">10</td><td><b>No cause-of-loss adjustment step at all</b> &mdash; defined in <b>0 of 47 + CW</b>, and nothing substitutes for it</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">11</td><td><b>Roof-surfacing ACV folded into <code>SetAdjustedBroadRate</code></b> &mdash; position confirmed, but <b>the factor cannot move a Broad building premium anywhere</b> (0 of 6 filed base rates survive 3dp rounding), and <b>Paragraph B's filed 0.99 is unreachable</b></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">12</td><td><b>No Broad deductible-by-location rule</b> &mdash; three rules, one record, three gates: shared 0.995 for Broad, Group II and Special both stay at 1.0</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">13</td><td><b>The two-tier base rate</b> &mdash; $16 / $12. And <b><code>ConstructionType</code> is a 25-value submission domain, not the six rating names</b>: submitting <code>Joisted Masonry</code> prices at <b>zero in silence</b></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">14</td><td><b>Class <code>1150</code> routes to the <code>BldrRisk</code> rows</b> &mdash; flat 0.012, and it <b>also removes coinsurance</b> through a second rule that independently hardcodes <code>1150</code></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">15</td><td><b><code>ConstructionTypeToUse</code> is a gate</b> &mdash; blank &rArr; Broad 0, Group I 0, Group II 0, and <b>Special still 54</b></td></tr>
+</tbody>
+</table>
+
+<p><span class="lab">Special-specific, shared and cross-form</span></p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#9989;</td><td class="num">16</td><td><b><code>SpecialBuildingRate</code> is header-only countrywide</b> &mdash; 45 of 47 file it, and <b>FL and PR are not unrateable</b>: FL splits residential/non-residential on 21 hardcoded class codes, PR uses a cause-of-loss domain that does not exist countrywide</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">17</td><td><b><code>SpecialBuildersRiskRate</code> carries a countrywide row</b> &mdash; class 1150 &rarr; $18. Rows resolve <b>47 of 47</b> against <b>45 of 47</b> for the building path</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">18</td><td><b>Theft exclusion (CP 10 33)</b> &mdash; factor 1.0&rarr;<b>0.88</b>, Special $54&rarr;<b>$47</b>; the record hangs off the <b>structure</b>, not the policy</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">19</td><td><b>Two amount-of-insurance sums as deductible keys</b> &mdash; 0.97/$54, 0.89/<b>$50</b>, the equal-deductible gate, and <b>excluding theft makes a separate theft deductible irrelevant</b></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">20</td><td><b><code>SetSpecialCauseOfLossAdjustment</code> has no <code>IsNull</code> guard</b> &mdash; re-entry is idempotent, and <b>the finding is the reverse of the worry</b>: a submitted <code>SpecialBaseRate=9.999</code> prices at <b>$11,398</b>. The unguarded rule is the only one that cannot be overridden</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">21</td><td><b>Broad and Special share one LOI table</b> &mdash; held across all 47, and PR (the one filing its own) moves both forms together</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">22</td><td><b>The documented same-name-different-table cases</b> &mdash; both confirmed, and <code>SetSpecialBaseRate</code> is <b>wider than documented: 5 tables across 16 datadef groups</b></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">23</td><td><b>The forms are CUMULATIVE, not exclusive</b> &mdash; ISO settles it: 293 / 309 / 347, matched coverage by coverage and on the policy total</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">24</td><td><b>Re-confirm the override pattern</b> &mdash; <b>the opposite of chunk 2</b>: 0&ndash;3 of 47 override any chunk 3 rule, against 39 of 47 for <code>SetBasicGroupIIRate</code></td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="chunk done">
+<h3><span class="n">4</span> Contents (Personal Property) &mdash; all four forms <span class="tag done">Gate 8 of 9 &mdash; all 32 tasks</span></h3>
+<p>Built <b>differentially</b> against chunks 1&ndash;3, and gated 2026-09-18 with <b>no engine code
+written</b> &mdash; the fourth coverage in a row on chunk 0's foundation. Golden cases: Basic Group I
+<b>$223</b>, Group II <b>$24</b>, Broad <b>$16</b>, Special <b>$137</b>; Building unmoved at $263/$32.
+32 tasks numbered <b>C4-01&ndash;C4-32</b>; the nine gate-level ones are closed and <b>all 32 tasks are now closed</b> rather than gate conditions.</p>
+<p><span class="lab">Three things that make it different in kind</span></p>
+<table>
+<thead><tr><th>&nbsp;</th><th>Why it is new, not just different data</th></tr></thead>
+<tbody>
+<tr><td><b>It rates a collection</b></td><td>N Personal Property records per Occupancy Class per Location, driven by a <code>ForEach</code>. <b>The first repeating group in the project</b> &mdash; and <b>ISO sums it the way we do</b> (209 + 105, confirmed)</td></tr>
+<tr><td><b>Four fields are inherited, not per-item</b></td><td><code>CovForm</code> was known; <code>BldgClassCode</code>, <code>RatingType</code> and <code>OccupCategoryRiskSeverity</code> were not. All are <code>Copy</code>d from an ancestor, and <b>a submission that sets them per item is silently overruled</b></td></tr>
+<tr><td><b>Special is the opposite of Building's</b></td><td>Building's is a flat statewide constant. PP's is keyed on occupancy category and severity, carries <b>its own territory multiplier</b>, and has two protective-safeguard credits no Building form has. 14 steps against 9</td></tr>
+</tbody>
+</table>
+<p><span class="lab">The state layer again, wider than chunk 2's</span> Every PP base-rate table is
+header-only countrywide: <code>BasicGroupIRate</code> (<b>44 of 47</b> &mdash; <b>AK, CA and PR file it in
+no edition at all</b>), <code>BasicGroupIIRate</code> and <code>SpecialPrsnlPropRate</code> (45 of 47,
+missing FL and PR), <code>PrsnlPropTerrMultiplier</code> and
+<code>SpecialPrsnlPropTheftExclusionFactor</code> (46 of 47, missing PR).</p>
+
+<p><span class="lab">Gate-level tasks &mdash; all nine closed</span></p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th><th>Result</th></tr></thead>
+<tbody>
+<tr><td class="st">&#9989;</td><td class="num">1</td><td>Golden case per form, hand-derived before code</td><td>BGI <b>$223</b>, BGII <b>$24</b>, Broad <b>$16</b>, Special <b>$137</b>; Building unmoved at $263/$32. <b>Five corrections</b>, each a finding</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">2</td><td>Chain runs &mdash; and the <code>ForEach</code> works</td><td>Four chains over a repeating group with <b>no new interpreter node</b> &mdash; the fourth coverage on chunk 0's foundation</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">3</td><td>Zero cases</td><td>7 cases, five new zero sites. <b>Z2: one blank <code>ProtectClass</code> prices Contents at zero and raises Building to $275</b> &mdash; opposite directions, no message either way</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">4</td><td>47-jurisdiction sweep, each premium predicted</td><td><b>46 of 47</b>; PR skipped because its own table files 83 class codes and 0951 is not among them</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">5</td><td>Shared-name adjudication</td><td><b>17 names</b>, every one the PersProp half of what chunks 1&ndash;3 adjudicated. <b>Chunk 3's adjudication predicted chunk 4's behaviour correctly</b> &mdash; the first time the method paid forward</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">6</td><td>Exclusion records, per datadef group</td><td>Theft 5/7, vandalism 5/13, wind/hail 5/19, sprinkler leakage 3/7 &mdash; and the terrorism families are policy-level, confirming chunk 3's correction to the gate's premise</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">7</td><td>Hardcoded literal census for PP</td><td>31 literals. <b><code>1150</code> is EXCLUDED here where Building routes it</b>; 1751/1752 gate protection class out; YARD in 5 rules; Valuable Papers in 7</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">8</td><td>ISO confirmation</td><td><b>6 calls, 6 matches</b> &mdash; including the two-item sum (209 + 105) and both District states (CA 208, AK 224). <b>And ISO refused four payloads our engine rates</b></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">9</td><td>Gate document</td><td><code>CF-CHUNK4-GATE.md</code> &mdash; <b>8 of 9</b>, point 9 owed on all four chunks</td></tr>
+</tbody>
+</table>
+<p class="sub"><b>C4-31 justified its block.</b> AK, CA and PR file <code>BasicGroupIRate</code> in no edition of the corpus &mdash; and all three override the rule to read a differently-named table. <b>Three different district mechanisms for two districts:</b> AK picks by territory against four literals, CA by a <code>District</code> field six levels up, PR has no district and keys the base rate on <code>ProtectClass</code> instead. ISO confirms both District readings.</p>
+
+<p><span class="lab">The collection problem &mdash; new machinery</span></p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#9989;</td><td class="num">10</td><td><b>Two PP records under one Occupancy Class both rate and sum</b> &mdash; $209 + $105 = $314, ISO-confirmed. <b>The LOI factor is the OCCUPANCY's, not the item's</b>: both take 0.842 off a 150,000 occupancy total, so two small items do not price as one large one</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">11</td><td><b>No leakage</b> &mdash; two items differing only in <code>CovType</code> get their own vault factors (1.0 / 0.5) and rates. <b>The first draft varied the class code and produced a perfect false positive</b>, because that field is inherited</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">12</td><td><b>Inherited fields</b> &mdash; and there are <b>four, not one</b>: <code>CovForm</code>, <code>BldgClassCode</code>, <code>RatingType</code> and <code>OccupCategoryRiskSeverity</code>. A per-item value is accepted and silently discarded</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">13</td><td><b>The two Special sums, separated at last.</b> CP 10 33 on the structure drives them apart (200,000 vs 100,000) while leaving branch 1 able to fire, and with a 2,500 theft deductible the factor is <b>0.89 not 0.92</b> and the premium <b>$125 not $129</b>. <b>Four dollars is the entire observable difference between the two sums</b> &mdash; and the household-limit route the rules suggested turned out to be unreachable</td></tr>
+</tbody>
+</table>
+
+<p><span class="lab">Basic Group I &mdash; the Contents differences</span></p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#9989;</td><td class="num">14</td><td><b><code>FireSafeVaultFactor</code></b> &mdash; 0.50 in a vault takes $223 to <b>$110</b>, almost exactly half because every factor after it is shared. 0.0 when not class-rated</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">15</td><td><b>The group letter is DERIVED, not submitted</b> &mdash; class 0321 &rarr; group <b>A</b> &rarr; 0.457 &rarr; <b>$185</b>. A 17,000-character occupancy rule picks the letter from the class code alone; a <code>Group</code> in the payload is overwritten</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">16</td><td><b>YARD substitutes the construction code</b> &mdash; class 1400 on a FRAME building: non-combustible passes code <b>3</b> &rarr; 0.059 &rarr; <b>$25</b>, combustible passes code 1 &rarr; 0.607 &rarr; <b>$246</b>. The building's own construction is discarded</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">17</td><td><b>Class <code>1150</code> is EXCLUDED</b> &mdash; base 0.0, premium <b>$0</b>, where Building routes it to the Builders Risk rows. Belt-and-braces: Oregon files <b>no PersProp rows for 1150 at all</b></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">18</td><td><b>Two fallbacks in one rule</b> &mdash; class 1751 takes <b>1.0</b> and prices at $69 (at 0.96 it would be $66); a missing protection class takes <b>0.0</b> and prices at zero. <b>And the algorithms page had the YARD condition backwards</b> &mdash; the lookup is skipped only for a NON-combustible yard. Corrected</td></tr>
+</tbody>
+</table>
+
+<p><span class="lab">Basic Group II &mdash; mostly inherited, and that is the claim</span></p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#9989;</td><td class="num">19</td><td><b>The <code>Copy</code>s are a genuine share, not a duplicate</b> &mdash; removing <code>NumStories</code> (4 levels up) or the Group II territory (<b>6 levels up</b>) prices <b>both</b> coverages' Group II at zero, silently. One missing field, two coverages, nothing raised</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">20</td><td><b><code>GroupIINumericValue[CW, 0580, 1] = 4</code></b> &mdash; it multiplies the base rate before every other factor: Contents $24 &rarr; <b>$93</b>, Building $32 &rarr; <b>$127</b>, the figure chunk 2 measured. Different field names, the same structure <code>ClassCode</code> underneath</td></tr>
+</tbody>
+</table>
+
+<p><span class="lab">Broad &mdash; the shortest chain in the project</span></p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#9989;</td><td class="num">21</td><td><b>The ancestor cannot be null</b> &mdash; Building's own rule ends in an <code>Otherwise</code> worth 0.0, so a blank building deductible gives Contents a <b>zero, not a null</b>: silent collapse rather than refusal. <b>The missing rule is safe only because of a guarantee in another datadef group.</b> The factor never materialises on the Contents record, so a trace cannot show it &mdash; and the item's own deductible is ignored entirely</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">22</td><td><b>0 of 47 + CW</b> &mdash; enumerated, not asserted. Absent outright, and nothing substitutes for it</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">23</td><td><b>0.021 &rarr; $16 and 0.011 &rarr; $8</b>, against Building's $17 and $12 on the same building. The fire-resistive tier doubled as a <b>rounding probe</b>: $8 confirms the adjusted-rate step rounds <b>once</b>, as Basic Group I does &mdash; per-factor rounding would give $9</td></tr>
+</tbody>
+</table>
+
+<p><span class="lab">Special &mdash; the longest chain, and the least like Building's</span></p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#9989;</td><td class="num">24</td><td><b>Keyed on occupancy category and severity</b> &mdash; Offices $137, Residential <b>$159</b>, Motels <b>$109</b>, blank <b>$0</b>. Oregon files eight categories between 0.069 and 0.316, <b>a 4.6&times; spread Building's single flat 0.047 cannot express</b></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">25</td><td><b>A territory dimension Building's Special lacks entirely</b> &mdash; Multnomah <b>1.214</b> against Remainder of State <b>1.000</b>: $137 vs <b>$113</b>, the same risk 21% dearer in Portland. Blank gives <b>0.0</b> and collapses the rate</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">26</td><td><b>0.4 for Offices against Building's flat 0.88</b> &mdash; $137 &rarr; <b>$54</b>. Oregon files the Contents credit between 0.2 and 0.6 by occupancy: <b>a 60% reduction where Building gets 12%</b>. The two coverages are not scaled versions of each other</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">27</td><td><b>A submitter-supplied factor that ISO intends</b> &mdash; 0.90 on the structure's schedule takes $137 to <b>$123</b>. The gate needs <code>TypeOfWatchmanSrvc</code> as well as the factor: supply the factor alone and the credit stays 1.0, <b>a discount silently not given</b></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">28</td><td><b>One record, three effects.</b> The exclusion's limit replaces the item's (100,000 &rarr; 60,000) <b>and</b> shrinks the occupancy sums, raising the LOI 0.790 &rarr; 0.94 and moving the deductible 0.98 &rarr; 0.97. Final rate 0.137 &rarr; 0.161 &mdash; <b>a smaller exposure at a dearer rate</b>: $137 &rarr; <b>$97</b>, not the $82 a pure exposure change would give</td></tr>
+</tbody>
+</table>
+
+<p><span class="lab">Cross-form</span></p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#9989;</td><td class="num">29</td><td><b>The premise was wrong &mdash; it is all FOUR forms, and what differs is WHERE.</b> Basic Group I, Group II and Special zero the <i>adjustment</i> and leave the rate intact (0.263 / 0.03 / 0.186); <b>Broad zeroes the RATE itself</b>, having no cause-of-loss step to put it in. Same $0 premium, a different thing visible in a trace. Seven rules carry the literal PP-side</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">30</td><td><b>The override pattern</b> &mdash; between chunk 2 and chunk 3: <code>SetBasicGroupIRate</code> 8 of 47, <code>SetBGIRatesAndFactors</code> 6, <code>SetBasicGroupIBaseRate</code> 4, and <b>0 of 47</b> for the Broad base rate, the vault factor and the territory multiplier</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">31</td><td><b>All three override the rule</b> &mdash; and there are <b>three different district mechanisms for two districts</b>: AK picks by territory against four literals, CA by a <code>District</code> field six levels up, PR has no district and keys the base rate on <code>ProtectClass</code>. ISO confirms both District readings (CA 208, AK 224). <i>Extending the shared-name check across the state layer is still not done</i></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">32</td><td><b>Building never moved</b> &mdash; $263 / $32 in every chunk 4 case. <b>Except where it should</b>: a blank <code>ProtectClass</code> takes Contents to zero and raises Building to $275</td></tr>
+</tbody>
+</table>
+
+<p><span class="lab">Carried in from chunk 3, and live here</span> A submission can populate a derived
+field (task 27 is the first place ISO <i>intends</i> it; everywhere else it is a hole) &middot;
+<code>ConstructionType</code> is a 25-value domain, not the six rating names &middot;
+<code>SetSpecialBaseRate</code> reads five different tables and PP's is <code>SpecialPrsnlPropRate</code>
+&middot; class <code>1150</code> has at least two independent consequences &middot; PR has no ISO
+confirmation and never will, and is the only jurisdiction missing <i>every</i> PP base-rate table.</p>
+
+<p><span class="lab">Deliberately not in chunk 4</span> Earthquake (chunk 10, and PP has its own EQ
+chain) &middot; Legal Liability (chunk 8), though the PP premium files carry its branch &middot; blanket
+(chunk 9, still a stub) &middot; Business Income (chunk 5) &middot; theft limitations, sublimits, agreed
+value, inflation guard and vacancy &mdash; endorsements, chunk 12.</p>
+</div>
+
+<div class="chunk done">
+<h3><span class="n">5</span> Business Income &mdash; the <code>Factor</code> chain and four forms <span class="tag done">Gate 8 of 9 &mdash; all 28 tasks</span></h3>
+<p>Opened 2026-09-18, 28 tasks numbered <b>C5-01&ndash;C5-28</b> in
+<code>CF-CHUNK5-TASKS.md</code>, derived from the algorithms doc and from censuses run while opening the
+chunk.</p>
+<p><span class="lab">Four things that make it different in kind</span></p>
+<table>
+<thead><tr><th>&nbsp;</th><th>Why it is new, not just different data</th></tr></thead>
+<tbody>
+<tr><td><b>It is arithmetically DOWNSTREAM of Building</b></td><td>Basic Group I, Basic Group II and Earthquake have <b>no base rate of their own</b> &mdash; they read Building's already-computed rate, symbol and territory from two to four levels up and apply a small adjustment factor. <b>The first coverage in the project that cannot be rated without rating another coverage first</b>, so every chunk 1&ndash;3 finding is now load-bearing twice</td></tr>
+<tr><td><b><code>SetFactor</code> picks exactly ONE of four</b></td><td>Max period, monthly limit, extra expense, or type of risk &mdash; in priority order. <b>Multiplying them instead of selecting would overstate the premium by a large multiple</b>, and a single case cannot show which happened. Broad and Special never apply it at all</td></tr>
+<tr><td><b>Four Building concepts are simply absent</b></td><td><b>No deductible factor</b> anywhere (the "deductible" is a waiting period built into the rate), <b>no limit-of-insurance factor</b> (the premium multiplies <code>Limit / 100</code> directly), no multi-premium credit despite the datadef being populated, and two premium branches instead of four</td></tr>
+<tr><td><b>Add-ons charge a surcharge, not a rate</b></td><td>Agreed Value and Extended Period of Indemnity compute <code>(Factor &minus; 1) &times; Rate &times; Limit/100</code> &mdash; only the incremental load. <b>Nothing in Building or Contents uses that shape</b></td></tr>
+</tbody>
+</table>
+
+<p><span class="lab">The state layer &mdash; quiet, for the first time since chunk 1</span>
+<code>BusnIncomeFactor</code> carries <b>131 countrywide rows</b> and resolves in 47 of 47, as do the
+monthly-limit (60), Broad base (30), Special base (24), max-period (22) and extra-expense (4) tables.
+<b>Only <code>BaseRateAdjustmentFactor</code> is header-only</b> &mdash; 46 of 47 file it, PR does not. Rule
+overrides are just as quiet: <code>SetFactor</code>, <code>SetTypeOfRiskFactor</code>,
+<code>SetBroadBaseRate</code> and <code>SetCoinsuranceToUse</code> are overridden by <b>0 of 47</b>. The one
+outlier is <b><code>SetBasicGroupIICauseOfLossAdjustment</code> at 10 of 47</b> &mdash; AR, DC, FL, IN, KS,
+KY, NY, PR, RI, TX. <b>So chunk 5 inverts chunk 2 and chunk 4's problem</b>: the tables are there, and what
+is unsettled is whether the countrywide chain holds.</p>
+
+<p><span class="lab">Gate-level tasks</span></p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#9989;</td><td class="num">1</td><td>Golden case, hand-derived before code &mdash; one per form. <b>BGI $112, BGII $13, Broad $23, Special $47</b>; Building unmoved at $261/$32</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">2</td><td>Chain runs, and Building rates first &mdash; <b>confirmed, and with no new interpreter node</b>. Basic Group II reads the shared rate table with the literal covType <code>"Bldg"</code>: <b>not a Business Income row, the Building's row</b></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">3</td><td>Zero cases &mdash; 5 cases. <b>All four Combined risk types are filed at 0</b>, so a correctly-spelled value from ISO's own domain prices at zero. And three routes to a $0 premium with <b>two different values underneath</b>: a filed 0, a blank-key 0, and a NULL that does not trigger the null-premium guard</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">4</td><td>47-jurisdiction sweep &mdash; <b>44 of 47 exact</b>, PR skipped for an enumerated reason. <b>AZ and TX diverge by $1 through the Building dependency</b>, not through any Business Income rule &mdash; neither overrides anything in the BI ruleset</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">5</td><td>Shared-name adjudication &mdash; <b>10 ambiguous names</b>, all resolving to the BusinessIncome half. <b>Chunk 3's adjudication predicted it correctly for the second time</b>, after chunk 4. And <code>SetFactor</code> reads <b>no matrix at all</b> &mdash; it is a selector, not a lookup</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">6</td><td>Exclusion records &mdash; theft 5/7, vandalism 5/13, wind/hail 5/19, sprinkler 3/7, plus <b>ten terrorism families each filing one policy-level record</b>. Confirms again that not every exclusion is per-coverage</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">7</td><td>Hardcoded literals &mdash; 20 of them. <b><code>Extra Expense Only</code> appears in 18 rules</b>, not just the <code>SetFactor</code> branch test: it gates the base rate and the Builders Risk factor as well. Chunk 3's lesson at scale &mdash; finding one consequence of a literal does not find the others</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">8</td><td>ISO confirmation &mdash; <b>6 calls, 6 matches</b>, including <b>233 for the priority case where multiplication would give 252</b>. ISO selects, and by priority</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">9</td><td>Gate document &mdash; <code>CF-CHUNK5-GATE.md</code>, <b>8 of 9</b>. The first chunk to add <b>no new validation message</b></td></tr>
+</tbody>
+</table>
+
+<p><span class="lab">The <code>Factor</code> &mdash; the chunk's central machinery</span></p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#9989;</td><td class="num">10</td><td><b>Exactly one, by priority</b> &mdash; and the three-way case was predicted at $233 and came back <b>$0</b>. The winning branch is itself keyed on <code>CovType</code>, cannot resolve, and <b><code>SetFactor</code> does not fall through</b>. A valid combination of filed options that prices at zero in silence &mdash; a different failure from the multiplication the build order warned about</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">11</td><td><b>All three keys move it</b> &mdash; Manufacturing 0.71 &rarr; <b>$144</b>, Without Extra Expense 0.50 &rarr; <b>$102</b>, coinsurance 80% 0.59 &rarr; <b>$120</b>. And the direction is inverted against Building: a <b>lower</b> coinsurance percentage is a <b>higher</b> factor, because this is a discount table</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">12</td><td><b>Neither table exists &mdash; they are datadefs read from the SUBMISSION.</b> The blend weights two submitted component factors by two submitted percentages, all four through <code>FromConstant="0.0"</code>, so absent means zero on every one. 40%/60% at 0.71/0.55 &rarr; <b>0.614 &rarr; $125</b>. <b>A combined risk is a selection plus four submitted numbers</b> &mdash; which is why the filed row is 0 and C5-03's case priced at zero</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">13</td><td><b>It follows the BUSINESS INCOME record, not the building.</b> BI at 80% while the structure stays at 90%: the factor moves 0.55 &rarr; 0.59 and <b>Building holds at $261</b>. The two coverages can carry different coinsurance on one submission</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">14</td><td><b>Confirmed by moving it.</b> Electing max-period gives a Factor of 1.15 &mdash; more than double the default &mdash; and Basic Group I goes $112 &rarr; $233 while <b>Broad stays at $23 and Special at $47</b>. The Factor is computed for every form and read by only two</td></tr>
+</tbody>
+</table>
+
+<p><span class="lab">Downstream of Building &mdash; the new dependency</span></p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#9989;</td><td class="num">15</td><td><b>Proven by moving it</b> &mdash; change the BUILDING's class code and the Business Income premium follows $112 &rarr; <b>$32</b>, with nothing in the BI record changed. <b>And the algorithms page had the ordering wrong</b>: the base-rate adjustment applies <b>first</b>, not last. Both orders give 0.203 on the golden case, so only a second class code could tell them apart</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">16</td><td><b>Group I and Group II read different ancestor values, and only Group II falls over.</b> Removing <code>NumStories</code> prices BI Group II and Building Group II at zero while both Group I premiums hold. Chunk 4's C4-19 reaching a third coverage</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">17</td><td><b>PR deletes the rule, it does not just omit the table.</b> <code>SetBGIBaseRateAdjustmentFactor</code> is overridden with an empty <code>&lt;rul:Sequence /&gt;</code>. The build order flagged rule-deletion for validation messages &mdash; 316 countrywide rules are emptied by some state &mdash; and <b>this is the first time it has been seen on a RATING rule</b></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">18</td><td><b>Every absent-means-zero finding now has a second consumer.</b> Removing the structure's <code>ClassCode</code> prices Building and Business Income at zero together &mdash; with the BI <code>Factor</code> still a healthy 0.55 and the BI record perfectly well formed. Nothing raises, in either coverage</td></tr>
+</tbody>
+</table>
+
+<p><span class="lab">Per-form specifics</span></p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#9989;</td><td class="num">19</td><td><b>Two rules, and the covType key halves the rate.</b> All Other 0.023 &rarr; <b>$23</b> against Without Extra Expense 0.011 &rarr; <b>$11</b> on the same building &mdash; two strings in a table shared with Building and Contents, and <b>picking the wrong one is a 2&times; error that looks entirely plausible</b>. Fire Resistive gives $12 and $7</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">20</td><td><b>A four-way table</b> &mdash; construction &times; covType &times; risk type: $47, apartments <b>$29</b>, Without EE <b>$33</b>, class 1150 &rarr; Builders Risk <b>$18</b>. <b>And <code>ApartmentCondoIndicator</code> is DERIVED</b> from the class code against a hardcoded list of 13 &mdash; setting it directly, on the record or the structure, is overwritten with <code>No</code></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">21</td><td><b>Three shapes, not ten overrides.</b> AR/DC/NY/RI (529 chars) have <b>dropped the wind/hail branch entirely</b>; TX adds a wind/hail exclusion factor; FL/IN/KS/KY/PR add a wind/hail-excluded rate and the LCM. A divergence in content, not formatting</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">22</td><td><b>Exactly as the build order described it</b> &mdash; the Factor is <b>0.0, not 1.0</b>, and the premium is zero. Predicted as a null on the assumption the row was simply missing; it is a <i>written</i> zero, which is the build order's point</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">23</td><td><b>A rate chain with nowhere to send its answer.</b> <code>FinalEQRate</code> is produced, there is <b>no plain Earthquake coverage file</b>, and all 10 Earthquake premium files in the ruleset are Agreed Value or endorsement variants</td></tr>
+</tbody>
+</table>
+
+<p><span class="lab">Cross-form</span></p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#9989;</td><td class="num">24</td><td><b>0 of 47 + CW</b> &mdash; enumerated, not asserted. Building applies a deductible factor on every form; Business Income has no such rule anywhere</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">25</td><td><b>0 of 47 + CW.</b> The premium multiplies <code>Limit / 100</code> with nothing in between &mdash; so nothing about limit banding carries over from chunks 1&ndash;4</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">26</td><td><b>Proven by moving it</b> &mdash; a 0.5 credit takes Building Group I $261 &rarr; <b>$131</b> and leaves Business Income at <b>$112</b>. A populated-but-unused datadef is exactly the shape that makes a reader assume it is in the formula</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">27</td><td><b>Agreed Value charges $11 where the full rate would charge $112</b> &mdash; <code>0.112 &times; (1.1 &minus; 1) &times; 1,000</code>. Ten times the difference, and Basic Group I is still charged in full alongside it. Nothing in Building or Contents uses this shape</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">28</td><td><b>Three coverages on one submission, none of them moving</b> &mdash; Building 263/32, Contents 223/24, Business Income 112/13. <b>BI is immune to the Contents record</b>, which follows from 24 and 25: no deductible key and no limit factor, so the location total that moves Building $261 &rarr; $263 cannot reach it</td></tr>
+</tbody>
+</table>
+
+<p><span class="lab">Carried in, and live here</span> Every Building finding is now load-bearing twice
+&middot; chunk 4 found seven inherited fields and BI nests one level deeper still &middot; a submission can
+populate a derived field, and an unguarded rule can discard one &middot; PR has no ISO confirmation and is
+the only jurisdiction missing <code>BaseRateAdjustmentFactor</code> &middot; gate point 9 is owed on all
+four closed chunks, and chunk 5 should not add a fifth silence.</p>
+
+<p><span class="lab">Deliberately not in chunk 5</span> Special Class Business Income (chunk 7, a complete
+parallel datadef group) &middot; blanket (chunk 9) &middot; Earthquake proper (chunk 10) &middot; the
+endorsement families (chunk 12).</p>
+</div>
+
+<div class="chunk done">
+<h3><span class="n">6</span> Special Class &mdash; building side <span class="tag done">Gate 8 of 9 &mdash; all 29 tasks</span></h3>
+<p>Opened 2026-09-18, 29 tasks numbered <b>C6-01&ndash;C6-29</b> in
+<code>CF-CHUNK6-TASKS.md</code>, derived from the algorithms doc and from the census run while opening the
+chunk (<code>scripts/cf/40_chunk6_census.py</code>).</p>
+
+<p><span class="lab">Five things that make it different in kind</span></p>
+<table>
+<thead><tr><th>&nbsp;</th><th>Why it is new, not just different data</th></tr></thead>
+<tbody>
+<tr><td class="num">1</td><td><b>The rating driver is a free-text class DESCRIPTION, not a class code.</b> Basic Group I's base rate keys on <code>SpecialClassDescConvertedOption</code> &mdash; itself the result of mapping a 100-character English string through a second table to one of 71 <code>OptionNN</code> codes. <b>Two lookups in series, the first on prose.</b> No <code>ConstructionCode</code> key at all</td></tr>
+<tr><td class="num">2</td><td><b>Protection class is a KEY, not a factor.</b> It is folded into the Group I base-rate lookup. <code>ProtectionClassFactor</code> is still computed &mdash; <i>last</i>, after every chain has run &mdash; and then never read. The first orphaned factor computed after the point where it could have been used</td></tr>
+<tr><td class="num">3</td><td><b>Nine of Building's rating concepts are simply absent</b> &mdash; LOI factor, roof surfacing (ACV and cosmetic), BCEG, sprinkler leakage, the substandard and vacant addends, <code>MultiResidentialPropSpecialCreditFactor</code>, the <code>CovType</code> taxonomy and the Legal Liability branch. Every premium file has <b>two</b> branches: blanket or scheduled</td></tr>
+<tr><td class="num">4</td><td><b>Basic Group I and II are never gated on the cause of loss.</b> <code>SetCoverageOnPolicyIndicator</code> is hard-coded to <code>1</code> in both. The pattern that has held for three chunks running is <b>half false here</b> &mdash; exactly the shape a fourth chunk would inherit without checking</td></tr>
+<tr><td class="num">5</td><td><b>Broad's base rate is construction-blind</b> &mdash; it keys on the hard-coded literal <code>"Frame"</code>. Building's reads the item's actual construction and moves 0.015 &rarr; 0.010. A fire-resistive Special Class item pays the frame rate</td></tr>
+</tbody>
+</table>
+
+<p><span class="lab">The state layer &mdash; the loudest since chunk 2</span> Three tables are <b>header-only countrywide</b> &mdash; <code>BasicGroupIIRate</code>, <code>LowestBasicGroupIIRate</code> and <code>SpecialBuildingRate</code>, the last of these the same unfilled table chunk 3 found on Building. Group I's own <code>BasicGroupIRateSpecialClass</code> carries 213 countrywide rows and only <b>FL (204), NY (189) and PR (213)</b> file their own; the two class-description converters carry 71 each, and <b>FL files 68 while NY files a header-only table</b>. <code>Deductible250Factor</code> is declared by <b>0 of 47</b>, and <code>BasicGroupIIFlatCoinsuranceFactor</code> is <b>1.5</b> &mdash; a surcharge, where every other coinsurance factor in the project runs at or below 1.0. The eight states filing no <code>LowestBasicGroupIIRate</code> &mdash; AR, DC, FL, KS, NY, PR, RI, TX &mdash; are <b>all inside the eleven that override the rule which reads it</b>.</p>
+<p class="sub"><b>Rule deletions, on rating rules, in five places.</b> Chunk 5 found the first rating rule any
+state empties to <code>&lt;rul:Sequence /&gt;</code>. Chunk 6 finds five more:
+<code>SetSpecialClassDescConvertedOption</code> (NY), <code>SetBasicGroupIISymbolNum</code> (NY, PR),
+<code>SetBasicGroupIINumericValue</code> (NY), <code>SetSpecialTheftExclusionFactor</code> (PR) and
+<code>SetProtectionClassFactor</code> (PR). Ordinary override traffic elsewhere:
+<code>SetBasicGroupIICauseOfLossAdjustment</code> by 11 &mdash; the same shape chunk 5 found at 10.</p>
+
+<p><span class="lab">Gate-level tasks</span></p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#9989;</td><td class="num">1</td><td>Golden case, hand-derived before code &mdash; one per form. BGI <b>$66</b>, BGII <b>$209</b>, Broad <b>$14</b>, Special <b>$44</b>; Building unmoved at 261/32. <b>Every predicted intermediate landed on all four forms &mdash; the first chunk needing no rate-step correction</b></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">2</td><td>Chain runs on chunk 0's foundation, with no new interpreter node. <b>No new node</b> &mdash; a sixth coverage on the same machinery, and the first that is not inside a building record: Special Class hangs off the <b>Location</b></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">3</td><td>Zero cases &mdash; 6 cases, all matching first run. <b>A description ISO itself files in Florida prices at zero in Oregon</b>, with no message; an absent <code>Deductible</code> takes all four forms at once &mdash; every deductible rule ends in an <code>Otherwise</code> worth <b>0.0</b>. And <code>PolicyType</code> is <b>derived four levels up</b>, on the policy: set on the item it is silently overwritten and both Broad and Special price at zero</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">4</td><td>47-jurisdiction sweep &mdash; <b>47 of 47</b>, the first complete sweep since chunk 3. <b>Three jurisdictions correctly produce no premium at all, and none of the three is a missing rate</b>: FL drops this class from its own 68-row converter (it is two countrywide editions behind), NY files the converter header-only and deletes the rule that reads it, and <b>AZ rewrites the rate step around <code>BasicGroupIReductionCredit</code> &mdash; a LOCATION field read through <code>FromConstant="0.0"</code>, so absent means ZERO</b>. Proven by moving it: absent $0, 1.0 $66, 0.9 $59. No validation message from any of the three</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">5</td><td>Shared-name adjudication &mdash; <b>39 shared names, 13 reading different tables</b>. <b>Chunk 3's prediction held a third time</b>: <code>SetBasicGroupIBaseRate</code> reads <code>BasicGroupIRateSpecialClass</code> here. And <code>SetBasicGroupIISymbolNum</code> is the sharpest reuse in the project &mdash; <b>five coverages, five different tables, one rule name</b>. Two names where Special Class and Building read the <i>same</i> table, which no previous chunk had</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">6</td><td>Exclusion records &mdash; vandalism, wind/hail and theft each file a <code>*SpecialClass</code> record, so electing Building's does nothing here. <b>Cyber is the opposite shape</b>: one record at the <b>policy</b> level reaching all four premium files &mdash; the terrorism shape chunk 5 found, again</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">7</td><td>Hardcoded literals &mdash; <b>36 pinned sites, 14 that kill filed rows</b>. <b>Broad's <code>"Frame"</code> makes 5 of 6 construction values unreachable from every site in the group</b>; <code>ProtectionClassFactor</code> is a dead lookup (140 of 168 rows) inside a factor nothing reads; <code>BasicGroupIIRate</code> is pinned to <code>"Bldg"</code>, the Building's row. <b><code>PolicyType</code> is tested 20 times</b> &mdash; where C6-01's trap would have been caught first</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">8</td><td>ISO confirmation &mdash; <b>7 calls, 7 agreements</b>, message counts matching on every one. <b>The $209 Group II premium confirms a numeric value of 8</b> keyed on the raw description, and <b>Broad is confirmed construction-blind</b>: the same item as Fire Resistive returns $14 again. ISO's Broad total is the Basic pair <i>plus</i> $14, which confirms <b>the Basic forms are not gated on the cause of loss</b>. <b>One divergence &mdash; ISO REFUSES (HTTP 400) where we return $0</b>, logged as <b>OI-99</b></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">9</td><td>Gate document &mdash; <b>8 of 9</b>. <b>Point 8 sharpened</b>: ISO's own Florida error named <b>three different editions in one call</b> &mdash; ruleset <code>CF CW 20230801 V04</code>, data <code>CF FL 20241201 V02</code>, our basis <code>CF CW 20260601 V01</code>. The edition basis is not one date, and Florida's frozen vocabulary is why its converter still spells the class the old way</td></tr>
+</tbody>
+</table>
+
+<p><span class="lab">The class-description chain &mdash; the chunk's central machinery</span></p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#9989;</td><td class="num">10</td><td><b>Both keys move the rate on their own.</b> Description &rarr; Option2 takes the base 0.07 &rarr; 0.286 (<b>$267</b>); the protection-class band takes it 0.286 &rarr; 0.368 &rarr; 0.448 (<b>$343 / $417</b>) &mdash; a 56% spread with no factor in the chain. <b>Removing the protection class was predicted at $0 and came back $417</b>: an absent band resolves to <code>9 to 10</code>, the WORST one, so the premium goes UP. The only absent field in chunk 6 that charges rather than costs. <b>And the deductible band is settled</b> &mdash; a second item on the location separates the two readings, and it keys on the ITEM's own limit ($267, not $269)</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">11</td><td><b>Florida is NOT a private namespace &mdash; it is an OLD EDITION, and this page said otherwise before checking.</b> FL resolves over <code>CF_CW_20230801_V01</code>; almost everyone else over <code>CF_CW_20260601_V01</code>. Against <b>its own</b> parent: <b>3</b> descriptions added, <b>6</b> dropped, <b>0</b> option codes outside its parent's set, <b>0</b> remapped. The &ldquo;11 Florida-only descriptions&rdquo; first published here came from diffing against the 2026 table &mdash; <b>8 of the 11 were an artefact of comparing across editions</b>. The three FL adds are the <b>old names</b> of classes countrywide renamed</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">12</td><td><b>The 189 rows ARE reachable &mdash; by submitting the option, which the deleted rule cannot overwrite.</b> NY <code>Option1a</code> &rarr; base 0.43 &rarr; <b>$393</b>; nothing submitted &rarr; <b>$0</b>. <b>A deleted rule is how ISO says a field is an INPUT.</b> And <b>the private namespace is New York's</b>: 63 codes to countrywide's 71, <b>35 of them nowhere countrywide</b>, <code>Option34a</code> absent &mdash; so a countrywide code submitted into NY misses, and NY's converter is header-only, so nothing in the corpus can produce one</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">13</td><td><b>Three coordinated edits, twice.</b> NY and PR each file the number table header-only, empty <code>SetBasicGroupIISymbolNum</code>, <b>and rewrite <code>SetBasicGroupIIRate</code> so it never reads the term.</b> Not a hole &mdash; a different chain. NY still rates Group II at <b>$55</b>; PR prices <b>$0</b> for a separate reason. <b>And the value cannot be supplied either</b>: submitted, OR overwrites it and NY never reads it &mdash; the same field ignored for opposite reasons</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">14</td><td><b>Seven spellings: one worth $66, six worth nothing, no reported difference.</b> Case, a trailing space, <code>&amp;</code> for <code>and</code>, a doubled space, <b>an en dash for the hyphen</b> &mdash; the one a word processor makes by itself &mdash; and Florida's own filed spelling</td></tr>
+</tbody>
+</table>
+
+<p><span class="lab">Per-form specifics</span></p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#9989;</td><td class="num">15</td><td><b>Four branches, and branch 3 is a SURCHARGE.</b> 80% &rarr; 1.0 &rarr; <b>$69</b>, 90% &rarr; 0.95 &rarr; <b>$66</b>, 100% &rarr; 0.9 &rarr; <b>$62</b>, and <b>50%/60% &rarr; 1.5 &rarr; $103</b>. <code>LessThan80PctMultiplicativeFactor</code> files one countrywide row at 1.5, so insuring to less than 80% costs <b>56% more</b>, not less &mdash; the first coinsurance penalty in the project. <b>One factor serves three forms</b>: at 50% Broad goes $14&rarr;$22 and Special $44&rarr;$69. Group II is the exception and reads a <i>different</i> table filing the same 1.5 &mdash; two tables, one number, nothing in a premium could tell them apart</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">16</td><td><b>The proof is arithmetic</b>: <code>BasicGroupIRate</code> = 0.07 = base &times; LCM exactly, while <code>ProtectionClassFactor</code> sits at <b>0.96</b> on the same record &mdash; 0.07 &times; 0.96 would be 0.067. Protection class reaches the premium as the second lookup key and nowhere else; C6-10 moved it across three bands and the base rate followed 0.286 &rarr; 0.368 &rarr; 0.448</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">17</td><td><b>Read by nothing.</b> 2 reads in the whole ruleset, <b>both inside its own <code>IsNull</code> guards</b> &mdash; 0 by any rate chain. <b>PR deletes the rule and still rates Group I at $64.</b> It runs LAST, after all five chains, and carries a pinned key (<code>ConstructionCode = 1</code>) that kills 140 of its 168 rows: <b>a dead lookup inside a dead factor, computed too late to matter</b></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">18</td><td><b>Answered: it is a submitted field.</b> Three datadef groups derive the Group II symbol &mdash; Structure, PersonalProperty, BuildersRiskRenovations &mdash; and <b>SpecialClass is not one of them</b>. AA/A/AB/B give <b>$112 / $120 / $178 / $209</b>. This explains C6-03's case 5, and means chunk 6's payload carries a field chunks 1&ndash;5 never sent: a builder that derives it the Building way is right for four coverages and silently wrong for this one</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">19</td><td><b>A biconditional, zero exceptions in 47.</b> 39 states file <code>LowestBasicGroupIIRate</code>; <b>the same 39 are exactly those whose rule can still reach the read</b>. The 8 non-filers (AR, DC, FL, KS, NY, PR, RI, TX) are all inside the 11 overriders, and the 3 that kept the read (AL, GA, VT) all file the table. <b>The header-only countrywide table is not a gap &mdash; it is a table nobody reads countrywide.</b> First time two censuses have been matched against each other</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">20</td><td><b>Two strings, not Building's four</b> &mdash; and the two missing are the two naming sprinkler leakage, which Special Class has no concept of. <code>Fire and Sprinkler Leakage</code> <b>zeroes a Building's Group II ($32 &rarr; $0) and leaves a Special Class item's at $209</b>: one submission field, two coverages, opposite answers</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">21</td><td><b>Florida is the discriminator.</b> Countrywide both tables file 1.5, so nothing in an Oregon premium could tell them apart; <b>FL files <code>BasicGroupIIFlatCoinsuranceFactor</code> at 1.42</b> and leaves <code>LessThan80PctMultiplicativeFactor</code> countrywide &mdash; the two Basic forms take different surcharges from one apparent concept. Group II at 50% costs <b>$329</b> against 90%'s $209. <b>PR declares both tables header-only</b> &mdash; no coinsurance surcharge at all, expressed as two empty tables</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">22</td><td><b>$14 at Frame and $14 at Fire Resistive, while Building moves $16 &rarr; $12</b> on the identical change. <b>The first draft proved nothing</b>: it sent six construction strings copied out of the rate table's key column, four of which <code>ConstructionTypeToUse</code> never resolves to &mdash; a test that sends an unrecognised string and reports &ldquo;unchanged&rdquo; cannot tell construction-blindness from a bad input. <b>And Building's FR was predicted at $11 and is $12</b>: the chain rounds at 3dp every step, so a two-thirds rate does not give a two-thirds premium</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">23</td><td><b><code>SpecialBuildersRiskRate</code> is named 6 times in the Structure ruleset and 0 times here.</b> Class <b>1150 does nothing</b> &mdash; base stays 0.047, premium stays <b>$44</b>. And <code>SpecialBuildingRate</code> is header-only countrywide, so <b>FL and PR cannot price the Special form at all</b> &mdash; the same two states, the same table and the same silence chunk 3 found on Building, now reached through a second coverage</td></tr>
+</tbody>
+</table>
+
+<p><span class="lab">Cross-form claims</span></p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#9989;</td><td class="num">24</td><td><b>0 countrywide files and 0 across all 47 jurisdictions</b>, scanned in the main ruleset and all four premium files &mdash; against Building, which names one. Special Class multiplies the final rate by <code>Limit/100</code> with nothing in between</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">25</td><td><b>Same treatment, same answer</b> &mdash; 0 of 5 countrywide files, 0 across 47. Building multiplies it into every form's final rate; scheduled Special Class property does not get it</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">26</td><td><b>Half the inherited pattern is false.</b> <code>SetCoverageOnPolicyIndicator</code> has <b>no <code>Test</code> at all</b> in the Basic Group I and II files; Broad and Special have one. A <code>Broad</code> submission and a <code>Special</code> submission both return Basic <b>$66 / $209</b>. <b>ISO confirmed it independently</b> in C6-08 &mdash; the Broad call's total was $289, the Basic pair's $275 <i>plus</i> $14</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">27</td><td><b>The algorithms page had it backwards, and is now corrected in six places.</b> All four Special Class premium files are nested <code>Product DecimalPlaces="0"</code> with <b>zero <code>rul:Round</code></b> &mdash; Building's <i>Special-form</i> convention on every form. Building's own Basic/Broad files carry 6 <code>rul:Round</code> each. <b>The premium rounds to 0 dp at six nested levels</b>, so every factor after the first multiplies an already-rounded dollar figure &mdash; and the cyber factors are <i>inside</i> the nest, not outside</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">28</td><td><b>Predicted $100, got $0 &mdash; and the reason is the finding.</b> The branch IS taken (<code>FinalBasicGroupIRate</code> is still 0.066, computed and never read), but <b>two of the four blanket inputs are overwritten</b>: <code>BlktTotalFullValueAmount</code> &rarr; 0 and <code>BlktCauseOfLossValue</code> &rarr; blank, both written by <code>SetNonEQBlanketValues</code> from policy-level blanket records. <b>The two it discards are exactly the two the formula cannot do without</b> &mdash; a silent $0 with half the submitted inputs thrown away. Sixth derived-field trap in the chunk; chunk 9 now has a named starting point</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">29</td><td><b>Building 263/32, Contents 223/24, Business Income 112/13, Special Class 66/209</b> &mdash; all on one submission, each unchanged from its own chunk. Special Class is a <b>sibling</b> of the Structure, so its limit never reaches Building's <code>TotAmtInsurance</code>. The isolation check at four coverages; chunk 5 ran it at three</td></tr>
+</tbody>
+</table>
+
+<p><span class="lab">What chunk 6 inherits and must re-ask</span> Building's rate-step rounding is still open
+(per factor vs once), and Special Class's chains are shorter &mdash; they may discriminate where Building's
+did not &middot; a submission can populate a derived field when the rule is guarded, and C6-12 is that
+question asked by a state &middot; chunk 3's shared-name adjudication predicted this chunk's Group I table,
+and C6-05 is its third test.</p>
+
+<p><span class="lab">Deliberately not in chunk 6</span> Special Class Business Income (chunk 7, a complete
+parallel datadef group) &middot; Earthquake, which is a <i>native fifth chain</i> in this same rules file
+(chunk 10) &middot; Agreed Value and Inflation Guard endorsements (chunk 12).</p>
+</div>
+
+<div class="chunk done">
+<h3><span class="n">7</span> Special Class Business Income <span class="tag done">Gate 8 of 9 &mdash; all 28 tasks</span></h3>
+<p>Opened 2026-09-18, 28 tasks numbered <b>C7-01&ndash;C7-28</b> in
+<code>CF-CHUNK7-TASKS.md</code>, derived from the algorithms doc and from the census run while opening the
+chunk (<code>scripts/cf/49_chunk7_census.py</code>) &mdash; which <b>carries chunk 6's correction in from the
+start</b>: every state is diffed against its own resolved parent, with both package ids printed.</p>
+
+<p><span class="lab">Five things that make it different in kind</span></p>
+<table>
+<thead><tr><th>&nbsp;</th><th>Why it is new, not just different data</th></tr></thead>
+<tbody>
+<tr><td class="num">1</td><td><b>The first coverage that borrows a FULLY RATED rate.</b> Business Income reads the Building's <code>BasicGroupIBaseRate</code> &mdash; before territory, protection class and the addends &mdash; and rebuilds a parallel formula. This one reads <b><code>../../BasicGroupIRate</code></b>, the Special Class item's <i>finished</i> rate, and adds nothing at the rate step. <b>SIX values cross the boundary</b> &mdash; the opening census said five and C7-01 found the sixth: two finished rates copied outright (<code>BasicGroupIRate</code>, <code>EQRate</code>), three inputs feeding its own lookups (<code>BasicGroupIISymbol</code>, <code>BasicGroupIIRatingTerr</code>, <code>EQTerr</code>), and <b><code>BasicGroupIINumericValue</code></b>, the parent&rsquo;s multiplier of 8, read outright. <b>No <code>BasicGroupIBaseRate</code> anywhere</b></td></tr>
+<tr><td class="num">2</td><td><b>Two forms are keyed on literals, and one blanks a dimension the same table still uses.</b> Broad always reads the <code>"Frame"</code> row; Special always reads <code>"Other than Apartments and Condominiums"</code>. So <b>the apartment rows are permanently unreachable from this group &mdash; while plain Business Income reaches them on the same physical table.</b> <b>Corrected 2026-09-18:</b> the algorithms page says the theft factor two steps earlier still varies by <code>ApartmentCondoIndicator</code>. <b>It does not</b> &mdash; that lookup is pinned to <code>"No"</code> from every site. Both dimensions are dead</td></tr>
+<tr><td class="num">3</td><td><b>Fewer multipliers than either parent, and the census measures it.</b> <code>StdPropPolGroupIFactor</code> appears <b>0</b> times here against <b>5</b> in Special Class Building; <code>BaseRateAdjustmentFactor</code>, <code>BuildersRiskFactor</code>, <code>LOIFactor</code> and <code>MultiResidentialPropSpecialCreditFactor</code> are 0 in both. Basic Group I's whole cause-of-loss adjustment is <code>rate &times; VandalismExclFactor</code> &mdash; <b>one multiplier</b></td></tr>
+<tr><td class="num">4</td><td><b>Earthquake is a real fifth form with no standalone premium file</b> &mdash; it borrows <code>EQRate</code> wholesale and charges only through Agreed Value. Chunk 5 found the same asymmetry on plain Business Income; <b>two instances make it a pattern</b></td></tr>
+<tr><td class="num">5</td><td><b>25 of 47 jurisdictions file their own rules file</b> for this group &mdash; the highest state participation of any chunk so far</td></tr>
+</tbody>
+</table>
+
+<p><span class="lab">The state layer</span> <code>BasicGroupIIRate</code> and
+<code>LowestBasicGroupIIRate</code> are <b>header-only countrywide</b> and declared by 45 and 39 states, so
+Group II is unresolvable at CW for the third coverage group running. Only <b>FL</b> files its own
+<code>BusnIncomeFactor</code>, max-period, monthly-limit and extra-expense tables; only <b>PR</b> files its
+own Broad base rate and leasehold theft factor. <b>Two tables have no consumer in this group at all</b>:
+<code>SpecialFormBldrsRiskTimeElementBaseRate</code> (no 1150 branch to reach it) and
+<code>BaseRateAdjustmentFactor</code> &mdash; which is plain Business Income's table, <b>filed by 46 of 47
+jurisdictions and named zero times in this ruleset</b>. <b>Rule deletions again:</b>
+<code>SetLowestBasicGroupIIBaseRate</code> is emptied to <code>&lt;rul:Sequence /&gt;</code> by <b>six</b>
+states &mdash; AR, DC, KS, NY, RI, TX &mdash; which are <b>six of the eight</b> filing no lowest-rate table,
+so <b>C6-19's biconditional gets re-asked on a second coverage</b>. <code>SetSpecialTheftExclusionFactor</code>
+is deleted by PR exactly as in chunk 6. Nothing at all overrides <code>SetBasicGroupIRate</code>,
+<code>SetFactor</code>, the whole Broad chain or <code>SetEQRate</code>.</p>
+
+<p><span class="lab">Gate-level tasks</span></p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#9989;</td><td class="num">1</td><td>Golden case &mdash; <b>$39 / $123 / $23 / $47</b>, the Special Class item unmoved at 66/209. <b>Every rate step landed first run.</b> One correction: <b>omitting <code>MonthlyLimitOfIndemnity</code> is not the same as saying &ldquo;Not Applicable&rdquo;</b> &mdash; the absent field reads as <code>""</code>, elects a priced branch, and both Basic forms return $0 with <code>TypeOfRiskFactor</code> sitting at a healthy 0.55 one field away</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">2</td><td>Chain runs &mdash; <b>no new interpreter node.</b> A seventh coverage on the same machinery, and the first at <b>three levels of nesting</b>: Location &rarr; SpecialClass &rarr; SpecialClassBusnIncome</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">3</td><td>Zero cases &mdash; 6 cases. <b>Removing the parent's <code>ClassDescription</code> was predicted to take one child form and takes two</b> (it feeds the rate Group I copies AND the numeric value Group II borrows). And removing the parent's <code>Deductible</code> prices the ITEM at zero while <b>the child stays at $39</b></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">4</td><td>47-jurisdiction sweep &mdash; <b>47 of 47</b>. AZ, FL and NY produce no Group I premium, <b>all three inherited from chunk 6 and none of them a Business Income defect</b></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">5</td><td>Shared names &mdash; <b>seven chains</b> now reported; 25 shared names, 11 reading different tables. <b><code>SetBasicGroupIRate</code> and <code>SetFactor</code> resolve to NO MATRIX at all</b> in this group &mdash; the borrowed-rate claim seen from the census side</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">6</td><td>Exclusion records &mdash; vandalism, wind/hail and theft each file a <code>*SpclClassBusnIncome</code> record; <b>cyber is one policy-level record</b> reaching every premium file, the same shape as chunks 5 and 6</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">7</td><td>Hardcoded literals &mdash; <b>38 pinned sites, 23 that kill filed rows.</b> Broad's <code>"Frame"</code> (5 of 6 unreachable) and Special's <code>"Frame"</code> plus the apartment key &mdash; <b>pinned &ldquo;from the pinned site only; the same column is read live elsewhere&rdquo;</b>, which is C7-19's claim with a measurement attached</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">8</td><td>ISO confirmation &mdash; <b>5 calls, 5 agreements</b>, including the one that mattered: <b>parent at $0/$0 while Business Income holds at $39/$123</b>. FL refused with a 400 &mdash; OI-99 reached through a <i>parent</i> that cannot rate</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">9</td><td>Gate document &mdash; <b>8 of 9</b>. <b>The first chunk where ISO's message count does not match the engine's</b> (ISO 3 / engine 5, and ISO 1 / engine 4 with the parent broken). Both sides agree on every premium, so it is not a rating divergence &mdash; but point 9 cannot close on any chunk until it is explained</td></tr>
+</tbody>
+</table>
+
+<p><span class="lab">The borrowed rate &mdash; the chunk's central machinery</span></p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#9989;</td><td class="num">10</td><td><b>The borrow, proven by moving it.</b> Parent class &rarr; Aircraft takes its rate 0.07 &rarr; 0.286 and the premium <b>$39 &rarr; $157</b>; parent LCM 2.0 takes it to 0.14 and <b>$77</b> &mdash; with nothing in the Business Income record changed. <b>The parent&rsquo;s LCM reaches the child and the parent&rsquo;s deductible does not</b>, because the copy happens after the one and before the other</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">11</td><td><b>A rate chain with nowhere to send its answer, for the second time.</b> No plain Earthquake coverage file exists; the only two premium files are Agreed Value and Extended Period of Indemnity. Chunk 5 found the same asymmetry on plain Business Income &mdash; <b>two instances make it a pattern</b></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">12</td><td><b>ELEVEN, and the count was wrong twice.</b> The census said five (a regex filtered to Rate/Symbol/Terr/Factor), the golden case found six by hand, an unfiltered regex finds <b>eleven</b> &mdash; and <code>BasicGroupIBaseRate</code> is named <b>zero</b> times. <b>A filtered enumeration is not an enumeration.</b> Also: the child&rsquo;s own LCM is <b>inert in Group I and five-fold in Group II</b> ($39 unchanged / $123 &rarr; $616)</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">13</td><td><b>Three jurisdictions where a well-formed Business Income record prices at zero</b>, for three reasons that all belong to a different coverage &mdash; FL, NY, AZ, inherited whole from chunk 6. Settled inside the sweep</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">14</td><td><b>Read by two forms, ignored by three.</b> Mercantile 0.55 &rarr; $39, Manufacturing 0.71 &rarr; $50, MaxPeriod <b>1.15 &rarr; $81</b>, Extra Expense Only <b>1.7 &rarr; $119</b> &mdash; and with max-period elected <b>Broad holds at $23 and Special at $47</b>. Only <b>FL</b> files its own <code>BusnIncomeFactor</code>. And the extra-expense branch keys on <code>ExtraExpenseLimitOnLossPayment</code>, <b>not</b> the column name <code>ExtraExpnLimitOnLossPymts</code> &mdash; the second time in the project a column name was mistaken for a field name, silently</td></tr>
+</tbody>
+</table>
+
+<p><span class="lab">Per-form specifics</span></p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#9989;</td><td class="num">15</td><td><b>One multiplier, and it keys on the PARENT.</b> <code>rate &times; VandalismExclFactor</code> and nothing else &mdash; and the factor keys on the <i>parent&rsquo;s</i> <code>ClassCode</code>, one of the eleven borrowed values, so the same exclusion is worth 0.95 on class 0951 and 0.98 on 0311 ($37 / $38). <b>Each absence has a different contrast and the census only drew one</b>: <code>StdPropPolGroupIFactor</code> is 0 here <i>and</i> 0 in plain Business Income (5 in Special Class Building), while <code>BuildersRiskFactor</code> and sprinkler leakage are 10 and 86 in plain Business Income and 0 in both Special Class groups</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">16</td><td><b>Unresolvable at countrywide for the third coverage group running.</b> <code>BasicGroupIIRate</code> 0 CW rows / 45 states, <code>LowestBasicGroupIIRate</code> 0 / 39 &mdash; the same two empty tables Building and plain Business Income read</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">17</td><td><b>Chunk 6&rsquo;s biconditional does not survive a second coverage.</b> Six states <b>delete</b> the rule (AR, DC, KS, NY, RI, TX) &mdash; six of the eight non-filers &mdash; and <b>FL and PR go a third way</b>, leaving the rule alone while filing no table, so they reach a read with nothing to read. A rule inferred from chunk 6 would have called those two defects</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">18</td><td><b>Construction pinned and covType live, in the SAME lookup.</b> Fire Resistive on the parent leaves the base at 0.023 and the premium at <b>$23</b>; <code>CovType</code> Without Extra Expense moves it to 0.011 and <b>$11</b>. Plain Business Income reads the Fire Resistive rows and prices the same risk at $12. <b>Moving only construction would have concluded the lookup ignores its keys</b></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">19</td><td><b>Pinned here, live next door.</b> The apartment rows (0.029 / 0.016) are unreachable from this group &mdash; the literals census says the pin applies <i>&ldquo;from the pinned site only; the same column is read live elsewhere&rdquo;</i> &mdash; and that elsewhere is plain Business Income on <b>the same physical table</b>, pricing the apartments version at <b>$29</b> against this group&rsquo;s $47</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">20</td><td><b>The algorithms page&rsquo;s open question answered, and half of it was wrong.</b> It records the theft factor as still varying by <code>ApartmentCondoIndicator</code>. <b>It does not</b> &mdash; that lookup keys the column on a hard-coded <code>"No"</code>, so the <code>Yes</code> row (0.96) is unreachable too. <b>Both dimensions are dead</b>: moving the indicator and the parent&rsquo;s class code moves neither the theft factor (0.86 throughout) nor the base rate (0.047). Corrected on the algorithms page in two places</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">21</td><td><b>Class 1150 is inert here for the third coverage group in two chunks.</b> <code>SpecialFormBldrsRiskTimeElementBaseRate</code> is named <b>0</b> times in this ruleset and <b>6</b> in plain Business Income&rsquo;s; the table files 1 countrywide row and <b>0 states file their own</b>. Parent class 1150 &rarr; premium <b>$47, unchanged</b></td></tr>
+</tbody>
+</table>
+
+<p><span class="lab">Cross-form claims</span></p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#9989;</td><td class="num">22</td><td><b>0 countrywide and 0 across all 47</b> for all four, scanned in the main ruleset and every premium file. <b>Each absence has a different lineage and the opening census only drew one comparison</b> &mdash; <code>StdPropPolGroupIFactor</code> is absent from plain Business Income too, so it is inherited rather than dropped</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">23</td><td><b>46 of 47 file it (all but PR), countrywide is header-only, and this ruleset names it 0 times</b> &mdash; against 19 in plain Business Income&rsquo;s. <b>A filed table is not evidence of a live path</b>: it belongs to the coverage that <i>rebuilds</i> a rate this one simply <i>copies</i></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">24</td><td><b>Counted, not read.</b> This group carries <b>4 <code>rul:Round</code> on every form</b>; the parent it hangs off carries <b>0 on all four</b>; and <b>plain Business Income is inconsistent with itself</b> (Basic Group II 0, the others 4). <b>This group follows plain Business Income and normalises its inconsistency &mdash; the copy is tidier than the original</b></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">25</td><td><b>The same two fields, on a different coverage.</b> <code>BlktTotalFullValueAmount</code> &rarr; 0 and <code>BlktCauseOfLossValue</code> &rarr; blank; <code>BlktLimit</code> and the average rate survive; premium <b>$0</b>. A caller supplying all four blanket values now gets a silent zero <b>twice over</b>, once at each level</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">26</td><td><b>Building 263/32, Contents 223/24, Business Income 112/13, Special Class 66/209, Special Class Business Income 39/123</b> &mdash; five coverages, four nesting levels, one submission, each unchanged from its own chunk</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">27</td><td><b>Checked &mdash; and the map was right where our own census was wrong.</b> 30 value-shaped claims, <b>21 consistent, 0 contradicted, 9 not decidable and stated as such</b>. The map lists <code>BasicGroupIINumericValue</code> among the copied values &mdash; <b>the one C7-12&rsquo;s census filtered out and the golden case had to rediscover by hand</b></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">28</td><td><b>Four answered with evidence, one left open with a reason.</b> <b>Two of the five were not answerable as asked</b> &mdash; Q1 and Q2 both embedded a premise about what varies, and both premises were wrong. Q5&rsquo;s file turned out <b>not</b> to be a dispatch file: it is a coverage shell whose own gate is hard-coded to <b>0</b>, the fifth computed-and-never-used shape across chunks 6 and 7. Q4 (two endorsement files) stays open for chunk 12, deliberately</td></tr>
+</tbody>
+</table>
+
+<p><span class="lab">What chunk 7 inherits and must re-ask</span> <b>OI-99</b> &mdash; ISO refuses where we
+return $0, and chunk 7 will produce zeros through a <i>parent</i> that cannot rate, a new route to the same
+question &middot; <b>OI-100</b> &mdash; diff each state against its own parent, built into the census from
+the start this time &middot; Building's rate-step rounding, still open from chunk 5 &middot; chunk 3's
+shared-name adjudication, which has now predicted correctly for chunks 4, 5 and 6.</p>
+
+<p><span class="lab">Deliberately not in chunk 7</span> Legal Liability (chunk 8) &middot; blanket rating
+proper (chunk 9) &middot; Earthquake's own chain (chunk 10) &middot; the Interruption of Computer Operations
+and Watercraft Exclusion Buyback endorsements (chunk 12).</p>
+</div>
+
+<div class="chunk done">
+<h3><span class="n">8</span> Legal Liability &mdash; Building and Contents <span class="tag done">Gate 7 of 9 &mdash; all 26 tasks</span></h3>
+<p>Opened 2026-09-18, 26 tasks numbered <b>C8-01&ndash;C8-26</b> in
+<code>CF-CHUNK8-TASKS.md</code>, derived from the two traced comparison pages and from the census run while
+opening the chunk (<code>scripts/cf/58_chunk8_census.py</code>).</p>
+
+<p><span class="lab">Five things that make it different in kind</span></p>
+<table>
+<thead><tr><th>&nbsp;</th><th>Why it is new, not just different data</th></tr></thead>
+<tbody>
+<tr><td class="num">1</td><td><b>The first chunk where the divergence is already traced.</b> Chunks 4&ndash;7 opened by discovering a shape; this one opens with an <b>eleven-point map</b> in hand. So the first job is not to discover it but to <b>check it</b> &mdash; exactly as C7-27 checked the Special Class Business Income reuse map. That check found <i>our</i> error last time; it may find the map's this time</td></tr>
+<tr><td class="num">2</td><td><b>The fork is in <code>SetPremium</code>, not the rate chain &mdash; and it starts three steps early.</b> Everything through <code>BasicGroupICauseOfLossAdjustment</code> is shared rule for rule. Then coinsurance, the LOI factor and the deductible are <b>computed and discarded</b>, the premium starts from the cause-of-loss adjustment instead of the final rate, and <code>MultiPremiumAndDispersionCreditFactor</code> is not applied. <b>No chunk so far has had a path that throws away work it has already done</b></td></tr>
+<tr><td class="num">3</td><td><b>Contents is double.</b> One two-row table, keyed <code>"Bldg"</code> &rarr; 0.25 and <code>"PersProp"</code> &rarr; 0.50. One table, one key, twice the money</td></tr>
+<tr><td class="num">4</td><td><b>The two sides gate on different fields at different LEVELS.</b> Building tests <code>CovType</code> on the item; Contents tests <code>CovForm</code> <b>inherited from the occupancy class</b>. One Contents item cannot carry a different answer from its siblings; a Building can</td></tr>
+<tr><td class="num">5</td><td><b>Blanket is unreachable by two different mechanisms.</b> Building reaches blanket by elimination and Legal Liability never gets there; Contents tests <code>IncludedInBlkt = "Yes"</code> explicitly <b>and excludes the Legal Liability form by name</b>. Same outcome, two reasons</td></tr>
+</tbody>
+</table>
+
+<p><span class="lab">The state layer &mdash; the quietest of any chunk</span> <b>Not one jurisdiction files
+its own copy of any of the three tables this coverage owns</b>: <code>LegalLiabilityFactor</code> (2
+countrywide rows &mdash; Bldg <b>0.25</b>, PersProp <b>0.50</b>), <code>AddlInsurableInterestFactor</code>
+(4 rows &mdash; 1.25 / 1.25 / 1.0 / 1.0) and <code>AdditionalInsurableIntOption</code> (4 rows). After six
+chunks of state overrides this is the first coverage whose entire distinctive data is countrywide-only.
+<b>And only two jurisdictions rewrite any of the eight premium files</b> &mdash; FL on both Group II files,
+PR on both Special files, nobody on the other four. <b>Branch ordering checked in all 47 rather than read
+once</b>: Legal Liability sits at <b>branch 2 in all eight countrywide files</b> and in all four state
+copies, <b>0 files where blanket comes first</b> &mdash; the map's central structural argument survives the
+check. <b>One line of the map is stale</b>: it says the plain-language &rarr; Option mapping ships empty and
+to pull it from the 2019 package; <b>the 2026 edition files four rows</b>.</p>
+
+<p><span class="lab">Gate-level tasks</span></p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#9989;</td><td class="num">1</td><td><b>Building $60 / $7 / $4 / $12, Contents $132 / $15 / $11 / $93</b> &mdash; all eight first clean run, and <b>$60 / $7 ISO-confirmed</b>. <b>Contents is exactly double</b> (C8-12 settled early), and the Special forms already show map point 6. Two prerequisites found the hard way: <b><code>PolicyType</code> on the policy</b> (without it ISO&rsquo;s own rule <i>deletes</i> the submitted record) and <b><code>CovForm</code> on the occupancy class</b> (map point 1, early)</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">2</td><td><b>No new interpreter node, and one near-miss worth recording.</b> The first run looked like an engine defect &mdash; a submitted record present before <code>Interpreter.run</code> and gone after. It was not: ISO&rsquo;s <code>AttachForm&hellip;</code> rule removes it when <code>PolicyType</code> is absent, and <b>the probe&rsquo;s two sides were built from different submissions</b>. <b>A control that passes without exercising the variable under test is not a control.</b> The engine was right throughout</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">3</td><td>6 cases. <b>Two identical $0s from opposite causes</b> (an appended empty record vs a deleted submitted one). <b>Two cases predicted at $0 REFUSE instead, and both correct the map</b>: Leasehold Interest reaches <code>Power(0, 0)</code> because a submission is not a file, and Builders Risk leaves <code>Premium</code> <b>null</b> &mdash; the outer <code>If</code> has no <code>Else</code>, so <b>unwritten and zero are different things</b>. And the case that is <i>not</i> a zero returns a plausible <b>$223</b></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">4</td><td><b>47 of 47, 43 with a real premium.</b> <b>The first version reported 47 of 47 and proved nothing</b>: it sent Oregon&rsquo;s territory to all 47, so 46 agreed at $0 &mdash; an empty search wearing a pass. Fixed by pinning the territory factor, which the rules <code>Copy</code> from the location. AZ is explained (C6-04); <b>CA, FL and PR are not, and are carried into C8-09</b></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">5</td><td><b>7 shared names, 0 reading different tables &mdash; and passing did not test the thing that would hurt.</b> <code>SetLegalLiabilityFactor</code> and <code>SetLegalLiabFactor</code> never collide <i>because they are different names</i>, one per datadef group. <b>Gate point 6 catches one-name-many-tables; Legal Liability&rsquo;s trap is the inverse.</b> Recorded as a limit of the gate rather than a pass of it</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">6</td><td><b>Legal Liability files no exclusion records of its own.</b> It is a <i>branch</i> of Building and Contents, not a coverage beside them, so it inherits both sides’ records wholesale</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">7</td><td><b><code>LegalLiabilityFactor.CovType</code> is pinned to <code>"Bldg"</code> &mdash; 1 of 2 filed values unreachable from every site that reads it.</b> The two-row table is one row per coverage, <b>each unreachable from the other</b>. <code>CovType</code> is tested against <code>Legal Liability</code> 26 times, <code>Leasehold Interest</code> 31, <code>Builders Risk</code> 30</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">8</td><td><b>3 confirmed, 1 payload-blocked, 1 divergence.</b> Broad <b>$4</b> and Special <b>$12</b> confirmed. <b>Blanket elected returns $0 on BOTH sides &mdash; and both contradict the map</b>, which argued it still rates as scheduled. <b>Builders Risk + reporting form: ISO RATES ($1) where we refuse</b> &mdash; OI-99’s second instance, opposite in direction to Florida’s. Contents’ $132 is <b>unconfirmed</b></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">9</td><td><b>7 of 9</b>, and <b>point 8 is held open on purpose</b>: CA, FL and PR produce no premium and the reason is not established. Three unexplained zeros is the shape chunk 6 taught us not to wave past</td></tr>
+</tbody>
+</table>
+
+<p><span class="lab">The fork &mdash; the chunk's central machinery</span></p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#9989;</td><td class="num">10</td><td><b>The two paths agree on the cause-of-loss adjustment to the digit and disagree on every number after it.</b> Class 0074 moves both to 0.069, and the premiums to <b>$17</b> (Legal Liability) and <b>$75</b> (class-rated)</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">11</td><td><b>Two computed and discarded, and a third never reached &mdash; the map says three.</b> Coinsurance 80% moves the class-rated premium 261&rarr;274 and deductible 250 moves it to 279, while <b>Legal Liability stays at $60 throughout</b>. But the <b>LOI factor comes back at 1</b> on this path (1.172 on the class-rated one): its setter is gated on the class-rated CovType, so it is <i>never computed</i> rather than computed and ignored. <b>A distinction invisible in the premium and visible in one field</b></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">12</td><td><b>$60 against $132 on the same risk</b>, factor 0.25 against 0.50. And <b>each lookup pins <code>CovType</code> to its own literal</b>, so Building can never read the PersProp row and Contents can never read the Bldg one &mdash; one table, two coverages, no overlap</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">13</td><td><b>Four options, two values</b>: Option1/2 &rarr; 1.25 &rarr; <b>$75</b>, Option3/4 &rarr; 1.0 &rarr; <b>$60</b>, so half the distinction the submitter is asked to make costs nothing. <b>And the map is stale</b>: it says the plain-language &rarr; Option mapping ships empty and to pull it from the 2019 package &mdash; <b>the 2026 edition files four rows</b></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">14</td><td><b>The map’s conclusion is right and its reason is not the operative one.</b> <code>CovType</code> is still <code>Legal Liability</code> and branch 2 <b>does</b> match &mdash; but the premium never reaches the <code>Choose</code>: <code>CoverageOnPolicyIndicator</code> is already <b>0</b>, because <code>CauseOfLossToUse</code> is copied from an <b>empty</b> <code>BlktCauseOfLossValue</code>. <b>The same overwrite C6-28 and C7-25 found &mdash; three chunks, three coverages, one mechanism.</b> ISO agrees at $0</td></tr>
+</tbody>
+</table>
+
+<p><span class="lab">The eleven-point map, checked point by point</span></p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#9989;</td><td class="num">15</td><td><b>Two Buildings on one location disagree — $60 and $261 — and two Contents items under one occupancy cannot.</b> The second item’s <code>CovForm</code> request is overwritten by the occupancy’s. <b>The gate is not just a different field: it is a different level, and the level decides who may differ</b></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">16</td><td><b>Neither record carries the other’s name.</b> <code>LegalLiabFactor</code> on a Building record and <code>LegalLiabilityFactor</code> on a Contents record both read <b>None</b>. Nothing is shared but the idea &mdash; C8-05’s blind spot, demonstrated rather than argued</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">17</td><td><b>Contents carries a live 0.50 on a risk that is not Legal Liability at all</b> (<code>LegalLiabFactor</code> = 0.5 on a class-rated item), where Building’s gated setter writes 0.0. <b>The fifth populated-and-unused factor in three chunks, and the first populated with a REAL value rather than a default</b></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">18</td><td><b>Point 1’s consequence, one level in.</b> Contents’ insurable-interest record on the ITEM gives factor 0 and premium <b>$0</b>; on the OCCUPANCY it gives 1 and <b>$132</b></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">19</td><td><b>The one that moves money, proven.</b> Theft excluded: <b>Building’s Legal Liability Special stays at $12</b> (it reads the raw <code>SpecialRate</code>) while <b>Contents’ falls $93 &rarr; $37</b> &mdash; <code>SpecialCauseOfLossAdjustment</code> keeps a 0.4 Offices credit. <b>One submission field, one of two coverages moving.</b> Both factors default to 1.0, which is why the golden case could not tell the rate sources apart</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">20</td><td><b>All four Building forms read <code>../Limit</code>; Contents’ Special reads a LOCAL <code>Limit</code>.</b> At least consistent: the one form with a local limit is the one form whose rate source also differs (point 6)</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">21</td><td><b>The outer <code>If</code> names the reporting form and has no <code>Else</code></b> &mdash; which is why C8-03 case 4 refuses rather than returning 0. <b>And the census’s addition holds</b>: only Building’s <b>Special</b> tests <code>IncludedInBlkt</code> explicitly; Basic I, Basic II and Broad reach blanket by elimination. <b>One coverage, two mechanisms, and the map describes only one</b></td></tr>
+</tbody>
+</table>
+
+<p><span class="lab">Cross-form claims</span></p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#9989;</td><td class="num">22</td><td><b>Second instance of a populated-and-unused field.</b> Factor 0.5 halves the class-rated premium 261 &rarr; <b>131</b> and <b>Legal Liability stays at $60</b></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">23</td><td><b>The map is wrong: the operand order IS premium-bearing.</b> PackageMod and IRPM both at 0.44 give <b>$11</b> nested; a single product gives 11.616 &rarr; <b>$12</b>. One dollar. <b>The map verified the operands and not the arithmetic</b> &mdash; and the first run of this test applied only one factor, because <b>IRPM is read from the POLICY</b>, five levels up</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">24</td><td><b>Both are correct outcomes and neither is a zero in our engine.</b> Leasehold Interest refuses (it activates chunk 11’s rate chain); Builders Risk + reporting form refuses here and <b>ISO prices it at $1</b>. The map records both as <code>Premium = 0.0</code></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">25</td><td><b>Predicted &ldquo;none of them moving&rdquo; and Contents moves, $223 &rarr; $248.</b> The Building’s <code>CovType</code> suppresses <b>Contents’</b> LOI factor (0.898 &rarr; 1) on a coverage that is still class-rated &mdash; <b>the fork is not confined to its own premium.</b> Business Income keeps $112 and both Special Class coverages are untouched because they hang off the location. <b>Only the coverage nested INSIDE the building follows it</b></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">26</td><td><b>8 of 11 confirmed, 3 corrected</b>, plus four further findings: a stale line, an over-claim, and two things the map does not mention &mdash; one of them the cross-coverage leak above. <b>This was the best-prepared input any chunk has started from</b> and running it moved five points</td></tr>
+</tbody>
+</table>
+
+<p><span class="lab">What chunk 8 inherits and must re-ask</span> <b>OI-99</b> &mdash; chunk 8 has
+<b>three</b> correct-zero paths (Leasehold Interest, Builders Risk with a reporting form, and the two
+factors' 0.0 defaults), so it is the best chunk yet for asking which zeros ISO tolerates &middot; <b>gate
+point 9</b>, where chunk 7 was the first chunk whose message count did not match ISO's &middot; <b>OI-100</b>
+and C7-12's filtered enumeration, both built into the census from the start &middot; and <b>the chunk 6
+lesson about harnesses that manufacture findings</b> &mdash; the first branch-ordering detector written for
+this census reported the map contradicted, and it was the detector that was wrong, twice. Fixed before
+anything was published.</p>
+
+<p><span class="lab">Deliberately not in chunk 8</span> Blanket rating proper (chunk 9) &middot; Earthquake,
+which ships 8 endorsement variants on this branch alone (chunk 10) &middot; Leasehold Interest, which this
+file returns 0.0 for because it rates in its own group (chunk 11).</p>
+</div>
+
+<div class="chunk todo">
+<h3><span class="n">9</span> Blanket rating <span class="tag open">Not opened</span></h3>
+<p><b>The widest remaining gap.</b> Branch B is a stub in every premium file built in chunks 1&ndash;8,
+across every coverage. Doing it once, late, is cheaper than five times early &mdash; but nothing above this
+line is <i>finished</i> until it lands.</p>
+</div>
+
+<div class="chunk todo">
+<h3><span class="n">10</span> Earthquake &mdash; the fifth form, all coverages <span class="tag open">Untraced</span></h3>
+<p>97 rule files, and it gates more than itself: ~29 Special Class files ship an Earthquake wrapper, Legal
+Liability has 8 Earthquake endorsement variants, Non-Owned Trailers has its own. <b>The single largest
+unblocking item in the plan.</b></p>
+</div>
+
+<div class="chunk todo">
+<h3><span class="n">11</span> Leasehold Interest <span class="tag open">Surveyed only</span></h3>
+<p>A sixth coverage, not a fifth path: 32 rule files, four sub-coverages &times; five forms. Its exposure is
+<b>computed, not entered</b> &mdash; a present-value annuity driving the only <code>rul:Power</code> in the
+package. No coinsurance, LOI or deductible anywhere in it, and no blanket branch at all &mdash; confirmed,
+not assumed.</p>
+</div>
+
+<div class="chunk todo">
+<h3><span class="n">12</span> The endorsement families <span class="tag open">Sized, not sequenced</span></h3>
+<p>Taken by family once the core is proved: Ordinance or Law (55 rule files), dependent properties, utility
+services, green upgrades, debris removal, unmanned aircraft.</p>
+</div>
+
+<div class="chunk todo">
+<h3><span class="n">13</span> Terrorism / TRIA <span class="tag open">Untraced</span></h3>
+<p>16 rule files. Reads other groups' finished premiums, so &mdash; as in GL &mdash; it runs last.</p>
+</div>
+
+<div class="chunk todo">
+<h3><span class="n">14</span> Policy assembly <span class="tag open">Not opened</span></h3>
+<p>Aggregation, minimum premium, statistical coding. <b>Already partly exercised:</b> chunk 3's task 23
+showed <code>ErcCalculatedTotalPremium</code> summing the coverages correctly at three different totals.</p>
+</div>
+
+<h2>Open items that cross every chunk</h2>
+<table>
+<thead><tr><th>Item</th><th>Status</th><th>What it is</th></tr></thead>
+<tbody>
+<tr><td><b>A submission can populate a derived field</b></td><td><span class="tag warn">New, 2026-09-18</span></td><td>Every <code>IsNull</code>-guarded rule honours a value that arrived in the payload &mdash; the guard cannot tell &ldquo;already set by an earlier rule&rdquo; from &ldquo;supplied by the submitter&rdquo;. A submitted <code>SpecialBaseRate=9.999</code> bypasses the filed table entirely and prices at <b>$11,398</b>. <b>The mirror image of the absent-means-zero family</b>: it fails upward as readily as downward, and no ISO comparison catches it &mdash; ISO has the same guards and returns the same number</td></tr>
+<tr><td><b>Input validation</b></td><td><span class="tag warn">Biggest risk</span></td><td>Five inputs price at zero rather than raising: Arizona's <code>BasicGroupIReductionCredit</code>, an unrecognised <code>ConstructionType</code>, an absent <code>BCEG</code>, a missing <code>RatingTypeBasicGroupII</code>, a missing Group II territory. Every one looks like a valid submission and silently produces a cheap policy</td></tr>
+<tr><td><code>SingleResult</code> with zero hits</td><td><span class="tag open">Open, narrowed</span></td><td>ISO refuses on <i>some</i> empty lookups and tolerates others; the distinguishing condition is unknown. Blanket strictness was measured and <b>disproven</b>. Needs targeted ISO probes, not more corpus reading</td></tr>
+<tr><td>Gate point 9 &mdash; validation messages</td><td><span class="tag open">Owed on C1 and C2</span></td><td>A CF submission can rate correctly and still return errors; chunk 1 fires three on every case</td></tr>
+<tr><td>Per-state gaps</td><td><span class="tag open">Logged</span></td><td>TX wind/hail untraced; DC and IL missing a <code>BCEGFactor</code> row; MT, NY, PR empty Group II symbol table</td></tr>
+<tr><td>Housekeeping</td><td><span class="tag open">Deferred</span></td><td><code>cf_engine</code> imports <code>gl_engine</code>; the shared core wants a neutral home. <b>Never bundle that rename with a rating change</b></td></tr>
+<tr><td>General Liability, optional</td><td><span class="tag open">A choice, not a defect</span></td><td>Whether GL adopts <code>propagate</code>; whether it wants its own rounding tie (OI-70)</td></tr>
+<tr><td><b>Nothing is committed</b></td><td><span class="tag warn">Working tree only</span></td><td>All of <code>cf_engine/</code>, <code>scripts/cf/</code>, <code>docs/CF-*</code> and the <code>gl_engine/</code> edits</td></tr>
+</tbody>
+</table>
+
+<h2>Confirm it is all still green</h2>
+<p><span class="lab">The golden cases &mdash; one per coverage</span></p>
+<table>
+<thead><tr><th>Command</th><th>Must produce</th><th class="st">2026-09-18</th></tr></thead>
+<tbody>
+<tr><td><code>scripts/cf/00_chunk0_checks.py</code></td><td>the foundation &mdash; operators, resolver, edition chain</td><td class="st">&#9989;</td></tr>
+<tr><td><code>scripts/cf/01_golden_case.py</code></td><td>chunk 1 Building Basic Group I &mdash; <b>$261 / $263 / $288</b></td><td class="st">&#9989;</td></tr>
+<tr><td><code>scripts/cf/09_chunk2_golden_case.py</code></td><td>chunk 2 Building Basic Group II &mdash; <b>$261 + $32</b> from one submission</td><td class="st">&#9989;</td></tr>
+<tr><td><code>scripts/cf/15_chunk3_golden_case.py</code></td><td>chunk 3 Broad and Special &mdash; <b>$16 / $54</b>, layering to 293 / 309 / 347</td><td class="st">&#9989;</td></tr>
+<tr><td><code>scripts/cf/22_chunk4_golden_case.py</code></td><td>chunk 4 Contents, four forms &mdash; <b>$223 / $24 / $16 / $137</b>, Building unmoved at 263 / 32</td><td class="st">&#9989;</td></tr>
+<tr><td><code>scripts/cf/32_chunk5_golden_case.py</code></td><td>chunk 5 Business Income, four forms &mdash; <b>$112 / $13 / $23 / $47</b>, Building unmoved at 261 / 32</td><td class="st">&#9989;</td></tr>
+<tr><td><code>scripts/cf/41_chunk6_golden_case.py</code></td><td>chunk 6 Special Class, four forms &mdash; <b>$66 / $209 / $14 / $44</b>, Building unmoved at 261 / 32</td><td class="st">&#9989;</td></tr>
+<tr><td><code>scripts/cf/50_chunk7_golden_case.py</code></td><td>chunk 7 Special Class Business Income, four forms &mdash; <b>$39 / $123 / $23 / $47</b>, the item unmoved at 66 / 209</td><td class="st">&#9989;</td></tr>
+<tr><td><code>scripts/cf/59_chunk8_golden_case.py</code></td><td>chunk 8 Legal Liability &mdash; Building <b>$60 / $7 / $4 / $12</b>, Contents <b>$132 / $15 / $11 / $93</b></td><td class="st">&#9989;</td></tr>
+</tbody>
+</table>
+
+<p><span class="lab">The machinery each chunk added</span> Run these when shared code changes.</p>
+<table>
+<thead><tr><th>Command</th><th>What it holds</th><th class="st">2026-09-18</th></tr></thead>
+<tbody>
+<tr><td><code>21_chunk3_special_structure.py</code></td><td>chunk 3's Special structure, including the <b>$11,398</b> derived-field case</td><td class="st">&#9989;</td></tr>
+<tr><td><code>23_chunk4_foreach.py</code></td><td>the repeating group &mdash; <b>209 + 105 = 314</b>, and no leakage between records</td><td class="st">&#9989;</td></tr>
+<tr><td><code>35_chunk5_factor.py</code></td><td><code>SetFactor</code> &mdash; <b>233 not 252</b>: selection, not multiplication</td><td class="st">&#9989;</td></tr>
+<tr><td><code>39_chunk5_crossform.py</code></td><td>three coverages on one submission, none of them moving</td><td class="st">&#9989;</td></tr>
+<tr><td><code>42_chunk6_zero_cases.py</code></td><td>chunk 6's six zero cases &mdash; Florida's own filed spelling worth <b>$0</b> in Oregon</td><td class="st">&#9989;</td></tr>
+<tr><td><code>45_chunk6_description_chain.py</code></td><td>the description chain &mdash; and the <b>correction to the Florida claim</b> (OI-100)</td><td class="st">&#9989;</td></tr>
+<tr><td><code>46_chunk6_perform.py</code></td><td>the <b>1.5 coinsurance surcharge</b>, the dead protection-class factor, the 39/39 biconditional</td><td class="st">&#9989;</td></tr>
+<tr><td><code>47_chunk6_forms.py</code></td><td>the narrowed fire gate, Florida's <b>1.42</b>, construction-blind Broad</td><td class="st">&#9989;</td></tr>
+<tr><td><code>48_chunk6_crossform.py</code></td><td>the <b>blanket branch</b> (first run in the project) and <b>four coverages</b> on one submission</td><td class="st">&#9989;</td></tr>
+<tr><td><code>51_chunk7_zero_cases.py</code></td><td>chunk 7&rsquo;s six zero cases &mdash; a parent worth <b>$0</b> still carrying a <b>$39</b> child</td><td class="st">&#9989;</td></tr>
+<tr><td><code>54_chunk7_borrowed.py</code></td><td>the borrowed rate &mdash; <b>eleven</b> values across the boundary and <b>no base rate</b> among them</td><td class="st">&#9989;</td></tr>
+<tr><td><code>55_chunk7_perform.py</code></td><td>both apartment dimensions dead, and a pin that is <b>live next door</b></td><td class="st">&#9989;</td></tr>
+<tr><td><code>56_chunk7_crossform.py</code></td><td>the rounding <b>counted</b>, and <b>five coverages</b> on one submission</td><td class="st">&#9989;</td></tr>
+<tr><td><code>57_chunk7_open_questions.py</code></td><td>the algorithms page&rsquo;s five open questions &mdash; four answered, one left open with a reason</td><td class="st">&#9989;</td></tr>
+<tr><td><code>61_chunk8_zero_cases.py</code></td><td>chunk 8&rsquo;s six zero cases &mdash; <b>four zeros, four unrelated causes</b>, and one $223 that is not a zero at all</td><td class="st">&#9989;</td></tr>
+<tr><td><code>64_chunk8_fork.py</code></td><td>the fork &mdash; two concepts discarded, a third <b>never computed</b>, and the blanket gate firing before the <code>Choose</code></td><td class="st">&#9989;</td></tr>
+<tr><td><code>65_chunk8_map.py</code></td><td>the traced map, point by point &mdash; incl. <b>theft excluded moving Contents $93 &rarr; $37 and Building not at all</b></td><td class="st">&#9989;</td></tr>
+<tr><td><code>66_chunk8_crossform.py</code></td><td>the map <b>scored</b> &mdash; 8 of 11 confirmed, 3 corrected &mdash; and the <b>cross-coverage LOI leak</b></td><td class="st">&#9989;</td></tr>
+<tr><td><code>60_chunk8_raas_probe.py</code></td><td>the standing engine-vs-ISO check on the Legal Liability form record</td><td class="st">&#9989;</td></tr>
+<tr><td><code>04_shared_names.py</code></td><td>gate point 6 across all <b>six</b> chains</td><td class="st">&#9989;</td></tr>
+<tr><td><code>05_exclusion_records.py</code></td><td>gate point 7 census, now with a per-group chunk 6 section</td><td class="st">&#9989;</td></tr>
+<tr><td><code>08_hardcoded_literals.py --group CommercialPropertySpecialClass</code></td><td>gate point 5 for a second datadef group</td><td class="st">&#9989;</td></tr>
+</tbody>
+</table>
+
+<p><span class="lab">The six sweeps</span> A few minutes each; all 47 jurisdictions enumerated.</p>
+<table>
+<thead><tr><th>Command</th><th>Result</th><th class="st">2026-09-18</th></tr></thead>
+<tbody>
+<tr><td><code>17_chunk3_enumerate_states.py</code></td><td>Broad <b>47 of 47</b>, Special <b>47 of 47</b>, none skipped</td><td class="st">&#9989;</td></tr>
+<tr><td><code>24_chunk4_enumerate_states.py</code></td><td>Contents <b>46 of 47</b>, PR skipped for an enumerated reason</td><td class="st">&#9989;</td></tr>
+<tr><td><code>34_chunk5_enumerate_states.py</code></td><td>Business Income <b>44 of 47</b>, PR skipped, AZ and TX diverging with a stated cause</td><td class="st">&#9989;</td></tr>
+<tr><td><code>43_chunk6_enumerate_states.py</code></td><td>Special Class <b>47 of 47</b> &mdash; AZ, FL and NY correctly producing <b>no premium at all</b>, and none of the three a missing rate</td><td class="st">&#9989;</td></tr>
+<tr><td><code>52_chunk7_enumerate_states.py</code></td><td>Special Class Business Income <b>47 of 47</b> &mdash; AZ, FL and NY at $0, <b>all three inherited whole from chunk 6</b> and none a Business Income defect</td><td class="st">&#9989;</td></tr>
+<tr><td><code>62_chunk8_enumerate_states.py</code></td><td>Legal Liability <b>47 of 47</b>, 43 with a real premium. <b>Its first version reported 47 of 47 and proved nothing</b> &mdash; 46 agreed at $0 on an out-of-state territory</td><td class="st">&#9989;</td></tr>
+</tbody>
+</table>
+<p class="sub">The full set is <code>scripts/cf/00</code>&ndash;<code>66</code>. The General Liability
+suites are the regression net for every shared-code change &mdash; <b>all 16 re-run green on 2026-09-18</b>,
+alongside every command above. <b>Chunks 6, 7 and 8 are the only chunks to touch shared code</b>:
+<code>04_shared_names.py</code> (now eight chains), <code>05_exclusion_records.py</code> (per-group sections)
+and <code>08_hardcoded_literals.py</code> (a <code>--group</code> argument). All three still pass for chunks
+1&ndash;5 unchanged. <b>No engine code has been written in eight chunks</b> &mdash; chunk 8 produced the first
+serious candidate for it and the candidate turned out to be a broken probe, not a defect.</p>
+
+<h2>The habit that produced every finding</h2>
+<div class="note shared"><b>Derive the expected numbers by hand from the filed rows FIRST, write them down,
+then run.</b> Every finding worth having in this project came from a prediction disagreeing with the engine
+&mdash; Arizona, the BCEG zero, the Kansas wind/hail mechanism, the cumulative forms. Observing what the
+engine does and writing that down proves nothing.</div>
+<ol>
+<li><b>The countrywide chain is often the minority behaviour.</b> 39 of 47 jurisdictions override
+<code>SetBasicGroupIIRate</code>; 18 of 47 override the Group I chain. Re-ask per chunk, never inherit.</li>
+<li><b>Absent means zero, and nothing raises.</b> The recurring failure shape in Property &mdash; which is
+why the zero cases exist in every chunk.</li>
+<li><b>A matching premium proves less than it looks.</b> Nine cases matched ISO before a rounding tie was
+deliberately constructed, and every one was consistent with all three rounding modes.</li>
+</ol>

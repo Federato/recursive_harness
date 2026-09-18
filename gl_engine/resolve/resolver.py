@@ -43,23 +43,49 @@ class Resolution:
         return f"<Resolution {self.juris}@{self.asof} {self.state.pkg_id} -> {par}>"
 
 
-def _valid_date(asof: str) -> str:
+#: Why GL's floor exists. Carried as text because Property's floor is a
+#: different kind of fact -- existence, not coverage -- and a refusal that
+#: cited OI-41 for a Property date would be citing the wrong reason.
+FLOOR_REASON = ("below that date this corpus cannot resolve all 51 "
+                "jurisdictions (OI-41)")
+
+
+def _valid_date(asof: str, floor: str = MIN_ASOF,
+                reason: str = FLOOR_REASON) -> str:
     if not (isinstance(asof, str) and len(asof) == 8 and asof.isdigit()):
         raise ResolutionError(f"as-of date must be YYYYMMDD, got {asof!r}")
-    if asof < MIN_ASOF:
+    if asof < floor:
         raise ResolutionError(
-            f"as-of {asof} is before {MIN_ASOF}; below that date this corpus "
-            f"cannot resolve all 51 jurisdictions (OI-41). Refusing rather than "
+            f"as-of {asof} is before {floor}; {reason}. Refusing rather than "
             f"serving a partial answer.")
     return asof
 
 
 class EditionResolver:
-    """Holds the discovered corpus and answers (jurisdiction, date) questions."""
+    """Holds the discovered corpus and answers (jurisdiction, date) questions.
+
+    The five steps above are properties of ISO's filing model, not of General
+    Liability, so Commercial Property subclasses this rather than restating it.
+    The two things that ARE line-specific are named as class attributes: which
+    corpus to discover, and the date floor below which the corpus is refused.
+    Everything else -- N4's "latest is never now", the version tie-break, N5's
+    declared-parent rule and its refusal to fall back -- is inherited unchanged,
+    which is the point.
+    """
+
+    #: The date below which this line's corpus is refused. Subclass-overridable
+    #: because the floor is a measured fact about one corpus, never a constant.
+    MIN_ASOF = MIN_ASOF
+    FLOOR_REASON = FLOOR_REASON
+
+    @staticmethod
+    def _discover(root):
+        return discover(root)
 
     def __init__(self, packages: list[Package] | None = None,
                  root: Path | None = None):
-        self._packages = list(packages) if packages is not None else discover(root)
+        self._packages = (list(packages) if packages is not None
+                          else self._discover(root))
 
     # ------------------------------------------------------------- inventory
 
@@ -89,7 +115,7 @@ class EditionResolver:
 
     def editions(self, juris: str, asof: str) -> list[Package]:
         """Editions of `juris` in force on or before `asof`, oldest first."""
-        asof = _valid_date(asof)
+        asof = _valid_date(asof, self.MIN_ASOF, self.FLOOR_REASON)
         return [p for p in self.by_juris.get(juris.upper(), [])
                 if p.identity.edition <= asof]
 
@@ -115,7 +141,7 @@ class EditionResolver:
         parent).
         """
         juris = juris.upper()
-        asof = _valid_date(asof)
+        asof = _valid_date(asof, self.MIN_ASOF, self.FLOOR_REASON)
         pool = self.by_juris.get(juris)
         if not pool:
             raise ResolutionError(

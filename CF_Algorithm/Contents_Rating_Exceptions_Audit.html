@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Contents Rating — Exceptions Audit (2026-09-10)</title>
+<style>
+  body { font-family: Georgia, "Iowan Old Style", serif; max-width: 980px; margin: 0 auto; padding: 40px 24px 80px; color: #1b232e; background: #f5f6f4; line-height: 1.55; }
+  h1 { font-size: 26px; margin-bottom: 4px; }
+  .subtitle { font-family: -apple-system, "Segoe UI", sans-serif; color: #55606e; font-size: 15px; margin-bottom: 28px; }
+  .banner { background: #eef3ee; border: 1px solid #b9cdb9; border-radius: 6px; padding: 14px 16px; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13.5px; margin-bottom: 32px; }
+  .banner b { color: #2f6b4f; }
+  h2 { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 21px; border-bottom: 3px solid #b9a577; padding-bottom: 8px; margin-top: 52px; }
+  h2 .count { font-size: 12px; letter-spacing: .05em; text-transform: uppercase; color: #8a5a1f; background: #f4e7d4; padding: 2px 9px; border-radius: 10px; margin-left: 10px; vertical-align: middle; }
+  p.section-intro { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13.5px; color: #444; background: #fff; border-left: 3px solid #b9a577; padding: 10px 16px; margin: 14px 0 20px; }
+  p.note { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13.5px; color: #55606e; }
+  table { width: 100%; border-collapse: collapse; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13px; margin: 16px 0 28px; }
+  th, td { border: 1px solid #d5d9d0; padding: 8px 10px; text-align: left; vertical-align: top; }
+  th { background: #e2e6dc; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
+  td.cell { font-family: ui-monospace, Consolas, monospace; white-space: nowrap; font-weight: 600; }
+  td.factor { font-weight: 600; }
+  .confirmed { color: #2f6b4f; }
+  .notfound { color: #999; font-style: italic; }
+  .closed { background: #eef3ee; }
+  code { font-family: ui-monospace, Consolas, monospace; background: #eceee8; padding: 1px 5px; border-radius: 3px; font-size: .92em; }
+  .scope-note { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13px; background: #faf3e6; border: 1px solid #e0cf9c; border-radius: 6px; padding: 12px 16px; margin: 16px 0; }
+  blockquote { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13px; background: #fff; border-left: 3px solid #b9a577; padding: 8px 14px; margin: 10px 0; color: #444; }
+</style>
+</head>
+<body>
+
+<h1>Contents Rating — Exceptions Audit</h1>
+<p class="subtitle">CFRater1.01.xlsb, Contents Rating Worksheet — read-only audit, 2026-09-10</p>
+
+<div class="banner">
+  <b>Methodology.</b> Every factor already confirmed built and working this session is excluded from this
+  list. For each remaining factor, the <em>full</em> ISO rule body was read (not just the branch already
+  implemented) in <code>CommercialPropertyPersonalPropertyRules.Rule.xml</code> (CFCW20260601V01), looking
+  specifically for branches the live rater doesn't handle. Each finding was cross-checked against the CF
+  manual (<code>CF-MU-2026-RU-001-C.pdf</code>) — cited where found, marked "not found in manual text"
+  where a genuine search turned up nothing rather than guessed at. Every finding marked "re-verified
+  directly against the rule XML" was independently re-checked in a second read before being included.
+</div>
+
+<div class="scope-note">
+  <b>Coverage:</b> all four coverage parts have now been read rule-by-rule, start to finish — BGI in the
+  first pass, BGII/Broad/Special in a follow-up pass. Every finding below marked "re-verified directly
+  against the rule XML" was independently re-checked by a second read after the research pass that found it,
+  not taken on the first pass's word alone.
+</div>
+
+<div class="scope-note" style="border-color:#c98a8a; background:#f9ecec;">
+  <b>Correction found during the follow-up pass:</b> Special Contents' territory multiplier
+  (<code>PrsnlPropTerrMultiplier</code>, <code>C77</code>) was marked closed earlier this session once the
+  lookup table and input dropdown were built. That was premature — <code>C77</code> resolves correctly, but
+  <code>RATE</code> (<code>C78</code>) was never updated to multiply it in: it's still
+  <code>=ROUND(C75*C76,3)</code>, BaseRate × LCM only. Confirmed live via a fresh read, not just inferred.
+  Reopened below — see the new entry in "3. All Other."
+</div>
+
+<h2>1. Specific Rating <span class="count">RatingType ≠ "Class"</span></h2>
+<p class="section-intro">
+  Manual grounding: <b>Rule 34, "Specific and Blanket Insurance," §A</b> (p.34) — "Insurance is specific
+  when the entire amount of insurance under a particular item applies at one location to one type of
+  property." Every exception in this section fires when a risk is entered as Specific (or Tentative) rated
+  instead of Class rated — a real, filed alternative to the class-code lookups the live rater is built
+  around, not an edge case invented by the rule engine.
+</p>
+
+<table>
+<tr><th>Factor</th><th>Rule / line</th><th>What's missing</th><th>Cell</th><th>Resolution</th></tr>
+<tr>
+  <td class="factor">BasicGroupIRate <span class="count">largest finding this pass</span></td>
+  <td><code>SetBasicGroupIRate</code> L3418 — <b>re-verified directly against the rule XML</b></td>
+  <td>Genuinely parallel rating mechanism, not a missing branch of the same computation. When
+  <code>RatingType≠"Class"</code>:<br>
+  <code>Rate = SpecificGroupIRate × LossCostMultiplier × SprinklerLeakageNotExcludedFactor</code> — a
+  manually-entered/submitted rate (<code>SpecificGroupIRate</code>), with no class-code table involved at
+  all. Confirmed by reading the full <code>&lt;rul:Choose&gt;</code> block: Class-rating branch (the one
+  built), non-Class branch (this one), and an <code>Otherwise</code> that zeroes out.</td>
+  <td><code>C9</code></td>
+  <td>Out of scope for a tweak — needs a <code>SpecificGroupIRate</code> input field on
+  <code>Location Inputs</code> and a full parallel formula path. <span class="confirmed">Manual mechanics
+  found: Rule 25.A.1 (p.~24) and the Basic Group I definitions section both point to a "Specific Property
+  Information quote"</span> — for a Specific-rated risk, class code, construction code, protection class,
+  and the rate itself all come from that external quote/submission, not from any table in this manual. This
+  is genuinely a data-entry-driven path, not a missing lookup table.</td>
+</tr>
+<tr>
+  <td class="factor">BasicGroupIBaseRate</td>
+  <td><code>SetBasicGroupIBaseRate</code> L3076</td>
+  <td><code>RatingType≠"Class"</code> → flat <b>0.0</b>, no lookup at all — currently invisible unless
+  tested, since the live formula doesn't branch on this at all.</td>
+  <td><code>C3</code></td>
+  <td>Worth testing what actually happens today if <code>Rating Type</code> is switched to Specific —
+  confirm it zeroes out as the rule implies, rather than assuming.</td>
+</tr>
+<tr>
+  <td class="factor">FireSafeVaultFactor</td>
+  <td><code>SetFireSafeVaultFactor</code> L3248</td>
+  <td><code>RatingType≠"Class"</code> → <b>0.0</b>, not 1.0 — the same zero-instead-of-one-default trap
+  already flagged elsewhere in this project.</td>
+  <td><code>C6</code></td>
+  <td>Add the RatingType gate; the correct fallback for the non-Class case is 0.0 per the rule, not 1.0 —
+  don't "fix" it to 1.0 by assumption.</td>
+</tr>
+<tr class="closed">
+  <td class="factor">BGII / Broad / Special BaseRates</td>
+  <td>—</td>
+  <td><span class="confirmed">Confirmed by full line-by-line read (follow-up pass): no RatingType branches
+  exist anywhere in Broad's or Special's rule blocks.</span> Genuine difference from BGI — Broad's and
+  Special's BaseRate key on Symbol/OccupCategory, not ClassCode+RatingType, so this exception category
+  genuinely doesn't apply to them.</td>
+  <td>—</td>
+  <td><em>Closed.</em></td>
+</tr>
+</table>
+
+<h2>2. Blanket Rating <span class="count">IncludedInBlkt = "Yes"</span></h2>
+<p class="section-intro">
+  Manual grounding: <b>Rule 34, "Specific and Blanket Insurance," §B</b> (p.34) — Blanket Insurance covers
+  under one amount either one type of property across more than one separately rated building, or two-plus
+  property types in one or more buildings. The ERC rule mechanics (which <code>Blkt*</code> field to copy)
+  aren't spelled out in this manual passage — that's rate-manual/ERC territory — but the underlying concept
+  is confirmed filed.
+</p>
+
+<table>
+<tr><th>Factor</th><th>Rule / line</th><th>What's missing</th><th>Cell(s)</th><th>Resolution</th></tr>
+<tr>
+  <td class="factor">LOIFactor <em>(every instance — one structural pattern, not four separate bugs)</em></td>
+  <td><code>SetBasicGroupILOIFactor</code> L2784, <code>SetBasicGroupIILOIFactor</code> L3935, Broad/Special
+  LOI equivalents</td>
+  <td>Every LOI rule opens with the identical gate: <code>IncludedInBlkt="Yes" AND BlktIDNum&gt;0</code> →
+  <code>Copy</code> from the corresponding <code>Blkt*</code> field instead of any table lookup. Repeated in
+  all four coverage parts.</td>
+  <td><code>C16</code> (BGI), <code>C40</code> (BGII), <code>C84</code> (Broad/Special, shared block)</td>
+  <td>None of the four handle blanket rating today. Needs an <code>IF(IncludedInBlkt="Yes", [Blkt field],
+  [existing lookup])</code> wrapper on each — and a <code>BlktLOIFactor</code>-equivalent input field that
+  doesn't exist on <code>Location Inputs</code> yet.</td>
+</tr>
+<tr class="closed">
+  <td class="factor">Everything else checked</td>
+  <td>—</td>
+  <td><span class="confirmed">No other <code>IncludedInBlkt</code> branches found</span> — confirmed by full
+  line-by-line reads of all four coverage parts' rule blocks, not just BGI. BaseRate, Coinsurance,
+  Deductible-family, NumericValue, BCEGFactor, TheftExclusionFactor, PrsnlPropTerrMultiplier — none of them
+  branch on blanket status.</td>
+  <td>—</td>
+  <td><em>Closed.</em></td>
+</tr>
+</table>
+
+<h2>3. All Other <span class="count">CovForm, Value Reporting Form, class-code specific</span></h2>
+<p class="section-intro">
+  Everything that doesn't fit the Specific/Blanket rating split — mostly the Coinsurance mechanism, which
+  branches on the <code>Coinsurance</code> value itself and on Value Reporting Form status, not on rating
+  type. Manual grounding for the Value Reporting Form piece: <b>Rule 36, "Value Reporting Form," §A</b>
+  (p.35–36) — intended for insureds with fluctuating values or changing locations; periodic value reports;
+  provisional premium adjusted at year-end.
+</p>
+
+<table>
+<tr><th>Factor</th><th>Rule / line</th><th>What's missing</th><th>Manual citation</th><th>Cell(s)</th><th>Resolution</th></tr>
+<tr>
+  <td class="factor">CoinsuranceFactor <em>(feeds BGI, Broad, Special)</em></td>
+  <td><code>SetCoinsuranceFactor</code> L2902 — <b>re-verified directly against the rule XML</b></td>
+  <td>Real branch structure is five-way, live formula only implements one:
+    <ol style="margin:6px 0 0 18px; padding:0;">
+      <li><code>ValuationType="Functional Valuation"</code> → skip everything else, defaults to 1.0 — <b>not handled</b></li>
+      <li>Special Coinsurance Provisions exist, OR a Value Reporting Form exists, OR <code>Coinsurance</code>
+        is any of Daily/Weekly/Monthly/Quarterly/Policy Year Reporting → forces a flat <b>100%</b> lookup
+        regardless of what's actually entered — <b>not handled</b></li>
+      <li>80/90/100% → looks up the entered value directly — <span class="confirmed">this is the only
+        branch the live VLOOKUP covers</span></li>
+      <li>50/60/70/None → an entirely <b>different table</b>, <code>LookupLessThan80PctMultiplicativeFactor</code>
+        — <b>not called anywhere in the live workbook</b></li>
+      <li>Otherwise → flat 1.0</li>
+    </ol>
+  </td>
+  <td><span class="confirmed">Rule 36 §A</span> (Value Reporting Form, for the reporting-related branches);
+  <span class="notfound">Functional Valuation and the 50/60/70/None table not found in manual text within
+  this pass's search budget.</span></td>
+  <td><code>C15</code> (BGI, real computation), <code>C58</code>/<code>C81</code> (Broad/Special, copy from
+  C15's value chain)</td>
+  <td>Single fix, wide reach — this one factor feeds three coverage parts. Needs the Functional Valuation
+  exclusion, the Reporting/Value-Reporting-Form 100% override, and a second lookup table for the 50/60/70/None
+  branch.</td>
+</tr>
+<tr>
+  <td class="factor">Special <code>RATE</code> — territory multiplier never wired in</td>
+  <td>— (implementation gap, not an ERC rule branch)</td>
+  <td><code>PrsnlPropTerrMultiplier</code> (<code>C77</code>) resolves correctly via its own lookup, but
+  <code>RATE</code> (<code>C78</code>) is still <code>=ROUND(C75*C76,3)</code> — BaseRate × LCM only, never
+  multiplies <code>C77</code> in. <code>SetSpecialRate</code> requires
+  <code>PrsnlPropTerrMultiplier × SpecialBaseRate × LossCostMultiplier</code>. Found and confirmed live
+  during the follow-up pass — previously marked closed based on the input/lookup side being done, without
+  checking the RATE formula itself.</td>
+  <td>—</td>
+  <td><code>C78</code></td>
+  <td><code>=ROUND(C75*C76*C77,3)</code> — a one-cell fix.</td>
+</tr>
+<tr>
+  <td class="factor">Broad <code>RATE</code> — missing Valuable Papers zero-out</td>
+  <td><code>SetBroadRate</code> L4285 — <b>re-verified directly against the rule XML</b></td>
+  <td><code>IF(CauseOfLossToUse≠"Broad" OR CovType="Valuable Papers and Records - Other Than Electronic
+  Data", 0.0, BroadBaseRate×LCM)</code>. Live formula (<code>=ROUND(C55*C56,3)</code>) has the CauseOfLoss
+  gate but not the Valuable Papers one. Same pattern as the already-backlogged Special COL ADJ item, but
+  this is a separate, distinct gap in a different coverage part — not the same bug reappearing.</td>
+  <td><span class="notfound">Not found within search budget.</span></td>
+  <td><code>C57</code></td>
+  <td>Add a <code>CovType="Valuable Papers..."</code> zero-out alongside the existing CauseOfLoss gate.</td>
+</tr>
+<tr>
+  <td class="factor">WatchmanCreditFactor / BurglaryAlarmCreditFactor — no theft-exclusion check</td>
+  <td><code>SetWatchmanCreditFactor</code> L4862, <code>SetBurglaryAlarmCreditFactor</code> L4943</td>
+  <td>Both gate the real endorsement-value lookup on <code>SpecialTheftExclusionIndicator=0</code> (theft
+  NOT excluded) — when theft IS excluded, both force <b>1.0</b> regardless of whatever Watchman/Burglary
+  data exists, since there's no theft exposure left to discount. Live formulas (<code>C82</code>: VLOOKUP
+  against the Watchman table; <code>C83</code>: direct copy of <code>'Location Inputs'!C57</code>) never
+  check theft-exclusion status at all. Currently masked in the test case (Watchman/Burglary both "Not
+  Applicable" already resolve to 1.0), but would misapply a real discount if theft is excluded and a real
+  Watchman/Burglary Alarm value is entered.</td>
+  <td><span class="notfound">Not found within search budget.</span></td>
+  <td><code>C82</code>, <code>C83</code></td>
+  <td>Wrap both in <code>IF('Location Inputs'!C47="Yes", 1, [existing formula])</code> — <code>C47</code> is
+  Theft Exclusion.</td>
+</tr>
+<tr>
+  <td class="factor">BasicGroupIBaseRate — YARD construction-code split</td>
+  <td><code>SetBasicGroupIBaseRate</code> L3076 (within the Class-rating branch)</td>
+  <td>Separate from the RatingType exception above: within Class rating specifically,
+  <code>Group="YARD"</code> further splits combustible (construction code 1) vs. non-combustible
+  (construction code 3) — a construction-code override the live formula doesn't special-case.</td>
+  <td><span class="notfound">Not found within search budget.</span></td>
+  <td><code>C3</code></td>
+  <td>Add a construction-code check inside the existing Class-rating path when Group=YARD.</td>
+</tr>
+<tr class="closed">
+  <td class="factor">ProtectionClassFactor / DeductibleFactorBasicGroupI</td>
+  <td>—</td>
+  <td><span class="confirmed">Both confirmed to have no further branches beyond what's already
+  built/fixed.</span></td>
+  <td>—</td>
+  <td><code>C8</code>, <code>C19</code></td>
+  <td><em>Closed.</em></td>
+</tr>
+<tr class="closed">
+  <td class="factor">BGII BasicGroupIIBaseRate, NumericValue, BCEGFactor, DeductibleFactorBasicGroupII</td>
+  <td><code>SetBasicGroupIINumericValue</code> L3615, <code>SetBCEGFactor</code> L1682,
+  <code>SetDeductibleFactorBasicGroupII</code> L4100</td>
+  <td><span class="confirmed">All four read in full (follow-up pass). Confirmed no branches beyond what's
+  already built:</span> BaseRate gates only on Symbol/Terr non-blank; NumericValue is exactly the
+  three-way branch already implemented (windstorm exclusion / class-code override / open-sides / default);
+  BCEGFactor is exactly YARD→1.0-else-copy-Building's-value; DeductibleFactorBasicGroupII is a single
+  unconditional ancestor <code>Copy</code>, no test beyond a null-check.</td>
+  <td>—</td>
+  <td><code>C31</code>, <code>C34</code>, <code>C35</code>, <code>C43</code></td>
+  <td><em>Closed.</em></td>
+</tr>
+</table>
+
+<h2>Audit status: complete</h2>
+<p class="note">All four coverage parts have now been read rule-by-rule, full-body, start to finish, with
+manual cross-referencing attempted for every finding. Nothing left in the "not yet read" category. What
+remains is a punch list of confirmed fixes to apply, not further research:</p>
+<ul style="font-family: -apple-system, 'Segoe UI', sans-serif; font-size: 13.5px; line-height: 1.9;">
+  <li><b>One-cell fix:</b> Special <code>RATE</code> (<code>C78</code>) — multiply in <code>C77</code>.</li>
+  <li><b>Small gates:</b> Broad <code>RATE</code> (<code>C57</code>, Valuable Papers), Watchman/Burglary
+  factors (<code>C82</code>/<code>C83</code>, theft-exclusion check), Special COL ADJ (<code>C80</code>,
+  Valuable Papers — already backlogged from the previous audit pass).</li>
+  <li><b>Medium fix, wide reach:</b> CoinsuranceFactor's Functional Valuation exclusion, Reporting-form 100%
+  override, and 50/60/70/None table — one fix, feeds BGI/Broad/Special.</li>
+  <li><b>Small fix:</b> BGI BaseRate's YARD construction-code split (<code>C3</code>).</li>
+  <li><b>Small fixes, RatingType≠"Class":</b> BGI BaseRate (<code>C3</code>) and FireSafeVaultFactor
+  (<code>C6</code>) should zero out; currently untested what they actually do.</li>
+  <li><b>Larger build, deliberately out of scope for now:</b> BGI's Specific-rating parallel path
+  (<code>BasicGroupIRate</code>, <code>C9</code>) — needs a <code>SpecificGroupIRate</code> input field and
+  a full parallel formula, not a tweak. LOI blanket-rating support across all four coverage parts — needs
+  new <code>Blkt*</code> input fields.</li>
+</ul>
+
+<blockquote>
+Built 2026-09-10 — read-only pass against CFRater1.01.xlsb, cross-referenced against
+<code>CommercialPropertyPersonalPropertyRules.Rule.xml</code> (CFCW20260601V01) and
+<code>CF-MU-2026-RU-001-C.pdf</code>. No changes made to the live rater.
+</blockquote>
+
+</body>
+</html>

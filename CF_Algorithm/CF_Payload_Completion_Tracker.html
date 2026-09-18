@@ -1,0 +1,230 @@
+<title>CF payload spec &mdash; completion tracker</title>
+<meta charset="utf-8">
+<style>
+  body { font-family: Georgia, "Times New Roman", serif; max-width: 1080px; margin: 0 auto; padding: 32px 24px 80px; line-height: 1.55; color: #1c2733; background: #fff; }
+  @media (prefers-color-scheme: dark) {
+    body { background: #14181d; color: #dfe4e9; }
+    table, th, td { border-color: #3a4048 !important; }
+    thead th { background: #24313a !important; color: #eef4f3 !important; }
+    code { background: #262c33 !important; color: #dfe4e9; }
+    pre { background: #262c33 !important; border-color: #3a4048 !important; color: #dfe4e9; }
+    .note { background: #2c2a1c !important; color: #e0c064 !important; }
+    .note.good { background: #1b3226 !important; color: #63c090 !important; }
+    .note.shared { background: #1d2b33 !important; color: #9fd4dc !important; }
+    td.y { background: #1b3226 !important; color: #63c090 !important; }
+    td.n { background: #1b242d !important; color: #6d7885 !important; }
+    td.p { background: #3a3319 !important; color: #e0c064 !important; }
+  }
+  h1 { font-size: 26px; font-weight: 400; margin-bottom: 4px; }
+  h2 { font-size: 19px; font-weight: 700; margin-top: 40px; border-bottom: 2px solid #1e3a45; padding-bottom: 4px; }
+  h3 { font-size: 15px; font-weight: 700; margin-top: 26px; }
+  .meta { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13px; color: #55606b; margin: 6px 0 4px; }
+  code { font-family: ui-monospace, Consolas, monospace; font-size: 0.92em; background: #eef1f4; padding: 1px 5px; border-radius: 3px; }
+  table { border-collapse: collapse; width: 100%; margin: 14px 0 22px; font-size: 13.5px; }
+  th, td { border: 1px solid #d7dce2; padding: 7px 9px; text-align: left; vertical-align: top; }
+  thead th { background: #1e3a45; color: #eef4f3; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 11.5px; text-transform: uppercase; letter-spacing: .03em; }
+  pre { background: #eef1f4; border: 1px solid #d7dce2; border-radius: 6px; padding: 14px 16px; overflow-x: auto; font-family: ui-monospace, Consolas, monospace; font-size: 12.5px; line-height: 1.5; }
+  .note { background: #f7ddd4; color: #a53d26; padding: 12px 16px; border-radius: 6px; margin: 16px 0; font-size: 14px; }
+  .note.good { background: #dcefe4; color: #2f7d5a; }
+  .note.shared { background: #dde9ee; color: #1e5567; }
+  .note b { font-weight: 700; }
+  ol, ul { padding-left: 22px; }
+  hr { border: none; border-top: 1px solid #d7dce2; margin: 40px 0; }
+  td.y, td.n, td.p { text-align: center; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 11.5px; font-weight: 700; white-space: nowrap; }
+  td.y { background: #dcefe4; color: #2f7d5a; }
+  td.n { background: #e4e8ed; color: #8b95a1; font-style: italic; }
+  td.p { background: #f2e6c4; color: #a67c1e; }
+  .num { font-family: -apple-system, "Segoe UI", sans-serif; text-align: center; font-weight: 700; }
+</style>
+
+<h1>CF payload spec &mdash; completion tracker</h1>
+<p>Tracks what remains before the CF rating-payload specification is complete, starting with class-rated Building and Personal Property in Alabama.</p>
+<p class="meta"><b>Opened:</b> 2026-09-17 <b>Spec document:</b> <code>CF_Algorithm/CF_Payload_ClassRated_Bldg_PP_Alabama.md</code> <b>HTML companion:</b> <code>CF_Algorithm/CF_Payload_Completion_Tracker.html</code></p>
+<p>Status values: <b>OPEN</b> &middot; <b>IN PROGRESS</b> &middot; <b>DONE</b> &middot; <b>BLOCKED</b> (needs something outside the ERC files)</p>
+<hr>
+<h2>Scoreboard</h2>
+<table>
+<thead><tr><th>Set</th><th>Item</th><th>Status</th></tr></thead>
+<tbody>
+<tr><td>0</td><td><code>ConstructionType</code> &rarr; <code>ConstructionCode</code> mapping</td><td class="y"><b>DONE</b> 2026-09-17</td></tr>
+<tr><td>0</td><td><code>Group</code> A/B/C derivation</td><td class="y"><b>DONE</b> 2026-09-17</td></tr>
+<tr><td><b>1</b></td><td>1a <code>ClassCodeToUse</code> derivation</td><td class="y"><b>DONE</b> 2026-09-17</td></tr>
+<tr><td><b>1</b></td><td>1b <code>YARD</code> selection</td><td class="y"><b>DONE</b> 2026-09-17</td></tr>
+<tr><td><b>1</b></td><td>1c Validate payload against all 7 AL STC cases</td><td class="y"><b>DONE</b> 2026-09-17</td></tr>
+<tr><td><b>1</b></td><td>1d Basic Group II specification</td><td class="y"><b>DONE</b> 2026-09-17</td></tr>
+<tr><td>2</td><td>2a Index the STC corpus</td><td class="y"><b>DONE</b> 2026-09-17 &mdash; <code>STC_Corpus_Index.xlsx</code></td></tr>
+<tr><td>2</td><td>2b Find AL rating paths with no STC coverage</td><td class="y"><b>DONE</b> 2026-09-17</td></tr>
+<tr><td>2</td><td>2c Determine whether expected outputs ship with STC</td><td class="y"><b>DONE</b> 2026-09-17 &mdash; <b>no</b></td></tr>
+<tr><td>3</td><td>3a Personal Property CovType universes beyond <code>All Personal Property</code></td><td class="y"><b>DONE</b> 2026-09-17</td></tr>
+<tr><td>3</td><td>3b Broad and Special forms</td><td class="y"><b>DONE</b> 2026-09-17</td></tr>
+<tr><td>3</td><td>3c Second state &mdash; the District states (AK, CA, NY)</td><td class="y"><b>DONE</b> 2026-09-17</td></tr>
+<tr><td>4</td><td>4a Live RAaS envelope (<code>header</code>/<code>body</code> wrapper)</td><td class="y"><b>DONE</b> 2026-09-17</td></tr>
+<tr><td>4</td><td>4b <code>LossCostMultiplier</code> sourcing</td><td class="y"><b>DECIDED</b> 2026-09-17 &mdash; default <code>1.0</code></td></tr>
+<tr><td><b>6</b></td><td>6a Carrier LCM as configured input, by LOB</td><td class="p"><b>OPEN</b></td></tr>
+<tr><td><b>6</b></td><td>6b Carrier deviation layer beyond LCM</td><td class="p"><b>OPEN</b></td></tr>
+<tr><td><b>7</b></td><td>7a Inventory the <code>DoMessage</code> validation rules</td><td class="y"><b>DONE</b> 2026-09-17</td></tr>
+<tr><td><b>7</b></td><td>7b Map mirrored rule pairs</td><td class="p"><b>OPEN</b></td></tr>
+<tr><td><b>7</b></td><td>7d Message register + diagnostic loop</td><td class="y"><b>DONE</b> 2026-09-17</td></tr>
+<tr><td><b>7</b></td><td>7e Pre-flight payload validator</td><td class="n"><b>NOT STARTED</b> &mdash; needs explicit go</td></tr>
+<tr><td><b>7</b></td><td>7c Reachability: which messages can fire for a given payload</td><td class="p"><b>OPEN</b></td></tr>
+<tr><td>5</td><td>Rating engine</td><td class="n"><b>NOT STARTED</b> &mdash; parallel work in flight; needs explicit go</td></tr>
+</tbody></table>
+<hr>
+<h2>Set 0 &mdash; closed before the tracker opened</h2>
+<h3><code>ConstructionType</code> &rarr; <code>ConstructionCode</code> &mdash; DONE</h3>
+<p><code>SetConstructionCode</code> (<code>CommercialPropertyStructureRules.Rule.xml</code> line 1041) calls <code>LookupConstructionCode</code>, which reads the <b><code>ConstructionCode</code> rate table</b>, keyed <code>StateCode + ConstructionTypeToUse</code>, state first with <code>CW</code> fallback. Six countrywide rows, no state override anywhere: Frame 1, Joisted Masonry 2, Non-Combustible 3, Masonry Non-Combustible 4, Modified Fire Resistive 5, Fire Resistive 6.</p>
+<h3><code>Group</code> A/B/C derivation &mdash; DONE</h3>
+<p><code>SetGroup</code> (<code>CommercialPropertyOccupClassRules.Rule.xml</code> line 640) reads only <code>RatingType</code>, <code>ClassCodeToUse</code> and <code>ClassCode</code>, and assigns <code>A</code> / <code>B</code> / <code>C</code> / <code>Not Applicable</code>. <code>RatingType &ne; Class</code> short-circuits to <code>Not Applicable</code>; the building&#x27;s <code>ClassCodeToUse</code> gates against ten eligible codes; the occupancy class&#x27;s own <code>ClassCode</code> selects the letter.</p>
+<hr>
+<h2>Set 1 &mdash; finish the Alabama specification</h2>
+<p><i>What it buys: a payload spec with no known holes, for one state and one form, ready to hand to whoever builds a submission UI or test harness.</i></p>
+<h3>1a &mdash; <code>ClassCodeToUse</code> derivation &mdash; DONE 2026-09-17</h3>
+<p>Six class-code datadefs across three levels, all derived from the two <code>ClassCode</code> values the payload supplies. Structure&#x27;s <code>ClassCodeToUse</code> is a <b>plain copy</b> of <code>ClassCode</code>. OccupClass&#x27;s is <code>RatingType = &quot;Class&quot; ? BldgClassCode : ClassCode</code>. PP copies down.</p>
+<p class="meta"><b>Correction made:</b> <code>VacantBuilding = &quot;Yes&quot;</code> does <b>not</b> substitute class code <code>1180</code> into the rating path &mdash; it sets <code>ClassCodeForStat</code>, a statistical code. <code>ClassCodeToUse</code> has no vacancy branch. Vacancy enters BGI through the additive <code>VacantBuildingRate</code> instead. Spec §6.1.</p>
+<h3>1b &mdash; <code>YARD</code> selection &mdash; DONE 2026-09-17</h3>
+<p>There are <b>two</b> <code>SetGroup</code> rules. OccupClass&#x27;s (line 640) assigns <code>A</code>/<code>B</code>/<code>C</code>/ <code>Not Applicable</code> and never YARD. PersonalProperty&#x27;s (line 1640) assigns <code>YARD</code> when <code>BldgClassCode</code> &isin; {1400, 1650, 1700} <b>and</b> <code>YardPropertyIndicator</code> is Combustible or Non-Combustible. <code>YardPropertyIndicator</code> is therefore a required payload input for yard risks, and is the only route to YARD rating. Spec §6.2.</p>
+<h3>1c &mdash; Validate against all 7 AL STC cases &mdash; DONE 2026-09-17</h3>
+<p>Aggregated 7 policies / 7 locations / 7 structures / 4 occupancy classes / 4 PP records. Policy (14 fields) and OccupClass (8) are <b>fully stable</b> &mdash; every field in every case. Structure has 38 of 49 universal, PP 14 of 16.</p>
+<p class="meta"><b>Found:</b> <code>ConstructionCode</code> appears directly in 1 of 7 cases &mdash; it <b>can be supplied as an override</b>, because <code>SetConstructionCode</code> assigns only when null. Spec §3.6.</p>
+<h3>1d &mdash; Basic Group II &mdash; DONE 2026-09-17</h3>
+<p>Specified. BGII rates off <b>rating territory + construction symbol</b>, not class code + construction code; territory is a base-rate <i>key</i>, not a multiplier. Extra payload drivers documented (<code>BasicGroupIIRatingTerr</code>, <code>NumStories</code>, <code>RatingTypeBasicGroupII</code>, <code>OpenSides</code>, <code>BCEG</code>/<code>BCEGClass</code>, <code>WindstormOrHailDeductible</code>, the roof/IBHS set, and the windstorm-or-hail exclusion election). AL base-rate grid transcribed: Seacoast &asymp; 3.5&times; Inland, Beach &asymp; 6&times;. Spec §7.</p>
+<p><b>Defect found &mdash; see Findings below.</b></p>
+<hr>
+<h3>Findings raised by Set 1</h3>
+<p><b>ISO filed-data defect &mdash; <code>LowestBasicGroupIIRate</code>, AL, symbol <code>A</code>, <code>PersProp</code>.</b> <code>CF AL 20270301 V01</code> files <b>0.8</b>. All seven prior AL editions file <b>0.08</b>, and every other symbol in the table still matches its Inland Territory rate exactly. Swept all 48 states&#x27; latest packages: only Maine shows anything comparable (0.03 vs 0.028, 0.033 vs 0.032 &mdash; small enough to be a deliberate floor). Alabama&#x27;s is a 10&times; jump that also breaks its own edition history.</p>
+<p><i>Impact:</i> a class-rated personal property risk with a windstorm/hail exclusion at construction symbol A, in Alabama, at the current edition, rates BGII contents ~10&times; too high &mdash; the exclusion branch rebuilds from <code>LowestBasicGroupIIBaseRate</code>.</p>
+<p><i>Action:</i> raise with ISO. <b>Do not code around it.</b> Belongs in <code>Rater_Simplifications_Backlog.md</code> as a divergence if it is ever worked around.</p>
+<hr>
+<h2>Set 2 &mdash; make the STC corpus usable</h2>
+<p><i>What it buys: knowing what ISO itself treats as a valid request, across every state &mdash; and whether we have test data or test data <b>with answers</b>.</i></p>
+<h3>2a &mdash; Index the corpus &mdash; DONE 2026-09-17</h3>
+<p><b><code>STC_Corpus_Index.xlsx</code></b> (repo root). One row per payload: line, jurisdiction, package edition/version, case id, <code>ProductName</code>, payload effective date, record counts per datadef level, coverage-slot count, and the switch values each case exercises (<code>PolicyType</code>, <code>RatingType</code>, <code>CovType</code>, <code>CauseOfLoss</code>, <code>IncludedInBlkt</code>, <code>CovForm</code>, <code>Subline</code>, <code>VacantBuilding</code>, <code>RatingTypeBasicGroupII</code>, <code>Group</code>, <code>BlktRated</code>).</p>
+<p><b>The count is 921, not 924.</b> Three files in <code>STC/</code> folders are <b>not ISO&#x27;s</b> &mdash; they are named <code>1. Input.json</code> / <code>1. Output.json</code>, matching this project&#x27;s own <code>Payloads/&lt;ST&gt;/</code> convention, and sit in <code>GL NJ 20250301 V01</code> and <code>GL OK 20250601 V01</code>. The OK output file differs from the repo copy at <code>Payloads/OK/</code>. They appear to have been dropped into the ERC tree by us and should be moved out &mdash; they pollute any scan of ISO content.</p>
+<table>
+<thead><tr><th></th><th>CF</th><th>GL</th></tr></thead>
+<tbody>
+<tr><td>Payloads</td><td>364</td><td>557</td></tr>
+<tr><td>Jurisdictions</td><td>47</td><td>51</td></tr>
+<tr><td>Per jurisdiction</td><td>4 (FL, KS, PR) &ndash; 13 (DE)</td><td>5 &ndash; 21</td></tr>
+</tbody></table>
+<p>CF: 206 cases carry Personal Property, 82 Business Income, 28 Special Class.</p>
+<h3>2b &mdash; Uncovered AL rating paths &mdash; DONE 2026-09-17</h3>
+<p>Alabama&#x27;s 7 cases collapse to <b>two scenarios</b>, each repeated once per edition: BPP class-rated Special (4), and vacant Builders Risk Special (3).</p>
+<p>Every AL case is <code>PolicyType = Commercial Property Policy</code>, <code>RatingType = Class</code>, <code>IncludedInBlkt = No</code>, <b><code>CauseOfLoss = Special</code></b>. Not one Basic. Not one Broad. No SPP, no Specific/Tentative, no blanket, no Legal Liability, no Condominium Association, no Leasehold Interest.</p>
+<p><b>This is not an Alabama quirk &mdash; it is the whole CF corpus.</b> Across all 364 CF payloads:</p>
+<table>
+<thead><tr><th>Switch</th><th>Distribution</th></tr></thead>
+<tbody>
+<tr><td><code>PolicyType</code></td><td><b>364 / 364 Commercial Property Policy</b> &mdash; zero SPP</td></tr>
+<tr><td><code>RatingType</code></td><td><b>364 / 364 Class</b> &mdash; zero Specific, zero Tentative</td></tr>
+<tr><td><code>IncludedInBlkt</code></td><td><b>364 / 364 No</b> &mdash; zero blanket</td></tr>
+<tr><td><code>CauseOfLoss</code></td><td>Special 357 &middot; Broad 19 &middot; <b>Basic 3</b> &middot; Special Incl/Excl Theft 5</td></tr>
+</tbody></table>
+<p><b>All three Basic cases are Builders Risk</b> &mdash; IL 2025-07-01, IN 2025-10-01, NY 2023-05-01 &mdash; and Builders Risk (class code <code>1150</code>) takes a different base-rate branch. So <b>no CF payload anywhere exercises a normal class-rated Basic Group I building.</b> Broad appears in 19 cases across 11 states; Alabama is not among them.</p>
+<p>Contrast GL, which is broader by subline: 519 of 557 are Premises/Operations and Products/Completed Operations, but Owners and Contractors, Railroad, Liquor and Product Withdrawal all appear.</p>
+<h3>2c &mdash; Do expected outputs ship? &mdash; DONE 2026-09-17 &mdash; <b>NO</b></h3>
+<p><b>The STC corpus is inputs only.</b> Every one of the 913 STC folders contains <code>.json</code> and nothing else. Scanning all 921 genuine <code>STC_*.json</code> files for premium- or rate-shaped output keys returns <b>nothing</b> &mdash; the only match is <code>WorkersCompensationRate</code> in 7 files, which is a Stop Gap <i>input</i>.</p>
+<p>The premium values that first appeared in the scan (<code>ErcCalculatedTotalPremium = 7839.0</code>, <code>Premium = 7839.0</code>) came exclusively from the three locally-added files described in 2a &mdash; our own GL output, not ISO&#x27;s.</p>
+<p class="meta"><b>Consequence, and it is a real constraint:</b> these are <b>fixtures, not a regression suite</b>. They tell you what a valid request looks like and which paths ISO itself exercises. They cannot tell you whether a premium is right. Verifying premium still requires calling ISO&#x27;s rating service &mdash; the STC corpus gives you the inputs to send, not the answers to check.</p>
+<h3>Findings raised by Set 2</h3>
+<p><b>1. The corpus cannot verify a premium.</b> Inputs only &mdash; see 2c. Any plan that assumed &quot;ISO ships test cases, so we can regression-test against them&quot; needs revising. They are request fixtures; the oracle is still ISO&#x27;s rating service.</p>
+<p><b>2. The Basic Group I chain has no representative test case anywhere in CF.</b> The spec this tracker serves is centred on Basic Group I, and 361 of 364 CF payloads are Special or Broad. The 3 Basic cases are all Builders Risk, which rates off a different branch. Building a BGI implementation means building it with <b>no ISO-authored example of the path</b>.</p>
+<p><b>3. Whole switches are untested corpus-wide.</b> Standard Property Policy, Specific and Tentative rating, and blanket (<code>IncludedInBlkt = Yes</code>) each appear in <b>zero</b> of 364 CF payloads &mdash; yet <code>CF_RatingPath_Switches.md</code> identifies <code>PolicyType</code>, <code>RatingType</code> and <code>IncludedInBlkt</code> as three of the five widest-reaching switches in the line. The most consequential branches are the least exemplified.</p>
+<p><b>4. Three of our own files are sitting in ISO&#x27;s corpus.</b> <code>1. Input.json</code> in GL NJ, and <code>1. Input.json</code> / <code>1. Output.json</code> in GL OK. They should be moved out of <code>ISO_ERC_Files\</code> &mdash; any future scan of &quot;what ISO ships&quot; will pick them up, and one of them already contaminated the first output scan in 2c.</p>
+<hr>
+<h2>Set 3 &mdash; extend across coverages and states</h2>
+<p><i>What it buys: knowing whether &quot;starting with Alabama&quot; scales to 47 states or whether each state is its own project.</i></p>
+<h3>3a &mdash; PP <code>CovType</code> universes &mdash; DONE 2026-09-17</h3>
+<p><code>DomainCovTypePrsnlProp</code> offers <b>16 values</b>, keyed <code>StateCode + PolicyType + CovForm</code> &mdash; the legal list changes with both. <b>Only three change rating:</b> <code>Valuable Papers and Records - Other Than Electronic Data</code> (7 tests, in the BGI/BGII cause-of-loss adjustments and <code>SetBroadRate</code>), <code>Personal Property in a Vault with an Approved Fire Rating</code> (gates <code>SetFireSafeVaultFactor</code>), and <code>Tobacco Sales Warehouses</code>. Every other value reaches only <code>DoMessage*</code> validation and <code>AttachForm*</code> rules.</p>
+<p><b>Found &mdash; a dead test.</b> The three LOI-factor rules guard on <code>CovType &lt;&gt; &quot;Tobacco Sales Warehouses&quot;</code>, but that string is offered by <b>zero rows</b> in all 23 packages that file <code>DomainCovTypePrsnlProp</code>. The guard can never be false. Tobacco warehouses rate via the <code>CovForm</code> and their own coverage record instead. Legacy constant, not a value to support. Spec §3.7.</p>
+<p>The STC corpus uses <code>All Personal Property</code> and nothing else, in all 364 CF cases &mdash; 15 of the 16 values have no ISO-authored example anywhere.</p>
+<h3>3b &mdash; Broad and Special forms &mdash; DONE 2026-09-17</h3>
+<p><b>Broad</b> is the shortest chain (6 steps, <b>no cause-of-loss adjustment rule at all</b>). <code>BroadFormBaseRate</code> keys <code>StateCode + ConstructionTypeToUse + CovType</code>; <b>Alabama does not file it</b> &mdash; countrywide, two-tiered on construction (Bldg 0.015 / 0.010, PersProp 0.021 / 0.011, BldrRisk flat 0.012). No new payload fields required.</p>
+<p><b>Special Building is a flat statewide constant</b> &mdash; <code>SpecialBuildingRate</code>, one row per state, AL = <b>0.039</b>. No class, construction, territory or protection class.</p>
+<p><b>Special Contents is the odd one out in the whole line.</b> <code>SpecialPrsnlPropRate</code> keys <code>StateCode + OccupCategory + OccupCategorySeverity</code> &mdash; an occupancy axis no other form uses. AL files 13 rows across 8 categories; <code>SpecialPrsnlPropTheftExclusionFactor</code> keys on <code>OccupCategory</code> alone. Spec §8.</p>
+<p class="meta"><b>Two payload fields Basic never needed:</b> <code>OccupCategory</code> and <code>OccupCategoryRiskSeverity</code>, both declared on OccupClass <i>and</i> PersonalProperty.</p>
+<p class="meta"><b>Naming trap:</b> the datadef is <code>OccupCategoryRiskSeverity</code>; the rate-table column is <code>OccupCategorySeverity</code>. Different strings, bound positionally. Grepping the rules for the column name returns nothing &mdash; the wrong conclusion.</p>
+<p><b>Defect found &mdash; see Findings below.</b></p>
+<h3>Findings raised by Set 3</h3>
+<p><b><code>OccupCategoryRiskSeverity</code> &mdash; required, undocumented, and absent from every fixture.</b> The Special Contents rate key needs it. It appears in <b>zero of the 364 CF STC payloads</b>. <b>No domain table constrains it</b> anywhere in the corpus, so its legal values (<code>High</code> / <code>Medium</code> / <code>Low</code> / <code>Not Applicable</code>) are discoverable only by reading the rate table itself.</p>
+<p>Six STC cases use <code>OccupCategory = &quot;Mercantile&quot;</code>, and all six are in states filing three distinct Mercantile severity rows:</p>
+<table>
+<thead><tr><th>State</th><th>High</th><th>Medium</th><th>Low</th><th>Spread</th></tr></thead>
+<tbody>
+<tr><td>CO</td><td>0.267</td><td>0.239</td><td>0.135</td><td>1.98x</td></tr>
+<tr><td>ME</td><td>0.156</td><td>0.152</td><td>0.094</td><td>1.66x</td></tr>
+<tr><td>MI</td><td>0.389</td><td>0.366</td><td>0.204</td><td><b>1.91x</b></td></tr>
+<tr><td>NM</td><td>0.221</td><td>0.178</td><td>0.141</td><td>1.57x</td></tr>
+</tbody></table>
+<p>Either the engine applies a default severity that is written down nowhere, or ISO&#x27;s own fixtures are underspecified for Special Contents on any multi-severity occupancy (Mercantile, Institutional, Industrial and Processing, Service). A submission builder must supply the field and can learn its values from neither a domain list nor an example.</p>
+<p><i>Action:</i> resolve before trusting any Special Contents premium on those four categories. This is the sharpest open question in the spec &mdash; and it sits on the form that 357 of 364 fixtures use.</p>
+<p class="meta"><b>Widened by 3c:</b> this is not a four-state problem. The severity structure is identical in <b>all 45 jurisdictions</b> that file <code>SpecialPrsnlPropRate</code>, on the same four occupancy categories. So the field is required nearly line-wide, has no domain list anywhere, and has no example in any of the 364 fixtures.</p>
+<p><b>Also raised by 3c &mdash; two dead artefacts that read as required inputs.</b> Alaska&#x27;s <code>DomainDistrict</code> is header-only in all 9 of its editions, and <code>BasicGroupIDistrictTerritory</code> is a countrywide Location field no rule reads. Both are traps for anyone building a submission form from the DataDef. Worth a standing check: <i>a declared field with no rule consumer, and a domain table with no rows, should be flagged rather than surfaced as an input.</i></p>
+<hr>
+<h3>3c &mdash; Second state: the District states &mdash; DONE 2026-09-17</h3>
+<p>Tested against <b>AK, CA and NY</b> &mdash; the three that split the Basic Group I base rate. (AK was flagged by the user; the earlier note treating this as a CA/NY question was incomplete.)</p>
+<p class="meta"><b>They are not one mechanism. They are three:</b></p>
+<table>
+<thead><tr><th>Mechanism</th><th>States</th><th>Tables</th></tr></thead>
+<tbody>
+<tr><td>Single table</td><td><b>43</b></td><td><code>BasicGroupIRate</code></td></tr>
+<tr><td>District I / II</td><td><b>2</b> &mdash; AK, CA</td><td><code>BasicGroupIDistrictIRate</code> + <code>…IIRate</code></td></tr>
+<tr><td>NYC split</td><td><b>1</b> &mdash; NY</td><td><code>BasicGroupIRate</code> + <code>BasicGroupIRateNYC</code></td></tr>
+<tr><td>None filed</td><td>2 &mdash; CW, PR</td><td>&mdash;</td></tr>
+</tbody></table>
+<p>All variants keep the <b>same five keys</b> and the same shape &mdash; only <i>which table</i> is read changes. Each state overrides <code>SetBasicGroupIBaseRate</code> with its own selector:</p>
+<ul><li><b>CA</b> reads <b><code>../../District</code></b> &mdash; a Location field, <code>District I</code> / <code>District II</code>.</li><li><b>AK</b> reads <code>BasicGroupIRatingTerr</code> &isin; {020, 040, 050, 100}.</li><li><b>NY</b> reads <code>BasicGroupIRatingTerr</code> &isin; {030, 240, 310, 410, 430} &rarr; the NYC table.</li></ul>
+<p><b>Payload answer: the record shape holds; exactly one state adds one field.</b> California needs <code>District</code> on <code>CommercialPropertyLocation</code> (<code>DomainDistrict</code>, 2 rows, CA only). Alaska and New York need <b>nothing new</b> &mdash; both derive the split from a territory field every payload already carries. Spec §9.</p>
+<p><b>Two dead artefacts found.</b> <code>DomainDistrict</code> is <b>header-only, 0 rows, in all 9 Alaska editions</b> &mdash; a dropdown offering nothing, for a field AK&#x27;s rules never read. <code>BasicGroupIDistrictTerritory</code> is declared on Location countrywide and read by <b>no rule</b>. Neither should be sent; both look required if you read the DataDef instead of the rules.</p>
+<p><b>The severity axis generalises completely.</b> <code>SpecialPrsnlPropRate</code> is filed by <b>45 of 47 jurisdictions</b> (countrywide is empty &mdash; Special Contents is entirely state-filed), and the severity structure is <b>identical in all 45</b>: Mercantile High/Medium/Low; Institutional, Industrial and Processing, Service High/Low; the other four Not Applicable. Only the rates differ. Florida partitions Special into Residential (flat) and NonResidential (the standard severity table); Puerto Rico files a different structure again.</p>
+<hr>
+<h2>Set 4 &mdash; needed something outside the ERC files</h2>
+<h3>4a &mdash; Live RAaS envelope &mdash; DONE 2026-09-17</h3>
+<p><b>Confirmed, and no longer blocked.</b> A live request is <code>{ &quot;header&quot;: {...}, &quot;body&quot;: { &quot;SchemeKeys&quot;: {...}, &quot;CommercialProperty&quot;: [...] } }</code>. The header carries <code>quoteback</code> (empty string in every observed request) and <code>authorization.orgId</code> / <code>authorization.shipId</code>. Evidence was already in the repo: the real GL RAaS inputs at <code>Payloads/&lt;STATE&gt;/1. Input.json</code> carry the populated authorization block, while <code>Engine_Payloads/&lt;STATE&gt;/submission.json</code> has it empty &mdash; which is why earlier reading suggested the block was unused.</p>
+<p><b>An STC file is the <code>body</code> alone</b>, with no wrapper. Both statements are true and need to be kept apart: the header belongs to the account, the body to the risk.</p>
+<p><code>orgId</code> and <code>shipId</code> hold the same value for this account. They are separate fields and should not be collapsed into one.</p>
+<h3>4b &mdash; <code>LossCostMultiplier</code> sourcing &mdash; DECIDED 2026-09-17</h3>
+<p><b>Default <code>1.0</code>.</b> LCM appears in no STC payload. At 1.0 the filed ISO loss cost passes through unchanged, which is the right baseline for proving the engine against ISO &mdash; a carrier multiplier would make every comparison a comparison of our arithmetic rather than of ISO&#x27;s. Carrier LCM becomes a configured input (Set 6), never a submission field.</p>
+<p><i>Consequence to keep visible:</i> every rate in the spec is an <b>ISO loss cost, not a carrier rate</b>. Nothing produced under this default is a quotable premium.</p>
+<hr>
+<h2>Set 6 &mdash; carrier configuration</h2>
+<p><i>What it buys: the step from &quot;matches ISO&quot; to &quot;matches what this carrier files&quot;. Deliberately after the engine proves itself against ISO, not before &mdash; otherwise there is no clean baseline to prove against.</i></p>
+<h3>6a &mdash; Carrier LCM as a configured input, by line of business &mdash; OPEN</h3>
+<p>Replace the <code>1.0</code> default with a per-carrier, per-LOB configured multiplier. Requirements known so far:</p>
+<ul><li><b>Keyed by LOB at minimum</b> (CF and GL differ), and realistically by state and effective date as well &mdash; LCMs are filed and change on their own schedule.</li><li><b>Not a submission field.</b> It must not be settable per-request, or a caller can quietly change the rate basis.</li><li><b>Not a post-hoc scalar.</b> <code>BasicGroupIRate</code> multiplies the base rate by LCM <i>before</i> a 3-decimal rounding step, so the multiplier changes which side of a rounding boundary a rate falls on. Applying LCM to a finished premium gives a different answer than applying it in-chain. It has to sit where ISO put it.</li><li><b>Provenance.</b> A result should record which LCM produced it; otherwise stored premiums become unreproducible the first time a carrier refiles.</li></ul>
+<h3>6b &mdash; Carrier deviation layer beyond LCM &mdash; OPEN</h3>
+<p>LCM is the simplest carrier deviation. Others (rate deviations, own factor tables, own class plans) will need the same treatment. Scope not yet assessed. GL&#x27;s <code>docs/EXECUTIVE-SUMMARY.md</code> already describes how carrier deviations layer on top &mdash; check whether that design transfers before inventing a second one.</p>
+<hr>
+<h2>Set 7 &mdash; validation messages</h2>
+<p><i>What it buys: submissions that come back clean. The payload spec says what a request carries; these rules say whether ISO considers it coherent. A payload can rate <b>and</b> return errors &mdash; that is how this set was opened.</i></p>
+<h3>7a &mdash; Inventory the <code>DoMessage</code> rules &mdash; DONE 2026-09-17</h3>
+<p><b><code>CF_Validation_Messages.xlsx</code></b> (1,621 rows) and <b><code>CF_Validation_Messages.md</code> / <code>.html</code></b>. Every <code>DoMessage*</code> rule in the latest package of all 48 jurisdictions, with its message text, datadef group, check kind, the fields it reads and the records it requires or forbids.</p>
+<p>Headline findings:</p>
+<ul><li><b>Every message is an &quot;Error&quot;.</b> One helper, <code>AddErrorMessage</code>, 621 countrywide calls. No warning or informational variant exists. Severity is the caller&#x27;s problem.</li><li><b>434 countrywide rules; 233 more exist only in state packages.</b></li><li><b>States switch countrywide messages off</b> by overriding the rule with <code>&lt;rul:Sequence /&gt;</code> &mdash; an empty body. <b>316 such no-ops</b>, concentrated in FL (63), PR (49), NY (34), KS (20). Effective message counts run <b>400 (PR) to 455 (CA)</b>, median 437. Alabama suppresses none and adds 18.</li><li><b>Over half the rules are form-attachment checks</b> &mdash; &quot;you chose X, so endorsement Y is mandatory / prohibited&quot; &mdash; not data-quality checks.</li><li><b><code>CovType</code> drives more messages than any other field</b> (59 of the 305 spine rules), matching its status as the most rating-significant switch.</li></ul>
+<h3>7b &mdash; Map mirrored rule pairs &mdash; OPEN</h3>
+<p>CP 03 20 has an opposite: one rule fires if the form is missing when deductibles differ, another if it is attached when they are the same. Attaching an endorsement to silence one message can raise its mirror. These pairs were found by hand; there is no systematic list, and without one &quot;attach everything&quot; looks like a fix and is not.</p>
+<h3>7d &mdash; Message register and diagnostic loop &mdash; DONE 2026-09-17</h3>
+<p><b><code>CF_Message_Register.md</code> / <code>.html</code></b> &mdash; a running log of every message ISO actually returns, with root cause, fix, and the <i>check that was missing</i>. Seeded with M-001 (CP 03 20).</p>
+<p><b><code>scripts/cf/07_diagnose_message.py</code></b> &mdash; given a message text (or rule name), the <code>TableName</code> from the response, the state and optionally the payload, it finds the rule, decodes the condition, and prints every comparison with the payload&#x27;s actual value and whether it is true. Field-to-field comparisons included &mdash; those are usually the deciding half and the easiest to miss by eye. It reports whether the state <b>suppresses</b> the countrywide rule.</p>
+<p>It deliberately does <b>not</b> evaluate And/Or nesting. A partial evaluator that mishandles a nested <code>Or</code> would be worse than none.</p>
+<p><b>Standing checks the register has raised so far</b> (neither built): C-1 deductible coherence across fields and levels; C-2 assert a mirror rule will not fire before attaching an endorsement.</p>
+<h3>7e &mdash; Pre-flight payload validator &mdash; NOT STARTED</h3>
+<p>Run the applicable <code>DoMessage</code> conditions locally before sending, so messages are designed out rather than discovered. The rule inventory it needs already exists. <b>Engine-adjacent &mdash; needs an explicit go</b>, like Set 5.</p>
+<h3>7c &mdash; Reachability &mdash; OPEN</h3>
+<p>The 1,621 rules were inventoried by reading conditions, not by evaluating them. Which of a state&#x27;s ~440 effective messages can actually fire for a given submission is unanswered.</p>
+<hr>
+<h2>Set 5 &mdash; the engine</h2>
+<p><code>cf_engine/</code> has package discovery and edition resolution only &mdash; no interpreter, no rating kernel. Everything in the spec is a <i>reading</i> until something executes it.</p>
+<p><b>Not started, and not to be started.</b> Confirmed 2026-09-17: there is parallel work in flight, so the engine waits for an explicit go. What this spec does in the meantime is remove the blocker on <code>cf_engine/schema/fields.py</code> &mdash; <code>docs/CF-CHUNK0-BUILD-SPEC.md</code> deferred the submission shape &quot;until the field set is known from more than one coverage&quot;, and it now is, for class-rated Building and Personal Property.</p>
+<hr>
+<h2>Where this is wired in</h2>
+<p>So the work is found by whoever picks up the harness build rather than living in a folder nobody opens:</p>
+<table>
+<thead><tr><th>Surface</th><th>What points here</th></tr></thead>
+<tbody>
+<tr><td><code>STC_Corpus_Index.xlsx</code> (repo root)</td><td>the 921-payload index itself</td></tr>
+<tr><td><code>docs/CF-CHUNK0-BUILD-SPEC.md</code></td><td><code>cf_engine/schema/fields.py</code> row &mdash; deferral reason retired, links to the spec. Territory-resolver finding confirmed from STC</td></tr>
+<tr><td><code>docs/CF-PROPERTY-BUILD-ORDER.md</code></td><td>&quot;What is already done, and worth not redoing&quot; &mdash; spec, tracker and the STC corpus added as assets for chunks 1, 2 and 4</td></tr>
+<tr><td><code>README.md</code></td><td>index table</td></tr>
+<tr><td><code>CF_Algorithm/BUILD-LOG.md</code></td><td>dated entry</td></tr>
+</tbody></table>

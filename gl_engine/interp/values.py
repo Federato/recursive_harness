@@ -92,8 +92,21 @@ def flatten(v) -> list:
     return out
 
 
-#: The five types the corpus declares. A sixth is a hard failure (contract §12).
-TYPES = frozenset({"string", "decimal", "integer", "long", "dateTime", "none"})
+#: Every type ISO declares, across both lines of business. A seventh is a hard
+#: failure (contract §12).
+#:
+#: **Six, not five, and no line files all six.** General Liability files
+#: `long` (1,101 occurrences) and never `boolean`; Commercial Property files
+#: `boolean` (9,228) and never `long`. The contract's "five types" was a
+#: measurement of one corpus that read as a property of the language.
+TYPES = frozenset({"string", "decimal", "integer", "long", "dateTime",
+                   "boolean", "none"})
+
+#: The two spellings ISO files, and the only two: 2,484 `true` and 2,234
+#: `false` across every boolean `Constant` in the Property corpus. Anything
+#: else is refused rather than read as truthy, because a condition is the one
+#: place a wrong guess silently changes which branch prices the risk.
+_BOOLEANS = {"true": True, "false": False}
 
 #: `01/01/0001` is ISO's dateTime zero and appears on 1,642 `FirstValue`s. It is
 #: a sentinel meaning "no date", not a date to compute with.
@@ -121,7 +134,12 @@ def coerce(raw, typ: str, where: str = ""):
         raise InterpretError(f"unknown @Type {typ!r}", "§12.2", where)
     if raw is None:
         return None
-    if isinstance(raw, (Decimal, int, _dt.date)) and not isinstance(raw, bool):
+    if isinstance(raw, bool):
+        # Already a boolean. Checked before the numeric branch below because
+        # `bool` is a subclass of `int` and `True` would otherwise be carried
+        # through as the number one.
+        return raw
+    if isinstance(raw, (Decimal, int, _dt.date)):
         return raw
     text = str(raw)
 
@@ -129,6 +147,15 @@ def coerce(raw, typ: str, where: str = ""):
         return text
     if typ == "none":
         return None
+    if typ == "boolean":
+        b = _BOOLEANS.get(text.strip())
+        if b is None:
+            if text.strip() == "":
+                return None           # absent, not false
+            raise InterpretError(
+                f"{text!r} is not a boolean; ISO files only 'true' and "
+                f"'false'", "§1", where)
+        return b
 
     stripped = text.strip()
     if stripped == "":
@@ -164,6 +191,10 @@ def to_text(v) -> str:
     """Render a runtime value the way ISO's own CSVs render it."""
     if v is None:
         return ""
+    if isinstance(v, bool):
+        # ISO's spelling, not Python's. A boolean written to the tree is read
+        # back out of it, and `"True"` would fail to coerce on the way in.
+        return "true" if v else "false"
     if isinstance(v, _dt.date):
         return v.strftime("%m/%d/%Y")
     if isinstance(v, Decimal):

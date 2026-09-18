@@ -43,7 +43,17 @@ Mirroring the discipline behind GL's eighteen, not the content — CF's traps ar
 4. **Cite the exact operator element, not the expected one.** An early grep for `rul:Multiply`
    found nothing; the real element is `rul:Product`. A rule model built on the assumed name would
    have silently under-counted CF's math.
-5. **Distinguish an edition-specific gap from a corpus-wide one.** FL, IL, and NJ are missing from
+5. **Never treat a returned premium as a clean result.** CF has exactly one message severity —
+   `AddErrorMessage`, 621 countrywide calls, no warning or informational variant — so ISO returns a
+   premium and an error together and the caller classifies severity itself. A submission that rates
+   is not a submission that is right.
+6. **Never read the countrywide message set as the applicable one.** 316 countrywide `DoMessage`
+   rules are overridden to an empty body in some state. Effective counts run 400 (PR) to 455 (CA).
+   Validation is per-jurisdiction exactly as rating is — including rules a state *deleted*.
+7. **Never attach an endorsement to silence a message without checking for its mirror.** Over half
+   the rules are form-attachment checks and some come in opposing pairs: one fires when the form is
+   missing, its opposite when the same form is attached and should not be.
+8. **Distinguish an edition-specific gap from a corpus-wide one.** FL, IL, and NJ are missing from
    the current (20260601) edition specifically but exist in earlier editions — a different
    failure mode from Hawaii's, and one that needs its own explanation before it's trusted either
    way.
@@ -52,7 +62,16 @@ Mirroring the discipline behind GL's eighteen, not the content — CF's traps ar
 
 Per the proposal, items 2–4 (a `cf_engine/` package reusing the interpreter architecture, a
 coverage-by-coverage gated build order, and separated GL/CF testing and reporting) remain
-unauthorized. The immediate useful next step within item 1's spirit, if this work continues, is
+unauthorized. **A fourth strand has since been added and is partly complete: the request side.**
+`CF_Algorithm/CF_Payload_ClassRated_Bldg_PP_Alabama.md` specifies what a CF rating request carries
+versus what the engine derives — derived from ISO's own STC payloads, validated against all seven
+Alabama cases, and generalised across the district states. Alongside it,
+`CF_Validation_Messages.md` analyses the 1,621 `DoMessage` rules that decide whether a request is
+coherent, and `CF_Message_Register.md` logs every message ISO has actually returned with the check
+that was missing. None of this is engine code; all of it is input the engine will need, and it
+retires the deferral on `cf_engine/schema/fields.py`.
+
+The immediate useful next step within item 1's spirit, if this work continues, is
 extending the ERC-side knowledge base's coverage — the state-level packages, the remaining four
 coverage groups' rule chains, and a full (not sampled) territory-scheme survey — before treating
 this plan as settled.

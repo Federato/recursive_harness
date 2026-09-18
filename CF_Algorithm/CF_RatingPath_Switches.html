@@ -1,0 +1,265 @@
+<title>Which selections change the rating path — core coverages</title>
+<meta charset="utf-8">
+<style>
+  body { font-family: Georgia, "Times New Roman", serif; max-width: 1080px; margin: 0 auto; padding: 32px 24px 80px; line-height: 1.55; color: #1c2733; background: #fff; }
+  @media (prefers-color-scheme: dark) {
+    body { background: #14181d; color: #dfe4e9; }
+    table, th, td { border-color: #3a4048 !important; }
+    thead th { background: #24313a !important; color: #eef4f3 !important; }
+    code { background: #262c33 !important; color: #dfe4e9; }
+    pre { background: #262c33 !important; border-color: #3a4048 !important; color: #dfe4e9; }
+    .note { background: #2c2a1c !important; color: #e0c064 !important; }
+    .note.good { background: #1b3226 !important; color: #63c090 !important; }
+    .note.shared { background: #1d2b33 !important; color: #9fd4dc !important; }
+    td.y { background: #1b3226 !important; color: #63c090 !important; }
+    td.n { background: #1b242d !important; color: #6d7885 !important; }
+    td.p { background: #3a3319 !important; color: #e0c064 !important; }
+  }
+  h1 { font-size: 26px; font-weight: 400; margin-bottom: 4px; }
+  h2 { font-size: 19px; font-weight: 700; margin-top: 40px; border-bottom: 2px solid #1e3a45; padding-bottom: 4px; }
+  h3 { font-size: 15px; font-weight: 700; margin-top: 26px; }
+  .meta { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13px; color: #55606b; margin: 6px 0 4px; }
+  code { font-family: ui-monospace, Consolas, monospace; font-size: 0.92em; background: #eef1f4; padding: 1px 5px; border-radius: 3px; }
+  table { border-collapse: collapse; width: 100%; margin: 14px 0 22px; font-size: 13.5px; }
+  th, td { border: 1px solid #d7dce2; padding: 7px 9px; text-align: left; vertical-align: top; }
+  thead th { background: #1e3a45; color: #eef4f3; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 11.5px; text-transform: uppercase; letter-spacing: .03em; }
+  pre { background: #eef1f4; border: 1px solid #d7dce2; border-radius: 6px; padding: 14px 16px; overflow-x: auto; font-family: ui-monospace, Consolas, monospace; font-size: 12.5px; line-height: 1.5; }
+  .note { background: #f7ddd4; color: #a53d26; padding: 12px 16px; border-radius: 6px; margin: 16px 0; font-size: 14px; }
+  .note.good { background: #dcefe4; color: #2f7d5a; }
+  .note.shared { background: #dde9ee; color: #1e5567; }
+  .note b { font-weight: 700; }
+  ol, ul { padding-left: 22px; }
+  hr { border: none; border-top: 1px solid #d7dce2; margin: 40px 0; }
+  td.y, td.n, td.p { text-align: center; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 11.5px; font-weight: 700; white-space: nowrap; }
+  td.y { background: #dcefe4; color: #2f7d5a; }
+  td.n { background: #e4e8ed; color: #8b95a1; font-style: italic; }
+  td.p { background: #f2e6c4; color: #a67c1e; }
+  .num { font-family: -apple-system, "Segoe UI", sans-serif; text-align: center; font-weight: 700; }
+</style>
+
+<h1>Which selections change the rating path</h1>
+<p class="meta"><b>Written:</b> 2026-09-16. <b>Source:</b> a mechanical scan of every path-selecting rule
+&mdash; <code>SetPremium</code>, <code>SetCoverageOnPolicyIndicator</code>,
+<code>Set*RatesAndFactors</code>, <code>Set*BaseRate</code>, <code>Set*Rate</code>,
+<code>Set*CauseOfLossAdjustment</code>, <code>SetFactor</code>, <code>Set*ExclFactor</code>,
+<code>Set*ToUse</code> &mdash; in the core rule files for Building, Contents, Business Income, Special Class
+and Special Class Business Income, CW 20260601 V01. Every value below was read out of a
+<code>&lt;rul:Test&gt;</code>. Markdown companion: <code>CF_RatingPath_Switches.md</code>.</p>
+
+<h2>The three kinds of switch</h2>
+<table>
+<thead><tr><th>Kind</th><th>What it is</th><th>Example</th></tr></thead>
+<tbody>
+<tr><td><b>Enum value</b></td><td>a coded field on a record, chosen from a domain list</td>
+    <td><code>CovType = "Legal Liability"</code></td></tr>
+<tr><td><b>Election</b></td><td>an endorsement record exists or does not &mdash; a Yes/No, not a value</td>
+    <td><code>CommercialPropertyTheftExclusion</code></td></tr>
+<tr><td><b>Inherited value</b></td><td>copied down from a parent; not selectable on the item itself</td>
+    <td>Contents' <code>CovForm</code>, copied from the occupancy class</td></tr>
+</tbody>
+</table>
+<div class="note shared"><b>The third kind is the one that bites.</b> A field can be <i>tested</i> on the
+item and still not be <i>chosen</i> there. Building the input next to the test is the natural mistake.</div>
+
+<h2>Master list &mdash; every enum tested in a path rule</h2>
+<table>
+<thead><tr><th>Field</th><th class="num">Values</th><th>Coverages</th><th>What it switches</th></tr></thead>
+<tbody>
+<tr><td><code>CovType</code></td><td class="num">10</td><td>Bldg, Contents, BI, SCBI</td>
+    <td><b>A different value universe per coverage</b> &mdash; see below</td></tr>
+<tr><td><code>CauseOfLossToUse</code></td><td class="num">10</td><td>all five</td>
+    <td>which form chain rates at all</td></tr>
+<tr><td><code>ClassCodeToUse</code></td><td class="num">7</td><td>Bldg, BI</td>
+    <td>special-cased class codes (1150 Builders Risk, 0580, 0585, 1300, 1650, 1751, 1752)</td></tr>
+<tr><td><code>TypeOfRisk</code></td><td class="num">6</td><td>BI, SCBI</td>
+    <td>which arm of <code>TypeOfRiskFactor</code> &mdash; four combined blends, educational, n/a</td></tr>
+<tr><td><code>RatingType</code></td><td class="num">3</td><td>Bldg, Contents, BI</td>
+    <td>Class / Specific / Tentative</td></tr>
+<tr><td><code>CovForm</code></td><td class="num">3</td><td>Contents</td><td>the Contents premium branch</td></tr>
+<tr><td><code>PolicyType</code></td><td class="num">2</td><td>all five</td>
+    <td>CPP vs SPP &mdash; cascades into three other lists</td></tr>
+<tr><td><code>IncludedInBlkt</code></td><td class="num">2</td><td>all five</td><td>scheduled vs blanket premium</td></tr>
+<tr><td><code>MUBlktRated</code></td><td class="num">2</td><td>all five</td><td>multi-unit blanket rating</td></tr>
+<tr><td><code>CoinsuranceToUse</code></td><td class="num">2</td><td>BI, SCBI</td>
+    <td>suppresses <code>TypeOfRiskFactor</code> when blanket or n/a</td></tr>
+<tr><td><code>EQCovIndicator</code></td><td class="num">2</td><td>Bldg, Contents, SC, SCBI</td><td>whether the EQ chain runs</td></tr>
+<tr><td><code>CauseOfLoss</code> / <code>BlktCauseOfLossValue</code></td><td class="num">2</td><td>Bldg, Contents</td>
+    <td>the blanket-vs-item source of cause of loss</td></tr>
+<tr><td><code>BlktTypeOfBlanketRating</code>, <code>MultiLocAvgRatesIndicator</code></td><td class="num">2</td>
+    <td>Bldg / Contents</td><td>blanket method, multi-location averaging</td></tr>
+<tr><td><code>MaxPeriod</code></td><td class="num">1</td><td>BI, SCBI</td><td>first arm of <code>SetFactor</code></td></tr>
+<tr><td><code>MonthlyLimitOfIndemnity</code></td><td class="num">1</td><td>BI, SCBI</td><td>second arm of <code>SetFactor</code></td></tr>
+<tr><td><code>VacantBuilding</code></td><td class="num">1</td><td>Bldg, Contents, BI</td>
+    <td>substitutes class code <code>1180</code></td></tr>
+<tr><td><code>SprinklerSystem</code></td><td class="num">1</td><td>Bldg, Contents, BI</td><td>sprinkler-leakage terms</td></tr>
+<tr><td><code>SubStdConditionA&ndash;E</code></td><td class="num">1 ea</td><td>Bldg</td><td>substandard condition rate</td></tr>
+<tr><td><code>OpenSides</code>, <code>Group</code>, <code>BldgClassCode</code>, <code>YardPropertyIndicator</code>,
+    <code>SuperiorRoofingIndicator</code>, <code>EQSprinklerLeakageOnly</code>, <code>EQCauseOfLossForm</code>,
+    <code>FloodCovIndicator</code>, <code>PostTRIAExclusion</code>, <code>IncludedInBuilding</code></td>
+    <td class="num">1 ea</td><td>varies</td><td>classification and narrow side-paths</td></tr>
+</tbody>
+</table>
+
+<h2>The big five</h2>
+
+<h3>1 &middot; <code>PolicyType</code> — and the three lists it rewrites</h3>
+<p>The widest-reaching switch in the line, tested in all five coverages, and it <b>cascades</b>:</p>
+<ul>
+<li><b>The cause-of-loss list changes.</b> CPP offers Basic / Broad / Special plus blanket; SPP offers fire
+combinations instead.</li>
+<li><b>The <code>CovForm</code> list changes.</b> <code>DomainCovForm</code> is keyed State + PolicyType +
+RatingType, and <b>Legal Liability is offered on CPP only</b> &mdash; absent from every SPP row.</li>
+<li><b><code>StdPropPolGroupIFactor</code> / <code>StdPropPolGroupIIFactor</code> exist</b> only on an SPP,
+and only on the building side.</li>
+<li><b>Vandalism's gate changes shape.</b> On a CPP it fires on an endorsement election; on an SPP it fires
+on a qualifying cause of loss and ignores the endorsement entirely.</li>
+</ul>
+
+<h3>2 &middot; <code>RatingType</code> — Class / Specific / Tentative</h3>
+<p>Selects an entirely different base-rate source: a class-code lookup versus a user-supplied specific or
+tentative rate. <b>Confirmed absent on Special Class and Special Class Business Income</b> &mdash;
+<code>RatingType</code>, <code>SpecificGroupIRate</code> and <code>TentativeRate</code> appear zero times in
+either ruleset. And only <b>Basic Group I</b> has a Specific/Tentative path at all; BGII, Broad and Special
+are structurally class-only.</p>
+
+<h3>3 &middot; <code>CovType</code> — one field name, four value universes</h3>
+<div class="note"><b>The trap worth the most care.</b> <code>CovType</code> is tested in four coverages and
+the legal values do not overlap. A single shared dropdown would be wrong in three of them.</div>
+<table>
+<thead><tr><th>Coverage</th><th>Values tested in path rules</th></tr></thead>
+<tbody>
+<tr><td><b>Building</b></td><td><code>Building</code> &middot; <code>Builders Risk</code> &middot;
+  <code>Improvements and Betterments</code> &middot; <code>Condominium Association</code> &middot;
+  <b><code>Legal Liability</code></b> &middot; <b><code>Leasehold Interest</code></b></td></tr>
+<tr><td><b>Contents</b></td><td><code>Valuable Papers and Records - Other Than Electronic Data</code></td></tr>
+<tr><td><b>Business Income</b></td><td><code>Business Income Without Extra Expense</code> &middot;
+  <code>Extra Expense Only</code> &middot; <code>Not Applicable</code></td></tr>
+<tr><td><b>SC Business Income</b></td><td>the same three as Business Income</td></tr>
+</tbody>
+</table>
+<p><code>CovType</code> is declared on <code>Structure</code>, <code>OccupClass</code> <b>and</b>
+<code>PersonalProperty</code>, and <b>no rule assigns it</b> on any of them &mdash; it is a submission input,
+entered per record. Two buildings at one location can therefore differ.</p>
+
+<h3>4 &middot; <code>CovForm</code> — the Contents switch, chosen one level up</h3>
+<p>Contents does not branch on <code>CovType</code>. It branches on <code>CovForm</code>, and
+<code>SetCovForm</code> is a plain <code>Copy ../../CovForm</code> &mdash; which resolves to
+<b><code>CommercialPropertyOccupClass</code></b>. Chosen once per occupancy class; every contents item
+inherits it.</p>
+<table>
+<thead><tr><th>Value</th><th>Effect</th></tr></thead>
+<tbody>
+<tr><td><code>Legal Liability Coverage Form</code></td><td>its own premium branch</td></tr>
+<tr><td><code>Tobacco Sales Warehouse Coverage Form</code></td><td>excluded from the class-rated branch; own path</td></tr>
+<tr><td><code>Class Rated Building Only, No Personal Property Coverage</code></td><td>excluded &mdash; there is no contents premium</td></tr>
+</tbody>
+</table>
+
+<h3>5 &middot; <code>CauseOfLossToUse</code> — which form chains fire</h3>
+<p>Ten values tested. On a CPP: <code>Broad</code>, <code>Special</code> (Basic implicitly). On an SPP the
+fire combinations: <code>Fire</code>, <code>Fire and Allied Lines</code>, <code>Fire and Vandalism</code>,
+<code>Fire and Sprinkler Leakage</code>, <code>Fire, Vandalism and Allied Lines</code>,
+<code>Fire, Sprinkler Leakage and Allied Lines</code>,
+<code>Fire, Vandalism and Sprinkler Leakage</code>, plus <code>Not Applicable</code>.</p>
+<p>Basic Group I and II rate regardless; Broad and Special rate only when the cause of loss names them. The
+value is read from <code>BlktCauseOfLossValue</code> when the item is blanketed and the item's own
+<code>CauseOfLoss</code> when it is not &mdash; so <b><code>IncludedInBlkt</code> silently changes where this
+value comes from.</b></p>
+
+<h2>Elections &mdash; 49 endorsement records tested in path rules</h2>
+<div class="note"><b>An election is not an enum.</b> The rule asks whether a record <i>exists</i>, so a blank
+is not a neutral value &mdash; several missing-record defaults are <code>0.0</code>, which zeroes a premium
+rather than declining a credit.</div>
+<p>The four core exclusions each file <b>a separate record per coverage</b> &mdash; the pattern behind
+backlog items S-1, S-2 and S-3.</p>
+<table>
+<thead><tr><th>Exclusion</th><th>Building</th><th>Contents</th><th>Business Income</th><th>Special Class</th><th>SC Business Income</th></tr></thead>
+<tbody>
+<tr><td><b>Theft</b></td><td><code>TheftExclusion</code></td><td><code>…PrsnlProp</code></td>
+    <td><code>…BusnIncome</code></td><td><code>…SpecialClass</code></td><td><code>…SpclClassBusnIncome</code></td></tr>
+<tr><td><b>Vandalism</b></td><td><code>VandalismExclusion</code></td><td><code>…PrsnlProp</code></td>
+    <td><code>…BusnIncome</code></td><td><code>…SpecialClass</code></td><td><code>…SpclClassBusnIncome</code></td></tr>
+<tr><td><b>Windstorm / Hail</b></td><td><code>WindstormOrHailExclusion</code></td><td><code>…PrsnlProp</code></td>
+    <td><code>…BusnIncome</code></td><td><code>…SpecialClass</code></td><td><code>…SpclClassBusnIncome</code></td></tr>
+<tr><td><b>Sprinkler Leakage</b></td><td><code>SprinklerLeakageExclusion</code></td><td><code>…PrsnlProp</code></td>
+    <td><code>…BusnIncome</code></td><td class="n">&mdash;</td><td class="n">&mdash;</td></tr>
+</tbody>
+</table>
+<p>Others that steer a core path: <code>BuildersRiskReportingForm</code> (Building &mdash; zeroes the
+ordinary premium), <code>ValueReportingForm</code> and
+<code>AdditionalLocationsSpecialCoinsuranceProvisions</code> (Contents &mdash; suppress the
+coverage-on-policy indicator), <code>LimitationsOnCovForRoofSurfacing</code> (Building),
+<code>AlcoholicBeveragesTaxExclusion</code> (Contents), eight Earthquake endorsement variants, and eleven
+terrorism records.</p>
+
+<h2>Worked example &mdash; how <code>Legal Liability</code> produces a different path</h2>
+<p>One enum value in, and what comes out is a different premium formula, two factors that exist nowhere else,
+and three things that silently stop applying.</p>
+<pre>SELECT               Building : CovType  = "Legal Liability"        (on the building item)
+                     Contents : CovForm  = "Legal Liability Coverage Form"
+                                           (on the OCCUPANCY CLASS - all contents inherit it)
+
+RATE CHAIN           unchanged. Base rate, territory, protection class and the
+                     cause-of-loss adjustment all run exactly as class-rated.
+
+THE FORK             a Choose branch inside SetPremium - not in the rate chain.
+
+                     class-rated : premium starts from FinalBasicGroupIRate
+                     legal liab. : premium starts from BasicGroupICauseOfLossAdjustment
+                                   ^ three steps earlier
+
+WHAT STOPS APPLYING  coinsurance, the LOI factor, the deductible factors
+                     (all computed upstream, then ignored)
+                     MultiPremiumAndDispersionCreditFactor
+
+WHAT STARTS APPLYING LegalLiabilityFactor          Bldg 0.25 / PersProp 0.50
+                     AddlInsurableInterestFactor   Option1 1.25 · Option2 1.25
+                                                   Option3 1.00 · Option4 ("None") 1.00
+
+ALSO CHANGES         blanket becomes unreachable - Building by Choose ordering,
+                     Contents by an explicit exclusion in the blanket branch
+
+PER FORM             BGI  -&gt; BasicGroupICauseOfLossAdjustment
+                     BGII -&gt; BasicGroupIICauseOfLossAdjustment
+                     Broad-&gt; BroadRate                     (raw; no COL adjustment exists)
+                     Spec -&gt; Building: SpecialRate                 (drops the theft credit)
+                             Contents: SpecialCauseOfLossAdjustment (keeps it)</pre>
+<div class="note good">That last line is the <b>only</b> premium-bearing Building-vs-Contents difference
+other than the 0.25 / 0.50 factor. Full detail in
+<code>Excel_Rater_LegalLiability_vs_ClassRated_Building.html</code> and its Personal Property companion.</div>
+
+<h2>Which drivers apply where</h2>
+<table>
+<thead><tr><th>Driver</th><th>Building</th><th>Contents</th><th>Business Income</th><th>Special Class</th><th>SC Business Income</th></tr></thead>
+<tbody>
+<tr><td><code>PolicyType</code></td><td class="y">yes</td><td class="y">yes</td><td class="y">yes</td><td class="y">yes</td><td class="y">yes</td></tr>
+<tr><td><code>IncludedInBlkt</code></td><td class="y">yes</td><td class="y">yes</td><td class="y">yes</td><td class="y">yes</td><td class="y">yes</td></tr>
+<tr><td><code>CauseOfLossToUse</code></td><td class="y">yes</td><td class="y">yes</td><td class="y">yes</td><td class="y">yes</td><td class="y">yes</td></tr>
+<tr><td><code>RatingType</code></td><td class="y">yes</td><td class="y">yes</td><td class="y">yes</td><td class="n">absent</td><td class="n">absent</td></tr>
+<tr><td><code>CovType</code></td><td class="y">yes</td><td class="p">narrow</td><td class="p">own values</td><td class="n">&mdash;</td><td class="p">own values</td></tr>
+<tr><td><code>CovForm</code></td><td class="n">&mdash;</td><td class="y">yes</td><td class="n">&mdash;</td><td class="n">&mdash;</td><td class="n">&mdash;</td></tr>
+<tr><td>Legal Liability</td><td class="y">yes</td><td class="y">yes</td><td class="n">absent</td><td class="n">absent</td><td class="n">absent</td></tr>
+<tr><td><code>TypeOfRisk</code> / <code>MaxPeriod</code> / <code>MonthlyLimit</code></td>
+    <td class="n">&mdash;</td><td class="n">&mdash;</td><td class="y">yes</td><td class="n">&mdash;</td><td class="y">yes</td></tr>
+<tr><td><code>VacantBuilding</code></td><td class="y">yes</td><td class="y">yes</td><td class="y">yes</td><td class="n">&mdash;</td><td class="n">&mdash;</td></tr>
+<tr><td><code>SubStdConditionA&ndash;E</code></td><td class="y">yes</td><td class="n">&mdash;</td><td class="n">&mdash;</td><td class="n">&mdash;</td><td class="n">&mdash;</td></tr>
+</tbody>
+</table>
+
+<h2>What this means for the input sheet</h2>
+<ol>
+<li><b><code>CovType</code> needs a different dropdown per coverage.</b> One shared list is wrong &mdash; the
+four value universes do not overlap.</li>
+<li><b>Contents' form selector belongs at the occupancy class</b>, not on the contents item. One dropdown
+drives every contents item beneath it.</li>
+<li><b><code>PolicyType</code> must be set before anything else is selectable</b> &mdash; it rewrites the
+cause-of-loss list, the <code>CovForm</code> list, and whether the Std Prop Pol factors exist at all.</li>
+<li><b>Elections are Yes/No records, not enum values.</b> A blank is not neutral.</li>
+<li><b>Each coverage needs its own election column</b> for theft, vandalism, wind/hail and sprinkler
+leakage. Sharing one input is the S-1/S-2/S-3 simplification, and it is logged as such.</li>
+</ol>
+
+<hr>
+<p class="meta">Scanned mechanically, then each headline claim re-read in the rule XML. Counts are of values
+actually tested in a path rule, not of values a domain table offers &mdash; a domain may list options that
+no rule branches on.</p>

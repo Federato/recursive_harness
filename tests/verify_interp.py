@@ -53,7 +53,8 @@ def prog(xml: str):
 class Fake(Interpreter):
     """An interpreter with no corpus behind it, for evaluating fragments."""
 
-    def __init__(self, tables=None, rounding="ROUND_HALF_UP"):
+    def __init__(self, tables=None, rounding="ROUND_HALF_UP",
+                 null_arithmetic="refuse"):
         self.book = None
         self.rounding_name = rounding
         from decimal import ROUND_HALF_UP
@@ -61,11 +62,21 @@ class Fake(Interpreter):
         self.rounding = ROUNDING_MODES[rounding]
         self.tracing = True
         self.trace = []
+        self.messages = []
         self._guid = 0
         self._programs = {}
         self.state_program = None
         self.parent_program = None
         self._tables = tables or {}
+        # Mirrors the real constructor. This class bypasses `Interpreter.
+        # __init__`, so every new piece of interpreter state has to be added
+        # here too -- which is exactly how it was noticed that `ip.num()` had
+        # become the single door into arithmetic.
+        self.null_arithmetic = null_arithmetic
+        self.guard_null_premium = True
+        self.strict_single_result = False
+        self.strict_refusals = []
+        self.coercions = []
 
     def lookup(self, name, col, keys, mode, typ, where):
         rows = self._tables.get(name)
@@ -108,9 +119,26 @@ def group_a() -> None:
     check("A2 every node has an evaluator", not missing,
           f"{len(language) - len(missing)} of {len(language)}"
           + (f"; missing {missing}" if missing else ""))
-    extra = [n for n in EVAL if n not in language]
-    check("A3 no evaluator for a node the corpus does not have", not extra,
-          f"extra {extra}" if extra else "")
+    # A3 used to assert the registry matched the GL census EXACTLY, which was
+    # right while the engine read one line of business and became wrong the day
+    # it read two. Commercial Property files five elements GL does not, and
+    # they are registered here because ISO files one rule language, not one per
+    # line -- see the Commercial Property section of `interp/nodes.py`.
+    #
+    # The assertion that still earns its place is the one that would catch a
+    # typo'd or invented evaluator: an evaluator must be in the GL census OR in
+    # this named list, and nothing else is allowed in. So the list is written
+    # out rather than computed, and adding a sixth means saying so here.
+    CF_ONLY = {"Null", "Power", "LastNonNull", "Custom", "FromList"}
+    extra = [n for n in EVAL if n not in language and n not in CF_ONLY]
+    check("A3 every evaluator is in the census or a declared CF extension",
+          not extra, f"extra {extra}" if extra else
+          f"{len(language)} GL + {len(CF_ONLY)} CF = {len(EVAL)} registered")
+    absent_from_gl = sorted(CF_ONLY & set(language))
+    check("A4 the CF extensions are genuinely absent from the GL corpus",
+          not absent_from_gl,
+          f"in the GL census after all: {absent_from_gl}" if absent_from_gl
+          else "so no GL rating can reach one of them")
 
 
 # ----------------------------------------------------------------- B semantics
@@ -294,6 +322,108 @@ def group_b() -> None:
                      "<rul:Sequence/></rul:Locate>")
     check("B20 Locate Append creates the node (§9)",
           root.first("Policy") is not None, tree.dump(root).replace("\n", " | "))
+
+    # B23/B24 -- contract §12.3, tested by trying to break it.
+    #
+    # Commercial Property raised the question for real: ISO's own service rates
+    # a New York risk this engine refuses, because a rule filed only in New
+    # York subtracts a policy premium that is not computed until after
+    # validation. One explanation was that ISO coerces null to zero in
+    # arithmetic -- which would mean §12.3 is wrong for this corpus, GL
+    # included. So `Interpreter(null_arithmetic="zero")` exists to MEASURE
+    # that, and these two tests are the measurement.
+    #
+    # The idiom under test is ISO's own state-to-countrywide fallback:
+    # `FirstNonNull(Round(Lookup(state)), Round(Lookup('CW')))`, where the
+    # state lookup is DESIGNED to miss. Refusing lets `FirstNonNull` abandon
+    # branch one and reach countrywide. Coercing turns the miss into a
+    # perfectly good `0`, which `FirstNonNull` accepts -- and countrywide is
+    # never read.
+    FALLBACK = (
+        '<rul:FirstNonNull Type="decimal">'
+        '<rul:Round DecimalPlaces="3"><rul:Lookup Type="decimal"'
+        ' MatrixCol="Factor" MatrixDef="RatesDef" MatrixFromConstant="Rates"'
+        ' ResultMode="FirstResult"><rul:Keys>'
+        '<rul:Constant Type="string">NY</rul:Constant>'
+        "</rul:Keys></rul:Lookup></rul:Round>"
+        '<rul:Round DecimalPlaces="3"><rul:Lookup Type="decimal"'
+        ' MatrixCol="Factor" MatrixDef="RatesDef" MatrixFromConstant="Rates"'
+        ' ResultMode="FirstResult"><rul:Keys>'
+        '<rul:Constant Type="string">CW</rul:Constant>'
+        "</rul:Keys></rul:Lookup></rul:Round>"
+        "</rul:FirstNonNull>")
+    rows = {"Rates": [("CW", "1.172")]}          # no NY row, by design
+
+    v, _, _ = run(FALLBACK, ip=Fake(tables=rows))
+    check("B23 refusing a null lets the countrywide fallback be reached (OI-88)",
+          v == Decimal("1.172"), repr(v))
+
+    v, _, ipz = run(FALLBACK,
+                    ip=Fake(tables=rows, null_arithmetic="zero"))
+    check("B24 coercing null to zero DESTROYS that fallback -- so ISO cannot "
+          "be coercing", v == Decimal(0) and len(ipz.coercions) == 1,
+          f"{v!r} after {len(ipz.coercions)} coercion(s); ISO returns the "
+          f"countrywide factor for exactly this shape, so coercion is "
+          f"disproven and §12.3 stands")
+
+    # B25 -- the mode that survived. Propagation has to leave the fallback
+    # working, or it is just `zero` with extra steps. This is the assertion
+    # that lets Commercial Property run in `propagate` without anyone having to
+    # take it on trust.
+    v, _, ipp = run(FALLBACK,
+                    ip=Fake(tables=rows, null_arithmetic="propagate"))
+    check("B25 propagating a null PRESERVES the countrywide fallback",
+          v == Decimal("1.172"),
+          f"{v!r} after {len(ipp.coercions)} propagation(s) -- null flows, "
+          f"FirstNonNull still falls through, and New York rates to ISO's "
+          f"own figure")
+
+    v, _, _ = run('<rul:GreaterThan>'
+                  '<rul:Constant Type="decimal">0</rul:Constant>'
+                  '<rul:Value Type="decimal" FromDataDef="Absent"'
+                  ' AllowNullReturn="true"/></rul:GreaterThan>',
+                  ip=Fake(null_arithmetic="propagate"))
+    check("B26 a comparison against a null is false, not a refusal",
+          v is False, f"{v!r} -- this is the step that lets New York's "
+          f"validation rule complete instead of stopping the rating")
+
+    # B27-B29 -- the null-premium guard, which is what `propagate` traded away
+    # bought back. Nulls flow freely through intermediate arithmetic, because
+    # ISO's fallback idiom needs them to; they are refused at the one boundary
+    # where "absent" silently becomes "free".
+    NULL_PREMIUM = ('<rul:Product ToDataDef="{to}">'
+                    '<rul:Value Type="decimal" FromDataDef="MissingRate"'
+                    ' AllowNullReturn="true"/>'
+                    '<rul:Constant Type="decimal">1000</rul:Constant>'
+                    "</rul:Product>")
+
+    try:
+        run(NULL_PREMIUM.format(to="Premium"),
+            ip=Fake(null_arithmetic="propagate"))
+        check("B27 a null written to Premium is refused", False,
+              "it was written silently")
+    except InterpretError as exc:
+        check("B27 a null written to Premium is refused",
+              "Premium" in str(exc) and "money" in str(exc), str(exc)[:90])
+
+    # The hazard itself, demonstrated rather than asserted: with the guard off
+    # the same program writes an empty Premium and raises nothing. `Sum` skips
+    # null operands by design, so that coverage would simply never be added up.
+    ip = Fake(null_arithmetic="propagate")
+    ip.guard_null_premium = False
+    _, root, _ = run(NULL_PREMIUM.format(to="Premium"), ip=ip)
+    check("B28 ...and without the guard it is written silently -- the hazard",
+          root.first("Premium") is not None
+          and root.first("Premium").text in (None, ""),
+          f"Premium = {root.first('Premium').text!r}, no error raised")
+
+    # The substring trap: `PremiumIndicator` is a 0/1 flag, not money, and
+    # guarding it by name-contains would refuse ordinary content.
+    _, root, _ = run(NULL_PREMIUM.format(to="PremiumIndicator"),
+                     ip=Fake(null_arithmetic="propagate"))
+    check("B29 PremiumIndicator is NOT guarded -- it is a flag, not money",
+          root.first("PremiumIndicator") is not None,
+          "guarding on a substring would have refused this")
 
     _, root, _ = run('<rul:Remove AtDataDef="T/Row"/>',
                      {"T": {"Row": [{"n": 1}, {"n": 2}]}})

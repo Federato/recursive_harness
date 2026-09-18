@@ -23,6 +23,7 @@ It is the first thing the Phase 2 RAaS comparison should be pointed at.
 """
 from __future__ import annotations
 
+import os
 from dataclasses import dataclass, field
 from decimal import Decimal, ROUND_HALF_UP, ROUND_HALF_EVEN, ROUND_DOWN
 
@@ -31,7 +32,8 @@ from ..erc.tables import Shape, Table
 from . import nodes, tree
 from .program import Program
 from .tree import Node
-from .values import InterpretError, coerce, compare_key, to_decimal
+from .values import (InterpretError, NullInArithmetic, coerce, compare_key,
+                     to_decimal)
 
 #: Contract C10. Named so a caller can change it explicitly and the trace says
 #: which was used -- it is never picked per node.
@@ -48,6 +50,53 @@ LOOKUP_KINDS = ("Rate", "Domain", "FormPage")
 #: A rating that recurses deeper than this is the engine being wrong, not the
 #: content: the corpus's own call graph is acyclic (0 back-edges, measured).
 MAX_DEPTH = 200
+
+#: Datadefs that carry MONEY OUT of a rating, and so must never be written
+#: null. Named explicitly rather than matched by pattern.
+#:
+#: A substring test on "Premium" was the obvious implementation and is wrong:
+#: the corpora write `PremiumIndicator` (a 0/1 flag, 21,386 writes across both),
+#: `MultiPremiumAndDispersionCreditFactor` (a factor), `PremiumBasis` (an
+#: exposure basis) and `PremiumDiscountCharge`. Guarding those would refuse
+#: ordinary content. This project has already paid once for letting a search
+#: predicate define a population; the set below is a decision, and adding to it
+#: is also a decision.
+#:
+#: `Premium` is every coverage's own answer and the policy's;
+#: `ErcCalculatedTotalPremium` is the figure a RAaS response leads with.
+#: Between them they are what "the policy came out free" would have to pass
+#: through.
+PREMIUM_TARGETS = frozenset({"Premium", "ErcCalculatedTotalPremium"})
+
+
+def _premium_target(path: str) -> bool:
+    """Does this `ToDataDef` path address a premium?
+
+    Only the LAST step matters -- `Premium`, `../Premium` and
+    `../../CommercialPropertyStructure[1]/Premium` are all the same datadef
+    reached from different places.
+    """
+    leaf = path.rstrip("/").rsplit("/", 1)[-1]
+    if leaf.endswith("]"):
+        leaf = leaf[:leaf.rindex("[")]
+    return leaf in PREMIUM_TARGETS
+
+
+#: The null-in-arithmetic policy every `Interpreter` starts with.
+#:
+#: Overridable by environment variable for ONE purpose: running an entire test
+#: suite under a variant to measure what it would change. That is how `"zero"`
+#: was disproven and how `"propagate"` was shown to move nothing in General
+#: Liability. It is not a configuration knob for production, and a caller that
+#: means it passes `null_arithmetic=` explicitly.
+DEFAULT_NULL_ARITHMETIC = os.environ.get("ERC_NULL_ARITHMETIC", "refuse")
+
+#: Whether a `SingleResult` lookup matching no row refuses (open item 8).
+#: Same one purpose as above: running a whole suite under the variant to see
+#: what it would change.
+DEFAULT_STRICT_SINGLE_RESULT = (
+    os.environ.get("ERC_STRICT_SINGLE_RESULT", "").strip().lower()
+    in ("1", "true", "yes", "on"))
 
 
 @dataclass
@@ -137,14 +186,108 @@ class TraceEntry:
 class Interpreter:
     """Executes one resolved rulebook against one data tree."""
 
+    #: What a null reaching arithmetic does. `"refuse"` is contract §12.3 and
+    #: the default: a null is not a zero, and folding one into the other is how
+    #: a missing coverage becomes a free one.
+    #:
+    #: `"zero"` is the alternative hypothesis, added 2026-09-17 to be MEASURED
+    #: rather than argued about. ISO's own service rates a New York Property
+    #: risk that this engine refuses, because a rule filed only in New York
+    #: subtracts a policy premium that is not computed until after validation
+    #: runs. Either ISO coerces, or ISO's ordering differs.
+    #:
+    #: **The measurement was made, and coercion is DISPROVEN.** Kept only so
+    #: the disproof is one line to reproduce -- never as a fallback, and never
+    #: to be switched on to make a stubborn case pass.
+    #:
+    #: Rating New York with `"zero"` completes, and returns **$0** where ISO
+    #: returns **$396**. The trace says exactly why, and it is not subtle:
+    #:
+    #:     lookup-miss: BasicGroupILOIFactorBldg keys=['NY', 100000, 1]
+    #:     null-coerced: null reached arithmetic and became 0
+    #:
+    #: ISO writes every state-to-countrywide fallback as
+    #: `FirstNonNull(Round(Lookup(state)), Round(Lookup('CW')))`, where the
+    #: state lookup is DESIGNED to miss. Refusing lets `FirstNonNull` abandon
+    #: branch one and reach countrywide (OI-88). Coercing turns the miss into a
+    #: perfectly good `0`, `FirstNonNull` accepts it, and **the countrywide row
+    #: is never read**. That idiom is everywhere in both corpora, so a coercing
+    #: engine would price vast numbers of risks at zero -- and ISO's service
+    #: plainly does not.
+    #:
+    #: So §12.3 is not merely intact, it is confirmed by its own counter-test.
+    #: New York's cause must be the other candidate: ISO's `Premium` is already
+    #: populated when validation runs. Locked in by `verify_interp` B23/B24.
+    #: `"propagate"` is the third hypothesis, and the one that survives.
+    #: Arithmetic with a null operand yields **null**, not zero and not a
+    #: refusal; a comparison with a null operand is **false**. It was reached
+    #: by elimination after the other two failed, and it is the only one of the
+    #: three consistent with everything observed:
+    #:
+    #: * New York's rule becomes `0 > null` -> false, no message, rating
+    #:   completes -- which is what ISO does.
+    #: * The state-to-countrywide fallback SURVIVES, because `Round(null)`
+    #:   yields null and `FirstNonNull` still falls through to countrywide.
+    #:   This is precisely where `"zero"` destroyed it.
+    #:
+    #: Null propagation is also the ordinary semantics of every three-valued
+    #: system this language resembles (SQL, XPath), which is weak evidence but
+    #: not no evidence.
+    NULL_ARITHMETIC = ("refuse", "zero", "propagate")
+
+    #: Nodes whose result is null when an operand is null, under `propagate`.
+    PROPAGATING = frozenset({
+        "Product", "Subtract", "Divide", "Max", "Round", "Truncate", "Sum",
+        "Power", "Convert", "DateAdd", "DateDifference", "DatePart",
+        "DateCreate", "PadLeft", "Length",
+    })
+
+    #: Comparisons, which yield FALSE rather than null when an operand is null.
+    #: A `Test` demands a boolean, so a null here would only move the refusal
+    #: one level up.
+    COMPARING = frozenset({
+        "GreaterThan", "GreaterThanOrEqual", "LessThan", "LessThanOrEqual",
+    })
+
     def __init__(self, book, rounding: str = "ROUND_HALF_UP",
-                 trace: bool = True):
+                 trace: bool = True, null_arithmetic: str | None = None,
+                 guard_null_premium: bool = True,
+                 strict_single_result: bool | None = None):
+        null_arithmetic = null_arithmetic or DEFAULT_NULL_ARITHMETIC
         if rounding not in ROUNDING_MODES:
             raise InterpretError(
                 f"unknown rounding mode {rounding!r}", "§6", "")
+        if null_arithmetic not in self.NULL_ARITHMETIC:
+            raise InterpretError(
+                f"unknown null_arithmetic mode {null_arithmetic!r}; "
+                f"one of {self.NULL_ARITHMETIC}", "§12.3", "")
         self.book = book
         self.rounding_name = rounding
         self.rounding = ROUNDING_MODES[rounding]
+        self.null_arithmetic = null_arithmetic
+        #: Refuse to write a null into a money datadef (`PREMIUM_TARGETS`).
+        #:
+        #: **This is what `propagate` traded away, bought back.** `refuse`
+        #: failed loudly the moment a null reached arithmetic; `propagate`
+        #: lets nulls flow, which is what ISO does, but a null can then reach
+        #: a premium and vanish -- `Sum` skips null operands by design, so a
+        #: coverage that resolved to nothing would simply not be added up, and
+        #: the policy would come out cheaper with nothing raised anywhere.
+        #:
+        #: So the loudness moves from "any arithmetic" to "the money". Nulls
+        #: are free to flow through intermediate steps, exactly as ISO's own
+        #: fallback idiom needs, and are refused at the one boundary where
+        #: absent silently becomes free.
+        self.guard_null_premium = guard_null_premium
+        #: Refuse a `SingleResult` lookup that matches NO row -- see
+        #: `_empty_lookup`. Default off; this is a measurement switch.
+        self.strict_single_result = (DEFAULT_STRICT_SINGLE_RESULT
+                                     if strict_single_result is None
+                                     else strict_single_result)
+        #: Every table a strict refusal fired on, for measuring the population.
+        self.strict_refusals: list[str] = []
+        #: Every site where a null was coerced. Empty in `refuse` mode.
+        self.coercions: list[str] = []
         self.tracing = trace
         self.trace: list[TraceEntry] = []
         #: ISO's own validation messages, in the order the rules raised them.
@@ -197,6 +340,28 @@ class Interpreter:
         self._guid += 1
         return f"{self._guid:08x}-0000-0000-0000-000000000000"
 
+    # -------------------------------------------------------------- arithmetic
+
+    def num(self, value, where: str) -> Decimal:
+        """The one door a value goes through to become a number.
+
+        In `refuse` mode this is exactly `to_decimal` -- contract §12.3
+        unchanged, and `NullInArithmetic` still escapes so `FirstNonNull` can
+        still absorb it per branch (C6/OI-88).
+
+        In `zero` mode a null becomes `Decimal(0)` **and is recorded**. Nothing
+        else changes: an empty string, a non-numeric string and a `Multi` in a
+        scalar position are still refusals, because none of those is the
+        hypothesis under test.
+        """
+        if value is None and self.null_arithmetic == "zero":
+            self.coercions.append(where)
+            self.note("null-coerced",
+                      "null reached arithmetic and became 0 "
+                      "(null_arithmetic='zero')", where)
+            return Decimal(0)
+        return to_decimal(value, where)
+
     # ---------------------------------------------------------------- rounding
 
     def round_to(self, value: Decimal, el, where: str,
@@ -226,13 +391,53 @@ class Interpreter:
         name = self.tag(el)
         fn = nodes.EVAL.get(name)
         if fn is None:
+            # The count is read from the registry rather than written down. It
+            # was a literal 54 until Commercial Property added five evaluators,
+            # at which point the message named a number that was no longer
+            # true -- in the one error whose entire job is to say "ISO filed
+            # something this engine has not been taught".
+            n = len(nodes.EVAL)
             raise InterpretError(
-                f"unknown node {name!r}; the language has 54 and a 55th means "
-                f"ISO filed something new", "§12.1", name)
-        value = fn(self, el, frame)
+                f"unknown node {name!r}; the engine implements {n} and a "
+                f"{n + 1}th means ISO filed something new", "§12.1", name)
+        if self.null_arithmetic == "propagate":
+            # Null propagation is applied HERE rather than inside each
+            # evaluator, so the sixteen arithmetic sites keep one behaviour and
+            # the policy stays one decision. `NullInArithmetic` is the only
+            # thing caught, and only for nodes that are declared to propagate:
+            # a `Multi` in a scalar position, an empty string or a non-numeric
+            # string still refuse, because none of those is null.
+            try:
+                value = fn(self, el, frame)
+            except NullInArithmetic as exc:
+                if name in self.PROPAGATING:
+                    self.coercions.append(name)
+                    self.note("null-propagated",
+                              f"{name} had a null operand and yielded null",
+                              name)
+                    value = None
+                elif name in self.COMPARING:
+                    self.coercions.append(name)
+                    self.note("null-comparison-false",
+                              f"{name} had a null operand and yielded false",
+                              name)
+                    value = False
+                else:
+                    raise exc
+        else:
+            value = fn(self, el, frame)
 
         to = el.attrib.get("ToDataDef")
         if to is not None:
+            if value is None and self.guard_null_premium \
+                    and _premium_target(to):
+                raise InterpretError(
+                    f"{name} wrote a NULL to {to!r}. A premium is money: "
+                    f"absent is not zero, and a null here disappears into "
+                    f"`Sum`, which skips null operands by design. Something "
+                    f"upstream resolved to nothing -- most often a rate table "
+                    f"that missed -- and the trace above names it",
+                    "§12.3", name)
             tree.write(to, frame.data, value)
             self.note("write", f"{to} = {value!r}", name)
         return value
@@ -313,6 +518,39 @@ class Interpreter:
             f"no table {name!r} in {', '.join(LOOKUP_KINDS)} for "
             f"{self.book.juris}@{self.book.asof}", "§7", where)
 
+    def _empty_lookup(self, name, col, keys, mode, table, where):
+        """A lookup that matched NO row. Null, or a refusal (§7).
+
+        **ISO refuses, and this engine does not -- open item 8.** Sending a
+        construction type ISO does not file returns a 400 from its service:
+
+            Matrix: ConstructionTypeToUse, Keys: CW, Masonry Non-Combustible.
+            No results have been returned.
+
+        ...while this engine returns null, lets it flow, and prices the
+        coverage at zero. A submission ISO would reject can come back from us
+        as a quiet, plausible premium.
+
+        `strict_single_result` is the switch for MEASURING that, not a setting
+        to leave on casually. The population is why:
+
+        * `FirstResult` misses are ISO's own two-pass idiom and are DESIGNED to
+          happen -- the state pass misses so the countrywide pass can answer.
+          Those must stay null under every mode.
+        * `SingleResult` is the countrywide pass, the last resort. It is the
+          last resort in 23,586 of 23,631 Commercial Property `FirstNonNull`
+          constructs, and in 4,935 of 4,935 in General Liability.
+        * The other **45 CF sites put a `Constant` AFTER it** -- a real
+          fallback that a refusal would skip.
+        """
+        if mode == "SingleResult" and self.strict_single_result:
+            self.strict_refusals.append(name)
+            raise InterpretError(
+                f"SingleResult matched NO row in {name!r} for keys {keys!r}. "
+                f"ISO's own service refuses a submission at this point rather "
+                f"than returning nothing", "§7", where)
+        return None
+
     def lookup(self, name: str, col: str, keys: list, mode: str, typ: str,
                where: str):
         """Match `keys` against the table's key columns, in filed order (§7)."""
@@ -359,7 +597,7 @@ class Interpreter:
         if not hits:
             self.note("lookup-miss", f"{name}[{col}] keys={keys!r}",
                       table.package)
-            return None
+            return self._empty_lookup(name, col, keys, mode, table, where)
         if mode == "SingleResult" and len(hits) > 1:
             raise InterpretError(
                 f"SingleResult matched {len(hits)} rows in {name!r}; ISO is "
@@ -389,9 +627,8 @@ class Interpreter:
         whole population is 11 table names, every one of them reachable:
 
         * **exactly one key range each**, always alongside plain equality key
-          columns, so the supplied `Keys` map positionally onto
-          `key_cols + key_ranges` in declared order -- the same order the CSV
-          header is built in
+          columns, so the supplied `Keys` map positionally onto the key columns
+          in ISO's DECLARED order -- the same order the CSV header is built in
         * **two boundary types**: `FromInclusiveToExclusive` (115 definitions)
           and `FromExclusiveToInclusive` (78)
         * **two interpolated tables**, both size-of-risk relativity, both
@@ -400,24 +637,48 @@ class Interpreter:
         **A stepped reading of an interpolated band is wrong by up to the width
         of the band**, which is why this refused rather than approximated until
         it was specified.
+
+        **The band is not necessarily the last key.** It is in General
+        Liability -- 218 definitions with a key range, 218 declaring it last --
+        and the first version of this method read `keys[-1]` as the band on the
+        strength of that. Commercial Property files 19 table names that declare
+        a range in the middle: `DeductibleFactor` is `StateCode, Deductible,
+        Range(Limit), CauseOfLossDeductible`, so reading its third key as its
+        fourth sends the string `'Basic Group I'` into `to_decimal`. That at
+        least raised. The same mistake on a table whose trailing key happens to
+        be numeric would have matched the wrong band and returned a plausible
+        factor, which is why the order is now read from the definition rather
+        than assumed from a measurement of one corpus.
         """
         defn = table.definition
         rng = defn.key_ranges[0]
-        eq = [c.name for c in defn.key_cols]
-
-        if len(keys) != len(eq) + 1:
+        if len(defn.key_ranges) != 1:
             raise InterpretError(
-                f"banded table {name!r} takes {len(eq)} equality keys plus a "
-                f"band value; the lookup supplied {len(keys)}", "§7", where)
+                f"banded table {name!r} declares {len(defn.key_ranges)} key "
+                f"ranges; every banded table in both corpora declares exactly "
+                f"one and a second would need a defined match order",
+                "§7", where)
+        items = defn.key_items
 
-        idx = [table.col(k) for k in eq]
-        want = [compare_key(k) for k in keys[:len(eq)]]
+        if len(keys) != len(items):
+            raise InterpretError(
+                f"banded table {name!r} declares {len(items)} key columns "
+                f"({len(items) - 1} equality plus a band); the lookup supplied "
+                f"{len(keys)}", "§7", where)
+
+        # Positional, in ISO's filed order: whichever slot holds the Range is
+        # the band, and every other slot is an equality match.
+        eq_pairs, x = [], None
+        for item, supplied in zip(items, keys):
+            if item is rng:
+                x = to_decimal(supplied, where)
+            else:
+                eq_pairs.append((table.col(item.name), compare_key(supplied)))
         lo_i, hi_i = table.col(rng.lo_col), table.col(rng.hi_col)
-        x = to_decimal(keys[-1], where)
 
         hits = []
         for row in table.rows:
-            if any(compare_key(row[i]) != w for i, w in zip(idx, want)):
+            if any(compare_key(row[i]) != w for i, w in eq_pairs):
                 continue
             lo, hi = row[lo_i], row[hi_i]
             if lo is None or hi is None:
@@ -432,7 +693,7 @@ class Interpreter:
             self.note("lookup-miss",
                       f"{name}[{col}] keys={keys!r} fell outside every band",
                       table.package)
-            return None
+            return self._empty_lookup(name, col, keys, mode, table, where)
         if mode == "SingleResult" and len(hits) > 1:
             raise InterpretError(
                 f"SingleResult matched {len(hits)} bands in {name!r}; the "

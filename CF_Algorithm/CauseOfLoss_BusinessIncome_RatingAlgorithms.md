@@ -194,6 +194,14 @@ BasicGroupICauseOfLossAdjustment =
   x BuildersRiskFactor
 ```
 
+**Note, 2026-09-04:** this file's `SprinklerLeakageExclNonSprinkleredRate` is Business Income's own
+LCM-scaled datadef (`CommercialPropertyBusinessIncomeRules.Rule.xml`: `SprinklerLeakageExclNonSprinkleredRate
+= SprinklerLeakageExclNonSprinkleredBaseRate × LossCostMultiplier`, rounded 3dp) — this file's naming
+was already correct. Don't confuse with Structure's own datadef group (Building/Contents-at-location,
+`CauseOfLoss_Building_RatingAlgorithms.md`), which names the same LCM-scaled concept
+`SprinklerLeakageExclNonSprinkleredBldgRate` instead — each ERC datadef group has its own copy of
+this logic with its own naming, even though all of them read the same filed CW rate (0.0006).
+
 Same shape as Building's Basic Group I COL adjustment (subtract-then-round, then two exclusion factors),
 with `StdPropPolGroupIFactor` replaced by `BuildersRiskFactor` — Business Income has no "standard property
 policy" concept but does have a Builders Risk rate modifier.
@@ -667,7 +675,7 @@ or (if the whole submission is multi-unit-blanket-rated) copying `BlktCoinsuranc
 |---|---|---|---|---|---|
 | Chain length | 3 rules | 5 rules | **2 rules** | 6 rules | 8 rules |
 | Base rate source | **Building's own `BasicGroupIBaseRate`** (cross-ref) | **Building's own symbol/terr lookup** (shared `BasicGroupIIRate` table) | own table, own covType key (`BroadFormBaseRate`, shared table w/ Building) | own table, own covType+risk-type key | **Building's own `EQBaseRate`** (cross-ref) |
-| BI-specific multiplier | `BGIBaseRateAdjustmentFactor` | `BGIIBaseRateAdjustmentFactor` | none | none | `BCEGEQFactor` (own), rest from Structure |
+| BI-specific multiplier | `BGIBaseRateAdjustmentFactor` | `BGIIBaseRateAdjustmentFactor` **and Building's `BCEGFactor`** — corrected 2026-09-18, this row previously listed only the adjustment factor. Measured in `scripts/cf/32_chunk5_golden_case.py`: 0.028 × BCEG 0.96 × 0.9 = 0.024, not the 0.025 the row implies, and $13 rather than $14 | none | none | `BCEGEQFactor` (own), rest from Structure |
 | COL adjustment step | yes (sprinkler/vandalism/BuildersRisk) | yes (wind/hail excl / BuildersRisk) | **none** | yes (theft only) | yes (StoryMod/BuildersRisk/SprinklerLeakageOnly) |
 | Shared coinsurance `Factor` applied | **yes** | **yes** | **no** | **no** | no (own `EQFactor` instead) |
 | Construction dependency | via Building's rate | via Building's symbol | own (`ConstructionTypeToUse` key) | own (`ConstructionTypeToUse` key) | via Building's rate |
@@ -781,7 +789,12 @@ this group's rate build-up and premium mechanics was out of scope for this pass.
 BGIBaseRateAdjustmentFactor = lookup BaseRateAdjustmentFactor(State|CW, "Basic Group I")
 
 BasicGroupIRate = ((Structure.BasicGroupIBaseRate x LossCostMultiplier) + SubStdConditionRate + VacantBuildingRate)
-                  x BasicGroupIRatingTerrFactor x ProtectionClassFactor x BGIBaseRateAdjustmentFactor
+                  x BGIBaseRateAdjustmentFactor x BasicGroupIRatingTerrFactor x ProtectionClassFactor
+
+  ^^ CORRECTED 2026-09-18. This line previously applied BGIBaseRateAdjustmentFactor LAST.
+     The adjustment applies FIRST. Both orderings give 0.203 on the Oregon golden case, which
+     is why it went unnoticed; class 0074 discriminates -- 0.059 against 0.058, measured in
+     scripts/cf/37_chunk5_downstream.py.
 
 COLAdj = round(BasicGroupIRate - SprinklerLeakageExclNonSprinkleredRate, 3)
          x SprinklerLeakageExclSprinkleredFactor x VandalismExclFactor x BuildersRiskFactor

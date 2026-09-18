@@ -1,0 +1,377 @@
+<title>CF Core Coverages — Rating Paths (Specific vs. Blanket)</title>
+<style>
+  :root {
+    --bg: #eef1f4; --paper: #ffffff; --ink: #1c2733; --ink-soft: #55606b; --ink-faint: #8b95a1;
+    --grid-line: #d7dce2; --header-fill: #e4e8ed; --header-fill-strong: #1e3a45; --header-text-strong: #eef4f3;
+    --accent: #1e3a45; --accent-soft: #cfe0e0; --accent-warm: #b96a2c; --accent-warm-soft: #f3e2cf;
+    --good: #2f7d5a; --good-soft: #dcefe4; --warn: #a53d26; --warn-soft: #f7ddd4;
+    --mid: #a67c1e; --mid-soft: #f2e6c4;
+    --shadow: 0 1px 2px rgba(28,39,51,0.06), 0 8px 24px rgba(28,39,51,0.07);
+    --font-display: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+    --font-body: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+    --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, "Liberation Mono", monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #10151b; --paper: #161d25; --ink: #e7ecf1; --ink-soft: #a3aebb; --ink-faint: #6d7885;
+      --grid-line: #2b3742; --header-fill: #1b242d; --header-fill-strong: #21504f; --header-text-strong: #eaf3f1;
+      --accent: #59a9ac; --accent-soft: #1d3535; --accent-warm: #dd9a5c; --accent-warm-soft: #372a1c;
+      --good: #63c090; --good-soft: #1b3226; --warn: #e0806a; --warn-soft: #3a2019;
+      --mid: #e0c064; --mid-soft: #3a3319;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 28px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #10151b; --paper: #161d25; --ink: #e7ecf1; --ink-soft: #a3aebb; --ink-faint: #6d7885;
+    --grid-line: #2b3742; --header-fill: #1b242d; --header-fill-strong: #21504f; --header-text-strong: #eaf3f1;
+    --accent: #59a9ac; --accent-soft: #1d3535; --accent-warm: #dd9a5c; --accent-warm-soft: #372a1c;
+    --good: #63c090; --good-soft: #1b3226; --warn: #e0806a; --warn-soft: #3a2019;
+    --mid: #e0c064; --mid-soft: #3a3319;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 28px rgba(0,0,0,0.35);
+  }
+  :root[data-theme="light"] {
+    --bg: #eef1f4; --paper: #ffffff; --ink: #1c2733; --ink-soft: #55606b; --ink-faint: #8b95a1;
+    --grid-line: #d7dce2; --header-fill: #e4e8ed; --header-fill-strong: #1e3a45; --header-text-strong: #eef4f3;
+    --accent: #1e3a45; --accent-soft: #cfe0e0; --accent-warm: #b96a2c; --accent-warm-soft: #f3e2cf;
+    --good: #2f7d5a; --good-soft: #dcefe4; --warn: #a53d26; --warn-soft: #f7ddd4;
+    --mid: #a67c1e; --mid-soft: #f2e6c4;
+    --shadow: 0 1px 2px rgba(28,39,51,0.06), 0 8px 24px rgba(28,39,51,0.07);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); line-height: 1.6; overflow-x: hidden; }
+  a { color: var(--accent); }
+  .wrap { max-width: 1320px; margin: 0 auto; padding: 0 24px 96px; }
+
+  header.masthead { padding: 56px 24px 28px; max-width: 1320px; margin: 0 auto; }
+  .eyebrow { font-family: var(--font-ui); font-size: 12px; letter-spacing: 0.11em; text-transform: uppercase; color: var(--accent-warm); font-weight: 600; margin: 0 0 10px; }
+  h1.title { font-family: var(--font-display); font-size: clamp(26px, 4vw, 38px); font-weight: 400; margin: 0 0 14px; text-wrap: balance; }
+  .dek { font-size: 16px; color: var(--ink-soft); max-width: 100ch; margin: 0 0 6px; }
+  .dek code { font-family: var(--font-mono); font-size: 14px; background: var(--header-fill); padding: 1px 5px; border-radius: 3px; }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 18px; margin: 20px 0 4px; font-family: var(--font-ui); font-size: 13px; color: var(--ink-soft); }
+  .legend .item { display: flex; align-items: center; gap: 7px; }
+  .legend .mk { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 5px; font-size: 12px; font-weight: 700; }
+  .mk.done { background: var(--good-soft); color: var(--good); }
+  .mk.formula { background: var(--mid-soft); color: var(--mid); }
+  .mk.none { background: var(--warn-soft); color: var(--warn); }
+  .mk.na { background: var(--header-fill); color: var(--ink-faint); }
+
+  section.sect { padding-top: 40px; }
+  .sect-heading { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 4px; }
+  h2.sect-title { font-family: var(--font-display); font-size: 24px; font-weight: 400; margin: 0; }
+  .sect-role { font-family: var(--font-ui); font-size: 13px; color: var(--ink-soft); margin: 0 0 16px; max-width: 105ch; }
+  .sect-role code { font-family: var(--font-mono); font-size: 12px; background: var(--header-fill); padding: 1px 5px; border-radius: 3px; }
+
+  .tblscroll { overflow-x: auto; border-radius: 8px; box-shadow: var(--shadow); margin-bottom: 10px; }
+  table.grid { border-collapse: collapse; width: 100%; min-width: 860px; font-size: 13px; background: var(--paper); }
+  table.grid th, table.grid td { border: 1px solid var(--grid-line); padding: 10px 12px; text-align: left; vertical-align: top; }
+  table.grid thead th { background: var(--header-fill-strong); color: var(--header-text-strong); font-family: var(--font-ui); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; }
+  table.grid td.form { font-family: var(--font-ui); font-size: 13px; font-weight: 700; width: 14%; }
+  table.grid td.path { text-align: left; }
+  table.grid td.path .stat { display: inline-flex; align-items: center; gap: 7px; font-family: var(--font-ui); font-size: 12px; font-weight: 700; }
+  table.grid td.path .mk { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 5px; font-size: 12px; font-weight: 700; flex: none; }
+  table.grid td.path .ref { display: block; font-family: var(--font-ui); font-size: 11px; font-weight: 400; color: var(--ink-faint); margin-top: 3px; }
+  table.grid td.path.absent { color: var(--ink-faint); font-style: italic; }
+  tr.eq-row td { background: var(--accent-soft); }
+
+  .callout { display: flex; gap: 10px; padding: 12px 14px; border-radius: 5px; max-width: 105ch; font-size: 14px; margin: 14px 0; }
+  .callout.warn { background: var(--warn-soft); color: var(--warn); }
+  .callout.good { background: var(--good-soft); color: var(--good); }
+  .callout b { font-weight: 700; }
+  .callout-mark { flex: none; font-weight: 700; }
+
+  hr.divider { border: none; border-top: 1px solid var(--grid-line); margin: 44px 0 0; }
+  footer.closing { max-width: 1320px; margin: 52px auto 0; padding: 0 24px 64px; }
+  footer.closing h2 { font-family: var(--font-display); font-weight: 400; font-size: 20px; margin: 0 0 10px; }
+  footer.closing p.note-foot { margin-top: 14px; font-size: 13px; color: var(--ink-faint); font-family: var(--font-ui); }
+</style>
+
+<header class="masthead">
+  <p class="eyebrow">CF_Algorithm &middot; whole Property line &middot; the five core coverages</p>
+  <h1 class="title">One coverage, four ways to price it &mdash; where each rating path stands today</h1>
+  <p class="dek">The categorized grid shows <b>which coverage families exist</b>. This page answers a
+    different question for the five <b>core</b> coverages themselves &mdash; Building, Personal Property,
+    Special Class, Business Income, and Special Class Business Income &mdash; <b>how does each one
+    actually get rated</b>, once you've picked a cause-of-loss form? ISO's own rule files branch into up
+    to four distinct premium paths per coverage per form: a <b>primary scheduled</b> rate (the everyday
+    per-item rating), a <b>Specific/Tentative</b> scheduled variant (Basic Group I only), a
+    <b>Legal Liability</b> premium, and a <b>blanket-rated</b> roll-up across locations. Source:
+    <code>Excel_Rater_RatingPaths_Checklist.md</code>, written 2026-09-02.</p>
+  <div class="legend">
+    <div class="item"><span class="mk done">&#10003;</span> Documented &amp; built &mdash; calc-tab columns, example rows</div>
+    <div class="item"><span class="mk formula">&#128221;</span> Formula traced, not built into the calc tab yet</div>
+    <div class="item"><span class="mk none">&#9744;</span> Not started at all</div>
+    <div class="item"><span class="mk na">&mdash;</span> Structurally absent &mdash; confirmed nothing to build</div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <section class="sect" id="building">
+    <div class="sect-heading"><h2 class="sect-title">Building</h2></div>
+    <p class="sect-role">The base structure coverage. Basic Group I is the only form ISO gives a
+      Specific/Tentative scheduled path to &mdash; every other form goes straight from primary-scheduled
+      to Legal Liability / blanket.</p>
+    <div class="tblscroll">
+      <table class="grid">
+        <thead><tr><th>Form</th><th>Primary scheduled</th><th>Specific / Tentative scheduled</th><th>Legal Liability</th><th>Blanket-rated</th></tr></thead>
+        <tbody>
+          <tr><td class="form">Basic Group I</td>
+            <td class="path"><span class="stat"><span class="mk done">&#10003;</span>Documented &amp; built</span><span class="ref">Excel_Rater_BasicGroupI.md &sect;4</span></td>
+            <td class="path"><span class="stat"><span class="mk done">&#10003;</span>Documented &amp; built</span><span class="ref">Excel_Rater_BasicGroupI.md &sect;9</span></td>
+            <td class="path"><span class="stat"><span class="mk formula">&#128221;</span>Formula only</span><span class="ref">formula in &sect;8, not built &mdash; &sect;7</span></td>
+            <td class="path"><span class="stat"><span class="mk formula">&#128221;</span>Formula only</span><span class="ref">formula referenced, not built &mdash; &sect;7</span></td>
+          </tr>
+          <tr><td class="form">Basic Group II</td>
+            <td class="path"><span class="stat"><span class="mk done">&#10003;</span>Documented &amp; built</span><span class="ref">Excel_Rater_BasicGroupII.md &sect;4</span></td>
+            <td class="path absent">Structurally absent &mdash; no <code>RatingType</code> branch exists for this form</td>
+            <td class="path"><span class="stat"><span class="mk formula">&#128221;</span>Formula only</span><span class="ref">not built &mdash; &sect;7</span></td>
+            <td class="path"><span class="stat"><span class="mk formula">&#128221;</span>Formula only</span><span class="ref">not built &mdash; &sect;7</span></td>
+          </tr>
+          <tr><td class="form">Broad</td>
+            <td class="path"><span class="stat"><span class="mk done">&#10003;</span>Documented &amp; built</span><span class="ref">Excel_Rater_Broad.md &sect;4</span></td>
+            <td class="path absent">Structurally absent &mdash; confirmed</td>
+            <td class="path"><span class="stat"><span class="mk formula">&#128221;</span>Formula only</span><span class="ref">not built &mdash; &sect;7</span></td>
+            <td class="path"><span class="stat"><span class="mk formula">&#128221;</span>Formula only</span><span class="ref">not built &mdash; &sect;7</span></td>
+          </tr>
+          <tr><td class="form">Special</td>
+            <td class="path"><span class="stat"><span class="mk done">&#10003;</span>Documented &amp; built</span><span class="ref">Excel_Rater_Special.md &sect;4</span></td>
+            <td class="path absent">Structurally absent &mdash; confirmed</td>
+            <td class="path"><span class="stat"><span class="mk formula">&#128221;</span>Formula only</span><span class="ref">&sect;7 &mdash; raw-rate formula, differs from Contents' (see callout below)</span></td>
+            <td class="path"><span class="stat"><span class="mk formula">&#128221;</span>Formula only</span><span class="ref">not built &mdash; &sect;7</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="sect" id="contents">
+    <div class="sect-heading"><h2 class="sect-title">Personal Property (Contents)</h2></div>
+    <p class="sect-role">Same four-path shape as Building. Special's Legal Liability formula is
+      genuinely different from Building's here &mdash; see the callout.</p>
+    <div class="tblscroll">
+      <table class="grid">
+        <thead><tr><th>Form</th><th>Primary scheduled</th><th>Specific / Tentative scheduled</th><th>Legal Liability</th><th>Blanket-rated</th></tr></thead>
+        <tbody>
+          <tr><td class="form">Basic Group I</td>
+            <td class="path"><span class="stat"><span class="mk done">&#10003;</span>Documented &amp; built</span><span class="ref">Excel_Rater_BasicGroupI.md &sect;5</span></td>
+            <td class="path"><span class="stat"><span class="mk done">&#10003;</span>Documented &amp; built</span><span class="ref">Excel_Rater_BasicGroupI.md &sect;9</span></td>
+            <td class="path"><span class="stat"><span class="mk formula">&#128221;</span>Formula only</span><span class="ref">formula in &sect;8, not built &mdash; &sect;7</span></td>
+            <td class="path"><span class="stat"><span class="mk formula">&#128221;</span>Formula only</span><span class="ref">not built &mdash; &sect;7</span></td>
+          </tr>
+          <tr><td class="form">Basic Group II</td>
+            <td class="path"><span class="stat"><span class="mk done">&#10003;</span>Documented &amp; built</span><span class="ref">Excel_Rater_BasicGroupII.md &sect;5</span></td>
+            <td class="path absent">Structurally absent &mdash; confirmed</td>
+            <td class="path"><span class="stat"><span class="mk formula">&#128221;</span>Formula only</span><span class="ref">not built &mdash; &sect;7</span></td>
+            <td class="path"><span class="stat"><span class="mk formula">&#128221;</span>Formula only</span><span class="ref">not built &mdash; &sect;7</span></td>
+          </tr>
+          <tr><td class="form">Broad</td>
+            <td class="path"><span class="stat"><span class="mk done">&#10003;</span>Documented &amp; built</span><span class="ref">Excel_Rater_Broad.md &sect;5</span></td>
+            <td class="path absent">Structurally absent &mdash; confirmed</td>
+            <td class="path"><span class="stat"><span class="mk formula">&#128221;</span>Formula only</span><span class="ref">not built &mdash; &sect;7</span></td>
+            <td class="path"><span class="stat"><span class="mk formula">&#128221;</span>Formula only</span><span class="ref">not built &mdash; &sect;7</span></td>
+          </tr>
+          <tr><td class="form">Special</td>
+            <td class="path"><span class="stat"><span class="mk done">&#10003;</span>Documented &amp; built</span><span class="ref">Excel_Rater_Special.md &sect;5</span></td>
+            <td class="path absent">Structurally absent &mdash; confirmed</td>
+            <td class="path"><span class="stat"><span class="mk formula">&#128221;</span>Formula only</span><span class="ref">&sect;8 &mdash; uses <code>COLAdj</code> (theft-adjusted), not Building's raw rate &mdash; not built, &sect;7</span></td>
+            <td class="path"><span class="stat"><span class="mk formula">&#128221;</span>Formula only</span><span class="ref">not built &mdash; &sect;7</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout warn"><span class="callout-mark">&#9888;</span><span><b>Special's Legal Liability path isn't one formula copied twice.</b>
+      When it gets built, Building uses the raw, un-theft-adjusted rate; Contents uses the already
+      theft-adjusted <code>SpecialCauseOfLossAdjustment</code>. Two different formulas, two builds &mdash;
+      don't let the shared 📝 status in the grid above suggest otherwise.</span></div>
+  </section>
+
+  <section class="sect" id="specialclass">
+    <div class="sect-heading"><h2 class="sect-title">Special Class</h2></div>
+    <p class="sect-role">Confirmed to exist as its own core coverage in ISO's rules
+      (<code>CauseOfLoss_SpecialClass_RatingAlgorithms.md</code>), mirroring Building's four-form
+      structure. No <code>Excel_Rater_*.md</code> document has been started for it yet, so every path
+      below is unstarted rather than merely unbuilt.</p>
+    <div class="tblscroll">
+      <table class="grid">
+        <thead><tr><th>Form</th><th>Primary scheduled</th><th>Specific / Tentative scheduled</th><th>Legal Liability</th><th>Blanket-rated</th></tr></thead>
+        <tbody>
+          <tr><td class="form">Basic Group I</td>
+            <td class="path"><span class="stat"><span class="mk none">&#9744;</span>Not started</span></td>
+            <td class="path"><span class="stat"><span class="mk none">&#9744;</span>Not started</span></td>
+            <td class="path"><span class="stat"><span class="mk none">&#9744;</span>Not started</span></td>
+            <td class="path"><span class="stat"><span class="mk none">&#9744;</span>Not started</span></td>
+          </tr>
+          <tr><td class="form">Basic Group II</td>
+            <td class="path"><span class="stat"><span class="mk none">&#9744;</span>Not started</span></td>
+            <td class="path absent">Presumed absent, unverified &mdash; no <code>RatingType</code> branch has been checked for this form</td>
+            <td class="path"><span class="stat"><span class="mk none">&#9744;</span>Not started</span></td>
+            <td class="path"><span class="stat"><span class="mk none">&#9744;</span>Not started</span></td>
+          </tr>
+          <tr><td class="form">Broad</td>
+            <td class="path"><span class="stat"><span class="mk none">&#9744;</span>Not started</span></td>
+            <td class="path absent">Presumed absent, unverified</td>
+            <td class="path"><span class="stat"><span class="mk none">&#9744;</span>Not started</span></td>
+            <td class="path"><span class="stat"><span class="mk none">&#9744;</span>Not started</span></td>
+          </tr>
+          <tr><td class="form">Special</td>
+            <td class="path"><span class="stat"><span class="mk none">&#9744;</span>Not started</span></td>
+            <td class="path absent">Presumed absent, unverified</td>
+            <td class="path"><span class="stat"><span class="mk none">&#9744;</span>Not started</span></td>
+            <td class="path"><span class="stat"><span class="mk none">&#9744;</span>Not started</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout warn"><span class="callout-mark">&#9888;</span><span>The "Structurally absent" calls for Building/Contents (Basic Group II, Broad, Special
+      having no Specific/Tentative path) were confirmed by reading ISO's rule file for those coverages.
+      For Special Class, nobody has read that file yet &mdash; the "absent" cells above are a reasonable
+      guess by analogy, not a confirmed fact. Treat them as ⬜ until traced.</span></div>
+  </section>
+
+  <section class="sect" id="businessincome">
+    <div class="sect-heading"><h2 class="sect-title">Business Income</h2></div>
+    <p class="sect-role">Business Income has no Legal Liability concept at all &mdash; that column is
+      structurally absent across every form, confirmed. Earthquake (shaded) is the odd one out: it has no
+      standalone scheduled premium file in ISO's own rules at all &mdash; its only non-blanket path is
+      through the Agreed Value surcharge below.</p>
+    <div class="tblscroll">
+      <table class="grid">
+        <thead><tr><th>Form</th><th>Primary scheduled</th><th>Specific / Tentative scheduled</th><th>Legal Liability</th><th>Blanket-rated</th></tr></thead>
+        <tbody>
+          <tr><td class="form">Basic Group I</td>
+            <td class="path"><span class="stat"><span class="mk done">&#10003;</span>Documented &amp; built</span><span class="ref">Excel_Rater_BusinessIncome_BasicGroupI.md &sect;4</span></td>
+            <td class="path"><span class="stat"><span class="mk done">&#10003;</span>Documented &amp; built</span><span class="ref">Excel_Rater_BusinessIncome_BasicGroupI.md &sect;8</span></td>
+            <td class="path absent">Structurally absent &mdash; Business Income has no Legal Liability coverage type at all, confirmed for all four forms</td>
+            <td class="path"><span class="stat"><span class="mk formula">&#128221;</span>Formula only</span><span class="ref">formula referenced, not built &mdash; &sect;7</span></td>
+          </tr>
+          <tr><td class="form">Basic Group II</td>
+            <td class="path"><span class="stat"><span class="mk done">&#10003;</span>Documented &amp; built</span><span class="ref">Excel_Rater_BusinessIncome_BasicGroupII.md &sect;4</span></td>
+            <td class="path absent">Structurally absent &mdash; confirmed</td>
+            <td class="path absent">Structurally absent</td>
+            <td class="path"><span class="stat"><span class="mk formula">&#128221;</span>Formula only</span><span class="ref">not built &mdash; &sect;7</span></td>
+          </tr>
+          <tr><td class="form">Broad</td>
+            <td class="path"><span class="stat"><span class="mk done">&#10003;</span>Documented &amp; built</span><span class="ref">Excel_Rater_BusinessIncome_Broad.md &sect;4</span></td>
+            <td class="path absent">Structurally absent &mdash; confirmed</td>
+            <td class="path absent">Structurally absent</td>
+            <td class="path"><span class="stat"><span class="mk formula">&#128221;</span>Formula only</span><span class="ref">not built &mdash; &sect;7</span></td>
+          </tr>
+          <tr><td class="form">Special</td>
+            <td class="path"><span class="stat"><span class="mk done">&#10003;</span>Documented &amp; built</span><span class="ref">Excel_Rater_BusinessIncome_Special.md &sect;4</span></td>
+            <td class="path absent">Structurally absent &mdash; confirmed</td>
+            <td class="path absent">Structurally absent</td>
+            <td class="path"><span class="stat"><span class="mk formula">&#128221;</span>Formula only</span><span class="ref">not built &mdash; &sect;7</span></td>
+          </tr>
+          <tr class="eq-row"><td class="form">Earthquake</td>
+            <td class="path"><span class="stat"><span class="mk none">&#9744;</span>Not started</span><span class="ref">real 5th rate chain &mdash; no standalone non-Agreed-Value premium file exists in ISO's own rules</span></td>
+            <td class="path absent">No <code>RatingType</code> concept in the source doc for this form</td>
+            <td class="path absent">No standalone Legal Liability path &mdash; Earthquake has no scheduled premium file at all outside Agreed Value</td>
+            <td class="path"><span class="stat"><span class="mk none">&#9744;</span>Not started</span><span class="ref">Earthquake premium only exists through Agreed Value or the blanket average-rate roll-up &mdash; neither traced</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="sect-role" style="margin-top:20px;"><b>Two add-ons that don't fit the four-column shape above</b> &mdash; both incremental
+      surcharges layered on top of whichever path above applies, not full-rate multiplications:</p>
+    <div class="tblscroll">
+      <table class="grid">
+        <thead><tr><th>Add-on</th><th>Status</th><th>What it does</th></tr></thead>
+        <tbody>
+          <tr><td class="form">Agreed Value</td>
+            <td class="path"><span class="stat"><span class="mk none">&#9744;</span>Not started</span></td>
+            <td class="path">Waives coinsurance. Charges <code>(Factor &minus; 1) &times; Rate &times; (Limit / 100)</code> &mdash; the only way Earthquake charges standalone premium in this package.</td>
+          </tr>
+          <tr><td class="form">Extended Period of Indemnity</td>
+            <td class="path"><span class="stat"><span class="mk none">&#9744;</span>Not started</span></td>
+            <td class="path">Same incremental-surcharge shape as Agreed Value. Five per-form coverage files.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="sect" id="specialclassbi">
+    <div class="sect-heading"><h2 class="sect-title">Special Class Business Income</h2></div>
+    <p class="sect-role">Confirmed to exist in the "Special Class Business Income" section of
+      <code>CauseOfLoss_BusinessIncome_RatingAlgorithms.md</code>, mirroring Business Income's five-form
+      structure (including its own Earthquake chain). No <code>Excel_Rater_*.md</code> document started.</p>
+    <div class="tblscroll">
+      <table class="grid">
+        <thead><tr><th>Form</th><th>Primary scheduled</th><th>Specific / Tentative scheduled</th><th>Legal Liability</th><th>Blanket-rated</th></tr></thead>
+        <tbody>
+          <tr><td class="form">Basic Group I</td>
+            <td class="path"><span class="stat"><span class="mk none">&#9744;</span>Not started</span></td>
+            <td class="path"><span class="stat"><span class="mk none">&#9744;</span>Not started</span></td>
+            <td class="path absent">Presumed absent by analogy to Business Income &mdash; unverified</td>
+            <td class="path"><span class="stat"><span class="mk none">&#9744;</span>Not started</span></td>
+          </tr>
+          <tr><td class="form">Basic Group II</td>
+            <td class="path"><span class="stat"><span class="mk none">&#9744;</span>Not started</span></td>
+            <td class="path absent">Presumed absent, unverified</td>
+            <td class="path absent">Presumed absent, unverified</td>
+            <td class="path"><span class="stat"><span class="mk none">&#9744;</span>Not started</span></td>
+          </tr>
+          <tr><td class="form">Broad</td>
+            <td class="path"><span class="stat"><span class="mk none">&#9744;</span>Not started</span></td>
+            <td class="path absent">Presumed absent, unverified</td>
+            <td class="path absent">Presumed absent, unverified</td>
+            <td class="path"><span class="stat"><span class="mk none">&#9744;</span>Not started</span></td>
+          </tr>
+          <tr><td class="form">Special</td>
+            <td class="path"><span class="stat"><span class="mk none">&#9744;</span>Not started</span></td>
+            <td class="path absent">Presumed absent, unverified</td>
+            <td class="path absent">Presumed absent, unverified</td>
+            <td class="path"><span class="stat"><span class="mk none">&#9744;</span>Not started</span></td>
+          </tr>
+          <tr class="eq-row"><td class="form">Earthquake</td>
+            <td class="path"><span class="stat"><span class="mk none">&#9744;</span>Not started</span></td>
+            <td class="path absent">Presumed absent by analogy &mdash; unverified</td>
+            <td class="path absent">Presumed absent by analogy &mdash; unverified</td>
+            <td class="path"><span class="stat"><span class="mk none">&#9744;</span>Not started</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <section class="sect" id="summary">
+    <div class="sect-heading"><h2 class="sect-title">Where this leaves the five core coverages</h2></div>
+    <div class="tblscroll">
+      <table class="grid">
+        <thead><tr><th>Coverage</th><th>Documented &amp; built &#10003;</th><th>Formula only &#128221;</th><th>Not started &#9744;</th><th>Structurally absent &mdash;</th></tr></thead>
+        <tbody>
+          <tr><td class="form">Building (16 cells)</td><td class="path">5</td><td class="path">8</td><td class="path">0</td><td class="path">3</td></tr>
+          <tr><td class="form">Personal Property (16 cells)</td><td class="path">5</td><td class="path">8</td><td class="path">0</td><td class="path">3</td></tr>
+          <tr><td class="form">Special Class (16 cells)</td><td class="path">0</td><td class="path">0</td><td class="path">16</td><td class="path">0</td></tr>
+          <tr><td class="form">Business Income (22 cells, incl. 2 add-on rows)</td><td class="path">5</td><td class="path">4</td><td class="path">4</td><td class="path">9</td></tr>
+          <tr><td class="form">Special Class Business Income (20 cells)</td><td class="path">0</td><td class="path">0</td><td class="path">20</td><td class="path">0</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout good"><span class="callout-mark">&#8226;</span><span>Building, Personal Property, and Business Income are the far side of this: 15 rating
+      paths fully built, 20 more with the formula already traced and only calc-tab columns / example rows
+      left to add. Special Class and Special Class Business Income are the near side &mdash; nobody has
+      opened those two rule files yet, so every cell is a guess by analogy until then.</span></div>
+  </section>
+
+  <hr class="divider" />
+
+  <footer class="closing">
+    <h2>Remaining steps</h2>
+    <p class="note-foot">Source: <code>Excel_Rater_RatingPaths_Checklist.md</code>, written 2026-09-02, transcribed here as
+      a visual grid. The "Special Class" and "Special Class Business Income" sections above extend that
+      checklist's shape by analogy &mdash; the underlying rule files for those two coverages have not been
+      read yet, so treat every ⬜ there as "unverified," not "confirmed unbuilt" the way Building's and
+      Business Income's ⬜/&mdash; cells are. Next: trace <code>CauseOfLoss_SpecialClass_RatingAlgorithms.md</code>
+      and the Special Class Business Income section of <code>CauseOfLoss_BusinessIncome_RatingAlgorithms.md</code>
+      to turn those "presumed absent, unverified" cells into confirmed &mdash; or discover a Specific/Tentative
+      or Legal Liability path nobody expected. Nothing gets built until you say go.</p>
+  </footer>
+
+</div>
