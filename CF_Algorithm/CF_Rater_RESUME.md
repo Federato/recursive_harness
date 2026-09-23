@@ -14,9 +14,9 @@ Risks are now entered on **`IN - Schedule`** (one row per record, 40 per block).
 
 | Building | Contents | BI | Special Class | SC BI | **Total** |
 |---|---|---|---|---|---|
-| 7592 | 8654 | 2962 | 1519 | 433 | **21160** |
+| 7597 | 8658 | 2964 | 1519 | 433 | **21171** |
 
-(21083 after the Cyber drop, 21016 after Group 1, 20970 at the start of 2026-09-23, 19994 the morning before. Every change was a fix verified against live ISO.)
+(21160 before RC-1's NY Cyber correction, 21083 after the Cyber drop, 21016 after Group 1, 20970 at the start of 2026-09-23, 19994 the morning before. Every change was a fix verified against live ISO.)
 
 **The main tool, a one-command Excel vs ISO vs engine comparison, per record per form:**
 
@@ -26,7 +26,7 @@ Excel must be closed. Results go to `results/cf-payload/<timestamp>/`. Cyber is 
 automatically for states with no rows in `TBL - Cyber` (FL, NY), exactly as the rater drops it.
 
 **Latest comparison (2026-09-23): 42 / 42 record-forms match Excel = ISO = engine (FL 15, NY 9, AK 9, CA 9);
-total 21160 on all three sides.** No flags needed.
+total 21171 on all three sides.** No flags needed. Standing checks: this run + `136_column_consistency_audit.py --strict`.
 
 ---
 
@@ -53,8 +53,7 @@ on Contents / BI (S-4). Script `scripts/cf/124_w16_bi_fixes.py`.
 1. **Decided and built 2026-09-23:** FL/NY Cyber drop (`--fix CY`), Alaska rating-area inputs (`--fix AK`),
    NY County + NYC protection class (`--fix NY`). "Engine refuses NY" was DROPPED: ISO rates NY once the payload
    sends `CompletedBasicGroupIISymbol` = "Not Applicable". Record: `CF_W16_W20_W21_Record.md`.
-   **Still to do: draft the ISO filing-gap write-up** (FL and NY Cyber tables header-only only; the NY symbol claim
-   was wrong) for the user to send.
+   **RC-1 done 2026-09-23** (see `CF_Rater_Release_Plan.md`). ISO write-up drafted, FL only: `ISO_Filing_Gap_FL_Cyber.md` (user to send). **Next: RC-4's "more states" run, then RC-2.**
 2. **Backlog still open:** W-4, W-5, W-7, W-22 (IRPM / mod rounding order, unverifiable while all are 1.0),
    S-4 / S-5 (missing per-group sprinkler and Cyber BI inputs), D-1c (NY territory factor), Special Class in NYC, dropdowns on blank Schedule rows, docs that still
    describe the old input sheets.

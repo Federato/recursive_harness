@@ -482,7 +482,11 @@ def main() -> int:
             if callable(save):
                 save()
             print("  saved.")
-        com_retry(lambda: wb.Close(SaveChanges=False))    # AK, 2026-09-23: "call rejected" here
+        # AK / W-24, 2026-09-23: "call rejected" here, and late-bound COM may run Close when the
+        # attribute is read (returning a bool), exactly as with Save above.
+        close = com_retry(lambda: wb.Close)
+        if callable(close):
+            com_retry(lambda: close(SaveChanges=False))
         wb = None
     finally:
         try:

@@ -142,3 +142,22 @@ gate now skips TOTAL rows; premium totals are still gated separately. Earlier fi
 
 **Premiums 21083 → 21160** (Bldg 7592, Contents 8654, BI 2962): NY Group I 437 → 468, 360 → 387, 224 → 243.
 **Verified: 42 / 42 record-forms match Excel = ISO = engine; total 21160 on all three sides.**
+
+---
+
+## RC-1 (hardening), 2026-09-23
+
+`124_w16_bi_fixes.py --fix W24 | CYNY | DV | Z`, each backed up (`Backups/CFRater1.02_pre-<fix>_*`), gated and
+reopen-verified. **Final: 42 / 42 Excel = ISO = engine, total 21171; strict column audit clean.**
+
+| Item | What was found | Fix | Premium |
+|---|---|---|---|
+| **W-24** (was W-7) | New standing check `136_column_consistency_audit.py` (R1C1 compare, per-record Schedule stepping, reader scan). A **clone test** (records 1-4 copied into slots 11-14, never saved) priced Contents Group I, Contents Special and BI Special at **$0** for records 11-40: R-8 widened the sheets to 40 records but 7 live CoreScratchpad rows (140, 173, 180, 181, 208, 210, 211) stayed C..L. W-7's own rows (7, 126) and 9 others are **dead** (no formula reads them); 57 / 216 were already empty | 7 rows filled to AP with column C's formula; Special Class 32 / 50 `'IN - Policy'!C3` made absolute. Clone test now identical for slots 11-14 | none (only empty slots changed) |
+| **CY-NY** | NY overrides the Cyber rules: exclusion 1.0, exceptions **1.005** from its own table. CY had given NY no Cyber | NY rows in `TBL - Cyber`; payload now sends NY's Cyber records; ISO agrees | NY +11 (21160 → 21171) |
+| **Dropdowns** | 4 Schedule columns had dropdowns only on records 1-4 (Location G / I / J, Building I); **FL had no Group II territory list at all** (45 / 46) | Dropdowns copied down all 40 rows; `FL_bgiiterr` built from ISO's DomainBasicGroupIIRatingTerrFL (6 values = the rate-table keys) | none |
+| **Z-2 / Z-3** | ISO's filed zero factors had no visible check | Diagnostics trap 9 (SC BI vandalism factor 0 → BLOCK), trap 10 (educational BI → WARN); both proved by what-if | none |
+| ISO write-up | FL only (NY rates Cyber by its own rules) | `ISO_Filing_Gap_FL_Cyber.md`, ready to send | — |
+| Stale docs | 23 reference docs used retired sheet names | Dated notice on each; payload generator RESUME brought current | — |
+
+Framework: `wb.Close` also resolves as a property under late binding (like `Save`); both now handled. `Validation.Add`
+evaluates the list source on the active cell and refuses an error, so dropdowns are copied with PasteSpecial instead.

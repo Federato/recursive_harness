@@ -399,7 +399,147 @@ def fix_ny(app, wb):
             f"CoreScratchpad 22, Bldg 8); Diagnostics trap 8"), {BR, w11.CR, BI}
 
 
-w11.FIXES.update(W16=fix_w16, W20=fix_w20, W21=fix_w21, CY=fix_cy, AK=fix_ak, NY=fix_ny)
+#: CoreScratchpad rows R-8 never widened past record 10 (M..AP blank) that something reads
+W24_LIVE = (140, 173, 180, 181, 208, 210, 211)
+
+
+def fix_w24(app, wb):
+    """W-24 (found by the RC-1 column audit + clone test, 2026-09-23): R-8 widened the calc
+    sheets from 10 records to 40, but seven live CoreScratchpad rows kept only columns C..L.
+    A record in slots 11-40 then read blanks: Contents Group I deductible factor 0 (row 140 ->
+    142), Contents Special base rate 0 (173), the $250 contents factor (180 / 181), BI Special
+    base rate and theft factor 0 (208 / 210 / 211) -- $0 premiums. Each row now holds column
+    C's formula in every column (identical in R1C1: none of them reads a per-record Schedule
+    cell). Also Special Class rows 32 / 50 read `'IN - Policy'!C3` RELATIVE in every column;
+    now `$C$3` (same cell, same value, copy-safe). Twelve other drifted rows have no readers
+    (consumer scan) and are left alone."""
+    cs = wb.Worksheets(w11.CS)
+    n = 0
+    for r in W24_LIVE:
+        base = cs.Cells(r, 3).FormulaR1C1
+        if not str(base).startswith("="):
+            raise Gate(f"CoreScratchpad C{r} has no formula")
+        filled = [str(cs.Cells(r, c).FormulaR1C1) for c in range(3, 13)]
+        if any(f != base for f in filled):
+            raise Gate(f"CoreScratchpad row {r}: columns C..L disagree -- not a plain widening")
+        cs.Range(cs.Cells(r, 13), cs.Cells(r, 42)).FormulaR1C1 = base
+        n += 30
+    sc = wb.Worksheets(SCC)
+    for r in (32, 50):
+        for c in COLS:
+            f = str(sc.Cells(r, c).Formula)
+            if "'IN - Policy'!C3" not in f:
+                raise Gate(f"Special Class {colname(c)}{r} lacks the relative Policy reference: {f!r}")
+            sc.Cells(r, c).Formula = f.replace("'IN - Policy'!C3", "'IN - Policy'!$C$3")
+            n += 1
+    return f"W-24: {n} cells -- 7 CoreScratchpad rows widened to 40 records; SC 32/50 Policy ref absolute", set()
+
+
+def fix_cyny(app, wb):
+    """CY-NY (correction to CY, 2026-09-23). New York files both Cyber tables header-only, but
+    unlike Florida it OVERRIDES the rules: `SetCyberIncidentExclusionFactor*` = 1.0, and the
+    ensuing-causes-of-loss exceptions factor (Group I / II / Broad / Special; property, Business
+    Income and Extra Expense alike) comes from NY's own one-row
+    `CyberIncidentExclusionWithEnsuingCauseOfLossExceptionsFactorNY` (1.005), whatever the type of
+    limit. Live ISO rates NY with both Cyber records. Adds NY rows to `TBL - Cyber`, inserted
+    inside the table so every lookup range extends; the payload then sends NY's Cyber records."""
+    ed_ws = wb.Worksheets("TBL - Editions")
+    ed_row = next(r for r in range(2, 60) if ed_ws.Range(f"A{r}").Value == "NY")
+    pkg = next(w11.ISO.parent.glob(f"*/{ed_ws.Range(f'B{ed_row}').Value}"), None)
+    rows = w11.read_csv(pkg / "Rate Tables" / "CyberIncidentExclusionWithEnsuingCauseOfLossExceptionsFactorNY.RateTable.csv")
+    if len(rows) != 1 or rows[0][0] != "NY":
+        raise Gate(f"NY exceptions table not the expected single row: {rows}")
+    fac = float(rows[0][2])
+    ws = wb.Worksheets("TBL - Cyber")
+    if any(str(ws.Range(f"A{r}").Value or "").startswith("NY|") for r in range(2, 400)):
+        raise Gate("TBL - Cyber already has NY rows")
+    ex = [(f"NY|{g}", 1.0) for g in GROUPS]
+    cx = [(f"NY|{g}|{t}|{a}", fac) for g in GROUPS for t in ("Full Limit", "Sublimit") for a in ("No", "Yes")]
+    k = max(len(ex), len(cx))
+    ws.Rows(f"3:{2 + k}").Insert()                     # inside both tables: every range reference extends
+    w11.write_rows(ws, 3, 1, ex)
+    w11.write_rows(ws, 3, 4, cx)
+    ws.Range("G2").Value = (str(ws.Range("G2").Value) + f" NY (added 2026-09-23, CY-NY): NY files both tables "
+                            f"header-only but overrides the rules -- exclusion 1.0, exceptions {fac} from "
+                            "CyberIncidentExclusionWithEnsuingCauseOfLossExceptionsFactorNY. FL alone has no rows.")
+    return f"CY-NY: {len(ex)} + {len(cx)} NY rows in TBL - Cyber (exclusion 1.0, exceptions {fac})", {BR, w11.CR, BI}
+
+
+#: (column, first row, last row, source row whose dropdown is the pattern)
+DV_GAPS = (("G", 5, 44, 5), ("I", 5, 44, 6), ("J", 5, 44, 5), ("I", 48, 87, 48))
+
+
+def fix_dv(app, wb):
+    """RC-1 dropdowns. Four Schedule columns had their dropdown only on the rows the test
+    risks use (records 1-4; Location BGIITerr not even on record 1), so records 5-40 took typed,
+    unvalidated values: Location G (BGI territory), I (BGII territory), J (Special territory),
+    Building I (construction type). Each column now carries the same dropdown on all 40 rows,
+    anchored to the block's first row so Excel steps the row reference down. Values untouched."""
+    # FL was the one state with no `<ST>_bgiiterr` list (45 / 46 had one), so its Group II territory
+    # dropdown showed nothing. Values: ISO's DomainBasicGroupIIRatingTerrFL (distinct), which equal
+    # the FL keys in TBL - BldgBGIIRating. ISO cascades them by county; that needs a FL county input.
+    if "FL_bgiiterr" in [x.Name for x in wb.Names]:
+        raise Gate("FL_bgiiterr already exists")
+    fl_pkg = next(w11.ISO.parent.glob("*/CF FL 20241201 V01"))
+    fl = sorted({r[2] for r in w11.read_csv(fl_pkg / "Domain Tables" / "DomainBasicGroupIIRatingTerrFL.DomainTable.csv")})
+    t = wb.Worksheets("TBL - BGIITerritory")
+    last_row = max(r for r in range(2, 200) if t.Range(f"A{r}").Value not in (None, ""))
+    if any(t.Range(f"{c}{r}").Value not in (None, "") for c in "AB" for r in range(last_row + 1, last_row + 1 + len(fl))):
+        raise Gate("TBL - BGIITerritory A:B below the list is not free")
+    w11.write_rows(t, last_row + 1, 1, [("FL", v) for v in fl])
+    wb.Names.Add(Name="FL_bgiiterr", RefersTo=f"='TBL - BGIITerritory'!$B${last_row + 1}:$B${last_row + len(fl)}")
+    sch = wb.Worksheets(w11.SCH)
+    n = 0
+    for col, top, last, src in DV_GAPS:
+        # Copy the source row's dropdown down the column (Excel adjusts the relative row itself).
+        # Validation.Add evaluates the list source on the anchor row and refuses when it errors:
+        # record 1 is FL, and there is no FL_bgiiterr list, so Add failed for column I.
+        sch.Range(f"{col}{src}").Copy()
+        for a, b in ((top, src - 1), (src + 1, last)):
+            if a <= b:
+                sch.Range(f"{col}{a}:{col}{b}").PasteSpecial(Paste=6)      # xlPasteValidation
+        app.CutCopyMode = False
+        n += last - top + 1
+    return f"DV: dropdowns on all 40 rows for {len(DV_GAPS)} Schedule columns ({n} cells)", set()
+
+
+def fix_z(app, wb):
+    """RC-1: make ISO's filed ZERO factors visible (backlog Z-2, Z-3; Z-1 is trap 3).
+    Z-2: Special Class BI vandalism -- when the exclusion gate passes and the class code is blank,
+    ISO's VandalismExclFactor is 0.0; the rater reproduces it (Special Class row 198), so a trap
+    BLOCKs any active SC BI record with that factor at 0. Z-3: BI type of risk "Educational
+    Institutions" (or "Combined Educational ...") -- ISO's TypeOfRiskFactor is 0 unless the
+    Changes - Educational Institutions endorsement (with a month count) is attached; the rater
+    does not model that endorsement and prices from its table, so the trap WARNs."""
+    dg = wb.Worksheets("OUT - Diagnostics")
+    if dg.Range("A21").Value != "3. ADJUDICATED" or dg.Range("A20").Value != 8:
+        raise Gate(f"Diagnostics rows 20/21 not as expected: {dg.Range('A20').Value!r} / {dg.Range('A21').Value!r}")
+    dg.Rows("21:22").Insert()
+    S, SC = f"'{w11.SCH}'!", f"'{SCC}'!"
+    z2 = f"SUMPRODUCT(({SC}$C$167:$AP$167=\"Yes\")*({SC}$C$198:$AP$198=0))"
+    z3 = f"SUMPRODUCT(({S}$C$177:$C$216=\"Yes\")*ISNUMBER(SEARCH(\"Educational\",{S}$E$177:$E$216)))"
+    dg.Range("A21").Value, dg.Range("A22").Value = 9, 10
+    dg.Range("B21").Value = "Special Class BI vandalism factor is not zero (ISO's blank-class-code zero, Z-2)"
+    dg.Range("C21").Formula = f"=IF({z2}=0,\"ok\",\"BLOCK - \"&{z2}&\" SC BI record(s) price at $0\")"
+    dg.Range("D21").Value = ("The vandalism exclusion applies but the Special Class code is blank, so ISO's factor is 0.0. "
+                             "Pick the Special Class description so it resolves to a class code")
+    dg.Range("B22").Value = "No Business Income risk is an educational institution (Z-3)"
+    dg.Range("C22").Formula = (f"=IF({z3}=0,\"ok\",\"WARN - \"&{z3}&\" educational BI record(s): ISO prices $0 "
+                               f"without the Changes - Educational Institutions endorsement\")")
+    dg.Range("D22").Value = ("ISO's TypeOfRiskFactor is 0 unless that endorsement (with a month count) is attached. "
+                             "The rater doesn't model it and prices from its table, so its figure is unconfirmed")
+    return "Z: Diagnostics traps 9 (Z-2, BLOCK) and 10 (Z-3, WARN)", set()
+
+
+w11.FIXES.update(W16=fix_w16, W20=fix_w20, W21=fix_w21, CY=fix_cy, AK=fix_ak, NY=fix_ny, W24=fix_w24,
+                 CYNY=fix_cyny, DV=fix_dv, Z=fix_z)
+w11.EXPECT_COLS["Z"] = set()
+w11.NO_MOVE.add("Z")
+w11.EXPECT_COLS["DV"] = set()
+w11.NO_MOVE.add("DV")
+w11.EXPECT_COLS["CYNY"] = {1}
+w11.EXPECT_COLS["W24"] = set()
+w11.NO_MOVE.add("W24")
 w11.EXPECT_COLS.update(W16={0, 1, 2, 3}, W20={0}, W21={0, 1, 2, 3}, CY={0, 1}, AK=set(), NY={1})
 w11.NO_MOVE.add("AK")
 

@@ -1,5 +1,8 @@
 # PRD — CF Basic Group II Building: Reference Workbooks → Excel Rater
 
+> <!-- RC-1 stale-name notice --> **Notice (2026-09-23):** Written before the 2026-09-22 restructure. Sheet names have changed: Policy Inputs → IN - Policy; Bldg / Contents / BI Rating Worksheet → CALC - Bldg / Contents / BI Rating; Special Class Worksheet → CALC - Special Class; CoreScratchpad → CALC - CoreScratchpad. **Location Inputs / IN - Location and Special Class Inputs / IN - Special Class no longer exist**: every record is entered on **IN - Schedule** (one row per record, 40 per block), so input-sheet cell addresses here are out of date, and calc-sheet column C is record 1 of 40. Current state: CF_Algorithm/CF_Rater_RESUME.md.
+
+
 **Status:** draft, 2026-09-08. **Owner:** this project (`CF_Algorithm`), consumed by
 `Spreadsheet_Rater\CF`. **No build authorized yet** — this PRD scopes what wiring these factors into
 `CFRater1.01.xlsb` would require; it does not itself authorize doing so.

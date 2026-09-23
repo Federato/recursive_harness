@@ -1,8 +1,17 @@
 # Payload generator — RESUME HERE
 
-**Last worked 2026-09-22.** Read this file first. Everything below is decided, not proposed.
+**Last worked 2026-09-23.** Read this file first. Everything below is decided, not proposed.
 
-**Goal:** generate a rateable ISO payload from `CFRater1.01.xlsb`, call ISO, rate the same payload
+### ✅ 2026-09-23: CURRENT STATE. Generator complete; 42 / 42 match
+
+`python scripts/cf/119_payload_three_way.py` (no flags). **Excel = ISO = engine on all 42 record-forms** (FL, NY, AK, CA),
+total 21160. Changes since 2026-09-22, each in `CF_W16_W20_W21_Record.md`: Cyber records omitted automatically
+where `TBL - Cyber` has no rows (FL); sprinkler-leakage records mirror the rater (S-4); Alaska sends `City` /
+`BasicGroupIDistrictTerritory` from Schedule O / P; NY sends `County` (Schedule Q) and
+`CompletedBasicGroupIISymbol` = "Not Applicable". **NY was never refused for an empty table**: the refusal was that
+missing field. The rest of the rater backlog: `CF_Rater_Release_Plan.md`.
+
+**Goal:** generate a rateable ISO payload from `CFRater1.02.xlsb` (1.01 is frozen), call ISO, rate the same payload
 through `cf_engine`, and print a three-way comparison — Excel vs ISO vs engine.
 
 ---
@@ -21,8 +30,8 @@ through `cf_engine`, and print a three-way comparison — Excel vs ISO vs engine
 ### ✅ 2026-09-22 (end of day): Steps 4-6 built and run against live ISO: read `CF_Payload_Step4-6_Record.md`
 
 The reader reads `IN - Schedule` directly (user decision). `Defaults` sheet built. CLI:
-`python scripts/cf/119_payload_three_way.py --without-cyber FL`. Engine = ISO on 33/33 record-forms.
-The 7-block composition is accepted by ISO. FL refuses Cyber (filing gap); NY refuses (header-only symbol table).
+`python scripts/cf/119_payload_three_way.py --without-cyber FL` *(flag no longer needed, 2026-09-23)*. Engine = ISO on 33/33 record-forms.
+The 7-block composition is accepted by ISO. FL refuses Cyber (filing gap); ~~NY refuses (header-only symbol table)~~ *(wrong: see 2026-09-23 above)*.
 The Excel-vs-ISO differences are listed there in dollar order. **Everything below this block is history.**
 
 ## Status: Step 1 of 6 complete
