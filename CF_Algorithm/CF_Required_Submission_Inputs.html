@@ -1,0 +1,194 @@
+<title>CF &mdash; required submission inputs, by coverage</title>
+<meta charset="utf-8">
+<style>
+  body { font-family: Georgia, "Times New Roman", serif; max-width: 1040px; margin: 0 auto; padding: 32px 24px 80px; line-height: 1.55; color: #1c2733; background: #fff; }
+  @media (prefers-color-scheme: dark) {
+    body { background: #14181d; color: #dfe4e9; }
+    table, th, td { border-color: #3a4048 !important; }
+    thead th { background: #24313a !important; color: #eef4f3 !important; }
+    code { background: #262c33 !important; color: #dfe4e9; }
+    .note { background: #2c2a1c !important; color: #e0c064 !important; }
+    a { color: #7fd3d0; }
+    .tag { background: #1d3535 !important; color: #7fd3d0 !important; }
+    .tag.trap { background: #3a1f1f !important; color: #e08a8a !important; }
+    .tag.fallback { background: #3a3319 !important; color: #e0c064 !important; }
+  }
+  h1 { font-size: 25px; font-weight: 400; margin-bottom: 4px; }
+  h2 { font-size: 18px; font-weight: 700; margin-top: 40px; border-bottom: 2px solid #1e3a45; padding-bottom: 4px; }
+  .meta { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13px; color: #55606b; margin: 6px 0 4px; }
+  code { font-family: ui-monospace, Consolas, monospace; font-size: 0.88em; background: #eef1f4; padding: 1px 5px; border-radius: 3px; }
+  table { border-collapse: collapse; width: 100%; margin: 10px 0 18px; font-size: 13.5px; }
+  th, td { border: 1px solid #d7dce2; padding: 6px 9px; text-align: left; vertical-align: top; }
+  thead th { background: #1e3a45; color: #eef4f3; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 11px; text-transform: uppercase; letter-spacing: .03em; }
+  .note { background: #f7ddd4; color: #a53d26; padding: 12px 16px; border-radius: 6px; margin: 16px 0; font-size: 14px; }
+  .tag { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 10.5px; font-weight: 700; text-transform: uppercase; background: #cfe0e0; color: #14484a; padding: 2px 7px; border-radius: 4px; white-space: nowrap; }
+  .tag.trap { background: #f7d9d9; color: #9c2b2b; }
+  .tag.fallback { background: #f2e6c4; color: #a67c1e; }
+  .toc { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13.5px; columns: 2; column-gap: 24px; }
+  .toc a { display: block; padding: 2px 0; }
+  .flag { font-size: 13px; color: #55606b; margin: 6px 0 16px; }
+</style>
+
+<h1>CF &mdash; required submission inputs, by coverage</h1>
+<p class="meta"><b>Compiled 2026-09-22.</b> A rules-first reference &mdash; every field the ISO ERC rules
+themselves treat as a genuine input, confirmed by reading the rule XML chunk by chunk. Separate from
+<code>CF_Payload_Generator_RESUME.md</code>'s own effort to reproduce <code>CFRater1.01.xlsb</code>'s field
+set as a payload; this doc answers what the RULES require, not what one rater sends. Full detail and
+citations: <code>CF_Required_Submission_Inputs.md</code>.</p>
+
+<p><span class="tag">pure input</span> no rule anywhere ever assigns it &nbsp;
+<span class="tag trap">dead-derivation trap</span> a rule exists but the table it reads is empty &nbsp;
+<span class="tag fallback">conditional fallback</span> derived most of the time, falls to a literal on a gate</p>
+
+<div class="toc">
+<a href="#bgi">Building &mdash; Basic Group I</a>
+<a href="#bgii">Building &mdash; Basic Group II</a>
+<a href="#broadspecial">Building &mdash; Broad and Special</a>
+<a href="#contents">Contents / Personal Property</a>
+<a href="#bi">Business Income</a>
+<a href="#sc">Special Class</a>
+<a href="#scbi">Special Class Business Income</a>
+<a href="#ll">Legal Liability</a>
+<a href="#blanket">Blanket rating</a>
+<a href="#eq">Earthquake</a>
+<a href="#appendix">Appendix &mdash; ambiguous fields</a>
+</div>
+
+<h2 id="bgi">Building &mdash; Basic Group I</h2>
+<table>
+<thead><tr><th>Field</th><th>Category</th><th>If omitted</th></tr></thead>
+<tbody>
+<tr><td><code>BasicGroupIRatingTerr</code></td><td><span class="tag">pure input</span></td><td>Used directly as a lookup key</td></tr>
+<tr><td><code>ClassCode</code></td><td><span class="tag">pure input</span></td><td>Base-rate gate fails &rarr; premium zero, no error</td></tr>
+<tr><td><code>ConstructionType</code></td><td><span class="tag">pure input</span></td><td>Unrecognized value &rarr; code 0 &rarr; zero, no raise</td></tr>
+<tr><td><code>CauseOfLoss</code></td><td><span class="tag">pure input</span></td><td>Blank &rarr; <code>CoverageOnPolicyIndicator=0</code> &rarr; zero</td></tr>
+<tr><td><code>ProtectClass</code> (Location, not Structure)</td><td><span class="tag">pure input</span></td><td>Wrong node &rarr; factor stays 1.0 &rarr; premium 4% high</td></tr>
+<tr><td><code>LossCostMultiplier</code></td><td><span class="tag">pure input</span></td><td>Company input, not filed</td></tr>
+<tr><td><code>IRPMFactor</code>, <code>PackageModFactor</code>, <code>MultiPremiumAndDispersionCreditFactor</code></td><td><span class="tag">pure input</span></td><td>Schedule inputs, not filed tables</td></tr>
+<tr><td><code>FullBldgValue</code></td><td><span class="tag">pure input</span></td><td>Raises an ISO validation message</td></tr>
+<tr><td>AZ <code>BasicGroupIReductionCredit</code></td><td><span class="tag">pure input</span></td><td>Literal 0.0 fallback &rarr; every AZ building zero</td></tr>
+<tr><td><code>TerrorismPremium</code> (policy, NY message rule)</td><td><span class="tag trap">dead-derivation trap</span></td><td>Zero writers anywhere &mdash; dead code as filed</td></tr>
+</tbody>
+</table>
+<p class="flag">Path-selectors, not values: <code>RatingType</code>, <code>CovType</code>, <code>IncludedInBlkt</code>.</p>
+
+<h2 id="bgii">Building &mdash; Basic Group II</h2>
+<table>
+<thead><tr><th>Field</th><th>Category</th><th>If omitted</th></tr></thead>
+<tbody>
+<tr><td><code>BasicGroupIIRatingTerr</code></td><td><span class="tag">pure input</span></td><td>Base rate 0 &rarr; zero</td></tr>
+<tr><td><code>NumStories</code></td><td><span class="tag">pure input</span></td><td>No symbol resolves &rarr; zero</td></tr>
+<tr><td><code>BCEG</code></td><td><span class="tag">pure input</span></td><td>Literal 0.0 fallback &mdash; ISO-confirmed $32&rarr;$0</td></tr>
+<tr><td><code>RatingTypeBasicGroupII</code></td><td><span class="tag">pure input</span></td><td>36 of 47 states gate on it &mdash; zero if omitted there</td></tr>
+<tr><td><code>BCEGFactor</code> (derived)</td><td><span class="tag fallback">conditional fallback</span></td><td>Territory/grade blank &rarr; literal 0.0, not the computed factor</td></tr>
+</tbody>
+</table>
+<p class="flag">Ambiguous: <code>OpenSides</code>. Path-selectors: <code>ClassCode</code> overrides (0580/0585/1150/1300/1650/1751), the SPP form-name election. Instrument note: "empty <code>SingleResult</code> = refusal" was tested and DISPROVEN &mdash; VA/VT break under strict mode.</p>
+
+<h2 id="broadspecial">Building &mdash; Broad and Special</h2>
+<table>
+<thead><tr><th>Field</th><th>Category</th><th>If omitted</th></tr></thead>
+<tbody>
+<tr><td><code>Limit</code></td><td><span class="tag">pure input</span></td><td>Null premium &rarr; <b>raises</b> &mdash; the one exception to silent-zero</td></tr>
+<tr><td><code>Deductible</code></td><td><span class="tag">pure input</span></td><td>Broad: <code>Otherwise</code> writes 0.0. Special: unresolved (see appendix)</td></tr>
+<tr><td><code>TheftDeductible</code></td><td><span class="tag">pure input</span></td><td>Selects theft (0.89) vs. building (0.97) deductible band</td></tr>
+<tr><td>FL's 21-code <code>ClassCode</code> list</td><td><span class="tag">pure input</span></td><td>Off the list &rarr; non-residential rate</td></tr>
+<tr><td><code>Applicability="Paragraph B"</code> (Broad roof)</td><td><span class="tag trap">dead-derivation trap</span></td><td>Tested before any lookup &mdash; filed 0.99 row unreachable</td></tr>
+<tr><td>Broad roof-surfacing factors generally</td><td><span class="tag trap">dead-derivation trap</span></td><td>0 of 6 filed rates survive 3dp rounding (Special: does move)</td></tr>
+<tr><td><code>DeductibleFactorSpecial</code> theft branch</td><td><span class="tag fallback">conditional fallback</span></td><td>3-part gate fails &rarr; falls back to building deductible</td></tr>
+</tbody>
+</table>
+<p class="flag">Override hazard: <code>SpecialBaseRate</code>'s <code>IsNull</code> guard honours a submitted literal over the filed table &mdash; $11,398 possible, nothing raised. Path-selectors: <code>CauseOfLossToUse</code> (cumulative, not exclusive), <code>Applicability</code>, <code>ClassCode=1150</code>, the theft-exclusion election.</p>
+
+<h2 id="contents">Contents / Personal Property</h2>
+<table>
+<thead><tr><th>Field</th><th>Category</th><th>If omitted</th></tr></thead>
+<tbody>
+<tr><td>Watchman/burglar-alarm credit (Special)</td><td><span class="tag">pure input</span></td><td>Without <code>TypeOfWatchmanSrvc</code> too: stays 1.0, silent</td></tr>
+<tr><td><code>ProtectClass</code> (Contents-side)</td><td><span class="tag fallback">conditional fallback</span></td><td>Blank &rarr; 0.0 (Contents), vs. Building's 1.0 on same field</td></tr>
+<tr><td>Same factor, class 1751/1752</td><td><span class="tag fallback">conditional fallback</span></td><td>1751 &rarr; 1.0; missing protect class &rarr; 0.0 &mdash; two fallbacks, one rule</td></tr>
+<tr><td>Broad-form deductible factor</td><td><span class="tag fallback">conditional fallback</span></td><td>No PP rule at all &mdash; reads Building's ancestor, whose <code>Otherwise</code> is 0.0</td></tr>
+</tbody>
+</table>
+<p class="flag">Derived-and-discarded (not one of the 3 categories): <code>OccupCategoryRiskSeverity</code>, the Basic Group I <code>Group</code> letter, 7 inherited/<code>Copy</code>'d fields (<code>CovForm</code>, <code>BldgClassCode</code>, <code>RatingType</code>, etc.) &mdash; all unconditionally overwritten, submitted values lost silently. Ambiguous: <code>CauseOfLoss</code>, <code>TypeOfWatchmanSrvc</code>.</p>
+
+<h2 id="bi">Business Income</h2>
+<table>
+<thead><tr><th>Field</th><th>Category</th><th>If omitted</th></tr></thead>
+<tbody>
+<tr><td><code>MfgPct</code>, <code>OtherPct</code>, <code>Combination1/2Factor</code></td><td><span class="tag">pure input</span></td><td>Default 0.0 &mdash; reaches premium as $0, bypasses the null-premium guard entirely</td></tr>
+<tr><td><code>BaseRateAdjustmentFactor</code> (PR only)</td><td><span class="tag trap">dead-derivation trap</span></td><td>PR deletes the RATING rule itself, not just the table</td></tr>
+<tr><td>A <code>Factor</code> branch (task #22)</td><td><span class="tag fallback">conditional fallback</span></td><td>Written 0.0, not null &mdash; "which is the point"</td></tr>
+</tbody>
+</table>
+<p class="flag">Derived-and-discarded: <code>ApartmentCondoIndicator</code>. Ambiguous: <code>CoinsuranceToUse</code>, <code>TypeOfRisk</code>. Path-selector: <code>SetFactor</code> itself &mdash; 4-branch priority selector, not a lookup; electing 3 conditions together can resolve to NULL (no fallthrough), zeroing a valid combination silently. Cross-cutting: BGI/BGII have no base rate of their own &mdash; every Building-side chunk 1&ndash;2 finding is load-bearing here too, invisibly.</p>
+
+<h2 id="sc">Special Class</h2>
+<table>
+<thead><tr><th>Field</th><th>Category</th><th>If omitted</th></tr></thead>
+<tbody>
+<tr><td><code>ClassDescription</code></td><td><span class="tag">pure input</span></td><td>Free-text driver, no rule derives it &mdash; Basic I/II zero, Broad/Special unaffected</td></tr>
+<tr><td><code>BasicGroupIISymbol</code></td><td><span class="tag">pure input</span></td><td>Not derived in this group &mdash; Group II zero</td></tr>
+<tr><td><code>SpecialClassDescConvertedOption</code> (NY)</td><td><span class="tag">pure input</span></td><td>NY's converter rule deleted &mdash; a deleted rule IS how ISO says "input"</td></tr>
+<tr><td><code>ProtectionClassFactor</code></td><td><span class="tag trap">dead-derivation trap</span></td><td>Read 0 times by any rate chain, PR deletes the rule with no effect</td></tr>
+<tr><td>Class 1150 in Special Class</td><td><span class="tag trap">dead-derivation trap</span></td><td>Builders Risk routing named 0 times here (6x in Building)</td></tr>
+<tr><td><code>ProtectClass</code>/<code>...ToUse</code> (Group I key)</td><td><span class="tag fallback">conditional fallback</span></td><td>Absent &rarr; worst band <b>"9 to 10"</b> &mdash; the one field that RAISES the premium</td></tr>
+<tr><td><code>Deductible</code></td><td><span class="tag fallback">conditional fallback</span></td><td>All 4 forms' <code>Otherwise</code> is 0.0 &mdash; widest blast radius in 6 chunks</td></tr>
+</tbody>
+</table>
+<p class="flag">Flagged: <code>BasicGroupIISymbolNum</code> in NY is a "decoy" (rule never reads it there); <code>PolicyType</code> is an unguarded always-succeeding copy.</p>
+
+<h2 id="scbi">Special Class Business Income</h2>
+<table>
+<thead><tr><th>Field</th><th>Category</th><th>If omitted</th></tr></thead>
+<tbody>
+<tr><td><code>MonthlyLimitOfIndemnity</code></td><td><span class="tag">pure input</span></td><td>Absent reads as <code>""</code> &ne; <code>"Not Applicable"</code> &mdash; wrongly elects the branch anyway, prices $0, no message</td></tr>
+<tr><td><code>ApartmentCondoIndicator</code> (theft factor here)</td><td><span class="tag trap">dead-derivation trap</span></td><td>Key hardcoded to <code>"No"</code> at every read site &mdash; live next door in plain BI, dead here</td></tr>
+<tr><td>Class 1150 (Builders Risk base rate)</td><td><span class="tag trap">dead-derivation trap</span></td><td>Named 0 times here vs. 6 in plain BI</td></tr>
+<tr><td><code>LossCostMultiplier</code> (own)</td><td><span class="tag fallback">conditional fallback</span></td><td>Null &rarr; copies the parent Special Class item's LCM</td></tr>
+</tbody>
+</table>
+<p class="flag">Flagged: blanket fields overwritten to 0/'' here regardless of submission &mdash; destructive, not a sensible default.</p>
+
+<h2 id="ll">Legal Liability</h2>
+<table>
+<thead><tr><th>Field</th><th>Category</th><th>If omitted</th></tr></thead>
+<tbody>
+<tr><td><code>Limit</code></td><td><span class="tag">pure input</span> (probable)</td><td>Refuses (null-premium guard), doesn't default</td></tr>
+<tr><td>Insurable-interest option</td><td><span class="tag fallback">conditional fallback</span></td><td>Blank &rarr; literal 0.0, outside the normal 1.0/1.25 domain</td></tr>
+</tbody>
+</table>
+<p class="flag"><b>Destructive-gate field:</b> <code>PolicyType</code> &mdash; wrong value or absent DELETES the whole coverage-form record (recurs at chunk 6, chunk 8, and again as chunk 9's <code>BlktRated</code>). Ambiguous: <code>Coinsurance</code>, <code>FullBldgValue</code>, <code>IRPMFactor</code>/<code>PackageModFactor</code> (only their read-depth is documented, not their derivation status). Path-selectors: <code>CovType</code> (item-level, Building) vs. <code>CovForm</code> (occupancy-level, Contents) &mdash; same fork, different LEVEL, a real trap on its own.</p>
+
+<h2 id="blanket">Blanket rating</h2>
+<table>
+<thead><tr><th>Field</th><th>Category</th><th>If omitted</th></tr></thead>
+<tbody>
+<tr><td><code>TotalLimit</code> (Detail, feeds <code>BlktLimit</code>)</td><td><span class="tag">pure input</span></td><td>Never set by any rule in a 13,458-line file &mdash; contrast: <code>TotalFullValueAmount</code> IS derived</td></tr>
+<tr><td><code>BlktCauseOfLossValue</code></td><td><span class="tag trap">dead-derivation trap</span></td><td>3 distinct gates leave it short; "never broken, never fed" &mdash; works once all 3 clear (chunk 9's own golden case)</td></tr>
+<tr><td><code>MUBlktRated</code></td><td><span class="tag fallback">conditional fallback</span></td><td>Null &rarr; literal "No" (the safe direction)</td></tr>
+</tbody>
+</table>
+<p class="flag"><b>NOT traps, despite similar symptoms:</b> <code>BlktTotalFullValueAmount</code>'s $0 was a genuine engine bug (fixed 2026-09-21); <code>Blkt&lt;Form&gt;AvgRate</code> is proven-correct machinery. <b>Destructive-gate field:</b> <code>BlktRated</code> &mdash; wrong combo with <code>MUBlktRated</code> deletes the whole blanket record before any rate chain runs. Path-selectors: <code>IncludedInBlkt</code> (5 Domain Tables, not 1 switch), <code>BlktTypeOfBlanketRating</code> ({Average,Highest}, both live), Detail <code>Type</code>.</p>
+
+<h2 id="eq">Earthquake</h2>
+<table>
+<thead><tr><th>Field</th><th>Category</th><th>If omitted</th></tr></thead>
+<tbody>
+<tr><td><code>EQClass</code></td><td><span class="tag">pure input</span></td><td>Corpus-wide confirmed &mdash; never assigned. Structure-level, no copy-down</td></tr>
+<tr><td><code>EQTerr</code></td><td><span class="tag">pure input</span></td><td>Corpus-wide confirmed. Location-level, copied DOWN by a plain <code>Copy</code></td></tr>
+<tr><td><code>EQDeductibleTier</code></td><td><span class="tag trap">dead-derivation trap</span></td><td>Real lookup rule, backing table is 0 rows everywhere &mdash; must be supplied directly for the sub-limit path</td></tr>
+</tbody>
+</table>
+<p class="flag"><b>Silent submission-shape traps (found only by running):</b> Contents' own <code>SetEQClass</code> and 4 more "own" factors are unguarded ancestor-copies from the Structure; <code>BCEGEQFactor</code> defaults to 0.0 (not 1.0) on blank <code>BCEG</code>; <code>EQSprinklerLeakageOnly</code> blank starves <code>FinalEQRate</code> (no <code>Otherwise</code>); blank <code>SprinklerSystem</code> reads as sprinklered, adding a 1.06 factor. Path-selectors: <code>EQCovIndicator</code> (4 values, 2 zero-tiers), <code>EQCauseOfLossForm</code> (selects among 4 Endorsement files), <code>CovType</code>. Note: <code>EQCoinsuranceFactor</code> is the one EQ factor that actually SHARES the ordinary <code>CoinsuranceFactor</code> table.</p>
+
+<h2 id="appendix">Appendix &mdash; ambiguous, needs verification</h2>
+<p>Repeatedly treated as inputs in worked examples, but no chunk's docs ever stated "zero deriving rules" for these &mdash; not asserted into a category:</p>
+<ul>
+<li><code>BasicGroupIRatingTerr</code> / <code>BasicGroupIIRatingTerr</code> &mdash; used as lookup keys, weaker phrasing than the confirmed pure inputs.</li>
+<li><code>Coinsurance</code> (raw percentage) &mdash; appears throughout, never explicitly labeled.</li>
+<li><code>FullBldgValue</code> &mdash; a given in every worked example, never confirmed derivation-free.</li>
+<li><code>TypeOfWatchmanSrvc</code> &mdash; required alongside a confirmed pure input, not itself confirmed.</li>
+<li><code>IRPMFactor</code> / <code>PackageModFactor</code> &mdash; only read-depth is documented (5/7/9 <code>../</code> hops), not derivation status.</li>
+<li>Special form's <code>Deductible</code>-removed case (chunk 3) &mdash; predicted null, actual run returned 0, never explained.</li>
+</ul>

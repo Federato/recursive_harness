@@ -1,0 +1,103 @@
+Row,Label,ReadsLocationRows,ReadsCoreScratchpad,AlreadySchedule,Formula
+3,Base Rate,46,6 128,,"=IF('CALC - CoreScratchpad'!C6=""No"",'IN - Location'!C46,IFERROR(VLOOKUP('CALC - CoreScratchpad'!C128,'TBL - ContentsTables'!$D$2:$J$36307,7,FALSE),0))"
+4,LCM,,2,,"=IFERROR(INDEX('TBL - LCM'!$B$2:$B$47,MATCH('CALC - CoreScratchpad'!C2,'TBL - LCM'!$A$2:$A$47,0)),0)"
+5,SubStdConditionRate,,6,,"=IF('CALC - CoreScratchpad'!C6=""No"",0,'CALC - Bldg Rating'!C5)"
+6,FireSafeVaultFactor,9,6,,"=IF('CALC - CoreScratchpad'!C6=""No"",1,IFERROR(VLOOKUP('IN - Location'!C9,'TBL - ContentsTables'!$L$2:$M$10,2,FALSE),0))"
+7,TerrFactor,,6,,"=IF('CALC - CoreScratchpad'!C6=""No"",1,'CALC - Bldg Rating'!C7)"
+8,ProtClassFactor,26 30 33,6,,"=IF('CALC - CoreScratchpad'!C6=""No"",1,IF(OR(AND('IN - Location'!C33=""Yard"",'IN - Location'!C30<>""Yard Property - Non Combustible""),'IN - Location'!C26=""1751"",'IN - Location'!C26=""1"
+9,RATE,,277 279,,"=IF('CALC - CoreScratchpad'!C279<>""Yes"",0,IF('CALC - CoreScratchpad'!C277<>""Yes"",0,ROUND(((C3*C4)+C5)*C6*C7*C8,3)))"
+10,SprinklerLeakageExclNonSprinkleredRate,,,,='CALC - Bldg Rating'!C11
+11,SprinklerLeakageExclSprinkleredFactor,,,,='CALC - Bldg Rating'!C12
+12,VandalismExclFactor,,,,='CALC - Bldg Rating'!C13
+13,StdPropPolGroupIFactor,,,,='CALC - Bldg Rating'!C14
+14,CAUSE OF LOSS ADJUSTMENT,,277,,"=IF('CALC - CoreScratchpad'!C277<>""Yes"",0,ROUND(ROUND(C9-C10,3)*C11*C12*C13,3))"
+15,CoinsuranceFactor,,130,,"=IFERROR(VLOOKUP('CALC - CoreScratchpad'!C130,'TBL - ContentsTables'!$O$2:$R$186,4,FALSE),0)"
+16,LOIFactor,,137,,='CALC - CoreScratchpad'!C137
+17,ADJUSTED RATE,,,,"=ROUND(C14*C15*C16,3)"
+18,DeductibleByLocationFactor,,,,='CALC - Bldg Rating'!C19
+19,DeductibleFactor,,142,,='CALC - CoreScratchpad'!C142
+20,FINAL RATE,,,,"=ROUND(C17*C18*C19,3)"
+21,IRPM,,,,='CALC - Bldg Rating'!C23
+22,MultiPremiumDispersion,,,,='CALC - Bldg Rating'!C27
+23,FinalRate,,278 280,,"=IF('CALC - CoreScratchpad'!C$280=""COL"",C14,IF('CALC - CoreScratchpad'!C$278=""Final"",C20,0))"
+24,LegalLiabFactor,10,,,"=IF('IN - Location'!C10=""Legal Liability Coverage Form"", 0.5, 1)"
+25,LegalLiabAddlInsurableIntFactor,10 92,,,"=IF('IN - Location'!C10=""Legal Liability Coverage Form"",VLOOKUP('IN - Location'!C92,'TBL - PolicyDropdowns'!$AM$2:$AO$6,3,FALSE),1)"
+26,PackageMod,,,,='CALC - Bldg Rating'!C28
+27,Limit,45,,,='IN - Location'!C45
+28,CyberExclFactorBGI,,,,='CALC - Bldg Rating'!C30
+29,CyberExclCOLExcpnsFactorBGI,,,,='CALC - Bldg Rating'!C31
+30,CONTENTS BGI PREMIUM,,,,"=ROUND(ROUND(C21*C22*C23*C24*C25*C26*(C27/100),0)*C28*C29,0)"
+31,TOTAL CONTENTS BGI PREMIUM,,,,=SUM(C30:L30)
+34,BaseRate,97,59,,"=IF('IN - Location'!C97=""Yes"",0,IFERROR(INDEX('TBL - ContentsTables'!$AO$2:$AO$382,MATCH('CALC - CoreScratchpad'!C59,'TBL - ContentsTables'!$AK$2:$AK$382,0)),0))"
+35,LowestBaseRate,97,72,,"=IF('IN - Location'!C97=""No"",0,IFERROR(INDEX('TBL - ContentsTables'!$AT$2:$AT$358,MATCH('CALC - CoreScratchpad'!C72,'TBL - ContentsTables'!$AQ$2:$AQ$358,0)),0))"
+36,LCM,,2,,"=IFERROR(INDEX('TBL - LCM'!$B$2:$B$47,MATCH('CALC - CoreScratchpad'!C2,'TBL - LCM'!$A$2:$A$47,0)),0)"
+37,NumericValue,,143,,='CALC - CoreScratchpad'!C143
+38,BCEGFactor,34,,,"=IF('IN - Location'!C34=""Yard"",1,'CALC - Bldg Rating'!C41)"
+39,RATE,97,277 279,,"=IF('CALC - CoreScratchpad'!C279<>""Yes"",0,IF('CALC - CoreScratchpad'!C277<>""Yes"",0,IF('IN - Location'!C97=""No"",ROUND(C34*C36*C37*C38,3),IF('IN - Location'!C97=""Yes"",ROUND(C35*C36,3"
+40,StdPropPolGroupIIFactor,,,,='CALC - Bldg Rating'!C43
+41,WindstormorHailExclusion,,205,,"=IFERROR(VLOOKUP('CALC - CoreScratchpad'!C205,'TBL - ContentsTables'!$DL$2:$DP$188,5,FALSE),1)"
+42,ADJUSTED RATE,,,,"=ROUND(C39*C40*C41,3)"
+43,Coinsurance Factor,,,,='CALC - Bldg Rating'!C46
+44,LOI Factor,,154,,='CALC - CoreScratchpad'!C154
+45,ADJUSTED RATE,,,,"=ROUND(C42*C43*C44,3)"
+46,BGIIDeductibleByLocationFactor,,,,='CALC - Bldg Rating'!C49
+47,DeductibleFactor,,,,='CALC - Bldg Rating'!C50
+48,FINAL RATE,,,,"=ROUND(C45*C46*C47,3)"
+49,IRPM,,,,=C21
+50,MultiPremiumDispersion,,,,=C22
+51,FinalRate,,278 280,,"=IF('CALC - CoreScratchpad'!C$280=""COL"",C42,IF('CALC - CoreScratchpad'!C$278=""Final"",C48,0))"
+52,LegalLiabFactor,10,,,"=IF('IN - Location'!C$10=""Legal Liability Coverage Form"", 0.5, 1)"
+53,LegalLiabAddlInsurableIntFactor,10 92,,,"=IF('IN - Location'!C10=""Legal Liability Coverage Form"",VLOOKUP('IN - Location'!C$92,'TBL - PolicyDropdowns'!$AM$2:$AO$6,3,FALSE),1)"
+54,PackageMod,,,,=C26
+55,Limit,,,,=C27
+56,CyberExclFactorBGII,,,,=C28
+57,CyberExclCOLExcpnsFactorBGII,,,,=C29
+58,CONTENTS BGII PREMIUM,,,,"=ROUND(ROUND(C49*C50*C51*C52*C53*C54*(C55/100),0)*C56*C57,0)"
+59,TOTAL CONTENTS BGII PREMIUM,,,,=SUM(C58:L58)
+62,BaseRate,50,155,,"=IFERROR(IF('IN - Location'!C50<>""Broad"",0,VLOOKUP('CALC - CoreScratchpad'!C155,'TBL - ContentsTables'!$BM$2:$BP$277,4,FALSE)),0)"
+63,LCM,,2,,"=IFERROR(INDEX('TBL - LCM'!$B$2:$B$47,MATCH('CALC - CoreScratchpad'!C2,'TBL - LCM'!$A$2:$A$47,0)),0)"
+64,RATE,,277 279,,"=IF('CALC - CoreScratchpad'!C279<>""Yes"",0,IF('CALC - CoreScratchpad'!C277<>""Yes"",0,ROUND(C62*C63,3)))"
+65,CoinsuranceFactor,,130,,"=IFERROR(VLOOKUP('CALC - CoreScratchpad'!C130,'TBL - ContentsTables'!$O$2:$R$186,4,FALSE),0)"
+66,LOIFactor,50,166,,"=IFERROR(IF('IN - Location'!C50<>""Broad"",0,'CALC - CoreScratchpad'!C166),0)"
+67,ADJUSTED RATE,,,,"=ROUND(C64*C65*C66,3)"
+68,DeductibleByLocationFactor,,,,='CALC - Bldg Rating'!C99
+69,DeductibleFactor,,,,='CALC - Bldg Rating'!C74
+70,MultiResidentialPropSepcialCreditFactor,,,,=1
+71,FINAL RATE,,,,"=ROUND(C67*C68*C69*C70,3)"
+72,IRPM,,,,=C49
+73,MultiPremiumDispersion,,,,=C50
+74,FinalRate,,278 280,,"=IF('CALC - CoreScratchpad'!C$280=""COL"",C64,IF('CALC - CoreScratchpad'!C$278=""Final"",C71,0))"
+75,LegalLiabFactor,10,,,"=IF('IN - Location'!C$10=""Legal Liability Coverage Form"", 0.5, 1)"
+76,LegalLiabAddlInsurableIntFactor,33 92,,,"=IF('IN - Location'!C33=""Legal Liability Coverage Form"",VLOOKUP('IN - Location'!C$92,'TBL - PolicyDropdowns'!$AM$2:$AO$6,3,FALSE),1)"
+77,PackageMod,,,,=C54
+78,Limit,,,,=C55
+79,CyberExclFactorBroad,,,,=C56
+80,CyberExclCOLExcpnsFactorBroad,,,,=C57
+81,CONTENTS BROAD PREMIUM,,,,"=ROUND(ROUND(C72*C73*C74*C75*C76*C77*(C78/100),0)*C79*C80,0)"
+82,TOTAL CONTENTS BROAD PREMIUM,,,,=SUM(C81:L81)
+85,BaseRate,,170,,='CALC - CoreScratchpad'!C170
+86,LCM,,2,,"=IFERROR(INDEX('TBL - LCM'!$B$2:$B$47,MATCH('CALC - CoreScratchpad'!C2,'TBL - LCM'!$A$2:$A$47,0)),0)"
+87,PrsnlPropTerrMultiplier,,183,,"=IFERROR(VLOOKUP('CALC - CoreScratchpad'!C183,'TBL - ContentsTables'!$DG$2:$DJ$156,4,FALSE),1)"
+88,RATE,,277 279,,"=IF('CALC - CoreScratchpad'!C279<>""Yes"",0,IF('CALC - CoreScratchpad'!C277<>""Yes"",0,ROUND(C85*C86,3)))"
+89,TheftExclusionFactor,,175,,"=IFERROR(VLOOKUP('CALC - CoreScratchpad'!C175,'TBL - ContentsTables'!$CU$2:$CY$369,5,FALSE),1)"
+90,CAUSE OF LOSS ADJUSTMENT,,,,"=ROUND(C88*C89,3)"
+91,CoinsuranceFactor,,,,=C65
+92,Watchman Service Factor,87,,,"=IFERROR(VLOOKUP('IN - Location'!C87,'TBL - ContentsTables'!$DA$2:$DB$5,2,FALSE),1)"
+93,Burglary Alarm System Factor,90,,,='IN - Location'!C90
+94,LOIFactor,50,166,,"=IFERROR(IF('IN - Location'!C50<>""Special"",0,'CALC - CoreScratchpad'!C166),0)"
+95,ADJUSTED RATE,,,,"=ROUND(C90*C91*C92*C93*C94,3)"
+96,DeductibleByLocationFactor,,,,='CALC - Bldg Rating'!C99
+97,DeductibleFactor,,182,,='CALC - CoreScratchpad'!C182
+98,MultiResidentialPropSpecialCreditFactor,,,,=1
+99,FINAL RATE,,,,"=ROUND(C95*C96*C97*C98,3)"
+100,IRPM,,,,=C72
+101,MultiPremiumDispersion,,,,=C73
+102,FinalRate,,278 280,,"=IF('CALC - CoreScratchpad'!C$280=""COL"",C90,IF('CALC - CoreScratchpad'!C$278=""Final"",C99,0))"
+103,LegalLiabFactor,10,,,"=IF('IN - Location'!C$10=""Legal Liability Coverage Form"", 0.5, 1)"
+104,LegalLiabAddlInsurableIntFactor,61 92,,,"=IF('IN - Location'!C61=""Legal Liability Coverage Form"",VLOOKUP('IN - Location'!C$92,'TBL - PolicyDropdowns'!$AM$2:$AO$6,3,FALSE),1)"
+105,PackageMod,,,,=C77
+106,Limit,,,,=C78
+107,CyberExclFactorSpecial,,,,=C79
+108,CyberExclCOLExcpnsFactorSpecial,,,,='CALC - Bldg Rating'!C111
+109,CONTENTS SPECIAL PREMIUM,,,,"=ROUND(ROUND(C100*C101*C102*C103*C104*C105*(C106/100),0)*C107*C108,0)"
+110,TOTAL CONTENTS SPECIAL PREMIUM,,,,=SUM(C109:L109)

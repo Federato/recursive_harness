@@ -1,0 +1,509 @@
+RecordType,Field,InOurPayloads,OurPct,InISOPayloads,ISOPct,Evidence,SampleValues
+CommercialProperty,BlktRated,1,2%,364,100%,both,No | Yes
+CommercialProperty,CPPIRPMFactor,0,0%,364,100%,ISO only,0.0
+CommercialProperty,ConditionalExclusionRatingOption,0,0%,10,3%,ISO only,Certified Terrorism Premium Calculated O | Certified Terrorism Premium Calculated f
+CommercialProperty,CountyMutualInsurance,0,0%,3,1%,ISO only,No
+CommercialProperty,CoverageForCertifiedActs,0,0%,359,99%,ISO only,"No | Yes | Yes, Subject to Sub-Limit | Yes, but Excludes Nuclear, Biological an"
+CommercialProperty,EQSubLimitBlktIndicator,0,0%,360,99%,ISO only,No | Yes
+CommercialProperty,FloodCovEndtBlktIndicator,0,0%,360,99%,ISO only,No
+CommercialProperty,FungusWetRotDryRotBacteriaCov,0,0%,351,96%,ISO only,"15,000 Sub Limit"
+CommercialProperty,IRPMApplies,0,0%,363,100%,ISO only,No | Yes
+CommercialProperty,IRPMFactor,44,100%,10,3%,both,1.0
+CommercialProperty,LossCostMultiplier,0,0%,10,3%,ISO only,1.0
+CommercialProperty,MUBlktRated,1,2%,364,100%,both,No
+CommercialProperty,MUPolicyType,0,0%,364,100%,ISO only,No
+CommercialProperty,MineSubsidenceCoverage,0,0%,41,11%,ISO only,All Buildings | No Coverage
+CommercialProperty,MineSubsidenceLimit,0,0%,30,8%,ISO only,0 | 1000
+CommercialProperty,MineSubsidenceRatingOption,0,0%,7,2%,ISO only,Not Applicable
+CommercialProperty,MultiPremiumAndDispersionCreditFactorUser,0,0%,364,100%,ISO only,0.0
+CommercialProperty,PackageModFactor,0,0%,364,100%,ISO only,1.0
+CommercialProperty,PolicyType,18,41%,364,100%,both,Commercial Property Policy
+CommercialProperty,PostTRIAExclusion,0,0%,5,1%,ISO only,"Cover Subject to Sub-Limit | Exclude | Exclude Nuclear, Biological and Chemical"
+CommercialProperty,State,44,100%,0,0%,ours only,AK | AL | AZ | CA
+CommercialProperty,StateFullName,0,0%,10,3%,ISO only,Colorado | Florida | Georgia | Massachusetts
+CommercialProperty,TRIAConditionalExclusion,0,0%,14,4%,ISO only,"Exclude | Exclude Nuclear, Biological and Chemical"
+CommercialProperty,TRIAExpirationDate,0,0%,10,3%,ISO only,2022-09-01 | 2022-12-01 | 2023-02-01 | 2023-05-01
+CommercialProperty,TRIAType,0,0%,364,100%,ISO only,"Has Already Expired, Use Post-TRIA Forms | Has Expired but Use Conditional Forms | Is in Effect for the Next 12 Months | Will Expire During the Next 12 Months"
+CommercialProperty,TerrorismIndicator,0,0%,354,97%,ISO only,Yes
+CommercialPropertyBlanketRatingDetail,CauseOfLoss,1,2%,0,0%,ours only,Basic Group I
+CommercialPropertyBlanketRatingDetail,Coinsurance,1,2%,0,0%,ours only,90%
+CommercialPropertyBlanketRatingDetail,TotalLimit,1,2%,0,0%,ours only,300000
+CommercialPropertyBlanketRatingDetail,Type,1,2%,0,0%,ours only,Building Only
+CommercialPropertyBlanketRatingDetail,TypeOfBlanketRating,1,2%,0,0%,ours only,Average
+CommercialPropertyBlanketRatingDetail,UnitNumber,1,2%,0,0%,ours only,100
+CommercialPropertyBuildersRiskTheftOfBuildingMaterialsFixturesMachineryEquipment,Deductible,0,0%,147,40%,ISO only,"1,000"
+CommercialPropertyBuildersRiskTheftOfBuildingMaterialsFixturesMachineryEquipment,Limit,0,0%,149,41%,ISO only,1000 | 45000 | 95000
+CommercialPropertyBusinessIncome,AgreedValueOption,0,0%,82,23%,ISO only,No | Not Applicable
+CommercialPropertyBusinessIncome,BasicGroupICauseOfLossAdjustment,0,0%,6,2%,ISO only,0.056 | 0.069 | 0.071 | 0.097
+CommercialPropertyBusinessIncome,BasicGroupIICauseOfLossAdjustment,0,0%,6,2%,ISO only,0.036 | 0.047 | 0.056 | 0.058
+CommercialPropertyBusinessIncome,BlktAgreedVal,0,0%,6,2%,ISO only,Not Applicable
+CommercialPropertyBusinessIncome,BlktBasicGroupIAvgRate,0,0%,6,2%,ISO only,0.0
+CommercialPropertyBusinessIncome,BlktBasicGroupIIAvgRate,0,0%,6,2%,ISO only,0.0
+CommercialPropertyBusinessIncome,BlktBroadAvgRate,0,0%,6,2%,ISO only,0.0
+CommercialPropertyBusinessIncome,BlktCauseOfLossValue,0,0%,6,2%,ISO only,Not Applicable
+CommercialPropertyBusinessIncome,BlktCoinsuranceValue,0,0%,6,2%,ISO only,Not Applicable
+CommercialPropertyBusinessIncome,BlktEQCauseOfLossIncludedInBlkt,0,0%,6,2%,ISO only,No
+CommercialPropertyBusinessIncome,BlktLimit,0,0%,6,2%,ISO only,0
+CommercialPropertyBusinessIncome,BlktProportion,0,0%,6,2%,ISO only,0.0
+CommercialPropertyBusinessIncome,BlktRadioactiveContaminationAvgRate,0,0%,6,2%,ISO only,0.0
+CommercialPropertyBusinessIncome,BlktRadioactiveContaminationValue,0,0%,6,2%,ISO only,Not Applicable
+CommercialPropertyBusinessIncome,BlktSpecialAvgRate,0,0%,6,2%,ISO only,0.0
+CommercialPropertyBusinessIncome,BlktTotalFullValueAmount,0,0%,6,2%,ISO only,0
+CommercialPropertyBusinessIncome,BlktType,0,0%,6,2%,ISO only,Not Applicable
+CommercialPropertyBusinessIncome,CauseOfLoss,6,14%,82,23%,both,Basic | Broad | Special
+CommercialPropertyBusinessIncome,Coinsurance,6,14%,82,23%,both,100% | 50% | 60% | 70%
+CommercialPropertyBusinessIncome,CombinedTypeOfRiskEducationalPct,0,0%,82,23%,ISO only,0 | 40
+CommercialPropertyBusinessIncome,CombinedTypeOfRiskManufacturingPct,0,0%,82,23%,ISO only,0 | 40 | 50 | 55
+CommercialPropertyBusinessIncome,CombinedTypeOfRiskMercantilePct,0,0%,82,23%,ISO only,0 | 30 | 35 | 40
+CommercialPropertyBusinessIncome,CombinedTypeOfRiskRentalPct,0,0%,82,23%,ISO only,0 | 60
+CommercialPropertyBusinessIncome,CovType,6,14%,82,23%,both,Business Income With Extra Expense | Business Income Without Extra Expense
+CommercialPropertyBusinessIncome,EQCauseOfLossAdjustment,0,0%,6,2%,ISO only,0.0 | 0.003 | 0.01 | 0.011
+CommercialPropertyBusinessIncome,EQCovIndicator,0,0%,82,23%,ISO only,"No Coverage | Yes, Not Included in Blanket"
+CommercialPropertyBusinessIncome,EQSprinklerLeakageOnly,0,0%,82,23%,ISO only,No | Not Applicable | Yes
+CommercialPropertyBusinessIncome,ExtendedPeriod,0,0%,82,23%,ISO only,270 | 90 | Not Applicable
+CommercialPropertyBusinessIncome,ExtendedPeriodApplies,0,0%,1,0%,ISO only,No
+CommercialPropertyBusinessIncome,ExtraExpenseLimitOnLossPayment,0,0%,82,23%,ISO only,Not Applicable
+CommercialPropertyBusinessIncome,FungusWetRotDryRotBacteriaCovIncrdPeriodRestorationIndicator,0,0%,5,1%,ISO only,No
+CommercialPropertyBusinessIncome,IncludedInBlkt,6,14%,82,23%,both,No
+CommercialPropertyBusinessIncome,Limit,6,14%,82,23%,both,100000 | 1125000 | 1233000 | 1255000
+CommercialPropertyBusinessIncome,LossCostMultiplier,6,14%,0,0%,ours only,1.0
+CommercialPropertyBusinessIncome,MaxPeriod,6,14%,82,23%,both,No | Not Applicable | Yes
+CommercialPropertyBusinessIncome,MonthlyLimitOfIndemnity,6,14%,82,23%,both,1/3 | Not Applicable
+CommercialPropertyBusinessIncome,TerrorismOverride,0,0%,82,23%,ISO only,No
+CommercialPropertyBusinessIncome,TerrorismSubLimit,0,0%,79,22%,ISO only,0 | 100
+CommercialPropertyBusinessIncome,TypeOfRisk,6,14%,82,23%,both,Combined Educational Institutes and Rent | Combined Manufacturing and Mercantile Op | Manufacturing | Mercantile and Non-manufacturing
+CommercialPropertyBusinessIncome,UnitNumber,0,0%,1,0%,ISO only,1
+CommercialPropertyBusinessIncome,WatercraftExclBuybackConstrctnOption,0,0%,82,23%,ISO only,Not Applicable
+CommercialPropertyBusinessIncome,WaterfrontProperty,0,0%,82,23%,ISO only,No
+CommercialPropertyBusinessIncomeChangesBeginningOfThePeriodOfRestorationNoWaitingPeriod,TimePeriod,0,0%,9,2%,ISO only,Eliminated | Replaced By 24 Hours
+CommercialPropertyBusinessIncomeChangesEducationalInstitutions,ExtensionOfRecoveryPeriodOption,0,0%,8,2%,ISO only,No
+CommercialPropertyBusinessIncomeChangesEducationalInstitutions,LimitedCovIndicator,0,0%,8,2%,ISO only,Yes
+CommercialPropertyBusinessIncomeChangesEducationalInstitutions,NumOfMonths,0,0%,8,2%,ISO only,0
+CommercialPropertyCannabisExclusionBuilding,ManualPremium,0,0%,4,1%,ISO only,100.0 | 4500.0
+CommercialPropertyCannabisExclusionPersonalProperty,ManualPremium,0,0%,3,1%,ISO only,4500.0
+CommercialPropertyCannabisExclusionWithHempExceptionPersonalProperty,ManualPremium,0,0%,1,0%,ISO only,200.0
+CommercialPropertyCivilAuthorityIncreasedCoveragePeriod,IncreasedCoveragePeriod,0,0%,4,1%,ISO only,60 | 90
+CommercialPropertyCivilAuthorityIncreasedCoveragePeriodRadiusCoverage,ManualPremium,0,0%,1,0%,ISO only,0.0
+CommercialPropertyContributingInsuranceDetail,AdditionalCoverageLimit,0,0%,1,0%,ISO only,567
+CommercialPropertyCyberIncidentExclusionWithEnsuingCausesOfLossExceptions,CyberAggregateLOI,0,0%,20,5%,ISO only,0 | 1 | 100 | 2500
+CommercialPropertyCyberIncidentExclusionWithEnsuingCausesOfLossExceptions,CyberBusnIncomeCovLOI,0,0%,20,5%,ISO only,0 | 1 | 100 | 500
+CommercialPropertyCyberIncidentExclusionWithEnsuingCausesOfLossExceptions,CyberExtraExpenseCovLOI,0,0%,20,5%,ISO only,0 | 100 | 500
+CommercialPropertyCyberIncidentExclusionWithEnsuingCausesOfLossExceptions,CyberLossOrDamageToCoveredPropertyCovLOI,0,0%,20,5%,ISO only,0 | 1 | 100 | 250
+CommercialPropertyDebrisRemovalAdditionalInsurance,Limit,0,0%,3,1%,ISO only,52000
+CommercialPropertyEQSubLimitBlanketRatingDetail,BldgCov,0,0%,1,0%,ISO only,Yes
+CommercialPropertyEQSubLimitBlanketRatingDetail,EQSprinklerLeakageOnly,0,0%,1,0%,ISO only,No
+CommercialPropertyEQSubLimitBlanketRatingDetail,IncreasedAnnlAggLimitOption,0,0%,1,0%,ISO only,No
+CommercialPropertyEQSubLimitBlanketRatingDetail,Limit,0,0%,1,0%,ISO only,100
+CommercialPropertyEQSubLimitBlanketRatingDetail,SubLimitPct,0,0%,1,0%,ISO only,5%
+CommercialPropertyEarthquakeAndVolcanicEruptionCoverageWithFlatDollarDeductibleBldg,IncludingMasonryVeneerOption,0,0%,65,18%,ISO only,No
+CommercialPropertyEarthquakeAndVolcanicEruptionCoverageWithFlatDollarDeductibleBldg,PctOfTotalExteriorWallsFaced,0,0%,65,18%,ISO only,Masonry Veneer Limitation Applies | Not Applicable
+CommercialPropertyEarthquakeAndVolcanicEruptionEndorsement,IncludingMasonryVeneerOption,0,0%,1,0%,ISO only,Yes
+CommercialPropertyEarthquakeAndVolcanicEruptionEndorsement,PctOfTotalExteriorWallsFaced,0,0%,1,0%,ISO only,25% to 50%
+CommercialPropertyEarthquakeAndVolcanicEruptionEndorsementSubLimitForm,IncludingMasonryVeneerOption,0,0%,2,1%,ISO only,No
+CommercialPropertyEarthquakeAndVolcanicEruptionEndorsementSubLimitForm,Limit,0,0%,3,1%,ISO only,10000 | 200000
+CommercialPropertyEarthquakeAndVolcanicEruptionEndorsementSubLimitForm,PctOfTotalExteriorWallsFaced,0,0%,3,1%,ISO only,Not Applicable
+CommercialPropertyEarthquakeAndVolcanicEruptionEndorsementSubLimitFormBusnIncome,AnnualNetIncome,0,0%,2,1%,ISO only,50000
+CommercialPropertyEarthquakeAndVolcanicEruptionEndorsementSubLimitFormBusnIncome,Limit,0,0%,2,1%,ISO only,50000
+CommercialPropertyEarthquakeAndVolcanicEruptionEndorsementSubLimitFormPrsnlProp,Limit,0,0%,2,1%,ISO only,10000
+CommercialPropertyFloodCovEndtLocation,Coinsurance,0,0%,1,0%,ISO only,No
+CommercialPropertyFloodCovEndtLocation,Deductible,0,0%,1,0%,ISO only,"100,000"
+CommercialPropertyFloodCovEndtLocation,FloodEffDate,0,0%,1,0%,ISO only,2018-07-01
+CommercialPropertyFloodCoverageEndorsement,AnnualAggregateLimit,0,0%,1,0%,ISO only,1850000
+CommercialPropertyFloodCoverageEndorsement,Limit,0,0%,1,0%,ISO only,850000
+CommercialPropertyFloodCoverageEndorsement,ManualPremium,0,0%,1,0%,ISO only,650.0
+CommercialPropertyFloodCoverageEndorsementBusnIncome,AnnualAggregateLimit,0,0%,1,0%,ISO only,120000
+CommercialPropertyFloodCoverageEndorsementBusnIncome,Limit,0,0%,1,0%,ISO only,85000
+CommercialPropertyFloodCoverageEndorsementBusnIncome,ManualPremium,0,0%,1,0%,ISO only,84.0
+CommercialPropertyFloodCoverageEndorsementPrsnlProp,AnnualAggregateLimit,0,0%,1,0%,ISO only,1850000
+CommercialPropertyFloodCoverageEndorsementPrsnlProp,Limit,0,0%,1,0%,ISO only,250000
+CommercialPropertyFloodCoverageEndorsementPrsnlProp,ManualPremium,0,0%,1,0%,ISO only,440.0
+CommercialPropertyIRPM,BuildingFeaturesPct,0,0%,24,7%,ISO only,0%
+CommercialPropertyIRPM,EmployeesPct,0,0%,24,7%,ISO only,0%
+CommercialPropertyIRPM,LocationPct,0,0%,24,7%,ISO only,0%
+CommercialPropertyIRPM,ManagementPct,0,0%,24,7%,ISO only,0%
+CommercialPropertyIRPM,PremisesEquipmentPct,0,0%,24,7%,ISO only,0%
+CommercialPropertyIRPM,ProtectionPct,0,0%,24,7%,ISO only,0%
+CommercialPropertyLegalLiabilityCoverageForm,AddlInsurableInt,4,9%,0,0%,ours only,None
+CommercialPropertyLimitationsOnCovForRoofSurfacing,Applicability,0,0%,1,0%,ISO only,Paragraph A
+CommercialPropertyLimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoverageDetail,BlanketCoverageUnmannedAircraftAppliesToUnmannedAircraftNotIndividuallyDescribed,0,0%,1,0%,ISO only,No
+CommercialPropertyLimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoverageDetail,CoverageExtensionForNewlyAcquiredPropertyIncludingTemporarySubstitutePropertyAppliesToScheduledCoverageonly,0,0%,1,0%,ISO only,No
+CommercialPropertyLimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoverageDetail,Deductible,0,0%,1,0%,ISO only,"2,500"
+CommercialPropertyLimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoverageDetail,DroneModification,0,0%,1,0%,ISO only,Used as commercially available
+CommercialPropertyLimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoverageDetail,EQDeductible,0,0%,1,0%,ISO only,500
+CommercialPropertyLimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoverageDetail,EncryptedCommunications,0,0%,1,0%,ISO only,No
+CommercialPropertyLimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoverageDetail,GeoFencingTechnologyToAvoidRestrictedAirspace,0,0%,1,0%,ISO only,No
+CommercialPropertyLimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoverageDetail,IndicateActualCashValueACVOrReplacementCostRC,0,0%,1,0%,ISO only,Actual Cash Value
+CommercialPropertyLimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoverageDetail,LimitOfInsurance,0,0%,1,0%,ISO only,95000
+CommercialPropertyLimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoverageDetail,ReturnToBaseTechnologyOrHoverCapability,0,0%,1,0%,ISO only,No
+CommercialPropertyLimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoverageDetail,SenseAndAvoidTechnology,0,0%,1,0%,ISO only,No
+CommercialPropertyLimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoverageDetail,TypeOfOperations,0,0%,1,0%,ISO only,Search & Rescue
+CommercialPropertyLimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoverageDetail,UnknownSecurityFeaturesOfDrones,0,0%,1,0%,ISO only,No
+CommercialPropertyLimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoverageDetail,UnmannedAircraftClassDescriptions,0,0%,1,0%,ISO only,"Aerial photography, surveillance or insp"
+CommercialPropertyLimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoverageDetail,UnmannedAircraftMethodOfControl,0,0%,1,0%,ISO only,Autonomous drones
+CommercialPropertyLimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoverageDetail,UnmannedAircraftOwnershipAndOperation,0,0%,1,0%,ISO only,Unmanned aircraft rented or leased to (a
+CommercialPropertyLimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoverageDetail,UnmannedAircraftPrimaryPlaceOfOperation,0,0%,1,0%,ISO only,Urban
+CommercialPropertyLimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoverageDetail,UnmannedAircraftRatingIdentification,0,0%,1,0%,ISO only,Drone (separate limit per drone)
+CommercialPropertyLimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoveragePrsnlPropDetail,BlanketCoverageUnmannedAircraftAppliesToUnmannedAircraftNotIndividuallyDescribed,0,0%,9,2%,ISO only,No
+CommercialPropertyLimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoveragePrsnlPropDetail,CoverageExtensionForNewlyAcquiredPropertyIncludingTemporarySubstitutePropertyAppliesToScheduledCoverageonly,0,0%,9,2%,ISO only,Yes
+CommercialPropertyLimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoveragePrsnlPropDetail,Deductible,0,0%,9,2%,ISO only,"2,500"
+CommercialPropertyLimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoveragePrsnlPropDetail,DroneModification,0,0%,9,2%,ISO only,Altered by owner to permanently add spec
+CommercialPropertyLimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoveragePrsnlPropDetail,EQDeductible,0,0%,7,2%,ISO only,"5,000 | 500"
+CommercialPropertyLimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoveragePrsnlPropDetail,EncryptedCommunications,0,0%,7,2%,ISO only,No
+CommercialPropertyLimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoveragePrsnlPropDetail,GeoFencingTechnologyToAvoidRestrictedAirspace,0,0%,7,2%,ISO only,No
+CommercialPropertyLimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoveragePrsnlPropDetail,IndicateActualCashValueACVOrReplacementCostRC,0,0%,9,2%,ISO only,Actual Cash Value
+CommercialPropertyLimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoveragePrsnlPropDetail,LimitOfInsurance,0,0%,9,2%,ISO only,99000
+CommercialPropertyLimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoveragePrsnlPropDetail,ReturnToBaseTechnologyOrHoverCapability,0,0%,7,2%,ISO only,No
+CommercialPropertyLimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoveragePrsnlPropDetail,SenseAndAvoidTechnology,0,0%,7,2%,ISO only,No
+CommercialPropertyLimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoveragePrsnlPropDetail,TypeOfOperations,0,0%,9,2%,ISO only,Search & Rescue
+CommercialPropertyLimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoveragePrsnlPropDetail,UnknownSecurityFeaturesOfDrones,0,0%,9,2%,ISO only,No | Yes
+CommercialPropertyLimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoveragePrsnlPropDetail,UnmannedAircraftClassDescriptions,0,0%,9,2%,ISO only,Firefighting
+CommercialPropertyLimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoveragePrsnlPropDetail,UnmannedAircraftMethodOfControl,0,0%,9,2%,ISO only,Autonomous drones
+CommercialPropertyLimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoveragePrsnlPropDetail,UnmannedAircraftOwnershipAndOperation,0,0%,9,2%,ISO only,Unmanned aircraft owned and operated by 
+CommercialPropertyLimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoveragePrsnlPropDetail,UnmannedAircraftPrimaryPlaceOfOperation,0,0%,9,2%,ISO only,Rural
+CommercialPropertyLimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoveragePrsnlPropDetail,UnmannedAircraftRatingIdentification,0,0%,9,2%,ISO only,Drone (separate limit per drone)
+CommercialPropertyLocation,AreaServicedByFireDept,0,0%,17,5%,ISO only,Information Not Available
+CommercialPropertyLocation,BasicGroupIDistrictTerritory,0,0%,6,2%,ISO only,Not Applicable
+CommercialPropertyLocation,BasicGroupIIRatingTerr,31,70%,364,100%,both,Balance of State | Beach Territory | Central | Division B
+CommercialPropertyLocation,BasicGroupIRatingTerr,27,61%,364,100%,both,Albany | Albuquerque | Balance of State | Baltimore City
+CommercialPropertyLocation,BasicGroupIReductionCredit,0,0%,8,2%,ISO only,0.5 | 1.0
+CommercialPropertyLocation,City,0,0%,364,100%,ISO only,Abilene | Alameda | Albany | Albuquerque
+CommercialPropertyLocation,County,0,0%,364,100%,ISO only,Adair | Adams | Addison | Adjuntas
+CommercialPropertyLocation,DesignatedCatastropheArea,0,0%,9,2%,ISO only,No
+CommercialPropertyLocation,District,1,2%,14,4%,both,District I | District II
+CommercialPropertyLocation,EQCauseOfLossForm,0,0%,364,100%,ISO only,Earthquake Form (CP 10 28) | Earthquake Form (CP 10 40) | Earthquake Sub-Limit Form (CP 10 45) | Not Applicable
+CommercialPropertyLocation,EQDeductibleTier,0,0%,10,3%,ISO only,0 | 1 | 2 | 3
+CommercialPropertyLocation,EQTerr,0,0%,364,100%,ISO only,005 | 1 | 11 | 13
+CommercialPropertyLocation,FireDepartment,0,0%,2,1%,ISO only,Not Applicable
+CommercialPropertyLocation,FloodCovIndicator,0,0%,360,99%,ISO only,No | Yes
+CommercialPropertyLocation,FungusWetRotDryRotBacteriaCovLocApply,0,0%,148,41%,ISO only,Not Applicable
+CommercialPropertyLocation,GeographicWindHazardLevelTerritory,0,0%,288,79%,ISO only,Adair | Adams | Alcona | Allen
+CommercialPropertyLocation,MineCoverage,0,0%,5,1%,ISO only,No | Yes
+CommercialPropertyLocation,MultipleResidentialPropSpecialCredit,0,0%,364,100%,ISO only,No | Not Applicable
+CommercialPropertyLocation,OperationalUnitIndicator,0,0%,364,100%,ISO only,No
+CommercialPropertyLocation,ProtectClass,37,84%,364,100%,both,1 | 10 | 1X | 1Y
+CommercialPropertyLocation,ShoreFrontOceanOrGreatLakes,0,0%,5,1%,ISO only,Not Applicable
+CommercialPropertyLocation,SpecialRatingTerr,6,14%,364,100%,both,Alameda | Alexandria City | Atlantic | Baltimore
+CommercialPropertyLocation,TerritorialZone,0,0%,36,10%,ISO only,Inland | Inland Territory (Zone 2) | Inland Territory (Zone 3) | Not Applicable
+CommercialPropertyLocation,TerrorismTerritory,0,0%,364,100%,ISO only,"Adams, Arapahoe, Boulder, Broomfield, De | Alexandria City, Arlington County & Fall | Allegany, Anne Arundel, Baltimore, Calve | Atlantic, Camden, Gloucester, Mercer & O"
+CommercialPropertyLocation,UnitNumber,0,0%,364,100%,ISO only,1
+CommercialPropertyLocation,WindstormOrHailDeductible,12,27%,0,0%,ours only,"1,000"
+CommercialPropertyLocation,ZipCode,0,0%,358,98%,ISO only,00501 | 01001 | 01002 | 01004
+CommercialPropertyLocationFireDepartmentCharge,FireIncreaseLimitApplyOnPolicyIndicator,0,0%,356,98%,ISO only,No
+CommercialPropertyLocationNewlyAcquiredLocationTimeElement,Indicator,0,0%,360,99%,ISO only,No
+CommercialPropertyMineSubsidenceCoverage,ManualPremium,0,0%,6,2%,ISO only,0.0
+CommercialPropertyMiningPropertiesBusinessIncome,MiningCoverageOption,0,0%,3,1%,ISO only,None
+CommercialPropertyMultipleDeductibleFormFixedDollarDeductibles,AllCoveredCausesOfLoss,0,0%,56,15%,ISO only,Yes
+CommercialPropertyMultipleDeductibleFormFixedDollarDeductibles,AllCoveredCausesOfLossExceptTheft,0,0%,56,15%,ISO only,No
+CommercialPropertyMultipleDeductibleFormFixedDollarDeductibles,AllCoveredCausesOfLossExceptWindstormOrHail,0,0%,56,15%,ISO only,No
+CommercialPropertyMultipleDeductibleFormFixedDollarDeductibles,AllCoveredCausesOfLossExceptWindstormOrHailAndTheft,0,0%,56,15%,ISO only,No
+CommercialPropertyMultipleDeductibleFormFixedDollarDeductibles,Theft,0,0%,56,15%,ISO only,No
+CommercialPropertyMultipleDeductibleFormFixedDollarDeductibles,WindstormOrHail,0,0%,56,15%,ISO only,No
+CommercialPropertyOccupClass,ClassCode,6,14%,206,57%,both,0074 | 0075 | 0077 | 0078
+CommercialPropertyOccupClass,ClassDesc,0,0%,206,57%,ISO only,"Bakeries - Baking on premises - no deliv | Boarding and Lodging Houses, Rooming Hou | Cannabis - Greenhouses - traditional soi | Convents or Monasteries - 11 to 30 units"
+CommercialPropertyOccupClass,ConformsToCondoActs,0,0%,52,14%,ISO only,Not Applicable
+CommercialPropertyOccupClass,CovForm,0,0%,206,57%,ISO only,Building and Personal Property Coverage 
+CommercialPropertyOccupClass,OccupCategory,6,14%,204,56%,both,Mercantile | Motels and Hotels | Offices | Residential Apartments and Condominiums
+CommercialPropertyOccupClass,PublicInstitutionalPlanApply,0,0%,13,4%,ISO only,No
+CommercialPropertyOccupClass,SpecialIncludingTheftClassLimit,0,0%,2,1%,ISO only,Not Applicable
+CommercialPropertyOccupClass,SpecialIncludingTheftOnPrsnlPropIndicator,0,0%,1,0%,ISO only,No
+CommercialPropertyOccupClass,SpecialIncludingTheftRateGroup,0,0%,2,1%,ISO only,Not Applicable
+CommercialPropertyOccupClass,SpecialIncludingTheftTypeOfRisk,0,0%,2,1%,ISO only,Apartments and Condominiums | Not Applicable
+CommercialPropertyOccupClass,SprinklerSystem,0,0%,206,57%,ISO only,"None | Sprinklered Building, but Not Rated as S"
+CommercialPropertyOccupClass,TheftDeductible,0,0%,202,55%,ISO only,"1,000 | 10,000 | 2,500 | 25,000"
+CommercialPropertyOccupClass,WindstormOrHailDeductible,6,14%,0,0%,ours only,"1,000"
+CommercialPropertyOccupClassTemporarilyInPortableStorageUnits,TemporarilyInPortableStorageUnitsIndicator,0,0%,200,55%,ISO only,No
+CommercialPropertyOrdinanceOrLawCoverage,CombinedBAndCDemolitionAndIncrdConstrctnLimit,0,0%,10,3%,ISO only,0 | 250000
+CommercialPropertyOrdinanceOrLawCoverage,CovBDemolitionLimit,0,0%,10,3%,ISO only,0 | 25000 | 75000
+CommercialPropertyOrdinanceOrLawCoverage,CovCIncreasedConstructionLimit,0,0%,10,3%,ISO only,0 | 35000 | 75000
+CommercialPropertyOrdinanceOrLawCoverage,CovType,0,0%,10,3%,ISO only,Coverages A and B & C Combined | Coverages A and B & C Separate
+CommercialPropertyOrdinanceOrLawCoverage,PostLossOrdinanceOrLawOption,0,0%,10,3%,ISO only,No | Yes
+CommercialPropertyOrdinanceOrLawIncreasedPeriodOfRestoration,PostLossOrdinanceOrLawOption,0,0%,9,2%,ISO only,No | Yes
+CommercialPropertyOutsideSignsDetail,CauseOfLoss,0,0%,1,0%,ISO only,Broad
+CommercialPropertyOutsideSignsDetail,Coinsurance,0,0%,1,0%,ISO only,90%
+CommercialPropertyOutsideSignsDetail,ConstructionType,0,0%,1,0%,ISO only,Entirely Metal
+CommercialPropertyOutsideSignsDetail,EQCovIndicator,0,0%,1,0%,ISO only,Yes
+CommercialPropertyOutsideSignsDetail,Limit,0,0%,1,0%,ISO only,50000
+CommercialPropertyOutsideSignsDetail,SignPlacement,0,0%,1,0%,ISO only,Attached
+CommercialPropertyPersonalProperty,AgreedValueOption,0,0%,206,57%,ISO only,No
+CommercialPropertyPersonalProperty,BlktAgreedVal,0,0%,9,2%,ISO only,Not Applicable
+CommercialPropertyPersonalProperty,BlktBasicGroupIAvgRate,0,0%,9,2%,ISO only,0.0
+CommercialPropertyPersonalProperty,BlktBasicGroupIAvgRateAgreedVal,0,0%,9,2%,ISO only,0.0
+CommercialPropertyPersonalProperty,BlktBasicGroupIIAvgRate,0,0%,9,2%,ISO only,0.0
+CommercialPropertyPersonalProperty,BlktBasicGroupIIAvgRateAgreedVal,0,0%,9,2%,ISO only,0.0
+CommercialPropertyPersonalProperty,BlktBroadAvgRate,0,0%,9,2%,ISO only,0.0
+CommercialPropertyPersonalProperty,BlktBroadAvgRateAgreedVal,0,0%,9,2%,ISO only,0.0
+CommercialPropertyPersonalProperty,BlktCauseOfLossValue,0,0%,9,2%,ISO only,Not Applicable
+CommercialPropertyPersonalProperty,BlktCoinsuranceValue,0,0%,9,2%,ISO only,Not Applicable
+CommercialPropertyPersonalProperty,BlktEQCauseOfLossIncludedInBlkt,0,0%,9,2%,ISO only,No
+CommercialPropertyPersonalProperty,BlktInflationGuard,0,0%,9,2%,ISO only,Not Applicable
+CommercialPropertyPersonalProperty,BlktLimit,0,0%,9,2%,ISO only,0
+CommercialPropertyPersonalProperty,BlktPeakSeasonIndicator,0,0%,9,2%,ISO only,No
+CommercialPropertyPersonalProperty,BlktProportion,0,0%,9,2%,ISO only,0.0
+CommercialPropertyPersonalProperty,BlktRadioactiveContaminationAvgRate,0,0%,9,2%,ISO only,0.0
+CommercialPropertyPersonalProperty,BlktRadioactiveContaminationValue,0,0%,9,2%,ISO only,Not Applicable
+CommercialPropertyPersonalProperty,BlktSpecialAvgRate,0,0%,9,2%,ISO only,0.0
+CommercialPropertyPersonalProperty,BlktSpecialAvgRateAgreedVal,0,0%,9,2%,ISO only,0.0
+CommercialPropertyPersonalProperty,BlktTotalFullValueAmount,0,0%,9,2%,ISO only,0
+CommercialPropertyPersonalProperty,BlktTotalLOIToUse,0,0%,9,2%,ISO only,0
+CommercialPropertyPersonalProperty,BlktType,0,0%,9,2%,ISO only,Not Applicable
+CommercialPropertyPersonalProperty,CauseOfLoss,6,14%,206,57%,both,Basic | Broad | Special | Special Excluding Theft
+CommercialPropertyPersonalProperty,Coinsurance,6,14%,206,57%,both,100% | 80% | 90%
+CommercialPropertyPersonalProperty,CovType,6,14%,206,57%,both,All Personal Property | Personal Property
+CommercialPropertyPersonalProperty,Deductible,6,14%,0,0%,ours only,"1,000"
+CommercialPropertyPersonalProperty,EQCoinsurance,0,0%,206,57%,ISO only,100% | 80% | 90% | Not Applicable
+CommercialPropertyPersonalProperty,EQCovIndicator,0,0%,206,57%,ISO only,"No Coverage | Yes, Not Included in Blanket"
+CommercialPropertyPersonalProperty,EQGrade,0,0%,66,18%,ISO only,1 | 2 | 3 | 4
+CommercialPropertyPersonalProperty,EQSprinklerLeakageOnly,0,0%,206,57%,ISO only,Not Applicable
+CommercialPropertyPersonalProperty,FullPrsnlPropValue,0,0%,67,18%,ISO only,125500 | 495000 | 525000 | 560000
+CommercialPropertyPersonalProperty,GradeOfOccupancyBGII,0,0%,2,1%,ISO only,C | J
+CommercialPropertyPersonalProperty,IncludedInBlkt,6,14%,206,57%,both,No
+CommercialPropertyPersonalProperty,InflationGuard,0,0%,206,57%,ISO only,2% | Not Applicable
+CommercialPropertyPersonalProperty,Limit,6,14%,206,57%,both,100000 | 1000000 | 1250000 | 1255000
+CommercialPropertyPersonalProperty,LossCostMultiplier,6,14%,0,0%,ours only,1.0
+CommercialPropertyPersonalProperty,OpenSides,0,0%,8,2%,ISO only,No | Yes
+CommercialPropertyPersonalProperty,StateOwnedProperty,0,0%,5,1%,ISO only,Yes
+CommercialPropertyPersonalProperty,TerrorismOverride,0,0%,206,57%,ISO only,No
+CommercialPropertyPersonalProperty,TerrorismSubLimit,0,0%,196,54%,ISO only,0 | 10 | 100 | 65
+CommercialPropertyPersonalProperty,TotalBlktSpecificInsAmount,0,0%,9,2%,ISO only,0
+CommercialPropertyPersonalProperty,UnitNumber,0,0%,206,57%,ISO only,1
+CommercialPropertyPersonalProperty,ValuationType,0,0%,206,57%,ISO only,Actual Cash Value
+CommercialPropertyPersonalPropertySpecialCOLFursFurGarmentsAndGarmentsTrimmedWithFur,Indicator,0,0%,201,55%,ISO only,No
+CommercialPropertyPersonalPropertySpecialCOLJewelryWatchesPearlsBullionGoldSilverPlatinumAndOtherPreciousMetals,Indicator,0,0%,201,55%,ISO only,No
+CommercialPropertyPersonalPropertySpecialCOLJewelryWatchesPearlsBullionGoldSilverPlatinumAndOtherPreciousMetals,ValueIndicator,0,0%,193,53%,ISO only,Not Applicable
+CommercialPropertyPersonalPropertySpecialCOLPatternsDiesMoldsAndForms,Indicator,0,0%,201,55%,ISO only,No
+CommercialPropertyPersonalPropertySpecialCOLStampsTicketsAndLettersOfCredit,Indicator,0,0%,201,55%,ISO only,No
+CommercialPropertyPollutantCleanUpAndRemovalAdditionalAggregateLimitOfInsuranceLocation,Deductible,0,0%,3,1%,ISO only,"1,000 | 2,500"
+CommercialPropertyPollutantCleanUpAndRemovalAdditionalAggregateLimitOfInsuranceLocation,Limit,0,0%,3,1%,ISO only,25000 | 60000
+CommercialPropertyProtectiveSafeguardsDetail,ProtectiveSymbol,0,0%,2,1%,ISO only,P-1 Automatic Sprinkler System | P-9 Describe in Schedule
+CommercialPropertyRadioOrTelevisionAntennasDetail,CauseOfLoss,0,0%,1,0%,ISO only,Special
+CommercialPropertyRadioOrTelevisionAntennasDetail,Coinsurance,0,0%,1,0%,ISO only,90%
+CommercialPropertyRadioOrTelevisionAntennasDetail,EQCovIndicator,0,0%,1,0%,ISO only,Yes
+CommercialPropertyRadioOrTelevisionAntennasDetail,Height,0,0%,1,0%,ISO only,Not over 75 Feet in Height
+CommercialPropertyRadioOrTelevisionAntennasDetail,Limit,0,0%,1,0%,ISO only,500000
+CommercialPropertyRadioOrTelevisionAntennasDetail,Type,0,0%,1,0%,ISO only,Towers - Broadcasting Antennas (Radio an
+CommercialPropertySpecialClass,AgreedValueOption,0,0%,28,8%,ISO only,No
+CommercialPropertySpecialClass,BasicGroupIIRatingTerr,10,23%,0,0%,ours only,Entire State
+CommercialPropertySpecialClass,BasicGroupIISymbol,10,23%,27,7%,both,AB | B
+CommercialPropertySpecialClass,BasicGroupIISymbolNum,0,0%,9,2%,ISO only,1.0 | 4.0
+CommercialPropertySpecialClass,BlktAgreedVal,0,0%,1,0%,ISO only,Not Applicable
+CommercialPropertySpecialClass,BlktBasicGroupIAvgRate,0,0%,1,0%,ISO only,0.0
+CommercialPropertySpecialClass,BlktBasicGroupIAvgRateAgreedVal,0,0%,1,0%,ISO only,0.0
+CommercialPropertySpecialClass,BlktBasicGroupIIAvgRate,0,0%,1,0%,ISO only,0.0
+CommercialPropertySpecialClass,BlktBasicGroupIIAvgRateAgreedVal,0,0%,1,0%,ISO only,0.0
+CommercialPropertySpecialClass,BlktBroadAvgRate,0,0%,1,0%,ISO only,0.0
+CommercialPropertySpecialClass,BlktBroadAvgRateAgreedVal,0,0%,1,0%,ISO only,0.0
+CommercialPropertySpecialClass,BlktCauseOfLossValue,0,0%,1,0%,ISO only,Not Applicable
+CommercialPropertySpecialClass,BlktCoinsuranceValue,0,0%,1,0%,ISO only,Not Applicable
+CommercialPropertySpecialClass,BlktEQCauseOfLossIncludedInBlkt,0,0%,1,0%,ISO only,No
+CommercialPropertySpecialClass,BlktInflationGuard,0,0%,1,0%,ISO only,Not Applicable
+CommercialPropertySpecialClass,BlktLimit,0,0%,1,0%,ISO only,0
+CommercialPropertySpecialClass,BlktProportion,0,0%,1,0%,ISO only,0.0
+CommercialPropertySpecialClass,BlktRadioactiveContaminationAvgRate,0,0%,1,0%,ISO only,0.0
+CommercialPropertySpecialClass,BlktRadioactiveContaminationValue,0,0%,1,0%,ISO only,Not Applicable
+CommercialPropertySpecialClass,BlktSpecialAvgRate,0,0%,1,0%,ISO only,0.0
+CommercialPropertySpecialClass,BlktSpecialAvgRateAgreedVal,0,0%,1,0%,ISO only,0.0
+CommercialPropertySpecialClass,BlktTotalFullValueAmount,0,0%,1,0%,ISO only,0
+CommercialPropertySpecialClass,BlktType,0,0%,1,0%,ISO only,Not Applicable
+CommercialPropertySpecialClass,BuildingIDNumber,0,0%,3,1%,ISO only,1
+CommercialPropertySpecialClass,CauseOfLoss,10,23%,28,8%,both,Basic | Broad | Special
+CommercialPropertySpecialClass,ClassCode,0,0%,28,8%,ISO only,1190
+CommercialPropertySpecialClass,ClassDescription,10,23%,28,8%,both,"Aircraft Beacons, Blinkers and Other Lig | Amusement Equipment in the Open (Commerc | Artificial Turf | Bleachers"
+CommercialPropertySpecialClass,Coinsurance,10,23%,28,8%,both,80% | 90%
+CommercialPropertySpecialClass,ConformsToCondoActs,0,0%,8,2%,ISO only,Not Applicable
+CommercialPropertySpecialClass,ConstructionType,10,23%,0,0%,ours only,Fire Resistive - Reinforced Masonry - Li | Frame
+CommercialPropertySpecialClass,CovForm,0,0%,28,8%,ISO only,Building and Personal Property Coverage 
+CommercialPropertySpecialClass,CovType,10,23%,0,0%,ours only,Bldg
+CommercialPropertySpecialClass,Deductible,9,20%,28,8%,both,"1,000 | 2,500 | 500"
+CommercialPropertySpecialClass,EQClass,0,0%,2,1%,ISO only,5C | E3
+CommercialPropertySpecialClass,EQCoinsurance,0,0%,28,8%,ISO only,80% | Not Applicable
+CommercialPropertySpecialClass,EQCovIndicator,0,0%,28,8%,ISO only,"No Coverage | Yes, Not Included in Blanket"
+CommercialPropertySpecialClass,EQDeductible,0,0%,2,1%,ISO only,"15% | 5,000"
+CommercialPropertySpecialClass,FullSpecialClassValue,10,23%,1,0%,both,100000 | 250000
+CommercialPropertySpecialClass,IncludedInBlkt,10,23%,28,8%,both,No
+CommercialPropertySpecialClass,IncludedInBuilding,10,23%,28,8%,both,No | Yes
+CommercialPropertySpecialClass,InflationGuard,0,0%,28,8%,ISO only,Not Applicable
+CommercialPropertySpecialClass,Limit,10,23%,28,8%,both,100000 | 200000 | 250000 | 400000
+CommercialPropertySpecialClass,LossCostMultiplier,10,23%,0,0%,ours only,1.0
+CommercialPropertySpecialClass,MultiPremiumAndDispersionCreditFactor,10,23%,0,0%,ours only,1.0
+CommercialPropertySpecialClass,NamedStormPctDeductibleApplies,0,0%,6,2%,ISO only,No
+CommercialPropertySpecialClass,OccupancyClassificationBGII,0,0%,1,0%,ISO only,Windmills
+CommercialPropertySpecialClass,PackageModFactor,10,23%,0,0%,ours only,1.0
+CommercialPropertySpecialClass,PublicInstitutionalPlanApply,0,0%,6,2%,ISO only,No
+CommercialPropertySpecialClass,RentalProperty,0,0%,28,8%,ISO only,No
+CommercialPropertySpecialClass,SpecialClassDescConvertedOption,0,0%,1,0%,ISO only,Option9
+CommercialPropertySpecialClass,TerrorismOverride,0,0%,28,8%,ISO only,No
+CommercialPropertySpecialClass,TerrorismSubLimit,0,0%,28,8%,ISO only,0 | 80
+CommercialPropertySpecialClass,TheftDeductible,0,0%,28,8%,ISO only,"1,000 | 2,500 | 250 | Not Applicable"
+CommercialPropertySpecialClass,ValuationType,0,0%,28,8%,ISO only,Actual Cash Value
+CommercialPropertySpecialClass,WindstormOrHailDeductible,0,0%,28,8%,ISO only,"1,000 | 2,500 | 5,000 | 500"
+CommercialPropertySpecialClassBusnIncome,AgreedValueOption,0,0%,1,0%,ISO only,Not Applicable
+CommercialPropertySpecialClassBusnIncome,CauseOfLoss,4,9%,1,0%,both,Basic | Broad | Special
+CommercialPropertySpecialClassBusnIncome,Coinsurance,4,9%,1,0%,both,90% | No Coinsurance
+CommercialPropertySpecialClassBusnIncome,CombinedTypeOfRiskEducationalPct,0,0%,1,0%,ISO only,0
+CommercialPropertySpecialClassBusnIncome,CombinedTypeOfRiskManufacturingPct,0,0%,1,0%,ISO only,55
+CommercialPropertySpecialClassBusnIncome,CombinedTypeOfRiskMercantilePct,0,0%,1,0%,ISO only,45
+CommercialPropertySpecialClassBusnIncome,CombinedTypeOfRiskRentalPct,0,0%,1,0%,ISO only,0
+CommercialPropertySpecialClassBusnIncome,CovType,4,9%,1,0%,both,Business Income With Extra Expense | Business Income Without Extra Expense
+CommercialPropertySpecialClassBusnIncome,EQCovIndicator,0,0%,1,0%,ISO only,No Coverage
+CommercialPropertySpecialClassBusnIncome,ExtendedPeriod,0,0%,1,0%,ISO only,Not Applicable
+CommercialPropertySpecialClassBusnIncome,ExtraExpenseLimitOnLossPayment,0,0%,1,0%,ISO only,Not Applicable
+CommercialPropertySpecialClassBusnIncome,IncludedInBlkt,4,9%,1,0%,both,No
+CommercialPropertySpecialClassBusnIncome,Limit,4,9%,1,0%,both,100000 | 560000
+CommercialPropertySpecialClassBusnIncome,LossCostMultiplier,4,9%,0,0%,ours only,1.0
+CommercialPropertySpecialClassBusnIncome,MaxPeriod,4,9%,1,0%,both,No | Yes
+CommercialPropertySpecialClassBusnIncome,MonthlyLimitOfIndemnity,4,9%,1,0%,both,Not Applicable
+CommercialPropertySpecialClassBusnIncome,TerrorismOverride,0,0%,1,0%,ISO only,No
+CommercialPropertySpecialClassBusnIncome,TerrorismSubLimit,0,0%,1,0%,ISO only,0
+CommercialPropertySpecialClassBusnIncome,TypeOfRisk,4,9%,1,0%,both,Combined Manufacturing and Mercantile Op | Mercantile and Non-manufacturing
+CommercialPropertySpecialClassBusnIncome,WaterFrontProperty,0,0%,1,0%,ISO only,No
+CommercialPropertySpecialClassBusnIncome,WatercraftExclBuybackConstrctnOption,0,0%,1,0%,ISO only,Not Applicable
+CommercialPropertySpoilageCoverage,Description,0,0%,3,1%,ISO only,Bakery Goods
+CommercialPropertySpoilageCoverage,Limit,0,0%,3,1%,ISO only,450000
+CommercialPropertySpoilageCoverage,RefrigerationMaintenanceAgreement,0,0%,3,1%,ISO only,Not Applicable
+CommercialPropertySpoilageCoverage,SellingPrice,0,0%,3,1%,ISO only,No
+CommercialPropertySpoilageCoverage,SpoilageCauseOfLoss,0,0%,3,1%,ISO only,Power Outage
+CommercialPropertyStructure,AbsenceOfCombustibleStructures,0,0%,1,0%,ISO only,Yes
+CommercialPropertyStructure,AgeOfTheRoof,0,0%,7,2%,ISO only,0
+CommercialPropertyStructure,AgreedValueOption,0,0%,364,100%,ISO only,No | Not Applicable
+CommercialPropertyStructure,ApplicantControlThirtyFeetFromBuilding,0,0%,1,0%,ISO only,Yes
+CommercialPropertyStructure,BCEG,20,45%,344,95%,both,1 | 4 | Ungraded
+CommercialPropertyStructure,BCEGClass,0,0%,344,95%,ISO only,Building Individually Inspected and Cert | Not Graded
+CommercialPropertyStructure,BasicGroupIISymbol,0,0%,7,2%,ISO only,A | H | W
+CommercialPropertyStructure,BlktAgreedVal,0,0%,10,3%,ISO only,Not Applicable
+CommercialPropertyStructure,BlktBasicGroupIAvgRate,0,0%,10,3%,ISO only,0.0
+CommercialPropertyStructure,BlktBasicGroupIAvgRateAgreedVal,0,0%,10,3%,ISO only,0.0
+CommercialPropertyStructure,BlktBasicGroupIIAvgRate,0,0%,10,3%,ISO only,0.0
+CommercialPropertyStructure,BlktBasicGroupIIAvgRateAgreedVal,0,0%,10,3%,ISO only,0.0
+CommercialPropertyStructure,BlktBroadAvgRate,0,0%,10,3%,ISO only,0.0
+CommercialPropertyStructure,BlktBroadAvgRateAgreedVal,0,0%,10,3%,ISO only,0.0
+CommercialPropertyStructure,BlktCauseOfLossValue,0,0%,10,3%,ISO only,Not Applicable
+CommercialPropertyStructure,BlktCoinsuranceValue,0,0%,10,3%,ISO only,Not Applicable
+CommercialPropertyStructure,BlktEQCauseOfLossIncludedInBlkt,0,0%,10,3%,ISO only,No
+CommercialPropertyStructure,BlktIDNum,1,2%,0,0%,ours only,100
+CommercialPropertyStructure,BlktInflationGuard,0,0%,10,3%,ISO only,Not Applicable
+CommercialPropertyStructure,BlktLimit,0,0%,10,3%,ISO only,0
+CommercialPropertyStructure,BlktProportion,0,0%,10,3%,ISO only,0.0
+CommercialPropertyStructure,BlktRadioactiveContaminationAvgRate,0,0%,10,3%,ISO only,0.0
+CommercialPropertyStructure,BlktRadioactiveContaminationValue,0,0%,10,3%,ISO only,Not Applicable
+CommercialPropertyStructure,BlktSpecialAvgRate,0,0%,10,3%,ISO only,0.0
+CommercialPropertyStructure,BlktSpecialAvgRateAgreedVal,0,0%,10,3%,ISO only,0.0
+CommercialPropertyStructure,BlktTotalFullValueAmount,0,0%,10,3%,ISO only,0
+CommercialPropertyStructure,BlktTotalLOIToUse,0,0%,10,3%,ISO only,0
+CommercialPropertyStructure,BlktType,0,0%,10,3%,ISO only,Not Applicable
+CommercialPropertyStructure,BlktTypeOfBlanketRating,0,0%,10,3%,ISO only,No
+CommercialPropertyStructure,CauseOfLoss,34,77%,364,100%,both,Basic | Basic Group I | Broad | Special
+CommercialPropertyStructure,CertificateLevel,0,0%,10,3%,ISO only,Not Applicable
+CommercialPropertyStructure,CertificateType,0,0%,14,4%,ISO only,No Certificate | No Certificate / No Mitigation / Not in  | No Certificate/No Mitigation/Not in Comp
+CommercialPropertyStructure,ClassAFireRatedRoof,0,0%,1,0%,ISO only,No
+CommercialPropertyStructure,ClassCode,34,77%,364,100%,both,0074 | 0075 | 0078 | 0079
+CommercialPropertyStructure,ClassificationDescription,0,0%,364,100%,ISO only,"Apartments without Mercantile Occupancie | Bakeries - Baking on premises - no deliv | Boarding and Lodging Houses, Rooming Hou | Builders' Risks"
+CommercialPropertyStructure,ClearingOfVegetationDebris,0,0%,1,0%,ISO only,Yes
+CommercialPropertyStructure,ClearingOfVegetationDebrisMulchStoredCombustibleMaterials,0,0%,1,0%,ISO only,Yes
+CommercialPropertyStructure,Coinsurance,34,77%,364,100%,both,100% | 80% | 90% | Not Applicable
+CommercialPropertyStructure,CompletedBasicGroupIISymbol,0,0%,7,2%,ISO only,B | Not Applicable
+CommercialPropertyStructure,CompliesWithSection4291,0,0%,1,0%,ISO only,No
+CommercialPropertyStructure,ConformsToCondoActs,0,0%,82,23%,ISO only,Not Applicable
+CommercialPropertyStructure,ConstructionClassBGII,0,0%,4,1%,ISO only,1 | 2 | 3
+CommercialPropertyStructure,ConstructionCode,0,0%,57,16%,ISO only,1 | 2 | 5 | 6
+CommercialPropertyStructure,ConstructionType,34,77%,364,100%,both,Fire Resistive | Fire Resistive - Other Than Reinforced M | Frame | Joisted Masonry - Other Than Reinforced
+CommercialPropertyStructure,CovType,34,77%,364,100%,both,Builders Risk | Building | Improvements and Betterments | Legal Liability
+CommercialPropertyStructure,Deductible,34,77%,364,100%,both,"1,000 | 2,500 | 25,000 | 250"
+CommercialPropertyStructure,EQClass,0,0%,69,19%,ISO only,1D | 2B | 3C | 5A
+CommercialPropertyStructure,EQCoinsurance,0,0%,364,100%,ISO only,100% | 80% | 90% | Not Applicable
+CommercialPropertyStructure,EQCovIndicator,0,0%,364,100%,ISO only,"No Coverage | Yes, Not Included in Blanket"
+CommercialPropertyStructure,EQDeductible,0,0%,69,19%,ISO only,"1,000 | 10% | 2,500 | 25%"
+CommercialPropertyStructure,EQRoofTankHazard,0,0%,9,2%,ISO only,No | Yes
+CommercialPropertyStructure,EQSprinklerLeakageOnly,0,0%,364,100%,ISO only,No | Not Applicable
+CommercialPropertyStructure,EnclosedEaves,0,0%,1,0%,ISO only,No
+CommercialPropertyStructure,FireResistantVents,0,0%,1,0%,ISO only,No
+CommercialPropertyStructure,FireRiskReductionCommunity,0,0%,1,0%,ISO only,No
+CommercialPropertyStructure,FirewiseSiteInGoodStanding,0,0%,1,0%,ISO only,No
+CommercialPropertyStructure,FullBldgValue,34,77%,160,44%,both,0 | 100000 | 1000000 | 1220000
+CommercialPropertyStructure,GradeOfOccupancyBGII,0,0%,4,1%,ISO only,B | C | I
+CommercialPropertyStructure,GroundFloorArea,0,0%,4,1%,ISO only,"Area Not More Than 3,000 Sq. Ft. | Not Relevant"
+CommercialPropertyStructure,HurricaneDeductibleType,0,0%,4,1%,ISO only,Not Applicable
+CommercialPropertyStructure,IBHSFORTIFIEDHomeHighWindAndHailCertificateLevel,0,0%,7,2%,ISO only,Not Applicable
+CommercialPropertyStructure,IncApt,0,0%,7,2%,ISO only,Not Applicable
+CommercialPropertyStructure,IncludedInBlkt,34,77%,364,100%,both,No | Yes
+CommercialPropertyStructure,IncorporationOfOnlyNonCombustibleMaterials,0,0%,1,0%,ISO only,Yes
+CommercialPropertyStructure,InflationGuard,0,0%,364,100%,ISO only,Not Applicable
+CommercialPropertyStructure,InsuredHoldsAnIBHSHurricaneCertificateOrAnIBHSHighWindAndHailCertificate,0,0%,7,2%,ISO only,No | Not Applicable
+CommercialPropertyStructure,Limit,34,77%,364,100%,both,100000 | 110000 | 1220000 | 1255000
+CommercialPropertyStructure,LossCostMultiplier,34,77%,0,0%,ours only,1.0
+CommercialPropertyStructure,MineSubsidenceType,0,0%,35,10%,ISO only,Dwelling Structure | Not Applicable
+CommercialPropertyStructure,MultiPremiumAndDispersionCreditFactor,34,77%,0,0%,ours only,1.0
+CommercialPropertyStructure,MultipaneWindows,0,0%,1,0%,ISO only,No
+CommercialPropertyStructure,NamedStormPctDeductibleApplies,0,0%,13,4%,ISO only,No
+CommercialPropertyStructure,NewResidentialConstruction,0,0%,1,0%,ISO only,Prior to 2002
+CommercialPropertyStructure,NonCombustibleVerticalClearanceAtBottom,0,0%,1,0%,ISO only,Yes
+CommercialPropertyStructure,NonCombustibleVerticalClearanceFromTheGroundUp,0,0%,1,0%,ISO only,No
+CommercialPropertyStructure,NumStories,20,45%,364,100%,both,1-2 | 1-3 | 3-4 | 4
+CommercialPropertyStructure,NumberOfUnits,0,0%,3,1%,ISO only,No
+CommercialPropertyStructure,OpenSides,0,0%,360,99%,ISO only,No | Yes
+CommercialPropertyStructure,PackageModFactor,34,77%,0,0%,ours only,1.0
+CommercialPropertyStructure,PlasticGreenhouse,0,0%,7,2%,ISO only,Not Applicable
+CommercialPropertyStructure,PublicInstitutionalPlanApply,0,0%,19,5%,ISO only,No | Not Applicable
+CommercialPropertyStructure,RatingType,34,77%,364,100%,both,Class
+CommercialPropertyStructure,RatingTypeBasicGroupII,12,27%,288,79%,both,Class
+CommercialPropertyStructure,RentalProperty,0,0%,360,99%,ISO only,No
+CommercialPropertyStructure,RoofLevel,0,0%,7,2%,ISO only,Not Applicable
+CommercialPropertyStructure,RoofSubDecking,0,0%,7,2%,ISO only,Not Applicable
+CommercialPropertyStructure,SoftStory,0,0%,60,16%,ISO only,No | Yes
+CommercialPropertyStructure,SpecificGroupIRate,0,0%,364,100%,ISO only,0.0
+CommercialPropertyStructure,SprinklerSystem,0,0%,364,100%,ISO only,"None | Sprinklered Building, but Not Rated as S"
+CommercialPropertyStructure,StateOwnedProperty,0,0%,7,2%,ISO only,Not Applicable | Yes
+CommercialPropertyStructure,SubStdConditionA,0,0%,81,22%,ISO only,No
+CommercialPropertyStructure,SubStdConditionB,0,0%,81,22%,ISO only,No
+CommercialPropertyStructure,SubStdConditionC,0,0%,81,22%,ISO only,No
+CommercialPropertyStructure,SubStdConditionD,0,0%,81,22%,ISO only,No
+CommercialPropertyStructure,SubStdConditionE,0,0%,81,22%,ISO only,No
+CommercialPropertyStructure,TerrorOverridePremium,1,2%,0,0%,ours only,10
+CommercialPropertyStructure,TerrorismOverride,1,2%,364,100%,both,No | Yes
+CommercialPropertyStructure,TerrorismSubLimit,0,0%,263,72%,ISO only,0 | 85 | 95
+CommercialPropertyStructure,TheftDeductible,0,0%,364,100%,ISO only,"1,000 | 10,000 | 2,500 | 25,000"
+CommercialPropertyStructure,UnderFourUnits,0,0%,4,1%,ISO only,Not Applicable | Yes
+CommercialPropertyStructure,UnitNumber,0,0%,364,100%,ISO only,1
+CommercialPropertyStructure,VacantBuilding,0,0%,364,100%,ISO only,No | Yes
+CommercialPropertyStructure,ValuationLaw,0,0%,6,2%,ISO only,Exemption Does Not Apply
+CommercialPropertyStructure,ValuationType,0,0%,364,100%,ISO only,Actual Cash Value | Not Applicable | Replacement Cost
+CommercialPropertyStructure,WCFProofOfCompliance,0,0%,10,3%,ISO only,Not Applicable
+CommercialPropertyStructure,WCFWindstormLossMitigationEligibility,0,0%,10,3%,ISO only,Not Applicable
+CommercialPropertyStructure,WildfireMitigation,0,0%,4,1%,ISO only,No | Yes
+CommercialPropertyStructure,WindstormConstructionProgram,0,0%,10,3%,ISO only,No
+CommercialPropertyStructure,WindstormCredit,0,0%,10,3%,ISO only,No | Yes
+CommercialPropertyStructure,WindstormMitigationDiscountApplies,0,0%,4,1%,ISO only,No
+CommercialPropertyStructure,WindstormOrHailDeductible,6,14%,364,100%,both,"1% | 1,000 | 10,000 | 2%"
+CommercialPropertyStructure,YearOfConstructionCode,0,0%,364,100%,ISO only,2000 | 2001 | 2004 | 2006
+CommercialPropertyStructureBuildersRiskBuildingMaterialsAndSuppliesOfOthers,Indicator,0,0%,154,42%,ISO only,No
+CommercialPropertyUnscheduledBuildingPropertyTenantsPolicy,CausesOfLoss,0,0%,1,0%,ISO only,Special
+CommercialPropertyUnscheduledBuildingPropertyTenantsPolicy,Coinsurance,0,0%,1,0%,ISO only,80%
+CommercialPropertyUnscheduledBuildingPropertyTenantsPolicy,CovType,0,0%,1,0%,ISO only,Building Glass And Building Property Oth
+CommercialPropertyUnscheduledBuildingPropertyTenantsPolicy,DeductibleOnBuildingGlass,0,0%,1,0%,ISO only,"1,000"
+CommercialPropertyUnscheduledBuildingPropertyTenantsPolicy,DeductibleOnBuildingPropertyOtherThanGlass,0,0%,1,0%,ISO only,"2,500"
+CommercialPropertyUnscheduledBuildingPropertyTenantsPolicy,EQCovIndicator,0,0%,1,0%,ISO only,No
+CommercialPropertyUnscheduledBuildingPropertyTenantsPolicy,LimitOnBuildingGlass,0,0%,1,0%,ISO only,450000
+CommercialPropertyUnscheduledBuildingPropertyTenantsPolicy,LimitOnBuildingPropertyOtherThanGlass,0,0%,1,0%,ISO only,500000
+CommercialPropertyUtilityServicesDirectDamageBldgDetail,CauseOfLoss,0,0%,3,1%,ISO only,Special
+CommercialPropertyUtilityServicesDirectDamageBldgDetail,EQCovIndicator,0,0%,3,1%,ISO only,No
+CommercialPropertyUtilityServicesDirectDamageBldgDetail,Limit,0,0%,3,1%,ISO only,45000
+CommercialPropertyUtilityServicesDirectDamageBldgDetail,Utility,0,0%,3,1%,ISO only,Water Supply
+CommercialPropertyUtilityServicesDirectDamageBldgDetail,UtilityType,0,0%,3,1%,ISO only,Public Utilities
+CommercialPropertyUtilityServicesTimeElementDetail,CauseOfLoss,0,0%,10,3%,ISO only,Broad | Special
+CommercialPropertyUtilityServicesTimeElementDetail,EQCovIndicator,0,0%,10,3%,ISO only,No
+CommercialPropertyUtilityServicesTimeElementDetail,Limit,0,0%,10,3%,ISO only,75000 | 8000 | 95000
+CommercialPropertyUtilityServicesTimeElementDetail,Utility,0,0%,10,3%,ISO only,Communications Supply - Including Overhe | Power Supply - Including Overhead Transm | Water Supply
+CommercialPropertyUtilityServicesTimeElementDetail,UtilityType,0,0%,10,3%,ISO only,Public Utilities
+CommercialPropertyUtilityServicesTimeElementDetail,WaitingPeriod,0,0%,10,3%,ISO only,12 hours | 120 hours | 168 hours
+CommercialPropertyWindstormLossMitigationCov,BuildingCode,0,0%,4,1%,ISO only,SCBC Equivalent
+CommercialPropertyWindstormLossMitigationCov,BuildingType,0,0%,4,1%,ISO only,I | II
+CommercialPropertyWindstormLossMitigationCov,DoorStrength,0,0%,2,1%,ISO only,Reinforced Single Width Doors
+CommercialPropertyWindstormLossMitigationCov,OpeningProtection,0,0%,4,1%,ISO only,"Engineered Shutters | Tempered, Heat Strengthened Or Laminated"
+CommercialPropertyWindstormLossMitigationCov,RoofDeckBuildingTypeI,0,0%,2,1%,ISO only,B
+CommercialPropertyWindstormLossMitigationCov,RoofDeckBuildingTypeII,0,0%,2,1%,ISO only,Wood
+CommercialPropertyWindstormLossMitigationCov,RoofShape,0,0%,2,1%,ISO only,Gable End With Bracing
+CommercialPropertyWindstormLossMitigationCov,RoofToWallConnection,0,0%,2,1%,ISO only,Clips
+CommercialPropertyWindstormLossMitigationCov,SecondaryWaterResistanceBuildingTypeI,0,0%,2,1%,ISO only,SWR
+CommercialPropertyWindstormLossMitigationCov,SecondaryWaterResistanceBuildingTypeII,0,0%,2,1%,ISO only,SWR
+CommercialPropertyWindstormLossMitigationCov,Territory,0,0%,4,1%,ISO only,Coastal And Seacoast Areas | Remainder Of State
+Policy,EffectiveDateTime,44,100%,364,100%,both,2020-12-01T00:00:00 | 2021-11-01T00:00:00 | 2022-04-01T00:00:00 | 2022-06-01T00:00:00
+Policy,ProductName,44,100%,364,100%,both,Commercial Property AK | Commercial Property AL | Commercial Property AR | Commercial Property AZ

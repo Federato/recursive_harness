@@ -1,0 +1,248 @@
+<title>Payload generator — wireframes for the two new sheets</title>
+<meta charset="utf-8">
+<style>
+  body { font-family: Georgia, "Times New Roman", serif; max-width: 1140px; margin: 0 auto; padding: 32px 24px 80px; line-height: 1.55; color: #1c2733; background: #fff; }
+  @media (prefers-color-scheme: dark) {
+    body { background: #14181d; color: #dfe4e9; }
+    code, pre { background: #262c33 !important; color: #dfe4e9; }
+    .note { background: #2c2a1c !important; color: #e0c064 !important; }
+    .note.good { background: #1b3226 !important; color: #63c090 !important; }
+    .note.shared { background: #1d2b33 !important; color: #9fd4dc !important; }
+    .xl { border-color: #3a4048 !important; }
+    .xl th { background: #24313a !important; color: #9aa5b1 !important; border-color: #3a4048 !important; }
+    .xl td { border-color: #303740 !important; background: #171d24; color: #dfe4e9; }
+    .xl td.rh { background: #24313a !important; color: #9aa5b1 !important; }
+    .xl td.blk { background: #1e3a45 !important; color: #9fd4dc !important; }
+    .xl td.hdr { background: #232a31 !important; color: #cfd6dd !important; }
+    .xl td.src { background: #16281f !important; }
+    .xl td.def { background: #2b2717 !important; }
+    .xl td.id  { background: #17242b !important; }
+    .xl td.empty { background: #15191e !important; }
+    .tabs { background: #1b2027 !important; border-color: #3a4048 !important; }
+    .tab { background: #232a31 !important; color: #a3aebb !important; border-color: #3a4048 !important; }
+    .tab.new { background: #1b3226 !important; color: #63c090 !important; border-color: #3f8f66 !important; }
+    .tab.cur { background: #171d24 !important; color: #dfe4e9 !important; }
+    .lgd span.sw { border-color: #3a4048 !important; }
+  }
+  h1 { font-size: 26px; font-weight: 400; margin-bottom: 4px; }
+  h2 { font-size: 19px; font-weight: 700; margin-top: 40px; border-bottom: 2px solid #1e3a45; padding-bottom: 4px; }
+  h3 { font-size: 15px; margin: 24px 0 6px; }
+  .meta { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13px; color: #55606b; margin: 6px 0 4px; }
+  code { font-family: ui-monospace, Consolas, monospace; font-size: 0.87em; background: #eef1f4; padding: 1px 5px; border-radius: 3px; }
+  pre { font-family: ui-monospace, Consolas, monospace; font-size: 12.5px; background: #eef1f4; padding: 12px 14px; border-radius: 6px; overflow-x: auto; }
+  .note { background: #f7ddd4; color: #a53d26; padding: 12px 16px; border-radius: 6px; margin: 16px 0; font-size: 14px; }
+  .note.good { background: #dcefe4; color: #2f7d5a; }
+  .note.shared { background: #dde9ee; color: #1e5567; }
+  .scroll { overflow-x: auto; margin: 10px 0 6px; }
+  table.xl { border-collapse: collapse; font-family: ui-monospace, Consolas, monospace; font-size: 11.5px; border: 1px solid #b8c0c9; }
+  .xl th { background: #e7eaee; color: #55606b; border: 1px solid #b8c0c9; padding: 2px 8px; font-weight: 700; text-align: center; font-size: 10.5px; }
+  .xl td { border: 1px solid #d7dce2; padding: 3px 8px; white-space: nowrap; background: #fff; }
+  .xl td.rh { background: #e7eaee; color: #55606b; text-align: center; font-weight: 700; font-size: 10.5px; }
+  .xl td.blk { background: #1e3a45; color: #cfe0e0; font-weight: 700; letter-spacing: .04em; }
+  .xl td.hdr { background: #eef1f4; font-weight: 700; color: #1c2733; }
+  .xl td.src { background: #eef7f1; }
+  .xl td.def { background: #fbf3dd; }
+  .xl td.id  { background: #e9f1f5; }
+  .xl td.empty { background: #f7f8f9; color: #b8c0c9; }
+  .tabs { display: flex; gap: 2px; background: #eef1f4; border: 1px solid #b8c0c9; border-radius: 4px 4px 0 0; padding: 5px 6px 0; overflow-x: auto; margin-top: 10px; }
+  .tab { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 11.5px; padding: 5px 11px; border: 1px solid #c9d0d7; border-bottom: none; border-radius: 4px 4px 0 0; background: #e2e6ea; color: #55606b; white-space: nowrap; }
+  .tab.cur { background: #fff; color: #1c2733; font-weight: 700; }
+  .tab.new { background: #dcefe4; color: #2f7d5a; font-weight: 700; border-color: #2f7d5a; }
+  .lgd { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 12px; color: #55606b; margin: 10px 0 2px; display: flex; gap: 18px; flex-wrap: wrap; }
+  .lgd span.sw { display: inline-block; width: 12px; height: 12px; border: 1px solid #b8c0c9; vertical-align: -2px; margin-right: 5px; }
+  .sub { font-size: 12.5px; color: #8b95a1; font-family: -apple-system, "Segoe UI", sans-serif; }
+  ol.steps li { margin: 9px 0; font-size: 14px; }
+</style>
+
+<h1>Wireframes &mdash; the two sheets to add to <code>CFRater1.01.xlsb</code></h1>
+<p class="meta"><b>2026-09-22.</b> Companion to <code>CF_Payload_Sheet_Spec_Step3.html</code>, which says
+<i>what</i> the columns are. This says <b>where everything sits</b> &mdash; real row numbers, real column
+letters, real formulas. Transcribable directly. <b>Nothing has been written to the workbook.</b></p>
+
+<div class="lgd">
+  <span><span class="sw" style="background:#e9f1f5"></span>ID / bookkeeping</span>
+  <span><span class="sw" style="background:#eef7f1"></span>Formula into an input tab</span>
+  <span><span class="sw" style="background:#fbf3dd"></span>Reads the <code>Defaults</code> sheet</span>
+  <span><span class="sw" style="background:#f7f8f9"></span>Empty slot &mdash; skipped at export</span>
+</div>
+
+<h2>Where the tabs go</h2>
+<p>At the <b>far right</b>, after <code>BroadRating</code> &mdash; they are machinery, not inputs, and
+putting them left of the input tabs invites someone to type in them. Hide both once built.</p>
+<div class="tabs">
+  <div class="tab">Policy Inputs</div>
+  <div class="tab">Location Inputs</div>
+  <div class="tab">Special Class Inputs</div>
+  <div class="tab">&hellip; 20 calc &amp; table tabs &hellip;</div>
+  <div class="tab">BGI Territories</div>
+  <div class="tab">BroadRating</div>
+  <div class="tab new">+ Payload Export</div>
+  <div class="tab new">+ Defaults</div>
+</div>
+
+<h2>Sheet 2 &mdash; <code>Defaults</code> &nbsp;<span class="sub">build this one first, it takes ten minutes</span></h2>
+<div class="scroll">
+<table class="xl">
+<tr><th>&nbsp;</th><th style="min-width:270px">A</th><th style="min-width:150px">B</th><th style="min-width:300px">C</th></tr>
+<tr><td class="rh">1</td><td class="hdr">Field</td><td class="hdr">Value</td><td class="hdr">Note (optional, ignored by the reader)</td></tr>
+<tr><td class="rh">2</td><td class="def">LossCostMultiplier</td><td class="def">1.0</td><td>ISO loss cost passes through unchanged</td></tr>
+<tr><td class="rh">3</td><td class="def">PackageModFactor</td><td class="def">1.0</td><td>policy-level, neutral</td></tr>
+<tr><td class="rh">4</td><td class="def">MultiPremiumAndDispersionCreditFactor</td><td class="def">1.0</td><td>neutral</td></tr>
+<tr><td class="rh">5</td><td class="def">IRPMFactor</td><td class="def">1.0</td><td>neutral</td></tr>
+<tr><td class="rh">6</td><td class="def">BlktRated</td><td class="def">No</td><td rowspan="4" style="white-space:normal">blanket is unbuilt in the rater &mdash; saying <code>No</code> is honest</td></tr>
+<tr><td class="rh">7</td><td class="def">MUBlktRated</td><td class="def">No</td></tr>
+<tr><td class="rh">8</td><td class="def">IncludedInBlkt</td><td class="def">No</td></tr>
+<tr><td class="rh">9</td><td class="def">BlktIDNum</td><td class="def">&lt;omit&gt;</td></tr>
+<tr><td class="rh">10</td><td class="def">TerrorismOverride</td><td class="def">No</td><td>TRIA untraced both sides</td></tr>
+<tr><td class="rh">11</td><td class="def">RatingTypeBasicGroupII</td><td class="def">=RatingType</td><td>same input as RatingType</td></tr>
+<tr><td class="rh">12</td><td class="def">EQCovIndicator</td><td class="def">No Coverage</td><td>Earthquake unbuilt both sides</td></tr>
+<tr><td class="rh">13</td><td class="def">EffectiveDate</td><td class="def">2027-03-01</td><td>no input exists for this anywhere &mdash; set it here</td></tr>
+</table>
+</div>
+<p class="sub">Literal values, not formulas. The reader fails loudly on a missing row rather than guessing.</p>
+
+<h2>Sheet 1 &mdash; <code>Payload Export</code></h2>
+
+<div class="note good"><b>One formula pattern covers the whole sheet.</b> Your input tabs run
+<b>one column per item</b>; this sheet runs <b>one row per item</b>. Put the item's ordinal in column
+<b>A</b>, and every other cell is the same <code>INDEX</code> against a fixed input row:
+<pre>=INDEX('Location Inputs'!$C$26:$L$26, 1, $A20)
+                        ^^^^^^^^^^^^        ^^^^
+             the input row being read    the item ordinal in col A</pre>
+Write it once per column, fill down. <b>No cell address is ever hard-coded into the reader</b>, so rows
+can be inserted freely later.</div>
+
+<h3>Block 1 &mdash; POLICY <span class="sub">rows 1&ndash;3</span></h3>
+<div class="scroll">
+<table class="xl">
+<tr><th>&nbsp;</th><th>A</th><th style="min-width:210px">B</th><th style="min-width:110px">C</th><th style="min-width:130px">D</th></tr>
+<tr><td class="rh">1</td><td class="blk" colspan="4">POLICY</td></tr>
+<tr><td class="rh">2</td><td class="hdr">#</td><td class="hdr">PolicyType</td><td class="hdr">State</td><td class="hdr">EffectiveDate</td></tr>
+<tr><td class="rh">3</td><td class="id">1</td><td class="src">='Policy Inputs'!C3</td><td class="src">='Location Inputs'!C15</td><td class="def">=Defaults!B13</td></tr>
+<tr><td class="rh">4</td><td class="empty" colspan="4">&larr; blank row ends the block</td></tr>
+</table>
+</div>
+<p class="sub"><b><code>State</code> is not sent as a field.</b> It becomes
+<code>ProductName = "Commercial Property " &amp; State</code> and <b>splits the run</b> &mdash; one ISO call
+per distinct state. Nothing extra is needed here; Python groups on it.</p>
+
+<h3>Block 2 &mdash; LOCATION <span class="sub">rows 5&ndash;17</span></h3>
+<div class="scroll">
+<table class="xl">
+<tr><th>&nbsp;</th><th>A</th><th style="min-width:66px">B</th><th style="min-width:70px">C</th><th style="min-width:200px">D</th><th style="min-width:180px">E</th><th style="min-width:150px">F</th><th>&hellip;</th></tr>
+<tr><td class="rh">5</td><td class="blk" colspan="7">LOCATION</td></tr>
+<tr><td class="rh">6</td><td class="hdr">#</td><td class="hdr">LocID</td><td class="hdr">Active</td><td class="hdr">ZipCode</td><td class="hdr">City</td><td class="hdr">ProtectClass</td><td class="hdr">&hellip;</td></tr>
+<tr><td class="rh">7</td><td class="id">1</td><td class="id">=INDEX('Location Inputs'!$C$4:$L$4,1,$A7)</td><td class="id">=IF(INDEX('Location Inputs'!$C$15:$L$15,1,$A7)="State","No","Yes")</td><td class="src">=TEXT(INDEX('Location Inputs'!$C$13:$L$13,1,$A7),"00000")</td><td class="src">=INDEX('Location Inputs'!$C$14:$L$14,1,$A7)</td><td class="src">=INDEX('Location Inputs'!$C$22:$L$22,1,$A7)</td><td>&hellip;</td></tr>
+<tr><td class="rh">8</td><td class="id">2</td><td class="id">2</td><td class="id">Yes</td><td class="src">11236</td><td class="src">Brooklyn</td><td class="src">2</td><td>&hellip;</td></tr>
+<tr><td class="rh">9</td><td class="id">3</td><td class="id">3</td><td class="id">Yes</td><td class="src">99827</td><td class="src">Haines</td><td class="src">6</td><td>&hellip;</td></tr>
+<tr><td class="rh">10</td><td class="id">4</td><td class="id">4</td><td class="id">Yes</td><td class="src">90210</td><td class="src">Beverly Hills</td><td class="src">4</td><td>&hellip;</td></tr>
+<tr><td class="rh">11</td><td class="id">5</td><td class="empty">5</td><td class="empty">No</td><td class="empty">00000</td><td class="empty">City</td><td class="empty">Select</td><td>&hellip;</td></tr>
+<tr><td class="rh">12</td><td class="id">&hellip;</td><td class="empty">&hellip;</td><td class="empty">No</td><td class="empty">&hellip;</td><td class="empty">&hellip;</td><td class="empty">&hellip;</td><td>&hellip;</td></tr>
+<tr><td class="rh">16</td><td class="id">10</td><td class="empty">10</td><td class="empty">No</td><td class="empty">00000</td><td class="empty">City</td><td class="empty">Select</td><td>&hellip;</td></tr>
+<tr><td class="rh">17</td><td class="empty" colspan="7">&larr; blank</td></tr>
+</table>
+</div>
+<div class="note"><b>The <code>Active</code> column is the important one.</b> Columns G&ndash;L of
+<code>Location Inputs</code> are placeholders &mdash; <code>"Select"</code>, <code>"State"</code>,
+<code>0</code>. Without a gate the generator would emit ten locations when four are real, and ISO would
+either refuse or price six empty ones. <code>Active</code> tests the <code>State</code> cell against its
+placeholder text and Python skips every <code>No</code> row.</div>
+<p class="sub"><b>Remaining columns, same pattern:</b> <code>BasicGroupIRatingTerr</code> (input row 17) ·
+<code>District</code> (18) · <code>BasicGroupIIRatingTerr</code> (19) · <code>SpecialRatingTerr</code> (20) ·
+<code>WindstormOrHailDeductible</code> (53) · <code>MultipleResidentialPropSpecialCredit</code> (57).</p>
+
+<h3>Block 3 &mdash; STRUCTURE <span class="sub">rows 18&ndash;30 &middot; the big one, ~30 columns</span></h3>
+<div class="scroll">
+<table class="xl">
+<tr><th>&nbsp;</th><th>A</th><th style="min-width:70px">B</th><th style="min-width:80px">C</th><th style="min-width:90px">D</th><th style="min-width:90px">E</th><th style="min-width:200px">F</th><th style="min-width:180px">G</th><th>&hellip;</th></tr>
+<tr><td class="rh">18</td><td class="blk" colspan="8">STRUCTURE</td></tr>
+<tr><td class="rh">19</td><td class="hdr">#</td><td class="hdr">ItemID</td><td class="hdr">ParentLocID</td><td class="hdr">Active</td><td class="hdr">RatingType</td><td class="hdr">ClassCode</td><td class="hdr">Limit</td><td class="hdr">&hellip;</td></tr>
+<tr><td class="rh">20</td><td class="id">1</td><td class="id">=INDEX('Location Inputs'!$C$6:$L$6,1,$A20)</td><td class="id">=INDEX('Location Inputs'!$C$4:$L$4,1,$A20)</td><td class="id">=IF($G20=0,"No","Yes")</td><td class="src">=INDEX('Location Inputs'!$C$28:$L$28,1,$A20)</td><td class="src">=INDEX('Location Inputs'!$C$26:$L$26,1,$A20)</td><td class="src">=INDEX('Location Inputs'!$C$43:$L$43,1,$A20)</td><td>&hellip;</td></tr>
+<tr><td class="rh">21</td><td class="id">2</td><td class="id">2 - 1</td><td class="id">2</td><td class="id">Yes</td><td class="src">Class</td><td class="src">0311</td><td class="src">526123</td><td>&hellip;</td></tr>
+<tr><td class="rh">22</td><td class="id">3</td><td class="id">3 - 1</td><td class="id">3</td><td class="id">Yes</td><td class="src">Class</td><td class="src">0311</td><td class="src">1000123</td><td>&hellip;</td></tr>
+<tr><td class="rh">23</td><td class="id">4</td><td class="id">4 - 1</td><td class="id">4</td><td class="id">Yes</td><td class="src">Class</td><td class="src">0311</td><td class="src">5125255</td><td>&hellip;</td></tr>
+<tr><td class="rh">24</td><td class="id">5</td><td class="empty">5 - 1</td><td class="empty">5</td><td class="empty">No</td><td class="empty">Rating Type</td><td class="empty">Select</td><td class="empty">0</td><td>&hellip;</td></tr>
+<tr><td class="rh">29</td><td class="id">10</td><td class="empty">10 - 1</td><td class="empty">10</td><td class="empty">No</td><td class="empty">Rating Type</td><td class="empty">Select</td><td class="empty">0</td><td>&hellip;</td></tr>
+<tr><td class="rh">30</td><td class="empty" colspan="8">&larr; blank</td></tr>
+</table>
+</div>
+<p class="sub"><b>Remaining columns:</b> <code>FullBldgValue</code> = <b>the same cell as <code>Limit</code></b>
+(decision D-2 &mdash; the rater has no value input, so the payload reproduces its limit-equals-value
+assumption rather than inventing a truer number) · <code>ClassificationDescription</code> (input row 29) ·
+<code>ConstructionType</code> (62) · <code>CovType</code> (8) · <code>CauseOfLoss</code> (50) ·
+<code>Coinsurance</code> (68, <b>as text</b>: <code>=TEXT(&hellip;*100,"0")&amp;"%"</code>) ·
+<code>Deductible</code> (52) · <code>TheftDeductible</code> (54) ·
+<code>WindstormOrHailDeductible</code> (53) · <code>NumStories</code> (63) · <code>BCEG</code> (23) ·
+<code>ValuationType</code> (67) · <code>VacantBuilding</code> (85) · <code>SprinklerSystem</code> (72) ·
+<code>OpenSides</code> (65) · <code>SubStdConditionA</code>&ndash;<code>E</code> (79&ndash;83) ·
+<code>SpecificGroupIRate</code> (44) · <code>BasicGroupIISymbol</code> (64) ·
+<code>RatingTypeBasicGroupII</code> (28) · then four <span style="background:#fbf3dd">Defaults</span>
+columns: <code>LossCostMultiplier</code>, <code>PackageModFactor</code>,
+<code>MultiPremiumAndDispersionCreditFactor</code>, <code>IncludedInBlkt</code>.</p>
+
+<h3>Blocks 4&ndash;8 &mdash; the rest <span class="sub">rows 31&ndash;81</span></h3>
+<div class="scroll">
+<table class="xl">
+<tr><th>&nbsp;</th><th style="min-width:230px">A</th><th style="min-width:250px">B &mdash; key columns</th><th style="min-width:170px">Parent joins to</th><th style="min-width:120px">Input tab</th></tr>
+<tr><td class="rh">31</td><td class="blk">OCCUPCLASS</td><td class="hdr">OccID · ParentItemID · ClassCode · OccupCategory · TheftDeductible · SprinklerSystem</td><td class="id">STRUCTURE.ItemID</td><td class="src">Location Inputs rows 27, 32, 54, 72</td></tr>
+<tr><td class="rh">44</td><td class="blk">PERSONALPROPERTY</td><td class="hdr">PPID · ParentOccID · CovType · CauseOfLoss · Limit · Coinsurance · ValuationType · OpenSides</td><td class="id">OCCUPCLASS.OccID</td><td class="src">rows 9, 50, 45, 69, 67, 65</td></tr>
+<tr><td class="rh">57</td><td class="blk">BUSINESSINCOME</td><td class="hdr">BIID · <b>ParentItemID</b> · CovType · Limit · Coinsurance · TypeOfRisk · MaxPeriod · MonthlyLimitOfIndemnity</td><td class="id">STRUCTURE.ItemID <span class="sub">(not OccupClass)</span></td><td class="src">rows 11, 47, 70, 36, 39, 40</td></tr>
+<tr><td class="rh">70</td><td class="blk">SPECIALCLASS</td><td class="hdr">SCID · ParentLocID · ClassDescription · Limit · Coinsurance · Deductible · BasicGroupIISymbol · IncludedInBuilding</td><td class="id">LOCATION.LocID</td><td class="src">Special Class Inputs rows 10, 19, 16, 24, 31, 21</td></tr>
+<tr><td class="rh">76</td><td class="blk">SPECIALCLASSBUSNINCOME</td><td class="hdr">SCBIID · ParentSCID · CovType · Limit · Coinsurance · TypeOfRisk · MaxPeriod · MonthlyLimitOfIndemnity</td><td class="id">SPECIALCLASS.SCID</td><td class="src">Special Class Inputs rows 38, 42, 18, 39, 44, 45</td></tr>
+</table>
+</div>
+<p class="sub">Special Class blocks run <b>3 rows</b> (input columns C&ndash;E), not 10. Personal Property
+carries <b>no</b> <code>RatingType</code>, <code>ClassCode</code> or <code>Deductible</code> &mdash; ISO's own
+payloads omit all three because the record inherits them; sending them is the likeliest way to get a wrong
+answer that still looks accepted.</p>
+
+<h3>Block 9 &mdash; RECORDS <span class="sub">rows 82&ndash;95 &middot; the exclusions</span></h3>
+<div class="scroll">
+<table class="xl">
+<tr><th>&nbsp;</th><th>A</th><th style="min-width:330px">B</th><th style="min-width:110px">C</th><th style="min-width:230px">D</th></tr>
+<tr><td class="rh">82</td><td class="blk" colspan="4">RECORDS</td></tr>
+<tr><td class="rh">83</td><td class="hdr">#</td><td class="hdr">RecordName</td><td class="hdr">ParentID</td><td class="hdr">Elected</td></tr>
+<tr><td class="rh">84</td><td class="id">1</td><td class="id">CommercialPropertyCyberIncidentExclusion</td><td class="id">POLICY</td><td class="src">='Policy Inputs'!F3</td></tr>
+<tr><td class="rh">85</td><td class="id">2</td><td class="id">&lt;theft excl, Structure group&gt;</td><td class="id">=$B20</td><td class="src">=INDEX('Location Inputs'!$C$77:$L$77,1,1)</td></tr>
+<tr><td class="rh">86</td><td class="id">3</td><td class="id">CommercialPropertyVandalismExclusion</td><td class="id">=$B20</td><td class="src">=INDEX('Location Inputs'!$C$76:$L$76,1,1)</td></tr>
+<tr><td class="rh">87</td><td class="id">4</td><td class="id">&lt;wind/hail excl, Structure group&gt;</td><td class="id">=$B20</td><td class="src">=INDEX('Location Inputs'!$C$75:$L$75,1,1)</td></tr>
+<tr><td class="rh">88</td><td class="id">5</td><td class="id">CommercialPropertyVandalismExclusion<b>SpecialClass</b></td><td class="id">=$B72</td><td class="src">='Special Class Inputs'!C28</td></tr>
+<tr><td class="rh">89</td><td class="id">6</td><td class="id">CommercialPropertyVandalismExclusion<b>SpclClassBusnIncome</b></td><td class="id">=$B78</td><td class="src">='Special Class Inputs'!C28 <span class="sub">&larr; same input, own cell</span></td></tr>
+<tr><td class="rh">90</td><td class="id">7</td><td class="id">&hellip;WindstormOrHailExclusion<b>SpecialClass</b></td><td class="id">=$B72</td><td class="src">='Special Class Inputs'!C32</td></tr>
+<tr><td class="rh">91</td><td class="id">8</td><td class="id">&hellip;WindstormOrHailExclusion<b>SpclClassBusnIncome</b></td><td class="id">=$B78</td><td class="src">='Special Class Inputs'!C32 <span class="sub">&larr; same input, own cell</span></td></tr>
+<tr><td class="rh">92</td><td class="id">9</td><td class="id">&hellip;TheftExclusion<b>SpecialClass</b></td><td class="id">=$B72</td><td class="src">='Special Class Inputs'!C35</td></tr>
+<tr><td class="rh">93</td><td class="id">10</td><td class="id">&hellip;TheftExclusion<b>SpclClassBusnIncome</b></td><td class="id">=$B78</td><td class="src">='Special Class Inputs'!C35 <span class="sub">&larr; same input, own cell</span></td></tr>
+</table>
+</div>
+<div class="note"><b>Rows 89, 91 and 93 look redundant today and are the whole point.</b> ISO files
+<b>two</b> exclusion records &mdash; one on the Special Class item, one on its Business Income group. The
+rater has <b>one</b> Yes/No input driving both, which is backlog <b>S-1 / S-2 / S-3</b>. Giving each record
+its own <code>Elected</code> cell now, even though both point at the same input, means closing that backlog
+later is <b>an input change, not a re-spec</b>. Point them at separate inputs the day those inputs exist.
+<br><br><b>Record names in angle brackets are placeholders</b> &mdash; lift the exact names from the harness's
+gate point 7 census (&ldquo;every exclusion's endorsement record identified per datadef group&rdquo;, passed
+on all eight closed chunks) rather than guessing them.</div>
+
+<h2>Build order</h2>
+<ol class="steps">
+<li><b><code>Defaults</code> first.</b> Thirteen rows, literal values. Ten minutes, and it lets the reader
+be tested before the big sheet exists.</li>
+<li><b>Block skeletons next</b> &mdash; just column A: the nine block names at rows 1, 5, 18, 31, 44, 57,
+70, 76, 82, with the blank rows between. Gets the shape right before any formula is written.</li>
+<li><b>Then LOCATION in full</b>, including <code>Active</code>. One block done end to end proves the
+<code>INDEX</code> pattern before it is repeated eight times.</li>
+<li><b>Then STRUCTURE</b>, the largest. Write each column's formula in row 20 and fill down to row 29.</li>
+<li><b>Then blocks 4&ndash;8</b>, which are the same pattern at smaller scale.</li>
+<li><b>RECORDS last.</b></li>
+<li><b>Tell me when any of it is in.</b> It does not need finishing first &mdash; the reader fails loudly
+and names the missing block, so a half-built sheet returns a precise error, never a wrong premium.</li>
+</ol>
+
+<div class="note shared"><b>Two things that will not break it.</b> <b>Inserting rows is safe</b> &mdash;
+the reader finds each block by its name in column A and reads until the blank row, so adding an eleventh
+location or a fourth Special Class item needs no code change. <b>Renaming an input label is safe</b> too
+&mdash; the formulas point at cells, and the labels are only there for you to read.</div>
+
+<p class="sub">Companion to <code>CF_Payload_Sheet_Spec_Step3.html</code> (what the columns are) and
+<code>CF_Payload_Excel_Input_Inventory.md</code> (where each input lives). Step 4 of 6 &mdash; yours to
+build. Nothing written to the workbook.</p>

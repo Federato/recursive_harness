@@ -1,0 +1,293 @@
+Direction,Sheet,LabelCell,RaterLabel,ISOField,SampleValue
+rater -> ISO,Policy Inputs,B3,Policy Type,PolicyType,Commercial Property Policy
+rater -> ISO,Policy Inputs,B4,Building Coverage Type,CovType,Building
+rater -> ISO,Policy Inputs,B5,Contents Coverage Type,CovType,All Personal Property
+rater -> ISO,Policy Inputs,B6,Business Income Coverage Type,CovType,Business Income Without Extra Expense
+rater -> ISO,Policy Inputs,B7,Cause of Loss,CauseOfLoss,Special
+rater -> ISO,Policy Inputs,B8,Policy Deductible,Deductible,"2,500"
+rater -> ISO,Policy Inputs,B9,Windstorm or Hail Deductible,WindstormOrHailDeductible,Not Applicable
+rater -> ISO,Policy Inputs,B10,Theft Deductible,TheftDeductible,"2,500"
+rater -> ISO,Policy Inputs,B11,Valuation,ValuationType,Actual Cash Value
+rater -> ISO,Policy Inputs,B12,Building Coinsurance,Coinsurance,0.8
+rater -> ISO,Policy Inputs,B13,Contents Coinsurance,Coinsurance,0.8
+rater -> ISO,Policy Inputs,B14,Business Income Coinsurance,Coinsurance,0.8
+"rater field, NO ISO match",Policy Inputs,B17,Windstorm or Hail Exclusion,,No
+"rater field, NO ISO match",Policy Inputs,B18,Vandalism Exclusion,,No
+"rater field, NO ISO match",Policy Inputs,B19,Theft Exclusion,,Yes
+"rater field, NO ISO match",Policy Inputs,E3,Cyber Incident Exclusion,,Yes
+"rater field, NO ISO match",Policy Inputs,E4,With Ensuing Cause of Loss Exceptions,,Yes
+"rater field, NO ISO match",Policy Inputs,E5,Property Damage Sublimit,,500000.0
+"rater field, NO ISO match",Policy Inputs,E6,Aggregate Limit,,500000.0
+"rater field, NO ISO match",Location Inputs,B4,Location #,,1.0
+"rater field, NO ISO match",Location Inputs,B5,Building #,,1.0
+"rater field, NO ISO match",Location Inputs,B6,Item ID,,1 - 1
+rater -> ISO,Location Inputs,B8,Building Coverage Type,CovType,Legal Liability
+rater -> ISO,Location Inputs,B9,Personal Property Coverage Type,CovType,All Personal Property
+rater -> ISO,Location Inputs,B10,Personal Property Coverage Form,CovForm,Legal Liability Coverage Form
+rater -> ISO,Location Inputs,B11,Business Income Coverage Type,CovType,Business Income Without Extra Expense
+rater -> ISO,Location Inputs,B13,Zip Code,ZipCode,32809.0
+rater -> ISO,Location Inputs,B14,City,City,Orlando
+rater -> ISO,Location Inputs,B15,State,State,FL
+rater -> ISO,Location Inputs,B17,BGI Territory,BasicGroupIRatingTerr,Miami
+"rater field, NO ISO match",Location Inputs,B18,"District (Alaska, California, New York)",,Not Applicable
+rater -> ISO,Location Inputs,B19,BGII Territory,BasicGroupIIRatingTerr,Inland
+rater -> ISO,Location Inputs,B20,Special Territory,SpecialRatingTerr,Miami-Dade
+rater -> ISO,Location Inputs,B22,Protection Class,ProtectClass,4
+rater -> ISO,Location Inputs,B23,Building Code Effectiveness Grade (BCEG),BCEG,1
+"rater field, NO ISO match",Location Inputs,B24,Limitations on Coverage for Roof Surfacing,,Paragraph A and B
+rater -> ISO,Location Inputs,B26,Building Class Code,ClassCode,0311
+rater -> ISO,Location Inputs,B27,Tenants Class Code,ClassCode,0520
+rater -> ISO,Location Inputs,B28,Rating Type,RatingType,Specific
+rater -> ISO,Location Inputs,B29,Class Description,ClassDescription,Apartments without Mercantile Occupancies - Up to 10 Units
+"rater field, NO ISO match",Location Inputs,B30,Yard Property Description,,Not Applicable
+rater -> ISO,Location Inputs,B32,Occupancy Category,OccupCategory,Residential Apartments and Condominiums
+"rater field, NO ISO match",Location Inputs,B33,Occupancy Severity,,Not Applicable
+"rater field, NO ISO match",Location Inputs,B34,Contents Group,,Not Applicable
+rater -> ISO,Location Inputs,B36,Business Income Type of Risk,TypeOfRisk,Rental Properties
+"rater field, NO ISO match",Location Inputs,B37,Percentage (Type 1),,1.0
+"rater field, NO ISO match",Location Inputs,B38,Percentage (Type 2),,0.0
+rater -> ISO,Location Inputs,B39,Max Period of Indemnity,MaxPeriod,Yes
+rater -> ISO,Location Inputs,B40,Monthly Limit of Indemnity,MonthlyLimitOfIndemnity,Not Applicable
+"rater field, NO ISO match",Location Inputs,B41,Extra Expense Loss Payment Schedule,,Not Applicable
+rater -> ISO,Location Inputs,B43,Building Limit,Limit,675000.0
+"rater field, NO ISO match",Location Inputs,B44,Building Specific/Tentative Rate,,0.25
+rater -> ISO,Location Inputs,B45,Contents Limit,Limit,515000.0
+"rater field, NO ISO match",Location Inputs,B46,Contents Specific/Tentative Rate,,0.175
+rater -> ISO,Location Inputs,B47,Business Income Limit,Limit,275500.0
+"rater field, NO ISO match",Location Inputs,B48,Business Income Specific/Tentative Rate,,0.25
+rater -> ISO,Location Inputs,B50,Cause of Loss,CauseOfLoss,Special
+rater -> ISO,Location Inputs,B52,Deductible,Deductible,"2,500"
+rater -> ISO,Location Inputs,B53,Windstorm or Hail Deductible,WindstormOrHailDeductible,Not Applicable
+rater -> ISO,Location Inputs,B54,Theft Deductible,TheftDeductible,"2,500"
+"rater field, NO ISO match",Location Inputs,B55,Per Location Deductible,,No
+"rater field, NO ISO match",Location Inputs,B57,Multi Residential Property Special Credits,,"Yes, under single supervision, maintenance and control"
+"rater field, NO ISO match",Location Inputs,B58,Location of Heating Plant,,Yes
+rater -> ISO,Location Inputs,B60,Construction Code,ConstructionCode,2.0
+"rater field, NO ISO match",Location Inputs,B61,Description,,Joisted Masonry
+rater -> ISO,Location Inputs,B62,Construction Type,ConstructionType,Joisted Masonry - Reinforced
+rater -> ISO,Location Inputs,B63,Number of Stories,NumStories,1-3
+"rater field, NO ISO match",Location Inputs,B64,Construction Symbol,,AB
+rater -> ISO,Location Inputs,B65,Open Sides,OpenSides,Yes
+rater -> ISO,Location Inputs,B67,Valuation,ValuationType,Actual Cash Value
+rater -> ISO,Location Inputs,B68,Building Coinsurance,Coinsurance,0.8
+rater -> ISO,Location Inputs,B69,Contents Coinsurance,Coinsurance,0.8
+rater -> ISO,Location Inputs,B70,Business Income Coinsurance,Coinsurance,0.8
+rater -> ISO,Location Inputs,B72,Sprinkler System,SprinklerSystem,"Sprinklered Building, but Not Rated as Sprinklered"
+"rater field, NO ISO match",Location Inputs,B73,Sprinkler Leakage Excluded,,Yes
+"rater field, NO ISO match",Location Inputs,B75,Windstorm or Hail Exclusion,,No
+"rater field, NO ISO match",Location Inputs,B76,Vandalism Exclusion,,No
+"rater field, NO ISO match",Location Inputs,B77,Theft Exclusion,,Yes
+"rater field, NO ISO match",Location Inputs,B79,Sub Standard Condition - Heating and Cooking,,No
+"rater field, NO ISO match",Location Inputs,B80,Sub Standard Condition - Wiring,,Yes
+"rater field, NO ISO match",Location Inputs,B81,Sub Standard Condition - Conversion,,No
+"rater field, NO ISO match",Location Inputs,B82,Sub Standard Condition - Physical Condition & Housekeeping,,Yes
+"rater field, NO ISO match",Location Inputs,B83,Sub Standard Condition - Exposure,,No
+rater -> ISO,Location Inputs,B85,Vacancy,VacantBuilding,Yes
+"rater field, NO ISO match",Location Inputs,B87,Type of Watchman Service,,Not Applicable
+"rater field, NO ISO match",Location Inputs,B88,Type of Burglary Alarm System,,Not Applicable
+"rater field, NO ISO match",Location Inputs,B89,Burglary System Range,,1.00 - 1.00
+"rater field, NO ISO match",Location Inputs,B90,Selected Burglary System Factor,,1.0
+"rater field, NO ISO match",Location Inputs,B92,Additional Insurable Interest Option,,Option 1
+"rater field, NO ISO match",Location Inputs,B93,Description,,"General Lessees, Managers or Operators of Premises — in poli"
+"rater field, NO ISO match",Special Class Inputs,B4,Location #,,1.0
+"rater field, NO ISO match",Special Class Inputs,B5,Item #,,1.0
+"rater field, NO ISO match",Special Class Inputs,B6,Item ID,,1 - 1
+rater -> ISO,Special Class Inputs,B7,Zip Code,ZipCode,32809.0
+rater -> ISO,Special Class Inputs,B8,City,City,Orlando
+rater -> ISO,Special Class Inputs,B9,State,State,FL
+"rater field, NO ISO match",Special Class Inputs,B10,Item Description,,Artificial Turf
+rater -> ISO,Special Class Inputs,B12,Cause of Loss,CauseOfLoss,Special
+rater -> ISO,Special Class Inputs,B13,Included in Blanket,IncludedInBlkt,No
+"rater field, NO ISO match",Special Class Inputs,B14,Special Valuation Type,,Actual Cash Value
+"rater field, NO ISO match",Special Class Inputs,B15,Special Agreed Value,,Not Applicable
+"rater field, NO ISO match",Special Class Inputs,B16,Special Class Building Coinsurance,,0.8
+"rater field, NO ISO match",Special Class Inputs,B17,Special Class Contents Coinsurance,,0.8
+"rater field, NO ISO match",Special Class Inputs,B18,Special Class Business Income Coinsurance,,0.8
+rater -> ISO,Special Class Inputs,B19,Special Class Building Limit,Limit,513000.0
+"rater field, NO ISO match",Special Class Inputs,B20,Special Class Business Income Limit,,213000.0
+"rater field, NO ISO match",Special Class Inputs,B21,Limit Included in Building?,,No
+"rater field, NO ISO match",Special Class Inputs,B22,Linked Building Item ID,,N/A
+"rater field, NO ISO match",Special Class Inputs,B23,Building ID Found?,,n/a
+rater -> ISO,Special Class Inputs,B24,Deductible,Deductible,"2,500"
+"rater field, NO ISO match",Special Class Inputs,B25,Deductible By Location,,Yes
+rater -> ISO,Special Class Inputs,B27,Protection Class,ProtectClass,5
+"rater field, NO ISO match",Special Class Inputs,B28,Vandalism Exclusion,,Yes
+rater -> ISO,Special Class Inputs,B30,BGII Territory,BasicGroupIIRatingTerr,Inland
+"rater field, NO ISO match",Special Class Inputs,B31,Construction Symbol,,B
+"rater field, NO ISO match",Special Class Inputs,B32,Windstorm/Hail Exclusion,,No
+"rater field, NO ISO match",Special Class Inputs,B33,Windstorm/Hail Deductible,,"2,500"
+"rater field, NO ISO match",Special Class Inputs,B35,Theft Exclusion,,Yes
+rater -> ISO,Special Class Inputs,B36,Theft Deductible,TheftDeductible,"2,500"
+"rater field, NO ISO match",Special Class Inputs,B38,Coverage Type,,Business Income Without Extra Expense
+rater -> ISO,Special Class Inputs,B39,Type of Risk,TypeOfRisk,Rental Properties
+"rater field, NO ISO match",Special Class Inputs,B40,Percentage (Type 1),,1.0
+"rater field, NO ISO match",Special Class Inputs,B41,Percentage (Type 2),,0.0
+rater -> ISO,Special Class Inputs,B42,Business Income Limit,Limit,223000.0
+rater -> ISO,Special Class Inputs,B44,Max Period of Indemnity,MaxPeriod,No
+rater -> ISO,Special Class Inputs,B45,Monthly Limit of Indemnity,MonthlyLimitOfIndemnity,Not Applicable
+"rater field, NO ISO match",Special Class Inputs,B46,Extra Expense Loss Payment Schedule,,Not Applicable
+"ISO field, NO rater source",,,,AbsenceOfCombustibleStructures,
+"ISO field, NO rater source",,,,AgeOfTheRoof,
+"ISO field, NO rater source",,,,AgreedValueOption,
+"ISO field, NO rater source",,,,ApplicantControlThirtyFeetFromBuilding,
+"ISO field, NO rater source",,,,AreaServicedByFireDept,
+"ISO field, NO rater source",,,,BCEGClass,
+"ISO field, NO rater source",,,,BasicGroupICauseOfLossAdjustment,
+"ISO field, NO rater source",,,,BasicGroupIDistrictTerritory,
+"ISO field, NO rater source",,,,BasicGroupIICauseOfLossAdjustment,
+"ISO field, NO rater source",,,,BasicGroupIISymbol,
+"ISO field, NO rater source",,,,BasicGroupIISymbolNum,
+"ISO field, NO rater source",,,,BasicGroupIReductionCredit,
+"ISO field, NO rater source",,,,BlktAgreedVal,
+"ISO field, NO rater source",,,,BlktBasicGroupIAvgRate,
+"ISO field, NO rater source",,,,BlktBasicGroupIAvgRateAgreedVal,
+"ISO field, NO rater source",,,,BlktBasicGroupIIAvgRate,
+"ISO field, NO rater source",,,,BlktBasicGroupIIAvgRateAgreedVal,
+"ISO field, NO rater source",,,,BlktBroadAvgRate,
+"ISO field, NO rater source",,,,BlktBroadAvgRateAgreedVal,
+"ISO field, NO rater source",,,,BlktCauseOfLossValue,
+"ISO field, NO rater source",,,,BlktCoinsuranceValue,
+"ISO field, NO rater source",,,,BlktEQCauseOfLossIncludedInBlkt,
+"ISO field, NO rater source",,,,BlktIDNum,
+"ISO field, NO rater source",,,,BlktInflationGuard,
+"ISO field, NO rater source",,,,BlktLimit,
+"ISO field, NO rater source",,,,BlktPeakSeasonIndicator,
+"ISO field, NO rater source",,,,BlktProportion,
+"ISO field, NO rater source",,,,BlktRadioactiveContaminationAvgRate,
+"ISO field, NO rater source",,,,BlktRadioactiveContaminationValue,
+"ISO field, NO rater source",,,,BlktRated,
+"ISO field, NO rater source",,,,BlktSpecialAvgRate,
+"ISO field, NO rater source",,,,BlktSpecialAvgRateAgreedVal,
+"ISO field, NO rater source",,,,BlktTotalFullValueAmount,
+"ISO field, NO rater source",,,,BlktTotalLOIToUse,
+"ISO field, NO rater source",,,,BlktType,
+"ISO field, NO rater source",,,,BlktTypeOfBlanketRating,
+"ISO field, NO rater source",,,,BuildingIDNumber,
+"ISO field, NO rater source",,,,CPPIRPMFactor,
+"ISO field, NO rater source",,,,CertificateLevel,
+"ISO field, NO rater source",,,,CertificateType,
+"ISO field, NO rater source",,,,ClassAFireRatedRoof,
+"ISO field, NO rater source",,,,ClassDesc,
+"ISO field, NO rater source",,,,ClearingOfVegetationDebris,
+"ISO field, NO rater source",,,,ClearingOfVegetationDebrisMulchStoredCombustibleMaterials,
+"ISO field, NO rater source",,,,CombinedTypeOfRiskEducationalPct,
+"ISO field, NO rater source",,,,CombinedTypeOfRiskManufacturingPct,
+"ISO field, NO rater source",,,,CombinedTypeOfRiskMercantilePct,
+"ISO field, NO rater source",,,,CombinedTypeOfRiskRentalPct,
+"ISO field, NO rater source",,,,CompletedBasicGroupIISymbol,
+"ISO field, NO rater source",,,,CompliesWithSection4291,
+"ISO field, NO rater source",,,,ConditionalExclusionRatingOption,
+"ISO field, NO rater source",,,,ConformsToCondoActs,
+"ISO field, NO rater source",,,,ConstructionClassBGII,
+"ISO field, NO rater source",,,,County,
+"ISO field, NO rater source",,,,CountyMutualInsurance,
+"ISO field, NO rater source",,,,CoverageForCertifiedActs,
+"ISO field, NO rater source",,,,DesignatedCatastropheArea,
+"ISO field, NO rater source",,,,District,
+"ISO field, NO rater source",,,,EQCauseOfLossAdjustment,
+"ISO field, NO rater source",,,,EQCauseOfLossForm,
+"ISO field, NO rater source",,,,EQClass,
+"ISO field, NO rater source",,,,EQCoinsurance,
+"ISO field, NO rater source",,,,EQCovIndicator,
+"ISO field, NO rater source",,,,EQDeductible,
+"ISO field, NO rater source",,,,EQDeductibleTier,
+"ISO field, NO rater source",,,,EQGrade,
+"ISO field, NO rater source",,,,EQRoofTankHazard,
+"ISO field, NO rater source",,,,EQSprinklerLeakageOnly,
+"ISO field, NO rater source",,,,EQSubLimitBlktIndicator,
+"ISO field, NO rater source",,,,EQTerr,
+"ISO field, NO rater source",,,,EffectiveDateTime,
+"ISO field, NO rater source",,,,EnclosedEaves,
+"ISO field, NO rater source",,,,ExtendedPeriod,
+"ISO field, NO rater source",,,,ExtendedPeriodApplies,
+"ISO field, NO rater source",,,,ExtraExpenseLimitOnLossPayment,
+"ISO field, NO rater source",,,,FireDepartment,
+"ISO field, NO rater source",,,,FireResistantVents,
+"ISO field, NO rater source",,,,FireRiskReductionCommunity,
+"ISO field, NO rater source",,,,FirewiseSiteInGoodStanding,
+"ISO field, NO rater source",,,,FloodCovEndtBlktIndicator,
+"ISO field, NO rater source",,,,FloodCovIndicator,
+"ISO field, NO rater source",,,,FullBldgValue,
+"ISO field, NO rater source",,,,FullPrsnlPropValue,
+"ISO field, NO rater source",,,,FullSpecialClassValue,
+"ISO field, NO rater source",,,,FungusWetRotDryRotBacteriaCov,
+"ISO field, NO rater source",,,,FungusWetRotDryRotBacteriaCovIncrdPeriodRestorationIndicator,
+"ISO field, NO rater source",,,,FungusWetRotDryRotBacteriaCovLocApply,
+"ISO field, NO rater source",,,,GeographicWindHazardLevelTerritory,
+"ISO field, NO rater source",,,,GradeOfOccupancyBGII,
+"ISO field, NO rater source",,,,GroundFloorArea,
+"ISO field, NO rater source",,,,HurricaneDeductibleType,
+"ISO field, NO rater source",,,,IBHSFORTIFIEDHomeHighWindAndHailCertificateLevel,
+"ISO field, NO rater source",,,,IRPMApplies,
+"ISO field, NO rater source",,,,IRPMFactor,
+"ISO field, NO rater source",,,,IncApt,
+"ISO field, NO rater source",,,,IncludedInBuilding,
+"ISO field, NO rater source",,,,IncorporationOfOnlyNonCombustibleMaterials,
+"ISO field, NO rater source",,,,InflationGuard,
+"ISO field, NO rater source",,,,InsuredHoldsAnIBHSHurricaneCertificateOrAnIBHSHighWindAndHailCertificate,
+"ISO field, NO rater source",,,,LossCostMultiplier,
+"ISO field, NO rater source",,,,MUBlktRated,
+"ISO field, NO rater source",,,,MUPolicyType,
+"ISO field, NO rater source",,,,MineCoverage,
+"ISO field, NO rater source",,,,MineSubsidenceCoverage,
+"ISO field, NO rater source",,,,MineSubsidenceLimit,
+"ISO field, NO rater source",,,,MineSubsidenceRatingOption,
+"ISO field, NO rater source",,,,MineSubsidenceType,
+"ISO field, NO rater source",,,,MultiPremiumAndDispersionCreditFactor,
+"ISO field, NO rater source",,,,MultiPremiumAndDispersionCreditFactorUser,
+"ISO field, NO rater source",,,,MultipaneWindows,
+"ISO field, NO rater source",,,,MultipleResidentialPropSpecialCredit,
+"ISO field, NO rater source",,,,NamedStormPctDeductibleApplies,
+"ISO field, NO rater source",,,,NewResidentialConstruction,
+"ISO field, NO rater source",,,,NonCombustibleVerticalClearanceAtBottom,
+"ISO field, NO rater source",,,,NonCombustibleVerticalClearanceFromTheGroundUp,
+"ISO field, NO rater source",,,,NumberOfUnits,
+"ISO field, NO rater source",,,,OccupancyClassificationBGII,
+"ISO field, NO rater source",,,,OperationalUnitIndicator,
+"ISO field, NO rater source",,,,PackageModFactor,
+"ISO field, NO rater source",,,,PlasticGreenhouse,
+"ISO field, NO rater source",,,,PostTRIAExclusion,
+"ISO field, NO rater source",,,,ProductName,
+"ISO field, NO rater source",,,,PublicInstitutionalPlanApply,
+"ISO field, NO rater source",,,,RatingTypeBasicGroupII,
+"ISO field, NO rater source",,,,RentalProperty,
+"ISO field, NO rater source",,,,RoofLevel,
+"ISO field, NO rater source",,,,RoofSubDecking,
+"ISO field, NO rater source",,,,ShoreFrontOceanOrGreatLakes,
+"ISO field, NO rater source",,,,SoftStory,
+"ISO field, NO rater source",,,,SpecialClassDescConvertedOption,
+"ISO field, NO rater source",,,,SpecialIncludingTheftClassLimit,
+"ISO field, NO rater source",,,,SpecialIncludingTheftOnPrsnlPropIndicator,
+"ISO field, NO rater source",,,,SpecialIncludingTheftRateGroup,
+"ISO field, NO rater source",,,,SpecialIncludingTheftTypeOfRisk,
+"ISO field, NO rater source",,,,SpecificGroupIRate,
+"ISO field, NO rater source",,,,StateFullName,
+"ISO field, NO rater source",,,,StateOwnedProperty,
+"ISO field, NO rater source",,,,SubStdConditionA,
+"ISO field, NO rater source",,,,SubStdConditionB,
+"ISO field, NO rater source",,,,SubStdConditionC,
+"ISO field, NO rater source",,,,SubStdConditionD,
+"ISO field, NO rater source",,,,SubStdConditionE,
+"ISO field, NO rater source",,,,TRIAConditionalExclusion,
+"ISO field, NO rater source",,,,TRIAExpirationDate,
+"ISO field, NO rater source",,,,TRIAType,
+"ISO field, NO rater source",,,,TerritorialZone,
+"ISO field, NO rater source",,,,TerrorOverridePremium,
+"ISO field, NO rater source",,,,TerrorismIndicator,
+"ISO field, NO rater source",,,,TerrorismOverride,
+"ISO field, NO rater source",,,,TerrorismSubLimit,
+"ISO field, NO rater source",,,,TerrorismTerritory,
+"ISO field, NO rater source",,,,TotalBlktSpecificInsAmount,
+"ISO field, NO rater source",,,,UnderFourUnits,
+"ISO field, NO rater source",,,,UnitNumber,
+"ISO field, NO rater source",,,,ValuationLaw,
+"ISO field, NO rater source",,,,WCFProofOfCompliance,
+"ISO field, NO rater source",,,,WCFWindstormLossMitigationEligibility,
+"ISO field, NO rater source",,,,WaterFrontProperty,
+"ISO field, NO rater source",,,,WatercraftExclBuybackConstrctnOption,
+"ISO field, NO rater source",,,,WaterfrontProperty,
+"ISO field, NO rater source",,,,WildfireMitigation,
+"ISO field, NO rater source",,,,WindstormConstructionProgram,
+"ISO field, NO rater source",,,,WindstormCredit,
+"ISO field, NO rater source",,,,WindstormMitigationDiscountApplies,
+"ISO field, NO rater source",,,,YearOfConstructionCode,

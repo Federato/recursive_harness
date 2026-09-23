@@ -1,0 +1,373 @@
+<title>Payload generator — Step 3: the two sheets to build</title>
+<meta charset="utf-8">
+<style>
+  body { font-family: Georgia, "Times New Roman", serif; max-width: 1100px; margin: 0 auto; padding: 32px 24px 80px; line-height: 1.55; color: #1c2733; background: #fff; }
+  @media (prefers-color-scheme: dark) {
+    body { background: #14181d; color: #dfe4e9; }
+    table, th, td { border-color: #3a4048 !important; }
+    thead th { background: #24313a !important; color: #eef4f3 !important; }
+    code, pre { background: #262c33 !important; color: #dfe4e9; }
+    .note { background: #2c2a1c !important; color: #e0c064 !important; }
+    .note.good { background: #1b3226 !important; color: #63c090 !important; }
+    .note.shared { background: #1d2b33 !important; color: #9fd4dc !important; }
+    .blk { border-color: #2b3742 !important; background: #171d24 !important; }
+    .n { background: #1d3535 !important; color: #7fd3d0 !important; }
+    .tag { background: #222a32 !important; color: #a3aebb !important; }
+    .tag.src { background: #1b3226 !important; color: #63c090 !important; }
+    .tag.def { background: #3a3319 !important; color: #e0c064 !important; }
+    .tag.ask { background: #34211c !important; color: #e08a72 !important; }
+    .big span { color: #7fd3d0 !important; }
+    .big em { color: #8b95a1 !important; }
+  }
+  h1 { font-size: 26px; font-weight: 400; margin-bottom: 4px; }
+  h2 { font-size: 19px; font-weight: 700; margin-top: 40px; border-bottom: 2px solid #1e3a45; padding-bottom: 4px; }
+  h3 { font-size: 15px; margin: 22px 0 6px; }
+  .meta { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13px; color: #55606b; margin: 6px 0 4px; }
+  code { font-family: ui-monospace, Consolas, monospace; font-size: 0.88em; background: #eef1f4; padding: 1px 5px; border-radius: 3px; }
+  pre { font-family: ui-monospace, Consolas, monospace; font-size: 12.5px; background: #eef1f4; padding: 12px 14px; border-radius: 6px; overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; margin: 12px 0 8px; font-size: 13px; }
+  th, td { border: 1px solid #d7dce2; padding: 6px 9px; text-align: left; vertical-align: top; }
+  thead th { background: #1e3a45; color: #eef4f3; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 11.5px; text-transform: uppercase; letter-spacing: .03em; }
+  td.num { text-align: center; width: 34px; color: #8b95a1; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 12px; }
+  .note { background: #f7ddd4; color: #a53d26; padding: 12px 16px; border-radius: 6px; margin: 16px 0; font-size: 14px; }
+  .note.good { background: #dcefe4; color: #2f7d5a; }
+  .note.shared { background: #dde9ee; color: #1e5567; }
+  .blk { border: 1px solid #d7dce2; border-left: 5px solid #1e3a45; border-radius: 8px; padding: 14px 18px; margin: 16px 0; background: #fcfcfd; }
+  .blk h3 { margin: 0 0 8px; font-size: 15px; font-weight: 700; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .n { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 12px; font-weight: 700; background: #cfe0e0; color: #14484a; padding: 2px 9px; border-radius: 99px; }
+  .tag { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; background: #eef1f4; color: #55606b; padding: 2px 7px; border-radius: 4px; }
+  .tag.src { background: #dcefe4; color: #2f7d5a; }
+  .tag.def { background: #f2e6c4; color: #a67c1e; }
+  .tag.ask { background: #f7ddd4; color: #a53d26; }
+  .lab { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; color: #8b95a1; }
+  .big { display: flex; gap: 26px; flex-wrap: wrap; margin: 16px 0; font-family: -apple-system, "Segoe UI", sans-serif; }
+  .big div { min-width: 120px; }
+  .big span { display: block; font-size: 30px; font-weight: 700; color: #1e5567; line-height: 1.1; }
+  .big em { font-size: 12px; font-style: normal; color: #7d8792; }
+  ol.steps li { margin: 10px 0; font-size: 14px; }
+  .sub { font-size: 12.5px; color: #8b95a1; font-family: -apple-system, "Segoe UI", sans-serif; }
+</style>
+
+<h1>Payload generator &mdash; Step 3: the two sheets to build</h1>
+<p class="meta"><b>2026-09-22.</b> This is the build sheet for <b>Step 4, which is yours.</b> It says exactly
+what to add to <code>CFRater1.01.xlsb</code>, column by column. Derived from Step 1
+(<code>CF_Payload_Excel_Input_Inventory.md</code>, 127 rater inputs) joined to Step 2
+(<code>CF_Payload_Field_Matrix.csv</code>, 408 payloads ISO has accepted).
+<b>Nothing here has been written to the workbook.</b></p>
+
+<div class="big">
+  <div><span>2</span><em>sheets to add</em></div>
+  <div><span>9</span><em>blocks across them</em></div>
+  <div><span>~90</span><em>export columns</em></div>
+  <div><span>12</span><em>Defaults rows</em></div>
+  <div><span>0</span><em>decisions left &mdash; the last one closed</em></div>
+</div>
+
+<div class="note good"><b>The Defaults sheet is far smaller than Step 2 estimated &mdash; 12 rows, not 165.</b>
+Step 2 counted 165 ISO fields with no rater source. Re-probing each one against the full matrix found most
+of them <i>do</i> have a rater source under a different name (<code>District</code>,
+<code>BasicGroupIISymbol</code>, <code>VacantBuilding</code>, <code>SprinklerSystem</code>,
+<code>SubStdConditionA&ndash;E</code>, <code>SpecificGroupIRate</code> and a dozen more). What is left that
+genuinely has no home in the workbook is twelve values, and eleven of those are constants like
+<code>1.0</code>.</div>
+
+<div class="note"><b>Correction to Step 2's &ldquo;safe reading&rdquo; &mdash; it was too loose.</b>
+Step 2 said <i>&ldquo;<code>ISO only</code> fields are safe to omit, because we already rate without
+them.&rdquo;</i> That is <b>only true when the rater's value is the neutral one.</b> Our 44 payloads never
+sent <code>VacantBuilding</code> or <code>SubStdConditionB</code> because those test cases did not use
+them &mdash; not because the fields do not matter. The rater's own sample data has
+<b><code>Vacancy = Yes</code></b> and <b><code>Sub Standard Condition &ndash; Wiring = Yes</code></b>, and
+omitting either would price the risk wrong. <b>Corrected rule: the export sheet carries every field the
+rater can source, whatever its evidence class.</b> Evidence class decides what we <i>default</i>, not what
+we <i>send</i>. This is why the export sheet is ~90 columns and not the 74 Step 2 implied.</div>
+
+<h2>Sheet A &mdash; <code>Payload Export</code></h2>
+<p>One block per record type, stacked down the sheet. Each block: a header row naming the block, a column
+header row, then one row per record. Every row carries its own ID and its parent's ID, so Python rebuilds
+the nesting by joining &mdash; no cell addresses are ever hard-coded.</p>
+
+<pre>POLICY
+  PolicyType | State | EffectiveDate
+  Commercial Property Policy | FL | 2027-03-01
+
+LOCATION
+  LocID | ZipCode | City | ProtectClass | BasicGroupIRatingTerr | District | ...
+  1     | 32809   | Orlando | 4         | Miami                 | Not Applicable
+  2     | 11236   | Brooklyn| 2         | New York City         | New York City
+
+STRUCTURE
+  ItemID | ParentLocID | RatingType | ClassCode | Limit  | FullBldgValue | ...
+  1 - 1  | 1           | Specific   | 0311      | 675000 | 675000
+  2 - 1  | 2           | Class      | 0311      | 526123 | 526123</pre>
+
+<p class="sub"><span class="tag src">From rater</span> a cell formula pointing at an input tab &nbsp;
+<span class="tag def">Default</span> reads the <code>Defaults</code> sheet &nbsp;
+<span class="tag ask">Your call</span> flagged below</p>
+
+<div class="blk">
+<h3><span class="n">1</span> POLICY <span class="tag">1 row</span></h3>
+<table>
+<thead><tr><th>Column</th><th>Source</th><th>Note</th></tr></thead>
+<tbody>
+<tr><td><code>PolicyType</code></td><td><span class="tag src">From rater</span> <code>Policy Inputs!C3</code></td><td>&mdash;</td></tr>
+<tr><td><code>State</code></td><td><span class="tag src">From rater</span> <code>Location Inputs!C15</code></td><td><b>Not sent as a field.</b> Becomes <code>ProductName</code> = <code>"Commercial Property " &amp; State</code>, and <b>splits the run</b> &mdash; see the multi-state note below</td></tr>
+<tr><td><code>EffectiveDate</code></td><td><span class="tag ask">Your call</span></td><td>No effective-date input exists on any tab. Needs one, or a CLI argument</td></tr>
+<tr><td><code>BlktRated</code>, <code>MUBlktRated</code></td><td><span class="tag def">Default</span> <code>"No"</code></td><td>Blanket is unbuilt in the rater; hard-coding <code>No</code> is honest</td></tr>
+<tr><td><code>IRPMFactor</code></td><td><span class="tag def">Default</span> <code>1.0</code></td><td>Policy-level; the rater carries flat 1.0 per tab today</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="blk">
+<h3><span class="n">2</span> LOCATION <span class="tag">N rows &mdash; up to 10 today</span></h3>
+<p><b>10 columns.</b> <code>LocID</code> (from <code>Location Inputs!row 4</code>) then:
+<code>ZipCode</code>&nbsp;<span class="sub">(B13, format as text &mdash; it is a float in the workbook)</span>,
+<code>City</code> (B14), <code>ProtectClass</code> (B22),
+<code>BasicGroupIRatingTerr</code> (B17), <code>BasicGroupIIRatingTerr</code> (B19),
+<code>SpecialRatingTerr</code> (B20), <code>District</code> (B18),
+<code>WindstormOrHailDeductible</code> (B53),
+<code>MultipleResidentialPropSpecialCredit</code> (B57).</p>
+<p class="sub">All ten are <span class="tag src">From rater</span>. <code>District</code> was on Step 2's
+&ldquo;needs a verdict&rdquo; list and is resolved &mdash; it is a real ISO field on
+<code>CommercialPropertyLocation</code>, evidence class <code>both</code>, and the rater already holds it.</p>
+</div>
+
+<div class="blk">
+<h3><span class="n">3</span> STRUCTURE <span class="tag">N rows</span></h3>
+<p><b>~30 columns.</b> <code>ItemID</code> + <code>ParentLocID</code> (from <code>Location Inputs!row 6</code>
+&mdash; the <code>Location# - Building#</code> scheme already computed), then:</p>
+<table>
+<thead><tr><th>Source</th><th>Columns</th></tr></thead>
+<tbody>
+<tr><td><span class="tag src">From rater</span></td><td><code>RatingType</code> (B28) &middot; <code>ClassCode</code> (B26) &middot; <code>ClassificationDescription</code> (B29) &middot; <code>ConstructionType</code> (B62) &middot; <code>CovType</code> (B8) &middot; <code>CauseOfLoss</code> (B50) &middot; <code>Limit</code> (B43) &middot; <code>Coinsurance</code> (B68) &middot; <code>Deductible</code> (B52) &middot; <code>TheftDeductible</code> (B54) &middot; <code>WindstormOrHailDeductible</code> (B53) &middot; <code>NumStories</code> (B63) &middot; <code>BCEG</code> (B23) &middot; <code>ValuationType</code> (B67) &middot; <code>VacantBuilding</code> (B85) &middot; <code>SprinklerSystem</code> (B72) &middot; <code>OpenSides</code> (B65) &middot; <code>SubStdConditionA</code>&ndash;<code>E</code> (B79&ndash;B83) &middot; <code>SpecificGroupIRate</code> (B44) &middot; <code>BasicGroupIISymbol</code> (B64) &middot; <code>RatingTypeBasicGroupII</code> (B28)</td></tr>
+<tr><td><span class="tag def">Default</span></td><td><code>IncludedInBlkt</code> = <code>"No"</code> &middot; <code>LossCostMultiplier</code> = <code>1.0</code> &middot; <code>PackageModFactor</code> = <code>1.0</code> &middot; <code>MultiPremiumAndDispersionCreditFactor</code> = <code>1.0</code> &middot; <code>TerrorismOverride</code> = <code>"No"</code></td></tr>
+<tr><td><span class="tag ask">Your call</span></td><td><code>FullBldgValue</code> &mdash; <b>the one real decision</b>, see below</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="blk">
+<h3><span class="n">4</span> OCCUPCLASS <span class="tag">N rows</span></h3>
+<p><b>6 columns.</b> <code>OccID</code> + <code>ParentItemID</code>, then <code>ClassCode</code>
+(B27 &mdash; the <b>Tenants</b> class code, not the building's), <code>OccupCategory</code> (B32),
+<code>TheftDeductible</code> (B54), <code>SprinklerSystem</code> (B72). All
+<span class="tag src">From rater</span>.</p>
+<p class="sub"><b>One row per building today</b>, because the workbook carries one occupancy class per
+building. The block is built to take N so it does not need redesigning when that changes &mdash; and the
+gap is exactly what Step 6's multi-class case will expose.</p>
+</div>
+
+<div class="blk">
+<h3><span class="n">5</span> PERSONALPROPERTY <span class="tag">N rows</span></h3>
+<p><b>10 columns.</b> <code>PPID</code> + <code>ParentOccID</code>, then <code>CovType</code> (B9),
+<code>CauseOfLoss</code> (B50), <code>Limit</code> (B45), <code>Coinsurance</code> (B69),
+<code>ValuationType</code> (B67), <code>OpenSides</code> (B65) &mdash; all
+<span class="tag src">From rater</span> &mdash; plus <span class="tag def">Default</span>
+<code>IncludedInBlkt</code> = <code>"No"</code>, <code>LossCostMultiplier</code> = <code>1.0</code>.</p>
+<p class="note" style="margin:10px 0 0"><b>Do not send</b> <code>RatingType</code>, <code>ClassCode</code>,
+<code>BldgClassCode</code>, <code>Group</code> or <code>Deductible</code> on this record. ISO's own STC
+payloads omit all five &mdash; Personal Property <b>inherits</b> them. Sending them is the single most
+likely way to get a wrong answer that still looks accepted.</p>
+</div>
+
+<div class="blk">
+<h3><span class="n">6</span> BUSINESSINCOME <span class="tag">N rows</span></h3>
+<p><b>11 columns.</b> <code>BIID</code> + <code>ParentItemID</code> &mdash; note the parent is the
+<b>Structure</b>, not the OccupClass &mdash; then <code>CovType</code> (B11),
+<code>CauseOfLoss</code> (B50), <code>Limit</code> (B47), <code>Coinsurance</code> (B70),
+<code>TypeOfRisk</code> (B36), <code>MaxPeriod</code> (B39), <code>MonthlyLimitOfIndemnity</code> (B40),
+plus <span class="tag def">Default</span> <code>IncludedInBlkt</code> = <code>"No"</code>,
+<code>LossCostMultiplier</code> = <code>1.0</code>.</p>
+</div>
+
+<div class="blk">
+<h3><span class="n">7</span> SPECIALCLASS <span class="tag">N rows</span></h3>
+<p><b>~18 columns.</b> <code>SCID</code> + <code>ParentLocID</code> from
+<code>Special Class Inputs!row 6</code>, then <span class="tag src">From rater</span>
+<code>ClassDescription</code> (B10), <code>CauseOfLoss</code> (B12), <code>Limit</code> (B19),
+<code>Coinsurance</code> (B16), <code>Deductible</code> (B24), <code>TheftDeductible</code> (B36),
+<code>WindstormOrHailDeductible</code> (B33), <code>ValuationType</code> (B14),
+<code>BasicGroupIISymbol</code> (B31), <code>BasicGroupIIRatingTerr</code> (B30),
+<code>IncludedInBlkt</code> (B13), <code>IncludedInBuilding</code> (B21),
+<code>AgreedValueOption</code> (B15); <span class="tag def">Default</span> <code>LossCostMultiplier</code>,
+<code>PackageModFactor</code>, <code>MultiPremiumAndDispersionCreditFactor</code> = <code>1.0</code>;
+<span class="tag ask">Your call</span> <code>FullSpecialClassValue</code> (same decision as
+<code>FullBldgValue</code>).</p>
+</div>
+
+<div class="blk">
+<h3><span class="n">8</span> SPECIALCLASSBUSNINCOME <span class="tag">N rows</span></h3>
+<p><b>11 columns.</b> <code>SCBIID</code> + <code>ParentSCID</code>, then <code>CovType</code> (B38),
+<code>CauseOfLoss</code> (B12), <code>Limit</code> (B42), <code>Coinsurance</code> (B18),
+<code>TypeOfRisk</code> (B39), <code>MaxPeriod</code> (B44), <code>MonthlyLimitOfIndemnity</code> (B45),
+plus the two <span class="tag def">Default</span> columns. Structurally identical to block 6.</p>
+</div>
+
+<div class="blk" style="border-left-color:#9e4630">
+<h3><span class="n">9</span> RECORDS <span class="tag ask">New &mdash; not in the Step 1 design</span></h3>
+<p><b>This block exists because of Step 2's structural finding.</b> The rater asks
+<i>&ldquo;Theft Exclusion? Yes/No&rdquo;</i>. ISO does not have a field for that &mdash; it elects an
+exclusion by the <b>presence of an empty endorsement record</b>:</p>
+<pre>"CommercialPropertyCyberIncidentExclusion": [{}]</pre>
+<p>So this block is a list, not a row of fields. Three columns: <code>RecordName</code> &middot;
+<code>ParentID</code> &middot; <code>Elected</code> (Yes/No, a formula reading the rater's exclusion input).
+Python emits an empty <code>{}</code> for every <code>Yes</code> row and omits the rest.</p>
+<table>
+<thead><tr><th>Rater input</th><th>ISO record to emit</th><th>Parent</th></tr></thead>
+<tbody>
+<tr><td><code>Policy Inputs!F3</code> Cyber Incident Exclusion</td><td><code>CommercialPropertyCyberIncidentExclusion</code></td><td>Policy</td></tr>
+<tr><td><code>Location Inputs!C77</code> Theft Exclusion</td><td>Theft exclusion record, Structure group</td><td>Structure</td></tr>
+<tr><td><code>Location Inputs!C76</code> Vandalism Exclusion</td><td><code>CommercialPropertyVandalismExclusion</code></td><td>Structure</td></tr>
+<tr><td><code>Location Inputs!C75</code> Windstorm/Hail Exclusion</td><td>Wind/hail exclusion record, Structure group</td><td>Structure</td></tr>
+<tr><td><code>Special Class Inputs!C28</code> Vandalism</td><td><code>CommercialPropertyVandalismExclusionSpclClassBusnIncome</code> <b>and</b> the Special Class one</td><td>SpecialClass <b>&times;2</b></td></tr>
+<tr><td><code>Special Class Inputs!C32</code> Wind/Hail</td><td><code>...WindstormOrHailExclusionSpecialClass</code> <b>and</b> <code>...SpclClassBusnIncome</code></td><td>SpecialClass <b>&times;2</b></td></tr>
+<tr><td><code>Special Class Inputs!C35</code> Theft</td><td><code>...TheftExclusionSpecialClass</code> <b>and</b> <code>...SpclClassBusnIncome</code></td><td>SpecialClass <b>&times;2</b></td></tr>
+</tbody>
+</table>
+<p class="note" style="margin:10px 0 0"><b>The last three rows are backlog S-1 / S-2 / S-3, and they are now
+a payload problem, not only a rating one.</b> ISO files <b>two</b> records &mdash; one on the item, one on
+the Business Income group. The rater has <b>one</b> Yes/No input driving both. So the generator physically
+cannot express &ldquo;exclude vandalism on Business Income but not the building.&rdquo; <b>Build the
+<code>Elected</code> column as two separate cells per exclusion now</b>, even if both point at the same
+input today &mdash; then closing S-1/S-2/S-3 later is an input change, not a re-spec.</p>
+<p class="sub">Exact record names for the non-Cyber rows should be lifted from the harness's gate point 7
+census (&ldquo;every exclusion's endorsement record identified per datadef group&rdquo;, passed on all eight
+closed chunks) rather than guessed &mdash; that work is already done and is authoritative.</p>
+</div>
+
+<h2>Sheet B &mdash; <code>Defaults</code></h2>
+<p>Two columns: <code>Field</code>, <code>Value</code>. Twelve rows. Python reads this and <b>fails loudly
+if a field it needs is missing</b> &mdash; it never invents a rating input.</p>
+<table>
+<thead><tr><th class="num">#</th><th>Field</th><th>Value</th><th>Why this value</th></tr></thead>
+<tbody>
+<tr><td class="num">1</td><td><code>LossCostMultiplier</code></td><td><code>1.0</code></td><td>Decided in BUILD-LOG Entry 35 &mdash; at 1.0 the filed ISO loss cost passes through unchanged, the only clean baseline for proving against ISO. Carrier LCM is a configured input by LOB, never a submission field</td></tr>
+<tr><td class="num">2</td><td><code>PackageModFactor</code></td><td><code>1.0</code></td><td>Policy-level; rater carries flat 1.0</td></tr>
+<tr><td class="num">3</td><td><code>MultiPremiumAndDispersionCreditFactor</code></td><td><code>1.0</code></td><td>Harness confirmed it is live on 12 of 20 premium files and genuinely absent on 8 &mdash; 1.0 is the neutral value</td></tr>
+<tr><td class="num">4</td><td><code>IRPMFactor</code></td><td><code>1.0</code></td><td>Policy-level</td></tr>
+<tr><td class="num">5</td><td><code>BlktRated</code></td><td><code>No</code></td><td rowspan="4">Blanket is unbuilt in the rater. Hard-coding <code>No</code> states that honestly rather than emitting a blanket payload the workbook cannot price</td></tr>
+<tr><td class="num">6</td><td><code>MUBlktRated</code></td><td><code>No</code></td></tr>
+<tr><td class="num">7</td><td><code>IncludedInBlkt</code></td><td><code>No</code></td></tr>
+<tr><td class="num">8</td><td><code>BlktIDNum</code></td><td><i>omit</i></td></tr>
+<tr><td class="num">9</td><td><code>TerrorismOverride</code></td><td><code>No</code></td><td>Terrorism/TRIA is harness chunk 13, untraced on both sides</td></tr>
+<tr><td class="num">10</td><td><code>RatingTypeBasicGroupII</code></td><td><i>= <code>RatingType</code></i></td><td>Points at the same rater input; split later if Group II ever rates on a different basis</td></tr>
+<tr><td class="num">11</td><td><code>EQCovIndicator</code></td><td><code>No Coverage</code></td><td>Earthquake is unbuilt on both sides (harness chunk 10, census only)</td></tr>
+<tr><td class="num">12</td><td><code>EffectiveDate</code></td><td><span class="tag ask">Your call</span></td><td>No input exists for it anywhere in the workbook</td></tr>
+</tbody>
+</table>
+
+<h2>The 30 verdicts from Step 2</h2>
+<p>Step 2 left 30 rater inputs genuinely unmapped. All 30 now have a verdict, and only one needs you.</p>
+
+<h3>Resolved &mdash; a real ISO field exists, alias only <span class="tag src">16</span></h3>
+<p><code>District</code> &middot; <code>BasicGroupIISymbol</code> &larr; Construction Symbol &middot;
+<code>IncludedInBuilding</code> &larr; &ldquo;Limit Included in Building?&rdquo; &middot;
+<code>VacantBuilding</code> &larr; Vacancy &middot; <code>SprinklerSystem</code> &middot;
+<code>OpenSides</code> &middot; <code>ValuationType</code> &larr; Valuation &middot;
+<code>ZipCode</code> &middot; <code>City</code> &middot; <code>ClassificationDescription</code> &larr; Class
+Description &middot; <code>TheftDeductible</code> &middot;
+<code>AgreedValueOption</code> &larr; Special Agreed Value &middot;
+<code>MultipleResidentialPropSpecialCredit</code> &middot;
+<code>SubStdConditionA</code>&ndash;<code>E</code> (5 inputs, one field each) &middot;
+<code>SpecificGroupIRate</code> &larr; Building Specific/Tentative Rate.</p>
+
+<h3>Not sent &mdash; workbook bookkeeping <span class="tag">12</span></h3>
+<p><code>Location #</code>, <code>Building #</code>, <code>Item #</code>, <code>Item ID</code> (&times;2),
+<code>Building ID Found?</code>, <code>Linked Building Item ID</code>, <code>Burglary System Range</code>,
+<code>Selected Burglary System Factor</code>, the two decoded <code>Description</code> rows, and
+<code>Construction Code</code> (ISO derives it from <code>ConstructionType</code>).
+These become the export sheet's ID/ParentID columns or are dropped.</p>
+
+<h3>Omit for v1 &mdash; no ISO field found in 408 payloads <span class="tag def">8</span></h3>
+<table>
+<thead><tr><th>Rater input</th><th>Reading</th></tr></thead>
+<tbody>
+<tr><td>Location of Heating Plant</td><td rowspan="8">None of these appear as a field name in <b>any</b> of the 408 payloads. The most likely reading is that they are <b>rater-internal</b> &mdash; the workbook derives a factor from them locally and ISO derives its equivalent from other inputs. <b>But absence from a corpus is not absence from the schema:</b> CF's DataDef has 56,207 field rows and neither corpus exercises all of them. <b>Verdict: omit for v1, and check each against <code>MasterCFCW.DataDef.xsd</code> before calling this settled.</b> Flagged rather than silently dropped</td></tr>
+<tr><td>Type of Watchman Service</td></tr>
+<tr><td>Type of Burglary Alarm System</td></tr>
+<tr><td>Limitations on Coverage for Roof Surfacing</td></tr>
+<tr><td>Yard Property Description</td></tr>
+<tr><td>Deductible By Location</td></tr>
+<tr><td>Percentage (Type 1) / (Type 2)</td></tr>
+<tr><td>Occupancy Severity</td></tr>
+</tbody>
+</table>
+
+<h3>Resolved 2026-09-22 &mdash; <code>FullBldgValue</code> <span class="tag src">settled</span></h3>
+<div class="note good"><b>Asked whether the scratchpad already computes this. It computes something
+adjacent, not this &mdash; and checking settled the question the other way.</b>
+
+<p><b>What is actually there:</b> <code>CoreScratchpad!B138</code> is <code>TOTAL LIMIT</code>, and for the
+first item it is <b>1,190,000</b> = 675,000 Building + 515,000 Contents. <code>B215</code> is
+<code>Total Special Class Limit</code>. That is the figure behind the DeductibleFactor fix
+(<code>C41 = C138</code>) and it feeds the deductible lookup at <code>B139</code>/<code>B140</code>.</p>
+
+<p><b>Why it is not <code>FullBldgValue</code>:</b> it totals <i>limits</i>, not insurable <i>value</i>, and
+it feeds the deductible factor rather than coinsurance. ISO's own Alabama sample keeps the two
+deliberately apart &mdash; <code>Limit: 500000</code> against <code>FullBldgValue: 550000</code>, a building
+insured to 500k but worth 550k. Summing Building + Contents limits produces neither number.</p>
+
+<p><b>The finding that settles it:</b> across all 127 inputs the rater has <code>Building Limit</code>,
+<code>Contents Limit</code>, <code>Business Income Limit</code> and <code>Special Class Building Limit</code>
+&mdash; and <b>no value field anywhere</b>. <b>The workbook already assumes limit = value</b>, i.e. 100%
+insurance-to-value.</p>
+
+<p><b>So the recommendation reverses.</b> Option (a) was framed above as introducing an assumption. It does
+not &mdash; it <i>reproduces one the rater already makes</i>. Option (b) would make the payload more correct
+than the workbook, and in a three-way diff that manufactures a disagreement where ISO is right and Excel is
+wrong <b>because of an input the generator invented</b>. For a verification harness that is backwards: the
+payload must reproduce the rater's assumptions exactly, so every disagreement points at a real defect.</p>
+
+<p><b>Decision: (a) for v1.</b> <code>FullBldgValue = Limit</code>,
+<code>FullSpecialClassValue = Special Class Building Limit</code> &mdash; logged as a simplification, not
+silently adopted. Move to (b) whenever genuine coinsurance testing is wanted; that is a rater change first
+and a payload change second. Blast radius is probably small &mdash; the only observed consumer of
+<code>FullBldgValue</code> is ISO's <i>&ldquo;Full Value cannot be lower than the Limit&rdquo;</i>
+validation, which setting it equal satisfies. <b>Not claiming zero rate effect</b>; that is not
+established.</p></div>
+
+<h2>The multi-state split</h2>
+<div class="note shared"><b>One workbook run is several ISO requests.</b> ISO carries state in
+<code>SchemeKeys.ProductName</code>, one state per request &mdash; there is no <code>StateCode</code> field
+to vary per location. The rater's sample data has <b>four</b> states live at once (FL, NY, AK, CA). So the
+CLI groups export rows by <code>State</code>, emits one payload per state, makes N calls, and reports N
+premiums plus a total. <b>The <code>Payload Export</code> sheet needs no extra structure for this</b> &mdash;
+<code>State</code> is already a LOCATION column and Python does the grouping.</div>
+
+<h2>How to build it &mdash; Step 4, in order</h2>
+<ol class="steps">
+<li><b>Add two sheets</b> to <code>CFRater1.01.xlsb</code>: <code>Payload Export</code> and
+<code>Defaults</code>. Hide both. Nothing else in the workbook changes.</li>
+<li><b>Build <code>Defaults</code> first</b> &mdash; it is 12 rows of <code>Field</code> /
+<code>Value</code>, copied straight from the table above. Ten minutes, and it unblocks testing the reader
+before the big sheet exists.</li>
+<li><b>Lay out the nine blocks</b> on <code>Payload Export</code>, top to bottom, in the order given here.
+Each block gets a row with the block name in column A, then a header row of ISO field names, then the data
+rows. Leave one blank row between blocks &mdash; that is how Python finds the boundaries.</li>
+<li><b>Fill each cell with a formula, never a typed value</b> &mdash; <code>='Location Inputs'!C26</code>
+and so on. The point of this sheet is that it stays live. A typed value silently goes stale.</li>
+<li><b>Apply the seven format conversions</b> from Step 1 as you go, in the formula itself:
+<code>Coinsurance</code> &rarr; <code>=TEXT('Location Inputs'!C68*100,"0")&amp;"%"</code>;
+<code>ZipCode</code> &rarr; <code>=TEXT('Location Inputs'!C13,"00000")</code>. The other five are noted in
+the inventory.</li>
+<li><b>Transpose as you go.</b> The input tabs run one column per item; the export sheet runs one row per
+item. Block 2's row for location 1 reads column C, row for location 2 reads column D, and so on.</li>
+<li><b>Build the RECORDS block last</b>, with two <code>Elected</code> cells per Special Class exclusion
+even though both point at the same input today.</li>
+<li><b>Tell me when it is in</b> and I will run Step 5 against it &mdash; the reader fails loudly on
+anything missing, so an incomplete sheet gives a precise error, not a wrong premium.</li>
+</ol>
+
+<h2>Remaining steps</h2>
+<ol class="steps">
+<li><b>Step 4 is yours, and it is unblocked</b> &mdash; build the two sheets from this document. Nothing
+is waiting on a decision.</li>
+<li><b>Step 5</b> &mdash; I build the CLI: read &rarr; JSON &rarr; RAaS &rarr; <code>cf_engine</code>
+&rarr; three-way diff.</li>
+<li><b>Step 6</b> &mdash; prove it, opening with the <b>7-block composition payload</b> that neither corpus
+has ever sent, before any premium comparison.</li>
+</ol>
+
+<p class="sub">Step 3 of 6. Sources: <code>CF_Payload_Excel_Input_Inventory.md</code> (Step 1),
+<code>CF_Payload_Field_Harvest_Step2.md</code> + <code>CF_Payload_Field_Matrix.csv</code> (Step 2).
+No code written, no workbook access, nothing built.</p>

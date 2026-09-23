@@ -1,0 +1,430 @@
+<title>Streamlining the CF rater — what the harness build teaches, as wireframes</title>
+<meta charset="utf-8">
+<style>
+  body { font-family: Georgia, "Times New Roman", serif; max-width: 1140px; margin: 0 auto; padding: 32px 24px 80px; line-height: 1.55; color: #1c2733; background: #fff; }
+  @media (prefers-color-scheme: dark) {
+    body { background: #14181d; color: #dfe4e9; }
+    table, th, td { border-color: #3a4048 !important; }
+    thead th { background: #24313a !important; color: #eef4f3 !important; }
+    code, pre { background: #262c33 !important; color: #dfe4e9; }
+    .note { background: #2c2a1c !important; color: #e0c064 !important; }
+    .note.good { background: #1b3226 !important; color: #63c090 !important; }
+    .note.shared { background: #1d2b33 !important; color: #9fd4dc !important; }
+    .rec { border-color: #2b3742 !important; background: #171d24 !important; }
+    .rec.quick { border-left-color: #3f8f66 !important; }
+    .rec.struct { border-left-color: #b4523c !important; }
+    .n { background: #1d3535 !important; color: #7fd3d0 !important; }
+    .tag { background: #222a32 !important; color: #a3aebb !important; }
+    .tag.quick { background: #1b3226 !important; color: #63c090 !important; }
+    .tag.struct { background: #34211c !important; color: #e08a72 !important; }
+    .tag.mid { background: #3a3319 !important; color: #e0c064 !important; }
+    .xl { border-color: #3a4048 !important; }
+    .xl th { background: #24313a !important; color: #9aa5b1 !important; border-color: #3a4048 !important; }
+    .xl td { border-color: #303740 !important; background: #171d24; color: #dfe4e9; }
+    .xl td.rh { background: #24313a !important; color: #9aa5b1 !important; }
+    .xl td.blk { background: #1e3a45 !important; color: #9fd4dc !important; }
+    .xl td.hdr { background: #232a31 !important; color: #cfd6dd !important; }
+    .xl td.ok { background: #16281f !important; }
+    .xl td.bad { background: #331e1a !important; color: #e08a72 !important; }
+    .xl td.warn { background: #2b2717 !important; }
+    .xl td.dim { background: #15191e !important; color: #8b95a1 !important; }
+    .tabs { background: #1b2027 !important; border-color: #3a4048 !important; }
+    .tab { background: #232a31 !important; color: #a3aebb !important; border-color: #3a4048 !important; }
+    .tab.g1 { background: #1d3535 !important; color: #7fd3d0 !important; }
+    .tab.g2 { background: #24313a !important; color: #9aa5b1 !important; }
+    .tab.g3 { background: #2b2717 !important; color: #e0c064 !important; }
+    .tab.g4 { background: #1b3226 !important; color: #63c090 !important; }
+  }
+  h1 { font-size: 26px; font-weight: 400; margin-bottom: 4px; }
+  h2 { font-size: 19px; font-weight: 700; margin-top: 42px; border-bottom: 2px solid #1e3a45; padding-bottom: 4px; }
+  .meta { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13px; color: #55606b; margin: 6px 0 4px; }
+  code { font-family: ui-monospace, Consolas, monospace; font-size: 0.87em; background: #eef1f4; padding: 1px 5px; border-radius: 3px; }
+  pre { font-family: ui-monospace, Consolas, monospace; font-size: 12.5px; background: #eef1f4; padding: 12px 14px; border-radius: 6px; overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; margin: 12px 0 8px; font-size: 13.5px; }
+  th, td { border: 1px solid #d7dce2; padding: 6px 9px; text-align: left; vertical-align: top; }
+  thead th { background: #1e3a45; color: #eef4f3; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 11.5px; text-transform: uppercase; letter-spacing: .03em; }
+  td.num { text-align: center; width: 40px; color: #8b95a1; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 12px; }
+  .note { background: #f7ddd4; color: #a53d26; padding: 12px 16px; border-radius: 6px; margin: 16px 0; font-size: 14px; }
+  .note.good { background: #dcefe4; color: #2f7d5a; }
+  .note.shared { background: #dde9ee; color: #1e5567; }
+  .rec { border: 1px solid #d7dce2; border-left: 5px solid #1e3a45; border-radius: 8px; padding: 16px 20px; margin: 22px 0; background: #fcfcfd; }
+  .rec.quick { border-left-color: #2f7d5a; }
+  .rec.struct { border-left-color: #9e4630; }
+  .rec h3 { margin: 0 0 4px; font-size: 16px; font-weight: 700; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .rec p { font-size: 14px; margin: 9px 0; }
+  .n { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 12px; font-weight: 700; background: #cfe0e0; color: #14484a; padding: 2px 9px; border-radius: 99px; }
+  .tag { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; background: #eef1f4; color: #55606b; padding: 2px 7px; border-radius: 4px; }
+  .tag.quick { background: #dcefe4; color: #2f7d5a; }
+  .tag.mid { background: #f2e6c4; color: #a67c1e; }
+  .tag.struct { background: #f7ddd4; color: #a53d26; }
+  .why { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 12.5px; color: #1e5567; background: #dde9ee; padding: 8px 12px; border-radius: 5px; margin: 10px 0; }
+  @media (prefers-color-scheme: dark) { .why { background: #1d2b33 !important; color: #9fd4dc !important; } }
+  .scroll { overflow-x: auto; margin: 10px 0 6px; }
+  table.xl { border-collapse: collapse; width: auto; font-family: ui-monospace, Consolas, monospace; font-size: 11.5px; border: 1px solid #b8c0c9; }
+  .xl th { background: #e7eaee; color: #55606b; border: 1px solid #b8c0c9; padding: 2px 8px; font-weight: 700; text-align: center; font-size: 10.5px; }
+  .xl td { border: 1px solid #d7dce2; padding: 3px 8px; white-space: nowrap; background: #fff; }
+  .xl td.rh { background: #e7eaee; color: #55606b; text-align: center; font-weight: 700; font-size: 10.5px; }
+  .xl td.blk { background: #1e3a45; color: #cfe0e0; font-weight: 700; letter-spacing: .04em; }
+  .xl td.hdr { background: #eef1f4; font-weight: 700; }
+  .xl td.ok { background: #eef7f1; }
+  .xl td.bad { background: #fbe9e4; color: #a53d26; font-weight: 700; }
+  .xl td.warn { background: #fbf3dd; }
+  .xl td.dim { background: #f7f8f9; color: #8b95a1; }
+  .tabs { display: flex; gap: 2px; background: #eef1f4; border: 1px solid #b8c0c9; border-radius: 4px 4px 0 0; padding: 5px 6px 0; overflow-x: auto; margin: 10px 0; }
+  .tab { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 11px; padding: 5px 10px; border: 1px solid #c9d0d7; border-bottom: none; border-radius: 4px 4px 0 0; background: #e2e6ea; color: #55606b; white-space: nowrap; }
+  .tab.g1 { background: #cfe0e0; color: #14484a; font-weight: 700; }
+  .tab.g2 { background: #e7eaee; color: #55606b; }
+  .tab.g3 { background: #f2e6c4; color: #a67c1e; }
+  .tab.g4 { background: #dcefe4; color: #2f7d5a; font-weight: 700; }
+  .sub { font-size: 12.5px; color: #8b95a1; font-family: -apple-system, "Segoe UI", sans-serif; }
+  ol.steps li { margin: 9px 0; font-size: 14px; }
+</style>
+
+<h1>Streamlining the CF rater &mdash; what the harness build teaches</h1>
+<p class="meta"><b>2026-09-22.</b> Eight suggestions, each one traced to a specific thing the
+Recursive&nbsp;Harness build learned the hard way. <b>These are proposals, not decisions</b> &mdash; nothing
+has been written to <code>CFRater1.01.xlsb</code>. Ordered cheapest-first within each tier; the priority
+table at the end ranks them by payoff per hour.</p>
+
+<div class="note shared"><b>The through-line.</b> The harness's nine-point gate exists because every one of
+its points was, at some stage, a bug that a clean-looking result hid. The rater produces numbers the same
+way the harness did before the gate &mdash; correctly, most of the time, with <b>no way to tell the
+difference between a right answer and a wrong one that looks right</b>. Almost everything below is about
+making that distinction visible inside the workbook, rather than discoverable only by a person reading rule
+XML afterwards.</div>
+
+<h2>The learnings, and what each implies</h2>
+<table>
+<thead><tr><th class="num">#</th><th>What the harness learned</th><th>What it implies for the workbook</th><th>Fix</th></tr></thead>
+<tbody>
+<tr><td class="num">1</td><td><b>Absent means zero, silently.</b> Eight known cases where a missing or unrecognised input prices a whole chain at <code>0</code> with nothing raised &mdash; including <code>ConstructionType = "Joisted Masonry"</code>, which is spelled correctly and is the name on the rate table</td><td>The rater has no guard anywhere. A zero looks identical to a legitimately cheap risk</td><td>R-3</td></tr>
+<tr><td class="num">2</td><td><b>Every intermediate must trace to a named rule and table row</b> (gate point 1)</td><td>A wrong factor in the workbook is diagnosable only by rebuilding the lookup by hand</td><td>R-3</td></tr>
+<tr><td class="num">3</td><td><b>Same field name &ne; same value across DataDefGroups.</b> A descendant group can locally shadow an ancestor's rule; 83 shared-name traps across the corpus</td><td>Pointing one coverage's cell at another's is precisely this trap. Business Income currently reads the building's wind/hail factor (S-2)</td><td>R-5</td></tr>
+<tr><td class="num">4</td><td><b>States override rules, not just values.</b> FL and PR rate Special through their own rule and a differently-named table; NY deviates 400%+ on Special Class BGI; 11 of FL's class descriptions don't exist countrywide</td><td>A workbook keyed on countrywide names misses silently in exactly the states that matter most</td><td>R-6</td></tr>
+<tr><td class="num">5</td><td><b>The edition basis must be stated</b> (gate point 8), and edition-specific gaps differ from corpus-wide ones</td><td>Editions were resolved once, outside the workbook, at a fixed cutoff. Nothing on the face says which</td><td>R-6</td></tr>
+<tr><td class="num">6</td><td><b>Cell references rot.</b> BUILD-LOG Entry 33 records rows and columns shifting several times <i>within one session</i>; every doc in this set carries a "re-read before trusting any reference" caveat</td><td>Every formula, every doc and every future integration is addressed by position</td><td>R-1</td></tr>
+<tr><td class="num">7</td><td><b>Enumerate, never sample</b> (gate point 3) &mdash; 47 of 47 jurisdictions, each premium predicted before the run</td><td>The workbook rates one submission at a time. There is no way to sweep</td><td>R-8</td></tr>
+<tr><td class="num">8</td><td><b>Validation messages are part of the answer</b> (gate point 9). ISO returns them; the premium can be right while the submission is refused</td><td>The rater has no concept of a message at all</td><td>R-7</td></tr>
+</tbody>
+</table>
+
+<h2>Tier 1 &mdash; cheap, high payoff</h2>
+
+<div class="rec quick">
+<h3><span class="n">R-1</span> Name every input, and stop addressing by position <span class="tag quick">&#10003; DONE 2026-09-22</span></h3>
+<div class="note good" style="margin-top:0"><b>Implemented.</b> <b>133 names</b> added to
+<code>CFRater1.02.xlsb</code> (a copy &mdash; <code>1.01</code> is byte-identical to before), 0 failed, and
+<b>133 of 133 verified</b> to resolve to the correct cell by two independent paths. Item tabs got a name per
+input <i>row</i> (<code>$C:$L</code> / <code>$C:$E</code>), so the <code>INDEX(range,1,ordinal)</code>
+pattern survives rows moving. Full record, including the reusable COM write protocol:
+<code>CF_R1_Implementation_Record.md</code>.</div>
+<div class="why"><b>Why:</b> Entry 33 &mdash; rows and columns moved repeatedly inside a single working
+session, and every cell reference given that day was wrong until caught by hand. This is the single
+largest source of friction in the whole project, and it silently taxes every other item on this page.</div>
+<p>Convert each input block to an <b>Excel Table</b> (<code>Ctrl+T</code>) and give every input row a
+<b>name</b>. Formulas then read structurally instead of positionally:</p>
+<div class="scroll">
+<table class="xl">
+<tr><th>&nbsp;</th><th style="min-width:250px">Today &mdash; positional</th><th style="min-width:300px">After &mdash; named</th></tr>
+<tr><td class="rh">&nbsp;</td><td class="dim">=INDEX('Location Inputs'!$C$26:$L$26,1,$A20)</td><td class="ok">=INDEX(IN_Bldg_ClassCode,1,$A20)</td></tr>
+<tr><td class="rh">&nbsp;</td><td class="dim">='Location Inputs'!C68</td><td class="ok">=IN_Bldg_Coinsurance</td></tr>
+<tr><td class="rh">&nbsp;</td><td class="dim">=CoreScratchpad!C138</td><td class="ok">=CALC_TotalLimit</td></tr>
+<tr><td class="rh">&nbsp;</td><td class="bad">breaks when a row is inserted</td><td class="ok">survives inserts, moves, re-ordering</td></tr>
+</table>
+</div>
+<p><b>Do this first.</b> It makes the Payload Export sheet trivial, it makes every future doc durable, and
+it retires the "re-read the workbook before trusting any cell reference" caveat that currently opens every
+handoff.</p>
+</div>
+
+<div class="rec quick">
+<h3><span class="n">R-2</span> A naming convention on the tabs <span class="tag quick">Quick</span> <span class="tag">~1 hour</span></h3>
+<div class="why"><b>Why:</b> 26 sheets with four different naming styles. Which are inputs, which are ISO
+data, which are working, and which are safe to edit is currently knowledge held in a person's head.</div>
+<p class="sub">Today &mdash; input, calc, data and scratch all interleaved, no visual grouping:</p>
+<div class="tabs">
+<div class="tab">Policy Inputs</div><div class="tab">Location Inputs</div><div class="tab">Special Class Inputs</div><div class="tab">BGIITerritory</div><div class="tab">Bldg Rating Worksheet</div><div class="tab">Contents Rating Worksheet</div><div class="tab">BI Rating Worksheet</div><div class="tab">Special Class Worksheet</div><div class="tab">CoreScratchpad</div><div class="tab">BI Tables</div><div class="tab">Special Class</div><div class="tab">PolicyDropdowns</div><div class="tab">ContentsTables</div><div class="tab">&hellip;</div>
+</div>
+<p class="sub">After &mdash; prefix by role, so the eye groups them and a stray edit in the wrong place is obvious:</p>
+<div class="tabs">
+<div class="tab g1">IN · Policy</div><div class="tab g1">IN · Location</div><div class="tab g1">IN · Special Class</div>
+<div class="tab g2">CALC · Building</div><div class="tab g2">CALC · Contents</div><div class="tab g2">CALC · BI</div><div class="tab g2">CALC · Special Class</div><div class="tab g2">CALC · Core</div>
+<div class="tab g3">TBL · BGI Rates</div><div class="tab g3">TBL · Territories</div><div class="tab g3">TBL · Class Codes</div><div class="tab g3">TBL · &hellip;</div>
+<div class="tab g4">OUT · Summary</div><div class="tab g4">OUT · Diagnostics</div><div class="tab g4">SYS · Payload Export</div><div class="tab g4">SYS · Defaults</div>
+</div>
+<p><code>IN</code> you type in &middot; <code>CALC</code> never touch &middot; <code>TBL</code> is ISO's
+filed data, replaced wholesale at each edition &middot; <code>OUT</code> is what you read &middot;
+<code>SYS</code> is machinery, hidden. <b>The <code>TBL</code> prefix earns its keep at the next edition
+change</b> &mdash; it is the list of what gets swapped.</p>
+</div>
+
+<div class="rec quick">
+<h3><span class="n">R-3</span> Guard and provenance columns on every calc row <span class="tag quick">&#10003; DONE 2026-09-22</span></h3>
+<div class="note good" style="margin-top:0"><b>Implemented.</b> <b>434 rows</b> annotated across the four
+<code>CALC -</code> sheets with <b>M = Source</b> (parsed from each row's real formula) and
+<b>N = Check</b> (<b>174</b> live zero-checks). Premiums unchanged &mdash; the only change in this series
+that is additive by construction. <b>The tuning was the work:</b> the first run flagged <b>46</b>, the
+tuned version flags <b>3</b>. Noise came from block titles holding a typed <code>1</code>, and from zeros
+that are legitimate &mdash; additive rates, unelected forms, branch-only values. <b>Only multiplicative
+terms are zero-checked</b>, since only those take the chain to zero. <b>All 3 surviving flags were
+investigated and are benign</b> &mdash; including one that looked exactly like the <code>=1</code> defects
+R-4 and M-1 found, but turned out correct: ISO files the multi-residential credit for Building only, so
+Contents' hard-coded <code>1</code> is right. <b>A hard-coded <code>1</code> sometimes means &ldquo;does
+not apply here&rdquo;</b> &mdash; the Source column's job is to make that visible for a human, not to
+declare it wrong. Full record: <code>CF_R3_Implementation_Record.md</code>.</div>
+<div class="why"><b>Why:</b> the two most expensive lessons at once. <b>Gate point 4</b> &mdash; every
+<code>0</code> tested against its consuming branch, because eight known inputs price a chain at zero
+silently. <b>Gate point 1</b> &mdash; every intermediate traced to a named rule and table row. Today a
+factor cell holds a number and nothing else.</div>
+<p>Three extra columns beside each factor. Cheap, and they turn the calc tabs from an answer into an
+explanation:</p>
+<div class="scroll">
+<table class="xl">
+<tr><th>&nbsp;</th><th style="min-width:180px">A &mdash; Step</th><th style="min-width:70px">B &mdash; Value</th><th style="min-width:190px">C &mdash; Source table</th><th style="min-width:210px">D &mdash; Key used</th><th style="min-width:140px">E &mdash; Check</th></tr>
+<tr><td class="rh">12</td><td class="hdr">BGI Base Rate</td><td class="ok">0.243</td><td class="dim">BasicGroupIRate · FL · 20241201</td><td class="dim">0311 / Frame / Miami</td><td class="ok">OK</td></tr>
+<tr><td class="rh">13</td><td class="hdr">Territory Factor</td><td class="ok">1.150</td><td class="dim">BGIRatingTerrFactor · FL</td><td class="dim">Miami</td><td class="ok">OK</td></tr>
+<tr><td class="rh">14</td><td class="hdr">Protection Class</td><td class="ok">0.910</td><td class="dim">ProtectionClassFactor · CW</td><td class="dim">4 / Frame</td><td class="ok">OK</td></tr>
+<tr><td class="rh">15</td><td class="hdr">Construction</td><td class="bad">0.000</td><td class="dim">ConstructionCode · CW</td><td class="bad">"Joisted Masonry" &mdash; not in domain</td><td class="bad">⚠ ZERO &mdash; kills chain</td></tr>
+<tr><td class="rh">16</td><td class="hdr">Deductible Factor</td><td class="ok">0.960</td><td class="dim">DeductibleFactor · FL</td><td class="dim">2,500 / 1,190,000</td><td class="ok">OK</td></tr>
+<tr><td class="rh">17</td><td class="hdr"><b>Final Rate</b></td><td class="bad"><b>0.000</b></td><td class="dim">&mdash;</td><td class="dim">&mdash;</td><td class="bad">⚠ 1 upstream zero</td></tr>
+</table>
+</div>
+<p><b>Row 15 is the whole point.</b> That is the real, documented Joisted Masonry case: an input that is
+spelled correctly, is semantically right, is the name printed on the rate table &mdash; and misses the
+domain lookup, pricing the chain at zero. Today the workbook shows <code>0.000</code> and a plausible
+final premium. <b>The Check column costs one <code>IF</code> per row</b> and turns a silent mispricing into
+something you cannot miss.</p>
+<p class="sub">Columns C and D can be text written once per step &mdash; they do not need to be computed.
+Their value is that the next person diagnosing a wrong number reads the key instead of reconstructing it.</p>
+</div>
+
+<div class="rec quick">
+<h3><span class="n">R-4</span> One policy-level factor block, referenced everywhere <span class="tag quick">&#10003; DONE 2026-09-22</span></h3>
+<div class="note good" style="margin-top:0"><b>Implemented &mdash; but the survey rewrote the job first.</b>
+Two of the five factors named below were <b>already correct</b> and were left alone: <code>LCM</code> is a
+genuine per-state lookup, not a flat 1.0, and <code>CyberExcl*</code> already gates off
+<code>'Policy Inputs'!$F$3</code>. <b>Collapsing Cyber would have been a bug</b> &mdash; its
+0.997-vs-0.996 split between Broad and Special is filed data, and merging it would have reintroduced the
+premium defect fixed in BUILD-LOG Entry 28. The real problem was narrower and worse: <b>IRPM, PackageMod
+and MultiPremiumDispersion were hard-coded <code>1.0</code> in 120 cells with no input anywhere</b> &mdash;
+applying an IRPM meant editing 40 cells. 3 inputs added, <b>150 cells repointed</b>, premiums unchanged at
+1.0 and moving correctly at 0.9. <b>The two-sided check caught a second defect:</b> Business Income's cells
+held the formula <code>=1</code> &mdash; a literal disguised as a formula &mdash; so BI was inert; 30 more
+cells fixed. <b>Open finding (backlog M-1):</b> Special Class and SCBI apply none of these three, though
+ISO files all of them. Full record: <code>CF_R4_Implementation_Record.md</code>.</div>
+<div class="why"><b>Why:</b> BUILD-LOG Entry 33 flagged this and it was never fixed &mdash;
+<code>MultiPremiumAndDispersionCreditFactor</code> and both Cyber exclusion factors are policy-level,
+endorsement-gated values, but every coverage tab carries its own independent flat <code>1.0</code>. The
+harness separately confirmed <code>MultiPremium</code> is live on 12 of 20 premium files and genuinely
+absent on 8 &mdash; so the right value is <i>not</i> uniformly 1.0, and four tabs will need changing in
+four places the day that matters.</div>
+<div class="scroll">
+<table class="xl">
+<tr><th>&nbsp;</th><th style="min-width:300px">A</th><th style="min-width:80px">B</th><th style="min-width:250px">C</th></tr>
+<tr><td class="rh">1</td><td class="blk" colspan="3">POLICY-LEVEL FACTORS &mdash; single source of truth</td></tr>
+<tr><td class="rh">2</td><td class="hdr">Factor</td><td class="hdr">Value</td><td class="hdr">Applies to</td></tr>
+<tr><td class="rh">3</td><td class="ok">PackageModFactor</td><td class="ok">1.000</td><td class="dim">all coverages</td></tr>
+<tr><td class="rh">4</td><td class="ok">IRPMFactor</td><td class="ok">1.000</td><td class="dim">all coverages</td></tr>
+<tr><td class="rh">5</td><td class="ok">MultiPremiumAndDispersionCredit</td><td class="ok">1.000</td><td class="warn">12 of 20 premium files &mdash; <b>not universal</b></td></tr>
+<tr><td class="rh">6</td><td class="ok">CyberIncidentExclusionFactor</td><td class="ok">1.000</td><td class="dim">gated on the endorsement record</td></tr>
+<tr><td class="rh">7</td><td class="ok">CyberIncidentExclusionFactorEQ</td><td class="ok">1.000</td><td class="dim">Earthquake chain only</td></tr>
+<tr><td class="rh">8</td><td class="ok">LossCostMultiplier</td><td class="ok">1.000</td><td class="warn">carrier LCM &mdash; applied <b>in-chain</b>, not to a finished premium</td></tr>
+</table>
+</div>
+<p>Every coverage tab points here. <b>Row 8's note matters:</b> the harness established that the LCM must
+multiply inside the chain, because the 3-decimal rounding sits after it &mdash; applying it to a finished
+premium gives a different number.</p>
+</div>
+
+<h2>Tier 2 &mdash; structural, higher payoff</h2>
+
+<div class="rec struct">
+<h3><span class="n">R-5</span> Split the exclusion inputs per datadef group <span class="tag quick">&#10003; DONE 2026-09-22</span></h3>
+<div class="note good" style="margin-top:0"><b>Implemented &mdash; and the scope below was understated by
+more than half.</b> The backlog describes <b>two</b> filed records per exclusion; ISO files <b>five</b>,
+one per coverage group &mdash; <b>15 records driven by 6 inputs</b>. <b>15 per-group inputs</b> appended
+(<code>IN - Location</code> 96&ndash;104, <code>IN - Special Class</code> 49&ndash;54), each a formula
+pointing at its master so <b>electing an exclusion still turns it on everywhere</b>; type
+<code>No</code> over one cell to split a single coverage. <b>161 cells across 17 consumer rows</b>
+rewired. Verified three ways: unchanged at defaults, <code>Theft-Building = No</code> moves Building
+<b>7183 &rarr; 7334</b>, and <b>every other coverage stays static</b> in that same run. <b>Honest limit:</b>
+fully live for Special Class and SCBI, <b>partial</b> for Building/Contents/BI &mdash; 6 of 23 consumers
+route through shared <code>CoreScratchpad</code> helpers and were left on the master rather than assigned
+to a group on a guess. Full record: <code>CF_R5_Implementation_Record.md</code>.</div>
+<div class="why"><b>Why:</b> the shared-name trap, in the workbook. ISO files a <b>separate exclusion
+record on each datadef group</b>; the rater reuses one Yes/No across groups, and Business Income currently
+<i>points at</i> the building's wind/hail factor. Backlog S-1 / S-2 / S-3. Step 2 of the payload work
+showed this is not only a rating simplification &mdash; the generator physically cannot express the split,
+so it is a fidelity ceiling too.</div>
+<div class="scroll">
+<table class="xl">
+<tr><th>&nbsp;</th><th style="min-width:230px">A &mdash; today</th><th style="min-width:80px">B</th><th style="min-width:280px">C &mdash; after</th><th style="min-width:60px">D</th><th style="min-width:60px">E</th></tr>
+<tr><td class="rh">&nbsp;</td><td class="hdr">Exclusion</td><td class="hdr">Y/N</td><td class="hdr">Exclusion</td><td class="hdr">Bldg</td><td class="hdr">BI</td></tr>
+<tr><td class="rh">26</td><td class="dim">Vandalism Exclusion</td><td class="bad">Yes</td><td class="ok">Vandalism &mdash; Special Class</td><td class="ok">Yes</td><td class="ok">No</td></tr>
+<tr><td class="rh">32</td><td class="dim">Windstorm/Hail Exclusion</td><td class="bad">No</td><td class="ok">Windstorm/Hail &mdash; Special Class</td><td class="ok">No</td><td class="ok">No</td></tr>
+<tr><td class="rh">35</td><td class="dim">Theft Exclusion</td><td class="bad">Yes</td><td class="ok">Theft &mdash; Special Class</td><td class="ok">Yes</td><td class="ok">Yes</td></tr>
+<tr><td class="rh">&nbsp;</td><td class="bad" colspan="2">one input drives both records</td><td class="ok" colspan="3">one column per datadef group</td></tr>
+</table>
+</div>
+<p><b>The table data does not change</b> &mdash; only the gate. Keep the shared lookup block and wrap it in
+its own <code>IF</code> per column. The cost is input-sheet width, which is why it was deferred; the
+benefit is that a risk can finally exclude vandalism on Business Income but not on the building, and the
+payload can say so.</p>
+<p class="sub">Theft is the one that cannot be pointed even if you wanted to &mdash; the factor tables
+genuinely differ (0.88 building vs 0.86 Business Income).</p>
+</div>
+
+<div class="rec struct">
+<h3><span class="n">R-6</span> Put the edition and state basis on the face <span class="tag quick">&#10003; DONE 2026-09-22</span></h3>
+<div class="note good" style="margin-top:0"><b>Implemented, and built differently from the sketch below.</b>
+<b>19 source stamps</b> (one per <code>TBL -</code> sheet), a new <b><code>TBL - Editions</code></b>
+(52 rows &mdash; 47 filed plus explicit <b>NO FILING</b> rows for HI/ID/LA/MS/WA), and
+<b><code>OUT - Diagnostics</code> &sect;5</b> resolving each active location live. FL reads
+<b>&ldquo;STALE &mdash; 21 months&rdquo;</b>, aged against <code>TODAY()</code> so it maintains itself.
+<b>The design change:</b> rather than a central ledger of which edition each sheet came from, <b>each sheet
+carries its own stamp</b> &mdash; a table <i>about</i> the data drifts from the data, which is the exact
+failure this session hit twice. Refreshing rates and refreshing provenance are now the same edit. Where
+provenance is unknown the stamp says <b>&ldquo;not recorded&rdquo;</b> rather than inventing one. Full
+record: <code>CF_R6_Implementation_Record.md</code>.</div>
+<div class="why"><b>Why:</b> gate point 8 &mdash; the edition basis must be stated, and any table from an
+older edition must say so. Today editions were resolved once, outside the workbook, at a 9/1/2026 cutoff,
+and nothing on the face records it. Meanwhile FL's last available edition is over a year stale, five
+jurisdictions have no filing at all, and NY/FL deviate from countrywide in ways that change the answer.</div>
+<div class="scroll">
+<table class="xl">
+<tr><th>&nbsp;</th><th style="min-width:110px">A</th><th style="min-width:130px">B</th><th style="min-width:160px">C</th><th style="min-width:110px">D</th><th style="min-width:280px">E</th></tr>
+<tr><td class="rh">1</td><td class="blk" colspan="5">RATING BASIS &mdash; auto-derived, read only</td></tr>
+<tr><td class="rh">2</td><td class="hdr">State</td><td class="hdr">ERC edition</td><td class="hdr">Effective</td><td class="hdr">Age</td><td class="hdr">Flags</td></tr>
+<tr><td class="rh">3</td><td class="ok">FL</td><td class="warn">CF FL 20241201 V01</td><td class="warn">2024-12-01</td><td class="bad">21 months</td><td class="bad">⚠ stale · not in current batch · own Residential/Non-Res rule</td></tr>
+<tr><td class="rh">4</td><td class="ok">NY</td><td class="ok">CF NY 20260401 V01</td><td class="ok">2026-04-01</td><td class="ok">5 months</td><td class="warn">⚠ District split (NYC) · Special Class BGI deviates from CW</td></tr>
+<tr><td class="rh">5</td><td class="ok">AK</td><td class="ok">CF AK 20251101 V01</td><td class="ok">2025-11-01</td><td class="ok">10 months</td><td class="warn">⚠ District split · ZIP mapping is a known-inaccurate shortcut</td></tr>
+<tr><td class="rh">6</td><td class="ok">CA</td><td class="ok">CF CA 20251201 V01</td><td class="ok">2025-12-01</td><td class="ok">9 months</td><td class="warn">⚠ District split (user-picked)</td></tr>
+<tr><td class="rh">7</td><td class="dim">&mdash;</td><td class="dim">&mdash;</td><td class="dim">&mdash;</td><td class="dim">&mdash;</td><td class="bad">HI · ID · LA · MS · WA &mdash; no filing in any batch</td></tr>
+</table>
+</div>
+<p>Derived from the ledger that already exists (<code>State_ERC_CW_Editions.csv</code>,
+<code>State_EffectiveDates.csv</code>) &mdash; this is presentation of data already pulled, not new
+analysis. <b>The Flags column is where the money is:</b> every known state quirk this project has found,
+surfaced on the risk that triggers it rather than sitting in a markdown file nobody opens mid-quote.</p>
+</div>
+
+<div class="rec struct">
+<h3><span class="n">R-7</span> A diagnostics tab, including the message register <span class="tag quick">&#10003; DONE 2026-09-22</span></h3>
+<div class="note good" style="margin-top:0"><b>Implemented</b> as <code>OUT - Diagnostics</code>, position 4,
+with <b>four</b> sections rather than the one drawn below. (1) a live <code>COUNTIF</code> roll-up of R-3's
+flags per sheet; (2) <b>six live input traps</b> &mdash; each one a documented defect, including Z-1's
+blank additional-insurable-interest option and <b>T-1's short total, which was failing until today</b>;
+(3) <b>ADJUDICATED</b> &mdash; the three R-3 flags with their verdicts, so they are not re-investigated
+every time someone opens the workbook; (4) standing assumptions. <b>Sections 3 and 4 are the addition
+worth noting:</b> a page reporting only errors would imply everything else is unconditionally
+trustworthy, and &ldquo;full value is assumed equal to the limit&rdquo; is exactly the kind of condition
+that is obvious to whoever chose it and invisible six months later. Full record:
+<code>CF_R7_Implementation_Record.md</code>.</div>
+<div class="why"><b>Why:</b> gate point 9 &mdash; the only point the harness has open across eight closed
+chunks, and the one it treats as unfinished business. ISO returns validation messages alongside the
+premium; a premium can be exactly right while the submission would be refused. The rater has no concept of
+a message.</div>
+<div class="scroll">
+<table class="xl">
+<tr><th>&nbsp;</th><th style="min-width:80px">A</th><th style="min-width:120px">B</th><th style="min-width:330px">C</th><th style="min-width:120px">D</th></tr>
+<tr><td class="rh">1</td><td class="blk" colspan="4">DIAGNOSTICS</td></tr>
+<tr><td class="rh">2</td><td class="hdr">Severity</td><td class="hdr">Where</td><td class="hdr">Message</td><td class="hdr">Action</td></tr>
+<tr><td class="rh">3</td><td class="bad">BLOCK</td><td class="dim">Item 1-1</td><td class="bad">ConstructionType "Joisted Masonry" is not a domain value &mdash; chain prices at 0</td><td class="dim">pick from dropdown</td></tr>
+<tr><td class="rh">4</td><td class="bad">BLOCK</td><td class="dim">Item 1-1 · Legal Liab</td><td class="bad">AddlInsurableIntOption blank &rarr; factor 0.0 &rarr; premium 0. Option4 = "None" = 1.00</td><td class="dim">set Option4</td></tr>
+<tr><td class="rh">5</td><td class="warn">WARN</td><td class="dim">Location 1 (FL)</td><td class="warn">Edition is 21 months old; FL absent from current batch</td><td class="dim">accept / source</td></tr>
+<tr><td class="rh">6</td><td class="warn">WARN</td><td class="dim">Policy</td><td class="warn">Full value = limit assumed (no value input exists) &mdash; backlog D-2</td><td class="dim">accept</td></tr>
+<tr><td class="rh">7</td><td class="ok">ISO</td><td class="dim">Item 2-1</td><td class="ok">Full Value cannot be lower than the Limit</td><td class="dim">expected</td></tr>
+<tr><td class="rh">8</td><td class="ok">INFO</td><td class="dim">Policy</td><td class="ok">Blanket not built &mdash; BlktRated forced to No</td><td class="dim">known gap</td></tr>
+</table>
+</div>
+<p><b>Rows 3 and 4 are already-known defects</b> from the backlog's Z-series &mdash; ISO's own filed
+behaviour, which the rater is meant to reproduce <i>deliberately, with a visible check cell</i>, rather
+than have someone "fix" later and quietly change the premium. This tab is where that visibility lives.
+Rows 7&ndash;8 fold in the messages the harness's register already catalogues.</p>
+</div>
+
+<div class="rec struct">
+<h3><span class="n">R-8</span> Row-per-item inputs, so the workbook can hold a real policy <span class="tag struct">Structural</span> <span class="tag">~2 days</span></h3>
+<div class="why"><b>Why:</b> gate point 3, enumerate rather than sample &mdash; and a hard ceiling found
+this week. The input tabs run <b>one column per item</b>, which caps the workbook at <b>10 locations &times;
+1 building &times; 1 occupancy class</b>. ISO's own structure allows N of each, and harness chunk 4 proved
+ISO sums multiple occupancy classes per location. The workbook cannot express the shape it is meant to
+price.</div>
+<div class="why"><b>Status (2026-09-22):</b> Phase 1, 2a, 2b-i and <b>2b-ii done</b>. Contents is now one
+column per contents record (C..AP, 40 records). TOTAL LIMIT is a per-building roll-up over contents
+records, and R-5 is closed (wind/hail split for Building and Contents). Gate 1 passed after reopen: all
+premiums unchanged. <b>Gate 2 run 2026-09-22 against live ISO:</b> the structure is confirmed
+(the join and the TOTAL LIMIT roll-up are both correct). It fails as built because LOI is keyed on the
+record's own limit, not the occupancy total. With that fix plus a rounding-order fix that predates
+R-8, the rater matches ISO to the dollar (247 / 231 / 116). <b>Both fixes applied 2026-09-22</b>
+(LOI on the occupancy total; BGI rounding order). Gate 2 was re-run on the saved workbook against live ISO:
+<b>PASS</b>. Today's premiums are unchanged. <b>Phase 4a Building and 4b Business Income done 2026-09-22</b>: both read the Schedule and hold 40 records, premiums unchanged, and an 11th record entered only on the Schedule prices (<code>CF_R8_Phase4_Record.md</code>). <b>4c Special Class + SC BI done 2026-09-22</b>: Group II now keys on the item's own symbol, per ISO (confirmed live), so Special Class went 1434→1633, SC BI 406→457, Total 19994. Phase 4 complete. <b>Phase 5 done 2026-09-22</b>: <code>IN - Location</code> and <code>IN - Special Class</code> were deleted, and <code>IN - Schedule</code> is now the input sheet. Premiums are unchanged at 19994, and the decoupling proof and no-<code>#REF!</code> gates passed (<code>CF_R8_Phase5_Record.md</code>). <b>Phase 6 done 2026-09-22</b>: there was no Payload Export sheet to collapse (payload Step 4 was never built), so the <i>spec</i> collapsed instead. <code>CF_Payload_Schedule_Map.csv</code> maps all 128 Schedule columns to ISO (69 sent, 16 exclusion records, 23 not sent). Found W-10 along the way. <b>R-8 is complete.</b> Whether the payload reader reads the Schedule directly (dropping decision 1's export sheet) is still open (<code>CF_R8_Phase6_Record.md</code>).
+Record: <code>CF_R8_Phase2b_Record.md</code>.</div>
+<p class="sub">Today &mdash; items run across, so adding an eleventh means a new column and every downstream
+formula widens:</p>
+<div class="scroll">
+<table class="xl">
+<tr><th>&nbsp;</th><th>B</th><th>C</th><th>D</th><th>E</th><th>&hellip;</th><th>L</th><th style="min-width:90px">M?</th></tr>
+<tr><td class="rh">26</td><td class="hdr">Building Class Code</td><td class="dim">0311</td><td class="dim">0311</td><td class="dim">0311</td><td class="dim">&hellip;</td><td class="dim">Select</td><td class="bad">&larr; 11th = new column</td></tr>
+<tr><td class="rh">43</td><td class="hdr">Building Limit</td><td class="dim">675000</td><td class="dim">526123</td><td class="dim">1000123</td><td class="dim">&hellip;</td><td class="dim">0</td><td class="bad">&hellip;everywhere</td></tr>
+</table>
+</div>
+<p class="sub">After &mdash; an Excel Table, items run down. Adding a row is adding a row; formulas inherit
+automatically:</p>
+<div class="scroll">
+<table class="xl">
+<tr><th>&nbsp;</th><th style="min-width:70px">ItemID</th><th style="min-width:60px">Loc</th><th style="min-width:60px">Bldg</th><th style="min-width:75px">ClassCode</th><th style="min-width:80px">Limit</th><th style="min-width:110px">ConstructionType</th><th>&hellip;</th></tr>
+<tr><td class="rh">2</td><td class="ok">1 - 1</td><td class="ok">1</td><td class="ok">1</td><td class="ok">0311</td><td class="ok">675000</td><td class="ok">Joisted Masonry &mdash; Reinforced</td><td>&hellip;</td></tr>
+<tr><td class="rh">3</td><td class="ok">1 - 2</td><td class="ok">1</td><td class="ok">2</td><td class="ok">0322</td><td class="ok">410000</td><td class="ok">Non-Combustible</td><td>&hellip;</td></tr>
+<tr><td class="rh">4</td><td class="ok">2 - 1</td><td class="ok">2</td><td class="ok">1</td><td class="ok">0311</td><td class="ok">526123</td><td class="ok">Non-Combustible</td><td>&hellip;</td></tr>
+<tr><td class="rh">5</td><td class="warn">&larr; type here</td><td class="warn">&nbsp;</td><td class="warn">&nbsp;</td><td class="warn">&nbsp;</td><td class="warn">&nbsp;</td><td class="warn">&nbsp;</td><td>&hellip;</td></tr>
+</table>
+</div>
+<p><b>Row 3 is the unlock:</b> <code>1 - 2</code> &mdash; a second building at location 1, which the current
+layout cannot represent at all. The same change lets one location carry several occupancy classes, which is
+the gap that will otherwise show up as a disagreement with ISO the first time Step 6 runs a multi-class
+case.</p>
+<p class="note" style="margin:10px 0 0"><b>The honest cost.</b> This is the one genuinely disruptive item:
+every calc tab currently reads item <i>n</i> from column <i>n</i>, so all of them change. <b>It also makes
+the Payload Export sheet nearly disappear</b> &mdash; the export sheet exists mostly to transpose, and if
+the inputs are already row-per-item most blocks become a direct reference. <b>If R-8 is going to happen,
+doing it before Step 4 saves building the transposition twice.</b></p>
+</div>
+
+<h2>Priority</h2>
+<table>
+<thead><tr><th class="num">#</th><th>Change</th><th>Effort</th><th>What it buys</th></tr></thead>
+<tbody>
+<tr><td class="num">1</td><td><b>R-1</b> Name every input</td><td>~2 hrs</td><td>Retires the biggest recurring friction in the project. Every other item gets cheaper. <b>Do this first regardless of what else you pick</b></td></tr>
+<tr><td class="num">2</td><td><b>R-3</b> Guard + provenance columns</td><td>~½ day</td><td>Makes silent zero-pricing impossible to miss, and makes a wrong factor diagnosable in seconds instead of an afternoon</td></tr>
+<tr><td class="num">3</td><td><b>R-4</b> Policy-level factor block</td><td>~1 hr</td><td>Closes a known Entry-33 defect. Cheapest real fix on the page</td></tr>
+<tr><td class="num">4</td><td><b>R-2</b> Tab naming</td><td>~1 hr</td><td>Legibility, and a definitive list of what gets swapped at each edition</td></tr>
+<tr><td class="num">5</td><td><b>R-8</b> Row-per-item inputs</td><td>~2 days</td><td>Removes the 10×1×1 ceiling. <b>Sequencing matters</b> &mdash; before Step 4, or the transposition gets built twice</td></tr>
+<tr><td class="num">6</td><td><b>R-6</b> Edition / state basis</td><td>~½ day</td><td>Surfaces every state quirk on the risk that triggers it. Pure presentation of data already pulled</td></tr>
+<tr><td class="num">7</td><td><b>R-7</b> Diagnostics tab</td><td>~1 day</td><td>The only gate point still open project-wide. Best paired with Step 5, which produces ISO's messages anyway</td></tr>
+<tr><td class="num">8</td><td><b>R-5</b> Split exclusion inputs</td><td>~½ day</td><td>Closes backlog S-1/S-2/S-3 and lifts a payload fidelity ceiling. Lower priority only because the current behaviour is correct whenever both records agree, which is the common submission</td></tr>
+</tbody>
+</table>
+
+<div class="note"><b>One sequencing decision worth making before Step 4.</b> R-8 (row-per-item) and the
+<code>Payload Export</code> sheet solve overlapping problems &mdash; the export sheet exists largely to
+transpose column-per-item into row-per-item. Build the export sheet now and R-8 later, and the
+transposition gets built, then thrown away. Do R-8 first and the export sheet shrinks to mostly direct
+references. <b>Not a recommendation to delay Step 4</b> &mdash; it may well be worth having a working
+generator sooner. But it is a real choice, and it is cheaper to make now than after.</div>
+
+<h2>Remaining steps</h2>
+<ol class="steps">
+<li><b>Pick a tier, or pick R-1 alone.</b> R-1 pays for itself against anything else on the list and does
+not commit you to the rest.</li>
+<li><b>Decide the R-8 / Step 4 sequencing</b> above &mdash; the only question here that gets more expensive
+with time.</li>
+<li><b>Each of these is a spec, not a build.</b> Say which and it gets the same treatment the payload sheets
+got: exact rows, exact formulas, then you build it.</li>
+<li>Nothing gets written to <code>CFRater1.01.xlsb</code> by me at any point.</li>
+</ol>
+
+<p class="sub">Sources: <code>docs/CF-BUILD-STATUS.html</code> (the nine-point gate and its findings) ·
+<code>BUILD-LOG.md</code> Entries 33&ndash;35 · <code>Rater_Simplifications_Backlog.md</code> (S- and
+Z-series) · <code>CF_Payload_Excel_Input_Inventory.md</code> (this week's read-only pass) ·
+<code>CF_Payload_Field_Harvest_Step2.md</code>.</p>
