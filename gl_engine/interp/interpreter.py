@@ -28,7 +28,7 @@ from dataclasses import dataclass, field
 from decimal import Decimal, ROUND_HALF_UP, ROUND_HALF_EVEN, ROUND_DOWN
 
 from ..domain import Citation
-from ..erc.tables import Shape, Table
+from ..erc.tables import Range, Shape, Table
 from . import nodes, tree
 from .program import Program
 from .tree import Node
@@ -109,10 +109,21 @@ class Frame:
     parent_scope: bool = False            # inside a @ProjectName call (N2)
     params: dict = field(default_factory=dict)
     depth: int = 0
+    # `None` means "same as `data`" -- the ordinary case, where reads and
+    # writes share one position. `AtInputDataDef` is the one place the two
+    # diverge (§9): it rebinds `data` so the loop body can READ the item, but
+    # a bare `ToDataDef` inside it still means the enclosing record, not the
+    # item -- see `_for_each`'s `keep_write_root`.
+    write_root: Node | None = None
 
-    def at(self, node: Node) -> "Frame":
+    @property
+    def write_target(self) -> Node:
+        return self.write_root if self.write_root is not None else self.data
+
+    def at(self, node: Node, keep_write_root: bool = False) -> "Frame":
+        write_root = self.write_target if keep_write_root else None
         return Frame(node, self.program, self.rule_file, self.parent_scope,
-                     self.params, self.depth)
+                     self.params, self.depth, write_root)
 
     def with_params(self, bindings: dict) -> "Frame":
         if not bindings:
@@ -120,12 +131,12 @@ class Frame:
         merged = dict(self.params)
         merged.update(bindings)
         return Frame(self.data, self.program, self.rule_file,
-                     self.parent_scope, merged, self.depth)
+                     self.parent_scope, merged, self.depth, self.write_root)
 
     def in_rule(self, program: Program, rule_file: str, params: dict,
                 parent_scope: bool) -> "Frame":
         return Frame(self.data, program, rule_file, parent_scope, params,
-                     self.depth + 1)
+                     self.depth + 1, self.write_root)
 
     def has_param(self, name: str) -> bool:
         return name in self.params
@@ -438,7 +449,7 @@ class Interpreter:
                     f"upstream resolved to nothing -- most often a rate table "
                     f"that missed -- and the trace above names it",
                     "§12.3", name)
-            tree.write(to, frame.data, value)
+            tree.write(to, frame.write_target, value)
             self.note("write", f"{to} = {value!r}", name)
         return value
 
@@ -624,7 +635,7 @@ class Interpreter:
         """A lookup whose key is a band, and possibly whose value is too.
 
         Measured over 570 packages (`scripts/erc/46_banded_lookups.py`), the
-        whole population is 11 table names, every one of them reachable:
+        GL-side population is 11 table names, every one of them reachable:
 
         * **exactly one key range each**, always alongside plain equality key
           columns, so the supplied `Keys` map positionally onto the key columns
@@ -649,45 +660,85 @@ class Interpreter:
         be numeric would have matched the wrong band and returned a plausible
         factor, which is why the order is now read from the definition rather
         than assumed from a measurement of one corpus.
+
+        **A second range, found later on the Commercial Property side, is a
+        plain containment filter, not a second interpolation dimension
+        (C10-19, then this fix).** `46_banded_lookups.py` never saw it because
+        it scanned General Liability alone, where the population above is
+        exhaustive; scanning Commercial Property finds 28 more table names
+        that declare TWO `rt:Range` key columns, all sharing one shape --
+        N equality columns, then two ranges. Every one of the 28 is one of:
+
+        * 13 `EQSubLimit<N>FlatDeductibleFactor` tables (Earthquake sub-limit
+          plus flat-dollar-deductible rating, `CommercialPropertyStructure
+          Rules.Rule.xml`'s `SetEQDeductibleFactor`) -- live.
+        * 7 `PropertyRateModificationFactors1`-`7` (plural family, Flood
+          coverage endorsements, `CommercialPropertyFloodCoverageEndorsement
+          Rules.Rule.xml`) -- live.
+        * 1 `HeatingOilTankServingResidentialPropertiesIndicator`
+          (Massachusetts structure rule) -- live.
+        * 7 `PropertyRateModificationFactor1`-`7` (singular/unnumbered-plural
+          sibling family) -- confirmed dead, zero rule references anywhere;
+          left unreachable on purpose, same as the dead EQ tables C10-13 found.
+
+        Every live one of the 28 declares AT MOST ONE of its ranges with a
+        `ValueCols/rt:Range@RangeKeyCol` naming it -- that is the
+        interpolation dimension when one is filed at all, resolved by name,
+        not position. `HeatingOilTankServingResidentialPropertiesIndicator`
+        files a plain `ValueCol` and no `RangeKeyCol` anywhere, same as an
+        ordinary equality lookup except two of its keys are containment
+        ranges instead of exact matches -- there is no interpolation to do,
+        and none is attempted. Every OTHER range (there is at most one, in
+        every table measured so far) is a plain `[lo, hi)`/`(lo, hi]`
+        containment filter per its own `RangeType`, exactly like an equality
+        key column except the match is a range instead of an exact value --
+        it narrows `hits` and nothing else. A value range whose `RangeKeyCol`
+        does not name one of the table's own key ranges refuses rather than
+        guessing which one is meant.
         """
         defn = table.definition
-        rng = defn.key_ranges[0]
-        if len(defn.key_ranges) != 1:
-            raise InterpretError(
-                f"banded table {name!r} declares {len(defn.key_ranges)} key "
-                f"ranges; every banded table in both corpora declares exactly "
-                f"one and a second would need a defined match order",
-                "§7", where)
+        ranges = defn.key_ranges
         items = defn.key_items
 
         if len(keys) != len(items):
             raise InterpretError(
                 f"banded table {name!r} declares {len(items)} key columns "
-                f"({len(items) - 1} equality plus a band); the lookup supplied "
-                f"{len(keys)}", "§7", where)
+                f"({len(items) - len(ranges)} equality plus {len(ranges)} "
+                f"range{'s' if len(ranges) != 1 else ''}); the lookup "
+                f"supplied {len(keys)}", "§7", where)
 
-        # Positional, in ISO's filed order: whichever slot holds the Range is
-        # the band, and every other slot is an equality match.
-        eq_pairs, x = [], None
+        # Positional, in ISO's filed order: every Range slot is a containment
+        # filter -- [lo, hi) or (lo, hi], per its own RangeType -- and every
+        # other slot is an equality match. Which range (if any) also drives a
+        # value-range interpolation is resolved separately, below, by name.
+        eq_pairs, range_pairs = [], []
         for item, supplied in zip(items, keys):
-            if item is rng:
-                x = to_decimal(supplied, where)
+            if isinstance(item, Range):
+                range_pairs.append((item, to_decimal(supplied, where)))
             else:
                 eq_pairs.append((table.col(item.name), compare_key(supplied)))
-        lo_i, hi_i = table.col(rng.lo_col), table.col(rng.hi_col)
+        range_cols = [(r, v, table.col(r.lo_col), table.col(r.hi_col))
+                      for r, v in range_pairs]
 
         hits = []
         for row in table.rows:
             if any(compare_key(row[i]) != w for i, w in eq_pairs):
                 continue
-            lo, hi = row[lo_i], row[hi_i]
-            if lo is None or hi is None:
-                continue
-            lo, hi = Decimal(lo), Decimal(hi)
-            below = lo <= x if rng.lo_inclusive else lo < x
-            above = x <= hi if rng.hi_inclusive else x < hi
-            if below and above:
-                hits.append((row, lo, hi))
+            bands, ok = {}, True
+            for r, v, lo_i, hi_i in range_cols:
+                lo, hi = row[lo_i], row[hi_i]
+                if lo is None or hi is None:
+                    ok = False
+                    break
+                lo, hi = Decimal(lo), Decimal(hi)
+                below = lo <= v if r.lo_inclusive else lo < v
+                above = v <= hi if r.hi_inclusive else v < hi
+                if not (below and above):
+                    ok = False
+                    break
+                bands[r.name] = (v, lo, hi)
+            if ok:
+                hits.append((row, bands))
 
         if not hits:
             self.note("lookup-miss",
@@ -704,12 +755,20 @@ class Interpreter:
                       f"overlapping bands; took the first in filed order",
                       table.package)
 
-        row, lo, hi = hits[0]
+        row, bands = hits[0]
 
-        # The value may itself be a range, interpolated along the key band.
+        # The value may itself be a range, interpolated along ONE of the key
+        # ranges -- named by RangeKeyCol, not assumed positionally.
         for vr in defn.value_ranges:
             if vr.name != col:
                 continue
+            if vr.range_key_col not in bands:
+                raise InterpretError(
+                    f"value range {col!r} in {name!r} declares "
+                    f"RangeKeyCol={vr.range_key_col!r}, which is not one of "
+                    f"this table's own key ranges "
+                    f"({[r.name for r, _ in range_pairs]!r})", "§7", where)
+            x, lo, hi = bands[vr.range_key_col]
             v_lo = Decimal(row[table.col(vr.lo_col)])
             v_hi = Decimal(row[table.col(vr.hi_col)])
             if vr.interpolate != "Linear":
@@ -740,13 +799,15 @@ class Interpreter:
                 f"table {name!r} has no column or value range {col!r}",
                 "§7", where)
         value = row[table.col(col)]
+        bands_desc = ", ".join(f"{rname}={v} in [{lo},{hi}]"
+                               for rname, (v, lo, hi) in bands.items())
         self.note("lookup-banded",
-                  f"{name}[{col}] {x} in band [{lo},{hi}] -> {value!r}",
+                  f"{name}[{col}] {bands_desc} -> {value!r}",
                   str(Citation(table.package, f"{kind} Tables", name,
                                repr(keys))),
                   table=name, column=col, keys=[str(k) for k in keys],
                   value=str(value), package=table.package, category=kind,
-                  band_from=str(lo), band_to=str(hi), banded_on=rng.name)
+                  banded_on=list(bands.keys()))
         return coerce(value, typ, where)
 
     # ------------------------------------------------------------------- run

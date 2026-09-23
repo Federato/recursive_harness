@@ -204,6 +204,28 @@ CHUNK8_RULES = {
     "InitializeLegalLiality", "SetCovForm", "SetCovType",
 }
 
+#: Chunk 9's blanket-rating chain, taken from C9-02's traced
+#: `ErcDoBlanketRating` sequence and C9-08/C9-09's dispatcher/value-rule names
+#: -- not guessed at. `CommercialPropertyBlanketRatingDetail` is a NEW, 7th
+#: datadef group this project has populated, so this is the first time this
+#: script's transitive scan has ever looked inside it.
+CHUNK9_RULES = {
+    # the Detail engine's own 7-step Sequence (C9-02) and the two named rules
+    # its averaging fan-out reaches for Basic Group I
+    "ErcDoBlanketRating", "SetCounters", "SetPolicyType",
+    "ErcSetRiskLevelAverageAndHighestRates", "SetCoinsuranceFactor",
+    "SetBldrsRiskFactor", "SetTenPctOfTotalFullValueAmount",
+    "SetFinalCalculations", "SetBuildingPPSpecialClassAverageRates",
+    "SetBasicGroupIStructureCalc", "SetMaxBasicGroupIStructureCalc",
+    "SetMaxBasicGroupICauseOfLossAdjmtRate", "SetBasicGroupIAvgRate",
+    "LookupBuildersRiskBlanketFactor", "LookupCoinsuranceFactorBlkt",
+    "LookupBldgPrsnlPropBlktCoverageCode", "SetBldgPrsnlPropBlktCoverageCode",
+    # the premium-group dispatcher/value rules (C9-08/C9-09) that hand off
+    # into the Detail engine above
+    "SetBlanketValuesSection", "SetBlanketValues", "SetNonEQBlanketValues",
+    "SetEQBlanketValues", "SetPremium",
+}
+
 #: The datadef group every chunk so far rates in.
 CHUNK1_GROUP = "CommercialPropertyStructure"
 
@@ -289,9 +311,11 @@ ADJUDICATED = {
         "separate step. The divergent groups are worth naming: BlanketRating"
         "Detail and PeakSeasonGeneralInformation read `CoinsuranceFactorBlkt`, "
         "a different table entirely, and AdditionalLocationsSpecialCoinsurance "
-        "reads `AddlLocSpclCoinsFactor`. Blanket is chunk 9 and is a stub "
-        "everywhere today; this is the first concrete thing known about what "
-        "it will need."),
+        "reads `AddlLocSpclCoinsFactor`. **Confirmed live 2026-09-21 (C9-21)**: "
+        "chunk 9's own golden case now populates `CommercialPropertyBlanketRating"
+        "Detail`, and its `SetCoinsuranceFactor` reads exactly `CoinsuranceFactor"
+        "Blkt` there -- this entry's prediction held to the table name, before "
+        "any chunk 9 task ran."),
     "SetBGIRatesAndFactors": (
         {"BasicGroupIRate", "BasicGroupILOIFactorBldg", "CoinsuranceFactor",
          "Deductible250Factor", "DeductibleFactor",
@@ -541,6 +565,8 @@ def main() -> int:
                            names=CHUNK7_RULES)
     _, chunk8_bad = report(out, "ON THE CHUNK 8 CHAIN (Legal Liability)",
                            names=CHUNK8_RULES)
+    _, chunk9_bad = report(out, "ON THE CHUNK 9 CHAIN (Blanket Rating Detail)",
+                           names=CHUNK9_RULES)
     chunk1_bad = {**chunk1_bad, **chunk2_bad, **chunk3_bad}
 
     unresolved = []

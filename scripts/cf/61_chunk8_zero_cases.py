@@ -16,12 +16,13 @@ working, not the engine failing.
      **deletes the record the submitter sent** (`<rul:Remove
      RemoveMultiple="true" />`). Same $0, completely different cause -- and
      this is the one that nearly cost an engine change.
-  3  **`CovType = "Leasehold Interest"` -- predicted $0 and it REFUSES.** The
-     map is right about the wrong scope: it says 0.0 *in this file*, and it
-     is, but a submission is not a file. The CovType also activates the
-     Leasehold rate chain -- the only `rul:Power` in the package -- and with
-     no leasehold data it reaches `Power(0, 0)`. **The engine declines to
-     invent an answer.** This zero belongs to chunk 11.
+  3  **`CovType = "Leasehold Interest"` -- predicted $0; now $0.** Until
+     2026-09-22 this REFUSED: the CovType activates the Leasehold rate chain,
+     and with no leasehold data the auto-created empty LI record reached
+     `Power(0, 0)`, which Python's Decimal refuses. Chunk 11 confirmed live
+     that ISO returns 1 there and prices $0 (OI-104), and the engine was
+     changed to match. So the map's original prediction -- 0.0 in this file
+     -- now holds for the whole submission.
   4  **Builders Risk with a Reporting Form record -- predicted $0 and it
      REFUSES, and here the map is simply wrong.** The outer `If` has no
      `Else`, so when it fails nothing is written and `Premium` is **null**,
@@ -88,15 +89,13 @@ CASES = [
     ("3  CovType = Leasehold Interest", "B",
      lambda s: zeros2.structure(s).__setitem__("CovType",
                                                "Leasehold Interest"),
-     RAISES, None,
-     "**predicted $0 and it REFUSES -- and the map is right about the wrong "
-     "scope.** The map says Leasehold Interest returns 0.0 *in this file*, "
-     "and it does. But a submission is not a file: setting the CovType also "
-     "activates the Leasehold Interest rate chain, which carries the only "
-     "`rul:Power` in the package, and with no leasehold data it reaches "
-     "`Power(0, 0)` and the engine refuses. **The engine declines to invent an "
-     "answer**, which is right, and it means this zero cannot be exercised "
-     "from chunk 8 at all -- it belongs to chunk 11"),
+     "0", ("0", "0"),
+     "**predicted $0, and since 2026-09-22 it is $0.** It used to REFUSE: the "
+     "CovType activates the Leasehold Interest rate chain, and with no "
+     "leasehold data the auto-created empty LI record reached `Power(0, 0)`, "
+     "which Python's Decimal refuses. Chunk 11 confirmed live that ISO takes "
+     "0^0 = 1 and prices $0 (OI-104); the engine now does the same, so the "
+     "map's 0.0 holds for the whole submission, not just this file"),
 
     ("4  Builders Risk + a reporting form", "B",
      lambda s: zeros2.structure(s).update({

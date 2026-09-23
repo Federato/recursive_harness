@@ -1,11 +1,95 @@
 # Property build — start here
 
-**Last worked 2026-09-18.** This is the resume point: where things stand, how to
+**Last worked 2026-09-22.** This is the resume point: where things stand, how to
 confirm it in two minutes, and what to pick up first.
 
 ---
 
-## Pick up here
+## Pick up here: chunk 12, the endorsement families (OPEN, 0 of 42)
+
+**Opened 2026-09-22.** [`CF-CHUNK12-TASKS.md`](CF-CHUNK12-TASKS.md) ·
+[`123_chunk12_census.py`](../scripts/cf/123_chunk12_census.py). 42 tasks in 8 groups:
+A (opening: sequence, attach map, operand types, EQ riders), then one six-task
+group per family (B Debris Removal, C Ordinance or Law, D Utility Services,
+E Unmanned Aircraft, F Green Upgrades, G Dependent Properties), then
+H (regression and gate). **First task: C12-01, confirm the family order with the
+user.**
+
+
+**Chunk 11 (Leasehold Interest) is CLOSED 2026-09-22: 24 of 24 tasks, gated 9
+of 9** ([`CF-CHUNK11-GATE.md`](CF-CHUNK11-GATE.md)). The golden case matched ISO
+live to the digit. Four engine fixes, all user-authorized and ISO-confirmed:
+date comparison, the `01/01/0001` sentinel (OI-102), 0^0 (OI-104), and the
+`DateDifference` sign (OI-107). Regression clean, 69 of 69.
+**Backlog (none blocking):** OI-101 (closes with OI-105), OI-103, OI-105,
+OI-106, and the GL ERP check left by OI-107. See the gate's backlog table.
+
+### Chunk 11 history
+
+**Chunks 0–10 are closed. Chunk 11 is OPEN at 21 of 24 tasks (2026-09-22; A–F done).** Earlier status line:
+Groups A–D are done.** Group D ([`CF-CHUNK11-GROUP-D.md`](CF-CHUNK11-GROUP-D.md)): shared machinery is
+clean. It found that ISO fixed OI-101 in its 2027 edition, that form names don't
+resolve project-wide (OI-106, no premium impact), and that OI-104 is easy to
+reach (an LI structure with no LI record crashes our engine).
+**Earlier (still true):
+Groups A (the annuity), B (the four sub-coverages) and C (zero cases, asked
+live at ISO) are done.** Group C: [`CF-CHUNK11-ZERO-CASES.md`](CF-CHUNK11-ZERO-CASES.md).
+ISO agreed on 11 of 14 and diverged on 3, all predicted. **OI-102 has since been fixed** (a blank date now orders as the earliest date, as at ISO; regression clean). OI-103 and OI-104 remain open.
+**Send live ISO calls at 2026-09-17, not 2027**: ISO holds a newer Oregon
+edition for 2027 than our local corpus (OI-105). Group B
+([`CF-CHUNK11-GROUP-B.md`](CF-CHUNK11-GROUP-B.md)) found that only Tenants
+Lease is discounted, and that Special without a Theft Exclusion prices at $0
+by ISO's own rule (**OI-101**, owed a live ISO call). The golden case matches
+at **$268 BGI + $30 BGII** (`114_chunk11_golden_case.py`,
+[`CF-CHUNK11-GOLDEN-CASE.md`](CF-CHUNK11-GOLDEN-CASE.md)). One authorized engine fix:
+ordered comparisons now accept two dates
+([`CF-ENGINE-FIX-DATE-COMPARE.md`](CF-ENGINE-FIX-DATE-COMPARE.md)). The regression is clean.
+**Done 2026-09-22 after Group D:** the one-command regression now covers **chunks 0–11**, and **OI-104 is fixed** (0^0 = 1, as ISO; an LI structure with no LI record now prices $0 instead of crashing). Regression clean.
+**Groups E and F done 2026-09-22** ([`CF-CHUNK11-GROUPS-E-F.md`](CF-CHUNK11-GROUPS-E-F.md), 46 states): the inventory is clean, and Florida runs the 2023 chain without injection guards. **OI-107 (our `DateDifference` had the wrong sign; ISO +257, ours −257, confirmed live on Oregon's TRIA field) was fixed the same day with authorization.**
+**Left in chunk 11:** C11-09 (messages), C11-22 (ISO golden + rounding tie), C11-24 (close-out regression). The tasks are grouped by
+theme on `CF-BUILD-STATUS.html`.
+
+**Two input rules every LI submission needs**, both silent if missed: the
+Structure's own `CovType` must be `Leasehold Interest` (plus
+`PolicyType = Commercial Property Policy`), or the LI record is deleted; and
+`EQCovIndicator` must be `No Coverage`, not blank, or the EQ cell switches on.
+[`CF-CHUNK11-TASKS.md`](CF-CHUNK11-TASKS.md) ·
+[`106_chunk11_census.py`](../scripts/cf/106_chunk11_census.py)
+
+**Confirm everything is green in one command** (this is new — it used to be a
+page of scripts to run by hand):
+
+    python scripts/cf/104_chunk10_c10-21_regression.py
+
+**Four things the chunk 11 census already found, before any task has run:**
+
+* **32 rule files, but only 21 of them rate.** The 11
+  `FactorsFor<N>Percent` files (5% through 15%) declare `InitializeRuleSet` /
+  `CalculateTotalPremium` / `ErcProcess` and nothing else — printed
+  form-attachment markers, no `Lookup`, no `Premium`, no factor.
+* **"Its own datadef group" is 32 groups, not 1** — one per file. Gate points
+  6 and 7 are per-group questions, so chunk 11 asks them across 32 groups
+  against the 5 that chunks 6–10 worked with. **The biggest structural jump
+  in the plan so far**, and a counting fact rather than an estimate.
+* **The fifth form is Earthquake.** Chunk 10 is a direct input here, not a
+  parallel track — the first coverage opened *after* the form it depends on
+  was built.
+* **Zero ISO fixtures.** Of 364 CF payloads, **0** mention Leasehold
+  Interest. This is chunk 9's situation, not chunk 10's: confirmation has to
+  come from a **live ISO call**, and that is planned at task 1 rather than
+  discovered at task 22.
+
+**The single sharpest thing to be careful about:** the `rul:Power` — the only
+one in all 882 countrywide rule files — sits behind an `IsNull` guard on
+`DiscFactorRaisedToNumOfMonthsRemainingAtInception`. A submission that
+supplies that value directly **bypasses the annuity entirely, and no ISO
+comparison catches it, because ISO has the same guard.** That is the standing
+"a submission can populate a derived field" trap, in the one chunk whose
+exposure is computed rather than entered.
+
+---
+
+### The historical record, chunk by chunk
 
 **Chunk 3 is closed — gated 8 of 9 on 2026-09-18, all 24 tasks done, no engine
 code written.** See [`CF-CHUNK3-GATE.md`](CF-CHUNK3-GATE.md).
@@ -59,8 +143,52 @@ which read as an engine defect and would have put chunks 1–7 through a full
 re-run. And a sweep that agreed with itself at $0 forty-six times because it
 sent Oregon's territory to every state. Both recorded in place.
 
-**Next: chunk 9, blanket rating** — the widest remaining gap, and the one chunks
-6, 7 and 8 have each now hit from a different side.
+**Chunk 9 is CLOSED — Blanket rating, 22 of 22, gated 9 of 9.** Opened and
+closed 2026-09-21. [`CF-CHUNK9-TASKS.md`](CF-CHUNK9-TASKS.md),
+[`CF-CHUNK9-GOLDEN-CASE.md`](CF-CHUNK9-GOLDEN-CASE.md) and
+[`CF-CHUNK9-GATE.md`](CF-CHUNK9-GATE.md) carry the full record. The opening
+census overturned its own premise: **zero of the 20 premium files stub the
+blanket formula out** — every one carries `IRPMFactor × PackageModFactor ×
+Blkt<Form>AvgRate × (item value / BlktTotalFullValueAmount) × (BlktLimit/100)`
+already filed. What was missing was the input, traced to `SetNonEQBlanketValues`
+and a wholly separate 135-rule averaging engine
+(`CommercialPropertyBlanketRatingDetailRules.Rule.xml`) no chunk 1–8 script had
+ever opened. **The fix was a real interpreter bug**, not a rating gap:
+`ForEach AtInputDataDef` reparented writes onto the iterated Detail record
+along with reads — the first engine change since chunk 0, user-authorized,
+with every chunk 1–8 script and all 16 GL suites re-verified green after it.
+**ISO confirmed the fix live**, to the dollar, for a submission that exists
+nowhere in ISO's own 924-payload fixture corpus.
+
+**Chunk 10 is CLOSED — Earthquake, 21 of 21 tasks, gated 9 of 9.** Opened and
+closed 2026-09-22. [`CF-CHUNK10-TASKS.md`](CF-CHUNK10-TASKS.md),
+[`CF-CHUNK10-GOLDEN-CASE.md`](CF-CHUNK10-GOLDEN-CASE.md) and
+[`CF-CHUNK10-GATE.md`](CF-CHUNK10-GATE.md) carry the full record. Three things
+worth carrying forward:
+
+* **The second real engine fix in the project**, user-authorized:
+  `_lookup_banded` could not read a table with two banded key ranges at once,
+  which made the Earthquake sub-limit form (CP 10 29) **unreachable**. A
+  corpus-wide scan *before* the fix found the same limitation silently
+  blocking **7 live Flood rate-modification tables and 1 Massachusetts
+  heating-oil rider** — the fix was scoped by measuring the population, not by
+  patching the one table that failed.
+  [`CF-ENGINE-FIX-BANDED-LOOKUP.md`](CF-ENGINE-FIX-BANDED-LOOKUP.md).
+* **The ISO fixture corpus is 364 Commercial Property payloads, not 924.**
+  The 924 figure silently included **560 General Liability payloads**. Any
+  fixture claim in this project states 364. C10-20 also found that counting
+  one regex match per file misses every repeating record after the first —
+  ISO's "69 Earthquake fixtures" are 69 *structures*, and the corpus holds
+  **149 electing records**.
+* **A golden case can be at 9 of 9 and still be unrepresentative.** Three of
+  chunk 10's four golden-case coordinates — Oregon, Basic Group I, and its CP
+  10 40 form — are exercised by **zero** of ISO's 69 fixtures. That is not a
+  defect in the gate; it is the honest statement of what a gate covers.
+
+**Next: chunk 11, Leasehold Interest** — see the top of this page.
+
+The paragraphs below (chunk 6's opening findings) are historical — kept for
+the record of how that chunk was opened.
 
 Three things the census already found:
 
@@ -116,20 +244,33 @@ The work follows a settled rhythm, and it is worth keeping:
 
 ## Where the project stands
 
+**Current as of 2026-09-22.**
+
 | | |
 |---|---|
-| Chunks built | **8 of 15**; chunks 6 and 7 at gate **8 of 9**, chunk 8 at **7 of 9** |
+| Chunks closed | **11 of 15** (0 through 10); chunk 11 **open at 0 of 24** |
 | Chunk 1 — Building Basic Group I | gate **8 of 8**, ISO-confirmed |
 | Chunk 2 — Building Basic Group II | gate **8 of 8**, ISO-confirmed |
 | Chunk 3 — Broad and Special | gate **8 of 9**, ISO-confirmed; 47 of 47 states |
 | Chunk 4 — Contents | gate **8 of 9**, ISO-confirmed; 46 of 47 states; 32 of 32 tasks |
 | Chunk 5 — Business Income | gate **8 of 9**, ISO-confirmed; 44 of 47 states; 28 of 28 tasks |
+| Chunk 6 — Special Class | gate **8 of 9**; 47 of 47 states; 29 of 29 tasks |
+| Chunk 7 — SC Business Income | gate **8 of 9**; 47 of 47 states; 28 of 28 tasks |
+| Chunk 8 — Legal Liability | gate **7 of 9** (2 points held open on purpose); 26 of 26 tasks |
+| Chunk 9 — Blanket rating | gate **9 of 9**, ISO-confirmed live; 22 of 22 tasks |
+| Chunk 10 — Earthquake | gate **9 of 9**; 21 of 21 tasks; **1 engine gap found and fixed** |
 | ISO calls made | ~46. The engine has matched every premium; **one handling divergence found** — ISO refuses where we return $0 (OI-99) |
-| General Liability | untouched — 12 suites green throughout |
+| General Liability | untouched — **16** suites green throughout |
 
-**No engine code has been written since chunk 0.** Chunks 1 to 5 all ran on
-the same foundation. The shared interpreter gained five nodes and three
-corrections early on and nothing since.
+**Two engine changes in eleven chunks, both user-authorized, both written up
+in full.** Chunks 1–8 ran on chunk 0's foundation untouched. Chunk 9 fixed
+`ForEach AtInputDataDef` reparenting writes as well as reads
+([`CF-CHUNK9-GOLDEN-CASE.md`](CF-CHUNK9-GOLDEN-CASE.md) §8); chunk 10 fixed
+`_lookup_banded`'s one-range-per-table limit
+([`CF-ENGINE-FIX-BANDED-LOOKUP.md`](CF-ENGINE-FIX-BANDED-LOOKUP.md)). **Both
+were found by RUNNING a real submission, not by reading rule XML**, and both
+had their blast radius measured across the whole corpus before the patch
+rather than after.
 
 ### Settled, with evidence
 
@@ -151,12 +292,15 @@ corrections early on and nothing since.
 | `python scripts/cf/00_chunk0_checks.py` | the foundation: operators, resolver, edition chain |
 | `python scripts/cf/01_golden_case.py` | chunk 1 Building Basic Group I — **$261 / $263 / $288** |
 | `python scripts/cf/09_chunk2_golden_case.py` | chunk 2 Building Basic Group II — **$261 + $32** from one submission |
-| `python scripts/cf/15_chunk3_golden_case.py` | chunk 3 Building Broad and Special — **$16 / $54**, layering on Basic to 293 / 309 / 347 |
+| `python scripts/cf/15_chunk3_golden_case.py` | chunk 3 Building Broad and Special — **$16 / $54**, layering onto Basic's own **293** (= 261 + 32, chunk 2's figure, not printed by this script) to reach **309 / 347** |
 | `python scripts/cf/22_chunk4_golden_case.py` | chunk 4 Contents, four forms — **$223 / $24 / $16 / $137**, Building unmoved at 263 / 32 |
 | `python scripts/cf/32_chunk5_golden_case.py` | chunk 5 Business Income, four forms — **$112 / $13 / $23 / $47**, Building unmoved at 261 / 32 |
 | `python scripts/cf/41_chunk6_golden_case.py` | chunk 6 Special Class, four forms — **$66 / $209 / $14 / $44**, Building unmoved at 261 / 32 |
 | `python scripts/cf/50_chunk7_golden_case.py` | chunk 7 Special Class Business Income — **$39 / $123 / $23 / $47**, the item unmoved at 66 / 209 |
 | `python scripts/cf/59_chunk8_golden_case.py` | chunk 8 Legal Liability — Building **$60 / $7 / $4 / $12**, Contents **$132 / $15 / $11 / $93** |
+| `python scripts/cf/68_chunk9_golden_case.py` | chunk 9 Blanket rating, two dispersed structures — **$255 / $510** |
+| `python scripts/cf/85_chunk10_golden_case.py` | chunk 10 Earthquake, Building Basic Group I — **$6** |
+| **`python scripts/cf/104_chunk10_c10-21_regression.py`** | **the chunk 0–11 rows above, all at once** (chunks 10–11 added 2026-09-22) — each golden case checked against its documented figure (not just its exit code), plus 25 machinery scripts and all 16 GL suites. Chunk 10's own `85_…` case is deliberately outside it: a regression harness is for what came before the change. `--selftest` proves the harness can fail |
 
 **The machinery each chunk added**, worth running when shared code changes:
 
@@ -194,20 +338,28 @@ corrections early on and nothing since.
     python scripts/cf/52_chunk7_enumerate_states.py   # SpclClass Busn Income 47/47, the same three inherited
     python scripts/cf/62_chunk8_enumerate_states.py   # Legal Liability 47/47, 43 with a real premium
 
-**All of the above re-run green on 2026-09-18**, along with all 16 General
-Liability suites (`tests/verify_*.py`). **Chunks 6, 7 and 8 are the only chunks to
-touch shared code** — `04_shared_names.py` (now reporting eight chains),
-`05_exclusion_records.py` (per-group sections) and `08_hardcoded_literals.py`
-(a `--group` argument) were extended to take further datadef groups, and all
-three still pass for chunks 1–5 unchanged. That was checked, not assumed.
+**All of the above re-run green on 2026-09-22** (C10-21), along with all 16
+General Liability suites (`tests/verify_*.py`). **Chunks 6, 7 and 8 are the
+only chunks to touch shared code** — `04_shared_names.py` (now reporting eight
+chains), `05_exclusion_records.py` (per-group sections) and
+`08_hardcoded_literals.py` (a `--group` argument) were extended to take further
+datadef groups, and all three still pass for chunks 1–5 unchanged. That was
+checked, not assumed.
 
-**No engine code has been written in eight chunks.** Chunk 8 produced the first
-serious candidate for one — and the candidate turned out to be a probe whose two
-sides received different submissions, not a defect.
+**Do not re-run these by hand.** `104_chunk10_c10-21_regression.py` runs the
+golden cases, the machinery scripts and all 16 GL suites in one command and
+checks each golden case against its **documented dollar figure**, not just its
+exit code — a script exiting 0 only proves it agreed with itself. It carries
+`--selftest`, which plants seven defects and fails if any is reported green.
 
-Everything exits 0. The full set is `scripts/cf/00`–`66`; the General Liability
+Everything exits 0. The full set is `scripts/cf/00`–`106`; the General Liability
 suites are `tests/verify_*.py` and must stay green — they are the regression net
 for every shared-code change.
+
+> **`scripts/cf/` holds two unrelated workstreams that share a number range.**
+> The `NN_chunkN_*` files are this engine. The `NN_r1`–`r8`/`m1`/`t1` files
+> drive Excel over COM for the separate rater-streamlining project and are
+> **not** part of this engine's test surface — RULE #0 applies to them.
 
 **Nothing is committed.** All of `cf_engine/`, `scripts/cf/`, the `docs/CF-*`
 files and the `gl_engine/` edits are working-tree only.
@@ -241,6 +393,16 @@ files and the `gl_engine/` edits are working-tree only.
 3. **A matching premium proves less than it looks.** Nine cases matched ISO
    before a rounding tie was deliberately constructed, and every one of them was
    consistent with all three rounding modes.
+5. **A check that finds SOMETHING needs its denominator tested too.**
+   **New 2026-09-22.** Chunk 10's opening census produced a real, believed,
+   acted-upon finding — "69 of 924 ISO payloads elect Earthquake" — and it
+   was wrong twice over. The 924 silently summed **560 General Liability
+   payloads** into a Commercial Property statistic, and the per-file regex
+   counted only the first of up to ten electing records. Neither error made
+   the finding *absent*; both made it **confidently wrong**, and it survived
+   nineteen tasks before C10-20 parsed what the census had only grepped. A
+   finding that confirms what you expected gets the least scrutiny and needs
+   the most.
 4. **A check that finds nothing needs its denominator tested too.** Chunk 3
    found three defects in its own instruments and none in the corpus — gate
    point 6's shared-name check was blind to delegating rules, gate point 7's
@@ -264,5 +426,10 @@ files and the `gl_engine/` edits are working-tree only.
 | [`CF-CHUNK8-TASKS.md`](CF-CHUNK8-TASKS.md) · [`CF-CHUNK8-GOLDEN-CASE.md`](CF-CHUNK8-GOLDEN-CASE.md) · [`CF-CHUNK8-GATE.md`](CF-CHUNK8-GATE.md) | **chunk 8, closed at 7 of 9 — all 26 tasks** |
 | [`CF-CHUNK7-TASKS.md`](CF-CHUNK7-TASKS.md) · [`CF-CHUNK7-GOLDEN-CASE.md`](CF-CHUNK7-GOLDEN-CASE.md) · [`CF-CHUNK7-GATE.md`](CF-CHUNK7-GATE.md) | **chunk 7, closed at 8 of 9 — all 28 tasks** |
 | [`CF-CHUNK6-TASKS.md`](CF-CHUNK6-TASKS.md) · [`CF-CHUNK6-GOLDEN-CASE.md`](CF-CHUNK6-GOLDEN-CASE.md) · [`CF-CHUNK6-DESCRIPTION-CHAIN.md`](CF-CHUNK6-DESCRIPTION-CHAIN.md) · [`CF-CHUNK6-PER-FORM.md`](CF-CHUNK6-PER-FORM.md) · [`CF-CHUNK6-FORMS.md`](CF-CHUNK6-FORMS.md) · [`CF-CHUNK6-CROSSFORM.md`](CF-CHUNK6-CROSSFORM.md) · [`CF-CHUNK6-GATE.md`](CF-CHUNK6-GATE.md) | **chunk 6, closed at 8 of 9 — all 29 tasks** |
+| [`CF-CHUNK9-TASKS.md`](CF-CHUNK9-TASKS.md) · [`CF-CHUNK9-GOLDEN-CASE.md`](CF-CHUNK9-GOLDEN-CASE.md) · [`CF-CHUNK9-GATE.md`](CF-CHUNK9-GATE.md) | **chunk 9, closed at 9 of 9 — all 22 tasks; the `ForEach` engine fix is §8 of the golden case** |
+| [`CF-CHUNK10-TASKS.md`](CF-CHUNK10-TASKS.md) · [`CF-CHUNK10-GOLDEN-CASE.md`](CF-CHUNK10-GOLDEN-CASE.md) · [`CF-CHUNK10-GATE.md`](CF-CHUNK10-GATE.md) | **chunk 10, closed at 9 of 9 — all 21 tasks** |
+| [`CF-ENGINE-FIX-BANDED-LOOKUP.md`](CF-ENGINE-FIX-BANDED-LOOKUP.md) | chunk 10's engine fix — root cause, scope, population check, regression |
+| [`CF-CHUNK11-TASKS.md`](CF-CHUNK11-TASKS.md) | **chunk 11, OPEN at 0 of 24 — Leasehold Interest** |
+| [`../CF_Algorithm/CF_Required_Submission_Inputs.md`](../CF_Algorithm/CF_Required_Submission_Inputs.md) | every field the ERC rules treat as a true submission input vs. derived, chunks 1–10. **Check this before building any new golden case** |
 
 Saved ISO requests and responses: `results/cf-raas/`.

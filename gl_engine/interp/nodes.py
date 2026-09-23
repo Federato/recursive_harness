@@ -16,7 +16,7 @@ import datetime as _dt
 from decimal import Decimal, InvalidOperation
 
 from . import tree
-from .values import (TYPES, InterpretError, Multi, NullInArithmetic, coerce,
+from .values import (DATE_ZERO, TYPES, InterpretError, Multi, NullInArithmetic, coerce,
                      equal, flatten, to_text, truthy)
 
 # NOTE: `to_decimal` is deliberately NOT imported here any more. Every
@@ -335,10 +335,53 @@ def _not_equal(ip, el, fr):
     return not equal(ip.eval(a, fr), ip.eval(b, fr))
 
 
+def _is_date_zero(ip, el) -> bool:
+    """True when `el` is a `dateTime` operand whose null came from ISO's
+    `01/01/0001` sentinel: a `FirstValue` falling back to
+    `FromConstant="01/01/0001"`, or a `Constant` of that text.
+
+    56 of the 60 operands in the corpus's ordered date comparisons are the
+    `FirstValue` shape. The other 4 are bare `Value` reads; how ISO orders a
+    missing bare `Value` is unmeasured, so they are deliberately NOT treated
+    as the sentinel.
+    """
+    if el.attrib.get("Type") != "dateTime":
+        return False
+    tag = ip.tag(el)
+    if tag == "FirstValue":
+        return el.attrib.get("FromConstant", "").strip() == DATE_ZERO
+    if tag == "Constant":
+        return (el.text or "").strip() == DATE_ZERO
+    return False
+
+
 def _cmp(ip, el, fr, op):
+    """Ordered comparison of two numbers, or of two dates.
+
+    Dates are compared as dates, only when BOTH operands are dates. The CF
+    corpus files 28 ordered comparisons of `dateTime` operands (Leasehold
+    Interest's `SetNumberOfMonths`, Builders Risk's `SetProRate`, and 13
+    period-validation messages). A date against a number still refuses.
+
+    **The `01/01/0001` sentinel orders as the earliest date (OI-102).**
+    `coerce` reads it as null, which is right for `IsNull` and equality, and
+    is left alone. But in an ORDERED comparison ISO treats it as .NET's
+    `DateTime.MinValue`, an ordinary date. Before this, the null made
+    the comparison False under `propagate`, and a Leasehold Interest with no
+    `LeaseEffDate` priced at $0 against ISO's $272 (confirmed live, C11-23
+    Z6). So a null operand that is recognisably the sentinel (`_is_date_zero`)
+    becomes `date.min`, here and only here. Any other null takes the old path.
+    """
     a, b = _two(el, ip)
-    x = ip.num(ip.eval(a, fr), ip.where(el))
-    y = ip.num(ip.eval(b, fr), ip.where(el))
+    va, vb = ip.eval(a, fr), ip.eval(b, fr)
+    if va is None and _is_date_zero(ip, a):
+        va = _dt.date.min
+    if vb is None and _is_date_zero(ip, b):
+        vb = _dt.date.min
+    if isinstance(va, _dt.date) and isinstance(vb, _dt.date):
+        return op(va, vb)
+    x = ip.num(va, ip.where(el))
+    y = ip.num(vb, ip.where(el))
     return op(x, y)
 
 
@@ -497,14 +540,19 @@ def _for_each(ip, el, fr):
     An absent or empty path iterates zero times and is not an error -- that is
     how an absent coverage disappears rather than raising.
     """
-    path = el.attrib.get("AtDataDef") or el.attrib.get("AtInputDataDef")
+    at_path = el.attrib.get("AtDataDef")
+    path = at_path if at_path is not None else el.attrib.get("AtInputDataDef")
     if path is None:
         raise InterpretError(
             "ForEach without @AtDataDef or @AtInputDataDef", "§9",
             ip.where(el))
+    # `AtInputDataDef` iterates an INPUT collection to read it -- a bare
+    # `ToDataDef` in the body still means the enclosing record (contract §9).
+    # Only `AtDataDef` rebinds writes along with reads.
+    keep_write_root = at_path is None
     yielded = []
     for item in tree.select(path, fr.data):
-        inner = fr.at(item)
+        inner = fr.at(item, keep_write_root=keep_write_root)
         out = None
         try:
             for ch in _kids(el):
@@ -785,6 +833,17 @@ def _date_create(ip, el, fr):
 
 @node("DateDifference")
 def _date_difference(ip, el, fr):
+    """Days from the FIRST date to the SECOND: `second - first` (OI-107).
+
+    This used to return `first - second`, a sign never exercised by an
+    acceptance case (a tail node, OI-72). Confirmed against ISO live on
+    2026-09-22: `DaysUntilTRIAExpiration = DateDifference(EffDate,
+    TRIAExpirationDate)` with EffDate 2026-09-17 and TRIA expiring 2027-06-01
+    is **257** at ISO; this engine returned -257. The corpus's own operand
+    orders read the same way -- (PeriodFrom, PeriodTo), (EffectiveDt,
+    ExpirationDt), (EffDate, LeaseExpDate). The pro-rate factors that divide
+    one difference by another were never affected; the signs cancelled.
+    """
     a, b = _two(el, ip)
     x, y = ip.eval(a, fr), ip.eval(b, fr)
     if not isinstance(x, _dt.date) or not isinstance(y, _dt.date):
@@ -794,7 +853,7 @@ def _date_difference(ip, el, fr):
         raise InterpretError(
             "DateDifference @UnitType is Days on all 30 occurrences",
             "§12.2", ip.where(el))
-    return (x - y).days
+    return (y - x).days
 
 
 # ======================================================================
@@ -870,11 +929,23 @@ def _power(ip, el, fr):
     a fractional exponent is refused rather than approximated through floats,
     because N10 applies here more than anywhere -- this is the one operator
     whose error compounds.
+
+    **`0 ** 0` is 1 (OI-104).** Python's `Decimal` refuses it with
+    `InvalidOperation`; ISO's .NET `Math.Pow(0, 0)` returns 1. It is reachable:
+    a Leasehold Interest record with a blank `PercentInterest` (DiscFactor 0.0)
+    and no remaining months -- including the EMPTY record the Structure's
+    attach rule auto-creates when a `CovType = Leasehold Interest` structure is
+    sent without one. Refusing crashed the whole submission where ISO prices
+    it at $0 (confirmed live, C11-23 Z13).
     """
     a, b = _two(el, ip)
     where = ip.where(el)
     base = ip.num(ip.eval(a, fr), where)
     exp = ip.num(ip.eval(b, fr), where)
+    if base == 0 and exp == 0:
+        ip.note("power-zero-zero", "0 ** 0 taken as 1, as .NET Math.Pow does",
+                where)
+        return ip.round_to(Decimal(1), el, where)
     if base <= 0 and exp != int(exp):
         raise InterpretError(
             f"Power with base {base} and fractional exponent {exp} is not "

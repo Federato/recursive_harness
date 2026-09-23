@@ -53,15 +53,68 @@
 </style>
 
 <h1>Property build &mdash; every chunk, every task, status</h1>
-<p class="meta"><b>As of 2026-09-18.</b> One page for the whole 15-chunk plan. Sources, and what to edit
+<p class="meta"><b>As of 2026-09-22.</b> One page for the whole 15-chunk plan. Sources, and what to edit
 when something changes: <code>CF-START-HERE.md</code> (resume point),
 <code>CF-PROPERTY-BUILD-ORDER.md</code> (the plan and the gate),
-<code>CF-CHUNK2-TASKS.md</code> through <code>CF-CHUNK5-TASKS.md</code>
-(the task lists), <code>CF-CHUNK1-GATE.md</code> / <code>CF-CHUNK2-GATE.md</code> /
-<code>CF-CHUNK3-GATE.md</code> (the filed gates).<br>
+<code>CF-CHUNK2-TASKS.md</code> through <code>CF-CHUNK11-TASKS.md</code>
+(the task lists), <code>CF-CHUNK1-GATE.md</code> through <code>CF-CHUNK10-GATE.md</code>
+(the filed gates), <code>CF-ENGINE-FIX-BANDED-LOOKUP.md</code> (chunk 10's engine fix).<br>
+<b>Chunks 0&ndash;11 are CLOSED (chunk 11, Leasehold Interest, closed 2026-09-22: gated 9 of 9, 24 of 24, 4 user-authorized engine fixes, confirmed against ISO live). Chunk 12 (the endorsement families) OPENED 2026-09-22: census run, 42 tasks in 8 groups, 0 started.</b>
+Verify the whole build in one command: <code>python scripts/cf/104_chunk10_c10-21_regression.py</code> (covers chunks 0&ndash;11 since 2026-09-22).<br>
 &#42; on a gate cell means passed, but re-tested later under a stronger check &mdash; see the note below.</p>
 
-<div class="note good"><b>Where to pick up: chunk 6 &mdash; Special Class.</b> <b>Chunk 5 is gated at 8 of 9</b>: all 28 tasks closed, four forms rating, 44 of 47 jurisdictions exact, 6 ISO calls all matching, and <b>no engine code written</b> &mdash; the fifth coverage in a row on chunk 0's foundation. <b>Chunk 4 is gated at 8 of 9</b>: all 32 tasks closed, four Contents forms rating, 46 of 47 jurisdictions, 6 ISO calls all matching, and <b>no engine code written</b> &mdash; the fourth coverage in a row on chunk 0's foundation.
+<div class="note good"><b>Chunk 10 &mdash; Earthquake, OPENED AND GATED 9 of 9 ON 2026-09-22, 21 of 21 tasks
+done, 1 engine gap found AND FIXED same day.</b> Task list at <code>CF-CHUNK10-TASKS.md</code>
+(<b>C10-01&ndash;C10-21</b>), gate at <code>CF-CHUNK10-GATE.md</code>. <b>The real reframe: the 97
+<code>*Earthquake*</code>-named files are NOT the rating engine</b> &mdash; the actual chain lives inside
+the <i>same five parent files</i> chunks 1&ndash;9 already opened. <b>C10-01 (golden case) closed clean</b>:
+<b>$6</b> EQ premium, <b>$261</b> ordinary unmoved, no engine gap. <b>Gate Groups 1 and 2 closed the
+remaining 8 gate points the same day</b>, all clean &mdash; <b>gate: 9 of 9, no engine gap on any gate
+point.</b> <b>Gate Group 3 (C10-10&ndash;14) verified those claims across all 5 groups</b>: Contents
+<b>$5</b>, Business Income <b>$5</b>, Special Class <b>$6</b>, SC Business Income <b>$5</b>, all exact;
+2 new ancestor-copy traps found on Contents. <b>Gate Group 4 (C10-15&ndash;18) closed the reachability
+map</b>: EQ's own blanket branch (<b>$6/$12</b>, and ISO itself refuses a 1-structure version); Legal
+Liability's 9-file EQ branch (<b>$2</b> EQ, chunk 8's <b>$60</b> unmoved); Non-Owned Trailers (found to
+attach under CONTENTS, not Building, <b>$5</b>, its own real <b>$5,000</b> threshold); Special Class's 27
+files (8 core + 19 wrapper across two sibling groups). <b>Gate Group 5 (C10-19) then found this chunk's
+first real engine gap</b>: the plain flat-dollar-deductible form (CP 10 28) works and rates <b>$8</b>,
+genuinely distinct from the percentage path's $6 &mdash; but the SUB-LIMIT flat-dollar form (CP 10 29) was
+initially unreachable: all 13 <code>EQSubLimit*FlatDeductibleFactor</code> tables carry a double-banded
+range key the interpreter's own <code>_lookup_banded</code> refused outright. <b>Fixed the same day,
+user-authorized</b> &mdash; <code>_lookup_banded</code> now handles any number of key ranges (one
+interpolates, named by the table's own <code>RangeKeyCol</code>; every other is a plain bracket filter).
+A corpus-wide check found this wasn't Earthquake-only: <b>28 CF tables carry two ranges</b> &mdash; the 13
+EQ sub-limit tables, <b>7 live Flood rate-modification tables</b>, <b>1 live Massachusetts heating-oil
+table</b>, and 7 confirmed-dead tables left untouched. The fixed CP 10 29 case now runs to
+<b>$6</b>, hand-derived and matched. <b>Full regression: 16 of 16 GL suites, 107 of 120 CF scripts</b>
+(the other 13 pre-existing/unrelated failures, not caused by this change). Write-up:
+<code>CF-ENGINE-FIX-BANDED-LOOKUP.md</code>. <b>C10-21 closed 2026-09-22 &mdash; the chunks 1&ndash;9 regression is CLEAN under that fix</b> (all 10 golden cases reproduce every documented figure, 25 machinery scripts and 16 GL suites green), run as a reproducible self-testing harness rather than a hand sweep. <b>C10-20 closed the same day and corrected the opening census's own fixture arithmetic in three places</b> &mdash; the "924" denominator is two lines of business (560 GL + 364 CF), "69" counts Structures rather than payloads (149 electing records in total), and EQ's blanket branch has <b>zero</b> ISO fixtures. <b>CHUNK 10 IS CLOSED: 21 of 21.</b></div>
+
+<div class="note good"><b>Chunk 9 &mdash; Blanket rating, CLOSED 22 of 22 on 2026-09-21.</b> Gated 9 of 9, all 22 tasks
+numbered <b>C9-01&ndash;C9-22</b> in <code>CF-CHUNK9-TASKS.md</code> done. <b>The opening census
+overturned the build order's own premise</b> &mdash; &ldquo;Branch B is a stub in every premium file&rdquo;
+did not survive a direct read: <b>zero of the 20 premium files chunks 1&ndash;8 built stub the blanket
+formula out.</b> Every one carries a complete, already-filed formula
+(<code>IRPMFactor &times; PackageModFactor &times; Blkt&lt;Form&gt;AvgRate &times; (item value /
+BlktTotalFullValueAmount) &times; (BlktLimit/100)</code>). What was missing was the <i>input</i>, and
+<b>C9-01's golden case found exactly why</b>: <code>ForEach AtInputDataDef</code> in
+<code>gl_engine/interp/nodes.py</code> reparented WRITES onto the iterated Detail record along with reads,
+so <code>SetNonEQBlanketValues</code>'s output never reached the structure it was meant for. <b>Fixed
+2026-09-21, the first engine change since chunk 0</b> &mdash; <code>Frame</code> gained a
+<code>write_root</code> that keeps a bare <code>ToDataDef</code> pinned to the frame active before an
+<code>AtInputDataDef</code> loop, while <code>AtDataDef</code> loops keep rebinding both as before. Golden
+case matches hand-derivation exactly, <b>$255 / $510</b>, and <b>C9-13 confirmed it live against ISO</b> to
+the dollar, all 3 validation messages included &mdash; the first CF chunk to do both at once for a
+submission absent from ISO's own fixture corpus. <b>C9-15 through C9-22 then closed out every remaining
+task</b>: all 3 of Building's forms activate blanket on a real run, no operand-order divergence exists
+anywhere in the 20 formulas, <code>MultiPremiumAndDispersionCreditFactor</code> is live on 12 of 20 and
+genuinely absent (not dead) on the other 8, the IRPM/PackageMod level count varies by group (5/7/9, not
+uniformly 5), cross-coverage isolation is clean, the 3 shared instruments now cover a 7th DataDefGroup, and
+every chunk 1&ndash;8 golden case plus all 16 GL suites re-ran green after the interpreter fix. Census:
+<code>scripts/cf/67_chunk9_census.py</code>. Golden case: <code>CF-CHUNK9-GOLDEN-CASE.md</code>. Gate:
+<code>CF-CHUNK9-GATE.md</code>. Full task list: <code>CF-CHUNK9-TASKS.md</code>.</div>
+
+<div class="note good"><b>Chunk 5 is gated at 8 of 9</b>: all 28 tasks closed, four forms rating, 44 of 47 jurisdictions exact, 6 ISO calls all matching, and <b>no engine code written</b> &mdash; the fifth coverage in a row on chunk 0's foundation. <b>Chunk 4 is gated at 8 of 9</b>: all 32 tasks closed, four Contents forms rating, 46 of 47 jurisdictions, 6 ISO calls all matching, and <b>no engine code written</b> &mdash; the fourth coverage in a row on chunk 0's foundation.
 <b>Chunk 3 is gated at 8 of 9 as of 2026-09-18</b>, with all 24 of its tasks closed and
 <b>no engine code written</b> &mdash; the third coverage in a row to run on chunk 0's foundation unchanged.
 Broad&nbsp;$16 and Special&nbsp;$54 ISO-confirmed, 47 of 47 jurisdictions with nothing skipped, 7 further
@@ -129,13 +182,18 @@ the <code>docs/CF-*</code> files and the <code>gl_engine/</code> edits are worki
 
 <h2>The whole plan at a glance</h2>
 
-<div class="bar"><span style="width:44%"></span></div>
-<p class="sub">8 of 15 chunks gated &middot; chunks 6, 7 and 8 all closed 2026-09-18 &middot; point 9 (validation messages) is owed project-wide, and <b>chunk 8 additionally holds point 8 open</b> on three jurisdictions whose zeros are not yet explained &mdash; named rather than waved past</p>
+<div class="bar"><span style="width:60%"></span></div>
+<p class="sub">9 of 15 chunks gated &middot; chunks 6, 7 and 8 closed 2026-09-18, <b>chunk 9 closed 22 of 22 on
+2026-09-21</b> (gated 9 of 9, ISO-confirmed live) &middot; <b>chunk 10 (Earthquake) opened AND gated 9 of 9 on 2026-09-22</b>,
+21 of 21 tasks done, 1 engine gap found and fixed same day (sub-limit EQ form, C10-19 &mdash; also unblocked
+Flood and a MA rider) &middot; point 9 (validation
+messages) is owed project-wide on chunks 1&ndash;8, and <b>chunk 8 additionally holds point 8 open</b> on
+three jurisdictions whose zeros are not yet explained &mdash; named rather than waved past</p>
 
 <table>
 <thead><tr><th class="num">#</th><th>Chunk</th><th>Status</th><th>Where it stands</th></tr></thead>
 <tbody>
-<tr class="d"><td class="num">0</td><td>Foundation &mdash; loader, resolver, interpreter</td><td><span class="tag done">Built</span></td><td>Proved by chunk 1's gate. No engine code written since</td></tr>
+<tr class="d"><td class="num">0</td><td>Foundation &mdash; loader, resolver, interpreter</td><td><span class="tag done">Built</span></td><td>Proved by chunk 1's gate. Unchanged through chunks 1&ndash;8; one fix (<code>ForEach AtInputDataDef</code> write-reparenting) landed in chunk 9, 2026-09-21</td></tr>
 <tr class="d"><td class="num">1</td><td>Building &mdash; Basic Group I</td><td><span class="tag done">Gate 8 of 8</span></td><td>$261 / $263 / $288, ISO-confirmed</td></tr>
 <tr class="d"><td class="num">2</td><td>Building &mdash; Basic Group II</td><td><span class="tag done">Gate 8 of 8</span></td><td>$261 + $32 from one submission, ISO-confirmed</td></tr>
 <tr class="d"><td class="num">3</td><td>Building &mdash; Broad and Special</td><td><span class="tag done">Gate 8 of 9</span></td><td>Broad $16 / Special $54, ISO-confirmed; 47 of 47 states; 24 of 24 tasks</td></tr>
@@ -144,10 +202,10 @@ the <code>docs/CF-*</code> files and the <code>gl_engine/</code> edits are worki
 <tr class="d"><td class="num">6</td><td>Special Class &mdash; building side</td><td><span class="tag done">Gate 8 of 9 &mdash; all 29 tasks</span></td><td>Four forms rating: <b>$66 / $209 / $14 / $44</b>; <b>47 of 47 states</b>, the first complete sweep since chunk 3. The first coverage that is <b>not inside a building record</b> &mdash; Special Class hangs off the Location. Rating driver is a free-text class <b>description</b> through two lookups in series</td></tr>
 <tr class="d"><td class="num">7</td><td>Special Class Business Income</td><td><span class="tag done">Gate 8 of 9 &mdash; all 28 tasks</span></td><td>Four forms rating: <b>$39 / $123 / $23 / $47</b>; <b>47 of 47 states</b>. <b>The first coverage that borrows a FULLY RATED rate</b> &mdash; eleven values cross the boundary and not one is a base rate. Deepest nesting in the project</td></tr>
 <tr class="d"><td class="num">8</td><td>Legal Liability &mdash; Building and Contents</td><td><span class="tag done">Gate 7 of 9 &mdash; all 26 tasks</span></td><td>Building <b>$60 / $7 / $4 / $12</b>, Contents <b>$132 / $15 / $11 / $93</b>; <b>47 of 47 states</b>. <b>The traced eleven-point map scored: 8 confirmed, 3 corrected</b>, plus a cross-coverage leak it does not mention. <b>Point 8 held open</b> on CA, FL and PR</td></tr>
-<tr><td class="num">9</td><td>Blanket rating</td><td><span class="tag open">Not opened</span></td><td>A stub in every premium file built so far</td></tr>
-<tr><td class="num">10</td><td>Earthquake &mdash; the fifth form</td><td><span class="tag open">Untraced</span></td><td>97 rule files; the largest unblocking item in the plan</td></tr>
-<tr><td class="num">11</td><td>Leasehold Interest</td><td><span class="tag open">Surveyed only</span></td><td>32 rule files; the only <code>rul:Power</code> in the package</td></tr>
-<tr><td class="num">12</td><td>The endorsement families</td><td><span class="tag open">Sized only</span></td><td>Ordinance or Law (55) and the rest &mdash; not sequenced</td></tr>
+<tr><td class="num">9</td><td>Blanket rating</td><td><span class="tag done">Gated 9 of 9 &mdash; all 22 tasks</span></td><td>Not a stub after all &mdash; every premium file carries the formula; the missing input traced to a <code>ForEach AtInputDataDef</code> write-reparenting bug, fixed same day. Golden case $255/$510, exact, and <b>ISO-confirmed live</b> to the dollar, messages included. All 3 of Building's forms and SC Business Income's 2-When shape confirmed reachable on real runs; <code>MultiPremiumAndDispersionCreditFactor</code> live on 12 of 20; IRPM/PackageMod level count varies by group (5/7/9); cross-coverage isolation clean; 3 shared instruments extended to a 7th DataDefGroup; every chunk 1&ndash;8 golden case and all 16 GL suites re-verified green</td></tr>
+<tr><td class="num">10</td><td>Earthquake &mdash; the fifth form</td><td><span class="tag done">CLOSED &mdash; gated 9 of 9, 21 of 21 tasks, 1 engine gap fixed</span></td><td>Golden case (C10-01): <b>$6</b> EQ premium, exact match, no engine gap. Gate closed same day, 9 of 9. C10-10&ndash;18 confirmed all 5 groups and the reachability map, all clean. <b>C10-19 found and (user-authorized) fixed a real engine gap</b>: <code>_lookup_banded</code> couldn't handle 2-range tables, blocking the sub-limit EQ form (CP 10 29) plus, corpus-wide, 7 live Flood tables and 1 MA rider. Fixed, now $6, exact; 16/16 GL + 107/120 CF regression clean</td></tr>
+<tr><td class="num">11</td><td>Leasehold Interest</td><td><span class="tag done">CLOSED &mdash; gated 9 of 9, 24 of 24 tasks, 4 engine fixes</span></td><td><b>2026-09-22: the golden case matched at $268 + $30; the date-comparison engine gap was fixed with authorization; the regression is clean.</b> Opened 2026-09-22 (<code>CF-CHUNK11-TASKS.md</code>, <code>106_chunk11_census.py</code>). <b>All seven of the build order's claims confirmed</b> &mdash; 32 files, the 4&times;5 grid, the annuity, the only <code>rul:Power</code> in 882 countrywide rule files, and no coinsurance/LOI/deductible/blanket anywhere. <b>Four things the census adds</b>: (1) <b>only 21 of the 32 files rate</b> &mdash; the 11 <code>FactorsFor&lt;N&gt;Percent</code> files (5%&ndash;15%) are inert printed-form markers with no Lookup, Premium or factor; (2) <b>"its own datadef group" is 32 groups, not 1</b>, one per file &mdash; and gate points 6 and 7 are per-group questions, so chunk 11 asks them across 32 groups against the 5 chunks 6&ndash;10 used, <b>the biggest structural jump in the plan</b>; (3) <b>the fifth form is Earthquake</b>, making chunk 10 a direct input &mdash; the first coverage opened after the form it depends on was built; (4) <b>zero ISO fixtures</b> in 364 CF payloads, so this is chunk 9's situation, not chunk 10's, and confirmation must come from a live ISO call &mdash; planned at task 1 rather than discovered at task 22. <b>The sharpest hazard</b>: the <code>rul:Power</code> sits behind an <code>IsNull</code> guard on <code>DiscFactorRaisedToNumOfMonthsRemainingAtInception</code>, so a submission supplying that value bypasses the annuity entirely and <b>no ISO comparison catches it</b> &mdash; ISO has the same guard. <b>Exact inverse of Earthquake on shared machinery</b>: EQ reads <code>IRPMFactor</code>/<code>PackageModFactor</code> at no depth in any group; LI reads both in 16 of 32 files. Engine readiness checked at opening: every <code>rul:</code> node these 32 files use is already implemented, <code>rul:Power</code> included &mdash; <b>no engine change expected</b></td></tr>
+<tr><td class="num">12</td><td>The endorsement families</td><td><span class="tag open">OPEN &mdash; census run, 0 of 42 tasks</span></td><td>Opened 2026-09-22 (<code>CF-CHUNK12-TASKS.md</code>, <code>123_chunk12_census.py</code>). Six families sized: Ordinance or Law 55 files (confirmed), Dependent Properties 50, Utility Services 35, Green Upgrades 30, Debris Removal 18, Unmanned Aircraft 20. <b>Two have no ISO fixture</b> (Dependent Properties, Green Upgrades); <b>Unmanned Aircraft is filed by all 46 states</b>; <b>Debris Removal reads the core LOI tables</b>. Recommended order: Debris Removal first, the two without fixtures last</td></tr>
 <tr><td class="num">13</td><td>Terrorism / TRIA</td><td><span class="tag open">Untraced</span></td><td>16 rule files; runs last, reads finished premiums</td></tr>
 <tr><td class="num">14</td><td>Policy assembly</td><td><span class="tag open">Not opened</span></td><td>First partial check already passed inside chunk 3's task 23</td></tr>
 </tbody>
@@ -155,25 +213,36 @@ the <code>docs/CF-*</code> files and the <code>gl_engine/</code> edits are worki
 
 <h2>The gate &mdash; what every chunk has to satisfy</h2>
 <p>Nine points in the plan. Chunks 1 and 2 were filed against the first eight; point 9 (validation
-messages) was added afterwards and is owed retroactively on all five closed chunks &mdash; it is the only
-point outstanding anywhere.</p>
+messages) was added afterwards and is owed retroactively on chunks 1&ndash;8 &mdash; chunk 9 is the first to
+close it, for its own golden case only.</p>
 
 <table>
-<thead><tr><th class="num">#</th><th>Gate point</th><th class="st">C1</th><th class="st">C2</th><th class="st">C3</th><th class="st">C4</th><th class="st">C5</th><th class="st">C6</th><th class="st">C7</th><th class="st">C8</th></tr></thead>
+<thead><tr><th class="num">#</th><th>Gate point</th><th class="st">C1</th><th class="st">C2</th><th class="st">C3</th><th class="st">C4</th><th class="st">C5</th><th class="st">C6</th><th class="st">C7</th><th class="st">C8</th><th class="st">C9</th><th class="st">C10</th></tr></thead>
 <tbody>
-<tr><td class="num">1</td><td>A golden case rates end to end, every intermediate traced to a named rule and table row</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td></tr>
-<tr><td class="num">2</td><td>Every table's row count stated; header-only tables explained</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#11036;</td><td class="st">&#9989;</td><td class="st">&#11036;</td></tr>
-<tr><td class="num">3</td><td>Every state enumerated, not sampled &mdash; "n of N", N from the corpus</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td></tr>
-<tr><td class="num">4</td><td>Every <code>0</code> tested against its consuming branch</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td></tr>
-<tr><td class="num">5</td><td>Every hardcoded literal key listed</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td></tr>
-<tr><td class="num">6</td><td>Shared-name traps diffed, not assumed</td><td class="st">&#9989;&#42;</td><td class="st">&#9989;&#42;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td></tr>
-<tr><td class="num">7</td><td>Every exclusion's endorsement record identified per datadef group</td><td class="st">&#9989;&#42;</td><td class="st">&#9989;&#42;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td></tr>
-<tr><td class="num">8</td><td>The edition basis stated; any table from an older edition says so</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#11036;</td></tr>
-<tr><td class="num">9</td><td>No unexplained validation message on the golden case</td><td class="st">&#11036;</td><td class="st">&#11036;</td><td class="st">&#11036;</td><td class="st">&#11036;</td><td class="st">&#11036;</td><td class="st">&#11036;</td><td class="st">&#11036;</td><td class="st">&#11036;</td></tr>
+<tr><td class="num">1</td><td>A golden case rates end to end, every intermediate traced to a named rule and table row</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td></tr>
+<tr><td class="num">2</td><td>Every table's row count stated; header-only tables explained</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#11036;</td><td class="st">&#9989;</td><td class="st">&#11036;</td><td class="st">&#9989;</td><td class="st">&#9989;</td></tr>
+<tr><td class="num">3</td><td>Every state enumerated, not sampled &mdash; "n of N", N from the corpus</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td></tr>
+<tr><td class="num">4</td><td>Every <code>0</code> tested against its consuming branch</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td></tr>
+<tr><td class="num">5</td><td>Every hardcoded literal key listed</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td></tr>
+<tr><td class="num">6</td><td>Shared-name traps diffed, not assumed</td><td class="st">&#9989;&#42;</td><td class="st">&#9989;&#42;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td></tr>
+<tr><td class="num">7</td><td>Every exclusion's endorsement record identified per datadef group</td><td class="st">&#9989;&#42;</td><td class="st">&#9989;&#42;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td></tr>
+<tr><td class="num">8</td><td>The edition basis stated; any table from an older edition says so</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#9989;</td><td class="st">&#11036;</td><td class="st">&#9989;</td><td class="st">&#9989;</td></tr>
+<tr><td class="num">9</td><td>No unexplained validation message on the golden case</td><td class="st">&#11036;</td><td class="st">&#11036;</td><td class="st">&#11036;</td><td class="st">&#11036;</td><td class="st">&#11036;</td><td class="st">&#11036;</td><td class="st">&#11036;</td><td class="st">&#11036;</td><td class="st">&#9989;</td><td class="st">&#9989;</td></tr>
 </tbody>
 </table>
 <p class="sub">&#9989; passed &middot; &#11036; not yet done &middot; &#9989;&#42; passed, then re-tested under a
-stronger check (see the note above). <b>Points 1&ndash;8 hold on all five closed chunks; point 9 holds on none.</b> Chunk 6 is open; none of its nine are answered yet.
+stronger check (see the note above). <b>Points 1&ndash;7 hold on all eight closed chunks (1&ndash;8); point
+9 holds on none of them</b> (project-wide backlog). Chunk 8 additionally leaves point 8 open on three
+unexplained zeros. <b>Chunk 9 is CLOSED, 9 of 9, 22 of 22 tasks</b> &mdash; the first chunk to close point 9
+for its own golden case (0 unexplained messages), though that closes it for chunk 9 alone, not the
+project-wide backlog. <b>Chunk 10 is GATED 9 of 9</b>, the same day it opened &mdash; C10-06 and C10-07
+(shared-name and exclusion-record adjudication) both closed clean, no engine gap. Gate Group 3
+(C10-10&ndash;14) verified those same claims across all 5 groups; Gate Group 4 (C10-15&ndash;18) closed
+the reachability map. <b>Gate Group 5 (C10-19) then found and fixed this chunk's first engine gap</b>
+&mdash; the sub-limit + flat-dollar-deductible EQ form was unreachable through the engine; fixed the same
+day, user-authorized, and confirmed to also unblock 7 live Flood tables and 1 Massachusetts rider
+corpus-wide. <b>21 of 21 tasks done &mdash; chunk 10 is CLOSED</b> (C10-21's regression came back clean; C10-20 found the census's fixture arithmetic wrong in three places), and chunk 10 is the SECOND chunk to close
+point 9 for its own golden case, with a real ISO fixture cross-check this time as well.
 Chunk 1 fires three ISO validation messages on every case and chunk 4 adds a fourth &mdash;
 <i>"Full Value cannot be lower than the Limit"</i>. The premium is right regardless, but point 9 is not
 satisfied until each is designed out or logged in
@@ -188,7 +257,7 @@ engine's on all seven chunk 3 calls.</p>
 <table>
 <thead><tr><th class="st">&nbsp;</th><th>Task</th><th>Evidence</th></tr></thead>
 <tbody>
-<tr><td class="st">&#9989;</td><td>Interpreter parity &mdash; <code>rul:Product</code>, <code>rul:Power</code>, <code>rul:FirstNonNull</code>, <code>rul:Choose</code> first-match</td><td>five nodes added, three corrections; nothing since</td></tr>
+<tr><td class="st">&#9989;</td><td>Interpreter parity &mdash; <code>rul:Product</code>, <code>rul:Power</code>, <code>rul:FirstNonNull</code>, <code>rul:Choose</code> first-match</td><td>five nodes added, three corrections; unchanged through chunk 8. Chunk 9 (C9-01) added a fourth correction &mdash; <code>ForEach AtInputDataDef</code> was reparenting writes onto the iterated item, not just reads</td></tr>
 <tr><td class="st">&#9989;</td><td>Resolver &mdash; countrywide base, state child, edition chain</td><td><code>cf_engine/resolve/resolver.py</code></td></tr>
 <tr><td class="st">&#9989;</td><td>County/place territory resolver (not ZIP)</td><td>built</td></tr>
 <tr><td class="st">&#9989;</td><td>Header-only-table detector that fails loudly</td><td>built</td></tr>
@@ -786,7 +855,7 @@ to pull it from the 2019 package; <b>the 2026 edition files four rows</b>.</p>
 <tbody>
 <tr><td class="st">&#9989;</td><td class="num">22</td><td><b>Second instance of a populated-and-unused field.</b> Factor 0.5 halves the class-rated premium 261 &rarr; <b>131</b> and <b>Legal Liability stays at $60</b></td></tr>
 <tr><td class="st">&#9989;</td><td class="num">23</td><td><b>The map is wrong: the operand order IS premium-bearing.</b> PackageMod and IRPM both at 0.44 give <b>$11</b> nested; a single product gives 11.616 &rarr; <b>$12</b>. One dollar. <b>The map verified the operands and not the arithmetic</b> &mdash; and the first run of this test applied only one factor, because <b>IRPM is read from the POLICY</b>, five levels up</td></tr>
-<tr><td class="st">&#9989;</td><td class="num">24</td><td><b>Both are correct outcomes and neither is a zero in our engine.</b> Leasehold Interest refuses (it activates chunk 11’s rate chain); Builders Risk + reporting form refuses here and <b>ISO prices it at $1</b>. The map records both as <code>Premium = 0.0</code></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">24</td><td><b>Both are correct outcomes and neither is a zero in our engine.</b> Leasehold Interest refused (it activates chunk 11’s rate chain; <i>since the 2026-09-22 OI-104 fix it prices $0, as ISO does</i>); Builders Risk + reporting form refuses here and <b>ISO prices it at $1</b>. The map records both as <code>Premium = 0.0</code></td></tr>
 <tr><td class="st">&#9989;</td><td class="num">25</td><td><b>Predicted &ldquo;none of them moving&rdquo; and Contents moves, $223 &rarr; $248.</b> The Building’s <code>CovType</code> suppresses <b>Contents’</b> LOI factor (0.898 &rarr; 1) on a coverage that is still class-rated &mdash; <b>the fork is not confined to its own premium.</b> Business Income keeps $112 and both Special Class coverages are untouched because they hang off the location. <b>Only the coverage nested INSIDE the building follows it</b></td></tr>
 <tr><td class="st">&#9989;</td><td class="num">26</td><td><b>8 of 11 confirmed, 3 corrected</b>, plus four further findings: a stale line, an over-claim, and two things the map does not mention &mdash; one of them the cross-coverage leak above. <b>This was the best-prepared input any chunk has started from</b> and running it moved five points</td></tr>
 </tbody>
@@ -802,36 +871,469 @@ this census reported the map contradicted, and it was the detector that was wron
 anything was published.</p>
 
 <p><span class="lab">Deliberately not in chunk 8</span> Blanket rating proper (chunk 9) &middot; Earthquake,
-which ships 8 endorsement variants on this branch alone (chunk 10) &middot; Leasehold Interest, which this
-file returns 0.0 for because it rates in its own group (chunk 11).</p>
+which ships <b>9</b> endorsement variants on this branch alone, not 8 as first estimated &mdash; corrected by
+chunk 10's opening census, which found none of the 9 nameable by filename alone (chunk 10) &middot;
+Leasehold Interest, which this file returns 0.0 for because it rates in its own group (chunk 11).</p>
 </div>
 
-<div class="chunk todo">
-<h3><span class="n">9</span> Blanket rating <span class="tag open">Not opened</span></h3>
-<p><b>The widest remaining gap.</b> Branch B is a stub in every premium file built in chunks 1&ndash;8,
-across every coverage. Doing it once, late, is cheaper than five times early &mdash; but nothing above this
-line is <i>finished</i> until it lands.</p>
+<div class="chunk done">
+<h3><span class="n">9</span> Blanket rating <span class="tag done">Closed 22 of 22 &mdash; gated 9 of 9</span></h3>
+<p><b>Cross-cutting, not one coverage.</b> Opened and gated 2026-09-21, 22 tasks numbered
+<b>C9-01&ndash;C9-22</b> in <code>CF-CHUNK9-TASKS.md</code>, derived from the build order's item 9 and from
+the census run while opening the chunk (<code>scripts/cf/67_chunk9_census.py</code>) &mdash; which reads
+all <b>20</b> premium files chunks 1&ndash;8 already built, not one coverage's four. <b>C9-01 found and the
+user authorized the first engine change since chunk 0</b> the same day; C9-02 through C9-12 all closed
+clean, no second engine gap. <b>C9-13 confirmed the golden case live against ISO</b> &mdash; exact match on
+premium ($255/$510/$765) and all 3 validation messages, the first CF chunk to confirm both at once for a
+submission absent from ISO's own fixture corpus. <b>C9-14 files the gate at 9 of 9, no point held open.</b>
+This closes the CORE MECHANISM (Building Basic Group I, Average election) end to end and ISO-confirmed.
+<b>C9-15 through C9-17 then confirmed reachability past the gate's own scope</b>: all three of Building's
+&ldquo;by elimination&rdquo; forms (Basic I, Basic II, Broad) activate blanket on a real run, no operand-order
+divergence exists anywhere in the 20 formulas (checked against C8-23's precedent and found NOT to recur,
+because these rules round once at the end, not per step), and SC Business Income's odd 2-<code>When</code>
+shape reaches the identical formula for a structural reason (it lacks Building's two carve-outs). <b>C9-18
+through C9-20 then closed the cross-cutting claims</b>: <code>MultiPremiumAndDispersionCreditFactor</code>
+is live (not decorative) on 12 of 20 files and genuinely absent, not populated-and-ignored, on the other 8;
+the <code>IRPMFactor</code>/<code>PackageModFactor</code> level count is NOT uniformly 5 &mdash; Building
+and Special Class read at 5, Business Income and SC Business Income at 7, Contents at 9; and a
+blanket-elected item leaves an ordinary sibling's premium untouched at both a different location and the
+harder same-location placement. <b>C9-21 and C9-22 close the chunk.</b> The three shared instruments were
+extended to the 7th DataDefGroup (<code>04_shared_names.py</code> and
+<code>05_exclusion_records.py</code> gained a chunk-9 section, matching chunk 6&ndash;8's own pattern;
+<code>08_hardcoded_literals.py --group</code> already worked unmodified): 11 shared chain names span more
+than one group, only 1 reads a different table (<code>SetCoinsuranceFactor</code>, already adjudicated
+before this chunk existed), and the averaging engine files 0 exclusion records of its own. Every chunk
+1&ndash;8 golden case, all 6 state sweeps, and all 16 GL <code>verify_*.py</code> suites (23 checks total)
+re-ran green, dollar figure by dollar figure against <code>CF-START-HERE.md</code>'s own documented values
+&mdash; nothing moved. <b>Chunk 9 is closed, 22 of 22.</b></p>
+
+<p><span class="lab">Five things the census found, before any task runs</span></p>
+<table>
+<thead><tr><th>&nbsp;</th><th>Why it is new, not just different data</th></tr></thead>
+<tbody>
+<tr><td class="num">1</td><td><b>The census overturns the plan's own premise.</b> &ldquo;Branch B is a stub&rdquo; does not survive a direct read: <b>every one of the 20 <code>SetPremium</code> rules already carries the full formula</b> &mdash; <code>IRPMFactor &times; PackageModFactor &times; Blkt&lt;Form&gt;AvgRate &times; (item value / BlktTotalFullValueAmount) &times; (BlktLimit/100)</code>. Building's Special and all four Contents forms reach it through an explicit <code>Choose</code> <code>When</code> on <code>IncludedInBlkt = "Yes"</code>; Building's other three forms reach it <b>by elimination</b>; Business Income, Special Class and SC Business Income reach it through a plain <code>Else</code> &mdash; their <code>SetPremium</code> is not even a <code>Choose</code>. <b>Zero of 20 files stub it out. What's missing is input, not code</b></td></tr>
+<tr><td class="num">2</td><td><b>The three-chunk finding (C6-28 / C7-25 / C8-14) now has a named cause.</b> <code>SetNonEQBlanketValues</code> &mdash; one copy per premium group, five total, called from a dispatcher with <b>two literal names</b> (<code>SetBlanketValuesSection</code> on Building and SC Business Income, <code>SetBlanketValues</code> on the other three &mdash; Chunk 8's shared-name trap, generalizing to blanket's own machinery) &mdash; is the <b>only</b> rule that ever assigns <code>BlktCauseOfLossValue</code> a real value, and has <b>three</b> distinct ways to leave it short: no <code>Else</code> on the outer gate, an inner <code>Else</code> writing the literal <code>"Not Applicable"</code>, and a <code>ForEach</code> lookup that silently no-ops with no matching <code>UnitNumber</code>. <b>The rule was never broken. Nothing has ever fed it</b></td></tr>
+<tr><td class="num">3</td><td><b>A wholly separate 621,894-character, 135-rule engine already exists, untouched by any chunk 1&ndash;8 script.</b> <code>CommercialPropertyBlanketRatingDetailRules.Rule.xml</code> &mdash; 32 <code>*Calc</code> rules, 31 <code>SetMax*</code> rules, 30 <code>*AgreedVal</code> rules &mdash; computes the averaged and highest rate per coverage-form across every risk sharing a <code>BlktIDNum</code>. This is what actually writes <code>Blkt&lt;Form&gt;AvgRate</code> and <code>BlktTotalFullValueAmount</code>, the two inputs point 1's formula is starved of. <b>Florida overrides this file</b></td></tr>
+<tr><td class="num">4</td><td><b>ISO's own fixture corpus has never demonstrated a blanket submission either.</b> Of 924 STC payloads, 364 carry <code>IncludedInBlkt</code> (almost always <code>"No"</code> boilerplate) and <b>zero</b> set it to <code>"Yes"</code> or carry any <code>CommercialPropertyBlanketRating*</code> record. A chunk-9 golden case will be the <b>first populated blanket submission built anywhere in this project</b>, with no ISO fixture to check it against</td></tr>
+<tr><td class="num">5</td><td><b>12 blanket-only Rate Tables exist, all but one a single countrywide row</b> &mdash; <code>BldgPrsnlPropBlktCoverageCode</code>, four <code>Blkt*RatingIdentificationCode</code> variants, <code>BuildersRiskBlanketFactor</code> (1.05), <code>CoinsuranceFactorBlkt</code> (0.95), two Earthquake blanket risk-ID tables, three Flood blanket tables. Five states file their own substandard-class variant (DC, IL, KY, NJ, NY); three (AK, FL, PR) file their own Flood variant. <b>None of the 12 has been read by any chunk 1&ndash;8 script</b></td></tr>
+</tbody>
+</table>
+
+<p><span class="lab">The state layer</span> Only <b>4</b> state copies of the 20 premium files exist at all,
+across 2 jurisdictions (PR overrides Building Special) &mdash; consistent with chunk 8's finding that the
+core premium chain is the quietest layer in the corpus. State activity concentrates in the endorsement
+families instead (213 groups, 21 states), not in the five core <code>SetPremium</code> rules blanket depends
+on.</p>
+
+<p><span class="lab">Gate-level tasks &mdash; 14 of 14 done, gate filed at 9 of 9</span></p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#9989;</td><td class="num">C9-01</td><td><b>Hand-derived $255/$510; the engine first returned $0/$0.</b> Root cause: <code>ForEach AtInputDataDef</code> reparented WRITES onto the iterated Detail record along with reads, so the averaging engine's output never reached the structure &mdash; four stray <code>Blkt*Temp</code> fields proved it, sitting on the Detail node undeclared in its own DataDef. <b>Fixed, user-authorized, 2026-09-21</b>: <code>Frame</code> gained a <code>write_root</code>; an <code>AtInputDataDef</code> loop now keeps writes pinned to the pre-loop frame while still rebinding reads; <code>AtDataDef</code> loops (chunk 4's repeating group among them) are unchanged. Re-run matches hand-derivation exactly: <b>$255 / $510</b>. Every chunk 1&ndash;8 script and all 16 GL suites re-verified green. See <code>CF-CHUNK9-GOLDEN-CASE.md</code> &sect;8</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">C9-02</td><td><b><code>ErcDoBlanketRating</code> is a 7-step <code>Sequence</code></b>, fanning out through <code>ErcSetRiskLevelAverageAndHighestRates</code> (21 further <code>RunRule</code>s) and <code>SetFinalCalculations</code> (11 more). The task doc's <code>Set*StructureCalc</code> pair is real but sits <b>3 <code>RunRule</code> hops down</b>, not a direct child &mdash; and a third rule it never named, <code>SetMaxBasicGroupICauseOfLossAdjmtRate</code>, is what actually feeds <code>SetBasicGroupIAvgRate</code>'s Highest branch. Scaled the golden case to <b>3 structures</b>, hand-derived first: rate <b>0.242</b>, premiums <b>$242/$484/$726</b>, engine exact. No write occurs inside this chain's one <code>AtInputDataDef</code> loop, so C9-01's bug can't recur here &mdash; confirmed by inspection, not just by the case passing</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">C9-03</td><td><b>The election is live and genuinely different, on both sides.</b> Same 3-structure case, flipped to <code>"Highest"</code>: hand-derived rate <b>0.275</b>, premiums <b>$275/$550/$825</b>, engine exact &mdash; Average stayed at 0.242. The finding: <b>&ldquo;Highest&rdquo; means highest RATE, not highest dollar amount</b> &mdash; despite sharing &ldquo;StructureCalc&rdquo; in the name, <code>SetMaxBasicGroupIStructureCalc</code> never multiplies by value, so with LOI falling as value rises, the <i>smallest</i> structure's rate governs the whole blanket group. No engine gap; both branches are live code</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">C9-04</td><td><b>Only 2 of the 12 blanket-only Rate Tables are in the golden-case chain</b> &mdash; <code>BuildersRiskBlanketFactor</code> and <code>CoinsuranceFactorBlkt</code>, read inside <code>ErcDoBlanketRating</code> steps 4&ndash;5 (C9-02). All 12 re-confirmed at 1 CW row each; the substandard-class variant filed by DC/IL/KY/NJ/NY (5 of 47), the 3 Flood variants by AK/FL/PR (3 of 47). The other 10 are out of scope: 4 are a stat-reporting code unrelated to the averaging formula, the rest are EQ/Flood-only. <b>The borrowed DataDefs are computed/copied fields, not lookups</b> &mdash; each is declared on 6&ndash;7 DataDefGroups and copied TWICE per group (Detail &rarr; a <code>*Temp</code> field &rarr; the real field), the exact copy-chain shape C9-01's bug exploited, confirmed in all 5 premium groups</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">C9-05</td><td><code>SetEQBlanketValues</code> exists in all 5 groups (0 of 5 missing). <b>Override census: 0 of 47 states override <code>SetNonEQBlanketValues</code> or <code>SetEQBlanketValues</code>, in any group.</b> One real override exists at the DISPATCHER level instead: Special Class's shared-name dispatcher is overridden by AL and KS (2 of 47) &mdash; a pure add that runs the countrywide rule unchanged then chains a Public Institutional Plan credit; neither touches the averaging mechanism</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">C9-06</td><td>All three hand predictions matched. <b>Correction found while building</b>: the field that actually differs is the REAL <code>BlktCauseOfLossValue</code>, not the <code>Temp</code> copy &mdash; gate 2's <code>Else</code> writes <code>"Not Applicable"</code> straight to the real field, bypassing <code>Temp</code> entirely. Three genuinely distinct outcomes: gate 1 (no Detail table at all) &rarr; <code>None</code>; gate 2 (<code>IncludedInBlkt="No"</code>) &rarr; <code>"Not Applicable"</code>; gate 3 (<code>UnitNumber</code> mismatch) &rarr; <code>""</code>. <b>Premium is NOT uniformly $0</b>: gate 2 never enters the blanket branch at all and returns a genuinely nonzero $261 &mdash; only gates 1 and 3 land on $0, for different reasons</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">C9-07</td><td><code>MUBlktRated</code> domain is exactly <code>{No, Yes}</code>, "No" gates entry and "Yes" is tested explicitly in 6 other spots. <code>IncludedInBlkt</code> is 5 separate per-form Domain Tables, not one flat switch &mdash; and Building's Legal Liability/Leasehold Interest <code>CovType</code>s can <b>never</b> reach "Yes" even when the policy elects blanket, at the DOMAIN level, layered on top of <code>SetPremium</code>'s own exclusion. <code>"Leasehold Interest"</code> confirmed as an elimination literal, doubly enforced. <code>BlktTypeOfBlanketRating</code>'s <code>{Average, Highest}</code> is the full filed domain across all 6 `BlanketType` keys. The Detail `Type` 4-literal gate is a real subset of a 6-value domain, but the missing 2 (Business Income types) route through a sibling rule &mdash; <b>nothing corpus-wide is unfiled or unreachable</b></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">C9-08</td><td><b>False-alarm shape, not a real collision.</b> Searched all 882 CW rule files plus all 47 state overlays: both dispatcher names occur ONLY in their 5 expected files (plus AL/KS's already-known Special Class override). Both are pure 2-line routers &mdash; <code>RunRule</code> `SetNonEQBlanketValues` then `SetEQBlanketValues`, identically, in all 5 groups, with zero fields of their own to collide over. The variation this chunk found sits one level down, inside <code>SetNonEQBlanketValues</code> itself (C9-09), not at the shared dispatcher name</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">C9-09</td><td>The 5 bodies are NOT byte-interchangeable, but every difference resolves cleanly. Contents drops <code>BlktTypeOfBlanketRating</code> but re-derives it inline itself, and adds two Contents-only fields with confirmed consumers. Business Income, Special Class and SC Business Income all drop <code>BlktTypeOfBlanketRating</code> (and 2 of the 3 also drop <code>BlktInflationGuard</code>) &mdash; inert by construction, because <b>none of those 3 forms has an LOI cascade to feed at all</b>. <code>BlktInflationGuard</code> itself is read nowhere in the whole corpus, in any group &mdash; dead weight, not a gap. None of the 4 differences reaches the golden case's Building-only chain</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">C9-10</td><td>Named all 4 exactly (<code>...Requires2OrMoreRisksToBeValid</code>, <code>...RequiresAllRisksToHaveTheSameValueForEQSprinklerLeakageCoverage</code>, a Peak-Season form check, a Business-Income indemnity-option check). <b>None fire on the 2-structure golden case</b> &mdash; each rule's own gate (risk count, EQ form, peak season, BI table) is absent from that submission. A deliberately-broken 1-structure variant confirmed message #1 fires exactly as predicted. Logged the golden case's own previously-unlogged message as <b>M-002</b> in <code>CF_Message_Register.md</code></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">C9-11</td><td><b>Consistent for the golden case's own jurisdiction.</b> Oregon overrides 15 rule files but neither the Detail engine nor any of the 5 parent premium files &mdash; both resolve to the current CW edition. <b>Florida is genuinely older</b> (`CF_CW_20230801_V01`), but internally consistent: its Detail-engine override and its (absent) premium-file overrides both pair with the SAME declared parent. The skew is FL's whole book being behind, not a Detail-vs-premium split inside one jurisdiction &mdash; the resolver's deliberate two-layer design, not a defect</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">C9-12</td><td><b>3 messages, 3 designed-out/logged, 0 unexplained.</b> Correction found first: chunk 8's own gate point 9 was never actually closed (`CF-CHUNK8-GATE.md` still marks it owed project-wide) &mdash; there was no prior "chunk 8 discipline" to match beyond the general design-out-or-log rule. <b>First chunk to close gate point 9 for its own golden case</b>; the project-wide backlog for chunks 1&ndash;8 is untouched and stays open</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">C9-13</td><td><b>ISO rates it and returns exactly $255 / $510, total $765</b> &mdash; the fixed engine's numbers, to the dollar &mdash; plus the identical 3 validation messages C9-12 found, nothing else. Re-confirmed 0 of 924 STC payloads elect blanket (the fixture question), then answered the separate CONFIRMATION question by calling ISO's live RAaS service directly, the way chunk 8 did for its own unfixtured cases. <b>Corrected a stale assumption on the way</b>: the golden-case doc's claim of "no network/credentials available here" did not hold up when actually tried &mdash; the call succeeds. One payload-shape fix needed: ISO wants <code>UnitNumber</code> as an integer, not the numeral-string habit every other chunk's payload builder carries</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">C9-14</td><td><b><code>CF-CHUNK9-GATE.md</code> filed at 9 of 9, no point held open.</b> Point 3 (every state) reframed rather than forced &mdash; blanket has no premium sweep of its own, so C9-05's override census (0 of 47 touch the averaging machinery) is the real substitute for chunks 1&ndash;8's coverage-by-coverage sweep. Point 7 (exclusion records) checked directly rather than assumed from chunk 8's precedent: blanket inherits by RE-EXECUTION (`SetBlanketRatesAndFactors` re-runs the whole ordinary rate chain unconditionally), a different mechanism from chunk 8's shared-datadef-group inheritance, arriving at the same "files none of its own" answer. Closes the CORE MECHANISM only &mdash; 19 of 20 premium files and the Highest election remain C9-15&ndash;17's job</td></tr>
+</tbody>
+</table>
+
+<p><span class="lab">Reachability map, form by form</span></p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#9989;</td><td class="num">C9-15</td><td><b>Yes, all three activate on a real run.</b> Basic Group II and Broad's <code>SetPremium</code> are structurally identical to Basic Group I's 3-<code>When</code> <code>Choose</code> &mdash; elimination gets to When 3, a nested <code>If IncludedInBlkt="Yes"</code> is the real gate. Hand-derived from chunks 2/3's own filed rows, then run: Basic Group II <b>AvgRate 0.030, $30/$60</b>; Broad <b>AvgRate 0.016, $16/$32</b>, both exact. <b>New finding the census missed</b>: Broad's nested gate carries an extra test, <code>BlktCauseOfLossValue="Broad"</code>, that Basic I/II don't have &mdash; a 4th silent-zero case (value present but Detail's <code>CauseOfLoss</code> isn't "Broad") not previously named</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">C9-16</td><td><b>No divergence found.</b> Every blanket <code>Set*StructureCalc</code>/<code>Set*AvgRate</code> rule rounds its WHOLE product once, at the end &mdash; not per-step nested rounds the way Legal Liability's chain did (C8-23). Confirmed both by inspection and empirically: a differently-ordered hand formula matched the engine to the dollar for both new forms tested</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">C9-17</td><td><b>The same switch as Building's, just not buried a level deep</b> &mdash; SC Business Income has neither of Building's two carve-outs (Legal Liability, Leasehold Interest) that force a 3-deep <code>Choose</code>, so 2 <code>When</code>s suffice. Real difference found: SC BI's blanket formula omits <code>MultiPremiumAndDispersionCreditFactor</code> entirely. One level down, <code>SetBroadAvgRate</code>/<code>SetTotalFullValTimesBroadRate</code> are genuinely SHARED between Building's Broad and SC BI's Broad, routed by the Detail record's own <code>Type</code> field &mdash; one <code>BlktIDNum</code> group is either a Building or a Business-Income blanket, never both. Built and ran a real SC BI Broad case: matched <b>$23/$46</b> exactly</td></tr>
+</tbody>
+</table>
+
+<p><span class="lab">Cross-cutting claims</span></p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#9989;</td><td class="num">C9-18</td><td><b>12 of 20 carry the field in the blanket product</b> (Building, Contents, Special Class, all 4 forms each) &mdash; <b>8 of 20 omit it entirely</b> (Business Income, SC Business Income, all 4 forms each), wider than C9-17's SC-BI-only finding. <b>Live, not decorative</b>: the golden case re-run with Structure A's factor at 0.6 moved Premium A 255&rarr;153 exactly, B untouched. Not a second Legal-Liability-style dead field &mdash; genuinely multiplied where present, genuinely absent where not</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">C9-19</td><td><b>Does NOT hold at 5 for all 20.</b> Building/Special Class read at 5 <code>../</code>; Business Income/SC Business Income at 7; <b>Contents at 9</b> &mdash; four levels deeper than Building, not "one level deeper" as guessed. All 4 forms agree within each group. Empirically confirmed at a different depth (Business Income, level 7): policy-set 0.9/0.8 reached both records' premium exactly ($81/$161); item-level decoys 7 levels too shallow were inert</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">C9-20</td><td><b>Clean isolation, both placements.</b> An ordinary, non-blanket structure stayed at chunk 1's own $261 whether placed on a different location or the SAME location as the two blanket structures (the harder case, chosen because <code>DeductibleFactor</code>'s location-level `TotAmtInsurance` aggregate is exactly the shape a leak could travel through) &mdash; both blanket premiums stayed $255/$510 throughout. Structural reason stated before running: C8-25's leak traveled a parent-child path (`PersonalProperty`'s `../CovType`); structures are siblings, with no equivalent path</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">C9-21</td><td>Only <code>08_hardcoded_literals.py --group</code> already handled the 7th DataDefGroup unmodified; <code>04_shared_names.py</code> and <code>05_exclusion_records.py</code> each gained a chunk-9 section, matching chunk 6&ndash;8's own extension pattern. <b>11 shared chain names span more than one group, only 1 reads a different table</b> (<code>SetCoinsuranceFactor</code> &rarr; <code>CoinsuranceFactorBlkt</code>, already adjudicated before this chunk existed &mdash; the prediction held). <b>The averaging engine files 0 exclusion records of its own</b> across all 4 families checked &mdash; distinct from C9-14's finding that the PREMIUM path inherits records by re-execution. 34 branch-literal pairs found, all already-named domain switches; no new trap. Chunks 1&ndash;8's own chains re-confirmed unchanged</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">C9-22</td><td><b>All 23 checks green</b> &mdash; every chunk 1&ndash;8 golden case (9 scripts), all 6 state sweeps, and all 16 GL <code>verify_*.py</code> suites &mdash; each dollar figure and tally checked against <code>CF-START-HERE.md</code>'s own documented values, not just exit codes. Nothing moved after C9-01's interpreter fix</td></tr>
+</tbody>
+</table>
+
+<p><span class="lab">What chunk 9 inherits and must re-ask</span> <b>C6-28 / C7-25 / C8-14</b> &mdash;
+this chunk names the cause but has not yet proven it by running a submission that clears all three gates
+(C9-01, C9-06 are that proof, both closed) &middot; <b>C8-05 / C8-16</b> &mdash; the shared-name trap that
+catches one-name-many-tables but is blind to many-names-one-idea; blanket's own dispatcher was checked
+against it (C9-08) and came back the FALSE-ALARM shape &mdash; both dispatcher names are pure 2-line
+routers with zero fields of their own, zero collisions in 882 CW files + all 47 overlays. The variation
+this chunk actually found sits one level down, inside <code>SetNonEQBlanketValues</code> itself (C9-09)
+&middot; <b>C8-23</b> &mdash; checked directly rather than assumed to recur (C9-16): every blanket
+<code>Set*StructureCalc</code>/<code>Set*AvgRate</code> rule rounds its WHOLE product once, at the end, not
+per-step like Legal Liability's chain did &mdash; so despite the 20 files' differing operand order and
+nesting depth, <b>no divergence found</b>, confirmed on 3 forms both by inspection and by running a
+differently-ordered hand formula to the dollar &middot; <b>OI-99</b> &mdash; asked and answered clean:
+C9-13 called ISO live with a submission absent from its own fixture corpus, and ISO RATED it, matching the
+engine exactly ($255/$510/$765 and all 3 messages) &mdash; no refusal, no divergence, unlike Florida's and
+Builders Risk's instances of OI-99 &middot; <b>gate point 9</b> &mdash; closed for this chunk's OWN golden
+case (C9-10/C9-12): 3 messages, all designed-out/logged, 0 unexplained, and 0 of the 4 blanket-specific
+messages actually fire on it (one was confirmed reachable only on a deliberately-broken 1-structure
+variant, not the golden case itself). The project-wide backlog for chunks 1&ndash;8's own golden cases is
+untouched and stays open.</p>
 </div>
 
-<div class="chunk todo">
-<h3><span class="n">10</span> Earthquake &mdash; the fifth form, all coverages <span class="tag open">Untraced</span></h3>
-<p>97 rule files, and it gates more than itself: ~29 Special Class files ship an Earthquake wrapper, Legal
-Liability has 8 Earthquake endorsement variants, Non-Owned Trailers has its own. <b>The single largest
-unblocking item in the plan.</b></p>
+<div class="chunk done">
+<h3><span class="n">10</span> Earthquake &mdash; the fifth form, all coverages <span class="tag done">CLOSED &mdash; gated 9 of 9, 21 of 21 tasks, 1 engine gap fixed</span></h3>
+<p><b>Cross-cutting, like blanket, and the single largest unblocking item in the plan.</b> Opened
+2026-09-22, 21 tasks numbered <b>C10-01&ndash;C10-21</b> in <code>CF-CHUNK10-TASKS.md</code>, derived from
+the build order's item 10 and from the opening census (<code>scripts/cf/84_chunk10_census.py</code>).
+<b>Gate filed at 9 of 9 the same day it opened</b> in <code>CF-CHUNK10-GATE.md</code>. Gate Groups 3 and 4
+(C10-10&ndash;18) then verified the census's own claims across all 5 groups and closed the reachability
+map, all clean. <b>Gate Group 5 (C10-19) then found this chunk's first real engine gap, and it was fixed
+the same day, user-authorized</b>: the sub-limit + flat-dollar-deductible Earthquake form (CP 10 29) was
+UNREACHABLE through this engine &mdash; see below for the fix and its corpus-wide scope (Flood, a
+Massachusetts rider). <b>21 of 21 tasks done &mdash; CLOSED.</b> <b>C10-21 closed clean 2026-09-22</b>: chunks 1&ndash;9 are unmoved by the banded-lookup fix, verified by a self-testing harness (<code>104_chunk10_c10-21_regression.py</code>) rather than a prose claim.</p>
+
+<p><span class="lab">Six things the opening census found, before any task ran</span></p>
+<table>
+<thead><tr><th>&nbsp;</th><th>Why it is new, not just different data</th></tr></thead>
+<tbody>
+<tr><td class="num">1</td><td><b>The population count holds; two of the build order's other three estimates do not.</b> <code>Rules/*Earthquake*</code> is exactly <b>97 files</b>, confirming the plan. But Special Class is <b>27</b>, not &ldquo;roughly 29&rdquo;, and Legal Liability is <b>9</b>, not 8 &mdash; and <b>zero of the 97 filenames contain &ldquo;LegalLiab&rdquo;</b> anywhere; all 9 were found only by reading each file's <code>SetPremium</code> branches. Non-Owned Trailers' count of 1 was the one estimate already exact</td></tr>
+<tr><td class="num">2</td><td><b>The real rating engine is not in the 97-file population the build order points at.</b> <code>SetEQBaseRate</code>, <code>SetEQRate</code>, <code>SetFinalEQRate</code>, <code>SetEQCauseOfLossAdjustment</code>, <code>SetEQDeductibleFactor</code> and four more all live inside <code>CommercialPropertyStructureRules.Rule.xml</code> and its four Contents/Business Income/Special Class/SC Business Income siblings &mdash; the SAME five parent files chunks 1&ndash;9 already opened, none of them named <code>*Earthquake*</code>. EQ's own <code>SetPremium</code>, inside the 97 files, is a <b>wholly separate premium node</b> that reads the already-computed rate and adds its own <code>Product ToDataDef="Premium"</code> on top &mdash; <b>two separate premium trees on one submission</b>, the opposite shape from blanket, which lived inside the ordinary <code>SetPremium</code> files themselves</td></tr>
+<tr><td class="num">3</td><td><b><code>EQClass</code> and <code>EQTerr</code> are pure submission inputs</b>, the same shape as chunk 2's <code>BasicGroupIISymbol</code>. Neither is ever assigned by a rule anywhere in the countrywide corpus. <code>EQTerr</code> IS read (not written) by the location rules and each parent file's <code>LookupEQLossCostBldg</code> family, keyed <code>State + EQClass + EQTerr</code> &mdash; a real, distinct territory concept, just not a resolved chain the way Building's territory is</td></tr>
+<tr><td class="num">4</td><td><b>EQ shares zero multipliers with the ordinary chain.</b> <code>IRPMFactor</code>, <code>PackageModFactor</code> and <code>MultiPremiumAndDispersionCreditFactor</code> are absent from EQ's <code>SetPremium</code> entirely &mdash; it runs instead on <code>EQDeductibleFactor</code>, <code>EQCoinsuranceFactor</code>, <code>EQPercentageDeductibleFactor</code>, <code>EQDeductibleByLocationFactor</code> and 13 more sub-limit-tier variants, 57 distinct EQ-prefixed names total (C10-01 later found one exception: <code>EQCoinsuranceFactor</code> actually SHARES the ordinary <code>CoinsuranceFactor</code> table)</td></tr>
+<tr><td class="num">5</td><td><b>66 EQ-named Rate Tables exist; 12 are read by zero <code>Lookup</code> rule anywhere</b>, including <code>EQRateBldg</code> and <code>EQRatePrsnlProp</code> &mdash; the two tables whose names most look like &ldquo;the&rdquo; EQ rate table, and are not. 17 of the 66 are header-only at countrywide</td></tr>
+<tr><td class="num">6</td><td><b>ISO's own fixture corpus DOES demonstrate Earthquake &mdash; unlike blanket.</b> 69 of 924 STC payloads elect <code>EQCovIndicator</code> to something other than &ldquo;No Coverage&rdquo;/&ldquo;Not Applicable&rdquo;, all 69 carry a populated <code>EQClass</code>. Chunk 10 does not face chunk 9's &ldquo;no ISO fixture, ever&rdquo; problem, and OI-99 is testable here in a way it wasn't for blanket</td></tr>
+</tbody>
+</table>
+
+<p><span class="lab">The state layer</span> Two layers, diverging sharply. At the wrapper-file layer, 56 of
+the 97 <code>*Earthquake*</code> files have at least one state package copy somewhere in the 47 &mdash;
+file-existing, not rule-overriding. At the engine layer (the 5 parent files' EQ-prefixed rules), overrides
+are real but uneven: Building 10 of 47, Contents 9, Special Class 7, Business Income 5, and <b>SC Business
+Income 0 of 47</b>. FL and PR appear in every group that has any override at all.</p>
+
+<p><span class="lab">Gate &mdash; 9 of 9 (2 task groups, same day)</span></p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#9989;</td><td class="num">C10-01</td><td><b>Golden case &mdash; the first CF chunk where hand derivation and engine agreed on the first try.</b> Chunk 1's Oregon Basic Group I risk plus an EQ election: <code>EQBaseRate 0.009 &rarr; EQRate 0.009 &rarr; AdjustedEQRate 0.009 &rarr; FinalEQRate 0.006 &rarr;</code> Premium <b>$6</b>, ordinary premium unmoved at <b>$261</b>. No fix needed. Three silent no-op traps found in passing: <code>BCEGEQFactor</code> defaults to <b>0.0</b> not 1.0 on blank input; <code>EQSprinklerLeakageOnly</code> blank starves <code>FinalEQRate</code> (no <code>Otherwise</code>); blank <code>SprinklerSystem</code> is read as sprinklered, not unsprinklered. Doc: <code>CF-CHUNK10-GOLDEN-CASE.md</code></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">C10-02</td><td><b>All 66 of 66 EQ-named Rate Tables classified into 4 buckets, not 2</b> &mdash; 29 core chain, 22 sub-limit/flat-dollar-deductible chain, 3 out of scope, 12 dead. <b>5 OTHER optional CF coverages</b> (Ordinance or Law, Outside Signs, Radio/TV Antennas, Builders Risk Renovations, Unmanned Aircraft) each file their own independent EQ rider sharing several of the 66 tables, invisible to the filename-only census</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">C10-03</td><td><b>47 of 47, both layers, re-confirmed exactly</b> (Building 10, Contents 9, Special Class 7, Business Income 5, SC Business Income 0) &mdash; specific overridden rule now named per state</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">C10-04</td><td><b>7 hand-built submissions; two genuinely distinct zero tiers</b> (record never created vs. record created and computed to $0). A 7th case (blank <code>SprinklerSystem</code>) confirmed NOT a zero case: a silently wrong nonzero <b>$7</b></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">C10-05</td><td><code>EQCovIndicator</code>'s 4-value domain and the 6 <code>CovType</code> literals checked against the Domain Tables folder directly. One new structural gate found: 3 <code>NotExist</code> checks re-enforcing the 4-way <code>AttachForm*</code> mutual exclusion</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">C10-06</td><td><b>Every gap in the 9 EQ-engine rule names across the 5 groups is a REAL structural difference, none a hidden C8-05/C8-16-style collision.</b> Special Class has no per-location deductible tier; Contents' base-rate table is keyed on raw <code>EQClass</code>/<code>EQGrade</code>, no normalization step needed; Business Income and SC Business Income read their structure ancestor's already-computed <code>EQBaseRate</code> directly (an ancestor-copy) and replace the deductible/coinsurance chain entirely with income coverage's own time-element <code>EQFactor</code></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">C10-07</td><td><b>None of the 5 groups files its own exclusion record &mdash; the &ldquo;per group&rdquo; question dissolves.</b> <code>CyberIncidentExclusionFactorEQ</code>/<code>...COLExcptnsFactorEQ</code> are declared exactly ONCE, at the policy-level <code>CommercialProperty</code> ancestor all 5 groups share, confirmed dynamically on Building and a fresh Contents submission &mdash; both default to the identical shared <code>1.0</code> no-op</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">C10-08</td><td>Oregon resolves to the current CW edition at every layer. <b>3 of the 10 EQ-overriding states sit on an older declared edition &mdash; CA, FL, RI</b> (not just FL, chunk 9's single data point); each a pre-existing whole-book fact, none an engine gap</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">C10-09</td><td><b>2 messages, 0 unexplained</b>, both already logged by chunk 9 (M-001/M-002). All 104 corpus-wide EQ-referencing <code>DoMessage</code> rules surveyed, confirmed inapplicable. <b>Cross-checked one real ISO fixture</b> &mdash; it exercises the FLAT-DOLLAR-DEDUCTIBLE variant, confirming the golden case's plain-form path is the shortest reachable chain, not the most representative one</td></tr>
+</tbody>
+</table>
+
+<p><span class="lab">Gate Group 3 (C10-10&ndash;14) &mdash; verifying the census's own claims across
+all 5 groups, not just Building</span></p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#9989;</td><td class="num">C10-10</td><td><b>19 files read in full; 9 of 19 are NOT thin wrappers as the census assumed</b> &mdash; Peak Season copies and subtracts up to 4 sibling Endorsement premiums; Non-Owned Trailers/Value Reporting Form re-run the top-level 3-way <code>Choose</code> in miniature; several riders read INTERMEDIATE EQ factors and recombine locally; Ordinance or Law computes an incremental premium (<code>Factor - 1</code>); the Inception Extension has no <code>SetPremium</code> at all &mdash; a bare attachment marker. None compute their own base-rate <code>Lookup</code> though &mdash; the load-bearing part of the claim (all 97 ultimately depend on the 5 parent files) holds</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">C10-11</td><td><b>One real submission per group, hand-derived then run, all matching exactly</b>: Contents <b>$5</b>, Business Income <b>$5</b>, Special Class <b>$6</b>, SC Business Income <b>$5</b> (ordinary premiums unmoved). Confirmed C10-06's two mechanisms by running, not just reading. <b>Two NEW silent traps found only by running</b>: Contents' own <code>SetEQClass</code> is an unguarded ancestor-copy from the Structure (a value set directly on the PP record is silently overwritten &mdash; the same shape as chunk 4's <code>OccupCategoryRiskSeverity</code> trap, now a third field); 4 more of Contents' &ldquo;own&rdquo; factor rules are ALSO ancestor-copies, needing the Structure's own fields populated even when Building itself isn't EQ-elected</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">C10-12</td><td><b>Both fields confirmed live.</b> Changing ONLY <code>EQTerr</code> moves the premium $6&rarr;$20; changing ONLY <code>EQClass</code> moves <code>EQBaseRate</code>, <code>EQClassToUse</code> AND <code>EQDeductibleFactor</code>, premium $6&rarr;$8</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">C10-13</td><td><b>All 12 confirmed genuinely dead</b> &mdash; reused <code>04_shared_names.py</code>'s own transitive-<code>RunRule</code> technique corpus-wide (882 files, memoized DFS) plus a <code>MatrixFromConstant</code>-alias check. Zero resurrected; all 12 have filed <code>TableDef</code>s but are read by zero rule, direct or indirect, anywhere</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">C10-14</td><td><b>Confirmed for all 5 groups, not just the one file read directly.</b> None of IRPM/PackageMod/MultiPremiumAndDispersionCredit/Deductible/Coinsurance/LOI (or an EQ-prefixed near-namesake) appears in any of the 5 groups' EQ <code>SetPremium</code></td></tr>
+</tbody>
+</table>
+
+<p><span class="lab">Gate Group 4 (C10-15&ndash;18) &mdash; the reachability map, form by form and
+family by family</span></p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#9989;</td><td class="num">C10-15</td><td><b>Mostly subsumed by C10-11</b> (all 5 groups' core chain already run: Building $6, Contents $5, Business Income $5, Special Class $6, SC Business Income $5). The genuinely NEW angle &mdash; EQ's own blanket branch, deliberately untested until now &mdash; reaches a real, genuinely dispersed <b>$6/$12</b> on a 2-structure submission. Two findings: a 1-structure version computes the same $6 by hand but <b>ISO's own validation refuses it</b> (&ldquo;Blanket Rating requires 2 or more risks&rdquo;) &mdash; another OI-99 shape; both that message and a second one gate on an until-now-unnamed field, <code>EQCauseOfLossIncludedInBlkt</code>, distinct from the ordinary chain's <code>BlktIDNum</code></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">C10-16</td><td><b>The 9 files re-derived exactly by content search</b> (8 Bldg/PrsnlProp Endorsement variants + Non-Owned Trailers). EQ's Legal Liability branch reads the IDENTICAL <code>LegalLiabilityFactor</code>/<code>LegalLiabAddlInsurableIntFactor</code> fields chunk 8's ordinary chain already computes &mdash; genuine shared-field reuse, not a collision; each writer rule runs once regardless of EQ election. Ran chunk 8's own $60 case plus an EQ election on the same structure: EQ branch <b>$2</b>, chunk 8's <b>$60</b> unmoved, neither overwrites the other</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">C10-17</td><td><b>Decisive finding no prior task named: the file attaches under CONTENTS, not Building.</b> Confirmed by corpus-wide consumer search and by its own field name (<code>LegalLiabFactor</code>, Contents' spelling, not Building's <code>LegalLiabilityFactor</code>). A peer Contents coverage form, not a Building-side rider &mdash; mirrors Building's 3-way <code>Choose</code> but reads Contents' own rate, no <code>Lookup</code> of its own. One genuinely separate mechanism: its own filed <b>$5,000</b> threshold table, a real third zero-case (populated EQ chain, still $0 below threshold). Ran a real case: <b>$5</b>, exact match. Also found the coverage record is an engine-instantiated SINGLETON, not a submittable table entry &mdash; a first attempt silently ignored a submitted <code>Limit</code> field</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">C10-18</td><td><b>The binary core-vs-wrapper framing didn't fit: the 27 span TWO sibling groups</b>, re-derived exactly &mdash; <b>8 core</b> (4 Special Class + 4 SC Business Income, the latter reading its own ancestor-copied rate per C10-06) and <b>19 wrapper</b>. Of the 19, <b>5 are not pure read-and-multiply</b> &mdash; each layers its own ordinary, non-EQ-named factor lookup (AgreedValue/ExtendedPeriod/InflationGuard/RebuildingExpenses) on top of the shared EQ value, the same nuance C10-10 flagged for the general population, now confirmed inside this one family too</td></tr>
+</tbody>
+</table>
+
+<p><span class="lab">Gate Group 5 (C10-19) &mdash; the sub-limit / flat-dollar-deductible trace,
+and this chunk's first engine gap, found AND fixed</span></p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#9989;</td><td class="num">C10-19</td><td><b>ENGINE GAP FOUND, then FIXED, same day, user-authorized.</b> The PLAIN flat-dollar-deductible form (CP 10 28, matching the real ISO fixture C10-09 pulled) hand-derives and runs to <b>$8</b> &mdash; genuinely distinct from C10-01's plain percentage-deductible <b>$6</b> on the identical risk, diverging only at the one shared <code>SetEQDeductibleFactor</code> rule's Lookup source. <b>A second case, actually attempting the sub-limit form (CP 10 29), originally hit a real engine gap</b>: all 13 <code>EQSubLimit*FlatDeductibleFactor</code> tables carry a DOUBLE-banded-range key that the interpreter's own <code>_lookup_banded</code> explicitly refused (its own one-range-per-table contract) &mdash; the CP 10 29 sub-limit path was confirmed currently UNREACHABLE through this engine. <b>Fix</b>: <code>_lookup_banded</code> now handles any number of key ranges &mdash; the one named by the table's own <code>RangeKeyCol</code> interpolates, every other is a plain bracket filter. <b>Scope check found this wasn't Earthquake-only</b>: 28 CF tables corpus-wide carry two ranges &mdash; the 13 EQ tables, <b>7 live Flood rate-modification tables</b>, <b>1 live Massachusetts heating-oil rider</b>, and 7 confirmed-dead tables left alone. CP 10 29 now runs to <b>$6</b>, hand-derived and matched; the other two live families verified by direct lookup call against their filed CSVs. <b>Full regression: 16 of 16 GL suites, 107 of 120 CF scripts</b> (the other 13 pre-existing/unrelated, not caused by this change). Write-up: <code>CF-ENGINE-FIX-BANDED-LOOKUP.md</code>. Also settles C10-02's own flagged item: <code>EarthquakeDeductibleTier</code>'s Lookup rule is real but its table is 0 rows everywhere &mdash; a dead derivation, not a hidden live path</td></tr>
+</tbody>
+</table>
+
+<p><span class="lab">Cross-cutting, closed &mdash; C10-21, 2026-09-22</span></p>
+<table><tbody>
+<tr><td class="st">&#9989;</td><td class="num">C10-21</td><td><b>Regression CLEAN &mdash; nothing chunks 1&ndash;9 established moved under today's <code>_lookup_banded</code> fix.</b> Built as a reproducible harness (<code>104_chunk10_c10-21_regression.py</code>) rather than a hand sweep, because the engine-fix write-up's own regression claim was prose with nothing to re-run. <b>51 scripts, three independent checks each</b>: exit code; a failure-marker scan of the output (so a script reporting a disagreement WITHOUT exiting non-zero is still caught); and, for the 10 golden cases, every dollar figure recorded BEFORE today matched as a standalone token &mdash; pinning the check to the number written down, not to a fresh run agreeing with itself. <b>All 10 chunk 0&ndash;9 golden cases reproduce every documented figure</b> (261/263/288 &middot; 261+32 &middot; 16/54 layering to 309/347 &middot; 223/24/16/137 &middot; 112/13/23/47 &middot; 66/209/14/44 &middot; 39/123/23/47 &middot; 60/7/4/12 and 132/15/11/93 &middot; 255/510); <b>25 machinery scripts and 16 GL suites clean</b>. <b>Two harness defects caught before the result was trusted, both would have been false alarms</b>: <code>CF-START-HERE.md</code>'s chunk-3 line lists <b>293 as a chunk-3 figure when it is the Basic-only subtotal (261+32), chunk 2's</b>, which chunk 3's script correctly never prints; and the three zero-case scripts legitimately print <code>RAISED</code> because a predicted raise IS their finding, so that marker was replaced for them by a positive requirement (each must still print its own "All 7 cases match their derivation" line &mdash; all three do). The harness ships a <code>--selftest</code> planting 7 defects, including a substring near-miss (<code>1261</code>/<code>261.5</code> must NOT satisfy <code>261</code>), and fails if any is reported green &mdash; the "a check that finds nothing needs its denominator tested too" rule applied to the regression check itself. Out-of-scope items are printed with a reason each, not silently dropped. No engine gap</td></tr>
+</tbody></table>
+<p><span class="lab">Cross-cutting, closed &mdash; C10-20, 2026-09-22 &mdash; chunk 10 complete at 21 of 21</span></p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#9989;</td><td class="num">C10-20</td><td><b>It does not sample &mdash; it parses all 364 CF payloads, and the opening census's fixture arithmetic was wrong in three places.</b> <b>(1) The denominator is not 924</b>: the ISO fixture root holds <b>560 General Liability payloads alongside 364 Commercial Property ones</b> and the census summed them. <code>EQCovIndicator</code> is a CF field, so "364 of 924 carry the field at all" <b>is not a coverage statistic &mdash; it is the CF payload count restated</b>. Real rate: <b>69 of 364 = 19%</b>. <b>(2) "69" counts Structures, not the corpus</b>: the census matched one <code>EQCovIndicator</code> per file via <code>re.search</code> (first hit only), but the field appears on up to 10 record types &mdash; there are <b>149 electing records</b>, the other 80 being 66 Personal Property, 11 Business Income, 1 Special Class and 2 auxiliary riders. <b>(3) Two different fields share the name</b>: the 4 premium groups use the 4-value domain C10-05 adjudicated; the auxiliary riders (Utility Services, Radio/TV Antennas, Outside Signs, Tenants-Policy glass) carry a plain <b><code>Yes</code>/<code>No</code></b> domain &mdash; C10-05 is correct and never claimed to cover these. <b>What the 69 exercise</b>: <code>CovType</code> <b>Building 69 of 69</b>; <code>CauseOfLoss</code> <b>Special 68 / Broad 1 &mdash; zero Basic Group I</b>; forms <b>CP 10 28 &times;65, CP 10 29 &times;3, CP 10 40 &times;1, CP 10 45 &times;0</b>; <b>28 of 47 states</b> (not "at least 8"), the 19 silent ones including <b>CA, FL, NY, OR, PR, TX</b>; <code>EQTerr</code> filed on the <b>Location</b> not the Structure, 57 of 69 at territory "1". <b>The headline: three of the golden case's four coordinates are exercised by ZERO fixtures</b> (Oregon 0, Basic Group I 0, its CP 10 40 form 1) &mdash; the gate stands at 9 of 9 on a submission shape ISO's own corpus never sends. Not a defect in the gate, but the honest statement of what 9 of 9 covers. <b>C10-19's fix was load-bearing for real ISO traffic</b>: CP 10 29, unreachable through this engine until that morning, has <b>3 real fixtures</b> (MT, WY&times;2). <b>Two gaps the corpus cannot close</b>: <code>"Yes, Included in Blanket"</code> appears <b>0 times in 364 payloads</b>, so EQ's blanket branch inherits chunk 9's no-fixture problem exactly; and <b>California files 8 CF payloads and elects EQ in 0</b> (Alaska 6 and 1) &mdash; the two most earthquake-exposed jurisdictions are the thinnest evidence in the book. <b>One self-correction recorded in the script</b>: a first pass read <code>EQTerr</code> off the Structure and concluded it was never populated &mdash; it is one level up, on the Location, populated on all 69. Wrong level, not missing data. No engine gap</td></tr>
+</tbody>
+</table>
+
+<p><span class="lab">What chunk 10 inherits and must re-ask</span> <b>C6-28 / C7-25 / C8-14 / chunk 9's
+<code>SetNonEQBlanketValues</code> mechanism</b> &mdash; EQ's own multi-way <code>EQCovIndicator</code> zero
+case (C10-04) had the same shape and is now confirmed distinct-by-tier, same as blanket &middot; <b>C8-05 /
+C8-16 / C9-08</b> &mdash; EQ's own engine-rule-name subsetting across the 5 groups, now CLOSED by C10-06:
+every gap is a named real mechanism, never a hidden collision &middot; <b>C8-23</b> &mdash; EQ's own
+<code>Product</code> nesting has not been checked against the 5 parent files' full chains the way C9-16
+checked blanket's &middot; <b>OI-99</b> &mdash; unlike chunk 9, this chunk has a real fixture corpus to test
+it against (69 of 924 payloads); C10-20 is where that gets asked further &middot; <b>C9-19</b> &mdash;
+EQ reads <code>IRPMFactor</code>/<code>PackageModFactor</code> at NO depth, in any group, confirmed for
+Building; C10-14 still owes the check for the other 4 groups &middot; <b>gate point 9</b> &mdash; the
+project-wide backlog for chunks 1&ndash;9 stays open regardless; chunk 10 adds a NEW message population
+(69 real ISO fixtures) no prior golden case could have exercised.</p>
 </div>
 
-<div class="chunk todo">
-<h3><span class="n">11</span> Leasehold Interest <span class="tag open">Surveyed only</span></h3>
-<p>A sixth coverage, not a fifth path: 32 rule files, four sub-coverages &times; five forms. Its exposure is
-<b>computed, not entered</b> &mdash; a present-value annuity driving the only <code>rul:Power</code> in the
-package. No coinsurance, LOI or deductible anywhere in it, and no blanket branch at all &mdash; confirmed,
-not assumed.</p>
+<div class="chunk done">
+<h3><span class="n">11</span> Leasehold Interest &mdash; a sixth coverage, not a fifth path <span class="tag done">CLOSED 2026-09-22 &mdash; gated 9 of 9, 24 of 24 tasks, 4 engine fixes</span></h3>
+<p><b>Opened 2026-09-22.</b> 24 tasks numbered <b>C11-01&ndash;C11-24</b> in <code>CF-CHUNK11-TASKS.md</code>,
+derived from the build order's item 11 and from the opening census
+(<code>scripts/cf/106_chunk11_census.py</code>). Its exposure is <b>computed, not entered</b>: a present-value
+annuity drives the only <code>rul:Power</code> in the package. <b>The census expected no engine code; C11-01 found one gap</b>. Every <code>rul:</code> node was implemented, but ordered comparisons accepted only numbers, not dates. It was fixed 2026-09-22 with authorization. <b>CLOSED 2026-09-22: 24 of 24, gated 9 of 9</b> (<code>CF-CHUNK11-GATE.md</code>). The golden case was confirmed against ISO live to the digit. Four engine fixes, all user-authorized and ISO-confirmed: date comparison, the blank-date fallback (OI-102), 0<sup>0</sup> (OI-104) and the date-subtraction sign (OI-107). Regression clean, 69 of 69.</p>
+
+<p><span class="lab">Eight things the opening census found, before any task ran (2026-09-22)</span></p>
+<table>
+<thead><tr><th>&nbsp;</th><th>Why it is new, not just different data</th></tr></thead>
+<tbody>
+<tr><td class="num">1</td><td><b>All seven of the build order's claims are true, but the file count overstates the rating surface by a third.</b> There are 32 <code>*LeaseholdInterest*</code> files, but <b>11 do no rating at all</b>. The <code>FactorsFor&lt;N&gt;Percent</code> files (5%&ndash;15%) declare only <code>InitializeRuleSet</code>, <code>CalculateTotalPremium</code> and <code>ErcProcess</code>: they are form-attachment markers with no Lookup, Premium or factor. <b>The real rating surface is 21 files</b>: 1 parent plus the 4&times;5 grid</td></tr>
+<tr><td class="num">2</td><td><b>&ldquo;Its own datadef group&rdquo; is 32 groups, not 1</b>: one per file, 21 of them rating-bearing. Gate points 6 and 7 are per-group questions, so chunk 11 asks them across 32 groups. Chunks 6&ndash;10 asked them across 5. <b>This is the largest structural jump in the plan so far</b>, and it is a count, not a difficulty estimate</td></tr>
+<tr><td class="num">3</td><td><b>The fifth form is Earthquake.</b> All 20 grid cells are filed, across Basic Group I, Basic Group II, Broad, Special and Earthquake. Chunk 10 is a direct input, and this is <b>the first coverage opened after the form it depends on was built</b></td></tr>
+<tr><td class="num">4</td><td><b>The <code>rul:Power</code> is real, unique and guarded.</b> It appears in exactly 1 of 882 countrywide rule files, LI's own parent. It sits behind an <code>IsNull</code> guard on <code>DiscFactorRaisedToNumOfMonthsRemainingAtInception</code>, so a payload that supplies that value bypasses the annuity entirely. <b>No ISO comparison would catch it, because ISO has the same guard</b></td></tr>
+<tr><td class="num">5</td><td><b>Leasehold Interest is the exact inverse of Earthquake on shared machinery.</b> EQ reads <code>IRPMFactor</code>/<code>PackageModFactor</code> in none of its groups (C10-14). LI reads both, <b>in 16 of 32 files</b>. Coinsurance, LOI, deductible and blanket are absent from all 32</td></tr>
+<tr><td class="num">6</td><td><b>One table is dead on arrival.</b> <code>SpecialFormExclgTheftLeaseHoldBaseRate</code> has 0 rows and no <code>Lookup</code> reads it anywhere. Its near-namesake <code>...IncldgTheft...</code> has 12 rows and is live. This was caught at opening rather than mid-chunk</td></tr>
+<tr><td class="num">7</td><td><b>Zero ISO fixtures.</b> Of the <b>364</b> CF STC payloads (not 924; C10-20's correction), <b>0 mention Leasehold Interest</b>. That puts this chunk in chunk 9's position, not chunk 10's: confirmation has to come from a <b>live ISO call</b>, and that call is planned from task 1 onward</td></tr>
+<tr><td class="num">8</td><td><b>The state layer is the thinnest of any chunk so far.</b> Only <b>FL and PR</b> file any LI file in their own package, and both carry a <code>Set</code>/<code>Lookup</code> rule. Every other state runs countrywide unmodified. A filed file is not the same as an overridden rule, so both layers still get enumerated</td></tr>
+</tbody>
+</table>
+
+<p class="sub">Grouped by what each task is about; task numbers are unchanged from <code>CF-CHUNK11-TASKS.md</code>. Tasks marked <b>gate</b> are the nine-point gate (C11-01&ndash;09). All 24 tasks done 2026-09-22. Gate: <code>CF-CHUNK11-GATE.md</code>.</p>
+
+<p><span class="lab">A &middot; The annuity &mdash; the new arithmetic (4) &mdash; DONE 2026-09-22</span> Proves the one thing no earlier chunk had: an exposure the rules compute rather than read from the submission. Everything else in this chunk prices off it.</p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#9989;</td><td class="num">C11-01</td><td><span class="tag open">gate</span> <b>Golden case: DONE 2026-09-22, $268 Basic Group I + $30 Basic Group II, all 20 hand-derived values matched</b> (<code>114_chunk11_golden_case.py</code>, <code>CF-CHUNK11-GOLDEN-CASE.md</code>). It took <b>one engine fix, user-authorized</b>: ordered comparisons refused two dates (<code>CF-ENGINE-FIX-DATE-COMPARE.md</code>). It also took <b>two submission corrections</b>, both silent traps: LI survives only if the Structure's own <code>CovType</code> is &ldquo;Leasehold Interest&rdquo;, otherwise the record is deleted with no message; and a blank <code>EQCovIndicator</code> switches the EQ cell ON. 1 validation message is left for C11-09</td></tr>
+<tr><td class="st">&#9989;</td><td class="num">C11-11</td><td><b>DONE 2026-09-22.</b> The average is of the two whole-dollar nets. The day-of-month adjustment was exercised (122/110 months &rarr; $270/$31). Both tables match the closed form: DiscFactor = (1+i)<sup>&minus;1/12</sup>, AnnuityConstant = v/(1&minus;v). <span class="sub">Task: Trace and hand-prove the annuity, <code>AnnuityConstant &times; (1 &minus; DiscFactor^months)</code> averaged from inception to expiration. Check what the rules actually do, not the build order's one-line summary</span></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">C11-12</td><td><b>DONE 2026-09-22. Confirmed, and wider than the census said: 7 guarded fields, not 1.</b> Injecting the <code>rul:Power</code> output, <code>DiscFactor</code> or a net factor each moves the premium ($242, $306, $309). The unguarded <code>AnnuityConstant</code> is overwritten from the table, so injecting it changes nothing. <span class="sub">Task: Prove the <code>rul:Power</code> <code>IsNull</code> guard is the &ldquo;submission populates a derived field&rdquo; trap: supply the raised power directly and show the premium moves</span></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">C11-13</td><td><b>DONE 2026-09-22.</b> 13% &rarr; $240/$27; a lease ending in 2032 &rarr; $156/$18. Both inputs are live. <span class="sub">Task: Prove <code>InterestRate</code> and lease term are live inputs: change only the rate, and <code>AnnuityConstant</code>, <code>DiscFactor</code> and the premium all move (C10-12's shape)</span></td></tr>
+</tbody>
+</table>
+
+<p><span class="lab">B &middot; The four sub-coverages (5) &mdash; DONE 2026-09-22</span> Proves each of the four pieces actually produces a premium, and how they combine into one total.</p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#9989;</td><td class="num">C11-16</td><td><b>DONE 2026-09-22.</b> Nonzero on every form: BGI $268, BGII $30, Broad $26, Special $45, EQ $10. <b>Special without a Theft Exclusion is $0 by ISO's own rule</b>: the factor falls back to 0.0, not 1.0. Logged as <b>OI-101</b> for the live ISO call. <span class="sub">Task: <b>Tenants Lease</b>: a nonzero premium on a real submission, all 5 forms</span></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">C11-17</td><td><b>DONE 2026-09-22.</b> The grid files are identical to Tenants Lease's, but the amount is <b>not discounted</b>: monthly &times; months, 22,800. So it prices even with no interest rate ($54/$6). <span class="sub">Task: <b>Bonus Payments</b>: the same, and confirm it is separate machinery, not a renamed copy of Tenants Lease</span></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">C11-18</td><td><b>DONE 2026-09-22.</b> $82/$9, not discounted. Unrelated to Building's &ldquo;Improvements and Betterments&rdquo; type: a structure of that type deletes the LI record. <span class="sub">Task: <b>Improvements &amp; Betterments</b>: the same, and confirm it is unrelated to Building's own <code>Improvements and Betterments</code> <code>CovType</code> literal</span></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">C11-19</td><td><b>DONE 2026-09-22.</b> $109/$12, not discounted. <span class="sub">Task: <b>Prepaid Rent</b>: the same</span></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">C11-20</td><td><b>DONE 2026-09-22. A sum, and nothing rates off it.</b> The total is 214,558, but each premium uses its own sub-coverage's amount. Rating off the total would give Tenants $513 instead of $268. <span class="sub">Task: <code>SetTotCoveredLeaseholdIntNet</code>: is it a <b>sum or a selection</b> of the 4 sub-coverages? In chunk 5, <code>SetFactor</code> picked one of four values, and multiplying them would have overstated the premium by a large multiple</span></td></tr>
+</tbody>
+</table>
+
+<p><span class="lab">C &middot; Zero cases and refusals (2) &mdash; DONE 2026-09-22</span> Finds every way this coverage can quietly price at $0, and whether ISO refuses the same submissions or prices them.</p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#9989;</td><td class="num">C11-04</td><td><b>DONE 2026-09-22.</b> Seven distinct tiers, from &ldquo;record deleted&rdquo; to &ldquo;engine refuses&rdquo;; 13 of 14 predictions held. The one miss: <code>ExpDate</code> is never an input, because ISO always sets it to EffDate + 1 year. <span class="sub">Task: <span class="tag open">gate</span> Every <code>0</code> tested against its consuming branch: no lease term, no <code>InterestRate</code>, a term expiring before inception, an unmatched rate (table holds only whole points 5&ndash;15%), each of the 4 exposure fields absent. Confirm these are <b>different causes</b>, not one zero counted several times</span></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">C11-23</td><td><b>DONE 2026-09-22, live ISO.</b> 11 agree, 3 diverge, all 3 predicted: a missing lease start date was $0 here but $272 at ISO (<b>OI-102, since FIXED and matching ISO</b>); an interest rate not in the table is $0 here and refused by ISO (<b>OI-103</b>); 0<sup>0</sup> was refused here and $0 at ISO (<b>OI-104, since FIXED</b>). OI-101 is confirmed as ISO's own behaviour. ISO also holds a newer 2027 Oregon edition than we do (<b>OI-105</b>). <span class="sub">Task: OI-99 asked again: does ISO refuse where this coverage returns $0? C11-04's zero cases are the input</span></td></tr>
+</tbody>
+</table>
+
+<p><span class="lab">D &middot; What it shares with other coverages, and what it doesn't (5) &mdash; DONE 2026-09-22</span> Proves the multipliers LI uses really apply, the ones it lacks really don't, and that its 32 groups don't collide with each other or with Earthquake.</p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#9989;</td><td class="num">C11-06</td><td><b>DONE 2026-09-22.</b> Six names are shared with the Structure file, all with different bodies; no collision is possible, and the Structure's fields equal ISO's. Also found <b>OI-106</b>: form names don't resolve, project-wide, no premium impact. <span class="sub">Task: <span class="tag open">gate</span> Shared-name adjudication across <b>32 DataDefGroups</b> (the previous maximum was 5). Does <code>04_shared_names.py</code> still hold when it is extended to them?</span></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">C11-07</td><td><b>DONE 2026-09-22.</b> The cyber exclusion is <b>policy-level and shared</b> ($268 &rarr; $267); the theft exclusion is <b>structure-level</b>. No LI group files its own. <span class="sub">Task: <span class="tag open">gate</span> Exclusion records per group, including whether <code>SpecialLeaseHoldTimeElementTheftExclusionFactor</code> is per-group or policy-level (C10-07's question asked again)</span></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">C11-14</td><td><b>DONE 2026-09-22.</b> Coinsurance, limit, deductible and blanket are all inert at run time: $268 / $30 every time. <span class="sub">Task: Coinsurance, LOI, deductible and blanket are absent <b>at run time</b>, not just from the XML: populate all four and show the premium doesn't change</span></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">C11-15</td><td><b>DONE 2026-09-22.</b> IRPM 1.10 &rarr; $295; PackageMod 0.90 &rarr; $241; both &rarr; $265. Read from the <b>policy</b>, and the EQ cell doesn't move. <span class="sub">Task: <code>IRPMFactor</code>/<code>PackageModFactor</code> are read at the depth the census found (16 of 32) and actually move the premium, the opposite of Earthquake's answer</span></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">C11-21</td><td><b>DONE 2026-09-22.</b> Copies the Structure's EQ rate and changes nothing (21 EQ fields identical). <b>Found: an LI structure with no LI record auto-creates an empty one and crashes our engine on 0<sup>0</sup></b>, which raised OI-104's severity (<b>OI-104 since FIXED</b>: it now prices $0, as ISO does). <span class="sub">Task: The Earthquake cell: confirm LI reads chunk 10's own <code>EQCauseOfLossAdjustment</code>/<code>FinalEQRate</code> chain rather than computing its own, and that the two never collide</span></td></tr>
+</tbody>
+</table>
+
+<p><span class="lab">E &middot; Inventory &mdash; files, tables, literals (3) &mdash; DONE 2026-09-22</span> Accounts for every file, table and hardcoded value, so nothing is assumed live or dead without checking.</p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#9989;</td><td class="num">C11-02</td><td><b>DONE 2026-09-22.</b> Row counts confirmed (countrywide 2026 and 2023 identical). The Excluding-Theft table is dead. None of the 46 states files any of the six. <span class="sub">Task: <span class="tag open">gate</span> Row count stated for every table the chain touches (the 6 LI-named Rate Tables), with the dead <code>ExclgTheft</code> table's status settled by checking rather than assumed</span></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">C11-05</td><td><b>DONE 2026-09-22.</b> 8 compared literals, all with a source. <span class="sub">Task: <span class="tag open">gate</span> The <code>CovType</code>/<code>CovForm</code> literals the 20 grid files branch on, checked against the Domain Tables folder</span></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">C11-10</td><td><b>DONE 2026-09-22.</b> Confirmed inert by reading all 11 <b>and</b> running all 11 rates: each attaches exactly its own marker, no premium. <span class="sub">Task: Read each of the 11 <code>FactorsFor&lt;N&gt;Percent</code> files in full to confirm they are inert. This is C10-10's lesson: 9 of 19 &ldquo;thin wrappers&rdquo; did real arithmetic</span></td></tr>
+</tbody>
+</table>
+
+<p><span class="lab">F &middot; States and editions (2) &mdash; DONE 2026-09-22</span> Settles the state layer. Only FL and PR file anything, so this group is small.</p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#9989;</td><td class="num">C11-03</td><td><b>DONE 2026-09-22.</b> <b>Of 46 states, only Florida files anything</b>: its Group II premium adds a sinkhole rate and drops the cyber factors. This group also found <b>OI-107</b>, our date subtraction having the wrong sign (ISO 257, ours &minus;257, confirmed live), <b>fixed the same day</b>. <span class="sub">Task: <span class="tag open">gate</span> All 47 states enumerated, both layers: which states file an LI file at all (census: FL, PR) and which override a rule</span></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">C11-08</td><td><b>DONE 2026-09-22.</b> Florida runs on the <b>2023</b> countrywide edition (same arithmetic, no injection guards). <span class="sub">Task: <span class="tag open">gate</span> Edition basis: FL and PR are the only overriding states, and both are known to sit on older declared parents</span></td></tr>
+</tbody>
+</table>
+
+<p><span class="lab">G &middot; Confirmation and regression (3) &mdash; DONE 2026-09-22</span> Closes the chunk: ISO agrees with the golden case by live call, no unexplained messages, and nothing earlier moved.</p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#9989;</td><td class="num">C11-09</td><td><b>DONE 2026-09-22.</b> The golden case gives one message (M-002, designed out). <b>Our messages equal ISO's on 16 of 16 cases compared</b>, including every Leasehold Interest message. <span class="sub">Task: <span class="tag open">gate</span> No unexplained validation message on the golden case. Every <code>DoMessage</code> rule that references an LI field is checked against the golden case's field values; it is not enough that the rule doesn't fire</span></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">C11-22</td><td><b>DONE 2026-09-22, live ISO.</b> Golden case at the matching date: <b>$272 / $31 on both sides</b>. Rounding tie: ISO returns 75,835, rounding half-up like us. <span class="sub">Task: <b>ISO confirmation by live call.</b> There are zero fixtures, so this follows chunk 9's route, planned from task 1</span></td></tr>
+<tr><td class="st">&#9989;</td><td class="num">C11-24</td><td><b>DONE 2026-09-22.</b> The one-command regression covers chunks 0&ndash;11: <b>clean, 69 of 69</b>, including all 16 GL suites. <span class="sub">Task: Regression: chunks 1&ndash;10's golden cases unmoved. Run <code>104_chunk10_c10-21_regression.py</code>, extended with chunk 10's own golden case</span></td></tr>
+</tbody>
+</table>
+
+<p><span class="lab">What chunk 11 inherits and must re-ask</span> <b>C10-20's denominator</b>: the fixture corpus
+is 364 CF payloads, and every fixture claim here states 364 &middot; <b>C10-20's &ldquo;count records, not
+files&rdquo;</b>: with 4 sub-coverages &times; 5 forms per submission, this chunk is <i>more</i> exposed to a
+single-match regex than chunk 10 was &middot; <b>C9-19 / C10-14</b>: IRPM/PackageMod depth, answered in outline
+by the census and owed a run by C11-15 &middot; <b>C8-23</b>: operand order is premium-bearing, and the annuity
+is the most nested arithmetic in the project so far &middot; <b>&ldquo;absent means zero, nothing
+raises&rdquo;</b>: C11-04's reason to exist, with an unmatched interest rate as the sharpest candidate &middot;
+<b>gate point 9</b>: the project-wide validation-message backlog stays open regardless.</p>
 </div>
 
-<div class="chunk todo">
-<h3><span class="n">12</span> The endorsement families <span class="tag open">Sized, not sequenced</span></h3>
-<p>Taken by family once the core is proved: Ordinance or Law (55 rule files), dependent properties, utility
-services, green upgrades, debris removal, unmanned aircraft.</p>
+<div class="chunk now">
+<h3><span class="n">12</span> The endorsement families &mdash; six coverages, sized then sequenced <span class="tag open">OPEN &mdash; census run, 0 of 42 tasks</span></h3>
+<p><b>Opened 2026-09-22.</b> 42 tasks numbered <b>C12-01&ndash;C12-42</b> in <code>CF-CHUNK12-TASKS.md</code>,
+derived from the build order's item 12 and the opening census (<code>scripts/cf/123_chunk12_census.py</code>).
+These are the <b>add-on endorsements</b> that sit on top of the core built in chunks 1&ndash;11: rebuilding
+to code, a supplier's fire, a power cut, green rebuilding, debris clearance and drones. Each gets its own
+golden case and its own small gate. &ldquo;All states&rdquo; means the 46 (Puerto Rico excluded); live ISO
+calls go at 2026-09-17 (OI-105). <b>As of 2026-09-22 the census has run and no task has.</b></p>
+
+<p><span class="lab">The six families, as the census sized them (2026-09-22)</span></p>
+<table>
+<thead><tr><th>Family</th><th>Rule files</th><th>With a premium</th><th>ISO fixtures</th><th>States filing</th><th>Attached from</th></tr></thead>
+<tbody>
+<tr><td><b>Ordinance or Law</b></td><td>55 (build order confirmed)</td><td>50</td><td>10</td><td>6</td><td>Building, Business Income, SC Business Income</td></tr>
+<tr><td><b>Dependent Properties</b></td><td>50</td><td>34 (4 inert)</td><td><b>0</b></td><td>1</td><td>Business Income and SC Business Income only</td></tr>
+<tr><td><b>Utility Services</b></td><td>35</td><td>25</td><td><b>13</b></td><td>1</td><td>all 5 core groups</td></tr>
+<tr><td><b>Green Upgrades</b></td><td>30</td><td>25</td><td><b>0</b></td><td>1</td><td>all 5 core groups</td></tr>
+<tr><td><b>Debris Removal</b></td><td>18</td><td>15</td><td>3</td><td>2</td><td>Building, Contents, Special Class; <b>reads the core LOI tables</b></td></tr>
+<tr><td><b>Unmanned Aircraft</b></td><td>20</td><td>10</td><td>10</td><td><b>all 46</b></td><td>all 5 core groups; reads chunk 10&rsquo;s EQ tables (2 empty)</td></tr>
+</tbody>
+</table>
+<p class="sub">Every <code>rul:</code> element the 208 files use is implemented, and none uses date or power arithmetic.
+Chunk 11&rsquo;s census said the same and missed a date <i>operand</i> gap, so C12-03 checks operand types too.
+Two families have no ISO fixture at all, so they need live ISO calls, planned from task 1.</p>
+
+<p class="sub">Grouped by what each task is about. Each family carries the nine-point gate in six tasks; <b>gate</b> tags
+name the points each task closes. As of 2026-09-22 no task has started.</p>
+
+<p><span class="lab">A &middot; Opening: sequence and readiness (4)</span> Sets the order the families are taken in, and surfaces engine risks before any golden case.</p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#11036;</td><td class="num">C12-01</td><td><b>Sequence the six families.</b> Recommended order: Debris Removal (smallest; tests the shared-LOI risk early), Ordinance or Law, Utility Services, Unmanned Aircraft, Green Upgrades, Dependent Properties (the two without fixtures last). Confirm with you before Group B starts</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C12-02</td><td><b>Read the attach map, don't infer it</b>: which core record attaches each family, under what gate, and what deletes it (the lessons from C10-17 and chunk 11&rsquo;s silent deletion)</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C12-03</td><td><b>Engine readiness by operand type</b>, not element name, across all 208 files</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C12-04</td><td><b>The 25 Earthquake riders</b>: confirm each reuses chunk 10&rsquo;s chain; account for Unmanned Aircraft&rsquo;s 2 empty EQ tables</td></tr>
+</tbody>
+</table>
+
+<p><span class="lab">B &middot; Debris Removal (6)</span> The smallest family proved end to end, and an early answer on sharing the core LOI tables.</p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#11036;</td><td class="num">C12-05</td><td><span class="tag open">gate 1</span> Golden case, hand-derived before code</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C12-06</td><td><span class="tag open">gate 2, 5</span> Tables and literals: the debris rate and minimum limit, and <b>which core LOI rows it reads</b></td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C12-07</td><td><span class="tag open">gate 3, 8</span> States (FL, NY) and edition basis</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C12-08</td><td><span class="tag open">gate 4</span> Zero cases, including the minimum-limit floor</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C12-09</td><td><span class="tag open">gate 6, 7</span> Shared names (it reuses core LOI names) and exclusion records</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C12-10</td><td><span class="tag open">gate 9</span> ISO confirmation (3 fixtures, plus live) and messages</td></tr>
+</tbody>
+</table>
+
+<p><span class="lab">C &middot; Ordinance or Law (6)</span> The largest family (50 premium files), with its Coverage A / B / C combinations proved.</p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#11036;</td><td class="num">C12-11</td><td><span class="tag open">gate 1</span> Golden case: one Coverage A + B + C combination</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C12-12</td><td><span class="tag open">gate 2, 5</span> Tables and literals: 11 single-row factors; the 5 coverage-combination indicators</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C12-13</td><td><span class="tag open">gate 3, 8</span> States (AK, CA, FL, NY, VA, WV) and editions</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C12-14</td><td><span class="tag open">gate 4</span> Zero cases across the A / B / C combinations</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C12-15</td><td><span class="tag open">gate 6, 7</span> Shared names across 55 files and the Business Income attachments; exclusions</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C12-16</td><td><span class="tag open">gate 9</span> ISO confirmation (10 fixtures, plus live) and messages</td></tr>
+</tbody>
+</table>
+
+<p><span class="lab">D &middot; Utility Services (6)</span> The best-evidenced family (13 fixtures): direct damage and time element.</p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#11036;</td><td class="num">C12-17</td><td><span class="tag open">gate 1</span> Golden case: one direct-damage and one time-element supply type</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C12-18</td><td><span class="tag open">gate 2, 5</span> Tables and literals: 9 tables; public vs non-public; the waiting-period factor</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C12-19</td><td><span class="tag open">gate 3, 8</span> States (FL) and edition</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C12-20</td><td><span class="tag open">gate 4</span> Zero cases</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C12-21</td><td><span class="tag open">gate 6, 7</span> Shared names across the 5 core attachments; exclusions</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C12-22</td><td><span class="tag open">gate 9</span> ISO confirmation (13 fixtures, plus live) and messages</td></tr>
+</tbody>
+</table>
+
+<p><span class="lab">E &middot; Unmanned Aircraft (6)</span> The one family every state changes, proved state by state.</p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#11036;</td><td class="num">C12-23</td><td><span class="tag open">gate 1</span> Golden case</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C12-24</td><td><span class="tag open">gate 2, 5</span> Tables and literals: 36 tables, the 2 empty EQ tables, the drone modification codes</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C12-25</td><td><span class="tag open">gate 3, 8</span> <b>All 46 states, both layers</b>: what each overrides; one pattern or many</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C12-26</td><td><span class="tag open">gate 4</span> Zero cases</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C12-27</td><td><span class="tag open">gate 6, 7</span> Shared names (the EQ chain it borrows); exclusions</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C12-28</td><td><span class="tag open">gate 9</span> ISO confirmation (10 fixtures, plus live) and messages</td></tr>
+</tbody>
+</table>
+
+<p><span class="lab">F &middot; Green Upgrades (6)</span> A family with no ISO fixtures, proved by live call.</p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#11036;</td><td class="num">C12-29</td><td><span class="tag open">gate 1</span> Golden case</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C12-30</td><td><span class="tag open">gate 2, 5</span> Tables and literals: 4 tables</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C12-31</td><td><span class="tag open">gate 3, 8</span> States (FL) and edition</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C12-32</td><td><span class="tag open">gate 4</span> Zero cases</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C12-33</td><td><span class="tag open">gate 6, 7</span> Shared names across the 5 core attachments; exclusions</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C12-34</td><td><span class="tag open">gate 9</span> <b>Live ISO confirmation (0 fixtures)</b> and messages</td></tr>
+</tbody>
+</table>
+
+<p><span class="lab">G &middot; Dependent Properties (6)</span> The time-element family, on Business Income and SC Business Income only.</p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#11036;</td><td class="num">C12-35</td><td><span class="tag open">gate 1</span> Golden case on a Business Income risk</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C12-36</td><td><span class="tag open">gate 2, 5</span> Tables and literals: 6 tables, the Broad/Limited factor; read the 4 inert files in full</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C12-37</td><td><span class="tag open">gate 3, 8</span> States (FL) and edition</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C12-38</td><td><span class="tag open">gate 4</span> Zero cases</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C12-39</td><td><span class="tag open">gate 6, 7</span> Shared names across the two attachments; exclusions</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C12-40</td><td><span class="tag open">gate 9</span> <b>Live ISO confirmation (0 fixtures)</b> and messages</td></tr>
+</tbody>
+</table>
+
+<p><span class="lab">H &middot; Close-out (2)</span> Chunk 12 folded into the one-command regression, and the gate filed.</p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#11036;</td><td class="num">C12-41</td><td>Regression: add every chunk 12 golden case and test to the one-command regression; clean for chunks 0&ndash;12</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C12-42</td><td>File <code>CF-CHUNK12-GATE.md</code>: all six families, nine points each</td></tr>
+</tbody>
+</table>
+
+<p><span class="lab">What chunk 12 inherits and must re-ask</span> <b>Operand types, not just node names</b>
+(chunk 11) &middot; <b>silent deletion</b> by a <code>CovType</code>/<code>PolicyType</code> gate or an unexpected
+parent (chunk 11, C10-17) &middot; <b>blank is not &ldquo;none&rdquo;</b> in gate literals &middot; <b>derived-field
+injection</b> through <code>IsNull</code> guards &middot; <b>OI-105</b>: live ISO at 2026-09-17 &middot; <b>OI-106</b>:
+a missing form number is not a missing coverage.</p>
 </div>
 
 <div class="chunk todo">
@@ -851,7 +1353,9 @@ showed <code>ErcCalculatedTotalPremium</code> summing the coverages correctly at
 <tbody>
 <tr><td><b>A submission can populate a derived field</b></td><td><span class="tag warn">New, 2026-09-18</span></td><td>Every <code>IsNull</code>-guarded rule honours a value that arrived in the payload &mdash; the guard cannot tell &ldquo;already set by an earlier rule&rdquo; from &ldquo;supplied by the submitter&rdquo;. A submitted <code>SpecialBaseRate=9.999</code> bypasses the filed table entirely and prices at <b>$11,398</b>. <b>The mirror image of the absent-means-zero family</b>: it fails upward as readily as downward, and no ISO comparison catches it &mdash; ISO has the same guards and returns the same number</td></tr>
 <tr><td><b>Input validation</b></td><td><span class="tag warn">Biggest risk</span></td><td>Five inputs price at zero rather than raising: Arizona's <code>BasicGroupIReductionCredit</code>, an unrecognised <code>ConstructionType</code>, an absent <code>BCEG</code>, a missing <code>RatingTypeBasicGroupII</code>, a missing Group II territory. Every one looks like a valid submission and silently produces a cheap policy</td></tr>
-<tr><td><code>SingleResult</code> with zero hits</td><td><span class="tag open">Open, narrowed</span></td><td>ISO refuses on <i>some</i> empty lookups and tolerates others; the distinguishing condition is unknown. Blanket strictness was measured and <b>disproven</b>. Needs targeted ISO probes, not more corpus reading</td></tr>
+<tr><td><b>A missing date compared differently from ISO</b> (OI-102)</td><td><span class="tag done">FIXED 2026-09-22</span></td><td>A blank date falls back to <code>01/01/0001</code>. ISO treats that as a real, very early date; our engine treated it as nothing, and a Leasehold Interest with no lease start date priced at $0 against ISO's $272. <b>Fixed with authorization</b>: in &ldquo;before/after&rdquo; comparisons the fallback now counts as the earliest date. ISO agrees live, and the regression is clean, 51 of 51</td></tr>
+<tr><td><b>Date subtraction had the wrong sign</b> (OI-107)</td><td><span class="tag done">FIXED 2026-09-22</span></td><td>Our engine subtracted dates the wrong way round: ISO +257 days until TRIA expiry, ours &minus;257 (confirmed live). Pro-rate factors were never affected, because they divide one difference by another. <b>Fixed with your authorization</b>; the Oregon case is now pinned in the regression</td></tr>
+<tr><td><code>SingleResult</code> with zero hits</td><td><span class="tag open">Open, narrowed</span></td><td>ISO refuses on <i>some</i> empty lookups and tolerates others; the distinguishing condition is unknown. <b>2026-09-22: one more refusal on record</b>, <code>LeaseholdInterestAnnuityConstant</code> (OI-103). Blanket strictness was measured and <b>disproven</b>. Needs targeted ISO probes, not more corpus reading</td></tr>
 <tr><td>Gate point 9 &mdash; validation messages</td><td><span class="tag open">Owed on C1 and C2</span></td><td>A CF submission can rate correctly and still return errors; chunk 1 fires three on every case</td></tr>
 <tr><td>Per-state gaps</td><td><span class="tag open">Logged</span></td><td>TX wind/hail untraced; DC and IL missing a <code>BCEGFactor</code> row; MT, NY, PR empty Group II symbol table</td></tr>
 <tr><td>Housekeeping</td><td><span class="tag open">Deferred</span></td><td><code>cf_engine</code> imports <code>gl_engine</code>; the shared core wants a neutral home. <b>Never bundle that rename with a rating change</b></td></tr>
@@ -874,6 +1378,7 @@ showed <code>ErcCalculatedTotalPremium</code> summing the coverages correctly at
 <tr><td><code>scripts/cf/41_chunk6_golden_case.py</code></td><td>chunk 6 Special Class, four forms &mdash; <b>$66 / $209 / $14 / $44</b>, Building unmoved at 261 / 32</td><td class="st">&#9989;</td></tr>
 <tr><td><code>scripts/cf/50_chunk7_golden_case.py</code></td><td>chunk 7 Special Class Business Income, four forms &mdash; <b>$39 / $123 / $23 / $47</b>, the item unmoved at 66 / 209</td><td class="st">&#9989;</td></tr>
 <tr><td><code>scripts/cf/59_chunk8_golden_case.py</code></td><td>chunk 8 Legal Liability &mdash; Building <b>$60 / $7 / $4 / $12</b>, Contents <b>$132 / $15 / $11 / $93</b></td><td class="st">&#9989;</td></tr>
+<tr><td><code>scripts/cf/68_chunk9_golden_case.py</code></td><td>chunk 9 Blanket rating, Building Basic Group I, two structures &mdash; <b>$255 / $510</b>, ISO-confirmed live</td><td class="st">&#9989;</td></tr>
 </tbody>
 </table>
 
@@ -900,9 +1405,26 @@ showed <code>ErcCalculatedTotalPremium</code> summing the coverages correctly at
 <tr><td><code>65_chunk8_map.py</code></td><td>the traced map, point by point &mdash; incl. <b>theft excluded moving Contents $93 &rarr; $37 and Building not at all</b></td><td class="st">&#9989;</td></tr>
 <tr><td><code>66_chunk8_crossform.py</code></td><td>the map <b>scored</b> &mdash; 8 of 11 confirmed, 3 corrected &mdash; and the <b>cross-coverage LOI leak</b></td><td class="st">&#9989;</td></tr>
 <tr><td><code>60_chunk8_raas_probe.py</code></td><td>the standing engine-vs-ISO check on the Legal Liability form record</td><td class="st">&#9989;</td></tr>
-<tr><td><code>04_shared_names.py</code></td><td>gate point 6 across all <b>six</b> chains</td><td class="st">&#9989;</td></tr>
-<tr><td><code>05_exclusion_records.py</code></td><td>gate point 7 census, now with a per-group chunk 6 section</td><td class="st">&#9989;</td></tr>
+<tr><td><code>67_chunk9_census.py</code></td><td>chunk 9's opening census &mdash; 0 of 20 files stub the blanket formula out; names <code>SetNonEQBlanketValues</code>'s three gates as the real blocker</td><td class="st">&#9989;</td></tr>
+<tr><td><code>69_chunk9_c9-02_chain_trace.py</code></td><td>the real <code>ErcDoBlanketRating</code> chain, 3 hops deeper than documented; the Average/Highest election confirmed genuinely different (0.242 vs 0.275)</td><td class="st">&#9989;</td></tr>
+<tr><td><code>70_chunk9_c9-04_tables_and_datadefs.py</code></td><td>only 2 of 12 blanket tables in the golden-case chain; the borrowed DataDefs' two-hop copy chain, present in all 5 groups</td><td class="st">&#9989;</td></tr>
+<tr><td><code>71_chunk9_c9-05_state_override_census.py</code></td><td>0 of 47 states override the averaging rules in any group; one pure-add exception (AL/KS, Special Class)</td><td class="st">&#9989;</td></tr>
+<tr><td><code>72_chunk9_c9-06_three_gates.py</code></td><td>the 3-gate root cause &mdash; 3 distinct outcomes, and premium is NOT uniformly $0</td><td class="st">&#9989;</td></tr>
+<tr><td><code>73_chunk9_c9-07_hardcoded_literals.py</code></td><td>every blanket-path literal traced to its full filed domain &mdash; nothing corpus-wide unreachable</td><td class="st">&#9989;</td></tr>
+<tr><td><code>74_chunk9_c9-08_shared_name_collision.py</code></td><td>the shared dispatcher names are the FALSE-ALARM shape &mdash; pure routers, zero collisions in 882 CW files + 47 overlays</td><td class="st">&#9989;</td></tr>
+<tr><td><code>75_chunk9_c9-09_setnoneq_diff.py</code></td><td>the 5 groups' value-setter bodies diverge, but every difference is dead code or a confirmed substitute</td><td class="st">&#9989;</td></tr>
+<tr><td><code>76_chunk9_c9-10_exclusion_messages.py</code></td><td>the 4 blanket-specific messages, and the submission that makes one fire</td><td class="st">&#9989;</td></tr>
+<tr><td><code>77_chunk9_c9-11_edition_basis.py</code></td><td>Oregon consistent and current; Florida a whole-book skew, not a Detail-vs-premium split</td><td class="st">&#9989;</td></tr>
+<tr><td><code>78_chunk9_c9-12_message_tally.py</code></td><td>3 messages, 0 unexplained &mdash; gate point 9 closed for chunk 9's own golden case</td><td class="st">&#9989;</td></tr>
+<tr><td><code>79_chunk9_c9-13_raas.py</code></td><td><b>live ISO confirmation</b> &mdash; $255/$510/$765 and all 3 messages, exact, for a submission absent from ISO's own fixture corpus</td><td class="st">&#9989;</td></tr>
+<tr><td><code>80_chunk9_c9-15-16-17_reachability.py</code></td><td>all 3 of Building's forms activate blanket on a real run; no operand-order divergence; SC BI's 2-When shape confirmed</td><td class="st">&#9989;</td></tr>
+<tr><td><code>81_chunk9_c9-18_multiprem.py</code></td><td><code>MultiPremiumAndDispersionCreditFactor</code> live on 12 of 20, genuinely absent on 8</td><td class="st">&#9989;</td></tr>
+<tr><td><code>82_chunk9_c9-19_irpm_levels.py</code></td><td>the IRPM/PackageMod level count by group &mdash; 5, 7 or 9, not uniformly 5</td><td class="st">&#9989;</td></tr>
+<tr><td><code>83_chunk9_c9-20_crosscoverage_leak.py</code></td><td>clean isolation at the policy level, both placements tested</td><td class="st">&#9989;</td></tr>
+<tr><td><code>04_shared_names.py</code></td><td>gate point 6 across all <b>seven</b> chains</td><td class="st">&#9989;</td></tr>
+<tr><td><code>05_exclusion_records.py</code></td><td>gate point 7 census, now with a per-group chunk 9 section</td><td class="st">&#9989;</td></tr>
 <tr><td><code>08_hardcoded_literals.py --group CommercialPropertySpecialClass</code></td><td>gate point 5 for a second datadef group</td><td class="st">&#9989;</td></tr>
+<tr><td><code>08_hardcoded_literals.py --group CommercialPropertyBlanketRatingDetail</code></td><td>gate point 5 for the blanket averaging engine</td><td class="st">&#9989;</td></tr>
 </tbody>
 </table>
 
@@ -918,13 +1440,19 @@ showed <code>ErcCalculatedTotalPremium</code> summing the coverages correctly at
 <tr><td><code>62_chunk8_enumerate_states.py</code></td><td>Legal Liability <b>47 of 47</b>, 43 with a real premium. <b>Its first version reported 47 of 47 and proved nothing</b> &mdash; 46 agreed at $0 on an out-of-state territory</td><td class="st">&#9989;</td></tr>
 </tbody>
 </table>
-<p class="sub">The full set is <code>scripts/cf/00</code>&ndash;<code>66</code>. The General Liability
-suites are the regression net for every shared-code change &mdash; <b>all 16 re-run green on 2026-09-18</b>,
-alongside every command above. <b>Chunks 6, 7 and 8 are the only chunks to touch shared code</b>:
-<code>04_shared_names.py</code> (now eight chains), <code>05_exclusion_records.py</code> (per-group sections)
-and <code>08_hardcoded_literals.py</code> (a <code>--group</code> argument). All three still pass for chunks
-1&ndash;5 unchanged. <b>No engine code has been written in eight chunks</b> &mdash; chunk 8 produced the first
-serious candidate for it and the candidate turned out to be a broken probe, not a defect.</p>
+<p class="sub"><b>Blanket has no premium sweep of its own</b> (chunk 9's own gate point 3, reframed rather than
+forced) &mdash; its state-layer check is <code>71_chunk9_c9-05_state_override_census.py</code> instead: 0 of
+47 states override the averaging rules in any of the 5 groups. The full set is <code>scripts/cf/00</code>
+&ndash;<code>83</code>. The General Liability suites are the regression net for every shared-code change
+&mdash; <b>all 16 re-run green on 2026-09-21</b>, alongside every command above. <b>Chunks 6, 7, 8 and 9 are
+the only chunks to touch shared code</b>: <code>04_shared_names.py</code> (now nine chains),
+<code>05_exclusion_records.py</code> (per-group sections) and <code>08_hardcoded_literals.py</code> (a
+<code>--group</code> argument). All three still pass for chunks 1&ndash;8 unchanged. <b>No engine code was
+written in the first eight chunks</b> &mdash; chunk 8 produced the first serious candidate for it and the
+candidate turned out to be a broken probe, not a defect. <b>Chunk 9 broke that streak</b>: C9-01 found a
+real interpreter gap (<code>ForEach AtInputDataDef</code> reparenting writes), fixed 2026-09-21 with the
+user's authorization &mdash; the first engine change since chunk 0, and then confirmed live against ISO to
+the dollar (C9-13). <b>All 23 chunk 1&ndash;8 checks re-ran green afterward</b> (C9-22).</p>
 
 <h2>The habit that produced every finding</h2>
 <div class="note shared"><b>Derive the expected numbers by hand from the filed rows FIRST, write them down,

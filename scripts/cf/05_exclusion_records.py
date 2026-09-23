@@ -98,6 +98,20 @@ BY_CHUNK = {
         "CommercialPropertyPersonalProperty",
         ["VandalismExclusion", "SprinklerLeakageExclusion",
          "WindstormOrHailExclusion", "TheftExclusion"]),
+    # Chunk 9's own averaging engine, `CommercialPropertyBlanketRatingDetail`
+    # -- the 7th datadef group this project has populated. Its own 135 rules
+    # test NO exclusion-family `Exist`/`NotExist` at all (confirmed directly,
+    # 0 hits under the same regex every prior chunk used) -- unlike C9-14's
+    # finding that the blanket PREMIUM path inherits Structure/Contents'
+    # exclusion records by re-executing their SetPremium rules, the Detail
+    # engine that computes the average/highest rate never elects or tests one
+    # of its own. Listed with the same five families every prior chunk
+    # checked, so the absence is an enumerated fact rather than an omission.
+    "chunk 9 (Blanket Rating Detail)": (
+        "CommercialPropertyBlanketRatingDetail",
+        ["VandalismExclusion", "WindstormOrHailExclusion", "TheftExclusion",
+         "CyberIncidentExclusion",
+         "CyberIncidentExclusionWithEnsuingCausesOfLossExceptions"]),
 }
 
 
