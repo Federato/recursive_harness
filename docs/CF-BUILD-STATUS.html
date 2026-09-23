@@ -53,14 +53,14 @@
 </style>
 
 <h1>Property build &mdash; every chunk, every task, status</h1>
-<p class="meta"><b>As of 2026-09-22.</b> One page for the whole 15-chunk plan. Sources, and what to edit
+<p class="meta"><b>As of 2026-09-23.</b> One page for the whole 15-chunk plan. Sources, and what to edit
 when something changes: <code>CF-START-HERE.md</code> (resume point),
 <code>CF-PROPERTY-BUILD-ORDER.md</code> (the plan and the gate),
 <code>CF-CHUNK2-TASKS.md</code> through <code>CF-CHUNK11-TASKS.md</code>
 (the task lists), <code>CF-CHUNK1-GATE.md</code> through <code>CF-CHUNK10-GATE.md</code>
 (the filed gates), <code>CF-ENGINE-FIX-BANDED-LOOKUP.md</code> (chunk 10's engine fix).<br>
-<b>Chunks 0&ndash;11 are CLOSED (chunk 11, Leasehold Interest, closed 2026-09-22: gated 9 of 9, 24 of 24, 4 user-authorized engine fixes, confirmed against ISO live). Chunk 12 (the endorsement families) OPENED 2026-09-22: census run, 42 tasks in 8 groups, 0 started.</b>
-Verify the whole build in one command: <code>python scripts/cf/104_chunk10_c10-21_regression.py</code> (covers chunks 0&ndash;11 since 2026-09-22).<br>
+<b>Chunks 0&ndash;11 are CLOSED (chunk 11, Leasehold Interest, closed 2026-09-22: gated 9 of 9, 24 of 24, 4 user-authorized engine fixes, confirmed against ISO live). Chunk 12 (the endorsement families) OPENED 2026-09-22; <b>PAUSED 2026-09-23 at 41 of 42</b> (Groups A&ndash;G closed, all six families ISO-confirmed; regression CLEAN for chunks 0&ndash;12; left: file the gate; <b>Debris Removal, Ordinance or Law, Utility Services, Unmanned Aircraft and Green Upgrades each gated 9 of 9 and ISO-confirmed live</b>; OI-109/110 fixed (a missing value is skipped in a premium product, as at ISO, and recorded); OI-108, OI-109 and OI-110 confirmed live and fixed).</b>
+Verify the whole build in one command: <code>python scripts/cf/104_chunk10_c10-21_regression.py</code> (covers chunks 0&ndash;12 since 2026-09-23).<br>
 &#42; on a gate cell means passed, but re-tested later under a stronger check &mdash; see the note below.</p>
 
 <div class="note good"><b>Chunk 10 &mdash; Earthquake, OPENED AND GATED 9 of 9 ON 2026-09-22, 21 of 21 tasks
@@ -177,8 +177,9 @@ construction-keyed rate table, its own theft rule, its own Broad base rate and i
 PR premium rests on a reading of the filed rules and nothing else, and that has to be said wherever a PR
 premium is presented.</div>
 
-<div class="note"><b>Nothing is committed.</b> All of <code>cf_engine/</code>, <code>scripts/cf/</code>,
-the <code>docs/CF-*</code> files and the <code>gl_engine/</code> edits are working-tree only.</div>
+<div class="note good"><b>Committed (checked 2026-09-23).</b> <code>cf_engine/</code>, the chunk scripts in <code>scripts/cf/</code>
+and the <code>docs/CF-*</code> files are in git (last: <code>0c11c9c</code>, chunks 9&ndash;11). This note said &ldquo;nothing is committed&rdquo;
+until 2026-09-23, which had been stale since those commits. Chunk 12's Group A files are new and not yet committed.</div>
 
 <h2>The whole plan at a glance</h2>
 
@@ -205,7 +206,7 @@ three jurisdictions whose zeros are not yet explained &mdash; named rather than 
 <tr><td class="num">9</td><td>Blanket rating</td><td><span class="tag done">Gated 9 of 9 &mdash; all 22 tasks</span></td><td>Not a stub after all &mdash; every premium file carries the formula; the missing input traced to a <code>ForEach AtInputDataDef</code> write-reparenting bug, fixed same day. Golden case $255/$510, exact, and <b>ISO-confirmed live</b> to the dollar, messages included. All 3 of Building's forms and SC Business Income's 2-When shape confirmed reachable on real runs; <code>MultiPremiumAndDispersionCreditFactor</code> live on 12 of 20; IRPM/PackageMod level count varies by group (5/7/9); cross-coverage isolation clean; 3 shared instruments extended to a 7th DataDefGroup; every chunk 1&ndash;8 golden case and all 16 GL suites re-verified green</td></tr>
 <tr><td class="num">10</td><td>Earthquake &mdash; the fifth form</td><td><span class="tag done">CLOSED &mdash; gated 9 of 9, 21 of 21 tasks, 1 engine gap fixed</span></td><td>Golden case (C10-01): <b>$6</b> EQ premium, exact match, no engine gap. Gate closed same day, 9 of 9. C10-10&ndash;18 confirmed all 5 groups and the reachability map, all clean. <b>C10-19 found and (user-authorized) fixed a real engine gap</b>: <code>_lookup_banded</code> couldn't handle 2-range tables, blocking the sub-limit EQ form (CP 10 29) plus, corpus-wide, 7 live Flood tables and 1 MA rider. Fixed, now $6, exact; 16/16 GL + 107/120 CF regression clean</td></tr>
 <tr><td class="num">11</td><td>Leasehold Interest</td><td><span class="tag done">CLOSED &mdash; gated 9 of 9, 24 of 24 tasks, 4 engine fixes</span></td><td><b>2026-09-22: the golden case matched at $268 + $30; the date-comparison engine gap was fixed with authorization; the regression is clean.</b> Opened 2026-09-22 (<code>CF-CHUNK11-TASKS.md</code>, <code>106_chunk11_census.py</code>). <b>All seven of the build order's claims confirmed</b> &mdash; 32 files, the 4&times;5 grid, the annuity, the only <code>rul:Power</code> in 882 countrywide rule files, and no coinsurance/LOI/deductible/blanket anywhere. <b>Four things the census adds</b>: (1) <b>only 21 of the 32 files rate</b> &mdash; the 11 <code>FactorsFor&lt;N&gt;Percent</code> files (5%&ndash;15%) are inert printed-form markers with no Lookup, Premium or factor; (2) <b>"its own datadef group" is 32 groups, not 1</b>, one per file &mdash; and gate points 6 and 7 are per-group questions, so chunk 11 asks them across 32 groups against the 5 chunks 6&ndash;10 used, <b>the biggest structural jump in the plan</b>; (3) <b>the fifth form is Earthquake</b>, making chunk 10 a direct input &mdash; the first coverage opened after the form it depends on was built; (4) <b>zero ISO fixtures</b> in 364 CF payloads, so this is chunk 9's situation, not chunk 10's, and confirmation must come from a live ISO call &mdash; planned at task 1 rather than discovered at task 22. <b>The sharpest hazard</b>: the <code>rul:Power</code> sits behind an <code>IsNull</code> guard on <code>DiscFactorRaisedToNumOfMonthsRemainingAtInception</code>, so a submission supplying that value bypasses the annuity entirely and <b>no ISO comparison catches it</b> &mdash; ISO has the same guard. <b>Exact inverse of Earthquake on shared machinery</b>: EQ reads <code>IRPMFactor</code>/<code>PackageModFactor</code> at no depth in any group; LI reads both in 16 of 32 files. Engine readiness checked at opening: every <code>rul:</code> node these 32 files use is already implemented, <code>rul:Power</code> included &mdash; <b>no engine change expected</b></td></tr>
-<tr><td class="num">12</td><td>The endorsement families</td><td><span class="tag open">OPEN &mdash; census run, 0 of 42 tasks</span></td><td>Opened 2026-09-22 (<code>CF-CHUNK12-TASKS.md</code>, <code>123_chunk12_census.py</code>). Six families sized: Ordinance or Law 55 files (confirmed), Dependent Properties 50, Utility Services 35, Green Upgrades 30, Debris Removal 18, Unmanned Aircraft 20. <b>Two have no ISO fixture</b> (Dependent Properties, Green Upgrades); <b>Unmanned Aircraft is filed by all 46 states</b>; <b>Debris Removal reads the core LOI tables</b>. Recommended order: Debris Removal first, the two without fixtures last</td></tr>
+<tr><td class="num">12</td><td>The endorsement families</td><td><span class="tag open">PAUSED &mdash; 41 of 42 (2026-09-23)</span></td><td><b>2026-09-23: Group G closed</b> &mdash; Dependent Properties ($80 + $12, no fixtures, 12 of 12 live). <b>Regression CLEAN for chunks 0&ndash;12.</b> <b>Left:</b> C12-42, the gate. <b>2026-09-23: Groups E and F closed</b> &mdash; Unmanned Aircraft ($187 golden, 10 of 10 live) and Green Upgrades ($33 golden, no fixtures, 8 of 8 live). <b>2026-09-23: Groups C and D closed</b> &mdash; Ordinance or Law ($198 golden, 7 of 8 live, K7 = OI-109) and Utility Services ($15+$4 / $9+$4, 10 of 11 live, every rated fixture agrees). <b>Group B closed &mdash; Debris Removal gated 9 of 9</b>, golden case $49 + $6 matched ISO live, 9 of 12 live calls agree (3 ISO refusals are EQ lookups in old fixtures). <b>Group A closed.</b> Nothing ever deletes an endorsement record; 17 of 17 ISO fixtures rate; Ordinance or Law is 100 files, not 55 (VA/WV state-only forms); one engine gap logged, OI-108 (blanket drone limit lost in CA/NC/MO). Opened 2026-09-22 (<code>CF-CHUNK12-TASKS.md</code>, <code>123_chunk12_census.py</code>). Six families sized: Ordinance or Law 55 files (confirmed), Dependent Properties 50, Utility Services 35, Green Upgrades 30, Debris Removal 18, Unmanned Aircraft 20. <b>Two have no ISO fixture</b> (Dependent Properties, Green Upgrades); <b>Unmanned Aircraft is filed by all 46 states</b>; <b>Debris Removal reads the core LOI tables</b>. Recommended order: Debris Removal first, the two without fixtures last</td></tr>
 <tr><td class="num">13</td><td>Terrorism / TRIA</td><td><span class="tag open">Untraced</span></td><td>16 rule files; runs last, reads finished premiums</td></tr>
 <tr><td class="num">14</td><td>Policy assembly</td><td><span class="tag open">Not opened</span></td><td>First partial check already passed inside chunk 3's task 23</td></tr>
 </tbody>
@@ -1204,19 +1205,19 @@ raises&rdquo;</b>: C11-04's reason to exist, with an unmatched interest rate as 
 </div>
 
 <div class="chunk now">
-<h3><span class="n">12</span> The endorsement families &mdash; six coverages, sized then sequenced <span class="tag open">OPEN &mdash; census run, 0 of 42 tasks</span></h3>
+<h3><span class="n">12</span> The endorsement families &mdash; six coverages, sized then sequenced <span class="tag open">PAUSED &mdash; 41 of 42</span></h3>
 <p><b>Opened 2026-09-22.</b> 42 tasks numbered <b>C12-01&ndash;C12-42</b> in <code>CF-CHUNK12-TASKS.md</code>,
 derived from the build order's item 12 and the opening census (<code>scripts/cf/123_chunk12_census.py</code>).
 These are the <b>add-on endorsements</b> that sit on top of the core built in chunks 1&ndash;11: rebuilding
 to code, a supplier's fire, a power cut, green rebuilding, debris clearance and drones. Each gets its own
 golden case and its own small gate. &ldquo;All states&rdquo; means the 46 (Puerto Rico excluded); live ISO
-calls go at 2026-09-17 (OI-105). <b>As of 2026-09-22 the census has run and no task has.</b></p>
+calls go at 2026-09-17 (OI-105). <b>Paused 2026-09-23 at 41 of 42: Groups A&ndash;G closed, regression clean for chunks 0&ndash;12. Next: file the gate.</b> Also <code>CF-CHUNK12-DEPENDENT-PROPERTIES.md</code>. Also <code>CF-CHUNK12-UNMANNED-AIRCRAFT.md</code>, <code>CF-CHUNK12-GREEN-UPGRADES.md</code>. Records: <code>CF-CHUNK12-GROUP-A.md</code>, <code>CF-CHUNK12-DEBRIS-REMOVAL.md</code>, <code>CF-CHUNK12-ORDINANCE-OR-LAW.md</code>, <code>CF-CHUNK12-UTILITY-SERVICES.md</code>.</p>
 
 <p><span class="lab">The six families, as the census sized them (2026-09-22)</span></p>
 <table>
 <thead><tr><th>Family</th><th>Rule files</th><th>With a premium</th><th>ISO fixtures</th><th>States filing</th><th>Attached from</th></tr></thead>
 <tbody>
-<tr><td><b>Ordinance or Law</b></td><td>55 (build order confirmed)</td><td>50</td><td>10</td><td>6</td><td>Building, Business Income, SC Business Income</td></tr>
+<tr><td><b>Ordinance or Law</b></td><td>55 countrywide (build order confirmed) <b>+ 45 state-only</b> (VA 43, WV 2; found by C12-02, 2026-09-23)</td><td>50</td><td>10</td><td>6</td><td>Building, Business Income, SC Business Income</td></tr>
 <tr><td><b>Dependent Properties</b></td><td>50</td><td>34 (4 inert)</td><td><b>0</b></td><td>1</td><td>Business Income and SC Business Income only</td></tr>
 <tr><td><b>Utility Services</b></td><td>35</td><td>25</td><td><b>13</b></td><td>1</td><td>all 5 core groups</td></tr>
 <tr><td><b>Green Upgrades</b></td><td>30</td><td>25</td><td><b>0</b></td><td>1</td><td>all 5 core groups</td></tr>
@@ -1229,16 +1230,16 @@ Chunk 11&rsquo;s census said the same and missed a date <i>operand</i> gap, so C
 Two families have no ISO fixture at all, so they need live ISO calls, planned from task 1.</p>
 
 <p class="sub">Grouped by what each task is about. Each family carries the nine-point gate in six tasks; <b>gate</b> tags
-name the points each task closes. As of 2026-09-22 no task has started.</p>
+name the points each task closes. As of 2026-09-23, Groups A&ndash;F (C12-01&ndash;34) are done; G and H remain.</p>
 
 <p><span class="lab">A &middot; Opening: sequence and readiness (4)</span> Sets the order the families are taken in, and surfaces engine risks before any golden case.</p>
 <table>
 <thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
 <tbody>
-<tr><td class="st">&#11036;</td><td class="num">C12-01</td><td><b>Sequence the six families.</b> Recommended order: Debris Removal (smallest; tests the shared-LOI risk early), Ordinance or Law, Utility Services, Unmanned Aircraft, Green Upgrades, Dependent Properties (the two without fixtures last). Confirm with you before Group B starts</td></tr>
-<tr><td class="st">&#11036;</td><td class="num">C12-02</td><td><b>Read the attach map, don't infer it</b>: which core record attaches each family, under what gate, and what deletes it (the lessons from C10-17 and chunk 11&rsquo;s silent deletion)</td></tr>
-<tr><td class="st">&#11036;</td><td class="num">C12-03</td><td><b>Engine readiness by operand type</b>, not element name, across all 208 files</td></tr>
-<tr><td class="st">&#11036;</td><td class="num">C12-04</td><td><b>The 25 Earthquake riders</b>: confirm each reuses chunk 10&rsquo;s chain; account for Unmanned Aircraft&rsquo;s 2 empty EQ tables</td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C12-01</td><td><b>Sequence the six families.</b> Recommended order: Debris Removal (smallest; tests the shared-LOI risk early), Ordinance or Law, Utility Services, Unmanned Aircraft, Green Upgrades, Dependent Properties (the two without fixtures last). <b>Done 2026-09-23: confirmed by you, unchanged.</b></td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C12-02</td><td><b>Read the attach map, don't infer it</b>: which core record attaches each family, under what gate, and what deletes it. <b>Done 2026-09-23</b> (<code>124_chunk12_c12-02_attach_map.py</code>, <code>CF-CHUNK12-ATTACH-MAP.md</code>). All 208 groups are driven unconditionally; <b>nothing deletes any of them</b> in any of the 5 parent editions or 46 states; 167 state overrides are pure pins to the parent. <b>New: 45 state-only Ordinance or Law files</b> (Virginia's own broad form, 43; West Virginia's Flood cells, 2), so the family is 100 files, not 55</td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C12-03</td><td><b>Engine readiness by operand type</b>, not element name. <b>Done 2026-09-23</b> (<code>125_chunk12_c12-03_operand_types.py</code>). 21,037 operators in 1,480 files: 21,031 handled, <b>6 wrong, one shape (OI-108)</b>: a <code>Break</code> inside a <code>Sum</code> drops a blanket drone's limit in CA, NC and MO (0 against 99,000, confirmed on a real submission). Live: <b>17 of 17</b> ISO fixtures with a chunk 12 record rate end to end</td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C12-04</td><td><b>The Earthquake riders.</b> <b>Done 2026-09-23</b> (<code>126_chunk12_c12-04_eq_riders.py</code>). <b>34, not 25</b> (Unmanned Aircraft names them <code>EQCov</code>). <b>Only partly reuse chunk 10</b>: Debris Removal, Ordinance or Law and Green Upgrades borrow its rate; Unmanned Aircraft re-runs its lookups; <b>Utility Services and 4 Dependent Properties riders price Earthquake from their own tables</b>, so their golden cases must cover the EQ cell. The 2 &ldquo;empty&rdquo; tables are empty at countrywide only: <b>46 of 46 states file rows</b></td></tr>
 </tbody>
 </table>
 
@@ -1246,12 +1247,12 @@ name the points each task closes. As of 2026-09-22 no task has started.</p>
 <table>
 <thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
 <tbody>
-<tr><td class="st">&#11036;</td><td class="num">C12-05</td><td><span class="tag open">gate 1</span> Golden case, hand-derived before code</td></tr>
-<tr><td class="st">&#11036;</td><td class="num">C12-06</td><td><span class="tag open">gate 2, 5</span> Tables and literals: the debris rate and minimum limit, and <b>which core LOI rows it reads</b></td></tr>
-<tr><td class="st">&#11036;</td><td class="num">C12-07</td><td><span class="tag open">gate 3, 8</span> States (FL, NY) and edition basis</td></tr>
-<tr><td class="st">&#11036;</td><td class="num">C12-08</td><td><span class="tag open">gate 4</span> Zero cases, including the minimum-limit floor</td></tr>
-<tr><td class="st">&#11036;</td><td class="num">C12-09</td><td><span class="tag open">gate 6, 7</span> Shared names (it reuses core LOI names) and exclusion records</td></tr>
-<tr><td class="st">&#11036;</td><td class="num">C12-10</td><td><span class="tag open">gate 9</span> ISO confirmation (3 fixtures, plus live) and messages</td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C12-05</td><td><span class="tag done">gate 1</span> <b>Golden case, hand-derived before code.</b> <b>Done 2026-09-23</b> (<code>127_chunk12_golden_case.py</code>). Chunk 2&rsquo;s Oregon building + a 60,000 debris limit: <b>$49 + $6 = $55</b>, building unmoved at $261 / $32. 21 of 21 figures on the first run; <b>ISO live identical</b></td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C12-06</td><td><span class="tag done">gate 2, 5</span> <b>Tables and literals.</b> <b>Done 2026-09-23.</b> 6 + 1 countrywide rows; only FL files a row (minimum 10,000). <b>The LOI factor is keyed on the building&rsquo;s limit</b> and equals the building&rsquo;s own, even inside an interpolated band, so the shared-table risk is clear. One dead literal (<code>Tobacco Sales Warehouses</code>, a form name)</td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C12-07</td><td><span class="tag done">gate 3, 8</span> <b>States and edition basis.</b> <b>Done 2026-09-23.</b> 44 states run the parent unchanged. <b>FL</b>: minimum 10,000, no Debris Removal on Contents, sinkhole added to Group II. <b>NY</b>: Earthquake cell drops the cyber factors. Identical across 4 parents; FL&rsquo;s older parent only lacks the <code>IsNull</code> guards</td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C12-08</td><td><span class="tag done">gate 4</span> <b>Zero cases.</b> <b>Done 2026-09-23.</b> 9 cases, 9 causes. <b>A limit under $25,000 gives a NEGATIVE premium (&minus;$21 / &minus;$3)</b>, guarded only by an error message, and <b>a &ldquo;No Coverage&rdquo; building is still charged</b>. Both are ISO&rsquo;s own behaviour, confirmed live</td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C12-09</td><td><span class="tag done">gate 6, 7</span> <b>Shared names and exclusion records.</b> <b>Done 2026-09-23.</b> 8 shared field names, none misread. A vandalism exclusion flows into Debris Removal ($49 &rarr; $47); a theft exclusion does <b>not</b> reach its Special cell (flat 0.01 rate). Both ISO-confirmed</td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C12-10</td><td><span class="tag done">gate 9</span> <b>ISO confirmation and messages.</b> <b>Done 2026-09-23</b> (<code>129_chunk12_c12-10_raas.py</code>). <b>9 of 12 agree live</b>, messages identical. The 3 ISO refusals are Earthquake lookups in 2023 fixtures (OI-103 data), not Debris Removal. 0 unexplained messages; CP 04 15 logged as M-003</td></tr>
 </tbody>
 </table>
 
@@ -1259,12 +1260,12 @@ name the points each task closes. As of 2026-09-22 no task has started.</p>
 <table>
 <thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
 <tbody>
-<tr><td class="st">&#11036;</td><td class="num">C12-11</td><td><span class="tag open">gate 1</span> Golden case: one Coverage A + B + C combination</td></tr>
-<tr><td class="st">&#11036;</td><td class="num">C12-12</td><td><span class="tag open">gate 2, 5</span> Tables and literals: 11 single-row factors; the 5 coverage-combination indicators</td></tr>
-<tr><td class="st">&#11036;</td><td class="num">C12-13</td><td><span class="tag open">gate 3, 8</span> States (AK, CA, FL, NY, VA, WV) and editions</td></tr>
-<tr><td class="st">&#11036;</td><td class="num">C12-14</td><td><span class="tag open">gate 4</span> Zero cases across the A / B / C combinations</td></tr>
-<tr><td class="st">&#11036;</td><td class="num">C12-15</td><td><span class="tag open">gate 6, 7</span> Shared names across 55 files and the Business Income attachments; exclusions</td></tr>
-<tr><td class="st">&#11036;</td><td class="num">C12-16</td><td><span class="tag open">gate 9</span> ISO confirmation (10 fixtures, plus live) and messages</td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C12-11</td><td><span class="tag done">gate 1</span> <b>Golden case.</b> <b>Done 2026-09-23</b> (<code>130</code>). &ldquo;A and B &amp; C Separate&rdquo;, B 20,000 / C 30,000: <b>$39+$5 / $55+$7 / $82+$10 = $198</b>, 15 of 15 first run; <b>ISO live identical</b></td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C12-12</td><td><span class="tag done">gate 2, 5</span> <b>Tables and literals.</b> <b>Done 2026-09-23.</b> 11 single-row countrywide tables (Cov A 1.15, post-loss 1.02, restoration 1.2); MN files its own Cov A rows. All 5 CovType literals are exactly the 5 domain values</td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C12-13</td><td><span class="tag done">gate 3, 8</span> <b>States and editions.</b> <b>Done 2026-09-23.</b> AK minimum Cov C limit; <b>CA $0 for public schools</b>; FL no cyber / post-loss, sinkhole added; NY Earthquake cells; <b>VA&rsquo;s own 43-file broad form</b>; <b>WV B&amp;C-only combinations and Flood</b></td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C12-14</td><td><span class="tag done">gate 4</span> <b>Zero cases.</b> <b>Done 2026-09-23.</b> 8 cases. <b>A blank coverage choice still charges Coverage A</b> (ISO agrees). <b>Absent B/C limits: ISO prices $0, our engine refuses (OI-109)</b></td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C12-15</td><td><span class="tag done">gate 6, 7</span> <b>Shared names and exclusions.</b> <b>Done 2026-09-23.</b> Vandalism flows into A, B and C; Increased Period of Restoration on Business Income = $22 + $3. ISO-confirmed</td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C12-16</td><td><span class="tag done">gate 9</span> <b>ISO confirmation and messages.</b> <b>Done 2026-09-23</b> (<code>132 ordinance</code>). <b>7 of 8 engine cases agree</b> (K7 = OI-109); <b>every fixture ISO rated agrees</b>, Earthquake and restoration cells included; 0 unexplained messages</td></tr>
 </tbody>
 </table>
 
@@ -1272,12 +1273,12 @@ name the points each task closes. As of 2026-09-22 no task has started.</p>
 <table>
 <thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
 <tbody>
-<tr><td class="st">&#11036;</td><td class="num">C12-17</td><td><span class="tag open">gate 1</span> Golden case: one direct-damage and one time-element supply type</td></tr>
-<tr><td class="st">&#11036;</td><td class="num">C12-18</td><td><span class="tag open">gate 2, 5</span> Tables and literals: 9 tables; public vs non-public; the waiting-period factor</td></tr>
-<tr><td class="st">&#11036;</td><td class="num">C12-19</td><td><span class="tag open">gate 3, 8</span> States (FL) and edition</td></tr>
-<tr><td class="st">&#11036;</td><td class="num">C12-20</td><td><span class="tag open">gate 4</span> Zero cases</td></tr>
-<tr><td class="st">&#11036;</td><td class="num">C12-21</td><td><span class="tag open">gate 6, 7</span> Shared names across the 5 core attachments; exclusions</td></tr>
-<tr><td class="st">&#11036;</td><td class="num">C12-22</td><td><span class="tag open">gate 9</span> ISO confirmation (13 fixtures, plus live) and messages</td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C12-17</td><td><span class="tag done">gate 1</span> <b>Golden case.</b> <b>Done 2026-09-23</b> (<code>133</code>). Direct damage <b>$15 + $4</b>, time element <b>$9 + $4</b>, 14 of 14 first run; <b>ISO live identical</b>. Its own rates, not a slice of the building&rsquo;s</td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C12-18</td><td><span class="tag done">gate 2, 5</span> <b>Tables and literals.</b> <b>Done 2026-09-23.</b> 9 tables. <b>The 3 non-public time-element tables are all 0</b>: free by filing (ISO confirms $0)</td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C12-19</td><td><span class="tag done">gate 3, 8</span> <b>States and editions.</b> <b>Done 2026-09-23.</b> Only FL files rules (drops the waiting-period and cyber factors). V03/V04 identical; MO V02 lacks one message only</td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C12-20</td><td><span class="tag done">gate 4</span> <b>Zero cases.</b> <b>Done 2026-09-23.</b> <b>No detail limit uses the whole building limit</b> (ISO agrees); no waiting period gives $0 (agrees); <b>an unfiled waiting period: ISO refuses, we charge $0</b> (OI-103)</td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C12-21</td><td><span class="tag done">gate 6, 7</span> <b>Shared names and exclusions.</b> <b>Done 2026-09-23.</b> All 5 attachments read identical fields. Reads no cause-of-loss adjustment, so vandalism moves the building but not Utility Services</td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C12-22</td><td><span class="tag done">gate 9</span> <b>ISO confirmation and messages.</b> <b>Done 2026-09-23</b> (<code>132 utility</code>). <b>10 of 11 engine cases agree</b>, <b>all 8 fixtures ISO rated agree</b>; 0 unexplained messages</td></tr>
 </tbody>
 </table>
 
@@ -1285,12 +1286,12 @@ name the points each task closes. As of 2026-09-22 no task has started.</p>
 <table>
 <thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
 <tbody>
-<tr><td class="st">&#11036;</td><td class="num">C12-23</td><td><span class="tag open">gate 1</span> Golden case</td></tr>
-<tr><td class="st">&#11036;</td><td class="num">C12-24</td><td><span class="tag open">gate 2, 5</span> Tables and literals: 36 tables, the 2 empty EQ tables, the drone modification codes</td></tr>
-<tr><td class="st">&#11036;</td><td class="num">C12-25</td><td><span class="tag open">gate 3, 8</span> <b>All 46 states, both layers</b>: what each overrides; one pattern or many</td></tr>
-<tr><td class="st">&#11036;</td><td class="num">C12-26</td><td><span class="tag open">gate 4</span> Zero cases</td></tr>
-<tr><td class="st">&#11036;</td><td class="num">C12-27</td><td><span class="tag open">gate 6, 7</span> Shared names (the EQ chain it borrows); exclusions</td></tr>
-<tr><td class="st">&#11036;</td><td class="num">C12-28</td><td><span class="tag open">gate 9</span> ISO confirmation (10 fixtures, plus live) and messages</td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C12-23</td><td><span class="tag done">gate 1</span> <b>Golden case.</b> <b>Done 2026-09-23</b> (<code>137</code>). One drone on chunk 4&rsquo;s Special Contents: <b>$187</b>, 10 of 10 first run; <b>ISO live identical</b>. Drones rate on the Special form only</td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C12-24</td><td><span class="tag done">gate 2, 5</span> <b>Tables and literals.</b> <b>Done 2026-09-23.</b> 36 tables; the family&rsquo;s own are countrywide (only FL files its own); the 2 empty Earthquake tables are filed by all 46 states</td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C12-25</td><td><span class="tag done">gate 3, 8</span> <b>All 46 states.</b> <b>Done 2026-09-23.</b> Many patterns, mostly Earthquake plumbing (39 states change only the EQ deductible-tier lookups); AL/TX wind, AR/DC/KS/NY/RI Business Income drones, FL its own tables</td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C12-26</td><td><span class="tag done">gate 4</span> <b>Zero cases.</b> <b>Done 2026-09-23.</b> Basic form $0 (Special-only); <b>no limit $2</b>, the missing value skipped (OI-110); two drones, blanket, deductible, extension: all ISO-confirmed</td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C12-27</td><td><span class="tag done">gate 6, 7</span> <b>Shared names and exclusions.</b> <b>Done 2026-09-23.</b> The drone adds no message; a Contents windstorm exclusion reaches it ($59, ISO agrees)</td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C12-28</td><td><span class="tag done">gate 9</span> <b>ISO confirmation.</b> <b>Done 2026-09-23.</b> <b>10 of 10 engine cases</b> and every fixture ISO rated agree; OI-108 fixed and live 8 of 8</td></tr>
 </tbody>
 </table>
 
@@ -1298,12 +1299,12 @@ name the points each task closes. As of 2026-09-22 no task has started.</p>
 <table>
 <thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
 <tbody>
-<tr><td class="st">&#11036;</td><td class="num">C12-29</td><td><span class="tag open">gate 1</span> Golden case</td></tr>
-<tr><td class="st">&#11036;</td><td class="num">C12-30</td><td><span class="tag open">gate 2, 5</span> Tables and literals: 4 tables</td></tr>
-<tr><td class="st">&#11036;</td><td class="num">C12-31</td><td><span class="tag open">gate 3, 8</span> States (FL) and edition</td></tr>
-<tr><td class="st">&#11036;</td><td class="num">C12-32</td><td><span class="tag open">gate 4</span> Zero cases</td></tr>
-<tr><td class="st">&#11036;</td><td class="num">C12-33</td><td><span class="tag open">gate 6, 7</span> Shared names across the 5 core attachments; exclusions</td></tr>
-<tr><td class="st">&#11036;</td><td class="num">C12-34</td><td><span class="tag open">gate 9</span> <b>Live ISO confirmation (0 fixtures)</b> and messages</td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C12-29</td><td><span class="tag done">gate 1</span> <b>Golden case.</b> <b>Done 2026-09-23</b> (<code>139</code>). 20,000 / 20% / related 10,000: <b>$30 + $3 = $33</b>, 12 of 12 first run; <b>ISO live identical</b></td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C12-30</td><td><span class="tag done">gate 2, 5</span> <b>Tables and literals.</b> <b>Done 2026-09-23.</b> 4 single-purpose countrywide tables, no state rows</td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C12-31</td><td><span class="tag done">gate 3, 8</span> <b>States and edition.</b> <b>Done 2026-09-23.</b> Only FL (sinkhole in Group II, no cyber)</td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C12-32</td><td><span class="tag done">gate 4</span> <b>Zero cases.</b> <b>Done 2026-09-23.</b> <b>A blank percentage nearly doubles the premium</b> ($30 &rarr; $56; ISO agrees). An unfiled one: ISO refuses, we charge $56 (OI-103)</td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C12-33</td><td><span class="tag done">gate 6, 7</span> <b>Shared names and exclusions.</b> <b>Done 2026-09-23.</b> Building/Contents/Special Class identical; the Business Income version&rsquo;s own formula confirmed live ($4); vandalism flows</td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C12-34</td><td><span class="tag done">gate 9</span> <b>Live ISO confirmation.</b> <b>Done 2026-09-23.</b> No fixtures exist; <b>8 of 8 live cases agree</b>, messages identical</td></tr>
 </tbody>
 </table>
 
@@ -1311,12 +1312,12 @@ name the points each task closes. As of 2026-09-22 no task has started.</p>
 <table>
 <thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
 <tbody>
-<tr><td class="st">&#11036;</td><td class="num">C12-35</td><td><span class="tag open">gate 1</span> Golden case on a Business Income risk</td></tr>
-<tr><td class="st">&#11036;</td><td class="num">C12-36</td><td><span class="tag open">gate 2, 5</span> Tables and literals: 6 tables, the Broad/Limited factor; read the 4 inert files in full</td></tr>
-<tr><td class="st">&#11036;</td><td class="num">C12-37</td><td><span class="tag open">gate 3, 8</span> States (FL) and edition</td></tr>
-<tr><td class="st">&#11036;</td><td class="num">C12-38</td><td><span class="tag open">gate 4</span> Zero cases</td></tr>
-<tr><td class="st">&#11036;</td><td class="num">C12-39</td><td><span class="tag open">gate 6, 7</span> Shared names across the two attachments; exclusions</td></tr>
-<tr><td class="st">&#11036;</td><td class="num">C12-40</td><td><span class="tag open">gate 9</span> <b>Live ISO confirmation (0 fixtures)</b> and messages</td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C12-35</td><td><span class="tag open">gate 1</span> Golden case on a Business Income risk &mdash; <b>Done.</b> $80 + $12 on chunk 5&rsquo;s Business Income; ISO live identical (2026-09-23)</td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C12-36</td><td><span class="tag open">gate 2, 5</span> Tables and literals: 6 tables, the Broad/Limited factor; read the 4 inert files in full &mdash; <b>Done.</b> 6 tables; the 4 inert files are the International detail records (2026-09-23)</td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C12-37</td><td><span class="tag open">gate 3, 8</span> States (FL) and edition &mdash; <b>Done.</b> Only FL (2026-09-23)</td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C12-38</td><td><span class="tag open">gate 4</span> Zero cases &mdash; <b>Done.</b> The highest dependent rate wins; all zero cases ISO-confirmed (2026-09-23)</td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C12-39</td><td><span class="tag open">gate 6, 7</span> Shared names across the two attachments; exclusions &mdash; <b>Done.</b> SC Business Income mirrors Business Income; confirmed live (2026-09-23)</td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C12-40</td><td><span class="tag open">gate 9</span> <b>Live ISO confirmation (0 fixtures)</b> and messages &mdash; <b>Done.</b> No fixtures; <b>12 of 12 live cases agree</b> (2026-09-23)</td></tr>
 </tbody>
 </table>
 
@@ -1355,12 +1356,14 @@ showed <code>ErcCalculatedTotalPremium</code> summing the coverages correctly at
 <tr><td><b>Input validation</b></td><td><span class="tag warn">Biggest risk</span></td><td>Five inputs price at zero rather than raising: Arizona's <code>BasicGroupIReductionCredit</code>, an unrecognised <code>ConstructionType</code>, an absent <code>BCEG</code>, a missing <code>RatingTypeBasicGroupII</code>, a missing Group II territory. Every one looks like a valid submission and silently produces a cheap policy</td></tr>
 <tr><td><b>A missing date compared differently from ISO</b> (OI-102)</td><td><span class="tag done">FIXED 2026-09-22</span></td><td>A blank date falls back to <code>01/01/0001</code>. ISO treats that as a real, very early date; our engine treated it as nothing, and a Leasehold Interest with no lease start date priced at $0 against ISO's $272. <b>Fixed with authorization</b>: in &ldquo;before/after&rdquo; comparisons the fallback now counts as the earliest date. ISO agrees live, and the regression is clean, 51 of 51</td></tr>
 <tr><td><b>Date subtraction had the wrong sign</b> (OI-107)</td><td><span class="tag done">FIXED 2026-09-22</span></td><td>Our engine subtracted dates the wrong way round: ISO +257 days until TRIA expiry, ours &minus;257 (confirmed live). Pro-rate factors were never affected, because they divide one difference by another. <b>Fixed with your authorization</b>; the Oregon case is now pinned in the regression</td></tr>
-<tr><td><code>SingleResult</code> with zero hits</td><td><span class="tag open">Open, narrowed</span></td><td>ISO refuses on <i>some</i> empty lookups and tolerates others; the distinguishing condition is unknown. <b>2026-09-22: one more refusal on record</b>, <code>LeaseholdInterestAnnuityConstant</code> (OI-103). Blanket strictness was measured and <b>disproven</b>. Needs targeted ISO probes, not more corpus reading</td></tr>
+<tr><td><code>SingleResult</code> with zero hits</td><td><span class="tag open">Open, narrowed</span></td><td>ISO refuses on <i>some</i> empty lookups and tolerates others; the distinguishing condition is unknown. <b>2026-09-22: one more refusal on record</b>, <code>LeaseholdInterestAnnuityConstant</code> (OI-103). <b>2026-09-23: three more</b> (chunk 12: <code>EarthquakeDeductibleTier</code> &times;2, <code>BuildingHeightFactor</code>), each where we rate. Blanket strictness was measured and <b>disproven</b>. Needs targeted ISO probes, not more corpus reading</td></tr>
 <tr><td>Gate point 9 &mdash; validation messages</td><td><span class="tag open">Owed on C1 and C2</span></td><td>A CF submission can rate correctly and still return errors; chunk 1 fires three on every case</td></tr>
 <tr><td>Per-state gaps</td><td><span class="tag open">Logged</span></td><td>TX wind/hail untraced; DC and IL missing a <code>BCEGFactor</code> row; MT, NY, PR empty Group II symbol table</td></tr>
 <tr><td>Housekeeping</td><td><span class="tag open">Deferred</span></td><td><code>cf_engine</code> imports <code>gl_engine</code>; the shared core wants a neutral home. <b>Never bundle that rename with a rating change</b></td></tr>
 <tr><td>General Liability, optional</td><td><span class="tag open">A choice, not a defect</span></td><td>Whether GL adopts <code>propagate</code>; whether it wants its own rounding tie (OI-70)</td></tr>
-<tr><td><b>Nothing is committed</b></td><td><span class="tag warn">Working tree only</span></td><td>All of <code>cf_engine/</code>, <code>scripts/cf/</code>, <code>docs/CF-*</code> and the <code>gl_engine/</code> edits</td></tr>
+<tr><td><b>A <code>Break</code> inside a <code>Sum</code></b> (OI-108)</td><td><span class="tag done">FIXED 2026-09-23</span></td><td>A blanket drone&rsquo;s limit read 0 instead of 99,000 in CA, NC and MO, undercharging about $125. Confirmed live, then <b>fixed with your authorization</b>: the sum now finishes before the loop stops. Regression clean; live CA/NC/MO/GA 8 of 8 identical to ISO</td></tr>
+<tr><td><b>A missing value in a premium</b> (OI-109, OI-110)</td><td><span class="tag done">FIXED 2026-09-23</span></td><td>ISO <b>skips</b> a missing value in a multiplication (live: $1, $3, $5 where &ldquo;write $0&rdquo; would give $0). A first change wrote $0 and was <b>corrected the same day</b>: Property now skips the null operand and <i>records every skip</i>; GL unchanged. Regression clean; <b>9 of 9 live probes identical</b>; chunk 5&rsquo;s Combined-risk case, a hidden divergence, now matches ISO ($256 + $30)</td></tr>
+<tr><td>Commit status</td><td><span class="tag done">Committed (checked 2026-09-23)</span></td><td><code>cf_engine/</code>, the chunk scripts and <code>docs/CF-*</code> are in git through chunk 11 (<code>0c11c9c</code>). Chunk 12 Group A files are new and uncommitted</td></tr>
 </tbody>
 </table>
 

@@ -1,19 +1,69 @@
 # Property build — start here
 
-**Last worked 2026-09-22.** This is the resume point: where things stand, how to
+**Last worked 2026-09-23.** This is the resume point: where things stand, how to
 confirm it in two minutes, and what to pick up first.
 
 ---
 
-## Pick up here: chunk 12, the endorsement families (OPEN, 0 of 42)
+## Pick up here: chunk 12 is PAUSED at 41 of 42 (2026-09-23)
+
+**All six families are closed, gated 9 of 9 and ISO-confirmed live.** Group G,
+Dependent Properties: [`CF-CHUNK12-DEPENDENT-PROPERTIES.md`](CF-CHUNK12-DEPENDENT-PROPERTIES.md)
+($80 + $12, 12 of 12 live). **One step left:**
+1. ~~**C12-41:**~~ done: the regression now covers chunks 0–12 and ran
+   **CLEAN** on 2026-09-23 (`python scripts/cf/104_chunk10_c10-21_regression.py`).
+2. **C12-42:** file `docs/CF-CHUNK12-GATE.md` (six families, nine points each;
+   the evidence is in the seven `CF-CHUNK12-*.md` records), then mark chunk 12
+   closed on the status page.
+
+**Engine changes this session (user-authorized, regression clean after each):**
+OI-108 (`Sum` finishes before a `Break` ends the loop), and OI-109/OI-110
+(Property's `Product` skips a null operand as ISO does, each skip recorded in
+`Interpreter.null_skips`; GL untouched).
+
+
+**Groups E and F closed 2026-09-23.** Unmanned Aircraft
+([`CF-CHUNK12-UNMANNED-AIRCRAFT.md`](CF-CHUNK12-UNMANNED-AIRCRAFT.md)): $187
+golden, 10 of 10 live. Green Upgrades
+([`CF-CHUNK12-GREEN-UPGRADES.md`](CF-CHUNK12-GREEN-UPGRADES.md)): $33 golden,
+no fixtures, 8 of 8 live. **Next: Group G, Dependent Properties
+(C12-35 to C12-40), then H (fold chunk 12 into the regression, file the
+gate).** Nothing from 2026-09-23 is committed yet; the user decides when.
+
+
+**Groups C and D closed 2026-09-23.** Ordinance or Law
+([`CF-CHUNK12-ORDINANCE-OR-LAW.md`](CF-CHUNK12-ORDINANCE-OR-LAW.md)): $198
+golden, 7 of 8 live, and the one divergence, **OI-109** (absent B/C limits: ISO $0), since fixed. Utility Services
+([`CF-CHUNK12-UTILITY-SERVICES.md`](CF-CHUNK12-UTILITY-SERVICES.md)): $15 + $4
+direct damage, $9 + $4 time element, 10 of 11 live. The live comparer for any
+family is `132_chunk12_family_raas.py`. **Next: Group E, Unmanned Aircraft
+(C12-23 to C12-28)**, OI-108 (fixed 2026-09-23) is in its path.
+
+
+**Group B, Debris Removal, closed 2026-09-23: gated 9 of 9 and ISO-confirmed
+live** ([`CF-CHUNK12-DEBRIS-REMOVAL.md`](CF-CHUNK12-DEBRIS-REMOVAL.md)). Golden
+case $49 + $6 = $55 (`127`), gates `128`, live `129` (9 of 12 agree; the 3
+refusals are Earthquake lookups in old fixtures, added to OI-103). ISO itself
+returns a negative premium for a limit under $25,000 (message M-003), and
+charges a "No Coverage" building. **Next: Group C, Ordinance or Law
+(C12-11 to C12-16)**, including Virginia's and West Virginia's state-only
+forms.
+
+
+**Group A closed 2026-09-23** ([`CF-CHUNK12-GROUP-A.md`](CF-CHUNK12-GROUP-A.md)).
+Family order confirmed as recommended. Nothing ever deletes an endorsement
+record; 17 of 17 ISO fixtures with a chunk 12 record rate end to end;
+Ordinance or Law is 100 files, not 55 (Virginia's and West Virginia's
+state-only forms). **One suspected engine gap, logged, not fixed: OI-108**
+(a blanket drone's limit reads 0 in CA, NC and MO). Fixing it is an engine
+change and needs the user's go. (Group B has since closed; see above.)
 
 **Opened 2026-09-22.** [`CF-CHUNK12-TASKS.md`](CF-CHUNK12-TASKS.md) ·
 [`123_chunk12_census.py`](../scripts/cf/123_chunk12_census.py). 42 tasks in 8 groups:
 A (opening: sequence, attach map, operand types, EQ riders), then one six-task
 group per family (B Debris Removal, C Ordinance or Law, D Utility Services,
 E Unmanned Aircraft, F Green Upgrades, G Dependent Properties), then
-H (regression and gate). **First task: C12-01, confirm the family order with the
-user.**
+H (regression and gate).
 
 
 **Chunk 11 (Leasehold Interest) is CLOSED 2026-09-22: 24 of 24 tasks, gated 9

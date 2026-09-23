@@ -1,4 +1,4 @@
-"""The one-command regression -- chunks 0-11 and the General Liability suites.
+"""The one-command regression -- chunks 0-12 and the General Liability suites.
 
 Built for C10-21 (chunks 1-9 after chunk 10's _lookup_banded fix,
 docs/CF-ENGINE-FIX-BANDED-LOOKUP.md). Extended 2026-09-22 (C11-24, part 1) to
@@ -111,6 +111,20 @@ GOLDEN = [
     # docs/CF-CHUNK11-GOLDEN-CASE.md: Tenants Lease $268 BGI + $30 BGII = $298.
     ("114_chunk11_golden_case.py", 11,
      "Leasehold Interest, Tenants Lease", ["268", "30", "298"]),
+    # Chunk 12 (C12-41, 2026-09-23). Each figure was derived by hand and written
+    # into the family's doc BEFORE its first run, and each matched ISO live.
+    ("127_chunk12_golden_case.py", 12,
+     "Debris Removal on chunk 2's building; building unmoved", ["49", "6", "55", "261", "32"]),
+    ("130_chunk12_ordinance_golden_case.py", 12,
+     "Ordinance or Law, A and B & C Separate", ["39", "5", "55", "7", "82", "10", "198"]),
+    ("133_chunk12_utility_golden_case.py", 12,
+     "Utility Services, direct damage and time element", ["15", "4", "9", "112"]),
+    ("137_chunk12_drone_golden_case.py", 12,
+     "Unmanned Aircraft on chunk 4's Special Contents", ["187", "137"]),
+    ("139_chunk12_green_golden_case.py", 12,
+     "Green Upgrades on chunk 2's building", ["27", "3", "30", "33", "261"]),
+    ("141_chunk12_dependent_golden_case.py", 12,
+     "Dependent Properties, Broad form on chunk 5's Business Income", ["80", "12", "112"]),
 ]
 
 # The machinery each chunk added -- run whenever shared code changes, which is
@@ -162,6 +176,15 @@ MACHINERY = [
     ("119_chunk11_groupD_shared_machinery.py", "chunk 11 shared machinery"),
     ("120_chunk11_groupsEF_inventory_states.py",
      "chunk 11 inventory, states (46), DateDifference sign pinned (OI-107)"),
+    # Chunk 12.
+    ("125_chunk12_c12-03_operand_types.py",
+     "chunk 12 operand types + 17 fixtures + the OI-108 blanket-drone probe"),
+    ("128_chunk12_debris_removal_gates.py", "chunk 12 Debris Removal gates 2-8"),
+    ("131_chunk12_ordinance_gates.py", "chunk 12 Ordinance or Law gates 2-8"),
+    ("134_chunk12_utility_gates.py", "chunk 12 Utility Services gates 2-8"),
+    ("138_chunk12_drone_gates.py", "chunk 12 Unmanned Aircraft gates 2-9"),
+    ("140_chunk12_green_gates.py", "chunk 12 Green Upgrades gates 2-8"),
+    ("142_chunk12_dependent_gates.py", "chunk 12 Dependent Properties gates 2-8"),
     ("121_chunk11_c11-09_messages.py",
      "chunk 11 messages: golden registered; ours == ISO's saved responses"),
 ]
@@ -172,10 +195,11 @@ EXCLUDED = [
      "the state sweeps take minutes each and enumerate 47 jurisdictions; "
      "they were re-run green on 2026-09-18 and touch no banded lookup. "
      "Run them directly when a state-layer change lands."),
-    ("chunk 10 censuses 84/86/87/89/90/92/93/94/97/102, chunk 11 census 106",
+    ("chunk 10 censuses 84/86/87/89/90/92/93/94/97/102, chunk 11 census 106, "
+     "chunk 12 censuses 123/124/126",
      "each states 'always exits 0 -- a census, not a test'; running them "
      "here would add minutes and prove only that they still print."),
-    ("06/19/44/53/63/79/118/122 RaaS scripts",
+    ("06/19/44/53/63/79/118/122 RaaS scripts, and chunk 12's 129/132/135/136",
      "they call ISO's live service; a regression of OUR engine must not "
      "depend on a network round trip. 63_chunk8_raas.py additionally exits "
      "non-zero BY DESIGN (OI-99)."),
@@ -281,7 +305,7 @@ def main():
         return a.only is None or any(name.startswith(p) for p in a.only)
 
     failures = []
-    print("Regression -- chunks 0-11 and the General Liability suites")
+    print("Regression -- chunks 0-12 and the General Liability suites")
     print("=" * 78)
 
     print("\nGOLDEN CASES -- exit code, failure markers, and documented figures")
@@ -346,7 +370,7 @@ def main():
             print("\n".join(out.strip().splitlines()[-15:]))
             print()
         return 1
-    print("REGRESSION CLEAN -- every chunk 0-11 golden case reproduces its "
+    print("REGRESSION CLEAN -- every chunk 0-12 golden case reproduces its "
           "documented figures,\nevery machinery script and every GL suite "
           "exits 0 with no failure marker.")
     return 0
