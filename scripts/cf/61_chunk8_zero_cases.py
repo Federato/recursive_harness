@@ -101,7 +101,11 @@ CASES = [
      lambda s: zeros2.structure(s).update({
          "CovType": "Builders Risk",
          f"{BR_FORM}Table": {BR_FORM: [{}]}}),
-     RAISES, None,
+     "0", None,
+     "**2026-09-23 (OI-109/OI-110): $0, and ISO's Legal Liability premium is $0 too.** C8-08's "
+     "'ISO prices $1' was the POLICY total: the $1 is the CP 11 05 Builders Risk Reporting Form's own "
+     "Group I cell, whose record carries no Limit. ISO skips that null operand (0.500 -> $1); the "
+     "engine now does the same and prices it $1 (OI-110, live-confirmed). Before: "
      "**predicted $0 and it REFUSES, and here the map is simply wrong.** The "
      "outer `If` has NO `Else`: when the test fails nothing is written at "
      "all, so `Premium` is **null**, not 0.0. The null-premium guard then "
@@ -111,7 +115,10 @@ CASES = [
      "is OI-99's question, and C8-08 will ask it"),
 
     ("5  no Limit", "B",
-     lambda s: zeros2.structure(s).pop("Limit", None), RAISES, None,
+     lambda s: zeros2.structure(s).pop("Limit", None), "0", None,
+     "**2026-09-23 (OI-109): now $0, not a refusal.** ISO writes $0 where a missing limit empties a "
+     "premium (confirmed live 5 of 5, chunk 12 `136_chunk12_oi109_probes.py`); the engine now does "
+     "the same with the user's authorization, and records each one in `null_premiums`. Before: "
      "predicted to raise -- the null-premium guard, contract 12.3"),
 
     ("6  CovForm on the ITEM, not the occupancy", "C",

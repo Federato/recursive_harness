@@ -74,6 +74,10 @@ class Fake(Interpreter):
         # become the single door into arithmetic.
         self.null_arithmetic = null_arithmetic
         self.guard_null_premium = True
+        self.null_premium = "refuse"       # the refusal is what B27/B28 test
+        self.null_premiums = []
+        self.product_skips_null = False    # B31 turns it on explicitly
+        self.null_skips = []
         self.strict_single_result = False
         self.strict_refusals = []
         self.coercions = []
@@ -416,6 +420,28 @@ def group_b() -> None:
           root.first("Premium") is not None
           and root.first("Premium").text in (None, ""),
           f"Premium = {root.first('Premium').text!r}, no error raised")
+
+    # OI-109: in "zero" mode (Property's default under `propagate`) the same
+    # program writes 0, as ISO does, and the zeroing is recorded, not silent.
+    ip = Fake(null_arithmetic="propagate")
+    ip.null_premium = "zero"
+    _, root, ip = run(NULL_PREMIUM.format(to="Premium"), ip=ip)
+    check("B30 zero mode writes 0 and records it (OI-109)",
+          root.first("Premium") is not None
+          and root.first("Premium").text == "0"
+          and ip.null_premiums == ["Premium"]
+          and any(t.kind == "null-premium-zeroed" for t in ip.trace),
+          f"Premium = {root.first('Premium').text!r}, recorded {ip.null_premiums}")
+
+    # OI-110: ISO skips a null operand in Product. 0.5 x <null> = 0.5, not null.
+    ip = Fake(null_arithmetic="propagate")
+    ip.product_skips_null = True
+    got, _, ip = run('<rul:Product><rul:Constant Type="decimal">0.5</rul:Constant>'
+                     '<rul:Value Type="decimal" FromDataDef="Missing"/></rul:Product>', ip=ip)
+    check("B31 Product skips a null operand and records it (OI-110)",
+          str(got) == "0.5" and len(ip.null_skips) == 1
+          and any(t.kind == "product-null-skipped" for t in ip.trace),
+          f"got {got!r}, skipped {ip.null_skips}")
 
     # The substring trap: `PremiumIndicator` is a 0/1 flag, not money, and
     # guarding it by name-contains would refuse ordinary content.

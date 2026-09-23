@@ -37,7 +37,21 @@ def node(*names):
 
 
 class BreakLoop(Exception):
-    """`Break`, travelling to the nearest enclosing loop (contract C12)."""
+    """`Break`, travelling to the nearest enclosing loop (contract C12).
+
+    `value` is what the iteration yields when a `Break` fires inside an
+    aggregator rather than as a statement. `Sum(x, Break)` is filed six times
+    (Unmanned Aircraft `SetTotalScheduleLimit`, 20230801 V02/V03): "add the
+    blanket limit, then stop". ISO counts `x` (OI-108, confirmed live), so the
+    `Sum` finishes over the operands it has already evaluated and hands that
+    total up with the break. Without one (`has_value` False), the loop keeps
+    its old behaviour: the iteration contributes the last completed child's value.
+    """
+
+    def __init__(self, value=None, has_value: bool = False):
+        super().__init__()
+        self.value = value
+        self.has_value = has_value
 
 
 def _kids(el):
@@ -557,8 +571,8 @@ def _for_each(ip, el, fr):
         try:
             for ch in _kids(el):
                 out = ip.eval(ch, inner)
-        except BreakLoop:
-            yielded.append(out)
+        except BreakLoop as brk:
+            yielded.append(brk.value if brk.has_value else out)
             break
         yielded.append(out)
     # A collection, not the last value: `Sum` over a `ForEach` must total every
@@ -672,7 +686,15 @@ def _sum(ip, el, fr):
     """Total every operand, spreading a `ForEach` over its iterations (§6)."""
     total = Decimal(0)
     for ch in _kids(el):
-        for v in flatten(ip.eval(ch, fr)):
+        try:
+            got = ip.eval(ch, fr)
+        except BreakLoop as brk:
+            # `Sum(x, Break)`: finish over what is already added, then stop the
+            # enclosing loop with that total as this iteration's value (OI-108).
+            if brk.has_value:
+                raise
+            raise BreakLoop(total, has_value=True) from None
+        for v in flatten(got):
             if v is None:
                 continue                   # an absent addend contributes nothing
             total += ip.num(v, ip.where(ch))
@@ -681,10 +703,30 @@ def _sum(ip, el, fr):
 
 @node("Product")
 def _product(ip, el, fr):
+    """Multiply every operand.
+
+    **A null operand is skipped, as ISO does (OI-110), under `propagate`.**
+    ISO prices `Product(0.500, Divide(<no Limit>, 100))` at $1 and the same
+    shape at LossCostMultiplier 10 at $3 and $5, all confirmed live: the
+    missing operand is left out, the way `Sum` already leaves one out. Every
+    skip is noted (`product-null-skipped`) and listed in `ip.null_skips`. A
+    product whose operands are ALL null is still null. Other modes are
+    unchanged: `refuse` still refuses at `ip.num`.
+    """
+    skip = getattr(ip, "product_skips_null", False)
     out = None
     for ch in _kids(el):
-        v = ip.num(ip.eval(ch, fr), ip.where(ch))
+        raw = ip.eval(ch, fr)
+        if raw is None and skip:
+            ip.null_skips.append(ip.where(ch))
+            ip.note("product-null-skipped",
+                    f"Product left out a null {ip.tag(ch)} operand, as ISO does "
+                    f"(OI-110)", "Product")
+            continue
+        v = ip.num(raw, ip.where(ch))
         out = v if out is None else out * v
+    if out is None:
+        return None
     return ip.round_to(out, el, ip.where(el))
 
 

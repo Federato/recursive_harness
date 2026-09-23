@@ -263,7 +263,8 @@ class Interpreter:
     def __init__(self, book, rounding: str = "ROUND_HALF_UP",
                  trace: bool = True, null_arithmetic: str | None = None,
                  guard_null_premium: bool = True,
-                 strict_single_result: bool | None = None):
+                 strict_single_result: bool | None = None,
+                 null_premium: str | None = None):
         null_arithmetic = null_arithmetic or DEFAULT_NULL_ARITHMETIC
         if rounding not in ROUNDING_MODES:
             raise InterpretError(
@@ -290,6 +291,35 @@ class Interpreter:
         #: fallback idiom needs, and are refused at the one boundary where
         #: absent silently becomes free.
         self.guard_null_premium = guard_null_premium
+        #: What the guard does with a null premium: "refuse" (raise), or
+        #: "zero" (write 0, as ISO does, and say so in the trace).
+        #:
+        #: **ISO writes $0 (OI-109, confirmed live 5 of 5).** A coverage whose
+        #: limit is missing prices at $0 while the rest of the policy rates:
+        #: a building with no Limit ($0 plus ISO's "Please enter a Limit"
+        #: message), Business Income with no Limit ($0, NO message), Ordinance
+        #: or Law without its B/C limits. Refusing the whole submission there
+        #: is stricter than the oracle. So under `propagate` -- the mode that
+        #: already exists to behave as ISO does -- the default is "zero", and
+        #: every zeroed premium is noted (`null-premium-zeroed`) and listed in
+        #: `null_premiums`, so a silent ISO $0 is never a silent $0 here.
+        #: `refuse` arithmetic (General Liability) keeps "refuse".
+        if null_premium is None:
+            null_premium = "zero" if null_arithmetic == "propagate" else "refuse"
+        if null_premium not in ("refuse", "zero"):
+            raise InterpretError(
+                f"unknown null_premium mode {null_premium!r}", "§12.3", "")
+        self.null_premium = null_premium
+        #: Every premium target a null was written to as 0 ("zero" mode).
+        self.null_premiums: list[str] = []
+        #: `Product` skips a null operand instead of yielding null (OI-110):
+        #: ISO's own behaviour, confirmed live where the remainder does not
+        #: round to zero ($1, $3, $5). On under `propagate` (Property) only.
+        #: With it on, "zero" above is reached only when EVERY operand of the
+        #: premium product was null.
+        self.product_skips_null = null_arithmetic == "propagate"
+        #: Every operand `Product` left out, for the same visibility.
+        self.null_skips: list[str] = []
         #: Refuse a `SingleResult` lookup that matches NO row -- see
         #: `_empty_lookup`. Default off; this is a measurement switch.
         self.strict_single_result = (DEFAULT_STRICT_SINGLE_RESULT
@@ -441,6 +471,16 @@ class Interpreter:
         to = el.attrib.get("ToDataDef")
         if to is not None:
             if value is None and self.guard_null_premium \
+                    and _premium_target(to) and self.null_premium == "zero":
+                # OI-109: ISO writes $0. Do the same, and leave a mark.
+                self.null_premiums.append(to)
+                self.note("null-premium-zeroed",
+                          f"{name} resolved to NULL for {to!r}; written as 0, "
+                          f"as ISO does (OI-109). Something upstream resolved "
+                          f"to nothing -- the trace above names it", name,
+                          target=to)
+                value = Decimal(0)
+            elif value is None and self.guard_null_premium \
                     and _premium_target(to):
                 raise InterpretError(
                     f"{name} wrote a NULL to {to!r}. A premium is money: "

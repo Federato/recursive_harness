@@ -101,7 +101,10 @@ CASES = [
      "Building is untouched because it carries its own deductible"),
 
     ("4  no Limit", lambda s: g.item(s).pop("Limit", None),
-     RAISES, ("261", "32"),
+     {"Basic": ("0", "0"), "Broad": ("0",), "Special": ("0",)}, ("261", "32"),
+     "**2026-09-23 (OI-109): now $0, not a refusal.** ISO writes $0 where a missing limit empties a "
+     "premium (confirmed live 5 of 5, chunk 12 `136_chunk12_oi109_probes.py`); the engine now does "
+     "the same with the user's authorization, and records each one in `null_premiums`. Before: "
      "predicted to raise, as chunk 3's Building did -- the premium formula "
      "divides the limit by 100 and `SetTotAmtInsurance` copies it for the "
      "deductible band, so there is nothing to rate"),

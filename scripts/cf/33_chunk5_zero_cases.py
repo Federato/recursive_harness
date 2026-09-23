@@ -77,7 +77,13 @@ CASES = [
 
     ("Z2  TypeOfRisk = a COMBINED risk",
      lambda s: chunk5.submission and _set_risk(s, COMBINED),
-     ("0.203", "0", "0", "261"),
+     ("0.203", "1.26", "256", "261"),
+     "**2026-09-23 (OI-110): NOT a zero, and ISO says so.** With the blend "
+     "percentages absent, each weighted term is a `Product` with a null "
+     "operand; ISO skips the null and adds the two component factors (1.26), "
+     "pricing BI at $256 + $30, confirmed live "
+     "(`results/cf-raas/chunk12_oi110_c5z2_Z2_response.json`). The engine now "
+     "does the same (user-authorized). What this case said before, kept: "
      "**a filed row worth 0.0.** All four Combined risk types are filed at 0 "
      "for every coinsurance percentage, because they are meant to be a "
      "percentage-weighted blend of two lookups. Without the "

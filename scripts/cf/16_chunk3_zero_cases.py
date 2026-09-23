@@ -110,8 +110,14 @@ CASES = [
 
     ("Z3  Limit removed",
      lambda s: zeros2.structure(s).pop("Limit"),
-     {"Broad": RAISES, "Special": RAISES}, {"BGI": None, "BGII": None},
-     "**predicted to price at zero; it RAISES instead, on both forms.** The "
+     {"Broad": "0", "Special": "0"}, {"BGI": "0", "BGII": "0"},
+     "**2026-09-23, OI-109: now prices at $0, as ISO does.** ISO was asked "
+     "live (chunk 12, `136_chunk12_oi109_probes.py` P1): a building with no "
+     "Limit rates at $0 there, with ISO's own error message 'Please enter a "
+     "Limit greater than 0'. The engine now writes 0 and records "
+     "`null-premium-zeroed` in the trace (`Interpreter.null_premiums`), with "
+     "the user's authorization. What this case said before, kept as it was:\n"
+     "    **predicted to price at zero; it RAISES instead, on both forms.** The "
      "prediction read branch 3 of the LOI rules -- `0.0` when `Limit` is "
      "absent -- and stopped there. What actually happens is that the premium's "
      "own exposure base is `Limit / 100 x final rate`, so an absent limit "

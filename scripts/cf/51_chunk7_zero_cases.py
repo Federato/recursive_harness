@@ -109,7 +109,11 @@ CASES = [
      "of borrowing, and only one of them notices"),
 
     ("6  no Limit on the BI record",
-     lambda s: record(s).pop("Limit", None), RAISES, ("66", "209"),
+     lambda s: record(s).pop("Limit", None),
+     {"Basic": ("0", "0"), "Broad": ("0",), "Special": ("0",)}, ("66", "209"),
+     "**2026-09-23 (OI-109): now $0, not a refusal.** ISO writes $0 where a missing limit empties a "
+     "premium (confirmed live 5 of 5, chunk 12 `136_chunk12_oi109_probes.py`); the engine now does "
+     "the same with the user's authorization, and records each one in `null_premiums`. Before: "
      "predicted to raise, as every coverage before it has -- the null-premium "
      "guard, contract 12.3"),
 ]
