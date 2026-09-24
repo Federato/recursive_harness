@@ -14,6 +14,7 @@
 > **FL-BGII DONE 2026-09-24** (county / FL territory dropdowns). Committed 188e741. Specific/Tentative Group I verified built (Tentative payload fix). Committed e5be5dc.
 > **Specific Group II DONE 2026-09-24** (BGIISPEC). Not committed yet. Committed 952b0a2.
 > **Blanket Phase 1 DONE 2026-09-24** (Building Only, Average). Phases 2-4 DONE -- blanket complete (Average + Highest, all five item types). Next: older-CW-base audit, Earthquake, editions LAST -> 4 (SC, Highest) -> Earthquake -> editions LAST.
+> **Older-CW-base audit DONE 2026-09-24** (`124 --fix SCBASE / CWRULES / SPTOT / SCTOT`; baseline 21171 unchanged). Not committed yet. Next: Earthquake, then editions LAST.
 
 ---
 

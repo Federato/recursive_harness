@@ -384,3 +384,28 @@ SC BI one round. Finding: a blanketed SC BI record's factor uses the blanket's c
 now warns only on a blanket election without a valid ID. Probes: NY Combined with 2 SC items 18 / 18; NY BI + SC BI 18 / 18; CA
 Highest 12 / 12; OH BI Highest 15 / 15; all Phase 1-3 probes unchanged; 11 state batches 42 / 42; standard 42 / 42 at 21171.
 Not built: Builders Risk blanket type, value-reporting / multi-location average rates (MUBlktRated), agreed-value blanket variants.
+
+## Feature set: Older-countrywide-base audit -- DONE 2026-09-24 (`scenarios/rc5/mo_sc_pool_v02`, `whpct_*`, `sptot_oh_sc`, live ISO)
+
+Each state's package rides on a specific countrywide project (`TBL - CWBase`): CA / NC on CF CW 20230801 V03, MO on V02, FL IL MA
+NJ RI VT on V04, the rest on CW 20260601. Tables and rules were diffed base by base against 2026.
+- **V04:** identical to 2026 (tables and rating rules). No change.
+- **Tables (`124 --fix SCBASE`):** V03 lacks one Special Class description ("Wind Towers..."); V02 has 9 renamed descriptions and
+  swapped pool rates. `TBL - Special Class` EI:EJ carries CA / NC / MO from their own base; #N/A where ISO refuses.
+- **Rules (`124 --fix CWRULES`):**
+  (a) % wind/hail deductible (1% / 2% / 5%) factor and indicator are sized on WindstormOrHailTotAmtInsurance = building + its
+  contents without a wind/hail exclusion + included Special Class items (2026 / V02 / V04), but on the building's limit alone on V03.
+  The rater used the building limit everywhere (OH probe: 0.91 vs ISO 0.87). CS 90 / Bldg 49 now switch on the base.
+  (b) V03 contents compute their own % wind/hail factor on their own limit (2026 copies the building's): Contents row 47.
+  (c) V02 (MO): Specific Group I = ROUND(specific x LCM, 3), no roof ACV, one rounding (MO probe 508 vs ISO 522); excluded
+  Group II lowest path without roof factors (Bldg rows 10 / 42).
+- **Found along the way, every base (`124 --fix SPTOT`, `SCTOT`):**
+  - The Special deductible factor was sized on the building limit; ISO uses SpecialTotAmtInsurance = building (blanket share if
+    blanketed) + contents + Special Class items included in the building (CS 122; OH probe 0.92 vs ISO 0.96). Theft total
+    (CS 127) and % wind/hail total now include the included Special Class items too.
+  - CS 215 (included Special Class limit in the building's total) pointed at building 1 ($A$48) in every column and counted
+    inactive / not-included items. Now per building, active, IncludedInBuilding = Yes.
+  - The baseline never showed either: its buildings sit in the top bands and its Special Class item is not included in a building.
+- **Probes:** OH % wind/hail 42 / 42; NC (V03) 42 / 42; MO (V02) 42 / 42; OH with an included Special Class item 42 / 42. All
+  earlier probes unchanged (FL / NY refusal probes still refuse identically); standard 42 / 42 at 21171.
+- **Simplification kept:** contents in the Special / theft / wind-hail totals use their scheduled limit, not a blanket share.

@@ -2501,6 +2501,209 @@ def fix_blktdiag(app, wb):
     return "Blanket: Diagnostics row 16 and Defaults notes updated", set()
 
 
+def fix_scbase(app, wb):
+    """Older-CW-base audit (2026-09-24). Rate tables on CF CW 20230801 V02 / V03 / V04 equal CW 2026 except Special
+    Class: V03 (CA, NC) lacks 'Wind Towers - Windmills and wind turbines...' (ISO refuses it); V02 (MO) names 9
+    descriptions differently (refused) and swaps the swimming-pool rates (above ground 0.152 / in ground 0.556).
+    Rows for those states (none files its own Special Class tables) are added to `TBL - Special Class` EI:EJ from
+    the state's own CW base: option = base map; rate = base table; #N/A where ISO would refuse."""
+    import csv
+    t = wb.Worksheets("TBL - Special Class")
+    cws = wb.Worksheets("TBL - CWBase")
+    base_of = {}
+    for r in range(2, cws.Cells(cws.Rows.Count, "A").End(-4162).Row + 1):
+        base_of[cws.Range(f"A{r}").Value] = cws.Range(f"B{r}").Value
+    root = w11.ISO.parent
+    dirs = {d.name: d for d in root.glob("*/CF CW *")}
+    rd = lambda f: list(csv.reader(open(f, encoding="utf-8-sig")))[1:]           # noqa: E731
+
+    def rates(f):
+        d = {}
+        for r in rd(f):
+            lo, hi = r[2].split(" to ") if " to " in r[2] else (r[2], r[2])
+            for pc in range(int(lo), int(hi) + 1):
+                d[(r[1], pc)] = float(r[3])
+        return d
+    offered = {r[1] for r in rd(w11.CW / "SpecialClassDescriptionConvertedOption.RateTable.csv")}
+    last = t.Cells(t.Rows.Count, "EI").End(-4162).Row
+    have = {str(v[0]).split("|")[0] for v in t.Range(f"EI2:EI{last}").Value if v[0]}
+    new, notes = [], []
+    for st in ("CA", "NC", "MO"):
+        if st in have:
+            raise Gate(f"{st} already has rows in EI:EJ")
+        b = base_of.get(st)
+        if b not in dirs:
+            raise Gate(f"{st}: base {b} not on disk")
+        rt = dirs[b] / "Rate Tables"
+        m = {r[1]: r[2] for r in rd(rt / "SpecialClassDescriptionConvertedOption.RateTable.csv")}
+        rr = rates(rt / "BasicGroupIRateSpecialClass.RateTable.csv")
+        na = 0
+        for desc in sorted(offered | set(m)):
+            opt = m.get(desc)
+            for pc in range(1, 11):
+                v = rr.get((opt, pc)) if opt else None
+                new.append((f"{st}|{desc}|{pc}", v if v is not None else "=NA()"))
+                na += v is None
+        notes.append(f"{st}: {b}, {na} refused")
+    t.Range(f"EI{last + 1}:EI{last + len(new)}").Value = tuple((r[0],) for r in new)
+    t.Range(f"EJ{last + 1}:EJ{last + len(new)}").Formula = tuple((r[1],) for r in new)
+    t.Range("EK4").Value = "2026-09-24 (older-CW-base audit): " + "; ".join(notes)
+    new_last = last + len(new)
+    import re
+    sc = wb.Worksheets(SCC)
+    for c in COLS:
+        f = str(w11.com_retry(lambda: sc.Cells(4, c).Formula))
+        f2 = re.sub(r"\$E([IJ])\$(\d+)", lambda mm: mm.group(0) if mm.group(2) == "2" else f"$E{mm.group(1)}${new_last}", f)
+        w11.com_retry(lambda: setattr(sc.Cells(4, c), "Formula", f2))
+    print("   " + "; ".join(notes))
+    return f"SC base rows: {len(new)} (CA, NC, MO)", {SCC}
+
+
+def fix_cwrules(app, wb):
+    """Older-CW-base audit, rules (2026-09-24). Rating-rule differences vs CW 2026 (V04 = none):
+      (a) % wind/hail deductible (1% / 2% / 5%) -- `LookupWindstormOrHailDeductibleFactor` and
+          `SetWindstormHailIndicator` key on WindstormOrHailTotAmtInsurance = the building's limit + its
+          non-excluded contents (2026 / V02 / V04) but on WindstormHailLimit = the building's limit alone on
+          V03 (CA, NC). The rater used the building limit everywhere: CS 90 and Bldg 49 now use the total
+          except on V03.
+      (b) V03 Contents compute their OWN % wind/hail factor on their own limit (2026 copies the building's):
+          Contents row 47 does that on V03 states.
+      (c) V02 (MO): Specific Group I = ROUND(specific x LCM, 3) -- no roof ACV, one rounding (MO probe: 508 vs
+          ISO 522); excluded Group II (CW lowest path) = ROUND(lowest x LCM, 3) -- no roof factors."""
+    cws = wb.Worksheets("TBL - CWBase")
+    last = cws.Cells(cws.Rows.Count, "A").End(-4162).Row
+    base = lambda st: f"IFERROR(VLOOKUP({st},'TBL - CWBase'!$A$2:$B${last},2,FALSE),\"\")"   # noqa: E731
+    cs, br, cr = wb.Worksheets(w11.CS), wb.Worksheets(BR), wb.Worksheets("CALC - Contents Rating")
+
+    def edit(sh, r, c, a, b, count=1):
+        f = str(w11.com_retry(lambda: sh.Cells(r, c).Formula))
+        if f.count(a) != count:
+            raise Gate(f"{sh.Name}!{colname(c)}{r}: expected {count} x {a!r} in {f[:200]!r}")
+        w11.com_retry(lambda: setattr(sh.Cells(r, c), "Formula", f.replace(a, b)))
+
+    for c in COLS:
+        X, b = colname(c), 45 + c
+        st = f"'CALC - CoreScratchpad'!{X}$2"
+        v03 = f"{base(st)}=\"CF CW 20230801 V03\""
+        v02 = f"{base(st)}=\"CF CW 20230801 V02\""
+        N, A = f"'IN - Schedule'!$N${b}", f"'IN - Schedule'!$A${b}"
+        tot = (f"({N}+SUMIFS('IN - Schedule'!$E$134:$E$173,'IN - Schedule'!$L$134:$L$173,{A},"
+               f"'IN - Schedule'!$C$134:$C$173,\"Yes\",'IN - Schedule'!$I$134:$I$173,\"<>Yes\"))")
+        whtot = f"IF({v03},{N},{tot})"
+        # (a) CS 90: % wind/hail factor band on the right amount (the building limit appears twice)
+        edit(cs, 90, c, f"<={N})", f"<={whtot})")
+        edit(cs, 90, c, f">{N})", f">{whtot})")
+        # (a) Bldg 49 indicator: 2026 uses the total including the building even if it excludes wind/hail
+        f49 = str(w11.com_retry(lambda: br.Cells(49, c).Formula))
+        old_tot = (f"(IF('IN - Schedule'!$AE${b}<>\"Yes\",{N},0)+SUMIFS('IN - Schedule'!$E$134:$E$173,"
+                   f"'IN - Schedule'!$L$134:$L$173,{A},'IN - Schedule'!$C$134:$C$173,\"Yes\",'IN - Schedule'!$I$134:$I$173,\"No\"))")
+        if f49.count(old_tot) != 3:
+            raise Gate(f"Bldg {X}49: W-3 total not found 3 times: {f49[:200]!r}")
+        w11.com_retry(lambda: setattr(br.Cells(49, c), "Formula", f49.replace(old_tot, whtot)))
+        # (c) V02: Specific Group I without ACV, one rounding; excluded Group II lowest path without roof factors
+        cs_ = f"'CALC - CoreScratchpad'!{X}"
+        edit(br, 10, c, f"ROUND(ROUND({X}3*{X}4,3)*{X}7*{X}8*{X}9,3)",
+             f"IF({v02},ROUND({X}3*{X}4*{X}7*{X}8,3),ROUND(ROUND({X}3*{X}4,3)*{X}7*{X}8*{X}9,3))")
+        lowest = f"ROUND(ROUND(ROUND({X}37*{X}38,3)*{X}9,3)*{X}40,3)"
+        edit(br, 42, c, lowest, f"IF({v02},ROUND({X}37*{X}38,3),{lowest})")
+    # (b) V03 contents: own % wind/hail factor on the contents' own limit
+    TB = "'TBL - BldgBGIIRating'!"
+    for c in COLS:
+        X, p = colname(c), 131 + c
+        k = f"{X}$116"
+        st = f"INDEX('CALC - CoreScratchpad'!$C$2:$AP$2,1,{k})"
+        v03 = f"{base(st)}=\"CF CW 20230801 V03\""
+        whd = f"INDEX('IN - Schedule'!$S$48:$S$87,{k})"
+        E = f"'IN - Schedule'!$E${p}"
+        own = (f"SUMPRODUCT({TB}$AW$2:$AW$1076*({TB}$AS$2:$AS$1076={st})*({TB}$AT$2:$AT$1076={whd})"
+               f"*({TB}$AU$2:$AU$1076<={E})*({TB}$AV$2:$AV$1076>{E}))")
+        old = f"=INDEX('CALC - Bldg Rating'!$C$50:$AP$50,1,{k})"
+        f = str(w11.com_retry(lambda: cr.Cells(47, c).Formula))
+        if f != old:
+            raise Gate(f"Contents {X}47 is not {old!r}: {f!r}")
+        pct = f"OR({whd}=\"1%\",{whd}=\"2%\",{whd}=\"5%\",{whd}=0.01,{whd}=0.02,{whd}=0.05)"
+        w11.com_retry(lambda: setattr(cr.Cells(47, c), "Formula",
+                                      f"=IF(AND({v03},{pct}),{own},{old[1:]})"))
+    return "CW-base rules: % wind/hail total (V03 building limit), V03 contents own factor, V02 specific / lowest", \
+        {BR, "CALC - Contents Rating"}
+
+
+def fix_sptot(app, wb):
+    """Special deductible sizing (2026-09-24; every CW base, V02/V03/2026 identical). ISO looks the Special
+    DeductibleFactor up on SpecialTotAmtInsurance = StructureLimitToUse (blanket share when blanketed) +
+    OccupancyTotSpecialAmtInsuranceSum (the building's contents) + SpecialClassRiskSpecialTotAmtInsurance
+    (Special Class items IncludedInBuilding with that building, Special cause of loss). CS 122 sized it on the
+    building limit alone (OH probe: 0.92 vs ISO 0.96; the baseline buildings sit in the top band either way).
+    Also adds the included Special Class items to the theft total (CS 127, SpecialClassRiskSpecialIncTheftTot...)
+    and the % wind/hail total (CS 90 / Bldg 49, SpecialClassRiskWindstormOrHailTotAmtInsurance)."""
+    cs, br = wb.Worksheets(w11.CS), wb.Worksheets(BR)
+    S = "'IN - Schedule'!"
+
+    def sc(b, extra=""):
+        return (f"SUMIFS({S}$K$220:$K$259,{S}$C$220:$C$259,\"Yes\",{S}$L$220:$L$259,\"Yes\","
+                f"{S}$M$220:$M$259,{S}$A${b},{S}$E$220:$E$259,\"Special\"{extra})")
+
+    def edit(sh, r, c, a, b, count):
+        f = str(w11.com_retry(lambda: sh.Cells(r, c).Formula))
+        if f.count(a) != count:
+            raise Gate(f"{sh.Name}!{colname(c)}{r}: expected {count} x {a!r} in {f[:240]!r}")
+        w11.com_retry(lambda: setattr(sh.Cells(r, c), "Formula", f.replace(a, b)))
+
+    for c in COLS:
+        X, b = colname(c), 45 + c
+        N, A = f"{S}$N${b}", f"{S}$A${b}"
+        lim = f"IF('CALC - Blanket'!{X}$2,'CALC - Blanket'!{X}$7,{N})"
+        ctot = (f"SUMIFS({S}$E$134:$E$173,{S}$L$134:$L$173,{A},{S}$C$134:$C$173,\"Yes\")")
+        tot = f"({lim}+{ctot}+{sc(b)})"
+        # CS 122: Special deductible band on the Special total
+        edit(cs, 122, c, f"<{N})", f"<{tot})", 1)
+        edit(cs, 122, c, f">={N})", f">={tot})", 1)
+        # CS 127: theft total -- blanket share for the building, plus included SC items without a theft exclusion
+        edit(cs, 127, c, f"\"No\"),{N},0)", f"\"No\"),{lim},0)", 1)
+        f = str(w11.com_retry(lambda: cs.Cells(127, c).Formula))
+        if not f.endswith(",\"No\"),0)"):
+            raise Gate(f"CS {X}127 tail: {f[-60:]!r}")
+        w11.com_retry(lambda: setattr(cs.Cells(127, c), "Formula",
+                                      f[:-3] + "+" + sc(b, f",{S}$W$220:$W$259,\"No\"") + ",0)"))
+        # CS 90 / Bldg 49: % wind/hail total gains included SC items without a wind/hail exclusion
+        wh_end = f"{S}$I$134:$I$173,\"<>Yes\"))"
+        wh_new = f"{S}$I$134:$I$173,\"<>Yes\")+{sc(b, f',{S}$V$220:$V$259,\"<>Yes\"')})"
+        edit(cs, 90, c, wh_end, wh_new, 2)
+        edit(br, 49, c, wh_end, wh_new, 3)
+    return "Special deductible on the Special total (bldg/blanket + contents + included SC); SC in theft and W/H totals", \
+        {BR, "CALC - Contents Rating"}
+
+
+def fix_sctot(app, wb):
+    """CS 215 (Special Class limit folded into the building's TotAmtInsurance, ISO SpecialClassRiskTotAmtInsurance)
+    pointed at building 1's ID ($A$48) in every column and summed inactive and not-included items. Now: this
+    column's building, active, IncludedInBuilding = Yes (2026-09-24; OH probe BGI deductible 0.92 vs ISO 0.96)."""
+    cs = wb.Worksheets(w11.CS)
+    S = "'IN - Schedule'!"
+    old = f"=SUMIF({S}$M$220:$M$259, {S}$A$48, {S}$K$220:$K$259)"
+    for c in COLS:
+        f = str(w11.com_retry(lambda: cs.Cells(215, c).Formula))
+        if f.replace(" ", "") != old.replace(" ", ""):
+            raise Gate(f"CS {colname(c)}215 is {f!r}")
+        new = (f"=SUMIFS({S}$K$220:$K$259,{S}$M$220:$M$259,{S}$A${45 + c},{S}$C$220:$C$259,\"Yes\","
+               f"{S}$L$220:$L$259,\"Yes\")")
+        w11.com_retry(lambda: setattr(cs.Cells(215, c), "Formula", new))
+    return "CS 215: included Special Class limit per building (was building 1 everywhere)", \
+        {BR, "CALC - Contents Rating"}
+
+
+w11.FIXES["SCTOT"] = fix_sctot
+w11.EXPECT_COLS["SCTOT"] = set()
+w11.NO_MOVE.add("SCTOT")        # the baseline SC item is not included in a building
+w11.FIXES["SPTOT"] = fix_sptot
+w11.EXPECT_COLS["SPTOT"] = set()
+w11.NO_MOVE.add("SPTOT")        # baseline buildings sit in the top Special deductible band either way
+w11.FIXES["CWRULES"] = fix_cwrules
+w11.EXPECT_COLS["CWRULES"] = set()
+w11.NO_MOVE.add("CWRULES")      # no baseline building has a % wind/hail deductible; MO is not in the baseline
+w11.FIXES["SCBASE"] = fix_scbase
+w11.EXPECT_COLS["SCBASE"] = set()
+w11.NO_MOVE.add("SCBASE")
 w11.FIXES["BLKTDIAG"] = fix_blktdiag
 w11.EXPECT_COLS["BLKTDIAG"] = set()
 w11.NO_MOVE.add("BLKTDIAG")

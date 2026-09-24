@@ -49,6 +49,7 @@ multi-edition support is the lowest priority.
 |---|---|
 | Blanket rating | ✅ **DONE 2026-09-24** (Building, Personal Property, Combined, BI, Special Class, SC BI; Average and Highest; CA / OH / NY probes = ISO). Not built: Builders Risk blankets, MU / value-reporting, agreed value |
 | Specific Group II | ✅ **DONE 2026-09-24**: 36 states, Building / Contents / BI, election ignored where the state has none; probes OH / NY / AK = ISO |
+| Older-CW-base audit | ✅ **DONE 2026-09-24**: V04 = 2026; V03 (CA, NC) % wind/hail on building limit + own contents factor; V02 (MO) Specific Group I / lowest Group II; plus Special deductible total and included-Special-Class total bugs (every state). Probes OH / NC / MO = ISO |
 | Earthquake | Untraced on both the rater and the harness side |
 | Edition transitions | One ERC edition per state, resolved outside the workbook; FL's filing is 21 months old (R-6) |
 | ED-FL | ✅ **DONE 2026-09-24**: FL V02 on disk (on CW 20230801 V04); FL Special Class rates, vacancy codes, substandard table (8 states), FL residential basis fixed; engine FL gap closed |
