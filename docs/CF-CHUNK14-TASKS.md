@@ -11,7 +11,7 @@ Derived from [`CF-PROPERTY-BUILD-ORDER.md`](CF-PROPERTY-BUILD-ORDER.md) item 14
 without the user's go. "All states" means the **46**; Puerto Rico is
 excluded. Live ISO comparisons at **2026-09-17** (OI-105).
 
-**Status: OPEN 2026-09-24, 9 of 22 tasks. RC-1 and RC-2 COMPLETE** (the policy total: golden $1,193 and 8 variants, ISO 9 of 9): every premium and the policy total equal ISO on 293 stored responses; no minimum premium in ISO's rating: a company input, refer to company (user decision; OI-113).
+**Status: OPEN 2026-09-24, 17 of 22 tasks. RC-1 to RC-4 COMPLETE** (statistical codes: 12,547 stored ISO stat values equal, strictly, on 293 of 293 responses; state earthquake codes ISO 4 of 4 live; policy modifiers: 23 cases, engine 23 of 23 as derived, ISO 23 of 23; the policy total: golden $1,193 and 8 variants, ISO 9 of 9): every premium and the policy total equal ISO on 293 stored responses; no minimum premium in ISO's rating: a company input, refer to company (user decision; OI-113).
 
 ---
 
@@ -66,23 +66,23 @@ codes ISO attaches to every record for reporting.
 | C14-08 | **More than one location and building**, and the additional-location reset (`ErcResetPrsnlPropPremiumForAdditionalLocations`) | ✅ | **Done 2026-09-24** (`159_chunk14_rc2_total.py`). Two locations, each chunk 2's building with terrorism: **$602**; two buildings on one location: also **$602**, because each **structure's** own total keys its deductible band (TotAmtInsurance = the structure's limit + contents at that structure, chunk 1), not the location's. My first prediction ($606) assumed the location total; the engine and ISO were right. **ISO agrees on both.** `ErcResetPrsnlPropPremiumForAdditionalLocations` belongs to the Additional Locations Special Coinsurance endorsement (12 rule files, in no ISO fixture): **already tracked as not built, B9 in `Coverage_Inventory_And_Tracking.md`**; not tested here |
 | C14-09 | **Rounding**: whole-dollar premiums summed against the 2-decimal roll-ups | ✅ | **Done 2026-09-24** (`159_chunk14_rc2_total.py`). **The total adds whole-dollar premiums; it never rounds a raw sum.** Discriminating case: two buildings whose terrorism works out to $0.357 each (Remainder of State, IL 09 53, fire exception 0.4): $0 each, **total $586**; rounding the raw 0.715 would give $587. **ISO: $586** |
 
-### RC-3 · Policy modifiers (5 tasks) — gates 4 and 5
+### RC-3 · Policy modifiers (5 tasks) — gates 4 and 5 — ✅ COMPLETE 2026-09-24
 
 | # | Task | Status | Notes |
 |---|---|---|---|
-| C14-10 | **IRPM**: the form, `TotalModificationPct`, the state maximum credit / debit, the 25% message, which premiums it multiplies; NE's override | ⬜ | The rater work found IRPM hard-coded to 1.0 once (R-4) |
-| C14-11 | **Package modification factor** | ⬜ | |
-| C14-12 | **Multi-premium and dispersion credit** (the policy-level user factor) | ⬜ | |
-| C14-13 | **Standard Property Policy** (CP 00 99): its Group I / II factors, eligibility and messages | ⬜ | |
-| C14-14 | **Multiple-location average rates** (value reporting form) | ⬜ | |
+| C14-10 | **IRPM**: the form, `TotalModificationPct`, the state maximum credit / debit, the 25% message, which premiums it multiplies; NE's override | ✅ | **Done 2026-09-24** (`160_chunk14_rc3_modifiers.py`). Six category percentages → `IRPMConversion` → summed → `IRPMFactor` = round3(1 + t/100), capped at the state limit; **a supplied `IRPMFactor` wins** (IsNull guard). Oregon: −10% → 0.9 → $264; +30 → 1.25 + message → $366; −30 → 0.75 → $220; IRPM No with `CPPIRPMFactor` 0.85 → $249; supplied 1.1 → $322. **The cap and the message are separate rules, and states change them separately:** NY ±15 on its **own twelve categories** (the CW six are ignored; first prediction wrong, engine right), its own 15% message, and a second "all credits" message that adds the IRPM *percent* to the multi-premium *factor*, so +25 trips it; MO credit −35 with a **seventh** category (expense reduction) and its own message; GA caps at 25 but warns at 15; VA silent; NE IRPM off (1.0 unless supplied). 12 state cases, ISO agrees on every premium and message. **Missouri, IRPM on with the expense category blank: ISO refuses the policy, ours prices** (logged on OI-103; pinned as O4). |
+| C14-11 | **Package modification factor** | ✅ | **Done 2026-09-24** (`160_chunk14_rc3_modifiers.py`). The policy's factor reaches the building only when the building's own is blank: policy 0.8 → $209 + $26 = **$235**; building 1.0 set → **$293**. ISO agrees. |
+| C14-12 | **Multi-premium and dispersion credit** (the policy-level user factor) | ✅ | **Done 2026-09-24** (`160_chunk14_rc3_modifiers.py`). `MultiPremiumAndDispersionCreditFactorUser` 0.9, building blank → $235 + $29 = **$264**. ISO agrees. |
+| C14-13 | **Standard Property Policy** (CP 00 99): its Group I / II factors, eligibility and messages | ✅ | **Done 2026-09-24** (`160_chunk14_rc3_modifiers.py`). CW 0.98 on Group I and II, applied at the **cause-of-loss step**, so it rounds through the chain (0.239 → 0.234 → … → 0.255): $255 + $31 = **$286**, not 0.98 × 293. Eligibility is 17 "not valid with the Standard Property Policy" **messages** (never refusals); the five-coverage policy as SPP raises the Business Income one and still prices it (ISO $1,087, 119 premiums agree). |
+| C14-14 | **Multiple-location average rates** (value reporting form) | ✅ | **Done 2026-09-24** (`160_chunk14_rc3_modifiers.py`). With no value reporting form, `MultiLocAvgRates` defaults to "Not Used" on the policy and nothing prices off it ($293). The value reporting form itself is unbuilt, tracked in `Coverage_Inventory_And_Tracking.md`. |
 
-### RC-4 · Statistical coding (3 tasks)
+### RC-4 · Statistical coding (3 tasks) — ✅ COMPLETE 2026-09-24
 
 | # | Task | Status | Notes |
 |---|---|---|---|
-| C14-15 | **Stat-code census** by record type; the 34 tables, which are state-filed | ⬜ | |
-| C14-16 | **Stat codes against ISO**: the 10,633 stored values, field for field | ⬜ | |
-| C14-17 | **State stat-code rules**: FL's dispatcher, state-filed tables | ⬜ | |
+| C14-15 | **Stat-code census** by record type; the 34 tables, which are state-filed | ✅ | **Done 2026-09-24** (census in `162_`'s docstring and here). Every countrywide edition our 46 states sit on files **46** stat-code tables. **22 tables are state-filed**: the deductible codes (All-other, Wind/Hail, general) in 43 states, Earthquake deductible in 45 (TX its own 37-row version), and single-state tables (FL BCEG / sinkhole / EQ construction, NY coinsurance, NC protection class, AL state exception, CA wildfire, MA oil / tenant relocation, AR/DC peril exclusion, 6 windstorm-mitigation states). **State stat rules in 18 states** (the dispatcher `ErcSetStatisticalCodes` is overridden in 18, not FL only as the opening census read). The stored responses carry 51 stat field names, 12,547 values. |
+| C14-16 | **Stat codes against ISO**: the 10,633 stored values, field for field | ✅ | **Done 2026-09-24** (`161_chunk14_c14-16_statcode_replay.py`, offline, sample in the regression). **All 12,547 stat values on 293 of 293 stored ISO responses equal ours**, compared **strictly**: a code is text, so "07" ≠ "7" and "" ≠ "0" (the premium comparer treats those as equal numbers; not good enough for codes). The 10,633 in the census counted `…StatCode` keys only; the full set adds stat amounts, stat premiums and `…ForStat` fields. |
+| C14-17 | **State stat-code rules**: FL's dispatcher, state-filed tables | ✅ | **Done 2026-09-24** (`162_chunk14_rc4_state_statcodes.py`, ISO live). The stored responses already exercise most state mechanisms with real values (AL/AR/DC/NY/RI deductible codes, NC, NY, AL/KY wind mitigation, AL, CA wildfire, FL sinkhole, VA, AK/AZ terrorism), and the **blanking** states (AK/NY mold, DC/NY BCEG), where ISO's blank must meet ours. Not in any stored response: a state **earthquake** code. The lookup is state row first, CW second; **FL class 2A → "21"** (CW has no 2A) and TX / OR / FL deductible codes: **ISO 4 of 4 as predicted**. **TX files "97" for off-grid EQ deductibles (7%, 11%…) but no premium factor for them**, so ISO refuses before the code (OI-103 shape): the "97" rows are unreachable through the percentage form. **Out of scope, with their coverages:** stat codes of unbuilt coverages: Off-Premises Interruption (AK), MA heating-oil remediation and tenant relocation, Condominium Unit-Owners Optional Coverages and the Value Reporting Form (AR/DC peril-exclusion codes). |
 
 ### RC-5 · Confirmation and close-out (5 tasks) — gates 2, 3, 6–9
 

@@ -206,6 +206,9 @@ MACHINERY = [
     ("158_chunk14_rc1_scope_machinery.py",
      "chunk 14 RC-1: no minimum premium, state overrides only add records, negative premiums count"),
     ("159_chunk14_rc2_total.py", "chunk 14 RC-2: golden total $1,193, what counts, several locations, rounding"),
+    ("160_chunk14_rc3_modifiers.py", "chunk 14 RC-3: IRPM (OR + 5 states), package mod, multi-premium, Standard Property Policy"),
+    ("161_chunk14_c14-16_statcode_replay.py", "chunk 14 RC-4: every stat value vs stored ISO responses, strict, 46-fixture sample"),
+    ("162_chunk14_rc4_state_statcodes.py", "chunk 14 RC-4: state earthquake stat codes (FL own classes, TX, OR)"),
 ]
 
 # Excluded on purpose, each with a reason -- no silent narrowing of scope.
