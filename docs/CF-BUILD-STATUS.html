@@ -53,13 +53,13 @@
 </style>
 
 <h1>Property build &mdash; every chunk, every task, status</h1>
-<p class="meta"><b>As of 2026-09-23.</b> One page for the whole 15-chunk plan. Sources, and what to edit
+<p class="meta"><b>As of 2026-09-24.</b> One page for the whole 15-chunk plan. Sources, and what to edit
 when something changes: <code>CF-START-HERE.md</code> (resume point),
 <code>CF-PROPERTY-BUILD-ORDER.md</code> (the plan and the gate),
 <code>CF-CHUNK2-TASKS.md</code> through <code>CF-CHUNK11-TASKS.md</code>
 (the task lists), <code>CF-CHUNK1-GATE.md</code> through <code>CF-CHUNK10-GATE.md</code>
 (the filed gates), <code>CF-ENGINE-FIX-BANDED-LOOKUP.md</code> (chunk 10's engine fix).<br>
-<b>Chunks 0&ndash;11 are CLOSED (chunk 11, Leasehold Interest, closed 2026-09-22: gated 9 of 9, 24 of 24, 4 user-authorized engine fixes, confirmed against ISO live). Chunk 12 (the endorsement families) OPENED 2026-09-22; <b>PAUSED 2026-09-23 at 41 of 42</b> (Groups A&ndash;G closed, all six families ISO-confirmed; regression CLEAN for chunks 0&ndash;12; left: file the gate; <b>Debris Removal, Ordinance or Law, Utility Services, Unmanned Aircraft and Green Upgrades each gated 9 of 9 and ISO-confirmed live</b>; OI-109/110 fixed (a missing value is skipped in a premium product, as at ISO, and recorded); OI-108, OI-109 and OI-110 confirmed live and fixed).</b>
+<b>Chunks 0&ndash;11 are CLOSED (chunk 11, Leasehold Interest, closed 2026-09-22: gated 9 of 9, 24 of 24, 4 user-authorized engine fixes, confirmed against ISO live). Chunk 12 (the endorsement families) OPENED 2026-09-22; <b>GATED 2026-09-24, 42 of 42</b> (<code>CF-CHUNK12-GATE.md</code>; Groups A&ndash;G closed, all six families ISO-confirmed; regression CLEAN for chunks 0&ndash;12; left: file the gate; <b>Debris Removal, Ordinance or Law, Utility Services, Unmanned Aircraft and Green Upgrades each gated 9 of 9 and ISO-confirmed live</b>; OI-109/110 fixed (a missing value is skipped in a premium product, as at ISO, and recorded); OI-108, OI-109 and OI-110 confirmed live and fixed).</b>
 Verify the whole build in one command: <code>python scripts/cf/104_chunk10_c10-21_regression.py</code> (covers chunks 0&ndash;12 since 2026-09-23).<br>
 &#42; on a gate cell means passed, but re-tested later under a stronger check &mdash; see the note below.</p>
 
@@ -183,8 +183,8 @@ until 2026-09-23, which had been stale since those commits. Chunk 12's Group A f
 
 <h2>The whole plan at a glance</h2>
 
-<div class="bar"><span style="width:60%"></span></div>
-<p class="sub">9 of 15 chunks gated &middot; chunks 6, 7 and 8 closed 2026-09-18, <b>chunk 9 closed 22 of 22 on
+<div class="bar"><span style="width:80%"></span></div>
+<p class="sub"><b>12 of 15 chunks gated (as of 2026-09-24)</b> &middot; <b>chunk 11 (Leasehold Interest) gated 9 of 9 on 2026-09-22</b> &middot; <b>chunk 12 (the six endorsement families) gated 42 of 42 on 2026-09-24</b>, each family 9 of 9 and ISO-confirmed live &middot; left: chunk 13 (Terrorism / TRIA) and chunk 14 (policy assembly) &middot; chunks 6, 7 and 8 closed 2026-09-18, <b>chunk 9 closed 22 of 22 on
 2026-09-21</b> (gated 9 of 9, ISO-confirmed live) &middot; <b>chunk 10 (Earthquake) opened AND gated 9 of 9 on 2026-09-22</b>,
 21 of 21 tasks done, 1 engine gap found and fixed same day (sub-limit EQ form, C10-19 &mdash; also unblocked
 Flood and a MA rider) &middot; point 9 (validation
@@ -206,7 +206,7 @@ three jurisdictions whose zeros are not yet explained &mdash; named rather than 
 <tr><td class="num">9</td><td>Blanket rating</td><td><span class="tag done">Gated 9 of 9 &mdash; all 22 tasks</span></td><td>Not a stub after all &mdash; every premium file carries the formula; the missing input traced to a <code>ForEach AtInputDataDef</code> write-reparenting bug, fixed same day. Golden case $255/$510, exact, and <b>ISO-confirmed live</b> to the dollar, messages included. All 3 of Building's forms and SC Business Income's 2-When shape confirmed reachable on real runs; <code>MultiPremiumAndDispersionCreditFactor</code> live on 12 of 20; IRPM/PackageMod level count varies by group (5/7/9); cross-coverage isolation clean; 3 shared instruments extended to a 7th DataDefGroup; every chunk 1&ndash;8 golden case and all 16 GL suites re-verified green</td></tr>
 <tr><td class="num">10</td><td>Earthquake &mdash; the fifth form</td><td><span class="tag done">CLOSED &mdash; gated 9 of 9, 21 of 21 tasks, 1 engine gap fixed</span></td><td>Golden case (C10-01): <b>$6</b> EQ premium, exact match, no engine gap. Gate closed same day, 9 of 9. C10-10&ndash;18 confirmed all 5 groups and the reachability map, all clean. <b>C10-19 found and (user-authorized) fixed a real engine gap</b>: <code>_lookup_banded</code> couldn't handle 2-range tables, blocking the sub-limit EQ form (CP 10 29) plus, corpus-wide, 7 live Flood tables and 1 MA rider. Fixed, now $6, exact; 16/16 GL + 107/120 CF regression clean</td></tr>
 <tr><td class="num">11</td><td>Leasehold Interest</td><td><span class="tag done">CLOSED &mdash; gated 9 of 9, 24 of 24 tasks, 4 engine fixes</span></td><td><b>2026-09-22: the golden case matched at $268 + $30; the date-comparison engine gap was fixed with authorization; the regression is clean.</b> Opened 2026-09-22 (<code>CF-CHUNK11-TASKS.md</code>, <code>106_chunk11_census.py</code>). <b>All seven of the build order's claims confirmed</b> &mdash; 32 files, the 4&times;5 grid, the annuity, the only <code>rul:Power</code> in 882 countrywide rule files, and no coinsurance/LOI/deductible/blanket anywhere. <b>Four things the census adds</b>: (1) <b>only 21 of the 32 files rate</b> &mdash; the 11 <code>FactorsFor&lt;N&gt;Percent</code> files (5%&ndash;15%) are inert printed-form markers with no Lookup, Premium or factor; (2) <b>"its own datadef group" is 32 groups, not 1</b>, one per file &mdash; and gate points 6 and 7 are per-group questions, so chunk 11 asks them across 32 groups against the 5 chunks 6&ndash;10 used, <b>the biggest structural jump in the plan</b>; (3) <b>the fifth form is Earthquake</b>, making chunk 10 a direct input &mdash; the first coverage opened after the form it depends on was built; (4) <b>zero ISO fixtures</b> in 364 CF payloads, so this is chunk 9's situation, not chunk 10's, and confirmation must come from a live ISO call &mdash; planned at task 1 rather than discovered at task 22. <b>The sharpest hazard</b>: the <code>rul:Power</code> sits behind an <code>IsNull</code> guard on <code>DiscFactorRaisedToNumOfMonthsRemainingAtInception</code>, so a submission supplying that value bypasses the annuity entirely and <b>no ISO comparison catches it</b> &mdash; ISO has the same guard. <b>Exact inverse of Earthquake on shared machinery</b>: EQ reads <code>IRPMFactor</code>/<code>PackageModFactor</code> at no depth in any group; LI reads both in 16 of 32 files. Engine readiness checked at opening: every <code>rul:</code> node these 32 files use is already implemented, <code>rul:Power</code> included &mdash; <b>no engine change expected</b></td></tr>
-<tr><td class="num">12</td><td>The endorsement families</td><td><span class="tag open">PAUSED &mdash; 41 of 42 (2026-09-23)</span></td><td><b>2026-09-23: Group G closed</b> &mdash; Dependent Properties ($80 + $12, no fixtures, 12 of 12 live). <b>Regression CLEAN for chunks 0&ndash;12.</b> <b>Left:</b> C12-42, the gate. <b>2026-09-23: Groups E and F closed</b> &mdash; Unmanned Aircraft ($187 golden, 10 of 10 live) and Green Upgrades ($33 golden, no fixtures, 8 of 8 live). <b>2026-09-23: Groups C and D closed</b> &mdash; Ordinance or Law ($198 golden, 7 of 8 live, K7 = OI-109) and Utility Services ($15+$4 / $9+$4, 10 of 11 live, every rated fixture agrees). <b>Group B closed &mdash; Debris Removal gated 9 of 9</b>, golden case $49 + $6 matched ISO live, 9 of 12 live calls agree (3 ISO refusals are EQ lookups in old fixtures). <b>Group A closed.</b> Nothing ever deletes an endorsement record; 17 of 17 ISO fixtures rate; Ordinance or Law is 100 files, not 55 (VA/WV state-only forms); one engine gap logged, OI-108 (blanket drone limit lost in CA/NC/MO). Opened 2026-09-22 (<code>CF-CHUNK12-TASKS.md</code>, <code>123_chunk12_census.py</code>). Six families sized: Ordinance or Law 55 files (confirmed), Dependent Properties 50, Utility Services 35, Green Upgrades 30, Debris Removal 18, Unmanned Aircraft 20. <b>Two have no ISO fixture</b> (Dependent Properties, Green Upgrades); <b>Unmanned Aircraft is filed by all 46 states</b>; <b>Debris Removal reads the core LOI tables</b>. Recommended order: Debris Removal first, the two without fixtures last</td></tr>
+<tr><td class="num">12</td><td>The endorsement families</td><td><span class="tag done">GATED 2026-09-24 &mdash; 42 of 42</span></td><td><b>2026-09-24: gate filed</b> (<code>CF-CHUNK12-GATE.md</code>): all six families 9 of 9; Ordinance or Law K7 re-run live, now 8 of 8. <b>2026-09-23: Group G closed</b> &mdash; Dependent Properties ($80 + $12, no fixtures, 12 of 12 live). <b>Regression CLEAN for chunks 0&ndash;12.</b> <b>Left:</b> C12-42, the gate. <b>2026-09-23: Groups E and F closed</b> &mdash; Unmanned Aircraft ($187 golden, 10 of 10 live) and Green Upgrades ($33 golden, no fixtures, 8 of 8 live). <b>2026-09-23: Groups C and D closed</b> &mdash; Ordinance or Law ($198 golden, 7 of 8 live, K7 = OI-109) and Utility Services ($15+$4 / $9+$4, 10 of 11 live, every rated fixture agrees). <b>Group B closed &mdash; Debris Removal gated 9 of 9</b>, golden case $49 + $6 matched ISO live, 9 of 12 live calls agree (3 ISO refusals are EQ lookups in old fixtures). <b>Group A closed.</b> Nothing ever deletes an endorsement record; 17 of 17 ISO fixtures rate; Ordinance or Law is 100 files, not 55 (VA/WV state-only forms); one engine gap logged, OI-108 (blanket drone limit lost in CA/NC/MO). Opened 2026-09-22 (<code>CF-CHUNK12-TASKS.md</code>, <code>123_chunk12_census.py</code>). Six families sized: Ordinance or Law 55 files (confirmed), Dependent Properties 50, Utility Services 35, Green Upgrades 30, Debris Removal 18, Unmanned Aircraft 20. <b>Two have no ISO fixture</b> (Dependent Properties, Green Upgrades); <b>Unmanned Aircraft is filed by all 46 states</b>; <b>Debris Removal reads the core LOI tables</b>. Recommended order: Debris Removal first, the two without fixtures last</td></tr>
 <tr><td class="num">13</td><td>Terrorism / TRIA</td><td><span class="tag open">Untraced</span></td><td>16 rule files; runs last, reads finished premiums</td></tr>
 <tr><td class="num">14</td><td>Policy assembly</td><td><span class="tag open">Not opened</span></td><td>First partial check already passed inside chunk 3's task 23</td></tr>
 </tbody>
@@ -1205,7 +1205,7 @@ raises&rdquo;</b>: C11-04's reason to exist, with an unmatched interest rate as 
 </div>
 
 <div class="chunk now">
-<h3><span class="n">12</span> The endorsement families &mdash; six coverages, sized then sequenced <span class="tag open">PAUSED &mdash; 41 of 42</span></h3>
+<h3><span class="n">12</span> The endorsement families &mdash; six coverages, sized then sequenced <span class="tag done">GATED 2026-09-24 &mdash; 42 of 42, all six families 9 of 9</span></h3>
 <p><b>Opened 2026-09-22.</b> 42 tasks numbered <b>C12-01&ndash;C12-42</b> in <code>CF-CHUNK12-TASKS.md</code>,
 derived from the build order's item 12 and the opening census (<code>scripts/cf/123_chunk12_census.py</code>).
 These are the <b>add-on endorsements</b> that sit on top of the core built in chunks 1&ndash;11: rebuilding
@@ -1325,8 +1325,8 @@ name the points each task closes. As of 2026-09-23, Groups A&ndash;F (C12-01&nda
 <table>
 <thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
 <tbody>
-<tr><td class="st">&#11036;</td><td class="num">C12-41</td><td>Regression: add every chunk 12 golden case and test to the one-command regression; clean for chunks 0&ndash;12</td></tr>
-<tr><td class="st">&#11036;</td><td class="num">C12-42</td><td>File <code>CF-CHUNK12-GATE.md</code>: all six families, nine points each</td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C12-41</td><td>Regression: add every chunk 12 golden case and test to the one-command regression; clean for chunks 0&ndash;12 &mdash; <b>Done 2026-09-23</b>, CLEAN. <b>Close-out re-run 2026-09-24: CLEAN</b> (chunks 0&ndash;12 and all 16 GL suites)</td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C12-42</td><td>File <code>CF-CHUNK12-GATE.md</code>: all six families, nine points each &mdash; <b>Done 2026-09-24.</b> All six gated 9 of 9, 0 unexplained messages. Ordinance or Law K7 re-run live after the OI-109 fix: <b>agrees, 8 of 8</b> (2026-09-24)</td></tr>
 </tbody>
 </table>
 
@@ -1363,99 +1363,126 @@ showed <code>ErcCalculatedTotalPremium</code> summing the coverages correctly at
 <tr><td>General Liability, optional</td><td><span class="tag open">A choice, not a defect</span></td><td>Whether GL adopts <code>propagate</code>; whether it wants its own rounding tie (OI-70)</td></tr>
 <tr><td><b>A <code>Break</code> inside a <code>Sum</code></b> (OI-108)</td><td><span class="tag done">FIXED 2026-09-23</span></td><td>A blanket drone&rsquo;s limit read 0 instead of 99,000 in CA, NC and MO, undercharging about $125. Confirmed live, then <b>fixed with your authorization</b>: the sum now finishes before the loop stops. Regression clean; live CA/NC/MO/GA 8 of 8 identical to ISO</td></tr>
 <tr><td><b>A missing value in a premium</b> (OI-109, OI-110)</td><td><span class="tag done">FIXED 2026-09-23</span></td><td>ISO <b>skips</b> a missing value in a multiplication (live: $1, $3, $5 where &ldquo;write $0&rdquo; would give $0). A first change wrote $0 and was <b>corrected the same day</b>: Property now skips the null operand and <i>records every skip</i>; GL unchanged. Regression clean; <b>9 of 9 live probes identical</b>; chunk 5&rsquo;s Combined-risk case, a hidden divergence, now matches ISO ($256 + $30)</td></tr>
-<tr><td>Commit status</td><td><span class="tag done">Committed (checked 2026-09-23)</span></td><td><code>cf_engine/</code>, the chunk scripts and <code>docs/CF-*</code> are in git through chunk 11 (<code>0c11c9c</code>). Chunk 12 Group A files are new and uncommitted</td></tr>
+<tr><td>Commit status</td><td><span class="tag done">Committed (checked 2026-09-24)</span></td><td><code>cf_engine/</code>, the chunk scripts and <code>docs/CF-*</code> are in git through chunk 12 Groups A&ndash;G (<code>f1873ae</code>). The chunk 12 gate file and the 2026-09-24 status edits are uncommitted</td></tr>
 </tbody>
 </table>
 
 <h2>Confirm it is all still green</h2>
-<p><span class="lab">The golden cases &mdash; one per coverage</span></p>
+<div class="note shared"><b>One command confirms the build:</b> <code>python scripts/cf/104_chunk10_c10-21_regression.py</code> (add <code>--selftest</code> to check the checker). It runs every golden case below against its documented dollar figures, every machinery script marked &ldquo;regression&rdquo;, and all 16 General Liability suites. <b>Last run 2026-09-24: CLEAN, chunks 0&ndash;12.</b> The checks marked &ldquo;separate&rdquo; are not in that command (state sweeps take minutes each; censuses always exit 0; live ISO calls must not gate an engine regression), so each was run on its own on the date shown.</div>
+<p><span class="lab">The golden cases &mdash; one per coverage, chunks 0&ndash;12</span> All in the one-command regression.</p>
 <table>
-<thead><tr><th>Command</th><th>Must produce</th><th class="st">2026-09-18</th></tr></thead>
+<thead><tr><th>Command</th><th>Must produce</th><th class="st">2026-09-24</th></tr></thead>
 <tbody>
-<tr><td><code>scripts/cf/00_chunk0_checks.py</code></td><td>the foundation &mdash; operators, resolver, edition chain</td><td class="st">&#9989;</td></tr>
+<tr><td><code>scripts/cf/00_chunk0_checks.py</code></td><td>chunk 0 &mdash; the foundation: operators, resolver, edition chain</td><td class="st">&#9989;</td></tr>
 <tr><td><code>scripts/cf/01_golden_case.py</code></td><td>chunk 1 Building Basic Group I &mdash; <b>$261 / $263 / $288</b></td><td class="st">&#9989;</td></tr>
 <tr><td><code>scripts/cf/09_chunk2_golden_case.py</code></td><td>chunk 2 Building Basic Group II &mdash; <b>$261 + $32</b> from one submission</td><td class="st">&#9989;</td></tr>
-<tr><td><code>scripts/cf/15_chunk3_golden_case.py</code></td><td>chunk 3 Broad and Special &mdash; <b>$16 / $54</b>, layering to 293 / 309 / 347</td><td class="st">&#9989;</td></tr>
+<tr><td><code>scripts/cf/15_chunk3_golden_case.py</code></td><td>chunk 3 Broad and Special &mdash; <b>$16 / $54</b>, layering to 309 / 347</td><td class="st">&#9989;</td></tr>
 <tr><td><code>scripts/cf/22_chunk4_golden_case.py</code></td><td>chunk 4 Contents, four forms &mdash; <b>$223 / $24 / $16 / $137</b>, Building unmoved at 263 / 32</td><td class="st">&#9989;</td></tr>
 <tr><td><code>scripts/cf/32_chunk5_golden_case.py</code></td><td>chunk 5 Business Income, four forms &mdash; <b>$112 / $13 / $23 / $47</b>, Building unmoved at 261 / 32</td><td class="st">&#9989;</td></tr>
 <tr><td><code>scripts/cf/41_chunk6_golden_case.py</code></td><td>chunk 6 Special Class, four forms &mdash; <b>$66 / $209 / $14 / $44</b>, Building unmoved at 261 / 32</td><td class="st">&#9989;</td></tr>
 <tr><td><code>scripts/cf/50_chunk7_golden_case.py</code></td><td>chunk 7 Special Class Business Income, four forms &mdash; <b>$39 / $123 / $23 / $47</b>, the item unmoved at 66 / 209</td><td class="st">&#9989;</td></tr>
 <tr><td><code>scripts/cf/59_chunk8_golden_case.py</code></td><td>chunk 8 Legal Liability &mdash; Building <b>$60 / $7 / $4 / $12</b>, Contents <b>$132 / $15 / $11 / $93</b></td><td class="st">&#9989;</td></tr>
-<tr><td><code>scripts/cf/68_chunk9_golden_case.py</code></td><td>chunk 9 Blanket rating, Building Basic Group I, two structures &mdash; <b>$255 / $510</b>, ISO-confirmed live</td><td class="st">&#9989;</td></tr>
+<tr><td><code>scripts/cf/68_chunk9_golden_case.py</code></td><td>chunk 9 Blanket rating, two structures &mdash; <b>$255 / $510</b>, ISO-confirmed live</td><td class="st">&#9989;</td></tr>
+<tr><td><code>scripts/cf/85_chunk10_golden_case.py</code></td><td>chunk 10 Earthquake, Building &mdash; <b>$6</b> EQ premium, ordinary BGI unmoved at $261</td><td class="st">&#9989;</td></tr>
+<tr><td><code>scripts/cf/114_chunk11_golden_case.py</code></td><td>chunk 11 Leasehold Interest, Tenants Lease &mdash; <b>$268 + $30 = $298</b></td><td class="st">&#9989;</td></tr>
+<tr class="d"><td><code>scripts/cf/127_chunk12_golden_case.py</code></td><td>chunk 12 Debris Removal &mdash; <b>$49 + $6 = $55</b>, building unmoved at 261 / 32</td><td class="st">&#9989;</td></tr>
+<tr class="d"><td><code>scripts/cf/130_chunk12_ordinance_golden_case.py</code></td><td>chunk 12 Ordinance or Law, A and B &amp; C Separate &mdash; <b>$198</b> (A 39 + 5, B 55 + 7, C 82 + 10)</td><td class="st">&#9989;</td></tr>
+<tr class="d"><td><code>scripts/cf/133_chunk12_utility_golden_case.py</code></td><td>chunk 12 Utility Services &mdash; direct damage <b>$15 + $4</b>, time element <b>$9 + $4</b></td><td class="st">&#9989;</td></tr>
+<tr class="d"><td><code>scripts/cf/137_chunk12_drone_golden_case.py</code></td><td>chunk 12 Unmanned Aircraft on chunk 4&rsquo;s Special Contents &mdash; <b>$187</b>, Contents unmoved at 137</td><td class="st">&#9989;</td></tr>
+<tr class="d"><td><code>scripts/cf/139_chunk12_green_golden_case.py</code></td><td>chunk 12 Green Upgrades &mdash; <b>$27 + $3 + $3 = $33</b></td><td class="st">&#9989;</td></tr>
+<tr class="d"><td><code>scripts/cf/141_chunk12_dependent_golden_case.py</code></td><td>chunk 12 Dependent Properties, Broad form &mdash; <b>$80 + $12</b>, Business Income unmoved at 112</td><td class="st">&#9989;</td></tr>
 </tbody>
 </table>
-
 <p><span class="lab">The machinery each chunk added</span> Run these when shared code changes.</p>
 <table>
-<thead><tr><th>Command</th><th>What it holds</th><th class="st">2026-09-18</th></tr></thead>
+<thead><tr><th>Command</th><th>What it holds</th><th class="st">2026-09-24</th></tr></thead>
 <tbody>
-<tr><td><code>21_chunk3_special_structure.py</code></td><td>chunk 3's Special structure, including the <b>$11,398</b> derived-field case</td><td class="st">&#9989;</td></tr>
-<tr><td><code>23_chunk4_foreach.py</code></td><td>the repeating group &mdash; <b>209 + 105 = 314</b>, and no leakage between records</td><td class="st">&#9989;</td></tr>
-<tr><td><code>35_chunk5_factor.py</code></td><td><code>SetFactor</code> &mdash; <b>233 not 252</b>: selection, not multiplication</td><td class="st">&#9989;</td></tr>
-<tr><td><code>39_chunk5_crossform.py</code></td><td>three coverages on one submission, none of them moving</td><td class="st">&#9989;</td></tr>
-<tr><td><code>42_chunk6_zero_cases.py</code></td><td>chunk 6's six zero cases &mdash; Florida's own filed spelling worth <b>$0</b> in Oregon</td><td class="st">&#9989;</td></tr>
-<tr><td><code>45_chunk6_description_chain.py</code></td><td>the description chain &mdash; and the <b>correction to the Florida claim</b> (OI-100)</td><td class="st">&#9989;</td></tr>
-<tr><td><code>46_chunk6_perform.py</code></td><td>the <b>1.5 coinsurance surcharge</b>, the dead protection-class factor, the 39/39 biconditional</td><td class="st">&#9989;</td></tr>
-<tr><td><code>47_chunk6_forms.py</code></td><td>the narrowed fire gate, Florida's <b>1.42</b>, construction-blind Broad</td><td class="st">&#9989;</td></tr>
-<tr><td><code>48_chunk6_crossform.py</code></td><td>the <b>blanket branch</b> (first run in the project) and <b>four coverages</b> on one submission</td><td class="st">&#9989;</td></tr>
-<tr><td><code>51_chunk7_zero_cases.py</code></td><td>chunk 7&rsquo;s six zero cases &mdash; a parent worth <b>$0</b> still carrying a <b>$39</b> child</td><td class="st">&#9989;</td></tr>
-<tr><td><code>54_chunk7_borrowed.py</code></td><td>the borrowed rate &mdash; <b>eleven</b> values across the boundary and <b>no base rate</b> among them</td><td class="st">&#9989;</td></tr>
-<tr><td><code>55_chunk7_perform.py</code></td><td>both apartment dimensions dead, and a pin that is <b>live next door</b></td><td class="st">&#9989;</td></tr>
-<tr><td><code>56_chunk7_crossform.py</code></td><td>the rounding <b>counted</b>, and <b>five coverages</b> on one submission</td><td class="st">&#9989;</td></tr>
-<tr><td><code>57_chunk7_open_questions.py</code></td><td>the algorithms page&rsquo;s five open questions &mdash; four answered, one left open with a reason</td><td class="st">&#9989;</td></tr>
-<tr><td><code>61_chunk8_zero_cases.py</code></td><td>chunk 8&rsquo;s six zero cases &mdash; <b>four zeros, four unrelated causes</b>, and one $223 that is not a zero at all</td><td class="st">&#9989;</td></tr>
-<tr><td><code>64_chunk8_fork.py</code></td><td>the fork &mdash; two concepts discarded, a third <b>never computed</b>, and the blanket gate firing before the <code>Choose</code></td><td class="st">&#9989;</td></tr>
-<tr><td><code>65_chunk8_map.py</code></td><td>the traced map, point by point &mdash; incl. <b>theft excluded moving Contents $93 &rarr; $37 and Building not at all</b></td><td class="st">&#9989;</td></tr>
-<tr><td><code>66_chunk8_crossform.py</code></td><td>the map <b>scored</b> &mdash; 8 of 11 confirmed, 3 corrected &mdash; and the <b>cross-coverage LOI leak</b></td><td class="st">&#9989;</td></tr>
-<tr><td><code>60_chunk8_raas_probe.py</code></td><td>the standing engine-vs-ISO check on the Legal Liability form record</td><td class="st">&#9989;</td></tr>
-<tr><td><code>67_chunk9_census.py</code></td><td>chunk 9's opening census &mdash; 0 of 20 files stub the blanket formula out; names <code>SetNonEQBlanketValues</code>'s three gates as the real blocker</td><td class="st">&#9989;</td></tr>
-<tr><td><code>69_chunk9_c9-02_chain_trace.py</code></td><td>the real <code>ErcDoBlanketRating</code> chain, 3 hops deeper than documented; the Average/Highest election confirmed genuinely different (0.242 vs 0.275)</td><td class="st">&#9989;</td></tr>
-<tr><td><code>70_chunk9_c9-04_tables_and_datadefs.py</code></td><td>only 2 of 12 blanket tables in the golden-case chain; the borrowed DataDefs' two-hop copy chain, present in all 5 groups</td><td class="st">&#9989;</td></tr>
-<tr><td><code>71_chunk9_c9-05_state_override_census.py</code></td><td>0 of 47 states override the averaging rules in any group; one pure-add exception (AL/KS, Special Class)</td><td class="st">&#9989;</td></tr>
-<tr><td><code>72_chunk9_c9-06_three_gates.py</code></td><td>the 3-gate root cause &mdash; 3 distinct outcomes, and premium is NOT uniformly $0</td><td class="st">&#9989;</td></tr>
-<tr><td><code>73_chunk9_c9-07_hardcoded_literals.py</code></td><td>every blanket-path literal traced to its full filed domain &mdash; nothing corpus-wide unreachable</td><td class="st">&#9989;</td></tr>
-<tr><td><code>74_chunk9_c9-08_shared_name_collision.py</code></td><td>the shared dispatcher names are the FALSE-ALARM shape &mdash; pure routers, zero collisions in 882 CW files + 47 overlays</td><td class="st">&#9989;</td></tr>
-<tr><td><code>75_chunk9_c9-09_setnoneq_diff.py</code></td><td>the 5 groups' value-setter bodies diverge, but every difference is dead code or a confirmed substitute</td><td class="st">&#9989;</td></tr>
-<tr><td><code>76_chunk9_c9-10_exclusion_messages.py</code></td><td>the 4 blanket-specific messages, and the submission that makes one fire</td><td class="st">&#9989;</td></tr>
-<tr><td><code>77_chunk9_c9-11_edition_basis.py</code></td><td>Oregon consistent and current; Florida a whole-book skew, not a Detail-vs-premium split</td><td class="st">&#9989;</td></tr>
-<tr><td><code>78_chunk9_c9-12_message_tally.py</code></td><td>3 messages, 0 unexplained &mdash; gate point 9 closed for chunk 9's own golden case</td><td class="st">&#9989;</td></tr>
-<tr><td><code>79_chunk9_c9-13_raas.py</code></td><td><b>live ISO confirmation</b> &mdash; $255/$510/$765 and all 3 messages, exact, for a submission absent from ISO's own fixture corpus</td><td class="st">&#9989;</td></tr>
-<tr><td><code>80_chunk9_c9-15-16-17_reachability.py</code></td><td>all 3 of Building's forms activate blanket on a real run; no operand-order divergence; SC BI's 2-When shape confirmed</td><td class="st">&#9989;</td></tr>
-<tr><td><code>81_chunk9_c9-18_multiprem.py</code></td><td><code>MultiPremiumAndDispersionCreditFactor</code> live on 12 of 20, genuinely absent on 8</td><td class="st">&#9989;</td></tr>
-<tr><td><code>82_chunk9_c9-19_irpm_levels.py</code></td><td>the IRPM/PackageMod level count by group &mdash; 5, 7 or 9, not uniformly 5</td><td class="st">&#9989;</td></tr>
-<tr><td><code>83_chunk9_c9-20_crosscoverage_leak.py</code></td><td>clean isolation at the policy level, both placements tested</td><td class="st">&#9989;</td></tr>
-<tr><td><code>04_shared_names.py</code></td><td>gate point 6 across all <b>seven</b> chains</td><td class="st">&#9989;</td></tr>
-<tr><td><code>05_exclusion_records.py</code></td><td>gate point 7 census, now with a per-group chunk 9 section</td><td class="st">&#9989;</td></tr>
-<tr><td><code>08_hardcoded_literals.py --group CommercialPropertySpecialClass</code></td><td>gate point 5 for a second datadef group</td><td class="st">&#9989;</td></tr>
-<tr><td><code>08_hardcoded_literals.py --group CommercialPropertyBlanketRatingDetail</code></td><td>gate point 5 for the blanket averaging engine</td><td class="st">&#9989;</td></tr>
+<tr><td colspan="3"><span class="lab">chunks 1&ndash;9: shared gate checks</span></td></tr>
+<tr><td><code>04_shared_names.py</code></td><td>gate point 6 across all chains <span class="lab">&middot; regression</span></td><td class="st">&#9989;</td></tr>
+<tr><td><code>05_exclusion_records.py</code></td><td>gate point 7 census, with per-group sections <span class="lab">&middot; regression</span></td><td class="st">&#9989;</td></tr>
+<tr><td><code>08_hardcoded_literals.py --group CommercialPropertySpecialClass</code></td><td>gate point 5 for Special Class <span class="lab">&middot; separate</span></td><td class="st">&#9989;</td></tr>
+<tr><td><code>08_hardcoded_literals.py --group CommercialPropertyBlanketRatingDetail</code></td><td>gate point 5 for the blanket averaging engine <span class="lab">&middot; separate</span></td><td class="st">&#9989;</td></tr>
+<tr><td colspan="3"><span class="lab">chunks 3&ndash;5</span></td></tr>
+<tr><td><code>21_chunk3_special_structure.py</code></td><td>chunk 3&rsquo;s Special structure, including the <b>$11,398</b> derived-field case <span class="lab">&middot; regression</span></td><td class="st">&#9989;</td></tr>
+<tr><td><code>23_chunk4_foreach.py</code></td><td>the repeating group &mdash; <b>209 + 105 = 314</b>, and no leakage between records <span class="lab">&middot; regression</span></td><td class="st">&#9989;</td></tr>
+<tr><td><code>35_chunk5_factor.py</code></td><td><code>SetFactor</code> &mdash; <b>233 not 252</b>: selection, not multiplication <span class="lab">&middot; regression</span></td><td class="st">&#9989;</td></tr>
+<tr><td><code>39_chunk5_crossform.py</code></td><td>three coverages on one submission, none of them moving <span class="lab">&middot; regression</span></td><td class="st">&#9989;</td></tr>
+<tr><td colspan="3"><span class="lab">chunk 6, Special Class</span></td></tr>
+<tr><td><code>42_chunk6_zero_cases.py</code></td><td>six zero cases &mdash; Florida&rsquo;s own filed spelling worth <b>$0</b> in Oregon <span class="lab">&middot; regression</span></td><td class="st">&#9989;</td></tr>
+<tr><td><code>45_chunk6_description_chain.py</code></td><td>the description chain, and the <b>correction to the Florida claim</b> (OI-100) <span class="lab">&middot; regression</span></td><td class="st">&#9989;</td></tr>
+<tr><td><code>46_chunk6_perform.py</code></td><td>the <b>1.5 coinsurance surcharge</b>, the dead protection-class factor, the 39/39 biconditional <span class="lab">&middot; regression</span></td><td class="st">&#9989;</td></tr>
+<tr><td><code>47_chunk6_forms.py</code></td><td>the narrowed fire gate, Florida&rsquo;s <b>1.42</b>, construction-blind Broad <span class="lab">&middot; regression</span></td><td class="st">&#9989;</td></tr>
+<tr><td><code>48_chunk6_crossform.py</code></td><td>the <b>blanket branch</b> and <b>four coverages</b> on one submission <span class="lab">&middot; regression</span></td><td class="st">&#9989;</td></tr>
+<tr><td colspan="3"><span class="lab">chunk 7, Special Class Business Income</span></td></tr>
+<tr><td><code>51_chunk7_zero_cases.py</code></td><td>six zero cases &mdash; a parent worth <b>$0</b> still carrying a <b>$39</b> child <span class="lab">&middot; regression</span></td><td class="st">&#9989;</td></tr>
+<tr><td><code>54_chunk7_borrowed.py</code></td><td>the borrowed rate &mdash; <b>eleven</b> values across the boundary and <b>no base rate</b> among them <span class="lab">&middot; regression</span></td><td class="st">&#9989;</td></tr>
+<tr><td><code>55_chunk7_perform.py</code></td><td>both apartment dimensions dead, and a pin that is <b>live next door</b> <span class="lab">&middot; regression</span></td><td class="st">&#9989;</td></tr>
+<tr><td><code>56_chunk7_crossform.py</code></td><td>the rounding <b>counted</b>, and <b>five coverages</b> on one submission <span class="lab">&middot; regression</span></td><td class="st">&#9989;</td></tr>
+<tr><td><code>57_chunk7_open_questions.py</code></td><td>the algorithms page&rsquo;s five open questions <span class="lab">&middot; regression</span></td><td class="st">&#9989;</td></tr>
+<tr><td colspan="3"><span class="lab">chunk 8, Legal Liability</span></td></tr>
+<tr><td><code>61_chunk8_zero_cases.py</code></td><td>six zero cases &mdash; <b>four zeros, four unrelated causes</b> <span class="lab">&middot; regression</span></td><td class="st">&#9989;</td></tr>
+<tr><td><code>64_chunk8_fork.py</code></td><td>the fork &mdash; two concepts discarded, a third <b>never computed</b> <span class="lab">&middot; regression</span></td><td class="st">&#9989;</td></tr>
+<tr><td><code>65_chunk8_map.py</code></td><td>the traced map, point by point &mdash; theft excluded moving Contents <b>$93 &rarr; $37</b> and Building not at all <span class="lab">&middot; regression</span></td><td class="st">&#9989;</td></tr>
+<tr><td><code>66_chunk8_crossform.py</code></td><td>the map <b>scored</b> (8 of 11 confirmed, 3 corrected) and the <b>cross-coverage LOI leak</b> <span class="lab">&middot; regression</span></td><td class="st">&#9989;</td></tr>
+<tr><td><code>60_chunk8_raas_probe.py</code></td><td><b>live ISO</b>: the standing engine-vs-ISO check on the Legal Liability form record <span class="lab">&middot; separate</span></td><td class="st">&#9989;</td></tr>
+<tr><td colspan="3"><span class="lab">chunk 9, Blanket</span></td></tr>
+<tr><td><code>67_chunk9_census.py</code></td><td>opening census &mdash; 0 of 20 files stub the blanket formula out (a census: always exits 0) <span class="lab">&middot; separate</span></td><td class="st">&#9989;</td></tr>
+<tr><td><code>69_chunk9_c9-02_chain_trace.py</code></td><td>the real <code>ErcDoBlanketRating</code> chain; Average vs Highest genuinely different <span class="lab">&middot; regression</span></td><td class="st">&#9989;</td></tr>
+<tr><td><code>70_chunk9_c9-04_tables_and_datadefs.py</code></td><td>2 of 12 blanket tables in the golden chain; the borrowed DataDefs&rsquo; two-hop copy <span class="lab">&middot; separate</span></td><td class="st">&#9989;</td></tr>
+<tr><td><code>71_chunk9_c9-05_state_override_census.py</code></td><td>0 of 47 states override the averaging rules (blanket&rsquo;s state check) <span class="lab">&middot; separate</span></td><td class="st">&#9989;</td></tr>
+<tr><td><code>72_chunk9_c9-06_three_gates.py</code></td><td>the 3-gate root cause &mdash; 3 distinct outcomes <span class="lab">&middot; regression</span></td><td class="st">&#9989;</td></tr>
+<tr><td><code>73_chunk9_c9-07_hardcoded_literals.py</code></td><td>every blanket-path literal traced to its filed domain <span class="lab">&middot; separate</span></td><td class="st">&#9989;</td></tr>
+<tr><td><code>74_chunk9_c9-08_shared_name_collision.py</code></td><td>shared dispatcher names are pure routers, zero collisions <span class="lab">&middot; separate</span></td><td class="st">&#9989;</td></tr>
+<tr><td><code>75_chunk9_c9-09_setnoneq_diff.py</code></td><td>the 5 groups&rsquo; value-setter bodies: every difference dead or a confirmed substitute <span class="lab">&middot; regression</span></td><td class="st">&#9989;</td></tr>
+<tr><td><code>76_chunk9_c9-10_exclusion_messages.py</code></td><td>the 4 blanket-specific messages, and the submission that fires one <span class="lab">&middot; separate</span></td><td class="st">&#9989;</td></tr>
+<tr><td><code>77_chunk9_c9-11_edition_basis.py</code></td><td>Oregon current; Florida a whole-book skew <span class="lab">&middot; separate</span></td><td class="st">&#9989;</td></tr>
+<tr><td><code>78_chunk9_c9-12_message_tally.py</code></td><td>3 messages, 0 unexplained <span class="lab">&middot; separate</span></td><td class="st">&#9989;</td></tr>
+<tr><td><code>79_chunk9_c9-13_raas.py</code></td><td><b>live ISO</b>: $255 / $510 / $765 and all 3 messages, exact <span class="lab">&middot; separate</span></td><td class="st">&#9989;</td></tr>
+<tr><td><code>80_chunk9_c9-15-16-17_reachability.py</code></td><td>all 3 Building forms activate blanket on a real run <span class="lab">&middot; regression</span></td><td class="st">&#9989;</td></tr>
+<tr><td><code>81_chunk9_c9-18_multiprem.py</code></td><td><code>MultiPremiumAndDispersionCreditFactor</code> live on 12 of 20 <span class="lab">&middot; separate</span></td><td class="st">&#9989;</td></tr>
+<tr><td><code>82_chunk9_c9-19_irpm_levels.py</code></td><td>IRPM/PackageMod level count by group: 5, 7 or 9 <span class="lab">&middot; separate</span></td><td class="st">&#9989;</td></tr>
+<tr><td><code>83_chunk9_c9-20_crosscoverage_leak.py</code></td><td>clean isolation at the policy level <span class="lab">&middot; regression</span></td><td class="st">&#9989;</td></tr>
+<tr><td colspan="3"><span class="lab">chunk 10, Earthquake</span></td></tr>
+<tr><td><code>88_chunk10_c10-04_zero_cases.py</code></td><td>zero cases, two tiers <span class="lab">&middot; regression</span></td><td class="st">&#9989;</td></tr>
+<tr><td><code>91_chunk10_c10-09_message_tally.py</code></td><td>message tally <span class="lab">&middot; regression</span></td><td class="st">&#9989;</td></tr>
+<tr><td><code>95_chunk10_c10-11_all_groups_chain.py</code></td><td>the EQ chain in all 5 groups <span class="lab">&middot; regression</span></td><td class="st">&#9989;</td></tr>
+<tr><td><code>96_chunk10_c10-12_eqclass_eqterr_live.py</code></td><td>EQClass / EQTerr on live inputs <span class="lab">&middot; regression</span></td><td class="st">&#9989;</td></tr>
+<tr><td><code>98_chunk10_c10-14_ordinary_chain_separation.py</code></td><td>the EQ chain kept separate from the ordinary chain <span class="lab">&middot; regression</span></td><td class="st">&#9989;</td></tr>
+<tr><td><code>99_chunk10_c10-16_legal_liability_eq.py</code></td><td>Legal Liability Earthquake <span class="lab">&middot; regression</span></td><td class="st">&#9989;</td></tr>
+<tr><td><code>100_chunk10_c10-15_blanket_reachability.py</code></td><td>the EQ blanket branch <span class="lab">&middot; regression</span></td><td class="st">&#9989;</td></tr>
+<tr><td><code>101_chunk10_c10-17_non_owned_trailers.py</code></td><td>Non-Owned Trailers Earthquake <span class="lab">&middot; regression</span></td><td class="st">&#9989;</td></tr>
+<tr><td><code>103_chunk10_c10-19_sublimit_flatdeductible.py</code></td><td>the sub-limit form (the banded-lookup engine fix) <span class="lab">&middot; regression</span></td><td class="st">&#9989;</td></tr>
+<tr><td><code>105_chunk10_c10-20_fixture_sample.py</code></td><td>fixture census across 364 CF payloads <span class="lab">&middot; regression</span></td><td class="st">&#9989;</td></tr>
+<tr><td colspan="3"><span class="lab">chunk 11, Leasehold Interest</span></td></tr>
+<tr><td><code>115_chunk11_groupA_annuity.py</code></td><td>the annuity, the injection trap, live inputs <span class="lab">&middot; regression</span></td><td class="st">&#9989;</td></tr>
+<tr><td><code>116_chunk11_groupB_subcoverages.py</code></td><td>the four sub-coverages <span class="lab">&middot; regression</span></td><td class="st">&#9989;</td></tr>
+<tr><td><code>117_chunk11_c11-04_zero_cases.py</code></td><td>zero cases, seven tiers <span class="lab">&middot; regression</span></td><td class="st">&#9989;</td></tr>
+<tr><td><code>119_chunk11_groupD_shared_machinery.py</code></td><td>shared machinery <span class="lab">&middot; regression</span></td><td class="st">&#9989;</td></tr>
+<tr><td><code>120_chunk11_groupsEF_inventory_states.py</code></td><td>inventory and all 46 states; the <code>DateDifference</code> sign pinned (OI-107) <span class="lab">&middot; regression</span></td><td class="st">&#9989;</td></tr>
+<tr><td><code>121_chunk11_c11-09_messages.py</code></td><td>messages: ours equal ISO&rsquo;s saved responses <span class="lab">&middot; regression</span></td><td class="st">&#9989;</td></tr>
+<tr><td colspan="3"><span class="lab">chunk 12, the endorsement families</span></td></tr>
+<tr><td><code>125_chunk12_c12-03_operand_types.py</code></td><td>operand types, 17 ISO fixtures, and the OI-108 blanket-drone probe <span class="lab">&middot; regression</span></td><td class="st">&#9989;</td></tr>
+<tr><td><code>128_chunk12_debris_removal_gates.py</code></td><td>Debris Removal gates 2&ndash;8 <span class="lab">&middot; regression</span></td><td class="st">&#9989;</td></tr>
+<tr><td><code>131_chunk12_ordinance_gates.py</code></td><td>Ordinance or Law gates 2&ndash;8 <span class="lab">&middot; regression</span></td><td class="st">&#9989;</td></tr>
+<tr><td><code>134_chunk12_utility_gates.py</code></td><td>Utility Services gates 2&ndash;8 <span class="lab">&middot; regression</span></td><td class="st">&#9989;</td></tr>
+<tr><td><code>138_chunk12_drone_gates.py</code></td><td>Unmanned Aircraft gates 2&ndash;9 <span class="lab">&middot; regression</span></td><td class="st">&#9989;</td></tr>
+<tr><td><code>140_chunk12_green_gates.py</code></td><td>Green Upgrades gates 2&ndash;8 <span class="lab">&middot; regression</span></td><td class="st">&#9989;</td></tr>
+<tr><td><code>142_chunk12_dependent_gates.py</code></td><td>Dependent Properties gates 2&ndash;8 <span class="lab">&middot; regression</span></td><td class="st">&#9989;</td></tr>
 </tbody>
 </table>
-
-<p><span class="lab">The six sweeps</span> A few minutes each; all 47 jurisdictions enumerated.</p>
+<p><span class="lab">The six sweeps</span> A few minutes each; all 47 jurisdictions enumerated. Run separately.</p>
 <table>
-<thead><tr><th>Command</th><th>Result</th><th class="st">2026-09-18</th></tr></thead>
+<thead><tr><th>Command</th><th>Must produce</th><th class="st">2026-09-24</th></tr></thead>
 <tbody>
-<tr><td><code>17_chunk3_enumerate_states.py</code></td><td>Broad <b>47 of 47</b>, Special <b>47 of 47</b>, none skipped</td><td class="st">&#9989;</td></tr>
-<tr><td><code>24_chunk4_enumerate_states.py</code></td><td>Contents <b>46 of 47</b>, PR skipped for an enumerated reason</td><td class="st">&#9989;</td></tr>
-<tr><td><code>34_chunk5_enumerate_states.py</code></td><td>Business Income <b>44 of 47</b>, PR skipped, AZ and TX diverging with a stated cause</td><td class="st">&#9989;</td></tr>
-<tr><td><code>43_chunk6_enumerate_states.py</code></td><td>Special Class <b>47 of 47</b> &mdash; AZ, FL and NY correctly producing <b>no premium at all</b>, and none of the three a missing rate</td><td class="st">&#9989;</td></tr>
-<tr><td><code>52_chunk7_enumerate_states.py</code></td><td>Special Class Business Income <b>47 of 47</b> &mdash; AZ, FL and NY at $0, <b>all three inherited whole from chunk 6</b> and none a Business Income defect</td><td class="st">&#9989;</td></tr>
-<tr><td><code>62_chunk8_enumerate_states.py</code></td><td>Legal Liability <b>47 of 47</b>, 43 with a real premium. <b>Its first version reported 47 of 47 and proved nothing</b> &mdash; 46 agreed at $0 on an out-of-state territory</td><td class="st">&#9989;</td></tr>
+<tr><td><code>17_chunk3_enumerate_states.py</code></td><td>chunk 3: Broad <b>47 of 47</b>, Special <b>47 of 47</b>, none skipped</td><td class="st">&#9989;</td></tr>
+<tr><td><code>24_chunk4_enumerate_states.py</code></td><td>chunk 4: Contents <b>46 of 47</b>, PR skipped for an enumerated reason</td><td class="st">&#9989;</td></tr>
+<tr><td><code>34_chunk5_enumerate_states.py</code></td><td>chunk 5: Business Income <b>44 of 47</b>, PR skipped, AZ and TX diverging with a stated cause</td><td class="st">&#9989;</td></tr>
+<tr><td><code>43_chunk6_enumerate_states.py</code></td><td>chunk 6: Special Class <b>47 of 47</b> &mdash; AZ, FL and NY correctly producing no premium, none a missing rate</td><td class="st">&#9989;</td></tr>
+<tr><td><code>52_chunk7_enumerate_states.py</code></td><td>chunk 7: Special Class Business Income <b>47 of 47</b> &mdash; AZ, FL and NY at $0, all inherited from chunk 6</td><td class="st">&#9989;</td></tr>
+<tr><td><code>62_chunk8_enumerate_states.py</code></td><td>chunk 8: Legal Liability <b>47 of 47</b>, 43 with a real premium</td><td class="st">&#9989;</td></tr>
 </tbody>
 </table>
-<p class="sub"><b>Blanket has no premium sweep of its own</b> (chunk 9's own gate point 3, reframed rather than
-forced) &mdash; its state-layer check is <code>71_chunk9_c9-05_state_override_census.py</code> instead: 0 of
-47 states override the averaging rules in any of the 5 groups. The full set is <code>scripts/cf/00</code>
-&ndash;<code>83</code>. The General Liability suites are the regression net for every shared-code change
-&mdash; <b>all 16 re-run green on 2026-09-21</b>, alongside every command above. <b>Chunks 6, 7, 8 and 9 are
-the only chunks to touch shared code</b>: <code>04_shared_names.py</code> (now nine chains),
-<code>05_exclusion_records.py</code> (per-group sections) and <code>08_hardcoded_literals.py</code> (a
-<code>--group</code> argument). All three still pass for chunks 1&ndash;8 unchanged. <b>No engine code was
-written in the first eight chunks</b> &mdash; chunk 8 produced the first serious candidate for it and the
-candidate turned out to be a broken probe, not a defect. <b>Chunk 9 broke that streak</b>: C9-01 found a
-real interpreter gap (<code>ForEach AtInputDataDef</code> reparenting writes), fixed 2026-09-21 with the
-user's authorization &mdash; the first engine change since chunk 0, and then confirmed live against ISO to
-the dollar (C9-13). <b>All 23 chunk 1&ndash;8 checks re-ran green afterward</b> (C9-22).</p>
+<p class="sub"><b>State coverage for chunks 9&ndash;12 lives inside their own checks</b>, not in a premium sweep: blanket in <code>71_&hellip;state_override_census</code> (0 of 47 override the averaging rules); Earthquake in <code>95_</code>/<code>96_</code>; Leasehold Interest in <code>120_</code> (all 46 states); the six endorsement families in their gate scripts <code>128</code>&ndash;<code>142</code> (all 46 states, both layers). <b>Live ISO confirmation</b> for chunks 10&ndash;12 is in <code>118</code>, <code>122</code>, <code>129</code>, <code>132</code> and <code>135</code>; they are deliberately outside the regression and are re-run when a family or engine rule changes (Ordinance or Law was last re-run live on 2026-09-24, 8 of 8). <b>Engine changes to date: nine</b>, all user-authorized and ISO-confirmed &mdash; the chunk 9 <code>ForEach</code> reparenting, chunk 10&rsquo;s banded lookup, chunk 11&rsquo;s date comparison, OI-102, OI-104 and OI-107, and chunk 12&rsquo;s OI-108 and OI-109/110. The regression and every separate check above were run after all nine.</p>
 
 <h2>The habit that produced every finding</h2>
 <div class="note shared"><b>Derive the expected numbers by hand from the filed rows FIRST, write them down,

@@ -1,11 +1,23 @@
 # Property build — start here
 
-**Last worked 2026-09-23.** This is the resume point: where things stand, how to
+**Last worked 2026-09-24.** This is the resume point: where things stand, how to
 confirm it in two minutes, and what to pick up first.
 
 ---
 
-## Pick up here: chunk 12 is PAUSED at 41 of 42 (2026-09-23)
+## Pick up here: chunk 12 is CLOSED (2026-09-24); chunk 13 is next
+
+**Chunk 12 gated 2026-09-24, 42 of 42** ([`CF-CHUNK12-GATE.md`](CF-CHUNK12-GATE.md)):
+all six endorsement families 9 of 9, 0 unexplained messages. Ordinance or Law K7
+was re-run live after the OI-109 fix and agrees (8 of 8). The regression was re-run
+2026-09-24: **CLEAN** for chunks 0–12 and all GL suites.
+
+**Next: chunk 13, Terrorism / TRIA** (16 rule files, untraced; it reads other
+groups' finished premiums, so it runs last). Then chunk 14, policy assembly.
+Open from the chunk 12 gate, not blocking: priced FL/VA/WV cases, and a theft
+exclusion attached to the Contents/BI records for drones and Dependent Properties.
+
+### Chunk 12 history (as of 2026-09-23)
 
 **All six families are closed, gated 9 of 9 and ISO-confirmed live.** Group G,
 Dependent Properties: [`CF-CHUNK12-DEPENDENT-PROPERTIES.md`](CF-CHUNK12-DEPENDENT-PROPERTIES.md)

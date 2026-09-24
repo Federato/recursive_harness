@@ -17,7 +17,7 @@ without the user's go. "All states" means the **46**; Puerto Rico is
 excluded. Live ISO comparisons are sent at **2026-09-17** until OI-105 is
 ingested.
 
-**Status: PAUSED 2026-09-23 at 41 of 42 tasks. Groups A to G closed**, all six families gated 9 of 9 and ISO-confirmed live (records: `CF-CHUNK12-GROUP-A.md`, `-DEBRIS-REMOVAL`, `-ORDINANCE-OR-LAW`, `-UTILITY-SERVICES`, `-UNMANNED-AIRCRAFT`, `-GREEN-UPGRADES`, `-DEPENDENT-PROPERTIES`). **To finish:** C12-42 only, file `CF-CHUNK12-GATE.md` (the regression, C12-41, is done and clean for chunks 0–12). OI-108, OI-109 and OI-110 fixed (user-authorized).
+**Status: CLOSED 2026-09-24, 42 of 42 tasks, gated** ([`CF-CHUNK12-GATE.md`](CF-CHUNK12-GATE.md)). **Groups A to G closed**, all six families gated 9 of 9 and ISO-confirmed live (records: `CF-CHUNK12-GROUP-A.md`, `-DEBRIS-REMOVAL`, `-ORDINANCE-OR-LAW`, `-UTILITY-SERVICES`, `-UNMANNED-AIRCRAFT`, `-GREEN-UPGRADES`, `-DEPENDENT-PROPERTIES`). Regression (C12-41) re-run 2026-09-24: CLEAN for chunks 0–12. OI-108, OI-109 and OI-110 fixed (user-authorized).
 
 ---
 
@@ -187,8 +187,8 @@ gate filed.
 
 | # | Task | Status | What it needs |
 |---|---|---|---|
-| C12-41 | Regression: add every chunk 12 golden case and test script to `104_…regression.py`; clean for chunks 0–12 | ✅ | **Done 2026-09-23.** Chunk 12's 6 golden cases (figures fixed before their runs) and 7 gate scripts added to `104_…regression.py`; `--selftest` passes; **full run CLEAN for chunks 0–12** and all GL suites. |
-| C12-42 | File `CF-CHUNK12-GATE.md`: all six families, nine points each | ⬜ | Not started |
+| C12-41 | Regression: add every chunk 12 golden case and test script to `104_…regression.py`; clean for chunks 0–12 | ✅ | **Done 2026-09-23.** Chunk 12's 6 golden cases (figures fixed before their runs) and 7 gate scripts added to `104_…regression.py`; `--selftest` passes; **full run CLEAN for chunks 0–12** and all GL suites. **Re-run 2026-09-24: CLEAN.** |
+| C12-42 | File `CF-CHUNK12-GATE.md`: all six families, nine points each | ✅ | **Done 2026-09-24.** All six families 9 of 9, 0 unexplained messages. Ordinance or Law K7 re-run live after the OI-109 fix: agrees, 8 of 8. |
 
 ---
 

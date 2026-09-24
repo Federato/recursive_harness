@@ -113,7 +113,8 @@ Group II). ISO agrees.
 ## C12-16: ISO confirmation and messages (gate 9)
 
 **Engine-built cases: 7 of 8 agree to the dollar** (C0, K2, K4, K5, K6, V1,
-I1), messages identical. The eighth is K7 (OI-109).
+I1), messages identical. The eighth is K7 (OI-109). **After the OI-109
+fix, K7 was re-run live on 2026-09-24 and agrees: 8 of 8.**
 
 **Fixtures: every one ISO rated agrees**, cell for cell, including the
 Earthquake and Increased Period of Restoration cells: NH ×2, NM, and IN and
