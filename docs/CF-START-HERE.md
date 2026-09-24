@@ -5,7 +5,27 @@ confirm it in two minutes, and what to pick up first.
 
 ---
 
-## Pick up here: chunk 13 is CLOSED (2026-09-24); chunk 14 is next
+## Pick up here (set 2026-09-24): chunks 0–14 are all CLOSED; next, the unbuilt coverages
+
+**Every chunk in the plan is closed and committed** (chunk 14, policy assembly, gated 9 of 9
+in `1b15ada`; regression CLEAN for chunks 0–14, 100 scripts). The user chose the next
+direction on 2026-09-24, in this order:
+
+1. **TOP ITEM: the coverages not yet built.** The value reporting form (drives
+   multi-location average rates and the AR/DC peril-exclusion stat codes); the Additional
+   Locations Special Coinsurance endorsement (`ErcResetPrsnlPropPremiumForAdditionalLocations`;
+   inventory B9); Off-Premises Interruption of Business, vehicles and mobile equipment
+   (inventory D8; AK's Option A stat code); MA heating-oil remediation and tenant relocation;
+   the Condominium Commercial Unit-Owners Optional Coverages (inventory rows ~260).
+   **Start by** reading `CF_Algorithm/Coverage_Inventory_And_Tracking.md` for these families,
+   then propose an order and a chunk plan (census first). **No engine code without the
+   user's go.**
+2. Chunk 4's gate point 9 (messages): likely closable from C13-27's evidence; verify.
+3. OI-103 (ISO refuses where we price; a dozen concrete cases now), an engine change: needs a go.
+4. OI-113 (minimum premium, refer to company): needs a referral layer.
+5. OI-112, OI-106: no premium effect.
+
+### Earlier: chunk 13 closed (2026-09-24), then chunk 14
 
 **Chunk 13, Terrorism / TRIA, gated 2026-09-24, 30 of 30, 9 of 9**
 ([`CF-CHUNK13-GATE.md`](CF-CHUNK13-GATE.md)). Terrorism is a premium on every coverage,
