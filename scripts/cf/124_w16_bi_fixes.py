@@ -1035,6 +1035,303 @@ def fix_scgistfl(app, wb):
     return f"SC-GI-ST FL: {len(vals) - len(keep)} FL rows removed, {len(keep)} kept", {SCC}
 
 
+def fix_w5(app, wb):
+    """RC-2 W-5 (2026-09-24). Contents Group II coinsurance (row 43) read the BUILDING's factor.
+    ISO `SetBasicGroupIICoinsuranceFactor` (PersonalProperty): the Contents record's own
+    CoinsuranceFactor (Contents row 15), except 50% / 60% / 70% / None -> the flat factor
+    (`BasicGroupIIFlatCoinsuranceFactor`, CW 1.5; only PR files its own). Probe
+    `scenarios/rc2/w5_contents_coins_100.json`: AK Contents 100% vs Building 80%, 68 vs ISO 60."""
+    cr = wb.Worksheets("CALC - Contents Rating")
+    n = 0
+    for c in COLS:
+        X, g = colname(c), f"'IN - Schedule'!$G${131 + c}"
+        old = f"=INDEX('CALC - Bldg Rating'!$C$46:$AP$46,1,{X}$116)"
+        if str(cr.Cells(43, c).Formula) != old:
+            raise Gate(f"Contents {X}43 is not {old!r}: {cr.Cells(43, c).Formula!r}")
+        cr.Cells(43, c).Formula = f"=IF(OR({g}=0.5,{g}=0.6,{g}=0.7,{g}=\"None\"),1.5,{X}15)"
+        n += 1
+    return f"W-5: {n} cells -- Contents Group II coinsurance is the contents' own", {"CALC - Contents Rating"}
+
+
+def fix_s2(app, wb):
+    """RC-2 S-2 (2026-09-24). SC Business Income Group II (rows 109-116) borrowed the Special Class
+    ITEM's base / lowest rate, which switch on the ITEM's wind/hail exclusion (Schedule V), and row 115
+    (its W/H factor) pointed at row 32 (StdPropPol). ISO (SpecialClassBusnIncome, CW):
+      BasicGroupIIRate = ROUND(ROUND(base(state, terr, item symbol, Bldg) x LCM) x item numeric)
+      CoL adjustment   = BasicGroupIIRate                                    no SC BI exclusion
+                       = ROUND(ROUND(lowest(state, item symbol) x LCM) x W/H excl factor)  SC BI excludes
+    keyed on SC BI's OWN exclusion (Schedule N 263+). Probe `scenarios/rc2/s2_scbi_windhail_differs`:
+    FL SC BI BGII 162 vs ISO 2."""
+    sc = wb.Worksheets(SCC)
+    n = 0
+    for c in COLS:
+        X = colname(c)
+        i = f"{X}$168"                                           # the Special Class item's column
+        loc = f"INDEX($C$163:$AP$163,1,{i})"
+        st = f"INDEX('IN - Schedule'!$C$5:$C$44,{loc})"
+        terr = f"INDEX('IN - Schedule'!$I$5:$I$44,{loc})"
+        sym = f"INDEX('IN - Schedule'!$R$220:$R$259,{i})"
+        ex = f"'IN - Schedule'!$N${260 + c}"
+        old = {109: f"=INDEX($C$26:$AP$26,1,{i})", 110: f"=INDEX($C$27:$AP$27,1,{i})",
+               112: f"=INDEX($C$29:$AP$29,1,{i})", 113: f"=ROUND(({X}109+{X}110)*{X}111*{X}112,3)",
+               115: f"=INDEX($C$32:$AP$32,1,{i})", 116: f"=ROUND({X}113*{X}114*{X}115,3)"}
+        for r, f in old.items():
+            if str(w11.com_retry(lambda r=r: sc.Cells(r, c).Formula)) != f:
+                raise Gate(f"Special Class {X}{r} is not {f!r}")
+        B = "'TBL - BldgBGIIRating'!"
+        new = {109: f"=IFERROR(INDEX({B}$E$2:$E$382,MATCH({st}&{terr}&{sym},{B}$A$2:$A$382,0)),0)",
+               110: f"=IFERROR(INDEX({B}$AE$2:$AE$358,MATCH({st}&{sym},{B}$AB$2:$AB$358,0)),0)",
+               112: (f"=IFERROR(VLOOKUP(INDEX($C$176:$AP$176,1,{i}),"
+                     f"'TBL - Special Class'!$AK$2:$AO$3335,4,FALSE),0)"),
+               113: f"=ROUND(ROUND({X}109*{X}111,3)*{X}112,3)",
+               115: (f"=IF({ex}=\"Yes\",IFERROR(VLOOKUP(INDEX($C$177:$AP$177,1,{i}),"
+                     f"'TBL - Special Class'!$AQ$2:$AT$189,4,FALSE),1),1)"),
+               116: (f"=IF({ex}=\"Yes\",ROUND(ROUND({X}110*{X}111,3)*{X}115,3),"
+                     f"ROUND({X}113*{X}114,3))")}
+        for r, f in new.items():
+            w11.com_retry(lambda r=r, f=f: setattr(sc.Cells(r, c), "Formula", f))
+        n += 6
+    return f"S-2: {n} cells -- SC Business Income Group II uses its own rates and exclusion", {SCC}
+
+
+def fix_whx(app, wb):
+    """RC-2 ED-WHX + W-4 (2026-09-24). What an EXCLUDED wind/hail does to the Group II cause-of-loss
+    adjustment is a state family (every in-force `SetBasicGroupIICauseOfLossAdjustment`, all five
+    coverages, traced):
+      CW (and lowest-rate variants)  ROUND chain lowest x LCM x ... x W/H excl factor x StdPol
+      NONE  AR DC NY RI              the regular Group II rate; the exclusion changes nothing
+      TX                             regular rate x `WindstormOrHailExclFactorTX` (0.1)
+      FL                             `BasicGroupIIWindstormOrHailExclRate` (0.001) x LCM (x numeric: BI / SC / SC BI)
+      KS                             `BasicGroupIIWindstormOrHailExclRate` (0.023) x LCM (Bldg x ACV x cosmetic;
+                                     BI x BGIIBaseRateAdjustmentFactor)
+    The rater applied CW everywhere (TX probe: Building / BI Group II $0 vs ISO 559 / 364). New sheet
+    `TBL - WHExclMode` (State, Mode, Value); a state not listed is CW. Each coverage keys on its OWN
+    election (Building AE, Contents I, BI N, SC V, SC BI N). W-4: BI's base no longer borrows the
+    Building's (which is the LOWEST rate when the Building excludes) -- ISO's BI looks up its own."""
+    import csv
+    ws = w11.new_sheet(wb, "TBL - WHExclMode")
+    rd = lambda f: list(csv.reader(open(f, encoding="utf-8-sig")))[1:]            # noqa: E731
+    eff = effective_date(wb)
+    tx = float(rd(state_file_in_force("TX", "WindstormOrHailExclFactorTX", eff))[0][2])
+    fl = {r[2] for r in rd(state_file_in_force("FL", "BasicGroupIIWindstormOrHailExclRate", eff))}
+    if len(fl) != 1:
+        raise Gate(f"FL exclusion rate varies by symbol: {fl}")
+    ks = float(rd(state_file_in_force("KS", "BasicGroupIIWindstormOrHailExclRate", eff))[0][2])
+    rows = [("State", "Mode", "Value", "Source (RC-2 ED-WHX, 2026-09-24)"),
+            ("AR", "NONE", 1, "exclusion leaves the Group II rate unchanged"), ("DC", "NONE", 1, ""),
+            ("NY", "NONE", 1, ""), ("RI", "NONE", 1, ""),
+            ("TX", "TX", tx, "WindstormOrHailExclFactorTX x regular rate"),
+            ("FL", "FL", float(fl.pop()), "BasicGroupIIWindstormOrHailExclRate x LCM"),
+            ("KS", "KS", ks, "BasicGroupIIWindstormOrHailExclRate x LCM"),
+            ("(other)", "CW", "", "not listed = CW lowest-rate method")]
+    ws.Range("A1:D9").Value = tuple(rows)
+    M = lambda st: f"IFERROR(VLOOKUP({st},'TBL - WHExclMode'!$A$2:$C$9,2,FALSE),\"CW\")"   # noqa: E731
+    V = lambda st: f"IFERROR(VLOOKUP({st},'TBL - WHExclMode'!$A$2:$C$9,3,FALSE),1)"        # noqa: E731
+
+    def edit(sh, r, c, pairs):
+        f = str(w11.com_retry(lambda: sh.Cells(r, c).Formula))
+        for a, b in pairs:
+            if a not in f:
+                raise Gate(f"{sh.Name}!{colname(c)}{r}: expected {a!r} in {f!r}")
+            f = f.replace(a, b)
+        w11.com_retry(lambda: setattr(sh.Cells(r, c), "Formula", f))
+
+    def setf(sh, r, c, f):
+        w11.com_retry(lambda: setattr(sh.Cells(r, c), "Formula", f))
+
+    br, cr, bi, sc = (wb.Worksheets(s) for s in ("CALC - Bldg Rating", "CALC - Contents Rating",
+                                                 "CALC - BI Rating", SCC))
+    n = 0
+    for c in COLS:
+        X = colname(c)
+        # ---------------- Building (schedule row 45+c)
+        AE = f"'IN - Schedule'!$AE${45 + c}"
+        st = f"'CALC - CoreScratchpad'!{X}$2"
+        ex_cw = f"AND({AE}=\"Yes\",{M(st)}=\"CW\")"
+        edit(br, 36, c, [(f"=IF({AE}=\"Yes\",0,", f"=IF({ex_cw},0,")])
+        edit(br, 37, c, [(f"=IF({AE}=\"No\",0,", f"=IF(NOT({ex_cw}),0,")])
+        regular = f"ROUND(ROUND(ROUND(ROUND(ROUND({X}36*{X}38,3)*{X}39,3)*{X}9,3)*{X}40,3)*{X}41,3)"
+        lowest = f"ROUND(ROUND(ROUND({X}37*{X}38,3)*{X}9,3)*{X}40,3)"
+        edit(br, 42, c, [(f"IF({AE}=\"No\",{regular},IF({AE}=\"Yes\",{lowest},0))",
+                          f"IF(OR({AE}<>\"Yes\",{M(st)}=\"NONE\",{M(st)}=\"TX\"),{regular},"
+                          f"IF({M(st)}=\"FL\",ROUND({V(st)}*{X}38,3),"
+                          f"IF({M(st)}=\"KS\",ROUND(ROUND(ROUND({V(st)}*{X}38,3)*{X}9,3)*{X}40,3),{lowest})))")])
+        old44 = str(w11.com_retry(lambda: br.Cells(44, c).Formula))
+        setf(br, 44, c, f"=IF({AE}<>\"Yes\",1,IF({M(st)}=\"TX\",{V(st)},IF({M(st)}=\"CW\",{old44[1:]},1)))")
+        edit(br, 45, c, [(f"=ROUND({X}42*{X}43*{X}44,3)", f"=ROUND(ROUND({X}42*{X}44,3)*{X}43,3)")])
+        # ---------------- Contents (schedule row 131+c)
+        I = f"'IN - Schedule'!$I${131 + c}"
+        cst = f"INDEX('CALC - CoreScratchpad'!$C$2:$AP$2,1,{X}$116)"
+        cex_cw = f"AND({I}=\"Yes\",{M(cst)}=\"CW\")"
+        edit(cr, 34, c, [(f"=IF({I}=\"Yes\",0,", f"=IF({cex_cw},0,")])
+        edit(cr, 35, c, [(f"=IF({I}=\"No\",0,", f"=IF(NOT({cex_cw}),0,")])
+        edit(cr, 39, c, [(f"IF({I}=\"No\",ROUND({X}34*{X}36*{X}37*{X}38,3),IF({I}=\"Yes\",ROUND({X}35*{X}36,3),0))",
+                          f"IF(OR({I}<>\"Yes\",{M(cst)}=\"NONE\",{M(cst)}=\"TX\"),ROUND({X}34*{X}36*{X}37*{X}38,3),"
+                          f"IF(OR({M(cst)}=\"FL\",{M(cst)}=\"KS\"),ROUND({V(cst)}*{X}36,3),ROUND({X}35*{X}36,3)))")])
+        old41 = str(w11.com_retry(lambda: cr.Cells(41, c).Formula))
+        setf(cr, 41, c, f"=IF({I}<>\"Yes\",1,IF({M(cst)}=\"TX\",{V(cst)},IF({M(cst)}=\"CW\",{old41[1:]},1)))")
+        edit(cr, 42, c, [(f"=ROUND({X}39*{X}40*{X}41,3)", f"=ROUND(ROUND({X}39*{X}41,3)*{X}40,3)")])
+        # ---------------- Business Income (schedule row 174+c; building = X$81)
+        N = f"'IN - Schedule'!$N${174 + c}"
+        bst = f"INDEX('CALC - CoreScratchpad'!$C$2:$AP$2,1,{X}$81)"
+        B2 = "'TBL - BldgBGIIRating'!"
+        edit(bi, 29, c, [(f"INDEX('CALC - Bldg Rating'!$C$36:$AP$36,1,{X}$81)+INDEX('CALC - Bldg Rating'!$C$37:$AP$37,1,{X}$81)",
+                          f"IFERROR(INDEX({B2}$E$2:$E$382,MATCH(INDEX('CALC - CoreScratchpad'!$C$59:$AP$59,1,{X}$81),"
+                          f"{B2}$A$2:$A$382,0)),0)")])
+        low = (f"IFERROR(INDEX({B2}$AE$2:$AE$358,MATCH(INDEX('CALC - CoreScratchpad'!$C$72:$AP$72,1,{X}$81),"
+               f"{B2}$AB$2:$AB$358,0)),0)")
+        key = f"\"Yes\"&{bst}&INDEX('CALC - CoreScratchpad'!$C$287:$AP$287,1,{X}$81)"
+        setf(bi, 35, c, f"=IF({N}<>\"Yes\",1,IF({M(bst)}=\"TX\",{V(bst)},IF({M(bst)}=\"CW\","
+                        f"IFERROR(VLOOKUP({key},'TBL - ContentsTables'!$DL$2:$DP$188,5,FALSE),1),1)))")
+        old36 = f"=IF({N}=\"No\",ROUND({X}33*{X}34,3),IF({N}=\"Yes\",ROUND({X}33*{X}34*{X}35,3)))"
+        if str(w11.com_retry(lambda: bi.Cells(36, c).Formula)) != old36:
+            raise Gate(f"BI {X}36 is not {old36!r}")
+        setf(bi, 36, c, f"=IF(OR({N}<>\"Yes\",{M(bst)}=\"NONE\"),ROUND({X}33*{X}34,3),"
+                        f"IF({M(bst)}=\"TX\",ROUND(ROUND({X}33*{X}35,3)*{X}34,3),"
+                        f"IF({M(bst)}=\"FL\",ROUND(ROUND(ROUND({V(bst)}*{X}30,3)*{X}31,3)*{X}34,3),"
+                        f"IF({M(bst)}=\"KS\",ROUND(ROUND(ROUND({V(bst)}*{X}30,3)*{X}32,3)*{X}34,3),"
+                        f"ROUND(ROUND(ROUND({low}*{X}30,3)*{X}35,3)*{X}34,3)))))")
+        # ---------------- Special Class item (schedule row 217+c)
+        Vv = f"'IN - Schedule'!$V${217 + c}"
+        sst = f"INDEX('IN - Schedule'!$C$5:$C$44,{X}$163)"
+        sex_cw = f"AND({Vv}=\"Yes\",{M(sst)}=\"CW\")"
+        edit(sc, 26, c, [(f"=IF({Vv}=\"Yes\",0,", f"=IF({sex_cw},0,")])
+        edit(sc, 27, c, [(f"=IF({Vv}=\"No\",0,", f"=IF(NOT({sex_cw}),0,")])
+        edit(sc, 29, c, [(f"IF({Vv}=\"Yes\",1,", f"IF({sex_cw},1,")])
+        edit(sc, 30, c, [(f"=ROUND(({X}26+{X}27)*{X}28*{X}29,3)",
+                          f"=IF(AND({Vv}=\"Yes\",{M(sst)}=\"FL\"),ROUND(ROUND({V(sst)}*{X}28,3)*{X}29,3),"
+                          f"IF(AND({Vv}=\"Yes\",{M(sst)}=\"KS\"),ROUND({V(sst)}*{X}28,3),"
+                          f"ROUND(({X}26+{X}27)*{X}28*{X}29,3)))")])
+        old31 = str(w11.com_retry(lambda: sc.Cells(31, c).Formula))
+        setf(sc, 31, c, f"=IF({Vv}<>\"Yes\",1,IF({M(sst)}=\"TX\",{V(sst)},IF({M(sst)}=\"CW\",{old31[1:]},1)))")
+        edit(sc, 33, c, [(f"=ROUND({X}30*{X}31*{X}32,3)", f"=ROUND(ROUND({X}30*{X}31,3)*{X}32,3)")])
+        # ---------------- SC Business Income (rows 109-116, own election N 260+c; item = X$168)
+        ex = f"'IN - Schedule'!$N${260 + c}"
+        qst = f"INDEX('IN - Schedule'!$C$5:$C$44,INDEX($C$163:$AP$163,1,{X}$168))"
+        old115 = str(w11.com_retry(lambda: sc.Cells(115, c).Formula))
+        if not old115.startswith(f"=IF({ex}=\"Yes\",IFERROR(VLOOKUP("):
+            raise Gate(f"SC {X}115 is not the S-2 formula: {old115!r}")
+        cwf = old115[len(f"=IF({ex}=\"Yes\","):-len(",1)")]
+        setf(sc, 115, c, f"=IF({ex}<>\"Yes\",1,IF({M(qst)}=\"TX\",{V(qst)},IF({M(qst)}=\"CW\",{cwf},1)))")
+        setf(sc, 116, c, f"=IF(OR({ex}<>\"Yes\",{M(qst)}=\"NONE\"),ROUND({X}113*{X}114,3),"
+                         f"IF({M(qst)}=\"TX\",ROUND(ROUND({X}113*{X}115,3)*{X}114,3),"
+                         f"IF({M(qst)}=\"FL\",ROUND(ROUND({V(qst)}*{X}111,3)*{X}112,3),"
+                         f"IF({M(qst)}=\"KS\",ROUND({V(qst)}*{X}111,3),"
+                         f"ROUND(ROUND({X}110*{X}111,3)*{X}115,3)))))")
+        n += 20
+    return (f"ED-WHX + W-4: {n} cells; TBL - WHExclMode (TX {tx}, FL {rows[6][2]}, KS {ks}; AR DC NY RI none)",
+            {"CALC - Bldg Rating", "CALC - Contents Rating", "CALC - BI Rating", SCC})
+
+
+def fix_whxnum(app, wb):
+    """RC-2 ED-WHX follow-up (2026-09-24). CoreScratchpad row 68 (the Building's Group II numeric
+    value) is forced to 1 when the BUILDING excludes wind/hail (row 60). Right for the CW lowest-rate
+    path, which ignores it; wrong (a) for the Building's regular path in NONE / TX states, and (b)
+    for BI, which ISO always rates with `../../BasicGroupIINumericValue` (FL probe: BI Group II
+    3 vs ISO 11 -- ISO BasicGroupIIRate 0.329 = 0.129 x numeric 4 x BCEG x adj). Row 68 now forces 1
+    only for an excluded CW-mode building; BI row 31 reads the numeric without the exclusion gate."""
+    cs, bi = wb.Worksheets(w11.CS), wb.Worksheets("CALC - BI Rating")
+    M = lambda st: f"IFERROR(VLOOKUP({st},'TBL - WHExclMode'!$A$2:$C$9,2,FALSE),\"CW\")"   # noqa: E731
+    n = 0
+    for c in COLS:
+        X, b = colname(c), 45 + c
+        old = f"=IF({X}60=\"Yes\",1,IF({X}63=\"Yes\",{X}65,IF('IN - Schedule'!$M${b}=\"Yes\",{X}67,1)))"
+        f = str(w11.com_retry(lambda: cs.Cells(68, c).Formula))
+        if f != old:
+            raise Gate(f"CoreScratchpad {X}68 is not {old!r}: {f!r}")
+        w11.com_retry(lambda: setattr(cs.Cells(68, c), "Formula",
+                                      old.replace(f"=IF({X}60=\"Yes\",1,", f"=IF(AND({X}60=\"Yes\",{M(X + '$2')}=\"CW\"),1,")))
+        old31 = f"=INDEX('CALC - Bldg Rating'!$C$39:$AP$39,1,{X}$81)"
+        if str(w11.com_retry(lambda: bi.Cells(31, c).Formula)) != old31:
+            raise Gate(f"BI {X}31 is not {old31!r}")
+        I = lambda row: f"INDEX('CALC - CoreScratchpad'!$C${row}:$AP${row},1,{X}$81)"    # noqa: E731
+        w11.com_retry(lambda: setattr(bi.Cells(31, c), "Formula",
+                                      f"=IF({I(63)}=\"Yes\",{I(65)},IF(INDEX('IN - Schedule'!$M$48:$M$87,{X}$81)=\"Yes\","
+                                      f"{I(67)},1))"))
+        n += 2
+    return f"ED-WHX numeric: {n} cells", {"CALC - BI Rating"}
+
+
+def fix_whxnum2(app, wb):
+    """RC-2 ED-WHX (2026-09-24), correcting WHXNUM's BI half. The AL probe (Building excludes, BI does
+    not, CW state) showed ISO's BI uses numeric 1 there: ISO's own `SetBasicGroupIINumericValue` DOES
+    force 1 for an excluded building in CW-mode states (AR DC FL KS NY RI override it and don't). So
+    BI row 31 goes back to the Building's numeric (row 39 = CoreScratchpad 68, now mode-gated)."""
+    bi = wb.Worksheets("CALC - BI Rating")
+    for c in COLS:
+        X = colname(c)
+        f = str(w11.com_retry(lambda: bi.Cells(31, c).Formula))
+        if not f.startswith(f"=IF(INDEX('CALC - CoreScratchpad'!$C$63:$AP$63,1,{X}$81)"):
+            raise Gate(f"BI {X}31 is not the WHXNUM formula: {f!r}")
+        w11.com_retry(lambda: setattr(bi.Cells(31, c), "Formula",
+                                      f"=INDEX('CALC - Bldg Rating'!$C$39:$AP$39,1,{X}$81)"))
+    return "ED-WHX numeric: BI row 31 back to the Building's (mode-gated) numeric", {"CALC - BI Rating"}
+
+
+def fix_w3fin(app, wb):
+    """RC-2 W-3 + final-rate rounding (2026-09-24), from the large-limit per-location probe
+    (`scenarios/rc2/w3_perloc_large.json`, AK $20M building excluded, $10M contents).
+    1. FINRND: ISO `SetFinal*Rate` (Structure, PersonalProperty, Special Class) is
+       ROUND(ROUND(adjusted x per-location credit,3) x deductible [x multi-res],3); the rater's
+       Building 22/52/76/102 and Contents 20/48/71/99 rounded once (Bldg BGI 7738 vs ISO 7936,
+       Contents Special 3271 vs 3369).
+    2. W-3: ISO's Group II per-location credit (`SetBGIIDeductibleByLocationFactor`) ignores every
+       wind/hail exclusion; it needs the per-location record and `WindstormHailIndicator` = 0, i.e.
+       NOT (1% and W/H total >= 100,000 / 2% >= 50,000 / 5% >= 20,000). W/H total = the building's limit
+       unless it excludes W/H + its contents that don't. Bldg row 49 (Contents 46 reads it) gated on
+       the Building's exclusion instead (ISO 0.995, rater 1.0)."""
+    br, cr = wb.Worksheets(BR), wb.Worksheets("CALC - Contents Rating")
+    fin = [(br, {22: (18, 19, [20, 21]), 52: (48, 49, [50, 51]), 76: (72, 73, [74, 75]), 102: (98, 99, [100, 101])}),
+           (cr, {20: (17, 18, [19]), 48: (45, 46, [47]), 71: (67, 68, [69, 70]), 99: (95, 96, [97, 98])})]
+    n = 0
+    for c in COLS:
+        X = colname(c)
+        for sh, rows in fin:
+            for r, (a, d, rest) in rows.items():
+                old = "=ROUND(" + "*".join(f"{X}{k}" for k in [a, d] + rest) + ",3)"
+                f = str(w11.com_retry(lambda: sh.Cells(r, c).Formula))
+                if f != old:
+                    raise Gate(f"{sh.Name}!{X}{r} is not {old!r}: {f!r}")
+                new = f"=ROUND(ROUND({X}{a}*{X}{d},3)*" + "*".join(f"{X}{k}" for k in rest) + ",3)"
+                w11.com_retry(lambda: setattr(sh.Cells(r, c), "Formula", new))
+                n += 1
+        b = 45 + c
+        S = lambda k: f"'IN - Schedule'!${k}${b}"                               # noqa: E731
+        old49 = (f"=IF(AND({S('AE')}=\"No\",INDEX('IN - Schedule'!$N$5:$N$44,'CALC - CoreScratchpad'!{X}$285)=\"Yes\"),"
+                 f"IFERROR(VLOOKUP('CALC - CoreScratchpad'!{X}$2,'TBL - DeductibleByLocation'!$A$2:$B$46,2,FALSE),1),1)")
+        f = str(w11.com_retry(lambda: br.Cells(49, c).Formula))
+        if f != old49:
+            raise Gate(f"Bldg {X}49 is not {old49!r}: {f!r}")
+        tot = (f"(IF({S('AE')}<>\"Yes\",{S('N')},0)+SUMIFS('IN - Schedule'!$E$134:$E$173,'IN - Schedule'!$L$134:$L$173,"
+               f"{S('A')},'IN - Schedule'!$C$134:$C$173,\"Yes\",'IN - Schedule'!$I$134:$I$173,\"No\"))")
+        w = S("S")
+        ind = (f"OR(AND(OR({w}=\"1%\",{w}=0.01),{tot}>=100000),AND(OR({w}=\"2%\",{w}=0.02),{tot}>=50000),"
+               f"AND(OR({w}=\"5%\",{w}=0.05),{tot}>=20000))")
+        new49 = (f"=IF(AND(INDEX('IN - Schedule'!$N$5:$N$44,'CALC - CoreScratchpad'!{X}$285)=\"Yes\",NOT({ind})),"
+                 f"IFERROR(VLOOKUP('CALC - CoreScratchpad'!{X}$2,'TBL - DeductibleByLocation'!$A$2:$B$46,2,FALSE),1),1)")
+        w11.com_retry(lambda: setattr(br.Cells(49, c), "Formula", new49))
+        n += 1
+    return f"W-3 + FINRND: {n} cells", {BR, "CALC - Contents Rating"}
+
+
+w11.FIXES["W3FIN"] = fix_w3fin
+w11.EXPECT_COLS["W3FIN"] = set()
+w11.NO_MOVE.add("W3FIN")        # no baseline location elects per-location deductibles
+w11.FIXES["WHXNUM2"] = fix_whxnum2
+w11.EXPECT_COLS["WHXNUM2"] = set()
+w11.NO_MOVE.add("WHXNUM2")
+w11.FIXES["WHXNUM"] = fix_whxnum
+w11.EXPECT_COLS["WHXNUM"] = set()
+w11.NO_MOVE.add("WHXNUM")
+w11.FIXES["WHX"] = fix_whx
+w11.EXPECT_COLS["WHX"] = set()
+w11.NO_MOVE.add("WHX")          # nothing on the baseline excludes wind/hail
+w11.FIXES["S2"] = fix_s2
+w11.EXPECT_COLS["S2"] = set()
+w11.NO_MOVE.add("S2")           # baseline SC BI excludes nothing
+w11.FIXES["W5"] = fix_w5
+w11.EXPECT_COLS["W5"] = set()
+w11.NO_MOVE.add("W5")           # Building and Contents coinsurance are both 80% on the baseline
 w11.FIXES["SCGISTFL"] = fix_scgistfl
 w11.EXPECT_COLS["SCGISTFL"] = set()
 w11.NO_MOVE.add("SCGISTFL")

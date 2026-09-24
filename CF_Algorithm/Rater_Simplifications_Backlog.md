@@ -277,4 +277,31 @@ symbol but U; the payload now sends it, and **ISO rates NY; the engine matches 9
 | TH-DED | **FIXED 2026-09-24 (`124 --fix THDED`, ISO-verified).** Theft deductible | The live rater had NO theft-deductible logic (Contents 160-165 were dead). New CoreScratchpad 127-131: ISO's Special-incl-theft total, theft lookup (Other Cause Of Loss), gate (theft covered, TheftDed not ''/NA/250 and <> Deductible), $250 branch. Bldg row 100 and Contents row 97 use them; Contents checks its own theft exclusion. Payload: occupancy `TheftDeductible` = building's; CP 03 20 `[{}]` when theft / dollar W-H ded differs (as ISO's STC payloads) | Probe `scenarios/rc4/ca_theft_deductible.json` (CA, theft covered, $5,000 theft vs $2,500): factor 0.84 vs regular 0.89, 9 / 9 = ISO. Not modelled: Special Class in the theft total. Baseline unchanged |
 | SC-GI-ST | **FIXED 2026-09-24 (`124 --fix SCGIST` + `SCGISTFL`, ISO-verified).** Special Class Group I rate was CW only | New `TBL - Special Class` EI:EJ (State|Description|PC -> rate) for NY and PR from their in-force tables; row 4 reads it first, falls back to CW (ISO's FirstNonNull). **NY** blanks `SetSpecialClassDescConvertedOption` (only state that does), so ISO priced Group I at **0** unless the option is SENT: payload now sends the rater's derived option (row 171) for NY items. **FL** removed again: live ISO runs FL V02 (not on disk), which maps the above-ground pool to Option29b2 = 0.556 (= CW); V01 swaps the two pool rates | Probes: `ny_special_class.json` (Artificial Turf NY 0.165; Option1a NY 0.43 vs CW 0.044 -> $778 vs ~$80) 18 / 18; `fl_special_class_pool.json` Excel = ISO. 'Special Class in NYC' closed: ISO computes the SC protection-class factor but never uses it. Open: NY option names like Option12b1 are unreachable through the CW map; engine uses FL V01 (ED-FL) |
 
+## Feature set: RC-2 probes (2026-09-24, `scenarios/rc2/`, live ISO)
 
+| Probe | Result | Finding |
+|---|---|---|
+| W-4a Building excludes W/H, BI does not (AK) | 9 / 9 | ISO's BI Group II uses its OWN base; matched only because AK has one territory (lowest = base). Rater BI row 29 = Bldg 36 + 37 switches BI to the Building's LOWEST base when the Building excludes -> wrong in multi-territory states. Re-probe in a multi-territory state |
+| W-4b BI excludes, Building does not (AK) | BI BGII **79 vs ISO 37** | BI row 36 multiplies the BUILDING's exclusion factor (1 here). ISO BI: ROUND(ROUND(ROUND(lowest(Bldg symbol) x LCM) x BI's own W/H excl factor) x BuildersRisk) |
+| W-5 Contents coinsurance 100%, Building 80% (AK) | Contents BGII **68 vs 60** | Contents row 43 = Building's factor. ISO: Contents' OWN coinsurance factor; flat 1.5 at 50 / 60 / 70% / None |
+| W-3 per-location ded, Building excludes (AK) | 9 / 9 but not discriminating | Reframed: ISO's Group II per-location credit (0.995) ignores every W/H exclusion; gate = per-location record + `WindstormHailIndicator` = 0 (no 1% >= 100k, 2% >= 50k, 5% >= 20k). Rater Bldg 49 gates on the Building's exclusion (ISO 0.995, rater 1.0 here; hidden by rounding). Needs a large-limit probe |
+| S-1 SC BI vandalism differs (FL) | 15 / 15 | Already own election. Closed |
+| S-2 SC BI W/H differs (FL) | SC BI BGII **162 vs 2** | SC BI follows the SC item's election, not its own |
+| S-3 SC BI theft differs (FL) | 15 / 15 | Already own election. Closed |
+| ED-WHX Building excludes W/H (TX) | Bldg / BI BGII **0 vs 559 / 364** | Rater uses a 'lowest' rate TX does not file -> 0 |
+
+**ED-WHX, state families for the Group II cause-of-loss adjustment when W/H is excluded** (Structure / PP / BI rules, in-force):
+CW = ROUND chain lowest x LCM x ACV x cosmetic x W/H excl factor x StdPol. **AR, DC, NY, RI** = exclusion has no effect (regular
+Group II rate x StdPol; RI public-institutional variant). **TX** = regular rate x `WindstormOrHailExclFactorTX` (0.1) x StdPol (Structure,
+PP, BI). **FL** = `BasicGroupIIWindstormOrHailExclRate` x LCM x StdPol (BI: x numeric). **KS** = `BasicGroupIIWindstormOrHailExclRate` x LCM
+(x ACV x cosmetic; BI x BGIIBaseRateAdjustmentFactor). NY Structure's rule is empty (to confirm by probe).
+
+**RC-2 FIXED 2026-09-24** (`124 --fix W5 / S2 / WHX / WHXNUM / WHXNUM2 / W3FIN`, each gated premium-neutral, saved + reopened):
+W-5 Contents Group II coinsurance = contents' own (flat 1.5 at 50/60/70%/None). S-2 SC BI Group II own base / numeric / exclusion.
+ED-WHX new `TBL - WHExclMode` (AR DC NY RI NONE, TX 0.1, FL 0.001, KS 0.023; else CW) applied to Building / Contents / BI / SC / SC BI,
+each on its OWN election; CoreScratchpad 68 forces numeric 1 only for an excluded CW-mode building (ISO's own rule). W-4 BI base is its
+own lookup. W-3 Group II per-location credit = per-location record + NOT WindstormHailIndicator (no exclusion gate). FINRND final rates
+round after the per-location credit (Bldg 22/52/76/102, Contents 20/48/71/99). All 14 RC-2 probes Excel = ISO; RC-4 probes still clean;
+42-state regression 40 / 40 rated states, 0 mismatches; standard 42 / 42 at 21171. Closed: S-1, S-3 (already own). Still open: S-4
+(sprinkler per occupancy -- needs an input, moved to RC-3); CW lowest-rate variants AL / CT / NH / WV / GA / KY / IN / VT differ only in
+which roof factors they apply (not probed); Contents Broad / Special multiply a multi-res factor ISO's PP rule lacks (1 on every test).

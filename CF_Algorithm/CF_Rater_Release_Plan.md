@@ -16,22 +16,12 @@ meant to move a line, and each move is confirmed by live ISO moving onto the rat
 ISO write-up drafted (FL only), CY-NY fixed, W-7 closed as W-24 (records 11-40 no longer price $0), dropdowns on all
 40 rows plus FL's missing list, Z-2 / Z-3 traps, 23 stale docs flagged. **Your action:** send `ISO_Filing_Gap_FL_Cyber.md`.
 
-## RC-2 · Separate choices per coverage (medium; moves premium only when elections differ)
+## RC-2 · Separate choices per coverage: ✅ DONE 2026-09-24
 
-What it buys: Building, Contents and BI can each carry their own exclusions and settings, as ISO files them.
-One pattern throughout: **one input drives several coverage groups**.
-
-| Item | What |
-|---|---|
-| W-4 | BI follows the **Building's** wind/hail exclusion, not its own (R-8 test: 2699 → 1890 when only the building excludes) |
-| W-5 | Contents Group II coinsurance reads the **Building's** factor |
-| W-3 | Contents Group II deductible-by-location credit gates on the **Building's** wind/hail election |
-| R-5 remainder (S-1..S-3) | 6 consumers still read the master exclusion input via shared CoreScratchpad helpers (Building / Contents / BI) |
-| S-4 | One sprinkler system and one sprinkler-leakage exclusion for all groups; ISO reads the occupancy's own sprinkler system and a record per group |
-| Sweep | Grep every `Exist AtInputDataDef=` gate for other one-input-many-records pairs before calling the set complete |
-
-Needs: a test risk whose elections **differ** between coverages. Today's four all agree, so nothing here is
-visible in the 42 / 42.
+Each coverage now follows its own elections, and an excluded wind/hail follows the state's own family (TBL - WHExclMode).
+Fixed: W-3, W-4, W-5, S-2, ED-WHX, final-rate rounding. Closed as already right: S-1, S-3. Moved to RC-3: S-4 (needs an
+occupancy sprinkler input). 14 probes in `scenarios/rc2/`, all Excel = ISO; regression 40 / 40, standard 42 / 42 at 21171.
+Details: `Rater_Simplifications_Backlog.md` (RC-2 probes).
 
 ## RC-3 · Inputs the rater doesn't have (medium; new Schedule / Policy fields, payload follows)
 
@@ -44,6 +34,7 @@ What it buys: submissions that carry these facts get rated on them instead of an
 | D-1c | **NY territory factor** from City + County (ISO's code), not the Group I dropdown |
 | WH-CO / EQT-SC / AZ-PFD | **CO / IN / OK wind hazard county; SC earthquake territory; AZ fire-department credit** (ISO refuses or zeroes without them) |
 | FL-BGII | **FL county input**, so the Group II territory dropdown narrows by county as ISO's does |
+| S-4 | **Sprinkler system per occupancy** and per-group sprinkler-leakage records (from RC-2); payload mirrors the building today |
 | Linked Special Class | Special Class "included in building" / linked item: never populated, untested |
 
 ## RC-4 · Prove what's built: ✅ DONE 2026-09-24 (final regression: 40 / 40 rated states, 0 mismatches; standard 42 / 42 at 21171)

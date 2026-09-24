@@ -1,0 +1,23 @@
+{
+ "name": "rc2_w3_perloc_bldg_excl_only",
+ "states": [
+  "AK"
+ ],
+ "edits": [
+  {
+   "sheet": "IN - Schedule",
+   "cell": "N7",
+   "value": "Yes"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "AE50",
+   "value": "Yes"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "I136",
+   "value": "No"
+  }
+ ]
+}

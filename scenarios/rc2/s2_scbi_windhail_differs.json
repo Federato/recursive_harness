@@ -1,0 +1,13 @@
+{
+ "name": "rc2_s2_scbi_windhail_differs",
+ "states": [
+  "FL"
+ ],
+ "edits": [
+  {
+   "sheet": "IN - Schedule",
+   "cell": "N263",
+   "value": "Yes"
+  }
+ ]
+}

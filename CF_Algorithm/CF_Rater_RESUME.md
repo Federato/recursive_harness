@@ -7,7 +7,8 @@
 > CO / IN / OK / SC are ISO refusals (RC-3 inputs). Standard run 42 / 42 at 21171. Next: RC-4's remaining items.
 >
 > **2026-09-24 later: RC-4 DONE.** ED-CA-SC, ROOFRND, TH-DED, W-22, CA-D2, SC-GI-ST fixed / verified on live ISO (`124 --fix <ID>`,
-> probes in `scenarios/rc4/`). Baseline 21171 unchanged. Next: RC-2 (incl. ED-WHX). Committed 60d2267.
+> probes in `scenarios/rc4/`). Baseline 21171 unchanged. Committed 60d2267.
+> **RC-2 DONE 2026-09-24** (W-3 W-4 W-5 S-2 ED-WHX FINRND; `scenarios/rc2/`). Not committed yet. Next: RC-3.
 
 ---
 
