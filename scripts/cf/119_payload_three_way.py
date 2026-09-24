@@ -329,7 +329,7 @@ class Builder:
         # "= RatingType", and on a Specific building that made ISO price Group II at 0
         # (FL, 2026-09-22). Reproduce the rater, not the default.
         o["RatingTypeBasicGroupII"] = "Class"
-        if b["RatingType"] == "Specific" and b.get("SpecificRate"):
+        if b["RatingType"] in ("Specific", "Tentative") and b.get("SpecificRate"):   # ISO: same path
             o["SpecificGroupIRate"] = float(b["SpecificRate"])
         for i, x in enumerate("ABCDE"):
             self.put(o, f"SubStdCondition{x}", b.get(f"SubStd{x}"))
@@ -410,7 +410,7 @@ class Builder:
         self.put(o, "ValuationType", p.get("Valuation"))
         self.put(o, "CauseOfLoss", b.get("CauseOfLoss"))
         self.put(o, "Deductible", b.get("Deductible"))
-        if b["RatingType"] == "Specific" and p.get("SpecificRate"):
+        if b["RatingType"] in ("Specific", "Tentative") and p.get("SpecificRate"):
             o["SpecificGroupIRate"] = float(p["SpecificRate"])   # rater Contents row 3
         # W-22 (RC-4, 2026-09-24): ISO's contents premium reads MPD from the PersonalProperty
         # record itself; package mod and IRPM come from the policy (see policy()).
@@ -427,7 +427,7 @@ class Builder:
     def business_income(self, x, col, rating_type=None, sprinkler_excl=None):
         self.order.append(("BI", x))
         o = {"Limit": int(x["Limit"] or 0)}
-        if rating_type == "Specific" and x.get("SpecificRate"):
+        if rating_type in ("Specific", "Tentative") and x.get("SpecificRate"):
             o["SpecificGroupIRate"] = float(x["SpecificRate"])   # rater BI row 3
         for f, h in (("CovType", "CovType"), ("TypeOfRisk", "TypeOfRisk"),
                      ("MaxPeriod", "MaxPeriodIndemnity"),

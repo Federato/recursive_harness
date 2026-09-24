@@ -45,6 +45,7 @@ New, carried forward: ED-WHX (-> RC-2), ENG-FL-MOD and ED-FL (harness engine / F
 | Item | What |
 |---|---|
 | Blanket rating | Every blanket branch is inert line-wide |
+| Specific Group II | Specific / Tentative **Group I** is built (input rate; ISO rates Tentative = Specific, verified 2026-09-24). Missing: ISO's Specific **Group II** rate (`RatingTypeBasicGroupII` = Specific, `SpecificGroupIIRate`, wind-hazard eligibility); the rater always rates Group II by class |
 | Earthquake | Untraced on both the rater and the harness side |
 | Edition transitions | One ERC edition per state, resolved outside the workbook; FL's filing is 21 months old (R-6) |
 | ED-FL | ✅ **DONE 2026-09-24**: FL V02 on disk (on CW 20230801 V04); FL Special Class rates, vacancy codes, substandard table (8 states), FL residential basis fixed; engine FL gap closed |

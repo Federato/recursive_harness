@@ -335,3 +335,8 @@ Special Class options, renames FL's descriptions to CW's, and adds vacancy codes
 - **EDFLSTAMP**: TBL - Editions FL row -> V02 / CW 20230801 V04.
 **ENG-FL-MOD closed**: with V02 on disk cf_engine applies IRPM / PM / MPD in FL (mods probe 42 / 42 all three).
 Regression: 44 / 44 states, 0 refused, 0 mismatches; standard 42 / 42 at 21171.
+
+**Specific / Tentative (2026-09-24, user correction):** the rater HAS Specific and Tentative Group I (Schedule G rating type, O input rate; CoreScratchpad 6 sends both
+down the Specific path, as ISO's `SetBasicGroupIRate` does -- Specific and Tentative share it; Tentative only adds a form and stat codes).
+Payload now sends `SpecificGroupIRate` for Tentative too (it sent it for Specific only). Probe `scenarios/rc5/fl_tentative.json`: 15 / 15.
+Earlier notes calling Specific/Tentative "unbuilt" were wrong. Still missing: **Specific Group II** (RC-5).
