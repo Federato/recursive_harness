@@ -104,7 +104,11 @@ def singletons(bk):
     by hand. ISO sends these as a JSON object; `to_engine` wraps every object in
     a one-row table, which puts the record where no rule looks (found by C13-03:
     AK and WY's PostTRIA premium read as absent until this was fixed)."""
-    key = bk.parent.package.content
+    # Keyed by parent AND state: a state's own rules can address a record bare that the
+    # countrywide rules never mention (KY's CommercialPropertyMineSubsidenceCoverage). Keyed
+    # by the parent alone, the first state rated (Oregon) fixed the set for every state on
+    # that parent, and Kentucky's mine subsidence record was never unwrapped (C14-02).
+    key = (bk.parent.package.content, bk.state.package.content)
     if key not in _SINGLETONS:
         names = set()
         for content in (bk.parent.package.content, bk.state.package.content):

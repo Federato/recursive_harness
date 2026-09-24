@@ -199,6 +199,12 @@ MACHINERY = [
     ("152_chunk13_rc4_states.py", "chunk 13 RC-4: 46 states, every tier, own rows + rules (290 cases)"),
     ("154_chunk13_rc5_fields_messages.py",
      "chunk 13 every terrorism field + messages vs 293 stored ISO responses (offline)"),
+    # Chunk 14 (2026-09-24). Offline: both re-rate stored ISO responses.
+    # 157_ runs its fixed 46-fixture covering sample here (~45 s); `--all` (293, ~4 min)
+    # runs at every chunk close-out and edition change (user-approved 2026-09-24).
+    ("157_chunk14_c14-02_total_replay.py", "chunk 14 every premium + the policy total, 46-fixture covering sample"),
+    ("158_chunk14_rc1_scope_machinery.py",
+     "chunk 14 RC-1: no minimum premium, state overrides only add records, negative premiums count"),
 ]
 
 # Excluded on purpose, each with a reason -- no silent narrowing of scope.

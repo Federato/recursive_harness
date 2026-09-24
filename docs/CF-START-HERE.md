@@ -17,8 +17,12 @@ OI-111 (named ancestors, the 10th authorized fix). **Regression CLEAN for chunks
 chunk 6's C6-11 and chunk 11's F2 were re-derived for it. Open, not blocking: OI-112 (a
 deductible-form message on older editions, no premium impact), OI-103, OI-106.
 
-**Next: chunk 14, policy assembly** (aggregation, minimum premium, statistical coding). It
-builds on chunk 13's finding that the policy total is locations + roll-up records.
+**Chunk 14, policy assembly, OPENED 2026-09-24 at 1 of 22** ([`CF-CHUNK14-TASKS.md`](CF-CHUNK14-TASKS.md),
+census `156_chunk14_census.py`). Minimum premium is not in ISO's rating for our 46 states
+(empty tables, no reader). **RC-1 COMPLETE 2026-09-24** (`157_`, `158_`, in the regression): every premium (14,236) and the
+policy total (293 of 293) equal ISO on the stored responses; state overrides of the total only add
+records; negative premiums count, as at ISO. **Minimum premium: a company input, refer to company (user decision; OI-113, backlog).**
+Next: RC-2 (C14-06, the policy-total golden case). **At every chunk close-out also run `python scripts/cf/157_chunk14_c14-02_total_replay.py --all`** (the regression runs its 46-fixture sample).
 
 ### Chunk 12 close-out (2026-09-24)
 
