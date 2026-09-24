@@ -362,3 +362,9 @@ V04 / 2026 by the exact share. (2) Excel stores "90%" as 0.9. Probes: CA two bui
 as .5 and rounds up). Next: Phase 2 Contents (Personal Property Only; Building & PP Combined).
 **Wider follow-up (not yet audited):** the 9 states on an older countrywide base may differ from CW 2026 elsewhere too; every standard
 risk matches today.
+
+**Blanket Phase 2 DONE 2026-09-24** (`124 --fix BLKT2`): Contents -- Personal Property Only and Building & PP Combined. Schedule Contents
+S IncludedInBlkt / T BlktIDNum / U FullPrsnlPropValue; `CALC - Blanket` rows 21-38 (contents weights with the BUILDING's deductible
+factors, Special pre-rounded with watchman / burglary credits); group totals and average rates add buildings and contents sharing the
+ID; Contents row 117 (LOI basis) reads the blanket basis; Contents premiums on ISO's chain (PM -> MPD -> IRPM, ISO operand order).
+Probes: CA Combined (2 buildings + contents) 12 / 12; OH PP Only 100% 9 / 9. Next: Phase 3 BI blankets.

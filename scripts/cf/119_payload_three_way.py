@@ -440,6 +440,11 @@ class Builder:
         o.update(IncludedInBlkt=self.d["IncludedInBlkt"],
                  LossCostMultiplier=float(self.d["LossCostMultiplier"]),
                  MultiPremiumAndDispersionCreditFactor=float(self.pol.get((24, 3)) or 1.0))
+        if p.get("IncludedInBlkt") == "Yes" and p.get("BlktIDNum") and int(p["BlktIDNum"]) in self.blankets:
+            # RC-5 Blanket Phase 2 (2026-09-24): the contents' own full value and blanket ID
+            o.update(IncludedInBlkt="Yes", BlktIDNum=int(p["BlktIDNum"]),
+                     FullPrsnlPropValue=int(p.get("FullPrsnlPropValue") or p["Limit"] or 0))
+            self.used_blankets.add(int(p["BlktIDNum"]))
         self.records(o, p, {"WindHailExcl": "CommercialPropertyWindstormOrHailExclusionPrsnlProp",
                             "VandalismExcl": "CommercialPropertyVandalismExclusionPrsnlProp",
                             "TheftExcl": "CommercialPropertyTheftExclusionPrsnlProp"})

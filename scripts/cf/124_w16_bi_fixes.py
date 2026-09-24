@@ -2091,6 +2091,111 @@ def fix_blkt1d(app, wb):
     return "Blanket: Special premium multiplies in ISO's operand order", {BR}
 
 
+def fix_blkt2(app, wb):
+    """RC-5 Blanket Phase 2 (2026-09-24): Contents (Personal Property Only; Building & PP Combined). ISO:
+      weight(group) = ROUND(FullPrsnlPropValue x the contents' CoL adj x MCL(1) x the BUILDING's per-loc credit
+                            x the BUILDING's deductible x margin(1) x the contents' blanket LOI, 0)
+                      (Broad: BroadRate; Special: ROUND(ROUND(V x CoL adj x watchman,3) x burglary,3) first,
+                       and the contents' own Special deductible)
+      blanket LOI  = the contents' LOI lookup at ROUND(FullPrsnlPropValue / TotalFull x BlktLimit, 0)
+      group totals and average rates add buildings and contents that share the ID (Combined).
+      Premium      = chain ROUND(avg x share x limit/100) -> x PM -> x MPD -> x IRPM (Special: limit/100 x share x
+                     avg first), then the two Cyber factors; share rounded to 2 dp on CW V01-V03 bases.
+    Schedule Contents S IncludedInBlkt / T BlktIDNum / U FullPrsnlPropValue; CALC - Blanket rows 21-38;
+    Contents row 117 (LOI basis) reads the blanket basis; building rows 5 and 13-16 now include contents."""
+    sch = wb.Worksheets(w11.SCH)
+    for cell in ("S133", "T133", "U133"):
+        if sch.Range(cell).Value not in (None, ""):
+            raise Gate(f"Schedule {cell} is not empty")
+    sch.Range("S133:U133").Value = (("IncludedInBlkt", "BlktIDNum", "FullPrsnlPropValue"),)
+    for r in range(134, 174):
+        sch.Range(f"S{r}").Value = "No"
+        sch.Range(f"T{r}").Value = 0
+        sch.Range(f"U{r}").Formula = f"=E{r}"
+    v = sch.Range("S134:S173").Validation
+    v.Delete()
+    v.Add(Type=3, AlertStyle=1, Operator=1, Formula1="No,Yes")
+    ib = wb.Worksheets("IN - Blanket")
+    v = ib.Range("B5:B14").Validation
+    v.Delete()
+    v.Add(Type=3, AlertStyle=1, Operator=1,
+          Formula1="Building Only,Personal Property Only,Building & Personal Property Combined")
+    ib.Range("A1").Value = "BLANKET GROUPS (Building / Personal Property / Combined; Average)"
+    cb = wb.Worksheets("CALC - Blanket")
+    labels = {21: "BLANKET (Contents)", 22: "In blanket", 23: "BlktIDNum", 24: "FullPrsnlPropValue",
+              25: "Blanket TotalFullValue", 26: "Blanket TotalLimit", 27: "BlktTotalLOIToUse", 28: "Weight BGI",
+              29: "Weight BGII", 30: "Weight Broad", 31: "Weight Special", 32: "Blanket CoinsuranceFactor",
+              33: "AvgRate BGI", 34: "AvgRate BGII", 35: "AvgRate Broad", 36: "AvgRate Special",
+              37: "Blanket CauseOfLoss", 38: "Blanket share"}
+    for r, t in labels.items():
+        cb.Range(f"B{r}").Value = t
+    CR = "'CALC - Contents Rating'!"
+    IB = "'IN - Blanket'!$A$5:$F$14"
+    last_cw = wb.Worksheets("TBL - CWBase").Cells(wb.Worksheets("TBL - CWBase").Rows.Count, "A").End(-4162).Row
+
+    def tot(idcell):
+        return (f"(SUMPRODUCT(($C$2:$AP$2=TRUE)*($C$3:$AP$3={idcell})*$C$4:$AP$4)"
+                f"+SUMPRODUCT(($C$22:$AP$22=TRUE)*($C$23:$AP$23={idcell})*$C$24:$AP$24))")
+
+    def wsum(idcell, rb, rc):
+        return (f"(SUMPRODUCT(($C$2:$AP$2=TRUE)*($C$3:$AP$3={idcell})*$C${rb}:$AP${rb})"
+                f"+SUMPRODUCT(($C$22:$AP$22=TRUE)*($C$23:$AP$23={idcell})*$C${rc}:$AP${rc}))")
+    for c in COLS:
+        X, p = colname(c), 131 + c
+        st = f"INDEX('CALC - CoreScratchpad'!$C$2:$AP$2,1,{CR}{X}$116)"
+        rnd = f"IFERROR(VLOOKUP({st},'TBL - CWBase'!$A$2:$C${last_cw},3,FALSE),\"No\")=\"Yes\""
+        f = {22: f"=AND('IN - Schedule'!$C${p}=\"Yes\",'IN - Schedule'!$S${p}=\"Yes\",'IN - Schedule'!$T${p}>0,"
+                 f"ISNUMBER(MATCH('IN - Schedule'!$T${p},'IN - Blanket'!$A$5:$A$14,0)))",
+             23: f"='IN - Schedule'!$T${p}", 24: f"=N('IN - Schedule'!$U${p})",
+             25: f"=IF({X}22,{tot(X + '23')},0)",
+             26: f"=IF({X}22,VLOOKUP({X}23,{IB},6,FALSE),0)",
+             27: f"=IF(AND({X}22,{X}25>0),ROUND({X}24/{X}25*{X}26,0),0)",
+             28: f"=IF({X}22,ROUND({X}24*{CR}{X}14*{CR}{X}18*{CR}{X}19*{CR}{X}16,0),0)",
+             29: f"=IF({X}22,ROUND({X}24*{CR}{X}42*{CR}{X}46*{CR}{X}47*{CR}{X}44,0),0)",
+             30: f"=IF({X}22,ROUND({X}24*{CR}{X}64*{CR}{X}68*{CR}{X}69*{CR}{X}66,0),0)",
+             31: (f"=IF({X}22,ROUND(ROUND(ROUND({X}24*{CR}{X}90*{CR}{X}92,3)*{CR}{X}93,3)*{CR}{X}96*{CR}{X}97"
+                  f"*{CR}{X}94,0),0)"),
+             32: (f"=IF({X}22,IF(OR(VLOOKUP({X}23,{IB},5,FALSE)=\"90%\",VLOOKUP({X}23,{IB},5,FALSE)=0.9),1,0.95),1)"),
+             37: f"=IF({X}22,VLOOKUP({X}23,{IB},4,FALSE),\"\")",
+             38: f"=IF({X}25>0,IF({rnd},ROUND({X}24/{X}25,2),{X}24/{X}25),0)"}
+        for r, (rb, rc) in ((33, (8, 28)), (34, (9, 29)), (35, (10, 30)), (36, (11, 31))):
+            gate = {33: "TRUE", 34: f"{X}37<>\"Fire\"", 35: f"{X}37=\"Broad\"", 36: f"{X}37=\"Special\""}[r]
+            f[r] = f"=IF(AND({X}22,{X}25>0,{gate}),ROUND({wsum(X + '23', rb, rc)}/{X}25*{X}32,3),0)"
+        for r, ff in f.items():
+            w11.com_retry(lambda r=r, ff=ff: setattr(cb.Cells(r, c), "Formula", ff))
+        # building side: totals and averages now include contents sharing the ID
+        w11.com_retry(lambda: setattr(cb.Cells(5, c), "Formula", f"=IF({X}2,{tot(X + '3')},0)"))
+        for r, (rb, rc) in ((13, (8, 28)), (14, (9, 29)), (15, (10, 30)), (16, (11, 31))):
+            gate = {13: "TRUE", 14: f"{X}17<>\"Fire\"", 15: f"{X}17=\"Broad\"", 16: f"{X}17=\"Special\""}[r]
+            w11.com_retry(lambda r=r, rb=rb, rc=rc, gate=gate: setattr(
+                cb.Cells(r, c), "Formula", f"=IF(AND({X}2,{X}5>0,{gate}),ROUND({wsum(X + '3', rb, rc)}/{X}5*{X}12,3),0)"))
+    cr = wb.Worksheets("CALC - Contents Rating")
+    B = "'CALC - Blanket'!"
+    for c in COLS:
+        X = colname(c)
+        f = str(w11.com_retry(lambda: cr.Cells(117, c).Formula))
+        if not f.startswith("=SUMIFS('IN - Schedule'!$E$134:$E$173"):
+            raise Gate(f"Contents {X}117 is not the occupancy total: {f!r}")
+        w11.com_retry(lambda: setattr(cr.Cells(117, c), "Formula", f"=IF({B}{X}22,{B}{X}27,{f[1:]})"))
+        for pr, avg in ((30, 33), (58, 34), (81, 35), (109, 36)):
+            b = pr - 9
+            irpm, mpd, pm, cy1, cy2 = f"{X}{b}", f"{X}{b + 1}", f"{X}{b + 5}", f"{X}{b + 7}", f"{X}{b + 8}"
+            first = (f"ROUND(({B}{X}26/100)*{B}{X}38*{B}{X}{avg},0)" if pr == 109
+                     else f"ROUND({B}{X}{avg}*{B}{X}38*({B}{X}26/100),0)")
+            core = f"ROUND({irpm}*ROUND({mpd}*ROUND({pm}*{first},0),0),0)"
+            blk = f"ROUND(ROUND({core}*{cy1},0)*{cy2},0)"
+            f = str(w11.com_retry(lambda pr=pr: cr.Cells(pr, c).Formula))
+            if not f.startswith(f"=IF({X}$114<>\"Yes\",0,"):
+                raise Gate(f"Contents {X}{pr} is not the expected premium: {f[:80]!r}")
+            nf = f"=IF(AND({B}{X}22,{B}{X}25>0),IF({X}$114<>\"Yes\",0,{blk}),{f[1:]})"
+            w11.com_retry(lambda pr=pr, nf=nf: setattr(cr.Cells(pr, c), "Formula", nf))
+    return "Blanket Phase 2: Contents S / T / U, CALC - Blanket 21-38, combined totals, LOI basis, premiums", \
+        {"CALC - Contents Rating"}
+
+
+w11.FIXES["BLKT2"] = fix_blkt2
+w11.EXPECT_COLS["BLKT2"] = set()
+w11.NO_MOVE.add("BLKT2")
 w11.FIXES["BLKT1D"] = fix_blkt1d
 w11.EXPECT_COLS["BLKT1D"] = set()
 w11.NO_MOVE.add("BLKT1D")
