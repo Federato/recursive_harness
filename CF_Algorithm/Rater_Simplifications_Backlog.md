@@ -340,3 +340,10 @@ Regression: 44 / 44 states, 0 refused, 0 mismatches; standard 42 / 42 at 21171.
 down the Specific path, as ISO's `SetBasicGroupIRate` does -- Specific and Tentative share it; Tentative only adds a form and stat codes).
 Payload now sends `SpecificGroupIRate` for Tentative too (it sent it for Specific only). Probe `scenarios/rc5/fl_tentative.json`: 15 / 15.
 Earlier notes calling Specific/Tentative "unbuilt" were wrong. Still missing: **Specific Group II** (RC-5).
+
+**Specific Group II DONE 2026-09-24** (`124 --fix BGIISPEC`): CW has none; 36 in-force states add it (new `TBL - BGIISpecific`, variant STD / NY).
+Schedule building AJ `BGIIRatingType` (Class / Specific, default Class) + AK `BGIISpecificRate`, Contents R `BGIISpecificRate`. Bldg 42 /
+Contents 39: ROUND(ROUND(S x LCM) x BCEG) (NY: ROUND(S x LCM)); BI 33 uses the building's S: ROUND(ROUND(ROUND(S x LCM) x BCEG) x adj).
+Election ignored where the state has no Specific Group II (AK AZ CA DC ME NV OR UT VT WV). Payload sends RatingTypeBasicGroupII /
+SpecificGroupIIRate. Probes `scenarios/rc5/bgii_specific_*`: OH 1220/1088/107 -> 1119/615/98, NY 312/206/171 -> 190/91/108, AK unchanged,
+all = ISO. Not modelled: AR / KY / OK wind-mitigation credit (1 without WCF inputs); Specific-eligibility messages (wind hazard level).

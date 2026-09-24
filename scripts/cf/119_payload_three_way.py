@@ -85,7 +85,7 @@ def read_workbook():
                  f"values on disk are the ones you see.")
     from pyxlsb import open_workbook
     sheets = {}
-    want = [SCH, "IN - Policy", "Defaults", "TBL - Cyber"] + sorted({s for s, _ in RATER.values()})
+    want = [SCH, "IN - Policy", "Defaults", "TBL - Cyber", "TBL - BGIISpecific"] + sorted({s for s, _ in RATER.values()})
     with open_workbook(str(WORKBOOK)) as wb:
         for name in want:
             with wb.get_sheet(name) as sh:
@@ -166,6 +166,8 @@ class Builder:
     def __init__(self, recs, policy, dflt, scc=None):
         self.r, self.pol, self.d = recs, policy, dflt
         self.scc = scc or {}                                  # CALC - Special Class values
+        # states whose rules rate a Specific Group II (TBL - BGIISpecific, RC-5); set by main()
+        self.bgii_spec = set()
         self.omitted: list[str] = []
 
     def put(self, obj, field, value, why=""):
@@ -329,6 +331,10 @@ class Builder:
         # "= RatingType", and on a Specific building that made ISO price Group II at 0
         # (FL, 2026-09-22). Reproduce the rater, not the default.
         o["RatingTypeBasicGroupII"] = "Class"
+        if b.get("BGIIRatingType") == "Specific" and isinstance(b.get("BGIISpecificRate"), (int, float))                 and self.state_of(b) in self.bgii_spec:
+            # RC-5 Specific Group II (2026-09-24): the building's election and rate (Schedule AJ / AK)
+            o["RatingTypeBasicGroupII"] = "Specific"
+            o["SpecificGroupIIRate"] = float(b["BGIISpecificRate"])
         if b["RatingType"] in ("Specific", "Tentative") and b.get("SpecificRate"):   # ISO: same path
             o["SpecificGroupIRate"] = float(b["SpecificRate"])
         for i, x in enumerate("ABCDE"):
@@ -410,6 +416,8 @@ class Builder:
         self.put(o, "ValuationType", p.get("Valuation"))
         self.put(o, "CauseOfLoss", b.get("CauseOfLoss"))
         self.put(o, "Deductible", b.get("Deductible"))
+        if b.get("BGIIRatingType") == "Specific" and isinstance(p.get("BGIISpecificRate"), (int, float))                 and self.state_of(b) in self.bgii_spec:
+            o["SpecificGroupIIRate"] = float(p["BGIISpecificRate"])     # contents' own (Schedule R)
         if b["RatingType"] in ("Specific", "Tentative") and p.get("SpecificRate"):
             o["SpecificGroupIRate"] = float(p["SpecificRate"])   # rater Contents row 3
         # W-22 (RC-4, 2026-09-24): ISO's contents premium reads MPD from the PersonalProperty
@@ -627,6 +635,7 @@ def main() -> int:
                     if c == 1 and r > 1}
     recs = records(sheets[SCH])
     b = Builder(recs, sheets["IN - Policy"], defaults(sheets["Defaults"]), sheets["CALC - Special Class"])
+    b.bgii_spec = {v for (r, c), v in sheets.get("TBL - BGIISpecific", {}).items() if c == 1 and r > 1}
     payloads = b.payloads()
     stamp = dt.datetime.now().strftime("%Y%m%d-%H%M%S")
     out = OUT_ROOT / stamp

@@ -1813,6 +1813,97 @@ def fix_flbgii(app, wb):
     return f"FL-BGII: TBL - Counties (FL {len(fl_counties)}, CO {len(wh['CO'])}, IN {len(wh['IN'])}); Q / I dropdowns", set()
 
 
+def fix_bgiispec(app, wb):
+    """RC-5 Specific Group II (2026-09-24). CW has no Specific Group II; 36 in-force states add it to
+    `SetBasicGroupIIRate` (Structure / PersonalProperty / BusinessIncome). Election on the BUILDING
+    (`RatingTypeBasicGroupII`); rate = the building's own (`SpecificGroupIIRate`), Contents' own, BI the
+    building's (../../). Shapes (S = rate):
+      Bldg / Contents  ROUND(ROUND(S x LCM,3) x BCEG,3)            (AR KY OK x wind-mitigation credit:
+      BI               ROUND(ROUND(ROUND(S x LCM) x BCEG) x adj)     1 without WCF inputs)
+      NY               ROUND(S x LCM,3) (no BCEG; greenhouse / protective-device factors 1); BI x adj
+    States without it rate Group II by class whatever is elected. New `TBL - BGIISpecific`; Schedule
+    building AJ `BGIIRatingType` / AK `BGIISpecificRate`, Contents R `BGIISpecificRate`."""
+    import re
+    from pathlib import Path
+    eff = effective_date(wb)
+    root = w11.ISO.parent
+    pk = {}
+    for d in root.glob("*/CF * *"):
+        m = re.match(r"CF ([A-Z]{2}) (\d{8}) V(\d+)$", d.name)
+        if m and m[2] <= eff and d.is_dir():
+            pk.setdefault(m[1], []).append((m[2], int(m[3]), d))
+    states = []
+    for st, v in sorted(pk.items()):
+        for _, _, d in sorted(v, reverse=True):
+            p = d / "Rules" / "CommercialPropertyStructureRules.Rule.xml"
+            if p.exists():
+                if "SpecificGroupIIRate" in p.read_text(encoding="utf-8", errors="ignore"):
+                    states.append((st, "NY" if st == "NY" else "STD", d.name))
+                break
+    ws = w11.new_sheet(wb, "TBL - BGIISpecific")
+    ws.Range("A1:C1").Value = (("State", "Variant", "Package (in force)"),)
+    ws.Range(f"A2:C{len(states) + 1}").Value = tuple(states)
+    ws.Range("E1").Value = "States whose in-force Structure rules rate a Specific Group II rate (RC-5, 2026-09-24)"
+    last = len(states) + 1
+    sch = wb.Worksheets(w11.SCH)
+    for cell in ("AJ47", "AK47", "R133"):
+        if sch.Range(cell).Value not in (None, ""):
+            raise Gate(f"Schedule {cell} is not empty")
+    sch.Range("AJ47").Value = "BGIIRatingType"
+    sch.Range("AK47").Value = "BGIISpecificRate"
+    sch.Range("R133").Value = "BGIISpecificRate"
+    sch.Range("AJ48:AJ87").Value = tuple(("Class",) for _ in range(40))
+    sch.Range("AK48:AK87").Value = tuple((0,) for _ in range(40))
+    sch.Range("R134:R173").Value = tuple((0,) for _ in range(40))
+    v = sch.Range("AJ48:AJ87").Validation
+    v.Delete()
+    v.Add(Type=3, AlertStyle=1, Operator=1, Formula1="Class,Specific")
+    TB = f"'TBL - BGIISpecific'!$A$2:$B${last}"
+    br, cr, bi = wb.Worksheets(BR), wb.Worksheets("CALC - Contents Rating"), wb.Worksheets("CALC - BI Rating")
+
+    def swap(sh, r, c, old, new):
+        f = str(w11.com_retry(lambda: sh.Cells(r, c).Formula))
+        if f.count(old) != 1:
+            raise Gate(f"{sh.Name}!{colname(c)}{r}: expected one {old!r} in {f!r}")
+        w11.com_retry(lambda: setattr(sh.Cells(r, c), "Formula", f.replace(old, new)))
+
+    for c in COLS:
+        X, b = colname(c), 45 + c
+        st = f"'CALC - CoreScratchpad'!{X}$2"
+        var = f"IFERROR(VLOOKUP({st},{TB},2,FALSE),\"\")"
+        spec = f"AND('IN - Schedule'!$AJ${b}=\"Specific\",{var}<>\"\")"
+        S = f"'IN - Schedule'!$AK${b}"
+        reg = f"ROUND(ROUND(ROUND(ROUND(ROUND({X}36*{X}38,3)*{X}39,3)*{X}9,3)*{X}40,3)*{X}41,3)"
+        swap(br, 42, c, reg, f"IF({spec},IF({var}=\"NY\",ROUND({S}*{X}38,3),ROUND(ROUND({S}*{X}38,3)*{X}41,3)),{reg})")
+        # Contents: the building's election (X$116), its own rate
+        k = f"{X}$116"
+        cst = f"INDEX('CALC - CoreScratchpad'!$C$2:$AP$2,1,{k})"
+        cvar = f"IFERROR(VLOOKUP({cst},{TB},2,FALSE),\"\")"
+        cspec = f"AND(INDEX('IN - Schedule'!$AJ$48:$AJ$87,{k})=\"Specific\",{cvar}<>\"\")"
+        Sc = f"'IN - Schedule'!$R${131 + c}"
+        creg = f"ROUND({X}34*{X}36*{X}37*{X}38,3)"
+        swap(cr, 39, c, creg, f"IF({cspec},IF({cvar}=\"NY\",ROUND({Sc}*{X}36,3),ROUND(ROUND({Sc}*{X}36,3)*{X}38,3)),{creg})")
+        # BI: the building's election and rate (X$81)
+        k = f"{X}$81"
+        bst = f"INDEX('CALC - CoreScratchpad'!$C$2:$AP$2,1,{k})"
+        bvar = f"IFERROR(VLOOKUP({bst},{TB},2,FALSE),\"\")"
+        bspec = f"AND(INDEX('IN - Schedule'!$AJ$48:$AJ$87,{k})=\"Specific\",{bvar}<>\"\")"
+        Sb = f"INDEX('IN - Schedule'!$AK$48:$AK$87,{k})"
+        bcg = f"INDEX('CALC - Bldg Rating'!$C$41:$AP$41,1,{k})"
+        old33 = f"=ROUND(ROUND(ROUND(ROUND({X}29*{X}30,3)*{X}31,3)*{bcg},3)*{X}32,3)"
+        f33 = str(w11.com_retry(lambda: bi.Cells(33, c).Formula))
+        if f33 != old33:
+            raise Gate(f"BI {X}33 is not {old33!r}: {f33!r}")
+        w11.com_retry(lambda: setattr(bi.Cells(33, c), "Formula",
+                                      f"=IF({bspec},IF({bvar}=\"NY\",ROUND(ROUND({Sb}*{X}30,3)*{X}32,3),"
+                                      f"ROUND(ROUND(ROUND({Sb}*{X}30,3)*{bcg},3)*{X}32,3)),{old33[1:]})"))
+    return f"Specific Group II: {len(states)} states (TBL - BGIISpecific); Schedule AJ / AK / Contents R", \
+        {BR, "CALC - Contents Rating", "CALC - BI Rating"}
+
+
+w11.FIXES["BGIISPEC"] = fix_bgiispec
+w11.EXPECT_COLS["BGIISPEC"] = set()
+w11.NO_MOVE.add("BGIISPEC")     # every building defaults to Class
 w11.FIXES["FLBGII"] = fix_flbgii
 w11.EXPECT_COLS["FLBGII"] = set()
 w11.NO_MOVE.add("FLBGII")

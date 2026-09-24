@@ -1,0 +1,23 @@
+{
+ "name": "rc5_bgii_specific_ak_not_allowed",
+ "states": [
+  "AK"
+ ],
+ "edits": [
+  {
+   "sheet": "IN - Schedule",
+   "cell": "AJ50",
+   "value": "Specific"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "AK50",
+   "value": 0.05
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "R136",
+   "value": 0.04
+  }
+ ]
+}
