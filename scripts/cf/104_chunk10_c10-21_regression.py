@@ -196,6 +196,7 @@ MACHINERY = [
     ("149_chunk13_golden_case.py", "chunk 13 golden case OR $8 + 4 variants (fire exception, TRIA proration), 38 figures"),
     ("150_chunk13_c13-08-09_groups_rollup.py", "chunk 13 other four groups + roll-ups, 9 policies, 53 figures"),
     ("151_chunk13_rc3_mechanisms.py", "chunk 13 RC-3: timeline, five form families, sub-limit, zeros, override, literals (36 cases)"),
+    ("152_chunk13_rc4_states.py", "chunk 13 RC-4: 46 states, every tier, own rows + rules (290 cases)"),
 ]
 
 # Excluded on purpose, each with a reason -- no silent narrowing of scope.
