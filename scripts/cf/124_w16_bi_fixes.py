@@ -2300,6 +2300,216 @@ def fix_blkt3b(app, wb):
     return "Blanket: BI factor uses the blanket's coinsurance", {"CALC - BI Rating"}
 
 
+def fix_blkt4(app, wb):
+    """RC-5 Blanket Phase 4 (2026-09-24): Special Class + SC Business Income in blankets, and the Highest method.
+    ISO (Detail rules): SC weight = ROUND(FullSpecialClassValue x CoL adj x margin x per-loc x deductible, 0)
+    (Broad: BroadRate; Special: SpecialRate x theft); SC BI weight = ROUND(V x CoL adj x Factor, 0) (Broad / Special
+    rate alone). Building-type averages add Building + Contents + SC; BI-type averages add BI + SC BI.
+    Highest: each item's unit rate = ROUND(weight without the value, 3) (its own LOI at its own value); the group
+    rate = ROUND(MAX(unit rates) x coinsurance factor, 3); BlktTotalLOIToUse = the item's own full value.
+    SC premium = ROUND(limit/100 x share x avg) -> x PM -> x MPD -> x IRPM (chain); SC BI = ROUND(IRPM x PM x avg
+    x share x limit/100); then the Cyber factors. Schedule SC F (existing InclInBlanket) + X BlktIDNum +
+    Y FullSpecialClassValue; SC BI P / Q / R. CALC - Blanket: SC rows 61-78, SC BI rows 81-98, method rows
+    19 / 39 / 59 / 79 / 99, unit rates 121-140."""
+    sch = wb.Worksheets(w11.SCH)
+    for cell in ("X219", "Y219", "P262", "Q262", "R262"):
+        if sch.Range(cell).Value not in (None, ""):
+            raise Gate(f"Schedule {cell} is not empty")
+    sch.Range("X219:Y219").Value = (("BlktIDNum", "FullSpecialClassValue"),)
+    sch.Range("P262:R262").Value = (("IncludedInBlkt", "BlktIDNum", "FullBusnIncomeValue"),)
+    for r in range(220, 260):
+        sch.Range(f"X{r}").Value = 0
+        sch.Range(f"Y{r}").Formula = f"=K{r}"
+    for r in range(263, 303):
+        sch.Range(f"P{r}").Value = "No"
+        sch.Range(f"Q{r}").Value = 0
+        sch.Range(f"R{r}").Formula = f"=H{r}"
+    v = sch.Range("P263:P302").Validation
+    v.Delete()
+    v.Add(Type=3, AlertStyle=1, Operator=1, Formula1="No,Yes")
+    ib = wb.Worksheets("IN - Blanket")
+    v = ib.Range("C5:C14").Validation
+    v.Delete()
+    v.Add(Type=3, AlertStyle=1, Operator=1, Formula1="Average,Highest")
+    ib.Range("A1").Value = "BLANKET GROUPS (Building / Personal Property / Combined / Business Income; Average or Highest)"
+    cb = wb.Worksheets("CALC - Blanket")
+    IB = "'IN - Blanket'!$A$5:$F$14"
+    BR_, CR, BI_, SC_ = "'CALC - Bldg Rating'!", "'CALC - Contents Rating'!", "'CALC - BI Rating'!", "'CALC - Special Class'!"
+    cws = wb.Worksheets("TBL - CWBase")
+    last_cw = cws.Cells(cws.Rows.Count, "A").End(-4162).Row
+    # section = (in, id, value, total, limit, loi_basis_row, weights row0, coins, avg row0, col, share, method, unitrate row0)
+    SEC = {"B": (2, 3, 4, 5, 6, 7, 8, 12, 13, 17, 18, 19, 121), "C": (22, 23, 24, 25, 26, 27, 28, 32, 33, 37, 38, 39, 125),
+           "I": (42, 43, 44, 45, 46, None, 48, None, 53, 57, 58, 59, 129),
+           "S": (62, 63, 64, 65, 66, None, 68, 72, 73, 77, 78, 79, 133),
+           "Q": (82, 83, 84, 85, 86, None, 88, None, 93, 97, 98, 99, 137)}
+    for key, name, r0 in (("S", "BLANKET (Special Class)", 61), ("Q", "BLANKET (SC Business Income)", 81)):
+        labs = ["In blanket", "BlktIDNum", "Full value", "Blanket TotalFullValue", "Blanket TotalLimit", "",
+                "Weight BGI", "Weight BGII", "Weight Broad", "Weight Special", "Blanket CoinsuranceFactor",
+                "AvgRate BGI", "AvgRate BGII", "AvgRate Broad", "AvgRate Special", "Blanket CauseOfLoss", "Blanket share",
+                "Method"]
+        cb.Range(f"B{r0}").Value = name
+        for i, t in enumerate(labs, start=1):
+            cb.Range(f"B{r0 + i}").Value = t
+    for r, t in ((19, "Method"), (39, "Method"), (59, "Method"), (120, "UNIT RATES (Highest)"),
+                 (121, "Bldg BGI"), (122, "Bldg BGII"), (123, "Bldg Broad"), (124, "Bldg Special"),
+                 (125, "Contents BGI"), (126, "Contents BGII"), (127, "Contents Broad"), (128, "Contents Special"),
+                 (129, "BI BGI"), (130, "BI BGII"), (131, "BI Broad"), (132, "BI Special"),
+                 (133, "SC BGI"), (134, "SC BGII"), (135, "SC Broad"), (136, "SC Special"),
+                 (137, "SC BI BGI"), (138, "SC BI BGII"), (139, "SC BI Broad"), (140, "SC BI Special")):
+        cb.Range(f"B{r}").Value = t
+
+    def rng(row):
+        return f"$C${row}:$AP${row}"
+
+    def total(idc):
+        return "(" + "+".join(f"SUMPRODUCT(({rng(s[0])}=TRUE)*({rng(s[1])}={idc})*{rng(s[2])})" for s in SEC.values()) + ")"
+
+    def wsum(idc, g, keys):
+        return "(" + "+".join(f"SUMPRODUCT(({rng(SEC[k][0])}=TRUE)*({rng(SEC[k][1])}={idc})*{rng(SEC[k][6] + g)})"
+                              for k in keys) + ")"
+
+    def wmax(idc, g, keys):
+        return "MAX(" + ",".join(f"SUMPRODUCT(MAX(({rng(SEC[k][0])}=TRUE)*({rng(SEC[k][1])}={idc})*{rng(SEC[k][12] + g)}))"
+                                 for k in keys) + ")"
+    last_cwr = f"'TBL - CWBase'!$A$2:$C${last_cw}"
+    for c in COLS:
+        X = colname(c)
+        st_of = {"B": f"'CALC - CoreScratchpad'!{X}$2", "C": f"INDEX('CALC - CoreScratchpad'!$C$2:$AP$2,1,{CR}{X}$116)",
+                 "I": f"INDEX('CALC - CoreScratchpad'!$C$2:$AP$2,1,{BI_}{X}$81)",
+                 "S": f"INDEX('IN - Schedule'!$C$5:$C$44,{SC_}{X}$163)",
+                 "Q": f"INDEX('IN - Schedule'!$C$5:$C$44,INDEX({SC_}$C$163:$AP$163,1,{SC_}{X}$168))"}
+        f = {}
+        # new SC / SC BI record rows
+        s, q = 217 + c, 260 + c
+        f[62] = (f"=AND('IN - Schedule'!$C${s}=\"Yes\",'IN - Schedule'!$F${s}=\"Yes\",'IN - Schedule'!$X${s}>0,"
+                 f"ISNUMBER(MATCH('IN - Schedule'!$X${s},'IN - Blanket'!$A$5:$A$14,0)))")
+        f[63], f[64] = f"='IN - Schedule'!$X${s}", f"=N('IN - Schedule'!$Y${s})"
+        f[82] = (f"=AND('IN - Schedule'!$C${q}=\"Yes\",'IN - Schedule'!$P${q}=\"Yes\",'IN - Schedule'!$Q${q}>0,"
+                 f"ISNUMBER(MATCH('IN - Schedule'!$Q${q},'IN - Blanket'!$A$5:$A$14,0)))")
+        f[83], f[84] = f"='IN - Schedule'!$Q${q}", f"=N('IN - Schedule'!$R${q})"
+        for k in ("S", "Q"):
+            i, idr, val, tot_, lim = SEC[k][:5]
+            f[lim] = f"=IF({X}{i},VLOOKUP({X}{idr},{IB},6,FALSE),0)"
+            f[SEC[k][9]] = f"=IF({X}{i},VLOOKUP({X}{idr},{IB},4,FALSE),\"\")"
+        f[72] = f"=IF({X}62,IF(OR(VLOOKUP({X}63,{IB},5,FALSE)=\"90%\",VLOOKUP({X}63,{IB},5,FALSE)=0.9),1,0.95),1)"
+        # weights (SC / SC BI) and unit rates (all)
+        f[68] = f"=IF({X}62,ROUND({X}64*{SC_}{X}9*{SC_}{X}12*{SC_}{X}13,0),0)"
+        f[69] = f"=IF({X}62,ROUND({X}64*{SC_}{X}33*{SC_}{X}36*{SC_}{X}37,0),0)"
+        f[70] = f"=IF({X}62,ROUND({X}64*{SC_}{X}52*{SC_}{X}55*{SC_}{X}56,0),0)"
+        f[71] = f"=IF({X}62,ROUND({X}64*{SC_}{X}71*{SC_}{X}72*{SC_}{X}76*{SC_}{X}77,0),0)"
+        f[88] = f"=IF({X}82,ROUND({X}84*{SC_}{X}95*{SC_}{X}96,0),0)"
+        f[89] = f"=IF({X}82,ROUND({X}84*{SC_}{X}116*{SC_}{X}117,0),0)"
+        f[90] = f"=IF({X}82,ROUND({X}84*{SC_}{X}132,0),0)"
+        f[91] = f"=IF({X}82,ROUND({X}84*{SC_}{X}148,0),0)"
+        ur = {121: f"{BR_}{X}15*{BR_}{X}19*{BR_}{X}20*{BR_}{X}21*{BR_}{X}17",
+              122: f"{BR_}{X}45*{BR_}{X}49*{BR_}{X}50*{BR_}{X}51*{BR_}{X}47",
+              123: f"{BR_}{X}68*{BR_}{X}70*{BR_}{X}73*{BR_}{X}74*{BR_}{X}75*{BR_}{X}71",
+              124: f"{BR_}{X}95*{BR_}{X}99*{BR_}{X}100*{BR_}{X}101*{BR_}{X}97",
+              125: f"{CR}{X}14*{CR}{X}18*{CR}{X}19*{CR}{X}16", 126: f"{CR}{X}42*{CR}{X}46*{CR}{X}47*{CR}{X}44",
+              127: f"{CR}{X}64*{CR}{X}68*{CR}{X}69*{CR}{X}66",
+              128: f"ROUND(ROUND({CR}{X}90*{CR}{X}92,3)*{CR}{X}93,3)*{CR}{X}96*{CR}{X}97*{CR}{X}94",
+              129: f"{BI_}{X}15*{BI_}{X}16", 130: f"{BI_}{X}36*{BI_}{X}37", 131: f"{BI_}{X}51", 132: f"{BI_}{X}67",
+              133: f"{SC_}{X}9*{SC_}{X}12*{SC_}{X}13", 134: f"{SC_}{X}33*{SC_}{X}36*{SC_}{X}37",
+              135: f"{SC_}{X}52*{SC_}{X}55*{SC_}{X}56", 136: f"{SC_}{X}73*{SC_}{X}76*{SC_}{X}77",
+              137: f"{SC_}{X}95*{SC_}{X}96", 138: f"{SC_}{X}116*{SC_}{X}117", 139: f"{SC_}{X}132", 140: f"{SC_}{X}148"}
+        inrow = {121: 2, 125: 22, 129: 42, 133: 62, 137: 82}
+        for r, e in ur.items():
+            gi = inrow[max(k for k in inrow if k <= r)]
+            f[r] = f"=IF({X}{gi},ROUND({e},3),0)"
+        # per section: method, total, share, LOI basis, averages
+        for k, (i, idr, val, tot_, lim, loi, w0, coins, a0, col, share, meth, u0) in SEC.items():
+            f[meth] = f"=IF({X}{i},VLOOKUP({X}{idr},{IB},3,FALSE),\"\")"
+            f[tot_] = f"=IF({X}{i},{total(X + str(idr))},0)"
+            rnd = f"IFERROR(VLOOKUP({st_of[k]},{last_cwr},3,FALSE),\"No\")=\"Yes\""
+            f[share] = f"=IF({X}{tot_}>0,IF({rnd},ROUND({X}{val}/{X}{tot_},2),{X}{val}/{X}{tot_}),0)"
+            if loi:
+                f[loi] = (f"=IF(AND({X}{i},{X}{tot_}>0),IF({X}{meth}=\"Highest\",{X}{val},"
+                          f"ROUND({X}{val}/{X}{tot_}*{X}{lim},0)),0)")
+            keys = ("I", "Q") if k in ("I", "Q") else ("B", "C", "S")
+            cf = f"*{X}{coins}" if coins else ""
+            for g in range(4):
+                gate = ["TRUE", f"{X}{col}<>\"Fire\"", f"{X}{col}=\"Broad\"", f"{X}{col}=\"Special\""][g]
+                avg = f"ROUND({wsum(X + str(idr), g, keys)}/{X}{tot_}{cf},3)"
+                hi = f"ROUND({wmax(X + str(idr), g, keys)}{cf},3)"
+                f[a0 + g] = f"=IF(AND({X}{i},{X}{tot_}>0,{gate}),IF({X}{meth}=\"Highest\",{hi},{avg}),0)"
+        for r, ff in f.items():
+            w11.com_retry(lambda r=r, ff=ff: setattr(cb.Cells(r, c), "Formula", ff))
+    # premiums: Special Class (chain) and SC BI (one round)
+    sc = wb.Worksheets(SCC)
+    B = "'CALC - Blanket'!"
+    for c in COLS:
+        X = colname(c)
+        for pr, avg, gate, i, tot_, lim, share in ((22, 73, 162, 62, 65, 66, 78), (46, 74, 162, 62, 65, 66, 78),
+                                                   (65, 75, 162, 62, 65, 66, 78), (86, 76, 162, 62, 65, 66, 78),
+                                                   (105, 93, 167, 82, 85, 86, 98), (126, 94, 167, 82, 85, 86, 98),
+                                                   (140, 95, 167, 82, 85, 86, 98), (157, 96, 167, 82, 85, 86, 98)):
+            b = pr - 7
+            pm, mpd, irpm, cy1, cy2 = f"{X}{b + 2}", f"{X}{b + 3}", f"{X}{b + 4}", f"{X}{b + 5}", f"{X}{b + 6}"
+            if pr < 100:
+                core = (f"ROUND(ROUND(ROUND(ROUND(({B}{X}{lim}/100)*{B}{X}{share}*{B}{X}{avg},0)*{pm},0)*{mpd},0)"
+                        f"*{irpm},0)")
+            else:
+                core = f"ROUND({irpm}*{pm}*{B}{X}{avg}*{B}{X}{share}*({B}{X}{lim}/100),0)"
+            blk = f"ROUND(ROUND({core}*{cy1},0)*{cy2},0)"
+            f0 = str(w11.com_retry(lambda pr=pr: sc.Cells(pr, c).Formula))
+            if not f0.startswith(f"=IF({X}${gate}<>\"Yes\",0,"):
+                raise Gate(f"Special Class {X}{pr} is not the expected premium: {f0[:80]!r}")
+            nf = f"=IF(AND({B}{X}{i},{B}{X}{tot_}>0),IF({X}${gate}<>\"Yes\",0,{blk}),{f0[1:]})"
+            w11.com_retry(lambda pr=pr, nf=nf: setattr(sc.Cells(pr, c), "Formula", nf))
+    return "Blanket Phase 4: Special Class + SC BI in blankets; Highest method on every section", {SCC}
+
+
+def fix_blkt4b(app, wb):
+    """Blanket Phase 4 follow-up (2026-09-24, NY BI + SC BI probe: +2.6%). ISO SC BI `SetCoinsuranceToUse`, as BI:
+    a blanketed SC BI record's factor is looked up at the BLANKET's coinsurance. Special Class rows 207 / 208
+    (SC BI factor keys) now use it when the record is in a blanket."""
+    sc = wb.Worksheets(SCC)
+    for c in COLS:
+        X, q = colname(c), 260 + c
+        v = f"VLOOKUP('CALC - Blanket'!{X}$83,'IN - Blanket'!$A$5:$F$14,5,FALSE)"
+        coins = (f"IF('CALC - Blanket'!{X}$82,IF(ISNUMBER({v}),{v},VALUE(SUBSTITUTE({v},\"%\",\"\"))/100),"
+                 f"'IN - Schedule'!$I${q})")
+        for r in (207, 208):
+            f = str(w11.com_retry(lambda r=r: sc.Cells(r, c).Formula))
+            a = f"'IN - Schedule'!$I${q})"
+            if not f.endswith(a) or f.count(a) != 1:
+                raise Gate(f"Special Class {X}{r} is not the expected key: {f!r}")
+            w11.com_retry(lambda r=r, f=f: setattr(sc.Cells(r, c), "Formula", f[:-len(a)] + coins + ")"))
+    return "Blanket: SC BI factor uses the blanket's coinsurance", {SCC}
+
+
+def fix_blktdiag(app, wb):
+    """Blanket (2026-09-24): Diagnostics row 16 still warned "blanket rating is unbuilt" and Defaults said so too.
+    Row 16 now warns only when an item elects blanket but has no valid blanket ID (it then rates as scheduled);
+    Defaults notes updated."""
+    d = wb.Worksheets("OUT - Diagnostics")
+    if "blanket rating is unbuilt" not in str(d.Range("C16").Formula) and "blanket" not in str(d.Range("B16").Value).lower():
+        pass
+    s = "'IN - Schedule'!"
+    d.Range("C16").Formula = (
+        f"=IF(COUNTIFS({s}$C$48:$C$87,\"Yes\",{s}$AL$48:$AL$87,\"Yes\")+COUNTIFS({s}$C$134:$C$173,\"Yes\",{s}$S$134:$S$173,\"Yes\")"
+        f"+COUNTIFS({s}$C$177:$C$216,\"Yes\",{s}$R$177:$R$216,\"Yes\")+COUNTIFS({s}$C$220:$C$259,\"Yes\",{s}$F$220:$F$259,\"Yes\")"
+        f"+COUNTIFS({s}$C$263:$C$302,\"Yes\",{s}$P$263:$P$302,\"Yes\")"
+        f"=COUNTIF('CALC - Blanket'!$C$2:$AP$2,TRUE)+COUNTIF('CALC - Blanket'!$C$22:$AP$22,TRUE)"
+        f"+COUNTIF('CALC - Blanket'!$C$42:$AP$42,TRUE)+COUNTIF('CALC - Blanket'!$C$62:$AP$62,TRUE)"
+        f"+COUNTIF('CALC - Blanket'!$C$82:$AP$82,TRUE),\"ok\","
+        f"\"WARN - an item elects blanket without a valid Blanket ID (IN - Blanket); it rates as scheduled\")")
+    df = wb.Worksheets("Defaults")
+    for r in range(1, 60):
+        if df.Range(f"A{r}").Value in ("BlktRated", "MUBlktRated", "IncludedInBlkt"):
+            df.Range(f"C{r}").Value = "per item on IN - Schedule / IN - Blanket since RC-5 (2026-09-24); payload sets BlktRated Yes when used"
+    return "Blanket: Diagnostics row 16 and Defaults notes updated", set()
+
+
+w11.FIXES["BLKTDIAG"] = fix_blktdiag
+w11.EXPECT_COLS["BLKTDIAG"] = set()
+w11.NO_MOVE.add("BLKTDIAG")
+w11.FIXES["BLKT4B"] = fix_blkt4b
+w11.EXPECT_COLS["BLKT4B"] = set()
+w11.NO_MOVE.add("BLKT4B")
+w11.FIXES["BLKT4"] = fix_blkt4
+w11.EXPECT_COLS["BLKT4"] = set()
+w11.NO_MOVE.add("BLKT4")
 w11.FIXES["BLKT3B"] = fix_blkt3b
 w11.EXPECT_COLS["BLKT3B"] = set()
 w11.NO_MOVE.add("BLKT3B")

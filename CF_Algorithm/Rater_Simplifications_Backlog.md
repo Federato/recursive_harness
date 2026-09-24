@@ -375,3 +375,12 @@ V x rate; no LOI, no deductible; average without coinsurance factor); group Tota
 sharing the ID; BI premiums on ISO's blanket formulas (BGI / Broad / Special one round with IRPM x PM; BGII chain; no MPD). Finding:
 a blanketed BI record's Type-of-Risk factor uses the BLANKET's coinsurance (ISO SetCoinsuranceToUse) -- BI rows 89 / 90.
 Probes: CA two BI 15 / 15 (V03, rounded share); OH two BI 15 / 15 (2026, exact share). Next: Phase 4 (Special Class, Highest).
+
+**Blanket Phase 4 DONE 2026-09-24 -- BLANKET COMPLETE** (`124 --fix BLKT4 / BLKT4B / BLKTDIAG`): Special Class (F InclInBlanket +
+X BlktIDNum + Y FullSpecialClassValue) and SC BI (P / Q / R) in blankets; Building-type groups average Building + Contents + SC,
+BI-type groups BI + SC BI; the **Highest** method on every section (unit rate = ROUND(weight without the value, 3) at the item's own
+LOI; group rate = ROUND(MAX x coinsurance, 3); LOI basis = own value); SC premiums chain limit/100 x share x avg -> PM -> MPD -> IRPM,
+SC BI one round. Finding: a blanketed SC BI record's factor uses the blanket's coinsurance (rows 207 / 208), as BI. Diagnostics row 16
+now warns only on a blanket election without a valid ID. Probes: NY Combined with 2 SC items 18 / 18; NY BI + SC BI 18 / 18; CA
+Highest 12 / 12; OH BI Highest 15 / 15; all Phase 1-3 probes unchanged; 11 state batches 42 / 42; standard 42 / 42 at 21171.
+Not built: Builders Risk blanket type, value-reporting / multi-location average rates (MUBlktRated), agreed-value blanket variants.

@@ -504,7 +504,13 @@ class Builder:
         self.put(o, "Coinsurance", pct(s.get("BuildingCoins")))
         if s.get("DedByLocation") == "Yes" and s.get("Deductible") not in BLANKS:
             o["CommercialPropertyDeductiblesByLocationSpecialClass"] = [by_location(o)]
-        o.update(IncludedInBlkt=s.get("InclInBlanket") or self.d["IncludedInBlkt"],
+        blk_ok = s.get("InclInBlanket") == "Yes" and s.get("BlktIDNum") and int(s["BlktIDNum"]) in self.blankets
+        if blk_ok:
+            # RC-5 Blanket Phase 4 (2026-09-24): the item's own full value and blanket ID
+            o.update(BlktIDNum=int(s["BlktIDNum"]),
+                     FullSpecialClassValue=int(s.get("FullSpecialClassValue") or s["BuildingLimit"] or 0))
+            self.used_blankets.add(int(s["BlktIDNum"]))
+        o.update(IncludedInBlkt="Yes" if blk_ok else self.d["IncludedInBlkt"],
                  LossCostMultiplier=float(self.d["LossCostMultiplier"]),
                  PackageModFactor=float(self.pol.get((23, 3)) or 1.0),
                  MultiPremiumAndDispersionCreditFactor=float(self.pol.get((24, 3)) or 1.0))
@@ -531,6 +537,10 @@ class Builder:
         self.records(o, x, {"WindHailExcl": "CommercialPropertyWindstormOrHailExclusionSpclClassBusnIncome",
                             "VandalismExcl": "CommercialPropertyVandalismExclusionSpclClassBusnIncome",
                             "TheftExcl": "CommercialPropertyTheftExclusionSpclClassBusnIncome"})
+        if x.get("IncludedInBlkt") == "Yes" and x.get("BlktIDNum") and int(x["BlktIDNum"]) in self.blankets:
+            o.update(IncludedInBlkt="Yes", BlktIDNum=int(x["BlktIDNum"]),
+                     FullBusnIncomeValue=int(x.get("FullBusnIncomeValue") or x["Limit"] or 0))
+            self.used_blankets.add(int(x["BlktIDNum"]))
         return o
 
     @staticmethod
