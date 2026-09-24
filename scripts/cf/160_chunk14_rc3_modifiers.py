@@ -10,12 +10,12 @@ C14-10  IRPM. Six category percentages ("-10%") go through IRPMConversion to
         capped at the countrywide +/-25 -- but only when IRPMFactor is blank: the
         rule is IsNull-guarded, so a supplied factor wins. The base policy supplies
         IRPMFactor 1.0, so every computed case removes it.
-        I1 Management -10%                              -> 0.9  -> 235 + 29 = 264
+        I1 Management -8%, Location -2% (= -10)          -> 0.9  -> 235 + 29 = 264
         I2 six categories summing to +30                 -> 1.25 -> 326 + 40 = 366 + cap message
         I3 six categories summing to -30                 -> 0.75 -> 196 + 24 = 220 + cap message
         I4 IRPMApplies No, CPPIRPMFactor 0.85            -> 0.85 -> 222 + 27 = 249
         I5 IRPMApplies Yes, no categories                -> 1.0  -> 293
-        I6 Management -10% but IRPMFactor 1.1 supplied   -> 1.1  -> 287 + 35 = 322
+        I6 the same -10 but IRPMFactor 1.1 supplied      -> 1.1  -> 287 + 35 = 322
         STATES (in force at 2026-09-17; the building made portable as in 152_). The
         cap follows each state's IRPMMaximumDebit / Credit; the message is a separate
         rule each state may blank or rewrite -- the two need not agree:
@@ -26,14 +26,14 @@ C14-10  IRPM. Six category percentages ("-10%") go through IRPMConversion to
             NY also rates on its OWN twelve categories (AccessToPropertyPct ...), not the
             six countrywide ones. (First prediction put +20 in ManagementPct; the engine
             read 1.0 -- right, NY never reads that field.)
-            Y0 ManagementPct +20 -> ignored, 1.0, silent.
-            Y1 AccessToPropertyPct +20 -> 1.15, 15% message.
-            Y2 five NY categories at +5 -> 1.15, 15% and all-credits messages.
+            Y0 the CW six summing to +20 -> ignored, 1.0, silent (NY blanks their domains).
+            Y1 six NY categories summing to +20 -> 1.15, 15% message.
+            Y2 eight NY categories summing to +25 -> 1.15, 15% and all-credits messages.
         MO  credit -35 (debit CW 25); own message tests the state limits.
             O1 -30 -> 0.70, no message (a CW cap would give 0.75 + message).
-            O2 -40 -> 0.65, MO message.
+            O2 -30 + expenses -10 = -40 -> 0.65, MO message.
             MO adds a seventh category, ReductionInExpensesPct, to the sum.
-            O3 six at -5% + expenses -5% = -35 -> 0.65, silent (not BELOW -35);
+            O3 six at their limits (-30) + expenses -5% = -35 -> 0.65, silent (not BELOW -35);
                a six-category reading gives -30 -> 0.70.
             The seventh lookup has no blank guard: left blank, ISO REFUSES the policy
             (IRPMConversion, keys CW + ""), where our engine reads 0 and prices -- OI-103's
@@ -106,8 +106,24 @@ def irpm_msgs(msgs):
     """The messages RC-3 owns: IRPM limits and Standard Property Policy eligibility."""
     return {m for m in msgs if "Risk Premium Modification" in m or "credits or debits" in m
             or "Standard Property Policy" in m}
-NY_CATS = ("AccessToPropertyPct", "ConditionOfFixturesPct", "ConditionOfPremisesPct", "DesignOfPremisesPct",
-           "EliminationOfHazardsPct", "EmployeeSelectionPct")
+#: Every percentage below is ON its category's domain (Domain Tables, 2026-09-24): CW
+#: Management +/-8, Location +/-7, Building Features +/-5, Premises & Equipment +/-5,
+#: Employees +/-3, Protection +/-2 (at their limits the six sum to exactly +/-30); NY's
+#: twelve, in NY_CATS order, +/-4 4 4 3 3 3 2 2 2 1 1 1 (also 30); MO's expense
+#: reduction 0% to -10%. (A first version used off-domain values -- "5%" on Employees and
+#: Protection, "20%" on one category. ISO rated them, and only the sum matters because
+#: IRPMConversion is one-to-one, but a probe should use inputs a user can enter.)
+NY_CATS = ("AccessToPropertyPct", "EliminationOfHazardsPct", "SafeguardingPropertyPct", "DesignOfPremisesPct",
+           "StructuralFeaturesPct", "SurroundingPremisesPct", "ConditionOfFixturesPct", "ConditionOfPremisesPct",
+           "EmployeeSelectionPct", "IdentificationAndIsolationHazardsPct", "TrainingAndSupervisionPct",
+           "WindstormLossPreventionPct")
+P30 = ["8%", "7%", "5%", "5%", "3%", "2%"]                 # CW six at their limits: +30
+N30 = ["-" + x for x in P30]                               # -30
+N10 = ["-8%", "-2%"]                                       # -10
+P20 = ["8%", "7%", "5%"]                                   # +20
+NY20 = ["4%", "4%", "4%", "3%", "3%", "2%"]
+NY25 = ["4%", "4%", "4%", "3%", "3%", "3%", "2%", "2%"]
+NY30 = ["4%", "4%", "4%", "3%", "3%", "3%", "2%", "2%", "2%", "1%", "1%", "1%"]
 REFUSES = {"O4"}      # ISO refuses by design; our engine prices (OI-103)
 CATS = ("ManagementPct", "LocationPct", "BuildingFeaturesPct", "PremisesEquipmentPct", "EmployeesPct", "ProtectionPct")
 MO_CATS = CATS + ("ReductionInExpensesPct",)
@@ -190,12 +206,12 @@ def spp_five():
 
 
 CASES = {
-    "I1": ("C14-10 IRPM Management -10%", irpm(["-10%"]), {IRPMF: 0.9, TMP: -10, B1: 235, B2: 29, TOTAL: 264}, set()),
-    "I2": ("C14-10 IRPM +30 capped at 1.25", irpm(["5%"] * 6), {IRPMF: 1.25, TMP: 30, B1: 326, B2: 40, TOTAL: 366}, {CW_MSG}),
-    "I3": ("C14-10 IRPM -30 capped at 0.75", irpm(["-5%"] * 6), {IRPMF: 0.75, TMP: -30, B1: 196, B2: 24, TOTAL: 220}, {CW_MSG}),
+    "I1": ("C14-10 IRPM -10 (Management -8, Location -2)", irpm(N10), {IRPMF: 0.9, TMP: -10, B1: 235, B2: 29, TOTAL: 264}, set()),
+    "I2": ("C14-10 IRPM +30 capped at 1.25", irpm(P30), {IRPMF: 1.25, TMP: 30, B1: 326, B2: 40, TOTAL: 366}, {CW_MSG}),
+    "I3": ("C14-10 IRPM -30 capped at 0.75", irpm(N30), {IRPMF: 0.75, TMP: -30, B1: 196, B2: 24, TOTAL: 220}, {CW_MSG}),
     "I4": ("C14-10 IRPM No, CPPIRPMFactor 0.85", cpp, {B1: 222, B2: 27, TOTAL: 249}, set()),
     "I5": ("C14-10 IRPM Yes, no categories", irpm([]), {B1: 261, B2: 32, TOTAL: 293}, set()),
-    "I6": ("C14-10 IRPM -10% but IRPMFactor 1.1 supplied", irpm(["-10%"], "1.1"), {IRPMF: 1.1, B1: 287, B2: 35, TOTAL: 322}, set()),
+    "I6": ("C14-10 IRPM -10 but IRPMFactor 1.1 supplied", irpm(N10, "1.1"), {IRPMF: 1.1, B1: 287, B2: 35, TOTAL: 322}, set()),
     "P1": ("C14-11 package mod 0.8, building blank", pkg(None), {B1: 209, B2: 26, TOTAL: 235}, set()),
     "P2": ("C14-11 package mod 0.8, building 1.0 wins", pkg("1.0"), {B1: 261, B2: 32, TOTAL: 293}, set()),
     "M1": ("C14-12 multi-premium credit 0.9", mpd, {B1: 235, B2: 29, TOTAL: 264}, set()),
@@ -203,19 +219,19 @@ CASES = {
     "S2": ("C14-13 Standard Property Policy with Business Income", spp_five,
            {POL + "/PolicyType": "Standard Property Policy"}, {BI_SPP}),
     "L1": ("C14-14 multi-location average rates default", t2.base, {MLA: "Not Used", B1: 261, TOTAL: 293}, set()),
-    "Y0": ("C14-10 NY ignores the CW categories", irpm(["20%"], juris="NY"), {IRPMF: 1.0, TMP: 0}, set()),
-    "Y1": ("C14-10 NY +20 -> 1.15", irpm(["20%"], juris="NY", cats=NY_CATS), {IRPMF: 1.15, TMP: 20}, {M15}),
-    "Y2": ("C14-10 NY +25 -> 1.15, all-credits message", irpm(["5%"] * 5, juris="NY", cats=NY_CATS),
+    "Y0": ("C14-10 NY ignores the CW categories", irpm(P20, juris="NY"), {IRPMF: 1.0, TMP: 0}, set()),
+    "Y1": ("C14-10 NY +20 -> 1.15", irpm(NY20, juris="NY", cats=NY_CATS), {IRPMF: 1.15, TMP: 20}, {M15}),
+    "Y2": ("C14-10 NY +25 -> 1.15, all-credits message", irpm(NY25, juris="NY", cats=NY_CATS),
            {IRPMF: 1.15, TMP: 25}, {M15, ALL25}),
-    "O1": ("C14-10 MO -30 -> 0.70, silent", irpm(["-5%"] * 6 + ["0%"], juris="MO", cats=MO_CATS), {IRPMF: 0.7, TMP: -30}, set()),
-    "O2": ("C14-10 MO -40 -> 0.65", irpm(["-10%"] * 4 + ["", "", "0%"], juris="MO", cats=MO_CATS), {IRPMF: 0.65, TMP: -40}, {MO_MSG}),
-    "O3": ("C14-10 MO seventh category, -35 -> 0.65 silent", irpm(["-5%"] * 7, juris="MO", cats=MO_CATS),
+    "O1": ("C14-10 MO -30 -> 0.70, silent", irpm(N30 + ["0%"], juris="MO", cats=MO_CATS), {IRPMF: 0.7, TMP: -30}, set()),
+    "O2": ("C14-10 MO -40 -> 0.65", irpm(N30 + ["-10%"], juris="MO", cats=MO_CATS), {IRPMF: 0.65, TMP: -40}, {MO_MSG}),
+    "O3": ("C14-10 MO seventh category, -35 -> 0.65 silent", irpm(N30 + ["-5%"], juris="MO", cats=MO_CATS),
            {IRPMF: 0.65, TMP: -35}, set()),
-    "O4": ("C14-10 MO expenses blank: ISO refuses (OI-103)", irpm(["-10%"], juris="MO"), {IRPMF: 0.9, TMP: -10}, set()),
-    "G1": ("C14-10 GA +20 -> 1.20 with a 15% message", irpm(["20%"], juris="GA"), {IRPMF: 1.2, TMP: 20}, {M15}),
-    "V1": ("C14-10 VA +30 -> 1.25, silent", irpm(["5%"] * 6, juris="VA"), {IRPMF: 1.25, TMP: 30}, set()),
-    "N1": ("C14-10 NE IRPM off: -10% ignored", irpm(["-10%"], juris="NE"), {IRPMF: 1.0}, set()),
-    "N2": ("C14-10 NE supplied 0.9", irpm(["-10%"], "0.9", juris="NE"), {IRPMF: 0.9}, set()),
+    "O4": ("C14-10 MO expenses blank: ISO refuses (OI-103)", irpm(N10, juris="MO"), {IRPMF: 0.9, TMP: -10}, set()),
+    "G1": ("C14-10 GA +20 -> 1.20 with a 15% message", irpm(P20, juris="GA"), {IRPMF: 1.2, TMP: 20}, {M15}),
+    "V1": ("C14-10 VA +30 -> 1.25, silent", irpm(P30, juris="VA"), {IRPMF: 1.25, TMP: 30}, set()),
+    "N1": ("C14-10 NE IRPM off: -10% ignored", irpm(N10, juris="NE"), {IRPMF: 1.0}, set()),
+    "N2": ("C14-10 NE supplied 0.9", irpm(N10, "0.9", juris="NE"), {IRPMF: 0.9}, set()),
 }
 JURIS = {"Y": "NY", "O": "MO", "G": "GA", "V": "VA", "N": "NE"}
 

@@ -209,6 +209,9 @@ MACHINERY = [
     ("160_chunk14_rc3_modifiers.py", "chunk 14 RC-3: IRPM (OR + 5 states), package mod, multi-premium, Standard Property Policy"),
     ("161_chunk14_c14-16_statcode_replay.py", "chunk 14 RC-4: every stat value vs stored ISO responses, strict, 46-fixture sample"),
     ("162_chunk14_rc4_state_statcodes.py", "chunk 14 RC-4: state earthquake stat codes (FL own classes, TX, OR)"),
+    ("163_chunk14_c14-19_zero_cases.py", "chunk 14 RC-5: every 0 / blank modifier against its branch; the 1..199 stat-code bound"),
+    ("164_chunk14_c14-18_all_states.py", "chunk 14 RC-5: IRPM and Standard Property Policy in all 46 states"),
+    ("165_chunk14_c14-20_shared_modifiers.py", "chunk 14 RC-5: modifier fields by path on every record vs stored ISO, sample"),
 ]
 
 # Excluded on purpose, each with a reason -- no silent narrowing of scope.
@@ -392,7 +395,7 @@ def main():
             print("\n".join(out.strip().splitlines()[-15:]))
             print()
         return 1
-    print("REGRESSION CLEAN -- every chunk 0-13 golden case reproduces its "
+    print("REGRESSION CLEAN -- every chunk 0-14 golden case reproduces its "
           "documented figures,\nevery machinery script and every GL suite "
           "exits 0 with no failure marker.")
     return 0
