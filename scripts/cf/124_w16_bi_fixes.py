@@ -2994,6 +2994,184 @@ def fix_eq1(app, wb):
     return f"Earthquake Phase 1: {len(keyed)} keyed + {len(flat)} flat-deductible rows; CALC - EQ; Schedule inputs", set()
 
 
+def iso_table_by_state(wb, eff, table):
+    """{state: ({key tuple: value}, source package)} for every rater state, resolved as ISO does (probed
+    2026-09-24): the state's package in force, else its countrywide base -- never an older state package."""
+    import csv
+    import re
+    root = w11.ISO.parent
+    cwb = wb.Worksheets("TBL - CWBase")
+    last = cwb.Cells(cwb.Rows.Count, "A").End(-4162).Row
+    out = {}
+    for r in range(2, last + 1):
+        st, base = str(cwb.Cells(r, 1).Value), str(cwb.Cells(r, 2).Value)
+        c = [(m[1], int(m[2]), d) for d in root.glob(f"*/CF {st} *")
+             if (m := re.match(rf"CF {st} (\d{{8}}) V(\d+)$", d.name)) and d.is_dir() and m[1] <= eff]
+        f = max(c)[2] / "Rate Tables" / f"{table}.RateTable.csv" if c else None
+        if f is None or not f.exists():
+            bd = w11.CW.parent if base == "CF CW 20260601 V01" else next(d for d in root.glob(f"*/{base}") if d.is_dir())
+            f = bd / "Rate Tables" / f"{table}.RateTable.csv"
+        if not f.exists():
+            out[st] = ({}, "-")
+            continue
+        with open(f, encoding="utf-8-sig", newline="") as fh:
+            data = list(csv.reader(fh))[1:]
+        d = {}
+        for want in ("CW", st):
+            for row in data:
+                if row and row[0] == want:
+                    d[tuple(row[1:-1])] = row[-1]
+        out[st] = (d, f.parent.parent.name)
+    return out
+
+
+def iso_rule_text(wb, eff, state, file, rule):
+    """The raw XML of `rule` in `file` as ISO resolves it for `state`: the in-force package's rule file if it
+    defines the rule, else the state's countrywide base."""
+    import re
+    root = w11.ISO.parent
+    cwb = wb.Worksheets("TBL - CWBase")
+    last = cwb.Cells(cwb.Rows.Count, "A").End(-4162).Row
+    base = next(str(cwb.Cells(r, 2).Value) for r in range(2, last + 1) if str(cwb.Cells(r, 1).Value) == state)
+    c = [(m[1], int(m[2]), d) for d in root.glob(f"*/CF {state} *")
+         if (m := re.match(rf"CF {state} (\d{{8}}) V(\d+)$", d.name)) and d.is_dir() and m[1] <= eff]
+    bd = w11.CW.parent if base == "CF CW 20260601 V01" else next(d for d in root.glob(f"*/{base}") if d.is_dir())
+    for d in ([max(c)[2]] if c else []) + [bd]:
+        f = d / "Rules" / f"{file}.Rule.xml"
+        if f.exists():
+            t = f.read_text(encoding="utf-8", errors="ignore")
+            m = re.search(rf'<rul:Rule Name="{rule}".*?</rul:Rule>', t, re.S)
+            if m:
+                return m.group(0), d.name
+    raise Gate(f"{state}: no {rule} in {file}")
+
+
+LT80_LEVELS = ("50%", "60%", "70%", "None", "Less Than 50%")
+
+
+def fix_coins1(app, wb):
+    """Coinsurance below 80% and adjusted-rate rounding (2026-09-24, CA / FL / NY probes; baseline all 80% so unseen).
+      (1) ISO rounds after the coinsurance factor, then after LOI (Structure: R3(R3(COL x Coins) x LOI); PP BGII /
+          Broad the same; PP Special R3 after Coins, Watchman, Burglary, LOI). Bldg 18 / 48 / 98 and Contents 45 / 67 /
+          95 rounded once (CA building 90%: Group II 18 vs ISO 21). Bldg 72 and Contents 17 were already right.
+      (2) Coinsurance 50% / 60% / 70% / None / Less Than 50%, by the state's in-force rules (SetCoinsuranceFactor /
+          SetBasicGroupIICoinsuranceFactor, Structure and PersonalProperty):
+            CW    Group I / Broad / Special = LessThan80PctMultiplicativeFactor (1.5);
+                  Group II = BasicGroupIIFlatCoinsuranceFactor (1.5)
+            FL    Group II 50 / 60 / None = the flat factor (1.42), 70% = CoinsuranceFactor["70%"] (1.14)
+            NY    building Group I / Broad / Special and all Group II = CoinsuranceModificationFactors[level];
+                  contents Group I / Broad / Special = LessThan80
+            PR    no below-80% branch: 1.0
+          Contents rows 15 / 65 (-> 91) priced 0 (table held 80-100% only; CA 70%: 0 vs ISO 535 / 241); Contents 43 was
+          a hard 1.5; Bldg 16 / 69 / 46 read the building table's 1.5 for every state. New `TBL - CoinsLT80`: per state
+          and level, the building / contents / Group II factor and the variant."""
+    eff = effective_date(wb)
+    lt = iso_table_by_state(wb, eff, "LessThan80PctMultiplicativeFactor")
+    g2 = iso_table_by_state(wb, eff, "BasicGroupIIFlatCoinsuranceFactor")
+    cf = iso_table_by_state(wb, eff, "CoinsuranceFactor")
+    cm = iso_table_by_state(wb, eff, "CoinsuranceModificationFactors")
+    rows, variants = [], {}
+    for st in sorted(lt):
+        sb, _ = iso_rule_text(wb, eff, st, "CommercialPropertyStructureRules", "SetCoinsuranceFactor")
+        sp, _ = iso_rule_text(wb, eff, st, "CommercialPropertyPersonalPropertyRules", "SetCoinsuranceFactor")
+        g2b, _ = iso_rule_text(wb, eff, st, "CommercialPropertyStructureRules", "SetBasicGroupIICoinsuranceFactor")
+        g2p, _ = iso_rule_text(wb, eff, st, "CommercialPropertyPersonalPropertyRules", "SetBasicGroupIICoinsuranceFactor")
+        for tok in ("LookupBasicGroupIIFlatCoinsuranceFactor", "LookupCoinsuranceModificationFactors", ">70%<"):
+            if (tok in g2b) != (tok in g2p):
+                raise Gate(f"{st}: building and contents Group II coinsurance rules differ on {tok} -- model separately")
+
+        def num(d, k):
+            return float(d[0][k]) if k in d[0] else "#N/A"
+
+        def group1(rule):
+            if "LookupCoinsuranceModificationFactors" in rule:
+                return "MOD", {L: num(cm[st], (L,)) for L in LT80_LEVELS}
+            if "LookupLessThan80PctMultiplicativeFactor" in rule:
+                # "Less Than 50%" only where the rule names it; otherwise ISO falls to OTHERWISE = 1.0
+                return "LT80", {L: (num(lt[st], ("Y",)) if L != "Less Than 50%" or ">Less Than 50%<" in rule else 1.0)
+                                for L in LT80_LEVELS}
+            return "NONE", {L: 1.0 for L in LT80_LEVELS}
+
+        vb, fb = group1(sb)
+        vp, fp = group1(sp)
+        if "LookupCoinsuranceModificationFactors" in g2b:
+            vg, fg = "MOD", {L: num(cm[st], (L,)) for L in LT80_LEVELS}
+        elif "LookupBasicGroupIIFlatCoinsuranceFactor" in g2b:
+            flat_ = num(g2[st], ("Y",))
+            fg = {L: flat_ for L in ("50%", "60%", "70%", "None")}
+            vg = "FLAT"
+            if ">70%<" in g2b and "LookupCoinsuranceFactor" in g2b:          # FL: 70% reads the coinsurance table
+                vg, fg["70%"] = "FLAT, 70% TABLE", num(cf[st], ("70%",))
+            fg["Less Than 50%"] = fb["Less Than 50%"]                         # not a Group II level: = CoinsuranceFactor
+        else:
+            vg, fg = "SAME", dict(fb)
+        variants[st] = f"bldg {vb} / contents {vp} / GII {vg}"
+        rows.append([st] + [fb[L] for L in LT80_LEVELS] + [fp[L] for L in LT80_LEVELS] + [fg[L] for L in LT80_LEVELS]
+                    + [variants[st]])
+    ws = w11.new_sheet(wb, "TBL - CoinsLT80")
+    head = (["State"] + [f"Bldg {L}" for L in LT80_LEVELS] + [f"Contents {L}" for L in LT80_LEVELS]
+            + [f"GroupII {L}" for L in LT80_LEVELS] + ["Variant (in-force rules)"])
+    ws.Range(ws.Cells(1, 1), ws.Cells(1, len(head))).Value = (tuple(head),)
+    w11.write_rows(ws, 2, 1, rows)
+    ws.Range("S1").Value = (f"Coinsurance below 80% (2026-09-24): each state's package in force on {eff}, else its "
+                            f"countrywide base (tables and rules). Group I / Broad / Special for building (B-F) and "
+                            f"contents (G-K); Group II for both (L-P).")
+    n = len(rows) + 1
+    TB = f"'TBL - CoinsLT80'!$A$2:$P${n}"
+    br, cr = wb.Worksheets(BR), wb.Worksheets("CALC - Contents Rating")
+
+    def put(sh, r, c, old, new):
+        f = str(w11.com_retry(lambda: sh.Cells(r, c).Formula))
+        if f != old:
+            raise Gate(f"{sh.Name}!{colname(c)}{r}: expected {old!r}, found {f!r}")
+        w11.com_retry(lambda: setattr(sh.Cells(r, c), "Formula", new))
+
+    def pos(v):
+        lvl = f"IF(ISNUMBER({v}),TEXT({v}*100,\"0\")&\"%\",{v}&\"\")"
+        return f"MATCH({lvl},{{\"50%\",\"60%\",\"70%\",\"None\",\"Less Than 50%\"}},0)"
+
+    for c in COLS:
+        X, b, p = colname(c), 45 + c, 131 + c
+        put(br, 18, c, f"=ROUND({X}15*{X}16*{X}17,3)", f"=ROUND(ROUND({X}15*{X}16,3)*{X}17,3)")
+        put(br, 48, c, f"=ROUND({X}45*{X}46*{X}47,3)", f"=ROUND(ROUND({X}45*{X}46,3)*{X}47,3)")
+        put(br, 98, c, f"=ROUND({X}95*{X}96*{X}97,3)", f"=ROUND(ROUND({X}95*{X}96,3)*{X}97,3)")
+        put(cr, 45, c, f"=ROUND({X}42*{X}43*{X}44,3)", f"=ROUND(ROUND({X}42*{X}43,3)*{X}44,3)")
+        put(cr, 67, c, f"=ROUND({X}64*{X}65*{X}66,3)", f"=ROUND(ROUND({X}64*{X}65,3)*{X}66,3)")
+        put(cr, 95, c, f"=ROUND({X}90*{X}91*{X}92*{X}93*{X}94,3)",
+            f"=ROUND(ROUND(ROUND(ROUND({X}90*{X}91,3)*{X}92,3)*{X}93,3)*{X}94,3)")
+        st = f"'CALC - CoreScratchpad'!{X}$2"
+        bu = f"'IN - Schedule'!$U${b}"
+        # Building Group I / Broad / Special (rows 16 / 69; 96 reads 16), behind the existing 1150 / Functional
+        # Valuation gate
+        old16 = (f"=IFERROR(IF('IN - Schedule'!$E${b}=\"1150\",1,IF('IN - Schedule'!$T${b}=\"Functional Valuation\",1,"
+                 f"VLOOKUP('IN - Schedule'!$U${b},'TBL - BldgBGIRating'!$AN$2:$AO$9,2,FALSE))),0)")
+        new16 = (f"=IFERROR(IF('IN - Schedule'!$E${b}=\"1150\",1,IF('IN - Schedule'!$T${b}=\"Functional Valuation\",1,"
+                 f"IF(ISNUMBER({pos(bu)}),VLOOKUP({st},{TB},1+{pos(bu)},FALSE),"
+                 f"VLOOKUP('IN - Schedule'!$U${b},'TBL - BldgBGIRating'!$AN$2:$AO$9,2,FALSE)))),0)")
+        put(br, 16, c, old16, new16)
+        put(br, 69, c, old16, new16)
+        put(br, 46, c, f"={X}16", f"=IF(ISNUMBER({pos(bu)}),VLOOKUP({st},{TB},11+{pos(bu)},FALSE),{X}16)")
+        cst = f"INDEX('CALC - CoreScratchpad'!$C$2:$AP$2,1,{X}$116)"
+        cg = f"'IN - Schedule'!$G${p}"
+        old15 = f"=IFERROR(VLOOKUP({X}125,'TBL - ContentsTables'!$O$2:$R$186,4,FALSE),0)"
+        new15 = f"=IF(ISNUMBER({pos(cg)}),VLOOKUP({cst},{TB},6+{pos(cg)},FALSE),{old15[1:]})"
+        put(cr, 15, c, old15, new15)
+        put(cr, 65, c, old15, new15)
+        old43 = (f"=IF(OR('IN - Schedule'!$G${p}=0.5,'IN - Schedule'!$G${p}=0.6,'IN - Schedule'!$G${p}=0.7,"
+                 f"'IN - Schedule'!$G${p}=\"None\"),1.5,{X}15)")
+        put(cr, 43, c, old43, f"=IF(ISNUMBER({pos(cg)}),VLOOKUP({cst},{TB},11+{pos(cg)},FALSE),{X}15)")
+    odd = {st: v for st, v in variants.items() if v != "bldg LT80 / contents LT80 / GII FLAT"}
+    print("    non-CW variants:", odd)
+    for r in rows:
+        if r[0] in odd or r[0] in ("CA", "OH"):
+            print("   ", r)
+    return f"Coinsurance <80% by state variant (TBL - CoinsLT80, {len(rows)} states) and adjusted-rate rounding", \
+        {BR, "CALC - Contents Rating"}
+
+
+w11.FIXES["COINS1"] = fix_coins1
+w11.EXPECT_COLS["COINS1"] = set()
+w11.NO_MOVE.add("COINS1")       # every baseline item is at 80% (factor 1.0)
 w11.FIXES["EQ1"] = fix_eq1
 w11.EXPECT_COLS["EQ1"] = set()
 w11.NO_MOVE.add("EQ1")          # every baseline record stays "No Coverage"

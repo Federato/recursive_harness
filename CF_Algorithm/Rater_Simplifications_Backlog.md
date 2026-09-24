@@ -438,3 +438,30 @@ deductible), not in a blanket, not sprinkler-leakage-only. Trace: `Earthquake_Ra
   dropdown).
 - **Found outside EQ (not fixed, user's call):** building coinsurance 90% -> Building Group II 18 vs ISO 21 (CA);
   contents coinsurance 70% -> Contents Group I 0 vs 535 and Special 0 vs 241 (CA).
+
+## Coinsurance below 80% and adjusted-rate rounding -- DONE 2026-09-24 (`124 --fix COINS1`; `scenarios/coins/`, live ISO)
+
+The baseline has every item at 80% coinsurance (factor 1.0), so neither bug ever showed.
+1. **Rounding.** ISO rounds after the coinsurance factor, then after LOI: R3(R3(COL x Coins) x LOI). Contents Special
+   also rounds after watchman and burglary. Bldg 18 / 48 / 98 and Contents 45 / 67 / 95 rounded once.
+   Example: CA building 90%, Group II: 18 vs ISO 21.
+2. **Below 80%.** The factor for 50% / 60% / 70% / None / Less Than 50% now comes from the state's in-force rules and
+   tables, in the new `TBL - CoinsLT80` (building, contents and Group II factor per state and level, plus the variant).
+   - CW: LessThan80 (1.5); Group II uses the flat factor (1.5).
+   - FL: Group II 1.42, but 70% = 1.14 from its coinsurance table.
+   - NY: building and all Group II use CoinsuranceModificationFactors (1.3 / 1.2 / 1.1 / 1.5 / 1.5); contents use
+     LessThan80.
+   - PR: 1.0.
+   Contents Group I / Broad / Special priced **0** before (CA 70%: 0 vs ISO 535 / 241).
+3. **Probes (Excel = ISO = engine unless noted):**
+   - CA building 90%, contents 70%, contents 90%: all match.
+   - NY 70%: matches.
+   - FL 70% / 60% (location 1's building switched to CovType Building, credit and heating flags off): the coinsurance
+     factors match ISO (1.14 / 1.42). Building Group II is still 6-7 low from gap F-2 below.
+- **Found, not fixed (user's call), FL location 1 turned into an ordinary building (baseline building 1 is Legal
+  Liability, which skips both steps):**
+  - **F-1 heating plant:** Excel's multi-residential factor applies 0.75 for the heating plant even with the credit off
+    (0.525 with it on). ISO's heat factor is 1.0 in both cases (0.70 with the credit).
+  - **F-2 FL Group II deductible:** $2,500 gives Excel 0.95 vs ISO 0.951.
+- **Payload gap:** the watchman and burglary-alarm credits are never sent, while the rater applies them. Any non-1.0
+  credit would mismatch ISO.

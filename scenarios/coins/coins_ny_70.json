@@ -1,0 +1,18 @@
+{
+ "name": "coins_ny_70",
+ "states": [
+  "NY"
+ ],
+ "edits": [
+  {
+   "sheet": "IN - Schedule",
+   "cell": "U49",
+   "value": 0.7
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "G135",
+   "value": 0.7
+  }
+ ]
+}
