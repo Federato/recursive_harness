@@ -191,6 +191,8 @@ MACHINERY = [
     ("144_chunk13_c13-02_rule_order.py", "chunk 13 terrorism rule order and roll-up, 5 editions"),
     ("145_chunk13_c13-03_replay.py",
      "chunk 13 14 stored ISO terrorism responses, field by field (OI-111 pinned: CA $153)"),
+    ("147_chunk13_c13-04_operand_types.py", "chunk 13 operand types; all four TRIA stages live, timeline by hand"),
+    ("148_chunk13_c13-05_attach_map.py", "chunk 13 attach map: 168 answer combinations x attach/delete"),
 ]
 
 # Excluded on purpose, each with a reason -- no silent narrowing of scope.
