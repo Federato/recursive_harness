@@ -205,6 +205,7 @@ MACHINERY = [
     ("157_chunk14_c14-02_total_replay.py", "chunk 14 every premium + the policy total, 46-fixture covering sample"),
     ("158_chunk14_rc1_scope_machinery.py",
      "chunk 14 RC-1: no minimum premium, state overrides only add records, negative premiums count"),
+    ("159_chunk14_rc2_total.py", "chunk 14 RC-2: golden total $1,193, what counts, several locations, rounding"),
 ]
 
 # Excluded on purpose, each with a reason -- no silent narrowing of scope.

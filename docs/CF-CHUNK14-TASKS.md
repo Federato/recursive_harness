@@ -11,7 +11,7 @@ Derived from [`CF-PROPERTY-BUILD-ORDER.md`](CF-PROPERTY-BUILD-ORDER.md) item 14
 without the user's go. "All states" means the **46**; Puerto Rico is
 excluded. Live ISO comparisons at **2026-09-17** (OI-105).
 
-**Status: OPEN 2026-09-24, 5 of 22 tasks. RC-1 COMPLETE**: every premium and the policy total equal ISO on 293 stored responses; no minimum premium in ISO's rating: a company input, refer to company (user decision; OI-113).
+**Status: OPEN 2026-09-24, 9 of 22 tasks. RC-1 and RC-2 COMPLETE** (the policy total: golden $1,193 and 8 variants, ISO 9 of 9): every premium and the policy total equal ISO on 293 stored responses; no minimum premium in ISO's rating: a company input, refer to company (user decision; OI-113).
 
 ---
 
@@ -57,14 +57,14 @@ codes ISO attaches to every record for reporting.
 | C14-04 | **State overrides of the total** (41 / 43 states): pass-through or rewrite, and which state-only records each adds | ✅ | **Done 2026-09-24** (`158_…`). **All 41 state overrides of `CalculateTotalPremium` call the parent edition's and add state-only records** (state forms, KY/IL mine subsidence, Alaska's terrorism forms) with **no arithmetic of their own**; **all 43 overrides of `ErcCalculateTotalPremium` are pure pass-throughs**. DC and MD don't override; NJ, OH, UT file no state policy file |
 | C14-05 | **The total's machinery**: operand types, the `PremiumIndicator` gate, negative premiums (Debris Removal under $25,000, chunk 12), inert records (`TotPremiumCoverage`) | ✅ | **Done 2026-09-24** (`158_…`). **4,008 `CalculateTotalPremium` rules, 8,392 operators, every one a shape the engine handles.** `SetPremiumIndicator` counts any non-zero premium, so **a negative premium enters the total**: chunk 12's Debris Removal under $25,000 (−$21 / −$3) gives ISO's total **$269** (= 261 + 32 − 21 − 3), and ours $269; the ordinary case $348 and the limit-at-minimum case $293 also equal ISO. `TotPremiumCoverage` is inert (premium hard-coded 0; chunk 13) |
 
-### RC-2 · The policy total (4 tasks) — gate 1
+### RC-2 · The policy total (4 tasks) — ✅ COMPLETE 2026-09-24
 
 | # | Task | Status | Notes |
 |---|---|---|---|
-| C14-06 | **Golden case**: chunk 13's five-coverage policy plus terrorism and an endorsement; hand-derive the policy total; ISO live | ⬜ | **gate 1** |
-| C14-07 | **What the total counts**: zero, negative and form-only records; ISO live | ⬜ | |
-| C14-08 | **More than one location and building**, and the additional-location reset (`ErcResetPrsnlPropPremiumForAdditionalLocations`) | ⬜ | |
-| C14-09 | **Rounding**: whole-dollar premiums summed against the 2-decimal roll-ups | ⬜ | |
+| C14-06 | **Golden case**: chunk 13's five-coverage policy plus terrorism and an endorsement; hand-derive the policy total; ISO live | ✅ | **Done 2026-09-24** (`159_chunk14_rc2_total.py`). Chunk 7's five-coverage policy ($1,104: building 263/32, contents 223/24, BI 112/13, SC 66/209, SCBI 39/123) + terrorism in effect ($34, chunk 13) + Debris Removal 60,000 ($49 + $6, chunk 12): **policy total $1,193, derived by hand. Engine 6 of 6; ISO live: agrees on all 126 premiums** |
+| C14-07 | **What the total counts**: zero, negative and form-only records; ISO live | ✅ | **Done 2026-09-24** (`159_chunk14_rc2_total.py`). On chunk 2's $293 building: Debris Removal at exposure 0 → **$293**; negative (−$21 / −$3) → **$269**; terrorism with the certified-acts answer blank (disclosure $0) → **$293**; terrorism override $500 → **$793**; building "No Coverage" + Debris Removal (still charged $42 + $5) → **$47**. **ISO agrees on all five**, field for field |
+| C14-08 | **More than one location and building**, and the additional-location reset (`ErcResetPrsnlPropPremiumForAdditionalLocations`) | ✅ | **Done 2026-09-24** (`159_chunk14_rc2_total.py`). Two locations, each chunk 2's building with terrorism: **$602**; two buildings on one location: also **$602**, because each **structure's** own total keys its deductible band (TotAmtInsurance = the structure's limit + contents at that structure, chunk 1), not the location's. My first prediction ($606) assumed the location total; the engine and ISO were right. **ISO agrees on both.** `ErcResetPrsnlPropPremiumForAdditionalLocations` belongs to the Additional Locations Special Coinsurance endorsement (12 rule files, in no ISO fixture): **already tracked as not built, B9 in `Coverage_Inventory_And_Tracking.md`**; not tested here |
+| C14-09 | **Rounding**: whole-dollar premiums summed against the 2-decimal roll-ups | ✅ | **Done 2026-09-24** (`159_chunk14_rc2_total.py`). **The total adds whole-dollar premiums; it never rounds a raw sum.** Discriminating case: two buildings whose terrorism works out to $0.357 each (Remainder of State, IL 09 53, fire exception 0.4): $0 each, **total $586**; rounding the raw 0.715 would give $587. **ISO: $586** |
 
 ### RC-3 · Policy modifiers (5 tasks) — gates 4 and 5
 

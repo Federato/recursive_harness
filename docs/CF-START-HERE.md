@@ -22,7 +22,7 @@ census `156_chunk14_census.py`). Minimum premium is not in ISO's rating for our 
 (empty tables, no reader). **RC-1 COMPLETE 2026-09-24** (`157_`, `158_`, in the regression): every premium (14,236) and the
 policy total (293 of 293) equal ISO on the stored responses; state overrides of the total only add
 records; negative premiums count, as at ISO. **Minimum premium: a company input, refer to company (user decision; OI-113, backlog).**
-Next: RC-2 (C14-06, the policy-total golden case). **At every chunk close-out also run `python scripts/cf/157_chunk14_c14-02_total_replay.py --all`** (the regression runs its 46-fixture sample).
+**RC-2 COMPLETE 2026-09-24** (`159_`): golden policy total $1,193 and 8 variants, ISO 9 of 9 field for field; the total adds whole-dollar premiums and counts negatives. Next: RC-3 (C14-10, IRPM). **At every chunk close-out also run `python scripts/cf/157_chunk14_c14-02_total_replay.py --all`** (the regression runs its 46-fixture sample).
 
 ### Chunk 12 close-out (2026-09-24)
 
