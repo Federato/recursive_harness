@@ -735,6 +735,324 @@ def fix_sctheft(app, wb):
     return f"SCTHEFT: {n} cells -- Special Class Special theft factor per state", {SCC}
 
 
+def fix_edcasc(app, wb):
+    """RC-4 ED-CA-SC (2026-09-24), three parts, each traced against ISO's files and a live CA probe.
+
+    1. **Edition.** `TBL - Special Class` BA:BE (Group II deductible), CA:CE (Other Cause Of Loss
+       deductible) and BK:BO (wind/hail %) held CA's FUTURE filing (CF CA 20261001 / 20261101).
+       CA's in-force package (CF CA 20251201 V01) files neither table, so ISO uses countrywide.
+       CA's rows are rewritten from CW; left-over CA rows are blanked.
+    2. **Schedule defaults.** Special Class rows 220-229 read Deductible = policy THEFT deductible,
+       WindHailDed = the item's Deductible, TheftDed = the item's WindHailDed (shifted by one).
+       Now Deductible / WindHail / Theft = `IN - Policy` C8 / C9 / C10, as the Building rows.
+    3. **Special deductible (row 191/194).** ISO `SetDeductibleFactorSpecial` (Special Class) uses
+       TheftDeductible only when theft is covered and it differs from Deductible (and is not 250 /
+       Not Applicable); otherwise Deductible. The rater always used TheftDed -- the CA probe with a
+       1% wind/hail deductible priced Special at $0 (ISO $32)."""
+    import csv
+    t = wb.Worksheets("TBL - Special Class")
+    cw = w11.CW
+    ded = list(csv.reader(open(cw / "DeductibleFactor.RateTable.csv", encoding="utf-8-sig")))[1:]
+    wind = list(csv.reader(open(cw / "WindstormOrHailDeductibleFactor.RateTable.csv", encoding="utf-8-sig")))[1:]
+
+    def rewrite(state_col, width, rows, top, bottom):
+        have = [r for r in range(top, bottom + 1) if t.Range(f"{state_col}{r}").Value == "CA"]
+        if not have or have != list(range(have[0], have[-1] + 1)):
+            raise Gate(f"CA rows in {state_col} are not one contiguous run: {have[:3]}...")
+        if len(rows) > len(have):
+            raise Gate(f"{state_col}: {len(rows)} CW rows do not fit in {len(have)} CA rows")
+        first = t.Range(f"{state_col}1").Column
+        for i, r in enumerate(have):
+            vals = rows[i] if i < len(rows) else [None] * width
+            for j, v in enumerate(vals):
+                t.Cells(r, first + j).Value = v
+        return len(have), len(rows)
+
+    g2 = [["CA", "'" + x[1], float(x[2]), float(x[3]), float(x[5])] for x in ded if x[4] == "Basic Group II"]
+    oc = [["CA", float(x[1].replace(",", "")), float(x[2]), float(x[3]), float(x[5])]
+          for x in ded if x[4] == "Other Cause Of Loss"]
+    wh = [["CA", float(x[1].rstrip("%")) / 100, float(x[2]), float(x[3]), float(x[4])] for x in wind]
+    notes = [f"BA {rewrite('BA', 5, g2, 2, 6776)}", f"CA {rewrite('CA', 5, oc, 2, 6744)}",
+             f"BK {rewrite('BK', 5, wh, 2, 1100)}"]
+
+    sch = wb.Worksheets(w11.SCH)
+    for r in range(220, 230):
+        want = {"N": "='IN - Policy'!$C$10", "S": f"='IN - Schedule'!$N${r}", "T": f"='IN - Schedule'!$S${r}"}
+        for col, old in want.items():
+            if str(sch.Range(f"{col}{r}").Formula) != old:
+                raise Gate(f"Schedule {col}{r} is not {old}: {sch.Range(f'{col}{r}').Formula!r}")
+        sch.Range(f"N{r}").Formula = "='IN - Policy'!$C$8"
+        sch.Range(f"S{r}").Formula = "='IN - Policy'!$C$9"
+        sch.Range(f"T{r}").Formula = "='IN - Policy'!$C$10"
+
+    sc = wb.Worksheets(SCC)
+    n = 0
+    for c in COLS:
+        X, r = colname(c), 217 + c
+        N, T, W = (f"'IN - Schedule'!${k}${r}" for k in "NTW")
+        old191 = (f"=IF(OR({T}=\"\",{T}=\"Not Applicable\"),0,IFERROR(VALUE(SUBSTITUTE({T},\",\",\"\")),0))")
+        old194 = (f"=IF({T}=\"250\",{X}193,IF({T}=\"Not Applicable\",1,IF({T}=\"\",0,{X}192)))")
+        if str(sc.Cells(191, c).Formula) != old191 or str(sc.Cells(194, c).Formula) != old194:
+            raise Gate(f"Special Class {X}191 / {X}194 are not the expected theft-deductible formulas")
+        use_t = f"AND({W}<>\"Yes\",{T}<>\"\",{T}<>\"Not Applicable\",{T}<>\"250\",{T}<>{N})"
+        sc.Cells(191, c).Formula = (f"=IF({use_t},IFERROR(VALUE(SUBSTITUTE({T},\",\",\"\")),0),"
+                                    f"IF(OR({N}=\"\",{N}=\"Not Applicable\"),0,IFERROR(VALUE(SUBSTITUTE({N},\",\",\"\")),0)))")
+        sc.Cells(194, c).Formula = (f"=IF(OR({N}=\"250\",{T}=\"250\"),{X}193,IF({N}=\"Not Applicable\",1,"
+                                    f"IF({N}=\"\",0,{X}192)))")
+        n += 2
+    return (f"ED-CA-SC: CA rows -> CW ({'; '.join(notes)} [CA rows, CW rows]); Special Class defaults "
+            f"rows 220-229 -> C8/C9/C10; {n} Special deductible cells"), set()
+
+
+def fix_roofrnd(app, wb):
+    """RC-4 NH-COS probe (2026-09-24). NH, Paragraph B: ISO applied the 0.98 ACV roof factor exactly
+    as the rater does (W-26), but Building Group I was Excel 1932 vs ISO 1881 -- ISO rounds after
+    the roof factor and the rater did not. ISO `SetBasicGroupIRate` (Class):
+    ROUND(ROUND((ROUND(base x LCM,3) + substd + vacant) x terr x PC,3) x ACV,3); Specific:
+    ROUND(ROUND(specific x LCM,3) x ... x ACV,3). `SetAdjustedBroadRate`: ROUND(ROUND(ROUND(broad x ACV)
+    x coins) x LOI). `SetSpecialCauseOfLossAdjustment`: ROUND(ROUND(special x theft) x ACV).
+    Rows 10 / 72 / 95 each rounded once. Premium-neutral wherever ACV = 1."""
+    br = wb.Worksheets(BR)
+    n = 0
+    for c in COLS:
+        X = colname(c)
+        cs = f"'CALC - CoreScratchpad'!{X}"
+        old = {10: f"=IF({cs}277<>\"Yes\",0,IFERROR(ROUND((({X}3*{X}4)+{X}5+{X}6)*{X}7*{X}8*{X}9,3),0))",
+               72: f"=ROUND({X}68*{X}69*{X}70*{X}71,3)",
+               95: f"=ROUND({X}92*{X}93*{X}94,3)"}
+        for r, f in old.items():
+            if str(br.Cells(r, c).Formula) != f:
+                raise Gate(f"Bldg {X}{r} is not {f!r}: {br.Cells(r, c).Formula!r}")
+        br.Cells(10, c).Formula = (f"=IF({cs}277<>\"Yes\",0,IFERROR(IF({cs}6=\"No\","
+                                   f"ROUND(ROUND({X}3*{X}4,3)*{X}7*{X}8*{X}9,3),"
+                                   f"ROUND(ROUND((ROUND({X}3*{X}4,3)+{X}5+{X}6)*{X}7*{X}8,3)*{X}9,3)),0))")
+        br.Cells(72, c).Formula = f"=ROUND(ROUND(ROUND({X}68*{X}70,3)*{X}69,3)*{X}71,3)"
+        br.Cells(95, c).Formula = f"=ROUND(ROUND({X}92*{X}93,3)*{X}94,3)"
+        n += 3
+    return f"ROOFRND: {n} cells -- Building Group I / Broad / Special round after the roof ACV factor", {BR}
+
+
+def fix_thded(app, wb):
+    """RC-4 TH-DED (2026-09-24). The rater had NO live theft-deductible logic: Building and Contents
+    Special always used `Deductible` (CoreScratchpad 125); Contents 160-165 were dead rows.
+    ISO `SetDeductibleFactorSpecial` (Structure and PersonalProperty, CW):
+      - theft covered (own SpecialTheftExclusionIndicator = 0) and TheftDeductible not "", Not
+        Applicable, 250 and <> Deductible -> LookupDeductibleFactor(TheftDeductible,
+        SpecialIncludingTheftTotAmtInsurance, "Other Cause Of Loss");
+      - Deductible = 250 or TheftDeductible = 250 -> the $250 factor;
+      - else LookupDeductibleFactor(Deductible, ...).
+    SpecialIncludingTheftTotAmtInsurance = the structure's limit when it is Special with theft
+    covered + its occupancies' Special-including-theft contents (+ Special Class, not modelled).
+    New CoreScratchpad rows 127-131 (retired R-8 rows); Bldg row 100 and Contents row 97 use them.
+    The Contents check reads the CONTENTS record's own theft exclusion, as ISO does."""
+    cs, br, cr = wb.Worksheets(w11.CS), wb.Worksheets(BR), wb.Worksheets("CALC - Contents Rating")
+    B = "'TBL - BldgSpecialRating'!"
+    labels = {127: "[TH] Special incl. theft total (ISO SpecialIncludingTheftTotAmtInsurance)",
+              128: "[TH] Theft deductible row offset", 129: "[TH] Theft DeductibleFactor",
+              130: "[TH] Theft deductible differs?", 131: "[TH] DeductibleFactorSpecial (theft-aware)"}
+    for r, t in labels.items():
+        if cs.Range(f"C{r}").Formula not in ("", None) or cs.Range(f"D{r}").Formula not in ("", None):
+            raise Gate(f"CoreScratchpad row {r} is not empty")
+        cs.Range(f"A{r}").Value = "TH-DED 2026-09-24"
+        cs.Range(f"B{r}").Value = t
+    n = 0
+    for c in COLS:
+        X, b = colname(c), 45 + c
+        S = lambda k: f"'IN - Schedule'!${k}${b}"                       # noqa: E731
+        P, Q, R, AG, N_, A = S("P"), S("Q"), S("R"), S("AG"), S("N"), S("A")
+        cs.Range(f"{X}127").Formula = (f"=IF(AND({P}=\"Special\",{AG}=\"No\"),{N_},0)+IF({P}=\"Special\","
+                                       f"SUMIFS('IN - Schedule'!$E$134:$E$173,'IN - Schedule'!$L$134:$L$173,{A},"
+                                       f"'IN - Schedule'!$C$134:$C$173,\"Yes\",'IN - Schedule'!$K$134:$K$173,\"No\"),0)")
+        cs.Range(f"{X}128").Formula = (f"=SUMPRODUCT(({B}$W$2:$W$6670=INDEX('IN - Schedule'!$C$5:$C$44,{X}$285))"
+                                       f"*({B}$X$2:$X$6670={R})*({B}$Y$2:$Y$6670<{X}127)*({B}$Z$2:$Z$6670>={X}127)"
+                                       f"*(ROW({B}$W$2:$W$6670)-ROW({B}$W$2)+1))")
+        cs.Range(f"{X}129").Formula = f"=IF({X}128=0,0,INDEX({B}$AA:$AA,{X}128+1))"
+        cs.Range(f"{X}130").Formula = (f"=AND({R}<>\"\",{R}<>\"Not Applicable\",{R}<>\"250\",{R}<>{Q})")
+        cs.Range(f"{X}131").Formula = (f"=IF(OR({Q}=\"250\",{R}=\"250\"),{X}124,"
+                                       f"IF(AND({AG}=\"No\",{X}130),{X}129,{X}125))")
+        old100 = f"=IF('IN - Schedule'!$P${b}<>\"Special\",1,'CALC - CoreScratchpad'!{X}125)"
+        if str(br.Cells(100, c).Formula) != old100:
+            raise Gate(f"Bldg {X}100 is not {old100!r}: {br.Cells(100, c).Formula!r}")
+        br.Cells(100, c).Formula = f"=IF('IN - Schedule'!$P${b}<>\"Special\",1,'CALC - CoreScratchpad'!{X}131)"
+        k = f"'IN - Schedule'!$K${131 + c}"
+        old97 = f"=INDEX('CALC - Bldg Rating'!$C$100:$AP$100,1,{X}$116)"
+        if str(cr.Cells(97, c).Formula) != old97:
+            raise Gate(f"Contents {X}97 is not {old97!r}: {cr.Cells(97, c).Formula!r}")
+        I = lambda row: f"INDEX('CALC - CoreScratchpad'!$C${row}:$AP${row},1,{X}$116)"   # noqa: E731
+        J = lambda col: f"INDEX('IN - Schedule'!${col}$48:${col}$87,{X}$116)"            # noqa: E731
+        cr.Cells(97, c).Formula = (f"=IF({J('P')}<>\"Special\",1,IF(OR({J('Q')}=\"250\",{J('R')}=\"250\"),{I(124)},"
+                                   f"IF(AND({k}=\"No\",{I(130)}),{I(129)},{I(125)})))")
+        n += 7
+    return f"TH-DED: {n} cells -- theft deductible on Building / Contents Special", {BR, "CALC - Contents Rating"}
+
+
+def fix_w22(app, wb):
+    """RC-4 W-22 (2026-09-24). Every premium row multiplied IRPM x package mod x MPD inside ONE ROUND.
+    ISO `SetPremium` (all 20 coverage x group files, traced):
+      Building BGI / BGII / Broad   one ROUND(limit x rate x IRPM x MPD x PM)          (unchanged)
+      Building Special              ROUND(ROUND(ROUND(ROUND(rate x lim) x PM) x MPD) x IRPM)
+      Contents all four             same chain (Special: rate x lim rounded to 3 dp first)
+      Legal Liability (Bldg + Cont) ROUND(ROUND(ROUND(rate x lim) x PM) x IRPM)       no MPD
+      BI BGI / Broad / Special      one ROUND(limit x rate x IRPM x PM)               no MPD
+      BI BGII                       ROUND(ROUND(ROUND(rate x lim) x PM) x IRPM)       no MPD
+      Special Class all four        chain PM -> MPD -> IRPM
+      SC BI all four                one ROUND(limit x rate x IRPM x PM)               no MPD
+    The two Cyber factors still round after, as before. Neutral while all three factors are 1."""
+    import re
+    sheets = {"CALC - Bldg Rating": [32, 62, 86, 112], "CALC - Contents Rating": [30, 58, 81, 109],
+              "CALC - BI Rating": [25, 45, 59, 75], SCC: [22, 46, 65, 86, 105, 126, 140, 157]}
+    tmpl = {}
+    for s, rows in sheets.items():
+        for p in rows:
+            tmpl[(s, p)] = str(wb.Worksheets(s).Cells(p, 3).Formula)
+    swap = lambda f, X: re.sub(r"(?<![A-Z$'])C(?=\$?\d)", X, f)          # noqa: E731
+    cyb = lambda X, a, b, core: f"ROUND(ROUND({core}*{X}{a},0)*{X}{b},0)"  # noqa: E731
+    R0 = lambda e: f"ROUND({e},0)"                                       # noqa: E731
+    n = 0
+    for c in COLS:
+        X = colname(c)
+        for (s, p), t in tmpl.items():
+            if str(wb.Worksheets(s).Cells(p, c).Formula) != swap(t, X):
+                raise Gate(f"{s}!{X}{p} does not follow column C's formula")
+        # Building: base b = p-9: IRPM b, rate b+1..b+3, MPD b+4, PM b+5, limit b+6, cyber b+7/b+8
+        for p in sheets["CALC - Bldg Rating"]:
+            b = p - 9
+            A = f"ROUND(ROUND({X}{b+1}*{X}{b+2},3)*{X}{b+3},3)*({X}{b+6}/100)"
+            ll = f"'IN - Schedule'!$D${45 + c}=\"Legal Liability\""
+            chain_ll = R0(f"{R0(f'{R0(A)}*{X}{b+5}')}*{X}{b}")
+            if p == 112:
+                other = R0(f"{R0(f'{R0(f'{R0(A)}*{X}{b+5}')}*{X}{b+4}')}*{X}{b}")
+            else:
+                other = R0(f"{X}{b}*{X}{b+4}*{X}{b+5}*{A}")
+            wb.Worksheets("CALC - Bldg Rating").Cells(p, c).Formula = (
+                f"=IF('CALC - CoreScratchpad'!{X}$284<>\"Yes\",0,"
+                f"{cyb(X, b + 7, b + 8, f'IF({ll},{chain_ll},{other})')})")
+            n += 1
+        # Contents: b = p-9: IRPM b, MPD b+1, rate b+2..b+4, PM b+5, limit b+6, cyber b+7/b+8
+        for p in sheets["CALC - Contents Rating"]:
+            b = p - 9
+            A = f"ROUND(ROUND({X}{b+2}*{X}{b+3},3)*{X}{b+4},3)*({X}{b+6}/100)"
+            first = f"ROUND({A},3)" if p == 109 else R0(A)
+            ll = f"INDEX('IN - Schedule'!$H$91:$H$130,{X}$115)=\"Legal Liability Coverage Form\""
+            chain_ll = R0(f"{R0(f'{R0(A)}*{X}{b+5}')}*{X}{b}")
+            chain = R0(f"{R0(f'{R0(f'{first}*{X}{b+5}')}*{X}{b+1}')}*{X}{b}")
+            wb.Worksheets("CALC - Contents Rating").Cells(p, c).Formula = (
+                f"=IF({X}$114<>\"Yes\",0,{cyb(X, b + 7, b + 8, f'IF({ll},{chain_ll},{chain})')})")
+            n += 1
+        # BI: b = p-6: rate b-1, IRPM b, MPD b+1 (dropped), PM b+2, limit b+3, cyber b+4/b+5
+        for p in sheets["CALC - BI Rating"]:
+            b = p - 6
+            A = f"{X}{b-1}*({X}{b+3}/100)"
+            core = (R0(f"{R0(f'{R0(A)}*{X}{b+2}')}*{X}{b}") if p == 45 else R0(f"{X}{b}*{X}{b+2}*{A}"))
+            wb.Worksheets("CALC - BI Rating").Cells(p, c).Formula = (
+                f"=IF({X}$80<>\"Yes\",0,{cyb(X, b + 4, b + 5, core)})")
+            n += 1
+        # Special Class / SC BI: b = p-7: limit b, rate b+1, PM b+2, MPD b+3, IRPM b+4, cyber b+5/b+6
+        for p in sheets[SCC]:
+            b = p - 7
+            A = f"({X}{b}/100)*{X}{b+1}"
+            gate = "162" if p < 100 else "167"
+            if p < 100:
+                core = R0(f"{R0(f'{R0(f'{R0(A)}*{X}{b+2}')}*{X}{b+3}')}*{X}{b+4}")
+            else:
+                core = R0(f"{A}*{X}{b+2}*{X}{b+4}")
+            wb.Worksheets(SCC).Cells(p, c).Formula = f"=IF({X}${gate}<>\"Yes\",0,{cyb(X, b + 5, b + 6, core)})"
+            n += 1
+    return f"W-22: {n} premium cells -- ISO's modifier order, rounding and MPD scope", \
+        {"CALC - Bldg Rating", "CALC - Contents Rating", "CALC - BI Rating", SCC}
+
+
+def fix_scgist(app, wb):
+    """RC-4 SC-GI-ST (2026-09-24). Special Class Group I rate (row 4) read only the COUNTRYWIDE
+    `BasicGroupIRateSpecialClass` (`TBL - Special Class` E:I). ISO's lookups are FirstNonNull:
+    the state's row, else CW -- both for `SpecialClassDescriptionConvertedOption` (description ->
+    option) and for the rate (option + protection class). FL, NY and PR file their own rate tables
+    in force (NY: all 189 rows differ from CW); FL also files its own option mapping (Option1..N).
+    New block EI:EK = State|Description|PC -> rate for those states, built from the packages in
+    force on the rater's effective date; row 4 reads it first and falls back to E:I."""
+    import csv
+    eff = effective_date(wb)
+    t = wb.Worksheets("TBL - Special Class")
+    if any(t.Range(f"{c}1").Value not in (None, "") for c in ("EI", "EJ", "EK")):
+        raise Gate("TBL - Special Class EI:EK is not empty")
+    rd = lambda f: list(csv.reader(open(f, encoding="utf-8-sig")))[1:]           # noqa: E731
+    cw_conv = {r[1]: r[2] for r in rd(w11.CW / "SpecialClassDescriptionConvertedOption.RateTable.csv")}
+    rows, src = [], []
+    for st in ("FL", "NY", "PR"):
+        rf = state_file_in_force(st, "BasicGroupIRateSpecialClass", eff)
+        if rf is None:
+            continue
+        cf = state_file_in_force(st, "SpecialClassDescriptionConvertedOption", eff)
+        conv = dict(cw_conv)
+        conv.update({r[1]: r[2] for r in rd(cf)} if cf else {})
+        rate = {}
+        for r in rd(rf):
+            lo, hi = (r[2].split(" to ") + [r[2]])[:2] if " to " in r[2] else (r[2], r[2])
+            for pc in range(int(lo), int(hi) + 1):
+                rate[(r[1], pc)] = float(r[3])
+        k = 0
+        for desc, opt in conv.items():
+            for pc in range(1, 11):
+                if (opt, pc) in rate:
+                    rows.append((f"{st}|{desc}|{pc}", rate[(opt, pc)]))
+                    k += 1
+        src.append(f"{st}: {k} rows from {rf.parent.parent.name}"
+                   f"{' + own option map' if cf else ' (CW option map)'}")
+    t.Range("EI1:EK1").Value = (("Key (State|Description|PC)", "Rate", "Source (RC-4 SC-GI-ST)"),)
+    t.Range(f"EI2:EJ{len(rows) + 1}").Value = tuple(rows)
+    t.Range("EK2").Value = f"Built 2026-09-24 from packages in force on {eff}: " + "; ".join(src)
+    last = len(rows) + 1
+    sc = wb.Worksheets(SCC)
+    n = 0
+    for c in COLS:
+        X, r = colname(c), 217 + c
+        old = f"=IFERROR(VLOOKUP({X}172,'TBL - Special Class'!$E$2:$I$711,5,FALSE),0)"
+        if str(sc.Cells(4, c).Formula) != old:
+            raise Gate(f"Special Class {X}4 is not {old!r}: {sc.Cells(4, c).Formula!r}")
+        key = f"{w11.sc_state(X)}&\"|\"&'IN - Schedule'!$D${r}&\"|\"&INDEX('IN - Schedule'!$F$5:$F$44,{X}$163)"
+        sc.Cells(4, c).Formula = (f"=IFERROR(VLOOKUP({key},'TBL - Special Class'!$EI$2:$EJ${last},2,FALSE),"
+                                  f"{old[1:]})")
+        n += 1
+    print("   ", "; ".join(src))
+    return f"SC-GI-ST: {len(rows)} state rate rows; {n} cells", {SCC}
+
+
+def fix_scgistfl(app, wb):
+    """RC-4 SC-GI-ST follow-up (2026-09-24). FL's rows in EI:EJ came from CF FL 20241201 V01 (the only
+    FL on disk). Live ISO runs V02 (ED-FL) and maps 'Swimming Pools in the Open - Above Ground (All
+    Other)' to Option29b2 = 0.556 (= CW), where V01 swapped the above- / in-ground rates (0.152).
+    V01 equals CW on every other description, so FL goes back to CW until V02 is on disk."""
+    t = wb.Worksheets("TBL - Special Class")
+    last = t.Cells(t.Rows.Count, "EI").End(-4162).Row
+    vals = t.Range(f"EI2:EJ{last}").Value
+    keep = tuple(r for r in vals if not str(r[0]).startswith("FL|"))
+    if len(keep) == len(vals):
+        raise Gate("no FL rows in EI:EJ")
+    t.Range(f"EI2:EJ{last}").ClearContents()
+    t.Range(f"EI2:EJ{len(keep) + 1}").Value = keep
+    t.Range("EK3").Value = ("2026-09-24: FL rows removed -- live ISO runs CF FL 20241201 V02 (not on disk); "
+                            "V01's swimming-pool rates are swapped vs live ISO. FL uses CW (E:I) until V02 (ED-FL).")
+    return f"SC-GI-ST FL: {len(vals) - len(keep)} FL rows removed, {len(keep)} kept", {SCC}
+
+
+w11.FIXES["SCGISTFL"] = fix_scgistfl
+w11.EXPECT_COLS["SCGISTFL"] = set()
+w11.NO_MOVE.add("SCGISTFL")
+w11.FIXES["SCGIST"] = fix_scgist
+w11.EXPECT_COLS["SCGIST"] = set()
+w11.NO_MOVE.add("SCGIST")       # FL's Artificial Turf (FL Option9, PC 5) already equals ISO
+w11.FIXES["W22"] = fix_w22
+w11.EXPECT_COLS["W22"] = set()
+w11.NO_MOVE.add("W22")          # IRPM / PM / MPD are 1.0 on the baseline
+w11.FIXES["THDED"] = fix_thded
+w11.EXPECT_COLS["THDED"] = set()
+w11.NO_MOVE.add("THDED")        # every baseline building has TheftDed = Deductible
+w11.FIXES["ROOFRND"] = fix_roofrnd
+w11.EXPECT_COLS["ROOFRND"] = set()
+w11.NO_MOVE.add("ROOFRND")      # ACV = 1 or Specific on all four baseline buildings
+w11.FIXES["EDCASC"] = fix_edcasc
+w11.EXPECT_COLS["EDCASC"] = set()
+w11.NO_MOVE.add("EDCASC")       # FL's defaults are 2,500 / 2,500 and theft is excluded: same factors
 w11.FIXES["SCTHEFT"] = fix_sctheft
 w11.EXPECT_COLS["SCTHEFT"] = set()
 w11.NO_MOVE.add("SCTHEFT")      # FL's factor is 0.88

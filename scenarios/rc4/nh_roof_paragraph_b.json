@@ -1,0 +1,63 @@
+{
+ "name": "rc4_nh_roof_b",
+ "states": [
+  "NH"
+ ],
+ "edits": [
+  {
+   "sheet": "IN - Schedule",
+   "cell": "C8",
+   "value": "NH"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "D8",
+   "value": 3031
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "G8",
+   "value": "Entire State"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "I8",
+   "value": "I"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "J8",
+   "value": "Entire State"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "H8",
+   "r1c1": "=IF(RC3=\"NY\",IF(OR(RC17=\"\",RC17=\"Not Applicable\"),\"Select\",IFERROR(VLOOKUP(RC17,'TBL - NYCounty'!R2C1:R63C3,3,FALSE),\"Select\")),IF(RC3=\"AK\",IF(OR(RC15=\"\",RC15=\"Not Applicable\"),\"Select\",IFERROR(VLOOKUP(RC15&\"|\"&IF(RC15=\"Remainder of State\",RC16,\"Not Applicable\"),'TBL - AKRatingArea'!R2C1:R12C5,5,FALSE),\"Select\")),IF(RC3=\"CA\",\"Select\",\"Not Applicable\")))"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "O8",
+   "value": "Not Applicable"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "P8",
+   "value": "Not Applicable"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "Q8",
+   "value": "Not Applicable"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "Y51",
+   "value": "Paragraph B"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "T51",
+   "value": "Replacement Cost"
+  }
+ ]
+}

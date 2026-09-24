@@ -46,14 +46,15 @@ What it buys: submissions that carry these facts get rated on them instead of an
 | FL-BGII | **FL county input**, so the Group II territory dropdown narrows by county as ISO's does |
 | Linked Special Class | Special Class "included in building" / linked item: never populated, untested |
 
-## RC-4 · Prove what's built: IN PROGRESS (2026-09-23)
+## RC-4 · Prove what's built: ✅ DONE 2026-09-24 (final regression: 40 / 40 rated states, 0 mismatches; standard 42 / 42 at 21171)
 
-"More states" done once: 42 new states run against live ISO; 8 rater fixes and 2 payload fixes (see record).
-**Full re-run 2026-09-24: 40 of 40 rated states match on every line** (0 mismatches); standard run 42 / 42 at 21171.
-Refusals (CO / IN / OK wind hazard county, SC EQ territory) moved to RC-3 as missing inputs.
-
-Still open in RC-4: W-22 (IRPM ≠ 1), Specific / Tentative rating, CA District II, Special Class in NYC,
-Contents theft deductible, NH cosmetic roof factor, and the edition audit of older TBL sheets (ED-ALL).
+42-state run clean (40 / 40 rated states). Then every open item traced, fixed where needed and verified on live ISO with a
+probe built so the competing readings disagree (`scenarios/rc4/`): **ED-CA-SC** (CA Special Class tables from a future
+filing + two SC wiring bugs), **NH-COS** (reading confirmed; found **ROOFRND**, roof-factor rounding), **TH-DED** (theft
+deductible built; payload CP 03 20), **W-22** (modifier order / rounding / MPD scope, 800 cells; payload sent PM / MPD at
+the wrong level), **CA-D2** (verified), **SC-GI-ST** (NY / PR Special Class rates; NY option must be sent; FL stays CW
+until V02). ED-ALL audited. Baseline 21171 unchanged throughout. Details: `Rater_Simplifications_Backlog.md`.
+New, carried forward: ED-WHX (-> RC-2), ENG-FL-MOD and ED-FL (harness engine / FL V02).
 
 ## RC-5 · Not built (large; each is its own project)
 
@@ -62,7 +63,7 @@ Contents theft deductible, NH cosmetic roof factor, and the edition audit of old
 | Blanket rating | Every blanket branch is inert line-wide |
 | Earthquake | Untraced on both the rater and the harness side |
 | Edition transitions | One ERC edition per state, resolved outside the workbook; FL's filing is 21 months old (R-6) |
-| ED-FL | Live ISO runs CF FL 20241201 **V02**; only V01 is on disk |
+| ED-FL | Live ISO runs CF FL 20241201 **V02**; only V01 is on disk. Now also blocks FL Special Class state rates (SC-GI-ST) and explains cf_engine FL gaps |
 
 ---
 

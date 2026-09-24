@@ -1,0 +1,23 @@
+{
+ "name": "rc4_ca_theft_ded",
+ "states": [
+  "CA"
+ ],
+ "edits": [
+  {
+   "sheet": "IN - Schedule",
+   "cell": "R51",
+   "value": "'5,000"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "AG51",
+   "value": "No"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "K137",
+   "value": "No"
+  }
+ ]
+}

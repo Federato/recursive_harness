@@ -1,0 +1,103 @@
+{
+ "name": "rc4_ca_special_class",
+ "states": [
+  "CA"
+ ],
+ "edits": [
+  {
+   "sheet": "IN - Schedule",
+   "cell": "C5",
+   "value": "CA"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "D5",
+   "value": 90210
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "E5",
+   "value": "Beverly Hills"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "F5",
+   "value": "4"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "G5",
+   "value": "City of Los Angeles"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "H5",
+   "value": "District I"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "I5",
+   "value": "Entire State"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "J5",
+   "value": "Los Angeles"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "K5",
+   "value": "Not Applicable"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "L5",
+   "value": "No"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "M5",
+   "value": "Not Applicable"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "N5",
+   "value": "No"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "O5",
+   "value": "Not Applicable"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "P5",
+   "value": "Not Applicable"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "Q5",
+   "value": "Not Applicable"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "K220",
+   "value": 150000
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "N220",
+   "value": "'1,000"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "Q220",
+   "value": "Entire State"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "S220",
+   "value": 0.01
+  }
+ ]
+}

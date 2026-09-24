@@ -134,6 +134,18 @@ def pct(v):
     return f"{round(float(v) * 100)}%" if isinstance(v, (int, float)) else v
 
 
+DED_FIELDS = {"Deductible", "TheftDeductible", "WindstormOrHailDeductible"}
+
+
+def ded_text(v):
+    """ISO types every deductible as a string ("1%", "1,000", "250"). The Special Class
+    wind/hail dropdown holds numbers (0.01, 1000.0), which ISO refuses as Float (RC-4,
+    2026-09-24). Fractions are percentages; anything else is a dollar amount."""
+    if isinstance(v, (int, float)) and not isinstance(v, bool):
+        return pct(v) if 0 < v < 1 else f"{int(v):,}"
+    return v
+
+
 def txt(v, width=None):
     if isinstance(v, float) and v.is_integer():
         v = int(v)
@@ -160,7 +172,13 @@ class Builder:
         if value in BLANKS:
             self.omitted.append(f"{field}{' (' + why + ')' if why else ''}")
             return
+        if field in DED_FIELDS:
+            value = ded_text(value)
         obj[field] = value
+
+    def sc_state(self, s):
+        """The state of a Special Class item (ParentID = its location ID)."""
+        return next((l["State"] for l in self.r["LOC"] if l["ID"] == s.get("ParentID")), None)
 
     def state_of(self, b):
         """The state of a building record (via its parent location)."""
@@ -185,6 +203,10 @@ class Builder:
         eff = dt.date.fromisoformat(str(self.d["EffectiveDate"]))
         cp = {"State": state,
               "IRPMFactor": float(self.pol.get((22, 3)) or self.d.get("IRPMFactor") or 1.0),
+              # Contents / BI / SC BI premiums read PackageModFactor at the POLICY level (W-22)
+              "PackageModFactor": float(self.pol.get((23, 3)) or 1.0),
+              # ...and Contents SPECIAL reads MPD here too (the other groups read the record's)
+              "MultiPremiumAndDispersionCreditFactor": float(self.pol.get((24, 3)) or 1.0),
               "PolicyType": self.pol.get((3, 3)),
               "CommercialPropertyLocation": locations}
         if self.pol.get((3, 6)) == "Yes":
@@ -298,6 +320,13 @@ class Builder:
             o["CommercialPropertyLegalLiabilityCoverageForm"] = [{"AddlInsurableInt": AII[opt]}]
         if self.loc_perded.get(b.get("ParentID")) == "Yes" and b.get("Deductible") not in BLANKS:
             o["CommercialPropertyDeductiblesByLocationBldg"] = [by_location(o)]
+        # TH-DED (RC-4, 2026-09-24). A theft or dollar wind/hail deductible that differs from
+        # `Deductible` is only legal with the CP 03 20 Multiple Deductible Form (ISO error M-001
+        # otherwise). The form carries no rating inputs: ISO's own STC payloads send it as [{}].
+        ded = o.get("Deductible")
+        other = [o.get("TheftDeductible"), o.get("WindstormOrHailDeductible")]
+        if ded and any(v not in (None, "Not Applicable", "1%", "2%", "5%", ded) for v in other):
+            o["CommercialPropertyMultipleDeductibleFormFixedDollarDeductibles"] = [{}]
         self.records(o, b, {"WindHailExcl": "CommercialPropertyWindstormOrHailExclusion",
                             "VandalismExcl": "CommercialPropertyVandalismExclusion",
                             "TheftExcl": "CommercialPropertyTheftExclusion",
@@ -329,6 +358,10 @@ class Builder:
                 {"AddlInsurableInt": AII[opt], "AddlInsurableIntOption": opt}]
         whd = b.get("WindHailDed")
         self.put(o, "WindstormOrHailDeductible", b.get("Deductible") if whd == "Not Applicable" else whd)
+        # ISO's contents Special deductible reads the OCCUPANCY's TheftDeductible (../../ from
+        # PersonalProperty). The rater has one theft deductible per building; carry it, as ISO's
+        # STC payloads do (TH-DED).
+        self.put(o, "TheftDeductible", b.get("TheftDed"))
         # ISO's contents sprinkler-leakage rate reads the OCCUPANCY's own SprinklerSystem
         # (../../ from PersonalProperty, past the Table wrapper). The rater has no such
         # input and applies the building's (Contents row 10 = Bldg row 11) -- S-4.
@@ -348,8 +381,11 @@ class Builder:
         self.put(o, "Deductible", b.get("Deductible"))
         if b["RatingType"] == "Specific" and p.get("SpecificRate"):
             o["SpecificGroupIRate"] = float(p["SpecificRate"])   # rater Contents row 3
+        # W-22 (RC-4, 2026-09-24): ISO's contents premium reads MPD from the PersonalProperty
+        # record itself; package mod and IRPM come from the policy (see policy()).
         o.update(IncludedInBlkt=self.d["IncludedInBlkt"],
-                 LossCostMultiplier=float(self.d["LossCostMultiplier"]))
+                 LossCostMultiplier=float(self.d["LossCostMultiplier"]),
+                 MultiPremiumAndDispersionCreditFactor=float(self.pol.get((24, 3)) or 1.0))
         self.records(o, p, {"WindHailExcl": "CommercialPropertyWindstormOrHailExclusionPrsnlProp",
                             "VandalismExcl": "CommercialPropertyVandalismExclusionPrsnlProp",
                             "TheftExcl": "CommercialPropertyTheftExclusionPrsnlProp"})
@@ -387,6 +423,12 @@ class Builder:
         if cc not in BLANKS:
             o["ClassCode"] = txt(cc, 4)
         o["FullSpecialClassValue"] = o["Limit"]            # D-2
+        # SC-GI-ST (RC-4, 2026-09-24): NY blanks `SetSpecialClassDescConvertedOption`, so ISO
+        # never derives the option and prices Group I at 0 unless it is SENT. Send the option
+        # the rater derived (Special Class row 171, CW map) -- live ISO then uses NY's rates.
+        opt = self.scc.get((171, s["_col"]))
+        if self.sc_state(s) == "NY" and opt not in BLANKS:
+            o["SpecialClassDescConvertedOption"] = opt
         for f, h in (("ClassDescription", "ItemDesc"), ("CauseOfLoss", "CauseOfLoss"),
                      ("ValuationType", "ValuationType"), ("AgreedValueOption", "AgreedValue"),
                      ("IncludedInBuilding", "LimitInclInBuilding"), ("Deductible", "Deductible"),

@@ -1,0 +1,48 @@
+{
+ "name": "rc4_ny_special_class",
+ "states": [
+  "NY"
+ ],
+ "edits": [
+  {
+   "sheet": "IN - Schedule",
+   "cell": "B220",
+   "value": 2
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "Q220",
+   "value": "III"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "C221",
+   "value": "Yes"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "B221",
+   "value": 2
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "D221",
+   "value": "Other - Masonry or Metal or Other Non-combustible Materials, Stock or Equipment"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "K221",
+   "value": 200000
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "Q221",
+   "value": "III"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "P221",
+   "value": "2"
+  }
+ ]
+}
