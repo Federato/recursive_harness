@@ -42,6 +42,9 @@ New, carried forward: ED-WHX (-> RC-2), ENG-FL-MOD and ED-FL (harness engine / F
 
 ## RC-5 · Not built (large; each is its own project)
 
+**Order (user, 2026-09-24):** Blanket -> Earthquake -> Edition transitions LAST. The rater is a proof of concept, so
+multi-edition support is the lowest priority.
+
 | Item | What |
 |---|---|
 | Blanket rating | Every blanket branch is inert line-wide |

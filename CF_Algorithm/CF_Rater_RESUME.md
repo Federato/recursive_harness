@@ -12,7 +12,7 @@
 > **RC-3 DONE 2026-09-24** (RC3GEO AZPFD S5 S4 + payload unit numbers; D-1c / D-2 no change). 44 / 44 states. Committed c4ce2de.
 > **ED-FL DONE 2026-09-24** (FL V02 on disk; SCSTATE VACFL SUBSTD FLRES EDFLSTAMP; ENG-FL-MOD closed). Committed 8160b0b.
 > **FL-BGII DONE 2026-09-24** (county / FL territory dropdowns). Committed 188e741. Specific/Tentative Group I verified built (Tentative payload fix). Committed e5be5dc.
-> **Specific Group II DONE 2026-09-24** (BGIISPEC). Not committed yet. Next: RC-5 (editions, Blanket, Earthquake).
+> **Specific Group II DONE 2026-09-24** (BGIISPEC). Not committed yet. Committed 952b0a2. Next: RC-5 Blanket -> Earthquake -> editions LAST (user: proof of concept).
 
 ---
 
