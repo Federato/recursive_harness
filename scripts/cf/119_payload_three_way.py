@@ -58,7 +58,15 @@ RATER = {
     "SC": ("CALC - Special Class", {"BGI": 22, "BGII": 46, "Broad": 65, "Special": 86}),
     "SCBI": ("CALC - Special Class", {"BGI": 105, "BGII": 126, "Broad": 140, "Special": 157}),
 }
-FORMS = ("BGI", "BGII", "Broad", "Special")
+FORMS = ("BGI", "BGII", "Broad", "Special", "EQ")
+#: RC-5 Earthquake Phase 1 (2026-09-24): the EQ premium sits on its form record under the Structure /
+#: PersonalProperty (CP 10 40 endorsement or CP 10 28 flat-dollar form); the rater's rows on `CALC - EQ`
+EQ_RECS = {"BLD": {"Earthquake Form (CP 10 40)": "CommercialPropertyEarthquakeAndVolcanicEruptionEndorsement",
+                   "Earthquake Form (CP 10 28)": "CommercialPropertyEarthquakeAndVolcanicEruptionCoverageWithFlatDollarDeductibleBldg"},
+           "CON": {"Earthquake Form (CP 10 40)": "CommercialPropertyEarthquakeAndVolcanicEruptionEndorsementPrsnlProp",
+                   "Earthquake Form (CP 10 28)": "CommercialPropertyEarthquakeAndVolcanicEruptionCoverageWithFlatDollarDeductiblePrsnlProp"}}
+EQ_NAMES = {n for d in EQ_RECS.values() for n in d.values()}
+RATER_EQ = {"BLD": 37, "CON": 74}
 LABEL = {"BLD": "Building", "CON": "Contents", "BI": "Bus. Income", "SC": "Special Class",
          "SCBI": "SC Bus. Income"}
 COV = re.compile(r"^(?P<rec>CommercialProperty\w+?)(?:Building|PrsnlProp)?"
@@ -85,9 +93,11 @@ def read_workbook():
                  f"values on disk are the ones you see.")
     from pyxlsb import open_workbook
     sheets = {}
-    want = [SCH, "IN - Policy", "Defaults", "TBL - Cyber", "TBL - BGIISpecific", "IN - Blanket"] + sorted({s for s, _ in RATER.values()})
+    want = [SCH, "IN - Policy", "Defaults", "TBL - Cyber", "TBL - BGIISpecific", "IN - Blanket", "CALC - EQ"] + sorted({s for s, _ in RATER.values()})
     with open_workbook(str(WORKBOOK)) as wb:
         for name in want:
+            if name not in wb.sheets:
+                continue
             with wb.get_sheet(name) as sh:
                 sheets[name] = {(c.r + 1, c.c + 1): c.v for row in sh.rows() for c in row
                                 if c.v is not None}
@@ -170,6 +180,7 @@ class Builder:
         self.bgii_spec = set()
         self.blankets, self.used_blankets = {}, set()           # IN - Blanket, set by main()
         self.omitted: list[str] = []
+        self.eq_used = False
 
     def put(self, obj, field, value, why=""):
         if value in BLANKS:
@@ -186,6 +197,14 @@ class Builder:
     def state_of(self, b):
         """The state of a building record (via its parent location)."""
         return next((l["State"] for l in self.r["LOC"] if l["ID"] == b.get("ParentID")), None)
+
+    @staticmethod
+    def eq_form(loc):
+        f = (loc or {}).get("EQCauseOfLossForm")
+        return None if f in BLANKS or f == "Not Applicable" else f
+
+    def loc_of(self, b):
+        return next((l for l in self.r["LOC"] if l["ID"] == b.get("ParentID")), None)
 
     def kids(self, blk, parent_id):
         return [x for x in self.r[blk] if x.get("ParentID") == parent_id]
@@ -216,6 +235,8 @@ class Builder:
               "MultiPremiumAndDispersionCreditFactor": float(self.pol.get((24, 3)) or 1.0),
               "PolicyType": self.pol.get((3, 3)),
               "CommercialPropertyLocation": locations}
+        if self.eq_used:
+            cp["EQSubLimitBlktIndicator"] = "No"            # RC-5 Earthquake Phase 1: no sub-limit blanket
         if self.used_blankets:
             # ISO deletes the blanket record unless BlktRated = "Yes" (AttachFormBlanketRating, chunk 9)
             cp.update(BlktRated="Yes", MUBlktRated="No")
@@ -286,6 +307,8 @@ class Builder:
                                  f"(Schedule: {'County, col Q' if h == 'WindHazardTerr' else 'a SC ZIP in TBL - EQTerr'})")
             if v not in BLANKS and v != "Not Applicable":
                 o[f] = txt(v)
+        if self.eq_form(loc):                             # RC-5 Earthquake Phase 1 (Schedule U)
+            o["EQCauseOfLossForm"] = loc["EQCauseOfLossForm"]
         blds = self.kids("BLD", loc["ID"])
         whd = loc.get("WindHailDed")
         if whd == "Not Applicable" and blds:
@@ -383,6 +406,17 @@ class Builder:
                             "VandalismExcl": "CommercialPropertyVandalismExclusion",
                             "TheftExcl": "CommercialPropertyTheftExclusion",
                             "SprinklerLeakageExcl": "CommercialPropertySprinklerLeakageExclusion"})
+        form = self.eq_form(self.loc_of(b))
+        if form and str(b.get("EQCovIndicator") or "").startswith("Yes"):
+            # RC-5 Earthquake Phase 1 (2026-09-24): Schedule AO-AS; coinsurance as the building's (ISO's
+            # domain forces EQCoinsurance = Coinsurance); no sprinkler-leakage-only coverage yet
+            o.update(EQCovIndicator=b["EQCovIndicator"], EQClass=b.get("EQClass"),
+                     EQDeductible=ded_text(b.get("EQDeductible")), EQCoinsurance=o.get("Coinsurance"),
+                     EQSprinklerLeakageOnly="Not Applicable", SoftStory=b.get("SoftStory") or "No")
+            o[EQ_RECS["BLD"][form]] = [{"IncludingMasonryVeneerOption": "No",
+                                        "PctOfTotalExteriorWallsFaced": b.get("MasonryVeneer")
+                                        or "Masonry Veneer Limitation Applies"}]
+            self.eq_used = True
         occs = self.kids("OCC", b["ID"])
         if occs:
             o["CommercialPropertyOccupClass"] = [self.occupancy(x, b) for x in occs]
@@ -450,6 +484,15 @@ class Builder:
                             "TheftExcl": "CommercialPropertyTheftExclusionPrsnlProp"})
         if p.get("SprinklerLeakageExcl") == "Yes":        # the contents' own election (S-4, col Q)
             o["CommercialPropertySprinklerLeakageExclusionPrsnlProp"] = [{}]
+        form = self.eq_form(self.loc_of(b))
+        if form and str(p.get("EQCovIndicator") or "").startswith("Yes"):
+            # RC-5 Earthquake Phase 1: Schedule V / W. ISO's CP 10 28 deductible band reads the location's
+            # EQ-elected full values; a contents record counts only when FullPrsnlPropValue is sent.
+            o.update(EQCovIndicator=p["EQCovIndicator"], EQGrade=txt(p.get("EQGrade")),
+                     EQCoinsurance=o.get("Coinsurance"), EQSprinklerLeakageOnly="Not Applicable",
+                     FullPrsnlPropValue=int(p.get("FullPrsnlPropValue") or p["Limit"] or 0))
+            o[EQ_RECS["CON"][form]] = [{}]
+            self.eq_used = True
         return o
 
     def business_income(self, x, col, rating_type=None, sprinkler_excl=None):
@@ -564,6 +607,9 @@ def iso_premiums(resp_body, order):
                 if m and m.group("rec") == rec_name and isinstance(v, dict) and "Premium" in v:
                     forms[FORM_OF[m.group("form")]] = float(v["Premium"] or 0)
             if rec_name:
+                eq = [i for k, v in node.items() if k in EQ_NAMES and isinstance(v, list) for i in v]
+                if eq:
+                    forms["EQ"] = sum(float(i.get("Premium") or 0) for i in eq)
                 found.append((rec_name, forms))
             for k, v in node.items():
                 if isinstance(v, list) and k in REC.values():
@@ -627,6 +673,12 @@ def engine_premiums(payload, state, order):
         if name in REC.values():
             forms = {}
             for tbl in node.children:
+                if tbl.tag.endswith("Table") and tbl.tag[:-5] in EQ_NAMES:
+                    for cov in tbl.children:
+                        p = cov.first("Premium")
+                        if p is not None and p.text not in (None, ""):
+                            forms["EQ"] = forms.get("EQ", 0.0) + float(p.text)
+                    continue
                 for cov in (tbl.children if tbl.tag.endswith("Table") else [tbl]):
                     m = COV.match(cov.tag)
                     if m and m.group("rec") == name:
@@ -649,7 +701,11 @@ def rater_premiums(sheets, order):
             continue
         sheet, rows = RATER[blk]
         g = sheets[sheet]
-        out.append({f: float(g.get((r, rec["_col"])) or 0) for f, r in rows.items()})
+        d = {f: float(g.get((r, rec["_col"])) or 0) for f, r in rows.items()}
+        if blk in RATER_EQ and "CALC - EQ" in sheets:
+            v = sheets["CALC - EQ"].get((RATER_EQ[blk], rec["_col"]))
+            d["EQ"] = float(v) if isinstance(v, (int, float)) else float("nan")
+        out.append(d)
     return out
 
 

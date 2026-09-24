@@ -409,3 +409,32 @@ NJ RI VT on V04, the rest on CW 20260601. Tables and rules were diffed base by b
 - **Probes:** OH % wind/hail 42 / 42; NC (V03) 42 / 42; MO (V02) 42 / 42; OH with an included Special Class item 42 / 42. All
   earlier probes unchanged (FL / NY refusal probes still refuse identically); standard 42 / 42 at 21171.
 - **Simplification kept:** contents in the Special / theft / wind-hail totals use their scheduled limit, not a blanket share.
+
+## Feature set: RC-5 Earthquake -- Phase 1 DONE 2026-09-24 (`124 --fix EQ1`; `scenarios/rc5eq/`, live ISO)
+
+Building and Personal Property earthquake on **CP 10 40** (percentage deductible) and **CP 10 28** (flat-dollar
+deductible), not in a blanket, not sprinkler-leakage-only. Trace: `Earthquake_Rater_Trace.md`.
+- **Inputs:** Schedule location U `EQCauseOfLossForm` and V `EQTerrEntry` (S `EQTerr` now reads V outside SC); building
+  AO `EQCovIndicator`, AP `EQClass`, AQ `EQDeductible`, AR `SoftStory`, AS `MasonryVeneer`; contents V `EQCovIndicator`,
+  W `EQGrade`. EQ coinsurance = the item's coinsurance (ISO's domain forces it).
+- **Tables:** `TBL - EQ` (22,315 keyed rows `PREFIX|STATE|keys`: loss costs, tier, height group / factor, BCEG, MO
+  BCEG x territory, class group, soft story, sprinklered, veneer, coinsurance, <80% factor, builders risk, % deductible;
+  plus dropdown lists and a per-state source list) and `TBL - EQFlatDed` (32,940 banded rows).
+- **Calc:** `CALC - EQ` rows 1-39 building, 41-76 contents; `IN - Policy` I8 Earthquake premium (`OUT_Prem_EQ`) is in
+  the total. Payload sends the EQ fields, the form record (CP 10 40 endorsement / CP 10 28 flat form) and, for contents,
+  `FullPrsnlPropValue` (ISO's CP 10 28 deductible band only counts contents when it is sent).
+- **Findings (live ISO):**
+  1. **Table resolution:** ISO uses the state's package IN FORCE, else the countrywide base. An OLDER state package is
+     never used (CA 20240401's veneer / soft-story files are ignored: CA rates soft story 1.42 from CW V03 and refuses
+     CA's own "10% to 25%"). `state_file_in_force` (used by earlier fixes) walks back to older packages -- **audit it**.
+  2. A blank SprinklerSystem (the Schedule's "Select" is not sent) applies the 1.06 sprinklered factor; a blank BCEG
+     gives 0 and zeroes the EQ premium. The rater mirrors both.
+- **Probes (all Excel = ISO = engine):** CA CP 10 28 (soft story 1.42, veneer 1.1, height 0.84) 1743 / 1096; CA CP 10 40
+  20% 308 / 191; MO CP 10 28 (V02) 51 / 48; CA bands (BCEG 1.04, coins 90% 0.95, contents 70% x1.5, location total
+  600,000 -> 1.426 not 1.383) 102 / 111; MO CP 10 40 territory 3A, BCEG 0.96 via V02 BCEGEQFactor 564 / 334.
+- **Simplifications / not built:** contents in a YARD group use the building's BCEG factor (ISO: 1.0); BI, Special
+  Class and SC BI earthquake; sprinkler-leakage-only; sub-limit forms CP 10 29 / 10 45; blanket EQ; TX deductible
+  formula, CA limited EQ, roof-tank and public-institutional factors (Phase 4). The territory is typed (no per-state
+  dropdown).
+- **Found outside EQ (not fixed, user's call):** building coinsurance 90% -> Building Group II 18 vs ISO 21 (CA);
+  contents coinsurance 70% -> Contents Group I 0 vs 535 and Special 0 vs 241 (CA).

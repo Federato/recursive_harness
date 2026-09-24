@@ -2692,6 +2692,311 @@ def fix_sctot(app, wb):
         {BR, "CALC - Contents Rating"}
 
 
+def eq_tables(wb, eff):
+    """Earthquake tables for every rater state, as ISO resolves them (probed live 2026-09-24): the state's
+    package IN FORCE (latest date <= eff) if it carries the table, else the state's countrywide base
+    (`TBL - CWBase`). An OLDER state package is never used (CA 20240401's masonry-veneer and soft-story
+    files are ignored by ISO: CA rates 1.42 soft story from CW V03, and refuses CA's own "10% to 25%")."""
+    import csv
+    import re
+    root = w11.ISO.parent
+    cwb = wb.Worksheets("TBL - CWBase")
+    last = cwb.Cells(cwb.Rows.Count, "A").End(-4162).Row
+    base = {str(cwb.Cells(r, 1).Value): str(cwb.Cells(r, 2).Value) for r in range(2, last + 1)}
+
+    def base_dir(name):
+        if name == "CF CW 20260601 V01":
+            return w11.CW.parent
+        hits = [d for d in root.glob(f"*/{name}") if d.is_dir()]
+        if len(hits) != 1:
+            raise Gate(f"countrywide base {name!r}: {hits}")
+        return hits[0]
+
+    pkg = {}
+    for st in base:
+        c = []
+        for d in root.glob(f"*/CF {st} *"):
+            m = re.match(rf"CF {st} (\d{{8}}) V(\d+)$", d.name)
+            if m and d.is_dir() and m[1] <= eff:
+                c.append((m[1], int(m[2]), d))
+        pkg[st] = max(c)[2] if c else None
+
+    def rows(st, table):
+        f = pkg[st] / "Rate Tables" / f"{table}.RateTable.csv" if pkg[st] else None
+        if f is None or not f.exists():
+            f = base_dir(base[st]) / "Rate Tables" / f"{table}.RateTable.csv"
+        if not f.exists():
+            return {}, "-"
+        with open(f, encoding="utf-8-sig", newline="") as fh:
+            data = list(csv.reader(fh))[1:]
+        out = {}
+        for want in ("CW", st):                         # a state row wins over a CW row in the same file
+            for r in data:
+                if r and r[0] == want:
+                    out[tuple(r[1:-1])] = r[-1]
+        return out, f.parent.parent.name
+
+    def num(v):
+        try:
+            x = float(v)
+            return int(x) if x.is_integer() and "." not in v else x
+        except ValueError:
+            return v
+
+    simple = {"LC": "EQLossCostBldg", "LCP": "EQLossCostPrsnlProp", "TIER": "EarthquakeDeductibleTier",
+              "HTG": "HeightTerrGroup", "HT": "BuildingHeightFactor", "BCEG": "BCEGEarthquakeFactor",
+              "BCEGT": "BCEGEQFactor", "CTU": "EQClassToUse", "SOFT": "SoftStoryModificationFactors",
+              "SPR": "EQSprinkleredRiskFactor", "VEN": "PctOfMasonryVeneerEQFactor", "COIN": "CoinsuranceFactor",
+              "LT80": "LessThan80PctMultiplicativeFactor", "BR": "BldrsRiskEQFactor",
+              "PCT": "EQPercentageDeductibleFactor"}
+    keyed, flat, src = [], [], []
+    for st in sorted(base):
+        for pre, t in simple.items():
+            d, where = rows(st, t)
+            src.append((st, t, where, len(d)))
+            for k, v in d.items():
+                keyed.append(("|".join((pre, st) + k), num(v)))
+        d, where = rows(st, "EQFlatDeductibleFactor")
+        src.append((st, "EQFlatDeductibleFactor", where, len(d)))
+        for k, v in d.items():
+            flat.append(("|".join((st,) + k[:3]), float(k[3]), float(k[4]), num(v)))
+    return keyed, flat, src, sorted({k[3] for k, _ in []})
+
+
+def fix_eq1(app, wb):
+    """RC-5 Earthquake Phase 1 (2026-09-24): Building and Personal Property on CP 10 40 (percentage deductible)
+    and CP 10 28 (flat-dollar deductible), not in a blanket, not sprinkler-leakage-only. ISO's chain (CW 2026
+    Structure / PersonalProperty rules; V02 / V03 / V04 identical except MO V02's BCEGEQFactor[BCEG, EQTerr]):
+      Bldg  EQRate = R3(R3(R3(LossCostBldg[st,EQClass,EQTerr] x LCM) x RoofACV) x SoftStory x Sprinklered(1.06
+            unless SprinklerSystem = "None") x Height[stories,EQClass,HeightTerrGroup[EQTerr]] x BCEG-EQ (blank = 0)
+            x MasonryVeneer x BuildersRisk(1150))
+      PP    EQRate = R3(SoftStory(PersProp) x Sprinklered x Height x BCEG x R3(LossCostPrsnlProp[..,EQGrade] x LCM))
+      Adj   = R3(EQRate x EQCoinsuranceFactor) (80/90/100 = the coinsurance table; PP 50/60/70/None = 1.5)
+      Ded   CP 10 40: EQPercentageDeductibleFactor[st, tier, class group, ded%];
+            CP 10 28: EQFlatDeductibleFactor[st, tier, class group, ded$, location EQ total value band]
+            (tier = EarthquakeDeductibleTier[EQTerr]; total = EQ-elected FullBldgValue + FullPrsnlPropValue)
+      Final = R3(R3(Adj x 1) x Ded);  Premium = R0(R0(R0(Final x Limit/100) x CyberEQ) x CyberCOLEQ)
+            (Legal Liability: R3(R3(COL adj x LL) x LL addl) x Limit/100)
+    New `TBL - EQ` (keyed factors + dropdown lists), `TBL - EQFlatDed`, `CALC - EQ` (rows 1-39 building,
+    41-76 contents); Schedule location U EQCauseOfLossForm, V EQTerrEntry (S now reads V outside SC);
+    building AO-AS; contents V-W; IN - Policy I8 Earthquake premium (OUT_Prem_EQ) into the total."""
+    eff = effective_date(wb)
+    keyed, flat, src, _ = eq_tables(wb, eff)
+    sch = wb.Worksheets(w11.SCH)
+    for cell in ("U4", "V4", "AO47", "AP47", "AQ47", "AR47", "AS47", "V133", "W133"):
+        if sch.Range(cell).Value not in (None, ""):
+            raise Gate(f"Schedule {cell} is not empty")
+    pol = wb.Worksheets("IN - Policy")
+    if pol.Range("H8").Value not in (None, "") or pol.Range("I8").Formula not in (None, ""):
+        raise Gate("IN - Policy H8 / I8 not empty")
+    if str(pol.Range("I9").Formula) != "=I3+I4+I5+I6+I7":
+        raise Gate(f"IN - Policy I9 is {pol.Range('I9').Formula!r}")
+
+    # --- tables
+    tk = w11.new_sheet(wb, "TBL - EQ")
+    tk.Range("A1:B1").Value = (("Key", "Value"),)
+    for i in range(0, len(keyed), 5000):
+        chunk = keyed[i:i + 5000]
+        w11.write_rows(tk, 2 + i, 1, [list(r) for r in chunk])
+    lists = {"D": ("Form", ["Not Applicable", "Earthquake Form (CP 10 40)", "Earthquake Form (CP 10 28)"]),
+             "E": ("CovIndicator", ["No Coverage", "Yes, Not Included in Blanket"]),
+             "F": ("EQClass", ["A1", "B1", "C1", "D1", "D2", "D3", "E1", "E2", "E3"]),
+             "G": ("EQDeductible", sorted({k.split("|")[-1] for k, _ in keyed if k.startswith("PCT|")},
+                                          key=lambda x: float(x.rstrip("%")))
+                   + sorted({r[0].split("|")[-1] for r in flat}, key=lambda x: float(x.replace(",", "")))),
+             "H": ("SoftStory", ["No", "Yes"]),
+             "I": ("MasonryVeneer", ["Masonry Veneer Limitation Applies", "10% to 50%", "Over 50%"]),
+             "J": ("EQGrade", ["1", "2", "3", "4"])}
+    for col, (head, vals) in lists.items():
+        tk.Range(f"{col}1").Value = head
+        w11.write_rows(tk, 2, tk.Range(f"{col}1").Column, [[v] for v in vals])
+    tk.Range("L1").Value = (f"RC-5 Earthquake Phase 1 (2026-09-24): each state's package in force on {eff}, else its "
+                            f"countrywide base (TBL - CWBase); never an older state package. Keys PREFIX|STATE|keys.")
+    tk.Range("L2:O2").Value = (("State", "Table", "Source package", "Rows"),)
+    w11.write_rows(tk, 3, tk.Range("L1").Column, [list(r) for r in src])
+    tf = w11.new_sheet(wb, "TBL - EQFlatDed")
+    tf.Range("A1:D1").Value = (("State|Tier|ClassToUse|Deductible", "TotalPropertyValue_From",
+                                "TotalPropertyValue_ToLessThan", "Factor"),)
+    for i in range(0, len(flat), 5000):
+        w11.write_rows(tf, 2 + i, 1, [list(r) for r in flat[i:i + 5000]])
+    nk, nf = len(keyed) + 1, len(flat) + 1
+    K = f"'TBL - EQ'!$A$2:$B${nk}"
+    FL = "'TBL - EQFlatDed'!"
+    FA, FB, FC, FD = (f"{FL}${c}$2:${c}${nf}" for c in "ABCD")
+
+    # --- Schedule inputs
+    def dv(rng, col, n):
+        v = sch.Range(rng).Validation
+        v.Delete()
+        v.Add(Type=3, AlertStyle=1, Operator=1, Formula1=f"='TBL - EQ'!${col}$2:${col}${n + 1}")
+
+    sch.Range("U4").Value, sch.Range("V4").Value = "EQCauseOfLossForm", "EQTerrEntry"
+    sch.Range("U5:U44").Value = tuple(("Not Applicable",) for _ in range(40))
+    sch.Range("V5:V44").Value = tuple(("Not Applicable",) for _ in range(40))
+    dv("U5:U44", "D", len(lists["D"][1]))
+    for r in range(5, 45):
+        f = str(sch.Range(f"S{r}").Formula)
+        old = (f"=IF(C{r}=\"SC\",IFERROR(VLOOKUP(TEXT(D{r},\"00000\"),'TBL - EQTerr'!$A$2:$B$539,2,FALSE),"
+               f"\"Select\"),\"Not Applicable\")")
+        if f != old:
+            raise Gate(f"Schedule S{r} is {f!r}")
+        sch.Range(f"S{r}").Formula = old[:-len("\"Not Applicable\")")] + f"V{r})"
+    sch.Range("AO47:AS47").Value = (("EQCovIndicator", "EQClass", "EQDeductible", "SoftStory", "MasonryVeneer"),)
+    sch.Range("AO48:AO87").Value = tuple(("No Coverage",) for _ in range(40))
+    sch.Range("AR48:AR87").Value = tuple(("No",) for _ in range(40))
+    sch.Range("AS48:AS87").Value = tuple(("Masonry Veneer Limitation Applies",) for _ in range(40))
+    for rng, col in (("AO48:AO87", "E"), ("AP48:AP87", "F"), ("AQ48:AQ87", "G"), ("AR48:AR87", "H"),
+                     ("AS48:AS87", "I")):
+        dv(rng, col, len(lists[col][1]))
+    sch.Range("V133:W133").Value = (("EQCovIndicator", "EQGrade"),)
+    sch.Range("V134:V173").Value = tuple(("No Coverage",) for _ in range(40))
+    dv("V134:V173", "E", len(lists["E"][1]))
+    dv("W134:W173", "J", len(lists["J"][1]))
+
+    # --- CALC - EQ
+    ce = w11.new_sheet(wb, "CALC - EQ")
+    S = "'IN - Schedule'!"
+    lk = lambda key: f"VLOOKUP({key},{K},2,FALSE)"                               # noqa: E731
+    T = lambda v: f"IF(ISNUMBER({v}),TEXT({v},\"0\"),{v}&\"\")"                   # noqa: E731
+    DED = lambda v: f"IF(ISNUMBER({v}),IF({v}<1,TEXT({v}*100,\"0\")&\"%\",TEXT({v},\"#,##0\")),{v}&\"\")"  # noqa: E731
+    PC = lambda v: f"IF(ISNUMBER({v}),TEXT({v}*100,\"0\")&\"%\",{v}&\"\")"         # noqa: E731
+    F40, F28 = "\"Earthquake Form (CP 10 40)\"", "\"Earthquake Form (CP 10 28)\""
+    F29 = "\"Earthquake Sub-Limit Form (CP 10 29)\""
+    v02 = lambda x: f"IFERROR(VLOOKUP({x},'TBL - CWBase'!$A$2:$B$48,2,FALSE),\"\")=\"CF CW 20230801 V02\""  # noqa
+    labels = {1: "EARTHQUAKE -- BUILDING (RC-5 Phase 1)", 2: "Active", 3: "State", 4: "LocIdx", 5: "EQCauseOfLossForm",
+              6: "EQTerr", 7: "EQCovIndicator", 8: "EQ elected", 9: "EQClass", 10: "CovType", 11: "EQBaseRate",
+              12: "LCM", 13: "RoofSurfacingACVFactor", 14: "SoftStoryModificationFactor", 15: "EQSprinkleredRiskFactor",
+              16: "HeightTerrGroup", 17: "BldgHeightFactor", 18: "BCEGEQFactor", 19: "PctOfMasonryVeneerEQFactor",
+              20: "BuildersRiskEQFactor", 21: "EQRate", 22: "EQCauseOfLossAdjustment", 23: "EQCoinsuranceFactor",
+              24: "AdjustedEQRate", 25: "EQDeductibleTier", 26: "EQClassToUse", 27: "EQDeductible",
+              28: "FullBldgValue", 29: "EarthquakeTotalPropertyValue (location)", 30: "EQDeductibleFactor",
+              31: "FinalEQRate", 32: "Limit", 33: "CyberIncidentExclusionFactorEQ",
+              34: "CyberIncidentExclusionCOLExcptnsFactorEQ", 35: "LegalLiabFactor", 36: "LegalLiabAddlInsurableIntFactor",
+              37: "BUILDING EQ PREMIUM", 39: "TOTAL BUILDING EQ PREMIUM",
+              41: "EARTHQUAKE -- PERSONAL PROPERTY", 42: "Active", 43: "Building col", 44: "State", 45: "LocIdx",
+              46: "EQCauseOfLossForm", 47: "EQTerr", 48: "EQCovIndicator", 49: "EQ elected", 50: "EQClass (building's)",
+              51: "EQGrade", 52: "EQBaseRate", 53: "LCM", 54: "SoftStoryModificationFactor (PersProp)",
+              55: "EQSprinkleredRiskFactor", 56: "BldgHeightFactor", 57: "BCEGEQFactor", 58: "EQRate",
+              59: "EQCauseOfLossAdjustment", 60: "EQCoinsuranceFactor", 61: "AdjustedEQRate", 62: "EQDeductibleTier",
+              63: "EQClassToUse", 64: "EQDeductible (building's)", 65: "FullPrsnlPropValue",
+              66: "EarthquakeTotalPropertyValue (location)", 67: "EQDeductibleFactor", 68: "FinalEQRate", 69: "Limit",
+              70: "CyberIncidentExclusionFactorEQ", 71: "CyberIncidentExclusionCOLExcptnsFactorEQ",
+              72: "LegalLiabFactor", 73: "LegalLiabAddlInsurableIntFactor", 74: "CONTENTS EQ PREMIUM",
+              76: "TOTAL CONTENTS EQ PREMIUM"}
+    ce.Range("B1:B76").Value = tuple((labels.get(r, ""),) for r in range(1, 77))
+
+    def dedf(X, el, form, tier, cls, ded, tpv, st, ctu):
+        fk = f"{st}&\"|\"&{tier}&\"|\"&{ctu}&\"|\"&{ded}"
+        cond = f"COUNTIFS({FA},{fk},{FB},\"<=\"&{tpv},{FC},\">\"&{tpv})"
+        flat_ = (f"IF({cond}=0,NA(),SUMIFS({FD},{FA},{fk},{FB},\"<=\"&{tpv},{FC},\">\"&{tpv}))")
+        pct_ = lk(f"\"PCT|\"&{st}&\"|\"&{tier}&\"|\"&{ctu}&\"|\"&{ded}")
+        ok = f"{tier}<>0,{cls}<>\"\",{ded}<>\"\",{ded}<>\"Not Applicable\""
+        return (f"=IF(NOT({el}),0,IF({form}={F28},IF(AND({ok},{tpv}<>0),{flat_},0),"
+                f"IF({form}={F40},IF(AND({ok}),{pct_},0),0)))")
+
+    cy1 = lambda st: (f"IF('IN - Policy'!$F$3=\"Yes\",IFERROR(VLOOKUP({st}&\"|Earthquake\","   # noqa: E731
+                      f"'TBL - Cyber'!$A$2:$B$369,2,FALSE),1),1)")
+    cy2 = lambda st: (f"IF('IN - Policy'!$F$4<>\"Yes\",1,IFERROR(VLOOKUP({st}&\"|Earthquake|\"&IF('IN - Policy'!$F$5>0,"  # noqa
+                      f"\"Sublimit\",\"Full Limit\")&\"|\"&IF('IN - Policy'!$F$6>0,\"Yes\",\"No\"),"
+                      f"'TBL - Cyber'!$D$2:$E$1425,2,FALSE),1))")
+    tpv = (lambda L, form: f"=IF(OR({form}={F28},{form}={F29}),SUMPRODUCT(($C$4:$AP$4={L})*$C$8:$AP$8*$C$28:$AP$28)"
+           f"+SUMPRODUCT(($C$45:$AP$45={L})*$C$49:$AP$49*$C$65:$AP$65),0)")
+    for c in COLS:
+        X, b, p = colname(c), 45 + c, 131 + c
+        st, terr, cls = f"{X}3", f"{X}6", f"{X}9"
+        stories, bceg = T(f"{S}$K${b}"), T(f"{S}$L${b}")
+        coins = PC(f"{S}$U${b}")
+        el = f"{X}8"
+        bt = (f"OR({X}10=\"Building\",{X}10=\"Improvements and Betterments\",{X}10=\"Condominium Association\","
+              f"{X}10=\"Builders Risk\")")
+        f = {2: f"='CALC - CoreScratchpad'!{X}$284=\"Yes\"", 3: f"='CALC - CoreScratchpad'!{X}$2",
+             4: f"='CALC - CoreScratchpad'!{X}$285", 5: f"=INDEX({S}$U$5:$U$44,{X}4)&\"\"",
+             6: "=" + T(f"INDEX({S}$S$5:$S$44,{X}4)"), 7: f"={S}$AO${b}&\"\"",
+             8: f"=AND({X}2,{X}5<>\"Not Applicable\",{X}5<>\"\",LEFT({X}7,3)=\"Yes\")",
+             9: f"={S}$AP${b}&\"\"", 10: f"={S}$D${b}&\"\"",
+             11: f"=IF({el},{lk(f'\"LC|\"&{st}&\"|\"&{cls}&\"|\"&{terr}')},0)",
+             12: f"='CALC - Bldg Rating'!{X}4", 13: f"='CALC - Bldg Rating'!{X}9",
+             14: f"=IF(AND({el},{S}$AR${b}=\"Yes\"),{lk(f'\"SOFT|\"&{st}&\"|Building\"')},1)",
+             15: f"=IF(OR(NOT({el}),{S}$V${b}=\"None\"),1,{lk(f'\"SPR|\"&{st}&\"|Y\"')})",
+             16: f"=IFERROR({lk(f'\"HTG|\"&{st}&\"|\"&{terr}')},0)",
+             17: (f"=IF(AND({el},{stories}<>\"Not Applicable\",{stories}<>\"\",{stories}<>\"Select\",{cls}<>\"\","
+                  f"{X}16<>0),{lk(f'\"HT|\"&{st}&\"|\"&{stories}&\"|\"&{cls}&\"|\"&{X}16')},1)"),
+             18: (f"=IF(NOT({el}),1,IF(OR({bceg}=\"\",{bceg}=\"Select\"),0,IF({v02(st)},IF({terr}=\"\",0,"
+                  f"{lk(f'\"BCEGT|\"&{st}&\"|\"&{bceg}&\"|\"&{terr}')}),{lk(f'\"BCEG|\"&{st}&\"|\"&{bceg}')})))"),
+             19: (f"=IF(OR(NOT({el}),{X}10=\"Leasehold Interest\",{S}$AS${b}=\"\"),1,"
+                  f"{lk(f'\"VEN|\"&{st}&\"|\"&{S}$AS${b}')})"),
+             20: f"=IF(AND({el},{T(f'{S}$E${b}')}=\"1150\",{cls}<>\"\"),{lk(f'\"BR|\"&{st}&\"|\"&{cls}')},1)",
+             21: f"=ROUND(ROUND(ROUND({X}11*{X}12,3)*{X}13,3)*{X}14*{X}15*{X}17*{X}18*{X}19*{X}20,3)",
+             22: f"=IF({el},ROUND({X}21,3),0)",
+             23: (f"=IF(AND({el},OR({coins}=\"80%\",{coins}=\"90%\",{coins}=\"100%\")),"
+                  f"{lk(f'\"COIN|\"&{st}&\"|\"&{coins}')},1)"),
+             24: f"=ROUND({X}22*{X}23,3)",
+             25: f"=IFERROR({lk(f'\"TIER|\"&{st}&\"|\"&{terr}')},0)",
+             26: f"=IFERROR({lk(f'\"CTU|\"&{st}&\"|\"&{cls}')},\"\")",
+             27: "=" + DED(f"{S}$AQ${b}"),
+             28: f"=IF('CALC - Blanket'!{X}2,N({S}$AN${b}),N({S}$N${b}))",
+             29: tpv(f"{X}4", f"{X}5"),
+             30: dedf(X, el, f"{X}5", f"{X}25", cls, f"{X}27", f"{X}29", st, f"{X}26"),
+             31: f"=ROUND(ROUND({X}24*1,3)*{X}30,3)", 32: f"=N({S}$N${b})",
+             33: "=" + cy1(st), 34: "=" + cy2(st),
+             35: f"='CALC - Bldg Rating'!{X}25", 36: f"='CALC - Bldg Rating'!{X}26",
+             37: (f"=IF(NOT({el}),0,IF({bt},ROUND(ROUND(ROUND({X}31*({X}32/100),0)*{X}33,0)*{X}34,0),"
+                  f"IF({X}10=\"Legal Liability\",ROUND(ROUND(ROUND(ROUND(ROUND({X}22*{X}35,3)*{X}36,3)*({X}32/100),0)"
+                  f"*{X}33,0)*{X}34,0),0)))")}
+        k = f"{X}$43"
+        ix = lambda row: f"INDEX($C${row}:$AP${row},1,{k})"                  # noqa: E731
+        cst, cel = f"{X}44", f"{X}49"
+        ccoins = PC(f"{S}$G${p}")
+        occ = f"INDEX({S}$H$91:$H$130,'CALC - Contents Rating'!{X}$115)"
+        f.update({
+            42: f"={S}$C${p}=\"Yes\"", 43: f"=IFERROR('CALC - Contents Rating'!{X}$116,1)",
+            44: "=" + ix(3), 45: "=" + ix(4), 46: "=" + ix(5), 47: "=" + ix(6), 48: f"={S}$V${p}&\"\"",
+            49: (f"=AND({X}42,{ix(2)},{X}46<>\"Not Applicable\",{X}46<>\"\",LEFT({X}48,3)=\"Yes\","
+                 f"{S}$D${p}<>\"Valuable Papers and Records - Other Than Electronic Data\")"),
+            50: "=" + ix(9), 51: "=" + T(f"{S}$W${p}"),
+            52: f"=IF({cel},{lk(f'\"LCP|\"&{cst}&\"|\"&{X}50&\"|\"&{X}47&\"|\"&{X}51')},0)",
+            53: f"='CALC - Contents Rating'!{X}4",
+            54: (f"=IF(AND({cel},INDEX({S}$AR$48:$AR$87,{k})=\"Yes\"),"
+                 f"{lk(f'\"SOFT|\"&{cst}&\"|PersProp\"')},1)"),
+            55: f"=IF({cel},{ix(15)},1)", 56: f"=IF({cel},{ix(17)},1)", 57: f"=IF({cel},{ix(18)},1)",
+            58: f"=ROUND({X}54*{X}55*{X}56*{X}57*ROUND({X}52*{X}53,3),3)",
+            59: f"=IF({cel},{X}58,0)",
+            60: (f"=IF(NOT({cel}),1,IF(OR({ccoins}=\"80%\",{ccoins}=\"90%\",{ccoins}=\"100%\"),"
+                 f"{lk(f'\"COIN|\"&{cst}&\"|\"&{ccoins}')},IF(OR({ccoins}=\"50%\",{ccoins}=\"60%\",{ccoins}=\"70%\","
+                 f"{ccoins}=\"None\"),{lk(f'\"LT80|\"&{cst}&\"|Y\"')},1)))"),
+            61: f"=ROUND({X}59*{X}60,3)", 62: "=" + ix(25), 63: "=" + ix(26), 64: "=" + ix(27),
+            65: f"=IF(N({S}$U${p})>0,N({S}$U${p}),N({S}$E${p}))",
+            66: tpv(f"{X}45", f"{X}46"),
+            67: dedf(X, cel, f"{X}46", f"{X}62", f"{X}50", f"{X}64", f"{X}66", cst, f"{X}63"),
+            68: f"=ROUND(ROUND({X}61*1,3)*{X}67,3)", 69: f"=N({S}$E${p})",
+            70: "=" + ix(33), 71: "=" + ix(34),
+            72: f"='CALC - Contents Rating'!{X}103", 73: f"='CALC - Contents Rating'!{X}104",
+            74: (f"=IF(NOT({cel}),0,IF({occ}=\"Legal Liability Coverage Form\",ROUND(ROUND(ROUND(ROUND(ROUND("
+                 f"{X}59*{X}72,3)*{X}73,3)*({X}69/100),0)*{X}70,0)*{X}71,0),IF(OR({occ}=\"Tobacco Sales Warehouse "
+                 f"Coverage Form\",{occ}=\"Class Rated Building Only, No Personal Property Coverage\"),0,"
+                 f"ROUND(ROUND(ROUND(({X}69/100)*{X}68,0)*{X}70,0)*{X}71,0))))")})
+        for r, ff in f.items():
+            w11.com_retry(lambda r=r, ff=ff: setattr(ce.Cells(r, c), "Formula", ff))
+    ce.Range("C39").Formula = "=SUM(C37:AP37)"
+    ce.Range("C76").Formula = "=SUM(C74:AP74)"
+
+    # --- output
+    pol.Range("H8").Value = "Earthquake Premium:"
+    pol.Range("I8").Formula = "='CALC - EQ'!C39+'CALC - EQ'!C76"
+    pol.Range("I9").Formula = "=I3+I4+I5+I6+I7+I8"
+    wb.Names.Add(Name="OUT_Prem_EQ", RefersTo="='IN - Policy'!$I$8")
+    d = wb.Worksheets("OUT - Diagnostics")
+    if str(d.Range("B37").Value) != "Earthquake is not built":
+        raise Gate(f"Diagnostics B37 is {d.Range('B37').Value!r}")
+    d.Range("B37").Value = "Earthquake: Phase 1 built (Building + Contents, CP 10 40 / CP 10 28)"
+    d.Range("C37").Value = ("Not built: BI / Special Class / SC BI EQ, sprinkler-leakage-only, sub-limit forms (CP 10 29 / "
+                            "10 45), blanket EQ, TX / CA-limited / roof-tank state rules. Harness rates EQ (chunk 10).")
+    return f"Earthquake Phase 1: {len(keyed)} keyed + {len(flat)} flat-deductible rows; CALC - EQ; Schedule inputs", set()
+
+
+w11.FIXES["EQ1"] = fix_eq1
+w11.EXPECT_COLS["EQ1"] = set()
+w11.NO_MOVE.add("EQ1")          # every baseline record stays "No Coverage"
 w11.FIXES["SCTOT"] = fix_sctot
 w11.EXPECT_COLS["SCTOT"] = set()
 w11.NO_MOVE.add("SCTOT")        # the baseline SC item is not included in a building
