@@ -197,6 +197,8 @@ MACHINERY = [
     ("150_chunk13_c13-08-09_groups_rollup.py", "chunk 13 other four groups + roll-ups, 9 policies, 53 figures"),
     ("151_chunk13_rc3_mechanisms.py", "chunk 13 RC-3: timeline, five form families, sub-limit, zeros, override, literals (36 cases)"),
     ("152_chunk13_rc4_states.py", "chunk 13 RC-4: 46 states, every tier, own rows + rules (290 cases)"),
+    ("154_chunk13_rc5_fields_messages.py",
+     "chunk 13 every terrorism field + messages vs 293 stored ISO responses (offline)"),
 ]
 
 # Excluded on purpose, each with a reason -- no silent narrowing of scope.
@@ -380,7 +382,7 @@ def main():
             print("\n".join(out.strip().splitlines()[-15:]))
             print()
         return 1
-    print("REGRESSION CLEAN -- every chunk 0-12 golden case reproduces its "
+    print("REGRESSION CLEAN -- every chunk 0-13 golden case reproduces its "
           "documented figures,\nevery machinery script and every GL suite "
           "exits 0 with no failure marker.")
     return 0

@@ -157,6 +157,12 @@ def main():
 
     cases = []
     for p in sorted(RESULTS.glob("*_response.json")):
+        # C13-03's population is the responses that existed BEFORE chunk 13 went live
+        # (chunk 12's and NY's). chunk13_* responses are chunk 13's own evidence and
+        # are compared, field for field and message for message, by 154_ and 155_;
+        # several of them are stored without a request file, so they don't belong here.
+        if p.name.startswith("chunk13_"):
+            continue
         resp = json.loads(p.read_text(encoding="utf-8-sig"))
         iso = iso_fields(resp)
         if any((num(v) or 0) > 0 for k, v in iso.items() if k.endswith("TerrorismPremium")):

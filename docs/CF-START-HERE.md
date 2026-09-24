@@ -5,7 +5,22 @@ confirm it in two minutes, and what to pick up first.
 
 ---
 
-## Pick up here: chunk 12 is CLOSED (2026-09-24); chunk 13 is next
+## Pick up here: chunk 13 is CLOSED (2026-09-24); chunk 14 is next
+
+**Chunk 13, Terrorism / TRIA, gated 2026-09-24, 30 of 30, 9 of 9**
+([`CF-CHUNK13-GATE.md`](CF-CHUNK13-GATE.md)). Terrorism is a premium on every coverage,
+rolled up to the policy by a disclosure record (25% cap in CA, DC, IL, MD, NY, VA). Golden
+case $8 (Oregon) and all five groups ISO-confirmed; all 46 states clean against their own
+rows and rules; ISO agreed on every terrorism figure it rated (587 of 587). One engine fix,
+OI-111 (named ancestors, the 10th authorized fix). **Regression CLEAN for chunks 0–13, 73 of
+73.** Florida now resolves to its V02 package (added by the user, as the records asked):
+chunk 6's C6-11 and chunk 11's F2 were re-derived for it. Open, not blocking: OI-112 (a
+deductible-form message on older editions, no premium impact), OI-103, OI-106.
+
+**Next: chunk 14, policy assembly** (aggregation, minimum premium, statistical coding). It
+builds on chunk 13's finding that the policy total is locations + roll-up records.
+
+### Chunk 12 close-out (2026-09-24)
 
 **Chunk 12 gated 2026-09-24, 42 of 42** ([`CF-CHUNK12-GATE.md`](CF-CHUNK12-GATE.md)):
 all six endorsement families 9 of 9, 0 unexplained messages. Ordinance or Law K7

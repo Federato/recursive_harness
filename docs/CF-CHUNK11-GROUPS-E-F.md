@@ -57,3 +57,15 @@ Risk) were never affected. General Liability's `SetMaturity*Year` rules use
 `DateDifference` with different operand orders in different editions, so
 the full regression includes all 16 GL suites (see
 `CF-ENGINE-FIX-DATE-COMPARE.md`).
+
+---
+
+### Addendum 2026-09-24: Florida's V02 package closes F2's exception
+
+The user added `CF FL 20241201 V02` on 2026-09-24; Florida now resolves to V02 over
+**CW 2023 V04**. CW 2023 V01 had **no `IsNull` guard** on `SetDiscFactor` (F2: an
+injected `DiscFactor` was overwritten, net 111,958); **CW 2023 V04 has it**, so the
+injection is now kept in Florida exactly as in Oregon: 0.99 → net **128,183**, the
+hand-derived case B of `CF-CHUNK11-GOLDEN-CASE.md`. **The "submitted value overrides the
+filed calculation" trap now applies in Florida too.** `120_…` pins V02 and the new F2;
+F1 (120 / 108 months, net 111,958) is unchanged.

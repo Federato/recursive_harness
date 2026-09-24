@@ -200,7 +200,7 @@ def main() -> int:
     print("    case that proves the copy is what the band keys on.")
 
     # ---- C6-11
-    print("\n=== 11  Florida is not a private namespace -- it is an OLD EDITION")
+    print("\n=== 11  Florida under V02: its OWN option namespace (under V01 it was an old edition)")
     fl = book_for("FL", ASOF)
     parent = fl.parent_table(NAME)
     own = fl.table(NAME)
@@ -213,29 +213,35 @@ def main() -> int:
     remap = [d for d in o_desc & p_desc if cwm[d] != stm[d]]
     orb = book_for("OR", ASOF)
     ref_desc = {r[1] for r in orb.parent_table(NAME).rows}
+    # 2026-09-24: the user added CF FL 20241201 V02 (the edition ISO rates on). It rides on
+    # CW 20230801 V04 and RENUMBERS Florida's options: under V01 (over CW 2023 V01) the
+    # figures were 0 / 0 / 3 / 6 / 11 and Florida shared every option code with its parent.
+    # Measured from the V02 files, Florida now has its own option namespace -- confirmed
+    # independently by the rater's SCSTATE finding (a state-filed option map replaces CW's
+    # inside the state's project; Rater_Simplifications_Backlog.md, RC-5 ED-FL).
     checks = [
-        ("Florida's resolved parent", fl.parent.pkg_id, "CF_CW_20230801_V01"),
+        ("Florida's resolved parent", fl.parent.pkg_id, "CF_CW_20230801_V04"),
         ("Oregon's resolved parent", orb.parent.pkg_id, "CF_CW_20260601_V01"),
-        ("option codes outside its parent's set", len(o_codes - p_codes), 0),
-        ("shared descriptions mapped elsewhere", len(remap), 0),
-        ("descriptions its own parent does not file", len(o_desc - p_desc), 3),
-        ("descriptions it drops from its own parent", len(p_desc - o_desc), 6),
+        ("option codes outside its parent's set", len(o_codes - p_codes), 23),
+        ("shared descriptions mapped elsewhere", len(remap), 35),
+        ("descriptions its own parent does not file", len(o_desc - p_desc), 4),
+        ("descriptions it drops from its own parent", len(p_desc - o_desc), 7),
         ("...the same table against the 2026 parent", len(o_desc - ref_desc),
-         11),
+         4),
     ]
     for label, got_v, want_v in checks:
         good = str(got_v) == str(want_v)
         ok &= good
         print(f"    {label:44s} {str(got_v):>22s}  (expected {want_v}) "
               f"{'OK' if good else 'MISMATCH'}")
-    print("    **The first cut of this census diffed every state against ONE")
-    print("    countrywide table and reported 11 Florida-only descriptions.**")
-    print("    Eight of those eleven are an artefact of comparing across")
-    print("    editions. Florida shares every option code with its own parent")
-    print("    and remaps none of them -- there is no private namespace.")
-    print("    What Florida actually is: **frozen at the 2023 countrywide")
-    print("    vocabulary**, before ISO renamed the antenna classes to add")
-    print("    `Cell` and added EV charging, solar arrays and wind turbines.")
+    print("    **Since 2026-09-24 Florida resolves to CF FL 20241201 V02 over CW")
+    print("    2023 V04**, the edition ISO rates on. V02 renumbers Florida's")
+    print("    options: 23 codes outside its parent's set and 35 shared")
+    print("    descriptions mapped to different codes, so Florida now has its")
+    print("    OWN option namespace (the rater's SCSTATE finding agrees: a")
+    print("    state-filed option map replaces CW's inside the state's project).")
+    print("    Under V01 (over CW 2023 V01) the answer was the opposite: every")
+    print("    code shared, none remapped, Florida frozen at the 2023 vocabulary.")
 
     # ---- C6-11 / C6-12: where the private namespace actually is
     print("\n=== 11/12  The private namespace is NEW YORK's")

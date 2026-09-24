@@ -109,3 +109,20 @@ The coverage-specific tasks are written up in
   Class data in the corpus.
 * **Building's rate-step rounding** is still the open question chunk 5 raised.
   Chunk 6's chains are shorter and did not discriminate it either.
+
+---
+
+### Addendum 2026-09-24: Florida's V02 package reverses C6-11
+
+**The user added `CF FL 20241201 V02`** (the edition ISO rates on, named in ISO's own
+error text above) to the corpus on 2026-09-24. Florida now resolves to V02 over
+**CW 2023 V04**, not V01 over CW 2023 V01. V02 **renumbers Florida's Special Class
+options**: measured from the files, 23 option codes lie outside its parent's set and
+35 shared descriptions map to different codes, so **Florida now has its own option
+namespace**, the opposite of C6-11's V01 finding (0 and 0: "not a private namespace,
+an old edition"). The rater work found the same independently (SCSTATE,
+`Rater_Simplifications_Backlog.md`). `45_chunk6_description_chain.py` now pins the V02
+figures (23 / 35 / 4 / 7 / 4) and keeps the V01 ones in its comments. **No premium
+moved:** the Special Class sweep (`43_`) still matches all 47 jurisdictions against
+their own rows, Florida included (its own 68-row converter doesn't carry the golden
+case's description, so $0 = predicted).

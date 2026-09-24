@@ -17,8 +17,9 @@ before this ran.
   OI-107  the DateDifference sign, pinned on Oregon's TRIA days-until
           (ISO +257, confirmed live). Puerto Rico's own runs were removed
           2026-09-22 at the user's direction.
-  F1-F3   Florida's 2023 chain, run: same arithmetic, no injection guard,
-          sinkhole-in-BGII.
+  F1-F3   Florida's chain, run: same arithmetic, sinkhole-in-BGII. Since
+          2026-09-24 (FL V02 over CW 2023 V04) the injection guard applies in
+          Florida too; under V01 it did not.
 
     python scripts/cf/120_chunk11_groupsEF_inventory_states.py
 
@@ -219,8 +220,11 @@ def c11_03_08(bk):
                                   .replace("Rules.Rule.xml", "") or "(parent)", name, code))
         print(f"      {j}: " + "; ".join(f"{a}.{b} [{c[8:]}]" for a, b, c in codes))
     fl = bk["FL"]
-    verdict("FL = CF_FL_20241201_V01 over CF_CW_20230801_V01",
-            (fl.state.pkg_id, fl.parent.pkg_id) == ("CF_FL_20241201_V01", "CF_CW_20230801_V01"),
+    # 2026-09-24: the user added CF FL 20241201 V02 (the edition ISO rates on, named in its
+    # own error text since chunk 6). It rides on CW 20230801 V04; until then FL resolved to
+    # V01 over CW 20230801 V01, which is what C11-08 originally recorded.
+    verdict("FL = CF_FL_20241201_V02 over CF_CW_20230801_V04",
+            (fl.state.pkg_id, fl.parent.pkg_id) == ("CF_FL_20241201_V02", "CF_CW_20230801_V04"),
             f"{fl.state.pkg_id} over {fl.parent.pkg_id}")
 
 
@@ -250,8 +254,12 @@ def state_runs():
     li = dict(g.LI_RECORD, DiscFactor="0.99")
     d2 = run_in("FL", g.submission(li=li))
     got = (read(LI + "/DiscFactor", d2), read(LI + "/TenantsNetLeaseholdInt", d2))
-    verdict("F2 injected DiscFactor 0.99 is overwritten: 0.99208894, net 111,958",
-            same(got[0], "0.99208894") and same(got[1], "111958"), f"got {got}")
+    # Under V01 (CW 2023 V01, no IsNull guard on SetDiscFactor) an injected DiscFactor was
+    # overwritten (0.99208894, net 111,958). Under V02 the parent is CW 2023 V04, which
+    # guards it, so the injection is KEPT -- exactly Oregon's hand-derived case B
+    # (CF-CHUNK11-GOLDEN-CASE.md: 0.99 -> net 128,183). The trap now exists in Florida too.
+    verdict("F2 injected DiscFactor 0.99 is kept (V04 guard): 0.99, net 128,183 = Oregon's case B",
+            same(got[0], "0.99") and same(got[1], "128183"), f"got {got}")
     adj2 = read(LI + "/BasicGroupIICauseOfLossAdjmt", d)
     sink = read(STRUCT + "/SinkholeRateAdjustment", d)
     net = Decimal(read(LI + "/TenantsNetLeaseholdInt", d))
