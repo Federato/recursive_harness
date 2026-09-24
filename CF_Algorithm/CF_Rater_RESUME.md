@@ -13,7 +13,7 @@
 > **ED-FL DONE 2026-09-24** (FL V02 on disk; SCSTATE VACFL SUBSTD FLRES EDFLSTAMP; ENG-FL-MOD closed). Committed 8160b0b.
 > **FL-BGII DONE 2026-09-24** (county / FL territory dropdowns). Committed 188e741. Specific/Tentative Group I verified built (Tentative payload fix). Committed e5be5dc.
 > **Specific Group II DONE 2026-09-24** (BGIISPEC). Not committed yet. Committed 952b0a2.
-> **Blanket Phase 1 DONE 2026-09-24** (Building Only, Average). Phase 2 (Contents) DONE. Next: Blanket Phase 3 (BI) -> 4 (SC, Highest) -> Earthquake -> editions LAST.
+> **Blanket Phase 1 DONE 2026-09-24** (Building Only, Average). Phases 2 (Contents) and 3 (BI) DONE. Next: Blanket Phase 4 -> 4 (SC, Highest) -> Earthquake -> editions LAST.
 
 ---
 

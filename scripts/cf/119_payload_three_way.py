@@ -471,6 +471,11 @@ class Builder:
                             "TheftExcl": "CommercialPropertyTheftExclusionBusnIncome"})
         if x.get("SprinklerLeakageExcl") == "Yes":        # BI's own election (S-4, col Q)
             o["CommercialPropertySprinklerLeakageExclusionBusnIncome"] = [{}]
+        if x.get("IncludedInBlkt") == "Yes" and x.get("BlktIDNum") and int(x["BlktIDNum"]) in self.blankets:
+            # RC-5 Blanket Phase 3 (2026-09-24): the BI record's own full value and blanket ID
+            o.update(IncludedInBlkt="Yes", BlktIDNum=int(x["BlktIDNum"]),
+                     FullBusnIncomeValue=int(x.get("FullBusnIncomeValue") or x["Limit"] or 0))
+            self.used_blankets.add(int(x["BlktIDNum"]))
         return o
 
     def special_class(self, s):

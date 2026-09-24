@@ -368,3 +368,10 @@ S IncludedInBlkt / T BlktIDNum / U FullPrsnlPropValue; `CALC - Blanket` rows 21-
 factors, Special pre-rounded with watchman / burglary credits); group totals and average rates add buildings and contents sharing the
 ID; Contents row 117 (LOI basis) reads the blanket basis; Contents premiums on ISO's chain (PM -> MPD -> IRPM, ISO operand order).
 Probes: CA Combined (2 buildings + contents) 12 / 12; OH PP Only 100% 9 / 9. Next: Phase 3 BI blankets.
+
+**Blanket Phase 3 DONE 2026-09-24** (`124 --fix BLKT3 / BLKT3B`): Business Income (types BI With / Without Extra Expense). Schedule BI
+R IncludedInBlkt / S BlktIDNum / T FullBusnIncomeValue; `CALC - Blanket` rows 41-58 (weights V x CoL adj x BI factor; Broad / Special
+V x rate; no LOI, no deductible; average without coinsurance factor); group TotalFullValue now counts buildings, contents and BI
+sharing the ID; BI premiums on ISO's blanket formulas (BGI / Broad / Special one round with IRPM x PM; BGII chain; no MPD). Finding:
+a blanketed BI record's Type-of-Risk factor uses the BLANKET's coinsurance (ISO SetCoinsuranceToUse) -- BI rows 89 / 90.
+Probes: CA two BI 15 / 15 (V03, rounded share); OH two BI 15 / 15 (2026, exact share). Next: Phase 4 (Special Class, Highest).

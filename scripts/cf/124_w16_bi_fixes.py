@@ -2193,6 +2193,119 @@ def fix_blkt2(app, wb):
         {"CALC - Contents Rating"}
 
 
+def fix_blkt3(app, wb):
+    """RC-5 Blanket Phase 3 (2026-09-24): Business Income (types BI With / Without Extra Expense). ISO:
+      weight  BGI  ROUND(FullBusnIncomeValue x BGI CoL adj x BI Factor, 0);  BGII the same with BGII CoL adj;
+              Broad ROUND(V x BroadRate, 0);  Special ROUND(V x Special CoL adj, 0)    (no LOI, no deductible)
+      AvgRate (BI types) = ROUND(sum of BI weights / TotalFullValue, 3) -- no coinsurance / builders-risk factor;
+              BGII only for non-Fire, Broad for Broad, Special for Special (Detail CauseOfLoss)
+      Premium BGI / Broad / Special = ROUND(IRPM x PM x avg x share x limit/100, 0);  BGII chain
+              ROUND(avg x share x limit/100) -> x PM -> x IRPM;  no MPD; then the two Cyber factors.
+    TotalFullValue counts every item with the ID (buildings, contents, BI), as ISO's SetTotalFullValueAmount.
+    Schedule BI R IncludedInBlkt / S BlktIDNum / T FullBusnIncomeValue; CALC - Blanket rows 41-58."""
+    sch = wb.Worksheets(w11.SCH)
+    for cell in ("R176", "S176", "T176"):
+        if sch.Range(cell).Value not in (None, ""):
+            raise Gate(f"Schedule {cell} is not empty")
+    sch.Range("R176:T176").Value = (("IncludedInBlkt", "BlktIDNum", "FullBusnIncomeValue"),)
+    for r in range(177, 217):
+        sch.Range(f"R{r}").Value = "No"
+        sch.Range(f"S{r}").Value = 0
+        sch.Range(f"T{r}").Formula = f"=H{r}"
+    v = sch.Range("R177:R216").Validation
+    v.Delete()
+    v.Add(Type=3, AlertStyle=1, Operator=1, Formula1="No,Yes")
+    ib = wb.Worksheets("IN - Blanket")
+    v = ib.Range("B5:B14").Validation
+    v.Delete()
+    v.Add(Type=3, AlertStyle=1, Operator=1,
+          Formula1=("Building Only,Personal Property Only,Building & Personal Property Combined,"
+                    "Business Income With Extra Expense,Business Income Without Extra Expense"))
+    ib.Range("A1").Value = "BLANKET GROUPS (Building / Personal Property / Combined / Business Income; Average)"
+    cb = wb.Worksheets("CALC - Blanket")
+    labels = {41: "BLANKET (Business Income)", 42: "In blanket", 43: "BlktIDNum", 44: "FullBusnIncomeValue",
+              45: "Blanket TotalFullValue", 46: "Blanket TotalLimit", 48: "Weight BGI", 49: "Weight BGII",
+              50: "Weight Broad", 51: "Weight Special", 53: "AvgRate BGI", 54: "AvgRate BGII", 55: "AvgRate Broad",
+              56: "AvgRate Special", 57: "Blanket CauseOfLoss", 58: "Blanket share"}
+    for r, t in labels.items():
+        cb.Range(f"B{r}").Value = t
+    BI_ = "'CALC - BI Rating'!"
+    IB = "'IN - Blanket'!$A$5:$F$14"
+    last_cw = wb.Worksheets("TBL - CWBase").Cells(wb.Worksheets("TBL - CWBase").Rows.Count, "A").End(-4162).Row
+
+    def tot(idcell):
+        return (f"(SUMPRODUCT(($C$2:$AP$2=TRUE)*($C$3:$AP$3={idcell})*$C$4:$AP$4)"
+                f"+SUMPRODUCT(($C$22:$AP$22=TRUE)*($C$23:$AP$23={idcell})*$C$24:$AP$24)"
+                f"+SUMPRODUCT(($C$42:$AP$42=TRUE)*($C$43:$AP$43={idcell})*$C$44:$AP$44))")
+    for c in COLS:
+        X, p = colname(c), 174 + c
+        st = f"INDEX('CALC - CoreScratchpad'!$C$2:$AP$2,1,{BI_}{X}$81)"
+        rnd = f"IFERROR(VLOOKUP({st},'TBL - CWBase'!$A$2:$C${last_cw},3,FALSE),\"No\")=\"Yes\""
+        f = {42: f"=AND('IN - Schedule'!$C${p}=\"Yes\",'IN - Schedule'!$R${p}=\"Yes\",'IN - Schedule'!$S${p}>0,"
+                 f"ISNUMBER(MATCH('IN - Schedule'!$S${p},'IN - Blanket'!$A$5:$A$14,0)))",
+             43: f"='IN - Schedule'!$S${p}", 44: f"=N('IN - Schedule'!$T${p})",
+             45: f"=IF({X}42,{tot(X + '43')},0)",
+             46: f"=IF({X}42,VLOOKUP({X}43,{IB},6,FALSE),0)",
+             48: f"=IF({X}42,ROUND({X}44*{BI_}{X}15*{BI_}{X}16,0),0)",
+             49: f"=IF({X}42,ROUND({X}44*{BI_}{X}36*{BI_}{X}37,0),0)",
+             50: f"=IF({X}42,ROUND({X}44*{BI_}{X}51,0),0)",
+             51: f"=IF({X}42,ROUND({X}44*{BI_}{X}67,0),0)",
+             57: f"=IF({X}42,VLOOKUP({X}43,{IB},4,FALSE),\"\")",
+             58: f"=IF({X}45>0,IF({rnd},ROUND({X}44/{X}45,2),{X}44/{X}45),0)"}
+        for r, w_ in ((53, 48), (54, 49), (55, 50), (56, 51)):
+            gate = {53: "TRUE", 54: f"{X}57<>\"Fire\"", 55: f"{X}57=\"Broad\"", 56: f"{X}57=\"Special\""}[r]
+            f[r] = (f"=IF(AND({X}42,{X}45>0,{gate}),ROUND(SUMPRODUCT(($C$42:$AP$42=TRUE)*($C$43:$AP$43={X}43)"
+                    f"*$C${w_}:$AP${w_})/{X}45,3),0)")
+        for r, ff in f.items():
+            w11.com_retry(lambda r=r, ff=ff: setattr(cb.Cells(r, c), "Formula", ff))
+        # building / contents totals now count BI items sharing the ID too
+        w11.com_retry(lambda: setattr(cb.Cells(5, c), "Formula", f"=IF({X}2,{tot(X + '3')},0)"))
+        w11.com_retry(lambda: setattr(cb.Cells(25, c), "Formula", f"=IF({X}22,{tot(X + '23')},0)"))
+    bi = wb.Worksheets("CALC - BI Rating")
+    B = "'CALC - Blanket'!"
+    for c in COLS:
+        X = colname(c)
+        for pr, avg in ((25, 53), (45, 54), (59, 55), (75, 56)):
+            b = pr - 6
+            irpm, pm, cy1, cy2 = f"{X}{b}", f"{X}{b + 2}", f"{X}{b + 4}", f"{X}{b + 5}"
+            parts = f"{B}{X}{avg}*{B}{X}58*({B}{X}46/100)"
+            core = (f"ROUND(ROUND(ROUND({parts},0)*{pm},0)*{irpm},0)" if pr == 45
+                    else f"ROUND({irpm}*{pm}*{parts},0)")
+            blk = f"ROUND(ROUND({core}*{cy1},0)*{cy2},0)"
+            f = str(w11.com_retry(lambda pr=pr: bi.Cells(pr, c).Formula))
+            if not f.startswith(f"=IF({X}$80<>\"Yes\",0,"):
+                raise Gate(f"BI {X}{pr} is not the expected premium: {f[:80]!r}")
+            nf = f"=IF(AND({B}{X}42,{B}{X}45>0),IF({X}$80<>\"Yes\",0,{blk}),{f[1:]})"
+            w11.com_retry(lambda pr=pr, nf=nf: setattr(bi.Cells(pr, c), "Formula", nf))
+    return "Blanket Phase 3: BI R / S / T, CALC - Blanket 41-58, BI premiums", {"CALC - BI Rating"}
+
+
+def fix_blkt3b(app, wb):
+    """Blanket Phase 3 follow-up (2026-09-24, CA BI probe: BI factor 0.5 vs ISO 0.46). ISO BI
+    `SetCoinsuranceToUse`: a blanketed BI record uses the BLANKET's coinsurance (BlktCoinsurance), so its
+    Type-of-Risk factor is looked up at 90%, not the record's 80%. BI rows 89 / 90 (factor keys) now use
+    the blanket coinsurance when the record is in a blanket ('90%' text or 0.9 number)."""
+    bi = wb.Worksheets("CALC - BI Rating")
+    for c in COLS:
+        X, p = colname(c), 174 + c
+        v = f"VLOOKUP('CALC - Blanket'!{X}$43,'IN - Blanket'!$A$5:$F$14,5,FALSE)"
+        coins = (f"IF('CALC - Blanket'!{X}$42,IF(ISNUMBER({v}),{v},VALUE(SUBSTITUTE({v},\"%\",\"\"))/100),"
+                 f"'IN - Schedule'!$J${p})")
+        for r in (89, 90):
+            f = str(w11.com_retry(lambda r=r: bi.Cells(r, c).Formula))
+            a = f"'IN - Schedule'!$J${p})"
+            if not f.endswith(a) or f.count(a) != 1:
+                raise Gate(f"BI {X}{r} is not the expected key: {f!r}")
+            w11.com_retry(lambda r=r, f=f: setattr(bi.Cells(r, c), "Formula", f[:-len(a)] + coins + ")"))
+    return "Blanket: BI factor uses the blanket's coinsurance", {"CALC - BI Rating"}
+
+
+w11.FIXES["BLKT3B"] = fix_blkt3b
+w11.EXPECT_COLS["BLKT3B"] = set()
+w11.NO_MOVE.add("BLKT3B")
+w11.FIXES["BLKT3"] = fix_blkt3
+w11.EXPECT_COLS["BLKT3"] = set()
+w11.NO_MOVE.add("BLKT3")
 w11.FIXES["BLKT2"] = fix_blkt2
 w11.EXPECT_COLS["BLKT2"] = set()
 w11.NO_MOVE.add("BLKT2")
