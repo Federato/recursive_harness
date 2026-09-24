@@ -347,3 +347,18 @@ Contents 39: ROUND(ROUND(S x LCM) x BCEG) (NY: ROUND(S x LCM)); BI 33 uses the b
 Election ignored where the state has no Specific Group II (AK AZ CA DC ME NV OR UT VT WV). Payload sends RatingTypeBasicGroupII /
 SpecificGroupIIRate. Probes `scenarios/rc5/bgii_specific_*`: OH 1220/1088/107 -> 1119/615/98, NY 312/206/171 -> 190/91/108, AK unchanged,
 all = ISO. Not modelled: AR / KY / OK wind-mitigation credit (1 without WCF inputs); Specific-eligibility messages (wind hazard level).
+
+## Feature set: RC-5 Blanket -- Phase 1 DONE 2026-09-24 (Building Only, Average; `scenarios/rc5/blanket_*`, live ISO)
+
+`124 --fix BLKT1 / BLKT1B / BLKT1C / BLKT1D`. New `IN - Blanket` (10 groups: ID, Type, Method, CauseOfLoss, Coinsurance, TotalLimit),
+Schedule building AL IncludedInBlkt / AM BlktIDNum / AN FullBldgValue (D-2), new `CALC - Blanket` (per building: in-blanket flag,
+group total full value, blanket LOI basis, four weights, blanket coinsurance factor 1 at 90% else 0.95, four average rates, share),
+the building's LOI rows read the blanket basis, Building premiums use ISO's blanket formula. Payload: BlktRated "Yes" (ISO deletes
+the record otherwise), MUBlktRated "No", CommercialPropertyBlanketRating / Detail, structure IncludedInBlkt / BlktIDNum / FullBldgValue.
+Findings: (1) each state's package rides on a specific countrywide project -- CA / NC CW 20230801 V03, MO V02, FL IL MA NJ RI VT
+V04, the rest CW 20260601 (`TBL - CWBase`); CW V01-V03 allocate the blanket premium by BlktProportion = ROUND(value / total, 2),
+V04 / 2026 by the exact share. (2) Excel stores "90%" as 0.9. Probes: CA two buildings 12 / 12; OH 100% coinsurance 11 / 12 --
+**known limitation**: Special on an exact .5 tie (ISO's double arithmetic gives 287.4999... and rounds down; Excel's ROUND treats it
+as .5 and rounds up). Next: Phase 2 Contents (Personal Property Only; Building & PP Combined).
+**Wider follow-up (not yet audited):** the 9 states on an older countrywide base may differ from CW 2026 elsewhere too; every standard
+risk matches today.

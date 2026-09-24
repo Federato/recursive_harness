@@ -27,7 +27,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 p4a = import_module("112_r8_phase4a_building")
 tw = import_module("119_payload_three_way")
 
-WANT = [tw.SCH, "IN - Policy", "Defaults", "TBL - Cyber", "TBL - BGIISpecific"] + sorted({s for s, _ in tw.RATER.values()})
+WANT = [tw.SCH, "IN - Policy", "Defaults", "TBL - Cyber", "TBL - BGIISpecific", "IN - Blanket"] + sorted({s for s, _ in tw.RATER.values()})
 
 
 def _plain(v):

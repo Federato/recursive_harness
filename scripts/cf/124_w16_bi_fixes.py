@@ -1901,6 +1901,208 @@ def fix_bgiispec(app, wb):
         {BR, "CALC - Contents Rating", "CALC - BI Rating"}
 
 
+def fix_blkt1(app, wb):
+    """RC-5 Blanket, Phase 1 (2026-09-24): Building Only, Average. ISO (CommercialPropertyBlanketRatingDetail +
+    Structure rules, traced; engine chunk 9 golden case):
+      weight(group) = ROUND(FullBldgValue x CoL adj x per-loc credit x deductible x multi-res x margin(1)
+                            x blanket LOI factor, 0)    (Broad: BroadRate x roof ACV instead of the CoL adj)
+      blanket LOI  = the ordinary LOI lookup at BlktTotalLOIToUse = ROUND(FullBldgValue / TotalFull x BlktLimit, 0)
+      AvgRate      = ROUND(sum of weights / TotalFullValue x CoinsuranceFactor x BldrsRisk(1), 3)
+                     CoinsuranceFactor = 1 at 90%, else CoinsuranceFactorBlkt (CW 0.95); BGII only for non-Fire
+                     causes, Broad only for Broad, Special only for Special
+      Premium      = ROUND(IRPM x MPD x PM x BlktLimit/100 x FullBldgValue/TotalFull x AvgRate, 0) (Special: chain
+                     PM -> MPD -> IRPM), then the two Cyber factors as before.
+    New `IN - Blanket` (10 groups: ID, Type, Method, CauseOfLoss, Coinsurance, TotalLimit); Schedule building
+    AL `IncludedInBlkt`, AM `BlktIDNum`, AN `FullBldgValue` (default = the limit); new `CALC - Blanket`
+    (one column per building). The building's LOI rows read the blanket basis when it is in a blanket."""
+    ib = w11.new_sheet(wb, "IN - Blanket")
+    ib.Range("A1").Value = "BLANKET GROUPS (Phase 1: Building Only, Average)"
+    ib.Range("A4:F4").Value = (("ID", "Type", "TypeOfBlanketRating", "CauseOfLoss", "Coinsurance", "TotalLimit"),)
+    ib.Range("A5:F14").Value = tuple((i, "Building Only", "Average", "Special", "90%", 0) for i in range(1, 11))
+    for col, lst in (("B", "Building Only"), ("C", "Average"), ("D", "Basic,Broad,Special"), ("E", "90%,100%")):
+        v = ib.Range(f"{col}5:{col}14").Validation
+        v.Delete()
+        v.Add(Type=3, AlertStyle=1, Operator=1, Formula1=lst)
+    sch = wb.Worksheets(w11.SCH)
+    for cell in ("AL47", "AM47", "AN47"):
+        if sch.Range(cell).Value not in (None, ""):
+            raise Gate(f"Schedule {cell} is not empty")
+    sch.Range("AL47:AN47").Value = (("IncludedInBlkt", "BlktIDNum", "FullBldgValue"),)
+    for r in range(48, 88):
+        sch.Range(f"AL{r}").Value = "No"
+        sch.Range(f"AM{r}").Value = 0
+        sch.Range(f"AN{r}").Formula = f"=N{r}"
+    v = sch.Range("AL48:AL87").Validation
+    v.Delete()
+    v.Add(Type=3, AlertStyle=1, Operator=1, Formula1="No,Yes")
+
+    cb = w11.new_sheet(wb, "CALC - Blanket")
+    labels = {1: "BLANKET (Building)", 2: "In blanket", 3: "BlktIDNum", 4: "FullBldgValue", 5: "Blanket TotalFullValue",
+              6: "Blanket TotalLimit", 7: "BlktTotalLOIToUse", 8: "Weight BGI", 9: "Weight BGII", 10: "Weight Broad",
+              11: "Weight Special", 12: "Blanket CoinsuranceFactor", 13: "AvgRate BGI", 14: "AvgRate BGII",
+              15: "AvgRate Broad", 16: "AvgRate Special", 17: "Blanket CauseOfLoss"}
+    for r, t in labels.items():
+        cb.Range(f"B{r}").Value = t
+    BR_ = "'CALC - Bldg Rating'!"
+    IB = "'IN - Blanket'!$A$5:$F$14"
+    for c in COLS:
+        X, b = colname(c), 45 + c
+        grp = f"$C$2:$AP$2=TRUE)*($C$3:$AP$3={X}3"
+        f = {2: f"=AND('IN - Schedule'!$C${b}=\"Yes\",'IN - Schedule'!$AL${b}=\"Yes\",'IN - Schedule'!$AM${b}>0,"
+                f"ISNUMBER(MATCH('IN - Schedule'!$AM${b},'IN - Blanket'!$A$5:$A$14,0)))",
+             3: f"='IN - Schedule'!$AM${b}", 4: f"=N('IN - Schedule'!$AN${b})",
+             5: f"=IF({X}2,SUMPRODUCT(({grp})*$C$4:$AP$4),0)",
+             6: f"=IF({X}2,VLOOKUP({X}3,{IB},6,FALSE),0)",
+             7: f"=IF(AND({X}2,{X}5>0),ROUND({X}4/{X}5*{X}6,0),0)",
+             8: f"=IF({X}2,ROUND({X}4*{BR_}{X}15*{BR_}{X}19*{BR_}{X}20*{BR_}{X}21*{BR_}{X}17,0),0)",
+             9: f"=IF({X}2,ROUND({X}4*{BR_}{X}45*{BR_}{X}49*{BR_}{X}50*{BR_}{X}51*{BR_}{X}47,0),0)",
+             10: f"=IF({X}2,ROUND({X}4*{BR_}{X}68*{BR_}{X}70*{BR_}{X}73*{BR_}{X}74*{BR_}{X}75*{BR_}{X}71,0),0)",
+             11: f"=IF({X}2,ROUND({X}4*{BR_}{X}95*{BR_}{X}99*{BR_}{X}100*{BR_}{X}101*{BR_}{X}97,0),0)",
+             12: f"=IF({X}2,IF(VLOOKUP({X}3,{IB},5,FALSE)=\"90%\",1,0.95),1)",
+             17: f"=IF({X}2,VLOOKUP({X}3,{IB},4,FALSE),\"\")"}
+        for r, w_ in ((13, 8), (14, 9), (15, 10), (16, 11)):
+            gate = {13: "TRUE", 14: f"{X}17<>\"Fire\"", 15: f"{X}17=\"Broad\"", 16: f"{X}17=\"Special\""}[r]
+            f[r] = (f"=IF(AND({X}2,{X}5>0,{gate}),ROUND(SUMPRODUCT(({grp})*$C${w_}:$AP${w_})/{X}5*{X}12,3),0)")
+        for r, ff in f.items():
+            w11.com_retry(lambda r=r, ff=ff: setattr(cb.Cells(r, c), "Formula", ff))
+    # LOI basis: the blanket share of the blanket limit when the building is in a blanket
+    cs = wb.Worksheets(w11.CS)
+    for c in COLS:
+        X, b = colname(c), 45 + c
+        basis = f"IF('CALC - Blanket'!{X}$2,'CALC - Blanket'!{X}$7,'IN - Schedule'!$N${b})"
+        for r in (27, 34, 73, 80, 95, 96, 103, 115, 120):
+            f = str(w11.com_retry(lambda r=r: cs.Cells(r, c).Formula))
+            if f"'IN - Schedule'!$N${b}" not in f:
+                raise Gate(f"CoreScratchpad {X}{r} does not read the building limit: {f!r}")
+            w11.com_retry(lambda r=r, f=f: setattr(cs.Cells(r, c), "Formula", f.replace(f"'IN - Schedule'!$N${b}", basis)))
+    # Premiums
+    br = wb.Worksheets(BR)
+    for c in COLS:
+        X = colname(c)
+        B = "'CALC - Blanket'!"
+        share = f"({B}{X}6/100)*({B}{X}4/{B}{X}5)"
+        for p, avg, base in ((32, 13, 23), (62, 14, 53), (86, 15, 77), (112, 16, 103)):
+            irpm, mpd, pm, cy1, cy2 = f"{X}{base}", f"{X}{base + 4}", f"{X}{base + 5}", f"{X}{base + 7}", f"{X}{base + 8}"
+            if p == 112:
+                core = f"ROUND(ROUND(ROUND(ROUND({B}{X}{avg}*{share},0)*{pm},0)*{mpd},0)*{irpm},0)"
+            else:
+                core = f"ROUND({irpm}*{mpd}*{pm}*{share}*{B}{X}{avg},0)"
+            blk = f"ROUND(ROUND({core}*{cy1},0)*{cy2},0)"
+            f = str(w11.com_retry(lambda p=p: br.Cells(p, c).Formula))
+            if not f.startswith(f"=IF('CALC - CoreScratchpad'!{X}$284<>\"Yes\",0,"):
+                raise Gate(f"Bldg {X}{p} is not the expected premium formula: {f[:80]!r}")
+            nf = f"=IF(AND({B}{X}2,{B}{X}5>0),IF('CALC - CoreScratchpad'!{X}$284<>\"Yes\",0,{blk}),{f[1:]})"
+            w11.com_retry(lambda p=p, nf=nf: setattr(br.Cells(p, c), "Formula", nf))
+    d = wb.Worksheets("OUT - Diagnostics")
+    return "Blanket Phase 1: IN - Blanket, Schedule AL / AM / AN, CALC - Blanket, LOI basis, Building premiums", {BR}
+
+
+def fix_blkt1b(app, wb):
+    """Blanket Phase 1 follow-up (2026-09-24, CA probe): Excel stores an entered "90%" as 0.9, so the
+    blanket coinsurance test (CALC - Blanket row 12) fell to 0.95; ISO's Detail CoinsuranceFactor is 1.0
+    at 90%. Accept both forms."""
+    cb = wb.Worksheets("CALC - Blanket")
+    for c in COLS:
+        X = colname(c)
+        f = str(w11.com_retry(lambda: cb.Cells(12, c).Formula))
+        a = "FALSE)=\"90%\",1,0.95)"
+        if a not in f:
+            raise Gate(f"CALC - Blanket {X}12 is not the expected formula: {f!r}")
+        g = f.replace(f"IF(VLOOKUP({X}3,'IN - Blanket'!$A$5:$F$14,5,FALSE)=\"90%\",1,0.95)",
+                      f"IF(OR(VLOOKUP({X}3,'IN - Blanket'!$A$5:$F$14,5,FALSE)=\"90%\","
+                      f"VLOOKUP({X}3,'IN - Blanket'!$A$5:$F$14,5,FALSE)=0.9),1,0.95)")
+        if g == f:
+            raise Gate(f"CALC - Blanket {X}12: replacement did not apply")
+        w11.com_retry(lambda: setattr(cb.Cells(12, c), "Formula", g))
+    return "Blanket: 90% coinsurance recognised as text or number", set()
+
+
+def fix_blkt1c(app, wb):
+    """Blanket Phase 1 follow-up (2026-09-24, CA probe: totals equal, split +-12). Each state's package rides
+    on a specific CW project (its rules' ProjectName): CA / NC on CF CW 20230801 V03, MO V02, FL IL MA NJ RI VT
+    V04, the rest CW 20260601. CW V01-V03 allocate the blanket premium by `BlktProportion` =
+    ROUND(FullBldgValue / BlktTotalFullValueAmount, 2); V04 and 2026 use the exact quotient. New
+    `TBL - CWBase` (state, CW project, rounds share?); CALC - Blanket row 18 = the share; Building blanket
+    premiums read it."""
+    import re
+    eff = effective_date(wb)
+    root = w11.ISO.parent
+    pk, cwdirs = {}, {}
+    for d in root.glob("*/*"):
+        m = re.match(r"CF ([A-Z]{2}) (\d{8}) V(\d+)$", d.name)
+        if m and m[2] <= eff and (d / "Rules").exists():
+            pk.setdefault(m[1], []).append((m[2], int(m[3]), d))
+        m2 = re.match(r"CF CW (\d{8}) V(\d+)$", d.name)
+        if m2:
+            cwdirs[d.name] = d
+    cwdirs["CF CW 20260601 V01"] = w11.CW.parent
+    rows = []
+    for st, v in sorted(pk.items()):
+        if st == "CW":
+            continue
+        d = sorted(v, reverse=True)[0][2]
+        s = (d / "Rules" / "CommercialPropertyStructureRules.Rule.xml").read_text(encoding="utf-8", errors="ignore")
+        cws = sorted(set(re.findall(r'ProjectName="(CF CW [^"]*)"', s)))
+        cw = cws[-1] if cws else "CF CW 20260601 V01"
+        cwd = cwdirs.get(cw)
+        if cwd is None:
+            raise Gate(f"{st}: countrywide base {cw} not on disk")
+        rnd = "BlktProportion" in (cwd / "Rules" / "CommercialPropertyStructureRules.Rule.xml").read_text(
+            encoding="utf-8", errors="ignore")
+        rows.append((st, cw, "Yes" if rnd else "No"))
+    ws = w11.new_sheet(wb, "TBL - CWBase")
+    ws.Range("A1:C1").Value = (("State", "Countrywide base (rules' ProjectName)", "Rounds blanket share to 2 dp"),)
+    ws.Range(f"A2:C{len(rows) + 1}").Value = tuple(rows)
+    ws.Range("E1").Value = "Built 2026-09-24 from each state's in-force package (RC-5 Blanket)"
+    last = len(rows) + 1
+    cb, br = wb.Worksheets("CALC - Blanket"), wb.Worksheets(BR)
+    cb.Range("B18").Value = "Blanket share (ISO BlktProportion)"
+    B = "'CALC - Blanket'!"
+    for c in COLS:
+        X = colname(c)
+        st = f"'CALC - CoreScratchpad'!{X}$2"
+        rnd = f"IFERROR(VLOOKUP({st},'TBL - CWBase'!$A$2:$C${last},3,FALSE),\"No\")=\"Yes\""
+        w11.com_retry(lambda: setattr(cb.Cells(18, c), "Formula",
+                                      f"=IF({X}5>0,IF({rnd},ROUND({X}4/{X}5,2),{X}4/{X}5),0)"))
+        for p in (32, 62, 86, 112):
+            f = str(w11.com_retry(lambda p=p: br.Cells(p, c).Formula))
+            a = f"({B}{X}4/{B}{X}5)"
+            if f.count(a) != 1:
+                raise Gate(f"Bldg {X}{p}: expected one blanket share term in {f[:120]!r}")
+            w11.com_retry(lambda p=p, f=f: setattr(br.Cells(p, c), "Formula", f.replace(a, f"{B}{X}18")))
+    print("   rounds share:", [r[0] for r in rows if r[2] == "Yes"])
+    return f"Blanket share: TBL - CWBase ({len(rows)} states); CALC - Blanket row 18; Building premiums", {BR}
+
+
+def fix_blkt1d(app, wb):
+    """Blanket Phase 1 follow-up (2026-09-24, OH probe: Special 286 vs ISO 285). ISO's Special blanket premium
+    multiplies in XML operand order -- BlktSpecialAvgRate x share x (BlktLimit / 100) -- and on a .5 tie the
+    floating-point order decides the rounding (0.023 x 0.2941... x 42,500 = 287.4999..., the rater's
+    rate x (limit/100) x share = 287.5000...). Special now multiplies in ISO's order."""
+    br = wb.Worksheets(BR)
+    B = "'CALC - Blanket'!"
+    for c in COLS:
+        X = colname(c)
+        f = str(w11.com_retry(lambda: br.Cells(112, c).Formula))
+        a = f"{B}{X}16*({B}{X}6/100)*{B}{X}18"
+        if f.count(a) != 1:
+            raise Gate(f"Bldg {X}112: expected {a!r} in {f[:160]!r}")
+        w11.com_retry(lambda: setattr(br.Cells(112, c), "Formula", f.replace(a, f"{B}{X}16*{B}{X}18*({B}{X}6/100)")))
+    return "Blanket: Special premium multiplies in ISO's operand order", {BR}
+
+
+w11.FIXES["BLKT1D"] = fix_blkt1d
+w11.EXPECT_COLS["BLKT1D"] = set()
+w11.NO_MOVE.add("BLKT1D")
+w11.FIXES["BLKT1C"] = fix_blkt1c
+w11.EXPECT_COLS["BLKT1C"] = set()
+w11.NO_MOVE.add("BLKT1C")
+w11.FIXES["BLKT1B"] = fix_blkt1b
+w11.EXPECT_COLS["BLKT1B"] = set()
+w11.NO_MOVE.add("BLKT1B")
+w11.FIXES["BLKT1"] = fix_blkt1
+w11.EXPECT_COLS["BLKT1"] = set()
+w11.NO_MOVE.add("BLKT1")        # nothing is in a blanket by default
 w11.FIXES["BGIISPEC"] = fix_bgiispec
 w11.EXPECT_COLS["BGIISPEC"] = set()
 w11.NO_MOVE.add("BGIISPEC")     # every building defaults to Class

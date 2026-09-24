@@ -85,7 +85,7 @@ def read_workbook():
                  f"values on disk are the ones you see.")
     from pyxlsb import open_workbook
     sheets = {}
-    want = [SCH, "IN - Policy", "Defaults", "TBL - Cyber", "TBL - BGIISpecific"] + sorted({s for s, _ in RATER.values()})
+    want = [SCH, "IN - Policy", "Defaults", "TBL - Cyber", "TBL - BGIISpecific", "IN - Blanket"] + sorted({s for s, _ in RATER.values()})
     with open_workbook(str(WORKBOOK)) as wb:
         for name in want:
             with wb.get_sheet(name) as sh:
@@ -168,6 +168,7 @@ class Builder:
         self.scc = scc or {}                                  # CALC - Special Class values
         # states whose rules rate a Specific Group II (TBL - BGIISpecific, RC-5); set by main()
         self.bgii_spec = set()
+        self.blankets, self.used_blankets = {}, set()           # IN - Blanket, set by main()
         self.omitted: list[str] = []
 
     def put(self, obj, field, value, why=""):
@@ -197,6 +198,7 @@ class Builder:
         out = {}
         for state, locs in states.items():
             self.order = []                               # (blk, record) in emission order
+            self.used_blankets = set()
             los = [self.location(l) for l in locs]
             for i, lo in enumerate(los, start=1):
                 lo["UnitNumber"] = i                      # as ISO's STC payloads (RC-3 linked SC)
@@ -214,6 +216,14 @@ class Builder:
               "MultiPremiumAndDispersionCreditFactor": float(self.pol.get((24, 3)) or 1.0),
               "PolicyType": self.pol.get((3, 3)),
               "CommercialPropertyLocation": locations}
+        if self.used_blankets:
+            # ISO deletes the blanket record unless BlktRated = "Yes" (AttachFormBlanketRating, chunk 9)
+            cp.update(BlktRated="Yes", MUBlktRated="No")
+            cp["CommercialPropertyBlanketRating"] = [{"CommercialPropertyBlanketRatingDetail": [
+                {"UnitNumber": i, "Type": self.blankets[i]["Type"],
+                 "TypeOfBlanketRating": self.blankets[i]["TypeOfBlanketRating"],
+                 "CauseOfLoss": self.blankets[i]["CauseOfLoss"], "Coinsurance": pct(self.blankets[i]["Coinsurance"]),
+                 "TotalLimit": int(self.blankets[i]["TotalLimit"] or 0)} for i in sorted(self.used_blankets)]}]
         if self.pol.get((3, 6)) == "Yes":
             cp["CommercialPropertyCyberIncidentExclusion"] = [{}]
         if self.pol.get((4, 6)) == "Yes":
@@ -310,6 +320,11 @@ class Builder:
         self.put(o, "Coinsurance", pct(b.get("Coinsurance")))
         o["Limit"] = int(b["Limit"] or 0)
         o["FullBldgValue"] = o["Limit"]                    # D-2
+        if b.get("IncludedInBlkt") == "Yes" and b.get("BlktIDNum") and int(b["BlktIDNum"]) in self.blankets:
+            # RC-5 Blanket Phase 1 (2026-09-24): the building's own full value and blanket ID
+            o["FullBldgValue"] = int(b.get("FullBldgValue") or b["Limit"] or 0)
+            o["BlktIDNum"] = int(b["BlktIDNum"])
+            self.used_blankets.add(int(b["BlktIDNum"]))
         self.put(o, "Deductible", b.get("Deductible"))
         self.put(o, "TheftDeductible", b.get("TheftDed"))
         whd = b.get("WindHailDed")
@@ -340,7 +355,7 @@ class Builder:
         for i, x in enumerate("ABCDE"):
             self.put(o, f"SubStdCondition{x}", b.get(f"SubStd{x}"))
         o.update(LossCostMultiplier=float(self.d["LossCostMultiplier"]),
-                 IncludedInBlkt=self.d["IncludedInBlkt"],
+                 IncludedInBlkt="Yes" if "BlktIDNum" in o else self.d["IncludedInBlkt"],
                  PackageModFactor=float(self.pol.get((23, 3)) or 1.0),
                  MultiPremiumAndDispersionCreditFactor=float(self.pol.get((24, 3)) or 1.0))
         # Roof surfacing is an endorsement record, not a field. Step 3 marked it "omit v1";
@@ -636,6 +651,11 @@ def main() -> int:
     recs = records(sheets[SCH])
     b = Builder(recs, sheets["IN - Policy"], defaults(sheets["Defaults"]), sheets["CALC - Special Class"])
     b.bgii_spec = {v for (r, c), v in sheets.get("TBL - BGIISpecific", {}).items() if c == 1 and r > 1}
+    ib = sheets.get("IN - Blanket", {})
+    heads = {c: ib.get((4, c)) for c in range(1, 7)}
+    for r in range(5, 15):
+        if isinstance(ib.get((r, 1)), (int, float)):
+            b.blankets[int(ib[(r, 1)])] = {heads[c]: ib.get((r, c)) for c in range(1, 7)}
     payloads = b.payloads()
     stamp = dt.datetime.now().strftime("%Y%m%d-%H%M%S")
     out = OUT_ROOT / stamp
