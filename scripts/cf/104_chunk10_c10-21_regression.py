@@ -187,6 +187,10 @@ MACHINERY = [
     ("142_chunk12_dependent_gates.py", "chunk 12 Dependent Properties gates 2-8"),
     ("121_chunk11_c11-09_messages.py",
      "chunk 11 messages: golden registered; ours == ISO's saved responses"),
+    # Chunk 13 (2026-09-24). No network: 145 replays ISO's own stored responses.
+    ("144_chunk13_c13-02_rule_order.py", "chunk 13 terrorism rule order and roll-up, 5 editions"),
+    ("145_chunk13_c13-03_replay.py",
+     "chunk 13 14 stored ISO terrorism responses, field by field (OI-111 pinned: CA $153)"),
 ]
 
 # Excluded on purpose, each with a reason -- no silent narrowing of scope.

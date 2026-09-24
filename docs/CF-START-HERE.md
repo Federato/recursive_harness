@@ -12,8 +12,13 @@ all six endorsement families 9 of 9, 0 unexplained messages. Ordinance or Law K7
 was re-run live after the OI-109 fix and agrees (8 of 8). The regression was re-run
 2026-09-24: **CLEAN** for chunks 0–12 and all GL suites.
 
-**Next: chunk 13, Terrorism / TRIA** (16 rule files, untraced; it reads other
-groups' finished premiums, so it runs last). Then chunk 14, policy assembly.
+**Chunk 13, Terrorism / TRIA, OPENED 2026-09-24 at 1 of 30**
+([`CF-CHUNK13-TASKS.md`](CF-CHUNK13-TASKS.md), census `143_chunk13_census.py`).
+Tasks are in five release-candidate groups, in priority order. **Start at RC-1:
+C13-02 (rule order) and C13-03 (replay the 14 stored ISO responses that carry a
+terrorism premium).** Both DONE 2026-09-24; C13-03 found **OI-111** (a named
+`ancestor::` read as the document root), **fixed with the user's authorization,
+the 10th engine fix**: replay 14 of 14, regression clean. Next: C13-04, C13-05. Then chunk 14, policy assembly.
 Open from the chunk 12 gate, not blocking: priced FL/VA/WV cases, and a theft
 exclusion attached to the Contents/BI records for drones and Dependent Properties.
 

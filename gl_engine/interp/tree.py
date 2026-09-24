@@ -123,15 +123,39 @@ _STEP = re.compile(r"^(?P<name>[^\[\]]+)(?:\[(?P<index>\d+)\])?$")
 #: `Exist ancestor::MasterGLCW/Policy`, an unimplemented axis matches nothing,
 #: and **every statistical code ISO publishes was simply absent** -- with the
 #: premium still exactly right.
+#:
+#: **OI-111 (2026-09-24, user-authorized): in Commercial Property the name IS a
+#: node to match.** CF writes `ancestor::CommercialProperty/...`,
+#: `ancestor::CommercialPropertyStructure/...` and ~60 other record names
+#: (30,512 paths) alongside the root shape `ancestor::MasterCFCW/Policy`.
+#: California's terrorism cap runs `Locate ancestor::CommercialProperty` ->
+#: `CalculateTotalPremium` from inside a policy-level form record; read as the
+#: root it found no locations and capped terrorism at $0 where ISO charges $153
+#: on a $3,424 policy (C13-03). The rule is now: **the nearest ancestor-or-self
+#: whose tag is the name; the document root if none matches.** GL is unchanged
+#: by construction -- `MasterGLCW` never matches a node while rating
+#: `MasterGLOK`, so it still falls through to the root.
 _AXIS = re.compile(r"^(?P<axis>\w+)::(?P<name>.*)$")
 
 
-#: The sentinel step meaning "restart at the document root".
+#: The sentinel step meaning "go up to the named ancestor (or the root)".
 _ROOT = "::ROOT::"
 
 
-def _steps(path: str) -> list[tuple[str, int | None]]:
-    """Split a path into (name, 1-based index or None) steps."""
+def _ancestor(node: Node, name: str) -> Node:
+    """The nearest ancestor-or-self tagged `name`; the root if there is none (OI-111)."""
+    n = node
+    while n is not None:
+        if n.tag == name:
+            return n
+        n = n.parent
+    return node.root
+
+
+def _steps(path: str) -> list[tuple[str, int | str | None]]:
+    """Split a path into (name, 1-based index or None) steps.
+
+    An `ancestor::Name` step is `(_ROOT, "Name")`."""
     out = []
     for s in path.split("/"):
         if s == "":
@@ -142,7 +166,7 @@ def _steps(path: str) -> list[tuple[str, int | None]]:
                 raise InterpretError(
                     f"path axis {ax.group('axis')}:: is not filed anywhere in "
                     f"the corpus and will not be guessed", "§9", path)
-            out.append((_ROOT, None))
+            out.append((_ROOT, ax.group("name")))
             continue
         m = _STEP.match(s)
         if not m:
@@ -172,7 +196,7 @@ def select(path: str, context: Node) -> list[Node]:
     for name, index in steps:
         nxt: list[Node] = []
         if name == _ROOT:
-            here = [context.root]
+            here = [_ancestor(n, index) for n in here]
             continue
         if name == ".":
             nxt = here
@@ -229,7 +253,7 @@ def ensure(path: str, context: Node) -> Node:
 
     for name, index in steps:
         if name == _ROOT:
-            here = here.root
+            here = _ancestor(here, index)
             continue
         if name == ".":
             continue

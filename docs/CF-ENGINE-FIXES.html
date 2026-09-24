@@ -1,0 +1,200 @@
+<title>Authorized engine fixes</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  :root { --bg:#fff; --fg:#1c2733; --muted:#55606b; --faint:#8b95a1; --line:#d7dce2; --head:#1e3a45; --headfg:#eef4f3;
+          --code:#eef1f4; --card:#fcfcfd; --ok:#2f7d5a; --okbg:#dcefe4; --warn:#a67c1e; --warnbg:#f2e6c4; --info:#1e5567; --infobg:#dde9ee; --pill:#cfe0e0; --pillfg:#14484a; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) { --bg:#14181d; --fg:#dfe4e9; --muted:#a3aebb; --faint:#8b95a1; --line:#3a4048; --head:#24313a; --headfg:#eef4f3;
+          --code:#262c33; --card:#171d24; --ok:#63c090; --okbg:#1b3226; --warn:#e0c064; --warnbg:#3a3319; --info:#9fd4dc; --infobg:#1d2b33; --pill:#1d3535; --pillfg:#7fd3d0; }
+  }
+  :root[data-theme="dark"] { --bg:#14181d; --fg:#dfe4e9; --muted:#a3aebb; --faint:#8b95a1; --line:#3a4048; --head:#24313a; --headfg:#eef4f3;
+          --code:#262c33; --card:#171d24; --ok:#63c090; --okbg:#1b3226; --warn:#e0c064; --warnbg:#3a3319; --info:#9fd4dc; --infobg:#1d2b33; --pill:#1d3535; --pillfg:#7fd3d0; }
+  body { font-family: Georgia, "Times New Roman", serif; max-width: 1060px; margin: 0 auto; padding: 32px 16px 80px; line-height: 1.55; color: var(--fg); background: var(--bg); }
+  h1 { font-size: 26px; font-weight: 400; margin-bottom: 4px; }
+  h2 { font-size: 19px; font-weight: 700; margin-top: 40px; border-bottom: 2px solid var(--head); padding-bottom: 4px; }
+  .meta, .sub { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13px; color: var(--muted); }
+  code { font-family: ui-monospace, Consolas, monospace; font-size: 0.88em; background: var(--code); padding: 1px 5px; border-radius: 3px; overflow-wrap: anywhere; }
+  .wrap { overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; margin: 12px 0 8px; font-size: 13.5px; }
+  th, td { border: 1px solid var(--line); padding: 6px 9px; text-align: left; vertical-align: top; }
+  thead th { background: var(--head); color: var(--headfg); font-family: -apple-system, "Segoe UI", sans-serif; font-size: 11.5px; text-transform: uppercase; letter-spacing: .03em; }
+  td.num { text-align: center; width: 34px; color: var(--faint); font-family: -apple-system, "Segoe UI", sans-serif; font-size: 12px; }
+  .note { padding: 12px 16px; border-radius: 6px; margin: 16px 0; font-size: 14px; background: var(--infobg); color: var(--info); }
+  .note.warn { background: var(--warnbg); color: var(--warn); }
+  .fix { border: 1px solid var(--line); border-left: 5px solid var(--ok); border-radius: 8px; padding: 14px 18px; margin: 18px 0; background: var(--card); }
+  .fix h3 { margin: 0 0 6px; font-size: 16px; font-weight: 700; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .n { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 12px; font-weight: 700; background: var(--pill); color: var(--pillfg); padding: 2px 9px; border-radius: 99px; }
+  .tag { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; background: var(--code); color: var(--muted); padding: 2px 7px; border-radius: 4px; }
+  .tag.ok { background: var(--okbg); color: var(--ok); }
+  .tag.warn { background: var(--warnbg); color: var(--warn); }
+  .fix p { margin: 8px 0; font-size: 14px; }
+  .lab { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; color: var(--faint); display: block; margin-top: 10px; }
+  .fix ul { margin: 4px 0 8px; padding-left: 20px; font-size: 14px; }
+  .fix li { margin: 2px 0; }
+</style>
+
+<h1>Engine fixes you have authorized</h1>
+<p class="meta"><b>As of 2026-09-24.</b> Every change made to the rating engine&rsquo;s interpreter during the Property build, each one found by running a case, measured against ISO, and made only on your go. Sources: <code>OPEN-ITEMS.md</code>, <code>CF-ENGINE-FIX-BANDED-LOOKUP.md</code>, <code>CF-ENGINE-FIX-DATE-COMPARE.md</code>, <code>CF-CHUNK9-GOLDEN-CASE.md</code> &sect;8, <code>CF-CHUNK10-GATE.md</code>, <code>CF-CHUNK13-TASKS.md</code>.</p>
+
+<div class="note"><b>In plain English.</b> The engine reads ISO&rsquo;s rule files and does what they say. Ten times, ISO&rsquo;s own service did something slightly different from what our engine did with the same rule, and every time ISO&rsquo;s answer was the one to match. None of these were guesses: each was found by a real case disagreeing with ISO (or failing outright), confirmed with ISO where a live answer was possible, and followed by the full regression. All ten are in the interpreter that General Liability shares (two sit behind Property-only switches), so every one was also checked against all 16 GL test suites.</div>
+
+<h2>The ten at a glance</h2>
+<div class="wrap"><table>
+<thead><tr><th class="num">#</th><th>Date</th><th>Found in</th><th>What was wrong, in one line</th><th>Where</th><th>Affects GL?</th></tr></thead>
+<tbody>
+<tr><td class="num">1</td><td>2026-09-21</td><td>Chunk 9, Blanket</td><td>A loop that <i>reads</i> from another record was also <i>writing</i> there, so blanket values landed on the wrong record</td><td><code>interpreter.py</code>, <code>nodes.py</code> (<code>ForEach</code>)</td><td>Shared; GL suites green</td></tr>
+<tr><td class="num">2</td><td>2026-09-22</td><td>Chunk 10, Earthquake</td><td>Tables that pick a row by two brackets at once were refused</td><td><code>interpreter.py</code> (<code>_lookup_banded</code>)</td><td>Shared; GL tables have one bracket, unchanged</td></tr>
+<tr><td class="num">3</td><td>2026-09-22</td><td>Chunk 11, Leasehold</td><td>&ldquo;Is this date after that date?&rdquo; was refused</td><td><code>nodes.py</code> (<code>_cmp</code>)</td><td>Shared; GL suites green</td></tr>
+<tr><td class="num">4</td><td>2026-09-22</td><td>Chunk 11 (OI-102)</td><td>A blank date (&ldquo;1 Jan year 1&rdquo;) was treated as no date instead of the earliest date</td><td><code>nodes.py</code> (<code>_cmp</code>)</td><td>Shared; GL suites green</td></tr>
+<tr><td class="num">5</td><td>2026-09-22</td><td>Chunk 11 (OI-104)</td><td>0 to the power 0 crashed; ISO says 1</td><td><code>nodes.py</code> (<code>_power</code>)</td><td>Shared; GL suites green</td></tr>
+<tr><td class="num">6</td><td>2026-09-22</td><td>Chunk 11 (OI-107)</td><td>&ldquo;Days from A to B&rdquo; came out as &ldquo;days from B to A&rdquo;</td><td><code>nodes.py</code> (<code>_date_difference</code>)</td><td>Shared; <b>GL ERP not covered by any suite</b></td></tr>
+<tr><td class="num">7</td><td>2026-09-23</td><td>Chunk 12 (OI-108)</td><td>A &ldquo;stop the loop&rdquo; inside a sum threw away the value being summed</td><td><code>nodes.py</code> (<code>Sum</code>, <code>ForEach</code>)</td><td>Shared; GL suites green</td></tr>
+<tr><td class="num">8</td><td>2026-09-23</td><td>Chunk 12 (OI-109)</td><td>A premium with a missing input stopped the whole rating; ISO rates on</td><td><code>interpreter.py</code> (premium-write guard)</td><td>Property only (mode switch)</td></tr>
+<tr><td class="num">9</td><td>2026-09-23</td><td>Chunk 12 (OI-110)</td><td>Correction of #8: ISO <i>skips</i> a missing input in a multiplication, it doesn&rsquo;t write $0</td><td><code>nodes.py</code> (<code>_product</code>)</td><td>Property only (mode switch)</td></tr>
+<tr><td class="num">10</td><td>2026-09-24</td><td>Chunk 13 (OI-111)</td><td>&ldquo;Go up to the record called X&rdquo; went to the top of the document instead</td><td><code>tree.py</code> (<code>select</code>, <code>ensure</code>)</td><td>Shared; GL unchanged by construction</td></tr>
+</tbody></table></div>
+<p class="sub"><b>A note on the count.</b> Earlier notes counted these as nine or ten depending on whether #8 and #9 were one fix. <code>OPEN-ITEMS.md</code> records two separate authorizations on 2026-09-23 (OI-109, then OI-110 correcting it), so they are listed separately here, which gives ten. The <code>propagate</code> null-handling mode chosen in chunk 1 is an engine design decision made while building the foundation, not a fix to existing behaviour, so it is not in this list.</p>
+
+<h2>Each fix in detail</h2>
+
+<div class="fix">
+<h3><span class="n">1</span> A reading loop that also moved where results were written <span class="tag">2026-09-21</span> <span class="tag ok">ISO-confirmed $255 / $510</span></h3>
+<p><b>In plain English.</b> Blanket rating averages a rate across several buildings. To do that, ISO&rsquo;s rule loops over a list of detail records <i>reading</i> from each, but it means to keep its running totals on the building. Our engine moved both reading and writing into each detail record, so the totals landed in the wrong place and both buildings priced at $0.</p>
+<span class="lab">Technical</span>
+<ul>
+<li><code>ForEach @AtInputDataDef</code> rebound writes exactly like <code>ForEach @AtDataDef</code>. <code>Frame</code> gained a <code>write_root</code>; an <code>AtInputDataDef</code> loop calls <code>fr.at(item, keep_write_root=True)</code>: reads resolve against the item, a bare <code>ToDataDef</code> still writes to the frame that was active before the loop.</li>
+<li><code>write_root</code> propagates through <code>with_params</code> and <code>in_rule</code>, so it survives <code>WithArgs</code>, cross-file <code>RunRule</code> and nested loops (the rule has two).</li>
+<li><b>Deliberately unchanged:</b> <code>ForEach AtDataDef</code> (chunk 4&rsquo;s repeating groups need the full rebind) and <code>Locate</code> (its job is to move the write target).</li>
+</ul>
+<span class="lab">Evidence</span>
+<ul><li>Golden case: average rate 0.236 &rarr; <b>0.255</b>, premiums $0 &rarr; <b>$255 / $510</b>, then matched ISO live to the dollar (C9-13).</li>
+<li>All chunk 1&ndash;8 scripts and all 16 GL suites re-run green. The first engine change since chunk 0.</li></ul>
+</div>
+
+<div class="fix">
+<h3><span class="n">2</span> Rate tables that pick a row by two brackets at once <span class="tag">2026-09-22</span> <span class="tag ok">Hand-derived match</span></h3>
+<p><b>In plain English.</b> Some tables choose a row two ways at once: one number is blended smoothly between rows (e.g. the percent of the building sub-limited), and a second only has to fall in a bracket (e.g. total property value). Our table code only knew one &ldquo;blend&rdquo; number per table and refused the rest, so Earthquake sub-limit coverage with a flat-dollar deductible could not be rated at all.</p>
+<span class="lab">Technical</span>
+<ul>
+<li><code>_lookup_banded</code> refused any table whose <code>key_ranges</code> length was not 1. Now every range key is a containment filter in ISO&rsquo;s filed order, and the one to interpolate is chosen <b>by name</b> from the value range&rsquo;s <code>RangeKeyCol</code>, never by position.</li>
+<li>Population: exactly 28 CF tables have two ranges (13 EQ sub-limit flat-deductible, 7 Flood rate-modification, 1 Massachusetts heating-oil table, 7 dead). None have three.</li>
+<li><b>Still refuses rather than guess:</b> two interpolated ranges, or a <code>RangeKeyCol</code> that isn&rsquo;t one of the table&rsquo;s own ranges. <code>gl_engine/erc/tables.py</code> untouched.</li>
+</ul>
+<span class="lab">Evidence</span>
+<ul><li>CP 10 29 case now runs: <code>EQDeductibleFactor</code> 1.376, premium <b>$6</b>, hand-derived from the filed CSV.</li>
+<li>16/16 GL suites; chunk 1&ndash;9 regression clean (C10-21). <b>Not yet exercised:</b> CP 10 45 (percentage sub-limit, a different 6-table family).</li></ul>
+</div>
+
+<div class="fix">
+<h3><span class="n">3</span> Comparing two dates <span class="tag">2026-09-22</span> <span class="tag ok">ISO-confirmed $272 / $31</span></h3>
+<p><b>In plain English.</b> Leasehold Interest asks &ldquo;does the lease end after the policy starts?&rdquo; Our engine could compare numbers but not dates, so it stopped with an error. It now compares dates as dates.</p>
+<span class="lab">Technical</span>
+<ul>
+<li><code>_cmp</code> (behind <code>GreaterThan</code>, <code>LessThan</code>, and the two &ldquo;or equal&rdquo; forms) pushed both operands through <code>ip.num</code>, so a date raised. Now: if <b>both</b> operands are dates, compare as dates. Number vs number unchanged; date vs number still refused.</li>
+<li>28 ordered date comparisons corpus-wide; 2 premium-bearing (Leasehold <code>SetNumberOfMonths</code>, Builders Risk <code>SetProRate</code>). None were reachable before, because no earlier case supplied the dates.</li>
+<li><b>Process lesson:</b> the chunk 11 census checked element <i>names</i>, not operand <i>types</i>. Every census since checks types.</li>
+</ul>
+<span class="lab">Evidence</span>
+<ul><li>Chunk 11 golden case: 20 of 20 hand-derived values, $268 + $30; later matched ISO live. Regression clean.</li></ul>
+</div>
+
+<div class="fix">
+<h3><span class="n">4</span> A blank date is the earliest date, not &ldquo;no date&rdquo; (OI-102) <span class="tag">2026-09-22</span> <span class="tag ok">ISO-confirmed $272 / $31</span></h3>
+<p><b>In plain English.</b> When a date is left blank, ISO&rsquo;s rules fill in 1 January year 1. ISO treats that as a real, very early date. We treated it as missing, so any &ldquo;is X before Y?&rdquo; test came out <i>no</i>. A Leasehold Interest with no lease start date priced at $0 here and $272 at ISO.</p>
+<span class="lab">Technical</span>
+<ul>
+<li>In <code>_cmp</code> only, an operand recognised by <code>_is_date_zero</code> (a <code>dateTime</code> <code>FirstValue</code> falling back to <code>01/01/0001</code>, or that <code>Constant</code>) orders as <code>date.min</code>. That covers 56 of the 60 such operands.</li>
+<li><b>Deliberately unchanged:</b> <code>coerce</code> still reads the sentinel as null, so <code>IsNull</code>, <code>IsNotNull</code> and equality behave as before; the 4 bare <code>Value</code> operands (ISO&rsquo;s ordering of those is unmeasured); all non-date comparisons.</li>
+</ul>
+<span class="lab">Evidence</span>
+<ul><li>Live ISO: missing lease date moved $0 &rarr; <b>$272 / $31</b>, = ISO. Regression clean, 51 of 51.</li></ul>
+</div>
+
+<div class="fix">
+<h3><span class="n">5</span> 0 to the power 0 is 1 (OI-104) <span class="tag">2026-09-22</span> <span class="tag ok">ISO-confirmed $0</span></h3>
+<p><b>In plain English.</b> Leasehold Interest discounts a lease with a power calculation. With no interest rate and no months left it asks for 0<sup>0</sup>. Python refuses; ISO&rsquo;s .NET says 1. So does <i>any</i> Leasehold building sent without its lease details, because ISO&rsquo;s rules create an empty lease record for it. We crashed; ISO prices $0. Now we say 1 and price $0.</p>
+<span class="lab">Technical</span>
+<ul>
+<li><code>_power</code>: <code>base == 0 and exp == 0</code> returns 1 (rounded as the element asks), traced <code>power-zero-zero</code>. The refusal for a non-positive base with a fractional exponent stays.</li>
+<li>One regression expectation moved, correctly: chunk 8&rsquo;s zero case 3 had pinned the old crash; it now rates $0, as chunk 8&rsquo;s own map predicted.</li>
+</ul>
+<span class="lab">Evidence</span>
+<ul><li>Live ISO case Z13: $0 both sides. Regression clean for chunks 0&ndash;11 after the one expectation update.</li></ul>
+</div>
+
+<div class="fix">
+<h3><span class="n">6</span> &ldquo;Days from A to B&rdquo; had the wrong sign (OI-107) <span class="tag">2026-09-22</span> <span class="tag ok">ISO-confirmed 257 days</span> <span class="tag warn">GL ERP untested</span></h3>
+<p><b>In plain English.</b> We computed &ldquo;days from B to A&rdquo; when asked for &ldquo;days from A to B&rdquo;. Anything that divided one count by another came out right (the minus signs cancel), so no premium had been wrong yet. But &ldquo;days until TRIA expires&rdquo; came out negative. That field drives terrorism proration, which chunk 13 now depends on.</p>
+<span class="lab">Technical</span>
+<ul>
+<li><code>_date_difference</code> returns <code>(second &minus; first).days</code>; it returned <code>(first &minus; second).days</code>.</li>
+<li><b>Open consideration:</b> the only GL rules using <code>DateDifference</code> are the ERP <code>SetMaturity*Year</code> rules, their operand order differs by edition, and no GL suite exercises them. The GL suites passing says nothing broke that they test, not that GL ERP maturity is now right. Logged on OI-107.</li>
+</ul>
+<span class="lab">Evidence</span>
+<ul><li>Live ISO, Oregon: <code>DaysUntilTRIAExpiration</code> ISO 257, ours &minus;257 before, 257 after. Pinned in the regression (<code>120_</code>). Regression clean, 68 of 68.</li></ul>
+</div>
+
+<div class="fix">
+<h3><span class="n">7</span> &ldquo;Stop the loop&rdquo; inside a sum lost the sum (OI-108) <span class="tag">2026-09-23</span> <span class="tag ok">ISO-confirmed 8 of 8</span></h3>
+<p><b>In plain English.</b> In the older California, North Carolina and Missouri editions, the drone rule adds up drone limits and, for a blanket drone, says &ldquo;take the blanket limit, then stop&rdquo;. Our engine stopped before taking it, so a blanket drone&rsquo;s $99,000 limit read as $0. That limit drives the drone deductible, so we undercharged by about $125 in NC and MO.</p>
+<span class="lab">Technical</span>
+<ul>
+<li>A <code>Break</code> inside a <code>Sum</code> raised <code>BreakLoop</code> before the <code>Sum</code> returned, and <code>_for_each</code> recorded the iteration as nothing. Now the <code>Sum</code> finishes over the operands already added, and <code>ForEach</code> records that total (<code>BreakLoop.value</code>).</li>
+<li>Only 6 of 21,037 operators in chunk 12&rsquo;s files had this shape; the 2026 edition rewrote the rule without the <code>Break</code>, which is why 42 states were unaffected.</li>
+</ul>
+<span class="lab">Evidence</span>
+<ul><li>Live ISO: <code>TotalScheduleLimit</code> 99,000 in CA, NC, MO (ours was 0); after the fix CA/NC/MO/GA <b>8 of 8 identical</b>, limit and premium. Regression clean.</li></ul>
+</div>
+
+<div class="fix">
+<h3><span class="n">8</span> A premium with a missing input no longer stops the rating (OI-109) <span class="tag">2026-09-23</span> <span class="tag warn">Narrowed by #9 the same day</span></h3>
+<p><b>In plain English.</b> Ordinance or Law sent without its demolition limits: ISO rated the policy and showed those two parts at $0; we refused the whole submission, because our engine treated a missing premium as an error (&ldquo;money can&rsquo;t be blank&rdquo;). This change let Property write $0 for a premium that comes out blank. The same day, a sharper probe showed ISO&rsquo;s real rule is different (#9), so this now applies only when <i>every</i> input to a premium is missing.</p>
+<span class="lab">Technical</span>
+<ul>
+<li>New interpreter mode <code>null_premium="zero"</code> under <code>propagate</code> (Property): a null premium is written as 0, traced <code>null-premium-zeroed</code>, listed in <code>Interpreter.null_premiums</code>. <b>GL keeps <code>refuse</code></b>.</li>
+<li>Four zero-case scripts that pinned the old refusal were updated with the old wording kept.</li>
+</ul>
+<span class="lab">Evidence</span>
+<ul><li>5 of 5 live probes matched ISO, messages included; regression clean. <b>But</b> all 5 probes had rates that rounded to $0 anyway, so they could not tell &ldquo;write $0&rdquo; from &ldquo;skip the missing value&rdquo;. That gap is what #9 closed.</li></ul>
+</div>
+
+<div class="fix">
+<h3><span class="n">9</span> A missing input in a multiplication is skipped, as ISO does (OI-110) <span class="tag">2026-09-23</span> <span class="tag ok">ISO-confirmed $1 / $3 / $5</span></h3>
+<p><b>In plain English.</b> A Builders Risk reporting form with no limit: ISO charged $1, we charged $0. ISO doesn&rsquo;t treat the missing limit as zero; it leaves it out of the multiplication and multiplies what&rsquo;s left. Rate 0.500 times &ldquo;nothing&rdquo; is 0.500, which rounds to $1. Probes built so the two readings gave different answers ($3 and $5 against our $0) settled it.</p>
+<span class="lab">Technical</span>
+<ul>
+<li>Property&rsquo;s <code>Product</code> skips a null operand (<code>nodes._product</code>, <code>Interpreter.product_skips_null</code>), recording each skip in <code>null_skips</code> and the trace (<code>product-null-skipped</code>). #8&rsquo;s zero-write remains only for a product whose operands are all null. <b>GL untouched.</b></li>
+<li>It uncovered a hidden difference: chunk 5&rsquo;s Combined-risk zero case now matches ISO ($256 + $30).</li>
+<li><b>Standing rule it produced:</b> a probe only proves a rule if competing rules predict different answers on it.</li>
+</ul>
+<span class="lab">Evidence</span>
+<ul><li>All 9 null-handling probes agree live, including the three that discriminate. Interpreter tests 71/71. Regression clean.</li></ul>
+</div>
+
+<div class="fix">
+<h3><span class="n">10</span> &ldquo;Go up to the record called X&rdquo; finds that record (OI-111) <span class="tag">2026-09-24</span> <span class="tag ok">Matches ISO 14 of 14</span></h3>
+<p><b>In plain English.</b> California caps terrorism at 25% of the rest of the policy premium. To get that total, its rule says &ldquo;go up to the policy and add up its premium&rdquo;. Our engine ignored the name &ldquo;policy&rdquo; and jumped to the very top of the document, where there are no locations, so the total read $0 and terrorism was capped at $0. ISO found a $3,424 total and charged $153. We had learned to ignore the name from General Liability, where it names the document itself and never matches; Property uses the same syntax to name real records.</p>
+<span class="lab">Technical</span>
+<ul>
+<li><code>tree.py</code>: an <code>ancestor::Name</code> step now resolves to the <b>nearest ancestor-or-self tagged Name</b>, and to the root only if none matches (<code>_ancestor</code>, used by both <code>select</code> and <code>ensure</code>). GL&rsquo;s <code>ancestor::MasterGLCW</code> never matches a node while rating <code>MasterGLOK</code>, so it still falls through to the root: unchanged by construction.</li>
+<li>Reach: <b>30,512</b> <code>ancestor::</code> paths in the CF corpus, about 1,500 root-shaped and ~29,000 naming records (<code>CommercialPropertyStructure</code> 13,450; <code>CommercialProperty</code> 7,773; ~60 others). Chunks 1&ndash;12 had matched ISO regardless, and the regression shows none of their figures moved.</li>
+<li><b>Open consideration:</b> the &ldquo;-or-self&rdquo; part (a rule running <i>on</i> the policy record that names the policy) is the reading the probe tested and ISO confirmed on these cases, but no case yet exercises it directly.</li>
+</ul>
+<span class="lab">Evidence</span>
+<ul><li>Probe with the engine untouched (<code>146_</code>): the named reading matched ISO on both CA cases, the old reading didn&rsquo;t, GA and NY agreed either way. After the fix: replay <b>14 of 14</b> stored ISO terrorism responses; full regression <b>clean</b> (82 checks incl. all GL suites); CA $153 pinned in the regression (<code>145_</code>).</li></ul>
+</div>
+
+<h2>Technical considerations across all ten</h2>
+<div class="wrap"><table>
+<thead><tr><th>Consideration</th><th>Where it stands</th></tr></thead>
+<tbody>
+<tr><td><b>Shared code with General Liability</b></td><td>All ten changed <code>gl_engine/interp/</code>, which GL also runs. All 16 GL suites were re-run after every one. #8 and #9 are behind Property-only mode switches, so GL never takes those paths; #10 is unchanged for GL by construction.</td></tr>
+<tr><td><b>Where GL coverage is thin</b></td><td>#6: no GL suite exercises GL&rsquo;s ERP maturity rules, the only GL rules using date differences. A GL ERP case is owed (OI-107).</td></tr>
+<tr><td><b>Property and GL now behave differently on purpose</b></td><td>Missing values in a premium: Property skips them (#9) or writes $0 when all are missing (#8); GL still refuses. Whether GL should adopt the same is a separate decision, not yet asked.</td></tr>
+<tr><td><b>Edges not yet exercised</b></td><td>#2: the CP 10 45 percentage sub-limit family. #4: a bare <code>Value</code> date operand. #10: the &ldquo;-or-self&rdquo; case. Each is logged where it was found.</td></tr>
+<tr><td><b>How each was proved</b></td><td>Found by running a case, never by reading alone; confirmed against ISO&rsquo;s live service or ISO&rsquo;s stored answers; then the one-command regression (<code>scripts/cf/104_chunk10_c10-21_regression.py</code>), which pins every golden case to its dollar figure.</td></tr>
+<tr><td><b>Housekeeping owed</b></td><td>The Property engine imports the GL engine&rsquo;s interpreter. A neutral shared home is on the backlog, never to be bundled with a rating change.</td></tr>
+</tbody></table></div>
+
+<div class="note warn"><b>The pattern behind all ten.</b> Every one surfaced where a Property coverage used a rule shape that no earlier case, and no General Liability case, had ever run: a new loop form, a two-bracket table, dates, 0<sup>0</sup>, a stop inside a sum, a missing input, a named ancestor. The engine was never wrong about what it had already been tested on. That&rsquo;s why each chunk opens with a census of rule shapes and value types, and why a fix only counts once a case that could have disagreed with ISO doesn&rsquo;t.</div>
