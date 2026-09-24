@@ -18,7 +18,7 @@ Tasks are in five release-candidate groups, in priority order. **Start at RC-1:
 C13-02 (rule order) and C13-03 (replay the 14 stored ISO responses that carry a
 terrorism premium).** Both DONE 2026-09-24; C13-03 found **OI-111** (a named
 `ancestor::` read as the document root), **fixed with the user's authorization,
-the 10th engine fix**: replay 14 of 14, regression clean. **RC-1 COMPLETE 2026-09-24** (C13-04 operand types clean; C13-05 attach map: `TRIAType` drives every terrorism form, `TerrorismIndicator` switches nothing). **Next: RC-2, C13-06, the Oregon golden case.** Then chunk 14, policy assembly.
+the 10th engine fix**: replay 14 of 14, regression clean. **RC-1 COMPLETE 2026-09-24** (C13-04 operand types clean; C13-05 attach map: `TRIAType` drives every terrorism form, `TerrorismIndicator` switches nothing). **RC-2 COMPLETE 2026-09-24**: Oregon golden case $8 (`149_`) and the other four groups + every roll-up record (`150_`), derived by hand and ISO-confirmed live, 14 of 14 policies field for field; Oregon's fire exception and the TRIA proration confirmed. **Next: RC-3 (C13-10 to C13-15), the mechanisms and zero cases.** Then chunk 14, policy assembly.
 Open from the chunk 12 gate, not blocking: priced FL/VA/WV cases, and a theft
 exclusion attached to the Contents/BI records for drones and Dependent Properties.
 
