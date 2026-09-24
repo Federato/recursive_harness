@@ -318,7 +318,7 @@ which roof factors they apply (not probed); Contents Broad / Special multiply a 
 | S-4 | `--fix S4`: occupancy J SprinklerSystem, Contents Q / BI Q SprinklerLeakageExcl (default = building's); Contents 10 / BI 11 own rates; payload per record | 3 probes, each coverage moves on its own election, = ISO |
 | Linked SC | Payload only: UnitNumber on Location / Structure (as ISO's STC payloads) and SC `BuildingIDNumber`; the rater already linked | linked 58 vs unlinked 51 (BGI), both = ISO |
 
-Still open from RC-3: **FL-BGII** (UX only: narrow FL's Group II territory dropdown by County as ISO's domain does; no premium effect).
+**FL-BGII DONE 2026-09-24** (`124 --fix FLBGII`, dropdowns only): new `TBL - Counties`; County (Q) lists the location state's counties (NY / FL / CO / IN, else Not Applicable -- it had accepted NY counties only, so FL / CO / IN could not pick one); FL Group II territory (I) offers only the county's territories (DomainBasicGroupIIRatingTerrFL, V02), all of FL's when no county. Verified after reopen: Bay -> Seacoast Zone 2 / 3; Monroe -> the two Monroe territories.
 Tooling: `120 main` save now retries "call rejected"; scenario values that look like dates / numbers must be prefixed `'`.
 
 ## Feature set: RC-5 ED-FL -- CF FL 20241201 V02 (DONE 2026-09-24, `scenarios/rc5/`, live ISO)

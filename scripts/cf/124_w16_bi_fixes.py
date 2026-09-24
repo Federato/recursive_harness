@@ -1758,6 +1758,64 @@ def fix_edflstamp(app, wb):
     return "ED-FL: TBL - Editions FL -> V02 / CW 20230801 V04", set()
 
 
+def fix_flbgii(app, wb):
+    """RC-3 FL-BGII (2026-09-24), dropdowns only. (1) Schedule County (Q) validated against NY's list
+    only, so FL / CO / IN users (who need a county since RC-3) could not pick one: Q now lists the
+    location state's counties (`<ST>_county` names; others "Not Applicable"). (2) FL's Group II
+    territory depends on the county (`DomainBasicGroupIIRatingTerrFL`, V02): FL rows of I now offer
+    only that county's territories; other states keep `<ST>_bgiiterr`. No premium can move."""
+    import csv
+    eff = effective_date(wb)
+    fl_pkg = state_file_in_force("FL", "BasicGroupIRateSpecialClass", eff).parent.parent
+    dom = list(csv.reader(open(fl_pkg / "Domain Tables" / "DomainBasicGroupIIRatingTerrFL.DomainTable.csv",
+                               encoding="utf-8-sig")))[1:]
+    pairs = sorted({(r[1], r[3]) for r in dom})
+    fl_counties = sorted({c for c, _ in pairs})
+    wh = {}
+    for st in ("CO", "IN"):
+        f = state_file_in_force(st, "GeographicWindHazardLevel", eff)
+        wh[st] = sorted({r[1] for r in list(csv.reader(open(f, encoding="utf-8-sig")))[1:]})
+    ws = w11.new_sheet(wb, "TBL - Counties")
+    cols = {"A": ("FL county", fl_counties), "B": ("FL county (pairs)", [c for c, _ in pairs]),
+            "C": ("FL BGII territory (pairs)", [t for _, t in pairs]), "D": ("CO county", wh["CO"]),
+            "E": ("IN county", wh["IN"]), "F": ("Other", ["Not Applicable"])}
+    for col, (head, vals) in cols.items():
+        ws.Range(f"{col}1").Value = head
+        ws.Range(f"{col}2:{col}{len(vals) + 1}").Value = tuple((v,) for v in vals)
+    ws.Range("H1").Value = (f"Source: {fl_pkg.name} DomainBasicGroupIIRatingTerrFL; CO / IN GeographicWindHazardLevel "
+                            f"(RC-3 FL-BGII, 2026-09-24). Dropdown lists only.")
+    names = {"FL_county": f"='TBL - Counties'!$A$2:$A${len(fl_counties) + 1}",
+             "CO_county": f"='TBL - Counties'!$D$2:$D${len(wh['CO']) + 1}",
+             "IN_county": f"='TBL - Counties'!$E$2:$E${len(wh['IN']) + 1}",
+             "NY_county": "='TBL - NYCounty'!$A$2:$A$64",
+             "NA_county": "='TBL - Counties'!$F$2:$F$2"}
+    existing = {wb.Names(i).Name for i in range(1, wb.Names.Count + 1)}
+    for n, ref in names.items():
+        if n in existing:
+            raise Gate(f"name {n} already exists")
+        wb.Names.Add(Name=n, RefersTo=ref)
+    sch = wb.Worksheets(w11.SCH)
+    if str(sch.Range("Q5").Validation.Formula1) != "='TBL - NYCounty'!$A$2:$A$64":
+        raise Gate(f"Q5 validation is not the NY list: {sch.Range('Q5').Validation.Formula1!r}")
+    if str(sch.Range("I5").Validation.Formula1) != "=INDIRECT($C5&\"_bgiiterr\")":
+        raise Gate(f"I5 validation is not the state list: {sch.Range('I5').Validation.Formula1!r}")
+    q = sch.Range("Q5:Q44")
+    q.Validation.Delete()
+    q.Validation.Add(Type=3, AlertStyle=1, Operator=1,
+                     Formula1="=INDIRECT(IF(OR($C5=\"NY\",$C5=\"FL\",$C5=\"CO\",$C5=\"IN\"),$C5,\"NA\")&\"_county\")")
+    last = len(pairs) + 1
+    i = sch.Range("I5:I44")
+    i.Validation.Delete()
+    i.Validation.Add(Type=3, AlertStyle=1, Operator=1,
+                     Formula1=(f"=IF(AND($C5=\"FL\",COUNTIF('TBL - Counties'!$B$2:$B${last},$Q5)>0),"
+                               f"OFFSET('TBL - Counties'!$C$1,MATCH($Q5,'TBL - Counties'!$B$2:$B${last},0),0,"
+                               f"COUNTIF('TBL - Counties'!$B$2:$B${last},$Q5),1),INDIRECT($C5&\"_bgiiterr\"))"))
+    return f"FL-BGII: TBL - Counties (FL {len(fl_counties)}, CO {len(wh['CO'])}, IN {len(wh['IN'])}); Q / I dropdowns", set()
+
+
+w11.FIXES["FLBGII"] = fix_flbgii
+w11.EXPECT_COLS["FLBGII"] = set()
+w11.NO_MOVE.add("FLBGII")
 w11.FIXES["EDFLSTAMP"] = fix_edflstamp
 w11.EXPECT_COLS["EDFLSTAMP"] = set()
 w11.NO_MOVE.add("EDFLSTAMP")

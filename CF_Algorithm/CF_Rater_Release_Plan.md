@@ -23,12 +23,12 @@ Fixed: W-3, W-4, W-5, S-2, ED-WHX, final-rate rounding. Closed as already right:
 occupancy sprinkler input). 14 probes in `scenarios/rc2/`, all Excel = ISO; regression 40 / 40, standard 42 / 42 at 21171.
 Details: `Rater_Simplifications_Backlog.md` (RC-2 probes).
 
-## RC-3 · Inputs the rater didn't have: ✅ DONE 2026-09-24 (FL-BGII dropdown left, UX only)
+## RC-3 · Inputs the rater didn't have: ✅ DONE 2026-09-24 (incl. FL-BGII dropdowns)
 
 New inputs: wind hazard county (CO / IN / OK) and SC EQ territory (all states now rate, 0 refused), AZ fire department
 credit, Cyber BI / EE sublimits, sprinkler facts per occupancy / group, linked Special Class. D-1c and D-2 closed with
 no change (ISO already agrees / blanket-only). Regression: 44 / 44 states, standard 42 / 42 at 21171. Details:
-`Rater_Simplifications_Backlog.md` (RC-3). Open: FL-BGII (Group II territory dropdown narrowed by county).
+`Rater_Simplifications_Backlog.md` (RC-3). FL-BGII done: county dropdown per state, FL Group II territory narrowed by county.
 
 ## RC-4 · Prove what's built: ✅ DONE 2026-09-24 (final regression: 40 / 40 rated states, 0 mismatches; standard 42 / 42 at 21171)
 
