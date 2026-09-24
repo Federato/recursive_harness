@@ -161,3 +161,38 @@ reopen-verified. **Final: 42 / 42 Excel = ISO = engine, total 21171; strict colu
 
 Framework: `wb.Close` also resolves as a property under late binding (like `Save`); both now handled. `Validation.Add`
 evaluates the list source on the active cell and refuses an error, so dropdowns are copied with PasteSpecial instead.
+
+---
+
+## RC-4 (prove what's built): "more states", 2026-09-23 (in progress)
+
+**Tools.** `scripts/cf/137_scenario_three_way.py` (what-if runner: rater opened read-only, edits in memory,
+119's own payload / ISO / engine comparison; `--none` reproduces 42 / 42 exactly). `138_make_state_scenarios.py`
+moves the four risk shapes to 42 new states, 4 per batch, with inputs from the rater's own lists.
+`139_state_field_sweep.py` lists fields states add that the payload never sends (358; a map, not defects).
+`140_state_run_summary.py` sorts mismatches by who disagrees (all were RATER; **the engine agreed with ISO
+everywhere ISO answered**).
+
+**First run: 24 of 42 new states clean, 4 refused, 14 with rater gaps.** Fixed, each gated (no move on today's
+4 risks, which stay 42 / 42 at 21171) and verified by scenario re-runs:
+
+| Fix | What | States |
+|---|---|---|
+| SCDED | Special Class Group I deductible table had no state column; now the per-state table the Building uses | AL CT IA KY MI NC NJ UT WV (-20) |
+| payload | Deductibles-by-location record carries Deductible, WindstormOrHailDeductible and TheftDeductible (ISO gives each credit its own field) | SC Group II / Special |
+| payload | Arizona Private Fire Department Credit sent as 1.0 (omitted = 0 = $0 Group I) | AZ (+1170) |
+| SCSPB | Special Class Special base rates rebuilt from the package **in force** on the effective date (10 were from future-dated packages, e.g. CF AL 20270301) | AK AL CA CT MD NC ND NJ NM NV |
+| W-25 | BI Group II rounds per ISO (BCEG before adjustment, 4 rounds); Building Group II rounds after every factor; roof ACV and cosmetic factors split (Paragraph B alone no longer discounts Group I) | MN NE RI VA WV; AL CT MI UT |
+| SCFIN | Special Class final rates round after the per-location credit | 9 credit states |
+| W-26 | Single-row roof tables (CT / IN / NH "ACV", MA / WY "Y") | CT |
+| SCTHEFT | Special Class Special theft factor was hard-coded 0.88; 30 states file 0.91 / 0.94 | CT (-31) + 29 |
+
+**Verified after all fixes (full re-run 2026-09-24, batches 01-11 + standard):** 44 states run, **40 match
+Excel = ISO = engine on every line**; 0 mismatched lines (`CF_RC4_State_Results.csv` is header-only). CO / IN / OK
+(wind hazard county) and SC (EQ territory) are ISO refusals, already moved to RC-3; Excel = engine there.
+Standard run still 42 / 42 at 21171 (`results/cf-payload/20260924-084136`).
+
+**Refusals = missing inputs (RC-3):** CO, IN, OK need a county-driven `GeographicWindHazardLevelTerritory`; SC
+needs an earthquake territory (`BCEGEQFactor`). **Edition finding:** tables must be built from the package in
+force on the effective date, not the newest on disk (13 states have future-dated packages); today's own tables
+were checked and match.

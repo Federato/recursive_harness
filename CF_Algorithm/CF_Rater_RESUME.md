@@ -2,6 +2,10 @@
 
 **Updated 2026-09-23 (Group 1 closed).** Supersedes `CF_R8_HANDOFF.md`. Read this first, then the records it links.
 
+
+> **2026-09-24:** RC-4 42-state re-run done. 40 of 40 rated states match Excel = ISO = engine on every line;
+> CO / IN / OK / SC are ISO refusals (RC-3 inputs). Standard run 42 / 42 at 21171. Next: RC-4's remaining items.
+
 ---
 
 ## Where things stand

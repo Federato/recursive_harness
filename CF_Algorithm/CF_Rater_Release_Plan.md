@@ -42,21 +42,18 @@ What it buys: submissions that carry these facts get rated on them instead of an
 | D-2 | **Full insurable value** (building, special class). The rater assumes value = limit |
 | S-5 | **Cyber Business Income / Extra Expense sublimits**. BI is hard-wired to "Full Limit" |
 | D-1c | **NY territory factor** from City + County (ISO's code), not the Group I dropdown |
+| WH-CO / EQT-SC / AZ-PFD | **CO / IN / OK wind hazard county; SC earthquake territory; AZ fire-department credit** (ISO refuses or zeroes without them) |
 | FL-BGII | **FL county input**, so the Group II territory dropdown narrows by county as ISO's does |
 | Linked Special Class | Special Class "included in building" / linked item: never populated, untested |
 
-## RC-4 · Prove what's built but never ISO-checked (medium-large; a wider test deck)
+## RC-4 · Prove what's built: IN PROGRESS (2026-09-23)
 
-What it buys: 42 / 42 today covers 4 states and one risk each. This widens that coverage and fixes what it finds.
+"More states" done once: 42 new states run against live ISO; 8 rater fixes and 2 payload fixes (see record).
+**Full re-run 2026-09-24: 40 of 40 rated states match on every line** (0 mismatches); standard run 42 / 42 at 21171.
+Refusals (CO / IN / OK wind hazard county, SC EQ territory) moved to RC-3 as missing inputs.
 
-| Item | What |
-|---|---|
-| More states | 42 of 46 states have never been through the three-way run |
-| W-22 | IRPM / package mod / multi-premium rounding order; needs a test risk with IRPM ≠ 1 |
-| Specific / Tentative | Built, never confirmed by a live ISO call |
-| CA District II | Only District I has been rated against ISO |
-| Special Class in NYC | Whether W-23's protection-class rule applies to Special Class too |
-| Contents theft deductible | W-6 dropped the separate-theft-deductible branch on Contents Special; unverified either way |
+Still open in RC-4: W-22 (IRPM ≠ 1), Specific / Tentative rating, CA District II, Special Class in NYC,
+Contents theft deductible, NH cosmetic roof factor, and the edition audit of older TBL sheets (ED-ALL).
 
 ## RC-5 · Not built (large; each is its own project)
 

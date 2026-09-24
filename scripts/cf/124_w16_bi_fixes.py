@@ -531,8 +531,223 @@ def fix_z(app, wb):
     return "Z: Diagnostics traps 9 (Z-2, BLOCK) and 10 (Z-3, WARN)", set()
 
 
+def fix_scded(app, wb):
+    """RC-4 P1 (found by the 42-state run, 2026-09-23): Special Class Group I deductible factor
+    (row 174) banded the item's limit in a table with NO state column (`TBL - Special Class`
+    X:AB, countrywide values). ISO's `SetDeductibleFactorBasicGroupI` looks up the state's own
+    `DeductibleFactor` table on TotAmtInsuranceToUse (= the item's limit), and 9 states file
+    different factors: AL, CT, IA, KY, MI, NC, NJ, UT, WV all came out -20 on SC Group I (AL:
+    ISO 0.99 at 513,000, rater 0.96). Row 174 now uses the per-state table the Building's own
+    Group I deductible already uses (`TBL - BldgBGIRating` AX:BB), keyed on the item's state and
+    limit (C175). The $250 branch is unchanged."""
+    sc = wb.Worksheets(SCC)
+    n = 0
+    for c in COLS:
+        X, r = colname(c), 217 + c
+        f = str(sc.Cells(174, c).Formula)
+        old = (f"SUMPRODUCT(('TBL - Special Class'!$X$2:$X$241=VALUE(SUBSTITUTE('IN - Schedule'!$N${r},\",\",\"\")))"
+               f"*('TBL - Special Class'!$Y$2:$Y$241<={X}175)*('TBL - Special Class'!$Z$2:$Z$241>{X}175)"
+               f"*('TBL - Special Class'!$AA$2:$AA$241=\"Basic Group I\")*'TBL - Special Class'!$AB$2:$AB$241)")
+        if old not in f:
+            raise Gate(f"Special Class {X}174 is not the expected deductible lookup: {f!r}")
+        B = "'TBL - BldgBGIRating'!"
+        new = (f"SUMPRODUCT(({B}$AX$2:$AX$6703={w11.sc_state(X)})*({B}$AY$2:$AY$6703='IN - Schedule'!$N${r})"
+               f"*({B}$AZ$2:$AZ$6703<{X}175)*({B}$BA$2:$BA$6703>={X}175)*{B}$BB$2:$BB$6703)")
+        sc.Cells(174, c).Formula = f.replace(old, new)
+        n += 1
+    return f"SCDED: {n} cells -- Special Class Group I deductible uses the item's state table", set()
+
+
+def effective_date(wb) -> str:
+    """The rater's policy effective date (Defaults), as YYYYMMDD: ISO picks each state's package
+    in force on this date."""
+    d = wb.Worksheets("Defaults")
+    for r in range(1, 60):
+        if d.Range(f"A{r}").Value == "EffectiveDate":
+            return str(d.Range(f"B{r}").Value)[:10].replace("-", "")
+    raise Gate("Defaults has no EffectiveDate")
+
+
+def state_file_in_force(state, table, eff):
+    """The table from the state's package IN FORCE on `eff` (latest effective date <= eff, all
+    edition folders), else None (ISO then uses countrywide). `w11.state_file` takes the NEWEST
+    package on disk, which includes future-dated ones (AL 20270301 on a 2026-09-22 policy)."""
+    import re
+    pkgs = []
+    for d in w11.ISO.parent.glob(f"*/CF {state} *"):
+        m = re.match(rf"CF {state} (\d{{8}}) V(\d+)", d.name)
+        if m and d.is_dir() and m.group(1) <= eff:
+            pkgs.append((m.group(1), int(m.group(2)), d))
+    for _, _, d in sorted(pkgs, reverse=True):
+        f = d / "Rate Tables" / f"{table}.RateTable.csv"
+        if f.exists():
+            return f
+    return None
+
+
+def fix_scspb(app, wb):
+    """RC-4 (42-state run, 2026-09-23): the Special Class Special base rate list (`TBL - Special
+    Class` CG:CJ) was built from each state's NEWEST package, future-dated ones included, so 10
+    states carried a rate that is not yet in force (AL 0.039 from CF AL 20270301; ISO rates a
+    2026-09-22 policy on CF AL 20260601, 0.040). Rates are rebuilt from the package in force on
+    the rater's effective date; the source-table column (CJ, e.g. FL's NonResidential) is kept."""
+    eff = effective_date(wb)
+    t = wb.Worksheets("TBL - Special Class")
+    cw_dir = w11.CW
+    changed = []
+    for r in range(2, 48):
+        st, table = t.Range(f"CG{r}").Value, t.Range(f"CJ{r}").Value
+        if not st:
+            continue
+        f = state_file_in_force(st, table, eff) or (cw_dir / f"{table}.RateTable.csv")
+        rows = w11.read_csv(f)
+        if not rows:
+            raise Gate(f"{st}: {table} in {f.parent.parent.name} is header-only")
+        rate = float(rows[0][2])
+        old = t.Range(f"CI{r}").Value
+        if abs(float(old or 0) - rate) > 1e-12:
+            t.Range(f"CI{r}").Value = rate
+            changed.append(f"{st} {old}->{rate} ({f.parent.parent.name})")
+    t.Range("CK1").Value = "Source (RC-4)"
+    t.Range("CK2").Value = (f"CI rebuilt 2026-09-23 from each state's package IN FORCE on {eff} (not the newest on "
+                            f"disk). Changed: {'; '.join(changed) or 'none'}")
+    print("   ", "\n    ".join(changed))
+    return f"SCSPB: {len(changed)} Special Class Special base rates now from the in-force package", {SCC}
+
+
+def fix_w25(app, wb):
+    """RC-4 (42-state run, 2026-09-23). Two ISO rate rules round after EVERY factor and the rater
+    rounded once, and the rater folded two roof factors into one.
+
+    BI Group II (row 33) -- ISO `SetBasicGroupIIRate` (BI): ROUND(ROUND(ROUND(ROUND(base x LCM) x
+    numeric) x BCEG) x adjustment). W-14R had adjustment before BCEG; AK / FL gave the same answer
+    either way, VA / WV / MN / NE / RI did not (+-3 to 5).
+
+    Building Group II (row 42) -- ISO `SetBasicGroupIIRate` (Structure): ROUND(ROUND(ROUND(ROUND(
+    ROUND(base x LCM) x numeric) x roof ACV) x roof COSMETIC) x BCEG). Reproduced ISO exactly in
+    AL / CT / MI / UT (the rater's single ROUND was -7 to +21). ISO's roof factors
+    (`SetLimitationsOnCovForRoofSurfacing*`): ACV = the paragraph's factor for Paragraph A or A and B,
+    else 1; cosmetic = the state's Paragraph B factor for Paragraph B or A and B, else 1. Group I,
+    Broad and Special use ACV only. Row 9 (the ACV factor Group I / Broad / Special read) now
+    gives 1 for Paragraph B alone; row 40 becomes the cosmetic factor (was a pre-multiplied
+    0.9702 from the rater's old Group II table)."""
+    br, bi = wb.Worksheets(BR), wb.Worksheets(BI)
+    T = "'TBL - RoofSurfacing'!$A$2:$E$123"
+    n = 0
+    for c in COLS:
+        X, b = colname(c), 45 + c
+        para, st = f"'{w11.SCH}'!$Y${b}", f"'{w11.CS}'!{X}$2"
+        if "'TBL - RoofSurfacing'" not in str(br.Cells(9, c).Formula) or \
+                "'TBL - RoofSurfacing'" not in str(br.Cells(40, c).Formula):
+            raise Gate(f"Bldg {X}9 / {X}40 are not the roof lookups")
+        br.Cells(9, c).Formula = (f"=IF(OR({para}=\"Paragraph A\",{para}=\"Paragraph A and B\"),"
+                                  f"IFERROR(VLOOKUP({st}&\"|\"&{para},{T},4,FALSE),1),1)")
+        br.Cells(40, c).Formula = (f"=IF(OR({para}=\"Paragraph B\",{para}=\"Paragraph A and B\"),"
+                                   f"IFERROR(VLOOKUP({st}&\"|Paragraph B\",{T},4,FALSE),1),1)")
+        f42 = str(br.Cells(42, c).Formula)
+        old = f"ROUND({X}36*{X}38*{X}39*{X}40*{X}41,3)"
+        if f42.count(old) != 1:
+            raise Gate(f"Bldg {X}42 lacks the single-ROUND Group II rate: {f42!r}")
+        low = f"ROUND('CALC - Bldg Rating'!{X}37*'CALC - Bldg Rating'!{X}38*'CALC - Bldg Rating'!{X}40,3)"
+        if f42.count(low) != 1:
+            raise Gate(f"Bldg {X}42 lacks the lowest-rate branch: {f42!r}")
+        # Lowest-rate branch (wind/hail excluded): ISO BasicGroupIICauseOfLossAdjustment =
+        # ROUND(ROUND(ROUND(lowest x LCM) x ACV) x cosmetic) ... ; row 40 is now cosmetic only.
+        br.Cells(42, c).Formula = f42.replace(
+            old, f"ROUND(ROUND(ROUND(ROUND(ROUND({X}36*{X}38,3)*{X}39,3)*{X}9,3)*{X}40,3)*{X}41,3)").replace(
+            low, f"ROUND(ROUND(ROUND({X}37*{X}38,3)*{X}9,3)*{X}40,3)")
+        bce = f"INDEX('{BR}'!$C$41:${w11.AP}$41,1,{X}$81)"
+        f33 = str(bi.Cells(33, c).Formula)
+        old33 = f"ROUND(ROUND({X}29*{X}30*{X}31*{X}32,3)*{bce},3)"
+        if old33 not in f33:
+            raise Gate(f"BI {X}33 is not the W-14R formula: {f33!r}")
+        bi.Cells(33, c).Formula = f33.replace(
+            old33, f"ROUND(ROUND(ROUND(ROUND({X}29*{X}30,3)*{X}31,3)*{bce},3)*{X}32,3)")
+        n += 4
+    br.Range("B9").Value = "RoofSurfacingACVFactor (ISO ACV: Paragraph A / A and B; W-25)"
+    br.Range("B40").Value = "RoofSurfacingCosmeticExclFactor (ISO: Paragraph B / A and B; W-25)"
+    return f"W-25: {n} cells -- roof ACV / cosmetic split; Building and BI Group II rates round per ISO", {BR, BI}
+
+
+def fix_scfin(app, wb):
+    """RC-4 (42-state run, 2026-09-23). ISO Special Class `SetFinal{BasicGroupI,BasicGroupII,Broad,
+    Special}Rate` = ROUND(ROUND(adjusted x deductible-by-location credit, 3) x deductible factor, 3).
+    The rater rounded the three-way product once. AL: Group I 0.159 x 0.995 = 0.158, x 0.99 = 0.156
+    (ISO) vs 0.157; Special 0.035 x 0.995 = 0.035, x 0.96 = 0.034 (ISO) vs 0.033. Only visible where a
+    state grants the per-location credit (FL files none)."""
+    sc = wb.Worksheets(SCC)
+    n = 0
+    for p in (14, 38, 57, 78):
+        a, b, d = p - 3, p - 2, p - 1
+        for c in COLS:
+            X = colname(c)
+            old = f"=ROUND({X}{a}*{X}{b}*{X}{d},3)"
+            if str(sc.Cells(p, c).Formula) != old:
+                raise Gate(f"Special Class {X}{p} is not {old}: {sc.Cells(p, c).Formula!r}")
+            sc.Cells(p, c).Formula = f"=ROUND(ROUND({X}{a}*{X}{b},3)*{X}{d},3)"
+            n += 1
+    return f"SCFIN: {n} cells -- Special Class final rates round after the per-location credit", {SCC}
+
+
+def fix_w26(app, wb):
+    """RC-4 (CT in the 42-state run, 2026-09-23). Five states file the roof-surfacing table with ONE
+    row instead of Paragraph A / B / A and B: CT, IN, NH key it "ACV", MA and WY key it "Y" (0.98).
+    Their `SetLimitationsOnCovForRoofSurfacingACVFactor` applies that row whenever a roof
+    limitation is present (any paragraph) and the cosmetic factor is 1.0. The rater looked up
+    "<ST>|Paragraph ...", found nothing and used 1 (CT Building Group I +14, Group II +21).
+    Rows 9 (ACV) / 40 (cosmetic) now use the single row when the state files one. NH's cosmetic
+    rule is ambiguous in the file; treated as 1 like the others (unverified)."""
+    br = wb.Worksheets(BR)
+    T = "'TBL - RoofSurfacing'!$A$2:$E$123"
+    n = 0
+    for c in COLS:
+        X, b = colname(c), 45 + c
+        para, st = f"'{w11.SCH}'!$Y${b}", f"'{w11.CS}'!{X}$2"
+        single = f"IFERROR(VLOOKUP({st}&\"|ACV\",{T},4,FALSE),IFERROR(VLOOKUP({st}&\"|Y\",{T},4,FALSE),\"\"))"
+        anyp = f"OR({para}=\"Paragraph A\",{para}=\"Paragraph B\",{para}=\"Paragraph A and B\")"
+        f9, f40 = str(br.Cells(9, c).Formula), str(br.Cells(40, c).Formula)
+        if not (f9.startswith(f"=IF(OR({para}=\"Paragraph A\"") and f40.startswith(f"=IF(OR({para}=\"Paragraph B\"")):
+            raise Gate(f"Bldg {X}9 / {X}40 are not the W-25 roof formulas")
+        br.Cells(9, c).Formula = f"=IF(AND({anyp},{single}<>\"\"),{single},{f9[1:]})"
+        br.Cells(40, c).Formula = f"=IF({single}<>\"\",1,{f40[1:]})"
+        n += 2
+    return f"W-26: {n} cells -- single-row roof tables (CT / IN / NH 'ACV', MA / WY 'Y')", {BR}
+
+
 w11.FIXES.update(W16=fix_w16, W20=fix_w20, W21=fix_w21, CY=fix_cy, AK=fix_ak, NY=fix_ny, W24=fix_w24,
-                 CYNY=fix_cyny, DV=fix_dv, Z=fix_z)
+                 CYNY=fix_cyny, DV=fix_dv, Z=fix_z, SCDED=fix_scded, SCSPB=fix_scspb, W25=fix_w25, SCFIN=fix_scfin,
+                 W26=fix_w26)
+def fix_sctheft(app, wb):
+    """RC-4 (CT in the 42-state run, 2026-09-23). Special Class row 72 hard-coded the Special theft
+    exclusion factor at 0.88 (CW). ISO `SpecialBldgTheftExclusionFactor` is per state and 30 states
+    file 0.91 or 0.94 (CT 0.94: Special Class Special -31). Row 72 now reads the same per-state table
+    the Building's own Special theft factor uses (`TBL - BldgSpecialRating` M:O, Bldg row 93)."""
+    sc = wb.Worksheets(SCC)
+    n = 0
+    for c in COLS:
+        X, r = colname(c), 217 + c
+        old = f"=IF('IN - Schedule'!$W${r}=\"Yes\",0.88,1)"
+        if str(sc.Cells(72, c).Formula) != old:
+            raise Gate(f"Special Class {X}72 is not {old}: {sc.Cells(72, c).Formula!r}")
+        sc.Cells(72, c).Formula = (f"=IF('IN - Schedule'!$W${r}=\"Yes\",IFERROR(VLOOKUP({w11.sc_state(X)},"
+                                   f"'TBL - BldgSpecialRating'!$M$2:$O$47,3,FALSE),1),1)")
+        n += 1
+    return f"SCTHEFT: {n} cells -- Special Class Special theft factor per state", {SCC}
+
+
+w11.FIXES["SCTHEFT"] = fix_sctheft
+w11.EXPECT_COLS["SCTHEFT"] = set()
+w11.NO_MOVE.add("SCTHEFT")      # FL's factor is 0.88
+w11.EXPECT_COLS["W26"] = set()
+w11.NO_MOVE.add("W26")          # none of the 4 baseline states files a single-row table
+w11.EXPECT_COLS["SCFIN"] = set()
+w11.NO_MOVE.add("SCFIN")        # FL grants no per-location credit; proven by the scenario runs
+w11.EXPECT_COLS["W25"] = set()
+w11.NO_MOVE.add("W25")          # proven by the scenario runs; today's 4 risks round the same
+w11.EXPECT_COLS["SCSPB"] = set()
+w11.NO_MOVE.add("SCSPB")
+w11.EXPECT_COLS["SCDED"] = set()
+w11.NO_MOVE.add("SCDED")
 w11.EXPECT_COLS["Z"] = set()
 w11.NO_MOVE.add("Z")
 w11.EXPECT_COLS["DV"] = set()

@@ -141,6 +141,15 @@ def txt(v, width=None):
     return s.zfill(width) if width and s.isdigit() else s
 
 
+def by_location(o):
+    """The deductibles-by-location record. ISO gives each credit its own field: Group I reads
+    `Deductible`, Group II `WindstormOrHailDeductible`, Special `TheftDeductible`; a missing
+    field leaves that credit at 1.0. The rater applies its one per-location election to all
+    three, so carry the item's own three amounts (RC-4, 2026-09-23: AL Special Class Group II
+    and Special were otherwise ISO 1.0 vs the rater's 0.995)."""
+    return {k: o[k] for k in ("Deductible", "WindstormOrHailDeductible", "TheftDeductible") if o.get(k)}
+
+
 class Builder:
     def __init__(self, recs, policy, dflt, scc=None):
         self.r, self.pol, self.d = recs, policy, dflt
@@ -198,6 +207,11 @@ class Builder:
         self.put(o, "ZipCode", txt(loc["ZipCode"], 5))
         if loc.get("District") not in (None, "Not Applicable"):
             self.put(o, "District", loc["District"])
+        if loc.get("State") == "AZ":
+            # Arizona's Private Fire Department Credit multiplies Group I (default 1, 0.5-1). No
+            # rule sets it, so omitted it is 0 and ISO's Group I rate is 0. The rater has no such
+            # input and applies no credit: send 1.0 (RC-4, 2026-09-23; RC-3 input AZ-PFD).
+            o["BasicGroupIReductionCredit"] = 1.0
         if loc.get("State") == "NY":
             # ISO NY takes the Group I territory from (City, County); the five borough counties
             # rate from the NYC table (D-1b). The rater holds County since 2026-09-23 (Schedule Q).
@@ -283,7 +297,7 @@ class Builder:
                 raise SystemExit(f"ABORT: unknown Additional Insurable Interest option {opt!r}")
             o["CommercialPropertyLegalLiabilityCoverageForm"] = [{"AddlInsurableInt": AII[opt]}]
         if self.loc_perded.get(b.get("ParentID")) == "Yes" and b.get("Deductible") not in BLANKS:
-            o["CommercialPropertyDeductiblesByLocationBldg"] = [{"Deductible": b["Deductible"]}]
+            o["CommercialPropertyDeductiblesByLocationBldg"] = [by_location(o)]
         self.records(o, b, {"WindHailExcl": "CommercialPropertyWindstormOrHailExclusion",
                             "VandalismExcl": "CommercialPropertyVandalismExclusion",
                             "TheftExcl": "CommercialPropertyTheftExclusion",
@@ -372,8 +386,6 @@ class Builder:
         cc = self.scc.get((173, s["_col"]))
         if cc not in BLANKS:
             o["ClassCode"] = txt(cc, 4)
-        if s.get("DedByLocation") == "Yes" and s.get("Deductible") not in BLANKS:
-            o["CommercialPropertyDeductiblesByLocationSpecialClass"] = [{"Deductible": s["Deductible"]}]
         o["FullSpecialClassValue"] = o["Limit"]            # D-2
         for f, h in (("ClassDescription", "ItemDesc"), ("CauseOfLoss", "CauseOfLoss"),
                      ("ValuationType", "ValuationType"), ("AgreedValueOption", "AgreedValue"),
@@ -384,6 +396,8 @@ class Builder:
         whd = s.get("WindHailDed")
         self.put(o, "WindstormOrHailDeductible", s.get("Deductible") if whd == "Not Applicable" else whd)
         self.put(o, "Coinsurance", pct(s.get("BuildingCoins")))
+        if s.get("DedByLocation") == "Yes" and s.get("Deductible") not in BLANKS:
+            o["CommercialPropertyDeductiblesByLocationSpecialClass"] = [by_location(o)]
         o.update(IncludedInBlkt=s.get("InclInBlanket") or self.d["IncludedInBlkt"],
                  LossCostMultiplier=float(self.d["LossCostMultiplier"]),
                  PackageModFactor=float(self.pol.get((23, 3)) or 1.0),

@@ -258,3 +258,14 @@ symbol but U; the payload now sends it, and **ISO rates NY; the engine matches 9
 | W-24 | **FIXED 2026-09-23 (RC-1). R-8's 10 → 40 widening missed 7 live CoreScratchpad rows** (140, 173, 180, 181, 208, 210, 211) | Records 11-40 read blanks: Contents BGI deductible 0, Contents Special base 0, BI Special base / theft 0 → $0 premiums | Found by the column audit + clone test; rows filled to AP. Standing check: `scripts/cf/136_column_consistency_audit.py --strict` | No premium today (only 4 records) |
 | FL-BGII | **FL Group II territory is county-driven in ISO** (`DomainBasicGroupIIRatingTerrFL`) | RC-1 gave FL a plain 6-value dropdown (it had none) | ISO narrows the choice by county, as with NY | Open (RC-3, with a FL county input) |
 
+## Feature set: RC-4 "more states" findings (2026-09-23)
+
+| # | Item | Status |
+|---|---|---|
+| SCDED / SCSPB / SCFIN / SCTHEFT / W-25 / W-26 | Special Class deductible, base-rate edition, final rounding, theft factor; Group II rounding and roof split; single-row roof tables | **FIXED 2026-09-23** (`CF_W16_W20_W21_Record.md`, RC-4) |
+| AZ-PFD | Arizona Private Fire Department Credit (location, 0.5-1) | Payload sends 1.0; **input missing (RC-3)** |
+| WH-CO | CO / IN / OK county-driven wind hazard level territory; ISO refuses without it | **Input missing (RC-3)** |
+| EQT-SC | SC requires an earthquake territory even without EQ cover | **Input missing (RC-3 / RC-5 Earthquake)** |
+| ED-ALL | Per-state tables must come from the package in force on the effective date (`state_file_in_force`), not the newest on disk | Open: audit every older TBL sheet; today's tables checked clean |
+| NH-COS | NH cosmetic roof factor rule ambiguous in the file | Open, unverified |
+
