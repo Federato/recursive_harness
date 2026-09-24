@@ -195,7 +195,10 @@ class Builder:
         out = {}
         for state, locs in states.items():
             self.order = []                               # (blk, record) in emission order
-            body = self.policy(state, [self.location(l) for l in locs])
+            los = [self.location(l) for l in locs]
+            for i, lo in enumerate(los, start=1):
+                lo["UnitNumber"] = i                      # as ISO's STC payloads (RC-3 linked SC)
+            body = self.policy(state, los)
             out[state] = (body, list(self.order))
         return out
 
@@ -215,6 +218,11 @@ class Builder:
             cp["CommercialPropertyCyberIncidentExclusionWithEnsuingCausesOfLossExceptions"] = [{
                 "CyberLossOrDamageToCoveredPropertyCovLOI": int(self.pol.get((5, 6)) or 0),
                 "CyberAggregateLOI": int(self.pol.get((6, 6)) or 0)}]
+            # S-5 (RC-3, 2026-09-24): Business Income / Extra Expense sublimits (IN - Policy F7 / F8)
+            rec = cp["CommercialPropertyCyberIncidentExclusionWithEnsuingCausesOfLossExceptions"][0]
+            for fld, cell in (("CyberBusnIncomeCovLOI", (7, 6)), ("CyberExtraExpenseCovLOI", (8, 6))):
+                if isinstance(self.pol.get(cell), (int, float)) and self.pol.get(cell) > 0:
+                    rec[fld] = int(self.pol[cell])
         return {"header": {"quoteback": "", "authorization": {}},
                 "body": {"SchemeKeys": {"ProductName": f"Commercial Property {state}",
                                         "EffectiveDateTime": f"{eff.isoformat()}T00:00:00"},
@@ -230,10 +238,12 @@ class Builder:
         if loc.get("District") not in (None, "Not Applicable"):
             self.put(o, "District", loc["District"])
         if loc.get("State") == "AZ":
-            # Arizona's Private Fire Department Credit multiplies Group I (default 1, 0.5-1). No
-            # rule sets it, so omitted it is 0 and ISO's Group I rate is 0. The rater has no such
-            # input and applies no credit: send 1.0 (RC-4, 2026-09-23; RC-3 input AZ-PFD).
-            o["BasicGroupIReductionCredit"] = 1.0
+            # Arizona's Private Fire Department Credit multiplies the Group I base (0.5-1); omitted,
+            # ISO prices Group I at 0. The rater holds it since RC-3 AZ-PFD (Schedule T, default 1).
+            v = loc.get("AZFireDeptCredit")
+            if not isinstance(v, (int, float)):
+                raise SystemExit(f"ABORT: Arizona location {loc['ID']} needs AZFireDeptCredit (Schedule col T)")
+            o["BasicGroupIReductionCredit"] = float(v)
         if loc.get("State") == "NY":
             # ISO NY takes the Group I territory from (City, County); the five borough counties
             # rate from the NYC table (D-1b). The rater holds County since 2026-09-23 (Schedule Q).
@@ -255,16 +265,37 @@ class Builder:
                 raise SystemExit(f"ABORT: Alaska location {loc['ID']} (Remainder of State) needs "
                                  f"East of 141st Meridian = Yes / No (Schedule col P)")
             o["BasicGroupIDistrictTerritory"] = east
+        # RC-3 (2026-09-24): ISO refuses CO / IN / OK without the wind hazard county and SC without
+        # its earthquake territory. Neither moves a premium; the rater derives both (Schedule R / S).
+        for f, h in (("GeographicWindHazardLevelTerritory", "WindHazardTerr"), ("EQTerr", "EQTerr")):
+            v = loc.get(h)
+            if v == "Select":
+                raise SystemExit(f"ABORT: {loc.get('State')} location {loc['ID']} needs {h} "
+                                 f"(Schedule: {'County, col Q' if h == 'WindHazardTerr' else 'a SC ZIP in TBL - EQTerr'})")
+            if v not in BLANKS and v != "Not Applicable":
+                o[f] = txt(v)
         blds = self.kids("BLD", loc["ID"])
         whd = loc.get("WindHailDed")
         if whd == "Not Applicable" and blds:
             whd = blds[0].get("Deductible")               # the rater's flat-deductible reading
         self.put(o, "WindstormOrHailDeductible", whd)
+        # Unit numbers, as ISO's own STC payloads carry them: a linked Special Class item points at
+        # its building through BuildingIDNumber = that Structure's UnitNumber (RC-3, 2026-09-24).
+        unit = {}
         if blds:
             o["CommercialPropertyStructure"] = [self.structure(b) for b in blds]
+            for j, (b, so) in enumerate(zip(blds, o["CommercialPropertyStructure"]), start=1):
+                so["UnitNumber"] = j
+                unit[b["ID"]] = j
         scs = self.kids("SC", loc["ID"])
         if scs:
             o["CommercialPropertySpecialClass"] = [self.special_class(s) for s in scs]
+            for s_, so in zip(scs, o["CommercialPropertySpecialClass"]):
+                if s_.get("LimitInclInBuilding") == "Yes":
+                    if s_.get("LinkedBuildingItemID") not in unit:
+                        raise SystemExit(f"ABORT: Special Class {s_['ID']} is included in a building but "
+                                         f"LinkedBuildingItemID {s_.get('LinkedBuildingItemID')!r} is not a building here")
+                    so["BuildingIDNumber"] = unit[s_["LinkedBuildingItemID"]]
         return o
 
     def structure(self, b):
@@ -363,9 +394,9 @@ class Builder:
         # STC payloads do (TH-DED).
         self.put(o, "TheftDeductible", b.get("TheftDed"))
         # ISO's contents sprinkler-leakage rate reads the OCCUPANCY's own SprinklerSystem
-        # (../../ from PersonalProperty, past the Table wrapper). The rater has no such
-        # input and applies the building's (Contents row 10 = Bldg row 11) -- S-4.
-        self.put(o, "SprinklerSystem", b.get("SprinklerSystem"))
+        # (../../ from PersonalProperty). The rater holds it since RC-3 S-4 (Schedule J, default =
+        # the building's).
+        self.put(o, "SprinklerSystem", oc.get("SprinklerSystem"))
         pps = self.kids("CON", oc["ID"])
         if pps:
             o["CommercialPropertyPersonalProperty"] = [self.contents(p, b) for p in pps]
@@ -389,7 +420,7 @@ class Builder:
         self.records(o, p, {"WindHailExcl": "CommercialPropertyWindstormOrHailExclusionPrsnlProp",
                             "VandalismExcl": "CommercialPropertyVandalismExclusionPrsnlProp",
                             "TheftExcl": "CommercialPropertyTheftExclusionPrsnlProp"})
-        if b.get("SprinklerLeakageExcl") == "Yes":        # one rater input drives both
+        if p.get("SprinklerLeakageExcl") == "Yes":        # the contents' own election (S-4, col Q)
             o["CommercialPropertySprinklerLeakageExclusionPrsnlProp"] = [{}]
         return o
 
@@ -410,7 +441,7 @@ class Builder:
         self.records(o, x, {"WindHailExcl": "CommercialPropertyWindstormOrHailExclusionBusnIncome",
                             "VandalismExcl": "CommercialPropertyVandalismExclusionBusnIncome",
                             "TheftExcl": "CommercialPropertyTheftExclusionBusnIncome"})
-        if sprinkler_excl == "Yes":                       # rater BI row 11 = the building's (S-4)
+        if x.get("SprinklerLeakageExcl") == "Yes":        # BI's own election (S-4, col Q)
             o["CommercialPropertySprinklerLeakageExclusionBusnIncome"] = [{}]
         return o
 

@@ -1314,6 +1314,165 @@ def fix_w3fin(app, wb):
     return f"W-3 + FINRND: {n} cells", {BR, "CALC - Contents Rating"}
 
 
+def fix_rc3geo(app, wb):
+    """RC-3 WH-CO / EQT-SC (2026-09-24). ISO refused CO / IN / OK and SC for two location inputs the
+    rater never held. Neither moves a premium the rater prices:
+      - `GeographicWindHazardLevelTerritory` (CO / IN county, OK "Entire State") -> hazard level,
+        read only by the Specific Group II ELIGIBILITY messages;
+      - `EQTerr` (SC, by ZIP: `DomainEQTerrSC`) -> `BCEGEQFactor`, an earthquake factor.
+    New Schedule location columns R `WindHazardTerr` (from County, col Q) and S `EQTerr` (from ZIP via
+    new `TBL - EQTerr`), so the payload sends what the rater holds and never invents a value."""
+    import csv
+    eff = effective_date(wb)
+    f = state_file_in_force("SC", "BasicGroupIRate", eff)          # any file: we want the package dir
+    pkg = f.parent.parent if f else None
+    dom = pkg / "Domain Tables" / "DomainEQTerrSC.DomainTable.csv" if pkg else None
+    if not dom or not dom.exists():
+        raise Gate(f"DomainEQTerrSC not found in {pkg}")
+    rows = [(r[1].zfill(5), r[3]) for r in list(csv.reader(open(dom, encoding="utf-8-sig")))[1:]]
+    ws = w11.new_sheet(wb, "TBL - EQTerr")
+    ws.Range("A1:C1").Value = (("ZipCodeSC", "EQTerr", f"Source: {pkg.name} DomainEQTerrSC (RC-3, 2026-09-24)"),)
+    ws.Range("A:A").NumberFormat = "@"
+    ws.Range(f"A2:B{len(rows) + 1}").Value = tuple(rows)
+    last = len(rows) + 1
+    sch = wb.Worksheets(w11.SCH)
+    for col in ("R", "S"):
+        if sch.Range(f"{col}4").Value not in (None, ""):
+            raise Gate(f"Schedule {col}4 is not empty")
+    sch.Range("R4").Value = "WindHazardTerr"
+    sch.Range("S4").Value = "EQTerr"
+    for r in range(5, 45):
+        sch.Range(f"R{r}").Formula = (f"=IF(C{r}=\"OK\",\"Entire State\",IF(OR(C{r}=\"CO\",C{r}=\"IN\"),"
+                                      f"IF(OR(Q{r}=\"\",Q{r}=\"Not Applicable\"),\"Select\",Q{r}),\"Not Applicable\"))")
+        sch.Range(f"S{r}").Formula = (f"=IF(C{r}=\"SC\",IFERROR(VLOOKUP(TEXT(D{r},\"00000\"),'TBL - EQTerr'!$A$2:$B${last},"
+                                      f"2,FALSE),\"Select\"),\"Not Applicable\")")
+    return f"RC3-GEO: TBL - EQTerr ({len(rows)} SC ZIPs); Schedule R WindHazardTerr, S EQTerr on 40 rows", set()
+
+
+def fix_azpfd(app, wb):
+    """RC-3 AZ-PFD (2026-09-24). Arizona's Private Fire Department Credit (`BasicGroupIReductionCredit`,
+    location, 0.5-1) multiplies the Group I BASE rate on the Class path of Building, Contents and
+    Special Class (AZ `SetBasicGroupIRate`: ROUND(ROUND(base x credit,3) x LCM,3) ...; Specific and BI
+    untouched). The rater had no input; the payload sent 1.0. New Schedule location column T
+    `AZFireDeptCredit` (1 for AZ, else Not Applicable); Bldg 10 / Contents 9 / Special Class 6 apply it.
+    Contents 9 also gains ISO's ROUND(base x LCM,3) (PP `SetBasicGroupIRate`)."""
+    sch = wb.Worksheets(w11.SCH)
+    if sch.Range("T4").Value not in (None, ""):
+        raise Gate("Schedule T4 is not empty")
+    sch.Range("T4").Value = "AZFireDeptCredit"
+    for r in range(5, 45):
+        sch.Range(f"T{r}").Formula = f"=IF(C{r}=\"AZ\",1,\"Not Applicable\")"
+    cr_of = lambda loc: (f"IF(ISNUMBER(INDEX('IN - Schedule'!$T$5:$T$44,{loc})),"            # noqa: E731
+                         f"INDEX('IN - Schedule'!$T$5:$T$44,{loc}),1)")
+    br, cr, sc = wb.Worksheets(BR), wb.Worksheets("CALC - Contents Rating"), wb.Worksheets(SCC)
+
+    def edit(sh, r, c, a, b):
+        f = str(w11.com_retry(lambda: sh.Cells(r, c).Formula))
+        if f.count(a) != 1:
+            raise Gate(f"{sh.Name}!{colname(c)}{r}: expected one {a!r} in {f!r}")
+        w11.com_retry(lambda: setattr(sh.Cells(r, c), "Formula", f.replace(a, b)))
+
+    for c in COLS:
+        X = colname(c)
+        k = cr_of(f"'CALC - CoreScratchpad'!{X}$285")
+        edit(br, 10, c, f"ROUND(ROUND((ROUND({X}3*{X}4,3)+", f"ROUND(ROUND((ROUND(ROUND({X}3*{k},3)*{X}4,3)+")
+        k = cr_of(f"INDEX('CALC - CoreScratchpad'!$C$285:$AP$285,1,{X}$116)")
+        edit(cr, 9, c, f"ROUND((({X}3*{X}4)+{X}5)*{X}6*{X}7*{X}8,3)",
+             f"IF(INDEX('CALC - CoreScratchpad'!$C$6:$AP$6,1,{X}$116)=\"No\",ROUND((({X}3*{X}4)+{X}5)*{X}6*{X}7*{X}8,3),"
+             f"ROUND((ROUND(ROUND({X}3*{k},3)*{X}4,3)+{X}5)*{X}6*{X}7*{X}8,3))")
+        k = cr_of(f"{X}$163")
+        edit(sc, 6, c, f"=ROUND({X}4*{X}5,3)", f"=ROUND(ROUND({X}4*{k},3)*{X}5,3)")
+    return "AZ-PFD: Schedule T + Bldg 10 / Contents 9 / Special Class 6", {BR, "CALC - Contents Rating", SCC}
+
+
+def fix_s5(app, wb):
+    """RC-3 S-5 (2026-09-24). Business Income's Cyber cause-of-loss-exceptions factor is keyed on
+    `CyberTypeOfLimitBusinessIncome` ("Sublimit" when the Cyber record carries `CyberBusnIncomeCovLOI`
+    > 0; for Extra Expense Only, `CyberTypeOfLimitExtraExpense` from `CyberExtraExpenseCovLOI`). The rater
+    had no such inputs and hard-wired "Full Limit" (BI rows 24/44/58/74, SC BI 104/125/139/156).
+    New `IN - Policy` E7:F8 inputs; the rows pick Sublimit when the matching one is > 0."""
+    pol = wb.Worksheets("IN - Policy")
+    for r in (7, 8):
+        if pol.Range(f"E{r}").Value not in (None, "") or pol.Range(f"F{r}").Value not in (None, ""):
+            raise Gate(f"IN - Policy E{r}:F{r} is not empty")
+    pol.Range("E7").Value = "Business Income Sublimit:"
+    pol.Range("E8").Value = "Extra Expense Sublimit:"
+    pol.Range("F7").Value = 0
+    pol.Range("F8").Value = 0
+    bi, sc = wb.Worksheets("CALC - BI Rating"), wb.Worksheets(SCC)
+    n = 0
+    for c in COLS:
+        X = colname(c)
+        for sh, rows, cov in ((bi, (24, 44, 58, 74), f"'IN - Schedule'!$D${174 + c}"),
+                              (sc, (104, 125, 139, 156), f"'IN - Schedule'!$D${260 + c}")):
+            lt = (f"IF({cov}=\"Extra Expense Only\",IF('IN - Policy'!$F$8>0,\"Sublimit\",\"Full Limit\"),"
+                  f"IF('IN - Policy'!$F$7>0,\"Sublimit\",\"Full Limit\"))")
+            for r in rows:
+                f = str(w11.com_retry(lambda: sh.Cells(r, c).Formula))
+                if f.count("\"Full Limit\"") != 1:
+                    raise Gate(f"{sh.Name}!{X}{r} has no single hard-wired Full Limit: {f!r}")
+                w11.com_retry(lambda: setattr(sh.Cells(r, c), "Formula", f.replace("\"Full Limit\"", lt)))
+                n += 1
+    return f"S-5: Cyber BI / EE sublimit inputs (IN - Policy F7 / F8); {n} cells", set()
+
+
+def fix_s4(app, wb):
+    """RC-3 S-4 (2026-09-24). ISO prices Contents' sprinkler-leakage exclusion from the OCCUPANCY's own
+    `SprinklerSystem` and the PersonalProperty's own `...SprinklerLeakageExclusionPrsnlProp`; BI from its
+    own `...SprinklerLeakageExclusionBusnIncome` (sprinkler system = the building's). The rater had one
+    building input for all three (Contents 10 / BI 11 = Bldg 11). New Schedule inputs, each defaulting
+    to the parent building's value: occupancy J `SprinklerSystem`, Contents Q and BI Q
+    `SprinklerLeakageExcl`. Contents 10 / BI 11 compute their own non-sprinklered rate
+    (ROUND(0.0006 [PR 0.0005] x LCM, 3), as Bldg 11)."""
+    sch = wb.Worksheets(w11.SCH)
+    for cell in ("J90", "Q133", "Q176"):
+        if sch.Range(cell).Value not in (None, ""):
+            raise Gate(f"Schedule {cell} is not empty")
+    sch.Range("J90").Value = "SprinklerSystem"
+    sch.Range("Q133").Value = "SprinklerLeakageExcl"
+    sch.Range("Q176").Value = "SprinklerLeakageExcl"
+    for i in range(40):
+        o, p, b = 91 + i, 134 + i, 177 + i
+        sch.Range(f"J{o}").Formula = f"=IFERROR(INDEX($V$48:$V$87,MATCH($B{o},$A$48:$A$87,0)),\"Select\")"
+        sch.Range(f"Q{p}").Formula = f"=IFERROR(INDEX($W$48:$W$87,MATCH($L{p},$A$48:$A$87,0)),\"No\")"
+        sch.Range(f"Q{b}").Formula = f"=IFERROR(INDEX($W$48:$W$87,MATCH($B{b},$A$48:$A$87,0)),\"No\")"
+    cr, bi = wb.Worksheets("CALC - Contents Rating"), wb.Worksheets("CALC - BI Rating")
+    NS = "\"Sprinklered Building, but Not Rated as Sprinklered\""
+    n = 0
+    for c in COLS:
+        X = colname(c)
+        old = f"=INDEX('CALC - Bldg Rating'!$C$11:$AP$11,1,{X}$116)"
+        if str(w11.com_retry(lambda: cr.Cells(10, c).Formula)) != old:
+            raise Gate(f"Contents {X}10 is not {old!r}")
+        st = f"INDEX('CALC - CoreScratchpad'!$C$2:$AP$2,1,{X}$116)"
+        occ = f"INDEX('IN - Schedule'!$J$91:$J$130,{X}$115)"
+        w11.com_retry(lambda: setattr(cr.Cells(10, c), "Formula",
+                                      f"=IF(AND({occ}={NS},'IN - Schedule'!$Q${131 + c}=\"Yes\"),"
+                                      f"ROUND(IF({st}=\"PR\",0.0005,0.0006)*{X}4,3),0)"))
+        old = f"=INDEX('CALC - Bldg Rating'!$C$11:$AP$11,1,{X}$81)"
+        if str(w11.com_retry(lambda: bi.Cells(11, c).Formula)) != old:
+            raise Gate(f"BI {X}11 is not {old!r}")
+        bst = f"INDEX('CALC - CoreScratchpad'!$C$2:$AP$2,1,{X}$81)"
+        bsys = f"INDEX('IN - Schedule'!$V$48:$V$87,{X}$81)"
+        w11.com_retry(lambda: setattr(bi.Cells(11, c), "Formula",
+                                      f"=IF(AND({bsys}={NS},'IN - Schedule'!$Q${174 + c}=\"Yes\"),"
+                                      f"ROUND(IF({bst}=\"PR\",0.0005,0.0006)*{X}4,3),0)"))
+        n += 2
+    return f"S-4: Schedule occupancy J / Contents Q / BI Q + {n} cells", set()
+
+
+w11.FIXES["S4"] = fix_s4
+w11.EXPECT_COLS["S4"] = set()
+w11.NO_MOVE.add("S4")           # every new input defaults to the building's value
+w11.FIXES["S5"] = fix_s5
+w11.EXPECT_COLS["S5"] = set()
+w11.NO_MOVE.add("S5")
+w11.FIXES["AZPFD"] = fix_azpfd
+w11.EXPECT_COLS["AZPFD"] = set()
+w11.NO_MOVE.add("AZPFD")
+w11.FIXES["RC3GEO"] = fix_rc3geo
+w11.EXPECT_COLS["RC3GEO"] = set()
+w11.NO_MOVE.add("RC3GEO")
 w11.FIXES["W3FIN"] = fix_w3fin
 w11.EXPECT_COLS["W3FIN"] = set()
 w11.NO_MOVE.add("W3FIN")        # no baseline location elects per-location deductibles

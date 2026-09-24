@@ -480,7 +480,7 @@ def main() -> int:
             # it is still callable; the reopen-verify below is the proof either way.
             save = wb.Save
             if callable(save):
-                save()
+                com_retry(save)                     # "call rejected" while busy (AZ-PFD, 2026-09-24)
             print("  saved.")
         # AK / W-24, 2026-09-23: "call rejected" here, and late-bound COM may run Close when the
         # attribute is read (returning a bool), exactly as with Save above.

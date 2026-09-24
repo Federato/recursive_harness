@@ -305,3 +305,18 @@ round after the per-location credit (Bldg 22/52/76/102, Contents 20/48/71/99). A
 42-state regression 40 / 40 rated states, 0 mismatches; standard 42 / 42 at 21171. Closed: S-1, S-3 (already own). Still open: S-4
 (sprinkler per occupancy -- needs an input, moved to RC-3); CW lowest-rate variants AL / CT / NH / WV / GA / KY / IN / VT differ only in
 which roof factors they apply (not probed); Contents Broad / Special multiply a multi-res factor ISO's PP rule lacks (1 on every test).
+
+## Feature set: RC-3 new inputs -- DONE 2026-09-24 (`scenarios/rc3/`, live ISO)
+
+| Item | Fix | Proof |
+|---|---|---|
+| WH-CO / EQT-SC | `124 --fix RC3GEO`: Schedule R `WindHazardTerr` (CO / IN from County col Q, OK "Entire State") and S `EQTerr` (SC by ZIP, new `TBL - EQTerr` from DomainEQTerrSC); payload sends both. Neither moves a premium (hazard level feeds only Specific Group II eligibility messages; EQTerr feeds an EQ factor) | CO / IN / OK / SC now rate: **44 / 44 states, 0 refused** |
+| AZ-PFD | `--fix AZPFD`: Schedule T `AZFireDeptCredit` (default 1); Group I base x credit on the Class path of Bldg / Contents / SC, as AZ `SetBasicGroupIRate`; payload sends it | credit 0.75: Bldg BGI 1170 -> 883, Contents 1021 -> 768, BI unchanged, all = ISO |
+| D-1c | **No change**: ISO's NY territory factor keys on the territory INPUT (label), as the rater; City + County only pick the district table (D-1b) | Buffalo (0.71): 238 = ISO |
+| D-2 | **No change**: full insurable value only feeds blanket / value-reporting rules; doubling every Full*Value moved no ISO premium (FL, AK). Moved to RC-5 Blanket | direct ISO re-rate |
+| S-5 | `--fix S5`: IN - Policy F7 / F8 Cyber BI / Extra Expense sublimits; BI + SC BI Cyber exceptions factor picks Sublimit; payload sends CyberBusnIncomeCovLOI / CyberExtraExpenseCovLOI | CA BI 252 -> 251, AK EE 541 -> 539, = ISO |
+| S-4 | `--fix S4`: occupancy J SprinklerSystem, Contents Q / BI Q SprinklerLeakageExcl (default = building's); Contents 10 / BI 11 own rates; payload per record | 3 probes, each coverage moves on its own election, = ISO |
+| Linked SC | Payload only: UnitNumber on Location / Structure (as ISO's STC payloads) and SC `BuildingIDNumber`; the rater already linked | linked 58 vs unlinked 51 (BGI), both = ISO |
+
+Still open from RC-3: **FL-BGII** (UX only: narrow FL's Group II territory dropdown by County as ISO's domain does; no premium effect).
+Tooling: `120 main` save now retries "call rejected"; scenario values that look like dates / numbers must be prefixed `'`.

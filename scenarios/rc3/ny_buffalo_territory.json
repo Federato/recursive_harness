@@ -1,0 +1,28 @@
+{
+ "name": "rc3_ny_buffalo",
+ "states": [
+  "NY"
+ ],
+ "edits": [
+  {
+   "sheet": "IN - Schedule",
+   "cell": "D6",
+   "value": 14201
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "E6",
+   "value": "Buffalo"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "G6",
+   "value": "Buffalo"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "Q6",
+   "value": "Erie"
+  }
+ ]
+}

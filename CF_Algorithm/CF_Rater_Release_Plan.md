@@ -23,19 +23,12 @@ Fixed: W-3, W-4, W-5, S-2, ED-WHX, final-rate rounding. Closed as already right:
 occupancy sprinkler input). 14 probes in `scenarios/rc2/`, all Excel = ISO; regression 40 / 40, standard 42 / 42 at 21171.
 Details: `Rater_Simplifications_Backlog.md` (RC-2 probes).
 
-## RC-3 · Inputs the rater doesn't have (medium; new Schedule / Policy fields, payload follows)
+## RC-3 · Inputs the rater didn't have: ✅ DONE 2026-09-24 (FL-BGII dropdown left, UX only)
 
-What it buys: submissions that carry these facts get rated on them instead of an assumption.
-
-| Item | What |
-|---|---|
-| D-2 | **Full insurable value** (building, special class). The rater assumes value = limit |
-| S-5 | **Cyber Business Income / Extra Expense sublimits**. BI is hard-wired to "Full Limit" |
-| D-1c | **NY territory factor** from City + County (ISO's code), not the Group I dropdown |
-| WH-CO / EQT-SC / AZ-PFD | **CO / IN / OK wind hazard county; SC earthquake territory; AZ fire-department credit** (ISO refuses or zeroes without them) |
-| FL-BGII | **FL county input**, so the Group II territory dropdown narrows by county as ISO's does |
-| S-4 | **Sprinkler system per occupancy** and per-group sprinkler-leakage records (from RC-2); payload mirrors the building today |
-| Linked Special Class | Special Class "included in building" / linked item: never populated, untested |
+New inputs: wind hazard county (CO / IN / OK) and SC EQ territory (all states now rate, 0 refused), AZ fire department
+credit, Cyber BI / EE sublimits, sprinkler facts per occupancy / group, linked Special Class. D-1c and D-2 closed with
+no change (ISO already agrees / blanket-only). Regression: 44 / 44 states, standard 42 / 42 at 21171. Details:
+`Rater_Simplifications_Backlog.md` (RC-3). Open: FL-BGII (Group II territory dropdown narrowed by county).
 
 ## RC-4 · Prove what's built: ✅ DONE 2026-09-24 (final regression: 40 / 40 rated states, 0 mismatches; standard 42 / 42 at 21171)
 
