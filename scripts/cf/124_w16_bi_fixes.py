@@ -1491,6 +1491,294 @@ w11.NO_MOVE.add("S2")           # baseline SC BI excludes nothing
 w11.FIXES["W5"] = fix_w5
 w11.EXPECT_COLS["W5"] = set()
 w11.NO_MOVE.add("W5")           # Building and Contents coinsurance are both 80% on the baseline
+def fix_edfl(app, wb):
+    """RC-5 ED-FL (2026-09-24). CF FL 20241201 V02 is now on disk (user download; live ISO runs it).
+    FL V02 renumbers its Special Class options (FL's own numbering, shifted vs CW from ~Option16) and
+    its rates equal CW's by DESCRIPTION -- except (a) in-ground pool (All Other) files PC 1-4 only,
+    (b) FL-only legacy descriptions, and (c) CW descriptions FL lacks resolve through ISO's FirstNonNull
+    to the CW option NAME, which FL's table then reads in FL numbering. Rebuild FL's rows in
+    `TBL - Special Class` EI:EJ exactly as ISO's lookups run: option = FL map else CW map; rate = FL
+    (option, PC) else CW (option, PC) else 0 (no fallback to the description's CW rate)."""
+    import csv
+    eff = effective_date(wb)
+    rf = state_file_in_force("FL", "BasicGroupIRateSpecialClass", eff)
+    if rf is None or "V02" not in rf.parent.parent.name:
+        raise Gate(f"FL in-force Special Class table is not V02: {rf}")
+    rd = lambda f: list(csv.reader(open(f, encoding="utf-8-sig")))[1:]           # noqa: E731
+
+    def rates(f):
+        d = {}
+        for r in rd(f):
+            lo, hi = r[2].split(" to ") if " to " in r[2] else (r[2], r[2])
+            for pc in range(int(lo), int(hi) + 1):
+                d[(r[1], pc)] = float(r[3])
+        return d
+    fl_rate, cw_rate = rates(rf), rates(w11.CW / "BasicGroupIRateSpecialClass.RateTable.csv")
+    fl_map = {r[1]: r[2] for r in rd(rf.parent / "SpecialClassDescriptionConvertedOption.RateTable.csv")}
+    cw_map = {r[1]: r[2] for r in rd(w11.CW / "SpecialClassDescriptionConvertedOption.RateTable.csv")}
+    rows, zero = [], []
+    for desc in sorted(set(cw_map) | set(fl_map)):
+        opt = fl_map.get(desc) or cw_map.get(desc)
+        for pc in range(1, 11):
+            v = fl_rate.get((opt, pc), cw_rate.get((opt, pc)))
+            if v is None:
+                v = 0.0
+                zero.append(f"{desc[:30]}|{pc}")
+            rows.append((f"FL|{desc}|{pc}", v))
+    t = wb.Worksheets("TBL - Special Class")
+    last = t.Cells(t.Rows.Count, "EI").End(-4162).Row
+    keep = tuple(r for r in t.Range(f"EI2:EJ{last}").Value if not str(r[0]).startswith("FL|"))
+    allrows = keep + tuple(rows)
+    t.Range(f"EI2:EJ{last}").ClearContents()
+    t.Range(f"EI2:EJ{len(allrows) + 1}").Value = allrows
+    t.Range("EK3").Value = (f"2026-09-24: FL rows rebuilt from {rf.parent.parent.name} (ISO FirstNonNull: FL then CW, "
+                            f"option then rate; 0 where both miss: {len(zero)} rows)")
+    new_last = len(allrows) + 1
+    sc = wb.Worksheets(SCC)
+    for c in COLS:
+        f = str(w11.com_retry(lambda: sc.Cells(4, c).Formula))
+        f2 = f.replace(f"$EI$2:$EJ${last}", f"$EI$2:$EJ${max(new_last, last)}")
+        if "$EI$2:$EJ$" not in f:
+            raise Gate(f"Special Class {colname(c)}4 does not read EI:EJ")
+        w11.com_retry(lambda: setattr(sc.Cells(4, c), "Formula", f2))
+    print("   zero-rate FL rows:", zero[:8])
+    return f"ED-FL: {len(rows)} FL rows from {rf.parent.parent.name} ({len(zero)} zero); block {len(allrows)} rows", {SCC}
+
+
+def fix_edfl2(app, wb):
+    """RC-5 ED-FL, corrected by live ISO (2026-09-24). FL V02's countrywide base is CF CW 20230801 V04
+    (its rules call that project), not CW 20260601. Two probes ISO REFUSED: in-ground pool (All Other)
+    at PC 5+ (no FL or CW-V04 rate) and 'Solar Panel Arrays...' (a newer CW description CW V04 lacks).
+    FL rows in EI:EJ are rebuilt for every description the rater offers (CW 2026 list) plus FL's own:
+    option = FL map else CW-V04 map; rate = FL (option, PC) else CW-V04 (option, PC); where ISO would
+    refuse, the cell holds #N/A so the premium shows as not rateable instead of a price."""
+    import csv
+    eff = effective_date(wb)
+    rf = state_file_in_force("FL", "BasicGroupIRateSpecialClass", eff)
+    if rf is None or "V02" not in rf.parent.parent.name:
+        raise Gate(f"FL in-force Special Class table is not V02: {rf}")
+    cw4 = rf.parent.parent.parent / "CF CW 20230801 V04" / "Rate Tables"
+    if not cw4.exists():
+        raise Gate(f"{cw4} not found")
+    rd = lambda f: list(csv.reader(open(f, encoding="utf-8-sig")))[1:]           # noqa: E731
+
+    def rates(f):
+        d = {}
+        for r in rd(f):
+            lo, hi = r[2].split(" to ") if " to " in r[2] else (r[2], r[2])
+            for pc in range(int(lo), int(hi) + 1):
+                d[(r[1], pc)] = float(r[3])
+        return d
+    fl_rate, cw_rate = rates(rf), rates(cw4 / "BasicGroupIRateSpecialClass.RateTable.csv")
+    fl_map = {r[1]: r[2] for r in rd(rf.parent / "SpecialClassDescriptionConvertedOption.RateTable.csv")}
+    cw_map = {r[1]: r[2] for r in rd(cw4 / "SpecialClassDescriptionConvertedOption.RateTable.csv")}
+    offered = {r[1] for r in rd(w11.CW / "SpecialClassDescriptionConvertedOption.RateTable.csv")}
+    rows, refused = [], []
+    for desc in sorted(offered | set(fl_map)):
+        opt = fl_map.get(desc) or cw_map.get(desc)
+        for pc in range(1, 11):
+            v = fl_rate.get((opt, pc), cw_rate.get((opt, pc))) if opt else None
+            if v is None:
+                refused.append(f"{desc[:40]}|{pc}")
+                rows.append((f"FL|{desc}|{pc}", "=NA()"))
+            else:
+                rows.append((f"FL|{desc}|{pc}", v))
+    t = wb.Worksheets("TBL - Special Class")
+    last = t.Cells(t.Rows.Count, "EI").End(-4162).Row
+    keep = [r for r in t.Range(f"EI2:EJ{last}").Value if not str(r[0]).startswith("FL|")]
+    allrows = keep + rows
+    t.Range(f"EI2:EJ{last}").ClearContents()
+    t.Range(f"EI2:EI{len(allrows) + 1}").Value = tuple((r[0],) for r in allrows)
+    t.Range(f"EJ2:EJ{len(allrows) + 1}").Formula = tuple((r[1] if isinstance(r[1], str) else r[1],) for r in allrows)
+    t.Range("EK3").Value = (f"2026-09-24: FL rows from {rf.parent.parent.name} on CF CW 20230801 V04 (ISO FirstNonNull); "
+                            f"#N/A = ISO refuses ({len(refused)} description x PC combinations)")
+    new_last = len(allrows) + 1
+    sc = wb.Worksheets(SCC)
+    for c in COLS:
+        f = str(w11.com_retry(lambda: sc.Cells(4, c).Formula))
+        m = __import__("re").search(r"\$EI\$2:\$EJ\$(\d+)", f)
+        if not m:
+            raise Gate(f"Special Class {colname(c)}4 does not read EI:EJ")
+        # a #N/A in the state block must NOT fall through to the CW rate: only a missing KEY may
+        key = f[f.index("VLOOKUP(") + 8:f.index(",'TBL - Special Class'!$EI$2")]
+        cwpart = f[f.index("IFERROR(VLOOKUP({}172".format(colname(c))):-1] if "IFERROR(VLOOKUP({}172".format(colname(c)) in f else None
+        if cwpart is None:
+            raise Gate(f"Special Class {colname(c)}4: CW fallback not found in {f!r}")
+        blk = f"'TBL - Special Class'!$EI$2:$EJ${new_last}"
+        f2 = (f"=IF(ISNA(MATCH({key},'TBL - Special Class'!$EI$2:$EI${new_last},0)),{cwpart},"
+              f"VLOOKUP({key},{blk},2,FALSE))")
+        w11.com_retry(lambda: setattr(sc.Cells(4, c), "Formula", f2))
+    print("   ISO-refused FL combinations:", len(refused), refused[:6])
+    return f"ED-FL: {len(rows)} FL rows ({len(refused)} #N/A) on CW 20230801 V04; block {len(allrows)} rows", {SCC}
+
+
+def fix_scstate(app, wb):
+    """RC-5 ED-FL follow-up (2026-09-24), from two ISO refusals in FL V02. When a state files its own
+    `SpecialClassDescriptionConvertedOption` or `BasicGroupIRateSpecialClass`, that table REPLACES the
+    countrywide one inside the state's project: ISO's "CW" fallback key is looked up in the state's own
+    table and fails (refusal names `Project: CF FL 20241201 V02, Keys: CW, ...`). So:
+      FL  option = FL map only;  rate = FL table only     (V02)
+      NY  option = CW map (sent; NY blanks the rule); rate = NY table only
+      PR  option = CW map (PR files none);            rate = PR table only
+    Anything else is #N/A (ISO refuses) -- never the description's countrywide rate."""
+    import csv
+    eff = effective_date(wb)
+    rd = lambda f: list(csv.reader(open(f, encoding="utf-8-sig")))[1:]           # noqa: E731
+
+    def rates(f):
+        d = {}
+        for r in rd(f):
+            lo, hi = r[2].split(" to ") if " to " in r[2] else (r[2], r[2])
+            for pc in range(int(lo), int(hi) + 1):
+                d[(r[1], pc)] = float(r[3])
+        return d
+    cw_map = {r[1]: r[2] for r in rd(w11.CW / "SpecialClassDescriptionConvertedOption.RateTable.csv")}
+    rows, notes = [], []
+    for st in ("FL", "NY", "PR"):
+        rf = state_file_in_force(st, "BasicGroupIRateSpecialClass", eff)
+        mf = state_file_in_force(st, "SpecialClassDescriptionConvertedOption", eff)
+        own_map = {r[1]: r[2] for r in rd(mf)} if (mf and st != "NY") else None
+        if st == "FL" and "V02" not in rf.parent.parent.name:
+            raise Gate(f"FL is not on V02: {rf}")
+        rt = rates(rf)
+        n_na = 0
+        for desc in sorted(set(cw_map) | set(own_map or {})):
+            opt = (own_map or {}).get(desc) if own_map is not None else cw_map.get(desc)
+            for pc in range(1, 11):
+                v = rt.get((opt, pc)) if opt else None
+                rows.append((f"{st}|{desc}|{pc}", v if v is not None else "=NA()"))
+                n_na += v is None
+        notes.append(f"{st}: {rf.parent.parent.name}, {'own' if own_map is not None else 'CW'} option map, {n_na} refused")
+    t = wb.Worksheets("TBL - Special Class")
+    last = t.Cells(t.Rows.Count, "EI").End(-4162).Row
+    t.Range(f"EI2:EJ{last}").ClearContents()
+    t.Range(f"EI2:EI{len(rows) + 1}").Value = tuple((r[0],) for r in rows)
+    t.Range(f"EJ2:EJ{len(rows) + 1}").Formula = tuple((r[1],) for r in rows)
+    t.Range("EK2").Value = "Rebuilt 2026-09-24 (ISO: a state-filed table replaces CW; #N/A = ISO refuses). " + "; ".join(notes)
+    t.Range("EK3").Value = ""
+    new_last = len(rows) + 1
+    import re
+    sc = wb.Worksheets(SCC)
+    for c in COLS:
+        f = str(w11.com_retry(lambda: sc.Cells(4, c).Formula))
+        f2 = re.sub(r"\$E([IJ])\$(\d+)", lambda m: f"$E{m.group(1)}${new_last}" if m.group(2) != "2" else m.group(0), f)
+        if f2 == f and f"${new_last}" not in f:
+            raise Gate(f"Special Class {colname(c)}4: no EI/EJ range to resize: {f!r}")
+        w11.com_retry(lambda: setattr(sc.Cells(4, c), "Formula", f2))
+    print("   " + "; ".join(notes))
+    return f"SC state rates: {len(rows)} rows", {SCC}
+
+
+def fix_vacfl(app, wb):
+    """RC-5 ED-FL (2026-09-24). FL V02 adds two `VacantBldgPreviousOrIntendedOccup` rows (0581, 0582 at
+    0.015) that V01 lacked. Appended below the vacancy block (`TBL - BldgBGIRating` N:R, rows 4851-4852)
+    and Bldg row 6's lookup ranges extended to match."""
+    t = wb.Worksheets("TBL - BldgBGIRating")
+    for r in (4851, 4852):
+        if any(t.Range(f"{c}{r}").Value not in (None, "") for c in "NOPQR"):
+            raise Gate(f"TBL - BldgBGIRating N{r}:R{r} is not empty")
+    for r, cc in ((4851, "0581"), (4852, "0582")):
+        t.Range(f"N{r}:R{r}").Value = ((f"YesFL{cc}", "Yes", "FL", "'" + cc, 0.015),)
+    br = wb.Worksheets(BR)
+    for c in COLS:
+        f = str(w11.com_retry(lambda: br.Cells(6, c).Formula))
+        a, b = "'TBL - BldgBGIRating'!$R$2:$R$4850", "'TBL - BldgBGIRating'!$N$2:$N$4849"
+        if a not in f or b not in f:
+            raise Gate(f"Bldg {colname(c)}6 does not read the vacancy block as expected: {f!r}")
+        f2 = f.replace(a, "'TBL - BldgBGIRating'!$R$2:$R$4852").replace(b, "'TBL - BldgBGIRating'!$N$2:$N$4852")
+        w11.com_retry(lambda: setattr(br.Cells(6, c), "Formula", f2))
+    return "ED-FL: FL vacancy 0581 / 0582 added; Bldg row 6 range extended", {BR}
+
+
+def fix_substd(app, wb):
+    """ED-FL probe finding (2026-09-24). The substandard-condition table (`TBL - BldgBGIRating` H:L,
+    30 rows per state) held 39 states. CA DC IL KY NJ NY (own filings) and FL UT (CW) had none, so a
+    Class-rated building's substandard conditions added 0 there (FL vacant 0581 probe: rater 0 vs ISO
+    0.481 = B 0.16 + D 0.321). Rows added for every missing state from its in-force package, else CW
+    (FL: its V02 base CF CW 20230801 V04); CoreScratchpad 13-17 ranges extended."""
+    import csv
+    eff = effective_date(wb)
+    t = wb.Worksheets("TBL - BldgBGIRating")
+    vals = t.Range("H2:L1171").Value
+    have = {r[1] for r in vals if r[1]}
+    states = [s for s in w11.states(wb) if s not in have and s not in ("CW",)]
+    cw4 = w11.ISO.parent / "20230801v4" / "CF CW 20230801 V04" / "Rate Tables" / "SubStdConditionRate.RateTable.csv"
+    rows = []
+    for st in states:
+        f = state_file_in_force(st, "SubStdConditionRate", eff)
+        if f is None:
+            f = cw4 if st == "FL" else w11.CW / "SubStdConditionRate.RateTable.csv"
+        for r in list(csv.reader(open(f, encoding="utf-8-sig")))[1:]:
+            rows.append((f"{st}{r[1]}{int(r[2])}", st, r[1], int(r[2]), float(r[3])))
+    if t.Range("H1172").Value not in (None, ""):
+        raise Gate("TBL - BldgBGIRating H1172 is not empty")
+    end = 1171 + len(rows)
+    t.Range(f"H1172:L{end}").Value = tuple(rows)
+    cs = wb.Worksheets(w11.CS)
+    for c in COLS:
+        for r in range(13, 18):
+            f = str(w11.com_retry(lambda: cs.Cells(r, c).Formula))
+            if "$L$2:$L$1171" not in f or "$H$2:$H$1171" not in f:
+                raise Gate(f"CoreScratchpad {colname(c)}{r} does not read H:L to 1171: {f!r}")
+            f2 = f.replace("$L$2:$L$1171", f"$L$2:$L${end}").replace("$H$2:$H$1171", f"$H$2:$H${end}")
+            w11.com_retry(lambda: setattr(cs.Cells(r, c), "Formula", f2))
+    return f"SUBSTD: {len(rows)} rows for {', '.join(states)}; ranges to {end}", set()
+
+
+def fix_flres(app, wb):
+    """ED-FL probe finding (2026-09-24). FL Contents Special base rate: FL `SetSpecialBaseRate` picks the
+    Residential table when the OCCUPANCY category is 'Residential Apartments and Condominiums', else the
+    Non-Residential table by category + severity. The rater keyed the basis on the BUILDING's class code
+    (CoreScratchpad 173), so a non-residential class over a residential occupancy priced 0 (probe:
+    rater 0 vs ISO 340). Contents row 159 now derives the basis from the occupancy category."""
+    cr = wb.Worksheets("CALC - Contents Rating")
+    for c in COLS:
+        X = colname(c)
+        a = f"INDEX('CALC - CoreScratchpad'!$C$173:$AP$173,1,{X}$116)"
+        f = str(w11.com_retry(lambda: cr.Cells(159, c).Formula))
+        if f.count(a) != 1:
+            raise Gate(f"Contents {X}159 is not the expected key: {f!r}")
+        b = (f"IF(INDEX('IN - Schedule'!$E$91:$E$130,{X}$115)=\"Residential Apartments and Condominiums\","
+             f"\"Residential\",\"Non-Residential\")")
+        w11.com_retry(lambda: setattr(cr.Cells(159, c), "Formula", f.replace(a, b)))
+    return "FL-RES: Contents Special FL basis from the occupancy category", {"CALC - Contents Rating"}
+
+
+def fix_edflstamp(app, wb):
+    """ED-FL (2026-09-24): `TBL - Editions` row 11 still named CF FL 20241201 V01 on CW 20260601."""
+    t = wb.Worksheets("TBL - Editions")
+    if t.Range("A11").Value != "FL" or t.Range("B11").Value != "CF FL 20241201 V01":
+        raise Gate(f"TBL - Editions row 11 is not FL V01: {t.Range('A11:B11').Value}")
+    t.Range("B11").Value = "CF FL 20241201 V02"
+    t.Range("D11").Value = "20230801v4"
+    t.Range("E11").Value = "CF CW 20230801 V04"
+    t.Range("F11").Value = ("V02 downloaded 2026-09-24 (live ISO runs it). Rides on CW 20230801 V04, not CW 2026. FL's own "
+                            "SpecialClass option map + rates REPLACE CW (unfiled description / PC = ISO refuses). "
+                            "Contents Special: Residential table when the occupancy is residential")
+    return "ED-FL: TBL - Editions FL -> V02 / CW 20230801 V04", set()
+
+
+w11.FIXES["EDFLSTAMP"] = fix_edflstamp
+w11.EXPECT_COLS["EDFLSTAMP"] = set()
+w11.NO_MOVE.add("EDFLSTAMP")
+w11.FIXES["FLRES"] = fix_flres
+w11.EXPECT_COLS["FLRES"] = set()
+w11.NO_MOVE.add("FLRES")
+w11.FIXES["SUBSTD"] = fix_substd
+w11.EXPECT_COLS["SUBSTD"] = set()
+w11.NO_MOVE.add("SUBSTD")      # baseline Class buildings (NY AK CA) have no substandard conditions
+w11.FIXES["VACFL"] = fix_vacfl
+w11.EXPECT_COLS["VACFL"] = set()
+w11.NO_MOVE.add("VACFL")
+w11.FIXES["SCSTATE"] = fix_scstate
+w11.EXPECT_COLS["SCSTATE"] = set()
+w11.NO_MOVE.add("SCSTATE")
+w11.FIXES["EDFL"] = fix_edfl
+w11.FIXES["EDFL2"] = fix_edfl2
+w11.EXPECT_COLS["EDFL2"] = set()
+w11.NO_MOVE.add("EDFL2")
+w11.EXPECT_COLS["EDFL"] = set()
+w11.NO_MOVE.add("EDFL")         # FL's Artificial Turf: V02 option rate = CW (live ISO 744 already)
 w11.FIXES["SCGISTFL"] = fix_scgistfl
 w11.EXPECT_COLS["SCGISTFL"] = set()
 w11.NO_MOVE.add("SCGISTFL")

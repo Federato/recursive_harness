@@ -271,7 +271,7 @@ symbol but U; the payload now sends it, and **ISO rates NY; the engine matches 9
 | CA-D2 | **CLOSED 2026-09-24, ISO-verified.** CA District II | District II base 0.090 vs I 0.069; probe `scenarios/rc4/ca_district_ii.json` 9 / 9 | n/a | Closed |
 | ED-CA-SC | **FIXED 2026-09-24 (`124 --fix EDCASC`, ISO-verified).** CA Special Class deductible / wind-hail tables were from the FUTURE CA filing; plus two wiring bugs found by the probe | (1) `TBL - Special Class` BA:BE, CA:CE, BK:BO CA rows -> CW (in force). (2) Special Class Schedule rows 220-229 defaults were shifted (Deductible = policy THEFT ded, WindHail = Deductible, Theft = WindHail) -> C8 / C9 / C10. (3) SC Special deductible (rows 191 / 194) always used TheftDed; ISO uses it only when theft is covered and it differs | Probe `scenarios/rc4/ca_special_class.json` (CA, $150k, $1,000 ded, 1% W/H): before SC BGII 17 vs ISO 15, SC Special **0 vs 32**; after 24 / 24. Baseline 21171 unchanged, 42 / 42. Payload: deductibles now always sent as text (`ded_text`), ISO refused floats |
 | ED-WHX | **Seven states switch OFF the countrywide wind/hail exclusion factor; the rater still applies it** | `CALC - Bldg Rating` 44 and `CALC - Contents Rating` 41 look up `TBL - ContentsTables` DL:DP; AR DC FL KS NY RI TX carry CW 0.35 / 0.315 | Those states override `SetWindstormOrHailExclFactor` (Structure and PersonalProperty) with an empty rule and file the table header-only. KS / FL use a replacement rate (`BasicGroupIIWindstormOrHailExclRate`, KS 0.023); TX its own factor (`WindstormOrHailExclFactorTX`, 0.1); AR / DC / NY / RI none found yet | Open, premium-changing only when a building / contents excludes wind/hail (none of today's test risks do). Trace per state with RC-2's W-4, then probe |
-| ENG-FL-MOD | **cf_engine (harness, not the rater): FL premiums ignore IRPM / PM / MPD** | n/a | ISO applies them in FL | Open, harness side. Found by the W-22 probe 2026-09-24 |
+| ENG-FL-MOD | **CLOSED 2026-09-24 (FL V02 on disk).** cf_engine: FL premiums ignored IRPM / PM / MPD | n/a | ISO applies them in FL | Open, harness side. Found by the W-22 probe 2026-09-24 |
 | ED-DEAD | `TBL - Special Class` AD:AI (Group II rate list) holds in-force AND future rows for the same keys | Nothing reads it (no formula, no defined name) | n/a | Clean-up only; no premium |
 | NH-COS | **CLOSED 2026-09-24, ISO-verified.** NH cosmetic roof factor | Reading confirmed: NH applies ACV 0.98 on any paragraph, no cosmetic factor (the rater already did, W-26). The probe (`scenarios/rc4/nh_roof_paragraph_b.json`) found a ROUNDING gap instead -> **ROOFRND** (`124 --fix ROOFRND`): Bldg rows 10 / 72 / 95 now round after the roof ACV factor as ISO `SetBasicGroupIRate` / `SetAdjustedBroadRate` / `SetSpecialCauseOfLossAdjustment` do. NH Building Group I 1932 -> 1881 = ISO; 9 / 9. Baseline unchanged |
 | TH-DED | **FIXED 2026-09-24 (`124 --fix THDED`, ISO-verified).** Theft deductible | The live rater had NO theft-deductible logic (Contents 160-165 were dead). New CoreScratchpad 127-131: ISO's Special-incl-theft total, theft lookup (Other Cause Of Loss), gate (theft covered, TheftDed not ''/NA/250 and <> Deductible), $250 branch. Bldg row 100 and Contents row 97 use them; Contents checks its own theft exclusion. Payload: occupancy `TheftDeductible` = building's; CP 03 20 `[{}]` when theft / dollar W-H ded differs (as ISO's STC payloads) | Probe `scenarios/rc4/ca_theft_deductible.json` (CA, theft covered, $5,000 theft vs $2,500): factor 0.84 vs regular 0.89, 9 / 9 = ISO. Not modelled: Special Class in the theft total. Baseline unchanged |
@@ -320,3 +320,18 @@ which roof factors they apply (not probed); Contents Broad / Special multiply a 
 
 Still open from RC-3: **FL-BGII** (UX only: narrow FL's Group II territory dropdown by County as ISO's domain does; no premium effect).
 Tooling: `120 main` save now retries "call rejected"; scenario values that look like dates / numbers must be prefixed `'`.
+
+## Feature set: RC-5 ED-FL -- CF FL 20241201 V02 (DONE 2026-09-24, `scenarios/rc5/`, live ISO)
+
+V02 downloaded by the user into `ISO_ERC_Files/CF/20230801v4/`. It rides on **CF CW 20230801 V04** (not CW 2026), renumbers FL's
+Special Class options, renames FL's descriptions to CW's, and adds vacancy codes 0581 / 0582. Fixes (`124 --fix`):
+- **SCSTATE** (after EDFL / EDFL2 were refined by ISO refusals): a state-filed Special Class option map or rate table REPLACES CW
+  inside the state's project -- ISO's "CW" fallback key is looked up in the state's table and fails. FL (own map + rates), NY (CW
+  option sent, NY rates), PR (CW option, PR rates); anything else is #N/A = ISO refuses. Probes: above-ground pool 0.556 = ISO;
+  in-ground pool PC 5+, Solar Panel Arrays (FL) and Bridges (NY, Option10a) -> ISO refuses, rater #N/A.
+- **VACFL**: FL vacancy 0581 / 0582 (0.015). **SUBSTD**: the substandard-condition table lacked CA DC IL KY NJ NY FL UT (+ any
+  CW state) -> added from each in-force package / CW (FL: CW V04). **FLRES**: FL Contents Special picks Residential by the
+  OCCUPANCY category (FL `SetSpecialBaseRate`), not the building class. Probe `fl_vacant_0581.json` 15 / 15.
+- **EDFLSTAMP**: TBL - Editions FL row -> V02 / CW 20230801 V04.
+**ENG-FL-MOD closed**: with V02 on disk cf_engine applies IRPM / PM / MPD in FL (mods probe 42 / 42 all three).
+Regression: 44 / 44 states, 0 refused, 0 mismatches; standard 42 / 42 at 21171.

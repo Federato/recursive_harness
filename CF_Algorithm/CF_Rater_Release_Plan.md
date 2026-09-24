@@ -47,7 +47,7 @@ New, carried forward: ED-WHX (-> RC-2), ENG-FL-MOD and ED-FL (harness engine / F
 | Blanket rating | Every blanket branch is inert line-wide |
 | Earthquake | Untraced on both the rater and the harness side |
 | Edition transitions | One ERC edition per state, resolved outside the workbook; FL's filing is 21 months old (R-6) |
-| ED-FL | Live ISO runs CF FL 20241201 **V02**; only V01 is on disk. Now also blocks FL Special Class state rates (SC-GI-ST) and explains cf_engine FL gaps |
+| ED-FL | ✅ **DONE 2026-09-24**: FL V02 on disk (on CW 20230801 V04); FL Special Class rates, vacancy codes, substandard table (8 states), FL residential basis fixed; engine FL gap closed |
 
 ---
 

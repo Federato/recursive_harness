@@ -9,7 +9,8 @@
 > **2026-09-24 later: RC-4 DONE.** ED-CA-SC, ROOFRND, TH-DED, W-22, CA-D2, SC-GI-ST fixed / verified on live ISO (`124 --fix <ID>`,
 > probes in `scenarios/rc4/`). Baseline 21171 unchanged. Committed 60d2267.
 > **RC-2 DONE 2026-09-24** (W-3 W-4 W-5 S-2 ED-WHX FINRND; `scenarios/rc2/`). Committed 669b8bc.
-> **RC-3 DONE 2026-09-24** (RC3GEO AZPFD S5 S4 + payload unit numbers; D-1c / D-2 no change). 44 / 44 states. Not committed yet. Next: RC-5.
+> **RC-3 DONE 2026-09-24** (RC3GEO AZPFD S5 S4 + payload unit numbers; D-1c / D-2 no change). 44 / 44 states. Committed c4ce2de.
+> **ED-FL DONE 2026-09-24** (FL V02 on disk; SCSTATE VACFL SUBSTD FLRES EDFLSTAMP; ENG-FL-MOD closed). Not committed yet.
 
 ---
 
