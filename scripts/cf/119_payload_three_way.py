@@ -67,6 +67,13 @@ EQ_RECS = {"BLD": {"Earthquake Form (CP 10 40)": "CommercialPropertyEarthquakeAn
                    "Earthquake Form (CP 10 28)": "CommercialPropertyEarthquakeAndVolcanicEruptionCoverageWithFlatDollarDeductiblePrsnlProp"}}
 EQ_NAMES = {n for d in EQ_RECS.values() for n in d.values()}
 RATER_EQ = {"BLD": 37, "CON": 74}
+#: ISO WatchmanCreditFactor keys on BurgRobbery3ConvertedCode (an input; no rule derives it): rater description -> code
+WATCHMAN_CODE = {
+    "Service Applying Within the Insured's Premises, Requiring Hourly Rounds and Signals Hourly to a Station Outside "
+    "Location": "Option75",
+    "Service Does Not Signal to an Outside Station but Registers at Least Hourly on a Watchman's Clock in the "
+    "Insured's Premises": "Option85",
+    "Service Does Not Signal to an Outside Station or Register on a Watchman's Clock": "Option95"}
 LABEL = {"BLD": "Building", "CON": "Contents", "BI": "Bus. Income", "SC": "Special Class",
          "SCBI": "SC Bus. Income"}
 COV = re.compile(r"^(?P<rec>CommercialProperty\w+?)(?:Building|PrsnlProp)?"
@@ -406,6 +413,29 @@ class Builder:
                             "VandalismExcl": "CommercialPropertyVandalismExclusion",
                             "TheftExcl": "CommercialPropertyTheftExclusion",
                             "SprinklerLeakageExcl": "CommercialPropertySprinklerLeakageExclusion"})
+        # F-1 (2026-09-24): ISO's multi-residential heat factor reads the BUILDING's LocOfHeatingPlantIndicator; the
+        # rater holds it per location (Schedule M). Domain: "Not Applicable" when the location takes no credit.
+        loc = self.loc_of(b) or {}
+        heat = "Not Applicable" if loc.get("MultiResCredit") in (None, "", "No") else loc.get("HeatingPlantLoc")
+        self.put(o, "LocOfHeatingPlantIndicator", heat)
+        # Watchman / burglary alarm credits (2026-09-24): one protective-safeguards record per BUILDING in ISO; the
+        # rater holds them per contents (M / N / P). The building's contents must agree.
+        sg = {(p.get("WatchmanService") or "Not Applicable", p.get("BurglaryAlarmType") or "Not Applicable",
+               p.get("BurglaryFactor")) for oc in self.kids("OCC", b["ID"]) for p in self.kids("CON", oc["ID"])}
+        sg = {x for x in sg if x[0] != "Not Applicable" or x[1] != "Not Applicable"}
+        if len(sg) > 1:
+            raise SystemExit(f"ABORT: building {b['ID']}: its contents carry different watchman / alarm credits {sg} -- "
+                             f"ISO holds one set per building")
+        if sg:
+            w, a_, f_ = sg.pop()
+            rec = {"TypeOfWatchmanSrvc": w, "BurglaryAlarmSystemType": a_}
+            if w != "Not Applicable":
+                if w not in WATCHMAN_CODE:
+                    raise SystemExit(f"ABORT: unknown watchman service {w!r}")
+                rec["BurgRobbery3ConvertedCode"] = WATCHMAN_CODE[w]
+            if a_ != "Not Applicable":
+                rec["BurglaryAlarmCreditFactor"] = float(f_ or 1.0)
+            o["CommercialPropertyBurglaryAndRobberyProtectiveSafeguards"] = [rec]
         form = self.eq_form(self.loc_of(b))
         if form and str(b.get("EQCovIndicator") or "").startswith("Yes"):
             # RC-5 Earthquake Phase 1 (2026-09-24): Schedule AO-AS; coinsurance as the building's (ISO's

@@ -16,7 +16,7 @@
 > **Blanket Phase 1 DONE 2026-09-24** (Building Only, Average). Phases 2-4 DONE -- blanket complete (Average + Highest, all five item types). Next: older-CW-base audit, Earthquake, editions LAST -> 4 (SC, Highest) -> Earthquake -> editions LAST.
 > **Older-CW-base audit DONE 2026-09-24** (`124 --fix SCBASE / CWRULES / SPTOT / SCTOT`; baseline 21171 unchanged). Committed ca0ce3b. Next: Earthquake, then editions LAST.
 > **Earthquake Phase 1 DONE 2026-09-24** (`124 --fix EQ1`: Building + Contents, CP 10 40 / 10 28; probes `scenarios/rc5eq/`).
-> **Coinsurance <80% + rounding DONE 2026-09-24** (`124 --fix COINS1`, `TBL - CoinsLT80`, probes `scenarios/coins/`). Open: FL heating-plant factor (F-1), FL GII deductible 0.95 vs 0.951 (F-2), watchman/burglary not in payload.
+> **Coinsurance <80% + rounding DONE 2026-09-24** (`124 --fix COINS1`, `TBL - CoinsLT80`, probes `scenarios/coins/`). F-1 / F-2 / watchman-burglary fixed same day (`MRC` / `FLDED` / `WBC`).
 
 ---
 

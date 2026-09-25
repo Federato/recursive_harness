@@ -465,3 +465,25 @@ The baseline has every item at 80% coinsurance (factor 1.0), so neither bug ever
   - **F-2 FL Group II deductible:** $2,500 gives Excel 0.95 vs ISO 0.951.
 - **Payload gap:** the watchman and burglary-alarm credits are never sent, while the rater applies them. Any non-1.0
   credit would mismatch ISO.
+
+## F-1 / F-2 / watchman-burglary -- DONE 2026-09-24 (`124 --fix MRC / FLDED / WBC`; `scenarios/fl_misc/`, `scenarios/coins/`)
+
+- **F-1 multi-residential credit (`MRC`).** ISO: R3(heat x control) only when the location takes the credit AND the
+  building class is 0311-0343; otherwise 1.0. The heat factor reads the building's `LocOfHeatingPlantIndicator`.
+  - CS 51 multiplied the two for every building.
+  - The payload never sent the field, so ISO used a heat factor of 1.0.
+  - Now: CS 51 is gated and rounded. The payload sends the location's Schedule M, or "Not Applicable" when the location
+    takes no credit.
+  - Probes, FL building switched to CovType Building: credit + heating 0.525 = ISO; no credit 1.0 = ISO.
+- **F-2 FL calendar-year deductibles (`FLDED`).** For FL residential classes (0074-0079, 0196-0198, 0311-0343; the
+  building's class for contents), Group I / II / Broad / Special deductible factors come from
+  `DeductibleFactorCalendarYear` (new `TBL - FLCalYearDed`). Wrapped CS 44, 89, 109, 123, 129 and 140.
+  - Probes: FL coinsurance 70% / 60% now 15 / 15.
+  - **Not done:** FL % wind/hail, EQ and sinkhole deductibles also use this table.
+- **Watchman / burglary (`WBC`).** ISO applies both only when the contents have no theft exclusion. They come from the
+  building's `CommercialPropertyBurglaryAndRobberyProtectiveSafeguards` record:
+  - `BurgRobbery3ConvertedCode` Option75 / 85 / 95 must be sent; missing = 0.0.
+  - `BurglaryAlarmCreditFactor` applies when the alarm type is set.
+  - Rater Contents 92 / 93 are now gated. The payload sends the record from the building's contents and aborts if they
+    disagree (ISO holds one set per building).
+  - Probes, CA: 0.86 / 0.8 applied = ISO; with a theft exclusion both are 1.0 = ISO.

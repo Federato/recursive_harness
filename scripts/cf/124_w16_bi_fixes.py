@@ -3169,6 +3169,131 @@ def fix_coins1(app, wb):
         {BR, "CALC - Contents Rating"}
 
 
+MRC_CLASSES = ("0311", "0312", "0313", "0321", "0322", "0323", "0331", "0332", "0333", "0341", "0342", "0343")
+FL_RES_CLASSES = ("0074", "0075", "0076", "0077", "0078", "0079", "0196", "0197", "0198") + MRC_CLASSES
+
+
+def fix_mrc(app, wb):
+    """F-1 (2026-09-24, FL probe): the multi-residential special credit. ISO (Structure, every base):
+      factor = R3(HeatFactor x ControlFactor) only when the location's MultipleResidentialPropSpecialCredit <> "No" AND the
+      building class is 0311-0343; else 1.0. HeatFactor[LocOfHeatingPlantIndicator] (Yes 0.75) needs the building field
+      sent (it never was: ISO used 1.0). CS 51 multiplied control x heat for every building, credit or not
+      (FL credit off, heating Yes: Excel 0.75 vs ISO 1.0). Payload now sends LocOfHeatingPlantIndicator."""
+    cs = wb.Worksheets(w11.CS)
+    for c in COLS:
+        X, b = colname(c), 45 + c
+        f = str(w11.com_retry(lambda: cs.Cells(51, c).Formula))
+        if f != f"={X}48*{X}50":
+            raise Gate(f"CS {X}51 is {f!r}")
+        cls = f"TEXT('IN - Schedule'!$E${b},\"0000\")"
+        inlist = "OR(" + ",".join(f"{cls}=\"{k}\"" for k in MRC_CLASSES) + ")"
+        new = (f"=IF(AND(INDEX('IN - Schedule'!$L$5:$L$44,{X}$285)<>\"No\",{inlist}),ROUND({X}48*{X}50,3),1)")
+        w11.com_retry(lambda: setattr(cs.Cells(51, c), "Formula", new))
+    return "Multi-residential credit gated on the credit and class 0311-0343; rounded (CS 51)", \
+        {BR, "CALC - Contents Rating"}
+
+
+def fix_flded(app, wb):
+    """F-2 (2026-09-24, FL probe): FL's in-force Structure / PersonalProperty rules (CF FL 20241201 V02) look the
+    Group I, Group II, Broad and Special deductible factors up in `DeductibleFactorCalendarYear` (same keys: deductible,
+    limit band, cause) for residential classes 0074-0079, 0196-0198, 0311-0343 (the BUILDING's class for contents).
+    FL $2,500 Group II top band: 0.951 vs the ordinary 0.95. New `TBL - FLCalYearDed`; CS 44 (Group I), 89 (Group II $),
+    109 (Broad), 123 (Special), 129 (Special theft), 140 (contents Group I, which ISO copies from the building).
+    Not done: FL % wind/hail, earthquake and sinkhole deductibles also use the calendar-year table."""
+    import csv
+    eff = effective_date(wb)
+    d = iso_table_by_state(wb, eff, "DeductibleFactorCalendarYear")
+    src = d["FL"][1]
+    rows = []
+    for k, v in d["FL"][0].items():            # (Deductible, From>, To<=, Cause)
+        rows.append([f"{k[0]}|{k[3]}", float(k[1]), float(k[2]), float(v)])
+    if not rows:
+        raise Gate("FL DeductibleFactorCalendarYear not found in the in-force package")
+    ws = w11.new_sheet(wb, "TBL - FLCalYearDed")
+    ws.Range("A1:D1").Value = (("Deductible|CauseOfLossDeductible", "Limit_FromGreaterThan", "Limit_To", "Factor"),)
+    w11.write_rows(ws, 2, 1, rows)
+    ws.Range("F1").Value = f"FL DeductibleFactorCalendarYear from {src} (in force {eff}); residential classes only"
+    n = len(rows) + 1
+    T = "'TBL - FLCalYearDed'!"
+    A, B, C, D = (f"{T}${x}$2:${x}${n}" for x in "ABCD")
+    cs = wb.Worksheets(w11.CS)
+
+    def cal(ded, lim, cause):
+        k = f"{ded}&\"|{cause}\""
+        cnt = f"COUNTIFS({A},{k},{B},\"<\"&{lim},{C},\">=\"&{lim})"
+        return f"IF({cnt}=0,NA(),SUMIFS({D},{A},{k},{B},\"<\"&{lim},{C},\">=\"&{lim}))"
+
+    def wrap(r, c, gate, repl):
+        f = str(w11.com_retry(lambda: cs.Cells(r, c).Formula))
+        if not f.startswith("=") or f.startswith("=IF(AND(INDEX('IN - Schedule'!$C$5"):
+            raise Gate(f"CS {colname(c)}{r} unexpected: {f[:80]!r}")
+        w11.com_retry(lambda: setattr(cs.Cells(r, c), "Formula", f"=IF({gate},{repl},{f[1:]})"))
+        return f
+
+    for c in COLS:
+        X, b = colname(c), 45 + c
+        cls = f"TEXT('IN - Schedule'!$E${b},\"0000\")"
+        gate = (f"AND(INDEX('IN - Schedule'!$C$5:$C$44,{X}$285)=\"FL\",OR("
+                + ",".join(f"{cls}=\"{k}\"" for k in FL_RES_CLASSES) + "))")
+        Q, R_ = f"'IN - Schedule'!$Q${b}", f"'IN - Schedule'!$R${b}"
+        wrap(44, c, gate, cal(f"{X}40", f"{X}41", "Basic Group I"))
+        wrap(89, c, gate, cal(Q, f"{X}138", "Basic Group II"))
+        wrap(109, c, gate, cal(f"{X}40", f"{X}41", "Other Cause Of Loss"))
+        f122 = str(w11.com_retry(lambda: cs.Cells(122, c).Formula))
+        a = f122.index("$Y$2:$Y$6670<") + len("$Y$2:$Y$6670<")
+        z = f122.index(")*('TBL - BldgSpecialRating'!$Z$2")
+        tot = f122[a:z]
+        if not (tot.startswith("(IF('CALC - Blanket'!") and tot.count("(") == tot.count(")")):
+            raise Gate(f"CS {X}122 Special total not found: {tot[:120]!r}")
+        wrap(123, c, gate, cal(Q, tot, "Other Cause Of Loss"))
+        wrap(129, c, gate, cal(R_, f"{X}127", "Other Cause Of Loss"))
+        wrap(140, c, gate, cal(Q, f"{X}138", "Basic Group I"))
+    return f"FL calendar-year deductibles for residential classes ({len(rows)} rows, {src})", \
+        {BR, "CALC - Contents Rating"}
+
+
+WATCHMAN_CODE = {
+    "Service Applying Within the Insured's Premises, Requiring Hourly Rounds and Signals Hourly to a Station Outside "
+    "Location": "Option75",
+    "Service Does Not Signal to an Outside Station but Registers at Least Hourly on a Watchman's Clock in the "
+    "Insured's Premises": "Option85",
+    "Service Does Not Signal to an Outside Station or Register on a Watchman's Clock": "Option95"}
+
+
+def fix_wbc(app, wb):
+    """Watchman / burglary alarm credits (2026-09-24). ISO (PersonalProperty): both apply only when the contents carry
+    no theft exclusion, and read the BUILDING's CommercialPropertyBurglaryAndRobberyProtectiveSafeguards record:
+    WatchmanCreditFactor = WatchmanCreditFactor[BurgRobbery3ConvertedCode] (an input: Option75 / 85 / 95; missing = 0.0),
+    BurglaryAlarmCreditFactor as entered when BurglaryAlarmSystemType <> "Not Applicable". The rater applied both
+    regardless of the theft exclusion and the alarm type (Contents 92 / 93). The payload sent neither (it now sends the
+    record from the building's contents; contents of one building must agree)."""
+    cr = wb.Worksheets("CALC - Contents Rating")
+    for c in COLS:
+        X, p = colname(c), 131 + c
+        f92 = str(w11.com_retry(lambda: cr.Cells(92, c).Formula))
+        old92 = f"=IFERROR(VLOOKUP('IN - Schedule'!$M${p},'TBL - ContentsTables'!$DA$2:$DB$5,2,FALSE),1)"
+        if f92 != old92:
+            raise Gate(f"Contents {X}92 is {f92!r}")
+        f93 = str(w11.com_retry(lambda: cr.Cells(93, c).Formula))
+        if f93 != f"='IN - Schedule'!$P${p}":
+            raise Gate(f"Contents {X}93 is {f93!r}")
+        k = f"'IN - Schedule'!$K${p}=\"Yes\""
+        w11.com_retry(lambda: setattr(cr.Cells(92, c), "Formula", f"=IF({k},1,{old92[1:]})"))
+        w11.com_retry(lambda: setattr(cr.Cells(93, c), "Formula",
+                                      f"=IF(OR({k},'IN - Schedule'!$N${p}=\"Not Applicable\",'IN - Schedule'!$N${p}=\"\"),"
+                                      f"1,'IN - Schedule'!$P${p})"))
+    return "Watchman / burglary credits gated on theft exclusion and alarm type (Contents 92 / 93)", {"CALC - Contents Rating"}
+
+
+w11.FIXES["MRC"] = fix_mrc
+w11.EXPECT_COLS["MRC"] = {0}   # FL building 1 (class 0311, Legal Liability): factors move, premiums do not
+w11.FIXES["FLDED"] = fix_flded
+w11.EXPECT_COLS["FLDED"] = {0}   # FL building 1 (class 0311, Legal Liability): factors move, premiums do not
+w11.FIXES["WBC"] = fix_wbc
+w11.EXPECT_COLS["WBC"] = set()
+w11.NO_MOVE.add("WBC")
+
+
 w11.FIXES["COINS1"] = fix_coins1
 w11.EXPECT_COLS["COINS1"] = set()
 w11.NO_MOVE.add("COINS1")       # every baseline item is at 80% (factor 1.0)
