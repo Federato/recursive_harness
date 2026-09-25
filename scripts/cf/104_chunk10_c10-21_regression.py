@@ -1,4 +1,4 @@
-"""The one-command regression -- chunks 0-12 and the General Liability suites.
+"""The one-command regression -- chunks 0-16 and the General Liability suites.
 
 Built for C10-21 (chunks 1-9 after chunk 10's _lookup_banded fix,
 docs/CF-ENGINE-FIX-BANDED-LOOKUP.md). Extended 2026-09-22 (C11-24, part 1) to
@@ -125,6 +125,17 @@ GOLDEN = [
      "Green Upgrades on chunk 2's building", ["27", "3", "30", "33", "261"]),
     ("141_chunk12_dependent_golden_case.py", 12,
      "Dependent Properties, Broad form on chunk 5's Business Income", ["80", "12", "112"]),
+    # Chunk 15 (C15-20, 2026-09-25). One golden case per formula variant, each derived by
+    # hand before the run and matched by ISO live: $1,013 (A, building credit), $1,066
+    # (B, no credit), $1,065 (C, one rounding), $959 (contents / policy credit, C15-10).
+    ("169_chunk15_rc2.py", 15,
+     "manual-premium endorsements, one golden case per variant + all 23 on one policy",
+     ["1013", "1066", "1065", "959"]),
+    # Chunk 16 (C16-22, 2026-09-25). Each derived by hand before the run and matched by ISO live:
+    # EPI $33, Pollutant Clean Up BGI $22 ($60 in G9b), Spoilage $513, IL $46, OK $960.
+    ("175_chunk16_rc2.py", 16,
+     "Business Income options, Pollutant Clean Up, Molten Material, Spoilage golden cases",
+     ["33", "22", "60", "513", "46", "960"]),
 ]
 
 # The machinery each chunk added -- run whenever shared code changes, which is
@@ -212,6 +223,15 @@ MACHINERY = [
     ("163_chunk14_c14-19_zero_cases.py", "chunk 14 RC-5: every 0 / blank modifier against its branch; the 1..199 stat-code bound"),
     ("164_chunk14_c14-18_all_states.py", "chunk 14 RC-5: IRPM and Standard Property Policy in all 46 states"),
     ("165_chunk14_c14-20_shared_modifiers.py", "chunk 14 RC-5: modifier fields by path on every record vs stored ISO, sample"),
+    # Chunk 15 (2026-09-25). Engine-only runs (no --live); 172_ is offline against stored responses.
+    ("168_chunk15_rc1.py", "chunk 15 RC-1: attach map, every modifier path resolved, engine = hand on 29 records"),
+    ("170_chunk15_rc3.py", "chunk 15 RC-3: 22 zero / exclusion / message cases as derived; shared names"),
+    ("171_chunk15_rc4.py", "chunk 15 RC-4: all 23 records in all 46 states + VA 2021 (tree check), as derived"),
+    ("172_chunk15_c15-19_downstream.py", "chunk 15 RC-5: total moves by the endorsements; stat fields vs stored ISO"),    # Chunk 16 (2026-09-25). Engine-only runs (no --live); 177_ on its default sample; 178_ offline.
+    ("174_chunk16_rc1.py", "chunk 16 RC-1: attach map, every record priced by the hand evaluator"),
+    ("176_chunk16_rc3.py", "chunk 16 RC-3: zero / message / exclusion cases as derived; shared names"),
+    ("177_chunk16_rc4.py", "chunk 16 RC-4: every family in the sample states + probes, as derived"),
+    ("178_chunk16_c16-21_downstream.py", "chunk 16 RC-5: total moves by the families (T1, T2); stat values vs stored ISO"),
 ]
 
 # Excluded on purpose, each with a reason -- no silent narrowing of scope.
@@ -221,7 +241,7 @@ EXCLUDED = [
      "they were re-run green on 2026-09-18 and touch no banded lookup. "
      "Run them directly when a state-layer change lands."),
     ("chunk 10 censuses 84/86/87/89/90/92/93/94/97/102, chunk 11 census 106, "
-     "chunk 12 censuses 123/124/126",
+     "chunk 12 censuses 123/124/126, chunk 13-15 censuses 143/156/166/167",
      "each states 'always exits 0 -- a census, not a test'; running them "
      "here would add minutes and prove only that they still print."),
     ("06/19/44/53/63/79/118/122 RaaS scripts, and chunk 12's 129/132/135/136",
@@ -330,7 +350,7 @@ def main():
         return a.only is None or any(name.startswith(p) for p in a.only)
 
     failures = []
-    print("Regression -- chunks 0-12 and the General Liability suites")
+    print("Regression -- chunks 0-16 and the General Liability suites")
     print("=" * 78)
 
     print("\nGOLDEN CASES -- exit code, failure markers, and documented figures")
@@ -395,7 +415,7 @@ def main():
             print("\n".join(out.strip().splitlines()[-15:]))
             print()
         return 1
-    print("REGRESSION CLEAN -- every chunk 0-14 golden case reproduces its "
+    print("REGRESSION CLEAN -- every chunk 0-16 golden case reproduces its "
           "documented figures,\nevery machinery script and every GL suite "
           "exits 0 with no failure marker.")
     return 0
