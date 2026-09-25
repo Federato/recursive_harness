@@ -1,11 +1,80 @@
 # Property build — start here
 
-**Last worked 2026-09-24.** This is the resume point: where things stand, how to
+**Last worked 2026-09-25.** This is the resume point: where things stand, how to
 confirm it in two minutes, and what to pick up first.
 
 ---
 
-## Pick up here (set 2026-09-24): chunks 0–14 are all CLOSED; next, the unbuilt coverages
+## Pick up here (set 2026-09-25): chunks 15 and 16 CLOSED; chunk 17 OPEN
+
+**Chunk 16, "already matched ISO: gate them", GATED 9 of 9 on 2026-09-25, 23 of 23**
+([`CF-CHUNK16-GATE.md`](CF-CHUNK16-GATE.md), tasks [`CF-CHUNK16-TASKS.md`](CF-CHUNK16-TASKS.md)):
+BI no waiting period, Extended Period of Indemnity, Civil Authority, Pollutant Clean Up,
+Spoilage, Molten Material, state-only Mine Subsidence. ISO agreed on everything it rated:
+the 27 never-priced records, 32 zero / message / exclusion cases, all 46 states + 6 probes
+(8,342 premiums), and the downstream total (T1 $2,832; clean test T2 predicted first,
+$3,183). Regression CLEAN for chunks 0–16 (110 scripts); `157_ --all` 293 of 293. No engine
+change. **290 of 546 countrywide premium files built (53%).** Findings worth knowing: Pollutant
+Clean Up's location rate is the last building's unless the special class's is higher, and
+goes negative below a $10,000 limit; FL and RI truncate Spoilage's limit / 100; Texas computes
+a Spoilage factor it never uses; ISO honours a submitted `Factor`. Open, not blocking: one
+more OI-103 case (Mortgageholders E&O with no limit).
+
+**Chunk 15, the manual-premium endorsements, GATED 9 of 9 on 2026-09-25, 21 of 21**
+([`CF-CHUNK15-GATE.md`](CF-CHUNK15-GATE.md)); OI-114 (`rul:Null` in the 2020 edition) open.
+
+**Chunk 17, Business Income add-ons, OPENED 2026-09-25; 1 of 23** ([`CF-CHUNK17-TASKS.md`](CF-CHUNK17-TASKS.md),
+census `179_chunk17_census.py`): Ordinary Payroll, Power Heat and Refrigeration, Mining BI,
+Landlord Rental Value, Watercraft Buyback, Off-Premises Interruption. 32 premium records,
+**none ever priced by ISO**; Landlord (5 states) and Off-Premises (6 states) carry the state
+rewrites; identical in all four editions. **Next: C17-02** (why 82 Watercraft fixtures price $0).
+**No engine code without the user's go. Nothing from chunks 15–16 is committed yet.**
+
+## Earlier pick-up (set 2026-09-25): the remaining build is planned as chunks 15–28, easiest first
+
+**2026-09-25: every remaining item is now a chunk.** `scripts/cf/166_remaining_coverage_census.py`
+sized it: of 546 countrywide premium files, chunks 0–14 own **228 (42%)**; the other 318 fall
+into 53 families (none unmapped), plus 75 state-only premium files. Earthquake riders count
+with their parent coverage (44 riders on unbuilt coverages are not chunk 10's). The plan,
+with every family, file count, state rewrite and ISO evidence held, is on
+[`CF-BUILD-STATUS.html`](CF-BUILD-STATUS.html#remaining):
+
+15 manual-premium endorsements (S) · 16 families already matching ISO on stored responses:
+gate them (S) · 17 Business Income add-ons incl. Off-Premises Interruption (M) · 18
+valuation and condition modifiers: Agreed Value, Inflation Guard… (M–L) · 19 scheduled
+property items (M) · 20 small coverages with their own tables (M) · 21 sewer backup and
+condo options (M) · 22 value reporting form and Additional Locations Special Coinsurance
+(L) · 23 state-only coverages incl. MA heating oil (M) · 24 Builders Risk (L) · 25 Flood
+(XL) · 26 Specific/Tentative rating (L) · 27 open gate points on chunks 1–8 (M) · 28
+engine behaviour decisions: OI-103, validation, OI-113 (L, each needs a go).
+
+**Chunk 15 OPENED 2026-09-25; closed 21 of 21 (above)** ([`CF-CHUNK15-TASKS.md`](CF-CHUNK15-TASKS.md),
+census `167_chunk15_census.py`): 23 files, one formula (`ManualPremium` × package mod ×
+multi-premium credit × IRPM) in 4 variants that round 3, 2 or 1 times; modifiers read
+at 7 different `../` depths; 0 tables; one message (Interruption of Computer Operations,
+$2,500 minimum); GA/TX/VA empty `ErcRate`, FL forces $0. **RC-1 COMPLETE 2026-09-25,
+5 of 21** (`168_chunk15_rc1.py`, all checks pass): every record attaches and rates as
+filed; IRPM and package discount always come from the **policy**; the multi-premium
+credit from the parent coverage (policy for 4 records), except **Valuable Papers, which
+reads the building's**; five records need their own on-switch (Valuable Papers: its
+Contents row's `CovType`). **RC-2 COMPLETE 2026-09-25, 10 of 21** (`169_chunk15_rc2.py
+--live`): one golden case per variant plus all 23 records on one policy, engine 27 of 27,
+ISO 27 of 27, every premium equal, messages identical; ISO confirms Valuable Papers reads
+the building's credit. Live payloads need `WindstormOrHailDeductible` set (OI-103).
+Messages about these endorsements also sit in parent rule files (C15-13). **RC-3
+COMPLETE 2026-09-25, 14 of 21** (`170_chunk15_rc3.py --live`): 22 zero / exclusion /
+message cases, engine 22 of 22, ISO 21 of 21 rated, messages identical; ISO refuses a
+policy package discount of 0 (added to OI-103). A Contents row's `CovForm` is copied from
+its occupancy: set it there. **RC-4 COMPLETE 2026-09-25, 18 of 21** (`171_chunk15_rc4.py
+--live`): all 23 records in all 46 states, ISO 46 of 46 (7,836 premiums, every message);
+states only switch families off: GA, TX, VA, FL, and MO (its CW 2023 V02 edition has no
+Discretionary Payroll premium rule). VA 2021: ISO $927 (the 2020 policy rule overwrites a
+supplied IRPM). New OI-114 (`rul:Null` test, old editions only); two more OI-103 cases.
+FL payloads need an FL-filed special class (not "Towers - Broadcasting Antennas").
+**Next: RC-5, C15-19** (downstream: total, terrorism, stat codes), then regression, gate.
+**No engine code without the user's go.**
+
+## Earlier pick-up (set 2026-09-24): chunks 0–14 are all CLOSED; next, the unbuilt coverages
 
 **Every chunk in the plan is closed and committed** (chunk 14, policy assembly, gated 9 of 9
 in `1b15ada`; regression CLEAN for chunks 0–14, 100 scripts). The user chose the next
