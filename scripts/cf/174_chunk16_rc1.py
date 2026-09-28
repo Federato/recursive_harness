@@ -43,6 +43,11 @@ sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts" / "cf"))
 
 from cf_engine.resolve import book_for
+import functools                                               # noqa: E402
+# book_for re-discovers the whole ERC corpus (~0.5-1.8 s) on every call, and this script calls it
+# inside loops (~640 times in C16-05 alone). The packages do not change within a run: cache it.
+# Measured 2026-09-28 before / after, output identical (logs/174_before.log, 174_after.log).
+book_for = functools.lru_cache(maxsize=None)(book_for)
 from gl_engine.interp import tree
 from gl_engine.interp.values import InterpretError
 

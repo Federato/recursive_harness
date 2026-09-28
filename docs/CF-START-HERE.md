@@ -20,9 +20,8 @@ Inflation Guard…), easiest-first plan on `CF-BUILD-STATUS.html#remaining`.
 
 **How to run things now:** the regression runs 4 at a time (`104_ --jobs 4`, ~45 min full);
 `--quick` (golden cases + the current chunk, no GL) after each RC; every long pass prints
-`[i/n elapsed]` to `results/cf-raas/logs/`. Speed-up still open: `174_` (18 min) calls `book_for`
-~640+ times in loops; cache it as in `180_` (est. 5-10 min off the parallel run). `178_`'s
-11 min is ~100 genuine re-ratings, not discovery: caching does not help it (checked 2026-09-28).
+`[i/n elapsed]` to `results/cf-raas/logs/`. `174_` now caches `book_for`: 612 s -> 129 s run alone,
+output identical (2026-09-28). `178_`'s ~11 min is ~100 genuine re-ratings, not discovery.
 
 ## Earlier pick-up (set 2026-09-25): chunks 15 and 16 CLOSED; chunk 17 OPEN
 
