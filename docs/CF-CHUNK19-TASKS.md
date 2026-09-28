@@ -42,7 +42,7 @@ rate the build already has:
 - **Manufacturers Consequential Loss**: stock made worthless because a matching part was damaged.
 
 **57 of the 63 countrywide premium records have never been priced by ISO**, nor
-have the 5 state-only glass records FL and MT file. The other 6 are
+have the 5 state-only glass records FL files. The other 6 are
 the unscheduled tenants' records (Group I, Group II and Special, for glass and for
 other building property), which already match ISO on a stored policy. RC-1 starts
 there: reproduce what ISO already priced before predicting what it hasn't.
@@ -51,7 +51,7 @@ there: reproduce what ISO already priced before predicting what it hasn't.
 
 | Family | Premium records | ISO has priced | Tables read directly (CW rows) | States that rewrite it | Messages (any file) | Editions |
 |---|---|---|---|---|---|---|
-| **Tenants' Building Property / Glass** (scheduled, unscheduled; glass, other than glass; 5 perils) | 20 + **5 state-only** (`BuildingGlassTenantsPolicyDetail…`, FL **and MT**, both in force) | **6** (unscheduled BGI / BGII / Special, both kinds) | the **Building** chain: BGI LOI (342), BGII LOI (57; AL GA NC SC TX), Broad base (30), `SpecialBuildingRate` (45 states), `DeductibleFactor` (240; 44 states), `BuildingGlassNoDeductibleFactor` (4; FL), `Deductible250Factor` (4) | AL KS NY RI (`SetPremium`); FL (on/off switches on the CW files); FL MT own glass files | 5: CP 14 01 with CP 14 02; detail pages needed / not applicable; Public Institutional Plan coinsurance 90 or 100% (AL KS RI) | same in all four |
+| **Tenants' Building Property / Glass** (scheduled, unscheduled; glass, other than glass; 5 perils) | 20 + **5 FL-only** (`BuildingGlassTenantsPolicyDetail…`; MT files the same names with **no premium rule**) | **6** (unscheduled BGI / BGII / Special, both kinds) | the **Building** chain: BGI LOI (342), BGII LOI (57; AL GA NC SC TX), Broad base (30), `SpecialBuildingRate` (45 states), `DeductibleFactor` (240; 44 states), `BuildingGlassNoDeductibleFactor` (4; FL), `Deductible250Factor` (4) | AL KS NY RI (`SetPremium`); FL (on/off switches on the CW files); FL's own glass files (MT's price nothing) | 5: CP 14 01 with CP 14 02; detail pages needed / not applicable; Public Institutional Plan coinsurance 90 or 100% (AL KS RI) | same in all four |
 | **Radio / TV Antennas** (property and BI) | 9 | 0 (on 1 fixture) | **30**: the **special-class** Group I rates (213; FL NY), BGII rate (45 states), 15 EQ sub-limit flat-deductible tables (FL files all) and the tier table (10 states), vandalism (161; FL GA KS NY), windstorm exclusion (8 states), own class code and BGII symbol (NY) | **46**, mostly the EQ sub-limit deductible tier lookup; formula rewrites in AL AR DC FL GA KS NY RI TX VT (+ CA NM SC EQ / wind) | 1: CP 14 50 not valid with coverage | same |
 | **Outdoor Trees, Shrubs and Plants** | 4 | 0 | 12: special-class Group I rates, BGII rate, `VehExclFactorOutdoorTrees` (1; **CT MA ME NH RI VT**), vandalism, windstorm exclusion, own class / coverage / rating-ID codes, BGII symbol (NY) | **10**: AL AR DC FL GA KS NY RI TX VT (AR DC FL KS NY RI `SetPremium`) | 3: CP 14 30 not valid; per-item limits required; cause of loss must match the blanket page | same |
 | **Outside Signs** | 5 | 0 (on 1 fixture) | **32**: as antennas, plus metal and other-than-metal BGII symbols (NY) and construction stat codes | **46**, mostly EQ sub-limit tiers; formula rewrites in AL AR DC FL GA KS NY RI TX VT (NY `SetPremium`) | 2: CP 14 40 not valid; NY construction vs sign description | same |
@@ -82,12 +82,14 @@ No date arithmetic, no `Power`, no unregistered element anywhere in the chunk.
    editions, so RC-4 needs one MO probe, not an edition task per family.
 5. **Leased Property borrows chunk 18's table.** Its premium reads `AgreedValueFactor`;
    its golden case follows C18-06 and must agree with it.
-6. **Five state-only glass files, in two states.** FL and MT both file
-   `BuildingGlassTenantsPolicyDetail…` (Group I, Group II, Broad, EQ, Special) plus their
-   container, in every MT package back to 2020. The plan said "FL-only": MT is new. The
-   census first missed all six because the name says `BuildingGlass`, not
+6. **Five FL-only glass files.** FL files `BuildingGlassTenantsPolicyDetail…` (Group I,
+   Group II, Broad, EQ, Special) plus their container, and prices them. MT files the same six
+   names but **with no premium rule** (only `ErcProcess`; corrected 2026-09-28 by chunk 23's
+   census, `904_`, which enumerates premium files rather than names), so the plan's "FL-only"
+   was right. The census first missed the files because the name says `BuildingGlass`, not
    `BuildingProperty`; `166_` uses the same pattern, which is harmless there (it counts
-   countrywide files only) but means the 5 are outside the 63. C19-18 prices them.
+   countrywide files only) but means the 5 are outside the 63. C19-18 prices them, and
+   checks that MT's glass records price nothing.
 7. **A census bug found on the way.** The form-number search copied from `185_` held literal
    backspace characters where `\b` belonged, so it never matched a form in any rule file.
    Chunk 18's form hits came from its wording list alone. `900_` is fixed and also lists
@@ -103,7 +105,7 @@ No date arithmetic, no `Power`, no unregistered element anywhere in the chunk.
 
 | # | Task | Status | Notes |
 |---|---|---|---|
-| C19-01 | **Opening census**: population, formulas, tables, messages by record **and by form / wording** in every file, every edition, state layer, stored evidence, attach points, engine readiness | ✅ | **Done 2026-09-28** (`900_chunk19_census.py`, 27 s). Findings above: 63 countrywide premium records + 5 FL / MT glass records, 6 priced by ISO; 21 message rules; 10 states with formula rewrites (46 with the EQ tier lookup); identical in all four editions; no date nodes; no unregistered element |
+| C19-01 | **Opening census**: population, formulas, tables, messages by record **and by form / wording** in every file, every edition, state layer, stored evidence, attach points, engine readiness | ✅ | **Done 2026-09-28** (`900_chunk19_census.py`, 27 s). Findings above: 63 countrywide premium records + 5 FL glass records, 6 priced by ISO; 21 message rules; 10 states with formula rewrites (46 with the EQ tier lookup); identical in all four editions; no date nodes; no unregistered element |
 | C19-02 | **The 6 records ISO already priced**: reproduce the unscheduled tenants' premiums on their stored policy, hand = engine = ISO, and which input turns scheduled vs unscheduled on. No new ISO calls | ⬜ | |
 | C19-03 | **Attach map and switches**: every record's parent (the Detail containers, per-item limits, the BI record under Antennas), each container's own rules, every on-switch shape (FL's `SetCoverageOnPolicyIndicator`s), every blank-input default that zeroes a premium | ⬜ | gate 2 (with C19-05) |
 | C19-04 | **Borrowed values**: every path to another record resolved on a real tree in its loop context: the special-class chain (Antennas, Signs, Trees), the Building chain (Tenants'), the personal property side (the other five), the blanket cause-of-loss match; hand = engine on every record | ⬜ | gate 6 |
@@ -135,7 +137,7 @@ No date arithmetic, no `Power`, no unregistered element anywhere in the chunk.
 | # | Task | Status | Notes |
 |---|---|---|---|
 | C19-17 | **The EQ sub-limit deductible layer**: Antennas and Signs in Tier 1, Tier 2 and FL (flat-deductible tables) states, and the 10 that file their own tier table; probes where the tiers disagree; ISO live | ⬜ | |
-| C19-18 | **The formula rewrites**: AL AR DC FL GA KS NY RI TX VT on Antennas, Signs and Trees; AL KS NY RI Tenants' and FL's switches; the Public Institutional Plan (AL KS RI); FL Household, Temporarily Away and Manufacturers; **the FL and MT state-only glass files** (5 each, diffed against each other); each predicted from the state's own rule and tables; ISO live | ⬜ | |
+| C19-18 | **The formula rewrites**: AL AR DC FL GA KS NY RI TX VT on Antennas, Signs and Trees; AL KS NY RI Tenants' and FL's switches; the Public Institutional Plan (AL KS RI); FL Household, Temporarily Away and Manufacturers; **FL's 5 state-only glass files**, and MT's same-named files pricing nothing; each predicted from the state's own rule and tables; ISO live | ⬜ | |
 | C19-19 | **Editions**: all premium rules identical in the four editions; one MO (CW 2023 V02) probe and one each on a V03 and a V04 state to confirm | ⬜ | gate 8 |
 | C19-20 | **All 46 states**: every family on every state's own package, predicted per state; ISO live | ⬜ | gate 3 |
 
