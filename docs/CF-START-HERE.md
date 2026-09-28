@@ -89,6 +89,28 @@ works on dated reporting periods; 16 states rewrite (not 9), 5 with their own pr
 Income, blanket, unmanned aircraft, antennas BI, CA O&L and FL Pollutant already read the Builders
 Risk factors; 149 stored policies have Builders Risk on, and all 293 must re-rate unchanged.
 
+**Chunk 25, Flood, TASKS SET 2026-09-28; 1 of 26; starts after chunk 24**
+([`CF-CHUNK25-TASKS.md`](CF-CHUNK25-TASKS.md), census `906_chunk25_census.py`, which adds a flood
+trail): 6 premium records + WV's 2 Ordinance or Law flood forms; ISO priced 3 on one stored policy;
+705 KB of rules, 27 tables. Loss cost comes from 37 states' tables, 7 states' county tables, or
+nothing at all (AK, FL). Much of flood already lives in built Structure, Location and the main
+ruleset. It closes chunk 17's Off-Premises flood factor and takes the count to 546 of 546.
+
+**Chunk 26, Specific and Tentative rating, TASKS SET 2026-09-28; 1 of 23; starts after chunk 25**
+([`CF-CHUNK26-TASKS.md`](CF-CHUNK26-TASKS.md), branch census `907_chunk26_census.py`): no new files;
+7 CW files / 33 rules; 41 states have their own rating-type rules, 36 rate Specific Group II by
+hazard level and floor area, 10 rewrite Group I; CA adds a fourth rating type (One-Term Loss Cost).
+**Not zero evidence**: ISO priced 566 Specific and 5 Tentative buildings in stored requests (14
+states), so RC-1 replays them first. Contents and occupancy copy the rating type down.
+
+**Chunk 27, open gate points on closed chunks, TASKS SET 2026-09-28; 1 of 18; can run beside any
+chunk** ([`CF-CHUNK27-TASKS.md`](CF-CHUNK27-TASKS.md), census `908_chunk27_census.py`, which enumerates
+every gate file and open item): point 9 (messages) owed on chunks 1–8, closable for 1–6 from C13-27's
+293-response evidence; **chunk 7 has a real gap (ISO 3 messages, engine 5)**; point 8 on chunk 8 (CA / FL
+Legal Liability); TX / DC / IL / MT / NY per-state gaps; chunk 12's two leftovers; OI-101, 105, 106, 112
+and **OI-114, which has no register row**. The card's "point 2 on chunks 6 and 8" was already passed.
+Each item ends closed with evidence or handed to chunk 28; no engine code. **Next: C27-02.**
+
 ## Earlier pick-up (set 2026-09-28): chunk 17 GATED; next, chunk 18
 
 **Chunk 17, the Business Income add-ons, GATED 9 of 9 on 2026-09-28, 23 of 23**
