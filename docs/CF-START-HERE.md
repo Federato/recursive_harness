@@ -5,7 +5,15 @@ confirm it in two minutes, and what to pick up first.
 
 ---
 
-## Pick up here (set 2026-09-28): chunk 18 OPEN, 11 of 23
+## Pick up here (set 2026-09-28): chunk 18 OPEN, 15 of 23
+
+**2026-09-28: chunk 18 RC-3 COMPLETE, 15 of 23** (`scripts/cf/188_chunk18_rc3.py --live`): 29 zero /
+message / name / exclusion cases, ISO agrees on all 29. A reversed Vacancy period prices negative
+(-$50); blank dates must be OMITTED (ISO refuses ""); Functional Valuation on Replacement Cost is
+deleted; Value Reporting attaches only on a reporting coinsurance; SC's CP 01 10 attaches on
+ValuationLaw "Exemption Does Not Apply". The fixed form-number census (`185_`) found no missed
+message. **Next: RC-4, C18-16.**
+
 
 **2026-09-28: chunk 18 RC-2 COMPLETE, 11 of 23** (`scripts/cf/187_chunk18_rc2.py --live`): 9 golden
 cases, ISO agrees on every premium and message. Agreed Value reads the agreed limit (blanketed: the
@@ -39,7 +47,7 @@ Closing chunk 18 takes the build to 406 of 546 (74%).
 gates** ([`CF-CHUNK19-TASKS.md`](CF-CHUNK19-TASKS.md), census `900_chunk19_census.py`): Tenants'
 Building Property / Glass, Antennas, Trees, Signs, Brands and Labels, Household, Leased Property,
 Temporarily Away, Manufacturers Consequential Loss. 63 premium records + 5 state-only glass
-records (**FL and MT**, not FL only); 57 of the 63 never priced by ISO; identical in all four
+records (FL only; MT files the names without a premium rule); 57 of the 63 never priced by ISO; identical in all four
 editions; Antennas and Signs "rewritten" in all 46 states but mostly the EQ sub-limit tier
 lookup. Leased Property waits on C18-06. **Census bug found:** `185_`'s form-number regex held
 backspace characters, so chunk 18's form search matched nothing from files; re-run it at C18-13.
@@ -65,6 +73,21 @@ and no stored multi-location policy at all. The five average rates (MLARs) have 
 the main ruleset, Personal Property (9 state rewrites), Occupancy and chunk 9's Blanket Rating Detail
 already touch them, so all 293 stored policies must re-rate unchanged. The plan's "resets the
 Contents premium" is a roll-up of Additional Locations premiums onto General Information.
+
+**Chunk 23, state-only coverages, TASKS SET 2026-09-28; 1 of 22; starts after chunk 22**
+([`CF-CHUNK23-TASKS.md`](CF-CHUNK23-TASKS.md), census `904_chunk23_census.py`, which enumerates every
+in-force state-only premium file and assigns an owner): 80 files, none unassigned. Chunk 23 owns 10
+(MA heating oil and tenant relocation, AK attorneys' fees, CA Additional / Limited EQ) and closes
+chunk 12's open VA Ordinance or Law priced cases (41 files); none priced by ISO. CA's next packages
+change a Limited EQ formula (OI-105). MT's glass files carry no premium rule (chunk 19 corrected).
+
+**Chunk 24, Builders Risk, TASKS SET 2026-09-28; 1 of 25; starts after chunk 23**
+([`CF-CHUNK24-TASKS.md`](CF-CHUNK24-TASKS.md), census `905_chunk24_census.py`, which adds a Builders
+Risk trail): 20 premium records (the plan card's "adds 17" was wrong); ISO has priced only BR theft
+(144 stored responses); materials of others is a manual premium at $0 on all 364; premium adjustment
+works on dated reporting periods; 16 states rewrite (not 9), 5 with their own premium rule. Business
+Income, blanket, unmanned aircraft, antennas BI, CA O&L and FL Pollutant already read the Builders
+Risk factors; 149 stored policies have Builders Risk on, and all 293 must re-rate unchanged.
 
 ## Earlier pick-up (set 2026-09-28): chunk 17 GATED; next, chunk 18
 

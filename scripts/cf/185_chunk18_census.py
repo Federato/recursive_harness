@@ -82,6 +82,21 @@ WORDS = {"Agreed Value": ["Agreed Value"], "Inflation Guard": ["Inflation Guard"
 EXCLUDE = re.compile(r"HeatingOil")
 
 
+def form_pages(pkgs):
+    """(TableName, display Name, form number 'CP nn nn', StateCode) from every package's Form Pages table
+    (copied from the planning session's 901_chunk20_census.py, 2026-09-28)."""
+    out = set()
+    for pkg in pkgs:
+        f = pkg / "Form Pages" / "Pages.FormPage.csv"
+        if not f.exists():
+            continue
+        with open(f, encoding="utf-8-sig") as h:
+            for r in csv.DictReader(h):
+                num = re.match(r"((?:CP|IL) \d\d \d\d)", r.get("Number") or "")
+                out.add((r["TableName"], r["Name"], num.group(1) if num else None, r["StateCode"]))
+    return out
+
+
 def rows(path):
     with open(path, encoding="utf-8-sig") as h:
         return sum(1 for r in csv.reader(h) if r) - 1
@@ -111,6 +126,7 @@ def main():
     ed_rules = {k: {f.name: f for f in (v / "Rules").glob("*.xml")} for k, v in EDITIONS.items()}
     stc = {p.stem: p.read_text(encoding="utf-8-sig", errors="replace") for p in ISO_CF.rglob("STC/*.json")}
     xsd = rc1.xsd_for(or_book)
+    pages = form_pages([cw] + [b.state.package.content for b in books.values()])
 
     # stored ISO responses: non-zero premium by record, and the forms seen
     replay = collections.Counter()
@@ -215,7 +231,12 @@ def main():
         print(f"  runs rules in other files: {dict(ext.most_common(8)) or '-'}")
 
         # the family's form numbers, from its own files' ErcFormNumber constants and lookups, and its wording
-        forms = set(f for t in texts.values() for f in re.findall(r"(?:CP|IL) \d\d \d\d", t))
+        # (2026-09-28 fix: the regex held literal backspaces and matched nothing; forms are now also taken
+        # from every package's Form Pages table by record name, and a family with none found is flagged)
+        forms = {num for tab, _, num, _ in pages if num and tab in recs}
+        forms |= set(f for t in texts.values() for f in re.findall(r"\b(?:CP|IL) \d\d \d\d\b", t))
+        if not forms:
+            print(f"  !! no form number found for {fam}: the form-number message search cannot bite")
         words = re.compile("|".join(re.escape(w) for w in WORDS[fam]), re.I)
         # 4 messages anywhere
         msgs = collections.defaultdict(set)
