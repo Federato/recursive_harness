@@ -20,7 +20,7 @@ evaluator and method), and each probe is chosen so the competing readings give d
 Every pass prints `[i/n elapsed]` progress to `results/cf-raas/logs/`; the quick regression tier
 runs after each RC, the full one at the gate.
 
-**Status: OPEN, 5 of 23 tasks** (RC-1 complete 2026-09-28, `186_chunk18_rc1.py`, all checks pass). Next: RC-2, C18-06 (Agreed Value).
+**Status: OPEN, 11 of 23 tasks** (RC-1 and RC-2 complete 2026-09-28; `187_chunk18_rc2.py --live`: 9 golden cases, 72 of 84 records priced, ISO agrees on every premium and message). Next: RC-3, C18-12.
 
 ---
 
@@ -92,12 +92,12 @@ say why before any golden case.
 
 | # | Task | Status | Notes |
 |---|---|---|---|
-| C18-06 | **Agreed Value**: all five forms on Building, Contents, BI, Special Class and SCBI, not blanketed and blanketed (the average-rate reading discriminated), plus Leased Property; ISO live | ⬜ | gate 1. **Chunk 19's Leased Property (C19-11) reads `AgreedValueFactor`: its golden case must agree with this one** |
-| C18-07 | **Inflation Guard**: Building, Contents and Special Class at two percentages from `InflationGuardBldg`; ISO live | ⬜ | |
-| C18-08 | **Functional Valuation**: Building and Personal Property other than stock, both factor rows and the post-loss ordinance option; ISO live | ⬜ | |
-| C18-09 | **Increase in Rebuilding Expenses**: Building and Special Class, percentages from the 100-row converted table (chosen so the conversion decides a dollar); ISO live | ⬜ | |
-| C18-10 | **Vacancy Permit**: Building and Contents with both riders (Molten Material, Radioactive), a period predicted in days by hand, with and without vandalism and sprinkler-leakage exclusions; Standard Property Policy vandalism rate; ISO live | ⬜ | |
-| C18-11 | **Peak Season**: blanket contents with a General Information record and a dated period, each LOI factor looked up by hand; ISO live | ⬜ | |
+| C18-06 | **Agreed Value**: all five forms on Building, Contents, BI, Special Class and SCBI, not blanketed and blanketed (the average-rate reading discriminated), plus Leased Property; ISO live | ✅ | **Done 2026-09-28** (`187_chunk18_rc2.py --live`, A1-A4). All Agreed Value forms predicted, engine = hand, **ISO agrees** on every premium and message. Unblanketed (A1 Special, A2 Broad): 0.05 × the coverage's final rate × the **agreed limit** (80,000, not the 100,000 coverage limit): building BGI **$10**; BI / SCBI use **1.10** (BI BGI $9). Blanketed (A3, chunk 9's blanket, detail `AgreedVal` Yes): the blanket's `…AvgRateAgreedVal` × `LimitToUse`: **$13 / $25** on the two buildings. Leased Property (A4): **switched on by the CONTENTS row's `AgreedValueOption`** (the detail copies it over its own), 0.05 × the contents' final rate × the item limit: $20 / $2 / $13. The EQ riders stay off without an EQ sub-limit form (RC-3). ISO types `AgreedValueLimit`, `UnitNumber`, `BlktIDNum`, `TotalLimit` as numbers · gate 1. **Chunk 19's Leased Property (C19-11) reads `AgreedValueFactor`: its golden case must agree with this one** |
+| C18-07 | **Inflation Guard**: Building, Contents and Special Class at two percentages from `InflationGuardBldg`; ISO live | ✅ | **Done 2026-09-28** (I1). A factor × **the coverage record's finished premium**: building 6% (0.03) $9, contents 20% (0.10) $20, special class 12% (0.06); 12 of 12 predicted, ISO agrees 123 of 123 |
+| C18-08 | **Functional Valuation**: Building and Personal Property other than stock, both factor rows and the post-loss ordinance option; ISO live | ✅ | **Done 2026-09-28** (F1). **The two forms differ**: the building keeps 1.30 and prices (1.30 × post-loss 1.02 − 1) × rate × limit ($79); the contents stores round3(1.25 − 1) = 0.25 ($52). ISO agrees 135 of 135 |
+| C18-09 | **Increase in Rebuilding Expenses**: Building and Special Class, percentages from the 100-row converted table (chosen so the conversion decides a dollar); ISO live | ✅ | **Done 2026-09-28** (R1, 25% of 1,000,000). Adjustment × form factor (BGI 0.10, BGII 0.15, Special 0.10, EQ 0.10) × the amount (value × converted %) / 100: building $55 / $10 / $12 / $3, special class $16 / $75 / $12 / $3; ISO agrees. At 7% of 100,000, Group II and Special round to $0 |
+| C18-10 | **Vacancy Permit**: Building and Contents with both riders (Molten Material, Radioactive), a period predicted in days by hand, with and without vandalism and sprinkler-leakage exclusions; Standard Property Policy vandalism rate; ISO live | ✅ | **Done 2026-09-28** (V1). Pro-rata = permit days / policy days (building 90 → 0.247, contents 181 → 0.496, by hand = engine); **the package discount applies to the vandalism part only**; building BGI $152, contents BGI $246. ISO agrees 139 of 139. Payloads must carry the policy's `EffectiveDt` / `ExpirationDt` |
+| C18-11 | **Peak Season**: blanket contents with a General Information record and a dated period, each LOI factor looked up by hand; ISO live | ✅ | **Done 2026-09-28** (P1). (premium at the total limit − at the base limit) × the season's pro-rata (60 days → 0.164): BGI $8, Special $4; ISO agrees 130 of 130 (without a blanket General Information record; RC-3 tests its message). ISO types `FullValue` as a number |
 
 ### RC-3 · Zero cases, messages and names (4 tasks)
 
