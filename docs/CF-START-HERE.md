@@ -5,7 +5,18 @@ confirm it in two minutes, and what to pick up first.
 
 ---
 
-## Pick up here (set 2026-09-28): chunk 17 GATED; next, chunk 18
+## Pick up here (set 2026-09-28): chunk 18 OPEN, 1 of 23
+
+**Chunk 18, valuation and condition modifiers, OPENED 2026-09-28; 1 of 23**
+([`CF-CHUNK18-TASKS.md`](CF-CHUNK18-TASKS.md), census `185_chunk18_census.py`): Agreed Value,
+Inflation Guard, Functional Valuation, Increase in Rebuilding Expenses, Vacancy Permit, Peak
+Season. 84 premium records, **none ever priced by ISO** (Agreed Value and Inflation Guard sit at
+$0 on every stored policy); 54 messages, every Agreed Value one found only by form / wording;
+30 files differ in MO's CW 2023 V02; Vacancy Permit and Peak Season use date arithmetic;
+Vacancy Permit has 9 state rewrites. **Next: C18-02** (why the stored records price $0).
+Closing chunk 18 takes the build to 406 of 546 (74%).
+
+## Earlier pick-up (set 2026-09-28): chunk 17 GATED; next, chunk 18
 
 **Chunk 17, the Business Income add-ons, GATED 9 of 9 on 2026-09-28, 23 of 23**
 ([`CF-CHUNK17-GATE.md`](CF-CHUNK17-GATE.md), tasks [`CF-CHUNK17-TASKS.md`](CF-CHUNK17-TASKS.md)):
