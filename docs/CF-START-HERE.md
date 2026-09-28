@@ -7,12 +7,28 @@ confirm it in two minutes, and what to pick up first.
 
 ## Pick up here (set 2026-09-25): chunks 15 and 16 CLOSED; chunk 17 OPEN
 
+**2026-09-28: chunk 17 RC-4 COMPLETE, 19 of 23** (`scripts/cf/183_chunk17_rc4.py --all --live`):
+all 46 states + 10 probes, 56 of 56 agree with ISO (1,344 predicted records, 9,039 premiums,
+messages equal), every state from its own edition. CT prices no Landlord Group I (empty
+`ErcRate`); KS / NY price Landlord Broad and Special on a Standard Property Policy, VT Broad
+only; AK drops insurance-to-exposure, AR DC NY RI the wind-hail factor; FL switches
+Off-Premises off on residential classes. Passes now stream `[i/n elapsed]` progress to
+`results/cf-raas/logs/`; `pkgs()` is cached (2.5 min -> 10 s a policy). **Next: RC-5, C17-20.**
+
+**2026-09-28: chunk 17 RC-3 COMPLETE, 15 of 23** (`scripts/cf/182_chunk17_rc3.py --live`):
+30 cases (14 zero, 10 message, 2 submitted-value, 4 exclusion); ISO agrees on all 29 it
+rated, whole message sets equal. Blank payroll days price like 0 days (not $0); a blank
+Off-Premises extended period is $0 but "Not Applicable" prices; Off-Premises reads no cyber
+factor; every family factor keeps a submitted value. Two more OI-103 cases: Watercraft option
+"Not Applicable" and FL's EQ building-height table (ISO refuses, we price). 4 Watercraft
+messages the census missed now tested. RC-1/RC-2 committed `54f34b3`.
+
 **2026-09-28: chunk 17 RC-2 COMPLETE, 11 of 23** (`scripts/cf/181_chunk17_rc2.py --live`):
 10 golden cases, every one of the 32 records priced by ISO for the first time; engine = hand =
 ISO on every premium on each policy and every message. ISO confirms Landlord Broad has no loss
 cost multiplier, Landlord EQ uses Business Income's EQ limit, Special Class Landlord keys its
 base rates on a hardcoded Frame, Mining ignores its own limit outside a blanket. At chunk 10's
-EQ class A1 the 0.06 EQ riders round to $0 (a zero case). **Next: RC-3, C17-12.**
+EQ class A1 the 0.06 EQ riders round to $0 (a zero case). 
 
 **2026-09-28: chunk 17 RC-1 COMPLETE, 5 of 23** (`scripts/cf/180_chunk17_rc1.py`, all checks
 pass, no ISO calls, no engine change). The $0 fixtures: none of the 82 Watercraft fixtures
@@ -21,7 +37,7 @@ sets `WaterfrontProperty`; the 3 Mining fixtures pick option None. Found: Busine
 `WaterFrontProperty`; Landlord Broad / Special switch on the Landlord record's **own**
 `CauseOfLoss`; a blank Off-Premises extended period prices $0; Watercraft option "Not
 Applicable" has no factor row. Hand = engine on 26 of 32 records (the 6 EQ riders need
-earthquake: RC-2). Chunks 15–16 are committed (`b84d8f1`); chunk 17 RC-1 and RC-2 are not yet committed.
+earthquake: RC-2). Chunks 15–16 are committed (`b84d8f1`).
 
 **Chunk 16, "already matched ISO: gate them", GATED 9 of 9 on 2026-09-25, 23 of 23**
 ([`CF-CHUNK16-GATE.md`](CF-CHUNK16-GATE.md), tasks [`CF-CHUNK16-TASKS.md`](CF-CHUNK16-TASKS.md)):
