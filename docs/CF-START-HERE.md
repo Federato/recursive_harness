@@ -5,7 +5,17 @@ confirm it in two minutes, and what to pick up first.
 
 ---
 
-## Pick up here (set 2026-09-28): chunk 18 OPEN, 1 of 23
+## Pick up here (set 2026-09-28): chunk 18 OPEN, 5 of 23
+
+**2026-09-28: chunk 18 RC-1 COMPLETE, 5 of 23** (`scripts/cf/186_chunk18_rc1.py`, all checks pass;
+`--skip-stored` skips the 16-min stored re-rate). Every stored policy carries Agreed Value and
+Inflation Guard switched off (option No / Not Applicable): ISO $0 = ours on all 293. Switched on:
+Agreed Value $10, Inflation Guard 4% $5 (a factor × the building's finished premium). Agreed Value
+"Yes" with no agreed limit prices $0 silently. **Functional Valuation attaches only when
+`ValuationType` = "Functional Valuation"** (deleted otherwise). Vacancy's pro-rata factor = permit
+days / policy days (0.247 by hand); payloads must carry the policy dates. Hand = engine on 53 of
+84. TX files `…TX` subline tables no Vacancy file reads (check live in RC-4). **Next: RC-2, C18-06.**
+
 
 **Chunk 18, valuation and condition modifiers, OPENED 2026-09-28; 1 of 23**
 ([`CF-CHUNK18-TASKS.md`](CF-CHUNK18-TASKS.md), census `185_chunk18_census.py`): Agreed Value,
@@ -15,6 +25,22 @@ $0 on every stored policy); 54 messages, every Agreed Value one found only by fo
 30 files differ in MO's CW 2023 V02; Vacancy Permit and Peak Season use date arithmetic;
 Vacancy Permit has 9 state rewrites. **Next: C18-02** (why the stored records price $0).
 Closing chunk 18 takes the build to 406 of 546 (74%).
+
+**Chunk 19, scheduled property items, TASKS SET 2026-09-28; 1 of 24; starts after chunk 18
+gates** ([`CF-CHUNK19-TASKS.md`](CF-CHUNK19-TASKS.md), census `900_chunk19_census.py`): Tenants'
+Building Property / Glass, Antennas, Trees, Signs, Brands and Labels, Household, Leased Property,
+Temporarily Away, Manufacturers Consequential Loss. 63 premium records + 5 state-only glass
+records (**FL and MT**, not FL only); 57 of the 63 never priced by ISO; identical in all four
+editions; Antennas and Signs "rewritten" in all 46 states but mostly the EQ sub-limit tier
+lookup. Leased Property waits on C18-06. **Census bug found:** `185_`'s form-number regex held
+backspace characters, so chunk 18's form search matched nothing from files; re-run it at C18-13.
+
+**Chunk 20, small coverages with their own tables, TASKS SET 2026-09-28; 1 of 26; starts after
+chunk 19** ([`CF-CHUNK20-TASKS.md`](CF-CHUNK20-TASKS.md), census `901_chunk20_census.py`, which now
+reads form numbers from the package's Form Pages table and flags sibling file names): 30 premium
+records (28 + 2 NC-only), none priced by ISO; Fire Department, Tobacco, the furs / jewelry /
+patterns / stamps limits and BI fungus sit at $0 on stored policies; Mortgageholders E&O is a
+five-layer, policy-level coverage form; 95 distinct messages; one MO edition difference.
 
 ## Earlier pick-up (set 2026-09-28): chunk 17 GATED; next, chunk 18
 
