@@ -1,11 +1,27 @@
 # Property build — start here
 
-**Last worked 2026-09-25.** This is the resume point: where things stand, how to
+**Last worked 2026-09-28.** This is the resume point: where things stand, how to
 confirm it in two minutes, and what to pick up first.
 
 ---
 
 ## Pick up here (set 2026-09-25): chunks 15 and 16 CLOSED; chunk 17 OPEN
+
+**2026-09-28: chunk 17 RC-2 COMPLETE, 11 of 23** (`scripts/cf/181_chunk17_rc2.py --live`):
+10 golden cases, every one of the 32 records priced by ISO for the first time; engine = hand =
+ISO on every premium on each policy and every message. ISO confirms Landlord Broad has no loss
+cost multiplier, Landlord EQ uses Business Income's EQ limit, Special Class Landlord keys its
+base rates on a hardcoded Frame, Mining ignores its own limit outside a blanket. At chunk 10's
+EQ class A1 the 0.06 EQ riders round to $0 (a zero case). **Next: RC-3, C17-12.**
+
+**2026-09-28: chunk 17 RC-1 COMPLETE, 5 of 23** (`scripts/cf/180_chunk17_rc1.py`, all checks
+pass, no ISO calls, no engine change). The $0 fixtures: none of the 82 Watercraft fixtures
+sets `WaterfrontProperty`; the 3 Mining fixtures pick option None. Found: Business Income
+**deletes Mining rows unless its `TypeOfRisk` is Mining**; Special Class BI spells the input
+`WaterFrontProperty`; Landlord Broad / Special switch on the Landlord record's **own**
+`CauseOfLoss`; a blank Off-Premises extended period prices $0; Watercraft option "Not
+Applicable" has no factor row. Hand = engine on 26 of 32 records (the 6 EQ riders need
+earthquake: RC-2). Chunks 15–16 are committed (`b84d8f1`); chunk 17 RC-1 and RC-2 are not yet committed.
 
 **Chunk 16, "already matched ISO: gate them", GATED 9 of 9 on 2026-09-25, 23 of 23**
 ([`CF-CHUNK16-GATE.md`](CF-CHUNK16-GATE.md), tasks [`CF-CHUNK16-TASKS.md`](CF-CHUNK16-TASKS.md)):
@@ -28,7 +44,7 @@ census `179_chunk17_census.py`): Ordinary Payroll, Power Heat and Refrigeration,
 Landlord Rental Value, Watercraft Buyback, Off-Premises Interruption. 32 premium records,
 **none ever priced by ISO**; Landlord (5 states) and Off-Premises (6 states) carry the state
 rewrites; identical in all four editions. **Next: C17-02** (why 82 Watercraft fixtures price $0).
-**No engine code without the user's go. Nothing from chunks 15–16 is committed yet.**
+**No engine code without the user's go.**
 
 ## Earlier pick-up (set 2026-09-25): the remaining build is planned as chunks 15–28, easiest first
 
