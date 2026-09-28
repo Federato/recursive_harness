@@ -20,8 +20,9 @@ Inflation Guard…), easiest-first plan on `CF-BUILD-STATUS.html#remaining`.
 
 **How to run things now:** the regression runs 4 at a time (`104_ --jobs 4`, ~45 min full);
 `--quick` (golden cases + the current chunk, no GL) after each RC; every long pass prints
-`[i/n elapsed]` to `results/cf-raas/logs/`. Speed-up still open: `174_` (18 min) and `178_`
-(11 min) re-discover the ERC corpus per call; cache `book_for` there as in `180_`.
+`[i/n elapsed]` to `results/cf-raas/logs/`. Speed-up still open: `174_` (18 min) calls `book_for`
+~640+ times in loops; cache it as in `180_` (est. 5-10 min off the parallel run). `178_`'s
+11 min is ~100 genuine re-ratings, not discovery: caching does not help it (checked 2026-09-28).
 
 ## Earlier pick-up (set 2026-09-25): chunks 15 and 16 CLOSED; chunk 17 OPEN
 
