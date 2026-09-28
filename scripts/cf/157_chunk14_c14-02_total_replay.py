@@ -102,10 +102,15 @@ def main():
     totals_ok = totals = 0
     diffs = collections.Counter()
     worst = []
-    for rpath in sorted(RES.glob("chunk13_fixture_*_response.json")):
+    import time
+    t0 = time.monotonic()
+    paths = [r for r in sorted(RES.glob("chunk13_fixture_*_response.json"))
+             if a.all or r.name[len("chunk13_fixture_"):-len("_response.json")] in SAMPLE]
+    for i, rpath in enumerate(paths, 1):
         stem = rpath.name[len("chunk13_fixture_"):-len("_response.json")]
-        if not a.all and stem not in SAMPLE:
-            continue
+        if i == 1 or i % 25 == 0 or i == len(paths):       # progress: long runs must show it (2026-09-28)
+            m, s_ = divmod(int(time.monotonic() - t0), 60)
+            print(f"[{i}/{len(paths)}  {m}m{s_:02d}s] {stem}", flush=True)
         fx = index.get(stem)
         if fx is None:
             continue

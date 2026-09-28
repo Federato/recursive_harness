@@ -5,7 +5,25 @@ confirm it in two minutes, and what to pick up first.
 
 ---
 
-## Pick up here (set 2026-09-25): chunks 15 and 16 CLOSED; chunk 17 OPEN
+## Pick up here (set 2026-09-28): chunk 17 GATED; next, chunk 18
+
+**Chunk 17, the Business Income add-ons, GATED 9 of 9 on 2026-09-28, 23 of 23**
+([`CF-CHUNK17-GATE.md`](CF-CHUNK17-GATE.md), tasks [`CF-CHUNK17-TASKS.md`](CF-CHUNK17-TASKS.md)):
+Ordinary Payroll, Power Heat and Refrigeration, Mining BI, Landlord Rental Value, Watercraft
+Buyback, Off-Premises Interruption. All 32 records ISO had never priced are now ISO-confirmed:
+10 golden cases, 30 zero / message / exclusion cases, all 46 states + 10 probes (9,039
+premiums), downstream total +$1,969 and clean test +$2,643 as predicted. No engine change.
+Regression CLEAN for chunks 0–17 (115 scripts); `157_ --all` 293 of 293. **322 of 546
+countrywide premium files built (59%).** Open: two more OI-103 cases; Off-Premises' flood
+factor waits on chunk 25. **Next: chunk 18** (valuation and condition modifiers: Agreed Value,
+Inflation Guard…), easiest-first plan on `CF-BUILD-STATUS.html#remaining`.
+
+**How to run things now:** the regression runs 4 at a time (`104_ --jobs 4`, ~45 min full);
+`--quick` (golden cases + the current chunk, no GL) after each RC; every long pass prints
+`[i/n elapsed]` to `results/cf-raas/logs/`. Speed-up still open: `174_` (18 min) and `178_`
+(11 min) re-discover the ERC corpus per call; cache `book_for` there as in `180_`.
+
+## Earlier pick-up (set 2026-09-25): chunks 15 and 16 CLOSED; chunk 17 OPEN
 
 **2026-09-28: chunk 17 RC-4 COMPLETE, 19 of 23** (`scripts/cf/183_chunk17_rc4.py --all --live`):
 all 46 states + 10 probes, 56 of 56 agree with ISO (1,344 predicted records, 9,039 premiums,

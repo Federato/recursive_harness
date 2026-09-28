@@ -73,6 +73,10 @@ sys.path.insert(0, str(ROOT / "scripts" / "cf"))
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from cf_engine.resolve import book_for
+import functools                                               # noqa: E402
+# book_for re-discovers the whole ERC corpus (~1.8 s) on every call and this script calls it per
+# state and family; the packages do not change within a run (profiled 2026-09-28, see 183_)
+book_for = functools.lru_cache(maxsize=None)(book_for)
 from gl_engine.interp.values import InterpretError
 
 g = import_module("181_chunk17_rc2")

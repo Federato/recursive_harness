@@ -18,7 +18,7 @@ filed table and rule **before** it runs (chunk 16's `174_` evaluator and
 `175_` method), and each probe is chosen so the competing readings give
 different dollars.
 
-**Status: OPEN, 19 of 23 tasks** (RC-1 to RC-4 complete 2026-09-28; `183_chunk17_rc4.py --all --live`: all 46 states + 10 probes, 56 of 56 agree, 9,039 premiums). Next: RC-5, C17-20 (downstream).
+**Status: GATED 2026-09-28, 9 of 9, 23 of 23** ([`CF-CHUNK17-GATE.md`](CF-CHUNK17-GATE.md)). Regression CLEAN for chunks 0–17 (115 scripts); `157_ --all` 293 of 293; 322 of 546 files built (59%).
 
 ---
 
@@ -138,7 +138,7 @@ They price in four ways:
 
 | # | Task | Status | Notes |
 |---|---|---|---|
-| C17-20 | **Downstream**: the policy total moves by exactly the families' premiums, with a clean test predicted before its ISO call; terrorism (these sit inside Business Income, which terrorism prices); statistical codes (Off-Premises' coverage, Option A and insurance-to-exposure codes); ISO live | ⬜ | |
-| C17-21 | **Regression**: add the chunk 17 scripts and pin the golden figures; CLEAN for chunks 0–17; `157_ --all` | ⬜ | |
-| C17-22 | **Census close**: count the six families as built in `166_` (290 → 322 of 546, 59%) | ⬜ | |
-| C17-23 | **File `CF-CHUNK17-GATE.md`** | ⬜ | 32 countrywide premium files |
+| C17-20 | **Downstream**: the policy total moves by exactly the families' premiums, with a clean test predicted before its ISO call; terrorism (these sit inside Business Income, which terrorism prices); statistical codes (Off-Premises' coverage, Option A and insurance-to-exposure codes); ISO live | ✅ | **Done 2026-09-28** (`184_chunk17_c17-20_downstream.py --live`). T0 carries the parent inputs (Mining risk, Special, waterfront No: BI auto-creates the Watercraft record on every policy); T1 adds the families: **total T1 − T0 at ISO $1,969 = the hand sum**; clean test **T2 $2,643, predicted before its call**; terrorism 72 of 72 fields identical, none on a chunk 17 record; every other premium identical; **866 stat values** on 96 stored chunk 17 responses equal (5 fields); T0–T2 agree live |
+| C17-21 | **Regression**: add the chunk 17 scripts and pin the golden figures; CLEAN for chunks 0–17; `157_ --all` | ✅ | **Done 2026-09-28**. Regression CLEAN, 115 of 115 (0 failures) with `181_` pinned ($77 / $982 / $343 / $253 / $13 / $63) and `180_`, `182_`–`184_` added; `157_ --all` 293 of 293. The runner now runs in parallel (`--jobs 4`) with a quick tier (`--quick`). Claude Code stopped it twice for low system memory (not a test failure); the last 4 ran separately |
+| C17-22 | **Census close**: count the six families as built in `166_` (290 → 322 of 546, 59%) | ✅ | **Done 2026-09-28**. `166_` counts the six families as built: **322 of 546 countrywide premium files (59%)**, 224 left in 31 families |
+| C17-23 | **File `CF-CHUNK17-GATE.md`** | ✅ | **Done 2026-09-28**. [`CF-CHUNK17-GATE.md`](CF-CHUNK17-GATE.md): 9 of 9 |

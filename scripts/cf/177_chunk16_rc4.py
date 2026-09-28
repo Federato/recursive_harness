@@ -54,6 +54,7 @@ Exits 1 on any disagreement.
 from __future__ import annotations
 
 import argparse
+import functools
 import csv
 import json
 import re
@@ -91,7 +92,10 @@ def q(x, dp):
 
 # ------------------------------------------------------------ per-state tables
 
+@functools.lru_cache(maxsize=None)
 def pkgs(j):
+    """cached: book_for re-discovers the whole ERC corpus (~1.8 s) per call, and this was called
+    ~120 times per policy -- 2.5 min a policy, 98% discovery (profiled 2026-09-28, chunk 17 RC-4)."""
     b = book_for(j, ASOF)
     return b.state.package.content, b.parent.package.content
 

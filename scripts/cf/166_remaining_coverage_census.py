@@ -124,6 +124,10 @@ CLOSED = {
     # chunk 16 (gated 2026-09-25): the rated Business Income options and the small property adds, 39 files
     "BI no waiting period", "Extended Period of Indemnity", "Civil Authority increased period",
     "Pollutant Clean Up aggregate", "Molten Material", "Spoilage",
+    # chunk 17 (gated 2026-09-28): the Business Income add-ons, 32 files
+    "Ordinary Payroll Limitation", "Power, Heat and Refrigeration Deduction", "Mining Properties BI",
+    "Landlord as Additional Insured (Rental Value)", "Watercraft Exclusion Buyback",
+    "Off-Premises Interruption (vehicles)",
 }
 
 

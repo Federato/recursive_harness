@@ -1,4 +1,4 @@
-"""The one-command regression -- chunks 0-16 and the General Liability suites.
+"""The one-command regression -- chunks 0-17 and the General Liability suites.
 
 Built for C10-21 (chunks 1-9 after chunk 10's _lookup_banded fix,
 docs/CF-ENGINE-FIX-BANDED-LOOKUP.md). Extended 2026-09-22 (C11-24, part 1) to
@@ -33,6 +33,14 @@ Usage:
     python scripts/cf/104_chunk10_c10-21_regression.py --selftest
     python scripts/cf/104_chunk10_c10-21_regression.py --only 01 09 68
     python scripts/cf/104_chunk10_c10-21_regression.py --no-gl
+    python scripts/cf/104_chunk10_c10-21_regression.py --quick           # after each RC
+    python scripts/cf/104_chunk10_c10-21_regression.py --jobs 1          # the old serial run
+
+Two tiers (2026-09-28). FULL (default): everything, 4 scripts at a time (--jobs), at every
+gate and after any engine change. QUICK (--quick): every golden case with all its pinned
+figures + the current chunk's own scripts, no GL, after each RC. Each script is its own
+process either way; a numbered [i/n elapsed] line prints as each finishes, and the report
+below it keeps the original order and format. The serial full run had grown to ~75 min.
 """
 
 from __future__ import annotations
@@ -42,6 +50,7 @@ import re
 import subprocess
 import sys
 import time
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -136,6 +145,12 @@ GOLDEN = [
     ("175_chunk16_rc2.py", 16,
      "Business Income options, Pollutant Clean Up, Molten Material, Spoilage golden cases",
      ["33", "22", "60", "513", "46", "960"]),
+    # Chunk 17 (C17-21, 2026-09-28). Each derived by hand before the run and matched by ISO live:
+    # Landlord BGI $77 (L1), Off-Premises Collision $982 / OTC $343 (O1), SCBI Mining BGII $253 (M1),
+    # SCBI Watercraft $13 (W1), payroll BI BGI $63 (P1).
+    ("181_chunk17_rc2.py", 17,
+     "Business Income add-ons: Landlord, payroll, power-heat, Mining, Watercraft, Off-Premises golden cases",
+     ["77", "982", "343", "253", "13", "63"]),
 ]
 
 # The machinery each chunk added -- run whenever shared code changes, which is
@@ -232,6 +247,11 @@ MACHINERY = [
     ("176_chunk16_rc3.py", "chunk 16 RC-3: zero / message / exclusion cases as derived; shared names"),
     ("177_chunk16_rc4.py", "chunk 16 RC-4: every family in the sample states + probes, as derived"),
     ("178_chunk16_c16-21_downstream.py", "chunk 16 RC-5: total moves by the families (T1, T2); stat values vs stored ISO"),
+    # Chunk 17 (2026-09-28). Engine-only runs (no --live); 183_ on its default sample + probes; 184_ offline.
+    ("180_chunk17_rc1.py", "chunk 17 RC-1: $0 fixtures explained, switches flipped, hand = engine on 26 records"),
+    ("182_chunk17_rc3.py", "chunk 17 RC-3: 30 zero / message / name / exclusion cases as derived"),
+    ("183_chunk17_rc4.py", "chunk 17 RC-4: every family in the sample states + 10 probes, as derived"),
+    ("184_chunk17_c17-20_downstream.py", "chunk 17 RC-5: total moves by the families (T1 $1,969, T2 $2,643); stat values vs stored ISO"),
 ]
 
 # Excluded on purpose, each with a reason -- no silent narrowing of scope.
@@ -241,7 +261,7 @@ EXCLUDED = [
      "they were re-run green on 2026-09-18 and touch no banded lookup. "
      "Run them directly when a state-layer change lands."),
     ("chunk 10 censuses 84/86/87/89/90/92/93/94/97/102, chunk 11 census 106, "
-     "chunk 12 censuses 123/124/126, chunk 13-15 censuses 143/156/166/167",
+     "chunk 12 censuses 123/124/126, chunk 13-17 censuses 143/156/166/167/173/179",
      "each states 'always exits 0 -- a census, not a test'; running them "
      "here would add minutes and prove only that they still print."),
     ("06/19/44/53/63/79/118/122 RaaS scripts, and chunk 12's 129/132/135/136",
@@ -334,6 +354,36 @@ def selftest():
     return 0 if ok else 1
 
 
+def jobs_for(a):
+    """every script this run covers, in report order: (section, name, cmd, figures, markers, require, label)."""
+    def wanted(name):
+        return a.only is None or any(name.startswith(p) for p in a.only)
+
+    current = max(c for _, c, _, _ in GOLDEN)
+    quick_chunk = a.chunk if a.chunk is not None else current
+    jobs = []
+    for script, chunk, what, figures in GOLDEN:
+        if wanted(script):
+            jobs.append(("golden", script, [sys.executable, "-u", f"scripts/cf/{script}"], figures,
+                         FAILURE_MARKERS, (), (chunk, what)))
+    for script, what in MACHINERY:
+        if not wanted(script):
+            continue
+        # quick tier: every golden case (all pinned figures) + the current chunk's own scripts
+        if a.quick and not what.startswith(f"chunk {quick_chunk} "):
+            continue
+        zero = script in ZERO_CASE_SCRIPTS
+        jobs.append(("machinery", script, [sys.executable, "-u", f"scripts/cf/{script}"], [],
+                     ZERO_CASE_MARKERS if zero else FAILURE_MARKERS,
+                     ZERO_CASE_REQUIRE if zero else (), (zero, what)))
+    if not a.no_gl and not a.quick:
+        for t in sorted(TESTS.glob("verify_*.py")):
+            if wanted(t.name):
+                jobs.append(("gl", t.name, [sys.executable, "-u", f"tests/{t.name}"], [],
+                             FAILURE_MARKERS, (), None))
+    return jobs
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--selftest", action="store_true")
@@ -341,64 +391,66 @@ def main():
                     help="run only scripts whose filename starts with these")
     ap.add_argument("--no-gl", action="store_true",
                     help="skip the 16 General Liability suites")
+    ap.add_argument("--jobs", type=int, default=4,
+                    help="scripts run at once (default 4; 1 = the old serial run). Each script is its "
+                         "own process; 4 fits comfortably in memory on the 16 GB dev machine")
+    ap.add_argument("--quick", action="store_true",
+                    help="quick tier: every golden case (all pinned figures) + the current chunk's own "
+                         "scripts, no GL -- after each RC. The full run is for gates and engine changes")
+    ap.add_argument("--chunk", type=int, default=None,
+                    help="with --quick: which chunk's scripts (default: the newest golden case's chunk)")
     a = ap.parse_args()
 
     if a.selftest:
         return selftest()
 
-    def wanted(name):
-        return a.only is None or any(name.startswith(p) for p in a.only)
-
-    failures = []
-    print("Regression -- chunks 0-16 and the General Liability suites")
+    jobs = jobs_for(a)
+    tier = "QUICK tier" if a.quick else "FULL run"
+    print(f"Regression -- chunks 0-{max(c for _, c, _, _ in GOLDEN)} and the General Liability suites "
+          f"({tier}, {len(jobs)} scripts, {a.jobs} at a time)")
     print("=" * 78)
 
-    print("\nGOLDEN CASES -- exit code, failure markers, and documented figures")
-    print("-" * 78)
-    for script, chunk, what, figures in GOLDEN:
-        if not wanted(script):
-            continue
-        rc, out, secs = run([sys.executable, f"scripts/cf/{script}"], ROOT)
-        good, why = check(rc, out, figures)
-        fig = " ".join(f"${f}" for f in figures) or "(no dollar figure)"
-        print(f"  chunk {chunk}  {script:38s} {'OK ' if good else 'FAIL'} "
-              f"{secs:5.1f}s  {fig}")
-        print(f"            {what}")
-        if not good:
-            failures.append((script, why, out))
-            for w in why:
-                print(f"            !! {w}")
+    # run: each script its own process, a.jobs at once; a progress line as each finishes
+    t0 = time.time()
+    results = {}
+    with ThreadPoolExecutor(max_workers=max(1, a.jobs)) as pool:
+        futs = {pool.submit(run, cmd, ROOT): name for _, name, cmd, *_ in jobs}
+        for k, fut in enumerate(as_completed(futs), 1):
+            name = futs[fut]
+            rc, out, secs = fut.result()
+            job = next(j for j in jobs if j[1] == name)
+            good, why = check(rc, out, job[3], markers=job[4], require=job[5])
+            results[name] = (good, why, out, secs)
+            m, sec = divmod(int(time.time() - t0), 60)
+            print(f"[{k}/{len(jobs)}  {m}m{sec:02d}s] {'OK ' if good else 'FAIL'} {name} ({secs:.0f}s)"
+                  + ("".join(f"\n      !! {w}" for w in why) if not good else ""), flush=True)
 
-    print("\nMACHINERY -- exit code and failure markers")
-    print("-" * 78)
-    for script, what in MACHINERY:
-        if not wanted(script):
+    # report, in the original order and format
+    failures = []
+    sections = [("golden", "\nGOLDEN CASES -- exit code, failure markers, and documented figures"),
+                ("machinery", "\nMACHINERY -- exit code and failure markers"),
+                ("gl", "\nGENERAL LIABILITY -- the regression net for shared-code changes")]
+    for sec_key, title in sections:
+        sec_jobs = [j for j in jobs if j[0] == sec_key]
+        if not sec_jobs:
             continue
-        zero = script in ZERO_CASE_SCRIPTS
-        rc, out, secs = run([sys.executable, f"scripts/cf/{script}"], ROOT)
-        good, why = check(rc, out, [],
-                          markers=ZERO_CASE_MARKERS if zero else FAILURE_MARKERS,
-                          require=ZERO_CASE_REQUIRE if zero else ())
-        tag = "  [zero-case: predicted raises allowed, match-line required]" \
-            if zero else ""
-        print(f"  {script:42s} {'OK ' if good else 'FAIL'} {secs:5.1f}s  "
-              f"{what}{tag}")
-        if not good:
-            failures.append((script, why, out))
-            for w in why:
-                print(f"      !! {w}")
-
-    if not a.no_gl:
-        print("\nGENERAL LIABILITY -- the regression net for shared-code changes")
+        print(title)
         print("-" * 78)
-        for t in sorted(TESTS.glob("verify_*.py")):
-            if not wanted(t.name):
-                continue
-            rc, out, secs = run([sys.executable, f"tests/{t.name}"], ROOT)
-            good, why = check(rc, out, [])
-            print(f"  {t.name:42s} {'OK ' if good else 'FAIL'} {secs:5.1f}s")
+        for _, name, _, figures, _, _, extra in sec_jobs:
+            good, why, out, secs = results[name]
+            if sec_key == "golden":
+                chunk, what = extra
+                fig = " ".join(f"${f}" for f in figures) or "(no dollar figure)"
+                print(f"  chunk {chunk}  {name:38s} {'OK ' if good else 'FAIL'} {secs:5.1f}s  {fig}")
+                print(f"            {what}")
+            elif sec_key == "machinery":
+                zero, what = extra
+                tag = "  [zero-case: predicted raises allowed, match-line required]" if zero else ""
+                print(f"  {name:42s} {'OK ' if good else 'FAIL'} {secs:5.1f}s  {what}{tag}")
+            else:
+                print(f"  {name:42s} {'OK ' if good else 'FAIL'} {secs:5.1f}s")
             if not good:
-                failures.append((t.name, why, out))
+                failures.append((name, why, out))
                 for w in why:
                     print(f"      !! {w}")
 
@@ -406,18 +458,21 @@ def main():
     print("-" * 78)
     for what, why in EXCLUDED:
         print(f"  - {what}\n      {why}")
+    if a.quick:
+        print("  - QUICK tier: the other chunks' machinery scripts and the GL suites (run the full "
+              "regression at a gate or after an engine change)")
 
+    m, sec = divmod(int(time.time() - t0), 60)
     print("\n" + "=" * 78)
     if failures:
-        print(f"REGRESSION FAILED -- {len(failures)} script(s)\n")
+        print(f"REGRESSION FAILED -- {len(failures)} script(s)  ({m}m{sec:02d}s)\n")
         for script, why, out in failures:
             print(f"--- {script}: {'; '.join(why)}")
             print("\n".join(out.strip().splitlines()[-15:]))
             print()
         return 1
-    print("REGRESSION CLEAN -- every chunk 0-16 golden case reproduces its "
-          "documented figures,\nevery machinery script and every GL suite "
-          "exits 0 with no failure marker.")
+    print(f"REGRESSION CLEAN ({tier}, {len(jobs)} scripts, {m}m{sec:02d}s) -- every golden case reproduces its "
+          "documented figures,\nevery machinery script and every GL suite run exits 0 with no failure marker.")
     return 0
 
 
