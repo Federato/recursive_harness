@@ -50,6 +50,20 @@
   .bar { height: 8px; background: #e7eaee; border-radius: 99px; overflow: hidden; margin: 10px 0 2px; }
   .bar span { display: block; height: 100%; background: #2f7d5a; }
   .sub { font-size: 12.5px; color: #8b95a1; font-family: -apple-system, "Segoe UI", sans-serif; }
+  /* chunk cards: expand / collapse (collapsed by default) */
+  .chunk > h3.chunk-toggle { cursor: pointer; user-select: none; margin: 0; }
+  .chunk > h3.chunk-toggle::before { content: "\25B8"; font-size: 12px; color: #8b95a1; width: 12px; display: inline-block; transition: transform .15s; }
+  .chunk.open > h3.chunk-toggle::before { transform: rotate(90deg); }
+  .chunk > h3.chunk-toggle:focus-visible { outline: 2px solid #5b8fa3; outline-offset: 3px; border-radius: 4px; }
+  .chunk > .chunk-body { margin-top: 6px; }
+  .chunk:not(.open) > .chunk-body { display: none; }
+  .chunk-controls { display: flex; gap: 8px; margin: 10px 0 -4px; }
+  .chunk-controls button { font: 600 12px -apple-system, "Segoe UI", sans-serif; padding: 4px 10px; border-radius: 6px; border: 1px solid #c9d0d7; background: #f4f6f8; color: #3b4652; cursor: pointer; }
+  .chunk-controls button:hover { background: #e9edf1; }
+  @media (prefers-color-scheme: dark) {
+    .chunk-controls button { background: #202831; border-color: #3a4652; color: #c9d2db; }
+    .chunk-controls button:hover { background: #28323c; }
+  }
 </style>
 
 <h1>Property build &mdash; every chunk, every task, status</h1>
@@ -212,11 +226,11 @@ three jurisdictions whose zeros are not yet explained &mdash; named rather than 
 <tr class="d"><td class="num">15</td><td>Manual-premium endorsements</td><td><span class="tag done">GATED 2026-09-25 &mdash; 21 of 21, 9 of 9</span></td><td><b>2026-09-25: gate filed (<code>CF-CHUNK15-GATE.md</code>), 9 of 9; regression CLEAN for chunks 0&ndash;15 (105 scripts).</b> 23 files, one formula in 4 variants. ISO agreed on everything it rated: golden cases 27 of 27, zero / exclusion / message cases 21 of 21, all 46 states 46 of 46. States only switch families off (GA, TX, VA, FL, and MO by edition). No engine change; OI-114 opened. <b>+23 files &rarr; 251 of 546 (46%)</b></td></tr>
 <tr class="d"><td class="num">16</td><td>Already matched ISO: gate them</td><td><span class="tag done">GATED 2026-09-25 &mdash; 23 of 23, 9 of 9</span></td><td><b>2026-09-25: gate filed (<code>CF-CHUNK16-GATE.md</code>), 9 of 9; regression CLEAN for chunks 0&ndash;16 (110 scripts).</b> 6 countrywide families + state-only Mine Subsidence. ISO agreed on everything it rated: every never-priced record, zero / message / exclusion cases, all 46 states 46 of 46 (8,342 premiums), the downstream total (T2 predicted first). No engine change. <b>+39 files &rarr; 290 of 546 (53%)</b></td></tr>
 <tr><td class="num">17</td><td>Business Income add-ons</td><td><span class="tag done">GATED 2026-09-28 &mdash; 23 of 23, 9 of 9</span></td><td><b>2026-09-28: gate filed (<code>CF-CHUNK17-GATE.md</code>), 9 of 9; regression CLEAN for chunks 0&ndash;17 (115 of 115); <code>157_ --all</code> 293 of 293; downstream total +$1,969 and clean test +$2,643 as predicted. 322 of 546 files built (59%).</b> <b>2026-09-28: RC-4 complete, 19 of 23 (<code>183_ --all --live</code>): all 46 states + 10 probes, 56 of 56 agree, 9,039 premiums; CT prices no Landlord Group I; KS / NY price Landlord on a Standard Property Policy. </b> <b>2026-09-28: RC-3 complete, 15 of 23 (<code>182_ --live</code>): 30 zero / message / name / exclusion cases, ISO agrees on all 29 it rated; Watercraft option "Not Applicable" refused by ISO, priced $0 by us (OI-103).</b> <b>2026-09-28: RC-2 complete, 11 of 23 (<code>181_ --live</code>): 10 golden cases, all 32 records priced by ISO for the first time, every premium and message equal.</b> <b>2026-09-28: RC-1 complete (<code>180_</code>, all checks pass): the $0 fixtures explained (no fixture sets Waterfront; Mining option None; BI deletes Mining rows unless TypeOfRisk = Mining); hand = engine on 26 of 32 records.</b> 2026-09-25: opened; census <code>179_</code>: 32 premium records, none ever priced by ISO; 23 tasks in 5 RC groups. Same shape as chunk 16's BI families (BI final rate &times; filed factor &times; limit), plus Off-Premises Interruption (own loss costs, 6 states). <b>+32 files &rarr; 322 of 546 (59%)</b></td></tr>
-<tr><td class="num">18</td><td>Valuation and condition modifiers</td><td><span class="tag warn">OPEN &mdash; 5 of 23 (RC-1 done 2026-09-28)</span></td><td><b>2026-09-28: opened; census <code>185_</code>: 84 premium records, none ever priced by ISO (Agreed Value and Inflation Guard at $0 on every stored policy); 54 messages, all Agreed Value ones found only by form / wording; 30 files differ in MO&rsquo;s 2023 V02; Vacancy Permit and Peak Season use date arithmetic. 23 tasks in 5 RC groups.</b> <b>2026-09-28: RC-1 complete, 5 of 23 (<code>186_</code>): the stored $0 explained (every policy has Agreed Value and Inflation Guard switched off); Functional Valuation attaches only on ValuationType &ldquo;Functional Valuation&rdquo;; Vacancy pro-rata 0.247 by hand; hand = engine on 53 of 84. Next: C18-06.</b> Agreed Value, Inflation Guard, Functional Valuation, Rebuilding Expenses, Vacancy Permit, Peak Season. Biggest file count; two read another record's finished premium. <b>+84 files &rarr; 406 of 546 (74%)</b></td></tr>
+<tr><td class="num">18</td><td>Valuation and condition modifiers</td><td><span class="tag warn">OPEN &mdash; 11 of 23 (RC-1, RC-2 done 2026-09-28)</span></td><td><b>2026-09-28: opened; census <code>185_</code>: 84 premium records, none ever priced by ISO (Agreed Value and Inflation Guard at $0 on every stored policy); 54 messages, all Agreed Value ones found only by form / wording; 30 files differ in MO&rsquo;s 2023 V02; Vacancy Permit and Peak Season use date arithmetic. 23 tasks in 5 RC groups.</b> <b>2026-09-28: RC-1 complete, 5 of 23 (<code>186_</code>): the stored $0 explained (every policy has Agreed Value and Inflation Guard switched off); Functional Valuation attaches only on ValuationType &ldquo;Functional Valuation&rdquo;; Vacancy pro-rata 0.247 by hand; hand = engine on 53 of 84.</b> <b>2026-09-28: RC-2 complete, 11 of 23 (<code>187_ --live</code>): 9 golden cases, ISO agrees on every premium and message; Leased Property Agreed Value switches on from the contents row; the two Functional forms differ; Vacancy discounts only its vandalism part. Next: C18-12.</b> Agreed Value, Inflation Guard, Functional Valuation, Rebuilding Expenses, Vacancy Permit, Peak Season. Biggest file count; two read another record's finished premium. <b>+84 files &rarr; 406 of 546 (74%)</b></td></tr>
 <tr><td class="num">19</td><td>Scheduled property items</td><td><span class="tag warn">TASKS SET 2026-09-28 &mdash; 1 of 24</span></td><td><b>2026-09-28: census <code>900_</code>: 63 premium records + 5 state-only glass records (FL and MT, not FL only); 57 of the 63 never priced by ISO (the 6 unscheduled tenants&rsquo; records already match); 21 messages; identical in all four editions; Antennas and Signs rewritten in all 46 states, but mostly the EQ sub-limit tier lookup. 24 tasks in 5 RC groups; starts after chunk 18 gates.</b> Signs, antennas, trees, brands, household and leased property, property away, tenants' glass and building property: a limit priced on chunks 1&ndash;4's rate chain. <b>+63 files &rarr; 469 of 546 (86%)</b></td></tr>
 <tr><td class="num">20</td><td>Small coverages with their own tables</td><td><span class="tag warn">TASKS SET 2026-09-28 &mdash; 1 of 26</span></td><td><b>2026-09-28: census <code>901_</code> (forms now read from the package&rsquo;s Form Pages; sibling names flagged): 30 premium records (28 + 2 NC-only), none ever priced by ISO; Fire Department, Tobacco, the special-limit items and BI fungus sit at $0 on stored policies; 95 distinct messages; Mortgageholders E&amp;O priced in five mortgage-count layers; 1 file differs in MO&rsquo;s 2023 V02. 26 tasks in 5 RC groups; starts after chunk 19.</b> 10 families with their own small rate tables or formulas: Radioactive Contamination, Pier and Wharf, Fire Department charge, Equipment Breakdown, Mortgageholders E&amp;O (layered premium) and others. <b>+28 files &rarr; 497 of 546 (91%)</b></td></tr>
-<tr><td class="num">21</td><td>Sewer backup and condo options</td><td><span class="tag open">Planned 2026-09-25 &middot; size M</span></td><td>Few files but 13 tables and 5 states; Florida's own condominium forms (5 state-only files). <b>+7 files &rarr; 504 of 546 (92%)</b></td></tr>
-<tr><td class="num">22</td><td>Multi-location: value reporting and special coinsurance</td><td><span class="tag open">Planned 2026-09-25 &middot; size L</span></td><td>Value Reporting Form drives the multi-location average rates; Additional Locations Special Coinsurance reads them. No stored ISO policy has more than one location. <b>+16 files &rarr; 520 of 546 (95%)</b></td></tr>
+<tr><td class="num">21</td><td>Sewer backup and condo options</td><td><span class="tag warn">TASKS SET 2026-09-28 &mdash; 1 of 21</span></td><td><b>2026-09-28: census <code>902_</code>: 7 premium records + 5 FL-only (a manual premium), none ever priced by ISO or on a stored policy; Sewer&rsquo;s 8 tables are one 2-row rate plus codes; loss assessment is tiered arithmetic (21 rules); condo options carry four state form numbers (CW, RI, FL, UT); 26 messages; identical in all four editions. 21 tasks in 5 RC groups; starts after chunk 20.</b> Few files but 13 tables and 5 states; Florida's own condominium forms (5 state-only files). <b>+7 files &rarr; 504 of 546 (92%)</b></td></tr>
+<tr><td class="num">22</td><td>Multi-location: value reporting and special coinsurance</td><td><span class="tag warn">TASKS SET 2026-09-28 &mdash; 1 of 24</span></td><td><b>2026-09-28: census <code>903_</code> (adds a multi-location trail): 16 premium records, none priced by ISO or stored; the five average rates (MLARs) have <i>three</i> writers; the main ruleset, Personal Property, Occupancy and chunk 9&rsquo;s Blanket Rating Detail already touch them, so all 293 stored policies must re-rate unchanged; the &ldquo;reset&rdquo; is a roll-up of Additional Locations premiums, not a reset of Contents; 40 messages; identical in all four editions. 24 tasks in 5 RC groups; starts after chunk 21.</b> Value Reporting Form drives the multi-location average rates; Additional Locations Special Coinsurance reads them. No stored ISO policy has more than one location. <b>+16 files &rarr; 520 of 546 (95%)</b></td></tr>
 <tr><td class="num">23</td><td>State-only coverages</td><td><span class="tag open">Planned 2026-09-25 &middot; size M</span></td><td>MA heating oil and tenant relocation, AK attorneys' fees, CA additional and limited earthquake; verify the VA/WV Ordinance or Law forms chunk 12 counted. <b>520 of 546 (95%)</b></td></tr>
 <tr><td class="num">24</td><td>Builders Risk</td><td><span class="tag open">Planned 2026-09-25 &middot; size L</span></td><td>20 files, 11 tables, 9 states; the only Basic-cause ISO fixtures are Builders Risk. Theft of materials already matches ISO on 144 responses. <b>+20 files &rarr; 540 of 546 (99%)</b></td></tr>
 <tr><td class="num">25</td><td>Flood</td><td><span class="tag open">Planned 2026-09-25 &middot; size XL</span></td><td>The largest family: 641 KB of rules, 23 tables, 10 states rewrite it, its own blanket rating. Chunk 10's banded-lookup fix already unblocked 7 of its tables. <b>+6 files &rarr; 546 of 546 (100%)</b></td></tr>
@@ -1512,11 +1526,11 @@ a missing form number is not a missing coverage.</p>
 <tr class="d"><td class="num">15</td><td>Manual-premium endorsements <b>(GATED 2026-09-25, 9 of 9)</b></td><td>S</td><td class="num">23</td><td>251 of 546 (46%)</td></tr>
 <tr class="d"><td class="num">16</td><td>Already matched ISO: gate them <b>(GATED 2026-09-25, 9 of 9)</b></td><td>S</td><td class="num">39</td><td>290 of 546 (53%)</td></tr>
 <tr><td class="num">17</td><td>Business Income add-ons <b>(GATED 2026-09-28, 23 of 23)</b></td><td>M</td><td class="num">32</td><td>322 of 546 (59%)</td></tr>
-<tr><td class="num">18</td><td>Valuation and condition modifiers <b>(OPEN, 5 of 23 as of 2026-09-28)</b></td><td>M&ndash;L</td><td class="num">84</td><td>406 of 546 (74%)</td></tr>
+<tr><td class="num">18</td><td>Valuation and condition modifiers <b>(OPEN, 11 of 23 as of 2026-09-28)</b></td><td>M&ndash;L</td><td class="num">84</td><td>406 of 546 (74%)</td></tr>
 <tr><td class="num">19</td><td>Scheduled property items <b>(TASKS SET 2026-09-28, 1 of 24)</b></td><td>M</td><td class="num">63</td><td>469 of 546 (86%)</td></tr>
 <tr><td class="num">20</td><td>Small coverages with their own tables <b>(TASKS SET 2026-09-28, 1 of 26)</b></td><td>M</td><td class="num">28</td><td>497 of 546 (91%)</td></tr>
-<tr><td class="num">21</td><td>Sewer backup and condo options</td><td>M</td><td class="num">7</td><td>504 of 546 (92%)</td></tr>
-<tr><td class="num">22</td><td>Multi-location: value reporting and special coinsurance</td><td>L</td><td class="num">16</td><td>520 of 546 (95%)</td></tr>
+<tr><td class="num">21</td><td>Sewer backup and condo options <b>(TASKS SET 2026-09-28, 1 of 21)</b></td><td>M</td><td class="num">7</td><td>504 of 546 (92%)</td></tr>
+<tr><td class="num">22</td><td>Multi-location: value reporting and special coinsurance <b>(TASKS SET 2026-09-28, 1 of 24)</b></td><td>L</td><td class="num">16</td><td>520 of 546 (95%)</td></tr>
 <tr><td class="num">23</td><td>State-only coverages</td><td>M</td><td class="num">&ndash;</td><td>520 of 546 (95%)</td></tr>
 <tr><td class="num">24</td><td>Builders Risk</td><td>L</td><td class="num">20</td><td>540 of 546 (99%)</td></tr>
 <tr><td class="num">25</td><td>Flood</td><td>XL</td><td class="num">6</td><td>546 of 546 (100%)</td></tr>
@@ -1745,7 +1759,7 @@ a missing form number is not a missing coverage.</p>
 </div>
 
 <div class="chunk now">
-<h3><span class="n">18</span> Valuation and condition modifiers <span class="tag warn">OPEN &mdash; 5 of 23 (RC-1 done 2026-09-28)</span></h3>
+<h3><span class="n">18</span> Valuation and condition modifiers <span class="tag warn">OPEN &mdash; 11 of 23 (RC-1, RC-2 done 2026-09-28)</span></h3>
 <p><b>Opened 2026-09-28.</b> 23 tasks numbered <b>C18-01&ndash;C18-23</b> in <code>CF-CHUNK18-TASKS.md</code>, from the remaining-build plan and the opening census (<code>scripts/cf/185_chunk18_census.py</code>, 16 s, carrying chunk 15&rsquo;s two census checks and chunk 17&rsquo;s: messages searched by form number and wording, not only record name). <b>In plain English:</b> options that change how a loss is valued or what the policy tolerates: agreed value (no coinsurance penalty), inflation guard, functional valuation, rebuilding costs after a disaster, vacancy, peak season. <b>None of the 84 premium records has ever been priced by ISO</b>; Agreed Value and Inflation Guard sit at $0 on every stored example policy.</p>
 <p><span class="lab">What the census found (2026-09-28)</span></p>
 <table>
@@ -1760,7 +1774,7 @@ a missing form number is not a missing coverage.</p>
 </tbody>
 </table>
 <p class="sub"><b>What shapes the plan.</b> (1) <b>The auto-created $0 records.</b> Agreed Value and Inflation Guard sit on every stored policy at $0. RC-1 finds the switch for each (option, limit, coinsurance, blanket) before RC-2 predicts a dollar. (2) <b>Two families read other finished work.</b> Agreed Value reads the blanket average rates (chunk 9) when the coverage is blanketed, and the coverage's own final rate when not. Peak Season is a blanket-contents coverage with its own General Information record and dated periods. Both need chunk 9's blanket policy as well as the ordinary one. (3) <b>Dates.</b> Vacancy Permit and Peak Season price by period: DateCreate / DateDifference / DatePart. OI-107 (DateDifference's sign, pinned in chunk 11) applies; every period case is predicted in days by hand. (4) <b>Missouri's edition differs for 30 files.</b> Agreed Value (20) and Functional Valuation (all 10) have a different <code>SetPremium</code> in CW 2023 V02. MO gets its own golden probe in RC-4, not just a sweep row. (5) <b>Vacancy Permit is the widest state layer in the chunk.</b> Nine states rewrite it, and it borrows chunk 8's sprinkler-leakage and vandalism machinery (FL GA KS NY file their own vandalism tables). (6) <b>Messages hide from the record-name search.</b> All 22 Agreed Value messages and all 4 Functional Valuation messages name the form or the wording, not the record. The census found them only because of chunk 17's lesson.</p>
-<p class="sub">Grouped like release candidates, <b>in the order to do them</b>. <b>gate</b> tags name the points a task closes. <b>Next (2026-09-28): C18-06.</b></p>
+<p class="sub">Grouped like release candidates, <b>in the order to do them</b>. <b>gate</b> tags name the points a task closes. <b>Next (2026-09-28): C18-12.</b></p>
 <p><span class="lab">RC-1 &middot; Evidence and plumbing (5) &middot; 5 of 5 done</span></p>
 <table>
 <thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
@@ -1772,16 +1786,16 @@ a missing form number is not a missing coverage.</p>
 <tr class="d"><td class="st">&#9989;</td><td class="num">C18-05</td><td><span class="tag done">gate 2</span> <span class="tag done">gate 5</span> <b>Tables and literals</b>: every table's rows and key literals, and every state-filed table under any name (CT FL functional valuation; FL rebuilding; the vacancy and vandalism tables of DC FL GA KS NY VT; AL GA NC SC TX contents LOI) &mdash; <b>Done 2026-09-28</b>. Tables and rows as the census (Agreed Value 1.05 / BI 1.10; Inflation Guard 2%→0.01 … 28%→0.14; Functional 1.30 / 1.25, post-loss 1.02; Rebuilding 0.10 / BGII 0.15; Vacancy CPP 0.13 / SPP 0.40, Broad 0.04, Special 0.053, EQ 0.006, other causes 0.10, BGII min 0.006). <b>TX files its own subline tables (<code>…TX</code>) that no Vacancy file reads</b>: sibling-table trap, check TX's Vacancy stat codes live in C18-16 / 19. DC's <code>VacancyPermitBasicGroupIRate</code> is header-only and unread</td></tr>
 </tbody>
 </table>
-<p><span class="lab">RC-2 &middot; Golden cases (6) &middot; 0 of 6 done</span></p>
+<p><span class="lab">RC-2 &middot; Golden cases (6) &middot; 6 of 6 done</span></p>
 <table>
 <thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
 <tbody>
-<tr><td class="st">&#11036;</td><td class="num">C18-06</td><td><span class="tag done">gate 1</span> <b>Agreed Value</b>: all five forms on Building, Contents, BI, Special Class and SCBI, not blanketed and blanketed (the average-rate reading discriminated), plus Leased Property; ISO live</td></tr>
-<tr><td class="st">&#11036;</td><td class="num">C18-07</td><td><b>Inflation Guard</b>: Building, Contents and Special Class at two percentages from <code>InflationGuardBldg</code>; ISO live</td></tr>
-<tr><td class="st">&#11036;</td><td class="num">C18-08</td><td><b>Functional Valuation</b>: Building and Personal Property other than stock, both factor rows and the post-loss ordinance option; ISO live</td></tr>
-<tr><td class="st">&#11036;</td><td class="num">C18-09</td><td><b>Increase in Rebuilding Expenses</b>: Building and Special Class, percentages from the 100-row converted table (chosen so the conversion decides a dollar); ISO live</td></tr>
-<tr><td class="st">&#11036;</td><td class="num">C18-10</td><td><b>Vacancy Permit</b>: Building and Contents with both riders (Molten Material, Radioactive), a period predicted in days by hand, with and without vandalism and sprinkler-leakage exclusions; Standard Property Policy vandalism rate; ISO live</td></tr>
-<tr><td class="st">&#11036;</td><td class="num">C18-11</td><td><b>Peak Season</b>: blanket contents with a General Information record and a dated period, each LOI factor looked up by hand; ISO live</td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C18-06</td><td><span class="tag done">gate 1</span> <b>Agreed Value</b>: all five forms on Building, Contents, BI, Special Class and SCBI, not blanketed and blanketed (the average-rate reading discriminated), plus Leased Property; ISO live &mdash; <b>Done 2026-09-28</b> (<code>187_chunk18_rc2.py --live</code>, A1-A4). All Agreed Value forms predicted, engine = hand, <b>ISO agrees</b> on every premium and message. Unblanketed (A1 Special, A2 Broad): 0.05 × the coverage's final rate × the <b>agreed limit</b> (80,000, not the 100,000 coverage limit): building BGI <b>$10</b>; BI / SCBI use <b>1.10</b> (BI BGI $9). Blanketed (A3, chunk 9's blanket, detail <code>AgreedVal</code> Yes): the blanket's <code>…AvgRateAgreedVal</code> × <code>LimitToUse</code>: <b>$13 / $25</b> on the two buildings. Leased Property (A4): <b>switched on by the CONTENTS row's <code>AgreedValueOption</code></b> (the detail copies it over its own), 0.05 × the contents' final rate × the item limit: $20 / $2 / $13. The EQ riders stay off without an EQ sub-limit form (RC-3). ISO types <code>AgreedValueLimit</code>, <code>UnitNumber</code>, <code>BlktIDNum</code>, <code>TotalLimit</code> as numbers</td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C18-07</td><td><b>Inflation Guard</b>: Building, Contents and Special Class at two percentages from <code>InflationGuardBldg</code>; ISO live &mdash; <b>Done 2026-09-28</b> (I1). A factor × <b>the coverage record's finished premium</b>: building 6% (0.03) $9, contents 20% (0.10) $20, special class 12% (0.06); 12 of 12 predicted, ISO agrees 123 of 123</td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C18-08</td><td><b>Functional Valuation</b>: Building and Personal Property other than stock, both factor rows and the post-loss ordinance option; ISO live &mdash; <b>Done 2026-09-28</b> (F1). <b>The two forms differ</b>: the building keeps 1.30 and prices (1.30 × post-loss 1.02 − 1) × rate × limit ($79); the contents stores round3(1.25 − 1) = 0.25 ($52). ISO agrees 135 of 135</td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C18-09</td><td><b>Increase in Rebuilding Expenses</b>: Building and Special Class, percentages from the 100-row converted table (chosen so the conversion decides a dollar); ISO live &mdash; <b>Done 2026-09-28</b> (R1, 25% of 1,000,000). Adjustment × form factor (BGI 0.10, BGII 0.15, Special 0.10, EQ 0.10) × the amount (value × converted %) / 100: building $55 / $10 / $12 / $3, special class $16 / $75 / $12 / $3; ISO agrees. At 7% of 100,000, Group II and Special round to $0</td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C18-10</td><td><b>Vacancy Permit</b>: Building and Contents with both riders (Molten Material, Radioactive), a period predicted in days by hand, with and without vandalism and sprinkler-leakage exclusions; Standard Property Policy vandalism rate; ISO live &mdash; <b>Done 2026-09-28</b> (V1). Pro-rata = permit days / policy days (building 90 → 0.247, contents 181 → 0.496, by hand = engine); <b>the package discount applies to the vandalism part only</b>; building BGI $152, contents BGI $246. ISO agrees 139 of 139. Payloads must carry the policy's <code>EffectiveDt</code> / <code>ExpirationDt</code></td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C18-11</td><td><b>Peak Season</b>: blanket contents with a General Information record and a dated period, each LOI factor looked up by hand; ISO live &mdash; <b>Done 2026-09-28</b> (P1). (premium at the total limit − at the base limit) × the season's pro-rata (60 days → 0.164): BGI $8, Special $4; ISO agrees 130 of 130 (without a blanket General Information record; RC-3 tests its message). ISO types <code>FullValue</code> as a number</td></tr>
 </tbody>
 </table>
 <p><span class="lab">RC-3 &middot; Zero cases, messages and names (4) &middot; 0 of 4 done</span></p>
@@ -1972,34 +1986,139 @@ a missing form number is not a missing coverage.</p>
 </div>
 
 <div class="chunk todo">
-<h3><span class="n">21</span> Sewer backup and condo options <span class="tag open">Planned 2026-09-25 &middot; size M</span></h3>
-<p><b>In plain English:</b> water backing up through sewers and drains, and the options a commercial condominium unit owner buys: loss assessment and miscellaneous real property. Condo options were on your list.</p>
+<h3><span class="n">21</span> Sewer backup and condo options <span class="tag warn">TASKS SET 2026-09-28 &mdash; 1 of 21</span></h3>
+<p><b>Tasks set 2026-09-28; starts after chunk 20.</b> 21 tasks numbered <b>C21-01&ndash;C21-21</b> in <code>CF-CHUNK21-TASKS.md</code>, from the remaining-build plan and the opening census (<code>scripts/cf/902_chunk21_census.py</code>, 3 s). <b>In plain English:</b> water backing up through sewers and drains, and what a commercial condo unit owner can add: loss assessment (their share of an association&rsquo;s bill) and miscellaneous real property; plus Florida&rsquo;s own version for shops in residential condo buildings. <b>None of the 12 premium records has ever been priced by ISO</b>, and none is on a stored policy.</p>
+<p><span class="lab">What the census found (2026-09-28)</span></p>
 <table>
-<thead><tr><th>Family</th><th class="num">Files</th><th>States that rewrite it</th><th>ISO evidence already held</th></tr></thead>
+<thead><tr><th>Family</th><th>Premium records</th><th>Tables</th><th>States that rewrite it</th><th>Messages</th></tr></thead>
 <tbody>
-<tr><td>Discharge from Sewer, Drain or Sump (not flood)</td><td class="num">5</td><td>FL</td><td>&ndash;</td></tr>
-<tr><td>Condominium Commercial Unit-Owners Optional Coverages</td><td class="num">2</td><td>AL FL KS NY RI</td><td>&ndash;</td></tr>
-<tr><td>FL Changes: Commercial Units in Residential Condominiums</td><td class="num">5 FL-only</td><td>FL</td><td>&ndash;</td></tr>
+<tr><td><b>Sewer / drain backup</b> (CP 10 38)</td><td>5</td><td>8: <b>one 2-row rate</b> (PD 0.77, BI 0.07) + deductible; the rest codes (FL files all)</td><td>FL</td><td>5 (limit &le; parent&rsquo;s)</td></tr>
+<tr><td><b>Condo unit-owner options</b> (CP 04 18)</td><td>2</td><td>11: loss assessment rate (15), sub-limit rate (9; FL), misc. real property 0.528</td><td>AL KS RI premium; KS NY rates; FL sub-limit; 5 states wind / hail indicator</td><td>13 + 3 shared</td></tr>
+<tr><td><b>FL Commercial Units in Residential Condos</b></td><td><b>5 FL-only</b></td><td>none: <b>manual premium</b></td><td>FL</td><td>8 (3 shared)</td></tr>
 </tbody>
 </table>
-<p><span class="lab">How it prices</span> Sewer: its own rate, sub-limits and 8 tables across five coverage groups. Condo: rate &times; loss-assessment limit, a deductible factor and a sub-limit rate (5 tables).</p>
-<p><span class="lab">Why here in the order</span> few files, but 13 tables and a Florida-only family make this harder than the file count suggests.</p>
-<p><span class="lab">Opens with</span> Sewer census (which of the 8 tables are live), then the condo options with Florida last. Adds 7 files, <b>504 of 546 (92%)</b>.</p>
+<p class="sub"><b>What shapes the plan.</b> (1) <b>Loss assessment is tiered arithmetic</b>: limit tiers 1,000 / 5,000 / 10,000 / per 5,000 over, sub-limit bands per 1,000; 21 rules, traced by hand in RC-1. (2) <b>Sewer&rsquo;s &ldquo;8 tables&rdquo; are one rate and seven codes</b>. (3) <b>Sewer&rsquo;s limit is capped by its parent&rsquo;s</b> (five messages). (4) <b>Florida&rsquo;s family is a manual premium</b> (chunk 15&rsquo;s shape) gated on coverage form, type and policy type; its records need FL&rsquo;s own schema. (5) <b>Four form numbers for the condo options</b>: CW, RI, FL, UT. (6) <b>No cyber-incident factor</b> anywhere, a first; confirmed in RC-3. Siblings (GA / FL association forms, UT / GA change forms) carry no premium; 26 messages of this chunk&rsquo;s own.</p>
+<p class="sub">Grouped like release candidates, <b>in the order to do them</b>. <b>Next: C21-02, once chunk 20 is gated.</b></p>
+<p><span class="lab">RC-1 &middot; Evidence and plumbing (5) &middot; 1 of 5 done</span></p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C21-01</td><td><b>Opening census</b>: population, formulas, tables, messages by record and by form / wording, sibling names, every edition, state layer, stored evidence, attach points, engine readiness &mdash; <b>Done 2026-09-28</b> (<code>902_chunk21_census.py</code>, 3 s)</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C21-02</td><td><span class="tag done">gate 2</span> <b>Attach map and switches</b>: Sewer&rsquo;s five parents, the options container, the FL records&rsquo; parents from FL&rsquo;s own schema, the <code>CovForm</code> / <code>CovType</code> / <code>PolicyType</code> gates, blank-input defaults. No ISO calls</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C21-03</td><td><span class="tag done">gate 6</span> <b>Borrowed values</b>: Sewer BI&rsquo;s <code>FinalRate</code>, the parent limits the caps read, deductible factors, modifiers; hand = engine on every record</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C21-04</td><td><b>Loss assessment by hand</b>: the 21 rules traced, every tier and band boundary checked against the engine before any ISO call</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C21-05</td><td><span class="tag done">gate 2</span> <span class="tag done">gate 5</span> <b>Tables and literals</b>: band strings, the &ldquo;Over 10,000&rdquo; key, FL&rsquo;s eight sewer tables and sub-limit rate, AR DC stat codes; which of Sewer&rsquo;s 8 tables price</td></tr>
+</tbody>
+</table>
+<p><span class="lab">RC-2 &middot; Golden cases (4) &middot; 0 of 4 done</span></p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#11036;</td><td class="num">C21-06</td><td><span class="tag done">gate 1</span> <b>Sewer backup</b>: five parents, PD and BI rates, a deductible moving a dollar; ISO live</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C21-07</td><td><b>Loss assessment</b>: a limit in each tier, a sub-limit in each band, three causes of loss; ISO live</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C21-08</td><td><b>Miscellaneous real property</b>: two limits, three causes, with and without a deductible factor; ISO live</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C21-09</td><td><b>FL Commercial Units in Residential Condominiums</b>: all five records with a manual premium through the modifiers; ISO live</td></tr>
+</tbody>
+</table>
+<p><span class="lab">RC-3 &middot; Zero cases, messages and names (4) &middot; 0 of 4 done</span></p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#11036;</td><td class="num">C21-10</td><td><span class="tag done">gate 4</span> <b>Zero cases</b>: sewer limit blank / 0 / at the parent&rsquo;s; sub-limit without a limit; options with neither limit; FL records on the wrong form / type; ISO live</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C21-11</td><td><span class="tag done">gate 9</span> <b>Messages</b>: all 26, triggered and silent; multiples-of rules either side; sewer caps one dollar over and under; RI UT FL GA forms; ISO live</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C21-12</td><td><span class="tag done">gate 6</span> <b>Shared names</b>: <code>Rate</code>, <code>FinalRate</code>, <code>DeductibleFactor</code>, <code>ManualPremium</code>, <code>CovForm</code>, <code>PolicyType</code>, <code>WindstormOrHailExcludedIndicator</code>, diffed</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C21-13</td><td><span class="tag done">gate 7</span> <b>Exclusions and stat codes</b>: no cyber factor anywhere (confirmed, not assumed); the wind / hail excluded indicator and AR DC peril-exclusion codes</td></tr>
+</tbody>
+</table>
+<p><span class="lab">RC-4 &middot; States and editions (4) &middot; 0 of 4 done</span></p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#11036;</td><td class="num">C21-14</td><td><b>The condo rewrites</b>: AL KS RI premium; KS NY rate rules; FL sub-limit rules; RI CP 04 20, FL CP 04 21, UT CP 04 22; GA / UT change forms; ISO live</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C21-15</td><td><b>Florida&rsquo;s sewer</b>: its own rate and eight tables on the five parents; ISO live</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C21-16</td><td><span class="tag done">gate 8</span> <b>Editions</b>: identical in all four; one probe each on MO (2023 V02), a V03 and a V04 state</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C21-17</td><td><span class="tag done">gate 3</span> <b>All 46 states</b>: every family on every state&rsquo;s own package with its own condo form; ISO live</td></tr>
+</tbody>
+</table>
+<p><span class="lab">RC-5 &middot; Confirmation and close-out (4) &middot; 0 of 4 done</span></p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#11036;</td><td class="num">C21-18</td><td><b>Downstream</b>: total moves by exactly the families&rsquo; premiums; terrorism; Sewer&rsquo;s codes and subline; exposure stat amount; ISO live</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C21-19</td><td><b>Regression</b>: chunk 21 scripts pinned; full run CLEAN for chunks 0&ndash;21 (<code>--jobs 4</code>); <code>157_ --all</code></td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C21-20</td><td><b>Census close</b>: two families built in <code>166_</code> (497 &rarr; 504 of 546, 92%)</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C21-21</td><td><b>File <code>CF-CHUNK21-GATE.md</code></b> &mdash; 7 countrywide premium files + FL&rsquo;s 5</td></tr>
+</tbody>
+</table>
 </div>
 
 <div class="chunk todo">
-<h3><span class="n">22</span> Multi-location: value reporting and special coinsurance <span class="tag open">Planned 2026-09-25 &middot; size L</span></h3>
-<p><b>In plain English:</b> the Value Reporting Form lets an insured report values monthly instead of fixing a limit, and it is what produces the multi-location average rates. Additional Locations Special Coinsurance then prices extra locations using those rates. Both were at the top of your list; they sit here because they are harder than they look.</p>
+<h3><span class="n">22</span> Multi-location: value reporting and special coinsurance <span class="tag warn">TASKS SET 2026-09-28 &mdash; 1 of 24</span></h3>
+<p><b>Tasks set 2026-09-28; starts after chunk 21.</b> 24 tasks numbered <b>C22-01&ndash;C22-24</b> in <code>CF-CHUNK22-TASKS.md</code>, from the remaining-build plan and the opening census (<code>scripts/cf/903_chunk22_census.py</code>, 3 s), which adds a <b>multi-location trail</b>: every file that writes or reads the multi-location average rates. <b>In plain English:</b> the Value Reporting Form lets an insured report values instead of fixing a limit and, across several locations, price them all at one average rate; Additional Locations Special Coinsurance prices small extra locations at such an average. <b>None of the 16 premium records has ever been priced by ISO, and no stored policy has more than one location</b>, so every golden case is a new live probe.</p>
+<p><span class="lab">What the census found (2026-09-28)</span></p>
 <table>
-<thead><tr><th>Family</th><th class="num">Files</th><th>States that rewrite it</th><th>ISO evidence already held</th></tr></thead>
+<thead><tr><th>Family</th><th>Premium records</th><th>Rate source</th><th>Tables</th><th>States</th><th>Messages</th></tr></thead>
 <tbody>
-<tr><td>Value Reporting Form (4 forms + general information)</td><td class="num">6</td><td>AL AR DC NY RI</td><td>&ndash; (drives the AR/DC peril-exclusion stat codes)</td></tr>
-<tr><td>Additional Locations Special Coinsurance</td><td class="num">10</td><td>&ndash;</td><td>&ndash; (the reset rule chunk 14&rsquo;s C14-08 touched)</td></tr>
+<tr><td><b>Value Reporting Form</b> (CP 13 10)</td><td>6</td><td>MLAR, blanket average or own final rate, by indicator; General Information prices incidental / acquired locations (169 KB, 56 rules)</td><td>10</td><td>AL AR DC NY RI (wind / hail indicator)</td><td>29</td></tr>
+<tr><td><b>Additional Locations Special Coinsurance</b> (CP 13 20)</td><td>10</td><td>its own MLAR &times; coinsurance factor &times; limit</td><td>2 (one is Value Reporting&rsquo;s)</td><td>none</td><td>14</td></tr>
 </tbody>
 </table>
-<p><span class="lab">How it prices</span> VRF: 7 tables and 203 KB of rules computing the multi-location average rate. Additional Locations: that rate &times; coinsurance factor &times; value, and it resets the Contents premium.</p>
-<p><span class="lab">Why here in the order</span> the first coverage that depends on more than one location. None of ISO&rsquo;s 293 stored policies has more than one location, so every check is a new live probe.</p>
-<p><span class="lab">Opens with</span> trace how the Value Reporting Form writes <code>BasicGroupIMLAR</code> (C14-14 found it &ldquo;Not Used&rdquo; without the form). Adds 16 files, <b>520 of 546 (95%)</b>.</p>
+<p class="sub"><b>What shapes the plan.</b> (1) <b>Three writers of the same five average rates</b> (both General Information records and the per-row Value Reporting Form); RC-1 settles the order before any dollar. (2) <b>Three rate sources per Value Reporting coverage</b>, set apart in the golden cases. (3) <b>The chunk reaches into built code</b>: the main ruleset, Personal Property (9 state rewrites), Occupancy and chunk 9&rsquo;s Blanket Rating Detail; all 293 stored policies must re-rate unchanged. (4) <b>The plan&rsquo;s &ldquo;resets the Contents premium&rdquo; is a roll-up</b>: the sum of Additional Locations premiums written to the General Information record. (5) <b>The largest rule file left</b> gets a hand trace. (6) <b>Averages round</b>: a scale probe. (7) <b>No stored multi-location evidence.</b> 40 messages in scope; identical in all four editions.</p>
+<p class="sub">Grouped like release candidates, <b>in the order to do them</b>. <b>Next: C22-02, once chunk 21 is gated.</b></p>
+<p><span class="lab">RC-1 &middot; Evidence and plumbing (6) &middot; 1 of 6 done</span></p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C22-01</td><td><b>Opening census</b> including the <b>multi-location trail</b> &mdash; <b>Done 2026-09-28</b> (<code>903_chunk22_census.py</code>, 3 s)</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C22-02</td><td><span class="tag done">gate 6</span> <b>Who writes the MLARs, in what order</b>: all three writers traced on a real two-location tree; which value each reader sees. No ISO calls</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C22-03</td><td><span class="tag done">gate 6</span> <b>The built touchpoints</b>: <code>SetMultipleLocationsAvgRate</code>, Personal Property&rsquo;s indicator (9 state rewrites), Occupancy, Blanket Rating Detail (CA), the roll-up; <b>all 293 stored policies re-rated unchanged</b></td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C22-04</td><td><span class="tag done">gate 2</span> <b>Attach map and switches</b>: the three rate sources per Value Reporting coverage and what selects each; blank-input defaults</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C22-05</td><td><b>Value Reporting General Information by hand</b>: 56 rules, incidental and acquired locations, new business, seasonal risk, the MLAR arithmetic</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C22-06</td><td><span class="tag done">gate 2</span> <span class="tag done">gate 5</span> <b>Tables and literals</b>: 11 tables, the <code>MultiLocAvgRates</code> values and their source, FL coinsurance, AR DC codes</td></tr>
+</tbody>
+</table>
+<p><span class="lab">RC-2 &middot; Golden cases (6) &middot; 0 of 6 done &middot; all new live probes</span></p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#11036;</td><td class="num">C22-07</td><td><span class="tag done">gate 1</span> <b>Value Reporting, MLAR not used</b>: two locations, each coverage group at its own rate; ISO live</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C22-08</td><td><b>Value Reporting, MLAR used</b>: an average equal to neither location&rsquo;s rate; new-business average value; CP 99 10; ISO live</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C22-09</td><td><b>Value Reporting, blanketed</b>: blanket average vs MLAR vs own rate, each different; ISO live</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C22-10</td><td><b>Value Reporting General Information</b>: incidental and acquired locations, seasonal risk, new business; ISO live</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C22-11</td><td><b>Additional Locations Special Coinsurance</b>: two and three locations, Provisions and General Information, EQ; ISO live</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C22-12</td><td><b>The roll-up</b>: Contents and <code>PrsnlPropPremium</code> before and after, both readings predicted; ISO live</td></tr>
+</tbody>
+</table>
+<p><span class="lab">RC-3 &middot; Zero cases, messages and names (4) &middot; 0 of 4 done</span></p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#11036;</td><td class="num">C22-13</td><td><span class="tag done">gate 4</span> <b>Zero cases</b>: no General Information; MLAR on one location; average value on a renewal; blank values; Additional Locations with blanket / Agreed Value; ISO live</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C22-14</td><td><span class="tag done">gate 9</span> <b>Messages</b>: all 40, incl. the &ldquo;identical on every record&rdquo; rules across locations and the mutual exclusion; ISO live</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C22-15</td><td><span class="tag done">gate 6</span> <b>Shared names</b>: the five MLARs (three writers), <code>MultiLocAvgRates</code>, <code>PrsnlPropPremium</code>, <code>TotalIncLocsLimit</code>, diffed; whether a submitted MLAR survives</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C22-16</td><td><span class="tag done">gate 7</span> <b>Exclusion records</b>: cyber factors in all 16 formulas; the wind / hail indicator</td></tr>
+</tbody>
+</table>
+<p><span class="lab">RC-4 &middot; States, editions and scale (4) &middot; 0 of 4 done</span></p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#11036;</td><td class="num">C22-17</td><td><b>The state layer</b>: AL AR DC NY RI indicator, AR DC codes, the 9 Personal Property rewrites, CA blanket, Public Institutional Plan; ISO live</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C22-18</td><td><span class="tag done">gate 8</span> <b>Editions</b>: one multi-location probe each on MO (2023 V02), a V03 and a V04 state</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C22-19</td><td><span class="tag done">gate 3</span> <b>All 46 states</b>: a multi-location policy per state on its own package; ISO live</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C22-20</td><td><b>Scale and rounding</b>: ~8 locations where rounding the average vs each term moves a dollar; ISO live</td></tr>
+</tbody>
+</table>
+<p><span class="lab">RC-5 &middot; Confirmation and close-out (4) &middot; 0 of 4 done</span></p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#11036;</td><td class="num">C22-21</td><td><b>Downstream</b>: total moves by exactly the families&rsquo; premiums; blanket roll-up; terrorism; stat codes; the 293 re-rated unchanged; ISO live</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C22-22</td><td><b>Regression</b>: chunk 22 scripts pinned; full run CLEAN for chunks 0&ndash;22 (<code>--jobs 4</code>); <code>157_ --all</code></td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C22-23</td><td><b>Census close</b>: two families built in <code>166_</code> (504 &rarr; 520 of 546, 95%)</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C22-24</td><td><b>File <code>CF-CHUNK22-GATE.md</code></b> &mdash; 16 countrywide premium files</td></tr>
+</tbody>
+</table>
 </div>
 
 <div class="chunk todo">
@@ -2267,3 +2386,59 @@ why the zero cases exist in every chunk.</li>
 <li><b>A matching premium proves less than it looks.</b> Nine cases matched ISO before a rounding tie was
 deliberately constructed, and every one was consistent with all three rounding modes.</li>
 </ol>
+
+<script>
+/* Chunk cards: click a card's title to expand or collapse it; every card starts collapsed.
+   A link to an anchor inside a card (e.g. #remaining) opens that card. */
+(function () {
+  var cards = Array.prototype.slice.call(document.querySelectorAll("div.chunk"));
+  cards.forEach(function (card) {
+    var h = card.querySelector(":scope > h3");
+    if (!h) return;
+    var body = document.createElement("div");
+    body.className = "chunk-body";
+    while (h.nextSibling) body.appendChild(h.nextSibling);
+    card.appendChild(body);
+    h.classList.add("chunk-toggle");
+    h.setAttribute("role", "button");
+    h.setAttribute("tabindex", "0");
+    h.setAttribute("aria-expanded", "false");
+    function toggle() { set(card, !card.classList.contains("open")); }
+    h.addEventListener("click", function (e) { if (!e.target.closest("a")) toggle(); });
+    h.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); toggle(); }
+    });
+  });
+  function set(card, open) {
+    card.classList.toggle("open", open);
+    var h = card.querySelector(":scope > h3");
+    if (h) h.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+  // one Expand all / Collapse all bar before each run of consecutive cards
+  cards.forEach(function (card) {
+    var prev = card.previousElementSibling;
+    if (prev && prev.matches("div.chunk")) return;
+    var run = [];
+    for (var el = card; el && el.matches("div.chunk"); el = el.nextElementSibling) run.push(el);
+    if (run.length < 2) return;
+    var bar = document.createElement("div");
+    bar.className = "chunk-controls";
+    [["Expand all", true], ["Collapse all", false]].forEach(function (b) {
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.textContent = b[0];
+      btn.addEventListener("click", function () { run.forEach(function (c) { set(c, b[1]); }); });
+      bar.appendChild(btn);
+    });
+    card.parentNode.insertBefore(bar, card);
+  });
+  function openFromHash() {
+    if (!location.hash) return;
+    var t = document.getElementById(decodeURIComponent(location.hash.slice(1)));
+    var card = t && t.closest("div.chunk");
+    if (card) { set(card, true); t.scrollIntoView(); }
+  }
+  openFromHash();
+  window.addEventListener("hashchange", openFromHash);
+})();
+</script>

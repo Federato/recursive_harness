@@ -5,7 +5,16 @@ confirm it in two minutes, and what to pick up first.
 
 ---
 
-## Pick up here (set 2026-09-28): chunk 18 OPEN, 5 of 23
+## Pick up here (set 2026-09-28): chunk 18 OPEN, 11 of 23
+
+**2026-09-28: chunk 18 RC-2 COMPLETE, 11 of 23** (`scripts/cf/187_chunk18_rc2.py --live`): 9 golden
+cases, ISO agrees on every premium and message. Agreed Value reads the agreed limit (blanketed: the
+blanket's AgreedVal average rate); Leased Property Agreed Value switches on from the contents row;
+Inflation Guard is a % of the finished premium; the building and contents Functional forms differ;
+Rebuilding needs a large amount to price every form; Vacancy discounts only its vandalism part.
+ISO types AgreedValueLimit, UnitNumber, BlktIDNum, TotalLimit, FullValue as numbers.
+**Next: RC-3, C18-12** (C18-13 first re-runs the fixed form-number message census).
+
 
 **2026-09-28: chunk 18 RC-1 COMPLETE, 5 of 23** (`scripts/cf/186_chunk18_rc1.py`, all checks pass;
 `--skip-stored` skips the 16-min stored re-rate). Every stored policy carries Agreed Value and
@@ -41,6 +50,21 @@ reads form numbers from the package's Form Pages table and flags sibling file na
 records (28 + 2 NC-only), none priced by ISO; Fire Department, Tobacco, the furs / jewelry /
 patterns / stamps limits and BI fungus sit at $0 on stored policies; Mortgageholders E&O is a
 five-layer, policy-level coverage form; 95 distinct messages; one MO edition difference.
+
+**Chunk 21, sewer backup and condo options, TASKS SET 2026-09-28; 1 of 21; starts after chunk
+20** ([`CF-CHUNK21-TASKS.md`](CF-CHUNK21-TASKS.md), census `902_chunk21_census.py`): 7 premium
+records + 5 FL-only (a manual premium gated on coverage form / type / policy type), none priced
+by ISO or on a stored policy; Sewer's 8 tables are one 2-row rate plus codes; loss assessment is
+tiered arithmetic (21 rules); the condo options have four form numbers (CW, RI, FL, UT); no cyber
+factor anywhere; 26 messages; identical in all four editions.
+
+**Chunk 22, multi-location (value reporting and special coinsurance), TASKS SET 2026-09-28; 1 of
+24; starts after chunk 21** ([`CF-CHUNK22-TASKS.md`](CF-CHUNK22-TASKS.md), census
+`903_chunk22_census.py`, which adds a multi-location trail): 16 premium records, none priced by ISO
+and no stored multi-location policy at all. The five average rates (MLARs) have **three writers**;
+the main ruleset, Personal Property (9 state rewrites), Occupancy and chunk 9's Blanket Rating Detail
+already touch them, so all 293 stored policies must re-rate unchanged. The plan's "resets the
+Contents premium" is a roll-up of Additional Locations premiums onto General Information.
 
 ## Earlier pick-up (set 2026-09-28): chunk 17 GATED; next, chunk 18
 
