@@ -5,7 +5,17 @@ confirm it in two minutes, and what to pick up first.
 
 ---
 
-## Pick up here (set 2026-09-28): chunk 18 OPEN, 15 of 23
+## Pick up here (set 2026-09-28): chunk 18 OPEN, 19 of 23
+
+**2026-09-28: chunk 18 RC-4 COMPLETE, 19 of 23** (`scripts/cf/189_chunk18_rc4.py --all --live`): 49 of
+50 agree with ISO (2,352 predicted records, 8,747 premiums); the 50th is KS's Standard Property Policy,
+which ISO refuses (OI-103). **ENGINE FIX (user's go): an empty state table no longer hides the
+countrywide rows, Property only** ([`CF-ENGINE-FIX-EMPTY-STATE-TABLES.md`](CF-ENGINE-FIX-EMPTY-STATE-TABLES.md)):
+VT's Vacancy Special was $0, ISO $87. Regression 115 of 115, `157_ --all` 293 of 293, all 87 stored
+chunk 18 responses unchanged. The portable state policy now carries each state's own contents
+territory and submits Group II base rates. CA's two earthquake-only rewrites remain untested.
+**Next: RC-5, C18-20.**
+
 
 **2026-09-28: chunk 18 RC-3 COMPLETE, 15 of 23** (`scripts/cf/188_chunk18_rc3.py --live`): 29 zero /
 message / name / exclusion cases, ISO agrees on all 29. A reversed Vacancy period prices negative

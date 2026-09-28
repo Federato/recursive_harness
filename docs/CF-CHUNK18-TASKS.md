@@ -20,7 +20,7 @@ evaluator and method), and each probe is chosen so the competing readings give d
 Every pass prints `[i/n elapsed]` progress to `results/cf-raas/logs/`; the quick regression tier
 runs after each RC, the full one at the gate.
 
-**Status: OPEN, 15 of 23 tasks** (RC-1 to RC-3 complete 2026-09-28; `188_chunk18_rc3.py --live`: 29 zero / message / name / exclusion cases, ISO agrees on all 29). Next: RC-4, C18-16 (Vacancy Permit's nine states).
+**Status: OPEN, 19 of 23 tasks** (RC-1 to RC-4 complete 2026-09-28; `189_chunk18_rc4.py --all --live`: 49 of 50 agree, the 50th an ISO refusal; **engine fix** for empty state tables, Property only). Next: RC-5, C18-20 (downstream).
 
 ---
 
@@ -112,10 +112,10 @@ say why before any golden case.
 
 | # | Task | Status | Notes |
 |---|---|---|---|
-| C18-16 | **Vacancy Permit's nine states**: KS NY VT `SetPremium`; AL AR DC RI sublines; CT coinsurance; FL vandalism; each state's own tables (DC FL GA KS NY VT); ISO live | ⬜ | |
-| C18-17 | **The other rewrites**: FL Agreed Value (3), CA Inflation Guard EQ (2), CT FL WV Functional Valuation, FL Rebuilding switch, CA FL Peak Season; each predicted from the state's own rule and tables; ISO live | ⬜ | |
-| C18-18 | **Editions**: **MO (CW 2023 V02) golden probes for Agreed Value and Functional Valuation**, whose formulas differ; one probe each on a V03 and a V04 state | ⬜ | gate 8 |
-| C18-19 | **All 46 states**: every family on every state's own package (ordinary and blanket policy), predicted per state; ISO live | ⬜ | gate 3 |
+| C18-16 | **Vacancy Permit's nine states**: KS NY VT `SetPremium`; AL AR DC RI sublines; CT coinsurance; FL vandalism; each state's own tables (DC FL GA KS NY VT); ISO live | ✅ | **Done 2026-09-28** (`189_chunk18_rc4.py --all --live`). Vacancy Permit's nine states agree with ISO in the sweep. **Vermont exposed an engine defect**: VT files `VacancyPermitFactors` header-only and our engine treated it as final (Special $0); ISO uses the countrywide rows ($87 / $18). **Fixed with your go** (`CFResolvedBook`, Property only; [`CF-ENGINE-FIX-EMPTY-STATE-TABLES.md`](CF-ENGINE-FIX-EMPTY-STATE-TABLES.md)); VT then agrees 178 of 178. Probes on a Standard Property Policy: OR, NY, DC agree; **KS: ISO refuses the policy** (KS files its own factors with no SPP earthquake row, and ISO does not fall back past a table with rows; we price it): **added to OI-103** |
+| C18-17 | **The other rewrites**: FL Agreed Value (3), CA Inflation Guard EQ (2), CT FL WV Functional Valuation, FL Rebuilding switch, CA FL Peak Season; each predicted from the state's own rule and tables; ISO live | ✅ | **Done 2026-09-28**. CT and WV switch Functional Valuation off, FL switches Rebuilding off, FL's Agreed Value Group II and emptied post-loss rule, FL Peak Season rates: all as filed, ISO agrees. **CA's two rewrites are earthquake-only** (Inflation Guard EQ, Peak Season EQ calcs): no CA earthquake setup is built, so they are **untested** (recorded gap, as chunks 16-17 kept earthquake out of state sweeps) |
+| C18-18 | **Editions**: **MO (CW 2023 V02) golden probes for Agreed Value and Functional Valuation**, whose formulas differ; one probe each on a V03 and a V04 state | ✅ | **Done 2026-09-28**. Every state predicted from its own countrywide edition: MO 2023 V02 (whose Agreed Value and Functional Valuation formulas differ), CA NC V03, FL RI MA VT V04; ISO agrees in every edition · gate 8 |
+| C18-19 | **All 46 states**: every family on every state's own package (ordinary and blanket policy), predicted per state; ISO live | ✅ | **Done 2026-09-28**. One portable policy per state with all six families (48 records) + 4 probes: **49 of 50 agree live, 2,352 predicted records, 8,747 premiums, messages equal** (the 50th is KS's OI-103 refusal). The portable policy now carries **each state's own contents territory** (Oregon's "Multnomah" made ISO refuse and our engine price $0: OI-103) and submits Group II / CA Group I base rates so the families price everywhere. After the engine fix, **all 87 stored chunk 18 ISO responses re-rate identically** (13,640 premiums) · gate 3 |
 
 ### RC-5 · Confirmation and close-out (4 tasks)
 

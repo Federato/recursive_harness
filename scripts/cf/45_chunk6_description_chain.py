@@ -283,7 +283,9 @@ def main() -> int:
         i = body.find('<rul:Rule Name="SetBasicGroupIIRate"')
         rate_rule = body[i:i + body[i:].find("</rul:Rule>") + 11] if i >= 0 else ""
         drops_term = "BasicGroupIINumericValue" not in rate_rule
-        n_rows = len(book.table("SpecialClassBasicGroupIINumber").rows)
+        # the STATE'S OWN FILE (what it filed), not the book's resolution: since 2026-09-28 a Property
+        # book resolves an empty state table to the countrywide rows (CFResolvedBook, ISO-confirmed in VT)
+        n_rows = len(book.state.table("Rate", "SpecialClassBasicGroupIINumber").rows)
         data = run(state, {"loc:BasicGroupIIRatingTerr": terr})
         got = str(read(P_BGII, data))
         num = read(f"{SC}/BasicGroupIINumericValue", data)

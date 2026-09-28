@@ -154,14 +154,18 @@ def main() -> int:
     print("  costs $329 against 90%'s $209. A lower coinsurance is a higher")
     print("  premium in both forms.")
     pr = book_for("PR", ASOF)
-    n_flat = len(pr.table("BasicGroupIIFlatCoinsuranceFactor").rows)
-    n_lt80 = len(pr.table("LessThan80PctMultiplicativeFactor").rows)
+    # the STATE'S OWN FILES (what PR filed), not the book's resolution
+    n_flat = len(pr.state.table("Rate", "BasicGroupIIFlatCoinsuranceFactor").rows)
+    n_lt80 = len(pr.state.table("Rate", "LessThan80PctMultiplicativeFactor").rows)
     good = n_flat == 0 and n_lt80 == 0
     ok &= good
     print(f"  PR declares BOTH tables header-only ({n_flat} and {n_lt80} rows) "
           f"{'OK' if good else 'MISMATCH'}")
-    print("  -- a state with no coinsurance surcharge of any kind, by filing")
-    print("  two empty tables rather than by changing a rule.")
+    print("  -- two empty tables rather than a changed rule. Read under N3 this was")
+    print("  'no coinsurance surcharge'; since 2026-09-28 a Property book resolves an")
+    print("  empty state table to the countrywide rows (CFResolvedBook, ISO-confirmed")
+    print("  in VT), so PR now takes the countrywide surcharge. PR is out of scope for")
+    print("  ISO comparison: that reading is unverified for PR itself.")
 
     # ---- C6-22
     print("\n=== 22  Broad is construction-blind")
