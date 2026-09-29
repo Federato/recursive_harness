@@ -189,10 +189,12 @@ def hand(body, node):
             val = q(val, e.get("DecimalPlaces"))
         elif tag == "Subtract":
             x, y = list(e)
-            val = num(ev(x, ctx, params)) - num(ev(y, ctx, params))
+            val = q(num(ev(x, ctx, params)) - num(ev(y, ctx, params)), e.get("DecimalPlaces"))
         elif tag == "Divide":
+            # DecimalPlaces applies to Divide and Subtract too (found 2026-09-29, chunk 19 C19-18: GA's tenants'
+            # glass <Divide DecimalPlaces="0"> of limit x rate / 100; unrounded, the hand value was $1 high)
             x, y = list(e)
-            val = num(ev(x, ctx, params)) / num(ev(y, ctx, params))
+            val = q(num(ev(x, ctx, params)) / num(ev(y, ctx, params)), e.get("DecimalPlaces"))
         elif tag in ("Equal", "NotEqual"):
             x, y = [str(ev(c, ctx, params) or "") for c in e]
             val = (x == y) if tag == "Equal" else (x != y)

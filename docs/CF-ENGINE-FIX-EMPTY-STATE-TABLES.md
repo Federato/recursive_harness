@@ -28,6 +28,19 @@ override is final by name, even when empty") are untouched.
   earthquake row misses and **ISO refuses the policy** rather than falling back (OI-103:
   our engine prices it).
 
+## Open question found 2026-09-29 (chunk 19, C19-17): ISO does not always fall back
+
+`195_chunk19_c19-17_eq_tiers.py --live`, E7. Vermont (in force: CF VT 20260201 V02 over CF CW 2023 V04)
+files `EQSubLimitDeductibleTierCWTable` **header-only**, exactly as it files `VacancyPermitFactors`. An
+antenna / sign on the CP 10 45 sub-limit form at Tier 1 reads that stub. **ISO REFUSES the policy**
+(`Matrix: EQSubLimitDeductibleTierCWTable, Project: CF VT 20260201 V02, Keys: CW, Y`); our engine falls
+back to the countrywide row (factor 0) and prices EQ $0. Yet for `VacancyPermitFactors` ISO did fall back.
+Checked and ruled out as the difference: the package (both empty in every VT batch, including the one in
+force), the countrywide edition (CW 2023 V04 files both with rows), and the lookup shape (both are a
+state-keyed `FirstResult` lookup then a `CW`-keyed `SingleResult` one). **Unexplained; the fix stands as
+built, and this is an open question for chunk 28's engine behaviour decisions** (whether the fallback should
+be narrower). It widens OI-103: here ISO refuses where we price $0.
+
 ## Blast radius, checked
 
 - 209 state tables in the 46 states are empty while the countrywide one has rows; 204 are

@@ -5,7 +5,114 @@ confirm it in two minutes, and what to pick up first.
 
 ---
 
-## Pick up here (set 2026-09-29): chunk 18 GATED; next, chunk 19
+## Pick up here (set 2026-09-29): chunk 19 OPEN, 21 of 24
+
+**2026-09-29: chunk 19 C19-20 and C19-21 COMPLETE, 21 of 24.** C19-20 (`196_chunk19_c19-18_states.py --all --live`):
+every family in all 46 states + the Public Institutional Plan in AL KS RI, **ISO 49 of 49** (3,098 records, 10,317
+premiums). C19-21 (`198_chunk19_c19-21_downstream.py --live`): **Household Personal Property's limit joins the
+occupancy's total amount of insurance and lowers the contents' own rate** (chunk 4's LOI lookup: $197 → $192),
+so the prediction is the families' hand sum + the contents' hand-evaluated change: total +$1,941 and clean test
++$14,054, both predicted before the call and **equal at ISO**; terrorism untouched; 336 stat values on 81 stored
+responses equal. **Next: C19-22 (regression, which also re-checks the Divide / Subtract evaluator fix), C19-23
+(census 406 → 469), C19-24 (the gate).**
+
+## Earlier (set 2026-09-29): chunk 19 OPEN, 19 of 24
+
+**2026-09-29: chunk 19 C19-19 COMPLETE, 19 of 24** (`scripts/cf/197_chunk19_c19-19_editions.py --live`). A rule-by-rule
+diff of every family file across the four countrywide editions (the census had compared only the premium rules)
+finds **4 files differ in CW 2023 V02 (MO)**: the special-class Group I rate is looked up under older option codes
+(antennas 62, signs 12 / 13, trees 42; same rates; V02's table has no rows under the 2026 codes, so the probe
+discriminates). MO (V02), NC (V03), MA (V04): **ISO agrees on 3 of 3**. **Next: C19-20 (all 46 states).**
+
+## Earlier (set 2026-09-29): chunk 19 OPEN, 18 of 24
+
+**2026-09-29: chunk 19 C19-18 COMPLETE, 18 of 24** (`scripts/cf/196_chunk19_c19-18_states.py --live`): every chunk 19
+family in AL AR DC FL GA KS NY RI TX VT MT + OR, plus the Public Institutional Plan in AL KS RI, each record from
+that state's own premium rule: **ISO agrees on 15 of 15** (3,152 premiums). FL switches off the countrywide
+tenants' and Temporarily Away records and prices glass through its own five files ($76 / $11 / $11); MT's
+same-named files price nothing; NY prices Group II from its own territory tables, so its empty symbol tables are
+never read. **`174_`'s hand evaluator now applies DecimalPlaces to Divide / Subtract** (GA exposed it: hand $239,
+engine and ISO $238): the C19-22 regression re-checks every script that uses it. **Next: C19-19 (editions).**
+
+## Earlier (set 2026-09-29): chunk 19 OPEN, 17 of 24
+
+**2026-09-29: chunk 19 C19-17 COMPLETE, 17 of 24** (`scripts/cf/195_chunk19_c19-17_eq_tiers.py --live`, 8 of 9
+agree). The EQ sub-limit records attach from the location's EQ form (CP 10 45 percentage / CP 10 29 flat
+dollar) and are removed otherwise; a tier a state does not rewrite reads a countrywide stub (factor 0: CO
+Tier 1 prices EQ $0, and ISO agrees); factors interpolate inside the sub-limit band. **Open question: VT files
+that stub header-only and ISO REFUSES the policy, while it fell back to the CW rows for VT's header-only
+vacancy table (chunk 18) through an identical lookup; our engine falls back in both. Recorded in
+`CF-ENGINE-FIX-EMPTY-STATE-TABLES.md`, not fixed (chunk 28 decision).** **Next: C19-18 (the formula rewrites
+and FL's own glass files).**
+
+## Earlier (set 2026-09-29): chunk 19 OPEN, 16 of 24
+
+**2026-09-29: chunk 19 RC-3 COMPLETE, 16 of 24** (`scripts/cf/194_chunk19_c19-15-16.py --live`, 12 of 12 agree).
+C19-15: every rate / factor / coinsurance factor a family writes is `IsNull`-guarded (a submitted value is used);
+the Group II symbol number and every on-switch are overwritten. C19-16: the cyber exclusion moves 23 of the 48
+priced records at 10× limits (ISO 210 of 210); vandalism moves Group I only; windstorm collapses Group II to the
+lowest rate × symbol 1 × 0.315; EQ sprinkler-leakage-only moves the tenants' EQ forms. **Next: RC-4, C19-17
+(the EQ sub-limit deductible tiers for Antennas and Signs).**
+
+## Earlier (set 2026-09-29): chunk 19 OPEN, 14 of 24
+
+**2026-09-29: chunk 19 C19-13 and C19-14 COMPLETE, 14 of 24** (`scripts/cf/193_chunk19_rc3.py --live`): 11 zero
+cases and 16 message cases, **27 of 27 agree with ISO** (every premium, the whole message set), plus one predicted
+refusal. Zero cases: blank tenants' deductibles price $0 with no message; a sign under $2,500 prices NEGATIVE on
+every form (this corrected C19-09's note, which had the $2,500 on three forms only); Temporarily Away EQ on
+"Not Applicable" is $0. **Manufacturers on a contents type with no factor row: ISO refuses the policy, we price $0
+(OI-103).** Messages: all 21 fire; the "80% in Blanket" one fires on an unblanketed 80% contents row (ISO too);
+the habitational class is copied down from the building; AL / RI read the plan flag on the occupancy.
+**Next: C19-15 (shared names).**
+
+## Earlier (set 2026-09-29): chunk 19 OPEN, 12 of 24
+
+**2026-09-29: chunk 19 RC-2 COMPLETE, 12 of 24** (`scripts/cf/192_chunk19_rc2.py --live`): 16 golden cases
+across all nine families, **ISO agrees on all 16** (every premium and message). C19-11: Household prices on
+the residential apartments contents rate; Leased Property on chunk 18's A4 policy gives the same Agreed Value
+($20 / $2 / $13) as ISO's stored A4 response. C19-12: Temporarily Away Special $24 (theft covered, 0.2) vs $5
+(the contents theft exclusion, 0.1); Manufacturers Stock vs Machinery and Equipment. **Next: RC-3, C19-13
+(zero cases, including the blank tenants' deductible and Temporarily Away EQ on "Not Applicable").**
+
+## Earlier (set 2026-09-29): chunk 19 OPEN, 10 of 24
+
+**2026-09-29: chunk 19 C19-09 and C19-10 COMPLETE, 10 of 24** (`scripts/cf/192_chunk19_rc2.py --live`, now 10
+golden cases, **ISO agrees on all 10**). Signs: `SignPlacement` decides the regime (detached: own rate metal
+0.513 / other 1.188, own symbol 4 / 8; attached: copies the building's rates); EVERY form prices on
+(limit − 2,500) ÷ 100 (corrected by C19-13: this first said Broad / Special / EQ only). Brands: rate = the smaller of the 0.053 cap and 0.10 × the contents' final
+rate; a submitted contents rate of 0.70 makes the cap bind (Group I $47, not $62). **Next: C19-11 (Household,
+Leased Property; Leased must agree with C18-06).**
+
+## Earlier (set 2026-09-29): chunk 19 OPEN, 8 of 24
+
+**2026-09-29: chunk 19 C19-06 to C19-08 COMPLETE, 8 of 24** (`scripts/cf/192_chunk19_rc2.py --live`): 6 golden
+cases, every family-own value checked against an independent lookup and every premium predicted before its
+ISO call; **ISO agrees on all 6** (41 records, 801 premiums, messages equal). Tenants' glass with no deductible
+(1.10 / 1.15) and at $250 (1.05; the EQ form reads the Broad row), scheduled and unscheduled; Antennas:
+only Group II tells a broadcasting (AB) from a receiving (B) tower; Trees: Vermont's vehicle factor (1.15)
+moves Group II $55 → $64. Outside Oregon, submitted rates must be numbers. **Next: C19-09 (Outside Signs).**
+
+## Earlier (set 2026-09-29): chunk 19 OPEN, 5 of 24
+
+**2026-09-29: chunk 19 RC-1 COMPLETE, 5 of 24** (`scripts/cf/191_chunk19_rc1.py`, 34 checks, no ISO calls).
+C19-04: hand = engine on all 233 switched-on nodes over 5 trees; all 63 records price. Payload facts found:
+the contents need their OWN earthquake election (`EQCovIndicator`, `EQGrade`, their own EQ endorsement record);
+Temporarily Away EQ prices only with the contents' `EQSprinklerLeakageOnly` "No" / "Yes" ("Not Applicable" →
+$0, no message); Manufacturers' factor keys on the contents `CovType` and it is OFF when the contents are in a
+blanket. C19-05: every table listed; the vehicle exclusion is 1.15 only in CT ME MA NH RI VT; header-only NY
+symbol / FL tables fall back to CW (ISO to confirm in C19-17 / 18). **Next: RC-2, C19-06 (golden cases, ISO live).**
+
+## Earlier (set 2026-09-29): chunk 19 OPEN, 3 of 24
+
+**2026-09-29: chunk 19 C19-02 and C19-03 COMPLETE, 3 of 24** (`scripts/cf/191_chunk19_rc1.py`, 27 checks, no
+ISO calls). The one stored policy with tenants' records (NM, unscheduled): ISO = ours = hand on all 10. What
+switches the tenants' records: which container (scheduled / unscheduled), its `CovType`, its OWN
+`CausesOfLoss`, and for earthquake its `EQCovIndicator` AND the building's earthquake election. Scheduled
+glass limit = the container's `Limit`; each item its own `Limit`. **FL switches all 20 countrywide tenants'
+records and all 5 Temporarily Away records off.** A blank tenants' deductible prices $0 with no message.
+All 63 records attach. **Next: C19-04 (borrowed values).**
+
+## Earlier (set 2026-09-29): chunk 18 GATED; next, chunk 19
 
 **Chunk 18, the valuation and condition modifiers, GATED 9 of 9 on 2026-09-29, 23 of 23**
 ([`CF-CHUNK18-GATE.md`](CF-CHUNK18-GATE.md), tasks [`CF-CHUNK18-TASKS.md`](CF-CHUNK18-TASKS.md)):
