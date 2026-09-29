@@ -135,6 +135,10 @@ CLOSED = {
     "Tenants' Building Property / Glass", "Radio / TV Antennas", "Outdoor Trees, Shrubs and Plants", "Outside Signs",
     "Brands and Labels", "Household Personal Property", "Leased Property", "Property Temporarily Away",
     "Manufacturers Consequential Loss",
+    # chunk 20 (gated 2026-09-29): small coverages with their own tables, 28 files
+    "Radioactive Contamination", "Pier and Wharf", "Fire Department Service Charge", "Tobacco Sales Warehouses",
+    "Special Cause of Loss (furs, jewelry, patterns, stamps)", "Additional Covered Property", "Food Contamination",
+    "Mortgageholders E&O", "Fungus, Wet Rot, Dry Rot changes", "Equipment Breakdown",
 }
 
 

@@ -164,6 +164,13 @@ GOLDEN = [
     ("192_chunk19_rc2.py", 19,
      "scheduled property items: Tenants', Antennas, Trees, Signs, Brands, Household, Leased, Temporarily Away, Manufacturers",
      ["122", "116", "193", "64", "47", "392", "24"]),
+    # Chunk 20 (C20-24, 2026-09-29). Each derived by hand before the run and matched by ISO live: Fire Department
+    # $85 / $173 through the location's higher limit (F1 / F2), Tobacco $23 at the band edge (TB1), Mortgageholders
+    # $606 across all five layers (MG4), fungus $25 with the incremental 10 x (forms - 1) (FU2), blanket radioactive
+    # $159 / $321 at the average rate (RA2), EB building $44 with the 250 deductible (EB2).
+    ("200_chunk20_rc2.py", 20,
+     "small coverages with their own tables: Fire Department, Tobacco, Mortgageholders, Fungus, Special COL, Radioactive, Pier, ACP, Food, EB",
+     ["85", "173", "23", "606", "25", "159", "321", "44"]),
 ]
 
 # The machinery each chunk added -- run whenever shared code changes, which is
@@ -278,6 +285,14 @@ MACHINERY = [
     ("196_chunk19_c19-18_states.py", "chunk 19 RC-4: the state rewrites, FL / MT glass, the plan probes, as derived"),
     ("197_chunk19_c19-19_editions.py", "chunk 19 RC-4: every rule diffed per edition; MO / NC / MA probes"),
     ("198_chunk19_c19-21_downstream.py", "chunk 19 RC-5: total +$1,941 / +$14,054 incl. the contents' LOI move; stat values vs stored ISO"),
+    # Chunk 20 (2026-09-29). Engine-only runs (no --live); 199_ without the stored re-rate; 203_ on a small state
+    # sample (the all-states run needs batches: memory); 204_ offline.
+    ("199_chunk20_rc1.py --skip-stored", "chunk 20 RC-1: switches flipped, 28 records hand = engine on four trees + a blanket, tables"),
+    ("201_chunk20_rc3.py", "chunk 20 RC-3: 12 zero + 50 message cases by level, as derived (OI-115 cases pinned)"),
+    ("202_chunk20_c20-17-18.py", "chunk 20 RC-3: shared names (submitted values) and the cyber factors, as derived"),
+    ("203_chunk20_rc4.py --no-editions --runs OR,AL,FL,NY,VA,MO,NC,P-pip-AL,P-FL-fd,P-VA-vol,E-FD-MA,E-FU-MO,E-MO",
+     "chunk 20 RC-4: a state sample, the rewrite and edition probes, as derived"),
+    ("204_chunk20_c20-23_downstream.py", "chunk 20 RC-5: total +$977 / +$5,110; blanket roll-up moves only on radioactive"),
 ]
 
 # Excluded on purpose, each with a reason -- no silent narrowing of scope.
@@ -399,7 +414,9 @@ def jobs_for(a):
         if a.quick and not what.startswith(f"chunk {quick_chunk} "):
             continue
         zero = script in ZERO_CASE_SCRIPTS
-        jobs.append(("machinery", script, [sys.executable, "-u", f"scripts/cf/{script}"], [],
+        # an entry may carry arguments after the script name (chunk 20: "199_... --skip-stored")
+        name, *args = script.split()
+        jobs.append(("machinery", script, [sys.executable, "-u", f"scripts/cf/{name}", *args], [],
                      ZERO_CASE_MARKERS if zero else FAILURE_MARKERS,
                      ZERO_CASE_REQUIRE if zero else (), (zero, what)))
     if not a.no_gl and not a.quick:

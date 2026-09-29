@@ -5,7 +5,19 @@ confirm it in two minutes, and what to pick up first.
 
 ---
 
-## Pick up here (set 2026-09-29): chunk 20 OPEN, 22 of 26
+## Pick up here (set 2026-09-29): chunk 20 GATED; next, chunk 21
+
+**Chunk 20, small coverages with their own tables, GATED 9 of 9 on 2026-09-29, 26 of 26**
+([`CF-CHUNK20-GATE.md`](CF-CHUNK20-GATE.md), tasks [`CF-CHUNK20-TASKS.md`](CF-CHUNK20-TASKS.md)): Radioactive, Pier and
+Wharf, Fire Department, Tobacco, the four special-limit items, ACP, Food, Mortgageholders, Fungus, Equipment Breakdown.
+All 28 records ISO had never priced are ISO-confirmed: 20 golden cases, 62 zero / message cases (all 95 message rules by
+level), 29 name / exclusion probes, all 46 states + 27 probes (73 of 73), the downstream total (+$977 / +$5,110) and
+1,251 stat values. No engine change. Regression scoped: 6 of 6 CLEAN. **497 of 546 countrywide premium files built
+(91%).** Open: **OI-115** (ISO skips a blank first operand of `Subtract`; needs the user's go), OI-103, the VT
+empty-table question; a stale engine comment on blank comparisons; move the every-rule edition diff into the census
+template. **Next: chunk 21** (sewer backup and condo options; tasks set, `CF-CHUNK21-TASKS.md`).
+
+## Earlier (set 2026-09-29): chunk 20 OPEN, 22 of 26
 
 **2026-09-29: chunk 20 RC-4 COMPLETE (C20-19 to C20-22), `203_chunk20_rc4.py --live`: all 46 states + 27 probes, ISO
 73 of 73** (2,050 predicted records, 11,003 premiums). Run it in batches (`--runs`), one process each: the single

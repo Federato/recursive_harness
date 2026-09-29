@@ -26,7 +26,7 @@ runs after each RC, the full one at the gate.
 **Order.** After chunk 19. Nothing in chunk 20 reads chunk 18 or 19's records. It does read
 chunk 9 (blanket averages), chunk 4's Contents Special rate and chunk 17's Watercraft tables.
 
-**Status: OPEN, 22 of 26** (RC-1 complete 2026-09-29, `199_chunk20_rc1.py`; RC-2 complete 2026-09-29, `200_chunk20_rc2.py --live`, 20 of 20 agree; RC-3 complete 2026-09-29, `201_` 62 cases and `202_` 16 cases, ISO agrees on all but the two recorded OI-115 cases; RC-4 complete 2026-09-29, `203_chunk20_rc4.py`, all 46 states + 27 probes, ISO 73 of 73). Next: RC-5, C20-23.
+**Status: GATED 2026-09-29, 26 of 26, 9 of 9** ([`CF-CHUNK20-GATE.md`](CF-CHUNK20-GATE.md)). Was: OPEN, 22 of 26 (RC-1 complete 2026-09-29, `199_chunk20_rc1.py`; RC-2 complete 2026-09-29, `200_chunk20_rc2.py --live`, 20 of 20 agree; RC-3 complete 2026-09-29, `201_` 62 cases and `202_` 16 cases, ISO agrees on all but the two recorded OI-115 cases; RC-4 complete 2026-09-29, `203_chunk20_rc4.py`, all 46 states + 27 probes, ISO 73 of 73). RC-5 complete 2026-09-29.
 
 ---
 
@@ -144,7 +144,7 @@ ACP), so **95 distinct**.
 
 | # | Task | Status | Notes |
 |---|---|---|---|
-| C20-23 | **Downstream**: the policy total moves by exactly the families' premiums, with a clean test predicted before its ISO call; terrorism (and Mortgageholders' TRIA rule); stat codes and sublines; the blanket roll-up unmoved except by Radioactive; ISO live | ⬜ | |
-| C20-24 | **Regression**: add the chunk 20 scripts and pin the golden figures; full run CLEAN for chunks 0–20 (`--jobs 4`); `157_ --all` | ⬜ | |
-| C20-25 | **Census close**: count the ten families as built in `166_` (469 → 497 of 546, 91%) | ⬜ | |
-| C20-26 | **File `CF-CHUNK20-GATE.md`** | ⬜ | 28 countrywide premium files + NC's 2 |
+| C20-23 | **Downstream**: the policy total moves by exactly the families' premiums, with a clean test predicted before its ISO call; terrorism (and Mortgageholders' TRIA rule); stat codes and sublines; the blanket roll-up unmoved except by Radioactive; ISO live | ✅ | **Done 2026-09-29** (`204_chunk20_c20-23_downstream.py --live`, stat codes in nine batches). T0 (every parent input) / T1 (+ every chunk 20 record) / T2 (× 10): **total +$977 and clean test +$5,110, both predicted before the call and equal at ISO**; every other premium identical; **terrorism: 72 of 72 fields identical, none on a chunk 20 record** (no SetTerrorismPremium reads one); Mortgageholders fires the TRIA message at ISO too; **the blanket roll-up moves only on radioactive** (3 fields, ISO too); **1,251 stat values on chunk 20 records equal on 168 stored ISO responses**. Found: **Tobacco attaches itself** on the Tobacco form (T0's $47) |
+| C20-24 | **Regression**: add the chunk 20 scripts and pin the golden figures; full run CLEAN for chunks 0–20 (`--jobs 4`); `157_ --all` | ✅ | **Done 2026-09-29**. **Regression CLEAN**, 2026-09-29, scoped as for chunks 18 and 19: **6 of 6, 0 failures** (`104_ --only 199_ 200_ 201_ 202_ 203_ 204_ --no-gl --jobs 2`, 5m46s, `chunk20_c20-24_regression_scoped.log`): `200_` pinned to $85 / $173 / $23 / $606 / $25 / $159 / $321 / $44; `199_`, `201_`-`204_` added (MACHINERY entries may now carry arguments). The full run is carried from 2026-09-28 (115 of 115): **no engine code has changed since** (`ae81ac7`), and no shared test helper changed in chunk 20 except the regression runner itself, which this run exercises |
+| C20-25 | **Census close**: count the ten families as built in `166_` (469 → 497 of 546, 91%) | ✅ | **Done 2026-09-29**. `166_` counts the ten families as built: **497 of 546 countrywide premium files (91%)**, 49 left in 6 families |
+| C20-26 | **File `CF-CHUNK20-GATE.md`** | ✅ | **Done 2026-09-29**. [`CF-CHUNK20-GATE.md`](CF-CHUNK20-GATE.md): 9 of 9, 28 countrywide premium files (+ NC's own ACP records, premium-less) |
