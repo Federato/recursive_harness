@@ -26,7 +26,7 @@ runs after each RC, the full one at the gate.
 **Order.** After chunk 19. Nothing in chunk 20 reads chunk 18 or 19's records. It does read
 chunk 9 (blanket averages), chunk 4's Contents Special rate and chunk 17's Watercraft tables.
 
-**Status: OPEN, 5 of 26** (RC-1 complete 2026-09-29, `199_chunk20_rc1.py`). Next: RC-2, C20-06.
+**Status: OPEN, 14 of 26** (RC-1 complete 2026-09-29, `199_chunk20_rc1.py`; RC-2 complete 2026-09-29, `200_chunk20_rc2.py --live`, 20 of 20 agree). Next: RC-3, C20-15.
 
 ---
 
@@ -112,15 +112,15 @@ ACP), so **95 distinct**.
 
 | # | Task | Status | Notes |
 |---|---|---|---|
-| C20-06 | **Fire Department Service Charge**: an increased limit that moves a dollar; ISO live | ⬜ | gate 1 |
-| C20-07 | **Tobacco Sales Warehouses**: two rows of the 4-row rate table on a tobacco occupancy; ISO live | ⬜ | |
-| C20-08 | **Mortgageholders E&O**: mortgage counts at and across **each layer boundary** (500, 1,000, 5,000, 15,000), so a wrong layer gives a different dollar; ISO live | ⬜ | |
-| C20-09 | **Fungus**: policy limit and separate limits, the increased-period factor, with a BI fungus record feeding the policy premium; excess-of-sublimit and incremental both deciding a dollar; ISO live | ⬜ | |
-| C20-10 | **Furs, jewelry, patterns, stamps**: each raised above its base special limit (the precious-metals table has 3 rows); ISO live | ⬜ | |
-| C20-11 | **Radioactive Contamination**: all five coverages, not blanketed and blanketed (the average-rate reading discriminated); ISO live | ⬜ | |
-| C20-12 | **Pier and Wharf and Additional Covered Property**: both on chunk 17's construction table, two construction options each; Pier and Wharf on structure, Special Class, BI, SCBI; ISO live | ⬜ | |
-| C20-13 | **Food Contamination**: food only and additional advertising, on BI and SCBI; ISO live | ⬜ | |
-| C20-14 | **Equipment Breakdown**: property damage from the 195-row table by occupancy group, BI loss cost with and without waiting period, ammonia; hazardous substance as a manual premium; ISO live | ⬜ | |
+| C20-06 | **Fire Department Service Charge**: an increased limit that moves a dollar; ISO live | ✅ | **Done 2026-09-29** (`200_chunk20_rc2.py --live`). F1 own limit 25,000: (25,000 - 1,000) / 100 x 0.4 → **$85**; F2 with the location's higher-limits record (indicator Yes, 50,000): LimitToUse **50,000 → $173**. ISO agrees, every premium on both policies · gate 1 |
+| C20-07 | **Tobacco Sales Warehouses**: two rows of the 4-row rate table on a tobacco occupancy; ISO live | ✅ | **Done 2026-09-29** (`200_chunk20_rc2.py --live`). A flat rate by the **contents** limit band: TB1 50,000 → **26 → $23** (a from-inclusive reading gives 40); TB2 100,000 → **53 → $47** (79 if the upper bound were exclusive). ISO agrees |
+| C20-08 | **Mortgageholders E&O**: mortgage counts at and across **each layer boundary** (500, 1,000, 5,000, 15,000), so a wrong layer gives a different dollar; ISO live | ✅ | **Done 2026-09-29** (`200_chunk20_rc2.py --live`). Every layer count and rate checked against the table: MG1 500 at 25,000 **$52**; MG2 1,001 at 50,000 (1 in the next-4,000 layer) **$104**; MG3 15,000 at 100,000 **$405**; MG4 20,000 at 1,000,000 (all five layers) **$606**. ISO agrees. **Submission fact: this record's `Limit` is TEXT ("25,000", the table key)**, not a number like every other `Limit`; sent as a number our engine finds no rate |
+| C20-09 | **Fungus**: policy limit and separate limits, the increased-period factor, with a BI fungus record feeding the policy premium; excess-of-sublimit and incremental both deciding a dollar; ISO live | ✅ | **Done 2026-09-29** (`200_chunk20_rc2.py --live`). FU1 Policy Limit, sub-limit 50,000, BI 90 days (0.03): **$31** (excess + the BI fungus total 3); FU2 Separate Limits, sub-limit 25,000, two buildings applying, BI 120 days (0.04): **$25**. **Found: the incremental charge is 10 × (forms − 1)** (10 × forms only on a CPP governed by another state), so the second building is the one charged. The BI fungus records carry a `TotalPremium` the policy record sums (checked). ISO agrees. `IncreasedPeriodOfRestoration` is text on the policy record, a number on the BI records |
+| C20-10 | **Furs, jewelry, patterns, stamps**: each raised above its base special limit (the precious-metals table has 3 rows); ISO live | ✅ | **Done 2026-09-29** (`200_chunk20_rc2.py --live`). SC1: furs 20,000 **$14**, jewelry 10,000 "Worth $100 or less per item" (base **0**) **$7**, patterns 20,000 **$14**, stamps 5,000 (base **250**) **$3**; SC2: jewelry "Worth more than $100" (base 2,500) **$6**, furs through the contents' higher-limits record (30,000) **$21**. ISO agrees |
+| C20-11 | **Radioactive Contamination**: all five coverages, not blanketed and blanketed (the average-rate reading discriminated); ISO live | ✅ | **Done 2026-09-29** (`200_chunk20_rc2.py --live`). **Found: unblanketed, each record prices on its PARENT's limit, not its own** (RA1: own 40,000 vs parent 100,000 → $91 / $86 / $98 / $85 / $98, all five coverages). Blanketed: detail "Yes" → the blanket average 0.167 × LimitToUse (**$159 / $321**); "No" → own rate × **own** limit (**$94 / $383**). ISO agrees on all three |
+| C20-12 | **Pier and Wharf and Additional Covered Property**: both on chunk 17's construction table, two construction options each; Pier and Wharf on structure, Special Class, BI, SCBI; ISO live | ✅ | **Done 2026-09-29** (`200_chunk20_rc2.py --live`). PW1 option 1 (Pier 0.026, ACP 0.016): $10 / $14 / $9 / $14, ACP $15 / $15; PW2 option 5 (0.04 / 0.024): $15 / $22 / $15 / $22, ACP $22 / $21. Pier on BI / SCBI prices on the parent's limit × its coinsurance factor; ACP on the building's LimitToUse. ISO agrees |
+| C20-13 | **Food Contamination**: food only and additional advertising, on BI and SCBI; ISO live | ✅ | **Done 2026-09-29** (`200_chunk20_rc2.py --live`). Food 10,000 × 0.18 → **$17**, advertising 20,000 × 0.045 → **$9**, on BI and on SCBI. ISO agrees |
+| C20-14 | **Equipment Breakdown**: property damage from the 195-row table by occupancy group, BI loss cost with and without waiting period, ammonia; hazardous substance as a manual premium; ISO live | ✅ | **Done 2026-09-29** (`200_chunk20_rc2.py --live`). EB1 Institutional (group 3: 12.5 / TE 0.006), ammonia 50,000, hazardous 100: $12 / $52 / $93 / $6 / $1; EB2 Industrial (group 7: 42.5 / 0.026), deductible 250 (factor 1.10), ammonia 100,000, hazardous 250: $44 / $153 / $232 / $25 / $3. **Found: the waiting-period record's factor is the no-waiting-period row − 1** (Eliminated 1.15 → 0.15; 24 hours 1.10 → 0.10). ISO agrees |
 
 ### RC-3 · Zero cases, messages and names (4 tasks)
 

@@ -5,7 +5,17 @@ confirm it in two minutes, and what to pick up first.
 
 ---
 
-## Pick up here (set 2026-09-29): chunk 20 OPEN, 5 of 26
+## Pick up here (set 2026-09-29): chunk 20 OPEN, 14 of 26
+
+**2026-09-29: chunk 20 RC-2 COMPLETE (C20-06 to C20-14), `200_chunk20_rc2.py --live`: 20 golden cases, ISO 20 of 20
+agree** (every premium and message on each policy). Four things the rules do that a submitter must know: **Radioactive
+Contamination, unblanketed, prices on the parent coverage's limit, not its own** (its own limit is read only in a blanket
+whose detail says "No"); **fungus's incremental charge is 10 × (forms − 1)** on a monoline policy; **EB's waiting-period
+record uses the no-waiting-period factor − 1**; **Mortgageholders' `Limit` is text ("25,000")** and
+`IncreasedPeriodOfRestoration` is text on the policy fungus record (ISO refuses the wrong type). **Next: RC-3, C20-15
+(zero cases), C20-16 (messages), C20-17 / 18.**
+
+## Earlier (set 2026-09-29): chunk 20 OPEN, 5 of 26
 
 **2026-09-29: chunk 20 RC-1 COMPLETE (C20-02 to C20-05), `199_chunk20_rc1.py`.** The four families sitting at $0 on
 stored policies are explained (293 of 293 stored responses, ISO $0 = ours $0) and switched on: Fire Department $85,
