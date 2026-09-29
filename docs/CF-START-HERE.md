@@ -5,7 +5,18 @@ confirm it in two minutes, and what to pick up first.
 
 ---
 
-## Pick up here (set 2026-09-29): chunk 19 GATED; next, chunk 20
+## Pick up here (set 2026-09-29): chunk 20 OPEN, 5 of 26
+
+**2026-09-29: chunk 20 RC-1 COMPLETE (C20-02 to C20-05), `199_chunk20_rc1.py`.** The four families sitting at $0 on
+stored policies are explained (293 of 293 stored responses, ISO $0 = ours $0) and switched on: Fire Department $85,
+Tobacco $47 (set `CovForm` on the occupancy), patterns $14, BI fungus. All 28 records price with hand = engine on four
+Oregon trees. Submission facts found: **EB ammonia / hazardous switch on only above $25,000**; **EB's BI waiting-period
+record needs BI's no-waiting-period endorsement with a `TimePeriod`**; **jewelry needs `ValueIndicator`**; FL switches
+off 14 records, AZ Fire Department. Blanket radioactive reads the blanket average rate when the blanket detail's
+`RadioactiveContamination` is "Yes" (0.167: $159 / $321 vs own rates $94 / $383). 24 header-only state tables the
+engine falls back through (chunk 19's VT question applies). **Next: RC-2, C20-06 (Fire Department, ISO live).**
+
+## Earlier (set 2026-09-29): chunk 19 GATED; next, chunk 20
 
 **Chunk 19, the scheduled property items, GATED 9 of 9 on 2026-09-29, 24 of 24**
 ([`CF-CHUNK19-GATE.md`](CF-CHUNK19-GATE.md), tasks [`CF-CHUNK19-TASKS.md`](CF-CHUNK19-TASKS.md)): Tenants' Building
