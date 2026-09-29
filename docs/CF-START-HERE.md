@@ -5,7 +5,19 @@ confirm it in two minutes, and what to pick up first.
 
 ---
 
-## Pick up here (set 2026-09-29): chunk 19 OPEN, 21 of 24
+## Pick up here (set 2026-09-29): chunk 19 GATED; next, chunk 20
+
+**Chunk 19, the scheduled property items, GATED 9 of 9 on 2026-09-29, 24 of 24**
+([`CF-CHUNK19-GATE.md`](CF-CHUNK19-GATE.md), tasks [`CF-CHUNK19-TASKS.md`](CF-CHUNK19-TASKS.md)): Tenants' Building
+Property / Glass, Antennas, Trees, Signs, Brands and Labels, Household, Leased, Temporarily Away, Manufacturers. All
+57 records ISO had never priced (and FL's five glass files) are ISO-confirmed: 16 golden cases, 39 zero / message /
+name / exclusion cases, the EQ tier layer, the state rewrites, every edition, all 46 states (49 of 49, 10,317
+premiums), the downstream total. No engine change. Regression scoped with the user's go: 23 of 23 CLEAN (chunk 19 +
+every script the hand-evaluator fix touched). **469 of 546 countrywide premium files built (86%).** Open: the VT
+empty-table question (chunk 28), more OI-103 cases, FL / CA earthquake. **Next: chunk 20** (small coverages with their
+own tables; tasks set, `CF-CHUNK20-TASKS.md`).
+
+## Earlier (set 2026-09-29): chunk 19 OPEN, 21 of 24
 
 **2026-09-29: chunk 19 C19-20 and C19-21 COMPLETE, 21 of 24.** C19-20 (`196_chunk19_c19-18_states.py --all --live`):
 every family in all 46 states + the Public Institutional Plan in AL KS RI, **ISO 49 of 49** (3,098 records, 10,317

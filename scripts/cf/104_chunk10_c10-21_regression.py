@@ -157,6 +157,13 @@ GOLDEN = [
     ("187_chunk18_rc2.py", 18,
      "valuation and condition modifiers: Agreed Value, Inflation Guard, Functional, Rebuilding, Vacancy, Peak Season",
      ["10", "13", "25", "79", "52", "55", "152", "246"]),
+    # Chunk 19 (C19-22, 2026-09-29). Each derived by hand before the run and matched by ISO live: tenants' glass
+    # BGI $122 (T1, no deductible) / $116 (T2, $250), the other-than-metal sign $193 (S1), Vermont trees BGII $64
+    # (TR2, vehicle factor 1.15), Brands BGI $47 with the cap binding (B2), Leased $392 (L1), Temporarily Away
+    # Special $24 (TA1, theft covered).
+    ("192_chunk19_rc2.py", 19,
+     "scheduled property items: Tenants', Antennas, Trees, Signs, Brands, Household, Leased, Temporarily Away, Manufacturers",
+     ["122", "116", "193", "64", "47", "392", "24"]),
 ]
 
 # The machinery each chunk added -- run whenever shared code changes, which is
@@ -263,6 +270,14 @@ MACHINERY = [
     ("188_chunk18_rc3.py", "chunk 18 RC-3: zero / message / name / exclusion cases as derived"),
     ("189_chunk18_rc4.py", "chunk 18 RC-4: every family in the sample states + 4 SPP probes, as derived"),
     ("190_chunk18_c18-20_downstream.py", "chunk 18 RC-5: total moves by the families (T1 $2,520, T2 $2,554, blanket $38); stat values vs stored ISO"),
+    # Chunk 19 (2026-09-29). Engine-only runs (no --live); 196_ on its default states + probes; 198_ offline.
+    ("191_chunk19_rc1.py", "chunk 19 RC-1: stored tenants' records, switches, 63 records hand = engine, tables"),
+    ("193_chunk19_rc3.py", "chunk 19 RC-3: 27 zero / message cases + the Manufacturers refusal probe, as derived"),
+    ("194_chunk19_c19-15-16.py", "chunk 19 RC-3: shared names (submitted values) and exclusion records, as derived"),
+    ("195_chunk19_c19-17_eq_tiers.py", "chunk 19 RC-4: the EQ sub-limit tier layer, every factor independent"),
+    ("196_chunk19_c19-18_states.py", "chunk 19 RC-4: the state rewrites, FL / MT glass, the plan probes, as derived"),
+    ("197_chunk19_c19-19_editions.py", "chunk 19 RC-4: every rule diffed per edition; MO / NC / MA probes"),
+    ("198_chunk19_c19-21_downstream.py", "chunk 19 RC-5: total +$1,941 / +$14,054 incl. the contents' LOI move; stat values vs stored ISO"),
 ]
 
 # Excluded on purpose, each with a reason -- no silent narrowing of scope.

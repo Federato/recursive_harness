@@ -131,6 +131,10 @@ CLOSED = {
     # chunk 18 (gated 2026-09-29): the valuation and condition modifiers, 84 files
     "Agreed Value", "Inflation Guard", "Functional Valuation", "Increase in Rebuilding Expenses after Disaster",
     "Vacancy Permit", "Peak Season",
+    # chunk 19 (gated 2026-09-29): the scheduled property items, 63 files
+    "Tenants' Building Property / Glass", "Radio / TV Antennas", "Outdoor Trees, Shrubs and Plants", "Outside Signs",
+    "Brands and Labels", "Household Personal Property", "Leased Property", "Property Temporarily Away",
+    "Manufacturers Consequential Loss",
 }
 
 
