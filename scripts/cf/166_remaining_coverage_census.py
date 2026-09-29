@@ -128,6 +128,9 @@ CLOSED = {
     "Ordinary Payroll Limitation", "Power, Heat and Refrigeration Deduction", "Mining Properties BI",
     "Landlord as Additional Insured (Rental Value)", "Watercraft Exclusion Buyback",
     "Off-Premises Interruption (vehicles)",
+    # chunk 18 (gated 2026-09-29): the valuation and condition modifiers, 84 files
+    "Agreed Value", "Inflation Guard", "Functional Valuation", "Increase in Rebuilding Expenses after Disaster",
+    "Vacancy Permit", "Peak Season",
 }
 
 

@@ -1,11 +1,34 @@
 # Property build — start here
 
-**Last worked 2026-09-28.** This is the resume point: where things stand, how to
+**Last worked 2026-09-29.** This is the resume point: where things stand, how to
 confirm it in two minutes, and what to pick up first.
 
 ---
 
-## Pick up here (set 2026-09-28): chunk 18 OPEN, 19 of 23
+## Pick up here (set 2026-09-29): chunk 18 GATED; next, chunk 19
+
+**Chunk 18, the valuation and condition modifiers, GATED 9 of 9 on 2026-09-29, 23 of 23**
+([`CF-CHUNK18-GATE.md`](CF-CHUNK18-GATE.md), tasks [`CF-CHUNK18-TASKS.md`](CF-CHUNK18-TASKS.md)):
+Agreed Value, Inflation Guard, Functional Valuation, Rebuilding Expenses, Vacancy Permit, Peak Season.
+All 84 records ISO had never priced are ISO-confirmed; all 46 states (49 of 50 agree, KS SPP an ISO
+refusal, OI-103); one engine fix (empty state tables, Property only). **406 of 546 countrywide premium
+files built (74%).** The regression was scoped with the user's go: chunk 18 scripts CLEAN; the full run
+and `157_ --all` carried from 2026-09-28 (no engine change since). **Next: chunk 19** (scheduled
+property items, [`CF-CHUNK19-TASKS.md`](CF-CHUNK19-TASKS.md); its Leased Property C19-11 must agree
+with C18-06's A4).
+
+## Earlier (set 2026-09-29): chunk 18 OPEN, 21 of 23
+
+**2026-09-29: chunk 18 C18-20 and C18-22 COMPLETE, 21 of 23.** Downstream (`scripts/cf/190_chunk18_c18-20_downstream.py
+--live`): the total moves by exactly the hand difference (+$2,520), the clean test +$2,554 was predicted before
+its ISO call, chunk 9's blanket +$38 with only its own Agreed Value roll-up fields moving; terrorism untouched;
+214 stat values equal. Found live: "Functional Valuation" as the valuation type moves the parents' rates AND
+switches the family on; a Leased Property row prices the leased item itself. `166_`: **406 of 546 (74%)**.
+Regression: chunk 18 scripts added, `187_` pinned; the full run was **stopped by Claude Code for low system
+memory at 36 of 120, all passing**. **Next: rerun `104_ --jobs 4` (fewer jobs if memory is short) and
+`157_ --all`, fill the two Confirmation lines in the drafted `CF-CHUNK18-GATE.md`, then gate.**
+
+## Earlier pick-up (set 2026-09-28): chunk 18 OPEN, 19 of 23
 
 **2026-09-28: chunk 18 RC-4 COMPLETE, 19 of 23** (`scripts/cf/189_chunk18_rc4.py --all --live`): 49 of
 50 agree with ISO (2,352 predicted records, 8,747 premiums); the 50th is KS's Standard Property Policy,

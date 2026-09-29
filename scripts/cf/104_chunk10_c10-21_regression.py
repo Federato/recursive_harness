@@ -151,6 +151,12 @@ GOLDEN = [
     ("181_chunk17_rc2.py", 17,
      "Business Income add-ons: Landlord, payroll, power-heat, Mining, Watercraft, Off-Premises golden cases",
      ["77", "982", "343", "253", "13", "63"]),
+    # Chunk 18 (C18-21, 2026-09-29). Each derived by hand before the run and matched by ISO live:
+    # Agreed Value building BGI $10 (A1), blanketed $13 / $25 (A3), Functional Valuation $79 / $52 (F1),
+    # Rebuilding building BGI $55 (R1), Vacancy Permit building / contents BGI $152 / $246 (V1).
+    ("187_chunk18_rc2.py", 18,
+     "valuation and condition modifiers: Agreed Value, Inflation Guard, Functional, Rebuilding, Vacancy, Peak Season",
+     ["10", "13", "25", "79", "52", "55", "152", "246"]),
 ]
 
 # The machinery each chunk added -- run whenever shared code changes, which is
@@ -252,6 +258,11 @@ MACHINERY = [
     ("182_chunk17_rc3.py", "chunk 17 RC-3: 30 zero / message / name / exclusion cases as derived"),
     ("183_chunk17_rc4.py", "chunk 17 RC-4: every family in the sample states + 10 probes, as derived"),
     ("184_chunk17_c17-20_downstream.py", "chunk 17 RC-5: total moves by the families (T1 $1,969, T2 $2,643); stat values vs stored ISO"),
+    # Chunk 18 (2026-09-29). Engine-only runs (no --live); 189_ on its default sample + probes; 190_ offline.
+    ("186_chunk18_rc1.py", "chunk 18 RC-1: $0 fixtures explained, switches flipped, hand = engine on 53 records"),
+    ("188_chunk18_rc3.py", "chunk 18 RC-3: zero / message / name / exclusion cases as derived"),
+    ("189_chunk18_rc4.py", "chunk 18 RC-4: every family in the sample states + 4 SPP probes, as derived"),
+    ("190_chunk18_c18-20_downstream.py", "chunk 18 RC-5: total moves by the families (T1 $2,520, T2 $2,554, blanket $38); stat values vs stored ISO"),
 ]
 
 # Excluded on purpose, each with a reason -- no silent narrowing of scope.

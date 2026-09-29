@@ -20,7 +20,7 @@ evaluator and method), and each probe is chosen so the competing readings give d
 Every pass prints `[i/n elapsed]` progress to `results/cf-raas/logs/`; the quick regression tier
 runs after each RC, the full one at the gate.
 
-**Status: OPEN, 19 of 23 tasks** (RC-1 to RC-4 complete 2026-09-28; `189_chunk18_rc4.py --all --live`: 49 of 50 agree, the 50th an ISO refusal; **engine fix** for empty state tables, Property only). Next: RC-5, C18-20 (downstream).
+**Status: GATED 2026-09-29, 23 of 23, 9 of 9** ([`CF-CHUNK18-GATE.md`](CF-CHUNK18-GATE.md)). RC-1 to RC-4 complete 2026-09-28; RC-5 2026-09-29.
 
 ---
 
@@ -121,7 +121,7 @@ say why before any golden case.
 
 | # | Task | Status | Notes |
 |---|---|---|---|
-| C18-20 | **Downstream**: the policy total moves by exactly the families' premiums, with a clean test predicted before its ISO call; terrorism; stat codes; the blanket roll-up (chunk 9) unmoved except by the families; ISO live | ⬜ | |
-| C18-21 | **Regression**: add the chunk 18 scripts and pin the golden figures; full run CLEAN for chunks 0–18 (`--jobs 4`); `157_ --all` | ⬜ | |
-| C18-22 | **Census close**: count the six families as built in `166_` (322 → 406 of 546, 74%) | ⬜ | |
-| C18-23 | **File `CF-CHUNK18-GATE.md`** | ⬜ | 84 countrywide premium files |
+| C18-20 | **Downstream**: the policy total moves by exactly the families' premiums, with a clean test predicted before its ISO call; terrorism; stat codes; the blanket roll-up (chunk 9) unmoved except by the families; ISO live | ✅ | **Done 2026-09-29** (`190_chunk18_c18-20_downstream.py --live`). **Total T1 − T0 at ISO $2,520 = hand(T1) $3,244 − hand(T0) $724**; clean test **T2 +$2,554, predicted before its call**; terrorism 72 of 72 fields identical, none on a chunk 18 record; every other premium identical; **blanket** (chunk 9, AgreedVal No → Yes) +$38 as predicted, 119 of 123 roll-up fields identical, the 4 that move are its own Agreed Value fields; **214 stat values** (`ExposureStatAmount`) on 87 stored chunk 18 responses equal; T0–T2, B0–B1 agree live. **Found live, first run $866 off:** `ValuationType` "Functional Valuation" is a parent input (building BGI $1,923 → $2,032) **and** Functional Valuation's switch (its records price on it alone, $724); a Leased Property row prices the leased item itself ($713, chunk 11 / 19's record). Both now sit in T0. `190_` also checks the engine totals offline |
+| C18-21 | **Regression** (scope reduced 2026-09-29, user's go): add the chunk 18 scripts and pin the golden figures; run them in the runner. The full run and `157_ --all` are **carried from 2026-09-28** (115 of 115, 293 of 293, run after the last engine change, `ae81ac7`); no engine change since | ✅ | **Done 2026-09-29**. `187_` pinned ($10 / $13 / $25 / $79 / $52 / $55 / $152 / $246) and passing (full run of the day, stopped by Claude Code for low system memory at 36 of 120, all passing); `186_`, `188_`–`190_` added and **CLEAN 4 of 4** (`--only … --no-gl --jobs 2`, 20m08s) |
+| C18-22 | **Census close**: count the six families as built in `166_` (322 → 406 of 546, 74%) | ✅ | **Done 2026-09-29**. `166_` counts the six families as built: **406 of 546 countrywide premium files (74%)**, 140 left in 25 families |
+| C18-23 | **File `CF-CHUNK18-GATE.md`** | ✅ | **Done 2026-09-29**. [`CF-CHUNK18-GATE.md`](CF-CHUNK18-GATE.md): 9 of 9, 84 countrywide premium files |
