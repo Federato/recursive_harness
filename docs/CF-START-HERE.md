@@ -5,7 +5,19 @@ confirm it in two minutes, and what to pick up first.
 
 ---
 
-## Pick up here (set 2026-09-29): chunk 20 OPEN, 14 of 26
+## Pick up here (set 2026-09-29): chunk 20 OPEN, 18 of 26
+
+**2026-09-29: chunk 20 RC-3 COMPLETE (C20-15 to C20-18).** `201_chunk20_rc3.py --live`: 12 zero cases and 50 message
+cases. Every one of the 95 message rule instances is fired at its own level, and each message is compared with ISO as a
+(level, text) pair: ours from the message call's `TableName`, captured in the test; ISO's from the node carrying the
+message id. `202_chunk20_c20-17-18.py --live`: 13 guarded-vs-overwritten probes and the four cyber factors. **ISO agrees on
+everything except OI-115 (new, recorded, NOT fixed; needs the user's go):** ISO skips a blank FIRST operand of `Subtract`
+(a Fire Department charge with no limit: ISO $3, ours $0; probe with Factor 2.0: ISO $17, blank-as-zero −$17, ours $2).
+Submission facts: the CP 00 70 location message needs `UnitNumber` > 0; BI's fungus period is overwritten from the
+policy fungus record; ACP prices $0 with the building's watercraft exclusion; computed fields submitted as overrides
+must be typed as the XSD declares (ISO refuses strings). **Next: RC-4, C20-19 (all 46 states).**
+
+## Earlier (set 2026-09-29): chunk 20 OPEN, 14 of 26
 
 **2026-09-29: chunk 20 RC-2 COMPLETE (C20-06 to C20-14), `200_chunk20_rc2.py --live`: 20 golden cases, ISO 20 of 20
 agree** (every premium and message on each policy). Four things the rules do that a submitter must know: **Radioactive
