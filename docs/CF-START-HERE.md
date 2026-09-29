@@ -15,7 +15,7 @@ level), 29 name / exclusion probes, all 46 states + 27 probes (73 of 73), the do
 1,251 stat values. No engine change. Regression scoped: 6 of 6 CLEAN. **497 of 546 countrywide premium files built
 (91%).** Open: **OI-115** (ISO skips a blank first operand of `Subtract`; needs the user's go), OI-103, the VT
 empty-table question; a stale engine comment on blank comparisons; move the every-rule edition diff into the census
-template. **Next: chunk 21** (sewer backup and condo options; tasks set, `CF-CHUNK21-TASKS.md`).
+template. **Next, first: OI-115** (user's decision 2026-09-29: two ISO probes, a blank second `Subtract` operand and a blank `Divide` numerator, then the fix and the full regression). **Then chunk 21** (sewer backup and condo options; tasks set, `CF-CHUNK21-TASKS.md`).
 
 ## Earlier (set 2026-09-29): chunk 20 OPEN, 22 of 26
 
