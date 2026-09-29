@@ -5,7 +5,20 @@ confirm it in two minutes, and what to pick up first.
 
 ---
 
-## Pick up here (set 2026-09-29): chunk 20 OPEN, 18 of 26
+## Pick up here (set 2026-09-29): chunk 20 OPEN, 22 of 26
+
+**2026-09-29: chunk 20 RC-4 COMPLETE (C20-19 to C20-22), `203_chunk20_rc4.py --live`: all 46 states + 27 probes, ISO
+73 of 73** (2,050 predicted records, 11,003 premiums). Run it in batches (`--runs`), one process each: the single
+all-states run was stopped by Claude Code for low memory. Every state rewrite probed where it moves a dollar (AL / KS /
+RI plan factor 0.85; FL empties the deductible-by-location factor and ignores the Fire Department higher limit; AZ Fire
+Department off; VA volunteer fire department and Ordinance-or-Law fungus; NY no cyber factor on Mortgageholders / EB BI;
+TX Mortgageholders, NC ACP, AK / NY fungus rating steps empty). **The every-rule edition diff found 6 differences where
+the census's SetPremium-only check found 1**; ISO agrees on all 10 edition probes, including that **"50,000 > blank" is
+true at ISO as in our engine** (our config comment says a comparison with a blank is false: the comment is stale, the
+behaviour is right). **Next: RC-5, C20-23 (downstream), C20-24 (regression), C20-25 (census), C20-26 (gate).** Open:
+OI-115 (needs the user's go).
+
+## Earlier (set 2026-09-29): chunk 20 OPEN, 18 of 26
 
 **2026-09-29: chunk 20 RC-3 COMPLETE (C20-15 to C20-18).** `201_chunk20_rc3.py --live`: 12 zero cases and 50 message
 cases. Every one of the 95 message rule instances is fired at its own level, and each message is compared with ISO as a
