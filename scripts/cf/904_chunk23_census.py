@@ -304,4 +304,10 @@ def main():
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    rc = main()
+    # every rule of the family files across the four CW editions (carried from chunk 20's gate; 211_ C21-16);
+    # these families are state-only, so a CW file (if any) is diffed and the state files are listed by main()
+    print("\n" + "=" * 90 + "\nEDITIONS: EVERY RULE")
+    import _edition_rules
+    _edition_rules.report(lambda n, t: any(re.search(f[2], n) for f in FAMILIES))
+    raise SystemExit(rc)

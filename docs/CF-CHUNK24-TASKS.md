@@ -27,6 +27,8 @@ and it feeds fields that chunks 5, 9, 12 and 19's records already read (the trai
 
 **Status: TASKS SET 2026-09-28, 1 of 25** (the census). Next, once chunk 23 is gated: RC-1, C24-02.
 
+**Carried from chunk 21 (2026-09-30): the census `905_` now diffs EVERY rule of the family files across the four countrywide editions** (`scripts/cf/_edition_rules.py`, chunk 20's gate item): 31 family files: MO V02 5, V03 5 (Builders Risk premium adjustment), V04 0 rule differences from 2026 V01. The editions task must judge each one; the census's earlier "identical in all four editions" was a SetPremium-only check. Chunk 21 also found its own edition difference in a PARENT file (MO's sewer caps read `Limit`, not `LimitToUse`): diff the parent files' rules that name this chunk's records too.
+
 ---
 
 ## In plain English first

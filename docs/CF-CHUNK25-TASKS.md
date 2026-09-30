@@ -34,6 +34,8 @@ Off-Premises flood factor and WV's two Ordinance or Law flood forms (chunk 23's 
 
 **Status: TASKS SET 2026-09-28, 1 of 26** (the census). Next, once chunk 24 is gated: RC-1, C25-02.
 
+**Carried from chunk 21 (2026-09-30): the census `906_` now diffs EVERY rule of the family files across the four countrywide editions** (`scripts/cf/_edition_rules.py`, chunk 20's gate item): 8 family files: MO V02 66, V03 37, V04 5 rule differences from 2026 V01. The editions task must judge each one; the census's earlier "identical in all four editions" was a SetPremium-only check. Chunk 21 also found its own edition difference in a PARENT file (MO's sewer caps read `Limit`, not `LimitToUse`): diff the parent files' rules that name this chunk's records too.
+
 ---
 
 ## In plain English first

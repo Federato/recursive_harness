@@ -358,4 +358,9 @@ def main():
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    rc = main()
+    # every rule of the family files across the four CW editions (carried from chunk 20's gate; 211_ C21-16)
+    print("\n" + "=" * 90 + "\nEDITIONS: EVERY RULE")
+    import _edition_rules
+    _edition_rules.report(lambda n, t: any(re.search(p, n) for _, p in FAMILIES) and not EXCLUDE.search(n))
+    raise SystemExit(rc)

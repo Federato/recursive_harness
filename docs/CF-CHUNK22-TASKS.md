@@ -29,6 +29,8 @@ new live probe.
 
 **Status: TASKS SET 2026-09-28, 1 of 24** (the census). Next, once chunk 21 is gated: RC-1, C22-02.
 
+**Carried from chunk 21 (2026-09-30): the census `903_` now diffs EVERY rule of the family files across the four countrywide editions** (`scripts/cf/_edition_rules.py`, chunk 20's gate item): 19 family files: MO V02 29, V03 4, V04 0 rule differences from 2026 V01. The editions task must judge each one; the census's earlier "identical in all four editions" was a SetPremium-only check. Chunk 21 also found its own edition difference in a PARENT file (MO's sewer caps read `Limit`, not `LimitToUse`): diff the parent files' rules that name this chunk's records too.
+
 ---
 
 ## In plain English first
