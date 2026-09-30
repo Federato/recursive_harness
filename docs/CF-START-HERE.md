@@ -1,11 +1,28 @@
 # Property build — start here
 
-**Last worked 2026-09-29.** This is the resume point: where things stand, how to
+**Last worked 2026-09-30.** This is the resume point: where things stand, how to
 confirm it in two minutes, and what to pick up first.
 
 ---
 
-## Pick up here (set 2026-09-29): chunk 20 GATED; next, chunk 21
+## Pick up here (set 2026-09-30): chunk 21 GATED; next, chunk 22
+
+**Chunk 21, sewer backup and condo options, GATED 9 of 9 on 2026-09-30, 21 of 21**
+([`CF-CHUNK21-GATE.md`](CF-CHUNK21-GATE.md), tasks [`CF-CHUNK21-TASKS.md`](CF-CHUNK21-TASKS.md)): sewer backup on its
+five parents, the condo unit-owners options (loss assessment, misc. real property; RI / FL / UT forms), Florida's
+commercial units in residential condos. All 12 records ISO had never priced are ISO-confirmed, every figure predicted
+by hand first (state-aware): 26 golden cases (25 agree + OI-116), 50 zero / message cases (all 24 messages), 15 name /
+stat-code cases, all 46 states + the rewrite / FL / edition probes (61 of 61), the downstream total (+$651 / +$6,405)
+and 1,648 stat values. **No engine change.** Regression: snapshot clean (1,127 requests), full gate run CLEAN (140
+scripts, full grids, 19m20s), `157_ --all` 293 of 293. **504 of 546 countrywide premium files built (92%).** New open
+items, none blocking: **OI-116** (ISO never attaches FL's SPP special-class condo record), **OI-117** (a blank
+`Convert` refuses at ISO, we price), **OI-118** (form labels: a state's `Pages` table hides CW rows in ours); OI-103
+gained three cases. Carried to chunks 22-26: their censuses now run the every-rule edition diff
+(`scripts/cf/_edition_rules.py`); counts noted in each task list. **For live cases outside Oregon** use
+`208_`'s `payload(sub, j)` (r11 writes Oregon's scheme) and `211_`'s state-aware `rows()` / `rule()`. **Next: chunk 22**
+(multi-location: value reporting and special coinsurance; tasks set, `CF-CHUNK22-TASKS.md`).
+
+## Earlier (set 2026-09-29): chunk 20 GATED; next, chunk 21
 
 **Chunk 20, small coverages with their own tables, GATED 9 of 9 on 2026-09-29, 26 of 26**
 ([`CF-CHUNK20-GATE.md`](CF-CHUNK20-GATE.md), tasks [`CF-CHUNK20-TASKS.md`](CF-CHUNK20-TASKS.md)): Radioactive, Pier and
