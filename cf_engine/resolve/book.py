@@ -61,8 +61,20 @@ class CFResolvedBook(ResolvedBook):
         return super().table(name, kind)
 
 
+#: One book per (jurisdiction, date, version) per process (2026-09-30, regression streamlining): resolving
+#: a book scans the package tree (~0.7 s), and scripts ask for the same one per case. A book is read-only
+#: (its own table caches are lookups), and no script modifies one. A caller passing its own `resolver`
+#: is not cached.
+_BOOKS: dict[tuple, ResolvedBook] = {}
+
+
 def book_for(juris: str, asof: str, version: str | None = None,
              resolver: CFEditionResolver | None = None) -> ResolvedBook:
     """The Property rulebook in force for one jurisdiction on one date."""
-    res = (resolver or CFEditionResolver()).resolve(juris, asof, version)
-    return CFResolvedBook(res)
+    if resolver is None:
+        key = (juris, asof, version)
+        got = _BOOKS.get(key)
+        if got is None:
+            got = _BOOKS[key] = CFResolvedBook(CFEditionResolver().resolve(juris, asof, version))
+        return got
+    return CFResolvedBook(resolver.resolve(juris, asof, version))

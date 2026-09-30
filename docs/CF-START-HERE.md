@@ -13,9 +13,11 @@ Wharf, Fire Department, Tobacco, the four special-limit items, ACP, Food, Mortga
 All 28 records ISO had never priced are ISO-confirmed: 20 golden cases, 62 zero / message cases (all 95 message rules by
 level), 29 name / exclusion probes, all 46 states + 27 probes (73 of 73), the downstream total (+$977 / +$5,110) and
 1,251 stat values. No engine change. Regression scoped: 6 of 6 CLEAN. **497 of 546 countrywide premium files built
-(91%).** Open: **OI-115** (ISO skips a blank first operand of `Subtract`; needs the user's go), OI-103, the VT
-empty-table question; a stale engine comment on blank comparisons; move the every-rule edition diff into the census
-template. **Next, first: OI-115** (user's decision 2026-09-29: two ISO probes, a blank second `Subtract` operand and a blank `Divide` numerator, then the fix and the full regression). **Then chunk 21** (sewer backup and condo options; tasks set, `CF-CHUNK21-TASKS.md`).
+(91%).** **CLOSED 2026-09-30:** OI-115 probed, fixed and closed (ISO skips a single blank `Subtract` operand in either
+position; the engine now does, Property only; full regression 134 of 134), the stale blank-comparison comment fixed, the
+every-rule edition diff carried into chunk 21's C21-16. Open: OI-103 (now also chunk 19 R1, which prices at Factor 1 where ISO refuses), the VT
+empty-table question. **Regression streamlined 2026-09-30:** `104_` runs 6 at a time and samples the slow grids (`--gate` for full grids),
+`206_snapshot_regression.py --check` answers "did anything move?" over every stored ISO payload. **Next: chunk 21** (sewer backup and condo options; tasks set, `CF-CHUNK21-TASKS.md`).
 
 ## Earlier (set 2026-09-29): chunk 20 OPEN, 22 of 26
 
@@ -334,9 +336,16 @@ countrywide premium files built (59%).** Open: two more OI-103 cases; Off-Premis
 factor waits on chunk 25. **Next: chunk 18** (valuation and condition modifiers: Agreed Value,
 Inflation Guard…), easiest-first plan on `CF-BUILD-STATUS.html#remaining`.
 
-**How to run things now:** the regression runs 4 at a time (`104_ --jobs 4`, ~45 min full);
-`--quick` (golden cases + the current chunk, no GL) after each RC; every long pass prints
-`[i/n elapsed]` to `results/cf-raas/logs/`. `174_` now caches `book_for`: 612 s -> 129 s run alone,
+**How to run things now (streamlined 2026-09-30):**
+- **After any engine change, first:** `206_snapshot_regression.py --check` (~4 min): re-rates all 970 stored ISO
+  payloads and lists every premium / rate / factor / switch that moved (601,115 fields). Refresh with `--baseline`
+  after an intended change.
+- **Regular full run:** `104_` (6 at a time; the six slow exhaustive scripts run a deterministic sample of their
+  grids via `scripts/cf/_regress.py`). **At a chunk gate:** `104_ --gate` (full grids).
+- `--quick` (golden cases + the current chunk, no GL) after each RC; every long pass prints `[i/n elapsed]` to
+  `results/cf-raas/logs/`.
+- The engine now caches parsed rule files, the rule directory listing and `book_for` per process: a repeat
+  rating takes ~0.15 s (was ~2 s); the snapshot proved it identical. `174_` now caches `book_for`: 612 s -> 129 s run alone,
 output identical (2026-09-28). `178_`'s ~11 min is ~100 genuine re-ratings, not discovery.
 
 ## Earlier pick-up (set 2026-09-25): chunks 15 and 16 CLOSED; chunk 17 OPEN

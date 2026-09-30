@@ -63,6 +63,8 @@ TOTAL = "CommercialProperty[0]/ErcCalculatedTotalPremium"
 OUT = gc.OUT
 
 
+import _regress  # noqa: E402  regression-mode sampling: 104_ sets CF_REGRESSION_SAMPLE; gates run in full
+
 def blank(v):
     return v is None or (isinstance(v, str) and v.strip() == "")
 
@@ -147,7 +149,7 @@ def main():
     print("\nSTAT CODES on chunk 15 records (stored responses, strict)")
     n = values = 0
     fields = collections.Counter()
-    for rpath in sorted(OUT.glob("chunk15_rc[234]_*_response.json")):
+    for rpath in _regress.sample(sorted(OUT.glob("chunk15_rc[234]_*_response.json"))):
         tag = rpath.name[len("chunk15_"):-len("_response.json")]
         if tag.endswith("VA-OLD"):
             continue                        # the 2020 edition cannot be rated whole (OI-114)

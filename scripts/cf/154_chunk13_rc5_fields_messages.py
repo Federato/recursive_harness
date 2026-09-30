@@ -46,6 +46,8 @@ FIELD = re.compile(r"Terror|TRIA|Terrsm|CertfdActs")
 REC = re.compile(r"Terror|TRIA|Terrsm|CertfdActs|CertifiedActs|ZzDisclosure|PostTRIACoverage")
 
 
+import _regress  # noqa: E402  regression-mode sampling: 104_ sets CF_REGRESSION_SAMPLE; gates run in full
+
 def pairs():
     """(name, request, response path) for every stored chunk 13 live call."""
     for cid, (label, kw, want) in gc.CASES.items():
@@ -56,7 +58,7 @@ def pairs():
         if go:
             yield f"rc3 {cid}", r11.payload(rc3.sub(**kw)), OUT / f"chunk13_rc3_{cid}_response.json"
     res, juris = st4.states()
-    for j in juris:
+    for j in _regress.sample(juris):
         book = book_for(j, st4.ASOF, resolver=res)
         plan, _, has_fire = st4.territory_plan(book, j)
         if not plan or plan[0]["py3"] is None:
@@ -66,7 +68,7 @@ def pairs():
                          ("post-TRIA", {"tria": rc3.POST, "post": "No Exclusion"})):
             yield f"rc4 {j} {case}", state_req(j, st4.state_sub(j, p["territory"], **kw)), \
                 OUT / f"chunk13_rc4_{j}_{case}_response.json"
-    for j, group, label, sub in rw.cases():
+    for j, group, label, sub in _regress.sample(rw.cases()):
         tag = f"{j}_{group.replace(' ', '')}_{label[:10].replace(' ', '').replace(',', '')}"
         yield f"c1319 {j} {group} {label}", state_req(j, sub), OUT / f"chunk13_c1319_{tag}_response.json"
 

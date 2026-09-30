@@ -89,6 +89,8 @@ MSG_1560 = "CP 15 60 not valid with selected Coverage Type"
 MSG_1558 = "CP 15 58 not valid with selected Coverage Type"
 
 
+import _regress  # noqa: E402  regression-mode sampling: 104_ sets CF_REGRESSION_SAMPLE; gates run in full
+
 def expected(j):
     want = dict(rc2.ALL)
     for r in NOT_RATED.get(j, []):
@@ -208,7 +210,7 @@ def main():
     a = ap.parse_args()
     states = a.states.split(",") if a.states else s18.STATES + ["VA-OLD"]
     fails = []
-    for j in states:
+    for j in _regress.sample(states):
         if j == "VA-OLD":
             b, out = old_va_static(build(j))
             bad = [(r, h, 927) for r, (h, w) in out.items() if h != 927]

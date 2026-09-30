@@ -63,6 +63,8 @@ MOLT = ["MoltenMaterial", "MoltenMaterialPrsnlProp", "MoltenMaterialBusnIncome",
 SPOIL = dict(r2.SPOIL, Limit="25000")
 
 
+import _regress  # noqa: E402  regression-mode sampling: 104_ sets CF_REGRESSION_SAMPLE; gates run in full
+
 def t0():
     return tot.terror(r2.base())
 
@@ -187,7 +189,7 @@ def main():
     print("\nSTAT CODES on chunk 16 records and containers (stored responses, strict)")
     n = values = 0
     fields = collections.Counter()
-    for rpath in sorted(OUT.glob("chunk16_rc[234]_*_response.json")):
+    for rpath in _regress.sample(sorted(OUT.glob("chunk16_rc[234]_*_response.json"))):
         tag = rpath.name[len("chunk16_"):-len("_response.json")]
         req = json.loads((OUT / f"chunk16_{tag}_request.json").read_text(encoding="utf-8"))
         resp = json.loads(rpath.read_text(encoding="utf-8"))

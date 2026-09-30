@@ -71,6 +71,8 @@ FORMS = {
 }
 
 
+import _regress  # noqa: E402  regression-mode sampling: 104_ sets CF_REGRESSION_SAMPLE; gates run in full
+
 def predict(tt, cert, excl, cond, rating):
     """The 13 tests, transcribed from CW 20260601, plus the PostTRIA indicator.
 
@@ -155,7 +157,7 @@ def main():
     fails = []
     print(f"COUNTRYWIDE (OR), {len(cases)} answer combinations, run twice (no forms submitted / all 13 submitted)\n")
     rows = {}
-    for answers in cases:
+    for answers in _regress.sample(cases):
         want, want_post = predict(*answers)
         for pre in (False, True):
             try:

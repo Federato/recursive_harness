@@ -70,12 +70,29 @@ class RuleFile:
         return rf
 
 
+#: Process-wide caches (2026-09-30, regression streamlining). A rating used to
+#: re-parse every rule file it touched and ask the filesystem ~2,600 times
+#: "does this file exist?", because each `Interpreter` builds fresh `Program`s.
+#: Rule XML is never modified by the interpreter (only the data tree is), so a
+#: parsed `RuleFile` is safe to share across ratings in one process. Keyed by
+#: path; the ERC packages are read-only inputs.
+_PARSED: dict[Path, RuleFile] = {}
+_LISTING: dict[Path, frozenset] = {}
+
+
+def _listing(d: Path) -> frozenset:
+    got = _LISTING.get(d)
+    if got is None:
+        got = _LISTING[d] = frozenset(p.name for p in d.iterdir())
+    return got
+
+
 class Program:
     """Every rule in one package, loaded lazily by file.
 
     Lazily because a package holds up to 526 rule files and a rating touches a
     fraction of them; the alternative is parsing 211 MB of XML to answer one
-    question.
+    question. Parsed files and the directory listing are cached per process.
     """
 
     def __init__(self, package: Package):
@@ -92,7 +109,7 @@ class Program:
 
     def has_file(self, name: str) -> bool:
         """Does this package hold this rule file? Asked before inheriting."""
-        return (self.dir / f"{name}{_SUFFIX}").exists()
+        return f"{name}{_SUFFIX}" in _listing(self.dir)
 
     def has_rule(self, file_name: str, rule_name: str) -> bool:
         """Does this package define this rule? Override resolution is per RULE.
@@ -109,10 +126,13 @@ class Program:
     def file(self, name: str) -> RuleFile:
         if name not in self._files:
             path = self.dir / f"{name}{_SUFFIX}"
-            if not path.exists():
+            if not self.has_file(name):
                 raise InterpretError(
                     f"{self.pkg_id}: no rule file {name!r}", "§8", str(self.dir))
-            self._files[name] = RuleFile.load(path)
+            rf = _PARSED.get(path)
+            if rf is None:
+                rf = _PARSED[path] = RuleFile.load(path)
+            self._files[name] = rf
         return self._files[name]
 
     def rule(self, file_name: str, rule_name: str):

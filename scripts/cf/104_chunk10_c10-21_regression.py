@@ -36,8 +36,10 @@ Usage:
     python scripts/cf/104_chunk10_c10-21_regression.py --quick           # after each RC
     python scripts/cf/104_chunk10_c10-21_regression.py --jobs 1          # the old serial run
 
-Two tiers (2026-09-28). FULL (default): everything, 4 scripts at a time (--jobs), at every
-gate and after any engine change. QUICK (--quick): every golden case with all its pinned
+Tiers (2026-09-30). FULL (default): everything, 6 scripts at a time (--jobs), with the six slow
+exhaustive scripts running a deterministic sample of their grids (scripts/cf/_regress.py);
+--gate runs those grids in full, at every chunk gate. After an engine change, run
+206_snapshot_regression.py --check first (~4 min, every stored ISO payload re-rated). QUICK (--quick): every golden case with all its pinned
 figures + the current chunk's own scripts, no GL, after each RC. Each script is its own
 process either way; a numbered [i/n elapsed] line prints as each finishes, and the report
 below it keeps the original order and format. The serial full run had grown to ~75 min.
@@ -46,6 +48,7 @@ below it keeps the original order and format. The serial full run had grown to ~
 from __future__ import annotations
 
 import argparse
+import os
 import re
 import subprocess
 import sys
@@ -317,10 +320,15 @@ EXCLUDED = [
 ]
 
 
+#: Environment for every script. The regular FULL run sets CF_REGRESSION_SAMPLE=1 so the slow exhaustive
+#: scripts (scripts/cf/_regress.py) run a deterministic sample of their grids; --gate clears it.
+ENV = dict(os.environ)
+
+
 def run(cmd, cwd):
     t0 = time.time()
     p = subprocess.run(cmd, cwd=str(cwd), capture_output=True, text=True,
-                       encoding="utf-8", errors="replace")
+                       encoding="utf-8", errors="replace", env=ENV)
     return p.returncode, (p.stdout or "") + (p.stderr or ""), time.time() - t0
 
 
@@ -434,9 +442,13 @@ def main():
                     help="run only scripts whose filename starts with these")
     ap.add_argument("--no-gl", action="store_true",
                     help="skip the 16 General Liability suites")
-    ap.add_argument("--jobs", type=int, default=4,
-                    help="scripts run at once (default 4; 1 = the old serial run). Each script is its "
-                         "own process; 4 fits comfortably in memory on the 16 GB dev machine")
+    ap.add_argument("--jobs", type=int, default=6,
+                    help="scripts run at once (default 6; 1 = the old serial run). Each script is its "
+                         "own process, 180-470 MB each measured 2026-09-30; 6 fits in the 16 GB dev machine, "
+                         "8 risks swapping on the heaviest scripts")
+    ap.add_argument("--gate", action="store_true",
+                    help="chunk gate: the slow exhaustive scripts run their FULL grids (no sampling). "
+                         "Without it they run a deterministic sample (scripts/cf/_regress.py)")
     ap.add_argument("--quick", action="store_true",
                     help="quick tier: every golden case (all pinned figures) + the current chunk's own "
                          "scripts, no GL -- after each RC. The full run is for gates and engine changes")
@@ -448,7 +460,11 @@ def main():
         return selftest()
 
     jobs = jobs_for(a)
-    tier = "QUICK tier" if a.quick else "FULL run"
+    if a.gate:
+        ENV.pop("CF_REGRESSION_SAMPLE", None)
+    else:
+        ENV["CF_REGRESSION_SAMPLE"] = "1"
+    tier = ("QUICK tier" if a.quick else "FULL run") + (", gate: full grids" if a.gate else ", slow grids sampled")
     print(f"Regression -- chunks 0-{max(c for _, c, _, _ in GOLDEN)} and the General Liability suites "
           f"({tier}, {len(jobs)} scripts, {a.jobs} at a time)")
     print("=" * 78)

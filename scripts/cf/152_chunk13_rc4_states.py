@@ -60,6 +60,8 @@ KEYCOL = {"TerrorismTerritoryTier": "StateCode", "TerrorismLossCost": "StateCode
           "TerrorismFireExcptnFactor": "StateCode"}
 
 
+import _regress  # noqa: E402  regression-mode sampling: 104_ sets CF_REGRESSION_SAMPLE; gates run in full
+
 def q(x, places):
     return Decimal(str(x)).quantize(Decimal(1).scaleb(-places), rounding=ROUND_HALF_UP)
 
@@ -219,7 +221,7 @@ def main():
     tally = collections.Counter()
     diverge = collections.defaultdict(list)
     live_cases = []
-    for j in juris:
+    for j in _regress.sample(juris):
         book, plan, has_fire = plans[j]
         rw = rewrites(book, j)
         fire_953 = il0953_uses_fire(book)
