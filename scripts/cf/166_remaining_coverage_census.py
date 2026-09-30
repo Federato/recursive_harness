@@ -139,6 +139,9 @@ CLOSED = {
     "Radioactive Contamination", "Pier and Wharf", "Fire Department Service Charge", "Tobacco Sales Warehouses",
     "Special Cause of Loss (furs, jewelry, patterns, stamps)", "Additional Covered Property", "Food Contamination",
     "Mortgageholders E&O", "Fungus, Wet Rot, Dry Rot changes", "Equipment Breakdown",
+    # chunk 21 (census closed 2026-09-30, C21-20): sewer backup and the condo unit-owners options, 7 CW files
+    # (FL's 5 state-only condo files are not in this countrywide count)
+    "Sewer / drain backup", "Condo Unit-Owners Optional Coverages",
 }
 
 

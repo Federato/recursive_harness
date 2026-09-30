@@ -174,6 +174,14 @@ GOLDEN = [
     ("200_chunk20_rc2.py", 20,
      "small coverages with their own tables: Fire Department, Tobacco, Mortgageholders, Fungus, Special COL, Radioactive, Pier, ACP, Food, EB",
      ["85", "173", "23", "606", "25", "159", "321", "44"]),
+    # Chunk 21 (C21-19, 2026-09-30). Each derived by hand before the run and matched by ISO live: sewer building /
+    # PP (borrowed factor) / special class / BI at 25,000 $167 / $164 / $17 (SW1), PP alone $170 (SW3), the limits case
+    # $332 / $68 / $197 / $69 / $28 (SW4), loss assessment Over 10,000 = 25,000 with sub-limit 14,000 $26 (LA4), misc.
+    # real property 50,000 with a 1,000 deductible $223 (MR2), FL condo building record $244 (one rounding, FC2),
+    # FL SPP special class $293 (FC5: ours; ISO never attaches it, OI-116).
+    ("208_chunk21_rc2.py", 21,
+     "sewer backup, condo unit-owners options (loss assessment, misc. real property), FL commercial units in residential condos",
+     ["167", "164", "17", "170", "332", "68", "197", "69", "28", "26", "223", "244", "293"]),
 ]
 
 # The machinery each chunk added -- run whenever shared code changes, which is
@@ -296,6 +304,12 @@ MACHINERY = [
     ("203_chunk20_rc4.py --no-editions --runs OR,AL,FL,NY,VA,MO,NC,P-pip-AL,P-FL-fd,P-VA-vol,E-FD-MA,E-FU-MO,E-MO",
      "chunk 20 RC-4: a state sample, the rewrite and edition probes, as derived"),
     ("204_chunk20_c20-23_downstream.py", "chunk 20 RC-5: total +$977 / +$5,110; blanket roll-up moves only on radioactive"),
+    # Chunk 21 (2026-09-30). Engine-only runs (no --live): each asserts its own predictions and exits 1 on any miss.
+    ("207_chunk21_rc1.py", "chunk 21 RC-1: switches flipped, borrowed values and loss assessment by hand (66 cases), tables, 46 states"),
+    ("209_chunk21_c21-10-11.py", "chunk 21 RC-3: 11 zero cases + 39 message cases, as derived (OI-103 / OI-117 refusals pinned)"),
+    ("210_chunk21_c21-12-13.py", "chunk 21 RC-3: shared names (submitted values), no cyber, the options container's stat codes"),
+    ("211_chunk21_c21-14-17.py", "chunk 21 RC-4: the state rewrites, FL sewer, MO's edition caps, all 46 states, state-aware"),
+    ("212_chunk21_c21-18_downstream.py", "chunk 21 RC-5: total +$651 / +$6,405; terrorism untouched"),
 ]
 
 # Excluded on purpose, each with a reason -- no silent narrowing of scope.
