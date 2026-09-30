@@ -732,9 +732,26 @@ def _product(ip, el, fr):
 
 @node("Subtract")
 def _subtract(ip, el, fr):
+    """First operand minus the second.
+
+    **A single null operand is skipped, as ISO does (OI-115), under
+    `propagate`,** and the other operand is returned as it is, not negated:
+    ISO prices `Subtract(<no limit>, 1,000)` as 1,000 (chunk 20 Z2b: $17, not
+    -$17) and `Subtract(1,065, <no prior premium>)` as 1,065 (205_ probe),
+    both confirmed live. Two null operands are still null. Every skip is noted
+    (`subtract-null-skipped`) and listed in `ip.null_skips`, like `Product`'s
+    (OI-110). Other modes are unchanged.
+    """
     a, b = _two(el, ip)
-    return (ip.num(ip.eval(a, fr), ip.where(el))
-            - ip.num(ip.eval(b, fr), ip.where(el)))
+    va, vb = ip.eval(a, fr), ip.eval(b, fr)
+    if getattr(ip, "product_skips_null", False) and (va is None) != (vb is None):
+        blank, kept = (a, vb) if va is None else (b, va)
+        ip.null_skips.append(ip.where(blank))
+        ip.note("subtract-null-skipped",
+                f"Subtract left out a null {ip.tag(blank)} operand and kept the "
+                f"other as it is, as ISO does (OI-115)", "Subtract")
+        return ip.num(kept, ip.where(el))
+    return ip.num(va, ip.where(el)) - ip.num(vb, ip.where(el))
 
 
 @node("Divide")

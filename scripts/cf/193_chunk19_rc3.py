@@ -322,10 +322,16 @@ def cases():
         "M11c": ("C19-14", "RI", "RI: Public Institutional Plan, contents and tenants' at 80%", pip("RI", True), {},
                  [MSG["pip"], MSG["pipri"]], []),
         "M12": ("C19-14", "NY", "NY: Entirely Metal sign described as a wood billboard", m12, {}, [MSG["ny"]], []),
-        # predicted: ISO REFUSES (no factor row for the contents type) and our engine prices $0 with the type
-        # message -- the OI-103 shape (found by M4's first live run)
+        # predicted: ISO REFUSES (no factor row for the contents type) -- the OI-103 shape (found by M4's first
+        # live run). Ours: BaseFactor is blank (no row), and since OI-115 (2026-09-30) Property's Subtract skips a
+        # blank operand as ISO does, so Factor = Round(blank - 1) = 1 and the four records price at the contents'
+        # own rate (was $0 before OI-115). ISO never reaches that Subtract: it refuses at the lookup. OI-103.
         "R1": ("C19-13", "OR", "Manufacturers on chunk 7's contents type 'Personal Property' (no factor row)",
-               g.mc("Personal Property"), zc(g.MC_RECS), [MSG["9902type"]], []),
+               g.mc("Personal Property"),
+               {r: (Decimal({"BasicGroupI": 198, "BasicGroupII": 21, "Earthquake": 8, "Special": 123}[k]) if k != "Broad" else ZERO)
+                for r in g.MC_RECS for k in ("BasicGroupI", "BasicGroupII", "Broad", "Earthquake", "Special")
+                if r.endswith(f"Assumption{k}Coverage")},
+               [MSG["9902type"]], []),
     }
 
 #: cases where ISO is predicted to refuse the policy: the refusal must name this table

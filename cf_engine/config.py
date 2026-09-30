@@ -77,10 +77,18 @@ ROUNDING = "ROUND_HALF_UP"
 #:              state-to-countrywide fallback idiom, because `Round(miss)`
 #:              becomes a perfectly good 0 that `FirstNonNull` accepts, so the
 #:              countrywide row is never read.
-#:   propagate  arithmetic with a null operand yields NULL; a comparison with
-#:              one yields false. New York returns **$396 -- exactly ISO's
-#:              figure** -- and the fallback idiom survives, because a null
-#:              still lets `FirstNonNull` fall through.
+#:   propagate  a null stays null through arithmetic unless the node skips it.
+#:              New York returns **$396 -- exactly ISO's figure** -- and the
+#:              fallback idiom survives, because a null still lets
+#:              `FirstNonNull` fall through.
+#:
+#: What `propagate` does today, each point confirmed against ISO live:
+#: `Sum` and `Product` leave a null operand out (OI-110); `Subtract` leaves a
+#: single null operand out and returns the other as it is (OI-115, 2026-09-30:
+#: blank - 1,000 = 1,000 and 1,065 - blank = 1,065); `Divide` with a null
+#: numerator is null (OI-110's $3 probe). A comparison with a null is NOT
+#: simply false: "50,000 > blank" is true, in the engine and at ISO (chunk 20
+#: C20-21, Fire Department). The paragraph above records the original choice.
 #:
 #: Measured blast radius of `propagate`: **nothing else moved.** Twelve General
 #: Liability suites green under it, including the ones that compare against

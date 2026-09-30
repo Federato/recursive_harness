@@ -26,7 +26,7 @@ runs after each RC, the full one at the gate.
 **Order.** After chunk 19. Nothing in chunk 20 reads chunk 18 or 19's records. It does read
 chunk 9 (blanket averages), chunk 4's Contents Special rate and chunk 17's Watercraft tables.
 
-**Status: GATED 2026-09-29, 26 of 26, 9 of 9** ([`CF-CHUNK20-GATE.md`](CF-CHUNK20-GATE.md)). Was: OPEN, 22 of 26 (RC-1 complete 2026-09-29, `199_chunk20_rc1.py`; RC-2 complete 2026-09-29, `200_chunk20_rc2.py --live`, 20 of 20 agree; RC-3 complete 2026-09-29, `201_` 62 cases and `202_` 16 cases, ISO agrees on all but the two recorded OI-115 cases; RC-4 complete 2026-09-29, `203_chunk20_rc4.py`, all 46 states + 27 probes, ISO 73 of 73). RC-5 complete 2026-09-29.
+**Status: CLOSED 2026-09-30. GATED 2026-09-29, 26 of 26, 9 of 9** ([`CF-CHUNK20-GATE.md`](CF-CHUNK20-GATE.md)); its one engine difference, **OI-115, fixed and closed 2026-09-30** (C20-15's Z2 / Z2b now agree live), the stale comment fixed, the census gap carried to C21-16. Was: OPEN, 22 of 26 (RC-1 complete 2026-09-29, `199_chunk20_rc1.py`; RC-2 complete 2026-09-29, `200_chunk20_rc2.py --live`, 20 of 20 agree; RC-3 complete 2026-09-29, `201_` 62 cases and `202_` 16 cases, ISO agrees on all but the two recorded OI-115 cases; RC-4 complete 2026-09-29, `203_chunk20_rc4.py`, all 46 states + 27 probes, ISO 73 of 73). RC-5 complete 2026-09-29.
 
 ---
 

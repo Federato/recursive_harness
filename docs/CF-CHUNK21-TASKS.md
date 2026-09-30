@@ -121,7 +121,7 @@ names the unit-owners form, so **26 are this chunk's**.
 |---|---|---|---|
 | C21-14 | **The condo rewrites**: AL KS RI `SetPremium`; KS NY loss-assessment rate rules; FL sub-limit rules and validation; RI CP 04 20, FL CP 04 21, UT CP 04 22 with CP 00 18 / 17 98; GA and UT's change forms; each predicted from the state's own rule and tables; ISO live | ⬜ | |
 | C21-15 | **Florida's sewer**: FL's own rate and all eight tables on the five parents; ISO live | ⬜ | |
-| C21-16 | **Editions**: all premium rules identical in the four editions; one probe each on MO (2023 V02), a V03 and a V04 state | ⬜ | gate 8 |
+| C21-16 | **Editions**: all premium rules identical in the four editions; one probe each on MO (2023 V02), a V03 and a V04 state. **Carried from chunk 20's gate (2026-09-30): diff EVERY rule of each family file across the four editions, not just `SetPremium`** (chunk 20's every-rule diff in `203_` found 6 differences where the census's SetPremium-only check found 1; chunk 21's census `902_` ran SetPremium-only), and move that diff into the census template for chunks 22-27 | ⬜ | gate 8 |
 | C21-17 | **All 46 states**: every family on every state's own package, with each state's own condo form, predicted per state; ISO live | ⬜ | gate 3 |
 
 ### RC-5 · Confirmation and close-out (4 tasks)

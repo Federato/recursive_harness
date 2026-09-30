@@ -443,6 +443,33 @@ def group_b() -> None:
           and any(t.kind == "product-null-skipped" for t in ip.trace),
           f"got {got!r}, skipped {ip.null_skips}")
 
+    # OI-115: ISO skips a single null operand of Subtract and keeps the other
+    # as it is. <null> - 1000 = 1000 (not -1000); 1065 - <null> = 1065.
+    ip = Fake(null_arithmetic="propagate")
+    ip.product_skips_null = True
+    got, _, ip = run('<rul:Subtract><rul:Value Type="decimal" FromDataDef="Missing"/>'
+                     '<rul:Constant Type="decimal">1000</rul:Constant></rul:Subtract>', ip=ip)
+    check("B32 Subtract skips a null FIRST operand, keeps the other un-negated (OI-115)",
+          str(got) == "1000" and len(ip.null_skips) == 1
+          and any(t.kind == "subtract-null-skipped" for t in ip.trace),
+          f"got {got!r}, skipped {ip.null_skips}")
+    ip = Fake(null_arithmetic="propagate")
+    ip.product_skips_null = True
+    got, _, ip = run('<rul:Subtract><rul:Constant Type="decimal">1065</rul:Constant>'
+                     '<rul:Value Type="decimal" FromDataDef="Missing"/></rul:Subtract>', ip=ip)
+    check("B33 Subtract skips a null SECOND operand (OI-115)",
+          str(got) == "1065" and len(ip.null_skips) == 1, f"got {got!r}")
+    # With the flag off (General Liability) nothing changes: the null still
+    # reaches arithmetic and propagates or refuses as before.
+    ip = Fake(null_arithmetic="propagate")
+    try:
+        got, _, ip = run('<rul:Subtract><rul:Value Type="decimal" FromDataDef="Missing"/>'
+                         '<rul:Constant Type="decimal">1000</rul:Constant></rul:Subtract>', ip=ip)
+        off_ok = got is None and not ip.null_skips
+    except Exception:
+        off_ok = not ip.null_skips
+    check("B34 Subtract is unchanged with the skip flag off (GL)", off_ok, "no skip recorded")
+
     # The substring trap: `PremiumIndicator` is a 0/1 flag, not money, and
     # guarding it by name-contains would refuse ordinary content.
     _, root, _ = run(NULL_PREMIUM.format(to="PremiumIndicator"),

@@ -11,8 +11,8 @@ the same text raised at five levels is five separate checks. --live compares eve
 
 C20-15  ZERO CASES (read from the rules, 2026-09-29)
   Z1  Fire Department at the base limit (1,000)          -> $0 ((1,000 - 1,000) / 100)
-  Z2  Fire Department, limit blank                       -> ours $0; ISO $3: OI-115 (ISO skips a blank first operand
-      of Subtract: (blank - 1,000) = 1,000). Z2b the same with Factor 2.0: skip $17 (ISO), blank-as-zero -$17, ours $2 (2.0 x the modifiers)
+  Z2  Fire Department, limit blank                       -> $3, ISO $3 (OI-115, fixed 2026-09-30: ISO skips a blank first operand
+      of Subtract: (blank - 1,000) = 1,000). Z2b the same with Factor 2.0: $17 at ISO and ours (blank-as-zero would be -$17)
   Z3  Tobacco, the contents on the ordinary form         -> switched off, $0
   Z4  Mortgageholders, 0 mortgages                       -> every layer 0, $0
   Z5  EB BI records with NO building EB record           -> occupancy group 0 -> loss cost 0 -> $0
@@ -342,9 +342,9 @@ def cases():
     return {
         # ---------------------------------------------------------- C20-15
         "Z1": ("C20-15", "OR", "Fire Department at the base limit 1,000", z_fire("1000"), zc(["LocationFireDepartmentCharge"]), [], [("L", T["fdform"])]),
-        "Z2": ("C20-15", "OR", "Fire Department, limit blank", z_fire(None), zc(["LocationFireDepartmentCharge"]), [], []),
+        "Z2": ("C20-15", "OR", "Fire Department, limit blank (OI-115, fixed: blank - 1,000 = 1,000)", z_fire(None), {"LocationFireDepartmentCharge": Decimal(3)}, [], []),
         "Z2b": ("C20-15", "OR", "Fire Department, limit blank, Factor 2.0 submitted (the OI-115 probe)", z_fire(None, "2.0"),
-                {"LocationFireDepartmentCharge": Decimal(2)}, [], []),
+                {"LocationFireDepartmentCharge": Decimal(17)}, [], []),
         "Z3": ("C20-15", "OR", "Tobacco on the ordinary contents form",
                with_(base, lambda s: put(s, "PersonalPropertyTobaccoSalesWarehousesCoverage")), zc(["PersonalPropertyTobaccoSalesWarehousesCoverage"]), [], []),
         "Z4": ("C20-15", "OR", "Mortgageholders, 0 mortgages (location numbered 1)", unit(m.mortgage(0, "25,000")), zc([m.MORT]), [("L", T["locnv"])], []),
@@ -500,7 +500,9 @@ def cases():
 #: readings give $0 (propagate, ours) and the negative figure (blank as zero), so the probe can disagree.
 #: (record, ISO under the skip reading, ours): ours is the product of the REMAINING operands (Product skips the
 #: blank Divide, OI-110), i.e. Factor x the modifiers: 0.4 rounds to $0, 2.0 to $2.
-KNOWN = {"Z2": ("LocationFireDepartmentCharge", Decimal(3), Decimal(0)), "Z2b": ("LocationFireDepartmentCharge", Decimal(17), Decimal(2))}
+#: OI-115 CLOSED 2026-09-30 (user's go, 205_oi115_probes.py): Property's Subtract now skips a single blank
+#: operand as ISO does, so Z2 / Z2b are ordinary agree cases ($3, $17). Nothing is pinned as known any more.
+KNOWN = {}
 
 
 # ------------------------------------------------------------------- run
