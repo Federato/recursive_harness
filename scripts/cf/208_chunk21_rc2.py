@@ -41,6 +41,20 @@ C21-08 Miscellaneous real property: Rate 0.528 (MiscRealPropRate, key "Y", no ca
   at LossAssessmentRate (keys CW, blank, cause) while ours prices it $0. MRZ pins that (OI-103), found
   2026-09-30 when MR1-MR6 were first sent without the "0".
 
+C21-09 Florida, Commercial Units in Residential Condominiums (FL's own five records, on 189_'s portable FL
+  policy): Premium = round0(ManualPremium x IRPM x package mod), ONE rounding, no multi-premium credit
+  (the stepwise reading gives 245 for 250; the credit reading gives 88 for 100). The three CPP records
+  price only on their CovForm / CovType + PolicyType "Commercial Property Policy"; the two SPP records are
+  ISO auto-attach forms (CovForm unit owners + PolicyType SPP + class 0331-0343 / ItemsBelongToResidentialCondo).
+  The CPP special-class record declares ManualPremium as TEXT (its rule converts it); it is sent as text.
+  FC1  occupancy, unit owners form, 100          FC2  building, Condominium Association, 250
+  FC3  special class, unit owners form, 175      FC4  SPP occupancy, class 0331, 100
+  FC5  SPP special class, ItemsBelongToResidentialCondo Yes, 300
+  FC6  occupancy record on the policy's own form (gate not met): $0 / priced
+  The Florida cases drop every earthquake input (FL files EQ classes like "1C", not the portable "A1":
+  OI-103) and use FL_SC for the special class (FL files no "Towers - Broadcasting Antennas").
+  FC5 is a KNOWN difference (OI-116, 2026-09-30): ISO never attaches the SPP special-class record.
+
     python scripts/cf/208_chunk21_rc2.py [--live] [--cases SW1,SW5]
 
 Progress streams as [i/n elapsed] lines. Exits 1 on any disagreement.
@@ -70,7 +84,7 @@ r2, g19, rc1, r16 = h21.r2, h21.g19, h21.rc1, h21.r16
 gc, rep, cmp, r11 = r2.gc, r2.rep, r2.cmp, r2.r11
 P, SEWER, NWP = h21.P, h21.SEWER, h21.NWP
 same = r2.same
-r11.NUMERIC |= {"DischargeLimitPD", "DischargeLimitBI",                 # xs:int in the DataDef XSD
+r11.NUMERIC |= {"DischargeLimitPD", "DischargeLimitBI", "ManualPremium",  # xs:int / xs:decimal in the XSD
                 "LossAssessmentLimitOver10000", "LossAssessmentSubLimit", "MiscRealPropLimit"}
 LA, MRP, OPT = h21.LA, h21.MRP, h21.OPT
 cen20 = import_module("901_chunk20_census")
@@ -79,6 +93,8 @@ BLDG, PP, SC, BI, SCBI = SEWER
 #: OI-103 (a SingleResult lookup with no row): ISO refuses where the engine rates. A refusal naming this
 #: table is the EXPECTED live result for these cases, pinned as evidence; the decision stays with chunk 28.
 EXPECT_REFUSAL = {"MRZ": "LossAssessmentRate"}
+#: known ISO differences, pinned: the case prints its differences and does not fail the run.
+KNOWN_DIFF = {"FC5": "OI-116: ISO never attaches FL's SPP special-class condo record; ours prices it"}
 
 
 def progress(i, n, what):
@@ -147,6 +163,87 @@ def mrp_by_hand(node):
     return p
 
 
+FLR = "ChangesCommercialUnitsInResidentialCondominiumsIncludingOptionForAddlCoveredProperty"
+FLSPP = "ChangesCommercialUnitsInResidentialCondosIncludingOptionForAddlCoveredPropertySPP"
+FL_RECS = {FLR + "OccupClass", FLR, FLR + "SpecClass", FLSPP + "OccupClass", FLSPP + "SpecClass"}
+TEXT_MANUAL = P + FLR + "SpecClass"                   # ManualPremium declared xs:string on this record only
+UO = "Condominium Commercial Unit Owners Coverage"
+FL_SC = import_module("177_chunk16_rc4").FL_SC     # FL files no "Towers - Broadcasting Antennas" (C15-16)
+
+
+def no_eq(o):
+    """drop every earthquake input: the portable policy's EQ class "A1" is not one Florida files (FL's
+    BldgHeightFactor keys EQ classes like "1C"; ISO refuses, ours rates: OI-103, logged at chunk 17's gate).
+    The Florida condo records read nothing from earthquake."""
+    if isinstance(o, dict):
+        for k in [k for k in o if k.startswith("EQ")]:
+            del o[k]
+        for v in o.values():
+            no_eq(v)
+    elif isinstance(o, list):
+        for v in o:
+            no_eq(v)
+    return o
+
+
+def florida(rec, manual, gate=True):
+    def b():
+        sub = no_eq(g19.with_cause(g19.portable("FL"), "Special"))
+        at = rc1.node_dicts(sub)
+        at[P + "SpecialClass"]["ClassDescription"] = FL_SC
+        spp = "SPP" in rec
+        at[P]["PolicyType"] = "Standard Property Policy" if spp else "Commercial Property Policy"
+        if gate:
+            if rec.endswith("OccupClass"):
+                at[P + "OccupClass"]["CovForm"] = UO
+                if spp:
+                    at[P + "OccupClass"]["ClassCode"] = "0331"
+            elif rec.endswith("SpecClass"):
+                at[P + "SpecialClass"]["CovForm"] = UO
+                if spp:
+                    at[P + "SpecialClass"]["ItemsBelongToResidentialCondo"] = "Yes"
+            else:
+                at[P + "Structure"]["CovType"] = "Condominium Association"
+        r2.put(sub, rec, {"ManualPremium": str(manual)}, state="FL")
+        return sub
+    return b
+
+
+def fl_by_hand(node, rec):
+    depth = 8 if rec.endswith("OccupClass") else 6
+    cp = h21.up(node, depth)
+    par = node.parent.parent
+    gate = True
+    if "SPP" not in rec:
+        gate = (h21.val(par, "CovType") == "Condominium Association" if rec == FLR else h21.val(par, "CovForm") == UO)             and h21.val(cp, "PolicyType") == "Commercial Property Policy"
+    if not gate:
+        return Decimal(0)
+    return h21.r(Decimal(h21.val(node, "ManualPremium") or 0) * Decimal(h21.val(cp, "IRPMFactor") or 0)
+                 * Decimal(h21.val(cp, "PackageModFactor") or 0), 0)
+
+
+def payload(sub, j="OR"):
+    """r11's payload, re-keyed to state `j` (r11 writes Oregon's State and ProductName: one request prices one
+    state's scheme, so a Florida policy under Oregon's product is priced, or refused, on Oregon's tables)."""
+    req = r11.payload(sub)
+    if j != "OR":
+        for cp in req["body"]["CommercialProperty"]:
+            cp["State"] = j
+        req["body"]["SchemeKeys"]["ProductName"] = r11.PRODUCT.format(state=j)
+
+    def fix(o, k=None):
+        if isinstance(o, dict):
+            if k == TEXT_MANUAL and "ManualPremium" in o:
+                o["ManualPremium"] = str(o["ManualPremium"])
+            for kk, v in o.items():
+                fix(v, kk)
+        elif isinstance(o, list):
+            for v in o:
+                fix(v, k)
+    fix(req)
+    return req
+
+
 def sewer(limits, deds=None, nwp=False):
     """limits: {record: limit}; deds: {parent short name: deductible}; nwp: the No Waiting Period endorsement
     on both BI parents."""
@@ -196,6 +293,15 @@ def cases():
         "MR4": ("C21-08", "50,000, Special, deductible 2,500", mrp("50000", "Special", "2,500"), [MRP]),
         "MR5": ("C21-08", "20,000, Special, deductible Not Applicable", mrp("20000", "Special", "Not Applicable"), [MRP]),
         "MR6": ("C21-08", "50,000, Basic, deductible 1,000 (= MR2)", mrp("50000", "Basic", "1,000"), [MRP]),
+        "FC1": ("C21-09", "FL occupancy, unit owners form, manual 100", florida(FLR + "OccupClass", 100), [FLR + "OccupClass"], "FL"),
+        "FC2": ("C21-09", "FL building, Condominium Association, manual 250 (one rounding: 244)", florida(FLR, 250), [FLR], "FL"),
+        "FC3": ("C21-09", "FL special class, unit owners form, manual 175 (sent as text)", florida(FLR + "SpecClass", 175),
+                [FLR + "SpecClass"], "FL"),
+        "FC4": ("C21-09", "FL SPP occupancy, class 0331, manual 100", florida(FLSPP + "OccupClass", 100), [FLSPP + "OccupClass"], "FL"),
+        "FC5": ("C21-09", "FL SPP special class, items belong to a residential condo, manual 300",
+                florida(FLSPP + "SpecClass", 300), [FLSPP + "SpecClass"], "FL"),
+        "FC6": ("C21-09", "FL occupancy on the policy's own form: gate not met, $0", florida(FLR + "OccupClass", 100, gate=False),
+                [FLR + "OccupClass"], "FL"),
         "MRZ": ("C21-08", "OI-103: MR1 with the loss assessment limit BLANK (ISO refuses; ours $0)",
                 mrp("20000", "Special", la_limit=None), [MRP]),
     }
@@ -203,10 +309,13 @@ def cases():
 
 def predict(data, rec):
     """[(hand model, SetPremium evaluator, engine)] per node of `rec`."""
-    body = cen20.set_premium((r2.CW / "Rules" / f"{P}{rec}Rules.Rule.xml").read_text(encoding="utf-8-sig"))
+    pkg = h21.FLPKG if rec in FL_RECS else r2.CW
+    body = cen20.set_premium((pkg / "Rules" / f"{P}{rec}Rules.Rule.xml").read_text(encoding="utf-8-sig"))
     out = []
     for node in rc1.find(data, P + rec):
-        if rec == MRP:
+        if rec in FL_RECS:
+            hand = fl_by_hand(node, rec)
+        elif rec == MRP:
             hand = mrp_by_hand(node)
         elif rec == LA:
             cont = {c.tag: c.text for c in node.parent.children if c.text not in (None, "") and not c.children}
@@ -230,10 +339,11 @@ def main():
     if a.cases:
         cs = {k: v for k, v in cs.items() if k in a.cases.split(",")}
     preds = {}
-    for i, (cid, (task, label, build, recs)) in enumerate(cs.items(), 1):
+    for i, (cid, (task, label, build, recs, *jj)) in enumerate(cs.items(), 1):
+        j = jj[0] if jj else "OR"
         progress(i, len(cs), f"engine {cid}")
         try:
-            data, ip = gc.run(build(), "OR")
+            data, ip = gc.run(build(), j)
         except InterpretError as exc:
             print(f"{cid} {task} {label}: RAISED {str(exc)[:150]}")
             FAIL.append(cid)
@@ -248,7 +358,7 @@ def main():
             lines.append(f"      {'ok  ' if ok else 'FAIL'} {r16.short(rec)[-44:]:44s} predicted {[str(h) for h, _, _ in res]}"
                          f" evaluator {[str(ev) for _, ev, _ in res]} engine {[e for _, _, e in res]}")
         msgs = sorted({str(x)[:90] for x in ip.messages if re.search("Loss Assessment|SubLimit|multiple", str(x))})
-        print(f"{cid} {task} OR {label}: engine {'as predicted' if not bad else 'DIFFERS'}"
+        print(f"{cid} {task} {j} {label}: engine {'as predicted' if not bad else 'DIFFERS'}"
               + (f"  messages {msgs}" if msgs else ""))
         print("\n".join(lines))
         if bad:
@@ -258,9 +368,9 @@ def main():
         import raas as raas_mod
         client = raas_mod.RaaS()
         print("\nISO live at 2026-09-17 (predicted records, every premium field for field, messages):")
-        for i, (cid, (task, label, build, recs)) in enumerate(cs.items(), 1):
+        for i, (cid, (task, label, build, recs, *jj)) in enumerate(cs.items(), 1):
             progress(i, len(cs), f"ISO {cid}")
-            req = r11.payload(build())
+            req = payload(build(), jj[0] if jj else "OR")
             (gc.OUT / f"chunk21_rc2_{cid}_request.json").write_text(json.dumps(req, indent=2), encoding="utf-8")
             try:
                 resp = client.rate(req)
@@ -290,10 +400,12 @@ def main():
                   + "".join(f"\n        predicted {r16.short(r)[-50:]}: ISO {x}, derived {w}" for r, x, w in pbad[:6])
                   + "".join(f"\n        {k[-90:]} ISO {v} ours {o}" for k, v, o in d[:5])
                   + (f"\n        ISO only {sorted(mi - mo)[:3]}\n        ours only {sorted(mo - mi)[:3]}" if mi != mo else ""))
-            if not ok:
+            if not ok and cid in KNOWN_DIFF:
+                print(f"        KNOWN DIFFERENCE ({KNOWN_DIFF[cid]})")
+            elif not ok:
                 FAIL.append(f"{cid} live")
     m, s = divmod(int(time.monotonic() - T0), 60)
-    print(f"\nRC-2 (C21-06..C21-08): {'ALL AGREE' if not FAIL else 'FAILED: ' + ', '.join(FAIL)}  ({m}m{s:02d}s)")
+    print(f"\nRC-2 (C21-06..C21-09): {'ALL AGREE' if not FAIL else 'FAILED: ' + ', '.join(FAIL)}  ({m}m{s:02d}s)")
     return 1 if FAIL else 0
 
 
