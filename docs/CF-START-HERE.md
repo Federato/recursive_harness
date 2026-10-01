@@ -11,7 +11,11 @@ page and the deployed page agree with them; on drift it hands the problems back 
 
 ---
 
-## Pick up here (set 2026-10-01): chunk 23 OPEN, RC-4 done; next RC-5
+## Pick up here (set 2026-10-01): chunk 23 GATED; next, chunk 24
+
+**Chunk 23 GATED 2026-10-01, 9 of 9, 22 of 22** ([`CF-CHUNK23-GATE.md`](CF-CHUNK23-GATE.md)). RC-5 (`scripts/cf/223_chunk23_c23-19_downstream.py --live`): with each state family removed and restored, the policy total moves by exactly the family's premiums (+$192 / +$31 / +$806 / +$3,908 on the fuller policies, +$234 / +$31 / +$1,360 / +$3,902 on the golden ones), predicted before each call and **equal at ISO**; nothing else moves. Gate checks (no engine change): `206_ --check` clean, `157_ --all` 293 of 293, chunk 23 scripts registered in `104_` and clean. **520 of 546** countrywide files; the state-only list closed except WV's two flood files (chunk 25). Open: OI-120 (old editions only). **Next: chunk 24 (Builders Risk), tasks set, `CF-CHUNK24-TASKS.md`.**
+
+## Earlier (set 2026-10-01): chunk 23 RC-4 done
 
 **Chunk 23 RC-4 done 2026-10-01** (`scripts/cf/222_chunk23_rc4.py --live`): every family on a fuller state policy (MA two locations, AK an ordinary second building, CA two buildings, VA three forms on three buildings) **agrees with ISO**; the state-only list is closed (80 files, none unassigned; no in-force premium writer outside `SetPremium`, so 520 of 546 stands); the old packages: MA 2022 relocation prices nothing, but **AK 2020 and VA 2021 DO price, inside `ErcRate`** (the census's "no premium rule" was a SetPremium-only test). **OI-120 (new): pre-2022-10 policies cannot rate in our engine** (a `Null` inside a 2020 countrywide condition); old editions only. No engine change. 18 of 22. **Next: RC-5, C23-19 (downstream).**
 

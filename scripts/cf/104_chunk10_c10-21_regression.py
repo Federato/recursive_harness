@@ -189,6 +189,13 @@ GOLDEN = [
     ("215_chunk22_rc2.py", 22,
      "multi-location: Value Reporting Form (Not Used, blanketed, General Information) and Additional Locations Special Coinsurance",
      ["146", "565", "247", "183", "481", "189", "597", "348", "174", "267"]),
+    # Chunk 23 (C23-20, 2026-10-01). Each derived by hand before the run and matched by ISO live (RC-2): MA heating-oil
+    # remediation $241 (3 tanks + 2 buildings) / $67 (1 tank), its Pollutant Clean Up credit -$17 at the cap / -$9 under it,
+    # tenant relocation $16 (6 units) / $30 (over the cap); AK attorneys' fees $12 / $8 / $11; CA Limited EQ $80 / $24 / $21
+    # and Additional EQ $1,235; VA broad form Cov B Group I $591, Cov C Group I $886.
+    ("220_chunk23_rc2.py", 23,
+     "state-only families: MA heating oil and tenant relocation, AK attorneys' fees, CA Limited / Additional EQ, VA Ordinance or Law",
+     ["241", "67", "-17", "-9", "16", "30", "12", "8", "11", "80", "24", "21", "1235", "591", "886"]),
 ]
 
 # The machinery each chunk added -- run whenever shared code changes, which is
@@ -323,6 +330,11 @@ MACHINERY = [
     ("217_chunk22_rc4.py --cases T-AL1,T-AR,T-CA1,E1,E2,E3,E3b,E5,SC1,S-OR,S-FL,S-MO",
      "chunk 22 RC-4: the state rewrites, MO V02's edition differences, 8-location rounding, a state sample, as derived"),
     ("218_chunk22_c22-21_downstream.py", "chunk 22 RC-5: total +$38 / -$622 / +$1,991 / -$3,878; contents switched off, terrorism on 0.75 x Limit"),
+    # Chunk 23 (2026-10-01). Engine-only runs (no --live); 222_ samples its fuller policies (the full run re-runs 904_).
+    ("219_chunk23_rc1.py", "chunk 23 RC-1: every record of the four states' families hand = evaluator = engine; switches, tables, editions"),
+    ("221_chunk23_rc3.py", "chunk 23 RC-3: 43 zero / message / shared-name / exclusion cases, as derived"),
+    ("222_chunk23_rc4.py --cases F-MA,F-AK,F-CA,F-VA", "chunk 23 RC-4: fuller state policies (the old-package probes print RAISED by design, OI-120: run them directly)"),
+    ("223_chunk23_c23-19_downstream.py", "chunk 23 RC-5: total + $192 / $31 / $806 / $3,908 (fuller) and $234 / $31 / $1,360 / $3,902 (golden); nothing else moves"),
     # Sync checks (2026-10-01, user: "always in sync"). The deployed page is checked each turn by the Stop hook.
     ("check_status_docs.py --no-deployed", "status docs agree: task lists vs CF-BUILD-STATUS.html RC labels, tags, plan rows, START-HERE"),
     ("check_premium_census.py", "every in-force premium writer is a SetPremium rule (selftest: AK 2020's ErcRate writers are seen)"),

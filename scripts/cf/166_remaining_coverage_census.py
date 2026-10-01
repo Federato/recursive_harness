@@ -284,8 +284,12 @@ def main():
             if '"SetPremium"' in s:
                 only[p.name.replace("CommercialProperty", "").replace("Rules.Rule.xml", "")].add(st)
     print(f"\nState-only premium files (not a countrywide file name), all batches, PR excluded: {len(only)}")
+    # chunk 23 (C23-21, 2026-10-01): every in-force state-only premium file has an owner chunk (904_, C23-17) and all are
+    # built except WV's two flood files, which chunk 25 (flood) takes
+    still_open = {n for n in only if "Flood" in n}
     for n, sts in sorted(only.items()):
-        print(f"  {n:90s} {' '.join(sorted(sts))}")
+        print(f"  {n:90s} {' '.join(sorted(sts)):12s} {'OPEN: chunk 25 (flood)' if n in still_open else 'closed'}")
+    print(f"State-only list: closed except {len(still_open)} flood file(s) left to chunk 25")
     return 0
 
 
