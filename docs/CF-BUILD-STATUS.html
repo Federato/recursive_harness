@@ -64,9 +64,42 @@
     .chunk-controls button { background: #202831; border-color: #3a4652; color: #c9d2db; }
     .chunk-controls button:hover { background: #28323c; }
   }
+  /* percent-complete panel at the top (figures computed from this page by the script at the end) */
+  .progress { border: 1px solid #d7dce2; border-radius: 10px; padding: 16px 20px 14px; margin: 14px 0 18px; background: #fcfcfd; font-family: -apple-system, "Segoe UI", sans-serif; }
+  .progress .big { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+  .progress .pct { font-size: 40px; font-weight: 700; color: #2f7d5a; line-height: 1; }
+  .progress .what { font-size: 14px; color: #3b4652; }
+  .progress .segs { display: flex; height: 16px; border-radius: 99px; overflow: hidden; margin: 12px 0 4px; background: #e7eaee; gap: 2px; }
+  .progress .segs span { display: block; height: 100%; background: #c9d0d7; min-width: 3px; }
+  .progress .segs span.done { background: #2f7d5a; }
+  .progress .segs span.now { background: #dd9a5c; }
+  .progress .keys { display: flex; justify-content: space-between; font-size: 11px; color: #8b95a1; }
+  .progress .row { display: grid; grid-template-columns: 150px 1fr 120px; gap: 10px; align-items: center; margin-top: 10px; font-size: 12.5px; color: #55606b; }
+  .progress .row .bar { margin: 0; }
+  .progress .row b { color: #1c2733; }
+  .progress .legend { margin-top: 10px; font-size: 11.5px; color: #8b95a1; }
+  .progress .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; vertical-align: -1px; margin: 0 4px 0 10px; }
+  @media (max-width: 560px) { .progress .row { grid-template-columns: 1fr; gap: 3px; } }
+  @media (prefers-color-scheme: dark) {
+    .progress { background: #171d24; border-color: #2b3742; }
+    .progress .pct { color: #63c090; }
+    .progress .what, .progress .row { color: #a3aebb; }
+    .progress .row b { color: #eef4f3; }
+    .progress .segs { background: #262c33; }
+    .progress .segs span { background: #3a4048; }
+    .progress .segs span.done { background: #3f8f66; }
+  }
 </style>
 
 <h1>Property build &mdash; every chunk, every task, status</h1>
+<div class="progress" id="progress" aria-label="Percent complete">
+  <div class="big"><span class="pct" id="pg-pct">&hellip;</span><span class="what" id="pg-what">countrywide premium files built</span></div>
+  <div class="segs" id="pg-segs"></div>
+  <div class="keys"><span>chunks 0&ndash;14</span><span id="pg-keys-end">chunk 25 (flood)</span></div>
+  <div class="row"><span>Tasks done</span><div class="bar"><span id="pg-task-bar"></span></div><span id="pg-tasks"></span></div>
+  <div class="row"><span>Chunks gated</span><div class="bar"><span id="pg-chunk-bar"></span></div><span id="pg-chunks"></span></div>
+  <div class="legend"><i style="background:#2f7d5a"></i>built and gated<i style="background:#dd9a5c"></i>open now<i style="background:#c9d0d7"></i>not started &middot; hover a segment for its chunk &middot; counted live from this page&rsquo;s tables</div>
+</div>
 <p class="meta"><b>As of 2026-09-25.</b> One page for the whole plan: the original 15 chunks (0&ndash;14, closed 2026-09-24) and the remaining build, chunks 15&ndash;28 (planned 2026-09-25; <b>chunks 15 and 16 gated 2026-09-25</b>). Sources, and what to edit
 when something changes: <code>CF-START-HERE.md</code> (resume point),
 <code>CF-PROPERTY-BUILD-ORDER.md</code> (the plan and the gate),
@@ -231,7 +264,7 @@ three jurisdictions whose zeros are not yet explained &mdash; named rather than 
 <tr><td class="num">20</td><td>Small coverages with their own tables</td><td><span class="tag done">CLOSED 2026-09-30 &mdash; 26 of 26, 9 of 9</span></td><td><b>2026-09-30: CLOSED. OI-115 probed (<code>205_</code>: ISO skips a single blank <code>Subtract</code> operand in either position; a blank <code>Divide</code> numerator stays blank, per OI-110), fixed (Property only, your go) and closed; Z2 / Z2b now agree live ($3, $17); full regression 134 of 134 (chunk 19 R1, an OI-103 refusal case, moved from $0 to Factor 1, explained and re-pinned). Stale blank-comparison comment fixed; the every-rule edition diff carried to C21-16.</b> <b>2026-09-29: gate filed (<code>CF-CHUNK20-GATE.md</code>), 9 of 9; downstream +$977 / +$5,110 equal at ISO; regression 6 of 6 CLEAN (scoped); 497 of 546 files built (91%). Open then: OI-115 (closed 2026-09-30).</b> <b>2026-09-29: RC-4 (<code>203_ --live</code>, six batches): all 46 states + 27 probes, ISO 73 of 73 (11,003 premiums). The every-rule edition diff found 6 differences where the census found 1 (Fire Department step order in the 2023 editions; MO pier-on-BI and fungus); ISO reads &ldquo;50,000 &gt; blank&rdquo; as true, like ours. Next: C20-23.</b> <b>2026-09-29: RC-3 (<code>201_</code>, <code>202_</code> --live): 12 zero cases, 50 message cases (all 95 rule instances, each at its own level), 13 shared-name probes, the four cyber factors; ISO agrees on all but two. <b>OI-115 (new, recorded, not fixed):</b> ISO skips a blank first operand of <code>Subtract</code> (a blank Fire Department limit: ISO $3, ours $0; probe $17 vs ours $2). Next: C20-19.</b> <b>2026-09-29: RC-2 (<code>200_ --live</code>): 20 golden cases across all ten families, ISO 20 of 20 agree (every premium, every message). Found: Radioactive prices on the parent&rsquo;s limit when unblanketed; fungus incremental = 10 &times; (forms &minus; 1); EB waiting period = row &minus; 1; Mortgageholders&rsquo; <code>Limit</code> is text. Next: C20-15.</b> <b>2026-09-29: RC-1 (<code>199_</code>): the four $0 families explained on 293 stored responses and switched on; all 28 records price with hand = engine; blanket radioactive reads the blanket average. Next: C20-06.</b> <b>2026-09-28: census <code>901_</code> (forms now read from the package&rsquo;s Form Pages; sibling names flagged): 30 premium records (28 + 2 NC-only), none ever priced by ISO; Fire Department, Tobacco, the special-limit items and BI fungus sit at $0 on stored policies; 95 distinct messages; Mortgageholders E&amp;O priced in five mortgage-count layers; 1 file differs in MO&rsquo;s 2023 V02. 26 tasks in 5 RC groups; starts after chunk 19.</b> 10 families with their own small rate tables or formulas: Radioactive Contamination, Pier and Wharf, Fire Department charge, Equipment Breakdown, Mortgageholders E&amp;O (layered premium) and others. <b>+28 files &rarr; 497 of 546 (91%)</b></td></tr>
 <tr><td class="num">21</td><td>Sewer backup and condo options</td><td><span class="tag done">GATED 2026-09-30 &mdash; 21 of 21, 9 of 9</span></td><td><b>2026-09-30: gate filed (<code>CF-CHUNK21-GATE.md</code>), 9 of 9. All 12 records ISO had never priced are ISO-confirmed, every figure predicted by hand first: 26 golden cases, 50 zero / message cases (all 24 messages), all 46 states + probes (61 of 61), the downstream total (+$651 / +$6,405), 1,648 stat values. No engine change. Full gate regression CLEAN (140 scripts); <code>157_ --all</code> 293 of 293. New open items OI-116, OI-117, OI-118 (none blocking).</b> Earlier, 2026-09-28: census <code>902_</code>: 7 premium records + 5 FL-only (a manual premium), none ever priced by ISO or on a stored policy; Sewer&rsquo;s 8 tables are one 2-row rate plus codes; loss assessment is tiered arithmetic (21 rules); condo options carry four state form numbers (CW, RI, FL, UT); 26 messages; identical in all four editions. 21 tasks in 5 RC groups; starts after chunk 20.</b> Few files but 13 tables and 5 states; Florida's own condominium forms (5 state-only files). <b>+7 files &rarr; 504 of 546 (92%)</b></td></tr>
 <tr><td class="num">22</td><td>Multi-location: value reporting and special coinsurance</td><td><span class="tag done">GATED 2026-10-01 &mdash; 24 of 24, 9 of 9</span></td><td><b>2026-10-01: gate filed (<code>CF-CHUNK22-GATE.md</code>), 9 of 9. ISO agrees on everything it rated (all 46 states, 2,006 downstream premiums, total +$38 / &minus;$622 as predicted); &ldquo;Used&rdquo; unpriceable at ISO and ours (OI-119); no engine change; 520 of 546 built (95%). RC-4 done (<code>217_</code>): the state rewrites, MO / CA / NC / IL editions, all 46 states and an 8-location rounding probe (ISO rounds each term) agree with ISO. RC-3 done (<code>216_</code>): 45 zero / message / shared-name / exclusion cases agree with ISO, incl. ISO reading the VR Broad cyber factor twice. RC-2 done (<code>215_</code>): ISO agrees on all 8 priced multi-location cases, 2,308 premiums and every message. RC-1 done (<code>213_chunk22_rc1.py</code>, all checks pass, no ISO calls). OI-119: a rule reads its own running maximum before binding it, so every Value Reporting policy with average rates &ldquo;Used&rdquo; is refused, <b>by ISO too</b> (probed live 2026-10-01, same error); our engine already agrees, no change. One average rate per policy, copied to every row; the Additional Locations roll-up sums a field nothing writes and nothing reads (moves no dollar). Regression scaled back (user, 2026-10-01).</b> <b>2026-09-28: census <code>903_</code> (adds a multi-location trail): 16 premium records, none priced by ISO or stored; the five average rates (MLARs) have <i>three</i> writers; the main ruleset, Personal Property, Occupancy and chunk 9&rsquo;s Blanket Rating Detail already touch them, so all 293 stored policies must re-rate unchanged; the &ldquo;reset&rdquo; is a roll-up of Additional Locations premiums, not a reset of Contents; 40 messages; identical in all four editions. 24 tasks in 5 RC groups; starts after chunk 21.</b> Value Reporting Form drives the multi-location average rates; Additional Locations Special Coinsurance reads them. No stored ISO policy has more than one location. <b>+16 files &rarr; 520 of 546 (95%)</b></td></tr>
-<tr><td class="num">23</td><td>State-only coverages</td><td><span class="tag warn">OPEN 2026-10-01 &mdash; 11 of 22</span></td><td><b>2026-10-01: RC-2 done (<code>220_</code>): 12 golden cases agree with ISO, all four states. RC-1 done (<code>219_chunk23_rc1.py</code>): every record of all four states' families hand = engine; MA's credit switch found; AK's fees Legal Liability only. </b><b>2026-09-28: census <code>904_</code> enumerates every in-force state-only premium file (80) and assigns each an owner, none unassigned; chunk 23 owns 10 (AK 3, CA 4, MA 3) and closes chunk 12&rsquo;s 41 VA Ordinance or Law files; none ever priced by ISO; CA&rsquo;s next packages change a Limited EQ formula (OI-105); MT&rsquo;s glass files price nothing (chunk 19 corrected). 22 tasks in 5 RC groups; starts after chunk 22.</b> MA heating oil and tenant relocation, AK attorneys' fees, CA additional and limited earthquake; verify the VA/WV Ordinance or Law forms chunk 12 counted. <b>520 of 546 (95%)</b></td></tr>
+<tr><td class="num">23</td><td>State-only coverages</td><td><span class="tag warn">OPEN 2026-10-01 &mdash; 18 of 22</span></td><td><b>2026-10-01: RC-4 done (<code>222_</code>): fuller state policies agree; state-only list closed; OI-120 opened. RC-3 done (<code>221_</code>): 43 cases agree with ISO; AK fees go negative under the coverage limit, as written. RC-2 done (<code>220_</code>): 12 golden cases agree with ISO, all four states. RC-1 done (<code>219_chunk23_rc1.py</code>): every record of all four states' families hand = engine; MA's credit switch found; AK's fees Legal Liability only. </b><b>2026-09-28: census <code>904_</code> enumerates every in-force state-only premium file (80) and assigns each an owner, none unassigned; chunk 23 owns 10 (AK 3, CA 4, MA 3) and closes chunk 12&rsquo;s 41 VA Ordinance or Law files; none ever priced by ISO; CA&rsquo;s next packages change a Limited EQ formula (OI-105); MT&rsquo;s glass files price nothing (chunk 19 corrected). 22 tasks in 5 RC groups; starts after chunk 22.</b> MA heating oil and tenant relocation, AK attorneys' fees, CA additional and limited earthquake; verify the VA/WV Ordinance or Law forms chunk 12 counted. <b>520 of 546 (95%)</b></td></tr>
 <tr><td class="num">24</td><td>Builders Risk</td><td><span class="tag warn">TASKS SET 2026-09-28 &mdash; 1 of 25</span></td><td><b>2026-09-28: census <code>905_</code> (adds a Builders Risk trail): 20 premium records (the card&rsquo;s &ldquo;adds 17&rdquo; was wrong); ISO has priced only BR theft (144 responses); materials of others $0 on all 364; premium adjustment uses dates; <b>16</b> states rewrite (not 9), 5 with their own premium rule; Business Income, blanket, unmanned aircraft, antennas BI and two state files already read the Builders Risk factors; 36 messages; identical in all four editions. 25 tasks in 5 RC groups; starts after chunk 23.</b> 20 files, 11 tables, 9 states; the only Basic-cause ISO fixtures are Builders Risk. Theft of materials already matches ISO on 144 responses. <b>+20 files &rarr; 540 of 546 (99%)</b></td></tr>
 <tr><td class="num">25</td><td>Flood</td><td><span class="tag warn">TASKS SET 2026-09-28 &mdash; 1 of 26</span></td><td><b>2026-09-28: census <code>906_</code> (adds a flood trail): 6 premium records + WV&rsquo;s 2; ISO priced 3 on one stored policy; 705 KB of rules and 27 tables; loss cost from state tables (37), county tables (7) or <b>nothing at all (AK, FL)</b>; much of flood already lives in built Structure, Location and the main ruleset; closes chunk 17&rsquo;s Off-Premises flood factor and WV&rsquo;s flood forms; 46 messages; identical in all four editions. 26 tasks in 5 RC groups; starts after chunk 24.</b> The largest family: 641 KB of rules, 23 tables, 10 states rewrite it, its own blanket rating. Chunk 10's banded-lookup fix already unblocked 7 of its tables. <b>+6 files &rarr; 546 of 546 (100%)</b></td></tr>
 <tr><td class="num">26</td><td>Specific and Tentative rating</td><td><span class="tag warn">TASKS SET 2026-09-28 &mdash; 1 of 23</span></td><td><b>2026-09-28: branch census <code>907_</code>: 7 CW files / 33 rules; 41 states have their own rating-type rules, 36 rate Specific Group II by hazard level and floor area; CA has a fourth rating type (One-Term Loss Cost); <b>not zero evidence</b>: ISO priced 566 Specific and 5 Tentative buildings in stored requests (14 states), and the payload generator already matched Excel = ISO = engine on Specific. 23 tasks in 5 RC groups; starts after chunk 25.</b> A second rating path through the core coverages, unbuilt project-wide. ISO has zero fixtures for it, so every check is our own probe. <b>546 of 546 (100%)</b></td></tr>
@@ -1976,7 +2009,7 @@ a missing form number is not a missing coverage.</p>
 </table>
 <p class="sub"><b>What shapes the plan.</b> (1) <b>Loss assessment is tiered arithmetic</b>: limit tiers 1,000 / 5,000 / 10,000 / per 5,000 over, sub-limit bands per 1,000; 21 rules, traced by hand in RC-1. (2) <b>Sewer&rsquo;s &ldquo;8 tables&rdquo; are one rate and seven codes</b>. (3) <b>Sewer&rsquo;s limit is capped by its parent&rsquo;s</b> (five messages). (4) <b>Florida&rsquo;s family is a manual premium</b> (chunk 15&rsquo;s shape) gated on coverage form, type and policy type; its records need FL&rsquo;s own schema. (5) <b>Four form numbers for the condo options</b>: CW, RI, FL, UT. (6) <b>No cyber-incident factor</b> anywhere, a first; confirmed in RC-3. Siblings (GA / FL association forms, UT / GA change forms) carry no premium; 26 messages of this chunk&rsquo;s own.</p>
 <p class="sub">Grouped like release candidates, <b>in the order to do them</b>. <b>2026-09-30: RC-1 done; C21-06 ISO 5 of 5, C21-07 ISO 9 of 9, C21-08 ISO 6 of 6, C21-09 5 of 6 + OI-116, C21-10/11 all agree bar 2 predicted refusals, C21-12/13 all agree bar 1 predicted refusal, C21-14&ndash;17 61 of 61 (OI-118 pinned), C21-18 downstream agrees, Gated 2026-09-30, 9 of 9 (<code>CF-CHUNK21-GATE.md</code>). Next: chunk 22.</b></p>
-<p><span class="lab">RC-1 &middot; Evidence and plumbing (5) &middot; 1 of 5 done</span></p>
+<p><span class="lab">RC-1 &middot; Evidence and plumbing (5) &middot; 5 of 5 done</span></p>
 <table>
 <thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
 <tbody>
@@ -1987,7 +2020,7 @@ a missing form number is not a missing coverage.</p>
 <tr class="d"><td class="st">&#9989;</td><td class="num">C21-05</td><td><span class="tag done">gate 2</span> <span class="tag done">gate 5</span> <b>Tables and literals</b>: band strings, the &ldquo;Over 10,000&rdquo; key, FL&rsquo;s eight sewer tables and sub-limit rate, AR DC stat codes; which of Sewer&rsquo;s 8 tables price &mdash; <b>Done 2026-09-30</b>: every key literal has a row; one of Sewer&rsquo;s 6 tables prices; Florida files 7 empty tables and never calls the sewer records (probe for C21-06); every state on the engine: only Florida leaves a record unpriced</td></tr>
 </tbody>
 </table>
-<p><span class="lab">RC-2 &middot; Golden cases (4) &middot; 0 of 4 done</span></p>
+<p><span class="lab">RC-2 &middot; Golden cases (4) &middot; 4 of 4 done</span></p>
 <table>
 <thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
 <tbody>
@@ -1997,7 +2030,7 @@ a missing form number is not a missing coverage.</p>
 <tr class="d"><td class="st">&#9989;</td><td class="num">C21-09</td><td><b>FL Commercial Units in Residential Condominiums</b>: all five records with a manual premium through the modifiers; ISO live &mdash; <b>Done 2026-09-30</b>: ISO agrees 5 of 6; ISO never attaches Florida&rsquo;s SPP special-class record, which ours prices (new open item OI-116, pinned)</td></tr>
 </tbody>
 </table>
-<p><span class="lab">RC-3 &middot; Zero cases, messages and names (4) &middot; 0 of 4 done</span></p>
+<p><span class="lab">RC-3 &middot; Zero cases, messages and names (4) &middot; 4 of 4 done</span></p>
 <table>
 <thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
 <tbody>
@@ -2007,7 +2040,7 @@ a missing form number is not a missing coverage.</p>
 <tr class="d"><td class="st">&#9989;</td><td class="num">C21-13</td><td><span class="tag done">gate 7</span> <b>Exclusions and stat codes</b>: no cyber factor anywhere (confirmed, not assumed); the wind / hail excluded indicator and AR DC peril-exclusion codes &mdash; <b>Done 2026-09-30</b>: no cyber factor anywhere; stat codes agree with ISO on 8 of 8; a state table with rows replaces the countrywide one outright (Arkansas: ISO refuses, as predicted)</td></tr>
 </tbody>
 </table>
-<p><span class="lab">RC-4 &middot; States and editions (4) &middot; 0 of 4 done</span></p>
+<p><span class="lab">RC-4 &middot; States and editions (4) &middot; 4 of 4 done</span></p>
 <table>
 <thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
 <tbody>
@@ -2017,7 +2050,7 @@ a missing form number is not a missing coverage.</p>
 <tr class="d"><td class="st">&#9989;</td><td class="num">C21-17</td><td><span class="tag done">gate 3</span> <b>All 46 states</b>: every family on every state&rsquo;s own package with its own condo form; ISO live &mdash; <b>Done 2026-09-30</b>: all 46 states agree with ISO on every premium and message; new OI-118 (form labels only)</td></tr>
 </tbody>
 </table>
-<p><span class="lab">RC-5 &middot; Confirmation and close-out (4) &middot; 0 of 4 done</span></p>
+<p><span class="lab">RC-5 &middot; Confirmation and close-out (4) &middot; 4 of 4 done</span></p>
 <table>
 <thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
 <tbody>
@@ -2099,21 +2132,21 @@ a missing form number is not a missing coverage.</p>
 </div>
 
 <h2 id="remaining">The remaining build &mdash; chunks 23&ndash;28, easiest first (planned 2026-09-25)</h2>
-<p class="sub"><b>2026-10-01 (updated when chunk 22 was gated):</b> chunks 15&ndash;22 from this plan are gated; their cards now sit with the finished chunks above. The sizing table below keeps their rows for the running file count (504 of 546 built, 92%).</p>
+<p class="sub"><b>2026-10-01 (updated when chunk 22 was gated):</b> chunks 15&ndash;22 from this plan are gated; their cards now sit with the finished chunks above. The sizing table below keeps their rows for the running file count (520 of 546 built, 95%).</p>
 <p class="sub"><b>Where the list comes from (2026-09-25):</b> <code>scripts/cf/166_remaining_coverage_census.py</code>. Of 882 countrywide rule files, 546 set a premium. Chunks 0&ndash;14 own 228 of them. The other 318 fall into 53 coverage families, every file assigned and none left over. An earthquake rider counts with its parent coverage, so the 44 riders on unbuilt coverages (e.g. Agreed Value&rsquo;s) are not counted as chunk 10&rsquo;s. A sweep of every state package in every batch adds 75 state-only premium files. <b>Easiest first</b> means: ISO evidence already held, then one repeating formula, then a family&rsquo;s own tables, then state rewrites and size. The percentage in each row counts countrywide premium files, not premium dollars. <b>Planning only: no engine code without your go.</b></p>
 <div class="note shared"><b>Order change from 2026-09-24.</b> Your chosen next items were the value reporting form, Additional Locations Special Coinsurance, Off-Premises Interruption, MA heating oil and tenant relocation, and condo options. Sorted by difficulty they land in chunks 22, 22, 17, 23 and 21. The value reporting form sits late because it is the first coverage that depends on more than one location, and ISO has no stored multi-location evidence. If you want them first, chunk 22 can move up without breaking anything before it.</div>
 <table>
 <thead><tr><th class="num">#</th><th>Chunk</th><th>Size</th><th class="num">+Files</th><th>Built after it</th></tr></thead>
 <tbody>
-<tr class="d"><td class="num">15</td><td>Manual-premium endorsements <b>(GATED 2026-09-25, 9 of 9)</b></td><td>S</td><td class="num">23</td><td>251 of 546 (46%)</td></tr>
-<tr class="d"><td class="num">16</td><td>Already matched ISO: gate them <b>(GATED 2026-09-25, 9 of 9)</b></td><td>S</td><td class="num">39</td><td>290 of 546 (53%)</td></tr>
+<tr class="d"><td class="num">15</td><td>Manual-premium endorsements <b>(GATED 2026-09-25, 9 of 9, 21 of 21)</b></td><td>S</td><td class="num">23</td><td>251 of 546 (46%)</td></tr>
+<tr class="d"><td class="num">16</td><td>Already matched ISO: gate them <b>(GATED 2026-09-25, 9 of 9, 23 of 23)</b></td><td>S</td><td class="num">39</td><td>290 of 546 (53%)</td></tr>
 <tr class="d"><td class="num">17</td><td>Business Income add-ons <b>(GATED 2026-09-28, 23 of 23)</b></td><td>M</td><td class="num">32</td><td>322 of 546 (59%)</td></tr>
 <tr class="d"><td class="num">18</td><td>Valuation and condition modifiers <b>(GATED 2026-09-29, 23 of 23)</b></td><td>M&ndash;L</td><td class="num">84</td><td>406 of 546 (74%)</td></tr>
 <tr class="d"><td class="num">19</td><td>Scheduled property items <b>(GATED 2026-09-29, 24 of 24)</b></td><td>M</td><td class="num">63</td><td>469 of 546 (86%)</td></tr>
 <tr class="d"><td class="num">20</td><td>Small coverages with their own tables <b>(GATED 2026-09-29, 26 of 26)</b></td><td>M</td><td class="num">28</td><td>497 of 546 (91%)</td></tr>
 <tr class="d"><td class="num">21</td><td>Sewer backup and condo options <b>(GATED 2026-09-30, 21 of 21)</b></td><td>M</td><td class="num">7</td><td>504 of 546 (92%)</td></tr>
 <tr class="d"><td class="num">22</td><td>Multi-location: value reporting and special coinsurance <b>(GATED 2026-10-01, 24 of 24; &ldquo;Used&rdquo; refused at ISO, OI-119)</b></td><td>L</td><td class="num">16</td><td>520 of 546 (95%)</td></tr>
-<tr><td class="num">23</td><td>State-only coverages <b>(OPEN 2026-10-01, 11 of 22)</b></td><td>M</td><td class="num">&ndash;</td><td>520 of 546 (95%)</td></tr>
+<tr><td class="num">23</td><td>State-only coverages <b>(OPEN 2026-10-01, 18 of 22)</b></td><td>M</td><td class="num">&ndash;</td><td>520 of 546 (95%)</td></tr>
 <tr><td class="num">24</td><td>Builders Risk <b>(TASKS SET 2026-09-28, 1 of 25)</b></td><td>L</td><td class="num">20</td><td>540 of 546 (99%)</td></tr>
 <tr><td class="num">25</td><td>Flood <b>(TASKS SET 2026-09-28, 1 of 26)</b></td><td>XL</td><td class="num">6</td><td>546 of 546 (100%)</td></tr>
 <tr><td class="num">26</td><td>Specific and Tentative rating <b>(TASKS SET 2026-09-28, 1 of 23)</b></td><td>L</td><td class="num">&ndash;</td><td>546 of 546 (100%)</td></tr>
@@ -2123,7 +2156,7 @@ a missing form number is not a missing coverage.</p>
 </table>
 
 <div class="chunk todo">
-<h3><span class="n">23</span> State-only coverages <span class="tag warn">OPEN 2026-10-01 &mdash; 11 of 22</span></h3>
+<h3><span class="n">23</span> State-only coverages <span class="tag warn">OPEN 2026-10-01 &mdash; 18 of 22</span></h3>
 <p><b>Tasks set 2026-09-28; starts after chunk 22.</b> 22 tasks numbered <b>C23-01&ndash;C23-22</b> in <code>CF-CHUNK23-TASKS.md</code>. The census (<code>scripts/cf/904_chunk23_census.py</code>, 1 min) works from the other end: it <b>enumerates every state-only premium file in force</b> and gives each an owner before checking chunk 23&rsquo;s own. <b>In plain English:</b> coverages only one state files: Massachusetts heating-oil clean-up (and its credit) and tenant relocation, Alaska&rsquo;s attorneys&rsquo; fees, California&rsquo;s additional and limited earthquake, and Virginia&rsquo;s own Ordinance or Law forms, whose priced cases chunk 12 left open. <b>None has ever been priced by ISO.</b></p>
 <p><span class="lab">Who owns the 80 state-only premium files in force (2026-09-28)</span></p>
 <table>
@@ -2148,7 +2181,7 @@ a missing form number is not a missing coverage.</p>
 </tbody>
 </table>
 <p class="sub"><b>What shapes the plan.</b> (1) Each family uses its <b>state&rsquo;s own schema and package history</b>, and three had no premium rule in older packages. (2) <b>California&rsquo;s next packages change a Limited EQ formula</b> (OI-105: which edition ISO serves when). (3) Four families read other chunks&rsquo; finished values (16, 20, 9 / 10, 12). (4) A manual premium and a capped premium. (5) <b>VA closes chunk 12&rsquo;s open item.</b> (6) The state-only list closes here except chunk 25&rsquo;s two; <b>MT&rsquo;s glass files price nothing</b> (chunk 19 corrected).</p>
-<p class="sub">Grouped like release candidates, <b>in the order to do them</b>. <b>2026-10-01: RC-1 done (<code>219_</code>, no ISO calls, no engine change): MA's credit never priced because nothing switched it on; AK's fees exist only on Legal Liability; CA's later packages move no dollar; all 41 VA records hand = engine. RC-2 done the same day: 12 golden cases agree with ISO (1,727 premiums); a blanketed Limited EQ building is unreachable at ISO too; VA&rsquo;s priced case closes chunk 12&rsquo;s open item. Next: RC-3, C23-12.</b></p>
+<p class="sub">Grouped like release candidates, <b>in the order to do them</b>. <b>2026-10-01: RC-1 done (<code>219_</code>, no ISO calls, no engine change): MA's credit never priced because nothing switched it on; AK's fees exist only on Legal Liability; CA's later packages move no dollar; all 41 VA records hand = engine. RC-2 done the same day: 12 golden cases agree with ISO (1,727 premiums); a blanketed Limited EQ building is unreachable at ISO too; VA&rsquo;s priced case closes chunk 12&rsquo;s open item. RC-3 done the same day: 43 zero / message / name / exclusion cases agree with ISO. RC-4 done the same day: fuller state policies agree with ISO, the state-only list is closed (80, none unassigned), and the old packages price inside <code>ErcRate</code> (OI-120: pre-2022-10 policies do not rate in our engine). Next: RC-5, C23-19.</b></p>
 <p><span class="lab">RC-1 &middot; Evidence and plumbing (6) &middot; 6 of 6 done 2026-10-01</span></p>
 <table>
 <thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
@@ -2172,23 +2205,23 @@ a missing form number is not a missing coverage.</p>
 <tr class="d"><td class="st">&#9989;</td><td class="num">C23-11</td><td><b>VA Ordinance or Law state forms</b>: one golden building, broad form and tenants&rsquo; improvements, all five groups, beside the countrywide form; ISO live (closes chunk 12&rsquo;s open item) &mdash; <b>Done 2026-10-01</b> (V1-V3, agree; <b>closes chunk 12's open "VA priced case"</b>): all 41 VA records on three CovTypes and three causes, beside the countrywide form in V1 (187 premiums): e.g. broad form Cov B $591 / C $886 at Group I, B&C $1,500 with post-loss "Yes", pollutant $150; the tenants' form prices the same figures (no cyber factor at factor 1)</td></tr>
 </tbody>
 </table>
-<p><span class="lab">RC-3 &middot; Zero cases, messages and names (4) &middot; 0 of 4 done</span></p>
+<p><span class="lab">RC-3 &middot; Zero cases, messages and names (4) &middot; 4 of 4 done 2026-10-01 &middot; 43 cases agree with ISO</span></p>
 <table>
 <thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
 <tbody>
-<tr><td class="st">&#11036;</td><td class="num">C23-12</td><td><span class="tag done">gate 4</span> <b>Zero cases</b>: no tanks / buildings / units; credit without CP 04 44; no mortgageholders limit; non-residential CA class; each switch off; ISO live</td></tr>
-<tr><td class="st">&#11036;</td><td class="num">C23-13</td><td><span class="tag done">gate 9</span> <b>Messages</b>: all 41; VA&rsquo;s 12 rules against their countrywide twins; CA&rsquo;s 15% and sub-limit boundaries; ISO live</td></tr>
-<tr><td class="st">&#11036;</td><td class="num">C23-14</td><td><span class="tag done">gate 6</span> <b>Shared names</b>: <code>Factor</code>, <code>ManualPremium</code>, <code>PostLossFactor</code>, the coverage totals and containers&rsquo; totals, diffed</td></tr>
-<tr><td class="st">&#11036;</td><td class="num">C23-15</td><td><span class="tag done">gate 7</span> <b>Exclusion records</b>: cyber factors in CA and VA; confirm MA and AK read none</td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C23-12</td><td><span class="tag done">gate 4</span> <b>Zero cases</b>: no tanks / buildings / units; credit without CP 04 44; no mortgageholders limit; non-residential CA class; each switch off; ISO live &mdash; <b>Done 2026-10-01</b> (<code>221_ --live</code> Z1-Z10, all agree with ISO): MA no tanks = base only; the credit with no remediation record $0 + the CP 04 44 message; 0 units $0; AK fee limits 0 $0; <b>AK fee limits under the coverage limits price NEGATIVE fees (-$1 / -$1 / -$0), as written, with all three messages</b>; CA earthquake off removes the Limited EQ records; Additional EQ 0 $0; VA blank B / C limits $0; pollutant 0 off; <b>a blank VA CovType switches the broad form's Cov A ON ($41) but the tenants' Cov A OFF</b></td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C23-13</td><td><span class="tag done">gate 9</span> <b>Messages</b>: all 41; VA&rsquo;s 12 rules against their countrywide twins; CA&rsquo;s 15% and sub-limit boundaries; ISO live &mdash; <b>Done 2026-10-01</b> (<code>221_ --live</code>, MS, MC1-MC9, MV1-MV8, all agree, every (level, message) equal): <b>30 of chunk 23's own message rules fired at their level</b> (MA 2, AK 3, CA 15 incl. RC-2's class messages, VA 10) and each checked silent where it should be (MS, MC2 residential 0074, MV3b replacement cost, MV7b). CA's CP 10 43 + 13 10 / 13 20 pair fired in chunk 22 RC-4. Not fired: VA's two "80% in Blanket" rules. VA's 10 countrywide twins are covered by the multiset on the CP 04 05 / 04 26 cases (MV4, MV8) and chunk 12</td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C23-14</td><td><span class="tag done">gate 6</span> <b>Shared names</b>: <code>Factor</code>, <code>ManualPremium</code>, <code>PostLossFactor</code>, the coverage totals and containers&rsquo; totals, diffed &mdash; <b>Done 2026-10-01</b> (S1-S6, MV7b, agree): submitted VA Factor 2.0 (Cov A $279), PostLossFactor 1.5 (Cov A $202, B $886), AK fee LimitToUse 3, MA HeatingOilBaseLossCost 100 ($263), TotalPollutantCleanUpCredit 5 (-$5), BasePremium 500 ($674) all <b>survive</b> (IsNull guards). <b><code>PersPropertyIncludedInBlanket</code> does not</b>: the countrywide CP 04 26 message rule re-computes it from the contents' blanket flag on every building, so VA's CP 04 27 rule fires only when the contents are really blanketed (MV7) and a submitted "Yes" is overwritten (MV7b)</td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C23-15</td><td><span class="tag done">gate 7</span> <b>Exclusion records</b>: cyber factors in CA and VA; confirm MA and AK read none &mdash; <b>Done 2026-10-01</b> (X1-X5, agree): the cyber exclusion moves VA's broad form (Cov B $5,876 at 2,000,000) and <b>not its tenants' form</b> (reads no cyber factor); CA's Limited EQ unchanged (the EQ cyber factor is 1.00); AK's fees and MA's records read none (unchanged)</td></tr>
 </tbody>
 </table>
-<p><span class="lab">RC-4 &middot; States and the list (3) &middot; 0 of 3 done</span></p>
+<p><span class="lab">RC-4 &middot; States and the list (3) &middot; 3 of 3 done 2026-10-01 &middot; all agree with ISO</span></p>
 <table>
 <thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
 <tbody>
-<tr><td class="st">&#11036;</td><td class="num">C23-16</td><td><span class="tag done">gate 3</span> <b>Each family on its state&rsquo;s full policy</b>, with the state&rsquo;s other rewrites present; ISO live</td></tr>
-<tr><td class="st">&#11036;</td><td class="num">C23-17</td><td><b>The state-only list, closed</b>: ownership re-run at the gate, none unassigned; MT prices nothing; WV flood waits for chunk 25</td></tr>
-<tr><td class="st">&#11036;</td><td class="num">C23-18</td><td><b>Older packages</b>: pre-2023 MA / AK and 2021 VA, where ISO still serves them, confirming no premium</td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C23-16</td><td><span class="tag done">gate 3</span> <b>Each family on its state&rsquo;s full policy</b>, with the state&rsquo;s other rewrites present; ISO live &mdash; <b>Done 2026-10-01</b> (<code>222_ --live</code>, F-MA / F-AK / F-CA / F-VA, all agree with ISO, every premium and message): MA on two locations (credit -$17 where a building has remediation, $0 where none does, relocation per building); AK with a Legal Liability building + contents and an ordinary second building (its fee record removed); CA with Limited EQ on two buildings + contents + BI and Additional EQ on both; VA with the broad form, the countrywide CP 04 05 and the tenants' form on three buildings (227 premiums)</td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C23-17</td><td><b>The state-only list, closed</b>: ownership re-run at the gate, none unassigned; MT prices nothing; WV flood waits for chunk 25 &mdash; <b>Done 2026-10-01</b> (<code>222_</code>, re-running <code>904_</code>): <b>80 in-force state-only premium files, none unassigned</b> (chunks 12 41, 15 6, 16 9, 19 5, 20 2, 21 5, 23 10, 25 2); MT's glass file is a totals file only (prices nothing); WV's two flood files wait for chunk 25; each owner chunk's task list names its files. And: no in-force package writes a coverage premium outside a <code>SetPremium</code> rule (only the policy total), so 520 of 546 stands</td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C23-18</td><td><b>Older packages</b>: pre-2023 MA / AK and 2021 VA, where ISO still serves them, confirming no premium &mdash; <b>Done 2026-10-01</b> (O-MA / O-AK / O-VA, ISO at 2022-07-01 / 2021-07-01, agree with the old packages' rule text): MA 2022's tenant relocation really has no premium writer ($0 at ISO). <b>The census's "no premium rule" was wrong for AK 2020 and VA 2021</b>: those files price inside a rule named <code>ErcRate</code>, not <code>SetPremium</code> (ISO prices AK's fees $1 / $2 and VA's Special and pollutant records). <b>OI-120 (new): our engine cannot rate any pre-2022-10 policy</b> (the 2020 countrywide package has a <code>Null</code> inside a condition), so the old figures are ISO's only</td></tr>
 </tbody>
 </table>
 <p><span class="lab">RC-5 &middot; Confirmation and close-out (4) &middot; 0 of 4 done</span></p>
@@ -2732,5 +2765,46 @@ deliberately constructed, and every one was consistent with all three rounding m
   }
   openFromHash();
   window.addEventListener("hashchange", openFromHash);
+})();
+</script>
+<script>
+/* Percent-complete panel: every figure is counted from this page, so it cannot drift from the tables.
+   Files: the plan table under #remaining (chunks 0-14 own 228; each later row adds its "+Files"; a row with class "d" is gated).
+   Tasks: every task row's status cell (&#9989; done). Chunks: 0-14 closed plus each gated plan row. */
+(function () {
+  var BASE = 228, TOTAL = 546, EARLY = 15;
+  var h = document.getElementById("remaining"), tbl = h;
+  while (tbl && tbl.tagName !== "TABLE") tbl = tbl.nextElementSibling;
+  if (!tbl) return;
+  var rows = Array.prototype.slice.call(tbl.querySelectorAll("tbody tr"));
+  var built = BASE, segs = [{ n: "Chunks 0–14", f: BASE, cls: "done" }], gated = EARLY, nowSeen = false;
+  rows.forEach(function (r) {
+    var c = r.children, n = c[0].textContent.trim(), name = c[1].textContent.replace(/\s*\(.*$/, "").trim();
+    var f = parseInt(c[3].textContent, 10) || 0, done = r.classList.contains("d");
+    if (done) { built += f; gated += 1; }
+    var cls = done ? "done" : (!nowSeen ? "now" : "");
+    if (!done) nowSeen = true;
+    if (f) segs.push({ n: "Chunk " + n + ": " + name, f: f, cls: cls });
+  });
+  var chunks = EARLY + rows.length;
+  var pct = Math.floor(100 * built / TOTAL);
+  document.getElementById("pg-pct").textContent = pct + "%";
+  document.getElementById("pg-what").innerHTML = "<b>" + built + " of " + TOTAL + "</b> countrywide premium files built and gated (" + (TOTAL - built) + " to go)";
+  var box = document.getElementById("pg-segs");
+  segs.forEach(function (s) {
+    var el = document.createElement("span");
+    el.className = s.cls;
+    el.style.flex = s.f + " 0 0";
+    el.title = s.n + " — " + s.f + " files" + (s.cls === "done" ? " (built)" : s.cls === "now" ? " (open)" : " (to do)");
+    box.appendChild(el);
+  });
+  var st = document.querySelectorAll("td.st"), td = 0;
+  for (var i = 0; i < st.length; i++) if (st[i].textContent.indexOf("✅") !== -1) td++;
+  function row(bar, lab, k, n) {
+    document.getElementById(bar).style.width = (100 * k / n).toFixed(1) + "%";
+    document.getElementById(lab).innerHTML = "<b>" + k + " of " + n + "</b> (" + Math.floor(100 * k / n) + "%)";
+  }
+  row("pg-task-bar", "pg-tasks", td, st.length);
+  row("pg-chunk-bar", "pg-chunks", gated, chunks);
 })();
 </script>

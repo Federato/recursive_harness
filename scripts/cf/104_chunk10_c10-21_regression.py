@@ -323,6 +323,9 @@ MACHINERY = [
     ("217_chunk22_rc4.py --cases T-AL1,T-AR,T-CA1,E1,E2,E3,E3b,E5,SC1,S-OR,S-FL,S-MO",
      "chunk 22 RC-4: the state rewrites, MO V02's edition differences, 8-location rounding, a state sample, as derived"),
     ("218_chunk22_c22-21_downstream.py", "chunk 22 RC-5: total +$38 / -$622 / +$1,991 / -$3,878; contents switched off, terrorism on 0.75 x Limit"),
+    # Sync checks (2026-10-01, user: "always in sync"). The deployed page is checked each turn by the Stop hook.
+    ("check_status_docs.py --no-deployed", "status docs agree: task lists vs CF-BUILD-STATUS.html RC labels, tags, plan rows, START-HERE"),
+    ("check_premium_census.py", "every in-force premium writer is a SetPremium rule (selftest: AK 2020's ErcRate writers are seen)"),
 ]
 
 # Excluded on purpose, each with a reason -- no silent narrowing of scope.

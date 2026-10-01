@@ -195,7 +195,8 @@ def hand_ma(node, rec):
     cp = root(node)
     if rec == HO:
         st, lcm = up(node, 2), d(up(node, 2), "LossCostMultiplier")
-        base = mods(r(table_val("MA", "BasePremium", "Premium", Constant="Y") * lcm, 0), cp, cp)
+        base = mods(r(OVR.get("HeatingOilBaseLossCost", table_val("MA", "BasePremium", "Premium", Constant="Y")) * lcm, 0), cp, cp)
+        base = OVR.get("BasePremium", base)
         tanks = d(node, "NumberOfTanks")
         tank_rate = r(table_val("MA", "NumberOfTanksRate", "Rate", Constant="Y") * lcm, 0) if tanks > 0 else D(0)
         add_t = D(0)
@@ -221,6 +222,7 @@ def hand_ma(node, rec):
             ded = r(r(d(pcn, "Limit") / 10000 * based, 0) * lcm, 0)
             prem = sum(d(c, "Premium") for c in pcn.children if c.tag.startswith(P + PC) and c.tag.endswith("Coverage"))
             credit += prem if ded > prem else ded
+        credit = OVR.get("TotalPollutantCleanUpCredit", credit)
         x = maxd if credit > maxd else credit
         return -mods(x, cp, cp)
     if rec == TR:
@@ -261,7 +263,8 @@ def hand_ak(node, rec):
             eq = d(hit[0], "Premium")
             break
     total = sum(d(c, "Premium") for c in covs) + eq
-    return r(total * (lim / d(parent, "LimitToUse") - 1) * f, 0)
+    ratio = OVR.get((rec, "LimitToUse"), lim / d(parent, "LimitToUse") - 1)
+    return r(total * ratio * f, 0)
 
 
 def hand_ca(node, rec):
@@ -271,6 +274,26 @@ def hand_ca(node, rec):
     blanket = val(parent, "EQCovIndicator") == "Yes, Included in Blanket"
     if val(parent, "EQCovIndicator") in (None, "No Coverage", "Not Applicable"):
         return D(0)
+    eq_endts = ("EarthquakeAndVolcanicEruptionEndorsement", "EarthquakeAndVolcanicEruptionEndorsementSubLimitForm",
+                "EarthquakeAndVolcanicEruptionCoverageWithFlatDollarDeductible", "EarthquakeAndVolcanicEruptionCoverageSubLimitFormWithFlatDollarDeductible")
+    suffix = {"Building": ("", "Bldg"), "PrsnlProp": ("PrsnlProp", "PrsnlProp"), "BusnIncome": ("BusnIncome", "BusnIncome")}[
+        "Building" if rec.endswith("Building") else "PrsnlProp" if rec.endswith("PrsnlProp") else "BusnIncome"]
+    if any(rc1.find(parent, P + e + (suffix[1] if "FlatDollar" in e else suffix[0])) for e in eq_endts):
+        return D(0)                                       # Limited EQ prices only without a standard EQ endorsement record
+    if rec.endswith("Building") and val(parent, "CovType") not in ("Building", "Improvements and Betterments",
+                                                                  "Condominium Association", "Builders Risk"):
+        return D(0)
+    cp = root(node)
+    if rec.endswith("PrsnlProp"):
+        covform = val(up(parent, 2), "CovForm")
+        if covform in ("Tobacco Sales Warehouse Coverage Form", "Class Rated Building Only, No Personal Property Coverage"):
+            return D(0)
+        if covform == "Legal Liability Coverage Form" and not blanket:
+            x = r(r(r(d(parent, "EQCauseOfLossAdjustment") * d(parent, "LegalLiabFactor"), 3) * d(parent, "LegalLiabAddlInsurableIntFactor"), 3)
+                  * d(node, "Limit") / 100, 0)
+            return r(r(x * d(cp, "CyberIncidentExclusionFactorEQ"), 0) * d(cp, "CyberIncidentExclusionCOLExcptnsFactorEQ"), 0)
+        if blanket and covform == "Legal Liability Coverage Form":
+            return D(0)
     if blanket:
         base = r(D(val(parent, "EQLimitToUse") or 0) / 100 * d(parent, "BlktEQAvgRate"), 0)
     else:
@@ -297,7 +320,11 @@ def va_parse(rec):
     return "T", m.group(1), TGROUP[m.group(2)]
 
 
-def va_on(cov, group, cont, st):
+#: RC-3's submitted-value cases: {key: value} read by the hand models where a submitted field survives its IsNull guard
+OVR = {}
+
+
+def va_on(cov, group, cont, st, form="BF"):
     ct = val(cont, "CovType")
     eq_on = val(st, "EQCovIndicator") in ("Yes, Included in Blanket", "Yes, Not Included in Blanket")
     if group == "Earthquake":
@@ -305,7 +332,8 @@ def va_on(cov, group, cont, st):
             return False
     elif group in ("Broad", "Special") and val(st, "CauseOfLossToUse") != group:
         return False
-    return {"CovA": ct not in (None, "Coverage C Only"),
+    # the broad form's Cov A tests only CovType != "Coverage C Only" (a blank passes); the tenants' form also needs it set
+    return {"CovA": ct != "Coverage C Only" if form == "BF" else ct not in (None, "Coverage C Only"),
             "CovB": ct in ("Coverages A and B", "Coverages A and B & C Separate"),
             "CovC": ct in ("Coverage C Only", "Coverages A and B & C Separate"),
             "CovBandC": ct == "Coverages A and B & C Combined"}[cov]
@@ -318,7 +346,7 @@ def hand_va(node, rec):
     form, cov, group = va_parse(rec)
     cont, st = node.parent, up(node, 3)
     cp = root(node)
-    if not va_on(cov, group, cont, st):
+    if not va_on(cov, group, cont, st, form):
         return D(0)
     # the container's factors BY HAND from the filed tables (not read off the engine): PostLossFactor 1.02 when
     # PostLossOrdinanceOrLawOption is "Yes", else 1.0; Factor / CovAFactor 1.15 and EQFactor / CovAEQFactor 1.85 unless "Coverage C
@@ -326,6 +354,7 @@ def hand_va(node, rec):
     ct = val(cont, "CovType")
     pl = table_val("VA", "PostLossOrdinanceOrLawOptionFactor", "Factor", Constant="Y") if val(cont, "PostLossOrdinanceOrLawOption") == "Yes" else D(1)
     fa = table_val("VA", "OrdinanceOrLawCoverageAFactor", "Factor", Constant="Y") if ct != "Coverage C Only" else D(1)
+    pl, fa = OVR.get((form, "PostLossFactor"), pl), OVR.get((form, "Factor"), fa)
     eq_el = val(st, "EQCovIndicator") not in (None, "No Coverage", "Not Applicable")
     fe = table_val("VA", "OrdinanceOrLawCovAEQFactor", "Factor", Constant="Y") if ct != "Coverage C Only" and eq_el else D(1)
     for f_, want in (("PostLossFactor", pl), ("Factor" if form == "BF" else "CovAFactor", fa), ("EQFactor" if form == "BF" else "CovAEQFactor", fe)):
@@ -476,7 +505,7 @@ def stored_credit():
     progress("C23-02  MA's STORED CREDIT RECORD")
     print("\n" + "=" * 90 + "\nC23-02  MA's STORED CREDIT RECORD\n" + "-" * 90)
     resp_files = sorted(f for f in gc.OUT.glob("*_response.json") if HOC in f.read_text(encoding="utf-8", errors="ignore"))
-    n = agree = 0
+    n = agree = n_on = 0
     for rp in resp_files:
         qp = Path(str(rp).replace("_response.json", "_request.json"))
         if not qp.exists():
@@ -492,11 +521,15 @@ def stored_credit():
         ours = [(val(x, "Premium"), val(x, "CoverageOnPolicyIndicator")) for x in find(data, HOC)]
         isov = [(o.get("Premium"), o.get("CoverageOnPolicyIndicator")) for o in iso]
         n += 1
-        ok = all(same(a[0], b[0]) and str(b[1]) in ("0", "None") for a, b in zip(ours, isov)) and not has_rem
+        if has_rem:          # a later chunk 23 case that switched it on: ours must equal ISO's figure
+            ok = len(ours) == len(isov) and all(same(a[0], b[0]) for a, b in zip(ours, isov))
+            n_on += 1
+        else:                # the fixtures' shape: no remediation record, switch 0, $0
+            ok = all(same(a[0], b[0]) and str(b[1]) in ("0", "None") for a, b in zip(ours, isov))
         agree += ok
         print(f"    {rp.name[:-14]:42s} remediation record sent: {has_rem}; ISO {isov} ours {ours}")
-    check(n >= 9 and agree == n, f"{agree} of {n} stored MA responses carry the credit record unpriced at ISO and ours: no "
-                                 f"building there has a remediation record, so the credit's switch is 0")
+    check(n - n_on >= 9 and agree == n, f"{agree} of {n} stored MA responses agree: {n - n_on} without a remediation record carry the "
+                                        f"credit unpriced at ISO and ours (switch 0); {n_on} with one price as ISO does")
 
 
 def _walk(o, tag, k=None):

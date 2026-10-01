@@ -3,9 +3,23 @@
 **Last worked 2026-10-01.** This is the resume point: where things stand, how to
 confirm it in two minutes, and what to pick up first.
 
+**Keeping things in sync (standing rule, 2026-10-01).** The task lists are the source of truth. A Stop hook
+(`.claude/settings.json` → `scripts/cf/hook_status_sync.py`) checks after every turn that CF-BUILD-STATUS.html, this
+page and the deployed page agree with them; on drift it hands the problems back to fix. After any status-page edit, run
+`scripts/cf/sync_status_page.py --push` (deployed copy, Federato/Ideation). At gates, 104_ also runs
+`check_status_docs.py --no-deployed` and `check_premium_census.py` (premium files the census could miss).
+
 ---
 
-## Pick up here (set 2026-10-01): chunk 23 OPEN, RC-2 done; next RC-3
+## Pick up here (set 2026-10-01): chunk 23 OPEN, RC-4 done; next RC-5
+
+**Chunk 23 RC-4 done 2026-10-01** (`scripts/cf/222_chunk23_rc4.py --live`): every family on a fuller state policy (MA two locations, AK an ordinary second building, CA two buildings, VA three forms on three buildings) **agrees with ISO**; the state-only list is closed (80 files, none unassigned; no in-force premium writer outside `SetPremium`, so 520 of 546 stands); the old packages: MA 2022 relocation prices nothing, but **AK 2020 and VA 2021 DO price, inside `ErcRate`** (the census's "no premium rule" was a SetPremium-only test). **OI-120 (new): pre-2022-10 policies cannot rate in our engine** (a `Null` inside a 2020 countrywide condition); old editions only. No engine change. 18 of 22. **Next: RC-5, C23-19 (downstream).**
+
+## Earlier (set 2026-10-01): chunk 23 RC-3 done
+
+**Chunk 23 RC-3 done 2026-10-01** (`scripts/cf/221_chunk23_rc3.py --live`): 43 zero, message, shared-name and exclusion cases **all agree with ISO**, every (level, message) equal. 30 of the chunk's own message rules fired at their level; AK fee limits under the coverage limits give negative fees (as written, at ISO too); a blank VA CovType switches the broad form's Cov A on and the tenants' off; the countrywide CP 04 26 rule overwrites `PersPropertyIncludedInBlanket`, which VA's CP 04 27 rule reads; VA's tenants' form reads no cyber factor. ISO twice closed the connection mid-run (re-sent; not a difference). No engine change. 15 of 22. **Next: RC-4, C23-16.**
+
+## Earlier (set 2026-10-01): chunk 23 RC-2 done
 
 **Chunk 23 RC-2 done 2026-10-01** (`scripts/cf/220_chunk23_rc2.py --live`, 2 min): 12 golden cases **all agree with ISO** (1,727 premiums, every message): MA heating oil (credit -$17 at its cap, -$9 under it), tenant relocation (the cap is per unit: $30 for 3 units over it), AK fees on Legal Liability (ISO truncates the per-mortgage ratio), CA Limited / Additional EQ (1,234.5 -> $1,235; a blanketed Limited EQ building is unreachable, $0 + ISO's no-EQ-blanket message) and all 41 VA records on three CovTypes (closes chunk 12's open VA priced case). Payloads with Mortgageholders E&O use 200_'s `payload` (its Limit is text). No engine change. 11 of 22. **Next: RC-3, C23-12 (zero cases).**
 
@@ -1019,7 +1033,7 @@ files and the `gl_engine/` edits are working-tree only.
 
 | | |
 |---|---|
-| [`CF-BUILD-STATUS.html`](CF-BUILD-STATUS.html) | **every chunk, every task, status — one page** |
+| [`CF-BUILD-STATUS.html`](CF-BUILD-STATUS.html) | **every chunk, every task, status — one page**. Edit it here only; it is mirrored to Ideation (`iso-rating-engine/cf-build-status`). After a work session that changed it, run `python scripts/sync_build_status_to_ideation.py` (opens a PR to Ideation's trunk) |
 | [`CF-PROPERTY-BUILD-ORDER.md`](CF-PROPERTY-BUILD-ORDER.md) | the 15-chunk plan and the eight-point gate |
 | [`CF-CHUNK0-BUILD-SPEC.md`](CF-CHUNK0-BUILD-SPEC.md) | the foundation, as built |
 | [`CF-CHUNK1-GOLDEN-CASE.md`](CF-CHUNK1-GOLDEN-CASE.md) · [`CF-CHUNK1-GATE.md`](CF-CHUNK1-GATE.md) | chunk 1 |
