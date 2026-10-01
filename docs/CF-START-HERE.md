@@ -5,7 +5,15 @@ confirm it in two minutes, and what to pick up first.
 
 ---
 
-## Pick up here (set 2026-10-01): chunk 22 GATED; next, chunk 23
+## Pick up here (set 2026-10-01): chunk 23 OPEN, RC-2 done; next RC-3
+
+**Chunk 23 RC-2 done 2026-10-01** (`scripts/cf/220_chunk23_rc2.py --live`, 2 min): 12 golden cases **all agree with ISO** (1,727 premiums, every message): MA heating oil (credit -$17 at its cap, -$9 under it), tenant relocation (the cap is per unit: $30 for 3 units over it), AK fees on Legal Liability (ISO truncates the per-mortgage ratio), CA Limited / Additional EQ (1,234.5 -> $1,235; a blanketed Limited EQ building is unreachable, $0 + ISO's no-EQ-blanket message) and all 41 VA records on three CovTypes (closes chunk 12's open VA priced case). Payloads with Mortgageholders E&O use 200_'s `payload` (its Limit is text). No engine change. 11 of 22. **Next: RC-3, C23-12 (zero cases).**
+
+## Earlier (set 2026-10-01): chunk 23 RC-1 done
+
+**Chunk 23 RC-1 done 2026-10-01** (`scripts/cf/219_chunk23_rc1.py`, 37 s, no ISO calls; tasks [`CF-CHUNK23-TASKS.md`](CF-CHUNK23-TASKS.md), 6 of 22). Every premium record of MA heating oil / tenant relocation, AK attorneys' fees, CA Additional / Limited EQ and VA's 41 Ordinance or Law files: hand = evaluator = engine on 13 trees. MA's stored credit never priced because nothing switched it on (it needs a remediation record on a building); MA's relocation cap is per unit; **AK's fees exist only on Legal Liability** (and the policy fee only with Mortgageholders E&O); CA's later packages fix a typo that moves no dollar; VA files no tables of its own. No engine change, no regression run. **Next: RC-2, C23-07 (MA heating oil, ISO live).**
+
+## Earlier (set 2026-10-01): chunk 22 GATED; next, chunk 23
 
 **Chunk 22, multi-location (Value Reporting Form and Additional Locations Special Coinsurance), GATED 9 of 9 on 2026-10-01, 24 of 24** ([`CF-CHUNK22-GATE.md`](CF-CHUNK22-GATE.md), tasks [`CF-CHUNK22-TASKS.md`](CF-CHUNK22-TASKS.md)). All 16 records ISO had never priced are ISO-confirmed, every figure predicted by hand first: RC-2 8 golden cases, RC-3 45 zero / message / name / exclusion cases, RC-4 the state rewrites, editions, **all 46 states** and an 8-location rounding probe, RC-5 the downstream total (**+$38 / -$622, +$1,991 / -$3,878, equal at ISO**: the forms switch the contents premium off and force the contents' coinsurance factor to the 100% row, which moves terrorism). **"Used" is unpriceable at ISO and ours (OI-119); no engine change.** Regression scaled back: `206_ --check` CLEAN (baseline refreshed, 1,259 requests), `157_ --all` 293 of 293, the chunk 22 entries through `104_` 5 of 5. **520 of 546 countrywide premium files built (95%).** **Next: chunk 23** (state-only coverages; tasks set, `CF-CHUNK23-TASKS.md`).
 
