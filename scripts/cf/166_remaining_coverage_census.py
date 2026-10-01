@@ -144,6 +144,8 @@ CLOSED = {
     "Sewer / drain backup", "Condo Unit-Owners Optional Coverages",
     # chunk 22 (census closed 2026-10-01, C22-23): multi-location, 16 CW files ("Used" is unpriceable at ISO, OI-119)
     "Value Reporting Form", "Additional Locations Special Coinsurance",
+    # chunk 24 (census closed 2026-10-01, C24-24): Builders Risk and CP 10 44, 20 CW files (OI-121 fixed in the chunk)
+    "Builders Risk", "Theft of Building Materials (not BR)",
 }
 
 

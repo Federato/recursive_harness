@@ -11,7 +11,27 @@ page and the deployed page agree with them; on drift it hands the problems back 
 
 ---
 
-## Pick up here (set 2026-10-01): chunk 23 GATED; next, chunk 24
+## Pick up here (set 2026-10-01): chunk 24 GATED; next, chunk 25
+
+**Chunk 24 GATED 2026-10-01, 9 of 9, 25 of 25** ([`CF-CHUNK24-GATE.md`](CF-CHUNK24-GATE.md)). RC-5 (`scripts/cf/228_chunk24_c24-22_downstream.py --live`): the policy total moves by exactly the Builders Risk premiums (+$1,976 OR, +$13,199 at 10 x, +$1,982 FL, +$1,861 NY), predicted before each call and **equal at ISO**; nothing else moves. Gate checks (the engine changed in the chunk: OI-121): the full `104_ --gate` **CLEAN 157 of 157** (stopped once for low memory at 153, the last 4 run separately), `157_ --all` 293 of 293. **540 of 546** countrywide files built (99%); 6 left, all flood. Open: OI-103 (four more refusal cases, chunk 28), two readers not priced (CA O&L increased period, FL Pollutant). **Next: chunk 25 (Flood), tasks set, `CF-CHUNK25-TASKS.md`.**
+
+## Earlier (set 2026-10-01): chunk 24 RC-4 done
+
+**Chunk 24 RC-4 done 2026-10-01** (`scripts/cf/227_chunk24_rc4.py --live`): **all 46 states agree with ISO** on a fuller Builders Risk policy (~200 premiums each, every message): the 16 rewriting states with records derived from their own rule text (FL's older package: no cyber factors, a sinkhole term); the 2023 V02 / V03 editions keep the FIRST of two same-numbered periods, 2026 the LAST (MO 738 / OR 1,214, ISO equal); Business Income (factor 2), antennas' BI and the building-level unmanned aircraft (EQ factor 0.495: $30 vs $60) price with Builders Risk on. Three more blank keys ISO refuses and ours prices (territory, NY's completed symbol): **added to OI-103**. No engine change in RC-4 (OI-121 was RC-2's). 21 of 25. **Next: RC-5, C24-22 (downstream).** The engine changed in this chunk, so the gate runs the full `104_ --gate`.
+
+## Earlier (set 2026-10-01): chunk 24 RC-3 done
+
+**Chunk 24 RC-3 done 2026-10-01** (`scripts/cf/226_chunk24_rc3.py --live`): **48 zero / message / shared-name / exclusion cases, all agree with ISO**, every premium and (level, message). A premium adjustment period after expiration prices **negative**, as written (ISO too); the $500 minimum fires on 250 and is silent at 500; NY's U / V / W both ways (a submitted symbol: NY's own rule is empty); KS / AL / RI's Public and Institutional Plan; the Builders Risk blanket sum and mixed-form messages. Submitted rates, Factor, ProRate and theft rate survive; **a submitted completed-value multiplier is overwritten**. The 2% EQ deductible on class A1 is refused by ISO and priced $0 by ours: **added to OI-103** (chunk 28). No engine change. 17 of 25. **Next: RC-4, C24-18 (the sixteen states).**
+
+## Earlier (set 2026-10-01): chunk 24 RC-2 done
+
+**Chunk 24 RC-2 done 2026-10-01** (`scripts/cf/225_chunk24_rc2.py --live`, 10 cases + 3 probes, all agree with ISO, every premium and message). Every container rate predicted by hand from the tables and the building's built factors (renovations Group II read from the engine, stated). Reporting form Group I $164 / II $321 / Special $94 / Broad $78 / EQ $20; renovations take the **larger** of the Builders Risk and completed-building rates ($454 Frame, $270 Fire Resistive; beside a reporting form renovations price $0 and the reporting form copies their rates); collapse $8 / $187 / $235; materials of others 250 -> $232; theft's deductible moves no dollar. **OI-121 probed and FIXED (your go): ISO pro-rates by plain exclusive days, no leap day removed** (L4 / L5: 0.73 / 0.52 where counting 29 February gives 0.74 / 0.53; the first two probes, L1 / L2, could not disagree and were replaced). The engine reads GetLeapDays as 0 on a one-year term (Property only) and equals ISO on all five probes; `206_ --check` after the change. 13 of 25. **Next: RC-3, C24-14 (zero cases).**
+
+## Earlier (set 2026-10-01): chunk 24 RC-1 done
+
+**Chunk 24 RC-1 done 2026-10-01** (`scripts/cf/224_chunk24_rc1.py`, 2m23s, no ISO calls, no engine change). All 293 stored policies re-rate unchanged. Builders Risk theft agrees hand = evaluator = engine = ISO on all **145** stored responses (one $0 by rounding; **FL prices theft on its own rule**, Group I rate x 0.25). Six test policies price every Builders Risk record three ways: the reporting form's five coverages, renovations (**$0 beside a reporting form**), collapse, materials of others, CP 10 44, and the premium adjustment periods. **OI-121 (new): a premium adjustment period starting after the effective date needs ISO's unpublished `GetLeapDays` function, which our engine refuses**; probe at C24-10. 6 of 25. **Next: RC-2, C24-07 (theft golden case).**
+
+## Earlier (set 2026-10-01): chunk 23 GATED; next, chunk 24
 
 **Chunk 23 GATED 2026-10-01, 9 of 9, 22 of 22** ([`CF-CHUNK23-GATE.md`](CF-CHUNK23-GATE.md)). RC-5 (`scripts/cf/223_chunk23_c23-19_downstream.py --live`): with each state family removed and restored, the policy total moves by exactly the family's premiums (+$192 / +$31 / +$806 / +$3,908 on the fuller policies, +$234 / +$31 / +$1,360 / +$3,902 on the golden ones), predicted before each call and **equal at ISO**; nothing else moves. Gate checks (no engine change): `206_ --check` clean, `157_ --all` 293 of 293, chunk 23 scripts registered in `104_` and clean. **520 of 546** countrywide files; the state-only list closed except WV's two flood files (chunk 25). Open: OI-120 (old editions only). **Next: chunk 24 (Builders Risk), tasks set, `CF-CHUNK24-TASKS.md`.**
 

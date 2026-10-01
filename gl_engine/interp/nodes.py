@@ -1069,9 +1069,29 @@ def _custom(ip, el, fr):
 
     Reachable only from Builders Risk premium adjustment. Refusing costs that
     one coverage and protects every other.
+
+    **One case is now answered by ISO itself (OI-121, the user's go,
+    2026-10-01): a one-year term, under `propagate` (Property), is 0.** The
+    rule subtracts the count from two day differences, (Exp - From - L) /
+    (Exp - Eff - L) with both differences negative (OI-107), so L = 1 reads as
+    (n + 1) / (tot + 1). Probed live on a 2023-09-17 term (366 days, 29
+    February inside): ISO's ProRate is 0.73 from 12/23/2023 and 0.52 from
+    03/09/2024, where L = 1 gives 0.74 / 0.53 (`225_` L4 / L5); a 2026 term
+    gives 0.50 (L3). Every other term length, and every other mode, is still
+    refused: those answers were not probed.
     """
     method = el.attrib.get("MethodName", "?")
     cls = el.attrib.get("ClassName", "?")
+    if method == "GetLeapDays" and getattr(ip, "product_skips_null", False):
+        args = {}
+        for ch in _kids(el):
+            if ip.tag(ch) == "Arg":
+                args.update(_arg_binding(ip, ch, fr))
+        a, b = args.get("dateFrom"), args.get("dateTo")
+        if isinstance(a, _dt.date) and isinstance(b, _dt.date) and b == _add_years(a, 1):
+            ip.note("leap-days-one-year-term",
+                    "GetLeapDays on a one-year term read as 0, as ISO answers (OI-121)", "Custom")
+            return 0
     raise InterpretError(
         f"Custom calls {cls}.{method} in {el.attrib.get('AssemblyName', '?')}, "
         f"a host function ISO ships as compiled code and does not publish. The "
