@@ -182,6 +182,13 @@ GOLDEN = [
     ("208_chunk21_rc2.py", 21,
      "sewer backup, condo unit-owners options (loss assessment, misc. real property), FL commercial units in residential condos",
      ["167", "164", "17", "170", "332", "68", "197", "69", "28", "26", "223", "244", "293"]),
+    # Chunk 22 (C22-22, 2026-10-01). Each derived by hand before the run and matched by ISO live: Value Reporting "Not Used"
+    # Group I $146 / $565 and Special $247 at each row's own rate on 0.75 x Limit (V1), General Information $183 (V1) /
+    # $481 with acquired 60,000 (G1) / $189 at exactly 50,000 (G2), blanketed Group I $597 (B1), Additional Locations
+    # Provisions Group I $348 / $174 at 90% (A1) and $267 on three locations (A2).
+    ("215_chunk22_rc2.py", 22,
+     "multi-location: Value Reporting Form (Not Used, blanketed, General Information) and Additional Locations Special Coinsurance",
+     ["146", "565", "247", "183", "481", "189", "597", "348", "174", "267"]),
 ]
 
 # The machinery each chunk added -- run whenever shared code changes, which is
@@ -310,6 +317,12 @@ MACHINERY = [
     ("210_chunk21_c21-12-13.py", "chunk 21 RC-3: shared names (submitted values), no cyber, the options container's stat codes"),
     ("211_chunk21_c21-14-17.py", "chunk 21 RC-4: the state rewrites, FL sewer, MO's edition caps, all 46 states, state-aware"),
     ("212_chunk21_c21-18_downstream.py", "chunk 21 RC-5: total +$651 / +$6,405; terrorism untouched"),
+    # Chunk 22 (2026-10-01). Engine-only runs (no --live); 217_ samples its cases (the 46-state run needs batches: memory).
+    ("213_chunk22_rc1.py", "chunk 22 RC-1: MLAR write order, built touchpoints, attach and switches, GI by hand, tables (OI-119 pinned)"),
+    ("216_chunk22_rc3.py", "chunk 22 RC-3: 10 zero cases, 24 message cases by level, 4 shared names, 5 exclusion probes, as derived"),
+    ("217_chunk22_rc4.py --cases T-AL1,T-AR,T-CA1,E1,E2,E3,E3b,E5,SC1,S-OR,S-FL,S-MO",
+     "chunk 22 RC-4: the state rewrites, MO V02's edition differences, 8-location rounding, a state sample, as derived"),
+    ("218_chunk22_c22-21_downstream.py", "chunk 22 RC-5: total +$38 / -$622 / +$1,991 / -$3,878; contents switched off, terrorism on 0.75 x Limit"),
 ]
 
 # Excluded on purpose, each with a reason -- no silent narrowing of scope.

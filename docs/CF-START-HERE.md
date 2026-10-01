@@ -1,11 +1,40 @@
 # Property build — start here
 
-**Last worked 2026-09-30.** This is the resume point: where things stand, how to
+**Last worked 2026-10-01.** This is the resume point: where things stand, how to
 confirm it in two minutes, and what to pick up first.
 
 ---
 
-## Pick up here (set 2026-09-30): chunk 21 GATED; next, chunk 22
+## Pick up here (set 2026-10-01): chunk 22 GATED; next, chunk 23
+
+**Chunk 22, multi-location (Value Reporting Form and Additional Locations Special Coinsurance), GATED 9 of 9 on 2026-10-01, 24 of 24** ([`CF-CHUNK22-GATE.md`](CF-CHUNK22-GATE.md), tasks [`CF-CHUNK22-TASKS.md`](CF-CHUNK22-TASKS.md)). All 16 records ISO had never priced are ISO-confirmed, every figure predicted by hand first: RC-2 8 golden cases, RC-3 45 zero / message / name / exclusion cases, RC-4 the state rewrites, editions, **all 46 states** and an 8-location rounding probe, RC-5 the downstream total (**+$38 / -$622, +$1,991 / -$3,878, equal at ISO**: the forms switch the contents premium off and force the contents' coinsurance factor to the 100% row, which moves terrorism). **"Used" is unpriceable at ISO and ours (OI-119); no engine change.** Regression scaled back: `206_ --check` CLEAN (baseline refreshed, 1,259 requests), `157_ --all` 293 of 293, the chunk 22 entries through `104_` 5 of 5. **520 of 546 countrywide premium files built (95%).** **Next: chunk 23** (state-only coverages; tasks set, `CF-CHUNK23-TASKS.md`).
+
+## Earlier (set 2026-10-01): chunk 22 RC-4 done; next RC-5
+
+**Chunk 22 RC-4 done 2026-10-01** (`scripts/cf/217_chunk22_rc4.py --live`; the 46 states with `--states`, one process per batch of ~11): the state layer (AL reads its own wind / hail record; AR DC NY RI hard-set 'No'; CA's CP 10 43 messages), the editions (MO V02 removes a blanketed VR Form whose contents sit at 90%; V02 / V03 rename the terrorism sub-limit message; "Used" refused in V02 too), **all 46 states** (both forms, 16 records each) and an 8-location rounding probe (**ISO rounds each full value x rate before averaging**: $3,589, not $3,610) **all agree with ISO**. FL needs 208_'s no-earthquake recipe. No engine change, no regression run. 20 of 24. **Next: RC-5, C22-21 (downstream), C22-22 (gate checks: `206_ --check` + `157_ --all`), C22-23 (census), C22-24 (gate).**
+
+## Earlier (set 2026-10-01): chunk 22 RC-3 done
+
+**Chunk 22 RC-3 done 2026-10-01** (`scripts/cf/216_chunk22_rc3.py --live`, 4m09s): 45 cases (10 zero cases, 24 message cases, 4 shared-name overrides, 5 exclusion probes) **all agree with ISO**: every predicted record, 11,977 premiums, every (level, message) multiset. 31 of the 40 in-scope messages fired at their own level (4 sit behind OI-119, CA's 2 go to C22-17, 3 were tested earlier). ISO, like the rule text, applies the VR Form Broad record's plain cyber factor twice ($130 not $131). Submitted AL coinsurance factor, VR incidental total and contents LimitToUse survive; a submitted AL MLAR does not. No engine change, no regression run. 16 of 24. **Next: RC-4, C22-17 (the state layer).**
+
+## Earlier (set 2026-10-01): chunk 22 RC-2 done
+
+**Chunk 22 RC-2 done 2026-10-01** (`scripts/cf/215_chunk22_rc2.py --live`, 51 s): 8 priced multi-location policies (Value Reporting "Not Used" at Special and Broad + EQ, blanketed at Monthly Reporting, General Information incidental / acquired / seasonal, Additional Locations on two and three locations) **all agree with ISO**, 2,308 premiums field for field and every message; "Used" refused as predicted (OI-119). Hand = evaluator = engine on every record first. No engine change, so no regression run (the scaled-back rule). 12 of 24. **Next: RC-3, C22-13 (zero cases).**
+
+## Earlier (set 2026-10-01): chunk 22 RC-1 done
+
+**Chunk 22 RC-1 done 2026-10-01** (`scripts/cf/213_chunk22_rc1.py`, all checks pass, 1m47s, no ISO calls; tasks
+[`CF-CHUNK22-TASKS.md`](CF-CHUNK22-TASKS.md), 6 of 24). **OI-119:** the rule that finds the largest contents limit reads its own running value
+(`maxLimit`) before binding it. **ISO refuses every Value Reporting policy with average rates "Used"** (`214_oi119_probe.py --live`,
+the same error as ours); every CW edition has the rule, so our engine already agrees and needs no change. Other findings:
+one average rate per policy, copied to every contents row (a submitted one is overwritten); the Additional Locations
+roll-up sums a field nothing writes and nothing reads (moves no dollar); either form switches the ordinary contents
+premium off; the Value Reporting Form survives only on the five reporting coinsurance values. **Regression scaled back
+(user, 2026-10-01):** no run after an RC unless the engine changed; `206_ --check` after an engine change; at the gate
+`206_ --check` + `157_ --all`, and the full `104_ --gate` only if the engine changed in the chunk. **Next: RC-2, C22-07
+("Not Used"); the "Used" golden cases become refusal cases.**
+
+## Earlier (set 2026-09-30): chunk 21 GATED; next, chunk 22
 
 **Chunk 21, sewer backup and condo options, GATED 9 of 9 on 2026-09-30, 21 of 21**
 ([`CF-CHUNK21-GATE.md`](CF-CHUNK21-GATE.md), tasks [`CF-CHUNK21-TASKS.md`](CF-CHUNK21-TASKS.md)): sewer backup on its

@@ -142,6 +142,8 @@ CLOSED = {
     # chunk 21 (census closed 2026-09-30, C21-20): sewer backup and the condo unit-owners options, 7 CW files
     # (FL's 5 state-only condo files are not in this countrywide count)
     "Sewer / drain backup", "Condo Unit-Owners Optional Coverages",
+    # chunk 22 (census closed 2026-10-01, C22-23): multi-location, 16 CW files ("Used" is unpriceable at ISO, OI-119)
+    "Value Reporting Form", "Additional Locations Special Coinsurance",
 }
 
 
