@@ -2,6 +2,9 @@
 
 **2026-09-17. Building, Basic Group II, class-rated, scheduled — Oregon.**
 
+> **Point 9 closed 2026-10-02 (chunk 27 RC-2, `239_chunk27_rc2.py --live`).** The golden case sent to ISO as the engine rates it: (level, message) 2 = 2, both in the register (M-001, M-002). Nothing unexplained.
+
+
 Assessed against the eight-point gate in [`CF-PROPERTY-BUILD-ORDER.md`](CF-PROPERTY-BUILD-ORDER.md).
 Task list and open items: [`CF-CHUNK2-TASKS.md`](CF-CHUNK2-TASKS.md).
 

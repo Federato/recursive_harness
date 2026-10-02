@@ -2,8 +2,7 @@
 
 **Special Class, building side.** Filed 2026-09-18.
 
-**8 of 9.** Point 9 (validation messages) is outstanding on chunks 1–6 alike and
-is a project-level item, not a chunk 6 one.
+**9 of 9** (point 9 closed 2026-10-02 by chunk 27 RC-2; at the gate it was outstanding on chunks 1–6 alike).
 
 | # | Gate point | | Evidence |
 |---|---|---|---|
@@ -15,7 +14,7 @@ is a project-level item, not a chunk 6 one.
 | 6 | Shared-name traps diffed, not assumed | ✅ | Same doc — **39 shared names, 13 reading different tables**; chunk 3's prediction held a third time |
 | 7 | Every exclusion's endorsement record identified per datadef group | ✅ | Same doc — vandalism / wind-hail / theft each file a `*SpecialClass` record; cyber files one at the **policy** level |
 | 8 | The edition basis stated; any table from an older edition says so | ✅ | See below — and ISO's own error message named **three different editions in one call** |
-| 9 | No unexplained validation message on the golden case | ⬜ | 3–4 messages per case, **matched by ISO exactly**; still owed on all six chunks |
+| 9 | No unexplained validation message on the golden case | ✅ | **2026-10-02** (`239_chunk27_rc2.py --live`, C27-03): Basic 5 = 5, Broad 5 = 5, Special 6 = 6 at ISO, same level and text; every message in the register (M-001 ×3 levels, M-002, M-004, M-005) |
 
 **ISO confirmation:** [`CF-CHUNK6-ISO-CONFIRMATION.md`](CF-CHUNK6-ISO-CONFIRMATION.md)
 — **7 calls, 7 agreements**, message counts matching on every one.

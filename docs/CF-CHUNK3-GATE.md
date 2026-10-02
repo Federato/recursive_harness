@@ -2,8 +2,8 @@
 
 **Building: Broad and Special.** Opened 2026-09-17, gated 2026-09-18.
 
-> **Chunk 3 passes 8 of 9, with point 9 outstanding on this chunk and on
-> chunks 1 and 2 alike.** No engine code was written for it — the third
+> **Chunk 3 passes 9 of 9** (point 9 closed 2026-10-02 by chunk 27 RC-2; it was outstanding at the gate on this chunk and on
+> chunks 1 and 2 alike). No engine code was written for it — the third
 > coverage in a row to run on chunk 0's foundation unchanged.
 
 | | |
@@ -146,7 +146,9 @@ lands on `CF_FL_20241201_V01` over `CF_CW_20230801_V01`, an older pair, and
 rates correctly there — which is the edition chain doing its job rather than an
 anomaly.
 
-### 9 · No unexplained validation message — **NOT DONE**
+### 9 · No unexplained validation message — **DONE 2026-10-02** (chunk 27 C27-03)
+
+`239_chunk27_rc2.py --live`: Broad 2 = 2, Special 3 = 3 at ISO, same level and text; every message in the register (M-001, M-002, M-004 the Special theft deductible). The original note, kept:
 
 Owed on chunks 1, 2 and 3 alike. What this chunk adds is the strongest evidence
 yet that it will pass: **ISO's message count matched the engine's on all seven

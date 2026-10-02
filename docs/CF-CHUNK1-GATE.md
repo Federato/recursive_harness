@@ -2,6 +2,9 @@
 
 **2026-09-17. Building, Basic Group I, class-rated, scheduled — Oregon.**
 
+> **Point 9 closed 2026-10-02 (chunk 27 RC-2, `239_chunk27_rc2.py --live`).** Each golden case sent to ISO as the engine rates it, the (level, message) multiset compared: case A 2 = 2, case C 2 = 2, case B 3 = 3 (the contents cases sent with the building's `WindstormOrHailDeductible`; without it ISO refuses, OI-103). Every message is in the register (M-001 CP 03 20, M-002 CP 10 75 / 76, M-005 full value). Nothing unexplained.
+
+
 Assessed against the eight-point gate in [`CF-PROPERTY-BUILD-ORDER.md`](CF-PROPERTY-BUILD-ORDER.md).
 
 > ## Verdict: **PASS on 8 of 8.**

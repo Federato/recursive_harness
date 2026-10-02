@@ -2,9 +2,8 @@
 
 **Special Class Business Income.** Filed 2026-09-18.
 
-**8 of 9.** Point 9 (validation messages) is outstanding on chunks 1–7 alike —
-and chunk 7 is the **first chunk where ISO's message count does not match the
-engine's**, which sharpens it.
+**9 of 9** (point 9 closed 2026-10-02 by chunk 27 RC-2). At the gate chunk 7 was the first chunk whose ISO message count did not
+match the engine's; **the gap was the two sides rating different inputs** (see below), plus one real difference, OI-126.
 
 | # | Gate point | | Evidence |
 |---|---|---|---|
@@ -16,7 +15,7 @@ engine's**, which sharpens it.
 | 6 | Shared-name traps diffed, not assumed | ✅ | `04_shared_names.py` now reports **seven** chains — 25 shared names, 11 reading different tables |
 | 7 | Every exclusion's endorsement record identified per datadef group | ✅ | `05_exclusion_records.py` — vandalism, wind/hail and theft each file a `*SpclClassBusnIncome` record; cyber is policy-level |
 | 8 | The edition basis stated | ✅ | As of 2026-09-17 over `CF CW 20260601 V01`; FL still resolves over `CF_CW_20230801_V01`, as chunk 6 established |
-| 9 | No unexplained validation message on the golden case | ⬜ | **ISO 3, engine 5** on the Basic call and **ISO 1, engine 4** with the parent's deductible removed — see below |
+| 9 | No unexplained validation message on the golden case | ✅ | **2026-10-02** (`239_chunk27_rc2.py --live`, C27-04): the same request to both, Basic 5 = 5, Broad 5 = 5, Special 6 = 6; deductible removed ISO 3, ours 4, the extra one **explained: OI-126** (messages only, 64 of 64 premiums equal) — see below |
 
 **ISO confirmation: 5 calls, 5 agreements** — including the one that mattered.
 
@@ -58,6 +57,27 @@ is broken.** Both sides agree on every premium, so this is not a rating
 divergence — but it is the first hard evidence that our message set is not
 ISO's, and gate point 9 cannot be closed on any chunk until it is explained.
 Recorded here rather than investigated, because it reaches back into chunks 1–6.
+
+### Explained 2026-10-02 (chunk 27 C27-04, `239_chunk27_rc2.py --live`)
+
+**The counts above compared two different inputs.** `53_` sent ISO a hand-built, sparse payload (the Special Class
+item and its BI record, no building, no structure deductibles); the engine figures came from `50_`'s full golden tree.
+Sent the **same** request, ISO and ours agree:
+
+| Call | ISO | ours | |
+|---|---|---|---|
+| OR Basic | 5 | 5 | equal (level and text) |
+| OR Broad | 5 | 5 | equal |
+| OR Special | 6 | 6 | equal |
+| OR, parent's deductible removed | 3 | 4 | one extra, **OI-126** |
+
+Every one is in the register: M-001 (CP 03 20, at the building and twice at the item), M-002, M-004, M-005.
+
+**The one real difference (OI-126).** With the item's deductible removed, the location asks "do its special class items
+carry different deductibles?" (`SetMultipleDiffDeductibleSpclIndicator`). One item, no deductible: **ISO answers "No"**,
+ours "Yes", because our `FirstNonNull` skips the rule's own "" fallback and then compares null to "". "Yes" raises *"Multiple
+Deductible Form CP 03 20 Must Be Attached For Different Fixed Dollar Amount Deductibles For Each Location"*. Messages only;
+every premium equal. The fix is an engine change: chunk 28, with the user's go.
 
 ---
 

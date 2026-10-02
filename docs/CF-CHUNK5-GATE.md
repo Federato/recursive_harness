@@ -3,8 +3,8 @@
 **Business Income: the `Factor` chain and all four cause-of-loss forms.**
 Opened and gated 2026-09-18.
 
-> **Chunk 5 passes 8 of 9**, with point 9 outstanding here and on chunks 1–4
-> alike. **No engine code was written** — the fifth coverage in a row on chunk
+> **Chunk 5 passes 9 of 9** (point 9 closed 2026-10-02 by chunk 27 RC-2; at the gate it was outstanding here and on chunks 1–4
+> alike). **No engine code was written** — the fifth coverage in a row on chunk
 > 0's foundation, and the first that is arithmetically downstream of another.
 
 | | |
@@ -117,7 +117,9 @@ universally.
 `OR@20260917` over `CF_CW_20260601_V01`, as chunks 1–4. The sweep resolves each
 jurisdiction's own chain.
 
-### 9 · No unexplained validation message — **NOT DONE**
+### 9 · No unexplained validation message — **DONE 2026-10-02** (chunk 27 C27-03)
+
+`239_chunk27_rc2.py --live`: Basic, Broad, Special 2 = 2 each at ISO; both in the register (M-001, M-002). The original note, kept:
 
 Owed on all five chunks. **Chunk 5 adds no new message** — every run returns
 the same two or three seen throughout (`CP 03 20`, `CP 10 75/76`, and the theft

@@ -2,8 +2,8 @@
 
 **Contents (Personal Property), all four forms.** Opened and gated 2026-09-18.
 
-> **Chunk 4 passes 8 of 9**, with point 9 outstanding here and on chunks 1, 2
-> and 3 alike. **No engine code was written** — the fourth coverage in a row on
+> **Chunk 4 passes 9 of 9** (point 9 closed 2026-10-02 by chunk 27 RC-2; at the gate it was outstanding here and on chunks 1, 2
+> and 3 alike). **No engine code was written** — the fourth coverage in a row on
 > chunk 0's foundation, and the first to rate a repeating group.
 
 | | |
@@ -128,7 +128,9 @@ at the policy level.
 jurisdiction's own chain; CA lands on `CF_CA_20251201_V01` over an older
 countrywide pair and rates correctly there.
 
-### 9 · No unexplained validation message — **NOT DONE**
+### 9 · No unexplained validation message — **DONE 2026-10-02** (chunk 27 C27-03)
+
+`239_chunk27_rc2.py --live`: Basic 3 = 3, Broad 3 = 3, Special 4 = 4 at ISO (the contents cases sent with the building's `WindstormOrHailDeductible`; without it ISO refuses, OI-103); every message in the register (M-001, M-002, M-004, M-005). The refusal below is now located: the lookup reads the **building's** field. The original note, kept:
 
 Owed on all four chunks. Chunk 4 adds one new message — *"Full Value cannot be
 lower than the Limit"* — which fires because the Contents record carries a

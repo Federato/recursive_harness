@@ -22,7 +22,11 @@ from __future__ import annotations
 import collections
 import html
 import re
+import sys
 from pathlib import Path
+
+# the docs carry symbols (⬜ ✅) the Windows console code page cannot encode: write UTF-8 (2026-10-02 refresh crashed without it)
+sys.stdout.reconfigure(encoding="utf-8")
 
 ROOT = Path(__file__).resolve().parents[2]
 DOCS = ROOT / "docs"

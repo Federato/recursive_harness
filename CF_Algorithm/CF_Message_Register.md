@@ -65,6 +65,9 @@ the base deductible before we send" is.
 | M-001 | 2026-09-17 | AL | CP 03 20 Must Be Attached When Fixed Dollar Amount Deductible For Each Location Are Different Than Windstorm Or Hail Deductible Or Theft Deductible | `CommercialPropertyStructure` | Payload defect | **Resolved** |
 | M-002 | 2026-09-21 | OR | Either CP 10 75 Or CP 10 76 must be attached | `CommercialProperty` | Designed out (not scheduled) | **Open, by design** |
 | M-003 | 2026-09-23 | OR | CP 04 15 Debris Removal Additional Insurance must have a limit greater than $25,000 | `CommercialPropertyStructure` | Input validation, by filing (ISO-confirmed) | **Understood** |
+| M-004 | 2026-10-02 | OR | Select a valid Theft Deductible with Theft Coverage included | `CommercialPropertyStructure`, `CommercialPropertySpecialClass` | Input validation, by filing (ISO-confirmed) | **Understood** |
+| M-005 | 2026-10-02 | OR | Full Value cannot be lower than the Limit | `CommercialPropertyPersonalProperty`, `CommercialPropertySpecialClass` (and `Structure`) | Input validation, by filing (ISO-confirmed) | **Understood** |
+| M-006 | 2026-10-02 | OR | Deductible not valid with Coverage form selected at Building and/or Occupancy Class levels | `CommercialPropertyStructure` | Input validation, by filing (ISO-confirmed) | **Understood** |
 
 ---
 
@@ -172,6 +175,24 @@ cells decide they are "on the policy" before `MinimumLimit` is looked up, so a l
 the minimum rates at (Limit − MinimumLimit)/100 < 0. ISO does the same: limit 10,000 returns
 −$21 / −$3 both sides. An error message, not a refusal, so a caller that ignores messages
 would bill a credit.
+
+---
+
+### M-004..M-006 — the golden cases' input messages (chunk 27 RC-2)
+
+**Reported:** 2026-10-02, Oregon, from the chunks 1–8 golden cases (`scripts/cf/239_chunk27_rc2.py --live`). Each fires
+identically at ISO on the same request: same level, same text, same count.
+
+* **M-004**, `DoMessageSelectAValidTheftDeductibleWithTheftCoverageIncluded` (Structure; SpecialClass has its own): cause
+  of loss Special, theft not excluded, `TheftDeductible` blank or "Not Applicable", not multi-unit blanket. The Special
+  golden cases send no theft deductible.
+* **M-005**, `DoMessageFullValueCannotBeLowerThanTheLimit`: not in a blanket and `Limit` > the full value field
+  (blank on the contents and Special Class golden cases). It does not stop the premium.
+* **M-006**, the Legal Liability deductible check: a deductible sent with the Legal Liability coverage form (chunk 8's
+  building cases, which keep chunk 2's deductible).
+
+**Classification — input validation, by filing.** None moves a premium; each is a golden-case input the case was not
+testing, and each is ISO's own message.
 
 ---
 

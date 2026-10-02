@@ -121,6 +121,16 @@ coverage.
 > dedicated "rating basis" cross-reference table to this document in a future pass rather than relying
 > on readers to notice the pattern across many separate docs.
 
+> **2026-10-02 — the rating ENGINE's Specific / Tentative path is built and ISO-confirmed (Property chunk 26,
+> `docs/CF-CHUNK26-GATE.md`).** This is the engine (`cf_engine`), not the Excel rater: the rater's gap above is
+> unchanged. In the engine, Specific and Tentative Group I (building, contents, BI), California's One-Term Loss
+> Cost, and Specific Group II in the 36 states that offer it were traced from the rule text, predicted by hand,
+> and matched by ISO live in all 46 states and every countrywide edition (MO's 2023 V02 differs and ISO follows
+> it); the 126 distinct stored Specific / Tentative policies re-rate with every premium equal to ISO. Facts a
+> rater build would need: contents price on their OWN `SpecificGroupIRate` (none → $0), BI on the building's;
+> FL NY WV and MO (V02) leave the roof ACV factor out of the Specific formula; a blank `RatingType` prices at
+> rate 1.0; CA One-Term leaves BI at 1.0 (OI-124). It adds no countrywide premium file: 546 of 546 unchanged.
+
 ---
 
 ## Part B — Endorsement/rider families with their own rating definition: not yet documented (92)

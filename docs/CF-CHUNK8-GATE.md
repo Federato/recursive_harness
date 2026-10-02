@@ -2,8 +2,8 @@
 
 **Legal Liability, Building and Contents.** Filed 2026-09-18.
 
-**7 of 9.** Point 9 is outstanding project-wide; **point 8 is held open on
-purpose** — see below.
+**8 of 9** (point 9 closed 2026-10-02 by chunk 27 RC-2). **Point 8 is held open on
+purpose** — see below (chunk 27 C27-06).
 
 | # | Gate point | | Evidence |
 |---|---|---|---|
@@ -15,7 +15,7 @@ purpose** — see below.
 | 6 | Shared-name traps diffed | ✅ | **7 shared, 0 reading different tables — and passing did not test the thing that would hurt.** See below |
 | 7 | Every exclusion's endorsement record identified | ✅ | `05_exclusion_records.py` — **Legal Liability files none of its own.** It is a *branch* of Building and Contents, not a coverage beside them, so it inherits both sides' records wholesale |
 | 8 | The edition basis stated | ⬜ | **Held open.** Three jurisdictions (CA, FL, PR) produce no Legal Liability premium and the reason is not yet established — see below |
-| 9 | No unexplained validation message | ⬜ | Owed project-wide |
+| 9 | No unexplained validation message | ✅ | **2026-10-02** (`239_chunk27_rc2.py --live`, C27-05): Building Basic / Broad / Special 2 = 2 each; Contents 3 = 3, 3 = 3, 4 = 4 (the contents cases sent with the building's `WindstormOrHailDeductible`; without it ISO refuses, OI-103); every message in the register (M-001, M-002, M-004, M-005, M-006 the Legal Liability deductible) |
 
 **ISO:** 3 of 5 confirmed, 1 payload-blocked, **1 divergence**.
 
@@ -43,7 +43,7 @@ of a fact. **The gate stays at 7 of 9 until they are named.**
 | Building Broad | 4 | **4** ✅ |
 | Building Special | 12 | **12** ✅ |
 | Blanket elected | **0** | **0** ✅ — *and both contradict the map* |
-| Builders Risk + reporting form | **refuses** | **rates, $1** ❌ |
+| Builders Risk + reporting form | **refuses** | **rates, $1** ❌ → **fixed 2026-09-23 (OI-110): ours now rates $1, as ISO** (marked 2026-10-02, chunk 27 C27-02) |
 | Contents Basic Group I | 132 | *payload refused — unconfirmed* |
 
 ### ISO rates where we refuse — OI-99's second instance, in the opposite direction
@@ -75,6 +75,11 @@ ISO refuses the Contents payload on a blank-key lookup of
 already recorded. Supplying the field on the Personal Property record did not
 clear it. **Our $132 stands on our own arithmetic only**, and is listed that way
 rather than counted.
+
+**Confirmed 2026-10-02 (chunk 27 C27-05).** The lookup reads `../../../../WindstormOrHailDeductible`, which from the
+Personal Property record is the **building** (the Table wrappers count), so a copy on the contents could never clear it.
+With the building's `WindstormOrHailDeductible` "1,000", ISO rates all three Contents cases and **every premium (58 of
+58) and message agrees**: the $132 is ISO-confirmed. As built (no building value) ISO still refuses: OI-103's class.
 
 ---
 

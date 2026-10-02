@@ -11,7 +11,43 @@ page and the deployed page agree with them; on drift it hands the problems back 
 
 ---
 
-## Pick up here (set 2026-10-02): chunk 25 GATED; every countrywide coverage built
+## Pick up here (set 2026-10-02): chunk 27 RC-2 done
+
+**Chunk 27 RC-2 done 2026-10-02** (`scripts/cf/239_chunk27_rc2.py --live`, no engine change; 5 of 18). **Gate point 9 is
+closed on chunks 1–8**: every golden case sent to ISO as the engine rates it, the (level, message) multiset equal on all 25
+runs. Chunk 7's old "ISO 3, engine 5" compared a hand-built ISO payload with the engine's full tree; the same request
+agrees. The one real difference: **OI-126** (ours fires one extra CP 03 20 message on a special class item with no
+deductible: our `FirstNonNull` skips a filed "" fallback; messages only, chunk 28). ISO refuses every contents golden case
+unless the **building** carries `WindstormOrHailDeductible` (OI-103's class); with it, chunk 8's contents premiums are now
+ISO-confirmed. Register M-004..M-006 added. Gate files 1–7 at 9 of 9 (1–2: point 9 noted on their eight-point gates),
+chunk 8 at 8 of 9 (point 8 is C27-06). **Next: RC-3, C27-06 (CA and FL Legal Liability).** Uncommitted: chunk 26 and
+chunk 27 so far (commit only when asked).
+
+## Earlier (set 2026-10-02): chunk 27 RC-1 done
+
+**Chunk 27 RC-1 done 2026-10-02** (no ISO calls, no engine change; tasks [`CF-CHUNK27-TASKS.md`](CF-CHUNK27-TASKS.md), 2 of 18). The census (`908_`, now UTF-8 safe) refreshed after chunks 18–26: chunks 1–8's open points unchanged. Register: **OI-114 registered as the canonical row, OI-120 merged into it** (a census of every CF package: `<rul:Null/>` in 5, none in force; NC 2023-08 / 2024-02 flood operational-unit rule newly recorded); **OI-118 merged into OI-106**. Stale status-page rows corrected with dates (commit status: through chunk 25; input validation: eight inputs; point 9: owed on chunks 1–8; chunk 27's plan row), chunk 8's ❌ marked fixed by OI-110. An owner for every open item (chunk 27 closes with evidence; OI-99 / 103 / 117 / 123 / 125 / 113 and the design questions go to chunk 28). Chunk 26 and this work are uncommitted. **Next: RC-2, C27-03 (point 9 on chunks 1–6).**
+
+## Earlier (set 2026-10-02): chunk 26 GATED; next, chunk 27
+
+**Chunk 26 (Specific and Tentative rating) GATED 2026-10-02, 9 of 9, 23 of 23** ([`CF-CHUNK26-GATE.md`](CF-CHUNK26-GATE.md)). RC-5 (`scripts/cf/238_chunk26_c26-20_downstream.py --live`): Class → Specific moves the policy total by exactly the core records' differences (+$56 OR, +$701 with the rates doubled, +$68 FL, −$149 SC Group II, −$794 MO), each predicted before its ISO call and **equal at ISO**; nothing else moves; stat values and identification codes equal. Gate checks (no engine change in the chunk): `104_ --quick` CLEAN (34 scripts, every golden case of chunks 1–26), `206_ --check` SNAPSHOT CLEAN (1,697 requests), `157_ --all` 293 of 293. 546 of 546 unchanged; **the second (Specific / Tentative) rating path is built**. Open: OI-124 (CA One-Term BI at 1.0, ISO agrees), OI-125 (occupancy counts, messages only), OI-99 (31 more refusals, chunk 28). **Next: chunk 27 (open gate points on closed chunks, tasks set, `CF-CHUNK27-TASKS.md`); chunk 28's engine decisions each need your go.**
+
+## Earlier (set 2026-10-02): chunk 26 RC-4 done
+
+**Chunk 26 RC-4 done 2026-10-02** (`scripts/cf/237_chunk26_rc4.py --live`; the 46 states with `--states` in four batches; 48 policies, no engine change): **every premium and (level, message) agrees with ISO.** All 46 states on a Specific building, Specific Group II in the 36 that offer it. A submitted roof ACV factor (0.900, IsNull-guarded) made each state's shape show in dollars: the countrywide shape and KY price on 0.270 (OR $326), **FL NY WV and MO ignore the roof factor** (0.300, FL / NY $354). **MO's CW 2023 V02 rules differ and ISO follows them**: no roof factor, and BI on the building's FINAL rate (submitted 0.500 → BI 0.400, $215; the 2026 reading 0.240). Only MO's 4 edition differences name the rating type (V03's 91 do not; V04 none). 19 of 23. **Next: RC-5, C26-20 (downstream and no-move).**
+
+## Earlier (set 2026-10-02): chunk 26 RC-3 done
+
+**Chunk 26 RC-3 done 2026-10-02** (`scripts/cf/236_chunk26_rc3.py --live`, 23 cases, no engine change): every premium equal to ISO, every (level, message) on 22. **A blank `RatingType` prices the building at rate 1.0 ($1,204; Specific $362, Class $287) and BI at 1.0 ($538)**, ISO the same; no specific rate → building and BI $0; blank Group II rating type → Group II $0; the hazard messages fire one below each threshold (Low always) and the specific Group II still prices; FL residential and DC fraternity messages; a submitted copy of the rating type is overwritten, a submitted building `BasicGroupIRate` survives; protection class, territory and fire-safe vault move no Specific dollar. **OI-125 (new, messages only):** ISO's occupancy counts stay 0 even when the occupancy's rating type is submitted; ours counts it and raises "only one apartment…". 15 of 23. **Next: RC-4, C26-16 (the Group I rewrites).**
+
+## Earlier (set 2026-10-02): chunk 26 RC-2 done
+
+**Chunk 26 RC-2 done 2026-10-02** (`scripts/cf/235_chunk26_rc2.py --live`, no engine change): **7 golden cases, all agree with ISO**, every premium and message, each predicted with a competing reading ISO did not match. Specific building Group I $362 (class $287); contents on their OWN rate ($150; $335 at 0.450 where the building's rate gives $223); BI on the building's ($137); Tentative identical plus its form; SC Specific Group II at Severe 10,000 / High 25,001 / Medium 50,001 sq ft ($67 / $37 / $24 vs Class $175 / $90 / $12). **OI-124 (new): CA One-Term Loss Cost leaves BI at rate 1.0 ($538, not $121), and ISO does the same.** Payload note: outside OR set `BasicGroupIIRatingTerr` to a territory the state's Group II rate table files (SC Inland): the class base-rate lookup runs even on Specific Group II and ISO refuses a missing row. 11 of 23. **Next: RC-3, C26-12 (zero cases).**
+
+## Earlier (set 2026-10-02): chunk 26 RC-1 done
+
+**Chunk 26 RC-1 done 2026-10-02** (`scripts/cf/234_chunk26_rc1.py`, no ISO calls, no engine change; `--skip-replay` skips the 3-min replay; tasks [`CF-CHUNK26-TASKS.md`](CF-CHUNK26-TASKS.md), 6 of 23). The 598 stored Specific / Tentative requests are 138 distinct policies, 126 with an ISO response in 16 states: **every one re-rates with every premium equal to ISO** (15,234) and the same messages; hand = engine on all 122 Specific buildings, their contents and BI, and 15 Group II rates. **Contents copy the rating type but price on their own `SpecificGroupIRate`** (none: rate 0); **BI uses the building's**; Tentative = Specific + the Tentative Rate form; FL NY WV MO round the Specific rate once without the roof factor, KY keeps it. 36 states rate Specific Group II (blank → 0.0; FL excludes 21 residential codes; NY has its own shape). **CA's One-Term Loss Cost prices building and contents as Specific but BI falls to 1.0** (probe C26-11). The 31 failed calls are OI-99 cases. **Next: RC-2, C26-07 (building Specific Group I, ISO live).**
+
+## Earlier (set 2026-10-02): chunk 25 GATED; every countrywide coverage built
 
 **Chunk 25 (Flood) GATED 2026-10-02, 9 of 9, 26 of 26** ([`CF-CHUNK25-GATE.md`](CF-CHUNK25-GATE.md)). RC-5 (`scripts/cf/233_chunk25_c25-23_downstream.py --live`): the policy total moves by exactly the flood premiums (+$3,521 OR, +$3,277 with limits halved, +$10,522 NY, +$3,116 AK, +$22,828 MO), predicted before each call and **equal at ISO**; nothing else moves. Gate checks (no engine change in the chunk): `206_ --check` SNAPSHOT CLEAN (1,609 requests), `157_ --all` 293 of 293, chunk 25 scripts registered in `104_` and clean. **546 of 546 countrywide premium files built (100%)**; the state-only list closed (WV's two O&L flood forms built). Open: OI-122 (ISO defect, ISO agrees with ours), OI-123 (MO messages only, engine change needs your go), OI-103 (chunk 28). **Next: chunk 26 (Specific and Tentative rating, tasks set, `CF-CHUNK26-TASKS.md`) or chunk 27 (open gate points, can run any time); chunk 28's engine decisions each need your go.**
 
