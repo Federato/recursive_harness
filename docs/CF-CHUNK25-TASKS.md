@@ -32,7 +32,27 @@ runs after each RC, the full one at the gate.
 Business Income (chunks 1–7) and blanket (9), and it closes two items left open: chunk 17's
 Off-Premises flood factor and WV's two Ordinance or Law flood forms (chunk 23's list).
 
-**Status: TASKS SET 2026-09-28, 1 of 26** (the census). Next, once chunk 24 is gated: RC-1, C25-02.
+**Status: RC-2 done 2026-10-02, 13 of 26** (`scripts/cf/230_chunk25_rc2.py --live`: 22 golden cases, **all agree with ISO**, every premium and message; no engine change). RC-1 done the same day (`229_`). **OI-122 answered: ISO prices the rule as written** ($0 / the last building's rate), as our engine does. **Next: RC-3, C25-14 (zero cases).**
+
+## RC-1 findings (2026-10-02), in plain English first
+
+**Flood is priced from a loss cost, then ONE adjustment table picked by the deductible, then the community discount.**
+The census read it as "loss cost × seven factors (zone, floor, stories…)". That was wrong: the flood zone is a key of
+the loss cost, floor and stories feed statistics only, and the deductible chooses **one** of the seven
+rate-modification tables (500 / 1,000 → table 1 … 1,000,000 → table 7). That table is keyed by the deductible,
+insurance-to-value % and the location's total flood property value, and it interpolates inside each 1-point ITV band.
+
+| What | Finding |
+|---|---|
+| **The stored policy** (C25-02) | `STC_CP000015648` is an **Alaska** policy. AK (and FL) replace all six flood premium rules with **manual premium × package mod × IRPM** and empty the rate, stat-code and location rules. ISO $650 / $440 / $84 = hand = engine. So "AK and FL file no loss cost" is answered from the rule text: they don't rate flood at all, the company enters the premium (C25-19 still confirms it live) |
+| **Building / Contents / Special Class** (C25-05) | rate = r3(r3(r3(loss cost × LCM) × annual aggregate) × table factor); × CRS factor (r3) only when the location carries a CRS grade; premium r0 through package mod, IRPM and the two flood cyber factors. Contents use the **Contents** loss-cost row and the **building's** construction; Special Class uses the Building row and **its flood record's own `ConstructionType`** (blank → $0) |
+| **Excess over NFIP** | only deductibles 750,000 / 1,000,000 have a factor (tables 6 / 7, keyed on the record's **own full value**, and only above the 500,000 NFIP maximum); any other deductible prices $0. **Tables 5–7 file factor 0** in 16 (deductible, value-band) cells from some ITV upward: $0 by the table, not a missing row |
+| **Insurance-to-value** | above 100% (limit > full value) the factor is 0 → $0; a blank `ExcessOverMaxNFIPIndicator` is neither primary nor excess → $0; blank zone → $0; blank deductible → $0 on the three property records (BI / SCBI still price) |
+| **BI / SCBI** | Building loss-cost row × LCM × aggregate × BI factor (MaxPeriod / Monthly / Extra Expense factor, else the type-of-risk factor; combined types weight two `BusnIncomeFactor` rows). **No** modification table, excess factor or community rating |
+| **OI-122 (new; answered in RC-2)** | BI flood with maximum period / monthly limit / extra expense only, in an **operational unit**, takes the location's "highest" building base rate. The rule that finds it sets its running maximum to 0 and then only stores a new one if the stored one is blank, so as written it **never moves off 0**: BI prices **$0** with a CRS grade; with no grade every comparison equals 0 and the **last** building's rate is taken (0.472, not the highest 0.637). Our engine does exactly this. **ISO agrees (C25-10, O1 $0 / O2 $531 where the intended reading gives $716)**: an ISO defect, no engine change |
+| **Blanket** (C25-06) | average rate = r3(Σ members' r0(full value × their flood rate) ÷ Σ 100% values); members price $0 themselves; excess blankets count only members above the NFIP maximum; BI counts its `AnnualNetIncome`. Two, three and BI-member blankets and an excess blanket: hand = engine |
+| **Touchpoints** (C25-03) | Location `FloodTotalPropertyValue` (unblanketed full values only), Structure `OperationalUnitFloodBaseRate`, the cyber flood factors and `FloodAttachmentIndicatorCode` all as read; 9 states rewrite a touchpoint rule (AK FL MA NC NJ NY SC TX VA) |
+| **County states** (C25-07) | the rule names the counties (MA 3, NC 8, NJ 1, NY 5, SC 2, TX 4, VA counties and cities) and picks a county table for them, an all-other table otherwise; **neither table has a county column** |
 
 **Carried from chunk 21 (2026-09-30): the census `906_` now diffs EVERY rule of the family files across the four countrywide editions** (`scripts/cf/_edition_rules.py`, chunk 20's gate item): 8 family files: MO V02 66, V03 37, V04 5 rule differences from 2026 V01. The editions task must judge each one; the census's earlier "identical in all four editions" was a SetPremium-only check. Chunk 21 also found its own edition difference in a PARENT file (MO's sewer caps read `Limit`, not `LimitToUse`): diff the parent files' rules that name this chunk's records too.
 
@@ -42,9 +62,11 @@ Off-Premises flood factor and WV's two Ordinance or Law flood forms (chunk 23's 
 
 The Flood Coverage Endorsement (CP 10 65; WV's own version is CP 10 68) adds flood to a building,
 its contents, a special class item, business income or special class business income. It's rated
-like the flood insurance market does it. There's a **loss cost** by state or county, adjusted
-by seven **rate modification** tables (flood zone, floor of interest, number of stories and so on),
-a **community rating** credit, a deductible, insurance-to-value, and whether the cover sits **in
+like the flood insurance market does it. There's a **loss cost** by state or county (keyed by flood
+zone and construction), adjusted by **one** of seven **rate modification** tables, chosen by the
+deductible and read by insurance-to-value and total property value (*corrected 2026-10-02, RC-1:
+the census said seven factors for zone, floor and stories; floor and stories are statistics only*),
+a **community rating** credit, and whether the cover sits **in
 excess of the federal flood program (NFIP)** maximum. Several risks can be put in a **flood
 blanket**, which has its own average rate. WV also has two Ordinance or Law forms for flood, priced
 as company-entered premiums.
@@ -114,23 +136,23 @@ CP 04 13 / 04 28 required with it).
 | # | Task | Status | Notes |
 |---|---|---|---|
 | C25-01 | **Opening census**: population, formulas, tables, messages by record and by form / wording, sibling names, every edition, state layer, stored evidence, attach points, engine readiness, **and the flood trail** | ✅ | **Done 2026-09-28** (`906_chunk25_census.py`, 4 s). Findings above: 6 CW + 2 WV premium records, 3 priced by ISO on one policy; 27 tables; 46 messages; 10 states; identical in all four editions; flood logic already in Structure, Location and the main ruleset |
-| C25-02 | **The stored policy** (`STC_CP000015648`): Building, Contents and BI flood reproduced, hand = engine = ISO, every factor named; the location record. No ISO calls | ⬜ | |
-| C25-03 | **The built touchpoints**: Structure's loss-cost lookup and base rate, Location's totals and highest BI base rate, Personal Property / Special Class initialisation, BI's cyber-flood factor, the main ruleset's flood indicators, each with its state rewrites; **all 293 stored policies re-rated unchanged** | ⬜ | gate 6 |
-| C25-04 | **Attach map and switches**: the location record, the endorsement on five coverage records, the blanket at policy level and its detail, the General Information requirement; every on-switch; blank-input defaults | ⬜ | gate 2 (with C25-07) |
-| C25-05 | **The flood rate by hand**: loss cost, the 7 rate-modification factors (which keys each reads), community rating, deductible conversion, insurance-to-value, excess over the NFIP maximum, annual aggregate; BI's business income and type-of-risk factors; each step written down and checked against the engine | ⬜ | |
-| C25-06 | **The flood blanket by hand**: total full value, 100% values per level, NFIP maximum building / contents amounts, the average rate, coinsurance level, deductible; checked against the engine | ⬜ | |
-| C25-07 | **Tables and literals**: all 27 tables' rows and keys, the two-range keys of the 7 rate-modification tables (bands and edges), the empty countrywide loss cost and the 37 state filings, the 7 states' county tables and their all-other fallback | ⬜ | gates 2, 5 |
+| C25-02 | **The stored policy** (`STC_CP000015648`): Building, Contents and BI flood reproduced, hand = engine = ISO, every factor named; the location record. No ISO calls | ✅ | **Done 2026-10-02** (`229_`). An **AK** policy: AK prices flood as r0(r0(ManualPremium × package mod) × IRPM) on all six records; ISO $650 / $440 / $84 = hand = engine; AK empties the rate rules (no flood rate is computed), the location record's ProcessCall (no CRS factor, deductible number or NFIP maximum) and the three built touchpoints (`SetFloodTotalPropertyValue`, `SetHighestBusnIncomeFloodBaseRate`, `SetOperationalUnitFloodBaseRate`) |
+| C25-03 | **The built touchpoints**: Structure's loss-cost lookup and base rate, Location's totals and highest BI base rate, Personal Property / Special Class initialisation, BI's cyber-flood factor, the main ruleset's flood indicators, each with its state rewrites; **all 293 stored policies re-rated unchanged** | ✅ | gate 6. **Done 2026-10-02** (`229_`): all 293 re-rate unchanged; `FloodTotalPropertyValue` = unblanketed full values only; `OperationalUnitFloodBaseRate` per building in the unit; **`HighestBusnIncomeFloodBaseRate` never stores its maximum as written (OI-122)**; every parent runs its flood records; cyber flood factors and `FloodAttachmentIndicatorCode` written; touchpoint rewrites in AK FL MA NC NJ NY SC TX VA listed per rule |
+| C25-04 | **Attach map and switches**: the location record, the endorsement on five coverage records, the blanket at policy level and its detail, the General Information requirement; every on-switch; blank-input defaults | ✅ | gate 2 (with C25-07). **Done 2026-10-02** (`229_`): `FloodCovIndicator` Yes keeps / attaches the location record (an empty one if none is sent: every flood record $0), No removes it; `FloodCovEndtBlktIndicator` Yes / No keeps / removes the blanket; a member left `IncludedInBlkt` Yes with no blanket prices $0; six blank inputs each predicted (zone, deductible, full value, `IncludedInBlkt`, excess indicator, SC flood construction) |
+| C25-05 | **The flood rate by hand**: loss cost, the 7 rate-modification factors (which keys each reads), community rating, deductible conversion, insurance-to-value, excess over the NFIP maximum, annual aggregate; BI's business income and type-of-risk factors; each step written down and checked against the engine | ✅ | **Done 2026-10-02** (`229_`, 18 trees): hand = 174_'s evaluator = engine on every premium **and every intermediate value** (ITV%, TPV, table factor, base, aggregate, rate, adjusted rate; BI coinsurance, type-of-risk and BI factor). All seven tables (T1, T3–T8), no CRS grade, ITV 50% / 100% / > 100%, aggregate 0.999, excess at 750,000 and 1,000,000 (and a contents value under the NFIP maximum, and deductible 100,000 → $0), combined type of risk, maximum period, extra expense only, the operational unit (OI-122) |
+| C25-06 | **The flood blanket by hand**: total full value, 100% values per level, NFIP maximum building / contents amounts, the average rate, coinsurance level, deductible; checked against the engine | ✅ | **Done 2026-10-02** (`229_`, K1–K4): two risks $1,273, three risks with aggregate 0.999 $1,731, with BI $1,952, an excess blanket counting only the building above the NFIP maximum $7,644; hand = evaluator = engine on levels, totals, average rate and premium |
+| C25-07 | **Tables and literals**: all 27 tables' rows and keys, the two-range keys of the 7 rate-modification tables (bands and edges), the empty countrywide loss cost and the 37 state filings, the 7 states' county tables and their all-other fallback | ✅ | gates 2, 5. **Done 2026-10-02** (`229_`): 27 tables listed; CW loss cost header-only, 37 states file it (none of AK FL or the county states); each table holds exactly the deductibles the rule sends it, ITV bands contiguous 1 → open; tables 5–7's filed zeros are monotonic; floor / stories / NFIP zone feed stat codes only; the county states name their counties in the rule, not the table; the literals `Y`, `Building`, `Content` and the type-of-risk names have rows |
 
 ### RC-2 · Golden cases (6 tasks)
 
 | # | Task | Status | Notes |
 |---|---|---|---|
-| C25-08 | **Building**: a zone, floor and stories chosen so each rate-modification band decides a dollar, with and without community rating; ISO live | ⬜ | gate 1 |
-| C25-09 | **Contents**: the same risk's contents, and a deductible that moves a dollar; ISO live | ⬜ | |
-| C25-10 | **Business Income and SCBI**: the business income factor and type-of-risk combinations; ISO live | ⬜ | |
-| C25-11 | **Special Class**: never priced by ISO; construction matched to its BI; ISO live | ⬜ | |
-| C25-12 | **Flood blanket**: two and three risks, the average rate, a case capped by the NFIP maximum; ISO live | ⬜ | |
-| C25-13 | **Excess over NFIP and insurance-to-value**: cover in excess of the NFIP maximum vs primary, and insurance-to-value either side of a percentage band; ISO live | ⬜ | |
+| C25-08 | **Building**: a zone, floor and stories chosen so each rate-modification band decides a dollar, with and without community rating; ISO live | ✅ | gate 1. **Done 2026-10-02** (`230_` B1–B8): every rate-modification table 1–7 decides the building dollar (deductible 500 → $36 … 100,000 → $5,758), zones A / X / X500 / D, CRS grade 5 vs none ($493 vs $616); ISO agrees on every premium and message |
+| C25-09 | **Contents**: the same risk's contents, and a deductible that moves a dollar; ISO live | ✅ | **Done 2026-10-02** (`230_` B1–B8, C1): the same risks' contents (Contents loss-cost row, the building's construction), and deductible 25,000 vs 10,000 inside table 3 ($643 vs $799); ISO agrees |
+| C25-10 | **Business Income and SCBI**: the business income factor and type-of-risk combinations; ISO live | ✅ | **Done 2026-10-02** (`230_` I1, I2, O1, O2): combined manufacturing / mercantile BI $403, SCBI rental without EE $286, maximum period $716, SCBI extra expense only $1,059; **OI-122: ISO $0 (CRS grade) and $531 (no grade, the last building) = as written = ours**; the intended $716 is not what ISO does |
+| C25-11 | **Special Class**: never priced by ISO; construction matched to its BI; ISO live | ✅ | **Done 2026-10-02** (`230_` S1, and every B case): Special Class first priced by ISO; it reads its flood record's own construction (Frame $460 on a Joisted Masonry building), SCBI likewise (Masonry Non-Combustible $254); ISO agrees |
+| C25-12 | **Flood blanket**: two and three risks, the average rate, a case capped by the NFIP maximum; ISO live | ✅ | **Done 2026-10-02** (`230_` K1–K4): two risks $1,273, three at aggregate $1,731, with BI $1,952, excess blanket counting only the building above the NFIP maximum $7,644; the blanket detail first priced by ISO; ISO agrees |
+| C25-13 | **Excess over NFIP and insurance-to-value**: cover in excess of the NFIP maximum vs primary, and insurance-to-value either side of a percentage band; ISO live | ✅ | **Done 2026-10-02** (`230_` E1–E4): excess at 750,000 on three full-value bands ($7,644 / $8,534 / $3,934), 1,000,000 with contents under the NFIP maximum ($0), ITV 50% / 100% / above 100% ($427 / $876 / $0), aggregate 0.999 ($492); ISO agrees |
 
 ### RC-3 · Zero cases, messages and names (4 tasks)
 
@@ -146,7 +168,7 @@ CP 04 13 / 04 28 required with it).
 | # | Task | Status | Notes |
 |---|---|---|---|
 | C25-18 | **The county states**: MA NC NJ NY SC TX VA, each with a county in the table and one falling to all-other; NY's `SetPremium` rewrites; ISO live | ⬜ | |
-| C25-19 | **AK and FL: no loss cost**: what the engine and ISO do with flood in the two states that file every flood table but the loss cost (price, zero or refuse); predicted both ways; ISO live | ⬜ | |
+| C25-19 | **AK and FL: no loss cost**: what the engine and ISO do with flood in the two states that file every flood table but the loss cost (price, zero or refuse); predicted both ways; ISO live | ⬜ | **Rule text answers it (C25-02)**: AK and FL price all six flood records as r0(r0(ManualPremium × package mod) × IRPM); the stored AK policy agrees. Still to confirm live: FL, a blank manual premium, and the blanket detail |
 | C25-20 | **WV**: CP 10 68 in place of CP 10 65, with CP 04 13 / 04 28; the two Ordinance or Law flood manual premiums; WV's O&L reading the flood-only limitation; ISO live | ⬜ | |
 | C25-21 | **Editions and all 46**: identical in the four editions, with one probe each on MO (2023 V02), a V03 and a V04 state; then every state's own package, predicted per state; ISO live | ⬜ | gates 3, 8 |
 | C25-22 | **Off-Premises Interruption's flood factor**: chunk 17's open item priced with flood on, on its own and its detail records (AK AR DC NY RI rewrites); ISO live | ⬜ | |

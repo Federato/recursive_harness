@@ -1,6 +1,6 @@
 # Property build — start here
 
-**Last worked 2026-10-01.** This is the resume point: where things stand, how to
+**Last worked 2026-10-02.** This is the resume point: where things stand, how to
 confirm it in two minutes, and what to pick up first.
 
 **Keeping things in sync (standing rule, 2026-10-01).** The task lists are the source of truth. A Stop hook
@@ -11,7 +11,15 @@ page and the deployed page agree with them; on drift it hands the problems back 
 
 ---
 
-## Pick up here (set 2026-10-01): chunk 24 GATED; next, chunk 25
+## Pick up here (set 2026-10-02): chunk 25 RC-2 done
+
+**Chunk 25 RC-2 done 2026-10-02** (`scripts/cf/230_chunk25_rc2.py --live`, 2m41s, no engine change): **22 golden cases, all agree with ISO**, every flood record predicted by hand before the call, every premium field for field, every message. All seven rate-modification tables each decide a building dollar ($36 at deductible 500 … $5,758 at 100,000), zones A / X / X500 / D, CRS on / off ($493 / $616); contents at two deductibles; BI combined types, maximum period, SCBI extra expense only; **Special Class, SCBI and the flood blanket priced by ISO for the first time** (blankets $1,273 / $1,731 / $1,952 / excess $7,644); excess over NFIP on three full-value bands; ITV over 100% → $0. **OI-122 answered: ISO prices the operational-unit BI flood rate AS WRITTEN** ($0 with a CRS grade, $531 from the last building without one), exactly as our engine does; an ISO defect, no engine change. 13 of 26. **Next: RC-3, C25-14 (zero cases).**
+
+## Earlier (set 2026-10-02): chunk 25 RC-1 done
+
+**Chunk 25 RC-1 done 2026-10-02** (`scripts/cf/229_chunk25_rc1.py`, no ISO calls, no engine change; `--skip-stored` skips the 3-min stored re-rate). All 293 stored policies re-rate unchanged. **The one stored flood policy is Alaska**, and AK and FL price all six flood records as a company-entered premium (r0(r0(ManualPremium × package mod) × IRPM)): ISO $650 / $440 / $84 = hand = engine. Countrywide: the **deductible picks ONE of seven rate-modification tables** (keyed by ITV % and total property value, interpolated on ITV); the zone keys the loss cost; floor and stories are statistics only (the census's "seven factors" reading was wrong, corrected in the task list). Hand = 174_'s evaluator = engine on 18 rate trees and 4 blankets, every premium and every intermediate value. Special Class / SCBI read their **flood record's own `ConstructionType`**; contents read the building's; excess over NFIP prices only at 750,000 / 1,000,000; tables 5–7 file zeros. **OI-122 (new):** the operational-unit "highest" BI flood base rate never stores its maximum as written, so BI with maximum period in an operational unit prices $0 (no CRS grade: the last building's rate); our engine does the same; two ISO probes set for C25-10. 7 of 26. **Next: RC-2, C25-08 (Building, ISO live).**
+
+## Earlier (set 2026-10-01): chunk 24 GATED; next, chunk 25
 
 **Chunk 24 GATED 2026-10-01, 9 of 9, 25 of 25** ([`CF-CHUNK24-GATE.md`](CF-CHUNK24-GATE.md)). RC-5 (`scripts/cf/228_chunk24_c24-22_downstream.py --live`): the policy total moves by exactly the Builders Risk premiums (+$1,976 OR, +$13,199 at 10 x, +$1,982 FL, +$1,861 NY), predicted before each call and **equal at ISO**; nothing else moves. Gate checks (the engine changed in the chunk: OI-121): the full `104_ --gate` **CLEAN 157 of 157** (stopped once for low memory at 153, the last 4 run separately), `157_ --all` 293 of 293. **540 of 546** countrywide files built (99%); 6 left, all flood. Open: OI-103 (four more refusal cases, chunk 28), two readers not priced (CA O&L increased period, FL Pollutant). **Next: chunk 25 (Flood), tasks set, `CF-CHUNK25-TASKS.md`.**
 
