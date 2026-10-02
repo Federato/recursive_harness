@@ -10,6 +10,7 @@ subline code with, but reads some tables from, Owners & Contractors Protective (
 **Derived from:** `RailroadProtective_RatingAlgorithms.md` (this pair's companion document).
 
 **Documented:** 2026-08-20.
+**Reconciled against the built engine:** 2026-10-02 (commit `630ba2f`) — every rate-bearing table below observed in engine lookup traces (RI/NH/MN Railroad STCs rated at 2026-10-02 and 2027-04-01) and its layer/row population censused through the engine's resolver across all 51 jurisdictions at both dates; keys read from the `Lookup*` rule XML.
 
 This lists every ERC rate table (CW and/or state-filed) that the Railroad rating algorithm
 touches, as resolved by the gate doc's own tracing of the rule chain and its layer-pattern table
@@ -25,15 +26,16 @@ where the gate doc says so, and flags "not resolved" where it doesn't.
 
 | Table | Used for | Keys |
 |---|---|---|
-| `RailroadELP` | Rating-basis selector — value column `RailroadELP`, string `"Industry"` in all 204 rows across all 51 jurisdictions, every as-of date. Single-valued: Railroad has exactly one rating path | State, `ClassCodeRailroad` |
-| `BaseELPRR` | Estimated Loss Potential by class and train-count band; excludes class `40014` | State, ClassCode, `NumPassgrFreightTrains` (6 bands) |
-| `OwnersContractorsLossCost` | **OCP's table, read by Railroad.** `SetConstructionOpsOwnerFactor` hardcodes `classCode = "16292"` regardless of the risk's own class | State \| CW, `classCodeOwnersContrctrs = "16292"` |
-| `ILFRailroad` | Increased Limits Factor, Rule 56.B.7 | State, limit selection (exact key structure not resolved in source docs) |
+| `RailroadELP` | Rating-basis selector — value column `RailroadELP`, string `"Industry"` in all 204 rows across all 51 jurisdictions at both 2026-10-02 and 2027-04-01. Single-valued: Railroad has exactly one rating path. Copied to the classification by `GeneralLiabilityClassificationRules.SetRailroadELP`; pre-2027 `SetBaseELPRR` derives the 40014 ELP only when it reads `"Industry"` | State, `ClassCodeRailroad` |
+| `BaseELPRR` | Estimated Loss Potential by class and train-count band; excludes class `40014`. **Every cell halves at the CW 2027 state editions** (AK, RI, NH, MN checked) | State, ClassCode, `NumPassgrFreightTrains` (6 bands) |
+| `OwnersContractorsLossCost` | **OCP's table, read by Railroad** (CW 2023/2026 chain). `SetConstructionOpsOwnerFactor` hardcodes `classCode = "16292"` regardless of the risk's own class; `0.24` in RI/NH/MN as of 2026-10-02 | State \| CW, `classCodeOwnersContrctrs = "16292"` |
+| `OwnersContractorsELP` | **CW 2027 replacement** for the row above — same hardcoded `16292`; `0.162` in RI/NH/MN as of 2027-04-01 | State \| CW, `"16292"` |
+| `ILFRailroad` | Increased Limits Factor, Rule 56.B.7. Read twice per classification: `SetILF` with the risk's own class, `SetILF40014` with class `"40014"` | State \| CW, ClassCode, `RailroadEachOccurrenceLimit`, `RailroadAggregateLimit` (e.g. `['RI','40011','1,000,000','3,000,000'] → 1.96`; no `" CSL"` suffix in any edition) |
 | `RailroadLCM` | Loss Cost Multiplier | State \| CW — CW carries 1 row, value `1`; 0/51 states file their own |
 | `ConstructionOpsOwnerAdjmtFactor` | Fixed adjustment applied to the OCP loss cost (Step 3) | State \| CW — CW carries 1 row, value `1.5`; 0/51 states |
 | `WorkTrainsOrOtherRREquipmtRate` | Work-trains charge, dollars per $1,000 Total Cost | State \| CW — CW carries 1 row, value `56.8`; 0/51 states. **Withdrawn CW 2027** |
 | `CovForInjuriesToSuprvsrInspctrsOtherEmpsOfTheInsd` | Supervisors/inspectors extension factor | State \| CW — CW carries 1 row, value `0.1`; 0/51 states. **Withdrawn CW 2027** |
-| `RailroadHomogeneityIndex` | Not resolved in source docs — gate doc §5 lists this table's row counts (0 CW / 51×969 state) but does not name the rule that reads it or its purpose |
+| `RailroadHomogeneityIndex` | Not a rating input: written to the classification by `GeneralLiabilityClassificationRules.SetRailroadHomogeneityIndex` (0 CW / 51 states · 969 rows at both dates) | State, class |
 
 ## Coinsurance / LOI / deductible tables
 
@@ -47,12 +49,12 @@ coinsurance/LOI/deductible rule names for Railroad.
 
 | Table | Used for | Keys / rows |
 |---|---|---|
-| `MinPremiumRR` | Minimum premium | State \| CW — CW carries 1 row, value `0`; 0/51 states. **Withdrawn CW 2027** |
+| `MinPremiumRR` | Minimum premium, keyed (State\|CW, `"Y"`). `MinPremium = round(MinPremiumRR x ILF, 0)` feeds the policy-level `GeneralLiabilityRailroadPremiumToReachMinCoverage` top-up, not the classification premium | State \| CW — CW carries 1 row, value `0`; 0/51 states. **Withdrawn CW 2027** (0 rows) |
 
-*Not resolved in source docs* — no CyberIncidentExclusion-equivalent, IRPM, package-mod, or
-multi-premium-discount factor is mentioned anywhere in the gate doc for Railroad; if such
-policy-level factors apply to this subline they are not documented in the source material read
-for this reformat.
+No package-mod or cyber factor applies. `SetFinalRate` multiplies three policy-level values that are
+**not ERC tables** — `ExperienceRatingModificationFactor`, `ExpenseModification` and
+`ScheduleRatingModificationFactor` (read from `GeneralLiability` via `FirstValue(…, 0)`, so an absent
+one zeroes the rate) — in both editions (rule XML, 2026-10-02).
 
 ## Statistical / subline tables (reporting only, not rate-affecting)
 
@@ -86,14 +88,20 @@ tracing what actually drives the rate.
 | `RailroadELP` | 0 rows | 51/51 · 204 |
 | `ILFRailroad` | 0 rows | 51/51 · 1,836 |
 | `RailroadHomogeneityIndex` | 0 rows | 51/51 · 969 |
-| `OwnersContractorsLossCost` | 0 rows | 51/51 · 563 → 8/51 · 88 at the 2027-04-01 cliff |
+| `OwnersContractorsLossCost` | 0 rows | 51/51 · 563 → 5/51 · 55 as of 2027-04-01 |
 | `RailroadLossCost` | 0 rows | 0/51 — and no reader anywhere in the corpus |
 | `RailroadLCM` | 1 row: `1` | 0/51 |
 | `ConstructionOpsOwnerAdjmtFactor` | 1 row: `1.5` | 0/51 |
-| `WorkTrainsOrOtherRREquipmtRate` | 1 row: `56.8` | 0/51 |
-| `CovForInjuriesToSuprvsrInspctrsOtherEmpsOfTheInsd` | 1 row: `0.1` | 0/51 |
-| `MinPremiumRR` | 1 row: `0` | 0/51 |
+| `WorkTrainsOrOtherRREquipmtRate` | 1 row: `56.8` (0 rows at CW 2027) | 0/51 |
+| `CovForInjuriesToSuprvsrInspctrsOtherEmpsOfTheInsd` | 1 row: `0.1` (0 rows at CW 2027) | 0/51 |
+| `MinPremiumRR` | 1 row: `0` (0 rows at CW 2027) | 0/51 |
 | `PolicyLimitsRailroadStatCode` | 9 rows | 0/51 |
+
+Every row of this table was re-counted by the engine on 2026-10-02 from the tables it resolves for
+all 51 jurisdictions as of 2026-10-02 and 2027-04-01. The only drift from the gate doc is the
+`OwnersContractorsLossCost` 2027 figure: **5/51 · 55 rows** (CA, GA, NJ, NY, WA — the states still on
+a pre-2027 parent), not 8/51 · 88; the CW 2027 constants going to 0 rows is confirmed in both
+`GL_CW_20270401_V01` and `V02`.
 
 **The pattern is inverted relative to a typical filed-rate table**: class-specific numbers
 (`BaseELPRR`, `ILFRailroad`, the ELP selector) are state-supplied with zero countrywide rows,
@@ -133,16 +141,22 @@ the first cell-by-cell (rather than structural) cross-source rate confirmation i
 **Orphan-table check.** `RailroadLossCost.RateTable.csv` was confirmed present (0 rows) in all 10
 countrywide package editions and all 51 jurisdictions, and confirmed to have zero readers by
 scanning every rule file in every countrywide package for the literal string
-`RailroadLossCost` (gate doc §3).
+`RailroadLossCost` (gate doc §3). Re-checked 2026-10-02 in the two CW editions that arrived since (`GL_CW_20261001_V01`,
+`GL_CW_20270401_V02`): still present, 0 rows, no rule reference.
 
 **Uncalled-lookup check.** `LookupPremOpsLCM` was confirmed present but never invoked in the
 Railroad rule file across all 10 editions (gate doc §5).
 
-**No end-to-end premium oracle.** The golden case (`GL_CW_20231201_V03`) carries Railroad with
+**No end-to-end ISO premium oracle.** The golden case (`GL_CW_20231201_V03`) carries Railroad with
 `CoverageOnPolicyIndicator = 0` and `Premium = 0.0` — this confirms only the entry gate, not any
-rate table's values in a live premium calculation. `tests/verify_golden.py`: 80/80, unchanged
-(gate doc §8). Railroad is the third subline gated without a positive-premium oracle, after OCP
-and Liquor Liability.
+rate table's values in a live premium calculation (gate doc §8). Railroad is the third subline gated
+without a positive-premium oracle, after OCP and Liquor Liability.
+
+**Engine re-check, 2026-10-02.** The 18 AK cells above are what the engine resolves for AK as of
+2026-10-02 (`GL_AK_20260801_V02`); as of 2027-04-01 (`GL_AK_20270401_V01`) every cell is exactly half.
+ISO's RI, NH and MN Railroad STC submissions rate end to end through these tables at both dates
+(e.g. NH@2026-10-02 class 40013: `BaseELPRR 7.68 x ILF 1.96 → 15.053 → 2,258`); worked numbers are in
+the algorithm doc.
 
 ---
 
@@ -151,5 +165,7 @@ and Liquor Liability.
 - **OI-45** (new): non-construction Railroad operations are a manual-only refer-to-company
   trigger (Procedure 5.E.1.b, 5.E.3.d) with **no ERC-side discriminator** — the engine will rate
   any submitted class code without detecting this condition (gate doc §7, §9).
-- Table key structures for `ILFRailroad` and `RailroadHomogeneityIndex` beyond what is stated
-  above are *not resolved in source docs*.
+- Table key structures for `ILFRailroad` and `RailroadHomogeneityIndex` — resolved 2026-10-02 from
+  rule XML (see the tables above).
+- **CW 2027 `$1` floor** (engine-confirmed): Railroad's 2027 `SetPremium` prices any zero result at
+  `1.0`, including an unknown class code, with no referral and no OI-94 refusal.

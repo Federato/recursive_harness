@@ -215,8 +215,8 @@
 <header class="masthead">
   <h1>GL Rating Decision Chains</h1>
   <div class="rule"></div>
-  <p>Every gate, branch, and terminal in ISO's Commercial General Liability rate build-up and premium calculation, for the seven sublines documented so far.</p>
-  <div class="src">GL_CW_20231201_V03 (+ GL_CW_20270401_V01 deltas) · Countrywide<br>companion to *_RatingAlgorithms.md, gate docs in docs/gates/</div>
+  <p>Every gate, branch, and terminal in ISO's Commercial General Liability rate build-up and premium calculation, for the sublines documented so far. Reconciled against the built engine on 2026-10-02 (commit 630ba2f): every chain re-checked against the rule XML of each live countrywide edition and, where a submission could be built, against an offline engine rating; corrections are marked in each chain's notes.</p>
+  <div class="src">Two edition branches: pre-2027 (GL_CW_20231201_V02/V03, 20260101_V01, 20261001_V01 — identical coverage rules) and CW 2027 (20270401_V01/V02 — identical premium rules) · Countrywide<br>At 2027-04-01, 46 jurisdictions move to CW 2027; CA, GA, NJ, NY, WA keep a pre-2027 parent.<br>companion to *_RatingAlgorithms.md, gate docs in docs/gates/</div>
 </header>
 
 <div class="shell">
@@ -225,13 +225,13 @@
     <hr>
     <div class="group">
       <div class="group-label">Premises/Operations (334)</div>
-      <button class="navlink" data-target="premops-cw23">CW 2023 and earlier<span class="chain-len">41-step chain · golden case 976</span></button>
-      <button class="navlink" data-target="premops-cw27">CW 2027 and later<span class="chain-len">med-pay folds into ILF · $1 floor</span></button>
+      <button class="navlink" data-target="premops-cw23">Pre-2027 editions<span class="chain-len">9+38+9 steps · golden case 976 · min premium</span></button>
+      <button class="navlink" data-target="premops-cw27">CW 2027 (V01/V02)<span class="chain-len">29+4 steps · med-pay folds into ILF · $1 floor</span></button>
     </div>
     <hr>
     <div class="group">
       <div class="group-label">Products/Completed Operations (336)</div>
-      <button class="navlink" data-target="prodscompldops-main">Loss Cost / ELP chain<span class="chain-len">35+6 step chain · edition-stable</span></button>
+      <button class="navlink" data-target="prodscompldops-main">Loss Cost / ELP chain<span class="chain-len">35+6 pre-2027 · 28+4 in 2027 · $1 floor from 2027</span></button>
     </div>
     <hr>
     <div class="group">
@@ -309,8 +309,8 @@
         <tbody>
           <tr>
             <th>Premises/Operations</th>
-            <td><button class="cell" data-target="premops-cw23">CW 2023 and earlier<span class="n">41 steps · golden 976</span></button></td>
-            <td><button class="cell" data-target="premops-cw27">CW 2027 and later<span class="n">med-pay folds into ILF</span></button></td>
+            <td><button class="cell" data-target="premops-cw23">Pre-2027 editions<span class="n">9+38+9 steps · golden 976</span></button></td>
+            <td><button class="cell" data-target="premops-cw27">CW 2027 (V01/V02)<span class="n">med-pay folds into ILF · $1 floor</span></button></td>
             <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
             <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
             <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
@@ -318,7 +318,7 @@
           <tr>
             <th>Products/Completed Operations</th>
             <td><button class="cell" data-target="prodscompldops-main">Loss Cost / ELP path<span class="n">41 steps · golden 6,845</span></button></td>
-            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">edition-stable — one chain</span></td>
+            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">pre-2027 vs 2027 differences noted in-chain</span></td>
             <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
             <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
             <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
@@ -387,8 +387,8 @@
     <section class="sheet-view" id="view-premops-cw23">
       <div class="titleblock">
         <div class="field"><span class="k">Coverage</span><span class="v">Premises/Operations (subline 334)</span></div>
-        <div class="field"><span class="k">Edition</span><span class="v">CW 2023 V03 and earlier (10 parents live, this is the golden case's)</span></div>
-        <div class="field"><span class="k">Master chain</span><span class="v">ErcSetRatesAndFactors (8 class + 29 coverage steps) + ErcRate (4 steps)</span></div>
+        <div class="field"><span class="k">Edition</span><span class="v">Pre-2027: GL_CW_20231201_V02/V03, 20260101_V01, 20261001_V01 (identical coverage rules) and earlier — every policy effective before 2027-04-01; the golden case's parent is 20231201_V03</span></div>
+        <div class="field"><span class="k">Master chain</span><span class="v">ErcSetRatesAndFactors (9 classification + 38 coverage steps) + ErcRate (9 steps, incl. SetMedicalPaymentsCharge, SetMinimumPremium/SetMinPremium and the SpecialCombined pair)</span></div>
         <div class="field"><span class="k">Premium file</span><span class="v">GeneralLiabilityClassificationPremOpsCoverageRules.Rule.xml</span></div>
         <div class="field wide"><span class="k">Coverage gate</span><span class="v">No explicit gate flag — referrals degrade silently into computed numbers (ILTA "Refer To Co.", empty class/territory, empty premium basis)</span></div>
       </div>
@@ -428,11 +428,14 @@ flowchart TD
     sentinelZero --> finalILF["FinalILF = round(CSLILF - FinalDeductibleFactor,3)"]:::step
     sentinelReal --> finalILF
     finalILF --> finalRate["FinalRate = round(BaseRate x FinalILF [x SizeOfRisk] x PackageMod x ExperienceMod x ExpenseMod x ModToUse,3)"]:::step
-    finalRate --> medCharge["MedicalPaymentsCharge = round(BaseRate x (MedPayFctr-1) x Exposure,0)"]:::step
-    medCharge --> premium["Premium = round(FinalRate x Exposure[/1000] + MedicalPaymentsCharge,0)"]:::final
+    finalRate --> medCharge["MedicalPaymentsCharge = round(LossCost x LCM [x ClaimsMadeMult] x (MedPayFctr-1) x mods x Exposure[/1000],0) - Med Pay limit 10,000 only"]:::step
+    medCharge --> minPrem1["MinPremium / SpecialCombinedMinPremium computed - pre-2027 only"]:::step
+    minPrem1 --> premium["Premium = round(FinalRate x Exposure[/1000] + MedicalPaymentsCharge,0)"]:::final
     premium --> zeroCheck{"Premium computes to 0?"}
     zeroCheck -->|"Yes"| stays0["Stays 0.0 - no $1 floor exists in this edition"]:::zero
-    zeroCheck -->|"No"| doneFinal["Premium stands - golden case: 976"]:::final
+    zeroCheck -->|"No"| doneFinal["Premium stands - golden case: 976 (engine, OK 2025-08-01)"]:::final
+    doneFinal --> topUp["Policy level: PremOpsPremiumToReachMin = MinPremium - Sum(class Premiums) when higher, else 0"]:::final
+    lossCostLookup -.->|"no row at all"| nullLC["Loss cost resolves NULL -> engine refuses the rating (OI-94)"]:::zero
 
     classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
     classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
@@ -448,7 +451,8 @@ flowchart TD
           <ul>
             <li>Two separate "silent referral" paths converge on the same rate build-up: a missing premium basis 1000x-overcharges (falls to the raw-exposure branch), and a missing class/territory silently routes onto the ELP path — neither raises a flag.</li>
             <li>Every "Per Claim" deductible row publishes a real-looking `0` factor, guarded only by a validation rule that fires on override absence, not by the rating chain itself.</li>
-            <li>Medical payments is a separate, additive, 0-decimal charge in this edition — folded into the ILF only under CW 2027 (see that chain).</li>
+            <li>Medical payments is a separate, additive, 0-decimal charge in these editions, at the 10,000 limit only — folded into the ILF only under CW 2027 (see that chain). Engine, OK @ 2026-08-01: MedPayFactor 1.003, charge 1, Premium 995 + 1 = 996, equal to ISO's output.</li>
+            <li>A minimum premium is computed here and topped up at policy level by <code>GeneralLiabilityPremOpsPremiumToReachMinCoverage</code> — so E11 (<code>AdditionalInterestFactor</code> computed but never consumed) applies to CW 2027 only.</li>
           </ul>
         </div>
         <div class="delta"><strong>Template form.</strong> This is the golden-case edition (parent GL_CW_20231201_V03) — every "differs from 334" note on other sublines' pages refers back to this shape.</div>
@@ -459,9 +463,9 @@ flowchart TD
     <section class="sheet-view" id="view-premops-cw27">
       <div class="titleblock">
         <div class="field"><span class="k">Coverage</span><span class="v">Premises/Operations (subline 334)</span></div>
-        <div class="field"><span class="k">Edition</span><span class="v">CW 2027 V01 and later</span></div>
-        <div class="field"><span class="k">Master chain</span><span class="v">Same rule names, edition-specific SetFinalILF / SetPremium bodies</span></div>
-        <div class="field"><span class="k">Premium file</span><span class="v">GL CW 20270401 V01/Rules/GeneralLiabilityRules.Rule.xml — ErcCalculateTotalPremium</span></div>
+        <div class="field"><span class="k">Edition</span><span class="v">GL_CW_20270401_V01 and V02 (identical coverage rules) — parents of 46 jurisdictions at 2027-04-01; GA, NJ, NY, WA and CA stay on pre-2027 parents</span></div>
+        <div class="field"><span class="k">Master chain</span><span class="v">ErcSetRatesAndFactors (29 coverage steps) + ErcRate (4: SetFinalRate, SetAdditionalInterestFactor, SetPremium, SetPremiumIndicator) — the pre-2027 med-pay charge, split-limit, BI/PD ILF and minimum-premium rules are gone</span></div>
+        <div class="field"><span class="k">Premium file</span><span class="v">GeneralLiabilityClassificationPremOpsCoverageRules.Rule.xml (CW 20270401 V01/V02)</span></div>
         <div class="field wide"><span class="k">Coverage gate</span><span class="v">Same silent-referral surface as CW 2023, plus: nine-base /1000 set drops Passenger Days; elevator/escalator inspection charge absent from the rule list entirely</span></div>
       </div>
       <div class="sheet">
@@ -471,7 +475,7 @@ flowchart TD
 flowchart TD
     start(["Premises/Operations coverage record, CW 2027"]) --> baseChain["BaseRate = round(LossCost|ELP x BYOAExclFactor x LCM [x ClaimsMadeMult],3) - same build-up as CW 2023"]:::step
     baseChain --> cslilf["CSLILF = lookup ILFPremOps(state,table#,occ,agg) - classification-level copy"]:::step
-    cslilf --> medpayFctr["MedicalPaymentsFactor = lookup IncreasedMedPayLimitFactor(...) - replaces MedPayFactor table"]:::step
+    cslilf --> medpayFctr["MedicalPaymentsFactor = lookup IncreasedMedPayLimitFactor(CW, ClassificationType, Limit) - replaces MedPayFactor; skipped at the included 5,000 or with a Coverage C exclusion"]:::step
     medpayFctr --> dedFactor2{"Deductible override supplied?"}
     dedFactor2 -->|"Yes"| dedOverride2["DeductibleFactor = override"]:::step
     dedFactor2 -->|"No"| dedLookup2["DeductibleFactor = lookup DedFactorPremOpsCSL, else 0.0"]:::step
@@ -485,7 +489,8 @@ flowchart TD
     finalRate2 --> premium2["Premium = round(FinalRate x Exposure[/1000, nine bases - Passenger Days dropped],0)"]:::step
     premium2 --> floor{"Premium = 0 and PremOpsCovExposure > 0?"}
     floor -->|"Yes"| floored["Premium = 1.0 - the $1 floor, undocumented in the manual, CW 2027 only"]:::final
-    floor -->|"No, Premium <> 0"| stands["Premium stands"]:::final
+    floor -->|"No, Premium <> 0"| stands["Premium stands - engine, OK 2027-04-01: 0.090 x 2.147 -> 0.193 x 5,000 = 965"]:::final
+    stands --> noMin["No minimum premium: the PremiumToReachMin records are forced to 0 in this edition"]:::zero
     floor -->|"No, Exposure = 0 too"| staysZero["Premium stays 0.0"]:::zero
 
     classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
@@ -500,7 +505,7 @@ flowchart TD
         <div>
           <h3>What to notice</h3>
           <ul>
-            <li>Algebraically identical to CW 2023 — `BaseRate = LossCost x LCM x ClaimsMadeMultiplier` is common to both — but rounding lands at a different point, and that moves the answer: golden-case inputs yield 976 under CW 2023, 975 under CW 2027, one dollar apart on the same published risk.</li>
+            <li>Algebraically close to the pre-2027 chain — `BaseRate = LossCost x LCM x ClaimsMadeMultiplier` is common to both — but rounding lands at a different point: golden-case inputs give 976 pre-2027 and, by hand arithmetic, 975 under CW 2027. No engine run produces the 975, because the golden inputs resolve a pre-2027 parent.</li>
             <li>No `SetMedicalPaymentsCharge` rule exists in this edition at all — medical payments is expressed purely as a term inside `FinalILF`.</li>
             <li>The $1 floor is new and undocumented in the manual; CW 2023 has no equivalent — a genuinely zero-computing premium there just stays zero.</li>
           </ul>
@@ -513,8 +518,8 @@ flowchart TD
     <section class="sheet-view" id="view-prodscompldops-main">
       <div class="titleblock">
         <div class="field"><span class="k">Coverage</span><span class="v">Products/Completed Operations (subline 336)</span></div>
-        <div class="field"><span class="k">Edition</span><span class="v">Identical under GL_CW_20231201_V03 and GL_CW_20270401_V01 — no medical-payments term to fork on</span></div>
-        <div class="field"><span class="k">Master chain</span><span class="v">ErcSetRatesAndFactors (35 steps) + ErcRate (6 steps)</span></div>
+        <div class="field"><span class="k">Edition</span><span class="v">Two branches: pre-2027 (20231201 V02/V03, 20260101 V01, 20261001 V01) and CW 2027 (20270401 V01/V02). Only <code>SetFinalILF</code> is identical across them — corrected 2026-10-02; this chain was previously labelled edition-stable</span></div>
+        <div class="field"><span class="k">Master chain</span><span class="v">Pre-2027: ErcSetRatesAndFactors (35) + ErcRate (6). CW 2027: 28 + 4 — split-limit weights, PD250, BeforeAdjustment, SprayPainting and the minimum-premium steps removed</span></div>
         <div class="field"><span class="k">Premium file</span><span class="v">GeneralLiabilityClassificationProdsCompldOpsCoverageRules.Rule.xml</span></div>
         <div class="field wide"><span class="k">Coverage gate</span><span class="v">ProdsCompldOpsCov must equal "Products/Completed Operations"; new rule N17 requires ProdsCompldOpsELPText to agree with the LossCost != 0 branch test (620,856/620,856 agreement, corpus-wide)</span></div>
       </div>
@@ -541,15 +546,17 @@ flowchart TD
     dedAdj --> finalDed2["FinalDeductibleFactor: combined / split sum / one side / 0.0"]:::step
     finalDed2 --> finalILF3{"FinalILF = round(CSLILF - FinalDeductibleFactor,3), clamp if <= 0 - no med-pay term, ever"}
     finalILF3 --> finalRate3["FinalRate = round(BaseRate x FinalILF [x SizeOfRisk] x PackageMod x ExperienceMod x ExpenseMod x ModToUse,3)"]:::step
-    finalRate3 --> premium3["Premium = round(FinalRate x Exposure,0) - no /1000, no $1 floor, either edition"]:::final
-    premium3 --> minPrem["MinPremium = round(MinimumPremium x FinalILF x AdditionalInterestFactor,0) - computed inside ErcRate, answers 334's E11"]:::final
+    finalRate3 --> premium3["Premium = round(FinalRate x Exposure[/1000 for the nine per-thousand bases],0) - engine, OK: 1.443 x 5,000 = 7,215 in both editions"]:::final
+    premium3 --> floor3{"CW 2027 only: Premium = 0 with exposure > 0?"}
+    floor3 -->|"Yes"| floored3["Premium = 1.0 - the $1 floor"]:::final
+    floor3 -->|"No"| minPrem["Pre-2027 only: MinPremium = round(MinimumPremium x FinalILF x AdditionalInterestFactor,0), topped up at policy level"]:::final
 
     classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
     classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
     classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
     classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
     classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
-    class covGate,ratingBasis,elpText,ilta2,finalILF3 gate
+    class covGate,ratingBasis,elpText,ilta2,finalILF3,floor3 gate
         </pre>
       </div>
       <div class="notes">
@@ -558,10 +565,11 @@ flowchart TD
           <ul>
             <li>A published `0.0` loss cost is a documented path switch, not a missing value — the sibling `ELPText` selector agrees with the `!=0.0` branch test in 620,856/620,856 tested rows, becoming rule N17: a disagreement is a load-time hard failure, not a warning.</li>
             <li>The increased-limits table assignment is alphabetic (A/B/C) here versus 334's numeric-as-string (1/2/3) — a shared `TableAssignment` type across the two sublines breaks on 336's golden-case value of `"B"`.</li>
-            <li>336 reads `AdditionalInterestFactor` inside its own `MinPremium` step — narrowing 334's open question E11 (computed but never consumed there) to "334's omission is real, not a hidden bug."</li>
+            <li>336 reads `AdditionalInterestFactor` inside its own `MinPremium` step — pre-2027 only. Pre-2027 334 computes a minimum too, so E11 (computed but never consumed) is a CW 2027 question for both sublines.</li>
+            <li>The NOT_OFFERED terminal above is a design target, not engine behaviour: the engine has no N17 load-time check and no NOT_OFFERED outcome yet. Class 10015 (assignment "N/A", ELP "Not Applicable") rates Products to 0 pre-2027 and to the $1 floor in 2027, with no referral in either mode.</li>
           </ul>
         </div>
-        <div class="delta"><strong>vs. Premises/Operations (334).</strong> No medical-payments term in either edition — 336's `FinalILF` never gains the bracketed `+MedicalPaymentsFactor-1` term 334 picks up under CW 2027; 336's chain is edition-stable where 334's is not. 336 also has no $1 floor at all, in either edition, and computes its own minimum premium inside `ErcRate` — 334 has no minimum-premium step whatsoever.</div>
+        <div class="delta"><strong>vs. Premises/Operations (334).</strong> No medical-payments term in either edition — 336's `FinalILF` never gains the bracketed `+MedicalPaymentsFactor-1` term 334 picks up under CW 2027. <em>Corrected 2026-10-02:</em> 336 is not edition-stable — it gains the same $1 floor as 334 in CW 2027 and, like 334, computes a minimum premium only before 2027.</div>
       </div>
     </section>
 
@@ -616,7 +624,9 @@ flowchart TD
             <li>The ILF limit vocabulary (`"1,000,000"`) differs from 334/336's (`"...CSL"`) — a shared limit-normalization helper across sublines would miss every OCP ILF lookup.</li>
           </ul>
         </div>
-        <div class="delta openq"><strong>Open question.</strong> Whether `MinPremium` is a floor (`max`) or an add-on to `Premium` is not stated explicitly in the gate doc — `max` is used here as the conventional, best-supported reading of "minimum premium," not a literal quote. See also the rounding-convention open question (Escalation E1) noted on this subline's other chains.</div>
+        <div class="delta"><strong>Resolved 2026-10-02:</strong> neither a <code>max</code> floor nor an add-on inside the coverage — pre-2027 the shortfall is added as a separate policy-level <code>GeneralLiabilityOwnersContractorsPremiumToReachMinCoverage</code> top-up (the min-premium lookup key is a hardcoded "2"). The node above showing <code>max</code> is superseded.</div>
+        <div class="delta openq"><strong>Original open question.</strong> Whether `MinPremium` is a floor (`max`) or an add-on to `Premium` is not stated explicitly in the gate doc — `max` is used here as the conventional, best-supported reading of "minimum premium," not a literal quote. See also the rounding-convention open question (Escalation E1) noted on this subline's other chains.</div>
+              <div class="delta"><strong>Reconciled against the engine, 2026-10-02.</strong> Loss costs are filed in 51 of 51 jurisdictions today (563 rows), not 8. The ELP gate is the class description; the WC rate is read at policy level; <code>OwnersContractorsLCM</code> is a step. Every OverOneMillion / OverOneHundred cell is 0 in every state, so exposure above the breakpoint is not charged (WY $10M rates 473). A Company-rated ELP class raises ISO's override message, which becomes referral R29 in underwriting mode (class 17982). A loss cost that resolves null is refused (OI-94).</div>
       </div>
     </section>
 
@@ -660,6 +670,7 @@ flowchart TD
           </ul>
         </div>
         <div class="delta"><strong>vs. standard classes.</strong> Every downstream step (ILF, FinalRate, Premium formula) is identical to the standard-class chain — only the ELP source differs. `LookupPrincipalsProtvLiabFactor` survives in the CW 2027 rule set with no caller after `SetPrincipalsProtvLiabFactor` is deleted (Escalation E14).</div>
+              <div class="delta"><strong>Reconciled against the engine, 2026-10-02.</strong> Reproduced: AR class 15191 = <b>13,125</b> at 2023-05-01 (CW 20230501 V01) and 14,100 at 2026-10-02 (ILF 1.88), from ISO's own STC submission rated offline.</div>
       </div>
     </section>
 
@@ -746,6 +757,7 @@ flowchart TD
           </ul>
         </div>
         <div class="delta"><strong>vs. CW 2023 and earlier.</strong> 21 steps collapse to 12: no loss cost, no minimum premium, no OverOneHundred band, no class-15191 branch. Everything that remains (ELP lookup, ILF, FinalRate, Premium formula) is structurally identical to the CW 2023 standard-class branch.</div>
+              <div class="delta"><strong>Reconciled against the engine, 2026-10-02.</strong> CW 2027 adds a <b>$1 floor</b> (a zero premium with exposure &gt; 0 prices at 1 — previously described as not floored). It has no loss-cost node, so a retired or unfiled class (AR 15191/15192) rates at $1 with no OI-94 refusal and no referral — an engine/register gap, see the OCP doc. 46 jurisdictions take this chain at 2027-04-01; CA, GA, NJ, NY, WA stay on the pre-2027 chains.</div>
       </div>
     </section>
 
@@ -807,6 +819,7 @@ flowchart TD
           </ul>
         </div>
         <div class="delta"><strong>CW 2027-04-01 delta (not modeled above).</strong> Minimum premium withdrawn; a $1 floor arrives for a zero-computing premium with non-zero exposure; the premium-basis vocabulary is replaced (9 generic bases -&gt; 2 rateable + 3 unit bases + Refer To Company); the `Subline == "Liquor"` guard is dropped; `SetELP` drops the `ClassDescription` condition. Known CW 2027 defect OI-43: the statistical-code rule still tests pre-2027 vocabulary, inflating reported exposure 1000x — premium itself is unaffected.</div>
+              <div class="delta"><strong>Reconciled against the engine, 2026-10-02.</strong> Chain, claims-made multiplier and ILF exceptions confirmed; AL class 70412 = <b>636</b> at 2026-10-02 and 50943 = 681 at 2027-04-01, rated offline from ISO's STC submissions. Corrections: <code>LiquorELPText</code> does feed ISO's override message (R29 in underwriting mode); the <code>LookupILFLiquorWithSubLimit</code> override is Minnesota's, not Illinois's; in 2027 <code>SetILF</code>/<code>SetDeductibleFactor</code> re-gate on class code and a Refer-to-Company or blank basis with exposure prices at $1, not 0. Liquor needs its own <code>GeneralLiability</code> risk (Subline = Liquor). Engine finding: register detector R14 fires on every "No Deductible" liquor risk.</div>
       </div>
     </section>
 
@@ -815,7 +828,7 @@ flowchart TD
       <div class="titleblock">
         <div class="field"><span class="k">Coverage</span><span class="v">Railroad Protective Liability (subline 335, Rule 49, form CG 00 35)</span></div>
         <div class="field"><span class="k">Edition</span><span class="v">CW 2023/2026 (65 rules) — classes 40011/40012, no mixed-hazard split</span></div>
-        <div class="field"><span class="k">Master chain</span><span class="v">26-step interleaved rate+premium chain, presented split at #22/#23 per the gate doc</span></div>
+        <div class="field"><span class="k">Master chain</span><span class="v">Corrected 2026-10-02: 21 rate rules + 10 premium rules (the earlier 26-step order had three wrong rule names) — the steps drawn below are the gate doc's reading</span></div>
         <div class="field"><span class="k">Premium file</span><span class="v">Not resolved in source docs — gate doc gives rule names and manual citations only, no XML file/line</span></div>
         <div class="field wide"><span class="k">Coverage gate</span><span class="v">CoverageOnPolicyIndicator == 0 -&gt; Premium 0.0. Rule 49.E.1: "Refer to company" for basic-limits rates — the actual procedure lives in ELP Supplement Procedure 5.E, not in the rules manual</span></div>
       </div>
@@ -855,6 +868,7 @@ flowchart TD
           </ul>
         </div>
         <div class="delta"><strong>vs. CW 2027 (46 rules).</strong> The largest edition rewrite of any subline gated so far. CW 2027 swaps Step 1's source to `LookupOwnersContractorsELP` (since OCP withdraws its own loss-cost table in 43 jurisdictions the same date), and withdraws the work-trains charge, the supervisors/inspectors extension, and minimum premium outright.</div>
+              <div class="delta"><strong>Reconciled against the engine, 2026-10-02.</strong> Formulas now traced from the XML: modifiers are Experience &times; Expense &times; Schedule; on 40012 the supervisors charge uses the 40011 rate; work trains are charged only on 40013. At CW 2027 every <code>BaseELPRR</code> cell is exactly halved (AK, all 18 cells) and the chain runs BaseRate &rarr; FinalRate &rarr; $1 floor with no Subline gate; the ConstructionOps factor reads OCP's ELP for 16292. Engine finding: referral R29 can never fire for Railroad, and an unknown class rates 0 pre-2027 and $1 in 2027 with no referral.</div>
       </div>
     </section>
 
@@ -899,6 +913,7 @@ flowchart TD
           </ul>
         </div>
         <div class="delta"><strong>Only `SetILF40014` is naming-consistent end to end</strong> — every other class-40014-referencing rule in this branch turns out to test a different class. See the class-40014 chain for the one place the naming does line up.</div>
+              <div class="delta"><strong>Reconciled against the engine, 2026-10-02.</strong> Reproduced: RI class 40011 mixed-hazard <b>85 / 42</b>, rated offline from ISO's STC submission.</div>
       </div>
     </section>
 
@@ -940,6 +955,7 @@ flowchart TD
           </ul>
         </div>
         <div class="delta"><strong>vs. class 40011/40012.</strong> Trades the mixed-hazard weighted-average machinery for a single ratio factor, and drops the supervisors/inspectors premium add-on entirely — the simplest of Railroad's four branches.</div>
+              <div class="delta"><strong>Reconciled against the engine, 2026-10-02.</strong> Reproduced: NH 40013 <b>2,258</b>; MN 40013 <b>976 / 376</b>. Work trains are charged on this class only.</div>
       </div>
     </section>
 
@@ -980,6 +996,7 @@ flowchart TD
           </ul>
         </div>
         <div class="delta"><strong>vs. classes 40011-40013.</strong> No lookup at all for the base rate — a pure derivation off a sibling subline's (OCP's) hardcoded class 16292, times the same 1.5 constant used everywhere else in Railroad.</div>
+              <div class="delta"><strong>Reconciled against the engine, 2026-10-02.</strong> 40014 is derived inside <code>SetBaseELPRR</code>. Reproduced: NH 40014 <b>908</b> (999 with supervisors).</div>
       </div>
     </section>
 
@@ -987,10 +1004,10 @@ flowchart TD
     <section class="sheet-view" id="view-pw-cova">
       <div class="titleblock">
         <div class="field"><span class="k">Coverage</span><span class="v">Product Withdrawal (subline 365) — Coverage A, Product Withdrawal Expense</span></div>
-        <div class="field"><span class="k">Edition</span><span class="v">GL_CW_20231201_V03 (edition not otherwise distinguished in source)</span></div>
+        <div class="field"><span class="k">Edition</span><span class="v">Pre-2027 (20231201 V03, 20260101 V01, 20261001 V01) and CW 2027 (20270401 V01/V02) — the deductible table and the coverage-form minimum premium differ, see nodes</span></div>
         <div class="field"><span class="k">Master chain</span><span class="v">GeneralLiabilityClassificationExclusionCoverageAProductWithdrawalExpenseRules — 27 rules, 9-step arithmetic reconstruction</span></div>
         <div class="field"><span class="k">Premium file</span><span class="v">Same rule set, SetPremium</span></div>
-        <div class="field wide"><span class="k">Coverage gate</span><span class="v">SetCoverageOnPolicyIndicator switches the group on/off (stubbed to 0 in withdrawn-coverage states, e.g. all six CA LoED/Cyber groups elsewhere in this subline)</span></div>
+        <div class="field wide"><span class="k">Coverage gate</span><span class="v">SetCoverageOnPolicyIndicator: on only when the policy Subline = "Product Withdrawal" and ProductWithdrawalCoverageType selects this coverage — so Product Withdrawal is its own GeneralLiability risk, not an add-on to a Prem/Ops risk</span></div>
       </div>
       <div class="sheet">
         <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
@@ -1001,19 +1018,20 @@ flowchart TD
     factorA --> lcmPW["LCM = lookup ProductWithdrawalLCM (CW: 1 row = 1)"]:::step
     lcmPW --> selectorGate{"ProductWithdrawalELP (borrowed from Prod/CompOps's selector) = 'Company'?"}
     selectorGate -->|"Yes"| elpOverride["ELP = override, else 0.0"]:::step
-    selectorGate -->|"No"| elpHost["ELP = lookup ProdsCompldOpsELPFactor(...) - the HOST subline's own ELP table"]:::openq
-    elpOverride --> ilfDed["CFLILF via ProductWithdrawalExpensesAndLiabilityIncrdLimitFactor; DeductibleFactor via LookupDedFactorProdsCSL (host table); FinalILF = combine - exact combining formula not resolved in source docs"]:::openq
+    selectorGate -->|"No"| elpHost["ELP = lookup ProdsCompldOpsELPFactor(...) - the Products table, looked up directly (not a read of a computed sibling value)"]:::step
+    elpOverride --> ilfDed["CSLILF via ProductWithdrawalExpensesAndLiabilityIncrdLimitFactor; DeductibleFactor: pre-2027 DedFactorProdsCSL or override, CW 2027 DedFactorProdsProdWithdrawl; FinalILF = round(CSLILF - DeductibleFactor,3), no floor"]:::step
     elpHost --> ilfDed
     ilfDed --> lossCostPW["LossCost = lookup ProdsCompldOpsLossCost(ProdsCompldOpsTerritory) - 0.0 if class or territory empty"]:::step
     lossCostPW --> baseRatePW{"ELP path or LossCost path?"}
     baseRatePW -->|"ELP"| baseELPpw["BaseRate = round(ELP x ExpenseFactor x LCM,3)"]:::step
     baseRatePW -->|"LossCost"| baseLCpw["BaseRate = round(LossCost x ExpenseFactor x LCM,3) - the only coverage in this gate with BOTH a loss-cost and an ELP path"]:::step
-    baseELPpw --> discCharge["PremiumDiscountCharge - Participation % or Cut-off Date triggers manual 'refer to company' per Rule 44.B.3.b-c, formula not resolved in source docs"]:::openq
+    baseELPpw --> discCharge["PremiumDiscountCharge = round(1 - PremiumDiscountPercentage/100,3) when supplied, else 1.0 (Participation % / Cut-off Date)"]:::step
     baseLCpw --> discCharge
     discCharge --> finalRatePW["FinalRate = round(BaseRate x FinalILF x PackageMod x ExperienceMod x ExpenseMod x ModToUse x PremiumDiscountCharge,3)"]:::step
     finalRatePW --> premPW{"exposure basis /1000?"}
     premPW -->|"Yes"| premPWa["Premium = round(FinalRate x exposure/1000,0)"]:::final
     premPW -->|"No"| premPWb["Premium = FinalRate x exposure"]:::final
+    premPWa --> pwMin["Coverage-form minimum premium: pre-2027 only (removed in CW 2027); the PW PremiumToReachMin record is inert in both"]:::zero
 
     classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
     classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
@@ -1032,7 +1050,7 @@ flowchart TD
             <li>The only one of the coverages in this gate carrying both a loss-cost path and an ELP path — Liquor and Railroad each have exactly one route to a base rate.</li>
           </ul>
         </div>
-        <div class="delta"><strong>vs. Coverage B.</strong> Structurally identical 9-step chain — only the factor table and its values differ (Coverage B: `ProductWithdrawalLiabilityFactor`, A 0.13/B 0.10/C 0.07).</div>
+        <div class="delta"><strong>vs. Coverage B.</strong> Structurally identical 9-step chain — only the factor table and its values differ (Coverage B: `ProductWithdrawalLiabilityFactor`, A 0.13/B 0.10/C 0.07). <em>Engine, 2026-10-02:</em> Coverage A / B rate 1,275 / 670 (TX @ 2027-04-01) and 1,340 / 705 (IL @ 2027-04-01) on a separate Product Withdrawal risk.</div>
       </div>
     </section>
 
@@ -1040,7 +1058,7 @@ flowchart TD
     <section class="sheet-view" id="view-pw-covb">
       <div class="titleblock">
         <div class="field"><span class="k">Coverage</span><span class="v">Product Withdrawal (subline 365) — Coverage B, Products Withdrawal Liability</span></div>
-        <div class="field"><span class="k">Edition</span><span class="v">GL_CW_20231201_V03</span></div>
+        <div class="field"><span class="k">Edition</span><span class="v">Pre-2027 and CW 2027 — same edition split as Coverage A</span></div>
         <div class="field"><span class="k">Master chain</span><span class="v">GeneralLiabilityClassificationExclusionCoverageBProductWithdrawalLiabilityRules — 27 rules, same 9-step shape as Coverage A</span></div>
         <div class="field"><span class="k">Premium file</span><span class="v">Same rule set, SetPremium</span></div>
         <div class="field wide"><span class="k">Coverage gate</span><span class="v">Same SetCoverageOnPolicyIndicator switch as Coverage A</span></div>
@@ -1054,12 +1072,12 @@ flowchart TD
     factorB --> lcmPWb["LCM = lookup ProductWithdrawalLCM (CW: 1 row = 1) - identical to Coverage A"]:::step
     lcmPWb --> selectorGateB{"ProductWithdrawalELP (borrowed selector) = 'Company'?"}
     selectorGateB -->|"Yes"| elpOverrideB["ELP = override, else 0.0"]:::step
-    selectorGateB -->|"No"| elpHostB["ELP = lookup ProdsCompldOpsELPFactor(...)"]:::openq
-    elpOverrideB --> ilfDedB["CFLILF / DeductibleFactor / FinalILF - identical shape to Coverage A"]:::openq
+    selectorGateB -->|"No"| elpHostB["ELP = lookup ProdsCompldOpsELPFactor(...)"]:::step
+    elpOverrideB --> ilfDedB["CSLILF / DeductibleFactor (edition-split table) / FinalILF = round(CSLILF - Ded,3) - identical to Coverage A"]:::step
     elpHostB --> ilfDedB
     ilfDedB --> lossCostPWb["LossCost = lookup ProdsCompldOpsLossCost(ProdsCompldOpsTerritory)"]:::step
     lossCostPWb --> baseRateB["BaseRate = round((ELP or LossCost) x ProductWithdrawalLiabilityFactor x LCM,3)"]:::step
-    baseRateB --> discChargeB["PremiumDiscountCharge - refer-to-company condition, not computed (not resolved in source docs)"]:::openq
+    baseRateB --> discChargeB["PremiumDiscountCharge = round(1 - pct/100,3) when supplied, else 1.0"]:::step
     discChargeB --> finalRateB["FinalRate = round(BaseRate x FinalILF x PackageMod x ExperienceMod x ExpenseMod x ModToUse x PremiumDiscountCharge,3)"]:::step
     finalRateB --> premB{"exposure basis /1000?"}
     premB -->|"Yes"| premBa["Premium = round(FinalRate x exposure/1000,0)"]:::final
@@ -1089,7 +1107,7 @@ flowchart TD
     <section class="sheet-view" id="view-pw-limited">
       <div class="titleblock">
         <div class="field"><span class="k">Coverage</span><span class="v">Limited Product Withdrawal Expense (endorsement CG 04 36, hosted on Prod/CompOps 336)</span></div>
-        <div class="field"><span class="k">Edition</span><span class="v">GL_CW_20231201_V03</span></div>
+        <div class="field"><span class="k">Edition</span><span class="v">Pre-2027 and CW 2027 — deductible table, the HighestLmtd flag and the coverage-premium formula differ; the engine cannot complete the pre-2027 chain (see notes)</span></div>
         <div class="field"><span class="k">Master chain</span><span class="v">GeneralLiabilityClassification container, 11 rating rules + 43 supporting rules across 4 more groups (54 total)</span></div>
         <div class="field"><span class="k">Premium file</span><span class="v">...LimitedProductWithdrawalExpenseCoverage (7 rules) + ...EndtPolLvl (24 rules) + ...PremiumToReachMinCoveragePolLvl (8 rules)</span></div>
         <div class="field wide"><span class="k">Coverage gate</span><span class="v">DoMessageLimitedProductWithdrawalEndt: a classification with Products coverage must be selected to attach this endorsement, plus ProdsWithdrawalCoverage == "Yes" and the policy-level endorsement row existing</span></div>
@@ -1105,13 +1123,13 @@ flowchart TD
     lmtdLCM --> lmtdFactor["LmtdProductWithdrawalFactor = lookup ProductWithdrawlFactor (MISSPELLED table name) - A 0.20 / B 0.15 / C 0.10"]:::step
     lmtdFactor --> lmtdBase["LmtdBaseRate = (ProdsCompldOpsLossCost | FinalProdsCompldOpsELP) x LmtdLCM x LmtdProductWithdrawalFactor - reads the SIBLING coverage group's ALREADY-COMPUTED value (E18)"]:::openq
     lmtdBase --> lmtdILF["LmtdIncreasedLimitsFactor = lookup ProductWithdrawalExpensesAndLiabilityIncrdLimitFactor(assignment, AggregateLimit); LmtdCSLILF = that value"]:::step
-    lmtdILF --> lmtdDed["LmtdDeductibleFactorForRating = lookup DedFactorProdsCSL, or supplied Override"]:::step
+    lmtdILF --> lmtdDed["LmtdDeductibleFactorForRating = pre-2027 DedFactorProdsCSL | CW 2027 DedFactorProdsProdWithdrawl, or supplied Override"]:::step
     lmtdDed --> lmtdFinalILF{"LmtdFinalILF = CSLILF - DeductibleFactorForRating - NO arithmetic floor in the formula itself"}
     lmtdFinalILF -->|"deductible exceeds ILF"| negGuard["DoMessageProdWithdrawalDedFactorCannotExceedPWILF fires - the ONLY negative-premium guard found anywhere in the GL corpus (N15)"]:::openq
     lmtdFinalILF -->|"passes"| lmtdFinalRate["LmtdFinalRate = round(BaseRate x FinalILF x PackageMod,3)"]:::step
     negGuard --> lmtdFinalRate
     lmtdFinalRate --> lmtdPrem["LmtdPremium = round(FinalRate x ProdsCompldOpsCovExposure[/1000],0)"]:::step
-    lmtdPrem --> covPrem["CoveragePremium = ClassPremium x ParticipationPercentage x PackageMod - PremiumDiscountCharge, or ManualPremium"]:::step
+    lmtdPrem --> covPrem["CoveragePremium = CW 2027: round(Sum LmtdPremium [x PremiumDiscountCharge],0), $1 minimum | pre-2027: round(ManualPremium x PackageMod x PremiumDiscountCharge,0), or the class sum when participation = 0 - corrected 2026-10-02, no participation multiply"]:::step
     covPrem --> negCheck{"CoveragePremium negative?"}
     negCheck -->|"Yes"| negBlock["DoMessageTheLimitedProductWithdrawalCoveragepremiumCannotBeANegativePremium fires"]:::zero
     negCheck -->|"No"| premStands["Premium stands"]:::final
@@ -1133,6 +1151,7 @@ flowchart TD
             <li>The only negative-premium guard anywhere in the GL corpus lives here — `FinalILF` has no arithmetic floor, so a deductible factor exceeding the ILF is caught only by a validation message, not by the math.</li>
           </ul>
         </div>
+        <div class="delta"><strong>Reconciled 2026-10-02.</strong> Engine, IL @ 2027-04-01: Limited Product Withdrawal 585. <strong>Engine finding:</strong> on every pre-2027 edition the engine stops INCOMPLETE in <code>LimitedProductWithdrawalExpenseEndtPolLvl.SetMinPremium</code> (a <code>WithArgs</code> argument read from inside a sibling argument is reported unbound).</div>
         <div class="delta"><strong>vs. Product Withdrawal Coverage A/B.</strong> Coverage A/B each rate their own loss cost/ELP path independently; Limited Product Withdrawal has none of its own — it borrows the sibling group's finished number wholesale, the same cross-group dependency shape LoED/Cyber use.</div>
       </div>
     </section>
@@ -1140,10 +1159,10 @@ flowchart TD
     <!-- ============================= LOED / CYBER ============================= -->
     <section class="sheet-view" id="view-pw-loedcyber">
       <div class="titleblock">
-        <div class="field"><span class="k">Coverage</span><span class="v">Loss Of Electronic Data (CG 04 37/CG 04 71) and Cyber Incident Liability — new at CW 2027</span></div>
-        <div class="field"><span class="k">Edition</span><span class="v">CW 2027 only — does not exist in GL_CW_20231201_V03</span></div>
+        <div class="field"><span class="k">Coverage</span><span class="v">Loss Of Electronic Data (CG 04 37 / CG 04 71 / CG 04 95) and Cyber Incident Liability</span></div>
+        <div class="field"><span class="k">Edition</span><span class="v">Corrected 2026-10-02: present from GL_CW_20231201 onward, not new at CW 2027. Pre-2027 the ILF key carries the " CSL" suffix, the /1000 list has Passenger Days, and there is no $1 minimum; CW 2027 adds a Subline test to the gate</span></div>
         <div class="field"><span class="k">Master chain</span><span class="v">Two matched groups per coverage (Prem/Ops host, Prod/CompOps host): LoED 25 rules each, Cyber 23 rules each</span></div>
-        <div class="field"><span class="k">Premium file</span><span class="v">SetFinalRate -&gt; SetPremium -&gt; SetPremiumIndicator (literal formula not given in source)</span></div>
+        <div class="field"><span class="k">Premium file</span><span class="v">SetFinalRate (round 4 dp) -&gt; SetPremium -&gt; SetPremiumIndicator — formula now traced from the XML and reproduced by the engine</span></div>
         <div class="field wide"><span class="k">Coverage gate</span><span class="v">SetCoverageOnPolicyIndicator stubbed to constant 0 in all six CA groups (both classification groups per coverage, plus each min-premium iterator) — the coverage is withdrawn there entirely and the chain never runs</span></div>
       </div>
       <div class="sheet">
@@ -1154,14 +1173,14 @@ flowchart TD
     start(["Loss Of Electronic Data / Cyber Incident Liability - Prem/Ops or Prod/CompOps host"]) --> onGate{"SetCoverageOnPolicyIndicator = 0? (stubbed in CA for all 6 groups)"}
     onGate -->|"Yes, CA"| premZeroLC["Premium = 0.0 - chain never runs, 13 tables in that state package go unreached"]:::zero
     onGate -->|"No"| limitStep["Limit(s): LossOfElectronicDataLimit (LoED, 1 limit) | EachCyberIncidentOccurrenceLimit + AggregateLimit (Cyber, 2 limits)"]:::step
-    limitStep --> ilfChain["ILF -> DeductibleFactor -> FinalILF - exact lookup table names not resolved in source docs"]:::openq
+    limitStep --> ilfChain["ILF lookup (LoED: 13 refer bands need ILFOverride - without it the engine stops INCOMPLETE, no referral) -> DedFactor = host combined BI/PD factor, else PD factor, else 0 -> FinalILF = round(ILF - DedFactor,3), 0 if not > 0"]:::step
     ilfChain --> hostGate{"Host = Prem/Ops (334) or Prod/CompOps (336)?"}
-    hostGate -->|"Prem/Ops host"| adjBaseP["AdjustedBaseRate = host LossCost|ELP x host LCM [x host ClaimsMadeMult] x host SizeOfRiskFinalRelativity x own FinalILF - reads the SIBLING group's COMPUTED values, not just its tables (E18)"]:::openq
-    hostGate -->|"Prod/CompOps host"| adjBaseC["AdjustedBaseRate - identical shape, reads sibling Prod/CompOps computed values instead"]:::openq
+    hostGate -->|"Prem/Ops host"| adjBaseP["AdjustedBaseRate = host LossCost|ELP x host LCM [x host ClaimsMadeMult] x host SizeOfRiskFinalRelativity x own FinalILF (E18)"]:::openq
+    hostGate -->|"Prod/CompOps host"| adjBaseC["AdjustedBaseRate = host's finished BaseRate [x SizeOfRisk] x own FinalILF - NOT the same shape: no LCM or claims-made term"]:::openq
     adjBaseP --> hazardGrade["HazardGrade = lookup {LossOfElectronicData|CyberIncidentLiability}PremOpsHazardGrade(ClassCode) - 1,188/1,163 rows CW, the LARGEST countrywide tables in the corpus; NY overrides"]:::step
     adjBaseC --> hazardGrade
-    hazardGrade --> covFactor["CoverageFactor = lookup factor table keyed by endorsement form number (CG0437/CG0471, or Cyber's type-of-policy equivalent) - 4 rows each"]:::step
-    covFactor --> finalRateLC["FinalRate, Premium, PremiumIndicator - literal formula not resolved in source docs; gate doc gives rule names and 'identical shape' only"]:::openq
+    hazardGrade --> covFactor["CoverageFactor = lookup keyed by HazardGrade (CG 04 95 rates through the CG0437 table); Cyber's TypeOfPolicy table is a stat code (C5-C8), not a factor"]:::step
+    covFactor --> finalRateLC["FinalRate = round(AdjustedBaseRate x factor x PackageMod x ExpMod x ExpenseMod x ModToUse,4); Premium = round(FinalRate x Exposure[/1000],0); $1 minimum CW 2027 only - engine TX 2027-04-01, 200k limit: 1 / 5"]:::final
 
     classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
     classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
@@ -1180,7 +1199,7 @@ flowchart TD
             <li>Pairwise rule-body overlap across all six rate-driven groups in this subline is zero identical bodies, despite 12-25 rules of name overlap per pair — documented together because the questions are shared, not the code.</li>
           </ul>
         </div>
-        <div class="delta openq"><strong>Open question.</strong> The gate doc documents the `AdjustedBaseRate` and `HazardGrade` steps in formula detail but does not give the literal `SetFinalRate`/`SetPremium` arithmetic for LoED or Cyber — unlike Product Withdrawal Coverage A, where it's given explicitly. Treat the final rate/premium shape as "same skeleton as Product Withdrawal" until confirmed against the ERC rule XML directly.</div>
+        <div class="delta"><strong>Resolved 2026-10-02.</strong> The final-rate/premium arithmetic is now traced from the XML and reproduced by the engine (see <code>LossOfElectronicData_RatingAlgorithms.md</code>): not Product Withdrawal's shape — no <code>PremiumDiscountCharge</code>, and a 4-dp round. <strong>Engine finding:</strong> the policy-level <code>TotalLossOfElectronicDataPremium</code> / <code>TotalCyberIncidentLiabilityPremium</code> come out 5 where 6 is expected — the interpreter's <code>ForEach</code> keeps only the last child's value per iteration (<code>gl_engine/interp/nodes.py</code>, <code>_for_each</code>), dropping the Prem/Ops term. Harmless while the filed minimum is $0.</div>
       </div>
     </section>
 
@@ -1235,6 +1254,7 @@ flowchart TD
           </ul>
         </div>
         <div class="delta"><strong>vs. Coverage B (PAI).</strong> Same 13-rule shape and same weight-banded loss-cost mechanic, but Coverage A carries a deductible-factor step and subtracts it from the ILF in the premium formula — Coverage B has neither.</div>
+              <div class="delta"><strong>Reconciled against the engine, 2026-10-02.</strong> Reproduced offline (OK base + one designated drone, both editions): Coverage A 154.26 &rarr; <b>316</b>; premium rounds to whole dollars. CovA table has 10 zero cells, not 8. CW 2027: gate field becomes <code>UnmannedAircraftCoverageOptions</code>, $1 floor, " CSL" dropped, minimum-premium rules removed, usage/place labels re-cased (case-sensitive keys — an old spelling silently prices $0). Over 55 lb: the filed 0 loss cost prices the drone at $0 and raises referral R19 in underwriting mode only — and R19 also fires on every drone because the minimum-premium table is 0 (a register false positive).</div>
       </div>
     </section>
 
@@ -1284,6 +1304,7 @@ flowchart TD
           </ul>
         </div>
         <div class="delta openq"><strong>Open question.</strong> The gate doc states only that "Coverage B drops the deductible term" from Coverage A's formula; it does not reproduce Coverage B's `SetPremium` expression verbatim. The formula shown assumes the term is simply omitted and `ILF` is used un-adjusted — confirm the literal expression if bit-exact reproduction is required.</div>
+              <div class="delta"><strong>Reconciled against the engine, 2026-10-02.</strong> Reproduced: Coverage B 105.156 &times; 2.05 &rarr; <b>216</b>; formula confirmed literally.</div>
       </div>
     </section>
 
@@ -1338,6 +1359,7 @@ flowchart TD
           </ul>
         </div>
         <div class="delta openq"><strong>Open question.</strong> The manual names which endorsement form does what; it does not say which policy-level DataDef or flag the rating engine actually reads to determine "which form is attached" — that mapping would need the rule file itself, not the Terrorism Supplement.</div>
+              <div class="delta"><strong>Reconciled against the engine, 2026-10-02.</strong> <b>The chain drawn above multiplies optional factors together; the rule does not.</b> <code>SetPremium</code> is a first-match choice: (1) <code>TerrorismCoverage = Yes</code> &rarr; round(ClassCoveragePremium &times; exposure-class factor, 0); else (2) an NBCR exclusion record exists (CG 21 84, and also 21 88 / 21 91) &rarr; &times; the NBCR factor 0.58; else (3) a cap / sublimit record exists (CG 21 80 / 82 / 89 / 92) &rarr; round(round(CCP &times; factor, 0) &times; round(TerrorismILF &divide; host FinalILF, 3), 0); else 0 — then a <b>$1 floor</b> in CW 2027 only. Exclusion forms CG 21 73 / 75 / 87 / 90 only raise validation messages. So a <i>declined</i> policy with a cap endorsement is still charged: Oklahoma's base rates terrorism 2 + 16 = 18, matching ISO's own output (account 8,229). FL and NY override to a Yes-only formula (NY needs the Manhattan input — without it the engine silently prices $0, an engine/register gap); AK drops CG 21 84 from the NBCR test.</div>
       </div>
     </section>
 
@@ -1391,6 +1413,7 @@ flowchart TD
           </ul>
         </div>
         <div class="delta openq"><strong>Open question.</strong> Both the sibling-group list and the countrywide Products exposure-class-factor values are inferred by analogy to Prem/Ops rather than individually cited in the gate doc — treat both as unverified until checked against the rule XML.</div>
+              <div class="delta"><strong>Reconciled against the engine, 2026-10-02.</strong> Same first-match choice as Prem/Ops (Yes / NBCR / cap / 0, $1 floor CW 2027 only). Engine, OK: Yes 7,215 &times; 0.004 &rarr; 29; cap only 29 &times; round(0.97/1.76, 3) = 0.551 &rarr; 16.</div>
       </div>
     </section>
 
@@ -1442,6 +1465,7 @@ flowchart TD
           </ul>
         </div>
         <div class="delta openq"><strong>Open question.</strong> The five specific sibling coverage groups summed into this path are not individually named anywhere in GATE-TERRORISM.md — only the count (5) and the fixed-Average behavior are confirmed.</div>
+              <div class="delta"><strong>Reconciled against the engine, 2026-10-02.</strong> Corrected: <b>selects one</b> sibling premium by the policy's Subline rather than summing five, has no cap/ILF branch, and its CW 2027 $1 floor is unconditional. TX, VA, VT (and AK, FL, NY) override this rule.</div>
       </div>
     </section>
 
@@ -1487,6 +1511,7 @@ flowchart TD
           </ul>
         </div>
         <div class="delta openq"><strong>Open question.</strong> Four separate facts are unresolved for this path alone: the two summed sibling groups' identities, the exposure-class resolution method, whether/how NBCR applies, and whether/how the sub-limit ILF ratio applies. Treat this chain's shape past the state-redirect gate as structural inference from the other three paths, not confirmed fact.</div>
+              <div class="delta"><strong>Reconciled against the engine, 2026-10-02.</strong> Base is Coverage A + Coverage B premiums &times; the <i>Premises</i> exposure-class factor; on the cap branch the ratio is the Prem/Ops <code>TerrorismILF</code> &divide; the Coverage A ILF. Engine: 532 &rarr; 1.</div>
       </div>
     </section>
 
@@ -1532,6 +1557,7 @@ flowchart TD
           </ul>
         </div>
         <div class="delta"><strong>vs. the four aggregation paths.</strong> No sibling `Premium` sum, no `ExposureClass` lookup, no NBCR factor (not applicable here), and no `FinalILF` input for a sub-limit ratio — the only enforcement is the validation message when no class on the policy is Above Average.</div>
+              <div class="delta"><strong>Reconciled against the engine, 2026-10-02.</strong> Corrected: <code>EndorsementPremium</code> is computed — the sum of ~294 endorsement-coverage premiums — then &times; the user-entered factor; it is not itself a user input.</div>
       </div>
     </section>
 
@@ -1588,6 +1614,7 @@ flowchart TD
           </ul>
         </div>
         <div class="delta openq"><strong>Open question.</strong> Three things are unresolved in source docs: what populates `StopGapIncrdLimitFactorOverride` and under what submission condition; whether `PackageModFactor`, `ExperienceRatingModificationFactor`, and `ModToUse` are filed rate tables or policy-level copied values (the same open question the Unmanned Aircraft docs record for the identically-named fields); and whether WA's newest package on disk reflects a live 2027-04-01 filing that simply wasn't pulled into this corpus.</div>
+              <div class="delta"><strong>Reconciled against the engine, 2026-10-02.</strong> All five states rated offline: ND 15/15, OH 10/10, WY 30/25, PR 50/55 (2026-10-02 / 2027-04-01), WA 15. Rules read <code>PolLvl[1]</code>; factor and ILF lookups require equal limits — a mismatch goes to ManualPremium &times; PMF and, with no ManualPremium, rates $0 with no referral (not in the register). The 2027 filings drop " BI" from the limit domain and re-case <code>ClassificationType</code>; an old-format limit on a 2027 edition silently prices $0 (<code>variants.py</code> does not renormalize Stop Gap limits). The ND stat-code "deviation" was false.</div>
       </div>
     </section>
 
@@ -1629,4 +1656,14 @@ flowchart TD
       activate(btn.getAttribute('data-target'));
     });
   })();
+</script>
+
+<style>.mermaid-rendering .sheet-view{display:block!important}</style>
+<script type="module">
+  // Render every mermaid diagram once, with all sheets briefly visible so hidden tabs get real sizes.
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({ startOnLoad: false, securityLevel: "strict" });
+  document.documentElement.classList.add("mermaid-rendering");
+  try { await mermaid.run({ querySelector: "pre.mermaid" }); }
+  finally { document.documentElement.classList.remove("mermaid-rendering"); }
 </script>

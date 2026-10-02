@@ -4,6 +4,23 @@
 **Line:** General Liability (GL), Countrywide, subline 370 — Unmanned Aircraft, Rule 37
 **Reformatted from:** `docs/gates/GATE-370-UNMANNED-AIRCRAFT.md` (filed 2026-08-11, as-of date 2026-08-11), cross-checked against `docs/rating-engine/03-SUBLINE-COVERAGE-PLAN.md` §3.2.9, `docs/erc/03-RATING-STRUCTURE.md`, and `docs/rating-engine/A3-ENDORSEMENT-CATALOG.md`
 **Documented:** 2026-08-20
+**Reconciled against the built engine:** 2026-10-02 (commit `630ba2f`) — an offline engine run of OK with one designated drone added (no ISO sample carries one) at 2026-10-02 (GL_OK_20261001_V01 / GL_CW_20261001_V01) and 2027-04-01 (GL_OK_20270401_V04 / GL_CW_20270401_V02), with edge cases rated in `underwriting` mode, plus rule-XML hash diffs of the three drone rule files across all 12 CW editions; corrections are marked **(engine)**.
+
+> **Edition note (engine).** The drone rules in `GL_CW_20231201_V03` are byte-identical (canonical XML
+> hash) to `GL_CW_20260101_V01` and `GL_CW_20261001_V01`, so this doc's base derivation is still the
+> current CW. **CW 20270401 V01/V02** change five things:
+> - The coverage gate (`SetCoverageOnPolicyIndicator`) now reads `UnmannedAircraftCoverageOptions =
+>   "Limited Coverage For Designated Unmanned Aircraft"` instead of `LimitedCovForDesignatedUnmannedAircraft
+>   = "Yes"`, and requires `Subline = Premises/Operations and Products/Completed Operations`.
+> - `SetPremium` gains a **$1 floor**: premium 1 when the product rounds to 0 while `AdjustedRate > 0`.
+> - `" CSL"` is no longer appended to limits before the ILF lookup (OI-96/97); `unmannedAircraftAggregateLimitLookup`
+>   is deleted.
+> - The policy-level `GeneralLiabilityUnmannedAircraft` min-premium rules (`SetMinimumPremium`,
+>   `SetMinPremium`, `LookupUnmannedAircraftMinPremium`) are removed.
+> - The usage/place domain and table values change case ("Education and research", "Other usage, …",
+>   "Private land", "Not applicable"). The keys are case-sensitive (`CaseInsensitive="false"`).
+>
+> Engine premiums for the same drone are identical at both dates: **CovA 316, CovB 216**.
 
 Unmanned Aircraft is a single subline (370, Rule 37) rated on two independent coverages:
 
@@ -52,15 +69,30 @@ ErcProcess:
 
 (GATE-370-UNMANNED-AIRCRAFT.md §1, table of 13 numbered rules.)
 
+**(engine) Confirmed as executed.** `ErcProcess` gates on `CoverageOnPolicyIndicator`. When it is on,
+it runs `ErcSetRatesAndFactors` (rules 1–12 in the order above) and then `ErcRate` (`SetPremium`,
+`SetPremiumIndicator`). In CW 20270401 `ErcSetRatesAndFactors` also runs three `Set…IntNumeric` limit
+converters. The indicator is 1 only when **all** of these hold:
+- a CG 24 50 / 24 51 / 24 52 *Limited Coverage For Designated Unmanned Aircraft* record exists;
+- the policy gate is met: `LimitedCovForDesignatedUnmannedAircraft = "Yes"` (≤ 20261001), or
+  `UnmannedAircraftCoverageOptions = "Limited Coverage For Designated Unmanned Aircraft"` plus the combined
+  subline (20270401);
+- the drone's `CovAApplies = "Yes"` (or `CovBApplies` for Coverage B).
+
+Every ISO sample input in `Payloads/` sends `LimitedCovForDesignatedUnmannedAircraft = "No"`, so no ISO
+golden exercises this subline. The drone record sits under the classification
+(`GeneralLiabilityUnmannedAircraftTable`), and the CG 24 50 record at policy level.
+
 **Drone borrows Prem/Ops's machinery wholesale** — the LCM, claims-made multiplier, ILF, and all
 three deductible tables are the Premises/Operations lookups reused directly (`LookupPremOpsLCM`,
 `LookupPremOpsClaimsMadeMultiplierAllOther`, `LookupILFPremOps`, `LookupDedFactorPremOps{CSL,BI,PD}`).
 It borrows the *tables*, not Prem/Ops's already-computed values, so it carries no cross-coverage
 (E18) dependency (GATE-370-UNMANNED-AIRCRAFT.md §1).
 
-Not resolved in source docs — whether `SetLCM`, `SetClaimsMadeMultiplier`, and `SetILF` are computed
-once and shared between Coverage A and Coverage B, or computed independently per coverage group.
-The gate doc describes the chain once for "both rate-driven groups" without stating which.
+~~Not resolved in source docs — whether `SetLCM`, `SetClaimsMadeMultiplier`, and `SetILF` are computed
+once and shared between Coverage A and Coverage B.~~ **(engine) Resolved:** independently. Each coverage
+group has its own copies of every rule and lookup, and the engine trace shows both groups performing their
+own `PremOpsLCM`, claims-made, and `ILFPremOps` lookups (same values).
 
 ---
 
@@ -75,10 +107,12 @@ The gate doc describes the chain once for "both rate-driven groups" without stat
 | Rate tables | see `UnmannedAircraft_ERC_Tables.md` | — |
 | Terrorism sub-coverage — **out of scope for this doc** | `GeneralLiabilityUnmannedAircraftTerrorismCoverage` | `docs/rating-engine/A2-CW-RULE-CATALOG.md` line 451 |
 
-Not resolved in source docs — exact ERC XML file names/paths for the two coverage rule groups and
-for `GeneralLiabilityUnmannedAircraft`. The gate doc cites rule and group names throughout but never
-a file path or line number (unlike the CF documentation style, which cites `File.Rule.xml — line N`
-for every rule). Every citation in this document is therefore to the gate doc's own section headings.
+~~Not resolved in source docs — exact ERC XML file names/paths.~~ **(engine)** The files are
+`Rules/GeneralLiabilityUnmannedAircraftCovABIPDCoverageRules.Rule.xml`,
+`Rules/GeneralLiabilityUnmannedAircraftCovBPAICoverageRules.Rule.xml`, and
+`Rules/GeneralLiabilityUnmannedAircraftRules.Rule.xml` (stat codes, `DoMessage*`, and min premium
+≤ 20261001), plus the policy-level `GeneralLiabilityLimitedCovForDesignatedUnmannedAircraftPremiumToReachMinCoverageRules.Rule.xml`.
+All sit in each CW package. Other citations remain to the gate doc's section headings.
 
 ---
 
@@ -86,7 +120,11 @@ for every rule). Every citation in this document is therefore to the gate doc's 
 
 ### Step 1 — Aggregate limit
 `SetAggregateLimit`, via `unmannedAircraftAggregateLimitLookup` (GATE-370-UNMANNED-AIRCRAFT.md §1,
-item 1). Not resolved in source docs — the lookup's keys and values.
+item 1). Not resolved in source docs — the lookup's keys and values. **(engine) Resolved:** there is no
+table. `SetAggregateLimit` copies the drone's own `AggregateLimit` input (blank if absent).
+`unmannedAircraftAggregateLimitLookup` is a string helper that appends `" CSL"` for the ILF lookup, and it
+is deleted in CW 20270401. Legal values come from `DomainUnmannedAircraftAggregateLimit`, keyed by the
+policy each-occurrence limit. Engine: `AggregateLimit = '1,000,000'`.
 
 In 8 states (IN, MO, MT, ND, NH, OK, TN, UT) this rule and its lookup table are overridden by a
 governmental-units increased-limits variant — see § State deviations below.
@@ -101,9 +139,9 @@ ceiling:
 maximumTakeoffWeightCeiling = Convert<int>( round( MaximumTakeoffWeight + 0.499, 0 ) )
 ```
 
-Not resolved in source docs — exactly which downstream rule performs this inline computation; the
-gate doc shows it feeding the Step 3 gate (`maximumTakeoffWeightCeiling != 0`) but does not name the
-rule body that now contains it.
+~~Not resolved in source docs — exactly which downstream rule performs this inline computation.~~
+**(engine)** It is the helper rule `maximumTakeoffWeightCeiling` (type integer), called from `SetLossCost`.
+A null `MaximumTakeoffWeight` gives 0. Engine: 10 lb → `round(10.499, 0)` → **10**.
 
 ### Step 3 — Loss cost
 `SetLossCost` (GATE-370-UNMANNED-AIRCRAFT.md §1, item 3):
@@ -129,9 +167,13 @@ else:
 
 (GATE-370-UNMANNED-AIRCRAFT.md §3.) The `>55 lb` row prices at 0 — refer to company (§3, §0).
 
-Not resolved in source docs — what `LossCost` resolves to when `maximumTakeoffWeightCeiling == 0`
-(i.e. `MaximumTakeoffWeight <= -0.499`, effectively unset/non-positive weight); the gate doc states
-the gate condition but not the else-branch value.
+~~Not resolved in source docs — what `LossCost` resolves to when `maximumTakeoffWeightCeiling == 0`.~~
+**(engine)** It resolves to `0.0` (a constant). Engine, weight 0: `LossCost` 0, both premiums 0, and
+message *"Please enter the Maximum Takeoff Weight to be greater than 0"*. Engine, 10 lb → band (5, 15] →
+**154.26**. Engine, 60 lb → band (55, ∞) → **0**: CovA and CovB both 0, so the drone is priced at $0. In
+`underwriting` mode R19 is raised (`UnmannedAircraftLimitedLiabilityBIPDLossCost … -> 0`). This is how
+the engine treats the PRD's ">55 lb encoded as 0 = Refer To Company": R19 in underwriting mode, and a
+silent $0 in `strict-erc`. The 2027 $1 floor does not rescue it, because `AdjustedRate` is 0.
 
 ### Step 4 — LCM
 `SetLCM` → `LookupPremOpsLCM`, countrywide, value **1** — the Premises/Operations LCM reused
@@ -144,7 +186,8 @@ Premises/Operations **"All Other"** claims-made multiplier variant, per manual C
 multipliers are found in Rule 23. Use Premises/Operations All Other claims-made multipliers."*
 (GATE-370-UNMANNED-AIRCRAFT.md §1, §4 item 2.)
 
-NY overrides this rule with its own selector — see § State deviations.
+NY overrides this rule with its own selector — see § State deviations. **(engine)** For an occurrence
+policy the trace writes `ClaimsMadeMultiplier = 1.0` (OK, both dates).
 
 ### Step 6 — Base rate
 `SetBaseRate` (GATE-370-UNMANNED-AIRCRAFT.md §1, item 6):
@@ -152,6 +195,7 @@ NY overrides this rule with its own selector — see § State deviations.
 ```
 BaseRate = round(LossCost x LCM x ClaimsMadeMultiplier, 3)
 ```
+**(engine)** 154.26 × 1 × 1.0 → **154.260** (CovA); 87.63 → **87.630** (CovB).
 
 ### Step 7 — Ownership and Operation modifier
 `SetOwnershipAndOperationBIPDRatingModifiers` — 9 rows, countrywide
@@ -160,10 +204,27 @@ BaseRate = round(LossCost x LCM x ClaimsMadeMultiplier, 3)
 of 9 rows price at **0** (refer to company), one of which is confirmed to be the row **"Non-owned
 unmanned aircraft operated by other parties"** (GATE-370-UNMANNED-AIRCRAFT.md §7a, resolving OI-49).
 
+**(engine) Row values, read from CW 20261001 V01 / 20270401 V02 (unchanged; BI/PD and PAI identical):**
+
+| Ownership and operation | Factor |
+|---|---|
+| Unmanned aircraft owned and operated by the insured | 1 |
+| Unmanned aircraft rented or leased to and operated by the insured | 1 |
+| Unmanned aircraft operations are contracted out to a subcontractor | 0.4 |
+| The insured is a hired operator/pilot operating unmanned aircraft provided by client | 1 |
+| Unmanned aircraft rented or leased to others | 0.9 |
+| Owned unmanned aircraft operated on insured's behalf by hired operator | 0.9 |
+| Non-owned unmanned aircraft operated by other parties | **0** |
+| Not Applicable | **0** |
+| Unknown | **0** |
+
 ### Step 8 — Primary Place of Operation modifier
 `SetPrimaryPlaceOfOperationBIPDRatingModifiers` — 9 rows, countrywide
 (`UnmannedAircraftPrimaryPlaceOfOperationBIPDRatingModifiers`), 1/51 states (WA) filing an override
-(§5). 2 of 9 rows price at **0** (§7a). Row values not resolved in source docs.
+(§5). 2 of 9 rows price at **0** (§7a). Row values not resolved in source docs. **(engine)** Rural 0.8 ·
+Urban 1.2 · Suburban 1 · Indoors 1.3 · Private Land 0.6 · Over bodies of water 0.6 · High concentration of
+people 1.3 · Not Applicable **0** · Unknown **0**. BI/PD and PAI are identical. 2027 respells "Private
+land" and "Not applicable".
 
 ### Step 9 — Usage modifier
 `SetUsageBIPDRatingModifiers` — 12 rows, countrywide (`UnmannedAircraftUsageBIPDRatingModifiers`),
@@ -188,14 +249,44 @@ unmanned aircraft operated by other parties"** (GATE-370-UNMANNED-AIRCRAFT.md §
 Else-branch: `SetUsageBIPDRatingModifiers` writes `0.0` when `Usage` is empty — a sixth path to a
 zero-rated modifier, independent of the five RTC rows above (GATE-370-UNMANNED-AIRCRAFT.md §0).
 
+**(engine)** Table labels are the full filed strings, e.g. "Aerial photography, surveillance,
+inspection, survey, data collection, media services", "Education and Research". CW 20270401 respells
+rows 7 and 12 as "Education and research" and "Other usage, not otherwise classified". The key is
+case-sensitive, so a pre-2027 spelling sent to a 2027 edition misses. The engine run (OK@2027-04-01,
+"Education and Research") rated the drone at **$0** with no message. **The Usage axis has no `Unknown`
+or `Not Applicable` row** (12 rows, domain likewise); only the other two axes do.
+
 **Referral requirement (engine obligation, not an ERC guard).** ERC multiplies all three
 modifiers into `AdjustedRate` (Step 10) with **no test of any kind** — `Rules referencing
 UsageRatingMod: 2 — both the rating rules that multiply by it` (§0). Per this project's rule:
 *any of the three rating modifiers resolving to `0` must raise `REFER` before it multiplies.*
-`Unknown` is itself a filed domain value on all three axes and also prices `0` — a broker who
+`Unknown` is itself a filed domain value on ~~all three axes~~ **(engine) the Ownership and Place axes
+(not Usage)** and also prices `0` — a broker who
 cannot resolve which single category applies per axis submits `Unknown`, which is a licensed way
 to trigger the same referral (§7a). This is a submission-level / engine-level requirement layered
 on top of ERC, not something ERC itself enforces.
+
+**(engine) How the built engine does it.** Register entry **R19** (`gl_engine/rating/referrals.py`,
+`d_zero_rating_factor`, reported under R14) runs only in `underwriting` mode. It raises when any
+*lookup* in the trace whose detail contains "UnmannedAircraft" returns 0. The multiply is not stopped:
+the zero is priced and a REFER is attached. Engine results, OK@2026-10-02:
+
+| Input | CovA / CovB | R19 raised by |
+|---|---|---|
+| 60 lb | 0 / 0 | both loss-cost lookups → 0 |
+| Usage = Firefighting | **0 / 162** (PAI 0.9 still prices) | usage lookup → 0 |
+| Ownership = Unknown | 0 / 0 | ownership lookups → 0 |
+| Usage empty | 0 / 0 | **only** the min-premium lookup below; the empty-usage else-branch writes a constant, not a lookup |
+| 10 lb, all factors valid | 316 / 216 | **`UnmannedAircraftMinPremium` → 0** |
+
+Two register defects follow (engine findings, not fixed here):
+- **False positive.** `UnmannedAircraftMinPremium` (CW value 0, meaning "no minimum") is looked up on
+  every drone policy, by `GeneralLiabilityUnmannedAircraftRules` ≤ 20261001 and by
+  `…LimitedCovForDesignatedUnmannedAircraftPremiumToReachMinCoverage` in 2027. So **every** drone
+  policy refers under R19.
+- **False negative.** A constant-0 modifier (empty Usage) or a lookup *miss* (a wrong-case 2027 usage
+  value) zero-prices the drone without any qualifying lookup. Such a drone would not refer if the
+  min-premium false positive were fixed.
 
 ### Step 10 — Adjusted rate
 `SetAjustedRate` *(sic — rule name is misspelled; the target datadef `AdjustedRate` is spelled
@@ -211,6 +302,7 @@ AdjustedRate = round(
 ```
 
 Per manual C.2.d, confirmed exact including modifier order (GATE-370-UNMANNED-AIRCRAFT.md §4 item 4).
+**(engine)** CovA 154.260 × 1 × 1 × 1 → **154.260**; CovB 87.630 × 1 × 1 × 1.2 = 105.156 → **105.156**.
 
 **Manual gap not implemented in ERC:** C.2.d(1)–(3) requires that where more than one category
 applies on an axis, the **highest** rating modifier be assigned. ERC takes a single submitted value
@@ -224,14 +316,31 @@ gate doc only by size (15,857 characters — the largest single rule in any gate
 its keys and values are **not resolved in source docs**
 (GATE-370-UNMANNED-AIRCRAFT.md §1 item 11).
 
+**(engine) Resolved from the rule body and the trace.** The lookup is `ILFPremOps[Factor]`, keyed on
+(State, **table assignment fixed at 3**, each-occurrence limit, aggregate limit). The limits are chosen
+from the drone aggregate `A`, the policy Prem/Ops occurrence `O` and the policy general aggregate `G`
+(the subline must include Prem/Ops):
+- if `A < O`: (`A`, `A`);
+- else if `A ≤ G`: (`O`, `A`).
+
+Up to 20261001 the `A` arguments get `" CSL"` appended; 2027 drops it. Engine, A = O = 1,000,000,
+G = 2,000,000: `ILFPremOps['OK', 3, '1,000,000 CSL', '1,000,000 CSL'] = 2.05` (2026-10-02) and
+`['OK', 3, '1,000,000', '1,000,000'] = 2.05` (2027-04-01).
+
 In 8 states (IN, MO, MT, ND, NH, OK, TN, UT), `SetILF` is overridden together with
 `SetAggregateLimit` by a governmental-units increased-limits variant — see § State deviations.
 
 ### Step 12 — Deductible factor (Coverage A only)
 `SetDeductibleFactor` → `LookupDedFactorPremOps{CSL,BI,PD}` — three Premises/Operations deductible
 tables (Combined Single Limit / Bodily Injury / Property Damage) reused directly
-(GATE-370-UNMANNED-AIRCRAFT.md §1 item 12). Not resolved in source docs — which of the three is
-selected under what condition, and their keys/values.
+(GATE-370-UNMANNED-AIRCRAFT.md §1 item 12). ~~Not resolved in source docs — which of the three is
+selected under what condition.~~ **(engine)** The selection, from the drone's deductible inputs:
+- `BIPDDeductible` set and not "No Deductible" → **CSL** table;
+- else `BIDeductible` and `PDDeductible` both set → **BI + PD** (summed);
+- else BI only → **BI** table; PD only → **PD** table;
+- else → `0.0`.
+
+Engine, BIPD "No Deductible": `DeductibleFactor = 0`.
 
 Coverage B's premium formula (Step 13) drops the deductible term entirely, so this step applies to
 Coverage A only.
@@ -261,8 +370,17 @@ Unlike the CF Structure premium rules, the gate doc gives no evidence of multipl
 branches (scheduled / Legal Liability / blanket) for this subline — Unmanned Aircraft premium is a
 single formula gated only by `CoverageOnPolicyIndicator`. No comparison-of-branches table applies.
 
-Not resolved in source docs — decimal-place rounding convention for the premium product (CF's
-`Round`-vs-`Product` distinction is not addressed anywhere in the gate doc for this subline).
+~~Not resolved in source docs — decimal-place rounding convention for the premium product.~~
+**(engine)** `Product ToDataDef=Premium DecimalPlaces=0`: the whole product is rounded once to whole
+dollars. Engine: 154.260 × (2.05 − 0) × 1 × 1 × 1 × 1 = 316.233 → **316** (OK, both dates).
+CW 20270401 adds `Premium = 1 if round(…) = 0 and AdjustedRate > 0`.
+
+**Policy-level minimum (engine).** `UnmannedAircraftMinPremium` = 0 (CW, every edition), so
+`…LimitedCovForDesignatedUnmannedAircraftPremiumToReachMinCoverage` writes `Premium = 0.0`. Its
+`SetTotalUnmannedAircraftPremium` sums `CovA.Premium` and `CovB.Premium` per drone inside one `ForEach`.
+The engine returned **216** (CovB only) instead of 532. `gl_engine/interp/nodes.py` `_for_each` yields
+only the *last* child of a multi-child `ForEach` body. No premium effect today because the minimum is
+0, but it is a latent interpreter defect.
 
 ---
 
@@ -332,8 +450,9 @@ Premium =
 The gate doc states only that "Coverage B drops the deductible term" from the Coverage A formula
 (§1, item 13); it does not reproduce Coverage B's formula verbatim. The reconstruction above assumes
 the deductible term is simply omitted and `ILF` is used un-adjusted (rather than, say, `(ILF - 0)`).
-**Not resolved in source docs — confirm the literal Coverage B `SetPremium` expression** if bit-exact
-reproduction is required.
+**(engine) Confirmed literally.** The rule is `Product DecimalPlaces=0 (AdjustedRate, ILF, PackageModFactor,
+ExperienceRatingModificationFactor, ExpenseModification, ModToUse)`, with the same 2027 $1 floor.
+Engine: 105.156 × 2.05 = 215.5698 → **216**.
 
 ---
 
@@ -346,8 +465,9 @@ reproduction is required.
 | Primary Place of Operation modifier | `...BIPDRatingModifiers` (9 rows, 2 zero) | `...PAIRatingModifiers` (9 rows, 2 zero) |
 | Usage modifier | `...BIPDRatingModifiers` (12 rows, 5 zero) | `...PAIRatingModifiers` (12 rows, 3 zero) |
 | Deductible factor step | present (`SetDeductibleFactor`) | absent |
-| Premium formula | `AdjustedRate x (ILF - DeductibleFactor) x ...` | `AdjustedRate x ILF x ...` (reconstructed — see caveat above) |
-| Total zero/RTC cells across both modifier axes + usage | 8 | 8 |
+| Premium formula | `AdjustedRate x (ILF - DeductibleFactor) x ...` | `AdjustedRate x ILF x ...` (**(engine)** confirmed literal) |
+| Total zero/RTC cells across both modifier axes + usage | ~~8~~ **10** (5 usage + 3 ownership + 2 place; **(engine)** re-counted from the table files) | 8 (3 + 3 + 2) — the 18 total matches "18 of 60" |
+| Engine, 10 lb / aerial / owned / suburban / 1M agg (OK) | **316** | **216** |
 
 Both coverages price **0** above 55 lb takeoff weight and share the LCM, claims-made multiplier
 (unless NY), and ILF/deductible source tables borrowed from Premises/Operations.
@@ -395,6 +515,15 @@ across this corpus for claims-made overrides (also seen in liquor and railroad).
 Not resolved in source docs — the contents of `LookupGovernmentalUnitsPremisesOperationsIncreasedLimitsFactor`
 and NY's substitute claims-made selector.
 
+**(engine) Re-scanned 2026-10-02 across every state package on disk.** The eight-state governmental-units
+set is unchanged. It is present in each state's 2027-04-01 editions (IN, ND V01–V04; MO, OK, NH, TN
+V02+; MT, UT V03+), where `unmannedAircraftAggregateLimitLookup` drops out as in CW. NY's
+`SetClaimsMadeMultiplier` override runs through NY 20260801 V01. Because NY has no 2027 package, it
+resolves to that edition over CW 20260101 V01 even at 2027-04-01. GA and PR filed indicator-only
+overrides in ≤ 2022 editions that are no longer current. **OK is one of the eight**: the engine
+run above used OK's `SetILF` override with `GovernmentalSubdivision = "No"`, which falls through to
+`LookupILFPremOps`.
+
 Also: `UnmannedAircraftOwnershipAndOperationBIPDRatingModifiers` and
 `UnmannedAircraftPrimaryPlaceOfOperationBIPDRatingModifiers` each carry a single state override —
 Washington (WA), 1/51 (§5). All other rate tables on this subline are countrywide-only with 0/51
@@ -410,9 +539,10 @@ state filings.
 | `LookupUnmannedAircraftLimitedLiabilityPAILossCost` (name inferred from the BI/PD pattern; not stated verbatim in the gate doc) | `UnmannedAircraftLimitedLiabilityPAILossCost` | State\|CW (0/51), weight ceiling band | 2 rows — **name not resolved in source docs**, only the table name is given |
 | `LookupPremOpsLCM` | (Prem/Ops LCM table) | — | CW value 1 |
 | `LookupPremOpsClaimsMadeMultiplierAllOther` | (Prem/Ops claims-made table, "All Other" variant) | — | NY overrides the calling rule |
-| `unmannedAircraftAggregateLimitLookup` | (aggregate limit table) | not resolved | — |
-| `LookupILFPremOps` | (Prem/Ops ILF table) | not resolved | 15,857-char rule body |
-| `LookupDedFactorPremOpsCSL` / `...BI` / `...PD` | (Prem/Ops deductible tables) | not resolved | Coverage A only |
+| `unmannedAircraftAggregateLimitLookup` | ~~(aggregate limit table)~~ **(engine)** none — string helper appending `" CSL"` | — | deleted in CW 20270401 |
+| `LookupILFPremOps` | `ILFPremOps` | **(engine)** State, assignment 3, occurrence, aggregate | 15,857-char rule body; OK 1M/1M → 2.05 |
+| `LookupDedFactorPremOpsCSL` / `...BI` / `...PD` | (Prem/Ops deductible tables) | **(engine)** chosen by BIPD / BI+PD / BI / PD deductible inputs (Step 12) | Coverage A only |
+| `LookupUnmannedAircraftMinPremium` | `UnmannedAircraftMinPremium` | State, constant `Y` | **(engine)** 0; the lookup trips R19 on every drone policy |
 | `LookupGovernmentalUnitsPremisesOperationsIncreasedLimitsFactor` | governmental-units ILF variant | not resolved | 8-state override |
 
 ---
@@ -423,7 +553,7 @@ state filings.
 Ceiling      = Convert<int>(round(MaximumTakeoffWeight + 0.499, 0))
 
 LossCost     = lookup UnmannedAircraftLimitedLiabilityBIPDLossCost(weight band)   if Ceiling != 0
-             | <not resolved in source docs>                                     otherwise
+             | 0.0                                    (engine)                   otherwise
 
 BaseRate     = round(LossCost x LCM x ClaimsMadeMultiplier, 3)
                                        (LCM = 1 CW; ClaimsMadeMultiplier = Prem/Ops "All Other",
@@ -431,13 +561,19 @@ BaseRate     = round(LossCost x LCM x ClaimsMadeMultiplier, 3)
 
 AdjustedRate = round(BaseRate x OwnershipAndOpMod x PrimaryPlaceOfOpMod x UsageMod, 3)
                                        (any of the three = 0  =>  REFER before use — engine rule,
-                                        not an ERC guard; "Unknown" is a filed way to trigger it)
+                                        not an ERC guard; "Unknown" is a filed way to trigger it.
+                                        (engine) R19, underwriting mode only, AFTER pricing at 0;
+                                        also fires on the 0 min-premium lookup for every drone)
 
-Premium      = AdjustedRate x (ILF - DeductibleFactor) x PackageModFactor
-             x ExperienceRatingModificationFactor x ExpenseModification x ModToUse
+ILF          = ILFPremOps[State, 3, (A,A) if A<O else (O,A)]     (engine; " CSL" appended <= 20261001)
+
+Premium      = round( AdjustedRate x (ILF - DeductibleFactor) x PackageModFactor
+             x ExperienceRatingModificationFactor x ExpenseModification x ModToUse , 0)   (engine)
+             (CW 20270401: 1 if that is 0 and AdjustedRate > 0)
 
                                        (basis: each unmanned aircraft, no /1000;
                                         MinPremium = 0 CW)
+# engine, OK, 10 lb aerial/owned/suburban, 1M agg: 154.26 -> 154.260 -> 154.260 x 2.05 = 316.233 -> 316
 ```
 
 ## Quick reference — end-to-end, Coverage B (PAI)
@@ -446,21 +582,23 @@ Premium      = AdjustedRate x (ILF - DeductibleFactor) x PackageModFactor
 Ceiling      = Convert<int>(round(MaximumTakeoffWeight + 0.499, 0))
 
 LossCost     = lookup UnmannedAircraftLimitedLiabilityPAILossCost(weight band)    if Ceiling != 0
-             | <not resolved in source docs>                                     otherwise
+             | 0.0                                    (engine)                   otherwise
 
 BaseRate     = round(LossCost x LCM x ClaimsMadeMultiplier, 3)
 
 AdjustedRate = round(BaseRate x OwnershipAndOpMod(PAI) x PrimaryPlaceOfOpMod(PAI) x UsageMod(PAI), 3)
                                        (same REFER-on-zero rule as Coverage A)
 
-Premium      = AdjustedRate x ILF x PackageModFactor
-             x ExperienceRatingModificationFactor x ExpenseModification x ModToUse
+Premium      = round( AdjustedRate x ILF x PackageModFactor
+             x ExperienceRatingModificationFactor x ExpenseModification x ModToUse , 0)   (engine)
 
-                                       (deductible term dropped — reconstructed formula,
-                                        see caveat under "Coverage B — differences")
+                                       (deductible term dropped — (engine) confirmed literal)
+# engine, same drone: 87.63 -> 87.630 x 1.2 = 105.156 x 2.05 = 215.5698 -> 216
 ```
 
 All intermediate rate products carry 3 decimal places per the gate doc's rule descriptions; premium
-rounding convention is **not resolved in source docs**.
+rounding: **(engine)** 0 dp (`Product DecimalPlaces=0`) in both coverages. Drone terrorism is a
+separate group, `GeneralLiabilityUnmannedAircraftTerrorismCoverage`, on CovA + CovB. See
+`Terrorism_RatingAlgorithms.md` (engine: 532 → **1** with the OK cap endorsement).
 
 ---

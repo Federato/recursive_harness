@@ -1,5 +1,12 @@
 # CF — required submission inputs, by coverage
 
+> **Reconciled against the built engine on 2026-10-02 (commit 630ba2f; chunks 1–27 gated).**
+> Confirmed by checking every row against the chunk 1–27 gate and task docs, `docs/OPEN-ITEMS.md`
+> and chunk 28's refusal table, re-running the chunk 3 / 5 / 8 zero-case scripts offline
+> (`16_`, `33_`, `61_`: all exit 0, figures as stated below) and re-counting the 2026 ERC
+> `EarthquakeDeductibleTier` tables. Rows that drifted are marked **(updated 2026-10-02)**; inputs
+> established by chunks 11–27 are summarised in the new section near the end.
+
 **A rules-first reference, not a rater-export reference.** This catalogs every
 field the ISO ERC rules themselves treat as a genuine submission input —
 confirmed by reading the rule XML directly, chunk by chunk — as opposed to
@@ -32,7 +39,8 @@ which one you're looking at.
    field — and the rule is not broken — but the table or record it reads
    from is empty in practice, so the derivation always misses and the field
    behaves exactly like a pure input, just with a misleading "there's a
-   rule for that" appearance. Examples: `EQDeductibleTier`,
+   rule for that" appearance. Examples: `EQDeductibleTier` (countrywide
+   only; the states file rows, corrected 2026-10-02),
    `BlktCauseOfLossValue` (before chunk 9's golden case), the New York
    `ProtectionClassFactor` shape.
 3. **Conditional fallback.** The field IS genuinely derived under most
@@ -85,7 +93,7 @@ dangerous until you've confirmed which.
 | `CauseOfLoss` | Pure input | Blank → `CauseOfLossToUse` blank → `CoverageOnPolicyIndicator=0` → premium zero | CF-CHUNK1-GOLDEN-CASE.md §2 |
 | `ProtectClass` (must be on Location, not Structure) | Pure input | Set on the wrong node → factor stays 1.0 → premium 4% too high, no error | CF-CHUNK1-GOLDEN-CASE.md §2 |
 | `LossCostMultiplier` | Pure input | "Company input, not filed" | CF-CHUNK1-GOLDEN-CASE.md §2 |
-| `IRPMFactor`, `PackageModFactor`, `MultiPremiumAndDispersionCreditFactor` (policy-level) | Pure input | "Schedule inputs, not filed tables" | CF-CHUNK1-GOLDEN-CASE.md §2 |
+| `IRPMFactor`, `PackageModFactor`, `MultiPremiumAndDispersionCreditFactor` (policy-level) | **Computed only when blank; a supplied factor always wins** (updated 2026-10-02) | Blank → computed from the IRPM categories / package rules. ISO **refuses** a policy whose combined modifier is 0 or ≥ 2.00 (stat-code lookup has rows 1–199 only), including a package discount of 0; ours prices (OI-103, chunk 28) | CF-CHUNK1-GOLDEN-CASE.md §2; CF-CHUNK14-GATE.md; OI-103 |
 | `FullBldgValue` | Pure input | Not rate-affecting on this branch; omission raises an ISO validation message | CF-CHUNK1-GOLDEN-CASE.md §2 |
 | Arizona `BasicGroupIReductionCredit` (Location, AZ only) | Pure input | Absent → literal `0.0` fallback → every AZ building prices at zero, nothing raises | CF-CHUNK1-GATE.md pt.3 |
 
@@ -97,7 +105,7 @@ dangerous until you've confirmed which.
 
 **Path-selectors, not rating-value inputs**
 
-- `RatingType` (Class vs. Specific/Tentative — the latter confirmed unbuilt project-wide)
+- `RatingType` (Class / Specific / Tentative; CA also "One-Term Loss Cost"). **Updated 2026-10-02: the Specific / Tentative path is built and ISO-confirmed (chunk 26).** Specific needs `SpecificGroupIRate` (none → building AND BI Group I $0, silently); a **blank `RatingType` prices Group I at rate 1.0** (building $1,204 where Specific gives $362), at ISO too. The occupancy and contents **copy** it (a submitted copy is overwritten). CF-CHUNK26-GATE.md
 - `CovType` — selects premium Branch A
 - `IncludedInBlkt` — selects blanket vs. non-blanket path
 
@@ -109,8 +117,12 @@ dangerous until you've confirmed which.
 |---|---|---|---|
 | `BasicGroupIIRatingTerr` (Location) | Pure input | Blank → base rate 0 → Group II premium zero | CF-CHUNK2-GATE.md pt.4 |
 | `NumStories` | Pure input | Blank → no symbol resolves → zero | CF-CHUNK2-GATE.md pt.4 |
-| `BCEG` | Pure input | Absent → `SetBCEGFactor` never assigns → literal `0.0` fallback → Group II prices at zero (ISO-confirmed: $32 with it, $0 without) | CF-CHUNK2-GATE.md pt.4 |
-| `RatingTypeBasicGroupII` | Pure input | 36 of 47 states gate `SetBasicGroupIIRate` on this Group-II-specific field the countrywide rule has no concept of; omit it and those 36 states price at zero | CF-CHUNK2-GATE.md pt.3 |
+| `BCEG` | Pure input | Absent → `SetBCEGFactor` never assigns → literal `0.0` fallback → Group II prices at zero (ISO-confirmed: $32 with it, $0 without). **Except DC and NY**, whose `SetBCEGFactor` is empty: BCEG is not read there (grade 4 = grade 9; DC $38, NY $70, ISO equal) (updated 2026-10-02) | CF-CHUNK2-GATE.md pt.4; CF-CHUNK27-TASKS.md C27-08 |
+| `RatingTypeBasicGroupII` | Pure input | 36 of 47 states gate `SetBasicGroupIIRate` on this Group-II-specific field the countrywide rule has no concept of; omit it and those 36 states price at zero. "Specific" also needs `SpecificGroupIIRate` (blank type → Group II $0 on building, contents and BI, ISO the same) (chunk 26) | CF-CHUNK2-GATE.md pt.3; CF-CHUNK26-GATE.md |
+| `BasicGroupIISymbol` — **New York only** | Pure input (added 2026-10-02) | NY's symbol rule is empty, so the symbol is submitted; without it Group II is **$0 at ISO too**. With it NY also needs `CompletedBasicGroupIISymbol` "Not Applicable", or ISO refuses (ours prices: OI-103, chunk 28) | CF-CHUNK27-TASKS.md C27-09 |
+| `BasicGroupIIRatingTerr` — **Florida** | Pure input (added 2026-10-02) | FL uses its own Group II territories ("Entire State" is refused at ISO). Outside OR, a Specific Group II building still needs a territory the state's rate table files (the class lookup runs anyway) | CF-CHUNK27-TASKS.md C27-06; CF-CHUNK26-GATE.md |
+
+**State shapes confirmed 2026-10-02 (chunk 27 C27-07..09, ISO live):** TX multiplies its Group II rate by a flat **0.1** when wind / hail is excluded ($800 → $79); IL maps "Cook County" to its "Cook" rows; MT's symbol now resolves ($74).
 
 **Conditional fallback**
 
@@ -124,14 +136,16 @@ dangerous until you've confirmed which.
 
 **Instrument note, not a field finding**: the "ISO always refuses on an empty `SingleResult` lookup" hypothesis was tested project-wide and **disproven** — turning strict refusal on breaks GL verification on VA/VT payloads ISO itself rates, because those states file a zero-row Subline table that makes both the state and countrywide lookup passes miss identically. Not every empty `SingleResult` is a rejection signal.
 
+**Updated 2026-10-02 (chunk 28 C28-02, `CF-CHUNK28-REFUSALS.md`):** the Property evidence now points the other way. Of 66 ISO refusals that reproduce live, **65 are a `SingleResult` lookup that matches no row** (an unfiled or blank key), and across 1,689 requests ISO rated, our engine never misses a `SingleResult` lookup. The exception is Vermont's empty earthquake sub-limit tier table. **Our engine still prices every one of those 66 (often at $0)**; refusing where ISO refuses is chunk 28 Set A, not built. Practical rule for submitters: **every lookup key must be a value the state files**, or ISO will refuse the policy.
+
 ---
 
 ## Building — Broad and Special (chunk 3)
 
 | Field | Category | If omitted | Source |
 |---|---|---|---|
-| `Limit` | Pure input | Absent → premium itself reaches null (not just a zeroed factor) → the null-premium guard **raises** — the one exception to the "absent means silent zero" family in chunks 1–3 | CF-CHUNK3-ZERO-CASES.md |
-| `Deductible` | Pure input | Blank → Broad's `Otherwise` writes `0.0` → silent zero for Broad. Special's actual run also returned 0 rather than the predicted null — **unresolved, see appendix** | CF-CHUNK3-ZERO-CASES.md |
+| `Limit` | Pure input | **Updated 2026-10-02.** Absent → **$0** (Broad and Special), as at ISO, which also returns "Please enter a Limit greater than 0". No longer a refusal: since OI-109 / OI-110 (2026-09-23, user-authorized) Property's `Product` skips a null operand as ISO does, and writes 0 only when every operand is null. Re-run offline 2026-10-02: `16_chunk3_zero_cases.py` Z3 = 0 / 0 | CF-CHUNK3-ZERO-CASES.md; OI-109, OI-110 |
+| `Deductible` | Pure input | Blank → silent **$0 on both Broad and Special**: both deductible rules end in an `Otherwise` worth `0.0` (the "Special has no `Otherwise`" reading was wrong; resolved, `16_` Z2) (updated 2026-10-02) | CF-CHUNK3-ZERO-CASES.md; `16_chunk3_zero_cases.py` Z2 |
 | `TheftDeductible` | Pure input | Non-blank, not "Not Applicable"/"250", and ≠ `Deductible` → moves the Special deductible factor to 0.89; otherwise reverts to the building deductible (0.97) | CF-CHUNK3-SPECIAL-STRUCTURE.md task 19 |
 | `ClassCode` (Florida's own 21-code list) | Pure input | Off that list → Florida rates non-residential instead of residential | CF-CHUNK3-STATE-SWEEP.md |
 
@@ -159,6 +173,8 @@ dangerous until you've confirmed which.
 | Field | Category | If omitted | Source |
 |---|---|---|---|
 | Watchman/burglar-alarm schedule credit factor (Special form) | Pure input | Supplying the factor without also submitting `TypeOfWatchmanSrvc` leaves the credit at 1.0 — a discount silently not given, no message | CF-CHUNK4-TASKS.md C4-27 |
+| The **building's** `WindstormOrHailDeductible` (read by contents) | Required at ISO (added 2026-10-02) | Blank → **ISO refuses every contents policy** (`WindstormOrHailDeductibleAsNumber`, keys CW + blank); ours prices. With it, chunk 8's contents premiums are ISO-confirmed. OI-103, chunk 28 Set A | CF-CHUNK27-TASKS.md (RC-2); OI-103 |
+| `SpecificGroupIRate` (and `SpecificGroupIIRate`) on the contents, Specific / Tentative only | Pure input (added 2026-10-02) | Contents price on their **own** specific rate, not the building's; none of their own → contents Group I **$0**, silently (ISO the same) | CF-CHUNK26-GATE.md |
 
 **Conditional fallback**
 
@@ -183,7 +199,9 @@ dangerous until you've confirmed which.
 
 | Field | Category | If omitted | Source |
 |---|---|---|---|
-| `MfgPct`, `OtherPct`, `Combination1Factor`, `Combination2Factor` (the "Combined" `TypeOfRisk` blend) | Pure input | All four submitted via `FromConstant="0.0"` defaults — the null does **not** trigger the null-premium guard, it reaches the premium as $0, no message | CF-CHUNK5-TASKS.md C5-12; CF-CHUNK5-GATE.md pt.4 |
+| `MfgPct`, `OtherPct`, `Combination1Factor`, `Combination2Factor` (the "Combined" `TypeOfRisk` blend) | Pure input | **Updated 2026-10-02.** Absent → **not** $0: each weighted term is a `Product` with a null operand, ISO skips the null and **adds the two component factors** (Factor 1.26, BI **$256** + $30, ISO-confirmed live), so a missing blend percentage **over**-prices. Ours matches since OI-110 (`33_chunk5_zero_cases.py` Z2, re-run 2026-10-02). An off-domain `TypeOfRisk` (e.g. "Mercantile") still leaves Factor null → BI $0 (Z3) | CF-CHUNK5-TASKS.md C5-12; OI-110 |
+| `Limit` | Pure input (added 2026-10-02) | Absent → BI **$0 with no message at all**, at ISO too (the building still prices) | OI-109 (P-probes, `136_`) |
+| Specific / Tentative rate | Inherited (added 2026-10-02) | BI rates on the **building's** `SpecificGroupIRate` (MO 2023 V02: the building's final rate). **CA One-Term Loss Cost: BI falls to rate 1.0** ($538 vs $121), ISO the same (OI-124, closed as matches ISO) | CF-CHUNK26-GATE.md; OI-124 |
 
 **Dead-derivation trap**
 
@@ -213,7 +231,7 @@ dangerous until you've confirmed which.
 
 | Field | Category | If omitted | Source |
 |---|---|---|---|
-| `ClassDescription` | Pure input | The rating driver is prose, not a code — no rule derives it. Basic I and II both price $0; Broad/Special are unaffected (they key off a hardcoded literal / flat constant instead) | CF-CHUNK6-ZERO-CASES.md; CF-CHUNK6-TASKS.md structural note 1 |
+| `ClassDescription` | Pure input | The rating driver is prose, not a code — no rule derives it. Basic I and II both price $0; Broad/Special are unaffected (they key off a hardcoded literal / flat constant instead). **Must be a description the state files** (FL is frozen at an older vocabulary): an unfiled one makes **ISO refuse** (`SpecialClassDescriptionConvertedOption`, OI-99) where ours prices $0 (updated 2026-10-02) | CF-CHUNK6-ZERO-CASES.md; CF-CHUNK6-TASKS.md structural note 1; OI-99; C15-16 |
 | `BasicGroupIISymbol` (on the Special Class item) | Pure input | "Three datadef groups derive the Group II construction symbol... `CommercialPropertySpecialClass` is not one of them" — Group II prices $0; Group I unaffected | CF-CHUNK6-PER-FORM.md C6-18; CF-CHUNK6-ZERO-CASES.md case 5 |
 | `SpecialClassDescConvertedOption` (New York only) | Pure input | NY's own converting rule is deleted (`<rul:Sequence />`) — "a deleted rule is how ISO says a field is an input," reachable only with NY's own private codes | CF-CHUNK6-DESCRIPTION-CHAIN.md C6-11/12 |
 
@@ -266,7 +284,9 @@ dangerous until you've confirmed which.
 
 | Field | Category | If omitted | Source |
 |---|---|---|---|
-| `Limit` | Probable pure input (not explicitly confirmed "zero deriving rules," but its absence **refuses** rather than defaults — consistent with no fallback path existing) | Engine refuses (null-premium guard) rather than pricing $0 | CF-CHUNK8-GATE-3-5.md C8-03 case 5; CF-CHUNK8-TASKS.md map pt.20 |
+| `Limit` | Probable pure input | **Updated 2026-10-02.** Absent → **$0**, and ISO's Legal Liability premium is $0 too (no longer a refusal since OI-109 / OI-110; `61_chunk8_zero_cases.py` case 5, re-run 2026-10-02) | CF-CHUNK8-GATE-3-5.md C8-03 case 5; OI-109 |
+| Location `District` — **California** | Pure input (added 2026-10-02) | CA's Legal Liability base rate is a District I / II table: without a `District` CA's Legal Liability prices **$0**; with it $57 (I) / $68 (II), ISO equal. (Chunk 8's "CA zero" was the sweep sending none) | CF-CHUNK27-TASKS.md C27-06 |
+| Group II territory — **Florida** | Pure input (added 2026-10-02) | FL prices Legal Liability ($59) with its own Group II territory; "Entire State" is refused at ISO | CF-CHUNK27-TASKS.md C27-06 |
 
 **Conditional fallback**
 
@@ -327,7 +347,7 @@ dangerous until you've confirmed which.
 
 | Field | Trap | Source |
 |---|---|---|
-| `EQDeductibleTier` | `LookupEarthquakeDeductibleTier` is a real rule, but its backing table (`EarthquakeDeductibleTier.RateTable.csv`) has zero rows in every state and countrywide. `SetEQDeductibleTier` only fills the field if it's null, so it correctly stays null forever against this empty table — "a dead derivation for now, not a hidden live path." **Also one of the sub-limit path's 4 equality keys**, so a sub-limit submission must supply it directly | CF-CHUNK10-TASKS.md C10-02/C10-19; verified directly against the rule XML and table CSV |
+| `EQDeductibleTier` | **Corrected 2026-10-02: not dead in the states.** The countrywide `EarthquakeDeductibleTier.RateTable.csv` is header-only, but **every 2026 state package in the corpus files rows** (1–19 each; re-counted 2026-10-02), so `SetEQDeductibleTier` (IsNull-guarded) derives the tier from `EQTerr` in-state; a submitted tier still wins. An `EQTerr` the state's tier table does not file makes **ISO refuse** (17 live cases, AK GA IN NH NV SC WY, keys CW + 22); ours prices (OI-103, chunk 28). **Also one of the sub-limit path's 4 equality keys.** The sub-limit tier tables are state-filed too: a tier a state does not file prices $0 (chunk 19), and **Vermont's empty sub-limit tier table is refused at ISO** while ours reads countrywide (CF-CHUNK28-REFUSALS.md) | CF-CHUNK10-TASKS.md C10-02/C10-19; CF-CHUNK28-REFUSALS.md; 2026 ERC table CSVs |
 
 **Silent submission-shape traps found only by running** (a distinct shape from a dead-derivation trap — these are ancestor-copy overwrites, not input-vs-derived questions):
 - Contents' own `SetEQClass` is an unguarded ancestor-copy from the Structure — a value set directly on the Personal Property record is silently overwritten.
@@ -342,6 +362,48 @@ dangerous until you've confirmed which.
 
 ---
 
+## Inputs established by chunks 11–27 (added 2026-10-02)
+
+Summarised from each chunk's gate doc ("what the chunk established, in submission terms"); every
+item below was found by running and confirmed against ISO live. Detail and evidence: the gate file named.
+
+| Chunk | Coverage | What a submission must carry, and the traps | Gate doc |
+|---|---|---|---|
+| 11 | Leasehold Interest | Structure `CovType` = "Leasehold Interest" with `PolicyType` = Commercial Property Policy, else the LI record is **deleted, no message**; `EQCovIndicator` "No Coverage", not blank (blank switches EQ on); `ExpDate` is never an input (EffDate + 1 year); a `PercentInterest` the table does not file (e.g. 10.5%) is refused at ISO, $0 in ours (OI-103) | CF-CHUNK11-GATE.md |
+| 12 | Debris Removal, Ordinance or Law, Utility Services, Unmanned Aircraft, Green Upgrades, Dependent Properties | Ordinance or Law B / C limits: absent → the cell prices on what remains of its product (ISO skips the null operand, OI-110; usually $0), A still prices; unfiled Utility Services waiting period or Green Upgrades percentage → ISO refuses (OI-103); the drone reads the **contents'** theft factor, Dependent Properties the **BI's** (chunk 27) | CF-CHUNK12-GATE.md; CF-CHUNK27-GATE.md |
+| 13 | Terrorism | **`TRIAType` drives everything** (blank → no terrorism form; submitted forms removed silently); `TerrorismIndicator` switches nothing off; send `TerrorismSubLimit`, `TerrorOverridePremium`, `BasicGroupIRatingTerrFactor` as JSON numbers; an unfiled terrorism territory is refused at ISO | CF-CHUNK13-GATE.md |
+| 14 | Policy assembly | A supplied IRPM / package mod / multi-premium credit always wins; combined modifier must be 0.01–1.99 or ISO refuses; MO's seventh IRPM category blank is refused; **CO / IN need a wind-hazard county, OK "Entire State", SC an earthquake territory**, or ISO refuses; **no minimum premium** (OI-113: refer to company, not built) | CF-CHUNK14-GATE.md |
+| 15 | Manual-premium endorsements | `ManualPremium` plus an on-switch on five records (`Indicator`, `TemporarilyInPortableStorageUnitsIndicator`, `InterruptionCompuOpsIndicator`; Valuable Papers needs its own Contents row `CovType`), or $0 with a premium entered; set the Contents `CovForm` **on the occupancy** (copied down); a special-class description the state files | CF-CHUNK15-GATE.md |
+| 16–17 | BI add-ons, Pollutant, Spoilage, Molten Material, Mine Subsidence, Payroll, Mining, Landlord, Watercraft, Off-Premises | Send `NumOfDays` as a number (string refused); blank days price as 0 days; Mining needs `TypeOfRisk` Mining (the container is deleted otherwise); Landlord carries its **own** `CauseOfLoss`; Special Class BI spells it `WaterFrontProperty`; Off-Premises needs an extended period (blank → $0); a watercraft option "Not Applicable" is refused at ISO | CF-CHUNK16-GATE.md; CF-CHUNK17-GATE.md |
+| 18 | Agreed Value, Inflation Guard, Functional Valuation, Rebuilding, Vacancy, Peak Season | `AgreedValueLimit` as a number (absent → $0, no message); Functional Valuation switched by the parent's `ValuationType`; Vacancy / Peak Season need the policy `EffectiveDt` / `ExpirationDt` (leave a blank date out, don't send it empty) | CF-CHUNK18-GATE.md |
+| 19 | Scheduled items (Tenants', Antennas, Signs, Trees, contents-side families) | Tenants' needs **both** deductibles (blank → $0) and its own `CausesOfLoss`; EQ needs the item's and the building's election; give the contents their own EQ election | CF-CHUNK19-GATE.md |
+| 20 | Small coverages with own tables | Radioactive needs a submitted rate; Fire Department needs `FireIncreaseLimitApplyOnPolicyIndicator` "Yes" and a limit above 1,000 (blank limit: ISO skips the blank, OI-115); special-limit items need the Special cause; Mortgageholders' `Limit` is text | CF-CHUNK20-GATE.md |
+| 21 | Sewer backup, condo options | `DischargeLimitPD` / `DischargeLimitBI` (xs:int) are the only switch; send `LossAssessmentLimit` "0" when unwanted (blank with misc. real property is refused at ISO); FL's CPP condo `ManualPremium` is text, and a blank one is refused at ISO (OI-117) | CF-CHUNK21-GATE.md |
+| 22 | Value Reporting, Additional Locations | General Information record at policy level; contents on a reporting coinsurance value; **send "Not Used"** (average rates "Used" is refused at ISO and ours, OI-119); the two forms are mutually exclusive; either switches the ordinary contents premium off | CF-CHUNK22-GATE.md |
+| 23 | State-only (MA, AK, CA, VA) | MA remediation under the building; AK fees only on Legal Liability; CA Limited EQ via the location's `EQCauseOfLossForm`; records the rules attach on their own sit at $0 without their inputs | CF-CHUNK23-GATE.md |
+| 24 | Builders Risk | `CovType` "Builders Risk", class 1150; with a reporting form `Limit` 0; renovations need `RatingType` "Class" (and `EQClass`); a 2% EQ deductible on class A1 is refused at ISO, $0 in ours (OI-103) | CF-CHUNK24-GATE.md |
+| 25 | Flood | Location `FloodCovIndicator` "Yes" + General Information (`Deductible`, `FloodZone`, `FloodEffDate`, optional CRS); county states read `County` (VA `City`); each flood record `Limit`, `IncludedInBlkt`, `ExcessOverMaxNFIPIndicator`; Special Class / SCBI their own `ConstructionType`; AK / FL `ManualPremium` | CF-CHUNK25-GATE.md |
+| 26 | Specific / Tentative | Building `RatingType` + `SpecificGroupIRate`; Group II in 36 states `RatingTypeBasicGroupII` "Specific", `SpecificGroupIIRate`, `SquareFootageOfBuilding`, a filed `BasicGroupIIRatingTerr`; contents their own specific rates; blank `RatingType` → rate 1.0 | CF-CHUNK26-GATE.md |
+| 27 | Loose ends on chunks 1–8 | CA `District` (Legal Liability); NY `BasicGroupIISymbol` + `CompletedBasicGroupIISymbol`; FL Group II territory; the building's `WindstormOrHailDeductible` for any contents policy | CF-CHUNK27-GATE.md |
+
+## Open behaviours — chunk 28, none built yet (added 2026-10-02)
+
+Chunk 28 is **open (2 of 22)**; every item needs the user's go before any engine change. Until then a
+submission builder must guard against these itself:
+
+- **Refusals (Set A).** Where a lookup key is unfiled or blank, **ISO refuses the whole policy; our engine
+  prices it** (often at $0). 66 live cases, 65 of them a `SingleResult` lookup with no row
+  (`CF-CHUNK28-REFUSALS.md`); also `Convert` of a blank (OI-117). OI-99, OI-103, OI-117.
+- **Silent zero-price inputs (Set B).** Eight inputs still price at $0 with no message: AZ's
+  `BasicGroupIReductionCredit`, an unknown `ConstructionType`, no `BCEG`, no `RatingTypeBasicGroupII`, no
+  Group II territory, a blank `Deductible` on Broad and on Special (two of the eight), a construction type spelled as a rating type;
+  plus NY's missing Group II symbol. Many are $0 at ISO too, so the fix is a validation layer, not a rating
+  change. A submitted `IsNull`-guarded derived field (e.g. `SpecialBaseRate`) overrides the filed table, at ISO too.
+- **Minimum premium (Set E).** ISO applies none; the user's decision is "refer to company" (OI-113). No
+  referral layer exists in the Property engine yet.
+- **Messages and form names (Sets C, D).** Premiums agree; a handful of messages (OI-112, 114, 123, 125, 126)
+  and 135 of 240 form names ("Value Not Found", OI-106) still differ from ISO.
+
 ## Appendix — ambiguous fields flagged across multiple chunks, needs verification
 
 These fields were repeatedly treated as inputs in worked examples but no chunk's docs ever stated "zero deriving rules anywhere" for them. Listed here rather than asserted into a category:
@@ -350,5 +412,5 @@ These fields were repeatedly treated as inputs in worked examples but no chunk's
 - `Coinsurance` (raw percentage, appears on Blanket Detail records and elsewhere) — never explicitly labeled.
 - `FullBldgValue` — a given in every worked example, never confirmed derivation-free.
 - `TypeOfWatchmanSrvc` (chunk 4) — required alongside a confirmed pure input, not itself confirmed.
-- `IRPMFactor` / `PackageModFactor` — only their *read depth* (how many `../` hops) is documented across chunks 8–10; their own derivation status (submitted vs. somehow computed) is never stated.
-- Special form's `Deductible`-removed case (chunk 3) — predicted null, actual run returned 0; the docs never resolve why.
+- ~~`IRPMFactor` / `PackageModFactor` — derivation status never stated.~~ **Resolved 2026-10-02 (chunks 14–15):** computed only when blank, a supplied factor always wins; endorsements take the **policy's** package discount and IRPM.
+- ~~Special form's `Deductible`-removed case (chunk 3) — predicted null, actual 0, unexplained.~~ **Resolved:** the filed Special rule has an `Otherwise` worth `0.0`, like Broad's; both price $0 (`16_chunk3_zero_cases.py` Z2).

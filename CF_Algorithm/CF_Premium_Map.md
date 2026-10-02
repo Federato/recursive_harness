@@ -20,6 +20,13 @@ almost nothing else; the differences are the point of this document.
 
 **Written:** 2026-09-17.
 
+> **Reconciled against the built engine on 2026-10-02** (commit `630ba2f`; chunks 1–27 gated).
+> Confirmed by re-running `01_premium_map.py` / `02_premium_tree.py` on the corpus (every count below
+> unchanged; the xlsx regenerates cell-for-cell identical) and against the engine's gate evidence:
+> **all 546 `SetPremium` groups are built** (546 of 546 countrywide premium files, chunk 25), and
+> `157_chunk14_c14-02_total_replay.py --all` re-rates ISO's 293 example policies with all 14,236
+> premiums and 293 of 293 policy totals equal to ISO. Build notes are marked *Build, 2026-10-02*.
+
 ---
 
 ## 1. The same three mechanisms, at twice the scale
@@ -34,6 +41,15 @@ Identical architecture. A leaf contributes its `Premium` only when `PremiumIndic
 **and** `Premium ≠ 0`; an aggregator sums its children into `ErcCalculatedTotalPremium`;
 children are reached by `ForEach` over an `<X>Table` when repeating and by `Locate` when
 singleton. Nothing about the mechanism is CF-specific.
+
+*Build, 2026-10-02 (chunk 14, `docs/CF-CHUNK14-GATE.md`).* The engine
+assembles the account total exactly this way, and ISO agrees: **the total adds whole-dollar
+premiums, negatives included** (a rounding case gives $586, not $587); it sums **45 record types**;
+the 41 state overrides of the total only add state records. **ISO applies no minimum premium**
+(`MinimumPremium` / `PolMinPremium` file 0 rows); a minimum is a company input with a "refer to
+company" outcome — OI-113, chunk 28 set E, **not built**. The policy-wide modifiers (IRPM, package
+modification, multi-premium credit, the Standard Property Policy's 0.98) act in the rate chain
+before `SetPremium`, not on the total.
 
 **`ErcCalculatedTotalPremium` is written 261 times across the corpus and read zero times** —
 exactly as in GL. Every stored subtotal is an output for the caller, never an input to the
@@ -118,6 +134,16 @@ Unlike GL, CF files genuine term arithmetic — in exactly the places where a co
 | `ProRateIndicator` | 19 / 19 | `SetProRateIndicator` on `CommercialPropertyPeakSeasonLimitOfInsuranceDetail` | a Peak Season limit applies for part of the year by definition |
 | `FormAnnualPremium`, `AnnualPremiumOfPrecedingReportingPeriod` | 10 / 25, 10 / 20 | `CommercialPropertyBuildersRiskPremiumAdjustmentForm` (CW, and FL files its own) | a reporting form adjusts against the prior reporting period |
 
+*Build, 2026-10-02 — all three are built and ISO-confirmed.* **Vacancy Permit** (chunk 18): pro-rata
+= permit days ÷ policy days (90 → 0.247), so the payload must carry the policy's `EffectiveDt` /
+`ExpirationDt`; a submitted pro-rata is honoured, at ISO too. **Peak Season** (chunk 18): (premium at
+the total limit − at the base limit) × the season's pro-rata (60 days → 0.164). **Builders Risk
+premium adjustment** (chunk 24): each reporting period is re-priced and pro-rated by **plain
+exclusive days, no leap day removed** (OI-121, the one engine change in that chunk, made with the
+user's go); a period after expiration prices **negative**, as written, at ISO too. One more
+term-shaped mechanism the measurement above did not name: the **Value Reporting Form** (chunk 22)
+carries one average rate per policy and switches the ordinary contents premium off.
+
 **This refines OI-98 rather than contradicting it.** ISO still does not administer a policy —
 there is no general proration engine, no transaction model, no earned/written split. What it
 does file is **coverage-intrinsic term arithmetic**: where the *coverage itself* is defined as
@@ -173,6 +199,17 @@ likely to be wrong.
 GL — the opposite of CF's *validation messages*, where 316 countrywide rules are switched off
 by an empty state override. Premium rules are added to or replaced, never silently removed.
 
+*Build, 2026-10-02 — true of `SetPremium`, but a state can still switch a premium off.* Chunk 15
+found states zeroing whole families **upstream of `SetPremium`**: GA, TX and VA file an empty
+`ErcRate` for the manual-premium endorsements and FL forces $0; MO's countrywide parent (CW 2023
+V02) has no Discretionary Payroll premium rule at all. Chunk 23 found AK 2020 and VA 2021 pricing
+**inside `ErcRate`** (old packages only). A `SetPremium`-only census cannot see either. Every
+chunk since 3 has run its family in **all 46 states** against ISO (Puerto Rico is counted in this
+map but excluded from the build by standing rule), and four countrywide parents are in force
+(2026 V01 for 37 states; 2023 V04, V03, V02), so a state's formula can differ by edition as well
+as by override. The six states rewriting `CommercialPropertyPostTRIACoverage` (CA DC IL MD NY VA)
+are exactly the six with the 25% terrorism cap confirmed in chunk 13.
+
 ---
 
 ## 6. Reading this for a specific premium
@@ -194,8 +231,13 @@ by an empty state override. Premium rules are added to or replaced, never silent
 - **The roll-up tree is countrywide.** State overrides of `SetPremium` are counted and
   attributed, but the tree *shape* is CW's. A state adding a premium-bearing group adds a node
   this tree does not draw; the jurisdiction panel lists them instead.
-- **Structural, not evaluated.** Read from rule XML. No premium was computed and no path was
-  exercised against a live rating.
+- **Structural, not evaluated** — *the map itself*. It is read from rule XML. *Build, 2026-10-02:*
+  the evaluation now exists separately: every group is rated by the engine and each chunk's
+  premiums are ISO-confirmed (gate files `docs/CF-CHUNK1`–`27-GATE.md`; replay `157_ --all`,
+  snapshot `206_ --check`).
+- **The jurisdiction overlay uses each state's latest-dated package** in the corpus. For some
+  states that is later than the package ISO serves today; the engine and ISO agree on the package
+  in all 46 states at 2026-09-17 (OI-105, chunk 28 set F).
 - **`SetPremium` inputs are flattened** from nested conditions — a rule reading eight fields
   may need only two in any given branch.
 - **Rate resolution is out of scope**, as in GL. This map covers rate-to-dollars and the

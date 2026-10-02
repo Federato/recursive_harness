@@ -18,6 +18,25 @@ calculation), `PremiumFields` (163 rows).
 
 **Written:** 2026-09-17.
 
+**Reconciled against the built engine:** 2026-10-02 (commit `630ba2f`) — `01_premium_map.py` and
+`02_premium_tree.py` re-run on the current corpus reproduce every count below unchanged, and the
+engine (`gl_engine`, offline, strict-erc) rates Oklahoma at 2027-04-01 (`GL_OK_20270401_V04` over
+`GL_CW_20270401_V02`) to **8,198** through exactly this roll-up; all 16 `tests/verify_*` suites pass.
+
+> **Edition scope — read before using any of this for a live policy.** Everything here is the
+> **2027-04-01 countrywide edition**. `GL CW 20270401 V02` (the parent 38 jurisdictions declare at
+> that date; 8 declare V01) differs from V01 in five rule files — validation messages, a dropped
+> classification `SetCounty` step, Cyber limit checks and Product Withdrawal form conditions, none
+> of them a `SetPremium` or `CalculateTotalPremium` — so its premium structure is identical
+> (re-run: same 571 / 112 / 322 / depth 4). **Policies effective before 2027-04-01 resolve older parents** — today
+> `GL CW 20260101 V01` for 46 jurisdictions, `20261001 V01` for OK, `20231201 V03` for NJ, TX, VT
+> and `20231201 V02` for CA — and those differ in ways that change premiums: the Prem/Ops,
+> Products and Special Combined `…PremiumToReachMinCoverage` records **compute** a minimum-premium
+> top-up, Med Pay is a separate per-class `MedicalPaymentsCharge` rather than an ILF term, and
+> there is no $1 premium floor. GA, NJ, NY, WA (CW 20260101 V01) and CA (CW 20231201 V02) keep
+> those older parents even after 2027-04-01. The engine picks the parent the state package
+> declares, as of the submission's effective date (decision A3); nothing here changes that.
+
 ---
 
 ## 1. Three mechanisms, and only three
@@ -112,6 +131,16 @@ GeneralLiability                                   depth 0   419 children   ← 
             └── …UnmannedAircraftCovABIPDCoverage  depth 4   leaf, SetPremium
 ```
 
+**Confirmed by the engine (2026-10-02).** Rating Oklahoma's engine base submission at
+2027-04-01 (`GL_OK_20270401_V04` over `GL_CW_20270401_V02`, class 50017, $5,000,000 gross sales)
+writes exactly this spine: Prem/Ops `Premium` **965** and Products **7,215** at depth 3; the
+terrorism coverages **2** and **16** at depth 4, summed to `GeneralLiabilityTerrorism`
+**18** at depth 3; then `ErcCalculatedTotalPremium` **8,198** at the classification, the
+location and the policy. The engine reads the account figure from `GeneralLiability.Premium`
+and refuses the rating if it disagrees with `ErcCalculatedTotalPremium`
+(`gl_engine/rating/kernel.py`, `_collect`); a submission carrying several `GeneralLiability`
+risks is the sum of their totals.
+
 **Location and Classification contribute their own `Premium` as well as their children's** —
 they are not pure containers. A premium can be written at any level.
 
@@ -194,7 +223,10 @@ administration system is expected to fill, shipped inside ISO's schema so a roun
 record has somewhere to put them.
 
 **What this means in practice.** The engine produces **one number: the full-term premium at
-the effective date supplied in `SchemeKeys`.** Proration, mid-term endorsement pricing,
+the effective date supplied in `SchemeKeys`.** (Confirmed 2026-10-02: the kernel resolves the
+edition from `SchemeKeys.EffectiveDateTime` — decision A3 — and ISO's own rules then write
+`ExpDate` one year later, 2027-04-01 → 2028-04-01; no rule reads a term or a pro-rata factor.)
+Proration, mid-term endorsement pricing,
 written-vs-earned splits and cancellation return arithmetic are **entirely the calling
 system's job.** Re-rating at a new effective date and differencing the results is the only
 transaction mechanism ISO's content offers, and even that is the caller's construction.
@@ -264,11 +296,21 @@ replaced — never silently removed.**
 
 ## 8. Limits of this map
 
-- **Countrywide only.** State packages override rules, and a state may override
-  `SetPremium` or `CalculateTotalPremium` — none of that is reflected here. The roll-up
-  *shape* is unlikely to differ; the premium *formulas* may.
-- **Structural, not evaluated.** The tree is read from the rule XML. No premium was
-  computed, and no path was exercised against a live rating.
+- **Countrywide sheets, state overlay in §7.** The workbook's `RollUpTree` and
+  `PremiumSources` are countrywide; what the state packages add or rewrite is measured in §7
+  and drawn per jurisdiction in `GL_Premium_Tree.html`, using each state's *latest-dated*
+  package — which can be later than the package a given effective date resolves. The engine
+  applies whichever state override is in force automatically.
+- **One edition.** This is the 2027-04-01 countrywide edition (V01; V02 identical in premium
+  structure). Earlier parents still in force differ — see *Edition scope* at the top.
+- **Structural, now confirmed by evaluation.** The tree is read from the rule XML. Since
+  2026-10-02 it has also been exercised: the engine's ratings follow this roll-up level for
+  level (§3), the Oklahoma golden case reproduces ISO's own premium (`tests/verify_golden.py`
+  80/80), and the engine agrees with ISO's live service on 50 of 50 standard risks
+  (`scripts/erc/out/phase2.csv`, 50 `MATCH`, BUILD-LOG Entry 12) and 184 of 184 varied risks in
+  11 jurisdictions (BUILD-LOG Entry 24). **Every one of those ISO comparisons was made on a
+  pre-2027 edition** (CW 20260101 V01 and earlier); the 2027-04-01 figures quoted here are the
+  engine's, not yet confirmed against ISO live (`docs/PRD-GL-RATING-ENGINE.md` §8, item C8).
 - **`SetPremium` inputs are the fields the rule reads**, flattened from nested conditions.
   A rule reading eight fields may only need two in any given branch.
 - **`FinalRate` is where this map stops.** How a rate becomes `FinalRate` is the rating

@@ -16,6 +16,31 @@ _ap = argparse.ArgumentParser()
 _ap.add_argument("--line", choices=sorted(LINES), default="GL")
 _A = _ap.parse_args()
 ROOTNAME, ABBR, OUTDIR, HINT = LINES[_A.line]
+# Reconciliation stamps against the built engine (CF and GL).
+RECON = {"CF": (
+    '<div class="recon"><b>Reconciled against the built engine on 2026-10-02</b> (commit 630ba2f; '
+    'chunks 1&ndash;27 gated). Confirmed by re-running 01_/02_ on the corpus (881 / 130 / 546 / 7 '
+    'levels / 213 rewritten / 223 state-only: unchanged; only FL&rsquo;s label moves to V02) and '
+    'by the engine: all 546 <code>SetPremium</code> groups are built, and '
+    '<code>157_ --all</code> replays 293 of 293 ISO policy totals equal.'
+    '<br>Read with two caveats: the jurisdiction panel shows each state&rsquo;s <i>latest-dated</i> '
+    'package in the corpus, which for some states is later than the package ISO serves today '
+    '(OI-105: the engine and ISO agree at 2026-09-17); and Puerto Rico is listed here but excluded '
+    'from the build. ISO rates no minimum premium (OI-113, chunk 28).</div>'),
+    # GL stamp added by the GL rating-path reconciliation, same day, same commit.
+    "GL": (
+    '<div class="recon"><b>Reconciled against the built engine on 2026-10-02</b> (commit 630ba2f). '
+    'Confirmed by re-running 01_/02_ on the corpus (571 groups / 112 aggregators / 322 '
+    '<code>SetPremium</code> / 4 levels / 457 state-only / 12 terrorism-only state rewrites: '
+    'unchanged; <code>GL CW 20270401 V02</code>, the parent 38 jurisdictions declare at 2027-04-01, '
+    'has the identical premium structure) and by the engine: Oklahoma @ 2027-04-01 '
+    '(<code>GL_OK_20270401_V04</code> over CW V02) rates 8,198 through exactly this roll-up, '
+    'and all 16 <code>tests/verify_*</code> suites pass.'
+    '<br>Read with two caveats: this is the <b>2027-04-01 edition</b> &mdash; policies effective '
+    'earlier resolve CW 20231201 V02/V03, 20260101 V01 or 20261001 V01, where the minimum-premium '
+    'records compute, Med Pay is a separate charge and there is no $1 floor (and GA, NJ, NY, WA, CA '
+    'keep those older parents after the cliff); and the jurisdiction panel shows each state&rsquo;s '
+    '<i>latest-dated</i> package, which can be later than the one a given effective date resolves.</div>')}
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(os.path.dirname(HERE))
 J = os.path.join(HERE, "_tree_%s.json" % _A.line)
@@ -80,6 +105,8 @@ padding:1px 5px;border-radius:3px}
 .muted{color:var(--mut)} .count{color:var(--mut);font-size:11.5px}
 ul.plain{list-style:none;margin:6px 0;padding:0;font-size:12px}
 ul.plain li{padding:2px 0;font-family:ui-monospace,Consolas,monospace;word-break:break-all}
+.recon{margin-top:12px;font-size:12.5px;line-height:1.5;opacity:.92;max-width:1100px;
+border-left:3px solid rgba(255,255,255,.55);padding-left:10px}
 .note{background:var(--chip);border-left:3px solid var(--accent);padding:9px 12px;
 border-radius:0 5px 5px 0;font-size:12.5px;margin:10px 0}
 """
@@ -219,6 +246,7 @@ html = """<title>__LINE__ premium tree &mdash; derivation and roll-up</title>
     <div><b>%d</b>jurisdictions analysed</div>
     <div><b>%d</b>state-only premium groups</div>
   </div>
+  __RECON__
 </header>
 <div class="bar">
   <input id="q" placeholder="Filter groups \u2014 e.g. __HINT__">
@@ -242,7 +270,8 @@ html = """<title>__LINE__ premium tree &mdash; derivation and roll-up</title>
 maxdepth = max(v["d"] for v in nodes.values() if isinstance(v.get("d"), int))
 html = (html.replace("__LINE__", _A.line).replace("__ROOTNAME__", ROOTNAME)
             .replace("__ABBR__", ABBR).replace("__HINT__", HINT)
-            .replace("__DEPTH__", str(maxdepth)))
+            .replace("__DEPTH__", str(maxdepth))
+            .replace("__RECON__", RECON.get(_A.line, "")))
 io.open(OUT, "w", encoding="utf-8").write(html)
 print("wrote", OUT, os.path.getsize(OUT) // 1024, "KB")
 print("nodes", n_nodes, "| aggregators", n_agg, "| with SetPremium", n_sp,

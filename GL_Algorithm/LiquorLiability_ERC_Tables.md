@@ -7,6 +7,7 @@
 three countrywide parents (`GL_CW_20231201_V02`, `...V03`, `GL_CW_20260101_V01` — V03 and 20260101 are
 byte-identical for this coverage group)
 **Documented:** 2026-08-20
+**Reconciled against the built engine:** 2026-10-02 (commit `630ba2f`) — every rate-bearing table below observed in engine lookup traces (AL/IL Liquor STCs rated at 2026-10-02 and 2027-04-01, incl. claims-made and Company-class variants), keys read from the `Lookup*` rule XML, and layer/row populations censused through the engine's resolver across all 51 jurisdictions at both dates.
 
 This lists every ERC rate table (CW and/or state-filed) required to rate Liquor Liability, resolved
 from GATE-332-LIQUOR-LIABILITY.md's trace of `ErcSetRatesAndFactors` / `ErcRate` in
@@ -24,14 +25,15 @@ with zero state rows, inverting the usual pattern (per GATE-332-LIQUOR-LIABILITY
 
 | Table | Used for | Keys |
 |---|---|---|
-| `LiquorELP` | Expected loss potential (surrogate base rate — there is no filed loss cost) | State (0 CW rows, 51/51 states, 362 rows) |
-| `LiquorELPText` | Classification-output selector (`Industry` / `Company`); **written but not read by any rating rule** | State (0 CW rows, 51/51 states, 362 rows) |
+| `LiquorELP` | Expected loss potential (surrogate base rate — there is no filed loss cost) | State\|CW, `LiquorClassCode` (0 CW rows, 51/51 states, 362 rows as of 2026-10-02; 771 as of 2027-04-01) |
+| `LiquorELPText` | Classification-output selector (`Industry` / `Company`); read by no rate-chain rule, **but read by ISO's `DoMessageMustEnterEstimatedLossPotentialFactorOverride`**, whose message the engine turns into referral R29 in `underwriting` mode | State, class (0 CW rows, 51/51 states, 362 rows; 771 as of 2027-04-01) |
 | `LiquorLCM` | Loss cost multiplier — a placeholder for the company's markup, not a rate (Escalation E15) | State\|CW (CW: 1 row, value `1`; 0/51 states) |
-| `ILFLiquor` | Increased limits factor | State, `EachCommonCauseLimit`, `AggregateLimit` (0 CW rows, 50/51 states, 3,531 rows) |
-| `ILFLiquorStException` | Illinois's ILF override — different table name **and** different key arity | State (IL only), `AggregateLimit` alone (5 rows) |
-| `DedFactorLiquor` | Deductible factor — all 21 options `0` by design (referral, per manual 45.J.3) | State\|CW (CW: 21 rows; 0/51 states) |
-| `ProdsCompldOpsClaimsMadeMultiplier` | Claims-made year multiplier (shared with Products/Completed Operations) | `min(YearInClaimsMade, 5)` (CW: 5 rows) |
-| `LiquorLiabGrade` | Liquor liability hazard grade (Rule 45.H) | State\|CW (CW: 7 rows, 16 at 2027; 41/51 states, 292 rows) — no consuming `Set` rule identified in the gate's traced algorithm; see Verification |
+| `ILFLiquor` | Increased limits factor | State\|CW, `EachCommonCauseLimit`, `AggregateLimit` (0 CW rows, 50/51 states, 3,531 rows at both dates; IL resolves no `ILFLiquor` rows). Limit strings carry no `" CSL"` suffix in any edition |
+| `ILFLiquorStException` | Illinois's ILF override — different table name **and** different key arity | State (IL only), `AggregateLimit` alone (5 rows); engine `['IL', '200,000'] → 0.97` |
+| (MN) `LookupILFLiquorWithSubLimit` | Minnesota's own `SetILF` override calls this state-only lookup | not exercised in this reconciliation |
+| `DedFactorLiquor` | Deductible factor — all 21 options `0` by design (referral, per manual 45.J.3) | State\|CW, `DeductibleLiquor` (CW: 21 rows; 0/51 states; unchanged at CW 2027) |
+| `ProdsCompldOpsClaimsMadeMultiplier` | Claims-made year multiplier (shared with Products/Completed Operations) | State\|CW, `min(YearInClaimsMade, 5)` (CW: 5 rows `0.56, 0.64, 0.79, 0.81, 0.89`; NY declares an empty state copy) |
+| `LiquorLiabGrade` | Liquor liability hazard grade (Rule 45.H) — **not a rating input**: `GeneralLiabilityClassificationRules.SetLiquorLiabGrade` writes it to the classification and no liquor rate step reads it | State\|CW (CW: 7 rows, 16 at 2027; 44 states declare it, 41 with rows, 292 rows → 611 at 2027-04-01) |
 
 ## ILF / deductible tables
 
@@ -51,20 +53,21 @@ than a distinct coverage-modifier layer.
 
 | Table | Used for |
 |---|---|
-| `ProdsCompldOpsMinPremium` | Minimum premium, keyed on hardcoded `ILTA = "C"` (shared with Products/Completed Operations). CW: 3 rows, all `0` — structurally zero for every liquor risk today (Escalation E16); table and both consuming rules deleted at CW 2027 |
+| `ProdsCompldOpsMinPremium` | Minimum premium, keyed on hardcoded `ILTA = "C"` (shared with Products/Completed Operations). CW: 3 rows, all `0` — structurally zero for every liquor risk today (Escalation E16); table and both consuming rules deleted at CW 2027. `MinPremium` feeds the policy-level `GeneralLiabilityLiquorPremiumToReachMinCoverage` top-up, not the classification premium |
 
 `PackageModFactor`, `ExperienceRatingModificationFactor`, `ExpenseModification`, and `ModToUse` are
 consumed by `SetFinalRate` but the gate doc describes their absent-value behavior as resolving via
 `FirstValue` (§ 5) — the same behavior CF's building doc documents for `rul:Copy` policy-level inputs,
-not a table `Lookup`. Treated as **Not ERC tables** below on that basis, though the gate doc does not
-independently confirm the underlying rule body the way the CF doc does with cited line numbers.
+not a table `Lookup`. Treated as **Not ERC tables** below on that basis; the rule body was confirmed
+on 2026-10-02 (`SetFinalRate` reads all four from `GeneralLiability` through `FirstValue(…, 0.0)`).
 
 ## Statistical/subline tables
 
 | Table | Used for | Note |
 |---|---|---|
-| (unnamed) | Liquor exposure/coverage statistical code output | **Not resolved in source docs** — GATE-332-LIQUOR-LIABILITY.md § 4 documents a defect in `SetLiquorExposureStatCode` (CW 2027 tests the pre-2027 `PremiumBasis` vocabulary and never matches) but does not name the target table the stat code is written to |
-| `ClassCodeLiquor` | Liquor class code table, 2,300 rows | per `docs/rating-engine/03-RATING-STRUCTURE.md` line 335; not traced to a specific rule/step in the gate doc's algorithm — included here as a fact found outside the gate doc, flagged accordingly |
+| (unnamed) | Liquor exposure/coverage statistical code output | **Not resolved in source docs** — GATE-332-LIQUOR-LIABILITY.md § 4 documents a defect in `SetLiquorExposureStatCode` (CW 2027 tests the pre-2027 `PremiumBasis` vocabulary and never matches; still present in the byte-identical `GL_CW_20270401_V02`) but does not name the target table the stat code is written to |
+| `DomainClassCodeLiquor` (cited elsewhere as `ClassCodeLiquor`) | Liquor class-code **domain** (validation) table, with `DomainClassDescriptionByClassCodeLiquor` | Resolved 2026-10-02: no rate table named `ClassCodeLiquor` exists in any resolved package; it is a Domain table and no rating step reads it |
+| `LiquorHomogeneityIndex` | Written to the classification by `GeneralLiabilityClassificationRules.SetLiquorHomogeneityIndex`; no premium effect | 0 CW rows, 51/51 states, 362 rows (771 at 2027-04-01) |
 
 ## Not ERC tables
 
@@ -84,19 +87,18 @@ time here): **treat an uncalled lookup as an inert artifact of the ERC package, 
 
 ## Not resolved / open items carried from the gate doc
 
-- **`LiquorHomogeneityIndex`** (state-filed, 51/51, 362 rows) — appears in the gate doc's table
-  inventory (§ 6) but no `Set` rule in the traced algorithm (§ 1) consumes it. Not resolved in source
-  docs.
-- **`LiquorLiabTerritory`** — found only outside the gate doc, at
-  `docs/rating-engine/03-RATING-STRUCTURE.md` line 541 ("one of the geographic-keyed table columns").
-  The gate doc's own traced rate chain (steps 1–16) has no territory-keyed step. Not resolved in
-  source docs whether/how this table enters liquor rating.
+- **`LiquorHomogeneityIndex`** — resolved 2026-10-02: consumed by
+  `GeneralLiabilityClassificationRules.SetLiquorHomogeneityIndex` (classification output, no premium
+  effect); listed under Statistical/subline tables above.
+- **`LiquorLiabTerritory`** — resolved 2026-10-02: a DataDef field only. No rate table of that name
+  exists in any package the engine resolves at either date, and no liquor rating step reads it.
 - **Liquor ILF filing footprint discrepancy.** `docs/rating-engine/03-SUBLINE-COVERAGE-PLAN.md`
   (§ 3.2.3) states the Liquor ILF table is filed as a separate Rule 56.B table only in IL, MN, UT,
   elsewhere a gap — this does not match the gate doc's direct read of `ILFLiquor` (50/51 states
-  populated, only Illinois overriding under a different name). Both are reproduced; the gate doc, as
-  the more recent and directly-verified source, is treated as authoritative for this doc's tables
-  above.
+  populated, only Illinois overriding under a different name). **Engine census 2026-10-02 settles it
+  for the resolved packages:** `ILFLiquor` populated in 50/51 states (3,531 rows) at both 2026-10-02
+  and 2027-04-01; IL rates through `ILFLiquorStException`; MN overrides `SetILF` via
+  `LookupILFLiquorWithSubLimit`. The coverage-plan statement is stale.
 
 ---
 
@@ -122,6 +124,13 @@ No `Liquor*LossCost` table exists in any jurisdiction at any edition (per GATE-3
 § 0) — confirmed both by table-inventory search and by the absence of a loss-cost branch in
 `SetBaseRate`.
 
+**Engine re-count, 2026-10-02.** Every count in the block above was re-derived from the tables the
+engine resolves for all 51 jurisdictions as of 2026-10-02 and matches, with two refinements:
+`LiquorLiabGrade` is *declared* by 44 states (41 with rows), and `ProdsCompldOpsClaimsMadeMultiplier`
+has one state declaration (NY, empty). As of 2027-04-01: `LiquorELP` / `LiquorELPText` /
+`LiquorHomogeneityIndex` 771 rows (485 Industry / 286 Company, 100% agreement), `LiquorLiabGrade` 16
+CW rows and 611 state rows, `ProdsCompldOpsMinPremium` 0 rows, `ILFLiquor` unchanged.
+
 **N16 confirmed a fourth time:** every liquor lookup that resolves at all follows
 `FirstNonNull(state row, "CW" row)` on a single table — except the four CW-only tables above
 (`DedFactorLiquor`, `LiquorLCM`, `ProdsCompldOpsMinPremium`, `ProdsCompldOpsClaimsMadeMultiplier`),
@@ -131,9 +140,11 @@ which have no state rows to fall back from.
 2026-08-11; 23 in force 2027-04-01 (16 new codes 50941–50957, exactly matching manual Rule 45.G, plus
 7 legacy survivors carried over in the 8 jurisdictions not yet migrated); 10 retired at the cliff.
 
-**No rated test oracle exists.** The project's golden case carries liquor with
-`CoverageOnPolicyIndicator = 0` and `Premium = 0.0`, exercising only the entry guard — no rated liquor
-output has been verified end-to-end in the source project as of this doc's date (per
-GATE-332-LIQUOR-LIABILITY.md § 9).
+**No rated ISO oracle exists.** The project's golden case carries liquor with
+`CoverageOnPolicyIndicator = 0` and `Premium = 0.0`, exercising only the entry guard (per
+GATE-332-LIQUOR-LIABILITY.md § 9). Since 2026-10-02 the engine rates ISO's own liquor STC submissions
+end to end through every table above (AL@2026-10-02 class `70412`: `ELP 1.72 x ILF 1.85 → 3.182 →
+636`; AL@2027-04-01 class `50943`: `1.72 x 1.98 → 3.406 → 681`) — confirmation that the engine runs
+ISO's rules as written, not that the premiums match ISO.
 
 ---

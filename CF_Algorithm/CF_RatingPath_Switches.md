@@ -8,6 +8,13 @@ Every value below was read out of a `<rul:Test>`; nothing is inferred from a fie
 
 Companion HTML: `CF_RatingPath_Switches.html`.
 
+> **Reconciled against the built engine on 2026-10-02** (commit `630ba2f`; chunks 1–27 gated).
+> Confirmed against each chunk's gate file and ISO-checked golden cases (`docs/CF-CHUNKnn-GATE.md`), the
+> rule XML re-read where a claim moved, and the three regressions (`104_ --quick`, `206_ --check`,
+> `157_ --all`). Three claims were wrong and are corrected in place (marked *Corrected 2026-10-02*); build
+> evidence is marked *Build*. The section "Every path, and where the build stands" lists every path and
+> the chunk that built it.
+
 ---
 
 ## The three kinds of switch
@@ -32,7 +39,7 @@ Ordered by how many distinct values the rules actually test.
 | `CauseOfLossToUse` | 10 | all five | which form chain rates at all |
 | `ClassCodeToUse` | 7 | Bldg, BI | special-cased class codes |
 | `TypeOfRisk` | 6 | BI, SCBI | which arm of `TypeOfRiskFactor` |
-| `RatingType` | 3 | Bldg, Contents, BI | Class / Specific / Tentative |
+| `RatingType` | 3 (CA: 4) | Bldg (Contents, OccupClass copy it) | Class / Specific / Tentative; CA adds One-Term Loss Cost |
 | `CovForm` | 3 | Contents | the Contents premium branch |
 | `PolicyType` | 2 | all five | CPP vs SPP — cascades into three other lists |
 | `IncludedInBlkt` | 2 | all five | scheduled vs blanket premium |
@@ -63,8 +70,11 @@ The widest-reaching switch in the line. Tested in all five coverages, and it **c
   fire combinations instead.
 - **The `CovForm` list changes.** `DomainCovForm` is keyed State + PolicyType + RatingType. Legal Liability
   is offered on **CPP only** — it is absent from every SPP row.
-- **`StdPropPolGroupIFactor` / `StdPropPolGroupIIFactor` apply** only on an SPP, and only on the
-  building side.
+- **`StdPropPolGroupIFactor` / `StdPropPolGroupIIFactor` apply** only on an SPP — on the **building,
+  contents and Special Class** (0.98 each, in the rate chain, not on the premium). *Corrected 2026-10-02:*
+  this said "only on the building side"; the CW rule files for Structure, PersonalProperty and SpecialClass
+  each set both factors (chunk 14, gate point 6). **KS, NY and VT file no SPP factor**, so an SPP there
+  prices like a CPP (chunk 14).
 - **Vandalism's gate flips shape.** On a CPP it fires on an endorsement election; on an SPP it fires on a
   qualifying cause of loss instead, ignoring the endorsement entirely.
 
@@ -74,8 +84,25 @@ Three values, tested on Building, Contents and Business Income. Selects an entir
 source: a class-code lookup versus a user-supplied specific or tentative rate.
 
 **Confirmed absent on Special Class and Special Class Business Income** — `RatingType`,
-`SpecificGroupIRate` and `TentativeRate` appear zero times in either ruleset. Also **only Basic Group I**
-has a Specific/Tentative path; BGII, Broad and Special are structurally class-only.
+`SpecificGroupIRate` and `TentativeRate` appear zero times in either ruleset (chunk 26: a `RatingType` sent
+on a Special Class item is ignored). In the countrywide rules **only Basic Group I** has a
+Specific/Tentative path; Broad and Special are class-only everywhere.
+
+*Corrected 2026-10-02 — Group II is not class-only in the states.* **36 states** carry
+`RatingTypeBasicGroupII`; "Specific" prices Group II from a submitted `SpecificGroupIIRate`
+(blank → Group II $0 on building, contents and BI, silently). *Build, chunk 26 (gated 2026-10-02, ISO
+agreed on every premium):*
+
+- **`RatingType` is chosen on the building only.** The occupancy class and the contents **copy** it (an
+  inherited value: a submitted copy is overwritten).
+- **Contents price on their OWN `SpecificGroupIRate`**; with none they rate $0. **BI uses the building's.**
+- Specific / Tentative replace the whole class chain (base rate, territory, protection class drop out):
+  building Group I **$362** where Class gives **$287**. Tentative prices exactly as Specific and attaches
+  the Tentative Rate form; no rule reads a `TentativeRate` field.
+- **A blank `RatingType` prices at rate 1.0** ($1,204), at ISO too. FL, NY, WV and MO leave the roof ACV
+  factor out of the Specific formula.
+- **California's One-Term Loss Cost** prices building and contents as Specific; BI falls to rate 1.0 —
+  ISO does the same (OI-124).
 
 ### 3. `CovType` — the same field name, four different value universes
 
@@ -167,8 +194,9 @@ WHAT STARTS APPLYING LegalLiabilityFactor          Bldg 0.25 / PersProp 0.50
                      AddlInsurableInterestFactor   Option1 1.25 · Option2 1.25
                                                    Option3 1.00 · Option4 ("None") 1.00
 
-ALSO CHANGES         blanket becomes unreachable - Building by Choose ordering,
-                     Contents by an explicit exclusion in the blanket branch
+ALSO CHANGES         blanket: electing it ZEROES the coverage ($0 at the engine
+                     and at ISO - chunk 8 gate; corrected 2026-10-02 from
+                     "becomes unreachable")
 
 PER FORM             BGI  -> BasicGroupICauseOfLossAdjustment
                      BGII -> BasicGroupIICauseOfLossAdjustment
@@ -178,6 +206,13 @@ PER FORM             BGI  -> BasicGroupICauseOfLossAdjustment
 ```
 
 That last line is the only premium-bearing Building/Contents difference other than the 0.25 / 0.50 factor.
+
+*Build, chunk 8 (gate 9 of 9 after chunk 27).* Golden case Building **$60 / $7 / $4 / $12**, Contents
+**$132 / $15 / $11 / $93** (BGI / BGII / Broad / Special), all ISO-confirmed — Contents only once the
+**building** carries `WindstormOrHailDeductible` (ISO refuses without it; ours prices: OI-103, chunk 28).
+The Special-form split moves money: theft excluded, Contents falls $93 → $37 while Building stays $12.
+`LegalLiabilityFactor`'s key is pinned by literal, so each coverage can reach only its own row.
+**California needs the location's `District`** (District I $57, II $68); without it Group I is $0 (chunk 27).
 
 ---
 
@@ -198,6 +233,46 @@ That last line is the only premium-bearing Building/Contents difference other th
 
 ---
 
+## Every path, and where the build stands (2026-10-02)
+
+Every path above is built in the engine and its premiums are ISO-confirmed in all 46 states (Puerto
+Rico excluded). **546 of 546 countrywide premium files built.**
+
+| Path / switch | Built in | Gate evidence (ISO) |
+|---|---|---|
+| Basic Group I / Group II (`CauseOfLossToUse` set at all) | chunks 1, 2 | $261 / $32 golden; TX × 0.1 when wind/hail excluded; NY's Group II symbol is a **submitted input** (chunk 27) |
+| Broad / Special — cumulative on top of Basic | chunk 3 | $16 / $54 → $309 / $347 |
+| Contents (`CovForm` from the occupancy) | chunk 4 | $223 / $24 / $16 / $137 |
+| Business Income (`TypeOfRisk`, `MaxPeriod`, `MonthlyLimitOfIndemnity`) | chunk 5 | $112 / $13 / $23 / $47 |
+| Special Class, SC Business Income | chunks 6, 7 | $66 / $209 / $14 / $44; $39 / $123 / $23 / $47 |
+| Legal Liability (`CovType` / `CovForm`) | chunk 8 | above |
+| Blanket (`IncludedInBlkt`; `BlktTypeOfBlanketRating` Average vs Highest, both live) | chunk 9 | $255 / $510 |
+| Earthquake (`EQCovIndicator`, the EQ endorsement variants) | chunk 10 | $6 golden |
+| `CovType = Leasehold Interest` | chunk 11 | 9 of 9 |
+| Endorsement families (Debris, O&L, Utility, UAS, Green, Dependent Properties) | chunk 12 | 9 of 9 |
+| Terrorism (`PostTRIAExclusion` and the TRIA records) | chunk 13 | $8 golden; 587 of 587 |
+| `PolicyType` SPP, IRPM, package mod, the policy total | chunk 14 | 293 of 293 totals |
+| Manual-premium endorsements, BI options, BI add-ons | chunks 15–17 | 9 of 9 each |
+| Agreed Value, Inflation Guard, Vacancy Permit, Peak Season | chunk 18 | 9 of 9 |
+| Scheduled items, small coverages (incl. Tobacco Sales Warehouse), sewer / condo options | chunks 19–21 | 9 of 9 each |
+| `ValueReportingForm`, `AdditionalLocationsSpecialCoinsuranceProvisions`, `MultiLocAvgRatesIndicator` | chunk 22 | 9 of 9; either form switches the ordinary contents premium off |
+| State-only coverages (MA, AK, CA, VA) | chunk 23 | 9 of 9 |
+| `CovType = Builders Risk`, `BuildersRiskReportingForm` | chunk 24 | 9 of 9; with a reporting form the building's own limit must be 0 |
+| Flood (`FloodCovIndicator` + the Flood General Information record) | chunk 25 | 9 of 9 |
+| `RatingType` Specific / Tentative, `RatingTypeBasicGroupII` | chunk 26 | 9 of 9 |
+
+**Still open — chunk 28 (engine behaviour decisions; none built, each needs the user's go):**
+
+- **Refuse where ISO refuses (set A).** ISO refuses a request when a `SingleResult` lookup finds no row (65
+  of 66 live refusals: an unfiled territory or class, a blank key such as the building's
+  `WindstormOrHailDeductible`, FL's Group II territory, NY's `CompletedBasicGroupIISymbol`); **ours prices
+  them, often at $0** (OI-99, OI-103, OI-117).
+- **Silent zero-price inputs (set B).** A blank `Deductible` on Broad / Special, no BCEG, no
+  `RatingTypeBasicGroupII`, no Group II territory, an unknown `ConstructionType`, AZ's reduction credit: each
+  prices $0 rather than raising — mostly at ISO too, so this is a validation layer, not a rating change.
+- **Minimum premium (set E).** ISO rates none; a minimum is a company input with a refer-to-company
+  outcome (OI-113).
+
 ## What this means for the input sheet
 
 1. **`CovType` needs a different dropdown per coverage.** One shared list is wrong — the four value
@@ -210,6 +285,12 @@ That last line is the only premium-bearing Building/Contents difference other th
    `0.0` in several places, which zeroes a premium rather than declining a credit.
 5. **Each coverage needs its own election column** for theft, vandalism, wind/hail and sprinkler leakage.
    Sharing one input across coverages is the S-1/S-2/S-3 simplification, and it is logged as such.
+6. **`RatingType` is a building input only** (added 2026-10-02, chunk 26): the occupancy and contents copy
+   it. Contents still need their own `SpecificGroupIRate` when the building is Specific.
+7. **Some switches only work with a companion input** (added 2026-10-02): CA Legal Liability needs the
+   location's `District`; Contents at ISO need the building's `WindstormOrHailDeductible`; NY needs a
+   submitted Group II symbol; Flood needs its General Information record. Without them the engine
+   prices (often $0) where ISO refuses or also prices $0.
 
 ---
 

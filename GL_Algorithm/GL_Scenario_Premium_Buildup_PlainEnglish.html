@@ -17,7 +17,10 @@
 
 <h1>How one policy's premium is built</h1>
 <p class="meta">A shop with a liquor licence: premises and products cover, liquor liability,
-medical payments at $10,000, terrorism accepted. Written 17 September 2026.
+medical payments at $10,000, terrorism accepted. Written 17 September 2026; re-checked on
+2 October 2026 by pricing this exact shop in the working rating engine (commit 630ba2f), which
+corrected four points below. Figures are for an Oklahoma antique shop with $1 million of sales
+under the rulebook that takes effect on 1 April 2027.
 The detailed version is <i>GL_Scenario_Premium_Buildup.md</i>.</p>
 
 <p>You would expect six charges on this policy. There are four, and one of the things you
@@ -27,46 +30,57 @@ expected to be a charge turns out not to be one.</p>
 
 <p>Every General Liability policy already includes $5,000 of medical payments cover. Asking for
 $10,000 does not add a line to the bill — it makes the <b>premises and operations rate slightly
-more expensive</b>, by about seven tenths of one percent. Nothing else on the policy changes.</p>
+more expensive</b> — here $827 instead of $824. Nothing else on the policy changes. (Under
+today's rules it is a small separate charge folded into the same premium.)</p>
 
 <p>So if someone asks "what did the medical payments cost", there is no number to point at. It
 is baked into another charge.</p>
 
-<h2>Three coverages are priced the same way</h2>
+<h2>Liquor needs its own policy section</h2>
 
-<p>Premises and operations, products, and liquor liability are each priced identically: take
-the claims cost ISO publishes for that trade, apply the insurer's own multiplier, adjust for
-the limits bought and the size and history of the business, then multiply by the exposure —
-the sales, payroll or whatever that trade is measured on.</p>
+<p><b>Corrected.</b> ISO's rules switch each coverage on by the policy's line of business, and
+one section of a policy has one. Liquor liability cannot sit beside premises and products cover
+on the same section — added there, it prices at nothing. It is written as a second section of
+the same submission, and the two sections' totals are added together.</p>
 
-<p>Three separate charges, three times the same arithmetic.</p>
+<h2>The coverages are priced the same way</h2>
+
+<p>Premises and operations, products, and liquor liability are each priced alike: start from
+ISO's figure for that trade, apply the insurer's own multiplier, adjust for the limits bought and
+the size and history of the business, then multiply by the exposure — the sales, payroll or
+whatever that trade is measured on. Here: premises $827, products $21.</p>
 
 <h2>Terrorism is a slice of the other three</h2>
 
 <p>The terrorism charge is not priced from scratch. It is a <b>percentage of the premium
-already worked out</b> for the other coverages. That has a quiet consequence: because the
-medical payments upgrade raised the premises charge, it also raised the terrorism charge on
-top of it. The $10,000 election costs a little more than it first appears.</p>
+already worked out</b> for the other coverages — 0.4% here, so $3 on premises and $1 on
+products (the $1 is the minimum a real exposure can cost). Because the medical payments upgrade
+raises the premises charge, it can raise the terrorism charge on top of it.</p>
+
+<p><b>Corrected:</b> turning terrorism down does not always make the charge zero. If the policy
+carries an endorsement that caps or excludes some terrorism losses, ISO still prices a (smaller)
+terrorism charge.</p>
 
 <p>It also means terrorism has to be calculated last. Nothing else on the policy depends on
 what comes before it in this way.</p>
 
 <h2>Adding it up</h2>
 
-<p>The four charges are added together for the classification, then for the location, then for
-the policy. That total is the premium.</p>
+<p>The charges are added together for the classification, then for the location, then for
+the policy section: $827 + $21 + $3 + $1 = <b>$852</b>, plus the liquor section.</p>
 
 <p>One rule decides whether a coverage joins in: it must have produced a premium, and that
 premium must not be zero. A coverage priced at nothing and a coverage never bought look
 identical in the total — which is why, if there is real exposure but the maths comes to zero,
 the rules force the charge to $1 rather than leave it at nought.</p>
 
-<h2>The minimum premium is only half there</h2>
+<h2>The minimum premium depends on the date</h2>
 
-<p>Every policy has minimum premiums, and ISO publishes them. It also provides a place on the
-policy to put the shortfall if the premium comes in under the minimum, and it will add that
-shortfall to the total.</p>
+<p><b>Corrected.</b> In the April 2027 rulebook ISO applies no minimum premium to these
+coverages, and the place on the policy that used to hold a top-up is switched off — anything put
+there is erased. A minimum has to be applied after the engine has priced the policy; if nobody
+does it, the policy simply prices below its own minimum and nothing objects.</p>
 
-<p>What it does <b>not</b> do is the comparison. Nothing checks the premium against the
-minimum, works out the difference, or fills that box in. Somebody else has to — and if nobody
-does, the policy simply prices below its own minimum and nothing objects.</p>
+<p>Under the rulebook in force today it is the other way round: ISO compares the premium with the
+minimum itself and adds the shortfall. The same shop priced today comes to $939, not $852 —
+mostly because today's claims figure for the trade is higher.</p>

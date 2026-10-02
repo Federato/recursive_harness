@@ -88,8 +88,9 @@ PAGES = {
     "glpremium": ("GL_Algorithm/GL_Premium_Map.md",
                "GL_Algorithm/GL_Premium_Map.html",
                "GL premium map — derivation and roll-up to the account total",
-               "General Liability · GL CW 20270401 V01 · "
-               "571 groups, every one reaching ErcCalculatedTotalPremium"),
+               "General Liability · GL CW 20270401 (V01 and V02) · "
+               "571 groups, every one reaching ErcCalculatedTotalPremium · "
+               "reconciled against the engine 2026-10-02"),
     # The CF premium derivation and roll-up map.
     "cfpremium": ("CF_Algorithm/CF_Premium_Map.md",
                "CF_Algorithm/CF_Premium_Map.html",
@@ -100,13 +101,14 @@ PAGES = {
     "gltrace": ("GL_Algorithm/GL_PremOps_Prods_Premium_Trace.md",
                "GL_Algorithm/GL_PremOps_Prods_Premium_Trace.html",
                "Premises/Operations and Products/Completed Operations — full premium trace",
-               "General Liability · every premium value computed, and which one is money"),
+               "General Liability · every premium value computed, and which one is money · "
+               "reconciled against the engine 2026-10-02"),
     # Worked scenario: six coverages into one policy premium.
     "glscenario": ("GL_Algorithm/GL_Scenario_Premium_Buildup.md",
                "GL_Algorithm/GL_Scenario_Premium_Buildup.html",
                "A worked scenario — how six coverages become one policy premium",
                "General Liability · Prem/Ops, Products, Liquor, Med Pay $10,000, TRIA accepted, "
-               "and the minimum-premium slot ISO leaves for you"),
+               "minimum premiums · engine-rated and reconciled 2026-10-02"),
     # The standing workflow for premium analysis.
     "premiumwf": ("docs/PREMIUM-ANALYSIS-WORKFLOW.md",
                "docs/premium-analysis-workflow.html",

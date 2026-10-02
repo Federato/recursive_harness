@@ -71,7 +71,7 @@ table{font-size:.95em}
 <header><h1>CF premium map — derivation and roll-up to the account total</h1>
 <div class="sub">Commercial Property · CFCW20260601V01 · 881 groups, seven levels, 213 formulas rewritten by states</div></header>
 <div class="wrap"><article>
-<p class="meta">Source: <code>CF_Algorithm/CF_Premium_Map.md</code> &nbsp;·&nbsp; 1,597 words &nbsp;·&nbsp; rendered 2026-09-17</p>
+<p class="meta">Source: <code>CF_Algorithm/CF_Premium_Map.md</code> &nbsp;·&nbsp; 2,141 words &nbsp;·&nbsp; rendered 2026-10-02</p>
 <div class="toc-box"><div class="lbl">On this page</div><div class="toc">
 <ul>
 <li><a href="#1-the-same-three-mechanisms-at-twice-the-scale">1. The same three mechanisms, at twice the scale</a></li>
@@ -99,6 +99,14 @@ jurisdiction selector.
 <p><strong>Companion for GL:</strong> <code>GL_Algorithm/GL_Premium_Map.md</code>. The two lines share a mechanism and
 almost nothing else; the differences are the point of this document.</p>
 <p><strong>Written:</strong> 2026-09-17.</p>
+<blockquote>
+<p><strong>Reconciled against the built engine on 2026-10-02</strong> (commit <code>630ba2f</code>; chunks 1–27 gated).
+Confirmed by re-running <code>01_premium_map.py</code> / <code>02_premium_tree.py</code> on the corpus (every count below
+unchanged; the xlsx regenerates cell-for-cell identical) and against the engine's gate evidence:
+<strong>all 546 <code>SetPremium</code> groups are built</strong> (546 of 546 countrywide premium files, chunk 25), and
+<code>157_chunk14_c14-02_total_replay.py --all</code> re-rates ISO's 293 example policies with all 14,236
+premiums and 293 of 293 policy totals equal to ISO. Build notes are marked <em>Build, 2026-10-02</em>.</p>
+</blockquote>
 <hr />
 <h2 id="1-the-same-three-mechanisms-at-twice-the-scale">1. The same three mechanisms, at twice the scale</h2>
 <table>
@@ -131,6 +139,14 @@ almost nothing else; the differences are the point of this document.</p>
 <strong>and</strong> <code>Premium ≠ 0</code>; an aggregator sums its children into <code>ErcCalculatedTotalPremium</code>;
 children are reached by <code>ForEach</code> over an <code>&lt;X&gt;Table</code> when repeating and by <code>Locate</code> when
 singleton. Nothing about the mechanism is CF-specific.</p>
+<p><em>Build, 2026-10-02 (chunk 14, <code>docs/CF-CHUNK14-GATE.md</code>).</em> The engine
+assembles the account total exactly this way, and ISO agrees: <strong>the total adds whole-dollar
+premiums, negatives included</strong> (a rounding case gives $586, not $587); it sums <strong>45 record types</strong>;
+the 41 state overrides of the total only add state records. <strong>ISO applies no minimum premium</strong>
+(<code>MinimumPremium</code> / <code>PolMinPremium</code> file 0 rows); a minimum is a company input with a "refer to
+company" outcome — OI-113, chunk 28 set E, <strong>not built</strong>. The policy-wide modifiers (IRPM, package
+modification, multi-premium credit, the Standard Property Policy's 0.98) act in the rate chain
+before <code>SetPremium</code>, not on the total.</p>
 <p><strong><code>ErcCalculatedTotalPremium</code> is written 261 times across the corpus and read zero times</strong> —
 exactly as in GL. Every stored subtotal is an output for the caller, never an input to the
 level above.</p>
@@ -338,6 +354,15 @@ pricing, no written-vs-earned split, no cancellation return arithmetic.</p>
 </tr>
 </tbody>
 </table>
+<p><em>Build, 2026-10-02 — all three are built and ISO-confirmed.</em> <strong>Vacancy Permit</strong> (chunk 18): pro-rata
+= permit days ÷ policy days (90 → 0.247), so the payload must carry the policy's <code>EffectiveDt</code> /
+<code>ExpirationDt</code>; a submitted pro-rata is honoured, at ISO too. <strong>Peak Season</strong> (chunk 18): (premium at
+the total limit − at the base limit) × the season's pro-rata (60 days → 0.164). <strong>Builders Risk
+premium adjustment</strong> (chunk 24): each reporting period is re-priced and pro-rated by <strong>plain
+exclusive days, no leap day removed</strong> (OI-121, the one engine change in that chunk, made with the
+user's go); a period after expiration prices <strong>negative</strong>, as written, at ISO too. One more
+term-shaped mechanism the measurement above did not name: the <strong>Value Reporting Form</strong> (chunk 22)
+carries one average rate per policy and switches the ordinary contents premium off.</p>
 <p><strong>This refines OI-98 rather than contradicting it.</strong> ISO still does not administer a policy —
 there is no general proration engine, no transaction model, no earned/written split. What it
 does file is <strong>coverage-intrinsic term arithmetic</strong>: where the <em>coverage itself</em> is defined as
@@ -425,6 +450,16 @@ likely to be wrong.</p>
 <p><strong>Neither line ever deletes a premium rule.</strong> Zero empty-body premium overrides in CF, as in
 GL — the opposite of CF's <em>validation messages</em>, where 316 countrywide rules are switched off
 by an empty state override. Premium rules are added to or replaced, never silently removed.</p>
+<p><em>Build, 2026-10-02 — true of <code>SetPremium</code>, but a state can still switch a premium off.</em> Chunk 15
+found states zeroing whole families <strong>upstream of <code>SetPremium</code></strong>: GA, TX and VA file an empty
+<code>ErcRate</code> for the manual-premium endorsements and FL forces $0; MO's countrywide parent (CW 2023
+V02) has no Discretionary Payroll premium rule at all. Chunk 23 found AK 2020 and VA 2021 pricing
+<strong>inside <code>ErcRate</code></strong> (old packages only). A <code>SetPremium</code>-only census cannot see either. Every
+chunk since 3 has run its family in <strong>all 46 states</strong> against ISO (Puerto Rico is counted in this
+map but excluded from the build by standing rule), and four countrywide parents are in force
+(2026 V01 for 37 states; 2023 V04, V03, V02), so a state's formula can differ by edition as well
+as by override. The six states rewriting <code>CommercialPropertyPostTRIACoverage</code> (CA DC IL MD NY VA)
+are exactly the six with the 25% terrorism cap confirmed in chunk 13.</p>
 <hr />
 <h2 id="6-reading-this-for-a-specific-premium">6. Reading this for a specific premium</h2>
 <ol>
@@ -444,8 +479,13 @@ by an empty state override. Premium rules are added to or replaced, never silent
 <li><strong>The roll-up tree is countrywide.</strong> State overrides of <code>SetPremium</code> are counted and
   attributed, but the tree <em>shape</em> is CW's. A state adding a premium-bearing group adds a node
   this tree does not draw; the jurisdiction panel lists them instead.</li>
-<li><strong>Structural, not evaluated.</strong> Read from rule XML. No premium was computed and no path was
-  exercised against a live rating.</li>
+<li><strong>Structural, not evaluated</strong> — <em>the map itself</em>. It is read from rule XML. <em>Build, 2026-10-02:</em>
+  the evaluation now exists separately: every group is rated by the engine and each chunk's
+  premiums are ISO-confirmed (gate files <code>docs/CF-CHUNK1</code>–<code>27-GATE.md</code>; replay <code>157_ --all</code>,
+  snapshot <code>206_ --check</code>).</li>
+<li><strong>The jurisdiction overlay uses each state's latest-dated package</strong> in the corpus. For some
+  states that is later than the package ISO serves today; the engine and ISO agree on the package
+  in all 46 states at 2026-09-17 (OI-105, chunk 28 set F).</li>
 <li><strong><code>SetPremium</code> inputs are flattened</strong> from nested conditions — a rule reading eight fields
   may need only two in any given branch.</li>
 <li><strong>Rate resolution is out of scope</strong>, as in GL. This map covers rate-to-dollars and the

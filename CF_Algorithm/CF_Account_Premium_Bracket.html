@@ -37,7 +37,17 @@ TRIA accepted, every item written on the <b>Special</b> cause-of-loss form. Draw
 gated off. Every box is a real datadef field from <code>CFCW20260601V01</code>.</p>
 
 <div class="warn"><b>The amounts are placeholders.</b> Structure, field names and the
-arithmetic of the roll-up are real; no premium was computed.</div>
+arithmetic of the roll-up are real; no premium was computed <i>for this drawing</i>.</div>
+
+<div class="warn good"><b>Reconciled against the built engine on 2026-10-02</b> (commit 630ba2f;
+chunks 1&ndash;27 gated). Confirmed against the gate evidence: the cumulative form gates (chunk 3:
+Basic&rsquo;s $293 + Broad $16 / Special $54 = $309 / $347, ISO-confirmed), Business Income under
+the building (chunk 5), the terrorism roll-up (chunk 13, ISO 587 of 587) and the policy total
+(chunk 14: whole-dollar premiums added, negatives included; <code>157_ --all</code> replays 293 of
+293 ISO policy totals equal). For a <b>real, ISO-confirmed</b> account total see chunk 14&rsquo;s
+golden case (<code>159_chunk14_rc2_total.py</code>): a five-coverage policy with terrorism and
+Debris Removal, <b>$1,193</b>, ISO 9 of 9. ISO applies <b>no minimum premium</b> to the total
+(OI-113: a company input with a refer-to-company outcome, chunk 28, not built).</div>
 
 <div class="key">
  <span><i style="background:#e8edf5;border-color:#1f3864"></i>Building</span>
@@ -309,10 +319,14 @@ Basic Group I <b>+</b> Basic Group II <b>+</b> Special. Broad is the only record
 A Basic-form item produces two (BGI + BGII); a Broad-form item produces three
 (BGI + BGII + Broad).</div>
 <p class="sub">The filed rates confirm the forms are <b>incremental, not alternative</b>. Alabama,
-class 0701 masonry: Basic Group I base rate <b>0.115</b>, Basic Group II
-<b>0.080&ndash;0.156</b> by construction symbol, and the Special building rate a flat
-<b>0.039</b> &mdash; far too small to replace the other two, and exactly the shape of a top-up
-for the extra perils Special adds.</p>
+class 0701, <b>frame</b> (construction code 1): Basic Group I base rate <b>0.115</b> (masonry
+non-combustible: 0.074), Basic Group II <b>0.070&ndash;0.135</b> by construction symbol (Inland
+territory), and the Special building rate a flat <b>0.04</b> &mdash; far too small to replace the
+other two, and exactly the shape of a top-up for the extra perils Special adds. <i>(Corrected
+2026-10-02: these are AL&rsquo;s 2026-06-01 V01 rows, the package ISO and the engine rate at
+2026-09-17; the earlier figures, Group II 0.080&ndash;0.156 and Special 0.039, came from AL&rsquo;s
+2027-03-01 package, and 0.115 is the frame row, not masonry.)</i> Chunk 3 proved the layering in
+dollars: ISO returns all three totals.</p>
 
 <h2>The depths</h2>
 <table>
@@ -336,7 +350,10 @@ depth 1. Its <code>SetPremium</code> is
 <code>round(TotalStructurePremium + TotalPrsnlPropPremium + TotalBusnIncPremium +
 TotalSpecialPremium + TotalSpClBusnIncPremium)</code>, and each of those five is built on the
 same record by <code>Sum(ForEach Location &rarr; ForEach item &rarr; that item's
-TerrorismPremium)</code>.</p>
+TerrorismPremium)</code>. <i>Build, 2026-10-02 (chunk 13):</i> six states (CA, DC, IL, MD, NY, VA)
+rewrite this rule to cap the total at 25% of the rest of the policy; ISO agrees on every terrorism
+figure (587 of 587 live responses), including California&rsquo;s capped $153 after engine fix
+OI-111.</p>
 <div class="warn"><b>Those five are the only per-coverage account totals CF stores &mdash; and
 they total <i>terrorism</i> premium, not coverage premium.</b> There is still no field holding
 the account's total building premium or total contents premium.</div>

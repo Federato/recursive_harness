@@ -45,6 +45,12 @@
 <code>Set*ToUse</code> &mdash; in the core rule files for Building, Contents, Business Income, Special Class
 and Special Class Business Income, CW 20260601 V01. Every value below was read out of a
 <code>&lt;rul:Test&gt;</code>. Markdown companion: <code>CF_RatingPath_Switches.md</code>.</p>
+<div class="note good"><b>Reconciled against the built engine on 2026-10-02</b> (commit 630ba2f; chunks
+1&ndash;27 gated). Confirmed against each chunk's gate file and ISO-checked golden cases, the rule XML re-read
+where a claim moved, and the three regressions (<code>104_ --quick</code>, <code>206_ --check</code>,
+<code>157_ --all</code>). Three claims were wrong and are corrected in place (marked <i>Corrected
+2026-10-02</i>); build evidence is marked <i>Build</i>. <a href="#build">Every path, and where the build
+stands</a> lists every path and the chunk that built it.</div>
 
 <h2>The three kinds of switch</h2>
 <table>
@@ -73,8 +79,8 @@ item and still not be <i>chosen</i> there. Building the input next to the test i
     <td>special-cased class codes (1150 Builders Risk, 0580, 0585, 1300, 1650, 1751, 1752)</td></tr>
 <tr><td><code>TypeOfRisk</code></td><td class="num">6</td><td>BI, SCBI</td>
     <td>which arm of <code>TypeOfRiskFactor</code> &mdash; four combined blends, educational, n/a</td></tr>
-<tr><td><code>RatingType</code></td><td class="num">3</td><td>Bldg, Contents, BI</td>
-    <td>Class / Specific / Tentative</td></tr>
+<tr><td><code>RatingType</code></td><td class="num">3 (CA 4)</td><td>Bldg (Contents, OccupClass copy it)</td>
+    <td>Class / Specific / Tentative; CA adds One-Term Loss Cost</td></tr>
 <tr><td><code>CovForm</code></td><td class="num">3</td><td>Contents</td><td>the Contents premium branch</td></tr>
 <tr><td><code>PolicyType</code></td><td class="num">2</td><td>all five</td>
     <td>CPP vs SPP &mdash; cascades into three other lists</td></tr>
@@ -109,8 +115,11 @@ item and still not be <i>chosen</i> there. Building the input next to the test i
 combinations instead.</li>
 <li><b>The <code>CovForm</code> list changes.</b> <code>DomainCovForm</code> is keyed State + PolicyType +
 RatingType, and <b>Legal Liability is offered on CPP only</b> &mdash; absent from every SPP row.</li>
-<li><b><code>StdPropPolGroupIFactor</code> / <code>StdPropPolGroupIIFactor</code> exist</b> only on an SPP,
-and only on the building side.</li>
+<li><b><code>StdPropPolGroupIFactor</code> / <code>StdPropPolGroupIIFactor</code> exist</b> only on an SPP
+&mdash; on the <b>building, contents and Special Class</b> (0.98 each, in the rate chain, not on the premium).
+<i>Corrected 2026-10-02:</i> this said &ldquo;only on the building side&rdquo;; the CW rule files for
+Structure, PersonalProperty and SpecialClass each set both factors (chunk 14, gate point 6). <b>KS, NY and VT
+file no SPP factor</b>, so an SPP there prices like a CPP.</li>
 <li><b>Vandalism's gate changes shape.</b> On a CPP it fires on an endorsement election; on an SPP it fires
 on a qualifying cause of loss and ignores the endorsement entirely.</li>
 </ul>
@@ -119,8 +128,26 @@ on a qualifying cause of loss and ignores the endorsement entirely.</li>
 <p>Selects an entirely different base-rate source: a class-code lookup versus a user-supplied specific or
 tentative rate. <b>Confirmed absent on Special Class and Special Class Business Income</b> &mdash;
 <code>RatingType</code>, <code>SpecificGroupIRate</code> and <code>TentativeRate</code> appear zero times in
-either ruleset. And only <b>Basic Group I</b> has a Specific/Tentative path at all; BGII, Broad and Special
-are structurally class-only.</p>
+either ruleset (chunk 26: a <code>RatingType</code> sent on a Special Class item is ignored). In the
+countrywide rules only <b>Basic Group I</b> has a Specific/Tentative path; Broad and Special are class-only
+everywhere.</p>
+<div class="note"><b>Corrected 2026-10-02 &mdash; Group II is not class-only in the states.</b> <b>36 states</b>
+carry <code>RatingTypeBasicGroupII</code>; &ldquo;Specific&rdquo; prices Group II from a submitted
+<code>SpecificGroupIIRate</code> (blank &rarr; Group II $0 on building, contents and BI, silently).</div>
+<p><i>Build, chunk 26 (gated 2026-10-02, ISO agreed on every premium):</i></p>
+<ul>
+<li><b><code>RatingType</code> is chosen on the building only.</b> The occupancy class and the contents
+<b>copy</b> it (an inherited value: a submitted copy is overwritten).</li>
+<li><b>Contents price on their OWN <code>SpecificGroupIRate</code></b>; with none they rate $0. <b>BI uses the
+building's.</b></li>
+<li>Specific / Tentative replace the whole class chain (base rate, territory, protection class drop out):
+building Group I <b>$362</b> where Class gives <b>$287</b>. Tentative prices exactly as Specific and attaches
+the Tentative Rate form; no rule reads a <code>TentativeRate</code> field.</li>
+<li><b>A blank <code>RatingType</code> prices at rate 1.0</b> ($1,204), at ISO too. FL, NY, WV and MO leave the
+roof ACV factor out of the Specific formula.</li>
+<li><b>California's One-Term Loss Cost</b> prices building and contents as Specific; BI falls to rate 1.0
+&mdash; ISO does the same (OI-124).</li>
+</ul>
 
 <h3>3 &middot; <code>CovType</code> — one field name, four value universes</h3>
 <div class="note"><b>The trap worth the most care.</b> <code>CovType</code> is tested in four coverages and
@@ -216,8 +243,9 @@ WHAT STARTS APPLYING LegalLiabilityFactor          Bldg 0.25 / PersProp 0.50
                      AddlInsurableInterestFactor   Option1 1.25 · Option2 1.25
                                                    Option3 1.00 · Option4 ("None") 1.00
 
-ALSO CHANGES         blanket becomes unreachable - Building by Choose ordering,
-                     Contents by an explicit exclusion in the blanket branch
+ALSO CHANGES         blanket: electing it ZEROES the coverage ($0 at the engine
+                     and at ISO - chunk 8 gate; corrected 2026-10-02 from
+                     "becomes unreachable")
 
 PER FORM             BGI  -&gt; BasicGroupICauseOfLossAdjustment
                      BGII -&gt; BasicGroupIICauseOfLossAdjustment
@@ -227,6 +255,13 @@ PER FORM             BGI  -&gt; BasicGroupICauseOfLossAdjustment
 <div class="note good">That last line is the <b>only</b> premium-bearing Building-vs-Contents difference
 other than the 0.25 / 0.50 factor. Full detail in
 <code>Excel_Rater_LegalLiability_vs_ClassRated_Building.html</code> and its Personal Property companion.</div>
+<p><i>Build, chunk 8 (gate 9 of 9 after chunk 27).</i> Golden case Building <b>$60 / $7 / $4 / $12</b>,
+Contents <b>$132 / $15 / $11 / $93</b> (BGI / BGII / Broad / Special), all ISO-confirmed &mdash; Contents only
+once the <b>building</b> carries <code>WindstormOrHailDeductible</code> (ISO refuses without it; ours prices:
+OI-103, chunk 28). The Special-form split moves money: theft excluded, Contents falls $93 &rarr; $37 while
+Building stays $12. <code>LegalLiabilityFactor</code>'s key is pinned by literal, so each coverage can reach
+only its own row. <b>California needs the location's <code>District</code></b> (District I $57, II $68);
+without it Group I is $0 (chunk 27).</p>
 
 <h2>Which drivers apply where</h2>
 <table>
@@ -246,6 +281,49 @@ other than the 0.25 / 0.50 factor. Full detail in
 </tbody>
 </table>
 
+<h2 id="build">Every path, and where the build stands (2026-10-02)</h2>
+<p>Every path above is built in the engine and its premiums are ISO-confirmed in all 46 states (Puerto Rico
+excluded). <b>546 of 546 countrywide premium files built.</b></p>
+<table>
+<thead><tr><th>Path / switch</th><th>Built in</th><th>Gate evidence (ISO)</th></tr></thead>
+<tbody>
+<tr><td>Basic Group I / Group II (<code>CauseOfLossToUse</code> set at all)</td><td>chunks 1, 2</td><td>$261 / $32 golden; TX &times; 0.1 when wind/hail excluded; NY's Group II symbol is a <b>submitted input</b> (chunk 27)</td></tr>
+<tr><td>Broad / Special &mdash; cumulative on top of Basic</td><td>chunk 3</td><td>$16 / $54 &rarr; $309 / $347</td></tr>
+<tr><td>Contents (<code>CovForm</code> from the occupancy)</td><td>chunk 4</td><td>$223 / $24 / $16 / $137</td></tr>
+<tr><td>Business Income (<code>TypeOfRisk</code>, <code>MaxPeriod</code>, <code>MonthlyLimitOfIndemnity</code>)</td><td>chunk 5</td><td>$112 / $13 / $23 / $47</td></tr>
+<tr><td>Special Class, SC Business Income</td><td>chunks 6, 7</td><td>$66 / $209 / $14 / $44; $39 / $123 / $23 / $47</td></tr>
+<tr><td>Legal Liability (<code>CovType</code> / <code>CovForm</code>)</td><td>chunk 8</td><td>above</td></tr>
+<tr><td>Blanket (<code>IncludedInBlkt</code>; <code>BlktTypeOfBlanketRating</code> Average vs Highest, both live)</td><td>chunk 9</td><td>$255 / $510</td></tr>
+<tr><td>Earthquake (<code>EQCovIndicator</code>, the EQ endorsement variants)</td><td>chunk 10</td><td>$6 golden</td></tr>
+<tr><td><code>CovType = Leasehold Interest</code></td><td>chunk 11</td><td>9 of 9</td></tr>
+<tr><td>Endorsement families (Debris, O&amp;L, Utility, UAS, Green, Dependent Properties)</td><td>chunk 12</td><td>9 of 9</td></tr>
+<tr><td>Terrorism (<code>PostTRIAExclusion</code> and the TRIA records)</td><td>chunk 13</td><td>$8 golden; 587 of 587</td></tr>
+<tr><td><code>PolicyType</code> SPP, IRPM, package mod, the policy total</td><td>chunk 14</td><td>293 of 293 totals</td></tr>
+<tr><td>Manual-premium endorsements, BI options, BI add-ons</td><td>chunks 15&ndash;17</td><td>9 of 9 each</td></tr>
+<tr><td>Agreed Value, Inflation Guard, Vacancy Permit, Peak Season</td><td>chunk 18</td><td>9 of 9</td></tr>
+<tr><td>Scheduled items, small coverages (incl. Tobacco Sales Warehouse), sewer / condo options</td><td>chunks 19&ndash;21</td><td>9 of 9 each</td></tr>
+<tr><td><code>ValueReportingForm</code>, <code>AdditionalLocationsSpecialCoinsuranceProvisions</code>, <code>MultiLocAvgRatesIndicator</code></td><td>chunk 22</td><td>9 of 9; either form switches the ordinary contents premium off</td></tr>
+<tr><td>State-only coverages (MA, AK, CA, VA)</td><td>chunk 23</td><td>9 of 9</td></tr>
+<tr><td><code>CovType = Builders Risk</code>, <code>BuildersRiskReportingForm</code></td><td>chunk 24</td><td>9 of 9; with a reporting form the building's own limit must be 0</td></tr>
+<tr><td>Flood (<code>FloodCovIndicator</code> + the Flood General Information record)</td><td>chunk 25</td><td>9 of 9</td></tr>
+<tr><td><code>RatingType</code> Specific / Tentative, <code>RatingTypeBasicGroupII</code></td><td>chunk 26</td><td>9 of 9</td></tr>
+</tbody>
+</table>
+<div class="note"><b>Still open &mdash; chunk 28</b> (engine behaviour decisions; none built, each needs the
+user's go):
+<ul>
+<li><b>Refuse where ISO refuses (set A).</b> ISO refuses a request when a <code>SingleResult</code> lookup finds
+no row (65 of 66 live refusals: an unfiled territory or class, a blank key such as the building's
+<code>WindstormOrHailDeductible</code>, FL's Group II territory, NY's <code>CompletedBasicGroupIISymbol</code>);
+<b>ours prices them, often at $0</b> (OI-99, OI-103, OI-117).</li>
+<li><b>Silent zero-price inputs (set B).</b> A blank <code>Deductible</code> on Broad / Special, no BCEG, no
+<code>RatingTypeBasicGroupII</code>, no Group II territory, an unknown <code>ConstructionType</code>, AZ's
+reduction credit: each prices $0 rather than raising &mdash; mostly at ISO too, so this is a validation layer,
+not a rating change.</li>
+<li><b>Minimum premium (set E).</b> ISO rates none; a minimum is a company input with a refer-to-company
+outcome (OI-113).</li>
+</ul></div>
+
 <h2>What this means for the input sheet</h2>
 <ol>
 <li><b><code>CovType</code> needs a different dropdown per coverage.</b> One shared list is wrong &mdash; the
@@ -257,6 +335,13 @@ cause-of-loss list, the <code>CovForm</code> list, and whether the Std Prop Pol 
 <li><b>Elections are Yes/No records, not enum values.</b> A blank is not neutral.</li>
 <li><b>Each coverage needs its own election column</b> for theft, vandalism, wind/hail and sprinkler
 leakage. Sharing one input is the S-1/S-2/S-3 simplification, and it is logged as such.</li>
+<li><b><code>RatingType</code> is a building input only</b> (added 2026-10-02, chunk 26): the occupancy and
+contents copy it. Contents still need their own <code>SpecificGroupIRate</code> when the building is
+Specific.</li>
+<li><b>Some switches only work with a companion input</b> (added 2026-10-02): CA Legal Liability needs the
+location's <code>District</code>; Contents at ISO need the building's <code>WindstormOrHailDeductible</code>;
+NY needs a submitted Group II symbol; Flood needs its General Information record. Without them the engine
+prices (often $0) where ISO refuses or also prices $0.</li>
 </ol>
 
 <hr>

@@ -52,6 +52,8 @@ padding:1px 5px;border-radius:3px}
 .muted{color:var(--mut)} .count{color:var(--mut);font-size:11.5px}
 ul.plain{list-style:none;margin:6px 0;padding:0;font-size:12px}
 ul.plain li{padding:2px 0;font-family:ui-monospace,Consolas,monospace;word-break:break-all}
+.recon{margin-top:12px;font-size:12.5px;line-height:1.5;opacity:.92;max-width:1100px;
+border-left:3px solid rgba(255,255,255,.55);padding-left:10px}
 .note{background:var(--chip);border-left:3px solid var(--accent);padding:9px 12px;
 border-radius:0 5px 5px 0;font-size:12.5px;margin:10px 0}
 </style>
@@ -67,6 +69,7 @@ border-radius:0 5px 5px 0;font-size:12.5px;margin:10px 0}
     <div><b>51</b>jurisdictions analysed</div>
     <div><b>457</b>state-only premium groups</div>
   </div>
+  <div class="recon"><b>Reconciled against the built engine on 2026-10-02</b> (commit 630ba2f). Confirmed by re-running 01_/02_ on the corpus (571 groups / 112 aggregators / 322 <code>SetPremium</code> / 4 levels / 457 state-only / 12 terrorism-only state rewrites: unchanged; <code>GL CW 20270401 V02</code>, the parent 38 jurisdictions declare at 2027-04-01, has the identical premium structure) and by the engine: Oklahoma @ 2027-04-01 (<code>GL_OK_20270401_V04</code> over CW V02) rates 8,198 through exactly this roll-up, and all 16 <code>tests/verify_*</code> suites pass.<br>Read with two caveats: this is the <b>2027-04-01 edition</b> &mdash; policies effective earlier resolve CW 20231201 V02/V03, 20260101 V01 or 20261001 V01, where the minimum-premium records compute, Med Pay is a separate charge and there is no $1 floor (and GA, NJ, NY, WA, CA keep those older parents after the cliff); and the jurisdiction panel shows each state&rsquo;s <i>latest-dated</i> package, which can be later than the one a given effective date resolves.</div>
 </header>
 <div class="bar">
   <input id="q" placeholder="Filter groups — e.g. terrorism, liquor, unmanned">

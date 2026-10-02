@@ -17,7 +17,10 @@
 
 <h1>How the two main General Liability premiums are built</h1>
 <p class="meta">Premises/Operations and Products/Completed Operations, in plain English.
-Written 17 September 2026. The detailed version is <i>GL_PremOps_Prods_Premium_Trace.md</i>.</p>
+Written 17 September 2026. Checked against the working rating engine on 2 October 2026
+(commit 630ba2f): the steps below are the ones the engine runs, and its Oklahoma figures match
+ISO's own. Describes the rulebook edition that takes effect on 1 April 2027; the notes say where
+today's edition differs. The detailed version is <i>GL_PremOps_Prods_Premium_Trace.md</i>.</p>
 
 <p>These two coverages are the core of a General Liability policy. In ISO's rules they are
 built by the same program twice, with different field names swapped in. Whatever is true of
@@ -63,8 +66,15 @@ that was never bought both add nothing, and look identical in the total.</p>
 <h2>Two things that surprise people</h2>
 
 <p><b>A tiny risk still costs a dollar.</b> If the arithmetic produces zero but there is real
-exposure, the rules force the premium to $1. Zero is reserved for "not covered".</p>
+exposure, the rules force the premium to $1. Zero is reserved for "not covered". This floor is
+new in the April 2027 rulebook; under today's rules a tiny charge can still round to nothing.</p>
 
-<p><b>Minimum premiums are looked up but never applied.</b> Both coverages find their minimum
-premium and then do nothing with it. If a minimum is meant to be enforced on these two
-coverages, it is not in ISO's filed rules — somebody else has to do it.</p>
+<p><b>Minimum premiums depend on the rulebook date.</b> In the April 2027 rulebook ISO applies
+no minimum to these two coverages at all — and the place on the policy meant for a top-up is
+switched off, so anything put there is erased. A minimum has to be applied after the engine has
+finished. Under today's rules it is different: ISO checks the premium against the minimum
+itself and adds any shortfall.</p>
+
+<p><b>Medical payments moves too.</b> In the April 2027 rulebook a higher medical payments limit
+nudges the limits factor up. Under today's rules it is worked out as a small separate charge,
+by trade, and added into the premises premium.</p>

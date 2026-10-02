@@ -69,9 +69,9 @@ table{font-size:.95em}
 @media print{header{position:static}.toc-box{break-inside:avoid}}
 </style></head><body>
 <header><h1>GL premium map — derivation and roll-up to the account total</h1>
-<div class="sub">General Liability · GL CW 20270401 V01 · 571 groups, every one reaching ErcCalculatedTotalPremium</div></header>
+<div class="sub">General Liability · GL CW 20270401 (V01 and V02) · 571 groups, every one reaching ErcCalculatedTotalPremium · reconciled against the engine 2026-10-02</div></header>
 <div class="wrap"><article>
-<p class="meta">Source: <code>GL_Algorithm/GL_Premium_Map.md</code> &nbsp;·&nbsp; 1,943 words &nbsp;·&nbsp; rendered 2026-09-17</p>
+<p class="meta">Source: <code>GL_Algorithm/GL_Premium_Map.md</code> &nbsp;·&nbsp; 2,458 words &nbsp;·&nbsp; rendered 2026-10-02</p>
 <div class="toc-box"><div class="lbl">On this page</div><div class="toc">
 <ul>
 <li><a href="#1-three-mechanisms-and-only-three">1. Three mechanisms, and only three</a></li>
@@ -99,6 +99,25 @@ or rewrites.</p>
 <code>RollUpTree</code> (571 rows, one per group), <code>PremiumSources</code> (322 rows, one per premium
 calculation), <code>PremiumFields</code> (163 rows).</p>
 <p><strong>Written:</strong> 2026-09-17.</p>
+<p><strong>Reconciled against the built engine:</strong> 2026-10-02 (commit <code>630ba2f</code>) — <code>01_premium_map.py</code> and
+<code>02_premium_tree.py</code> re-run on the current corpus reproduce every count below unchanged, and the
+engine (<code>gl_engine</code>, offline, strict-erc) rates Oklahoma at 2027-04-01 (<code>GL_OK_20270401_V04</code> over
+<code>GL_CW_20270401_V02</code>) to <strong>8,198</strong> through exactly this roll-up; all 16 <code>tests/verify_*</code> suites pass.</p>
+<blockquote>
+<p><strong>Edition scope — read before using any of this for a live policy.</strong> Everything here is the
+<strong>2027-04-01 countrywide edition</strong>. <code>GL CW 20270401 V02</code> (the parent 38 jurisdictions declare at
+that date; 8 declare V01) differs from V01 in five rule files — validation messages, a dropped
+classification <code>SetCounty</code> step, Cyber limit checks and Product Withdrawal form conditions, none
+of them a <code>SetPremium</code> or <code>CalculateTotalPremium</code> — so its premium structure is identical
+(re-run: same 571 / 112 / 322 / depth 4). <strong>Policies effective before 2027-04-01 resolve older parents</strong> — today
+<code>GL CW 20260101 V01</code> for 46 jurisdictions, <code>20261001 V01</code> for OK, <code>20231201 V03</code> for NJ, TX, VT
+and <code>20231201 V02</code> for CA — and those differ in ways that change premiums: the Prem/Ops,
+Products and Special Combined <code>…PremiumToReachMinCoverage</code> records <strong>compute</strong> a minimum-premium
+top-up, Med Pay is a separate per-class <code>MedicalPaymentsCharge</code> rather than an ILF term, and
+there is no $1 premium floor. GA, NJ, NY, WA (CW 20260101 V01) and CA (CW 20231201 V02) keep
+those older parents even after 2027-04-01. The engine picks the parent the state package
+declares, as of the submission's effective date (decision A3); nothing here changes that.</p>
+</blockquote>
 <hr />
 <h2 id="1-three-mechanisms-and-only-three">1. Three mechanisms, and only three</h2>
 <p>The whole premium architecture is three rule names repeated across the corpus:</p>
@@ -202,6 +221,15 @@ would miss 19 whole endorsement families.</p>
         └── GeneralLiabilityUnmannedAircraft       depth 3    3 children
             └── …UnmannedAircraftCovABIPDCoverage  depth 4   leaf, SetPremium
 </code></pre>
+<p><strong>Confirmed by the engine (2026-10-02).</strong> Rating Oklahoma's engine base submission at
+2027-04-01 (<code>GL_OK_20270401_V04</code> over <code>GL_CW_20270401_V02</code>, class 50017, $5,000,000 gross sales)
+writes exactly this spine: Prem/Ops <code>Premium</code> <strong>965</strong> and Products <strong>7,215</strong> at depth 3; the
+terrorism coverages <strong>2</strong> and <strong>16</strong> at depth 4, summed to <code>GeneralLiabilityTerrorism</code>
+<strong>18</strong> at depth 3; then <code>ErcCalculatedTotalPremium</code> <strong>8,198</strong> at the classification, the
+location and the policy. The engine reads the account figure from <code>GeneralLiability.Premium</code>
+and refuses the rating if it disagrees with <code>ErcCalculatedTotalPremium</code>
+(<code>gl_engine/rating/kernel.py</code>, <code>_collect</code>); a submission carrying several <code>GeneralLiability</code>
+risks is the sum of their totals.</p>
 <p><strong>Location and Classification contribute their own <code>Premium</code> as well as their children's</strong> —
 they are not pure containers. A premium can be written at any level.</p>
 <h3 id="depth-distribution">Depth distribution</h3>
@@ -353,7 +381,10 @@ fourteen is written <strong>zero</strong> times and read <strong>zero</strong> t
 administration system is expected to fill, shipped inside ISO's schema so a round-tripped
 record has somewhere to put them.</p>
 <p><strong>What this means in practice.</strong> The engine produces <strong>one number: the full-term premium at
-the effective date supplied in <code>SchemeKeys</code>.</strong> Proration, mid-term endorsement pricing,
+the effective date supplied in <code>SchemeKeys</code>.</strong> (Confirmed 2026-10-02: the kernel resolves the
+edition from <code>SchemeKeys.EffectiveDateTime</code> — decision A3 — and ISO's own rules then write
+<code>ExpDate</code> one year later, 2027-04-01 → 2028-04-01; no rule reads a term or a pro-rata factor.)
+Proration, mid-term endorsement pricing,
 written-vs-earned splits and cancellation return arithmetic are <strong>entirely the calling
 system's job.</strong> Re-rating at a new effective date and differencing the results is the only
 transaction mechanism ISO's content offers, and even that is the caller's construction.</p>
@@ -441,11 +472,21 @@ replaced — never silently removed.</strong></p>
 <hr />
 <h2 id="8-limits-of-this-map">8. Limits of this map</h2>
 <ul>
-<li><strong>Countrywide only.</strong> State packages override rules, and a state may override
-  <code>SetPremium</code> or <code>CalculateTotalPremium</code> — none of that is reflected here. The roll-up
-  <em>shape</em> is unlikely to differ; the premium <em>formulas</em> may.</li>
-<li><strong>Structural, not evaluated.</strong> The tree is read from the rule XML. No premium was
-  computed, and no path was exercised against a live rating.</li>
+<li><strong>Countrywide sheets, state overlay in §7.</strong> The workbook's <code>RollUpTree</code> and
+  <code>PremiumSources</code> are countrywide; what the state packages add or rewrite is measured in §7
+  and drawn per jurisdiction in <code>GL_Premium_Tree.html</code>, using each state's <em>latest-dated</em>
+  package — which can be later than the package a given effective date resolves. The engine
+  applies whichever state override is in force automatically.</li>
+<li><strong>One edition.</strong> This is the 2027-04-01 countrywide edition (V01; V02 identical in premium
+  structure). Earlier parents still in force differ — see <em>Edition scope</em> at the top.</li>
+<li><strong>Structural, now confirmed by evaluation.</strong> The tree is read from the rule XML. Since
+  2026-10-02 it has also been exercised: the engine's ratings follow this roll-up level for
+  level (§3), the Oklahoma golden case reproduces ISO's own premium (<code>tests/verify_golden.py</code>
+  80/80), and the engine agrees with ISO's live service on 50 of 50 standard risks
+  (<code>scripts/erc/out/phase2.csv</code>, 50 <code>MATCH</code>, BUILD-LOG Entry 12) and 184 of 184 varied risks in
+  11 jurisdictions (BUILD-LOG Entry 24). <strong>Every one of those ISO comparisons was made on a
+  pre-2027 edition</strong> (CW 20260101 V01 and earlier); the 2027-04-01 figures quoted here are the
+  engine's, not yet confirmed against ISO live (<code>docs/PRD-GL-RATING-ENGINE.md</code> §8, item C8).</li>
 <li><strong><code>SetPremium</code> inputs are the fields the rule reads</strong>, flattened from nested conditions.
   A rule reading eight fields may only need two in any given branch.</li>
 <li><strong><code>FinalRate</code> is where this map stops.</strong> How a rate becomes <code>FinalRate</code> is the rating

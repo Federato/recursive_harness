@@ -2,12 +2,16 @@
 
     python scripts/premium/04_account_bracket.py
 
-Edit the `account` dict below to model a different risk. Structure and field
-names are real; amounts are placeholders and are labelled as such on the page.
+Edit the `account` dict below to model a different risk.
 
-The structure and the field names are real (GL CW 20270401 V01). The dollar
-amounts are placeholders chosen to make the summation legible -- they are not
-rated values and are labelled as such on the page.
+The structure and field names are real (GL CW 20270401 V01/V02 -- identical premium
+structure). Since 2026-10-02 the amounts are ENGINE-RATED, not placeholders: they are
+the values gl_engine writes for an Oklahoma submission effective 2027-04-01 (GL_OK_20270401_V04
+over GL_CW_20270401_V02, strict-erc mode, offline), two locations / three Mercantile
+classifications on the Premises/Operations and Products/Completed Operations subline,
+Med Pay 10,000, TerrorismCoverage = Yes with no cap endorsement. Every subtotal the bracket
+draws equals the ErcCalculatedTotalPremium the engine wrote (852 / 497 / 1,349 / 804 / 2,153).
+Rebuild the submission and re-rate it before changing any amount.
 """
 import io, os, sys
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -20,36 +24,33 @@ def cov(n, amt, kind="cov"):
 
 account = {
     "locations": [
-        {"id": "Location 1", "note": "Downtown", "classes": [
-            {"id": "Classification 1A", "note": "class 16905 \u00b7 restaurant, liquor",
-             "covs": [cov("ClassificationPremOpsCoverage", 4820),
-                      cov("ClassificationProdsCompldOpsCoverage", 1140),
-                      cov("ClassificationLiquorCoverage", 2310)],
-             "terr": [cov("TerrorismPremOpsCoverage", 24, "terr"),
-                      cov("TerrorismProdsCompldOpsCoverage", 6, "terr"),
-                      cov("TerrorismAllOtherSublineCoverage", 12, "terr")]},
-            {"id": "Classification 1B", "note": "class 18206 \u00b7 retail, no liquor",
-             "covs": [cov("ClassificationPremOpsCoverage", 1960),
-                      cov("ClassificationProdsCompldOpsCoverage", 640)],
-             "terr": [cov("TerrorismPremOpsCoverage", 10, "terr"),
-                      cov("TerrorismProdsCompldOpsCoverage", 3, "terr")]},
+        {"id": "Location 1", "note": "territory 501", "classes": [
+            {"id": "Classification 1A", "note": "class 10026 · antique stores",
+             "covs": [cov("ClassificationPremOpsCoverage", 827),
+                      cov("ClassificationProdsCompldOpsCoverage", 21)],
+             "terr": [cov("TerrorismPremOpsCoverage", 3, "terr"),
+                      cov("TerrorismProdsCompldOpsCoverage", 1, "terr")]},
+            {"id": "Classification 1B", "note": "class 10042 · appliance stores",
+             "covs": [cov("ClassificationPremOpsCoverage", 314),
+                      cov("ClassificationProdsCompldOpsCoverage", 181)],
+             "terr": [cov("TerrorismPremOpsCoverage", 1, "terr"),
+                      cov("TerrorismProdsCompldOpsCoverage", 1, "terr")]},
         ]},
-        {"id": "Location 2", "note": "Airport", "classes": [
-            {"id": "Classification 2A", "note": "class 16905 \u00b7 restaurant, liquor",
-             "covs": [cov("ClassificationPremOpsCoverage", 3450),
-                      cov("ClassificationProdsCompldOpsCoverage", 820),
-                      cov("ClassificationLiquorCoverage", 1875)],
-             "terr": [cov("TerrorismPremOpsCoverage", 17, "terr"),
-                      cov("TerrorismProdsCompldOpsCoverage", 4, "terr"),
-                      cov("TerrorismAllOtherSublineCoverage", 9, "terr")]},
+        {"id": "Location 2", "note": "territory 501", "classes": [
+            {"id": "Classification 2A", "note": "class 10100 · bakeries",
+             "covs": [cov("ClassificationPremOpsCoverage", 744),
+                      cov("ClassificationProdsCompldOpsCoverage", 56)],
+             "terr": [cov("TerrorismPremOpsCoverage", 3, "terr"),
+                      cov("TerrorismProdsCompldOpsCoverage", 1, "terr")]},
         ]},
     ],
-    # policy-level leaves that bypass the location chain entirely
+    # policy-level leaves that bypass the location chain entirely; in the 2027 edition
+    # all four are forced to 0 by their own rules (see the page text)
     "policy_leaves": [
         cov("MedPayCoverage", 0, "zero"),
         cov("PremOpsPremiumToReachMinCoverage", 0, "slot"),
         cov("ProdsCompldOpsPremiumToReachMinCoverage", 0, "slot"),
-        cov("LiquorPremiumToReachMinCoverage", 815, "slot"),
+        cov("LiquorPremiumToReachMinCoverage", 0, "slot"),
     ],
 }
 
@@ -233,23 +234,38 @@ html = """<title>Account premium bracket &mdash; leaf Premium fields to policy t
  .warn{background:#f7ddd4;color:#a53d26;padding:10px 14px;border-radius:6px;font-size:13px;
  margin:16px 0;max-width:900px}
  @media(prefers-color-scheme:dark){.warn{background:#2c221c;color:#e09a80}}
+ .warn.good{background:#dcefe4;color:#1e5b3c}
+ @media(prefers-color-scheme:dark){.warn.good{background:#1a2a21;color:#8fd0aa}}
 </style>
 
 <h1>Account premium bracket</h1>
-<p class="sub">Two locations, three classifications, liquor liability on two of them, terrorism
-accepted. Every box is a real datadef field from <code>GL CW 20270401 V01</code>. Read left to
+<p class="sub">Two locations, three classifications on the Prem/Ops and Products subline, Med Pay
+$10,000, terrorism accepted. Every box is a real datadef field from <code>GL CW 20270401</code> (V01
+and V02 share this structure), carrying the premium the engine computed. Read left to
 right: each leaf holds a <code>Premium</code>; each merge is one
 <code>CalculateTotalPremium</code> writing an <code>ErcCalculatedTotalPremium</code>.</p>
 
-<div class="warn"><b>The amounts are placeholders.</b> They exist to make the summation legible
-and are not rated values &mdash; no premium was computed. The <i>structure</i>, the field names
-and the arithmetic of the roll-up are real.</div>
+<div class="warn good"><b>Reconciled against the built engine on 2026-10-02</b> (commit 630ba2f).
+<b>Every amount is now an engine-rated value</b>, not a placeholder: an Oklahoma submission effective
+2027-04-01 (<code>GL_OK_20270401_V04</code> over <code>GL_CW_20270401_V02</code>, strict-erc, offline),
+Med Pay $10,000, <code>TerrorismCoverage = Yes</code>, no cap endorsement. Each subtotal drawn below is
+the <code>ErcCalculatedTotalPremium</code> the engine wrote &mdash; 852, 497, 1,349, 804 and the policy
+total <b>2,153</b>; the kernel also checks it equals <code>GeneralLiability.Premium</code>. All 16
+<code>tests/verify_*</code> suites pass on this build.</div>
+
+<div class="warn"><b>Corrected 2026-10-02 &mdash; liquor is not on this risk any more.</b> The earlier
+drawing put Liquor beside Prem/Ops on classifications 1A and 2A. ISO&rsquo;s rules cannot price that:
+<code>GeneralLiabilityClassificationLiquorCoverage.SetCoverageOnPolicyIndicator</code> is <code>1</code>
+only when the policy&rsquo;s <code>Subline = "Liquor"</code>, and Prem/Ops is on only for
+<code>"Premises/Operations and Products/Completed Operations"</code>. Rated by the engine, a liquor
+record added to this risk contributes <b>0</b>. Liquor is written as a <b>second
+<code>GeneralLiability</code> risk</b> in the same submission, and the kernel adds the risks&rsquo; totals.</div>
 
 <div class="key">
  <span><i style="background:#e8edf5;border-color:#1f3864"></i>coverage <code>Premium</code></span>
  <span><i style="background:#efeaf7;border-color:#6b4c9a"></i>terrorism <code>Premium</code></span>
  <span><i style="background:#e4f1ea;border-color:#2f7d5a"></i><code>ErcCalculatedTotalPremium</code></span>
- <span><i style="background:#f7ece0;border-color:#a35a1e"></i>caller-supplied slot</span>
+ <span><i style="background:#f7ece0;border-color:#a35a1e"></i>minimum top-up record (switched off in this edition)</span>
  <span><i style="background:#eef0f2;border-color:#8b95a1"></i>never computed (always 0)</span>
 </div>
 
@@ -260,12 +276,18 @@ and the arithmetic of the roll-up are real.</div>
 <thead><tr><th>Level</th><th>Field written</th><th>Rule</th><th>Inputs</th></tr></thead>
 <tbody>
 <tr><td>leaf</td><td><code>Premium</code></td><td><code>SetPremium</code></td>
- <td><code>FinalRate &times; Exposure &divide; 1000</code>, rounded to whole dollars</td></tr>
+ <td><code>FinalRate &times; Exposure &divide; 1000</code>, rounded to whole dollars (1A Prem/Ops:
+ 0.827 &times; 1,000 = <b>827</b>)</td></tr>
+<tr><td>terrorism leaf</td><td><code>Premium</code></td><td><code>SetPremium</code></td>
+ <td><code>ClassCoveragePremium &times; exposure-class factor</code> (0.004 here), whole dollars, with a
+ <b>$1 floor</b> when that rounds to 0 on a positive base (2A Products: 56 &times; 0.004 = 0.224 &rarr; <b>1</b>)</td></tr>
 <tr><td>terrorism</td><td><code>GeneralLiabilityTerrorism.ErcCalculatedTotalPremium</code></td>
- <td><code>CalculateTotalPremium</code></td><td>its three coverage <code>Premium</code> fields</td></tr>
+ <td><code>CalculateTotalPremium</code></td><td>its three coverage <code>Premium</code> fields (All Other
+ Subline is 0 on this risk)</td></tr>
 <tr><td>classification</td><td><code>GeneralLiabilityClassification.ErcCalculatedTotalPremium</code></td>
  <td><code>CalculateTotalPremium</code></td>
- <td>Prem/Ops + Products + Liquor + the terrorism subtotal</td></tr>
+ <td>Prem/Ops + Products + the terrorism subtotal (and any other coverage the risk&rsquo;s subline
+ switches on)</td></tr>
 <tr><td>location</td><td><code>GeneralLiabilityLocation.ErcCalculatedTotalPremium</code></td>
  <td><code>CalculateTotalPremium</code></td><td>its classification subtotals</td></tr>
 <tr><td>policy</td><td><code>GeneralLiability.ErcCalculatedTotalPremium</code></td>
@@ -301,11 +323,20 @@ conditional, and neither of them on the path the bracket draws.</p>
  <code>TotalLossOfElectronicDataPremium</code>, <code>TotalUnmannedAircraftPremium</code>,
  <code>LimitedProductWithdrawalClassPremium</code></td>
  <td>Real datadef fields, written by a <code>Set&hellip;</code> rule</td>
- <td>When that coverage is on the policy &mdash; they exist to be compared against a minimum</td></tr>
-<tr><td>Prem/Ops, Products, Liquor on an ordinary policy</td>
+ <td>When that coverage is on the policy &mdash; they exist to be compared against a minimum.
+ In the 2027 edition the Cyber, Loss of Electronic Data and Unmanned Aircraft records are the
+ only <code>&hellip;PremiumToReachMin&hellip;</code> records that still compute; the other ten are switched off</td></tr>
+<tr><td>Prem/Ops, Products, Liquor on an ordinary policy &mdash; <b>2027-04-01 edition</b></td>
  <td><b>Nothing</b></td><td>&mdash;</td>
  <td>Never. No <code>TotalPremOpsPremium</code> or <code>TotalProdsCompldOpsPremium</code>
  field is declared anywhere in the DataDef</td></tr>
+<tr><td>Prem/Ops, Products, Special Combined &mdash; <b>editions before 2027-04-01</b>
+ (CW 20231201 V02/V03, 20260101 V01, 20261001 V01)</td>
+ <td><code>CoveragePremium</code> on <code>GeneralLiabilityPremOpsPremiumToReachMinCoverage</code>,
+ <code>&hellip;ProdsCompldOps&hellip;</code>, <code>&hellip;SpecialCombined&hellip;</code></td>
+ <td>Real datadef fields: <code>Sum(ForEach location &rarr; ForEach classification &rarr; Premium)</code></td>
+ <td>Always, in those editions &mdash; the policy-level minimum-premium test. Engine, OK @ 2026-10-02
+ (<code>GL_CW_20261001_V01</code>), one antique-store class: 914 / 21 / 935</td></tr>
 </tbody>
 </table>
 
@@ -323,18 +354,28 @@ mistake for the answer: <code>AnnualBasicLimitsCoPremiumPremOps</code> and
 statistical reporting, a different quantity from what the coverage cost.</p>
 
 <h2 style="font-size:16px;margin-top:26px">Three things the bracket shows</h2>
-<p class="sub"><b>1 &middot; Liquor is per classification, not per policy.</b> It appears only
-where a classification has liquor exposure &mdash; 1A and 2A here, not 1B. There is no
-policy-level liquor premium; the account's liquor cost is the sum of its classifications'.</p>
-<p class="sub"><b>2 &middot; The policy-level leaves bypass the location chain.</b> Med Pay and
-the three <code>PremiumToReachMin</code> records attach directly to
-<code>GeneralLiability</code>, so they are added <i>after</i> every location has been totalled.
-The liquor minimum top-up of 815 shown here is <b>supplied by the caller</b> &mdash; no rule
-computes it.</p>
+<p class="sub"><b>1 &middot; One subline per risk.</b> Every coverage on a classification is
+switched on or off by the policy&rsquo;s <code>Subline</code>. Prem/Ops and Products share one risk;
+Liquor, OCP, Railroad and the rest each need their own <code>GeneralLiability</code> risk, and the
+account premium is the sum of the risks&rsquo; totals (engine: two copies of 1A&rsquo;s risk rate to
+exactly 2 &times; 852 = 1,704).</p>
+<p class="sub"><b>2 &middot; The policy-level leaves bypass the location chain &mdash; and in this
+edition they are all zero.</b> Med Pay and the three <code>PremiumToReachMin</code> records attach
+directly to <code>GeneralLiability</code>, so they are added <i>after</i> every location has been
+totalled. In the 2027-04-01 edition the three minimum-premium records&rsquo;
+<code>SetCoverageOnPolicyIndicator</code> writes <code>0</code> unconditionally, so
+<code>ErcProcess</code> forces their <code>Premium</code> to 0: <b>a caller cannot put a top-up
+there</b> (engine: a supplied <code>Premium = 100</code> is wiped and the total stays 852). A
+minimum premium on this edition has to be applied outside ISO&rsquo;s roll-up. In the editions in
+force today (before 2027-04-01) these records <i>do</i> compute the top-up themselves &mdash;
+<code>MinPremium &minus; CoveragePremium</code> when the minimum is higher, under the rule&rsquo;s own
+conditions.</p>
 <p class="sub"><b>3 &middot; Every merge applies the same gate.</b> A leaf contributes its
 <code>Premium</code> only when <code>PremiumIndicator = 1</code> <b>and</b>
 <code>Premium &ne; 0</code>. <code>MedPayCoverage.Premium</code> sits at 0 because nothing ever
-computes it &mdash; Med Pay is priced as a factor inside the Prem/Ops <code>FinalILF</code>.</p>
+computes it &mdash; in this edition Med Pay is priced as a factor inside the Prem/Ops
+<code>FinalILF</code> (1A: 2.01 + 1.007 &minus; 1 = <b>2.017</b>). Before 2027-04-01 it is a separate
+<code>MedicalPaymentsCharge</code> added into the Prem/Ops premium.</p>
 """ % SVG
 
 io.open(OUT, "w", encoding="utf-8").write(html)

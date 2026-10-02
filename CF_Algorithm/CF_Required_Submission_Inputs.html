@@ -35,6 +35,11 @@ themselves treat as a genuine input, confirmed by reading the rule XML chunk by 
 <code>CF_Payload_Generator_RESUME.md</code>'s own effort to reproduce <code>CFRater1.01.xlsb</code>'s field
 set as a payload; this doc answers what the RULES require, not what one rater sends. Full detail and
 citations: <code>CF_Required_Submission_Inputs.md</code>.</p>
+<div class="note"><b>Reconciled against the built engine on 2026-10-02 (commit 630ba2f; chunks 1&ndash;27 gated).</b>
+Every row checked against the chunk 1&ndash;27 gate and task docs, <code>docs/OPEN-ITEMS.md</code> and chunk 28's refusal table;
+the chunk 3 / 5 / 8 zero-case scripts re-run offline (<code>16_</code>, <code>33_</code>, <code>61_</code>, all exit 0) and the 2026
+<code>EarthquakeDeductibleTier</code> tables re-counted. Drifted rows are marked <b>Updated</b>; chunks 11&ndash;27 and chunk 28's open
+behaviours have their own sections below.</div>
 
 <p><span class="tag">pure input</span> no rule anywhere ever assigns it &nbsp;
 <span class="tag trap">dead-derivation trap</span> a rule exists but the table it reads is empty &nbsp;
@@ -51,6 +56,8 @@ citations: <code>CF_Required_Submission_Inputs.md</code>.</p>
 <a href="#ll">Legal Liability</a>
 <a href="#blanket">Blanket rating</a>
 <a href="#eq">Earthquake</a>
+<a href="#later">Chunks 11&ndash;27 &mdash; inputs established</a>
+<a href="#open28">Chunk 28 &mdash; open behaviours (not built)</a>
 <a href="#appendix">Appendix &mdash; ambiguous fields</a>
 </div>
 
@@ -64,13 +71,13 @@ citations: <code>CF_Required_Submission_Inputs.md</code>.</p>
 <tr><td><code>CauseOfLoss</code></td><td><span class="tag">pure input</span></td><td>Blank &rarr; <code>CoverageOnPolicyIndicator=0</code> &rarr; zero</td></tr>
 <tr><td><code>ProtectClass</code> (Location, not Structure)</td><td><span class="tag">pure input</span></td><td>Wrong node &rarr; factor stays 1.0 &rarr; premium 4% high</td></tr>
 <tr><td><code>LossCostMultiplier</code></td><td><span class="tag">pure input</span></td><td>Company input, not filed</td></tr>
-<tr><td><code>IRPMFactor</code>, <code>PackageModFactor</code>, <code>MultiPremiumAndDispersionCreditFactor</code></td><td><span class="tag">pure input</span></td><td>Schedule inputs, not filed tables</td></tr>
+<tr><td><code>IRPMFactor</code>, <code>PackageModFactor</code>, <code>MultiPremiumAndDispersionCreditFactor</code></td><td><span class="tag fallback">computed when blank</span></td><td><b>Updated:</b> a supplied factor always wins; blank &rarr; computed. Combined modifier 0 or &ge; 2.00 (incl. package discount 0) &rarr; <b>ISO refuses</b>, ours prices (OI-103)</td></tr>
 <tr><td><code>FullBldgValue</code></td><td><span class="tag">pure input</span></td><td>Raises an ISO validation message</td></tr>
 <tr><td>AZ <code>BasicGroupIReductionCredit</code></td><td><span class="tag">pure input</span></td><td>Literal 0.0 fallback &rarr; every AZ building zero</td></tr>
 <tr><td><code>TerrorismPremium</code> (policy, NY message rule)</td><td><span class="tag trap">dead-derivation trap</span></td><td>Zero writers anywhere &mdash; dead code as filed</td></tr>
 </tbody>
 </table>
-<p class="flag">Path-selectors, not values: <code>RatingType</code>, <code>CovType</code>, <code>IncludedInBlkt</code>.</p>
+<p class="flag">Path-selectors, not values: <code>RatingType</code>, <code>CovType</code>, <code>IncludedInBlkt</code>. <b>Updated:</b> the Specific / Tentative path is <b>built and ISO-confirmed</b> (chunk 26): it needs <code>SpecificGroupIRate</code> (none &rarr; building and BI Group I $0, silently); a <b>blank <code>RatingType</code> prices at rate 1.0</b> ($1,204 vs Specific $362), ISO the same; occupancy and contents copy it. CA adds "One-Term Loss Cost".</p>
 
 <h2 id="bgii">Building &mdash; Basic Group II</h2>
 <table>
@@ -78,19 +85,21 @@ citations: <code>CF_Required_Submission_Inputs.md</code>.</p>
 <tbody>
 <tr><td><code>BasicGroupIIRatingTerr</code></td><td><span class="tag">pure input</span></td><td>Base rate 0 &rarr; zero</td></tr>
 <tr><td><code>NumStories</code></td><td><span class="tag">pure input</span></td><td>No symbol resolves &rarr; zero</td></tr>
-<tr><td><code>BCEG</code></td><td><span class="tag">pure input</span></td><td>Literal 0.0 fallback &mdash; ISO-confirmed $32&rarr;$0</td></tr>
-<tr><td><code>RatingTypeBasicGroupII</code></td><td><span class="tag">pure input</span></td><td>36 of 47 states gate on it &mdash; zero if omitted there</td></tr>
+<tr><td><code>BCEG</code></td><td><span class="tag">pure input</span></td><td>Literal 0.0 fallback &mdash; ISO-confirmed $32&rarr;$0. <b>Updated:</b> DC and NY read no BCEG (empty rule; DC $38, NY $70, ISO equal)</td></tr>
+<tr><td><code>RatingTypeBasicGroupII</code></td><td><span class="tag">pure input</span></td><td>36 of 47 states gate on it &mdash; zero if omitted there; "Specific" also needs <code>SpecificGroupIIRate</code></td></tr>
+<tr><td>NY <code>BasicGroupIISymbol</code></td><td><span class="tag">pure input</span></td><td><b>Added:</b> NY's symbol rule is empty &mdash; without it Group II $0 at ISO too; with it also send <code>CompletedBasicGroupIISymbol</code> "Not Applicable" or ISO refuses</td></tr>
+<tr><td>FL Group II territory</td><td><span class="tag">pure input</span></td><td><b>Added:</b> FL's own territories; "Entire State" is refused at ISO</td></tr>
 <tr><td><code>BCEGFactor</code> (derived)</td><td><span class="tag fallback">conditional fallback</span></td><td>Territory/grade blank &rarr; literal 0.0, not the computed factor</td></tr>
 </tbody>
 </table>
-<p class="flag">Ambiguous: <code>OpenSides</code>. Path-selectors: <code>ClassCode</code> overrides (0580/0585/1150/1300/1650/1751), the SPP form-name election. Instrument note: "empty <code>SingleResult</code> = refusal" was tested and DISPROVEN &mdash; VA/VT break under strict mode.</p>
+<p class="flag">Ambiguous: <code>OpenSides</code>. Path-selectors: <code>ClassCode</code> overrides (0580/0585/1150/1300/1650/1751), the SPP form-name election. Instrument note: "empty <code>SingleResult</code> = refusal" was tested and DISPROVEN &mdash; VA/VT break under strict mode. <b>Updated (chunk 28 C28-02):</b> 65 of 66 live ISO refusals ARE a <code>SingleResult</code> lookup with no row, and ours never misses one on 1,689 rated requests; VT's empty EQ tier table is the exception. Ours still prices all 66. State shapes confirmed in chunk 27: TX wind / hail excluded &times; 0.1 ($800 &rarr; $79); IL "Cook County" &rarr; "Cook"; MT's symbol resolves.</p>
 
 <h2 id="broadspecial">Building &mdash; Broad and Special</h2>
 <table>
 <thead><tr><th>Field</th><th>Category</th><th>If omitted</th></tr></thead>
 <tbody>
-<tr><td><code>Limit</code></td><td><span class="tag">pure input</span></td><td>Null premium &rarr; <b>raises</b> &mdash; the one exception to silent-zero</td></tr>
-<tr><td><code>Deductible</code></td><td><span class="tag">pure input</span></td><td>Broad: <code>Otherwise</code> writes 0.0. Special: unresolved (see appendix)</td></tr>
+<tr><td><code>Limit</code></td><td><span class="tag">pure input</span></td><td><b>Updated:</b> $0 on both forms, as at ISO (which adds "Please enter a Limit greater than 0"). No longer a refusal since OI-109 / OI-110 (null operand skipped as ISO does)</td></tr>
+<tr><td><code>Deductible</code></td><td><span class="tag">pure input</span></td><td><b>Updated:</b> both rules end in an <code>Otherwise</code> worth 0.0 &rarr; Broad and Special $0, silently (resolved)</td></tr>
 <tr><td><code>TheftDeductible</code></td><td><span class="tag">pure input</span></td><td>Selects theft (0.89) vs. building (0.97) deductible band</td></tr>
 <tr><td>FL's 21-code <code>ClassCode</code> list</td><td><span class="tag">pure input</span></td><td>Off the list &rarr; non-residential rate</td></tr>
 <tr><td><code>Applicability="Paragraph B"</code> (Broad roof)</td><td><span class="tag trap">dead-derivation trap</span></td><td>Tested before any lookup &mdash; filed 0.99 row unreachable</td></tr>
@@ -105,6 +114,8 @@ citations: <code>CF_Required_Submission_Inputs.md</code>.</p>
 <thead><tr><th>Field</th><th>Category</th><th>If omitted</th></tr></thead>
 <tbody>
 <tr><td>Watchman/burglar-alarm credit (Special)</td><td><span class="tag">pure input</span></td><td>Without <code>TypeOfWatchmanSrvc</code> too: stays 1.0, silent</td></tr>
+<tr><td>The <b>building's</b> <code>WindstormOrHailDeductible</code></td><td><span class="tag">required at ISO</span></td><td><b>Added:</b> blank &rarr; ISO refuses every contents policy; ours prices (OI-103)</td></tr>
+<tr><td>Contents' own <code>SpecificGroupIRate</code> (Specific only)</td><td><span class="tag">pure input</span></td><td><b>Added:</b> contents price on their OWN rate; none &rarr; $0, silently (ISO the same)</td></tr>
 <tr><td><code>ProtectClass</code> (Contents-side)</td><td><span class="tag fallback">conditional fallback</span></td><td>Blank &rarr; 0.0 (Contents), vs. Building's 1.0 on same field</td></tr>
 <tr><td>Same factor, class 1751/1752</td><td><span class="tag fallback">conditional fallback</span></td><td>1751 &rarr; 1.0; missing protect class &rarr; 0.0 &mdash; two fallbacks, one rule</td></tr>
 <tr><td>Broad-form deductible factor</td><td><span class="tag fallback">conditional fallback</span></td><td>No PP rule at all &mdash; reads Building's ancestor, whose <code>Otherwise</code> is 0.0</td></tr>
@@ -116,7 +127,9 @@ citations: <code>CF_Required_Submission_Inputs.md</code>.</p>
 <table>
 <thead><tr><th>Field</th><th>Category</th><th>If omitted</th></tr></thead>
 <tbody>
-<tr><td><code>MfgPct</code>, <code>OtherPct</code>, <code>Combination1/2Factor</code></td><td><span class="tag">pure input</span></td><td>Default 0.0 &mdash; reaches premium as $0, bypasses the null-premium guard entirely</td></tr>
+<tr><td><code>MfgPct</code>, <code>OtherPct</code>, <code>Combination1/2Factor</code></td><td><span class="tag">pure input</span></td><td><b>Updated:</b> not $0 &mdash; ISO skips the null blend terms and adds the two component factors (1.26 &rarr; BI $256 + $30), over-pricing; ours matches since OI-110. An off-domain <code>TypeOfRisk</code> still gives $0</td></tr>
+<tr><td><code>Limit</code></td><td><span class="tag">pure input</span></td><td><b>Added:</b> absent &rarr; BI $0 with no message, at ISO too</td></tr>
+<tr><td>Specific rate</td><td><span class="tag fallback">inherited</span></td><td><b>Added:</b> BI uses the building's <code>SpecificGroupIRate</code>; CA One-Term Loss Cost &rarr; BI at rate 1.0 ($538), ISO the same (OI-124)</td></tr>
 <tr><td><code>BaseRateAdjustmentFactor</code> (PR only)</td><td><span class="tag trap">dead-derivation trap</span></td><td>PR deletes the RATING rule itself, not just the table</td></tr>
 <tr><td>A <code>Factor</code> branch (task #22)</td><td><span class="tag fallback">conditional fallback</span></td><td>Written 0.0, not null &mdash; "which is the point"</td></tr>
 </tbody>
@@ -127,7 +140,7 @@ citations: <code>CF_Required_Submission_Inputs.md</code>.</p>
 <table>
 <thead><tr><th>Field</th><th>Category</th><th>If omitted</th></tr></thead>
 <tbody>
-<tr><td><code>ClassDescription</code></td><td><span class="tag">pure input</span></td><td>Free-text driver, no rule derives it &mdash; Basic I/II zero, Broad/Special unaffected</td></tr>
+<tr><td><code>ClassDescription</code></td><td><span class="tag">pure input</span></td><td>Free-text driver, no rule derives it &mdash; Basic I/II zero, Broad/Special unaffected. <b>Updated:</b> must be a description the state files, or ISO refuses (OI-99)</td></tr>
 <tr><td><code>BasicGroupIISymbol</code></td><td><span class="tag">pure input</span></td><td>Not derived in this group &mdash; Group II zero</td></tr>
 <tr><td><code>SpecialClassDescConvertedOption</code> (NY)</td><td><span class="tag">pure input</span></td><td>NY's converter rule deleted &mdash; a deleted rule IS how ISO says "input"</td></tr>
 <tr><td><code>ProtectionClassFactor</code></td><td><span class="tag trap">dead-derivation trap</span></td><td>Read 0 times by any rate chain, PR deletes the rule with no effect</td></tr>
@@ -154,7 +167,9 @@ citations: <code>CF_Required_Submission_Inputs.md</code>.</p>
 <table>
 <thead><tr><th>Field</th><th>Category</th><th>If omitted</th></tr></thead>
 <tbody>
-<tr><td><code>Limit</code></td><td><span class="tag">pure input</span> (probable)</td><td>Refuses (null-premium guard), doesn't default</td></tr>
+<tr><td><code>Limit</code></td><td><span class="tag">pure input</span> (probable)</td><td><b>Updated:</b> $0, and ISO's Legal Liability premium is $0 too (OI-109 / OI-110)</td></tr>
+<tr><td>CA location <code>District</code></td><td><span class="tag">pure input</span></td><td><b>Added:</b> CA's base rate is a District I / II table &mdash; none &rarr; $0; $57 / $68 with it, ISO equal</td></tr>
+<tr><td>FL Group II territory</td><td><span class="tag">pure input</span></td><td><b>Added:</b> FL prices $59 on its own territory; "Entire State" refused</td></tr>
 <tr><td>Insurable-interest option</td><td><span class="tag fallback">conditional fallback</span></td><td>Blank &rarr; literal 0.0, outside the normal 1.0/1.25 domain</td></tr>
 </tbody>
 </table>
@@ -177,10 +192,43 @@ citations: <code>CF_Required_Submission_Inputs.md</code>.</p>
 <tbody>
 <tr><td><code>EQClass</code></td><td><span class="tag">pure input</span></td><td>Corpus-wide confirmed &mdash; never assigned. Structure-level, no copy-down</td></tr>
 <tr><td><code>EQTerr</code></td><td><span class="tag">pure input</span></td><td>Corpus-wide confirmed. Location-level, copied DOWN by a plain <code>Copy</code></td></tr>
-<tr><td><code>EQDeductibleTier</code></td><td><span class="tag trap">dead-derivation trap</span></td><td>Real lookup rule, backing table is 0 rows everywhere &mdash; must be supplied directly for the sub-limit path</td></tr>
+<tr><td><code>EQDeductibleTier</code></td><td><span class="tag fallback">derived in-state</span></td><td><b>Corrected:</b> only the countrywide table is empty &mdash; every 2026 state package files rows (1&ndash;19), so the tier derives from <code>EQTerr</code>; a supplied tier wins. An unfiled <code>EQTerr</code> &rarr; ISO refuses (17 cases), ours prices. VT's empty sub-limit tier table is refused at ISO, ours reads countrywide</td></tr>
 </tbody>
 </table>
 <p class="flag"><b>Silent submission-shape traps (found only by running):</b> Contents' own <code>SetEQClass</code> and 4 more "own" factors are unguarded ancestor-copies from the Structure; <code>BCEGEQFactor</code> defaults to 0.0 (not 1.0) on blank <code>BCEG</code>; <code>EQSprinklerLeakageOnly</code> blank starves <code>FinalEQRate</code> (no <code>Otherwise</code>); blank <code>SprinklerSystem</code> reads as sprinklered, adding a 1.06 factor. Path-selectors: <code>EQCovIndicator</code> (4 values, 2 zero-tiers), <code>EQCauseOfLossForm</code> (selects among 4 Endorsement files), <code>CovType</code>. Note: <code>EQCoinsuranceFactor</code> is the one EQ factor that actually SHARES the ordinary <code>CoinsuranceFactor</code> table.</p>
+
+<h2 id="later">Chunks 11&ndash;27 &mdash; inputs established (added 2026-10-02)</h2>
+<p class="flag">From each chunk's gate doc; every item found by running and confirmed against ISO live. Detail: <code>docs/CF-CHUNKnn-GATE.md</code>.</p>
+<table>
+<thead><tr><th>Chunk</th><th>Coverage</th><th>What a submission must carry, and the traps</th></tr></thead>
+<tbody>
+<tr><td>11</td><td>Leasehold Interest</td><td>Structure <code>CovType</code> "Leasehold Interest" on a CPP, else the record is deleted silently; <code>EQCovIndicator</code> "No Coverage", not blank; <code>ExpDate</code> never an input; an unfiled <code>PercentInterest</code> is refused at ISO, $0 in ours</td></tr>
+<tr><td>12</td><td>Debris, Ordinance or Law, Utility, Drones, Green Upgrades, Dependent Properties</td><td>O&amp;L B / C limit absent &rarr; the cell prices on what remains (usually $0), A still prices; unfiled waiting period / percentage &rarr; ISO refuses; drone reads the contents' theft factor, Dependent Properties the BI's</td></tr>
+<tr><td>13</td><td>Terrorism</td><td><code>TRIAType</code> drives everything (blank &rarr; no form, silently); <code>TerrorismIndicator</code> switches nothing off; numeric fields as JSON numbers; unfiled terrorism territory refused</td></tr>
+<tr><td>14</td><td>Policy assembly</td><td>Supplied modifiers win; combined modifier 0.01&ndash;1.99; CO / IN wind-hazard county, OK "Entire State", SC earthquake territory or ISO refuses; <b>no minimum premium</b> (refer to company, OI-113, not built)</td></tr>
+<tr><td>15</td><td>Manual-premium endorsements</td><td><code>ManualPremium</code> plus an on-switch on five records, else $0; Contents <code>CovForm</code> set on the occupancy (copied down)</td></tr>
+<tr><td>16&ndash;17</td><td>BI add-ons and small BI plans</td><td><code>NumOfDays</code> as a number; Mining needs <code>TypeOfRisk</code> Mining; Landlord's own <code>CauseOfLoss</code>; SCBI spells <code>WaterFrontProperty</code>; Off-Premises needs an extended period (blank &rarr; $0)</td></tr>
+<tr><td>18</td><td>Agreed Value, Inflation Guard, valuation modifiers</td><td><code>AgreedValueLimit</code> as a number (absent &rarr; $0, silent); <code>ValuationType</code> switches Functional Valuation; Vacancy / Peak Season need the policy dates (omit, don't send blank)</td></tr>
+<tr><td>19</td><td>Scheduled items</td><td>Tenants' needs both deductibles (blank &rarr; $0) and its own <code>CausesOfLoss</code>; contents need their own EQ election</td></tr>
+<tr><td>20</td><td>Small coverages with own tables</td><td>Radioactive needs a submitted rate; Fire Department its indicator and a limit over 1,000; special-limit items need Special; Mortgageholders' <code>Limit</code> is text</td></tr>
+<tr><td>21</td><td>Sewer, condo options</td><td>Discharge limits (xs:int) are the only switch; send <code>LossAssessmentLimit</code> "0" when unwanted; FL condo <code>ManualPremium</code> blank is refused at ISO (OI-117)</td></tr>
+<tr><td>22</td><td>Value Reporting, Additional Locations</td><td>General Information record at policy level; send "Not Used" ("Used" refused at ISO and ours, OI-119); the forms are mutually exclusive and switch the ordinary contents premium off</td></tr>
+<tr><td>23</td><td>State-only (MA, AK, CA, VA)</td><td>Records the rules attach on their own sit at $0 without their inputs; AK fees only on Legal Liability</td></tr>
+<tr><td>24</td><td>Builders Risk</td><td><code>CovType</code> "Builders Risk", class 1150; reporting form <code>Limit</code> 0; renovations <code>RatingType</code> "Class"</td></tr>
+<tr><td>25</td><td>Flood</td><td>Location <code>FloodCovIndicator</code> + General Information (<code>Deductible</code>, <code>FloodZone</code>, <code>FloodEffDate</code>); county states read <code>County</code>; Special Class / SCBI their own <code>ConstructionType</code>; AK / FL <code>ManualPremium</code></td></tr>
+<tr><td>26</td><td>Specific / Tentative</td><td>Building <code>RatingType</code> + <code>SpecificGroupIRate</code>; Group II (36 states) <code>RatingTypeBasicGroupII</code>, <code>SpecificGroupIIRate</code>, square footage, a filed territory; contents their own rates</td></tr>
+<tr><td>27</td><td>Loose ends, chunks 1&ndash;8</td><td>CA <code>District</code>; NY Group II symbol + completed symbol; FL Group II territory; the building's <code>WindstormOrHailDeductible</code> for contents</td></tr>
+</tbody>
+</table>
+
+<h2 id="open28">Chunk 28 &mdash; open behaviours, none built yet (added 2026-10-02)</h2>
+<div class="note">Chunk 28 is open (2 of 22); every engine change needs the user's go. Until then a submission builder must guard against these itself.</div>
+<ul>
+<li><b>Refusals (Set A).</b> An unfiled or blank lookup key makes <b>ISO refuse the policy; ours prices it</b>, often at $0 &mdash; 66 live cases, 65 a <code>SingleResult</code> lookup with no row (<code>docs/CF-CHUNK28-REFUSALS.md</code>); also <code>Convert</code> of a blank (OI-99, OI-103, OI-117).</li>
+<li><b>Silent zero-price inputs (Set B).</b> Eight inputs still price $0 with no message (AZ reduction credit, unknown <code>ConstructionType</code>, no BCEG, no <code>RatingTypeBasicGroupII</code>, no Group II territory, blank <code>Deductible</code> on Broad and on Special, a construction type spelled as a rating type) plus NY's missing symbol; many are $0 at ISO too. A submitted <code>IsNull</code>-guarded field (e.g. <code>SpecialBaseRate</code>) overrides the filed table, at ISO too.</li>
+<li><b>Minimum premium (Set E).</b> ISO applies none; the decision is "refer to company" (OI-113). No referral layer yet.</li>
+<li><b>Messages and form names (Sets C, D).</b> Premiums agree; a few messages (OI-112, 114, 123, 125, 126) and 135 of 240 form names (OI-106) still differ from ISO.</li>
+</ul>
 
 <h2 id="appendix">Appendix &mdash; ambiguous, needs verification</h2>
 <p>Repeatedly treated as inputs in worked examples, but no chunk's docs ever stated "zero deriving rules" for these &mdash; not asserted into a category:</p>
@@ -189,6 +237,6 @@ citations: <code>CF_Required_Submission_Inputs.md</code>.</p>
 <li><code>Coinsurance</code> (raw percentage) &mdash; appears throughout, never explicitly labeled.</li>
 <li><code>FullBldgValue</code> &mdash; a given in every worked example, never confirmed derivation-free.</li>
 <li><code>TypeOfWatchmanSrvc</code> &mdash; required alongside a confirmed pure input, not itself confirmed.</li>
-<li><code>IRPMFactor</code> / <code>PackageModFactor</code> &mdash; only read-depth is documented (5/7/9 <code>../</code> hops), not derivation status.</li>
-<li>Special form's <code>Deductible</code>-removed case (chunk 3) &mdash; predicted null, actual run returned 0, never explained.</li>
+<li><del><code>IRPMFactor</code> / <code>PackageModFactor</code> &mdash; derivation status unknown.</del> <b>Resolved:</b> computed only when blank, a supplied factor wins; endorsements take the policy's (chunks 14&ndash;15).</li>
+<li><del>Special form's <code>Deductible</code>-removed case &mdash; unexplained.</del> <b>Resolved:</b> the Special rule has an <code>Otherwise</code> 0.0 like Broad's.</li>
 </ul>

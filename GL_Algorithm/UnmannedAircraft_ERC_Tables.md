@@ -4,13 +4,15 @@
 **Line:** General Liability (GL), Countrywide, subline 370 — Unmanned Aircraft, Rule 37
 **Derived from:** `UnmannedAircraft_RatingAlgorithms.md`, reformatted from `docs/gates/GATE-370-UNMANNED-AIRCRAFT.md`
 **Documented:** 2026-08-20
+**Reconciled against the built engine:** 2026-10-02 (commit `630ba2f`) — every table below was read from `Rate Tables/*.RateTable.csv` in CW 20260101 V01, 20261001 V01 and 20270401 V02, and its lookup observed in an offline engine run (OK + one designated drone, 2026-10-02 and 2027-04-01); corrections are marked **(engine)**.
 
 This lists every ERC rate table named in GATE-370-UNMANNED-AIRCRAFT.md, resolved by tracing the
 13-rule chain (`SetAggregateLimit` … `SetPremium`) across both Coverage A (BI/PD) and Coverage B
 (PAI) rate-driven groups. Unlike the CF Basic Group I documentation this list draws, the gate doc
 does **not** report a file-existence verification pass against the ERC package's `Rate Tables`
 directory — table presence here is as stated in the gate doc's own row/state counts, not
-independently re-verified against the filesystem.
+independently re-verified against the filesystem. **(engine)** Now re-verified: each table exists
+as a CSV with the row counts stated, and its lookup appears in the engine trace.
 
 **Every table on this subline is countrywide-only except two,** which carry a single Washington
 override; see the notes column.
@@ -29,15 +31,17 @@ override; see the notes column.
 | `UnmannedAircraftOwnershipAndOperationPAIRatingModifiers` | Coverage B ownership/operation modifier | State\|CW — 9 rows, **0/51** |
 | `UnmannedAircraftPrimaryPlaceOfOperationBIPDRatingModifiers` | Coverage A place-of-operation modifier | State\|CW — 9 rows, 1/51 (**WA**) |
 | `UnmannedAircraftPrimaryPlaceOfOperationPAIRatingModifiers` | Coverage B place-of-operation modifier | State\|CW — 9 rows, **0/51** |
-| `UnmannedAircraftUsageBIPDRatingModifiers` | Coverage A usage modifier | State\|CW — 12 rows, **0/51** |
-| `UnmannedAircraftUsagePAIRatingModifiers` | Coverage B usage modifier | State\|CW — 12 rows, **0/51** |
-| (aggregate limit table, via `unmannedAircraftAggregateLimitLookup`) | Aggregate limit | Not resolved in source docs — keys not stated |
-| (Prem/Ops ILF table, via `LookupILFPremOps`) | Increased limits factor, borrowed from Prem/Ops | Not resolved in source docs — keys not stated; rule body is 15,857 characters |
+| `UnmannedAircraftUsageBIPDRatingModifiers` | Coverage A usage modifier | State\|CW — 12 rows, **0/51**. **(engine)** No `Unknown`/`Not Applicable` row; 2027 respells rows 7 and 12 (keys case-sensitive) |
+| `UnmannedAircraftUsagePAIRatingModifiers` | Coverage B usage modifier | State\|CW — 12 rows, **0/51**; same 2027 respelling |
+| ~~(aggregate limit table, via `unmannedAircraftAggregateLimitLookup`)~~ | **(engine)** Not a table. `SetAggregateLimit` copies the drone's `AggregateLimit`; the helper only appends `" CSL"` (deleted in 2027). Legal values: domain `DomainUnmannedAircraftAggregateLimit` (keyed by policy occurrence limit) | — |
+| `ILFPremOps` (via `LookupILFPremOps`) | Increased limits factor, borrowed from Prem/Ops | **(engine)** State, increased-limit table assignment (**fixed 3** for drones), each-occurrence limit, aggregate limit. `" CSL"` suffix ≤ 20261001 only. OK 1M/1M = 2.05 |
 
 All CW tables in this section follow the two-pass `FirstNonNull(state row, "CW" row)` pattern
 elsewhere in this corpus; the gate doc does not explicitly re-state that pattern for this subline,
 so treat this as **carried over from the CF documentation convention, not independently confirmed
-here.**
+here.** **(engine)** Confirmed by trace: every drone lookup resolves `keys=['CW', …]` in OK, and a
+miss returns null, which the rules coerce to 0 (`FirstValue … FromConstant=0.0`). So an unmatched value
+zero-prices the drone rather than erroring.
 
 ---
 
@@ -53,9 +57,10 @@ Premises/Operations and applied to Coverage A only:
 | (Prem/Ops BI deductible table, via `LookupDedFactorPremOpsBI`) | Coverage A deductible factor | Bodily Injury variant |
 | (Prem/Ops PD deductible table, via `LookupDedFactorPremOpsPD`) | Coverage A deductible factor | Property Damage variant |
 
-Not resolved in source docs — which of the three is selected under what condition, and their
-keys/values. Coverage B's premium formula drops the deductible term, so none of these three apply
-to Coverage B.
+~~Not resolved in source docs — which of the three is selected under what condition.~~ **(engine)**
+The CSL table is used when `BIPDDeductible` is set and not "No Deductible". BI + PD are summed when both
+are set; otherwise BI or PD alone; else 0.0. Coverage B's premium formula drops the deductible term, so
+none of these three apply to Coverage B.
 
 ---
 
@@ -63,7 +68,7 @@ to Coverage B.
 
 | Table | Used for | Notes |
 |---|---|---|
-| `UnmannedAircraftMinPremium` | Minimum premium floor | 1 row, CW, **value 0** — E16 confirmed a fourth time on this subline |
+| `UnmannedAircraftMinPremium` | Minimum premium floor | 1 row, CW, **value 0** — E16 confirmed a fourth time on this subline. **(engine)** Keys `['CW','Y']`. It is read by `GeneralLiabilityUnmannedAircraftRules` (≤ 20261001) and by `…LimitedCovForDesignatedUnmannedAircraftPremiumToReachMinCoverage` (2027). The 0 it returns trips referral R19 on every drone policy in `underwriting` mode (false positive) |
 | (governmental-units ILF variant, via `LookupGovernmentalUnitsPremisesOperationsIncreasedLimitsFactor`) | Replaces `SetAggregateLimit`/`SetILF` in 8 states | IN, MO, MT, ND, NH, OK, TN, UT — one deviation, eight filings |
 | `PackageModFactor`, `ExperienceRatingModificationFactor`, `ExpenseModification`, `ModToUse` | Premium-level multipliers in `SetPremium` | Not resolved in source docs — whether these are filed rate tables or policy-level copied values (the gate doc lists them as multipliers without stating the ERC mechanism); see "Not ERC tables" caveat below |
 
@@ -88,7 +93,9 @@ tables. Flagged here as likely-not-ERC-tables by analogy only.
 
 Not resolved in source docs — confirm the ERC mechanism for `PackageModFactor`,
 `ExperienceRatingModificationFactor`, `ExpenseModification`, and `ModToUse` before treating this
-section as settled.
+section as settled. **(engine) Settled for the drone rules:** `SetPremium` reads all four as
+`FirstValue FromDataDef=../../../../../../../<name>`, i.e. policy-level (`GeneralLiability`) values.
+There is no `Lookup` against a rate table. The engine run had all four at 1.
 
 ---
 
@@ -115,7 +122,18 @@ CF-style completeness check on this subline:
 - **State filing counts**: countrywide-only for every table except the two WA overrides, checked
   per table (§5).
 
-No independent re-verification of these counts against the raw ERC package was performed in
-producing this document — they are carried forward from the gate doc as-is.
+*As originally produced (2026-08-20):* no independent re-verification of these counts against the raw
+ERC package was performed; they were carried forward from the gate doc as-is. That is no longer
+true, per the 2026-10-02 pass below.
+
+**(engine) Re-verification, 2026-10-02.** Every rate table above was read directly from CW 20260101 V01
+and 20270401 V02:
+- The loss-cost and ownership tables are unchanged.
+- The usage and place tables differ in 2027 only by label case.
+- The zero-cell count is 18 (CovA 10, CovB 8).
+
+A designated drone was rated end to end in the engine. OK@2026-10-02 and @2027-04-01 gave CovA 316,
+CovB 216 and drone terrorism 1, account 8,762 / 8,731. 60 lb, Unknown ownership, and Firefighting
+(BI/PD) each priced the affected coverage at 0 and raised R19 in `underwriting` mode.
 
 ---
