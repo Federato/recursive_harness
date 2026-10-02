@@ -236,11 +236,18 @@ the four that zero Group II are the same four. ISO confirms both corners.
 2. **Input validation.** Five inputs now price at zero rather than raising: Arizona's
    `BasicGroupIReductionCredit`, an unrecognised `ConstructionType`, an absent `BCEG`, a missing
    `RatingTypeBasicGroupII`, a missing Group II territory. Item 8 is the engine-side half.
-3. **TX's wind/hail shape**, untraced.
+3. **TX's wind/hail shape**, untraced. **Traced 2026-10-02 (chunk 27 C27-07, `240_chunk27_rc3.py --live`):** TX keeps the normal rate and
+   multiplies it by `WindstormOrHailExclFactor` every time: 1.0 without the exclusion, a flat **0.1** with it (its own
+   one-row `WindstormOrHailExclFactorTX`; no symbol, no lowest-rate rebuild). Seacoast 1, symbol B: **$800 → $79**, ISO equal.
 4. **DC and IL** have no `BCEGFactor` row for their own Group II territory, so Group II may be
-   unrateable there. Not diagnosed.
+   unrateable there. Not diagnosed. **Diagnosed 2026-10-02 (chunk 27 C27-08): the sweep's skip, not a gap.** DC (and
+   NY) empty `SetBCEGFactor` and read no BCEG at all: grade 4 = grade 9 = **$38** (DC), **$70** (NY), ISO equal. IL maps
+   "Cook County" to its table's "Cook" rows and keys "Balance of State" directly: **$122 / $158**, ISO equal.
 5. **MT, NY, PR** resolve to an empty `BasicGroupIIConstructionSymbol`. NY files 120
-   `BasicGroupIIRate` rows, so it clearly rates Group II by some other symbol route.
+   `BasicGroupIIRate` rows, so it clearly rates Group II by some other symbol route. **Answered 2026-10-02 (chunk 27
+   C27-09):** MT's symbol now resolves (**$74**, ISO equal). NY's symbol is a **submitted input** (`SetBasicGroupIISymbol`
+   is empty; `SetBGIISymbolToUse` copies `BasicGroupIISymbol`): sent "B" (with `CompletedBasicGroupIISymbol` "Not
+   Applicable", else refused: OI-103) it prices $70; sent nothing, Group II is **$0 at ISO too**, silently.
 
 ## What is deliberately not here
 

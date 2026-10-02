@@ -19,7 +19,7 @@ This chunk closes items **with evidence**; anything whose fix is an engine chang
 Live ISO comparisons at **2026-09-17** (OI-105). Every figure and message set is predicted before it
 runs. Every pass prints `[i/n elapsed]` progress to `results/cf-raas/logs/`.
 
-**Status: RC-2 done 2026-10-02, 5 of 18** (RC-1: the census refreshed, the register cleaned; RC-2: point 9 closed on chunks 1–8, `239_chunk27_rc2.py --live`, 25 of 25 agree with ISO, OI-126 registered; no engine change). **Next: RC-3, C27-06 (CA and FL Legal Liability).**
+**Status: RC-3 done 2026-10-02, 9 of 18** (RC-1: the census and register; RC-2: point 9 on chunks 1–8, `239_`; RC-3: point 8 on chunk 8 and the per-state gaps, `240_chunk27_rc3.py --live`, 16 of 16 agree with ISO; no engine change). **Next: RC-4, C27-10 (chunk 12's leftovers).**
 
 ## Who owns what (C27-02, 2026-10-02)
 
@@ -148,10 +148,10 @@ derived field overriding the filed table, the shared core's housekeeping.
 
 | # | Task | Status | Notes |
 |---|---|---|---|
-| C27-06 | **CA and FL Legal Liability**: why neither produces a Legal Liability premium; each state's own rule, edition and tables traced, predicted, then probed; ISO live | ⬜ | closes point 8 on chunk 8 |
-| C27-07 | **TX wind / hail**: trace the fourth shape chunk 2 logged, predict it, and price a TX building with wind / hail excluded and not; ISO live | ⬜ | |
-| C27-08 | **DC and IL `BCEGFactor`**: no row for their own Group II territory. What the engine does (null → $0?) and what ISO does, on one probe each; a refusal becomes an OI-103 case for chunk 28 | ⬜ | |
-| C27-09 | **MT and NY Group II symbol**: the empty symbol table traced; what a building rates at in each; ISO live; again, a refusal goes to chunk 28 | ⬜ | |
+| C27-06 | **CA and FL Legal Liability**: why neither produces a Legal Liability premium; each state's own rule, edition and tables traced, predicted, then probed; ISO live | ✅ 2026-10-02 | Neither zero was Legal Liability: CA's base rate needs the location's `District` (the sweep sent none): District I **$57**, II **$68**, normal $243; FL prices **$59** today (FL 2024-12 V02 over CW 2023 V04; normal $250) with its own Group II territory ("Entire State" refused). ISO equal on all five. Chunk 8 at 9 of 9 |
+| C27-07 | **TX wind / hail**: trace the fourth shape chunk 2 logged, predict it, and price a TX building with wind / hail excluded and not; ISO live | ✅ 2026-10-02 | TX multiplies its normal Group II rate by `WindstormOrHailExclFactor`: 1.0, or a flat **0.1** with the exclusion (`WindstormOrHailExclFactorTX`); no lowest-rate rebuild. Seacoast 1, B: **$800 / $79**, ISO equal |
+| C27-08 | **DC and IL `BCEGFactor`**: no row for their own Group II territory. What the engine does (null → $0?) and what ISO does, on one probe each; a refusal becomes an OI-103 case for chunk 28 | ✅ 2026-10-02 | The sweep's skip, not a gap: DC and NY empty `SetBCEGFactor` (grade 4 = grade 9: DC **$38**, NY **$70**); IL maps "Cook County" → "Cook": **$122**, Balance of State **$158**. ISO equal on all six. No refusal |
+| C27-09 | **MT and NY Group II symbol**: the empty symbol table traced; what a building rates at in each; ISO live; again, a refusal goes to chunk 28 | ✅ 2026-10-02 | MT's symbol resolves now (**$74**, ISO equal). NY's symbol is a submitted `BasicGroupIISymbol` (its symbol rule is empty); with it NY needs `CompletedBasicGroupIISymbol` "Not Applicable" (else refused, OI-103, chunk 24); without a symbol Group II is **$0 at ISO too** |
 
 ### RC-4 · Chunk 12's leftovers and the open items (6 tasks)
 

@@ -2,8 +2,8 @@
 
 **Legal Liability, Building and Contents.** Filed 2026-09-18.
 
-**8 of 9** (point 9 closed 2026-10-02 by chunk 27 RC-2). **Point 8 is held open on
-purpose** — see below (chunk 27 C27-06).
+**9 of 9** (point 9 closed 2026-10-02 by chunk 27 RC-2; point 8 closed 2026-10-02 by chunk 27 RC-3: CA and FL price Legal
+Liability, ISO-confirmed — see below).
 
 | # | Gate point | | Evidence |
 |---|---|---|---|
@@ -14,7 +14,7 @@ purpose** — see below (chunk 27 C27-06).
 | 5 | Every hardcoded literal key listed | ✅ | `08_hardcoded_literals.py` — **`LegalLiabilityFactor.CovType` pinned to `"Bldg"`, 1 of 2 filed values unreachable from every site**; `CovType` tested against `Legal Liability` 26 times, `Leasehold Interest` 31, `Builders Risk` 30 |
 | 6 | Shared-name traps diffed | ✅ | **7 shared, 0 reading different tables — and passing did not test the thing that would hurt.** See below |
 | 7 | Every exclusion's endorsement record identified | ✅ | `05_exclusion_records.py` — **Legal Liability files none of its own.** It is a *branch* of Building and Contents, not a coverage beside them, so it inherits both sides' records wholesale |
-| 8 | The edition basis stated | ⬜ | **Held open.** Three jurisdictions (CA, FL, PR) produce no Legal Liability premium and the reason is not yet established — see below |
+| 8 | The edition basis stated | ✅ | **2026-10-02** (`240_chunk27_rc3.py --live`, C27-06): **neither zero was Legal Liability.** CA's base rate is a District I / II table keyed by the location's `District`, which the sweep never sent; with it CA prices **$57 / $68**, ISO equal. FL now resolves FL 2024-12 V02 over CW 2023 V04 and prices **$59**, ISO equal (with FL's own Group II territory). PR is out of ISO scope |
 | 9 | No unexplained validation message | ✅ | **2026-10-02** (`239_chunk27_rc2.py --live`, C27-05): Building Basic / Broad / Special 2 = 2 each; Contents 3 = 3, 3 = 3, 4 = 4 (the contents cases sent with the building's `WindstormOrHailDeductible`; without it ISO refuses, OI-103); every message in the register (M-001, M-002, M-004, M-005, M-006 the Legal Liability deductible) |
 
 **ISO:** 3 of 5 confirmed, 1 payload-blocked, **1 divergence**.
@@ -22,6 +22,13 @@ purpose** — see below (chunk 27 C27-06).
 ---
 
 ## Point 8 is held open, deliberately
+
+> **Closed 2026-10-02 (chunk 27 C27-06, `240_chunk27_rc3.py --live`).** CA: `SetBasicGroupIBaseRate` reads `../../District` ("District I" /
+> "District II", two tables); no District → base rate 0 → every Group I premium 0, Legal Liability included. With it:
+> District I **$57** (0.227 × 0.25), District II **$68** (0.273 × 0.25), the same building rated normally $243; ISO equal on
+> all three, every premium and message. FL: today's engine prices **$59** (0.234 × 0.25; normal $250), ISO equal once the
+> location carries one of FL's own Group II territories ("Entire State" is refused: `BasicGroupIIRatingTerrConverted`).
+> The fork is countrywide in both, as the sweep said. The original note, kept:
 
 The sweep found **four** jurisdictions producing no premium. Arizona is
 understood — its rewritten rate step multiplies by `BasicGroupIReductionCredit`,

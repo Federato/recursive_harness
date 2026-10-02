@@ -11,7 +11,17 @@ page and the deployed page agree with them; on drift it hands the problems back 
 
 ---
 
-## Pick up here (set 2026-10-02): chunk 27 RC-2 done
+## Pick up here (set 2026-10-02): chunk 27 RC-3 done
+
+**Chunk 27 RC-3 done 2026-10-02** (`scripts/cf/240_chunk27_rc3.py --live`, 16 of 16 agree with ISO, no engine change; 9 of
+18). **Chunk 8 is 9 of 9**: CA's Legal Liability zero was the sweep sending no `District` (CA's base rate is a District I /
+II table; $57 / $68), FL prices $59 today. Chunk 2's per-state gaps closed: TX multiplies its Group II rate by a flat 0.1
+when wind / hail is excluded ($800 → $79); DC and NY read no BCEG; IL maps "Cook County" to its "Cook" rows; MT's symbol
+resolves; NY's Group II symbol is a submitted input (without one, $0 at ISO too). Two more OI-103 inputs noted (FL's own
+Group II territories; NY's `CompletedBasicGroupIISymbol`). Committed through RC-2 (`1056a15`); RC-3 uncommitted. **Next:
+RC-4, C27-10 (chunk 12's leftovers).**
+
+## Earlier (set 2026-10-02): chunk 27 RC-2 done
 
 **Chunk 27 RC-2 done 2026-10-02** (`scripts/cf/239_chunk27_rc2.py --live`, no engine change; 5 of 18). **Gate point 9 is
 closed on chunks 1–8**: every golden case sent to ISO as the engine rates it, the (level, message) multiset equal on all 25
@@ -20,8 +30,7 @@ agrees. The one real difference: **OI-126** (ours fires one extra CP 03 20 messa
 deductible: our `FirstNonNull` skips a filed "" fallback; messages only, chunk 28). ISO refuses every contents golden case
 unless the **building** carries `WindstormOrHailDeductible` (OI-103's class); with it, chunk 8's contents premiums are now
 ISO-confirmed. Register M-004..M-006 added. Gate files 1–7 at 9 of 9 (1–2: point 9 noted on their eight-point gates),
-chunk 8 at 8 of 9 (point 8 is C27-06). **Next: RC-3, C27-06 (CA and FL Legal Liability).** Uncommitted: chunk 26 and
-chunk 27 so far (commit only when asked).
+chunk 8 at 8 of 9 (point 8 is C27-06). Committed in `1056a15`.
 
 ## Earlier (set 2026-10-02): chunk 27 RC-1 done
 
