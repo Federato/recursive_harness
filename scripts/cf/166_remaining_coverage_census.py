@@ -146,6 +146,8 @@ CLOSED = {
     "Value Reporting Form", "Additional Locations Special Coinsurance",
     # chunk 24 (census closed 2026-10-01, C24-24): Builders Risk and CP 10 44, 20 CW files (OI-121 fixed in the chunk)
     "Builders Risk", "Theft of Building Materials (not BR)",
+    # chunk 25 (census closed 2026-10-02, C25-25): Flood, 6 CW files (+ WV's two O&L flood forms, state-only); no engine change
+    "Flood",
 }
 
 
@@ -286,12 +288,12 @@ def main():
             if '"SetPremium"' in s:
                 only[p.name.replace("CommercialProperty", "").replace("Rules.Rule.xml", "")].add(st)
     print(f"\nState-only premium files (not a countrywide file name), all batches, PR excluded: {len(only)}")
-    # chunk 23 (C23-21, 2026-10-01): every in-force state-only premium file has an owner chunk (904_, C23-17) and all are
-    # built except WV's two flood files, which chunk 25 (flood) takes
-    still_open = {n for n in only if "Flood" in n}
+    # chunk 23 (C23-21, 2026-10-01): every in-force state-only premium file has an owner chunk (904_, C23-17); chunk 25
+    # (C25-25, 2026-10-02) built WV's two O&L flood files (232_ W1-W3, ISO live), the last two
+    still_open = set()
     for n, sts in sorted(only.items()):
-        print(f"  {n:90s} {' '.join(sorted(sts)):12s} {'OPEN: chunk 25 (flood)' if n in still_open else 'closed'}")
-    print(f"State-only list: closed except {len(still_open)} flood file(s) left to chunk 25")
+        print(f"  {n:90s} {' '.join(sorted(sts)):12s} closed")
+    print(f"State-only list: closed, {len(still_open)} left")
     return 0
 
 

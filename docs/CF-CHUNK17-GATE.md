@@ -80,7 +80,7 @@ after the engine answered and each confirmed by ISO:
 | Item | What | Blocking? |
 |---|---|---|
 | **OI-103** | Two more cases where ISO refuses and we price: Watercraft option "Not Applicable" (`WatercraftExclBuybackFactor` has no row), and FL's EQ building-height table for chunk 10's EQ inputs (`BldgHeightFactor`) | no; engine behaviour decision (chunk 28) |
-| Flood factor untested | Off-Premises OTC's flood factor (1.02) needs the flood endorsement, which is chunk 25 | no; chunk 25 |
+| ~~Flood factor untested~~ | Off-Premises OTC's flood factor (1.02) needs the flood endorsement, which is chunk 25. **CLOSED 2026-10-02** (chunk 25 C25-22, `232_chunk25_rc4.py --live`): with a BI flood record `FloodCovFactor` = 1.02 from the table (OR OTC $275 → $281), without it 1.0, in OR AK AR DC NY RI; ISO agrees on all 12 | closed |
 | Process gap found | Long passes gave no progress, and 177_'s `pkgs()` re-discovered the whole ERC corpus on every call (2.5 min a policy, 98% discovery). The check that was missing: every pass prints `[i/n elapsed]` to a log under `results/cf-raas/logs/`, and a profile of one unit runs before any sweep. Now in 183_ / 184_; `book_for` is cached in 180_ / 182_ / 183_ | no |
 
 ## Confirmation

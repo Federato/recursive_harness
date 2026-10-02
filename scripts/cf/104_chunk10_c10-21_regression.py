@@ -203,6 +203,13 @@ GOLDEN = [
     ("225_chunk24_rc2.py", 24,
      "Builders Risk: reporting form, renovations, premium adjustment, collapse, theft, materials of others, CP 10 44, EQ",
      ["164", "321", "94", "78", "20", "454", "270", "145", "8", "187", "235", "232", "11", "36", "48"]),
+    # Chunk 25 (C25-24, 2026-10-02). Each derived by hand before the run and matched by ISO live (RC-2): building $493 (table 3,
+    # CRS 5), $616 (no CRS), $36 (deductible 500), $5,758 (100,000); contents $799, $643 (deductible 25,000); special class $460;
+    # BI $343, combined types $403 / $286, maximum period $716, SCBI extra expense only $1,059; OI-122 as written $531;
+    # blankets $1,273 / $1,731 / $1,952 / excess $7,644; excess contents $8,534.
+    ("230_chunk25_rc2.py", 25,
+     "Flood: building / contents / special class / BI / SCBI, the seven rate-modification tables, CRS, blankets, excess over NFIP",
+     ["493", "616", "36", "5758", "799", "643", "460", "343", "403", "286", "716", "1059", "531", "1273", "1731", "1952", "7644", "8534"]),
 ]
 
 # The machinery each chunk added -- run whenever shared code changes, which is
@@ -347,6 +354,12 @@ MACHINERY = [
     ("226_chunk24_rc3.py", "chunk 24 RC-3: 48 zero / message / shared-name / exclusion cases, as derived"),
     ("227_chunk24_rc4.py", "chunk 24 RC-4: the 16 rewriting states (own rule text), the edition probe, the built readers"),
     ("228_chunk24_c24-22_downstream.py", "chunk 24 RC-5: total + $1,976 / $13,199 / $1,982 / $1,861; nothing else moves"),
+    # Chunk 25 (2026-10-02). Engine-only runs (no --live). 229_ re-rates all 293 stored responses (~4 min); 232_ runs its 29
+    # probes (editions, WV, Off-Premises, AK / FL blanks; the 46 state policies run with --states, in batches).
+    ("229_chunk25_rc1.py", "chunk 25 RC-1: stored AK flood (manual), every flood record and intermediate value hand = evaluator = engine, tables"),
+    ("231_chunk25_rc3.py", "chunk 25 RC-3: 41 zero / message / shared-name / exclusion cases, all 45 flood message rules, as derived"),
+    ("232_chunk25_rc4.py", "chunk 25 RC-4: MO V02 / V03 / V04 edition probes, WV CP 10 68 and O&L flood, Off-Premises flood factor, AK / FL"),
+    ("233_chunk25_c25-23_downstream.py", "chunk 25 RC-5: total + $3,521 / $3,277 / $10,522 / $3,116 / $22,828; nothing else moves"),
     # Sync checks (2026-10-01, user: "always in sync"). The deployed page is checked each turn by the Stop hook.
     ("check_status_docs.py --no-deployed", "status docs agree: task lists vs CF-BUILD-STATUS.html RC labels, tags, plan rows, START-HERE"),
     ("check_premium_census.py", "every in-force premium writer is a SetPremium rule (selftest: AK 2020's ErcRate writers are seen)"),

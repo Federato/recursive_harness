@@ -86,6 +86,16 @@ LC_ROW = {B: "Building", PP: "Contents", SC: "Building", BI: "Building", SCBI: "
 MOD_TABLE = {"500": 1, "1,000": 1, "2,500": 2, "5,000": 2, "10,000": 3, "25,000": 3, "50,000": 4, "75,000": 4,
              "100,000": 5, "250,000": 5, "500,000": 6, "750,000": 6, "1,000,000": 7}
 EXCESS_TABLE = {"750,000": 6, "1,000,000": 7}
+#: submitted values (C25-16): {(record, field): value}. Every field below is IsNull-guarded in its Set rule, so a submitted
+#: value replaces the computed one at that step and everything downstream uses it; the hand models read them from here,
+#: never from the engine's output
+SUB = {}
+
+
+def sub(rec, field, v):
+    return SUB.get((rec, field), v)
+
+
 JM = "Joisted Masonry - Reinforced"                    # the building domain; ConstructionTypeToUse maps it to "Joisted Masonry"
 
 
@@ -244,8 +254,42 @@ def agg_factor(j, node, rec):
     return D(1)
 
 
-def loss_cost(j, rec, constr, zone):
+def edition(j):
+    """the in-force countrywide parent: '2026', 'V04', 'V03' or 'V02' (MO)."""
+    name = book_for(j, ASOF).parent.package.content.name
+    return "2026" if "2026" in name else name[-3:]
+
+
+_COUNTY = {}
+
+
+def county_rule(j, rec):
+    """the county states (MA NC NJ NY SC TX VA) rewrite SetFloodBaseRate: the listed counties / cities read the county
+    table, every other location the all-other table (neither table has a county column). None elsewhere."""
+    if (j, rec) not in _COUNTY:
+        f = book_for(j, ASOF).state.package.content / "Rules" / f"{P}{rec}Rules.Rule.xml"
+        t = f.read_text(encoding="utf-8-sig") if f.exists() else ""
+        body = rule(t, "SetFloodBaseRate")
+        tabs = sorted(set(re.findall(r'MatrixFromConstant="(FloodLossCost\w+)"', t)))
+        if "ByCount" not in body or len(tabs) < 2:
+            _COUNTY[(j, rec)] = None
+        else:
+            names = re.findall(r'FromDataDef="(?:\.\./)+(County|City)"[^>]*/>\s*<rul:Constant[^>]*>([^<]+)</rul:Constant>', body)
+            _COUNTY[(j, rec)] = (names, next(x for x in tabs if "AllOther" not in x), next(x for x in tabs if "AllOther" in x))
+    return _COUNTY[(j, rec)]
+
+
+def loss_cost(j, rec, constr, zone, loc=None):
     if not constr or not zone:
+        return D(0)
+    cr = county_rule(j, rec)
+    if cr is not None and loc is not None:
+        names, by, other = cr
+        listed = any(val(loc, f) == v for f, v in names)
+        rs = rows(book_for(j, ASOF).state.package.content, by if listed else other) or []
+        for x in rs:
+            if x.get("CovType") == LC_ROW[rec] and x.get("Construction") == constr and x.get("FloodZone") == zone:
+                return D(x["LossCost"])
         return D(0)
     return one(j, "FloodLossCost", "LossCost", CovType=LC_ROW[rec], Construction=constr, FloodZone=zone) or D(0)
 
@@ -256,7 +300,7 @@ def crs(j, node, rate):
     grade = val(lr, "CommunityRatingSystemCRSGrade") if lr is not None else None
     if lr is None or not grade:
         return rate, None
-    f = one(j, "CommunityRatingSystemFactor", "Factor", CommunityRatingSystemGrade=grade) or D(0)
+    f = SUB.get((LOCR, "CommunityRatingSystemFactor"), one(j, "CommunityRatingSystemFactor", "Factor", CommunityRatingSystemGrade=grade) or D(0))
     return r(rate * f, 3), f
 
 
@@ -265,38 +309,69 @@ def hand_prop(j, node, rec, parts=None):
     parts = {} if parts is None else parts
     cp, par, loc = m.root(node), cov(node), anc(node, "Location")
     lr = loc_rec(loc)
-    ded = val(node, "Deductible") or (val(lr, "Deductible") if lr is not None else None) or ""
-    det = detail_for(node)
-    excess = (val(det, "ExcessOverMaxNFIPIndicator") if det is not None and val(det, COV_FLAG[rec]) == "Yes"
-              else ("No" if det is not None else val(node, "ExcessOverMaxNFIPIndicator")))
+    blk = val(node, "IncludedInBlkt")
+    bid = d(node, "BlanketIDNum")
+    dets = details(cp)
+    flagged = next((x for x in dets if d(x, "UnitNumber") == bid and val(x, COV_FLAG[rec]) == "Yes"), None) if blk == "Yes" and bid > 0 else None
+    loc_ded = (val(lr, "Deductible") if lr is not None else None) or ""
+    # SetDeductible (IsNull-guarded, so a submitted one survives). Building: the location record's, always. Contents /
+    # Special Class: blanketed -> the deductible of the detail with this BlanketIDNum AND its coverage flag "Yes", else
+    # blank; unblanketed ("No") -> the location record's; anything else -> blank
+    if rec == B or blk == "No" or edition(j) == "V02":
+        ded = loc_ded                                  # V02 (MO): contents / Special Class take the location's too
+    elif blk == "Yes" and bid > 0:
+        ded = (val(flagged, "Deductible") or "") if flagged is not None else ""
+    else:
+        ded = ""
+    ded = SUB.get((rec, "Deductible")) or ded
+    # SetExcessOverMaxNFIPIndicatorToUse: blanketed with an id and ANY detail on the policy -> the flagged detail's
+    # indicator, else "No"; otherwise a copy of the record's own
+    if blk == "Yes" and bid > 0 and dets:
+        excess = val(flagged, "ExcessOverMaxNFIPIndicator") if flagged is not None else "No"
+    else:
+        excess = val(node, "ExcessOverMaxNFIPIndicator")
+    det = detail_for(node)                             # SetInsuranceToValuePercentageToUse: the detail with this id, no flag test
     fv = full_value(rec, node)
-    if val(node, "IncludedInBlkt") == "No":
+    if blk == "No":
         itv = r(d(node, "Limit") / fv, 4) if fv > 0 else D(0)
         touse = itv_touse(r(itv * 100, 2))
-        tpv = sum(full_value(rr, n) for rr in PROP for n in rc1.find(loc, P + rr) if val(n, "IncludedInBlkt") == "No")
-    elif det is not None:
-        _, _, _, touse = detail_itv(j, det, cp)
-        tpv = sum(full_value(rr, n) for rr, n in members(cp, det) if rr in PROP) if excess == "No" else D(0)
+        # Location.SetFloodTotalPropertyValue runs only with FloodCovIndicator "Yes"
+        tpv = (sum(full_value(rr, n) for rr in PROP for n in rc1.find(loc, P + rr) if val(n, "IncludedInBlkt") == "No")
+               if val(loc, "FloodCovIndicator") == "Yes" else D(0))
+    elif blk == "Yes" and bid > 0:
+        touse = detail_itv(j, det, cp)[3] if det is not None else 0
+        # SetTotalPropertyValue: blanketed, not excess -> every member with the same BlanketIDNum, detail or no detail;
+        # V02 (MO) counts only the members at the record's own location (Structure LocUnitNumber = the location's UnitNumber)
+        here = rc1.find(loc, P + "Structure") + rc1.find(loc, P + "SpecialClass") if edition(j) == "V02" else None
+        tpv = (sum(full_value(rr, n) for rr in PROP for n in rc1.find(cp, P + rr)
+                   if val(n, "IncludedInBlkt") == "Yes" and d(n, "BlanketIDNum") == bid
+                   and (here is None or anc(n, "Location") is loc)) if excess == "No" else D(0))
     else:
         touse, tpv = 0, D(0)
     parts.update(ded=ded, excess=excess, touse=touse, tpv=tpv)
     if excess == "Yes":
         mx = one(j, "MaxNFIPCoverageAmount", "Amount", Coverage=NFIP_MAX[rec])
-        n = EXCESS_TABLE.get(ded)
-        fac = banded(j, n, ded, touse, fv) if n and fv > mx and 1 <= touse <= 100 else D(0)
+        if edition(j) == "V02":                        # MO: table 6 at the '500,000' row, whatever the deductible
+            n, key = 6, "500,000"
+        else:
+            n, key = EXCESS_TABLE.get(ded), ded
+        fac = banded(j, n, key, touse, fv) if n and fv > mx and 1 <= touse <= 100 else D(0)
     elif excess != "No":
         n, fac = None, D(0)                            # neither: SetFloodModificationFactor runs only on "No", the excess factor only on "Yes"
     else:
         n = MOD_TABLE.get(ded)
         fac = banded(j, n, ded, touse, tpv) if n and tpv > 0 and 1 <= touse <= 100 else D(0)
     fac = fac if fac is not None else D(0)
+    if excess in ("Yes", "No"):
+        fac = sub(rec, "FloodExcessFactor" if excess == "Yes" else "FloodModificationFactor", fac)
     # SC: the flood record's own ConstructionType; Building: ../../ (the Structure); BPP: ../../../../../../ (the Structure too)
     constr = val(node, "ConstructionType") if rec == SC else val(anc(node, "Structure"), "ConstructionTypeToUse")
     zone = val(lr, "FloodZone") if lr is not None else None
-    base = loss_cost(j, rec, constr, zone)
-    agg = agg_factor(j, node, rec)
-    rate = r(r(r(base * d(par, "LossCostMultiplier"), 3) * agg, 3) * fac, 3)
+    base = sub(rec, "FloodBaseRate", loss_cost(j, rec, constr, zone, loc))
+    agg = sub(rec, "AnnualAggregateFactor", agg_factor(j, node, rec))
+    rate = sub(rec, "FloodRate", r(r(r(base * d(par, "LossCostMultiplier"), 3) * agg, 3) * fac, 3))
     adj, crsf = crs(j, node, rate)
+    adj = sub(rec, "FloodAdjustedRate", adj)
     parts.update(table=n, factor=fac, base=base, agg=agg, rate=rate, crs=crsf, adjusted=adj)
     if val(node, "IncludedInBlkt") != "No":
         return D(0)
@@ -352,6 +427,7 @@ def hand_te(j, node, rec, parts=None):
             tor_f = look("Rental Properties")
         elif tor not in ("Not Applicable", "", None):
             tor_f = look(tor)
+    tor_f = sub(rec, "TypeOfRiskFactor", tor_f)
     if val(node, "IncludedInBlkt") == "Yes":
         bif = tor_f if (covt != "Extra Expense Only" and val(par, "MaxPeriod") != "Yes" and val(par, "MonthlyLimitOfIndemnity") == "Not Applicable") else D(1)
     elif val(par, "MaxPeriod") == "Yes":
@@ -370,12 +446,14 @@ def hand_te(j, node, rec, parts=None):
             base = highest_opunit_rate(j, loc)
             how = f"the location's operational-unit rate AS WRITTEN (intended reading: {highest_opunit_rate(j, loc, intended=True)})"
         else:
-            base, how = loss_cost(j, rec, val(st, "ConstructionTypeToUse"), zone), "own lookup"
+            base, how = loss_cost(j, rec, val(st, "ConstructionTypeToUse"), zone, loc), "own lookup"
     else:
-        base, how = loss_cost(j, rec, val(node, "ConstructionType"), zone), "own lookup (the flood record's construction)"
-    agg = agg_factor(j, node, rec)
-    rate = r(r(base * d(par, "LossCostMultiplier"), 3) * agg, 3)
-    adj = r(rate * bif, 3)
+        base, how = loss_cost(j, rec, val(node, "ConstructionType"), zone, loc), "own lookup (the flood record's construction)"
+    bif = sub(rec, "BusinessIncomeFactor", bif)
+    base = sub(rec, "FloodBaseRate", base)
+    agg = sub(rec, "AnnualAggregateFactor", agg_factor(j, node, rec))
+    rate = sub(rec, "FloodRate", r(r(base * d(par, "LossCostMultiplier"), 3) * agg, 3))
+    adj = sub(rec, "FloodAdjustedRate", r(rate * bif, 3))
     parts.update(coins=coins, tor=tor_f, bif=bif, base=base, how=how, agg=agg, rate=rate, adjusted=adj)
     if val(node, "IncludedInBlkt") != "No":
         return D(0)
@@ -397,7 +475,7 @@ def highest_opunit_rate(j, loc, intended=False):
     for st in rc1.find(loc, P + "Structure"):
         if val(st, "BldgIncludedInOperationalUnit") != "Yes" or not val(st, "ConstructionTypeToUse"):
             continue
-        base = loss_cost(j, B, val(st, "ConstructionTypeToUse"), val(lr, "FloodZone"))
+        base = loss_cost(j, B, val(st, "ConstructionTypeToUse"), val(lr, "FloodZone"), loc)
         cand.append((r(r(base * d(st, "LossCostMultiplier"), 3) * crsf, 3), base))
     if intended:
         return max(cand)[1] if cand else D(0)
@@ -419,7 +497,7 @@ def hand_blanket(j, det, parts=None):
         (hand_prop if rec in PROP else hand_te)(j, n, rec, pr)
         fv = full_value(rec, n) if rec in PROP else bi_full100(n)
         adj_total += r(fv * pr["adjusted"], 0)
-    avg = r(adj_total / total, 3) if total > 0 else D(0)
+    avg = sub(BRD, "BlanketAverageRate", r(adj_total / total, 3) if total > 0 else D(0))
     parts.update(levels=lv, total=total, adjusted_total=adj_total, average=avg)
     return tail(avg * d(det, "Limit") / 100, cp)
 
