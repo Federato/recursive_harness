@@ -375,6 +375,7 @@ MACHINERY = [
     ("238_chunk26_c26-20_downstream.py", "chunk 26 RC-5: total + $56 / $701 / $68 / -$149 / -$794 Class -> Specific; nothing else moves"),
     ("239_chunk27_rc2.py", "chunk 27 RC-2: chunks 1-8 golden cases, every message in the register (M-001..M-006)"),
     ("240_chunk27_rc3.py", "chunk 27 RC-3: CA / FL Legal Liability, TX wind / hail, DC IL NY BCEG, MT NY Group II symbol, as predicted"),
+    ("241_chunk27_rc4.py", "chunk 27 RC-4: theft exclusion on the drone / Dependent Properties; FL and WV Ordinance or Law, as predicted"),
     # Sync checks (2026-10-01, user: "always in sync"). The deployed page is checked each turn by the Stop hook.
     ("check_status_docs.py --no-deployed", "status docs agree: task lists vs CF-BUILD-STATUS.html RC labels, tags, plan rows, START-HERE"),
     ("check_premium_census.py", "every in-force premium writer is a SetPremium rule (selftest: AK 2020's ErcRate writers are seen)"),

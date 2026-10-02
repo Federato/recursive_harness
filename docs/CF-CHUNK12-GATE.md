@@ -73,10 +73,21 @@ wrong, but no priced case has been run for them yet:
   from the filed rules. The Oregon golden buildings don't rate in those
   states, and no ISO fixture comes from them. Florida's Debris Removal
   minimum limit and exposure were confirmed on the engine.
+  **Ordinance or Law in FL and WV priced end to end 2026-10-02 (chunk 27 C27-11, `241_ --live`):** every cell predicted
+  by 174_'s evaluator on the state's own premium rule, ISO equal on all six cases. FL charges Coverage A on the **whole**
+  factor (1.15 × 0.250 → $288, where countrywide charges the 0.15 increment) and has no post-loss factor (Yes = No);
+  WV's "Coverages B & C Separate" / "Combined" price no Coverage A, and its flood-only flag zeroes Coverage A. (CA's
+  public-school zero and VA are chunk 23's.)
 * **Theft exclusion on the drone and on Dependent Properties.** Both probes
   were attached at the building and didn't reach the Contents or Business
   Income theft factor. The factor is wired, but it hasn't been tested with a
   correctly attached exclusion.
+  **Closed 2026-10-02 (chunk 27 C27-10, `241_chunk27_rc4.py --live`).** The drone reads the **contents** record's
+  `SpecialTheftExclusionFactor` (set by `CommercialPropertyTheftExclusionPrsnlProp` from the state's
+  `SpecialPrsnlPropTheftExclusionFactor`, OR "Offices" 0.4): **$187 → $75**. Dependent Properties reads the **Business
+  Income** record's (`CommercialPropertyTheftExclusionBusnIncome`, 0.86 when the building is not an apartment / condo):
+  Special **$19 → $16**. On the building, the exclusion leaves the drone at $187. ISO equal on all five, every premium and
+  message.
 
 ## Findings that change how these coverages must be submitted
 

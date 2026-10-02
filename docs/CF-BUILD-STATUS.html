@@ -100,14 +100,16 @@
   <div class="row"><span>Chunks gated</span><div class="bar"><span id="pg-chunk-bar"></span></div><span id="pg-chunks"></span></div>
   <div class="legend"><i style="background:#2f7d5a"></i>built and gated<i style="background:#dd9a5c"></i>open now<i style="background:#c9d0d7"></i>not started &middot; hover a segment for its chunk &middot; counted live from this page&rsquo;s tables</div>
 </div>
-<p class="meta"><b>As of 2026-09-25.</b> One page for the whole plan: the original 15 chunks (0&ndash;14, closed 2026-09-24) and the remaining build, chunks 15&ndash;28 (planned 2026-09-25; <b>chunks 15 and 16 gated 2026-09-25</b>). Sources, and what to edit
-when something changes: <code>CF-START-HERE.md</code> (resume point),
-<code>CF-PROPERTY-BUILD-ORDER.md</code> (the plan and the gate),
-<code>CF-CHUNK2-TASKS.md</code> through <code>CF-CHUNK11-TASKS.md</code>
-(the task lists), <code>CF-CHUNK1-GATE.md</code> through <code>CF-CHUNK10-GATE.md</code>
-(the filed gates), <code>CF-ENGINE-FIX-BANDED-LOOKUP.md</code> (chunk 10's engine fix).<br>
-<b>Chunks 0&ndash;11 are CLOSED (chunk 11, Leasehold Interest, closed 2026-09-22: gated 9 of 9, 24 of 24, 4 user-authorized engine fixes, confirmed against ISO live). Chunk 12 (the endorsement families) OPENED 2026-09-22; <b>GATED 2026-09-24, 42 of 42</b> (<code>CF-CHUNK12-GATE.md</code>; Groups A&ndash;G closed, all six families ISO-confirmed; regression CLEAN for chunks 0&ndash;12; left: file the gate; <b>Debris Removal, Ordinance or Law, Utility Services, Unmanned Aircraft and Green Upgrades each gated 9 of 9 and ISO-confirmed live</b>; OI-109/110 fixed (a missing value is skipped in a premium product, as at ISO, and recorded); OI-108, OI-109 and OI-110 confirmed live and fixed).</b>
-Verify the whole build in one command: <code>python scripts/cf/104_chunk10_c10-21_regression.py</code> (covers chunks 0&ndash;12 since 2026-09-23).<br>
+<p class="meta"><b>As of 2026-10-02.</b> One page for the whole Property (CF) build: chunks 0&ndash;28, every task, every gate. <b>Chunks 1&ndash;27 are gated</b> (chunk 0, the foundation, is proved by their gates), the last one (27, every open gate point on closed chunks) on 2026-10-02, 18 of 18. <b>Chunk 28 (engine behaviour decisions) is open, 1 of 22</b>; every engine change in it needs the user&rsquo;s go, one item at a time.<br>
+<b>What &ldquo;546 of 546 built&rdquo; means:</b> the engine rates every one of ISO&rsquo;s 546 countrywide Property premium files, and each chunk&rsquo;s premiums were checked against ISO&rsquo;s own answers (gated 9 of 9). <b>It does not mean Property is a finished product:</b> 
+there is no Property app or screen yet &mdash; Property is rated by the scripts in <code>scripts/cf/</code> on the shared interpreter, and the published Windows app is General Liability only; 
+chunk 28 still decides how the engine behaves where ISO refuses to rate, where an input silently prices to zero, submitted derived fields, minimum premium, and exact message parity with ISO; 
+the second rating path (Specific / Tentative rates) is built in the engine only, and ISO has no stored answers for it, so every check there is our own.<br>
+Sources, and what to edit when something changes: <code>CF-START-HERE.md</code> (resume point), <code>OPEN-ITEMS.md</code> (open items), 
+<code>CF-PROPERTY-BUILD-ORDER.md</code> (the plan and the gate), <code>CF-CHUNK2-TASKS.md</code> through <code>CF-CHUNK28-TASKS.md</code> (the task lists), 
+<code>CF-CHUNK1-GATE.md</code> through <code>CF-CHUNK27-GATE.md</code> (the filed gates).<br>
+Verify the whole build: <code>python scripts/cf/104_chunk10_c10-21_regression.py --quick</code>, <code>python scripts/cf/206_snapshot_regression.py --check</code> and 
+<code>python scripts/cf/157_chunk14_c14-02_total_replay.py --all</code> (clean at chunk 27&rsquo;s gate: 34, 1,760 requests, 293 of 293).<br>
 &#42; on a gate cell means passed, but re-tested later under a stronger check &mdash; see the note below.</p>
 
 <div class="note good"><b>Chunk 10 &mdash; Earthquake, OPENED AND GATED 9 of 9 ON 2026-09-22, 21 of 21 tasks
@@ -224,19 +226,12 @@ construction-keyed rate table, its own theft rule, its own Broad base rate and i
 PR premium rests on a reading of the filed rules and nothing else, and that has to be said wherever a PR
 premium is presented.</div>
 
-<div class="note good"><b>Committed (checked 2026-09-23).</b> <code>cf_engine/</code>, the chunk scripts in <code>scripts/cf/</code>
-and the <code>docs/CF-*</code> files are in git (last: <code>0c11c9c</code>, chunks 9&ndash;11). This note said &ldquo;nothing is committed&rdquo;
-until 2026-09-23, which had been stale since those commits. Chunk 12's Group A files are new and not yet committed.</div>
+<div class="note good"><b>Committed (checked 2026-10-02).</b> <code>cf_engine/</code>, the chunk scripts in <code>scripts/cf/</code> and the <code>docs/CF-*</code> files are in git through <code>630ba2f</code> (chunk 27 RC-3). Chunk 27 RC-4, its gate and chunk 28&rsquo;s task list are not yet committed.</div>
 
 <h2>The whole plan at a glance</h2>
 
-<div class="bar"><span style="width:53%"></span></div>
-<p class="sub"><b>2026-09-25: 290 of 546 countrywide premium files built and gated (53%)</b> (chunks 15 and 16 gated 2026-09-25; 228 before them), measured by <code>166_remaining_coverage_census.py</code>. Chunks 0&ndash;14 are closed; <b>chunks 15&ndash;28 are the remaining build, planned 2026-09-25, easiest first</b> (see <a href="#remaining">The remaining build</a>). By premium on a typical policy the built share is far higher: every one of ISO&rsquo;s 293 stored responses already matches ours. &middot; <b>14 of 15 original chunks gated (as of 2026-09-24)</b> &middot; <b>chunk 14 (policy assembly) gated 22 of 22, 9 of 9</b> &middot; <b>chunk 13 (Terrorism / TRIA) gated 30 of 30, 9 of 9</b> &middot; <b>chunk 11 (Leasehold Interest) gated 9 of 9 on 2026-09-22</b> &middot; <b>chunk 12 (the six endorsement families) gated 42 of 42 on 2026-09-24</b>, each family 9 of 9 and ISO-confirmed live &middot; chunks 6, 7 and 8 closed 2026-09-18, <b>chunk 9 closed 22 of 22 on
-2026-09-21</b> (gated 9 of 9, ISO-confirmed live) &middot; <b>chunk 10 (Earthquake) opened AND gated 9 of 9 on 2026-09-22</b>,
-21 of 21 tasks done, 1 engine gap found and fixed same day (sub-limit EQ form, C10-19 &mdash; also unblocked
-Flood and a MA rider) &middot; point 9 (validation
-messages) is owed project-wide on chunks 1&ndash;8, and <b>chunk 8 additionally holds point 8 open</b> on
-three jurisdictions whose zeros are not yet explained &mdash; named rather than waved past</p>
+<div class="bar"><span style="width:100%"></span></div>
+<p class="sub"><b>2026-10-02: 546 of 546 countrywide premium files built and gated (100%)</b>, measured by <code>166_remaining_coverage_census.py</code>. <b>Chunks 1&ndash;27 gated</b> (chunk 0 proved by them); chunk 27 closed every open gate point on the earlier chunks &mdash; point 9 (validation messages) on chunks 1&ndash;8 and point 8 on chunk 8 &mdash; with evidence, or handed them to chunk 28. <b>Chunk 28 (engine behaviour decisions) is the remaining work, 1 of 22.</b> Every one of ISO&rsquo;s 293 stored responses matches ours. Built means rated by the engine and checked against ISO; there is no Property app yet (see the note at the top).</p>
 
 <table>
 <thead><tr><th class="num">#</th><th>Chunk</th><th>Status</th><th>Where it stands</th></tr></thead>
@@ -268,8 +263,8 @@ three jurisdictions whose zeros are not yet explained &mdash; named rather than 
 <tr><td class="num">24</td><td>Builders Risk</td><td><span class="tag done">GATED 2026-10-01 &mdash; 25 of 25, 9 of 9</span></td><td><b>2026-10-01: gate filed (<code>CF-CHUNK24-GATE.md</code>), 9 of 9. RC-5: the total moves by exactly the Builders Risk premiums, equal at ISO; full gate regression CLEAN 157 of 157; <code>157_ --all</code> 293 of 293; OI-121 fixed (your go); 540 of 546 (99%). RC-4 done (<code>227_</code>): all 46 states, the edition probe and the built readers agree with ISO. RC-3 done (<code>226_</code>): 48 cases agree with ISO. RC-2 done (<code>225_</code>): 10 golden cases agree with ISO; OI-121 probed (no leap day removed) and fixed with your go. RC-1 done (<code>224_</code>): 293 stored policies unchanged; theft agrees on 145 stored responses; every record hand = engine; premium adjustment after the effective date needs ISO&rsquo;s leap-day function (OI-121). </b><b>2026-09-28: census <code>905_</code> (adds a Builders Risk trail): 20 premium records (the card&rsquo;s &ldquo;adds 17&rdquo; was wrong); ISO has priced only BR theft (144 responses); materials of others $0 on all 364; premium adjustment uses dates; <b>16</b> states rewrite (not 9), 5 with their own premium rule; Business Income, blanket, unmanned aircraft, antennas BI and two state files already read the Builders Risk factors; 36 messages; identical in all four editions. 25 tasks in 5 RC groups; starts after chunk 23.</b> 20 files, 11 tables, 9 states; the only Basic-cause ISO fixtures are Builders Risk. Theft of materials already matches ISO on 144 responses. <b>+20 files &rarr; 540 of 546 (99%)</b></td></tr>
 <tr><td class="num">25</td><td>Flood</td><td><span class="tag done">GATED 2026-10-02 &mdash; 26 of 26, 9 of 9</span></td><td><b>2026-10-02: gate filed (<code>CF-CHUNK25-GATE.md</code>), 9 of 9; <b>546 of 546 countrywide premium files built (100%)</b>, the state-only list closed. RC-5: the total moves by exactly the flood premiums (+$3,521 / +$3,277 / +$10,522 NY / +$3,116 AK / +$22,828 MO), predicted before each call and equal at ISO; <code>206_ --check</code> clean (1,609 requests), <code>157_ --all</code> 293 of 293; no engine change.</b> <b>2026-10-02: RC-4 done (<code>232_ --live</code>, 75 policies): every premium agrees with ISO in all 46 states, the county states, AK / FL manual premiums, WV&rsquo;s CP 10 68 and O&amp;L flood forms, MO&rsquo;s older rules and Off-Premises&rsquo; flood factor (chunk 17&rsquo;s item closed); OI-123 (MO message only).</b> <b>2026-10-02: RC-3 done (<code>231_ --live</code>): 41 zero / message / name / exclusion cases all agree with ISO; all 45 countrywide flood message rules fired at their own level; contents and Special Class in a blanket take the detail&rsquo;s deductible, the building the location&rsquo;s.</b> <b>2026-10-02: RC-2 done (<code>230_ --live</code>): 22 golden cases all agree with ISO, every premium and message; Special Class, SCBI and the blanket priced by ISO for the first time; OI-122 answered, ISO prices it as written like ours.</b> <b>2026-10-02: RC-1 done (<code>229_</code>, no ISO calls, no engine change): the stored AK policy is a manual premium (AK and FL price all six flood records as manual premium &times; package mod &times; IRPM); the deductible picks ONE of seven rate-modification tables (not seven factors); hand = engine on 22 trees and every intermediate value; <b>OI-122 (new)</b>: the operational-unit BI flood base rate never stores its maximum as written ($0), probe in C25-10.</b> <b>2026-09-28: census <code>906_</code> (adds a flood trail): 6 premium records + WV&rsquo;s 2; ISO priced 3 on one stored policy; 705 KB of rules and 27 tables; loss cost from state tables (37), county tables (7) or <b>nothing at all (AK, FL)</b>; much of flood already lives in built Structure, Location and the main ruleset; closes chunk 17&rsquo;s Off-Premises flood factor and WV&rsquo;s flood forms; 46 messages; identical in all four editions. 26 tasks in 5 RC groups; starts after chunk 24.</b> The largest family: 641 KB of rules, 23 tables, 10 states rewrite it, its own blanket rating. Chunk 10's banded-lookup fix already unblocked 7 of its tables. <b>+6 files &rarr; 546 of 546 (100%)</b></td></tr>
 <tr><td class="num">26</td><td>Specific and Tentative rating</td><td><span class="tag done">GATED 2026-10-02 &mdash; 23 of 23, 9 of 9</span></td><td><b>2026-10-02: gate filed (<code>CF-CHUNK26-GATE.md</code>), 9 of 9. RC-5: Class &rarr; Specific moves the total by exactly the predicted amounts (+$56 / +$701 / +$68 / &minus;$149 / &minus;$794), equal at ISO; <code>104_ --quick</code> clean, <code>206_ --check</code> clean (1,697 requests), <code>157_ --all</code> 293 of 293; no engine change; the second rating path built.</b> <b>2026-10-02: RC-4 done (<code>237_ --live</code>): all 46 states agree with ISO on a Specific building (Specific Group II in 36); FL NY WV MO price without the roof factor; MO&rsquo;s V02 rules (no roof factor, BI on the building&rsquo;s final rate) followed by ISO.</b> <b>2026-10-02: RC-3 done (<code>236_ --live</code>): 23 zero / message / name / class-only cases, every premium equal to ISO; a blank rating type prices at rate 1.0; the class-only factors move no Specific dollar; OI-125 (occupancy counts, messages only).</b> <b>2026-10-02: RC-2 done (<code>235_ --live</code>): 7 golden cases all agree with ISO, none matching its competing reading: Specific / Tentative building, contents on their own rate, BI on the building&rsquo;s, SC Specific Group II at the three thresholds, CA One-Term (BI at 1.0, OI-124).</b> <b>2026-10-02: RC-1 done (<code>234_</code>, no ISO calls, no engine change): the 126 distinct stored Specific / Tentative policies (16 states) all re-rate with every premium equal to ISO; hand = engine on 122 buildings, contents and BI and 15 Group II rates; contents use their own specific rate, BI the building&rsquo;s; CA One-Term Loss Cost leaves BI at 1.0 (probe C26-11).</b> <b>2026-09-28: branch census <code>907_</code>: 7 CW files / 33 rules; 41 states have their own rating-type rules, 36 rate Specific Group II by hazard level and floor area; CA has a fourth rating type (One-Term Loss Cost); <b>not zero evidence</b>: ISO priced 566 Specific and 5 Tentative buildings in stored requests (14 states), and the payload generator already matched Excel = ISO = engine on Specific. 23 tasks in 5 RC groups; starts after chunk 25.</b> A second rating path through the core coverages, unbuilt project-wide. ISO has zero fixtures for it, so every check is our own probe. <b>546 of 546 (100%)</b></td></tr>
-<tr><td class="num">27</td><td>Open gate points on closed chunks</td><td><span class="tag warn">OPEN 2026-10-02 &mdash; 9 of 18</span></td><td><b>2026-10-02: RC-3 done: chunk 8 point 8 closed (CA needs the location&rsquo;s District, FL prices today; neither zero was Legal Liability) and chunk 2&rsquo;s per-state gaps traced (TX a flat 0.1 wind / hail factor; DC NY read no BCEG; IL maps Cook County; NY&rsquo;s Group II symbol is an input) &mdash; <code>240_ --live</code>, 16 of 16 agree with ISO.</b> <b>2026-10-02: RC-2 done: point 9 closed on chunks 1&ndash;8 (<code>239_ --live</code>, 25 of 25 agree with ISO; chunk 7&rsquo;s old gap was two different inputs; one real message difference, OI-126, for chunk 28; chunk 8&rsquo;s contents now ISO-confirmed).</b> <b>2026-10-02: RC-1 done: census refreshed, OI-114 registered (OI-120 merged), OI-118 merged into OI-106, stale rows corrected, an owner for every open item.</b> <b>2026-09-28: census <code>908_</code> enumerated every open gate point and open item: point 9 owed on chunks 1&ndash;8 (chunk 7 has a real gap, ISO 3 messages vs engine 5), point 8 on chunk 8 (CA / FL Legal Liability), 3 per-state gaps, chunk 12&rsquo;s two leftovers, OI-101 / 105 / 106 / 112 and an unregistered OI-114; the card&rsquo;s &ldquo;point 2 on chunks 6 and 8&rdquo; was already passed. Can run beside any chunk.</b> Point 9 (messages) on chunks 1&ndash;8, point 8 on chunk 8, <s>point 2 on chunks 6 and 8</s> (already passed: census 2026-09-28), logged per-state gaps, OI-112, OI-106. <b>546 of 546 (100%)</b></td></tr>
-<tr><td class="num">28</td><td>Engine behaviour decisions (each needs your go)</td><td><span class="tag open">Planned 2026-09-25 &middot; size L</span></td><td>OI-103 (ISO refuses where we price), silent zero-price inputs, submitted derived fields, OI-113 (minimum premium: refer to company), the shared-core housekeeping. <b>546 of 546 (100%)</b></td></tr>
+<tr><td class="num">27</td><td>Open gate points on closed chunks</td><td><span class="tag done">GATED 2026-10-02 &mdash; 18 of 18</span></td><td><b>2026-10-02: gate filed (<code>CF-CHUNK27-GATE.md</code>): every loose end closed with evidence or handed to chunk 28; regression clean (104_ quick 34, 206_ 1,760, 157_ 293 of 293).</b> <b>2026-10-02: RC-4 done: theft exclusions and FL / WV Ordinance or Law agree with ISO (11 of 11); OI-101 / 119 / 122 / 124 closed as matching ISO; OI-105 measured (same package in all 46 states at 2026-09-17, 34 newer packages missing); OI-106 / 112 / 114 / 116 handed to chunk 28.</b> <b>2026-10-02: RC-3 done: chunk 8 point 8 closed (CA needs the location&rsquo;s District, FL prices today; neither zero was Legal Liability) and chunk 2&rsquo;s per-state gaps traced (TX a flat 0.1 wind / hail factor; DC NY read no BCEG; IL maps Cook County; NY&rsquo;s Group II symbol is an input) &mdash; <code>240_ --live</code>, 16 of 16 agree with ISO.</b> <b>2026-10-02: RC-2 done: point 9 closed on chunks 1&ndash;8 (<code>239_ --live</code>, 25 of 25 agree with ISO; chunk 7&rsquo;s old gap was two different inputs; one real message difference, OI-126, for chunk 28; chunk 8&rsquo;s contents now ISO-confirmed).</b> <b>2026-10-02: RC-1 done: census refreshed, OI-114 registered (OI-120 merged), OI-118 merged into OI-106, stale rows corrected, an owner for every open item.</b> <b>2026-09-28: census <code>908_</code> enumerated every open gate point and open item: point 9 owed on chunks 1&ndash;8 (chunk 7 has a real gap, ISO 3 messages vs engine 5), point 8 on chunk 8 (CA / FL Legal Liability), 3 per-state gaps, chunk 12&rsquo;s two leftovers, OI-101 / 105 / 106 / 112 and an unregistered OI-114; the card&rsquo;s &ldquo;point 2 on chunks 6 and 8&rdquo; was already passed. Can run beside any chunk.</b> Point 9 (messages) on chunks 1&ndash;8, point 8 on chunk 8, <s>point 2 on chunks 6 and 8</s> (already passed: census 2026-09-28), logged per-state gaps, OI-112, OI-106. <b>546 of 546 (100%)</b></td></tr>
+<tr><td class="num">28</td><td>Engine behaviour decisions (each needs your go)</td><td><span class="tag warn">OPEN 2026-10-02 &mdash; 4 of 22</span></td><td><b>2026-10-02: tasks set (<code>CF-CHUNK28-TASKS.md</code>), seven feature sets, starting with Set A (refuse where ISO refuses) at your choice; C28-01 census done (<code>909_</code>: 12 of 12 open items assigned). C28-02 done: the refusal table points at one rule, ISO refuses when a <code>SingleResult</code> lookup finds no row (65 of 66; none of 1,689 rated policies has one).</b> OI-103 (ISO refuses where we price), silent zero-price inputs, submitted derived fields, OI-113 (minimum premium: refer to company), the shared-core housekeeping. <b>546 of 546 (100%)</b></td></tr>
 </tbody>
 </table>
 
@@ -294,8 +289,7 @@ close it, for its own golden case only.</p>
 </table>
 <p class="sub">&#9989; passed &middot; &#11036; not yet done &middot; &#9989;&#42; passed, then re-tested under a
 stronger check (see the note above). <b>Points 1&ndash;7 hold on all eight closed chunks (1&ndash;8); point
-9 holds on none of them</b> (project-wide backlog). Chunk 8 additionally leaves point 8 open on three
-unexplained zeros. <b>Chunk 9 is CLOSED, 9 of 9, 22 of 22 tasks</b> &mdash; the first chunk to close point 9
+9 holds on none of them</b> (project-wide backlog). Chunk 8 additionally leaves point 8 open on three unexplained zeros. <b>Update 2026-10-02: chunk 27 closed both</b> &mdash; point 9 on chunks 1&ndash;8 and point 8 on chunk 8 (<code>CF-CHUNK27-GATE.md</code>); this table keeps its original record. <b>Chunk 9 is CLOSED, 9 of 9, 22 of 22 tasks</b> &mdash; the first chunk to close point 9
 for its own golden case (0 unexplained messages), though that closes it for chunk 9 alone, not the
 project-wide backlog. <b>Chunk 10 is GATED 9 of 9</b>, the same day it opened &mdash; C10-06 and C10-07
 (shared-name and exclusion-record adjudication) both closed clean, no engine gap. Gate Group 3
@@ -2430,32 +2424,8 @@ a missing form number is not a missing coverage.</p>
 </table>
 </div>
 
-<h2 id="remaining">The remaining build &mdash; chunks 27&ndash;28, easiest first (planned 2026-09-25)</h2>
-<p class="sub"><b>2026-10-02 (updated when chunk 26 was gated):</b> chunks 15&ndash;26 from this plan are gated; their cards now sit with the finished chunks above. The sizing table below keeps their rows for the running file count: <b>546 of 546 built (100%)</b>; every countrywide coverage and the second (Specific / Tentative) rating path are built. What remains is chunk 27 (open gate points on closed chunks) and chunk 28 (engine decisions, each needing your go).</p>
-<p class="sub"><b>Where the list comes from (2026-09-25):</b> <code>scripts/cf/166_remaining_coverage_census.py</code>. Of 882 countrywide rule files, 546 set a premium. Chunks 0&ndash;14 own 228 of them. The other 318 fall into 53 coverage families, every file assigned and none left over. An earthquake rider counts with its parent coverage, so the 44 riders on unbuilt coverages (e.g. Agreed Value&rsquo;s) are not counted as chunk 10&rsquo;s. A sweep of every state package in every batch adds 75 state-only premium files. <b>Easiest first</b> means: ISO evidence already held, then one repeating formula, then a family&rsquo;s own tables, then state rewrites and size. The percentage in each row counts countrywide premium files, not premium dollars. <b>Planning only: no engine code without your go.</b></p>
-<div class="note shared"><b>Order change from 2026-09-24.</b> Your chosen next items were the value reporting form, Additional Locations Special Coinsurance, Off-Premises Interruption, MA heating oil and tenant relocation, and condo options. Sorted by difficulty they land in chunks 22, 22, 17, 23 and 21. The value reporting form sits late because it is the first coverage that depends on more than one location, and ISO has no stored multi-location evidence. If you want them first, chunk 22 can move up without breaking anything before it.</div>
-<table>
-<thead><tr><th class="num">#</th><th>Chunk</th><th>Size</th><th class="num">+Files</th><th>Built after it</th></tr></thead>
-<tbody>
-<tr class="d"><td class="num">15</td><td>Manual-premium endorsements <b>(GATED 2026-09-25, 9 of 9, 21 of 21)</b></td><td>S</td><td class="num">23</td><td>251 of 546 (46%)</td></tr>
-<tr class="d"><td class="num">16</td><td>Already matched ISO: gate them <b>(GATED 2026-09-25, 9 of 9, 23 of 23)</b></td><td>S</td><td class="num">39</td><td>290 of 546 (53%)</td></tr>
-<tr class="d"><td class="num">17</td><td>Business Income add-ons <b>(GATED 2026-09-28, 23 of 23)</b></td><td>M</td><td class="num">32</td><td>322 of 546 (59%)</td></tr>
-<tr class="d"><td class="num">18</td><td>Valuation and condition modifiers <b>(GATED 2026-09-29, 23 of 23)</b></td><td>M&ndash;L</td><td class="num">84</td><td>406 of 546 (74%)</td></tr>
-<tr class="d"><td class="num">19</td><td>Scheduled property items <b>(GATED 2026-09-29, 24 of 24)</b></td><td>M</td><td class="num">63</td><td>469 of 546 (86%)</td></tr>
-<tr class="d"><td class="num">20</td><td>Small coverages with their own tables <b>(GATED 2026-09-29, 26 of 26)</b></td><td>M</td><td class="num">28</td><td>497 of 546 (91%)</td></tr>
-<tr class="d"><td class="num">21</td><td>Sewer backup and condo options <b>(GATED 2026-09-30, 21 of 21)</b></td><td>M</td><td class="num">7</td><td>504 of 546 (92%)</td></tr>
-<tr class="d"><td class="num">22</td><td>Multi-location: value reporting and special coinsurance <b>(GATED 2026-10-01, 24 of 24; &ldquo;Used&rdquo; refused at ISO, OI-119)</b></td><td>L</td><td class="num">16</td><td>520 of 546 (95%)</td></tr>
-<tr class="d"><td class="num">23</td><td>State-only coverages <b>(GATED 2026-10-01, 22 of 22)</b></td><td>M</td><td class="num">&ndash;</td><td>520 of 546 (95%)</td></tr>
-<tr class="d"><td class="num">24</td><td>Builders Risk <b>(GATED 2026-10-01, 25 of 25)</b></td><td>L</td><td class="num">20</td><td>540 of 546 (99%)</td></tr>
-<tr class="d"><td class="num">25</td><td>Flood <b>(GATED 2026-10-02, 26 of 26)</b></td><td>XL</td><td class="num">6</td><td>546 of 546 (100%)</td></tr>
-<tr class="d"><td class="num">26</td><td>Specific and Tentative rating <b>(GATED 2026-10-02, 23 of 23)</b></td><td>L</td><td class="num">&ndash;</td><td>546 of 546 (100%)</td></tr>
-<tr><td class="num">27</td><td>Open gate points on closed chunks <b>(OPEN 2026-10-02, 9 of 18)</b></td><td>M</td><td class="num">&ndash;</td><td>546 of 546 (100%)</td></tr>
-<tr><td class="num">28</td><td>Engine behaviour decisions (each needs your go)</td><td>L</td><td class="num">&ndash;</td><td>546 of 546 (100%)</td></tr>
-</tbody>
-</table>
-
-<div class="chunk todo">
-<h3><span class="n">27</span> Open gate points on closed chunks <span class="tag warn">OPEN 2026-10-02 &mdash; 9 of 18</span></h3>
+<div class="chunk done">
+<h3><span class="n">27</span> Open gate points on closed chunks <span class="tag done">GATED 2026-10-02 &mdash; 18 of 18</span></h3>
 <p><b>Tasks set 2026-09-28; can run beside any chunk.</b> 18 tasks numbered <b>C27-01&ndash;C27-18</b> in <code>CF-CHUNK27-TASKS.md</code>. The census (<code>scripts/cf/908_chunk27_census.py</code>) <b>enumerates</b> every open gate point and open item instead of trusting the card. <b>In plain English:</b> loose ends on closed chunks, none on the rating path. Each ends <b>closed with evidence</b> or <b>handed to chunk 28</b> as an engine decision, with the evidence attached. No engine code here.</p>
 <p><span class="lab">What the census found (2026-09-28)</span></p>
 <table>
@@ -2469,7 +2439,7 @@ a missing form number is not a missing coverage.</p>
 <tr><td>Open items</td><td>OI-101 (ISO agrees), OI-105 (corpus), OI-106 / 112 (no premium effect), <b>OI-114 with no register row</b>; OI-103 and OI-113 stay chunk 28&rsquo;s</td></tr>
 </tbody>
 </table>
-<p class="sub">Grouped like release candidates, <b>in the order to do them</b>. <b>2026-10-02: RC-3 done</b> (chunk 8 point 8 and the per-state gaps, 16 of 16 agree with ISO, no engine change). <b>2026-10-02: RC-2 done</b> (point 9 closed on chunks 1&ndash;8, 25 of 25 agree with ISO, OI-126 registered, no engine change). <b>2026-10-02: RC-1 done</b> (no ISO calls, no engine change): the census refreshed after chunks 18&ndash;26; <b>OI-114 registered and OI-120 merged into it, OI-118 merged into OI-106</b>; the stale commit-status, input-validation and point-9 rows corrected with dates; every open item given an owner (chunk 27 closes with evidence, chunk 28 decides engine changes). <b>Next: RC-2, C27-03 (point 9 on chunks 1&ndash;6).</b></p>
+<p class="sub">Grouped like release candidates, <b>in the order to do them</b>. <b>2026-10-02: RC-4 done</b> (11 priced cases agree with ISO, four items closed, five measured and handed to chunk 28, no engine change). <b>2026-10-02: RC-3 done</b> (chunk 8 point 8 and the per-state gaps, 16 of 16 agree with ISO, no engine change). <b>2026-10-02: RC-2 done</b> (point 9 closed on chunks 1&ndash;8, 25 of 25 agree with ISO, OI-126 registered, no engine change). <b>2026-10-02: RC-1 done</b> (no ISO calls, no engine change): the census refreshed after chunks 18&ndash;26; <b>OI-114 registered and OI-120 merged into it, OI-118 merged into OI-106</b>; the stale commit-status, input-validation and point-9 rows corrected with dates; every open item given an owner (chunk 27 closes with evidence, chunk 28 decides engine changes). <b>Next: RC-2, C27-03 (point 9 on chunks 1&ndash;6).</b></p>
 <p><span class="lab">RC-1 &middot; The register (2) &middot; 2 of 2 done 2026-10-02</span></p>
 <table>
 <thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
@@ -2497,31 +2467,120 @@ a missing form number is not a missing coverage.</p>
 <tr class="d"><td class="st">&#9989;</td><td class="num">C27-09</td><td><b>MT and NY Group II symbol</b> &mdash; <b>Done 2026-10-02</b>: MT resolves now ($74); NY&rsquo;s symbol is a submitted input ($70 with &ldquo;B&rdquo;; without one Group II is $0 at ISO too); ISO equal</td></tr>
 </tbody>
 </table>
-<p><span class="lab">RC-4 &middot; Chunk 12&rsquo;s leftovers and the open items (6) &middot; 0 of 6 done</span></p>
+<p><span class="lab">RC-4 &middot; Chunk 12&rsquo;s leftovers and the open items (6) &middot; 6 of 6 done 2026-10-02 &middot; 11 priced cases agree with ISO</span></p>
 <table>
 <thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
 <tbody>
-<tr><td class="st">&#11036;</td><td class="num">C27-10</td><td><b>Theft on drones and Dependent Properties</b>, exclusion on Contents / BI; ISO live</td></tr>
-<tr><td class="st">&#11036;</td><td class="num">C27-11</td><td><b>FL and WV Ordinance or Law priced cases</b> (VA is C23-11); ISO live</td></tr>
-<tr><td class="st">&#11036;</td><td class="num">C27-12</td><td><b>OI-101</b>: ISO agrees; record and close</td></tr>
-<tr><td class="st">&#11036;</td><td class="num">C27-13</td><td><b>OI-105</b>: packages ISO serves beyond the corpus, per state; an as-of date policy</td></tr>
-<tr><td class="st">&#11036;</td><td class="num">C27-14</td><td><b>OI-106 and OI-112</b>: evidence bounded, no premium effect confirmed; handed to chunk 28</td></tr>
-<tr><td class="st">&#11036;</td><td class="num">C27-15</td><td><b>OI-114</b>: the <code>rul:Null</code> test on old editions; handed to chunk 28</td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C27-10</td><td><b>Theft on drones and Dependent Properties</b> &mdash; <b>Done 2026-10-02</b>: the drone reads the contents record&rsquo;s theft factor ($187 &rarr; $75), Dependent Properties the Business Income record&rsquo;s ($19 &rarr; $16); on the building nothing moves; ISO equal on all five</td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C27-11</td><td><b>FL and WV Ordinance or Law</b> &mdash; <b>Done 2026-10-02</b>: every cell predicted, ISO equal on all six; FL charges Coverage A on the whole factor ($288) with no post-loss option; WV&rsquo;s B &amp; C-only forms and flood-only flag price no Coverage A</td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C27-12</td><td><b>OI-101, 119, 122, 124</b> &mdash; <b>Closed 2026-10-02</b> as &ldquo;matches ISO&rdquo;, documented for submitters; no rater backlog row (the rater builds none of them; CA One-Term in the rater not checked, RULE #0)</td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C27-13</td><td><b>OI-105</b> &mdash; <b>Done 2026-10-02</b>: at 2026-09-17 ISO and the corpus use the same package in all 46 states; after it 28 part (IL from 2026-10-01, most from 2027-01-01) and 34 packages are missing; proposed: stay at 2026-09-17, ingest before later dates, flag out-of-coverage dates (chunk 28)</td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C27-14</td><td><b>OI-106, OI-112, OI-116</b> &mdash; <b>Done 2026-10-02</b>, each handed to chunk 28: form names miss in all 47 states (ours 135 of 240 &ldquo;Value Not Found&rdquo;, ISO 0); on 2023 editions ISO drops the CP 03 20 cause-of-loss answers whatever is sent (checkbox fields); FL&rsquo;s SPP condo record still unexplained, a question for ISO</td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C27-15</td><td><b>OI-114</b> &mdash; <b>Done 2026-10-02</b>: CW 2020-12 in force in 43 states to 2024-09 (2019-12 in 7 to 2023-05, NC flood packages to 2025-03); no 2026-09-17 probe reaches it; handed to chunk 28</td></tr>
 </tbody>
 </table>
-<p><span class="lab">RC-5 &middot; Close-out (3) &middot; 0 of 3 done</span></p>
+<p><span class="lab">RC-5 &middot; Close-out (3) &middot; 3 of 3 done 2026-10-02</span></p>
 <table>
 <thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
 <tbody>
-<tr><td class="st">&#11036;</td><td class="num">C27-16</td><td><b>Gate files updated</b>: chunks 1&ndash;8 re-scored, dated; this page brought in line</td></tr>
-<tr><td class="st">&#11036;</td><td class="num">C27-17</td><td><b>Regression</b>: message tallies pinned; full run CLEAN; <code>157_ --all</code></td></tr>
-<tr><td class="st">&#11036;</td><td class="num">C27-18</td><td><b>File <code>CF-CHUNK27-GATE.md</code></b>: every item closed or handed to chunk 28</td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C27-16</td><td><b>Gate files re-scored</b> &mdash; <b>Done 2026-10-02</b>: chunks 3&ndash;8 at 9 of 9, 1&ndash;2 point 9 noted; status rows brought in line</td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C27-17</td><td><b>Regression</b> &mdash; <b>Done 2026-10-02</b>: <code>104_ --quick</code> clean (34 scripts), <code>206_ --check</code> clean (1,760), <code>157_ --all</code> 293 of 293; no engine change</td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C27-18</td><td><b>File <code>CF-CHUNK27-GATE.md</code></b> &mdash; <b>Done 2026-10-02</b>: every item closed with evidence or handed to chunk 28</td></tr>
 </tbody>
 </table>
 </div>
 
+<h2 id="remaining">The remaining build &mdash; chunk 28 (planned 2026-09-25)</h2>
+<p class="sub"><b>2026-10-02 (updated when chunk 26 was gated):</b> chunks 15&ndash;26 from this plan are gated; their cards now sit with the finished chunks above. The sizing table below keeps their rows for the running file count: <b>546 of 546 built (100%)</b>; every countrywide coverage and the second (Specific / Tentative) rating path are built. What remains is chunk 27 (open gate points on closed chunks) and chunk 28 (engine decisions, each needing your go).</p>
+<p class="sub"><b>Where the list comes from (2026-09-25):</b> <code>scripts/cf/166_remaining_coverage_census.py</code>. Of 882 countrywide rule files, 546 set a premium. Chunks 0&ndash;14 own 228 of them. The other 318 fall into 53 coverage families, every file assigned and none left over. An earthquake rider counts with its parent coverage, so the 44 riders on unbuilt coverages (e.g. Agreed Value&rsquo;s) are not counted as chunk 10&rsquo;s. A sweep of every state package in every batch adds 75 state-only premium files. <b>Easiest first</b> means: ISO evidence already held, then one repeating formula, then a family&rsquo;s own tables, then state rewrites and size. The percentage in each row counts countrywide premium files, not premium dollars. <b>Planning only: no engine code without your go.</b></p>
+<div class="note shared"><b>Order change from 2026-09-24.</b> Your chosen next items were the value reporting form, Additional Locations Special Coinsurance, Off-Premises Interruption, MA heating oil and tenant relocation, and condo options. Sorted by difficulty they land in chunks 22, 22, 17, 23 and 21. The value reporting form sits late because it is the first coverage that depends on more than one location, and ISO has no stored multi-location evidence. If you want them first, chunk 22 can move up without breaking anything before it.</div>
+<table>
+<thead><tr><th class="num">#</th><th>Chunk</th><th>Size</th><th class="num">+Files</th><th>Built after it</th></tr></thead>
+<tbody>
+<tr class="d"><td class="num">15</td><td>Manual-premium endorsements <b>(GATED 2026-09-25, 9 of 9, 21 of 21)</b></td><td>S</td><td class="num">23</td><td>251 of 546 (46%)</td></tr>
+<tr class="d"><td class="num">16</td><td>Already matched ISO: gate them <b>(GATED 2026-09-25, 9 of 9, 23 of 23)</b></td><td>S</td><td class="num">39</td><td>290 of 546 (53%)</td></tr>
+<tr class="d"><td class="num">17</td><td>Business Income add-ons <b>(GATED 2026-09-28, 23 of 23)</b></td><td>M</td><td class="num">32</td><td>322 of 546 (59%)</td></tr>
+<tr class="d"><td class="num">18</td><td>Valuation and condition modifiers <b>(GATED 2026-09-29, 23 of 23)</b></td><td>M&ndash;L</td><td class="num">84</td><td>406 of 546 (74%)</td></tr>
+<tr class="d"><td class="num">19</td><td>Scheduled property items <b>(GATED 2026-09-29, 24 of 24)</b></td><td>M</td><td class="num">63</td><td>469 of 546 (86%)</td></tr>
+<tr class="d"><td class="num">20</td><td>Small coverages with their own tables <b>(GATED 2026-09-29, 26 of 26)</b></td><td>M</td><td class="num">28</td><td>497 of 546 (91%)</td></tr>
+<tr class="d"><td class="num">21</td><td>Sewer backup and condo options <b>(GATED 2026-09-30, 21 of 21)</b></td><td>M</td><td class="num">7</td><td>504 of 546 (92%)</td></tr>
+<tr class="d"><td class="num">22</td><td>Multi-location: value reporting and special coinsurance <b>(GATED 2026-10-01, 24 of 24; &ldquo;Used&rdquo; refused at ISO, OI-119)</b></td><td>L</td><td class="num">16</td><td>520 of 546 (95%)</td></tr>
+<tr class="d"><td class="num">23</td><td>State-only coverages <b>(GATED 2026-10-01, 22 of 22)</b></td><td>M</td><td class="num">&ndash;</td><td>520 of 546 (95%)</td></tr>
+<tr class="d"><td class="num">24</td><td>Builders Risk <b>(GATED 2026-10-01, 25 of 25)</b></td><td>L</td><td class="num">20</td><td>540 of 546 (99%)</td></tr>
+<tr class="d"><td class="num">25</td><td>Flood <b>(GATED 2026-10-02, 26 of 26)</b></td><td>XL</td><td class="num">6</td><td>546 of 546 (100%)</td></tr>
+<tr class="d"><td class="num">26</td><td>Specific and Tentative rating <b>(GATED 2026-10-02, 23 of 23)</b></td><td>L</td><td class="num">&ndash;</td><td>546 of 546 (100%)</td></tr>
+<tr><td class="num">27</td><td>Open gate points on closed chunks <b>(GATED 2026-10-02, 18 of 18)</b></td><td>M</td><td class="num">&ndash;</td><td>546 of 546 (100%)</td></tr>
+<tr><td class="num">28</td><td>Engine behaviour decisions (each needs your go) <b>(OPEN 2026-10-02, 4 of 22)</b></td><td>L</td><td class="num">&ndash;</td><td>546 of 546 (100%)</td></tr>
+</tbody>
+</table>
+
 <div class="chunk todo">
-<h3><span class="n">28</span> Engine behaviour decisions (each needs your go) <span class="tag open">Planned 2026-09-25 &middot; size L</span></h3>
+<h3><span class="n">28</span> Engine behaviour decisions (each needs your go) <span class="tag warn">OPEN 2026-10-02 &mdash; 4 of 22</span></h3>
+<p><b>Tasks set 2026-10-02</b> in <code>CF-CHUNK28-TASKS.md</code>. Seven candidate feature sets &mdash; <b>A</b> refuse where ISO refuses (OI-99, 103, 117), <b>B</b> input validation, <b>C</b> messages match ISO (OI-112, 114, 123, 125, 126), <b>D</b> form names (OI-106; OI-116), <b>E</b> refer to company (OI-113), <b>F</b> dates beyond the corpus (OI-105), <b>G</b> housekeeping. <b>All seven on the list; you chose to start with Set A (2026-10-02).</b> Every engine change needs your go.</p>
+<p><span class="lab">RC-1 &middot; The census (1) &middot; 1 of 1 done</span></p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C28-01</td><td><b>Census</b> (<code>909_chunk28_census.py</code>): every open item the register hands to chunk 28, every "chunk 28" mention in the docs and gate files, and the status page's cross-chunk open rows; nothing owned by 28 left out of the sets above &mdash; <b>Done 2026-10-02</b></td></tr>
+</tbody>
+</table>
+<p><span class="lab">RC-2 &middot; Set A, refuse where ISO refuses (5) &middot; 3 of 5 done</span></p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C28-02</td><td><b>The refusal table</b> &mdash; <b>Done 2026-10-02</b> (<code>245_</code>, <code>CF-CHUNK28-REFUSALS.md</code>): 66 refusals reproduce live, 65 of them a <code>SingleResult</code> lookup with no row (ours prices every one, and records the same miss); across 1,689 policies ISO rated, ours never misses a <code>SingleResult</code> lookup. Exception: VT&rsquo;s empty earthquake tier table</td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C28-03</td><td><b>The distinguishing rule</b> &mdash; <b>Done 2026-10-02</b>: &ldquo;a <code>SingleResult</code> lookup with no row refuses&rdquo; holds; every competitor refuted or equivalent. Empty state tables split by table: two fall back to countrywide at ISO, the earthquake stub refuses in MA TN VT (<code>246_</code>)</td></tr>
+<tr class="d"><td class="st">&#9989;</td><td class="num">C28-04</td><td><b>Proposal</b> &mdash; <b>Done 2026-10-02</b> (<code>CF-CHUNK28-PROPOSAL-A.md</code>, measured by <code>247_</code>, no code change): ours would refuse 65 of 66 ISO refusals (66 with the earthquake-stub exception) and 0 of 1,690 policies ISO rated; awaiting your go</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C28-05</td><td><b>Build</b> (with the go)</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C28-06</td><td><b>Regression and ISO</b>: <code>206_ --check</code>, <code>157_ --all</code>, the full <code>104_ --gate</code>; then every case in C28-02's table: ours refuses exactly where ISO does</td></tr>
+</tbody>
+</table>
+<p><span class="lab">RC-3 &middot; Set C, messages match ISO (5) &middot; 0 of 5 done</span></p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#11036;</td><td class="num">C28-07</td><td><b>OI-126 and OI-123</b> (interpreter: <code>FirstNonNull</code> with a "" constant; an empty <code>NotExist</code>): a probe telling the readings apart; the smaller change proposed <i>(your go)</i></td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C28-08</td><td><b>OI-125</b> (a submitted value standing in for a field the rules write later): probe a second unguarded computed field before generalising <i>(your go)</i></td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C28-09</td><td><b>OI-112</b> (2023-edition checkbox answers): propose reading them as blank on those parents, or documenting it <i>(your go)</i></td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C28-10</td><td><b>OI-114</b> (<code>&lt;rul:Null/&gt;</code>, old builds only): the discriminating probe at a back date, then null-as-false or leave <i>(your go)</i></td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C28-11</td><td><b>Build and confirm</b> each item given a go; the (level, message) multisets re-compared on chunk 27's cases</td></tr>
+</tbody>
+</table>
+<p><span class="lab">RC-4 &middot; Set D, form names (3) &middot; 0 of 3 done</span></p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#11036;</td><td class="num">C28-12</td><td><b>OI-106</b>: <code>FormPage</code> tables resolved as state rows plus countrywide rows (state first); Rate and Domain tables stay wholesale <i>(your go)</i></td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C28-13</td><td><b>Confirm</b>: every <code>ErcFormName</code> / <code>ErcFormNumber</code> on chunk 27's saved responses equal to ISO's</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C28-14</td><td><b>OI-116</b>: the question for ISO written up (the three probes and their responses); ours keeps the record until answered</td></tr>
+</tbody>
+</table>
+<p><span class="lab">RC-5 &middot; Sets B and E, validation and referral (4) &middot; 0 of 4 done</span></p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#11036;</td><td class="num">C28-15</td><td><b>The silent-zero table</b>: each of the eight inputs (and NY's missing Group II symbol) run on ours and at ISO, classed "ISO also $0" (validation only) or a divergence (moves to set A or C)</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C28-16</td><td><b>Design</b>: one outcome layer above the premium (rated / refer to company / invalid input), what triggers each (C28-15's table, OI-113), and how a caller sees it <i>(your go)</i></td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C28-17</td><td><b>Build</b> (with the go), never changing a premium ISO agrees with</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C28-18</td><td><b>Confirm</b>: every C28-15 input returns its outcome; every golden case still rates, unchanged</td></tr>
+</tbody>
+</table>
+<p><span class="lab">RC-6 &middot; Set F, dates beyond the corpus (2) &middot; 0 of 2 done</span></p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#11036;</td><td class="num">C28-19</td><td><b>Flag out-of-coverage dates</b>: a request dated after the latest package the corpus holds for its state, against the dates <code>242_</code> measured <i>(your go)</i></td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C28-20</td><td><b>Corpus refresh</b> (a data job, not an engine change): the 34 missing packages, if the user wants dates past 2026-09-17; <code>242_</code> re-run until every date matches <i>(your decision)</i></td></tr>
+</tbody>
+</table>
+<p><span class="lab">RC-7 &middot; Close-out (2) &middot; 0 of 2 done</span></p>
+<table>
+<thead><tr><th class="st">&nbsp;</th><th class="num">#</th><th>Task</th></tr></thead>
+<tbody>
+<tr><td class="st">&#11036;</td><td class="num">C28-21</td><td><b>Set G, housekeeping</b>: only if the user asks, and never in the same change as a rating fix</td></tr>
+<tr><td class="st">&#11036;</td><td class="num">C28-22</td><td><b>File <code>CF-CHUNK28-GATE.md</code></b>: each item fixed, documented as matching ISO, or left open with the user's decision recorded</td></tr>
+</tbody>
+</table>
 <p><b>In plain English:</b> places where our engine and ISO behave differently by design, or where a bad input silently produces a cheap policy. Each is an engine change, and none starts without your go.</p>
 <table>
 <thead><tr><th>Family</th><th class="num">Files</th><th>States that rewrite it</th><th>ISO evidence already held</th></tr></thead>
@@ -2548,7 +2607,7 @@ a missing form number is not a missing coverage.</p>
 <tr><td><b>Date subtraction had the wrong sign</b> (OI-107)</td><td><span class="tag done">FIXED 2026-09-22</span></td><td>Our engine subtracted dates the wrong way round: ISO +257 days until TRIA expiry, ours &minus;257 (confirmed live). Pro-rate factors were never affected, because they divide one difference by another. <b>Fixed with your authorization</b>; the Oregon case is now pinned in the regression</td></tr>
 <tr><td><code>SingleResult</code> with zero hits</td><td><span class="tag open">Open, narrowed</span></td><td>ISO refuses on <i>some</i> empty lookups and tolerates others; the distinguishing condition is unknown. <b>2026-09-22: one more refusal on record</b>, <code>LeaseholdInterestAnnuityConstant</code> (OI-103). <b>2026-09-23: three more</b> (chunk 12: <code>EarthquakeDeductibleTier</code> &times;2, <code>BuildingHeightFactor</code>), each where we rate. Blanket strictness was measured and <b>disproven</b>. Needs targeted ISO probes, not more corpus reading</td></tr>
 <tr><td>Gate point 9 &mdash; validation messages</td><td><span class="tag done">Closed on chunks 1&ndash;8 2026-10-02 (chunk 27 RC-2; OI-126 a message-only difference for chunk 28)</span></td><td>A CF submission can rate correctly and still return errors; chunk 1 fires three on every case</td></tr>
-<tr><td>Per-state gaps</td><td><span class="tag open">Logged</span></td><td>TX wind/hail untraced; DC and IL missing a <code>BCEGFactor</code> row; MT, NY, PR empty Group II symbol table</td></tr>
+<tr><td>Per-state gaps</td><td><span class="tag done">Closed 2026-10-02 (chunk 27 RC-3)</span></td><td>TX: a flat 0.1 wind / hail factor on the normal Group II rate; DC and NY read no BCEG, IL maps Cook County to its &ldquo;Cook&rdquo; rows; MT&rsquo;s symbol resolves, NY&rsquo;s is a submitted input; all ISO-confirmed (PR out of scope)</td></tr>
 <tr><td>Housekeeping</td><td><span class="tag open">Deferred</span></td><td><code>cf_engine</code> imports <code>gl_engine</code>; the shared core wants a neutral home. <b>Never bundle that rename with a rating change</b></td></tr>
 <tr><td>General Liability, optional</td><td><span class="tag open">A choice, not a defect</span></td><td>Whether GL adopts <code>propagate</code>; whether it wants its own rounding tie (OI-70)</td></tr>
 <tr><td><b>A <code>Break</code> inside a <code>Sum</code></b> (OI-108)</td><td><span class="tag done">FIXED 2026-09-23</span></td><td>A blanket drone&rsquo;s limit read 0 instead of 99,000 in CA, NC and MO, undercharging about $125. Confirmed live, then <b>fixed with your authorization</b>: the sum now finishes before the loop stops. Regression clean; live CA/NC/MO/GA 8 of 8 identical to ISO</td></tr>
@@ -2557,7 +2616,7 @@ a missing form number is not a missing coverage.</p>
 <tr><td><b>A named ancestor read as the document root</b> (OI-111)</td><td><span class="tag done">FIXED 2026-09-24</span></td><td>CF writes <code>ancestor::CommercialProperty</code>, <code>ancestor::CommercialPropertyStructure</code> and ~60 other record names (30,512 paths); our engine sends every <code>ancestor::</code> to the root, the rule GL taught. Found by C13-03: California&rsquo;s terrorism cap sees a $0 policy total (ISO $3,424) and prices terrorism at $0 (ISO $153). A named-ancestor reading, tested in a probe only, matches ISO on 14 of 14. Fixed with your authorization on 2026-09-24 (the 10th engine fix): the nearest ancestor with that name, the root only if none. Replay 14 of 14; regression CLEAN for chunks 0&ndash;12 and all GL suites; CA $153 pinned in the regression</td></tr>
 <tr><td><b>A <code>rul:Null</code> inside a test, on old editions</b> (OI-114)</td><td><span class="tag open">OPEN 2026-09-25</span></td><td>Found by chunk 15 (C15-17): rating Virginia at 2021-06-01 (VA 20210501 over CW 20201201) stops in the building message <code>DoMessageAtLeastOneBuildingOrPersonalPropertyRecordMustBeBlanketRatedToApplyMarginClause</code>, where ISO itself replaced an <code>Exist</code> with <code>Null</code> (its comment: &ldquo;Invalid path removed&rdquo;); our engine refuses a condition that evaluates to nothing. <b>No in-force package for our 46 states contains <code>rul:Null</code></b> (the 2026 countrywide edition has none), so no current rating is affected. Deciding how a <code>Null</code> test evaluates (presumably false) is an engine change: needs your go</td></tr>
 <tr><td><b>A missing value in a premium</b> (OI-109, OI-110)</td><td><span class="tag done">FIXED 2026-09-23</span></td><td>ISO <b>skips</b> a missing value in a multiplication (live: $1, $3, $5 where &ldquo;write $0&rdquo; would give $0). A first change wrote $0 and was <b>corrected the same day</b>: Property now skips the null operand and <i>records every skip</i>; GL unchanged. Regression clean; <b>9 of 9 live probes identical</b>; chunk 5&rsquo;s Combined-risk case, a hidden divergence, now matches ISO ($256 + $30)</td></tr>
-<tr><td>Commit status</td><td>Committed through chunk 25 (checked 2026-10-02)</td><td><code>cf_engine/</code>, the chunk scripts and <code>docs/CF-*</code> are in git through chunk 25, gate included (<code>294d8a1</code>, 2026-10-02; chunk 24 <code>c7ffe66</code>). <b>Not yet committed (2026-10-02):</b> chunk 26 (scripts <code>234_</code>&ndash;<code>238_</code>, its gate, the <code>104_</code> registration) and chunk 27&rsquo;s census refresh and register work. <i>Corrected 2026-10-02 (C27-02): this row had said &ldquo;through chunk 14, checked 2026-09-24&rdquo;.</i></td></tr>
+<tr><td>Commit status</td><td>Committed through chunk 27 RC-3 (checked 2026-10-02)</td><td><code>cf_engine/</code>, the chunk scripts and <code>docs/CF-*</code> are in git through chunk 26 and chunk 27 RC-1&ndash;RC-3 (<code>630ba2f</code> and <code>1056a15</code>, 2026-10-02). <b>Not yet committed (2026-10-02):</b> chunk 27 RC-4 and the gate (<code>241_</code>&ndash;<code>244_</code>, <code>CF-CHUNK27-GATE.md</code>) and chunk 28&rsquo;s task list and census (<code>909_</code>).</td></tr>
 </tbody>
 </table>
 

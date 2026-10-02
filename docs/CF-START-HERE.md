@@ -11,15 +11,41 @@ page and the deployed page agree with them; on drift it hands the problems back 
 
 ---
 
-## Pick up here (set 2026-10-02): chunk 27 RC-3 done
+## Pick up here (set 2026-10-02): chunk 27 GATED, chunk 28 OPEN at 4 of 22
+
+**Chunk 27 GATED 2026-10-02, 18 of 18** ([`CF-CHUNK27-GATE.md`](CF-CHUNK27-GATE.md)): every loose end on chunks 1–26
+closed with evidence or handed to chunk 28; no engine change; `104_ --quick` clean (34), `206_ --check` clean (1,760),
+`157_ --all` 293 of 293. **Chunk 28 OPEN** ([`CF-CHUNK28-TASKS.md`](CF-CHUNK28-TASKS.md), 4 of 22): seven feature sets, **starting
+with Set A (refuse where ISO refuses) at the user's choice**, then C, D, B + E, F, G; **every engine change needs the
+user's go, one item at a time.** C28-01 census done (`909_`: 12 of 12
+open items assigned). **C28-02 done** ([`CF-CHUNK28-REFUSALS.md`](CF-CHUNK28-REFUSALS.md), `245_`): 65 of 66 live refusals
+are a `SingleResult` lookup with no row; none of 1,689 rated policies has one (exception: VT's empty EQ tier table).
+**C28-03 done**: the rule holds against every competitor; empty state tables split by table (VT vacancy and NY off-premises fall
+back to CW, the EQ stub refuses in MA TN VT; `246_`). **C28-04 done**: [`CF-CHUNK28-PROPOSAL-A.md`](CF-CHUNK28-PROPOSAL-A.md), measured (`247_`): ours would
+refuse 65 of 66 ISO refusals (66 with the EQ stub exception), 0 new refusals on 1,690 rated requests. **Next session: C28-05, the build** (the user said 2026-10-02 "will build next session"; confirm the go when
+starting). Build plan in the proposal's "What the build would also update". Uncommitted since `630ba2f`:
+chunk 27 RC-4, its gate, chunk 28's tasks.
+
+## Earlier (set 2026-10-02): chunk 27 RC-4 done
+
+**Chunk 27 RC-4 done 2026-10-02** (15 of 18, no engine change; RC-3 committed `630ba2f`, RC-4 uncommitted).
+`241_chunk27_rc4.py --live`, 11 of 11 agree with ISO: the drone's theft exclusion is read from the **contents** record
+($187 → $75), Dependent Properties' from the **Business Income** record ($19 → $16); FL Ordinance or Law charges Coverage
+A on the whole factor ($288) with no post-loss option, WV's B & C-only forms and flood-only flag price no Coverage A.
+OI-101 / 119 / 122 / 124 closed (ISO agrees). OI-105 (`242_`, 276 live calls): same package in all 46 states at
+2026-09-17; 34 newer packages missing (IL from 2026-10-01, most from 2027-01-01); policy proposed. OI-112 narrowed
+(`243_`: on 2023 editions ISO drops the CP 03 20 cause-of-loss answers whatever is sent; the fields are checkboxes
+there). OI-106 bounded (47 of 47 states; ours 135 of 240 form names "Value Not Found"), OI-114 windows, OI-116 two
+readings ruled out (`244_`); all handed to chunk 28. **Next: RC-5, the close-out (C27-16..18).**
+
+## Earlier (set 2026-10-02): chunk 27 RC-3 done
 
 **Chunk 27 RC-3 done 2026-10-02** (`scripts/cf/240_chunk27_rc3.py --live`, 16 of 16 agree with ISO, no engine change; 9 of
 18). **Chunk 8 is 9 of 9**: CA's Legal Liability zero was the sweep sending no `District` (CA's base rate is a District I /
 II table; $57 / $68), FL prices $59 today. Chunk 2's per-state gaps closed: TX multiplies its Group II rate by a flat 0.1
 when wind / hail is excluded ($800 → $79); DC and NY read no BCEG; IL maps "Cook County" to its "Cook" rows; MT's symbol
 resolves; NY's Group II symbol is a submitted input (without one, $0 at ISO too). Two more OI-103 inputs noted (FL's own
-Group II territories; NY's `CompletedBasicGroupIISymbol`). Committed through RC-2 (`1056a15`); RC-3 uncommitted. **Next:
-RC-4, C27-10 (chunk 12's leftovers).**
+Group II territories; NY's `CompletedBasicGroupIISymbol`). Committed in `630ba2f`.
 
 ## Earlier (set 2026-10-02): chunk 27 RC-2 done
 
