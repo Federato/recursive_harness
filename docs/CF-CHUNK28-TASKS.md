@@ -10,7 +10,7 @@ answers, run it at ISO, then propose the change. After a change: `206_ --check`,
 (the engine changed), and the item's own ISO cases again. Live ISO at **2026-09-17** (OI-105: the only date where ISO and
 the corpus use the same package in all 46 states). Puerto Rico excluded. Progress to `results/cf-raas/logs/`.
 
-**Status: OPEN 2026-10-05, 11 of 22** (all seven sets; the user chose to start with Set A). **Sets A and C are done** (OI-99, 103, 112, 114, 123, 125, 126 closed; OI-117 open). **Next: Set D, C28-12 (OI-106, form names).**
+**Status: OPEN 2026-10-05, 14 of 22** (all seven sets; the user chose to start with Set A). **Sets A and C are done**; Set D measured (C28-12 proposed, C28-13 measured, C28-14 the ISO question written). **Next: the user's go on C28-12, then Sets B + E (C28-15).**
 
 ## The feature sets, and what each buys
 
@@ -59,9 +59,9 @@ still needs the user's go, one item at a time.
 
 | # | Task | Status | Notes |
 |---|---|---|---|
-| C28-12 | **OI-106**: `FormPage` tables resolved as state rows plus countrywide rows (state first); Rate and Domain tables stay wholesale | ⬜ | the user's go |
-| C28-13 | **Confirm**: every `ErcFormName` / `ErcFormNumber` on chunk 27's saved responses equal to ISO's | ⬜ | |
-| C28-14 | **OI-116**: the question for ISO written up (the three probes and their responses); ours keeps the record until answered | ⬜ | |
+| C28-12 | **OI-106**: `FormPage` tables resolved as state rows plus countrywide rows (state first); Rate and Domain tables stay wholesale | ✅ 2026-10-05 | [`CF-CHUNK28-PROPOSAL-D.md`](CF-CHUNK28-PROPOSAL-D.md), `253_` on 1,692 stored requests ISO rated: state rows, then countrywide's for records the state does not file (a state row of `Status` "D" files nothing): **90,645 of 90,645** form names and numbers equal to ISO (today 13,455); 0 premiums or messages moved. Two refinements each forced by a measurement (VA's CP 14 10 ISO leaves unnamed; NC's "D" rows). **Awaiting the user's go** |
+| C28-13 | **Confirm**: every `ErcFormName` / `ErcFormNumber` on chunk 27's saved responses equal to ISO's | ✅ 2026-10-05 | Measured with C28-12 (`253_` covers every stored response, chunk 27's included: chunk 27 RC-4's 234 names all equal under the rule); confirmed again after the build |
+| C28-14 | **OI-116**: the question for ISO written up (the three probes and their responses); ours keeps the record until answered | ✅ 2026-10-05 | [`CF-CHUNK28-ISO-QUESTION-OI116.md`](CF-CHUNK28-ISO-QUESTION-OI116.md): the rule's three conditions, the five live probes (record absent in every one, policy total 1,400 vs ours 1,693), what is ruled out; not yet sent; ours keeps the record (KNOWN in `208_`) |
 
 ### RC-5 · Sets B and E, validation and referral (4 tasks)
 
