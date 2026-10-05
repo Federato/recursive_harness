@@ -240,10 +240,7 @@
     <hr>
     <div class="group">
       <div class="group-label">Owners &amp; Contractors Protective (335)</div>
-      <button class="navlink" data-target="ocp-standard">CW 2023, standard classes<span class="chain-len">21-step chain</span></button>
-      <button class="navlink" data-target="ocp-15191">CW 2023, class 15191<span class="chain-len">WC-derived ELP</span></button>
-      <button class="navlink" data-target="ocp-legacy">CW 2023, classes 27111/27112<span class="chain-len">100-unit breakpoint, retired 2027</span></button>
-      <button class="navlink" data-target="ocp-cw27">CW 2027 and later<span class="chain-len">12-step chain · loss-cost path deleted</span></button>
+      <a class="navlink" href="gl-ocp-chains.html">Pre-2027 and CW 2027 chains<span class="chain-len">moved to their own page ↗</span></a>
     </div>
     <hr>
     <div class="group">
@@ -329,10 +326,10 @@
           </tr>
           <tr>
             <th>Owners &amp; Contractors Protective</th>
-            <td><button class="cell" data-target="ocp-standard">CW 2023, standard classes<span class="n">21 steps</span></button></td>
-            <td><button class="cell" data-target="ocp-15191">CW 2023, class 15191<span class="n">WC-derived ELP</span></button></td>
-            <td><button class="cell" data-target="ocp-legacy">CW 2023, classes 27111/27112<span class="n">100-unit breakpoint</span></button></td>
-            <td><button class="cell" data-target="ocp-cw27">CW 2027 and later<span class="n">12 steps</span></button></td>
+            <td><a class="cell" href="gl-ocp-chains.html">Pre-2027 editions<span class="n">own page ↗</span></a></td>
+            <td><a class="cell" href="gl-ocp-chains.html">CW 2027 (V01/V02)<span class="n">own page ↗</span></a></td>
+            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
+            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
             <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
           </tr>
           <tr>
@@ -391,193 +388,7 @@
 
     <!-- Products/Completed Operations (both editions) moved to gl-prodscompldops-chains.html on 2026-10-05. -->
 
-    <!-- ============================= OCP · CW2023 STANDARD ============================= -->
-    <section class="sheet-view" id="view-ocp-standard">
-      <div class="titleblock">
-        <div class="field"><span class="k">Coverage</span><span class="v">Owners &amp; Contractors Protective / Principals Protective (subline 335, Rule 46)</span></div>
-        <div class="field"><span class="k">Edition</span><span class="v">CW 2023 and earlier, standard classes</span></div>
-        <div class="field"><span class="k">Master chain</span><span class="v">ErcSetRatesAndFactors (11 steps) + ErcRate (10 steps) — 21 total</span></div>
-        <div class="field"><span class="k">Premium file</span><span class="v">GeneralLiabilityClassificationOwnersContractorsCoverageRules (file/line not cited in source)</span></div>
-        <div class="field wide"><span class="k">Coverage gate</span><span class="v">SetPremium's outer test: OwnersContractorsClassCode blank -&gt; Premium 0.0. Rule 5 (standard Premium Computation) explicitly does not apply — OCP runs its own piecewise function. Gate status: passed with no oracle — this chain is a prediction confirmed only at 6 manual cross-check points, not against a published premium.</span></div>
-      </div>
-      <div class="sheet">
-        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
-        <pre class="mermaid">
-%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
-flowchart TD
-    start(["OCP/Principals Protective coverage record, standard classes"]) --> classGate{"OwnersContractorsClassCode blank?"}
-    classGate -->|"Yes"| elpZero["ELP = 0.0"]:::zero
-    classGate -->|"No, not class 15191"| elpLookup["ELP = lookup OwnersContractorsELP(state,class)"]:::step
-    elpZero --> lcGate{"LossCost (state-filed, only 8 of 51 jurisdictions) <> 0?"}
-    elpLookup --> lcGate
-    lcGate -->|"Yes"| baseFromLC2["BaseRate = round(LossCost x LCM,3)"]:::step
-    lcGate -->|"No, 43 of 51 jurisdictions"| baseFromELP2["BaseRate = round(ELP x LCM,3)"]:::step
-    baseFromLC2 --> ilfLookup3["ILF = lookup ILFOwnersContractors(state,occLimit,aggLimit) - vocabulary '1,000,000', NOT '...CSL' used elsewhere"]:::openq
-    baseFromELP2 --> ilfLookup3
-    ilfLookup3 --> finalRate4["FinalRate = round(BaseRate x ILF x ExperienceMod x ExpenseMod x ModToUse,3) (+ same for OverOneMillion band)"]:::step
-    finalRate4 --> descGate{"OwnersContractorsClassDescription supplied? (a DIFFERENT field than the class code)"}
-    descGate -->|"No"| zeroILF["ELP/ILF gate separately on description -> FinalRate x 0 -> Premium 0, not an error"]:::openq
-    descGate -->|"Yes"| premCalc["Premium = round(FinalRate x min(Exposure,1,000,000)/1000 + FinalRateOverOneMillion x max(0,Exposure-1,000,000)/1000,0)"]:::step
-    zeroILF --> premZero["Premium = 0.0"]:::zero
-    premCalc --> minPremGate{"Subline = 'Owners and Contractors'?"}
-    minPremGate -->|"Yes"| minPremCalc2["MinPremium = round(PremOpsMinPremium x ILF,0) — reused table, no AdditionalInterestFactor; Premium = max(Premium, MinPremium)"]:::openq
-    minPremGate -->|"No"| noMin["MinPremium = 0.0"]:::step
-    minPremCalc2 --> premFinal["Premium stands"]:::final
-    noMin --> premFinal
-
-    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
-    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
-    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
-    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
-    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
-    class classGate,lcGate,descGate,minPremGate gate
-        </pre>
-      </div>
-      <div class="notes">
-        <div>
-          <h3>What to notice</h3>
-          <ul>
-            <li>No `PackageModFactor` anywhere in this subline's `FinalRate` — the one point of the four sublines documented here that omits it entirely.</li>
-            <li>`SetELP` and `SetILF` gate on `OwnersContractorsClassDescription`, not `OwnersContractorsClassCode` — a submission carrying the code but not the description prices at zero silently, no error.</li>
-            <li>The ILF limit vocabulary (`"1,000,000"`) differs from 334/336's (`"...CSL"`) — a shared limit-normalization helper across sublines would miss every OCP ILF lookup.</li>
-          </ul>
-        </div>
-        <div class="delta"><strong>Resolved 2026-10-02:</strong> neither a <code>max</code> floor nor an add-on inside the coverage — pre-2027 the shortfall is added as a separate policy-level <code>GeneralLiabilityOwnersContractorsPremiumToReachMinCoverage</code> top-up (the min-premium lookup key is a hardcoded "2"). The node above showing <code>max</code> is superseded.</div>
-        <div class="delta openq"><strong>Original open question.</strong> Whether `MinPremium` is a floor (`max`) or an add-on to `Premium` is not stated explicitly in the gate doc — `max` is used here as the conventional, best-supported reading of "minimum premium," not a literal quote. See also the rounding-convention open question (Escalation E1) noted on this subline's other chains.</div>
-              <div class="delta"><strong>Reconciled against the engine, 2026-10-02.</strong> Loss costs are filed in 51 of 51 jurisdictions today (563 rows), not 8. The ELP gate is the class description; the WC rate is read at policy level; <code>OwnersContractorsLCM</code> is a step. Every OverOneMillion / OverOneHundred cell is 0 in every state, so exposure above the breakpoint is not charged (WY $10M rates 473). A Company-rated ELP class raises ISO's override message, which becomes referral R29 in underwriting mode (class 17982). A loss cost that resolves null is refused (OI-94).</div>
-      </div>
-    </section>
-
-    <!-- ============================= OCP · 15191 ============================= -->
-    <section class="sheet-view" id="view-ocp-15191">
-      <div class="titleblock">
-        <div class="field"><span class="k">Coverage</span><span class="v">Owners &amp; Contractors Protective, class 15191 (Workers Compensation-derived)</span></div>
-        <div class="field"><span class="k">Edition</span><span class="v">CW 2023 and earlier only — class retired entirely by CW 2027</span></div>
-        <div class="field"><span class="k">Master chain</span><span class="v">Same 21-step chain as standard classes, ELP branch replaced</span></div>
-        <div class="field"><span class="k">Premium file</span><span class="v">GeneralLiabilityClassificationOwnersContractorsCoverageRules</span></div>
-        <div class="field wide"><span class="k">Coverage gate</span><span class="v">OwnersContractorsClassCode = "15191" exactly. WorkersCompensationRate is a declared submission input (xs:decimal), not an ERC table value — required whenever this class is present.</span></div>
-      </div>
-      <div class="sheet">
-        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
-        <pre class="mermaid">
-%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
-flowchart TD
-    start(["OCP coverage record, class 15191"]) --> wcFactor["PrincipalsProtvLiabFactor = 0.75 - single CW cell, confirmed against manual ELP Supplement Table 5.C"]:::step
-    wcFactor --> elpWC["ELP = PrincipalsProtvLiabFactor x WorkersCompensationRate - a submitted input, not looked up"]:::step
-    elpWC --> baseWC["BaseRate = round(ELP x LCM,3) - LossCost is always 0 for class 15191, no published rate"]:::step
-    baseWC --> ilfWC["ILF = lookup ILFOwnersContractors(state,occLimit,aggLimit)"]:::step
-    ilfWC --> finalWC["FinalRate = round(BaseRate x ILF x ExperienceMod x ExpenseMod x ModToUse,3)"]:::step
-    finalWC --> premWC["Premium = round(FinalRate x min(Exposure,1,000,000)/1000 + FinalRateOverOneMillion x max(0,Exposure-1,000,000)/1000,0)"]:::final
-    premWC --> example["Worked example (AR): ELP=0.75x1000.0=750.000, BaseRate=750.000, FinalRate=round(750x1.75,3)=1312.500, Premium=round(1312.5x10,0)=13,125 — derived, NOT confirmed against ISO arithmetic"]:::openq
-
-    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
-    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
-    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
-    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
-    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
-    class start gate
-        </pre>
-      </div>
-      <div class="notes">
-        <div>
-          <h3>What to notice</h3>
-          <ul>
-            <li>Only class in this subline whose ELP is computed rather than looked up — `PrincipalsProtvLiabFactor x WorkersCompensationRate`, where the second term is a field the submission itself must supply.</li>
-            <li>Confirmed independently against the manual's ELP Supplement: "15191 Percentage of otherwise applicable Workers Compensation loss costs: 75%" — an exact match.</li>
-            <li>Entirely removed at the CW 2027 cliff, along with the class code itself.</li>
-          </ul>
-        </div>
-        <div class="delta"><strong>vs. standard classes.</strong> Every downstream step (ILF, FinalRate, Premium formula) is identical to the standard-class chain — only the ELP source differs. `LookupPrincipalsProtvLiabFactor` survives in the CW 2027 rule set with no caller after `SetPrincipalsProtvLiabFactor` is deleted (Escalation E14).</div>
-              <div class="delta"><strong>Reconciled against the engine, 2026-10-02.</strong> Reproduced: AR class 15191 = <b>13,125</b> at 2023-05-01 (CW 20230501 V01) and 14,100 at 2026-10-02 (ILF 1.88), from ISO's own STC submission rated offline.</div>
-      </div>
-    </section>
-
-    <!-- ============================= OCP · LEGACY 27111/27112 ============================= -->
-    <section class="sheet-view" id="view-ocp-legacy">
-      <div class="titleblock">
-        <div class="field"><span class="k">Coverage</span><span class="v">Owners &amp; Contractors Protective, classes 27111 / 27112</span></div>
-        <div class="field"><span class="k">Edition</span><span class="v">CW 2023 and earlier only — retired entirely by CW 2027, replaced by class 27113 with no special basis</span></div>
-        <div class="field"><span class="k">Master chain</span><span class="v">Same 21-step chain, OverOneHundred band instead of OverOneMillion</span></div>
-        <div class="field"><span class="k">Premium file</span><span class="v">GeneralLiabilityClassificationOwnersContractorsCoverageRules — these two class codes are hardcoded directly in SetPremium</span></div>
-        <div class="field wide"><span class="k">Coverage gate</span><span class="v">OwnersContractorsClassCode in {27111, 27112} — breakpoint is 100 units, not $1,000,000; no /1000 divisor, unlike every other OCP branch</span></div>
-      </div>
-      <div class="sheet">
-        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
-        <pre class="mermaid">
-%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
-flowchart TD
-    start(["OCP coverage record, class 27111 or 27112"]) --> lcGateL{"LossCost <> 0?"}
-    lcGateL -->|"Yes"| baseLCL["BaseRate = round(LossCost x LCM,3)"]:::step
-    lcGateL -->|"No"| baseELPL["BaseRate = round(ELP x LCM,3)"]:::step
-    baseLCL --> finalRateL["FinalRate = round(BaseRate x ILF x ExperienceMod x ExpenseMod x ModToUse,3) (and identically for the OverOneHundred band)"]:::step
-    baseELPL --> finalRateL
-    finalRateL --> premL["Premium = round(FinalRate x min(Units,100) + FinalRateOverOneHundred x max(0,Units-100),0) - breakpoint 100 units, NO /1000 divisor"]:::openq
-    premL --> retired["Branch retired entirely by CW 2027 - no equivalent exists in that edition's chain"]:::zero
-
-    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
-    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
-    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
-    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
-    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
-    class lcGateL gate
-        </pre>
-      </div>
-      <div class="notes">
-        <div>
-          <h3>What to notice</h3>
-          <ul>
-            <li>Only OCP branch rated on a unit breakpoint (100) instead of the standard $1,000,000 exposure breakpoint, and the only one with no ÷1000 divisor at all.</li>
-            <li>The two class codes are hardcoded directly inside `SetPremium` — not driven by a lookup table the way every other class-code fork in this subline is.</li>
-          </ul>
-        </div>
-        <div class="delta openq"><strong>Open question.</strong> The gate doc gives the breakpoint (100 units) and confirms no divisor applies, and states the formula shape mirrors the standard branch, but does not spell out the Branch B formula symbol-for-symbol. The formula shown is constructed by substituting the stated breakpoint/divisor pair into the general piecewise pattern — treat the exact variable name (`Units` vs `Exposure`) as unconfirmed.</div>
-      </div>
-    </section>
-
-    <!-- ============================= OCP · CW2027 ============================= -->
-    <section class="sheet-view" id="view-ocp-cw27">
-      <div class="titleblock">
-        <div class="field"><span class="k">Coverage</span><span class="v">Owners &amp; Contractors Protective / Principals Protective</span></div>
-        <div class="field"><span class="k">Edition</span><span class="v">CW 2027 and later</span></div>
-        <div class="field"><span class="k">Master chain</span><span class="v">12 steps — loss-cost path, minimum premium, and OverOneHundred band all deleted</span></div>
-        <div class="field"><span class="k">Premium file</span><span class="v">GeneralLiabilityClassificationOwnersContractorsCoverageRules, CW 2027 body</span></div>
-        <div class="field wide"><span class="k">Coverage gate</span><span class="v">43 of 51 jurisdictions withdraw the OCP loss-cost table in one simultaneous program change effective 2027-04-01 — which algorithm runs is selected entirely by the resolved parent edition, not by jurisdiction</span></div>
-      </div>
-      <div class="sheet">
-        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
-        <pre class="mermaid">
-%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
-flowchart TD
-    start(["OCP/Principals Protective coverage record, CW 2027"]) --> classGate2{"OwnersContractorsClassCode blank?"}
-    classGate2 -->|"Yes"| elpZero2["ELP = 0.0"]:::zero
-    classGate2 -->|"No"| elpLookup2["ELP = lookup OwnersContractorsELP(state,class) - no class-15191 WC branch, that class is retired"]:::step
-    elpZero2 --> baseRate5["BaseRate = round(ELP x LCM,3) - loss-cost path deleted entirely, never non-zero in this edition"]:::step
-    elpLookup2 --> baseRate5
-    baseRate5 --> ilfLookup4["ILF = lookup ILFOwnersContractors(state,occLimit,aggLimit) - same table, same rule as CW 2023"]:::step
-    ilfLookup4 --> finalRate6["FinalRate = round(BaseRate x ILF x ExperienceMod x ExpenseMod x ModToUse,3) (+ OverOneMillion band only, no OverOneHundred)"]:::step
-    finalRate6 --> premium4["Premium = round(FinalRate x min(Exposure,1,000,000)/1000 + FinalRateOverOneMillion x max(0,Exposure-1,000,000)/1000,0)"]:::final
-    premium4 --> noMinPrem["No minimum-premium step in this edition - SetMinimumPremium/SetMinPremium both deleted, premium is not floored"]:::step
-
-    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
-    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
-    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
-    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
-    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
-    class classGate2 gate
-        </pre>
-      </div>
-      <div class="notes">
-        <div>
-          <h3>What to notice</h3>
-          <ul>
-            <li>Purely ELP-driven — the published loss-cost path, the minimum-premium steps, and the `OverOneHundred` band are all removed in one program change, along with the class-`15191` Workers Compensation special case (class itself retired).</li>
-            <li>`LookupPrincipalsProtvLiabFactor` survives as a dead artifact — still present in the rule set with no caller.</li>
-          </ul>
-        </div>
-        <div class="delta"><strong>vs. CW 2023 and earlier.</strong> 21 steps collapse to 12: no loss cost, no minimum premium, no OverOneHundred band, no class-15191 branch. Everything that remains (ELP lookup, ILF, FinalRate, Premium formula) is structurally identical to the CW 2023 standard-class branch.</div>
-              <div class="delta"><strong>Reconciled against the engine, 2026-10-02.</strong> CW 2027 adds a <b>$1 floor</b> (a zero premium with exposure &gt; 0 prices at 1 — previously described as not floored). It has no loss-cost node, so a retired or unfiled class (AR 15191/15192) rates at $1 with no OI-94 refusal and no referral — an engine/register gap, see the OCP doc. 46 jurisdictions take this chain at 2027-04-01; CA, GA, NJ, NY, WA stay on the pre-2027 chains.</div>
-      </div>
-    </section>
+    <!-- Owners & Contractors Protective (both editions) moved to gl-ocp-chains.html on 2026-10-05. -->
 
     <!-- ============================= LIQUOR LIABILITY ============================= -->
     <section class="sheet-view" id="view-liquor-main">

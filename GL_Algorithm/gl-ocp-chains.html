@@ -1,0 +1,626 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Owners &amp; Contractors Protective Rating Chains</title>
+<style>
+  :root {
+    --ink: #101b24;
+    --paper: #edf0ec;
+    --paper-line: #c7d2ce;
+    --blueprint: #2e6e8e;
+    --blueprint-soft: #e4ebef;
+    --stamp: #c77f32;
+    --caution: #b14b39;
+    --ledger: #3f8f6e;
+    --surface: #f4f6f3;
+    --panel: #ffffff;
+    --sidebar: #e8ede8;
+    --text: var(--ink);
+    --muted: #5b6b72;
+    --border: #cdd6d2;
+    --font-display: Cambria, 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+    --font-body: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+    --font-mono: 'Cascadia Code', 'Cascadia Mono', Consolas, 'SFMono-Regular', ui-monospace, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --surface: #0b141a;
+      --panel: #101b22;
+      --sidebar: #0e1a20;
+      --text: #e7ece9;
+      --muted: #93a3a0;
+      --border: #223138;
+      --blueprint-soft: #16232b;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --surface: #0b141a;
+    --panel: #101b22;
+    --sidebar: #0e1a20;
+    --text: #e7ece9;
+    --muted: #93a3a0;
+    --border: #223138;
+    --blueprint-soft: #16232b;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; background: var(--surface); color: var(--text);
+    font-family: var(--font-body); -webkit-font-smoothing: antialiased;
+  }
+  body { display: flex; flex-direction: column; min-height: 100vh; }
+  a { color: inherit; }
+  code { font-family: var(--font-mono); font-size: 0.92em; }
+  ::selection { background: var(--stamp); color: #101b24; }
+
+  /* header */
+  header.masthead {
+    display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap;
+    padding: 1.1rem 1.6rem; border-bottom: 1px solid var(--border);
+    background: var(--panel);
+  }
+  header.masthead h1 {
+    font-family: var(--font-display); font-weight: 600; font-size: 1.35rem;
+    margin: 0; letter-spacing: 0.01em; text-wrap: balance;
+  }
+  header.masthead .rule { width: 1px; align-self: stretch; background: var(--border); }
+  header.masthead p { margin: 0; font-size: 0.82rem; color: var(--muted); max-width: 52ch; }
+  header.masthead .src {
+    margin-left: auto; font-family: var(--font-mono); font-size: 0.72rem;
+    color: var(--muted); text-align: right; line-height: 1.5;
+  }
+
+  /* shell */
+  .shell { display: flex; flex: 1; min-height: 0; }
+
+  nav.toc {
+    width: 258px; flex: none; background: var(--sidebar);
+    border-right: 1px solid var(--border);
+    padding: 1rem 0 2rem; overflow-y: auto;
+  }
+  nav.toc .group-label {
+    font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--muted); padding: 0.5rem 1.2rem 0.35rem;
+  }
+  nav.toc button.navlink {
+    display: block; width: 100%; text-align: left; background: none; border: none;
+    font-family: var(--font-body); font-size: 0.86rem; color: var(--text);
+    padding: 0.42rem 1.2rem 0.42rem 1.6rem; cursor: pointer;
+    border-left: 3px solid transparent;
+  }
+  nav.toc button.navlink:hover { background: var(--blueprint-soft); }
+  nav.toc button.navlink.active {
+    background: var(--blueprint-soft); border-left-color: var(--blueprint); font-weight: 600;
+  }
+  nav.toc button.navlink .chain-len {
+    display: block; font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); font-weight: 400;
+  }
+  nav.toc hr { border: none; border-top: 1px solid var(--border); margin: 0.6rem 1.2rem; }
+
+  nav.toc .legend {
+    margin: 1rem 1.2rem 0; padding: 0.8rem 0.9rem; border: 1px solid var(--border);
+    border-radius: 3px; background: var(--panel);
+  }
+  nav.toc .legend h4 {
+    margin: 0 0 0.5rem; font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--muted); font-weight: 600;
+  }
+  nav.toc .legend .row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.74rem; margin-bottom: 0.35rem; }
+  nav.toc .legend .swatch { width: 13px; height: 13px; flex: none; border-radius: 2px; border-width: 1.5px; border-style: solid; }
+  .sw-gate { background: #f4e4ce; border-color: #c77f32; }
+  .sw-zero { background: #f3dcd6; border-color: #b14b39; }
+  .sw-final { background: #dceee4; border-color: #3f8f6e; }
+  .sw-step { background: #e4ebef; border-color: #2e6e8e; }
+  .sw-openq { background: #f4e4ce; border-color: #b14b39; border-style: dashed !important; }
+  .sw-engine { background: #e6e1f0; border-color: #5a4c8a; }
+
+  main { flex: 1; min-width: 0; overflow-y: auto; padding: 1.6rem 2rem 4rem; }
+
+  .intro { max-width: 70ch; margin-bottom: 1.4rem; }
+  .intro h2 { font-family: var(--font-display); font-size: 1.25rem; margin: 0 0 0.5rem; text-wrap: balance; }
+  .intro p { font-size: 0.92rem; line-height: 1.6; color: var(--muted); margin: 0 0 0.6rem; }
+
+  /* tables */
+  .tablewrap { overflow-x: auto; margin-bottom: 1.4rem; }
+  table.grid { border-collapse: collapse; width: 100%; max-width: 1100px; background: var(--panel); }
+  table.grid caption {
+    text-align: left; font-family: var(--font-mono); font-size: 0.7rem; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem;
+  }
+  table.grid th, table.grid td {
+    border: 1px solid var(--border); padding: 0.5rem 0.7rem; font-size: 0.82rem;
+    text-align: left; vertical-align: top; line-height: 1.45;
+  }
+  table.grid thead th {
+    font-family: var(--font-mono); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--muted); background: var(--blueprint-soft); font-weight: 600;
+  }
+  table.grid tbody th { font-weight: 600; white-space: nowrap; }
+  table.grid td.num { font-family: var(--font-mono); text-align: right; white-space: nowrap; }
+  table.grid tr.hl td, table.grid tr.hl th { background: var(--blueprint-soft); }
+  table.grid td .tag {
+    font-family: var(--font-mono); font-size: 0.66rem; padding: 0.05rem 0.35rem; border-radius: 2px;
+    border: 1px solid var(--border); color: var(--muted); white-space: nowrap;
+  }
+  table.grid td .tag.a { border-color: var(--blueprint); color: var(--blueprint); }
+  table.grid td .tag.b { border-color: var(--ledger); color: var(--ledger); }
+  table.grid td .tag.bad { border-color: var(--caution); color: var(--caution); }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.9rem; max-width: 1100px; margin-bottom: 1.4rem; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 3px; padding: 0.9rem 1rem; }
+  .card .k { font-family: var(--font-mono); font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
+  .card .v { font-family: var(--font-display); font-size: 1.5rem; margin: 0.2rem 0 0.25rem; font-variant-numeric: tabular-nums; }
+  .card p { margin: 0; font-size: 0.8rem; color: var(--muted); line-height: 1.45; }
+  .card button.go {
+    margin-top: 0.6rem; background: none; border: 1px solid var(--blueprint); color: var(--blueprint);
+    font-family: var(--font-mono); font-size: 0.7rem; padding: 0.3rem 0.6rem; border-radius: 2px; cursor: pointer;
+  }
+  .card button.go:hover { background: var(--blueprint-soft); }
+
+  /* sheet */
+  .sheet-view { display: none; }
+  .sheet-view.active { display: block; }
+
+  .titleblock {
+    display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--border);
+    margin-bottom: 1.1rem; background: var(--panel);
+  }
+  .titleblock .field { padding: 0.6rem 0.9rem; border-right: 1px solid var(--border); }
+  .titleblock .field:last-child { border-right: none; }
+  .titleblock .field .k {
+    font-family: var(--font-mono); font-size: 0.63rem; text-transform: uppercase; letter-spacing: 0.07em;
+    color: var(--muted); display: block; margin-bottom: 0.15rem;
+  }
+  .titleblock .field .v { font-family: var(--font-mono); font-size: 0.82rem; color: var(--text); line-height: 1.35; }
+  .titleblock .field.wide { grid-column: span 4; border-top: 1px solid var(--border); border-right: none; }
+
+  .sheet {
+    background: var(--paper); border: 1px solid var(--paper-line); border-radius: 2px;
+    padding: 1.4rem 1.2rem 1rem; position: relative; overflow-x: auto;
+    background-image:
+      linear-gradient(var(--paper-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--paper-line) 1px, transparent 1px);
+    background-size: 28px 28px; background-position: -1px -1px;
+    background-color: var(--paper);
+  }
+  .sheet .corner { position: absolute; width: 14px; height: 14px; }
+  .sheet .corner.tl { top: 6px; left: 6px; border-top: 1.5px solid #7d8f8a; border-left: 1.5px solid #7d8f8a; }
+  .sheet .corner.tr { top: 6px; right: 6px; border-top: 1.5px solid #7d8f8a; border-right: 1.5px solid #7d8f8a; }
+  .sheet .corner.bl { bottom: 6px; left: 6px; border-bottom: 1.5px solid #7d8f8a; border-left: 1.5px solid #7d8f8a; }
+  .sheet .corner.br { bottom: 6px; right: 6px; border-bottom: 1.5px solid #7d8f8a; border-right: 1.5px solid #7d8f8a; }
+  .sheet pre.mermaid { margin: 0; background: transparent; min-width: 760px; color: #101b24; }
+
+  .notes { margin-top: 1.1rem; display: grid; grid-template-columns: 1.4fr 1fr; gap: 1.2rem; }
+  .notes h3 {
+    font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--muted); margin: 0 0 0.5rem;
+  }
+  .notes ul { margin: 0; padding-left: 1.1rem; font-size: 0.86rem; line-height: 1.55; }
+  .notes ul li { margin-bottom: 0.4rem; }
+  .notes .delta { border: 1px solid var(--border); background: var(--panel); padding: 0.8rem 0.9rem; border-radius: 3px; font-size: 0.86rem; line-height: 1.55; }
+  .notes .delta.openq { border-color: var(--caution); }
+  .notes .delta + .delta { margin-top: 0.8rem; }
+
+  h3.section {
+    font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--muted); margin: 1.6rem 0 0.6rem;
+  }
+
+  footer.doc-footer {
+    padding: 1rem 2rem 2rem; font-size: 0.76rem; color: var(--muted); border-top: 1px solid var(--border);
+  }
+  footer.doc-footer strong { color: var(--text); }
+
+  @media (max-width: 900px) {
+    .notes { grid-template-columns: 1fr; }
+    .titleblock { grid-template-columns: 1fr 1fr; }
+    .titleblock .field.wide { grid-column: span 2; }
+  }
+  @media (max-width: 720px) {
+    .shell { flex-direction: column; }
+    nav.toc { width: 100%; border-right: none; border-bottom: 1px solid var(--border); padding: 0.6rem 0; }
+    nav.toc .legend { display: none; }
+    main { padding: 1.2rem 16px 3rem; }
+    header.masthead { padding: 1rem 16px; }
+    header.masthead .src { margin-left: 0; text-align: left; }
+    header.masthead .rule { display: none; }
+    .titleblock { grid-template-columns: 1fr; }
+    .titleblock .field { border-right: none; border-bottom: 1px solid var(--border); }
+    .titleblock .field.wide { grid-column: span 1; }
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <h1>Owners &amp; Contractors Protective Rating Chains</h1>
+  <div class="rule"></div>
+  <p>Every gate, branch and terminal in subline 335's rate build-up and premium (Rule 46, Owners and Contractors Protective and Principals Protective), drawn separately for the two rule sets ISO files: pre-2027 and CW 2027. Every rule and branch is checked against the built engine (<code>gl_engine</code>) and ISO's rule XML as of 2026-10-05.</p>
+  <div class="src">Engine at 62eb125 (GL rating path unchanged since the 630ba2f reconciliation)<br>Rule file: GeneralLiabilityClassificationOwnersContractorsCoverageRules.Rule.xml<br>Companion: OwnersContractorsProtective_RatingAlgorithms.md · docs/gates/GATE-335</div>
+</header>
+
+<div class="shell">
+  <nav class="toc" id="toc">
+    <button class="navlink active" data-target="overview">Overview<span class="chain-len">three premium functions, one subline</span></button>
+    <hr>
+    <div class="group-label">Decision chains</div>
+    <button class="navlink" data-target="cw23">Pre-2027<span class="chain-len">11 + 10 steps · 3 class branches · top-up</span></button>
+    <button class="navlink" data-target="cw27">CW 2027<span class="chain-len">6 + 6 steps · ELP only · $1 floor</span></button>
+    <hr>
+    <div class="group-label">Comparison</div>
+    <button class="navlink" data-target="diff">Side by side<span class="chain-len">13 differences, rule by rule</span></button>
+    <hr>
+    <div class="group-label">Review</div>
+    <button class="navlink" data-target="review">Why the old sheets were replaced<span class="chain-len">11 items · 2 new findings</span></button>
+
+    <div class="legend">
+      <h4>Reading the chains</h4>
+      <div class="row"><span class="swatch sw-gate"></span> gate / branch condition</div>
+      <div class="row"><span class="swatch sw-step"></span> computed factor</div>
+      <div class="row"><span class="swatch sw-final"></span> premium resolves</div>
+      <div class="row"><span class="swatch sw-zero"></span> zero, refusal or clamp</div>
+      <div class="row"><span class="swatch sw-openq"></span> silent gap / open question</div>
+      <div class="row"><span class="swatch sw-engine"></span> engine layer, not an ISO rule</div>
+    </div>
+  </nav>
+
+  <main id="main">
+
+    <!-- ============================= OVERVIEW ============================= -->
+    <section class="sheet-view active" id="view-overview">
+      <div class="intro">
+        <h2>A standalone coverage part with its own premium function, and a 2027 rewrite</h2>
+        <p>OCP is not an endorsement to the CGL. It rates per classification, with no territory, no deductibles, no size of risk and no package modification factor. Rule 5's standard premium computation does not apply, and the premium is a piecewise function of the job's cost with a breakpoint at $1,000,000.</p>
+        <p>The edition decides almost everything. Pre-2027 has a published loss-cost path and three class-specific premium branches. CW 2027 deletes the loss costs, two of those branches and the minimum premium, and leaves an ELP-only chain. The engine picks the edition the same way as for every GL subline, from the state package's declared parent: all 51 jurisdictions are on pre-2027 today. On 2027-04-01, 46 move, and CA, GA, NJ, NY and WA stay.</p>
+      </div>
+
+      <div class="cards">
+        <div class="card">
+          <div class="k">Pre-2027 chain</div>
+          <div class="v">11 + 10</div>
+          <p>Rate-build and premium steps. Loss cost or ELP, three class branches (standard, Workers Comp-derived 15191, unit-rated 27111/27112), and a policy-level minimum premium.</p>
+          <button class="go" data-target="cw23">Open chain →</button>
+        </div>
+        <div class="card">
+          <div class="k">CW 2027 chain</div>
+          <div class="v">6 + 6</div>
+          <p>ELP only, one premium function, and no minimum premium. A $1 floor applies, but only when the unrounded premium is exactly 0.</p>
+          <button class="go" data-target="cw27">Open chain →</button>
+        </div>
+        <div class="card">
+          <div class="k">Above the breakpoint</div>
+          <div class="v">$0</div>
+          <p>Every filed over-$1M and over-100-unit cell is 0 in all 51 states, in both editions. Cost above the breakpoint adds nothing.</p>
+          <button class="go" data-target="diff">Side by side →</button>
+        </div>
+      </div>
+
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart LR
+    cls(["OCP classification"]) --> ed{"Edition?"}
+    ed -->|"pre-2027"| which{"Class?"}
+    ed -->|"CW 2027"| std27["Standard: ELP x LCM x ILF, per $1,000 up to $1M"]:::final
+    which -->|"15191"| wc["Workers Comp-derived: ELP = 0.75 x the policy's WC rate"]:::step
+    which -->|"27111 / 27112"| units["Unit-rated: per unit up to 100 units, no /1000"]:::step
+    which -->|"any other"| std["Standard: loss cost or ELP, per $1,000 up to $1M"]:::step
+    wc --> pre["Premium, then a policy-level minimum-premium top-up"]:::final
+    units --> pre
+    std --> pre
+    ed -.->|"CW 2027, retired class (15191, 15192, 27111, 27112)"| ret["No ELP row: prices at the $1 floor, no refusal"]:::openq
+
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    class ed,which gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>Two fields gate the chain. The class <strong>code</strong> drives the loss cost and the premium formula. The class <strong>description</strong> drives the ELP (pre-2027) and the ILF (both editions). A submission with the code but no description gets no ILF and prices 0 pre-2027, or $1 in 2027.</li>
+            <li>The ILF limit keys are <code>"1,000,000"</code> / <code>"2,000,000"</code> in every edition. OCP never had the <code>" CSL"</code> suffix, so the 2027 renaming that breaks stale Premises and Products keys does not touch it. New York overrides <code>SetILF</code>, the only state override that affects premium.</li>
+            <li>Policy totals on ISO's sample OCP submissions include endorsement premiums (a PFAS exclusion, a terrorism exclusion). Those are separate coverages and not part of this chain.</li>
+          </ul>
+        </div>
+        <div class="delta"><strong>No oracle.</strong> ISO's corpus has no rated OCP output to compare against. Every branch here is ISO's rule XML as the engine executes it, and the old Arkansas 15191 example (13,125 at 2023-05-01) is reproduced by the engine. That confirms the engine runs the rules as written. It is not an ISO-certified premium.</div>
+      </div>
+    </section>
+
+    <!-- ============================= PRE-2027 ============================= -->
+    <section class="sheet-view" id="view-cw23">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Owners &amp; Contractors Protective / Principals Protective (subline 335, Rule 46)</span></div>
+        <div class="field"><span class="k">Edition</span><span class="v">Pre-2027: CW 20231201 V03, 20260101 V01, 20261001 V01 identical. CA's 20231201 V02 differs only in lacking the "supplied value wins" guards.</span></div>
+        <div class="field"><span class="k">Master chain</span><span class="v">ErcProcess → ErcSetRatesAndFactors (11) → ErcRate (10) → policy-level OwnersContractorsPremiumToReachMin</span></div>
+        <div class="field"><span class="k">Rate sources</span><span class="v">Loss cost and ELP by state and class (three bands each) · ILF by state and the two policy limits · minimum premium borrowed from Premises</span></div>
+        <div class="field wide"><span class="k">Coverage gate</span><span class="v">The policy subline must be "Owners and Contractors", or ErcProcess writes Premium 0 and nothing runs. Silent zeros: a blank class description, a Company class with no ELP override, class 15191 with no Workers Comp rate (ISO does message that one), and a premium under 0.5.</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec','clusterBkg':'#f7f9f6','clusterBorder':'#7d8f8a'}}}%%
+flowchart TD
+    start(["OCP / Principals Protective policy"]) --> subQ{"Subline = Owners and Contractors?"}
+    subQ -->|"No"| off["CoverageOnPolicyIndicator = 0: ErcProcess writes Premium 0"]:::zero
+
+    subgraph SRF["ErcSetRatesAndFactors · 11 steps"]
+        codeQ{"Class code set?"}
+        codeQ -->|"No"| lc0["LossCost = 0.0"]:::step
+        codeQ -->|"Yes"| lc["LossCost = lookup OwnersContractorsLossCost(state, class), plus OverOneMillion and OverOneHundred bands. No territory"]:::step
+        lc --> found{"Row found?"}
+        found -->|"No, null"| refuse["ENGINE REFUSES: incomplete rating, no premium (OI-94)"]:::eng
+        found -->|"Yes"| ppf
+        lc0 --> ppf["PrincipalsProtvLiabFactor = CW 0.75 for class 15191, else 0"]:::step
+        ppf --> descQ{"Class description set?"}
+        descQ -->|"No"| elp0["ELP = 0.0, and an ELP override is ignored too"]:::openq
+        descQ -->|"Yes"| ovQ{"ELP override?"}
+        ovQ -->|"Yes"| elpOv["ELP = OwnersContractorsELPOverride"]:::step
+        ovQ -->|"No"| clsQ{"Which class?"}
+        clsQ -->|"15191"| wcQ{"Workers Comp rate on the policy?"}
+        wcQ -->|"Yes"| elpWC["ELP = 0.75 x WorkersCompensationRate: one rate per policy, from the Principals Protective record"]:::step
+        wcQ -->|"No"| elpWC0["ELP = 0.0. ISO message: the Workers Compensation Rate must be entered for Class Code 15191"]:::zero
+        clsQ -->|"any other"| elpLk["ELP = lookup OwnersContractorsELP(state, class), plus the two bands"]:::step
+        clsQ -->|"blank"| elpB["ELP = 0.0"]:::zero
+        elpLk -.->|"Company class"| comp["Company-rated class: ELP 0, ISO message 'Must enter Estimated Loss Potential Override', premium 0. Underwriting mode: R29"]:::openq
+        elp0 --> lcm["LCM = OwnersContractorsLCM, filed CW row = 1"]:::step
+        elpOv --> lcm
+        elpWC --> lcm
+        elpWC0 --> lcm
+        elpLk --> lcm
+        elpB --> lcm
+        lcm --> ilfQ{"Description and both limits set?"}
+        ilfQ -->|"Yes"| ilf["ILF = ILFOwnersContractors(state, occurrence, aggregate): keys '1,000,000', no CSL suffix. NY overrides SetILF"]:::step
+        ilfQ -->|"No"| ilf0["ILF = 0.0: FinalRate 0, premium 0"]:::openq
+    end
+
+    subgraph RT["ErcRate · 10 steps"]
+        brQ{"LossCost = 0?"}
+        brQ -->|"No"| brLC["BaseRate = round(LossCost x LCM, 3)"]:::step
+        brQ -->|"Yes"| brELP["BaseRate = round(ELP x LCM, 3)"]:::step
+        brLC --> bands["Same for the OverOneMillion and OverOneHundred bands, each from its own tables. Every filed band cell is 0"]:::openq
+        brELP --> bands
+        bands --> fr["FinalRate = round(BaseRate x ILF x ExpMod x ExpenseMod x ModToUse, 3), each band. No PackageMod, deductible or size of risk"]:::step
+        fr --> minp["MinimumPremium = PremOpsMinPremium(CW, '2'), borrowed from Premises · MinPremium = round(Min x ILF, 0) when MiscIfAnyBasis = No. Filed value 0, no AdditionalInterestFactor"]:::step
+        minp --> pcQ{"Class code present?"}
+        pcQ -->|"No"| p0["Premium = 0.0"]:::zero
+        pcQ -->|"Yes"| legQ{"Class 27111 or 27112?"}
+        legQ -->|"Yes"| pU["Premium = round(FinalRate x min(Exposure, 100) + FinalRateOverOneHundred x max(0, Exposure - 100), 0). Exposure read as units, no /1000"]:::step
+        legQ -->|"No"| pS["Premium = round(FinalRate x min(Exposure, 1,000,000) / 1000 + FinalRateOverOneMillion x max(0, Exposure - 1,000,000) / 1000, 0)"]:::step
+        pU --> zQ{"Premium = 0?"}
+        pS --> zQ
+        zQ -->|"Yes"| z0["Stays 0, including any premium under 0.5. No floor in this edition"]:::zero
+        zQ -->|"No"| ok["Premium stands, PremiumIndicator = 1"]:::final
+    end
+
+    subgraph PL["POLICY LEVEL · OwnersContractorsPremiumToReachMin"]
+        topQ{"Top-up conditions met?"}
+        topQ -->|"Yes"| topY["PackagePolicy and multistate blank, a class with MiscIfAnyBasis = No, a class with exposure: top-up = max(0, max MinPremium - sum of class Premiums)"]:::final
+        topQ -->|"No"| topN["Top-up = 0"]:::step
+        topY --> kern["Kernel: total check · underwriting mode raises R29 on Company classes"]:::eng
+        topN --> kern
+    end
+
+    subQ -->|"Yes"| codeQ
+    ilf --> brQ
+    ilf0 --> brQ
+    ok --> topQ
+    z0 --> topQ
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class subQ,codeQ,found,descQ,ovQ,clsQ,wcQ,ilfQ,brQ,pcQ,legQ,zQ,topQ gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>The loss cost is gated on the class <em>code</em>, and the ELP and ILF on the class <em>description</em>. With the code but no description, BaseRate still comes from the loss cost but the ILF is 0, so the premium is 0.</li>
+            <li>The base rate takes the loss cost when it is not 0, otherwise the ELP. All 51 states file the loss-cost table today. The ELP text selector ("Rate/Loss Cost Applies", "Industry", "Company") matches the filed data, but the rule branches on the number.</li>
+            <li>The minimum premium borrows Premises' table at a hardcoded key "2" and uses no AdditionalInterestFactor. It feeds only the policy-level top-up, which is 0 on filed data.</li>
+            <li>The unit-rated classes read the same exposure field as a count of units, with the breakpoint at 100 and no /1000.</li>
+          </ul>
+        </div>
+        <div>
+          <div class="delta openq"><strong>Silent zeros, 2026-10-05.</strong> Four routes price a classification at 0: a blank class description, a Company class with no ELP override (ISO messages it, and underwriting mode raises R29), class 15191 with no Workers Comp rate (ISO messages it, no referral), and any premium that rounds below 0.5. A blank description raises nothing in either mode.</div>
+          <div class="delta"><strong>Engine layer.</strong> The OI-94 refusal fires when a class has no loss-cost row in the state. That is the only point where the engine stops a pre-2027 OCP rating that ISO's rules would price.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================= CW 2027 ============================= -->
+    <section class="sheet-view" id="view-cw27">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Owners &amp; Contractors Protective / Principals Protective (subline 335, Rule 46)</span></div>
+        <div class="field"><span class="k">Edition</span><span class="v">CW 20270401 V01 and V02, identical in this rule file. Parent of 46 jurisdictions from 2027-04-01.</span></div>
+        <div class="field"><span class="k">Master chain</span><span class="v">ErcProcess → ErcSetRatesAndFactors (6) → ErcRate (6). The policy-level top-up record has no rating rules.</span></div>
+        <div class="field"><span class="k">Rate sources</span><span class="v">ELP by state and class (base and over-$1M bands) · ILF by state and the two policy limits · no loss costs</span></div>
+        <div class="field wide"><span class="k">Removed vs pre-2027</span><span class="v">SetLossCost and both bands, SetPrincipalsProtvLiabFactor (its lookup survives, uncalled), the OverOneHundred band, the 27111/27112 unit formula, SetMinimumPremium/SetMinPremium and the policy top-up: 13 rules. SetELP, SetBaseRate and SetPremium changed.</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec','clusterBkg':'#f7f9f6','clusterBorder':'#7d8f8a'}}}%%
+flowchart TD
+    start(["OCP / Principals Protective policy, CW 2027"]) --> subQ{"Subline = Owners and Contractors?"}
+    subQ -->|"No"| off["CoverageOnPolicyIndicator = 0: ErcProcess writes Premium 0"]:::zero
+
+    subgraph SRF["ErcSetRatesAndFactors · 6 steps"]
+        codeQ{"Class code set?"}
+        codeQ -->|"No"| elp0["ELP = 0.0"]:::zero
+        codeQ -->|"Yes"| ovQ{"ELP override?"}
+        ovQ -->|"Yes"| elpOv["ELP = OwnersContractorsELPOverride. The description no longer gates it"]:::step
+        ovQ -->|"No"| elpLk["ELP = lookup OwnersContractorsELP(state, class), plus the over-$1M band"]:::step
+        elpLk --> found{"Class filed in the state?"}
+        found -->|"No: retired 15191, 15192, 27111, 27112, or unfiled"| elpNull["ELP = null, so BaseRate is 0 and the $1 floor prices it. No OI-94 refusal: the kernel only checks loss-cost nodes, and this edition has none"]:::openq
+        found -->|"Yes"| lcm
+        elpLk -.->|"Company class"| comp["Company-rated class: ELP 0, ISO message, $1 floor. Underwriting mode: R29"]:::openq
+        elp0 --> lcm["LCM = OwnersContractorsLCM, filed CW row = 1"]:::step
+        elpOv --> lcm
+        elpNull --> lcm
+        lcm --> ilfQ{"Description and both limits set?"}
+        ilfQ -->|"Yes"| ilf["ILF = ILFOwnersContractors(state, occurrence, aggregate): same rule and table as pre-2027"]:::step
+        ilfQ -->|"No"| ilf0["ILF = 0.0: FinalRate 0, then the $1 floor"]:::openq
+    end
+
+    subgraph RT["ErcRate · 6 steps"]
+        br["BaseRate = round(ELP x LCM, 3), and the over-$1M band. No loss-cost branch"]:::step
+        br --> fr["FinalRate = round(BaseRate x ILF x ExpMod x ExpenseMod x ModToUse, 3), each band"]:::step
+        fr --> pcQ{"Class code present?"}
+        pcQ -->|"No"| p0["Premium = 0.0, no floor"]:::zero
+        pcQ -->|"Yes"| sum["Sum = FinalRate x min(Exposure, 1,000,000) / 1000 + FinalRateOverOneMillion x max(0, Exposure - 1,000,000) / 1000, unrounded. Band cells all 0"]:::step
+        sum --> floorQ{"Unrounded sum exactly 0, exposure above 0?"}
+        floorQ -->|"Yes"| floored["Premium = 1.0: the $1 floor"]:::final
+        floorQ -->|"No"| rnd["Premium = round(Sum, 0), PremiumIndicator = 1"]:::final
+        rnd -.->|"Sum between 0 and 0.5"| tiny["Rounds to 0 and stays 0. The floor tested the unrounded value, so it never fires"]:::openq
+    end
+
+    subgraph PL["POLICY LEVEL"]
+        nomin["OwnersContractorsPremiumToReachMin holds no rating rules: no minimum premium exists"]:::zero
+        nomin --> kern["Kernel: total check · underwriting mode raises R29 on Company classes"]:::eng
+    end
+
+    subQ -->|"Yes"| codeQ
+    ilf --> br
+    ilf0 --> br
+    floored --> nomin
+    rnd --> nomin
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class subQ,codeQ,ovQ,found,ilfQ,pcQ,floorQ gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>The <strong>$1 floor tests the unrounded sum</strong>, unlike Premises and Products, which test the rounded premium. A premium of 0.23 rounds to 0 and stays 0. Only an exact 0, such as a missing ILF or a null ELP, gets the $1.</li>
+            <li>SetELP now gates on the class code, not the description. The ILF still gates on the description, so a blank description prices at $1 rather than 0.</li>
+            <li>The retired classes are gone from the state tables, but nothing rejects them. They price at $1 with no message, no referral and no refusal.</li>
+            <li><code>LookupPrincipalsProtvLiabFactor</code> remains in the file with no caller (E14).</li>
+          </ul>
+        </div>
+        <div>
+          <div class="delta openq"><strong>Silent outcomes, 2026-10-05.</strong> $1: a blank class description, a retired or unfiled class, a Company class with no override (ISO messages it, R29 in underwriting). 0: any premium that rounds below 0.5, and a blank class code. Only the Company case reaches a referral.</div>
+          <div class="delta"><strong>vs. pre-2027.</strong> One premium function instead of three, ELP instead of loss cost or ELP, and no minimum premium. FinalRate, the ILF rule and the $1M breakpoint are unchanged, so a standard class moves only by the change in its rate source: the filed 2027 ELP against the pre-2027 loss cost.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================= SIDE BY SIDE ============================= -->
+    <section class="sheet-view" id="view-diff">
+      <div class="intro">
+        <h2>Thirteen differences, every one read from the rule XML</h2>
+        <p>The rule file goes from 58 rules to 45: 13 removed and 7 changed. Each pre-2027 cell holds for CW 20231201 V03, 20260101 V01 and 20261001 V01 (and CA's V02, which only lacks the override guards). Each CW 2027 cell holds for 20270401 V01 and V02.</p>
+      </div>
+      <div class="tablewrap">
+        <table class="grid">
+          <thead><tr><th>Step</th><th>Pre-2027</th><th>CW 2027</th><th>Premium effect</th></tr></thead>
+          <tbody>
+            <tr><th>Chain length</th><td>11 + 10 steps</td><td>6 + 6 steps</td><td>—</td></tr>
+            <tr><th>Rate source</th><td>Loss cost when filed, else ELP</td><td>ELP only; loss-cost rules deleted</td><td>A standard class moves to its 2027 ELP</td></tr>
+            <tr><th>Missing class row</th><td>Loss cost null → engine refuses (OI-94)</td><td>ELP null → $1 floor, no refusal</td><td>Retired classes rate at $1</td></tr>
+            <tr><th>SetELP gate</th><td>Class description</td><td>Class code</td><td>Blank description: ELP kept in 2027</td></tr>
+            <tr><th>ILF gate</th><td>Description and both limits</td><td>Same</td><td>Blank description: 0 vs $1</td></tr>
+            <tr><th>Class 15191</th><td>ELP = 0.75 × the policy's Workers Comp rate</td><td>Class retired, branch deleted</td><td>Rates $1 in 2027</td></tr>
+            <tr><th>Classes 27111 / 27112</th><td>Unit-rated, breakpoint 100, no /1000; hardcoded in SetPremium</td><td>Retired; 27113 replaces them on the standard basis</td><td>Old codes rate $1 in 2027</td></tr>
+            <tr><th>Over-100-unit band</th><td>Loss cost, ELP, base and final rate</td><td>Deleted</td><td>Nil (band cells all 0)</td></tr>
+            <tr><th>Over-$1M band</th><td>Present</td><td>Present</td><td>Nil in both (band cells all 0)</td></tr>
+            <tr><th>Minimum premium</th><td>PremOpsMinPremium key "2" × ILF, when MiscIfAnyBasis = No; policy top-up</td><td>Deleted, top-up record has no rating rules</td><td>Nil on filed data (value 0)</td></tr>
+            <tr><th>Exact-zero premium</th><td>Stays 0</td><td>$1 when exposure &gt; 0</td><td>Missing ILF or ELP: 0 → 1</td></tr>
+            <tr><th>Premium rounding to 0</th><td>0</td><td>0; the floor tests the unrounded sum</td><td>None</td></tr>
+            <tr><th>Dead rule</th><td>LookupPrincipalsProtvLiabFactor called</td><td>Still present, no caller (E14)</td><td>None</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="intro"><p>Unchanged in both: the "Owners and Contractors" subline gate, no territory, no deductibles, no size of risk, no PackageModFactor, the LCM (CW row 1), the ILF rule and table with "1,000,000" keys, New York's SetILF override, the FinalRate formula, the $1,000,000 breakpoint, the Company-class ISO message and R29 referral, and the policy-level kernel total check.</p></div>
+    </section>
+
+    <!-- ============================= REVIEW ============================= -->
+    <section class="sheet-view" id="view-review">
+      <div class="intro">
+        <h2>What the all-coverage page got wrong or left out for OCP</h2>
+        <p><code>gl-rating-chains.html</code> had four OCP sheets, reconciled on 2026-10-02. Several of their corrections were written as notes under diagrams that were never redrawn. On 2026-10-05 the four sheets were removed and now link here.</p>
+      </div>
+      <div class="tablewrap">
+        <table class="grid">
+          <thead><tr><th>#</th><th>All-coverage page said</th><th>Engine / XML shows</th><th>Kind</th></tr></thead>
+          <tbody>
+            <tr><th>1</th><td>Four sheets: three pre-2027 class variants and CW 2027</td><td>One pre-2027 chain with its three class branches, and one CW 2027 chain</td><td>restructured</td></tr>
+            <tr><th>2</th><td>Loss costs filed in "only 8 of 51" jurisdictions; "43 of 51" on the ELP edge</td><td>51 of 51 file loss costs today. "8" described the 2027 cliff, and it is now 5 states that stay pre-2027.</td><td><span class="tag bad">wrong as drawn</span></td></tr>
+            <tr><th>3</th><td>Minimum premium drawn as <code>max(Premium, MinPremium)</code></td><td>A policy-level top-up coverage. SetPremium never reads MinPremium.</td><td><span class="tag bad">wrong as drawn</span></td></tr>
+            <tr><th>4</th><td>ELP gated on a blank class code</td><td>Pre-2027 ELP is gated on the class <em>description</em>, and a blank description also ignores an ELP override</td><td><span class="tag bad">wrong as drawn</span></td></tr>
+            <tr><th>5</th><td>15191: no branch for a missing Workers Comp rate</td><td>ELP 0 and premium 0, and ISO <em>does</em> raise "The Workers Compensation Rate must be entered for Class Code 15191" (the companion doc says no message)</td><td><span class="tag bad">new finding</span></td></tr>
+            <tr><th>6</th><td>27111/27112: "Units vs Exposure unconfirmed"</td><td>The same OwnersContractorsExposure field, read as a unit count</td><td>out of date</td></tr>
+            <tr><th>7</th><td>CW 2027: "premium is not floored"</td><td>$1 floor when the unrounded sum is exactly 0 and exposure &gt; 0</td><td><span class="tag bad">wrong as drawn</span></td></tr>
+            <tr><th>8</th><td>—</td><td>The 2027 floor tests the <em>unrounded</em> sum, so a premium under 0.5 rounds to 0 and stays 0. Premises and Products floor the rounded value.</td><td><span class="tag bad">new finding</span></td></tr>
+            <tr><th>9</th><td>CW 2027 sheet: no ILF gate or retired-class path</td><td>Blank description → ILF 0 → $1. A retired or unfiled class → null ELP → $1, with no refusal.</td><td>missing</td></tr>
+            <tr><th>10</th><td>Company classes and OI-94 only in notes</td><td>Drawn in both chains: the ISO message, R29 in underwriting mode, and the pre-2027 refusal</td><td>missing</td></tr>
+            <tr><th>11</th><td>Over-$1M band drawn as live</td><td>Every filed band cell is 0 in all 51 states, so cost above the breakpoint adds nothing</td><td>incomplete</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="doc-footer">
+  Sources: the built engine (<strong>gl_engine</strong> at 62eb125: <code>rating/kernel.py</code>, <code>rating/referrals.py</code>, <code>resolve/</code>, <code>interp/</code>), probed on 2026-10-05 with ISO's Arkansas and Wyoming OCP STC submissions re-dated to each edition. ISO rule XML and rate tables are under <code>F:\ISO_ERC_Files\General_Liability</code>. Companion docs are <code>GL_Algorithm\OwnersContractorsProtective_RatingAlgorithms.md</code> (reconciled 2026-10-02) and <code>docs\gates\GATE-335-OWNERS-CONTRACTORS-PROTECTIVE.md</code>. Table counts (loss-cost and ELP rows by state) are the 2026-10-02 census, not re-measured.
+</footer>
+
+<script>
+  (function () {
+    var toc = document.getElementById('toc');
+    var main = document.getElementById('main');
+
+    function activate(target) {
+      var views = main.querySelectorAll('.sheet-view');
+      for (var i = 0; i < views.length; i++) views[i].classList.remove('active');
+      var view = document.getElementById('view-' + target);
+      if (view) view.classList.add('active');
+
+      var links = toc.querySelectorAll('.navlink');
+      for (var j = 0; j < links.length; j++) {
+        links[j].classList.toggle('active', links[j].getAttribute('data-target') === target);
+      }
+      main.scrollTop = 0;
+      window.scrollTo(0, 0);
+    }
+
+    document.addEventListener('click', function (e) {
+      var btn = e.target.closest('button[data-target]');
+      if (btn) activate(btn.getAttribute('data-target'));
+    });
+  })();
+</script>
+
+<style>.mermaid-rendering .sheet-view{display:block!important}</style>
+<script type="module">
+  // Render every diagram once, with all sheets briefly visible so hidden tabs get real sizes.
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({ startOnLoad: false, securityLevel: "strict", flowchart: { wrappingWidth: 260 } });
+  document.documentElement.classList.add("mermaid-rendering");
+  try { await mermaid.run({ querySelector: "pre.mermaid" }); }
+  finally { document.documentElement.classList.remove("mermaid-rendering"); }
+</script>
+</body>
+</html>
