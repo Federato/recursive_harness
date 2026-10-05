@@ -1,6 +1,6 @@
 # Property chunk 28, C28-12: proposal for OI-106 (Set D, form names)
 
-**Status: PROPOSED 2026-10-05, awaiting the user's go.** No engine code changed. Form names and numbers only: no
+**Status: BUILT 2026-10-05 (the user's go, same day).** Measured before any code changed. Form names and numbers only: no
 premium or message moves (measured on every stored request ISO rated).
 
 ## In plain English

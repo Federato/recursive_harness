@@ -22,6 +22,8 @@ not use it.
 """
 from __future__ import annotations
 
+import dataclasses
+
 from gl_engine.erc.tables import Table
 from gl_engine.resolve.book import Layer, ResolvedBook
 
@@ -97,8 +99,33 @@ class CFResolvedBook(ResolvedBook):
                 upstairs = self.parent.table(kind, name)
                 if upstairs.rows:
                     return upstairs
+            if kind == "FormPage" and self.parent and self.parent.has(kind, name):
+                return self._form_pages(name, own)
             return own
         return super().table(name, kind)
+
+    def _form_pages(self, name: str, own: Table) -> Table:
+        """A state `FormPage` table merged with countrywide's (OI-106, chunk 28 C28-12).
+
+        Every in-force state files its own `Pages` table, and read wholesale it left most forms "Value Not Found"
+        (13,455 of the 90,645 names and numbers ISO gives on the stored requests). ISO uses the state's rows, then
+        countrywide's for every record (`TableName`) the state does not file a row for; a state row of `Status`
+        "D" files nothing. Each part measured (`253_`): VA's own CP 14 10 row hides countrywide's (ISO leaves it
+        unnamed), NC's "D" rows do not. Built as measured: 90,645 of 90,645 equal to ISO, no premium or message
+        moved. Rate and Domain tables are untouched (a state rate table with rows replaces countrywide's at ISO).
+        """
+        cache = self.__dict__.setdefault("_form_page_cache", {})
+        got = cache.get(name)
+        if got is None:
+            cw = self.parent.table("FormPage", name)
+            idx = [cw.header.index(h) if h in cw.header else None for h in own.header]
+            tn = own.header.index("TableName")
+            st = own.header.index("Status") if "Status" in own.header else None
+            filed = {r[tn] for r in own.rows if st is None or r[st] != "D"}
+            extra = [row for row in (tuple(r[i] if i is not None else None for i in idx) for r in cw.rows)
+                     if row[tn] not in filed]
+            got = cache[name] = dataclasses.replace(own, rows=list(own.rows) + extra)
+        return got
 
 
 #: One book per (jurisdiction, date, version) per process (2026-09-30, regression streamlining): resolving
