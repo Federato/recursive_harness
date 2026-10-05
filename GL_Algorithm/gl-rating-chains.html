@@ -270,7 +270,7 @@
     <hr>
     <div class="group">
       <div class="group-label">Stop Gap Employers Liability (state-only)</div>
-      <button class="navlink" data-target="stopgap-main">ND/OH/PR/WA/WY, Rule A2<span class="chain-len">E18 dependency on Prem/Ops · 5-state chain</span></button>
+      <a class="navlink" href="gl-stopgap-chains.html">Pre-2027 and CW 2027 chains<span class="chain-len">moved to their own page ↗</span></a>
     </div>
 
     <div class="legend">
@@ -290,6 +290,7 @@
         <h2>Nineteen chains across eight sublines, none of them a template</h2>
         <p>Unlike CF's four cause-of-loss forms rated in parallel off one shared shape, GL's eight sublines share almost nothing structurally — Premises/Operations forks by countrywide edition, Products/Completed Operations forks by whether a published loss cost is filed as zero, Owners &amp; Contractors Protective forks by class code and by edition simultaneously, Railroad Protective forks by class code four ways with three "naming trap" rules whose names lie about which class they test, and Product Withdrawal / Cyber reads its host coverage's <em>already-computed</em> values rather than its own tables (escalation E18). Liquor Liability is the plainest of the eight: no loss-cost path exists at all, by rule — Rule 45.E says "for rates, refer to company," so the entire chain is an ELP-driven surrogate. Stop Gap Employers Liability is the only one with no ISO subline code and no countrywide rating package at all — it is filed state-only, in exactly five monopolistic-fund jurisdictions, and its rate build-up reads Premises/Operations' own already-computed <code style="font-family:var(--font-mono)">BaseRate</code> and exposure count directly, the same E18 pattern Product Withdrawal / Cyber uses but at the level of computed values rather than borrowed tables.</p>
         <p>Dashed amber-and-rust nodes mark a flagged finding — an unresolved formula, a naming trap, a sibling-group dependency, a table that prices legitimately at zero — logged in each subline's own <code style="font-family:var(--font-mono)">RatingAlgorithms.md</code> and its source gate doc rather than guessed at. Where a gate doc did not reconstruct a step's internal branching, the node says so instead of inventing one.</p>
+      <p><strong>Moved 2026-10-05.</strong> Each subline's chains now have their own page, drawn separately for the pre-2027 and CW 2027 editions and re-checked against the built engine. The matrix below links to them; this page keeps only the overview.</p>
       </div>
       <table class="matrix">
         <caption>Click a cell to open its decision chain</caption>
@@ -363,8 +364,8 @@
           </tr>
           <tr>
             <th>Stop Gap Employers Liability</th>
-            <td><button class="cell" data-target="stopgap-main">ND/OH/PR/WA/WY, Rule A2<span class="n">reads Prem/Ops' own BaseRate + exposure</span></button></td>
-            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">no rating-mechanism deviation among the 5 states</span></td>
+            <td><a class="cell" href="gl-stopgap-chains.html">Pre-2027 editions<span class="n">own page ↗</span></a></td>
+            <td><a class="cell" href="gl-stopgap-chains.html">CW 2027 state editions<span class="n">own page ↗</span></a></td>
             <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
             <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
             <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
@@ -389,62 +390,7 @@
 
     <!-- Terrorism (all five groups, both editions) moved to gl-terrorism-chains.html on 2026-10-05. -->
 
-    <!-- ============================= STOP GAP EMPLOYERS LIABILITY ============================= -->
-    <section class="sheet-view" id="view-stopgap-main">
-      <div class="titleblock">
-        <div class="field"><span class="k">Coverage</span><span class="v">Stop Gap Employers Liability — state-only Additional Rule A2</span></div>
-        <div class="field"><span class="k">Edition</span><span class="v">ND, OH, PR, WA, WY — no ISO subline code, no countrywide rating package (CW `StopGapRate` is header-only, 0 rows, every edition checked)</span></div>
-        <div class="field"><span class="k">Master chain</span><span class="v">4 rules added into classification-level `ErcRate` + a policy-level endorsement rule group, one instance per attached Stop Gap endorsement</span></div>
-        <div class="field"><span class="k">Premium file</span><span class="v">GeneralLiabilityStopGapEmployersLiabilityCoverageEndorsementPolLvlRules.Rule.xml + GeneralLiabilityClassificationRules.Rule.xml override</span></div>
-        <div class="field wide"><span class="k">Coverage gate</span><span class="v">Genuine cross-coverage (E18) dependency, not a table borrow — reads Premises/Operations' own already-computed classification `BaseRate` and `PremOpsExposureCalc` directly, so Stop Gap cannot rate a classification until Prem/Ops has already rated it (GATE-STOPGAP-EMPLOYERS-LIABILITY.md § 2)</span></div>
-      </div>
-      <div class="sheet">
-        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
-        <pre class="mermaid">
-%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
-flowchart TD
-    start(["Stop Gap classification record, run inside Prem/Ops classification's ErcRate override"]) --> ilfStep["SetStopGapIncrdLimitFactor: StopGapIncrdLimitFactor = LookupILFPremOpsWithArgs(ILTA assignment, Stop Gap's own BI-by-accident and BI-by-disease-aggregate limits) - same Prem/Ops ILF lookup, guarded IsNull -> 0.0 if unresolved"]:::step
-    ilfStep --> factorStep["SetStopGapFactor: StopGapFactor = LookupStopGapRate(StateCode, ClassificationType) - 0.03 Mfg/Contracting/Servicing, 0.02 Buildings/Mercantile/Misc; CW layer is 0 rows so FirstNonNull(state,CW) can never resolve through CW -> 0.0 if the state files no row"]:::step
-    factorStep --> baseRead["calcBaseRateStopGap = StopGapFactor x PremOpsCoverage.BaseRate - Prem/Ops' OWN already-computed classification base rate, not an independent lookup (E18 dependency)"]:::openq
-    baseRead --> overrideGate{"StopGapIncrdLimitFactorOverride populated (non-zero)?"}
-    overrideGate -->|"Yes"| overrideBranch["StopGapFinalRate = round(Override x calcBaseRateStopGap x PackageModFactor x ExperienceRatingModificationFactor x ModToUse, 3) - what populates the override, or under what submission condition, is not resolved in source docs"]:::openq
-    overrideGate -->|"No"| normalBranch["StopGapFinalRate = round(StopGapIncrdLimitFactor x calcBaseRateStopGap x PackageModFactor x ExperienceRatingModificationFactor x ModToUse, 3)"]:::step
-    overrideBranch --> limitGateClass{"LimitBodilyInjuryByAccident == LimitBodilyInjuryByDiseaseEachEmployee?"}
-    normalBranch --> limitGateClass
-    limitGateClass -->|"Yes"| stopGapPremium["StopGapPremium = round(StopGapFinalRate x PremOpsExposureCalc, 0) - Prem/Ops' OWN already-computed exposure count (second half of the E18 dependency)"]:::step
-    limitGateClass -->|"No"| classZero["StopGapPremium = 0.0 - classification-level premium forced to zero when limits differ"]:::zero
-    stopGapPremium --> policyGate{"Policy level, per attached Stop Gap endorsement instance: LimitBodilyInjuryByAccident == LimitBodilyInjuryByDiseaseEachEmployee?"}
-    classZero --> policyGate
-    policyGate -->|"Yes - Branch A, the algorithmic path"| sumBranch["Premium = sum(StopGapPremium across every classification, every location)"]:::step
-    policyGate -->|"No - Branch B, refer-to-company"| manualBranch["Premium = round(ManualPremium x PackageModFactor, 0) - ManualPremium is submission-supplied, not computed anywhere in this chain (manual B.2: 'refer to company for rating')"]:::openq
-    sumBranch --> indicator["SetPremiumIndicator: PremiumIndicator = 1 if Premium != 0.0, else 0"]:::step
-    manualBranch --> indicator
-    indicator --> totalGuard{"PremiumIndicator == 1 AND Premium != 0?"}
-    totalGuard -->|"Yes"| contributes["CalculateTotalPremium returns this instance's Premium into the policy sum"]:::final
-    totalGuard -->|"No"| contributesZero["CalculateTotalPremium returns 0 for this instance - guards against a stray null reaching the policy sum"]:::zero
-
-    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
-    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
-    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
-    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
-    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
-    class overrideGate,limitGateClass,policyGate,totalGuard gate
-        </pre>
-      </div>
-      <div class="notes">
-        <div>
-          <h3>What to notice</h3>
-          <ul>
-            <li>Two separate E18 reads, not one: Step 3 reads Prem/Ops' own classification `BaseRate` directly (not a lookup table), and Step 4 reads Prem/Ops' own `PremOpsExposureCalc` — Stop Gap has no exposure base or base rate of its own at all. This is a deeper form of the pattern Product Withdrawal / Cyber uses (which borrows tables but not already-computed sibling values).</li>
-            <li>The classification-level limit-equality branch (Step 4) and the policy-level branch (Premium aggregator) test the identical condition twice, at two different levels — when limits differ, every classification's `StopGapPremium` is forced to 0.0 <em>and</em> the policy-level aggregator abandons the sum entirely in favor of the submission-supplied `ManualPremium` path.</li>
-            <li>The countrywide `StopGapRate` table is confirmed 0 rows at every edition checked — there is no countrywide fallback for the rate factor; all five rating states must carry their own row for every `ClassificationType`, and 25/25 cells across the five states match the manual's two-bucket table exactly.</li>
-            <li>No rating-mechanism deviation was found among the five states beyond the endorsement form number itself (CG 04 40/41/42/44/51) — same rule names, same call order, same two factor values, same ILF borrow, same refer-to-company mechanism in all five.</li>
-          </ul>
-        </div>
-        <div class="delta openq"><strong>Open question.</strong> Three things are unresolved in source docs: what populates `StopGapIncrdLimitFactorOverride` and under what submission condition; whether `PackageModFactor`, `ExperienceRatingModificationFactor`, and `ModToUse` are filed rate tables or policy-level copied values (the same open question the Unmanned Aircraft docs record for the identically-named fields); and whether WA's newest package on disk reflects a live 2027-04-01 filing that simply wasn't pulled into this corpus.</div>
-              <div class="delta"><strong>Reconciled against the engine, 2026-10-02.</strong> All five states rated offline: ND 15/15, OH 10/10, WY 30/25, PR 50/55 (2026-10-02 / 2027-04-01), WA 15. Rules read <code>PolLvl[1]</code>; factor and ILF lookups require equal limits — a mismatch goes to ManualPremium &times; PMF and, with no ManualPremium, rates $0 with no referral (not in the register). The 2027 filings drop " BI" from the limit domain and re-case <code>ClassificationType</code>; an old-format limit on a 2027 edition silently prices $0 (<code>variants.py</code> does not renormalize Stop Gap limits). The ND stat-code "deviation" was false.</div>
-      </div>
-    </section>
+    <!-- Stop Gap Employers Liability (both editions) moved to gl-stopgap-chains.html on 2026-10-05. -->
 
   </main>
 </div>
