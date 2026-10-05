@@ -1,0 +1,601 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Terrorism Rating Chains</title>
+<style>
+  :root {
+    --ink: #101b24;
+    --paper: #edf0ec;
+    --paper-line: #c7d2ce;
+    --blueprint: #2e6e8e;
+    --blueprint-soft: #e4ebef;
+    --stamp: #c77f32;
+    --caution: #b14b39;
+    --ledger: #3f8f6e;
+    --surface: #f4f6f3;
+    --panel: #ffffff;
+    --sidebar: #e8ede8;
+    --text: var(--ink);
+    --muted: #5b6b72;
+    --border: #cdd6d2;
+    --font-display: Cambria, 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+    --font-body: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+    --font-mono: 'Cascadia Code', 'Cascadia Mono', Consolas, 'SFMono-Regular', ui-monospace, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --surface: #0b141a;
+      --panel: #101b22;
+      --sidebar: #0e1a20;
+      --text: #e7ece9;
+      --muted: #93a3a0;
+      --border: #223138;
+      --blueprint-soft: #16232b;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --surface: #0b141a;
+    --panel: #101b22;
+    --sidebar: #0e1a20;
+    --text: #e7ece9;
+    --muted: #93a3a0;
+    --border: #223138;
+    --blueprint-soft: #16232b;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; background: var(--surface); color: var(--text);
+    font-family: var(--font-body); -webkit-font-smoothing: antialiased;
+  }
+  body { display: flex; flex-direction: column; min-height: 100vh; }
+  a { color: inherit; }
+  code { font-family: var(--font-mono); font-size: 0.92em; }
+  ::selection { background: var(--stamp); color: #101b24; }
+
+  /* header */
+  header.masthead {
+    display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap;
+    padding: 1.1rem 1.6rem; border-bottom: 1px solid var(--border);
+    background: var(--panel);
+  }
+  header.masthead h1 {
+    font-family: var(--font-display); font-weight: 600; font-size: 1.35rem;
+    margin: 0; letter-spacing: 0.01em; text-wrap: balance;
+  }
+  header.masthead .rule { width: 1px; align-self: stretch; background: var(--border); }
+  header.masthead p { margin: 0; font-size: 0.82rem; color: var(--muted); max-width: 52ch; }
+  header.masthead .src {
+    margin-left: auto; font-family: var(--font-mono); font-size: 0.72rem;
+    color: var(--muted); text-align: right; line-height: 1.5;
+  }
+
+  /* shell */
+  .shell { display: flex; flex: 1; min-height: 0; }
+
+  nav.toc {
+    width: 258px; flex: none; background: var(--sidebar);
+    border-right: 1px solid var(--border);
+    padding: 1rem 0 2rem; overflow-y: auto;
+  }
+  nav.toc .group-label {
+    font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--muted); padding: 0.5rem 1.2rem 0.35rem;
+  }
+  nav.toc button.navlink {
+    display: block; width: 100%; text-align: left; background: none; border: none;
+    font-family: var(--font-body); font-size: 0.86rem; color: var(--text);
+    padding: 0.42rem 1.2rem 0.42rem 1.6rem; cursor: pointer;
+    border-left: 3px solid transparent;
+  }
+  nav.toc button.navlink:hover { background: var(--blueprint-soft); }
+  nav.toc button.navlink.active {
+    background: var(--blueprint-soft); border-left-color: var(--blueprint); font-weight: 600;
+  }
+  nav.toc button.navlink .chain-len {
+    display: block; font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); font-weight: 400;
+  }
+  nav.toc hr { border: none; border-top: 1px solid var(--border); margin: 0.6rem 1.2rem; }
+
+  nav.toc .legend {
+    margin: 1rem 1.2rem 0; padding: 0.8rem 0.9rem; border: 1px solid var(--border);
+    border-radius: 3px; background: var(--panel);
+  }
+  nav.toc .legend h4 {
+    margin: 0 0 0.5rem; font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--muted); font-weight: 600;
+  }
+  nav.toc .legend .row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.74rem; margin-bottom: 0.35rem; }
+  nav.toc .legend .swatch { width: 13px; height: 13px; flex: none; border-radius: 2px; border-width: 1.5px; border-style: solid; }
+  .sw-gate { background: #f4e4ce; border-color: #c77f32; }
+  .sw-zero { background: #f3dcd6; border-color: #b14b39; }
+  .sw-final { background: #dceee4; border-color: #3f8f6e; }
+  .sw-step { background: #e4ebef; border-color: #2e6e8e; }
+  .sw-openq { background: #f4e4ce; border-color: #b14b39; border-style: dashed !important; }
+  .sw-engine { background: #e6e1f0; border-color: #5a4c8a; }
+
+  main { flex: 1; min-width: 0; overflow-y: auto; padding: 1.6rem 2rem 4rem; }
+
+  .intro { max-width: 70ch; margin-bottom: 1.4rem; }
+  .intro h2 { font-family: var(--font-display); font-size: 1.25rem; margin: 0 0 0.5rem; text-wrap: balance; }
+  .intro p { font-size: 0.92rem; line-height: 1.6; color: var(--muted); margin: 0 0 0.6rem; }
+
+  /* tables */
+  .tablewrap { overflow-x: auto; margin-bottom: 1.4rem; }
+  table.grid { border-collapse: collapse; width: 100%; max-width: 1100px; background: var(--panel); }
+  table.grid caption {
+    text-align: left; font-family: var(--font-mono); font-size: 0.7rem; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem;
+  }
+  table.grid th, table.grid td {
+    border: 1px solid var(--border); padding: 0.5rem 0.7rem; font-size: 0.82rem;
+    text-align: left; vertical-align: top; line-height: 1.45;
+  }
+  table.grid thead th {
+    font-family: var(--font-mono); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--muted); background: var(--blueprint-soft); font-weight: 600;
+  }
+  table.grid tbody th { font-weight: 600; white-space: nowrap; }
+  table.grid td.num { font-family: var(--font-mono); text-align: right; white-space: nowrap; }
+  table.grid tr.hl td, table.grid tr.hl th { background: var(--blueprint-soft); }
+  table.grid td .tag {
+    font-family: var(--font-mono); font-size: 0.66rem; padding: 0.05rem 0.35rem; border-radius: 2px;
+    border: 1px solid var(--border); color: var(--muted); white-space: nowrap;
+  }
+  table.grid td .tag.a { border-color: var(--blueprint); color: var(--blueprint); }
+  table.grid td .tag.b { border-color: var(--ledger); color: var(--ledger); }
+  table.grid td .tag.bad { border-color: var(--caution); color: var(--caution); }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.9rem; max-width: 1100px; margin-bottom: 1.4rem; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 3px; padding: 0.9rem 1rem; }
+  .card .k { font-family: var(--font-mono); font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
+  .card .v { font-family: var(--font-display); font-size: 1.5rem; margin: 0.2rem 0 0.25rem; font-variant-numeric: tabular-nums; }
+  .card p { margin: 0; font-size: 0.8rem; color: var(--muted); line-height: 1.45; }
+  .card button.go {
+    margin-top: 0.6rem; background: none; border: 1px solid var(--blueprint); color: var(--blueprint);
+    font-family: var(--font-mono); font-size: 0.7rem; padding: 0.3rem 0.6rem; border-radius: 2px; cursor: pointer;
+  }
+  .card button.go:hover { background: var(--blueprint-soft); }
+
+  /* sheet */
+  .sheet-view { display: none; }
+  .sheet-view.active { display: block; }
+
+  .titleblock {
+    display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--border);
+    margin-bottom: 1.1rem; background: var(--panel);
+  }
+  .titleblock .field { padding: 0.6rem 0.9rem; border-right: 1px solid var(--border); }
+  .titleblock .field:last-child { border-right: none; }
+  .titleblock .field .k {
+    font-family: var(--font-mono); font-size: 0.63rem; text-transform: uppercase; letter-spacing: 0.07em;
+    color: var(--muted); display: block; margin-bottom: 0.15rem;
+  }
+  .titleblock .field .v { font-family: var(--font-mono); font-size: 0.82rem; color: var(--text); line-height: 1.35; }
+  .titleblock .field.wide { grid-column: span 4; border-top: 1px solid var(--border); border-right: none; }
+
+  .sheet {
+    background: var(--paper); border: 1px solid var(--paper-line); border-radius: 2px;
+    padding: 1.4rem 1.2rem 1rem; position: relative; overflow-x: auto;
+    background-image:
+      linear-gradient(var(--paper-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--paper-line) 1px, transparent 1px);
+    background-size: 28px 28px; background-position: -1px -1px;
+    background-color: var(--paper);
+  }
+  .sheet .corner { position: absolute; width: 14px; height: 14px; }
+  .sheet .corner.tl { top: 6px; left: 6px; border-top: 1.5px solid #7d8f8a; border-left: 1.5px solid #7d8f8a; }
+  .sheet .corner.tr { top: 6px; right: 6px; border-top: 1.5px solid #7d8f8a; border-right: 1.5px solid #7d8f8a; }
+  .sheet .corner.bl { bottom: 6px; left: 6px; border-bottom: 1.5px solid #7d8f8a; border-left: 1.5px solid #7d8f8a; }
+  .sheet .corner.br { bottom: 6px; right: 6px; border-bottom: 1.5px solid #7d8f8a; border-right: 1.5px solid #7d8f8a; }
+  .sheet pre.mermaid { margin: 0; background: transparent; min-width: 760px; color: #101b24; }
+
+  .notes { margin-top: 1.1rem; display: grid; grid-template-columns: 1.4fr 1fr; gap: 1.2rem; }
+  .notes h3 {
+    font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--muted); margin: 0 0 0.5rem;
+  }
+  .notes ul { margin: 0; padding-left: 1.1rem; font-size: 0.86rem; line-height: 1.55; }
+  .notes ul li { margin-bottom: 0.4rem; }
+  .notes .delta { border: 1px solid var(--border); background: var(--panel); padding: 0.8rem 0.9rem; border-radius: 3px; font-size: 0.86rem; line-height: 1.55; }
+  .notes .delta.openq { border-color: var(--caution); }
+  .notes .delta + .delta { margin-top: 0.8rem; }
+
+  h3.section {
+    font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--muted); margin: 1.6rem 0 0.6rem;
+  }
+
+  footer.doc-footer {
+    padding: 1rem 2rem 2rem; font-size: 0.76rem; color: var(--muted); border-top: 1px solid var(--border);
+  }
+  footer.doc-footer strong { color: var(--text); }
+
+  @media (max-width: 900px) {
+    .notes { grid-template-columns: 1fr; }
+    .titleblock { grid-template-columns: 1fr 1fr; }
+    .titleblock .field.wide { grid-column: span 2; }
+  }
+  @media (max-width: 720px) {
+    .shell { flex-direction: column; }
+    nav.toc { width: 100%; border-right: none; border-bottom: 1px solid var(--border); padding: 0.6rem 0; }
+    nav.toc .legend { display: none; }
+    main { padding: 1.2rem 16px 3rem; }
+    header.masthead { padding: 1rem 16px; }
+    header.masthead .src { margin-left: 0; text-align: left; }
+    header.masthead .rule { display: none; }
+    .titleblock { grid-template-columns: 1fr; }
+    .titleblock .field { border-right: none; border-bottom: 1px solid var(--border); }
+    .titleblock .field.wide { grid-column: span 1; }
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <h1>Terrorism Rating Chains</h1>
+  <div class="rule"></div>
+  <p>Every gate, branch and terminal in GL's certified-acts terrorism premium (TRIA, Rule 55 and the Terrorism Supplement): the Premises, Products, All Other Sublines, Unmanned Aircraft and Endorsement groups, drawn for pre-2027 and CW 2027. Every rule and branch is checked against the built engine (<code>gl_engine</code>) and ISO's rule XML as of 2026-10-05.</p>
+  <div class="src">Engine at 62eb125 (GL rating path unchanged since the 630ba2f reconciliation)<br>Rule files: TerrorismPremOps/ProdsCompldOps/AllOtherSubline/EndorsementCoverage, UnmannedAircraftTerrorismCoverage, Terrorism<br>Companion: Terrorism_RatingAlgorithms.md · docs/gates/GATE-TERRORISM</div>
+</header>
+
+<div class="shell">
+  <nav class="toc" id="toc">
+    <button class="navlink active" data-target="overview">Overview<span class="chain-len">a premium on other premiums</span></button>
+    <hr>
+    <div class="group-label">Decision chains</div>
+    <button class="navlink" data-target="cw23">Pre-2027<span class="chain-len">2 diagrams · no floor · Prem/Ops-only accepted</span></button>
+    <button class="navlink" data-target="cw27">CW 2027<span class="chain-len">2 diagrams · combined subline · $1 floors</span></button>
+    <hr>
+    <div class="group-label">Comparison</div>
+    <button class="navlink" data-target="diff">Side by side<span class="chain-len">7 differences + state overrides</span></button>
+    <hr>
+    <div class="group-label">Review</div>
+    <button class="navlink" data-target="review">Why the old sheets were replaced<span class="chain-len">10 items</span></button>
+
+    <div class="legend">
+      <h4>Reading the chains</h4>
+      <div class="row"><span class="swatch sw-gate"></span> gate / branch condition</div>
+      <div class="row"><span class="swatch sw-step"></span> computed factor</div>
+      <div class="row"><span class="swatch sw-final"></span> premium resolves</div>
+      <div class="row"><span class="swatch sw-zero"></span> zero, refusal or clamp</div>
+      <div class="row"><span class="swatch sw-openq"></span> silent gap / open question</div>
+      <div class="row"><span class="swatch sw-engine"></span> engine layer, not an ISO rule</div>
+    </div>
+  </nav>
+
+  <main id="main">
+
+    <!-- ============================= OVERVIEW ============================= -->
+    <section class="sheet-view active" id="view-overview">
+      <div class="intro">
+        <h2>A premium on other premiums, switched by an answer and by which forms are present</h2>
+        <p>Terrorism has no rate, ELP or loss cost of its own. Each group reads the finished premiums of sibling coverages and multiplies by an exposure-class factor. That makes it the last thing rated on a policy. Whether it rates at all depends on <code>TerrorismCoverage</code> and on the <em>presence</em> of two families of endorsement records: NBCR (CG 21 84 / 21 88 / 21 91) and the aggregate cap (CG 21 80 / 21 82 / 21 89 / 21 92). Exclusion forms (CG 21 73 / 75 / 87 / 90) only trigger messages.</p>
+        <p>All 51 jurisdictions are on pre-2027 today, and 46 move on 2027-04-01. Fifteen states rate terrorism by territory through their own factor tables, and FL, NY and AK override the premium rule itself.</p>
+      </div>
+
+      <div class="cards">
+        <div class="card">
+          <div class="k">Countrywide factors</div>
+          <div class="v">.009 / .004</div>
+          <p>Above-average and average exposure class. The NBCR discount is 0.58. The 15 territory-rated states range from .004 to .133, and NY Manhattan from .038 to .098.</p>
+          <button class="go" data-target="cw23">Open chains →</button>
+        </div>
+        <div class="card">
+          <div class="k">Precedence</div>
+          <div class="v">Yes → NBCR → cap</div>
+          <p>The first match wins. A "Yes" policy is never discounted by the NBCR factor, and a declined policy carrying a cap form is still charged.</p>
+          <button class="go" data-target="cw23">See branches →</button>
+        </div>
+        <div class="card">
+          <div class="k">CW 2027</div>
+          <div class="v">$1 floors</div>
+          <p>The combined subline is required, the cap ILF loses " CSL", and each group gets a floor. All Other Sublines' floor is unconditional.</p>
+          <button class="go" data-target="cw27">Open chains →</button>
+        </div>
+      </div>
+
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart LR
+    po(["Premises + LoED Premises + Cyber Premises premiums"]) --> tp["Terrorism, Premises group"]:::step
+    pc(["Products + LoED Products + Cyber Products premiums"]) --> tc["Terrorism, Products group"]:::step
+    ao(["ONE of Liquor, OCP, Pollution, Railroad, UST, picked by subline"]) --> ta["Terrorism, All Other Sublines: Average class always"]:::step
+    ua(["Drone Coverage A + Coverage B premiums"]) --> tu["Terrorism, Unmanned Aircraft"]:::step
+    en(["Sum of ~300 attached endorsement premiums"]) --> te["Terrorism, Endorsement group: user-entered factor"]:::step
+    tp --> pol["Policy terrorism total"]:::final
+    tc --> pol
+    ta --> pol
+    tu --> pol
+    te --> pol
+
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>The exposure class is resolved per class code for Premises and Products (CW lists 105 and 54 above-average classes; LA, NJ and NY override). All Other Sublines is always Average.</li>
+            <li>The Endorsement group's factor is a user-entered field: <code>CertifiedActsofTerrorismExposureClassFactor</code>, with a lowercase "of". Its only bound is a message requiring 0 &lt; factor ≤ 0.004 when no class is above-average.</li>
+            <li>The cap branch divides the terrorism ILF by the host's own FinalILF, so it reads a sibling's computed factor as well as its premium.</li>
+          </ul>
+        </div>
+        <div class="delta"><strong>Messages, not switches.</strong> With "Yes", ISO messages that a certified-acts form must be attached, and that an exclusion form cannot be. With "No" and no records, it messages that an exclusion form must be attached. None of these changes the premium.</div>
+      </div>
+    </section>
+
+    <!-- ============================= PRE-2027 ============================= -->
+    <section class="sheet-view" id="view-cw23">
+      <div class="titleblock">
+        <div class="field"><span class="k">Groups</span><span class="v">Premises · Products · All Other Sublines · Unmanned Aircraft · Endorsement-only</span></div>
+        <div class="field"><span class="k">Edition</span><span class="v">Pre-2027: CW 20231201 V03, 20260101 V01, 20261001 V01, identical except the Endorsement group's list of summed endorsements</span></div>
+        <div class="field"><span class="k">Rules</span><span class="v">Premises 21 · Products 21 · All Other 10 · Unmanned Aircraft 8 · Endorsement ~600 (mostly per-endorsement summers)</span></div>
+        <div class="field"><span class="k">Floors</span><span class="v">None. A zero terrorism premium stays 0.</span></div>
+        <div class="field wide"><span class="k">Gate</span><span class="v">Subline is Premises/Operations and Products/Completed Operations, or Premises/Operations alone, AND (TerrorismCoverage = "Yes" OR an NBCR record OR a cap record). Otherwise every group writes 0.</span></div>
+      </div>
+
+      <h3 class="section">1 · Premises and Products groups (the same Choose, different siblings)</h3>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["Classification on a Premises/Products policy"]) --> gate{"Subline accepted, and Yes, NBCR record or cap record?"}
+    gate -->|"No"| off["CoverageOnPolicyIndicator = 0: Premium 0 on every terrorism group"]:::zero
+    gate -->|"Yes"| ccp["CCP = sibling premiums: Premises + LoED + Cyber (Premises host), or Products + LoED + Cyber (Products host)"]:::step
+    ccp --> cls["Exposure class = TerrorismExposureClassesPremises / Products(class): Above Average or Average"]:::step
+    cls --> fac["Factor = ExposureClassFactor(state, TRIA indicator, class): CW .009 / .004. 15 states add Territory; NY adds Manhattan"]:::step
+    fac --> ilf["TerrorismILF = 1.0 unless a cap record: host ILF table at the cap aggregate (' CSL' appended), per PEV001 A.1.c"]:::step
+    ilf --> ch{"First match"}
+    ch -->|"TerrorismCoverage = Yes"| b1["Premium = round(CCP x factor, 0). An NBCR record does NOT discount it"]:::final
+    ch -->|"NBCR record: CG 21 84, 21 88 or 21 91"| b2["Premium = round(CCP x factor x 0.58, 0)"]:::final
+    ch -->|"cap record: CG 21 80, 21 89, 21 92 (Products also 21 82)"| b3["Premium = round(round(CCP x factor, 0) x round(TerrorismILF / host FinalILF, 3), 0)"]:::openq
+    b3 -.->|"TerrorismCoverage = No"| declined["A declined policy is still charged when a cap record is attached"]:::openq
+    b1 --> z{"Premium = 0?"}
+    b2 --> z
+    b3 --> z
+    z -->|"Yes"| z0["Stays 0: no floor"]:::zero
+    z -->|"No"| ok["Premium stands"]:::final
+    fac -.->|"NY without the Manhattan input"| ny["Factor null: premium silently 0 (engine finding)"]:::openq
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    class gate,ch,z gate
+        </pre>
+      </div>
+
+      <h3 class="section">2 · All Other Sublines, Unmanned Aircraft and Endorsement-only</h3>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    g{"Which group?"}
+    g -->|"All Other Sublines"| ao["P = the ONE sibling premium the subline names: Liquor, OCP, Pollution, Railroad or UST. Factor = FactorOther, Average class always"]:::step
+    ao --> aoQ{"First match"}
+    aoQ -->|"Yes"| ao1["round(P x factor, 0)"]:::final
+    aoQ -->|"NBCR record"| ao2["round(P x factor x 0.58, 0)"]:::final
+    aoQ -->|"otherwise"| ao0["0: no cap branch on this path"]:::zero
+    g -->|"Unmanned Aircraft"| ua["CoveragePremium = drone Coverage A + Coverage B. Factor = the classification's Premises factor"]:::step
+    ua --> uaQ{"First match"}
+    uaQ -->|"Yes"| ua1["round(CP x factor, 0)"]:::final
+    uaQ -->|"NBCR record"| ua2["round(CP x factor x 0.58, 0)"]:::final
+    uaQ -->|"cap record"| ua3["round(round(CP x factor, 0) x round(Premises TerrorismILF / drone ILF, 3), 0)"]:::final
+    g -->|"Endorsement-only"| en["EndorsementPremium = state hook + sum of every attached endorsement's premium (~294 kinds, list varies by edition)"]:::step
+    en --> en1["Premium = round(EndorsementPremium x user-entered factor, 0). Gate as Premises. Factor 0 or blank: 0"]:::openq
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    class g,aoQ,uaQ gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>The NBCR branch fires on CG 21 88 and 21 91 as well as 21 84. The manual reads 21 88 and 21 91 as outright exclusions, but ERC discounts all three by 0.58.</li>
+            <li>The cap branch rounds twice: the base product to whole dollars, then the ILF ratio to 3 decimals.</li>
+            <li>Pre-2027 also accepts a Premises/Operations-only subline. CW 2027 does not.</li>
+          </ul>
+        </div>
+        <div>
+          <div class="delta openq"><strong>Silent outcomes.</strong> A declined policy with a cap form is charged. An exclusion form on a "Yes" policy is still charged, with messages only. NY without the Manhattan input prices 0. An Endorsement group with no factor entered prices 0.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================= CW 2027 ============================= -->
+    <section class="sheet-view" id="view-cw27">
+      <div class="titleblock">
+        <div class="field"><span class="k">Groups</span><span class="v">Same five groups</span></div>
+        <div class="field"><span class="k">Edition</span><span class="v">CW 20270401 V01 and V02, identical in every terrorism file. Parent of 46 jurisdictions from 2027-04-01.</span></div>
+        <div class="field"><span class="k">Changed rules</span><span class="v">Premises and Products: gate, SetPremium, SetTerrorismILF · All Other: SetPremium · Unmanned Aircraft: gate, SetPremium · Endorsement: gate, sum list, SetPremium, a state hook · class/factor setters rewritten</span></div>
+        <div class="field"><span class="k">Floors</span><span class="v">$1 when the computed premium is 0 and its base is above 0; All Other Sublines unconditionally</span></div>
+        <div class="field wide"><span class="k">Gate</span><span class="v">The combined subline only (Premises/Operations alone no longer qualifies), AND Yes, an NBCR record or a cap record. The cap ILF uses bare limits.</span></div>
+      </div>
+
+      <h3 class="section">1 · Premises and Products groups</h3>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["Classification, CW 2027"]) --> gate{"Combined subline, and Yes, NBCR record or cap record?"}
+    gate -->|"No"| off["Premium 0 on every terrorism group"]:::zero
+    gate -->|"Yes"| ccp["CCP = the three sibling premiums for the host, as pre-2027"]:::step
+    ccp --> fac["Factor by exposure class (setters rewritten; CW values unchanged) · state territory and Manhattan tables as before"]:::step
+    fac --> ilf["TerrorismILF = 1.0 unless a cap record: host ILF table at the cap aggregate, bare limit"]:::step
+    ilf --> ch{"First match"}
+    ch -->|"Yes"| b1["calc = round(CCP x factor, 0)"]:::step
+    ch -->|"NBCR record"| b2["calc = round(CCP x factor x 0.58, 0)"]:::step
+    ch -->|"cap record, even when declined"| b3["calc = round(round(CCP x factor, 0) x round(TerrorismILF / host FinalILF, 3), 0)"]:::openq
+    b1 --> fq{"calc = 0 and CCP above 0?"}
+    b2 --> fq
+    b3 --> fq
+    fq -->|"Yes"| fl["Premium = 1.0"]:::final
+    fq -->|"No"| ok["Premium = calc"]:::final
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    class gate,ch,fq gate
+        </pre>
+      </div>
+
+      <h3 class="section">2 · All Other Sublines, Unmanned Aircraft and Endorsement-only</h3>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    g{"Which group?"}
+    g -->|"All Other Sublines"| ao["P = the one sibling premium the subline names · Yes: round(P x FactorOther, 0) · NBCR: x 0.58 · else 0"]:::step
+    ao --> aoF["calc 0: Premium = 1.0, with NO base test, so a $0 sibling still pays $1. TX, VA, VT override: four sublines, no floor"]:::openq
+    g -->|"Unmanned Aircraft"| ua["CP = drone Coverage A + B · same three branches as pre-2027, gate now on the combined subline"]:::step
+    ua --> uaF["calc 0 and CP above 0: Premium = 1.0"]:::final
+    g -->|"Endorsement-only"| en["EndorsementPremium = state hook + sum of attached endorsement premiums (~296 kinds)"]:::step
+    en --> enF["Premium = round(EndorsementPremium x user-entered factor, 0). 0 with EndorsementPremium above 0: Premium = 1.0, so a missing factor still costs $1"]:::openq
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    class g gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>The precedence and the three branches are unchanged. A declined policy with a cap form is still charged, and a "Yes" policy is still never discounted.</li>
+            <li>Floors differ by group: Premises, Products and Unmanned Aircraft need a non-zero base; Endorsement needs a non-zero endorsement premium; All Other Sublines has no test at all.</li>
+            <li>The cap ILF key drops " CSL", the same 2027 change that hits Premises and Products.</li>
+          </ul>
+        </div>
+        <div>
+          <div class="delta"><strong>State overrides still apply.</strong> FL and NY keep only the "Yes" branch, so a declined policy with a cap form is <em>not</em> charged there. FL keeps the floor. AK's pre-2027 override does not discount CG 21 84. TX, VA and VT override All Other with four branches and no floor.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================= SIDE BY SIDE ============================= -->
+    <section class="sheet-view" id="view-diff">
+      <div class="intro">
+        <h2>Seven edition differences, and the states that change the arithmetic</h2>
+        <p>The Premises, Products, All Other, Unmanned Aircraft and policy terrorism files keep their rule counts; the changes are inside gates, premium rules and setters. The Endorsement group's list of summed endorsements changes in every edition.</p>
+      </div>
+      <div class="tablewrap">
+        <table class="grid">
+          <thead><tr><th>Item</th><th>Pre-2027</th><th>CW 2027</th><th>Premium effect</th></tr></thead>
+          <tbody>
+            <tr><th>Subline in the gate</th><td>Combined, or Premises/Operations alone</td><td>Combined only</td><td>Premises-only policies: no terrorism</td></tr>
+            <tr><th>Cap ILF key</th><td>" CSL" appended</td><td>Bare limit</td><td>Stale key misses</td></tr>
+            <tr><th>Premises/Products floor</th><td>None</td><td>$1 when calc 0 and CCP &gt; 0</td><td>0 → 1</td></tr>
+            <tr><th>All Other floor</th><td>None</td><td>$1 unconditionally</td><td>A $0 sibling pays $1</td></tr>
+            <tr><th>Unmanned Aircraft floor and gate</th><td>No floor</td><td>$1 when CP &gt; 0; combined subline</td><td>0 → 1</td></tr>
+            <tr><th>Endorsement group</th><td>~294 endorsements summed, no floor</td><td>~296 summed, state hook, $1 when EndorsementPremium &gt; 0</td><td>Missing factor costs $1</td></tr>
+            <tr><th>Exposure class setters</th><td>Pre-2027 bodies</td><td>Rewritten</td><td>CW factors unchanged (.009 / .004)</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <h3 class="section">State overrides of the premium arithmetic</h3>
+      <div class="tablewrap">
+        <table class="grid">
+          <thead><tr><th>State</th><th>Overrides</th><th>Effect</th></tr></thead>
+          <tbody>
+            <tr><th>FL</th><td>Premises, Products, All Other, Unmanned Aircraft SetPremium</td><td>"Yes" branch only; no NBCR or cap branch; 2027 floor kept. Factor .009 for Average class via FL's territory table</td></tr>
+            <tr><th>NY</th><td>Same four groups (stays pre-2027)</td><td>"Yes" branch only; accepts Premises-only; Manhattan factors .038–.098; missing Manhattan input prices 0</td></tr>
+            <tr><th>AK</th><td>Same four groups (pre-2027 edition)</td><td>NBCR branch tests only CG 21 88 / 21 91, so CG 21 84 does not discount</td></tr>
+            <tr><th>TX, VA, VT</th><td>All Other only (2027)</td><td>Four sublines (UST not priced), no floor</td></tr>
+            <tr><th>15 states</th><td>Exposure-class factor tables</td><td>Territory-keyed factors .004–.133 (CA, CO, CT, FL, IL, MA, MD, MI, NJ, NY, OR, PA, TX, VA, WA)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============================= REVIEW ============================= -->
+    <section class="sheet-view" id="view-review">
+      <div class="intro">
+        <h2>What the all-coverage page got wrong or left out for Terrorism</h2>
+        <p><code>gl-rating-chains.html</code> had five Terrorism sheets, one per group, each mixing editions. On 2026-10-05 the five sheets were removed and now link here.</p>
+      </div>
+      <div class="tablewrap">
+        <table class="grid">
+          <thead><tr><th>#</th><th>All-coverage page said</th><th>Engine / XML shows</th><th>Kind</th></tr></thead>
+          <tbody>
+            <tr><th>1</th><td>Five sheets, one per group</td><td>Two diagrams per edition: Premises and Products together, then the other three groups</td><td>restructured</td></tr>
+            <tr><th>2</th><td>"All Other Sublines: 5 siblings summed"</td><td>Selects one sibling premium by subline; never sums</td><td><span class="tag bad">wrong as drawn</span></td></tr>
+            <tr><th>3</th><td>"Endorsement-only: user input × validated factor"</td><td>The endorsement premium is computed from ~294 attached endorsements; only the factor is user-entered</td><td><span class="tag bad">wrong as drawn</span></td></tr>
+            <tr><th>4</th><td>NBCR and cap factors drawn as optional multipliers</td><td>A first-match Choose: "Yes" wins, then NBCR, then cap; never combined</td><td>clarified</td></tr>
+            <tr><th>5</th><td>Exclusion forms stop the chain</td><td>Exclusion forms only raise messages; a "Yes" policy is still charged</td><td>clarified</td></tr>
+            <tr><th>6</th><td>—</td><td>A declined policy carrying a cap form is charged (except in FL and NY)</td><td>missing</td></tr>
+            <tr><th>7</th><td>NBCR factor tied to CG 21 84 only</td><td>CG 21 88 and 21 91 records also take the 0.58 branch</td><td>incomplete</td></tr>
+            <tr><th>8</th><td>Floors not drawn</td><td>Drawn per group, with All Other's unconditional floor</td><td>missing</td></tr>
+            <tr><th>9</th><td>State factor tables only</td><td>FL, NY and AK also override SetPremium; NY without the Manhattan input prices 0</td><td>incomplete</td></tr>
+            <tr><th>10</th><td>Worked-case premiums on the sheets</td><td>Left off; the page keeps only the filed factors</td><td>generalized</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="doc-footer">
+  Sources: the built engine (<strong>gl_engine</strong> at 62eb125), probed on 2026-10-05 on the Oklahoma engine base at each edition, switching TerrorismCoverage and the cap, NBCR and exclusion records. FL, NY and AK overrides are the 2026-10-02 reconciliation's engine runs, not re-run. ISO rule XML is under <code>F:\ISO_ERC_Files\General_Liability</code>. Companion docs are <code>GL_Algorithm\Terrorism_RatingAlgorithms.md</code> and <code>docs\gates\GATE-TERRORISM.md</code>.
+</footer>
+
+<script>
+  (function () {
+    var toc = document.getElementById('toc');
+    var main = document.getElementById('main');
+
+    function activate(target) {
+      var views = main.querySelectorAll('.sheet-view');
+      for (var i = 0; i < views.length; i++) views[i].classList.remove('active');
+      var view = document.getElementById('view-' + target);
+      if (view) view.classList.add('active');
+
+      var links = toc.querySelectorAll('.navlink');
+      for (var j = 0; j < links.length; j++) {
+        links[j].classList.toggle('active', links[j].getAttribute('data-target') === target);
+      }
+      main.scrollTop = 0;
+      window.scrollTo(0, 0);
+    }
+
+    document.addEventListener('click', function (e) {
+      var btn = e.target.closest('button[data-target]');
+      if (btn) activate(btn.getAttribute('data-target'));
+    });
+  })();
+</script>
+
+<style>.mermaid-rendering .sheet-view{display:block!important}</style>
+<script type="module">
+  // Render every diagram once, with all sheets briefly visible so hidden tabs get real sizes.
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({ startOnLoad: false, securityLevel: "strict", flowchart: { wrappingWidth: 260 } });
+  document.documentElement.classList.add("mermaid-rendering");
+  try { await mermaid.run({ querySelector: "pre.mermaid" }); }
+  finally { document.documentElement.classList.remove("mermaid-rendering"); }
+</script>
+</body>
+</html>
