@@ -235,7 +235,7 @@
     <hr>
     <div class="group">
       <div class="group-label">Products/Completed Operations (336)</div>
-      <button class="navlink" data-target="prodscompldops-main">Loss Cost / ELP chain<span class="chain-len">35+6 pre-2027 · 28+4 in 2027 · $1 floor from 2027</span></button>
+      <a class="navlink" href="gl-prodscompldops-chains.html">Pre-2027 and CW 2027 chains<span class="chain-len">moved to their own page ↗</span></a>
     </div>
     <hr>
     <div class="group">
@@ -321,8 +321,8 @@
           </tr>
           <tr>
             <th>Products/Completed Operations</th>
-            <td><button class="cell" data-target="prodscompldops-main">Loss Cost / ELP path<span class="n">41 steps · golden 6,845</span></button></td>
-            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">pre-2027 vs 2027 differences noted in-chain</span></td>
+            <td><a class="cell" href="gl-prodscompldops-chains.html">Pre-2027 editions<span class="n">own page ↗</span></a></td>
+            <td><a class="cell" href="gl-prodscompldops-chains.html">CW 2027 (V01/V02)<span class="n">own page ↗</span></a></td>
             <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
             <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
             <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
@@ -389,64 +389,7 @@
 
     <!-- Premises/Operations (both editions) moved to gl-premops-chains.html on 2026-10-05. -->
 
-    <!-- ============================= PRODUCTS/COMPLETED OPERATIONS ============================= -->
-    <section class="sheet-view" id="view-prodscompldops-main">
-      <div class="titleblock">
-        <div class="field"><span class="k">Coverage</span><span class="v">Products/Completed Operations (subline 336)</span></div>
-        <div class="field"><span class="k">Edition</span><span class="v">Two branches: pre-2027 (20231201 V02/V03, 20260101 V01, 20261001 V01) and CW 2027 (20270401 V01/V02). Only <code>SetFinalILF</code> is identical across them — corrected 2026-10-02; this chain was previously labelled edition-stable</span></div>
-        <div class="field"><span class="k">Master chain</span><span class="v">Pre-2027: ErcSetRatesAndFactors (35) + ErcRate (6). CW 2027: 28 + 4 — split-limit weights, PD250, BeforeAdjustment, SprayPainting and the minimum-premium steps removed</span></div>
-        <div class="field"><span class="k">Premium file</span><span class="v">GeneralLiabilityClassificationProdsCompldOpsCoverageRules.Rule.xml</span></div>
-        <div class="field wide"><span class="k">Coverage gate</span><span class="v">ProdsCompldOpsCov must equal "Products/Completed Operations"; new rule N17 requires ProdsCompldOpsELPText to agree with the LossCost != 0 branch test (620,856/620,856 agreement, corpus-wide)</span></div>
-      </div>
-      <div class="sheet">
-        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
-        <pre class="mermaid">
-%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
-flowchart TD
-    start(["Products/Completed Operations coverage record"]) --> covGate{"ProdsCompldOpsCov = 'Products/Completed Operations'?"}
-    covGate -->|"No"| baseZero["BaseRate = 0.0"]:::zero
-    covGate -->|"Yes"| territory["Territory = ProdsCompldOpsTerritory - statewide 999 in all 51 jurisdictions"]:::step
-    territory --> ratingBasis{"ProdsCompldOpsLossCost <> 0.0? (N17: cross-checked against ELPText)"}
-    ratingBasis -->|"Yes - Loss Cost path"| lcPath["BaseRate = round(LossCost x LCM [x ClaimsMadeMult] [x DWLMultiplier],3)"]:::step
-    ratingBasis -->|"No, LossCost=0.0 (a published zero, not missing)"| elpText{"ProdsCompldOpsELPText = 'Not Applicable'?"}
-    elpText -->|"Yes - 21,021 of 60,063 rows, 35%"| notOffered["NOT_OFFERED - never a silent 0"]:::openq
-    elpText -->|"No, Industry/Company"| elpPath["BaseRate = round(ELP x LCM [x ClaimsMadeMult] [x DWLMultiplier],3)"]:::step
-    lcPath --> dwlNote["DefenseWithinLimitsBasicLimitMultiplier gated on ROW PRESENCE (Exist test), not a boolean flag"]:::openq
-    elpPath --> dwlNote
-    dwlNote --> ilta2{"IncreasedLimitsTableAssignmentProdsCompldOps (alphabetic A/B/C, no ...Int conversion rule)"}
-    ilta2 -->|"'Refer To Co.', no override - universal on classes 54444/94444"| iltaReferZero["Assignment empty -> ILF lookup misses -> Premium 0"]:::openq
-    ilta2 -->|"'N/A' - 21,021 rows"| notOffered2["Coverage not offered for this class"]:::zero
-    ilta2 -->|"resolved letter A/B/C"| ilfLookup2["CSLILF = lookup ILFProds(state,letter,occLimit,aggLimit)"]:::step
-    ilfLookup2 --> dedAdj["ProdsCompldOps{BIPD,PD}DeductibleFactorBeforeAdjustment - branch shape not resolved in source docs"]:::openq
-    dedAdj --> finalDed2["FinalDeductibleFactor: combined / split sum / one side / 0.0"]:::step
-    finalDed2 --> finalILF3{"FinalILF = round(CSLILF - FinalDeductibleFactor,3), clamp if <= 0 - no med-pay term, ever"}
-    finalILF3 --> finalRate3["FinalRate = round(BaseRate x FinalILF [x SizeOfRisk] x PackageMod x ExperienceMod x ExpenseMod x ModToUse,3)"]:::step
-    finalRate3 --> premium3["Premium = round(FinalRate x Exposure[/1000 for the nine per-thousand bases],0) - engine, OK: 1.443 x 5,000 = 7,215 in both editions"]:::final
-    premium3 --> floor3{"CW 2027 only: Premium = 0 with exposure > 0?"}
-    floor3 -->|"Yes"| floored3["Premium = 1.0 - the $1 floor"]:::final
-    floor3 -->|"No"| minPrem["Pre-2027 only: MinPremium = round(MinimumPremium x FinalILF x AdditionalInterestFactor,0), topped up at policy level"]:::final
-
-    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
-    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
-    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
-    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
-    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
-    class covGate,ratingBasis,elpText,ilta2,finalILF3,floor3 gate
-        </pre>
-      </div>
-      <div class="notes">
-        <div>
-          <h3>What to notice</h3>
-          <ul>
-            <li>A published `0.0` loss cost is a documented path switch, not a missing value — the sibling `ELPText` selector agrees with the `!=0.0` branch test in 620,856/620,856 tested rows, becoming rule N17: a disagreement is a load-time hard failure, not a warning.</li>
-            <li>The increased-limits table assignment is alphabetic (A/B/C) here versus 334's numeric-as-string (1/2/3) — a shared `TableAssignment` type across the two sublines breaks on 336's golden-case value of `"B"`.</li>
-            <li>336 reads `AdditionalInterestFactor` inside its own `MinPremium` step — pre-2027 only. Pre-2027 334 computes a minimum too, so E11 (computed but never consumed) is a CW 2027 question for both sublines.</li>
-            <li>The NOT_OFFERED terminal above is a design target, not engine behaviour: the engine has no N17 load-time check and no NOT_OFFERED outcome yet. Class 10015 (assignment "N/A", ELP "Not Applicable") rates Products to 0 pre-2027 and to the $1 floor in 2027, with no referral in either mode.</li>
-          </ul>
-        </div>
-        <div class="delta"><strong>vs. Premises/Operations (334).</strong> No medical-payments term in either edition — 336's `FinalILF` never gains the bracketed `+MedicalPaymentsFactor-1` term 334 picks up under CW 2027. <em>Corrected 2026-10-02:</em> 336 is not edition-stable — it gains the same $1 floor as 334 in CW 2027 and, like 334, computes a minimum premium only before 2027.</div>
-      </div>
-    </section>
+    <!-- Products/Completed Operations (both editions) moved to gl-prodscompldops-chains.html on 2026-10-05. -->
 
     <!-- ============================= OCP · CW2023 STANDARD ============================= -->
     <section class="sheet-view" id="view-ocp-standard">
