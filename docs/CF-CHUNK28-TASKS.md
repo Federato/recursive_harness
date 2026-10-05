@@ -10,7 +10,7 @@ answers, run it at ISO, then propose the change. After a change: `206_ --check`,
 (the engine changed), and the item's own ISO cases again. Live ISO at **2026-09-17** (OI-105: the only date where ISO and
 the corpus use the same package in all 46 states). Puerto Rico excluded. Progress to `results/cf-raas/logs/`.
 
-**Status: OPEN 2026-10-05, 14 of 22** (all seven sets; the user chose to start with Set A). **Sets A, C and D are done** (OI-99, 103, 106, 112, 114, 123, 125, 126 closed; OI-117 open; OI-116 a question for ISO). **Next: Sets B + E, C28-15 (the silent-zero table).**
+**Status: OPEN 2026-10-05, 15 of 22** (all seven sets; the user chose to start with Set A). **Sets A, C and D are done**; Sets B + E: C28-15 done ([`CF-CHUNK28-SILENT-ZEROS.md`](CF-CHUNK28-SILENT-ZEROS.md)). **Next: C28-16, the outcome-layer design (the user's go).**
 
 ## The feature sets, and what each buys
 
@@ -67,7 +67,7 @@ still needs the user's go, one item at a time.
 
 | # | Task | Status | Notes |
 |---|---|---|---|
-| C28-15 | **The silent-zero table**: each of the eight inputs (and NY's missing Group II symbol) run on ours and at ISO, classed "ISO also $0" (validation only) or a divergence (moves to set A or C) | ⬜ | analysis |
+| C28-15 | **The silent-zero table**: each of the eight inputs (and NY's missing Group II symbol) run on ours and at ISO, classed "ISO also $0" (validation only) or a divergence (moves to set A or C) | ✅ 2026-10-05 | [`CF-CHUNK28-SILENT-ZEROS.md`](CF-CHUNK28-SILENT-ZEROS.md), `254_ --live`: of the nine, **five ISO also prices $0, silently** (AZ reduction credit, no BCEG, no Group II territory, blank Broad / Special deductible: the last two zero the whole building); **two both refuse** (unfiled construction types, since C28-05); **two no longer zero** on the policies tested (no `RatingTypeBasicGroupII`, NY without a symbol). **0 divergences**; ISO raises no message on any zero, so Set B is our own validation layer, not ISO-matching |
 | C28-16 | **Design**: one outcome layer above the premium (rated / refer to company / invalid input), what triggers each (C28-15's table, OI-113), and how a caller sees it | ⬜ | the user's go |
 | C28-17 | **Build** (with the go), never changing a premium ISO agrees with | ⬜ | |
 | C28-18 | **Confirm**: every C28-15 input returns its outcome; every golden case still rates, unchanged | ⬜ | |

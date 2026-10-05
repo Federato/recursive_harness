@@ -11,7 +11,7 @@ page and the deployed page agree with them; on drift it hands the problems back 
 
 ---
 
-## Pick up here (set 2026-10-05): chunk 28 OPEN at 14 of 22, Sets A, C and D done
+## Pick up here (set 2026-10-05): chunk 28 OPEN at 15 of 22, Sets A, C and D done, C28-15 done
 
 **Set A (refuse where ISO refuses) done 2026-10-05.** C28-05 (the user's go): a `SingleResult` lookup that matches no row
 refuses the policy on every Property book (`CFResolvedBook.strict_single_result`; GL off; `ERC_STRICT_SINGLE_RESULT`
@@ -34,7 +34,9 @@ clean (170). **Set C done.** **Set D measured 2026-10-05:** C28-12 [`CF-CHUNK28-
 table plus countrywide's rows for records the state does not file (a "D" row files nothing) gives 90,645 of 90,645 form
 names / numbers equal to ISO (today 13,455), nothing else moves; C28-13 measured with it; C28-14 the OI-116 question for
 ISO written ([`CF-CHUNK28-ISO-QUESTION-OI116.md`](CF-CHUNK28-ISO-QUESTION-OI116.md)). **C28-12 built the same day with the user's
-go** (snapshot clean, 293 of 293, full gate clean; OI-106 closed). **Next: Sets B + E, C28-15 (the silent-zero table).**
+go** (snapshot clean, 293 of 293, full gate clean; OI-106 closed). **C28-15 done** ([`CF-CHUNK28-SILENT-ZEROS.md`](CF-CHUNK28-SILENT-ZEROS.md), `254_ --live`):
+five inputs ISO also prices $0 with no message, two both refuse, two no longer zero, 0 divergences. **Next: C28-16, the
+outcome-layer design (rated / refer to company / probably invalid input); needs the user's go.**
 
 **New PC (2026-10-05).** Everything now lives on F: and the defaults say so: the corpus `F:\ISO_ERC_Files`
 (`cf_engine` / `gl_engine` config), RaaS credentials `F:\Will_Dan_Collab_dev\.env` (with `RAAS_ORG_ID` / `RAAS_SHIP_ID`), the
