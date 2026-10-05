@@ -102,6 +102,11 @@
     padding: 0.42rem 1.2rem 0.42rem 1.6rem; cursor: pointer; position: relative;
     border-left: 3px solid transparent;
   }
+  nav.toc a.navlink { display: block; text-decoration: none; font-family: var(--font-body); font-size: 0.86rem; color: var(--text); padding: 0.42rem 1.2rem 0.42rem 1.6rem; border-left: 3px solid transparent; }
+  nav.toc a.navlink:hover { background: var(--blueprint-soft); }
+  table.matrix td a.cell { display: block; text-decoration: none; padding: 0.6rem 0.8rem; color: var(--blueprint); }
+  table.matrix td a.cell:hover { background: var(--blueprint-soft); }
+  table.matrix td a.cell .n { font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); display: block; }
   nav.toc button.navlink:hover { background: var(--blueprint-soft); }
   nav.toc button.navlink.active {
     background: var(--blueprint-soft); border-left-color: var(--blueprint);
@@ -225,8 +230,7 @@
     <hr>
     <div class="group">
       <div class="group-label">Premises/Operations (334)</div>
-      <button class="navlink" data-target="premops-cw23">Pre-2027 editions<span class="chain-len">9+38+9 steps · golden case 976 · min premium</span></button>
-      <button class="navlink" data-target="premops-cw27">CW 2027 (V01/V02)<span class="chain-len">29+4 steps · med-pay folds into ILF · $1 floor</span></button>
+      <a class="navlink" href="gl-premops-chains.html">Pre-2027 and CW 2027 chains<span class="chain-len">moved to their own page ↗</span></a>
     </div>
     <hr>
     <div class="group">
@@ -309,8 +313,8 @@
         <tbody>
           <tr>
             <th>Premises/Operations</th>
-            <td><button class="cell" data-target="premops-cw23">Pre-2027 editions<span class="n">9+38+9 steps · golden 976</span></button></td>
-            <td><button class="cell" data-target="premops-cw27">CW 2027 (V01/V02)<span class="n">med-pay folds into ILF · $1 floor</span></button></td>
+            <td><a class="cell" href="gl-premops-chains.html">Pre-2027 editions<span class="n">own page ↗</span></a></td>
+            <td><a class="cell" href="gl-premops-chains.html">CW 2027 (V01/V02)<span class="n">own page ↗</span></a></td>
             <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
             <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
             <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
@@ -383,136 +387,7 @@
       </table>
     </section>
 
-    <!-- ============================= PREMISES/OPERATIONS · CW 2023 ============================= -->
-    <section class="sheet-view" id="view-premops-cw23">
-      <div class="titleblock">
-        <div class="field"><span class="k">Coverage</span><span class="v">Premises/Operations (subline 334)</span></div>
-        <div class="field"><span class="k">Edition</span><span class="v">Pre-2027: GL_CW_20231201_V02/V03, 20260101_V01, 20261001_V01 (identical coverage rules) and earlier — every policy effective before 2027-04-01; the golden case's parent is 20231201_V03</span></div>
-        <div class="field"><span class="k">Master chain</span><span class="v">ErcSetRatesAndFactors (9 classification + 38 coverage steps) + ErcRate (9 steps, incl. SetMedicalPaymentsCharge, SetMinimumPremium/SetMinPremium and the SpecialCombined pair)</span></div>
-        <div class="field"><span class="k">Premium file</span><span class="v">GeneralLiabilityClassificationPremOpsCoverageRules.Rule.xml</span></div>
-        <div class="field wide"><span class="k">Coverage gate</span><span class="v">No explicit gate flag — referrals degrade silently into computed numbers (ILTA "Refer To Co.", empty class/territory, empty premium basis)</span></div>
-      </div>
-      <div class="sheet">
-        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
-        <pre class="mermaid">
-%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
-flowchart TD
-    start(["Premises/Operations coverage record"]) --> expCalc{"PremiumBasis in nine /1000 bases?"}
-    expCalc -->|"Yes"| expDiv["PremOpsExposureCalc = truncate(Exposure/1000)"]:::step
-    expCalc -->|"No, empty basis falls here too"| expRaw["PremOpsExposureCalc = Exposure (raw) - 1000x overcharge risk"]:::openq
-    expDiv --> ilta{"PremOpsIncrdLimitTableAssignment = 'Refer To Co.'?"}
-    expRaw --> ilta
-    ilta -->|"Yes, no override supplied"| iltaNull["Assignment resolves null -> Int = 0"]:::openq
-    ilta -->|"No, or override supplied"| iltaOk["FinalPremOpsIncrdLimitTableAssignment resolved"]:::step
-    iltaNull --> ilfLookup{"ILF lookup: table#, occ limit, agg limit all set?"}
-    iltaOk --> ilfLookup
-    ilfLookup -->|"No, any key empty"| ilfZero["PremOpsIncrdLimitFactor = 0.0"]:::zero
-    ilfLookup -->|"Yes"| ilfOk["CSLILF = lookup ILFPremOps(state,table#,occ,agg)"]:::step
-    ilfOk --> lossCostGate{"ClassCode and Territory both non-empty?"}
-    ilfZero --> lossCostGate
-    lossCostGate -->|"No"| lossCostZero["PremOpsLossCost = 0.0 - silently routes to ELP path"]:::openq
-    lossCostGate -->|"Yes"| lossCostLookup["PremOpsLossCost = lookup (size-of-risk or standard)"]:::step
-    lossCostLookup --> baseRate{"LossCost <> 0?"}
-    lossCostZero --> baseRate
-    baseRate -->|"Yes"| baseFromLC["BaseRate = round(LossCost x BYOAExclFactor x LCM [x ClaimsMadeMult],3)"]:::step
-    baseRate -->|"No"| baseFromELP["BaseRate = round(ELP x LCM [x ClaimsMadeMult],3)"]:::step
-    baseFromLC --> medpay["MedicalPaymentsFactor = lookup MedPayFactor(CW,class)"]:::step
-    baseFromELP --> medpay
-    medpay --> dedFactor{"Deductible override supplied?"}
-    dedFactor -->|"Yes"| dedOverride["DeductibleFactor = override"]:::step
-    dedFactor -->|"No"| dedLookup["DeductibleFactor = lookup DedFactorPremOpsCSL, else 0.0"]:::step
-    dedOverride --> sentinel{"'Per Claim' deductible row?"}
-    dedLookup --> sentinel
-    sentinel -->|"Yes"| sentinelZero["Factor = 0 in table - guarded only by DoMessage, not the rating chain"]:::openq
-    sentinel -->|"No, Per Occurrence"| sentinelReal["Real factor applied (0.005-0.018)"]:::step
-    sentinelZero --> finalILF["FinalILF = round(CSLILF - FinalDeductibleFactor,3)"]:::step
-    sentinelReal --> finalILF
-    finalILF --> finalRate["FinalRate = round(BaseRate x FinalILF [x SizeOfRisk] x PackageMod x ExperienceMod x ExpenseMod x ModToUse,3)"]:::step
-    finalRate --> medCharge["MedicalPaymentsCharge = round(LossCost x LCM [x ClaimsMadeMult] x (MedPayFctr-1) x mods x Exposure[/1000],0) - Med Pay limit 10,000 only"]:::step
-    medCharge --> minPrem1["MinPremium / SpecialCombinedMinPremium computed - pre-2027 only"]:::step
-    minPrem1 --> premium["Premium = round(FinalRate x Exposure[/1000] + MedicalPaymentsCharge,0)"]:::final
-    premium --> zeroCheck{"Premium computes to 0?"}
-    zeroCheck -->|"Yes"| stays0["Stays 0.0 - no $1 floor exists in this edition"]:::zero
-    zeroCheck -->|"No"| doneFinal["Premium stands - golden case: 976 (engine, OK 2025-08-01)"]:::final
-    doneFinal --> topUp["Policy level: PremOpsPremiumToReachMin = MinPremium - Sum(class Premiums) when higher, else 0"]:::final
-    lossCostLookup -.->|"no row at all"| nullLC["Loss cost resolves NULL -> engine refuses the rating (OI-94)"]:::zero
-
-    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
-    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
-    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
-    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
-    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
-    class expCalc,ilta,ilfLookup,lossCostGate,baseRate,dedFactor,sentinel,zeroCheck gate
-        </pre>
-      </div>
-      <div class="notes">
-        <div>
-          <h3>What to notice</h3>
-          <ul>
-            <li>Two separate "silent referral" paths converge on the same rate build-up: a missing premium basis 1000x-overcharges (falls to the raw-exposure branch), and a missing class/territory silently routes onto the ELP path — neither raises a flag.</li>
-            <li>Every "Per Claim" deductible row publishes a real-looking `0` factor, guarded only by a validation rule that fires on override absence, not by the rating chain itself.</li>
-            <li>Medical payments is a separate, additive, 0-decimal charge in these editions, at the 10,000 limit only — folded into the ILF only under CW 2027 (see that chain). Engine, OK @ 2026-08-01: MedPayFactor 1.003, charge 1, Premium 995 + 1 = 996, equal to ISO's output.</li>
-            <li>A minimum premium is computed here and topped up at policy level by <code>GeneralLiabilityPremOpsPremiumToReachMinCoverage</code> — so E11 (<code>AdditionalInterestFactor</code> computed but never consumed) applies to CW 2027 only.</li>
-          </ul>
-        </div>
-        <div class="delta"><strong>Template form.</strong> This is the golden-case edition (parent GL_CW_20231201_V03) — every "differs from 334" note on other sublines' pages refers back to this shape.</div>
-      </div>
-    </section>
-
-    <!-- ============================= PREMISES/OPERATIONS · CW 2027 ============================= -->
-    <section class="sheet-view" id="view-premops-cw27">
-      <div class="titleblock">
-        <div class="field"><span class="k">Coverage</span><span class="v">Premises/Operations (subline 334)</span></div>
-        <div class="field"><span class="k">Edition</span><span class="v">GL_CW_20270401_V01 and V02 (identical coverage rules) — parents of 46 jurisdictions at 2027-04-01; GA, NJ, NY, WA and CA stay on pre-2027 parents</span></div>
-        <div class="field"><span class="k">Master chain</span><span class="v">ErcSetRatesAndFactors (29 coverage steps) + ErcRate (4: SetFinalRate, SetAdditionalInterestFactor, SetPremium, SetPremiumIndicator) — the pre-2027 med-pay charge, split-limit, BI/PD ILF and minimum-premium rules are gone</span></div>
-        <div class="field"><span class="k">Premium file</span><span class="v">GeneralLiabilityClassificationPremOpsCoverageRules.Rule.xml (CW 20270401 V01/V02)</span></div>
-        <div class="field wide"><span class="k">Coverage gate</span><span class="v">Same silent-referral surface as CW 2023, plus: nine-base /1000 set drops Passenger Days; elevator/escalator inspection charge absent from the rule list entirely</span></div>
-      </div>
-      <div class="sheet">
-        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
-        <pre class="mermaid">
-%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
-flowchart TD
-    start(["Premises/Operations coverage record, CW 2027"]) --> baseChain["BaseRate = round(LossCost|ELP x BYOAExclFactor x LCM [x ClaimsMadeMult],3) - same build-up as CW 2023"]:::step
-    baseChain --> cslilf["CSLILF = lookup ILFPremOps(state,table#,occ,agg) - classification-level copy"]:::step
-    cslilf --> medpayFctr["MedicalPaymentsFactor = lookup IncreasedMedPayLimitFactor(CW, ClassificationType, Limit) - replaces MedPayFactor; skipped at the included 5,000 or with a Coverage C exclusion"]:::step
-    medpayFctr --> dedFactor2{"Deductible override supplied?"}
-    dedFactor2 -->|"Yes"| dedOverride2["DeductibleFactor = override"]:::step
-    dedFactor2 -->|"No"| dedLookup2["DeductibleFactor = lookup DedFactorPremOpsCSL, else 0.0"]:::step
-    dedOverride2 --> finalILF2["FinalILF = round(CSLILF + MedicalPaymentsFactor - 1 - FinalDeductibleFactor,3) - med-pay folded in, no separate charge rule exists"]:::step
-    dedLookup2 --> finalILF2
-    finalILF2 --> clamp{"FinalILF <= 0?"}
-    clamp -->|"Yes"| clampZero["Clamped to 0.0"]:::zero
-    clamp -->|"No"| clampOk["FinalILF stands"]:::step
-    clampZero --> finalRate2["FinalRate = round(BaseRate x FinalILF [x SizeOfRisk] x PackageMod x ExperienceMod x ExpenseMod x ModToUse,3)"]:::step
-    clampOk --> finalRate2
-    finalRate2 --> premium2["Premium = round(FinalRate x Exposure[/1000, nine bases - Passenger Days dropped],0)"]:::step
-    premium2 --> floor{"Premium = 0 and PremOpsCovExposure > 0?"}
-    floor -->|"Yes"| floored["Premium = 1.0 - the $1 floor, undocumented in the manual, CW 2027 only"]:::final
-    floor -->|"No, Premium <> 0"| stands["Premium stands - engine, OK 2027-04-01: 0.090 x 2.147 -> 0.193 x 5,000 = 965"]:::final
-    stands --> noMin["No minimum premium: the PremiumToReachMin records are forced to 0 in this edition"]:::zero
-    floor -->|"No, Exposure = 0 too"| staysZero["Premium stays 0.0"]:::zero
-
-    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
-    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
-    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
-    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
-    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
-    class dedFactor2,clamp,floor gate
-        </pre>
-      </div>
-      <div class="notes">
-        <div>
-          <h3>What to notice</h3>
-          <ul>
-            <li>Algebraically close to the pre-2027 chain — `BaseRate = LossCost x LCM x ClaimsMadeMultiplier` is common to both — but rounding lands at a different point: golden-case inputs give 976 pre-2027 and, by hand arithmetic, 975 under CW 2027. No engine run produces the 975, because the golden inputs resolve a pre-2027 parent.</li>
-            <li>No `SetMedicalPaymentsCharge` rule exists in this edition at all — medical payments is expressed purely as a term inside `FinalILF`.</li>
-            <li>The $1 floor is new and undocumented in the manual; CW 2023 has no equivalent — a genuinely zero-computing premium there just stays zero.</li>
-          </ul>
-        </div>
-        <div class="delta"><strong>vs. CW 2023 and earlier.</strong> Same rate sources, same rule names, different formula shape at three points: FinalILF folds med-pay in, SetPremium drops the separate charge term, and a $1 floor appears where none existed before.</div>
-      </div>
-    </section>
+    <!-- Premises/Operations (both editions) moved to gl-premops-chains.html on 2026-10-05. -->
 
     <!-- ============================= PRODUCTS/COMPLETED OPERATIONS ============================= -->
     <section class="sheet-view" id="view-prodscompldops-main">
@@ -1622,7 +1497,7 @@ flowchart TD
 </div>
 
 <footer class="doc-footer">
-  Source: <strong>GL_CW_20231201_V03</strong> (golden-case parent), with <strong>GL_CW_20270401_V01</strong> deltas noted per subline where documented. Full citations, formulas, and open-item detail live in the companion markdown docs (<code style="font-family:var(--font-mono)">*_RatingAlgorithms.md</code>) and the source gate docs (<code style="font-family:var(--font-mono)">docs/gates/GATE-33*.md</code>, <code style="font-family:var(--font-mono)">GATE-365-*.md</code>, <code style="font-family:var(--font-mono)">GATE-370-*.md</code>), all in <code style="font-family:var(--font-mono)">C:\Projects\Recursive_Harness_2.0\GL_Algorithm</code>.
+  Source: <strong>GL_CW_20231201_V03</strong> (golden-case parent), with <strong>GL_CW_20270401_V01</strong> deltas noted per subline where documented. Full citations, formulas, and open-item detail live in the companion markdown docs (<code style="font-family:var(--font-mono)">*_RatingAlgorithms.md</code>) and the source gate docs (<code style="font-family:var(--font-mono)">docs/gates/GATE-33*.md</code>, <code style="font-family:var(--font-mono)">GATE-365-*.md</code>, <code style="font-family:var(--font-mono)">GATE-370-*.md</code>), all in <code style="font-family:var(--font-mono)">F:\Recursive_Harness_2.0\GL_Algorithm</code>.
 </footer>
 
 <script>
