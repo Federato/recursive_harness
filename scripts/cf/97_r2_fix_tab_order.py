@@ -18,7 +18,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-TARGET = Path(r"C:\Projects\Spreadsheet_Rater\CF\CFRater1.02.xlsb")
+TARGET = Path(r"F:\Spreadsheet_Rater\CF\CFRater1.02.xlsb")
 FORBIDDEN = "cfrater1.01.xlsb"
 
 PREMIUMS = ["OUT_Prem_Building", "OUT_Prem_Contents", "OUT_Prem_BI",

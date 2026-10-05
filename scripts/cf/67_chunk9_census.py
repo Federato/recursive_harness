@@ -346,8 +346,8 @@ def main() -> int:
     if not stc_dir.exists():
         print(f"    no STC/ folder under {pkg} -- searching known corpus "
               f"locations instead")
-        candidates = list(Path("C:/Projects/ISO_ERC_Files").rglob("STC")) \
-            if Path("C:/Projects/ISO_ERC_Files").exists() else []
+        candidates = list(Path("F:/ISO_ERC_Files").rglob("STC")) \
+            if Path("F:/ISO_ERC_Files").exists() else []
     else:
         candidates = [stc_dir]
     payloads = []

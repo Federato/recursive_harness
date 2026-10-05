@@ -1,6 +1,6 @@
 import os, re, json, collections, csv, io
 
-BASE = r"C:\Projects\ISO_ERC_Files\CF\20260601\CFCW20260601V01\Rate Tables"
+BASE = r"F:\ISO_ERC_Files\CF\20260601\CFCW20260601V01\Rate Tables"
 
 files = os.listdir(BASE)
 print("Total files in Rate Tables:", len(files))
@@ -41,4 +41,4 @@ json.dump({
     "extensions": dict(exts),
     "prefix_rate_groups": dict(groups),
     "first2word_groups": dict(topic2),
-}, open(r"C:\Projects\Recursive_Harness_2.0\scripts\erc\_cf_table_survey.json", "w"), indent=2)
+}, open(r"F:\Recursive_Harness_2.0\scripts\erc\_cf_table_survey.json", "w"), indent=2)

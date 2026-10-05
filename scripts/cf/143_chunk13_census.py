@@ -33,7 +33,7 @@ from gl_engine.interp import nodes
 
 census11 = import_module("106_chunk11_census")
 ASOF = "20260917"
-ISO_CF = Path("C:/Projects/ISO_ERC_Files/CF")
+ISO_CF = Path("F:/ISO_ERC_Files/CF")
 KEY = re.compile(r"Terror|TRIA|Terrsm")
 DATE_NODES = {"DateDifference", "DateAdd", "DateCreate", "DatePart"}
 STRUCTURAL = {"Rules", "Rule", "MetaData", "MetaDataCode", "Test", "Then", "Else",

@@ -15,10 +15,10 @@ sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 import argparse
 LINES = {
-    "GL": dict(pkg_glob=r"C:/Projects/ISO_ERC_Files/General_Liability/*/GL CW *",
+    "GL": dict(pkg_glob=r"F:/ISO_ERC_Files/General_Liability/*/GL CW *",
                root="GeneralLiability", out=os.path.join("GL_Algorithm", "GL_Premium_Map.xlsx"),
                dict_=os.path.join("GL_Algorithm", "GL_Data_Dictionary.xlsx")),
-    "CF": dict(pkg_glob=r"C:/Projects/ISO_ERC_Files/CF/*/CFCW*",
+    "CF": dict(pkg_glob=r"F:/ISO_ERC_Files/CF/*/CFCW*",
                root="CommercialProperty", out=os.path.join("CF_Algorithm", "CF_Premium_Map.xlsx"),
                dict_=os.path.join("CF_Algorithm", "CF_Data_Dictionary.xlsx")),
 }

@@ -21,7 +21,7 @@ import os
 import re
 from collections import Counter, defaultdict
 
-ROOT = r"C:\Projects\ISO_ERC_Files\General_Liability"
+ROOT = r"F:\ISO_ERC_Files\General_Liability"
 NS_RE = re.compile(r'targetNamespace="http://www\.verisk\.com/iso/erc/([^/"]+)/')
 
 

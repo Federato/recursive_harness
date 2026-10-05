@@ -27,7 +27,7 @@ import tempfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-IDEATION = Path(r"C:\Projects\Ideation")
+IDEATION = Path(r"F:\Ideation")
 PROJECT = "iso-rating-engine"
 SITE = "https://federato-ideation.vercel.app"
 PAD = "<style>body{padding-top:44px}</style>\n"

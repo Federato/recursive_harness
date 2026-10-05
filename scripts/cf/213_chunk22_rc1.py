@@ -66,7 +66,7 @@ P = "CommercialProperty"
 AL = "AdditionalLocationsSpecialCoinsurance"
 VR = "ValueReportingForm"
 CW = book_for("OR", ASOF).parent.package.content
-ERC = Path(r"C:\Projects\ISO_ERC_Files\CF")
+ERC = Path(r"F:\ISO_ERC_Files\CF")
 FAIL = []
 GROUPS = ("BasicGroupI", "BasicGroupII", "Broad", "Special", "EQ")
 MLARS = tuple(g + "MLAR" for g in GROUPS)
@@ -390,6 +390,8 @@ def touchpoints():
         "gl_engine/interp/nodes.py": "c7ffe66, chunk 24 (Builders Risk); 157_ --all 293 of 293 at chunk 27, 2026-10-02",
         "gl_engine/interp/interpreter.py": "C28-05 strict SingleResult; 157_ --all 293 of 293, 2026-10-05",
         "cf_engine/resolve/book.py": "C28-05 strict default and EQ stub; 157_ --all 293 of 293, 2026-10-05",
+        "cf_engine/config.py": "the corpus root's default moved to F: (new PC, 2026-10-05); no rating code",
+        "gl_engine/config.py": "the corpus root's default moved to F: (new PC, 2026-10-05); no rating code",
     }
     git = subprocess.run(["git", "diff", "--name-only", "5a35c1f", "--", "cf_engine", "gl_engine"],
                          capture_output=True, text=True, cwd=ROOT)

@@ -1,7 +1,7 @@
 """CF ERC corpus inventory (Phase 1).
 
 Independent of the CF_Algorithm / CFBranch / cf-circular-expert manual-reading
-side. Reads only the raw ERC corpus at C:\\Projects\\ISO_ERC_Files\\CF\\.
+side. Reads only the raw ERC corpus at F:\\ISO_ERC_Files\\CF\\.
 
 Produces Agentic/cf-erc-expert/knowledge/corpus.json.
 
@@ -28,8 +28,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-ROOT = Path(r"C:\Projects\ISO_ERC_Files\CF")
-OUT = Path(r"C:\Projects\Recursive_Harness_2.0\Agentic\cf-erc-expert\knowledge\corpus.json")
+ROOT = Path(r"F:\ISO_ERC_Files\CF")
+OUT = Path(r"F:\Recursive_Harness_2.0\Agentic\cf-erc-expert\knowledge\corpus.json")
 
 PRECISE_EDITION = "20260601"
 
@@ -116,7 +116,7 @@ def main() -> None:
     result = {
         "_note": (
             "Built by scripts/erc/cf_01_inventory.py, reading only "
-            "C:\\Projects\\ISO_ERC_Files\\CF\\. Edition folder list and "
+            "F:\\ISO_ERC_Files\\CF\\. Edition folder list and "
             "package-directory counts are an EXACT walk of every edition "
             "folder found under the CF root (top-level dirs are treated as "
             "editions/snapshots; each immediate subdirectory as a package). "

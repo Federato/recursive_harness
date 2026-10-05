@@ -54,7 +54,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from cf_engine.resolve import book_for
 
 ASOF = "20260917"
-ISO_CF = Path("C:/Projects/ISO_ERC_Files/CF")
+ISO_CF = Path("F:/ISO_ERC_Files/CF")
 
 SUBCOV = ["TenantsLease", "BonusPayments", "Improvements", "PrepaidRent"]
 FORMS = ["BasicGroupI", "BasicGroupII", "Broad", "Special", "Earthquake"]

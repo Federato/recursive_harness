@@ -38,7 +38,7 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
 LEDGER = REPO / "CF_Algorithm" / "dropdown tables" / "State_ERC_CW_Editions.csv"
-TARGET = Path(r"C:\Projects\Spreadsheet_Rater\CF\CFRater1.02.xlsb")
+TARGET = Path(r"F:\Spreadsheet_Rater\CF\CFRater1.02.xlsb")
 FORBIDDEN = "cfrater1.01.xlsb"
 EDITIONS = "TBL - Editions"
 DIAG = "OUT - Diagnostics"

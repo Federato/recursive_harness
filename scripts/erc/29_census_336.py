@@ -21,7 +21,7 @@ import os
 import re
 from collections import defaultdict
 
-ROOT = r"C:\Projects\ISO_ERC_Files\General_Liability"
+ROOT = r"F:\ISO_ERC_Files\General_Liability"
 NS_RE = re.compile(r'targetNamespace="http://www\.verisk\.com/iso/erc/([^/"]+)/')
 RULE_RE = re.compile(r'<rul:Rule\s+([^>]*?)>')
 PLUMBING = {"InitializeRuleSet", "ErcProcess"}

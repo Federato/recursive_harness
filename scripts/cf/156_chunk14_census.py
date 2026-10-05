@@ -19,7 +19,7 @@ from cf_engine.resolve import book_for
 
 census11 = import_module("106_chunk11_census")
 ASOF = "20260917"
-ISO_CF = Path("C:/Projects/ISO_ERC_Files/CF")
+ISO_CF = Path("F:/ISO_ERC_Files/CF")
 
 
 def rules_in(s):

@@ -40,7 +40,7 @@ from r8_contents_translate import colname                          # noqa: E402
 p4a = import_module("112_r8_phase4a_building")
 Gate, prem, show, grid, calc = p4a.Gate, p4a.prem, p4a.show, p4a.grid, p4a.calc
 
-ISO = Path(r"C:\Projects\ISO_ERC_Files\CF\20260601")
+ISO = Path(r"F:\ISO_ERC_Files\CF\20260601")
 CW = ISO / "CFCW20260601V01" / "Rate Tables"
 BR, CR, CS, BI, SCH = ("CALC - Bldg Rating", "CALC - Contents Rating", "CALC - CoreScratchpad",
                        "CALC - BI Rating", "IN - Schedule")

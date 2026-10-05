@@ -54,6 +54,7 @@ from importlib import import_module
 from cf_engine.config import NULL_ARITHMETIC, ROUNDING
 from cf_engine.resolve import book_for
 from gl_engine.interp.interpreter import Interpreter
+import _iso_refusals as _iso                                    # noqa: E402
 from gl_engine.interp.tree import Node
 from gl_engine.interp.values import TYPES, InterpretError
 
@@ -260,7 +261,9 @@ def run_fixtures():
             data = Node.from_dict(f"MasterCF{st}", sub)
             ip.run(data)
         except InterpretError as exc:
-            results.append((p, st, fams, "REFUSED", str(exc), []))
+            # C28-05: ours refuses where ISO refused this same fixture (chunk 12, 2026-09-17), at the same table
+            iso = _iso.saved_iso_refusal(p.stem)
+            results.append((p, st, fams, "ISO-REFUSED" if iso and iso == _iso.table_of(exc) else "REFUSED", str(exc), []))
             continue
         except Exception as exc:                       # noqa: BLE001 -- report, never hide
             results.append((p, st, fams, "ERROR", f"{type(exc).__name__}: {exc}", []))
@@ -292,8 +295,13 @@ def probe_drone(st: str, blanket: bool) -> str:
     for cp in d["CommercialProperty"]:
         cp["State"] = st
     sub = {"EffDate": "09/17/2026", "ExpDate": "09/17/2027"}
-    sub.update(to_engine({"CommercialProperty": d["CommercialProperty"]}))
-    ip = Interpreter(book_for(st, ASOF), rounding=ROUNDING, null_arithmetic=NULL_ARITHMETIC)
+    # C28-05: the fixture's EQ keys are ones GA no longer files (ISO refuses it as filed); OI-108 is not about EQ.
+    # This probe watches an ENGINE mechanism (Break inside Sum, OI-108) on a Georgia record moved to other states,
+    # where Georgia's territories have no row (ISO refused that shape in OI-108's own live run): so it runs with the
+    # strict SingleResult refusal OFF, explicitly. It is a diagnostic, never a rating claim.
+    sub.update(to_engine(_iso.no_eq({"CommercialProperty": d["CommercialProperty"]})))
+    ip = Interpreter(book_for(st, ASOF), rounding=ROUNDING, null_arithmetic=NULL_ARITHMETIC,
+                     strict_single_result=False)
     data = Node.from_dict(f"MasterCF{st}", sub)
     try:
         ip.run(data)
@@ -372,7 +380,7 @@ def main():
               f"scheduled {s:>6s}   blanket {bl:>6s}")
 
     unhandled = [x for x in flagged if x[2].startswith(("REFUSES", "WRONG"))]
-    refused = [r for r in results if r[3] != "OK"]
+    refused = [r for r in results if r[3] not in ("OK", "ISO-REFUSED")]
     print(f"\n  unhandled static shapes: {len(unhandled)}; fixtures refused: {len(refused)}")
     return 1 if unhandled or refused else 0
 

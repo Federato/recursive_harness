@@ -19,7 +19,7 @@ import sys
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
-TARGET = Path(r"C:\Projects\Spreadsheet_Rater\CF\CFRater1.02.xlsb")
+TARGET = Path(r"F:\Spreadsheet_Rater\CF\CFRater1.02.xlsb")
 
 
 def main() -> int:

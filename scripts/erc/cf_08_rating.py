@@ -1,7 +1,7 @@
 import os, json
 
-RULES = r"C:\Projects\ISO_ERC_Files\CF\20260601\CFCW20260601V01\Rules"
-TABLES = r"C:\Projects\ISO_ERC_Files\CF\20260601\CFCW20260601V01\Rate Tables"
+RULES = r"F:\ISO_ERC_Files\CF\20260601\CFCW20260601V01\Rules"
+TABLES = r"F:\ISO_ERC_Files\CF\20260601\CFCW20260601V01\Rate Tables"
 
 # Verify premium-chain citations found by manual reading of CommercialPropertyStructureRules.Rule.xml
 struct_path = os.path.join(RULES, "CommercialPropertyStructureRules.Rule.xml")
@@ -37,4 +37,4 @@ json.dump({
     "chain_citation_checks": checks,
     "special_building_rate_table_lines": len(lines),
     "special_building_rate_table_content": lines,
-}, open(r"C:\Projects\Recursive_Harness_2.0\scripts\erc\_cf_rating_survey.json", "w"), indent=2)
+}, open(r"F:\Recursive_Harness_2.0\scripts\erc\_cf_rating_survey.json", "w"), indent=2)

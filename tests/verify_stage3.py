@@ -25,7 +25,7 @@ from gl_engine.rating import (Kernel, RatingError, STRICT,        # noqa: E402
 from gl_engine.interp import tree                                 # noqa: E402
 
 FIXTURE = ROOT / "tests" / "fixtures" / "golden-ok-2025.json"
-ISO_DIR = Path(r"C:\Projects\ISO_ERC_Files\General_Liability\OK"
+ISO_DIR = Path(r"F:\ISO_ERC_Files\General_Liability\OK"
                r"\GL_OK 20250601 V01\GL OK 20250601 V01\STC")
 ISO_IN = ISO_DIR / "1. Input.json"
 ISO_OUT = ISO_DIR / "1. Output.json"

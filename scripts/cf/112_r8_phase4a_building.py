@@ -42,7 +42,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import r8_building_translate as B                                  # noqa: E402
 from r8_contents_translate import colname                          # noqa: E402
 
-TARGET = Path(r"C:\Projects\Spreadsheet_Rater\CF\CFRater1.02.xlsb")
+TARGET = Path(r"F:\Spreadsheet_Rater\CF\CFRater1.02.xlsb")
 FORBIDDEN = "cfrater1.01.xlsb"
 PREMIUMS = ["OUT_Prem_Building", "OUT_Prem_Contents", "OUT_Prem_BI",
             "OUT_Prem_SCBuilding", "OUT_Prem_SCBI", "OUT_Prem_Total"]

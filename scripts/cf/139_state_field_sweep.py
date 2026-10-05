@@ -19,7 +19,7 @@ from collections import defaultdict
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
-ERC = Path(r"C:\Projects\ISO_ERC_Files\CF")
+ERC = Path(r"F:\ISO_ERC_Files\CF")
 CW = ERC / "20260601" / "CFCW20260601V01" / "Form Fields" / "Fields.FormField.csv"
 TABLES = {"CommercialPropertyLocation", "CommercialPropertyStructure", "CommercialPropertyOccupClass",
           "CommercialPropertyPersonalProperty", "CommercialPropertyBusinessIncome",

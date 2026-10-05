@@ -1,7 +1,7 @@
 """Phase 4 step 4: characterise every integrity anomaly with hard evidence.
 
 READ-ONLY.  This script never writes to, moves or renames anything under
-C:\\Projects\\ISO_ERC_Files.  It only reads and hashes.
+F:\\ISO_ERC_Files.  It only reads and hashes.
 
 Covers:
   I1 duplicate package directories  - full recursive tree hash of each

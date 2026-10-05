@@ -1,7 +1,7 @@
 """CF ERC territory.json builder (Phase 4).
 
 Independent of CF_Algorithm / CFBranch / cf-circular-expert. Reads only the
-raw ERC corpus at C:\\Projects\\ISO_ERC_Files\\CF\\20260601\\.
+raw ERC corpus at F:\\ISO_ERC_Files\\CF\\20260601\\.
 
 For each sampled package, finds its "BasicGroupIRatingTerritory<ST>" domain
 table (the primary Group I premises rating-territory table; excludes
@@ -36,8 +36,8 @@ import csv
 import json
 from pathlib import Path
 
-ROOT = Path(r"C:\Projects\ISO_ERC_Files\CF\20260601")
-OUT = Path(r"C:\Projects\Recursive_Harness_2.0\Agentic\cf-erc-expert\knowledge\territory.json")
+ROOT = Path(r"F:\ISO_ERC_Files\CF\20260601")
+OUT = Path(r"F:\Recursive_Harness_2.0\Agentic\cf-erc-expert\knowledge\territory.json")
 
 SAMPLE = [
     ("CFCW20260601V01", "CW"),
@@ -147,7 +147,7 @@ def main() -> None:
     result = {
         "_note": (
             "Built by scripts/erc/cf_04_territory.py, reading only "
-            "C:\\Projects\\ISO_ERC_Files\\CF\\20260601\\. Classifies each "
+            "F:\\ISO_ERC_Files\\CF\\20260601\\. Classifies each "
             "sampled package's primary Group I premises rating-territory "
             "domain table (DomainBasicGroupIRatingTerritory<ST>) into one of "
             "three schemes -- ZIP_TABLE, SINGLE_TERRITORY, COUNTY_PLACE -- by "

@@ -5,7 +5,7 @@ through ISO's own service, and compare. **Any difference is our defect until
 proven otherwise.**"* This is the half that talks to ISO.
 
 **No third-party dependency.** A working client already exists in
-`C:\\Projects\\Will_Dan_Collab_dev` and uses `httpx`; the protocol is OAuth 2.0
+`F:\\Will_Dan_Collab_dev` and uses `httpx`; the protocol is OAuth 2.0
 client credentials followed by a JSON POST, which `urllib` does without adding a
 dependency to a project that has none.
 
@@ -82,7 +82,7 @@ def load_env(path: str | Path | None = None) -> dict:
     The file lives outside this repository -- credentials are never committed.
     """
     if path is None:
-        path = os.environ.get("RAAS_ENV_FILE", r"C:\Projects\Will_Dan_Collab_dev\.env")
+        path = os.environ.get("RAAS_ENV_FILE", r"F:\Will_Dan_Collab_dev\.env")
     p = Path(path)
     if not p.exists():
         return {}

@@ -25,7 +25,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 LOCAL = ROOT / "docs" / "CF-BUILD-STATUS.html"
-IDEATION = Path(r"C:\Projects\Ideation")
+IDEATION = Path(r"F:\Ideation")
 REL = "projects/iso-rating-engine/cf-build-status/index.html"
 ART = "projects/iso-rating-engine/cf-build-status/artifact.json"
 PROJ = "projects/iso-rating-engine/project.json"

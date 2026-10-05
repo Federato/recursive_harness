@@ -27,7 +27,7 @@ of an answer, confidently delivered.
 
 | | Source | Location | Licensed to |
 |---|---|---|---|
-| **Tier 1** | **ISO's ERC content** | `C:\Projects\ISO_ERC_Files\General_Liability\` (read-only) | **Supply** every value, table, key, rule, edition and structure |
+| **Tier 1** | **ISO's ERC content** | `F:\ISO_ERC_Files\General_Liability\` (read-only) | **Supply** every value, table, key, rule, edition and structure |
 | **Tier 2** | **ISO's manuals and circulars** | `Agentic/iso-circular-expert/text/` — `rules`, `losscosts`, `terrorism`, `scheduleexperience`, `compositerating` | **Confirm** the meaning of something present in tier 1. **Never supply** a value or mechanism tier 1 lacks |
 | **Under test** | **Our Python** | `gl_engine/`, `tests/`, `scripts/` | Neither sources nor confirms. It is **the thing being checked** against tiers 1 and 2 |
 | **Tier 3** | **A person** | — | Settles what tiers 1 and 2 cannot |
@@ -151,7 +151,7 @@ A rating takes about a second warm, two cold. `scripts/variants.py` declares wha
 varied per jurisdiction; `scripts/sweep.py` runs one configuration across states, engine-only or
 against ISO's live service. **Prefer running a variant to asserting what a jurisdiction accepts.**
 
-`C:\Projects\ISO_ERC_Files\` is **read-only**. Never move, rename, delete or rewrite anything in it.
+`F:\ISO_ERC_Files\` is **read-only**. Never move, rename, delete or rewrite anything in it.
 Exclude `_quarantine_misfiled\` from every scan — it is a byte-identical duplicate and would
 double-count.
 

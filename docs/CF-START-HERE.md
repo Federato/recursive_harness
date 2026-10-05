@@ -23,10 +23,12 @@ pins on "ours $0", every new refusal sent live and **17 of 17 refused at the sam
 OI-117 (`Convert` of a blank) open.** Puerto Rico not confirmable. **Next: Set C, C28-07** (OI-126 / OI-123); each change
 needs the user's go.
 
-**New PC (2026-10-05).** The corpus is at `F:\ISO_ERC_Files`: set `CF_ERC_ROOT` / `GL_ERC_ROOT` and
-`PYTHONIOENCODING=utf-8`; RaaS needs `RAAS_ENV_FILE=F:\Will_Dan_Collab_dev\.env` (it now carries `RAAS_ORG_ID` /
-`RAAS_SHIP_ID`). 11 gate scripts still fail on hardcoded `C:\Projects` paths (the 6 GL suites' fixtures, `91_ 105_ 125_
-147_ 224_`); they fail identically with the rule off. Pointing the config defaults at F: is the proposed fix.
+**New PC (2026-10-05).** Everything now lives on F: and the defaults say so: the corpus `F:\ISO_ERC_Files`
+(`cf_engine` / `gl_engine` config), RaaS credentials `F:\Will_Dan_Collab_dev\.env` (with `RAAS_ORG_ID` / `RAAS_SHIP_ID`), the
+Ideation clone `F:\Ideation`; no environment variables needed (set `PYTHONIOENCODING=utf-8` for the console). The code's
+`C:\Projects` references were moved to F: (historical logs and docs left as written). Full gate clean but for
+`verify_notebooks` (IPython is not installed here). The status-page push also needs `gh auth login` and
+`git config --global --add safe.directory F:/Ideation`.
 
 ## Earlier (set 2026-10-02): chunk 27 GATED, chunk 28 OPEN at 4 of 22
 

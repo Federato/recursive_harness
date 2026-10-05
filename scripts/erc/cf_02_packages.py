@@ -1,7 +1,7 @@
 """CF ERC packages.json builder (Phase 2), 20260601 edition only.
 
 Independent of CF_Algorithm / CFBranch / cf-circular-expert. Reads only the
-raw ERC corpus at C:\\Projects\\ISO_ERC_Files\\CF\\20260601\\.
+raw ERC corpus at F:\\ISO_ERC_Files\\CF\\20260601\\.
 
 For each package directory inside the 20260601 edition folder, records:
   jurisdiction (2-letter code, or CW for countrywide)
@@ -24,8 +24,8 @@ import json
 import re
 from pathlib import Path
 
-ROOT = Path(r"C:\Projects\ISO_ERC_Files\CF\20260601")
-OUT = Path(r"C:\Projects\Recursive_Harness_2.0\Agentic\cf-erc-expert\knowledge\packages.json")
+ROOT = Path(r"F:\ISO_ERC_Files\CF\20260601")
+OUT = Path(r"F:\Recursive_Harness_2.0\Agentic\cf-erc-expert\knowledge\packages.json")
 
 NAME_RE_STATE = re.compile(r"^CF\s+([A-Z]{2})\s+(\d{8})\s+(V\d+)$", re.I)
 NAME_RE_CW = re.compile(r"^CFCW(\d{8})(V\d+)$", re.I)
@@ -113,7 +113,7 @@ def main() -> None:
     result = {
         "_note": (
             "Built by scripts/erc/cf_02_packages.py, reading only "
-            "C:\\Projects\\ISO_ERC_Files\\CF\\20260601\\. Covers the 20260601 "
+            "F:\\ISO_ERC_Files\\CF\\20260601\\. Covers the 20260601 "
             "edition folder only (66 package directories: 1 countrywide + 65 "
             "state/DC/PR). Keyed by the literal package directory name as it "
             "appears on disk. xsd_target_ns and parent_package_id are read "

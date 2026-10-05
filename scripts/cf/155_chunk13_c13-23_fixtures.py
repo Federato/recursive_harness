@@ -29,7 +29,7 @@ from gl_engine.interp.values import InterpretError
 
 cmp = import_module("154_chunk13_rc5_fields_messages")
 gc, rp = cmp.gc, cmp.rp
-ISO_CF = Path("C:/Projects/ISO_ERC_Files/CF")
+ISO_CF = Path("F:/ISO_ERC_Files/CF")
 EFFECTIVE = "2026-09-17T00:00:00"
 
 

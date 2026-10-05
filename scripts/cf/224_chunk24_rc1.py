@@ -363,7 +363,7 @@ def evidence():
     check(len(basic) == 2, "the two stored Basic-cause Builders Risk policies (IL, IN) re-rate end to end (inside the count above); "
           "the plan's third Basic fixture, STC_CP000020234 (NY), is Builders Risk with no theft record and was never stored")
     print(f"    built readers on the {br_pol} Builders Risk policies: {readers}")
-    stc = {p.stem: p for p in Path(r"C:\Projects\ISO_ERC_Files\CF").rglob("STC/*.json")}
+    stc = {p.stem: p for p in Path(r"F:\ISO_ERC_Files\CF").rglob("STC/*.json")}
     withth = [k for k, p in stc.items() if TH in p.read_text(encoding="utf-8-sig", errors="replace")]
     stored = {p.name[len("chunk13_fixture_"):-len("_response.json")] for p in paths}
     missing = sorted(k for k in withth if k not in stored)

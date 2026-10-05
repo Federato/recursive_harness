@@ -9,7 +9,7 @@ parses every one, because the opening census's own figures turned out to rest
 on two measurement choices that do not survive contact:
 
   1. The DENOMINATOR is not 924. The census scanned
-     `C:/Projects/ISO_ERC_Files` whole, which holds 560 General Liability
+     `F:/ISO_ERC_Files` whole, which holds 560 General Liability
      payloads alongside 364 Commercial Property ones. `EQCovIndicator` is a
      CF field, so "364 of 924 carry the field at all" is not a coverage
      statistic -- it is the CF payload count restated. The real denominator
@@ -40,7 +40,7 @@ import re
 import sys
 from pathlib import Path
 
-ISO = Path("C:/Projects/ISO_ERC_Files")
+ISO = Path("F:/ISO_ERC_Files")
 CF = ISO / "CF"
 
 # The 4 EQCauseOfLossForm variants, by the record key each attaches as.

@@ -6,7 +6,7 @@ from openpyxl.utils import get_column_letter
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 PAGES = os.path.join(HERE, "lc_pages")
-ROOT = r"C:\Projects\Recursive_Harness_2.0"
+ROOT = r"F:\Recursive_Harness_2.0"
 OUTX = os.path.join(ROOT, "GL_LossCost_to_ERC.xlsx")
 
 CIRC_RE = re.compile(r"\b(LI-[A-Z]{2,3}-\d{4}-\d{3})\b")

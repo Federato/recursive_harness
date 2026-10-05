@@ -29,7 +29,7 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
 RAAS = REPO / "results" / "cf-raas"
-ERC = Path("C:/Projects/ISO_ERC_Files/CF")
+ERC = Path("F:/ISO_ERC_Files/CF")
 OUT = REPO / "CF_Algorithm"
 INVENTORY = OUT / "CF_Payload_Excel_Input_Inventory.csv"
 

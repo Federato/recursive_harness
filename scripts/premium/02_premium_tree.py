@@ -10,9 +10,9 @@ sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 import argparse
 LINES = {
-    "GL": dict(root_dir=r"C:/Projects/ISO_ERC_Files/General_Liability", root="GeneralLiability",
+    "GL": dict(root_dir=r"F:/ISO_ERC_Files/General_Liability", root="GeneralLiability",
                pat=r"^GL[ _]?([A-Z]{2})[ _]?(\d{8})[ _]?V(\d+)$", cw="GL CW *"),
-    "CF": dict(root_dir=r"C:/Projects/ISO_ERC_Files/CF", root="CommercialProperty",
+    "CF": dict(root_dir=r"F:/ISO_ERC_Files/CF", root="CommercialProperty",
                pat=r"^CF[ _]?([A-Z]{2})[ _]?(\d{8})[ _]?V(\d+)$", cw="CF *"),
 }
 _ap = argparse.ArgumentParser()

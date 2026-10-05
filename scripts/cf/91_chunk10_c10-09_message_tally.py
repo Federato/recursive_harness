@@ -57,7 +57,7 @@ LOGGED = {
 
 #: one representative STC fixture (opening census Sec.10) -- picked because
 #: it is small (6.7KB) and self-contained, not because it's the "best" one.
-FIXTURE = (r"C:\Projects\ISO_ERC_Files\CF\20230801v4\CF UT 20260401 V01\STC"
+FIXTURE = (r"F:\ISO_ERC_Files\CF\20230801v4\CF UT 20260401 V01\STC"
            r"\STC_CP000020296.json")
 
 

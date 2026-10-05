@@ -73,3 +73,32 @@ def without_oregon_territories(sub: dict) -> dict:
             loc.pop("BasicGroupIIRatingTerr", None)
             loc["BasicGroupIRatingTerrFactor"] = "1.0"
     return sub
+
+
+RAAS = Path(__file__).resolve().parents[2] / "results" / "cf-raas"
+
+
+def saved_iso_refusal(fixture_id: str) -> str | None:
+    """The table ISO named when it refused this ISO fixture (`STC_CP000012003` -> `*_F-12003_refusal.json`), or None.
+
+    Only the as-filed sends count: the `t` variants (a terrorism or tier edit) are other requests."""
+    n = fixture_id.replace("STC_CP", "").lstrip("0")
+    for p in sorted(RAAS.glob(f"*_F-{n.zfill(5)}_refusal.json")):
+        m = re.search(r"Matrix: (\w+)", p.read_text(encoding="utf-8", errors="replace"))
+        if m:
+            return m.group(1)
+    return None
+
+
+def no_eq(o):
+    """Drop every earthquake input (209_'s way): for a test about something else, on a fixture whose earthquake keys
+    its state no longer files (ISO refuses those, and since C28-05 ours does too)."""
+    if isinstance(o, dict):
+        for k in [k for k in o if k.startswith("EQ")]:
+            del o[k]
+        for v in o.values():
+            no_eq(v)
+    elif isinstance(o, list):
+        for x in o:
+            no_eq(x)
+    return o

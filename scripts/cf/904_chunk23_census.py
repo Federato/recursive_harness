@@ -50,7 +50,7 @@ from gl_engine.interp import nodes
 s18 = import_module("164_chunk14_c14-18_all_states")
 rc1 = import_module("168_chunk15_rc1")
 ASOF = "20260917"
-ISO_CF = Path("C:/Projects/ISO_ERC_Files/CF")
+ISO_CF = Path("F:/ISO_ERC_Files/CF")
 RES = ROOT / "results" / "cf-raas"
 P = "CommercialProperty"
 STRUCTURAL = {"Rules", "Rule", "MetaData", "MetaDataCode", "Test", "Then", "Else",

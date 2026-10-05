@@ -1,8 +1,8 @@
 import os, warnings
 from concurrent.futures import ProcessPoolExecutor
 
-SRC = r"C:\Projects\Recursive_Harness_2.0\Commercial Line Manuals\GL\Rules"
-OUT = r"C:\Projects\Recursive_Harness_2.0\Agentic\iso-circular-expert\text\rules"
+SRC = r"F:\Recursive_Harness_2.0\Commercial Line Manuals\GL\Rules"
+OUT = r"F:\Recursive_Harness_2.0\Agentic\iso-circular-expert\text\rules"
 
 
 def one(f):

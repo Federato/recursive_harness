@@ -1,6 +1,6 @@
 import os, re, json, collections
 
-BASE = r"C:\Projects\ISO_ERC_Files\CF\20260601\CFCW20260601V01\Rules"
+BASE = r"F:\ISO_ERC_Files\CF\20260601\CFCW20260601V01\Rules"
 
 files = [f for f in os.listdir(BASE) if f.lower().endswith(".xml")]
 print("Total rule xml files:", len(files))
@@ -67,4 +67,4 @@ json.dump({
     "detail_files_count": len(detail_files),
     "detail_paired_with_base": paired,
     "topic_word_counts": dict(topic_counts),
-}, open(r"C:\Projects\Recursive_Harness_2.0\scripts\erc\_cf_rule_survey.json","w"), indent=2)
+}, open(r"F:\Recursive_Harness_2.0\scripts\erc\_cf_rule_survey.json","w"), indent=2)

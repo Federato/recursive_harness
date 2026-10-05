@@ -37,6 +37,7 @@ sys.path.insert(0, str(ROOT / "scripts" / "cf"))
 from cf_engine.config import NULL_ARITHMETIC, ROUNDING
 from cf_engine.resolve import book_for
 from gl_engine.interp.interpreter import Interpreter
+import _iso_refusals as _iso                                    # noqa: E402
 from gl_engine.interp.tree import Node
 from gl_engine.interp.values import TYPES, InterpretError
 
@@ -45,7 +46,7 @@ rp = import_module("145_chunk13_c13-03_replay")
 census11 = import_module("106_chunk11_census")
 NS = ops.NS
 ASOF = "20260917"
-ISO_CF = Path("C:/Projects/ISO_ERC_Files/CF")
+ISO_CF = Path("F:/ISO_ERC_Files/CF")
 KEY = re.compile(r"Terror|TRIA|Terrsm")
 CORE = {"CommercialPropertyRules.Rule.xml", "CommercialPropertyLocationRules.Rule.xml",
         "CommercialPropertyStructureRules.Rule.xml", "CommercialPropertyPersonalPropertyRules.Rule.xml",
@@ -193,7 +194,9 @@ def part3():
         st = d["SchemeKeys"]["ProductName"].split()[-1]
         bk = book_for(st, ASOF)
         sub = {"EffDate": "09/17/2026", "ExpDate": "09/17/2027"}
-        sub.update(rp.unwrap(ops.to_engine({"CommercialProperty": d["CommercialProperty"]}), rp.singletons(bk)))
+        # C28-05: these fixtures carry EQ keys their states no longer file (ISO refuses them as filed: chunk 12's
+        # refusals); the TRIA timeline reads no earthquake input, so the EQ inputs are dropped
+        sub.update(rp.unwrap(ops.to_engine(_iso.no_eq({"CommercialProperty": d["CommercialProperty"]})), rp.singletons(bk)))
         cp = sub["CommercialPropertyTable"]["CommercialProperty"][0]
         if override:
             cp["TRIAExpirationDate"] = override

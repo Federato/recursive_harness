@@ -35,7 +35,7 @@ REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO / "scripts"))
 import raas as raas_mod                                             # noqa: E402
 
-TARGET = Path(r"C:\Projects\Spreadsheet_Rater\CF\CFRater1.02.xlsb")
+TARGET = Path(r"F:\Spreadsheet_Rater\CF\CFRater1.02.xlsb")
 FORBIDDEN = "cfrater1.01.xlsb"
 IL, SC, CR, POL = "IN - Location", "IN - Schedule", "CALC - Contents Rating", "IN - Policy"
 G = 7                               # item 5 / contents record 5

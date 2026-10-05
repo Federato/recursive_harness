@@ -1,7 +1,7 @@
 """CF ERC jurisdictions.json builder (Phase 3).
 
 Independent of CF_Algorithm / CFBranch / cf-circular-expert. Reads only the
-raw ERC corpus at C:\\Projects\\ISO_ERC_Files\\CF\\ and this project's own
+raw ERC corpus at F:\\ISO_ERC_Files\\CF\\ and this project's own
 Agentic/cf-erc-expert/knowledge/packages.json (built by cf_02_packages.py).
 
 Two things happen here:
@@ -24,9 +24,9 @@ import json
 import re
 from pathlib import Path
 
-ROOT = Path(r"C:\Projects\ISO_ERC_Files\CF")
-PACKAGES_PATH = Path(r"C:\Projects\Recursive_Harness_2.0\Agentic\cf-erc-expert\knowledge\packages.json")
-OUT = Path(r"C:\Projects\Recursive_Harness_2.0\Agentic\cf-erc-expert\knowledge\jurisdictions.json")
+ROOT = Path(r"F:\ISO_ERC_Files\CF")
+PACKAGES_PATH = Path(r"F:\Recursive_Harness_2.0\Agentic\cf-erc-expert\knowledge\packages.json")
+OUT = Path(r"F:\Recursive_Harness_2.0\Agentic\cf-erc-expert\knowledge\jurisdictions.json")
 
 NAME_RE_STATE = re.compile(r"^CF\s+([A-Z]{2})\s+\d{8}\s+V\d+$", re.I)
 NAME_RE_CW = re.compile(r"^CFCW\d{8}V\d+$", re.I)
@@ -85,7 +85,7 @@ def main() -> None:
             "which was itself built by an exact walk of the 20260601 edition "
             "folder only (cf_02_packages.py). The all-editions jurisdiction "
             "survey below is a SHALLOW pass: it parses package directory "
-            "names across every edition folder in C:\\Projects\\ISO_ERC_Files\\CF\\ "
+            "names across every edition folder in F:\\ISO_ERC_Files\\CF\\ "
             "(no file contents read) to build the full set of jurisdictions "
             "that appear anywhere in the CF corpus, then diffs that set "
             "against the 52-member reference list (50 states + DC + PR) used "

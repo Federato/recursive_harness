@@ -11,7 +11,7 @@ from pathlib import Path
 
 #: Root of the ISO ERC Commercial Property corpus.
 CORPUS_ROOT = Path(os.environ.get(
-    "CF_ERC_ROOT", r"C:\Projects\ISO_ERC_Files\CF"))
+    "CF_ERC_ROOT", r"F:\ISO_ERC_Files\CF"))
 
 #: Directories under the root that are not edition batches.
 EXCLUDE_DIRS = frozenset({".claude"})

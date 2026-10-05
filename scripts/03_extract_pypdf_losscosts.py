@@ -1,7 +1,7 @@
 import os, warnings
 from concurrent.futures import ProcessPoolExecutor
 
-SRC = r"C:\Projects\Recursive_Harness_2.0\Commercial Line Manuals\GL\LossCosts"
+SRC = r"F:\Recursive_Harness_2.0\Commercial Line Manuals\GL\LossCosts"
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "lc_pypdf")
 

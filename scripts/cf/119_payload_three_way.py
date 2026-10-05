@@ -35,7 +35,7 @@ REPO = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPO))
 sys.path.insert(0, str(REPO / "scripts"))
 
-WORKBOOK = Path(r"C:\Projects\Spreadsheet_Rater\CF\CFRater1.02.xlsb")
+WORKBOOK = Path(r"F:\Spreadsheet_Rater\CF\CFRater1.02.xlsb")
 FORBIDDEN = "cfrater1.01.xlsb"
 OUT_ROOT = REPO / "results" / "cf-payload"
 

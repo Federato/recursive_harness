@@ -42,7 +42,7 @@ from cf_engine.resolve import book_for
 
 s18 = import_module("164_chunk14_c14-18_all_states")
 ASOF = "20260917"
-ISO_CF = Path("C:/Projects/ISO_ERC_Files/CF")
+ISO_CF = Path("F:/ISO_ERC_Files/CF")
 RES = ROOT / "results"
 P = "CommercialProperty"
 EDITIONS = {"CW 2026 V01": ISO_CF / "20260601" / "CFCW20260601V01",

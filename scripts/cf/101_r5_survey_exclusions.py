@@ -16,7 +16,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-TARGET = Path(r"C:\Projects\Spreadsheet_Rater\CF\CFRater1.02.xlsb")
+TARGET = Path(r"F:\Spreadsheet_Rater\CF\CFRater1.02.xlsb")
 
 #: (sheet, row) -> what the input means today
 MASTERS = {

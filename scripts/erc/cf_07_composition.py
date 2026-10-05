@@ -1,7 +1,7 @@
 import os, re, json
 
-PATH = r"C:\Projects\ISO_ERC_Files\CF\20260601\CFCW20260601V01\DataDefs\MasterCFCW.DataDef.xsd"
-DATADEFS_DIR = r"C:\Projects\ISO_ERC_Files\CF\20260601\CFCW20260601V01\DataDefs"
+PATH = r"F:\ISO_ERC_Files\CF\20260601\CFCW20260601V01\DataDefs\MasterCFCW.DataDef.xsd"
+DATADEFS_DIR = r"F:\ISO_ERC_Files\CF\20260601\CFCW20260601V01\DataDefs"
 
 size = os.path.getsize(PATH)
 print(f"File size: {size} bytes ({size/1024/1024:.2f} MB)")
@@ -43,4 +43,4 @@ json.dump({
     "xs_include_count": includes,
     "xs_import_count": imports,
     "single_file_monolithic": len(files_in_dir) == 1,
-}, open(r"C:\Projects\Recursive_Harness_2.0\scripts\erc\_cf_composition_survey.json", "w"), indent=2)
+}, open(r"F:\Recursive_Harness_2.0\scripts\erc\_cf_composition_survey.json", "w"), indent=2)

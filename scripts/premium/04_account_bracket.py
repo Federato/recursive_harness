@@ -15,7 +15,7 @@ Rebuild the submission and re-rate it before changing any amount.
 """
 import io, os, sys
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-OUT = r"C:\Projects\Recursive_Harness_2.0\GL_Algorithm\GL_Account_Premium_Bracket.html"
+OUT = r"F:\Recursive_Harness_2.0\GL_Algorithm\GL_Account_Premium_Bracket.html"
 
 # ---- the account -------------------------------------------------------------
 # leaf = (field path suffix, label, amount, kind)

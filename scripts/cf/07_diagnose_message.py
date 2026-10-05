@@ -37,7 +37,7 @@ import sys
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
-CORPUS = os.environ.get("CF_ERC_ROOT", r"C:\Projects\ISO_ERC_Files\CF")
+CORPUS = os.environ.get("CF_ERC_ROOT", r"F:\ISO_ERC_Files\CF")
 PKGPAT = re.compile(r"^CF[ _]?([A-Z]{2})[ _]?(\d{8})[ _]?V(\d+)$")
 
 

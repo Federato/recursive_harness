@@ -323,8 +323,8 @@ def main() -> int:
     pkg = any_book.parent.package.content
     stc_dir = pkg / "STC"
     if not stc_dir.exists():
-        candidates = list(Path("C:/Projects/ISO_ERC_Files").rglob("STC")) \
-            if Path("C:/Projects/ISO_ERC_Files").exists() else []
+        candidates = list(Path("F:/ISO_ERC_Files").rglob("STC")) \
+            if Path("F:/ISO_ERC_Files").exists() else []
     else:
         candidates = [stc_dir]
     payloads = []
