@@ -68,9 +68,9 @@ L = {"ST": P + "Structure", "PP": P + "PersonalProperty"}
 SEV, HIGH, MED, LOW = "Severe Hazard Level", "High Hazard Level", "Medium Hazard Level", "Low Hazard Level"
 NONRES, FRAT, APT = "Non-Residential Risk Program", "Fraternity or Sorority", "Only one Apartment without Mercantile"
 FRAGS = [SEV, HIGH, MED, LOW, NONRES, FRAT, APT]
-#: known, recorded differences (messages only): ISO's occupancy count stays 0 even with the occupancies' RatingType submitted
-#: (it is copied from the building only after the count runs); ours counts the submitted value: OI-125
-KNOWN = {"K4d": ("OI-125", "Only one Apartment without Mercantile")}
+#: known, recorded differences (messages only). K4d (OI-125) closed by chunk 28 C28-08: ours no longer reads the
+#: occupancies' submitted RatingType, which a rule writes later, so its count is 0 as ISO's is
+KNOWN = {}
 CORE = {"BI": "BusinessIncomeBasicGroupICoverage", "B1": "StructureBuildingBasicGroupICoverage", "B2": "StructureBuildingBasicGroupIICoverage",
         "C1": "PersonalPropertyPrsnlPropBasicGroupICoverage", "C2": "PersonalPropertyPrsnlPropBasicGroupIICoverage",
         "BI2": "BusinessIncomeBasicGroupIICoverage"}
@@ -179,8 +179,9 @@ CASES = {
     "K4c": ("C26-15", "OR", "the same Class-rated, nothing submitted on the occupancies: their RatingType is copied AFTER the count runs, "
                             "so the count is 0 and the message is silent (as written)",
             two_apartments("Class"), set(), [], None, None),
-    "K4d": ("C26-15", "OR", "Class-rated with the occupancies' RatingType submitted 'Class': count 2, the message fires",
-            two_apartments("Class", "Class"), set(), [("ST", APT)], None, None),
+    "K4d": ("C26-15", "OR", "Class-rated with the occupancies' RatingType submitted 'Class': ISO counts 0 and is silent; since "
+                            "chunk 28 C28-08 (OI-125) ours does not read a submitted value its rules write, so silent too",
+            two_apartments("Class", "Class"), set(), [], None, None),
 }
 
 

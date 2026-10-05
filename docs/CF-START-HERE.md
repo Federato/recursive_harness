@@ -11,7 +11,7 @@ page and the deployed page agree with them; on drift it hands the problems back 
 
 ---
 
-## Pick up here (set 2026-10-05): chunk 28 OPEN at 10 of 22, Set A done, C28-07 built, C28-08..10 proposed
+## Pick up here (set 2026-10-05): chunk 28 OPEN at 11 of 22, Sets A and C done
 
 **Set A (refuse where ISO refuses) done 2026-10-05.** C28-05 (the user's go): a `SingleResult` lookup that matches no row
 refuses the policy on every Property book (`CFResolvedBook.strict_single_result`; GL off; `ERC_STRICT_SINGLE_RESULT`
@@ -27,8 +27,10 @@ predicted message sets moved, no premium; 293 of 293; **full gate clean, 170 scr
 **C28-08..10 done 2026-10-05** ([`CF-CHUNK28-PROPOSAL-C2.md`](CF-CHUNK28-PROPOSAL-C2.md); `251_`, `243_ --cases MA-true,MA-false`,
 `252_`): OI-125 reading R1 (a submitted value a rule later writes is not read) on 1,688 policies fixes K4d, breaks 0,
 moves 0; OI-112 ISO drops exactly three CP 03 20 answers on 2023 parents (booleans too), cause not in the corpus;
-OI-114 null-as-false brings the 4 back-dated policies ours refuses to 4 of 4 equal to ISO. **Next: the user's go on
-each of the three changes (then C28-11), then Set D (C28-12, form names).**
+OI-114 null-as-false brings the 4 back-dated policies ours refuses to 4 of 4 equal to ISO. **All three built 2026-10-05 with the user's go** (C28-09 as "don't read on
+2023-parent states"); OI-125 first built statically and rejected (15 requests ISO agrees with moved), then as measured,
+with a look-ahead pass (the gate 13 → 17 minutes). C28-11 done: `206_` moved exactly the predicted 6; 293 of 293; full gate
+clean (170). **Set C done. Next: Set D, C28-12 (OI-106, form names)**; each change needs the user's go.
 
 **New PC (2026-10-05).** Everything now lives on F: and the defaults say so: the corpus `F:\ISO_ERC_Files`
 (`cf_engine` / `gl_engine` config), RaaS credentials `F:\Will_Dan_Collab_dev\.env` (with `RAAS_ORG_ID` / `RAAS_SHIP_ID`), the

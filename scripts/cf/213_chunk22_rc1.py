@@ -149,12 +149,14 @@ def tracer():
 
     def w(path, ctx, value):
         n = w0(path, ctx, value)
-        if WATCH.search(path):
+        # C28-08's look-ahead pass (OI-125) rates a copy first; its writes are not the rating's
+        if WATCH.search(path) and not (stack and stack[-1].startswith("~")):
             log.append((stack[-1] if stack else "?", ctx.tag, path, None if value is None else str(value)))
         return n
 
     def call(self, file_name, rule_name, *a, **k):
-        stack.append(f"{short(file_name.replace('Rules', ''))}.{rule_name}")
+        stack.append(("~" if getattr(self, "_lookahead", False) else "")
+                     + f"{short(file_name.replace('Rules', ''))}.{rule_name}")
         try:
             return c0(self, file_name, rule_name, *a, **k)
         finally:
@@ -387,9 +389,9 @@ def touchpoints():
     # repository's ownership check on a new PC), and had been failing since c7ffe66 unseen (the chunk 24-27 gates ran
     # the quick tier, which skips this script). Both fixed: a git error fails the check, and the changes are listed.
     REVERIFIED = {
-        "gl_engine/interp/nodes.py": "c7ffe66 chunk 24, and C28-07 (OI-126 / OI-123, messages only); 157_ --all 293 of 293, 2026-10-05",
-        "gl_engine/interp/interpreter.py": "C28-05 strict SingleResult; 157_ --all 293 of 293, 2026-10-05",
-        "cf_engine/resolve/book.py": "C28-05 strict default and EQ stub; 157_ --all 293 of 293, 2026-10-05",
+        "gl_engine/interp/nodes.py": "c7ffe66 chunk 24; C28-07 (OI-126 / OI-123) and C28-10 (OI-114); 157_ --all 293 of 293, 2026-10-05",
+        "gl_engine/interp/interpreter.py": "C28-05 strict SingleResult; C28-08 / C28-09 submitted inputs (OI-125 / OI-112); 157_ --all 293 of 293, 2026-10-05",
+        "cf_engine/resolve/book.py": "C28-05 strict default and EQ stub; C28-08 / C28-09 switches; 157_ --all 293 of 293, 2026-10-05",
         "cf_engine/config.py": "the corpus root's default moved to F: (new PC, 2026-10-05); no rating code",
         "gl_engine/config.py": "the corpus root's default moved to F: (new PC, 2026-10-05); no rating code",
     }

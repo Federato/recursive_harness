@@ -492,6 +492,23 @@ def group_b() -> None:
           ex_cf is False and nx_cf is True and ex_gl is True,
           f"Property Exist {ex_cf} NotExist {nx_cf}; GL Exist {ex_gl}")
 
+    # OI-114 (chunk 28 C28-10): a <rul:Null/> operand of And / Or is false in
+    # Property; GL still refuses a condition that is neither true nor false.
+    AND_NULL = '<rul:And><rul:Null/><rul:Constant Type="boolean">true</rul:Constant></rul:And>'
+    OR_NULL = '<rul:Or><rul:Null/><rul:Constant Type="boolean">true</rul:Constant></rul:Or>'
+    ip = Fake(null_arithmetic="propagate")
+    ip.product_skips_null = True
+    and_cf, _, _ = run(AND_NULL, ip=ip)
+    or_cf, _, _ = run(OR_NULL, ip=ip)
+    try:
+        run(AND_NULL, ip=Fake(null_arithmetic="propagate"))
+        gl_refuses = False
+    except InterpretError:
+        gl_refuses = True
+    check("B37 a Null operand of And / Or is false in Property; GL refuses it (OI-114)",
+          and_cf is False and or_cf is True and gl_refuses,
+          f"Property And {and_cf} Or {or_cf}; GL refuses {gl_refuses}")
+
     # The substring trap: `PremiumIndicator` is a 0/1 flag, not money, and
     # guarding it by name-contains would refuse ordinary content.
     _, root, _ = run(NULL_PREMIUM.format(to="PremiumIndicator"),

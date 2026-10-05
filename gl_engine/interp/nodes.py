@@ -309,7 +309,15 @@ def _operand_bools(ip, el, ch, fr) -> list:
     times (317 `Or`, 52 `And`), typically as an `Or` wrapping a single nested
     `ForEach` over locations and structures. So this is a shape the language
     always had and one corpus happened never to use.
+
+    **A `<rul:Null/>` operand is false, in Property (OI-114, chunk 28 C28-10).**
+    ISO's 2019 / 2020 builds put one where its build tool removed an invalid
+    path (the margin clause message's `And`); ISO rates those policies, and ours
+    refused the test. Read as false, the 4 stored back-dated requests ISO rated
+    equal ISO on every premium and message (`252_`); read as true, identically.
     """
+    if getattr(ip, "product_skips_null", False) and ch.tag.split("}", 1)[-1] == "Null":
+        return [False]
     v = ip.eval(ch, fr)
     if not isinstance(v, Multi):
         return [truthy(v, ip.where(ch))]

@@ -177,6 +177,9 @@ def _message_helper(ip, rule_name: str, args: dict, frame, where: str):
 
 #: Rule files the host engine provides rather than ISO filing them.
 _BUILTINS = {"MessageHelper": _message_helper}
+#: The builtins as the engine defines them, before any caller wraps an entry: OI-125's look-ahead pass uses these, so a
+#: wrapper that counts messages (the test scripts' MessageHelper) sees each rating once.
+_ORIGINAL_BUILTINS = dict(_BUILTINS)
 
 
 @dataclass
@@ -338,6 +341,8 @@ class Interpreter:
         self.strict_single_result = strict_single_result
         #: Every table a strict refusal fired on, for measuring the population.
         self.strict_refusals: list[str] = []
+        #: OI-125's look-ahead pass: the ids of every node a rule writes (None outside that pass).
+        self._writes: set[int] | None = None
         #: Every site where a null was coerced. Empty in `refuse` mode.
         self.coercions: list[str] = []
         self.tracing = trace
@@ -500,7 +505,9 @@ class Interpreter:
                     f"upstream resolved to nothing -- most often a rate table "
                     f"that missed -- and the trace above names it",
                     "§12.3", name)
-            tree.write(to, frame.write_target, value)
+            written = tree.write(to, frame.write_target, value)
+            if getattr(self, "_writes", None) is not None:
+                self._writes.add(id(written))
             self.note("write", f"{to} = {value!r}", name)
         return value
 
@@ -543,7 +550,8 @@ class Interpreter:
                     parent_scope = cand is self.parent_program
                     break
             if program is None:
-                builtin = _BUILTINS.get(file_name)
+                builtin = (_ORIGINAL_BUILTINS if getattr(self, "_writes", None) is not None
+                           else _BUILTINS).get(file_name)
                 if builtin is not None:
                     return builtin(self, rule_name, args, frame, where)
                 program = frame.program            # let it raise where it is
@@ -874,8 +882,64 @@ class Interpreter:
                       rule_file="Overall Rating")
         self.note("entry", f"Default block of {self.state_program.pkg_id}",
                   "Overall Rating.Rule.xml")
+        dropped = getattr(self.book, "ignored_inputs", frozenset())
+        if dropped:
+            self._ignore_inputs(data, dropped)
+        if getattr(self.book, "ignore_submitted_owned", False) and not getattr(self, "_lookahead", False):
+            self._ignore_submitted_owned(data)
         self.eval(entry, frame)
         return data
+
+    def _ignore_inputs(self, data: Node, dropped: frozenset) -> None:
+        """Submitted values the book says ISO's request reader drops (OI-112): not read, noted in the trace."""
+        stack = [data]
+        while stack:
+            n = stack.pop()
+            stack.extend(n.children)
+            if not n.children and n.parent is not None and (n.parent.tag, n.tag) in dropped                     and n.text not in (None, ""):
+                self.note("submitted-input-dropped",
+                          f"{n.parent.tag}.{n.tag} = {n.text!r} submitted; ISO drops it on this edition", "OI-112")
+                n.text = None
+
+    def _ignore_submitted_owned(self, data: Node) -> None:
+        """A submitted value for a field a rule writes later in the run is not read: as if never sent (OI-125).
+
+        Chunk 26 K4d: `RatingType` submitted on the occupancies is counted before `OccupClass.SetRatingType` copies
+        the building's; ISO counts 0. Measured on 1,692 stored requests ISO rated (`251_`, chunk 28 C28-08): 1,688
+        submit at least one such value; hiding each one until its rule writes it fixes K4d, breaks nothing and moves
+        no premium. A submitted value no rule writes in THIS run (an `IsNull`-guarded input, or a conditional write
+        that does not fire, such as the 2020 editions' IRPM) is read as before, as ISO reads it: a static "some rule
+        can write it" test was built first and moved 15 requests ISO agrees with, so it is not used.
+
+        Exactly as measured: a look-ahead pass rates a copy of the request (trace off, the engine's own builtins)
+        and records which submitted values a rule writes; those are blanked before the real run. It roughly doubles
+        a Property rating's time. A refusal in the look-ahead keeps the writes seen so far; the real run decides.
+        """
+        copy_of: dict[int, Node] = {}
+
+        def clone(n: Node, parent: Node | None) -> Node:
+            c = Node(n.tag, parent, n.text)
+            copy_of[id(c)] = n
+            c.children = [clone(k, c) for k in n.children]
+            return c
+
+        twin = clone(data, None)
+        look = type(self)(self.book, rounding=self.rounding_name, trace=False,
+                          null_arithmetic=self.null_arithmetic, guard_null_premium=self.guard_null_premium,
+                          strict_single_result=self.strict_single_result, null_premium=self.null_premium)
+        look._writes = set()
+        look._lookahead = True
+        try:
+            look.run(twin)
+        except InterpretError:
+            pass
+        for cid in look._writes:
+            orig = copy_of.get(cid)
+            if orig is not None and not orig.children and orig.text not in (None, ""):
+                self.note("submitted-owned-ignored",
+                          f"{orig.parent.tag if orig.parent else ''}.{orig.tag} = {orig.text!r} submitted; "
+                          f"a rule writes it later, so it is not read", "OI-125")
+                orig.text = None
 
     def trace_text(self) -> str:           # pragma: no cover - display only
         return "\n".join(str(t) for t in self.trace)

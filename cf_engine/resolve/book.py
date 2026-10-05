@@ -65,6 +65,26 @@ class CFResolvedBook(ResolvedBook):
     #: The interpreter's default for a `SingleResult` miss: refuse (C28-05).
     strict_single_result = True
 
+    #: A submitted value for a field the rules write is not read, as if never sent (OI-125, C28-08).
+    ignore_submitted_owned = True
+
+    #: Submitted answers ISO's request reader drops on the 2023 countrywide editions (OI-112, C28-09): three
+    #: cause-of-loss answers on the multiple-deductible form (CP 03 20), whatever is sent (text or true / false),
+    #: while it keeps the record's other three. Nothing in the corpus says why (identical declarations, no rule
+    #: writes or removes them); measured live (`243_`) and on the 5 ISO fixtures on those parents.
+    DROPPED_ON_2023 = frozenset({
+        ("CommercialPropertyMultipleDeductibleFormFixedDollarDeductibles", "AllCoveredCausesOfLoss"),
+        ("CommercialPropertyMultipleDeductibleFormFixedDollarDeductibles", "AllCoveredCausesOfLossExceptTheft"),
+        ("CommercialPropertyMultipleDeductibleFormFixedDollarDeductibles", "Theft"),
+    })
+    PARENTS_2023 = frozenset({"CF_CW_20230801_V02", "CF_CW_20230801_V03", "CF_CW_20230801_V04"})
+
+    @property
+    def ignored_inputs(self) -> frozenset:
+        """(record, field) pairs whose submitted value is not read on this book (as ISO drops them)."""
+        parent = self.resolution.parent
+        return self.DROPPED_ON_2023 if parent is not None and parent.pkg_id in self.PARENTS_2023 else frozenset()
+
     #: State tables read as filed even when empty: ISO refuses rather than
     #: falling back to countrywide (MA, TN, VT; C28-03, `246_`).
     NO_EMPTY_FALLBACK = frozenset({"EQSubLimitDeductibleTierCWTable"})

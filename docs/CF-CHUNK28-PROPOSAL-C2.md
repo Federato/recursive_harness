@@ -1,6 +1,6 @@
 # Property chunk 28, C28-08..10: proposal for OI-125, OI-112 and OI-114 (Set C, messages match ISO)
 
-**Status: PROPOSED 2026-10-05, awaiting the user's go, one item at a time.** No engine code changed. Each item below is
+**Status: BUILT 2026-10-05, all three with the user's go (C28-09 as "don't read them on 2023-parent states").** Measured before any code changed. **One correction in the build:** OI-125 was first built statically ("a field some rule can write"); that moved 15 requests ISO agrees with, so it was replaced by the measured reading exactly (a look-ahead pass records which submitted values a rule actually writes in the run). Each item below is
 measured on every stored request ISO rated (1,690+) and, where a probe could add anything, sent to ISO live.
 
 ## In plain English
