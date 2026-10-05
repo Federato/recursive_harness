@@ -260,8 +260,7 @@
     <hr>
     <div class="group">
       <div class="group-label">Unmanned Aircraft (370)</div>
-      <button class="navlink" data-target="uav-cova">Coverage A · BI/PD<span class="chain-len">13-step chain</span></button>
-      <button class="navlink" data-target="uav-covb">Coverage B · PAI<span class="chain-len">13-step chain, no deductible term</span></button>
+      <a class="navlink" href="gl-uav-chains.html">Pre-2027 and CW 2027 chains<span class="chain-len">moved to their own page ↗</span></a>
     </div>
     <hr>
     <div class="group">
@@ -352,8 +351,8 @@
           </tr>
           <tr>
             <th>Unmanned Aircraft</th>
-            <td><button class="cell" data-target="uav-cova">Coverage A · BI/PD<span class="n">13 steps</span></button></td>
-            <td><button class="cell" data-target="uav-covb">Coverage B · PAI<span class="n">13 steps, no deductible</span></button></td>
+            <td><a class="cell" href="gl-uav-chains.html">Pre-2027 editions<span class="n">own page ↗</span></a></td>
+            <td><a class="cell" href="gl-uav-chains.html">CW 2027 (V01/V02)<span class="n">own page ↗</span></a></td>
             <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
             <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
             <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
@@ -390,110 +389,7 @@
 
     <!-- Product Withdrawal / LoED / Cyber (both editions) moved to gl-pw-cyber-chains.html on 2026-10-05. -->
 
-    <!-- ============================= UNMANNED AIRCRAFT · COVERAGE A ============================= -->
-    <section class="sheet-view" id="view-uav-cova">
-      <div class="titleblock">
-        <div class="field"><span class="k">Coverage</span><span class="v">Unmanned Aircraft (subline 370, Rule 37) — Coverage A, Bodily Injury / Property Damage</span></div>
-        <div class="field"><span class="k">Edition</span><span class="v">GL_CW_20231201_V03</span></div>
-        <div class="field"><span class="k">Master chain</span><span class="v">…UnmannedAircraftCovABIPDCoverage — 13-rule chain</span></div>
-        <div class="field"><span class="k">Premium file</span><span class="v">Same rule set, SetPremium (item 13)</span></div>
-        <div class="field wide"><span class="k">Coverage gate</span><span class="v">CoverageOnPolicyIndicator == 0 -&gt; Premium 0.0. Company-rated in its entirety per manual C.2: every published number below is a REFERENCE value, not a usable filed price — the risk must still be referred</span></div>
-      </div>
-      <div class="sheet">
-        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
-        <pre class="mermaid">
-%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
-flowchart TD
-    start(["Unmanned Aircraft Coverage A (BI/PD)"]) --> covOnU{"CoverageOnPolicyIndicator = 0?"}
-    covOnU -->|"Yes"| premZeroU["Premium = 0.0"]:::zero
-    covOnU -->|"No"| ceiling["Ceiling = Convert&lt;int&gt;(round(MaxTakeoffWeight + 0.499,0)) - SetmaximumTakeoffWeightCeiling is an EMPTY rule, logic inlined elsewhere"]:::openq
-    ceiling --> lcGateU{"Ceiling <> 0?"}
-    lcGateU -->|"Yes"| lossCostU["LossCost = lookup UnmannedAircraftLimitedLiabilityBIPDLossCost(weight band): 0-1lb 66.11, 1-5lb 110.19, 5-15lb 154.26, 15-55lb 220.37, over 55lb = 0"]:::step
-    lcGateU -->|"No"| lossCostUnk["LossCost value when Ceiling=0 not resolved in source docs"]:::openq
-    lossCostU --> baseU["BaseRate = round(LossCost x LCM x ClaimsMadeMult,3) - LCM and ClaimsMadeMult borrowed WHOLESALE from Prem/Ops's own tables"]:::step
-    lossCostUnk --> baseU
-    baseU --> modGate{"Any of Ownership/Operation, Primary Place, Usage modifier = 0? (3 of 9, 2 of 9, 5 of 12 rows price 0)"}
-    modGate -->|"Yes"| referU["Engine rule: any 0 modifier must REFER before multiplying - ERC itself performs NO test; 'Unknown' is a filed value that also prices 0"]:::openq
-    modGate -->|"No"| adjRateU["AdjustedRate = round(BaseRate x OwnershipMod x PlaceMod x UsageMod,3) - order confirmed exact against manual C.2.d"]:::step
-    referU --> adjRateU
-    adjRateU --> ilfU["ILF = lookup ILFPremOps(...) - the Prem/Ops ILF table reused directly, 15,857-char rule body"]:::step
-    ilfU --> dedU["DeductibleFactor = lookup DedFactorPremOps{CSL,BI,PD} - Coverage A only, which of the three is selected not resolved in source docs"]:::openq
-    dedU --> premiumU["Premium = AdjustedRate x (ILF - DeductibleFactor) x PackageMod x ExperienceMod x ExpenseMod x ModToUse"]:::step
-    premiumU --> weightGuard{"MaximumTakeoffWeight <= 0?"}
-    weightGuard -->|"Yes"| errGuard["DoMessageWeightOfDroneCheck fires - an ERROR, not a rated 0"]:::zero
-    weightGuard -->|"No"| premStandsU["Premium stands (basis: each unmanned aircraft, no /1000)"]:::final
-
-    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
-    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
-    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
-    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
-    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
-    class covOnU,lcGateU,modGate,weightGuard gate
-        </pre>
-      </div>
-      <div class="notes">
-        <div>
-          <h3>What to notice</h3>
-          <ul>
-            <li>Drone borrows Premises/Operations's machinery wholesale — LCM, claims-made multiplier, ILF, and all three deductible tables are Prem/Ops lookups called directly. It borrows the *tables*, not already-computed values, so unlike LoED/Cyber it carries no E18 cross-coverage dependency.</li>
-            <li>The manual requires the *highest* rating modifier be assigned when more than one category applies per axis (C.2.d(1)-(3)); ERC has no max-of-many logic at all — resolved as a submission-level requirement (OI-48), not something ERC enforces.</li>
-            <li>`SetAjustedRate` is a misspelled rule name in ERC itself (the target DataDef `AdjustedRate` is spelled correctly) — confirmed cosmetic, not a functional defect.</li>
-          </ul>
-        </div>
-        <div class="delta"><strong>vs. Coverage B (PAI).</strong> Same 13-rule shape and same weight-banded loss-cost mechanic, but Coverage A carries a deductible-factor step and subtracts it from the ILF in the premium formula — Coverage B has neither.</div>
-              <div class="delta"><strong>Reconciled against the engine, 2026-10-02.</strong> Reproduced offline (OK base + one designated drone, both editions): Coverage A 154.26 &rarr; <b>316</b>; premium rounds to whole dollars. CovA table has 10 zero cells, not 8. CW 2027: gate field becomes <code>UnmannedAircraftCoverageOptions</code>, $1 floor, " CSL" dropped, minimum-premium rules removed, usage/place labels re-cased (case-sensitive keys — an old spelling silently prices $0). Over 55 lb: the filed 0 loss cost prices the drone at $0 and raises referral R19 in underwriting mode only — and R19 also fires on every drone because the minimum-premium table is 0 (a register false positive).</div>
-      </div>
-    </section>
-
-    <!-- ============================= UNMANNED AIRCRAFT · COVERAGE B ============================= -->
-    <section class="sheet-view" id="view-uav-covb">
-      <div class="titleblock">
-        <div class="field"><span class="k">Coverage</span><span class="v">Unmanned Aircraft (subline 370, Rule 37) — Coverage B, Personal &amp; Advertising Injury</span></div>
-        <div class="field"><span class="k">Edition</span><span class="v">GL_CW_20231201_V03</span></div>
-        <div class="field"><span class="k">Master chain</span><span class="v">…UnmannedAircraftCovBPAICoverage — same 13-rule shape as Coverage A</span></div>
-        <div class="field"><span class="k">Premium file</span><span class="v">Same rule set, SetPremium — deductible term dropped</span></div>
-        <div class="field wide"><span class="k">Coverage gate</span><span class="v">Same CoverageOnPolicyIndicator gate and company-rated-in-entirety caveat as Coverage A</span></div>
-      </div>
-      <div class="sheet">
-        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
-        <pre class="mermaid">
-%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
-flowchart TD
-    start(["Unmanned Aircraft Coverage B (PAI)"]) --> covOnU2{"CoverageOnPolicyIndicator = 0?"}
-    covOnU2 -->|"Yes"| premZeroU2["Premium = 0.0"]:::zero
-    covOnU2 -->|"No"| ceilingB["Ceiling = Convert&lt;int&gt;(round(MaxTakeoffWeight + 0.499,0)) - same inlined-empty-rule pattern as Coverage A"]:::step
-    ceilingB --> lcGateB{"Ceiling <> 0?"}
-    lcGateB -->|"Yes"| lossCostB["LossCost = lookup UnmannedAircraftLimitedLiabilityPAILossCost(weight band): 0-55lb 87.63, over 55lb = 0 (2 rows only)"]:::step
-    lcGateB -->|"No"| lossCostUnkB["LossCost value not resolved in source docs"]:::openq
-    lossCostB --> baseB["BaseRate = round(LossCost x LCM x ClaimsMadeMult,3)"]:::step
-    lossCostUnkB --> baseB
-    baseB --> modGateB{"Any of Ownership/Op(PAI), Place(PAI), Usage(PAI) modifier = 0? SAME usage code means a DIFFERENT price per coverage (finding 3) - e.g. firefighting is RTC for BI/PD but 0.90 for PAI"}
-    modGateB -->|"Yes"| referB["Engine rule: REFER before multiplying - keyed on (table, column, row), not (table, value) alone"]:::openq
-    modGateB -->|"No"| adjRateB["AdjustedRate = round(BaseRate x OwnershipMod(PAI) x PlaceMod(PAI) x UsageMod(PAI),3)"]:::step
-    referB --> adjRateB
-    adjRateB --> ilfB["ILF = lookup ILFPremOps(...) - same Prem/Ops table as Coverage A"]:::step
-    ilfB --> premiumB["Premium = AdjustedRate x ILF x PackageMod x ExperienceMod x ExpenseMod x ModToUse - deductible term DROPPED entirely, no (ILF - DeductibleFactor)"]:::openq
-
-    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
-    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
-    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
-    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
-    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
-    class covOnU2,lcGateB,modGateB gate
-        </pre>
-      </div>
-      <div class="notes">
-        <div>
-          <h3>What to notice</h3>
-          <ul>
-            <li>Same usage code, different meaning per coverage: firefighting/search-and-rescue is a referral (RTC, price 0) on the BI/PD axis but a real 0.90 factor on the PAI axis — a sentinel register keyed only on `(table, value)` is wrong for this subline.</li>
-            <li>PAI's loss-cost table has just 2 rows (a flat 0-55lb rate plus the &gt;55lb zero row) versus BI/PD's 5-row weight banding — the coarsest loss-cost table in the subline.</li>
-          </ul>
-        </div>
-        <div class="delta openq"><strong>Open question.</strong> The gate doc states only that "Coverage B drops the deductible term" from Coverage A's formula; it does not reproduce Coverage B's `SetPremium` expression verbatim. The formula shown assumes the term is simply omitted and `ILF` is used un-adjusted — confirm the literal expression if bit-exact reproduction is required.</div>
-              <div class="delta"><strong>Reconciled against the engine, 2026-10-02.</strong> Reproduced: Coverage B 105.156 &times; 2.05 &rarr; <b>216</b>; formula confirmed literally.</div>
-      </div>
-    </section>
+    <!-- Unmanned Aircraft (both editions) moved to gl-uav-chains.html on 2026-10-05. -->
 
     <!-- ============================= TERRORISM · PREM/OPS ============================= -->
     <section class="sheet-view" id="view-terr-premops">
