@@ -102,7 +102,10 @@ def push():
         if pr.returncode != 0:
             raise RuntimeError(f"gh pr create: {pr.stderr.strip()[:300]}")
         url = pr.stdout.strip().splitlines()[-1]
-        mg = subprocess.run(["gh", "pr", "merge", url, "--merge", "--delete-branch"], cwd=wt, capture_output=True, text=True, encoding="utf-8")
+        # run from outside any checkout: inside one, gh also switches the local branch to trunk, which fails while
+        # trunk is checked out in the main Ideation clone (the merge itself had already succeeded, 2026-10-05)
+        mg = subprocess.run(["gh", "pr", "merge", url, "--repo", "Federato/Ideation", "--merge", "--delete-branch"],
+                            cwd=tmp, capture_output=True, text=True, encoding="utf-8")
         if mg.returncode != 0:
             raise RuntimeError(f"gh pr merge {url}: {mg.stderr.strip()[:300]}")
         print(f"synced: {url} merged into trunk ({why}); Vercel deploys {URL}")
