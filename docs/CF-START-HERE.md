@@ -11,7 +11,7 @@ page and the deployed page agree with them; on drift it hands the problems back 
 
 ---
 
-## Pick up here (set 2026-10-05): chunk 28 OPEN at 6 of 22, Set A done
+## Pick up here (set 2026-10-05): chunk 28 OPEN at 7 of 22, Set A done, C28-07 awaiting the go
 
 **Set A (refuse where ISO refuses) done 2026-10-05.** C28-05 (the user's go): a `SingleResult` lookup that matches no row
 refuses the policy on every Property book (`CFResolvedBook.strict_single_result`; GL off; `ERC_STRICT_SINGLE_RESULT`
@@ -20,8 +20,9 @@ overrides either way); `EQSubLimitDeductibleTierCWTable` read as filed (`CFResol
 pins on "ours $0", every new refusal sent live and **17 of 17 refused at the same table and keys** (`248_`); pins now say
 "refuses as ISO does" (`scripts/cf/_iso_refusals.py`) or the incidental bad input was corrected, no figure moved;
 `245_ --refused` live: 87 of 87 lookup refusals ours refuses, 37 of 37 ISO now rates ours prices. **OI-99 and OI-103 closed;
-OI-117 (`Convert` of a blank) open.** Puerto Rico not confirmable. **Next: Set C, C28-07** (OI-126 / OI-123); each change
-needs the user's go.
+OI-117 (`Convert` of a blank) open.** Puerto Rico not confirmable. **Set C, C28-07 done 2026-10-05**: [`CF-CHUNK28-PROPOSAL-C1.md`](CF-CHUNK28-PROPOSAL-C1.md) (`249_`, `250_`): OI-126's
+readings A / B identical on all evidence (A proposed, the smaller); OI-123 confirmed live on GA's in-force package; both
+messages only, 7 policies, 0 broken. **Next: the user's go on C28-07's change (then C28-11), and C28-08..10.**
 
 **New PC (2026-10-05).** Everything now lives on F: and the defaults say so: the corpus `F:\ISO_ERC_Files`
 (`cf_engine` / `gl_engine` config), RaaS credentials `F:\Will_Dan_Collab_dev\.env` (with `RAAS_ORG_ID` / `RAAS_SHIP_ID`), the

@@ -10,7 +10,7 @@ answers, run it at ISO, then propose the change. After a change: `206_ --check`,
 (the engine changed), and the item's own ISO cases again. Live ISO at **2026-09-17** (OI-105: the only date where ISO and
 the corpus use the same package in all 46 states). Puerto Rico excluded. Progress to `results/cf-raas/logs/`.
 
-**Status: OPEN 2026-10-05, 6 of 22** (all seven sets; the user chose to start with Set A). **Set A is done** (C28-05 built with the user's go, C28-06 confirmed at ISO; OI-99 and OI-103 closed, OI-117 stays open). **Next: Set C (C28-07), messages match ISO; each change needs the user's go.**
+**Status: OPEN 2026-10-05, 7 of 22** (all seven sets; the user chose to start with Set A). **Set A is done** (OI-99 and OI-103 closed, OI-117 open). Set C: C28-07 proposed and measured ([`CF-CHUNK28-PROPOSAL-C1.md`](CF-CHUNK28-PROPOSAL-C1.md)). **Next: the user's go on C28-07's change, then C28-08..10.**
 
 ## The feature sets, and what each buys
 
@@ -49,7 +49,7 @@ still needs the user's go, one item at a time.
 
 | # | Task | Status | Notes |
 |---|---|---|---|
-| C28-07 | **OI-126 and OI-123** (interpreter: `FirstNonNull` with a "" constant; an empty `NotExist`): a probe telling the readings apart; the smaller change proposed | ⬜ | the user's go |
+| C28-07 | **OI-126 and OI-123** (interpreter: `FirstNonNull` with a "" constant; an empty `NotExist`): a probe telling the readings apart; the smaller change proposed | ✅ 2026-10-05 | [`CF-CHUNK28-PROPOSAL-C1.md`](CF-CHUNK28-PROPOSAL-C1.md), measured by `249_` on 1,690 stored requests ISO rated (no engine change). **OI-126:** readings A (`FirstNonNull` returns a filed "") and B (null equals "") are identical (each 1,677 → 1,679 message sets equal to ISO, 0 broken, 0 premiums moved), and no rule in all 24,028 rule files compares a bare field to "": A proposed, the smaller. **OI-123 confirmed live on an in-force package** (`250_`: GA 2026 fires CP 10 53 with the exclusion record, not without; 123 of 123 premiums equal); reading C 1,677 → 1,682, 0 broken. **Awaiting the user's go** |
 | C28-08 | **OI-125** (a submitted value standing in for a field the rules write later): probe a second unguarded computed field before generalising | ⬜ | the user's go |
 | C28-09 | **OI-112** (2023-edition checkbox answers): propose reading them as blank on those parents, or documenting it | ⬜ | the user's go |
 | C28-10 | **OI-114** (`<rul:Null/>`, old builds only): the discriminating probe at a back date, then null-as-false or leave | ⬜ | the user's go |
