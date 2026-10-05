@@ -51,6 +51,7 @@ from importlib import import_module
 from cf_engine.config import NULL_ARITHMETIC, ROUNDING
 from cf_engine.resolve import book_for
 from gl_engine.interp.interpreter import Interpreter
+import _iso_refusals as _iso                                    # noqa: E402
 from gl_engine.interp.tree import Node, read
 
 chunk2 = import_module("09_chunk2_golden_case")
@@ -125,6 +126,8 @@ def main() -> int:
         try:
             ip.run(data)
         except Exception as exc:
+            if _iso.refused_as_iso(__file__, name, exc):      # C28-05: ours refuses where ISO does (C28-06 P6)
+                continue
             print(f"{name:34s} RAISED {type(exc).__name__}: {exc}")
             ok = False
             continue

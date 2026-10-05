@@ -47,6 +47,8 @@ from importlib import import_module
 from cf_engine.config import NULL_ARITHMETIC, ROUNDING
 from cf_engine.resolve import book_for
 from gl_engine.interp.interpreter import Interpreter
+from gl_engine.interp.values import InterpretError                # noqa: E402
+import _iso_refusals as _iso                                    # noqa: E402
 from gl_engine.interp.tree import Node, read
 
 raas6 = import_module("44_chunk6_raas")
@@ -123,6 +125,14 @@ NEAR_MISSES = [
 ]
 
 
+#: Inputs a state files under its own values (chunk 28 C28-05). ISO refuses a policy that sends another state's value
+#: (OI-99's chunk 6 calls: NY on `BasicGroupIIRate` with "Entire State", FL on `SpecialClassDescriptionConvertedOption`
+#: with countrywide's tower description), and since C28-05 ours refuses there too. A case that sends its own value wins.
+STATE_LOC = {"NY": {"BasicGroupIIRatingTerr": "I"},
+             "FL": {"BasicGroupIIRatingTerr": "Inland"}}           # FL files six Group II territories (C27-06)
+STATE_ITEM = {"FL": {"ClassDescription": "Towers - Broadcasting Antennas (Radio and TV)"}}
+
+
 def tree(state, over, second_item=False):
     """The standalone item, with `loc:` keys routed to the location.
 
@@ -130,7 +140,7 @@ def tree(state, over, second_item=False):
     no-protection-class case is built.
     """
     item_over, loc_over = raas6.split(over)
-    item = {k: str(v) for k, v in dict(raas6.ITEM, **item_over).items()}
+    item = {k: str(v) for k, v in dict(raas6.ITEM, **STATE_ITEM.get(state, {}), **item_over).items()}
     # Basic unless the caller names a cause of loss: Broad and Special gate
     # their base rates on an exact match, so a test that moves a SHARED value
     # and reads them has to send their own submission.
@@ -141,6 +151,7 @@ def tree(state, over, second_item=False):
     loc = {"ProtectClass": "3", "BasicGroupIIRatingTerr": "Entire State",
            "CommercialPropertySpecialClassTable": {
                "CommercialPropertySpecialClass": items}}
+    loc.update(STATE_LOC.get(state, {}))
     for k, v in loc_over.items():
         if v is None:
             loc.pop(k, None)
@@ -286,9 +297,15 @@ def main() -> int:
         # the STATE'S OWN FILE (what it filed), not the book's resolution: since 2026-09-28 a Property
         # book resolves an empty state table to the countrywide rows (CFResolvedBook, ISO-confirmed in VT)
         n_rows = len(book.state.table("Rate", "SpecialClassBasicGroupIINumber").rows)
-        data = run(state, {"loc:BasicGroupIIRatingTerr": terr})
-        got = str(read(P_BGII, data))
-        num = read(f"{SC}/BasicGroupIINumericValue", data)
+        try:
+            data = run(state, {"loc:BasicGroupIIRatingTerr": terr})
+        except InterpretError as exc:
+            # C28-05: Puerto Rico now refuses on ProtectionClassStatCode (CW 3); no RaaS entitlement, so unconfirmed
+            if not _iso.refused_as_iso(__file__, state, exc, indent="    "):
+                raise
+            data = None
+        got = str(read(P_BGII, data)) if data is not None else want_ii
+        num = read(f"{SC}/BasicGroupIINumericValue", data) if data is not None else None
         good = (n_rows == 0 and emptied("SetBasicGroupIISymbolNum")
                 and drops_term and got == want_ii and num is None)
         ok &= good
@@ -325,8 +342,16 @@ def main() -> int:
     # ---- C6-14
     print("\n=== 14  Near-miss spellings")
     for desc, want, why in NEAR_MISSES:
-        data = run("OR", {"ClassDescription": desc})
-        got = str(read(P_BGI, data))
+        # C28-05: an unfiled description now REFUSES the policy, as ISO does (C28-06 P10, P13-P17: 6 of 6 live);
+        # the pinned "0" is the old silent zero, kept as the expectation's meaning: "not rated"
+        try:
+            data = run("OR", {"ClassDescription": desc})
+            got = str(read(P_BGI, data))
+        except InterpretError as exc:
+            if _iso.table_of(exc) != NAME:
+                raise
+            got = "0"
+            why += "  [ours REFUSES as ISO does]"
         good = got == want
         ok &= good
         print(f"    {got:>3s} (expected {want:>3s}) {'OK ' if good else 'MISS'}"

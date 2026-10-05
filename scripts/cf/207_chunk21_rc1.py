@@ -30,6 +30,7 @@ import re
 import sys
 import time
 from importlib import import_module
+import _iso_refusals as _iso                                    # noqa: E402
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -187,6 +188,28 @@ def attach_and_switches():
 r2 = import_module("175_chunk16_rc2")
 g19 = import_module("192_chunk19_rc2")
 gc = import_module("149_chunk13_golden_case")
+def portable(j, cause="Special"):
+    """The portable policy in state `j` (chunk 28 C28-05). In Florida, as 209_ builds it: no earthquake inputs (FL's
+    BldgHeightFactor files no EQ class "A1": ISO refuses, C28-06 P1) and Florida's own special class description (it
+    files no countrywide "Towers - Broadcasting Antennas": ISO refuses, OI-99). Since C28-05 ours refuses both too, so
+    a Florida case built on the bare portable policy would test nothing. Other states keep the earthquake inputs: SC
+    looks up its BCEG earthquake factor whatever is elected, and refuses a blank EQ territory (ISO too, C28-06 P12)."""
+    sub = g19.with_cause(g19.portable(j), cause)
+    if j == "FL":
+        def no_eq(o):
+            if isinstance(o, dict):
+                for k in [k for k in o if k.startswith("EQ")]:
+                    del o[k]
+                for v in o.values():
+                    no_eq(v)
+            elif isinstance(o, list):
+                for x in o:
+                    no_eq(x)
+        no_eq(sub)
+        rc1.node_dicts(sub)[P + "SpecialClass"]["ClassDescription"] = import_module("177_chunk16_rc4").FL_SC
+    return sub
+
+
 SEWER = {"DischargeFromSewerDrainOrSumpNotFloodReltd": "DischargeLimitPD",
          "DischargeFromSewerDrainOrSumpNotFloodReltdPrsnlProp": "DischargeLimitPD",
          "DischargeFromSewerDrainOrSumpNotFloodReltdSpclClass": "DischargeLimitPD",
@@ -236,14 +259,16 @@ def flips(fl_only):
     # 250 / All Other / Not Applicable; blank -> DeductibleFactor 0 -> premium 0 (a blank-input zero).
     LA_OK = {"LossAssessmentLimit": "10,000", "LossAssessmentDeductible": "250"}
     cases = (("LA 10,000, ded 250", LA_OK, ("+", "0")),
-             ("LA 10000 (not an enum value)", {"LossAssessmentLimit": "10000", "LossAssessmentDeductible": "250"}, ("0", "0")),
+             ("LA 10000 (not an enum value)", {"LossAssessmentLimit": "10000", "LossAssessmentDeductible": "250"},
+              "LossAssessmentLimitConverted"),                       # C28-05: refuses, as ISO does (C28-06 P2)
              ("LA 10,000, no deductible", {"LossAssessmentLimit": "10,000"}, ("0", "0")),
-             ("LA 10,000, ded All Other", {"LossAssessmentLimit": "10,000", "LossAssessmentDeductible": "All Other"}, ("0", "0")),
+             ("LA 10,000, ded All Other", {"LossAssessmentLimit": "10,000", "LossAssessmentDeductible": "All Other"},
+              "DeductibleFactor"),                                   # C28-05: refuses, as ISO does (C28-06 P3)
              ("LA Over 10,000 (25,000), ded N/A", {"LossAssessmentLimit": "Over 10,000", "LossAssessmentLimitOver10000": "25000",
                                                  "LossAssessmentDeductible": "Not Applicable"}, ("+", "0")),
-             ("MRP 20,000", {"MiscRealPropLimit": "20000"}, ("0", "+")),
+             ("MRP 20,000", {"MiscRealPropLimit": "20000"}, "LossAssessmentRate"),   # the LA record, blank: MRZ, C28-02
              ("both", dict(LA_OK, MiscRealPropLimit="20000"), ("+", "+")),
-             ("neither", {}, ("0", "0")))
+             ("neither", {}, "LossAssessmentRate"))                 # C28-05: refuses, as ISO does (MRZ, C28-02)
     for label, cont, want in cases:
         for form in (UO_FORM, None):
             sub = g19.with_cause(g19.portable("OR"), "Special")
@@ -255,13 +280,13 @@ def flips(fl_only):
             got = (err,) if err else (premiums(data, LA), premiums(data, MRP))
             print(f"    condo options, {label:34s} CovForm {'unit owners' if form else 'as the policy':13s} "
                   f"LA {got[0]}  MRP {got[-1]}")
-            sign = tuple("+" if g and g[0] not in ("0", None) else "0" for g in got) if not err else None
+            sign = tuple("+" if g and g[0] not in ("0", None) else "0" for g in got) if not err else _iso.table_of(err)
             check(sign == want, f"condo {label} / {'UO' if form else 'policy'} form: LA/MRP {want} ({got})")
     # FL: the SetPremium gates (CovForm / CovType + PolicyType), with a manual premium
     for rec in sorted(r for rs in fl_only.values() for r in rs):
         s = short(rec)
         for label, gate in (("gate met", True), ("gate not met", False)):
-            sub = g19.with_cause(g19.portable("FL"), "Special")
+            sub = portable("FL")
             at = rc1.node_dicts(sub)
             spp = "SPP" in s
             if gate:
@@ -413,6 +438,10 @@ def borrowed():
                 how(at, at[P + parent_of[rec]])
             r2.put(sub, rec, {lim: "25000"})
             data, ip, err = rated(sub)
+            if err and rec.endswith("SpclClass") and "Not Applicable" in label and _iso.table_of(err) == "DeductibleFactor":
+                print(f"    {short(rec)[-38:]:38s} {label:32s} ours REFUSES as ISO does (DeductibleFactor; C28-06 P4)")
+                n += 1                                       # C28-05: the special class's N/A deductible has no row
+                continue
             if err:
                 check(False, f"{short(rec)[-30:]} {label}: engine raised {err}")
                 continue
@@ -548,6 +577,10 @@ def loss_assessment():
             at[P]["PolicyType"] = ptype
         at[P + "PersonalProperty"][P + OPT + "Table"] = {P + OPT: [dict(cont, **{P + LA: {}})]}
         data, ip, err = rated(sub)
+        if err and cont.get("LossAssessmentDeductible") == "All Other" and _iso.table_of(err) == "DeductibleFactor":
+            print(f"    [{i:2d}/{len(cases)}] {label:40s} ours REFUSES as ISO does (DeductibleFactor; C28-06 P3)")
+            ok_n += 1                                        # C28-05: "All Other" has no deductible row
+            continue
         if err:
             check(False, f"[{i}/{len(cases)}] {label}: engine raised {err}")
             continue
@@ -746,7 +779,7 @@ def every_state():
     unpriced, raised = {}, {}
     states = [j for j in s18.STATES]
     for i, j in enumerate(states, 1):
-        sub = g19.with_cause(g19.portable(j), "Special")
+        sub = portable(j)
         for rec, lim in SEWER.items():
             r2.put(sub, rec, {lim: "25000"}, state=j)
         rc1.node_dicts(sub)[P + "PersonalProperty"][P + OPT + "Table"] = {P + OPT: [{

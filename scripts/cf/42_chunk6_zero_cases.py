@@ -49,6 +49,8 @@ from importlib import import_module
 from cf_engine.config import NULL_ARITHMETIC, ROUNDING
 from cf_engine.resolve import book_for
 from gl_engine.interp.interpreter import Interpreter
+from gl_engine.interp.values import InterpretError                # noqa: E402
+import _iso_refusals as _iso                                    # noqa: E402
 from gl_engine.interp.tree import Node, read
 
 chunk2 = import_module("09_chunk2_golden_case")
@@ -162,6 +164,8 @@ def main() -> int:
             ok &= good
             print(f"    RAISED: {raised}   (expected a refusal) "
                   f"{'OK' if good else 'MISMATCH -- it rated'}")
+        elif raised is not None and _iso.refused_as_iso(__file__, name.split("  ")[0], raised, indent="    "):
+            pass                                            # C28-05: ours refuses where ISO does (C28-06 P10)
         elif raised is not None:
             ok = False
             print(f"    RAISED unexpectedly: {raised}")

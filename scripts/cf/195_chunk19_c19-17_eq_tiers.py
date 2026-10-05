@@ -184,16 +184,15 @@ def cases():
         "E4": ("OR", "Tier 3, 25%: OR Tier3Table5", dict(tier="3", pct="25")),
         "E5": ("CO", "Tier 1: CO does not rewrite it, the countrywide stub (0)", dict(tier="1", pct="25")),
         "E6": ("CO", "Tier 2: CO Tier2Table3", dict(tier="2", pct="25")),
-        "E7": ("VT", "Tier 1: not rewritten, VT's stub header-only (ISO REFUSES; we price $0)", dict(tier="1", pct="25")),
+        "E7": ("VT", "Tier 1: not rewritten, VT's stub header-only (ISO REFUSES; ours refuses too, C28-05)", dict(tier="1", pct="25")),
         "E8": ("AK", "Tier 2: not rewritten, AK's stub header-only", dict(tier="2", pct="25")),
         "E9": ("OR", "CP 10 29 flat-dollar form, deductible 5,000, 25%", dict(tier="1", pct="25", flat=True, ded="5,000")),
     }
 
 
-#: ISO's observed answer where it refuses and our engine prices (OI-103's shape). E7: VT files the stub
-#: EQSubLimitDeductibleTierCWTable header-only; ISO does NOT fall back to the CW row here, although it did for VT's
-#: header-only VacancyPermitFactors (C18-16) through a structurally identical lookup -- an open question on the
-#: empty-table rule (CF-ENGINE-FIX-EMPTY-STATE-TABLES.md), recorded, not fixed (engine change needs the user's go)
+#: Where ISO refuses (OI-103's shape). E7: VT files the stub EQSubLimitDeductibleTierCWTable header-only; ISO does NOT
+#: fall back to the CW row here, although it did for VT's header-only VacancyPermitFactors (C18-16). Since chunk 28
+#: C28-05 ours reads that one table as filed (`CFResolvedBook.NO_EMPTY_FALLBACK`) and refuses at the same lookup.
 REFUSE = {"E7": "EQSubLimitDeductibleTierCWTable"}
 
 
@@ -211,6 +210,9 @@ def main():
         try:
             data, ip = gc.run(build(j, **kw)(), j)
         except InterpretError as exc:
+            if cid in REFUSE and f"NO row in '{REFUSE[cid]}'" in str(exc):
+                print(f"{cid} ours REFUSES as ISO does ({REFUSE[cid]}; C28-05)")
+                continue
             print(f"{cid} RAISED {str(exc)[:150]}")
             FAIL.append(cid)
             continue
@@ -257,7 +259,7 @@ def main():
             except raas_mod.RaaSError as exc:
                 m = re.search(r"Matrix: (\w+).*?Keys: ([^.]*)", str(exc.body)) or re.search(r'"Message":"([^"]{0,200})', str(exc.body))
                 known = cid in REFUSE and REFUSE[cid] in str(exc.body)
-                print(f"  {cid} ISO REFUSES {'(recorded: ISO refuses, we price) ' if known else ''}"
+                print(f"  {cid} ISO REFUSES {'(as expected: ISO refuses, ours too) ' if known else ''}"
                       f"{m.group(0)[:220] if m else str(exc.body)[:220]}")
                 if not known:
                     FAIL.append(f"{cid} live")

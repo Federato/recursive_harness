@@ -157,6 +157,11 @@ def submission(col="Basic"):
     st = (sub["CommercialPropertyTable"]["CommercialProperty"][0]
           ["CommercialPropertyLocationTable"]["CommercialPropertyLocation"][0]
           ["CommercialPropertyStructureTable"]["CommercialPropertyStructure"][0])
+    # ISO refuses contents whose BUILDING has no windstorm deductible: the
+    # contents rule's `SingleResult` lookup of `WindstormOrHailDeductibleAsNumber`
+    # (CW + blank) finds no row, and ours refuses there too (chunk 28 C28-05,
+    # OI-103). The building's own deductible; figures unchanged (2026-10-02).
+    st["WindstormOrHailDeductible"] = "1,000"
     st["CommercialPropertyOccupClassTable"] = {
         "CommercialPropertyOccupClass": [{
             # Special's base rate is keyed on these two, and they are `Copy`d

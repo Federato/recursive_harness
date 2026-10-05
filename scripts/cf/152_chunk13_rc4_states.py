@@ -44,6 +44,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 from cf_engine.resolve import CFEditionResolver, book_for
 from gl_engine.interp.values import InterpretError
+import _iso_refusals as _iso                                    # noqa: E402
 
 gc = import_module("149_chunk13_golden_case")
 rc3 = import_module("151_chunk13_rc3_mechanisms")
@@ -143,6 +144,11 @@ def il0953_uses_fire(book):
         seg = body[i:body.find("</rul:When>", i)]
         return "TerrorismFireExcptnFactor" in seg and "UnderFourUnits" not in seg
     return False
+
+
+#: C28-05 / C28-06: states where the portable building sends a blank lookup key ISO refuses (P11 CO, P12 SC live)
+ISO_REFUSES = {("CO", "GeographicWindHazardLevel"), ("IN", "GeographicWindHazardLevel"),
+               ("OK", "GeographicWindHazardLevel"), ("SC", "BCEGEQFactor")}
 
 
 def state_sub(juris, territory, **kw):
@@ -245,6 +251,10 @@ def main():
                 try:
                     got = run_case(j, sub)
                 except InterpretError as exc:
+                    if (j, _iso.table_of(exc)) in ISO_REFUSES and str(exc).count("''") >= 1:
+                        # C28-05: the portable building's blank key refuses, as ISO does (C28-06 P11 CO, P12 SC live)
+                        tally[(case, "refused as ISO does")] += 1
+                        continue
                     tally[(case, "RAISED")] += 1
                     diverge[j].append(f"{case} tier {p['tier']}: RAISED {str(exc)[:80]}")
                     continue

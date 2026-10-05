@@ -35,6 +35,8 @@ sys.path.insert(0, str(ROOT / "scripts" / "cf"))
 sys.stdout.reconfigure(line_buffering=True, encoding="utf-8")
 T0 = time.monotonic()
 
+from gl_engine.interp.values import InterpretError
+
 c23 = import_module("221_chunk23_rc3")                   # wraps MessageHelper (TAGGED), iso_tagged
 t2, rep, gc = c23.t2, c23.rep, c23.gc
 P, TAGGED, lvl = c23.P, c23.TAGGED, c23.lvl
@@ -100,6 +102,19 @@ CASES.update({k + "w": (t, l + ", building WindstormOrHailDeductible 1,000", win
               if k == "C1B" or k.startswith("C4") or k.startswith("C8C")})
 
 
+def no_wind(build):
+    """Chunk 28 C28-05 put the building's windstorm deductible into the golden builders themselves; the REFUSE cases take it
+    back out, so they stay the as-built request ISO refuses (and ours now refuses too, at the same table)."""
+    def b():
+        sub = build()
+        g8.zeros2.structure(sub).pop("WindstormOrHailDeductible", None)
+        return sub
+    return b
+
+
+CASES.update({k: (t, l, no_wind(b)) for k, (t, l, b) in CASES.items() if k in REFUSE})
+
+
 def progress(i, n, what):
     mm, s = divmod(int(time.monotonic() - T0), 60)
     print(f"[{i}/{n}  {mm}m{s:02d}s] {what}")
@@ -148,6 +163,19 @@ def main():
     reqs, ours = {}, {}
     for i, (cid, (task, label, build)) in enumerate(cs.items(), 1):
         progress(i, len(cs), f"{cid} {task} {label}")
+        req = t2.state_req(t2.m20.payload(build()), "OR")
+        if cid in REFUSE:
+            # C28-05: ours refuses where ISO does, on the same SingleResult lookup
+            try:
+                ours_from_tree(build)
+                why = "ours PRICES it"
+            except InterpretError as exc:
+                why = "" if "WindstormOrHailDeductibleAsNumber" in str(exc) else f"ours raises elsewhere: {str(exc)[:160]}"
+            print(f"  {cid}: {why or 'ours REFUSES as ISO does (WindstormOrHailDeductibleAsNumber, CW + blank)'}")
+            if why:
+                FAIL.append(cid)
+            reqs[cid] = req
+            continue
         tree = ours_from_tree(build)
         req = t2.state_req(t2.m20.payload(build()), "OR")
         _, viareq = ours_from_request(req)
@@ -189,7 +217,8 @@ def main():
             if cid in REFUSE:
                 print(f"      {cid} was predicted to be REFUSED")
                 FAIL.append(f"{cid} live")
-            elif not ok and cid in KNOWN and not dd and sum((mine - isos).values()) == 1 and not (isos - mine):
+                continue
+            if not ok and cid in KNOWN and not dd and sum((mine - isos).values()) == 1 and not (isos - mine):
                 print(f"      explained: {KNOWN[cid]} (premiums equal; the one extra message is the known difference)")
             elif not ok:
                 FAIL.append(f"{cid} live")

@@ -24,6 +24,7 @@ from cf_engine.resolve import book_for
 from gl_engine.interp import tree
 from gl_engine.interp.tree import read
 from gl_engine.interp.values import InterpretError
+import _iso_refusals as _iso                                    # noqa: E402
 
 g = import_module("114_chunk11_golden_case")
 LI, cell, SUBCOV, FORMS = g.LI, g.cell, g.SUBCOV, g.FORMS
@@ -154,6 +155,8 @@ def main() -> int:
         except InterpretError as exc:
             if kind[0] == "refuse" and kind[1] in str(exc) and "Power(" in str(exc):
                 print(f"  {cid:4s}{tier}  {label:50s} REFUSED as predicted")
+                continue
+            if _iso.refused_as_iso(__file__, cid, exc, indent="  "):   # C28-05: ours refuses where ISO does
                 continue
             ok = False
             print(f"  {cid:4s}{tier}  {label:50s} MISMATCH: refused -- {str(exc)[:120]}")

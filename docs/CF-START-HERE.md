@@ -1,6 +1,6 @@
 # Property build — start here
 
-**Last worked 2026-10-02.** This is the resume point: where things stand, how to
+**Last worked 2026-10-05.** This is the resume point: where things stand, how to
 confirm it in two minutes, and what to pick up first.
 
 **Keeping things in sync (standing rule, 2026-10-01).** The task lists are the source of truth. A Stop hook
@@ -11,7 +11,24 @@ page and the deployed page agree with them; on drift it hands the problems back 
 
 ---
 
-## Pick up here (set 2026-10-02): chunk 27 GATED, chunk 28 OPEN at 4 of 22
+## Pick up here (set 2026-10-05): chunk 28 OPEN at 6 of 22, Set A done
+
+**Set A (refuse where ISO refuses) done 2026-10-05.** C28-05 (the user's go): a `SingleResult` lookup that matches no row
+refuses the policy on every Property book (`CFResolvedBook.strict_single_result`; GL off; `ERC_STRICT_SINGLE_RESULT`
+overrides either way); `EQSubLimitDeductibleTierCWTable` read as filed (`CFResolvedBook.NO_EMPTY_FALLBACK`). C28-06:
+`157_ --all` 293 of 293; `206_` moved only on 59 ISO refusals (rebaselined); the full gate's 23 newly failing scripts were
+pins on "ours $0", every new refusal sent live and **17 of 17 refused at the same table and keys** (`248_`); pins now say
+"refuses as ISO does" (`scripts/cf/_iso_refusals.py`) or the incidental bad input was corrected, no figure moved;
+`245_ --refused` live: 87 of 87 lookup refusals ours refuses, 37 of 37 ISO now rates ours prices. **OI-99 and OI-103 closed;
+OI-117 (`Convert` of a blank) open.** Puerto Rico not confirmable. **Next: Set C, C28-07** (OI-126 / OI-123); each change
+needs the user's go.
+
+**New PC (2026-10-05).** The corpus is at `F:\ISO_ERC_Files`: set `CF_ERC_ROOT` / `GL_ERC_ROOT` and
+`PYTHONIOENCODING=utf-8`; RaaS needs `RAAS_ENV_FILE=F:\Will_Dan_Collab_dev\.env` (it now carries `RAAS_ORG_ID` /
+`RAAS_SHIP_ID`). 11 gate scripts still fail on hardcoded `C:\Projects` paths (the 6 GL suites' fixtures, `91_ 105_ 125_
+147_ 224_`); they fail identically with the rule off. Pointing the config defaults at F: is the proposed fix.
+
+## Earlier (set 2026-10-02): chunk 27 GATED, chunk 28 OPEN at 4 of 22
 
 **Chunk 27 GATED 2026-10-02, 18 of 18** ([`CF-CHUNK27-GATE.md`](CF-CHUNK27-GATE.md)): every loose end on chunks 1–26
 closed with evidence or handed to chunk 28; no engine change; `104_ --quick` clean (34), `206_ --check` clean (1,760),

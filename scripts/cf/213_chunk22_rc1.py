@@ -382,10 +382,24 @@ def touchpoints():
                                                        f"with two priced Provisions rows")
 
     # the stored policies
-    changed = subprocess.run(["git", "diff", "--stat", "5a35c1f", "HEAD", "--", "cf_engine", "gl_engine"],
-                             capture_output=True, text=True, cwd=ROOT).stdout.strip()
-    check(changed == "", "engine unchanged since the chunk 21 gate (5a35c1f): the 2026-09-30 re-rate of the 293 stored "
-                         "policies (157_ --all, 293 of 293) carries; every stored policy has no GI, so 'Not Used' as before")
+    # The engine's files changed since the chunk 21 gate (5a35c1f), against the WORKING TREE, each allowed only with the
+    # replay that re-verified it. 2026-10-05: this guard read an empty diff as "unchanged" when git itself failed (the
+    # repository's ownership check on a new PC), and had been failing since c7ffe66 unseen (the chunk 24-27 gates ran
+    # the quick tier, which skips this script). Both fixed: a git error fails the check, and the changes are listed.
+    REVERIFIED = {
+        "gl_engine/interp/nodes.py": "c7ffe66, chunk 24 (Builders Risk); 157_ --all 293 of 293 at chunk 27, 2026-10-02",
+        "gl_engine/interp/interpreter.py": "C28-05 strict SingleResult; 157_ --all 293 of 293, 2026-10-05",
+        "cf_engine/resolve/book.py": "C28-05 strict default and EQ stub; 157_ --all 293 of 293, 2026-10-05",
+    }
+    git = subprocess.run(["git", "diff", "--name-only", "5a35c1f", "--", "cf_engine", "gl_engine"],
+                         capture_output=True, text=True, cwd=ROOT)
+    changed = set(git.stdout.split())
+    unverified = sorted(changed - set(REVERIFIED))
+    check(git.returncode == 0 and not unverified,
+          f"engine changes since the chunk 21 gate (5a35c1f) each re-verified by the 293-policy replay (157_ --all, "
+          f"293 of 293): {sorted(changed) or 'none'}; unverified {unverified or 'none'}"
+          + (f"; git failed: {git.stderr.strip()[:120]}" if git.returncode else "")
+          + "; every stored policy has no GI, so 'Not Used' as before")
 
 
 # ------------------------------------------------------------------ C22-04

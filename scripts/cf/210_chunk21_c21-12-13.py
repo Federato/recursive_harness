@@ -55,6 +55,7 @@ T0 = time.monotonic()
 
 from cf_engine.resolve import book_for                                   # noqa: E402
 from gl_engine.interp.values import InterpretError                       # noqa: E402
+import _iso_refusals as _iso                                    # noqa: E402
 
 m9 = import_module("209_chunk21_c21-10-11")
 m8, h21 = m9.m8, m9.h21
@@ -298,6 +299,8 @@ def main():
         try:
             data, ip = gc.run(c["build"](), c["j"])
         except InterpretError as exc:
+            if _iso.refused_as_iso(__file__, cid, exc):          # C28-05: ours refuses where ISO does
+                continue
             print(f"{cid}: RAISED {str(exc)[:150]}")
             FAIL.append(cid)
             continue

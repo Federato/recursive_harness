@@ -46,6 +46,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from cf_engine.config import NULL_ARITHMETIC, ROUNDING
 from cf_engine.resolve import book_for
 from gl_engine.interp.interpreter import Interpreter
+from gl_engine.interp.values import InterpretError                # noqa: E402
+import _iso_refusals as _iso                                    # noqa: E402
 from gl_engine.interp.tree import Node, read
 
 JURIS, ASOF = "OR", "20260917"
@@ -146,7 +148,14 @@ def main() -> int:
     for label, overrides, prediction in CASES:
         print(f"--- {label} ---")
         print(f"    predicted: {prediction}")
-        data, ip = run(overrides)
+        try:
+            data, ip = run(overrides)
+        except InterpretError as exc:
+            # C28-05: an unfiled EQClass now refuses the policy, as ISO does (C28-06 P5); it no longer zeroes
+            if _iso.refused_as_iso(__file__, label.split(" --")[0], exc, indent="    "):
+                print()
+                continue
+            raise
         base_rate = read(STRUCT + "/EQBaseRate", data)
         eq_rate = read(STRUCT + "/EQRate", data)
         eq_ded_factor = read(STRUCT + "/EQDeductibleFactor", data)
@@ -162,7 +171,7 @@ def main() -> int:
         print()
 
     print("=== Cross-case distinctness check ===\n")
-    key_fields = {label: (v[2], v[3]) for label, v in outcomes.items()}  # (FinalEQRate, EQPremium)
+    key_fields = {label: (v[2], v[3]) for label, v in outcomes.items()}  # (FinalEQRate, EQPremium); refused cases absent
     print("    (FinalEQRate, EQ Premium) per case:")
     for label, v in key_fields.items():
         print(f"        {label:70s} {v}")
@@ -170,11 +179,11 @@ def main() -> int:
     print(f"\n    {n_distinct} distinct (FinalEQRate, Premium) pairs across the 7 cases "
           f"(not all 7 need to differ from each other -- the real question is "
           f"whether cases that SHOULD be distinct-by-cause actually are):")
-    group_no_election = {key_fields[l] for l in
+    group_no_election = {key_fields[l] for l in key_fields if l in
                           ("Case 1 -- EQCovIndicator='No Coverage'",
                            "Case 2 -- EQCovIndicator='Not Applicable' (domain-illegal for CovType=Building)",
                            "Case 3 -- EQCovIndicator absent entirely")}
-    group_elected_but_zeroed = {key_fields[l] for l in
+    group_elected_but_zeroed = {key_fields[l] for l in key_fields if l in
                                  ("Case 4 -- EQCovIndicator elected, EQClass unfiled ('Z9')",
                                   "Case 5 -- BCEG blank",
                                   "Case 6 -- EQSprinklerLeakageOnly blank")}

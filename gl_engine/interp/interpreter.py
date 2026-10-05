@@ -92,11 +92,18 @@ def _premium_target(path: str) -> bool:
 DEFAULT_NULL_ARITHMETIC = os.environ.get("ERC_NULL_ARITHMETIC", "refuse")
 
 #: Whether a `SingleResult` lookup matching no row refuses (open item 8).
-#: Same one purpose as above: running a whole suite under the variant to see
-#: what it would change.
+#:
+#: Unset (None), the BOOK decides: a book whose class sets
+#: `strict_single_result = True` refuses (Property, chunk 28 C28-05: ISO refuses
+#: 65 of 66 such misses live, and none of 1,690 rated requests has one); any
+#: other book does not (General Liability, unmeasured). The environment
+#: variable overrides both ways, for the same one purpose as above: running a
+#: whole suite under the variant to see what it would change.
+_STRICT_ENV = os.environ.get("ERC_STRICT_SINGLE_RESULT", "").strip().lower()
 DEFAULT_STRICT_SINGLE_RESULT = (
-    os.environ.get("ERC_STRICT_SINGLE_RESULT", "").strip().lower()
-    in ("1", "true", "yes", "on"))
+    True if _STRICT_ENV in ("1", "true", "yes", "on")
+    else False if _STRICT_ENV in ("0", "false", "no", "off")
+    else None)
 
 
 @dataclass
@@ -321,10 +328,14 @@ class Interpreter:
         #: Every operand `Product` left out, for the same visibility.
         self.null_skips: list[str] = []
         #: Refuse a `SingleResult` lookup that matches NO row -- see
-        #: `_empty_lookup`. Default off; this is a measurement switch.
-        self.strict_single_result = (DEFAULT_STRICT_SINGLE_RESULT
-                                     if strict_single_result is None
-                                     else strict_single_result)
+        #: `_empty_lookup`. An explicit argument wins, then the environment,
+        #: then the book's own class default (on for Property, off for GL).
+        if strict_single_result is None:
+            strict_single_result = DEFAULT_STRICT_SINGLE_RESULT
+        if strict_single_result is None:
+            strict_single_result = bool(
+                getattr(book, "strict_single_result", False))
+        self.strict_single_result = strict_single_result
         #: Every table a strict refusal fired on, for measuring the population.
         self.strict_refusals: list[str] = []
         #: Every site where a null was coerced. Empty in `refuse` mode.
@@ -582,8 +593,12 @@ class Interpreter:
         coverage at zero. A submission ISO would reject can come back from us
         as a quiet, plausible premium.
 
-        `strict_single_result` is the switch for MEASURING that, not a setting
-        to leave on casually. The population is why:
+        **Property refuses (chunk 28 C28-05, 2026-10-05).** `CFResolvedBook`
+        turns `strict_single_result` on: ISO refuses 65 of 66 such misses live
+        at its own table, and none of 1,690 requests ISO rated has one
+        (`docs/CF-CHUNK28-PROPOSAL-A.md`). General Liability keeps it off
+        until measured on its own evidence. The population is why it is
+        `SingleResult` only:
 
         * `FirstResult` misses are ISO's own two-pass idiom and are DESIGNED to
           happen -- the state pass misses so the countrywide pass can answer.

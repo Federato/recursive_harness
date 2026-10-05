@@ -106,6 +106,14 @@ def submission(limit: int, contents: int = 0) -> dict:
                                 "IncludedInBlkt": "No",
                                 "PackageModFactor": "1.0",
                                 "MultiPremiumAndDispersionCreditFactor": "1.0",
+                                # ISO refuses a policy with contents unless the
+                                # BUILDING carries this: the contents rule looks
+                                # it up `SingleResult` (CW + blank: no row), and
+                                # ours now refuses there too (chunk 28 C28-05,
+                                # OI-103). The building's own deductible; every
+                                # pinned figure unchanged (measured 2026-10-02).
+                                **({"WindstormOrHailDeductible": "1,000"}
+                                   if contents else {}),
                                 # Contents at the same structure. Present only
                                 # for case B: the building chain never reads
                                 # them, but `SetTotAmtInsurance` sums them into

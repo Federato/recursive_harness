@@ -49,6 +49,7 @@ import functools                                               # noqa: E402
 # state and family; the packages do not change within a run (profiled 2026-09-28, see 183_)
 book_for = functools.lru_cache(maxsize=None)(book_for)
 from gl_engine.interp.values import InterpretError
+import _iso_refusals as _iso                                    # noqa: E402
 
 gc = import_module("149_chunk13_golden_case")
 grp = import_module("150_chunk13_c13-08-09_groups_rollup")
@@ -270,10 +271,13 @@ def zero_fixtures(pop, xsd):
         try:
             data, _ = gc.run(sub, "OR")
         except InterpretError as exc:
-            print(f"    {label:45s} RAISED {str(exc)[:110]}")
-            if "Not Applicable" in label:
-                print("      (the conversion table maps 'Not Applicable' to 'Not Applicable', which has no factor row)")
+            if "Not Applicable" in label and _iso.table_of(exc) == "WatercraftExclBuybackFactor":
+                print(f"    {label:45s} ours REFUSES as ISO does ({_iso.table_of(exc)})")
+                # C28-05: ours refuses here, as ISO does (C17-12 Z6, C28-02); it used to price $0
+                print("      (the conversion table maps 'Not Applicable' to 'Not Applicable', which has no factor row;"
+                      " ISO refuses there, and since C28-05 so does ours)")
             else:
+                print(f"    {label:45s} RAISED {str(exc)[:110]}")
                 check(False, f"Watercraft {label}: raised")
             continue
         vals = {short(r): prem_of(data, r) for r in WATERCRAFT}

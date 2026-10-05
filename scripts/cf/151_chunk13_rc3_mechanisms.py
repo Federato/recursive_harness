@@ -84,6 +84,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 from cf_engine.resolve import book_for
 from gl_engine.interp.values import InterpretError
+import _iso_refusals as _iso                                    # noqa: E402
 
 gc = import_module("149_chunk13_golden_case")
 r11, rp = gc.r11, gc.rp
@@ -250,6 +251,9 @@ def engine():
         except InterpretError as exc:
             if want == "REFUSES":
                 print(f"{cid:5s} {task} {label}: refuses as predicted ({str(exc)[:70]})")
+                by_task[task] += 1
+                continue
+            if _iso.refused_as_iso(__file__, cid, exc):          # C28-05: ours refuses where ISO does
                 by_task[task] += 1
                 continue
             print(f"{cid:5s} {task} {label}: RAISED {exc}")

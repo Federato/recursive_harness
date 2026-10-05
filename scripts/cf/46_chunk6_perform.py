@@ -48,6 +48,8 @@ from importlib import import_module
 
 from cf_engine.resolve import CFEditionResolver, book_for
 from gl_engine.interp.tree import read
+from gl_engine.interp.values import InterpretError                # noqa: E402
+import _iso_refusals as _iso                                    # noqa: E402
 
 chain = import_module("45_chunk6_description_chain")
 g = import_module("41_chunk6_golden_case")
@@ -154,10 +156,16 @@ def main() -> int:
     print(f"    reads by any RATE chain                              : "
           f"{reads - in_own}  (expected 0) {'OK' if good else 'MISMATCH'}")
 
-    pr = chain.run("PR", {})
-    pr_pcf = read(f"{SC}/ProtectionClassFactor", pr)
-    pr_prem = str(read(P["BasicGroupI"], pr))
-    good = pr_pcf is None and pr_prem == "64"
+    try:
+        pr = chain.run("PR", {})
+    except InterpretError as exc:
+        # C28-05: Puerto Rico now refuses on ProtectionClassStatCode (CW 3); no RaaS entitlement, so unconfirmed
+        if not _iso.refused_as_iso(__file__, "PR", exc, indent="    "):
+            raise
+        pr = None
+    pr_pcf = read(f"{SC}/ProtectionClassFactor", pr) if pr is not None else None
+    pr_prem = str(read(P["BasicGroupI"], pr)) if pr is not None else "64 (not rated: refused, C28-05)"
+    good = pr_pcf is None and (pr is None or pr_prem == "64")
     ok &= good
     print(f"\n    PR deletes SetProtectionClassFactor: factor = {pr_pcf} "
           f"(expected None)")

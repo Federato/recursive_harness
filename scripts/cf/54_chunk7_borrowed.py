@@ -45,6 +45,8 @@ from importlib import import_module
 from cf_engine.config import NULL_ARITHMETIC, ROUNDING
 from cf_engine.resolve import CFEditionResolver, book_for
 from gl_engine.interp.interpreter import Interpreter
+from gl_engine.interp.values import InterpretError                # noqa: E402
+import _iso_refusals as _iso                                    # noqa: E402
 from gl_engine.interp.tree import Node, read
 
 g6 = import_module("41_chunk6_golden_case")
@@ -139,7 +141,12 @@ def main() -> int:
 
     print("=== 10 / 12  The borrow, moved one value at a time\n")
     for name, item, rec, loc, want, _ in CASES:
-        data = run("OR", "Basic", item, rec, loc)
+        try:
+            data = run("OR", "Basic", item, rec, loc)
+        except InterpretError as exc:
+            if _iso.refused_as_iso(__file__, name, exc, indent="  "):   # C28-05: ours refuses where ISO does (P9)
+                continue
+            raise
         got = (str(read(f"{BI}/BasicGroupIRate", data)),
                str(read(P7["BasicGroupI"], data)),
                str(read(P7["BasicGroupII"], data)),
@@ -212,7 +219,15 @@ def main() -> int:
     # ---- C7-13
     print("\n=== 13  The parent's failures, re-asserted")
     for j, want in (("FL", "0"), ("NY", "0"), ("AZ", "0"), ("OR", "39")):
-        got = str(read(P7["BasicGroupI"], run(j)))
+        try:
+            got = str(read(P7["BasicGroupI"], run(j)))
+        except InterpretError as exc:
+            # C28-05: Oregon's territories sent to another state now REFUSE the policy, as ISO does (C28-06 P7 FL,
+            # P8 VA; chunk 13's first live sweep, 105 refusals); the pinned "0" reads "not rated"
+            if j == "OR" or not re.search(r"keys \['CW', '(Portland|Entire State)'", str(exc)):
+                raise
+            print(f"    {j}: ours REFUSES as ISO does ({_iso.table_of(exc)}: Oregon's territory)")
+            got = "0"
         good = got == want
         ok &= good
         print(f"    {j}: Business Income Group I = {got:>3s}  "

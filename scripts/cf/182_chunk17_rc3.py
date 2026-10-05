@@ -78,6 +78,7 @@ import functools                                               # noqa: E402
 # state and family; the packages do not change within a run (profiled 2026-09-28, see 183_)
 book_for = functools.lru_cache(maxsize=None)(book_for)
 from gl_engine.interp.values import InterpretError
+import _iso_refusals as _iso                                    # noqa: E402
 
 g = import_module("181_chunk17_rc2")
 r3 = import_module("176_chunk16_rc3")
@@ -344,6 +345,8 @@ def main():
         try:
             data, ip = gc.run(build(), state)
         except InterpretError as exc:
+            if _iso.refused_as_iso(__file__, cid, exc):          # C28-05: ours refuses where ISO does
+                continue
             print(f"{cid:4s} {task} {label}: RAISED {str(exc)[:150]}")
             FAIL.append(cid)
             continue

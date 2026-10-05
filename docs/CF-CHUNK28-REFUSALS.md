@@ -94,3 +94,37 @@ is not reached by our builders (FL `SecondaryLocationDependenciesFactor`: FL rew
 are NY's (BCEG stat code on a special class, fungus rates, mold stat code, sub-standard rating codes). **Proposal input:**
 keep the fallback for data-keyed lookups (2 of 2), and treat the earthquake stub as ISO does (3 of 3); whether to
 generalise to every all-constant lookup is a choice to make with the evidence above, not a fact.
+
+## C28-06: the refusals the build introduced, each sent to ISO (2026-10-05)
+
+**In plain English.** After C28-05 the full gate showed 23 Property scripts newly failing: each one had pinned "ours
+prices $0" on an input ours now refuses. 15 of the 22 tables involved were already on record as ISO refusals (the table
+above, OI-99's chunk 6 / 26 calls). For every other refusal, and for the near-miss spellings, the exact policy the script
+builds was sent to ISO live at 2026-09-17 (`scripts/cf/248_chunk28_c28-06_probes.py --live`). **17 of 17: ISO refuses at
+the same table, with the same keys.** No probe found ours refusing a policy ISO rates.
+
+| # | Case (the script that pinned it) | Table | ISO |
+|---|---|---|---|
+| P1 | FL portable policy, EQ class "A1" (`207_`) | `BldgHeightFactor` CW, 1-3, A1, 1 | refuses |
+| P2 | OR condo options, loss assessment limit "10000" (`207_`) | `LossAssessmentLimitConverted` CW, 10000 | refuses |
+| P3 | OR condo options, deductible "All Other" (`207_`) | `DeductibleFactor` CW, All Other, 10000, Other Cause Of Loss | refuses |
+| P4 | OR sewer special class, parent deductible "Not Applicable" (`207_`) | `DeductibleFactor` CW, Not Applicable, 100000, Basic Group I | refuses |
+| P5 | OR EQ class "Z9" (`88_`) | `EQClassToUse` CW, Z9 | refuses |
+| P6 | OR Business Income, all three options (`35_`) | `MaxPeriodOfIndemnityFactor` CW, Extra Expense Only, Mercantile… | refuses |
+| P7 / P8 | Oregon's "Portland" in FL / VA (`120_`, `168_`, `54_` C7-13) | `RatingTerritoryGroupIFactor` CW, Portland | refuses (both) |
+| P9 | OR Group II territory "Portland" (`54_`) | `BCEGFactor` CW, Portland, 4 | refuses |
+| P10 | FL's own tower description, sent in OR (`42_`, `45_`) | `SpecialClassDescriptionConvertedOption` | refuses |
+| P11 | CO terrorism, no wind hazard input (`152_`; IN, OK the same) | `GeographicWindHazardLevel` CO, blank | refuses |
+| P12 | SC terrorism (`152_`) | `BCEGEQFactor` CW, 4, blank | refuses |
+| P13–P17 | `45_` C6-14's five other near-miss spellings (case, trailing space, `&`, doubled space, en dash) | `SpecialClassDescriptionConvertedOption` | refuses (5 of 5) |
+
+**Not confirmable:** Puerto Rico (`45_` C6-13, `46_`): ours now refuses on `ProtectionClassStatCode` (CW, 3); there is no
+RaaS entitlement for PR, so the pins say "ours refuses, ISO unknown" (`_iso_refusals.UNCONFIRMED`).
+
+**How the scripts changed (no figure moved).** Where the script's point was the refusal-shaped input, the pin now expects
+ours to refuse at ISO's table (`scripts/cf/_iso_refusals.py` holds each case, its table and its evidence; a refusal at any
+other table still fails). Where the script's point was something else and the bad input was incidental, the input was
+corrected to what ISO rates, as the golden cases' windstorm deductible was in C28-05: New York's own Group II territory "I"
+and Florida's "Inland" and tower description (`45_` / `47_`), Oregon's territories removed outside Oregon (`120_`, `168_`,
+`152_`'s way), and Florida's portable policy without earthquake inputs (`207_`, `209_`'s way). Every pinned figure in
+those scripts is unchanged.

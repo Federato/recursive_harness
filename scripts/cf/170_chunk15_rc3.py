@@ -76,6 +76,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 from cf_engine.resolve import book_for
 from gl_engine.interp.values import InterpretError
+import _iso_refusals as _iso                                    # noqa: E402
 
 gc = import_module("149_chunk13_golden_case")
 rep = import_module("157_chunk14_c14-02_total_replay")
@@ -295,6 +296,8 @@ def main():
         try:
             data, ip = gc.run(build(cid))
         except InterpretError as exc:
+            if _iso.refused_as_iso(__file__, cid, exc):          # C28-05: ours refuses where ISO does
+                continue
             print(f"{cid:4s} {task} {label}: RAISED {exc}")
             fails.append(cid)
             continue

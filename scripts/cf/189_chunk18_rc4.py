@@ -54,6 +54,7 @@ sys.stdout.reconfigure(line_buffering=True)
 T0 = time.monotonic()
 
 from gl_engine.interp.values import InterpretError                       # noqa: E402
+import _iso_refusals as _iso                                    # noqa: E402
 
 g = import_module("187_chunk18_rc2")
 r4 = import_module("177_chunk16_rc4")                  # its pkgs() is cached (2026-09-28)
@@ -255,6 +256,8 @@ def main():
         try:
             data, ip = gc.run(build(j, fn), j)
         except (InterpretError, LookupError) as exc:
+            if _iso.refused_as_iso(__file__, rid, exc):          # C28-05: ours refuses where ISO does
+                continue
             print(f"  {rid:9s} RAISED {str(exc)[:150]}")
             FAIL.append(rid)
             continue

@@ -50,6 +50,7 @@ sys.path.insert(0, str(ROOT / "scripts" / "cf"))
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from gl_engine.interp.values import InterpretError
+import _iso_refusals as _iso                                    # noqa: E402
 
 m3 = import_module("160_chunk14_rc3_modifiers")
 gc, t2, rep, r11 = m3.gc, m3.t2, m3.rep, m3.r11
@@ -110,6 +111,8 @@ def main():
         try:
             data, ip = gc.run(build())
         except InterpretError as exc:
+            if _iso.refused_as_iso(__file__, cid, exc):          # C28-05: ours refuses where ISO does
+                continue
             print(f"{cid}  {label}: RAISED {exc}")
             fails.append(cid)
             continue

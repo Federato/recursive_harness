@@ -1,6 +1,6 @@
 # Property chunk 28, C28-04: proposal for Set A, refuse where ISO refuses
 
-**Status: PROPOSED 2026-10-02, awaiting the user's go.** No engine code changed. Evidence:
+**Status: BUILT 2026-10-05 (C28-05, the user's go 2026-10-05); proposed 2026-10-02.** Measured before any code changed. Evidence:
 [`CF-CHUNK28-REFUSALS.md`](CF-CHUNK28-REFUSALS.md) (C28-02, C28-03); impact measured with the engine's own measurement
 switch by `scripts/cf/247_chunk28_c28-04_strict_impact.py` and `104_ --quick --no-gl` under `ERC_STRICT_SINGLE_RESULT=1`.
 

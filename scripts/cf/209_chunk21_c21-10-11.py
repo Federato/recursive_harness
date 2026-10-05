@@ -56,6 +56,7 @@ sys.stdout.reconfigure(line_buffering=True)
 T0 = time.monotonic()
 
 from gl_engine.interp.values import InterpretError                       # noqa: E402
+import _iso_refusals as _iso                                    # noqa: E402
 
 m8 = import_module("208_chunk21_rc2")
 h21, r2, g19, rc1, r16, gc, rep, cmp = m8.h21, m8.r2, m8.g19, m8.rc1, m8.r16, m8.gc, m8.rep, m8.cmp
@@ -278,6 +279,8 @@ def main():
         try:
             data, ip = gc.run(c["build"](), c["j"])
         except InterpretError as exc:
+            if _iso.refused_as_iso(__file__, cid, exc):          # C28-05: ours refuses where ISO does
+                continue
             print(f"{cid} {c['task']} {c['j']} {c['label']}: RAISED {str(exc)[:150]}")
             FAIL.append(cid)
             continue

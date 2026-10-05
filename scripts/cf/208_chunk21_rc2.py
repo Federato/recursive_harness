@@ -90,8 +90,8 @@ LA, MRP, OPT = h21.LA, h21.MRP, h21.OPT
 cen20 = import_module("901_chunk20_census")
 FAIL = []
 BLDG, PP, SC, BI, SCBI = SEWER
-#: OI-103 (a SingleResult lookup with no row): ISO refuses where the engine rates. A refusal naming this
-#: table is the EXPECTED live result for these cases, pinned as evidence; the decision stays with chunk 28.
+#: OI-103 (a SingleResult lookup with no row): ISO refuses, and since chunk 28 C28-05 ours refuses too, naming the
+#: same table. A refusal naming this table is the EXPECTED result for these cases, ours and live.
 EXPECT_REFUSAL = {"MRZ": "LossAssessmentRate"}
 #: known ISO differences, pinned: the case prints its differences and does not fail the run.
 KNOWN_DIFF = {"FC5": "OI-116: ISO never attaches FL's SPP special-class condo record; ours prices it"}
@@ -302,7 +302,7 @@ def cases():
                 florida(FLSPP + "SpecClass", 300), [FLSPP + "SpecClass"], "FL"),
         "FC6": ("C21-09", "FL occupancy on the policy's own form: gate not met, $0", florida(FLR + "OccupClass", 100, gate=False),
                 [FLR + "OccupClass"], "FL"),
-        "MRZ": ("C21-08", "OI-103: MR1 with the loss assessment limit BLANK (ISO refuses; ours $0)",
+        "MRZ": ("C21-08", "OI-103: MR1 with the loss assessment limit BLANK (ISO refuses; ours refuses, C28-05)",
                 mrp("20000", "Special", la_limit=None), [MRP]),
     }
 
@@ -345,6 +345,9 @@ def main():
         try:
             data, ip = gc.run(build(), j)
         except InterpretError as exc:
+            if cid in EXPECT_REFUSAL and f"NO row in '{EXPECT_REFUSAL[cid]}'" in str(exc):
+                print(f"{cid} {task} {label}: ours REFUSES as ISO does ({EXPECT_REFUSAL[cid]}; C28-05)")
+                continue
             print(f"{cid} {task} {label}: RAISED {str(exc)[:150]}")
             FAIL.append(cid)
             continue
@@ -378,7 +381,7 @@ def main():
                 m = re.search(r"Matrix: (\w+).*?Keys: ([^.]*)", str(exc.body)) or re.search(r'"Message":"([^"]{0,200})', str(exc.body))
                 what = m.group(0)[:220] if m else str(exc.body)[:220]
                 if cid in EXPECT_REFUSAL and EXPECT_REFUSAL[cid] in what:
-                    print(f"  {cid} REFUSES AS EXPECTED (OI-103; ours rates): {what}")
+                    print(f"  {cid} REFUSES AS EXPECTED (OI-103; ours refuses too): {what}")
                     continue
                 print(f"  {cid} ISO REFUSES {what}")
                 FAIL.append(f"{cid} live")

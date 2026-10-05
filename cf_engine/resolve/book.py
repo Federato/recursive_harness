@@ -46,14 +46,34 @@ class CFResolvedBook(ResolvedBook):
     files its own `VacancyPermitFactors`: ISO refuses a CW-keyed miss against it
     rather than falling back -- the same probe, same day).
 
+    **One table is read as filed, empty or not** (`NO_EMPTY_FALLBACK`, chunk 28
+    C28-05): ISO refuses the earthquake sub-limit tier lookup in MA, TN and VT,
+    whose state tables are empty, rather than reading countrywide's rows (3 of
+    3 live, 2026-10-02, `246_`). Every other empty state table keeps the
+    fallback (VT `VacancyPermitFactors`, NY `OffPremEndtsModifyingCovdCOLFactor`:
+    ISO used countrywide's rows, 2 of 2).
+
+    **A `SingleResult` lookup that matches no row refuses the policy**
+    (`strict_single_result`, read by the interpreter; chunk 28 C28-05). ISO
+    refuses at exactly that point (65 of 66 live refusals, 0 of 1,690 rated
+    requests), where ours used to carry a null on and often price $0.
+
     Scope: Property only. GL keeps N3 in `gl_engine.resolve.book`; nothing here
     changes a General Liability book.
     """
 
+    #: The interpreter's default for a `SingleResult` miss: refuse (C28-05).
+    strict_single_result = True
+
+    #: State tables read as filed even when empty: ISO refuses rather than
+    #: falling back to countrywide (MA, TN, VT; C28-03, `246_`).
+    NO_EMPTY_FALLBACK = frozenset({"EQSubLimitDeductibleTierCWTable"})
+
     def table(self, name: str, kind: str = "Rate") -> Table:
         if self.state.has(kind, name):
             own = self.state.table(kind, name)
-            if not own.rows and self.parent and self.parent.has(kind, name):
+            if (not own.rows and name not in self.NO_EMPTY_FALLBACK
+                    and self.parent and self.parent.has(kind, name)):
                 upstairs = self.parent.table(kind, name)
                 if upstairs.rows:
                     return upstairs
