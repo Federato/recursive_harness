@@ -245,7 +245,7 @@
     <hr>
     <div class="group">
       <div class="group-label">Liquor Liability (332)</div>
-      <button class="navlink" data-target="liquor-main">ELP-only chain<span class="chain-len">16-step chain · no loss-cost path</span></button>
+      <a class="navlink" href="gl-liquor-chains.html">Pre-2027 and CW 2027 chains<span class="chain-len">moved to their own page ↗</span></a>
     </div>
     <hr>
     <div class="group">
@@ -334,8 +334,8 @@
           </tr>
           <tr>
             <th>Liquor Liability</th>
-            <td><button class="cell" data-target="liquor-main">ELP-only chain<span class="n">16 steps · no loss cost</span></button></td>
-            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">edition delta noted in-page</span></td>
+            <td><a class="cell" href="gl-liquor-chains.html">Pre-2027 editions<span class="n">own page ↗</span></a></td>
+            <td><a class="cell" href="gl-liquor-chains.html">CW 2027 (V01/V02)<span class="n">own page ↗</span></a></td>
             <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
             <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
             <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
@@ -390,67 +390,7 @@
 
     <!-- Owners & Contractors Protective (both editions) moved to gl-ocp-chains.html on 2026-10-05. -->
 
-    <!-- ============================= LIQUOR LIABILITY ============================= -->
-    <section class="sheet-view" id="view-liquor-main">
-      <div class="titleblock">
-        <div class="field"><span class="k">Coverage</span><span class="v">Liquor Liability (subline 332, Rule 45)</span></div>
-        <div class="field"><span class="k">Edition</span><span class="v">GL_CW_20231201_V03 / GL_CW_20260101_V01 (byte-identical) — see delta note for CW 2027</span></div>
-        <div class="field"><span class="k">Master chain</span><span class="v">ErcSetRatesAndFactors (12 steps) + ErcRate (4 steps) — 16 total, one chain, no form split</span></div>
-        <div class="field"><span class="k">Premium file</span><span class="v">GeneralLiabilityClassificationLiquorCoverageRules.Rule.xml</span></div>
-        <div class="field wide"><span class="k">Coverage gate</span><span class="v">CoverageOnPolicyIndicator == 0 -&gt; Premium 0.0, stop. Manual Rule 45.E: "For rates, refer to company" — ISO publishes no liquor rate by rule; the entire chain below is an ELP-driven surrogate</span></div>
-      </div>
-      <div class="sheet">
-        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
-        <pre class="mermaid">
-%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
-flowchart TD
-    start(["Liquor Liability classification record"]) --> covOn{"CoverageOnPolicyIndicator = 0?"}
-    covOn -->|"Yes"| premZeroL["Premium = 0.0, stop"]:::zero
-    covOn -->|"No"| classCheck{"LiquorClassDescription and LiquorClassCode both non-empty?"}
-    classCheck -->|"No"| elpZeroL["ELP = 0.0"]:::zero
-    classCheck -->|"Yes"| elpLookupL["ELP = lookup LiquorELP, or ELPOverride if non-zero"]:::step
-    elpZeroL --> formGate{"LiquorCoverageForm?"}
-    elpLookupL --> formGate
-    formGate -->|"Occurrence"| baseOcc["BaseRate = round(ELP x LCM,3) - NO loss-cost branch exists in this rule at all"]:::step
-    formGate -->|"Claims Made"| baseCM["BaseRate = round(ELP x LCM x ClaimsMadeMult,3)"]:::step
-    formGate -->|"other/absent"| baseZeroL["BaseRate = 0.0"]:::zero
-    baseOcc --> ilfGate{"ClassDescription, EachCommonCauseLimit, AggregateLimit all non-empty?"}
-    baseCM --> ilfGate
-    ilfGate -->|"Yes"| ilfLookupL["ILF = lookup ILFLiquor (IL overrides: ILFLiquorStException, keyed on AggregateLimit alone)"]:::step
-    ilfGate -->|"No"| ilfZeroL["ILF = 0.0"]:::zero
-    ilfLookupL --> dedGateL{"ClassDescription and LiquorDeductible both non-empty?"}
-    ilfZeroL --> dedGateL
-    dedGateL -->|"Yes"| dedLookupL["DeductibleFactor = lookup DedFactorLiquor - all 21 CW options price 0; guard covers only 10/21 (OI-44)"]:::openq
-    dedGateL -->|"No"| dedZeroL["DeductibleFactor = 0.0"]:::step
-    dedLookupL --> finalILFL["FinalILF = round(ILF - DeductibleFactor,3)"]:::step
-    dedZeroL --> finalILFL
-    finalILFL --> finalRateL2["FinalRate = round(BaseRate x FinalILF x PackageMod x ExperienceMod x ExpenseMod x ModToUse,3) - missing modifier zeroes the premium (FirstValue -> 0.0)"]:::step
-    finalRateL2 --> premGateL{"Subline='Liquor' AND PremiumBasis non-blank and not 'Refer To Co.'?"}
-    premGateL -->|"No"| premZeroL2["Premium = 0.0 - a referral, not a price"]:::zero
-    premGateL -->|"Yes, divisor basis"| premDiv["Premium = round(FinalRate x LiquorExposure / 1000,0)"]:::final
-    premGateL -->|"Yes, unit basis"| premUnit["Premium = round(FinalRate x LiquorExposure,0)"]:::final
-
-    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
-    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
-    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
-    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
-    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
-    class covOn,classCheck,formGate,ilfGate,dedGateL,premGateL gate
-        </pre>
-      </div>
-      <div class="notes">
-        <div>
-          <h3>What to notice</h3>
-          <ul>
-            <li>Eight distinct absent-input paths reach `Premium = 0` with no message — the largest silent-zero surface of any subline gated to date, a direct consequence of liquor having no second (loss-cost) route to a premium.</li>
-            <li>`DedFactorLiquor` publishes 21 deductible options, all with factor `0` — deliberate per manual 45.J.3 ("must be referred to the company"), but only 10 of the 21 zero rows carry a validation guard (OI-44).</li>
-            <li>New York disables claims-made liquor outright: `SetBaseRate` requires `Occurrence`, returning `0.0` for a claims-made submission with no message or referral.</li>
-          </ul>
-        </div>
-        <div class="delta"><strong>CW 2027-04-01 delta (not modeled above).</strong> Minimum premium withdrawn; a $1 floor arrives for a zero-computing premium with non-zero exposure; the premium-basis vocabulary is replaced (9 generic bases -&gt; 2 rateable + 3 unit bases + Refer To Company); the `Subline == "Liquor"` guard is dropped; `SetELP` drops the `ClassDescription` condition. Known CW 2027 defect OI-43: the statistical-code rule still tests pre-2027 vocabulary, inflating reported exposure 1000x — premium itself is unaffected.</div>
-              <div class="delta"><strong>Reconciled against the engine, 2026-10-02.</strong> Chain, claims-made multiplier and ILF exceptions confirmed; AL class 70412 = <b>636</b> at 2026-10-02 and 50943 = 681 at 2027-04-01, rated offline from ISO's STC submissions. Corrections: <code>LiquorELPText</code> does feed ISO's override message (R29 in underwriting mode); the <code>LookupILFLiquorWithSubLimit</code> override is Minnesota's, not Illinois's; in 2027 <code>SetILF</code>/<code>SetDeductibleFactor</code> re-gate on class code and a Refer-to-Company or blank basis with exposure prices at $1, not 0. Liquor needs its own <code>GeneralLiability</code> risk (Subline = Liquor). Engine finding: register detector R14 fires on every "No Deductible" liquor risk.</div>
-      </div>
-    </section>
+    <!-- Liquor Liability (both editions) moved to gl-liquor-chains.html on 2026-10-05. -->
 
     <!-- ============================= RAILROAD · STANDARD ============================= -->
     <section class="sheet-view" id="view-railroad-standard">
