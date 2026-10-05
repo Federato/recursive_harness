@@ -49,6 +49,22 @@ def tree(j, value):
 
 
 CASES = {f"{j}-{v}": (j, v) for j, vals in (("OR", ("Yes",)), ("MA", ("Yes", "True", "1", "Y"))) for v in vals}
+# chunk 28 C28-09 (2026-10-05): a JSON boolean, which a CHECKBOX field may want (every value above was text)
+CASES.update({"MA-true": ("MA", True), "MA-false": ("MA", False)})
+
+
+def with_bool(o, v):
+    """Set AllCoveredCausesOfLoss to the JSON boolean `v` in a finished request (the payload builder makes text)."""
+    if isinstance(o, dict):
+        for k in o:
+            if k == "AllCoveredCausesOfLoss":
+                o[k] = v
+            else:
+                with_bool(o[k], v)
+    elif isinstance(o, list):
+        for x in o:
+            with_bool(x, v)
+    return o
 
 
 def echo(resp):
@@ -70,11 +86,17 @@ def echo(resp):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--live", action="store_true")
+    ap.add_argument("--cases")
     a = ap.parse_args()
     import raas as raas_mod
     client = raas_mod.RaaS() if a.live else None
+    ap_cases = [c for c in (a.cases or "").split(",") if c]
     for cid, (j, v) in CASES.items():
-        req = t2.state_req(t2.m20.payload(tree(j, v)()), j)
+        if ap_cases and cid not in ap_cases:
+            continue
+        req = t2.state_req(t2.m20.payload(tree(j, "Yes" if isinstance(v, bool) else v)()), j)
+        if isinstance(v, bool):
+            with_bool(req, v)
         TAGGED.clear()
         data, ip = rep.cmp.rate(req)
         ours = MSG in [x for _, x in TAGGED]
