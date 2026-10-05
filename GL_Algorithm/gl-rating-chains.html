@@ -250,10 +250,7 @@
     <hr>
     <div class="group">
       <div class="group-label">Railroad Protective (335)</div>
-      <button class="navlink" data-target="railroad-standard">Classes 40011/40012<span class="chain-len">single-hazard</span></button>
-      <button class="navlink" data-target="railroad-mixed">Class 40011, mixed-hazard<span class="chain-len">weighted average branch</span></button>
-      <button class="navlink" data-target="railroad-40013">Class 40013<span class="chain-len">highway projects</span></button>
-      <button class="navlink" data-target="railroad-40014">Class 40014<span class="chain-len">derived, not tabulated</span></button>
+      <a class="navlink" href="gl-railroad-chains.html">Pre-2027 and CW 2027 chains<span class="chain-len">moved to their own page ↗</span></a>
     </div>
     <hr>
     <div class="group">
@@ -342,10 +339,10 @@
           </tr>
           <tr>
             <th>Railroad Protective</th>
-            <td><button class="cell" data-target="railroad-standard">Classes 40011/40012<span class="n">single-hazard</span></button></td>
-            <td><button class="cell" data-target="railroad-mixed">Class 40011, mixed-hazard<span class="n">weighted average</span></button></td>
-            <td><button class="cell" data-target="railroad-40013">Class 40013<span class="n">highway, no add-on</span></button></td>
-            <td><button class="cell" data-target="railroad-40014">Class 40014<span class="n">derived, not tabulated</span></button></td>
+            <td><a class="cell" href="gl-railroad-chains.html">Pre-2027 editions<span class="n">own page ↗</span></a></td>
+            <td><a class="cell" href="gl-railroad-chains.html">CW 2027 (V01/V02)<span class="n">own page ↗</span></a></td>
+            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
+            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
             <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
           </tr>
           <tr>
@@ -392,182 +389,7 @@
 
     <!-- Liquor Liability (both editions) moved to gl-liquor-chains.html on 2026-10-05. -->
 
-    <!-- ============================= RAILROAD · STANDARD ============================= -->
-    <section class="sheet-view" id="view-railroad-standard">
-      <div class="titleblock">
-        <div class="field"><span class="k">Coverage</span><span class="v">Railroad Protective Liability (subline 335, Rule 49, form CG 00 35)</span></div>
-        <div class="field"><span class="k">Edition</span><span class="v">CW 2023/2026 (65 rules) — classes 40011/40012, no mixed-hazard split</span></div>
-        <div class="field"><span class="k">Master chain</span><span class="v">Corrected 2026-10-02: 21 rate rules + 10 premium rules (the earlier 26-step order had three wrong rule names) — the steps drawn below are the gate doc's reading</span></div>
-        <div class="field"><span class="k">Premium file</span><span class="v">Not resolved in source docs — gate doc gives rule names and manual citations only, no XML file/line</span></div>
-        <div class="field wide"><span class="k">Coverage gate</span><span class="v">CoverageOnPolicyIndicator == 0 -&gt; Premium 0.0. Rule 49.E.1: "Refer to company" for basic-limits rates — the actual procedure lives in ELP Supplement Procedure 5.E, not in the rules manual</span></div>
-      </div>
-      <div class="sheet">
-        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
-        <pre class="mermaid">
-%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
-flowchart TD
-    start(["Railroad Protective, class 40011/40012, single-hazard project"]) --> covOnR{"CoverageOnPolicyIndicator = 0?"}
-    covOnR -->|"Yes"| premZeroR["Premium = 0.0, stop"]:::zero
-    covOnR -->|"No"| constFactor["ConstructionOpsOwnerFactor = lookup OwnersContractorsLossCost(class '16292', HARDCODED) - reads OCP's table, not Railroad's own"]:::openq
-    constFactor --> lcmR["LCM = lookup RailroadLCM (CW: 1 row = 1, unsupplied company multiplier)"]:::step
-    lcmR --> adjFactor["ConstructionOpsOwnerAdjmtFactor = 1.5 (CW constant, matches manual '150%')"]:::step
-    adjFactor --> baseELPBand["BaseELPRR = lookup BaseELPRR(state,class,trains/day) - banded, 18-row table, excludes class 40014"]:::step
-    baseELPBand --> ilfR["ILF = lookup ILFRailroad(...) - Rule 56.B.7, 0 rows CW / 1,836 state rows"]:::step
-    ilfR --> adjBase["AdjustedBaseELPRR = f(BaseELPRR, LCM, ...) - exact combining formula not resolved in source docs"]:::openq
-    adjBase --> finalRateR["FinalRate = AdjustedBaseELPRR x ILF (SetFinalRate40011 for class 40012 - naming trap: tests 40012, writes FinalRate40011)"]:::step
-    finalRateR --> premR["Premium = FinalRate x TotalCost / 1000"]:::step
-    premR --> addOns["+ Supervisors/Inspectors premium (classes 40011/40012/40014) + WorkTrains premium (56.8 per $1,000, withdrawn CW 2027)"]:::step
-    addOns --> minPremR["Subject to MinPremiumRR = 0 (CW, 1 row) - structurally zero minimum premium"]:::final
-
-    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
-    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
-    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
-    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
-    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
-    class covOnR gate
-        </pre>
-      </div>
-      <div class="notes">
-        <div>
-          <h3>What to notice</h3>
-          <ul>
-            <li>Step 1 hardcodes class `16292` and reads Owners &amp; Contractors Protective's own loss-cost table — Railroad and OCP share the same subline code (335) but different rules (49 vs 46), and this is the one point they cross-reference each other's data.</li>
-            <li>`WorkTrainsOrOtherRREquipmtRate = 56.8` is a rare countrywide dollar rate, not a factor — confirmed exact against Procedure 5.E.2.c ("$56.80" per $1,000 of Total Cost).</li>
-            <li>No oracle exists for an end-to-end Railroad premium anywhere in the corpus — the golden case carries Railroad with `CoverageOnPolicyIndicator = 0`, confirming only the entry gate.</li>
-          </ul>
-        </div>
-        <div class="delta"><strong>vs. CW 2027 (46 rules).</strong> The largest edition rewrite of any subline gated so far. CW 2027 swaps Step 1's source to `LookupOwnersContractorsELP` (since OCP withdraws its own loss-cost table in 43 jurisdictions the same date), and withdraws the work-trains charge, the supervisors/inspectors extension, and minimum premium outright.</div>
-              <div class="delta"><strong>Reconciled against the engine, 2026-10-02.</strong> Formulas now traced from the XML: modifiers are Experience &times; Expense &times; Schedule; on 40012 the supervisors charge uses the 40011 rate; work trains are charged only on 40013. At CW 2027 every <code>BaseELPRR</code> cell is exactly halved (AK, all 18 cells) and the chain runs BaseRate &rarr; FinalRate &rarr; $1 floor with no Subline gate; the ConstructionOps factor reads OCP's ELP for 16292. Engine finding: referral R29 can never fire for Railroad, and an unknown class rates 0 pre-2027 and $1 in 2027 with no referral.</div>
-      </div>
-    </section>
-
-    <!-- ============================= RAILROAD · MIXED HAZARD ============================= -->
-    <section class="sheet-view" id="view-railroad-mixed">
-      <div class="titleblock">
-        <div class="field"><span class="k">Coverage</span><span class="v">Railroad Protective Liability, class 40011, mixed-hazard project</span></div>
-        <div class="field"><span class="k">Edition</span><span class="v">CW 2023/2026 — mixed-hazard machinery is entirely removed by CW 2027</span></div>
-        <div class="field"><span class="k">Master chain</span><span class="v">Steps 13, 15-20 of the 26-step chain — three "naming trap" rules in this branch alone</span></div>
-        <div class="field"><span class="k">Premium file</span><span class="v">Not resolved in source docs</span></div>
-        <div class="field wide"><span class="k">Coverage gate</span><span class="v">EstdContractCostWORRHzd &gt; 0 — a class-40011 project only partly clear of the tracks</span></div>
-      </div>
-      <div class="sheet">
-        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
-        <pre class="mermaid">
-%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
-flowchart TD
-    start(["Railroad class 40011 coverage record"]) --> hazGate{"EstdContractCostWORRHzd > 0?"}
-    hazGate -->|"No"| standardPath["Routes through the standard 40011/40012 chain (see that page)"]:::step
-    hazGate -->|"Yes"| noHazard["BaseELPRR400065orLess = round(ConstructionOpsOwnerFactor x ConstructionOpsOwnerAdjmtFactor,3) - NAMING TRAP: rule named '400145', tests class 40011, writes DataDef '400065orLess'"]:::openq
-    noHazard --> hazardPortion["BaseELPRR40011 = lookup BaseELPRR(state,'40011',trains/day) - the hazard portion"]:::step
-    hazardPortion --> weightFactors["ContractCostFactorWOHzd / ContractCostFactorWithHzd - the two weighting factors, Procedure 5.E.4 'weighted average'"]:::step
-    weightFactors --> weighted["PriorToFinalRateMixedHazard = weighted average of the two rates - exact combining formula not resolved in source docs"]:::openq
-    weighted --> continuation["SetBaseELPRR40014 - SECOND NAMING TRAP: rule named '40014', tests class 40011, writes DataDef 'BaseELPRR40006' (40006 = 'Miscellaneous', an unrelated class)"]:::openq
-    continuation --> finalRateM["SetFinalRate / SetFinalRate40011 - THIRD NAMING TRAP pattern: FinalRate = f(PriorToFinalRateMixedHazard, ILF)"]:::openq
-    finalRateM --> premM["Premium = FinalRate x TotalCost/1000 + supervisors/inspectors + work-trains add-ons"]:::final
-
-    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
-    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
-    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
-    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
-    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
-    class hazGate gate
-        </pre>
-      </div>
-      <div class="notes">
-        <div>
-          <h3>What to notice</h3>
-          <ul>
-            <li>The densest naming-trap concentration in the whole GL corpus: three separate rules in this one branch whose rule name references one class or DataDef number while the rule body tests and writes a different one — per the gate doc, "N11 at its purest."</li>
-            <li>An engine that maps `BaseELPRR40006` to class `40006` (which is "Miscellaneous" in `ClassificationType.RateTable.csv`) would produce nonsense — it's a mixed-hazard-path DataDef name, not a class identity.</li>
-          </ul>
-        </div>
-        <div class="delta"><strong>Only `SetILF40014` is naming-consistent end to end</strong> — every other class-40014-referencing rule in this branch turns out to test a different class. See the class-40014 chain for the one place the naming does line up.</div>
-              <div class="delta"><strong>Reconciled against the engine, 2026-10-02.</strong> Reproduced: RI class 40011 mixed-hazard <b>85 / 42</b>, rated offline from ISO's STC submission.</div>
-      </div>
-    </section>
-
-    <!-- ============================= RAILROAD · 40013 ============================= -->
-    <section class="sheet-view" id="view-railroad-40013">
-      <div class="titleblock">
-        <div class="field"><span class="k">Coverage</span><span class="v">Railroad Protective Liability, class 40013 (state/federal highway projects)</span></div>
-        <div class="field"><span class="k">Edition</span><span class="v">CW 2023/2026</span></div>
-        <div class="field"><span class="k">Master chain</span><span class="v">Steps 1-4, 12, 17, 21 of the 26-step chain — no mixed-hazard split, that mechanic is 40011-only</span></div>
-        <div class="field"><span class="k">Premium file</span><span class="v">Not resolved in source docs</span></div>
-        <div class="field wide"><span class="k">Coverage gate</span><span class="v">OwnersContractorsLossCost(16292) feeds the ratio-adjusted ELP; no supervisors/inspectors add-on — class 40013 is not listed in Step 11's scope</span></div>
-      </div>
-      <div class="sheet">
-        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
-        <pre class="mermaid">
-%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
-flowchart TD
-    start(["Railroad class 40013 coverage record"]) --> constFactor2["ConstructionOpsOwnerFactor = lookup OwnersContractorsLossCost(class '16292', hardcoded)"]:::step
-    constFactor2 --> ratio["EstimatedContractCostRatio = at-hazard contract cost / total contract cost - Procedure 5.E.2.b, confirmed exact"]:::step
-    ratio --> baseELP13["BaseELPRR = lookup BaseELPRR(state,'40013',trains/day) - 18-row banded table"]:::step
-    baseELP13 --> adjBase13["AdjustedBaseELPRR = f(BaseELPRR, EstimatedContractCostRatio, LCM) - exact combining formula not resolved in source docs"]:::openq
-    adjBase13 --> finalRate13["FinalRate = AdjustedBaseELPRR x ILF"]:::step
-    finalRate13 --> prem13["Premium = FinalRate x TotalCost / 1000 - NO supervisors/inspectors add-on, class 40013 outside Step 11's scope"]:::final
-
-    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
-    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
-    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
-    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
-    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
-    class start gate
-        </pre>
-      </div>
-      <div class="notes">
-        <div>
-          <h3>What to notice</h3>
-          <ul>
-            <li>Shortest of the four Railroad branches — no mixed-hazard weighting, no supervisors/inspectors add-on, just a ratio applied to the ELP.</li>
-            <li>The estimated-contract-cost ratio is confirmed exact against manual Procedure 5.E.2.b, including its description as a ratio of at-hazard to total contract cost.</li>
-          </ul>
-        </div>
-        <div class="delta"><strong>vs. class 40011/40012.</strong> Trades the mixed-hazard weighted-average machinery for a single ratio factor, and drops the supervisors/inspectors premium add-on entirely — the simplest of Railroad's four branches.</div>
-              <div class="delta"><strong>Reconciled against the engine, 2026-10-02.</strong> Reproduced: NH 40013 <b>2,258</b>; MN 40013 <b>976 / 376</b>. Work trains are charged on this class only.</div>
-      </div>
-    </section>
-
-    <!-- ============================= RAILROAD · 40014 ============================= -->
-    <section class="sheet-view" id="view-railroad-40014">
-      <div class="titleblock">
-        <div class="field"><span class="k">Coverage</span><span class="v">Railroad Protective Liability, class 40014 (no railroad-hazard exposure)</span></div>
-        <div class="field"><span class="k">Edition</span><span class="v">CW 2023/2026 — 40014 still exists at CW 2027, but rated on the ELP-sourced base by then</span></div>
-        <div class="field"><span class="k">Master chain</span><span class="v">SetILF40014, SetBaseELPRR40014 (naming-consistent), Step 11 include</span></div>
-        <div class="field"><span class="k">Premium file</span><span class="v">Not resolved in source docs</span></div>
-        <div class="field wide"><span class="k">Coverage gate</span><span class="v">Class 40014 is never tabulated in BaseELPRR (18 cells = 3 classes x 6 bands, confirmed against Alaska's filed table) — it is always derived</span></div>
-      </div>
-      <div class="sheet">
-        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
-        <pre class="mermaid">
-%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
-flowchart TD
-    start(["Railroad class 40014 coverage record"]) --> derived["BaseELPRR40014 - NOT tabulated, derived: round(OwnersContractorsLossCost(16292) x 1.5,3) - same formula as the 40011 mixed-hazard no-hazard portion"]:::openq
-    derived --> ilf40014["ILF40014 = lookup ILFRailroad(...) - class 40014's own ILF rule (SetILF40014 -> ILF40014, the ONE naming-consistent rule in this subline)"]:::step
-    ilf40014 --> finalRate14["FinalRate = BaseELPRR40014 x ILF40014"]:::step
-    finalRate14 --> prem14["Premium = FinalRate x TotalCost / 1000 + Supervisors/Inspectors premium (class 40014 IS included, per Step 11 scope)"]:::final
-
-    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
-    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
-    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
-    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
-    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
-    class start gate
-        </pre>
-      </div>
-      <div class="notes">
-        <div>
-          <h3>What to notice</h3>
-          <ul>
-            <li>The only class of the four whose base rate is never tabulated at all — it borrows 150% of OCP's class-16292 loss cost directly, exactly matching the no-hazard portion of the class-40011 mixed-hazard branch.</li>
-            <li>`SetILF40014 -&gt; ILF40014` is the single rule in this whole subline where the printed number in the rule name, the DataDef it writes, and the class it tests all agree — the exception the naming-trap pattern proves.</li>
-            <li>Verified cell-by-cell against Alaska's 2020 filed PDF: all 18 `BaseELPRR` cells match, and class 40014 is correctly absent from that table in both sources.</li>
-          </ul>
-        </div>
-        <div class="delta"><strong>vs. classes 40011-40013.</strong> No lookup at all for the base rate — a pure derivation off a sibling subline's (OCP's) hardcoded class 16292, times the same 1.5 constant used everywhere else in Railroad.</div>
-              <div class="delta"><strong>Reconciled against the engine, 2026-10-02.</strong> 40014 is derived inside <code>SetBaseELPRR</code>. Reproduced: NH 40014 <b>908</b> (999 with supervisors).</div>
-      </div>
-    </section>
+    <!-- Railroad Protective (both editions) moved to gl-railroad-chains.html on 2026-10-05. -->
 
     <!-- ============================= PRODUCT WITHDRAWAL · COVERAGE A ============================= -->
     <section class="sheet-view" id="view-pw-cova">

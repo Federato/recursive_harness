@@ -1,0 +1,641 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Railroad Protective Rating Chains</title>
+<style>
+  :root {
+    --ink: #101b24;
+    --paper: #edf0ec;
+    --paper-line: #c7d2ce;
+    --blueprint: #2e6e8e;
+    --blueprint-soft: #e4ebef;
+    --stamp: #c77f32;
+    --caution: #b14b39;
+    --ledger: #3f8f6e;
+    --surface: #f4f6f3;
+    --panel: #ffffff;
+    --sidebar: #e8ede8;
+    --text: var(--ink);
+    --muted: #5b6b72;
+    --border: #cdd6d2;
+    --font-display: Cambria, 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+    --font-body: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+    --font-mono: 'Cascadia Code', 'Cascadia Mono', Consolas, 'SFMono-Regular', ui-monospace, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --surface: #0b141a;
+      --panel: #101b22;
+      --sidebar: #0e1a20;
+      --text: #e7ece9;
+      --muted: #93a3a0;
+      --border: #223138;
+      --blueprint-soft: #16232b;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --surface: #0b141a;
+    --panel: #101b22;
+    --sidebar: #0e1a20;
+    --text: #e7ece9;
+    --muted: #93a3a0;
+    --border: #223138;
+    --blueprint-soft: #16232b;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; background: var(--surface); color: var(--text);
+    font-family: var(--font-body); -webkit-font-smoothing: antialiased;
+  }
+  body { display: flex; flex-direction: column; min-height: 100vh; }
+  a { color: inherit; }
+  code { font-family: var(--font-mono); font-size: 0.92em; }
+  ::selection { background: var(--stamp); color: #101b24; }
+
+  /* header */
+  header.masthead {
+    display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap;
+    padding: 1.1rem 1.6rem; border-bottom: 1px solid var(--border);
+    background: var(--panel);
+  }
+  header.masthead h1 {
+    font-family: var(--font-display); font-weight: 600; font-size: 1.35rem;
+    margin: 0; letter-spacing: 0.01em; text-wrap: balance;
+  }
+  header.masthead .rule { width: 1px; align-self: stretch; background: var(--border); }
+  header.masthead p { margin: 0; font-size: 0.82rem; color: var(--muted); max-width: 52ch; }
+  header.masthead .src {
+    margin-left: auto; font-family: var(--font-mono); font-size: 0.72rem;
+    color: var(--muted); text-align: right; line-height: 1.5;
+  }
+
+  /* shell */
+  .shell { display: flex; flex: 1; min-height: 0; }
+
+  nav.toc {
+    width: 258px; flex: none; background: var(--sidebar);
+    border-right: 1px solid var(--border);
+    padding: 1rem 0 2rem; overflow-y: auto;
+  }
+  nav.toc .group-label {
+    font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--muted); padding: 0.5rem 1.2rem 0.35rem;
+  }
+  nav.toc button.navlink {
+    display: block; width: 100%; text-align: left; background: none; border: none;
+    font-family: var(--font-body); font-size: 0.86rem; color: var(--text);
+    padding: 0.42rem 1.2rem 0.42rem 1.6rem; cursor: pointer;
+    border-left: 3px solid transparent;
+  }
+  nav.toc button.navlink:hover { background: var(--blueprint-soft); }
+  nav.toc button.navlink.active {
+    background: var(--blueprint-soft); border-left-color: var(--blueprint); font-weight: 600;
+  }
+  nav.toc button.navlink .chain-len {
+    display: block; font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); font-weight: 400;
+  }
+  nav.toc hr { border: none; border-top: 1px solid var(--border); margin: 0.6rem 1.2rem; }
+
+  nav.toc .legend {
+    margin: 1rem 1.2rem 0; padding: 0.8rem 0.9rem; border: 1px solid var(--border);
+    border-radius: 3px; background: var(--panel);
+  }
+  nav.toc .legend h4 {
+    margin: 0 0 0.5rem; font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--muted); font-weight: 600;
+  }
+  nav.toc .legend .row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.74rem; margin-bottom: 0.35rem; }
+  nav.toc .legend .swatch { width: 13px; height: 13px; flex: none; border-radius: 2px; border-width: 1.5px; border-style: solid; }
+  .sw-gate { background: #f4e4ce; border-color: #c77f32; }
+  .sw-zero { background: #f3dcd6; border-color: #b14b39; }
+  .sw-final { background: #dceee4; border-color: #3f8f6e; }
+  .sw-step { background: #e4ebef; border-color: #2e6e8e; }
+  .sw-openq { background: #f4e4ce; border-color: #b14b39; border-style: dashed !important; }
+  .sw-engine { background: #e6e1f0; border-color: #5a4c8a; }
+
+  main { flex: 1; min-width: 0; overflow-y: auto; padding: 1.6rem 2rem 4rem; }
+
+  .intro { max-width: 70ch; margin-bottom: 1.4rem; }
+  .intro h2 { font-family: var(--font-display); font-size: 1.25rem; margin: 0 0 0.5rem; text-wrap: balance; }
+  .intro p { font-size: 0.92rem; line-height: 1.6; color: var(--muted); margin: 0 0 0.6rem; }
+
+  /* tables */
+  .tablewrap { overflow-x: auto; margin-bottom: 1.4rem; }
+  table.grid { border-collapse: collapse; width: 100%; max-width: 1100px; background: var(--panel); }
+  table.grid caption {
+    text-align: left; font-family: var(--font-mono); font-size: 0.7rem; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem;
+  }
+  table.grid th, table.grid td {
+    border: 1px solid var(--border); padding: 0.5rem 0.7rem; font-size: 0.82rem;
+    text-align: left; vertical-align: top; line-height: 1.45;
+  }
+  table.grid thead th {
+    font-family: var(--font-mono); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--muted); background: var(--blueprint-soft); font-weight: 600;
+  }
+  table.grid tbody th { font-weight: 600; white-space: nowrap; }
+  table.grid td.num { font-family: var(--font-mono); text-align: right; white-space: nowrap; }
+  table.grid tr.hl td, table.grid tr.hl th { background: var(--blueprint-soft); }
+  table.grid td .tag {
+    font-family: var(--font-mono); font-size: 0.66rem; padding: 0.05rem 0.35rem; border-radius: 2px;
+    border: 1px solid var(--border); color: var(--muted); white-space: nowrap;
+  }
+  table.grid td .tag.a { border-color: var(--blueprint); color: var(--blueprint); }
+  table.grid td .tag.b { border-color: var(--ledger); color: var(--ledger); }
+  table.grid td .tag.bad { border-color: var(--caution); color: var(--caution); }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.9rem; max-width: 1100px; margin-bottom: 1.4rem; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 3px; padding: 0.9rem 1rem; }
+  .card .k { font-family: var(--font-mono); font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
+  .card .v { font-family: var(--font-display); font-size: 1.5rem; margin: 0.2rem 0 0.25rem; font-variant-numeric: tabular-nums; }
+  .card p { margin: 0; font-size: 0.8rem; color: var(--muted); line-height: 1.45; }
+  .card button.go {
+    margin-top: 0.6rem; background: none; border: 1px solid var(--blueprint); color: var(--blueprint);
+    font-family: var(--font-mono); font-size: 0.7rem; padding: 0.3rem 0.6rem; border-radius: 2px; cursor: pointer;
+  }
+  .card button.go:hover { background: var(--blueprint-soft); }
+
+  /* sheet */
+  .sheet-view { display: none; }
+  .sheet-view.active { display: block; }
+
+  .titleblock {
+    display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--border);
+    margin-bottom: 1.1rem; background: var(--panel);
+  }
+  .titleblock .field { padding: 0.6rem 0.9rem; border-right: 1px solid var(--border); }
+  .titleblock .field:last-child { border-right: none; }
+  .titleblock .field .k {
+    font-family: var(--font-mono); font-size: 0.63rem; text-transform: uppercase; letter-spacing: 0.07em;
+    color: var(--muted); display: block; margin-bottom: 0.15rem;
+  }
+  .titleblock .field .v { font-family: var(--font-mono); font-size: 0.82rem; color: var(--text); line-height: 1.35; }
+  .titleblock .field.wide { grid-column: span 4; border-top: 1px solid var(--border); border-right: none; }
+
+  .sheet {
+    background: var(--paper); border: 1px solid var(--paper-line); border-radius: 2px;
+    padding: 1.4rem 1.2rem 1rem; position: relative; overflow-x: auto;
+    background-image:
+      linear-gradient(var(--paper-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--paper-line) 1px, transparent 1px);
+    background-size: 28px 28px; background-position: -1px -1px;
+    background-color: var(--paper);
+  }
+  .sheet .corner { position: absolute; width: 14px; height: 14px; }
+  .sheet .corner.tl { top: 6px; left: 6px; border-top: 1.5px solid #7d8f8a; border-left: 1.5px solid #7d8f8a; }
+  .sheet .corner.tr { top: 6px; right: 6px; border-top: 1.5px solid #7d8f8a; border-right: 1.5px solid #7d8f8a; }
+  .sheet .corner.bl { bottom: 6px; left: 6px; border-bottom: 1.5px solid #7d8f8a; border-left: 1.5px solid #7d8f8a; }
+  .sheet .corner.br { bottom: 6px; right: 6px; border-bottom: 1.5px solid #7d8f8a; border-right: 1.5px solid #7d8f8a; }
+  .sheet pre.mermaid { margin: 0; background: transparent; min-width: 760px; color: #101b24; }
+
+  .notes { margin-top: 1.1rem; display: grid; grid-template-columns: 1.4fr 1fr; gap: 1.2rem; }
+  .notes h3 {
+    font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--muted); margin: 0 0 0.5rem;
+  }
+  .notes ul { margin: 0; padding-left: 1.1rem; font-size: 0.86rem; line-height: 1.55; }
+  .notes ul li { margin-bottom: 0.4rem; }
+  .notes .delta { border: 1px solid var(--border); background: var(--panel); padding: 0.8rem 0.9rem; border-radius: 3px; font-size: 0.86rem; line-height: 1.55; }
+  .notes .delta.openq { border-color: var(--caution); }
+  .notes .delta + .delta { margin-top: 0.8rem; }
+
+  h3.section {
+    font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--muted); margin: 1.6rem 0 0.6rem;
+  }
+
+  footer.doc-footer {
+    padding: 1rem 2rem 2rem; font-size: 0.76rem; color: var(--muted); border-top: 1px solid var(--border);
+  }
+  footer.doc-footer strong { color: var(--text); }
+
+  @media (max-width: 900px) {
+    .notes { grid-template-columns: 1fr; }
+    .titleblock { grid-template-columns: 1fr 1fr; }
+    .titleblock .field.wide { grid-column: span 2; }
+  }
+  @media (max-width: 720px) {
+    .shell { flex-direction: column; }
+    nav.toc { width: 100%; border-right: none; border-bottom: 1px solid var(--border); padding: 0.6rem 0; }
+    nav.toc .legend { display: none; }
+    main { padding: 1.2rem 16px 3rem; }
+    header.masthead { padding: 1rem 16px; }
+    header.masthead .src { margin-left: 0; text-align: left; }
+    header.masthead .rule { display: none; }
+    .titleblock { grid-template-columns: 1fr; }
+    .titleblock .field { border-right: none; border-bottom: 1px solid var(--border); }
+    .titleblock .field.wide { grid-column: span 1; }
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <h1>Railroad Protective Rating Chains</h1>
+  <div class="rule"></div>
+  <p>Every gate, branch and terminal in Railroad Protective Liability's rate build-up and premium (subline 335, Rule 49, form CG 00 35), drawn separately for the two rule sets ISO files: pre-2027 and CW 2027. Every rule and branch is checked against the built engine (<code>gl_engine</code>) and ISO's rule XML as of 2026-10-05.</p>
+  <div class="src">Engine at 62eb125 (GL rating path unchanged since the 630ba2f reconciliation)<br>Rule file: GeneralLiabilityClassificationRailroadCoverageRules.Rule.xml<br>Companion: RailroadProtective_RatingAlgorithms.md · docs/gates/GATE-335-RAILROAD</div>
+</header>
+
+<div class="shell">
+  <nav class="toc" id="toc">
+    <button class="navlink active" data-target="overview">Overview<span class="chain-len">four classes, one table, OCP's 16292</span></button>
+    <hr>
+    <div class="group-label">Decision chains</div>
+    <button class="navlink" data-target="cw23">Pre-2027<span class="chain-len">21 + 10 steps · add-ons · mixed hazard</span></button>
+    <button class="navlink" data-target="cw27">CW 2027<span class="chain-len">12 + 3 steps · halved ELPs · $1 floor</span></button>
+    <hr>
+    <div class="group-label">Comparison</div>
+    <button class="navlink" data-target="diff">Side by side<span class="chain-len">13 differences, rule by rule</span></button>
+    <hr>
+    <div class="group-label">Review</div>
+    <button class="navlink" data-target="review">Why the old sheets were replaced<span class="chain-len">12 items</span></button>
+
+    <div class="legend">
+      <h4>Reading the chains</h4>
+      <div class="row"><span class="swatch sw-gate"></span> gate / branch condition</div>
+      <div class="row"><span class="swatch sw-step"></span> computed factor</div>
+      <div class="row"><span class="swatch sw-final"></span> premium resolves</div>
+      <div class="row"><span class="swatch sw-zero"></span> zero, refusal or clamp</div>
+      <div class="row"><span class="swatch sw-openq"></span> silent gap / open question</div>
+      <div class="row"><span class="swatch sw-engine"></span> engine layer, not an ISO rule</div>
+    </div>
+  </nav>
+
+  <main id="main">
+
+    <!-- ============================= OVERVIEW ============================= -->
+    <section class="sheet-view active" id="view-overview">
+      <div class="intro">
+        <h2>Four classes rated off one 18-cell table, and a constant borrowed from OCP</h2>
+        <p>Railroad Protective shares subline 335 with Owners &amp; Contractors Protective but has its own rule (49) and rule file. ISO files no railroad loss cost anywhere. Rule 49.E.1 says "Refer to company", and the real procedure is ELP Supplement 5.E. Each state files an 18-cell base ELP table (three classes × six trains-per-day bands). The fourth class, 40014, is derived as 150% of OCP's figure for class 16292, Construction Operations – Owner.</p>
+        <p>Every class is rated per $1,000 of total cost. The edition is picked the same way as every GL subline: all 51 jurisdictions are on pre-2027 today. On 2027-04-01, 46 move, and CA, GA, NJ, NY and WA stay. Railroad's 2027 rewrite is the largest of any GL subline: 65 rules become 46.</p>
+      </div>
+
+      <div class="cards">
+        <div class="card">
+          <div class="k">Pre-2027 chain</div>
+          <div class="v">21 + 10</div>
+          <p>Rate-build and premium steps. Mixed-hazard weighting for 40011, a 10% supervisors add-on, a work-trains charge for 40013, and a policy-level minimum premium.</p>
+          <button class="go" data-target="cw23">Open chain →</button>
+        </div>
+        <div class="card">
+          <div class="k">CW 2027 chain</div>
+          <div class="v">12 + 3</div>
+          <p>Add-ons and minimum premium withdrawn. One FinalRate rule branches on all four classes, and the $1 floor has no exposure test.</p>
+          <button class="go" data-target="cw27">Open chain →</button>
+        </div>
+        <div class="card">
+          <div class="k">Base ELP at 2027-04-01</div>
+          <div class="v">× 0.5</div>
+          <p>Every filed base ELP cell is exactly half its 2026 value in the states checked, and the 16292 factor moves from OCP's loss cost to OCP's ELP.</p>
+          <button class="go" data-target="diff">Side by side →</button>
+        </div>
+      </div>
+
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart LR
+    cls(["Railroad class"]) --> q{"Class?"}
+    q -->|"40011"| c11["Base ELP table, by trains-per-day band"]:::step
+    q -->|"40012"| c12["Base ELP table, by band"]:::step
+    q -->|"40013 highway"| c13["Base ELP table x the submitted contract-cost ratio"]:::step
+    q -->|"40014 no train hazard"| c14["1.5 x OCP's class 16292 figure, never tabulated"]:::step
+    q -->|"anything else"| cx["Base ELP 0: prices 0, or $1 in 2027, no message"]:::openq
+    c11 -.->|"part of the cost clear of the tracks"| mix["Weighted: hazard part at 40011, clear part at the 40014 basis"]:::step
+    c12 -.->|"part clear of the tracks"| drop["Only the hazard part is rated: the clear part is dropped"]:::openq
+    c11 --> rate["x ILF x modifiers, per $1,000 of total cost"]:::final
+    c12 --> rate
+    c13 --> rate
+    c14 --> rate
+    mix --> rate
+    drop --> rate
+
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    class q gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>Rule names in this file cite class numbers they do not test. <code>SetBaseELPRR400145orLess</code> and <code>SetBaseELPRR40014</code> both act on class 40011 and write to DataDefs named for other numbers (<code>…400065orLess</code>, <code>…40006</code>). <code>SetFinalRate40011</code> tests class 40012. Only <code>SetILF40014</code> → <code>ILF40014</code> means what it says.</li>
+            <li>The modifiers are Experience × Expense × <strong>Schedule</strong>. That differs from OCP and Liquor, which use ModToUse, and Liquor also uses PackageMod.</li>
+            <li>The limits are each occurrence and aggregate, with no <code>" CSL"</code> suffix in any edition. Only AK and NY override any rule in this file, and only for statistical coding.</li>
+          </ul>
+        </div>
+        <div class="delta"><strong>No referral ever fires.</strong> Railroad has no Company selector (every <code>RailroadELP</code> row is "Industry"), no ISO override message, and no loss-cost node for the OI-94 refusal. Underwriting mode raised nothing on any probe. Operations other than construction (Procedure 5.E.1.b) are a manual referral with no ERC discriminator (OI-45).</div>
+      </div>
+    </section>
+
+    <!-- ============================= PRE-2027 ============================= -->
+    <section class="sheet-view" id="view-cw23">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Railroad Protective Liability (subline 335, Rule 49, CG 00 35)</span></div>
+        <div class="field"><span class="k">Edition</span><span class="v">Pre-2027: CW 20231201 V03, 20260101 V01, 20261001 V01 identical (65 rules). CA's V02 lacks only the "supplied value wins" guards.</span></div>
+        <div class="field"><span class="k">Master chain</span><span class="v">ErcProcess → ErcSetRatesAndFactors (21) → ErcRate (10) → policy-level RailroadPremiumToReachMin</span></div>
+        <div class="field"><span class="k">Rate sources</span><span class="v">BaseELPRR by state, class and trains band · ILFRailroad by state, class and limits · OCP's 16292 loss cost · countrywide constants 1.5, 0.1, 56.8</span></div>
+        <div class="field wide"><span class="k">Coverage gate</span><span class="v">The policy subline must be "Railroad". Silent zeros: a blank trains band, a blank class description, an unknown class code. Zeros ISO does message: a missing contract-cost ratio on 40013, and zero exposure.</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec','clusterBkg':'#f7f9f6','clusterBorder':'#7d8f8a'}}}%%
+flowchart TD
+    subgraph POL["POLICY"]
+        start(["Railroad Protective policy"]) --> subQ{"Subline = Railroad?"}
+        subQ -->|"No"| off["CoverageOnPolicyIndicator = 0: ErcProcess writes Premium 0"]:::zero
+    end
+
+    subgraph SRF["ErcSetRatesAndFactors · 21 steps"]
+        cof["ConstructionOpsOwnerFactor = OwnersContractorsLossCost(state, '16292'): OCP's table, class hardcoded"]:::step
+        cof --> consts["LCM = RailroadLCM, CW 1 · adjustment factor 1.5 · supervisors factor 0.1 · work-trains rate 56.8 per $1,000: all countrywide"]:::step
+        consts --> ratio["EstimatedContractCostRatio = the submitted ratio, class 40013 only"]:::step
+        ratio --> ilfQ{"Description, class and limits set?"}
+        ilfQ -->|"Yes"| ilf["ILF = ILFRailroad(state, class, occurrence, aggregate) · ILF40014 = the same table at class 40014, for every class"]:::step
+        ilfQ -->|"No"| ilf0["ILF = 0.0"]:::zero
+        ilf --> wt["Work-trains final rate = round(round(56.8 x LCM, 3) x ILF, 3), computed for every class"]:::step
+        ilf0 --> wt
+        wt --> bQ{"SetBaseELPRR: which class?"}
+        bQ -->|"description blank"| b0["BaseELPRR = 0.0, no message"]:::openq
+        bQ -->|"40011, 40012, 40013"| trQ{"Trains band given?"}
+        trQ -->|"Yes"| bLk["BaseELPRR = BaseELPRR(state, class, band): 18 cells per state"]:::step
+        trQ -->|"No"| bNo["BaseELPRR = 0.0, no message"]:::openq
+        bQ -->|"40014"| b14["BaseELPRR = round(1.5 x 16292 loss cost, 3), when RailroadELP = Industry (every row)"]:::step
+        bQ -->|"anything else"| bX["BaseELPRR = 0.0: unknown class, no message"]:::openq
+        b0 --> adjQ{"Adjusted base ELP: which class?"}
+        bLk --> adjQ
+        bNo --> adjQ
+        b14 --> adjQ
+        bX --> adjQ
+        adjQ -->|"40011, 40014"| a1["AdjustedBaseELPRR = round(BaseELPRR x LCM, 3)"]:::step
+        adjQ -->|"40013"| a3["AdjustedBaseELPRR = round(BaseELPRR x ratio x LCM, 3). No ratio: 0, ISO message"]:::step
+        adjQ -->|"40012"| a2["AdjustedBaseELPRR = round(BaseELPRR x WithHzd x LCM, 3) when part of the cost is clear of the tracks. The clear part is not rated"]:::openq
+        a1 --> mixQ{"40011 with cost clear of the tracks?"}
+        a2 --> mixQ
+        a3 --> mixQ
+        mixQ -->|"Yes"| mix["Hazard part = round(AdjustedBaseELPRR x ILF x WithHzd, 3) · clear part = round(round(round(16292 x 1.5, 3) x LCM, 3) x ILF40014 x WOHzd, 3). WOHzd and WithHzd are the cost shares, 8dp"]:::step
+        mixQ -->|"No"| nomix["Single rate"]:::step
+    end
+
+    subgraph RT["ErcRate · 10 steps"]
+        fr["FinalRate = round((hazard part + clear part) x Mods, 3) for 40011 mixed, else round(AdjustedBaseELPRR x ILF x Mods, 3). Mods = Experience x Expense x Schedule"]:::step
+        fr --> tot["TotPremium = round(FinalRate x TotalCost / 1000, 0)"]:::step
+        tot --> supQ{"Supervisors coverage Included?"}
+        supQ -->|"40011 or 40014"| sup1["Add-on = round(TotPremium x 0.1, 0)"]:::step
+        supQ -->|"40012"| sup2["Add-on = round(round(FinalRate40011 x TotalCost / 1000, 0) x 0.1, 0): 10% of the cost at the 40011 rate"]:::step
+        supQ -->|"No, or 40013"| sup0["No supervisors add-on"]:::step
+        sup0 --> wtQ{"Class 40013?"}
+        wtQ -->|"Yes"| wtY["Add-on = round(work-trains final rate x work-train cost / 1000, 0)"]:::step
+        wtQ -->|"No"| wtN["No work-trains charge"]:::step
+        sup1 --> minp
+        sup2 --> minp
+        wtY --> minp
+        wtN --> minp["MinimumPremium = MinPremiumRR, CW 0 · MinPremium = round(Min x ILF, 0) when MiscIfAnyBasis = No"]:::step
+        minp --> prem["Premium = TotPremium + its add-on, only when Subline = Railroad"]:::step
+        prem --> zQ{"Premium = 0?"}
+        zQ -->|"Yes"| z0["Stays 0. Zero exposure: ISO messages 'Exposure must be entered'"]:::zero
+        zQ -->|"No"| ok["Premium stands, PremiumIndicator = 1"]:::final
+    end
+
+    subgraph PL["POLICY LEVEL · RailroadPremiumToReachMin"]
+        topQ{"Top-up conditions met?"}
+        topQ -->|"Yes"| topY["PackagePolicy and multistate blank, a class with MiscIfAnyBasis = No: top-up = max(0, max MinPremium - sum of class Premiums)"]:::final
+        topQ -->|"No"| topN["Top-up = 0"]:::step
+        topY --> kern["Kernel: total check only. No referral fires for Railroad, and OI-94 has no loss-cost node to refuse"]:::eng
+        topN --> kern
+    end
+
+    subQ -->|"Yes"| cof
+    mix --> fr
+    nomix --> fr
+    ok --> topQ
+    z0 --> topQ
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class subQ,ilfQ,bQ,trQ,adjQ,mixQ,supQ,wtQ,zQ,topQ gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>Every rule runs for every class. The class forks are inside the rules, which is why the diagram branches on class four separate times.</li>
+            <li>The base premium is rounded to whole dollars <em>before</em> the 10% supervisors add-on is computed. On 40012 that add-on is figured at the 40011 rate.</li>
+            <li>The work-trains rate (56.8 per $1,000, a rare countrywide dollar rate) is computed for every class but charged only on 40013.</li>
+            <li>When a 40011 project is partly clear of the tracks, the clear part is rated on the 40014 basis. For 40012 it is simply dropped, so a project two-thirds clear prices on its hazard third alone.</li>
+          </ul>
+        </div>
+        <div>
+          <div class="delta openq"><strong>Silent zeros, 2026-10-05.</strong> A blank trains-per-day band, a blank class description and an unknown class code all price 0 with no message and no referral. A missing contract-cost ratio on 40013 and a zero exposure also price 0, but ISO messages both.</div>
+          <div class="delta"><strong>No oracle.</strong> ISO's rated golden case carries Railroad switched off. The engine rates ISO's RI, NH and MN Railroad sample submissions end to end, which confirms it runs ISO's rules as written, not that the premiums match ISO.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================= CW 2027 ============================= -->
+    <section class="sheet-view" id="view-cw27">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Railroad Protective Liability (subline 335, Rule 49, CG 00 35)</span></div>
+        <div class="field"><span class="k">Edition</span><span class="v">CW 20270401 V01 and V02, identical (46 rules). Parent of 46 jurisdictions from 2027-04-01.</span></div>
+        <div class="field"><span class="k">Master chain</span><span class="v">ErcProcess → ErcSetRatesAndFactors (12) → ErcRate (3: FinalRate, Premium, PremiumIndicator). The top-up record has no rating rules.</span></div>
+        <div class="field"><span class="k">Rate sources</span><span class="v">BaseELPRR (every cell halved) · ILFRailroad · OCP's 16292 <em>ELP</em> · the 1.5 constant. Work-trains, supervisors and minimum-premium tables emptied.</span></div>
+        <div class="field wide"><span class="k">Changed vs pre-2027</span><span class="v">22 rules removed, 3 added (LookupOwnersContractorsELP, SetBaseRate, SetBaseRate40014), 7 changed. The mixed-hazard machinery collapses into one SetFinalRate. Its DataDefs are renamed BaseELPRR40014, so the "40006" naming trap is gone.</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec','clusterBkg':'#f7f9f6','clusterBorder':'#7d8f8a'}}}%%
+flowchart TD
+    subgraph POL["POLICY"]
+        start(["Railroad Protective policy, CW 2027"]) --> subQ{"Subline = Railroad?"}
+        subQ -->|"No"| off["CoverageOnPolicyIndicator = 0: ErcProcess writes Premium 0"]:::zero
+    end
+
+    subgraph SRF["ErcSetRatesAndFactors · 12 steps"]
+        cof["ConstructionOpsOwnerFactor = OwnersContractorsELP(state, '16292'): OCP's ELP, since OCP drops its loss costs the same day"]:::step
+        cof --> consts["LCM = RailroadLCM, CW 1 · adjustment factor 1.5"]:::step
+        consts --> ratio["EstimatedContractCostRatio = the submitted ratio, class 40013 only"]:::step
+        ratio --> ilfQ{"Description, class and limits set?"}
+        ilfQ -->|"Yes"| ilf["ILF and ILF40014 from ILFRailroad, as before"]:::step
+        ilfQ -->|"No"| ilf0["ILF = 0.0: FinalRate 0, then the $1 floor"]:::openq
+        ilf --> bQ{"SetBaseELPRR: which class?"}
+        ilf0 --> bQ
+        bQ -->|"40011, 40012, 40013 with a band"| bLk["BaseELPRR = BaseELPRR(state, class, band): every cell half its 2026 value"]:::step
+        bQ -->|"band blank, or unknown class"| bNo["BaseELPRR = 0.0, no message"]:::openq
+        bQ -->|"40014"| b14["BaseELPRR = round(1.5 x 16292 ELP, 3), with no selector test now"]:::step
+        bLk --> b40014["BaseELPRR40014 = round(1.5 x 16292 ELP, 3), for the clear part of a 40011 project"]:::step
+        bNo --> b40014
+        b14 --> b40014
+        b40014 --> br["BaseRate = round(BaseELPRR x LCM, 3) · BaseRate40014 = round(BaseELPRR40014 x LCM, 3) · contract-cost shares WOHzd and WithHzd"]:::step
+    end
+
+    subgraph RT["ErcRate · 3 steps"]
+        frQ{"SetFinalRate: which class?"}
+        frQ -->|"40011, part clear"| f1["FinalRate = round((BaseRate x ILF x WithHzd + BaseRate40014 x ILF40014 x WOHzd) x Mods, 3): one rounding now"]:::step
+        frQ -->|"40012, part clear"| f2["FinalRate = round(BaseRate x WithHzd x ILF x Mods, 3): the clear part is still not rated"]:::openq
+        frQ -->|"40013"| f3["FinalRate = round(BaseRate x ratio x ILF x Mods, 3). No ratio: 0, ISO message"]:::step
+        frQ -->|"40011, 40012, 40014 otherwise"| f4["FinalRate = round(BaseRate x ILF x Mods, 3)"]:::step
+        frQ -->|"any other class"| f0["FinalRate = 0"]:::zero
+        f1 --> prem["Premium = round(FinalRate x TotalCost / 1000, 0). No add-ons, no subline test"]:::step
+        f2 --> prem
+        f3 --> prem
+        f4 --> prem
+        f0 --> prem
+        prem --> floorQ{"Premium = 0?"}
+        floorQ -->|"Yes"| floored["Premium = 1.0. No exposure test: zero exposure, an unknown class, a blank band or description all price $1"]:::final
+        floorQ -->|"No"| ok["Premium stands, PremiumIndicator = 1"]:::final
+    end
+
+    subgraph PL["POLICY LEVEL"]
+        nomin["RailroadPremiumToReachMin holds no rating rules: no minimum premium exists"]:::zero
+        nomin --> kern["Kernel: total check only. No referral fires for Railroad"]:::eng
+    end
+
+    subQ -->|"Yes"| cof
+    br --> frQ
+    floored --> nomin
+    ok --> nomin
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class subQ,ilfQ,bQ,frQ,floorQ gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>The $1 floor tests only the rounded premium. Unlike every other GL subline here, it has <strong>no exposure test</strong>, so a classification with zero exposure prices $1 while ISO messages "Exposure must be entered".</li>
+            <li>The supervisors add-on and the work-trains charge are withdrawn. An election of supervisors coverage, or a work-train cost on 40013, is accepted and ignored.</li>
+            <li>The mixed-hazard 40011 rate is now rounded once over both parts, not once per part.</li>
+            <li>The base ELP halves, and 16292 moves from loss cost to ELP. A standard class's 2027 premium is roughly half its 2026 premium at the same ILF.</li>
+          </ul>
+        </div>
+        <div>
+          <div class="delta openq"><strong>Silent outcomes, 2026-10-05.</strong> $1: a blank band, a blank description, an unknown class, zero exposure and a missing 40013 ratio (ISO messages the last two). Ignored: a supervisors election and work-train cost. Still unrated: the clear part of a 40012 project.</div>
+          <div class="delta"><strong>vs. pre-2027.</strong> The same four classes and the same ILF table. A single FinalRate rule replaces the six mixed-hazard and supervisors rules, every add-on and the minimum premium are gone, and the floor arrives without an exposure check.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================= SIDE BY SIDE ============================= -->
+    <section class="sheet-view" id="view-diff">
+      <div class="intro">
+        <h2>Thirteen differences, every one read from the rule XML</h2>
+        <p>The rule file goes from 65 rules to 46: 22 removed, 3 added and 7 changed. Each pre-2027 cell holds for CW 20231201 V03, 20260101 V01 and 20261001 V01 (and CA's V02, which only lacks the override guards). Each CW 2027 cell holds for 20270401 V01 and V02.</p>
+      </div>
+      <div class="tablewrap">
+        <table class="grid">
+          <thead><tr><th>Step</th><th>Pre-2027</th><th>CW 2027</th><th>Premium effect</th></tr></thead>
+          <tbody>
+            <tr><th>Chain length</th><td>21 + 10 steps</td><td>12 + 3 steps</td><td>—</td></tr>
+            <tr><th>16292 factor</th><td>OCP loss cost (<code>LookupOwnersContractorsLossCost</code>)</td><td>OCP ELP (<code>LookupOwnersContractorsELP</code>, new)</td><td>40014 base and the clear part of a 40011 project move with OCP</td></tr>
+            <tr><th>Base ELP table</th><td>18 cells per state</td><td>Same 18 cells, each halved</td><td>About half the premium at the same ILF</td></tr>
+            <tr><th>40014 derivation</th><td>Only when RailroadELP = "Industry" (every row)</td><td>Unconditional</td><td>None on filed data</td></tr>
+            <tr><th>Mixed hazard, 40011</th><td>Six rules, each part rounded to 3dp, then summed</td><td>One FinalRate, rounded once</td><td>Can move by a rounding step</td></tr>
+            <tr><th>Mixed hazard, 40012</th><td>Clear part dropped</td><td>Clear part dropped</td><td>Under-rated in both</td></tr>
+            <tr><th>Supervisors add-on</th><td>10% of base premium (40011, 40014); 10% at the 40011 rate (40012)</td><td>Withdrawn; election ignored</td><td>Add-on lost</td></tr>
+            <tr><th>Work trains</th><td>56.8 per $1,000 × ILF, on 40013</td><td>Withdrawn; cost ignored</td><td>Add-on lost</td></tr>
+            <tr><th>Minimum premium</th><td>MinPremiumRR (CW 0) × ILF; policy top-up</td><td>Removed</td><td>Nil on filed data</td></tr>
+            <tr><th>Subline test in SetPremium</th><td>Must be "Railroad"</td><td>None (the coverage gate still requires it)</td><td>None</td></tr>
+            <tr><th>Zero premium</th><td>Stays 0</td><td>$1, with no exposure test</td><td>Zero exposure: 0 → 1</td></tr>
+            <tr><th>Naming traps</th><td>Three rule names cite classes they don't test; DataDef <code>…40006</code></td><td>DataDefs renamed <code>BaseELPRR40014</code>, <code>BaseRate40014</code></td><td>None</td></tr>
+            <tr><th>Unknown class</th><td>Base 0 → premium 0</td><td>FinalRate 0 → $1</td><td>Silent in both</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="intro"><p>Unchanged in both: the "Railroad" coverage gate, no loss cost, the LCM (CW 1), the 1.5 adjustment factor, the ILF rule and table (ILF and ILF40014 for every class, no CSL suffix), the submitted 40013 contract-cost ratio, the per-$1,000-of-total-cost basis, the Experience × Expense × Schedule modifiers, ISO's messages for a missing ratio and zero exposure, and the absence of any engine referral.</p></div>
+    </section>
+
+    <!-- ============================= REVIEW ============================= -->
+    <section class="sheet-view" id="view-review">
+      <div class="intro">
+        <h2>What the all-coverage page got wrong or left out for Railroad</h2>
+        <p><code>gl-rating-chains.html</code> had four Railroad sheets, several with formulas marked "not resolved in source docs" that the 2026-10-02 reconciliation resolved in notes but never redrew. On 2026-10-05 the four sheets were removed and now link here.</p>
+      </div>
+      <div class="tablewrap">
+        <table class="grid">
+          <thead><tr><th>#</th><th>All-coverage page said</th><th>Engine / XML shows</th><th>Kind</th></tr></thead>
+          <tbody>
+            <tr><th>1</th><td>Four sheets, one per class branch</td><td>One pre-2027 chain and one CW 2027 chain, each with all four classes</td><td>restructured</td></tr>
+            <tr><th>2</th><td>"Premium file not resolved"</td><td><code>GeneralLiabilityClassificationRailroadCoverageRules.Rule.xml</code></td><td>out of date</td></tr>
+            <tr><th>3</th><td>AdjustedBaseELPRR "exact formula not resolved"</td><td>Resolved per class: × LCM (40011, 40014), × ratio × LCM (40013), × WithHzd × LCM (40012 part clear)</td><td><span class="tag bad">wrong as drawn</span></td></tr>
+            <tr><th>4</th><td>Mixed-hazard weighted average "not resolved"</td><td>Resolved: hazard part at 40011 × ILF × WithHzd, clear part at the 40014 basis × ILF40014 × WOHzd</td><td><span class="tag bad">wrong as drawn</span></td></tr>
+            <tr><th>5</th><td>Work-trains add-on on 40011/40012</td><td>Charged only on 40013. The old 40013 sheet left it off.</td><td><span class="tag bad">wrong as drawn</span></td></tr>
+            <tr><th>6</th><td>"Subject to MinPremiumRR = 0" as a floor</td><td>A policy-level top-up coverage. SetPremium does not read MinPremium.</td><td><span class="tag bad">wrong as drawn</span></td></tr>
+            <tr><th>7</th><td>Supervisors add-on: 10% of premium</td><td>On 40012 it is 10% of the cost at the 40011 rate. The base premium is rounded before the add-on.</td><td>incomplete</td></tr>
+            <tr><th>8</th><td>—</td><td>A 40012 project partly clear of the tracks rates only the hazard part, in both editions</td><td>missing</td></tr>
+            <tr><th>9</th><td>Modifiers not stated</td><td>Experience × Expense × Schedule (not ModToUse or PackageMod)</td><td>missing</td></tr>
+            <tr><th>10</th><td>CW 2027 only in notes</td><td>Drawn in full: halved ELPs, OCP ELP for 16292, a single FinalRate, add-ons and minimum withdrawn, and a $1 floor with no exposure test (zero exposure prices $1)</td><td>missing</td></tr>
+            <tr><th>11</th><td>No zero paths drawn</td><td>Blank band, blank description and unknown class are silent; a missing 40013 ratio and zero exposure carry ISO messages</td><td>missing</td></tr>
+            <tr><th>12</th><td>No referral or refusal layer</td><td>None fires: no Company selector, no override message, no loss-cost node for OI-94</td><td>missing</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="doc-footer">
+  Sources: the built engine (<strong>gl_engine</strong> at 62eb125: <code>rating/kernel.py</code>, <code>rating/referrals.py</code>, <code>resolve/</code>, <code>interp/</code>), probed on 2026-10-05 with ISO's Rhode Island and New Hampshire Railroad STC submissions re-dated to each edition. ISO rule XML and rate tables are under <code>F:\ISO_ERC_Files\General_Liability</code>. Companion docs are <code>GL_Algorithm\RailroadProtective_RatingAlgorithms.md</code> (reconciled 2026-10-02) and <code>docs\gates\GATE-335-RAILROAD-PROTECTIVE.md</code>. Table counts and the halved-cell check (AK, RI, NH, MN) are the 2026-10-02 census, not re-measured.
+</footer>
+
+<script>
+  (function () {
+    var toc = document.getElementById('toc');
+    var main = document.getElementById('main');
+
+    function activate(target) {
+      var views = main.querySelectorAll('.sheet-view');
+      for (var i = 0; i < views.length; i++) views[i].classList.remove('active');
+      var view = document.getElementById('view-' + target);
+      if (view) view.classList.add('active');
+
+      var links = toc.querySelectorAll('.navlink');
+      for (var j = 0; j < links.length; j++) {
+        links[j].classList.toggle('active', links[j].getAttribute('data-target') === target);
+      }
+      main.scrollTop = 0;
+      window.scrollTo(0, 0);
+    }
+
+    document.addEventListener('click', function (e) {
+      var btn = e.target.closest('button[data-target]');
+      if (btn) activate(btn.getAttribute('data-target'));
+    });
+  })();
+</script>
+
+<style>.mermaid-rendering .sheet-view{display:block!important}</style>
+<script type="module">
+  // Render every diagram once, with all sheets briefly visible so hidden tabs get real sizes.
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({ startOnLoad: false, securityLevel: "strict", flowchart: { wrappingWidth: 260 } });
+  document.documentElement.classList.add("mermaid-rendering");
+  try { await mermaid.run({ querySelector: "pre.mermaid" }); }
+  finally { document.documentElement.classList.remove("mermaid-rendering"); }
+</script>
+</body>
+</html>
