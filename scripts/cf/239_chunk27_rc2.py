@@ -53,8 +53,9 @@ FAIL = []
 REFUSE = {"C1B", "C4Ba", "C4Br", "C4Sp", "C8CBa", "C8CBr", "C8CSp"}
 # a difference explained and registered: ours sets the location's MultipleDiffDeductibleSpclIndicator "Yes" on one special
 # class item with no deductible (FirstNonNull skips the rule's own "" fallback, then null <> ""), ISO "No"; one extra
-# CP 03 20 message, no premium moves. An engine change: chunk 28, the user's go.
-KNOWN = {"C7nd": "OI-126"}
+# CP 03 20 message, no premium moves. Closed by chunk 28 C28-07 (2026-10-05): a filed "" Constant now ends the
+# FirstNonNull, so ours says "No" as ISO does. Nothing is explained here any more.
+KNOWN = {}
 
 REGISTER = [
     ("M-001", re.compile(r"CP 03 20 Must Be Attached")),

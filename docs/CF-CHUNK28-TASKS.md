@@ -10,7 +10,7 @@ answers, run it at ISO, then propose the change. After a change: `206_ --check`,
 (the engine changed), and the item's own ISO cases again. Live ISO at **2026-09-17** (OI-105: the only date where ISO and
 the corpus use the same package in all 46 states). Puerto Rico excluded. Progress to `results/cf-raas/logs/`.
 
-**Status: OPEN 2026-10-05, 7 of 22** (all seven sets; the user chose to start with Set A). **Set A is done** (OI-99 and OI-103 closed, OI-117 open). Set C: C28-07 proposed and measured ([`CF-CHUNK28-PROPOSAL-C1.md`](CF-CHUNK28-PROPOSAL-C1.md)). **Next: the user's go on C28-07's change, then C28-08..10.**
+**Status: OPEN 2026-10-05, 7 of 22** (all seven sets; the user chose to start with Set A). **Set A is done** (OI-99 and OI-103 closed, OI-117 open). Set C: C28-07 built with the user's go (OI-126 and OI-123 closed, [`CF-CHUNK28-PROPOSAL-C1.md`](CF-CHUNK28-PROPOSAL-C1.md)). **Next: C28-08 (OI-125).**
 
 ## The feature sets, and what each buys
 
@@ -49,11 +49,11 @@ still needs the user's go, one item at a time.
 
 | # | Task | Status | Notes |
 |---|---|---|---|
-| C28-07 | **OI-126 and OI-123** (interpreter: `FirstNonNull` with a "" constant; an empty `NotExist`): a probe telling the readings apart; the smaller change proposed | ✅ 2026-10-05 | [`CF-CHUNK28-PROPOSAL-C1.md`](CF-CHUNK28-PROPOSAL-C1.md), measured by `249_` on 1,690 stored requests ISO rated (no engine change). **OI-126:** readings A (`FirstNonNull` returns a filed "") and B (null equals "") are identical (each 1,677 → 1,679 message sets equal to ISO, 0 broken, 0 premiums moved), and no rule in all 24,028 rule files compares a bare field to "": A proposed, the smaller. **OI-123 confirmed live on an in-force package** (`250_`: GA 2026 fires CP 10 53 with the exclusion record, not without; 123 of 123 premiums equal); reading C 1,677 → 1,682, 0 broken. **Awaiting the user's go** |
+| C28-07 | **OI-126 and OI-123** (interpreter: `FirstNonNull` with a "" constant; an empty `NotExist`): a probe telling the readings apart; the smaller change proposed | ✅ 2026-10-05 | [`CF-CHUNK28-PROPOSAL-C1.md`](CF-CHUNK28-PROPOSAL-C1.md), measured by `249_` on 1,690 stored requests ISO rated (no engine change). **OI-126:** readings A (`FirstNonNull` returns a filed "") and B (null equals "") are identical (each 1,677 → 1,679 message sets equal to ISO, 0 broken, 0 premiums moved), and no rule in all 24,028 rule files compares a bare field to "": A proposed, the smaller. **OI-123 confirmed live on an in-force package** (`250_`: GA 2026 fires CP 10 53 with the exclusion record, not without; 123 of 123 premiums equal); reading C 1,677 → 1,682, 0 broken. **Built 2026-10-05 with the user's go** (C28-11) |
 | C28-08 | **OI-125** (a submitted value standing in for a field the rules write later): probe a second unguarded computed field before generalising | ⬜ | the user's go |
 | C28-09 | **OI-112** (2023-edition checkbox answers): propose reading them as blank on those parents, or documenting it | ⬜ | the user's go |
 | C28-10 | **OI-114** (`<rul:Null/>`, old builds only): the discriminating probe at a back date, then null-as-false or leave | ⬜ | the user's go |
-| C28-11 | **Build and confirm** each item given a go; the (level, message) multisets re-compared on chunk 27's cases | ⬜ | |
+| C28-11 | **Build and confirm** each item given a go; the (level, message) multisets re-compared on chunk 27's cases | ⬜ | **C28-07's two built 2026-10-05** (`nodes.py`, Property only; interpreter tests B35 / B36, 76 of 76): `206_` moved exactly the 7 predicted message sets, no premium (rebaselined); `157_ --all` 293 of 293; `239_` all 32 agree (C7nd's known difference removed); `250_` G1 fires in ours; **full gate clean, 170 scripts**. OI-126 and OI-123 closed. Open for C28-08..10 |
 
 ### RC-4 · Set D, form names (3 tasks)
 

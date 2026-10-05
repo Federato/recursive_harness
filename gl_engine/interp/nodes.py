@@ -196,8 +196,21 @@ def _first_non_null(ip, el, fr):
     treated as a null argument. Every other refusal still escapes: this is the
     one construct that declares a null branch legal, and it is not a licence to
     answer where the engine should stop.
+
+    **A filed empty `Constant` is a value, in Property (OI-126, chunk 28 C28-07).**
+    ISO ends 14 countrywide `FirstNonNull`s in `<Constant></Constant>` and answers
+    with that "" (a lone special class item with no deductible: ISO's
+    `SetMultipleDiffDeductibleSpclIndicator` says "No"; skipping the "" said
+    "Yes" and raised an extra CP 03 20 message). Only a branch that IS an empty
+    `Constant` counts; a "" read from data is still skipped. Measured on 1,690
+    requests ISO rated: 2 message sets fixed, 0 broken, 0 premiums moved
+    (`249_`; "null equals ''" fits the same evidence and was not chosen, being
+    the wider change). Under `product_skips_null` only; GL unchanged.
     """
     for idx, ch in enumerate(_kids(el)):
+        if (getattr(ip, "product_skips_null", False) and ch.tag.split("}", 1)[-1] == "Constant"
+                and (ch.text or "") == ""):
+            return ""
         try:
             vals = flatten(ip.eval(ch, fr))
         except NullInArithmetic as exc:
@@ -433,14 +446,27 @@ def _is_not_null(ip, el, fr):
 
 @node("Exist")
 def _exist(ip, el, fr):
-    """Presence in the tree, which is a different question from nullity (§4)."""
+    """Presence in the tree, which is a different question from nullity (§4).
+
+    **No path selects nothing, in Property (OI-123, chunk 28 C28-07).** ISO's
+    builds strip the path from a few tests (MO's CW 2023 V02 flood message, GA
+    2026's CP 10 53 message), and ISO reads the bare test as "nothing exists":
+    confirmed live on GA's in-force package (`250_`: the message fires with the
+    exclusion record, not without). Selecting "" would select the current node
+    and invert both answers. 5 message sets fixed of 1,690, 0 broken (`249_`).
+    Under `product_skips_null` only; GL unchanged.
+    """
     path = el.attrib.get("AtInputDataDef", "")
+    if not path and getattr(ip, "product_skips_null", False):
+        return False
     return bool(tree.select(path, fr.data))
 
 
 @node("NotExist")
 def _not_exist(ip, el, fr):
     path = el.attrib.get("AtInputDataDef", "")
+    if not path and getattr(ip, "product_skips_null", False):
+        return True                            # OI-123: see `_exist`
     return not tree.select(path, fr.data)
 
 

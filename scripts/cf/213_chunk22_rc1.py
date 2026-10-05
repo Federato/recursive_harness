@@ -387,7 +387,7 @@ def touchpoints():
     # repository's ownership check on a new PC), and had been failing since c7ffe66 unseen (the chunk 24-27 gates ran
     # the quick tier, which skips this script). Both fixed: a git error fails the check, and the changes are listed.
     REVERIFIED = {
-        "gl_engine/interp/nodes.py": "c7ffe66, chunk 24 (Builders Risk); 157_ --all 293 of 293 at chunk 27, 2026-10-02",
+        "gl_engine/interp/nodes.py": "c7ffe66 chunk 24, and C28-07 (OI-126 / OI-123, messages only); 157_ --all 293 of 293, 2026-10-05",
         "gl_engine/interp/interpreter.py": "C28-05 strict SingleResult; 157_ --all 293 of 293, 2026-10-05",
         "cf_engine/resolve/book.py": "C28-05 strict default and EQ stub; 157_ --all 293 of 293, 2026-10-05",
         "cf_engine/config.py": "the corpus root's default moved to F: (new PC, 2026-10-05); no rating code",

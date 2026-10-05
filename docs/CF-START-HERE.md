@@ -11,7 +11,7 @@ page and the deployed page agree with them; on drift it hands the problems back 
 
 ---
 
-## Pick up here (set 2026-10-05): chunk 28 OPEN at 7 of 22, Set A done, C28-07 awaiting the go
+## Pick up here (set 2026-10-05): chunk 28 OPEN at 7 of 22, Set A done, C28-07 built
 
 **Set A (refuse where ISO refuses) done 2026-10-05.** C28-05 (the user's go): a `SingleResult` lookup that matches no row
 refuses the policy on every Property book (`CFResolvedBook.strict_single_result`; GL off; `ERC_STRICT_SINGLE_RESULT`
@@ -22,7 +22,9 @@ pins on "ours $0", every new refusal sent live and **17 of 17 refused at the sam
 `245_ --refused` live: 87 of 87 lookup refusals ours refuses, 37 of 37 ISO now rates ours prices. **OI-99 and OI-103 closed;
 OI-117 (`Convert` of a blank) open.** Puerto Rico not confirmable. **Set C, C28-07 done 2026-10-05**: [`CF-CHUNK28-PROPOSAL-C1.md`](CF-CHUNK28-PROPOSAL-C1.md) (`249_`, `250_`): OI-126's
 readings A / B identical on all evidence (A proposed, the smaller); OI-123 confirmed live on GA's in-force package; both
-messages only, 7 policies, 0 broken. **Next: the user's go on C28-07's change (then C28-11), and C28-08..10.**
+messages only, 7 policies, 0 broken. **Built the same day with the user's go** (`nodes.py`, Property only; B35 / B36): exactly the 7
+predicted message sets moved, no premium; 293 of 293; **full gate clean, 170 scripts**; OI-126 and OI-123 closed.
+**Next: C28-08 (OI-125, occupancy counts from a submitted `RatingType`)**; each change needs the user's go.
 
 **New PC (2026-10-05).** Everything now lives on F: and the defaults say so: the corpus `F:\ISO_ERC_Files`
 (`cf_engine` / `gl_engine` config), RaaS credentials `F:\Will_Dan_Collab_dev\.env` (with `RAAS_ORG_ID` / `RAAS_SHIP_ID`), the

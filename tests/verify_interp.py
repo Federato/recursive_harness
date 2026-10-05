@@ -470,6 +470,28 @@ def group_b() -> None:
         off_ok = not ip.null_skips
     check("B34 Subtract is unchanged with the skip flag off (GL)", off_ok, "no skip recorded")
 
+    # OI-126 (chunk 28 C28-07): a filed empty Constant ends a FirstNonNull with
+    # "" in Property; GL still skips it and exhausts to null.
+    FNN_EMPTY = ('<rul:FirstNonNull Type="string"><rul:Value Type="string" FromDataDef="Missing"/>'
+                 '<rul:Constant Type="string"></rul:Constant></rul:FirstNonNull>')
+    ip = Fake(null_arithmetic="propagate")
+    ip.product_skips_null = True
+    got_cf, _, _ = run(FNN_EMPTY, ip=ip)
+    got_gl, _, _ = run(FNN_EMPTY, ip=Fake(null_arithmetic="propagate"))
+    check("B35 FirstNonNull returns a filed empty Constant in Property, null in GL (OI-126)",
+          got_cf == "" and got_gl is None, f"Property {got_cf!r}, GL {got_gl!r}")
+
+    # OI-123 (chunk 28 C28-07): an Exist / NotExist with no path selects
+    # nothing in Property (Exist false, NotExist true); GL selects the node.
+    ip = Fake(null_arithmetic="propagate")
+    ip.product_skips_null = True
+    ex_cf, _, _ = run("<rul:Exist/>", ip=ip)
+    nx_cf, _, _ = run("<rul:NotExist/>", ip=ip)
+    ex_gl, _, _ = run("<rul:Exist/>", ip=Fake(null_arithmetic="propagate"))
+    check("B36 an Exist / NotExist with no path selects nothing in Property, the node in GL (OI-123)",
+          ex_cf is False and nx_cf is True and ex_gl is True,
+          f"Property Exist {ex_cf} NotExist {nx_cf}; GL Exist {ex_gl}")
+
     # The substring trap: `PremiumIndicator` is a 0/1 flag, not money, and
     # guarding it by name-contains would refuse ordinary content.
     _, root, _ = run(NULL_PREMIUM.format(to="PremiumIndicator"),

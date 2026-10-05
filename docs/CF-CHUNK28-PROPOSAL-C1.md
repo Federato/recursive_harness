@@ -1,6 +1,6 @@
 # Property chunk 28, C28-07: proposal for OI-126 and OI-123 (Set C, messages match ISO)
 
-**Status: PROPOSED 2026-10-05, awaiting the user's go.** No engine code changed. Both items are messages only: no
+**Status: BUILT 2026-10-05 (the user's go, same day); proposed 2026-10-05.** Measured before any code changed. Both items are messages only: no
 premium moves under either change (measured on every stored request ISO rated).
 
 ## In plain English
