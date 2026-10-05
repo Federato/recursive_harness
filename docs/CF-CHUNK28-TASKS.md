@@ -10,7 +10,7 @@ answers, run it at ISO, then propose the change. After a change: `206_ --check`,
 (the engine changed), and the item's own ISO cases again. Live ISO at **2026-09-17** (OI-105: the only date where ISO and
 the corpus use the same package in all 46 states). Puerto Rico excluded. Progress to `results/cf-raas/logs/`.
 
-**Status: OPEN 2026-10-05, 15 of 22** (all seven sets; the user chose to start with Set A). **Sets A, C and D are done**; Sets B + E: C28-15 done ([`CF-CHUNK28-SILENT-ZEROS.md`](CF-CHUNK28-SILENT-ZEROS.md)). **Next: C28-16, the outcome-layer design (the user's go).**
+**Status: OPEN 2026-10-05, 16 of 22** (all seven sets; the user chose to start with Set A). **Sets A, C and D are done**; Sets B + E: C28-15 done, C28-16 designed ([`CF-CHUNK28-DESIGN-B-E.md`](CF-CHUNK28-DESIGN-B-E.md)). **Next: the user's go on C28-17 (the build: ~250 stored requests become refusals).**
 
 ## The feature sets, and what each buys
 
@@ -68,7 +68,7 @@ still needs the user's go, one item at a time.
 | # | Task | Status | Notes |
 |---|---|---|---|
 | C28-15 | **The silent-zero table**: each of the eight inputs (and NY's missing Group II symbol) run on ours and at ISO, classed "ISO also $0" (validation only) or a divergence (moves to set A or C) | ✅ 2026-10-05 | [`CF-CHUNK28-SILENT-ZEROS.md`](CF-CHUNK28-SILENT-ZEROS.md), `254_ --live`: of the nine, **five ISO also prices $0, silently** (AZ reduction credit, no BCEG, no Group II territory, blank Broad / Special deductible: the last two zero the whole building); **two both refuse** (unfiled construction types, since C28-05); **two no longer zero** on the policies tested (no `RatingTypeBasicGroupII`, NY without a symbol). **0 divergences**; ISO raises no message on any zero, so Set B is our own validation layer, not ISO-matching |
-| C28-16 | **Design**: one outcome layer above the premium (rated / refer to company / invalid input), what triggers each (C28-15's table, OI-113), and how a caller sees it | ⬜ | the user's go |
+| C28-16 | **Design**: one outcome layer above the premium (rated / refer to company / invalid input), what triggers each (C28-15's table, OI-113), and how a caller sees it | ✅ 2026-10-05 | [`CF-CHUNK28-DESIGN-B-E.md`](CF-CHUNK28-DESIGN-B-E.md), the user's choices: silent-zero inputs **refuse** (stricter than ISO, by decision); the outcome is a separate field (rated / refused / refer to company); a missing Group II territory refuses only when Group II is on and $0. Measured reach: 218 + 23 + 12 + 2 of 1,705 stored requests ISO rated (~250). Refer to company: only when a company minimum premium is supplied and the total is below it. **The build (C28-17) awaits the user's go** |
 | C28-17 | **Build** (with the go), never changing a premium ISO agrees with | ⬜ | |
 | C28-18 | **Confirm**: every C28-15 input returns its outcome; every golden case still rates, unchanged | ⬜ | |
 
