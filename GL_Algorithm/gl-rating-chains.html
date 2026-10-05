@@ -255,10 +255,7 @@
     <hr>
     <div class="group">
       <div class="group-label">Product Withdrawal / Cyber (365)</div>
-      <button class="navlink" data-target="pw-cova">Coverage A · Expense<span class="chain-len">9-step chain</span></button>
-      <button class="navlink" data-target="pw-covb">Coverage B · Liability<span class="chain-len">same shape, own factor</span></button>
-      <button class="navlink" data-target="pw-limited">Limited Prod. Withdrawal (CG 04 36)<span class="chain-len">11+43 rules, sibling read (E18)</span></button>
-      <button class="navlink" data-target="pw-loedcyber">LoED / Cyber Incident Liab.<span class="chain-len">host-dependent, 2 hosts each</span></button>
+      <a class="navlink" href="gl-pw-cyber-chains.html">Pre-2027 and CW 2027 chains<span class="chain-len">moved to their own page ↗</span></a>
     </div>
     <hr>
     <div class="group">
@@ -347,10 +344,10 @@
           </tr>
           <tr>
             <th>Product Withdrawal / Cyber</th>
-            <td><button class="cell" data-target="pw-cova">Coverage A · Expense<span class="n">9 steps</span></button></td>
-            <td><button class="cell" data-target="pw-covb">Coverage B · Liability<span class="n">9 steps, own factor</span></button></td>
-            <td><button class="cell" data-target="pw-limited">Limited Prod. Withdrawal<span class="n">11+43 rules</span></button></td>
-            <td><button class="cell" data-target="pw-loedcyber">LoED / Cyber Incident Liab.<span class="n">2 hosts each</span></button></td>
+            <td><a class="cell" href="gl-pw-cyber-chains.html">Pre-2027 editions<span class="n">own page ↗</span></a></td>
+            <td><a class="cell" href="gl-pw-cyber-chains.html">CW 2027 (V01/V02)<span class="n">own page ↗</span></a></td>
+            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
+            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
             <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
           </tr>
           <tr>
@@ -391,208 +388,7 @@
 
     <!-- Railroad Protective (both editions) moved to gl-railroad-chains.html on 2026-10-05. -->
 
-    <!-- ============================= PRODUCT WITHDRAWAL · COVERAGE A ============================= -->
-    <section class="sheet-view" id="view-pw-cova">
-      <div class="titleblock">
-        <div class="field"><span class="k">Coverage</span><span class="v">Product Withdrawal (subline 365) — Coverage A, Product Withdrawal Expense</span></div>
-        <div class="field"><span class="k">Edition</span><span class="v">Pre-2027 (20231201 V03, 20260101 V01, 20261001 V01) and CW 2027 (20270401 V01/V02) — the deductible table and the coverage-form minimum premium differ, see nodes</span></div>
-        <div class="field"><span class="k">Master chain</span><span class="v">GeneralLiabilityClassificationExclusionCoverageAProductWithdrawalExpenseRules — 27 rules, 9-step arithmetic reconstruction</span></div>
-        <div class="field"><span class="k">Premium file</span><span class="v">Same rule set, SetPremium</span></div>
-        <div class="field wide"><span class="k">Coverage gate</span><span class="v">SetCoverageOnPolicyIndicator: on only when the policy Subline = "Product Withdrawal" and ProductWithdrawalCoverageType selects this coverage — so Product Withdrawal is its own GeneralLiability risk, not an add-on to a Prem/Ops risk</span></div>
-      </div>
-      <div class="sheet">
-        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
-        <pre class="mermaid">
-%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
-flowchart TD
-    start(["Product Withdrawal Coverage A - Expense"]) --> factorA["ProductWithdrawalExpenseFactor = lookup(FinalProductWithdrawalIncrdLimitTableAssignment) - A 0.25 / B 0.19 / C 0.13"]:::step
-    factorA --> lcmPW["LCM = lookup ProductWithdrawalLCM (CW: 1 row = 1)"]:::step
-    lcmPW --> selectorGate{"ProductWithdrawalELP (borrowed from Prod/CompOps's selector) = 'Company'?"}
-    selectorGate -->|"Yes"| elpOverride["ELP = override, else 0.0"]:::step
-    selectorGate -->|"No"| elpHost["ELP = lookup ProdsCompldOpsELPFactor(...) - the Products table, looked up directly (not a read of a computed sibling value)"]:::step
-    elpOverride --> ilfDed["CSLILF via ProductWithdrawalExpensesAndLiabilityIncrdLimitFactor; DeductibleFactor: pre-2027 DedFactorProdsCSL or override, CW 2027 DedFactorProdsProdWithdrawl; FinalILF = round(CSLILF - DeductibleFactor,3), no floor"]:::step
-    elpHost --> ilfDed
-    ilfDed --> lossCostPW["LossCost = lookup ProdsCompldOpsLossCost(ProdsCompldOpsTerritory) - 0.0 if class or territory empty"]:::step
-    lossCostPW --> baseRatePW{"ELP path or LossCost path?"}
-    baseRatePW -->|"ELP"| baseELPpw["BaseRate = round(ELP x ExpenseFactor x LCM,3)"]:::step
-    baseRatePW -->|"LossCost"| baseLCpw["BaseRate = round(LossCost x ExpenseFactor x LCM,3) - the only coverage in this gate with BOTH a loss-cost and an ELP path"]:::step
-    baseELPpw --> discCharge["PremiumDiscountCharge = round(1 - PremiumDiscountPercentage/100,3) when supplied, else 1.0 (Participation % / Cut-off Date)"]:::step
-    baseLCpw --> discCharge
-    discCharge --> finalRatePW["FinalRate = round(BaseRate x FinalILF x PackageMod x ExperienceMod x ExpenseMod x ModToUse x PremiumDiscountCharge,3)"]:::step
-    finalRatePW --> premPW{"exposure basis /1000?"}
-    premPW -->|"Yes"| premPWa["Premium = round(FinalRate x exposure/1000,0)"]:::final
-    premPW -->|"No"| premPWb["Premium = FinalRate x exposure"]:::final
-    premPWa --> pwMin["Coverage-form minimum premium: pre-2027 only (removed in CW 2027); the PW PremiumToReachMin record is inert in both"]:::zero
-
-    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
-    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
-    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
-    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
-    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
-    class selectorGate,baseRatePW,premPW gate
-        </pre>
-      </div>
-      <div class="notes">
-        <div>
-          <h3>What to notice</h3>
-          <ul>
-            <li>This is a "factor-on-host" coverage — its base rate is a host subline's (Prod/CompOps, 336) rate times a small factor (0.13-0.25), not an independently-priced rate.</li>
-            <li>Product Withdrawal has no rating-basis selector table of its own — `ProductWithdrawalELP` is populated by calling Prod/CompOps's `ProdsCompldOpsELPText` directly.</li>
-            <li>The only one of the coverages in this gate carrying both a loss-cost path and an ELP path — Liquor and Railroad each have exactly one route to a base rate.</li>
-          </ul>
-        </div>
-        <div class="delta"><strong>vs. Coverage B.</strong> Structurally identical 9-step chain — only the factor table and its values differ (Coverage B: `ProductWithdrawalLiabilityFactor`, A 0.13/B 0.10/C 0.07). <em>Engine, 2026-10-02:</em> Coverage A / B rate 1,275 / 670 (TX @ 2027-04-01) and 1,340 / 705 (IL @ 2027-04-01) on a separate Product Withdrawal risk.</div>
-      </div>
-    </section>
-
-    <!-- ============================= PRODUCT WITHDRAWAL · COVERAGE B ============================= -->
-    <section class="sheet-view" id="view-pw-covb">
-      <div class="titleblock">
-        <div class="field"><span class="k">Coverage</span><span class="v">Product Withdrawal (subline 365) — Coverage B, Products Withdrawal Liability</span></div>
-        <div class="field"><span class="k">Edition</span><span class="v">Pre-2027 and CW 2027 — same edition split as Coverage A</span></div>
-        <div class="field"><span class="k">Master chain</span><span class="v">GeneralLiabilityClassificationExclusionCoverageBProductWithdrawalLiabilityRules — 27 rules, same 9-step shape as Coverage A</span></div>
-        <div class="field"><span class="k">Premium file</span><span class="v">Same rule set, SetPremium</span></div>
-        <div class="field wide"><span class="k">Coverage gate</span><span class="v">Same SetCoverageOnPolicyIndicator switch as Coverage A</span></div>
-      </div>
-      <div class="sheet">
-        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
-        <pre class="mermaid">
-%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
-flowchart TD
-    start(["Product Withdrawal Coverage B - Liability"]) --> factorB["ProductWithdrawalLiabilityFactor = lookup(FinalProductWithdrawalIncrdLimitTableAssignment) - A 0.13 / B 0.10 / C 0.07, same key axis as Coverage A's factor"]:::step
-    factorB --> lcmPWb["LCM = lookup ProductWithdrawalLCM (CW: 1 row = 1) - identical to Coverage A"]:::step
-    lcmPWb --> selectorGateB{"ProductWithdrawalELP (borrowed selector) = 'Company'?"}
-    selectorGateB -->|"Yes"| elpOverrideB["ELP = override, else 0.0"]:::step
-    selectorGateB -->|"No"| elpHostB["ELP = lookup ProdsCompldOpsELPFactor(...)"]:::step
-    elpOverrideB --> ilfDedB["CSLILF / DeductibleFactor (edition-split table) / FinalILF = round(CSLILF - Ded,3) - identical to Coverage A"]:::step
-    elpHostB --> ilfDedB
-    ilfDedB --> lossCostPWb["LossCost = lookup ProdsCompldOpsLossCost(ProdsCompldOpsTerritory)"]:::step
-    lossCostPWb --> baseRateB["BaseRate = round((ELP or LossCost) x ProductWithdrawalLiabilityFactor x LCM,3)"]:::step
-    baseRateB --> discChargeB["PremiumDiscountCharge = round(1 - pct/100,3) when supplied, else 1.0"]:::step
-    discChargeB --> finalRateB["FinalRate = round(BaseRate x FinalILF x PackageMod x ExperienceMod x ExpenseMod x ModToUse x PremiumDiscountCharge,3)"]:::step
-    finalRateB --> premB{"exposure basis /1000?"}
-    premB -->|"Yes"| premBa["Premium = round(FinalRate x exposure/1000,0)"]:::final
-    premB -->|"No"| premBb["Premium = FinalRate x exposure"]:::final
-
-    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
-    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
-    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
-    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
-    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
-    class selectorGateB,premB gate
-        </pre>
-      </div>
-      <div class="notes">
-        <div>
-          <h3>What to notice</h3>
-          <ul>
-            <li>The gate doc documents Coverage A and B together and does not spell out Coverage B's steps rule-by-rule — it states the chains are "the same shape, differing only in which factor they apply."</li>
-            <li>Same key axis (`FinalProductWithdrawalIncrdLimitTableAssignment`) as Coverage A's factor table, but a different table with lower per-tier values (0.13/0.10/0.07 vs 0.25/0.19/0.13).</li>
-          </ul>
-        </div>
-        <div class="delta"><strong>Template form.</strong> Coverage A is the reference shape this chain reuses verbatim — every step besides the factor lookup is a substitution, not a redesign.</div>
-      </div>
-    </section>
-
-    <!-- ============================= LIMITED PRODUCT WITHDRAWAL ============================= -->
-    <section class="sheet-view" id="view-pw-limited">
-      <div class="titleblock">
-        <div class="field"><span class="k">Coverage</span><span class="v">Limited Product Withdrawal Expense (endorsement CG 04 36, hosted on Prod/CompOps 336)</span></div>
-        <div class="field"><span class="k">Edition</span><span class="v">Pre-2027 and CW 2027 — deductible table, the HighestLmtd flag and the coverage-premium formula differ; the engine cannot complete the pre-2027 chain (see notes)</span></div>
-        <div class="field"><span class="k">Master chain</span><span class="v">GeneralLiabilityClassification container, 11 rating rules + 43 supporting rules across 4 more groups (54 total)</span></div>
-        <div class="field"><span class="k">Premium file</span><span class="v">...LimitedProductWithdrawalExpenseCoverage (7 rules) + ...EndtPolLvl (24 rules) + ...PremiumToReachMinCoveragePolLvl (8 rules)</span></div>
-        <div class="field wide"><span class="k">Coverage gate</span><span class="v">DoMessageLimitedProductWithdrawalEndt: a classification with Products coverage must be selected to attach this endorsement, plus ProdsWithdrawalCoverage == "Yes" and the policy-level endorsement row existing</span></div>
-      </div>
-      <div class="sheet">
-        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
-        <pre class="mermaid">
-%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
-flowchart TD
-    start(["Limited Product Withdrawal Expense endorsement (CG 04 36)"]) --> attachGate{"ProdsWithdrawalCoverage='Yes' AND Prod/CompOps coverage exists AND policy-level row exists?"}
-    attachGate -->|"No"| noAttach["DoMessageLimitedProductWithdrawalEndt fires - Products coverage must be selected to attach"]:::zero
-    attachGate -->|"Yes"| lmtdLCM["LmtdLCM = branch on ProdsWithdrawalCoverage / ProdsCompldOpsCov"]:::step
-    lmtdLCM --> lmtdFactor["LmtdProductWithdrawalFactor = lookup ProductWithdrawlFactor (MISSPELLED table name) - A 0.20 / B 0.15 / C 0.10"]:::step
-    lmtdFactor --> lmtdBase["LmtdBaseRate = (ProdsCompldOpsLossCost | FinalProdsCompldOpsELP) x LmtdLCM x LmtdProductWithdrawalFactor - reads the SIBLING coverage group's ALREADY-COMPUTED value (E18)"]:::openq
-    lmtdBase --> lmtdILF["LmtdIncreasedLimitsFactor = lookup ProductWithdrawalExpensesAndLiabilityIncrdLimitFactor(assignment, AggregateLimit); LmtdCSLILF = that value"]:::step
-    lmtdILF --> lmtdDed["LmtdDeductibleFactorForRating = pre-2027 DedFactorProdsCSL | CW 2027 DedFactorProdsProdWithdrawl, or supplied Override"]:::step
-    lmtdDed --> lmtdFinalILF{"LmtdFinalILF = CSLILF - DeductibleFactorForRating - NO arithmetic floor in the formula itself"}
-    lmtdFinalILF -->|"deductible exceeds ILF"| negGuard["DoMessageProdWithdrawalDedFactorCannotExceedPWILF fires - the ONLY negative-premium guard found anywhere in the GL corpus (N15)"]:::openq
-    lmtdFinalILF -->|"passes"| lmtdFinalRate["LmtdFinalRate = round(BaseRate x FinalILF x PackageMod,3)"]:::step
-    negGuard --> lmtdFinalRate
-    lmtdFinalRate --> lmtdPrem["LmtdPremium = round(FinalRate x ProdsCompldOpsCovExposure[/1000],0)"]:::step
-    lmtdPrem --> covPrem["CoveragePremium = CW 2027: round(Sum LmtdPremium [x PremiumDiscountCharge],0), $1 minimum | pre-2027: round(ManualPremium x PackageMod x PremiumDiscountCharge,0), or the class sum when participation = 0 - corrected 2026-10-02, no participation multiply"]:::step
-    covPrem --> negCheck{"CoveragePremium negative?"}
-    negCheck -->|"Yes"| negBlock["DoMessageTheLimitedProductWithdrawalCoveragepremiumCannotBeANegativePremium fires"]:::zero
-    negCheck -->|"No"| premStands["Premium stands"]:::final
-
-    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
-    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
-    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
-    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
-    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
-    class attachGate,lmtdFinalILF,negCheck gate
-        </pre>
-      </div>
-      <div class="notes">
-        <div>
-          <h3>What to notice</h3>
-          <ul>
-            <li>Not its own subline — it rates inside the shared `GeneralLiabilityClassification` container, attached to Prod/CompOps (336) by endorsement, and reads that sibling group's already-computed loss cost or ELP directly (E18, the third instance of this pattern in the gate).</li>
-            <li>`ProductWithdrawlFactor` is a genuinely misspelled table name in ERC (missing an "a") — and it has two readers: the full (365) coverage's correctly-spelled sibling tables serve Product Withdrawal A/B, while this misspelled one serves only Limited Product Withdrawal.</li>
-            <li>The only negative-premium guard anywhere in the GL corpus lives here — `FinalILF` has no arithmetic floor, so a deductible factor exceeding the ILF is caught only by a validation message, not by the math.</li>
-          </ul>
-        </div>
-        <div class="delta"><strong>Reconciled 2026-10-02.</strong> Engine, IL @ 2027-04-01: Limited Product Withdrawal 585. <strong>Engine finding:</strong> on every pre-2027 edition the engine stops INCOMPLETE in <code>LimitedProductWithdrawalExpenseEndtPolLvl.SetMinPremium</code> (a <code>WithArgs</code> argument read from inside a sibling argument is reported unbound).</div>
-        <div class="delta"><strong>vs. Product Withdrawal Coverage A/B.</strong> Coverage A/B each rate their own loss cost/ELP path independently; Limited Product Withdrawal has none of its own — it borrows the sibling group's finished number wholesale, the same cross-group dependency shape LoED/Cyber use.</div>
-      </div>
-    </section>
-
-    <!-- ============================= LOED / CYBER ============================= -->
-    <section class="sheet-view" id="view-pw-loedcyber">
-      <div class="titleblock">
-        <div class="field"><span class="k">Coverage</span><span class="v">Loss Of Electronic Data (CG 04 37 / CG 04 71 / CG 04 95) and Cyber Incident Liability</span></div>
-        <div class="field"><span class="k">Edition</span><span class="v">Corrected 2026-10-02: present from GL_CW_20231201 onward, not new at CW 2027. Pre-2027 the ILF key carries the " CSL" suffix, the /1000 list has Passenger Days, and there is no $1 minimum; CW 2027 adds a Subline test to the gate</span></div>
-        <div class="field"><span class="k">Master chain</span><span class="v">Two matched groups per coverage (Prem/Ops host, Prod/CompOps host): LoED 25 rules each, Cyber 23 rules each</span></div>
-        <div class="field"><span class="k">Premium file</span><span class="v">SetFinalRate (round 4 dp) -&gt; SetPremium -&gt; SetPremiumIndicator — formula now traced from the XML and reproduced by the engine</span></div>
-        <div class="field wide"><span class="k">Coverage gate</span><span class="v">SetCoverageOnPolicyIndicator stubbed to constant 0 in all six CA groups (both classification groups per coverage, plus each min-premium iterator) — the coverage is withdrawn there entirely and the chain never runs</span></div>
-      </div>
-      <div class="sheet">
-        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
-        <pre class="mermaid">
-%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
-flowchart TD
-    start(["Loss Of Electronic Data / Cyber Incident Liability - Prem/Ops or Prod/CompOps host"]) --> onGate{"SetCoverageOnPolicyIndicator = 0? (stubbed in CA for all 6 groups)"}
-    onGate -->|"Yes, CA"| premZeroLC["Premium = 0.0 - chain never runs, 13 tables in that state package go unreached"]:::zero
-    onGate -->|"No"| limitStep["Limit(s): LossOfElectronicDataLimit (LoED, 1 limit) | EachCyberIncidentOccurrenceLimit + AggregateLimit (Cyber, 2 limits)"]:::step
-    limitStep --> ilfChain["ILF lookup (LoED: 13 refer bands need ILFOverride - without it the engine stops INCOMPLETE, no referral) -> DedFactor = host combined BI/PD factor, else PD factor, else 0 -> FinalILF = round(ILF - DedFactor,3), 0 if not > 0"]:::step
-    ilfChain --> hostGate{"Host = Prem/Ops (334) or Prod/CompOps (336)?"}
-    hostGate -->|"Prem/Ops host"| adjBaseP["AdjustedBaseRate = host LossCost|ELP x host LCM [x host ClaimsMadeMult] x host SizeOfRiskFinalRelativity x own FinalILF (E18)"]:::openq
-    hostGate -->|"Prod/CompOps host"| adjBaseC["AdjustedBaseRate = host's finished BaseRate [x SizeOfRisk] x own FinalILF - NOT the same shape: no LCM or claims-made term"]:::openq
-    adjBaseP --> hazardGrade["HazardGrade = lookup {LossOfElectronicData|CyberIncidentLiability}PremOpsHazardGrade(ClassCode) - 1,188/1,163 rows CW, the LARGEST countrywide tables in the corpus; NY overrides"]:::step
-    adjBaseC --> hazardGrade
-    hazardGrade --> covFactor["CoverageFactor = lookup keyed by HazardGrade (CG 04 95 rates through the CG0437 table); Cyber's TypeOfPolicy table is a stat code (C5-C8), not a factor"]:::step
-    covFactor --> finalRateLC["FinalRate = round(AdjustedBaseRate x factor x PackageMod x ExpMod x ExpenseMod x ModToUse,4); Premium = round(FinalRate x Exposure[/1000],0); $1 minimum CW 2027 only - engine TX 2027-04-01, 200k limit: 1 / 5"]:::final
-
-    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
-    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
-    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
-    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
-    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
-    class onGate,hostGate gate
-        </pre>
-      </div>
-      <div class="notes">
-        <div>
-          <h3>What to notice</h3>
-          <ul>
-            <li>The architectural finding of the whole subline (escalation E18): LoED and Cyber read a sibling coverage group's already-computed intermediate values — not just its rate tables — so these groups cannot be evaluated independently of their host, and a host's edition-scoped behavior (like Prem/Ops's Claims-Made split) propagates silently.</li>
-            <li>Cyber's only structural difference from LoED is carrying two limits (occurrence + aggregate) where LoED carries one — everything else, including the hazard-grade table shape and the coverage-factor lookup, is step-for-step identical.</li>
-            <li>Pairwise rule-body overlap across all six rate-driven groups in this subline is zero identical bodies, despite 12-25 rules of name overlap per pair — documented together because the questions are shared, not the code.</li>
-          </ul>
-        </div>
-        <div class="delta"><strong>Resolved 2026-10-02.</strong> The final-rate/premium arithmetic is now traced from the XML and reproduced by the engine (see <code>LossOfElectronicData_RatingAlgorithms.md</code>): not Product Withdrawal's shape — no <code>PremiumDiscountCharge</code>, and a 4-dp round. <strong>Engine finding:</strong> the policy-level <code>TotalLossOfElectronicDataPremium</code> / <code>TotalCyberIncidentLiabilityPremium</code> come out 5 where 6 is expected — the interpreter's <code>ForEach</code> keeps only the last child's value per iteration (<code>gl_engine/interp/nodes.py</code>, <code>_for_each</code>), dropping the Prem/Ops term. Harmless while the filed minimum is $0.</div>
-      </div>
-    </section>
+    <!-- Product Withdrawal / LoED / Cyber (both editions) moved to gl-pw-cyber-chains.html on 2026-10-05. -->
 
     <!-- ============================= UNMANNED AIRCRAFT · COVERAGE A ============================= -->
     <section class="sheet-view" id="view-uav-cova">
