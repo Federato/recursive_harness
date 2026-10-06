@@ -116,7 +116,11 @@ def _ctx() -> ssl.SSLContext:
 class RaaS:
     """Authenticate once, rate many. Retries a rotated token exactly once."""
 
-    def __init__(self, timeout: float = 120.0):
+    def __init__(self, timeout: float = 120.0, lane: str = "adhoc", origin: str | None = None,
+                 override: str | None = None):
+        """`lane`, `origin` and `override` are the call ledger's (console/ledger.py, D2 / D21): every call is counted
+        against the daily cap in its lane; a full lane needs an override with a reason."""
+        self.lane, self.origin, self.override = lane, origin, override
         load_env()
         missing = [k for k in REQUIRED if not os.environ.get(k)]
         if missing:
@@ -195,6 +199,52 @@ class RaaS:
     RETRY_WAITS = (5, 15, 30)
 
     def rate(self, payload: dict) -> dict:
+        """POST one submission and return ISO's parsed response, counted in the call ledger (D21).
+
+        The ledger admits the call first (a full lane raises, unless overridden with a reason), then records what came
+        back, and every answer ISO gives -- rated or refused -- goes into the reference store. A failure to write the
+        log or the answer is reported and never stops the rating.
+        """
+        import sys as _sys
+        _root = str(Path(__file__).resolve().parent.parent)
+        if _root not in _sys.path:
+            _sys.path.insert(0, _root)
+        from console import ledger, store
+        try:
+            used_override = ledger.admit(self.lane, self.override)
+        except ledger.CapReached as exc:
+            raise RaaSError(f"call not sent: {exc}") from None
+        body = (payload.get("body") or payload) if isinstance(payload, dict) else {}
+        name = ((body.get("SchemeKeys") or {}).get("ProductName") or "")
+        line = "CP" if name.startswith("Commercial Property") else "GL" if name.startswith("General Liability") else ""
+        meta = {"lane": self.lane, "origin": self.origin or ledger.origin_default(), "line": line,
+                "state": (name.split() or [""])[-1], "request_hash": store.request_hash(payload), "override": used_override}
+        try:
+            resp = self._rate_with_retries(payload)
+        except RaaSError as exc:
+            self._log(ledger, store, meta, payload, None, exc)
+            raise
+        except Exception as exc:                                  # noqa: BLE001 -- counted, then re-raised
+            self._log(ledger, store, meta, payload, None, exc)
+            raise
+        self._log(ledger, store, meta, payload, resp, None)
+        return resp
+
+    @staticmethod
+    def _log(ledger, store, meta, payload, resp, exc) -> None:
+        try:
+            if resp is not None:
+                ans = store.save_answer(payload, resp, None)
+                ledger.record(outcome="rated", answer=ans.name, **meta)
+            elif isinstance(exc, RaaSError) and exc.status is not None:
+                ans = store.save_answer(payload, None, exc.body or str(exc))
+                ledger.record(outcome="refused", status=exc.status, answer=ans.name, **meta)
+            else:
+                ledger.record(outcome="error", answer=str(exc)[:200], **meta)
+        except Exception as log_exc:                              # noqa: BLE001 -- logging never stops a rating
+            print(f"  (call ledger: could not record this call: {log_exc})")
+
+    def _rate_with_retries(self, payload: dict) -> dict:
         """POST one submission and return ISO's parsed response, retrying only what the network lost."""
         import http.client
         import time as _time
