@@ -62,6 +62,19 @@ else:
     PROPERTY_ERROR = ""
 
 
+def property_states() -> tuple[list, str]:
+    """(the Property states, "") or ([], why not). The packaged app ships Property's rule files as a separate
+    add-on download, so their absence is a state the page explains, not a server error."""
+    if property_rating is None:
+        return [], f"Property unavailable: {PROPERTY_ERROR}"
+    try:
+        return property_rating.states(), ""
+    except Exception as exc:                                # noqa: BLE001
+        return [], ("Commercial Property rule files are not installed. In the Windows app, download the "
+                    "Commercial Property add-on and unzip it into the same folder as RecursiveHarness.exe. "
+                    f"({type(exc).__name__}: {exc})"[:400])
+
+
 def is_property(payload: dict) -> bool:
     """A request is Property when ISO would read it as Property: its ProductName says so."""
     name = (payload.get("body", {}).get("SchemeKeys", {}).get("ProductName") or "")
@@ -517,7 +530,8 @@ function setLine(line, then){
   const gl=line==='gl';
   $('#mode').style.display=gl?'':'none'; $('#rounding').style.display=gl?'':'none';
   fetch('/api/samples'+(gl?'':'?line=property')).then(r=>r.json()).then(d=>{
-    if(d.error){ out.innerHTML=card('Unavailable','<div class="stopped">'+esc(d.error)+'</div>'); return; }
+    if(d.error){ $('#sample').length=1;
+      out.innerHTML=card('Unavailable','<div class="stopped">'+esc(d.error)+'</div>'); return; }
     if(!$('#mode').options.length) d.modes.forEach(m=>$('#mode').add(new Option(m,m)));
     const sel=$('#sample'); sel.length=1;
     d.jurisdictions.forEach(j=>sel.add(new Option(j,j)));
@@ -624,6 +638,9 @@ document.getElementById('brun').onclick=()=>{
     body:JSON.stringify({mode:$('#mode').value,rounding:$('#rounding').value,
       compare:document.getElementById('bcmp').checked,line:LINE})})
    .then(r=>r.json()).then(j=>{
+     if(j.error){ btn.disabled=false; document.getElementById('bprog').style.display='none';
+       document.getElementById('bout').innerHTML=card('Unavailable','<div class="stopped">'+esc(j.error)+'</div>');
+       return; }
      const bar=document.getElementById('bbar'); bar.max=j.total; bar.value=0;
      POLL=setInterval(()=>poll(j.id,btn),1500); poll(j.id,btn);
    });
@@ -846,9 +863,9 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/":
             return self._send(200, PAGE, "text/html")
         if path == "/api/samples" and query.get("line") == "property":
-            if property_rating is None:
-                return self._send(500, json.dumps({"error": f"Property unavailable: {PROPERTY_ERROR}"}))
-            js = property_rating.states()
+            js, why = property_states()
+            if why:
+                return self._send(200, json.dumps({"error": why}))
             return self._send(200, json.dumps({
                 "jurisdictions": js, "modes": list(MODES),
                 "no_iso": sorted(NO_ISO & set(js)), "line": "property"}))
@@ -873,7 +890,7 @@ class Handler(BaseHTTPRequestHandler):
                 }))
         if path.startswith("/api/sample/") and query.get("line") == "property":
             juris = path.rsplit("/", 1)[-1]
-            if property_rating is None or juris not in property_rating.states():
+            if juris not in property_states()[0]:
                 return self._send(404, json.dumps({"error": "no such Property state"}))
             return self._send(200, json.dumps(property_rating.sample(juris), indent=2))
         if path.startswith("/api/sample/"):
@@ -902,8 +919,8 @@ class Handler(BaseHTTPRequestHandler):
         if path == "/api/batch":
             compare = bool(req.get("compare"))
             line = "property" if req.get("line") == "property" else "gl"
-            if line == "property" and property_rating is None:
-                return self._send(500, json.dumps({"error": f"Property unavailable: {PROPERTY_ERROR}"}))
+            if line == "property" and property_states()[1]:
+                return self._send(200, json.dumps({"error": property_states()[1]}))
             js = req.get("jurisdictions")
             if not js and line == "property":
                 js = [j for j in property_rating.states() if not (compare and j in NO_ISO)]
@@ -929,8 +946,8 @@ class Handler(BaseHTTPRequestHandler):
 
         payload = req.get("payload") or {}
         if is_property(payload):
-            if property_rating is None:
-                return self._send(200, json.dumps({"error": f"Property unavailable: {PROPERTY_ERROR}"}))
+            if property_states()[1]:
+                return self._send(200, json.dumps({"error": property_states()[1]}))
             try:
                 result = property_rating.rate(payload, compare_with=iso_client if req.get("compare") else None,
                                               no_iso=NO_ISO)
