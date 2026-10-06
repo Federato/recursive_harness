@@ -127,7 +127,36 @@ def sample(juris: str, effective: str = EFFECTIVE) -> dict:
     v = _first(book, "BCEGEQFactor", "EQTerr", juris)       # SC keys its BCEG factor on it even without EQ
     if v is not None:
         loc["EQTerr"] = v
+    _drop_withdrawn(q["body"]["CommercialProperty"][0], _withdrawn(book))
     return q
+
+
+def _withdrawn(book) -> set:
+    """The records (form `TableName`s) the state files only as withdrawn (`Status` "D") in its own `Pages` table.
+
+    A state that does not offer a form marks it "D": FL withdrew the Cyber Incident Exclusion (CP 10 75), and ISO
+    refuses a FL policy that attaches it, at FL's empty `CyberIncidentExclusionFactors` (OI-133, 2026-10-06).
+    """
+    if not book.state.has("FormPage", "Pages"):
+        return set()
+    t = book.state.table("FormPage", "Pages")
+    tn, st = t.header.index("TableName"), t.header.index("Status")
+    filed: dict = {}
+    for r in t.rows:
+        filed.setdefault(r[tn], set()).add(r[st])
+    return {name for name, sts in filed.items() if sts == {"D"}}
+
+
+def _drop_withdrawn(node, withdrawn: set) -> None:
+    """Remove every attached record the state has withdrawn, at any depth: the sample offers only forms it files."""
+    if isinstance(node, dict):
+        for k in [k for k in node if k in withdrawn]:
+            del node[k]
+        for v in node.values():
+            _drop_withdrawn(v, withdrawn)
+    elif isinstance(node, list):
+        for v in node:
+            _drop_withdrawn(v, withdrawn)
 
 
 def to_tree(obj):
