@@ -1,0 +1,497 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Leasehold Interest Rating Chains</title>
+<style>
+  :root {
+    --ink: #101b24;
+    --paper: #edf0ec;
+    --paper-line: #c7d2ce;
+    --blueprint: #2e6e8e;
+    --blueprint-soft: #e4ebef;
+    --stamp: #c77f32;
+    --caution: #b14b39;
+    --ledger: #3f8f6e;
+    --surface: #f4f6f3;
+    --panel: #ffffff;
+    --sidebar: #e8ede8;
+    --text: var(--ink);
+    --muted: #5b6b72;
+    --border: #cdd6d2;
+    --font-display: Cambria, 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+    --font-body: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+    --font-mono: 'Cascadia Code', 'Cascadia Mono', Consolas, 'SFMono-Regular', ui-monospace, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --surface: #0b141a;
+      --panel: #101b22;
+      --sidebar: #0e1a20;
+      --text: #e7ece9;
+      --muted: #93a3a0;
+      --border: #223138;
+      --blueprint-soft: #16232b;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --surface: #0b141a;
+    --panel: #101b22;
+    --sidebar: #0e1a20;
+    --text: #e7ece9;
+    --muted: #93a3a0;
+    --border: #223138;
+    --blueprint-soft: #16232b;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; background: var(--surface); color: var(--text);
+    font-family: var(--font-body); -webkit-font-smoothing: antialiased;
+  }
+  body { display: flex; flex-direction: column; min-height: 100vh; }
+  a { color: inherit; }
+  code { font-family: var(--font-mono); font-size: 0.92em; }
+  ::selection { background: var(--stamp); color: #101b24; }
+
+  /* header */
+  header.masthead {
+    display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap;
+    padding: 1.1rem 1.6rem; border-bottom: 1px solid var(--border);
+    background: var(--panel);
+  }
+  header.masthead h1 {
+    font-family: var(--font-display); font-weight: 600; font-size: 1.35rem;
+    margin: 0; letter-spacing: 0.01em; text-wrap: balance;
+  }
+  header.masthead .rule { width: 1px; align-self: stretch; background: var(--border); }
+  header.masthead p { margin: 0; font-size: 0.82rem; color: var(--muted); max-width: 52ch; }
+  header.masthead .src {
+    margin-left: auto; font-family: var(--font-mono); font-size: 0.72rem;
+    color: var(--muted); text-align: right; line-height: 1.5;
+  }
+
+  /* shell */
+  .shell { display: flex; flex: 1; min-height: 0; }
+
+  nav.toc {
+    width: 258px; flex: none; background: var(--sidebar);
+    border-right: 1px solid var(--border);
+    padding: 1rem 0 2rem; overflow-y: auto;
+  }
+  nav.toc .group-label {
+    font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--muted); padding: 0.5rem 1.2rem 0.35rem;
+  }
+  nav.toc button.navlink {
+    display: block; width: 100%; text-align: left; background: none; border: none;
+    font-family: var(--font-body); font-size: 0.86rem; color: var(--text);
+    padding: 0.42rem 1.2rem 0.42rem 1.6rem; cursor: pointer;
+    border-left: 3px solid transparent;
+  }
+  nav.toc button.navlink:hover { background: var(--blueprint-soft); }
+  nav.toc button.navlink.active {
+    background: var(--blueprint-soft); border-left-color: var(--blueprint); font-weight: 600;
+  }
+  nav.toc button.navlink .chain-len {
+    display: block; font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); font-weight: 400;
+  }
+  nav.toc hr { border: none; border-top: 1px solid var(--border); margin: 0.6rem 1.2rem; }
+
+  nav.toc .legend {
+    margin: 1rem 1.2rem 0; padding: 0.8rem 0.9rem; border: 1px solid var(--border);
+    border-radius: 3px; background: var(--panel);
+  }
+  nav.toc .legend h4 {
+    margin: 0 0 0.5rem; font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--muted); font-weight: 600;
+  }
+  nav.toc .legend .row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.74rem; margin-bottom: 0.35rem; }
+  nav.toc .legend .swatch { width: 13px; height: 13px; flex: none; border-radius: 2px; border-width: 1.5px; border-style: solid; }
+  .sw-gate { background: #f4e4ce; border-color: #c77f32; }
+  .sw-zero { background: #f3dcd6; border-color: #b14b39; }
+  .sw-final { background: #dceee4; border-color: #3f8f6e; }
+  .sw-step { background: #e4ebef; border-color: #2e6e8e; }
+  .sw-openq { background: #f4e4ce; border-color: #b14b39; border-style: dashed !important; }
+  .sw-engine { background: #e6e1f0; border-color: #5a4c8a; }
+
+  main { flex: 1; min-width: 0; overflow-y: auto; padding: 1.6rem 2rem 4rem; }
+
+  .intro { max-width: 70ch; margin-bottom: 1.4rem; }
+  .intro h2 { font-family: var(--font-display); font-size: 1.25rem; margin: 0 0 0.5rem; text-wrap: balance; }
+  .intro p { font-size: 0.92rem; line-height: 1.6; color: var(--muted); margin: 0 0 0.6rem; }
+
+  /* tables */
+  .tablewrap { overflow-x: auto; margin-bottom: 1.4rem; }
+  table.grid { border-collapse: collapse; width: 100%; max-width: 1100px; background: var(--panel); }
+  table.grid caption {
+    text-align: left; font-family: var(--font-mono); font-size: 0.7rem; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem;
+  }
+  table.grid th, table.grid td {
+    border: 1px solid var(--border); padding: 0.5rem 0.7rem; font-size: 0.82rem;
+    text-align: left; vertical-align: top; line-height: 1.45;
+  }
+  table.grid thead th {
+    font-family: var(--font-mono); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--muted); background: var(--blueprint-soft); font-weight: 600;
+  }
+  table.grid tbody th { font-weight: 600; white-space: nowrap; }
+  table.grid td.num { font-family: var(--font-mono); text-align: right; white-space: nowrap; }
+  table.grid tr.hl td, table.grid tr.hl th { background: var(--blueprint-soft); }
+  table.grid td .tag {
+    font-family: var(--font-mono); font-size: 0.66rem; padding: 0.05rem 0.35rem; border-radius: 2px;
+    border: 1px solid var(--border); color: var(--muted); white-space: nowrap;
+  }
+  table.grid td .tag.a { border-color: var(--blueprint); color: var(--blueprint); }
+  table.grid td .tag.b { border-color: var(--ledger); color: var(--ledger); }
+  table.grid td .tag.bad { border-color: var(--caution); color: var(--caution); }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.9rem; max-width: 1100px; margin-bottom: 1.4rem; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 3px; padding: 0.9rem 1rem; }
+  .card .k { font-family: var(--font-mono); font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
+  .card .v { font-family: var(--font-display); font-size: 1.5rem; margin: 0.2rem 0 0.25rem; font-variant-numeric: tabular-nums; }
+  .card p { margin: 0; font-size: 0.8rem; color: var(--muted); line-height: 1.45; }
+  .card button.go {
+    margin-top: 0.6rem; background: none; border: 1px solid var(--blueprint); color: var(--blueprint);
+    font-family: var(--font-mono); font-size: 0.7rem; padding: 0.3rem 0.6rem; border-radius: 2px; cursor: pointer;
+  }
+  .card button.go:hover { background: var(--blueprint-soft); }
+
+  /* sheet */
+  .sheet-view { display: none; }
+  .sheet-view.active { display: block; }
+
+  .titleblock {
+    display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--border);
+    margin-bottom: 1.1rem; background: var(--panel);
+  }
+  .titleblock .field { padding: 0.6rem 0.9rem; border-right: 1px solid var(--border); }
+  .titleblock .field:last-child { border-right: none; }
+  .titleblock .field .k {
+    font-family: var(--font-mono); font-size: 0.63rem; text-transform: uppercase; letter-spacing: 0.07em;
+    color: var(--muted); display: block; margin-bottom: 0.15rem;
+  }
+  .titleblock .field .v { font-family: var(--font-mono); font-size: 0.82rem; color: var(--text); line-height: 1.35; }
+  .titleblock .field.wide { grid-column: span 4; border-top: 1px solid var(--border); border-right: none; }
+
+  .sheet {
+    background: var(--paper); border: 1px solid var(--paper-line); border-radius: 2px;
+    padding: 1.4rem 1.2rem 1rem; position: relative; overflow-x: auto;
+    background-image:
+      linear-gradient(var(--paper-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--paper-line) 1px, transparent 1px);
+    background-size: 28px 28px; background-position: -1px -1px;
+    background-color: var(--paper);
+  }
+  .sheet .corner { position: absolute; width: 14px; height: 14px; }
+  .sheet .corner.tl { top: 6px; left: 6px; border-top: 1.5px solid #7d8f8a; border-left: 1.5px solid #7d8f8a; }
+  .sheet .corner.tr { top: 6px; right: 6px; border-top: 1.5px solid #7d8f8a; border-right: 1.5px solid #7d8f8a; }
+  .sheet .corner.bl { bottom: 6px; left: 6px; border-bottom: 1.5px solid #7d8f8a; border-left: 1.5px solid #7d8f8a; }
+  .sheet .corner.br { bottom: 6px; right: 6px; border-bottom: 1.5px solid #7d8f8a; border-right: 1.5px solid #7d8f8a; }
+  .sheet pre.mermaid { margin: 0; background: transparent; min-width: 760px; color: #101b24; }
+
+  .notes { margin-top: 1.1rem; display: grid; grid-template-columns: 1.4fr 1fr; gap: 1.2rem; }
+  .notes h3 {
+    font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--muted); margin: 0 0 0.5rem;
+  }
+  .notes ul { margin: 0; padding-left: 1.1rem; font-size: 0.86rem; line-height: 1.55; }
+  .notes ul li { margin-bottom: 0.4rem; }
+  .notes .delta { border: 1px solid var(--border); background: var(--panel); padding: 0.8rem 0.9rem; border-radius: 3px; font-size: 0.86rem; line-height: 1.55; }
+  .notes .delta.openq { border-color: var(--caution); }
+  .notes .delta + .delta { margin-top: 0.8rem; }
+
+  h3.section {
+    font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--muted); margin: 1.6rem 0 0.6rem;
+  }
+
+  footer.doc-footer {
+    padding: 1rem 2rem 2rem; font-size: 0.76rem; color: var(--muted); border-top: 1px solid var(--border);
+  }
+  footer.doc-footer strong { color: var(--text); }
+
+  @media (max-width: 900px) {
+    .notes { grid-template-columns: 1fr; }
+    .titleblock { grid-template-columns: 1fr 1fr; }
+    .titleblock .field.wide { grid-column: span 2; }
+  }
+  @media (max-width: 720px) {
+    .shell { flex-direction: column; }
+    nav.toc { width: 100%; border-right: none; border-bottom: 1px solid var(--border); padding: 0.6rem 0; }
+    nav.toc .legend { display: none; }
+    main { padding: 1.2rem 16px 3rem; }
+    header.masthead { padding: 1rem 16px; }
+    header.masthead .src { margin-left: 0; text-align: left; }
+    header.masthead .rule { display: none; }
+    .titleblock { grid-template-columns: 1fr; }
+    .titleblock .field { border-right: none; border-bottom: 1px solid var(--border); }
+    .titleblock .field.wide { grid-column: span 1; }
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <h1>Leasehold Interest Rating Chains</h1>
+  <div class="rule"></div>
+  <p>Every gate, branch and terminal in the Commercial Property Leasehold Interest Coverage Form (CP 00 60): the record on a Leasehold Interest building, the interest-rate factor, and the four coverages (Tenant's Lease Interest, Bonus Payments, Improvements and Betterments, Prepaid Rent) across the five cause-of-loss forms. Checked against the built engine and ISO's rule XML as of 2026-10-06. CW 2023-08 V04 and CW 2026-06 are drawn together because all 32 Leasehold Interest rule files and their tables are byte-identical.</p>
+  <div class="src">Engine at 542f0e1 (stage2-interpreter; probed at d2f4383 on a clean copy)<br>Rule files: CommercialPropertyLeaseholdInterestCoverageFormRules · 20 coverage cells · 11 LeaseholdInterestFactorsFor{5..15}Percent<br>Companion: docs/CF-CHUNK11-GATE.md · CF-CHUNK11-GOLDEN-CASE.md · CF-CHUNK11-ZERO-CASES.md</div>
+</header>
+
+<div class="shell">
+  <nav class="toc" id="toc">
+    <button class="navlink active" data-target="overview">Overview<span class="chain-len">the record, the factor, four coverages</span></button>
+    <button class="navlink" data-target="cell">One cell in detail<span class="chain-len">Tenant's Lease x Group I</span></button>
+    <hr>
+    <div class="group-label">Reference</div>
+    <button class="navlink" data-target="table">The four coverages<span class="chain-len">exposure and rate source</span></button>
+    <hr>
+    <div class="group-label">Review</div>
+    <button class="navlink" data-target="review">Chunk 11 claims re-checked<span class="chain-len">16 claims · 3 out of date</span></button>
+
+    <div class="legend">
+      <h4>Reading the chains</h4>
+      <div class="row"><span class="swatch sw-gate"></span> gate / branch condition</div>
+      <div class="row"><span class="swatch sw-step"></span> computed factor</div>
+      <div class="row"><span class="swatch sw-final"></span> premium resolves</div>
+      <div class="row"><span class="swatch sw-zero"></span> zero, refusal or clamp</div>
+      <div class="row"><span class="swatch sw-openq"></span> silent gap / open question</div>
+      <div class="row"><span class="swatch sw-engine"></span> engine layer, not an ISO rule</div>
+    </div>
+  </nav>
+
+  <main id="main">
+
+    <!-- ============================= OVERVIEW ============================= -->
+    <section class="sheet-view active" id="view-overview">
+      <div class="intro">
+        <h2>A tenant's lease value, priced at the building's rate</h2>
+        <p>Leasehold Interest insures what a tenant loses when the lease is cancelled by a covered loss. The record lives on a building whose CovType is "Leasehold Interest" on a Commercial Property Policy; anything else silently deletes it. It always creates 20 cells: four coverages x five forms. Each coverage turns its monthly amount into a net exposure, and each cell multiplies that exposure by a rate: the building's own Group I / II cause-of-loss adjustment, Leasehold's own Broad and Special tables, or the building's earthquake adjustment.</p>
+        <p>Only Tenant's Lease Interest is discounted: its monthly advantage is turned into a present value with an annuity factor chosen by the interest rate (5% to 15%). The other three are monthly amount x months remaining, averaged at inception and expiry. All 32 rule files and the six tables are byte-identical in CW 2023-08 V04 and CW 2026-06; chunk 11's Oregon golden case still gives $268 / $30. Probes ran in OR, OH and FL, and in OR at 2027-01-01.</p>
+      </div>
+
+      <div class="cards">
+        <div class="card">
+          <div class="k">Factor files</div>
+          <div class="v">Choose nothing</div>
+          <p>The 11 "Factors for N Percent" files only attach a printed page. The factor comes from two tables keyed on the interest-rate text; an off-table rate now refuses, as ISO does.</p>
+          <button class="go" data-target="cell">See the cell →</button>
+        </div>
+        <div class="card">
+          <div class="k">Special</div>
+          <div class="v">$0 without theft</div>
+          <p>Special prices $0 unless a theft exclusion is on the building (the factor's else-branch is 0.0). ISO confirmed it for 2026; CW 2027-01 fixes it ($53).</p>
+          <button class="go" data-target="table">See the coverages →</button>
+        </div>
+        <div class="card">
+          <div class="k">Group II</div>
+          <div class="v">$0 in 36 states</div>
+          <p>Group II reads the building's adjustment, so where <code>RatingTypeBasicGroupII</code> is required and blank, every Leasehold Group II cell is $0 (OH $86 / $91 and FL $138 when sent).</p>
+          <button class="go" data-target="review">See the checks →</button>
+        </div>
+      </div>
+
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    st(["Structure record<br/>CW 2023-08 V04 = CW 2026-06, byte-identical"]) --> att{"PolicyType = Commercial Property Policy<br/>AND CovType = Leasehold Interest?"}
+    att -->|"No"| del["LI record removed<br/>no message, no refusal"]:::zero
+    att -->|"Yes"| rec["LI record kept<br/>Initialize appends all 20 grid cells"]:::step
+    rec --> pct{"PercentInterest?"}
+    pct -->|"5% to 15%"| tab["A = LeaseholdInterestAnnuityConstant<br/>v = LeaseholdInterestDiscFactor<br/>CW rows only, no state files"]:::step
+    pct -->|"blank"| pz["A = 0, v = 0<br/>Tenants net 0, rated"]:::zero
+    pct -->|"anything else"| pref["Refused: SingleResult no row<br/>same as ISO since C28-05"]:::eng
+    tab --> mark["Structure attaches FactorsFor N Percent<br/>form-page marker, no premium"]:::step
+    rec --> mon{"LeaseExpDate set AND<br/>lease overlaps the policy?"}
+    mon -->|"No"| m0["months at inception / expiry = 0"]:::zero
+    mon -->|"Yes"| m["m = 12 x year gap + month gap<br/>minus 1 if expiry day is earlier"]:::step
+    tab --> tl["Tenants Lease: nf = r4(A x (1 - v^m))<br/>net = r0(gross x nf), inception and expiry"]:::step
+    m --> tl
+    m --> oth["Bonus / Improvements / Prepaid Rent<br/>net = monthly x m, no A, no v"]:::step
+    tl --> avg["each net = r0((inception + expiry) / 2)<br/>only if its amount &gt; 0, else 0"]:::step
+    oth --> avg
+    avg --> grid{"Which cells are on?<br/>each needs its own amount not 0"}
+    grid -->|"BGI, BGII: always"| r12["rate = Structure COL adjustment<br/>before coinsurance, LOI, deductible"]:::step
+    grid -->|"Broad: CauseOfLoss = Broad"| rb["LeaseholdInterestBroadSpecialRate<br/>by construction"]:::step
+    grid -->|"Special: CauseOfLoss = Special"| rs["SpecialFormIncldgTheft rate (constr, Apt)<br/>x theft factor 0.96 Apt / 0.86 other"]:::step
+    grid -->|"EQ: EQCovIndicator not<br/>No Coverage / Not Applicable"| re["Structure EQCauseOfLossAdjustment"]:::step
+    rs -.- s0["No Theft Exclusion: factor 0.0<br/>Special $0 (OI-101); CW 2027 uses 1.0"]:::openq
+    r12 -.- g2["~36 states: no RatingTypeBasicGroupII<br/>Structure BGII adj 0, LI BGII $0, rated"]:::openq
+    re -.- eqb["blank EQCovIndicator counts as elected"]:::openq
+    r12 --> prem["cell premium = r0 chain:<br/>net/100 x rate x PackageMod x IRPM x cyber"]:::final
+    rb --> prem
+    rs --> prem
+    re --> prem
+    prem --> tot["LI total = sum of the 20 cells<br/>TotCoveredLeaseholdIntNet is info only"]:::final
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class att,pct,mon,grid gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>A Group I / II cell is on whenever its coverage amount is not 0; Broad and Special also need the building's cause of loss; Earthquake is on unless "No Coverage" / "Not Applicable", including when blank.</li>
+            <li>Bonus Payments ignores the interest rate entirely, so a lease to 2099 makes it grow linearly (171,600); Tenant's Lease levels off at about 125 x the monthly amount at 10%.</li>
+            <li>The earthquake cell is the only one that skips the package modifier and IRPM.</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>Still $0 with no refusal:</strong> a blank interest rate (Tenant's Lease only), a blank lease expiry, a lease already ended (two date messages), a negative amount (cell on at $0), Special without a theft exclusion, and Group II with no <code>RatingTypeBasicGroupII</code> in the states that require it. No C28-17 check covers a Leasehold field, and the outcome checks skip non-"Building" structures. A missing Group II territory refuses, but the message names the building's Group II cell.</div>
+      </div>
+    </section>
+
+    <!-- ============================= CELL ============================= -->
+    <section class="sheet-view" id="view-cell">
+      <div class="titleblock">
+        <div class="field"><span class="k">Record</span><span class="v">CommercialPropertyLeaseholdInterestCoverageForm on a Structure (CovType Leasehold Interest, Commercial Property Policy; else removed, StructureRules :1530)</span></div>
+        <div class="field"><span class="k">Editions</span><span class="v">V04 = 2026 (32 files, 6 tables); V01 lacks 7 null guards; CW 2027-01 rewrites the parent</span></div>
+        <div class="field"><span class="k">Chain</span><span class="v">ErcSetRatesAndFactors :387, 29 setters: building COL adjustments :419 / :424 / :473; Broad :429; Special :549 x theft :599; annuity :483; discount :505; months :661; complements (Power) :826 / :862; net factors :898 / :917 (r4); nets :936–:1084</span></div>
+        <div class="field"><span class="k">Tables</span><span class="v">Annuity constant and discount factor (11 rows each, 5%–15%; match v = (1+i)^(−1/12), A = v/(1−v)) · Broad / Special rate 0.023 / 0.012 · Special incl. theft 0.029 / 0.017 apt, 0.047 / 0.035 other · theft factor 0.96 / 0.86</span></div>
+        <div class="field wide"><span class="k">Premium</span><span class="v">Cell: r0(r3(rate) x net/100) x PackageMod x IRPM x cyber (EQ: cyber only). Tenant's Lease net = r0(average of r0(gross x r4(A x (1 − v^m))) at inception and expiry).</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    cin(["Tenants Lease x Basic Group I cell<br/>TenantsLeaseCoverageBasicGroupICoverageRules"]) --> cgate{"TenantsGrossLeaseholdInt not 0?"}
+    cgate -->|"No"| off["CoverageOnPolicyIndicator 0<br/>Premium = 0.0, cell off"]:::zero
+    cgate -->|"Yes, even if negative"| on["CoverageOnPolicyIndicator 1"]:::step
+    on --> net["TenantsNetLeaseholdInt from the LI record<br/>0 if gross not &gt; 0"]:::step
+    rate["BasicGroupICauseOfLossAdjmt =<br/>copy of Structure's COL adjustment"]:::step --> p1
+    net --> p1["p1 = r0(net / 100 x BGI COL adj)"]:::step
+    p1 --> p2["p2 = r0(p1 x policy PackageModFactor)"]:::step
+    p2 --> p3["p3 = r0(p2 x policy IRPMFactor)"]:::step
+    p3 --> p4["p4 = r0(p3 x CyberIncidentExclusionFactorBGI)"]:::step
+    p4 --> p5["Premium = r0(p4 x Cyber COL-exceptions factor BGI)"]:::final
+    p5 --> ind{"Premium not 0?"}
+    ind -->|"Yes"| cnt["PremiumIndicator 1<br/>counted in LI total"]:::final
+    ind -->|"No"| nc["PremiumIndicator 0<br/>$0, outcome rated"]:::zero
+    p5 -.- diff["Other forms, same shape: BGII adj + BGII cyber;<br/>Broad = BroadRate; Special = Special adj;<br/>EQ = EQ adj with NO PackageMod / IRPM"]:::step
+    p5 -.- fl["FL BGII override: r0(r3(BGII adj + Sinkhole)<br/>x net/100) x PackageMod x IRPM, no cyber"]:::openq
+    p5 -.- subs["Bonus / Improvements / Prepaid Rent:<br/>same file, own gate field and own net"]:::step
+    p1 -.- golden["Engine, OR golden: r0(1,119.58 x 0.239) = 268<br/>ISO-confirmed in chunk 11"]:::eng
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class cgate,ind gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>Golden case (OR, 10%, gross 1,500, 120 / 108 months): factors 77.0562 / 72.2213, net 111,958, Group I $268, Group II $30. All 20 intermediates match chunk 11's model.</li>
+            <li>Group I / II read the building's rate before coinsurance, LOI and deductible, so anything that zeroes the building's Group II rate zeroes all four Leasehold Group II cells.</li>
+            <li>A blank interest rate gives A = v = 0 and a $0 Tenant's Lease; an off-table rate (4%, 16%, 10.5%) refuses, as ISO does.</li>
+            <li><code>ExpDate</code> is always EffDate + 1 year; months are non-zero only when the lease overlaps the policy.</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>Florida</strong> (its 2024-12 package on CW 2023 V04) overrides only the four Group II cells: no cyber factors, and a sinkhole term that can never apply to Leasehold Interest, so FL Group II = r0(r3(adj II) x net/100) x package x IRPM ($138). No other state files Leasehold rules (PR is out of scope).</div>
+      </div>
+    </section>
+
+    <!-- ============================= TABLE ============================= -->
+    <section class="sheet-view" id="view-table">
+      <div class="intro">
+        <h2>The four coverages</h2>
+      </div>
+      <div class="tablewrap">
+        <table class="grid">
+          <thead><tr><th>Coverage</th><th>Input</th><th>Exposure (net)</th><th>Rate per form</th></tr></thead>
+          <tbody>
+            <tr><th>Tenant's Lease Interest</th><td>Monthly gross leasehold interest, interest rate, lease dates</td><td>Average of gross x r4(A x (1 − v^m)) at inception and expiry: <strong>the only discounted one</strong></td><td rowspan="4">Group I / II: the building's cause-of-loss adjustment · Broad: Leasehold Broad table (0.023 / 0.012) · Special: Leasehold Special table x the building's theft factor (0.0 without a theft exclusion) · EQ: the building's EQ adjustment</td></tr>
+            <tr><th>Bonus Payments</th><td>Monthly bonus</td><td>Monthly x months, averaged; no interest rate</td></tr>
+            <tr><th>Improvements and Betterments</th><td>Monthly amount</td><td>Monthly x months, averaged</td></tr>
+            <tr><th>Prepaid Rent</th><td>Monthly prepaid rent</td><td>Monthly x months, averaged</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="intro"><p>Apartment status (derived from the building's class) changes both the Special rate (0.029 against 0.047) and the theft factor (0.96 against 0.86). A blank set of amounts turns every cell off with ISO's message "At least one Leasehold Interest limit is required". CW 2027-01 adds Mass Timber, reads Broad from the general Broad table and Special from the time-element table, and makes the theft factor's else-branch 1.0 (OR 2027-01-01: Group I $67, Special $53, both ISO's 2027 figures).</p></div>
+    </section>
+
+    <!-- ============================= REVIEW ============================= -->
+    <section class="sheet-view" id="view-review">
+      <div class="intro">
+        <h2>Chunk 11's claims, re-checked</h2>
+        <p>No Leasehold Interest chain was ever drawn, so this table re-checks what chunk 11 recorded. Chunk 11's scripts 114_–117_, 119_ and 120_ all still match.</p>
+      </div>
+      <div class="tablewrap">
+        <table class="grid">
+          <thead><tr><th>#</th><th>Chunk 11 said</th><th>Engine / XML now shows</th><th>Kind</th></tr></thead>
+          <tbody>
+            <tr><th>1</th><td>Off-table interest rate: ISO refuses, we price $0 (OI-103)</td><td>The engine now refuses too (C28-05)</td><td>out of date</td></tr>
+            <tr><th>2</th><td>Florida runs on CW 2023 V01, without the null guards</td><td>FL resolves to CW 2023 V04, which has them (the groups E–F addendum already says so)</td><td>out of date</td></tr>
+            <tr><th>3</th><td>"Seven tiers" of zero</td><td>The unmatched-rate tier now refuses; a new silent tier: the building's Group II adjustment 0 with no <code>RatingTypeBasicGroupII</code></td><td>out of date</td></tr>
+            <tr><th>4</th><td>Florida's Group II formula: not exercised</td><td>Now exercised: $138 = r0(0.121 x 1,137.51); its sinkhole term is unreachable for Leasehold</td><td>missing</td></tr>
+            <tr><th>5</th><td>Special without a theft exclusion = $0; ISO 2027 = $53</td><td>Confirmed for 2023 and 2026; the engine now gives $53 at OR 2027-01-01</td><td>clarified</td></tr>
+            <tr><td colspan="4">Confirmed: golden case $268 / $30 with every intermediate; the 11 factor files are inert form markers; the record survives only on a Leasehold Interest building on a Commercial Property Policy (else silently deleted); only Tenant's Lease is discounted; the total net is a sum nothing rates off; 0^0 → 1 gives $0 as ISO does; a blank lease effective date prices from the earliest date; a blank EQ indicator switches the EQ cells on; the six tables are identical and filed by no state; only FL (and PR) file Leasehold rules; the tables match the annuity formulas; IRPM and package at policy depth, the EQ cell skips them.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="doc-footer">
+  Sources: the built engine (<strong>cf_engine</strong> / interpreter at 542f0e1; probed at d2f4383 on a clean archive copy), offline on 2026-10-06 with no calls to ISO: OR on CW 2026-06, OH on CW 2023 V04 and CW 2026-06, FL (override state), and OR at 2027-01-01 for the CW 2027 watch-item. ISO rule XML is under <code>F:\ISO_ERC_Files\CF</code>. Chunk 11's records are <code>docs/CF-CHUNK11-*.md</code>.
+</footer>
+
+<script>
+  (function () {
+    var toc = document.getElementById('toc');
+    var main = document.getElementById('main');
+
+    function activate(target) {
+      var views = main.querySelectorAll('.sheet-view');
+      for (var i = 0; i < views.length; i++) views[i].classList.remove('active');
+      var view = document.getElementById('view-' + target);
+      if (view) view.classList.add('active');
+
+      var links = toc.querySelectorAll('.navlink');
+      for (var j = 0; j < links.length; j++) {
+        links[j].classList.toggle('active', links[j].getAttribute('data-target') === target);
+      }
+      main.scrollTop = 0;
+      window.scrollTo(0, 0);
+    }
+
+    document.addEventListener('click', function (e) {
+      var btn = e.target.closest('button[data-target]');
+      if (btn) activate(btn.getAttribute('data-target'));
+    });
+
+    var hash = location.hash.slice(1);
+    if (hash && document.getElementById('view-' + hash)) activate(hash);
+  })();
+</script>
+
+<style>.mermaid-rendering .sheet-view{display:block!important}</style>
+<script type="module">
+  // Render every diagram once, with all sheets briefly visible so hidden tabs get real sizes.
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({ startOnLoad: false, securityLevel: "strict", flowchart: { wrappingWidth: 260 } });
+  document.documentElement.classList.add("mermaid-rendering");
+  try { await mermaid.run({ querySelector: "pre.mermaid" }); }
+  finally { document.documentElement.classList.remove("mermaid-rendering"); }
+</script>
+</body>
+</html>
