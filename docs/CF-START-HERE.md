@@ -19,7 +19,7 @@ decisions at the gate). Full gate clean: `206_` (2,074), `157_ --all` 293 of 293
 **Chunks 1 to 28 are all gated; the build order has no chunk 29.** What is left is outside the plan: the
 Property side of the app (since 2026-10-06, `096f2b0`: `start.bat`, choose Commercial Property, a state; one office
 risk rated and compared with ISO; 46 states offline, 46 of 46 equal ISO live once the sample stopped attaching Florida's withdrawn CP 10 75; the engine
-side is **OI-133**, narrowed to FL's two cyber exclusion tables, a state-scoped fix proposed, awaiting the user's go;
+side, **OI-133**, fixed and closed (FL's cyber exclusion tables read as filed; `259_` 5 of 5 equal ISO live);
 status page "Property in the app"), option (c) of Set G (a neutral shared core, worth it as that app grows), the parking lot (OI-117), and refreshing the corpus when ISO
 files newer packages (`242_`, then `255_ --write`; C28-19 refuses any state that falls behind).
 

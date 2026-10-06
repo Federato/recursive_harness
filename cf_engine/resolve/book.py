@@ -118,10 +118,24 @@ class CFResolvedBook(ResolvedBook):
     #: falling back to countrywide (MA, TN, VT; C28-03, `246_`).
     NO_EMPTY_FALLBACK = frozenset({"EQSubLimitDeductibleTierCWTable"})
 
+    #: (state, table) read as filed even when empty: the state withdrew the table's form (`Pages` Status "D"), and ISO
+    #: reads such a table as filed and refuses, where for an offered form it fills an empty state table from countrywide
+    #: (OI-133, 2026-10-06, `258_`: FL CP 10 75 and CP 10 76 refused live; VT vacancy and NY off-premises fall back).
+    #: Florida withdrew the Cyber Incident Exclusion forms; these are their five tables, all empty in FL. Narrow by
+    #: design: moving every stored request into 15 states, these are the only withdrawn-form tables any rating reaches.
+    NO_EMPTY_FALLBACK_STATE = frozenset({
+        ("FL", "CyberIncidentExclusionFactors"),
+        ("FL", "CyberIncidentExclusionWithEnsuingCauseOfLossExceptionsFactors"),
+        ("FL", "CyberIncidentExclusionFactorMortgageholdersErrorsAndOmissions"),
+        ("FL", "CyberExclCoverageExclusionIndicatorCode"),
+        ("FL", "CyberExclSpecifiedPerilCoverageExclusionIndicatorCode"),
+    })
+
     def table(self, name: str, kind: str = "Rate") -> Table:
         if self.state.has(kind, name):
             own = self.state.table(kind, name)
             if (not own.rows and name not in self.NO_EMPTY_FALLBACK
+                    and (self.juris, name) not in self.NO_EMPTY_FALLBACK_STATE
                     and self.parent and self.parent.has(kind, name)):
                 upstairs = self.parent.table(kind, name)
                 if upstairs.rows:
