@@ -1,6 +1,6 @@
 # ISO Rating Test Console: the plan
 
-**Status: PLANNED 2026-10-06, 1 of 38 tasks** (TC-01, the decisions, done). Source: the design package `Design brief questionnaire.zip` (6 Oct 2026):
+**Status: IN PROGRESS 2026-10-06, 5 of 38 tasks.** RC-0 done (decisions, parity list, call rules, GL step values, path census). **Before RC-1: the user's calls on TC-02's 9 uncovered jobs and TC-05's 6 brief mismatches.** Source: the design package `Design brief questionnaire.zip` (6 Oct 2026):
 the hi-fi prototype `ISO-Rating-Test-Console.html`, seven wireframes, and `readiness-matrix-integration.md`. The
 user's ask: build the console into the app, and **remove the current testing pages**. Nothing here is built yet.
 
@@ -30,7 +30,7 @@ home in the console, so the app never loses a capability in between.
 | Brief needs | Exists today | Gap |
 |---|---|---|
 | A store of ISO answers | `results/cf-raas/` (Property, 4,817 files: requests, responses, refusals), `results/runs-*.jsonl` (`scripts/runstore.py`, GL runs) | Two shapes, no index, no request hash, no content version, no staleness |
-| Step-level ISO values | Property responses carry every intermediate field (rates, factors, sub-premiums) | GL: unconfirmed (TC-04) |
+| Step-level ISO values | Property responses carry every intermediate field (rates, factors, sub-premiums) | GL too: 276 step fields in a stored NJ response (TC-04) |
 | Our step trace | `Interpreter.trace` + every data-tree field the rules write | A **worksheet map** aligning our nodes to ISO's fields by stable ID |
 | Dimensions from ISO's catalog | `scripts/variants.py` (`Declared`, GL), `_state_inputs.py` (CP territories) | CP dimension catalog |
 | Pairwise + edges | `scripts/qa.py` (`_allpairs`, tiers T0-T3, cost estimate) | Wired to the builder and queue |
@@ -63,15 +63,15 @@ home in the console, so the app never loses a capability in between.
 
 ## Milestone 1: the foundations (no screens)
 
-### RC-0 · Decisions and discovery (5 tasks) · 1 of 5 done
+### RC-0 · Decisions and discovery (5 tasks) · 5 of 5 done
 
 | # | Task | Status | Notes |
 |---|---|---|---|
 | TC-01 | **Decisions D1-D7** recorded, with dates | ✅ 2026-10-06 | The user's, one at a time (above) |
-| TC-02 | **Inventory of the old pages**: every job `/tester`, `/tests`, `/review` and `/` do, each mapped to the console screen that will do it (the parity list RC-6 is gated on) | ⬜ | |
-| TC-03 | **The cap in practice** (D2: 250 = 150 / 50 / 50): whether errors are charged (the brief assumes a 504 is) and when the day resets, so the ledger counts calls as ISO does | ⬜ | |
-| TC-04 | **GL step values**: does a GL RaaS response carry intermediate steps the way Property's does? If not, Trace Diff for GL compares only what ISO returns | ⬜ | Decides Trace Diff's GL scope |
-| TC-05 | **Path catalog census**: every rating path per (line, state, coverage) the engine can walk, from the ERC rules; the denominator the matrix needs | ⬜ | Like the chunk censuses |
+| TC-02 | **Inventory of the old pages**: every job `/tester`, `/tests`, `/review` and `/` do, each mapped to the console screen that will do it (the parity list RC-6 is gated on) | ✅ 2026-10-06 | [`TC-02-PARITY.md`](TC-02-PARITY.md): 36 jobs; 9 the plan doesn't cover yet, each the user's call before RC-6 |
+| TC-03 | **The cap in practice** (D2: 250 = 150 / 50 / 50): whether errors are charged (the brief assumes a 504 is) and when the day resets, so the ledger counts calls as ISO does | ✅ 2026-10-06 | The old 60 / 150 (A6) was our own budget, not ISO's; ISO's API console states no quota; the PDF is unreadable here. **Ledger rule: every request sent counts as one call, refusals and errors included** (931 failed calls on record, almost all 400s with a body); the day resets at 00:00 ET. Open for ISO: the real limit, and whether errors are charged |
+| TC-04 | **GL step values**: does a GL RaaS response carry intermediate steps the way Property's does? If not, Trace Diff for GL compares only what ISO returns | ✅ 2026-10-06 | **Yes**: a stored NJ GL response carries 1,203 values in 276 fields, every step (`BaseRate`, `ILF`, `FinalILF`, `DeductibleFactor`, `FinalRate`, `BasicLimitPremium`, `CoveragePremium`, the experience-rating factors). Trace Diff goes step by step for both lines |
+| TC-05 | **Path catalog census**: every rating path per (line, state, coverage) the engine can walk, from the ERC rules; the denominator the matrix needs | ✅ 2026-10-06 | [`TC-05-PATHS.md`](TC-05-PATHS.md): CP 17 paths in 6 coverages (n/a: BCEG in NY, DC; PR); GL ~35 paths in 5 coverages across 51 jurisdictions (n/a: size of risk in 16, state exceptions where none filed). **Six places the brief's GL columns don't match ISO's content**, the user's calls before TC-09 |
 
 ### RC-1 · The data layer (8 tasks)
 
@@ -135,7 +135,7 @@ answers without a call.
 |---|---|---|---|
 | TC-26 | **Dimension catalog** from ISO's own files: GL from `variants.Declared`; CP from its domains and state inputs (`_state_inputs`) | ⬜ | |
 | TC-27 | **Test Plan Builder**: line, states (no waves, D3), dimension chips; live counters (cartesian, Tier 0, pairwise, edges, already verified, projected calls and days) | ⬜ | Reuses `qa._allpairs` |
-| TC-28 | **Tier 0 invariants** (zero calls): premium rises with limits, deductibles never raise premium, minimum premium floors hold, no null steps, every valid state / class resolves | ⬜ | From `qa.py` T0 |
+| TC-28 | **Tier 0 invariants** (zero calls): premium rises with limits, deductibles never raise premium, minimum premium floors hold, no null steps, every valid state / class resolves | ⬜ | New work: `qa.py`'s T0 is a live smoke run, not an invariant tier (TC-02) |
 | TC-29 | **Commit a plan** → queue, with the confirmation dialog (calls, lane, ETA, dedupe); prefilled from the Matrix's "Build a test plan from these gaps" | ⬜ | |
 | TC-30 | **Dispatcher**: ordered by information value (untested path, changed content, edge, stale, pairwise), within lanes and the daily cap; dedupe against the store before every call | ⬜ | |
 | TC-31 | **Queue & Run Log** screen: lanes, dispatch queue, the run log (sent, match, mismatch, dedupe hit, error, override, reset) | ⬜ | |
