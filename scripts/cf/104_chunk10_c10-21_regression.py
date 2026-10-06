@@ -376,6 +376,11 @@ MACHINERY = [
     ("239_chunk27_rc2.py", "chunk 27 RC-2: chunks 1-8 golden cases, every message in the register (M-001..M-006)"),
     ("240_chunk27_rc3.py", "chunk 27 RC-3: CA / FL Legal Liability, TX wind / hail, DC IL NY BCEG, MT NY Group II symbol, as predicted"),
     ("241_chunk27_rc4.py", "chunk 27 RC-4: theft exclusion on the drone / Dependent Properties; FL and WV Ordinance or Law, as predicted"),
+    # Chunk 28 (registered at its gate, C28-22): the offline tests that can fail. The measurements (245_-247_, 249_,
+    # 251_-256_) always exit 0 or replay every stored request; their findings are pinned by 206_'s snapshot.
+    ("248_chunk28_c28-06_probes.py", "chunk 28 C28-06: 17 refusal probes refuse at the table ISO named (P5 / P9 built as written)"),
+    ("250_chunk28_c28-07_oi123_probe.py", "chunk 28 C28-07: the OI-123 probe, as predicted"),
+    ("257_chunk28_c28-19_older_package.py", "chunk 28 C28-19: a known-older package refuses, nothing else; 276 recorded state-dates"),
     # Sync checks (2026-10-01, user: "always in sync"). The deployed page is checked each turn by the Stop hook.
     ("check_status_docs.py --no-deployed", "status docs agree: task lists vs CF-BUILD-STATUS.html RC labels, tags, plan rows, START-HERE"),
     ("check_premium_census.py", "every in-force premium writer is a SetPremium rule (selftest: AK 2020's ErcRate writers are seen)"),

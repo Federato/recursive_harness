@@ -78,6 +78,10 @@ def sewer_na():
     return sub
 
 
+#: probes whose point is a deliberately wrong input: not given the state's real Group II inputs (see main)
+AS_WRITTEN = {"P5", "P9"}
+
+
 def g2_portland():
     sub = g7.submission("Basic")
     (sub["CommercialPropertyTable"]["CommercialProperty"][0]["CommercialPropertyLocationTable"]
@@ -166,7 +170,9 @@ def main():
     fail, reqs = [], {}
     for i, (cid, (j, label, build, table)) in enumerate(cs.items(), 1):
         progress(i, len(cs), f"ours {cid}")
-        req = ints(cmp.state_req(j, build()))
+        # built as written: since C28-17 state_req fills each state's real Group II inputs, which overwrote P9's
+        # deliberate territory and moved P5's refusal (found at the chunk 28 gate); ISO confirmed these requests unfilled
+        req = ints(cmp.state_req(j, build(), localize=cid not in AS_WRITTEN))
         reqs[cid] = req
         try:
             cmp.rate(req)

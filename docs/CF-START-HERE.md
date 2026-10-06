@@ -11,11 +11,21 @@ page and the deployed page agree with them; on drift it hands the problems back 
 
 ---
 
-## Pick up here (set 2026-10-06): chunk 28 OPEN at 21 of 22, Sets A to G done
+## Pick up here (set 2026-10-06): chunk 28 GATED, 22 of 22; every planned chunk gated
+
+**Chunk 28 GATED 2026-10-06** ([`CF-CHUNK28-GATE.md`](CF-CHUNK28-GATE.md)): Sets A to G, each engine change
+with the user's go; all 34 newer ISO packages in; OI-116 closed and OI-117 to the parking lot (the user's
+decisions at the gate). Full gate clean: `206_` (2,074), `157_ --all` 293 of 293, `104_ --gate` 173.
+**Chunks 1 to 28 are all gated; the build order has no chunk 29.** What is left is outside the plan: a
+Property app or screen (none exists; the published Windows app is GL only), option (c) of Set G (a neutral
+shared core, for when that app is built), the parking lot (OI-117), and refreshing the corpus when ISO
+files newer packages (`242_`, then `255_ --write`; C28-19 refuses any state that falls behind).
+
+## Earlier (set 2026-10-06): chunk 28 at 21 of 22, Sets A to G done
 
 **C28-21 done 2026-10-06 (the user's choice (b))**: the Property steps around a rating moved out of GL's interpreter
 into `cf_engine/run_checks.py` (`PropertyRunChecks`, via `CFResolvedBook.run_hooks`); nothing moved (snapshot clean, no
-rebaseline; 293 of 293; full regression clean). **Next: C28-22, file `CF-CHUNK28-GATE.md`.**
+rebaseline; 293 of 293; full regression clean). Then C28-22, the gate (above).
 
 **C28-20 done 2026-10-06: all 34 packages in** (batches `CF/20270101` with countrywide `CF_CW_20270101_V01`,
 `CF/20270201`, `CF/20270301`, `CF/20270401`, `CF/20270601`, and IL 20261001 in `CF/20260601`). ISO and ours name the

@@ -10,7 +10,7 @@ answers, run it at ISO, then propose the change. After a change: `206_ --check`,
 (the engine changed), and the item's own ISO cases again. Live ISO at **2026-09-17** (OI-105: the only date where ISO and
 the corpus use the same package in all 46 states). Puerto Rico excluded. Progress to `results/cf-raas/logs/`.
 
-**Status: OPEN 2026-10-06, 21 of 22** (all seven sets). **Sets A to G are done** (Set F 2026-10-06: C28-19 built, C28-20 all 34 packages in) (OI-99, 103, 105, 106, 112, 113, 114, 123, 125, 126 closed; OI-117 open; OI-116 a question for ISO). **Next: C28-22, file the chunk 28 gate.**
+**Status: GATED 2026-10-06, 22 of 22** ([`CF-CHUNK28-GATE.md`](CF-CHUNK28-GATE.md)): Sets A to G done, each engine change with the user's go; OI-99, 103, 105, 106, 112, 113, 114, 116, 123, 125, 126 closed; OI-117 in the parking lot. Full gate clean.
 
 ## The feature sets, and what each buys
 
@@ -84,4 +84,4 @@ still needs the user's go, one item at a time.
 | # | Task | Status | Notes |
 |---|---|---|---|
 | C28-21 | **Set G, housekeeping**: only if the user asks, and never in the same change as a rating fix | ✅ 2026-10-06 | **Done 2026-10-06, the user's choice (b)**: the Property steps around a rating (C28-19 older package, C28-17 silent zeros, OI-112 dropped inputs, OI-125 look-ahead, OI-113 refer to company) and the two refusal types moved out of GL's interpreter into `cf_engine/run_checks.py` (`PropertyRunChecks`), supplied by `CFResolvedBook.run_hooks`; the interpreter keeps one neutral hook point (before / after / finish) and no Property logic. Moved unchanged: snapshot clean with no rebaseline (2,074 requests, 1,257,442 fields), `157_ --all` 293 of 293, full regression clean (170; `213_`'s engine-change ledger given today's files). No Property script changed but `257_`'s import. Option (c), a neutral shared core, left for when a Property app is built. Committed alone, after Set F |
-| C28-22 | **File `CF-CHUNK28-GATE.md`**: each item fixed, documented as matching ISO, or left open with the user's decision recorded | ⬜ | |
+| C28-22 | **File `CF-CHUNK28-GATE.md`**: each item fixed, documented as matching ISO, or left open with the user's decision recorded | ✅ 2026-10-06 | [`CF-CHUNK28-GATE.md`](CF-CHUNK28-GATE.md): every item fixed or matching ISO, but OI-116 (closed) and OI-117 (parking lot), the user's decisions at the gate. `206_` clean (2,074), `157_ --all` 293 of 293, `104_ --gate` clean (173). `248_` P5 / P9 restored to their written requests; `248_`, `250_`, `257_` registered in `104_` |
