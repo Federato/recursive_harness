@@ -211,6 +211,14 @@ class InvalidInput(InterpretError):
     """
 
 
+class OlderPackage(InterpretError):
+    """A Property request refused because ISO is known to rate its date on a package the corpus lacks (chunk 28 C28-19).
+
+    Ours would rate on an older package and be known not to be ISO's answer; refused by the user's decision (2026-10-06).
+    Lifted by importing the package (C28-20).
+    """
+
+
 class Interpreter:
     """Executes one resolved rulebook against one data tree."""
 
@@ -891,6 +899,12 @@ class Interpreter:
                       rule_file="Overall Rating")
         self.note("entry", f"Default block of {self.state_program.pkg_id}",
                   "Overall Rating.Rule.xml")
+        if getattr(self.book, "older_package_check", False) and not getattr(self, "_lookahead", False):
+            try:
+                self._refuse_older_package()     # first: a known-older package rates nothing (C28-19)
+            except OlderPackage as exc:
+                self.outcome = {"status": "refused", "reasons": [{"kind": "older package", "detail": str(exc)[:300]}]}
+                raise
         dropped = getattr(self.book, "ignored_inputs", frozenset())
         if dropped:
             self._ignore_inputs(data, dropped)
@@ -955,6 +969,15 @@ class Interpreter:
                             raise InvalidInput(
                                 f"{tag}.{field} is missing, and {cov} is attached and priced $0 because of it. ISO "
                                 f"rates this silently at $0; refused by decision (chunk 28 C28-17)", "C28-17", tag)
+
+    def _refuse_older_package(self) -> None:
+        """Refuse a date ISO is known to rate on a package the corpus lacks (C28-19)."""
+        got = self.book.older_than_iso()
+        if got:
+            ours, iso = got
+            raise OlderPackage(
+                f"{self.book.juris} on {self.book.asof}: ISO rates on {iso}; the corpus holds only {ours}, an older "
+                f"package. Refused by decision until {iso} is imported (chunk 28 C28-19)", "C28-19", ours)
 
     def _refer_to_company(self, data: Node) -> None:
         """Minimum premium is a company input (OI-113): refer when one is supplied and the total is below it."""

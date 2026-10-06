@@ -73,12 +73,12 @@ def main() -> int:
     import raas as raas_mod
     client = raas_mod.RaaS()
     cs = cases(a.state, a.date)
-    fails = []
+    fails, expected = [], []
     for i, (cid, d, date) in enumerate(cs, 1):
         req = {"header": {}, "body": {"SchemeKeys": {"ProductName": d["SchemeKeys"]["ProductName"],
                                                      "EffectiveDateTime": f"{date}T00:00:00"},
                                       "CommercialProperty": d["CommercialProperty"]}}
-        base = RES / f"chunk28_c28-20_{a.state}_{cid}"
+        base = RES / f"chunk28_c28-20_{a.state}_{date.replace('-', '')}_{cid}"   # dated: one state is run at several dates
         Path(f"{base}_request.json").write_text(json.dumps(req, indent=2), encoding="utf-8")
         mine = ours_pkg(a.state, date)
         iso_err = our_err = None
@@ -93,6 +93,11 @@ def main() -> int:
         except InterpretError as exc:
             data, our_err = None, str(exc)[:200]
         head = f"[{i}/{len(cs)}] {cid} @ {date}"
+        if our_err and "(chunk 28 C28-19)" in our_err and not iso_err:
+            # ours refuses by decision: ISO rates this date on a package the corpus doesn't hold yet (C28-19)
+            print(f"{head}: EXPECTED, older package (C28-19), not a disagreement\n    ours: {our_err}")
+            expected.append(cid)
+            continue
         if iso_err or our_err:
             ok = bool(iso_err and our_err)
             print(f"{head}: {'AGREE, both refuse' if ok else 'DIFFER'}\n    ISO: {iso_err}\n    ours: {our_err}")
@@ -116,8 +121,9 @@ def main() -> int:
               + "".join(f"\n    ours only: {y[:110]} x{n}" for (t, y), n in (ours_m - iso_m).items()))
         if not ok:
             fails.append(cid)
-    print(f"\n{a.state} @ {a.date}: {len(cs) - len(fails)} of {len(cs)} agree with ISO"
-          + (f"; differ: {', '.join(fails)}" if fails else ""))
+    print(f"\n{a.state} @ {a.date}: {len(cs) - len(fails) - len(expected)} of {len(cs) - len(expected)} agree with ISO"
+          + (f"; differ: {', '.join(fails)}" if fails else "")
+          + (f"; {len(expected)} refused by C28-19 (package not yet imported): {', '.join(expected)}" if expected else ""))
     return 1 if fails else 0
 
 

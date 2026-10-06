@@ -46,6 +46,8 @@ input where the script tests something else (the C28-05 / C28-06 pattern).
 * `{"status": "rated", "reasons": []}`
 * `{"status": "refused", "reasons": [{"kind": "invalid input" | "no row", "record": …, "field" | "table": …, …}]}`: the
   four checks above, and the C28-05 `SingleResult` refusals (the existing error still raises; the outcome records it)
+* `{"status": "refused", "reasons": [{"kind": "older package", "detail": …}]}`: a date on which ISO is known to
+  rate on a package the corpus lacks (C28-19, 2026-10-06, `CF-CHUNK28-PROPOSAL-F.md`), checked before anything is rated
 * `{"status": "refer to company", "reasons": [{"kind": "minimum premium", "minimum": …, "rated": …}]}`
 
 ## Refer to company (OI-113)

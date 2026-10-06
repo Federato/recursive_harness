@@ -56,6 +56,9 @@ FAIL = []
 BR = "BuildersRisk"
 TH = BR + "TheftOfBuildingMaterialsFixturesMachineryEquipment"
 MO = "StructureBuildersRiskBuildingMaterialsAndSuppliesOfOthers"
+#: Packages added to the corpus after this census (chunk 28 C28-20); their own STC fixtures are checked against ISO by 256_
+C28_20_IMPORTED = {"CF IL 20261001 V01"}
+C28_20_BATCHES = {"20270101", "20270201", "20270301", "20270401", "20270601"}          # whole batch folders added by C28-20
 CP1044 = "TheftOfBuildingMaterialsAndSuppliesOtherThanBuildersRisk"
 RF, RN, PA, PAD, COL = BR + "ReportingForm", BR + "Renovations", BR + "PremiumAdjustmentForm", BR + "PremiumAdjustmentFormDetail", BR + "CollapseDuringConstruction"
 GROUPS = ("BasicGroupI", "BasicGroupII", "Broad", "Special", "Earthquake")
@@ -364,7 +367,13 @@ def evidence():
           "the plan's third Basic fixture, STC_CP000020234 (NY), is Builders Risk with no theft record and was never stored")
     print(f"    built readers on the {br_pol} Builders Risk policies: {readers}")
     stc = {p.stem: p for p in Path(r"F:\ISO_ERC_Files\CF").rglob("STC/*.json")}
-    withth = [k for k, p in stc.items() if TH in p.read_text(encoding="utf-8-sig", errors="replace")]
+    # fixtures shipped in packages imported after the census (chunk 28 C28-20), each rated against ISO by 256_
+    # a fixture counts as imported only when no package held before C28-20 ships it (the batches repeat some packages)
+    held = {p.stem for p in Path(r"F:\ISO_ERC_Files\CF").rglob("STC/*.json")
+            if p.parent.parent.name not in C28_20_IMPORTED and p.parent.parent.parent.name not in C28_20_BATCHES}
+    imported = {k for k in stc if k not in held}
+    withth = [k for k, p in stc.items() if k not in imported and TH in p.read_text(encoding="utf-8-sig", errors="replace")]
+    print(f"    (not in the census: {len(imported)} fixture(s) from packages imported by C28-20: {', '.join(sorted(imported))})")
     stored = {p.name[len("chunk13_fixture_"):-len("_response.json")] for p in paths}
     missing = sorted(k for k in withth if k not in stored)
     print(f"    {len(withth)} STC fixtures carry the theft record; {len(withth) - len(missing)} have a stored response; without: "

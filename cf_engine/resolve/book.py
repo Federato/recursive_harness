@@ -23,6 +23,8 @@ not use it.
 from __future__ import annotations
 
 import dataclasses
+import json
+from pathlib import Path
 
 from gl_engine.erc.tables import Table
 from gl_engine.resolve.book import Layer, ResolvedBook
@@ -72,6 +74,29 @@ class CFResolvedBook(ResolvedBook):
 
     #: Refuse an input whose absence prices an attached coverage at $0 (C28-17, the user's decision: stricter than ISO).
     silent_zero_checks = True
+
+    #: Refuse a date on which ISO is known to rate on a package the corpus lacks (C28-19, the user's decision 2026-10-06).
+    older_package_check = True
+
+    def older_than_iso(self) -> tuple[str, str] | None:
+        """(ours, ISO's) when this book's state package is older than one ISO is known to rate on for this date.
+
+        ISO names the package it used in every response (`Scheme`); `iso_packages.json` holds every one named per state
+        in the live comparisons (`242_`, written by `255_ --write`). A package is taken as in force from the edition date
+        in its name. ISO's package for this date is the newest named one in force by then (edition, then version); ours
+        is older when it sorts below it, as when the corpus lacks an edition (OR 20270101), an edition between two it
+        holds (CT 20270101), or a later version (CT 20270301 V02). Importing the package lifts it with no re-run. A
+        date nothing was named for, or where ours is the same or newer, is not flagged: "unchecked" is not "older".
+        """
+        named = _iso_packages().get(self.juris, ())
+        due = [p for p in named if p[1] <= self.asof]
+        if not due:
+            return None
+        iso = max(due, key=lambda p: (p[1], p[2]))
+        mine = self.resolution.state.identity
+        if (mine.edition, mine.version) < (iso[1], iso[2]):
+            return mine.raw, iso[0]
+        return None
 
     #: Submitted answers ISO's request reader drops on the 2023 countrywide editions (OI-112, C28-09): three
     #: cause-of-loss answers on the multiple-deductible form (CP 03 20), whatever is sent (text or true / false),
@@ -129,6 +154,18 @@ class CFResolvedBook(ResolvedBook):
                      if row[tn] not in filed]
             got = cache[name] = dataclasses.replace(own, rows=list(own.rows) + extra)
         return got
+
+
+_ISO_PACKAGES: dict | None = None
+
+
+def _iso_packages() -> dict:
+    """state -> [(package id, edition, version)] ISO is known to rate on (`iso_packages.json`, C28-19)."""
+    global _ISO_PACKAGES
+    if _ISO_PACKAGES is None:
+        raw = json.loads((Path(__file__).with_name("iso_packages.json")).read_text(encoding="utf-8"))["served"]
+        _ISO_PACKAGES = {st: [(p, *p.split("_")[2:4]) for p in ids] for st, ids in raw.items()}
+    return _ISO_PACKAGES
 
 
 #: One book per (jurisdiction, date, version) per process (2026-09-30, regression streamlining): resolving

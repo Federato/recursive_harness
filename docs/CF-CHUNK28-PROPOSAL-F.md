@@ -1,6 +1,6 @@
 # Property chunk 28, C28-19: flag dates beyond the corpus (Set F, OI-105), measured and proposed
 
-**Status: proposed 2026-10-06, no engine change.** Measured by `scripts/cf/255_chunk28_c28-19_coverage.py` from
+**Status: built 2026-10-06, the user's go and choice (a) refuse** (see "What was built" at the end). Proposed the same day: Measured by `scripts/cf/255_chunk28_c28-19_coverage.py` from
 `242_`'s live comparison (`results/cf-raas/chunk27_c27-13_editions.json`, 276 calls, 2026-10-02). The build waits on
 the user's go and the two choices below.
 
@@ -65,3 +65,19 @@ what `242_` measured, not from the corpus alone.
   for an edition we did see.
 * ISO can file more packages after 2026-10-02. The table is only as current as the last `242_` run, and the check
   will say when it was.
+
+## What was built (2026-10-06)
+
+The user's go and choice **(a) refuse**. Dates past the last comparison are **not** flagged (left as a later choice).
+
+* `cf_engine/resolve/iso_packages.json`: every package ISO named, per state, in the live comparisons (`255_ --write`,
+  re-run after every `242_` run). It holds what ISO *serves*, not what we lack, so importing a package lifts its refusal
+  with no re-run.
+* `CFResolvedBook.older_than_iso()`: ISO's package for the date is the newest named one in force by then (edition date
+  from its name, then version); ours is older when it sorts below it.
+* `Interpreter.run`, first thing on a Property book: `OlderPackage` is raised, and the outcome is
+  `{"status": "refused", "reasons": [{"kind": "older package", "detail": "OR on 20270101: ISO rates on
+  CF_OR_20270101_V01; the corpus holds only CF_OR_20260601_V01, ..."}]}`. GL books carry no such check.
+* Confirmed by `257_`: 276 of 276 recorded state-dates as ISO named them (103 refuse, 173 rate); OR 2027-01-01, CT
+  2027-01-01 and CT 2027-04-01 (the V02) refuse; nothing refuses today; a real Illinois rating rates at 2026-11-01 and
+  refuses at 2027-01-01. Snapshot: 1 of 1,812 requests moved, by decision (OR 2027-01-01), rebaselined.

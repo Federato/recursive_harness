@@ -11,7 +11,30 @@ page and the deployed page agree with them; on drift it hands the problems back 
 
 ---
 
-## Pick up here (set 2026-10-05): chunk 28 OPEN at 18 of 22, Sets A to E done
+## Pick up here (set 2026-10-06): chunk 28 OPEN at 20 of 22, Sets A to F done
+
+**C28-20 done 2026-10-06: all 34 packages in** (batches `CF/20270101` with countrywide `CF_CW_20270101_V01`,
+`CF/20270201`, `CF/20270301`, `CF/20270401`, `CF/20270601`, and IL 20261001 in `CF/20260601`). ISO and ours name the
+same package in 46 of 46 states at all 276 dates checked; 287 of 287 cases agree with ISO (`256_`); OI-105 closed.
+Full regression clean (170), `157_ --all` 293 of 293, snapshot clean (2,074). **Next: C28-21 only if the user asks
+(Set G), then C28-22, file the chunk 28 gate.** When ISO files newer packages: `242_`, then `255_ --write`.
+
+## Earlier (set 2026-10-06): C28-19 built
+
+**C28-19 built 2026-10-06** (the user's go, choice (a) refuse): a date on which ISO is known to rate on a package the
+corpus lacks refuses before rating (outcome *refused / older package*, both packages named), from
+`cf_engine/resolve/iso_packages.json` (`255_ --write`, after every `242_` run). Importing a package lifts it. `257_`
+confirms it (276 of 276); `157_ --all` 293 of 293; snapshot 1 request moved by decision (OR 2027-01-01), rebaselined.
+Full regression 168 of 170, both explained: `224_`'s Builders Risk census counted the imported IL package's own test case
+(now named as imported by C28-20, passes); `tests/verify_tester.py` is timing-flaky under the full run's load (two test
+batches stamped the same instant; 81 of 81 alone, 3 of 3 runs), not the engine. Today nothing refuses; from 2027-01-01, 20 states refuse until their packages are in.
+**C28-20: 31 of 34 packages in** (2026-10-06: IL's October package; the whole 2027-01-01 batch in `CF/20270101`, 20
+states on a new countrywide edition `CF_CW_20270101_V01`): 176 of 176 cases agree with ISO at 2027-01-01 (`256_`); the
+OR OI-105 case equals ISO ($97). AK 20270201 then too (`CF/20270201`, 8 of 8). Then the 2027-03-01 batch
+(`CF/20270301`, 9 states, 80 of 80 agree with ISO). **Next: the 3 left**: VT 20270301 V01 (not in the March batch),
+GA 20270401, KS 20270601. Then C28-21 (optional), C28-22 (gate).
+
+## Earlier (set 2026-10-05): chunk 28 at 18 of 22, Sets A to E done
 
 **Sets A, B, C, D and E done 2026-10-05.** Latest, C28-17 / 18 (Sets B and E, the user's go): a missing input that
 zeroes an attached coverage refuses the policy (stricter than ISO, the user's decision), with an outcome field (rated /
