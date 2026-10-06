@@ -127,6 +127,10 @@ def sample(juris: str, effective: str = EFFECTIVE) -> dict:
     v = _first(book, "BCEGEQFactor", "EQTerr", juris)       # SC keys its BCEG factor on it even without EQ
     if v is not None:
         loc["EQTerr"] = v
+    if juris == "CA":
+        # California files no BasicGroupIRate: Group I is split into District I / II tables and the submitter picks
+        # the district (chunk 4; AK derives its own from the territory). Without it Group I prices $0, silently.
+        loc["District"] = "District I"
     _drop_withdrawn(q["body"]["CommercialProperty"][0], _withdrawn(book))
     return q
 
