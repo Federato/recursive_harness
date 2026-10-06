@@ -1,0 +1,956 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Flood Rating Chains</title>
+<style>
+  :root {
+    --ink: #101b24;
+    --paper: #edf0ec;
+    --paper-line: #c7d2ce;
+    --blueprint: #2e6e8e;
+    --blueprint-soft: #e4ebef;
+    --stamp: #c77f32;
+    --caution: #b14b39;
+    --ledger: #3f8f6e;
+    --surface: #f4f6f3;
+    --panel: #ffffff;
+    --sidebar: #e8ede8;
+    --text: var(--ink);
+    --muted: #5b6b72;
+    --border: #cdd6d2;
+    --font-display: Cambria, 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+    --font-body: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+    --font-mono: 'Cascadia Code', 'Cascadia Mono', Consolas, 'SFMono-Regular', ui-monospace, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --surface: #0b141a;
+      --panel: #101b22;
+      --sidebar: #0e1a20;
+      --text: #e7ece9;
+      --muted: #93a3a0;
+      --border: #223138;
+      --blueprint-soft: #16232b;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --surface: #0b141a;
+    --panel: #101b22;
+    --sidebar: #0e1a20;
+    --text: #e7ece9;
+    --muted: #93a3a0;
+    --border: #223138;
+    --blueprint-soft: #16232b;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; background: var(--surface); color: var(--text);
+    font-family: var(--font-body); -webkit-font-smoothing: antialiased;
+  }
+  body { display: flex; flex-direction: column; min-height: 100vh; }
+  a { color: inherit; }
+  code { font-family: var(--font-mono); font-size: 0.92em; }
+  ::selection { background: var(--stamp); color: #101b24; }
+
+  /* header */
+  header.masthead {
+    display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap;
+    padding: 1.1rem 1.6rem; border-bottom: 1px solid var(--border);
+    background: var(--panel);
+  }
+  header.masthead h1 {
+    font-family: var(--font-display); font-weight: 600; font-size: 1.35rem;
+    margin: 0; letter-spacing: 0.01em; text-wrap: balance;
+  }
+  header.masthead .rule { width: 1px; align-self: stretch; background: var(--border); }
+  header.masthead p { margin: 0; font-size: 0.82rem; color: var(--muted); max-width: 52ch; }
+  header.masthead .src {
+    margin-left: auto; font-family: var(--font-mono); font-size: 0.72rem;
+    color: var(--muted); text-align: right; line-height: 1.5;
+  }
+
+  /* shell */
+  .shell { display: flex; flex: 1; min-height: 0; }
+
+  nav.toc {
+    width: 258px; flex: none; background: var(--sidebar);
+    border-right: 1px solid var(--border);
+    padding: 1rem 0 2rem; overflow-y: auto;
+  }
+  nav.toc .group-label {
+    font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--muted); padding: 0.5rem 1.2rem 0.35rem;
+  }
+  nav.toc button.navlink {
+    display: block; width: 100%; text-align: left; background: none; border: none;
+    font-family: var(--font-body); font-size: 0.86rem; color: var(--text);
+    padding: 0.42rem 1.2rem 0.42rem 1.6rem; cursor: pointer;
+    border-left: 3px solid transparent;
+  }
+  nav.toc button.navlink:hover { background: var(--blueprint-soft); }
+  nav.toc button.navlink.active {
+    background: var(--blueprint-soft); border-left-color: var(--blueprint); font-weight: 600;
+  }
+  nav.toc button.navlink .chain-len {
+    display: block; font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); font-weight: 400;
+  }
+  nav.toc hr { border: none; border-top: 1px solid var(--border); margin: 0.6rem 1.2rem; }
+
+  nav.toc .legend {
+    margin: 1rem 1.2rem 0; padding: 0.8rem 0.9rem; border: 1px solid var(--border);
+    border-radius: 3px; background: var(--panel);
+  }
+  nav.toc .legend h4 {
+    margin: 0 0 0.5rem; font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--muted); font-weight: 600;
+  }
+  nav.toc .legend .row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.74rem; margin-bottom: 0.35rem; }
+  nav.toc .legend .swatch { width: 13px; height: 13px; flex: none; border-radius: 2px; border-width: 1.5px; border-style: solid; }
+  .sw-gate { background: #f4e4ce; border-color: #c77f32; }
+  .sw-zero { background: #f3dcd6; border-color: #b14b39; }
+  .sw-final { background: #dceee4; border-color: #3f8f6e; }
+  .sw-step { background: #e4ebef; border-color: #2e6e8e; }
+  .sw-openq { background: #f4e4ce; border-color: #b14b39; border-style: dashed !important; }
+  .sw-engine { background: #e6e1f0; border-color: #5a4c8a; }
+
+  main { flex: 1; min-width: 0; overflow-y: auto; padding: 1.6rem 2rem 4rem; }
+
+  .intro { max-width: 70ch; margin-bottom: 1.4rem; }
+  .intro h2 { font-family: var(--font-display); font-size: 1.25rem; margin: 0 0 0.5rem; text-wrap: balance; }
+  .intro p { font-size: 0.92rem; line-height: 1.6; color: var(--muted); margin: 0 0 0.6rem; }
+
+  /* tables */
+  .tablewrap { overflow-x: auto; margin-bottom: 1.4rem; }
+  table.grid { border-collapse: collapse; width: 100%; max-width: 1100px; background: var(--panel); }
+  table.grid caption {
+    text-align: left; font-family: var(--font-mono); font-size: 0.7rem; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem;
+  }
+  table.grid th, table.grid td {
+    border: 1px solid var(--border); padding: 0.5rem 0.7rem; font-size: 0.82rem;
+    text-align: left; vertical-align: top; line-height: 1.45;
+  }
+  table.grid thead th {
+    font-family: var(--font-mono); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--muted); background: var(--blueprint-soft); font-weight: 600;
+  }
+  table.grid tbody th { font-weight: 600; white-space: nowrap; }
+  table.grid td.num { font-family: var(--font-mono); text-align: right; white-space: nowrap; }
+  table.grid tr.hl td, table.grid tr.hl th { background: var(--blueprint-soft); }
+  table.grid td .tag {
+    font-family: var(--font-mono); font-size: 0.66rem; padding: 0.05rem 0.35rem; border-radius: 2px;
+    border: 1px solid var(--border); color: var(--muted); white-space: nowrap;
+  }
+  table.grid td .tag.a { border-color: var(--blueprint); color: var(--blueprint); }
+  table.grid td .tag.b { border-color: var(--ledger); color: var(--ledger); }
+  table.grid td .tag.bad { border-color: var(--caution); color: var(--caution); }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.9rem; max-width: 1100px; margin-bottom: 1.4rem; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 3px; padding: 0.9rem 1rem; }
+  .card .k { font-family: var(--font-mono); font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
+  .card .v { font-family: var(--font-display); font-size: 1.5rem; margin: 0.2rem 0 0.25rem; font-variant-numeric: tabular-nums; }
+  .card p { margin: 0; font-size: 0.8rem; color: var(--muted); line-height: 1.45; }
+  .card button.go {
+    margin-top: 0.6rem; background: none; border: 1px solid var(--blueprint); color: var(--blueprint);
+    font-family: var(--font-mono); font-size: 0.7rem; padding: 0.3rem 0.6rem; border-radius: 2px; cursor: pointer;
+  }
+  .card button.go:hover { background: var(--blueprint-soft); }
+
+  /* sheet */
+  .sheet-view { display: none; }
+  .sheet-view.active { display: block; }
+
+  .titleblock {
+    display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--border);
+    margin-bottom: 1.1rem; background: var(--panel);
+  }
+  .titleblock .field { padding: 0.6rem 0.9rem; border-right: 1px solid var(--border); }
+  .titleblock .field:last-child { border-right: none; }
+  .titleblock .field .k {
+    font-family: var(--font-mono); font-size: 0.63rem; text-transform: uppercase; letter-spacing: 0.07em;
+    color: var(--muted); display: block; margin-bottom: 0.15rem;
+  }
+  .titleblock .field .v { font-family: var(--font-mono); font-size: 0.82rem; color: var(--text); line-height: 1.35; }
+  .titleblock .field.wide { grid-column: span 4; border-top: 1px solid var(--border); border-right: none; }
+
+  .sheet {
+    background: var(--paper); border: 1px solid var(--paper-line); border-radius: 2px;
+    padding: 1.4rem 1.2rem 1rem; position: relative; overflow-x: auto;
+    background-image:
+      linear-gradient(var(--paper-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--paper-line) 1px, transparent 1px);
+    background-size: 28px 28px; background-position: -1px -1px;
+    background-color: var(--paper);
+  }
+  .sheet .corner { position: absolute; width: 14px; height: 14px; }
+  .sheet .corner.tl { top: 6px; left: 6px; border-top: 1.5px solid #7d8f8a; border-left: 1.5px solid #7d8f8a; }
+  .sheet .corner.tr { top: 6px; right: 6px; border-top: 1.5px solid #7d8f8a; border-right: 1.5px solid #7d8f8a; }
+  .sheet .corner.bl { bottom: 6px; left: 6px; border-bottom: 1.5px solid #7d8f8a; border-left: 1.5px solid #7d8f8a; }
+  .sheet .corner.br { bottom: 6px; right: 6px; border-bottom: 1.5px solid #7d8f8a; border-right: 1.5px solid #7d8f8a; }
+  .sheet pre.mermaid { margin: 0; background: transparent; min-width: 760px; color: #101b24; }
+
+  .notes { margin-top: 1.1rem; display: grid; grid-template-columns: 1.4fr 1fr; gap: 1.2rem; }
+  .notes h3 {
+    font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--muted); margin: 0 0 0.5rem;
+  }
+  .notes ul { margin: 0; padding-left: 1.1rem; font-size: 0.86rem; line-height: 1.55; }
+  .notes ul li { margin-bottom: 0.4rem; }
+  .notes .delta { border: 1px solid var(--border); background: var(--panel); padding: 0.8rem 0.9rem; border-radius: 3px; font-size: 0.86rem; line-height: 1.55; }
+  .notes .delta.openq { border-color: var(--caution); }
+  .notes .delta + .delta { margin-top: 0.8rem; }
+
+  h3.section {
+    font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--muted); margin: 1.6rem 0 0.6rem;
+  }
+
+  footer.doc-footer {
+    padding: 1rem 2rem 2rem; font-size: 0.76rem; color: var(--muted); border-top: 1px solid var(--border);
+  }
+  footer.doc-footer strong { color: var(--text); }
+
+  @media (max-width: 900px) {
+    .notes { grid-template-columns: 1fr; }
+    .titleblock { grid-template-columns: 1fr 1fr; }
+    .titleblock .field.wide { grid-column: span 2; }
+  }
+  @media (max-width: 720px) {
+    .shell { flex-direction: column; }
+    nav.toc { width: 100%; border-right: none; border-bottom: 1px solid var(--border); padding: 0.6rem 0; }
+    nav.toc .legend { display: none; }
+    main { padding: 1.2rem 16px 3rem; }
+    header.masthead { padding: 1rem 16px; }
+    header.masthead .src { margin-left: 0; text-align: left; }
+    header.masthead .rule { display: none; }
+    .titleblock { grid-template-columns: 1fr; }
+    .titleblock .field { border-right: none; border-bottom: 1px solid var(--border); }
+    .titleblock .field.wide { grid-column: span 1; }
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <h1>Flood Rating Chains</h1>
+  <div class="rule"></div>
+  <p>Every gate, branch and terminal in the Commercial Property Flood Coverage Endorsement (CP 10 65; CP 10 68 in WV): the location's flood record, the flood premium on Building, Personal Property, Special Class, Business Income and Special Class Business Income, flood's own blanket, and where each state's loss cost comes from. Checked against the built engine and ISO's rule XML as of 2026-10-06. CW 2023-08 V04 and CW 2026-06 are drawn together: the only rule difference is a reordered branch with the same result.</p>
+  <div class="src">Engine at 542f0e1 (stage2-interpreter; probed at d98efe5)<br>Rule files: CommercialPropertyFloodCovEndtLocationRules · FloodCoverageEndorsement{,PrsnlProp,SpecialClass,BusnIncome,SpclClassBusnIncome}Rules · FloodCovEndtBlanketRating{,Detail}Rules<br>Companion: docs/CF-CHUNK25-GATE.md · CF-CHUNK25-TASKS.md · scripts 229_–233_, 906_</div>
+</header>
+
+<div class="shell">
+  <nav class="toc" id="toc">
+    <button class="navlink active" data-target="overview">Overview<span class="chain-len">state, county or manual loss cost</span></button>
+    <button class="navlink" data-target="loc">Location record<span class="chain-len">indicator, zone, CRS, deductible table</span></button>
+    <hr>
+    <div class="group-label">Coverage chains</div>
+    <button class="navlink" data-target="bldg">Building<span class="chain-len">7 deductible tables · excess over NFIP</span></button>
+    <button class="navlink" data-target="pp">Personal Property<span class="chain-len">Contents row · building's construction</span></button>
+    <button class="navlink" data-target="sc">Special Class<span class="chain-len">its own construction</span></button>
+    <button class="navlink" data-target="bi">Business Income<span class="chain-len">no deductible, CRS or excess · OI-122</span></button>
+    <button class="navlink" data-target="scbi">Special Class Business Income<span class="chain-len">no op-unit branch</span></button>
+    <hr>
+    <div class="group-label">Blanket and states</div>
+    <button class="navlink" data-target="blkt">Flood blanket<span class="chain-len">premium on the detail, not the members</span></button>
+    <button class="navlink" data-target="states">State map<span class="chain-len">10 states rewrite flood</span></button>
+    <hr>
+    <div class="group-label">Review</div>
+    <button class="navlink" data-target="review">Chunk 25 claims re-checked<span class="chain-len">12 claims · 1 corrections</span></button>
+
+    <div class="legend">
+      <h4>Reading the chains</h4>
+      <div class="row"><span class="swatch sw-gate"></span> gate / branch condition</div>
+      <div class="row"><span class="swatch sw-step"></span> computed factor</div>
+      <div class="row"><span class="swatch sw-final"></span> premium resolves</div>
+      <div class="row"><span class="swatch sw-zero"></span> zero, refusal or clamp</div>
+      <div class="row"><span class="swatch sw-openq"></span> silent gap / open question</div>
+      <div class="row"><span class="swatch sw-engine"></span> engine layer, not an ISO rule</div>
+    </div>
+  </nav>
+
+  <main id="main">
+
+    <!-- ============================= OVERVIEW ============================= -->
+    <section class="sheet-view active" id="view-overview">
+      <div class="intro">
+        <h2>Switched on at the location, priced on each coverage's own flood record</h2>
+        <p>Flood is an endorsement, not a cause of loss. The location sets <code>FloodCovIndicator</code> "Yes" and carries a General Information record: the flood zone (A, X, X500 or D), an optional Community Rating System grade, and the deductible. Each coverage then has its own flood record with a limit, and prices it: the flood loss cost (by zone and construction) x the loss cost multiplier x an aggregate factor x a deductible-table factor or an excess-over-NFIP factor, x the CRS credit, then the policy modifiers. The deductible picks one of seven rate-modification tables. The two Business Income coverages use the BI factor instead of the deductible, excess and CRS machinery.</p>
+        <p>Where the loss cost comes from depends on the state: 37 states file a state table, 7 use county tables with an all-other fallback, and AK and FL file none and price a manual premium. Flood has its own blanket, whose premium sits on the blanket detail, not the members. The policy total moves by exactly the flood premiums. Probes ran in OH (no flood overrides), VA and TX (county tables), OR, MA, NY, TN, NV, UT, MO, AK, FL and DC.</p>
+      </div>
+
+      <div class="cards">
+        <div class="card">
+          <div class="k">No General Information</div>
+          <div class="v">$0, no message</div>
+          <p>With the indicator "Yes" but no General Information record, an empty one is attached and every flood record prices $0 without a message.</p>
+          <button class="go" data-target="loc">See the location →</button>
+        </div>
+        <div class="card">
+          <div class="k">Operational unit (OI-122)</div>
+          <div class="v">Order-dependent</div>
+          <p>The op-unit BI flood rate never stores its maximum: $0 with a CRS grade, otherwise the last building's rate ($1,434 Frame-then-JM, $1,935 reversed). ISO does the same.</p>
+          <button class="go" data-target="bi">See Business Income →</button>
+        </div>
+        <div class="card">
+          <div class="k">The 46-state sweep</div>
+          <div class="v">Blanket $0</div>
+          <p>Chunk 25's 46-state sweep agreed with ISO, but every blanket in it priced $0 (limit above values). Priced blankets were ISO-checked only in OR, IL, NC, MO and FL.</p>
+          <button class="go" data-target="blkt">See the blanket →</button>
+        </div>
+      </div>
+
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    rec(["Flood record: Bldg / BPP / SC / BI / SCBI"]) --> mp{"State rewrites SetPremium<br/>to a manual premium?"}
+    mp -->|"AK, FL"| man["r0(r0(ManualPremium x pkg) x IRPM);<br/>no loss cost table, rate rules emptied"]:::final
+    man --> mz["ManualPremium blank: $0"]:::zero
+    man --> mb["Blanket detail: AK no premium rule;<br/>FL manual ($196)"]:::step
+    mp -->|"other 44"| zc{"Construction &amp; zone<br/>both non-blank?"}
+    zc -->|"No"| z0["Base rate 0.0: $0"]:::zero
+    zc -->|"Yes"| cty{"County state?<br/>MA NC NJ NY SC TX VA"}
+    cty -->|"Yes (7)"| nm{"Location County (VA: or City)<br/>named in the state rule?"}
+    nm -->|"Yes"| byc["FloodLossCostByCounty<br/>(VA ByCountiesAndCities)"]:::step
+    nm -->|"No"| allo["FloodLossCostAllOtherCounty<br/>(VA AllOtherCountiesAndCities)"]:::step
+    cty -->|"No (37)"| lc{"State FloodLossCost row?<br/>(CW table header-only)"}
+    lc -->|"No row, e.g. DC zone D"| ref["CW SingleResult miss: refuse"]:::zero
+    lc -->|"Yes"| base["Base = loss cost row<br/>(Building / Contents)"]:::step
+    byc --> base
+    allo --> base
+    base --> rt["x LCM x aggregate x one mod. table<br/>x CRS; BI: x BI factor"]:::step
+    rt --> ny{"NY?"}
+    ny -->|"Yes"| nyp["NY SetPremium (6 files):<br/>no cyber flood factors"]:::final
+    ny -->|"No"| cwp["CW SetPremium chain"]:::final
+    cwp -.- wv["WV: CP 10 68 forms + 2 O&amp;L flood<br/>files (manual x pkg x MPDC x IRPM)"]:::openq
+    ref -.- e2["Engine: refuses (InterpretError,<br/>C28-05 strict lookup) both dates;<br/>every other $0 here ends 'rated'"]:::eng
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class mp,zc,cty,nm,lc,ny gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>The flood zone is a loss-cost key, not a factor. Only the data values A / X / X500 / D have rows; sending the NFIP display value "AE" refuses.</li>
+            <li>The countrywide loss-cost table is header-only in every edition, so a missing state row is a refusal (DC files no zone D).</li>
+            <li>Insurance to value above 100% prices $0 on the property records; a limit $1 over rounds to 100% and still prices.</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>No flood input refuses for being blank.</strong> No flood field is in the C28-17 list, so a blank zone, deductible, construction, excess flag, coinsurance, <code>IncludedInBlkt</code> or missing General Information all price $0 with outcome "rated". The only flood refusals are table misses: an unfiled zone or construction, and Business Income's blank type of risk.</div>
+      </div>
+    </section>
+
+    <!-- ============================= LOCATION ============================= -->
+    <section class="sheet-view" id="view-loc">
+      <div class="titleblock">
+        <div class="field"><span class="k">Record</span><span class="v">Location: FloodCovIndicator, County (VA also City) · General Information: Deductible, FloodZone, CRS grade, FloodEffDate</span></div>
+        <div class="field"><span class="k">Editions</span><span class="v">FloodCovEndtLocationRules byte-identical in V04 and 2026; flood tables identical</span></div>
+        <div class="field"><span class="k">Chain</span><span class="v">Location SetBlanketRatesAndFactors :140 → SetFloodRating :349: attach General Information :1492, FloodTotalPropertyValue :356, initialize :447 (CRS factor, deductible, NFIP maximums)</span></div>
+        <div class="field"><span class="k">Premium</span><span class="v">None on the General Information record; stat codes :412 / :456 / :484</span></div>
+        <div class="field wide"><span class="k">Gate</span><span class="v">FloodCovIndicator = "Yes" keeps or attaches the General Information record; anything else removes it (:1524). The deductible → table choice lives in each coverage's SetFloodModificationFactor (Building :522, PP :616); tables 1–7 have 176 / 176 / 220 / 220 / 264 / 264 / 132 rows.</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["Location record<br/>FloodCovIndicator, County, City<br/>child: Flood Coverage General Information"]) --> ind{"FloodCovIndicator<br/>= 'Yes'?"}
+    ind -->|"No or blank"| rm["GI record removed<br/>FloodTotalPropertyValue = 0<br/>flood records still run"]:::zero
+    rm --> rmMsg["each B / PP flood record: $0<br/>+ 'GI needs to be attached' message"]:::zero
+    rmMsg -.-> eng1["Engine: $0, outcome 'rated'<br/>no flood input in SILENT_ZERO_INPUTS"]:::eng
+    ind -->|"Yes"| gi{"GI record<br/>sent?"}
+    gi -->|"No"| empty["empty GI appended (Location :1509)<br/>zone and deductible blank"]:::zero
+    empty -.-> eng2["Engine: $0 'rated', NO message<br/>(GI message tests NotExist only)"]:::eng
+    gi -->|"Yes"| pc["GI ProcessCall :65<br/>CRS factor, DeductibleInt,<br/>MaxNFIP Building / Content 500,000"]:::step
+    pc --> crs{"CommunityRatingSystem<br/>CRSGrade blank?"}
+    crs -->|"Yes"| crs0["CRS factor written 0.0<br/>(unused: adjusted rate = rate)"]:::step
+    crs -->|"No"| crsF["CRS factor [CW, grade]<br/>1: 0.70 ... 5: 0.80 ... 9: 0.95<br/>10 / Unknown / Not Applicable: 1.0"]:::step
+    pc --> tpv["Location FloodTotalPropertyValue :356<br/>sum of full values of B / PP / SC<br/>with flood record, IncludedInBlkt 'No'"]:::step
+    pc --> lc{"Which loss-cost table?<br/>(state type)"}
+    lc -->|"37 states e.g. OH, OR"| st["state FloodLossCost<br/>[Building or Contents, construction, zone]<br/>CW table is header-only"]:::step
+    lc -->|"MA NC NJ NY SC TX VA"| cty{"County / City named<br/>in state rule?"}
+    cty -->|"Yes"| cty1["ByCounties table<br/>VA York / Norfolk: 2.204"]:::step
+    cty -->|"No or blank"| cty2["AllOther table<br/>VA Fairfax or blank: 1.910"]:::step
+    lc -->|"AK, FL"| man["ManualPremium path<br/>(state map: other page)"]:::openq
+    st -.->|"zone not filed, e.g. raw 'AE'"| ref["Engine: refused<br/>SingleResult CW FloodLossCost no row"]:::eng
+    pc --> ded{"Deductible picks ONE table<br/>(record SetFloodModificationFactor)"}
+    ded -->|"500 / 1,000"| t1["Table 1"]:::step
+    ded -->|"2,500 / 5,000"| t2["Table 2"]:::step
+    ded -->|"10,000 / 25,000"| t3["Table 3"]:::step
+    ded -->|"50,000 / 75,000"| t4["Table 4"]:::step
+    ded -->|"100,000 / 250,000"| t5["Table 5"]:::step
+    ded -->|"500,000 / 750,000"| t6["Table 6"]:::step
+    ded -->|"1,000,000"| t7["Table 7"]:::step
+    ded -->|"blank"| d0["factor 0.0, $0<br/>DeductibleInt 0"]:::zero
+    d0 -.-> eng1
+    t3 --> key["key: deductible, ITV% to use, TPV<br/>interpolate in 1-pt ITV band<br/>r4 then r3"]:::final
+    t1 --> key
+    t7 --> key
+    key -.->|"tables 5-7 file 0 where<br/>deductible nears value"| fz["factor 0, $0 + deductible<br/>&gt;= TPV message"]:::zero
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class ind,gi,crs,lc,cty,ded gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>Flood is switched on at the location, but the coverages' flood records are never removed: with the indicator "No" or blank they still run, price $0 and each raises "General Information needs to be attached".</li>
+            <li>With the indicator "Yes" and no General Information sent, an empty record is attached and every flood record prices $0 with no message at all.</li>
+            <li>The deductible chooses one of seven tables (500 / 1,000 → table 1 … 1,000,000 → table 7), read at the coverage's own insurance-to-value; a blank or unlisted deductible gives factor 0.</li>
+            <li>The CRS credit applies only when a grade is entered; "10", "Unknown" and "Not Applicable" mean 1.0.</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>A blank VA county and city is not $0:</strong> it rates on the all-other table ($1,480 / $2,543). Tables 5–7 file factor 0 where the deductible nears the value; that is a filed zero (rated, with two "deductible ≥ value" messages), not a missing row.</div>
+      </div>
+    </section>
+
+    <!-- ============================= BUILDING ============================= -->
+    <section class="sheet-view" id="view-bldg">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Building: CP 10 65 record under the Structure</span></div>
+        <div class="field"><span class="k">Editions</span><span class="v">V04 = 2026 (SetAnnualAggregateFactor :1184 branches reordered, same result)</span></div>
+        <div class="field"><span class="k">Chain</span><span class="v">Structure :3130 → SetInitializeFloodRatingBuilding :3776 → ErcSetRatesAndFactors :70: deductible :88, excess-to-use :135, insurance to value :195–:228, modification and excess factors, aggregate, base rate, rate, adjusted rate</span></div>
+        <div class="field"><span class="k">Premium</span><span class="v">SetPremium :1596: r0(r0(r0(r0(r0(Adjusted x Limit/100) x Pkg) x IRPM) x CyberFlood) x CyberCOLFlood)</span></div>
+        <div class="field wide"><span class="k">Gate</span><span class="v">IncludedInBlkt = "No" charges the record; every other value gives 0.0. Rate = r3(r3(r3(Base x LCM) x Aggregate) x Mod-or-Excess); Adjusted = r3(Rate x CRS) only with a grade.</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["Building flood record, child of Structure<br/>Limit, IncludedInBlkt, ExcessOverMaxNFIPIndicator,<br/>AnnualAggregateLimit, BlanketIDNum"]) --> dedS["Deductible = GI Deductible :88<br/>always the location's, blanket or not<br/>blank GI deductible: ''"]:::step
+    dedS --> exS{"IncludedInBlkt Yes + ID<br/>+ a blanket detail exists?"}
+    exS -->|"Yes"| exB["ExcessToUse = detail's<br/>(BldgCov Yes), else 'No'<br/>blanket: other page"]:::openq
+    exS -->|"No"| exO["ExcessToUse = own indicator"]:::step
+    exO --> itv["IncludedInBlkt 'No': ITV = r4(Limit / FullBldgValue)<br/>ToUse = round(r2(ITV x 100)), 1 if &gt; 0<br/>TPV = Location FloodTotalPropertyValue"]:::step
+    exB --> itv
+    itv --> which{"ExcessToUse?"}
+    which -->|"'No'"| modG{"TPV &gt; 0 AND<br/>1 &lt;= ITV% &lt;= 100?"}
+    modG -->|"No (limit over value)"| mod0["FloodModificationFactor 0.0<br/>+ limit message"]:::zero
+    modG -->|"Yes"| mod["factor = table picked by deductible<br/>[ded, ITV%, TPV] (Block 1)<br/>OH 10,000 / 67% / 270k: 0.991"]:::step
+    which -->|"'Yes'"| exG{"FullBldgValue &gt; 500,000 AND<br/>ITV 1-100 AND ded<br/>750,000 or 1,000,000?"}
+    exG -->|"No"| ex0["FloodExcessFactor 0.0"]:::zero
+    exG -->|"Yes"| exF["T6 (750k) / T7 (1M)<br/>keyed on OWN FullBldgValue<br/>OH 4M, 50%: 0.768 / 0.688"]:::step
+    which -->|"blank"| bl0["no factor at all: 0.0"]:::zero
+    mod --> agg
+    exF --> agg
+    agg["Aggregate: IncludedInBlkt 'No' AND<br/>Limit = AnnualAggregateLimit: 0.999<br/>else 1.0"]:::step
+    agg --> base{"ConstructionTypeToUse AND<br/>GI FloodZone non-blank?"}
+    base -->|"No"| base0["FloodBaseRate 0.0"]:::zero
+    base -->|"Yes"| baseL["FloodBaseRate = loss cost<br/>[state, 'Building', construction, zone]<br/>OH Frame A: 1.722"]:::step
+    baseL --> rate["FloodRate = r3(r3(r3(base x Structure LCM)<br/>x aggregate) x mod or excess factor)<br/>OH: 1.707"]:::step
+    rate --> adj{"GI exists AND<br/>CRS grade non-blank?"}
+    adj -->|"Yes"| adjC["Adjusted = r3(rate x CRS factor)<br/>grade 5: 1.366"]:::step
+    adj -->|"No"| adjN["Adjusted = rate"]:::step
+    adjC --> prem{"IncludedInBlkt = 'No'?"}
+    adjN --> prem
+    prem -->|"Yes"| pr["Premium = r0 chain: adj x Limit/100,<br/>x PackageMod, x IRPM, x Cyber flood,<br/>x Cyber COL flood. OH: $1,335"]:::final
+    prem -->|"No: 'Yes' or blank"| pr0["Premium 0.0<br/>(blanket detail charges it)"]:::zero
+    mod0 -.-> eng["Engine: $0, outcome 'rated'<br/>blank zone / deductible / excess /<br/>IncludedInBlkt, ITV &gt; 100, ded &gt;= TPV"]:::eng
+    bl0 -.-> eng
+    base0 -.-> eng
+    pr0 -.-> eng
+    baseL -.->|"zone / construction not filed"| ref["Engine: refused<br/>SingleResult no row"]:::eng
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class exS,which,modG,exG,base,adj,prem gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>The building always takes the location's deductible, even in a blanket. OH happy path $1,335 on table 3.</li>
+            <li>"Excess over NFIP" swaps the deductible table for table 6 or 7, keyed on the building's own full value. It prices only at deductibles of 750,000 or 1,000,000 and above the 500,000 NFIP maximum; a blank indicator prices $0.</li>
+            <li>Insurance to value above 100% prices $0; a limit $1 over value rounds to 100% and still prices ($1,639).</li>
+            <li>Floor and number of stories are statistics only; they never move the premium.</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>Silent $0, "rated":</strong> blank zone, blank deductible, blank excess indicator, blank <code>IncludedInBlkt</code>, ITV over 100%, deductible at or above total value. The engine matched chunk 25's hand model on every intermediate value in all 94 rated probes; the only refusal is an unfiled zone.</div>
+      </div>
+    </section>
+
+    <!-- ============================= PP ============================= -->
+    <section class="sheet-view" id="view-pp">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Personal Property: flood record under each contents record</span></div>
+        <div class="field"><span class="k">Editions</span><span class="v">V04 = 2026 (aggregate rule restructured, same result)</span></div>
+        <div class="field"><span class="k">Chain</span><span class="v">OccupClass :451 → PP preliminary pass :801 → SetInitializeFloodRatingPersonalProperty :1140 → ErcSetRatesAndFactors :70</span></div>
+        <div class="field"><span class="k">Premium</span><span class="v">SetPremium :1436 (V04 :1438): Building's formula on the "Contents" loss-cost row</span></div>
+        <div class="field wide"><span class="k">Gate</span><span class="v">IncludedInBlkt = "No" charges the record, else 0.0; with IncludedInBlkt blank the deductible is also blank. Uses the PP's own LCM, FullPrsnlPropValueToUse and the NFIP contents maximum.</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["PP flood record, child of Personal Property<br/>(Structure &gt; OccupClass &gt; PP)<br/>Limit, IncludedInBlkt, Excess, AggLimit"]) --> dedG{"IncludedInBlkt?"}
+    dedG -->|"'No'"| dedL["Deductible = GI Deductible :88"]:::step
+    dedG -->|"'Yes' + ID + detail"| dedB["Deductible = blanket detail's<br/>(PrsnlPropCov Yes), else ''<br/>blanket: other page"]:::openq
+    dedG -->|"blank / other"| ded0["Deductible '' : factor 0, $0"]:::zero
+    dedL --> itv["ITV = r4(Limit / FullPrsnlPropValueToUse)<br/>ToUse rounded (same as building)<br/>TPV = Location FloodTotalPropertyValue"]:::step
+    itv --> which{"ExcessToUse?"}
+    which -->|"'No'"| modG{"TPV &gt; 0 AND<br/>1 &lt;= ITV% &lt;= 100?"}
+    modG -->|"No"| mod0["FloodModificationFactor 0.0"]:::zero
+    modG -->|"Yes"| mod["table picked by deductible<br/>[ded, ITV%, TPV]<br/>OH 10,000 / 83% / 270k: 0.889"]:::step
+    which -->|"'Yes'"| exG{"FullPrsnlPropValueToUse<br/>&gt; MaxNFIP Content 500,000<br/>AND ITV 1-100?"}
+    exG -->|"No (e.g. 400k contents)"| ex0["FloodExcessFactor 0.0"]:::zero
+    exG -->|"Yes"| exF["T6 (750k) / T7 (1M) on OWN<br/>contents value; other ded: 0<br/>OH 3M, 50%: 0.632 / 0.555"]:::step
+    which -->|"blank"| bl0["0.0, $0"]:::zero
+    mod --> agg["Aggregate 0.999 when Limit =<br/>AnnualAggregateLimit, else 1.0"]:::step
+    exF --> agg
+    agg --> base{"Building ConstructionTypeToUse<br/>AND GI FloodZone non-blank?"}
+    base -->|"No"| base0["FloodBaseRate 0.0"]:::zero
+    base -->|"Yes"| baseL["loss cost [state, 'Contents',<br/>BUILDING's construction, zone]<br/>OH Frame A: 2.988"]:::step
+    baseL --> rate["FloodRate = r3(r3(r3(base x PP LCM)<br/>x aggregate) x factor). OH: 2.656"]:::step
+    rate --> adj{"CRS grade<br/>non-blank?"}
+    adj -->|"Yes"| adjC["Adjusted = r3(rate x CRS)<br/>grade 5: 2.125"]:::step
+    adj -->|"No"| adjN["Adjusted = rate"]:::step
+    adjC --> prem{"IncludedInBlkt = 'No'?"}
+    adjN --> prem
+    prem -->|"Yes"| pr["r0 chain: adj x Limit/100, PackageMod,<br/>IRPM, Cyber flood, Cyber COL flood<br/>OH: $2,077"]:::final
+    prem -->|"No"| pr0["Premium 0.0"]:::zero
+    ded0 -.-> eng["Engine: $0, outcome 'rated'<br/>not in SILENT_ZERO_INPUTS"]:::eng
+    ex0 -.-> eng
+    bl0 -.-> eng
+    base0 -.-> eng
+    pr0 -.-> eng
+    baseL -.->|"zone not filed"| ref["Engine: refused<br/>SingleResult no row"]:::eng
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class dedG,which,modG,exG,base,adj,prem gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>Contents use their own "Contents" loss-cost row (OH Frame A: 2.988 against the building's 1.722) but read the building's construction. OH happy path $2,077.</li>
+            <li>Contents and building share one location flood value, but each looks up the table at its own insurance to value (83% vs 67%), so the factors differ (0.889 vs 0.991).</li>
+            <li>Excess contents must themselves exceed the 500,000 NFIP contents maximum: 400,000 of contents prices $0 while the building beside it prices.</li>
+            <li>In a blanket, contents take the blanket detail's deductible, not the location's (when the detail's contents flag is "Yes").</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>The policy total moves by exactly the flood premiums</strong> (base + building flood + contents flood) in every rated probe. Silent $0s are the building's list.</div>
+      </div>
+    </section>
+
+    <!-- ============================= SC ============================= -->
+    <section class="sheet-view" id="view-sc">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Special Class: flood record under each item (CP 10 65; WV CP 10 68)</span></div>
+        <div class="field"><span class="k">Editions</span><span class="v">V04 = 2026; MO's V02 differs on the excess factor (table 6 at 500,000)</span></div>
+        <div class="field"><span class="k">Chain</span><span class="v">ErcSetRatesAndFactors :70, 14 steps: deductible :88 … total property value :430, modification :616, excess :884, aggregate, base rate, rate, adjusted</span></div>
+        <div class="field"><span class="k">Premium</span><span class="v">SetPremium :1438, the Building's r0 chain</span></div>
+        <div class="field wide"><span class="k">Gate</span><span class="v">IncludedInBlkt = "No", else 0.0. Loss cost: FloodLossCost[state, "Building", the flood record's own ConstructionType, zone]. Uses the location's unblanketed total property value.</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["SC flood record (CP 10 65)<br/>on a Special Class item"]) --> inBl{"IncludedInBlkt?"}
+    inBl -->|"'Yes' + ID &gt; 0<br/>+ a detail exists"| mem["Blanket member: ded, excess flag,<br/>ITV% and agg read from the<br/>detail (SpecialClassCov = Yes)"]:::step
+    mem --> memOut["Premium 0.0; AdjustedFull100 =<br/>r0(FullSC x Adjusted) to the blanket"]:::zero
+    inBl -->|"blank / other"| blank0["Ded, ITV% blank or 0<br/>Premium 0.0"]:::zero
+    blank0 --> engB["Engine: $0, 'rated'<br/>(B-incl, B-inclY)"]:::eng
+    inBl -->|"'No'"| ded["Deductible = location<br/>record's (blank stays blank)"]:::step
+    ded --> itv["ITV = r4(Limit / FullSC)<br/>0 if FullSC blank or 0;<br/>pct r2; ToUse = round, 1 if &gt;0"]:::step
+    itv --> tpv["TPV = Location.<br/>FloodTotalPropertyValue<br/>(unblanketed full values)"]:::step
+    tpv --> xs{"Own Excess-<br/>OverMaxNFIP?"}
+    xs -->|"'No'"| modG{"TPV &gt; 0 and<br/>1 ≤ ToUse ≤ 100?"}
+    modG -->|"No (ITV &gt; 100%)"| mod0["Mod factor 0.0"]:::zero
+    modG -->|"Yes"| modT["Deductible picks ONE table:<br/>500/1,000 → T1 … 1,000,000 → T7<br/>[ded, ToUse, TPV], interp. r4 → r3"]:::step
+    modT -->|"other / blank ded"| mod0
+    xs -->|"'Yes'"| xsG{"FullSC &gt; NFIP Bldg max<br/>500,000 and<br/>1 ≤ ToUse ≤ 100?"}
+    xsG -->|"No"| xs0["Excess factor 0.0"]:::zero
+    xsG -->|"Yes"| xsT["750,000 → T6, 1,000,000 → T7<br/>keyed on OWN FullSC;<br/>other ded → 0.0"]:::step
+    xs -->|"blank"| both0["Neither factor set → 0"]:::zero
+    mod0 --> engZ["Engine: $0, 'rated'<br/>no flood input in<br/>SILENT_ZERO_INPUTS"]:::eng
+    xs0 --> engZ
+    both0 --> engZ
+    modT --> agg
+    xsT --> agg
+    agg["Agg = 0.999 if Limit =<br/>AnnualAggregateLimit, else 1.0"]:::step
+    agg --> baseG{"OWN ConstructionType<br/>and FloodZone non-blank?"}
+    baseG -->|"No"| base0["Base 0.0 (C-blank, B-zone)"]:::zero
+    baseG -->|"Yes"| lc["FloodLossCost[state, 'Building',<br/>own constr., zone] else CW<br/>(CW empty; county states<br/>rewrite; AK/FL manual)"]:::step
+    lc -->|"no row"| engR["Engine: refused<br/>(SingleResult miss, C-Wood)"]:::eng
+    lc --> rate["Rate = r3(r3(r3(Base x LCM)<br/>x Agg) x Mod-or-Excess)"]:::step
+    base0 --> rate
+    rate --> crs{"Location record<br/>has a CRS grade?"}
+    crs -->|"Yes"| adj1["Adjusted = r3(Rate x CRS factor)"]:::step
+    crs -->|"No"| adj2["Adjusted = Rate"]:::step
+    adj1 --> prem
+    adj2 --> prem
+    prem["Premium = Adjusted x Limit/100,<br/>x PackageMod, x IRPM,<br/>x 2 cyber flood factors;<br/>r0 after each step"]:::final
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class inBl,xs,modG,xsG,baseG,crs gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>The construction is the flood record's own: Frame $1,241, Masonry Non-Combustible $919, blank $0; a value with no row ("Wood") refuses.</li>
+            <li>Because the total property value is the location's unblanketed total, putting the building and contents in a blanket moves Special Class's own price ($1,241 → $1,074).</li>
+            <li>Excess compares the item's own full value with the NFIP building maximum: 750,000 → $10,631, 1,000,000 → $9,348, an item worth 400,000 → $0.</li>
+            <li>CRS grade 5 gives $1,241, grade 9 $1,473, no grade $1,550.</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>A missing limit gives $0 and quietly sets the aggregate factor to 0.999</strong>, because a blank limit equals a blank aggregate limit. Every other zero is the building's list; none refuses.</div>
+      </div>
+    </section>
+
+    <!-- ============================= BI ============================= -->
+    <section class="sheet-view" id="view-bi">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Business Income: flood record under the building's BI</span></div>
+        <div class="field"><span class="k">Editions</span><span class="v">V04 = 2026; V02 / V03 differ only in blanket details</span></div>
+        <div class="field"><span class="k">Chain</span><span class="v">ErcSetRatesAndFactors :70, 12 steps: coinsurance :86, type of risk :472, BI factor :806, aggregate :956, base rate :1142 (op-unit branch), rate :1237, adjusted :1259</span></div>
+        <div class="field"><span class="k">Premium</span><span class="v">SetPremium :1455: the r0 chain, ending with the BI parent's cyber COL factor</span></div>
+        <div class="field wide"><span class="k">Gate</span><span class="v">IncludedInBlkt = "No", else 0.0. No construction, deductible, excess flag or CRS is read; loss cost on the building's construction. Its existence sets the Off-Premises BI flood factor to 1.02.</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["BI flood record (CP 10 65)<br/>on a building's BI"]) --> coins{"Blanket member<br/>(Yes + ID + detail)?"}
+    coins -->|"Yes"| cBl["Coinsurance from detail ITV%<br/>(EQSubLimitPct table;<br/>&gt; 125 → 'Greater than 125%')"]:::step
+    coins -->|"No"| cOwn["Coinsurance = parent's<br/>CoinsuranceToUse"]:::step
+    cBl --> torG
+    cOwn --> torG
+    torG{"CovType not EE-only/blank<br/>and coinsurance valid?"}
+    torG -->|"No"| tor0["TypeOfRisk factor 0.0<br/>(B-coins: $0)"]:::zero
+    torG -->|"Yes"| torC["Combined: r3(r3(p1 x f1) + r3(p2 x f2));<br/>Educational → Mercantile row;<br/>Seasonal → Rental row"]:::step
+    torG -->|"Yes, other"| torL["BusnIncomeFactor[CovType,<br/>TypeOfRisk, Coins]"]:::step
+    torL -->|"TypeOfRisk blank or<br/>'Not Applicable' (Or test<br/>is always true)"| engR["Engine: refused<br/>(SingleResult miss, T-BI)"]:::eng
+    engR -.-> qR["ISO not asked: likely<br/>refuses too (C28-05)"]:::openq
+    tor0 --> bif
+    torC --> bif
+    torL --> bif
+    bif{"BI factor<br/>(first match)"}
+    bif -->|"unblanketed, MaxPeriod Yes"| bMP["MaxPeriodOfIndemnityFactor"]:::step
+    bif -->|"unbl., Monthly ≠ N/A"| bML["MonthlyLimitOfIndemnityFactor"]:::step
+    bif -->|"unbl., EE only"| bEE["ExtraExpenseFactor"]:::step
+    bif -->|"blanketed MP/Monthly/EE"| b1["1.0 (not the MP factor)"]:::step
+    bif -->|"otherwise"| bT["TypeOfRisk factor"]:::step
+    bMP --> agg
+    bML --> agg
+    bEE --> agg
+    b1 --> agg
+    bT --> agg
+    agg["Agg 0.999 if Limit = AnnualAggLimit<br/>(member: detail Limit = AggLimit)"]:::step
+    agg --> ou{"MP / Monthly / EE-only AND<br/>building in an op. unit?"}
+    ou -->|"Yes"| hi["Base = Location.<br/>HighestBusnIncomeFloodBaseRate"]:::step
+    hi --> oi["OI-122: max never stored.<br/>CRS grade → 0.0 → $0;<br/>no grade → LAST op-unit<br/>building's base rate"]:::openq
+    ou -->|"No"| bG{"Building's construction<br/>and FloodZone non-blank?"}
+    bG -->|"No"| base0["Base 0.0 (B-zone: $0)"]:::zero
+    bG -->|"Yes"| lc["FloodLossCost['Building',<br/>BUILDING's constr., zone]"]:::step
+    oi --> rate
+    base0 --> rate
+    lc --> rate
+    rate["Rate = r3(r3(Base x LCM) x Agg)<br/>Adjusted = r3(Rate x BI factor)<br/>no mod table, excess, CRS, ded"]:::step
+    rate --> inBl{"IncludedInBlkt = 'No'?"}
+    inBl -->|"Yes"| prem["Premium = Adjusted x Limit/100,<br/>x PackageMod, x IRPM, x CyberFlood,<br/>x parent's BI-flood COL factor; r0 each"]:::final
+    inBl -->|"No: member / blank"| m0["Premium 0.0; member writes<br/>Full100 = AnnualNetIncome<br/>to the blanket"]:::zero
+    m0 --> engZ["Engine: $0, 'rated'"]:::eng
+    prem -.-> nl["Limit absent: Product skips<br/>the null → $1 (OI-110)"]:::eng
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class coins,torG,bif,ou,bG,inBl gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>BI flood ignores the location's rating apparatus: CRS, a 100,000 deductible and excess all leave $926. Only a blank zone or missing General Information zeroes it.</li>
+            <li>The BI factor is a first-match choice: with EE 0.55 ($926), without EE $842, max period $1,935, EE-only $2,861. In a blanket, max period, monthly limit and EE-only all collapse to 1.0.</li>
+            <li>OI-122: the op-unit "highest" rate is never stored. With a CRS grade, $0; without, the last building's rate ($1,434 Frame-then-JM, $1,935 reversed). ISO does the same; chunk 25's ISO-pinned $0 / $531 still reproduce.</li>
+            <li>The Off-Premises flood factor is 1.02 whenever a BI flood record exists, even one priced $0 ($275 → $281).</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>Two engine-specific endings.</strong> A blank or "Not Applicable" type of risk refuses on BI (the "otherwise" test is an always-true Or), while SCBI's And gives $0 for the same input; ISO has not been asked. With no limit, BI prices $1 (the null limit is skipped, as ISO does elsewhere, OI-110).</div>
+      </div>
+    </section>
+
+    <!-- ============================= SCBI ============================= -->
+    <section class="sheet-view" id="view-scbi">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Special Class Business Income: flood record under SCBI</span></div>
+        <div class="field"><span class="k">Editions</span><span class="v">V04 = 2026; V02 differs in the EE-only blanket value</span></div>
+        <div class="field"><span class="k">Chain</span><span class="v">BI's 12 steps to :1142, then rate :1195, adjusted :1217</span></div>
+        <div class="field"><span class="k">Premium</span><span class="v">SetPremium :1413, BI's chain with the SCBI parent's cyber factor</span></div>
+        <div class="field wide"><span class="k">Gate</span><span class="v">IncludedInBlkt = "No", else 0.0. Its own ConstructionType; no operational-unit branch; type-of-risk "otherwise" is an And (blank or N/A → 0.0).</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["SCBI flood record (CP 10 65)<br/>under a Special Class item"]) --> coins{"Blanket member<br/>(Yes + ID + detail)?"}
+    coins -->|"Yes"| cBl["Coinsurance from detail ITV%<br/>(EQSubLimitPct table)"]:::step
+    coins -->|"No"| cOwn["Coinsurance = SCBI parent's<br/>CoinsuranceToUse"]:::step
+    cBl --> torG
+    cOwn --> torG
+    torG{"CovType not EE-only/blank<br/>and coinsurance valid?"}
+    torG -->|"No"| tor0["TypeOfRisk factor 0.0"]:::zero
+    torG -->|"Yes"| torK{"TypeOfRisk"}
+    torK -->|"combined / Educ. / Seasonal"| torC["Weighted or mapped<br/>BusnIncomeFactor rows"]:::step
+    torK -->|"other, non-blank,<br/>not N/A"| torL["BusnIncomeFactor[CovType,<br/>TypeOfRisk, Coins]"]:::step
+    torK -->|"blank or 'Not Applicable'"| torNA["0.0 (And test)<br/>T-SCBI: $0"]:::zero
+    torNA --> engZ1["Engine: $0, 'rated'"]:::eng
+    tor0 --> bif
+    torC --> bif
+    torL --> bif
+    bif{"BI factor<br/>(first match)"}
+    bif -->|"unbl., MaxPeriod Yes"| bMP["MaxPeriodOfIndemnityFactor"]:::step
+    bif -->|"unbl., Monthly ≠ N/A"| bML["MonthlyLimitOfIndemnityFactor"]:::step
+    bif -->|"unbl., EE only"| bEE["ExtraExpenseFactor"]:::step
+    bif -->|"blanketed EE/MP/Monthly"| b1["1.0"]:::step
+    bif -->|"otherwise"| bT["TypeOfRisk factor"]:::step
+    bMP --> agg
+    bML --> agg
+    bEE --> agg
+    b1 --> agg
+    bT --> agg
+    agg["Agg 0.999 if Limit = AnnualAggLimit<br/>(member: detail Limit = AggLimit)"]:::step
+    agg --> bG{"OWN ConstructionType<br/>and FloodZone non-blank?<br/>(no op-unit branch)"}
+    bG -->|"No"| base0["Base 0.0 (C-blank, B-zone)"]:::zero
+    bG -->|"Yes"| lc["FloodLossCost['Building',<br/>OWN constr., zone]"]:::step
+    lc -->|"no row"| engR["Engine: refused<br/>(C-SCBIWood)"]:::eng
+    lc -.-> msg["≠ SC flood construction:<br/>message only, both price"]:::step
+    base0 --> rate
+    lc --> rate
+    rate["Rate = r3(r3(Base x LCM) x Agg)<br/>Adjusted = r3(Rate x BI factor)<br/>no mod table, excess, CRS, ded"]:::step
+    rate --> inBl{"IncludedInBlkt = 'No'?"}
+    inBl -->|"Yes"| prem["Premium = Adjusted x Limit/100,<br/>x PackageMod, x IRPM, x CyberFlood,<br/>x parent's BI-flood COL factor; r0 each"]:::final
+    inBl -->|"No: member / blank"| m0["Premium 0.0; member writes<br/>Full100 = AnnualNetIncome"]:::zero
+    m0 --> engZ2["Engine: $0, 'rated'"]:::eng
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class coins,torG,torK,bif,bG,inBl gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>SCBI is BI's chain with the flood record's own construction in place of the building's (OH JM $687, Frame $926).</li>
+            <li>No operational-unit branch, so OI-122 never touches SCBI: it stays at its own lookup while BI drops to $0.</li>
+            <li>A blank or "Not Applicable" type of risk prices $0 here, but refuses on BI.</li>
+            <li>The SCBI Off-Premises record tests for this flood record (1.02 when it exists; XML only).</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>Every SCBI zero is "rated":</strong> blank construction, zone, type of risk or coinsurance, no General Information, members. The only refusal is a construction with no loss-cost row. With no limit it prices $1, like BI. In TX the county table moves SCBI as it moves BI (Galveston $664, Travis $576).</div>
+      </div>
+    </section>
+
+    <!-- ============================= BLANKET ============================= -->
+    <section class="sheet-view" id="view-blkt">
+      <div class="titleblock">
+        <div class="field"><span class="k">Records</span><span class="v">Policy FloodCovEndtBlktIndicator → one FloodCovEndtBlanketRating → 1–99 details (UnitNumber, Limit, Deductible, coverage flags, excess indicator, AggLimit; FL also ManualPremium)</span></div>
+        <div class="field"><span class="k">Editions</span><span class="v">Blanket and detail files byte-identical in V04 and 2026</span></div>
+        <div class="field"><span class="k">Join</span><span class="v">The member's flood record carries IncludedInBlkt "Yes" and BlanketIDNum = the detail's UnitNumber (the ordinary blanket uses BlktIDNum)</span></div>
+        <div class="field"><span class="k">Premium</span><span class="v">Detail only: r0(… r0(average rate x Limit/100) x Pkg x IRPM x 2 cyber); members 0.0</span></div>
+        <div class="field wide"><span class="k">Average rate</span><span class="v">r3(Σ members' r0(full value x own adjusted flood rate) ÷ Σ 100% values). No coinsurance, cause of loss or Average/Highest choice, unlike the ordinary blanket.</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    pol(["Policy FloodCovEndtBlktIndicator"]) --> att{"= 'Yes'?"}
+    att -->|"No / blank"| rem["Blanket record removed;<br/>members left 'Yes' price $0<br/>+ 'valid Flood Blanket ID' msg"]:::zero
+    att -->|"Yes"| det["Detail per blanket:<br/>UnitNumber, Limit, Deductible,<br/>6 coverage flags, Excess, AggLimit"]:::step
+    det --> join{"Member flood record:<br/>IncludedInBlkt 'Yes' &amp;<br/>BlanketIDNum = UnitNumber?"}
+    join -->|"ID blank / 0 / unmatched"| out["Out of every level; ITV 0,<br/>rate 0, $0 + 'valid ID' msg"]:::zero
+    join -->|"IncludedInBlkt blank"| outb["Neither member nor<br/>scheduled: $0, no ID msg"]:::zero
+    join -->|"Yes"| lev["Levels: Bldg / BPP / SC full value<br/>(no flag check); BI / SCBI only if<br/>flag 'Yes' (AnnualNetIncome).<br/>Excess detail: values &gt; NFIP max"]:::step
+    lev --> itv["Detail ITV = r4(Limit / sum of levels);<br/>% to use r0, floor 1; &gt; 100 gives 0"]:::step
+    itv --> ded{"Member deductible"}
+    ded -->|"Building"| dl["Location's, always"]:::step
+    ded -->|"BPP / SC, detail flag 'Yes'"| dd["Detail's Deductible"]:::step
+    ded -->|"BPP / SC, flag not 'Yes'"| dz["'' : mod. factor 0,<br/>value still counted (dilutes)"]:::zero
+    dl --> mr["Member rate on the detail's ITV %;<br/>TPV = blanket's Bldg+BPP+SC values;<br/>agg 0.999 if Limit = AggLimit &amp; flag"]:::step
+    dd --> mr
+    mr --> adj["AdjustedFull100% =<br/>r0(full value x own adjusted rate)"]:::step
+    adj --> avg["BlanketAverageRate =<br/>r3(sum adjusted / sum levels)"]:::step
+    avg --> prem["Detail premium = r0 chain:<br/>avg x Limit/100, pkg, IRPM,<br/>2 cyber flood factors"]:::final
+    adj --> mz["Members' own premium 0.0<br/>(no allocation back)"]:::zero
+    prem -.- e1["Engine: every $0 here ends 'rated';<br/>no flood input in SILENT_ZERO_INPUTS<br/>(542f0e1). Matches hand on every probe"]:::eng
+    dd -.- o1["CW 2023 V01 / V02 (MO; 12 states on<br/>2026-01-01): BPP &amp; SC keep the<br/>location deductible (TN $4,761 vs $4,996)"]:::openq
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class att,join,ded gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>The premium sits only on the detail; nothing is allocated back to the members. The ordinary blanket works the other way round. Two members price $3,363 at both OH dates.</li>
+            <li>Contents and Special Class take the detail's deductible only when the detail's matching flag is "Yes"; with the flag off they still add their value but rate 0 ($3,363 → $1,408). The building always takes the location's.</li>
+            <li>Dropping a member (blank or unmatched <code>BlanketIDNum</code>, blank <code>IncludedInBlkt</code>, blanket indicator "No") can push ITV over 100% and price the whole blanket $0.</li>
+            <li>Chunk 25's priced blankets reproduce offline: OR $1,273 / $1,731 / $1,952 / $7,644.</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>Older parents read the deductible differently.</strong> Under CW 2023 V01 and V02, blanketed contents and Special Class keep the location's deductible (TN $4,761 against $4,996); 12 states were on V01/V02 at 2026-01-01, only MO at 2026-09-17. State rewrites: AK (no blanket premium), FL (manual detail premium), NY (no cyber factors), WV (CP 10 68 message). MA $2,904 and NY $3,483 blankets are hand-verified but not ISO-checked.</div>
+      </div>
+    </section>
+
+    <!-- ============================= STATE MAP ============================= -->
+    <section class="sheet-view" id="view-states">
+      <div class="intro">
+        <h2>10 states rewrite flood; 37 / 7 / 2 by loss-cost source</h2>
+        <p>Every flood rule each state package overrides, diffed against its own CW parent at 2026-01-01 and 2026-09-17. No state's flood override set changes between the two dates; what changes is the countrywide parent (V01 / V02 states drop from 12 to 1).</p>
+      </div>
+      <div class="tablewrap">
+        <table class="grid">
+          <thead><tr><th>State</th><th>What it changes for flood</th></tr></thead>
+          <tbody>
+            <tr><th>AK</th><td>Manual premium on all five records (r0(r0(ManualPremium x Pkg) x IRPM)); rate rules emptied; the blanket detail has no premium. No loss-cost table.</td></tr>
+            <tr><th>FL</th><td>Manual premium on all five records and the blanket detail; totals and the blanket limit message emptied. No loss-cost table.</td></tr>
+            <tr><th>MA</th><td>County tables: Barnstable, Dukes and Nantucket; all-other table otherwise.</td></tr>
+            <tr><th>NC, NJ, SC, TX</th><td>County tables with an all-other fallback (TX also overrides the op-unit highest BI rate).</td></tr>
+            <tr><th>VA</th><td>County <em>and city</em> tables; a blank county and city falls to the all-other table.</td></tr>
+            <tr><th>NY</th><td>County tables; premium rules on all five records and the blanket detail drop the two cyber flood factors.</td></tr>
+            <tr><th>WV</th><td>CP 10 68 in place of CP 10 65 (every message), plus two state-only Ordinance or Law flood files priced on a manual premium.</td></tr>
+            <tr><th>AR, DC, RI</th><td>Flood touches only the Off-Premises flood factor. DC files no zone D (36 of 48 rows), so a zone D location refuses.</td></tr>
+            <tr><th>KS, VT</th><td>An older policy flood-blanket message.</td></tr>
+            <tr><th>MO</th><td>Nothing in its package, but its CW 2023 V02 parent: contents and SC keep the location deductible in a blanket, excess uses table 6 at 500,000, the OI-123 message fires.</td></tr>
+            <tr><th>NV, UT</th><td>Clean, but on CW 2023 V01 at 2026-01-01 (13 detail rules rewritten; same blanket-deductible reading as V02).</td></tr>
+            <tr><th>31 others</th><td>Clean: their own 48-row loss-cost table, no flood rule override.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============================= REVIEW ============================= -->
+    <section class="sheet-view" id="view-review">
+      <div class="intro">
+        <h2>Chunk 25's claims, re-checked</h2>
+        <p>No flood chain was ever drawn, so this table re-checks what chunk 25 (gated 2026-10-02) recorded. Its offline script 230_ still reproduces every ISO-pinned figure ($460 / $343 / $403 / $716 / $286 / $1,059 / $0 / $531), and the engine matched its hand model on every rated probe.</p>
+      </div>
+      <div class="tablewrap">
+        <table class="grid">
+          <thead><tr><th>#</th><th>Chunk 25 said</th><th>Engine / XML now shows</th><th>Kind</th></tr></thead>
+          <tbody>
+            <tr><th>1</th><td>In a blanket, contents and Special Class take the detail's deductible; the building the location's</td><td><strong>Only when the detail's matching flag is "Yes", and false under CW 2023 V01 / V02</strong> (TN $4,761 vs $4,996)</td><td><span class="tag bad">correction</span></td></tr>
+            <tr><th>2</th><td>OI-123: ISO fires the CP 10 65 location message in MO and ours doesn't</td><td>Closed 2026-10-05 (C28-07); ours now fires it too. The empty tests are in CW V01 and V02, not MO's package</td><td>out of date</td></tr>
+            <tr><th>3</th><td>All 46 states agree with ISO on a two-location policy with a blanket</td><td>True, but the blanket was $0 in all 44 rating states (ITV 111%); priced blankets were ISO-checked only in OR, IL, NC, MO and FL</td><td>clarified</td></tr>
+            <tr><th>4</th><td>The blanket is rewritten in AK, NY and WV</td><td>FL rewrites the detail too (manual premium)</td><td>incomplete</td></tr>
+            <tr><th>5</th><td>MO runs older rules (CW 2023 V02)</td><td>At 2026-01-01, 10 states were on V02 and 2 (NV, UT) on V01; only MO at 2026-09-17</td><td>clarified</td></tr>
+            <tr><th>6</th><td>Without the General Information record every flood record prices $0</td><td>With the indicator "Yes" and no record sent, an empty one is attached: $0 with no message</td><td>clarified</td></tr>
+            <tr><th>7</th><td>OI-122: the op-unit highest rate never stores its maximum</td><td>Confirmed, and order-dependent ($1,434 vs $1,935); SCBI has no op-unit branch</td><td>clarified</td></tr>
+            <tr><th>8</th><td>BI factor = max period / monthly / EE else type of risk</td><td>In a blanket all three collapse to 1.0</td><td>incomplete</td></tr>
+            <tr><th>9</th><td>Annual aggregate 0.999 when Limit = AnnualAggregateLimit</td><td>Also when both are blank</td><td>incomplete</td></tr>
+            <tr><th>10</th><td>Off-Premises flood factor 1.02 with a BI flood record</td><td>SCBI's Off-Premises record has the same test on its own flood record (XML)</td><td>clarified</td></tr>
+            <tr><th>11</th><td>Loss cost from state tables (37), county (7) or none (AK, FL)</td><td>Confirmed; VA is counties and cities; DC files no zone D, which refuses</td><td>incomplete</td></tr>
+            <tr><th>12</th><td>Zero endings</td><td>New since chunk 25: no flood field is in the C28-17 list, so every flood $0 is "rated"; BI's blank type of risk refuses where SCBI's prices $0</td><td>incomplete</td></tr>
+            <tr><td colspan="4">Confirmed: deductible → one of seven tables, keyed and interpolated; zone a loss-cost key, floor and stories statistics only; CRS only with a grade; excess only at 750,000 / 1,000,000 above the NFIP maximum; ITV over 100% → $0, $1 over still prices; filed zeros in tables 5–7; FloodCovIndicator No zeroes the location value; SC on the Building row with its own construction; BI / SCBI with no table, excess or CRS; members $0 and the detail priced; 10 states rewrite flood; WV CP 10 68 and two O&amp;L files; 46 flood messages (39 texts); the policy total moves by exactly the flood premiums; V04 = 2026.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="doc-footer">
+  Sources: the built engine (<strong>cf_engine</strong> / interpreter at 542f0e1; probed at d98efe5), offline on 2026-10-06 with no calls to ISO: location, Building and Contents in OH and VA; Special Class, BI and SCBI in OH and TX; the flood blanket in OH, OR, MA, NY, TN, NV, UT and MO; manual premium in AK and FL; DC's zone D; each at a date resolving CW 2023-08 V04 (or the state's older parent) and one resolving CW 2026-06; the state map across all 46 states at both dates. ISO rule XML is under <code>F:\ISO_ERC_Files\CF</code>. Chunk 25's records are <code>docs/CF-CHUNK25-GATE.md</code> and <code>CF-CHUNK25-TASKS.md</code>.
+</footer>
+
+<script>
+  (function () {
+    var toc = document.getElementById('toc');
+    var main = document.getElementById('main');
+
+    function activate(target) {
+      var views = main.querySelectorAll('.sheet-view');
+      for (var i = 0; i < views.length; i++) views[i].classList.remove('active');
+      var view = document.getElementById('view-' + target);
+      if (view) view.classList.add('active');
+
+      var links = toc.querySelectorAll('.navlink');
+      for (var j = 0; j < links.length; j++) {
+        links[j].classList.toggle('active', links[j].getAttribute('data-target') === target);
+      }
+      main.scrollTop = 0;
+      window.scrollTo(0, 0);
+    }
+
+    document.addEventListener('click', function (e) {
+      var btn = e.target.closest('button[data-target]');
+      if (btn) activate(btn.getAttribute('data-target'));
+    });
+
+    var hash = location.hash.slice(1);
+    if (hash && document.getElementById('view-' + hash)) activate(hash);
+  })();
+</script>
+
+<style>.mermaid-rendering .sheet-view{display:block!important}</style>
+<script type="module">
+  // Render every diagram once, with all sheets briefly visible so hidden tabs get real sizes.
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({ startOnLoad: false, securityLevel: "strict", flowchart: { wrappingWidth: 260 } });
+  document.documentElement.classList.add("mermaid-rendering");
+  try { await mermaid.run({ querySelector: "pre.mermaid" }); }
+  finally { document.documentElement.classList.remove("mermaid-rendering"); }
+</script>
+</body>
+</html>
