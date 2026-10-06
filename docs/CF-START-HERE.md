@@ -18,7 +18,7 @@ with the user's go; all 34 newer ISO packages in; OI-116 closed and OI-117 to th
 decisions at the gate). Full gate clean: `206_` (2,074), `157_ --all` 293 of 293, `104_ --gate` 173.
 **Chunks 1 to 28 are all gated; the build order has no chunk 29.** What is left is outside the plan: the
 Property side of the app (since 2026-10-06, `096f2b0`: `start.bat`, choose Commercial Property, a state; one office
-risk rated and compared with ISO; 46 states offline, OH CA TX NY equal ISO live; **FL disagrees, OI-133**: ISO refuses on
+risk rated and compared with ISO; 46 states offline, 45 of 46 equal ISO live; **FL disagrees, OI-133**: ISO refuses on
 its empty cyber exclusion table, ours falls back to countrywide; status page "Property in the app"), option (c) of Set G (a neutral shared core, worth it as that app grows), the parking lot (OI-117), and refreshing the corpus when ISO
 files newer packages (`242_`, then `255_ --write`; C28-19 refuses any state that falls behind).
 
