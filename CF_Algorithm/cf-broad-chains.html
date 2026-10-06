@@ -1,0 +1,844 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Broad Form Rating Chains</title>
+<style>
+  :root {
+    --ink: #101b24;
+    --paper: #edf0ec;
+    --paper-line: #c7d2ce;
+    --blueprint: #2e6e8e;
+    --blueprint-soft: #e4ebef;
+    --stamp: #c77f32;
+    --caution: #b14b39;
+    --ledger: #3f8f6e;
+    --surface: #f4f6f3;
+    --panel: #ffffff;
+    --sidebar: #e8ede8;
+    --text: var(--ink);
+    --muted: #5b6b72;
+    --border: #cdd6d2;
+    --font-display: Cambria, 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+    --font-body: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+    --font-mono: 'Cascadia Code', 'Cascadia Mono', Consolas, 'SFMono-Regular', ui-monospace, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --surface: #0b141a;
+      --panel: #101b22;
+      --sidebar: #0e1a20;
+      --text: #e7ece9;
+      --muted: #93a3a0;
+      --border: #223138;
+      --blueprint-soft: #16232b;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --surface: #0b141a;
+    --panel: #101b22;
+    --sidebar: #0e1a20;
+    --text: #e7ece9;
+    --muted: #93a3a0;
+    --border: #223138;
+    --blueprint-soft: #16232b;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; background: var(--surface); color: var(--text);
+    font-family: var(--font-body); -webkit-font-smoothing: antialiased;
+  }
+  body { display: flex; flex-direction: column; min-height: 100vh; }
+  a { color: inherit; }
+  code { font-family: var(--font-mono); font-size: 0.92em; }
+  ::selection { background: var(--stamp); color: #101b24; }
+
+  /* header */
+  header.masthead {
+    display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap;
+    padding: 1.1rem 1.6rem; border-bottom: 1px solid var(--border);
+    background: var(--panel);
+  }
+  header.masthead h1 {
+    font-family: var(--font-display); font-weight: 600; font-size: 1.35rem;
+    margin: 0; letter-spacing: 0.01em; text-wrap: balance;
+  }
+  header.masthead .rule { width: 1px; align-self: stretch; background: var(--border); }
+  header.masthead p { margin: 0; font-size: 0.82rem; color: var(--muted); max-width: 52ch; }
+  header.masthead .src {
+    margin-left: auto; font-family: var(--font-mono); font-size: 0.72rem;
+    color: var(--muted); text-align: right; line-height: 1.5;
+  }
+
+  /* shell */
+  .shell { display: flex; flex: 1; min-height: 0; }
+
+  nav.toc {
+    width: 258px; flex: none; background: var(--sidebar);
+    border-right: 1px solid var(--border);
+    padding: 1rem 0 2rem; overflow-y: auto;
+  }
+  nav.toc .group-label {
+    font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--muted); padding: 0.5rem 1.2rem 0.35rem;
+  }
+  nav.toc button.navlink {
+    display: block; width: 100%; text-align: left; background: none; border: none;
+    font-family: var(--font-body); font-size: 0.86rem; color: var(--text);
+    padding: 0.42rem 1.2rem 0.42rem 1.6rem; cursor: pointer;
+    border-left: 3px solid transparent;
+  }
+  nav.toc button.navlink:hover { background: var(--blueprint-soft); }
+  nav.toc button.navlink.active {
+    background: var(--blueprint-soft); border-left-color: var(--blueprint); font-weight: 600;
+  }
+  nav.toc button.navlink .chain-len {
+    display: block; font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); font-weight: 400;
+  }
+  nav.toc hr { border: none; border-top: 1px solid var(--border); margin: 0.6rem 1.2rem; }
+
+  nav.toc .legend {
+    margin: 1rem 1.2rem 0; padding: 0.8rem 0.9rem; border: 1px solid var(--border);
+    border-radius: 3px; background: var(--panel);
+  }
+  nav.toc .legend h4 {
+    margin: 0 0 0.5rem; font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--muted); font-weight: 600;
+  }
+  nav.toc .legend .row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.74rem; margin-bottom: 0.35rem; }
+  nav.toc .legend .swatch { width: 13px; height: 13px; flex: none; border-radius: 2px; border-width: 1.5px; border-style: solid; }
+  .sw-gate { background: #f4e4ce; border-color: #c77f32; }
+  .sw-zero { background: #f3dcd6; border-color: #b14b39; }
+  .sw-final { background: #dceee4; border-color: #3f8f6e; }
+  .sw-step { background: #e4ebef; border-color: #2e6e8e; }
+  .sw-openq { background: #f4e4ce; border-color: #b14b39; border-style: dashed !important; }
+  .sw-engine { background: #e6e1f0; border-color: #5a4c8a; }
+
+  main { flex: 1; min-width: 0; overflow-y: auto; padding: 1.6rem 2rem 4rem; }
+
+  .intro { max-width: 70ch; margin-bottom: 1.4rem; }
+  .intro h2 { font-family: var(--font-display); font-size: 1.25rem; margin: 0 0 0.5rem; text-wrap: balance; }
+  .intro p { font-size: 0.92rem; line-height: 1.6; color: var(--muted); margin: 0 0 0.6rem; }
+
+  /* tables */
+  .tablewrap { overflow-x: auto; margin-bottom: 1.4rem; }
+  table.grid { border-collapse: collapse; width: 100%; max-width: 1100px; background: var(--panel); }
+  table.grid caption {
+    text-align: left; font-family: var(--font-mono); font-size: 0.7rem; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem;
+  }
+  table.grid th, table.grid td {
+    border: 1px solid var(--border); padding: 0.5rem 0.7rem; font-size: 0.82rem;
+    text-align: left; vertical-align: top; line-height: 1.45;
+  }
+  table.grid thead th {
+    font-family: var(--font-mono); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--muted); background: var(--blueprint-soft); font-weight: 600;
+  }
+  table.grid tbody th { font-weight: 600; white-space: nowrap; }
+  table.grid td.num { font-family: var(--font-mono); text-align: right; white-space: nowrap; }
+  table.grid tr.hl td, table.grid tr.hl th { background: var(--blueprint-soft); }
+  table.grid td .tag {
+    font-family: var(--font-mono); font-size: 0.66rem; padding: 0.05rem 0.35rem; border-radius: 2px;
+    border: 1px solid var(--border); color: var(--muted); white-space: nowrap;
+  }
+  table.grid td .tag.a { border-color: var(--blueprint); color: var(--blueprint); }
+  table.grid td .tag.b { border-color: var(--ledger); color: var(--ledger); }
+  table.grid td .tag.bad { border-color: var(--caution); color: var(--caution); }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.9rem; max-width: 1100px; margin-bottom: 1.4rem; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 3px; padding: 0.9rem 1rem; }
+  .card .k { font-family: var(--font-mono); font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
+  .card .v { font-family: var(--font-display); font-size: 1.5rem; margin: 0.2rem 0 0.25rem; font-variant-numeric: tabular-nums; }
+  .card p { margin: 0; font-size: 0.8rem; color: var(--muted); line-height: 1.45; }
+  .card button.go {
+    margin-top: 0.6rem; background: none; border: 1px solid var(--blueprint); color: var(--blueprint);
+    font-family: var(--font-mono); font-size: 0.7rem; padding: 0.3rem 0.6rem; border-radius: 2px; cursor: pointer;
+  }
+  .card button.go:hover { background: var(--blueprint-soft); }
+
+  /* sheet */
+  .sheet-view { display: none; }
+  .sheet-view.active { display: block; }
+
+  .titleblock {
+    display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--border);
+    margin-bottom: 1.1rem; background: var(--panel);
+  }
+  .titleblock .field { padding: 0.6rem 0.9rem; border-right: 1px solid var(--border); }
+  .titleblock .field:last-child { border-right: none; }
+  .titleblock .field .k {
+    font-family: var(--font-mono); font-size: 0.63rem; text-transform: uppercase; letter-spacing: 0.07em;
+    color: var(--muted); display: block; margin-bottom: 0.15rem;
+  }
+  .titleblock .field .v { font-family: var(--font-mono); font-size: 0.82rem; color: var(--text); line-height: 1.35; }
+  .titleblock .field.wide { grid-column: span 4; border-top: 1px solid var(--border); border-right: none; }
+
+  .sheet {
+    background: var(--paper); border: 1px solid var(--paper-line); border-radius: 2px;
+    padding: 1.4rem 1.2rem 1rem; position: relative; overflow-x: auto;
+    background-image:
+      linear-gradient(var(--paper-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--paper-line) 1px, transparent 1px);
+    background-size: 28px 28px; background-position: -1px -1px;
+    background-color: var(--paper);
+  }
+  .sheet .corner { position: absolute; width: 14px; height: 14px; }
+  .sheet .corner.tl { top: 6px; left: 6px; border-top: 1.5px solid #7d8f8a; border-left: 1.5px solid #7d8f8a; }
+  .sheet .corner.tr { top: 6px; right: 6px; border-top: 1.5px solid #7d8f8a; border-right: 1.5px solid #7d8f8a; }
+  .sheet .corner.bl { bottom: 6px; left: 6px; border-bottom: 1.5px solid #7d8f8a; border-left: 1.5px solid #7d8f8a; }
+  .sheet .corner.br { bottom: 6px; right: 6px; border-bottom: 1.5px solid #7d8f8a; border-right: 1.5px solid #7d8f8a; }
+  .sheet pre.mermaid { margin: 0; background: transparent; min-width: 760px; color: #101b24; }
+
+  .notes { margin-top: 1.1rem; display: grid; grid-template-columns: 1.4fr 1fr; gap: 1.2rem; }
+  .notes h3 {
+    font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--muted); margin: 0 0 0.5rem;
+  }
+  .notes ul { margin: 0; padding-left: 1.1rem; font-size: 0.86rem; line-height: 1.55; }
+  .notes ul li { margin-bottom: 0.4rem; }
+  .notes .delta { border: 1px solid var(--border); background: var(--panel); padding: 0.8rem 0.9rem; border-radius: 3px; font-size: 0.86rem; line-height: 1.55; }
+  .notes .delta.openq { border-color: var(--caution); }
+  .notes .delta + .delta { margin-top: 0.8rem; }
+
+  h3.section {
+    font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--muted); margin: 1.6rem 0 0.6rem;
+  }
+
+  footer.doc-footer {
+    padding: 1rem 2rem 2rem; font-size: 0.76rem; color: var(--muted); border-top: 1px solid var(--border);
+  }
+  footer.doc-footer strong { color: var(--text); }
+
+  @media (max-width: 900px) {
+    .notes { grid-template-columns: 1fr; }
+    .titleblock { grid-template-columns: 1fr 1fr; }
+    .titleblock .field.wide { grid-column: span 2; }
+  }
+  @media (max-width: 720px) {
+    .shell { flex-direction: column; }
+    nav.toc { width: 100%; border-right: none; border-bottom: 1px solid var(--border); padding: 0.6rem 0; }
+    nav.toc .legend { display: none; }
+    main { padding: 1.2rem 16px 3rem; }
+    header.masthead { padding: 1rem 16px; }
+    header.masthead .src { margin-left: 0; text-align: left; }
+    header.masthead .rule { display: none; }
+    .titleblock { grid-template-columns: 1fr; }
+    .titleblock .field { border-right: none; border-bottom: 1px solid var(--border); }
+    .titleblock .field.wide { grid-column: span 1; }
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <h1>Broad Form Rating Chains</h1>
+  <div class="rule"></div>
+  <p>Every gate, branch and terminal in the Commercial Property Broad cause-of-loss form (adds water damage, collapse, falling objects and weight of snow) for the five coverages that rate it: Building, Personal Property, Special Class, Business Income and Special Class Business Income. Every rule and branch is checked against the built engine and ISO's rule XML as of 2026-10-06. CW 2023-08 V04 and CW 2026-06 are drawn together because their Broad rules are byte-identical.</p>
+  <div class="src">Engine at 542f0e1 (stage2-interpreter, after the C28-17/18 silent-zero refusals)<br>Rule files: CommercialProperty{Structure, PersonalProperty, SpecialClass, BusinessIncome, SpecialClassBusnIncome}Rules + each coverage's BroadCoverageRules · BroadFormBaseRate<br>Companion: cf-bgi-chains.html · cf-bgii-chains.html · docs/CF-CHUNK3-BROAD-STRUCTURE.md</div>
+</header>
+
+<div class="shell">
+  <nav class="toc" id="toc">
+    <button class="navlink active" data-target="overview">Overview<span class="chain-len">one small table, an extra premium</span></button>
+    <hr>
+    <div class="group-label">Decision chains</div>
+    <button class="navlink" data-target="bldg">Building<span class="chain-len">construction-keyed · 6 rules</span></button>
+    <button class="navlink" data-target="pp">Personal Property<span class="chain-len">building's deductible · LOI first</span></button>
+    <button class="navlink" data-target="sc">Special Class<span class="chain-len">"Frame" and "Bldg" pinned · PolicyType test</span></button>
+    <button class="navlink" data-target="bi">Business Income<span class="chain-len">2 rules · no factor</span></button>
+    <button class="navlink" data-target="scbi">Special Class Business Income<span class="chain-len">own "Frame" pin · own cause of loss</span></button>
+    <hr>
+    <div class="group-label">Comparison</div>
+    <button class="navlink" data-target="diff">Side by side<span class="chain-len">steps across 5 coverages · states · editions</span></button>
+    <hr>
+    <div class="group-label">Review</div>
+    <button class="navlink" data-target="review">Why the old sheets were replaced<span class="chain-len">41 items · 3 corrections</span></button>
+
+    <div class="legend">
+      <h4>Reading the chains</h4>
+      <div class="row"><span class="swatch sw-gate"></span> gate / branch condition</div>
+      <div class="row"><span class="swatch sw-step"></span> computed factor</div>
+      <div class="row"><span class="swatch sw-final"></span> premium resolves</div>
+      <div class="row"><span class="swatch sw-zero"></span> zero, refusal or clamp</div>
+      <div class="row"><span class="swatch sw-openq"></span> silent gap / open question</div>
+      <div class="row"><span class="swatch sw-engine"></span> engine layer, not an ISO rule</div>
+    </div>
+  </nav>
+
+  <main id="main">
+
+    <!-- ============================= OVERVIEW ============================= -->
+    <section class="sheet-view active" id="view-overview">
+      <div class="intro">
+        <h2>A small extra premium from one table, switched on by "Broad"</h2>
+        <p>Broad is charged on top of Basic Group I and II, not instead of them: a Broad Business Income in Utah pays Group I $1,390, Group II $70 and Broad $230. Every coverage reads one countrywide table, <code>BroadFormBaseRate</code>, keyed by construction and a coverage-type row. Building uses Bldg / BldrRisk rows (0.015 / 0.010 / 0.012), Contents PersProp (0.021 / 0.011), Business Income "Without Extra Expense" or "All Other" (0.011 or 0.023). Special Class and its Business Income pin the construction to "Frame".</p>
+        <p>Each coverage's Broad record is created whatever the cause of loss and switched on only when the cause of loss is exactly "Broad". The rules and the table are byte-identical in CW 2023-08 V04 and CW 2026-06, and only PR files its own Broad rates. Probes ran in ME and OK (Building, Contents), OH (Special Class) and UT and IN (Business Income).</p>
+      </div>
+
+      <div class="cards">
+        <div class="card">
+          <div class="k">Editions</div>
+          <div class="v">No change</div>
+          <p>All ten Broad rule files and <code>BroadFormBaseRate</code> are byte-identical in CW 2023 V04 and CW 2026-06. No state overrides the Business Income chain at all.</p>
+          <button class="go" data-target="diff">Side by side →</button>
+        </div>
+        <div class="card">
+          <div class="k">Blank IncludedInBlkt</div>
+          <div class="v">$0, "rated"</div>
+          <p>On Business Income a blank value falls to the blanket side and zeroes Broad, Group I and Group II together, with the coverage switched on and no message.</p>
+          <button class="go" data-target="bi">See Business Income →</button>
+        </div>
+        <div class="card">
+          <div class="k">Biggest correction</div>
+          <div class="v">Not inherited</div>
+          <p>SC Business Income's "Frame" pin is its own literal, not borrowed from the item. It reads only the item's loss cost multiplier, and only when it sends none.</p>
+          <button class="go" data-target="scbi">Open chain →</button>
+        </div>
+      </div>
+
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart LR
+    tbl(["BroadFormBaseRate<br/>construction x row"]) --> bldg["Building: Bldg / BldrRisk row<br/>x LCM x roof x coins x LOI x ded"]:::step
+    tbl --> pp["Contents: PersProp row<br/>x LCM x coins x LOI x building's ded"]:::step
+    tbl --> bi["Business Income: WO-EE / All Other<br/>row x LCM, nothing else"]:::step
+    tbl -->|"'Frame', 'Bldg' pinned"| sc["Special Class: x LCM<br/>x coins x ded"]:::step
+    tbl -->|"'Frame' pinned"| scbi["SC Business Income:<br/>row x LCM, nothing else"]:::step
+    bldg --> f1["+ to Group I and II"]:::final
+    pp --> f1
+    bi --> f1
+    sc --> f1
+    scbi --> f1
+
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>No coverage has a cause-of-loss adjustment step in Broad: no sprinkler, vandalism or wind/hail terms.</li>
+            <li>Business Income and SC Business Income ignore the Business Income factor entirely: coinsurance, max period, monthly limit and operational unit all leave Broad unchanged.</li>
+            <li>On a blanket, the cause of loss is the blanket Detail's. A Broad item in a Basic blanket gets no Broad premium.</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>What the engine now refuses.</strong> C28-17 refuses a blank building <code>Deductible</code> on Broad, but only when the submitted cause of loss is "Broad" and the cover type is blank or "Building". Special Class's blank deductible, a blank <code>PolicyType</code>, Limit 0, a blank construction and a blank <code>IncludedInBlkt</code> on Business Income all still price $0 with outcome "rated", as ISO does. Off-domain construction types and unfiled deductibles refuse at the table lookup.</div>
+      </div>
+    </section>
+
+    <!-- ============================= BUILDING ============================= -->
+    <section class="sheet-view" id="view-bldg">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Building / Structure</span></div>
+        <div class="field"><span class="k">Editions</span><span class="v">CW 2023-08 V04 = CW 2026-06 (byte-identical)</span></div>
+        <div class="field"><span class="k">Master chain</span><span class="v">SetBroadRatesAndFactors :9063 (StructureRules), 6 rules: Base :9073 → Rate :9159 → LOI :9178 → Adjusted :9373 → Deductible :9398 → Final :9506. Runs after Group I and II, whatever the cause of loss.</span></div>
+        <div class="field"><span class="k">Premium file</span><span class="v">…StructureBuildingBroadCoverageRules SetPremium :60; outer Builders Risk reporting test :62</span></div>
+        <div class="field wide"><span class="k">Coverage gate</span><span class="v">CauseOfLossToUse = "Broad" exactly (:32). For a blanketed building CauseOfLossToUse is the blanket's BlktCauseOfLossValue (:857).</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["Broad building record<br/>CW 2023-08 V04 = CW 2026-06"]) --> colUse["CauseOfLossToUse = BlktCauseOfLossValue<br/>if IncludedInBlkt = Yes, else CauseOfLoss"]:::step
+    colUse --> baseGate{"CauseOfLossToUse = 'Broad' AND<br/>ConstructionTypeToUse set?"}
+    baseGate -->|"No"| baseZero["BaseRate = 0.0"]:::zero
+    baseGate -->|"Yes"| classGate{"ClassCode = 1150?"}
+    classGate -->|"Yes"| brLookup["BroadFormBaseRate 'BldrRisk'<br/>CW 0.012, any construction"]:::step
+    classGate -->|"No"| bldgLookup["BroadFormBaseRate 'Bldg'<br/>CW 0.015; 0.010 MFR / FR"]:::step
+    brLookup --> rate["Rate = r3(Base x LCM)"]:::step
+    bldgLookup --> rate
+    baseZero --> rate
+    rate --> loiGate{"LOI branch?"}
+    loiGate -->|"IncludedInBlkt = Yes,<br/>BlktIDNum &gt; 0"| loiBlkt["Copy BlktBroadLOIFactor"]:::step
+    loiGate -->|"Builders Risk +<br/>BR reporting form"| loiBR["Lookup on the form's limit<br/>(0.0 if limit 0)"]:::step
+    loiGate -->|"not Leasehold / LL /<br/>No Coverage, Limit &gt; 0"| loiLook["Lookup BroadSpecialLOIFactorBldg<br/>(shared with Special)"]:::step
+    loiGate -->|"otherwise, incl. Limit 0"| loiOne["LOI = 1.0"]:::step
+    roof["RoofACV: lookup only for a<br/>Commercial Property Policy with a<br/>roof record 'Paragraph A' / 'A and B';<br/>else 1.0"]:::step --> adj
+    coins["CoinsuranceFactor: the shared one<br/>(80% 1.0, 90% 0.95, 100% 0.90,<br/>50-70% / None 1.5, blank 1.0;<br/>1150 / Functional = 1.0)"]:::step --> adj
+    loiBlkt --> adj["Adjusted = r3(r3(r3(Rate x RoofACV)<br/>x Coins) x LOI)"]:::step
+    loiBR --> adj
+    loiLook --> adj
+    loiOne --> adj
+    adj --> dedStd{"Deductible?"}
+    dedStd -->|"250"| ded250["Lookup Deductible250Factor<br/>'Broad' (CW 1.05)"]:::step
+    dedStd -->|"Not Applicable"| dedOne["Ded = 1.0"]:::step
+    dedStd -->|"other value"| dedLook["Lookup DeductibleFactor on<br/>TotAmtInsurance,<br/>'Other Cause Of Loss'"]:::step
+    dedStd -->|"blank"| dedZero["Ded = 0.0"]:::zero
+    dedLook -->|"unfiled amount"| refDed["Refused: SingleResult no row<br/>(Group I's lookup fails first)"]:::eng
+    dbl["DedByLoc: shared rule, any<br/>by-location Deductible (CW 0.995),<br/>else 1.0"]:::step --> final
+    ded250 --> final["Final = r3(r3(Adjusted x DedByLoc)<br/>x Ded x MultiResCredit)"]:::step
+    dedOne --> final
+    dedLook --> final
+    dedZero --> final
+    final --> covGate{"CauseOfLossToUse = 'Broad'?"}
+    covGate -->|"No"| premZero1["Coverage off, Premium = 0.0"]:::zero
+    covGate -->|"Yes"| brGate{"BR reporting form AND<br/>CovType Builders Risk?"}
+    brGate -->|"Yes"| premZero2["Premium = 0.0"]:::zero
+    brGate -->|"No"| covType{"CovType / IncludedInBlkt?"}
+    covType -->|"BR / Building / I&amp;B / Condo Assn,<br/>IncludedInBlkt = No,<br/>CauseOfLoss = Broad"| branchA["Premium = r0(IRPM x MultiPrem<br/>x PackageMod x Final x Limit/100)<br/>x 2 cyber Broad factors"]:::final
+    covType -->|"Legal Liability,<br/>CauseOfLoss = Broad"| branchB["Premium = r3(r3(BroadRate x LLFactor)<br/>x AddlInsInt) x Limit/100 x PackageMod<br/>x IRPM x cyber: no coins, LOI, ded"]:::final
+    covType -->|"not Leasehold, IncludedInBlkt = Yes,<br/>BlktCauseOfLossValue = Broad"| blktGate{"BlktTotalFullValueAmount &gt; 0?"}
+    blktGate -->|"No"| premZero3["Premium = 0.0"]:::zero
+    blktGate -->|"Yes"| branchC["Premium = r0(IRPM x MultiPrem x PackageMod<br/>x BlktLimit/100 x FullBldgValue/BlktTotal<br/>x BlktBroadAvgRate) x cyber"]:::final
+    covType -->|"Leasehold, IncludedInBlkt blank,<br/>or blanket COL not Broad"| premZero4["Premium = 0.0"]:::zero
+    baseGate -.- ctRef["Engine: an off-domain ConstructionType<br/>(e.g. 'Joisted Masonry') is refused,<br/>SingleResult no row; blank rates $0"]:::eng
+    dedZero -.- c28["Engine C28-17 refuses only when submitted<br/>CauseOfLoss = 'Broad', CovType blank or<br/>Building, and Broad is on at $0"]:::eng
+    premZero3 -.- silent["Engine: every other 0.0 here rates<br/>silently, outcome 'rated'"]:::eng
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class baseGate,classGate,loiGate,dedStd,covGate,brGate,covType,blktGate gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>Six rules and no cause-of-loss step. Construction and class 1150 are the only risk inputs; a blank class still rates Broad at $16 while Group I prices $0.</li>
+            <li>The roof factor sits in the adjusted rate. At countrywide rates it rounds away; with LCM 3.0 it shows ($50 against $51).</li>
+            <li>Limit 0 does not give LOI 0.0: the "Limit &gt; 0" test is in the branch condition, so the inner 0.0 can never run. Limit 0 prices $0 through Limit/100.</li>
+            <li>Legal Liability uses the raw Broad rate: no coinsurance, LOI or deductible. A blank deductible still prices it at $4.</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>The blank-deductible zero now refuses, in its plainest form only.</strong> C28-17 refuses it when the <em>submitted</em> <code>CauseOfLoss</code> is "Broad" and <code>CovType</code> is blank or "Building". Improvements and Betterments, Condominium Association and Builders Risk buildings, and a blanketed building whose own <code>CauseOfLoss</code> is blank (the check reads <code>CauseOfLoss</code>, not <code>CauseOfLossToUse</code>) still price $0 "rated". So do a blank construction, Limit 0 and a blanket at 0. <strong>State watch-items:</strong> PR files its own rates and LOI tables; AL, KS and RI multiply by <code>PublicInstitutionalPlanFactor</code>; FL and WV drop the roof factor; FL also drops deductible-by-location.</div>
+      </div>
+    </section>
+
+    <!-- ============================= PERSONAL PROPERTY ============================= -->
+    <section class="sheet-view" id="view-pp">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Personal Property (one record per occupancy class)</span></div>
+        <div class="field"><span class="k">Editions</span><span class="v">CW 2023-08 V04 = CW 2026-06 (byte-identical)</span></div>
+        <div class="field"><span class="k">Master chain</span><span class="v">SetBroadRatesAndFactors :4138 (PersonalPropertyRules), 5 rules, LOI first: LOI :4147 → Base :4235 → Rate :4285 → Adjusted :4338 → Final :4360</span></div>
+        <div class="field"><span class="k">Premium file</span><span class="v">…PrsnlPropBroadCoverageRules SetPremium :64 (blanket a plain divide, no Truncate)</span></div>
+        <div class="field wide"><span class="k">Coverage gate</span><span class="v">No SCP and no value-reporting form AND the item's own CauseOfLossToUse = "Broad". From the building: construction (:4245), DeductibleFactorBroad (:4375), deductible-by-location (:2399).</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["PP item, 1 of N per occupancy<br/>CW 2023-08 V04 = CW 2026-06"]) --> colUse["CauseOfLossToUse = the ITEM's<br/>CauseOfLoss (blanket: BlktCauseOfLossValue)"]:::step
+    colUse --> loiGate{"LOI branch?<br/>(runs first)"}
+    loiGate -->|"IncludedInBlkt = Yes,<br/>BlktIDNum &gt; 0"| loiBlkt["Copy BlktBroadLOIFactor"]:::step
+    loiGate -->|"building not LL, item not<br/>Tobacco, OccupTotalLOI &gt; 0"| loiLook["Lookup BroadSpecialLOIFactorPrsnlProp<br/>on OccupTotalLOIToUse"]:::step
+    loiGate -->|"otherwise"| loiOne["LOI = 1.0"]:::step
+    loiBlkt --> baseGate{"CauseOfLossToUse = 'Broad' AND<br/>building's ConstructionTypeToUse set?"}
+    loiLook --> baseGate
+    loiOne --> baseGate
+    baseGate -->|"No"| baseZero["BaseRate = 0.0"]:::zero
+    baseGate -->|"Yes"| lookup["BroadFormBaseRate 'PersProp'<br/>CW 0.021; 0.011 MFR / FR<br/>no class 1150 branch"]:::step
+    lookup --> vpGate{"CauseOfLossToUse not Broad<br/>OR Valuable Papers?"}
+    baseZero --> vpGate
+    vpGate -->|"Yes"| rateZero["Rate = 0.0"]:::zero
+    vpGate -->|"No"| rate["Rate = r3(Base x LCM)"]:::step
+    coins["CoinsuranceFactor: the item's own<br/>(80% 1.0, 90% 0.95, 70% / None 1.5,<br/>Functional 1.0)"]:::step --> adj
+    rate --> adj["Adjusted = r3(LOI x r3(Rate x Coins))<br/>no roof factor"]:::step
+    rateZero --> adj
+    inh["Copied from the building: DedByLoc and<br/>DeductibleFactorBroad, set even when the<br/>building is not Broad. The item's own<br/>Deductible is never read"]:::step --> final
+    adj --> final["Final = r3(r3(Adjusted x DedByLoc)<br/>x building's DeductibleFactorBroad)<br/>no MultiResCredit"]:::step
+    final --> covGate{"No SCP record, no VRF record<br/>AND CauseOfLossToUse = 'Broad'?"}
+    covGate -->|"No"| premZero1["Coverage off, Premium = 0.0"]:::zero
+    covGate -->|"Yes"| covForm{"CovForm / IncludedInBlkt?"}
+    covForm -->|"not LL / Tobacco / ClassRatedOnly,<br/>IncludedInBlkt = No,<br/>CauseOfLoss = Broad"| branchA["Premium = r0(IRPM x MultiPrem<br/>x PackageMod x Final x Limit/100)<br/>x 2 cyber Broad factors"]:::final
+    covForm -->|"Legal Liability Coverage Form<br/>(no cause-of-loss test)"| branchB["Premium = Limit/100 x r3(AddlInsInt<br/>x r3(LegalLiabFactor x BroadRate))<br/>x PackageMod x IRPM x cyber"]:::final
+    covForm -->|"not LL / Tobacco / ClassRatedOnly,<br/>IncludedInBlkt = Yes,<br/>BlktCauseOfLossValue = Broad"| blktGate{"BlktTotalFullValueAmount &gt; 0?"}
+    blktGate -->|"No"| premZero2["Premium = 0.0"]:::zero
+    blktGate -->|"Yes"| branchC["Premium = r0(... x BlktBroadAvgRate<br/>x FullPrsnlPropValue/BlktTotal<br/>x BlktLimit/100): plain divide"]:::final
+    covForm -->|"Tobacco / ClassRatedOnly /<br/>IncludedInBlkt blank / other"| premZero3["Premium = 0.0"]:::zero
+    inh -.- refDed["Engine: a blank building Deductible refuses<br/>the policy (PP stat-code SingleResult,<br/>keys CW + blank; C28-05), even when<br/>the building is not Broad"]:::eng
+    baseZero -.- silent["Engine: C28-17 has no PP check. Blank<br/>building construction, Valuable Papers<br/>and Limit 0 rate $0, outcome 'rated'"]:::eng
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class loiGate,baseGate,vpGate,covGate,covForm,blktGate gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>Contents takes its deductible from the building and never reads its own: 2,500 on the item leaves $16. The building's factor is set even under a Basic building, so Contents still rates.</li>
+            <li>Contents always reads PersProp rows. A class 1150 building leaves it at 0.021; fire-resistive gives 0.011.</li>
+            <li>No roof factor and no multi-residential credit.</li>
+            <li>Valuable Papers is zeroed at the rate step and prices $0, "rated".</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>C28-17 has no Personal Property check, but the blank building deductible still refuses.</strong> Contents' own stat-code lookup on the building's blank deductible finds no row (C28-05), even under a "No Coverage" or non-Broad building, so Contents never prices that 0.0 silently. A blank building construction, Valuable Papers and a Contents limit of 0 do stay silent. State watch-items as for Building; AL and RI also zero Non-Owned Trailers.</div>
+      </div>
+    </section>
+
+    <!-- ============================= SPECIAL CLASS ============================= -->
+    <section class="sheet-view" id="view-sc">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Special Class</span></div>
+        <div class="field"><span class="k">Editions</span><span class="v">CW 2023-08 V04 = CW 2026-06 (byte-identical)</span></div>
+        <div class="field"><span class="k">Master chain</span><span class="v">SetBroadRatesAndFactors :3713 (SpecialClassRules), 5 steps: Base :3722 → Rate :3772 → Adjusted :3791 → Deductible :3810 → Final :3894</span></div>
+        <div class="field"><span class="k">Premium file</span><span class="v">…SpecialClassBroadCoverageRules SetPremium :60</span></div>
+        <div class="field wide"><span class="k">Coverage gate</span><span class="v">Item's CauseOfLossToUse = "Broad" exactly (:32), case-sensitive. The record is always appended (:210–222); for a blanket item the cause of loss is the blanket's.</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["Special Class item<br/>Broad record always created"]) --> covGate{"Coverage on: CauseOfLossToUse<br/>= 'Broad' exactly?<br/>(blanket item: blanket's COL)"}
+    covGate -->|"No"| off["Indicator 0, Premium 0.0<br/>(coverage off)"]:::zero
+    covGate -->|"Yes"| baseGate{"Also policy PolicyType =<br/>'Commercial Property Policy'?<br/>(copied from the policy)"}
+    baseGate -->|"No"| baseZero["BaseRate = 0.0"]:::zero
+    baseZero --> engZ1["Engine: $0, outcome 'rated'<br/>(PolicyType blank or SPP)"]:::eng
+    baseGate -->|"Yes"| lookup["BroadFormBaseRate<br/>[state, 'Frame', 'Bldg']<br/>both literals: CW 0.015.<br/>Construction and CovType never read"]:::step
+    lookup --> rate["Rate = r3(Base x LCM)"]:::step
+    rate --> adj["Adjusted = r3(Rate x CoinsuranceFactor)<br/>shared item factor: 80% 1.0, 90% 0.95,<br/>100% 0.90, 50-70%/None 1.5, blank 1.0"]:::step
+    adj --> dbl{"By-location record with a<br/>Deductible (not blank, not N/A)?"}
+    dbl -->|"Yes"| dblY["DedByLoc = 0.995<br/>(shared one-row table)"]:::step
+    dbl -->|"No"| dblN["DedByLoc = 1.0"]:::step
+    dblY --> dedChoose
+    dblN --> dedChoose
+    dedChoose{"Item Deductible?<br/>(no wind/hail branch)"}
+    dedChoose -->|"250"| d250["Deductible250Factor<br/>['Broad'] CW 1.05"]:::step
+    dedChoose -->|"other value"| dLook["DeductibleFactor[ded,<br/>TotAmt band, 'Other Cause Of Loss']"]:::step
+    dLook -->|"value not filed, or N/A"| refuse1["Engine: refused<br/>(SingleResult miss;<br/>BGI's lookup hits first)"]:::eng
+    dedChoose -->|"blank"| dZero["DedFactor = 0.0"]:::zero
+    dZero --> engZ2["Engine: $0, outcome 'rated'.<br/>C28-17 covers Building's<br/>Broad only"]:::eng
+    d250 --> finalRate
+    dLook --> finalRate
+    finalRate["Final = r3(r3(Adjusted x DedByLoc) x Ded)"]:::step
+    finalRate --> blktTest{"IncludedInBlkt = 'Yes'?"}
+    blktTest -->|"No, or blank"| branchB["Scheduled: Limit/100 x Final,<br/>then x PackageMod, x MultiPrem,<br/>x IRPM, x 2 cyber factors.<br/>Rounded to $1 after EACH step"]:::final
+    blktTest -->|"Yes"| blktGate{"BlktTotalFullValueAmount &gt; 0?"}
+    blktGate -->|"No"| premZero["Premium = 0.0"]:::zero
+    premZero --> engZ3["Engine: $0, outcome 'rated'"]:::eng
+    blktGate -->|"Yes"| branchA["Blanket: BlktLimit/100 x<br/>Full/BlktTotal x BlktBroadAvgRate,<br/>then the same factor ladder.<br/>Item's Final rate is not read"]:::final
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class covGate,baseGate,dbl,dedChoose,blktTest,blktGate gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>The base rate reads two literals, "Frame" and "Bldg". Construction, even blank or "Brick", and the item's cover type change nothing: every probe gives $14. Only a state table moves it (PR 0.011).</li>
+            <li>The base rate also needs the <em>policy's</em> <code>PolicyType</code> = "Commercial Property Policy". Blank or Standard Property Policy leaves the coverage on at $0.</li>
+            <li>No wind/hail step. The deductible-by-location factor keys on the record's ordinary deductible.</li>
+            <li>The scheduled premium is rounded to whole dollars at each of six steps and applies the multi-premium credit.</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>Three silent $0 endings, all with the coverage on.</strong> A blank <code>Deductible</code>, a blank or Standard Property <code>PolicyType</code>, and a blanket item with a blank full value each price Broad $0 with outcome "rated". C28-17 checks the building's Broad deductible only. An unlisted or "Not Applicable" deductible refuses, on Group I's lookup, which runs first. <strong>State watch-items:</strong> KS and NY drop the <code>PolicyType</code> test; AL, KS and RI add <code>PublicInstitutionalPlanFactor</code>; FL drops the by-location factor; PR files its own rates and deductibles.</div>
+      </div>
+    </section>
+
+    <!-- ============================= BUSINESS INCOME ============================= -->
+    <section class="sheet-view" id="view-bi">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Business Income (child of Structure)</span></div>
+        <div class="field"><span class="k">Editions</span><span class="v">CW 2023-08 V04 = CW 2026-06 (byte-identical); no state overrides</span></div>
+        <div class="field"><span class="k">Master chain</span><span class="v">SetBroadRatesAndFactors :3956 (BusinessIncomeRules): Base :3962 → Rate :4042; then SetFinalBroadRate :8064 (a copy). Cause of loss :2717, LCM :2751.</span></div>
+        <div class="field"><span class="k">Premium file</span><span class="v">…BusinessIncomeBroadCoverageRules SetPremium :60, ErcProcess :167</span></div>
+        <div class="field wide"><span class="k">Coverage gate</span><span class="v">CauseOfLossToUse = "Broad" exactly (:32), else premium 0.0. The record is appended to every Business Income (:117–129). CauseOfLossToUse is the blanket Detail's when IncludedInBlkt = "Yes".</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["Business Income record, child of Structure<br/>Broad coverage record auto-added to every BI"]) --> blktCol{"IncludedInBlkt = 'Yes'?"}
+    blktCol -->|"Yes"| colBlkt["CauseOfLossToUse = matched blanket<br/>Detail's CauseOfLoss, else 'Not Applicable'<br/>BI's own CauseOfLoss not read"]:::step
+    blktCol -->|"No / blank"| colOwn["CauseOfLossToUse = BI CauseOfLoss"]:::step
+    colBlkt --> colGate
+    colOwn --> colGate{"CauseOfLossToUse = 'Broad' exactly?"}
+    colGate -->|"No"| baseZero["BroadBaseRate = 0.0, BroadRate = 0.0"]:::zero
+    colGate -->|"Yes"| covTypeGate{"CovType = 'Business Income<br/>Without Extra Expense'?"}
+    covTypeGate -->|"Yes"| lookupWO["BroadFormBaseRate [state, else CW;<br/>Structure.ConstructionTypeToUse;<br/>'Business Income Without Extra Expense']<br/>CW 0.011, MFR / FR 0.007"]:::step
+    covTypeGate -->|"No: With EE, EE Only, blank"| lookupAll["BroadFormBaseRate [...; 'All Other']<br/>CW 0.023, MFR / FR 0.012"]:::step
+    lookupWO --> rate
+    lookupAll --> rate["BroadRate = r3(Base x LCM)<br/>LCM: BI's own, else the Structure's"]:::step
+    rate --> finalRate["FinalBroadRate = copy of BroadRate<br/>no Factor, coinsurance, LOI, deductible,<br/>BCEG, W/H, builders risk, op unit"]:::step
+    finalRate --> covGate{"CoverageOnPolicyIndicator:<br/>CauseOfLossToUse = 'Broad'?"}
+    covGate -->|"No: 0"| premZero1["Premium = 0.0, not attached"]:::zero
+    covGate -->|"Yes: 1"| blktTest{"IncludedInBlkt = 'No'?"}
+    blktTest -->|"Yes"| branchA["Scheduled = r0(r0(r0(r0(IRPM x Pkg<br/>x FinalBroadRate x Limit/100)) x CyberExclBroad)<br/>x CyberCOLExcptnsBusnIncomeBroadToUse)<br/>MultiPremiumAndDispersion not read"]:::final
+    blktTest -->|"No: 'Yes' or blank"| blktAmt{"BlktTotalFullValueAmount &gt; 0?"}
+    blktAmt -->|"Yes"| branchB["Blanket = same nesting on BlktBroadAvgRate<br/>x FullBusnIncomeValue / BlktTotalFullValueAmount<br/>x BlktLimit/100; FinalBroadRate not read"]:::final
+    blktAmt -->|"No"| premZero2["Premium = 0.0"]:::zero
+    lookupAll -.->|"no construction"| refuse["Engine: refused, SingleResult no row<br/>contract 7, not C28-17"]:::eng
+    premZero2 -.->|"IncludedInBlkt blank"| silent["Engine: $0, outcome 'rated'<br/>not in SILENT_ZERO_INPUTS"]:::eng
+    branchB -.->|"Detail Type blank: avg rate 0"| silent
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class blktCol,colGate,covTypeGate,covGate,blktTest,blktAmt gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>Broad is added on top of Group I and II: BGI $1,390 + BGII $70 + Broad $230 in Utah.</li>
+            <li>Three inputs set the rate: the building's construction, whether the BI includes extra expense, and the loss cost multiplier (the BI's own, or the building's when blank).</li>
+            <li>The Business Income factor is computed on the record (0.55) but Broad never reads it. Coinsurance, max period, monthly limit, operational unit, class 1150 and a wind/hail exclusion all leave $230.</li>
+            <li>"Without Extra Expense" is the only cheap row (0.011). Extra Expense Only and a blank cover type read "All Other" (0.023).</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>A blank <code>IncludedInBlkt</code> zeroes Broad, Group I and Group II together.</strong> The scheduled branch needs "No" exactly; blank falls to the blanket side, where the total is 0. The coverage is on and the outcome is "rated", in UT and IN at both dates. A blanket Detail with no <code>Type</code> or a BI with no full value ends the same way. Missing construction refuses at the <code>BroadFormBaseRate</code> lookup, not through C28-17. <strong>Watch-items:</strong> PR files its own rows (same values today); FL adds a sinkhole rate beside Broad; packages over CW 2023 V01–V03 use an older blanket formula.</div>
+      </div>
+    </section>
+
+    <!-- ============================= SC BUSINESS INCOME ============================= -->
+    <section class="sheet-view" id="view-scbi">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Special Class Business Income (child of a Special Class item)</span></div>
+        <div class="field"><span class="k">Editions</span><span class="v">CW 2023-08 V04 = CW 2026-06 (byte-identical)</span></div>
+        <div class="field"><span class="k">Master chain</span><span class="v">SetBroadRatesAndFactors :3101 (SpecialClassBusnIncomeRules), 2 steps: Base :3107 → Rate :3187; then SetFinalBroadRate :6971 (a copy). Own LCM :2742, own cause of loss :2758.</span></div>
+        <div class="field"><span class="k">Premium file</span><span class="v">…SpecialClassBusnIncomeBroadCoverageRules SetPremium :60, a three-way Choose</span></div>
+        <div class="field wide"><span class="k">Coverage gate</span><span class="v">This record's own CauseOfLossToUse = "Broad" (:32); the parent's cause of loss is never read. The record is always appended (:237–249).</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["SCBI record, child of a<br/>Special Class item.<br/>Broad record always created"]) --> covGate{"Coverage on: OWN<br/>CauseOfLossToUse = 'Broad'?<br/>(parent's COL not read)"}
+    covGate -->|"No"| off["Indicator 0, Premium 0.0<br/>(coverage off)"]:::zero
+    covGate -->|"Yes"| covType{"Own CovType = 'Business<br/>Income Without Extra Expense'?<br/>(no PolicyType test)"}
+    covType -->|"Yes"| lookupWO["BroadFormBaseRate<br/>[state, 'Frame', 'BI Without EE']<br/>CW 0.011"]:::step
+    covType -->|"No: With EE, EE Only,<br/>or blank"| lookupAll["BroadFormBaseRate<br/>[state, 'Frame', 'All Other']<br/>CW 0.023"]:::step
+    lookupWO --> lcmGate
+    lookupAll --> lcmGate
+    lcmGate{"Own LossCostMultiplier<br/>submitted?"}
+    lcmGate -->|"Yes"| lcmOwn["Use own LCM"]:::step
+    lcmGate -->|"No"| lcmPar["Copy the parent's LCM<br/>(the only value borrowed)"]:::step
+    lcmOwn --> rate
+    lcmPar --> rate
+    rate["Rate = r3(Base x LCM)"]:::step
+    rate --> finalRate["Final = copy of Rate<br/>Factor computed, not used.<br/>No coinsurance, LOI or deductible"]:::step
+    finalRate --> blktTest{"Own IncludedInBlkt?"}
+    blktTest -->|"'No'"| branchA["Scheduled: round(IRPM x PackageMod<br/>x Final x Limit/100), then<br/>x 2 cyber factors. No MultiPrem"]:::final
+    blktTest -->|"'Yes'"| blktAmt{"BlktTotalFullValueAmount &gt; 0?"}
+    blktAmt -->|"No"| premZero1["Premium = 0.0"]:::zero
+    blktAmt -->|"Yes"| branchB["Blanket: round(IRPM x PackageMod<br/>x BlktBroadAvgRate x Full/BlktTotal<br/>x BlktLimit/100) x 2 cyber factors"]:::final
+    blktTest -->|"blank or other"| premZero2["Premium = 0.0<br/>(Otherwise branch)"]:::zero
+    premZero1 --> engZ["Engine: $0, outcome 'rated'"]:::eng
+    premZero2 --> engZ
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class covGate,covType,lcmGate,blktTest,blktAmt gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>The shortest chain on the page: base rate, rate, copy. The Business Income factor is computed but unused; a blank monthly limit that zeroes Group I leaves Broad at $23.</li>
+            <li>Construction is pinned to "Frame" by this record's own literal; the cover type is live (0.011 without extra expense, 0.023 otherwise).</li>
+            <li>It borrows only the item's loss cost multiplier, and only when it sends none. No <code>PolicyType</code> test: a Standard Property policy that zeroes the item's Broad still prices this at $23.</li>
+            <li>A blank <code>IncludedInBlkt</code> goes straight to $0; only "No" reaches the scheduled formula.</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>Independent of the item, and silent on two zeros.</strong> Broad here with Basic on the item prices $23; the reverse prices $0. A blank <code>IncludedInBlkt</code> and a blanket record with a blank full value price $0 with outcome "rated"; nothing in the refusal layer covers SCBI. No state overrides this chain's rate rules; PR files its own rows (same values as CW).</div>
+      </div>
+    </section>
+
+    <!-- ============================= SIDE BY SIDE ============================= -->
+    <section class="sheet-view" id="view-diff">
+      <div class="intro">
+        <h2>One table, five ways to read it</h2>
+        <p>Each row is one step; a dash means the coverage has no such step.</p>
+      </div>
+      <div class="tablewrap">
+        <table class="grid">
+          <thead><tr><th>Step</th><th>Building</th><th>Personal Property</th><th>Special Class</th><th>Business Income</th><th>SC Business Income</th></tr></thead>
+          <tbody>
+            <tr><th>Construction key</th><td>Own</td><td>Building's</td><td>"Frame" literal</td><td>Building's</td><td>"Frame" literal (its own)</td></tr>
+            <tr><th>Row</th><td>Bldg, or BldrRisk for 1150</td><td>PersProp</td><td>"Bldg" literal</td><td>WO-EE or All Other</td><td>WO-EE or All Other</td></tr>
+            <tr><th>Extra base test</th><td>—</td><td>—</td><td>Policy <code>PolicyType</code> = CPP</td><td>—</td><td>—</td></tr>
+            <tr><th>Rate</th><td>Base x LCM</td><td>Base x LCM; Valuable Papers → 0</td><td>Base x LCM</td><td>Base x LCM (own or building's)</td><td>Base x LCM (own or item's)</td></tr>
+            <tr><th>Roof factor</th><td>In the adjusted rate</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+            <tr><th>Coinsurance</th><td>Shared factor</td><td>Shared factor</td><td>Shared factor</td><td>—</td><td>—</td></tr>
+            <tr><th>LOI</th><td>Shared Broad/Special table</td><td>Shared table, runs first</td><td>—</td><td>—</td><td>—</td></tr>
+            <tr><th>Deductible</th><td>250 / N/A / lookup / blank → 0</td><td>Building's, copied</td><td>250 / lookup / blank → 0</td><td>—</td><td>—</td></tr>
+            <tr><th>Coverage gate</th><td>Cause of loss = Broad</td><td>No SCP / VRF, and Broad</td><td>Broad</td><td>Broad</td><td>Own cause of loss = Broad</td></tr>
+            <tr><th>Multi-premium credit</th><td>Applied (not on LL)</td><td>Applied (not on LL)</td><td>Applied</td><td>Not applied</td><td>Not applied</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="intro">
+        <h2>Editions: nothing changed; states: very little</h2>
+        <p>All ten rule files and the <code>BroadFormBaseRate</code> table are byte-identical in CW 2023-08 V04 and CW 2026-06, and every probe priced the same at both dates. Broad is the least state-specific form so far: no state overrides the Business Income chain, no state overrides the Broad base-rate lookup (the "Frame" pins hold everywhere), and only PR files its own rates. The overrides that exist are small: <code>PublicInstitutionalPlanFactor</code> in AL, KS and RI; the roof factor in FL and WV; the by-location factor in FL; the <code>PolicyType</code> test dropped in KS and NY; coinsurance in CT, NY, PR, AL, KS and RI.</p>
+      </div>
+    </section>
+
+    <!-- ============================= REVIEW ============================= -->
+    <section class="sheet-view" id="view-review">
+      <div class="intro">
+        <h2>What the all-coverage page got wrong or left out for Broad</h2>
+        <p><code>cf-rating-chains.html</code> drew one Broad sheet per coverage from the CW 2026-06 rule XML. On 2026-10-06 those five sheets were removed and now link here. Items the engine confirmed are listed at the foot of each table.</p>
+      </div>
+      <div class="tablewrap">
+        <table class="grid">
+          <caption>Building</caption>
+          <thead><tr><th>#</th><th>All-coverage page said</th><th>Engine / XML shows</th><th>Kind</th></tr></thead>
+          <tbody>
+            <tr><th>1</th><td>Blank deductible "zeroes the whole rate", a chunk 28 item</td><td>The engine now refuses it (C28-17), but only for a submitted Broad cause of loss on a plain building; I&amp;B, Condo, Builders Risk and a blanket with blank own cause still price $0</td><td>out of date</td></tr>
+            <tr><th>2</th><td>Delta: "Template form"</td><td>C28-17 refusal, other silent zeros, several state overrides</td><td>out of date</td></tr>
+            <tr><th>3</th><td>LOI: blanket / Builders Risk / normal / other</td><td>The normal branch's Limit 0 → 0.0 is dead code; Limit 0 gets LOI 1.0 and $0 through the limit</td><td>incomplete</td></tr>
+            <tr><th>4</th><td>covGate then CovType branches</td><td>Also the outer Builders Risk reporting test ($0); scheduled tests the submitted cause of loss and four cover types</td><td>incomplete</td></tr>
+            <tr><th>5</th><td>Base gate on ConstructionType</td><td>On the mapped construction: blank → $0 rated; an off-domain value now refuses (chunk 3 recorded $0)</td><td>clarified</td></tr>
+            <tr><th>6</th><td>Adjusted = Rate x Roof x Coins x LOI</td><td>Rounded at each step; the shared coinsurance factor's branches</td><td>clarified</td></tr>
+            <tr><th>7</th><td>Roof factor "one step later than Group I/II"</td><td>Right; it only shows at higher rates; Paragraph B and blank <code>PolicyType</code> → 1.0</td><td>clarified</td></tr>
+            <tr><th>8</th><td>No engine behaviour drawn</td><td>C28-17 and table-row refusals; the rest silent</td><td>missing</td></tr>
+            <tr><td colspan="4">Confirmed: line numbers, coverage gate, 1150 → BldrRisk 0.012 else 0.015 / 0.010, Rate = Base x LCM, deductible branches, final rate, Legal Liability on the raw rate, blanket branch, six rules with no cause-of-loss step.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="tablewrap">
+        <table class="grid">
+          <caption>Personal Property</caption>
+          <thead><tr><th>#</th><th>All-coverage page said</th><th>Engine / XML shows</th><th>Kind</th></tr></thead>
+          <tbody>
+            <tr><th>9</th><td>Deductible read directly from the building, "no Set-rule at all" (open question)</td><td>Confirmed and closed: the building computes it even when the building isn't Broad; the item's own deductible is never read</td><td>clarified</td></tr>
+            <tr><th>10</th><td>Chain order</td><td>LOI runs first</td><td>clarified</td></tr>
+            <tr><th>11</th><td>LOI blanket / lookup / 1.0</td><td>The blanket test is "&gt;= 0", so a blanket total of 0 looks up 1.728</td><td>clarified</td></tr>
+            <tr><th>12</th><td>Final = Adjusted x DedByLoc x Ded</td><td>DedByLoc is a copy of the building's</td><td>clarified</td></tr>
+            <tr><th>13</th><td>Premium branches</td><td>Scheduled also needs the submitted cause of loss; LL has no cause-of-loss test; blanket is a plain divide</td><td>clarified</td></tr>
+            <tr><th>14</th><td>Delta: what is PP-specific</td><td>Also no roof factor, no multi-residential credit, copied DedByLoc, LOI first</td><td>incomplete</td></tr>
+            <tr><th>15</th><td>No engine behaviour drawn</td><td>A blank building deductible refuses via C28-05; blank construction, Valuable Papers and Limit 0 stay silent</td><td>missing</td></tr>
+            <tr><td colspan="4">Confirmed: line numbers, coverage gate, base gate, PersProp rows 0.021 / 0.011, Valuable Papers zero, adjusted rate, Legal Liability, five rules.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="tablewrap">
+        <table class="grid">
+          <caption>Special Class</caption>
+          <thead><tr><th>#</th><th>All-coverage page said</th><th>Engine / XML shows</th><th>Kind</th></tr></thead>
+          <tbody>
+            <tr><th>16</th><td>"The only chain construction-blind by a hard-coded literal"</td><td><strong>SC Business Income uses its own "Frame" literal too.</strong></td><td><span class="tag bad">correction</span></td></tr>
+            <tr><th>17</th><td>Base gate: Broad AND PolicyType = CPP</td><td><code>PolicyType</code> is the policy's, copied with no blank guard: blank or SPP prices $0 with the coverage on</td><td>incomplete</td></tr>
+            <tr><th>18</th><td>"Frame" key (open question)</td><td>Confirmed (ISO, chunk 6) and closed; the third key is the literal "Bldg" too, so cover type is ignored</td><td>clarified</td></tr>
+            <tr><th>19</th><td>Coverage gate drawn after the final rate</td><td>It is the record's on/off switch; case-sensitive; the record is always appended</td><td>clarified</td></tr>
+            <tr><th>20</th><td>Adjusted = Rate x Coinsurance</td><td>The shared factor's branches: 80% / 90% / 100% / 50–70% and None 1.5 / blank 1.0</td><td>incomplete</td></tr>
+            <tr><th>21</th><td>Deductible lookup; blank → 0.0</td><td>Keys and state table (OH); blank → $0 "rated", not refused; unlisted / N/A refuse on Group I's lookup</td><td>incomplete</td></tr>
+            <tr><th>22</th><td>Final = Adjusted x DedByLoc x Ded</td><td>DedByLoc 0.995 only when the by-location record has an ordinary deductible</td><td>incomplete</td></tr>
+            <tr><th>23</th><td>Wind/hail not mentioned</td><td>No wind/hail deductible or exclusion reaches Broad</td><td>missing</td></tr>
+            <tr><th>24</th><td>Blanket / scheduled, two branches</td><td>Blanket needs a total &gt; 0 and uses the average of raw Broad rates; blank IncludedInBlkt goes scheduled; six roundings; multi-premium credit applied</td><td>incomplete</td></tr>
+            <tr><th>25</th><td>"Otherwise the shortest shape"</td><td>SC Business Income's is shorter</td><td>clarified</td></tr>
+            <tr><td colspan="4">Confirmed: line numbers, Rate = Base x LCM, Deductible250 1.05, Fire Resistive re-sent to ISO still $14.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="tablewrap">
+        <table class="grid">
+          <caption>Business Income</caption>
+          <thead><tr><th>#</th><th>All-coverage page said</th><th>Engine / XML shows</th><th>Kind</th></tr></thead>
+          <tbody>
+            <tr><th>26</th><td>Exact-match gate "unlike BGI/BGII's hard-coded 1"</td><td>Right, but Group I and II still price on a Broad BI: Broad is an extra premium, not a replacement</td><td>clarified</td></tr>
+            <tr><th>27</th><td>Blanket cause of loss not mentioned</td><td>On a blanket it is the Detail's; a Broad BI in a Basic blanket gets $0</td><td>missing</td></tr>
+            <tr><th>28</th><td>Rows "CW approx 0.011 / 0.007"</td><td>Exact; "All Other" 0.023 / 0.012; Extra Expense Only and blank read All Other</td><td>clarified</td></tr>
+            <tr><th>29</th><td>Scheduled premium, no formula</td><td>One rounded product, then two cyber factors; no multi-premium credit</td><td>incomplete</td></tr>
+            <tr><th>30</th><td>Blanket premium, no formula</td><td>Blanket average rate x value share x blanket limit; needs Detail <code>Type</code></td><td>incomplete</td></tr>
+            <tr><th>31</th><td>"IncludedInBlkt = 'No'?" two-way</td><td>Blank falls to the blanket side: Broad, Group I and II all $0 "rated"</td><td>missing</td></tr>
+            <tr><th>32</th><td>No zeros drawn</td><td>Blank IncludedInBlkt, untyped Detail, blank full value, Limit 0 silent; no construction refuses at the lookup</td><td>missing</td></tr>
+            <tr><th>33</th><td>"2-step chain, shortest of all"</td><td>Right for the rate; the premium is added to Group I and II</td><td>clarified</td></tr>
+            <tr><td colspan="4">Confirmed: line numbers, coverage gate, base and rate formulas (LCM own or building's), final copy, no factor / LOI / deductible (coinsurance, max period, op unit, 1150 all leave $230), own rows, editions.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="tablewrap">
+        <table class="grid">
+          <caption>Special Class Business Income</caption>
+          <thead><tr><th>#</th><th>All-coverage page said</th><th>Engine / XML shows</th><th>Kind</th></tr></thead>
+          <tbody>
+            <tr><th>34</th><td>"Inherited" its construction-blindness from the item</td><td><strong>Nothing is inherited:</strong> its own literal; it reads only the item's LCM, when blank</td><td><span class="tag bad">correction</span></td></tr>
+            <tr><th>35</th><td>IncludedInBlkt "No" → scheduled, otherwise the blanket test</td><td><strong>A three-way Choose:</strong> "No" scheduled, "Yes" blanket test, anything else straight to $0; no multi-premium credit</td><td><span class="tag bad">correction</span></td></tr>
+            <tr><th>36</th><td>Rate = Base x LCM</td><td>Its own LCM, the item's only when blank (5.0 gives $115)</td><td>incomplete</td></tr>
+            <tr><th>37</th><td>Base gate on cause of loss</td><td>Its own cause of loss; no <code>PolicyType</code> test (SPP still $23)</td><td>clarified</td></tr>
+            <tr><th>38</th><td>"Frame" key (open question)</td><td>Confirmed and closed; plain BI reads the building's construction instead</td><td>clarified</td></tr>
+            <tr><th>39</th><td>Rate step gate not drawn</td><td>Repeats the Broad test; redundant with the coverage gate</td><td>missing</td></tr>
+            <tr><th>40</th><td>Coverage gate</td><td>Its own cause of loss; the item's is never read</td><td>clarified</td></tr>
+            <tr><th>41</th><td>"Not blocked by an empty table like Group II"</td><td>Group II is state-filed, not blocked</td><td>out of date</td></tr>
+            <tr><td colspan="4">Confirmed: line numbers, the two rows ($11 / $23), final copy with no factor, construction pin vs plain BI.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="doc-footer">
+  Sources: the built engine (<strong>cf_engine</strong> / interpreter at 542f0e1; probed at b2d025c), probed offline on 2026-10-06 with no calls to ISO: Building and Personal Property in ME (OK cross-check), Special Class and Special Class Business Income in OH, Business Income in UT and IN, each at a date resolving CW 2023-08 V04 and one resolving CW 2026-06. The Builders Risk reporting branches and a blanket whose matched total is exactly 0 come from the XML only. ISO rule XML is under <code>F:\ISO_ERC_Files\CF</code>. Companion docs are in <code>CF_Algorithm</code>: <code>CauseOfLoss_*_RatingAlgorithms.md</code>, <code>cf-bgi-chains.html</code> and <code>cf-bgii-chains.html</code>.
+</footer>
+
+<script>
+  (function () {
+    var toc = document.getElementById('toc');
+    var main = document.getElementById('main');
+
+    function activate(target) {
+      var views = main.querySelectorAll('.sheet-view');
+      for (var i = 0; i < views.length; i++) views[i].classList.remove('active');
+      var view = document.getElementById('view-' + target);
+      if (view) view.classList.add('active');
+
+      var links = toc.querySelectorAll('.navlink');
+      for (var j = 0; j < links.length; j++) {
+        links[j].classList.toggle('active', links[j].getAttribute('data-target') === target);
+      }
+      main.scrollTop = 0;
+      window.scrollTo(0, 0);
+    }
+
+    document.addEventListener('click', function (e) {
+      var btn = e.target.closest('button[data-target]');
+      if (btn) activate(btn.getAttribute('data-target'));
+    });
+
+    var hash = location.hash.slice(1);
+    if (hash && document.getElementById('view-' + hash)) activate(hash);
+  })();
+</script>
+
+<style>.mermaid-rendering .sheet-view{display:block!important}</style>
+<script type="module">
+  // Render every diagram once, with all sheets briefly visible so hidden tabs get real sizes.
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({ startOnLoad: false, securityLevel: "strict", flowchart: { wrappingWidth: 260 } });
+  document.documentElement.classList.add("mermaid-rendering");
+  try { await mermaid.run({ querySelector: "pre.mermaid" }); }
+  finally { document.documentElement.classList.remove("mermaid-rendering"); }
+</script>
+</body>
+</html>
