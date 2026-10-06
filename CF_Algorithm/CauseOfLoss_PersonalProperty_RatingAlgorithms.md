@@ -116,6 +116,16 @@ else:
 ```
 Otherwise (gate fails): `BasicGroupIBaseRate = 0.0`. Assigned only when currently null.
 
+**Corrected 2026-10-06** (`cf-bgi-chains.html`, PP review #12, #15, #21; probes P1, P2, P2x, P3, P3x, P3b, P4,
+P7, P7n, P7f in the Group I notes). A non-Class item's 0.0 base rate is **not a zero premium**: Specific and
+Tentative contents have their own rate in step 4 (`SpecificGroupIRate x LCM x SprinklerNotExcl`, :3473). A
+Specific building's contents price $253 (P2). The item does not choose its own rating type or class:
+`RatingType` is copied from the building (:1199) and `BldgClassCode` from the occupancy, which is the
+building's `ClassCode` (:1147, OccupClass :569). Values typed on the item are overwritten (P2x, P3x, both
+$617). YARD needs class 1400 / 1650 / 1700 **and** a yard indicator (`SetGroup` :1640): combustible $719,
+non-combustible $76 (P7, P7n). Silent $0s, "rated": a missing building `ClassCode` or `ConstructionType`
+(whole policy $0, P3, P3b), class 1150 (P4), and a combustible yard with no construction (P7f).
+
 `LookupBasicGroupIRate` (line 19321) reads matrix **`BasicGroupIRate`** — the **same table Building uses** — keyed on:
 
 1. `/*/State/Code` (falls back to `CW`)
@@ -139,10 +149,10 @@ else:
     FireSafeVaultFactor = 0.0
 ```
 
-This factor has **no Building equivalent** — it is a contents-specific credit for property stored in a fire-rated vault. It multiplies directly into the Basic Group I rate (step 4).
+This factor has **no Building equivalent** — it is a contents-specific credit for property stored in a fire-rated vault. It multiplies directly into the Basic Group I rate (step 4). (2026-10-06, `cf-bgi-chains.html` PP review #20; probe P5: a table lookup, `FireSafeVaultFactor` CW row 0.5, class-rated only, $309. The 0.0 for non-class items is never read.)
 
 ### Step 3 — Protection class factor
-`SetProtectionClassFactor` (line 3320) — same idea as Building's, but the gate additionally excludes `Group = "YARD"` **when** `YardPropertyIndicator = "Yard Property - Non Combustible"` — **corrected 2026-09-18, this page previously said "unless", which is backwards.** The filed test is `Group <> "YARD" OR YardPropertyIndicator <> "Yard Property - Non Combustible"`, so the lookup is skipped only for a NON-combustible yard: a combustible yard keeps the credit (0.96 in Oregon) and a non-combustible one loses it (1.0). Measured in `scripts/cf/27_chunk4_bgi_structure.py` — $246 against $25 on class 1400 and `BldgClassCode` 1751/1752. `LookupProtectionClassFactor` reads matrix `ProtectionClassFactor` keyed on State\|CW, `ProtectClass` (read from 6 levels up — the location), `ConstructionCode`. Falls back to `0.0` if the gate's inner condition fails, `1.0` if the outer gate fails entirely.
+`SetProtectionClassFactor` (line 3320) — same idea as Building's, but the gate additionally excludes `Group = "YARD"` **when** `YardPropertyIndicator = "Yard Property - Non Combustible"` — **corrected 2026-09-18, this page previously said "unless", which is backwards.** The filed test is `Group <> "YARD" OR YardPropertyIndicator <> "Yard Property - Non Combustible"`, so the lookup is skipped only for a NON-combustible yard: a combustible yard keeps the credit (0.96 in Oregon) and a non-combustible one loses it (1.0). Measured in `scripts/cf/27_chunk4_bgi_structure.py` — $246 against $25 on class 1400 and `BldgClassCode` 1751/1752. `LookupProtectionClassFactor` reads matrix `ProtectionClassFactor` keyed on State\|CW, `ProtectClass` (read from 6 levels up — the location), `ConstructionCode`. Falls back to `0.0` if the gate's inner condition fails, `1.0` if the outer gate fails entirely. (2026-10-06, `cf-bgi-chains.html` PP review #16; probe P15: the 0.0 branch (no `ProtectClass`, or construction 0, :3390) makes Contents differ from Building. With no location `ProtectClass`, Contents prices **$0, "rated"** while the building prices higher at factor 1.0 ($758).)
 
 ### Step 4 — Rate
 `SetBasicGroupIRate` (line 3418), 3 decimals, only when currently null:
@@ -204,6 +214,15 @@ AdjustedBasicGroupIRate =
 
 `SetCoinsuranceFactor` differs from Building's version: when `CommercialPropertyAdditionalLocationsSpecialCoinsuranceProvisions` or `CommercialPropertyValueReportingForm` exists, **or** `Coinsurance` is one of the five reporting-form values (`Daily`/`Weekly`/`Monthly`/`Quarterly`/`Policy Year Reporting`), PP **forces the factor to the 100% lookup value** — Building's equivalent branch instead *skips* assignment, leaving the factor unchanged. Both are guarded by `ValuationType <> "Functional Valuation"`.
 
+**Corrected 2026-10-06** (`cf-bgi-chains.html`, PP review #17, #19, #22; probes P10, P10r). This is not a real
+pricing divergence. The same conditions turn this coverage **off**: SCP / VRF fail the coverage gate, and a
+reporting `Coinsurance` value auto-attaches the VRF (`AttachFormValueReportingForm` :18351; P10r, coverage
+off). So the forced factor only feeds the SCP / VRF premiums. Building's skip (1150 or Functional) is a
+different mechanism, and it **sets** 1.0. Contents' own skip is **Functional Valuation → 1.0**, with no 1150
+test ($649, P10). Then 80/90/100% → lookup; 50/60/70% / None → ×1.5; else 1.0. There is no
+blanket-coinsurance branch (Building has one). The adjusted rate rounds as `r3(LOI x r3(COLAdj x Coins))`
+(:3549). LOI has no 0.0 branch here, unlike Building.
+
 `SetBasicGroupILOIFactor` (line 2784) is a three-way `Choose`: blanket copy from `BlktBasicGroupILOIFactor` when `IncludedInBlkt = "Yes"` and `BlktIDNum > 0`; otherwise `LookupBasicGroupILOIFactor(OccupTotalLOIToUse)` when `CovType` is neither `"Legal Liability"` nor `"Tobacco Sales Warehouses"` and `ConstructionCode <> 0`; otherwise `1.0`.
 
 ### Step 7 — Deductible
@@ -217,6 +236,15 @@ FinalBasicGroupIRate =
 **No `MultiResidentialPropSpecialCreditFactor`** — that Building-only multi-residential credit does not appear anywhere in `CommercialPropertyPersonalPropertyRules.Rule.xml` (confirmed by full-file grep).
 
 `SetDeductibleFactorBasicGroupI` (line 3584) is **not a Lookup at all** — it simply `Copy`s `DeductibleFactorBasicGroupI` from **four levels up the datadef tree** (`../../../../DeductibleFactorBasicGroupI`), guarded by `IsNull`. The actual `Choose`-on-`Deductible` computation lives in a different ruleset entirely — `CommercialPropertySpecialClassRules.Rule.xml` (`DataDefGroup="CommercialPropertySpecialClass"`, line 3078) also defines a rule of the same name with a real `Lookup`-based `Choose`. **Open question:** the exact ancestor datadef that "4 levels up" resolves to from within a `CommercialPropertyPersonalProperty` record was not conclusively traced from the schema alone — see Open Questions below. The same Copy-not-Lookup pattern repeats for `DeductibleFactorBasicGroupII` (line 4100) and `DeductibleFactorBroad` (read directly in `SetFinalBroadRate`, line 4375, with no dedicated Set-rule at all). **Special is the exception** — `SetDeductibleFactorSpecial` (line 4426) *does* run its own local `Lookup`.
+
+**Corrected 2026-10-06** (`cf-bgi-chains.html`, PP review #14; probes P11, P11b in the Group I notes). The
+open question is answered: four levels up is the **Structure** (the building). A blank deductible on the
+item changes nothing ($617, P11b). A blank deductible on the **building** no longer gives Contents a silent
+$0: Contents' own `SetBasicGroupIDeductibleStatCode` (:14163) looks up `DeductibleStatCode` with the
+building's blank value, that `SingleResult` lookup finds no row, and the **policy is refused** (P11; C28-05,
+not C28-17). The same refusal covers Group II, Broad and Special Contents (Group II notes P11; Broad notes
+P4, P4n, P5d; Special notes P7b, P8d) — it fires even when the building is "No Coverage" or not on the same
+cause of loss.
 
 ---
 
@@ -270,7 +298,7 @@ Premium =
     x CyberIncidentExclusionCOLExcptnsFactorBGI
 ```
 
-Same concept as Building's Legal Liability branch (uses the COL-adjusted rate, not the final rate — bypassing coinsurance/LOI/deductible). Factor name is `LegalLiabFactor` (PP) vs. `LegalLiabilityFactor` (Building's datadef alias) — both are populated from a `LegalLiabilityFactor` rate table keyed with covType `"PersProp"` vs. Building's `"Bldg"`.
+Same concept as Building's Legal Liability branch (uses the COL-adjusted rate, not the final rate — bypassing coinsurance/LOI/deductible). Factor name is `LegalLiabFactor` (PP) vs. `LegalLiabilityFactor` (Building's datadef alias) — both are populated from a `LegalLiabilityFactor` rate table keyed with covType `"PersProp"` vs. Building's `"Bldg"`. (2026-10-06, `cf-bgi-chains.html` PP review #18; probe P8: the exact nesting is `Limit/100 x r3(AddlInsInt x r3(LegalLiabFactor x COLAdj)) x PackageMod x IRPM x cyber` (:120–144), with no multi-premium credit. `LegalLiabFactor` is 0.5 for contents: 0.731 x 0.5 → $366.)
 
 ### Branch C — blanket (line 148)
 Applies when `CovForm` is none of the three excluded forms **and** `IncludedInBlkt = "Yes"`. Requires `BlktTotalFullValueAmount > 0`, else `Premium = 0.0`:
@@ -293,6 +321,13 @@ Same shape as Building's blanket branch, with `FullPrsnlPropValue` in place of `
 
 ### Branch D — otherwise
 `Premium = 0.0`. Catches the three excluded `CovForm`s when not blanketed (Legal Liability is caught by Branch B first; Tobacco Sales Warehouse and "Class Rated Building Only" fall through to zero here — those are rated by their own dedicated rule files, e.g. `CommercialPropertyPersonalPropertyTobaccoSalesWarehousesCoverageRules.Rule.xml`).
+
+**Corrected 2026-10-06** (`cf-bgi-chains.html`, PP review #13; probes P9, P12). Tobacco: yes, its own file.
+But "Class Rated Building Only, No Personal Property Coverage" means **no contents cover**; no dedicated
+contents rule file exists for it (Tobacco here prices $0, P12). A blank `IncludedInBlkt` also falls to this
+$0, "rated" (XML). Contents
+has no cause-of-loss gate, so an unmatched blanket item does reach Branch C's $0 (P9, "rated"), unlike
+Building, where the coverage gate turns it off.
 
 ### Premium indicator
 `SetPremiumIndicator` (line 231) and `CalculateTotalPremium` (line 10) are structurally identical to Building's.
@@ -322,6 +357,16 @@ Same overall shape as Building's Group II: rated off construction **symbol** + r
 ### Prerequisites — symbol and territory are Copied, not computed locally
 `SetBasicGroupIISymbol` (line 1299) and `SetBasicGroupIIRatingTerr` (line 1304) are plain `Copy`s from ancestor datadefs (`../../../../BasicGroupIISymbolToUse` and `../../../../../../BasicGroupIIRatingTerr`) — the actual symbol-resolution logic (construction-type/stories lookup, class overrides, oil-distributing-station overrides) lives up in the Structure/Location context and is shared between Building and Personal Property, not duplicated in the PP ruleset.
 
+**Added 2026-10-06** (`cf-bgii-chains.html`, PP review #16, #21, #23; probes P3, P4, P5, P5n, P5nc, P6, P10).
+More is copied than the symbol and territory: `BCEGFactor` (the building's, or 1.0 for a YARD item, :1682 /
+:1716), `OpenSides` (:1479), the wind/hail indicator (:2357) and the wind/hail deductible factor (:2373).
+So Contents decides almost nothing locally: a building with no NumStories zeroes Contents too ($0 "rated",
+P3). C28-17 has **no Personal Property check**. A missing territory or BCEG refuses only because the
+building's own Group II is also $0 (P4, P5). When the building is "No Coverage", the same missing BCEG
+zeroes Contents Group II **silently** ($0 "rated", against $34 in control P5nc; P5n). In the 36
+`RatingTypeBasicGroupII` states the PP rate override reads the **building's** field, so a blank there zeroes
+Contents Group II too (XML only).
+
 ### Step 1 — Numeric value
 `SetBasicGroupIINumericValue` (line 3615) — same three-way logic as Building's (class-code override for 0580/0585/1300/1650, open-sides override, else 1.0), but keyed on `BldgClassCode` (PP's field name) rather than `ClassCodeToUse`.
 
@@ -330,6 +375,13 @@ Same overall shape as Building's Group II: rated off construction **symbol** + r
 
 ### Step 3 — Lowest base rate
 `SetLowestBasicGroupIIBaseRate` (line 3737). `LookupLowestBasicGroupIIRate` reads matrix `LowestBasicGroupIIRate` keyed on State\|CW, symbol, `"PersProp"`. **This table is also header-only — zero CW data rows.**
+
+**Corrected 2026-10-06** (`cf-bgii-chains.html`, PP review #10, #18; probes P1, P2). Header-only at countrywide
+does **not** mean the excluded path can't resolve. Both tables are one table each with "Bldg" / "PersProp"
+rows, and states file them: ME files 16 base rows (8 PersProp) and 8 Lowest rows (4 PersProp), and an
+excluded contents item prices $11 (P2; happy path $34, P1). The 8 jurisdictions that file no Lowest table (AR DC FL
+KS NY PR RI TX) all override the cause-of-loss rule, so the countrywide rebuild is never asked to resolve
+there. A missing row refuses.
 
 ### Step 4 — Rate
 `SetBasicGroupIIRate` (line 3788), 3 decimals:
@@ -352,8 +404,12 @@ BasicGroupIICauseOfLossAdjustment = 0.0                                   if fir
 
 No roof-surfacing factors in the wind/hail-excluded branch either (Building's version applies two roof factors there).
 
+(2026-10-06, `cf-bgii-chains.html` PP review #17; probes P2, P2b: the exclusion tested is the item's **own**
+`WindstormOrHailExclusionPrsnlProp` record (:3619, :3849). Excluding wind on the item gives $11; excluding it
+on the building only leaves Contents at $34. Valuable Papers prices $0, P12.)
+
 ### Step 6 — Coinsurance
-`SetBasicGroupIICoinsuranceFactor` (line 3879) — same shape as Building's: flat lookup (State\|CW, `"Y"`) when `Coinsurance` in (50%/60%/70%/None), else copy the shared `CoinsuranceFactor`.
+`SetBasicGroupIICoinsuranceFactor` (line 3879) — same shape as Building's: flat lookup (State\|CW, `"Y"`) when `Coinsurance` in (50%/60%/70%/None), else copy the shared `CoinsuranceFactor`. (2026-10-06, `cf-bgii-chains.html` PP review #19; probes P7c70, P7c80, P7f: flat CW 1.5, $55; otherwise the item's **Group I** factor, $36 at 80% and under Functional Valuation.)
 
 ### Step 7 — Limit of insurance
 `SetBasicGroupIILOIFactor` (line 3935) — three-way `Choose` (blanket copy / `LookupBasicGroupIILOIFactor(OccupTotalLOIToUse)` guarded by `CovType` not in Legal Liability/Tobacco Sales Warehouses and `OccupTotalLOIToUse > 0` / otherwise 1.0). One fewer branch than Building's four-way (no separate Builders Risk branch).
@@ -362,7 +418,7 @@ No roof-surfacing factors in the wind/hail-excluded branch either (Building's ve
 `SetAdjustedBasicGroupIIRate` (line 4023) — same shape as Building's.
 
 ### Step 9 — Deductible by location
-`SetBGIIDeductibleByLocationFactor` (line 4045) — same shape as Building's, but the wind/hail gate reads `WindstormHailIndicatorPrsnlProp` (PP's own datadef, distinct name from Building's `WindstormHailIndicator`).
+`SetBGIIDeductibleByLocationFactor` (line 4045) — same shape as Building's, but the wind/hail gate reads `WindstormHailIndicatorPrsnlProp` (PP's own datadef, distinct name from Building's `WindstormHailIndicator`). **Corrected 2026-10-06** (`cf-bgii-chains.html`, PP review #14; probe P13): it is not an independent gate. `WindstormHailIndicatorPrsnlProp` is a **copy of the building's** indicator (:2367), and the Deductibles-by-Location record read is the **building's** (`../../../../`, :4054). Factor 0.995 ($34).
 
 ### Step 10 — Deductible factor
 `SetDeductibleFactorBasicGroupII` (line 4100) — again a plain `Copy` from four levels up (`../../../../DeductibleFactorBasicGroupII`), not a local `Lookup`/`Choose` — same pattern as Basic Group I above.
@@ -399,6 +455,12 @@ Premium =
 
 This can shave fractional cents off the blanket-limit ratio for Group II that Group I would otherwise retain — a small but real rounding divergence between the two forms within the same coverage.
 
+(2026-10-06, `cf-bgii-chains.html` PP review #17, #19, #22; probes P8, P9, P11w, P11p: the Truncate is the only
+change from Group I's file after renaming, confirmed by normalised diff. The scheduled and Legal Liability
+formulas are Group I's on Group II's fields: Legal Liability 1,000 x r3(1.0 x r3(0.5 x 0.044)) = $22. A
+blanket item with no Detail prices $0 "rated" (P8). The building's wind/hail deductible reaches Contents
+through the copied factor: 2,500 → $33, 1% → $32.)
+
 ---
 
 ## Broad — rate build-up
@@ -415,8 +477,14 @@ SetFinalBroadRate
 
 No dedicated `SetDeductibleFactorBroad` rule exists at all — `SetFinalBroadRate` reads `../../../../DeductibleFactorBroad` directly (four levels up), with no local Copy or Lookup step in between. As with Basic Group I/II's deductible factors, the real computation happens outside the Personal Property ruleset.
 
+**Confirmed and closed 2026-10-06** (`cf-broad-chains.html`, PP review #9, #10; probes P4pp, P4d, P5 in the
+Broad notes). Four levels up is the building. The building computes `DeductibleFactorBroad` **even when the
+building is not Broad**: a Basic building with a Broad contents item still prices Contents at $16 (P5). The
+item's own `Deductible` is never read (2,500 on the item leaves $16, P4pp); a building deductible of 2,500
+gives $15 (P4d). LOI runs first in the chain.
+
 ### Step 1 — LOI factor (computed first, unlike Building's ordering)
-`SetBroadLOIFactor` (line 4147) — three-way `Choose`: blanket copy from `BlktBroadLOIFactor`; else `LookupBroadSpecialLOIFactor(OccupTotalLOIToUse)` when `CovType` not in (Legal Liability, Tobacco Sales Warehouses) and `OccupTotalLOIToUse > 0`; else `1.0`. No separate Builders Risk branch (Building's Broad LOI rule has one).
+`SetBroadLOIFactor` (line 4147) — three-way `Choose`: blanket copy from `BlktBroadLOIFactor`; else `LookupBroadSpecialLOIFactor(OccupTotalLOIToUse)` when `CovType` not in (Legal Liability, Tobacco Sales Warehouses) and `OccupTotalLOIToUse > 0`; else `1.0`. No separate Builders Risk branch (Building's Broad LOI rule has one). (2026-10-06, `cf-broad-chains.html` PP review #11; probes P8, P13: PP's `SetBlktBroadLOIFactor` (:2663) tests `BlktTotalLOIToUse >= 0`, where Building tests `> 0`, so a blanket total of 0 looks the table up and gets 1.728, not 1.0. A PP Limit of 0 gives LOI 1.0 and $0 "rated".)
 
 ### Step 2 — Base rate
 `SetBroadBaseRate` (line 4235)
@@ -469,7 +537,7 @@ AdjustedBroadRate = BroadLOIFactor x BroadRate x CoinsuranceFactor
 FinalBroadRate = AdjustedBroadRate x DeductibleByLocationFactor x DeductibleFactorBroad
 ```
 
-`DeductibleFactorBroad` read directly from four levels up (see above) — no local deductible `Choose` at all, unlike Building's `SetDeductibleFactorBroad` (which has a four-way `Choose` including a "blank deductible → 0.0" fallback).
+`DeductibleFactorBroad` read directly from four levels up (see above) — no local deductible `Choose` at all, unlike Building's `SetDeductibleFactorBroad` (which has a four-way `Choose` including a "blank deductible → 0.0" fallback). (2026-10-06, `cf-broad-chains.html` PP review #12, #14; probe P11: `DeductibleByLocationFactor` here is a **copy of the building's** (:2399), 0.995. There is no roof factor and no multi-residential credit.)
 
 ---
 
@@ -518,6 +586,16 @@ Premium =
 
 Zero when `BlktTotalFullValueAmount = 0`. Branch D — otherwise, `Premium = 0.0`.
 
+**Added 2026-10-06** (`cf-broad-chains.html`, PP review #2, #13, #15; probes P1, P2, P2n, P4, P4n, P5d, P6,
+P9, P10, P13 in the Broad notes). The scheduled branch also excludes Legal Liability / Tobacco /
+ClassRatedOnly. Legal Liability has **no** cause-of-loss test in its branch (the gate still applies):
+1,000 x r3(1.0 x r3(0.5 x 0.021)) = $11 (P9). `CauseOfLossToUse` is the item's own `CauseOfLoss` (P10 off;
+P5 on with a Basic building). The blanket branch is a plain divide, no Truncate. **What the engine does:** a
+blank **building** `Deductible` is refused through Contents' stat-code lookup (C28-05), even when the building
+is "No Coverage" (P4n) or not Broad (P5d). These stay silent $0, "rated": a blank building `ConstructionType`
+(P2, and P2n with a "No Coverage" building), Valuable Papers (P6) and a PP Limit of 0 (P13). C28-17 has no
+Personal Property check.
+
 ---
 
 ## Special — rate build-up
@@ -544,10 +622,10 @@ SetFinalSpecialRate
 **Special is structurally the most different of the four PP forms, and the opposite of Building's Special.** Building's Special base rate is a flat statewide constant with no class/territory dimension at all. Personal Property's Special base rate is keyed on **occupancy category + occupancy category risk severity**, and — unlike Building's Special — it carries its **own territory multiplier** (`PrsnlPropTerrMultiplier`), something none of Building's four forms have for Special. PP's Special is also the only PP chain with theft-specific schedule credits (`WatchmanCreditFactor`, `BurglaryAlarmCreditFactor`) sourced directly from user-entered protective-safeguards data rather than a rate-table lookup.
 
 ### Prerequisites — occupancy category
-`SetOccupCategory` (line 4400) and `SetOccupCategoryRiskSeverity` (line 4405) `Copy` from two levels up (`../../OccupCategory`, `../../OccupCategoryRiskSeverity`) — set once at the Occupancy Class level and shared by every PersonalProperty record under it.
+`SetOccupCategory` (line 4400) and `SetOccupCategoryRiskSeverity` (line 4405) `Copy` from two levels up (`../../OccupCategory`, `../../OccupCategoryRiskSeverity`) — set once at the Occupancy Class level and shared by every PersonalProperty record under it. (2026-10-06, `cf-special-chains.html` PP review #12; probes P2a, P2b, P2c, P2m: severity is itself **derived** on the occupancy from category + occupancy `ClassCode` (`SetOccupCategoryRiskSeverity` :406, a `SingleResult` lookup). A blank category or a blank occupancy class code leaves the base rate 0: **$0, "rated"** (P2a, P2b). An off-domain category is refused (P2c). Mercantile / Medium prices $136.)
 
 ### Step 1 — Deductible by location
-`SetSpecialDeductibleByLocationFactor` (line 4410) — a plain `Copy` from four levels up, guarded by `IsNull` — **not** a local computation, unlike Basic Group I/II's deductible-by-location factors which do run local `Lookup`s (`LookupDeductibleByLocationFactor`) elsewhere in this same ruleset. Special's is the one deductible-by-location factor that is externally sourced rather than locally computed.
+`SetSpecialDeductibleByLocationFactor` (line 4410) — a plain `Copy` from four levels up, guarded by `IsNull` — **not** a local computation, unlike Basic Group I/II's deductible-by-location factors which do run local `Lookup`s (`LookupDeductibleByLocationFactor`) elsewhere in this same ruleset. Special's is the one deductible-by-location factor that is externally sourced rather than locally computed. (2026-10-06, `cf-special-chains.html` PP review #16; probe P15: it copies the **building's Special** by-location factor, keyed on the by-location `TheftDeductible`: 0.995, $83. Group I's and Broad's are copies of the building's too; see the table note below.)
 
 ### Step 2 — Deductible factor
 `SetDeductibleFactorSpecial` (line 4426) — the one deductible factor among all four PP chains that **is** computed locally with its own `Lookup`, not copied from an ancestor. A four-branch `Choose`:
@@ -573,6 +651,14 @@ Otherwise: DeductibleFactorSpecial = 0.0
 
 Same theft-deductible-driven shape as Building's Special deductible factor, keyed the same way (`SpecialIncludingTheftTotAmtInsurance` / `SpecialTotAmtInsurance`).
 
+**Corrected 2026-10-06** (`cf-special-chains.html`, PP review #10, #11; probes P7pp, P7a, P7n, P7d, P7t, P7b,
+P8d). The rule is local, but its inputs are not. It reads the **building's** `Deductible` (four levels up),
+the occupancy's `TheftDeductible` (copied from the building) and the building's Special sums. The item's own
+`Deductible` is never read (2,500 on the item leaves $83, P7pp). Building 250 → 1.1 ($94); N/A → 1.0 ($85);
+2,500 → $78; building theft deductible 2,500 → 0.92 ($78). A blank building `Deductible` never reaches the
+0.0: the policy is refused first by Contents' stat-code lookup (C28-05), even when the building is not
+Special (P7b, P8d). The deductible runs 4th in the chain, before the theft factor.
+
 ### Step 3 — Theft exclusion factor
 `SetSpecialTheftExclusionFactor` (line 4592)
 
@@ -586,7 +672,7 @@ else:
     SpecialTheftExclusionFactor = 1.0
 ```
 
-Unlike Building's flat CW 0.88 theft-exclusion credit, PP's theft-exclusion factor is **keyed on OccupCategory** — a per-occupancy credit, not a single statewide constant. `SpecialPrsnlPropTheftExclusionFactor.RateTable.csv` is **header-only — zero CW data rows filed.**
+Unlike Building's flat CW 0.88 theft-exclusion credit, PP's theft-exclusion factor is **keyed on OccupCategory** — a per-occupancy credit, not a single statewide constant. `SpecialPrsnlPropTheftExclusionFactor.RateTable.csv` is **header-only — zero CW data rows filed.** (2026-10-06, `cf-special-chains.html` PP review #4, #13, #18; probes P4, P4b, P4c: the indicator comes from the item's **own** Theft Exclusion PP record (:16227), not the building's CP 10 33. Excluding theft on the building only leaves Contents at $83; on the item, OK Offices 0.4 gives $34. A blank category with theft excluded gives 0.0 and $0 "rated". The three CW-empty tables are state-filed: 45 states file all three; FL and PR override; a state without a row refuses.)
 
 ### Step 4 — Base rate
 `SetSpecialBaseRate` (line 4670)
@@ -616,7 +702,7 @@ else:
     PrsnlPropTerrMultiplier = 0.0
 ```
 
-`LookupTerritoryMultiplier` reads matrix `PrsnlPropTerrMultiplier`. **This table is also header-only — zero CW data rows filed.** Building's Special form has no territory dimension whatsoever (flat statewide rate); Personal Property's does, via this multiplier — a genuine structural difference between the two coverages' Special forms.
+`LookupTerritoryMultiplier` reads matrix `PrsnlPropTerrMultiplier`. **This table is also header-only — zero CW data rows filed.** Building's Special form has no territory dimension whatsoever (flat statewide rate); Personal Property's does, via this multiplier — a genuine structural difference between the two coverages' Special forms. (2026-10-06, `cf-special-chains.html` PP review #6; probes P3a, P3t, P3x: a blank `SpecialRatingTerr` prices **$0, "rated"**; Tulsa 1.434 gives $120; an off-domain territory is refused. Building ignores it.)
 
 ### Step 6 — Rate
 `SetSpecialRate` (line 4787), 3 decimals:
@@ -641,10 +727,10 @@ else:
 No roof-surfacing factor (none exists for PP). Same Valuable-Papers carve-out as the other three PP forms.
 
 ### Step 8/9 — Protective-safeguard credits (PP Special-only)
-`SetWatchmanCreditFactor` (line 4862) and `SetBurglaryAlarmCreditFactor` (line 4943) — both gated on `SpecialTheftExclusionIndicator = 0` and the existence of a `CommercialPropertyBurglaryAndRobberyProtectiveSafeguards` record (four levels up). When present and valid, the factor is `Copy`'d **directly from the schedule-modifier record itself** (`.../CommercialPropertyBurglaryAndRobberyProtectiveSafeguards[1]/WatchmanCreditFactor` / `.../BurglaryAlarmCreditFactor`) — these are **not rate-table lookups**, they are pre-computed values carried on the user's protective-safeguards schedule entry (itself presumably rated by a separate ruleset not traced here). Defaults to `1.0` otherwise. Building's Special form has no equivalent — these credits are Personal-Property-specific (theft/burglary protection reduces contents theft exposure in a way that has no Building-coverage analogue).
+`SetWatchmanCreditFactor` (line 4862) and `SetBurglaryAlarmCreditFactor` (line 4943) — both gated on `SpecialTheftExclusionIndicator = 0` and the existence of a `CommercialPropertyBurglaryAndRobberyProtectiveSafeguards` record (four levels up). When present and valid, the factor is `Copy`'d **directly from the schedule-modifier record itself** (`.../CommercialPropertyBurglaryAndRobberyProtectiveSafeguards[1]/WatchmanCreditFactor` / `.../BurglaryAlarmCreditFactor`) — these are **not rate-table lookups**, they are pre-computed values carried on the user's protective-safeguards schedule entry (itself presumably rated by a separate ruleset not traced here). Defaults to `1.0` otherwise. Building's Special form has no equivalent — these credits are Personal-Property-specific (theft/burglary protection reduces contents theft exposure in a way that has no Building-coverage analogue). (2026-10-06, `cf-special-chains.html` PP review #14; probes P5a–P5d: each credit also needs its **type field** set and not N/A, or it stays 1.0 — a watchman factor with no service type leaves $83 (P5b). Watchman 0.90 → $75; alarm 0.85 → $72. Excluding PP theft turns both off ($34, P5c). The schedule is on the building.)
 
 ### Step 10 — Limit of insurance
-`SetSpecialLOIFactor` (line 5024) — three-way `Choose`, same shape as Broad's LOI rule: blanket copy from `BlktSpecialLOIFactor`; else `LookupBroadSpecialLOIFactor(OccupSpecialTotAmtInsurance)` when `CovType` not in (Legal Liability, Tobacco Sales Warehouses) and `OccupSpecialTotAmtInsurance > 0`; else `1.0`. Matrix `BroadSpecialLOIFactorPrsnlProp` — shared with Broad, exactly as Building's Broad and Special share `BroadSpecialLOIFactorBldg`.
+`SetSpecialLOIFactor` (line 5024) — three-way `Choose`, same shape as Broad's LOI rule: blanket copy from `BlktSpecialLOIFactor`; else `LookupBroadSpecialLOIFactor(OccupSpecialTotAmtInsurance)` when `CovType` not in (Legal Liability, Tobacco Sales Warehouses) and `OccupSpecialTotAmtInsurance > 0`; else `1.0`. Matrix `BroadSpecialLOIFactorPrsnlProp` — shared with Broad, exactly as Building's Broad and Special share `BroadSpecialLOIFactorBldg`. (2026-10-06, `cf-special-chains.html` PP review #15; probe P14: a PP Limit of 0 gives LOI 1.0 and `LimitToUse` 0, so $0 "rated".)
 
 ### Step 11 — Adjusted rate
 `SetAdjustedSpecialRate` (line 5112):
@@ -684,7 +770,7 @@ else:
     LimitToUse = Limit
 ```
 
-No equivalent exists in Building's Special (or anywhere in Building's ruleset) — this is a Personal-Property-specific sublimit override for the CP 12 11 Alcoholic Beverages Tax Exclusion endorsement, feeding directly into Branch A's premium formula in place of the raw `Limit`.
+No equivalent exists in Building's Special (or anywhere in Building's ruleset) — this is a Personal-Property-specific sublimit override for the CP 12 11 Alcoholic Beverages Tax Exclusion endorsement, feeding directly into Branch A's premium formula in place of the raw `Limit`. (2026-10-06, `cf-special-chains.html` PP review #17; probe P6: the record does three things, not one. It swaps the exposure to the record's limit (60,000), and it shrinks the occupancy and building sums, which moves LOI to 0.94 and the deductible to 0.97: $59, not $50. The building's Special moves $85 → $84.)
 
 ### Gate 1 — coverage on policy
 `SetCoverageOnPolicyIndicator` (line 32):
@@ -713,6 +799,11 @@ Premium =
 
 **Rounding matches Building's Special pattern, not the Basic/Broad pattern**: nested `Product DecimalPlaces="0"` with no `Round` wrapper (each product step rounds to 0 places as it goes), consistent with the Building doc's finding that Special premium calc across CF consistently departs from the triple-nested-`Round` convention used by Basic Group I/II/Broad.
 
+**Corrected 2026-10-06** (`cf-special-chains.html`, PP review #9). Not an exact match. The **first** step here is
+`r3(FinalSpecialRate x LimitToUse / 100)`, then `r0` for each factor; Building's first step is
+`r0(Final x Limit / 100)`. The branch also needs `CovForm` not Legal Liability / Tobacco / ClassRatedOnly and
+the submitted `CauseOfLoss` = Special.
+
 ### Branch B — Legal Liability (line 224)
 Requires `CovForm = "Legal Liability Coverage Form"`:
 
@@ -728,7 +819,7 @@ Premium =
   x CyberIncidentExclusionCOLExcptnsFactorSpecial
 ```
 
-Uses `SpecialCauseOfLossAdjustment` (which already includes the theft-exclusion factor and the Valuable-Papers zero-out) rather than raw `SpecialRate` — a departure from Building's Special Legal Liability branch, which uses the raw, unadjusted `SpecialRate`.
+Uses `SpecialCauseOfLossAdjustment` (which already includes the theft-exclusion factor and the Valuable-Papers zero-out) rather than raw `SpecialRate` — a departure from Building's Special Legal Liability branch, which uses the raw, unadjusted `SpecialRate`. (2026-10-06, `cf-special-chains.html` PP review #19; probes P10, P10t, P10c: that is rate x theft, **not** `AdjustedSpecialRate`. 0.114 x 0.5 → $57; with PP theft excluded $23. It reads `Limit`, not `LimitToUse`, and has no cause-of-loss test in the branch — the gate still turns a Basic item off.)
 
 ### Branch C — blanket (line 261)
 Requires `IncludedInBlkt = "Yes"` **and** `BlktCauseOfLossValue = "Special"`. Requires `BlktTotalFullValueAmount > 0`, else `Premium = 0.0`:
@@ -749,6 +840,13 @@ Same nested-`Product`-no-`Round` pattern and reversed factor ordering as Branch 
 
 ### Branch D — otherwise
 `Premium = 0.0`.
+
+**Added 2026-10-06** (`cf-special-chains.html`, PP review #18, #20; probes P2a, P2b, P3a, P4c, P9, P11, P14).
+The Special and "Yes" tests sit in Branch C's condition, with `total > 0` inside. A blanketed item with no
+Detail is turned off at the gate (P11). **Silent zeros, Special Contents** — the most of any form, none
+refused (C28-17 has no Personal Property check): blank `OccupCategory` (P2a, also P4c with theft excluded),
+blank occupancy `ClassCode` (P2b), blank `SpecialRatingTerr` (P3a), Valuable Papers (P9), PP Limit 0 (P14).
+Refusals come only from no-row lookups (P2c, P3x) and the building's deductible stat code (P7b, P8d).
 
 ### Premium indicator
 `SetPremiumIndicator` (line 348) and `CalculateTotalPremium` (line 10) are structurally identical to the other three forms. Notably, `ErcProcess` (line 370) for Special runs an **extra** `ErcSetRatesAndFactors` call (the `SetLimit`/`SetLimitToUse` pair) before `ErcRate` — the only one of the four PP premium files with additional per-premium-file rate/factor prep beyond `SetPremium`/`SetPremiumIndicator`.
@@ -780,13 +878,22 @@ Same nested-`Product`-no-`Round` pattern and reversed factor ordering as Branch 
 | Blanket branch tests | `IncludedInBlkt` | `IncludedInBlkt` | + `BlktCauseOfLossValue` | + `BlktCauseOfLossValue` |
 | Special sublimit override | — | — | — | **`LimitToUse` swapped for Alcoholic Beverages Tax Exclusion limit** |
 
+**Corrected 2026-10-06** (`cf-bgi-chains.html` PP #14, #15; `cf-bgii-chains.html` PP #10, #14; `cf-broad-chains.html`
+PP #12; `cf-special-chains.html` PP #10, #16). Read the table with these changes. "Deduct-by-location": every
+form's factor comes **from the building**. Group I and Broad use a copy of the building's shared factor (:2399);
+Group II looks up the building's by-location record with a copy of the building's wind/hail indicator; Special
+copies the building's Special factor, keyed on the by-location theft deductible. "Deductible factor": Special's rule is local, but it reads the
+building's deductible inputs; the item's own `Deductible` is never read on any form. "Empty CW" tables are
+state-filed (the Group II and Special tables resolve in ME / OK). A blank building deductible refuses the
+policy through Contents' stat-code lookup (C28-05) on every form.
+
 ---
 
 ## Structural differences from Building — summary
 
 1. **Cardinality.** Building rates one Structure per building. Personal Property rates N `CommercialPropertyPersonalProperty` records per Occupancy Class per Location, each running the full four-chain build-up independently (`ForEach`-driven from `CommercialPropertyOccupClassRules.Rule.xml`).
 2. **Master orchestration is split across two files** (`CommercialPropertyOccupClassRules.Rule.xml` drives the `ForEach`; `CommercialPropertyPersonalPropertyRules.Rule.xml` holds the actual chain-runner `ErcSetPostRatesAndFactors`) rather than living entirely in one file the way Building's `SetBlanketRatesAndFactors` does.
-3. **Deductible factors for Basic Group I, Basic Group II, and Broad are not computed locally** — they are `Copy`'d (or read directly with no Set-rule) from an ancestor context 4 levels up the datadef tree. Only Special computes its own deductible factor locally. Building computes all four locally, each with its own `Choose`.
+3. **Deductible factors for Basic Group I, Basic Group II, and Broad are not computed locally** — they are `Copy`'d (or read directly with no Set-rule) from an ancestor context 4 levels up the datadef tree. Only Special computes its own deductible factor locally. Building computes all four locally, each with its own `Choose`. (2026-10-06, `cf-special-chains.html` PP #10: Special's local rule still reads the building's deductible inputs; the ancestor is the building.)
 4. **Basic Group I's base rate table (`BasicGroupIRate`) and Basic Group II's base rate tables (`BasicGroupIIRate`, `LowestBasicGroupIIRate`) are shared with Building** — same matrix, differentiated by `Group`/`CovType` columns — but **filed with zero CW data rows**, confirmed by direct byte-count of the CSVs.
 5. **Special is inverted relative to Building.** Building's Special is the simplest chain (flat statewide rate, no territory, no class). Personal Property's Special is the *most* complex chain (14 steps) — keyed on occupancy category + risk severity, carries its own territory multiplier (which Building's Special entirely lacks), and adds two schedule-sourced protective-safeguard credits (Watchman, Burglary Alarm) that have no Building analogue.
 6. **PP-only rate concepts:** `FireSafeVaultFactor` (Basic Group I), `WatchmanCreditFactor`/`BurglaryAlarmCreditFactor` (Special), and a recurring **Valuable Papers and Records** carve-out that zeroes the COL adjustment (or rate, for Broad) across all four forms — none of which exist anywhere in Building's ruleset.
@@ -881,6 +988,7 @@ Premium         = round(IRPM x MultiPremiumDispersion x PackageMod x FinalRate x
 ```
 TheftExclFactor = lookup SpecialPrsnlPropTheftExclusionFactor(State|CW, OccupCategory)
                      if COL = Special and CP 10 33 attached (empty CW table)
+                     [2026-10-06: the item's own Theft Exclusion PP record, not the building's]
                 | 1.0
 
 BaseRate        = lookup SpecialPrsnlPropRate(State|CW, OccupCategory, OccupCategoryRiskSeverity)
@@ -897,6 +1005,7 @@ COLAdj          = 0.0                                  if CovType = Valuable Pap
 
 WatchmanCredit, BurglaryAlarmCredit  = copied directly from the protective-safeguards schedule record,
                                         1.0 if none / theft not excluded
+                                        [2026-10-06, P5b/P5c: 1.0 if no type field, or if PP theft IS excluded]
 
 LOIFactor       = BlktSpecialLOIFactor                       if blanketed
                 | lookup BroadSpecialLOIFactorPrsnlProp(State|CW, OccupSpecialTotAmtInsurance)

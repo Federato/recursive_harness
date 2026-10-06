@@ -61,6 +61,14 @@ Building rate silently produces a wrong Business Income premium". Chunk 7's is
 tighter: **it cannot be rated until the parent's rate build-up has fully
 completed**, not merely its base-rate step.
 
+> **Correction note, 2026-10-06** (`CF_Algorithm/cf-bgi-chains.html`, SCBI review #44, #45, #52; probes
+> BI-7, BI-8, BI-9). Points 1 and the list above overstate the borrow. `../../BasicGroupIRate` is the
+> parent's step-3 value, `r3(Base x LCM)`, taken **before** its vandalism, StdPropPol, coinsurance and
+> deductible factors — not its "finished" or "fully rated" rate (golden case: 0.07 copied, against the
+> parent's final 0.066). So the child needs only the parent's third step, not the completed chain, and
+> the dependency is looser than "tighter". Task 10's own finding already showed this: the parent's LCM
+> reaches the child and its deductible does not. The `EQRate` line was not re-checked.
+
 **2 · Two forms are keyed on literals, and one of them blanks a dimension the
 same table still uses.** Broad always reads the `"Frame"` row; Special always
 reads the `"Other than Apartments and Condominiums"` row. So **the apartment
@@ -168,6 +176,14 @@ Otherwise: `SetBasicGroupIICauseOfLossAdjustment` overridden by 8,
 | 19 | ✅ **Pinned here, live next door.** The apartment rows (0.029 / 0.016) are unreachable from this group — the literals census says the pin applies *"from the pinned site only; the same column is read live elsewhere"* — and that elsewhere is plain Business Income on **the same physical table**, pricing the apartments version at **$29** against this group's $47 |
 | 20 | ✅ **The algorithms page's open question answered, and half of it was wrong.** It records the theft factor as still varying by `ApartmentCondoIndicator`. **It does not** — that lookup keys the column on a hard-coded `"No"`, so the `Yes` row (0.96) is unreachable too. **Both dimensions are dead**: moving the indicator and the parent's class code moves neither the theft factor (0.86 throughout) nor the base rate (0.047). Corrected on the algorithms page in two places |
 | 21 | ✅ **Class 1150 is inert here for the third coverage group in two chunks.** `SpecialFormBldrsRiskTimeElementBaseRate` is named **0** times in this ruleset and **6** in plain Business Income's; the table files 1 countrywide row and **0 states file their own**. Parent class 1150 → premium **$47, unchanged** |
+
+> **Correction note, 2026-10-06, row 16** (`CF_Algorithm/cf-bgii-chains.html`, SCBI review #52, #55; probe
+> BI-1 in the Group II notes). "Unresolvable at countrywide" is true of the CW file but out of date as a
+> finding: header-only CW with state rows is the **normal state-filed pattern**, not a gap. OH rates this
+> coverage's Group II at $321 (2026-01-01) and $361 (2026-07-01). A key with no state row is now refused
+> (C28-05). Also from the same review (#47–#51): the child's LCM, wind/hail exclusion, coinsurance and
+> limits are its own; the parent supplies only territory, symbol and the class multiplier, and that
+> multiplier drops to 1.0 when the **parent** has a wind/hail exclusion ($321 → $40, probe BI-14).
 
 ## Cross-form claims
 

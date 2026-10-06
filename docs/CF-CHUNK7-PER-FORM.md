@@ -54,6 +54,10 @@ census cannot tell them apart.
 plain Business Income and this one all read the same two empty tables, and all
 three depend entirely on a state filing.
 
+> **Correction note, 2026-10-06** (`CF_Algorithm/cf-bgii-chains.html`, SCBI review #52). Depending on a
+> state filing is the normal pattern for these tables, not a gap: every filed state resolves them (OH
+> $321 / $361). A key with no state row is now refused (C28-05).
+
 ---
 
 ## C7-17 · The lowest-rate biconditional — and it does not hold here

@@ -137,6 +137,13 @@ than a conclusion.
 | 22 | ✅ **0 of 47 + CW** — enumerated, not asserted. Absent outright, and nothing substitutes |
 | 23 | ✅ **0.021 → $16 and 0.011 → $8**, against Building's $17 and $12 on the same building. The fire-resistive tier doubled as a **rounding probe**: $8 confirms the adjusted-rate step rounds ONCE, as Basic Group I does; per-factor rounding would give $9 |
 
+> **Correction note, 2026-10-06, row 21** (`CF_Algorithm/cf-bgi-chains.html` PP review #14;
+> `cf-broad-chains.html` PP review #15; probes P11 in the Group I notes and P4, P4n, P5d in the Broad notes).
+> Out of date for the engine. A blank **building** `Deductible` no longer gives Contents a silent zero: the
+> Contents record's own `DeductibleStatCode` `SingleResult` lookup finds no row for the blank value, so the
+> **policy is refused** (C28-05). It fires even when the building is "No Coverage" or not Broad. The XML
+> reading in row 21 (an `Otherwise` worth 0.0 four levels up) is still right.
+
 ## Special — the longest chain, and the least like Building's
 
 | # | Task |

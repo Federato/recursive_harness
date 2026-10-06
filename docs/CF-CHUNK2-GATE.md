@@ -236,6 +236,11 @@ the four that zero Group II are the same four. ISO confirms both corners.
 2. **Input validation.** Five inputs now price at zero rather than raising: Arizona's
    `BasicGroupIReductionCredit`, an unrecognised `ConstructionType`, an absent `BCEG`, a missing
    `RatingTypeBasicGroupII`, a missing Group II territory. Item 8 is the engine-side half.
+   *(Status note, 2026-10-06, `CF_Algorithm/cf-bgi-chains.html` and `cf-bgii-chains.html` Building reviews:
+   AZ's credit, a missing territory and an absent BCEG now refuse (C28-17; territory and BCEG only on a
+   "Building" CovType); an unrecognised construction refuses at its lookup (C28-05). A missing
+   `RatingTypeBasicGroupII` in the 36 states, and a blank NumStories or construction (blank symbol), still
+   price Group II at $0 "rated".)*
 3. **TX's wind/hail shape**, untraced. **Traced 2026-10-02 (chunk 27 C27-07, `240_chunk27_rc3.py --live`):** TX keeps the normal rate and
    multiplies it by `WindstormOrHailExclFactor` every time: 1.0 without the exclusion, a flat **0.1** with it (its own
    one-row `WindstormOrHailExclFactorTX`; no symbol, no lowest-rate rebuild). Seacoast 1, symbol B: **$800 → $79**, ISO equal.

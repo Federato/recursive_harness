@@ -161,6 +161,16 @@ Seven missing inputs are now known across chunks 1–3:
 | a blank `Deductible` (Broad **and** Special) | silent zero |
 | **a missing `Limit`** | **raises** |
 
+> **Status note, 2026-10-06** (the four verified chain pages in `CF_Algorithm/`, built after 542f0e1's
+> C28-17 layer). The table records chunk 3's engine. Since then: AZ's missing credit, a missing Group II
+> territory and an absent BCEG **refuse** (C28-17), but territory and BCEG only on a "Building" CovType
+> (`cf-bgii-chains.html` Building probes B3, B4, B8b). An unrecognised `ConstructionType` **refuses** at the
+> `ConstructionTypeToUse` lookup (C28-05; `cf-broad-chains.html` B2j). A blank Broad / Special `Deductible`
+> refuses **only** on a plain building with a submitted Broad / Special cause of loss; I&B, Condo, Builders
+> Risk and a blanket with a blank own cause still price $0 "rated" (`cf-broad-chains.html` #1,
+> `cf-special-chains.html` #7). A missing `RatingTypeBasicGroupII` is still a silent zero in the 36 states
+> that read it (PA probe R1).
+
 Six of seven are silent. The one that raises does so because it reaches the
 premium as a null instead of as a factor of zero — which is an argument *for*
 the input-validation layer, not against it. The guard already catches

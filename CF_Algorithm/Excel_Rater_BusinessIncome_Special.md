@@ -93,6 +93,16 @@ Straight translation of `SetSpecialRatesAndFactors`'s 6-step chain.
 7. **`FinalRate`** = `COLAdj` — a straight copy, matching Broad. No `Factor` multiplication for this
    form.
 
+**Corrected 2026-10-06** (`cf-special-chains.html` BI review #30, #31, #37; probes COVBLANK, ACI_YES,
+ACI_BLANK, INCBLANK). Three things the steps above get wrong or leave out. (a) Step 4's lookup is a `Choose`
+on `BI_CovType`: "Without Extra Expense" → WO row, any other **non-blank** value → "All Other", **blank →
+0.0**. A blank `BI_CovType` prices Special $0 with the coverage on, and Group I and II $0 too (the shared
+`Factor` is 0); class 1150 ignores `CovType`. (b) `BI_ApartmentCondoIndicator` is **not an input**: the
+Structure derives it from the building's class code (0300–0343 → "Yes", else "No") and overwrites a
+submitted value, so the blank branches in steps 2–4 cannot be reached. (c) A blank `BI_IncludedInBlkt`
+falls to the blanket side and prices Special, Group I and II at $0 "rated". Special is charged on top of
+Group I and II.
+
 ---
 
 ## 5. `Premium_Summary` formula for this form

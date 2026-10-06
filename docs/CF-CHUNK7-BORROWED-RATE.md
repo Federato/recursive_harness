@@ -23,6 +23,13 @@ copy happens **after** the loss cost multiplier and **before** the deductible
 factor. C7-03 and the ISO run already showed the other half: strip the parent's
 deductible and the item prices at **$0** while the child holds at **$39**.
 
+> **Correction note, 2026-10-06** (`CF_Algorithm/cf-bgi-chains.html`, SCBI review #44, #45; probes BI-7,
+> BI-8, BI-9). The heading's word "finished" is wrong; the paragraph above has it right. The child copies
+> the parent's `BasicGroupIRate`, which is base x LCM — the parent's **third** step, taken before its
+> vandalism, policy-form, coinsurance and deductible factors. The parent's final rate is 0.066; the child
+> uses 0.07. Re-probed in OH at CW 2023-08 V04 and CW 2026-06: parent coinsurance 100% or deductible 250
+> moves the parent ($62, $70) and leaves the child at $39; parent LCM 2.0 takes the child to $77.
+
 ---
 
 ## C7-12 · Eleven values cross the boundary — and the count was wrong twice
@@ -47,6 +54,12 @@ deductible and the item prices at **$0** while the child holds at **$39**.
 
 **And `BasicGroupIBaseRate` is mentioned zero times in the entire ruleset** —
 the claim that matters, and the one that was right all along.
+
+> **Correction note, 2026-10-06** (`CF_Algorithm/cf-bgi-chains.html`, SCBI review #44). In the list above,
+> `BasicGroupIRate` is the parent's base x LCM, not its "FINISHED" rate (see the note under C7-10). The
+> `EQRate` line was not re-checked. `cf-bgii-chains.html` SCBI review #48: `BasicGroupIINumericValue` is 8
+> only when the parent has no wind/hail exclusion; with one it is 1.0, and the child falls from $321 to
+> $40 in OH (probe BI-14 in the Group II notes).
 
 **The lesson is the count, not the list.** The census asked *"which borrowed
 values look like rates, symbols, territories or factors?"* — a guess about
@@ -74,6 +87,13 @@ Setting the location's `BasicGroupIIRatingTerr` to `Portland` — a territory
 Oregon files for Group I but not for Group II — takes **Group II to $0** and
 leaves **Group I at $39**. One form borrows an answer, the other borrows an
 input, and only the second one can miss.
+
+> **Correction note, 2026-10-06** (`CF_Algorithm/cf-bgii-chains.html`, SC review #27 and the SC delta;
+> probes SC-7, SC-9 in the Group II notes). Out of date for the engine. Since the C28-05 `SingleResult`
+> rule, a territory the state does not file is **refused**, not priced at $0 (SC-9: OH, location territory
+> "Bogus", no building). Only a **blank** territory on a location with no building still gives a silent
+> $0, outcome "rated" (SC-7). "Borrows an answer" for Group I should read "borrows an intermediate rate"
+> (note under C7-10).
 
 ---
 

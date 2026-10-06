@@ -80,6 +80,17 @@ All 26 tables above were confirmed present as `<TableName>.RateTable.csv` (with 
 > was not caught by the original verification pass and should be treated as the standing check going
 > forward: "table exists" and "table has a usable row" are different claims, and only the second one
 > is load-bearing. See `BUILD-LOG.md` Entry 3.
+>
+> **Corrected 2026-10-06** (`cf-bgi-chains.html`, Building and PP reviews; `cf-bgii-chains.html`, Building
+> review #5 and PP review #10, #18; probes B1, P1, P3y in the Group I notes and B1, P1, P2 in the Group II
+> notes). Still header-only at countrywide in both CW 2023-08 V04 and CW 2026-06, but "entirely
+> unresolvable" is out of date. **This is the normal state-filed pattern**: OK files 1,368 `BasicGroupIRate`
+> rows (identical in both OK packages) and prices a building at $720 and contents at $617; ME files 16
+> `BasicGroupIIRate` and 8 `LowestBasicGroupIIRate` rows and prices Group II at $48 (building) and $34
+> (contents), with a wind/hail-excluded building at $15. A key with no row in the state's table is now
+> **refused** (`SingleResult` miss, C28-05), not left null: an unknown class 9999 refuses in OK (B3x, P3y).
+> The CA District watch-item below still stands: C28-17 has no `District` check, so CA without `District`
+> still prices Group I at $0 silently (code reading, not re-probed).
 
 > **Watch-item, 2026-09-03: California splits `BasicGroupIRate` into two district-specific tables.**
 > While pulling a countrywide `BGI_BuildingRates.csv` dropdown export, CA turned out to have **no**
@@ -164,7 +175,10 @@ attempted). Flat `0.98` CW, matches manual Rule 69.D.2 exactly. Checked all 47 s
 overrides.
 
 **`CoinsuranceFactor`** (`BGI_CoinsuranceFactor.xlsx`) — bypassed entirely (`1.0`) when
-`ClassCode="1150"` (Builders Risk) or `ValuationType="Functional Valuation"`. Otherwise four branches:
+`ClassCode="1150"` (Builders Risk) or `ValuationType="Functional Valuation"` (confirmed 2026-10-06,
+`cf-bgi-chains.html` Building review #5, #6: the skip **sets** 1.0, :7898; probes B6 $759, B6c 70% $1,137).
+The 1.5 branch is not unique to Group I: Group II's flat factor and Special Class Group II use the same 1.5
+on the same four values (`cf-bgii-chains.html` SC review #24). Otherwise four branches:
 standard 80/90/100% lookup; the *same* table reused for the blanket-coinsurance branch (confirmed —
 `LookupBlktCoinsuranceFactor` points at the identical matrix, just a different key); a flat `1.5`
 surcharge for 50%/60%/70%/None; else `1.0`. **FL files a real, unreachable 70% row** (factor 1.14) —

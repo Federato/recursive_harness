@@ -183,7 +183,7 @@ dangerous until you've confirmed which.
 | `ProtectClass` (Contents-side factor) | Blank | Falls back to **0.0** for Contents (vs. Building's **1.0** fallback on the identical blank field) — Contents prices $0, Building rises, no message either way | CF-CHUNK4-GATE.md pt.4; CF-CHUNK4-TASKS.md C4-32 |
 | Same factor, class 1751/1752 | Class 1751 | Falls back to 1.0 ($69 vs. true 0.96) | CF-CHUNK4-TASKS.md C4-18 |
 | Same factor, class 1751/1752 | Protection class missing | Falls back to 0.0 (zero premium) — "two fallbacks in one rule" | CF-CHUNK4-TASKS.md C4-18 |
-| Broad-form deductible factor | No `SetDeductibleFactorBroad` rule exists in PP at all — reads Building's ancestor value 4 levels up, whose own `Otherwise` is 0.0 | A blank building deductible silently zeros Contents' Broad premium instead of refusing | CF-CHUNK4-TASKS.md C4-21 |
+| Broad-form deductible factor | No `SetDeductibleFactorBroad` rule exists in PP at all — reads Building's ancestor value 4 levels up, whose own `Otherwise` is 0.0 | A blank building deductible silently zeros Contents' Broad premium instead of refusing. **Corrected 2026-10-06** (`cf-broad-chains.html` PP review #15): the engine now refuses the policy through Contents' `DeductibleStatCode` lookup (C28-05), even when the building is "No Coverage" or not Broad | CF-CHUNK4-TASKS.md C4-21 |
 
 **Documented but NOT one of the three categories** (derived unconditionally, submitted value silently discarded):
 

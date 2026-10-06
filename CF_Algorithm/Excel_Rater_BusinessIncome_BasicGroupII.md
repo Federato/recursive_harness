@@ -28,7 +28,7 @@ dependency is a shared table lookup, not just a borrowed scalar.
 | Occupancy hazard load | n/a | `BasicGroupIINumericValue`, read from the Structure (Business Income doesn't recompute this either) |
 | BI-specific multiplier | `BGIBaseRateAdjustmentFactor` | `BGIIBaseRateAdjustmentFactor` — same mechanism, `"Basic Group II"` key |
 | COL adjustment gate | sprinkler/vandalism | wind/hail-exclusion record present or not |
-| Premium file | — | **byte-shape-identical** to Basic Group I's, only datadef names swapped — same relationship Building's own Group I/II premium files have |
+| Premium file | — | **byte-shape-identical** to Basic Group I's, only datadef names swapped — same relationship Building's own Group I/II premium files have. **Corrected 2026-10-06** (`cf-bgii-chains.html` BI review #37): not the same rounding — Group II rounds at five nested steps, Group I once (see §5) |
 
 ---
 
@@ -86,6 +86,12 @@ Straight translation of `SetBGIIRatesAndFactors`'s 5-step chain.
 
 **Byte-shape-identical to Basic Group I's** with datadef names swapped — confirmed by the source doc as
 a direct rename, same relationship Building's own Basic Group I/II premium files have:
+
+> **Corrected 2026-10-06** (`cf-bgii-chains.html` BI review #37, #41). Same branches and factors, different
+> rounding. Group II nests five `Product`s, each rounded to $1:
+> `r0(r0(r0(r0(r0(FinalRate x Limit/100) x Pkg) x IRPM) x CyberBGII) x CyberCOLBGIIToUse)`. Group I rounds
+> `IRPM x Pkg x FinalRate x Limit/100` once. The multi-premium credit is never read. The formula below
+> rounds once, so it can differ by a dollar.
 
 ```
 BI_BGII_Premium =
@@ -151,9 +157,15 @@ BI_BGII_Premium =
 ## 7. What's deliberately left out of this pass
 
 Same list as `Excel_Rater_BusinessIncome_BasicGroupI.md` §7, applied to this form: the blanket/max-period
-base-rate branch, the blanket premium branch, `CoinsuranceToUse`'s real scan (n/a — Basic Group II
+base-rate branch (**corrected 2026-10-06**, `cf-bgii-chains.html` BI review #36: the operational-unit test,
+copying the base rate of the unit's riskiest building, then BI's own LCM, numeric value, BCEG and
+adjustment; UT $150 in the unit against $120), the blanket premium branch, `CoinsuranceToUse`'s real scan (n/a — Basic Group II
 doesn't read `Factor` differently), and the `"Combined"` `TypeOfRisk` branch inherited from the shared
 `Factor` helper.
+
+**Added 2026-10-06** (`cf-bgii-chains.html` BI review #39; probe RT2BLANK): also not modelled here — the 36
+states that replace the rate rule with a switch on `RatingTypeBasicGroupII`. There a blank value prices
+BI and Building Group II at $0, outcome "rated".
 
 ## Remaining steps
 

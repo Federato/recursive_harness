@@ -85,6 +85,14 @@ Every Business Income form reuses `ClassCode` (Builders Risk detection), `Constr
 Special's own base-rate keys), and `Coinsurance`/`Deductible` are **not** reused — Business Income has no
 deductible-factor rating at all (§1).
 
+**Corrected 2026-10-06** (`cf-bgi-chains.html` BI review #33; `cf-broad-chains.html` BI review #31;
+`cf-special-chains.html` BI review #30, #31, #37). Four fixes to the table above. `BI_BldgIncludedInOperationalUnit`
+gates the **operational-unit** branch, not a blanket branch. `BI_IncludedInBlkt` is not Y/N in effect:
+anything but "No", blank included, takes the blanket side, and a blank prices Group I, Group II and
+Broad / Special at **$0, "rated"**. A blank `BI_CovType` zeroes BI Special, and Group I and II with it
+(Broad reads "All Other" instead). `BI_ApartmentCondoIndicator` is **not an input**: ISO derives it from the
+building's class code (0300–0343 → "Yes") and overwrites a submitted value.
+
 ---
 
 ## 4. `Rate_Tables` additions — Business Income block
@@ -131,6 +139,10 @@ Broad already was.
 either Basic form's Business Income rate resolves; filing one without the other still produces a blank.
 Flag this in the workbook as a two-part gap, not a single flag — a reviewer checking only
 `BaseRateAdjustmentFactor` might miss that the Building-side table is also empty.
+
+**Corrected 2026-10-06** (`cf-bgi-chains.html` BI review #41; `cf-bgii-chains.html` BI review #43). Both
+tables are state-filed in practice (adjustment factor: Group I IN 0.85; Group II UT 0.7, IN 0.75), and BI
+Group I and II price normally in IN and UT. Header-only CW is the normal state-filed pattern, not a gap.
 
 ---
 

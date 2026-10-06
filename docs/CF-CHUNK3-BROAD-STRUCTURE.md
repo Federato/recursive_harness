@@ -52,6 +52,11 @@ row. Chunk 1's Z2 case ("an unrecognised `ConstructionType` prices at zero")
 recorded the behaviour; this explains why five of the six rating types are
 unreachable from their own names.
 
+> **Correction note, 2026-10-06** (`CF_Algorithm/cf-broad-chains.html`, Building review #5; probes B2j,
+> B2 in the Broad notes). Out of date for the engine. Since the C28-05 `SingleResult` rule, submitting
+> `"Joisted Masonry"` is **refused** at the `ConstructionTypeToUse` lookup (ME, both editions), not priced
+> at zero. Only a **blank** `ConstructionType` still prices Broad (and Group I) at $0 with outcome "rated".
+
 Also worth noting: the fire-resistive tier is a second rounding site.
 `r3(0.010 × 0.95)` is 0.010 half-up and 0.009 truncated, which carries through
 to **$12 against $11**. Half-up was already proven against ISO in chunk 1; this
@@ -113,6 +118,12 @@ three decimals.
 
 Logged as a real divergence between what ISO filed and what any submission can
 produce — not as a defect in either.
+
+> **Correction note, 2026-10-06** (`CF_Algorithm/cf-broad-chains.html`, Building review #7; probes B4l,
+> B4a, B4b, B4n in the Broad notes). "Cannot change a Broad building premium anywhere" holds only at
+> LCM 1.0. The factor applies after the LCM, so a higher LCM lifts the rate past the rounding: at LCM 3.0,
+> Paragraph A (0.98) prices **$50 against $51** with no roof record (ME, both editions). Paragraph B and a
+> blank `PolicyType` give 1.0 ($51). The by-location 0.995 still rounds away at LCM 3.0 (B7locL, $51).
 
 ## 12 · Three deductible-by-location rules, one record, no interference
 

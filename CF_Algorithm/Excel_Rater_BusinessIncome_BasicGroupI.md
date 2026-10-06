@@ -47,6 +47,9 @@ critically — **`Calc_Building_BGI.BaseRate`** from a tab this workbook already
 Combined with `BasicGroupIRate` also being header-only (the table `Calc_Building_BGI.BaseRate` itself
 depends on — see `Excel_Rater_BasicGroupI.md` §3), this form is **doubly unresolvable** at CW level: two
 independent empty tables, not one. A state filing has to cover both before this rate produces anything.
+**Corrected 2026-10-06** (`cf-bgi-chains.html` BI review #41): both are state-filed in practice (OK files
+1,368 Group I rows; IN's adjustment factor is 0.85), so this is the normal state-filed pattern, not a gap.
+IN prices this form at $178 / $163.
 
 ---
 
@@ -171,6 +174,12 @@ BI_BGI_Premium =
 
 - The blanket/max-period/multi-unit base-rate branch (step 2 of §4) — needs
   `HighestBusnIncomeBasicGroupIBaseRate`, a multi-unit aggregate not traced in the source doc
+  (**corrected 2026-10-06**, `cf-bgi-chains.html` BI review #33: not blanket — the **operational-unit**
+  test. The Location writes the `BasicGroupIRate` of the op-unit building with the highest COLAdj; IN
+  $587 in the unit against $371 outside)
+- (**Added 2026-10-06**, BI review #36: a blank `RatingType` takes a fourth branch, rate 1.0, $550 against
+  $163, and the Building $1,091. Also: no deductible in this chain; coinsurance is priced inside the
+  type-of-risk factor, BI review #34)
 - The blanket premium branch — needs `BlktBasicGroupIAvgRate`, `FullBusnIncomeValue`,
   `BlktTotalFullValueAmount`
 - `CoinsuranceToUse`'s real blanket-rating-table scan — this pass enters it directly as a simplification

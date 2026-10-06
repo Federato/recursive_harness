@@ -443,7 +443,10 @@ rather than the source one.
    shared-name diff, and the per-datadef-group exclusion records.
 2. **Input validation.** Z2 is the argument: an unrecognised `ConstructionType` prices at zero
    rather than raising, so a typo and a deliberate zero are indistinguishable. This is the schema
-   layer chunk 0 deferred, and it now has a concrete reason to exist.
+   layer chunk 0 deferred, and it now has a concrete reason to exist. *(Status note, 2026-10-06,
+   `CF_Algorithm/cf-bgi-chains.html` Building probe B4x and `cf-broad-chains.html` B2j: an unrecognised
+   `ConstructionType` is now refused at the `ConstructionTypeToUse` lookup (C28-05). A blank one still
+   prices $0 "rated".)*
 3. **A message-clean submission.** Three ISO validation messages fire on every case. The premium is
    right regardless, but RAaS returns these in `RatingMessages`, and any comparison that ignores
    them compares half the response.

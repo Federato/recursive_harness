@@ -47,6 +47,21 @@ SetSpecialRatesAndFactors    (line 3163)
 
 Every chain computes a rate regardless of which cause of loss is actually selected; the coverage-level `SetCoverageOnPolicyIndicator` gate decides which one produces premium.
 
+> **Corrected 2026-10-06** (`cf-broad-chains.html` and `cf-special-chains.html` Building review #8; probes
+> B1 / B1me in the Broad and Special notes). **Broad and Special are extra premiums on top of Group I and
+> II.** Group I and II are on for any cause of loss except blank and "Not Applicable". So a Special building
+> pays Group I + Group II + Special (ME: $471 + $48 + $57, B1me), and a Broad building pays Group I and II
+> plus Broad (ME: Group I $471 alongside Broad $16, B1).
+>
+> **What the engine refuses on a building after 542f0e1 (C28-17), and what it doesn't.** C28-17 refuses
+> five named inputs: Arizona's missing `BasicGroupIReductionCredit` (Group I), a missing Group II territory
+> or BCEG on a "Building" CovType (Group II), and a blank `Deductible` on a Broad or Special building — but
+> **only when the submitted `CauseOfLoss` is Broad / Special and `CovType` is blank or "Building"**. Every
+> other "= 0.0" ending below still prices **$0 with outcome "rated"**, as ISO's own silent $0 does. The
+> engine also refuses where a `SingleResult` lookup finds no row (C28-05): an unknown class, an unfiled
+> construction type, territory, BCEG grade, deductible or wind/hail amount. Each form's silent zeros are
+> listed in its section.
+
 ---
 
 ## File map
@@ -97,6 +112,12 @@ If `RatingType = "Class"` **and** `ClassCodeToUse` is non-blank **and** `Constru
 4. `"Not Applicable"`
 5. `"Building"`
 
+**Clarified 2026-10-06** (`cf-bgi-chains.html`, Building review #3, #4; probes B3, B3x, B4, B4x in the Group I
+notes). `ClassCodeToUse` is copied from `ClassCode` (:893). A 0.0 base rate is **not a dead end**: it flows
+into step 2, so the rate is `(0 x LCM + SubStd + Vacant) x Terr x PC x Roof`, and is 0 only when the add-ons
+are 0 too. No class code or no construction prices $0, outcome "rated" (B3, B4). An unknown class or an
+unfiled construction type is refused at the lookup (B3x, B4x).
+
 ### Step 2 — Rate
 `SetBasicGroupIRate` (line 7599) — all products rounded to 3 decimals.
 
@@ -123,6 +144,14 @@ BasicGroupIRate =
 ```
 
 **Otherwise:** `BasicGroupIRate = 1.0`
+
+**Corrected 2026-10-06** (`cf-bgi-chains.html`, Building review #1, #2; probes B1, B2, B2t, B5, B15). The
+rating type only picks the starting rate. **Specific and Tentative are not "used as-is downstream"**:
+`SetBasicGroupICauseOfLossAdjustment` has no rating-type test, so the cause-of-loss step, coinsurance, LOI
+and deductible all apply (Specific 0.300 → COL 0.300 → coins 0.95 → LOI 1.172 → ded 0.98 → $327, B2). The
+`Otherwise` 1.0 is not a dead end either: a **blank `RatingType`** runs the full chain at rate 1.0 and
+overprices silently ($1,091 against $720, B5). A missing Group I territory zeroes the territory factor:
+$0, "rated" (B15).
 
 ### Step 3 — Cause-of-loss adjustment
 `SetBasicGroupICauseOfLossAdjustment` (line 7698)
@@ -151,6 +180,15 @@ AdjustedBasicGroupIRate =
 
 `SetCoinsuranceFactor` is skipped (leaving the factor unchanged) when `ClassCodeToUse = "1150"` or `ValuationType = "Functional Valuation"`; otherwise it branches on `Coinsurance` (80% / 90% / 100% / other) and requires `IncludedInBlkt = "No"` for the standard branch.
 
+**Corrected 2026-10-06** (`cf-bgi-chains.html`, Building review #5, #6, #7; probes B4, B6, B6b, B6c). The skip
+**sets** `CoinsuranceFactor = 1.0` (:7898); it does not leave it unchanged ($759, B6). Coinsurance has four
+branches: 80/90/100% with `IncludedInBlkt = "No"` → `LookupCoinsuranceFactor`; `BlktCoinsurance` 80/90/100%
+with `IncludedInBlkt = "Yes"` → `LookupBlktCoinsuranceFactor`; 50/60/70% / None →
+`LookupLessThan80PctMultiplicativeFactor` (×1.5, $1,137 at 70%, B6c); anything else → 1.0. LOI also has four
+branches: blanket copy / Builders Risk reporting / standard lookup / 1.0 for Leasehold, Legal Liability and No
+Coverage. The standard branch **writes 0.0** when `Limit` is 0 or `ConstructionCode` is 0 (:8075; B4). The
+adjusted rate rounds as `r3(r3(COLAdj x Coins) x LOI)`.
+
 ### Step 5 — Deductible
 `SetDeductibleFactorBasicGroupI` (line 8126) then `SetFinalBasicGroupIRate` (line 8234):
 
@@ -163,6 +201,11 @@ FinalBasicGroupIRate =
 ```
 
 `SetDeductibleFactorBasicGroupI` is a `Choose` on the `Deductible` datadef (250, 500, 1000, …).
+
+**Corrected 2026-10-06** (`cf-bgi-chains.html`, Building review #8; probes B7, B7n, B7a). Four branches:
+"250" → `Deductible250Factor` ($772); "Not Applicable" → 1.0 ($735); any other value → `DeductibleFactor` on
+`TotAmtInsurance`; **blank → 0.0** (:8225), so $0 with outcome "rated" (B7). C28-17's deductible check
+covers only Broad and Special, so a blank deductible on a Basic building is not refused.
 
 ---
 
@@ -233,6 +276,15 @@ Premium =
 ### Branch D — otherwise
 `Premium = 0.0`. This catches `CovType = "Leasehold Interest"` and any non-blanketed cov type not listed in Branch A.
 
+**Clarified 2026-10-06** (`cf-bgi-chains.html`, Building review #9, #10, #11; probes B9, B10, B12, B13, AZ).
+There are two separate $0 exits: Leasehold (the `Otherwise`), and a not-Leasehold building whose
+`IncludedInBlkt` is neither "No" nor "Yes" — a **blank `IncludedInBlkt`** prices $0, "rated" (B13). A
+blanketed building whose `BlktIDNum` matches no Detail never reaches Branch C's total test: its
+`CauseOfLossToUse` is blank, so the coverage gate turns it off (B10). A matched blanket prices $705 / $1,410
+(B9). **Silent zeros, Group I Building:** no class code, no construction, no territory, a blank deductible,
+a blank `IncludedInBlkt`, Leasehold, an unmatched blanket. The only C28-17 refusal for Group I is Arizona
+without `BasicGroupIReductionCredit` (the same AZ policy with the credit rates $356).
+
 ### Premium indicator
 `SetPremiumIndicator` (line 267): `PremiumIndicator = 1` when `Premium <> 0.0`, else 0.
 
@@ -271,6 +323,13 @@ The key structural difference from Group I: Group I is rated off **class code + 
    - `LookupBasicGroupIISymbolOilDistributingStations` (line 4222)
 4. Otherwise `BasicGroupIISymbolToUse = BasicGroupIISymbol` (line 4227).
 
+**Corrected 2026-10-06** (`cf-bgii-chains.html`, Building review #2; probes B2, B2s, B2c, B2j, B2r, B2o). The
+symbol is **blank** when either `ConstructionType` or `NumStories` is blank (:4005–4025). Then the base rate,
+lowest rate and exclusion factor are all 0, and Group II prices **$0, outcome "rated"** (B2, B2c). A submitted
+symbol does not rescue it (B2s). C28-17 does not check this. The override order is superior-roofing row →
+OpenSides row → class row (0580/0585/1300/1650 keyed with construction code 1; 1150 with its own) →
+1751/1752 oil station → else the construction symbol (:4083).
+
 ### Prerequisite — rating territory
 `SetBasicGroupIIRatingTerr` (line 919) simply copies `BasicGroupIIRatingTerr` down from the location level (`../../BasicGroupIIRatingTerr`). Unlike Group I there is no separate territory *factor* — territory is a **lookup key into the base rate table**, not a multiplier.
 
@@ -290,6 +349,10 @@ else:
 
 This is Group II's analogue to Group I's protection-class factor — it loads occupancy/open-sides hazard into the rate.
 
+**Clarified 2026-10-06** (`cf-bgii-chains.html`, Building review #4; probes B2o, B2v). The class table files
+**0** for 0580 / 0585 / 1300 / 1650 in construction 4–6. That 0 prices Group II at $0 "rated" (class 0580,
+masonry: $0, while Group I is $106, B2v). OpenSides gives numeric 4 ($195, B2o).
+
 ### Step 2 — Base rate
 `SetBasicGroupIIBaseRate` (line 8347)
 
@@ -301,6 +364,18 @@ Requires **both** `BasicGroupIISymbolToUse` and `BasicGroupIIRatingTerr` to be n
 2. `BasicGroupIIRatingTerr`
 3. `BasicGroupIISymbolToUse`
 4. `"Bldg"`
+
+**Added 2026-10-06** (`cf-bgii-chains.html`, Building review #3, #5, #12; probes B3, B3x, B4, B4g1–B4n, B4x,
+B10, B10b, B10s, R1, R2, R3). The CW `BasicGroupIIRate` is header-only, so a state row is required; a missing
+row refuses. **BCEG** (`SetBCEGFactor` :4232) is 0.0 unless territory **and** BCEG grade are set, then a
+lookup keyed by both (ME territory I: grade 4 → 0.98, $48; 10 / Ungraded / Not Eligible → 1.0, $50). A
+missing territory or BCEG on a "Building" CovType is **refused by C28-17** (B3, B4); an unfiled territory or
+grade is refused at the lookup (B3x, B4x). **Rating type:** countrywide Group II ignores `RatingType` and has
+no `RatingTypeBasicGroupII` (Specific, blank and `RatingTypeBasicGroupII` all leave $48). But **36 states**
+(AL AR CO CT DE FL GA IA IL IN KS KY MA MD MI MN MO MT NC ND NE NH NJ NM NY OH OK PA RI SC SD TN TX VA WI WY)
+replace `SetBasicGroupIIRate` with a Class / Specific / else-0.0 switch on `RatingTypeBasicGroupII`. There a
+**blank `RatingTypeBasicGroupII` prices Group II $0, outcome "rated"** (PA, R1); Class $59 / $60 (R2);
+Specific 0.100 → $116 (R3). Nothing refuses it.
 
 ### Step 3 — Lowest base rate
 `SetLowestBasicGroupIIBaseRate` (line 8397)
@@ -364,6 +439,15 @@ at all) rather than a coincidence, though the regulatory reason itself hasn't be
 manual text for these specific states. See `Excel_Rater_BGII_WindHailExclusionEligibility_Walkthrough.html`
 for the rater-side mechanism this implies (a state-eligibility gate before the branch is ever reachable).
 
+**Corrected 2026-10-06** (`cf-bgii-chains.html`, Building review #10, #11 and PP review #15; probes B6, B6b,
+B6o, and PP P2). "Unresolvable" is too strong. These 8 jurisdictions (AR DC FL KS NY PR RI TX) file no
+Lowest table **and override the cause-of-loss rule**, so the countrywide rebuild is never asked to resolve
+there (AR, DC, NY, RI ignore the exclusion record; FL, KS price it with their own rate; TX uses a flat 0.1
+factor). Where a state files the Lowest table, the rebuild resolves: ME prices an excluded building at $15
+and excluded contents at $11. The excluded branch keeps both roof factors and drops the numeric value and
+BCEG, as written above: a missing BCEG or OpenSides leaves it at $15 (B6b, B6o), and a missing BCEG is not
+refused there because the premium is not 0.
+
 ### Step 6 — Coinsurance
 `SetBasicGroupIICoinsuranceFactor` (line 8540)
 
@@ -374,7 +458,7 @@ else:
     BasicGroupIICoinsuranceFactor = CoinsuranceFactor      # copy Group I's shared factor
 ```
 
-The flat-factor lookup takes a constant `"Y"` as its second key — it is a single statewide value, not coinsurance-percentage-specific. Both branches assign only when currently null.
+The flat-factor lookup takes a constant `"Y"` as its second key — it is a single statewide value, not coinsurance-percentage-specific. Both branches assign only when currently null. (2026-10-06, `cf-bgii-chains.html` Building review #6; probes B7c70, B7c50, B7f, B13: CW flat 1.5 ($76). The copied factor is **Group I's**, so the 1150 / Functional Valuation skip to 1.0 applies here too.)
 
 ### Step 7 — Limit of insurance
 `SetBasicGroupIILOIFactor` (line 8596), a four-way `Choose`:
@@ -385,6 +469,10 @@ The flat-factor lookup takes a constant `"Y"` as its second key — it is a sing
 | 2 | `CovType = "Builders Risk"` | `LookupBasicGroupIILOIFactorWithArgs` (explicit args), else 0.0 |
 | 3 | `CovType` not in (*Leasehold Interest*, *Legal Liability*, *No Coverage*) | `LookupBasicGroupIILOIFactor`, else 0.0 |
 | 4 | otherwise | 1.0 |
+
+(2026-10-06, `cf-bgii-chains.html` Building review #7; probe B12: branch 3 writes **0.0 when `Limit` is 0**,
+with no construction test, unlike Group I; so does branch 2 when the form's limit is 0. Limit 0 → $0
+"rated".)
 
 ### Step 8 — Adjusted rate
 `SetAdjustedBasicGroupIIRate` (line 8787)
@@ -416,6 +504,18 @@ Group II keeps this in its own datadef (`BGIIDeductibleByLocationFactor`) rather
 `SetDeductibleFactorBasicGroupII` (line 8864)
 
 Outer test: when `WindstormOrHailDeductible` is blank, `"Not Applicable"`, or **equal to** `Deductible` (i.e. no separate wind/hail deductible), fall through to a `Choose` on `Deductible` (250, 500, 1000, …) — the same shape as Group I. When a distinct wind/hail deductible *is* present, the rule branches on `WindstormOrHailDeductible` instead. Assignments are guarded by `IsNull` on `DeductibleFactorBasicGroupII`.
+
+**Added 2026-10-06** (`cf-bgii-chains.html`, Building review #8, #9; probes B5d, B5a, B5p, B5p2, B5pl, B5pn,
+B5blank, B5bw, B5x, B5big, B5loc). It is a three-way `Choose` (:8864). (a) Wind/hail deductible blank / N/A /
+equal → the ordinary deductible: 250 → Ded250, N/A → 1.0, a value → `DeductibleFactor('Basic Group II')`,
+**blank → 0.0**. (b) A wind/hail factor that is not 0 → copy it: the 1/2/5% table when the wind/hail total
+reaches 100k / 50k / 20k, 250, or a filed dollar amount. (c) **Otherwise 0.0.** Silent $0s, all "rated": a
+percentage deductible below its minimum total (1% on 90,000, B5pl); a percentage deductible with a blank
+`PolicyType`, because the wind/hail total is never added up (B5pn); a blank `Deductible` with no wind/hail
+deductible (B5blank). A blank `Deductible` **with** a wind/hail deductible of 2,500 prices Group II $45 while
+Group I is $0 (B5bw). An unfiled amount refuses (B5x). Nearly every state adds the 100,000–1,000,000 dollar
+deductibles (ME 100,000 → $16, B5big). Step 9's by-location factor is 0.995 when the indicator is 0 and the
+record has a wind/hail deductible; it rounds away at these rates (B5loc, $48).
 
 ### Step 11 — Final rate
 `SetFinalBasicGroupIIRate` (line 9040)
@@ -463,6 +563,16 @@ Premium =
 
 Gates and the Legal Liability / blanket / zero branches follow the Group I section above verbatim, with `ErcProcess` at line 289 and `SetPremium` at line 66 in the Group II file.
 
+**Clarified 2026-10-06** (`cf-bgii-chains.html`, Building review #10, #11, #14; probes B8, B8b, B9, B9u, B9z,
+B12). Not byte-identical (the names differ), but identical once `BasicGroupI` → `BasicGroupII` is renamed:
+308 lines each, normalised diff empty. The branches include Builders Risk reporting + BR → $0, a blanket
+total of 0 → $0 (B9z), a blank `IncludedInBlkt` → $0, and Leasehold → `Otherwise`; an unmatched blanket ID
+turns the coverage off at the gate (B9u). Legal Liability $10, blanket $45 + $90. **Silent zeros, Group II
+Building:** blank symbol (no NumStories or construction), a filed 0 numeric value, the percentage /
+`PolicyType` / blank-deductible cases above, Limit 0, blanket total 0, and (in the 36 states) a blank
+`RatingTypeBasicGroupII`. C28-17's territory and BCEG checks skip any CovType other than blank or "Building":
+a Legal Liability building with no BCEG still prices $0 "rated" (B8b).
+
 ---
 
 ## Broad — rate build-up
@@ -496,6 +606,12 @@ else:
 ```
 
 Note the gate requires `ConstructionTypeToUse` — Broad is the only non-Basic form with a construction dependency. Assigned only when currently null.
+
+**Clarified 2026-10-06** (`cf-broad-chains.html`, Building review #5; probes B2, B2j, B3c in the Broad notes).
+The gate tests the **mapped** `ConstructionTypeToUse` (:9083). A blank `ConstructionType` prices $0, outcome
+"rated" (B2). An off-domain value such as "Joisted Masonry" is now **refused** at the `ConstructionTypeToUse`
+lookup (B2j); chunk 3 recorded $0 for that case. A blank class still rates Broad at $16 while Group I is $0
+(B3c).
 
 `LookupBroadFormBaseRate` (line 24544) takes a `covType` **parameter** and reads matrix `BroadFormBaseRate`, column `Rate`, keyed on:
 
@@ -537,6 +653,11 @@ Identical in shape to `SetSpecialRate`.
 
 Matrix `BroadSpecialLOIFactorBldg` is shared with Special — one LOI table serves both forms.
 
+**Corrected 2026-10-06** (`cf-broad-chains.html`, Building review #3; probes B6, B6m). In Broad, branch 3's
+condition **already needs `Limit > 0`**, so its inner 0.0 can never run. Limit 0 falls to branch 4, LOI 1.0,
+and prices $0 only through `Limit / 100` (B6, "rated"). Special differs: it tests the limit inside the
+branch, so Limit 0 gives LOI 0.0 there. LOI is 1.237 at 100,000 and 0.851 at 500,000 (B6m, $60).
+
 ### Step 4 — Adjusted rate
 `SetAdjustedBroadRate` (line 9373)
 
@@ -549,6 +670,11 @@ AdjustedBroadRate =
 ```
 
 This is where Broad absorbs the roof-surfacing factor that the other three forms apply upstream. Net effect is the same ordering of multiplications; only the rule boundary differs.
+
+(2026-10-06, `cf-broad-chains.html` Building review #6, #7; probes B4a, B4l, B4b, B4n, B5*: it rounds at each
+step, `r3(r3(r3(Rate x RoofACV) x Coins) x LOI)`. At countrywide rates the roof factor rounds away; at LCM
+3.0, Paragraph A gives $50 against $51. Paragraph B and a blank `PolicyType` give 1.0. Coinsurance is the
+shared factor: 80% 1.0, 90% 0.95, 100% 0.90, 70% / None 1.5, blank 1.0, 1150 / Functional 1.0.)
 
 ### Step 5 — Deductible factor
 `SetDeductibleFactorBroad` (line 9398), a four-way `Choose` — simpler than Special's, with no theft dimension:
@@ -568,6 +694,17 @@ else:
 ```
 
 Note the `Otherwise` branch yields **0.0**, not 1.0 — a blank `Deductible` zeroes the Broad rate entirely. ~~Special's equivalent fall-through behaves differently~~ — **corrected 2026-09-18: Special's fall-through is identical**, an `Otherwise` worth `0.0`. What does differ is the lookup key: Special uses `SpecialTotAmtInsurance` where Broad uses the plain `TotAmtInsurance`, and Special has a theft dimension Broad has none of.
+
+**Updated 2026-10-06** (`cf-broad-chains.html`, Building review #1, #8; probes B7b, B7bok, B9db, B7bib, B9cb,
+B7bll, B7a, B7na, B7d, B7x in the Broad notes). The XML is unchanged, but the **engine now refuses** the
+blank-`Deductible` zero (C28-17, 542f0e1) — **only on a plain building with a submitted Broad cause of
+loss**: the check needs `CauseOfLoss` (not `CauseOfLossToUse`) = "Broad" and `CovType` blank or "Building"
+(B7b, B7bok, and the blanket case B9db). These still price **$0, outcome "rated"**: Improvements and
+Betterments, Condominium Association and Builders Risk with a blank deductible (B7bib), and a blanketed
+building whose own `CauseOfLoss` is blank (B9cb). Legal Liability skips the deductible, so a blank one still
+prices it at $4 (B7bll). 250 → 1.05 ($18); N/A $17; 2,500 → 0.89 ($15); an unfiled amount refuses on Group
+I's lookup, which runs first (B7x). Other silent zeros on Broad Building: blank construction (B2), Limit 0
+(B6), a blanket whose values are 0 (B9z).
 
 `TotAmtInsurance` (`SetTotAmtInsurance`, `CommercialPropertyStructure` level) = `StructureLimitToUse + OccupancyTotAmtInsuranceSum + SpecialClassRiskTotAmtInsurance` — the Building's own limit, plus every Contents/Personal Property item's limit rolled up from `CommercialPropertyOccupClassTable`, plus Special Class Risk amounts, at that location. `SpecialTotAmtInsurance` (`SetSpecialTotAmtInsurance`) is the same shape with the Special-scoped rollup fields. **Not** the Building's own limit alone — every Excel_Rater_*.md build doc in this project previously simplified this to `Bldg_Limit`, which was wrong; corrected across those docs, backlogged as a live-rater fix until Contents is built (see project memory `project_deductiblefactor-uses-location-total-not-building-limit`).
 
@@ -596,6 +733,12 @@ Broad follows the **Basic Group I premium structure**, including the triple-nest
 4. **Branch C (blanket)** adds `BlktCauseOfLossValue = "Broad"` alongside `IncludedInBlkt = "Yes"`.
 
 The outer `SetPremium` gate keeps the Group I form — `(no Builders Risk Reporting Form OR CovType <> "Builders Risk")` — with Leasehold Interest filtered inside the `Choose` rather than up front the way Special does.
+
+(2026-10-06, `cf-broad-chains.html` Building review #4; probes B9, B9c, B9z, B11s, B11b: the outer test sends a
+Builders Risk reporting form + BR to $0. Branch A needs the **submitted** `CauseOfLoss` = Broad and CovType
+BR / Building / I&B / Condo. A blanket whose cause of loss is not Broad is caught inside the not-Leasehold
+branch. Blanket $16 + $32; values 0 → $0 "rated" (B9z). A Special or Basic cause of loss turns the coverage
+off.)
 
 ### Branch A — scheduled building
 
@@ -693,7 +836,7 @@ else:
     SpecialTheftExclusionFactor = 1.0
 ```
 
-Countrywide value is **0.88** — a 12% credit for excluding theft. Assigned only when currently null.
+Countrywide value is **0.88** — a 12% credit for excluding theft. Assigned only when currently null. (2026-10-06, `cf-special-chains.html` Building review #2; probes B3, B3me: the lookup reads the **state row first**. 29 jurisdictions file their own (ME 0.94, $55); PR files none and overrides the rule; the rest, OK among them, use 0.88 ($75).)
 
 ### Step 2 — Base rate
 `SetSpecialBaseRate` (line 9611)
@@ -711,6 +854,12 @@ else:
 Both lookups take a **constant `"Y"`** as their only non-state key — these are single-value statewide tables, filed under bureau rule **72.E.2.b.(1)**.
 
 > **Countrywide data note.** `Rate Tables\SpecialBuildingRate.RateTable.csv` contains only a header row — no `CW` row is filed, so the countrywide lookup returns null and `SpecialBaseRate` is left unset unless a state supplies a row. `SpecialBuildersRiskRate.RateTable.csv` does carry a `CW` row at **0.015**. Any state implementation must file its own `SpecialBuildingRate`.
+>
+> **Updated 2026-10-06** (`cf-special-chains.html`, Building review #3, #16; probes B1, B5c, B5k, B5t, B5r). Not
+> an open gap: **45 of 47 states file one flat row** (OK 0.074, $84). A state without a row is refused (a
+> `SingleResult` miss on CW). FL and PR override the rule. Construction, class and territory do not touch the
+> rate (blank construction, blank class or no Special territory all $84); only class 1150 switches table
+> (0.015, $18).
 
 ### Step 3 — Rate
 `SetSpecialRate` (line 9683), 3 decimals, only when currently null:
@@ -745,6 +894,9 @@ Unlike Groups I and II this rule has no `IsNull` guard and no branching — it a
 
 Note the matrix is **`BroadSpecialLOIFactorBldg`** — Broad and Special share one LOI factor table.
 
+(2026-10-06, `cf-special-chains.html` Building review #4; probe B8z: in Special the `Limit > 0` test is
+**inside** branch 3, so Limit 0 gives LOI **0.0** and $0 "rated". In Broad the same case gives LOI 1.0.)
+
 ### Step 6 — Adjusted rate
 `SetAdjustedSpecialRate` (line 9904)
 
@@ -767,6 +919,10 @@ else:
 ```
 
 Same shape as the Group II rule, but triggered by a by-location **theft** deductible rather than a wind/hail one. Note there is no `WindstormHailIndicator = 0` precondition here — Group II has one, Special does not.
+
+(2026-10-06, `cf-special-chains.html` Building review #5; probes B9l1, B9l2, B9l3: confirmed. A by-location
+`TheftDeductible` gives 0.995 ($252 at LCM 3); a by-location `Deductible` alone leaves Special at 1.0 while
+Group I moves.)
 
 ### Step 8 — Deductible factor
 `SetDeductibleFactorSpecial` (line 9977), a multi-branch `Choose`:
@@ -800,6 +956,19 @@ DeductibleFactorSpecial = LookupDeductibleFactor(
 **Branch 5 — `Otherwise` → `0.0`.** Added 2026-09-18: this page previously listed four branches and stated that Special's fall-through "behaves differently" from Broad's. **It does not.** `SetDeductibleFactorSpecial` ends in an `<rul:Otherwise>` assigning `0.0`, identical in shape to `SetDeductibleFactorBroad`'s, so a blank `Deductible` zeroes the Special rate exactly as it zeroes the Broad one. The error was caught by chunk 3's zero cases (`scripts/cf/16_chunk3_zero_cases.py`), which predicted a null premium from this page and got a zero from the engine; the filed XML settles it for the engine.
 
 All assignments guarded by `IsNull` on `DeductibleFactorSpecial`. The key difference from Groups I and II: the deductible factor can be driven by the **theft** deductible and a **theft-inclusive** amount-of-insurance band.
+
+**Updated 2026-10-06** (`cf-special-chains.html`, Building review #1, #7; probes B4a–B4e, B9b, B9bme, B11d,
+B9ib, B11cd, B9ll, B9x in the Special notes). The five branches above are confirmed in the engine. Theft
+deductible 2,500 → 0.89 ($77, B4a). A theft deductible equal to the deductible, or N/A, falls through ($84).
+With theft excluded, the theft deductible is ignored ($75, B4c). A theft deductible of 250 wins over a
+deductible of 1,000 (1.1, $96, B4d). A blank `Deductible` with a theft deductible of 2,500 prices Special at
+$77, so nothing refuses, while Group I is $0 (B4e). **What the engine refuses (C28-17, 542f0e1):** a blank
+`Deductible` with no usable theft deductible, **only when the submitted `CauseOfLoss` is Special and
+`CovType` is blank or "Building"** (B9b, B9bme, blanket B11d). These still price **$0, outcome "rated"**:
+Improvements and Betterments, Condominium Association and Builders Risk (B9ib), and a blanketed building whose
+own `CauseOfLoss` is blank (B11cd). Legal Liability with a blank deductible prices $19 (B9ll). An unfiled
+deductible refuses on Group I's lookup, which runs first (B9x). Other silent zeros on Special Building:
+Limit 0 (B8z) and a blanket whose values are 0 (B11z).
 
 ### Step 9 — Final rate
 `SetFinalSpecialRate` (line 10143)
@@ -853,7 +1022,7 @@ Premium =
   x CyberIncidentExclusionCOLExcptnsFactorSpecial
 ```
 
-**Rounding differs from the Basic forms.** The Basic files wrap the core product in three nested `Round DecimalPlaces="0"` elements before applying the cyber factors. Special uses a chain of nested `Product DecimalPlaces="0"` elements with **no `Round` wrappers** — each product truncates/rounds to 0 places as it goes, and the factors are applied in a different order (rate × limit first, then PackageMod, then MultiPremium, then IRPM). Results can differ by a dollar or two from the Basic-form pattern on the same inputs.
+**Rounding differs from the Basic forms.** The Basic files wrap the core product in three nested `Round DecimalPlaces="0"` elements before applying the cyber factors. Special uses a chain of nested `Product DecimalPlaces="0"` elements with **no `Round` wrappers** — each product truncates/rounds to 0 places as it goes, and the factors are applied in a different order (rate × limit first, then PackageMod, then MultiPremium, then IRPM). Results can differ by a dollar or two from the Basic-form pattern on the same inputs. (2026-10-06, `cf-special-chains.html` Building review #6 and PP review #9: not Special-only. Contents Special has the same nested shape, but its first step is `r3(Final x LimitToUse/100)` where Building starts with `r0(Final x Limit/100)`.)
 
 ### Branch B — Legal Liability (line 155)
 Requires `CovType = "Legal Liability"` **and** `CauseOfLoss = "Special"`:
@@ -943,6 +1112,15 @@ Again nested `Product` rather than `Round`, and factor order reversed relative t
 | Legal Liability uses | COL adjustment | COL adjustment | **raw `BroadRate`** | **raw `SpecialRate`** |
 | Blanket branch tests | `IncludedInBlkt` | `IncludedInBlkt` | + `BlktCauseOfLossValue` | + `BlktCauseOfLossValue` |
 | Premium file vs BGI | — | byte-identical (renamed) | **BGI shape + COL guards** | **structurally different** |
+
+**Corrected 2026-10-06** (`cf-bgi-chains.html` Building #1, #8; `cf-bgii-chains.html` Building #9, #10, #12;
+`cf-broad-chains.html` Building #1; `cf-special-chains.html` Building #1, #8). Read the table with these changes.
+"Blank-deductible fallback" is **0.0 in all four forms**, not only Broad. C28-17 refuses it only for Broad and
+Special, on a plain building with a submitted cause of loss; Group I and II stay a silent $0. Group II's
+"Rating-type branch: none" is countrywide only: 36 states switch on `RatingTypeBasicGroupII`, and a blank
+there prices $0. Group I's Specific / Tentative branch feeds the full chain, not a finished rate. "Byte-
+identical (renamed)" means identical after the rename, not byte for byte. Broad and Special are charged on
+top of Group I and II.
 
 ---
 

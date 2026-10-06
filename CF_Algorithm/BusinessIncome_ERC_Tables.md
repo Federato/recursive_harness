@@ -78,6 +78,12 @@ layered on top of *both* the Building's base rate table and Business Income's ow
 > `SpecialFormIncldgTheftTimeElementBaseRate`, `SpecialFormBldrsRiskTimeElementBaseRate`) **do** carry CW
 > data rows — those two forms are resolvable at the countrywide level even though Basic Group I/II and
 > Earthquake are not.
+>
+> **Corrected 2026-10-06** (`cf-bgi-chains.html` BI review #41; `cf-bgii-chains.html` BI review #43; probes
+> CLASS in the Group I and Group II BI notes). "Doubly unresolvable" is out of date as a practical finding.
+> Header-only CW with state rows is the normal pattern: the adjustment factor is state-filed (Group I IN
+> 0.85; Group II UT 0.7, IN 0.75), and BI Group I and II price normally (IN Group I $178 / $163; UT Group II
+> $70). The 1.0 rate branch (blank `RatingType`) skips the adjustment factor. Earthquake not re-checked.
 
 ---
 

@@ -222,7 +222,11 @@ reference — end-to-end, Basic Group II scheduled building" block.
    `LowestBasicGroupIIRate` (§3) *and* `WindstormOrHailExclFactor` — the same 8 states, both tables,
    together. This looks like a deliberate choice (these states may not permit excluding wind/hail from a
    CPP at all — plausible given several are coastal/wind-pool states, but **not confirmed against the
-   manual for these specific states**, flagged as inferred not verified). A rater build needs a
+   manual for these specific states**, flagged as inferred not verified). **Corrected 2026-10-06**
+   (`cf-bgii-chains.html` Building delta, PP review #10): all 8 **override the cause-of-loss rule**, so the
+   countrywide rebuild is never reached there — AR, DC, NY, RI ignore the exclusion record; FL, KS price it
+   with their own rate; TX uses a flat 0.1 factor. Where a state files the tables, the branch resolves (ME
+   building $15, contents $11). A rater build needs a
    state-eligibility gate before this branch is ever reachable — see
    `Excel_Rater_BGII_WindHailExclusionEligibility_Walkthrough.html` for the full mechanism, input-side UI
    mockup, and worked examples.

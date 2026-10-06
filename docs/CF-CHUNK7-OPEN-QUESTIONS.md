@@ -69,6 +69,11 @@ II is unresolvable at countrywide for three coverage groups** — Building, plai
 Business Income and this one — and the two jurisdictions filing neither table
 (FL, PR) reach a read with nothing to read (C7-17).
 
+> **Correction note, 2026-10-06** (`CF_Algorithm/cf-bgii-chains.html`, SCBI review #52, #55). True of the
+> countrywide file, but out of date as a finding: header-only CW with state rows is the **normal
+> state-filed pattern**, not a gap. OH rates this coverage's Group II at $321 / $361 (probe BI-1 in the
+> Group II notes), and a key with no state row is now refused (C28-05).
+
 ---
 
 ## Q4 · The two untraced endorsement files — **STILL OPEN, deliberately**

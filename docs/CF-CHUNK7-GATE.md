@@ -89,6 +89,12 @@ Basic Group I has no lookup of any kind — `04_shared_names.py` reports
 group. Plain Business Income reads the Building's *base* rate and rebuilds;
 this one reads the answer.
 
+> **Correction note, 2026-10-06** (`CF_Algorithm/cf-bgi-chains.html`, SCBI review #44, #45; probes BI-7,
+> BI-8, BI-9). "Finished" is wrong. The value read is the parent's `BasicGroupIRate` = base x LCM, its
+> third step, before its vandalism, policy-form, coinsurance and deductible factors (0.07 copied against a
+> final 0.066). The ISO confirmation still stands; it showed the parent at $0 with the child at $39, which
+> is exactly what a pre-deductible copy predicts.
+
 **2 · Six values cross the boundary, not five.** The opening census said five.
 The golden case found a sixth: **`BasicGroupIINumericValue`**, the parent's
 numeric multiplier of 8, read across the boundary by Group II's rate step. The

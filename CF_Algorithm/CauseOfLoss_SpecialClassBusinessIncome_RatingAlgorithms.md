@@ -25,6 +25,14 @@ class-description-derived key. This mirrors what the Special Class Building pass
 form's construction-blind `"Frame"` key — but goes one step further here, because it also blanks out the
 theft/apartment-condo classification dimension plain Business Income uses.
 
+> **Corrected 2026-10-06** (`cf-bgi-chains.html`, SCBI review #44–46 and #52; probes BI-7 to BI-9, BI-12).
+> Basic Group I does **not** borrow "even more directly" in the sense of a finished rate. It copies the
+> item's `BasicGroupIRate`, which is base x LCM only. The item's vandalism, policy-form, coinsurance and
+> deductible factors never reach it. The other corrections below are marked the same way: Group II keys
+> come partly from this record (`cf-bgii-chains.html` SCBI #47–52), and the Broad / Special premium
+> files send a blank `IncludedInBlkt` straight to $0 (`cf-broad-chains.html` #35, `cf-special-chains.html`
+> #42). None of the zeros on this coverage is refused by the engine after 542f0e1.
+
 ---
 
 ## Master orchestration
@@ -97,7 +105,8 @@ reading `SetBroadRate` (line 3187) and `SetSpecialCauseOfLossAdjustment` (line 3
 
 `SetFactor` itself (line 5824) is **byte-identical in shape** to plain Business Income's version: a
 priority-ordered `Choose` picking `MaxPeriodOfIndemnityFactor` → `MonthlyLimitOfIndemnityFactor` →
-`ExtraExpenseFactor` → `TypeOfRiskFactor`, each populated only if `Factor` is currently null.
+`ExtraExpenseFactor` → `TypeOfRiskFactor`, each populated only if `Factor` is currently null. (Two blank
+inputs zero this `Factor`; see "The shared Factor" below, corrected 2026-10-06.)
 
 ---
 
@@ -183,6 +192,18 @@ This is a *tighter* cross-coverage dependency than plain Business Income has, no
 Special Class Business Income's Basic Group I rate is arithmetically nothing more than "the Special Class
 item's own rate, passed through."
 
+**Corrected 2026-10-06** (`cf-bgi-chains.html`, SCBI review #44, #45; probes BI-7, BI-8, BI-9, BI-11,
+BI-13, BI-14). The paragraph above overstates it. `../../BasicGroupIRate` is the item's step-3 value,
+`r3(Base x LCM)` (SC rules :3029). It is taken **before** the item's vandalism, StdPropPol, coinsurance and
+deductible factors. It is not the item's final rate. Golden case: the item's `BasicGroupIRate` is 0.07 and its
+`FinalBasicGroupIRate` is 0.066; this record uses 0.07. Proof in the engine (OH, both editions): the item's
+coinsurance at 100% or deductible at 250 moves the item ($62, $70) but leaves this record at $39 (BI-8,
+BI-9). Doubling the item's LCM doubles both ($130, $77; BI-7). This record's own LCM does nothing here
+(5.0 still $39; BI-13). So the dependency is looser than "tighter": this record needs only the item's third
+step, not its finished chain. Two more facts the paragraph left out: a submitted `BasicGroupIRate` is kept
+(0.5 gives $275; BI-14), and a blank item `ClassDescription` (item base 0) zeroes this record too ($0,
+outcome "rated"; BI-11).
+
 ### Step 2 — Cause-of-loss adjustment
 `SetBasicGroupICauseOfLossAdjustment` (line 2946), 3 decimals, unconditional:
 
@@ -242,6 +263,11 @@ Income has under Structure). **`MultiPremiumAndDispersionCreditFactor` does not 
 exactly as in plain Business Income — even though `SetMultiPremiumAndDispersionCreditFactor` runs during
 shared prep (line 2143) and populates the datadef.
 
+**Corrected 2026-10-06** (`cf-bgi-chains.html`, SCBI review #46, #51; probes BI-12, MOD-2). Branch B is not
+only the "Yes" case. The test is `IncludedInBlkt = "No"`, so **anything but "No", blank included**, goes to
+Branch B. A blank `IncludedInBlkt` has no blanket total, so it prices **$0 with outcome "rated"** (BI-12).
+MultiPrem 0.9 leaves this record at $39 while the item drops to $59 (MOD-2), as stated above.
+
 This two-branch shape happens to match Special Class Building's own two-branch premium files too, but for a
 **different reason**: Special Class Building has only two branches because it has no `CovType` taxonomy at
 all (no Legal Liability, no Leasehold Interest). Special Class Business Income has only two branches for the
@@ -288,10 +314,20 @@ Building, plain Business Income, and Special Class Business Income, and **none o
 resolve a Basic Group II base rate at the countrywide level in this package edition** without a state-specific
 filing layered on top.
 
+**Corrected 2026-10-06** (`cf-bgii-chains.html`, SCBI review #47, #52, #54; probes BI-1, BI-11, BI-12 in the
+Group II notes). Two things. First, header-only at countrywide is the **normal state-filed pattern**, not a
+gap. Every state files its own rows (OH files 8), and this record rates $321 in OH at 2026-01-01 and $361
+at 2026-07-01 (BI-1). A key with no filed row now refuses (C28-05). Second, "keys entirely on values read
+from the item" is too strong. The territory, the symbol and the class multiplier come from the item. The
+LCM, the wind/hail exclusion, the coinsurance (as a factor key), `CovType`, `TypeOfRisk`, the limits and
+`IncludedInBlkt` are this record's own. A blank item symbol, or a blank location territory with no building
+on the location, prices both the item and this record at **$0, outcome "rated"** (BI-11, BI-12).
+
 ### Step 2 — Lowest base rate
 `SetLowestBasicGroupIIBaseRate` (line 3012): same shape, `LookupLowestBasicGroupIIRate` (line 11653) against
 matrix `LowestBasicGroupIIRate`, keyed State|CW, `../../BasicGroupIISymbol`, `"Bldg"` (no territory) — same
-empty-table gap as step 1.
+empty-table gap as step 1. **Corrected 2026-10-06** (`cf-bgii-chains.html`, SCBI review #55): state-filed,
+not a gap, as in step 1. It is 0.0 when the item's symbol is blank.
 
 ### Step 3 — Rate
 `SetBasicGroupIIRate` (line 3056), 3 decimals:
@@ -306,6 +342,16 @@ value (which, per the Special Class Building doc, is itself looked up by `ClassD
 `SpecialClassBasicGroupIINumber`, not by `ClassCode`/`OpenSides`). No BCEG factor multiplier here — matches
 Special Class Building's own Basic Group II rate (which also has no BCEG term), and differs from plain
 Business Income's `BasicGroupIIRate` formula, which does multiply in `BCEGFactor`.
+
+**Corrected 2026-10-06** (`cf-bgii-chains.html`, SCBI review #48, #49; probes BI-7, BI-8, BI-9, BI-13,
+BI-14 in the Group II notes). Two gaps in the step above:
+
+- **The item's numeric value is not fixed.** It is 1.0 when the **item** has a wind/hail exclusion, so the
+  item's exclusion cuts this record from $321 to $40 though this record has no exclusion of its own (BI-14).
+  It is 0 when the item's `ClassDescription` is blank, so this record prices $0, outcome "rated" (BI-13).
+- **`LossCostMultiplier` is this record's own.** It is copied from the item only when this record sends none
+  (`SetLossCostMultiplier` :2742). Own 5.0 gives $1,606 (BI-7). None sent, with the item at 2.0, gives $642
+  (BI-8). A submitted 1.0 holds at $321 while the item goes to 2.0 (BI-9).
 
 ### Step 4 — Cause-of-loss adjustment
 `SetBasicGroupIICauseOfLossAdjustment` (line 3078):
@@ -336,6 +382,11 @@ the Basic Group I premium file (confirmed lines 32-71: hardcoded `CoverageOnPoli
 branches), with only the datadef names swapped (`FinalBasicGroupIIRate`, `BlktBasicGroupIIAvgRate`,
 `CyberIncidentExclusionFactorBGII`, `CyberIncidentExclusionCOLExcptnsFactorBusnIncomeBGIIToUse`) — the same
 Group I/II premium-file relationship every other datadef group in this package has.
+
+**Corrected 2026-10-06** (`cf-bgii-chains.html`, SCBI review #51; probes BI-23, BI-27). Confirmed equal to
+this record's Group I file after renaming. The scheduled branch needs `IncludedInBlkt = "No"` exactly;
+anything else, blank included, goes to the blanket side and prices **$0, outcome "rated"** (BI-23). There
+is no multi-premium credit: 0.9 leaves $321 while the item drops to $490 (BI-27).
 
 ---
 
@@ -383,6 +434,18 @@ Confirmed CW rows exist: `("CW","Frame","Business Income Without Extra Expense",
 1 header). Both rows resolve; this lookup is **not** blocked by an empty-table gap the way Basic Group II's
 is.
 
+**Corrected 2026-10-06** (`cf-broad-chains.html`, SCBI review #34, #37, #40, #41; probes BI-2, BI-4, BI-5,
+BI-7, BI-15, BI-25 in the Broad notes). The "Frame" pin is confirmed (the item at Fire Resistive still $23,
+BI-7). But nothing is inherited from the item: this rule has its own literal, set separately. The
+comparison with Basic Group II is out of date: Group II is state-filed, not blocked. Also:
+
+- The cause of loss tested is this record's **own**. The item's is never read. Broad here with Basic on the
+  item prices $23; the reverse prices $0 with the coverage off (BI-5, BI-4).
+- There is **no `PolicyType` test**, unlike the item's Broad. A Standard Property policy zeroes the item's
+  Broad but this record still prices $23 (BI-15).
+- Without Extra Expense reads 0.011 ($11, BI-2). Everything else, blank `CovType` included, reads "All Other"
+  0.023 ($23, BI-25).
+
 ### Step 2 — Rate
 `SetBroadRate` (line 3187), 3 decimals, same gate:
 
@@ -393,6 +456,12 @@ BroadRate = BroadBaseRate x LossCostMultiplier
 That is the entire chain — no cause-of-loss adjustment, no LOI factor, no coinsurance-linked `Factor`, no
 deductible factor. `FinalBroadRate` is a straight copy of `BroadRate` (`SetFinalBroadRate`, line 6971) — same
 as plain Business Income.
+
+**Corrected 2026-10-06** (`cf-broad-chains.html`, SCBI review #36, #39; probes BI-8, BI-9, BI-10 in the
+Broad notes). `LossCostMultiplier` is this record's own, copied from the item only when blank (:2742). Own
+5.0 gives $115; none sent with the item at 2.0 gives $46; own 1.0 with the item at 2.0 holds $23. The rate
+step repeats the base step's `CauseOfLossToUse = "Broad"` test and writes 0.0 otherwise; that test is
+redundant with the coverage gate.
 
 ---
 
@@ -411,6 +480,15 @@ Structurally identical to Basic Group I's premium file, substituting `FinalBroad
 by direct read (lines 60-158) — a three-way `Choose` (`IncludedInBlkt = "No"` / `"Yes"` / otherwise-zero),
 functionally the same two live branches as Basic Group I's `If`/`Else` shape, just expressed with `Choose`
 instead of nested `If`.
+
+**Corrected 2026-10-06** (`cf-broad-chains.html`, SCBI review #35; probes BI-16, BI-17, BI-19, BI-20, X-6 in
+the Broad notes). The three-way `Choose` is not the same as Group I's `If`/`Else`. "No" goes scheduled.
+"Yes" goes to the `BlktTotalFullValueAmount > 0` test. **Anything else, blank included, goes straight to
+0.0.** So a blank `IncludedInBlkt` prices **$0 with the coverage on and outcome "rated"** (BI-16). Group I's
+`Else` sends a blank to its blanket test instead; the dollars are the same $0. A blanket record with a blank
+`FullBusnIncomeValue` also prices $0 "rated" (X-6). A blanket election with no policy blanket record turns
+the coverage off (BI-17). The scheduled branch rounds once, then applies two cyber factors. There is no
+multi-premium credit (0.9 leaves $23, BI-20). PackageMod 0.75 with IRPM 0.99 gives $17 (BI-19).
 
 ---
 
@@ -453,6 +531,11 @@ else: 1.0
 doesn't test it explicitly the way plain Business Income's does. **Note the CW factor values themselves
 (0.96 / 0.86) differ from what the plain Business Income pass would need to cross-check** — this document
 does not claim they match plain Business Income's own table row-for-row; that comparison was out of scope.
+**Corrected 2026-10-06** (`cf-special-chains.html`, SCBI review #44 and confirmed list; probes SB-2, SB-3,
+SB-4 in the Special notes; first found by C7-20). The indicator does not survive: the lookup keys on a
+constant `"No"`, so the factor is always 0.86 (SB-2 and SB-3 both $40, with "Yes" on the record and the
+item). The exclusion record tested is this record's own; the item's theft exclusion does not reach it
+(SB-4, $47).
 
 ### Step 2 — Base rate (hard-coded literal keys on both dimensions)
 `SetSpecialBaseRate` (line 3312), gated on `CauseOfLossToUse = "Special"`:
@@ -516,6 +599,13 @@ Same two-factor shape as plain Business Income's Special COL adjustment.
 `FinalSpecialRate = SpecialCauseOfLossAdjustment` — straight copy (`SetFinalSpecialRate`, line 6987), no
 `Factor` multiplication, matching Broad and matching plain Business Income's Special form.
 
+**Corrected 2026-10-06** (`cf-special-chains.html`, SCBI review #41, #43, #45; probes SB-12, SB-15, SB-16,
+SB-17 in the Special notes). The base-rate gate tests only this record's own `CauseOfLossToUse`. There is
+**no `PolicyType` test**: a Standard Property policy zeroes the item's Special but this record still prices
+$47 (SB-15). Special here with Basic on the item prices $47 (SB-12). `LossCostMultiplier` is this record's
+own, the item's only when blank: own 2.0 gives $94; none sent with the item at 2.0 also gives $94 (SB-16,
+SB-17).
+
 ---
 
 ## Special — premium
@@ -529,6 +619,15 @@ Building's own Special premium file also uses this standard rounding pattern** (
 Product-only-no-Round quirk). All three of Building, Special Class Building, and Special Class Business
 Income converge on the standard nested-`Round` pattern for Special premium; only plain **Building**'s Special
 premium file is the documented outlier with the no-`Round` shape.
+
+**Corrected 2026-10-06** (`cf-special-chains.html`, SC review #21 and SCBI review #42; probes S-42, SB-22,
+SB-26, SB-27 in the Special notes). The comparison with Special Class Building is wrong (C6-27 had already
+corrected the Special Class doc). Special Class Building's Special premium file has **no `Round` element**:
+nested `Product`s round to $1 at each of six steps, like Building's Special file and Special Class Broad's
+(PackageMod 0.75 with IRPM 0.99 gives $32, S-42). This record's own Special file does match its Broad file
+word for word. Its `Choose` sends **anything but "No" or "Yes", blank included, straight to 0.0**: a blank
+`IncludedInBlkt` prices $0 with the coverage on, outcome "rated" (SB-22). There is no multi-premium credit
+(0.9 leaves $47, SB-27); PackageMod 0.75 with IRPM 0.99 gives $35 (SB-26).
 
 ---
 
@@ -653,6 +752,18 @@ identical shared table** plain Business Income reads (keyed State|CW, `CovType`,
 This table is shared between the plain and Special Class Business Income groups — not duplicated or
 Special-Class-specific.
 
+**Corrected 2026-10-06** (`cf-bgi-chains.html`, SCBI review #47, #48; `cf-bgii-chains.html`, SCBI review
+#50; probes BI-2 to BI-6 in the Group I notes, BI-4 and BI-6 in the Group II notes). The order is right,
+but two blanks zero the `Factor`:
+
+- The monthly test is `MonthlyLimitOfIndemnity <> "Not Applicable"`. A **blank** monthly limit matches it,
+  finds no factor, and gives `Factor` 0.0. Group I and Group II both price **$0, outcome "rated"** (BI-4).
+- `CovType = "Extra Expense Only"` with a blank limit-on-loss gives `ExtraExpenseFactor` 0.0, and **$0,
+  outcome "rated"** (BI-6).
+
+The working branches in OH, Group I: MaxPeriod $81, monthly 1/4 $67, Extra Expense Only $119, type of
+risk $39. Neither zero is refused by the engine after 542f0e1.
+
 `CoinsuranceToUse` (`SetCoinsuranceToUse`, line 3447) is built with the identical blanket-scan logic plain
 Business Income uses: direct copy of `Coinsurance` when not blanketed, else a `ForEach` scan of
 `CommercialPropertyBlanketRatingTable` for the matching `UnitNumber`, else `BlktCoinsurance` directly for
@@ -677,6 +788,12 @@ multi-unit-blanket-rated submissions.
 | Coverage-on-policy gate | hardcoded `1` | hardcoded `1` | `CauseOfLossToUse = "Broad"` | `CauseOfLossToUse = "Special"` | compound EQCovIndicator/AgreedValueOption/BlktEQAgreedVal test |
 | Premium branches | 2 | 2 | 2 | 2 | n/a (Agreed Value: 2 live + otherwise-zero) |
 
+**Corrected 2026-10-06** (`cf-bgi-chains.html` SCBI #44; `cf-bgii-chains.html` SCBI #47, #52; `cf-broad-chains.html`
+SCBI #35, #41; `cf-special-chains.html` SCBI #42). Read the table above with these changes. Basic Group I's
+base rate is the item's `BasicGroupIRate` = base x LCM, **not** fully rated. Basic Group II's "0 CW rows" is
+the normal state-filed pattern; every state files rows. Broad and Special have two live branches plus a
+third, "otherwise → 0.0", that catches a blank `IncludedInBlkt`. The Earthquake column was not re-checked.
+
 ---
 
 ## Structural differences from plain Business Income
@@ -689,6 +806,10 @@ multi-unit-blanket-rated submissions.
    0-or-copy gate, no multiplier at all). This is a materially tighter cross-coverage dependency: for these
    two forms, Special Class Business Income cannot be rated at all until the Special Class item's own Basic
    Group I / Earthquake rate build-up has fully completed, not merely its base-rate step.
+   **Corrected 2026-10-06 for Basic Group I** (`cf-bgi-chains.html`, SCBI review #44, #45, #52; probes BI-7
+   to BI-9). `../../BasicGroupIRate` is the item's base x LCM, its third step, not its finished rate. Basic
+   Group I needs only that step. It then adds its own vandalism factor and a Business Income `Factor`, not
+   "only a single COL multiplier". The Earthquake half of this point was not re-checked.
 
 2. **Broad and Special key their own base-rate tables on hard-coded literal constants, not data-derived
    values.** Plain Business Income's Broad varies by `ConstructionTypeToUse` and its Special varies by
@@ -725,6 +846,8 @@ multi-unit-blanket-rated submissions.
    this package edition — the same gap that affects Building's and plain Business Income's Basic Group II
    base rate (per `BasicGroupI_ERC_Tables.md`'s BUILD-LOG Entry 3 correction). All three coverage groups
    share these two empty tables and are equally unresolvable at CW for Basic Group II absent a state filing.
+   **Corrected 2026-10-06** (`cf-bgii-chains.html`, SCBI review #52): out of date. This is the normal
+   state-filed pattern. Every state files rows; OH rates this record at $321 / $361.
 
 7. **Everything else — master orchestration, `SetFactor`, `SetFinalRates`, premium-file shapes, rounding,
    the Agreed Value asymmetry for Earthquake, the two-branch-only premium pattern, and the lack of a
@@ -758,6 +881,8 @@ multi-unit-blanket-rated submissions.
    already-rated result, the same cross-coverage-dependency shape plain Business Income has on plain
    Building.** Only Broad and Special retain independent base-rate tables, and even those are keyed on
    hard-coded literal constants rather than on `ClassDescription` or any class-specific option code.
+   **Corrected 2026-10-06** (`cf-bgi-chains.html`, SCBI review #44): for Basic Group I the borrowed value
+   is the item's base x LCM (0.07 in the golden case), not its finished rate (0.066).
 
 4. **Two premium branches for a different reason than Special Class Building's two branches.** Special Class
    Building has two branches because it has no `CovType` taxonomy. Special Class Business Income has two
@@ -800,7 +925,8 @@ multi-unit-blanket-rated submissions.
 - **`BasicGroupIIRate` and `LowestBasicGroupIIRate` are header-only (zero CW data rows)** — Basic Group II
   base rate is unresolvable at the countrywide level for this coverage group (as it is for Building and plain
   Business Income). Any rater built off this document needs a state-specific override for Basic Group II to
-  produce a nonzero rate.
+  produce a nonzero rate. **ANSWERED 2026-10-06** (`cf-bgii-chains.html`, SCBI review #52, #55): every
+  state files these rows (OH 8 each), so this is the normal pattern, not an open gap. OH prices $321 / $361.
 - **`CommercialPropertySpecialClassBusnIncomeInterruptionOfComputerOperationsCoverageRules.Rule.xml` and
   `...WatercraftExclusionBuybackCoverageRules.Rule.xml`** were confirmed to exist by directory listing but not
   traced — endorsement add-ons layered on top of the core rate chains, out of scope for this pass, same as
@@ -815,6 +941,8 @@ multi-unit-blanket-rated submissions.
 
 ```
 BasicGroupIRate = SpecialClassItem.BasicGroupIRate                      (direct cross-coverage copy)
+                  = item r3(Base x LCM), before the item's vandalism, coinsurance, deductible
+                  (corrected 2026-10-06, cf-bgi-chains.html SCBI #44; a submitted value is kept)
 
 COLAdj = BasicGroupIRate x VandalismExclFactor
 
@@ -825,6 +953,8 @@ FinalBasicGroupIRate = COLAdj x Factor
 
 Premium = round(round(IRPM x PackageMod x FinalBasicGroupIRate x (Limit/100), 0), 0)
           x CyberExclFactorBGI x CyberExclCOLExcptnsFactorBusnIncomeBGIToUse
+          (only when IncludedInBlkt = "No"; blank goes to the blanket side and prices $0 —
+           corrected 2026-10-06, cf-bgi-chains.html SCBI #46)
 ```
 
 ## Quick reference — end-to-end, Basic Group II (scheduled)
@@ -832,8 +962,11 @@ Premium = round(round(IRPM x PackageMod x FinalBasicGroupIRate x (Limit/100), 0)
 ```
 BasicGroupIIBaseRate = lookup BasicGroupIIRate(State|CW, BasicGroupIIRatingTerr, BasicGroupIISymbol, "Bldg")
                         [CW: table header-only, 0 data rows — unresolvable without state filing]
+                        [corrected 2026-10-06: every state files rows; normal pattern, not a gap]
 
 BasicGroupIIRate = BasicGroupIIBaseRate x LossCostMultiplier x SpecialClassItem.BasicGroupIINumericValue
+                   (LCM is this record's own, the item's only when blank; the item's numeric value is
+                    1.0 when the item has a wind/hail exclusion — corrected 2026-10-06, cf-bgii-chains.html SCBI #48, #49)
 
 COLAdj = BasicGroupIIRate                                        if no wind/hail exclusion
        | LowestBasicGroupIIBaseRate x LossCostMultiplier x WindstormOrHailExclFactor   otherwise
@@ -856,6 +989,7 @@ FinalBroadRate = BroadRate                       (straight copy — no COL adjus
 
 Premium = round(round(IRPM x PackageMod x FinalBroadRate x (Limit/100), 0), 0)
           x CyberExclFactorBroad x CyberExclCOLExcptnsFactorBusnIncomeBroadToUse
+          ("No" only; a blank IncludedInBlkt goes straight to 0.0 — corrected 2026-10-06)
 ```
 
 ## Quick reference — end-to-end, Special (scheduled)
@@ -863,6 +997,8 @@ Premium = round(round(IRPM x PackageMod x FinalBroadRate x (Limit/100), 0), 0)
 ```
 SpecialTheftExclusionFactor = lookup SpecialLeaseHoldTimeElementTheftExclusionFactor(State|CW, ApartmentCondoIndicator)
                                if theft excluded, else 1.0                                [CW 0.96 / 0.86]
+                               (corrected 2026-10-06, cf-special-chains.html SCBI: the key is a constant
+                                "No", so always 0.86; C7-20)
 
 SpecialBaseRate = lookup SpecialFormIncldgTheftTimeElementBaseRate(
                        State|CW, "Frame", CovType, "Other than Apartments and Condominiums")   [CW 0.033 / 0.047 — always this key]
@@ -873,6 +1009,7 @@ FinalSpecialRate = SpecialCauseOfLossAdjustment      (straight copy — no Facto
 
 Premium = round(round(IRPM x PackageMod x FinalSpecialRate x (Limit/100), 0), 0)
           x CyberExclFactorSpecial x CyberExclCOLExcptnsFactorBusnIncomeSpecialToUse
+          ("No" only; a blank IncludedInBlkt goes straight to 0.0 — corrected 2026-10-06)
 ```
 
 ## Quick reference — end-to-end, Earthquake (Agreed Value, not-in-blanket)

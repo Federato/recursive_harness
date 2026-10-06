@@ -33,6 +33,12 @@ rule the other forty-five do not. That is the cleanest available statement of
 why "a chunk is not done because the lookup chain resolves" — the chain
 resolving in 45 places said nothing about the two where it doesn't.
 
+> **Note, 2026-10-06** (`CF_Algorithm/cf-special-chains.html`, Building review #3). Confirmed at both CW
+> 2023-08 V04 and CW 2026-06: 45 of 47 file the row, FL and PR override. The engine now **refuses** a
+> state that reaches the empty countrywide table (`SingleResult` miss, C28-05), so no filed state can
+> price Special from it at $0. Special is also charged **on top of** Group I and II, which price for any
+> cause of loss except blank and "Not Applicable" (ME: $471 + $48 + Special $57, probe B1me).
+
 ## 19 · Two sums, and a three-part gate in front of the second
 
 | Case | Deductible factor | Premium |
@@ -52,6 +58,15 @@ The fourth case is the interesting one: **excluding theft makes a separate
 theft deductible irrelevant.** The 0.88 credit applies instead, and the
 deductible reverts to the building one. Two theft-related inputs that look
 independent and are not.
+
+> **Correction note, 2026-10-06** (`CF_Algorithm/cf-special-chains.html`, Building review #1, #2; probes
+> B3, B3me, B4a–B4e in the Special notes). Confirmed in OK, with one qualification and two additions.
+> 0.88 is only the **countrywide** row: the lookup reads the state row first, and 29 jurisdictions file
+> their own (ME 0.94). The "250" branch fires on **either** `Deductible` or `TheftDeductible`: a theft
+> deductible of 250 beats a deductible of 1,000 (1.1, $96). A blank `Deductible` with a separate theft
+> deductible still prices Special ($77) while Group I goes to $0; with no usable theft deductible a blank
+> `Deductible` is refused by the engine (C28-17) on a plain building with a submitted Special cause of
+> loss, and still prices $0 "rated" on I&B / Condo / Builders Risk or a blanket with a blank own cause.
 
 **A stated limitation rather than a result:** both sums are written and both
 equal the building limit here, because each is `StructureLimitToUse` plus

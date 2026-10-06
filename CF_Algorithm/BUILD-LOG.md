@@ -141,6 +141,11 @@ silently edited away) rather than only noted here. Practical consequence: Basic 
 Group II base rates are unresolvable at the countrywide level, for both Building and Personal
 Property, in this package edition — a state filing is required for either to rate at all.
 
+> **Correction note, 2026-10-06** (`cf-bgi-chains.html`, `cf-bgii-chains.html` reviews). Still true of the
+> CW file, but not a gap in practice: header-only CW with state rows is the normal pattern. OK files 1,368
+> Group I rows; ME files Group II and Lowest rows; both price (OK $720 building, ME $48 Group II). A key a
+> state does not file is now refused by the engine (C28-05). See `BasicGroupI_ERC_Tables.md`.
+
 **Standing check added:** every future required-tables doc must report row counts and confirm at
 least one non-empty data row per table, not just file existence.
 
@@ -255,6 +260,12 @@ meaning Basic Group I and Basic Group II Business Income rating is *doubly* unre
 countrywide level — both the underlying Building rate and Business Income's own adjustment factor
 return null. Broad and Special's own tables, by contrast, do carry CW data and resolve fine.
 
+> **Correction note, 2026-10-06** (`cf-bgi-chains.html` BI review #41; `cf-bgii-chains.html` BI review #43).
+> All three tables are state-filed (adjustment factor: Group I IN 0.85; Group II UT 0.7, IN 0.75); Business Income Group I
+> and II price normally in IN and UT. Also from those reviews: the "blanket/max-period" branch is the
+> operational-unit test, not blanket, and BI Group I prices coinsurance inside the type-of-risk factor and
+> has no deductible.
+
 ### Open questions queued for the user
 
 - **Q1–Q5 (prior entries, still open).** No new information this pass.
@@ -335,7 +346,12 @@ first open question — do state-specific CF Rules notices exist anywhere to col
   not Special Class Building's — but pushes the cross-coverage rate-borrowing pattern further.
   Basic Group I and Earthquake don't just borrow a *base* rate from the coinsured Special Class item
   the way plain Business Income borrows from Building — they borrow the item's **already fully-rated**
-  `BasicGroupIRate`/`EQRate` directly, adding at most one trivial multiplier on top. Broad and Special
+  `BasicGroupIRate`/`EQRate` directly, adding at most one trivial multiplier on top.
+  *(Correction note, 2026-10-06, `cf-bgi-chains.html` SCBI review #44; probes BI-7 to BI-9: for Basic
+  Group I the copied value is the item's base x LCM, its third step, not its final rate — 0.07 against
+  0.066 in the golden case. The child then adds its own vandalism factor and a BI `Factor`. Earthquake
+  not re-checked.)*
+  Broad and Special
   key their own dedicated base-rate tables on **hard-coded literal constants** (`"Frame"` for
   construction; `"Other than Apartments and Condominiums"` for the occupancy dimension) — the same
   construction-blind pattern Entry 3 found in Special Class Building's own Broad form, now confirmed
@@ -419,7 +435,9 @@ per `AGENTS.md` Part 4: the deferred cross-cutting endorsement cluster documenta
   chains."
 - **Diagram-authoring note:** Basic Group I and Earthquake's diagrams are visibly the simplest of
   all twenty-two — a single gate feeding a single "borrow the sibling's finished rate" box, since
-  that's structurally all those two chains do. Didn't force extra nodes in to make them look more
+  that's structurally all those two chains do. *(Correction note, 2026-10-06: for Basic Group I the
+  borrowed value is the item's base x LCM, not its finished rate; `cf-bgi-chains.html` now draws the
+  corrected chain, and the old sheets in `cf-rating-chains.html` were replaced.)* Didn't force extra nodes in to make them look more
   substantial; the diagram is honest about how little work those two chains actually perform.
 - **Checked against:** full read of `CauseOfLoss_SpecialClassBusinessIncome_RatingAlgorithms.md`
   before authoring, same discipline as every prior diagram pass.
@@ -1406,7 +1424,8 @@ navigation aid for choosing where to start, not a substitute for opening a rule 
 - **Building's own Basic Group II**, standalone (no comparison framing, per direct instruction) — built
   `Excel_Rater_BGII_Building_HowItWorks.html`. Surfaced two findings while tracing it: the wind/hail-
   excluded rebuild branch is unresolvable in 8 states (correlated zero-filing across two tables, inferred
-  not confirmed against manual text), and `OperationalUnitWindstormOrHailExclusionFactor` is computed but
+  not confirmed against manual text) *(correction note, 2026-10-06, `cf-bgii-chains.html` PP review #10:
+  all 8 override the cause-of-loss rule, so the countrywide rebuild is never reached there)*, and `OperationalUnitWindstormOrHailExclusionFactor` is computed but
   never consumed anywhere in the rule file — an orphaned factor, same pattern as Special Class's own
   orphaned `ProtectionClassFactor`.
 

@@ -228,6 +228,10 @@ inventing its own — but it leans on the coinsured item's own already-finished 
 heavily than plain Business Income does for two of its five pricing paths, essentially charging
 "whatever that item already costs, plus a tiny adjustment," rather than working anything out itself.
 
+*Correction, 2026-10-06 (`cf-bgi-chains.html`): for the Basic Group I path it copies the item's price
+part-way through — base rate times the loss cost multiplier — before the item's deductible and coinsurance
+are applied. Changing the item's deductible does not change this coverage's price.*
+
 **The bigger news this update: we started reading ISO's official written rulebook for property
 insurance for the first time**, instead of only the computer-readable pricing files. Six nationwide
 rulebook documents were converted into searchable text — about 2,060 pages. State-specific versions

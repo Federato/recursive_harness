@@ -125,6 +125,13 @@ BI_Broad_Premium =
 
 - The blanket premium branch — needs `BlktBroadAvgRate`, `FullBusnIncomeValue`, `BlktTotalFullValueAmount`
 
+**Added 2026-10-06** (`cf-broad-chains.html` BI review #26, #27, #31; probes HAPPY, BLKT_BASIC, INCBLANK).
+Broad is charged **on top of** Group I and II (UT $1,390 + $70 + $230), not instead of them. Only
+`BI_IncludedInBlkt = "No"` reaches the scheduled formula: a blank value falls to the blanket side and
+prices Broad, Group I and II at $0 "rated". On a blanket the cause of loss is the blanket Detail's, so a
+Broad BI in a Basic blanket gets no Broad premium. A blank `BI_CovType` reads "All Other" ($230), as the
+table above says.
+
 ## Remaining steps
 
 1. You review this document — it's short by design, not by omission; the source doc confirms this is
