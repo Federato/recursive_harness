@@ -102,7 +102,7 @@
 </div>
 <p class="meta"><b>As of 2026-10-06.</b> One page for the whole Property (CF) build: chunks 0&ndash;28, every task, every gate. <b>Chunks 1&ndash;28 are gated</b> (chunk 0, the foundation, is proved by their gates), the last one (28, engine behaviour decisions) on 2026-10-06, 22 of 22: Sets A to G, each engine change with your go; all 34 newer ISO packages imported (<a href="#packages-to-add">ERC packages added</a>); OI-116 closed and OI-117 in the parking lot by your decision.<br>
 <b>What &ldquo;546 of 546 built&rdquo; means:</b> the engine rates every one of ISO&rsquo;s 546 countrywide Property premium files, and each chunk&rsquo;s premiums were checked against ISO&rsquo;s own answers (gated 9 of 9). <b>It does not mean Property is a finished product:</b> 
-the app&rsquo;s first Property screen arrived on 2026-10-06 (<code>096f2b0</code>): pick Commercial Property and a state, and it rates one office risk (Building, Contents and Business Income on the Special form) and compares it with ISO &mdash; a single sample risk, not a submission form; everything else Property does is still run by the scripts in <code>scripts/cf/</code>; 
+Property is in the app since 2026-10-06 (<a href="#in-the-app">below</a>), but as one sample risk per state, not a submission form; everything else Property does is still run by the scripts in <code>scripts/cf/</code>; 
 chunk 28 (gated 2026-10-06) decided how the engine behaves where ISO refuses to rate, where an input silently prices to zero, submitted derived fields, minimum premium, message parity and dates beyond the corpus; 
 the second rating path (Specific / Tentative rates) is built in the engine only, and ISO has no stored answers for it, so every check there is our own.<br>
 Sources, and what to edit when something changes: <code>CF-START-HERE.md</code> (resume point), <code>OPEN-ITEMS.md</code> (open items), 
@@ -2640,6 +2640,20 @@ a missing form number is not a missing coverage.</p>
 <p><span class="lab">Opens with</span> OI-103: put the refusal cases in one table and propose a rule.</p>
 </div>
 
+<h2 id="in-the-app">Property in the app (2026-10-06)</h2>
+<p><b>In plain English:</b> the rating app now does Commercial Property as well as General Liability. Run <code>start.bat</code> (it serves the app at <code>http://127.0.0.1:8765</code> and opens a browser), choose <b>Commercial Property</b> instead of General Liability, pick a state, and the app rates a sample policy on our engine and, if asked, sends the same request to ISO and shows both side by side.</p>
+<table>
+<thead><tr><th>What</th><th>How it works</th></tr></thead>
+<tbody>
+<tr><td>The policy</td><td>One office risk (class 0951, frame, 1&ndash;3 stories): <b>Building, Contents and Business Income with Extra Expense</b>, all on the Special cause-of-loss form, so each prices Basic Group I, Basic Group II and Special. Dated 2026-09-17. Each state&rsquo;s own territories are read from its filed tables (Group II via <code>_state_inputs</code>, chunk 28 C28-17; Group I, Special, wind and earthquake from the state&rsquo;s first filed row), never typed in</td></tr>
+<tr><td>The answer</td><td>The total, and a grid of the three coverages by the three forms, with ISO&rsquo;s figure in each cell and differences in red; the packages used; any refusal and its reason (chunk 28&rsquo;s outcome field)</td></tr>
+<tr><td>The request box</td><td>The text box holds ISO&rsquo;s own request, exactly what is sent to ISO, so a pasted Property request (any coverage) rates too; the app tells the lines apart by <code>ProductName</code></td></tr>
+<tr><td>Every state at once</td><td>&ldquo;Test every jurisdiction&rdquo; runs the chosen line: <b>46 Property states</b> (ID, LA, MS and WA have no Property package; PR is left out: its Group I table is keyed differently and ISO&rsquo;s subscription does not cover it)</td></tr>
+<tr><td>Code</td><td><code>app.py</code> (the page), <code>scripts/property_rating.py</code> (sample, rating, comparison; the shared interpreter through <code>cf_engine.book_for</code>, as the chunk scripts do); commits <code>096f2b0</code>, <code>51aef1d</code></td></tr>
+</tbody>
+</table>
+<p><b>Checked 2026-10-06:</b> the sample rates offline in <b>46 of 46</b> states (32 s for all); live against ISO, <b>OH $5,204, CA $449, TX $7,861 and NY $3,473 equal ISO&rsquo;s</b>; the app&rsquo;s own test (<code>tests/verify_stage6.py</code>) 33 of 33. <b>Florida disagrees:</b> ISO refuses the sample (its own cyber incident exclusion table is empty) while ours prices $2,774 &mdash; registered as <b>OI-133</b>, an engine question needing your go. A full 46-state comparison with ISO has not been run yet.</p>
+<p><b>Not yet:</b> a form to enter a policy (the sample is fixed; anything else is a pasted request), other coverages in the grid (they rate in a pasted request, the grid shows the three), a date choice, and the published Windows app, which is not recorded here as rebuilt with it.</p>
 <h2>Open items that cross every chunk</h2>
 <table>
 <thead><tr><th>Item</th><th>Status</th><th>What it is</th></tr></thead>
