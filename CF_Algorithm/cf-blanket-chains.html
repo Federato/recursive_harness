@@ -1,0 +1,706 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Blanket Rating Chains</title>
+<style>
+  :root {
+    --ink: #101b24;
+    --paper: #edf0ec;
+    --paper-line: #c7d2ce;
+    --blueprint: #2e6e8e;
+    --blueprint-soft: #e4ebef;
+    --stamp: #c77f32;
+    --caution: #b14b39;
+    --ledger: #3f8f6e;
+    --surface: #f4f6f3;
+    --panel: #ffffff;
+    --sidebar: #e8ede8;
+    --text: var(--ink);
+    --muted: #5b6b72;
+    --border: #cdd6d2;
+    --font-display: Cambria, 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+    --font-body: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+    --font-mono: 'Cascadia Code', 'Cascadia Mono', Consolas, 'SFMono-Regular', ui-monospace, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --surface: #0b141a;
+      --panel: #101b22;
+      --sidebar: #0e1a20;
+      --text: #e7ece9;
+      --muted: #93a3a0;
+      --border: #223138;
+      --blueprint-soft: #16232b;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --surface: #0b141a;
+    --panel: #101b22;
+    --sidebar: #0e1a20;
+    --text: #e7ece9;
+    --muted: #93a3a0;
+    --border: #223138;
+    --blueprint-soft: #16232b;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; background: var(--surface); color: var(--text);
+    font-family: var(--font-body); -webkit-font-smoothing: antialiased;
+  }
+  body { display: flex; flex-direction: column; min-height: 100vh; }
+  a { color: inherit; }
+  code { font-family: var(--font-mono); font-size: 0.92em; }
+  ::selection { background: var(--stamp); color: #101b24; }
+
+  /* header */
+  header.masthead {
+    display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap;
+    padding: 1.1rem 1.6rem; border-bottom: 1px solid var(--border);
+    background: var(--panel);
+  }
+  header.masthead h1 {
+    font-family: var(--font-display); font-weight: 600; font-size: 1.35rem;
+    margin: 0; letter-spacing: 0.01em; text-wrap: balance;
+  }
+  header.masthead .rule { width: 1px; align-self: stretch; background: var(--border); }
+  header.masthead p { margin: 0; font-size: 0.82rem; color: var(--muted); max-width: 52ch; }
+  header.masthead .src {
+    margin-left: auto; font-family: var(--font-mono); font-size: 0.72rem;
+    color: var(--muted); text-align: right; line-height: 1.5;
+  }
+
+  /* shell */
+  .shell { display: flex; flex: 1; min-height: 0; }
+
+  nav.toc {
+    width: 258px; flex: none; background: var(--sidebar);
+    border-right: 1px solid var(--border);
+    padding: 1rem 0 2rem; overflow-y: auto;
+  }
+  nav.toc .group-label {
+    font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--muted); padding: 0.5rem 1.2rem 0.35rem;
+  }
+  nav.toc button.navlink {
+    display: block; width: 100%; text-align: left; background: none; border: none;
+    font-family: var(--font-body); font-size: 0.86rem; color: var(--text);
+    padding: 0.42rem 1.2rem 0.42rem 1.6rem; cursor: pointer;
+    border-left: 3px solid transparent;
+  }
+  nav.toc button.navlink:hover { background: var(--blueprint-soft); }
+  nav.toc button.navlink.active {
+    background: var(--blueprint-soft); border-left-color: var(--blueprint); font-weight: 600;
+  }
+  nav.toc button.navlink .chain-len {
+    display: block; font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); font-weight: 400;
+  }
+  nav.toc hr { border: none; border-top: 1px solid var(--border); margin: 0.6rem 1.2rem; }
+
+  nav.toc .legend {
+    margin: 1rem 1.2rem 0; padding: 0.8rem 0.9rem; border: 1px solid var(--border);
+    border-radius: 3px; background: var(--panel);
+  }
+  nav.toc .legend h4 {
+    margin: 0 0 0.5rem; font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--muted); font-weight: 600;
+  }
+  nav.toc .legend .row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.74rem; margin-bottom: 0.35rem; }
+  nav.toc .legend .swatch { width: 13px; height: 13px; flex: none; border-radius: 2px; border-width: 1.5px; border-style: solid; }
+  .sw-gate { background: #f4e4ce; border-color: #c77f32; }
+  .sw-zero { background: #f3dcd6; border-color: #b14b39; }
+  .sw-final { background: #dceee4; border-color: #3f8f6e; }
+  .sw-step { background: #e4ebef; border-color: #2e6e8e; }
+  .sw-openq { background: #f4e4ce; border-color: #b14b39; border-style: dashed !important; }
+  .sw-engine { background: #e6e1f0; border-color: #5a4c8a; }
+
+  main { flex: 1; min-width: 0; overflow-y: auto; padding: 1.6rem 2rem 4rem; }
+
+  .intro { max-width: 70ch; margin-bottom: 1.4rem; }
+  .intro h2 { font-family: var(--font-display); font-size: 1.25rem; margin: 0 0 0.5rem; text-wrap: balance; }
+  .intro p { font-size: 0.92rem; line-height: 1.6; color: var(--muted); margin: 0 0 0.6rem; }
+
+  /* tables */
+  .tablewrap { overflow-x: auto; margin-bottom: 1.4rem; }
+  table.grid { border-collapse: collapse; width: 100%; max-width: 1100px; background: var(--panel); }
+  table.grid caption {
+    text-align: left; font-family: var(--font-mono); font-size: 0.7rem; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem;
+  }
+  table.grid th, table.grid td {
+    border: 1px solid var(--border); padding: 0.5rem 0.7rem; font-size: 0.82rem;
+    text-align: left; vertical-align: top; line-height: 1.45;
+  }
+  table.grid thead th {
+    font-family: var(--font-mono); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--muted); background: var(--blueprint-soft); font-weight: 600;
+  }
+  table.grid tbody th { font-weight: 600; white-space: nowrap; }
+  table.grid td.num { font-family: var(--font-mono); text-align: right; white-space: nowrap; }
+  table.grid tr.hl td, table.grid tr.hl th { background: var(--blueprint-soft); }
+  table.grid td .tag {
+    font-family: var(--font-mono); font-size: 0.66rem; padding: 0.05rem 0.35rem; border-radius: 2px;
+    border: 1px solid var(--border); color: var(--muted); white-space: nowrap;
+  }
+  table.grid td .tag.a { border-color: var(--blueprint); color: var(--blueprint); }
+  table.grid td .tag.b { border-color: var(--ledger); color: var(--ledger); }
+  table.grid td .tag.bad { border-color: var(--caution); color: var(--caution); }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.9rem; max-width: 1100px; margin-bottom: 1.4rem; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 3px; padding: 0.9rem 1rem; }
+  .card .k { font-family: var(--font-mono); font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
+  .card .v { font-family: var(--font-display); font-size: 1.5rem; margin: 0.2rem 0 0.25rem; font-variant-numeric: tabular-nums; }
+  .card p { margin: 0; font-size: 0.8rem; color: var(--muted); line-height: 1.45; }
+  .card button.go {
+    margin-top: 0.6rem; background: none; border: 1px solid var(--blueprint); color: var(--blueprint);
+    font-family: var(--font-mono); font-size: 0.7rem; padding: 0.3rem 0.6rem; border-radius: 2px; cursor: pointer;
+  }
+  .card button.go:hover { background: var(--blueprint-soft); }
+
+  /* sheet */
+  .sheet-view { display: none; }
+  .sheet-view.active { display: block; }
+
+  .titleblock {
+    display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--border);
+    margin-bottom: 1.1rem; background: var(--panel);
+  }
+  .titleblock .field { padding: 0.6rem 0.9rem; border-right: 1px solid var(--border); }
+  .titleblock .field:last-child { border-right: none; }
+  .titleblock .field .k {
+    font-family: var(--font-mono); font-size: 0.63rem; text-transform: uppercase; letter-spacing: 0.07em;
+    color: var(--muted); display: block; margin-bottom: 0.15rem;
+  }
+  .titleblock .field .v { font-family: var(--font-mono); font-size: 0.82rem; color: var(--text); line-height: 1.35; }
+  .titleblock .field.wide { grid-column: span 4; border-top: 1px solid var(--border); border-right: none; }
+
+  .sheet {
+    background: var(--paper); border: 1px solid var(--paper-line); border-radius: 2px;
+    padding: 1.4rem 1.2rem 1rem; position: relative; overflow-x: auto;
+    background-image:
+      linear-gradient(var(--paper-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--paper-line) 1px, transparent 1px);
+    background-size: 28px 28px; background-position: -1px -1px;
+    background-color: var(--paper);
+  }
+  .sheet .corner { position: absolute; width: 14px; height: 14px; }
+  .sheet .corner.tl { top: 6px; left: 6px; border-top: 1.5px solid #7d8f8a; border-left: 1.5px solid #7d8f8a; }
+  .sheet .corner.tr { top: 6px; right: 6px; border-top: 1.5px solid #7d8f8a; border-right: 1.5px solid #7d8f8a; }
+  .sheet .corner.bl { bottom: 6px; left: 6px; border-bottom: 1.5px solid #7d8f8a; border-left: 1.5px solid #7d8f8a; }
+  .sheet .corner.br { bottom: 6px; right: 6px; border-bottom: 1.5px solid #7d8f8a; border-right: 1.5px solid #7d8f8a; }
+  .sheet pre.mermaid { margin: 0; background: transparent; min-width: 760px; color: #101b24; }
+
+  .notes { margin-top: 1.1rem; display: grid; grid-template-columns: 1.4fr 1fr; gap: 1.2rem; }
+  .notes h3 {
+    font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--muted); margin: 0 0 0.5rem;
+  }
+  .notes ul { margin: 0; padding-left: 1.1rem; font-size: 0.86rem; line-height: 1.55; }
+  .notes ul li { margin-bottom: 0.4rem; }
+  .notes .delta { border: 1px solid var(--border); background: var(--panel); padding: 0.8rem 0.9rem; border-radius: 3px; font-size: 0.86rem; line-height: 1.55; }
+  .notes .delta.openq { border-color: var(--caution); }
+  .notes .delta + .delta { margin-top: 0.8rem; }
+
+  h3.section {
+    font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--muted); margin: 1.6rem 0 0.6rem;
+  }
+
+  footer.doc-footer {
+    padding: 1rem 2rem 2rem; font-size: 0.76rem; color: var(--muted); border-top: 1px solid var(--border);
+  }
+  footer.doc-footer strong { color: var(--text); }
+
+  @media (max-width: 900px) {
+    .notes { grid-template-columns: 1fr; }
+    .titleblock { grid-template-columns: 1fr 1fr; }
+    .titleblock .field.wide { grid-column: span 2; }
+  }
+  @media (max-width: 720px) {
+    .shell { flex-direction: column; }
+    nav.toc { width: 100%; border-right: none; border-bottom: 1px solid var(--border); padding: 0.6rem 0; }
+    nav.toc .legend { display: none; }
+    main { padding: 1.2rem 16px 3rem; }
+    header.masthead { padding: 1rem 16px; }
+    header.masthead .src { margin-left: 0; text-align: left; }
+    header.masthead .rule { display: none; }
+    .titleblock { grid-template-columns: 1fr; }
+    .titleblock .field { border-right: none; border-bottom: 1px solid var(--border); }
+    .titleblock .field.wide { grid-column: span 1; }
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <h1>Blanket Rating Chains</h1>
+  <div class="rule"></div>
+  <p>How Commercial Property blanket rating works: the policy's blanket records (each Detail's total value, average or highest rate per form, coinsurance, builders risk and margin clause), how each coverage joins a blanket and what it copies back, and the blanket premium formula for every coverage and form. Checked against the built engine and ISO's rule XML as of 2026-10-06. CW 2023-08 V04 and CW 2026-06 are drawn together because their blanket rules are byte-identical; CW 2023 V01–V03, still used by some states, are noted.</p>
+  <div class="src">Engine at 542f0e1 (stage2-interpreter; probed at 5d3cb8b)<br>Rule files: CommercialPropertyBlanketRatingRules · CommercialPropertyBlanketRatingDetailRules · each coverage's SetNonEQBlanketValues / SetEQBlanketValues and premium files<br>Companion: docs/CF-CHUNK9-GATE.md · CF-CHUNK9-GOLDEN-CASE.md · the cause-of-loss and Earthquake chain pages</div>
+</header>
+
+<div class="shell">
+  <nav class="toc" id="toc">
+    <button class="navlink active" data-target="overview">Overview<span class="chain-len">Detail → averages → members → premium</span></button>
+    <button class="navlink" data-target="avg">The average rate<span class="chain-len">Average vs Highest, Basic Group I</span></button>
+    <hr>
+    <div class="group-label">Joining a blanket</div>
+    <button class="navlink" data-target="bldgpp">Building and Personal Property<span class="chain-len">blank IncludedInBlkt = $0 · PP truncates BGII</span></button>
+    <button class="navlink" data-target="sc">Special Class<span class="chain-len">blank goes scheduled · policy MultiPrem</span></button>
+    <button class="navlink" data-target="bi">Business Income and SCBI<span class="chain-len">no LOI, no coinsurance, no MultiPrem</span></button>
+    <hr>
+    <div class="group-label">Reference</div>
+    <button class="navlink" data-target="formulas">Premium formulas<span class="chain-len">every coverage and form</span></button>
+    <button class="navlink" data-target="editions">Editions and states<span class="chain-len">BlktProportion in V01–V03</span></button>
+    <hr>
+    <div class="group-label">Review</div>
+    <button class="navlink" data-target="review">Chunk 9 claims re-checked<span class="chain-len">14 claims · 4 corrections</span></button>
+
+    <div class="legend">
+      <h4>Reading the chains</h4>
+      <div class="row"><span class="swatch sw-gate"></span> gate / branch condition</div>
+      <div class="row"><span class="swatch sw-step"></span> computed factor</div>
+      <div class="row"><span class="swatch sw-final"></span> premium resolves</div>
+      <div class="row"><span class="swatch sw-zero"></span> zero, refusal or clamp</div>
+      <div class="row"><span class="swatch sw-openq"></span> silent gap / open question</div>
+      <div class="row"><span class="swatch sw-engine"></span> engine layer, not an ISO rule</div>
+    </div>
+  </nav>
+
+  <main id="main">
+
+    <!-- ============================= OVERVIEW ============================= -->
+    <section class="sheet-view active" id="view-overview">
+      <div class="intro">
+        <h2>One Detail record sets the rate for everything with its ID</h2>
+        <p>A blanket insures several items under one limit. The policy needs <code>BlktRated</code> = "Yes" and <code>MUBlktRated</code> = "No" (blank defaults to "No"); each blanket is a Detail record with a <code>UnitNumber</code>. Every building, contents, special class and BI item that says <code>IncludedInBlkt</code> = "Yes" with a matching <code>BlktIDNum</code> joins it. The Detail adds up the members' full values, builds one average (or highest) rate per form, and applies its own coinsurance (0.95, unless 90% or N/A) and builders-risk (1.05) factors. The members copy back the Detail's cause of loss, coinsurance, total, limit and rates.</p>
+        <p>Each member is then charged blanket limit / 100 x its share of the total x the average rate, with its own premium modifiers. The blanket rules are byte-identical in CW 2023-08 V04 and CW 2026-06; CW 2023 V01–V03 use a 2-decimal <code>BlktProportion</code> instead of the exact share. Probes ran in OK, OH, OR and IN; chunk 9's golden case still gives $255 / $510.</p>
+      </div>
+
+      <div class="cards">
+        <div class="card">
+          <div class="k">A member drops out</div>
+          <div class="v">Limit moves</div>
+          <p>If one member's full value is blank or its ID doesn't match, the total shrinks but the limit doesn't: the other member is charged the whole blanket ($1,881 instead of $705), with no message.</p>
+          <button class="go" data-target="avg">See the average →</button>
+        </div>
+        <div class="card">
+          <div class="k">Blank IncludedInBlkt</div>
+          <div class="v">$0, "rated"</div>
+          <p>Building, Contents, BI and SCBI price $0 with the coverage still on. Special Class alone treats blank as scheduled.</p>
+          <button class="go" data-target="bldgpp">See the join →</button>
+        </div>
+        <div class="card">
+          <div class="k">The Detail wins</div>
+          <div class="v">Its cause of loss</div>
+          <p>A blanketed member's own cause of loss and coinsurance are ignored: a Special building in a Broad blanket prices Broad, and its Special is off.</p>
+          <button class="go" data-target="bldgpp">See Building →</button>
+        </div>
+      </div>
+
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    pol(["Policy blanket record<br/>CW 2023-08 V04 = CW 2026-06"]) --> mu{"MUBlktRated blank?"}
+    mu -->|"Yes"| muNo["Set to 'No'<br/>(SetMUBlktRated :307)"]:::step
+    mu -->|"No"| att
+    muNo --> att{"BlktRated = Yes AND<br/>MUBlktRated = No?"}
+    att -->|"No"| rem["Blanket record removed<br/>(AttachFormBlanketRating :352)"]:::zero
+    att -->|"Yes"| tot["Detail TotalFullValueAmount =<br/>sum of full values of every member with<br/>IncludedInBlkt Yes &amp; BlktIDNum = UnitNumber<br/>(bldg, PP, SC, SCBI, BI, or EQ blanket ID)"]:::step
+    tot --> tot0{"Sum &gt; 0?"}
+    tot0 -->|"No"| one["Total = 1 (not 0)"]:::zero
+    tot0 -->|"Yes"| pull1
+    one --> pull1["Each member copies from its Detail:<br/>CauseOfLoss, Coinsurance, Total,<br/>TotalLimit to BlktLimit (if blank),<br/>Type, TypeOfBlanketRating"]:::step
+    pull1 --> match{"Member BlktIDNum<br/>matches a Detail?"}
+    match -->|"No"| nm["CauseOfLossToUse blank:<br/>coverage off, $0"]:::zero
+    match -->|"Yes"| mfac["Member blanket factors:<br/>LOI on Average: r0(Full/Total x BlktLimit)<br/>LOI on Highest: own full value<br/>MarginClausesFactor"]:::step
+    mfac --> typ{"Detail Type and<br/>TypeOfBlanketRating?"}
+    typ -->|"Type blank, BI type with<br/>property members, or rating blank"| tz["Every average rate 0.0"]:::zero
+    typ -->|"Bldg / PP / Combined /<br/>Builders Risk; Average or Highest"| avg["Per-form rate, diagram (b):<br/>BGI always; BGII unless fire-only;<br/>Broad if COL Broad; Special if<br/>COL Special; EQ; Radioactive"]:::step
+    avg --> pull2["Members copy Blkt&lt;Form&gt;AvgRate<br/>(SetNonEQBlanketRatesAndFactors)"]:::step
+    pull2 --> prem["Member premium (coverage page):<br/>BlktLimit/100 x Full/Total<br/>x BlktAvgRate x mods"]:::final
+    rem -.- e1["Engine: every 0.0 ending here rates<br/>'rated'. 542f0e1 adds no blanket check.<br/>Only refusal: unfiled MarginClause<br/>(SingleResult, no row)"]:::eng
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class mu,att,tot0,match,typ gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>The Detail's <code>Type</code> doesn't filter members: a "Building Only" blanket with a contents item still averages the contents in.</li>
+            <li>The Detail's total never falls below 1, so the premium's "total &gt; 0" guard only catches a failed join.</li>
+            <li>Submitted values beat computed ones: a Detail average rate (0.5 → $500 / $1,000) or a member <code>BlktLimit</code>, which also moves the shared average for every other member.</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>No blanket zero refuses after 542f0e1.</strong> No message at all: a blank <code>TypeOfBlanketRating</code>, every member's full value blank, a blank Detail cause of loss. Message only: blank or mismatched <code>Type</code>, unmatched ID, <code>BlktRated</code> absent, <code>MUBlktRated</code> = Yes, blank <code>TotalLimit</code>. The only refusal is an unfiled <code>MarginClause</code> value. "Blanket rating requires 2 or more risks" fires but doesn't stop rating.</div>
+      </div>
+    </section>
+
+    <!-- ============================= AVERAGE ============================= -->
+    <section class="sheet-view" id="view-avg">
+      <div class="titleblock">
+        <div class="field"><span class="k">Scope</span><span class="v">One form's blanket rate, built on the Detail (Basic Group I shown)</span></div>
+        <div class="field"><span class="k">Editions</span><span class="v">CW 2023-08 V04 = CW 2026-06; V03's Detail file = V04's</span></div>
+        <div class="field"><span class="k">Detail engine</span><span class="v">BlanketRatingDetailRules ErcProcess :13075 → ErcDoBlanketRating :30: counters, risk-level average and highest rates :329, coinsurance :8449, builders risk :8523, final averages :8577 (11 Set*AvgRate rules)</span></div>
+        <div class="field"><span class="k">Tables</span><span class="v">CoinsuranceFactorBlkt 0.95 · BuildersRiskBlanketFactor 1.05 · MarginClauseRatingFactor (105% 0.93 … 130% 0.96)</span></div>
+        <div class="field wide"><span class="k">Order</span><span class="v">Policy ErcProcess :6999: SetMUBlktRated → ErcSetBlanketLimit (Detail totals) → ErcSetRatesAndFactors → ErcSetBlanketRatesAndFactors (members copy values, LOI, margin) → blanket record ErcProcess (Detail averages) → members copy the averages</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    s(["BasicGroupIAvgRate, one Detail<br/>SetBasicGroupIAvgRate :8592"]) --> sub{"Rate already submitted?<br/>(IsNull guard)"}
+    sub -->|"Yes"| keep["Submitted rate kept<br/>(probe A20: 0.5 rated)"]:::eng
+    sub -->|"No"| bi{"Type = BI with or<br/>without Extra Expense?"}
+    bi -->|"No"| m{"TypeOfBlanketRating?"}
+    m -->|"Average"| calc["Each member: r0(Full x COLAdj<br/>x DedByLoc x Ded x MultiRes<br/>x Margin x BlktLOI)<br/>bldg :392, PP :1166, SC :1859"]:::step
+    calc --> sum["Sum of bldg + PP + SC<br/>(:6262)"]:::step
+    sum --> g{"Total &gt; 0?"}
+    g -->|"Yes (always: floor 1)"| avgF["r3(Sum / Total<br/>x Coins x BldrsRisk)"]:::final
+    g -->|"No"| z0["0.0"]:::zero
+    m -->|"Highest"| mx["Each member: r3(COLAdj x DedByLoc<br/>x Ded x MultiRes x Margin x BlktLOI)<br/>max per kind (:2537, :2966, :3421)"]:::step
+    mx --> pick["Largest of bldg / PP / SC max<br/>(tie goes to bldg) :7519"]:::step
+    pick --> hiF["r3(Max x Coins x BldrsRisk)"]:::final
+    m -->|"blank / other"| z1["0.0"]:::zero
+    bi -->|"Yes"| bim{"TypeOfBlanketRating?"}
+    bim -->|"Average"| biA["r3(Sum BI calcs / Total)<br/>BI calc = r0(FullBI x COLAdj x Factor)<br/>no Coins, no BldrsRisk"]:::final
+    bim -->|"Highest"| biH["r3(Max x Coins)<br/>(Coins is 1.0 for BI)"]:::final
+    bim -->|"blank / other"| z2["0.0"]:::zero
+    avgF --> fac["Coins: 0.95 unless Coinsurance 90%,<br/>Not Applicable, Lumberyard, blank,<br/>or Type BI / Builders Risk (then 1.0)<br/>BldrsRisk: 1.05 if Type Builders Risk"]:::step
+    hiF --> fac
+    fac -.- oq["ISO not called for Highest,<br/>Broad, mixed or BR blankets<br/>(offline only)"]:::openq
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class sub,bi,m,g,bim gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>Average weights each member by full value (whole-dollar products, divide, round to 3 places); Highest takes the single worst member. OK: Average 0.705, Highest 0.758.</li>
+            <li>The member's LOI size changes too: its share of the blanket limit under Average, its own full value under Highest.</li>
+            <li>Other forms use the same shape: Group II, Broad and Special gate on the Detail's cause of loss; Special Class has no LOI or multi-residential factor; BI multiplies its Factor.</li>
+            <li>Margin clause 110% gives 0.94; the margin-clause and EQ sub-limit blanket rule files carry no rating logic of their own.</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>A member dropping out over-charges the rest.</strong> With one of two buildings missing its full value (no message) or unmatched (a message), the remaining building takes the whole $300,000 limit at its own rate: $1,881 instead of $705.</div>
+      </div>
+    </section>
+
+    <!-- ============================= BUILDING & PP ============================= -->
+    <section class="sheet-view" id="view-bldgpp">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Building and Personal Property</span></div>
+        <div class="field"><span class="k">Editions</span><span class="v">CW 2023-08 V04 = CW 2026-06; V01–V03 use BlktProportion</span></div>
+        <div class="field"><span class="k">Join</span><span class="v">Building SetNonEQBlanketValues :3433, SetCauseOfLoss :857, SetCoinsuranceToUse :875; PP SetNonEQBlanketValues :18097, SetCauseOfLossToUse :16267</span></div>
+        <div class="field"><span class="k">Blanket LOI</span><span class="v">Building SetBlktTotalLOIToUse :7214 (Average: share of the limit; Highest: own full value); PP :2405 (no IncludedInBlkt test)</span></div>
+        <div class="field wide"><span class="k">Gate</span><span class="v">Building BGI / BGII / Broad: not Leasehold, then IncludedInBlkt = Yes (Broad also needs the blanket cause = Broad); Building Special and all PP forms: an explicit IncludedInBlkt = Yes. Then BlktTotalFullValueAmount &gt; 0.</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["Building (Structure) or PP item<br/>IncludedInBlkt, BlktIDNum, full value"]) --> mu{"Policy MUBlktRated = 'No'?<br/>(BlktRated 'Yes' keeps the Detail)"}
+    mu -->|"'Yes' / BlktRated blank"| skip["Join skipped or Detail removed:<br/>COL to use blank"]:::zero
+    skip --> engSkip["Engine: coverage off, $0 'rated'<br/>(BL-16, BL-17)"]:::eng
+    mu -->|"Yes"| inc{"IncludedInBlkt = 'Yes'?"}
+    inc -->|"No or blank"| na["BlktCauseOfLossValue = 'Not Applicable'<br/>BlktTotal = 0; own COL used"]:::step
+    na --> isNo{"IncludedInBlkt = 'No'?"}
+    isNo -->|"Yes"| sched["Scheduled premium<br/>(own Limit, own Final rate)"]:::final
+    isNo -->|"blank"| zBlank["Premium = 0.0<br/>(Otherwise; coverage stays on)"]:::zero
+    inc -->|"Yes"| match{"A Detail UnitNumber<br/>= BlktIDNum?"}
+    match -->|"No"| unm["Copies stay empty: COL '',<br/>BlktTotal 0, BlktLimit 0<br/>+ 'valid Blanket ID' message"]:::step
+    unm --> unmEnd["Building: COL '' turns coverage off.<br/>PP BGI/BGII: on, Premium 0.0"]:::zero
+    match -->|"Yes"| copy["Copy from Detail: CauseOfLoss to COL to use,<br/>Coinsurance, TotalFullValueAmount (always),<br/>TotalLimit to BlktLimit (if item blank),<br/>Form AvgRate (if item blank)"]:::step
+    copy --> loi["Item side only: BlktTotalLOIToUse<br/>= r0(Full / Total x BlktLimit) to Blkt LOI factor;<br/>Building coinsurance 0.95. Read by the<br/>Detail average, not by the premium"]:::step
+    loi --> colg{"Form gate on the blanket COL:<br/>BGI/BGII any value;<br/>Broad/Special exact match"}
+    colg -->|"fails"| covOff["Coverage off"]:::zero
+    colg -->|"passes"| tot{"BlktTotalFullValueAmount &gt; 0?<br/>(Detail floors its total at 1)"}
+    tot -->|"No"| z0["Premium = 0.0"]:::zero
+    tot -->|"Yes"| prem["Premium = r0(BlktLimit/100 x Full/Total<br/>x Form AvgRate x IRPM x Pkg x MultiPrem)<br/>x 2 cyber; nesting per form (table §5)"]:::final
+    prem --> old["CW 2023 V01-V03: Full/Total replaced by<br/>BlktProportion = r2(Full/Total), no &gt; 0 guard"]:::openq
+    zBlank --> engZ["Engine: every 0.0 here ends 'rated';<br/>no blanket field in SILENT_ZERO_INPUTS"]:::eng
+    z0 --> engZ
+    unmEnd --> engZ
+    eq["EQ (CP 10 40/10 28): EQCovIndicator 'Yes, Included<br/>in Blanket' + EQCauseOfLossCovBlktIDNum match"]:::step --> eqP["r0(r0(r0(BlktEQAvgRate x EQLimitToUse/100)<br/>x 2 cyber)); EQLimitToUse = r0(Full/EQ total<br/>x BlktEQLimit); no &gt; 0 guard"]:::final
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class mu,inc,isNo,match,colg,tot gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>The blanket's cause of loss replaces the item's: a Special building in a Broad blanket prices Broad, and Broad buildings in a Basic blanket get no Broad premium.</li>
+            <li>A blank <code>IncludedInBlkt</code> is a silent $0 on both, with the coverage on. An unmatched ID turns Building off but leaves Contents Group I / II on at $0.</li>
+            <li>Contents Basic Group II truncates the blanket limit / 100; every other form divides exactly (limit 301,199: $128 against $129).</li>
+            <li>Only Building has a blanket coinsurance branch (0.95); Contents' own factor feeds only its scheduled rate.</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>State watch-items:</strong> PR keys the Special form on "Special Including / Excluding Theft"; FL's Building and Contents Group II files drop both cyber factors. States still on CW 2023 V01–V03 price with <code>BlktProportion</code> = r2(Full / Total) and no "&gt; 0" guard (OR V03: $219 / $444 where the exact share gives $221 / $442).</div>
+      </div>
+    </section>
+
+    <!-- ============================= SPECIAL CLASS ============================= -->
+    <section class="sheet-view" id="view-sc">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Special Class</span></div>
+        <div class="field"><span class="k">Editions</span><span class="v">CW 2023-08 V04 = CW 2026-06</span></div>
+        <div class="field"><span class="k">Join</span><span class="v">SetNonEQBlanketValues :780, SetCauseOfLossToUse :1032, blanket coinsurance near :2870, SetNonEQBlanketRatesAndFactors :10757</span></div>
+        <div class="field"><span class="k">Premium files</span><span class="v">SpecialClass BGI / BGII SetPremium :43; Broad / Special :60; EQ :139</span></div>
+        <div class="field wide"><span class="k">Gate</span><span class="v">If IncludedInBlkt = "Yes": Then is the blanket, Else is scheduled. Then the total &gt; 0. Broad and Special are gated by the coverage indicator, not the premium file. IRPM, package and MultiPrem all read from the policy.</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["Special Class item<br/>IncludedInBlkt, BlktIDNum,<br/>FullSpecialClassValue"]) --> mu{"Policy MUBlktRated = 'No'?"}
+    mu -->|"'Yes'"| skip["Join skipped"]:::zero
+    mu -->|"Yes"| inc{"IncludedInBlkt = 'Yes'?"}
+    inc -->|"No or blank"| na["'Not Applicable', BlktTotal 0;<br/>own COL used"]:::step
+    na --> sched["Scheduled premium (Else branch):<br/>blank is treated as No"]:::final
+    inc -->|"Yes"| match{"A Detail UnitNumber<br/>= BlktIDNum?"}
+    match -->|"No"| unm["COL '': Broad/Special off;<br/>BGI/BGII gate is always 1<br/>+ 'valid Blanket ID' message"]:::step
+    unm --> z0["BlktTotal 0: Premium 0.0"]:::zero
+    match -->|"Yes"| copy["Copy from Detail: COL, Coinsurance,<br/>TotalFullValueAmount, TotalLimit<br/>(if item blank), Form AvgRate<br/>(if item blank). No blanket LOI"]:::step
+    copy --> coins["Item coinsurance: CoinsuranceFactorBlkt<br/>0.95 for 80/90/100%. Not read<br/>by the blanket premium"]:::step
+    coins --> colg{"Coverage gate: BGI/BGII always on;<br/>Broad/Special: blanket COL exact"}
+    colg -->|"fails"| covOff["Coverage off"]:::zero
+    colg -->|"passes"| tot{"BlktTotalFullValueAmount &gt; 0?"}
+    tot -->|"No"| z0
+    tot -->|"Yes"| prem["r0 at every step: (BlktLimit/100<br/>x Full/Total x Form AvgRate), then x Pkg,<br/>x MultiPrem, x IRPM, x 2 cyber.<br/>Pkg, MultiPrem, IRPM read from the policy"]:::final
+    prem --> old["CW 2023 V01-V03: Full/Total replaced by<br/>BlktProportion = r2(Full/Total), no &gt; 0 guard"]:::openq
+    z0 --> engZ["Engine: 0.0 ends 'rated'<br/>(SC-5, SC-6)"]:::eng
+    eq["EQ: 'Yes, Included in Blanket'"]:::step --> eqP["r0(r0(r0(BlktEQAvgRate x EQLimitToUse/100)<br/>x 2 cyber)); EQLimitToUse = r0(FullSpecialClassValue<br/>/ EQ total x BlktEQLimit)"]:::final
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class mu,inc,match,colg,tot gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>Special Class is the only coverage where a blank <code>IncludedInBlkt</code> prices scheduled: blank and "No" give the same Special $42 / Group II $544.</li>
+            <li>An unmatched ID leaves Group I / II on at $0; Broad and Special switch off.</li>
+            <li>The multi-premium credit is read from the policy, not the item: 0.6 on the policy takes Group I from $69 to $41; on the item it changes nothing.</li>
+            <li>The Detail's cause of loss wins: Broad items in a Special blanket price Special.</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>State watch-items:</strong> AL and KS add a Public Institutional Plan factor after the CW join; PR's Special file carries no premium rule, so CW's applies. V01–V03 use <code>BlktProportion</code> (OR V03 Group I $68 / $139).</div>
+      </div>
+    </section>
+
+    <!-- ============================= BI & SCBI ============================= -->
+    <section class="sheet-view" id="view-bi">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Business Income and Special Class Business Income</span></div>
+        <div class="field"><span class="k">Editions</span><span class="v">CW 2023-08 V04 = CW 2026-06</span></div>
+        <div class="field"><span class="k">Join</span><span class="v">BI SetNonEQBlanketValues :2470, SetCauseOfLossToUse :2717; SCBI :2384, :2758</span></div>
+        <div class="field"><span class="k">Premium files</span><span class="v">BGI / BGII SetPremium :43; Broad / Special :60; EQ :139 (both coverages)</span></div>
+        <div class="field wide"><span class="k">Gate</span><span class="v">BI (all four forms) and SCBI Group I / II: IncludedInBlkt = "No" → scheduled, anything else → blanket. SCBI Broad / Special: "No" / "Yes" / otherwise 0.0. Then the total &gt; 0.</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["BI record (under Structure) or<br/>SCBI record (under SC item)<br/>FullBusnIncomeValue"]) --> mu{"Policy MUBlktRated = 'No'?"}
+    mu -->|"'Yes'"| skip["Join skipped"]:::zero
+    mu -->|"Yes"| inc{"IncludedInBlkt = 'Yes'?"}
+    inc -->|"No or blank"| na["'Not Applicable', BlktTotal 0;<br/>own COL used"]:::step
+    na --> isNo{"IncludedInBlkt = 'No'?"}
+    isNo -->|"Yes"| sched["Scheduled: r0(IRPM x Pkg x Final<br/>x Limit/100) x 2 cyber. No MultiPrem"]:::final
+    isNo -->|"blank"| zBlank["Falls to the blanket side, total 0:<br/>Premium 0.0 (SCBI Broad/Special:<br/>Otherwise 0.0). Coverage stays on"]:::zero
+    inc -->|"Yes"| match{"A Detail UnitNumber<br/>= BlktIDNum?"}
+    match -->|"No"| unm["COL '': Broad/Special off;<br/>BGI/BGII on (gate always 1)"]:::step
+    unm --> z0["BlktTotal 0: Premium 0.0"]:::zero
+    match -->|"Yes"| copy["Copy from Detail: COL, Coinsurance,<br/>TotalFullValueAmount, TotalLimit<br/>(if item blank), Form AvgRate<br/>(if item blank). No LOI, no item coins"]:::step
+    copy --> colg{"Coverage gate: BGI/BGII always on;<br/>Broad/Special: blanket COL exact"}
+    colg -->|"fails"| covOff["Coverage off"]:::zero
+    colg -->|"passes"| tot{"BlktTotalFullValueAmount &gt; 0?"}
+    tot -->|"No"| z0
+    tot -->|"Yes"| prem["r0(r0(IRPM x Pkg x Form AvgRate<br/>x FullBI/Total x BlktLimit/100)) x 2 cyber.<br/>BI BGII rounds after each step.<br/>IRPM, Pkg 7 levels up; no MultiPrem"]:::final
+    prem --> old["CW 2023 V01-V03: Full/Total replaced by<br/>BlktProportion = r2(Full/Total), no &gt; 0 guard"]:::openq
+    zBlank --> engZ["Engine: 0.0 ends 'rated'; nothing in<br/>SILENT_ZERO_INPUTS covers BI or SCBI"]:::eng
+    z0 --> engZ
+    eq["EQ: 'Yes, Included in Blanket'<br/>(CP 10 40/10 28; sub-limit forms 0.0)"]:::step --> eqP["r0(r0(r0(BlktEQAvgRate x EQLimitToUse/100)<br/>x CyberEQ) x CyberCOL BI EQ); EQLimitToUse<br/>= r0(FullBusnIncomeValue / EQ total x BlktEQLimit)"]:::final
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class mu,inc,isNo,match,colg,tot gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>A blank <code>IncludedInBlkt</code> prices $0 on every form with the coverage on: Group I / II send blank to the blanket side; SCBI Broad / Special catch it in "otherwise".</li>
+            <li>No multi-premium credit on either coverage, and no blanket LOI or coinsurance factor on the record.</li>
+            <li>BI Basic Group II rounds to the dollar at five steps; the other seven files round once before the two cyber factors.</li>
+            <li>A missing full value prices $0 with the coverage on.</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>State watch-items:</strong> CA, NY and PR override the earthquake blanket limit rule; PR's Special files carry no premium rule. One message gap is untraced: BI's "valid blanket ID" message fires on OR's V03 book but not on OH's.</div>
+      </div>
+    </section>
+
+    <!-- ============================= FORMULAS ============================= -->
+    <section class="sheet-view" id="view-formulas">
+      <div class="intro">
+        <h2>Blanket premium, every coverage and form</h2>
+        <p>share = full value / <code>BlktTotalFullValueAmount</code>; L = <code>BlktLimit</code>; cy, cyC = the form's two cyber factors; r0 = round to the dollar, nested where shown. Every core form also needs the total &gt; 0. In V01–V03, share is <code>BlktProportion</code> = r2(Full / Total) and there's no guard.</p>
+      </div>
+      <div class="tablewrap">
+        <table class="grid">
+          <thead><tr><th>Coverage</th><th>Form</th><th>Blanket premium</th><th>Verified</th></tr></thead>
+          <tbody>
+            <tr><th>Building</th><td>BGI, BGII, Broad</td><td>r0(… r0(IRPM x MultiPrem x Pkg x L/100 x share x avg rate) … x cy) x cyC); Broad also needs the blanket cause = Broad</td><td>OH $592 / $1,184 (V04), $664 / $1,328 (CW 2026); golden $255 / $510</td></tr>
+            <tr><th>Building</th><td>Special</td><td>avg rate x share x L/100, then r0 after each of Pkg, MultiPrem, IRPM and the two cyber factors</td><td>$49 / $98, $50 / $100</td></tr>
+            <tr><th>Building</th><td>Earthquake</td><td>r0(r0(r0(EQ avg rate x EQLimitToUse/100) x cyEQ) x cyCOL); EQLimitToUse = r0(Full / EQ total x EQ limit)</td><td>IN $12 / $24</td></tr>
+            <tr><th>Contents</th><td>BGI, Broad</td><td>r0(r0(r0(IRPM x r0(MultiPrem x r0(Pkg x r0(avg rate x share x L/100)))) x cy) x cyC)</td><td>$505 / $1,010; Broad $14 / $28</td></tr>
+            <tr><th>Contents</th><td>BGII</td><td>Same, with Truncate(L/100)</td><td>L 301,199: $128 (not $129)</td></tr>
+            <tr><th>Contents</th><td>Special</td><td>L/100 x share x avg rate, then r0 after each factor</td><td>$79 / $158, $63 / $126</td></tr>
+            <tr><th>Special Class</th><td>all four</td><td>L/100 x share x avg rate, then r0 after Pkg, MultiPrem, IRPM (all policy) and the two cyber factors</td><td>BGI $69 / $138; Special $44 / $88; policy MultiPrem 0.6 → $41</td></tr>
+            <tr><th>BI</th><td>BGI, Broad, Special</td><td>r0(… r0(IRPM x Pkg x avg rate x share x L/100) … x cy) x cyC); gate "not No" (blank included)</td><td>BGI $229 / $458, $257 / $514</td></tr>
+            <tr><th>BI</th><td>BGII</td><td>avg rate x share x L/100, then r0 after Pkg, IRPM and both cyber factors</td><td>$27 / $54, $31 / $62</td></tr>
+            <tr><th>SCBI</th><td>all four</td><td>Same as BI Group I; Broad / Special: blank → 0.0</td><td>BGI $36 / $72; BGII $302 / $604</td></tr>
+            <tr><th>BI, SCBI, PP, SC</th><td>Earthquake</td><td>Same shape as Building's, on the coverage's own full value; BI sub-limit forms "Included in Blanket" → 0.0</td><td>BI UT $420, IN $90; PP and SC XML only</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============================= EDITIONS ============================= -->
+    <section class="sheet-view" id="view-editions">
+      <div class="intro">
+        <h2>Editions and states</h2>
+        <p>All six blanket rule files and every blanket premium branch are byte-identical in CW 2023-08 V04 and CW 2026-06. CW 2023 V01–V03 price the blanket with <code>BlktProportion</code> = round(Full / Total, 2) and no "&gt; 0" guard; V01 also has no null guards (submitted rates are overwritten), and V02 drops the roof factor from the Broad average and changes the Special and Agreed Value calcs. States on V01–V03: 32 at 2026-01-01, then MO, CA, NC, TX and WV at 2026-06-01, and only NC at 2026-10-06.</p>
+      </div>
+      <div class="tablewrap">
+        <table class="grid">
+          <thead><tr><th>State</th><th>Blanket change</th></tr></thead>
+          <tbody>
+            <tr><th>FL</th><td>39 Detail rules: Building, Contents and Special Class averages drop the deductible-by-location factor; BI Group II adds a sinkhole adjustment; Group II premium files drop both cyber factors.</td></tr>
+            <tr><th>PR</th><td>26 Detail rules: the Special average keys on "Special Including / Excluding Theft", adds a theft factor; EQ membership uses CP 10 42.</td></tr>
+            <tr><th>CA</th><td>EQ averages and counters add Limited EQ CP 10 43; EQ blanket limit rule overridden.</td></tr>
+            <tr><th>WV</th><td>Broad building average drops the roof factor.</td></tr>
+            <tr><th>NY</th><td>EQ blanket limit rule overridden.</td></tr>
+            <tr><th>AL, KS, RI</th><td>One extra message ("public and institutional plan"); AL and KS add a Public Institutional Plan factor after the Special Class join.</td></tr>
+            <tr><th>OK, ME, OH, UT</th><td>No blanket rule overridden.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============================= REVIEW ============================= -->
+    <section class="sheet-view" id="view-review">
+      <div class="intro">
+        <h2>Chunk 9's claims, re-checked</h2>
+        <p>No blanket chain was ever drawn, so this table re-checks what chunk 9 recorded. Chunk 9's offline scripts 68_, 72_, 80_ and 82_ still match; 81_'s liveness check now refuses on the working tree (BCEG missing, C28-17).</p>
+      </div>
+      <div class="tablewrap">
+        <table class="grid">
+          <thead><tr><th>#</th><th>Chunk 9 said</th><th>Engine / XML now shows</th><th>Kind</th></tr></thead>
+          <tbody>
+            <tr><th>1</th><td><code>MUBlktRated</code> absent, null or "Yes" skips the blanket join</td><td><strong>Absent does not:</strong> <code>SetMUBlktRated</code> sets null to "No" first, and the policy rates normally ($2,115)</td><td><span class="tag bad">correction</span></td></tr>
+            <tr><th>2</th><td>BI, SC and SCBI reach the blanket through a plain Else</td><td><strong>Special Class is the reverse:</strong> it tests = "Yes" with the blanket in the Then branch, so blank goes scheduled</td><td><span class="tag bad">correction</span></td></tr>
+            <tr><th>3</th><td>SCBI Broad / Special "otherwise" is unreachable</td><td><strong>Reachable with a blank IncludedInBlkt:</strong> $0 with the coverage on, "rated"</td><td><span class="tag bad">correction</span></td></tr>
+            <tr><th>4</th><td>MultiPrem is item-level for Building, Contents and Special Class</td><td><strong>Special Class reads it from the policy</strong> (item 0.6 ignored; policy 0.6 takes $69 to $41)</td><td><span class="tag bad">correction</span></td></tr>
+            <tr><th>5</th><td>Detail total is derived; a submitted one is overwritten</td><td>Yes; it also counts EQ-blanket members and is floored at 1, not 0</td><td>incomplete</td></tr>
+            <tr><th>6</th><td>Blanket LOI = round(Full / Total x BlktLimit)</td><td>Average only; Highest uses the member's own full value</td><td>incomplete</td></tr>
+            <tr><th>7</th><td>Only two blanket tables are in the chain</td><td>A third, MarginClauseRatingFactor, feeds the Detail through the members; the coinsurance key has no percentage</td><td>incomplete</td></tr>
+            <tr><th>8</th><td>Florida overrides the Detail file</td><td>So do PR, CA and WV (rates) and AL, KS, RI (one message)</td><td>incomplete</td></tr>
+            <tr><th>9</th><td><code>TotalLimit</code> is a genuine input</td><td>A submitted member <code>BlktLimit</code> overrides it and moves the shared average</td><td>incomplete</td></tr>
+            <tr><th>10</th><td>All 20 premium rules carry the full blanket formula</td><td>Yes, plus two cyber factors, MultiPrem in 12, rounding by group, and Contents Group II's Truncate</td><td>incomplete</td></tr>
+            <tr><th>11</th><td>The premium gate is total &gt; 0</td><td>A matched Detail's total is never below 1, so the gate only catches a failed join</td><td>clarified</td></tr>
+            <tr><th>12</th><td>Detail <code>Type</code> is a 4-literal subset</td><td>Gates the calcs but doesn't filter which members are summed</td><td>clarified</td></tr>
+            <tr><th>13</th><td><code>IncludedInBlkt</code> is Yes / No, so "otherwise $0" is unreachable</td><td>The engine doesn't enforce domains: blank reaches $0 everywhere except Special Class</td><td>clarified</td></tr>
+            <tr><th>14</th><td>No state overrides the join rules</td><td>True in force today; older CA (2023-02 to 2024-04) and PR packages override them</td><td>clarified</td></tr>
+            <tr><td colspan="4">Confirmed: golden case $255 / $510 (avg 0.255, total 300,000); <code>BlktRated</code> = Yes is a third gate; Average and Highest formulas (0.758); CoinsuranceFactorBlkt 0.95, Builders Risk 1.05; the per-structure chain re-runs for blanket members; the Detail → member copy works; four blanket messages; Broad's extra cause-of-loss test; BI and SCBI omit MultiPrem; IRPM / package levels by coverage; no blanket LOI rule on BI, SC, SCBI; field lists by coverage.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="doc-footer">
+  Sources: the built engine (<strong>cf_engine</strong> / interpreter at 542f0e1; probed at 5d3cb8b), offline on 2026-10-06 with no calls to ISO: policy blanket records in OK; the coverage side in OH (V04 and CW 2026-06) and OR (CW 2023 V03); Earthquake blankets in IN; chunk 9's golden case re-run in OR. Not probed: the PR, FL and CA overrides, and Earthquake blankets for Contents and Special Class (XML only). ISO rule XML is under <code>F:\ISO_ERC_Files\CF</code>. Chunk 9's records are <code>docs/CF-CHUNK9-GATE.md</code>, <code>CF-CHUNK9-TASKS.md</code> and <code>CF-CHUNK9-GOLDEN-CASE.md</code>.
+</footer>
+
+<script>
+  (function () {
+    var toc = document.getElementById('toc');
+    var main = document.getElementById('main');
+
+    function activate(target) {
+      var views = main.querySelectorAll('.sheet-view');
+      for (var i = 0; i < views.length; i++) views[i].classList.remove('active');
+      var view = document.getElementById('view-' + target);
+      if (view) view.classList.add('active');
+
+      var links = toc.querySelectorAll('.navlink');
+      for (var j = 0; j < links.length; j++) {
+        links[j].classList.toggle('active', links[j].getAttribute('data-target') === target);
+      }
+      main.scrollTop = 0;
+      window.scrollTo(0, 0);
+    }
+
+    document.addEventListener('click', function (e) {
+      var btn = e.target.closest('button[data-target]');
+      if (btn) activate(btn.getAttribute('data-target'));
+    });
+
+    var hash = location.hash.slice(1);
+    if (hash && document.getElementById('view-' + hash)) activate(hash);
+  })();
+</script>
+
+<style>.mermaid-rendering .sheet-view{display:block!important}</style>
+<script type="module">
+  // Render every diagram once, with all sheets briefly visible so hidden tabs get real sizes.
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({ startOnLoad: false, securityLevel: "strict", flowchart: { wrappingWidth: 260 } });
+  document.documentElement.classList.add("mermaid-rendering");
+  try { await mermaid.run({ querySelector: "pre.mermaid" }); }
+  finally { document.documentElement.classList.remove("mermaid-rendering"); }
+</script>
+</body>
+</html>
