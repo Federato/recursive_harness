@@ -192,8 +192,8 @@ def group_e():
     base = f"http://127.0.0.1:{port}"
     try:
         page = urllib.request.urlopen(base + "/").read().decode()
-        check("E1 the page is served", "GL Rating Engine" in page,
-              f"{len(page):,} bytes, no framework")
+        check("E1 the page is served", "ISO Rating Engine" in page and 'value="property"' in page,
+              f"{len(page):,} bytes, no framework, both lines offered")
         meta = json.loads(urllib.request.urlopen(base + "/api/samples").read())
         check("E2 every jurisdiction sample is offered",
               len(meta["jurisdictions"]) == 51,
@@ -217,6 +217,23 @@ def group_e():
         d = json.loads(urllib.request.urlopen(req).read())
         check("E5 a refusal returns 200 with the reason, not a server error",
               "error" in d, str(d.get("error", ""))[:56])
+        # Commercial Property (2026-10-06): the same page, routed by the request's ProductName.
+        pmeta = json.loads(urllib.request.urlopen(base + "/api/samples?line=property").read())
+        check("E6 Property states are offered", len(pmeta["jurisdictions"]) >= 40
+              and "OH" in pmeta["jurisdictions"], f"{len(pmeta['jurisdictions'])} jurisdictions")
+        prop = json.loads(urllib.request.urlopen(base + "/api/sample/OH?line=property").read())
+        check("E7 a Property sample loads", prop["body"]["SchemeKeys"]["ProductName"] == "Commercial Property OH"
+              and prop["body"]["CommercialProperty"][0]["CommercialPropertyLocation"][0].get("BasicGroupIRatingTerr"),
+              "OH, with Ohio's own territories")
+        req = urllib.request.Request(base + "/api/rate", data=json.dumps({"payload": prop}).encode(),
+                                     headers={"Content-Type": "application/json"})
+        d = json.loads(urllib.request.urlopen(req).read())
+        lib = app.property_rating.rate(prop)
+        cells = {g["record"]: g["forms"] for g in d.get("grid", [])}
+        check("E8 Property over HTTP gives the library's answer, every cell priced",
+              d.get("line") == "property" and d.get("premium") == lib["premium"]
+              and all(v not in (None, "0") for f in cells.values() for v in f.values()) and len(cells) == 3,
+              f"{d.get('premium')} both ways; Building, Contents, BI x Group I, Group II, Special")
     finally:
         srv.shutdown()
 

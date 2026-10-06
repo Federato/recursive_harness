@@ -52,6 +52,21 @@ except Exception:                                           # noqa: BLE001
     class RaaSError(RuntimeError):
         pass
 
+#: Commercial Property: the same request in, the same ISO client, rated through `cf_engine` (`scripts/property_rating.py`).
+try:
+    import property_rating                                  # noqa: E402
+except Exception as _exc:                                   # noqa: BLE001
+    property_rating = None
+    PROPERTY_ERROR = f"{type(_exc).__name__}: {_exc}"[:200]
+else:
+    PROPERTY_ERROR = ""
+
+
+def is_property(payload: dict) -> bool:
+    """A request is Property when ISO would read it as Property: its ProductName says so."""
+    name = (payload.get("body", {}).get("SchemeKeys", {}).get("ProductName") or "")
+    return name.startswith("Commercial Property")
+
 SAMPLES = ROOT / "Engine_Payloads"
 HOST, PORT = "127.0.0.1", 8765
 
@@ -140,11 +155,36 @@ JOBS: dict = {}
 JOBS_LOCK = threading.Lock()
 
 
+def _property_row(juris: str, compare: bool) -> dict:
+    """One state of a Property run: the sample moved to `juris`, rated by us and (optionally) ISO."""
+    r = property_rating.rate(property_rating.sample(juris),
+                             compare_with=iso_client if compare else None, no_iso=NO_ISO)
+    if not r["complete"]:
+        return {"status": "ENGINE STOPPED", "detail": r["stopped"][:140]}
+    row = {"engine": r["premium"], "packages": " over ".join(r["packages"]), "referrals": 0}
+    if not compare:
+        return {**row, "status": "RATED"}
+    c = r["iso"]
+    if not c["available"]:
+        return {**row, "status": "ISO UNAVAILABLE", "detail": c["reason"]}
+    return {**row, "iso": c["premium"], "delta": c["delta"], "status": "PASS" if c["agrees"] else "FAIL"}
+
+
 def _batch_worker(job_id: str, jurisdictions: list, mode: str, rounding: str,
-                  compare: bool) -> None:
+                  compare: bool, line: str = "gl") -> None:
     kernel = KERNELS[mode] if rounding == "ROUND_HALF_UP" else Kernel(
         mode=mode, rounding=rounding, resolver=RESOLVER)
     for i, juris in enumerate(jurisdictions, start=1):
+        if line == "property":
+            row = {"n": i, "juris": juris}
+            try:
+                row.update(_property_row(juris, compare))
+            except Exception as exc:                        # noqa: BLE001
+                row.update(status="ERROR", detail=f"{type(exc).__name__}: {exc}"[:140])
+            with JOBS_LOCK:
+                JOBS[job_id]["rows"].append(row)
+                JOBS[job_id]["done"] = i
+            continue
         src = SAMPLES / juris / "submission.json"
         row = {"n": i, "juris": juris}
         try:
@@ -342,7 +382,7 @@ def rate(payload: dict, mode: str, rounding: str, compare: bool = False) -> dict
 
 
 PAGE = r"""<!doctype html><html><head><meta charset="utf-8">
-<title>GL Rating Engine</title><style>
+<title>ISO Rating Engine</title><style>
 *{box-sizing:border-box}body{font:14px/1.5 -apple-system,Segoe UI,Roboto,sans-serif;
 margin:0;background:#f6f7f9;color:#1a1d21}
 header{background:#1f2933;color:#fff;padding:14px 22px;display:flex;
@@ -421,7 +461,7 @@ tr.rowfail td{background:#fff5f5}
 .legend{font-size:12px;color:#66727f;margin-top:2px}
 progress{width:100%;height:14px}
 </style></head><body>
-<header><h1>GL Rating Engine</h1>
+<header><h1>ISO Rating Engine</h1>
 <span>ISO content, executed &mdash; every number carries its source</span>
 <nav><a href="/tests">Layered tests</a><a href="/tester">Variable tester</a>
 <a href="/runs/index.html" target="_blank">Run files</a></nav></header>
@@ -429,7 +469,9 @@ progress{width:100%;height:14px}
  <div class="col">
   <div class="card"><h2>Submission</h2><div class="body">
    <div class="row">
-    <select id="sample"><option value="">Load a sample&hellip;</option></select>
+    <select id="line"><option value="gl">General Liability</option>
+     <option value="property">Commercial Property</option></select>
+    <select id="sample"><option value="">State&hellip;</option></select>
     <select id="mode"></select>
     <select id="rounding">
      <option>ROUND_HALF_UP</option><option>ROUND_HALF_EVEN</option>
@@ -463,36 +505,60 @@ const $=s=>document.querySelector(s), out=$('#out');
 const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
 // `?sample=OK&mode=underwriting` preloads, so a view can be linked to.
 const Q=new URLSearchParams(location.search);
-fetch('/api/samples').then(r=>r.json()).then(d=>{
-  d.modes.forEach(m=>$('#mode').add(new Option(m,m)));
-  d.jurisdictions.forEach(j=>$('#sample').add(new Option(j,j)));
+// `?line=property&sample=OH&compare=1&rate` preloads, so a view can be linked to.
+// The line picks the samples: General Liability's are one stored submission per
+// state (Premises/Operations and Products/Completed Operations); Property's is one
+// office risk -- Building, Contents and Business Income on the Special form --
+// moved to the state with that state's own territories.
+let LINE=Q.get('line')==='property'?'property':'gl';
+$('#line').value=LINE;
+function setLine(line, then){
+  LINE=line;
+  const gl=line==='gl';
+  $('#mode').style.display=gl?'':'none'; $('#rounding').style.display=gl?'':'none';
+  fetch('/api/samples'+(gl?'':'?line=property')).then(r=>r.json()).then(d=>{
+    if(d.error){ out.innerHTML=card('Unavailable','<div class="stopped">'+esc(d.error)+'</div>'); return; }
+    if(!$('#mode').options.length) d.modes.forEach(m=>$('#mode').add(new Option(m,m)));
+    const sel=$('#sample'); sel.length=1;
+    d.jurisdictions.forEach(j=>sel.add(new Option(j,j)));
+    // The batch caption counts what will actually run. Jurisdictions ISO will
+    // not answer for are left out of a comparison run rather than reported as
+    // permanent failures, and the caption says which and why.
+    const all=d.jurisdictions.length, skip=d.no_iso||[];
+    const setNote=()=>{
+      const cmp=$('#bcmp').checked, n=cmp?all-skip.length:all;
+      $('#bnote').textContent=n+(gl?' General Liability':' Commercial Property')+
+        ' submissions, the same risk in every state.'
+        +(cmp?' With ISO this takes several minutes.':'')
+        +(cmp&&skip.length?' '+skip.join(', ')+' left out — not on the ISO '
+          +'subscription, so there is nothing to compare against.':'');
+    };
+    $('#bcmp').onchange=setNote; setNote();
+    if(then) then(d);
+  });
+}
+function loadSample(j){
+  return fetch('/api/sample/'+j+(LINE==='gl'?'':'?line=property')).then(r=>r.text())
+    .then(t=>{$('#payload').value=t;});
+}
+setLine(LINE, d=>{
   if(Q.get('mode')) $('#mode').value=Q.get('mode');
   if(Q.get('rounding')) $('#rounding').value=Q.get('rounding');
   if(Q.has('compare')) $('#cmp').checked=Q.get('compare')!=='0';
-  // The batch caption counts what will actually run. Jurisdictions ISO will
-  // not answer for are left out of a comparison run rather than reported as
-  // permanent failures, and the caption says which and why.
-  const all=d.jurisdictions.length, skip=d.no_iso||[];
-  const setNote=()=>{
-    const cmp=$('#bcmp').checked, n=cmp?all-skip.length:all;
-    $('#bnote').textContent=n+' submissions, the same risk in every state.'
-      +(cmp?' With ISO this takes several minutes.':'')
-      +(cmp&&skip.length?' '+skip.join(', ')+' left out — not on the ISO '
-        +'subscription, so there is nothing to compare against.':'');
-  };
-  $('#bcmp').onchange=setNote; setNote();
   const j=Q.get('sample');
   if(j && d.jurisdictions.includes(j)){
     $('#sample').value=j;
-    fetch('/api/sample/'+j).then(r=>r.text()).then(t=>{
-      $('#payload').value=t;
-      if(Q.has('rate')) $('#go').click();
-    });
+    loadSample(j).then(()=>{ if(Q.has('rate')) $('#go').click(); });
   }
 });
-$('#sample').onchange=e=>{ if(!e.target.value) return;
-  fetch('/api/sample/'+e.target.value).then(r=>r.text())
-    .then(t=>{$('#payload').value=t;}); };
+$('#line').onchange=e=>{
+  const keep=$('#sample').value;
+  $('#payload').value=''; out.innerHTML=''; document.getElementById('bout').innerHTML='';
+  document.getElementById('jsoncard').style.display='none';
+  setLine(e.target.value, d=>{ if(keep && d.jurisdictions.includes(keep)){
+    $('#sample').value=keep; loadSample(keep); } });
+};
+$('#sample').onchange=e=>{ if(e.target.value) loadSample(e.target.value); };
 function table(head, rows){ if(!rows.length) return '';
   return '<table><tr>'+head.map(h=>'<th>'+h+'</th>').join('')+'</tr>'+
     rows.join('')+'</table>'; }
@@ -556,7 +622,7 @@ document.getElementById('brun').onclick=()=>{
   btn.disabled=true; document.getElementById('bprog').style.display='';
   fetch('/api/batch',{method:'POST',headers:{'Content-Type':'application/json'},
     body:JSON.stringify({mode:$('#mode').value,rounding:$('#rounding').value,
-      compare:document.getElementById('bcmp').checked})})
+      compare:document.getElementById('bcmp').checked,line:LINE})})
    .then(r=>r.json()).then(j=>{
      const bar=document.getElementById('bbar'); bar.max=j.total; bar.value=0;
      POLL=setInterval(()=>poll(j.id,btn),1500); poll(j.id,btn);
@@ -618,6 +684,7 @@ function batchOut(j){
 }
 function render(d){
   if(d.error){ out.innerHTML=card('Refused','<div class="stopped">'+esc(d.error)+'</div>'); return; }
+  if(d.line==='property') return renderProperty(d);
   let h='';
   const head='<div class="muted">'+esc(d.jurisdiction)+' as of '+esc(d.asof)+
     ' &middot; '+esc(d.mode)+' &middot; '+esc(d.rounding)+'</div>'+
@@ -686,6 +753,51 @@ function render(d){
     ' trace entries &mdash; see the Result panel below the submission.</div>');
   out.innerHTML=h;
 }
+// Commercial Property: the premium, then the record x form grid -- ours, and
+// ISO's beside it when compared, a cell that differs marked red.
+function renderProperty(d){
+  document.getElementById('jsoncard').style.display='none';
+  const head='<div class="muted">Commercial Property &middot; '+esc(d.jurisdiction)+' as of '+esc(d.asof)+'</div>'+
+    '<div class="muted">'+d.packages.map(esc).join(' over ')+'</div>';
+  if(!d.complete){
+    out.innerHTML=card('Did not rate', head+'<div class="stopped">'+esc(d.stopped)+'</div>'+
+      '<div class="muted">The engine refuses rather than guessing.</div>');
+    return; }
+  const iso=d.iso&&d.iso.available?d.iso:null;
+  let cmp='';
+  if(d.iso && !d.iso.available) cmp='<div class="muted">ISO comparison unavailable: '+esc(d.iso.reason)+'</div>';
+  if(iso) cmp='<div class="verdict"><span class="vs">Our engine</span><b>'+esc(d.premium)+
+    '</b><span class="vs">ISO</span><b>'+esc(iso.premium)+'</b><span class="badge '+
+    (iso.agrees?'pass':'fail')+'">'+(iso.agrees?'They agree':'They differ by '+esc(iso.delta))+'</span></div>'+
+    (iso.edition_agrees===false?'<div class="muted">ISO rated with '+esc(iso.package)+
+      ', we resolved '+esc(d.packages[0])+'</div>':'');
+  let h=card('Premium','<div class="premium">'+esc(d.premium)+'</div>'+head+cmp);
+  const forms=['Group I','Group II','Special'];
+  const num=v=>v==null?0:Number(v);
+  const isoRow=r=>iso?iso.grid.find(g=>g.record===r.record):null;
+  const cell=(ours,theirs)=>{
+    if(!iso) return '<td class="n">'+esc(ours==null?'—':ours)+'</td>';
+    const bad=num(ours)!==num(theirs);
+    return '<td class="n"'+(bad?' style="background:#fee2e2"':'')+'>'+esc(ours==null?'—':ours)+
+      '<div class="muted">ISO '+esc(theirs==null?'—':theirs)+'</div></td>';
+  };
+  const rows=d.grid.map(r=>{ const t=isoRow(r);
+    const tot=forms.reduce((a,f)=>a+num(r.forms[f]),0), itot=t?forms.reduce((a,f)=>a+num(t.forms[f]),0):null;
+    return '<tr><td><b>'+esc(r.record)+'</b></td>'+forms.map(f=>cell(r.forms[f],t?t.forms[f]:null)).join('')+
+      cell(String(tot), itot==null?null:String(itot))+'</tr>'; });
+  h+=card('By coverage and cause of loss', table(['Coverage'].concat(forms,['Total']), rows)+
+    '<div class="om">Special cause of loss: each record prices Basic Group I, Basic Group II and Special.'+
+    (iso?' A cell ISO prices differently is red.':'')+'</div>');
+  const other=d.other.map(o=>'<tr><td>'+esc(o.coverage.replace('CommercialProperty',''))+'</td><td class="n">'+
+    esc(o.premium)+'</td></tr>');
+  if(iso) iso.other.forEach(o=>{ if(!d.other.find(x=>x.coverage===o.coverage))
+    other.push('<tr><td>'+esc(o.coverage.replace('CommercialProperty',''))+'</td><td class="n">— <div class="muted">ISO '+
+      esc(o.premium)+'</div></td></tr>'); });
+  if(other.length) h+=card('Other premiums', table(['Coverage','Premium'], other));
+  if(d.messages.length) h+=card('Rating messages (ours)', d.messages.map(m=>'<div>'+esc(m)+'</div>').join(''));
+  if(iso && iso.messages.length) h+=card('Rating messages (ISO)', iso.messages.map(m=>'<div>'+esc(m)+'</div>').join(''));
+  out.innerHTML=h;
+}
 </script></body></html>"""
 
 
@@ -733,6 +845,13 @@ class Handler(BaseHTTPRequestHandler):
             return
         if path == "/":
             return self._send(200, PAGE, "text/html")
+        if path == "/api/samples" and query.get("line") == "property":
+            if property_rating is None:
+                return self._send(500, json.dumps({"error": f"Property unavailable: {PROPERTY_ERROR}"}))
+            js = property_rating.states()
+            return self._send(200, json.dumps({
+                "jurisdictions": js, "modes": list(MODES),
+                "no_iso": sorted(NO_ISO & set(js)), "line": "property"}))
         if path == "/api/samples":
             js = sorted(p.name for p in SAMPLES.iterdir()
                         if p.is_dir() and (p / "submission.json").exists()) \
@@ -752,6 +871,11 @@ class Handler(BaseHTTPRequestHandler):
                     "started": job["started"], "ended": job.get("ended"),
                     "rows": list(job["rows"]),
                 }))
+        if path.startswith("/api/sample/") and query.get("line") == "property":
+            juris = path.rsplit("/", 1)[-1]
+            if property_rating is None or juris not in property_rating.states():
+                return self._send(404, json.dumps({"error": "no such Property state"}))
+            return self._send(200, json.dumps(property_rating.sample(juris), indent=2))
         if path.startswith("/api/sample/"):
             f = SAMPLES / path.rsplit("/", 1)[-1] / "submission.json"
             if not f.exists():
@@ -777,7 +901,12 @@ class Handler(BaseHTTPRequestHandler):
 
         if path == "/api/batch":
             compare = bool(req.get("compare"))
+            line = "property" if req.get("line") == "property" else "gl"
+            if line == "property" and property_rating is None:
+                return self._send(500, json.dumps({"error": f"Property unavailable: {PROPERTY_ERROR}"}))
             js = req.get("jurisdictions")
+            if not js and line == "property":
+                js = [j for j in property_rating.states() if not (compare and j in NO_ISO)]
             if not js:
                 js = sorted(p.name for p in SAMPLES.iterdir()
                             if p.is_dir() and (p / "submission.json").exists())
@@ -794,12 +923,22 @@ class Handler(BaseHTTPRequestHandler):
             threading.Thread(
                 target=_batch_worker, daemon=True,
                 args=(job_id, js, mode, req.get("rounding", "ROUND_HALF_UP"),
-                      compare)).start()
+                      compare, line)).start()
             return self._send(200, json.dumps({"id": job_id, "total": len(js),
                                                "compare": compare}))
 
+        payload = req.get("payload") or {}
+        if is_property(payload):
+            if property_rating is None:
+                return self._send(200, json.dumps({"error": f"Property unavailable: {PROPERTY_ERROR}"}))
+            try:
+                result = property_rating.rate(payload, compare_with=iso_client if req.get("compare") else None,
+                                              no_iso=NO_ISO)
+            except Exception as exc:                        # noqa: BLE001
+                return self._send(200, json.dumps({"error": f"{type(exc).__name__}: {exc}"}))
+            return self._send(200, json.dumps(result))
         try:
-            result = rate(req.get("payload") or {}, mode,
+            result = rate(payload, mode,
                           req.get("rounding", "ROUND_HALF_UP"),
                           compare=bool(req.get("compare")))
         except Exception as exc:                            # noqa: BLE001
