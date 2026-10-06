@@ -29,6 +29,8 @@ from pathlib import Path
 from gl_engine.erc.tables import Table
 from gl_engine.resolve.book import Layer, ResolvedBook
 
+from ..run_checks import PropertyRunChecks
+
 from .resolver import CFEditionResolver, Resolution
 
 __all__ = ["Layer", "ResolvedBook", "CFResolvedBook", "Resolution", "book_for"]
@@ -69,14 +71,11 @@ class CFResolvedBook(ResolvedBook):
     #: The interpreter's default for a `SingleResult` miss: refuse (C28-05).
     strict_single_result = True
 
-    #: A submitted value for a field the rules write is not read, as if never sent (OI-125, C28-08).
-    ignore_submitted_owned = True
-
-    #: Refuse an input whose absence prices an attached coverage at $0 (C28-17, the user's decision: stricter than ISO).
-    silent_zero_checks = True
-
-    #: Refuse a date on which ISO is known to rate on a package the corpus lacks (C28-19, the user's decision 2026-10-06).
-    older_package_check = True
+    #: Property's steps around every rating (`cf_engine.run_checks`, moved out of GL's interpreter by C28-21): refuse a
+    #: known-older package (C28-19), drop what ISO drops (OI-112), don't read a submitted value a rule writes (OI-125,
+    #: C28-08), refuse an input whose absence prices an attached coverage at $0 (C28-17), refer below a company minimum
+    #: (OI-113).
+    run_hooks = PropertyRunChecks()
 
     def older_than_iso(self) -> tuple[str, str] | None:
         """(ours, ISO's) when this book's state package is older than one ISO is known to rate on for this date.

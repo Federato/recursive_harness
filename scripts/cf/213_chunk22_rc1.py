@@ -390,8 +390,13 @@ def touchpoints():
     # the quick tier, which skips this script). Both fixed: a git error fails the check, and the changes are listed.
     REVERIFIED = {
         "gl_engine/interp/nodes.py": "c7ffe66 chunk 24; C28-07 (OI-126 / OI-123) and C28-10 (OI-114); 157_ --all 293 of 293, 2026-10-05",
-        "gl_engine/interp/interpreter.py": "C28-05 strict SingleResult; C28-08 / C28-09 submitted inputs (OI-125 / OI-112); 157_ --all 293 of 293, 2026-10-05",
-        "cf_engine/resolve/book.py": "C28-05 strict default and EQ stub; C28-08 / C28-09 switches; 157_ --all 293 of 293, 2026-10-05",
+        "gl_engine/interp/interpreter.py": "C28-05 strict SingleResult; C28-08 / C28-09 submitted inputs (OI-125 / OI-112); 157_ --all 293 of 293, 2026-10-05; "
+                                           "C28-19 older package, then C28-21 (Property steps moved out to run_hooks); 157_ --all 293 of 293 after each, snapshot clean, 2026-10-06",
+        "cf_engine/resolve/book.py": "C28-05 strict default and EQ stub; C28-08 / C28-09 switches; 157_ --all 293 of 293, 2026-10-05; "
+                                     "C28-19 older_than_iso, C28-21 run_hooks; 157_ --all 293 of 293 after each, 2026-10-06",
+        "cf_engine/resolve/iso_packages.json": "C28-19's data (255_ --write); 157_ --all 293 of 293 and snapshot clean after every refresh, 2026-10-06",
+        "cf_engine/run_checks.py": "C28-21: chunk 28's Property steps, moved unchanged from the interpreter; 157_ --all 293 of 293, snapshot clean (no rebaseline), 2026-10-06",
+        "cf_engine/__init__.py": "C28-21: docstring only; no rating code",
         "cf_engine/config.py": "the corpus root's default moved to F: (new PC, 2026-10-05); no rating code",
         "gl_engine/config.py": "the corpus root's default moved to F: (new PC, 2026-10-05); no rating code",
     }

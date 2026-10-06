@@ -31,7 +31,8 @@ sys.stdout.reconfigure(encoding="utf-8")
 from cf_engine.config import CORPUS_ROOT
 from cf_engine.resolve import book_for
 from cf_engine.resolve import book as book_mod
-from gl_engine.interp.interpreter import Interpreter, OlderPackage
+from cf_engine.run_checks import OlderPackage
+from gl_engine.interp.interpreter import Interpreter
 
 EDITIONS = ROOT / "results" / "cf-raas" / "chunk27_c27-13_editions.json"
 FAIL = []

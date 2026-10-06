@@ -204,21 +204,6 @@ class TraceEntry:
         return f"{self.kind}: {self.detail}{tail}"
 
 
-class InvalidInput(InterpretError):
-    """A Property submission refused because an input it lacks would price a coverage at $0 (chunk 28 C28-17).
-
-    ISO rates these silently at $0; refusing them is the user's decision (2026-10-05), stricter than ISO on purpose.
-    """
-
-
-class OlderPackage(InterpretError):
-    """A Property request refused because ISO is known to rate its date on a package the corpus lacks (chunk 28 C28-19).
-
-    Ours would rate on an older package and be known not to be ISO's answer; refused by the user's decision (2026-10-06).
-    Lifted by importing the package (C28-20).
-    """
-
-
 class Interpreter:
     """Executes one resolved rulebook against one data tree."""
 
@@ -893,153 +878,42 @@ class Interpreter:
     # ------------------------------------------------------------------- run
 
     def run(self, data: Node) -> Node:
-        """Execute the `Default` block against `data`, returning the tree."""
+        """Execute the `Default` block against `data`, returning the tree.
+
+        A book may carry `run_hooks`: line-specific steps around the rules (`before(ip, data)` -> pending,
+        `after(ip, data, pending)`, `finish(ip, data)`). Property's are `cf_engine.run_checks.PropertyRunChecks`
+        (chunk 28's outcome layer, moved out of this file by C28-21); a General Liability book carries none. A
+        refusal raised by a hook or by the rules sets `outcome` to refused, with the exception's `outcome_kind`.
+        """
         entry = self.state_program.entry()
         frame = Frame(data=data, program=self.state_program,
                       rule_file="Overall Rating")
         self.note("entry", f"Default block of {self.state_program.pkg_id}",
                   "Overall Rating.Rule.xml")
-        if getattr(self.book, "older_package_check", False) and not getattr(self, "_lookahead", False):
+        hooks = getattr(self.book, "run_hooks", None)
+        pending = None
+        if hooks is not None:
             try:
-                self._refuse_older_package()     # first: a known-older package rates nothing (C28-19)
-            except OlderPackage as exc:
-                self.outcome = {"status": "refused", "reasons": [{"kind": "older package", "detail": str(exc)[:300]}]}
+                pending = hooks.before(self, data)
+            except InterpretError as exc:
+                self.outcome = self._refused(exc)
                 raise
-        dropped = getattr(self.book, "ignored_inputs", frozenset())
-        if dropped:
-            self._ignore_inputs(data, dropped)
-        if getattr(self.book, "ignore_submitted_owned", False) and not getattr(self, "_lookahead", False):
-            self._ignore_submitted_owned(data)
-        checks = getattr(self.book, "silent_zero_checks", False) and not getattr(self, "_lookahead", False)
-        missing = self._missing_inputs(data) if checks else []
         self.outcome = {"status": "rated", "reasons": []}
         try:
             self.eval(entry, frame)
-            if missing:
-                self._refuse_silent_zeros(missing)
+            if hooks is not None:
+                hooks.after(self, data, pending)
         except InterpretError as exc:
-            kind = "invalid input" if isinstance(exc, InvalidInput) else "refused"
-            self.outcome = {"status": "refused", "reasons": [{"kind": kind, "detail": str(exc)[:300]}]}
+            self.outcome = self._refused(exc)
             raise
-        self._refer_to_company(data)
+        if hooks is not None:
+            hooks.finish(self, data)
         return data
 
-    #: The inputs whose absence ISO prices at $0 silently (C28-15, `CF-CHUNK28-SILENT-ZEROS.md`): refused only where
-    #: the absence actually zeroes a coverage that is attached (the user's rule for the territory, 2026-10-05, and,
-    #: by the same reasoning, for every check: New York and DC read no BCEG, so a missing BCEG there zeroes nothing).
-    #: (record tag, field, state or None, the building coverage it zeroes, also needs CauseOfLoss in this set)
-    SILENT_ZERO_INPUTS = (
-        ("CommercialPropertyLocation", "BasicGroupIIRatingTerr", None, "BuildingBasicGroupIICoverage", None),
-        ("CommercialPropertyStructure", "BCEG", None, "BuildingBasicGroupIICoverage", None),
-        ("CommercialPropertyLocation", "BasicGroupIReductionCredit", "AZ", "BuildingBasicGroupICoverage", None),
-        ("CommercialPropertyStructure", "Deductible", None, "BuildingBroadCoverage", {"Broad"}),
-        ("CommercialPropertyStructure", "Deductible", None, "BuildingSpecialCoverage", {"Special"}),
-    )
-
-    def _missing_inputs(self, data: Node) -> list:
-        """(check, record node) for every silent-zero input absent from the submission, before the rules run."""
-        out, stack = [], [data]
-        juris = getattr(self.book, "juris", None)
-        while stack:
-            n = stack.pop()
-            stack.extend(n.children)
-            for chk in self.SILENT_ZERO_INPUTS:
-                tag, field, state, _, causes = chk
-                if n.tag != tag or (state and state != juris):
-                    continue
-                if tag == "CommercialPropertyStructure" and (n.first("CovType") is not None
-                                                             and n.first("CovType").text not in (None, "", "Building")):
-                    continue
-                if causes and (n.first("CauseOfLoss") is None or n.first("CauseOfLoss").text not in causes):
-                    continue
-                f = n.first(field)
-                if f is None or f.text in (None, ""):
-                    out.append((chk, n))
-        return out
-
-    def _refuse_silent_zeros(self, missing: list) -> None:
-        """Refuse when a missing input's coverage is attached and priced $0 (C28-17)."""
-        for (tag, field, _, cov, _), n in missing:
-            structures = [n] if tag == "CommercialPropertyStructure" else                 [s for t in n.kids("CommercialPropertyStructureTable") for s in t.kids("CommercialPropertyStructure")]
-            for st in structures:
-                for t in st.kids(f"CommercialPropertyStructure{cov}Table") or [st]:
-                    for c in t.kids(f"CommercialPropertyStructure{cov}"):
-                        on, prem = c.first("CoverageOnPolicyIndicator"), c.first("Premium")
-                        if on is not None and str(on.text) in ("1", "1.0", "True", "true")                                 and prem is not None and prem.text not in (None, "") and Decimal(prem.text) == 0:
-                            raise InvalidInput(
-                                f"{tag}.{field} is missing, and {cov} is attached and priced $0 because of it. ISO "
-                                f"rates this silently at $0; refused by decision (chunk 28 C28-17)", "C28-17", tag)
-
-    def _refuse_older_package(self) -> None:
-        """Refuse a date ISO is known to rate on a package the corpus lacks (C28-19)."""
-        got = self.book.older_than_iso()
-        if got:
-            ours, iso = got
-            raise OlderPackage(
-                f"{self.book.juris} on {self.book.asof}: ISO rates on {iso}; the corpus holds only {ours}, an older "
-                f"package. Refused by decision until {iso} is imported (chunk 28 C28-19)", "C28-19", ours)
-
-    def _refer_to_company(self, data: Node) -> None:
-        """Minimum premium is a company input (OI-113): refer when one is supplied and the total is below it."""
-        for t in data.kids("CommercialPropertyTable"):
-            for cp in t.kids("CommercialProperty"):
-                mn, tot = cp.first("CompanyMinimumPremium"), cp.first("ErcCalculatedTotalPremium")
-                if mn is None or mn.text in (None, "") or tot is None or tot.text in (None, ""):
-                    continue
-                if Decimal(tot.text) < Decimal(mn.text):
-                    self.outcome = {"status": "refer to company",
-                                    "reasons": [{"kind": "minimum premium", "minimum": mn.text, "rated": tot.text}]}
-
-    def _ignore_inputs(self, data: Node, dropped: frozenset) -> None:
-        """Submitted values the book says ISO's request reader drops (OI-112): not read, noted in the trace."""
-        stack = [data]
-        while stack:
-            n = stack.pop()
-            stack.extend(n.children)
-            if not n.children and n.parent is not None and (n.parent.tag, n.tag) in dropped                     and n.text not in (None, ""):
-                self.note("submitted-input-dropped",
-                          f"{n.parent.tag}.{n.tag} = {n.text!r} submitted; ISO drops it on this edition", "OI-112")
-                n.text = None
-
-    def _ignore_submitted_owned(self, data: Node) -> None:
-        """A submitted value for a field a rule writes later in the run is not read: as if never sent (OI-125).
-
-        Chunk 26 K4d: `RatingType` submitted on the occupancies is counted before `OccupClass.SetRatingType` copies
-        the building's; ISO counts 0. Measured on 1,692 stored requests ISO rated (`251_`, chunk 28 C28-08): 1,688
-        submit at least one such value; hiding each one until its rule writes it fixes K4d, breaks nothing and moves
-        no premium. A submitted value no rule writes in THIS run (an `IsNull`-guarded input, or a conditional write
-        that does not fire, such as the 2020 editions' IRPM) is read as before, as ISO reads it: a static "some rule
-        can write it" test was built first and moved 15 requests ISO agrees with, so it is not used.
-
-        Exactly as measured: a look-ahead pass rates a copy of the request (trace off, the engine's own builtins)
-        and records which submitted values a rule writes; those are blanked before the real run. It roughly doubles
-        a Property rating's time. A refusal in the look-ahead keeps the writes seen so far; the real run decides.
-        """
-        copy_of: dict[int, Node] = {}
-
-        def clone(n: Node, parent: Node | None) -> Node:
-            c = Node(n.tag, parent, n.text)
-            copy_of[id(c)] = n
-            c.children = [clone(k, c) for k in n.children]
-            return c
-
-        twin = clone(data, None)
-        look = type(self)(self.book, rounding=self.rounding_name, trace=False,
-                          null_arithmetic=self.null_arithmetic, guard_null_premium=self.guard_null_premium,
-                          strict_single_result=self.strict_single_result, null_premium=self.null_premium)
-        look._writes = set()
-        look._lookahead = True
-        try:
-            look.run(twin)
-        except InterpretError:
-            pass
-        for cid in look._writes:
-            orig = copy_of.get(cid)
-            if orig is not None and not orig.children and orig.text not in (None, ""):
-                self.note("submitted-owned-ignored",
-                          f"{orig.parent.tag if orig.parent else ''}.{orig.tag} = {orig.text!r} submitted; "
-                          f"a rule writes it later, so it is not read", "OI-125")
-                orig.text = None
+    @staticmethod
+    def _refused(exc: InterpretError) -> dict:
+        return {"status": "refused",
+                "reasons": [{"kind": getattr(exc, "outcome_kind", "refused"), "detail": str(exc)[:300]}]}
 
     def trace_text(self) -> str:           # pragma: no cover - display only
         return "\n".join(str(t) for t in self.trace)

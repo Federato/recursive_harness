@@ -11,13 +11,16 @@ page and the deployed page agree with them; on drift it hands the problems back 
 
 ---
 
-## Pick up here (set 2026-10-06): chunk 28 OPEN at 20 of 22, Sets A to F done
+## Pick up here (set 2026-10-06): chunk 28 OPEN at 21 of 22, Sets A to G done
+
+**C28-21 done 2026-10-06 (the user's choice (b))**: the Property steps around a rating moved out of GL's interpreter
+into `cf_engine/run_checks.py` (`PropertyRunChecks`, via `CFResolvedBook.run_hooks`); nothing moved (snapshot clean, no
+rebaseline; 293 of 293; full regression clean). **Next: C28-22, file `CF-CHUNK28-GATE.md`.**
 
 **C28-20 done 2026-10-06: all 34 packages in** (batches `CF/20270101` with countrywide `CF_CW_20270101_V01`,
 `CF/20270201`, `CF/20270301`, `CF/20270401`, `CF/20270601`, and IL 20261001 in `CF/20260601`). ISO and ours name the
 same package in 46 of 46 states at all 276 dates checked; 287 of 287 cases agree with ISO (`256_`); OI-105 closed.
-Full regression clean (170), `157_ --all` 293 of 293, snapshot clean (2,074). **Next: C28-21 only if the user asks
-(Set G), then C28-22, file the chunk 28 gate.** When ISO files newer packages: `242_`, then `255_ --write`.
+Full regression clean (170), `157_ --all` 293 of 293, snapshot clean (2,074). Then C28-21 (below the heading above). When ISO files newer packages: `242_`, then `255_ --write`.
 
 ## Earlier (set 2026-10-06): C28-19 built
 
