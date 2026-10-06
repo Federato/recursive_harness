@@ -48,7 +48,9 @@ is left out of the catalog until the user decides what it should mean.
 NJ and WA; increased medical payments move to a new table (`IncreasedMedPayLimitFactor`) in 46 states; a P&AI limit
 table appears in 46. **The matrix needs an as-of date.**
 
-## Where the brief and ISO's GL content disagree (the user's calls before TC-09)
+## Where the brief and ISO's GL content disagree (decided 2026-10-06: D8-D13 in `TC-PLAN.md`)
+
+Decided: (1) renamed **Size of risk**; (2) **filed at $0, testable**; (3) **filed at zero, testable**; (4) Cov B **kept, included / excluded**; (5) **all tracked as paths**; (6) Prod/CO area and units **left out**.
 
 1. **"ILF interpolated" does not exist.** ISO's GL ILF tables are flat (discrete limit pairs); the only interpolated
    lookup in GL is the **size-of-risk** relativity. Proposal: rename the column "Size of risk".

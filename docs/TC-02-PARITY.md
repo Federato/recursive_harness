@@ -79,7 +79,9 @@ testing exists only on `/`.
   `verify_notebooks.py` runs notebooks that import `ui.charts`. The full gate runs every `tests/verify_*.py`.
 * None of these are imported by `gl_engine`, `scripts/cf`, `property_rating` or `/`.
 
-## Not covered by the plan yet (the user's call per item, before RC-6)
+## Not covered by the plan yet: decided 2026-10-06 (D14-D22 in `TC-PLAN.md`, each folded into its task)
+
+All nine kept: run controls (D14), INERT and pass 3 (D15), review tools (D16), plan reports replacing run files (D17), four trends (D18), one config everywhere in the Workbench (D19), the plan options (D20), every call in one ledger (D21), mode / rounding / free batch in the console (D22). The items as found:
 
 1. **Pause / resume and stop-and-keep** on runs (T4, L5): add to TC-31?
 2. **INERT VALUE** ("a control that changed nothing") and **pass 3's "our refusal vs ISO's narrowing"** (T5, T6, T9): a

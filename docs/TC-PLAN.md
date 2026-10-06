@@ -1,6 +1,6 @@
 # ISO Rating Test Console: the plan
 
-**Status: IN PROGRESS 2026-10-06, 5 of 38 tasks.** RC-0 done (decisions, parity list, call rules, GL step values, path census). **Before RC-1: the user's calls on TC-02's 9 uncovered jobs and TC-05's 6 brief mismatches.** Source: the design package `Design brief questionnaire.zip` (6 Oct 2026):
+**Status: IN PROGRESS 2026-10-06, 5 of 38 tasks.** RC-0 done (decisions, parity list, call rules, GL step values, path census). All decisions in (D1-D22, 2026-10-06). **Next: RC-1, the data layer.** Source: the design package `Design brief questionnaire.zip` (6 Oct 2026):
 the hi-fi prototype `ISO-Rating-Test-Console.html`, seven wireframes, and `readiness-matrix-integration.md`. The
 user's ask: build the console into the app, and **remove the current testing pages**. Nothing here is built yet.
 
@@ -49,6 +49,21 @@ home in the console, so the app never loses a capability in between.
 | D5 | Cells that don't apply | **"n/a" cell** (grey, its own glyph) where the state files no such path, never counted as a gap; **descoped** paths listed with their reason in the cell's side panel |
 | D6 | Where it lives | **The local app** (`start.bat`, the packaged Windows app), **plus read-only snapshots of every screen on Ideation** (Matrix, Board, Library, Run Log; Trace Diffs as static pages per scenario) |
 | D7 | Look | **The prototype's design, offline**: its layout, colours and type in one stylesheet, fonts bundled or replaced by system fonts, no external libraries |
+| D8 | GL "ILF interpolated" (TC-05) | **Renamed "Size of risk"**: the one interpolated GL lookup; n/a in the 16 states that don't offer it |
+| D9 | GL minimum premium | **"Filed at $0", testable**: Passed means ours and ISO both apply the $0 minimum; from 2027-04-01 CA GA NJ NY WA file real minimums |
+| D10 | GL per-claim deductibles | **"Filed at zero", testable**: Passed means both apply no credit |
+| D11 | GL Cov B | **Kept: included / excluded**; passes when both are verified |
+| D12 | GL paths the brief misses | **All tracked as paths**: ELP industry / company, split BI/PD limits, company LCM, the "other" bases, claims-made, governmental-units and stop-gap ILF, the 2027 medical-payments change |
+| D13 | GL Prod/CO area and units | **Left out**: no state rates on them |
+| D14 | Run controls (TC-02 T4, L5) | **Pause, resume, stop-and-keep** on committed plans; a stopped plan keeps its results and lists what it never reached |
+| D15 | INERT and pass 3 (T5, T6, T9) | **Keep both**: "exercised nothing" flags a scenario (it counts toward no path); "our refusal vs ISO's narrowing" is a **seventh mismatch category**; pass 3 runs after a plan finishes |
+| D16 | Review tools (V2, V3, T9) | **Keep all three in Trace Diff**: "seen before" with the earlier classification, a copy-brief button; the refused-payload list in the Queue & Run Log |
+| D17 | Run files (L7, L8, R7) | **Replaced by plan reports**: a shareable read-only report per committed plan, linked from the run log and published with D6's snapshots; existing run files stay browsable from the log |
+| D18 | Trends (T10-T13, L9) | **Keep four**: agreement over time, defects first / last seen, response curves, the control × state grid |
+| D19 | One config everywhere (T15, T16) | **In the Workbench**: "Check where it applies" (free) and "Run in every state" (shows the calls, then commits a one-config plan) |
+| D20 | Plan options (L2, L3) | **Add all**: allowance thinning (never cuts states), reduced grid, basis-first class picker, multi-class, effective date as a dimension |
+| D21 | Call ledger (R3, R6) | **Every call, wherever it starts**: one ledger inside the RaaS client (`scripts/raas.py`); the console, `/`, the CLIs and the chunk scripts all count toward 250, tagged by origin; every answer lands in the reference store |
+| D22 | `/`'s mode, rounding and free batch (R2, R6) | **Brought to the console**: mode and rounding in the Workbench; the all-samples check as a zero-call Regression Library run |
 
 ## Ground rules (every RC)
 
@@ -77,13 +92,13 @@ home in the console, so the app never loses a capability in between.
 
 | # | Task | Status | Notes |
 |---|---|---|---|
-| TC-06 | **Reference store**: one index over every stored ISO answer, both lines: request hash, line, state, effective date, package and content version, ISO's outcome, stored date. Built from `results/cf-raas/` and the GL run store; nothing moved on disk | ⬜ | Dedupe key = request hash |
+| TC-06 | **Reference store**: one index over every stored ISO answer, both lines: request hash, line, state, effective date, package and content version, ISO's outcome, stored date. Built from `results/cf-raas/` and the GL run store; nothing moved on disk; **every new answer from any origin added as it arrives (D21)** | ⬜ | Dedupe key = request hash |
 | TC-07 | **Staleness**: a reference is stale when the package in force for its state and date changes (`book_for`, `iso_packages.json`), so a corpus refresh (C28-20) marks exactly the answers it affects | ⬜ | |
 | TC-08 | **Status vocabulary**: the five states (verified, internal, mismatch, stale, untested) with fixed keys, glyphs and colours, one module every screen imports | ⬜ | |
 | TC-09 | **Coverage → path mapping** as versioned configuration (GL 5 coverages, CP 6), per §4 of the spec; states with no such path read "n/a" (D5) | ⬜ | |
 | TC-10 | **Path signature**: which paths one scenario walks, from the engine's own trace (records attached, forms priced, tables reached) | ⬜ | Ties a stored answer to the paths it proves |
-| TC-11 | **Mismatch taxonomy and classifications**: rounding ±$1, interpolation ±0.5%, version skew, input mapping, RaaS anomaly, true engine defect (zero); stored per scenario | ⬜ | |
-| TC-12 | **Call ledger and lanes** (D2): every call logged with lane, outcome and cost; cap 250, lanes 150 / 50 / 50 enforced in one place, replacing `qa.py`'s budget guard (A6) | ⬜ | |
+| TC-11 | **Mismatch taxonomy and classifications**: rounding ±$1, interpolation ±0.5%, version skew, input mapping, RaaS anomaly, true engine defect (zero), **and our refusal vs ISO's narrowing (D15)**; the **INERT** flag (a scenario that exercised nothing counts toward no path); stored per scenario | ⬜ | |
+| TC-12 | **Call ledger and lanes** (D2, D21): **inside the RaaS client**, so every call counts wherever it starts (console, `/`, CLIs, `scripts/cf`), tagged by origin, with lane, outcome and cost; cap 250, lanes 150 / 50 / 50 enforced in one place, replacing `qa.py`'s budget guard (A6) | ⬜ | |
 | TC-13 | **Roll-up**: path → coverage → cell status by §3's order (mismatch, stale, untested, verified, internal), n/a where no path is filed (D5); optional sign-off kept and cleared (D4); estimated calls to finish (§6). Tests for each rule | ⬜ | |
 
 **Gate RC-1:** the store indexes every stored ISO answer and matches today's counts (e.g. CP's 293 fixtures, 46-state
@@ -99,9 +114,9 @@ sample); a test per roll-up rule; `104_ --quick` clean.
 |---|---|---|---|
 | TC-14 | **Console shell**: the seven-tab frame, the call-cap strip (used / left / queued / resets), the shared legend; D7's look | ⬜ | |
 | TC-15 | **`GET /api/console/readiness`** per §5: cells, columns, cap; recomputed on store, classification, ingest and build events | ⬜ | |
-| TC-16 | **Readiness Matrix** screen: every state, alphabetical (D3), both lines, totals strip (§8), cell select / double-click (§7), n/a cells (D5), sign-off (D4) | ⬜ | |
+| TC-16 | **Readiness Matrix** screen: every state, alphabetical (D3), both lines, totals strip (§8), cell select / double-click (§7), n/a cells (D5), sign-off (D4), **agreement over time (D18)** | ⬜ | |
 | TC-17 | **"Still to test" list**: §6's sort without the wave key (status priority, then calls), needs text and call estimate; days to finish at the active lane (150/day) | ⬜ | |
-| TC-18 | **Coverage Board**: one line, state × path, readiness verdict per state (Go / Hold / Not ready), side panel of scenarios per cell | ⬜ | |
+| TC-18 | **Coverage Board**: one line, state × path, readiness verdict per state (Go / Hold / Not ready), side panel of scenarios per cell; **the control × state grid beside it (D18)** | ⬜ | |
 | TC-19 | **Seeded from real evidence**: CP from the chunk 1-28 work and the app's 46-state sample; GL from the QA runs. Every Passed cell traceable to its stored answers | ⬜ | No new calls |
 
 **Gate RC-2:** the matrix and board render from real data in both lines; spot-checks (e.g. CP Building in OH) trace to
@@ -116,9 +131,9 @@ stored answers; no screen spends a call.
 | # | Task | Status | Notes |
 |---|---|---|---|
 | TC-20 | **Worksheet map**: our engine's nodes (data-tree fields and the rules that write them) aligned to ISO's response fields by stable ID, per line; versioned | ⬜ | TC-04 sets GL's depth |
-| TC-21 | **Trace Diff**: ours vs ISO row by row, matching subtrees collapsed, the first divergent step marked and downstream rows tagged "flows from"; each row's ERC source (rule, table, circular) | ⬜ | |
+| TC-21 | **Trace Diff**: ours vs ISO row by row, matching subtrees collapsed, the first divergent step marked and downstream rows tagged "flows from"; each row's ERC source (rule, table, circular); **"seen before" with the earlier classification, and a copy-brief button (D16)** | ⬜ | |
 | TC-22 | **Classify a mismatch** from Trace Diff (TC-11's taxonomy), with a note; the cell's status follows | ⬜ | |
-| TC-23 | **Scenario Workbench**: the inputs per line, "Rate internally" (free), "Send to RaaS" (one call); the dedupe dialog when a stored answer exists | ⬜ | Supersedes `/`'s job (D1) |
+| TC-23 | **Scenario Workbench**: the inputs per line, **mode and rounding (D22)**, "Rate internally" (free), "Send to RaaS" (one call); the dedupe dialog when a stored answer exists; **"Check where it applies" and "Run in every state" (D19)**; **response curves (D18)** | ⬜ | Supersedes `/`'s job (D1) |
 | TC-24 | **Promote to Regression Library** from the Workbench or Trace Diff | ⬜ | |
 | TC-25 | **Proof**: a known past mismatch replayed (e.g. OI-133's FL cyber case before its fix) shows its first divergence at the right step | ⬜ | |
 
@@ -133,12 +148,12 @@ answers without a call.
 
 | # | Task | Status | Notes |
 |---|---|---|---|
-| TC-26 | **Dimension catalog** from ISO's own files: GL from `variants.Declared`; CP from its domains and state inputs (`_state_inputs`) | ⬜ | |
-| TC-27 | **Test Plan Builder**: line, states (no waves, D3), dimension chips; live counters (cartesian, Tier 0, pairwise, edges, already verified, projected calls and days) | ⬜ | Reuses `qa._allpairs` |
+| TC-26 | **Dimension catalog** from ISO's own files: GL from `variants.Declared`; CP from its domains and state inputs (`_state_inputs`); **basis-first class picker, multi-class, effective date with the package dates (D20)** | ⬜ | |
+| TC-27 | **Test Plan Builder**: line, states (no waves, D3), dimension chips, **allowance thinning (never cuts states) and a reduced grid (D20)**; live counters (cartesian, Tier 0, pairwise, edges, already verified, projected calls and days) | ⬜ | Reuses `qa._allpairs` |
 | TC-28 | **Tier 0 invariants** (zero calls): premium rises with limits, deductibles never raise premium, minimum premium floors hold, no null steps, every valid state / class resolves | ⬜ | New work: `qa.py`'s T0 is a live smoke run, not an invariant tier (TC-02) |
 | TC-29 | **Commit a plan** → queue, with the confirmation dialog (calls, lane, ETA, dedupe); prefilled from the Matrix's "Build a test plan from these gaps" | ⬜ | |
-| TC-30 | **Dispatcher**: ordered by information value (untested path, changed content, edge, stale, pairwise), within lanes and the daily cap; dedupe against the store before every call | ⬜ | |
-| TC-31 | **Queue & Run Log** screen: lanes, dispatch queue, the run log (sent, match, mismatch, dedupe hit, error, override, reset) | ⬜ | |
+| TC-30 | **Dispatcher**: ordered by information value (untested path, changed content, edge, stale, pairwise), within lanes and the daily cap; dedupe against the store before every call; **pass 3 after each plan (D15)** | ⬜ | |
+| TC-31 | **Queue & Run Log** screen: lanes, dispatch queue, the run log (sent, match, mismatch, dedupe hit, error, override, reset); **pause / resume / stop-and-keep (D14)**; **the refused-payload list (D16)**; **a shareable report per plan, existing run files browsable (D17)** | ⬜ | |
 | TC-32 | **Override** of the cap: needs a reason, is logged | ⬜ | |
 
 **Gate RC-4:** a small real plan (e.g. one CP coverage in one state) committed, dispatched within its lane,
@@ -152,8 +167,8 @@ every call in the log, results in the store, the matrix updated.
 
 | # | Task | Status | Notes |
 |---|---|---|---|
-| TC-33 | **Regression Library**: every promoted scenario with its reference, content version, verified date, last build result; filters | ⬜ | Seeded with the 293 ISO fixtures and the chunk golden cases |
-| TC-34 | **Re-run on build** at zero calls: ours against each stored reference; divergences flagged | ⬜ | Same comparison as `157_` |
+| TC-33 | **Regression Library**: every promoted scenario with its reference, content version, verified date, last build result; filters; **defects with first and last seen (D18)** | ⬜ | Seeded with the 293 ISO fixtures and the chunk golden cases |
+| TC-34 | **Re-run on build** at zero calls: ours against each stored reference; divergences flagged; **the free all-samples check from `/` (D22)** | ⬜ | Same comparison as `157_` |
 | TC-35 | **Stale refresh**: stale references listed and queued into the refresh lane | ⬜ | |
 
 **Gate RC-5:** the library re-runs at zero calls with today's results (e.g. 293 of 293 CP fixtures pass); a corpus
