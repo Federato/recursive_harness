@@ -784,7 +784,7 @@ multi-unit-blanket-rated submissions.
 | ApartmentCondoIndicator dependency | n/a | n/a | n/a | **neither — BOTH lookups are hard-coded** (base rate to "Other than Apartments and Condominiums", theft factor to "No"). Corrected 2026-09-18, C7-20 | n/a |
 | Deductible factor | none | none | none | none | flat-dollar EQ deductible/sub-limit endorsements only |
 | Final-rate formula | COLAdj x Factor | COLAdj x Factor | straight copy of `BroadRate` | straight copy of `SpecialCauseOfLossAdjustment` | COLAdj x EQFactor |
-| Standalone (non-Agreed-Value) premium coverage file | yes | yes | yes | yes | **no — Agreed Value only** |
+| Standalone (non-Agreed-Value) premium coverage file | yes | yes | yes | yes | **no — Agreed Value only** *(Corrected 2026-10-06: wrong; four EQ endorsement record files charge it. `cf-earthquake-chains.html` SCBI #13, #21)* |
 | Coverage-on-policy gate | hardcoded `1` | hardcoded `1` | `CauseOfLossToUse = "Broad"` | `CauseOfLossToUse = "Special"` | compound EQCovIndicator/AgreedValueOption/BlktEQAgreedVal test |
 | Premium branches | 2 | 2 | 2 | 2 | n/a (Agreed Value: 2 live + otherwise-zero) |
 
@@ -792,7 +792,10 @@ multi-unit-blanket-rated submissions.
 SCBI #35, #41; `cf-special-chains.html` SCBI #42). Read the table above with these changes. Basic Group I's
 base rate is the item's `BasicGroupIRate` = base x LCM, **not** fully rated. Basic Group II's "0 CW rows" is
 the normal state-filed pattern; every state files rows. Broad and Special have two live branches plus a
-third, "otherwise → 0.0", that catches a blank `IncludedInBlkt`. The Earthquake column was not re-checked.
+third, "otherwise → 0.0", that catches a blank `IncludedInBlkt`. **Earthquake (corrected 2026-10-06, `cf-earthquake-chains.html`
+SCBI #13, #15, #21; probes E-2, E-5, E-7, E-9 to E-15):** the rate is the item's EQ base x LCM, not its finished rate;
+`EQFactor` is a copy of the shared `Factor` unless a CP 10 45 / 10 29 record exists; the premium is charged by one
+EQ endorsement record, not Agreed Value only.
 
 ---
 
@@ -809,7 +812,10 @@ third, "otherwise → 0.0", that catches a blank `IncludedInBlkt`. The Earthquak
    **Corrected 2026-10-06 for Basic Group I** (`cf-bgi-chains.html`, SCBI review #44, #45, #52; probes BI-7
    to BI-9). `../../BasicGroupIRate` is the item's base x LCM, its third step, not its finished rate. Basic
    Group I needs only that step. It then adds its own vandalism factor and a Business Income `Factor`, not
-   "only a single COL multiplier". The Earthquake half of this point was not re-checked.
+   "only a single COL multiplier". **Corrected 2026-10-06 for Earthquake too** (`cf-earthquake-chains.html` SCBI #13, #14; probes E-2,
+E-5, E-7, E-8): `../../EQRate` is written at the item's second step, base x LCM (0.5 against a finished 0.352).
+The item's EQ coinsurance and deductible never reach SCBI; the item's LCM does. SCBI then multiplies the
+Business Income `Factor`. Neither form needs the item's finished rate.
 
 2. **Broad and Special key their own base-rate tables on hard-coded literal constants, not data-derived
    values.** Plain Business Income's Broad varies by `ConstructionTypeToUse` and its Special varies by
@@ -897,6 +903,10 @@ third, "otherwise → 0.0", that catches a blank `IncludedInBlkt`. The Earthquak
    Income is nine rules long only because of the sub-limit-percent/coinsurance/type-of-risk-combination
    machinery that has no bearing on the base rate itself; strip that away and the actual rate-borrowing logic
    is a two-line copy-then-gate.
+   **Corrected 2026-10-06** (`cf-earthquake-chains.html` SCBI #13, #16, #17; probes E-2, E-9 to E-15, E-41). The copied `EQRate` is
+   the item's base x LCM, not its finished rate. It is then multiplied by `EQFactor`, a copy of the shared
+   Business Income `Factor` (coinsurance, cover type, type of risk, max period and monthly limit all move it,
+   $2,500 to $8,500), and the endorsement record multiplies the limit and two cyber factors. Not a copy-then-gate.
 
 ---
 
@@ -1029,5 +1039,11 @@ Premium = round(round(round(FinalEQRate x round(AgreedValueFactor - 1, 3) x (Agr
 
 (non-Agreed-Value, non-blanket scheduled Earthquake premium: no coverage file exists for this case)
 ```
+
+**Corrected 2026-10-06** (`cf-earthquake-chains.html` SCBI #13, #20, #21; probes E-29, E-30, E-38, E-41). Four EQ endorsement records
+charge the scheduled premium: r0(r0(r0(FinalEQRate x SCBI Limit/100) x CyberEQ) x CyberCOL), or the sub-limit for
+CP 10 45 / 10 29. A record attaches only when SCBI's own `EQCovIndicator` is "Yes, ..." and the location's form names
+it; the item need not elect earthquake. Agreed Value: CW 1.1 gives $280 on 10,000; a blank limit gives $0 "rated";
+it also charges on top of a sub-limit form ($340).
 
 ---

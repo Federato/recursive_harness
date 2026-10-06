@@ -25,7 +25,7 @@ Business-Income equivalent of the Contents split — **each form gets one calc t
 **Three of its five forms don't compute their own base rate at all.** Basic Group I, Basic Group II, and
 Earthquake read the coinsured Building's *already-computed* rate datadefs
 (`BasicGroupIBaseRate`, `BasicGroupIISymbolToUse`/`BasicGroupIIRatingTerr`, `EQBaseRate`) directly, rather
-than running their own class/construction/territory lookup. **Rate the Building first.** This workbook's
+than running their own class/construction/territory lookup. *(Corrected 2026-10-06, `cf-bgi-chains.html` and `cf-earthquake-chains.html` BI #4: "already-computed" means the Building's base rate or base loss cost plus some of its factors, not its finished rate; the Building's deductible and coinsurance never reach Business Income.)* **Rate the Building first.** This workbook's
 `Calc_Building_BGI` and `Calc_Building_BGII` tabs, already built, become upstream dependencies for the
 Business Income tabs in this document set — the first time in this workbook that a coverage's calc tab
 reads another coverage's calc tab rather than only `Locations_Buildings` and `Rate_Tables`. Only Broad

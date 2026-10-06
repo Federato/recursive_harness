@@ -675,7 +675,10 @@ analogue, since sub-limited earthquake coverage is a time-element-specific conce
 ### Step 7 — Rate
 `SetEQRate` (line 7923), 3 decimals, same blanket/max-period gate used throughout this ruleset
 (2026-10-06: for Group I and II that gate was verified to be the **operational-unit test**, not a blanket
-test — see the Group I step 2 correction. The Earthquake rule itself was not re-checked):
+test — see the Group I step 2 correction. **Corrected 2026-10-06 for Earthquake** (`cf-earthquake-chains.html` BI review #2, #4; probes
+OPUNIT, ST_NOEQ, LCM15): the Earthquake gate is the same operational-unit test (:7925), and on that path
+`SetHighestBusnIncomeEQBaseRate` (Location :1184) never writes its maximum, so the rate is always 0 ($0, "rated").
+The else branch reads the building's **base loss cost** `EQBaseRate` and four factors, not its finished EQ rate):
 
 ```
 blanket/max-period branch:
@@ -810,7 +813,7 @@ or (if the whole submission is multi-unit-blanket-rated) copying `BlktCoinsuranc
 | Territory dependency | via Building's terr factor | via Building's terr key | none | none | via Building's rate |
 | Deductible factor | **none** | **none** | **none** | **none** | flat-dollar EQ deductible endorsements only, separate mechanism |
 | Final-rate formula | COLAdj x Factor | COLAdj x Factor | straight copy of `BroadRate` | straight copy of `SpecialCauseOfLossAdjustment` | COLAdj x EQFactor |
-| Standalone (non-Agreed-Value) premium coverage file | yes | yes | yes | yes | **no — Agreed Value only** |
+| Standalone (non-Agreed-Value) premium coverage file | yes | yes | yes | yes | **no — Agreed Value only** *(Corrected 2026-10-06: wrong. One of four EQ endorsement records, CP 10 40 / 10 45 / 10 28 / 10 29, charges the full rate; Agreed Value adds only the increment. `cf-earthquake-chains.html` BI #1)* |
 | Coverage-on-policy gate | hardcoded `1` | hardcoded `1` | `CauseOfLossToUse = "Broad"` | `CauseOfLossToUse = "Special"` | compound EQCovIndicator/AgreedValueOption/BlktEQAgreedVal test |
 
 ---
@@ -901,7 +904,7 @@ for one:
 | `CommercialPropertyBusinessIncomeBroadCoverageRules.Rule.xml` | `CommercialPropertySpecialClassBusnIncomeBroadCoverageRules.Rule.xml` |
 | `CommercialPropertyBusinessIncomeSpecialCoverageRules.Rule.xml` | `CommercialPropertySpecialClassBusnIncomeSpecialCoverageRules.Rule.xml` |
 | `CommercialPropertyBusinessIncomeAgreedValEarthquakeCoverageRules.Rule.xml` | `CommercialPropertySpecialClassBusnIncomeAgreedValEarthquakeCoverageRules.Rule.xml` |
-| *(no plain Earthquake file for either group — Agreed Value only, both sides)* | — |
+| *(no plain Earthquake file for either group — Agreed Value only, both sides)* — **Corrected 2026-10-06:** each group has four EQ endorsement record files (CP 10 40 / 10 28 `SetPremium` :111, CP 10 45 / 10 29 :81) that charge the premium (`cf-earthquake-chains.html`) | — |
 | `CommercialPropertyBusinessIncomeExtendedPeriodOfIndemnityCoverage*Rules.Rule.xml` (x5 forms) | `CommercialPropertySpecialClassBusnIncomeExtendedPeriodOfIndemnityCoverage*Rules.Rule.xml` (x4 forms — no Basic Group II variant confirmed present by name; not verified further) |
 
 The naming convention swaps `BusinessIncome` for `SpecialClassBusnIncome` throughout, and the
@@ -1000,5 +1003,12 @@ Premium = round(round(FinalEQRate x round(AgreedValueFactor - 1, 3) x (AgreedVal
 
 (non-Agreed-Value, non-blanket scheduled Earthquake premium: no coverage file exists for this case)
 ```
+
+**Corrected 2026-10-06** (`cf-earthquake-chains.html` BI review #1, #7, #8, #9; probes HAPPY, F1045, F1045_AV, IN AV). The scheduled
+premium is charged by one EQ endorsement record, picked by the Location's `EQCauseOfLossForm`: CP 10 40 / 10 28 =
+r0(r0(r0(FinalEQRate x Limit/100) x CyberEQ) x CyberCOL); CP 10 45 / 10 29 charge on the sub-limit and give $0 when
+"Included in Blanket". No deductible, IRPM, package or multi-premium factor. The Agreed Value formula above is
+missing an inner r3 on FinalEQRate x (F - 1) (IN gives $10, not $9), and its gate is always true, so it also
+charges on a sub-limited BI. `EQFactor` is a copy of the ordinary `Factor` unless a sub-limit record exists.
 
 ---

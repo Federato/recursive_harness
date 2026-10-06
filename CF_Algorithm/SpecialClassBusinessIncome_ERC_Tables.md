@@ -19,7 +19,8 @@ separate facts throughout.
 Two forms (Basic Group I, Earthquake) do not resolve independent base-rate tables at all — they cross-
 reference the coinsured Special Class item's own already-computed `BasicGroupIRate` / `EQRate` datadefs, not
 a table lookup. Those cross-references are noted, not listed as tables, since there is no table for them to
-resolve.
+resolve. **Corrected 2026-10-06** (`cf-bgi-chains.html` SCBI #44, `cf-earthquake-chains.html` SCBI #13): "already-computed" means the
+item's base x LCM step for both, not its finished rate.
 
 ---
 

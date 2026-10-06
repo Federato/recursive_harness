@@ -83,7 +83,9 @@ layered on top of *both* the Building's base rate table and Business Income's ow
 > CLASS in the Group I and Group II BI notes). "Doubly unresolvable" is out of date as a practical finding.
 > Header-only CW with state rows is the normal pattern: the adjustment factor is state-filed (Group I IN
 > 0.85; Group II UT 0.7, IN 0.75), and BI Group I and II price normally (IN Group I $178 / $163; UT Group II
-> $70). The 1.0 rate branch (blank `RatingType`) skips the adjustment factor. Earthquake not re-checked.
+> $70). The 1.0 rate branch (blank `RatingType`) skips the adjustment factor. **Earthquake (2026-10-06,
+> `cf-earthquake-chains.html` BI #4):** the CW `EQLossCostBldg` table is header-only and every state files rows (UT $420, IN $90);
+> BI reads the building's base loss cost, not its finished EQ rate.
 
 ---
 

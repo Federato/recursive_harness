@@ -350,7 +350,8 @@ first open question — do state-specific CF Rules notices exist anywhere to col
   *(Correction note, 2026-10-06, `cf-bgi-chains.html` SCBI review #44; probes BI-7 to BI-9: for Basic
   Group I the copied value is the item's base x LCM, its third step, not its final rate — 0.07 against
   0.066 in the golden case. The child then adds its own vandalism factor and a BI `Factor`. Earthquake
-  not re-checked.)*
+  not re-checked.)* *(Correction note, 2026-10-06, `cf-earthquake-chains.html` SCBI #13: Earthquake likewise copies the item's
+  base x LCM (0.5 against a finished 0.352, probe E-2), then multiplies the BI `Factor`.)*
   Broad and Special
   key their own dedicated base-rate tables on **hard-coded literal constants** (`"Frame"` for
   construction; `"Other than Apartments and Condominiums"` for the occupancy dimension) — the same
