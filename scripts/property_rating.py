@@ -149,6 +149,12 @@ def _juris(payload: dict) -> str:
     return ((payload.get("body", {}).get("SchemeKeys", {}).get("ProductName") or "").split() or [""])[-1]
 
 
+def _num(v) -> str:
+    """A premium as plain text: ISO's 1045.0 and our 1045 both read "1045"."""
+    d = Decimal(str(v))
+    return str(d.quantize(Decimal(1))) if d == d.to_integral_value() else str(d.normalize())
+
+
 def _cells(premiums: dict) -> tuple[list, list]:
     """(rows of the record x form grid, every other coverage that carries a premium) from {coverage: premium}."""
     used, grid = set(), []
@@ -157,9 +163,9 @@ def _cells(premiums: dict) -> tuple[list, list]:
         for form, suffix in FORMS:
             name = f"{prefix}{suffix}Coverage"
             used.add(name)
-            row["forms"][form] = str(premiums[name]) if name in premiums else None
+            row["forms"][form] = _num(premiums[name]) if name in premiums else None
         grid.append(row)
-    other = [{"coverage": k, "premium": str(v)} for k, v in sorted(premiums.items())
+    other = [{"coverage": k, "premium": _num(v)} for k, v in sorted(premiums.items())
              if k not in used and v != 0]
     return grid, other
 
@@ -241,9 +247,9 @@ def compare(payload: dict, ours: dict, client, no_iso=frozenset()) -> dict:
             if isinstance(kind, list) for m in kind if isinstance(m, dict)]
     return {
         "available": True,
-        "premium": str(Decimal(str(iso_total)).normalize()) if iso_total is not None else None,
+        "premium": _num(iso_total) if iso_total is not None else None,
         "agrees": agrees,
-        "delta": str(Decimal(ours["premium"]) - Decimal(str(iso_total)))
+        "delta": _num(Decimal(ours["premium"]) - Decimal(str(iso_total)))
                  if iso_total is not None and ours.get("premium") is not None else "",
         "package": iso_pkg,
         "edition_agrees": (iso_pkg == ours["packages"][0]) if iso_pkg else None,
@@ -259,7 +265,7 @@ def rate(payload: dict, compare_with=None, no_iso=frozenset()) -> dict:
               "complete": outcome.get("status") != "refused" and total is not None}
     if result["complete"]:
         grid, other = _cells(premiums)
-        result.update(premium=str(Decimal(total).normalize()), grid=grid, other=other)
+        result.update(premium=_num(total), grid=grid, other=other)
     else:
         result["stopped"] = "; ".join(r.get("detail", "") for r in outcome.get("reasons", [])) or "did not rate"
     if compare_with is not None:
