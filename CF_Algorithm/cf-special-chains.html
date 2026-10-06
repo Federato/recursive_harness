@@ -1,0 +1,907 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Special Form Rating Chains</title>
+<style>
+  :root {
+    --ink: #101b24;
+    --paper: #edf0ec;
+    --paper-line: #c7d2ce;
+    --blueprint: #2e6e8e;
+    --blueprint-soft: #e4ebef;
+    --stamp: #c77f32;
+    --caution: #b14b39;
+    --ledger: #3f8f6e;
+    --surface: #f4f6f3;
+    --panel: #ffffff;
+    --sidebar: #e8ede8;
+    --text: var(--ink);
+    --muted: #5b6b72;
+    --border: #cdd6d2;
+    --font-display: Cambria, 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+    --font-body: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+    --font-mono: 'Cascadia Code', 'Cascadia Mono', Consolas, 'SFMono-Regular', ui-monospace, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --surface: #0b141a;
+      --panel: #101b22;
+      --sidebar: #0e1a20;
+      --text: #e7ece9;
+      --muted: #93a3a0;
+      --border: #223138;
+      --blueprint-soft: #16232b;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --surface: #0b141a;
+    --panel: #101b22;
+    --sidebar: #0e1a20;
+    --text: #e7ece9;
+    --muted: #93a3a0;
+    --border: #223138;
+    --blueprint-soft: #16232b;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; background: var(--surface); color: var(--text);
+    font-family: var(--font-body); -webkit-font-smoothing: antialiased;
+  }
+  body { display: flex; flex-direction: column; min-height: 100vh; }
+  a { color: inherit; }
+  code { font-family: var(--font-mono); font-size: 0.92em; }
+  ::selection { background: var(--stamp); color: #101b24; }
+
+  /* header */
+  header.masthead {
+    display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap;
+    padding: 1.1rem 1.6rem; border-bottom: 1px solid var(--border);
+    background: var(--panel);
+  }
+  header.masthead h1 {
+    font-family: var(--font-display); font-weight: 600; font-size: 1.35rem;
+    margin: 0; letter-spacing: 0.01em; text-wrap: balance;
+  }
+  header.masthead .rule { width: 1px; align-self: stretch; background: var(--border); }
+  header.masthead p { margin: 0; font-size: 0.82rem; color: var(--muted); max-width: 52ch; }
+  header.masthead .src {
+    margin-left: auto; font-family: var(--font-mono); font-size: 0.72rem;
+    color: var(--muted); text-align: right; line-height: 1.5;
+  }
+
+  /* shell */
+  .shell { display: flex; flex: 1; min-height: 0; }
+
+  nav.toc {
+    width: 258px; flex: none; background: var(--sidebar);
+    border-right: 1px solid var(--border);
+    padding: 1rem 0 2rem; overflow-y: auto;
+  }
+  nav.toc .group-label {
+    font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--muted); padding: 0.5rem 1.2rem 0.35rem;
+  }
+  nav.toc button.navlink {
+    display: block; width: 100%; text-align: left; background: none; border: none;
+    font-family: var(--font-body); font-size: 0.86rem; color: var(--text);
+    padding: 0.42rem 1.2rem 0.42rem 1.6rem; cursor: pointer;
+    border-left: 3px solid transparent;
+  }
+  nav.toc button.navlink:hover { background: var(--blueprint-soft); }
+  nav.toc button.navlink.active {
+    background: var(--blueprint-soft); border-left-color: var(--blueprint); font-weight: 600;
+  }
+  nav.toc button.navlink .chain-len {
+    display: block; font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); font-weight: 400;
+  }
+  nav.toc hr { border: none; border-top: 1px solid var(--border); margin: 0.6rem 1.2rem; }
+
+  nav.toc .legend {
+    margin: 1rem 1.2rem 0; padding: 0.8rem 0.9rem; border: 1px solid var(--border);
+    border-radius: 3px; background: var(--panel);
+  }
+  nav.toc .legend h4 {
+    margin: 0 0 0.5rem; font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--muted); font-weight: 600;
+  }
+  nav.toc .legend .row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.74rem; margin-bottom: 0.35rem; }
+  nav.toc .legend .swatch { width: 13px; height: 13px; flex: none; border-radius: 2px; border-width: 1.5px; border-style: solid; }
+  .sw-gate { background: #f4e4ce; border-color: #c77f32; }
+  .sw-zero { background: #f3dcd6; border-color: #b14b39; }
+  .sw-final { background: #dceee4; border-color: #3f8f6e; }
+  .sw-step { background: #e4ebef; border-color: #2e6e8e; }
+  .sw-openq { background: #f4e4ce; border-color: #b14b39; border-style: dashed !important; }
+  .sw-engine { background: #e6e1f0; border-color: #5a4c8a; }
+
+  main { flex: 1; min-width: 0; overflow-y: auto; padding: 1.6rem 2rem 4rem; }
+
+  .intro { max-width: 70ch; margin-bottom: 1.4rem; }
+  .intro h2 { font-family: var(--font-display); font-size: 1.25rem; margin: 0 0 0.5rem; text-wrap: balance; }
+  .intro p { font-size: 0.92rem; line-height: 1.6; color: var(--muted); margin: 0 0 0.6rem; }
+
+  /* tables */
+  .tablewrap { overflow-x: auto; margin-bottom: 1.4rem; }
+  table.grid { border-collapse: collapse; width: 100%; max-width: 1100px; background: var(--panel); }
+  table.grid caption {
+    text-align: left; font-family: var(--font-mono); font-size: 0.7rem; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem;
+  }
+  table.grid th, table.grid td {
+    border: 1px solid var(--border); padding: 0.5rem 0.7rem; font-size: 0.82rem;
+    text-align: left; vertical-align: top; line-height: 1.45;
+  }
+  table.grid thead th {
+    font-family: var(--font-mono); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--muted); background: var(--blueprint-soft); font-weight: 600;
+  }
+  table.grid tbody th { font-weight: 600; white-space: nowrap; }
+  table.grid td.num { font-family: var(--font-mono); text-align: right; white-space: nowrap; }
+  table.grid tr.hl td, table.grid tr.hl th { background: var(--blueprint-soft); }
+  table.grid td .tag {
+    font-family: var(--font-mono); font-size: 0.66rem; padding: 0.05rem 0.35rem; border-radius: 2px;
+    border: 1px solid var(--border); color: var(--muted); white-space: nowrap;
+  }
+  table.grid td .tag.a { border-color: var(--blueprint); color: var(--blueprint); }
+  table.grid td .tag.b { border-color: var(--ledger); color: var(--ledger); }
+  table.grid td .tag.bad { border-color: var(--caution); color: var(--caution); }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.9rem; max-width: 1100px; margin-bottom: 1.4rem; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 3px; padding: 0.9rem 1rem; }
+  .card .k { font-family: var(--font-mono); font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
+  .card .v { font-family: var(--font-display); font-size: 1.5rem; margin: 0.2rem 0 0.25rem; font-variant-numeric: tabular-nums; }
+  .card p { margin: 0; font-size: 0.8rem; color: var(--muted); line-height: 1.45; }
+  .card button.go {
+    margin-top: 0.6rem; background: none; border: 1px solid var(--blueprint); color: var(--blueprint);
+    font-family: var(--font-mono); font-size: 0.7rem; padding: 0.3rem 0.6rem; border-radius: 2px; cursor: pointer;
+  }
+  .card button.go:hover { background: var(--blueprint-soft); }
+
+  /* sheet */
+  .sheet-view { display: none; }
+  .sheet-view.active { display: block; }
+
+  .titleblock {
+    display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--border);
+    margin-bottom: 1.1rem; background: var(--panel);
+  }
+  .titleblock .field { padding: 0.6rem 0.9rem; border-right: 1px solid var(--border); }
+  .titleblock .field:last-child { border-right: none; }
+  .titleblock .field .k {
+    font-family: var(--font-mono); font-size: 0.63rem; text-transform: uppercase; letter-spacing: 0.07em;
+    color: var(--muted); display: block; margin-bottom: 0.15rem;
+  }
+  .titleblock .field .v { font-family: var(--font-mono); font-size: 0.82rem; color: var(--text); line-height: 1.35; }
+  .titleblock .field.wide { grid-column: span 4; border-top: 1px solid var(--border); border-right: none; }
+
+  .sheet {
+    background: var(--paper); border: 1px solid var(--paper-line); border-radius: 2px;
+    padding: 1.4rem 1.2rem 1rem; position: relative; overflow-x: auto;
+    background-image:
+      linear-gradient(var(--paper-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--paper-line) 1px, transparent 1px);
+    background-size: 28px 28px; background-position: -1px -1px;
+    background-color: var(--paper);
+  }
+  .sheet .corner { position: absolute; width: 14px; height: 14px; }
+  .sheet .corner.tl { top: 6px; left: 6px; border-top: 1.5px solid #7d8f8a; border-left: 1.5px solid #7d8f8a; }
+  .sheet .corner.tr { top: 6px; right: 6px; border-top: 1.5px solid #7d8f8a; border-right: 1.5px solid #7d8f8a; }
+  .sheet .corner.bl { bottom: 6px; left: 6px; border-bottom: 1.5px solid #7d8f8a; border-left: 1.5px solid #7d8f8a; }
+  .sheet .corner.br { bottom: 6px; right: 6px; border-bottom: 1.5px solid #7d8f8a; border-right: 1.5px solid #7d8f8a; }
+  .sheet pre.mermaid { margin: 0; background: transparent; min-width: 760px; color: #101b24; }
+
+  .notes { margin-top: 1.1rem; display: grid; grid-template-columns: 1.4fr 1fr; gap: 1.2rem; }
+  .notes h3 {
+    font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--muted); margin: 0 0 0.5rem;
+  }
+  .notes ul { margin: 0; padding-left: 1.1rem; font-size: 0.86rem; line-height: 1.55; }
+  .notes ul li { margin-bottom: 0.4rem; }
+  .notes .delta { border: 1px solid var(--border); background: var(--panel); padding: 0.8rem 0.9rem; border-radius: 3px; font-size: 0.86rem; line-height: 1.55; }
+  .notes .delta.openq { border-color: var(--caution); }
+  .notes .delta + .delta { margin-top: 0.8rem; }
+
+  h3.section {
+    font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--muted); margin: 1.6rem 0 0.6rem;
+  }
+
+  footer.doc-footer {
+    padding: 1rem 2rem 2rem; font-size: 0.76rem; color: var(--muted); border-top: 1px solid var(--border);
+  }
+  footer.doc-footer strong { color: var(--text); }
+
+  @media (max-width: 900px) {
+    .notes { grid-template-columns: 1fr; }
+    .titleblock { grid-template-columns: 1fr 1fr; }
+    .titleblock .field.wide { grid-column: span 2; }
+  }
+  @media (max-width: 720px) {
+    .shell { flex-direction: column; }
+    nav.toc { width: 100%; border-right: none; border-bottom: 1px solid var(--border); padding: 0.6rem 0; }
+    nav.toc .legend { display: none; }
+    main { padding: 1.2rem 16px 3rem; }
+    header.masthead { padding: 1rem 16px; }
+    header.masthead .src { margin-left: 0; text-align: left; }
+    header.masthead .rule { display: none; }
+    .titleblock { grid-template-columns: 1fr; }
+    .titleblock .field { border-right: none; border-bottom: 1px solid var(--border); }
+    .titleblock .field.wide { grid-column: span 1; }
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <h1>Special Form Rating Chains</h1>
+  <div class="rule"></div>
+  <p>Every gate, branch and terminal in the Commercial Property Special cause-of-loss form (open perils, including theft) for the five coverages that rate it: Building, Personal Property, Special Class, Business Income and Special Class Business Income. Every rule and branch is checked against the built engine and ISO's rule XML as of 2026-10-06. CW 2023-08 V04 and CW 2026-06 are drawn together because their Special rules are byte-identical.</p>
+  <div class="src">Engine at 542f0e1 (stage2-interpreter, after the C28-17/18 silent-zero refusals)<br>Rule files: CommercialProperty{Structure, PersonalProperty, SpecialClass, BusinessIncome, SpecialClassBusnIncome}Rules + each coverage's SpecialCoverageRules<br>Companion: cf-bgi-chains.html · cf-bgii-chains.html · cf-broad-chains.html · docs/CF-CHUNK3-SPECIAL-STRUCTURE.md</div>
+</header>
+
+<div class="shell">
+  <nav class="toc" id="toc">
+    <button class="navlink active" data-target="overview">Overview<span class="chain-len">state rates, theft, an extra premium</span></button>
+    <hr>
+    <div class="group-label">Decision chains</div>
+    <button class="navlink" data-target="bldg">Building<span class="chain-len">one flat state rate · theft deductible</span></button>
+    <button class="navlink" data-target="pp">Personal Property<span class="chain-len">14 rules · occupancy, territory, credits</span></button>
+    <button class="navlink" data-target="sc">Special Class<span class="chain-len">Building's state rate · four-way deductible</span></button>
+    <button class="navlink" data-target="bi">Business Income<span class="chain-len">construction, apartment, theft · no factor</span></button>
+    <button class="navlink" data-target="scbi">Special Class Business Income<span class="chain-len">three pinned keys · own cause of loss</span></button>
+    <hr>
+    <div class="group-label">Comparison</div>
+    <button class="navlink" data-target="diff">Side by side<span class="chain-len">steps across 5 coverages · states · editions</span></button>
+    <hr>
+    <div class="group-label">Review</div>
+    <button class="navlink" data-target="review">Why the old sheets were replaced<span class="chain-len">45 items · 6 corrections</span></button>
+
+    <div class="legend">
+      <h4>Reading the chains</h4>
+      <div class="row"><span class="swatch sw-gate"></span> gate / branch condition</div>
+      <div class="row"><span class="swatch sw-step"></span> computed factor</div>
+      <div class="row"><span class="swatch sw-final"></span> premium resolves</div>
+      <div class="row"><span class="swatch sw-zero"></span> zero, refusal or clamp</div>
+      <div class="row"><span class="swatch sw-openq"></span> silent gap / open question</div>
+      <div class="row"><span class="swatch sw-engine"></span> engine layer, not an ISO rule</div>
+    </div>
+  </nav>
+
+  <main id="main">
+
+    <!-- ============================= OVERVIEW ============================= -->
+    <section class="sheet-view active" id="view-overview">
+      <div class="intro">
+        <h2>State-filed rates, a theft dimension, charged on top of Groups I and II</h2>
+        <p>Special adds to the Basic Group I and II premiums; it does not replace them. A Special building in Maine pays Group I $471, Group II $48 and Special $57. Building and Special Class read one flat state rate per state (the countrywide table is empty; 45 of 47 states file a row). Contents is the richest chain: occupancy category and risk severity pick the rate, the location's Special territory multiplies it, and two protective-safeguard credits can apply. The two Business Income coverages read a time-element table keyed by construction, extra expense and apartment status.</p>
+        <p>Theft runs through every chain: a theft exclusion multiplies the rate by a state factor (CW 0.88 for buildings; 29 states file their own), and Building, Contents and Special Class can carry a separate theft deductible. The rules are byte-identical in CW 2023-08 V04 and CW 2026-06. Probes ran in OK and ME (Building, Contents), OH (Special Class) and UT and IN (Business Income).</p>
+      </div>
+
+      <div class="cards">
+        <div class="card">
+          <div class="k">Editions</div>
+          <div class="v">No change</div>
+          <p>All ten Special rule files and their countrywide tables are byte-identical in CW 2023 V04 and CW 2026-06. States still on CW 2023 V02/V03 price blankets the older way.</p>
+          <button class="go" data-target="diff">Side by side →</button>
+        </div>
+        <div class="card">
+          <div class="k">Contents silent zeros</div>
+          <div class="v">Five inputs</div>
+          <p>A blank occupancy category, occupancy class, Special territory, Valuable Papers or a limit of 0 prices Contents Special $0 with outcome "rated". No refusal covers Contents.</p>
+          <button class="go" data-target="pp">See Contents →</button>
+        </div>
+        <div class="card">
+          <div class="k">New in Special</div>
+          <div class="v">Blank CovType</div>
+          <p>On Business Income a blank cover type gets base rate 0, zeroing Special, Group I and Group II together. Broad rated the same input at "All Other".</p>
+          <button class="go" data-target="bi">Open chain →</button>
+        </div>
+      </div>
+
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart LR
+    st(["SpecialBuildingRate<br/>one state row"]) --> bldg["Building: x LCM x theft x roof<br/>x coins x LOI x ded"]:::step
+    st --> sc["Special Class: x LCM x theft<br/>x coins x ded"]:::step
+    occ(["Occupancy category + severity,<br/>Special territory"]) --> pp["Contents: x theft x credits<br/>x coins x LOI x building's ded inputs"]:::step
+    te(["Time-element table:<br/>construction, EE, apartment"]) --> bi["Business Income: x LCM x theft"]:::step
+    te -->|"'Frame', 'Other than Apts'<br/>pinned"| scbi["SC Business Income:<br/>x LCM x 0.86 if excluded"]:::step
+    bldg --> f1["+ to Group I and II"]:::final
+    sc --> f1
+    pp --> f1
+    bi --> f1
+    scbi --> f1
+
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>Every theft exclusion is the coverage's own record. The building's exclusion does not touch Contents or Business Income; the item's does not touch SC Business Income.</li>
+            <li>The Business Income coverages ignore the Business Income factor, as in Broad: coinsurance, max period, monthly limit and operational unit leave Special unchanged.</li>
+            <li>A Business Income "apartment" is never an input: ISO derives it from the building's class code (0300–0343) and overwrites anything sent.</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>What the engine now refuses.</strong> C28-17 refuses a blank building <code>Deductible</code> on Special, but only for a submitted "Special" cause of loss on a plain building. Special Class's blank deductible or <code>PolicyType</code>, Contents' five blanks, Business Income's blank cover type and every blank <code>IncludedInBlkt</code> on the BI coverages still price $0 with outcome "rated", as ISO does. Unfiled theft deductibles, off-domain occupancy values and missing construction refuse at the table lookup.</div>
+      </div>
+    </section>
+
+    <!-- ============================= BUILDING ============================= -->
+    <section class="sheet-view" id="view-bldg">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Building / Structure</span></div>
+        <div class="field"><span class="k">Editions</span><span class="v">CW 2023-08 V04 = CW 2026-06 (byte-identical)</span></div>
+        <div class="field"><span class="k">Master chain</span><span class="v">SetSpecialRatesAndFactors :9529 (StructureRules), 9 rules: Theft :9561 → Base :9611 → Rate :9683 → COL :9702 → LOI :9713 → Adjusted :9904 → Special DedByLoc :9926 → Deductible :9977 → Final :10143. Runs after Broad, whatever the cause of loss.</span></div>
+        <div class="field"><span class="k">Premium file</span><span class="v">…StructureBuildingSpecialCoverageRules SetPremium :60; outer Builders Risk / Leasehold test :62</span></div>
+        <div class="field wide"><span class="k">Coverage gate</span><span class="v">CauseOfLossToUse = "Special" exactly (:32); for a blanketed building, the blanket's cause of loss. Group I and II also price on a Special building (ME 471 + 48 + 57).</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["Special building record<br/>CW 2023-08 V04 = CW 2026-06"]) --> colUse["CauseOfLossToUse = BlktCauseOfLossValue<br/>if IncludedInBlkt = Yes, else CauseOfLoss"]:::step
+    colUse --> theftGate{"CauseOfLossToUse = 'Special' AND<br/>Theft Exclusion record (CP 10 33)?"}
+    theftGate -->|"Yes"| theftLookup["SpecialBldgTheftExclusionFactor:<br/>state row first (ME 0.94),<br/>else CW 0.88"]:::step
+    theftGate -->|"No"| theftOne["Theft = 1.0"]:::step
+    theftLookup --> baseGate{"CauseOfLossToUse = 'Special'?"}
+    theftOne --> baseGate
+    baseGate -->|"No"| baseZero["BaseRate = 0.0"]:::zero
+    baseGate -->|"Yes"| classGate{"ClassCode = 1150?"}
+    classGate -->|"Yes"| brLookup["SpecialBuildersRiskRate:<br/>state row, else CW 0.015"]:::step
+    classGate -->|"No"| bldgLookup["SpecialBuildingRate: one flat<br/>state row (OK 0.074). CW has none.<br/>No construction, class or territory"]:::step
+    brLookup --> rate["Rate = r3(Base x LCM)"]:::step
+    bldgLookup --> rate
+    baseZero --> rate
+    rate --> colAdj["COLAdj = r3(r3(Rate x Theft)<br/>x RoofACV)"]:::step
+    colAdj --> loiGate{"LOI branch?"}
+    loiGate -->|"IncludedInBlkt = Yes,<br/>BlktIDNum &gt; 0"| loiBlkt["Copy BlktSpecialLOIFactor"]:::step
+    loiGate -->|"Builders Risk +<br/>BR reporting form"| loiBR["Lookup on the form's limit<br/>(0.0 if limit 0)"]:::step
+    loiGate -->|"not Leasehold / LL /<br/>No Coverage"| loiLim{"Limit &gt; 0?"}
+    loiLim -->|"Yes"| loiLook["Lookup BroadSpecialLOIFactorBldg<br/>(shared with Broad)"]:::step
+    loiLim -->|"No"| loiZero["LOI = 0.0"]:::zero
+    loiGate -->|"otherwise"| loiOne["LOI = 1.0"]:::step
+    coins["CoinsuranceFactor: the shared one<br/>(80% 1.0, 90% 0.95, 100% 0.90,<br/>70% 1.5, blank 1.0;<br/>1150 / Functional = 1.0)"]:::step --> adj
+    loiBlkt --> adj["Adjusted = r3(r3(COLAdj x Coins)<br/>x LOI)"]:::step
+    loiBR --> adj
+    loiLook --> adj
+    loiZero --> adj
+    loiOne --> adj
+    adj --> dedGate{"Deductible branch?<br/>(first match wins)"}
+    dedGate -->|"theft not excluded, TheftDeductible<br/>set, not N/A / 250 / = Deductible"| dedTheft["DeductibleFactor on TheftDeductible,<br/>SpecialIncludingTheftTotAmtInsurance"]:::step
+    dedGate -->|"Deductible OR<br/>TheftDeductible = 250"| ded250["Deductible250Factor<br/>'Special' (CW 1.1)"]:::step
+    dedGate -->|"Deductible =<br/>Not Applicable"| dedNA["Ded = 1.0"]:::step
+    dedGate -->|"Deductible, other value"| dedStd["DeductibleFactor on Deductible,<br/>SpecialTotAmtInsurance"]:::step
+    dedGate -->|"Deductible blank"| dedZero["Ded = 0.0"]:::zero
+    dbl["Special DedByLoc: by-location record<br/>with a TheftDeductible (not N/A)<br/>gives 0.995, else 1.0.<br/>Not the shared DedByLoc rule"]:::step --> final
+    dedTheft --> final["Final = r3(r3(Adjusted x DedByLoc)<br/>x Ded x MultiResCredit)"]:::step
+    ded250 --> final
+    dedNA --> final
+    dedStd --> final
+    dedZero --> final
+    final --> covGate{"CauseOfLossToUse = 'Special'?"}
+    covGate -->|"No"| premZero1["Coverage off, Premium = 0.0"]:::zero
+    covGate -->|"Yes"| outer{"(no BR reporting form OR<br/>CovType not Builders Risk)<br/>AND CovType not Leasehold?"}
+    outer -->|"No"| premZero2["Premium = 0.0"]:::zero
+    outer -->|"Yes"| covType{"CovType / IncludedInBlkt?"}
+    covType -->|"BR / Building / I&amp;B / Condo Assn,<br/>no BR form, IncludedInBlkt = No,<br/>CauseOfLoss = Special"| branchA["Premium: r0 at every step.<br/>Final x Limit/100, then x PackageMod,<br/>x MultiPrem, x IRPM, x 2 cyber"]:::final
+    covType -->|"Legal Liability,<br/>CauseOfLoss = Special"| branchB["Premium = r3(r3(SpecialRate x LLFactor)<br/>x AddlInsInt) x Limit/100 x PackageMod<br/>x IRPM x cyber: no theft, roof,<br/>coins, LOI or deductible"]:::final
+    covType -->|"IncludedInBlkt = Yes,<br/>BlktCauseOfLossValue = Special"| blktGate{"BlktTotalFullValueAmount &gt; 0?"}
+    blktGate -->|"No"| premZero3["Premium = 0.0"]:::zero
+    blktGate -->|"Yes"| branchC["Premium = r0(BlktSpecialAvgRate<br/>x FullBldgValue/BlktTotal x BlktLimit/100)<br/>x PackageMod x MultiPrem x IRPM x cyber"]:::final
+    covType -->|"other, incl. IncludedInBlkt blank"| premZero4["Premium = 0.0"]:::zero
+    bldgLookup -.- refRow["Engine: a state with no row refuses<br/>(SingleResult on CW). Only FL and PR<br/>lack one, and both override the rule"]:::eng
+    dedZero -.- c28["Engine C28-17 refuses only when submitted<br/>CauseOfLoss = 'Special', CovType blank or<br/>Building, and Special is on at $0"]:::eng
+    premZero3 -.- silent["Engine: other 0.0 endings rate silently,<br/>outcome 'rated': Limit 0, blanket total 0,<br/>blank Deductible on I&amp;B / Condo / BR or a<br/>blanketed building with no CauseOfLoss"]:::eng
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class theftGate,baseGate,classGate,loiGate,loiLim,dedGate,covGate,outer,covType,blktGate gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>The base rate is one number per state. Construction, class and territory don't touch it (blank construction, class or territory all give $84); only class 1150 switches to the Builders Risk table ($18).</li>
+            <li>The theft exclusion and the theft deductible pull against each other. Excluding theft applies 0.88 and switches the separate theft deductible off. A theft deductible of 250 beats a building deductible of 1,000 and picks the 1.1 factor ($96).</li>
+            <li>Limit 0 gives LOI 0.0 here, not 1.0 as in Broad.</li>
+            <li>The deductible-by-location factor is Special's own: only a by-location theft deductible gives 0.995.</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>The blank-deductible zero refuses only in its plainest form.</strong> C28-17 refuses it for a submitted "Special" cause on a blank or "Building" cover type. Improvements and Betterments, Condominium and Builders Risk buildings, a blanketed building whose own cause of loss is blank, Limit 0 and a blanket at 0 still price $0 "rated". A blank deductible with a separate theft deductible prices Special at $77, while Group I goes to $0 unrefused. <strong>State watch-items:</strong> FL and PR override the base rate (PR rewrites most of the chain); AL, KS and RI override the rate step; WV the cause-of-loss step; 29 states file their own theft factor (ME 0.94).</div>
+      </div>
+    </section>
+
+    <!-- ============================= PERSONAL PROPERTY ============================= -->
+    <section class="sheet-view" id="view-pp">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Personal Property (one record per occupancy class)</span></div>
+        <div class="field"><span class="k">Editions</span><span class="v">CW 2023-08 V04 = CW 2026-06 (byte-identical)</span></div>
+        <div class="field"><span class="k">Master chain</span><span class="v">SetSpecialRatesAndFactors :4382 (PersonalPropertyRules), 14 rules: Category :4400 → Severity :4405 → DedByLoc :4410 → Deductible :4426 → Theft :4592 → Base :4670 → Territory :4748 → Rate :4787 → COL :4837 → Watchman :4862 → Burglary :4943 → LOI :5024 → Adjusted :5112 → Final :5140</span></div>
+        <div class="field"><span class="k">Premium file</span><span class="v">…PrsnlPropSpecialCoverageRules SetPremium :169; SetLimitToUse :80 (Alcoholic Beverages Tax Exclusion)</span></div>
+        <div class="field wide"><span class="k">Coverage gate</span><span class="v">No SCP and no value-reporting form AND the item's own CauseOfLossToUse = "Special". Deductible inputs, DedByLoc and the safeguards schedule come from the building; Special territory from the location.</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["PP item, Special<br/>CW 2023-08 V04 = CW 2026-06"]) --> colUse["CauseOfLossToUse = the ITEM's<br/>CauseOfLoss (blanket: BlktCauseOfLossValue)"]:::step
+    colUse --> occCat["Copy OccupCategory + RiskSeverity<br/>from the occupancy. Severity is looked<br/>up there from category + occupancy class"]:::step
+    occCat --> theftGate{"CauseOfLossToUse = 'Special' AND<br/>PP Theft Exclusion record?"}
+    theftGate -->|"Yes"| occGate{"OccupCategory set?"}
+    occGate -->|"Yes"| theftLookup["SpecialPrsnlPropTheftExclusionFactor<br/>by category (OK Offices 0.4).<br/>CW has no rows"]:::step
+    occGate -->|"No"| theftZero["Theft = 0.0"]:::zero
+    theftGate -->|"No"| theftOne["Theft = 1.0"]:::step
+    theftLookup --> baseGate{"CauseOfLossToUse = 'Special' AND<br/>category and severity set?"}
+    theftZero --> baseGate
+    theftOne --> baseGate
+    baseGate -->|"No"| baseZero["BaseRate = 0.0"]:::zero
+    baseGate -->|"Yes"| baseLookup["SpecialPrsnlPropRate by category<br/>+ severity (OK Offices 0.114).<br/>CW has no rows"]:::step
+    baseLookup --> terrGate{"CauseOfLossToUse = 'Special' AND<br/>location SpecialRatingTerr set?"}
+    baseZero --> terrGate
+    terrGate -->|"No"| terrZero["Terr = 0.0"]:::zero
+    terrGate -->|"Yes"| terrLookup["PrsnlPropTerrMultiplier<br/>(OK Remainder 1.0, Tulsa 1.434).<br/>CW has no rows"]:::step
+    terrZero --> rateGate{"CauseOfLossToUse = 'Special'?"}
+    terrLookup --> rateGate
+    rateGate -->|"No"| rateZero["Rate = 0.0"]:::zero
+    rateGate -->|"Yes"| rate["Rate = r3(Terr x r3(Base x LCM))"]:::step
+    rate --> vpGate{"Valuable Papers?"}
+    rateZero --> vpGate
+    vpGate -->|"Yes"| colZero["COLAdj = 0.0"]:::zero
+    vpGate -->|"No"| colAdj["COLAdj = r3(Rate x Theft)<br/>no roof factor"]:::step
+    colAdj --> safeGate{"Safeguards schedule on building<br/>AND PP theft not excluded?"}
+    colZero --> safeGate
+    safeGate -->|"Yes"| credits["Each credit copied from the schedule<br/>only if its type is set and not N/A;<br/>else 1.0"]:::step
+    safeGate -->|"No"| creditOne["Both credits = 1.0"]:::step
+    credits --> loiGate{"LOI branch?"}
+    creditOne --> loiGate
+    loiGate -->|"IncludedInBlkt = Yes,<br/>BlktIDNum &gt; 0"| loiBlkt["Copy BlktSpecialLOIFactor"]:::step
+    loiGate -->|"building not LL, item not Tobacco,<br/>OccupSpecialTotAmtInsurance &gt; 0"| loiLook["Lookup BroadSpecialLOIFactorPrsnlProp<br/>on OccupSpecialTotAmtInsurance"]:::step
+    loiGate -->|"otherwise"| loiOne["LOI = 1.0"]:::step
+    coins["CoinsuranceFactor: the item's own"]:::step --> adj
+    loiBlkt --> adj["Adjusted = r3(r3(r3(r3(COLAdj x Coins)<br/>x Watchman) x Burglary) x LOI)"]:::step
+    loiLook --> adj
+    loiOne --> adj
+    dedInh["Deductible (runs 4th): Building's 4<br/>branches, on the BUILDING's Deductible<br/>and TheftDeductible, PP's own theft<br/>indicator. Blank: 0.0. Item's own<br/>Deductible is never read"]:::step --> final
+    dblInh["DedByLoc: copy of the building's<br/>Special DedByLoc"]:::step --> final
+    adj --> final["Final = r3(r3(Adjusted x DedByLoc) x Ded)<br/>no MultiResCredit"]:::step
+    final --> covGate{"No SCP record, no VRF record<br/>AND CauseOfLossToUse = 'Special'?"}
+    covGate -->|"No"| premZero1["Coverage off, Premium = 0.0"]:::zero
+    covGate -->|"Yes"| covForm{"CovForm / IncludedInBlkt?"}
+    covForm -->|"not LL / Tobacco / ClassRatedOnly,<br/>IncludedInBlkt = No,<br/>CauseOfLoss = Special"| abte{"Alcoholic Beverages Tax<br/>Exclusion record on the item?"}
+    abte -->|"Yes"| ltuA["LimitToUse = the record's Limit"]:::step
+    abte -->|"No"| ltuL["LimitToUse = Limit"]:::step
+    ltuA --> branchA["Premium = r0(r3(Final x LimitToUse/100)<br/>x PackageMod), then r0 x MultiPrem,<br/>x IRPM, x 2 cyber Special factors"]:::final
+    ltuL --> branchA
+    covForm -->|"Legal Liability Coverage Form<br/>(no cause-of-loss test)"| branchB["Premium = r3(r3(COLAdj x LegalLiabFactor)<br/>x AddlInsInt) x Limit/100 x PackageMod<br/>x IRPM x cyber: theft applies"]:::final
+    covForm -->|"not LL / Tobacco / ClassRatedOnly,<br/>IncludedInBlkt = Yes,<br/>BlktCauseOfLossValue = Special"| blktGate{"BlktTotalFullValueAmount &gt; 0?"}
+    blktGate -->|"No"| premZero2["Premium = 0.0"]:::zero
+    blktGate -->|"Yes"| branchC["Premium = r0(BlktLimit/100<br/>x FullPrsnlPropValue/BlktTotal<br/>x BlktSpecialAvgRate) x PackageMod<br/>x MultiPrem x IRPM x cyber"]:::final
+    covForm -->|"Tobacco / ClassRatedOnly /<br/>IncludedInBlkt blank / other"| premZero3["Premium = 0.0"]:::zero
+    dedInh -.- refDed["Engine: a blank building Deductible refuses<br/>the policy (PP stat-code SingleResult, keys<br/>CW + blank, C28-05), even when the<br/>building is not Special"]:::eng
+    baseZero -.- silent["Engine: C28-17 has no PP check. Blank<br/>category, occupancy class or territory,<br/>Valuable Papers and Limit 0 rate $0,<br/>outcome 'rated'"]:::eng
+    baseLookup -.- refRow["Engine: an off-domain category or<br/>territory refuses (SingleResult no row)"]:::eng
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class theftGate,occGate,baseGate,terrGate,rateGate,vpGate,safeGate,loiGate,covGate,covForm,abte,blktGate gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>Three state-only tables set the rate: category + severity pick the base, the Special territory multiplies it, and the theft factor depends on category. All three are empty countrywide; Oklahoma files all three.</li>
+            <li>The deductible is computed locally but from the building's deductible and theft deductible. The item's own deductible changes nothing.</li>
+            <li>Each safeguard credit needs its type field as well as its factor, or it stays 1.0. Excluding Contents theft turns both credits off; the building's theft exclusion doesn't touch Contents.</li>
+            <li>The Alcoholic Beverages Tax Exclusion swaps the limit and also moves LOI and the deductible ($59, not $50).</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>Special Contents has the most silent zeros of any form, and C28-17 checks none.</strong> A blank occupancy category, a blank occupancy class (severity goes blank), a blank Special territory, Valuable Papers and a limit of 0 all price $0 with outcome "rated". Wrong values refuse instead. A blank <em>building</em> deductible refuses first, at Contents' stat-code lookup (C28-05), even under a non-Special building.</div>
+      </div>
+    </section>
+
+    <!-- ============================= SPECIAL CLASS ============================= -->
+    <section class="sheet-view" id="view-sc">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Special Class</span></div>
+        <div class="field"><span class="k">Editions</span><span class="v">CW 2023-08 V04 = CW 2026-06 (byte-identical)</span></div>
+        <div class="field"><span class="k">Master chain</span><span class="v">SetSpecialRatesAndFactors :3916 (SpecialClassRules), 9 steps: Theft indicator :3929 → Theft :3948 → Base :3998 → Rate :4048 → COL :4067 → Adjusted :4075 → Special DedByLoc :4094 → Deductible :4145 → Final :4293</span></div>
+        <div class="field"><span class="k">Premium file</span><span class="v">…SpecialClassSpecialCoverageRules SetPremium :60</span></div>
+        <div class="field wide"><span class="k">Coverage gate</span><span class="v">Item's CauseOfLossToUse = "Special" exactly (:32); the record is always appended; a blanket item takes the blanket's cause of loss. Group I and II also price ($66 + $544 + $42).</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["Special Class item<br/>Special record always created"]) --> covGate{"Coverage on: CauseOfLossToUse<br/>= 'Special' exactly?<br/>(blanket item: blanket's COL)"}
+    covGate -->|"No"| off["Indicator 0, Premium 0.0<br/>(coverage off)"]:::zero
+    covGate -->|"Yes"| theftInd{"Item has a theft<br/>exclusion record?"}
+    theftInd -->|"Yes"| theftF["TheftFactor =<br/>SpecialBldgTheftExclusionFactor['Y']<br/>CW 0.88; 29 states own (OH 0.91)"]:::step
+    theftInd -->|"No"| theftOne["TheftFactor = 1.0"]:::step
+    theftF --> baseGate
+    theftOne --> baseGate
+    baseGate{"Also policy PolicyType =<br/>'Commercial Property Policy'?"}
+    baseGate -->|"No"| baseZero["BaseRate = 0.0"]:::zero
+    baseZero --> engZ1["Engine: $0, outcome 'rated'<br/>(PolicyType blank or SPP)"]:::eng
+    baseGate -->|"Yes"| lookup["SpecialBuildingRate[state, 'Y']<br/>CW has no rows; 45 states file one<br/>(OH 0.045 / 0.046). Shared with Building.<br/>Construction never read"]:::step
+    lookup --> rate["Rate = r3(Base x LCM)"]:::step
+    rate --> colAdj["COLAdj = r3(Rate x TheftFactor)<br/>no roof factor"]:::step
+    colAdj --> adj["Adjusted = r3(COLAdj x CoinsuranceFactor)<br/>shared item factor; no LOI factor"]:::step
+    adj --> dedChoose{"Deductible choice,<br/>first match wins"}
+    dedChoose -->|"1: theft covered, TheftDeductible<br/>set, not N/A, not 250,<br/>not = Deductible"| dTheft["DeductibleFactor[TheftDed,<br/>incl.-theft amount band,<br/>'Other Cause Of Loss']"]:::step
+    dedChoose -->|"2: Deductible or<br/>TheftDeductible = 250"| d250["Deductible250Factor<br/>['Special'] CW 1.1.<br/>Theft exclusion not tested"]:::step
+    dedChoose -->|"3: Deductible set, not 250"| dLook["DeductibleFactor[ded,<br/>amount band, 'Other Cause Of Loss']"]:::step
+    dedChoose -->|"4: otherwise"| dZero["DedFactor = 0.0"]:::zero
+    dZero --> engZ2["Engine: $0, outcome 'rated'.<br/>C28-17 covers Building's<br/>Special only"]:::eng
+    dTheft -->|"value not filed"| refuse1["Engine: refused<br/>(SingleResult miss)"]:::eng
+    dLook -->|"value not filed, or N/A"| refuse1
+    dTheft --> finalRate
+    d250 --> finalRate
+    dLook --> finalRate
+    finalRate["Final = r3(r3(Adjusted x DedByLoc) x Ded)<br/>DedByLoc: shared 0.995 if the by-location<br/>record has a Deductible, else 1.0"]:::step
+    finalRate --> blktTest{"IncludedInBlkt = 'Yes'?"}
+    blktTest -->|"No, or blank"| branchB["Scheduled: Limit/100 x Final,<br/>x PackageMod, x MultiPrem,<br/>x IRPM, x 2 cyber factors.<br/>Rounded to $1 after EACH step"]:::final
+    blktTest -->|"Yes"| blktGate{"BlktTotalFullValueAmount &gt; 0?"}
+    blktGate -->|"No"| premZero["Premium = 0.0"]:::zero
+    premZero --> engZ3["Engine: $0, outcome 'rated'"]:::eng
+    blktGate -->|"Yes"| branchA["Blanket: BlktLimit/100 x<br/>Full/BlktTotal x BlktSpecialAvgRate,<br/>then the same factor ladder"]:::final
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class covGate,theftInd,baseGate,dedChoose,blktTest,blktGate gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>The base rate is Building's state row: construction, cover type and an apartment indicator change nothing ($42). Ohio files 0.045, then 0.046.</li>
+            <li>The deductible is a four-way choice. A separate theft deductible wins when theft is covered (5,000 gives $33). A 250 on either deductible uses 1.1, even when theft is excluded ($43).</li>
+            <li>The Special-specific by-location factor is computed but only the blanket average reads it; the scheduled final rate uses the shared one.</li>
+            <li>The premium rounds to the dollar after each of six multiplications and applies the multi-premium credit.</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>Four silent $0 endings, all with the coverage on.</strong> A blank deductible with no usable theft deductible, a blank or Standard Property <code>PolicyType</code>, and a blanket item with a blank full value each price Special $0 with outcome "rated". An unlisted theft deductible refuses on Special's own lookup, the only Special-specific refusal. <strong>State watch-items:</strong> KS drops the <code>PolicyType</code> test; AL, KS and RI add <code>PublicInstitutionalPlanFactor</code>; FL drops the by-location factor and uses its own rates; PR renames the cause of loss and rewrites the chain; 29 states file their own theft factor (OH 0.91).</div>
+      </div>
+    </section>
+
+    <!-- ============================= BUSINESS INCOME ============================= -->
+    <section class="sheet-view" id="view-bi">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Business Income (child of Structure)</span></div>
+        <div class="field"><span class="k">Editions</span><span class="v">CW 2023-08 V04 = CW 2026-06 (byte-identical); UT and IN override nothing</span></div>
+        <div class="field"><span class="k">Master chain</span><span class="v">SetSpecialRatesAndFactors :4089 (BusinessIncomeRules), 6 rules: Theft indicator :4099 → Type of risk :4118 → Theft factor :4167 → Base :4221 → Rate :4361 → COL :4408; then SetFinalSpecialRate (a copy)</span></div>
+        <div class="field"><span class="k">Premium file</span><span class="v">…BusinessIncomeSpecialCoverageRules SetPremium :60 (Broad's file with "Broad" renamed)</span></div>
+        <div class="field wide"><span class="k">Coverage gate</span><span class="v">CauseOfLossToUse = "Special" exactly (:32), else premium 0.0; the record is appended to every BI. Apartment indicator derived by the Structure from ClassCodeToUse (:3931).</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["Business Income record, child of Structure<br/>Special coverage record auto-added to every BI"]) --> blktCol{"IncludedInBlkt = 'Yes'?"}
+    blktCol -->|"Yes"| colBlkt["CauseOfLossToUse = matched blanket<br/>Detail's CauseOfLoss, else 'Not Applicable'"]:::step
+    blktCol -->|"No / blank"| colOwn["CauseOfLossToUse = BI CauseOfLoss"]:::step
+    colBlkt --> theftInd
+    colOwn --> theftInd["TheftExclIndicator = 1 if a<br/>TheftExclusionBusnIncome record exists, else 0"]:::step
+    theftInd --> aci["Structure.ApartmentCondoIndicator: derived,<br/>class 0300-0343 = 'Yes', else 'No'<br/>a submitted value is overwritten"]:::step
+    aci --> typeRisk["TypeRisk = 'Apartments and Condominiums'<br/>or 'Other than ...' when COL = 'Special', else blank"]:::step
+    typeRisk --> theftGate{"COL = 'Special' AND indicator 1<br/>AND apartment indicator non-blank?"}
+    theftGate -->|"Yes"| theftLookup["SpecialLeaseHoldTimeElementTheftExclusionFactor<br/>[state, else CW; ApartmentCondoIndicator]<br/>CW Yes 0.96, No 0.86"]:::step
+    theftGate -->|"No"| theftOne["TheftExclFactor = 1.0"]:::step
+    theftLookup --> colGate
+    theftOne --> colGate{"CauseOfLossToUse = 'Special' exactly?"}
+    colGate -->|"No"| baseZero["SpecialBaseRate = 0.0, SpecialRate = 0.0"]:::zero
+    colGate -->|"Yes"| c1150{"Structure.ClassCodeToUse = '1150'?"}
+    c1150 -->|"Yes"| brLookup["SpecialFormBldrsRiskTimeElementBaseRate<br/>[state, else CW; 'Y'] CW 0.018<br/>CovType and type of risk not read"]:::step
+    c1150 -->|"No"| typeRiskGate{"TypeRisk non-blank?<br/>always Yes here"}
+    typeRiskGate -->|"No"| trZero["SpecialBaseRate = 0.0"]:::zero
+    typeRiskGate -->|"Yes"| covTypeGate{"CovType?"}
+    covTypeGate -->|"BI Without Extra Expense"| lookupWO["SpecialFormIncldgTheftTimeElementBaseRate<br/>[state, else CW; Structure construction; WO EE; TypeRisk]<br/>Other 0.033 / 0.027, Apt 0.016 / 0.010"]:::step
+    covTypeGate -->|"any other non-blank"| lookupAll["same table, 'All Other'<br/>Other 0.047 / 0.035, Apt 0.029 / 0.017"]:::step
+    covTypeGate -->|"blank"| covZero["SpecialBaseRate = 0.0"]:::zero
+    brLookup --> rate
+    lookupWO --> rate
+    lookupAll --> rate["SpecialRate = r3(Base x LCM)<br/>LCM: BI's own, else the Structure's"]:::step
+    rate --> colAdj["COLAdj = r3(SpecialRate x TheftExclFactor)<br/>also on the 1150 path"]:::step
+    colAdj --> finalRate["FinalSpecialRate = copy of COLAdj<br/>no Factor, coinsurance, LOI, deductible,<br/>BuildersRiskFactor, op unit"]:::step
+    finalRate --> covGate{"CoverageOnPolicyIndicator:<br/>CauseOfLossToUse = 'Special'?"}
+    covGate -->|"No: 0"| premZero1["Premium = 0.0, not attached"]:::zero
+    covGate -->|"Yes: 1"| blktTest{"IncludedInBlkt = 'No'?"}
+    blktTest -->|"Yes"| branchA["Scheduled = r0(r0(r0(r0(IRPM x Pkg<br/>x FinalSpecialRate x Limit/100)) x CyberExclSpecial)<br/>x CyberCOLExcptnsBusnIncomeSpecialToUse)"]:::final
+    blktTest -->|"No: 'Yes' or blank"| blktAmt{"BlktTotalFullValueAmount &gt; 0?"}
+    blktAmt -->|"Yes"| branchB["Blanket = same nesting on BlktSpecialAvgRate<br/>x FullBusnIncomeValue / BlktTotalFullValueAmount<br/>x BlktLimit/100"]:::final
+    blktAmt -->|"No"| premZero2["Premium = 0.0"]:::zero
+    covZero -.->|"CovType blank"| silent["Engine: $0, indicator 1, outcome 'rated'<br/>not in SILENT_ZERO_INPUTS"]:::eng
+    premZero2 -.->|"IncludedInBlkt blank"| silent
+    branchB -.->|"Detail Type blank: avg rate 0"| silent
+    lookupAll -.->|"no construction"| refuse["Engine: refused, SingleResult no row<br/>contract 7, not C28-17"]:::eng
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class blktCol,theftGate,colGate,c1150,typeRiskGate,covTypeGate,covGate,blktTest,blktAmt gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>Special is added on top of Group I and II: BGI $1,390 + BGII $70 + Special $470 in Utah.</li>
+            <li>Four things set the rate: construction (two bands), extra expense or not, apartment or not, and the theft exclusion (0.86 / 0.96, rounded: $470 becomes $400).</li>
+            <li>"Apartment" is derived from the building's class code (0300–0343); a submitted value is overwritten.</li>
+            <li>Class 1150 skips the table: a flat 0.018 that ignores the cover type, though the theft factor still applies ($150).</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>A blank cover type zeroes Special, and Group I and II with it.</strong> "All Other" applies only to a non-blank cover type; blank falls to base 0.0, so the premium is $0 with the coverage on and outcome "rated" (UT and IN, both dates). Broad rated the same input at "All Other". A blank <code>IncludedInBlkt</code> and a blanket Detail with no <code>Type</code> also give $0 "rated". Missing construction refuses at the lookup. <strong>Watch-items:</strong> PR rewrites the chain (own causes of loss, no theft factor); FL files its own rates; NY, KS and VT 2020–22 packages override the rate step with the same math.</div>
+      </div>
+    </section>
+
+    <!-- ============================= SC BUSINESS INCOME ============================= -->
+    <section class="sheet-view" id="view-scbi">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Special Class Business Income (child of a Special Class item)</span></div>
+        <div class="field"><span class="k">Editions</span><span class="v">CW 2023-08 V04 = CW 2026-06 (byte-identical)</span></div>
+        <div class="field"><span class="k">Master chain</span><span class="v">SetSpecialRatesAndFactors :3234 (SpecialClassBusnIncomeRules), 5 steps: Theft indicator :3243 → Theft :3262 → Base :3312 → Rate :3392 → COL :3439; then SetFinalSpecialRate :6987 (a copy)</span></div>
+        <div class="field"><span class="k">Premium file</span><span class="v">…SpecialClassBusnIncomeSpecialCoverageRules SetPremium :60, a three-way Choose</span></div>
+        <div class="field wide"><span class="k">Coverage gate</span><span class="v">This record's own CauseOfLossToUse = "Special" (:32); the item's is never read. Own LCM, own theft exclusion record.</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["SCBI record, child of a<br/>Special Class item.<br/>Special record always created"]) --> covGate{"Coverage on: OWN<br/>CauseOfLossToUse = 'Special'?<br/>(parent's COL not read)"}
+    covGate -->|"No"| off["Indicator 0, Premium 0.0<br/>(coverage off)"]:::zero
+    covGate -->|"Yes"| theftInd{"OWN theft exclusion record?<br/>(the item's is not read)"}
+    theftInd -->|"Yes"| theftF["TheftFactor = LeaseHold table<br/>key: CONSTANT 'No', CW 0.86.<br/>The 0.96 'Yes' row is unreachable"]:::step
+    theftInd -->|"No"| theftOne["TheftFactor = 1.0"]:::step
+    theftF --> covType
+    theftOne --> covType
+    covType{"Own CovType = 'Business<br/>Income Without Extra Expense'?<br/>(no PolicyType test)"}
+    covType -->|"Yes"| lookupWO["TimeElement base rate<br/>['Frame', 'BI w/o EE',<br/>'Other than Apts']: CW 0.033"]:::step
+    covType -->|"No: With EE, EE Only,<br/>or blank"| lookupAll["TimeElement base rate<br/>['Frame', 'All Other',<br/>'Other than Apts']: CW 0.047"]:::step
+    lookupWO --> lcmGate
+    lookupAll --> lcmGate
+    lcmGate{"Own LossCostMultiplier<br/>submitted?"}
+    lcmGate -->|"Yes"| lcmOwn["Use own LCM"]:::step
+    lcmGate -->|"No"| lcmPar["Copy the parent's LCM<br/>(the only value borrowed)"]:::step
+    lcmOwn --> rate
+    lcmPar --> rate
+    rate["Rate = r3(Base x LCM)"]:::step
+    rate --> colAdj["COLAdj = r3(Rate x TheftFactor)"]:::step
+    colAdj --> finalRate["Final = copy of COLAdj<br/>Factor computed, not used.<br/>No coinsurance, LOI or deductible"]:::step
+    finalRate --> blktTest{"Own IncludedInBlkt?"}
+    blktTest -->|"'No'"| branchA["Scheduled: round(IRPM x PackageMod<br/>x Final x Limit/100), then<br/>x 2 cyber factors. No MultiPrem"]:::final
+    blktTest -->|"'Yes'"| blktAmt{"BlktTotalFullValueAmount &gt; 0?"}
+    blktAmt -->|"No"| premZero1["Premium = 0.0"]:::zero
+    blktAmt -->|"Yes"| branchB["Blanket: round(IRPM x PackageMod<br/>x BlktSpecialAvgRate x Full/BlktTotal<br/>x BlktLimit/100) x 2 cyber factors"]:::final
+    blktTest -->|"blank or other"| premZero2["Premium = 0.0<br/>(Otherwise branch)"]:::zero
+    premZero1 --> engZ["Engine: $0, outcome 'rated'"]:::eng
+    premZero2 --> engZ
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class covGate,theftInd,covType,lcmGate,blktTest,blktAmt gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>Three pinned keys: the theft factor keys on a constant "No" (always 0.86), the base rate on "Frame" and "Other than Apartments and Condominiums". Apartment indicators change nothing.</li>
+            <li>The cover type is the only live key: 0.033 without extra expense ($33), "All Other" 0.047 otherwise, blank included ($47).</li>
+            <li>No <code>PolicyType</code> test: a Standard Property policy that zeroes the item still prices this at $47.</li>
+            <li>It borrows only the item's loss cost multiplier, and only when it sends none.</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>Two silent zeros, nothing refused.</strong> A blank <code>IncludedInBlkt</code> goes straight to $0 (only "No" reaches the scheduled formula), and a blanket record with a blank full value prices $0; both are "rated". The scheduled premium has no multi-premium credit. State watch-items: FL files its own base-rate table; PR rewrites the base rate, theft steps and coverage gate; no state changes the three literals.</div>
+      </div>
+    </section>
+
+    <!-- ============================= SIDE BY SIDE ============================= -->
+    <section class="sheet-view" id="view-diff">
+      <div class="intro">
+        <h2>Five Special chains, three rate tables</h2>
+        <p>Each row is one step; a dash means the coverage has no such step.</p>
+      </div>
+      <div class="tablewrap">
+        <table class="grid">
+          <thead><tr><th>Step</th><th>Building</th><th>Personal Property</th><th>Special Class</th><th>Business Income</th><th>SC Business Income</th></tr></thead>
+          <tbody>
+            <tr><th>Base rate</th><td>One state row; 1150 → Builders Risk</td><td>Category + severity (state)</td><td>Building's state row</td><td>Construction x EE x apartment; 1150 flat 0.018</td><td>"Frame", "Other than Apts" pinned; EE live</td></tr>
+            <tr><th>Territory</th><td>—</td><td>Special territory multiplier</td><td>—</td><td>—</td><td>—</td></tr>
+            <tr><th>Theft exclusion</th><td>State factor (CW 0.88)</td><td>By category (state)</td><td>State factor (CW 0.88)</td><td>0.86 / 0.96 by derived apartment</td><td>Constant "No": 0.86</td></tr>
+            <tr><th>Credits / roof</th><td>Roof factor</td><td>Watchman, burglary alarm</td><td>—</td><td>—</td><td>—</td></tr>
+            <tr><th>Coinsurance</th><td>Shared factor</td><td>Shared factor</td><td>Shared factor</td><td>—</td><td>—</td></tr>
+            <tr><th>LOI</th><td>Broad/Special table; Limit 0 → 0.0</td><td>Broad/Special table</td><td>—</td><td>—</td><td>—</td></tr>
+            <tr><th>Deductible</th><td>Theft / 250 / N/A / ordinary / blank → 0</td><td>Same, from building inputs</td><td>Theft / 250 / ordinary / blank → 0</td><td>—</td><td>—</td></tr>
+            <tr><th>Extra base test</th><td>—</td><td>—</td><td>Policy <code>PolicyType</code> = CPP</td><td>—</td><td>—</td></tr>
+            <tr><th>Legal Liability</th><td>Raw rate</td><td>Rate x theft</td><td>—</td><td>—</td><td>—</td></tr>
+            <tr><th>Multi-premium credit</th><td>Applied (not on LL)</td><td>Applied (not on LL)</td><td>Applied</td><td>Not applied</td><td>Not applied</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="intro">
+        <h2>Editions: nothing changed; states: rates and theft factors</h2>
+        <p>All ten rule files and every countrywide table are byte-identical in CW 2023-08 V04 and CW 2026-06. The countrywide building, Contents, territory and Contents-theft tables are empty, so Special is state-filed by design: 45 of 47 states file the building row and the three Contents tables, FL and PR use their own rules, and 29 jurisdictions file their own building theft factor. Premiums moved between the probe dates only through state data (Ohio's Special Class rate 0.045 to 0.046). States still resolving CW 2023 V02/V03 price the blanket branch with <code>BlktProportion</code> and no total &gt; 0 guard.</p>
+      </div>
+    </section>
+
+    <!-- ============================= REVIEW ============================= -->
+    <section class="sheet-view" id="view-review">
+      <div class="intro">
+        <h2>What the all-coverage page got wrong or left out for Special</h2>
+        <p><code>cf-rating-chains.html</code> drew one Special sheet per coverage from the CW 2026-06 rule XML. On 2026-10-06 those five sheets were removed and now link here. Items the engine confirmed are listed at the foot of each table.</p>
+      </div>
+      <div class="tablewrap">
+        <table class="grid">
+          <caption>Building</caption>
+          <thead><tr><th>#</th><th>All-coverage page said</th><th>Engine / XML shows</th><th>Kind</th></tr></thead>
+          <tbody>
+            <tr><th>1</th><td>Deductible: theft separate / 250 / N/A / standard</td><td><strong>The theft branch also needs theft not excluded and a theft deductible distinct from 250, N/A and the deductible; 250 fires on either field; a blank deductible gives 0.0</strong></td><td><span class="tag bad">correction</span></td></tr>
+            <tr><th>2</th><td>Theft: CP 10 33 → 0.88, CW</td><td>The state row is read first; 29 jurisdictions file one (ME 0.94)</td><td>clarified</td></tr>
+            <tr><th>3</th><td>SpecialBuildingRate "CW row not filed" (open question)</td><td>Closed: 45 of 47 states file it; a state without one refuses; FL and PR override</td><td>out of date</td></tr>
+            <tr><th>4</th><td>LOI four branches</td><td>Limit &gt; 0 is tested inside the normal branch, so Limit 0 gives 0.0 (Broad gave 1.0)</td><td>incomplete</td></tr>
+            <tr><th>5</th><td>Final = Adjusted x DedByLoc x Ded x MultiRes</td><td>DedByLoc is Special's own: only a by-location theft deductible gives 0.995</td><td>clarified</td></tr>
+            <tr><th>6</th><td>Scheduled: "nested Product, no Round, Special-only quirk" (open question)</td><td>Rounds at each step; Contents Special has the same shape; also needs the submitted cause of loss</td><td>clarified</td></tr>
+            <tr><th>7</th><td>No engine behaviour drawn</td><td>C28-17 refuses part of the blank-deductible case; I&amp;B, blanket with blank cause, Limit 0, blanket 0 stay silent</td><td>missing</td></tr>
+            <tr><th>8</th><td>Extra premium not stated</td><td>Group I and II also price on a Special building</td><td>missing</td></tr>
+            <tr><td colspan="4">Confirmed: line numbers, coverage gate, Builders Risk 0.015, Rate = Base x LCM, COLAdj = Rate x theft x roof, adjusted rate, inner Builders Risk / Leasehold gate, Legal Liability on the raw rate, blanket branch, flat statewide rate, ISO-confirmed $54 OR / $38 FL.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="tablewrap">
+        <table class="grid">
+          <caption>Personal Property</caption>
+          <thead><tr><th>#</th><th>All-coverage page said</th><th>Engine / XML shows</th><th>Kind</th></tr></thead>
+          <tbody>
+            <tr><th>9</th><td>Scheduled premium "matches Building's Special quirk"</td><td><strong>First step is r3(Final x LimitToUse/100), then r0 per factor; Building starts with r0. Also needs CovForm not LL / Tobacco / ClassRatedOnly</strong></td><td><span class="tag bad">correction</span></td></tr>
+            <tr><th>10</th><td>Deductible: "the one PP form that computes it locally"</td><td>Local rule, but it reads the building's deductible and theft deductible; the item's own is never read; blank → 0.0</td><td>incomplete</td></tr>
+            <tr><th>11</th><td>Chain order</td><td>The deductible runs 4th, before the theft factor</td><td>clarified</td></tr>
+            <tr><th>12</th><td>Category and severity copied from the occupancy</td><td>Severity is derived from category + occupancy class; blank → $0; off-domain refuses</td><td>clarified</td></tr>
+            <tr><th>13</th><td>Theft gate on the building's CP 10 33</td><td>The item's own theft exclusion record</td><td>clarified</td></tr>
+            <tr><th>14</th><td>Safeguard credits</td><td>Each also needs its type field, or stays 1.0; the schedule is the building's</td><td>clarified</td></tr>
+            <tr><th>15</th><td>LOI blanket / lookup / 1.0</td><td>Keys the occupancy's Special total; Limit 0 → 1.0</td><td>clarified</td></tr>
+            <tr><th>16</th><td>Final = Adjusted x DedByLoc x Ded</td><td>DedByLoc is a copy of the building's Special one</td><td>clarified</td></tr>
+            <tr><th>17</th><td>Alcoholic Beverages Tax Exclusion (open question)</td><td>Closed: it swaps the limit and also moves LOI and the deductible</td><td>clarified</td></tr>
+            <tr><th>18</th><td>Blanket: total &gt; 0 AND Special</td><td>The Special and Yes tests are in the branch condition; total &gt; 0 inside</td><td>clarified</td></tr>
+            <tr><th>19</th><td>Delta: LL "uses the adjusted rate"</td><td>It uses rate x theft, not the adjusted rate</td><td>clarified</td></tr>
+            <tr><th>20</th><td>No engine behaviour drawn</td><td>Five silent zeros; refusals only at lookups and the building's deductible stat code</td><td>missing</td></tr>
+            <tr><td colspan="4">Confirmed: line numbers, coverage gate, base and territory lookups, rate, Valuable Papers zero, adjusted rate, Legal Liability (P10 $57), three empty CW tables, 14 rules.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="tablewrap">
+        <table class="grid">
+          <caption>Special Class</caption>
+          <thead><tr><th>#</th><th>All-coverage page said</th><th>Engine / XML shows</th><th>Kind</th></tr></thead>
+          <tbody>
+            <tr><th>21</th><td>Premium uses "standard nested Round, not Building's Product-only quirk"</td><td><strong>No Round element: nested Products rounding to $1 at each of six steps, like Building and SC Broad</strong></td><td><span class="tag bad">correction</span></td></tr>
+            <tr><th>22</th><td>Theft factor 0.88, CW</td><td>Only the CW row: 29 states file their own (OH 0.91)</td><td>incomplete</td></tr>
+            <tr><th>23</th><td>Base gate: Special AND PolicyType = CPP</td><td><code>PolicyType</code> is the policy's: blank or SPP prices $0 with the coverage on</td><td>incomplete</td></tr>
+            <tr><th>24</th><td>Shares Building's empty table (open question)</td><td>Closed: 45 states file the row (OH 0.045 / 0.046)</td><td>clarified</td></tr>
+            <tr><th>25</th><td>Coverage gate after the final rate</td><td>The record's on/off switch; a blanket item takes the blanket's cause of loss</td><td>clarified</td></tr>
+            <tr><th>26</th><td>Four-way deductible, "same shape as Building's"</td><td>Branch 1 uses the theft deductible and band; 250 ignores the theft exclusion ($43); otherwise → $0 rated</td><td>incomplete</td></tr>
+            <tr><th>27</th><td>Final = Adjusted x DedByLoc x Ded</td><td>Uses the shared DedByLoc; the Special one feeds only the blanket average</td><td>incomplete</td></tr>
+            <tr><th>28</th><td>Blanket / scheduled</td><td>Blank IncludedInBlkt goes scheduled; blank full value on a blanket → $0 rated</td><td>incomplete</td></tr>
+            <tr><th>29</th><td>Extra premium not stated</td><td>Group I and II also price ($66 + $544 + $42)</td><td>missing</td></tr>
+            <tr><td colspan="4">Confirmed: line numbers, 9 steps, no Builders Risk branch, Rate = Base x LCM, COLAdj = Rate x theft, adjusted rate with no LOI, two branches, 45 of 47 states filed.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="tablewrap">
+        <table class="grid">
+          <caption>Business Income</caption>
+          <thead><tr><th>#</th><th>All-coverage page said</th><th>Engine / XML shows</th><th>Kind</th></tr></thead>
+          <tbody>
+            <tr><th>30</th><td>"All Other" branch, "not fully traced" (open question)</td><td><strong>Only a non-blank cover type gets "All Other"; blank gets base 0.0 and zeroes Special, Group I and II</strong></td><td><span class="tag bad">correction</span></td></tr>
+            <tr><th>31</th><td>Apartment/condo indicator, a dimension Building lacks (open question)</td><td>Closed: derived from the building's class code (0300–0343); submitted values are overwritten</td><td>clarified</td></tr>
+            <tr><th>32</th><td>Theft lookup by apartment indicator</td><td>CW values 0.96 / 0.86, rounded to 3 places ($470 → $400)</td><td>incomplete</td></tr>
+            <tr><th>33</th><td>1150 → Builders Risk table, CW 0.018</td><td>Uses the building's class; ignores cover type; theft factor still applies</td><td>clarified</td></tr>
+            <tr><th>34</th><td>Type-of-risk gate</td><td>Its "No → 0.0" branch is undrawn and unreachable with a Special cause</td><td>incomplete</td></tr>
+            <tr><th>35</th><td>Blanket cause of loss not mentioned</td><td>On a blanket it is the Detail's; a Special BI in a Basic blanket gets $0</td><td>missing</td></tr>
+            <tr><th>36</th><td>Blanket premium, no formula</td><td>Blanket average (carries the theft factor) x value share x blanket limit</td><td>incomplete</td></tr>
+            <tr><th>37</th><td>"IncludedInBlkt = 'No'?" two-way</td><td>Blank falls to the blanket side: $0 "rated", Group I and II too</td><td>missing</td></tr>
+            <tr><th>38</th><td>No zeros drawn</td><td>Blank cover type, blank IncludedInBlkt, untyped Detail, Limit 0 silent; no construction refuses</td><td>missing</td></tr>
+            <tr><th>39</th><td>Extra premium not stated</td><td>Group I and II still price on a Special BI</td><td>missing</td></tr>
+            <tr><th>40</th><td>"Varies by construction, unlike Bldg's", 6 steps</td><td>Two construction bands x EE x apartment, plus theft</td><td>clarified</td></tr>
+            <tr><td colspan="4">Confirmed: line numbers, coverage gate, theft indicator and gate, rows ($330 / $470), Rate = Base x LCM (own or building's), COLAdj = Rate x theft, final copy with no factor, Broad-shaped premium file, editions.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="tablewrap">
+        <table class="grid">
+          <caption>Special Class Business Income</caption>
+          <thead><tr><th>#</th><th>All-coverage page said</th><th>Engine / XML shows</th><th>Kind</th></tr></thead>
+          <tbody>
+            <tr><th>41</th><td>Base gate: Special AND PolicyType = CPP</td><td><strong>No PolicyType test: only the record's own cause of loss (SPP still $47)</strong></td><td><span class="tag bad">correction</span></td></tr>
+            <tr><th>42</th><td>IncludedInBlkt "No" → scheduled, otherwise the blanket test</td><td><strong>A three-way Choose: blank goes straight to $0; no multi-premium credit</strong></td><td><span class="tag bad">correction</span></td></tr>
+            <tr><th>43</th><td>Rate = Base x LCM</td><td>Its own LCM, the item's only when blank</td><td>incomplete</td></tr>
+            <tr><th>44</th><td>Theft gate, no apartment test</td><td>The exclusion record is this record's own; the item's doesn't reach it</td><td>clarified</td></tr>
+            <tr><th>45</th><td>Coverage gate</td><td>Its own cause of loss: Special here with Basic on the item prices $47</td><td>clarified</td></tr>
+            <tr><td colspan="4">Confirmed: line numbers, constant "No" theft key (0.86), cover-type rows ($33 / $47), "Frame" + "Other than Apts" pins, no Builders Risk branch, COLAdj, final copy, Broad-shaped premium file.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="doc-footer">
+  Sources: the built engine (<strong>cf_engine</strong> / interpreter at 542f0e1; probed at 3a5123b), probed offline on 2026-10-06 with no calls to ISO: Building and Personal Property in OK (ME cross-check), Special Class and Special Class Business Income in OH, Business Income in UT and IN, each at a date resolving CW 2023-08 V04 and one resolving CW 2026-06. The Contents blanket happy path and the state overrides other than those probed come from the XML only. ISO rule XML is under <code>F:\ISO_ERC_Files\CF</code>. Companion docs are in <code>CF_Algorithm</code>: <code>CauseOfLoss_*_RatingAlgorithms.md</code> and the Basic Group I, Basic Group II and Broad chain pages.
+</footer>
+
+<script>
+  (function () {
+    var toc = document.getElementById('toc');
+    var main = document.getElementById('main');
+
+    function activate(target) {
+      var views = main.querySelectorAll('.sheet-view');
+      for (var i = 0; i < views.length; i++) views[i].classList.remove('active');
+      var view = document.getElementById('view-' + target);
+      if (view) view.classList.add('active');
+
+      var links = toc.querySelectorAll('.navlink');
+      for (var j = 0; j < links.length; j++) {
+        links[j].classList.toggle('active', links[j].getAttribute('data-target') === target);
+      }
+      main.scrollTop = 0;
+      window.scrollTo(0, 0);
+    }
+
+    document.addEventListener('click', function (e) {
+      var btn = e.target.closest('button[data-target]');
+      if (btn) activate(btn.getAttribute('data-target'));
+    });
+
+    var hash = location.hash.slice(1);
+    if (hash && document.getElementById('view-' + hash)) activate(hash);
+  })();
+</script>
+
+<style>.mermaid-rendering .sheet-view{display:block!important}</style>
+<script type="module">
+  // Render every diagram once, with all sheets briefly visible so hidden tabs get real sizes.
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({ startOnLoad: false, securityLevel: "strict", flowchart: { wrappingWidth: 260 } });
+  document.documentElement.classList.add("mermaid-rendering");
+  try { await mermaid.run({ querySelector: "pre.mermaid" }); }
+  finally { document.documentElement.classList.remove("mermaid-rendering"); }
+</script>
+</body>
+</html>
