@@ -11,6 +11,22 @@ page and the deployed page agree with them; on drift it hands the problems back 
 
 ---
 
+## Pick up here (set 2026-10-06, end of day): the ISO Rating Test Console, RC-2 next
+
+**New workstream: the ISO Rating Test Console** ([`TC-PLAN.md`](TC-PLAN.md), from the design brief
+`Design brief questionnaire.zip`): seven screens replacing the testing pages `/tester`, `/tests`, `/review`. **13 of 38
+tasks; RC-0 and RC-1 done** (commit `75757f0`). All 22 decisions are the user's (D1-D22, in the plan).
+* RC-0: decisions, the old pages' parity list ([`TC-02-PARITY.md`](TC-02-PARITY.md)), call rules, GL step values, the
+  path census ([`TC-05-PATHS.md`](TC-05-PATHS.md)).
+* RC-1, the data layer `console/`: reference store (2,935 ISO answers + 1,060 GL premium rows), staleness, status
+  vocabulary, path config (`console/config/paths.json`), path signatures, mismatch categories, roll-up, and **the call
+  ledger, live inside `scripts/raas.py`: every ISO call counts toward 250 a day (150 active / 50 refresh / 50 ad hoc);
+  the chunk scripts and `/` share the ad hoc 50; past it, `RAAS_OVERRIDE="reason"` (logged).** Tests:
+  `tests/verify_console_rc1.py` (50 of 50).
+* **Next: RC-2** (TC-14..19): the console shell, `/api/console/readiness`, the Readiness Matrix, "Still to test", the
+  Coverage Board, seeded from the evidence held (no calls). Carry: GL has premium-level references only (bodies accrue
+  via the ledger); 344 CP answers have no request file.
+
 ## Pick up here (set 2026-10-06): chunk 28 GATED, 22 of 22; every planned chunk gated
 
 **Chunk 28 GATED 2026-10-06** ([`CF-CHUNK28-GATE.md`](CF-CHUNK28-GATE.md)): Sets A to G, each engine change
