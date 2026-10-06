@@ -399,7 +399,8 @@ def main():
         print("\nISO live at 2026-09-17 (predicted records, every premium field for field, the whole message set):")
         for cid, (task, label, state, build, recs, must, mustnot) in cs.items():
             sub = build()
-            eo = at(sub)[P].get(P + "MortgageholdersErrorsAndOmissionsCoverageFormTable")
+            # a policy-level field: read the policy directly (not every case has the occupancy node_dicts needs)
+            eo = sub["CommercialPropertyTable"]["CommercialProperty"][0].get(P + "MortgageholdersErrorsAndOmissionsCoverageFormTable")
             if eo:                                    # survives the numeric Limit conversion, restored below
                 for rec in eo[P + "MortgageholdersErrorsAndOmissionsCoverageForm"]:
                     rec["Limit"] = "25000"

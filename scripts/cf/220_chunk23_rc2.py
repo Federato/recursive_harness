@@ -57,11 +57,14 @@ def progress(i, n, what):
     print(f"[{i}/{n}  {mm}m{s:02d}s] {what}")
 
 
-def state_req(req, j):
+def state_req(req, j, localize=True):
     for c in req["body"]["CommercialProperty"]:
         c["State"] = j
     req["body"]["SchemeKeys"]["ProductName"] = r11.PRODUCT.format(state=j)
-    return req
+    if not localize:                           # a case whose missing input is the subject
+        return req
+    import _state_inputs                       # C28-17: the state's own Group II territory, as gc.run gives
+    return _state_inputs.localize_request(req, j)
 
 
 # ------------------------------------------------------------------ trees

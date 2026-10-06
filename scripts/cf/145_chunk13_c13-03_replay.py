@@ -186,6 +186,11 @@ def main():
             st, eff, ours = replay(req, None)
         except InterpretError as exc:
             refused += 1
+            if "is missing, and" in str(exc):
+                # C28-17 (the user's decision): this stored request is a silent zero ISO priced at $0 (no Group II
+                # territory); ours refuses it on purpose. Historical evidence, kept as sent; not a failure
+                print(f"  {name:40s} ours REFUSES by decision (C28-17): {str(exc)[:90]}")
+                continue
             print(f"  {name:40s} ours REFUSED: {str(exc)[:110]}")
             fails.append(name)
             continue

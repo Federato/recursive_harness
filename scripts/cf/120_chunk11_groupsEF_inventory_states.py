@@ -41,6 +41,7 @@ from cf_engine.config import NULL_ARITHMETIC, ROUNDING
 from cf_engine.resolve import book_for
 from gl_engine.interp import tree
 from gl_engine.interp.interpreter import Interpreter
+import _state_inputs as _si                                     # noqa: E402
 import _iso_refusals as _iso                                    # noqa: E402
 from gl_engine.interp.tree import Node, read
 
@@ -91,6 +92,7 @@ def books():
 
 
 def run_in(juris, sub):
+    _si.localize(sub, juris, ASOF)      # C28-17: the state's own Group II territory
     ip = Interpreter(book_for(juris, ASOF), rounding=ROUNDING, trace=False,
                      null_arithmetic=NULL_ARITHMETIC)
     data = Node.from_dict(f"MasterCF{juris}", sub)
@@ -246,14 +248,14 @@ def state_runs():
             same(got, "257"), f"got {got}")
 
     print("\nF1-F3  Florida, run")
-    d = run_in("FL", _iso.without_oregon_territories(g.submission()))   # C28-05: no Oregon territory in FL
+    d = run_in("FL", _iso.without_oregon_territories(g.submission(), "FL"))   # C28-05: no Oregon territory in FL
     got = tuple(read(f"{LI}/{f}", d) for f in (
         "NumOfMonthsRemainingAtInception", "NumOfMonthsRemainingAtExpiration",
         "TenantsNetLeaseholdInt"))
     verdict("F1 months 120/108, net 111,958 (2023 chain, same arithmetic)",
             all(same(a, b) for a, b in zip(got, ("120", "108", "111958"))), f"got {got}")
     li = dict(g.LI_RECORD, DiscFactor="0.99")
-    d2 = run_in("FL", _iso.without_oregon_territories(g.submission(li=li)))
+    d2 = run_in("FL", _iso.without_oregon_territories(g.submission(li=li), "FL"))
     got = (read(LI + "/DiscFactor", d2), read(LI + "/TenantsNetLeaseholdInt", d2))
     # Under V01 (CW 2023 V01, no IsNull guard on SetDiscFactor) an injected DiscFactor was
     # overwritten (0.99208894, net 111,958). Under V02 the parent is CW 2023 V04, which

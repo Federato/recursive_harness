@@ -142,6 +142,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from cf_engine.config import NULL_ARITHMETIC, ROUNDING
 from cf_engine.resolve import book_for
 from gl_engine.interp.interpreter import Interpreter
+import _state_inputs as _si                                     # noqa: E402
 from gl_engine.interp.tree import Node, dump, read
 from gl_engine.interp.values import InterpretError
 
@@ -243,7 +244,7 @@ def submission() -> dict:
 def run(trace=False):
     ip = Interpreter(book_for(JURIS, ASOF), rounding=ROUNDING, trace=trace,
                       null_arithmetic=NULL_ARITHMETIC)
-    data = Node.from_dict(f"MasterCF{JURIS}", submission())
+    data = Node.from_dict(f"MasterCF{JURIS}", _si.localize(submission(), JURIS, ASOF))
     ip.run(data)
     return data, ip
 
@@ -309,7 +310,7 @@ def sublimit_submission() -> dict:
 def run_sublimit(trace=False):
     ip = Interpreter(book_for(JURIS, ASOF), rounding=ROUNDING, trace=trace,
                       null_arithmetic=NULL_ARITHMETIC)
-    data = Node.from_dict(f"MasterCF{JURIS}", sublimit_submission())
+    data = Node.from_dict(f"MasterCF{JURIS}", _si.localize(sublimit_submission(), JURIS, ASOF))
     ip.run(data)
     return data, ip
 

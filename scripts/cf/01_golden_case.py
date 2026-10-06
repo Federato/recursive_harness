@@ -30,6 +30,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from cf_engine.config import NULL_ARITHMETIC, ROUNDING
 from cf_engine.resolve import book_for
 from gl_engine.interp.interpreter import Interpreter
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import _state_inputs as _si                                     # noqa: E402  C28-17: Oregon's own Group II inputs
 from gl_engine.interp.tree import Node, dump, read
 
 JURIS, ASOF = "OR", "20260917"
@@ -155,7 +157,7 @@ def rate(limit: int, contents: int, trace: bool):
     book = book_for(JURIS, ASOF)
     ip = Interpreter(book, rounding=ROUNDING, trace=True,
                           null_arithmetic=NULL_ARITHMETIC)
-    data = Node.from_dict("MasterCFOR", submission(limit, contents))
+    data = Node.from_dict("MasterCFOR", _si.localize(submission(limit, contents), JURIS, ASOF))
     ip.run(data)
     return ip, data
 

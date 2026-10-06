@@ -204,6 +204,13 @@ class TraceEntry:
         return f"{self.kind}: {self.detail}{tail}"
 
 
+class InvalidInput(InterpretError):
+    """A Property submission refused because an input it lacks would price a coverage at $0 (chunk 28 C28-17).
+
+    ISO rates these silently at $0; refusing them is the user's decision (2026-10-05), stricter than ISO on purpose.
+    """
+
+
 class Interpreter:
     """Executes one resolved rulebook against one data tree."""
 
@@ -341,6 +348,8 @@ class Interpreter:
         self.strict_single_result = strict_single_result
         #: Every table a strict refusal fired on, for measuring the population.
         self.strict_refusals: list[str] = []
+        #: The rating's outcome (chunk 28 C28-16): rated / refused / refer to company, with reasons.
+        self.outcome: dict = {"status": "not run", "reasons": []}
         #: OI-125's look-ahead pass: the ids of every node a rule writes (None outside that pass).
         self._writes: set[int] | None = None
         #: Every site where a null was coerced. Empty in `refuse` mode.
@@ -887,8 +896,76 @@ class Interpreter:
             self._ignore_inputs(data, dropped)
         if getattr(self.book, "ignore_submitted_owned", False) and not getattr(self, "_lookahead", False):
             self._ignore_submitted_owned(data)
-        self.eval(entry, frame)
+        checks = getattr(self.book, "silent_zero_checks", False) and not getattr(self, "_lookahead", False)
+        missing = self._missing_inputs(data) if checks else []
+        self.outcome = {"status": "rated", "reasons": []}
+        try:
+            self.eval(entry, frame)
+            if missing:
+                self._refuse_silent_zeros(missing)
+        except InterpretError as exc:
+            kind = "invalid input" if isinstance(exc, InvalidInput) else "refused"
+            self.outcome = {"status": "refused", "reasons": [{"kind": kind, "detail": str(exc)[:300]}]}
+            raise
+        self._refer_to_company(data)
         return data
+
+    #: The inputs whose absence ISO prices at $0 silently (C28-15, `CF-CHUNK28-SILENT-ZEROS.md`): refused only where
+    #: the absence actually zeroes a coverage that is attached (the user's rule for the territory, 2026-10-05, and,
+    #: by the same reasoning, for every check: New York and DC read no BCEG, so a missing BCEG there zeroes nothing).
+    #: (record tag, field, state or None, the building coverage it zeroes, also needs CauseOfLoss in this set)
+    SILENT_ZERO_INPUTS = (
+        ("CommercialPropertyLocation", "BasicGroupIIRatingTerr", None, "BuildingBasicGroupIICoverage", None),
+        ("CommercialPropertyStructure", "BCEG", None, "BuildingBasicGroupIICoverage", None),
+        ("CommercialPropertyLocation", "BasicGroupIReductionCredit", "AZ", "BuildingBasicGroupICoverage", None),
+        ("CommercialPropertyStructure", "Deductible", None, "BuildingBroadCoverage", {"Broad"}),
+        ("CommercialPropertyStructure", "Deductible", None, "BuildingSpecialCoverage", {"Special"}),
+    )
+
+    def _missing_inputs(self, data: Node) -> list:
+        """(check, record node) for every silent-zero input absent from the submission, before the rules run."""
+        out, stack = [], [data]
+        juris = getattr(self.book, "juris", None)
+        while stack:
+            n = stack.pop()
+            stack.extend(n.children)
+            for chk in self.SILENT_ZERO_INPUTS:
+                tag, field, state, _, causes = chk
+                if n.tag != tag or (state and state != juris):
+                    continue
+                if tag == "CommercialPropertyStructure" and (n.first("CovType") is not None
+                                                             and n.first("CovType").text not in (None, "", "Building")):
+                    continue
+                if causes and (n.first("CauseOfLoss") is None or n.first("CauseOfLoss").text not in causes):
+                    continue
+                f = n.first(field)
+                if f is None or f.text in (None, ""):
+                    out.append((chk, n))
+        return out
+
+    def _refuse_silent_zeros(self, missing: list) -> None:
+        """Refuse when a missing input's coverage is attached and priced $0 (C28-17)."""
+        for (tag, field, _, cov, _), n in missing:
+            structures = [n] if tag == "CommercialPropertyStructure" else                 [s for t in n.kids("CommercialPropertyStructureTable") for s in t.kids("CommercialPropertyStructure")]
+            for st in structures:
+                for t in st.kids(f"CommercialPropertyStructure{cov}Table") or [st]:
+                    for c in t.kids(f"CommercialPropertyStructure{cov}"):
+                        on, prem = c.first("CoverageOnPolicyIndicator"), c.first("Premium")
+                        if on is not None and str(on.text) in ("1", "1.0", "True", "true")                                 and prem is not None and prem.text not in (None, "") and Decimal(prem.text) == 0:
+                            raise InvalidInput(
+                                f"{tag}.{field} is missing, and {cov} is attached and priced $0 because of it. ISO "
+                                f"rates this silently at $0; refused by decision (chunk 28 C28-17)", "C28-17", tag)
+
+    def _refer_to_company(self, data: Node) -> None:
+        """Minimum premium is a company input (OI-113): refer when one is supplied and the total is below it."""
+        for t in data.kids("CommercialPropertyTable"):
+            for cp in t.kids("CommercialProperty"):
+                mn, tot = cp.first("CompanyMinimumPremium"), cp.first("ErcCalculatedTotalPremium")
+                if mn is None or mn.text in (None, "") or tot is None or tot.text in (None, ""):
+                    continue
+                if Decimal(tot.text) < Decimal(mn.text):
+                    self.outcome = {"status": "refer to company",
+                                    "reasons": [{"kind": "minimum premium", "minimum": mn.text, "rated": tot.text}]}
 
     def _ignore_inputs(self, data: Node, dropped: frozenset) -> None:
         """Submitted values the book says ISO's request reader drops (OI-112): not read, noted in the trace."""

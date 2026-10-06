@@ -575,12 +575,15 @@ def predictions(data, recs, j):
     return out, lines, bad
 
 
-def state_req(req, j):
+def state_req(req, j, localize=True):
     if j != "OR":
         for c in req["body"]["CommercialProperty"]:
             c["State"] = j
         req["body"]["SchemeKeys"]["ProductName"] = r11.PRODUCT.format(state=j)
-    return req
+    if not localize:                           # a case whose missing input is the subject
+        return req
+    import _state_inputs                       # C28-17: the state's own Group II territory, as gc.run gives
+    return _state_inputs.localize_request(req, j)
 
 
 def main():

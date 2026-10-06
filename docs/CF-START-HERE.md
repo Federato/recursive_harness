@@ -11,33 +11,17 @@ page and the deployed page agree with them; on drift it hands the problems back 
 
 ---
 
-## Pick up here (set 2026-10-05): chunk 28 OPEN at 16 of 22, Sets A, C and D done, C28-15 / 16 done
+## Pick up here (set 2026-10-05): chunk 28 OPEN at 18 of 22, Sets A to E done
 
-**Set A (refuse where ISO refuses) done 2026-10-05.** C28-05 (the user's go): a `SingleResult` lookup that matches no row
-refuses the policy on every Property book (`CFResolvedBook.strict_single_result`; GL off; `ERC_STRICT_SINGLE_RESULT`
-overrides either way); `EQSubLimitDeductibleTierCWTable` read as filed (`CFResolvedBook.NO_EMPTY_FALLBACK`). C28-06:
-`157_ --all` 293 of 293; `206_` moved only on 59 ISO refusals (rebaselined); the full gate's 23 newly failing scripts were
-pins on "ours $0", every new refusal sent live and **17 of 17 refused at the same table and keys** (`248_`); pins now say
-"refuses as ISO does" (`scripts/cf/_iso_refusals.py`) or the incidental bad input was corrected, no figure moved;
-`245_ --refused` live: 87 of 87 lookup refusals ours refuses, 37 of 37 ISO now rates ours prices. **OI-99 and OI-103 closed;
-OI-117 (`Convert` of a blank) open.** Puerto Rico not confirmable. **Set C, C28-07 done 2026-10-05**: [`CF-CHUNK28-PROPOSAL-C1.md`](CF-CHUNK28-PROPOSAL-C1.md) (`249_`, `250_`): OI-126's
-readings A / B identical on all evidence (A proposed, the smaller); OI-123 confirmed live on GA's in-force package; both
-messages only, 7 policies, 0 broken. **Built the same day with the user's go** (`nodes.py`, Property only; B35 / B36): exactly the 7
-predicted message sets moved, no premium; 293 of 293; **full gate clean, 170 scripts**; OI-126 and OI-123 closed.
-**C28-08..10 done 2026-10-05** ([`CF-CHUNK28-PROPOSAL-C2.md`](CF-CHUNK28-PROPOSAL-C2.md); `251_`, `243_ --cases MA-true,MA-false`,
-`252_`): OI-125 reading R1 (a submitted value a rule later writes is not read) on 1,688 policies fixes K4d, breaks 0,
-moves 0; OI-112 ISO drops exactly three CP 03 20 answers on 2023 parents (booleans too), cause not in the corpus;
-OI-114 null-as-false brings the 4 back-dated policies ours refuses to 4 of 4 equal to ISO. **All three built 2026-10-05 with the user's go** (C28-09 as "don't read on
-2023-parent states"); OI-125 first built statically and rejected (15 requests ISO agrees with moved), then as measured,
-with a look-ahead pass (the gate 13 → 17 minutes). C28-11 done: `206_` moved exactly the predicted 6; 293 of 293; full gate
-clean (170). **Set C done.** **Set D measured 2026-10-05:** C28-12 [`CF-CHUNK28-PROPOSAL-D.md`](CF-CHUNK28-PROPOSAL-D.md) (`253_`): a state `FormPage`
-table plus countrywide's rows for records the state does not file (a "D" row files nothing) gives 90,645 of 90,645 form
-names / numbers equal to ISO (today 13,455), nothing else moves; C28-13 measured with it; C28-14 the OI-116 question for
-ISO written ([`CF-CHUNK28-ISO-QUESTION-OI116.md`](CF-CHUNK28-ISO-QUESTION-OI116.md)). **C28-12 built the same day with the user's
-go** (snapshot clean, 293 of 293, full gate clean; OI-106 closed). **C28-15 done** ([`CF-CHUNK28-SILENT-ZEROS.md`](CF-CHUNK28-SILENT-ZEROS.md), `254_ --live`):
-five inputs ISO also prices $0 with no message, two both refuse, two no longer zero, 0 divergences. **C28-16 designed** ([`CF-CHUNK28-DESIGN-B-E.md`](CF-CHUNK28-DESIGN-B-E.md)) with the user's choices:
-silent-zero inputs refuse (stricter than ISO); a separate outcome field; a missing Group II territory refuses only when
-Group II is on and $0. Reach: ~250 of 1,705 stored requests. **Next: the user's go on C28-17, the build.**
+**Sets A, B, C, D and E done 2026-10-05.** Latest, C28-17 / 18 (Sets B and E, the user's go): a missing input that
+zeroes an attached coverage refuses the policy (stricter than ISO, the user's decision), with an outcome field (rated /
+refused / refer to company; refer only when a `CompanyMinimumPremium` is supplied). The test policies, which had moved
+Oregon's policy to other states without their own territories, now carry each state's real inputs (the user: "we need
+to input the correct territory"; `scripts/cf/_state_inputs.py`), and all 26 affected scripts were re-run live: all agree
+with ISO. Full gate clean (170); 293 of 293; snapshot rebaselined (195 requests equal to fresh ISO, 96 old silent-zero
+requests refused by decision). Original evidence kept in `results/cf-raas-before-c28-17`. Open: OI-117; OI-116 is a
+question for ISO ([`CF-CHUNK28-ISO-QUESTION-OI116.md`](CF-CHUNK28-ISO-QUESTION-OI116.md), not yet sent).
+**Next: Set F, C28-19 (flag a request dated after the corpus's coverage); the user's go.**
 
 **New PC (2026-10-05).** Everything now lives on F: and the defaults say so: the corpus `F:\ISO_ERC_Files`
 (`cf_engine` / `gl_engine` config), RaaS credentials `F:\Will_Dan_Collab_dev\.env` (with `RAAS_ORG_ID` / `RAAS_SHIP_ID`), the

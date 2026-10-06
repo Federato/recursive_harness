@@ -47,6 +47,7 @@ from gl_engine.interp.values import InterpretError
 import _iso_refusals as _iso                                    # noqa: E402
 
 gc = import_module("149_chunk13_golden_case")
+si = import_module("_state_inputs")                       # C28-17: a state's own Group II territory
 rc3 = import_module("151_chunk13_rc3_mechanisms")
 r11, rp = gc.r11, gc.rp
 ASOF = gc.ASOF
@@ -164,7 +165,7 @@ def state_sub(juris, territory, **kw):
     loc.pop("BasicGroupIRatingTerr", None)
     loc.pop("BasicGroupIIRatingTerr", None)
     loc["BasicGroupIRatingTerrFactor"] = "1.0"
-    return s
+    return si.localize_group2(s, juris)
 
 
 def run_case(book_juris, sub):

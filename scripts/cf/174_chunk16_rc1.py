@@ -52,6 +52,7 @@ from gl_engine.interp import tree
 from gl_engine.interp.values import InterpretError
 
 gc = import_module("149_chunk13_golden_case")
+si = import_module("_state_inputs")                       # C28-17: a state's own Group II territory
 grp = import_module("150_chunk13_c13-08-09_groups_rollup")
 rep = import_module("157_chunk14_c14-02_total_replay")
 s18 = import_module("164_chunk14_c14-18_all_states")
@@ -479,6 +480,7 @@ def borrowed(pop, trees, by_rec):
             loc.pop("BasicGroupIIRatingTerr", None)
             loc["BasicGroupIRatingTerrFactor"] = "1.0"
             loc.update(s18.STATE_LOC.get(j, {}))
+            si.localize_group2(sub, j)
             xj = rc1.xsd_for(book_for(j, ASOF))
             recs = [r for r, pk in pop[fam].items() if j in pk]
             for r in recs:

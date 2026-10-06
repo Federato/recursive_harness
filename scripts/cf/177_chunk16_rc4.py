@@ -73,6 +73,7 @@ from gl_engine.interp import tree
 from gl_engine.interp.values import InterpretError
 
 r2 = import_module("175_chunk16_rc2")
+si = import_module("_state_inputs")                       # C28-17: a state's own Group II territory
 r16, rc1, gc, rep, cmp, r11, s18 = r2.r16, r2.rc1, r2.gc, r2.rep, r2.cmp, r2.r11, r2.s18
 ASOF = r2.ASOF
 P = "CommercialProperty"
@@ -161,6 +162,7 @@ def build(j, extra=None):
         loc.pop("BasicGroupIIRatingTerr", None)
         loc["BasicGroupIRatingTerrFactor"] = "1.0"
         loc.update(s18.STATE_LOC.get(j, {}))
+        si.localize_group2(sub, j)
     if j == "FL":
         at[P + "SpecialClass"]["ClassDescription"] = FL_SC
     at[P + "BusinessIncome"].update({"CauseOfLoss": "Broad", "ExtendedPeriod": "270"})

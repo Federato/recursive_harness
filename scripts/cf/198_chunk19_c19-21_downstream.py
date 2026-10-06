@@ -189,7 +189,13 @@ def main():
             progress(i, len(stored), f"stat codes {tag}")
             req = json.loads(reqp.read_text(encoding="utf-8"))
             resp = json.loads(rpath.read_text(encoding="utf-8"))
-            data, ip = cmp.rate(req)
+            try:
+                data, ip = cmp.rate(req)
+            except Exception as exc:                          # noqa: BLE001
+                if "is missing, and" in str(exc):           # C28-17: a stored silent-zero request, refused by decision
+                    print(f"  {tag}: ours refuses by decision (C28-17), kept as sent: {str(exc)[:70]}")
+                    continue
+                raise
             iso, ours = d15.iso_fields(resp, want, d15.STAT.search), d15.our_fields(data, want, d15.STAT.search)
             n += 1
             values += len(iso)

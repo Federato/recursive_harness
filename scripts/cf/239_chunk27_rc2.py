@@ -36,6 +36,7 @@ sys.stdout.reconfigure(line_buffering=True, encoding="utf-8")
 T0 = time.monotonic()
 
 from gl_engine.interp.values import InterpretError
+import _state_inputs as _si                                     # noqa: E402
 
 c23 = import_module("221_chunk23_rc3")                   # wraps MessageHelper (TAGGED), iso_tagged
 t2, rep, gc = c23.t2, c23.rep, c23.gc
@@ -164,7 +165,7 @@ def main():
     reqs, ours = {}, {}
     for i, (cid, (task, label, build)) in enumerate(cs.items(), 1):
         progress(i, len(cs), f"{cid} {task} {label}")
-        req = t2.state_req(t2.m20.payload(build()), "OR")
+        req = t2.state_req(t2.m20.payload(_si.localize(build(), "OR")), "OR")
         if cid in REFUSE:
             # C28-05: ours refuses where ISO does, on the same SingleResult lookup
             try:
@@ -178,7 +179,7 @@ def main():
             reqs[cid] = req
             continue
         tree = ours_from_tree(build)
-        req = t2.state_req(t2.m20.payload(build()), "OR")
+        req = t2.state_req(t2.m20.payload(_si.localize(build(), "OR")), "OR")
         _, viareq = ours_from_request(req)
         unreg = [k for k in tree if not register_id(k[1])]
         print(f"  {cid}: {sum(tree.values())} messages from the tree; {sum(viareq.values())} from the request "

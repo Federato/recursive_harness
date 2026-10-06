@@ -88,7 +88,8 @@ def submission(struct_overrides: dict) -> dict:
                 "IRPMFactor": "1.0", "EQSubLimitBlktIndicator": "No",
                 "CommercialPropertyLocationTable": {
                     "CommercialPropertyLocation": [{
-                        "BasicGroupIRatingTerr": "Portland", "ProtectClass": "3",
+                        "BasicGroupIRatingTerr": "Portland",
+                        "BasicGroupIIRatingTerr": "Entire State",  # C28-17: Oregon's Group II territory "ProtectClass": "3",
                         "EQCauseOfLossForm": "Earthquake Form (CP 10 40)",
                         "EQTerr": "1", "EQDeductibleTier": "1",
                         "CommercialPropertyStructureTable": {

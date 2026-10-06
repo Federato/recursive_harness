@@ -250,6 +250,10 @@ CASES["B-NY0"] = ("C27-09", "NY", f"Group II, {first_terr('NY')}, NO BasicGroupI
 CASES["M-MT"] = CASES["M-MT"][:4] + (expect_gii("MT", "Division A", "4", "Division A"),)
 
 
+#: cases whose missing input is what they test: not given the state's own inputs (C28-17's _state_inputs)
+DELIBERATE = {"B-NY0"}          # New York with no Group II symbol: $0 at ISO too (C27-09)
+
+
 def progress(i, n, what):
     mm, s = divmod(int(time.monotonic() - T0), 60)
     print(f"[{i}/{n}  {mm}m{s:02d}s] {what}")
@@ -264,7 +268,8 @@ def main():
     reqs, preds = {}, {}
     for i, (cid, (task, j, label, build, expect)) in enumerate(cs.items(), 1):
         progress(i, len(cs), f"{cid} {task} {j} {label}")
-        req = t2.state_req(t2.m20.payload(build()), j)
+        loc = cid not in DELIBERATE                     # C28-17: a missing input that is the case's subject stays missing
+        req = t2.state_req(t2.m20.payload(build(), localize=loc), j, localize=loc)
         TAGGED.clear()
         data, ip = rep.cmp.rate(req)
         want, bad, how = expect(data, j)

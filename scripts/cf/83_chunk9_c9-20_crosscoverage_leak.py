@@ -55,6 +55,7 @@ from importlib import import_module
 from cf_engine.config import NULL_ARITHMETIC, ROUNDING
 from cf_engine.resolve import book_for
 from gl_engine.interp.interpreter import Interpreter
+import _state_inputs as _si                                     # noqa: E402
 from gl_engine.interp.tree import Node, read
 
 g9 = import_module("68_chunk9_golden_case")
@@ -89,6 +90,7 @@ def run_case(same_location: bool):
         ord_path = (CP + "/CommercialPropertyLocationTable/CommercialPropertyLocation[2]"
                     "/CommercialPropertyStructureTable/CommercialPropertyStructure[1]")
 
+    _si.localize(sub, JURIS, ASOF)      # C28-17: the state's own Group II territory
     ip = Interpreter(book_for(JURIS, ASOF), rounding=ROUNDING,
                       null_arithmetic=NULL_ARITHMETIC)
     data = Node.from_dict(f"MasterCF{JURIS}", sub)

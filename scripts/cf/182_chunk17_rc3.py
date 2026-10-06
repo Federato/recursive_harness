@@ -81,6 +81,7 @@ from gl_engine.interp.values import InterpretError
 import _iso_refusals as _iso                                    # noqa: E402
 
 g = import_module("181_chunk17_rc2")
+si = import_module("_state_inputs")                       # C28-17: a state's own Group II territory
 r3 = import_module("176_chunk16_rc3")
 r2, gc, rc1, rep, cmp, r16, r11 = g.r2, g.gc, g.rc1, g.rep, g.cmp, g.r16, g.r11
 r11.NUMERIC |= {"Factor", "BaseFactor"}          # S1 / S2 submit factors: ISO types them as decimals
@@ -154,6 +155,7 @@ def fl_offprem(class_code):
         loc.pop("BasicGroupIIRatingTerr", None)
         loc["BasicGroupIRatingTerrFactor"] = "1.0"
         loc.update(r2.s18.STATE_LOC.get("FL", {}))
+        si.localize_group2(sub, "FL")
         a[P + "SpecialClass"]["ClassDescription"] = FL_SC
         a[P + "Structure"]["ClassCode"] = class_code
         a[P + "BusinessIncome"]["CauseOfLoss"] = "Special"

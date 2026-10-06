@@ -90,6 +90,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from cf_engine.config import NULL_ARITHMETIC, ROUNDING
 from cf_engine.resolve import book_for
 from gl_engine.interp.interpreter import Interpreter
+import _state_inputs as _si                                     # noqa: E402
 from gl_engine.interp.tree import Node, read
 
 JURIS, ASOF = "OR", "20260917"
@@ -220,7 +221,7 @@ def main() -> int:
 
     ip = Interpreter(book, rounding=ROUNDING, trace=a.trace,
                       null_arithmetic=NULL_ARITHMETIC)
-    data = Node.from_dict(f"MasterCF{JURIS}", submission())
+    data = Node.from_dict(f"MasterCF{JURIS}", _si.localize(submission(), JURIS, ASOF))
     ip.run(data)
 
     checks = [

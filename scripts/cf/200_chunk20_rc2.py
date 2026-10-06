@@ -492,14 +492,14 @@ def predict(data, rec, j):
     return out
 
 
-def payload(sub):
+def payload(sub, localize=True):
     """r11's payload, except Mortgageholders' Limit: that record declares Limit as TEXT (the domain value
     "25,000", the rate table's key) where every other Limit is xs:int, so it is sent unconverted."""
     sub = copy.deepcopy(sub)
     for k, d in walk(sub):
         if k == P + MORT and "Limit" in d:
             d["MORTLIMIT__"] = d.pop("Limit")
-    req = r11.payload(sub)
+    req = r11.payload(sub, localize=localize)
 
     def fix(o):
         if isinstance(o, dict):

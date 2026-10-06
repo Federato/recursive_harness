@@ -95,8 +95,16 @@ def to_raas(node):
     return out
 
 
-def payload(sub: dict) -> dict:
+def payload(sub: dict, localize: bool = True) -> dict:
     sub = copy.deepcopy(sub)
+    # C28-17: the state's own Group II territory / BCEG / stories (and Arizona's credit), as gc.run gives the engine;
+    # the state is the policy's own State field (the builders set it), else Oregon
+    if localize:
+        import _state_inputs
+        state = sub["CommercialPropertyTable"]["CommercialProperty"][0].get("State")
+        # without a State on the policy the request's state is set later (state_req): fill only, never replace,
+        # so a Florida policy's "Inland" is not swapped for Oregon's "Entire State" here
+        _state_inputs.localize(sub, str(state or "OR"), replace=bool(state))
     for k in ("EffDate", "ExpDate"):       # EffDate travels in SchemeKeys;
         sub.pop(k, None)                   # ExpDate is EffDate + 1y (C11-04 Z5)
     cps = to_raas(sub)["CommercialProperty"]

@@ -150,6 +150,7 @@ def submission() -> dict:
                 "CommercialPropertyLocationTable": {
                     "CommercialPropertyLocation": [{
                         "BasicGroupIRatingTerr": "Portland",
+                        "BasicGroupIIRatingTerr": "Entire State",  # C28-17: Oregon's Group II territory
                         "ProtectClass": "3",
                         # Location-level EQ inputs, copied down to the
                         # structure by SetEQCauseOfLossForm/SetEQTerr/

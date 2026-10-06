@@ -84,6 +84,7 @@ from gl_engine.interp.values import InterpretError
 import _iso_refusals as _iso                                    # noqa: E402
 
 gc = import_module("149_chunk13_golden_case")
+si = import_module("_state_inputs")                       # C28-17: a state's own Group II territory
 rep = import_module("157_chunk14_c14-02_total_replay")
 t2 = import_module("159_chunk14_rc2_total")
 r11 = gc.r11
@@ -148,7 +149,7 @@ def portable(juris):
     loc.pop("BasicGroupIRatingTerr", None)
     loc.pop("BasicGroupIIRatingTerr", None)
     loc["BasicGroupIRatingTerrFactor"] = "1.0"
-    return sub
+    return si.localize_group2(sub, juris)
 
 
 def irpm(pcts, supplied=None, juris=None, cats=CATS):

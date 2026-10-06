@@ -73,8 +73,11 @@ def pairs():
         yield f"c1319 {j} {group} {label}", state_req(j, sub), OUT / f"chunk13_c1319_{tag}_response.json"
 
 
-def state_req(j, sub):
-    req = r11.payload(sub)
+def state_req(j, sub, localize=True):
+    if localize:                                # C28-17: the same state inputs gc.run gives the engine
+        import _state_inputs
+        _state_inputs.localize(sub, j)
+    req = r11.payload(sub, localize=localize)
     for cp in req["body"]["CommercialProperty"]:
         cp["State"] = j
     req["body"]["SchemeKeys"]["ProductName"] = r11.PRODUCT.format(state=j)

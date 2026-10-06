@@ -145,7 +145,13 @@ def num_eq(got, want):
         return False
 
 
-def run(sub, juris="OR"):
+def run(sub, juris="OR", localize=True):
+    """Rate a test policy. `localize` (chunk 28 C28-17, the user's direction): a policy moved out of Oregon gets the
+    state's own Group II territory / BCEG, and Arizona its reduction credit, where it lacks them (`_state_inputs`);
+    a test that removes one on purpose, to check the refusal, passes `localize=False`."""
+    if localize:
+        import _state_inputs
+        _state_inputs.localize(sub, juris)
     ip = Interpreter(book_for(juris, ASOF), rounding=ROUNDING, null_arithmetic=NULL_ARITHMETIC)
     data = Node.from_dict(f"MasterCF{juris}", sub)
     ip.run(data)

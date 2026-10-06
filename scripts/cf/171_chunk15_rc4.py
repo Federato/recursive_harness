@@ -56,10 +56,12 @@ sys.path.insert(0, str(ROOT / "scripts"))
 from cf_engine.config import NULL_ARITHMETIC, ROUNDING
 from cf_engine.resolve import book_for
 from gl_engine.interp.interpreter import Interpreter
+import _state_inputs as _si                                     # noqa: E402
 from gl_engine.interp.tree import Node
 from gl_engine.interp.values import InterpretError
 
 gc = import_module("149_chunk13_golden_case")
+si = import_module("_state_inputs")                       # C28-17: a state's own Group II territory
 rep = import_module("157_chunk14_c14-02_total_replay")
 cmp = import_module("154_chunk13_rc5_fields_messages")
 s18 = import_module("164_chunk14_c14-18_all_states")
@@ -114,6 +116,7 @@ def build(j):
     loc.pop("BasicGroupIIRatingTerr", None)
     loc["BasicGroupIRatingTerrFactor"] = "1.0"
     loc.update(s18.STATE_LOC.get(juris, {}))
+    si.localize_group2(sub, juris)
     rc3.cannabis_coverage_pp(sub)
     if juris == "FL":
         rc1.node_dicts(sub)[P + "SpecialClass"]["ClassDescription"] = FL_SC
@@ -156,6 +159,7 @@ def old_va_static(sub):
 
 def run(j, sub):
     if j == "VA-OLD":
+        _si.localize(sub, "VA", "20210601")      # C28-17: the state's own Group II territory
         ip = Interpreter(book_for("VA", "20210601"), rounding=ROUNDING, null_arithmetic=NULL_ARITHMETIC)
         data = Node.from_dict("MasterCFVA", sub)
         ip.run(data)

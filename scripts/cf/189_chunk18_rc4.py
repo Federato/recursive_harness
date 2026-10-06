@@ -57,6 +57,7 @@ from gl_engine.interp.values import InterpretError                       # noqa:
 import _iso_refusals as _iso                                    # noqa: E402
 
 g = import_module("187_chunk18_rc2")
+si = import_module("_state_inputs")                       # C28-17: a state's own Group II territory
 r4 = import_module("177_chunk16_rc4")                  # its pkgs() is cached (2026-09-28)
 x17 = import_module("183_chunk17_rc4")
 r2, rc1, gc, rep, cmp, r11, r16, s18 = r4.r2, r4.rc1, r4.gc, r4.rep, r4.cmp, r4.r11, r4.r16, r4.s18
@@ -99,6 +100,7 @@ def build(j, extra=None):
         loc.pop("BasicGroupIIRatingTerr", None)
         loc["BasicGroupIRatingTerrFactor"] = "1.0"
         loc.update(s18.STATE_LOC.get(j, {}))
+        si.localize_group2(sub, j)
     if j == "FL":
         at[P + "SpecialClass"]["ClassDescription"] = r4.FL_SC
     if j != "OR":

@@ -115,6 +115,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from cf_engine.config import NULL_ARITHMETIC, ROUNDING
 from cf_engine.resolve import book_for
 from gl_engine.interp.interpreter import Interpreter
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import _state_inputs as _si                                     # noqa: E402  C28-17: Oregon's own Group II inputs
 from gl_engine.interp.tree import Node, dump, read, select_one
 
 JURIS, ASOF = "OR", "20260917"
@@ -207,6 +209,7 @@ def submission() -> dict:
                 "CommercialPropertyLocationTable": {
                     "CommercialPropertyLocation": [{
                         "BasicGroupIRatingTerr": "Portland",
+                        "BasicGroupIIRatingTerr": "Entire State",  # C28-17: Oregon's Group II territory
                         "ProtectClass": "3",
                         "CommercialPropertyStructureTable": {
                             "CommercialPropertyStructure": [
@@ -224,7 +227,7 @@ def submission() -> dict:
 def run(trace=False):
     ip = Interpreter(book_for(JURIS, ASOF), rounding=ROUNDING, trace=trace,
                       null_arithmetic=NULL_ARITHMETIC)
-    data = Node.from_dict(f"MasterCF{JURIS}", submission())
+    data = Node.from_dict(f"MasterCF{JURIS}", _si.localize(submission(), JURIS, ASOF))
     ip.run(data)
     return data, ip
 

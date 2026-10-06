@@ -70,6 +70,9 @@ class CFResolvedBook(ResolvedBook):
     #: A submitted value for a field the rules write is not read, as if never sent (OI-125, C28-08).
     ignore_submitted_owned = True
 
+    #: Refuse an input whose absence prices an attached coverage at $0 (C28-17, the user's decision: stricter than ISO).
+    silent_zero_checks = True
+
     #: Submitted answers ISO's request reader drops on the 2023 countrywide editions (OI-112, C28-09): three
     #: cause-of-loss answers on the multiple-deductible form (CP 03 20), whatever is sent (text or true / false),
     #: while it keeps the record's other three. Nothing in the corpus says why (identical declarations, no rule

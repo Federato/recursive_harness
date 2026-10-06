@@ -128,7 +128,7 @@ def main():
         client = raas_mod.RaaS()
     rows = []
     for cid, (j, label, build) in cs.items():
-        req = cmp.state_req(j, build())
+        req = cmp.state_req(j, build(), localize=False)      # the silent zeros are the subject: no localizing
         o_state, o_prem, o_msgs = ours(req)
         line = f"{cid:7s} {j} {label}\n    ours: {o_state}; {show(o_prem)}"
         iso_state, i_prem, i_msgs = None, {}, []

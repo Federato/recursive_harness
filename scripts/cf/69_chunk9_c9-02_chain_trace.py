@@ -174,6 +174,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from cf_engine.config import NULL_ARITHMETIC, ROUNDING
 from cf_engine.resolve import book_for
 from gl_engine.interp.interpreter import Interpreter
+import _state_inputs as _si                                     # noqa: E402
 from gl_engine.interp.tree import Node, dump, read
 
 JURIS, ASOF = "OR", "20260917"
@@ -286,7 +287,7 @@ def submission(type_of_blanket_rating: str) -> dict:
 def run(type_of_blanket_rating: str, trace=False):
     ip = Interpreter(book_for(JURIS, ASOF), rounding=ROUNDING, trace=trace,
                       null_arithmetic=NULL_ARITHMETIC)
-    data = Node.from_dict(f"MasterCF{JURIS}", submission(type_of_blanket_rating))
+    data = Node.from_dict(f"MasterCF{JURIS}", _si.localize(submission(type_of_blanket_rating), JURIS, ASOF))
     ip.run(data)
     return data, ip
 

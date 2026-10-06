@@ -365,7 +365,7 @@ def main():
     vsub["CommercialPropertyTable"]["CommercialProperty"][0].update(POLICY_MODS)
     place(vsub, va_xsd, VA_RECORDS + ["BusinessIncomeAndOrExtraExpnCovForY2KComputerRelatedAndOtherElectronicProblems"], {})
     try:
-        vdata, _ = gc.run(_iso.without_oregon_territories(vsub), "VA")   # C28-05: no Oregon territory in VA
+        vdata, _ = gc.run(_iso.without_oregon_territories(vsub, "VA"), "VA")   # C28-05: no Oregon territory in VA
         landed_va = audit(vdata, VA_RECORDS, text, "Virginia, its 6 state-only Y2K records")
         y2k = find(vdata, P + "BusinessIncomeAndOrExtraExpnCovForY2KComputerRelatedAndOtherElectronicProblems")
         prem = y2k[0].first("Premium") if y2k else None

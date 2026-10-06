@@ -19,7 +19,8 @@ EXPECTED = {
     "42": {"2": ("SpecialClassDescriptionConvertedOption", "C28-06 P10")},
     "54": {"12  Group II territory, moved": ("BCEGFactor", "C28-06 P9")},
     "35": {"all three elected at once": ("MaxPeriodOfIndemnityFactor", "C28-06 P6")},
-    "88": {"Case 4": ("EQClassToUse", "C28-06 P5")},
+    "88": {"Case 4": ("EQClassToUse", "C28-06 P5"),
+           "Case 5": ("missing:BCEG", "C28-17: a missing BCEG that zeroes Group II refuses, the user's decision")},
     "117": {"Z8": ("LeaseholdInterestAnnuityConstant", "C11-23 Z8, C28-02"),
             "Z9": ("LeaseholdInterestAnnuityConstant", "C11-23 Z9, C28-02")},
     "151": {"Z4": ("TerrorismTerritoryTier", "C13-13 Z4, C28-02")},
@@ -44,8 +45,12 @@ UNCONFIRMED = {
 
 
 def table_of(exc) -> str | None:
+    """The table a refusal names, or "missing:<field>" for a C28-17 invalid-input refusal."""
     m = re.search(r"SingleResult matched NO row in '(\w+)'", str(exc))
-    return m.group(1) if m else None
+    if m:
+        return m.group(1)
+    m = re.search(r"CommercialProperty\w+\.(\w+) is missing, and", str(exc))
+    return f"missing:{m.group(1)}" if m else None
 
 
 def expected(script: str, cid: str):
@@ -63,7 +68,7 @@ def refused_as_iso(script: str, cid: str, exc, indent: str = "") -> bool:
     return True
 
 
-def without_oregon_territories(sub: dict) -> dict:
+def without_oregon_territories(sub: dict, juris: str | None = None) -> dict:
     """An Oregon policy made portable to another state, `152_`'s way: Oregon's building territories ("Portland",
     "Entire State") exist nowhere else and ISO refuses them (C28-06 P7 FL, P8 VA); since C28-05 ours refuses too. The
     territories are removed and the Group I territory factor pinned to 1.0 (a submitted, IsNull-guarded field)."""
@@ -72,6 +77,9 @@ def without_oregon_territories(sub: dict) -> dict:
             loc.pop("BasicGroupIRatingTerr", None)
             loc.pop("BasicGroupIIRatingTerr", None)
             loc["BasicGroupIRatingTerrFactor"] = "1.0"
+    if juris:                                   # C28-17: the state's own Group II territory, not none
+        import _state_inputs
+        _state_inputs.localize_group2(sub, juris)
     return sub
 
 

@@ -189,8 +189,29 @@ class RaaS:
             auth.setdefault("shipId", self.ship_id)
         return out
 
+    #: Waits before each retry of a call the NETWORK lost (a read timeout, a dropped connection, an unreachable
+    #: endpoint). An answer from ISO, a refusal included, is never retried. Added 2026-10-05 (chunk 28): long live
+    #: runs died on one dropped connection.
+    RETRY_WAITS = (5, 15, 30)
+
     def rate(self, payload: dict) -> dict:
-        """POST one submission and return ISO's parsed response."""
+        """POST one submission and return ISO's parsed response, retrying only what the network lost."""
+        import http.client
+        import time as _time
+        for wait in self.RETRY_WAITS + (None,):
+            try:
+                return self._rate_once(payload)
+            except RaaSError as exc:
+                if exc.status is not None or wait is None or "cannot reach" not in str(exc):
+                    raise
+            except (TimeoutError, ConnectionError, http.client.RemoteDisconnected, http.client.IncompleteRead):
+                if wait is None:
+                    raise
+            _time.sleep(wait)
+        raise RaaSError("unreachable")
+
+    def _rate_once(self, payload: dict) -> dict:
+        """POST one submission once and return ISO's parsed response."""
         body = json.dumps(self.prepare(payload)).encode()
         for attempt in (1, 2):
             req = urllib.request.Request(
