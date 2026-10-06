@@ -10,7 +10,7 @@ answers, run it at ISO, then propose the change. After a change: `206_ --check`,
 (the engine changed), and the item's own ISO cases again. Live ISO at **2026-09-17** (OI-105: the only date where ISO and
 the corpus use the same package in all 46 states). Puerto Rico excluded. Progress to `results/cf-raas/logs/`.
 
-**Status: OPEN 2026-10-05, 18 of 22** (all seven sets). **Sets A, B, C, D and E are done** (OI-99, 103, 106, 112, 113, 114, 123, 125, 126 closed; OI-117 open; OI-116 a question for ISO). **Next: Set F, C28-19 (flag dates beyond the corpus).**
+**Status: OPEN 2026-10-05, 18 of 22** (all seven sets). **Sets A, B, C, D and E are done** (OI-99, 103, 106, 112, 113, 114, 123, 125, 126 closed; OI-117 open; OI-116 a question for ISO). **Next: Set F, C28-19 (flag dates beyond the corpus): measured and proposed 2026-10-06, awaits the user's go.**
 
 ## The feature sets, and what each buys
 
@@ -76,8 +76,8 @@ still needs the user's go, one item at a time.
 
 | # | Task | Status | Notes |
 |---|---|---|---|
-| C28-19 | **Flag out-of-coverage dates**: a request dated after the latest package the corpus holds for its state, against the dates `242_` measured | ⬜ | the user's go |
-| C28-20 | **Corpus refresh** (a data job, not an engine change): the 34 missing packages, if the user wants dates past 2026-09-17; `242_` re-run until every date matches | ⬜ | the user's decision |
+| C28-19 | **Flag out-of-coverage dates**: a request dated after the latest package the corpus holds for its state, against the dates `242_` measured | ⬜ | **Measured and proposed 2026-10-06** ([`CF-CHUNK28-PROPOSAL-F.md`](CF-CHUNK28-PROPOSAL-F.md), `255_`, no engine change): 34 missing packages, 28 states go onto an older package than ISO's, **IL already today** (from 2026-10-01); CT and NM hold a later package but miss ISO's 2027-01-01 edition, so the date comes from what ISO serves, not the latest we hold; 1 of 1,804 stored requests past its date. **Awaits the user's go and choices** (refuse / warn / refer) |
+| C28-20 | **Corpus refresh** (a data job, not an engine change): the 34 missing packages, if the user wants dates past 2026-09-17; `242_` re-run until every date matches | ⬜ | **Under way, the user's decision 2026-10-06** (import the newer packages). **1 of 34 in: `CF IL 20261001 V01`** (added to `CF/20260601`, parent `CF_CW_20260601_V01`, held; IL moves off the 2023 countrywide base): `242_ --states IL` names ISO's package at 2026-11-01; `256_ --state IL --date 2026-11-01` **8 of 8 agree with ISO** (the package's own test case and the 7 stored IL fixtures re-dated, every premium and message); `206_ --check` clean (1,812). **33 to go**: IL 20270101 V02 and the 2027 packages (`255_` lists them) |
 
 ### RC-7 · Close-out (2 tasks)
 

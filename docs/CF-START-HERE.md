@@ -1,6 +1,6 @@
 # Property build — start here
 
-**Last worked 2026-10-05.** This is the resume point: where things stand, how to
+**Last worked 2026-10-06.** This is the resume point: where things stand, how to
 confirm it in two minutes, and what to pick up first.
 
 **Keeping things in sync (standing rule, 2026-10-01).** The task lists are the source of truth. A Stop hook
@@ -21,7 +21,14 @@ to input the correct territory"; `scripts/cf/_state_inputs.py`), and all 26 affe
 with ISO. Full gate clean (170); 293 of 293; snapshot rebaselined (195 requests equal to fresh ISO, 96 old silent-zero
 requests refused by decision). Original evidence kept in `results/cf-raas-before-c28-17`. Open: OI-117; OI-116 is a
 question for ISO ([`CF-CHUNK28-ISO-QUESTION-OI116.md`](CF-CHUNK28-ISO-QUESTION-OI116.md), not yet sent).
-**Next: Set F, C28-19 (flag a request dated after the corpus's coverage); the user's go.**
+**Next: Set F, C28-19, measured and proposed 2026-10-06** ([`CF-CHUNK28-PROPOSAL-F.md`](CF-CHUNK28-PROPOSAL-F.md),
+`255_`, no engine change): 34 missing packages, 28 states go onto an older package than ISO's;
+CT and NM miss an edition between packages they hold. **Awaits the user's go and choice** (refuse / warn / refer).
+**C28-20 under way (the user's decision: import the newer packages)**: `CF IL 20261001 V01` is in (`CF/20260601`), 8 of 8
+agree with ISO at 2026-11-01 (`256_`), snapshot clean. **33 packages to go** (IL 20270101 V02 and the 2027 ones, `255_`
+lists them); for each: drop it in, `242_ --states XX`, `256_ --state XX --date <after its edition>`.
+The full list is on the status page, "Future items: ERC packages to add". Committed 2026-10-06 (the commit after
+`542f0e1`); the quick gate was clean (34 scripts) and the snapshot clean (1,812) after the import.
 
 **New PC (2026-10-05).** Everything now lives on F: and the defaults say so: the corpus `F:\ISO_ERC_Files`
 (`cf_engine` / `gl_engine` config), RaaS credentials `F:\Will_Dan_Collab_dev\.env` (with `RAAS_ORG_ID` / `RAAS_SHIP_ID`), the
