@@ -162,8 +162,76 @@ def part_b():
             os.environ.pop("RAAS_LEDGER_DIR", None)
 
 
+def part_c():
+    print("C. Readiness Matrix screen (TC-16)")
+    from console import evidence, mismatch, paths, readiness, store
+    from ui import console_page, tester
+    with tempfile.TemporaryDirectory() as tmp:
+        t = Path(tmp)
+        saved = (evidence.STORE, mismatch.STORE, store.INDEX, readiness.CACHE, readiness.SIGNOFFS, readiness.LAST_BUILD,
+                 store.current_package)
+        evidence.STORE, mismatch.STORE, store.INDEX = t / "ev.jsonl", t / "cl.jsonl", t / "index.json"
+        readiness.CACHE, readiness.SIGNOFFS, readiness.LAST_BUILD = t / "rd.json", t / "so.jsonl", t / "build.json"
+        os.environ["RAAS_LEDGER_DIR"] = tmp
+        readiness._MEM.clear()
+        lookups = []
+        real_pkg = saved[-1]
+        store.current_package = lambda *a: (lookups.append(a), real_pkg(*a))[1]
+        try:
+            store.INDEX.write_text(json.dumps({"references": [{"hash": "f", "freshness": "fresh"}]}))
+            html = console_page.page()
+            check("C1 the matrix screen is built (no placeholder), with its grid, totals, trend and side panel",
+                  'id="s-matrix"' in html and "Built in TC-16" not in html
+                  and all(i in html for i in ('id="mx-grid"', 'id="mx-stats"', 'id="mx-chart"', 'id="mx-side"')))
+            check("C2 every state has a name for its row", all(s in console_page.STATE_NAMES
+                  for l in paths.lines() for s in paths.states(l)))
+            check("C3 the legend carries §6's needs text", {g["key"]: g["needs"] for g in console_page.legend()}["stale"]
+                  == "Refresh stale references")
+
+            bldg = paths.in_scope("CP", "OH", "Building")
+            for sc, ours in (("a", "100"), ("b", "120"), ("b", "100")):
+                evidence.add(scenario=sc, line="CP", state="OH", walked=bldg, ours=ours, iso="100", request_hash="f")
+            lines = evidence.STORE.read_text().splitlines()
+            fixed = []
+            for raw, day in zip(lines, ("2026-10-01", "2026-10-01", "2026-10-02")):
+                x = json.loads(raw); x["at"] = day + "T09:00:00"; fixed.append(json.dumps(x))
+            evidence.STORE.write_text("\n".join(fixed) + "\n")
+            ag = readiness.get()["agreement"]
+            check("C4 agreement over time (D18): per day, latest record per scenario as of that day",
+                  ag.get("CP") == [{"day": "2026-10-01", "compared": 2, "agreed": 1},
+                                   {"day": "2026-10-02", "compared": 2, "agreed": 2}], ag)
+            r = readiness.get(lob="CP", state="OH")
+            b = {c["coverage"]: c for c in r["cells"]}["Building"]
+            check("C5 path labels for every path in a cell", set(b["paths"]["byPath"]) <= set(r["pathLabels"]["CP"]))
+
+            code, body, _ = tester.dispatch("POST", "/api/console/signoff",
+                                            {}, {"lob": "CP", "state": "OH", "coverage": "BPP", "by": "Dan"})
+            check("C6 sign-off refused on a cell that is not Passed (D4)", code == 409, (code, body))
+            n0 = len(lookups)
+            code, body, _ = tester.dispatch("POST", "/api/console/signoff",
+                                            {}, {"lob": "CP", "state": "OH", "coverage": "Building", "by": "Dan"})
+            b = _cell(readiness, "Building")
+            check("C7 sign-off accepted on a Passed cell and shown", code == 200 and b["signedOffBy"] == "Dan", (code, body))
+            check("C8 the recompute after a sign-off reuses the day's content versions (no engine reload)",
+                  len(lookups) == n0 and b["contentVersion"].startswith("CF_OH_"), len(lookups) - n0)
+            tester.dispatch("POST", "/api/console/signoff", {}, {"lob": "CP", "state": "OH", "coverage": "Building", "by": ""})
+            check("C9 an empty name withdraws the sign-off", _cell(readiness, "Building")["signedOffBy"] is None)
+            code, _, _ = tester.dispatch("POST", "/api/console/signoff", {}, {"lob": "CP", "state": "OH", "coverage": "Nope", "by": "x"})
+            check("C10 an unknown cell is a 404", code == 404)
+            n1 = len(lookups)
+            time.sleep(0.05)
+            store.INDEX.write_text(json.dumps({"references": [{"hash": "f", "freshness": "fresh"}], "x": 1}))
+            readiness.get()
+            check("C11 a new reference index (a corpus ingest) looks the content versions up again", len(lookups) > n1)
+        finally:
+            (evidence.STORE, mismatch.STORE, store.INDEX, readiness.CACHE, readiness.SIGNOFFS, readiness.LAST_BUILD,
+             store.current_package) = saved
+            readiness._MEM.clear()
+            os.environ.pop("RAAS_LEDGER_DIR", None)
+
+
 def main() -> int:
-    part_a(); part_b()
+    part_a(); part_b(); part_c()
     bad = [n for n, ok in RESULTS if not ok]
     print(f"\n{len(RESULTS) - len(bad)}/{len(RESULTS)} passed")
     return 1 if bad else 0

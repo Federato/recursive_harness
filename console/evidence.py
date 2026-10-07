@@ -35,16 +35,17 @@ def add(*, scenario: str, line: str, state: str, walked, ours=None, iso=None, re
     return rec
 
 
+def history(store: Path | None = None) -> list:
+    """Every record, oldest first."""
+    f = store or STORE
+    if not f.exists():
+        return []
+    return [json.loads(raw) for raw in f.read_text(encoding="utf-8").splitlines() if raw.strip()]
+
+
 def records(store: Path | None = None) -> list:
     """The latest record per scenario."""
-    f = store or STORE
-    out = {}
-    if f.exists():
-        for raw in f.read_text(encoding="utf-8").splitlines():
-            if raw.strip():
-                rec = json.loads(raw)
-                out[rec["scenario"]] = rec
-    return list(out.values())
+    return list({rec["scenario"]: rec for rec in history(store)}.values())
 
 
 def resolve(rec: dict, latest: dict, freshness: dict) -> Evidence:

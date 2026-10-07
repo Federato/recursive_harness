@@ -33,14 +33,18 @@ _LOCK = threading.Lock()
 _MEM: dict = {}
 
 
+def _stamp(f) -> str:
+    f = Path(f)
+    return f"{f.stat().st_size}:{f.stat().st_mtime_ns}" if f.exists() else "absent"
+
+
 def inputs() -> dict:
     """The files the matrix depends on, with their size and modification time: the recompute trigger."""
     files = {"references": store.INDEX, "classifications": mismatch.STORE, "evidence": evidence.STORE,
              "signoffs": SIGNOFFS, "descoped": DESCOPED, "paths": paths.CONFIG, "build": LAST_BUILD}
     out = {}
     for k, f in files.items():
-        f = Path(f)
-        out[k] = f"{f.stat().st_size}:{f.stat().st_mtime_ns}" if f.exists() else "absent"
+        out[k] = _stamp(f)
     out["day"] = ledger.day()
     return out
 
@@ -76,8 +80,11 @@ def _cap() -> dict:
             "activeLane": ledger.LANES["active"]}
 
 
-def compute(today: str | None = None) -> dict:
+def compute(today: str | None = None, versions: dict | None = None) -> dict:
+    """`versions`: (line|state) -> package in force, carried over from the last result of the same day, so a
+    recompute after a sign-off or a classification does not load both engines again."""
     today = today or ledger.day()
+    versions = dict(versions or {})
     latest = mismatch.classifications()
     try:
         refs = store.load()["references"]
@@ -97,7 +104,10 @@ def compute(today: str | None = None) -> dict:
             evs = [evidence.resolve(r, latest, freshness) for r in rs]
             ps = rollup.path_states(line, state, evs)
             d = {**desc.get(line, {}).get("*", {}), **desc.get(line, {}).get(state, {})}
-            version = store.current_package(line, state, today) or ""
+            vk = f"{line}|{state}"
+            if vk not in versions:
+                versions[vk] = store.current_package(line, state, today) or ""
+            version = versions[vk]
             for cov in paths.coverages(line):
                 c = rollup.cell(line, state, cov, ps, descoped={p: r for p, r in d.items()
                                                                 if p in paths.paths(line, cov)},
@@ -137,7 +147,25 @@ def compute(today: str | None = None) -> dict:
                    "daysAtActiveLane": round(calls / ledger.LANES["active"], 1)})
     return {"generatedAt": time.strftime("%Y-%m-%dT%H:%M:%S"),
             "columns": {line: paths.coverages(line) for line in paths.lines()},
-            "cells": cells, "totals": totals, "evidence": len(recs)}
+            "pathLabels": {line: {p: v["label"] for p, v in paths.paths(line).items()} for line in paths.lines()},
+            "cells": cells, "totals": totals, "evidence": len(recs), "agreement": agreement(latest),
+            "versions": {"day": today, "paths": _stamp(paths.CONFIG), "references": _stamp(store.INDEX), "map": versions}}
+
+
+def agreement(latest: dict | None = None) -> dict:
+    """Agreement over time (D18): per line, on each day evidence arrived, the share of compared scenarios (their latest
+    record as of that day, INERT ones left out) that agree with ISO under today's classifications."""
+    latest = mismatch.classifications() if latest is None else latest
+    agrees: dict = {}            # line -> scenario -> agrees? (compared scenarios only, as of the record being read)
+    days: dict = {}
+    for r in evidence.history():
+        mine = agrees.setdefault(r["line"], {})
+        mine.pop(r["scenario"], None)
+        if not r.get("inert") and r.get("iso") is not None and r.get("ours") is not None:
+            mine[r["scenario"]] = not mismatch.is_open(r["scenario"], r["ours"], r["iso"], latest)
+        d = r["at"][:10]
+        days.setdefault(r["line"], {})[d] = {"day": d, "compared": len(mine), "agreed": sum(mine.values())}
+    return {line: list(v.values()) for line, v in days.items()}
 
 
 def get(lob: str | None = None, state: str | None = None, force: bool = False) -> dict:
@@ -154,7 +182,11 @@ def get(lob: str | None = None, state: str | None = None, force: bool = False) -
             if cached and cached.get("inputs") == key:
                 _MEM.clear(); _MEM.update(cached)
             else:
-                out = compute(key["day"])
+                prev = (cached or _MEM).get("versions") or {}
+                # the package in force moves with the day, the path config and a corpus ingest (which rebuilds the index)
+                same = (prev.get("day"), prev.get("paths"), prev.get("references")) == (key["day"], key["paths"], key["references"])
+                carry = prev.get("map") if same else None
+                out = compute(key["day"], carry)
                 out["inputs"] = key
                 CACHE.parent.mkdir(parents=True, exist_ok=True)
                 CACHE.write_text(json.dumps(out), encoding="utf-8")
