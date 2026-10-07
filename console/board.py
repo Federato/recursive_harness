@@ -82,10 +82,7 @@ def board(line: str) -> dict:
 def cell(line: str, state: str, path: str) -> dict:
     """The scenarios behind one board cell: every scenario of that line and state whose latest record walked the path."""
     latest = mismatch.classifications()
-    try:
-        fresh = {e["hash"]: e.get("freshness", "unknown") for e in store.load()["references"]}
-    except FileNotFoundError:
-        fresh = {}
+    fresh = store.freshness()
     out = []
     for rec in evidence.records():
         if rec["line"] != line or rec["state"] != state or path not in rec["walked"]:

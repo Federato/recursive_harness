@@ -359,8 +359,67 @@ def part_e():
     check("E18 console/ does not import the UI", "ui" not in imports, imports)
 
 
+def part_f():
+    print("F. seeded from real evidence (TC-19)")
+    from importlib import import_module
+    from console import evidence, readiness, store
+    seed = import_module("tc.tc19_seed_evidence") if (ROOT / "scripts" / "tc" / "__init__.py").exists() else None
+    if seed is None:
+        sys.path.insert(0, str(ROOT / "scripts" / "tc"))
+        seed = import_module("tc19_seed_evidence")
+    idx = store.load()
+    gl = idx["gl_premium_rows"]
+    check("F1 GL premium rows carry a hash and a real freshness (ISO's package is recorded)",
+          gl and all(e.get("hash", "").startswith("gl:") for e in gl) and sum(e["freshness"] != "unknown" for e in gl) > 0.9 * len(gl))
+    fm = store.freshness(idx)
+    check("F2 one freshness map over full answers and GL rows", all(e["hash"] in fm for e in gl[:50] + idx["references"][:50]))
+    check("F3 a GL row is judged on its own date, not only the run's", not any(
+        e["freshness"] == "stale" and "20270401" in e["stale_reason"] and e["date"] != "20270401" for e in gl))
+    tasks, skipped = seed.gl_tasks(None)
+    keys = [(t["fingerprint"], t["state"], t["asof"]) for t in tasks]
+    check("F4 GL: one task per (config, state, date), the latest run", len(keys) == len(set(keys)) and len(tasks) > 500, len(tasks))
+    ctasks, cskip = seed.cp_tasks(None)
+    rated = sum(1 for e in idx["references"] if e["line"] == "CP" and e["outcome"] == "rated")
+    check("F5 CP: every rated answer is either re-rated or counted as without a request",
+          len(ctasks) + cskip["no_request"] + cskip["no_response"] == rated, (len(ctasks), cskip, rated))
+    check("F6 CP: ISO's STC fixtures are rebuilt as 157_ sends them",
+          any("chunk13_fixture_" in t["source"] for t in ctasks))
+    recs = evidence.records()
+    if not recs:
+        print("  skip F7-F10: no evidence seeded yet (run scripts/tc/tc19_seed_evidence.py)")
+        return
+    check("F7 seeded records name their seed and source", all(r.get("source") for r in recs)
+          and any(r.get("seed") == "TC-19" for r in recs))
+    r = readiness.get()
+    passed = [c for c in r["cells"] if c["status"] == "verified"]
+    verified = {ln for ln, by in r["pathCells"].items() for row in by.values() for v in row.values() if v[0] == "verified"}
+    # Passed needs every in-scope path of a coverage verified; GL's QA runs vary the common paths only, so GL may
+    # rightly have verified paths and no Passed cell yet. What must hold: real verified evidence in both lines.
+    check("F8 real RaaS-verified paths in both lines, Passed cells where a whole coverage is verified",
+          verified == {"CP", "GL"} and passed, (verified, len(passed)))
+    # every Passed cell traceable to its stored answers: each of its paths is walked by a scenario whose source exists
+    by = {}
+    for rec in recs:
+        for p in rec["walked"]:
+            by.setdefault((rec["line"], rec["state"], p), []).append(rec)
+    runs = {l.get("id") for f in (ROOT / "results").glob("runs-*.jsonl")
+            for l in map(json.loads, f.read_text(encoding="utf-8").splitlines()) if l}
+    bad = []
+    for c in passed:
+        for p in c["paths"]["byPath"]:
+            srcs = [x["source"] for x in by.get((c["lob"], c["state"], p), [])
+                    if x.get("ours") is not None and x.get("iso") is not None]
+            ok = any((s.startswith("run ") and s[4:] in runs) or
+                     all((ROOT / "results" / "cf-raas" / n.strip()).exists() for n in s.split(",")) for s in srcs)
+            if not ok:
+                bad.append((c["lob"], c["state"], c["coverage"], p))
+    check(f"F9 every Passed cell ({len(passed)}) traces to stored answers on disk", not bad, bad[:5])
+    oh = {c["coverage"]: c for c in r["cells"] if c["lob"] == "CP" and c["state"] == "OH"}
+    check("F10 spot-check: CP Building in OH has evidence behind it", oh["Building"]["scenarios"] > 0, oh["Building"])
+
+
 def main() -> int:
-    part_a(); part_b(); part_c(); part_d(); part_e()
+    part_a(); part_b(); part_c(); part_d(); part_e(); part_f()
     bad = [n for n, ok in RESULTS if not ok]
     print(f"\n{len(RESULTS) - len(bad)}/{len(RESULTS)} passed")
     return 1 if bad else 0

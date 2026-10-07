@@ -90,11 +90,7 @@ def compute(today: str | None = None, versions: dict | None = None) -> dict:
     today = today or ledger.day()
     versions = dict(versions or {})
     latest = mismatch.classifications()
-    try:
-        refs = store.load()["references"]
-    except FileNotFoundError:
-        refs = []
-    freshness = {e["hash"]: e.get("freshness", "unknown") for e in refs}
+    freshness = store.freshness()
     recs = evidence.records()
     by_cell: dict = {}
     for r in recs:

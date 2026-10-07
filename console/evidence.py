@@ -24,10 +24,12 @@ STORE = ROOT / "results" / "tc" / "evidence.jsonl"
 
 
 def add(*, scenario: str, line: str, state: str, walked, ours=None, iso=None, request_hash: str = "",
-        inert: bool = False, source: str = "", store: Path | None = None) -> dict:
-    rec = {"at": time.strftime("%Y-%m-%dT%H:%M:%S"), "scenario": scenario, "line": line, "state": state,
+        inert: bool = False, source: str = "", store: Path | None = None, at: str | None = None, **extra) -> dict:
+    """`at`: when the evidence was produced (a seed passes the answer's own date, so agreement over time is
+    history, not the day of seeding). `extra`: provenance kept with the record (e.g. the field compared)."""
+    rec = {"at": at or time.strftime("%Y-%m-%dT%H:%M:%S"), "scenario": scenario, "line": line, "state": state,
            "walked": sorted(walked), "ours": None if ours is None else str(ours),
-           "iso": None if iso is None else str(iso), "hash": request_hash, "inert": bool(inert), "source": source}
+           "iso": None if iso is None else str(iso), "hash": request_hash, "inert": bool(inert), "source": source, **extra}
     f = store or STORE
     f.parent.mkdir(parents=True, exist_ok=True)
     with f.open("a", encoding="utf-8") as fh:

@@ -172,7 +172,9 @@ def _gl_runs() -> list:
             for r in line.get("rows") or []:
                 if r.get("iso") in (None, ""):
                     continue
-                out.append({"kind": "premium-only", "line": "GL", "state": r.get("juris"), "date": s.get("asof", ""),
+                # a run that varies the effective date records it per row (sweep's `asof`); the run's is the default
+                out.append({"kind": "premium-only", "line": "GL", "state": r.get("juris"), "date": r.get("asof") or s.get("asof", ""),
+                            "hash": f"gl:{line.get('id')}:{r.get('juris')}", "iso_package": r.get("iso_package") or "",
                             "fingerprint": s.get("fingerprint", ""), "describes": s.get("describes", ""),
                             "ours": r.get("ours"), "iso": r.get("iso"), "status": r.get("status"),
                             "our_packages": r.get("packages", ""), "run": line.get("id"), "at": line.get("at_iso")})
@@ -203,7 +205,7 @@ def current_package(line: str, state: str, date: str) -> str | None:
 
 def staleness(e: dict) -> tuple[str, str]:
     """('fresh' | 'stale' | 'unknown', why)."""
-    if e.get("kind") == "premium-only":
+    if e.get("kind") == "premium-only" and not e.get("iso_package"):
         return "unknown", "premium-level row: no ISO package recorded"
     iso = e.get("iso_package")
     if not iso:
@@ -224,7 +226,10 @@ def build() -> dict:
     refs = sorted(entries.values(), key=lambda e: (e["line"], e["state"], e["date"], e["hash"]))
     for e in refs:
         e["freshness"], e["stale_reason"] = staleness(e)
-    idx = {"built_at": time.strftime("%Y-%m-%dT%H:%M:%S"), "references": refs, "gl_premium_rows": _gl_runs()}
+    gl = _gl_runs()
+    for e in gl:
+        e["freshness"], e["stale_reason"] = staleness(e)
+    idx = {"built_at": time.strftime("%Y-%m-%dT%H:%M:%S"), "references": refs, "gl_premium_rows": gl}
     INDEX.parent.mkdir(parents=True, exist_ok=True)
     INDEX.write_text(json.dumps(idx, indent=0), encoding="utf-8")
     return idx
@@ -232,6 +237,16 @@ def build() -> dict:
 
 def load() -> dict:
     return json.loads(INDEX.read_text(encoding="utf-8"))
+
+
+def freshness(idx: dict | None = None) -> dict:
+    """reference hash -> 'fresh' | 'stale' | 'unknown', over full answers and GL's premium-level rows alike."""
+    try:
+        idx = idx or load()
+    except FileNotFoundError:
+        return {}
+    return {e["hash"]: e.get("freshness", "unknown")
+            for e in idx.get("references", []) + idx.get("gl_premium_rows", []) if e.get("hash")}
 
 
 def lookup(payload: dict, idx: dict | None = None) -> dict | None:
