@@ -38,9 +38,12 @@ import copy
 import hashlib
 import json
 from dataclasses import dataclass, field as dc_field
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+if getattr(sys, "frozen", False):        # the packaged app: this module sits in _internal, not _internal/scripts
+    ROOT = Path(sys._MEIPASS)
 SAMPLES = ROOT / "Engine_Payloads"
 
 from gl_engine import EditionResolver, ResolvedBook          # noqa: E402

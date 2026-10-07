@@ -32,9 +32,12 @@ import json
 import os
 import tempfile
 import time
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+if getattr(sys, "frozen", False):        # the packaged app: this module sits in _internal, not _internal/scripts
+    ROOT = Path(sys._MEIPASS)
 RESULTS = ROOT / "results"
 
 #: Schema version of a stored line. A reader must be able to tell an old shape

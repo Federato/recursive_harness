@@ -44,10 +44,8 @@ def build(line: str, state: str, config: dict | None = None, request: dict | Non
     """The request for one scenario. GL: the config applied to the state's declared base (its effective date, if set,
     is the date the domains are read at, as `sweep.py` does). CP: the given request, or the state's sample."""
     if line == "GL":
-        import variants as V
-        cfg = V.clean(config or {})
-        d = V.Declared(state, str(cfg.get("effective_date") or V.DEFAULT_ASOF), cfg.get("package_version") or None)
-        return V.build(cfg, d)
+        from . import catalog                            # one build for GL everywhere: a class gets its basis's exposure
+        return catalog.build("GL", state, config or {})
     if request:
         return copy.deepcopy(request)
     import property_rating as pr
@@ -62,8 +60,10 @@ def rate(line: str, payload: dict, mode: str = "strict-erc", rounding: str = "RO
             r = _kernel(mode, rounding).rate(payload)
             if not r.complete:
                 return {**out, "outcome": "stopped", "detail": str(r.stopped)[:400], "stored": stored(payload)}
+            from . import catalog
             out.update(premium=str(r.premium), packages=list(r.packages), juris=r.juris, asof=r.asof,
-                       paths=sorted(signature.gl_signature(r)), referrals=len(r.referrals))
+                       paths=sorted(signature.gl_signature(r)), referrals=len(r.referrals),
+                       classification=catalog.gl_class_of(payload))
         else:
             tree, trace, total = W.rate("CP", payload)
             out.update(premium=total, paths=sorted(signature.cp_signature(tree)),

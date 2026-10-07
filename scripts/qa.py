@@ -53,6 +53,8 @@ import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+if getattr(sys, "frozen", False):        # the packaged app: this module sits in _internal, not _internal/scripts
+    ROOT = Path(sys._MEIPASS)
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
 

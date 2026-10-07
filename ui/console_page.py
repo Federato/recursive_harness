@@ -1292,7 +1292,8 @@ function wbRate(){
   wbJSON('/api/console/workbench/rate',body).then(r=>{WB.last={...r,body};
     const o=document.getElementById('wb-out');
     if(r.error){o.innerHTML='<div class="td-root">'+esc(r.error)+'</div>';return;}
-    o.innerHTML='<div class="wb-res">'+(r.outcome==='rated'?'<span class="cap2">Our premium</span><div><b class="big">'+esc(r.premium)+'</b> <span class="mx-msg">'+esc((r.packages||[]).join(' over '))+(r.mode?' · '+r.mode+' · '+r.rounding:'')+'</span></div>':
+    o.innerHTML='<div class="wb-res">'+(r.outcome==='rated'?'<span class="cap2">Our premium</span><div><b class="big">'+esc(r.premium)+'</b> <span class="mx-msg">'+esc((r.packages||[]).join(' over '))+(r.mode?' · '+r.mode+' · '+r.rounding:'')+'</span></div>'+
+      (r.classification?'<div>Class '+esc(r.classification.code+' '+r.classification.description)+' · <b>'+esc(r.classification.basis)+'</b>: '+esc(r.classification.label)+'</div>':''):
       '<b>Our engine '+(r.outcome==='stopped'?'stopped':'refused')+'</b><div class="mx-msg">'+esc(r.detail||'')+'</div>')+wbStoredBox(r.stored,r.premium)+'</div>';
     wbSide(r);});
 }

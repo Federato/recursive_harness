@@ -128,6 +128,23 @@ GL_CLASS_MIX = (("56911", "Manufacturing"), ("53733", "Manufacturing"), ("60010"
                 ("11127", "Retail"), ("91340", "Construction"), ("98482", "Construction"))
 
 
+#: A realistic exposure for a class's own premium basis, used when a plan or the Workbench sets a class code and no
+#: exposure (the base risk's 5,000,000 would otherwise be 5,000,000 apartment units). Ours, not ISO's: a sensible
+#: size per basis; an exposure set explicitly always wins.
+BASIS_EXPOSURE = {"Units": 50, "Area": 10000, "Gross Sales": 1000000, "Payroll": 500000}
+#: How each basis reads on a label: ISO's rate is per this much exposure.
+BASIS_WORDS = {"Units": ("per unit", "units"), "Area": ("per 1,000 sq ft", "sq ft"),
+               "Gross Sales": ("per $1,000 of sales", "$ sales"), "Payroll": ("per $1,000 of payroll", "$ payroll")}
+
+
+def basis_label(basis: str, exposure=None) -> str:
+    per, unit = BASIS_WORDS.get(basis, (f"per {basis.lower()}", ""))
+    if exposure is None:
+        return per
+    amt = f"{int(exposure):,}"
+    return f"{per}, {'$' + amt if unit.startswith('$') else amt} {unit.lstrip('$ ').strip()}".rstrip()
+
+
 def dimensions(line: str, state: str, config: dict | None = None, asof: str | None = None) -> list:
     """Every dimension of the line in one state, with its legal values (given the answers in `config`) and edges."""
     config = config or {}
@@ -147,13 +164,21 @@ def dimensions(line: str, state: str, config: dict | None = None, asof: str | No
             if cid == "class_code":
                 mix = [code for code, _ in GL_CLASS_MIX if code in set(vals)]
                 labels = {}
+                bases = {}
                 for code, grp in GL_CLASS_MIX:
                     if code in mix:
                         try:
-                            labels[code] = f"{code} {d.description(code)} ({grp})"
+                            b = d.basis_for(code, "PremOps")
+                        except Exception:                     # noqa: BLE001
+                            b = ""
+                        bases[code] = b
+                        try:
+                            desc = d.description(code)
                         except Exception:                     # noqa: BLE001 -- no declared description here
-                            labels[code] = f"{code} ({grp})"
-                dim.update(suggested=mix, labels=labels)
+                            desc = ""
+                        labels[code] = (f"{code} {desc} · {basis_label(b, BASIS_EXPOSURE.get(b))}" if b else
+                                        f"{code} {desc}").strip() + f" ({grp})"
+                dim.update(suggested=mix, labels=labels, bases=bases)
             out.append(dim)
         return out
     out = []
@@ -230,4 +255,20 @@ def build(line: str, state: str, config: dict | None = None) -> dict:
     if any(isinstance(v, str) and v.startswith("@") for v in cfg.values()):
         import layers                                     # `/tests`' positions (@lowest...), resolved per state
         cfg = layers.resolve(cfg, d)
+    if cfg.get("class_code") and cfg.get("exposure") in (None, ""):
+        b = d.basis_for(str(cfg["class_code"]), "PremOps")
+        if b in BASIS_EXPOSURE:                           # a class's own basis, at a realistic size (not 5,000,000 units)
+            cfg = {**cfg, "exposure": BASIS_EXPOSURE[b]}
     return V.build(cfg, d)
+
+
+def gl_class_of(request: dict) -> dict | None:
+    """The first classification's code, description, basis and exposure, as a request carries them (for display)."""
+    try:
+        body = request.get("body", request)
+        cls = body["GeneralLiability"][0]["GeneralLiabilityLocation"][0]["GeneralLiabilityClassification"][0]
+    except (KeyError, IndexError, TypeError):
+        return None
+    b, e = cls.get("PremOpsPremiumBasis", ""), cls.get("PremOpsCovExposure")
+    return {"code": cls.get("ClassCode"), "description": cls.get("ClassDescription", ""), "basis": b, "exposure": e,
+            "label": basis_label(b, e) if b else ""}
