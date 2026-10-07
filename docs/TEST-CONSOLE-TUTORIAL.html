@@ -60,7 +60,7 @@ article{padding:22px 16px 40px}header{padding:20px 16px}}
 <ul><li><a href="#w-smoke">1 · Run a quick smoke</a></li><li><a href="#w-cell">2 · Test one cell from the board</a></li>
 <li><a href="#w-gaps">3 · Close a state's gaps</a></li><li><a href="#w-mismatch">4 · Investigate a mismatch</a></li>
 <li><a href="#w-whatif">5 · Try a what-if risk</a></li><li><a href="#w-plan">6 · Build a bigger plan</a></li>
-<li><a href="#w-regress">7 · Check nothing broke</a></li><li><a href="#w-queue">8 · Watch the queue and budget</a></li></ul>
+<li><a href="#w-regress">7 · Check nothing broke</a></li><li><a href="#w-queue">8 · Watch the queue and budget</a></li><li><a href="#w-inspect">9 · Inspect results</a></li></ul>
 <div class="lbl">Reference</div>
 <ul><li><a href="#r-screens">The seven screens</a></li><li><a href="#r-cats">Mismatch categories</a></li><li><a href="#r-faq">Questions</a></li></ul>
 </aside>
@@ -217,6 +217,24 @@ whether ISO has already answered.</li>
 <li>The <b>Run log</b> records each call: sent, reused, refused, or capped.</li>
 <li><b>Refused payloads</b> lists requests ISO rejected, with its message, so you can tell a bad input from an engine problem.</li></ol>
 <div class="note">Plans send only while the app is open. If you close it, the plan picks up where it left off next time.</div>
+
+<h2 id="w-inspect">Walkthrough 9 · Inspect results</h2>
+<p>After a plan's results come back from ISO, a person reviews them and records a verdict on each. ISO's agreement still
+turns a cell ✓ on its own; the review is a separate layer that shows what nobody has looked at yet.</p>
+<ol class="steps">
+<li>In <span class="scr">Queue &amp; Run Log</span>, click <span class="btn">Inspect results · 51 awaiting</span> on a finished plan.</li>
+<li>Enter your name once (the console remembers it in this browser). The list starts with what's awaiting: mismatches, then
+refusals, then matches.</li>
+<li>Click <span class="btn">✓ Pass all 50 matches</span> to pass every result that matched ISO in one go, or pass them one by one.</li>
+<li>For the rest, use the buttons on each row. Open <span class="btn">Trace ↗</span> first when you need to see why.</li>
+<li>When nothing is awaiting, click <span class="btn">Sign off this plan</span>. It records your name and the counts.</li></ol>
+<table><tr><th>Button</th><th>Means</th><th>Asks for</th></tr>
+<tr><td><span class="btn">✓ Pass</span></td><td>I've looked; our result is right.</td><td>nothing</td></tr>
+<tr><td><span class="btn">× Fail</span></td><td>Our result is wrong.</td><td>a reason and a category</td></tr>
+<tr><td><span class="btn">⊘ Excuse</span></td><td>Not a test of our engine. Example: ISO refused GL in Puerto Rico because it isn't in our RaaS subscription.</td><td>a reason</td></tr></table>
+<p>Every verdict shows who and when, and has an <b>undo</b>. The same buttons are in <span class="scr">Trace Diff</span>'s header
+and in a <span class="scr">Coverage Board</span> cell's panel. On the board, <b>Awaiting inspection</b> counts plan results
+nobody has reviewed, and a small dot marks the cells they walked.</p>
 
 <h2 id="r-screens">Reference · the seven screens</h2>
 <table><tr><th>Screen</th><th>Shows</th><th>Use it to</th></tr>
