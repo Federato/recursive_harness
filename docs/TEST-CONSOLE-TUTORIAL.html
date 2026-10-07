@@ -1,0 +1,254 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Using the Test Console</title>
+<link rel="icon" type="image/png" href="/favicon.png" />
+<style>
+:root{--bg:#fbfbfd;--card:#fff;--fg:#1d1d20;--mut:#63636b;--line:#e3e3e8;--accent:#1f3864;--accent-soft:#e8edf6;
+--code-bg:#f4f4f7;--note:#fff8e1;--note-line:#e6c65c;--ok:#1e6b3a;--bad:#a11;--stale:#8a5a00}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141519;--card:#1c1d22;--fg:#e7e7ea;--mut:#a0a0aa;
+--line:#30313a;--accent:#9db6e6;--accent-soft:#232a3a;--code-bg:#24252c;--note:#2b2618;--note-line:#7a6528;--ok:#6fcf8f;--bad:#ff8a8a;--stale:#e0b25a}}
+:root[data-theme="dark"]{--bg:#141519;--card:#1c1d22;--fg:#e7e7ea;--mut:#a0a0aa;--line:#30313a;--accent:#9db6e6;--accent-soft:#232a3a;
+--code-bg:#24252c;--note:#2b2618;--note-line:#7a6528;--ok:#6fcf8f;--bad:#ff8a8a;--stale:#e0b25a}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--fg)}
+header{background:#1f3864;color:#fff;padding:26px 32px 22px}
+header h1{margin:0 0 4px;font-size:22px;font-weight:650;letter-spacing:-.01em}
+header .sub{opacity:.78;font-size:14px}
+.wrap{display:grid;grid-template-columns:240px minmax(0,1fr);gap:34px;max-width:1280px;margin:0 auto;padding:30px 32px 90px}
+aside{position:sticky;top:22px;align-self:start;max-height:calc(100vh - 50px);overflow:auto;font-size:13.5px;border-left:2px solid var(--line);padding-left:14px}
+aside .lbl{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--mut);font-weight:700;margin:14px 0 6px}
+aside .lbl:first-child{margin-top:0}
+aside ul{list-style:none;margin:0;padding:0}
+aside a{color:var(--mut);text-decoration:none;display:block;padding:3px 0;line-height:1.4}
+aside a:hover{color:var(--accent)}
+article{min-width:0;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:34px 42px 54px}
+article h2{font-size:21px;margin:44px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--line);letter-spacing:-.01em}
+article h2:first-child{margin-top:0}
+article h3{font-size:16.5px;margin:26px 0 8px}
+p,li{max-width:76ch}
+code,kbd{background:var(--code-bg);padding:.12em .38em;border-radius:4px;font:13.5px/1.5 Consolas,"SF Mono",Menlo,monospace}
+.btn{display:inline-block;border:1px solid var(--accent);color:var(--accent);border-radius:4px;padding:0 7px;font-size:13.5px;white-space:nowrap;background:var(--accent-soft)}
+.scr{font-weight:650;color:var(--accent)}
+ol.steps{counter-reset:s;list-style:none;padding:0;margin:12px 0}
+ol.steps>li{counter-increment:s;position:relative;padding:2px 0 10px 40px}
+ol.steps>li::before{content:counter(s);position:absolute;left:0;top:2px;width:26px;height:26px;border-radius:50%;background:#1f3864;color:#fff;
+font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.note{background:var(--note);border-left:3px solid var(--note-line);padding:10px 14px;border-radius:0 6px 6px 0;margin:14px 0;max-width:80ch}
+.free{color:var(--ok);font-weight:650}
+.cost{color:var(--bad);font-weight:650}
+table{border-collapse:collapse;margin:12px 0;font-size:14.5px;width:100%;max-width:880px}
+th,td{border-bottom:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+th{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--mut)}
+td.g{font-size:18px;text-align:center;width:44px}
+.g.ok{color:var(--ok)}.g.bad{color:var(--bad)}.g.st{color:var(--stale)}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px;margin:14px 0}
+.card{border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+.card b{display:block;color:var(--accent);margin-bottom:2px}
+.card span{font-size:14px;color:var(--mut)}
+@media (max-width:860px){.wrap{grid-template-columns:1fr;padding:16px}aside{position:static;max-height:none;border-left:0;padding-left:0}
+article{padding:22px 16px 40px}header{padding:20px 16px}}
+</style></head><body>
+<header><h1>Using the ISO Rating Test Console</h1>
+<div class="sub">A walkthrough for checking our GL and Commercial Property rating against ISO · 2026-10-07</div></header>
+<div class="wrap">
+<aside>
+<div class="lbl">Start here</div>
+<ul><li><a href="#what">What the console is for</a></li><li><a href="#open">Opening it</a></li><li><a href="#symbols">Reading the cells</a></li>
+<li><a href="#calls">Free vs. calls to ISO</a></li></ul>
+<div class="lbl">Walkthroughs</div>
+<ul><li><a href="#w-smoke">1 · Run a quick smoke</a></li><li><a href="#w-cell">2 · Test one cell from the board</a></li>
+<li><a href="#w-gaps">3 · Close a state's gaps</a></li><li><a href="#w-mismatch">4 · Investigate a mismatch</a></li>
+<li><a href="#w-whatif">5 · Try a what-if risk</a></li><li><a href="#w-plan">6 · Build a bigger plan</a></li>
+<li><a href="#w-regress">7 · Check nothing broke</a></li><li><a href="#w-queue">8 · Watch the queue and budget</a></li></ul>
+<div class="lbl">Reference</div>
+<ul><li><a href="#r-screens">The seven screens</a></li><li><a href="#r-cats">Mismatch categories</a></li><li><a href="#r-faq">Questions</a></li></ul>
+</aside>
+<article>
+
+<h2 id="what">What the console is for</h2>
+<p>The Recursive Harness rates General Liability (GL) and Commercial Property (CP) from ISO's own ERC content. The test console
+answers one question: <b>where does our rating agree with ISO's, and where haven't we checked yet?</b> ISO's answers come from
+its Rating-as-a-Service (RaaS). Each request to it is one <em>call</em>, and calls are budgeted.</p>
+<p>The console stores every ISO answer. It re-rates each stored request on today's engine and compares the two. The comparison
+runs across states, coverages and the individual <em>rating paths</em>: the different routes a premium can take, such as
+"Prem/Ops · units" or "Causes of loss · Special".</p>
+
+<h2 id="open">Opening it</h2>
+<ul>
+<li><b>Windows:</b> unzip the package and double-click <code>RecursiveHarness.exe</code>. From the source folder, run <code>start.bat</code>.</li>
+<li><b>Mac:</b> unzip the package and double-click <code>start.command</code>. It needs Python 3.9 or newer.</li>
+</ul>
+<p>A browser opens at <code>http://127.0.0.1:8765/console</code>. The app's original rating page, "Rate a submission", is still at
+<code>/</code>. There's a link to it in the console's header.</p>
+<div class="note"><b>Only one app at a time.</b> If an older copy is still running, it keeps the port, and the browser
+shows the old pages. Close every app window (Ctrl-C, or close the console window), then start it once.</div>
+<div class="note"><b>Sending to ISO needs credentials.</b> Everything marked <span class="free">free</span> works without them.
+To send calls, the app needs a <code>raas.env</code> file next to it. Ask Dan; it's never shipped in the package.</div>
+<p>The seven screens sit across the top: <span class="scr">Coverage Board</span>, <span class="scr">Readiness Matrix</span>,
+<span class="scr">Test Plan Builder</span>, <span class="scr">Trace Diff</span>, <span class="scr">Scenario Workbench</span>,
+<span class="scr">Regression Library</span> and <span class="scr">Queue &amp; Run Log</span>. A strip under them shows today's
+call budget.</p>
+
+<h2 id="symbols">Reading the cells</h2>
+<p>The Board and the Matrix use the same six cell states:</p>
+<table><tr><th></th><th>State</th><th>Meaning</th><th>What it needs</th></tr>
+<tr><td class="g ok">✓</td><td>RaaS-verified / Passed</td><td>Every in-scope path agrees with ISO within tolerance; no open mismatch; nothing stale.</td><td>Nothing.</td></tr>
+<tr><td class="g">○</td><td>Internal only</td><td>Our engine has walked it, but at least one path has no ISO answer to compare with.</td><td>Send scenarios to ISO.</td></tr>
+<tr><td class="g bad">×</td><td>Mismatch</td><td>At least one open difference from ISO outside tolerance.</td><td>Triage in Trace Diff, then re-verify.</td></tr>
+<tr><td class="g st">↻</td><td>Stale</td><td>We have an answer, but ISO's content in force has changed since.</td><td>Refresh the stale answers.</td></tr>
+<tr><td class="g">–</td><td>Untested</td><td>No scenario has walked any path here.</td><td>Find or plan scenarios.</td></tr>
+<tr><td class="g">·</td><td>n/a</td><td>The state doesn't file this path. It's never a gap.</td><td>Nothing.</td></tr></table>
+<p>On the Coverage Board, a number in a cell is how many scenarios walked that path. For a mismatch or a stale cell it reads
+<code>affected/total</code>.</p>
+
+<h2 id="calls">Free vs. calls to ISO</h2>
+<p>Every button says what it costs. <span class="free">Free</span> work (rating on our engine, Tier 0 checks, re-running the
+library) costs nothing. Anything that sends to ISO says <span class="cost">call</span> and asks before it sends.</p>
+<table><tr><th>Lane</th><th>Per day</th><th>Used by</th></tr>
+<tr><td>Active plans</td><td>150</td><td>Plans you commit (quick smoke, board cells, the Plan Builder)</td></tr>
+<tr><td>Change &amp; stale refresh</td><td>50</td><td>Re-asking ISO where its content changed</td></tr>
+<tr><td>Ad hoc &amp; triage</td><td>50</td><td>Single sends from the Workbench</td></tr></table>
+<p>That's 250 calls a day in all, and the lanes reset at midnight Eastern. Before any call, the console checks whether ISO has
+already answered that exact request. A fresh stored answer is reused, not paid for twice. When a lane is full, sending more
+needs an override with a written reason (Queue &amp; Run Log → <span class="btn">Set override</span>).</p>
+
+<h2 id="w-smoke">Walkthrough 1 · Run a quick smoke</h2>
+<p>A quick smoke rates <b>one retail risk per state</b> at industry-standard selections. It's the fastest way to see that a state
+rates end to end.</p>
+<div class="cards">
+<div class="card"><b>GL retail</b><span>Class 11127 (clothing stores), $1,000,000 gross sales, premises/operations and products/completed
+operations together, $1M occurrence / $2M aggregates, occurrence form, no deductibles.</span></div>
+<div class="card"><b>Property retail</b><span>Class 0567 (Mercantile NOC), Special causes of loss (rates Basic Group I, Basic Group II and
+Special), joisted masonry, $1M building, $250K contents, 80% coinsurance, replacement cost, $1,000 deductible.</span></div></div>
+<h3>One state</h3>
+<ol class="steps">
+<li>Open <span class="scr">Coverage Board</span> and choose <b>General Liability</b> or <b>Commercial Property</b> at the top right.</li>
+<li>Click a state's name in the left column. Its panel opens on the right.</li>
+<li>Click <span class="btn">Run quick smoke for OH…</span>. The console counts the calls: one, or none if ISO already answered.</li>
+<li>Click <span class="btn">Send now</span>. The console opens <span class="scr">Queue &amp; Run Log</span> on the new plan, and the result
+appears there when ISO answers.</li></ol>
+<h3>Every state</h3>
+<ol class="steps">
+<li>Open <span class="scr">Test Plan Builder</span>. Under <b>Start from</b>, pick <b>Quick smoke · GL retail (one per state)</b> or
+<b>Quick smoke · Property retail (one per state)</b>.</li>
+<li>The right-hand panel counts the plan: 51 GL or 46 Property scenarios, less any already answered, against what's left in the active lane today.</li>
+<li>Click <span class="btn">Commit plan…</span>, give it a name, tick <b>start</b> and click <span class="btn">Commit</span>.</li></ol>
+
+<h2 id="w-cell">Walkthrough 2 · Test one cell from the board</h2>
+<p>Each Coverage Board cell is <b>one rating path in one state</b>. You can test any cell directly.</p>
+<ol class="steps">
+<li>On <span class="scr">Coverage Board</span>, click a cell, for example <b>OH × Prem/Ops · units</b>.</li>
+<li>The panel lists the scenarios already behind the cell. Click a linked one to open it in <span class="scr">Trace Diff</span>.</li>
+<li>Under <b>Run tests for this cell</b>, click <span class="btn">Find scenarios (free)</span>. The console rates candidate risks on our
+engine and keeps only those whose trace actually walks this path. It tries the state's base risk, the smoke risk, then one setting
+changed at a time, best match first. This takes up to 30 seconds.</li>
+<li>Each find shows our premium and whether ISO has answered it. Risks with no fresh answer are ticked.</li>
+<li>Click <span class="btn">Send ticked to ISO…</span>, check the call count, then click <span class="btn">Send now</span>.</li></ol>
+<div class="note"><b>"None found" is an honest answer.</b> Some paths aren't reachable by changing one setting: company ELP, specific
+Property rates, stop-gap ILF, and the per-claim deductibles ISO files at zero. For those, build the request by hand in the
+<span class="scr">Scenario Workbench</span>.</div>
+
+<h2 id="w-gaps">Walkthrough 3 · Close a state's gaps</h2>
+<ol class="steps">
+<li>Open <span class="scr">Readiness Matrix</span>. Rows are states; columns are coverages for GL and CP. Each row ends with a
+readiness figure.</li>
+<li>The side panel, <b>Still to test</b>, lists the gaps, most urgent first. Click a gap, or any cell that isn't ✓,
+to see what's missing and why.</li>
+<li>Click <span class="btn">Build a test plan from these gaps</span>. The Plan Builder opens with those states and coverages
+already chosen.</li>
+<li>Check the count and click <span class="btn">Commit plan…</span> (see <a href="#w-plan">walkthrough 6</a>).</li></ol>
+<p>The chart under the matrix, <b>Agreement with ISO over time</b>, shows whether agreement is rising as plans finish.</p>
+
+<h2 id="w-mismatch">Walkthrough 4 · Investigate a mismatch</h2>
+<ol class="steps">
+<li>Find a <span class="g bad">×</span> cell on the Board or the Matrix and click a scenario in its panel. It opens in
+<span class="scr">Trace Diff</span>.</li>
+<li>Trace Diff lines our worksheet up with ISO's, step by step. It shows the <b>first divergence</b>, what <b>flows from</b> it, and
+whether this difference has been <b>seen before</b> elsewhere.</li>
+<li>Decide the cause and pick a category under <b>Classify this scenario</b> (see <a href="#r-cats">the categories</a>), then click
+<span class="btn">Save classification</span>. Only a <em>true engine defect</em> is ours to fix; the others explain the gap.</li>
+<li><span class="btn">Copy brief</span> copies a plain-text summary for a ticket or a message.</li>
+<li>Once it's fixed or explained, click <span class="btn">Promote to Regression Library</span> so every future engine change is
+checked against it.</li></ol>
+
+<h2 id="w-whatif">Walkthrough 5 · Try a what-if risk</h2>
+<ol class="steps">
+<li>Open <span class="scr">Scenario Workbench</span>. Choose the line and state.</li>
+<li>For GL, set the controls: class code, exposure, limits, deductibles and so on. The class shows its premium basis, such as
+"per unit, 50 units" for apartments. For CP, edit the request itself.</li>
+<li>Click <span class="btn">Rate internally · free</span>. You get our premium, the packages used, and the paths the risk walked.</li>
+<li><span class="btn">Check where it applies · free</span> and <span class="btn">Run in every state…</span> rate the same settings in
+every state where they're legal, and count what sending would cost.</li>
+<li><span class="btn">Send to RaaS · 1 call…</span> asks ISO from the ad hoc lane. If ISO has already answered this exact request,
+you can <span class="btn">Use the stored answer · free</span> or <span class="btn">Spend a call anyway</span>.</li>
+<li><span class="btn">Build a plan from this…</span> turns the risk into a plan across states.</li></ol>
+
+<h2 id="w-plan">Walkthrough 6 · Build a bigger plan</h2>
+<ol class="steps">
+<li>Open <span class="scr">Test Plan Builder</span>. Pick the line and the states.</li>
+<li>Optionally start from a preset: quick smoke, a QA tier or a layer.</li>
+<li>Tick the <b>dimensions</b> to vary and pick their values. For GL class codes, the builder suggests a mix of ten (manufacturing,
+apartments, lessor's risk, retail, construction), each labelled with its premium basis. Type any other code in the box to add it.</li>
+<li>The console combines values <b>pairwise</b>, so every pair of values meets at least once without trying every combination,
+and adds <b>edge cases</b>. The panel shows the counts: scenarios, already answered (reused), calls, and the active lane left.</li>
+<li><span class="btn">Run Tier 0 now · free</span> runs quick sanity checks on our own engine first, such as no zeroed premiums.</li>
+<li>Click <span class="btn">Commit plan…</span>, name it, choose whether to <b>start</b> now, and click <span class="btn">Commit</span>. Each
+scenario is rated on our engine at commit time; the calls go out from the queue.</li></ol>
+
+<h2 id="w-regress">Walkthrough 7 · Check nothing broke</h2>
+<p>The <span class="scr">Regression Library</span> holds every scenario ISO has answered that we keep as a check. It's
+around 400 entries today.</p>
+<ol class="steps">
+<li>After any engine or content change, open it and click <span class="btn">Re-run now · free</span>. Every entry is re-rated
+on today's engine and compared with ISO's stored answer.</li>
+<li><b>Since the previous run</b> lists what changed: newly agreeing, newly disagreeing, or moved.</li>
+<li><b>Stale answers</b> lists entries where ISO's content has changed since it answered. Each one shows a remedy: re-send to ISO,
+or refresh our corpus when ISO has a version we don't.</li>
+<li>Optionally, <span class="btn">Sign off</span> a run to record that someone reviewed it.</li></ol>
+
+<h2 id="w-queue">Walkthrough 8 · Watch the queue and budget</h2>
+<ol class="steps">
+<li>Open <span class="scr">Queue &amp; Run Log</span>. The top shows <b>Today · resets 00:00 ET</b> with each lane's used and left counts.</li>
+<li><b>Plans</b> lists every committed plan with its progress. Pause, resume or <span class="btn">Withdraw</span> one there.</li>
+<li><b>Dispatch queue · next up</b> shows the scenarios about to be sent. They go in order of what they'd teach us: a path not yet
+verified in its state first, then changed content, then edge cases, then the rest. Before each call the console checks again
+whether ISO has already answered.</li>
+<li>The <b>Run log</b> records each call: sent, reused, refused, or capped.</li>
+<li><b>Refused payloads</b> lists requests ISO rejected, with its message, so you can tell a bad input from an engine problem.</li></ol>
+<div class="note">Plans send only while the app is open. If you close it, the plan picks up where it left off next time.</div>
+
+<h2 id="r-screens">Reference · the seven screens</h2>
+<table><tr><th>Screen</th><th>Shows</th><th>Use it to</th></tr>
+<tr><td class="scr">Coverage Board</td><td>Rating paths × states for one line, a readiness verdict per state (Go / Hold / Not ready),
+and which controls have been rated where.</td><td>Spot untested paths; test a cell; run a state's quick smoke.</td></tr>
+<tr><td class="scr">Readiness Matrix</td><td>States × coverages for both lines, and agreement over time.</td><td>See readiness at a glance; plan from gaps.</td></tr>
+<tr><td class="scr">Test Plan Builder</td><td>States, dimensions, presets and the cost of a plan before it runs.</td><td>Design and commit test plans.</td></tr>
+<tr><td class="scr">Trace Diff</td><td>One scenario, our worksheet against ISO's, step by step.</td><td>Find why a premium differs; classify; promote.</td></tr>
+<tr><td class="scr">Scenario Workbench</td><td>One risk you build, rated free, sent on request.</td><td>Try what-ifs; reach paths plans can't.</td></tr>
+<tr><td class="scr">Regression Library</td><td>Every kept check and its history.</td><td>Re-run after changes; handle stale answers; sign off.</td></tr>
+<tr><td class="scr">Queue &amp; Run Log</td><td>Lanes, plans, what's next, every call, refusals.</td><td>Watch progress and budget; override the cap with a reason.</td></tr></table>
+
+<h2 id="r-cats">Reference · mismatch categories</h2>
+<table><tr><th>Category</th><th>Meaning</th></tr>
+<tr><td>Rounding ±$1</td><td>ISO rounded at a different step.</td></tr>
+<tr><td>Interpolation ±0.5%</td><td>A different method between table entries.</td></tr>
+<tr><td>Version skew</td><td>A different loss cost or rule version was in effect.</td></tr>
+<tr><td>Input mapping</td><td>The same intent reached ISO and us as different inputs.</td></tr>
+<tr><td>RaaS anomaly</td><td>ISO's service did something its own filing doesn't say.</td></tr>
+<tr><td>True engine defect</td><td>Our engine is wrong. Tolerance zero: these get fixed.</td></tr>
+<tr><td>Our refusal vs ISO's narrowing</td><td>We said "not applicable" where ISO rated.</td></tr></table>
+
+<h2 id="r-faq">Questions</h2>
+<h3>A screen shows "Built in TC-…" or old pages</h3>
+<p>An older copy of the app is still running. Close all app windows and start it once.</p>
+<h3>Why is a Property cell "n/a"?</h3>
+<p>The state doesn't file that path. It's never counted as a gap.</p>
+<h3>Can I break anything?</h3>
+<p>Free actions change nothing at ISO. Sends always show the call count and wait for <span class="btn">Send now</span>. Stored
+answers are never deleted; evidence is only added to.</p>
+<h3>Where's the read-only version?</h3>
+<p>The Test Console page on Ideation is a snapshot of the matrix, board, library, queue and some Trace Diffs. Nothing there
+sends or changes anything.</p>
+</article></div>
+</body></html>
