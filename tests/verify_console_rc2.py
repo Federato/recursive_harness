@@ -66,6 +66,15 @@ def part_a():
               [g["key"] for g in console_page.legend()] == [s.key for s in status.ALL]
               and all(f'chip.{s.key}' in html for s in status.ALL))
         check("A10 the shell spends no call: no POST route", console_page.dispatch("POST", "/console", {}, {}) is None)
+        import re, shutil, subprocess
+        node = shutil.which("node")
+        if node:
+            js = Path(tmp) / "page.js"
+            js.write_text("\n".join(re.findall(r"<script>(.*?)</script>", html, re.S)), encoding="utf-8")
+            res = subprocess.run([node, "--check", str(js)], capture_output=True, text=True)
+            check("A11 the page's script parses (node --check)", res.returncode == 0, res.stderr.strip()[-300:])
+        else:
+            print("  skip A11 the page's script parses: node not found")
         os.environ.pop("RAAS_LEDGER_DIR")
 
 
@@ -230,8 +239,62 @@ def part_c():
             os.environ.pop("RAAS_LEDGER_DIR", None)
 
 
+def part_d():
+    print("D. Still to test (TC-17)")
+    from console import evidence, mismatch, paths, readiness, store
+    from ui import console_page
+    with tempfile.TemporaryDirectory() as tmp:
+        t = Path(tmp)
+        saved = (evidence.STORE, mismatch.STORE, store.INDEX, readiness.CACHE, readiness.SIGNOFFS, readiness.LAST_BUILD)
+        evidence.STORE, mismatch.STORE, store.INDEX = t / "ev.jsonl", t / "cl.jsonl", t / "index.json"
+        readiness.CACHE, readiness.SIGNOFFS, readiness.LAST_BUILD = t / "rd.json", t / "so.jsonl", t / "build.json"
+        os.environ["RAAS_LEDGER_DIR"] = tmp
+        readiness._MEM.clear()
+        try:
+            store.INDEX.write_text(json.dumps({"references": [{"hash": "f", "freshness": "fresh"}, {"hash": "o", "freshness": "stale"}]}))
+            sc = lambda cov, st="OH": paths.in_scope("CP", st, cov)
+            evidence.add(scenario="m", line="CP", state="OH", walked=sc("Building")[:1], ours="120", iso="100", request_hash="f")
+            evidence.add(scenario="s", line="CP", state="OH", walked=sc("BPP")[:2], ours="100", iso="100", request_hash="o")
+            evidence.add(scenario="i", line="CP", state="OH", walked=sc("Business income")[:1])
+            evidence.add(scenario="v", line="CP", state="OH", walked=sc("Extra expense"), ours="1", iso="1", request_hash="f")
+            r = readiness.get()
+            L = r["stillToTest"]
+            oh = [g for g in L if g["lob"] == "CP" and g["state"] == "OH"]
+            check("D1 one entry per cell neither Passed nor n/a", len(L) == sum(c["status"] not in ("verified", "na") for c in r["cells"]))
+            check("D2 Passed cells are left out", not any(g["coverage"] == "Extra expense" and g["state"] == "OH" and g["lob"] == "CP" for g in L))
+            order = [g["status"] for g in L]
+            rank = {"mismatch": 0, "stale": 1, "internal": 2, "untested": 3}
+            check("D3 status priority: mismatch, stale, internal, untested (§6, no wave key)",
+                  order == sorted(order, key=rank.get) and order[:3] == ["mismatch", "stale", "internal"], order[:4])
+            unt = [g["calls"] for g in L if g["status"] == "untested"]
+            check("D4 within a status, the most calls first", unt == sorted(unt, reverse=True))
+            check("D5 needs text per status (§6)", {g["status"]: g["needs"] for g in oh} == {
+                "mismatch": "Triage + re-verify", "stale": "Refresh stale references",
+                "internal": "RaaS pairwise + edges", "untested": "Tier 0, then RaaS"}, {g["status"]: g["needs"] for g in oh})
+            check("D6 stale work is the refresh lane's, the rest the active lane's",
+                  all(g["lane"] == ("refresh" if g["status"] == "stale" else "active") for g in L))
+            check("D7 calls: one per stale reference and per open mismatch, not per path (§6)",
+                  [g["calls"] for g in oh if g["status"] in ("mismatch", "stale")] == [1, 1], [(g["status"], g["calls"]) for g in oh][:2])
+            tt = r["totals"]
+            check("D8 days at 150/day, and stale refreshes at 50/day shown apart",
+                  tt["daysAtActiveLane"] == round(tt["estCallsToFinish"] / 150, 1) and tt["daysAtRefreshLane"] == round(1 / 50, 1))
+            f = readiness.get(lob="CP", state="OH")["stillToTest"]
+            check("D9 the list follows the lob / state filter", f == oh)
+            readiness._MEM.clear()
+            cached = json.loads(readiness.CACHE.read_text()); cached["inputs"]["schema"] = 1; cached.pop("stillToTest")
+            readiness.CACHE.write_text(json.dumps(cached))
+            check("D10 a saved result from older code is not served (schema)", "stillToTest" in readiness.get())
+            html = console_page.page()
+            check("D11 the side panel lists them, with the build-a-plan button", "function mxList" in html
+                  and "Build a test plan from these gaps" in html)
+        finally:
+            (evidence.STORE, mismatch.STORE, store.INDEX, readiness.CACHE, readiness.SIGNOFFS, readiness.LAST_BUILD) = saved
+            readiness._MEM.clear()
+            os.environ.pop("RAAS_LEDGER_DIR", None)
+
+
 def main() -> int:
-    part_a(); part_b(); part_c()
+    part_a(); part_b(); part_c(); part_d()
     bad = [n for n, ok in RESULTS if not ok]
     print(f"\n{len(RESULTS) - len(bad)}/{len(RESULTS)} passed")
     return 1 if bad else 0

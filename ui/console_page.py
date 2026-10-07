@@ -136,7 +136,7 @@ MATRIX_HTML = """<section class="screen" id="s-matrix" hidden><div class="mx-wra
     <div id="mx-chart"></div></div>
   <div class="mx-scroll"><div id="mx-grid" class="mx-grid" role="grid" aria-label="Readiness by state and coverage">
     <div class="mx-loading">Loading the matrix… (the first build after a change takes about half a minute)</div></div></div>
-</div><aside class="mx-side" id="mx-side"><div class="mx-side-empty">Select a cell to see what it needs.</div></aside></div></section>"""
+</div><aside class="mx-side" id="mx-side" aria-live="polite"></aside></div></section>"""
 
 BUILT = {"matrix": MATRIX_HTML}
 
@@ -180,9 +180,21 @@ MATRIX_CSS = """
 .mx-cell .l1{font-size:11.5px;font-weight:600;letter-spacing:-.01em}
 .mx-cell .l2{font-size:10.5px}
 .mx-cell .so{position:absolute;top:3px;right:5px;font-size:10px}
-.mx-side{width:380px;flex:none;position:sticky;top:66px;align-self:flex-start;max-height:calc(100vh - 66px);overflow-y:auto;border-left:1px solid var(--color-divider);padding:24px;background:#f8f4f4;
+.mx-side{width:380px;flex:none;position:sticky;top:var(--hdr,66px);align-self:flex-start;max-height:calc(100vh - var(--hdr,66px));overflow-y:auto;border-left:1px solid var(--color-divider);padding:24px;background:#f8f4f4;
   display:flex;flex-direction:column;gap:14px}
-.mx-side-empty{color:var(--color-neutral-700)}
+.mx-back{font-size:12px;text-decoration:none}
+.mx-list{display:flex;flex-direction:column}
+.mx-lh,.mx-li{display:grid;grid-template-columns:22px 30px 28px minmax(0,1fr) 56px;gap:8px;align-items:center}
+.mx-lh{padding-bottom:5px;border-bottom:1px solid var(--color-text);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-neutral-700)}
+.mx-lh span:last-child,.mx-ln{text-align:right}
+.mx-li{padding:7px 0;border:0;border-bottom:1px solid var(--color-divider);background:transparent;font:inherit;font-size:12.5px;
+  color:var(--color-text);text-align:left;cursor:pointer}
+.mx-li:hover{background:var(--color-accent-100)}
+.mx-li .chip{width:20px;height:16px;font-size:10px}
+.mx-lc{display:flex;flex-direction:column;line-height:1.25;min-width:0}
+.mx-lc small,.mx-ln small{font-size:11.5px;color:var(--color-neutral-700)}
+.mx-ln small{display:block;font-size:10px}
+.mx-more{align-self:flex-start;border:0;background:transparent;color:var(--color-accent-700);cursor:pointer;font:inherit;font-size:12.5px;padding:0;text-decoration:underline}
 .mx-side h2{margin:0;font:600 24px/1.15 var(--font-heading)}
 .mx-side .cap2{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-neutral-700)}
 .mx-side table{width:100%;border-collapse:collapse;font-size:12.5px}
@@ -202,7 +214,7 @@ MATRIX_CSS = """
 """
 
 MATRIX_JS = r"""
-const MX={data:null,sel:null};
+const MX={data:null,sel:null,all:false};
 const SERIES={GL:{name:'General Liability',color:'#2f72a8'},CP:{name:'Commercial Property',color:'#9a6214'}};
 const LG=Object.fromEntries(BOOT.legend.map(s=>[s.key,s]));
 const SHORT={internal:'Internal',na:'n/a'};   // the cell's own label; the full one is in the title and side panel
@@ -245,7 +257,7 @@ function mxDraw(){
     });
   });
   g.innerHTML=h;
-  if(MX.sel&&by[MX.sel])mxSide(by[MX.sel]);
+  if(MX.sel&&by[MX.sel])mxSide(by[MX.sel]);else{MX.sel=null;mxList();}
 }
 function mxTrend(A){
   const el=document.getElementById('mx-chart'),key=document.getElementById('mx-key');
@@ -278,7 +290,7 @@ function mxTrend(A){
 }
 function mxSide(c){
   const s=LG[c.status],p=c.paths,labels=(MX.data.pathLabels||{})[c.lob]||{};
-  let h='<div class="cap2">'+esc(c.lob+' · '+(BOOT.names[c.state]||c.state))+'</div><h2>'+esc(c.coverage)+'</h2>';
+  let h='<a href="#matrix" class="mx-back" id="mx-back">← Still to test</a><div class="cap2">'+esc(c.lob+' · '+(BOOT.names[c.state]||c.state))+'</div><h2>'+esc(c.coverage)+'</h2>';
   h+='<div class="mx-need"><span class="chip '+c.status+'">'+esc(s.glyph)+'</span><div><b>'+esc(s.matrix)+'</b><div class="mx-msg">'+
     esc(c.status==='na'?'The state files no such path; never counted as a gap (D5).':c.status==='verified'?'Nothing needed.':
       s.needs+' · about '+c.estRemainingCalls+' call'+(c.estRemainingCalls===1?'':'s'))+'</div></div></div>';
@@ -301,6 +313,36 @@ function mxSide(c){
   const sb=document.getElementById('mx-sign');if(sb)sb.onclick=()=>{const v=document.getElementById('mx-by').value.trim();if(v){sb.disabled=true;send(v);}};
   const ub=document.getElementById('mx-unsign');if(ub)ub.onclick=()=>{ub.disabled=true;send('');};
   document.getElementById('mx-open').onclick=()=>mxOpen(c);
+  document.getElementById('mx-back').onclick=ev=>{ev.preventDefault();MX.sel=null;
+    document.querySelectorAll('.mx-cell.sel').forEach(x=>x.classList.remove('sel'));mxList();};
+}
+// TC-17: "Still to test" (§6 without waves, D3): mismatch, stale, internal-only, untested; then most calls first.
+function mxList(){
+  const L=MX.data.stillToTest||[],T=MX.data.totals,n=MX.all?L.length:Math.min(14,L.length);
+  let h='<div class="cap2">Still to test · '+L.length+' state-coverage'+(L.length===1?'':'s')+'</div>'+
+    '<div class="mx-msg">Mismatches first, then stale, internal-only, untested; within each, the most calls first. Click a row to see the cell.</div>';
+  if(!L.length){h+='<div class="mx-need"><span class="chip verified">✓</span><div><b>Nothing left</b><div class="mx-msg">Every applicable cell has Passed.</div></div></div>';}
+  else{
+    h+='<div class="mx-list"><div class="mx-lh"><span></span><span>St.</span><span>LOB</span><span>Coverage · needs</span><span>Calls</span></div>'+
+      L.slice(0,n).map(g=>'<button class="mx-li" data-k="'+esc(g.lob+'|'+g.state+'|'+g.coverage)+'"><span class="chip '+g.status+'">'+esc(LG[g.status].glyph)+'</span>'+
+        '<b>'+esc(g.state)+'</b><span>'+esc(g.lob)+'</span><span class="mx-lc"><span>'+esc(g.coverage)+'</span><small>'+esc(LG[g.status].matrix+' · '+g.needs)+
+        '</small></span><span class="mx-ln">'+g.calls+(g.lane==='refresh'?'<small>refresh</small>':'')+'</span></button>').join('')+'</div>';
+    if(L.length>14)h+='<button class="mx-more" id="mx-more">'+(MX.all?'Show the first 14':'Show all '+L.length)+'</button>';
+  }
+  h+='<table><tr><td>Est. RaaS calls to finish</td><td>'+T.estCallsToFinish.toLocaleString()+'</td></tr>'+
+    '<tr><td>Days at the active lane (150/day)</td><td>'+T.daysAtActiveLane+'</td></tr>'+
+    (T.staleCalls?'<tr><td>Of which stale refreshes, in the refresh lane (50/day)</td><td>'+T.staleCalls+' · '+T.daysAtRefreshLane+' days</td></tr>':'')+'</table>'+
+    '<div class="mx-msg">Estimates are one call per unverified path (or per stale reference, or per open mismatch to re-verify); the pairwise design of a test plan and stored answers bring them down.</div>';
+  if(L.length)h+='<button class="btn" id="mx-plan" style="margin-top:auto">Build a test plan from these gaps</button><div class="mx-msg">No calls are spent until a plan is committed.</div>';
+  const side=document.getElementById('mx-side');side.innerHTML=h;
+  side.querySelectorAll('.mx-li').forEach(b=>b.onclick=()=>{const c=MX.data.cells.find(x=>mxKey(x)===b.dataset.k);if(!c)return;
+    MX.sel=b.dataset.k;document.querySelectorAll('.mx-cell.sel').forEach(x=>x.classList.remove('sel'));
+    const el=document.querySelector('.mx-cell[data-k="'+CSS.escape(MX.sel)+'"]');if(el){el.classList.add('sel');el.scrollIntoView({block:'center',behavior:'smooth'});}
+    mxSide(c);});
+  const more=document.getElementById('mx-more');if(more)more.onclick=()=>{MX.all=!MX.all;mxList();};
+  const plan=document.getElementById('mx-plan');if(plan)plan.onclick=()=>{
+    const ls=[...new Set(L.map(g=>g.lob))],ss=[...new Set(L.map(g=>g.state))];
+    location.hash='#plan?from='+encodeURIComponent('Readiness Matrix gaps')+'&lines='+encodeURIComponent(ls.join(','))+'&states='+encodeURIComponent(ss.length+' states')+'&cells='+L.length;};
 }
 function mxOpen(c){location.hash='#board?lob='+encodeURIComponent(c.lob)+'&state='+encodeURIComponent(c.state)+'&coverage='+encodeURIComponent(c.coverage);}
 document.getElementById('mx-grid').addEventListener('click',ev=>{const b=ev.target.closest('.mx-cell');if(!b)return;
@@ -430,6 +472,9 @@ function route(){
   document.querySelectorAll('.tab').forEach(t=>t.dataset.k===ok?t.setAttribute('aria-current','page'):t.removeAttribute('aria-current'));
 }
 drawCap(BOOT.cap);drawLegend(BOOT.legend);route();
+// the header wraps on narrow windows; sticky panels sit below its real height
+const hdr=()=>document.documentElement.style.setProperty('--hdr',document.querySelector('header').offsetHeight+'px');
+hdr();addEventListener('resize',hdr);
 addEventListener('hashchange',route);
 setInterval(()=>fetch('/api/console/cap').then(r=>r.json()).then(drawCap).catch(()=>{}),30000);
 /*{{JS}}*/

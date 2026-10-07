@@ -20,7 +20,7 @@ import time
 from decimal import Decimal
 from pathlib import Path
 
-from . import evidence, ledger, mismatch, paths, rollup, store
+from . import evidence, ledger, mismatch, paths, rollup, status, store
 
 ROOT = Path(__file__).resolve().parent.parent
 TC = ROOT / "results" / "tc"
@@ -28,6 +28,9 @@ CACHE = TC / "readiness.json"
 SIGNOFFS = TC / "signoffs.jsonl"
 DESCOPED = Path(__file__).resolve().parent / "config" / "descoped.json"
 LAST_BUILD = TC / "last_build.json"
+
+#: Bumped when the shape of the result changes, so a saved result from older code is never served.
+SCHEMA = 3
 
 _LOCK = threading.Lock()
 _MEM: dict = {}
@@ -46,6 +49,7 @@ def inputs() -> dict:
     for k, f in files.items():
         out[k] = _stamp(f)
     out["day"] = ledger.day()
+    out["schema"] = SCHEMA
     return out
 
 
@@ -118,6 +122,11 @@ def compute(today: str | None = None, versions: dict | None = None) -> dict:
                             "category": (latest.get(r["scenario"]) or {}).get("category", "unclassified"),
                             "delta": str(Decimal(r["ours"]) - Decimal(r["iso"]))}
                            for r, e in mine if e.iso == "open-mismatch"]
+                # §6: a stale cell needs one call per stale reference and a mismatched one one per open mismatch
+                # (re-verify after the fix), not one per path: one answer often walks several of a cell's paths
+                est = {"mismatch": len(open_mm),
+                       "stale": len({r.get("hash") or r["scenario"] for r, e in mine if e.iso != "none" and not e.fresh}),
+                       }.get(c.status, c.est_remaining_calls)
                 cells.append({
                     "lob": line, "state": state, "coverage": cov, "status": c.status,
                     "paths": {"inScope": c.counts["in_scope"], "walked": c.counts["walked"],
@@ -127,7 +136,7 @@ def compute(today: str | None = None, versions: dict | None = None) -> dict:
                               "byPath": {p: ps.get(p, "untested") for p in c.in_scope}},
                     "scenarios": len(mine),
                     "openMismatches": open_mm,
-                    "estRemainingCalls": c.est_remaining_calls,
+                    "estRemainingCalls": est,
                     "contentVersion": version,
                     "lastChangedAt": max((r["at"] for r, _ in mine), default=None),
                     "signedOffBy": c.signed_off_by, "signedOffAt": c.signed_off_at,
@@ -144,12 +153,24 @@ def compute(today: str | None = None, versions: dict | None = None) -> dict:
         for line in paths.lines()}
     totals.update({"stillToTest": len(todo), "estCallsToFinish": calls,
                    "staleCalls": sum(c["estRemainingCalls"] for c in todo if c["status"] == "stale"),
-                   "daysAtActiveLane": round(calls / ledger.LANES["active"], 1)})
+                   "daysAtActiveLane": round(calls / ledger.LANES["active"], 1),
+                   "daysAtRefreshLane": round(sum(c["estRemainingCalls"] for c in todo if c["status"] == "stale")
+                                              / ledger.LANES["refresh"], 1)})
     return {"generatedAt": time.strftime("%Y-%m-%dT%H:%M:%S"),
             "columns": {line: paths.coverages(line) for line in paths.lines()},
             "pathLabels": {line: {p: v["label"] for p, v in paths.paths(line).items()} for line in paths.lines()},
-            "cells": cells, "totals": totals, "evidence": len(recs), "agreement": agreement(latest),
+            "cells": cells, "totals": totals, "stillToTest": still_to_test(cells), "evidence": len(recs), "agreement": agreement(latest),
             "versions": {"day": today, "paths": _stamp(paths.CONFIG), "references": _stamp(store.INDEX), "map": versions}}
+
+
+def still_to_test(cells: list) -> list:
+    """§6 without the wave key (D3): every cell neither Passed nor n/a, by status priority (mismatch, stale, internal,
+    untested), then most calls first, then state and coverage; each with what it needs and its calls (TC-17)."""
+    todo = [c for c in cells if c["status"] not in ("verified", "na")]
+    todo.sort(key=lambda c: (rollup.PRIORITY[c["status"]], -c["estRemainingCalls"], c["state"], c["lob"], c["coverage"]))
+    return [{"lob": c["lob"], "state": c["state"], "coverage": c["coverage"], "status": c["status"],
+             "needs": status.NEEDS[c["status"]], "lane": "refresh" if c["status"] == "stale" else "active",
+             "calls": c["estRemainingCalls"]} for c in todo]
 
 
 def agreement(latest: dict | None = None) -> dict:
@@ -198,4 +219,6 @@ def get(lob: str | None = None, state: str | None = None, force: bool = False) -
     if lobs or sts:
         res["cells"] = [c for c in res["cells"] if (not lobs or c["lob"] in lobs) and (not sts or c["state"] in sts)]
         res["columns"] = {k: v for k, v in res["columns"].items() if not lobs or k in lobs}
+        res["stillToTest"] = [g for g in res.get("stillToTest", [])
+                              if (not lobs or g["lob"] in lobs) and (not sts or g["state"] in sts)]
     return res
