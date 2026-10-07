@@ -209,4 +209,7 @@ def build(line: str, state: str, config: dict | None = None) -> dict:
     import variants as V
     cfg = V.clean(config or {})
     d = V.Declared(state, str(cfg.get("effective_date") or V.DEFAULT_ASOF), cfg.get("package_version") or None)
+    if any(isinstance(v, str) and v.startswith("@") for v in cfg.values()):
+        import layers                                     # `/tests`' positions (@lowest...), resolved per state
+        cfg = layers.resolve(cfg, d)
     return V.build(cfg, d)

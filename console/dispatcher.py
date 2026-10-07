@@ -112,7 +112,10 @@ def _record(plan: dict, s: dict, req: dict, e: dict, how: str) -> None:
         status = "match" if W.same(ours, iso) else "mismatch"
     evidence.add(scenario=sid, line=line, state=s["state"], walked=walked, ours=ours,
                  iso=None if outcome == "refused" else iso, request_hash=e["hash"], source=f"plan {plan['id']}",
-                 plan=plan["id"], kind=s["kind"])
+                 inert=bool(s.get("inert")), plan=plan["id"], kind=s["kind"])
+    if s.get("inert"):
+        runlog.add(plan=plan["id"], event="inert", scenario=sid, state=s["state"],
+                   detail=f"exercised nothing: rates as the base risk through the same paths ({', '.join(f'{k}={v}' for k, v in s['config'].items())})")
     s.update(status=status, iso=None if iso is None else str(iso), oursNow=ours, scenario=sid, how=how,
              message=msg[:300], at=time.strftime("%Y-%m-%dT%H:%M:%S"))
     runlog.add(plan=plan["id"], event="dedupe" if how == "dedupe" else "sent", scenario=sid, state=s["state"],

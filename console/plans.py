@@ -56,9 +56,11 @@ def scenarios(spec: dict) -> list:
         own = {k: (list(C.edges(C.cp_values(k, st))) if line == "CP" and k in C.STATE_SPECIFIC else v)
                for k, v in dims.items()}
         own = {k: v for k, v in own.items() if v}
-        rows = [(cfg, "pairwise") for cfg in _pairs(own)] if own else [({}, "base")]
+        rows = [(cfg, "pairwise") for cfg in _pairs(own)] if own else ([] if spec.get("configs") else [({}, "base")])
         if spec.get("edges", True):
             rows += [({k: v}, "edge") for k, vs in own.items() for v in C.edges(vs)]
+        # explicit scenarios: a QA tier's or a layer's (presets), or one config across every state (D19)
+        rows += [(dict(c), "preset") for c in spec.get("configs") or []]
         for cfg, kind in rows:
             key = json.dumps(cfg, sort_keys=True)
             if key in seen:
@@ -139,6 +141,7 @@ def preview(spec: dict) -> dict:
             "tier0": invariants.CHECKS_PER_STATE * len(states),
             "pairwise": sum(1 for r in ex["rows"] if r["kind"] in ("pairwise", "base")),
             "edges": sum(1 for r in ex["rows"] if r["kind"] == "edge"),
+            "presets": sum(1 for r in ex["rows"] if r["kind"] == "preset"),
             "scenarios": len(rows), "alreadyAnswered": sum(1 for r in rows if r.get("stored")),
             "notApplicable": len(ex["notApplicable"]), "thinned": thinned, "calls": calls,
             "days": round(calls / ledger.LANES["active"], 1), "activeLeftToday": left_today,
@@ -167,6 +170,7 @@ def commit(spec: dict, by: str = "", name: str = "") -> dict:
     ex = expand(spec)
     rows, thinned = _thin(ex["rows"], spec.get("allowance"))
     open_paths = _untested_paths(line)
+    base: dict = {}
     for r in rows:
         req = C.build(line, r["state"], r["config"])
         rr = WB.rate(line, req)
@@ -175,6 +179,15 @@ def commit(spec: dict, by: str = "", name: str = "") -> dict:
         r["paths"] = rr.get("paths", [])
         r["score"] = _score(r, line, open_paths, set(r["paths"]))
         r["status"] = "reuse" if r.get("stored") else "queued"
+        # D15's INERT: a scenario that sets something yet rates exactly as the state's base risk, through the same
+        # paths, exercised nothing. It still goes to ISO (ISO moving where we did not would be our defect), but its
+        # evidence counts toward no path.
+        if r["config"] and r["ours"] is not None:
+            if r["state"] not in base:
+                b = WB.rate(line, C.build(line, r["state"], {}))
+                base[r["state"]] = (b.get("premium"), set(b.get("paths", [])))
+            if (r["ours"], set(r["paths"])) == base[r["state"]]:
+                r["inert"] = True
     pid = time.strftime("%Y%m%d-%H%M%S") + "-" + line
     plan = {"id": pid, "name": name or f"{line} plan, {len(spec.get('states') or [])} state(s)", "line": line,
             "spec": spec, "by": by, "committed_at": time.strftime("%Y-%m-%dT%H:%M:%S"), "status": "queued",

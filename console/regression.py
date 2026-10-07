@@ -174,6 +174,35 @@ def runs() -> list:
     return out
 
 
+def changes() -> dict | None:
+    """What changed since the previous run (T8, L6): fixed, newly failing, still failing, newly refusing, and our
+    premium moved (pass or fail alike), per scenario both runs hold."""
+    rs = runs()
+    if len(rs) < 2:
+        return None
+    a, b = rs[-2], rs[-1]
+    prev = {x["scenario"]: x for x in a["results"]}
+    bad = ("diverged", "refused", "error")
+    out = {"from": {k: a[k] for k in ("run", "build", "at")}, "to": {k: b[k] for k in ("run", "build", "at")},
+           "fixed": [], "new": [], "still": [], "newlyRefusing": [], "premiumMoved": [], "added": []}
+    for x in b["results"]:
+        p = prev.get(x["scenario"])
+        if p is None:
+            out["added"].append(x["scenario"])
+            continue
+        if p["result"] in bad and x["result"] not in bad:
+            out["fixed"].append(x["scenario"])
+        elif p["result"] not in bad and x["result"] in bad:
+            out["new"].append(x["scenario"])
+        elif x["result"] in bad:
+            out["still"].append(x["scenario"])
+        if x["result"] == "refused" and p["result"] != "refused":
+            out["newlyRefusing"].append(x["scenario"])
+        if p.get("ours") is not None and x.get("ours") is not None and str(p["ours"]) != str(x["ours"]):
+            out["premiumMoved"].append({"scenario": x["scenario"], "was": p["ours"], "now": x["ours"]})
+    return out
+
+
 def history() -> dict:
     """scenario -> {last, firstSeen, lastSeen, open}: the defect history across runs (D18)."""
     out: dict = {}
@@ -225,6 +254,7 @@ def view() -> dict:
     return {"entries": rows, "lastRun": last and {k: last[k] for k in ("run", "build", "at", "seconds", "entries", "counts",
                                                                        "callsSpent")},
             "runs": [{k: r[k] for k in ("run", "build", "at", "counts")} for r in rs[-20:]],
+            "changes": changes(),
             "progress": json.loads(PROGRESS.read_text(encoding="utf-8")) if PROGRESS.exists() else None}
 
 

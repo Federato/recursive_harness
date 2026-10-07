@@ -358,6 +358,17 @@ def dispatch(method: str, path: str, query: dict, body):
                                                         "/api/console/refused", "/api/console/override",
                                                         "/api/console/runs") or path.startswith("/console/report/"):
         return planning(method, path, query, body or {})
+    if method == "GET" and path.startswith("/runs/"):
+        # D17: the standalone run files `/tests` wrote stay browsable (read-only), and `/`'s "Run files" link keeps working
+        from console.store import RES
+        name = path.rsplit("/", 1)[-1] or "index.html"
+        f = RES / "runs" / name
+        if ".." in name or "/" in name or "\\" in name or not f.is_file():
+            return 404, json.dumps({"error": "no such run file"}), "json"
+        return 200, f.read_text(encoding="utf-8"), "html"
+    if method == "GET" and path == "/api/console/presets":
+        from console import presets
+        return 200, json.dumps({"presets": presets.presets()}), "json"
     if path.startswith("/api/console/library"):
         return library_routes(method, path, query, body or {})
     if path.startswith("/api/console/workbench/"):
@@ -1251,8 +1262,10 @@ function wbEvery(){
   wbJSON('/api/console/workbench/every',{config:WB.config,mode:document.getElementById('wb-mode').value,rounding:document.getElementById('wb-round').value}).then(j=>{
     if(j.error){document.getElementById('wb-out').innerHTML='<div class="td-root">'+esc(j.error)+'</div>';return;}
     document.getElementById('wb-out').innerHTML='<div class="wb-res"><span class="cap2">'+esc(j.describes||'the base risk')+' · every state</span><div><b class="big">'+j.applicable+'</b> states rated free · <b>'+j.callsToSend+'</b> would need a call (no stored answer) · '+j.storedAgree+' already verified against a stored answer</div>'+
-      '<div class="mx-msg">Sending these is a one-config test plan: committed from the Test Plan Builder once RC-4 lands (TC-29); nothing is spent here.</div>'+
-      '<table class="wb-tbl">'+j.rows.map(x=>'<tr><td>'+x.state+'</td><td class="v">'+esc(x.premium||'')+'</td><td>'+esc(x.outcome)+'</td><td>'+(x.stored?'ISO '+esc(x.stored.iso||x.stored.outcome):x.needsCall?'<span class="mx-msg">needs a call</span>':'')+'</td></tr>').join('')+'</table></div>';});
+      '<div class="td-tools"><button class="btn" id="wb-toplan">Build a plan from this…</button><span class="mx-msg">Sending these is a one-config test plan; nothing is spent here.</span></div>'+
+      '<table class="wb-tbl">'+j.rows.map(x=>'<tr><td>'+x.state+'</td><td class="v">'+esc(x.premium||'')+'</td><td>'+esc(x.outcome)+'</td><td>'+(x.stored?'ISO '+esc(x.stored.iso||x.stored.outcome):x.needsCall?'<span class="mx-msg">needs a call</span>':'')+'</td></tr>').join('')+'</table></div>';
+    const tp=document.getElementById('wb-toplan');if(tp)tp.onclick=()=>{const sts=j.rows.filter(x=>x.outcome!=='not applicable').map(x=>x.state);
+      location.hash='#plan?lob=GL&states='+encodeURIComponent(sts.join(','))+'&config='+encodeURIComponent(JSON.stringify(WB.config));};});
 }
 function wbCurve(){
   const cid=document.getElementById('wb-curve').value,el=document.getElementById('wb-chart'),msg=document.getElementById('wb-curvemsg');if(!cid){el.innerHTML='';msg.textContent='';return;}
@@ -1295,6 +1308,8 @@ PLAN_HTML = """<section class="screen" id="s-plan" hidden><div class="mx-wrap"><
   <div class="pl-sec"><div class="cap2">States · <span id="pl-stc"></span></div>
     <div class="td-tools"><button class="btn" data-st="all">All</button><button class="btn" data-st="none">None</button><button class="btn" data-st="gaps">Still to test</button><span class="mx-msg" id="pl-prefill"></span></div>
     <div class="pl-chips" id="pl-states"></div></div>
+  <div class="pl-sec"><div class="cap2">Start from (optional)</div><div class="td-tools"><select id="pl-preset"><option value="">a QA tier or a layer…</option></select>
+    <span class="mx-msg" id="pl-presetmsg"></span></div></div>
   <div class="pl-sec"><div class="cap2">Dimensions · values from <span id="pl-ref"></span>'s domains</div><div id="pl-dims"></div></div>
   <div class="pl-sec td-tools"><label class="td-chk"><input type="checkbox" id="pl-reduced"> reduced grid (edges only)</label>
     <label class="td-chk"><input type="checkbox" id="pl-edges" checked> edge cases</label>
@@ -1352,7 +1367,14 @@ function plDimsDraw(){
   document.getElementById('pl-dims').innerHTML=h;
 }
 function plSpec(){const a=parseInt(document.getElementById('pl-allow').value,10);
-  return {line:PL.line,states:[...PL.states].sort(),dims:PL.dims,reduced:document.getElementById('pl-reduced').checked,edges:document.getElementById('pl-edges').checked,allowance:isNaN(a)?null:a};}
+  return {line:PL.line,states:[...PL.states].sort(),dims:PL.dims,configs:PL.configs||[],reduced:document.getElementById('pl-reduced').checked,edges:document.getElementById('pl-edges').checked,allowance:isNaN(a)?null:a};}
+function plPresetNote(label){const m=document.getElementById('pl-presetmsg');const n=(PL.configs||[]).length;
+  m.innerHTML=n?esc(label)+': '+n+' scenario'+(n===1?'':'s')+' per state, added to the dimensions below · <a href="#" id="pl-clearp">clear</a>':'';
+  const c=document.getElementById('pl-clearp');if(c)c.onclick=e=>{e.preventDefault();PL.configs=[];document.getElementById('pl-preset').value='';plPresetNote('');plPreview();};}
+fetch('/api/console/presets').then(r=>r.json()).then(j=>{PL.presets=j.presets;document.getElementById('pl-preset').innerHTML='<option value="">a QA tier or a layer…</option>'+
+  j.presets.map(p=>'<option value="'+p.id+'" title="'+esc(p.what)+'">'+esc(p.name)+' ('+p.line+')</option>').join('');}).catch(()=>{});
+document.getElementById('pl-preset').addEventListener('change',ev=>{const p=(PL.presets||[]).find(x=>x.id===ev.target.value);if(!p)return;
+  PL.line=p.line;PL.configs=p.spec.configs;PL.dims={};plLoad({states:p.spec.states}).then(()=>{plPresetNote(p.name);});});
 function plPreview(){clearTimeout(PL.timer);PL.timer=setTimeout(()=>{
   const side=document.getElementById('pl-side');if(!PL.states.size){side.innerHTML='<div class="mx-msg">Choose at least one state.</div>';return;}
   side.innerHTML='<div class="mx-msg">Counting… (each scenario is built and checked against the stored answers)</div>';
@@ -1361,7 +1383,7 @@ function plSide(){
   const p=PL.prev;if(!p||p.error){document.getElementById('pl-side').innerHTML='<div class="td-root">'+esc(p&&p.error||'')+'</div>';return;}
   let h='<div class="cap2">This plan</div><div><span class="pl-big">'+p.calls+'</span> call'+(p.calls===1?'':'s')+' · '+p.days+' day'+(p.days===1?'':'s')+' at 150/day</div>'+
     '<div class="pl-count"><span>Cartesian (every combination)</span><b>'+p.cartesian.toLocaleString()+'</b><span>Tier 0 checks (free)</span><b>'+p.tier0+'</b>'+
-    '<span>Pairwise</span><b>'+p.pairwise+'</b><span>Edge cases</span><b>'+p.edges+'</b><span>Already answered by ISO (reused)</span><b>'+p.alreadyAnswered+'</b>'+
+    '<span>Pairwise</span><b>'+p.pairwise+'</b><span>Edge cases</span><b>'+p.edges+'</b>'+(p.presets?'<span>From the tier / layer / Workbench</span><b>'+p.presets+'</b>':'')+'<span>Already answered by ISO (reused)</span><b>'+p.alreadyAnswered+'</b>'+
     '<span>Not expressible in a state</span><b>'+p.notApplicable+'</b>'+(p.thinned?'<span>Thinned by the allowance</span><b>'+p.thinned+'</b>':'')+
     '<span>States kept</span><b>'+p.statesKept+' of '+p.states+'</b><span>Active lane left today</span><b>'+p.activeLeftToday+'</b></div>'+
     '<button class="btn" id="pl-t0">Run Tier 0 now · free</button><div id="pl-t0out"></div>'+
@@ -1403,7 +1425,9 @@ let plStarted=false;
 function plRoute(){const p=(location.hash||'').slice(1).split('?');if(p[0]!=='plan')return;const q=new URLSearchParams(p[1]||'');
   const pre=q.get('states')?{states:q.get('states').split(','),coverages:(q.get('coverages')||'').split('|').filter(Boolean)}:null;
   if(q.get('lob'))PL.line=q.get('lob')==='GL'?'GL':'CP';
-  if(pre){document.getElementById('pl-prefill').textContent='Prefilled from the Readiness Matrix: '+pre.states.length+' state(s), '+pre.coverages.length+' coverage(s).';plStarted=true;plLoad(pre);}
+  if(pre&&q.get('config')){PL.configs=[JSON.parse(q.get('config'))];plStarted=true;
+    document.getElementById('pl-prefill').textContent='From the Workbench: one config in '+pre.states.length+' state(s).';plLoad({states:pre.states}).then(()=>plPresetNote('The Workbench config'));}
+  else if(pre){document.getElementById('pl-prefill').textContent='Prefilled from the Readiness Matrix: '+pre.states.length+' state(s), '+pre.coverages.length+' coverage(s).';plStarted=true;plLoad(pre);}
   else if(!plStarted){plStarted=true;plLoad();}}
 addEventListener('hashchange',plRoute);plRoute();
 """
@@ -1483,7 +1507,16 @@ function quSide(){
   document.getElementById('qu-ov').onclick=()=>quJSON('/api/console/override',{reason:document.getElementById('qu-reason').value,calls:document.getElementById('qu-calls').value,by:document.getElementById('qu-by').value})
     .then(j=>{document.getElementById('qu-ovmsg').textContent=j.error?j.error:'Set: '+j.calls+' call(s) past the cap today.';quLoad();});
   fetch('/api/console/refused').then(r=>r.json()).then(j=>{document.getElementById('qu-ref').innerHTML=j.total+' refusals stored.<table>'+j.refused.slice(0,25).map(x=>'<tr><td><a href="#trace?lob='+x.line+'&scenario='+encodeURIComponent(x.scenario)+'">'+esc(x.scenario)+'</a><div class="mx-msg">'+esc(x.message.slice(0,140))+'</div></td></tr>').join('')+'</table>';});
-  fetch('/api/console/runs').then(r=>r.json()).then(j=>{document.getElementById('qu-runs').innerHTML=j.total+' runs in the GL run store.<table>'+j.runs.slice(0,40).map(x=>'<tr><td>'+esc((x.at||'').slice(0,16))+'<div class="mx-msg">'+esc(x.describes||x.label||x.id)+'</div></td><td>'+(x.compared?(x.agree||0)+'/'+(x.total||0)+' agree':'ours only')+'</td></tr>').join('')+'</table>';});
+  fetch('/api/console/runs').then(r=>r.json()).then(j=>{document.getElementById('qu-runs').innerHTML='<a href="/runs/index.html" target="_blank" rel="noopener">The standalone run files (/tests) ↗</a><div class="mx-msg">'+j.total+' runs in the GL run store; click one for its rows.</div><table>'+
+    j.runs.slice(0,40).map(x=>'<tr data-run="'+esc(x.id)+'" style="cursor:pointer"><td>'+esc((x.at||'').slice(0,16))+'<div class="mx-msg">'+esc(x.describes||x.label||x.id)+'</div></td><td>'+(x.compared?(x.agree||0)+'/'+(x.total||0)+' agree':'ours only')+'</td></tr>').join('')+'</table>';
+    document.querySelectorAll('#qu-runs tr[data-run]').forEach(tr=>tr.onclick=()=>quRun(tr.dataset.run));});
+}
+function quRun(id){
+  fetch('/api/console/runs?id='+encodeURIComponent(id)).then(r=>r.json()).then(l=>{const s=l.summary||{};
+    document.getElementById('qu-side').innerHTML='<a href="#" class="mx-back" id="qu-back">← Overrides and files</a><div class="cap2">Run '+esc(id)+'</div><div>'+esc(s.describes||l.label||'')+'</div>'+
+      '<div class="mx-msg">'+esc((l.at_iso||'').replace('T',' '))+' · '+esc(s.mode||'')+' · as of '+esc(s.asof||'')+(s.compared?' · compared with ISO':' · ours only')+'</div><table class="qu-tbl">'+
+      (l.rows||[]).map(r=>'<tr><td>'+esc(r.juris||'')+'</td><td>'+esc(r.status||'')+'</td><td class="v">'+esc(r.ours||'')+'</td><td class="v">'+esc(r.iso||'')+'</td><td class="mx-msg">'+esc((r.detail||r.first_differences||'').slice(0,120))+'</td></tr>').join('')+'</table>';
+    document.getElementById('qu-back').onclick=e=>{e.preventDefault();quSide();};});
 }
 document.getElementById('qu-plans').addEventListener('click',ev=>{const b=ev.target.closest('button[data-a]');if(!b)return;
   if(b.dataset.a==='open'){fetch('/api/console/plan?id='+encodeURIComponent(b.dataset.id)).then(r=>r.json()).then(p=>{document.getElementById('qu-side').innerHTML='<a href="#" class="mx-back" id="qu-back">← Overrides and files</a><div class="cap2">'+esc(p.name)+'</div><table class="qu-tbl">'+
@@ -1531,7 +1564,7 @@ LIB_CSS = """
 
 LIB_JS = r"""
 const LB={data:null,timer:null};
-function lbLoad(){return fetch('/api/console/library').then(r=>r.json()).then(d=>{LB.data=d;lbDraw();lbProg(d.progress);});}
+function lbLoad(){return fetch('/api/console/library').then(r=>r.json()).then(d=>{const was=LB.data&&LB.data.lastRun&&LB.data.lastRun.run;LB.data=d;lbDraw();lbProg(d.progress);if(was&&d.lastRun&&d.lastRun.run!==was)lbSide();});}
 function lbProg(p){const m=document.getElementById('lb-prog'),b=document.getElementById('lb-rerun');
   if(p){m.textContent='Re-running: '+p.done+' of '+p.total+' · '+p.seconds+' s';b.disabled=true;clearTimeout(LB.timer);LB.timer=setTimeout(lbLoad,3000);}
   else{b.disabled=false;const r=LB.data&&LB.data.lastRun;m.textContent=r?'Last run '+r.run+' on build '+r.build+' · '+r.seconds+' s · '+r.callsSpent+' calls':'Never run.';}}
@@ -1554,10 +1587,18 @@ function lbDraw(){
       '<td class="mx-msg">'+(e.firstSeen?'first '+esc(e.firstSeen.at.slice(0,10))+' ('+esc(e.firstSeen.build)+')'+(e.open?', open':', last '+esc(e.lastSeen.at.slice(0,10))):'')+'</td></tr>';}).join('')+
     (rows.length>400?'<tr><td colspan="9" class="mx-msg">The first 400 of '+rows.length+'; narrow the filters.</td></tr>':'');
 }
+function lbChanges(){
+  const c=LB.data&&LB.data.changes;if(!c)return '<div class="cap2">Since the previous run</div><div class="mx-msg">One run so far.</div>';
+  const n=(k,l)=>'<span>'+l+'</span><b>'+c[k].length+'</b>';
+  return '<div class="cap2">Since the previous run</div><div class="mx-msg">'+esc(c.from.run)+' ('+esc(c.from.build)+') → '+esc(c.to.run)+' ('+esc(c.to.build)+')</div><div class="pl-count">'+
+    n('fixed','Fixed')+n('new','Newly failing')+n('still','Still failing')+n('newlyRefusing','Newly refusing')+n('premiumMoved','Our premium moved')+n('added','Added to the library')+'</div>'+
+    (c.premiumMoved.length?'<table>'+c.premiumMoved.slice(0,15).map(m=>'<tr><td>'+esc(m.scenario)+'</td><td>'+esc(m.was)+' → '+esc(m.now)+'</td></tr>').join('')+'</table>':'')+
+    (c.new.length?'<div class="mx-msg">Newly failing: '+esc(c.new.slice(0,15).join(', '))+'</div>':'');
+}
 function lbSide(){
   const s=document.getElementById('lb-side');s.innerHTML='<div class="cap2">Stale answers (TC-35)</div><div class="mx-msg">Loading…</div>';
   fetch('/api/console/library/stale').then(r=>r.json()).then(j=>{
-    let h='<div class="cap2">Stale answers (TC-35)</div><div class="mx-msg">ISO answered these on a package that is no longer the one in force for their state and date. A refresh re-sends the same request in the refresh lane (50 a day).</div>'+
+    let h=lbChanges()+'<div class="cap2">Stale answers (TC-35)</div><div class="mx-msg">ISO answered these on a package that is no longer the one in force for their state and date. A refresh re-sends the same request in the refresh lane (50 a day).</div>'+
       '<div class="pl-count"><span>Full answers, stale</span><b>'+j.answers.length+'</b><span>... with their request on disk (can be re-sent)</span><b>'+j.sendable+'</b><span>GL premium-level rows, stale</span><b>'+j.premiumRows.length+'</b></div>';
     h+=j.answers.length?'<table>'+j.answers.slice(0,20).map(a=>'<tr><td>'+esc(a.line+' '+a.state+' · '+a.date)+'<div class="mx-msg">'+esc(a.stale_reason)+'</div><div class="mx-msg"><b>'+
       (a.remedy==='corpus'?'ISO is ahead of our corpus: asking again changes nothing; the corpus needs '+esc(a.iso_package):'Our corpus moved on: a re-send gets the current answer')+'</b></div></td></tr>').join('')+'</table>':'';
