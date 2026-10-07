@@ -255,11 +255,20 @@ def build(line: str, state: str, config: dict | None = None) -> dict:
     if any(isinstance(v, str) and v.startswith("@") for v in cfg.values()):
         import layers                                     # `/tests`' positions (@lowest...), resolved per state
         cfg = layers.resolve(cfg, d)
-    if cfg.get("class_code") and cfg.get("exposure") in (None, ""):
-        b = d.basis_for(str(cfg["class_code"]), "PremOps")
-        if b in BASIS_EXPOSURE:                           # a class's own basis, at a realistic size (not 5,000,000 units)
-            cfg = {**cfg, "exposure": BASIS_EXPOSURE[b]}
+    if (cfg.get("class_code") or cfg.get("premium_basis")) and cfg.get("exposure") in (None, ""):
+        b = d.basis_for(str(cfg["class_code"]), "PremOps") if cfg.get("class_code") else str(cfg["premium_basis"])
+        cfg = {**cfg, "exposure": basis_exposure(b)}      # the basis's own size (not 5,000,000 units or acres)
     return V.build(cfg, d)
+
+
+def basis_exposure(basis: str):
+    """A realistic exposure for a premium basis (ours): the four common bases by table; a count ("Number of ...",
+    "Each ...", "Per ...") 10; any other measure (admissions, gallons, total cost) 100,000."""
+    if basis in BASIS_EXPOSURE:
+        return BASIS_EXPOSURE[basis]
+    if basis.startswith(("Number of", "Each", "Per ")) or basis in ("Vehicles", "Acres", "Passenger Days"):
+        return 10
+    return 100000
 
 
 def gl_class_of(request: dict) -> dict | None:

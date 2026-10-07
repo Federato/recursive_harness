@@ -482,6 +482,10 @@ def dispatch(method: str, path: str, query: dict, body):
     if path == "/api/console/board/cell":
         from console import board
         return 200, json.dumps(board.cell(_line(query), query.get("state", "").upper(), query.get("path", ""))), "json"
+    if path == "/api/console/board/find":
+        from console import pathfind
+        return 200, json.dumps(pathfind.find(_line(query), query.get("state", "").upper(), query.get("path", ""),
+                                             want=min(int(query.get("want") or 3), 6))), "json"
     if path == "/api/console/controls":
         return 200, json.dumps(controls(_line(query))), "json"
     if path == "/api/console/readiness":
@@ -998,7 +1002,13 @@ function bdState(st){
   document.getElementById('bd-side').innerHTML='<a href="#" class="mx-back" id="bd-back">← Overview</a><div class="cap2">Readiness · '+BD.line+'</div>'+
     '<div style="display:flex;gap:12px;align-items:center"><h2>'+esc(BOOT.names[st]||st)+'</h2><span class="bd-badge '+r.verdict.replace(' ','')+(r.counts.mismatch?' mm':'')+'">'+esc(r.verdict)+'</span></div>'+
     '<div>'+esc(r.note)+'</div>'+bdCounts(r.counts)+
+    '<div class="cap2" style="margin-top:14px">Quick smoke</div><div class="mx-msg">One retail risk at standard selections'+
+    (BD.line==='GL'?' (class 11127, $1M sales, premises and products, 1M/2M/2M)':' (class 0567, Special form, $1M building, $250K contents)')+', sent to ISO for '+esc(st)+'.</div>'+
+    '<div class="td-tools"><button class="btn" id="bd-smoke">Run quick smoke for '+esc(st)+'…</button></div><div id="bd-sconf"></div>'+
     '<button class="btn" id="bd-tomx" style="margin-top:auto">See '+st+' on the Readiness Matrix</button>';
+  document.getElementById('bd-smoke').onclick=()=>fetch('/api/console/presets').then(r=>r.json()).then(j=>{
+    const p=j.presets.find(x=>x.id===(BD.line==='GL'?'smoke-gl':'smoke-cp'));
+    bdPlan(BD.line,st,p.spec.configs,'Quick smoke · '+BD.line+' · '+st,document.getElementById('bd-sconf'));});
   document.getElementById('bd-back').onclick=ev=>{ev.preventDefault();BD.state=null;BD.sel=null;bdDraw();};
   document.getElementById('bd-tomx').onclick=()=>{location.hash='#matrix';};
 }
@@ -1022,8 +1032,46 @@ function bdCellDraw(c){
       '<td class="st">'+(x.status==='inert'?'<span class="mx-msg">inert</span>':'<span class="chip '+x.status+'">'+esc(LG[x.status].glyph)+'</span>')+'</td>'+
       '<td>'+esc(x.ours==null?'—':x.ours)+' / '+esc(x.iso==null?'—':x.iso)+(x.delta&&+x.delta!==0?'<div class="mx-msg">Δ '+esc((+x.delta>0?'+':'')+x.delta)+(x.category?' · '+esc(x.category.replace(/_/g,' ')):' · unclassified')+'</div>':'')+'</td></tr>').join('')+'</table>'+
     '<div class="mx-msg">A linked scenario opens in Trace Diff, step by step. QA-run rows (source "run …") hold ISO’s premium only, no answer to diff.</div>';
+  if(c.applies&&c.status!=='descoped')h+='<div class="cap2" style="margin-top:14px">Run tests for this cell</div>'+
+    '<div class="mx-msg">Find risks that walk this path in '+esc(c.state)+': each candidate is rated on our engine (free) and kept only if its trace walks the path. Then send the ones you choose to ISO.</div>'+
+    '<div class="td-tools"><button class="btn" id="bd-find">Find scenarios (free)</button></div><div id="bd-found"></div>';
   document.getElementById('bd-side').innerHTML=h;
   document.getElementById('bd-back').onclick=ev=>{ev.preventDefault();BD.sel=null;BD.state=c.state;bdDraw();};
+  const f=document.getElementById('bd-find');if(f)f.onclick=()=>bdFind(c);
+}
+function bdFind(c){
+  const out=document.getElementById('bd-found'),btn=document.getElementById('bd-find');btn.disabled=true;
+  out.innerHTML='<div class="mx-msg">Rating candidates on our engine… (up to 30 seconds)</div>';
+  fetch('/api/console/board/find?lob='+c.line+'&state='+c.state+'&path='+encodeURIComponent(c.path||BD.sel.split('|')[1])).then(r=>r.json()).then(j=>{
+    btn.disabled=false;if(BD.sel!==c.key)return;
+    if(j.error){out.innerHTML='<div class="mx-msg">'+esc(j.error)+'</div>';return;}
+    if(!j.found.length){out.innerHTML='<div class="mx-msg">None of '+j.tried+' candidates walked this path ('+j.seconds+' s). No single control in the catalog reaches it in '+esc(c.state)+'; the Scenario Workbench can set a stored request by hand.</div>';return;}
+    BD.found=j.found;
+    out.innerHTML='<table class="bd-tbl"><tr><td></td><td><b>Scenario</b></td><td><b>Ours</b></td><td><b>ISO</b></td></tr>'+j.found.map((x,i)=>
+      '<tr><td><input type="checkbox" data-i="'+i+'"'+(x.stored&&x.stored.freshness==='fresh'?'':' checked')+'></td><td>'+esc(x.label)+
+      (x.classification&&x.classification.label?'<div class="mx-msg">'+esc(x.classification.basis+': '+x.classification.label)+'</div>':'')+'</td><td>'+esc(x.premium)+'</td>'+
+      '<td>'+(x.stored?(x.stored.iso?esc(x.stored.iso):esc(x.stored.outcome))+'<div class="mx-msg">'+esc(x.stored.freshness||'')+'</div>':'<span class="mx-msg">not asked</span>')+'</td></tr>').join('')+'</table>'+
+      '<div class="mx-msg">'+j.found.length+' found in '+j.tried+' tries ('+j.seconds+' s). Ticked: no fresh answer from ISO yet.</div>'+
+      '<div class="td-tools"><button class="btn" id="bd-send">Send ticked to ISO…</button></div><div id="bd-conf"></div>';
+    document.getElementById('bd-send').onclick=()=>bdSend(c);
+  }).catch(e=>{btn.disabled=false;out.innerHTML='<div class="mx-msg">'+esc(String(e))+'</div>';});
+}
+function bdPlan(line,state,configs,name,el,onDone){
+  const spec={line:line,states:[state],dims:{},configs:configs,edges:false};
+  el.innerHTML='<div class="mx-msg">Counting calls…</div>';
+  fetch('/api/console/plan/preview',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({spec:spec})}).then(r=>r.json()).then(p=>{
+    if(p.error){el.innerHTML='<div class="mx-msg">'+esc(p.error)+'</div>';return;}
+    el.innerHTML='<div class="mx-msg"><b>'+p.calls+' call'+(p.calls===1?'':'s')+'</b> to ISO from the active lane ('+p.activeLeftToday+' left today)'+(p.alreadyAnswered?'; '+p.alreadyAnswered+' already answered, reused':'')+'. It runs as a plan in the Queue.</div>'+
+      '<div class="td-tools"><button class="btn" id="bd-go"'+(p.scenarios?'':' disabled')+'>Send now</button><button class="btn" id="bd-no">Cancel</button></div><div class="mx-msg" id="bd-msg"></div>';
+    document.getElementById('bd-no').onclick=()=>el.innerHTML='';
+    document.getElementById('bd-go').onclick=()=>{document.getElementById('bd-msg').textContent='Writing the plan…';
+      fetch('/api/console/plan/commit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({spec:spec,name:name,start:true})}).then(r=>r.json()).then(j=>{
+        if(j.error){document.getElementById('bd-msg').textContent=j.error;return;}location.hash='#queue?plan='+encodeURIComponent(j.id);});};});
+}
+function bdSend(c){
+  const cfgs=[...document.querySelectorAll('#bd-found input[data-i]:checked')].map(x=>BD.found[+x.dataset.i].config);
+  const el=document.getElementById('bd-conf');if(!cfgs.length){el.innerHTML='<div class="mx-msg">Tick at least one.</div>';return;}
+  bdPlan(c.line,c.state,cfgs,c.line+' '+c.state+' · '+c.label,el);
 }
 function bdCtl(){
   const c=BD.ctl[BD.line],el=document.getElementById('bd-ctl');if(!c)return;
