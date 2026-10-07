@@ -293,8 +293,74 @@ def part_d():
             os.environ.pop("RAAS_LEDGER_DIR", None)
 
 
+def part_e():
+    print("E. Coverage Board (TC-18)")
+    from console import board, evidence, mismatch, paths, readiness, store
+    from ui import console_page, tester
+    check("E1 verdict: every path verified -> Go", board.verdict(["verified"] * 3)["verdict"] == "Go")
+    check("E2 verdict: any mismatch -> Hold, named", (lambda v: v["verdict"] == "Hold" and "1 mismatch path" in v["note"])(
+        board.verdict(["verified", "mismatch", "internal"])))
+    check("E3 verdict: a stale reference -> Hold", board.verdict(["verified", "stale"])["verdict"] == "Hold")
+    check("E4 verdict: verified part-way -> Hold", board.verdict(["verified", "internal", "untested"])["verdict"] == "Hold")
+    check("E5 verdict: nothing verified -> Not ready", {board.verdict(x)["verdict"] for x in
+          (["internal", "untested"], ["untested"])} == {"Not ready"})
+    for line in paths.lines():
+        cols = [p["id"] for g in board.columns(line) for p in g["paths"]]
+        check(f"E6 {line}: every path is one column, exactly once", sorted(cols) == sorted(paths.paths(line)) and len(cols) == len(set(cols)))
+    gl = {g["coverage"]: g for g in board.columns("GL")}
+    check("E7 a path sits under its most specific coverage (GL deductibles under Deductibles)",
+          "Deductibles" in gl and all("Deductibles" in p["coverages"] for p in gl["Deductibles"]["paths"]))
+    with tempfile.TemporaryDirectory() as tmp:
+        t = Path(tmp)
+        saved = (evidence.STORE, mismatch.STORE, store.INDEX, readiness.CACHE, readiness.SIGNOFFS, readiness.LAST_BUILD)
+        evidence.STORE, mismatch.STORE, store.INDEX = t / "ev.jsonl", t / "cl.jsonl", t / "index.json"
+        readiness.CACHE, readiness.SIGNOFFS, readiness.LAST_BUILD = t / "rd.json", t / "so.jsonl", t / "build.json"
+        os.environ["RAAS_LEDGER_DIR"] = tmp
+        readiness._MEM.clear()
+        try:
+            store.INDEX.write_text(json.dumps({"references": [{"hash": "f", "freshness": "fresh"}]}))
+            sc = paths.in_scope("CP", "OH", "Building")
+            evidence.add(scenario="ok", line="CP", state="OH", walked=sc, ours="100", iso="100", request_hash="f")
+            evidence.add(scenario="bad", line="CP", state="OH", walked=sc[:1], ours="110", iso="100", request_hash="f")
+            evidence.add(scenario="flat", line="CP", state="OH", walked=sc[:1], inert=True)
+            b = json.loads(tester.dispatch("GET", "/api/console/board", {"lob": "CP"}, None)[1])
+            oh = next(r for r in b["rows"] if r["state"] == "OH")
+            check("E8 board cell: state, scenarios walking it, affected (inert left out)", oh["cells"][sc[0]] == ["mismatch", 2, 1], oh["cells"][sc[0]])
+            check("E9 board and matrix agree on a path", oh["cells"][sc[1]][0] ==
+                  _cell(readiness, "Building")["paths"]["byPath"][sc[1]] == "verified")
+            check("E10 OH's verdict is Hold for the mismatch", oh["verdict"] == "Hold" and oh["counts"]["mismatch"] == 1)
+            check("E11 summary: open mismatches by category", b["summary"]["openMismatches"] == 1 and b["summary"]["byCategory"] == {"unclassified": 1})
+            na = [r for r in b["rows"] if any(v[0] == "na" for v in r["cells"].values())]
+            check("E12 n/a paths are marked and left out of the verdict", all(r["verdict"] != "n/a" or not r["counts"] for r in na))
+            c = json.loads(tester.dispatch("GET", "/api/console/board/cell", {"lob": "CP", "state": "OH", "path": sc[0]}, None)[1])
+            check("E13 cell detail lists its scenarios, mismatch first, with the difference",
+                  [(x["scenario"], x["status"], x["delta"]) for x in c["scenarios"]] == [("bad", "mismatch", "10"), ("ok", "verified", "0"), ("flat", "inert", None)],
+                  [(x["scenario"], x["status"]) for x in c["scenarios"]])
+            idp = paths.paths("CP")
+            nap = next(p for p in idp if not paths.applies("CP", "NY", p)[0]) if any(not paths.applies("CP", "NY", p)[0] for p in idp) else None
+            if nap:
+                c = json.loads(tester.dispatch("GET", "/api/console/board/cell", {"lob": "CP", "state": "NY", "path": nap}, None)[1])
+                check("E14 an n/a cell says why (D5)", c["applies"] is False and c["status"] == "na")
+        finally:
+            (evidence.STORE, mismatch.STORE, store.INDEX, readiness.CACHE, readiness.SIGNOFFS, readiness.LAST_BUILD) = saved
+            readiness._MEM.clear()
+            os.environ.pop("RAAS_LEDGER_DIR", None)
+    g = console_page.controls("GL")
+    check("E15 control x state grid (D18): GL's controls over its states, from the run store",
+          g["available"] and len(g["controls"]) >= 20 and len(g["states"]) == 51 and 0 < g["exercised"] <= len(g["controls"]))
+    check("E16 CP says why it has no grid yet", console_page.controls("CP")["available"] is False)
+    html = console_page.page()
+    check("E17 the board screen is built, with its grid, side panel and control grid",
+          "Built in TC-18" not in html and all(i in html for i in ('id="bd-grid"', 'id="bd-side"', 'id="bd-ctl"')))
+    import ast
+    imports = {n.module.split(".")[0] for n in ast.walk(ast.parse((ROOT / "console" / "board.py").read_text(encoding="utf-8")))
+               if isinstance(n, ast.ImportFrom) and n.module} | {a.name.split(".")[0] for n in ast.walk(ast.parse(
+               (ROOT / "console" / "board.py").read_text(encoding="utf-8"))) if isinstance(n, ast.Import) for a in n.names}
+    check("E18 console/ does not import the UI", "ui" not in imports, imports)
+
+
 def main() -> int:
-    part_a(); part_b(); part_c(); part_d()
+    part_a(); part_b(); part_c(); part_d(); part_e()
     bad = [n for n, ok in RESULTS if not ok]
     print(f"\n{len(RESULTS) - len(bad)}/{len(RESULTS)} passed")
     return 1 if bad else 0

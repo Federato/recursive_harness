@@ -20,6 +20,8 @@ from datetime import datetime, timedelta, timezone
 
 from console import ledger, status
 
+from . import variables
+
 #: The seven screens (the brief's order), the hash each opens on, and the task that builds it.
 SCREENS = (
     ("board", "Coverage Board", "TC-18"),
@@ -77,6 +79,27 @@ STATE_NAMES = {
 }
 
 
+def _line(query: dict) -> str:
+    return "CP" if (query.get("lob") or "").upper() == "CP" else "GL"
+
+
+def controls(line: str) -> dict:
+    """D18's control x state grid beside the Coverage Board: which input controls have been rated (or only declined)
+    in which states. GL's comes from the run store, the same data `/tester` drew it from (T11); CP has no control
+    catalog until its dimension catalog (TC-26)."""
+    if line != "GL":
+        return {"line": line, "available": False,
+                "why": "CP's controls arrive with its dimension catalog (TC-26); until then its paths are the grid."}
+    import runstore
+    cov = runstore.coverage()
+    spec = variables.specs()
+    rows = [{"id": c["id"], "label": c["label"], "group": c.get("group", ""),
+             "rated": cov["rated"].get(c["id"], []), "declined": cov["declined"].get(c["id"], []),
+             "values": cov["values"].get(c["id"], [])} for c in spec["controls"]]
+    return {"line": line, "available": True, "states": sorted(spec["jurisdictions"]), "controls": rows,
+            "exercised": sum(1 for r in rows if r["rated"])}
+
+
 def sign_off(body: dict) -> tuple[int, dict]:
     """D4: a person may sign off a Passed cell; an empty name withdraws a sign-off. Nothing else is accepted."""
     from console import readiness
@@ -102,6 +125,14 @@ def dispatch(method: str, path: str, query: dict, body):
         return 200, json.dumps(cap()), "json"
     if path == "/api/console/legend":
         return 200, json.dumps(legend()), "json"
+    if path == "/api/console/board":
+        from console import board
+        return 200, json.dumps(board.board(_line(query))), "json"
+    if path == "/api/console/board/cell":
+        from console import board
+        return 200, json.dumps(board.cell(_line(query), query.get("state", "").upper(), query.get("path", ""))), "json"
+    if path == "/api/console/controls":
+        return 200, json.dumps(controls(_line(query))), "json"
     if path == "/api/console/readiness":
         from console import readiness
         return 200, json.dumps(readiness.get(query.get("lob"), query.get("state"),
@@ -118,7 +149,7 @@ def page() -> str:
                          f'(docs/TC-PLAN.md).<span class="filter"></span></div></section>')
         for i, (k, label, task) in enumerate(SCREENS, 1))
     return (PAGE.replace("{{TABS}}", tabs).replace("{{SCREENS}}", screens)
-            .replace("/*{{CSS}}*/", MATRIX_CSS).replace("/*{{JS}}*/", MATRIX_JS)
+            .replace("/*{{CSS}}*/", MATRIX_CSS + BOARD_CSS).replace("/*{{JS}}*/", MATRIX_JS + BOARD_JS)
             .replace("{{BOOT}}", json.dumps({"cap": cap(), "legend": legend(), "names": STATE_NAMES})))
 
 
@@ -480,3 +511,190 @@ setInterval(()=>fetch('/api/console/cap').then(r=>r.json()).then(drawCap).catch(
 /*{{JS}}*/
 </script>
 </body></html>"""
+
+
+# ---- TC-18: the Coverage Board --------------------------------------------------------------------------------------
+# One line at a time: states (alphabetical, D3) x rating paths, grouped under their most specific coverage; a cell's
+# number is the scenarios that walked the path there (mismatch and stale cells show the affected count first). The
+# verdict per state is `console.board.verdict`. Beside it, D18's control x state grid. Nothing here spends a call.
+
+BOARD_HTML = """<section class="screen" id="s-board" hidden><div class="mx-wrap"><div class="mx-main">
+  <div class="mx-head"><div><div class="eyebrow">Go / no-go · straight ISO build</div><h1>Coverage Board</h1></div>
+    <p>Rows: states · Columns: rating paths, grouped by coverage · Click a cell for its scenarios, a state for its
+    readiness. Number = scenarios in the cell (mismatch and stale cells show the affected count).</p>
+    <div class="bd-lines" id="bd-lines" role="group" aria-label="Line"><button data-l="GL">General Liability</button><button data-l="CP">Commercial Property</button></div></div>
+  <div class="mx-stats bd-stats" id="bd-stats"></div>
+  <div class="mx-scroll bd-scroll"><div id="bd-grid" class="bd-grid"><div class="mx-loading">Loading the board…</div></div></div>
+  <div class="bd-ctl"><div class="mx-trend-hd"><span>Controls × states · which inputs have been rated where</span>
+    <span class="mx-key"><span><b class="bd-dot r"></b>rated there</span><span><b class="bd-dot d"></b>asked, not declarable there</span><span><b class="bd-dot"></b>never run</span></span></div>
+    <div class="mx-scroll"><div id="bd-ctl"></div></div></div>
+</div><aside class="mx-side" id="bd-side" aria-live="polite"></aside></div></section>"""
+
+BUILT["board"] = BOARD_HTML
+
+BOARD_CSS = """
+.bd-lines{margin-left:auto;display:flex;border:1px solid var(--color-divider);border-radius:4px;overflow:hidden}
+.bd-lines button{border:0;border-right:1px solid var(--color-divider);background:transparent;padding:7px 16px;cursor:pointer;
+  font:inherit;font-size:13px;color:var(--color-text)}
+.bd-lines button:last-child{border-right:0}
+.bd-lines button[aria-pressed="true"]{background:var(--color-accent-100);color:var(--color-accent-800);box-shadow:inset 0 -2px 0 var(--color-accent)}
+.bd-stats{grid-template-columns:1fr 1fr 1.6fr 1fr 1fr}
+.bd-cats{display:grid;grid-template-columns:1fr auto;gap:1px 10px;font-size:11.5px;margin-top:4px}
+.bd-cats .def{color:var(--ox-deep)}
+.bd-grid{display:grid;gap:3px;align-items:stretch}
+.bd-grp{font-size:10.5px;letter-spacing:.03em;color:var(--color-neutral-700);border-bottom:1px solid var(--color-text);
+  padding-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bd-ph{writing-mode:vertical-rl;transform:rotate(180deg);font-size:10.5px;line-height:1.1;height:132px;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;padding:2px 0;justify-self:center;color:var(--color-text)}
+.bd-ph.hl{font-weight:700;color:var(--color-accent-800)}
+.bd-colhl{height:3px;border-radius:2px}
+.bd-colhl.hl{background:var(--color-accent)}
+.bd-st{position:sticky;left:0;z-index:2;background:var(--color-bg);display:flex;align-items:center;gap:6px;border:0;padding:0;
+  cursor:pointer;font:inherit;color:var(--color-text);text-align:left;min-width:0}
+.bd-st b{font:600 16px var(--font-heading);width:26px;flex:none}
+.bd-st span{font-size:11.5px;color:var(--color-neutral-700);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bd-st.sel b{color:var(--color-accent-700);text-decoration:underline}
+.bd-c{width:auto;height:30px;padding:0;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;
+  cursor:pointer;font:inherit;gap:1px}
+.bd-c i{font-style:normal;font-size:10px}
+.bd-c small{font-size:9.5px}
+.bd-c.na{cursor:default}
+.bd-c.sel{outline:2px solid var(--color-text);outline-offset:1px}
+.bd-c.descoped{background:var(--color-surface);color:var(--color-neutral-600);border:1px dotted var(--color-neutral-500)}
+.bd-v{display:flex;align-items:center;gap:8px;padding:0 8px 0 2px;min-width:0}
+.bd-stk{position:sticky;left:130px;z-index:2;background:var(--color-bg);border-right:1px solid var(--color-divider)}
+.bd-badge{border:1px solid var(--color-neutral-400);color:var(--color-neutral-700);padding:2px 8px;border-radius:3px;font-size:11.5px;
+  font-weight:600;white-space:nowrap}
+.bd-badge.Go{border-color:var(--color-accent-700);color:var(--color-accent-800);background:var(--color-accent-100)}
+.bd-badge.Hold{border-color:var(--color-accent-400);color:var(--color-accent-800)}
+.bd-badge.Hold.mm{border-color:var(--ox);color:var(--ox-deep)}
+.bd-v span:last-child{font-size:11px;color:var(--color-neutral-700);line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bd-counts{display:flex;gap:6px}
+.bd-counts span{flex:1;display:flex;flex-direction:column;align-items:center;padding:5px 0;border-radius:2px;width:auto;height:auto}
+.bd-counts b{font-size:15px}
+.bd-counts small{font-size:10px}
+.bd-ctl{margin-top:8px}
+.bd-dot{display:inline-block;width:10px;height:10px;border-radius:50%;border:1px dashed var(--color-neutral-400);vertical-align:middle;margin-right:5px}
+.bd-dot.r{background:var(--color-accent-700);border:1px solid var(--color-accent-700)}
+.bd-dot.d{background:transparent;border:1.5px solid var(--color-accent-700)}
+.bd-cg{display:grid;gap:2px;align-items:center;font-size:11.5px}
+.bd-cg .h{font-size:9.5px;color:var(--color-neutral-700);writing-mode:vertical-rl;transform:rotate(180deg);justify-self:center;height:22px}
+.bd-cg .lab{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:6px;position:sticky;left:0;background:var(--color-bg)}
+.bd-cg .grp{grid-column:1/-1;font:600 13px var(--font-heading);padding-top:6px;border-bottom:1px solid var(--color-divider)}
+.bd-cg .dot{justify-self:center}
+.bd-cg .dot .bd-dot{margin-right:0}
+.bd-cg .n{font-size:10.5px;color:var(--color-neutral-700);text-align:right}
+.bd-tbl td.st{white-space:nowrap}
+"""
+
+BOARD_JS = r"""
+const BD={line:'GL',data:null,ctl:{},sel:null,state:null,hl:null,cell:null};
+function bdLoad(){
+  const line=BD.line;
+  document.querySelectorAll('#bd-lines button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.l===line));
+  const a=fetch('/api/console/board?lob='+line).then(r=>r.json()).then(d=>{if(BD.line===line){BD.data=d;bdDraw();}});
+  if(!BD.ctl[line])fetch('/api/console/controls?lob='+line).then(r=>r.json()).then(c=>{BD.ctl[line]=c;if(BD.line===line)bdCtl();});
+  else bdCtl();
+  return a;
+}
+function bdCellTxt(v){const st=v[0],n=v[1],aff=v[2];if(st==='na')return['·',''];if(st==='descoped')return['⊘',''];
+  return[LG[st].glyph,st==='mismatch'||st==='stale'?aff+'/'+n:(n?String(n):'')];}
+function bdDraw(){
+  const d=BD.data,S=d.summary,cols=d.columns.flatMap(g=>g.paths);
+  const pct=(a,b)=>b?Math.round(100*a/b)+'%':'—';
+  const cats=S.categories.filter(c=>S.byCategory[c.key]).map(c=>'<span class="'+(c.key==='true_engine_defect'?'def':'')+'">'+esc(c.label)+'</span><b>'+S.byCategory[c.key]+'</b>').join('')+
+    (S.byCategory.unclassified?'<span>Unclassified</span><b>'+S.byCategory.unclassified+'</b>':'');
+  document.getElementById('bd-stats').innerHTML=
+    '<div><span>Path coverage</span><b>'+pct(S.walked,S.applicable)+'</b><small>'+S.walked+' of '+S.applicable+' walked</small></div>'+
+    '<div><span>RaaS-verified paths</span><b>'+pct(S.verified,S.applicable)+'</b><small>'+S.verified+' of '+S.applicable+'</small></div>'+
+    '<div><span>Open mismatches</span><b>'+S.openMismatches+'</b>'+(cats?'<div class="bd-cats">'+cats+'</div>':'')+'</div>'+
+    '<div><span>Verification days left</span><b>'+S.days+'</b><small>'+S.calls.toLocaleString()+' calls at 150/day</small></div>'+
+    '<div><span>States</span><b>'+S.verdicts.Go+' <small>Go</small></b><small>'+S.verdicts.Hold+' Hold · '+S.verdicts['Not ready']+' Not ready</small></div>';
+  const g=document.getElementById('bd-grid');
+  g.style.gridTemplateColumns='130px 190px repeat('+cols.length+',26px)';   // the verdict beside the state, never scrolled away
+  const hl=p=>BD.hl&&BD.hl.lob===d.line&&p.coverages.includes(BD.hl.coverage);
+  let h='<span class="bd-st" style="cursor:default"></span><span class="bd-v bd-stk"></span>';
+  d.columns.forEach(gr=>h+='<span class="bd-grp" style="grid-column:span '+gr.paths.length+'" title="'+esc(gr.coverage)+'">'+esc(gr.coverage)+'</span>');
+  h+='<span class="bd-st" style="cursor:default;align-self:end"><span style="letter-spacing:.08em;text-transform:uppercase;font-size:10.5px">State</span></span>'+
+    '<span class="bd-v bd-stk" style="align-self:stretch;align-items:flex-end;padding-bottom:4px"><span style="font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-neutral-700)">Readiness</span></span>';
+  cols.forEach(p=>h+='<span class="bd-ph'+(hl(p)?' hl':'')+'" title="'+esc(p.label)+'">'+esc(p.label)+'</span>');
+  h+='<span class="bd-st" style="cursor:default"></span><span class="bd-v bd-stk"></span>'+cols.map(p=>'<span class="bd-colhl'+(hl(p)?' hl':'')+'"></span>').join('');
+  d.rows.forEach(r=>{
+    h+='<button class="bd-st'+(BD.state===r.state?' sel':'')+'" data-s="'+r.state+'" title="'+esc(BOOT.names[r.state]||r.state)+'"><b>'+r.state+'</b><span>'+esc(BOOT.names[r.state]||'')+'</span></button>';
+    h+='<span class="bd-v bd-stk"><span class="bd-badge '+r.verdict.replace(' ','')+(r.counts.mismatch?' mm':'')+'">'+esc(r.verdict)+'</span><span title="'+esc(r.note)+'">'+esc(r.note)+'</span></span>';
+    cols.forEach(p=>{const v=r.cells[p.id]||['untested',0,0],t=bdCellTxt(v),k=r.state+'|'+p.id;
+      h+='<button class="bd-c chip '+v[0]+(BD.sel===k?' sel':'')+'" data-k="'+esc(k)+'" title="'+esc(r.state+' · '+p.label+' · '+(v[0]==='descoped'?'descoped':LG[v[0]].board)+(v[1]?' · '+v[1]+' scenario'+(v[1]>1?'s':''):''))+'"><i>'+esc(t[0])+'</i>'+(t[1]?'<small>'+t[1]+'</small>':'')+'</button>';});
+  });
+  g.innerHTML=h;
+  if(BD.sel)bdCell(BD.sel,false);else if(BD.state)bdState(BD.state);else bdOverview();
+}
+function bdOverview(){
+  const S=BD.data.summary;
+  document.getElementById('bd-side').innerHTML='<div class="cap2">Readiness · '+(BD.line==='GL'?'General Liability':'Commercial Property')+'</div>'+
+    '<h2>'+S.verdicts.Go+' Go · '+S.verdicts.Hold+' Hold · '+S.verdicts['Not ready']+' Not ready</h2>'+
+    '<div class="mx-msg">Go: every applicable path RaaS-verified. Hold: an open mismatch, a stale reference, or verification part-way. Not ready: nothing verified yet.</div>'+
+    '<div class="mx-msg">Click a state for its counts, or a cell for the scenarios behind it.</div>';
+}
+function bdCounts(c){return '<div class="bd-counts">'+['verified','internal','mismatch','stale','untested'].map(k=>'<span class="chip '+k+'"><b>'+c[k]+'</b><small>'+esc(LG[k].board)+'</small></span>').join('')+'</div>';}
+function bdState(st){
+  const r=BD.data.rows.find(x=>x.state===st);if(!r)return bdOverview();
+  document.getElementById('bd-side').innerHTML='<a href="#" class="mx-back" id="bd-back">← Overview</a><div class="cap2">Readiness · '+BD.line+'</div>'+
+    '<div style="display:flex;gap:12px;align-items:center"><h2>'+esc(BOOT.names[st]||st)+'</h2><span class="bd-badge '+r.verdict.replace(' ','')+(r.counts.mismatch?' mm':'')+'">'+esc(r.verdict)+'</span></div>'+
+    '<div>'+esc(r.note)+'</div>'+bdCounts(r.counts)+
+    '<button class="btn" id="bd-tomx" style="margin-top:auto">See '+st+' on the Readiness Matrix</button>';
+  document.getElementById('bd-back').onclick=ev=>{ev.preventDefault();BD.state=null;BD.sel=null;bdDraw();};
+  document.getElementById('bd-tomx').onclick=()=>{location.hash='#matrix';};
+}
+function bdCell(k,fetchIt){
+  const st=k.split('|')[0],pid=k.split('|')[1];
+  if(fetchIt===false&&BD.cell&&BD.cell.key===k)return bdCellDraw(BD.cell);
+  document.getElementById('bd-side').innerHTML='<div class="mx-msg">Loading the scenarios…</div>';
+  fetch('/api/console/board/cell?lob='+BD.line+'&state='+st+'&path='+encodeURIComponent(pid)).then(r=>r.json())
+    .then(c=>{c.key=k;BD.cell=c;if(BD.sel===k)bdCellDraw(c);});
+}
+function bdCellDraw(c){
+  const s=c.status==='descoped'?{glyph:'⊘',board:'Descoped',meaning:'taken out of scope with a reason'}:LG[c.status];
+  let h='<a href="#" class="mx-back" id="bd-back">← '+esc(BOOT.names[c.state]||c.state)+'</a><div class="cap2">Selected cell · '+esc(c.line+' · '+c.state)+'</div>'+
+    '<div style="display:flex;gap:10px;align-items:center"><span class="chip '+c.status+'">'+esc(s.glyph)+'</span><h2 style="font-size:19px">'+esc(c.label)+'</h2></div>'+
+    '<div class="mx-msg">'+esc(s.board+' — '+s.meaning)+'</div>';
+  if(!c.applies)h+='<div class="mx-msg">Not filed in '+esc(c.state)+': '+esc(c.why||'the state files no such path')+' (D5).</div>';
+  else if(!c.scenarios.length)h+='<div class="mx-msg">No scenario has walked this path in '+esc(c.state)+' yet.</div>';
+  else h+='<div class="cap2">Scenarios · '+c.scenarios.length+'</div><table class="bd-tbl"><tr><td><b>Scenario</b></td><td class="st"><b>State</b></td><td><b>Ours / ISO</b></td></tr>'+
+    c.scenarios.map(x=>'<tr><td>'+esc(x.scenario)+'<div class="mx-msg">'+esc((x.source||'')+(x.at?' · '+x.at.slice(0,10):''))+'</div></td>'+
+      '<td class="st">'+(x.status==='inert'?'<span class="mx-msg">inert</span>':'<span class="chip '+x.status+'">'+esc(LG[x.status].glyph)+'</span>')+'</td>'+
+      '<td>'+esc(x.ours==null?'—':x.ours)+' / '+esc(x.iso==null?'—':x.iso)+(x.delta&&+x.delta!==0?'<div class="mx-msg">Δ '+esc((+x.delta>0?'+':'')+x.delta)+(x.category?' · '+esc(x.category.replace(/_/g,' ')):' · unclassified')+'</div>':'')+'</td></tr>').join('')+'</table>'+
+    '<div class="mx-msg">Trace Diff (TC-21) will open a scenario step by step.</div>';
+  document.getElementById('bd-side').innerHTML=h;
+  document.getElementById('bd-back').onclick=ev=>{ev.preventDefault();BD.sel=null;BD.state=c.state;bdDraw();};
+}
+function bdCtl(){
+  const c=BD.ctl[BD.line],el=document.getElementById('bd-ctl');if(!c)return;
+  if(!c.available){el.innerHTML='<div class="mx-empty" style="height:60px">'+esc(c.why)+'</div>';return;}
+  const n=c.states.length;let h='<div class="bd-cg" style="grid-template-columns:220px repeat('+n+',16px) 54px;min-width:'+(280+18*n)+'px"><span></span>'+
+    c.states.map(s=>'<span class="h">'+s+'</span>').join('')+'<span class="n">States</span>';
+  let grp=null;
+  c.controls.forEach(r=>{if(r.group!==grp){grp=r.group;h+='<span class="grp">'+esc(grp||'Other')+'</span>';}
+    const R=new Set(r.rated),D=new Set(r.declined);
+    h+='<span class="lab" title="'+esc(r.label+(r.values.length?' · values run: '+r.values.join(', '):''))+'">'+esc(r.label)+'</span>'+
+      c.states.map(s=>'<span class="dot" title="'+esc(r.label+' · '+s+': '+(R.has(s)?'rated':D.has(s)?'asked, not declarable':'never run'))+'"><b class="bd-dot'+(R.has(s)?' r':D.has(s)?' d':'')+'"></b></span>').join('')+
+      '<span class="n">'+R.size+'</span>';});
+  el.innerHTML=h+'</div><div class="mx-msg" style="margin-top:6px">'+c.exercised+' of '+c.controls.length+' controls have been rated somewhere. From the GL run store (the grid /tester showed).</div>';
+}
+function bdRoute(){
+  const parts=(location.hash||'').slice(1).split('?');if(parts[0]!=='board')return;
+  const p=new URLSearchParams(parts[1]||'');
+  if(p.get('lob')){BD.line=p.get('lob')==='CP'?'CP':'GL';BD.hl=p.get('coverage')?{lob:BD.line,coverage:p.get('coverage')}:null;
+    BD.state=p.get('state')||null;BD.sel=null;}
+  bdLoad().then(()=>{if(BD.state){const b=document.querySelector('.bd-st[data-s="'+BD.state+'"]');if(b)b.scrollIntoView({block:'center'});}});
+}
+document.getElementById('bd-lines').addEventListener('click',ev=>{const b=ev.target.closest('button');if(!b||b.dataset.l===BD.line)return;
+  BD.line=b.dataset.l;BD.sel=null;BD.state=null;BD.hl=null;bdLoad();});
+document.getElementById('bd-grid').addEventListener('click',ev=>{
+  const c=ev.target.closest('.bd-c');if(c&&!c.classList.contains('na')){BD.sel=c.dataset.k;BD.state=c.dataset.k.split('|')[0];
+    document.querySelectorAll('.bd-c.sel').forEach(x=>x.classList.remove('sel'));c.classList.add('sel');bdCell(BD.sel);return;}
+  const s=ev.target.closest('.bd-st[data-s]');if(s){BD.state=s.dataset.s;BD.sel=null;
+    document.querySelectorAll('.bd-st.sel,.bd-c.sel').forEach(x=>x.classList.remove('sel'));s.classList.add('sel');bdState(BD.state);}});
+addEventListener('hashchange',bdRoute);
+if((location.hash||'').startsWith('#board'))bdRoute();
+setInterval(()=>{if(!document.getElementById('s-board').hidden&&BD.data)bdLoad().catch(()=>{});},60000);
+"""

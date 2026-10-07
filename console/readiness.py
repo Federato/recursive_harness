@@ -30,7 +30,7 @@ DESCOPED = Path(__file__).resolve().parent / "config" / "descoped.json"
 LAST_BUILD = TC / "last_build.json"
 
 #: Bumped when the shape of the result changes, so a saved result from older code is never served.
-SCHEMA = 3
+SCHEMA = 4
 
 _LOCK = threading.Lock()
 _MEM: dict = {}
@@ -102,11 +102,19 @@ def compute(today: str | None = None, versions: dict | None = None) -> dict:
     sos, desc = signoffs(), descoped()
 
     cells = []
+    path_cells: dict = {}       # line -> state -> path -> [state, scenarios walking it, affected] (the board, TC-18)
     for line in paths.lines():
         for state in paths.states(line):
             rs = by_cell.get((line, state), [])
             evs = [evidence.resolve(r, latest, freshness) for r in rs]
             ps = rollup.path_states(line, state, evs)
+            d0 = {**desc.get(line, {}).get("*", {}), **desc.get(line, {}).get(state, {})}
+            row = path_cells.setdefault(line, {}).setdefault(state, {})
+            for pid, pst in ps.items():
+                walkers = [e for e in evs if not e.inert and pid in e.walked]
+                affected = (sum(e.iso == "open-mismatch" for e in walkers) if pst == "mismatch" else
+                            sum(e.iso != "none" and not e.fresh for e in walkers) if pst == "stale" else 0)
+                row[pid] = ["descoped" if pid in d0 and pst != "na" else pst, len(walkers), affected]
             d = {**desc.get(line, {}).get("*", {}), **desc.get(line, {}).get(state, {})}
             vk = f"{line}|{state}"
             if vk not in versions:
@@ -159,7 +167,7 @@ def compute(today: str | None = None, versions: dict | None = None) -> dict:
     return {"generatedAt": time.strftime("%Y-%m-%dT%H:%M:%S"),
             "columns": {line: paths.coverages(line) for line in paths.lines()},
             "pathLabels": {line: {p: v["label"] for p, v in paths.paths(line).items()} for line in paths.lines()},
-            "cells": cells, "totals": totals, "stillToTest": still_to_test(cells), "evidence": len(recs), "agreement": agreement(latest),
+            "cells": cells, "totals": totals, "stillToTest": still_to_test(cells), "pathCells": path_cells, "evidence": len(recs), "agreement": agreement(latest),
             "versions": {"day": today, "paths": _stamp(paths.CONFIG), "references": _stamp(store.INDEX), "map": versions}}
 
 
@@ -219,6 +227,8 @@ def get(lob: str | None = None, state: str | None = None, force: bool = False) -
     if lobs or sts:
         res["cells"] = [c for c in res["cells"] if (not lobs or c["lob"] in lobs) and (not sts or c["state"] in sts)]
         res["columns"] = {k: v for k, v in res["columns"].items() if not lobs or k in lobs}
+        res["pathCells"] = {ln: {st: v for st, v in by.items() if not sts or st in sts}
+                            for ln, by in res.get("pathCells", {}).items() if not lobs or ln in lobs}
         res["stillToTest"] = [g for g in res.get("stillToTest", [])
                               if (not lobs or g["lob"] in lobs) and (not sts or g["state"] in sts)]
     return res
