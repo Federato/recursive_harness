@@ -199,7 +199,8 @@ def planning(method: str, path: str, query: dict, b: dict):
                 _dispatcher_on()
             return js(200, P.summary(plan))
         if path == "/api/console/plans":
-            return js(200, {"plans": [P.summary(p) for p in reversed(P.all_plans())]})
+            from console import inspection as I
+            return js(200, {"plans": [{**P.summary(p), "inspection": I.plan_view(p)["counts"]} for p in reversed(P.all_plans())]})
         if path == "/api/console/plan":
             p = P.load(query.get("id", ""))
             return js(200, {**p, "summary": P.summary(p)})
@@ -241,6 +242,32 @@ def planning(method: str, path: str, query: dict, b: dict):
     except (KeyError, ValueError, FileNotFoundError) as exc:
         return js(400, {"error": f"{type(exc).__name__}: {exc}"[:300]})
     return js(404, {"error": "no such planning route"})
+
+
+def inspect_routes(method: str, path: str, query: dict, b: dict):
+    """Results inspection: a plan's results with their verdicts, a verdict, pass-all-matches, sign-off, and the
+    verdicts for a list of scenarios (Trace Diff, the board's cell panel)."""
+    from console import inspection as I, plans as P
+    js = lambda code, o: (code, json.dumps(o), "json")    # noqa: E731
+    try:
+        if path == "/api/console/inspect/plan":
+            return js(200, I.plan_view(P.load(query.get("id", ""))))
+        if path == "/api/console/inspect/verdicts":
+            v = I.latest()
+            return js(200, {s: v.get(s) for s in (query.get("ids") or "").split(",") if s})
+        if method != "POST":
+            return js(405, {"error": "POST only"})
+        if path == "/api/console/inspect":
+            return js(200, I.record(str(b.get("scenario") or ""), str(b.get("verdict") or ""), by=str(b.get("by") or ""),
+                                    reason=str(b.get("reason") or ""), category=str(b.get("category") or ""),
+                                    plan=str(b.get("plan") or "")))
+        if path == "/api/console/inspect/pass-matches":
+            return js(200, {"passed": I.pass_matches(P.load(str(b.get("plan"))), by=str(b.get("by") or ""))})
+        if path == "/api/console/inspect/signoff":
+            return js(200, I.signoff(P.load(str(b.get("plan"))), by=str(b.get("by") or "")))
+    except (I.InspectionError, KeyError, ValueError, FileNotFoundError) as exc:
+        return js(400, {"error": str(exc)[:300]})
+    return js(404, {"error": "no such inspection route"})
 
 
 def library_routes(method: str, path: str, query: dict, b: dict):
@@ -437,6 +464,8 @@ def dispatch(method: str, path: str, query: dict, body):
     if method == "GET" and path == "/api/console/presets":
         from console import presets
         return 200, json.dumps({"presets": presets.presets()}), "json"
+    if path.startswith("/api/console/inspect"):
+        return inspect_routes(method, path, query, body or {})
     if path.startswith("/api/console/library"):
         return library_routes(method, path, query, body or {})
     if path.startswith("/api/console/workbench/"):
@@ -509,8 +538,8 @@ def page(app_only: frozenset = frozenset()) -> str:
                          f'(docs/TC-PLAN.md).<span class="filter"></span></div></section>')
         for i, (k, label, task) in enumerate(SCREENS, 1))
     return (PAGE.replace("{{TABS}}", tabs).replace("{{SCREENS}}", screens)
-            .replace("/*{{CSS}}*/", MATRIX_CSS + BOARD_CSS + TRACE_CSS + WB_CSS + PLAN_CSS + QUEUE_CSS + LIB_CSS)
-            .replace("/*{{JS}}*/", MATRIX_JS + BOARD_JS + TRACE_JS + WB_JS + PLAN_JS + QUEUE_JS + LIB_JS)
+            .replace("/*{{CSS}}*/", INSP_CSS + MATRIX_CSS + BOARD_CSS + TRACE_CSS + WB_CSS + PLAN_CSS + QUEUE_CSS + LIB_CSS)
+            .replace("/*{{JS}}*/", INSP_JS + MATRIX_JS + BOARD_JS + TRACE_JS + WB_JS + PLAN_JS + QUEUE_JS + LIB_JS)
             .replace("{{BOOT}}", json.dumps({"cap": cap(), "legend": legend(), "names": STATE_NAMES, "categories": categories()})))
 
 
@@ -899,7 +928,7 @@ BOARD_CSS = """
   font:inherit;font-size:13px;color:var(--color-text)}
 .bd-lines button:last-child{border-right:0}
 .bd-lines button[aria-pressed="true"]{background:var(--color-accent-100);color:var(--color-accent-800);box-shadow:inset 0 -2px 0 var(--color-accent)}
-.bd-stats{grid-template-columns:1fr 1fr 1.6fr 1fr 1fr}
+.bd-stats{grid-template-columns:1fr 1fr 1.6fr 1fr 1fr 1fr}
 .bd-cats{display:grid;grid-template-columns:1fr auto;gap:1px 10px;font-size:11.5px;margin-top:4px}
 .bd-cats .def{color:var(--ox-deep)}
 .bd-grid{display:grid;gap:3px;align-items:stretch}
@@ -969,6 +998,7 @@ function bdDraw(){
     '<div><span>Path coverage</span><b>'+pct(S.walked,S.applicable)+'</b><small>'+S.walked+' of '+S.applicable+' walked</small></div>'+
     '<div><span>RaaS-verified paths</span><b>'+pct(S.verified,S.applicable)+'</b><small>'+S.verified+' of '+S.applicable+'</small></div>'+
     '<div><span>Open mismatches</span><b>'+S.openMismatches+'</b>'+(cats?'<div class="bd-cats">'+cats+'</div>':'')+'</div>'+
+    '<div class="aw" id="bd-aw" title="Plan results nobody has inspected yet (a layer beside ISO\'s agreement)"><span>Awaiting inspection</span><b>'+(S.awaitingInspection||0)+(S.awaitingInspection?' ▸':'')+'</b><small>plan results not yet reviewed</small></div>'+
     '<div><span>Verification days left</span><b>'+S.days+'</b><small>'+S.calls.toLocaleString()+' calls at 150/day</small></div>'+
     '<div><span>States</span><b>'+S.verdicts.Go+' <small>Go</small></b><small>'+S.verdicts.Hold+' Hold · '+S.verdicts['Not ready']+' Not ready</small></div>';
   const g=document.getElementById('bd-grid');
@@ -983,10 +1013,12 @@ function bdDraw(){
   d.rows.forEach(r=>{
     h+='<button class="bd-st'+(BD.state===r.state?' sel':'')+'" data-s="'+r.state+'" title="'+esc(BOOT.names[r.state]||r.state)+'"><b>'+r.state+'</b><span>'+esc(BOOT.names[r.state]||'')+'</span></button>';
     h+='<span class="bd-v bd-stk"><span class="bd-badge '+r.verdict.replace(' ','')+(r.counts.mismatch?' mm':'')+'">'+esc(r.verdict)+'</span><span title="'+esc(r.note)+'">'+esc(r.note)+'</span></span>';
+    const aw=(d.awaiting||{})[r.state]||{};
     cols.forEach(p=>{const v=r.cells[p.id]||['untested',0,0],t=bdCellTxt(v),k=r.state+'|'+p.id;
-      h+='<button class="bd-c chip '+v[0]+(BD.sel===k?' sel':'')+'" data-k="'+esc(k)+'" title="'+esc(r.state+' · '+p.label+' · '+(v[0]==='descoped'?'descoped':LG[v[0]].board)+(v[1]?' · '+v[1]+' scenario'+(v[1]>1?'s':''):''))+'"><i>'+esc(t[0])+'</i>'+(t[1]?'<small>'+t[1]+'</small>':'')+'</button>';});
+      h+='<button class="bd-c chip '+v[0]+(aw[p.id]?' aw':'')+(BD.sel===k?' sel':'')+'" data-k="'+esc(k)+'" title="'+esc(r.state+' · '+p.label+' · '+(v[0]==='descoped'?'descoped':LG[v[0]].board)+(v[1]?' · '+v[1]+' scenario'+(v[1]>1?'s':''):''))+'"><i>'+esc(t[0])+'</i>'+(t[1]?'<small>'+t[1]+'</small>':'')+'</button>';});
   });
   g.innerHTML=h;
+  const awb=document.getElementById('bd-aw');if(awb)awb.onclick=()=>{location.hash='#queue';};
   if(BD.sel)bdCell(BD.sel,false);else if(BD.state)bdState(BD.state);else bdOverview();
 }
 function bdOverview(){
@@ -1030,7 +1062,7 @@ function bdCellDraw(c){
   else h+='<div class="cap2">Scenarios · '+c.scenarios.length+'</div><table class="bd-tbl"><tr><td><b>Scenario</b></td><td class="st"><b>State</b></td><td><b>Ours / ISO</b></td></tr>'+
     c.scenarios.map(x=>'<tr><td>'+((x.source||'').startsWith('run ')?esc(x.scenario):'<a href="#trace?lob='+c.line+'&scenario='+encodeURIComponent(x.scenario)+'">'+esc(x.scenario)+'</a>')+'<div class="mx-msg">'+esc((x.source||'')+(x.at?' · '+x.at.slice(0,10):''))+'</div></td>'+
       '<td class="st">'+(x.status==='inert'?'<span class="mx-msg">inert</span>':'<span class="chip '+x.status+'">'+esc(LG[x.status].glyph)+'</span>')+'</td>'+
-      '<td>'+esc(x.ours==null?'—':x.ours)+' / '+esc(x.iso==null?'—':x.iso)+(x.delta&&+x.delta!==0?'<div class="mx-msg">Δ '+esc((+x.delta>0?'+':'')+x.delta)+(x.category?' · '+esc(x.category.replace(/_/g,' ')):' · unclassified')+'</div>':'')+'</td></tr>').join('')+'</table>'+
+      '<td>'+esc(x.ours==null?'—':x.ours)+' / '+esc(x.iso==null?'—':x.iso)+(x.inspectable?'<div>'+ivHTML(x.scenario,x.plan,x.verdict)+'</div>':'')+(x.delta&&+x.delta!==0?'<div class="mx-msg">Δ '+esc((+x.delta>0?'+':'')+x.delta)+(x.category?' · '+esc(x.category.replace(/_/g,' ')):' · unclassified')+'</div>':'')+'</td></tr>').join('')+'</table>'+
     '<div class="mx-msg">A linked scenario opens in Trace Diff, step by step. QA-run rows (source "run …") hold ISO’s premium only, no answer to diff.</div>';
   if(c.applies&&c.status!=='descoped')h+='<div class="cap2" style="margin-top:14px">Run tests for this cell</div>'+
     '<div class="mx-msg">Find risks that walk this path in '+esc(c.state)+': each candidate is rated on our engine (free) and kept only if its trace walks the path. Then send the ones you choose to ISO.</div>'+
@@ -1101,6 +1133,7 @@ document.getElementById('bd-grid').addEventListener('click',ev=>{
   const s=ev.target.closest('.bd-st[data-s]');if(s){BD.state=s.dataset.s;BD.sel=null;
     document.querySelectorAll('.bd-st.sel,.bd-c.sel').forEach(x=>x.classList.remove('sel'));s.classList.add('sel');bdState(BD.state);}});
 addEventListener('hashchange',bdRoute);
+document.addEventListener('iv:changed',()=>{if(!document.getElementById('s-board').hidden&&BD.data){BD.cell=null;bdLoad();}});
 if((location.hash||'').startsWith('#board'))bdRoute();
 setInterval(()=>{if(!document.getElementById('s-board').hidden&&BD.data)bdLoad().catch(()=>{});},60000);
 """
@@ -1178,9 +1211,11 @@ function tdOpen(id){
     if(d.line!==TD.line){TD.line=d.line;tdList();}else if([...sel.options].some(o=>o.value===d.scenario))sel.value=d.scenario;tdDraw();});
 }
 function tdVal(v){return v===null||v===undefined?'<span class="mx-msg">absent</span>':esc(String(v));}
-function tdDraw(){
+function tdDraw(){tdDraw0();ivFill(document.getElementById('td-body'));}
+function tdDraw0(){
   const d=TD.cur,b=document.getElementById('td-body');
-  const head='<div class="td-head"><h2>'+esc(d.scenario)+'</h2><span>'+esc(d.line+' · '+(BOOT.names[d.state]||d.state)+' · effective '+d.date)+'</span></div>';
+  const slot='<span class="insp-slot" data-sid="'+esc(d.scenario)+'"></span>';
+  const head='<div class="td-head"><h2>'+esc(d.scenario)+'</h2><span>'+esc(d.line+' · '+(BOOT.names[d.state]||d.state)+' · effective '+d.date)+'</span>'+slot+'</div>';
   if(d.isoRefused){
     let h=head+'<div class="td-root"><b>ISO refused this request</b><div class="mx-msg">'+esc(d.isoRefused)+'</div></div>';
     if(d.bothRefuse)h+='<div class="td-root ok"><b>Ours refuses too'+(d.sameTable?', at the same table':', for a different reason')+'.</b><div class="mx-msg">'+esc(d.refused)+'</div></div>';
@@ -1194,7 +1229,7 @@ function tdDraw(){
     tdSide();return;}
   if(d.refused){b.innerHTML=head+'<div class="td-root"><b>Our engine refuses this request</b><div>'+esc(d.refused)+'</div><div class="mx-msg">ISO rated it; a refusal where ISO rates is D15’s "our refusal vs ISO’s narrowing" when it is not by decision.</div></div>';tdSide();return;}
   const c=d.counts;
-  let h='<div class="td-head"><h2>'+esc(d.scenario)+'</h2><span>'+esc(d.line+' · '+(BOOT.names[d.state]||d.state)+' · effective '+d.date)+'</span><span class="mx-msg">ISO package '+esc(d.isoPackage||'?')+(d.freshness==='stale'?' · <b>stale</b>: '+esc(d.staleReason):'')+'</span></div>';
+  let h='<div class="td-head"><h2>'+esc(d.scenario)+'</h2><span>'+esc(d.line+' · '+(BOOT.names[d.state]||d.state)+' · effective '+d.date)+'</span><span class="mx-msg">ISO package '+esc(d.isoPackage||'?')+(d.freshness==='stale'?' · <b>stale</b>: '+esc(d.staleReason):'')+'</span>'+slot+'</div>';
   h+='<div class="mx-stats" style="grid-template-columns:repeat(5,minmax(0,1fr))"><div><span>Ours</span><b>'+tdVal(d.oursTotal)+'</b></div><div><span>ISO</span><b>'+tdVal(d.isoTotal)+'</b></div>'+
     '<div><span>Fields agree</span><b>'+c.agree+'</b><small>of '+c.compared+' compared</small></div><div><span>Steps differ</span><b>'+c.steps+'</b><small>'+c.roots+' divergence'+(c.roots===1?'':'s')+'</small></div>'+
     '<div><span>Other</span><b>'+c.other+'</b><small>codes, dates, text · '+c.isoOnly+' ISO-only</small></div></div>';
@@ -1571,6 +1606,7 @@ QUEUE_HTML = """<section class="screen" id="s-queue" hidden><div class="mx-wrap"
     <p>Committed plans and what they spend, lane by lane; the dispatch order; every call and what came of it. Pause,
     resume, or stop a plan and keep what it found.</p></div>
   <div class="mx-stats" id="qu-lanes" style="grid-template-columns:repeat(4,minmax(0,1fr))"></div>
+  <div id="qu-insp" hidden></div>
   <div class="cap2">Plans</div><div id="qu-plans"></div>
   <div class="cap2">Dispatch queue · next up</div><div id="qu-next"></div>
   <div class="cap2">Run log</div><div class="td-tools"><select id="qu-filter"><option value="">all plans</option></select></div><div id="qu-log"></div>
@@ -1597,7 +1633,7 @@ QUEUE_CSS = """
 """
 
 QUEUE_JS = r"""
-const QU={plan:'',timer:null};
+const QU={plan:'',timer:null,insp:'',show:'',result:''};
 function quJSON(u,b){return fetch(u,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)}).then(r=>r.json());}
 function quLoad(){
   Promise.all([fetch('/api/console/cap').then(r=>r.json()),fetch('/api/console/plans').then(r=>r.json()),fetch('/api/console/runlog'+(QU.plan?'?plan='+encodeURIComponent(QU.plan):'')).then(r=>r.json()),fetch('/api/console/override').then(r=>r.json())])
@@ -1616,7 +1652,8 @@ function quPlans(ps){
     return '<div class="qu-plan"><div class="hd"><b>'+esc(p.name)+'</b><span class="qu-st '+p.status+'">'+p.status+'</span><span class="mx-msg">'+esc(p.line+' · '+p.states+' state(s) · '+p.scenarios+' scenarios · committed '+p.committed_at.replace('T',' ')+(p.by?' by '+p.by:''))+'</span></div>'+
       '<div class="qu-bar">'+seg('match','var(--color-accent-700)')+seg('mismatch','var(--ox)')+seg('refused','var(--color-neutral-500)')+seg('error','var(--ox-deep)')+seg('notReached','var(--color-neutral-300)')+'</div>'+
       '<div class="mx-msg">'+p.sent+' sent · '+p.reused+' reused · '+p.match+' match · '+p.mismatch+' mismatch · '+p.refused+' refused · '+p.error+' error · '+p.queued+' queued'+(p.notReached?' · '+p.notReached+' never reached':'')+(p.notApplicable?' · '+p.notApplicable+' not expressible':'')+(p.pass3?' · pass 3 '+esc(JSON.stringify(p.pass3)):'')+'</div>'+
-      '<div class="td-tools">'+acts+'<a href="/console/report/'+encodeURIComponent(p.id)+'" target="_blank" rel="noopener">Report</a><button class="btn" data-a="open" data-id="'+esc(p.id)+'">Scenarios</button></div></div>';}).join('');
+      '<div class="td-tools">'+acts+(p.inspection&&p.inspection.total?'<button class="btn" data-a="inspect" data-id="'+esc(p.id)+'">Inspect results'+(p.inspection.awaiting?' · '+p.inspection.awaiting+' awaiting':' · all inspected')+'</button>':'')+
+      '<a href="/console/report/'+encodeURIComponent(p.id)+'" target="_blank" rel="noopener">Report</a><button class="btn" data-a="open" data-id="'+esc(p.id)+'">Scenarios</button></div></div>';}).join('');
 }
 function quNext(ps){
   const running=ps.filter(p=>p.status==='running');
@@ -1651,13 +1688,52 @@ function quRun(id){
     document.getElementById('qu-back').onclick=e=>{e.preventDefault();quSide();};});
 }
 document.getElementById('qu-plans').addEventListener('click',ev=>{const b=ev.target.closest('button[data-a]');if(!b)return;
+  if(b.dataset.a==='inspect'){location.hash='#queue?inspect='+encodeURIComponent(b.dataset.id);return;}
   if(b.dataset.a==='open'){fetch('/api/console/plan?id='+encodeURIComponent(b.dataset.id)).then(r=>r.json()).then(p=>{document.getElementById('qu-side').innerHTML='<a href="#" class="mx-back" id="qu-back">← Overrides and files</a><div class="cap2">'+esc(p.name)+'</div><table class="qu-tbl">'+
     p.scenarios.map(s=>'<tr><td>'+s.state+'<div class="mx-msg">'+esc(Object.entries(s.config).map(([k,v])=>k+'='+v).join(', ')||'base risk')+'</div></td><td>'+esc(s.status)+'</td><td>'+(s.scenario?'<a href="#trace?scenario='+encodeURIComponent(s.scenario)+'">diff</a>':'')+'</td></tr>').join('')+'</table>';
     document.getElementById('qu-back').onclick=e=>{e.preventDefault();quSide();};});return;}
   quJSON('/api/console/plan/control',{id:b.dataset.id,action:b.dataset.a}).then(()=>quLoad());});
 document.getElementById('qu-filter').addEventListener('change',ev=>{QU.plan=ev.target.value;quLoad();});
 let quStarted=false;
+function quInsp(){
+  const el=document.getElementById('qu-insp');if(!QU.insp){el.hidden=true;el.innerHTML='';return;}el.hidden=false;
+  fetch('/api/console/inspect/plan?id='+encodeURIComponent(QU.insp)).then(r=>r.json()).then(v=>{
+    if(v.error){el.innerHTML='<div class="mx-msg">'+esc(v.error)+'</div>';return;}
+    const c=v.counts,n=c.total||1,show=QU.show||(c.awaiting?'awaiting':'all');
+    const seg=(k,col)=>c[k]?'<i style="width:'+(100*c[k]/n)+'%;background:'+col+'" title="'+k+' '+c[k]+'"></i>':'';
+    const rows=v.rows.filter(r=>(show==='all'||!r.verdict)&&(!QU.result||r.result===QU.result));
+    const nm=v.rows.filter(r=>r.result==='match'&&!r.verdict).length;
+    const chip=(k,val,l)=>'<button class="pl-chip" data-f="'+k+'" data-v="'+val+'" aria-pressed="'+((k==='show'?show:QU.result)===val)+'">'+l+'</button>';
+    const msg=m=>{const x=/"Message":"([^"]*)"/.exec(m);return x?x[1]:m;};
+    // settings every result shares are said once, above the table; a row shows only what differs
+    const keys=[...new Set(v.rows.flatMap(r=>Object.keys(r.config)))];
+    const same=keys.filter(k=>v.rows.every(r=>k in r.config&&String(r.config[k])===String(v.rows[0].config[k])));
+    const own=r=>Object.entries(r.config).filter(([k])=>!same.includes(k)).map(([k,x])=>k+'='+x).join(', ');
+    let h='<div class="qu-plan" style="gap:10px"><div class="in-hd"><a href="#queue" id="in-back">‹ Plans</a><b>Inspect results · '+esc(v.name)+'</b><span class="mx-msg">'+esc(v.line+' · '+v.status+' · '+v.plan)+'</span></div>'+
+      '<div class="in-hd"><span class="in-bar">'+seg('pass','var(--color-accent-700)')+seg('fail','var(--ox)')+seg('excuse','var(--color-neutral-500)')+'</span><span>'+c.inspected+' of '+c.total+' inspected</span>'+
+      '<span class="mx-msg">'+c.pass+' ✓ passed · '+c.fail+' × failed · '+c.excuse+' ⊘ excused · <b>'+c.awaiting+' awaiting</b></span></div>'+
+      '<div class="td-tools in-flt">Show '+chip('show','awaiting','Awaiting')+chip('show','all','All')+' · Result '+chip('result','','All')+chip('result','match','Match')+chip('result','mismatch','Mismatch')+chip('result','refused','Refused')+chip('result','error','Error')+
+      '<label class="mx-msg" style="margin-left:auto">Your name <input id="in-by" value="'+esc(IV.by)+'" style="width:120px"></label>'+
+      (nm?'<button class="btn iv-pass" id="in-all">✓ Pass all '+nm+' matches</button>':'')+'</div>'+
+      (same.length?'<div class="mx-msg">Every result: '+esc(same.map(k=>k+'='+v.rows[0].config[k]).join(', '))+'</div>':'')+
+      '<table class="qu-tbl in-tbl"><tr><td><b>St</b></td><td><b>Scenario</b></td><td class="n"><b>Ours</b></td><td class="n"><b>ISO</b></td><td><b>Auto</b></td><td><b>Inspector</b></td><td></td></tr>'+
+      (rows.length?rows.map(r=>'<tr><td><b>'+esc(r.state)+'</b></td><td>'+esc(own(r)||(same.length?'the plan\'s risk':'base risk'))+
+        (r.message?'<div class="mx-msg">'+esc(msg(r.message))+'</div>':'')+'</td><td class="n">'+esc(r.ours==null?'—':r.ours)+'</td><td class="n">'+esc(r.iso==null?'—':r.iso)+'</td>'+
+        '<td><span class="qu-ev '+esc(r.result)+'">'+esc(r.result)+'</span></td><td>'+ivHTML(r.scenario,v.plan,r.verdict)+'</td><td><a href="#trace?scenario='+encodeURIComponent(r.scenario)+'">Trace ↗</a></td></tr>').join('')
+        :'<tr><td colspan="7" class="mx-msg">'+(show==='awaiting'?'Nothing awaiting inspection.':'No results match the filter.')+'</td></tr>')+'</table>'+
+      '<div class="td-tools">'+(v.signoff?'<span class="iv-done pass">Signed off by '+esc(v.signoff.by)+' · '+esc(ivWhen(v.signoff.at))+' · '+esc(v.signoff.reason)+'</span>':
+        '<button class="btn" id="in-sign"'+(c.awaiting?' disabled title="'+c.awaiting+' still awaiting"':'')+'>Sign off this plan</button><span class="mx-msg" id="in-msg">'+(c.awaiting?'Enabled once nothing is awaiting.':'Records your name and the counts.')+'</span>')+
+      '<a href="/console/report/'+encodeURIComponent(v.plan)+'" target="_blank" rel="noopener">Report ↗</a></div></div>';
+    el.innerHTML=h;
+    document.getElementById('in-by').onchange=e=>ivSetBy(e.target.value.trim());
+    el.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{if(b.dataset.f==='show')QU.show=b.dataset.v;else QU.result=b.dataset.v;quInsp();});
+    const all=document.getElementById('in-all');if(all)all.onclick=()=>{all.disabled=true;quJSON('/api/console/inspect/pass-matches',{plan:v.plan,by:IV.by}).then(()=>{quInsp();quLoad();});};
+    const sg=document.getElementById('in-sign');if(sg)sg.onclick=()=>quJSON('/api/console/inspect/signoff',{plan:v.plan,by:IV.by}).then(j=>{if(j.error){document.getElementById('in-msg').textContent=j.error;return;}quInsp();});
+  });
+}
+document.addEventListener('iv:changed',()=>{if(QU.insp&&!document.getElementById('s-queue').hidden){quInsp();quLoad();}});
 function quRoute(){const p=(location.hash||'').slice(1).split('?');if(p[0]!=='queue')return;const q=new URLSearchParams(p[1]||'');QU.plan=q.get('plan')||QU.plan;
+  const ins=q.get('inspect')||'';if(ins!==QU.insp){QU.insp=ins;QU.show='';QU.result='';}quInsp();
   quLoad();if(!quStarted){quStarted=true;quSide();}clearInterval(QU.timer);QU.timer=setInterval(()=>{if(!document.getElementById('s-queue').hidden)quLoad();},5000);}
 addEventListener('hashchange',quRoute);quRoute();
 """
@@ -1748,4 +1824,76 @@ document.getElementById('lb-rerun').onclick=()=>fetch('/api/console/library/reru
 ['lb-line','lb-origin','lb-result','lb-ref','lb-state'].forEach(i=>document.getElementById(i).addEventListener(i==='lb-state'?'input':'change',()=>LB.data&&lbDraw()));
 let lbStarted=false;function lbRoute(){if(!(location.hash||'').startsWith('#library')||lbStarted)return;lbStarted=true;lbLoad();lbSide();}
 addEventListener('hashchange',lbRoute);lbRoute();
+"""
+
+
+# ---- Results inspection: a person's verdict on each plan result (pass / fail / excuse), beside ISO's agreement -------
+
+INSP_CSS = """
+.iv{display:inline-flex;gap:4px;align-items:center;flex-wrap:nowrap;white-space:nowrap}
+.in-tbl td:nth-child(6),.in-tbl td:nth-child(7){white-space:nowrap}
+.iv .btn{padding:2px 8px;font-size:12px}
+.iv .btn.iv-pass{border-color:var(--color-accent-700);color:var(--color-accent-800)}
+.iv .btn.iv-fail{border-color:var(--ox);color:var(--ox-deep)}
+.iv .btn.iv-exc{border-color:var(--color-neutral-500);color:var(--color-neutral-800)}
+.iv-done{font-size:12px;white-space:nowrap}
+.iv-done.pass{color:var(--color-accent-800)}.iv-done.fail{color:var(--ox-deep)}.iv-done.excuse{color:var(--color-neutral-700)}
+.iv-done a{margin-left:6px}
+.iv-form{display:flex;flex-direction:column;gap:6px;border:1px dashed var(--ox);border-radius:4px;padding:8px;margin-top:6px;max-width:460px;background:var(--color-bg)}
+.iv-form input,.iv-form select{font:inherit;padding:4px 6px}
+.td-head .insp-slot{margin-left:auto}
+.in-hd{display:flex;gap:12px;align-items:baseline;flex-wrap:wrap}
+.in-hd b{font:600 18px var(--font-heading)}
+.in-bar{display:flex;height:12px;border-radius:2px;overflow:hidden;background:var(--color-surface);max-width:420px;flex:1 1 220px}
+.in-bar i{display:block;height:100%}
+.in-flt .pl-chip{font-size:12px}
+.qu-tbl td.n{text-align:right;font-variant-numeric:tabular-nums}
+.bd-c.aw{position:relative}
+.bd-c.aw::after{content:"";position:absolute;top:2px;right:2px;width:6px;height:6px;border-radius:50%;background:var(--ox)}
+.bd-stats div.aw{cursor:pointer}
+"""
+
+INSP_JS = r"""
+const IV={by:''};
+try{IV.by=localStorage.getItem('tc.by')||'';}catch(e){}
+function ivSetBy(v){IV.by=v;try{localStorage.setItem('tc.by',v);}catch(e){}}
+function ivWhen(at){return (at||'').replace('T',' ').slice(5,16);}
+function ivHTML(sid,plan,v){
+  if(v){const L={pass:'✓ Passed',fail:'× Failed',excuse:'⊘ Excused'}[v.verdict]||v.verdict;
+    return '<span class="iv-done '+v.verdict+'" title="'+esc((v.reason||'')+(v.category?' · '+v.category.replace(/_/g,' '):''))+'">'+L+(v.by?' · '+esc(v.by):'')+' '+esc(ivWhen(v.at))+
+      '<a href="#" data-iv="undo" data-sid="'+esc(sid)+'" data-plan="'+esc(plan||'')+'">undo</a></span>';}
+  return '<span class="iv"><button class="btn iv-pass" data-iv="pass" data-sid="'+esc(sid)+'" data-plan="'+esc(plan||'')+'" title="Our result is right">✓ Pass</button>'+
+    '<button class="btn iv-fail" data-iv="fail" data-sid="'+esc(sid)+'" data-plan="'+esc(plan||'')+'" title="Our result is wrong (reason and category)">× Fail</button>'+
+    '<button class="btn iv-exc" data-iv="excuse" data-sid="'+esc(sid)+'" data-plan="'+esc(plan||'')+'" title="Not a test of our engine (reason)">⊘ Excuse</button></span>';
+}
+function ivFill(root){   // every .insp-slot[data-sid] under root gets its verdict or the buttons
+  const slots=[...(root||document).querySelectorAll('.insp-slot[data-sid]')];if(!slots.length)return;
+  const ids=[...new Set(slots.map(s=>s.dataset.sid))];
+  fetch('/api/console/inspect/verdicts?ids='+encodeURIComponent(ids.join(','))).then(r=>r.json()).then(v=>{
+    slots.forEach(s=>{s.innerHTML=ivHTML(s.dataset.sid,s.dataset.plan,v[s.dataset.sid]);});});
+}
+function ivPost(body){
+  return fetch('/api/console/inspect',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...body,by:IV.by})}).then(r=>r.json());
+}
+function ivChanged(sid){document.dispatchEvent(new CustomEvent('iv:changed',{detail:{scenario:sid}}));}
+document.addEventListener('click',ev=>{
+  const b=ev.target.closest('[data-iv]');if(!b)return;ev.preventDefault();
+  const sid=b.dataset.sid,plan=b.dataset.plan,v=b.dataset.iv;
+  if(v==='pass'||v==='undo'){ivPost({scenario:sid,verdict:v,plan:plan}).then(j=>{if(j.error){alertless(b,j.error);return;}ivChanged(sid);});return;}
+  const host=b.closest('.iv')||b.parentNode;const old=host.parentNode.querySelector('.iv-form');if(old)old.remove();
+  const f=document.createElement('div');f.className='iv-form';
+  f.innerHTML='<b>'+(v==='fail'?'× Fail':'⊘ Excuse')+' · '+esc(sid)+'</b>'+
+    (v==='fail'?'<select class="iv-cat"><option value="">Category…</option>'+BOOT.categories.map(c=>'<option value="'+c.key+'" title="'+esc(c.meaning)+'">'+esc(c.label)+'</option>').join('')+'</select>':'')+
+    '<input class="iv-why" placeholder="'+(v==='fail'?'What is wrong':'Why this is not a test of our engine')+'">'+
+    '<input class="iv-by" placeholder="Your name" value="'+esc(IV.by)+'">'+
+    '<div class="td-tools"><button class="btn iv-save">Save</button><button class="btn iv-cancel">Cancel</button><span class="mx-msg iv-msg"></span></div>';
+  host.after(f);f.querySelector('.iv-why').focus();
+  f.querySelector('.iv-cancel').onclick=e=>{e.preventDefault();f.remove();};
+  f.querySelector('.iv-save').onclick=e=>{e.preventDefault();ivSetBy(f.querySelector('.iv-by').value.trim());
+    const cat=f.querySelector('.iv-cat');
+    ivPost({scenario:sid,verdict:v,plan:plan,reason:f.querySelector('.iv-why').value,category:cat?cat.value:''}).then(j=>{
+      if(j.error){f.querySelector('.iv-msg').textContent=j.error;return;}f.remove();ivChanged(sid);});};
+});
+function alertless(el,msg){const m=document.createElement('span');m.className='mx-msg';m.textContent=' '+msg;el.after(m);setTimeout(()=>m.remove(),5000);}
+document.addEventListener('iv:changed',()=>ivFill(document));
 """

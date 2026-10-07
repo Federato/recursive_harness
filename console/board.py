@@ -13,7 +13,7 @@ from __future__ import annotations
 
 from decimal import Decimal
 
-from . import evidence, ledger, mismatch, paths, readiness, store
+from . import evidence, inspection, ledger, mismatch, paths, readiness, store
 
 
 def columns(line: str) -> list:
@@ -69,10 +69,13 @@ def board(line: str) -> dict:
                 seen.add(m["scenarioId"])
                 mm[m["category"]] = mm.get(m["category"], 0) + 1
     calls = sum(g["calls"] for g in r["stillToTest"])
+    aw = inspection.awaiting(line)                # a layer beside ISO's agreement, never a gate on it
     return {
         "line": line, "generatedAt": r["generatedAt"], "columns": columns(line), "rows": rows, "cap": r["cap"],
+        "awaiting": aw["cells"],
         "summary": {"applicable": applicable, "walked": walked, "verified": verified,
                     "openMismatches": sum(mm.values()), "byCategory": mm,
+                    "awaitingInspection": aw["count"],
                     "categories": [{"key": c.key, "label": c.label} for c in mismatch.CATEGORIES],
                     "calls": calls, "days": round(calls / ledger.LANES["active"], 1),
                     "verdicts": {v: sum(x["verdict"] == v for x in rows) for v in ("Go", "Hold", "Not ready")}},
@@ -84,6 +87,7 @@ def cell(line: str, state: str, path: str) -> dict:
     latest = mismatch.classifications()
     fresh = store.freshness()
     out = []
+    verdicts = inspection.latest()
     for rec in evidence.records():
         if rec["line"] != line or rec["state"] != state or path not in rec["walked"]:
             continue
@@ -102,7 +106,8 @@ def cell(line: str, state: str, path: str) -> dict:
         cls = latest.get(rec["scenario"])
         out.append({"scenario": rec["scenario"], "status": st, "ours": rec.get("ours"), "iso": rec.get("iso"),
                     "delta": delta, "category": cls["category"] if cls else None, "at": rec["at"],
-                    "source": rec.get("source", ""), "paths": len(rec["walked"])})
+                    "source": rec.get("source", ""), "paths": len(rec["walked"]), "plan": rec.get("plan", ""),
+                    "inspectable": str(rec.get("source", "")).startswith("plan "), "verdict": verdicts.get(rec["scenario"])})
     rank = {"mismatch": 0, "stale": 1, "internal": 2, "verified": 3, "inert": 4}
     out.sort(key=lambda x: (rank[x["status"]], x["scenario"]))
     pcs = readiness.get(lob=line, state=state).get("pathCells", {}).get(line, {}).get(state, {})
