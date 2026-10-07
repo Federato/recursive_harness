@@ -74,6 +74,10 @@ def dispatch(method: str, path: str, query: dict, body):
         return 200, json.dumps(cap()), "json"
     if path == "/api/console/legend":
         return 200, json.dumps(legend()), "json"
+    if path == "/api/console/readiness":
+        from console import readiness
+        return 200, json.dumps(readiness.get(query.get("lob"), query.get("state"),
+                                             force=query.get("refresh") == "1")), "json"
     return None
 
 
