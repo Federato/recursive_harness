@@ -1384,7 +1384,7 @@ PLAN_HTML = """<section class="screen" id="s-plan" hidden><div class="mx-wrap"><
   <div class="pl-sec"><div class="cap2">States · <span id="pl-stc"></span></div>
     <div class="td-tools"><button class="btn" data-st="all">All</button><button class="btn" data-st="none">None</button><button class="btn" data-st="gaps">Still to test</button><span class="mx-msg" id="pl-prefill"></span></div>
     <div class="pl-chips" id="pl-states"></div></div>
-  <div class="pl-sec"><div class="cap2">Start from (optional)</div><div class="td-tools"><select id="pl-preset"><option value="">a QA tier or a layer…</option></select>
+  <div class="pl-sec"><div class="cap2">Start from (optional)</div><div class="td-tools"><select id="pl-preset"><option value="">a quick smoke, a QA tier or a layer…</option></select>
     <span class="mx-msg" id="pl-presetmsg"></span></div></div>
   <div class="pl-sec"><div class="cap2">Dimensions · values from <span id="pl-ref"></span>'s domains</div><div id="pl-dims"></div></div>
   <div class="pl-sec td-tools"><label class="td-chk"><input type="checkbox" id="pl-reduced"> reduced grid (edges only)</label>
@@ -1452,7 +1452,7 @@ function plSpec(){const a=parseInt(document.getElementById('pl-allow').value,10)
 function plPresetNote(label){const m=document.getElementById('pl-presetmsg');const n=(PL.configs||[]).length;
   m.innerHTML=n?esc(label)+': '+n+' scenario'+(n===1?'':'s')+' per state, added to the dimensions below · <a href="#" id="pl-clearp">clear</a>':'';
   const c=document.getElementById('pl-clearp');if(c)c.onclick=e=>{e.preventDefault();PL.configs=[];document.getElementById('pl-preset').value='';plPresetNote('');plPreview();};}
-fetch('/api/console/presets').then(r=>r.json()).then(j=>{PL.presets=j.presets;document.getElementById('pl-preset').innerHTML='<option value="">a QA tier or a layer…</option>'+
+fetch('/api/console/presets').then(r=>r.json()).then(j=>{PL.presets=j.presets;document.getElementById('pl-preset').innerHTML='<option value="">a quick smoke, a QA tier or a layer…</option>'+
   j.presets.map(p=>'<option value="'+p.id+'" title="'+esc(p.what)+'">'+esc(p.name)+' ('+p.line+')</option>').join('');}).catch(()=>{});
 document.getElementById('pl-preset').addEventListener('change',ev=>{const p=(PL.presets||[]).find(x=>x.id===ev.target.value);if(!p)return;
   PL.line=p.line;PL.configs=p.spec.configs;PL.dims={};plLoad({states:p.spec.states}).then(()=>{plPresetNote(p.name);});});
