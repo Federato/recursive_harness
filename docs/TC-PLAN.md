@@ -1,6 +1,6 @@
 # ISO Rating Test Console: the plan
 
-**Status: IN PROGRESS 2026-10-07, 19 of 38 tasks.** RC-0 and RC-1 done (the data layer: `console/`); RC-2's six tasks built: the console at `/console` with the Readiness Matrix, "Still to test" and the Coverage Board, seeded from real evidence (CP 155 of 281 cells Passed, GL 0 of 255). **Next: the RC-2 gate** (`104_ --quick`). **Open from TC-19:** GL 2027-04-01 rates about double what matched ISO on 2026-08-31 (7 of 7 rows); NY GL needs ISO's `V02` package. Progress at a glance: [`TC-TRACKER.html`](TC-TRACKER.html), rebuilt from this file on every edit.
+**Status: IN PROGRESS 2026-10-07, 19 of 38 tasks.** RC-0 and RC-1 done (the data layer: `console/`); RC-2 done and gated: the console at `/console` with the Readiness Matrix, "Still to test" and the Coverage Board, seeded from real evidence (CP 155 of 281 cells Passed, GL 0 of 255). **Next: RC-3, Trace Diff and the Scenario Workbench (TC-20, the worksheet map, first).** **Open from TC-19:** GL 2027-04-01 rates about double what matched ISO on 2026-08-31 (7 of 7 rows); NY GL needs ISO's `V02` package. Progress at a glance: [`TC-TRACKER.html`](TC-TRACKER.html), rebuilt from this file on every edit.
 the hi-fi prototype `ISO-Rating-Test-Console.html`, seven wireframes, and `readiness-matrix-integration.md`. The
 user's ask: build the console into the app, and **remove the current testing pages**. Nothing here is built yet.
 
@@ -108,7 +108,7 @@ sample); a test per roll-up rule; `104_ --quick` clean.
 
 ## Milestone 2: the go/no-go views
 
-### RC-2 · Readiness Matrix and Coverage Board (6 tasks)
+### RC-2 · Readiness Matrix and Coverage Board (6 tasks) · 6 of 6 done, gated 2026-10-07
 
 | # | Task | Status | Notes |
 |---|---|---|---|
@@ -119,8 +119,10 @@ sample); a test per roll-up rule; `104_ --quick` clean.
 | TC-18 | **Coverage Board**: one line, state × path, readiness verdict per state (Go / Hold / Not ready), side panel of scenarios per cell; **the control × state grid beside it (D18)** | ✅ 2026-10-07 | The Board tab of `/console` with `console/board.py`: one line at a time, states × every path (GL 43, CP 17) grouped under the most specific coverage they count toward, so GL's deductible paths sit under Deductibles; each cell's number is its scenarios (affected / all for mismatch and stale); n/a and descoped marked. **Verdict per state** (the prototype's rule): Go = every applicable path verified; Hold = a mismatch, a stale reference, or verified part-way; Not ready = nothing verified; pinned beside the state so it never scrolls away. Summary: path coverage, verified share, open mismatches by category, days left, verdict counts. Click a state for its counts, a cell for its scenarios (`/api/console/board/cell`, mismatch first, with Δ and category). Opened from the Matrix with that line, state and coverage highlighted. **Control × state grid**: GL's 23 controls × 51 states from the run store (the `/tester` grid, T11), 18 rated somewhere today; CP's waits for its catalog (TC-26). Path states come from the readiness result, so board and matrix cannot disagree. Tests E1-E18 |
 | TC-19 | **Seeded from real evidence**: CP from the chunk 1-28 work and the app's 46-state sample; GL from the QA runs. Every Passed cell traceable to its stored answers | ✅ 2026-10-07 | `scripts/tc/tc19_seed_evidence.py`, **0 calls**: every stored answer re-rated on today's engine (7 workers, ~8 min). **CP**: 2,041 rated answers (incl. ISO's STC fixtures rebuilt as `157_` sends them), every premium field compared: 1,940 of 1,941 agree; the one that differs is OI-116 (FL `chunk21_rc2_FC5`, known, a question to ISO); 100 older probes our engine now refuses by design (no Group II territory, C28-17/18) add no paths; 344 answers kept without a request and 549 refusals add none. **GL**: 956 QA-run rows (latest per config, state, date): 949 agree; **all 7 that differ are 2027-04-01 rows (3 configs, 6 states) that matched ISO on 2026-08-31 and rate about double today** (TX 7,740 vs ISO 895, same packages): a change in GL 2027-04-01 rating since then, not yet traced. GL rows now carry their ISO package, so they get real staleness (22 NY rows stale: ISO answers on `GL_NY_20260801_V02`, our corpus holds V01 only); judged on each row's own date. Records dated with the answer's date, so agreement over time is history. **Today: CP 155 of 281 Passed; GL 0 of 255** (500 of 2,065 GL paths verified, but no coverage has every path: the QA runs vary the common paths, D12 keeps all of them in scope). Every Passed cell traces to answers on disk (F9). Tests F1-F10 |
 
-**Gate RC-2:** the matrix and board render from real data in both lines; spot-checks (e.g. CP Building in OH) trace to
-stored answers; no screen spends a call.
+**Gate RC-2 (passed 2026-10-07: `tests/verify_console_rc2.py` 84 of 84, `verify_console_rc1.py` 50 of 50,
+`verify_tester.py` 81 of 81, `104_ --quick` clean, 34 scripts in 5m41s, log `results/tc/rc2_gate_104_quick.log`):** the matrix and board render from real data in both lines; spot-checks (e.g. CP Building in OH) trace to
+stored answers; no screen spends a call. (The quick tier runs no GL suites, so it says nothing about TC-19's GL
+2027-04-01 finding; the full `104_` at RC-7, or sooner if that finding is opened, does.)
 
 ---
 
