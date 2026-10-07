@@ -128,7 +128,9 @@ def step(plan_id: str, client_factory=None) -> str:
             plan["pass3"] = pass3(plan)
             runlog.add(plan=plan_id, event="pass3", detail=json.dumps(plan["pass3"]["counts"]))
         P.save(plan)
-        runlog.add(plan=plan_id, event="done", detail=json.dumps(P.summary(plan)))
+        sm = P.summary(plan)
+        runlog.add(plan=plan_id, event="done", detail=f"{sm['sent']} sent · {sm['reused']} reused · {sm['match']} match · "
+                                                      f"{sm['mismatch']} mismatch · {sm['refused']} refused · {sm['error']} error")
         # the plan's answers join the reference index (staleness, counts) without anyone running store.build by hand
         threading.Thread(target=store.build, name="tc-index", daemon=True).start()
         return "done"
