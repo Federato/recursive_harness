@@ -1436,6 +1436,11 @@ function plDimsDraw(){
     const on=d.id in PL.dims,sel=new Set(PL.dims[d.id]||[]),vals=d.values,many=vals.length>16;
     h+='<div class="pl-dim"><label><input type="checkbox" data-d="'+d.id+'"'+(on?' checked':'')+(vals.length<2?' disabled':'')+'> '+esc(d.label)+' <span class="mx-msg">'+vals.length+' value'+(vals.length===1?'':'s')+(d.coverage?' · '+esc(d.coverage):'')+'</span></label>';
     if(on&&d.perState)h+='<div class="mx-msg" style="margin-left:22px">Each state uses its own edge values (its territories are its own).</div>';
+    else if(on&&d.suggested){   // GL class codes: the chosen mix (with ISO's descriptions), then any other code by number
+      const shown=d.suggested.concat([...sel].filter(v=>!d.suggested.includes(v)));
+      h+='<div class="pl-chips">'+shown.map(v=>'<button class="pl-chip" data-d="'+d.id+'" data-v="'+esc(v)+'" aria-pressed="'+sel.has(v)+'" title="'+esc((d.labels||{})[v]||v)+'">'+esc((d.labels||{})[v]||v)+'</button>').join('')+'</div>'+
+        '<div class="td-tools" style="margin:4px 0 0 22px"><span class="mx-msg">A mix of ten: manufacturing, apartments, lessor’s risk, retail, construction. Add another of the '+vals.length+' codes:</span>'+
+        '<input class="pl-addcode" data-d="'+d.id+'" placeholder="class code" maxlength="5" style="width:90px"></div>';}
     else if(on)h+='<div class="pl-chips">'+(many?vals.filter(v=>sel.has(v)||d.edges.includes(v)).concat(vals.filter(v=>!sel.has(v)&&!d.edges.includes(v)).slice(0,12)):vals).map(v=>'<button class="pl-chip" data-d="'+d.id+'" data-v="'+esc(v)+'" aria-pressed="'+sel.has(v)+'">'+esc(v)+'</button>').join('')+
       (many?'<span class="mx-msg"> +'+(vals.length-12)+' more in ISO’s domain</span>':'')+'</div>';
     h+='</div>';});
@@ -1494,7 +1499,10 @@ document.getElementById('s-plan').addEventListener('click',ev=>{
     PL.dims[d]=PL.cat.find(x=>x.id===d).values.filter(x=>cur.has(x));v.setAttribute('aria-pressed',cur.has(val));plPreview();}
 });
 document.getElementById('pl-dims').addEventListener('change',ev=>{const c=ev.target.closest('input[data-d]');if(!c)return;const d=PL.cat.find(x=>x.id===c.dataset.d);
-  if(c.checked)PL.dims[d.id]=d.edges.slice();else delete PL.dims[d.id];plDimsDraw();plPreview();});
+  if(c.checked)PL.dims[d.id]=(d.suggested&&d.suggested.length?d.suggested:d.edges).slice();else delete PL.dims[d.id];plDimsDraw();plPreview();});
+document.getElementById('pl-dims').addEventListener('keydown',ev=>{const t=ev.target.closest('.pl-addcode');if(!t||ev.key!=='Enter')return;
+  const d=PL.cat.find(x=>x.id===t.dataset.d),v=t.value.trim();if(!d.values.includes(v)){t.value='';t.placeholder='not legal here';return;}
+  PL.dims[d.id]=[...new Set((PL.dims[d.id]||[]).concat(v))];plDimsDraw();plPreview();});
 ['pl-reduced','pl-edges','pl-allow'].forEach(i=>document.getElementById(i).addEventListener('change',plPreview));
 let plStarted=false;
 function plRoute(){const p=(location.hash||'').slice(1).split('?');if(p[0]!=='plan')return;const q=new URLSearchParams(p[1]||'');

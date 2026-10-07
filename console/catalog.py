@@ -121,6 +121,13 @@ def edges(values) -> tuple:
     return tuple(dict.fromkeys([vs[0], vs[-1]])) if vs else ()
 
 
+#: GL class codes a plan starts from (the user's choice, 2026-10-07): a mix of ten across manufacturing, apartments,
+#: lessor's risk, retail and construction, each legal in all 51 GL jurisdictions and rating in each state checked.
+GL_CLASS_MIX = (("56911", "Manufacturing"), ("53733", "Manufacturing"), ("60010", "Apartments"),
+                ("60011", "Apartments"), ("61212", "Lessor's risk"), ("61217", "Lessor's risk"), ("18501", "Retail"),
+                ("11127", "Retail"), ("91340", "Construction"), ("98482", "Construction"))
+
+
 def dimensions(line: str, state: str, config: dict | None = None, asof: str | None = None) -> list:
     """Every dimension of the line in one state, with its legal values (given the answers in `config`) and edges."""
     config = config or {}
@@ -134,9 +141,20 @@ def dimensions(line: str, state: str, config: dict | None = None, asof: str | No
                 vals = tuple(str(v) for v in c.options(d, config))
             except Exception:                                 # noqa: BLE001 -- a control this state cannot offer
                 vals = ()
-            out.append({"id": cid, "label": c.label, "group": c.group, "kind": c.kind, "values": list(vals),
-                        "edges": list(edges(vals)), "keyedBy": list(c.keyed_by) + (["premium_basis"] if cid == "class_code" else []),
-                        "exercises": c.exercises})
+            dim = {"id": cid, "label": c.label, "group": c.group, "kind": c.kind, "values": list(vals),
+                   "edges": list(edges(vals)), "keyedBy": list(c.keyed_by) + (["premium_basis"] if cid == "class_code" else []),
+                   "exercises": c.exercises}
+            if cid == "class_code":
+                mix = [code for code, _ in GL_CLASS_MIX if code in set(vals)]
+                labels = {}
+                for code, grp in GL_CLASS_MIX:
+                    if code in mix:
+                        try:
+                            labels[code] = f"{code} {d.description(code)} ({grp})"
+                        except Exception:                     # noqa: BLE001 -- no declared description here
+                            labels[code] = f"{code} ({grp})"
+                dim.update(suggested=mix, labels=labels)
+            out.append(dim)
         return out
     out = []
     for d in CP_DIMS:
