@@ -145,8 +145,16 @@ def gl_task(t: dict) -> dict:
         return {**out, "walked": [], "error": f"{type(exc).__name__}: {str(exc)[:160]}"}
     if not r.complete:
         return {**out, "walked": [], "error": f"engine stopped: {str(r.stopped)[:160]}", "iso": t["iso"]}
-    return {**out, "walked": sorted(signature.gl_signature(r)), "ours": str(r.premium), "iso": t["iso"],
-            "ours_then": t["ours_then"], "run_status": t["status"]}
+    rec = {**out, "walked": sorted(signature.gl_signature(r)), "ours": str(r.premium), "iso": t["iso"],
+           "ours_then": t["ours_then"], "run_status": t["status"]}
+    # The run kept ISO's premium, not the request it sent; the request is rebuilt here with today's `variants`. When
+    # today's rebuild rates differently from what the run recorded for us, the request (or our engine) has moved and
+    # ISO's old answer cannot vouch for this one: keep it as engine-only evidence, saying why. (Found in RC-3: the
+    # 2027-04-01 runs predate OI-97's stopgap, which now adds ProdsCompldOpsExclusion to the rebuilt request.)
+    if t.get("ours_then") is not None and _dec(t["ours_then"]) != r.premium:
+        rec.update(iso=None, not_comparable=f"rebuilt request rates {r.premium}, the run recorded {t['ours_then']} "
+                                            f"for ISO's {t['iso']}: the request has changed since (OI-97's stopgap?)")
+    return rec
 
 
 def gl_tasks(limit: int | None) -> tuple[list, dict]:
@@ -184,6 +192,49 @@ def gl_tasks(limit: int | None) -> tuple[list, dict]:
     return (tasks[:limit] if limit else tasks), skipped
 
 
+# ---- GL full answers (every call the ledger saved, D21) ----------------------------------------------------------
+
+def gl_answer_task(t: dict) -> dict:
+    from console import signature
+    from gl_engine.rating import Kernel
+    if "kernel" not in _W:
+        _W["kernel"] = {}
+    k = _W["kernel"].setdefault("strict-erc", Kernel(mode="strict-erc"))
+    out = {"scenario": f"GL-{t['state']}-{t['hash'][:10]}", "line": "GL", "state": t["state"], "hash": t["hash"],
+           "at": t["at"], "source": t["source"]}
+    req = json.loads(Path(t["request"]).read_text(encoding="utf-8"))
+    resp = json.loads(Path(t["response"]).read_text(encoding="utf-8"))
+    iso = ((resp.get("Body") or {}).get("GeneralLiability") or [{}])[0].get("Premium")
+    try:
+        r = k.rate(req)
+    except Exception as exc:                                  # noqa: BLE001
+        return {**out, "walked": [], "error": f"{type(exc).__name__}: {str(exc)[:160]}", "iso": iso}
+    if not r.complete:
+        return {**out, "walked": [], "error": f"engine stopped: {str(r.stopped)[:160]}", "iso": iso}
+    return {**out, "walked": sorted(signature.gl_signature(r)), "ours": str(r.premium), "iso": str(iso)}
+
+
+def gl_answer_tasks(limit: int | None) -> tuple[list, dict]:
+    from console import store
+    tasks, skipped = [], {"refused": 0, "no_files": 0}
+    for e in store.load()["references"]:
+        if e["line"] != "GL":
+            continue
+        if e["outcome"] != "rated":
+            skipped["refused"] += 1
+            continue
+        req = next((f for f in e["files"] if f.endswith("_request.json")), None)
+        resp = [f for f in e["files"] if f.endswith("_response.json")]
+        if not (req and resp):
+            skipped["no_files"] += 1
+            continue
+        tasks.append({"hash": e["hash"], "state": e["state"], "at": e.get("stored_at") or "",
+                      "request": str(ROOT / req), "response": str(ROOT / resp[-1]),
+                      "source": ", ".join(Path(f).name for f in resp)})
+    tasks.sort(key=lambda t: t["at"])
+    return (tasks[:limit] if limit else tasks), skipped
+
+
 # ---- run ------------------------------------------------------------------------------------------------------------
 
 def run(fn, tasks, workers, label):
@@ -204,17 +255,23 @@ def main() -> int:
     ap.add_argument("--limit", type=int, help="first N per line (a trial run)")
     ap.add_argument("--dry-run", action="store_true", help="re-rate and report; write no evidence")
     ap.add_argument("--line", choices=("CP", "GL"), help="one line only")
+    ap.add_argument("--only", choices=("gl-answers",), help="just GL's full stored answers (added in RC-3)")
     a = ap.parse_args()
     from console import evidence, ledger
 
     calls_before = ledger.used()["total"]
     recs, report = [], {"at": time.strftime("%Y-%m-%dT%H:%M:%S")}
-    if a.line in (None, "GL"):
+    if a.only == "gl-answers":
+        tasks, skipped = gl_answer_tasks(a.limit)
+        print(f"GL full answers: {len(tasks)} to re-rate; skipped {skipped}")
+        recs += run(gl_answer_task, tasks, a.workers, "GL answers")
+        report["GL"] = {"tasks": len(tasks), "skipped": skipped, "only": "gl-answers"}
+    if a.only is None and a.line in (None, "GL"):
         tasks, skipped = gl_tasks(a.limit)
         print(f"GL: {len(tasks)} compared rows to re-rate (latest per config, state and date); skipped {skipped}")
         recs += run(gl_task, tasks, a.workers, "GL")
         report["GL"] = {"tasks": len(tasks), "skipped": skipped}
-    if a.line in (None, "CP"):
+    if a.only is None and a.line in (None, "CP"):
         tasks, skipped = cp_tasks(a.limit)
         print(f"CP: {len(tasks)} stored answers to re-rate; skipped {skipped}")
         recs += run(cp_task, tasks, a.workers, "CP")
@@ -225,10 +282,11 @@ def main() -> int:
         if not rs:
             continue
         rated = [r for r in rs if "error" not in r]
-        agree = [r for r in rated if _dec(r.get("ours")) == _dec(r.get("iso"))]
+        agree = [r for r in rated if r.get("iso") is not None and _dec(r.get("ours")) == _dec(r.get("iso"))]
         report[line].update({
             "records": len(rs), "rated": len(rated), "agree": len(agree),
-            "differ": len(rated) - len(agree), "engine_refused": len(rs) - len(rated),
+            "differ": sum(1 for r in rated if r.get("iso") is not None) - len(agree),
+            "not_comparable": sum(1 for r in rs if r.get("not_comparable")), "engine_refused": len(rs) - len(rated),
             "walked_nothing": sum(1 for r in rated if not r["walked"]),
             "inert": sum(1 for r in rs if r.get("inert")),
             "states": len({r["state"] for r in rs}),
@@ -244,11 +302,13 @@ def main() -> int:
             evidence.add(scenario=r["scenario"], line=r["line"], state=r["state"], walked=r["walked"],
                          ours=r.get("ours") if "error" not in r else None, iso=r.get("iso"),
                          request_hash=r.get("hash", ""), inert=r.get("inert", False), source=r["source"], at=r["at"],
-                         seed="TC-19", **{k: r[k] for k in ("field", "error", "differ", "fields", "ours_then", "run_status")
+                         seed="TC-19", **{k: r[k] for k in ("field", "error", "differ", "fields", "ours_then", "run_status",
+                                                             "not_comparable")
                                          if k in r})
         REPORT.parent.mkdir(parents=True, exist_ok=True)
-        REPORT.write_text(json.dumps(report, indent=1), encoding="utf-8")
-        print(f"wrote {len(recs)} records to {evidence.STORE.relative_to(ROOT)}; report {REPORT.relative_to(ROOT)}")
+        rep_file = REPORT.with_name("tc19_seed_report_gl_answers.json") if a.only else REPORT
+        rep_file.write_text(json.dumps(report, indent=1), encoding="utf-8")
+        print(f"wrote {len(recs)} records to {evidence.STORE.relative_to(ROOT)}; report {rep_file.relative_to(ROOT)}")
     return 0 if report["calls_spent"] == 0 else 1
 
 

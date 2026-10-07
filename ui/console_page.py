@@ -79,6 +79,89 @@ STATE_NAMES = {
 }
 
 
+def classify(body: dict) -> tuple[int, dict]:
+    """TC-22: classify a scenario's difference with ISO (TC-11's taxonomy), with a note. The premiums the tolerance is
+    judged on are the scenario's evidence (what the matrix rolls up), else the diff's totals. Append-only: the latest
+    classification wins and the matrix and board follow on their next read."""
+    from console import evidence, mismatch
+    sid, cat = str(body.get("scenario") or "").strip(), str(body.get("category") or "").strip()
+    if not sid or cat not in mismatch.BY_KEY:
+        return 400, {"error": f"need a scenario and one of {sorted(mismatch.BY_KEY)}"}
+    ev = next((r for r in evidence.records() if r["scenario"] == sid), None)
+    ours, iso = (ev or {}).get("ours"), (ev or {}).get("iso")
+    if ours is None or iso is None:
+        ours, iso = body.get("ours"), body.get("iso")
+    rec = mismatch.classify(sid, cat, note=str(body.get("note") or ""), by=str(body.get("by") or ""), ours=ours, iso=iso)
+    within = None
+    if ours is not None and iso is not None:
+        from decimal import Decimal
+        within = mismatch.within(cat, Decimal(str(ours)), Decimal(str(iso)))
+    return 200, {**rec, "withinTolerance": within, "inEvidence": ev is not None}
+
+
+def workbench(method: str, op: str, query: dict, b: dict):
+    """TC-23's routes. Every one is free except `send`, which spends one call through the ledger (or reuses)."""
+    from console import workbench as WB
+    line = "CP" if (b.get("line") or query.get("lob") or "").upper() == "CP" else "GL"
+    state = (b.get("state") or query.get("state") or "").upper()
+    js = lambda code, o: (code, json.dumps(o), "json")    # noqa: E731
+    try:
+        if op == "spec":
+            if line == "GL":
+                import variants as V
+                spec = variables.specs()
+                return js(200, {"line": "GL", "states": sorted(V.Declared.jurisdictions()), "modes": WB.modes(),
+                                "roundings": list(WB.ROUNDINGS),
+                                "controls": [{k: c.get(k) for k in ("id", "label", "group", "kind", "note")}
+                                             for c in spec["controls"]]})
+            import property_rating as pr
+            return js(200, {"line": "CP", "states": pr.states(), "modes": [], "roundings": []})
+        if op == "options" and method == "POST":
+            return js(200, variables.for_juris(state, b.get("config") or {}))
+        if op == "request":
+            if b.get("hash") or query.get("hash"):
+                e = next(x for x in store_refs() if x["hash"] == (b.get("hash") or query.get("hash")))
+                req = next(f for f in e["files"] if f.endswith("_request.json"))
+                from console.store import ROOT as R
+                return js(200, json.loads((R / req).read_text(encoding="utf-8")))
+            return js(200, WB.build(line, state))
+        if op == "rate" and method == "POST":
+            p = WB.build(line, state, b.get("config"), b.get("request"))
+            return js(200, {**WB.rate(line, p, b.get("mode") or "strict-erc", b.get("rounding") or "ROUND_HALF_UP"),
+                            "request": p})
+        if op == "send" and method == "POST":
+            p = WB.build(line, state, b.get("config"), b.get("request"))
+            return js(200, WB.send(line, p, reuse=b.get("reuse", True) is not False, override=b.get("override") or None))
+        if op == "where" and method == "POST":
+            import variants as V
+            cfg = V.clean(b.get("config") or {})
+            return js(200, {**variables.legality(cfg), "describes": V.describe(cfg)})
+        if op == "every" and method == "POST":
+            import variants as V
+            cfg = V.clean(b.get("config") or {})
+            leg = variables.legality(cfg)
+            sts = leg.get("applicable") or []
+            out = WB.every_state(cfg, sts, b.get("mode") or "strict-erc", b.get("rounding") or "ROUND_HALF_UP")
+            return js(200, {**out, "notApplicable": leg.get("not_applicable", {}), "describes": V.describe(cfg)})
+        if op == "curve":
+            import runstore
+            cid = query.get("control", "")
+            return js(200, {"control": cid, "series": runstore.response_curve(cid)})
+    except Exception as exc:                                  # noqa: BLE001 -- shown on the page, never a crash
+        return js(400, {"error": f"{type(exc).__name__}: {exc}"[:400]})
+    return js(404, {"error": f"no workbench route {op!r}"})
+
+
+def store_refs() -> list:
+    from console import store
+    return store.load()["references"]
+
+
+def categories() -> list:
+    from console import mismatch
+    return [{"key": c.key, "label": c.label, "meaning": c.meaning} for c in mismatch.CATEGORIES]
+
+
 def _line(query: dict) -> str:
     return "CP" if (query.get("lob") or "").upper() == "CP" else "GL"
 
@@ -117,6 +200,34 @@ def dispatch(method: str, path: str, query: dict, body):
     if method == "POST" and path == "/api/console/signoff":
         code, out = sign_off(body or {})
         return code, json.dumps(out), "json"
+    if path.startswith("/api/console/workbench/"):
+        return workbench(method, path.rsplit("/", 1)[-1], query, body or {})
+    if method == "POST" and path == "/api/console/promote":
+        from console import library
+        b = body or {}
+        try:
+            e = library.promote(scenario=str(b.get("scenario") or ""), line=str(b.get("line") or ""),
+                                state=str(b.get("state") or ""), origin=str(b.get("origin") or ""),
+                                request_hash=str(b.get("hash") or ""), request=b.get("request"), ours=b.get("ours"),
+                                by=str(b.get("by") or ""), note=str(b.get("note") or ""))
+        except ValueError as exc:
+            return 400, json.dumps({"error": str(exc)}), "json"
+        return 200, json.dumps(e), "json"
+    if method == "POST" and path == "/api/console/classify":
+        code, out = classify(body or {})
+        return code, json.dumps(out), "json"
+    if method == "GET" and path == "/api/console/trace/scenarios":
+        from console import tracediff
+        sc = tracediff.scenarios(query.get("lob") or None, (query.get("state") or "").upper() or None)
+        if query.get("differ") == "1":
+            sc = [s for s in sc if s["agree"] is False]
+        return 200, json.dumps({"scenarios": sc[:600], "total": len(sc)}), "json"
+    if method == "GET" and path == "/api/console/trace":
+        from console import tracediff
+        try:
+            return 200, json.dumps(tracediff.diff(query.get("scenario", ""))), "json"
+        except KeyError as exc:
+            return 404, json.dumps({"error": str(exc)}), "json"
     if method != "GET":
         return None
     if path == "/console":
@@ -149,8 +260,8 @@ def page() -> str:
                          f'(docs/TC-PLAN.md).<span class="filter"></span></div></section>')
         for i, (k, label, task) in enumerate(SCREENS, 1))
     return (PAGE.replace("{{TABS}}", tabs).replace("{{SCREENS}}", screens)
-            .replace("/*{{CSS}}*/", MATRIX_CSS + BOARD_CSS).replace("/*{{JS}}*/", MATRIX_JS + BOARD_JS)
-            .replace("{{BOOT}}", json.dumps({"cap": cap(), "legend": legend(), "names": STATE_NAMES})))
+            .replace("/*{{CSS}}*/", MATRIX_CSS + BOARD_CSS + TRACE_CSS + WB_CSS).replace("/*{{JS}}*/", MATRIX_JS + BOARD_JS + TRACE_JS + WB_JS)
+            .replace("{{BOOT}}", json.dumps({"cap": cap(), "legend": legend(), "names": STATE_NAMES, "categories": categories()})))
 
 
 # ---- TC-16: the Readiness Matrix -------------------------------------------------------------------------------------
@@ -660,10 +771,10 @@ function bdCellDraw(c){
   if(!c.applies)h+='<div class="mx-msg">Not filed in '+esc(c.state)+': '+esc(c.why||'the state files no such path')+' (D5).</div>';
   else if(!c.scenarios.length)h+='<div class="mx-msg">No scenario has walked this path in '+esc(c.state)+' yet.</div>';
   else h+='<div class="cap2">Scenarios · '+c.scenarios.length+'</div><table class="bd-tbl"><tr><td><b>Scenario</b></td><td class="st"><b>State</b></td><td><b>Ours / ISO</b></td></tr>'+
-    c.scenarios.map(x=>'<tr><td>'+esc(x.scenario)+'<div class="mx-msg">'+esc((x.source||'')+(x.at?' · '+x.at.slice(0,10):''))+'</div></td>'+
+    c.scenarios.map(x=>'<tr><td>'+((x.source||'').startsWith('run ')?esc(x.scenario):'<a href="#trace?lob='+c.line+'&scenario='+encodeURIComponent(x.scenario)+'">'+esc(x.scenario)+'</a>')+'<div class="mx-msg">'+esc((x.source||'')+(x.at?' · '+x.at.slice(0,10):''))+'</div></td>'+
       '<td class="st">'+(x.status==='inert'?'<span class="mx-msg">inert</span>':'<span class="chip '+x.status+'">'+esc(LG[x.status].glyph)+'</span>')+'</td>'+
       '<td>'+esc(x.ours==null?'—':x.ours)+' / '+esc(x.iso==null?'—':x.iso)+(x.delta&&+x.delta!==0?'<div class="mx-msg">Δ '+esc((+x.delta>0?'+':'')+x.delta)+(x.category?' · '+esc(x.category.replace(/_/g,' ')):' · unclassified')+'</div>':'')+'</td></tr>').join('')+'</table>'+
-    '<div class="mx-msg">Trace Diff (TC-21) will open a scenario step by step.</div>';
+    '<div class="mx-msg">A linked scenario opens in Trace Diff, step by step. QA-run rows (source "run …") hold ISO’s premium only, no answer to diff.</div>';
   document.getElementById('bd-side').innerHTML=h;
   document.getElementById('bd-back').onclick=ev=>{ev.preventDefault();BD.sel=null;BD.state=c.state;bdDraw();};
 }
@@ -697,4 +808,314 @@ document.getElementById('bd-grid').addEventListener('click',ev=>{
 addEventListener('hashchange',bdRoute);
 if((location.hash||'').startsWith('#board'))bdRoute();
 setInterval(()=>{if(!document.getElementById('s-board').hidden&&BD.data)bdLoad().catch(()=>{});},60000);
+"""
+
+
+# ---- TC-21 / TC-22: Trace Diff and classification -------------------------------------------------------------------
+# One stored scenario, ours vs ISO row by row on today's engine (`console.tracediff`). Matching records collapsed; the
+# first divergent step marked, later differences tagged "flows from"; each row's rule file and package; seen before
+# (D16) with its classification; a copy-brief button (D16); classify with a note (TC-22). Rating a stored request
+# spends nothing.
+
+TRACE_HTML = """<section class="screen" id="s-trace" hidden><div class="mx-wrap"><div class="mx-main">
+  <div class="mx-head"><div><div class="eyebrow">Seeing why · ours vs ISO, step by step</div><h1>Trace Diff</h1></div>
+    <p>A stored ISO answer re-rated on today's engine and lined up field by field. The first divergent step is the
+    earliest number we computed that ISO disagrees with; what follows from it is tagged. Re-rating spends no call.</p></div>
+  <div class="td-pick"><div class="bd-lines" id="td-lines" role="group" aria-label="Line"><button data-l="CP">Commercial Property</button><button data-l="GL">General Liability</button></div>
+    <input id="td-state" placeholder="State" maxlength="2" aria-label="State filter">
+    <label class="td-chk"><input type="checkbox" id="td-differ"> differing only</label>
+    <select id="td-sel" aria-label="Scenario"></select><span class="mx-msg" id="td-count"></span></div>
+  <div id="td-body"><div class="mx-empty" style="height:120px">Pick a scenario, or open one from a Coverage Board cell.</div></div>
+</div><aside class="mx-side" id="td-side" aria-live="polite"></aside></div></section>"""
+
+BUILT["trace"] = TRACE_HTML
+
+TRACE_CSS = """
+.td-pick{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.td-pick .bd-lines{margin-left:0}
+.td-pick input#td-state{width:64px;font:inherit;padding:6px 8px;border:1px solid var(--color-divider);border-radius:4px;background:#fff;text-transform:uppercase}
+.td-pick select{font:inherit;padding:6px 8px;border:1px solid var(--color-divider);border-radius:4px;background:#fff;max-width:420px}
+.td-chk{font-size:12.5px;display:flex;gap:5px;align-items:center}
+.td-head{display:flex;gap:18px;align-items:baseline;flex-wrap:wrap}
+.td-head h2{margin:0;font:600 22px var(--font-heading)}
+.td-root{border:1.5px solid var(--ox);background:var(--ox-tint);border-radius:4px;padding:10px 12px;margin:6px 0}
+.td-root.ok{border-color:var(--color-accent-700);background:var(--color-accent-100)}
+.td-root b{font:600 15px var(--font-heading)}
+.td-root code,.td-row code{font-size:11px;word-break:break-all}
+.td-tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.td-recs{display:flex;flex-direction:column;gap:4px}
+.td-rec{border:1px solid var(--color-divider);border-radius:4px;background:var(--color-bg)}
+.td-rec>button{width:100%;display:flex;gap:10px;align-items:center;padding:6px 10px;border:0;background:transparent;cursor:pointer;font:inherit;
+  text-align:left;color:var(--color-text)}
+.td-rec>button span:first-child{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px}
+.td-rec.bad{border-color:var(--ox)}
+.td-rows{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}
+.td-rows td:nth-child(1){width:38%}.td-rows td:nth-child(2),.td-rows td:nth-child(3){width:20%}
+.td-rows td{overflow-wrap:anywhere}
+#td-body{min-width:0;overflow-x:hidden}
+.td-rows td{padding:4px 8px;border-top:1px solid var(--color-divider);vertical-align:top}
+.td-rows td.v{text-align:right;font-variant-numeric:tabular-nums}
+.td-rows tr.first td{background:var(--ox-tint)}
+.td-rows tr.flows td{background:color-mix(in srgb,var(--ox-tint) 50%,transparent)}
+.td-tag{font-size:10.5px;padding:1px 6px;border-radius:3px;border:1px solid var(--color-neutral-400);white-space:nowrap}
+.td-tag.first{border-color:var(--ox);color:var(--ox-deep);font-weight:600}
+.td-tag.flows{color:var(--ox-deep)}
+.td-src{font-size:10.5px;color:var(--color-neutral-700)}
+.td-cls select,.td-cls input,.td-cls textarea{font:inherit;padding:6px 8px;border:1px solid var(--color-divider);border-radius:4px;background:#fff;width:100%}
+.td-cls textarea{min-height:60px;resize:vertical}
+"""
+
+TRACE_JS = r"""
+const TD={line:'CP',list:[],cur:null,open:{},all:false};
+function tdList(){
+  const st=document.getElementById('td-state').value.trim().toUpperCase(),dif=document.getElementById('td-differ').checked;
+  document.querySelectorAll('#td-lines button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.l===TD.line));
+  return fetch('/api/console/trace/scenarios?lob='+TD.line+(st?'&state='+st:'')+(dif?'&differ=1':'')).then(r=>r.json()).then(j=>{
+    TD.list=j.scenarios;const sel=document.getElementById('td-sel');
+    sel.innerHTML='<option value="">— '+j.total+' stored answer'+(j.total===1?'':'s')+' —</option>'+j.scenarios.map(s=>'<option value="'+esc(s.scenario)+'"'+(TD.cur&&TD.cur.scenario===s.scenario?' selected':'')+'>'+
+      esc((s.agree===false?'× ':s.agree?'✓ ':'· ')+s.scenario+' · '+s.date+' · '+s.source)+'</option>').join('');
+    document.getElementById('td-count').textContent=j.total>j.scenarios.length?'first '+j.scenarios.length+' shown':'';});
+}
+function tdOpen(id){
+  if(!id)return;document.getElementById('td-body').innerHTML='<div class="mx-msg">Re-rating on today’s engine and lining up the fields…</div>';
+  return fetch('/api/console/trace?scenario='+encodeURIComponent(id)).then(r=>r.json()).then(d=>{if(d.error){document.getElementById('td-body').innerHTML='<div class="mx-empty" style="height:80px">'+esc(d.error)+'</div>';return;}
+    TD.cur=d;TD.open={};TD.all=false;const sel=document.getElementById('td-sel');
+    if(d.line!==TD.line){TD.line=d.line;tdList();}else if([...sel.options].some(o=>o.value===d.scenario))sel.value=d.scenario;tdDraw();});
+}
+function tdVal(v){return v===null||v===undefined?'<span class="mx-msg">absent</span>':esc(String(v));}
+function tdDraw(){
+  const d=TD.cur,b=document.getElementById('td-body');
+  const head='<div class="td-head"><h2>'+esc(d.scenario)+'</h2><span>'+esc(d.line+' · '+(BOOT.names[d.state]||d.state)+' · effective '+d.date)+'</span></div>';
+  if(d.isoRefused){
+    let h=head+'<div class="td-root"><b>ISO refused this request</b><div class="mx-msg">'+esc(d.isoRefused)+'</div></div>';
+    if(d.bothRefuse)h+='<div class="td-root ok"><b>Ours refuses too'+(d.sameTable?', at the same table':', for a different reason')+'.</b><div class="mx-msg">'+esc(d.refused)+'</div></div>';
+    else{h+='<div class="mx-stats" style="grid-template-columns:repeat(2,minmax(0,1fr))"><div><span>Ours</span><b>'+tdVal(d.oursTotal)+'</b><small>we rate it</small></div><div><span>ISO</span><b>refused</b></div></div>';
+      d.roots.forEach(r=>h+='<div class="td-root"><b>'+(r.role==='first'?'First divergent step':'Separate divergence')+'</b> · ours read <code>'+esc(r.field)+'</code> = '+esc(String(r.ours))+
+        '<div class="td-src">from '+esc(r.package||'?')+' · keys '+esc(r.tables[0])+(r.downstream?' · read '+r.downstream+' more time'+(r.downstream===1?'':'s')+' at other keys':'')+' · ISO found no rows in this table and refused</div></div>');
+      if(!d.roots.length)h+='<div class="td-root"><b>Ours rates where ISO refused</b>, and no table ISO names was read by us: compare the messages.</div>';}
+    h+='<div class="td-tools"><button class="btn" id="td-brief">Copy brief</button><span class="mx-msg" id="td-copied"></span></div>';
+    b.innerHTML=h;
+    document.getElementById('td-brief').onclick=()=>{const m=document.getElementById('td-copied');(navigator.clipboard?navigator.clipboard.writeText(d.brief):Promise.reject()).then(()=>m.textContent='Copied.').catch(()=>{m.textContent='Select and copy:';const t=document.createElement('textarea');t.value=d.brief;t.style.width='100%';t.rows=8;m.after(t);t.select();});};
+    tdSide();return;}
+  if(d.refused){b.innerHTML=head+'<div class="td-root"><b>Our engine refuses this request</b><div>'+esc(d.refused)+'</div><div class="mx-msg">ISO rated it; a refusal where ISO rates is D15’s "our refusal vs ISO’s narrowing" when it is not by decision.</div></div>';tdSide();return;}
+  const c=d.counts;
+  let h='<div class="td-head"><h2>'+esc(d.scenario)+'</h2><span>'+esc(d.line+' · '+(BOOT.names[d.state]||d.state)+' · effective '+d.date)+'</span><span class="mx-msg">ISO package '+esc(d.isoPackage||'?')+(d.freshness==='stale'?' · <b>stale</b>: '+esc(d.staleReason):'')+'</span></div>';
+  h+='<div class="mx-stats" style="grid-template-columns:repeat(5,minmax(0,1fr))"><div><span>Ours</span><b>'+tdVal(d.oursTotal)+'</b></div><div><span>ISO</span><b>'+tdVal(d.isoTotal)+'</b></div>'+
+    '<div><span>Fields agree</span><b>'+c.agree+'</b><small>of '+c.compared+' compared</small></div><div><span>Steps differ</span><b>'+c.steps+'</b><small>'+c.roots+' divergence'+(c.roots===1?'':'s')+'</small></div>'+
+    '<div><span>Other</span><b>'+c.other+'</b><small>codes, dates, text · '+c.isoOnly+' ISO-only</small></div></div>';
+  if(!d.roots.length)h+='<div class="td-root ok"><b>No divergent step.</b> Every number we computed that ISO publishes agrees'+(c.other?'; '+c.other+' codes / dates / text differ (below).':'.')+'</div>';
+  d.roots.forEach(r=>h+='<div class="td-root"><b>'+(r.role==='first'?'First divergent step':'Separate divergence')+'</b> · <code>'+esc(r.path)+'</code><div>Ours '+tdVal(r.ours)+' · ISO '+tdVal(r.iso)+
+    (r.downstream?' · '+r.downstream+' later difference'+(r.downstream===1?'':'s')+' flow from it':'')+'</div><div class="td-src">Written by '+esc(r.rule_file||'?')+' · '+esc(r.package||'?')+(r.tables.length?' · tables read: '+esc(r.tables.join(', ')):'')+'</div></div>');
+  h+='<div class="td-tools"><button class="btn" id="td-all">'+(TD.all?'Collapse matching records':'Expand all records')+'</button><button class="btn" id="td-brief">Copy brief</button><span class="mx-msg" id="td-copied"></span></div>';
+  const byRec={};d.rows.forEach(r=>(byRec[r.record]=byRec[r.record]||[]).push(r));
+  const isOpen=R=>TD.all||(TD.open[R.record]!==undefined?TD.open[R.record]:!R.collapsed);
+  h+='<div class="td-recs">'+d.records.map(R=>{const open=isOpen(R);
+    let s='<div class="td-rec'+(R.differ?' bad':'')+'"><button data-rec="'+esc(R.record)+'"><span title="'+esc(R.record)+'">'+(open?'▾ ':'▸ ')+esc(R.record)+'</span><span class="mx-msg">'+
+      (R.differ?R.differ+' differ · ':'')+R.compared+' compared'+(R.isoOnly?' · '+R.isoOnly+' ISO-only':'')+'</span></button>';
+    if(open)s+='<table class="td-rows">'+byRec[R.record].map(r=>{const st=r.match===true?'verified':r.match===false?'mismatch':'untested';
+      return '<tr class="'+(r.role||'')+'"><td>'+esc(r.field)+(r.rule_file?'<div class="td-src">'+esc(r.rule_file)+'</div>':'')+'</td><td class="v">'+tdVal(r.ours)+'</td><td class="v">'+tdVal(r.iso)+'</td>'+
+        '<td><span class="chip '+st+'" style="width:18px;height:15px;font-size:9.5px">'+(r.match===true?'✓':r.match===false?'×':'·')+'</span> '+
+        (r.role==='first'?'<span class="td-tag first">first divergence</span>':r.role==='divergence'?'<span class="td-tag first">divergence</span>':r.role==='flows'?'<span class="td-tag flows">flows from '+esc(r.flowsFrom.split('/').slice(-2).join('/'))+'</span>':r.role==='other'?'<span class="td-tag">'+esc(r.kind)+'</span>':(!r.in_iso?'<span class="td-tag">ours only</span>':!r.in_ours?'<span class="td-tag">ISO only</span>':''))+'</td></tr>';}).join('')+'</table>';
+    return s+'</div>';}).join('')+'</div>';
+  b.innerHTML=h;
+  b.querySelectorAll('.td-rec>button').forEach(x=>x.onclick=()=>{const R=d.records.find(r=>r.record===x.dataset.rec);TD.open[R.record]=!isOpen(R);tdDraw();});
+  document.getElementById('td-all').onclick=()=>{TD.all=!TD.all;tdDraw();};
+  document.getElementById('td-brief').onclick=()=>{const m=document.getElementById('td-copied');
+    (navigator.clipboard?navigator.clipboard.writeText(d.brief):Promise.reject()).then(()=>m.textContent='Copied.').catch(()=>{m.textContent='Select and copy:';
+      const t=document.createElement('textarea');t.value=d.brief;t.style.width='100%';t.rows=8;m.after(t);t.select();});};
+  tdSide();
+}
+function tdSide(){
+  const d=TD.cur,s=document.getElementById('td-side');
+  let h='<div class="cap2">Classify this scenario</div>';
+  const cl=d.classification;
+  h+=cl?'<div class="mx-need"><span class="chip mismatch">×</span><div><b>'+esc(cl.category.replace(/_/g,' '))+'</b><div class="mx-msg">'+esc((cl.by||'')+' · '+(cl.at||'').slice(0,16)+(cl.note?' · '+cl.note:''))+'</div></div></div>':
+    '<div class="mx-msg">'+(d.roots.length?'Unclassified: an open mismatch until classified (TC-11).':'Nothing to classify: no divergent step.')+'</div>';
+  h+='<div class="td-cls" style="display:flex;flex-direction:column;gap:8px"><select id="td-cat"><option value="">Category…</option>'+BOOT.categories.map(c=>'<option value="'+c.key+'">'+esc(c.label)+'</option>').join('')+'</select>'+
+    '<textarea id="td-note" placeholder="Note (what you found, the open item)"></textarea><input id="td-by" placeholder="Your name"><button class="btn" id="td-save">Save classification</button><div class="mx-msg" id="td-msg"></div></div>'+
+    '<div class="mx-msg">Rounding (±$1) and interpolation (±0.5%) can clear a cell; the others never do until fixed and re-verified. The matrix and board follow on their next read.</div>';
+  if((d.seenBefore||[]).length)h+='<div class="cap2">Seen before</div><table>'+d.seenBefore.map(x=>'<tr><td>'+esc(x.scenario)+'<div class="mx-msg">'+esc(x.field)+'</div></td><td>'+(x.classification?esc(x.classification.category.replace(/_/g,' ')):'<span class="mx-msg">unclassified</span>')+'</td></tr>').join('')+'</table>';
+  h+='<div class="cap2">Files</div><div class="mx-msg">'+d.files.map(esc).join('<br>')+'</div>';
+  h+='<button class="btn" id="td-promote" style="margin-top:auto">Promote to Regression Library</button><div class="mx-msg" id="td-pmsg"></div>';
+  s.innerHTML=h;
+  document.getElementById('td-save').onclick=()=>{const cat=document.getElementById('td-cat').value,m=document.getElementById('td-msg');if(!cat){m.textContent='Pick a category.';return;}
+    fetch('/api/console/classify',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({scenario:d.scenario,category:cat,
+      note:document.getElementById('td-note').value,by:document.getElementById('td-by').value,ours:d.oursTotal,iso:d.isoTotal})}).then(r=>r.json()).then(j=>{
+      if(j.error){m.textContent=j.error;return;}d.classification=j;m.textContent='Saved.'+(j.withinTolerance===true?' Within its tolerance: it no longer blocks Passed.':j.withinTolerance===false?' Outside any tolerance: the cell stays a mismatch until fixed.':'');tdSide();});};
+  const pb=document.getElementById('td-promote');if(pb)pb.onclick=()=>tdPromote(d.scenario,d.hash,d.line,d.state,'trace');
+}
+function tdPromote(sid,hash,line,state,origin){
+  const m=document.getElementById('td-pmsg');
+  fetch('/api/console/promote',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({scenario:sid,hash:hash,line:line,state:state,origin:origin})})
+    .then(r=>r.json()).then(j=>{if(m)m.textContent=j.error?j.error:(j.already?'Already in the library.':'Promoted: the Regression Library (TC-33) re-runs it on every build.');});
+}
+function tdRoute(){const p=(location.hash||'').slice(1).split('?');if(p[0]!=='trace')return;const q=new URLSearchParams(p[1]||'');
+  if(q.get('lob'))TD.line=q.get('lob')==='GL'?'GL':'CP';
+  tdList().then(()=>{if(q.get('scenario'))tdOpen(q.get('scenario'));});}
+document.getElementById('td-lines').addEventListener('click',ev=>{const b=ev.target.closest('button');if(!b||b.dataset.l===TD.line)return;TD.line=b.dataset.l;tdList();});
+document.getElementById('td-state').addEventListener('change',tdList);
+document.getElementById('td-differ').addEventListener('change',tdList);
+document.getElementById('td-sel').addEventListener('change',ev=>tdOpen(ev.target.value));
+addEventListener('hashchange',tdRoute);
+if((location.hash||'').startsWith('#trace'))tdRoute();else tdList();
+"""
+
+
+# ---- TC-23 / TC-24: the Scenario Workbench ---------------------------------------------------------------------------
+# One scenario: GL from ISO's declared domains (the controls /tester offered), CP from the state's sample or a stored
+# request edited as itself. Rate internally (free; GL with /'s mode and rounding, D22); Send to RaaS (one call, after
+# the store is asked for an exact stored answer, and a reason when the lane is full); check where it applies and run in
+# every state (D19, free; committing it as a plan is RC-4's); response curves (D18); promote to the library (TC-24).
+
+WB_HTML = """<section class="screen" id="s-workbench" hidden><div class="mx-wrap"><div class="mx-main">
+  <div class="mx-head"><div><div class="eyebrow">One scenario · free, or one call</div><h1>Scenario Workbench</h1></div>
+    <p>Build a risk from ISO's own domains, rate it on our engine for free, and send it to ISO only when no stored answer
+    already covers it. Nothing here spends a call until you confirm one.</p>
+    <div class="bd-lines" id="wb-lines" role="group" aria-label="Line"><button data-l="GL">General Liability</button><button data-l="CP">Commercial Property</button></div></div>
+  <div class="wb-top"><label>State <select id="wb-state"></select></label>
+    <label id="wb-model">Mode <select id="wb-mode"></select></label><label id="wb-roundl">Rounding <select id="wb-round"></select></label></div>
+  <div id="wb-inputs"></div>
+  <div class="td-tools"><button class="btn" id="wb-rate">Rate internally · free</button><button class="btn" id="wb-send">Send to RaaS · 1 call…</button>
+    <button class="btn" id="wb-where">Check where it applies · free</button><button class="btn" id="wb-every">Run in every state…</button></div>
+  <div id="wb-confirm"></div>
+  <div id="wb-out"></div>
+  <div class="mx-trend"><div class="mx-trend-hd"><span>Response curve · premium by value, from the runs that varied one control</span>
+    <span class="mx-key"><span><i style="background:#9a6214"></i>ours</span><span><b class="bd-dot r" style="background:#2f72a8;border-color:#2f72a8"></b>ISO</span></span></div>
+    <div class="td-tools"><select id="wb-curve"></select><span class="mx-msg" id="wb-curvemsg"></span></div><div id="wb-chart" style="position:relative;height:180px"></div></div>
+</div><aside class="mx-side" id="wb-side" aria-live="polite"><div class="mx-msg">Rate a scenario to see what it walked, and whether ISO already answered it.</div></aside></div></section>"""
+
+BUILT["workbench"] = WB_HTML
+
+WB_CSS = """
+.wb-top{display:flex;gap:16px;flex-wrap:wrap;align-items:center;font-size:12.5px}
+.wb-top select,.wb-in select,.wb-in input,#wb-req,.wb-conf input{font:inherit;padding:5px 7px;border:1px solid var(--color-divider);border-radius:4px;background:#fff;max-width:100%}
+.wb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px 14px}
+.wb-in{display:flex;flex-direction:column;gap:3px;font-size:12px}
+.wb-in select,.wb-in input{width:100%}
+.wb-grp{grid-column:1/-1;font:600 14px var(--font-heading);border-bottom:1px solid var(--color-divider);margin-top:6px}
+#wb-req{width:100%;min-height:220px;font-family:ui-monospace,Menlo,monospace;font-size:11.5px}
+.wb-conf{border:1.5px solid var(--color-accent);background:var(--color-accent-100);border-radius:4px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.wb-conf.full{border-color:var(--ox);background:var(--ox-tint)}
+.wb-res{border:1px solid var(--color-divider);border-radius:4px;padding:12px;background:var(--color-bg)}
+.wb-res b.big{font:400 30px var(--font-heading)}
+.wb-tbl{width:100%;border-collapse:collapse;font-size:12px}
+.wb-tbl td{padding:3px 6px;border-top:1px solid var(--color-divider)}
+.wb-tbl td.v{text-align:right;font-variant-numeric:tabular-nums}
+"""
+
+WB_JS = r"""
+const WB={line:'GL',spec:{},opts:null,config:{},last:null};
+function wbJSON(url,body){return fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json());}
+function wbLoad(){
+  document.querySelectorAll('#wb-lines button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.l===WB.line));
+  const go=s=>{WB.spec[WB.line]=s;const sel=document.getElementById('wb-state'),cur=sel.value;
+    sel.innerHTML=s.states.map(x=>'<option'+(x===cur?' selected':'')+'>'+x+'</option>').join('');if(!cur&&s.states.includes('OH'))sel.value='OH';
+    document.getElementById('wb-mode').innerHTML=s.modes.map(m=>'<option>'+m+'</option>').join('');
+    document.getElementById('wb-round').innerHTML=s.roundings.map(m=>'<option>'+m+'</option>').join('');
+    document.getElementById('wb-model').hidden=document.getElementById('wb-roundl').hidden=WB.line!=='GL';
+    document.getElementById('wb-where').hidden=document.getElementById('wb-every').hidden=WB.line!=='GL';
+    document.getElementById('wb-curve').innerHTML=WB.line==='GL'?'<option value="">Control…</option>'+s.controls.map(c=>'<option value="'+c.id+'">'+esc(c.label)+'</option>').join(''):'<option value="">CP curves arrive with its control catalog (TC-26)</option>';
+    wbInputs();};
+  return WB.spec[WB.line]?Promise.resolve(go(WB.spec[WB.line])):fetch('/api/console/workbench/spec?lob='+WB.line).then(r=>r.json()).then(go);
+}
+function wbState(){return document.getElementById('wb-state').value;}
+function wbInputs(){
+  const el=document.getElementById('wb-inputs');
+  if(WB.line==='CP'){el.innerHTML='<div class="mx-msg">The CP request itself, starting from '+esc(wbState())+'’s sample risk. Edit any field; CP’s dimension catalog (TC-26) brings dropdowns.</div><textarea id="wb-req" spellcheck="false"></textarea>';
+    fetch('/api/console/workbench/request?lob=CP&state='+wbState()).then(r=>r.json()).then(j=>document.getElementById('wb-req').value=JSON.stringify(j,null,1));return;}
+  wbJSON('/api/console/workbench/options',{state:wbState(),config:WB.config}).then(o=>{WB.opts=o;
+    let h='<div class="wb-grid">',grp=null;
+    WB.spec.GL.controls.forEach(c=>{const oc=o.controls[c.id]||{};if(c.group!==grp){grp=c.group;h+='<div class="wb-grp">'+esc(grp)+'</div>';}
+      const v=WB.config[c.id]??'';
+      h+='<label class="wb-in" title="'+esc(c.note||'')+'">'+esc(c.label)+(oc.values?'<select data-c="'+c.id+'"><option value="">(base)</option>'+oc.values.map(x=>'<option'+(String(x)===String(v)?' selected':'')+'>'+esc(String(x))+'</option>').join('')+'</select>':
+        '<input data-c="'+c.id+'" value="'+esc(String(v))+'" placeholder="(base)">')+'</label>';});
+    el.innerHTML=h+'</div>';
+    el.querySelectorAll('[data-c]').forEach(x=>x.onchange=()=>{const k=x.dataset.c;if(x.value==='')delete WB.config[k];else WB.config[k]=x.value;wbInputs();});});
+}
+function wbBody(extra){const b={line:WB.line,state:wbState(),mode:document.getElementById('wb-mode').value,rounding:document.getElementById('wb-round').value,...(extra||{})};
+  if(WB.line==='GL')b.config=WB.config;else{try{b.request=JSON.parse(document.getElementById('wb-req').value);}catch(e){throw new Error('The CP request is not valid JSON: '+e.message);}}return b;}
+function wbStoredBox(s,ours){if(!s)return '<div class="mx-msg">No stored ISO answer for this exact request.</div>';
+  const agree=s.iso&&ours&&(+s.iso===+ours);
+  return '<div class="mx-need"><span class="chip '+(s.outcome!=='rated'?'untested':agree?'verified':'mismatch')+'">'+(s.outcome!=='rated'?'·':agree?'✓':'×')+'</span><div><b>ISO already answered this exact request</b><div class="mx-msg">'+
+    esc(s.outcome==='rated'?'ISO '+s.iso+(ours?' · ours '+ours+(agree?' · agree':' · differ'):''):'ISO refused: '+s.message)+' · stored '+esc((s.stored_at||'').slice(0,10))+(s.freshness==='stale'?' · stale':'')+'</div>'+
+    (s.outcome==='rated'?'<a href="#trace?lob='+WB.line+'&scenario='+encodeURIComponent(s.scenario)+'">Open in Trace Diff</a>':'')+'</div></div>';}
+function wbRate(){
+  let body;try{body=wbBody();}catch(e){document.getElementById('wb-out').innerHTML='<div class="td-root">'+esc(e.message)+'</div>';return;}
+  document.getElementById('wb-out').innerHTML='<div class="mx-msg">Rating on our engine…</div>';
+  wbJSON('/api/console/workbench/rate',body).then(r=>{WB.last={...r,body};
+    const o=document.getElementById('wb-out');
+    if(r.error){o.innerHTML='<div class="td-root">'+esc(r.error)+'</div>';return;}
+    o.innerHTML='<div class="wb-res">'+(r.outcome==='rated'?'<span class="cap2">Our premium</span><div><b class="big">'+esc(r.premium)+'</b> <span class="mx-msg">'+esc((r.packages||[]).join(' over '))+(r.mode?' · '+r.mode+' · '+r.rounding:'')+'</span></div>':
+      '<b>Our engine '+(r.outcome==='stopped'?'stopped':'refused')+'</b><div class="mx-msg">'+esc(r.detail||'')+'</div>')+wbStoredBox(r.stored,r.premium)+'</div>';
+    wbSide(r);});
+}
+function wbSide(r){
+  const labels=(MX.data&&MX.data.pathLabels&&MX.data.pathLabels[r.line])||{};
+  let h='<div class="cap2">Paths this scenario walked · '+(r.paths||[]).length+'</div>'+((r.paths||[]).length?'<table>'+r.paths.map(p=>'<tr><td>'+esc(labels[p]||p)+'</td></tr>').join('')+'</table>':'<div class="mx-msg">None.</div>');
+  h+='<div class="cap2">Request</div><div class="mx-msg">hash '+esc(r.hash)+'</div>';
+  h+='<button class="btn" id="wb-promote" style="margin-top:auto">Promote to Regression Library</button><div class="mx-msg" id="wb-pmsg">'+(r.stored&&r.stored.outcome==='rated'?'Kept with ISO’s stored answer as its reference.':'No ISO answer yet: kept with our premium as its reference (regression, not verification).')+'</div>';
+  document.getElementById('wb-side').innerHTML=h;
+  document.getElementById('wb-promote').onclick=()=>{const s=r.stored&&r.stored.outcome==='rated'?r.stored:null;
+    wbJSON('/api/console/promote',{scenario:s?s.scenario:(r.line+'-'+r.body.state+'-wb-'+r.hash.slice(0,10)),line:r.line,state:r.body.state,origin:'workbench',
+      hash:s?s.hash:'',request:s?null:r.request,ours:r.premium}).then(j=>document.getElementById('wb-pmsg').textContent=j.error?j.error:j.already?'Already in the library.':'Promoted.');};
+}
+function wbSendDialog(){
+  let body;try{body=wbBody();}catch(e){document.getElementById('wb-confirm').innerHTML='<div class="td-root">'+esc(e.message)+'</div>';return;}
+  fetch('/api/console/cap').then(r=>r.json()).then(c=>{
+    const ad=c.lanes.find(l=>l.key==='adhoc'),full=ad.used>=ad.cap||c.used>=c.cap;
+    wbJSON('/api/console/workbench/rate',body).then(r=>{
+      const el=document.getElementById('wb-confirm');
+      let h='<div class="wb-conf'+(full?' full':'')+'"><b>Send this scenario to ISO?</b><div>'+(r.stored?'<b>A stored answer covers this exact request.</b> Reusing it costs nothing.':'No stored answer covers it: this spends <b>1 call</b> from the ad hoc lane.')+'</div>'+
+        '<div class="mx-msg">Ad hoc lane: '+ad.used+' of '+ad.cap+' used today · '+c.left+' of '+c.cap+' left in all'+(full?' · <b>full</b>: a call needs a reason, logged with it.':'')+'</div>';
+      if(r.stored)h+='<div class="td-tools"><button class="btn" id="wb-reuse">Use the stored answer · free</button>'+(full?'<input id="wb-reason" placeholder="Reason, to spend past the cap" style="flex:1">':'')+'<button class="btn" id="wb-spend">Spend a call anyway</button><button class="btn" id="wb-cancel">Cancel</button></div>';
+      else h+='<div class="td-tools">'+(full?'<input id="wb-reason" placeholder="Reason for going past the cap" style="flex:1">':'')+'<button class="btn" id="wb-spend">Send · 1 call</button><button class="btn" id="wb-cancel">Cancel</button></div>';
+      el.innerHTML=h+'<div class="mx-msg" id="wb-sendmsg"></div></div>';
+      const done=j=>{const m=document.getElementById('wb-sendmsg');if(j.error){m.textContent=j.error;return;}el.innerHTML='';
+        document.getElementById('wb-out').insertAdjacentHTML('afterbegin','<div class="mx-msg">'+(j.reused?'Used the stored answer; no call spent.':'Sent: 1 call, logged in the ledger; ISO’s answer is in the store.')+'</div>');
+        fetch('/api/console/cap').then(r=>r.json()).then(drawCap);wbRate();};
+      const reuse=document.getElementById('wb-reuse');if(reuse)reuse.onclick=()=>wbJSON('/api/console/workbench/send',{...body,reuse:true}).then(done);
+      document.getElementById('wb-spend').onclick=()=>{const rs=document.getElementById('wb-reason');if(full&&rs&&!rs.value.trim()){document.getElementById('wb-sendmsg').textContent='A reason is needed past the cap.';return;}
+        wbJSON('/api/console/workbench/send',{...body,reuse:false,override:rs?rs.value.trim():''}).then(done);};
+      document.getElementById('wb-cancel').onclick=()=>{el.innerHTML='';};
+    });});
+}
+function wbWhere(){
+  document.getElementById('wb-out').innerHTML='<div class="mx-msg">Checking every state against ISO’s declared domains…</div>';
+  wbJSON('/api/console/workbench/where',{config:WB.config}).then(j=>{const na=Object.entries(j.not_applicable||{});
+    document.getElementById('wb-out').innerHTML='<div class="wb-res"><span class="cap2">'+esc(j.describes||'the base risk')+'</span><div><b class="big">'+j.applicable.length+'</b> states it applies in · '+na.length+' it does not</div>'+
+      (na.length?'<table class="wb-tbl">'+na.slice(0,60).map(([s,w])=>'<tr><td>'+s+'</td><td>'+esc(w)+'</td></tr>').join('')+'</table>':'')+'</div>';});
+}
+function wbEvery(){
+  document.getElementById('wb-out').innerHTML='<div class="mx-msg">Rating this config in every state where it applies, on our engine (free)…</div>';
+  wbJSON('/api/console/workbench/every',{config:WB.config,mode:document.getElementById('wb-mode').value,rounding:document.getElementById('wb-round').value}).then(j=>{
+    if(j.error){document.getElementById('wb-out').innerHTML='<div class="td-root">'+esc(j.error)+'</div>';return;}
+    document.getElementById('wb-out').innerHTML='<div class="wb-res"><span class="cap2">'+esc(j.describes||'the base risk')+' · every state</span><div><b class="big">'+j.applicable+'</b> states rated free · <b>'+j.callsToSend+'</b> would need a call (no stored answer) · '+j.storedAgree+' already verified against a stored answer</div>'+
+      '<div class="mx-msg">Sending these is a one-config test plan: committed from the Test Plan Builder once RC-4 lands (TC-29); nothing is spent here.</div>'+
+      '<table class="wb-tbl">'+j.rows.map(x=>'<tr><td>'+x.state+'</td><td class="v">'+esc(x.premium||'')+'</td><td>'+esc(x.outcome)+'</td><td>'+(x.stored?'ISO '+esc(x.stored.iso||x.stored.outcome):x.needsCall?'<span class="mx-msg">needs a call</span>':'')+'</td></tr>').join('')+'</table></div>';});
+}
+function wbCurve(){
+  const cid=document.getElementById('wb-curve').value,el=document.getElementById('wb-chart'),msg=document.getElementById('wb-curvemsg');if(!cid){el.innerHTML='';msg.textContent='';return;}
+  fetch('/api/console/workbench/curve?control='+cid).then(r=>r.json()).then(j=>{const st=wbState(),pts=(j.series||{})[st]||[],n=Object.values(j.series||{}).filter(v=>v.length>=2).length;
+    msg.textContent=pts.length>=2?st+': '+pts.length+' values run · '+n+' states have a curve':pts.length?st+': only one value run so far · '+n+' states have a curve':'no runs varied this control in '+st+' · '+n+' states have a curve';
+    if(pts.length<2){el.innerHTML='<div class="mx-empty">Run two or more values of this control in '+esc(st)+' (Run in every state, or the Test Plan Builder) to draw its curve.</div>';return;}
+    const num=v=>parseFloat(String(v).replace(/[^0-9.\-]/g,''))||0;pts.sort((a,b)=>num(a.value)-num(b.value));
+    const W=el.clientWidth||700,H=180,L=56,R=16,T=10,B=34,ys=pts.flatMap(p=>[+p.ours,p.iso?+p.iso:null]).filter(v=>v!=null&&!isNaN(v)),lo=Math.min(...ys),hi=Math.max(...ys);
+    const x=i=>L+(W-L-R)*(pts.length<2?0.5:i/(pts.length-1)),y=v=>T+(H-T-B)*(1-(hi===lo?0.5:(v-lo)/(hi-lo)));
+    let s='<svg viewBox="0 0 '+W+' '+H+'" width="100%" height="100%" role="img" aria-label="Premium by value of '+esc(cid)+' in '+st+'">';
+    [lo,hi].forEach(v=>s+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+y(v)+'" y2="'+y(v)+'" stroke="var(--color-divider)"/><text x="'+(L-6)+'" y="'+(y(v)+4)+'" text-anchor="end" font-size="10.5" fill="var(--color-neutral-700)">'+Math.round(v).toLocaleString()+'</text>');
+    s+='<polyline fill="none" stroke="#9a6214" stroke-width="2" points="'+pts.map((p,i)=>x(i)+','+y(+p.ours)).join(' ')+'"/>';
+    pts.forEach((p,i)=>{s+='<circle cx="'+x(i)+'" cy="'+y(+p.ours)+'" r="4" fill="#9a6214" stroke="var(--color-bg)" stroke-width="2"><title>'+esc(p.value+': ours '+p.ours+(p.iso?' · ISO '+p.iso:''))+'</title></circle>';
+      if(p.iso)s+='<circle cx="'+x(i)+'" cy="'+y(+p.iso)+'" r="6" fill="none" stroke="#2f72a8" stroke-width="2"><title>'+esc(p.value+': ISO '+p.iso)+'</title></circle>';
+      s+='<text x="'+x(i)+'" y="'+(H-12)+'" text-anchor="middle" font-size="10" fill="var(--color-neutral-700)">'+esc(String(p.value).slice(0,14))+'</text>';});
+    el.innerHTML=s+'</svg>';});
+}
+document.getElementById('wb-lines').addEventListener('click',ev=>{const b=ev.target.closest('button');if(!b||b.dataset.l===WB.line)return;WB.line=b.dataset.l;WB.config={};wbLoad();});
+document.getElementById('wb-state').addEventListener('change',()=>{wbInputs();wbCurve();});
+document.getElementById('wb-rate').onclick=wbRate;
+document.getElementById('wb-send').onclick=wbSendDialog;
+document.getElementById('wb-where').onclick=wbWhere;
+document.getElementById('wb-every').onclick=wbEvery;
+document.getElementById('wb-curve').onchange=wbCurve;
+let wbStarted=false;function wbRoute(){if((location.hash||'').startsWith('#workbench')&&!wbStarted){wbStarted=true;wbLoad();}}
+addEventListener('hashchange',wbRoute);wbRoute();
 """

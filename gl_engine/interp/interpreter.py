@@ -510,7 +510,11 @@ class Interpreter:
             written = tree.write(to, frame.write_target, value)
             if getattr(self, "_writes", None) is not None:
                 self._writes.add(id(written))
-            self.note("write", f"{to} = {value!r}", name)
+            # `node`: which node took the value (an object id, valid while the tree lives), and the rule file and
+            # package that wrote it, so a reader can tie each field of the rated tree to its ERC source -- the test
+            # console's Trace Diff (TC-21). Data only: nothing reads it to rate.
+            self.note("write", f"{to} = {value!r}", name, node=id(written), rule_file=frame.rule_file,
+                      package=getattr(frame.program, "pkg_id", ""))
         return value
 
     # -------------------------------------------------------------- dispatch
