@@ -1,0 +1,149 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Test Console Tracker</title><style>
+:root{--bg:#f6f7f9;--card:#fff;--ink:#1c2733;--mute:#5d6b7a;--line:#e1e5ea;--accent:#2f6f8f;
+--done:#2f8a5b;--done-bg:#e3f3ea;--now:#c77a2c;--now-bg:#fbeedd;--todo:#8a96a3;--todo-bg:#eef1f4;
+--blk:#b23b3b;--blk-bg:#f8e3e3;--code:#eef1f4}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#121619;--card:#1a1f24;--ink:#e3e8ed;
+--mute:#9aa6b2;--line:#2c343c;--accent:#7fbfdc;--done:#5fc28f;--done-bg:#1b3226;--now:#e3a25e;--now-bg:#3a2b1a;
+--todo:#8a96a3;--todo-bg:#232a31;--blk:#e77;--blk-bg:#3a1f1f;--code:#262c33}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 -apple-system,"Segoe UI",system-ui,sans-serif}
+main{max-width:1080px;margin:0 auto;padding:28px 16px 80px}
+h1{font-size:24px;margin:0 0 4px}
+.sub{color:var(--mute);font-size:13px}
+.hero{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:20px 0}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.stat b{display:block;font-size:26px;font-variant-numeric:tabular-nums}
+.stat span{color:var(--mute);font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+.bar{height:8px;border-radius:4px;background:var(--todo-bg);overflow:hidden;display:flex}
+.bar i{display:block;height:100%}
+.bar .d{background:var(--done)}.bar .n{background:var(--now)}
+.next{background:var(--now-bg);border:1px solid var(--now);border-radius:10px;padding:14px 16px;margin:0 0 20px}
+.next h2{margin:0 0 4px;font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--now)}
+.filters{display:flex;gap:8px;margin:0 0 16px;flex-wrap:wrap}
+.filters button{font:inherit;font-size:13px;padding:5px 12px;border-radius:16px;border:1px solid var(--line);
+background:var(--card);color:var(--ink);cursor:pointer}
+.filters button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--bg)}
+.ms{margin:28px 0 8px;font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--mute)}
+details.rc{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--todo);border-radius:10px;
+margin:0 0 12px;overflow:hidden}
+details.rc.done{border-left-color:var(--done)}details.rc.now{border-left-color:var(--now)}
+summary{list-style:none;cursor:pointer;padding:12px 16px;display:grid;grid-template-columns:1fr 160px;gap:12px;align-items:center}
+summary::-webkit-details-marker{display:none}
+summary h3{margin:0;font-size:16px}
+summary .meta{font-size:12px;color:var(--mute);text-align:right}
+summary .bar{margin-top:4px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+td{padding:9px 16px;border-top:1px solid var(--line);vertical-align:top}
+td.id{white-space:nowrap;font-variant-numeric:tabular-nums;color:var(--mute);width:70px}
+td.st{width:120px;white-space:nowrap}
+td.notes{color:var(--mute);font-size:13px;width:34%}
+tr.is-next td{background:var(--now-bg)}
+.pill{display:inline-block;font-size:12px;padding:1px 9px;border-radius:10px}
+.pill.done{background:var(--done-bg);color:var(--done)}.pill.now{background:var(--now-bg);color:var(--now)}
+.pill.todo{background:var(--todo-bg);color:var(--todo)}.pill.blocked{background:var(--blk-bg);color:var(--blk)}
+.gate{padding:10px 16px;border-top:1px dashed var(--line);font-size:13px;color:var(--mute)}
+.gate strong:first-child{color:var(--ink)}
+code{background:var(--code);padding:0 4px;border-radius:3px;font-size:.9em}
+a{color:var(--accent)}
+.hide{display:none}
+@media (max-width:640px){td.notes{display:none}summary{grid-template-columns:1fr}summary .meta{text-align:left}}
+</style></head><body><main>
+<h1>ISO Rating Test Console</h1>
+<div class="sub">Generated from <a href="TC-PLAN.md">docs/TC-PLAN.md</a> at 2026-10-07 07:43 · reloads every 30 s</div>
+<div class="hero">
+<div class="stat"><span>Tasks done</span><b>14 / 38</b><div class="bar"><i class="d" style="width:36.8%"></i><i class="n" style="width:0.0%"></i></div></div>
+<div class="stat"><span>RCs complete</span><b>2 / 8</b><div class="bar"><i class="d" style="width:25.0%"></i><i class="n" style="width:0.0%"></i></div></div>
+<div class="stat"><span>In progress</span><b>0</b></div>
+<div class="stat"><span>Decisions recorded</span><b>22</b></div>
+</div>
+<div class="next"><h2>Next up · RC-2 Readiness Matrix and Coverage Board</h2><strong>TC-15</strong> — <strong><code>GET /api/console/readiness</code></strong> per §5: cells, columns, cap; recomputed on store, classification, ingest and build events</div>
+<div class="filters"><button data-f="all">All</button><button data-f="open">Open</button><button data-f="done">Done</button></div>
+<div class="ms">Milestone 1 · the foundations (no screens)</div>
+<details class="rc done" id="RC-0"><summary><div><h3>RC-0 · Decisions and discovery</h3></div><div class="meta">5 of 5 done<div class="bar"><i class="d" style="width:100.0%"></i><i class="n" style="width:0.0%"></i></div></div></summary><table>
+<tr class="" data-s="done"><td class="id">TC-01</td><td><strong>Decisions D1-D7</strong> recorded, with dates</td><td class="st"><span class="pill done">Done</span><div class="sub"> 2026-10-06</div></td><td class="notes">The user&#x27;s, one at a time (above)</td></tr>
+<tr class="" data-s="done"><td class="id">TC-02</td><td><strong>Inventory of the old pages</strong>: every job <code>/tester</code>, <code>/tests</code>, <code>/review</code> and <code>/</code> do, each mapped to the console screen that will do it (the parity list RC-6 is gated on)</td><td class="st"><span class="pill done">Done</span><div class="sub"> 2026-10-06</div></td><td class="notes"><a href="TC-02-PARITY.md"><code>TC-02-PARITY.md</code></a>: 36 jobs; 9 the plan doesn&#x27;t cover yet, each the user&#x27;s call before RC-6</td></tr>
+<tr class="" data-s="done"><td class="id">TC-03</td><td><strong>The cap in practice</strong> (D2: 250 = 150 / 50 / 50): whether errors are charged (the brief assumes a 504 is) and when the day resets, so the ledger counts calls as ISO does</td><td class="st"><span class="pill done">Done</span><div class="sub"> 2026-10-06</div></td><td class="notes">The old 60 / 150 (A6) was our own budget, not ISO&#x27;s; ISO&#x27;s API console states no quota; the PDF is unreadable here. <strong>Ledger rule: every request sent counts as one call, refusals and errors included</strong> (931 failed calls on record, almost all 400s with a body); the day resets at 00:00 ET. Open for ISO: the real limit, and whether errors are charged</td></tr>
+<tr class="" data-s="done"><td class="id">TC-04</td><td><strong>GL step values</strong>: does a GL RaaS response carry intermediate steps the way Property&#x27;s does? If not, Trace Diff for GL compares only what ISO returns</td><td class="st"><span class="pill done">Done</span><div class="sub"> 2026-10-06</div></td><td class="notes"><strong>Yes</strong>: a stored NJ GL response carries 1,203 values in 276 fields, every step (<code>BaseRate</code>, <code>ILF</code>, <code>FinalILF</code>, <code>DeductibleFactor</code>, <code>FinalRate</code>, <code>BasicLimitPremium</code>, <code>CoveragePremium</code>, the experience-rating factors). Trace Diff goes step by step for both lines</td></tr>
+<tr class="" data-s="done"><td class="id">TC-05</td><td><strong>Path catalog census</strong>: every rating path per (line, state, coverage) the engine can walk, from the ERC rules; the denominator the matrix needs</td><td class="st"><span class="pill done">Done</span><div class="sub"> 2026-10-06</div></td><td class="notes"><a href="TC-05-PATHS.md"><code>TC-05-PATHS.md</code></a>: CP 17 paths in 6 coverages (n/a: BCEG in NY, DC; PR); GL ~35 paths in 5 coverages across 51 jurisdictions (n/a: size of risk in 16, state exceptions where none filed). <strong>Six places the brief&#x27;s GL columns don&#x27;t match ISO&#x27;s content</strong>, the user&#x27;s calls before TC-09</td></tr>
+</table>
+</details>
+<details class="rc done" id="RC-1"><summary><div><h3>RC-1 · The data layer</h3></div><div class="meta">8 of 8 done<div class="bar"><i class="d" style="width:100.0%"></i><i class="n" style="width:0.0%"></i></div></div></summary><table>
+<tr class="" data-s="done"><td class="id">TC-06</td><td><strong>Reference store</strong>: one index over every stored ISO answer, both lines: request hash, line, state, effective date, package and content version, ISO&#x27;s outcome, stored date. Built from <code>results/cf-raas/</code> and the GL run store; nothing moved on disk; <strong>every new answer from any origin added as it arrives (D21)</strong></td><td class="st"><span class="pill done">Done</span><div class="sub"> 2026-10-06</div></td><td class="notes"><code>console/store.py</code>: <strong>2,935 references</strong> (2,384 CP rated, 549 CP refused, 2 GL refused) + <strong>1,060 GL premium-level rows</strong> from the run store. The 293 ISO fixtures are 207 distinct requests, each rebuilt from ISO&#x27;s STC file; 344 more answers kept without their request are indexed by state, date and package (<code>request_kept: false</code>). GL has no stored request/response bodies yet: they accrue from now on (D21)</td></tr>
+<tr class="" data-s="done"><td class="id">TC-07</td><td><strong>Staleness</strong>: a reference is stale when the package in force for its state and date changes (<code>book_for</code>, <code>iso_packages.json</code>), so a corpus refresh (C28-20) marks exactly the answers it affects</td><td class="st"><span class="pill done">Done</span><div class="sub"> 2026-10-06</div></td><td class="notes"><code>store.staleness</code>: stale when ISO answered on a package other than the one our corpus resolves now. Today 2,815 fresh, 0 stale, 120 unknown (refusals naming no state package)</td></tr>
+<tr class="" data-s="done"><td class="id">TC-08</td><td><strong>Status vocabulary</strong>: the five states (verified, internal, mismatch, stale, untested) with fixed keys, glyphs and colours, one module every screen imports</td><td class="st"><span class="pill done">Done</span><div class="sub"> 2026-10-06</div></td><td class="notes"><code>console/status.py</code>: five states plus n/a, fixed keys, glyphs, colours; §6 priority and needs text</td></tr>
+<tr class="" data-s="done"><td class="id">TC-09</td><td><strong>Coverage → path mapping</strong> as versioned configuration (GL 5 coverages, CP 6), per §4 of the spec; states with no such path read &quot;n/a&quot; (D5)</td><td class="st"><span class="pill done">Done</span><div class="sub"> 2026-10-06</div></td><td class="notes"><code>console/config/paths.json</code> (built by <code>scripts/tc/tc09_build_paths.py</code> from TC-05 and D8-D13), read through <code>console/paths.py</code>: CP 17 paths × 47 states (11 n/a), GL 43 paths × 51 (128 n/a)</td></tr>
+<tr class="" data-s="done"><td class="id">TC-10</td><td><strong>Path signature</strong>: which paths one scenario walks, from the engine&#x27;s own trace (records attached, forms priced, tables reached)</td><td class="st"><span class="pill done">Done</span><div class="sub"> 2026-10-06</div></td><td class="notes"><code>console/signature.py</code>: CP from the rated tree (forms that priced, inputs read), GL from the trace (writes and lookups). Across all 51 GL samples no path is walked where the census says n/a</td></tr>
+<tr class="" data-s="done"><td class="id">TC-11</td><td><strong>Mismatch taxonomy and classifications</strong>: rounding ±$1, interpolation ±0.5%, version skew, input mapping, RaaS anomaly, true engine defect (zero), <strong>and our refusal vs ISO&#x27;s narrowing (D15)</strong>; the <strong>INERT</strong> flag (a scenario that exercised nothing counts toward no path); stored per scenario</td><td class="st"><span class="pill done">Done</span><div class="sub"> 2026-10-06</div></td><td class="notes"><code>console/mismatch.py</code>: 7 categories (D15&#x27;s refusal vs narrowing added), tolerance bands, the INERT flag, append-only classifications</td></tr>
+<tr class="" data-s="done"><td class="id">TC-12</td><td><strong>Call ledger and lanes</strong> (D2, D21): <strong>inside the RaaS client</strong>, so every call counts wherever it starts (console, <code>/</code>, CLIs, <code>scripts/cf</code>), tagged by origin, with lane, outcome and cost; cap 250, lanes 150 / 50 / 50 enforced in one place, replacing <code>qa.py</code>&#x27;s budget guard (A6)</td><td class="st"><span class="pill done">Done</span><div class="sub"> 2026-10-06</div></td><td class="notes"><code>console/ledger.py</code> <strong>inside the RaaS client</strong> (<code>scripts/raas.py</code>): every call admitted against its lane (250 = 150 / 50 / 50), recorded with origin and outcome, its answer saved to the store; a full lane needs an override with a reason. <strong>Live from 2026-10-06</strong> (first call: OH sample, $5,204 = ISO)</td></tr>
+<tr class="" data-s="done"><td class="id">TC-13</td><td><strong>Roll-up</strong>: path → coverage → cell status by §3&#x27;s order (mismatch, stale, untested, verified, internal), n/a where no path is filed (D5); optional sign-off kept and cleared (D4); estimated calls to finish (§6). Tests for each rule</td><td class="st"><span class="pill done">Done</span><div class="sub"> 2026-10-06</div></td><td class="notes"><code>console/rollup.py</code>: path states from scenarios, cells by §3&#x27;s order, n/a, descoped, sign-off kept only while Passed, §6 still-to-test order and call estimates</td></tr>
+</table>
+<div class="gate"><strong>Gate ✅:</strong> passed 2026-10-06: <code>tests/verify_console_rc1.py</code> 50 of 50, <code>104_ --quick</code> clean, one live call through the ledger the store indexes every stored ISO answer and matches today&#x27;s counts (e.g. CP&#x27;s 293 fixtures, 46-state sample); a test per roll-up rule; <code>104_ --quick</code> clean.</div>
+</details>
+<div class="ms">Milestone 2 · the go/no-go views</div>
+<details class="rc now" id="RC-2" open><summary><div><h3>RC-2 · Readiness Matrix and Coverage Board</h3></div><div class="meta">1 of 6 done<div class="bar"><i class="d" style="width:16.7%"></i><i class="n" style="width:0.0%"></i></div></div></summary><table>
+<tr class="" data-s="done"><td class="id">TC-14</td><td><strong>Console shell</strong>: the seven-tab frame, the call-cap strip (used / left / queued / resets), the shared legend; D7&#x27;s look</td><td class="st"><span class="pill done">Done</span><div class="sub"> 2026-10-07</div></td><td class="notes"><code>ui/console_page.py</code> at <code>/console</code>, mounted through <code>ui.tester</code>; the cap strip reads the ledger (<code>/api/console/cap</code>, refreshed every 30 s), the legend reads <code>console.status</code>; the prototype&#x27;s palette and type, system-serif fallbacks, nothing fetched. Screens not yet built name the task that builds them. <code>tests/verify_console_rc2.py</code> A1-A10</td></tr>
+<tr class="is-next" data-s="todo"><td class="id">TC-15</td><td><strong><code>GET /api/console/readiness</code></strong> per §5: cells, columns, cap; recomputed on store, classification, ingest and build events</td><td class="st"><span class="pill todo">To do</span><div class="sub"></div></td><td class="notes"></td></tr>
+<tr class="" data-s="todo"><td class="id">TC-16</td><td><strong>Readiness Matrix</strong> screen: every state, alphabetical (D3), both lines, totals strip (§8), cell select / double-click (§7), n/a cells (D5), sign-off (D4), <strong>agreement over time (D18)</strong></td><td class="st"><span class="pill todo">To do</span><div class="sub"></div></td><td class="notes"></td></tr>
+<tr class="" data-s="todo"><td class="id">TC-17</td><td><strong>&quot;Still to test&quot; list</strong>: §6&#x27;s sort without the wave key (status priority, then calls), needs text and call estimate; days to finish at the active lane (150/day)</td><td class="st"><span class="pill todo">To do</span><div class="sub"></div></td><td class="notes"></td></tr>
+<tr class="" data-s="todo"><td class="id">TC-18</td><td><strong>Coverage Board</strong>: one line, state × path, readiness verdict per state (Go / Hold / Not ready), side panel of scenarios per cell; <strong>the control × state grid beside it (D18)</strong></td><td class="st"><span class="pill todo">To do</span><div class="sub"></div></td><td class="notes"></td></tr>
+<tr class="" data-s="todo"><td class="id">TC-19</td><td><strong>Seeded from real evidence</strong>: CP from the chunk 1-28 work and the app&#x27;s 46-state sample; GL from the QA runs. Every Passed cell traceable to its stored answers</td><td class="st"><span class="pill todo">To do</span><div class="sub"></div></td><td class="notes">No new calls</td></tr>
+</table>
+<div class="gate"><strong>Gate:</strong> the matrix and board render from real data in both lines; spot-checks (e.g. CP Building in OH) trace to stored answers; no screen spends a call.</div>
+</details>
+<div class="ms">Milestone 3 · seeing why</div>
+<details class="rc todo" id="RC-3"><summary><div><h3>RC-3 · Trace Diff and Scenario Workbench</h3></div><div class="meta">0 of 6 done<div class="bar"><i class="d" style="width:0.0%"></i><i class="n" style="width:0.0%"></i></div></div></summary><table>
+<tr class="" data-s="todo"><td class="id">TC-20</td><td><strong>Worksheet map</strong>: our engine&#x27;s nodes (data-tree fields and the rules that write them) aligned to ISO&#x27;s response fields by stable ID, per line; versioned</td><td class="st"><span class="pill todo">To do</span><div class="sub"></div></td><td class="notes">TC-04 sets GL&#x27;s depth</td></tr>
+<tr class="" data-s="todo"><td class="id">TC-21</td><td><strong>Trace Diff</strong>: ours vs ISO row by row, matching subtrees collapsed, the first divergent step marked and downstream rows tagged &quot;flows from&quot;; each row&#x27;s ERC source (rule, table, circular); <strong>&quot;seen before&quot; with the earlier classification, and a copy-brief button (D16)</strong></td><td class="st"><span class="pill todo">To do</span><div class="sub"></div></td><td class="notes"></td></tr>
+<tr class="" data-s="todo"><td class="id">TC-22</td><td><strong>Classify a mismatch</strong> from Trace Diff (TC-11&#x27;s taxonomy), with a note; the cell&#x27;s status follows</td><td class="st"><span class="pill todo">To do</span><div class="sub"></div></td><td class="notes"></td></tr>
+<tr class="" data-s="todo"><td class="id">TC-23</td><td><strong>Scenario Workbench</strong>: the inputs per line, <strong>mode and rounding (D22)</strong>, &quot;Rate internally&quot; (free), &quot;Send to RaaS&quot; (one call); the dedupe dialog when a stored answer exists; <strong>&quot;Check where it applies&quot; and &quot;Run in every state&quot; (D19)</strong>; <strong>response curves (D18)</strong></td><td class="st"><span class="pill todo">To do</span><div class="sub"></div></td><td class="notes">Supersedes <code>/</code>&#x27;s job (D1)</td></tr>
+<tr class="" data-s="todo"><td class="id">TC-24</td><td><strong>Promote to Regression Library</strong> from the Workbench or Trace Diff</td><td class="st"><span class="pill todo">To do</span><div class="sub"></div></td><td class="notes"></td></tr>
+<tr class="" data-s="todo"><td class="id">TC-25</td><td><strong>Proof</strong>: a known past mismatch replayed (e.g. OI-133&#x27;s FL cyber case before its fix) shows its first divergence at the right step</td><td class="st"><span class="pill todo">To do</span><div class="sub"></div></td><td class="notes"></td></tr>
+</table>
+<div class="gate"><strong>Gate:</strong> Trace Diff on 10 stored scenarios per line, every row aligned; the Workbench rates and reuses stored answers without a call.</div>
+</details>
+<div class="ms">Milestone 4 · planning and spending calls</div>
+<details class="rc todo" id="RC-4"><summary><div><h3>RC-4 · Test Plan Builder and Queue &amp; Run Log</h3></div><div class="meta">0 of 7 done<div class="bar"><i class="d" style="width:0.0%"></i><i class="n" style="width:0.0%"></i></div></div></summary><table>
+<tr class="" data-s="todo"><td class="id">TC-26</td><td><strong>Dimension catalog</strong> from ISO&#x27;s own files: GL from <code>variants.Declared</code>; CP from its domains and state inputs (<code>_state_inputs</code>); <strong>basis-first class picker, multi-class, effective date with the package dates (D20)</strong></td><td class="st"><span class="pill todo">To do</span><div class="sub"></div></td><td class="notes"></td></tr>
+<tr class="" data-s="todo"><td class="id">TC-27</td><td><strong>Test Plan Builder</strong>: line, states (no waves, D3), dimension chips, <strong>allowance thinning (never cuts states) and a reduced grid (D20)</strong>; live counters (cartesian, Tier 0, pairwise, edges, already verified, projected calls and days)</td><td class="st"><span class="pill todo">To do</span><div class="sub"></div></td><td class="notes">Reuses <code>qa._allpairs</code></td></tr>
+<tr class="" data-s="todo"><td class="id">TC-28</td><td><strong>Tier 0 invariants</strong> (zero calls): premium rises with limits, deductibles never raise premium, minimum premium floors hold, no null steps, every valid state / class resolves</td><td class="st"><span class="pill todo">To do</span><div class="sub"></div></td><td class="notes">New work: <code>qa.py</code>&#x27;s T0 is a live smoke run, not an invariant tier (TC-02)</td></tr>
+<tr class="" data-s="todo"><td class="id">TC-29</td><td><strong>Commit a plan</strong> → queue, with the confirmation dialog (calls, lane, ETA, dedupe); prefilled from the Matrix&#x27;s &quot;Build a test plan from these gaps&quot;</td><td class="st"><span class="pill todo">To do</span><div class="sub"></div></td><td class="notes"></td></tr>
+<tr class="" data-s="todo"><td class="id">TC-30</td><td><strong>Dispatcher</strong>: ordered by information value (untested path, changed content, edge, stale, pairwise), within lanes and the daily cap; dedupe against the store before every call; <strong>pass 3 after each plan (D15)</strong></td><td class="st"><span class="pill todo">To do</span><div class="sub"></div></td><td class="notes"></td></tr>
+<tr class="" data-s="todo"><td class="id">TC-31</td><td><strong>Queue &amp; Run Log</strong> screen: lanes, dispatch queue, the run log (sent, match, mismatch, dedupe hit, error, override, reset); <strong>pause / resume / stop-and-keep (D14)</strong>; <strong>the refused-payload list (D16)</strong>; <strong>a shareable report per plan, existing run files browsable (D17)</strong></td><td class="st"><span class="pill todo">To do</span><div class="sub"></div></td><td class="notes"></td></tr>
+<tr class="" data-s="todo"><td class="id">TC-32</td><td><strong>Override</strong> of the cap: needs a reason, is logged</td><td class="st"><span class="pill todo">To do</span><div class="sub"></div></td><td class="notes"></td></tr>
+</table>
+<div class="gate"><strong>Gate:</strong> a small real plan (e.g. one CP coverage in one state) committed, dispatched within its lane, every call in the log, results in the store, the matrix updated.</div>
+</details>
+<div class="ms">Milestone 5 · keeping it true</div>
+<details class="rc todo" id="RC-5"><summary><div><h3>RC-5 · Regression Library</h3></div><div class="meta">0 of 3 done<div class="bar"><i class="d" style="width:0.0%"></i><i class="n" style="width:0.0%"></i></div></div></summary><table>
+<tr class="" data-s="todo"><td class="id">TC-33</td><td><strong>Regression Library</strong>: every promoted scenario with its reference, content version, verified date, last build result; filters; <strong>defects with first and last seen (D18)</strong></td><td class="st"><span class="pill todo">To do</span><div class="sub"></div></td><td class="notes">Seeded with the 293 ISO fixtures and the chunk golden cases</td></tr>
+<tr class="" data-s="todo"><td class="id">TC-34</td><td><strong>Re-run on build</strong> at zero calls: ours against each stored reference; divergences flagged; <strong>the free all-samples check from <code>/</code> (D22)</strong></td><td class="st"><span class="pill todo">To do</span><div class="sub"></div></td><td class="notes">Same comparison as <code>157_</code></td></tr>
+<tr class="" data-s="todo"><td class="id">TC-35</td><td><strong>Stale refresh</strong>: stale references listed and queued into the refresh lane</td><td class="st"><span class="pill todo">To do</span><div class="sub"></div></td><td class="notes"></td></tr>
+</table>
+<div class="gate"><strong>Gate:</strong> the library re-runs at zero calls with today&#x27;s results (e.g. 293 of 293 CP fixtures pass); a corpus change marks exactly the affected references stale.</div>
+</details>
+<div class="ms">Milestone 6 · the switch-over</div>
+<details class="rc todo" id="RC-6"><summary><div><h3>RC-6 · Retire the old testing pages</h3></div><div class="meta">0 of 2 done<div class="bar"><i class="d" style="width:0.0%"></i><i class="n" style="width:0.0%"></i></div></div></summary><table>
+<tr class="" data-s="todo"><td class="id">TC-36</td><td><strong>Parity check</strong> against TC-02&#x27;s list: every job the old pages did, done in the console (or dropped by the user&#x27;s decision, recorded)</td><td class="st"><span class="pill todo">To do</span><div class="sub"></div></td><td class="notes"></td></tr>
+<tr class="" data-s="todo"><td class="id">TC-37</td><td><strong>Remove</strong> <code>/tester</code>, <code>/tests</code>, <code>/review</code> and their modules (<code>ui/tester.py</code>, <code>ui/tests_page.py</code>, <code>ui/review_page.py</code>, <code>ui/runfile.py</code> and what only they use); their tests retired or moved; the app&#x27;s nav and <code>start.bat</code> point at the console; <code>/</code> per D1</td><td class="st"><span class="pill todo">To do</span><div class="sub"></div></td><td class="notes">Run history kept on disk</td></tr>
+</table>
+</details>
+<details class="rc todo" id="RC-7"><summary><div><h3>RC-7 · Release</h3></div><div class="meta">0 of 1 done<div class="bar"><i class="d" style="width:0.0%"></i><i class="n" style="width:0.0%"></i></div></div></summary><table>
+<tr class="" data-s="todo"><td class="id">TC-38</td><td><strong>Release gate</strong>: full <code>104_ --gate</code>, the console&#x27;s own tests, the packaged Windows app rebuilt and started clean, the status page, and <strong>read-only snapshots of every screen published to Ideation</strong> (D6), refreshed by the same push the status page uses</td><td class="st"><span class="pill todo">To do</span><div class="sub"></div></td><td class="notes"></td></tr>
+</table>
+</details>
+</main><script>
+const btns=document.querySelectorAll('.filters button');
+function apply(f){btns.forEach(b=>b.setAttribute('aria-pressed',b.dataset.f===f));
+document.querySelectorAll('tr[data-s]').forEach(r=>r.classList.toggle('hide',f!=='all'&&(f==='open')===(r.dataset.s==='done')));
+try{localStorage.setItem('tc-filter',f)}catch(e){}}
+btns.forEach(b=>b.onclick=()=>apply(b.dataset.f));
+let f='all';try{f=localStorage.getItem('tc-filter')||'all'}catch(e){}apply(f);
+// keep open/closed panels across the auto-reload
+const key='tc-open';let open=[];try{open=JSON.parse(localStorage.getItem(key)||'null')}catch(e){}
+document.querySelectorAll('details.rc').forEach(d=>{if(open)d.open=open.includes(d.id);
+d.addEventListener('toggle',()=>{try{localStorage.setItem(key,JSON.stringify([...document.querySelectorAll('details.rc[open]')].map(x=>x.id)))}catch(e){}})});
+const y=sessionStorage.getItem('tc-y');if(y)scrollTo(0,+y);
+setTimeout(()=>{sessionStorage.setItem('tc-y',scrollY);location.reload()},30000);
+</script></body></html>

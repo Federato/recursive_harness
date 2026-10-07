@@ -1,6 +1,6 @@
 # ISO Rating Test Console: the plan
 
-**Status: IN PROGRESS 2026-10-06, 13 of 38 tasks.** RC-0 and RC-1 done (the data layer: `console/`). **Next: RC-2, the Readiness Matrix and Coverage Board.**
+**Status: IN PROGRESS 2026-10-07, 14 of 38 tasks.** RC-0 and RC-1 done (the data layer: `console/`); RC-2 under way, the console shell at `/console`. **Next: TC-15, `/api/console/readiness`.** Progress at a glance: [`TC-TRACKER.html`](TC-TRACKER.html), rebuilt from this file on every edit.
 the hi-fi prototype `ISO-Rating-Test-Console.html`, seven wireframes, and `readiness-matrix-integration.md`. The
 user's ask: build the console into the app, and **remove the current testing pages**. Nothing here is built yet.
 
@@ -112,7 +112,7 @@ sample); a test per roll-up rule; `104_ --quick` clean.
 
 | # | Task | Status | Notes |
 |---|---|---|---|
-| TC-14 | **Console shell**: the seven-tab frame, the call-cap strip (used / left / queued / resets), the shared legend; D7's look | ⬜ | |
+| TC-14 | **Console shell**: the seven-tab frame, the call-cap strip (used / left / queued / resets), the shared legend; D7's look | ✅ 2026-10-07 | `ui/console_page.py` at `/console`, mounted through `ui.tester`; the cap strip reads the ledger (`/api/console/cap`, refreshed every 30 s), the legend reads `console.status`; the prototype's palette and type, system-serif fallbacks, nothing fetched. Screens not yet built name the task that builds them. `tests/verify_console_rc2.py` A1-A10 |
 | TC-15 | **`GET /api/console/readiness`** per §5: cells, columns, cap; recomputed on store, classification, ingest and build events | ⬜ | |
 | TC-16 | **Readiness Matrix** screen: every state, alphabetical (D3), both lines, totals strip (§8), cell select / double-click (§7), n/a cells (D5), sign-off (D4), **agreement over time (D18)** | ⬜ | |
 | TC-17 | **"Still to test" list**: §6's sort without the wave key (status priority, then calls), needs text and call estimate; days to finish at the active lane (150/day) | ⬜ | |

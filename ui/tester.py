@@ -599,10 +599,11 @@ def dispatch(method: str, path: str, query: dict, body):
     store -- mounting it here rather than in `app.py` keeps that file's mount at
     four lines, which was the point of the boundary.
     """
-    from . import tests_page
-    out = tests_page.dispatch(method, path, query, body)
-    if out is not None:
-        return out
+    from . import console_page, tests_page
+    for mod in (console_page, tests_page):
+        out = mod.dispatch(method, path, query, body)
+        if out is not None:
+            return out
     if path == "/tester" and method == "GET":
         return 200, PAGE, "html"
     if not path.startswith("/api/tester"):
