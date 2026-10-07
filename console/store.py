@@ -255,7 +255,32 @@ def lookup(payload: dict, idx: dict | None = None) -> dict | None:
     for e in (idx or load())["references"]:
         if e["hash"] == h:
             return e
-    return None
+    return answer_entry(h, payload)
+
+
+def answer_entry(h: str, payload: dict) -> dict | None:
+    """An answer the ledger kept since the index was last built (`results/tc/answers/<hash>_*.json`), as an index
+    entry, so a call made a minute ago is found by the next dedupe without waiting for `build()`."""
+    resp, ref, req = ANSWERS / f"{h}_response.json", ANSWERS / f"{h}_refusal.json", ANSWERS / f"{h}_request.json"
+    ans = resp if resp.exists() else ref if ref.exists() else None
+    if ans is None:
+        return None
+    try:
+        line, state, date = _keys(payload)
+    except Exception:                                         # noqa: BLE001
+        line, state, date = "", "", ""
+    msg = ""
+    if ans is ref:
+        try:
+            msg = json.loads(ref.read_text(encoding="utf-8")).get("message", "")[:300]
+        except ValueError:
+            pass
+    text = ans.read_text(encoding="utf-8", errors="replace")
+    return {"hash": h, "line": line, "state": state, "date": date, "outcome": "rated" if ans is resp else "refused",
+            "iso_package": _state_pkg(text, line), "message": msg, "stored_at": _mtime(ans),
+            "files": [str(p.relative_to(ROOT)) if p.is_relative_to(ROOT) else str(p) for p in (req, ans) if p.exists()],
+            "sends": 1,
+            "freshness": "fresh", "stale_reason": "", "note": "kept by the ledger since the index was built"}
 
 
 def save_answer(payload: dict, response: dict | None, refusal: str | None) -> Path:

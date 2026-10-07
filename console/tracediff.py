@@ -73,9 +73,14 @@ def _find(key: str) -> dict:
     for e in store.load()["references"]:
         if e["hash"] == key or scenario_id(e["line"], e["state"], e["hash"]) == key:
             return e
-    for r in evidence.records():
-        if r["scenario"] == key and r.get("hash"):
-            return _find(r["hash"])
+    h = next((r["hash"] for r in evidence.records() if r["scenario"] == key and r.get("hash")), None)
+    if h and h != key:
+        return _find(h)
+    req = store.ANSWERS / f"{key}_request.json"            # kept by the ledger since the index was built
+    if req.exists():
+        e = store.answer_entry(key, json.loads(req.read_text(encoding="utf-8")))
+        if e:
+            return e
     raise KeyError(f"no stored answer for {key!r}")
 
 

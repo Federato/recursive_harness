@@ -52,13 +52,22 @@ def cap(now: datetime | None = None) -> dict:
         "cap": ledger.CAP,
         "used": u["total"],
         "left": max(0, ledger.CAP - u["total"]),
-        "queued": 0,                     # the dispatcher (TC-30) owns a queue; none exists yet
+        "queued": _queued(),             # scenarios waiting for a call in plans not finished (TC-30)
         "overrides": overrides,
         "resets_at": reset.strftime("%Y-%m-%dT%H:%M:%SZ"),
         "resets_in_s": int((reset - now).total_seconds()),
         "lanes": [{"key": k, "name": LANE_NAMES[k], "cap": c, "used": u.get(k, 0)}
                   for k, c in ledger.LANES.items()],
     }
+
+
+def _queued() -> int:
+    try:
+        from console import plans as P
+        return sum(1 for p in P.all_plans() if p["status"] in ("queued", "running", "paused")
+                   for s in p["scenarios"] if s["status"] == "queued")
+    except Exception:                                         # noqa: BLE001 -- the strip never fails for this
+        return 0
 
 
 def legend() -> list:
@@ -152,6 +161,123 @@ def workbench(method: str, op: str, query: dict, b: dict):
     return js(404, {"error": f"no workbench route {op!r}"})
 
 
+def _dispatcher_on():
+    """The dispatcher runs inside the app (one thread); `TC_DISPATCH=0` keeps it off (tests)."""
+    import os
+    if os.environ.get("TC_DISPATCH", "1") != "0":
+        from console import dispatcher
+        dispatcher.start()
+
+
+def planning(method: str, path: str, query: dict, b: dict):
+    """RC-4's routes: the catalog, plan preview / Tier 0 / commit / controls, the run log, refusals, override, run
+    files, and a plan's read-only report (D17). Only a running plan spends calls, through the dispatcher."""
+    from console import catalog as C, dispatcher as D, invariants, plans as P, runlog
+    js = lambda code, o: (code, json.dumps(o), "json")    # noqa: E731
+    line = "CP" if (b.get("line") or query.get("lob") or "").upper() == "CP" else "GL"
+    try:
+        if path == "/api/console/catalog":
+            st = (query.get("state") or "").upper()
+            if not st:
+                import variants as V
+                import property_rating as pr
+                return js(200, {"line": line, "states": pr.states() if line == "CP" else sorted(V.Declared.jurisdictions())})
+            cfg = json.loads(query.get("config") or "{}")
+            return js(200, {"line": line, "state": st, "dimensions": C.dimensions(line, st, cfg)})
+        if path == "/api/console/plan/preview" and method == "POST":
+            return js(200, P.preview(b["spec"]))
+        if path == "/api/console/plan/tier0" and method == "POST":
+            sts = (b.get("states") or [])[:8]
+            out = invariants.run(line, sts)
+            out["note"] = "" if len(b.get("states") or []) <= 8 else f"the first 8 of {len(b['states'])} states, to keep this quick"
+            return js(200, out)
+        if path == "/api/console/plan/commit" and method == "POST":
+            plan = P.commit(b["spec"], by=str(b.get("by") or ""), name=str(b.get("name") or ""))
+            if b.get("start"):
+                plan = P.control(plan["id"], "start", str(b.get("by") or ""))
+                _dispatcher_on()
+            return js(200, P.summary(plan))
+        if path == "/api/console/plans":
+            return js(200, {"plans": [P.summary(p) for p in reversed(P.all_plans())]})
+        if path == "/api/console/plan":
+            p = P.load(query.get("id", ""))
+            return js(200, {**p, "summary": P.summary(p)})
+        if path == "/api/console/plan/control" and method == "POST":
+            p = P.control(str(b.get("id")), str(b.get("action")), str(b.get("by") or ""))
+            if p["status"] == "running":
+                _dispatcher_on()
+            return js(200, P.summary(p))
+        if path == "/api/console/runlog":
+            return js(200, {"entries": list(reversed(runlog.entries(query.get("plan") or None, 400)))})
+        if path == "/api/console/refused":
+            from console import store, tracediff
+            refs = [e for e in store.load()["references"] if e["outcome"] == "refused"]
+            refs.sort(key=lambda e: e.get("stored_at", ""), reverse=True)
+            return js(200, {"total": len(refs), "refused": [{"scenario": tracediff.scenario_id(e["line"], e["state"], e["hash"]),
+                                                              "line": e["line"], "state": e["state"], "date": e["date"],
+                                                              "stored_at": e.get("stored_at", ""), "message": e.get("message", "")}
+                                                             for e in refs[:200]]})
+        if path == "/api/console/override":
+            if method == "POST":
+                return js(200, D.set_override(str(b.get("reason") or ""), int(b.get("calls") or 0), str(b.get("by") or "")))
+            return js(200, {"override": D.override()})
+        if path == "/api/console/runs":
+            from console import store as S
+            rid = query.get("id")
+            lines = [json.loads(x) for f in sorted(S.RES.glob("runs-*.jsonl"))
+                     for x in f.read_text(encoding="utf-8").splitlines() if x.strip()]
+            if rid:
+                ln = next((l for l in lines if l.get("id") == rid), None)
+                return js(200 if ln else 404, ln or {"error": "no such run"})
+            out = [{"id": l.get("id"), "at": l.get("at_iso"), "label": l.get("label", ""), "batch": l.get("batch", ""),
+                    "describes": (l.get("summary") or {}).get("describes", ""), "compared": (l.get("summary") or {}).get("compared"),
+                    "rated": (l.get("summary") or {}).get("rated"), "agree": (l.get("summary") or {}).get("agree"),
+                    "differ": len((l.get("summary") or {}).get("differ") or []), "total": (l.get("summary") or {}).get("total")}
+                   for l in reversed(lines)]
+            return js(200, {"runs": out[:300], "total": len(out)})
+        if path.startswith("/console/report/"):
+            return 200, report(P.load(path.rsplit("/", 1)[-1]), runlog.entries(path.rsplit("/", 1)[-1], 2000)), "html"
+    except (KeyError, ValueError, FileNotFoundError) as exc:
+        return js(400, {"error": f"{type(exc).__name__}: {exc}"[:300]})
+    return js(404, {"error": "no such planning route"})
+
+
+def report(plan: dict, log: list) -> str:
+    """D17: a plan's shareable, read-only report (no scripts, no calls), published with D6's snapshots."""
+    from console import plans as P
+    import html as H
+    s = P.summary(plan)
+    e = H.escape
+    rows = "".join(
+        f"<tr><td>{e(x['state'])}</td><td>{e(', '.join(f'{k}={v}' for k, v in x['config'].items()) or 'base risk')}</td>"
+        f"<td>{e(x['kind'])}</td><td>{e(x['status'])}</td><td class=n>{e(str(x.get('oursNow') or x.get('ours') or ''))}</td>"
+        f"<td class=n>{e(str(x.get('iso') or ''))}</td><td>{e(x.get('scenario', ''))}</td></tr>" for x in plan["scenarios"])
+    na = "".join(f"<tr><td>{e(x['state'])}</td><td>{e(json.dumps(x['config']))}</td><td>{e(x.get('detail', ''))}</td></tr>"
+                 for x in plan.get("notApplicable", []))
+    p3 = plan.get("pass3") or {}
+    logs = "".join(f"<tr><td>{e(x['at'])}</td><td>{e(x['event'])}</td><td>{e(x.get('state', ''))}</td><td>{e(x.get('detail', ''))}</td></tr>"
+                   for x in log)
+    return f"""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Plan report · {e(plan['name'])}</title><style>
+:root{{--bg:#f3f2f2;--ink:#201f1d;--mute:#605d5d;--line:color-mix(in srgb,#201f1d 16%,transparent);--accent:#7d5411}}
+body{{margin:0;background:var(--bg);color:var(--ink);font:13px/1.45 Georgia,serif}}main{{max-width:1100px;margin:0 auto;padding:24px 16px 60px}}
+h1{{font-weight:400;font-size:32px;margin:0}}h2{{font-size:18px;margin:24px 0 6px}}.sub{{color:var(--mute)}}
+.stats{{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin:16px 0;border-top:1px solid var(--ink);padding-top:10px}}
+.stats b{{display:block;font-size:24px;font-weight:400}}.stats span{{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--mute)}}
+table{{width:100%;border-collapse:collapse;font-size:12px}}td,th{{padding:4px 6px;border-top:1px solid var(--line);text-align:left;vertical-align:top}}
+td.n{{text-align:right;font-variant-numeric:tabular-nums}}.wrap{{overflow-x:auto}}</style></head><body><main>
+<div class=sub>ISO Rating Test Console · plan report (read-only)</div><h1>{e(plan['name'])}</h1>
+<div class=sub>{e(plan['line'])} · committed {e(plan['committed_at'])}{' by ' + e(plan['by']) if plan.get('by') else ''} · status {e(plan['status'])} · lane {e(plan.get('lane', 'active'))}</div>
+<div class=stats><div><span>Scenarios</span><b>{s['scenarios']}</b></div><div><span>Calls sent</span><b>{s['sent']}</b></div>
+<div><span>Reused answers</span><b>{s['reused']}</b></div><div><span>Match</span><b>{s['match']}</b></div><div><span>Mismatch</span><b>{s['mismatch']}</b></div>
+<div><span>Refused</span><b>{s['refused']}</b></div><div><span>Not reached</span><b>{s['notReached']}</b></div><div><span>Not expressible</span><b>{s['notApplicable']}</b></div></div>
+<h2>Scenarios</h2><div class=wrap><table><tr><th>State</th><th>Config</th><th>Kind</th><th>Result</th><th>Ours</th><th>ISO</th><th>Scenario</th></tr>{rows}</table></div>
+{'<h2>Not expressible in a state</h2><div class=wrap><table><tr><th>State</th><th>Config</th><th>Why</th></tr>' + na + '</table></div>' if na else ''}
+{'<h2>Pass 3 (D15)</h2><div class=sub>' + e(json.dumps(p3.get('counts'))) + '</div>' if p3 else ''}
+<h2>Run log</h2><div class=wrap><table><tr><th>At</th><th>Event</th><th>State</th><th>Detail</th></tr>{logs}</table></div>
+</main></body></html>"""
+
+
 def store_refs() -> list:
     from console import store
     return store.load()["references"]
@@ -200,6 +326,10 @@ def dispatch(method: str, path: str, query: dict, body):
     if method == "POST" and path == "/api/console/signoff":
         code, out = sign_off(body or {})
         return code, json.dumps(out), "json"
+    if path.startswith("/api/console/plan") or path in ("/api/console/catalog", "/api/console/runlog",
+                                                        "/api/console/refused", "/api/console/override",
+                                                        "/api/console/runs") or path.startswith("/console/report/"):
+        return planning(method, path, query, body or {})
     if path.startswith("/api/console/workbench/"):
         return workbench(method, path.rsplit("/", 1)[-1], query, body or {})
     if method == "POST" and path == "/api/console/promote":
@@ -260,7 +390,8 @@ def page() -> str:
                          f'(docs/TC-PLAN.md).<span class="filter"></span></div></section>')
         for i, (k, label, task) in enumerate(SCREENS, 1))
     return (PAGE.replace("{{TABS}}", tabs).replace("{{SCREENS}}", screens)
-            .replace("/*{{CSS}}*/", MATRIX_CSS + BOARD_CSS + TRACE_CSS + WB_CSS).replace("/*{{JS}}*/", MATRIX_JS + BOARD_JS + TRACE_JS + WB_JS)
+            .replace("/*{{CSS}}*/", MATRIX_CSS + BOARD_CSS + TRACE_CSS + WB_CSS + PLAN_CSS + QUEUE_CSS)
+            .replace("/*{{JS}}*/", MATRIX_JS + BOARD_JS + TRACE_JS + WB_JS + PLAN_JS + QUEUE_JS)
             .replace("{{BOOT}}", json.dumps({"cap": cap(), "legend": legend(), "names": STATE_NAMES, "categories": categories()})))
 
 
@@ -483,8 +614,8 @@ function mxList(){
     mxSide(c);});
   const more=document.getElementById('mx-more');if(more)more.onclick=()=>{MX.all=!MX.all;mxList();};
   const plan=document.getElementById('mx-plan');if(plan)plan.onclick=()=>{
-    const ls=[...new Set(L.map(g=>g.lob))],ss=[...new Set(L.map(g=>g.state))];
-    location.hash='#plan?from='+encodeURIComponent('Readiness Matrix gaps')+'&lines='+encodeURIComponent(ls.join(','))+'&states='+encodeURIComponent(ss.length+' states')+'&cells='+L.length;};
+    const lob=L[0].lob,G=L.filter(g=>g.lob===lob);   // one line per plan: the line of the most urgent gap
+    location.hash='#plan?lob='+lob+'&states='+encodeURIComponent([...new Set(G.map(g=>g.state))].join(','))+'&coverages='+encodeURIComponent([...new Set(G.map(g=>g.coverage))].join('|'));};
 }
 function mxOpen(c){location.hash='#board?lob='+encodeURIComponent(c.lob)+'&state='+encodeURIComponent(c.state)+'&coverage='+encodeURIComponent(c.coverage);}
 document.getElementById('mx-grid').addEventListener('click',ev=>{const b=ev.target.closest('.mx-cell');if(!b)return;
@@ -1118,4 +1249,220 @@ document.getElementById('wb-every').onclick=wbEvery;
 document.getElementById('wb-curve').onchange=wbCurve;
 let wbStarted=false;function wbRoute(){if((location.hash||'').startsWith('#workbench')&&!wbStarted){wbStarted=true;wbLoad();}}
 addEventListener('hashchange',wbRoute);wbRoute();
+"""
+
+
+# ---- TC-27 / TC-29: the Test Plan Builder -----------------------------------------------------------------------------
+# A line, states (no waves, D3) and per dimension the values to cover (from ISO's own domains, TC-26); a reduced grid,
+# edges, an allowance that never drops a state (D20); live counters; Tier 0 at zero calls (TC-28); commit with a
+# confirmation of what it will spend. Prefilled from the Readiness Matrix's gaps.
+
+PLAN_HTML = """<section class="screen" id="s-plan" hidden><div class="mx-wrap"><div class="mx-main">
+  <div class="mx-head"><div><div class="eyebrow">Planning · nothing spent until committed</div><h1>Test Plan Builder</h1></div>
+    <p>Choose states and the dimensions to cover, from ISO's own domains. Pairwise covers every pair of values once;
+    edges try each dimension at its extremes. Answers ISO already gave are reused, not asked again.</p>
+    <div class="bd-lines" id="pl-lines" role="group" aria-label="Line"><button data-l="CP">Commercial Property</button><button data-l="GL">General Liability</button></div></div>
+  <div class="pl-sec"><div class="cap2">States · <span id="pl-stc"></span></div>
+    <div class="td-tools"><button class="btn" data-st="all">All</button><button class="btn" data-st="none">None</button><button class="btn" data-st="gaps">Still to test</button><span class="mx-msg" id="pl-prefill"></span></div>
+    <div class="pl-chips" id="pl-states"></div></div>
+  <div class="pl-sec"><div class="cap2">Dimensions · values from <span id="pl-ref"></span>'s domains</div><div id="pl-dims"></div></div>
+  <div class="pl-sec td-tools"><label class="td-chk"><input type="checkbox" id="pl-reduced"> reduced grid (edges only)</label>
+    <label class="td-chk"><input type="checkbox" id="pl-edges" checked> edge cases</label>
+    <label class="td-chk">allowance <input type="number" id="pl-allow" min="1" placeholder="no limit" style="width:90px"> calls</label>
+    <label class="td-chk">name <input id="pl-name" placeholder="plan name" style="width:220px"></label></div>
+</div><aside class="mx-side" id="pl-side"></aside></div></section>"""
+
+BUILT["plan"] = PLAN_HTML
+
+PLAN_CSS = """
+.pl-sec{display:flex;flex-direction:column;gap:6px}
+.pl-chips{display:flex;flex-wrap:wrap;gap:4px}
+.pl-chip{font:inherit;font-size:11.5px;padding:3px 7px;border-radius:12px;border:1px solid var(--color-divider);background:#fff;cursor:pointer;color:var(--color-text)}
+.pl-chip[aria-pressed="true"]{background:var(--color-accent-700);border-color:var(--color-accent-700);color:var(--color-accent-100)}
+.pl-dim{border:1px solid var(--color-divider);border-radius:4px;padding:6px 8px;margin-bottom:4px;background:var(--color-bg)}
+.pl-dim>label{display:flex;gap:8px;align-items:center;font-size:12.5px;cursor:pointer}
+.pl-dim .pl-chips{margin:6px 0 0 22px}
+.pl-grp{font:600 14px var(--font-heading);margin:8px 0 4px;border-bottom:1px solid var(--color-divider)}
+.pl-count{display:grid;grid-template-columns:1fr auto;gap:2px 10px;font-size:12.5px}
+.pl-count b{font:600 16px var(--font-heading);text-align:right}
+.pl-big{font:400 34px var(--font-heading)}
+"""
+
+PLAN_JS = r"""
+const PL={line:'CP',states:new Set(),dims:{},cat:null,allStates:[],timer:null,prev:null};
+const PL_COV_GL={'Prem/Ops':['Limits','Classification'],'Prod/CO':['Limits','Classification'],'Deductibles':['Deductibles'],'Cov B · P&AI':['Coverage form'],'Cov C · Med pay':['Coverage form']};
+function plRef(){return [...PL.states].sort()[0]||PL.allStates[0]||'OH';}
+function plLoad(prefill){
+  document.querySelectorAll('#pl-lines button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.l===PL.line));
+  return fetch('/api/console/catalog?lob='+PL.line).then(r=>r.json()).then(j=>{PL.allStates=j.states;
+    if(prefill&&prefill.states)PL.states=new Set(prefill.states.filter(s=>j.states.includes(s)));
+    plStates();return plDims(prefill);});
+}
+function plStates(){
+  document.getElementById('pl-states').innerHTML=PL.allStates.map(s=>'<button class="pl-chip" data-s="'+s+'" aria-pressed="'+PL.states.has(s)+'" title="'+esc(BOOT.names[s]||s)+'">'+s+'</button>').join('');
+  document.getElementById('pl-stc').textContent=PL.states.size+' of '+PL.allStates.length;
+}
+function plDims(prefill){
+  const ref=plRef();document.getElementById('pl-ref').textContent=ref;
+  return fetch('/api/console/catalog?lob='+PL.line+'&state='+ref).then(r=>r.json()).then(j=>{PL.cat=j.dimensions;
+    if(prefill&&prefill.coverages){PL.dims={};const cov=prefill.coverages;
+      j.dimensions.forEach(d=>{const hit=PL.line==='CP'?cov.includes(d.coverage):cov.some(c=>(PL_COV_GL[c]||[]).includes(d.group));
+        if(hit&&d.values.length>1&&d.id!=='class_code'&&d.id!=='effective_date')PL.dims[d.id]=d.edges.slice();});}
+    plDimsDraw();plPreview();});
+}
+function plDimsDraw(){
+  let h='',grp=null;
+  PL.cat.forEach(d=>{if(d.group!==grp){grp=d.group;h+='<div class="pl-grp">'+esc(grp)+'</div>';}
+    const on=d.id in PL.dims,sel=new Set(PL.dims[d.id]||[]),vals=d.values,many=vals.length>16;
+    h+='<div class="pl-dim"><label><input type="checkbox" data-d="'+d.id+'"'+(on?' checked':'')+(vals.length<2?' disabled':'')+'> '+esc(d.label)+' <span class="mx-msg">'+vals.length+' value'+(vals.length===1?'':'s')+(d.coverage?' · '+esc(d.coverage):'')+'</span></label>';
+    if(on&&d.perState)h+='<div class="mx-msg" style="margin-left:22px">Each state uses its own edge values (its territories are its own).</div>';
+    else if(on)h+='<div class="pl-chips">'+(many?vals.filter(v=>sel.has(v)||d.edges.includes(v)).concat(vals.filter(v=>!sel.has(v)&&!d.edges.includes(v)).slice(0,12)):vals).map(v=>'<button class="pl-chip" data-d="'+d.id+'" data-v="'+esc(v)+'" aria-pressed="'+sel.has(v)+'">'+esc(v)+'</button>').join('')+
+      (many?'<span class="mx-msg"> +'+(vals.length-12)+' more in ISO’s domain</span>':'')+'</div>';
+    h+='</div>';});
+  document.getElementById('pl-dims').innerHTML=h;
+}
+function plSpec(){const a=parseInt(document.getElementById('pl-allow').value,10);
+  return {line:PL.line,states:[...PL.states].sort(),dims:PL.dims,reduced:document.getElementById('pl-reduced').checked,edges:document.getElementById('pl-edges').checked,allowance:isNaN(a)?null:a};}
+function plPreview(){clearTimeout(PL.timer);PL.timer=setTimeout(()=>{
+  const side=document.getElementById('pl-side');if(!PL.states.size){side.innerHTML='<div class="mx-msg">Choose at least one state.</div>';return;}
+  side.innerHTML='<div class="mx-msg">Counting… (each scenario is built and checked against the stored answers)</div>';
+  fetch('/api/console/plan/preview',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({spec:plSpec()})}).then(r=>r.json()).then(p=>{PL.prev=p;plSide();});},350);}
+function plSide(){
+  const p=PL.prev;if(!p||p.error){document.getElementById('pl-side').innerHTML='<div class="td-root">'+esc(p&&p.error||'')+'</div>';return;}
+  let h='<div class="cap2">This plan</div><div><span class="pl-big">'+p.calls+'</span> call'+(p.calls===1?'':'s')+' · '+p.days+' day'+(p.days===1?'':'s')+' at 150/day</div>'+
+    '<div class="pl-count"><span>Cartesian (every combination)</span><b>'+p.cartesian.toLocaleString()+'</b><span>Tier 0 checks (free)</span><b>'+p.tier0+'</b>'+
+    '<span>Pairwise</span><b>'+p.pairwise+'</b><span>Edge cases</span><b>'+p.edges+'</b><span>Already answered by ISO (reused)</span><b>'+p.alreadyAnswered+'</b>'+
+    '<span>Not expressible in a state</span><b>'+p.notApplicable+'</b>'+(p.thinned?'<span>Thinned by the allowance</span><b>'+p.thinned+'</b>':'')+
+    '<span>States kept</span><b>'+p.statesKept+' of '+p.states+'</b><span>Active lane left today</span><b>'+p.activeLeftToday+'</b></div>'+
+    '<button class="btn" id="pl-t0">Run Tier 0 now · free</button><div id="pl-t0out"></div>'+
+    '<div id="pl-conf"></div><button class="btn" id="pl-commit" style="margin-top:auto"'+(p.scenarios?'':' disabled')+'>Commit plan…</button>';
+  document.getElementById('pl-side').innerHTML=h;
+  document.getElementById('pl-t0').onclick=()=>{const o=document.getElementById('pl-t0out');o.innerHTML='<div class="mx-msg">Rating the invariants on our engine…</div>';
+    fetch('/api/console/plan/tier0',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({line:PL.line,states:[...PL.states].sort()})}).then(r=>r.json()).then(j=>{
+      o.innerHTML='<div class="mx-need"><span class="chip '+(j.failed.length?'mismatch':'verified')+'">'+(j.failed.length?'×':'✓')+'</span><div><b>'+j.passed+' of '+j.checks+' Tier 0 checks pass</b><div class="mx-msg">'+esc(j.note||'')+'</div></div></div>'+
+        (j.failed.length?'<table>'+j.failed.map(f=>'<tr><td>'+f.state+' · '+esc(f.check)+'</td><td>'+esc(f.detail)+'</td></tr>').join('')+'</table>':'');});};
+  document.getElementById('pl-commit').onclick=plConfirm;
+}
+function plConfirm(){
+  const p=PL.prev,el=document.getElementById('pl-conf');
+  el.innerHTML='<div class="wb-conf"><b>Commit this plan?</b><div>'+p.scenarios+' scenarios in '+p.statesKept+' state'+(p.statesKept===1?'':'s')+': <b>'+p.calls+' call'+(p.calls===1?'':'s')+'</b> from the <b>active lane</b> ('+p.activeLeftToday+' left today); '+p.alreadyAnswered+' answered already, reused at no cost.</div>'+
+    '<div class="mx-msg">At 150 a day: about '+p.days+' day'+(p.days===1?'':'s')+'. Each scenario is rated on our engine now (free) to order the queue by what it would teach. The dispatcher checks the store again before every call.</div>'+
+    '<div class="td-tools"><input id="pl-by" placeholder="Your name"><label class="td-chk"><input type="checkbox" id="pl-start" checked> start dispatching now</label></div>'+
+    '<div class="td-tools"><button class="btn" id="pl-go">Commit</button><button class="btn" id="pl-cancel">Cancel</button></div><div class="mx-msg" id="pl-msg"></div></div>';
+  document.getElementById('pl-cancel').onclick=()=>el.innerHTML='';
+  document.getElementById('pl-go').onclick=()=>{document.getElementById('pl-msg').textContent='Rating each scenario on our engine and writing the plan…';
+    fetch('/api/console/plan/commit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({spec:plSpec(),name:document.getElementById('pl-name').value,
+      by:document.getElementById('pl-by').value,start:document.getElementById('pl-start').checked})}).then(r=>r.json()).then(j=>{
+      if(j.error){document.getElementById('pl-msg').textContent=j.error;return;}location.hash='#queue?plan='+encodeURIComponent(j.id);});};
+}
+document.getElementById('pl-lines').addEventListener('click',ev=>{const b=ev.target.closest('button');if(!b||b.dataset.l===PL.line)return;PL.line=b.dataset.l;PL.states=new Set();PL.dims={};plLoad();});
+document.getElementById('s-plan').addEventListener('click',ev=>{
+  const s=ev.target.closest('#pl-states .pl-chip');if(s){const k=s.dataset.s;PL.states.has(k)?PL.states.delete(k):PL.states.add(k);s.setAttribute('aria-pressed',PL.states.has(k));
+    document.getElementById('pl-stc').textContent=PL.states.size+' of '+PL.allStates.length;if(plRef()!==document.getElementById('pl-ref').textContent)plDims();else plPreview();return;}
+  const q=ev.target.closest('[data-st]');if(q){const k=q.dataset.st;
+    if(k==='all')PL.states=new Set(PL.allStates);else if(k==='none')PL.states=new Set();
+    else if(MX.data)PL.states=new Set((MX.data.stillToTest||[]).filter(g=>g.lob===PL.line).map(g=>g.state).filter(s=>PL.allStates.includes(s)));
+    plStates();plDims();return;}
+  const v=ev.target.closest('#pl-dims .pl-chip');if(v){const d=v.dataset.d,val=v.dataset.v,cur=new Set(PL.dims[d]||[]);cur.has(val)?cur.delete(val):cur.add(val);
+    PL.dims[d]=PL.cat.find(x=>x.id===d).values.filter(x=>cur.has(x));v.setAttribute('aria-pressed',cur.has(val));plPreview();}
+});
+document.getElementById('pl-dims').addEventListener('change',ev=>{const c=ev.target.closest('input[data-d]');if(!c)return;const d=PL.cat.find(x=>x.id===c.dataset.d);
+  if(c.checked)PL.dims[d.id]=d.edges.slice();else delete PL.dims[d.id];plDimsDraw();plPreview();});
+['pl-reduced','pl-edges','pl-allow'].forEach(i=>document.getElementById(i).addEventListener('change',plPreview));
+let plStarted=false;
+function plRoute(){const p=(location.hash||'').slice(1).split('?');if(p[0]!=='plan')return;const q=new URLSearchParams(p[1]||'');
+  const pre=q.get('states')?{states:q.get('states').split(','),coverages:(q.get('coverages')||'').split('|').filter(Boolean)}:null;
+  if(q.get('lob'))PL.line=q.get('lob')==='GL'?'GL':'CP';
+  if(pre){document.getElementById('pl-prefill').textContent='Prefilled from the Readiness Matrix: '+pre.states.length+' state(s), '+pre.coverages.length+' coverage(s).';plStarted=true;plLoad(pre);}
+  else if(!plStarted){plStarted=true;plLoad();}}
+addEventListener('hashchange',plRoute);plRoute();
+"""
+
+# ---- TC-31 / TC-32: the Queue & Run Log ------------------------------------------------------------------------------
+
+QUEUE_HTML = """<section class="screen" id="s-queue" hidden><div class="mx-wrap"><div class="mx-main">
+  <div class="mx-head"><div><div class="eyebrow">Spending calls · every one logged</div><h1>Queue &amp; Run Log</h1></div>
+    <p>Committed plans and what they spend, lane by lane; the dispatch order; every call and what came of it. Pause,
+    resume, or stop a plan and keep what it found.</p></div>
+  <div class="mx-stats" id="qu-lanes" style="grid-template-columns:repeat(4,minmax(0,1fr))"></div>
+  <div class="cap2">Plans</div><div id="qu-plans"></div>
+  <div class="cap2">Dispatch queue · next up</div><div id="qu-next"></div>
+  <div class="cap2">Run log</div><div class="td-tools"><select id="qu-filter"><option value="">all plans</option></select></div><div id="qu-log"></div>
+</div><aside class="mx-side" id="qu-side"></aside></div></section>"""
+
+BUILT["queue"] = QUEUE_HTML
+
+QUEUE_CSS = """
+.qu-plan{border:1px solid var(--color-divider);border-radius:4px;padding:8px 10px;margin-bottom:6px;background:var(--color-bg);display:flex;flex-direction:column;gap:6px}
+.qu-plan .hd{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
+.qu-plan .hd b{font:600 16px var(--font-heading)}
+.qu-bar{display:flex;height:10px;border-radius:2px;overflow:hidden;background:var(--color-surface)}
+.qu-bar i{display:block;height:100%}
+.qu-st{font-size:11px;padding:1px 7px;border-radius:3px;border:1px solid var(--color-neutral-400)}
+.qu-st.running{border-color:var(--color-accent);color:var(--color-accent-800);background:var(--color-accent-100)}
+.qu-st.done{border-color:var(--color-accent-700);color:var(--color-accent-800)}
+.qu-tbl{width:100%;border-collapse:collapse;font-size:12px}
+.qu-tbl td{padding:4px 6px;border-top:1px solid var(--color-divider);vertical-align:top}
+.qu-ev{font-size:11px;padding:1px 6px;border-radius:3px;border:1px solid var(--color-neutral-400);white-space:nowrap}
+.qu-ev.match{border-color:var(--color-accent-700);color:var(--color-accent-800)}
+.qu-ev.mismatch,.qu-ev.error,.qu-ev.capped{border-color:var(--ox);color:var(--ox-deep)}
+.qu-ev.override{border-color:var(--ox);background:var(--ox-tint);color:var(--ox-deep)}
+#qu-side td,#qu-side td:last-child{text-align:left}
+"""
+
+QUEUE_JS = r"""
+const QU={plan:'',timer:null};
+function quJSON(u,b){return fetch(u,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)}).then(r=>r.json());}
+function quLoad(){
+  Promise.all([fetch('/api/console/cap').then(r=>r.json()),fetch('/api/console/plans').then(r=>r.json()),fetch('/api/console/runlog'+(QU.plan?'?plan='+encodeURIComponent(QU.plan):'')).then(r=>r.json()),fetch('/api/console/override').then(r=>r.json())])
+  .then(([c,p,l,o])=>{drawCap(c);quLanes(c,o.override);quPlans(p.plans);quLog(l.entries);quNext(p.plans);});
+}
+function quLanes(c,ov){
+  document.getElementById('qu-lanes').innerHTML=c.lanes.map(l=>'<div><span>'+esc(l.name)+'</span><b>'+l.used+' <small>of '+l.cap+'</small></b></div>').join('')+
+    '<div><span>Today · resets 00:00 ET</span><b>'+c.left+' <small>left of '+c.cap+'</small></b>'+(ov?'<small>Override: '+ov.left+' of '+ov.calls+' left · '+esc(ov.reason)+'</small>':'')+'</div>';
+}
+function quPlans(ps){
+  const sel=document.getElementById('qu-filter'),cur=QU.plan;sel.innerHTML='<option value="">all plans</option>'+ps.map(p=>'<option value="'+esc(p.id)+'"'+(p.id===cur?' selected':'')+'>'+esc(p.name)+' · '+esc(p.id)+'</option>').join('');
+  if(!ps.length){document.getElementById('qu-plans').innerHTML='<div class="mx-empty" style="height:70px">No plans yet. Build one in the Test Plan Builder.</div>';return;}
+  document.getElementById('qu-plans').innerHTML=ps.map(p=>{const n=p.scenarios||1,seg=(k,c)=>p[k]?'<i style="width:'+(100*p[k]/n)+'%;background:'+c+'" title="'+k+' '+p[k]+'"></i>':'';
+    const btn=(a,l)=>'<button class="btn" data-a="'+a+'" data-id="'+esc(p.id)+'">'+l+'</button>';
+    const acts=p.status==='queued'?btn('start','Start')+btn('stop','Stop and keep'):p.status==='running'?btn('pause','Pause')+btn('stop','Stop and keep'):p.status==='paused'?btn('resume','Resume')+btn('stop','Stop and keep'):'';
+    return '<div class="qu-plan"><div class="hd"><b>'+esc(p.name)+'</b><span class="qu-st '+p.status+'">'+p.status+'</span><span class="mx-msg">'+esc(p.line+' · '+p.states+' state(s) · '+p.scenarios+' scenarios · committed '+p.committed_at.replace('T',' ')+(p.by?' by '+p.by:''))+'</span></div>'+
+      '<div class="qu-bar">'+seg('match','var(--color-accent-700)')+seg('mismatch','var(--ox)')+seg('refused','var(--color-neutral-500)')+seg('error','var(--ox-deep)')+seg('notReached','var(--color-neutral-300)')+'</div>'+
+      '<div class="mx-msg">'+p.sent+' sent · '+p.reused+' reused · '+p.match+' match · '+p.mismatch+' mismatch · '+p.refused+' refused · '+p.error+' error · '+p.queued+' queued'+(p.notReached?' · '+p.notReached+' never reached':'')+(p.notApplicable?' · '+p.notApplicable+' not expressible':'')+(p.pass3?' · pass 3 '+esc(JSON.stringify(p.pass3)):'')+'</div>'+
+      '<div class="td-tools">'+acts+'<a href="/console/report/'+encodeURIComponent(p.id)+'" target="_blank" rel="noopener">Report</a><button class="btn" data-a="open" data-id="'+esc(p.id)+'">Scenarios</button></div></div>';}).join('');
+}
+function quNext(ps){
+  const running=ps.filter(p=>p.status==='running');
+  if(!running.length){document.getElementById('qu-next').innerHTML='<div class="mx-msg">Nothing running.</div>';return;}
+  Promise.all(running.map(p=>fetch('/api/console/plan?id='+encodeURIComponent(p.id)).then(r=>r.json()))).then(full=>{
+    const q=full.flatMap(p=>p.scenarios.filter(s=>s.status==='queued'||s.status==='reuse').map(s=>({...s,plan:p.name}))).sort((a,b)=>(b.status==='reuse')-(a.status==='reuse')||b.score-a.score).slice(0,10);
+    document.getElementById('qu-next').innerHTML='<table class="qu-tbl">'+q.map(s=>'<tr><td>'+s.state+'</td><td>'+esc(Object.entries(s.config).map(([k,v])=>k+'='+v).join(', ')||'base risk')+'</td><td>'+esc(s.kind)+'</td><td>'+(s.status==='reuse'?'stored answer, no call':'score '+s.score)+'</td><td class="mx-msg">'+esc(s.plan)+'</td></tr>').join('')+'</table>';});
+}
+function quLog(es){
+  document.getElementById('qu-log').innerHTML=es.length?'<table class="qu-tbl">'+es.slice(0,150).map(e=>{const k=e.outcome||e.event;
+    return '<tr><td class="mx-msg">'+esc(e.at.replace('T',' '))+'</td><td><span class="qu-ev '+esc(k)+'">'+esc(e.event==='sent'?'sent · '+(e.outcome||''):e.event)+'</span></td><td>'+esc(e.state||'')+'</td><td>'+
+      (e.scenario?'<a href="#trace?scenario='+encodeURIComponent(e.scenario)+'">'+esc(e.scenario)+'</a> · ':'')+esc(e.detail||'')+'</td></tr>';}).join('')+'</table>':'<div class="mx-msg">No events yet.</div>';
+}
+function quSide(){
+  const s=document.getElementById('qu-side');
+  s.innerHTML='<div class="cap2">Override the cap (TC-32)</div><div class="mx-msg">For today only: lets the dispatcher go past a full lane for this many calls, each logged with the reason.</div>'+
+    '<div class="td-cls" style="display:flex;flex-direction:column;gap:6px"><input id="qu-reason" placeholder="Reason"><input id="qu-calls" type="number" min="1" placeholder="Calls"><input id="qu-by" placeholder="Your name"><button class="btn" id="qu-ov">Set override</button><div class="mx-msg" id="qu-ovmsg"></div></div>'+
+    '<div class="cap2">Refused payloads (D16)</div><div id="qu-ref" class="mx-msg">Loading…</div>'+
+    '<div class="cap2">Earlier run files (D17)</div><div id="qu-runs" class="mx-msg">Loading…</div>';
+  document.getElementById('qu-ov').onclick=()=>quJSON('/api/console/override',{reason:document.getElementById('qu-reason').value,calls:document.getElementById('qu-calls').value,by:document.getElementById('qu-by').value})
+    .then(j=>{document.getElementById('qu-ovmsg').textContent=j.error?j.error:'Set: '+j.calls+' call(s) past the cap today.';quLoad();});
+  fetch('/api/console/refused').then(r=>r.json()).then(j=>{document.getElementById('qu-ref').innerHTML=j.total+' refusals stored.<table>'+j.refused.slice(0,25).map(x=>'<tr><td><a href="#trace?lob='+x.line+'&scenario='+encodeURIComponent(x.scenario)+'">'+esc(x.scenario)+'</a><div class="mx-msg">'+esc(x.message.slice(0,140))+'</div></td></tr>').join('')+'</table>';});
+  fetch('/api/console/runs').then(r=>r.json()).then(j=>{document.getElementById('qu-runs').innerHTML=j.total+' runs in the GL run store.<table>'+j.runs.slice(0,40).map(x=>'<tr><td>'+esc((x.at||'').slice(0,16))+'<div class="mx-msg">'+esc(x.describes||x.label||x.id)+'</div></td><td>'+(x.compared?(x.agree||0)+'/'+(x.total||0)+' agree':'ours only')+'</td></tr>').join('')+'</table>';});
+}
+document.getElementById('qu-plans').addEventListener('click',ev=>{const b=ev.target.closest('button[data-a]');if(!b)return;
+  if(b.dataset.a==='open'){fetch('/api/console/plan?id='+encodeURIComponent(b.dataset.id)).then(r=>r.json()).then(p=>{document.getElementById('qu-side').innerHTML='<a href="#" class="mx-back" id="qu-back">← Overrides and files</a><div class="cap2">'+esc(p.name)+'</div><table class="qu-tbl">'+
+    p.scenarios.map(s=>'<tr><td>'+s.state+'<div class="mx-msg">'+esc(Object.entries(s.config).map(([k,v])=>k+'='+v).join(', ')||'base risk')+'</div></td><td>'+esc(s.status)+'</td><td>'+(s.scenario?'<a href="#trace?scenario='+encodeURIComponent(s.scenario)+'">diff</a>':'')+'</td></tr>').join('')+'</table>';
+    document.getElementById('qu-back').onclick=e=>{e.preventDefault();quSide();};});return;}
+  quJSON('/api/console/plan/control',{id:b.dataset.id,action:b.dataset.a}).then(()=>quLoad());});
+document.getElementById('qu-filter').addEventListener('change',ev=>{QU.plan=ev.target.value;quLoad();});
+let quStarted=false;
+function quRoute(){const p=(location.hash||'').slice(1).split('?');if(p[0]!=='queue')return;const q=new URLSearchParams(p[1]||'');QU.plan=q.get('plan')||QU.plan;
+  quLoad();if(!quStarted){quStarted=true;quSide();}clearInterval(QU.timer);QU.timer=setInterval(()=>{if(!document.getElementById('s-queue').hidden)quLoad();},5000);}
+addEventListener('hashchange',quRoute);quRoute();
 """
