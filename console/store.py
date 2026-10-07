@@ -252,10 +252,15 @@ def freshness(idx: dict | None = None) -> dict:
 def lookup(payload: dict, idx: dict | None = None) -> dict | None:
     """The stored answer for exactly this request, if any (the dedupe check before a call)."""
     h = request_hash(payload)
+    newer = answer_entry(h, payload)
     for e in (idx or load())["references"]:
         if e["hash"] == h:
+            # a refresh (or any re-send) since the index was built: the ledger's newer answer is the one in force
+            if newer and newer["stored_at"] > e["stored_at"]:
+                return {**newer, "files": sorted(set(e["files"]) | set(newer["files"]), key=lambda f: f == newer["files"][-1]),
+                        "sends": e.get("sends", 1) + 1}
             return e
-    return answer_entry(h, payload)
+    return newer
 
 
 def answer_entry(h: str, payload: dict) -> dict | None:

@@ -1,6 +1,6 @@
 # ISO Rating Test Console: the plan
 
-**Status: IN PROGRESS 2026-10-07, 32 of 38 tasks.** RC-0 and RC-1 done (the data layer: `console/`); RC-2, RC-3 and RC-4 done and gated: the console at `/console` with the Readiness Matrix, "Still to test", the Coverage Board, Trace Diff, the Scenario Workbench, the Test Plan Builder and the Queue & Run Log, on real evidence (CP 156 of 281 cells Passed, GL 0 of 255); the first real plan ran through it (3 calls, all equal ISO). **Next: RC-5, the Regression Library (TC-33).** **Open:** NY GL needs ISO's `V02` package (a corpus refresh); GL writes "Value Not Found" for every form name and number (found by Trace Diff; premiums unaffected). (TC-19's GL 2027-04-01 "mismatches" were the seed's: those runs predate OI-97's stopgap, so the rebuilt request differs; now recorded as not comparable.) Progress at a glance: [`TC-TRACKER.html`](TC-TRACKER.html), rebuilt from this file on every edit.
+**Status: IN PROGRESS 2026-10-07, 35 of 38 tasks.** RC-0 to RC-5 done and gated: the console at `/console` with all seven screens (Readiness Matrix and "Still to test", Coverage Board, Trace Diff, Scenario Workbench, Test Plan Builder, Regression Library, Queue & Run Log) on real evidence (CP 156 of 281 cells Passed, GL 0 of 255); the first real plan ran through it (3 calls, all equal ISO); the library of 395 re-runs free (395 pass). **Next: RC-6, retiring `/tester`, `/tests` and `/review` (TC-36, the parity check against TC-02's 36 jobs, first).** **Open:** NY GL needs ISO's `V02` package (a corpus refresh); GL writes "Value Not Found" for every form name and number (found by Trace Diff; premiums unaffected). (TC-19's GL 2027-04-01 "mismatches" were the seed's: those runs predate OI-97's stopgap, so the rebuilt request differs; now recorded as not comparable.) Progress at a glance: [`TC-TRACKER.html`](TC-TRACKER.html), rebuilt from this file on every edit.
 the hi-fi prototype `ISO-Rating-Test-Console.html`, seven wireframes, and `readiness-matrix-integration.md`. The
 user's ask: build the console into the app, and **remove the current testing pages**. Nothing here is built yet.
 
@@ -163,16 +163,15 @@ answers without a call.
 
 ## Milestone 5: keeping it true
 
-### RC-5 · Regression Library (3 tasks)
+### RC-5 · Regression Library (3 tasks) · 3 of 3 done
 
 | # | Task | Status | Notes |
 |---|---|---|---|
-| TC-33 | **Regression Library**: every promoted scenario with its reference, content version, verified date, last build result; filters; **defects with first and last seen (D18)** | ⬜ | Seeded with the 293 ISO fixtures and the chunk golden cases |
-| TC-34 | **Re-run on build** at zero calls: ours against each stored reference; divergences flagged; **the free all-samples check from `/` (D22)** | ⬜ | Same comparison as `157_` |
-| TC-35 | **Stale refresh**: stale references listed and queued into the refresh lane | ⬜ | |
+| TC-33 | **Regression Library**: every promoted scenario with its reference, content version, verified date, last build result; filters; **defects with first and last seen (D18)** | ✅ 2026-10-07 | The Library tab, `console/regression.py` over `console/library.py`; seeded by `scripts/tc/tc33_seed_library.py` with **395 entries**: ISO's 293 STC fixtures (each with its own response, rebuilt as `157_` sends it), the 5 chunk golden cases with an ISO answer, and the samples (51 GL, 46 CP; ISO's answer where it gave one, else our premium, labelled ours). Filters by line, origin, result, reference, state; first / last seen per entry across runs |
+| TC-34 | **Re-run on build** at zero calls: ours against each stored reference; divergences flagged; **the free all-samples check from `/` (D22)** | ✅ 2026-10-07 | `scripts/tc/tc34_rerun_library.py` and "Re-run now" (its own process, 7 workers): **395 of 395 pass in 44-53 s, 0 calls; ISO fixtures 293 of 293, clean on every number**. Premium fields decide pass / diverged as `157_`; any other number that differs is reported apart. Each run kept with its git build, and writes the readiness build marker (the matrix recomputes). Tests prove a tampered ISO answer and a moved premium are caught |
+| TC-35 | **Stale refresh**: stale references listed and queued into the refresh lane | ✅ 2026-10-07 | Stale answers listed with **what fixes them**: a re-send when our corpus moved past ISO's package; **a corpus refresh when ISO is ahead of us** (re-asking changes nothing: today's one stale answer, NY GL on `V02`, is this). "Queue a refresh" makes a refresh-lane plan of the re-sendable ones (spends only when started); the dispatcher now runs a plan in its own lane, re-sends a scenario's kept request, and never takes a stale answer as answered; `store.lookup` prefers a newer answer the ledger kept. GL's 22 stale premium rows hold no request: listed for a QA re-run |
 
-**Gate RC-5:** the library re-runs at zero calls with today's results (e.g. 293 of 293 CP fixtures pass); a corpus
-change marks exactly the affected references stale.
+**Gate RC-5 (passed 2026-10-07: `tests/verify_console_rc5.py` 22 of 22, RC-4 45, RC-3 48, RC-2 84, RC-1 50, tester 81, `104_ --quick` clean, log `results/tc/rc5_gate_104_quick.log`):** the library re-runs at zero calls with today's results (e.g. 293 of 293 CP fixtures pass); a corpus change marks exactly the affected references stale. **Run:** `20261007-104417` on build `9270d45`, started from the screen: 395 of 395, 293 of 293 fixtures clean on every number, 0 calls. **Corpus change** (tested): a new OH Property package marks stale exactly the OH answers ISO gave on the old one, nothing else.
 
 ---
 

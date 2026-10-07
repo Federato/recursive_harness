@@ -26,16 +26,22 @@ def entries() -> list:
 
 
 def promote(*, scenario: str, line: str, state: str, origin: str, request_hash: str = "", request: dict | None = None,
-            ours=None, by: str = "", note: str = "") -> dict:
-    """Add a scenario to the library. Returns the entry, with `already` when it was there."""
+            ours=None, by: str = "", note: str = "", fixture: str = "", fixture_file: str = "",
+            response_file: str = "") -> dict:
+    """Add a scenario to the library. Returns the entry, with `already` when it was there. A reference is a stored
+    answer (request hash), one of ISO's STC fixtures with its own response (rebuilt as `157_` sends it), or, for a
+    request ISO never answered, the request kept with our premium."""
     have = next((e for e in entries() if e["scenario"] == scenario), None)
     if have:
         return {**have, "already": True}
-    if not request_hash and request is None:
-        raise ValueError("a library entry needs a stored ISO answer (request hash) or a request to keep")
+    if not request_hash and request is None and not (fixture and response_file):
+        raise ValueError("a library entry needs a stored ISO answer (request hash), a fixture, or a request to keep")
+    iso = bool(request_hash or fixture)
     e = {"at": time.strftime("%Y-%m-%dT%H:%M:%S"), "scenario": scenario, "line": line, "state": state,
-         "origin": origin, "reference": "iso" if request_hash else "ours", "hash": request_hash, "by": by, "note": note}
-    if request is not None and not request_hash:
+         "origin": origin, "reference": "iso" if iso else "ours", "hash": request_hash, "by": by, "note": note}
+    if fixture:
+        e.update(fixture=fixture, fixture_file=fixture_file, response_file=response_file)
+    if request is not None and not iso:
         PAYLOADS.mkdir(parents=True, exist_ok=True)
         f = PAYLOADS / (re.sub(r"[^A-Za-z0-9_.-]", "_", scenario) + ".json")
         f.write_text(json.dumps(request, indent=1), encoding="utf-8")

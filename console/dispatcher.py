@@ -66,6 +66,11 @@ def _use_override() -> str | None:
 
 # ---- one step -----------------------------------------------------------------------------------------------------
 
+def _path(f) -> Path:
+    f = Path(f)
+    return f if f.is_absolute() else ROOT / f
+
+
 def _premium(line: str, resp: dict):
     b = resp.get("Body", {})
     if line == "GL":
@@ -80,13 +85,13 @@ def _iso_answer(e: dict) -> tuple[str, object, str]:
     if e["outcome"] != "rated":
         return "refused", None, e.get("message", "")
     resp = [f for f in e["files"] if f.endswith("_response.json")]
-    body = json.loads((ROOT / resp[-1]).read_text(encoding="utf-8")) if resp else {}
+    body = json.loads(_path(resp[-1]).read_text(encoding="utf-8")) if resp else {}
     return "rated", _premium(e["line"], body), ""
 
 
 def _record(plan: dict, s: dict, req: dict, e: dict, how: str) -> None:
     """Compare ours with ISO's stored answer, record the evidence, mark the scenario."""
-    line = plan["line"]
+    line = s.get("line") or plan["line"]
     outcome, iso, msg = _iso_answer(e)
     sid = f"{line}-{s['state']}-{e['hash'][:10]}"
     try:
@@ -135,21 +140,25 @@ def step(plan_id: str, client_factory=None) -> str:
         threading.Thread(target=store.build, name="tc-index", daemon=True).start()
         return "done"
     s = max(queue, key=lambda x: (x["status"] == "reuse", x.get("score", 0)))
-    req = C.build(plan["line"], s["state"], s["config"])
+    line = s.get("line") or plan["line"]
+    lane = plan.get("lane", "active")
+    # a refresh scenario re-sends the request it was answered on; a plan scenario is built from its config
+    req = (json.loads(_path(s["request_file"]).read_text(encoding="utf-8")) if s.get("request_file")
+           else C.build(line, s["state"], s["config"]))
     e = store.lookup(req)
-    if e and e["outcome"] in ("rated", "refused"):           # dedupe before every call
+    if e and e["outcome"] in ("rated", "refused") and e.get("freshness") != "stale":   # dedupe before every call
         _record(plan, s, req, e, "dedupe")
         P.save(plan)
         return "dedupe"
     used = ledger.used()
-    full = used["active"] >= ledger.LANES["active"] or used["total"] >= ledger.CAP
+    full = used[lane] >= ledger.LANES[lane] or used["total"] >= ledger.CAP
     reason = None
     if full:
         reason = _use_override()
         if reason is None:
             if _STATE["capped_day"] != ledger.day():
                 _STATE["capped_day"] = ledger.day()
-                runlog.add(plan=plan_id, event="capped", detail=f"active lane {used['active']} of {ledger.LANES['active']}, "
+                runlog.add(plan=plan_id, event="capped", detail=f"{lane} lane {used[lane]} of {ledger.LANES[lane]}, "
                                                                  f"{used['total']} of {ledger.CAP}: waiting for the reset")
             return "capped"
     if client_factory is None:
@@ -158,7 +167,7 @@ def step(plan_id: str, client_factory=None) -> str:
         from raas import RaaS
 
         def client_factory(ov):
-            return RaaS(lane="active", origin=f"plan:{plan_id}", override=ov)
+            return RaaS(lane=lane, origin=f"plan:{plan_id}", override=ov)
     from raas import RaaSError
     try:
         client_factory(reason).rate(req)

@@ -407,10 +407,12 @@ def part_f():
     bad = []
     for c in passed:
         for p in c["paths"]["byPath"]:
-            srcs = [x["source"] for x in by.get((c["lob"], c["state"], p), [])
-                    if x.get("ours") is not None and x.get("iso") is not None]
-            ok = any((s.startswith("run ") and s[4:] in runs) or
-                     all((ROOT / "results" / "cf-raas" / n.strip()).exists() for n in s.split(",")) for s in srcs)
+            recs = [x for x in by.get((c["lob"], c["state"], p), []) if x.get("ours") is not None and x.get("iso") is not None]
+            answers = store.ANSWERS
+            ok = any((x["source"].startswith("run ") and x["source"][4:] in runs) or
+                     all((ROOT / "results" / "cf-raas" / n.strip()).exists() for n in x["source"].split(",")) or
+                     (x.get("hash") and (answers / f"{x['hash']}_response.json").exists())   # a plan's answer (RC-4)
+                     for x in recs)
             if not ok:
                 bad.append((c["lob"], c["state"], c["coverage"], p))
     check(f"F9 every Passed cell ({len(passed)}) traces to stored answers on disk", not bad, bad[:5])

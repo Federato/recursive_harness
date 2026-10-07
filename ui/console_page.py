@@ -16,6 +16,7 @@ labels here are the ones every screen shares (TC-08).
 from __future__ import annotations
 
 import json
+import sys
 from datetime import datetime, timedelta, timezone
 
 from console import ledger, status
@@ -242,6 +243,33 @@ def planning(method: str, path: str, query: dict, b: dict):
     return js(404, {"error": "no such planning route"})
 
 
+def library_routes(method: str, path: str, query: dict, b: dict):
+    """RC-5: the library view, a re-run (free, in its own process so the app stays responsive), the stale answers and
+    a refresh plan for them (queued in the refresh lane; it spends only when started from the Queue)."""
+    import subprocess
+    from console import regression as R
+    js = lambda code, o: (code, json.dumps(o), "json")    # noqa: E731
+    try:
+        if path == "/api/console/library":
+            return js(200, R.view())
+        if path == "/api/console/library/rerun" and method == "POST":
+            if R.PROGRESS.exists():
+                return js(409, {"error": "a re-run is already going", "progress": json.loads(R.PROGRESS.read_text(encoding="utf-8"))})
+            R.RUNS.mkdir(parents=True, exist_ok=True)
+            log = open(R.RUNS / "last_rerun.log", "w", encoding="utf-8")
+            subprocess.Popen([sys.executable, "-X", "utf8", str(R.ROOT / "scripts" / "tc" / "tc34_rerun_library.py")],
+                             cwd=R.ROOT, stdout=log, stderr=subprocess.STDOUT)
+            return js(200, {"started": True})
+        if path == "/api/console/library/stale":
+            return js(200, R.stale())
+        if path == "/api/console/library/refresh" and method == "POST":
+            from console import plans as P
+            return js(200, P.summary(R.refresh_plan(by=str(b.get("by") or ""))))
+    except (KeyError, ValueError) as exc:
+        return js(400, {"error": f"{type(exc).__name__}: {exc}"[:300]})
+    return js(404, {"error": "no such library route"})
+
+
 def report(plan: dict, log: list) -> str:
     """D17: a plan's shareable, read-only report (no scripts, no calls), published with D6's snapshots."""
     from console import plans as P
@@ -330,6 +358,8 @@ def dispatch(method: str, path: str, query: dict, body):
                                                         "/api/console/refused", "/api/console/override",
                                                         "/api/console/runs") or path.startswith("/console/report/"):
         return planning(method, path, query, body or {})
+    if path.startswith("/api/console/library"):
+        return library_routes(method, path, query, body or {})
     if path.startswith("/api/console/workbench/"):
         return workbench(method, path.rsplit("/", 1)[-1], query, body or {})
     if method == "POST" and path == "/api/console/promote":
@@ -390,8 +420,8 @@ def page() -> str:
                          f'(docs/TC-PLAN.md).<span class="filter"></span></div></section>')
         for i, (k, label, task) in enumerate(SCREENS, 1))
     return (PAGE.replace("{{TABS}}", tabs).replace("{{SCREENS}}", screens)
-            .replace("/*{{CSS}}*/", MATRIX_CSS + BOARD_CSS + TRACE_CSS + WB_CSS + PLAN_CSS + QUEUE_CSS)
-            .replace("/*{{JS}}*/", MATRIX_JS + BOARD_JS + TRACE_JS + WB_JS + PLAN_JS + QUEUE_JS)
+            .replace("/*{{CSS}}*/", MATRIX_CSS + BOARD_CSS + TRACE_CSS + WB_CSS + PLAN_CSS + QUEUE_CSS + LIB_CSS)
+            .replace("/*{{JS}}*/", MATRIX_JS + BOARD_JS + TRACE_JS + WB_JS + PLAN_JS + QUEUE_JS + LIB_JS)
             .replace("{{BOOT}}", json.dumps({"cap": cap(), "legend": legend(), "names": STATE_NAMES, "categories": categories()})))
 
 
@@ -1465,4 +1495,84 @@ let quStarted=false;
 function quRoute(){const p=(location.hash||'').slice(1).split('?');if(p[0]!=='queue')return;const q=new URLSearchParams(p[1]||'');QU.plan=q.get('plan')||QU.plan;
   quLoad();if(!quStarted){quStarted=true;quSide();}clearInterval(QU.timer);QU.timer=setInterval(()=>{if(!document.getElementById('s-queue').hidden)quLoad();},5000);}
 addEventListener('hashchange',quRoute);quRoute();
+"""
+
+
+# ---- TC-33..TC-35: the Regression Library ---------------------------------------------------------------------------
+# Every promoted scenario with its reference, the content version and date it was verified on, its last build's result
+# and its defect history (D18); a free re-run; the stale answers and a refresh plan for the refresh lane.
+
+LIB_HTML = """<section class="screen" id="s-library" hidden><div class="mx-wrap"><div class="mx-main">
+  <div class="mx-head"><div><div class="eyebrow">Keeping it true · re-run on every build, free</div><h1>Regression Library</h1></div>
+    <p>Every scenario we trust: ISO's fixtures, the golden cases, the app's samples and what you promote. Each re-run
+    rates them all on today's engine against their reference and spends nothing.</p></div>
+  <div class="mx-stats" id="lb-stats" style="grid-template-columns:repeat(5,minmax(0,1fr))"></div>
+  <div class="td-tools"><button class="btn" id="lb-rerun">Re-run now · free</button><span class="mx-msg" id="lb-prog"></span></div>
+  <div class="td-tools lb-filters">
+    <select id="lb-line"><option value="">both lines</option><option>CP</option><option>GL</option></select>
+    <select id="lb-origin"><option value="">every origin</option><option value="fixture">ISO fixtures</option><option value="golden">golden cases</option><option value="sample">samples</option><option value="trace">promoted from Trace Diff</option><option value="workbench">promoted from the Workbench</option></select>
+    <select id="lb-result"><option value="">every result</option><option value="pass">pass</option><option value="fields">premiums pass, a number differs</option><option value="diverged">diverged</option><option value="refused">refused</option><option value="error">error</option><option value="never">not run yet</option><option value="open">open defects</option></select>
+    <select id="lb-ref"><option value="">either reference</option><option value="iso">ISO's answer</option><option value="ours">our own premium</option></select>
+    <input id="lb-state" placeholder="State" maxlength="2" style="width:64px"><span class="mx-msg" id="lb-count"></span></div>
+  <div class="mx-scroll"><table class="qu-tbl" id="lb-table"></table></div>
+</div><aside class="mx-side" id="lb-side"></aside></div></section>"""
+
+BUILT["library"] = LIB_HTML
+
+LIB_CSS = """
+.lb-filters select,.lb-filters input{font:inherit;padding:5px 7px;border:1px solid var(--color-divider);border-radius:4px;background:#fff}
+#lb-table th{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-neutral-700);text-align:left;padding:4px 6px;border-bottom:1px solid var(--color-text)}
+.lb-r{font-size:11px;padding:1px 6px;border-radius:3px;border:1px solid var(--color-neutral-400);white-space:nowrap}
+.lb-r.pass{border-color:var(--color-accent-700);color:var(--color-accent-800);background:var(--color-accent-100)}
+.lb-r.fields{border-color:var(--color-accent-400);color:var(--color-accent-800)}
+.lb-r.diverged,.lb-r.error{border-color:var(--ox);color:var(--ox-deep);background:var(--ox-tint)}
+#lb-side td,#lb-side td:last-child{text-align:left}
+"""
+
+LIB_JS = r"""
+const LB={data:null,timer:null};
+function lbLoad(){return fetch('/api/console/library').then(r=>r.json()).then(d=>{LB.data=d;lbDraw();lbProg(d.progress);});}
+function lbProg(p){const m=document.getElementById('lb-prog'),b=document.getElementById('lb-rerun');
+  if(p){m.textContent='Re-running: '+p.done+' of '+p.total+' · '+p.seconds+' s';b.disabled=true;clearTimeout(LB.timer);LB.timer=setTimeout(lbLoad,3000);}
+  else{b.disabled=false;const r=LB.data&&LB.data.lastRun;m.textContent=r?'Last run '+r.run+' on build '+r.build+' · '+r.seconds+' s · '+r.callsSpent+' calls':'Never run.';}}
+function lbDraw(){
+  const d=LB.data,r=d.lastRun,c=(r&&r.counts)||{},E=d.entries;
+  const n=k=>c[k]||0;
+  document.getElementById('lb-stats').innerHTML='<div><span>Scenarios</span><b>'+E.length+'</b><small>'+E.filter(e=>e.reference==='iso').length+' against ISO</small></div>'+
+    '<div><span>Pass</span><b>'+(n('pass')+n('fields'))+'</b><small>'+n('pass')+' clean on every number</small></div>'+
+    '<div><span>Diverged</span><b>'+n('diverged')+'</b><small>a premium moved</small></div>'+
+    '<div><span>Refused / error</span><b>'+(n('refused')+n('error'))+'</b></div>'+
+    '<div><span>Open defects</span><b>'+E.filter(e=>e.open).length+'</b><small>first / last seen kept</small></div>';
+  const f=id=>document.getElementById(id).value,st=document.getElementById('lb-state').value.trim().toUpperCase();
+  const rows=E.filter(e=>(!f('lb-line')||e.line===f('lb-line'))&&(!f('lb-origin')||e.origin===f('lb-origin'))&&(!f('lb-ref')||e.reference===f('lb-ref'))&&(!st||e.state===st)&&
+    (!f('lb-result')||(f('lb-result')==='never'?!e.last:f('lb-result')==='open'?e.open:e.last&&e.last.result===f('lb-result'))));
+  document.getElementById('lb-count').textContent=rows.length+' shown';
+  document.getElementById('lb-table').innerHTML='<tr><th>Scenario</th><th>Line</th><th>St.</th><th>Origin</th><th>Reference</th><th>Content</th><th>Verified</th><th>Last build</th><th>Defect</th></tr>'+
+    rows.slice(0,400).map(e=>{const l=e.last;return '<tr><td>'+(e.reference==='iso'&&!e.scenario.startsWith('FX-')&&!e.scenario.startsWith('SAMPLE-')?'<a href="#trace?scenario='+encodeURIComponent(e.scenario)+'">'+esc(e.scenario)+'</a>':esc(e.scenario))+'</td><td>'+e.line+'</td><td>'+e.state+'</td><td>'+esc(e.origin)+'</td><td>'+(e.reference==='iso'?'ISO':'ours')+'</td>'+
+      '<td class="mx-msg">'+esc(e.contentVersion||'')+(e.freshness==='stale'?' · <b>stale</b>':'')+'</td><td class="mx-msg">'+esc((e.verified||'').slice(0,10))+'</td>'+
+      '<td>'+(l?'<span class="lb-r '+l.result+'" title="'+esc(l.detail||'')+'">'+esc(l.result==='fields'?'premiums pass':l.result)+'</span> <span class="mx-msg">'+esc(l.build)+'</span>':'<span class="mx-msg">not run</span>')+'</td>'+
+      '<td class="mx-msg">'+(e.firstSeen?'first '+esc(e.firstSeen.at.slice(0,10))+' ('+esc(e.firstSeen.build)+')'+(e.open?', open':', last '+esc(e.lastSeen.at.slice(0,10))):'')+'</td></tr>';}).join('')+
+    (rows.length>400?'<tr><td colspan="9" class="mx-msg">The first 400 of '+rows.length+'; narrow the filters.</td></tr>':'');
+}
+function lbSide(){
+  const s=document.getElementById('lb-side');s.innerHTML='<div class="cap2">Stale answers (TC-35)</div><div class="mx-msg">Loading…</div>';
+  fetch('/api/console/library/stale').then(r=>r.json()).then(j=>{
+    let h='<div class="cap2">Stale answers (TC-35)</div><div class="mx-msg">ISO answered these on a package that is no longer the one in force for their state and date. A refresh re-sends the same request in the refresh lane (50 a day).</div>'+
+      '<div class="pl-count"><span>Full answers, stale</span><b>'+j.answers.length+'</b><span>... with their request on disk (can be re-sent)</span><b>'+j.sendable+'</b><span>GL premium-level rows, stale</span><b>'+j.premiumRows.length+'</b></div>';
+    h+=j.answers.length?'<table>'+j.answers.slice(0,20).map(a=>'<tr><td>'+esc(a.line+' '+a.state+' · '+a.date)+'<div class="mx-msg">'+esc(a.stale_reason)+'</div><div class="mx-msg"><b>'+
+      (a.remedy==='corpus'?'ISO is ahead of our corpus: asking again changes nothing; the corpus needs '+esc(a.iso_package):'Our corpus moved on: a re-send gets the current answer')+'</b></div></td></tr>').join('')+'</table>':'';
+    if(j.premiumRows.length)h+='<div class="mx-msg">The premium-level GL rows hold no request to re-send: re-run their QA configs (Test Plan Builder) instead. '+esc([...new Set(j.premiumRows.map(r=>r.state))].join(', '))+'.</div>';
+    if(j.sendable)h+='<div id="lb-conf"></div><button class="btn" id="lb-refresh">Queue a refresh · '+j.sendable+' call'+(j.sendable===1?'':'s')+'…</button>';
+    s.innerHTML=h;
+    const b=document.getElementById('lb-refresh');if(b)b.onclick=()=>{document.getElementById('lb-conf').innerHTML='<div class="wb-conf"><b>Queue a refresh plan?</b><div>'+j.sendable+' request'+(j.sendable===1?'':'s')+' re-sent in the <b>refresh lane</b> when you start the plan in the Queue. Nothing is spent until then.</div>'+
+      '<div class="td-tools"><input id="lb-by" placeholder="Your name"><button class="btn" id="lb-go">Queue it</button><button class="btn" id="lb-cancel">Cancel</button></div><div class="mx-msg" id="lb-msg"></div></div>';
+      document.getElementById('lb-cancel').onclick=()=>document.getElementById('lb-conf').innerHTML='';
+      document.getElementById('lb-go').onclick=()=>fetch('/api/console/library/refresh',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({by:document.getElementById('lb-by').value})})
+        .then(r=>r.json()).then(p=>{if(p.error){document.getElementById('lb-msg').textContent=p.error;return;}location.hash='#queue?plan='+encodeURIComponent(p.id);});};
+  });
+}
+document.getElementById('lb-rerun').onclick=()=>fetch('/api/console/library/rerun',{method:'POST'}).then(r=>r.json()).then(j=>{if(j.error)document.getElementById('lb-prog').textContent=j.error;setTimeout(lbLoad,1500);});
+['lb-line','lb-origin','lb-result','lb-ref','lb-state'].forEach(i=>document.getElementById(i).addEventListener(i==='lb-state'?'input':'change',()=>LB.data&&lbDraw()));
+let lbStarted=false;function lbRoute(){if(!(location.hash||'').startsWith('#library')||lbStarted)return;lbStarted=true;lbLoad();lbSide();}
+addEventListener('hashchange',lbRoute);lbRoute();
 """

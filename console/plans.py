@@ -97,7 +97,7 @@ def expand(spec: dict, with_requests: bool = True) -> dict:
                 continue
             h = store.request_hash(req)
             e = idx.get(h)
-            r.update(hash=h, stored=bool(e and e["outcome"] in ("rated", "refused")),
+            r.update(hash=h, stored=bool(e and e["outcome"] in ("rated", "refused") and e.get("freshness") != "stale"),
                      storedOutcome=e and e["outcome"], fresh=bool(e and e.get("freshness") != "stale"))
         rows.append(r)
     return {"rows": rows, "notApplicable": na}
