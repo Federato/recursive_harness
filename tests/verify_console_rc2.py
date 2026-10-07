@@ -34,10 +34,10 @@ def part_a():
     with tempfile.TemporaryDirectory() as tmp:
         os.environ["RAAS_LEDGER_DIR"] = tmp           # a ledger of our own, so the real one is never read or written
         from console import ledger, status
-        from ui import console_page, tester
+        from ui import console_page
 
-        code, html, kind = tester.dispatch("GET", "/console", {}, None)
-        check("A1 /console is served through the ui mount", code == 200 and kind == "html")
+        code, html, kind = console_page.dispatch("GET", "/console", {}, None)
+        check("A1 /console is served by the console mount", code == 200 and kind == "html")
         check("A2 the seven screens, in the brief's order", [label for _, label, _ in console_page.SCREENS] == [
             "Coverage Board", "Readiness Matrix", "Test Plan Builder", "Trace Diff", "Scenario Workbench",
             "Regression Library", "Queue & Run Log"] and html.count('class="tab"') == 7)
@@ -54,7 +54,7 @@ def part_a():
         check("A6 cap strip follows the ledger, per lane and overrides",
               (c["used"], c["left"], c["overrides"]) == (2, 248, 1)
               and {l["key"]: l["used"] for l in c["lanes"]} == {"active": 1, "refresh": 0, "adhoc": 1}, c)
-        code, body, kind = tester.dispatch("GET", "/api/console/cap", {}, None)
+        code, body, kind = console_page.dispatch("GET", "/api/console/cap", {}, None)
         check("A7 /api/console/cap returns the same", code == 200 and json.loads(body)["used"] == 2)
 
         summer = console_page.cap(datetime(2026, 10, 7, 12, 0, tzinfo=timezone.utc))
@@ -85,7 +85,7 @@ def _cell(readiness, coverage, line="CP", state="OH"):
 def part_b():
     print("B. readiness endpoint (TC-15)")
     from console import evidence, ledger, mismatch, paths, readiness, store
-    from ui import tester
+    from ui import console_page
     with tempfile.TemporaryDirectory() as tmp:
         t = Path(tmp)
         saved = (evidence.STORE, mismatch.STORE, store.INDEX, readiness.CACHE, readiness.SIGNOFFS, readiness.LAST_BUILD)
@@ -162,7 +162,7 @@ def part_b():
             check("B20 totals strip (§8): passed per line, still to test, calls, days at 150",
                   tt["stillToTest"] == sum(c["status"] not in ("verified", "na") for c in full["cells"])
                   and tt["daysAtActiveLane"] == round(tt["estCallsToFinish"] / 150, 1))
-            code, body, _ = tester.dispatch("GET", "/api/console/readiness", {"lob": "CP", "state": "OH"}, None)
+            code, body, _ = console_page.dispatch("GET", "/api/console/readiness", {"lob": "CP", "state": "OH"}, None)
             check("B21 served at /api/console/readiness", code == 200 and json.loads(body)["cells"][0]["state"] == "OH")
             check("B22 no call spent", ledger.used()["total"] == 0)
         finally:
@@ -174,7 +174,7 @@ def part_b():
 def part_c():
     print("C. Readiness Matrix screen (TC-16)")
     from console import evidence, mismatch, paths, readiness, store
-    from ui import console_page, tester
+    from ui import console_page
     with tempfile.TemporaryDirectory() as tmp:
         t = Path(tmp)
         saved = (evidence.STORE, mismatch.STORE, store.INDEX, readiness.CACHE, readiness.SIGNOFFS, readiness.LAST_BUILD,
@@ -213,19 +213,19 @@ def part_c():
             b = {c["coverage"]: c for c in r["cells"]}["Building"]
             check("C5 path labels for every path in a cell", set(b["paths"]["byPath"]) <= set(r["pathLabels"]["CP"]))
 
-            code, body, _ = tester.dispatch("POST", "/api/console/signoff",
+            code, body, _ = console_page.dispatch("POST", "/api/console/signoff",
                                             {}, {"lob": "CP", "state": "OH", "coverage": "BPP", "by": "Dan"})
             check("C6 sign-off refused on a cell that is not Passed (D4)", code == 409, (code, body))
             n0 = len(lookups)
-            code, body, _ = tester.dispatch("POST", "/api/console/signoff",
+            code, body, _ = console_page.dispatch("POST", "/api/console/signoff",
                                             {}, {"lob": "CP", "state": "OH", "coverage": "Building", "by": "Dan"})
             b = _cell(readiness, "Building")
             check("C7 sign-off accepted on a Passed cell and shown", code == 200 and b["signedOffBy"] == "Dan", (code, body))
             check("C8 the recompute after a sign-off reuses the day's content versions (no engine reload)",
                   len(lookups) == n0 and b["contentVersion"].startswith("CF_OH_"), len(lookups) - n0)
-            tester.dispatch("POST", "/api/console/signoff", {}, {"lob": "CP", "state": "OH", "coverage": "Building", "by": ""})
+            console_page.dispatch("POST", "/api/console/signoff", {}, {"lob": "CP", "state": "OH", "coverage": "Building", "by": ""})
             check("C9 an empty name withdraws the sign-off", _cell(readiness, "Building")["signedOffBy"] is None)
-            code, _, _ = tester.dispatch("POST", "/api/console/signoff", {}, {"lob": "CP", "state": "OH", "coverage": "Nope", "by": "x"})
+            code, _, _ = console_page.dispatch("POST", "/api/console/signoff", {}, {"lob": "CP", "state": "OH", "coverage": "Nope", "by": "x"})
             check("C10 an unknown cell is a 404", code == 404)
             n1 = len(lookups)
             time.sleep(0.05)
@@ -296,7 +296,7 @@ def part_d():
 def part_e():
     print("E. Coverage Board (TC-18)")
     from console import board, evidence, mismatch, paths, readiness, store
-    from ui import console_page, tester
+    from ui import console_page
     check("E1 verdict: every path verified -> Go", board.verdict(["verified"] * 3)["verdict"] == "Go")
     check("E2 verdict: any mismatch -> Hold, named", (lambda v: v["verdict"] == "Hold" and "1 mismatch path" in v["note"])(
         board.verdict(["verified", "mismatch", "internal"])))
@@ -323,7 +323,7 @@ def part_e():
             evidence.add(scenario="ok", line="CP", state="OH", walked=sc, ours="100", iso="100", request_hash="f")
             evidence.add(scenario="bad", line="CP", state="OH", walked=sc[:1], ours="110", iso="100", request_hash="f")
             evidence.add(scenario="flat", line="CP", state="OH", walked=sc[:1], inert=True)
-            b = json.loads(tester.dispatch("GET", "/api/console/board", {"lob": "CP"}, None)[1])
+            b = json.loads(console_page.dispatch("GET", "/api/console/board", {"lob": "CP"}, None)[1])
             oh = next(r for r in b["rows"] if r["state"] == "OH")
             check("E8 board cell: state, scenarios walking it, affected (inert left out)", oh["cells"][sc[0]] == ["mismatch", 2, 1], oh["cells"][sc[0]])
             check("E9 board and matrix agree on a path", oh["cells"][sc[1]][0] ==
@@ -332,14 +332,14 @@ def part_e():
             check("E11 summary: open mismatches by category", b["summary"]["openMismatches"] == 1 and b["summary"]["byCategory"] == {"unclassified": 1})
             na = [r for r in b["rows"] if any(v[0] == "na" for v in r["cells"].values())]
             check("E12 n/a paths are marked and left out of the verdict", all(r["verdict"] != "n/a" or not r["counts"] for r in na))
-            c = json.loads(tester.dispatch("GET", "/api/console/board/cell", {"lob": "CP", "state": "OH", "path": sc[0]}, None)[1])
+            c = json.loads(console_page.dispatch("GET", "/api/console/board/cell", {"lob": "CP", "state": "OH", "path": sc[0]}, None)[1])
             check("E13 cell detail lists its scenarios, mismatch first, with the difference",
                   [(x["scenario"], x["status"], x["delta"]) for x in c["scenarios"]] == [("bad", "mismatch", "10"), ("ok", "verified", "0"), ("flat", "inert", None)],
                   [(x["scenario"], x["status"]) for x in c["scenarios"]])
             idp = paths.paths("CP")
             nap = next(p for p in idp if not paths.applies("CP", "NY", p)[0]) if any(not paths.applies("CP", "NY", p)[0] for p in idp) else None
             if nap:
-                c = json.loads(tester.dispatch("GET", "/api/console/board/cell", {"lob": "CP", "state": "NY", "path": nap}, None)[1])
+                c = json.loads(console_page.dispatch("GET", "/api/console/board/cell", {"lob": "CP", "state": "NY", "path": nap}, None)[1])
                 check("E14 an n/a cell says why (D5)", c["applies"] is False and c["status"] == "na")
         finally:
             (evidence.STORE, mismatch.STORE, store.INDEX, readiness.CACHE, readiness.SIGNOFFS, readiness.LAST_BUILD) = saved

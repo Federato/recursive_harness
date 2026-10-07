@@ -208,27 +208,15 @@ def d_differences() -> None:
 # ------------------------------------------------------------------------- E
 
 def e_runfile() -> None:
-    print("\nE  a run writes one self-contained file")
-    from ui import runfile
+    # E2-E5 checked the standalone run-file writer (`ui/runfile.py`), retired with `/tests` in RC-6 (TC-37): a plan's
+    # report (`/console/report/<plan>`) replaced it (D17), and the 80 files it wrote stay served read-only.
+    print("\nE  a run keeps what it found")
 
     out = layers.run("L1", jurisdictions=PROBE, offline=True,
                      label="verify_layers")
     plan, results = out["plan"], out["results"]
     check("E1 the smoke layer rated every jurisdiction",
           plan["rollup"]["rated"] == len(PROBE), str(plan["rollup"]))
-
-    path = runfile.write_run(plan, results, engine_version="verify")
-    doc = path.read_text(encoding="utf-8")
-    check("E2 the file is written under results/",
-          path.exists() and "results" in path.parts)
-    check("E3 it loads nothing from the network",
-          "http://" not in doc and "https://" not in doc
-          and "<script src" not in doc and "fetch(" not in doc
-          and "XMLHttpRequest" not in doc)
-    check("E4 it names the layer and the counts",
-          plan["name"] in doc and "rated" in doc)
-    check("E5 the index links it",
-          path.name in runfile.INDEX_HTML.read_text(encoding="utf-8"))
 
     stopped = {"n": 0}
 

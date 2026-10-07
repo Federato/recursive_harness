@@ -124,6 +124,11 @@ def run(entries: list | None = None, workers: int | None = None, progress: bool 
     """Re-run the library (zero calls). Writes the run, the progress file while it runs, and the build marker."""
     entries = entries if entries is not None else library.entries()
     rid = time.strftime("%Y%m%d-%H%M%S")
+    RUNS.mkdir(parents=True, exist_ok=True)
+    n = 1
+    while (RUNS / f"{rid}.json").exists():                    # two runs in one second must not overwrite each other
+        rid = f"{time.strftime('%Y%m%d-%H%M%S')}-{n}"
+        n += 1
     build = _build_id()
     calls_before = ledger.used()["total"]
     RUNS.mkdir(parents=True, exist_ok=True)
@@ -166,12 +171,13 @@ def runs() -> list:
     if not RUNS.exists():
         return []
     out = []
-    for f in sorted(RUNS.glob("2*.json")):
+    for f in RUNS.glob("2*.json"):
         try:
             out.append(json.loads(f.read_text(encoding="utf-8")))
         except ValueError:
             continue
-    return out
+    # oldest first by when they ran, then by id (`...-1` after its same-second sibling), not by how file names sort
+    return sorted(out, key=lambda r: (r.get("at", ""), len(r["run"]), r["run"]))
 
 
 def changes() -> dict | None:

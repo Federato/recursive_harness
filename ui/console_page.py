@@ -11,7 +11,7 @@ reset at 00:00 Eastern. The legend reads `console.status`, so the glyphs and
 labels here are the ones every screen shares (TC-08).
 
     from ui import console_page
-    console_page.dispatch(method, path, query, body)   # mounted through ui.tester
+    console_page.dispatch(method, path, query, body)   # mounted by app.py (Handler._console)
 """
 from __future__ import annotations
 
@@ -402,6 +402,7 @@ def dispatch(method: str, path: str, query: dict, body):
     if method != "GET":
         return None
     if path == "/console":
+        _dispatcher_on()                  # a plan left running resumes when the app restarts and the console opens
         return 200, page(), "html"
     if path == "/api/console/cap":
         return 200, json.dumps(cap()), "json"
@@ -740,7 +741,7 @@ h1{margin:2px 0 0;font:400 38px/1.15 var(--font-heading)}
 /*{{CSS}}*/
 </style></head><body>
 <header>
-  <div class="brand"><b>ISO Rating Test Console</b><span>Internal engine vs. ISO RaaS (UAT) · GL &amp; CP</span></div>
+  <div class="brand"><b>ISO Rating Test Console</b><span>Internal engine vs. ISO RaaS (UAT) · GL &amp; CP · <a href="/" title="The rating page: paste or edit one submission and rate it">Rate a submission</a></span></div>
   <nav>{{TABS}}</nav>
   <div class="cap" title="Every ISO call, wherever it starts, counts here (D21)">
     <div class="lanes"><div class="hd"><span id="cap-hd"></span><span id="cap-ov"></span></div>

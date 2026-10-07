@@ -1,4 +1,12 @@
-"""Variable tester acceptance: the controls, the routes and the separation.
+"""GL variants, the run store, pass 3 and the UI boundary: the checks of `verify_tester.py` that outlived its page.
+
+Moved here in RC-6 (TC-37, 2026-10-07) when `/tester`, `/tests` and `/review` were retired. What tested the page
+itself (its routes, its QA tab, its review tab, its "what changed" route: G, Q, R11-R13, E7-E8) went with it; those
+jobs now live in the test console and are tested there (tests/verify_console_rc4.py, rc5, rc6). What stays tests code
+that outlived the page: the one-way UI boundary (A), ISO's options (B, C), the effective date (H), not-applicable (D),
+pass 3 and pass 4's briefs (R), multi-class (M), the run store (E1-E6) and the charts (F).
+
+Variable tester acceptance: the controls, the routes and the separation.
 
   A  separation     UI code imports the engine; the engine imports no UI. This
                     is asserted by reading the imports, because it is the
@@ -23,7 +31,7 @@
 store is redirected to a temporary directory, so this suite never touches the
 real `results/` and never spends a call.
 
-Run: python tests/verify_tester.py
+Run: python tests/verify_gl_variants.py
 """
 from __future__ import annotations
 
@@ -40,7 +48,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 
 import variants as V                                          # noqa: E402
 import runstore as store                                      # noqa: E402
-from ui import charts, tester, variables                      # noqa: E402
+from ui import charts, variables                      # noqa: E402
 
 PASS, FAIL = [], []
 
@@ -67,7 +75,7 @@ def _imports(path: Path) -> set:
 
 
 def main() -> int:
-    print("Variable tester acceptance -- no server, no live calls")
+    print("GL variants, run store, pass 3 and the UI boundary -- no server, no live calls")
 
     print("\nA  THE SEPARATION, READ FROM THE IMPORTS")
     engine_files = list((ROOT / "gl_engine").rglob("*.py"))
@@ -288,23 +296,6 @@ def main() -> int:
           and mixed["cause"]["control"] == "locations",
           f"cause: {mixed['cause']['why'][:70] if mixed['cause'] else None}")
 
-    # W6 -- the review has a screen. It is a READER: pass 3's verdicts are
-    # computed and definitive, pass 4's briefs are questions whose answers come
-    # from agents a person dispatches. A screen implying the server had run them
-    # would claim a review that never happened.
-    code, body, _ = tester.dispatch("GET", "/api/tester/qa/review", {}, None)
-    rev = json.loads(body)
-    check("R11 the review has a route, and it separates settled from unsettled",
-          code == 200 and "pass3" in rev and "briefs" in rev,
-          f"{rev['pass3']['reviewed']} reviewed, {len(rev['briefs'])} claim "
-          f"group(s) still open")
-    page = tester.dispatch("GET", "/tester", {}, None)[1]
-    check("R12 ...and a tab, so a finding is not only a terminal line",
-          "What the review found" in page and "qa/review" in page)
-    check("R13 the screen never implies the agents were run from it",
-          "dispatched by hand, not from this page" in page,
-          "pass 4's answers come from a person, and the page says so")
-
     # --- pass 4: the adversarial brief. Its value is entirely in how it asks.
     b = QR.brief("Our premium for OK is correct.",
                  {"jurisdiction": "OK", "our premium": "8229"},
@@ -410,231 +401,6 @@ def main() -> int:
           len(V._classes(V._locations(one)[0])) == 1)
 
 
-    print("\nQ  THE QA PROGRAMME -- TIERS, BUDGET, VERDICT AND MAP")
-    import qa                                                 # noqa: E402
-    code, body, _ = tester.dispatch("GET", "/api/tester/qa", {}, None)
-    spec = json.loads(body)
-    check("Q1 the tiers come from scripts/qa.py, not a second list",
-          [t["id"] for t in spec["tiers"]] == sorted(qa.TIERS),
-          f"{len(spec['tiers'])} tiers; one definition, as with 'agree'")
-    unbuilt = [t["id"] for t in spec["tiers"] if not t["runnable"]]
-    check("Q2 a tier that is not built says so rather than pretending",
-          "T3" in unbuilt, f"not runnable: {unbuilt} -- each names what it needs")
-
-    t4_rows = qa.tier_t4()
-    t4_dates = {c.get("effective_date") for c, _ in t4_rows}
-    check("Q2b T4 is a real cliff run now (decision A3), not T1 doubled "
-          "in name only",
-          len(t4_rows) == 2 * len(qa.tier_t1())
-          and t4_dates == {qa._DAY_BEFORE_CLIFF, qa.CLASS_BASIS_CLIFF},
-          f"{len(t4_rows)} rows, dated {sorted(t4_dates)}")
-
-    # The guard has to hold on the button as well as the command line, or the
-    # budget becomes a matter of which door you came in by.
-    real = qa._spent_today
-    try:
-        qa._spent_today = lambda: qa.DAILY_STANDING - 1
-        code_over, body_over, _ = tester.dispatch(
-            "POST", "/api/tester/qa/run", {}, {"tier": "T1"})
-        code_off, _, _ = tester.dispatch(
-            "POST", "/api/tester/qa/run", {}, {"tier": "T1", "offline": True})
-    finally:
-        qa._spent_today = real
-    check("Q3 a tier over the daily budget WARNS, and does not silently spend",
-          code_over == 409,
-          f"HTTP {code_over}: {json.loads(body_over).get('detail', '')[:58]}")
-    check("Q4 ...and offline is always allowed, because it costs nothing",
-          code_off == 200, f"HTTP {code_off}")
-
-    # The warning must be overridable. The budget is our own policy, not a limit
-    # ISO publishes, and the person holding the subscription is better placed to
-    # weigh one run than a constant in a file is. What the guard owes is the
-    # number BEFORE the decision, not the decision itself.
-    real2 = qa._spent_today
-    try:
-        qa._spent_today = lambda: qa.DAILY_STANDING - 1
-        code_forced, _, _ = tester.dispatch(
-            "POST", "/api/tester/qa/run", {},
-            {"tier": "T1", "offline": True, "force": True})
-    finally:
-        qa._spent_today = real2
-    check("Q4b ...and the warning can be overridden, deliberately",
-          code_forced == 200,
-          "force:true runs it, and the run is labelled OVER BUDGET afterwards")
-    qa_page = tester.dispatch("GET", "/tester", {}, None)[1]
-    check("Q4c the page arms a second click rather than spending on the first",
-          "QAARMED=true" in qa_page and "Nothing was sent" in qa_page,
-          "no dialog; the number stays on screen while you decide")
-
-
-    code, body, _ = tester.dispatch("POST", "/api/tester/qa/plan", {}, {"tier": "T1"})
-    plan = json.loads(body)
-    check("Q5 the matrix can be seen without running it",
-          code == 200 and len(plan["scenarios"]) == plan["cost"]["scenarios"],
-          f"{len(plan['scenarios'])} scenarios, {plan['cost']['live_calls']} "
-          f"calls if run live")
-
-    code, body, _ = tester.dispatch("GET", "/api/tester/qa/summary", {}, None)
-    summ = json.loads(body)
-    check("Q6 the verdict and the map are inline SVG with no external asset",
-          summ["verdict"].startswith("<svg") and summ["map"].startswith("<svg")
-          and "http" not in summ["map"],
-          f"verdict {len(summ['verdict'])}b, map {len(summ['map'])}b")
-
-    # A missing tile would silently drop a jurisdiction from the picture.
-    missing = sorted(set(V.Declared.jurisdictions()) - set(charts.TILES))
-    check("Q7 every jurisdiction has a tile on the map", not missing,
-          "HI is drawn and permanently blank because ISO does not file it"
-          if not missing else f"missing: {missing}")
-
-    # not-applicable must never colour a tile as a failure.
-    roll = store.qa_rollup()
-    softened = [j for j, v in roll["status"].items() if v == "partial"]
-    check("Q8 'not offered here' softens a tile, never fails it",
-          all(v in ("differs", "refused", "agrees", "uncompared", "partial",
-                    "untested") for v in roll["status"].values()),
-          f"{roll['counts']['not_applicable']} not-applicable outcomes; "
-          f"{len(softened)} tile(s) softened to 'partial'")
-
-    # W1: pass 3 running automatically when a tier finishes, not only when
-    # someone types a command. A tiny hand-built scenario (one jurisdiction)
-    # rather than a real 51-state T0 sweep, so this test stays fast.
-    # Redirected to a temp store -- _qa_worker writes through store.append.
-    import time as _time
-    review_tmp = Path(tempfile.mkdtemp(prefix="tester-review-"))
-    review_real = store.RESULTS
-    store.RESULTS = review_tmp
-    try:
-        job_id = "verify-review-after"
-        with tester.JOBS_LOCK:
-            tester.JOBS[job_id] = {
-                "id": job_id, "qa": "T0", "total": 1, "done": 0, "rows": [],
-                "finished": False, "compare": False, "scenarios": 1,
-                "scenario_done": 0, "describes": "T0 test", "config": {},
-                "started": _time.time(), "findings": [], "forced": False,
-                "review_after": True, "review": None}
-        tester._qa_worker(job_id, "T0", [({}, ["OK"])], True, "strict-erc",
-                          "", True)
-        with tester.JOBS_LOCK:
-            finished_job = dict(tester.JOBS.pop(job_id))
-        check("Q9 review_after runs pass 3 automatically once the tier "
-              "finishes",
-              finished_job["finished"] and finished_job["review"] is not None
-              and "counts" in finished_job["review"],
-              finished_job["review"])
-
-        job_id2 = "verify-review-off"
-        with tester.JOBS_LOCK:
-            tester.JOBS[job_id2] = {
-                "id": job_id2, "qa": "T0", "total": 1, "done": 0, "rows": [],
-                "finished": False, "compare": False, "scenarios": 1,
-                "scenario_done": 0, "describes": "T0 test", "config": {},
-                "started": _time.time(), "findings": [], "forced": False,
-                "review_after": False, "review": None}
-        tester._qa_worker(job_id2, "T0", [({}, ["OK"])], True, "strict-erc",
-                          "", False)
-        with tester.JOBS_LOCK:
-            no_review_job = dict(tester.JOBS.pop(job_id2))
-        check("Q10 ...and leaving the checkbox unset costs nothing extra -- "
-              "no review computed",
-              no_review_job["finished"] and no_review_job["review"] is None,
-              no_review_job["review"])
-
-        # W2: pause/stop, mirroring ui/tests_page.py's own proven mechanism
-        # (same "state" field, same _stop_check shape).
-        import threading as _threading
-
-        job_id3 = "verify-stop"
-        with tester.JOBS_LOCK:
-            tester.JOBS[job_id3] = {
-                "id": job_id3, "qa": "T0", "total": 3, "done": 0, "rows": [],
-                "finished": False, "compare": False, "scenarios": 3,
-                "scenario_done": 0, "describes": "T0 test", "config": {},
-                "started": _time.time(), "findings": [], "forced": False,
-                "review_after": False, "review": None,
-                "state": "stopping", "stopped_after": None}
-        tester._qa_worker(job_id3, "T0",
-                          [({}, ["OK"]), ({}, ["NY"]), ({}, ["CA"])],
-                          True, "strict-erc", "", False)
-        with tester.JOBS_LOCK:
-            stopped_job = dict(tester.JOBS.pop(job_id3))
-        check("Q11 stop ends the run where it is, keeping what already rated "
-              "rather than discarding it",
-              stopped_job["finished"] and stopped_job["state"] == "stopped"
-              and stopped_job["stopped_after"] == 0,
-              stopped_job)
-
-        # Pause genuinely blocks the worker thread -- proven with a real
-        # background thread, not simulated by inspecting a flag.
-        job_id4 = "verify-pause"
-        with tester.JOBS_LOCK:
-            tester.JOBS[job_id4] = {
-                "id": job_id4, "qa": "T0", "total": 1, "done": 0, "rows": [],
-                "finished": False, "compare": False, "scenarios": 1,
-                "scenario_done": 0, "describes": "T0 test", "config": {},
-                "started": _time.time(), "findings": [], "forced": False,
-                "review_after": False, "review": None,
-                "state": "paused", "stopped_after": None}
-        th = _threading.Thread(
-            target=tester._qa_worker,
-            args=(job_id4, "T0", [({}, ["OK"])], True, "strict-erc", "",
-                 False), daemon=True)
-        th.start()
-        th.join(timeout=1.5)
-        with tester.JOBS_LOCK:
-            still_paused = not tester.JOBS[job_id4]["finished"]
-        code, _, _ = tester.dispatch("POST", "/api/tester/qa/control", {},
-                                     {"id": job_id4, "action": "resume"})
-        th.join(timeout=45)
-        with tester.JOBS_LOCK:
-            resumed_job = dict(tester.JOBS.pop(job_id4))
-        check("Q12 pause genuinely blocks the worker (not just a flag "
-              "nobody reads), and resume releases it",
-              still_paused and code == 200 and resumed_job["finished"]
-              and resumed_job["state"] == "done",
-              f"still_paused={still_paused}, resume_code={code}, "
-              f"resumed_finished={resumed_job['finished']}")
-
-        # A stop mid-scenario (not just between scenarios, Q11's case) must
-        # still mark the job "stopped" -- found live, in a browser, testing
-        # this exact feature: a single-scenario tier (T0) stopped mid-way
-        # through its 51 jurisdictions reported "done" instead of "stopped",
-        # because the outer loop only ever re-checks BETWEEN scenarios and a
-        # one-scenario tier never gets a second iteration to notice.
-        job_id5 = "verify-stop-mid-scenario"
-        with tester.JOBS_LOCK:
-            tester.JOBS[job_id5] = {
-                "id": job_id5, "qa": "T0", "total": 51, "done": 0, "rows": [],
-                "finished": False, "compare": False, "scenarios": 1,
-                "scenario_done": 0, "describes": "T0 test", "config": {},
-                "started": _time.time(), "findings": [], "forced": False,
-                "review_after": False, "review": None,
-                "state": "running", "stopped_after": None}
-        th2 = _threading.Thread(
-            target=tester._qa_worker,
-            args=(job_id5, "T0", [({}, sorted(V.Declared.jurisdictions()))],
-                 True, "strict-erc", "", False), daemon=True)
-        th2.start()
-        th2.join(timeout=0.3)
-        code2, _, _ = tester.dispatch("POST", "/api/tester/qa/control", {},
-                                      {"id": job_id5, "action": "stop"})
-        th2.join(timeout=45)
-        with tester.JOBS_LOCK:
-            mid_stop_job = dict(tester.JOBS.pop(job_id5))
-        check("Q13 stopping partway through a tier's ONLY scenario still "
-              "reports 'stopped', not 'done'",
-              code2 == 200 and mid_stop_job["finished"]
-              and mid_stop_job["state"] == "stopped"
-              and mid_stop_job["stopped_after"] is not None
-              and 0 < mid_stop_job["done"] < 51,
-              f"state={mid_stop_job['state']}, "
-              f"stopped_after={mid_stop_job['stopped_after']}, "
-              f"done={mid_stop_job['done']}")
-    finally:
-        store.RESULTS = review_real
-        shutil.rmtree(review_tmp, ignore_errors=True)
-
-
     print("\nE  THE STORE, AND THE LONG VIEW BUILT FROM IT")
     tmp = Path(tempfile.mkdtemp(prefix="tester-store-"))
     real = store.RESULTS
@@ -673,6 +439,10 @@ def main() -> int:
         store.append(base, [{"juris": "TX", "status": "DIFF"},
                             {"juris": "NY", "status": "MATCH"}],
                     label="qa T1", batch="T1-older")
+        # The store orders by its timestamp, to the second: two appends in the same second could sort either way,
+        # which made E6 fail now and then (seen 2026-10-07). A real tier's executions are minutes apart.
+        import time
+        time.sleep(1.1)
         store.append(base, [{"juris": "TX", "status": "MATCH"},
                             {"juris": "NY", "status": "MATCH"},
                             {"juris": "CA", "status": "DIFF"}],
@@ -680,21 +450,6 @@ def main() -> int:
         check("E6 batches groups a tier's executions, most recent first",
               store.batches("T1", limit=2) == ["T1-newer", "T1-older"],
               store.batches("T1", limit=2))
-        code, body, _ = tester.dispatch("GET", "/api/tester/qa/changed",
-                                        {"tier": "T1"}, None)
-        changed = json.loads(body)
-        check("E7 what changed: fixed and new are told apart, not blurred "
-              "into one list",
-              code == 200 and not changed["first_run"]
-              and changed["new_problems"] == ["CA"]
-              and changed["no_longer_failing"] == ["TX"],
-              changed)
-        code0, body0, _ = tester.dispatch("GET", "/api/tester/qa/changed",
-                                          {"tier": "T4"}, None)
-        check("E8 a tier with no prior execution says FIRST RUN, not four "
-              "zeros",
-              code0 == 200 and json.loads(body0)["first_run"] is True,
-              body0)
     finally:
         store.RESULTS = real
         shutil.rmtree(tmp, ignore_errors=True)
@@ -717,33 +472,6 @@ def main() -> int:
         "OK": [{"value": "a", "ours": "100"}, {"value": "b", "ours": "90"}]})
     check("F4 a curve draws a path per jurisdiction", "<path" in curve)
 
-    print("\nG  ROUTES, WITHOUT A SERVER")
-    code, body, kind = tester.dispatch("GET", "/tester", {}, None)
-    check("G1 the page is served", code == 200 and kind == "html"
-          and "Variable tester" in body, f"{len(body):,} bytes")
-    code, body, kind = tester.dispatch("GET", "/api/tester/spec", {}, None)
-    spec = json.loads(body)
-    check("G2 the spec carries every control and every jurisdiction",
-          len(spec["controls"]) == len(V.CONTROLS)
-          and len(spec["jurisdictions"]) == 51,
-          f"{len(spec['controls'])} controls over {len(spec['groups'])} groups")
-    check("G3 the spec says where each value is legal, not just that it is",
-          all("states" in v for c in spec["controls"] if c["kind"] == "select"
-              for v in c["values"]),
-          "so a dropdown can show '50/51 states'")
-    code, body, _ = tester.dispatch("POST", "/api/tester/legality", {},
-                                    {"config": {"coverage_form": "Claims Made"}})
-    check("G4 legality answers without rating anything",
-          json.loads(body)["summary"] == "50 of 51")
-    code, body, _ = tester.dispatch("GET", "/api/tester/run/nope", {}, None)
-    check("G5 an unknown run is a 404, not a crash", code == 404)
-    check("G6 a path that is not the tester's is declined, not swallowed",
-          tester.dispatch("GET", "/api/samples", {}, None) is None,
-          "app.py keeps its own routes")
-
-    print(f"\n{len(PASS)}/{len(PASS) + len(FAIL)} passed")
-    for f in FAIL:
-        print(f"  FAILED  {f}")
     return 1 if FAIL else 0
 
 

@@ -476,7 +476,7 @@ progress{width:100%;height:14px}
 </style></head><body>
 <header><h1>ISO Rating Engine</h1>
 <span>ISO content, executed &mdash; every number carries its source</span>
-<nav><a href="/tests">Layered tests</a><a href="/tester">Variable tester</a>
+<nav><a href="/console">Test console</a>
 <a href="/runs/index.html" target="_blank">Run files</a></nav></header>
 <div class="wrap">
  <div class="col">
@@ -830,23 +830,22 @@ class Handler(BaseHTTPRequestHandler):
     def log_message(self, *a):                    # pragma: no cover - quiet
         pass
 
-    def _tester(self, method, path, query, body=None):
-        """Hand the request to `ui.tester`, or return False to keep looking.
+    def _console(self, method, path, query, body=None):
+        """Hand the request to the test console (`ui.console_page`), or return False to keep looking.
 
-        **The tester's routes are not written here.** `ui/` owns its page, its
-        charts and its history; this file owns the socket. The whole point of
-        keeping them apart is that neither grows the other's concerns -- so the
-        mount is four lines and knows nothing about variables or premiums.
+        **The console's routes are not written here.** `ui/` owns its screens and `console/` its data; this file
+        owns the socket, so the mount knows nothing about variables or premiums. (It replaced the `/tester`,
+        `/tests` and `/review` mount in RC-6, TC-37.)
         """
         try:
-            from ui import tester as ui_tester
+            from ui import console_page
         except Exception as exc:                              # noqa: BLE001
-            if path.startswith("/api/tester") or path == "/tester":
+            if path.startswith("/api/console") or path == "/console":
                 self._send(500, json.dumps(
-                    {"error": f"tester unavailable: {type(exc).__name__}: {exc}"}))
+                    {"error": f"console unavailable: {type(exc).__name__}: {exc}"}))
                 return True
             return False
-        out = ui_tester.dispatch(method, path, query, body)
+        out = console_page.dispatch(method, path, query, body)
         if out is None:
             return False
         code, payload, kind = out
@@ -858,7 +857,7 @@ class Handler(BaseHTTPRequestHandler):
         parsed = urlparse(self.path)
         path = parsed.path
         query = dict(parse_qsl(parsed.query))
-        if self._tester("GET", path, query):
+        if self._console("GET", path, query):
             return
         if path == "/":
             return self._send(200, PAGE, "text/html")
@@ -908,7 +907,7 @@ class Handler(BaseHTTPRequestHandler):
             req = json.loads(self.rfile.read(n) or b"{}")
         except ValueError as exc:
             return self._send(400, json.dumps({"error": f"bad JSON: {exc}"}))
-        if self._tester("POST", path, dict(parse_qsl(parsed.query)), req):
+        if self._console("POST", path, dict(parse_qsl(parsed.query)), req):
             return
         if path not in ("/api/rate", "/api/batch"):
             return self._send(404, json.dumps({"error": "not found"}))
@@ -970,13 +969,13 @@ def main(argv) -> int:
     port = int(argv[0]) if argv else PORT
     srv = ThreadingHTTPServer((HOST, port), Handler)
     url = f"http://{HOST}:{port}"
-    print(f"GL rating engine UI on {url}")
+    print(f"ISO Rating Test Console on {url}/console  (rate one submission: {url}/)")
     print(f"  {len(RESOLVER.packages)} packages loaded; "
           f"{len(list(SAMPLES.iterdir())) if SAMPLES.is_dir() else 0} samples")
     print("  Ctrl-C to stop")
     if "--no-browser" not in argv:
         try:
-            webbrowser.open(url)
+            webbrowser.open(url + "/console")    # the console is the front door since RC-6 (TC-37); `/` stays (D1)
         except Exception:                                   # noqa: BLE001
             pass
     try:

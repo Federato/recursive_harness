@@ -71,7 +71,7 @@ def part_a():
     check("A8 T8 / L6: what changed since the last run: newly failing, fixed, our premium moved",
           c["new"] == ["s"] and c["fixed"] == ["t"] and c["premiumMoved"] == [{"scenario": "s", "was": "100", "now": "105"}], c)
     code, body, _ = CP.dispatch("GET", "/api/console/runs", {}, None)
-    rid = json.loads(body)["runs"][0]["id"]
+    rid = next(r["id"] for r in json.loads(body)["runs"] if r["total"])     # a run that rated something (a stopped one may have none)
     code, body, _ = CP.dispatch("GET", "/api/console/runs", {"id": rid}, None)
     check("A9 V1 / L8: an old run's rows open from the console", code == 200 and json.loads(body)["rows"])
     p = P.preview({"line": "GL", "states": ["OH", "NJ"], "dims": {}, "configs": [{"occurrence_limit": "500,000 CSL"}], "edges": False})

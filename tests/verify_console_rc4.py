@@ -222,7 +222,7 @@ def part_f(pid):
     code, body, _ = CP.dispatch("GET", "/api/console/runs", {}, None)
     j = json.loads(body)
     check("F5 earlier run files stay browsable (D17)", code == 200 and j["total"] > 100)
-    code, body, _ = CP.dispatch("GET", "/api/console/runs", {"id": j["runs"][0]["id"]}, None)
+    code, body, _ = CP.dispatch("GET", "/api/console/runs", {"id": next(r["id"] for r in j["runs"] if r["total"])}, None)
     check("F6 ...each with its rows", code == 200 and json.loads(body).get("rows"))
     code, body, _ = CP.dispatch("POST", "/api/console/override", {}, {"reason": "", "calls": 2})
     check("F7 an override without a reason is refused", code == 400)

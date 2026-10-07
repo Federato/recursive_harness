@@ -1,6 +1,6 @@
 @echo off
-REM Launch the GL rating engine UI (Stage 6 interface).
-REM Usage:  start.bat            -- serves on http://127.0.0.1:8765 and opens a browser
+REM Launch the rating engine: the ISO Rating Test Console at /console (and the rating page at /).
+REM Usage:  start.bat            -- serves on http://127.0.0.1:8765 and opens the console
 REM         start.bat 9000       -- serves on port 9000
 REM         start.bat --no-browser
 setlocal
