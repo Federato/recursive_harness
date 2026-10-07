@@ -72,7 +72,7 @@ def _add(entries: dict, payload: dict, outcome: str, answer: Path, request: Path
         return
     at = _mtime(answer)
     e = entries.get(h)
-    files = [str(request.relative_to(ROOT)), str(answer.relative_to(ROOT))]
+    files = [request.relative_to(ROOT).as_posix(), answer.relative_to(ROOT).as_posix()]   # portable: the Mac package reads it
     if e is None or at >= e["stored_at"]:
         msg = ""
         if outcome == "refused":
@@ -153,7 +153,7 @@ def _scan_response_only(entries: dict) -> None:
         h = "resp-" + hashlib.sha256(name.encode()).hexdigest()[:19]
         entries[h] = {"hash": h, "line": "CP" if fam == "CF" else "GL", "state": st, "date": m.group(1) if m else "",
                       "outcome": "rated", "iso_package": pkg, "message": "", "stored_at": _mtime(ans),
-                      "files": [str(ans.relative_to(ROOT))], "sends": 1, "request_kept": False,
+                      "files": [ans.relative_to(ROOT).as_posix()], "sends": 1, "request_kept": False,
                       "note": "request not kept: rebuilt by its chunk script"}
 
 
@@ -236,7 +236,12 @@ def build() -> dict:
 
 
 def load() -> dict:
-    return json.loads(INDEX.read_text(encoding="utf-8"))
+    """The last build. File paths are relative to the harness and read with forward slashes, whichever system wrote
+    them, so one index serves Windows and the Mac package alike."""
+    idx = json.loads(INDEX.read_text(encoding="utf-8"))
+    for e in idx.get("references", []):
+        e["files"] = [f.replace("\\", "/") for f in e.get("files", [])]
+    return idx
 
 
 def freshness(idx: dict | None = None) -> dict:
@@ -283,7 +288,7 @@ def answer_entry(h: str, payload: dict) -> dict | None:
     text = ans.read_text(encoding="utf-8", errors="replace")
     return {"hash": h, "line": line, "state": state, "date": date, "outcome": "rated" if ans is resp else "refused",
             "iso_package": _state_pkg(text, line), "message": msg, "stored_at": _mtime(ans),
-            "files": [str(p.relative_to(ROOT)) if p.is_relative_to(ROOT) else str(p) for p in (req, ans) if p.exists()],
+            "files": [p.relative_to(ROOT).as_posix() if p.is_relative_to(ROOT) else str(p) for p in (req, ans) if p.exists()],
             "sends": 1,
             "freshness": "fresh", "stale_reason": "", "note": "kept by the ledger since the index was built"}
 

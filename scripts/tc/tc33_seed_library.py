@@ -25,7 +25,7 @@ for p in (ROOT, ROOT / "scripts", ROOT / "scripts" / "cf"):
     if str(p) not in sys.path:
         sys.path.insert(0, str(p))
 
-from console import library, store, tracediff, workbench as WB  # noqa: E402
+from console import library, regression, store, tracediff, workbench as WB  # noqa: E402
 
 RES = ROOT / "results" / "cf-raas"
 
@@ -51,7 +51,8 @@ def main() -> int:
         d = json.loads(f.read_text(encoding="utf-8-sig"))
         state = d["SchemeKeys"]["ProductName"].split()[-1]
         add(scenario=f"FX-{stem}", line="CP", state=state, origin="fixture", fixture=stem, fixture_file=str(f),
-            response_file=str(resp.relative_to(ROOT)), note="ISO STC fixture, rebuilt as 157_ sends it")
+            response_file=resp.relative_to(ROOT).as_posix(), note="ISO STC fixture, rebuilt as 157_ sends it",
+            request=regression.request_for({"fixture": stem, "fixture_file": str(f)}))
 
     idx = {e["hash"]: e for e in store.load()["references"]}
     for e in idx.values():

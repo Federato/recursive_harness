@@ -22,7 +22,12 @@ PAYLOADS = ROOT / "results" / "tc" / "library"
 def entries() -> list:
     if not STORE.exists():
         return []
-    return [json.loads(x) for x in STORE.read_text(encoding="utf-8").splitlines() if x.strip()]
+    out = [json.loads(x) for x in STORE.read_text(encoding="utf-8").splitlines() if x.strip()]
+    for e in out:                                             # forward slashes, whichever system wrote them
+        for k in ("request_file", "response_file"):
+            if e.get(k):
+                e[k] = e[k].replace("\\", "/")
+    return out
 
 
 def promote(*, scenario: str, line: str, state: str, origin: str, request_hash: str = "", request: dict | None = None,
@@ -41,12 +46,13 @@ def promote(*, scenario: str, line: str, state: str, origin: str, request_hash: 
          "origin": origin, "reference": "iso" if iso else "ours", "hash": request_hash, "by": by, "note": note}
     if fixture:
         e.update(fixture=fixture, fixture_file=fixture_file, response_file=response_file)
-    if request is not None and not iso:
+    if request is not None and (not iso or fixture):         # a fixture keeps its rebuilt request: no corpus path needed
         PAYLOADS.mkdir(parents=True, exist_ok=True)
         f = PAYLOADS / (re.sub(r"[^A-Za-z0-9_.-]", "_", scenario) + ".json")
         f.write_text(json.dumps(request, indent=1), encoding="utf-8")
-        e["request_file"] = str(f.relative_to(ROOT)) if f.is_relative_to(ROOT) else str(f)
-        e["ours"] = None if ours is None else str(ours)
+        e["request_file"] = f.relative_to(ROOT).as_posix() if f.is_relative_to(ROOT) else str(f)
+        if not iso:
+            e["ours"] = None if ours is None else str(ours)
     STORE.parent.mkdir(parents=True, exist_ok=True)
     with STORE.open("a", encoding="utf-8") as fh:
         fh.write(json.dumps(e) + "\n")

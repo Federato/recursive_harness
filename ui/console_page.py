@@ -256,9 +256,14 @@ def library_routes(method: str, path: str, query: dict, b: dict):
             if R.PROGRESS.exists():
                 return js(409, {"error": "a re-run is already going", "progress": json.loads(R.PROGRESS.read_text(encoding="utf-8"))})
             R.RUNS.mkdir(parents=True, exist_ok=True)
+            script = R.ROOT / "scripts" / "tc" / "tc34_rerun_library.py"
+            if getattr(sys, "frozen", False) or not script.exists():
+                # the packaged app: its "python" is the app itself, so the re-run goes on a thread, one entry at a time
+                import threading
+                threading.Thread(target=R.run, kwargs={"workers": 1}, name="tc-library-rerun", daemon=True).start()
+                return js(200, {"started": True, "inProcess": True})
             log = open(R.RUNS / "last_rerun.log", "w", encoding="utf-8")
-            subprocess.Popen([sys.executable, "-X", "utf8", str(R.ROOT / "scripts" / "tc" / "tc34_rerun_library.py")],
-                             cwd=R.ROOT, stdout=log, stderr=subprocess.STDOUT)
+            subprocess.Popen([sys.executable, "-X", "utf8", str(script)], cwd=R.ROOT, stdout=log, stderr=subprocess.STDOUT)
             return js(200, {"started": True})
         if path == "/api/console/library/stale":
             return js(200, R.stale())
@@ -268,6 +273,69 @@ def library_routes(method: str, path: str, query: dict, b: dict):
     except (KeyError, ValueError) as exc:
         return js(400, {"error": f"{type(exc).__name__}: {exc}"[:300]})
     return js(404, {"error": "no such library route"})
+
+
+SNAPSHOT_TRACES = ("CP-FL-865e8e3634", "CP-FL-a423e73917", "CP-OH-7164f29b0a", "CP-OH-c473de0f0e")
+
+
+def snapshot(traces: tuple = SNAPSHOT_TRACES, gl_traces: int = 1) -> str:
+    """D6: the console as one read-only page, for Ideation. Every answer the Matrix, the Board, the Library, the Queue
+    & Run Log and the chosen Trace Diffs read is computed now and embedded; a stand-in `fetch` serves them, refuses
+    every write, and says what is not in the snapshot. No server, no calls."""
+    import subprocess
+    import time as _t
+    from console import plans as P, store, tracediff
+    get = lambda path, q=None: json.loads(dispatch("GET", path, q or {}, None)[1])    # noqa: E731
+    gl = [s for s in tracediff.scenarios("GL") if s["outcome"] == "rated"][:gl_traces]
+    ids = list(traces) + [s["scenario"] for s in gl]
+    snap = {"/api/console/cap": get("/api/console/cap"), "/api/console/readiness": get("/api/console/readiness"),
+            "/api/console/library": get("/api/console/library"), "/api/console/library/stale": get("/api/console/library/stale"),
+            "/api/console/plans": get("/api/console/plans"), "/api/console/runlog": get("/api/console/runlog"),
+            "/api/console/override": get("/api/console/override"), "/api/console/refused": get("/api/console/refused"),
+            "/api/console/runs": get("/api/console/runs")}
+    for line in ("GL", "CP"):
+        snap[f"/api/console/board?lob={line}"] = get("/api/console/board", {"lob": line})
+        snap[f"/api/console/controls?lob={line}"] = get("/api/console/controls", {"lob": line})
+    for p in snap["/api/console/plans"]["plans"]:
+        snap[f"/api/console/plan?id={p['id']}"] = get("/api/console/plan", {"id": p["id"]})
+        snap[f"/api/console/runlog?plan={p['id']}"] = get("/api/console/runlog", {"plan": p["id"]})
+    keep = set()
+    for sid in ids:
+        try:
+            d = tracediff.diff(sid)
+        except KeyError:
+            continue
+        snap[f"/api/console/trace?scenario={sid}"] = d
+        keep.add(sid)
+    for line in ("CP", "GL"):
+        sc = [s for s in tracediff.scenarios(line) if s["scenario"] in keep]
+        snap[f"/api/console/trace/scenarios?lob={line}"] = {"scenarios": sc, "total": len(sc)}
+        snap[f"/api/console/trace/scenarios?lob={line}&differ=1"] = {"scenarios": [s for s in sc if s["agree"] is False],
+                                                                     "total": sum(1 for s in sc if s["agree"] is False)}
+    try:
+        build = subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=store.ROOT, capture_output=True, text=True,
+                               timeout=10).stdout.strip()
+    except Exception:                                         # noqa: BLE001
+        build = ""
+    meta = {"at": _t.strftime("%Y-%m-%d %H:%M"), "build": build, "traces": sorted(keep)}
+    shim = """<script>
+window.SNAP=__SNAP__;window.SNAPMETA=__META__;
+(function(){const ok=(o,s)=>Promise.resolve(new Response(JSON.stringify(o),{status:s||200,headers:{'Content-Type':'application/json'}}));
+window.fetch=function(u,o){u=String(u).replace(location.origin,'');
+  if(o&&o.method&&o.method!=='GET')return ok({error:'This is a read-only snapshot: nothing can be changed or sent here. Use the console in the app.'},403);
+  if(u in SNAP)return ok(SNAP[u]);
+  const base=u.split('&state=')[0].split('&differ=')[0];
+  if(u.startsWith('/api/console/trace/scenarios')&&(base in SNAP))return ok(SNAP[base]);
+  return ok({error:'Not in this read-only snapshot ('+SNAPMETA.at+'). Open the console in the app for the live screen.'},404);};
+document.addEventListener('DOMContentLoaded',()=>{const m=document.querySelector('main');if(m)m.insertAdjacentHTML('afterbegin',
+  '<div class="mx-need" style="margin-bottom:12px"><span class="chip internal">·</span><div><b>Read-only snapshot</b> of the ISO Rating Test Console, '+SNAPMETA.at+(SNAPMETA.build?' · build '+SNAPMETA.build:'')+
+  '<div class="mx-msg">The Matrix, the Coverage Board, the Regression Library, the Queue &amp; Run Log and '+SNAPMETA.traces.length+' Trace Diffs, as they stood. Nothing here sends or changes anything; the live console is in the app (Windows and Mac downloads on the ISO Project page).</div></div></div>');});
+})();
+</script>"""
+    shim = shim.replace("__SNAP__", json.dumps(snap).replace("</", "<\\/")).replace("__META__", json.dumps(meta))
+    html = page(app_only=frozenset({"plan", "workbench"}))
+    i = html.index("<script>")
+    return html[:i] + shim + html[i:]
 
 
 def report(plan: dict, log: list) -> str:
@@ -423,10 +491,15 @@ def dispatch(method: str, path: str, query: dict, body):
     return None
 
 
-def page() -> str:
+def page(app_only: frozenset = frozenset()) -> str:
+    """The console. `app_only`: screens a read-only snapshot replaces with a note (they need the running app)."""
     tabs = "".join(f'<a class="tab" href="#{k}" data-k="{k}">{label.replace("&", "&amp;")}</a>'
                    for k, label, _ in SCREENS)
     screens = "".join(
+        (f'<section class="screen" id="s-{k}" hidden><div class="eyebrow">Interactive · in the app</div>'
+         f'<h1>{label.replace("&", "&amp;")}</h1><div class="pending">This screen builds and rates scenarios, so it '
+         f'needs the running app: start RecursiveHarness (Windows) or start.command (Mac) and open /console.'
+         f'<span class="filter"></span></div></section>') if k in app_only else
         BUILT.get(k) or (f'<section class="screen" id="s-{k}" hidden><div class="eyebrow">Screen {i} of 7</div>'
                          f'<h1>{label.replace("&", "&amp;")}</h1><div class="pending">Built in {task} '
                          f'(docs/TC-PLAN.md).<span class="filter"></span></div></section>')
@@ -934,7 +1007,8 @@ function bdCell(k,fetchIt){
   if(fetchIt===false&&BD.cell&&BD.cell.key===k)return bdCellDraw(BD.cell);
   document.getElementById('bd-side').innerHTML='<div class="mx-msg">Loading the scenarios…</div>';
   fetch('/api/console/board/cell?lob='+BD.line+'&state='+st+'&path='+encodeURIComponent(pid)).then(r=>r.json())
-    .then(c=>{c.key=k;BD.cell=c;if(BD.sel===k)bdCellDraw(c);});
+    .then(c=>{if(c.error){document.getElementById('bd-side').innerHTML='<div class="mx-msg">'+esc(c.error)+'</div>';return;}
+      c.key=k;BD.cell=c;if(BD.sel===k)bdCellDraw(c);});
 }
 function bdCellDraw(c){
   const s=c.status==='descoped'?{glyph:'⊘',board:'Descoped',meaning:'taken out of scope with a reason'}:LG[c.status];
