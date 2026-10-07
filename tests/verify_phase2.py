@@ -59,7 +59,10 @@ def group_a():
             mods.update(a.name.split(".")[0] for a in node.names)
         elif isinstance(node, ast.ImportFrom) and node.module and node.level == 0:
             mods.add(node.module.split(".")[0])
-    third_party = mods - set(sys.stdlib_module_names)
+    # The harness's own packages are not dependencies: since the test console's RC-1 (TC-12) the client counts every
+    # call in `console.ledger`, imported inside `rate`, and that is this repo's code, not something to install.
+    local = {p.name for p in ROOT.iterdir() if p.is_dir() and (p / "__init__.py").exists()}
+    third_party = mods - set(sys.stdlib_module_names) - local
     check("A1 standard library only, no new dependency",
           not third_party and "urllib" in mods,
           f"imports {sorted(mods)}")
