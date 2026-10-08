@@ -111,6 +111,25 @@ def send(line: str, payload: dict, reuse: bool = True, override: str | None = No
     return {"sent": True, "reused": False, "stored": stored(payload)}
 
 
+def identify(payload) -> dict:
+    """An uploaded request's line, state and effective date, read the way ISO reads them: from `SchemeKeys`
+    ("General Liability OH", "Commercial Property OH"). Raises ValueError for anything else."""
+    keys = (payload.get("body") or {}).get("SchemeKeys") if isinstance(payload, dict) else None
+    name = str((keys or {}).get("ProductName") or "").strip()
+    for prefix, line, block in (("General Liability", "GL", "GeneralLiability"),
+                                ("Commercial Property", "CP", "CommercialProperty")):
+        if name.startswith(prefix):
+            state = name[len(prefix):].strip().upper()
+            if len(state) != 2 or not state.isalpha():
+                raise ValueError(f"ProductName {name!r} names no state")
+            if not payload["body"].get(block):
+                raise ValueError(f"a {prefix} request with no body.{block}")
+            return {"line": line, "state": state, "effective": str(keys.get("EffectiveDateTime") or "")[:10]}
+    raise ValueError("not an ISO rating request: body.SchemeKeys.ProductName should start General Liability or "
+                     f"Commercial Property (found {name!r})" if name else
+                     "not an ISO rating request: it has no body.SchemeKeys.ProductName")
+
+
 def every_state(config: dict, states: list, mode: str = "strict-erc", rounding: str = "ROUND_HALF_UP") -> dict:
     """D19 for GL: the config rated in each state where it is legal (free), and what sending it would cost."""
     import variants as V

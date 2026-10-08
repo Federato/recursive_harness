@@ -23,8 +23,10 @@ from console import ledger, status
 
 from . import variables
 
-#: The seven screens (the brief's order), the hash each opens on, and the task that builds it.
+#: The screens (Upload & Compare, the landing screen, then the brief's seven), the hash each opens on, and the task
+#: that builds it.
 SCREENS = (
+    ("compare", "Upload & Compare", "TC-39"),
     ("board", "Coverage Board", "TC-18"),
     ("matrix", "Readiness Matrix", "TC-16"),
     ("plan", "Test Plan Builder", "TC-27"),
@@ -142,6 +144,22 @@ def workbench(method: str, op: str, query: dict, b: dict):
         if op == "send" and method == "POST":
             p = WB.build(line, state, b.get("config"), b.get("request"))
             return js(200, WB.send(line, p, reuse=b.get("reuse", True) is not False, override=b.get("override") or None))
+        if op in ("upload", "upload-send") and method == "POST":
+            # Upload & Compare: the request as given (GL or CP, read from its ProductName); rated free, or one call
+            # parsed here, from the text as uploaded: a browser's JSON round trip turns 1.0 into 1, so the request
+            # would no longer hash to ISO's stored answer for it
+            try:
+                req = json.loads(b["text"]) if "text" in b else b.get("request")
+                if isinstance(req, list):
+                    req = req[int(b.get("index") or 0)]
+                who = WB.identify(req)
+            except (ValueError, IndexError) as exc:
+                return js(400, {"error": str(exc)[:400]})
+            if op == "upload-send":
+                return js(200, {**who, **WB.send(who["line"], req, reuse=b.get("reuse", True) is not False,
+                                                 override=b.get("override") or None)})
+            return js(200, {**who, **WB.rate(who["line"], req, b.get("mode") or "strict-erc",
+                                             b.get("rounding") or "ROUND_HALF_UP")})
         if op == "where" and method == "POST":
             import variants as V
             cfg = V.clean(b.get("config") or {})
@@ -360,7 +378,7 @@ document.addEventListener('DOMContentLoaded',()=>{const m=document.querySelector
 })();
 </script>"""
     shim = shim.replace("__SNAP__", json.dumps(snap).replace("</", "<\\/")).replace("__META__", json.dumps(meta))
-    html = page(app_only=frozenset({"plan", "workbench"}))
+    html = page(app_only=frozenset({"compare", "plan", "workbench"}))
     i = html.index("<script>")
     return html[:i] + shim + html[i:]
 
@@ -538,8 +556,8 @@ def page(app_only: frozenset = frozenset()) -> str:
                          f'(docs/TC-PLAN.md).<span class="filter"></span></div></section>')
         for i, (k, label, task) in enumerate(SCREENS, 1))
     return (PAGE.replace("{{TABS}}", tabs).replace("{{SCREENS}}", screens)
-            .replace("/*{{CSS}}*/", INSP_CSS + MATRIX_CSS + BOARD_CSS + TRACE_CSS + WB_CSS + PLAN_CSS + QUEUE_CSS + LIB_CSS)
-            .replace("/*{{JS}}*/", INSP_JS + MATRIX_JS + BOARD_JS + TRACE_JS + WB_JS + PLAN_JS + QUEUE_JS + LIB_JS)
+            .replace("/*{{CSS}}*/", INSP_CSS + UP_CSS + MATRIX_CSS + BOARD_CSS + TRACE_CSS + WB_CSS + PLAN_CSS + QUEUE_CSS + LIB_CSS)
+            .replace("/*{{JS}}*/", INSP_JS + UP_JS + MATRIX_JS + BOARD_JS + TRACE_JS + WB_JS + PLAN_JS + QUEUE_JS + LIB_JS)
             .replace("{{BOOT}}", json.dumps({"cap": cap(), "legend": legend(), "names": STATE_NAMES, "categories": categories()})))
 
 
@@ -885,8 +903,8 @@ function drawLegend(L){
     '"><span class="chip '+s.key+'">'+esc(s.glyph)+'</span>'+esc(s.key==='verified'?s.board+' / '+s.matrix:s.board)+'</span>').join(''));
 }
 function route(){
-  const [k,q]=(location.hash||'#matrix').slice(1).split('?');
-  const ok=document.getElementById('s-'+k)?k:'matrix';
+  const [k,q]=(location.hash||'#compare').slice(1).split('?');
+  const ok=document.getElementById('s-'+k)?k:'compare';
   const f=document.querySelector('#s-'+ok+' .filter');
   if(f)f.textContent=q?' Opened for '+[...new URLSearchParams(q).values()].join(' · ')+'.':'';
   document.querySelectorAll('.screen').forEach(s=>s.hidden=s.id!=='s-'+ok);
@@ -1453,6 +1471,123 @@ let wbStarted=false;function wbRoute(){if((location.hash||'').startsWith('#workb
 addEventListener('hashchange',wbRoute);wbRoute();
 """
 
+
+# ---- Upload & Compare: the landing screen ---------------------------------------------------------------------------
+# Requests the user already has (GL or CP, ISO's own request format, one per file or a list): the line and state read
+# from ProductName, each rated on our engine (free) beside ISO's stored answer for exactly that request when there is
+# one; the rest sent to ISO only after a confirmation that says what it spends (ad hoc lane, through the ledger).
+
+UP_HTML = """<section class="screen" id="s-compare" hidden><div class="mx-wrap"><div class="mx-main">
+  <div class="mx-head"><div><div class="eyebrow">Your requests · free to rate, one call each to ask ISO</div><h1>Upload &amp; Compare</h1></div>
+    <p>Drop in GL or Property requests in ISO's request format. Each is rated on our engine for free and set beside ISO's
+    answer when one is already stored for that exact request. Asking ISO about the rest spends calls, and nothing is sent until you confirm.</p></div>
+  <label class="up-drop" id="up-drop"><input type="file" id="up-file" accept=".json,application/json" multiple hidden>
+    <b>Drop request files here, or choose files</b><span class="mx-msg">.json · one request per file, or a list of them · GL and Property can be mixed</span></label>
+  <details class="up-paste"><summary>Or paste a request</summary><textarea id="up-text" spellcheck="false" placeholder='{"header": {...}, "body": {"SchemeKeys": {"ProductName": "General Liability OH", ...}, ...}}'></textarea>
+    <div class="td-tools"><button class="btn" id="up-add">Add and rate · free</button></div></details>
+  <div class="td-tools"><button class="btn" id="up-send" disabled>Compare with ISO…</button><button class="btn" id="up-clear">Clear</button><span class="mx-msg" id="up-msg"></span></div>
+  <div id="up-confirm"></div>
+  <div id="up-out"><div class="mx-empty">No requests yet.</div></div>
+</div><aside class="mx-side" id="up-side" aria-live="polite"></aside></div></section>"""
+
+BUILT["compare"] = UP_HTML
+
+UP_CSS = """
+.up-drop{display:flex;flex-direction:column;gap:4px;align-items:center;justify-content:center;text-align:center;min-height:110px;margin:14px 0 10px;
+  border:1.5px dashed var(--color-neutral-400);border-radius:var(--radius-lg);background:var(--color-bg);cursor:pointer;padding:16px}
+.up-drop.over{border-color:var(--color-accent-700);background:var(--color-accent-100)}
+.up-paste summary{cursor:pointer;font-size:12.5px;margin-bottom:6px}
+#up-text{width:100%;min-height:160px;font:11.5px ui-monospace,Menlo,monospace;padding:6px;border:1px solid var(--color-divider);border-radius:4px}
+.up-tbl{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:10px}
+.up-tbl th{text-align:left;font-weight:600;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-neutral-700);padding:4px 6px}
+.up-tbl td{padding:6px;border-top:1px solid var(--color-divider);vertical-align:top}
+.up-tbl .v{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.up-tbl .file{max-width:240px;overflow-wrap:anywhere}
+.up-tbl .x{border:0;background:none;cursor:pointer;color:var(--color-neutral-600);font-size:15px}
+.up-res{display:flex;gap:6px;align-items:flex-start}
+"""
+
+UP_JS = r"""
+const UP={rows:[],seq:0,busy:false};
+function upAdd(name,text){
+  let v;try{v=JSON.parse(text);}catch(e){UP.rows.push({id:++UP.seq,name,err:'Not valid JSON: '+e.message});upDraw();return;}
+  const list=Array.isArray(v)?v:[v];
+  list.forEach((_,i)=>{const row={id:++UP.seq,name:list.length>1?name+' #'+(i+1):name,text,index:i,busy:'rating'};UP.rows.push(row);upRate(row);});
+  upDraw();
+}
+function upRate(row){row.busy='rating';
+  return wbJSON('/api/console/workbench/upload',{text:row.text,index:row.index}).then(r=>{row.busy='';if(r.error)row.err=r.error;else{row.err='';row.r=r;}upDraw();})
+    .catch(e=>{row.busy='';row.err=String(e);upDraw();});}
+function upNeeds(){return UP.rows.filter(x=>x.r&&!x.r.stored&&!x.busy);}
+function upVerdict(r){const s=r.stored;
+  if(!s)return '<span class="mx-msg">not asked yet</span>';
+  if(s.outcome!=='rated')return '<span class="up-res"><span class="chip untested">·</span><span>ISO refused<div class="mx-msg">'+esc((s.message||'').slice(0,160))+'</div></span></span>';
+  if(r.outcome!=='rated')return '<span class="up-res"><span class="chip mismatch">×</span><span>ISO rated it; ours '+esc(r.outcome)+'</span></span>';
+  const d=Number(r.premium)-Number(s.iso);
+  return d===0?'<span class="up-res"><span class="chip verified">✓</span><span>Agree</span></span>':
+    '<span class="up-res"><span class="chip mismatch">×</span><span>Differ by '+esc((d>0?'+':'')+d.toFixed(2))+'</span></span>';}
+function upDraw(){
+  const out=document.getElementById('up-out');
+  if(!UP.rows.length)out.innerHTML='<div class="mx-empty">No requests yet.</div>';
+  else out.innerHTML='<table class="up-tbl"><tr><th>Request</th><th>Line · state</th><th>Effective</th><th class="v">Ours</th><th class="v">ISO</th><th>Result</th><th></th></tr>'+
+    UP.rows.map(x=>{const r=x.r,s=r&&r.stored,rm='<button class="x" data-x="'+x.id+'" title="Remove">×</button>';
+      if(x.err)return '<tr><td class="file">'+esc(x.name)+'</td><td colspan="5"><span class="up-res"><span class="chip mismatch">!</span><span>'+esc(x.err)+'</span></span></td><td>'+rm+'</td></tr>';
+      if(!r)return '<tr><td class="file">'+esc(x.name)+'</td><td colspan="5" class="mx-msg">Rating on our engine…</td><td></td></tr>';
+      const ours=r.outcome==='rated'?esc(r.premium):esc(r.outcome);
+      const iso=x.busy==='sending'?'<span class="mx-msg">asking ISO…</span>':!s?'<span class="mx-msg">—</span>':s.outcome==='rated'?esc(s.iso)+'<div class="mx-msg">stored '+esc((s.stored_at||s.date||'').slice(0,10))+(s.freshness==='stale'?' · stale':'')+'</div>':'refused';
+      return '<tr><td class="file">'+esc(x.name)+(r.outcome!=='rated'?'<div class="mx-msg">'+esc((r.detail||'').slice(0,200))+'</div>':'')+'</td><td>'+(r.line==='GL'?'General Liability':'Property')+' · '+esc(r.state)+'</td><td>'+esc(r.effective)+
+        '</td><td class="v">'+ours+'</td><td class="v">'+iso+'</td><td>'+upVerdict(r)+'</td><td>'+
+        (s&&s.outcome==='rated'?'<a href="#trace?lob='+r.line+'&scenario='+encodeURIComponent(s.scenario)+'">Trace Diff</a> ':'')+rm+'</td></tr>';}).join('')+'</table>';
+  const n=upNeeds().length,b=document.getElementById('up-send');
+  b.disabled=!n||UP.busy;b.textContent=n?'Compare with ISO · '+n+' call'+(n>1?'s':'')+'…':'Compare with ISO…';
+  upSide();
+}
+function upSide(){
+  const R=UP.rows.filter(x=>x.r).map(x=>x.r),both=R.filter(r=>r.stored&&r.stored.outcome==='rated'&&r.outcome==='rated');
+  const agree=both.filter(r=>Number(r.premium)===Number(r.stored.iso)).length;
+  const k=(t,v)=>'<tr><td>'+t+'</td><td style="text-align:right">'+v+'</td></tr>';
+  document.getElementById('up-side').innerHTML='<div class="cap2">This upload</div><table>'+k('Requests',UP.rows.length)+k('Rated by our engine',R.filter(r=>r.outcome==='rated').length)+
+    k('ISO answered',R.filter(r=>r.stored).length)+k('Agree with ISO',agree)+k('Differ from ISO',both.length-agree)+k('Not asked yet',upNeeds().length)+
+    k('Could not be read',UP.rows.filter(x=>x.err).length)+'</table><div class="mx-msg">Rated with strict ERC and ROUND_HALF_UP, as the Workbench does; for another mode use <a href="/">the rating page</a>. '+
+    'A request ISO already answered is never sent again: its stored answer is used, free. Each answer ISO gives is stored, so it shows in Trace Diff and counts as evidence.</div>';
+}
+function upSendDialog(){
+  const need=upNeeds(),el=document.getElementById('up-confirm');if(!need.length)return;
+  fetch('/api/console/cap').then(r=>r.json()).then(c=>{
+    const ad=c.lanes.find(l=>l.key==='adhoc'),room=Math.max(0,Math.min(ad.cap-ad.used,c.left)),over=need.length>room,n=need.length,pl=n>1?'s':'';
+    el.innerHTML='<div class="wb-conf'+(over?' full':'')+'"><b>Ask ISO about '+n+' request'+pl+'?</b>'+
+      '<div>No stored answer covers '+(n>1?'them':'it')+': this spends <b>'+n+' call'+pl+'</b> from the ad hoc lane, one at a time, each logged in the ledger.</div>'+
+      '<div class="mx-msg">Ad hoc lane: '+ad.used+' of '+ad.cap+' used today · '+c.left+' of '+c.cap+' left in all'+(over?' · <b>'+(n-room)+' would go past the cap</b>: they need a reason, logged with each.':'')+'</div>'+
+      '<div class="td-tools">'+(over?'<input id="up-reason" placeholder="Reason for going past the cap" style="flex:1">':'')+'<button class="btn" id="up-go">Send · '+n+' call'+pl+'</button><button class="btn" id="up-cancel">Cancel</button></div><div class="mx-msg" id="up-cmsg"></div></div>';
+    document.getElementById('up-cancel').onclick=()=>{el.innerHTML='';};
+    document.getElementById('up-go').onclick=()=>{const rs=document.getElementById('up-reason'),why=rs?rs.value.trim():'';
+      if(over&&!why){document.getElementById('up-cmsg').textContent='A reason is needed past the cap.';return;}
+      el.innerHTML='';upSend(need,why);};});
+}
+async function upSend(rows,why){
+  UP.busy=true;const msg=document.getElementById('up-msg');let sent=0,reused=0,stop='';
+  for(const row of rows){
+    row.busy='sending';upDraw();msg.textContent='Asking ISO: '+(sent+reused+1)+' of '+rows.length+'…';
+    let j;try{j=await wbJSON('/api/console/workbench/upload-send',{text:row.text,index:row.index,reuse:true,override:why});}catch(e){j={error:String(e)};}
+    row.busy='';
+    if(j.error){stop=(j.capped?'Stopped at the cap: ':'Stopped: ')+j.error;upDraw();break;}
+    j.reused?reused++:sent++;row.r.stored=j.stored;upDraw();}
+  UP.busy=false;fetch('/api/console/cap').then(r=>r.json()).then(drawCap);
+  msg.textContent=(stop?stop+' · ':'Done: ')+sent+' call'+(sent===1?'':'s')+' spent'+(reused?', '+reused+' answered from the store':'')+'.';
+  upDraw();
+}
+function upFiles(files){[...files].forEach(f=>f.text().then(t=>upAdd(f.name,t)));}
+(function(){const d=document.getElementById('up-drop'),f=document.getElementById('up-file');
+  f.onchange=()=>{upFiles(f.files);f.value='';};
+  ['dragenter','dragover'].forEach(e=>d.addEventListener(e,ev=>{ev.preventDefault();d.classList.add('over');}));
+  ['dragleave','drop'].forEach(e=>d.addEventListener(e,ev=>{ev.preventDefault();d.classList.remove('over');}));
+  d.addEventListener('drop',ev=>upFiles(ev.dataTransfer.files));
+  document.getElementById('up-add').onclick=()=>{const t=document.getElementById('up-text');if(!t.value.trim())return;upAdd('Pasted request',t.value);t.value='';};
+  document.getElementById('up-send').onclick=upSendDialog;
+  document.getElementById('up-clear').onclick=()=>{if(UP.busy)return;UP.rows=[];document.getElementById('up-msg').textContent='';document.getElementById('up-confirm').innerHTML='';upDraw();};
+  document.getElementById('up-out').addEventListener('click',ev=>{const b=ev.target.closest('[data-x]');if(!b||UP.busy)return;UP.rows=UP.rows.filter(x=>String(x.id)!==b.dataset.x);upDraw();});
+  upSide();})();
+"""
 
 # ---- TC-27 / TC-29: the Test Plan Builder -----------------------------------------------------------------------------
 # A line, states (no waves, D3) and per dimension the values to cover (from ISO's own domains, TC-26); a reduced grid,
