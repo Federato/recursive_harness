@@ -210,18 +210,20 @@ def save(plan: dict) -> None:
 
 
 def load(pid: str) -> dict:
-    return json.loads(path(pid).read_text(encoding="utf-8"))
+    with _LOCK:     # Windows refuses to open a file while save() is replacing it
+        return json.loads(path(pid).read_text(encoding="utf-8"))
 
 
 def all_plans() -> list:
     if not PLANS.exists():
         return []
     out = []
-    for f in sorted(PLANS.glob("*.json")):
-        try:
-            out.append(json.loads(f.read_text(encoding="utf-8")))
-        except ValueError:
-            continue
+    with _LOCK:
+        for f in sorted(PLANS.glob("*.json")):
+            try:
+                out.append(json.loads(f.read_text(encoding="utf-8")))
+            except ValueError:
+                continue
     return out
 
 
