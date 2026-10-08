@@ -8,6 +8,7 @@ ISO's stored answer for exactly that request; the rest sent one call each after 
   C  sending: a request ISO already answered is reused, no call; otherwise the route hands the request as uploaded to
      the Workbench's send (ad hoc lane, the reason past the cap)
   D  the page: the first tab and where /console opens; app-only in the read-only snapshot; the JS parses
+  E  generating: a working request for a line and state (the Workbench's base request), rated like an upload
 
     python tests/verify_console_upload.py
 """
@@ -130,6 +131,24 @@ def part_c():
           and seen.get("reuse") is True and seen.get("override") == "triage", seen)
 
 
+def part_e():
+    print("E. generating a request")
+    get = lambda q: json.loads(CP.dispatch("GET", "/api/console/workbench/generate", q, None)[1])   # noqa: E731
+    bad, stored = [], 0
+    for lob, states in (("GL", ["AK", "NY", "OH", "TX", "WY"]), ("CP", ["AZ", "FL", "OH", "TX"])):
+        for st in states:
+            g = get({"lob": lob, "state": st})
+            _, r = post("upload", {"text": g["text"]})
+            stored += bool(r.get("stored"))
+            if (g["line"], g["state"], r.get("line"), r.get("state"), r.get("outcome")) != (lob, st, lob, st, "rated"):
+                bad.append((lob, st, g.get("line"), r.get("outcome"), r.get("detail") or r.get("error")))
+    check("E1 a generated request reads back as its line and state and rates (GL and Property)", not bad, bad)
+    check("E2 generated GL is the Workbench's base request, so ISO's stored answers match it", stored >= 4, stored)
+    g = get({"lob": "GL", "state": "OH"})
+    check("E3 it is sent as text, as an uploaded file is (1.0 stays 1.0)", isinstance(g["text"], str)
+          and json.loads(g["text"]) == WB.build("GL", "OH"))
+
+
 def part_d():
     print("D. the page")
     check("D1 Upload & Compare is the first tab", CP.SCREENS[0][:2] == ("compare", "Upload & Compare"))
@@ -137,6 +156,8 @@ def part_d():
     check("D2 /console opens on it", "(location.hash||'#compare')" in html and "?k:'compare'" in html)
     check("D3 its controls are on the page", all(f'id="{i}"' in html for i in
                                                  ("up-drop", "up-file", "up-text", "up-send", "up-out", "up-side")))
+    check("D6 the generator and the row actions are on the page",
+          all(s in html for s in ('id="up-lob"', 'id="up-state"', 'id="up-gen"', "data-dl=", "data-ed=")))
     snap = CP.page(app_only=frozenset({"compare", "plan", "workbench"}))
     sec = re.search(r'<section class="screen" id="s-compare".*?</section>', snap, re.S).group(0)
     check("D4 in the read-only snapshot it says it needs the running app", "needs the running app" in sec and "up-drop" not in sec)
@@ -152,7 +173,7 @@ def part_d():
 
 if __name__ == "__main__":
     try:
-        part_a(); part_b(); part_c(); part_d()
+        part_a(); part_b(); part_c(); part_d(); part_e()
     finally:
         shutil.rmtree(TMP, ignore_errors=True)
     n = sum(ok for _, ok in RESULTS)

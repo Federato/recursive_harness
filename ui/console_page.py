@@ -144,6 +144,10 @@ def workbench(method: str, op: str, query: dict, b: dict):
         if op == "send" and method == "POST":
             p = WB.build(line, state, b.get("config"), b.get("request"))
             return js(200, WB.send(line, p, reuse=b.get("reuse", True) is not False, override=b.get("override") or None))
+        if op == "generate":
+            # Upload & Compare's generator: the Workbench's base request for a line and state (GL from ISO's declared
+            # domains, CP the state's sample risk), returned as text for the page to keep as it would an uploaded file
+            return js(200, {"line": line, "state": state, "text": json.dumps(WB.build(line, state), indent=1)})
         if op in ("upload", "upload-send") and method == "POST":
             # Upload & Compare: the request as given (GL or CP, read from its ProductName); rated free, or one call
             # parsed here, from the text as uploaded: a browser's JSON round trip turns 1.0 into 1, so the request
@@ -1480,7 +1484,11 @@ addEventListener('hashchange',wbRoute);wbRoute();
 UP_HTML = """<section class="screen" id="s-compare" hidden><div class="mx-wrap"><div class="mx-main">
   <div class="mx-head"><div><div class="eyebrow">Your requests · free to rate, one call each to ask ISO</div><h1>Upload &amp; Compare</h1></div>
     <p>Drop in GL or Property requests in ISO's request format. Each is rated on our engine for free and set beside ISO's
-    answer when one is already stored for that exact request. Asking ISO about the rest spends calls, and nothing is sent until you confirm.</p></div>
+    answer when one is already stored for that exact request. Or generate a working request for any state. Asking ISO about the rest spends calls, and nothing is sent until you confirm.</p></div>
+  <div class="up-gen"><b>Generate a request</b>
+    <label>Line <select id="up-lob"><option value="GL">General Liability</option><option value="CP">Commercial Property</option></select></label>
+    <label>State <select id="up-state"></select></label><button class="btn" id="up-gen">Generate and rate · free</button>
+    <span class="mx-msg">a working request for the state: GL from ISO's own options, Property the state's sample risk</span></div>
   <label class="up-drop" id="up-drop"><input type="file" id="up-file" accept=".json,application/json" multiple hidden>
     <b>Drop request files here, or choose files</b><span class="mx-msg">.json · one request per file, or a list of them · GL and Property can be mixed</span></label>
   <details class="up-paste"><summary>Or paste a request</summary><textarea id="up-text" spellcheck="false" placeholder='{"header": {...}, "body": {"SchemeKeys": {"ProductName": "General Liability OH", ...}, ...}}'></textarea>
@@ -1505,19 +1513,22 @@ UP_CSS = """
 .up-tbl .file{max-width:240px;overflow-wrap:anywhere}
 .up-tbl .x{border:0;background:none;cursor:pointer;color:var(--color-neutral-600);font-size:15px}
 .up-res{display:flex;gap:6px;align-items:flex-start}
+.up-gen{display:flex;gap:12px;flex-wrap:wrap;align-items:center;font-size:12.5px;margin-top:14px;padding:10px 12px;border:1px solid var(--color-divider);border-radius:var(--radius-lg)}
+.up-gen select{font:inherit;padding:5px 7px;border:1px solid var(--color-divider);border-radius:4px;background:#fff}
+.up-tbl .acts{white-space:nowrap}.up-tbl .acts a{margin-right:8px;cursor:pointer}
 """
 
 UP_JS = r"""
-const UP={rows:[],seq:0,busy:false};
+const UP={rows:[],seq:0,busy:false,q:Promise.resolve(),spec:{}};
 function upAdd(name,text){
   let v;try{v=JSON.parse(text);}catch(e){UP.rows.push({id:++UP.seq,name,err:'Not valid JSON: '+e.message});upDraw();return;}
   const list=Array.isArray(v)?v:[v];
-  list.forEach((_,i)=>{const row={id:++UP.seq,name:list.length>1?name+' #'+(i+1):name,text,index:i,busy:'rating'};UP.rows.push(row);upRate(row);});
+  list.forEach((_,i)=>{const row={id:++UP.seq,name:list.length>1?name+' #'+(i+1):name,text,index:i,list:Array.isArray(v),busy:'rating'};UP.rows.push(row);upRate(row);});
   upDraw();
 }
 function upRate(row){row.busy='rating';
-  return wbJSON('/api/console/workbench/upload',{text:row.text,index:row.index}).then(r=>{row.busy='';if(r.error)row.err=r.error;else{row.err='';row.r=r;}upDraw();})
-    .catch(e=>{row.busy='';row.err=String(e);upDraw();});}
+  return UP.q=UP.q.then(()=>wbJSON('/api/console/workbench/upload',{text:row.text,index:row.index}).then(r=>{row.busy='';if(r.error)row.err=r.error;else{row.err='';row.r=r;}upDraw();})
+    .catch(e=>{row.busy='';row.err=String(e);upDraw();}));}
 function upNeeds(){return UP.rows.filter(x=>x.r&&!x.r.stored&&!x.busy);}
 function upVerdict(r){const s=r.stored;
   if(!s)return '<span class="mx-msg">not asked yet</span>';
@@ -1537,7 +1548,7 @@ function upDraw(){
       const iso=x.busy==='sending'?'<span class="mx-msg">asking ISO…</span>':!s?'<span class="mx-msg">—</span>':s.outcome==='rated'?esc(s.iso)+'<div class="mx-msg">stored '+esc((s.stored_at||s.date||'').slice(0,10))+(s.freshness==='stale'?' · stale':'')+'</div>':'refused';
       return '<tr><td class="file">'+esc(x.name)+(r.outcome!=='rated'?'<div class="mx-msg">'+esc((r.detail||'').slice(0,200))+'</div>':'')+'</td><td>'+(r.line==='GL'?'General Liability':'Property')+' · '+esc(r.state)+'</td><td>'+esc(r.effective)+
         '</td><td class="v">'+ours+'</td><td class="v">'+iso+'</td><td>'+upVerdict(r)+'</td><td>'+
-        (s&&s.outcome==='rated'?'<a href="#trace?lob='+r.line+'&scenario='+encodeURIComponent(s.scenario)+'">Trace Diff</a> ':'')+rm+'</td></tr>';}).join('')+'</table>';
+        '<span class="acts">'+(s&&s.outcome==='rated'?'<a href="#trace?lob='+r.line+'&scenario='+encodeURIComponent(s.scenario)+'">Trace Diff</a>':'')+'<a data-dl="'+x.id+'" title="Save this request as a .json file">Download</a><a data-ed="'+x.id+'" title="Copy into the paste box to change it">Edit</a></span>'+rm+'</td></tr>';}).join('')+'</table>';
   const n=upNeeds().length,b=document.getElementById('up-send');
   b.disabled=!n||UP.busy;b.textContent=n?'Compare with ISO · '+n+' call'+(n>1?'s':'')+'…':'Compare with ISO…';
   upSide();
@@ -1576,17 +1587,34 @@ async function upSend(rows,why){
   msg.textContent=(stop?stop+' · ':'Done: ')+sent+' call'+(sent===1?'':'s')+' spent'+(reused?', '+reused+' answered from the store':'')+'.';
   upDraw();
 }
+function upItem(x){const v=JSON.parse(x.text);return JSON.stringify(Array.isArray(v)?v[x.index]:v,null,1);}
+function upDownload(x){const a=document.createElement('a'),r=x.r;
+  a.href=URL.createObjectURL(new Blob([x.list?upItem(x):x.text],{type:'application/json'}));
+  a.download=(r?r.line+'-'+r.state+(x.gen?'':'-'+x.name.replace(/\.json.*$/i,'')):x.name.replace(/\.json.*$/i,''))+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
+function upEdit(x){const d=document.querySelector('.up-paste'),t=document.getElementById('up-text');d.open=true;t.value=x.list?upItem(x):x.text;
+  UP.editName='Edited '+x.name.replace(/^(Generated|Edited) /,'');t.focus();t.setSelectionRange(0,0);t.scrollTop=0;t.scrollIntoView({block:'center'});}
+function upGenStates(){const lob=document.getElementById('up-lob').value,sel=document.getElementById('up-state');
+  const go=s=>{UP.spec[lob]=s;sel.innerHTML='<option value="*">All states ('+s.states.length+')</option>'+s.states.map(x=>'<option'+(x==='OH'?' selected':'')+'>'+x+'</option>').join('');};
+  UP.spec[lob]?go(UP.spec[lob]):fetch('/api/console/workbench/spec?lob='+lob).then(r=>r.json()).then(go);}
+function upGen(){const lob=document.getElementById('up-lob').value,st=document.getElementById('up-state').value,spec=UP.spec[lob];if(!spec)return;
+  (st==='*'?spec.states:[st]).reduce((q,s)=>q.then(()=>fetch('/api/console/workbench/generate?lob='+lob+'&state='+s).then(r=>r.json()).then(j=>{
+    if(j.error){UP.rows.push({id:++UP.seq,name:'Generated '+lob+' '+s,err:j.error});upDraw();return;}
+    const n=UP.rows.length;upAdd('Generated '+(lob==='GL'?'GL':'Property')+' '+s,j.text);UP.rows.slice(n).forEach(x=>x.gen=true);})),Promise.resolve());}
 function upFiles(files){[...files].forEach(f=>f.text().then(t=>upAdd(f.name,t)));}
 (function(){const d=document.getElementById('up-drop'),f=document.getElementById('up-file');
   f.onchange=()=>{upFiles(f.files);f.value='';};
   ['dragenter','dragover'].forEach(e=>d.addEventListener(e,ev=>{ev.preventDefault();d.classList.add('over');}));
   ['dragleave','drop'].forEach(e=>d.addEventListener(e,ev=>{ev.preventDefault();d.classList.remove('over');}));
   d.addEventListener('drop',ev=>upFiles(ev.dataTransfer.files));
-  document.getElementById('up-add').onclick=()=>{const t=document.getElementById('up-text');if(!t.value.trim())return;upAdd('Pasted request',t.value);t.value='';};
+  document.getElementById('up-add').onclick=()=>{const t=document.getElementById('up-text');if(!t.value.trim())return;upAdd(UP.editName||'Pasted request',t.value);t.value='';UP.editName='';};
   document.getElementById('up-send').onclick=upSendDialog;
   document.getElementById('up-clear').onclick=()=>{if(UP.busy)return;UP.rows=[];document.getElementById('up-msg').textContent='';document.getElementById('up-confirm').innerHTML='';upDraw();};
-  document.getElementById('up-out').addEventListener('click',ev=>{const b=ev.target.closest('[data-x]');if(!b||UP.busy)return;UP.rows=UP.rows.filter(x=>String(x.id)!==b.dataset.x);upDraw();});
-  upSide();})();
+  document.getElementById('up-out').addEventListener('click',ev=>{const dl=ev.target.closest('[data-dl]'),ed=ev.target.closest('[data-ed]');
+    if(dl||ed){const x=UP.rows.find(r=>String(r.id)===(dl||ed).dataset[dl?'dl':'ed']);if(x)(dl?upDownload:upEdit)(x);return;}
+    const b=ev.target.closest('[data-x]');if(!b||UP.busy)return;UP.rows=UP.rows.filter(x=>String(x.id)!==b.dataset.x);upDraw();});
+  document.getElementById('up-lob').onchange=upGenStates;
+  document.getElementById('up-gen').onclick=upGen;
+  upGenStates();upSide();})();
 """
 
 # ---- TC-27 / TC-29: the Test Plan Builder -----------------------------------------------------------------------------
