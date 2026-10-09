@@ -221,3 +221,107 @@ def send_technical(line: str, payload: dict, company: str, reuse: bool = True, o
     req.setdefault("header", {})["WritingCompany"] = company
     plain, _ = iso_request(req, "CF" if line == "CP" else "GL")
     return send(line, plain, reuse=reuse, override=override, client=client)
+
+
+def worksheet(line: str, payload: dict, company: str = "", policy_type: str = "New", root=None) -> dict:
+    """The rating worksheet for one request: every field, record by record, as Technical | ISO | Deviated.
+
+    * **Technical** -- our engine, pure ISO, on the non-deviated payload (with no company: the request as given);
+    * **ISO** -- ISO's stored answer to that same payload, if it was ever asked (opening a worksheet never calls ISO);
+    * **Deviated** -- our engine through the company's filing (only with a company; never sent to ISO).
+
+    Rows are `console.worksheet.align`'s (Trace Diff's alignment, with the rule file and tables that wrote each
+    technical value), plus the deviated value at the same path. Free: two ratings, no calls.
+    """
+    from . import worksheet as W
+    ln = "CF" if line == "CP" else "GL"
+    req = copy.deepcopy(payload)
+    if company:
+        from deviations.engine import iso_request
+        req.setdefault("header", {})
+        req["header"]["WritingCompany"] = company
+        req["header"]["PolicyType"] = policy_type or "New"
+        plain, _ = iso_request(req, ln)
+    else:
+        plain = req
+    dev = None
+    if line == "GL":
+        from gl_engine.rating import Kernel
+        k = Kernel()
+        if company:
+            r = k.rate(req, with_technical=True, **({"root": root} if root else {}))
+            tech = r.technical
+            t_tree, t_trace, t_prem = (tech.tree, tech.trace, str(tech.premium)) if tech and tech.complete else (None, [], None)
+            d_tree, d_prem = (r.tree, str(r.premium)) if r.complete else (None, None)
+            dev = r.deviation
+        else:
+            r = k.rate(req)
+            t_tree, t_trace, t_prem = (r.tree, r.trace, str(r.premium)) if r.complete else (None, [], None)
+            d_tree = d_prem = None
+    else:
+        from cf_engine.rating import rate as cf_rate
+        if company:
+            r = cf_rate(req, with_technical=True, **({"root": root} if root else {}))
+            tech = r.technical
+            t_tree, t_trace, t_prem = (tech.tree, tech.ip.trace, tech.premium) if tech and tech.complete else (None, [], None)
+            d_tree, d_prem = (r.tree, r.premium) if r.complete else (None, None)
+            dev = r.deviation
+        else:
+            r = cf_rate(req)
+            t_tree, t_trace, t_prem = (r.tree, r.ip.trace, r.premium) if r.complete else (None, [], None)
+            d_tree = d_prem = None
+    if t_tree is None:
+        return {"line": line, "error": "our engine did not rate the technical request" + (
+            f": {(dev or {}).get('refused', '')}" if dev else "")}
+
+    e = store.lookup(plain)
+    body, iso_prem, iso_state = None, None, "not asked"
+    if e:
+        if e["outcome"] == "rated":
+            resp = [f for f in e["files"] if f.endswith("_response.json")]
+            if resp:
+                import json
+                body = W.body_of(line, json.loads((ROOT / resp[-1]).read_text(encoding="utf-8")))
+                iso_state = "rated"
+        else:
+            iso_state = "refused"
+    key = "CommercialProperty" if line == "CP" else "GeneralLiability"
+    rows = W.align(line, t_tree, t_trace, body if body is not None else {key: None})
+    if body is not None:
+        b = body.get(key)
+        b = b[0] if isinstance(b, list) and b else b or {}
+        iso_prem = b.get("ErcCalculatedTotalPremium") if line == "CP" else b.get("Premium")
+    deviated = {}
+    if d_tree is not None:
+        deviated, _ = W.our_leaves(d_tree)
+        tops = (f"/{key}",)
+        deviated = {p: v for p, v in deviated.items() if p.startswith(tops)}
+    out_rows, seen = [], set()
+    for x in rows:
+        if not x["in_ours"]:
+            continue                          # an ISO-only field: listed after, with no technical value
+        p = x["path"]
+        seen.add(p)
+        d = deviated.get(p) if d_tree is not None else None
+        out_rows.append({"path": p, "record": x["record"], "field": x["field"], "kind": x["kind"],
+                         "technical": x["ours"], "iso": x["iso"], "deviated": d,
+                         "techIso": x["match"], "changed": (d_tree is not None and not W.same(d, x["ours"])),
+                         "rule": x["rule_file"], "tables": x["tables"], "order": x["order"]})
+    for p, v in deviated.items():             # fields only the deviated rating writes (e.g. a record's LCM)
+        if p not in seen:
+            out_rows.append({"path": p, "record": W.record_of(p), "field": p.rsplit("/", 1)[-1], "kind": W.kind(v),
+                             "technical": None, "iso": None, "deviated": v, "techIso": None, "changed": True,
+                             "rule": "", "tables": [], "order": None})
+    for x in rows:
+        # a field only ISO publishes: shown when it carries a value (an empty one is no difference), marked ISO-only
+        if not x["in_ours"] and x["iso"] not in (None, ""):
+            out_rows.append({"path": x["path"], "record": x["record"], "field": x["field"], "kind": x["kind"],
+                             "technical": None, "iso": x["iso"], "deviated": deviated.get(x["path"]),
+                             "techIso": False, "isoOnly": True, "changed": False, "rule": "(ISO only)", "tables": [],
+                             "order": None})
+    return {"line": line, "state": identify(payload)["state"], "company": company or None,
+            "policyType": (policy_type or "New") if company else None,
+            "premium": {"technical": t_prem, "iso": None if iso_prem is None else str(iso_prem), "deviated": d_prem},
+            "iso": iso_state, "isoHash": store.request_hash(plain),
+            "deviation": {k: (dev or {}).get(k) for k in ("filings", "edition", "waterfall", "warnings")} if dev else None,
+            "rows": out_rows}

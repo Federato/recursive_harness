@@ -152,6 +152,16 @@ def workbench(method: str, op: str, query: dict, b: dict):
         if op == "companies":
             # Upload & Compare's writing-company picker (deviations P4): every company with a compiled filing
             return js(200, {"companies": WB.companies()})
+        if op == "worksheet" and method == "POST":
+            # the rating worksheet for one uploaded request: Technical | ISO | Deviated, field by field (free)
+            try:
+                req = json.loads(b["text"]) if "text" in b else b.get("request")
+                if isinstance(req, list):
+                    req = req[int(b.get("index") or 0)]
+                who = WB.identify(req)
+            except (ValueError, IndexError) as exc:
+                return js(400, {"error": str(exc)[:400]})
+            return js(200, WB.worksheet(who["line"], req, (b.get("company") or "").strip(), b.get("policyType") or "New"))
         if op in ("upload", "upload-send") and method == "POST":
             # Upload & Compare: the request as given (GL or CP, read from its ProductName); rated free, or one call
             # parsed here, from the text as uploaded: a browser's JSON round trip turns 1.0 into 1, so the request
@@ -1516,6 +1526,7 @@ UP_HTML = """<section class="screen" id="s-compare" hidden><div class="mx-wrap">
   <div class="td-tools"><button class="btn" id="up-send" disabled>Compare with ISO…</button><button class="btn" id="up-clear">Clear</button><span class="mx-msg" id="up-msg"></span></div>
   <div id="up-confirm"></div>
   <div id="up-out"><div class="mx-empty">No requests yet.</div></div>
+  <div id="up-ws"></div>
 </div><aside class="mx-side" id="up-side" aria-live="polite"></aside></div></section>"""
 
 BUILT["compare"] = UP_HTML
@@ -1536,6 +1547,19 @@ UP_CSS = """
 .up-gen{display:flex;gap:12px;flex-wrap:wrap;align-items:center;font-size:12.5px;margin-top:14px;padding:10px 12px;border:1px solid var(--color-divider);border-radius:var(--radius-lg)}
 .up-gen select{font:inherit;padding:5px 7px;border:1px solid var(--color-divider);border-radius:4px;background:#fff}
 .up-tbl .acts{white-space:nowrap}.up-tbl .acts a{margin-right:8px;cursor:pointer}
+.ws{margin-top:18px;border-top:2px solid var(--color-neutral-700);padding-top:10px}
+.ws-hd{display:flex;gap:18px;flex-wrap:wrap;align-items:baseline}.ws-hd h2{margin:0;font-size:18px}
+.ws-prem{display:flex;gap:22px;margin:8px 0}.ws-prem div{font-size:12px}.ws-prem b{display:block;font-size:20px;font-variant-numeric:tabular-nums}
+.ws-tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:6px 0 4px;font-size:12.5px}
+.ws-tools button.on{background:var(--color-accent-100);border-color:var(--color-accent-700)}
+.ws-tbl{width:100%;border-collapse:collapse;font-size:12px}
+.ws-tbl th{text-align:left;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-neutral-700);padding:4px 6px;position:sticky;top:0;background:var(--color-bg)}
+.ws-tbl td{padding:3px 6px;border-top:1px solid var(--color-divider);vertical-align:top}
+.ws-tbl .v{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.ws-tbl tr.rec td{background:var(--color-neutral-100,#eee);font-weight:600;cursor:pointer;overflow-wrap:anywhere}
+.ws-tbl td.bad{color:#9b1c1c;font-weight:600}.ws-tbl td.chg{background:var(--color-accent-100);font-weight:600}
+.ws-tbl .src{color:var(--color-neutral-700);font-size:11px;overflow-wrap:anywhere;max-width:340px}
+.ws-scroll{max-height:70vh;overflow:auto;border:1px solid var(--color-divider);border-radius:4px}
 .up-co{margin-top:8px}.up-tbl a.car{cursor:pointer;font-weight:600}.up-tbl tr.sel td{background:var(--color-accent-100)}
 .up-dv table{width:100%;font-size:12px;table-layout:fixed}.up-dv td{padding:2px 0;overflow-wrap:anywhere;vertical-align:top}
 .up-dv td:first-child{width:42%;padding-right:6px}.up-dv td+td{text-align:right}.up-dv .w{color:var(--color-neutral-700);font-size:11.5px;margin-top:6px}
@@ -1572,7 +1596,7 @@ function upDraw(){
       const iso=x.busy==='sending'?'<span class="mx-msg">asking ISO…</span>':!s?'<span class="mx-msg">—</span>':s.outcome==='rated'?esc(s.iso)+'<div class="mx-msg">stored '+esc((s.stored_at||s.date||'').slice(0,10))+(s.freshness==='stale'?' · stale':'')+'</div>':'refused';
       return '<tr'+(UP.sel===x.id?' class="sel"':'')+'><td class="file">'+esc(x.name)+(r.outcome!=='rated'?'<div class="mx-msg">'+esc((r.detail||'').slice(0,200))+'</div>':'')+'</td><td>'+(r.line==='GL'?'General Liability':'Property')+' · '+esc(r.state)+'</td><td>'+esc(r.effective)+
         '</td><td class="v">'+ours+'</td><td class="v">'+iso+'</td><td class="v">'+upCarrier(x)+'</td><td>'+upVerdict(r)+'</td><td>'+
-        '<span class="acts">'+(s&&s.outcome==='rated'?'<a href="#trace?lob='+r.line+'&scenario='+encodeURIComponent(s.scenario)+'">Trace Diff</a>':'')+'<a data-dl="'+x.id+'" title="Save this request as a .json file">Download</a><a data-ed="'+x.id+'" title="Copy into the paste box to change it">Edit</a></span>'+rm+'</td></tr>';}).join('')+'</table>';
+        '<span class="acts">'+(s&&s.outcome==='rated'?'<a href="#trace?lob='+r.line+'&scenario='+encodeURIComponent(s.scenario)+'">Trace Diff</a>':'')+'<a data-ws="'+x.id+'" title="Every field, Technical | ISO | Deviated">Worksheet</a><a data-dl="'+x.id+'" title="Save this request as a .json file">Download</a><a data-ed="'+x.id+'" title="Copy into the paste box to change it">Edit</a></span>'+rm+'</td></tr>';}).join('')+'</table>';
   const n=upNeeds().length,b=document.getElementById('up-send');
   b.disabled=!n||UP.busy;b.textContent=n?'Compare with ISO · '+n+' call'+(n>1?'s':'')+'…':'Compare with ISO…';
   upSide();
@@ -1598,6 +1622,46 @@ function upCompanies(){fetch('/api/console/workbench/companies').then(r=>r.json(
     o.textContent=c.code+' · '+c.name+' ('+c.carrier+(fs?': '+fs:'')+')';sel.appendChild(o);});}).catch(()=>{});}
 function upRerate(){UP.company=document.getElementById('up-company').value;UP.pt=document.getElementById('up-pt').value;UP.sel=null;
   UP.rows.filter(x=>!x.err&&x.text).forEach(x=>{x.r=null;upRate(x);});upDraw();}
+const WS={d:null,name:'',filter:'all',q:'',shut:new Set()};
+function wsOpen(x){const el=document.getElementById('up-ws');WS.name=x.name;WS.shut=new Set();
+  el.innerHTML='<div class="ws"><div class="mx-msg">Building the worksheet for '+esc(x.name)+'… (two ratings, no ISO call)</div></div>';el.scrollIntoView({block:'start'});
+  wbJSON('/api/console/workbench/worksheet',{text:x.text,index:x.index,company:(x.r&&x.r.company)||'',policyType:(x.r&&x.r.policyType)||'New'})
+    .then(d=>{WS.d=d;wsDraw();}).catch(e=>{el.innerHTML='<div class="ws"><div class="mx-empty">'+esc(String(e))+'</div></div>';});}
+function wsShown(){const d=WS.d,q=WS.q.toLowerCase();
+  return d.rows.filter(r=>(WS.filter==='all'||(WS.filter==='diff'&&(r.techIso===false||r.changed))||(WS.filter==='dev'&&r.changed)||
+    (WS.filter==='iso'&&r.techIso===false)||(WS.filter==='num'&&r.kind==='number'))&&(!q||(r.path+' '+r.rule).toLowerCase().includes(q)));}
+function wsCell(v){return v===null||v===undefined?'<span class="mx-msg">—</span>':esc(String(v));}
+function wsDraw(){const d=WS.d,el=document.getElementById('up-ws');
+  if(d.error){el.innerHTML='<div class="ws"><div class="mx-empty">'+esc(d.error)+'</div></div>';return;}
+  const hasDev=!!d.company,P=d.premium,isoNote=d.iso==='rated'?'':d.iso==='refused'?' (ISO refused it)':' (not asked yet: Compare with ISO to fill this column)';
+  const rows=wsShown(),by={};rows.forEach(r=>{(by[r.record]=by[r.record]||[]).push(r);});
+  const cnt=f=>d.rows.filter(f).length,btn=(k,t)=>'<button class="btn'+(WS.filter===k?' on':'')+'" data-wf="'+k+'">'+t+'</button>';
+  el.innerHTML='<div class="ws"><div class="ws-hd"><h2>Rating worksheet · '+esc(WS.name)+'</h2><span class="mx-msg">'+(d.line==='GL'?'General Liability':'Property')+' · '+esc(d.state)+
+    (hasDev?' · writing company '+esc(d.company)+' · '+esc(d.policyType):' · no writing company')+'</span><a data-wclose="1" style="cursor:pointer;margin-left:auto">Close</a></div>'+
+    '<div class="ws-prem"><div>Technical<b>'+wsCell(P.technical)+'</b>our engine, pure ISO</div><div>ISO<b>'+wsCell(P.iso)+'</b>its answer to the same request'+esc(isoNote)+'</div>'+
+    (hasDev?'<div>Deviated<b>'+wsCell(P.deviated)+'</b>our engine with the filing, never sent to ISO</div>':'')+'</div>'+
+    '<div class="ws-tools">'+btn('all','All fields · '+d.rows.length)+btn('diff','Any difference · '+cnt(r=>r.techIso===false||r.changed))+
+    (hasDev?btn('dev','Deviated changes · '+cnt(r=>r.changed)):'')+btn('iso','Technical ≠ ISO · '+cnt(r=>r.techIso===false))+btn('num','Numbers only')+
+    '<input id="ws-q" placeholder="Find a field, record or rule" value="'+esc(WS.q)+'" style="flex:1;min-width:180px"><button class="btn" data-wcsv="1">Download CSV</button></div>'+
+    '<div class="ws-scroll"><table class="ws-tbl"><tr><th>Field</th><th class="v">Technical</th><th class="v">ISO</th>'+(hasDev?'<th class="v">Deviated</th>':'')+'<th>Written by (technical)</th></tr>'+
+    Object.entries(by).map(([rec,rs])=>{const shut=WS.shut.has(rec);
+      const parts=rec.split('/').filter(Boolean),name=parts.pop()||'(policy)',trail=parts.map(x=>x.replace(/^CommercialProperty|^GeneralLiability/,'')||x).join(' › ');
+      return '<tr class="rec" data-rec="'+esc(rec)+'" title="'+esc(rec)+'"><td colspan="'+(hasDev?5:4)+'">'+(shut?'▸ ':'▾ ')+esc(name)+' <span class="mx-msg">'+rs.length+' field'+(rs.length>1?'s':'')+(trail?' · in '+esc(trail):'')+'</span></td></tr>'+
+        (shut?'':rs.map(r=>'<tr><td>'+esc(r.field)+'</td><td class="v">'+wsCell(r.technical)+'</td><td class="v'+(r.techIso===false&&d.iso==='rated'?' bad':'')+'">'+wsCell(r.iso)+'</td>'+
+          (hasDev?'<td class="v'+(r.changed?' chg':'')+'">'+wsCell(r.deviated)+'</td>':'')+'<td class="src">'+esc(r.rule||'')+(r.tables&&r.tables.length?' · '+esc(r.tables.join(', ')):'')+'</td></tr>').join(''));}).join('')+
+    '</table></div><div class="mx-msg">Red ISO value: technical and ISO differ there. Highlighted deviated value: the filing changed it. "Written by" is the ERC rule file (and the tables read just before) that wrote the technical value.</div></div>';
+  const q=document.getElementById('ws-q');q.oninput=()=>{WS.q=q.value;const pos=q.selectionStart;wsDraw();const n=document.getElementById('ws-q');n.focus();n.setSelectionRange(pos,pos);};}
+function wsCSV(){const d=WS.d,hasDev=!!d.company,qq=v=>v===null||v===undefined?'':'"'+String(v).replace(/"/g,'""')+'"';
+  const head=['Record','Field','Technical','ISO'].concat(hasDev?['Deviated']:[]).concat(['Technical vs ISO','Changed by deviations','Written by','Tables']);
+  const lines=[head.map(qq).join(',')].concat(wsShown().map(r=>[r.record,r.field,r.technical,r.iso].concat(hasDev?[r.deviated]:[])
+    .concat([r.techIso===null?'':r.techIso?'agree':'differ',hasDev?(r.changed?'yes':'no'):'',r.rule,(r.tables||[]).join('; ')]).map(qq).join(',')));
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([lines.join('\r\n')],{type:'text/csv'}));
+  a.download='worksheet-'+d.line+'-'+d.state+(d.company?'-'+d.company:'')+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
+document.getElementById('up-ws').addEventListener('click',ev=>{const t=ev.target;
+  if(t.closest('[data-wclose]')){document.getElementById('up-ws').innerHTML='';WS.d=null;return;}
+  if(t.closest('[data-wcsv]')){wsCSV();return;}
+  const f=t.closest('[data-wf]');if(f){WS.filter=f.dataset.wf;wsDraw();return;}
+  const rc=t.closest('[data-rec]');if(rc){const k=rc.dataset.rec;WS.shut.has(k)?WS.shut.delete(k):WS.shut.add(k);wsDraw();}});
 function upSide(){
   const sx=UP.sel&&UP.rows.find(x=>x.id===UP.sel&&x.r&&x.r.carrier);
   if(sx){document.getElementById('up-side').innerHTML=upDev(sx);return;}
@@ -1658,6 +1722,7 @@ function upFiles(files){[...files].forEach(f=>f.text().then(t=>upAdd(f.name,t)))
   document.getElementById('up-clear').onclick=()=>{if(UP.busy)return;UP.rows=[];document.getElementById('up-msg').textContent='';document.getElementById('up-confirm').innerHTML='';upDraw();};
   document.getElementById('up-out').addEventListener('click',ev=>{const dv=ev.target.closest('[data-dv]');
     if(dv){UP.sel=Number(dv.dataset.dv);upDraw();return;}
+    const ws=ev.target.closest('[data-ws]');if(ws){const x=UP.rows.find(r=>String(r.id)===ws.dataset.ws);if(x)wsOpen(x);return;}
     const dl=ev.target.closest('[data-dl]'),ed=ev.target.closest('[data-ed]');
     if(dl||ed){const x=UP.rows.find(r=>String(r.id)===(dl||ed).dataset[dl?'dl':'ed']);if(x)(dl?upDownload:upEdit)(x);return;}
     const b=ev.target.closest('[data-x]');if(!b||UP.busy)return;UP.rows=UP.rows.filter(x=>String(x.id)!==b.dataset.x);upDraw();});

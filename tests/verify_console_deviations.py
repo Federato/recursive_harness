@@ -7,6 +7,7 @@
   C  asking ISO about a company request sends the NON-DEVIATED payload: no company, no PolicyType, no LCM (D21)
   D  the page: the picker, the Technical / ISO / Carrier columns, the Deviations Proof tab; the JS parses
   E  the Deviations Proof board: T1-T10 as rows from each suite's last run; T3 and T8 list ISO's cases
+  F  the rating worksheet: every field, Technical | ISO | Deviated, free, with the rule that wrote each value
 
     python tests/verify_console_deviations.py
 """
@@ -177,9 +178,37 @@ def part_e():
     check("E6 T3 lists the cases ISO answered", all(c["line"] in ("CP", "GL") for c in t["T3"]["cases"]))
 
 
+def part_f():
+    print("F. the rating worksheet: Technical | ISO | Deviated")
+    text = json.dumps(pr.sample("IA", "2025-07-01"))
+    code, w = post("worksheet", {"text": text, "company": "UFC", "policyType": "New"})
+    rows = w.get("rows", [])
+    check("F1 built, with all three premiums' columns", code == 200 and w["premium"]["technical"]
+          and w["premium"]["deviated"] and rows, {k: w.get(k) for k in ("premium", "iso", "error")})
+    check("F2 every row says where it sits: record, field, technical, ISO, deviated, the rule that wrote it",
+          all({"record", "field", "technical", "iso", "deviated", "rule", "tables"} <= set(r) for r in rows))
+    ch = [r for r in rows if r["changed"]]
+    check("F3 the deviated changes are the fields the filing moved (67 on this risk, as the panel says)",
+          len(ch) == 67 and any(r["field"] == "LossCostMultiplier" and r["deviated"] == "1.511" for r in ch),
+          len(ch))
+    check("F4 the premiums on the worksheet are the ones the row shows",
+          w["premium"]["technical"] == "4334" and w["premium"]["deviated"] == "9026", w["premium"])
+    check("F5 opening a worksheet never calls ISO: the ISO column is a stored answer or 'not asked'",
+          w["iso"] in ("rated", "refused", "not asked"))
+    check("F6 an ISO-only field with no value is not listed as a difference",
+          not any(r.get("isoOnly") and r["iso"] in (None, "") for r in rows))
+    code, w2 = post("worksheet", {"text": text})
+    check("F7 with no company: Technical and ISO only, no deviated column",
+          code == 200 and w2["company"] is None and w2["premium"]["deviated"] is None
+          and not any(r["changed"] for r in w2["rows"]))
+    code, html, _ = CP.dispatch("GET", "/console", {}, None)
+    check("F8 each row has a Worksheet link, and the worksheet has its filters and a CSV download",
+          "data-ws=" in html and "data-wcsv" in html and "Deviated changes" in html)
+
+
 def main() -> int:
     setup()
-    for part in (part_a, part_b, part_c, part_d, part_e):
+    for part in (part_a, part_b, part_c, part_d, part_e, part_f):
         part()
     bad = [n for n, ok in RESULTS if not ok]
     print(f"\n{len(RESULTS) - len(bad)}/{len(RESULTS)} passed" + (f"; FAILED: {', '.join(bad)}" if bad else ""))
