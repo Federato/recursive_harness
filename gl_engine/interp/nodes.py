@@ -130,6 +130,8 @@ def _value(ip, el, fr):
         if not fr.has_param(name):
             raise InterpretError(
                 f"parameter {name!r} is not bound here", "§8", where)
+        if ip.deps is not None:
+            ip.deps.param(fr.params, name)
         return coerce(fr.param(name), typ, where)
 
     path = el.attrib.get("FromDataDef")
@@ -142,8 +144,8 @@ def _value(ip, el, fr):
     # address an explicitly nillable element. The guard against nulls sits at
     # the arithmetic boundary (§12.3), which is where a null becomes a wrong
     # premium rather than merely an absent one.
-    if ip.taint is not None:
-        ip.taint.read(tree.select_one(path, fr.data))
+    if ip.deps is not None:
+        ip.deps.read(tree.select_one(path, fr.data))
     return coerce(tree.read(path, fr.data), typ, where)
 
 
@@ -171,8 +173,8 @@ def _first_value(ip, el, fr):
     typ = el.attrib.get("Type", "string")
     path = el.attrib.get("FromDataDef")
     if path is not None:
-        if ip.taint is not None:
-            ip.taint.read(tree.select_one(path, fr.data))
+        if ip.deps is not None:
+            ip.deps.read(tree.select_one(path, fr.data))
         raw = tree.read(path, fr.data)
         if raw is not None and str(raw) != "":
             return coerce(raw, typ, where)
@@ -255,9 +257,25 @@ def _if(ip, el, fr):
                 f"If holds a {t}", "§5", ip.where(el))
     if test is None or then is None:
         raise InterpretError("If without Test or Then", "§5", ip.where(el))
-    if truthy(ip.eval(test, fr), ip.where(test)):
-        return ip.eval(then, fr)
-    return ip.eval(other, fr) if other is not None else None
+    deps = ip.deps
+    if deps is None:
+        if truthy(ip.eval(test, fr), ip.where(test)):
+            return ip.eval(then, fr)
+        return ip.eval(other, fr) if other is not None else None
+    # recording dependencies: what the test read decides the branch (a control edge on every write inside it)
+    deps.capture_begin()
+    try:
+        ok = truthy(ip.eval(test, fr), ip.where(test))
+    finally:
+        reads = deps.capture_end()
+    branch = then if ok else other
+    if branch is None:
+        return None
+    deps.control_push(reads)
+    try:
+        return ip.eval(branch, fr)
+    finally:
+        deps.control_pop()
 
 
 @node("Test", "Then", "Else", "Otherwise")
@@ -270,6 +288,18 @@ def _wrapper(ip, el, fr):
 def _choose(ip, el, fr):
     """First `When` whose test holds; `Otherwise` optional (contract §5)."""
     other = None
+    deps = ip.deps
+    seen = set()
+
+    def branch(body):
+        if deps is None:
+            return ip.eval(body, fr)
+        deps.control_push(seen)
+        try:
+            return ip.eval(body, fr)
+        finally:
+            deps.control_pop()
+
     for ch in _kids(el):
         t = ip.tag(ch)
         if t == "When":
@@ -283,13 +313,20 @@ def _choose(ip, el, fr):
             if test is None or then is None:
                 raise InterpretError(
                     "When without Test or Then", "§5", ip.where(ch))
-            if truthy(ip.eval(test, fr), ip.where(test)):
-                return ip.eval(then, fr)
+            if deps is not None:
+                deps.capture_begin()
+            try:
+                ok = truthy(ip.eval(test, fr), ip.where(test))
+            finally:
+                if deps is not None:
+                    seen |= deps.capture_end()
+            if ok:
+                return branch(then)
         elif t == "Otherwise":
             other = ch
         else:
             raise InterpretError(f"Choose holds a {t}", "§5", ip.where(el))
-    return ip.eval(other, fr) if other is not None else None
+    return branch(other) if other is not None else None
 
 
 @node("When")
@@ -471,7 +508,10 @@ def _exist(ip, el, fr):
     path = el.attrib.get("AtInputDataDef", "")
     if not path and getattr(ip, "product_skips_null", False):
         return False
-    return bool(tree.select(path, fr.data))
+    got = tree.select(path, fr.data)
+    if ip.deps is not None:
+        ip.deps.read_many(got)
+    return bool(got)
 
 
 @node("NotExist")
@@ -479,7 +519,10 @@ def _not_exist(ip, el, fr):
     path = el.attrib.get("AtInputDataDef", "")
     if not path and getattr(ip, "product_skips_null", False):
         return True                            # OI-123: see `_exist`
-    return not tree.select(path, fr.data)
+    got = tree.select(path, fr.data)
+    if ip.deps is not None:
+        ip.deps.read_many(got)
+    return not got
 
 
 # --------------------------------------------------------------------- lookup
@@ -535,22 +578,33 @@ def _run_rule(ip, el, fr):
             "RunRule without @FileName or @Rule", "§8", where)
 
     args = {}
+    prov = {} if ip.deps is not None else None
     for ch in _kids(el):
         if ip.tag(ch) != "Arg":
             raise InterpretError(
                 f"RunRule holds a {ip.tag(ch)}", "§8", where)
-        args.update(_arg_binding(ip, ch, fr))
+        args.update(_arg_binding(ip, ch, fr, prov))
+    if prov is not None:
+        ip.deps.bind(args, prov)
 
     return ip.call(file_name, rule_name, el.attrib.get("ProjectName"),
                    args, fr, where)
 
 
-def _arg_binding(ip, el, fr) -> dict:
-    """`Arg` binds one parameter, evaluated in the CALLER's frame (§8)."""
+def _arg_binding(ip, el, fr, prov: dict | None = None) -> dict:
+    """`Arg` binds one parameter, evaluated in the CALLER's frame (§8). With a dependency recorder, `prov`
+    collects what each argument was computed from."""
     name = el.attrib.get("Param")
     if not name:
         raise InterpretError("Arg without @Param", "§8", ip.where(el))
-    return {name: ip.eval(_only(el, ip), fr)}
+    if prov is None:
+        return {name: ip.eval(_only(el, ip), fr)}
+    ip.deps.capture_begin()
+    try:
+        value = ip.eval(_only(el, ip), fr)
+    finally:
+        prov[name] = ip.deps.capture_end()
+    return {name: value}
 
 
 @node("Arg")
@@ -567,16 +621,20 @@ def _with_args(ip, el, fr):
     """
     bindings = {}
     body = []
+    prov = {} if ip.deps is not None else None
     for ch in _kids(el):
         if ip.tag(ch) == "Arg":
             if body:
                 raise InterpretError(
                     "WithArgs has an Arg after the body began", "§8",
                     ip.where(el))
-            bindings.update(_arg_binding(ip, ch, fr))
+            bindings.update(_arg_binding(ip, ch, fr, prov))
         else:
             body.append(ch)
     inner = fr.with_params(bindings)
+    if prov is not None and inner.params is not fr.params:
+        ip.deps.bind(inner.params, prov)
+        ip.deps.inherit(inner.params, fr.params)
     out = None
     for ch in body:
         out = ip.eval(ch, inner)
@@ -697,13 +755,15 @@ def _copy(ip, el, fr):
         if not fr.has_param(name):
             raise InterpretError(
                 f"parameter {name!r} is not bound here", "§8", where)
+        if ip.deps is not None:
+            ip.deps.param(fr.params, name)
         return coerce(fr.param(name), typ, where)
     path = el.attrib.get("FromDataDef")
     if path is None:
         raise InterpretError(
             "Copy with neither @FromDataDef nor @FromParam", "§9", where)
-    if ip.taint is not None:
-        ip.taint.read(tree.select_one(path, fr.data))
+    if ip.deps is not None:
+        ip.deps.read(tree.select_one(path, fr.data))
     return coerce(tree.read(path, fr.data), typ, where)
 
 

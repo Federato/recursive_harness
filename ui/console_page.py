@@ -162,6 +162,10 @@ def workbench(method: str, op: str, query: dict, b: dict):
             except (ValueError, IndexError) as exc:
                 return js(400, {"error": str(exc)[:400]})
             return js(200, WB.worksheet(who["line"], req, (b.get("company") or "").strip(), b.get("policyType") or "New"))
+        if op == "why" and method == "POST":
+            # G2: why a worksheet value is what it is -- its ancestry from the worksheet's rating graph
+            return js(200, WB.why(str(b.get("token") or ""), b.get("side") or "technical", int(b.get("gid") or 0),
+                                  int(b.get("depth") or 3)))
         if op in ("upload", "upload-send") and method == "POST":
             # Upload & Compare: the request as given (GL or CP, read from its ProductName); rated free, or one call
             # parsed here, from the text as uploaded: a browser's JSON round trip turns 1.0 into 1, so the request
@@ -1558,6 +1562,12 @@ UP_CSS = """
 .ws-tbl .v{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 .ws-tbl tr.rec td{background:var(--color-neutral-100,#eee);font-weight:600;cursor:pointer;overflow-wrap:anywhere}
 .ws-tbl td.bad{color:#9b1c1c;font-weight:600}.ws-tbl td.chg{background:var(--color-accent-100);font-weight:600}
+.ws-tbl a.ws-why{cursor:pointer;color:inherit;text-decoration:underline dotted;text-underline-offset:2px}
+.wy ul{list-style:none;margin:0;padding-left:14px;border-left:1px solid var(--color-divider)}.wy ul.wy-root{padding-left:0;border:0}
+.wy li{margin:3px 0;font-size:12px;overflow-wrap:anywhere}.wy-v{font-weight:600;font-variant-numeric:tabular-nums}
+.wy-k{color:var(--color-neutral-700);font-size:10.5px;text-transform:uppercase;letter-spacing:.04em}
+.wy li.wy-aff>.wy-v,.wy li.wy-aff>.wy-name{background:var(--color-accent-100)}.wy li.wy-ctl>.wy-name{font-style:italic}
+.wy-more{cursor:pointer;font-size:11px;margin-left:4px}.wy-src li{border:0}
 .ws-tbl tr.ws-app td{border-top:1px dashed var(--color-accent-700)}.ws-tbl tr.ws-app td:first-child{font-weight:600}
 .ws-tbl .src{color:var(--color-neutral-700);font-size:11px;overflow-wrap:anywhere;max-width:340px}
 .ws-scroll{max-height:70vh;overflow:auto;border:1px solid var(--color-divider);border-radius:4px}
@@ -1623,7 +1633,7 @@ function upCompanies(){fetch('/api/console/workbench/companies').then(r=>r.json(
     o.textContent=c.code+' · '+c.name+' ('+c.carrier+(fs?': '+fs:'')+')';sel.appendChild(o);});}).catch(()=>{});}
 function upRerate(){UP.company=document.getElementById('up-company').value;UP.pt=document.getElementById('up-pt').value;UP.sel=null;
   UP.rows.filter(x=>!x.err&&x.text).forEach(x=>{x.r=null;upRate(x);});upDraw();}
-const WS={d:null,name:'',filter:'all',q:'',shut:new Set(),view:'calc'};
+const WS={d:null,name:'',filter:'all',q:'',shut:new Set(),view:'calc',why:null};
 function wsOpen(x){const el=document.getElementById('up-ws');WS.name=x.name;WS.shut=new Set();
   el.innerHTML='<div class="ws"><div class="mx-msg">Building the worksheet for '+esc(x.name)+'… (two ratings, no ISO call)</div></div>';el.scrollIntoView({block:'start'});
   wbJSON('/api/console/workbench/worksheet',{text:x.text,index:x.index,company:(x.r&&x.r.company)||'',policyType:(x.r&&x.r.policyType)||'New'})
@@ -1632,6 +1642,8 @@ function wsShown(){const d=WS.d,q=WS.q.toLowerCase();
   return d.rows.filter(r=>(WS.filter==='all'||(WS.filter==='diff'&&(r.techIso===false||r.changed))||(WS.filter==='dev'&&r.changed)||
     (WS.filter==='iso'&&r.techIso===false)||(WS.filter==='num'&&r.kind==='number'))&&(!q||(r.path+' '+r.rule).toLowerCase().includes(q)));}
 function wsCell(v){return v===null||v===undefined?'<span class="mx-msg">—</span>':esc(String(v));}
+function wsVal(r,side){const v=side==='technical'?r.technical:r.deviated,g=side==='technical'?r.tg:r.dg;
+  return g===undefined||g===null||v===null||v===undefined?wsCell(v):'<a class="ws-why" data-side="'+side+'" data-gid="'+g+'" title="Why this value">'+esc(String(v))+'</a>';}
 function wsDraw(){const d=WS.d,el=document.getElementById('up-ws');
   if(d.error){el.innerHTML='<div class="ws"><div class="mx-empty">'+esc(d.error)+'</div></div>';return;}
   const hasDev=!!d.company,P=d.premium,isoNote=d.iso==='rated'?'':d.iso==='refused'?' (ISO refused it)':' (not asked yet: Compare with ISO to fill this column)';
@@ -1652,9 +1664,9 @@ function wsDraw(){const d=WS.d,el=document.getElementById('up-ws');
     Object.entries(by).map(([rec,rs])=>{const shut=WS.shut.has(rec);
       const calc=WS.view==='calc',parts=calc?[]:rec.split('/').filter(Boolean),name=calc?rec:(parts.pop()||'(policy)'),trail=parts.map(x=>x.replace(/^CommercialProperty|^GeneralLiability/,'')||x).join(' › ');
       return '<tr class="rec" data-rec="'+esc(rec)+'" title="'+esc(rec)+'"><td colspan="'+(hasDev?5:4)+'">'+(shut?'▸ ':'▾ ')+esc(name)+' <span class="mx-msg">'+rs.length+' field'+(rs.length>1?'s':'')+(trail?' · in '+esc(trail):'')+'</span></td></tr>'+
-        (shut?'':rs.map(r=>'<tr'+(r.applied?' class="ws-app"':'')+'><td title="'+esc(r.path)+'">'+esc(calc?(r.label||r.field):r.field)+(r.note?'<div class="mx-msg">'+esc(r.note)+'</div>':'')+'</td><td class="v">'+wsCell(r.technical)+'</td><td class="v'+(r.techIso===false&&d.iso==='rated'?' bad':'')+'">'+wsCell(r.iso)+'</td>'+
-          (hasDev?'<td class="v'+(r.changed?' chg':'')+'">'+wsCell(r.deviated)+'</td>':'')+'<td class="src">'+esc(r.rule||'')+(r.tables&&r.tables.length?' · '+esc(r.tables.join(', ')):'')+'</td></tr>').join(''));}).join('')+
-    '</table></div><div class="mx-msg">By calculation: one section per coverage group of each rated item, its factors in the order our engine computed them (inputs first). <b>LCM applied</b>: the LCM that group rate was multiplied by (Property applies one per coverage group; ISO and technical apply the one record LCM to every group). Red ISO value: technical and ISO differ there. Highlighted deviated value: the filing changed it. "Written by" is the ERC rule file (and the tables read just before) that wrote the technical value.</div></div>';
+        (shut?'':rs.map(r=>'<tr'+(r.applied?' class="ws-app"':'')+'><td title="'+esc(r.path)+'">'+esc(calc?(r.label||r.field):r.field)+(r.note?'<div class="mx-msg">'+esc(r.note)+'</div>':'')+'</td><td class="v">'+wsVal(r,'technical')+'</td><td class="v'+(r.techIso===false&&d.iso==='rated'?' bad':'')+'">'+wsCell(r.iso)+'</td>'+
+          (hasDev?'<td class="v'+(r.changed?' chg':'')+'">'+wsVal(r,'deviated')+'</td>':'')+'<td class="src">'+esc(r.rule||'')+(r.tables&&r.tables.length?' · '+esc(r.tables.join(', ')):'')+'</td></tr>').join(''));}).join('')+
+    '</table></div><div class="mx-msg">Click a technical or deviated value to see what it was computed from. By calculation: one section per coverage group of each rated item, its factors in the order our engine computed them (inputs first). <b>LCM applied</b>: the LCM that group rate was multiplied by (Property applies one per coverage group; ISO and technical apply the one record LCM to every group). Red ISO value: technical and ISO differ there. Highlighted deviated value: the filing changed it. "Written by" is the ERC rule file (and the tables read just before) that wrote the technical value.</div></div>';
   const q=document.getElementById('ws-q');q.oninput=()=>{WS.q=q.value;const pos=q.selectionStart;wsDraw();const n=document.getElementById('ws-q');n.focus();n.setSelectionRange(pos,pos);};}
 function wsCSV(){const d=WS.d,hasDev=!!d.company,qq=v=>v===null||v===undefined?'':'"'+String(v).replace(/"/g,'""')+'"';
   const head=['Section','Record','Field','Technical','ISO'].concat(hasDev?['Deviated']:[]).concat(['Technical vs ISO','Changed by deviations','Written by','Tables']);
@@ -1664,13 +1676,38 @@ function wsCSV(){const d=WS.d,hasDev=!!d.company,qq=v=>v===null||v===undefined?'
     .concat([r.techIso===null?'':r.techIso?'agree':'differ',hasDev?(r.changed?'yes':'no'):'',r.rule,(r.tables||[]).join('; ')]).map(qq).join(',')));
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([lines.join('\r\n')],{type:'text/csv'}));
   a.download='worksheet-'+d.line+'-'+d.state+(d.company?'-'+d.company:'')+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
+function wsWhy(side,gid){WS.why={loading:true,side};upSide();
+  wbJSON('/api/console/workbench/why',{token:WS.d.graph,side,gid,depth:3}).then(j=>{WS.why=j;upSide();}).catch(e=>{WS.why={error:String(e)};upSide();});}
+function wyFind(n,id){if(n.id===id)return n;for(const c of n.from||[]){const f=wyFind(c,id);if(f)return f;}return null;}
+function wyNode(n){const kind=n.kind==='table'?(n.company?'company table row':'table'):n.kind==='company'?'filing':n.kind==='input'?'input':(n.op||'');
+  const more=n.inputs&&!(n.from&&n.from.length)?' <a class="wy-more" data-wexp="'+n.id+'">show its '+n.inputs+' input'+(n.inputs>1?'s':'')+'</a>':'';
+  return '<li class="'+(n.affected?'wy-aff':'')+(n.edge==='control'?' wy-ctl':'')+'"><span class="wy-v">'+esc(n.value??'—')+'</span> <span class="wy-name">'+esc(n.name||'')+'</span>'+
+    ' <span class="wy-k">'+esc(n.edge==='control'?'decides whether · ':'')+esc(kind)+'</span>'+(n.kind==='company'&&n.explain?'<div class="mx-msg">'+esc(n.explain)+'</div>':'')+more+
+    (n.from&&n.from.length?'<ul>'+n.from.map(wyNode).join('')+'</ul>':'')+'</li>';}
+function wyHtml(w){if(w.loading)return '<div class="cap2">Why this value</div><div class="mx-msg">Reading the rating graph…</div>';
+  if(w.error)return '<div class="cap2">Why this value</div><div class="mx-empty">'+esc(w.error)+'</div><a data-wyback="1" style="cursor:pointer">Back</a>';
+  const S=w.sources||[],k=t=>S.filter(x=>x.kind===t),li=x=>'<li><span class="wy-v">'+esc(x.value??'—')+'</span> '+esc(x.name)+(x.kind==='table'?' <span class="wy-k">'+esc(x.package||'')+'</span>':'')+'</li>';
+  return '<div class="cap2">Why this value · '+(w.side==='deviated'?'deviated':'technical')+'</div><div class="wy">'+
+    '<ul class="wy-root">'+wyNode(w.node)+'</ul>'+
+    (w.side==='deviated'?'<div class="mx-msg">Highlighted: reached by the carrier filing. </div>':'')+
+    '<div class="cap2" style="margin-top:10px">Everything it came from</div>'+
+    (k('company').length?'<div class="mx-msg">Filing</div><ul class="wy-src">'+k('company').map(li).join('')+'</ul>':'')+
+    (k('table').length?'<div class="mx-msg">Tables · '+k('table').length+'</div><ul class="wy-src">'+k('table').map(li).join('')+'</ul>':'')+
+    (k('input').length?'<div class="mx-msg">Inputs · '+k('input').length+'</div><ul class="wy-src">'+k('input').map(li).join('')+'</ul>':'')+
+    '<div class="td-tools"><a data-wyback="1" style="cursor:pointer">Back to the upload summary</a></div></div>';}
+document.getElementById('up-side').addEventListener('click',ev=>{
+  if(ev.target.closest('[data-wyback]')){WS.why=null;upSide();return;}
+  const ex=ev.target.closest('[data-wexp]');if(ex&&WS.why&&WS.why.node){const id=Number(ex.dataset.wexp);
+    wbJSON('/api/console/workbench/why',{token:WS.d.graph,side:WS.why.side,gid:id,depth:3}).then(j=>{const n=wyFind(WS.why.node,id);if(n&&j.node){n.from=j.node.from;}upSide();});}});
 document.getElementById('up-ws').addEventListener('click',ev=>{const t=ev.target;
-  if(t.closest('[data-wclose]')){document.getElementById('up-ws').innerHTML='';WS.d=null;return;}
+  const wy=t.closest('[data-gid]');if(wy){wsWhy(wy.dataset.side,Number(wy.dataset.gid));return;}
+  if(t.closest('[data-wclose]')){document.getElementById('up-ws').innerHTML='';WS.d=null;WS.why=null;upSide();return;}
   if(t.closest('[data-wcsv]')){wsCSV();return;}
   const f=t.closest('[data-wf]');if(f){WS.filter=f.dataset.wf;wsDraw();return;}
   const v=t.closest('[data-wv]');if(v){WS.view=v.dataset.wv;WS.shut=new Set();wsDraw();return;}
   const rc=t.closest('[data-rec]');if(rc){const k=rc.dataset.rec;WS.shut.has(k)?WS.shut.delete(k):WS.shut.add(k);wsDraw();}});
 function upSide(){
+  if(WS.why){document.getElementById('up-side').innerHTML=wyHtml(WS.why);return;}
   const sx=UP.sel&&UP.rows.find(x=>x.id===UP.sel&&x.r&&x.r.carrier);
   if(sx){document.getElementById('up-side').innerHTML=upDev(sx);return;}
   const R=UP.rows.filter(x=>x.r).map(x=>x.r),both=R.filter(r=>r.stored&&r.stored.outcome==='rated'&&r.outcome==='rated');

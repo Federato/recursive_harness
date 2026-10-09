@@ -71,8 +71,6 @@ class Plan:
     #: ISO table name -> {"col", "keys", "rows": {key tuple: (value, mode, explain)}}
     overrides: dict = field(default_factory=dict)
     warnings: list = field(default_factory=list)
-    #: Track which fields the company's inputs reach (T4, P3). Off for every ordinary rating.
-    track: bool = False
     #: id(record node) -> (class, rating type) as submitted, fixed before the rules run: the record LCM and every
     #: group LCM on that record use the same class, the one ISO's service sees on the request (P3 finding: a
     #: contents record ISO's rules later stamp with the building's class kept two classes otherwise).
@@ -263,8 +261,8 @@ class GroupLCM:
             self.plan.warn(f"no company {group} LCM for class {cls} ({basis}): ISO's LCM applies")
             return None
         v = _final(entry, self.iso_lcm)
-        if ip.taint is not None:
-            ip.taint.hit()
+        if ip.deps is not None:
+            ip.deps.company(f"{group} LCM", v, entry[2], group=group, class_code=cls, basis=basis)
         ip.note("company-group-lcm", f"{group}/{basis}/{cls} -> {v} ({entry[2]})",
                 self.plan.ref or "", group=group, basis=basis, class_code=cls, value=str(v),
                 explain=entry[2], operands=names, node=id(node))
@@ -353,8 +351,8 @@ def write_record_lcms(plan: Plan, data, iso_lcm: Decimal, ip=None) -> int:
             f = node.add("LossCostMultiplier", str(v))
         else:
             f.text = str(v)
-        if ip is not None and ip.taint is not None:
-            ip.taint.mark(f)
+        if ip is not None and ip.deps is not None:
+            ip.deps.mark(f, "record LCM (Group I value)", v, entry[2])
         n += 1
         if ip is not None:
             ip.note("company-record-lcm", f"{node.tag} class {cls} -> {v} ({entry[2]})",
@@ -407,8 +405,8 @@ def write_gl_lcms(plan: Plan, data, book, ip=None) -> int:
             f = node.add("LCM", str(v))
         else:
             f.text = str(v)
-        if ip is not None and ip.taint is not None:
-            ip.taint.mark(f)
+        if ip is not None and ip.deps is not None:
+            ip.deps.mark(f, f"{cov} LCM", v, entry[2])
         n += 1
         if ip is not None:
             ip.note("company-record-lcm", f"{node.tag} class {cls} -> {v} ({entry[2]})", plan.ref or "")
@@ -423,9 +421,6 @@ class CompanyRunChecks:
 
     def before(self, ip, data):
         quiet = getattr(ip, "_lookahead", False)
-        if self.plan.track and not quiet:
-            from gl_engine.interp.taint import Taint
-            ip.taint = Taint()
         if self.plan.group_lcm:
             ip.group_lcm = GroupLCM(self.plan, self.iso_lcm)
             write_record_lcms(self.plan, data, self.iso_lcm, None if quiet else ip)

@@ -99,8 +99,8 @@ class Rating:
     deviation: dict | None = None
     #: The technical rating from the same call, when asked for (`with_technical`).
     technical: "Rating | None" = None
-    #: Dependency tracking from a company rating asked to track it (deviations T4); None otherwise.
-    taint: object = None
+    #: The rating graph, when asked for (`graph=True`: a `RatingGraph`); None otherwise.
+    deps: object = None
 
     @property
     def packages(self) -> tuple[str, ...]:
@@ -154,7 +154,7 @@ class Kernel:
     def rate(self, payload: dict | str | Path,
             version: str | None = None, *, company: str | None = None,
             with_technical: bool = False, waterfall: bool = True,
-            root: Path | None = None, track: bool = False) -> Rating:
+            root: Path | None = None, graph: bool = False) -> Rating:
         """Rate one RAaS-shaped submission.
 
         `version`, if given, pins the SAME package version the payload was
@@ -174,15 +174,18 @@ class Kernel:
             header = payload.get("header") or {}
             if company or any(k in header for k in OWN_HEADER):
                 return self._rate_company(payload, version, company, with_technical,
-                                          waterfall, root, track)
+                                          waterfall, root, graph)
             data, juris, asof = from_raas(payload)
 
         book = ResolvedBook(self.resolver.resolve(juris, asof, version))
-        return self._rate_book(data, juris, asof, book)
+        return self._rate_book(data, juris, asof, book, graph)
 
-    def _rate_book(self, data: Node, juris: str, asof: str, book) -> Rating:
+    def _rate_book(self, data: Node, juris: str, asof: str, book, graph: bool = False) -> Rating:
         """One rating of one tree on one book (ISO's, or a company's in front of it)."""
         interp = Interpreter(book, rounding=self.rounding)
+        if graph:
+            from ..interp.graph import RatingGraph
+            interp.deps = RatingGraph()
 
         result = Rating(juris=juris, asof=asof, mode=self.mode, book=book,
                         tree=data, trace=interp.trace,
@@ -190,7 +193,9 @@ class Kernel:
         try:
             interp.run(data)
             result.complete = True
-            result.taint = interp.taint
+            result.deps = interp.deps
+            if hasattr(interp.deps, "finalize"):
+                interp.deps.finalize(data)
         except Exception as exc:                     # noqa: BLE001 - reported
             result.stopped = exc
             return result
@@ -209,7 +214,7 @@ class Kernel:
     # ------------------------------------------------ a writing company (P2)
 
     def _rate_company(self, payload: dict, version, company, with_technical, waterfall,
-                      root, track: bool = False) -> Rating:
+                      root, graph: bool = False) -> Rating:
         """Technical and carrier from one call (DEVIATIONS-PLAN.md §3, §4).
 
         Our header fields are removed before anything else (M6); with no
@@ -223,7 +228,7 @@ class Kernel:
         for k in OWN_HEADER:
             clean.setdefault("header", {}).pop(k, None)
         if not wc:
-            return self.rate(clean, version)
+            return self.rate(clean, version, graph=graph)
 
         from deviations import engine as dv, report
         lcm_warnings: list = []
@@ -237,10 +242,9 @@ class Kernel:
             plan = dv.plan_for("GL", wc, juris, date, header.get("PolicyType"),
                                **({"root": root} if root else {}))
             book = dv.book_for(plan) if plan.pin else iso_book
-            plan.track = track
             for w in lcm_warnings:
                 plan.warn(w)
-            technical = self._rate_book(data, juris, asof, book)
+            technical = self._rate_book(data, juris, asof, book, graph)
             cbook = dv.CompanyBook(book, plan)
         except dv.Refused as exc:
             out = Rating(juris=juris, asof=asof, mode=self.mode, book=iso_book,
@@ -248,10 +252,10 @@ class Kernel:
             out.deviation = {"writingCompany": wc, "refused": str(exc)}
             return out
 
-        def again(book_):
-            return self._rate_book(from_raas(clean)[0], juris, asof, book_)
+        def again(book_, g=False):
+            return self._rate_book(from_raas(clean)[0], juris, asof, book_, g)
 
-        carrier = again(cbook)
+        carrier = again(cbook, graph)
         current = again(iso_book).premium if (waterfall and plan.pin) else None
         carrier.deviation = report.build(
             plan, book.resolution.state.pkg_id,

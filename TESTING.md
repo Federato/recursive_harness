@@ -75,8 +75,10 @@ python tests/verify_deviations_engine.py          44/44  the engine with a writi
                                                          rated, pins, refusals, what ISO may see
 python tests/verify_deviations_proof.py           57/57   P3 (T4-T7, T9 offline; T3 and T8 re-judged
                                                          from ISO's stored answers, no calls)
-python tests/verify_console_deviations.py         40/40   P4: the writing-company picker, Technical / ISO /
+python tests/verify_console_deviations.py         48/48   P4: the writing-company picker, Technical / ISO /
                                                          Carrier, rating worksheets, the Deviations Proof board
+python tests/verify_rating_graph.py               12/12   the rating graph (G1): unchanged ratings, complete,
+                                                         2,300 operations replayed, carrier sources, control
 python Agentic/iso-circular-expert/tools/smoke_test.py     19/19
 python Agentic/iso-erc-expert/tools/smoke_test.py       88 checks
 python -m gl_engine.cli check 20260811 --deep              13/13

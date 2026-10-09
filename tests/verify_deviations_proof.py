@@ -2,8 +2,8 @@
 
 Run: python tests/verify_deviations_proof.py [--no-live]        (offline; makes no ISO calls)
 
-  T4  locality    every field a carrier changed is one its inputs could reach (`gl_engine.interp.taint`): its
-                  record LCMs, its group LCMs, its overridden tables. Property and GL, LCMs and table overrides
+  T4  locality    every field a carrier changed is reachable in the rating graph (`gl_engine.interp.graph`) from the
+                  carrier's own sources: its record LCMs, group LCMs and overridden table rows. Property and GL
   T6  arithmetic  a single table override: every lookup of that table returns ISO's value x the factor exactly,
                   and the waterfall adds up to carrier - technical exactly
   T7  boundaries  state, coverage, coverage group, the new-business date, new vs renewal, superseded versions,
@@ -80,32 +80,35 @@ def rate_gl(req, root, **kw):
 # --------------------------------------------------------------------- T4
 
 def locality(r) -> tuple[int, int, int, list]:
-    """(changed, tainted, leaves, changed-but-not-tainted)"""
-    taint = _taint(r)
-    cn = leaf_nodes(r.tree)
+    """(changed, reached, fields, changed-but-not-reached): reach is exact, along the rating graph's edges from the
+    carrier's own sources -- its record LCMs, group LCMs and overridden table rows (G3)."""
+    from gl_engine.interp.graph import normalise
+    g = _graph(r)
+    src = [n["id"] for n in g.nodes if n["kind"] == "company" or (n["kind"] == "table" and n.get("company"))]
+    reach = g.reach(src) | set(src)
+    reached = {p for p, gid in g.final.items() if gid in reach}
     ch = E.tree_diff(r.technical.tree, r.tree)
-    bad = [p for p, _, _ in ch if p not in cn or id(cn[p]) not in taint.nodes]
-    return len(ch), len(taint.nodes), len(cn), bad
+    bad = [p for p, _, _ in ch if normalise(p) not in reached]
+    return len(ch), len(reached), len(leaf_nodes(r.tree)), bad
 
 
-def _taint(r):
-    """The dependency tracking a company rating carried: Property's on its interpreter, GL's on the Rating."""
-    ip = getattr(r, "ip", None)
-    return ip.taint if ip is not None else getattr(r, "taint", None)
+def _graph(r):
+    """The carrier rating's graph: Property's on the result, GL's on the Rating."""
+    return getattr(r, "graph", None) if hasattr(r, "ip") else getattr(r, "deps", None)
 
 
 def t4(root: Path) -> None:
     print("\nT4  only what was deviated changes")
     cases = [("UFC Iowa sample (group LCMs)", lambda: rate_cf(E.ia_sample("UFC"), root, with_technical=True,
-                                                             waterfall=False, track=True)),
+                                                             waterfall=False, graph=True)),
              ("ADD Iowa sample (group LCMs)", lambda: rate_cf(E.ia_sample("ADD"), root, with_technical=True,
-                                                             waterfall=False, track=True))]
+                                                             waterfall=False, graph=True))]
     ia = [it for it in E.stored({"IA"}) if it[0].startswith("chunk24_rc4_S-IA")]
     if ia:
         req = copy.deepcopy(ia[0][3])
         req["header"].update(WritingCompany="UFC", PolicyType="New")
         cases.append(("UFC stored Iowa request, two classes in two groups",
-                      lambda req=req: rate_cf(req, root, with_technical=True, waterfall=False, track=True)))
+                      lambda req=req: rate_cf(req, root, with_technical=True, waterfall=False, graph=True)))
     cdir = root / "UFG" / "T4T"
     cdir.mkdir(parents=True, exist_ok=True)
     (cdir / "company.json").write_text(json.dumps({"code": "T4T"}), encoding="utf-8")
@@ -113,7 +116,7 @@ def t4(root: Path) -> None:
              [{"target": "TABLE:BasicGroupIIRate.Rate", "scope": {}, "value": "1.1", "mode": "multiply"}])
     cases.append(("Iowa sample, a Property table override",
                   lambda: rate_cf(E.ia_sample("T4T", "2025-07-01"), root, with_technical=True,
-                                  waterfall=False, track=True)))
+                                  waterfall=False, graph=True)))
     req = gl_request()
     eff = req["body"]["SchemeKeys"]["EffectiveDateTime"][:10]
     cls = req["body"]["GeneralLiability"][0]["GeneralLiabilityLocation"][0]["GeneralLiabilityClassification"][0]["ClassCode"]
@@ -125,11 +128,11 @@ def t4(root: Path) -> None:
     E.filing(root, "UFC", "TX-GL-T4", "GL", ["TX"], eff, rows)
     req["header"]["WritingCompany"] = "UFC"
     cases.append((f"UFC Texas GL: two coverage LCMs and {t[0] if t else 'no'} table override",
-                  lambda req=req: rate_gl(req, root, with_technical=True, waterfall=False, track=True)))
+                  lambda req=req: rate_gl(req, root, with_technical=True, waterfall=False, graph=True)))
     for label, fn in cases:
         r = fn()
-        if r.tree is None or r.technical is None or _taint(r) is None:
-            check(f"T4 {label}", False, f"did not rate or did not track: "
+        if r.tree is None or r.technical is None or _graph(r) is None:
+            check(f"T4 {label}", False, f"did not rate or has no graph: "
                                         f"{getattr(r, 'outcome', None) or getattr(r, 'stopped', None)}")
             continue
         ch, tn, n, bad = locality(r)

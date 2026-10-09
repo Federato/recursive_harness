@@ -8,6 +8,7 @@
   D  the page: the picker, the Technical / ISO / Carrier columns, the Deviations Proof tab; the JS parses
   E  the Deviations Proof board: T1-T10 as rows from each suite's last run; T3 and T8 list ISO's cases
   F  the rating worksheet: every field, Technical | ISO | Deviated, free, with the rule that wrote each value
+  G  why this value: a worksheet value's ancestry from the rating graph, its sources, the carrier's path marked
 
     python tests/verify_console_deviations.py
 """
@@ -238,9 +239,41 @@ def part_f():
           "data-ws=" in html and "data-wcsv" in html and "Deviated changes" in html and "By calculation" in html)
 
 
+def part_g():
+    print("G. why this value: the worksheet's rating graph (G2)")
+    text = json.dumps(pr.sample("IA", "2025-07-01"))
+    code, w = post("worksheet", {"text": text, "company": "UFC", "policyType": "New"})
+    tok = w.get("graph")
+    row = next(r for r in w["rows"] if r["path"].endswith("CommercialPropertyStructure/FinalBasicGroupIIRate"))
+    check("G1 a worksheet carries a graph token, and its values carry node ids on both sides",
+          tok and row.get("tg") is not None and row.get("dg") is not None, {k: row.get(k) for k in ("tg", "dg")})
+    code, y = post("why", {"token": tok, "side": "deviated", "gid": row["dg"], "depth": 3})
+    n = y["node"]
+    check("G2 the deviated final Group II rate's inputs are its chain: adjusted rate, deductible factor",
+          {"AdjustedBasicGroupIIRate", "DeductibleFactorBasicGroupII"} <= {c["name"] for c in n.get("from", [])},
+          [c["name"] for c in n.get("from", [])])
+    check("G3 three levels by default, with a count of inputs below that",
+          all("from" in c for c in n["from"]) and any(
+              cc.get("inputs") and "from" not in cc for c in n["from"] for g in c.get("from", [])
+              for cc in g.get("from", [])))
+    src = y["sources"]
+    check("G4 everything it came from: the filing's Group II LCM (3.28) and ISO's own table rows",
+          any(x["kind"] == "company" and x["value"] == "3.28" for x in src)
+          and any(x["kind"] == "table" and x["name"].startswith("BasicGroupIIRate[") for x in src),
+          [(x["kind"], x["name"]) for x in src][:5])
+    check("G5 the carrier's path is marked: the final rate is reached by the filing", n["affected"] is True)
+    code, t = post("why", {"token": tok, "side": "technical", "gid": row["tg"], "depth": 3})
+    check("G6 technical's ancestry of the same value has no filing source and nothing marked",
+          not any(x["kind"] == "company" for x in t["sources"]) and t["node"]["affected"] is False)
+    code, e = post("why", {"token": "nope", "side": "deviated", "gid": 0})
+    check("G7 an expired worksheet says to open it again", "open it again" in e.get("error", ""))
+    code, html, _ = CP.dispatch("GET", "/console", {}, None)
+    check("G8 the page makes worksheet values clickable and draws the panel", "ws-why" in html and "wyHtml" in html)
+
+
 def main() -> int:
     setup()
-    for part in (part_a, part_b, part_c, part_d, part_e, part_f):
+    for part in (part_a, part_b, part_c, part_d, part_e, part_f, part_g):
         part()
     bad = [n for n, ok in RESULTS if not ok]
     print(f"\n{len(RESULTS) - len(bad)}/{len(RESULTS)} passed" + (f"; FAILED: {', '.join(bad)}" if bad else ""))

@@ -66,6 +66,8 @@ class PropertyRating:
     outcome: dict = field(default_factory=dict)
     deviation: dict | None = None
     technical: "PropertyRating | None" = None
+    #: The rating graph, when asked for (`graph=True`; docs/RATING-GRAPH-PLAN.md)
+    graph: object = None
 
     @property
     def complete(self) -> bool:
@@ -77,7 +79,7 @@ def _scheme(request: dict) -> tuple[str, str]:
     return sk["ProductName"].split()[-1], sk["EffectiveDateTime"][:10]
 
 
-def _run(request: dict, book, trace: bool = True) -> PropertyRating:
+def _run(request: dict, book, trace: bool = True, graph: bool = False) -> PropertyRating:
     """One rating on one book, the console's way (154_'s `rate`), with a refusal kept as the outcome."""
     rp = _helpers()
     st, eff = _scheme(request)
@@ -90,6 +92,9 @@ def _run(request: dict, book, trace: bool = True) -> PropertyRating:
     ip = Interpreter(book, rounding=ROUNDING, null_arithmetic=NULL_ARITHMETIC, trace=trace)
     data = Node.from_dict(f"MasterCF{st}", sub)
     out.ip = ip
+    if graph:
+        from gl_engine.interp.graph import RatingGraph
+        ip.deps = RatingGraph()
     try:
         ip.run(data)
     except InterpretError as exc:
@@ -99,6 +104,8 @@ def _run(request: dict, book, trace: bool = True) -> PropertyRating:
         return out
     out.tree, out.outcome = data, ip.outcome
     out.premium = _total(data)
+    if graph:
+        out.graph = ip.deps.finalize(data)
     return out
 
 
@@ -112,20 +119,20 @@ def _total(data: Node) -> str | None:
 
 def rate(request: dict, company: str | None = None, *, with_technical: bool = False,
          waterfall: bool = True, trace: bool = True, root: Path | None = None,
-         track: bool = False) -> PropertyRating:
+         graph: bool = False) -> PropertyRating:
     """Rate a Property request; with a writing company, the carrier result with `deviation` set."""
     header = dict(request.get("header") or {})
     wc = company or header.get("WritingCompany")
     if not wc and not any(k in header for k in OWN_HEADER):
         st, eff = _scheme(request)
-        return _run(request, book_for(st, eff.replace("-", "")), trace)
+        return _run(request, book_for(st, eff.replace("-", "")), trace, graph)
 
     clean = copy.deepcopy(request)
     for k in OWN_HEADER:
         clean.setdefault("header", {}).pop(k, None)
     if not wc:                       # PolicyType alone: our field, removed; rated as ISO-only
         st, eff = _scheme(clean)
-        return _run(clean, book_for(st, eff.replace("-", "")), trace)
+        return _run(clean, book_for(st, eff.replace("-", "")), trace, graph)
 
     from deviations import engine as dv
     st, eff = _scheme(clean)
@@ -141,7 +148,6 @@ def rate(request: dict, company: str | None = None, *, with_technical: bool = Fa
         r.outcome = {"status": "refused", "reasons": [{"kind": exc.outcome_kind, "detail": str(exc)}]}
         r.deviation = {"writingCompany": wc, "refused": str(exc)}
         return r
-    plan.track = track
     if company and header.get("WritingCompany") and header["WritingCompany"] != company:
         plan.warn(f"company={company} given; header.WritingCompany {header['WritingCompany']} not used")
     for w in lcm_warnings:
@@ -151,7 +157,7 @@ def rate(request: dict, company: str | None = None, *, with_technical: bool = Fa
                   f"{plan.manifest['iso_edition']['new']['state']}, rating on {book.state.pkg_id}; "
                   f"replace rows keep their value, multiply rows follow ISO (D9)")
 
-    technical = _run(clean, book, trace)
+    technical = _run(clean, book, trace, graph)
     try:
         cbook = dv.CompanyBook(book, plan)
     except dv.Refused as exc:
@@ -160,7 +166,7 @@ def rate(request: dict, company: str | None = None, *, with_technical: bool = Fa
         r.deviation = {"writingCompany": wc, "refused": str(exc), "warnings": plan.warnings}
         r.technical = technical if with_technical else None
         return r
-    carrier = _run(clean, cbook, trace)
+    carrier = _run(clean, cbook, trace, graph)
     carrier.deviation = _deviation(plan, book, technical, carrier, clean, trace, waterfall)
     if with_technical:
         carrier.technical = technical

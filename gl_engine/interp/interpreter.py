@@ -270,9 +270,10 @@ class Interpreter:
         "GreaterThan", "GreaterThanOrEqual", "LessThan", "LessThanOrEqual",
     })
 
-    #: Dependency tracking (`taint.Taint`): off unless a caller sets it. A class default, so an interpreter built
-    #: without `__init__` (the fragment evaluator in `verify_interp.py`) has it too.
-    taint = None
+    #: The dependency recorder (`graph.RatingGraph`): off unless a caller sets it. A
+    #: class default, so an interpreter built without `__init__` (the fragment evaluator in `verify_interp.py`) has
+    #: it too. It records; it never changes a value.
+    deps = None
 
     def __init__(self, book, rounding: str = "ROUND_HALF_UP",
                  trace: bool = True, null_arithmetic: str | None = None,
@@ -288,8 +289,8 @@ class Interpreter:
                 f"unknown null_arithmetic mode {null_arithmetic!r}; "
                 f"one of {self.NULL_ARITHMETIC}", "§12.3", "")
         self.book = book
-        #: Dependency tracking (`taint.Taint`), set by a caller only; None for every ordinary rating.
-        self.taint = None
+        #: The dependency recorder, set by a caller only; None for every ordinary rating.
+        self.deps = None
         self.rounding_name = rounding
         self.rounding = ROUNDING_MODES[rounding]
         self.null_arithmetic = null_arithmetic
@@ -453,8 +454,8 @@ class Interpreter:
     # ------------------------------------------------------------------ eval
 
     def eval(self, el, frame: Frame):
-        if self.taint is not None:
-            return self.taint.around(self._eval, el, frame)
+        if self.deps is not None:
+            return self.deps.around(self._eval, el, frame)
         return self._eval(el, frame)
 
     def _eval(self, el, frame: Frame):
@@ -519,8 +520,8 @@ class Interpreter:
                     f"that missed -- and the trace above names it",
                     "§12.3", name)
             written = tree.write(to, frame.write_target, value)
-            if self.taint is not None:
-                self.taint.wrote(written)
+            if self.deps is not None:
+                self.deps.wrote(written, value, name, el, frame.rule_file)
             if getattr(self, "_writes", None) is not None:
                 self._writes.add(id(written))
             # `node`: which node took the value (an object id, valid while the tree lives), and the rule file and
@@ -586,16 +587,16 @@ class Interpreter:
                   program.pkg_id)
 
         out = None
-        if self.taint is not None:
-            self.taint.enter_rule()
+        if self.deps is not None:
+            self.deps.enter_rule()
         try:
             for ch in el:
                 if self.tag(ch) == "Param":
                     continue                      # a declaration, bound at the call
                 out = self.eval(ch, inner)
         finally:
-            if self.taint is not None:
-                self.taint.leave_rule()
+            if self.deps is not None:
+                self.deps.leave_rule()
 
         declared = el.attrib.get("Type", "none")
         if declared == "none":
@@ -655,8 +656,6 @@ class Interpreter:
         """Match `keys` against the table's key columns, in filed order (§7)."""
         table, kind = self._find_table(name, where)
         defn = table.definition
-        if self.taint is not None and "+" in str(table.package):
-            self.taint.hit()                  # a table a carrier overrode (deviations P3, T4)
 
         if defn.key_ranges:
             return self._lookup_banded(table, kind, name, col, keys, mode,
@@ -711,6 +710,8 @@ class Interpreter:
                       f"took the first in filed order", table.package)
 
         value = hits[0][out_i]
+        if self.deps is not None:
+            self.deps.lookup(name, col, keys, value, table.package)
         self.note("lookup", f"{name}[{col}] keys={keys!r} -> {value!r}",
                   str(Citation(table.package, f"{kind} Tables", name,
                                repr(keys))),
@@ -872,6 +873,8 @@ class Interpreter:
             span = hi - lo
             pos = (x - lo) / span if span else Decimal(0)
             out = v_lo + (v_hi - v_lo) * pos
+            if self.deps is not None:
+                self.deps.lookup(name, col, keys, out, table.package)
             self.note("lookup-interpolated",
                       f"{name}[{col}] {x} in [{lo},{hi}) -> {out} "
                       f"between {v_lo} and {v_hi}",
@@ -889,6 +892,8 @@ class Interpreter:
                 f"table {name!r} has no column or value range {col!r}",
                 "§7", where)
         value = row[table.col(col)]
+        if self.deps is not None:
+            self.deps.lookup(name, col, keys, value, table.package)
         bands_desc = ", ".join(f"{rname}={v} in [{lo},{hi}]"
                                for rname, (v, lo, hi) in bands.items())
         self.note("lookup-banded",

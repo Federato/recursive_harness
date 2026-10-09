@@ -296,32 +296,37 @@ def worksheet(line: str, payload: dict, company: str = "", policy_type: str = "N
         plain = req
     dev = None
     carrier_trace: list = []
+    t_graph = d_graph = None
     if line == "GL":
         from gl_engine.rating import Kernel
         k = Kernel()
         if company:
-            r = k.rate(req, with_technical=True, **({"root": root} if root else {}))
+            r = k.rate(req, with_technical=True, graph=True, **({"root": root} if root else {}))
             tech = r.technical
             t_tree, t_trace, t_prem = (tech.tree, tech.trace, str(tech.premium)) if tech and tech.complete else (None, [], None)
             d_tree, d_prem = (r.tree, str(r.premium)) if r.complete else (None, None)
+            t_graph, d_graph = (tech.deps if tech else None), r.deps
             dev = r.deviation
         else:
-            r = k.rate(req)
+            r = k.rate(req, graph=True)
             t_tree, t_trace, t_prem = (r.tree, r.trace, str(r.premium)) if r.complete else (None, [], None)
             d_tree = d_prem = None
+            t_graph, d_graph = r.deps, None
     else:
         from cf_engine.rating import rate as cf_rate
         if company:
-            r = cf_rate(req, with_technical=True, **({"root": root} if root else {}))
+            r = cf_rate(req, with_technical=True, graph=True, **({"root": root} if root else {}))
             tech = r.technical
             t_tree, t_trace, t_prem = (tech.tree, tech.ip.trace, tech.premium) if tech and tech.complete else (None, [], None)
             d_tree, d_prem = (r.tree, r.premium) if r.complete else (None, None)
             carrier_trace = r.ip.trace if r.ip is not None else []
+            t_graph, d_graph = (tech.graph if tech else None), r.graph
             dev = r.deviation
         else:
-            r = cf_rate(req)
+            r = cf_rate(req, graph=True)
             t_tree, t_trace, t_prem = (r.tree, r.ip.trace, r.premium) if r.complete else (None, [], None)
             d_tree = d_prem = None
+            t_graph, d_graph = r.graph, None
     if t_tree is None:
         return {"line": line, "error": "our engine did not rate the technical request" + (
             f": {(dev or {}).get('refused', '')}" if dev else "")}
@@ -381,7 +386,8 @@ def worksheet(line: str, payload: dict, company: str = "", policy_type: str = "N
             "premium": {"technical": t_prem, "iso": None if iso_prem is None else str(iso_prem), "deviated": d_prem},
             "iso": iso_state, "isoHash": store.request_hash(plain),
             "deviation": {k: (dev or {}).get(k) for k in ("filings", "edition", "waterfall", "warnings")} if dev else None,
-            "sections": calculation_view(line, out_rows), "rows": out_rows}
+            "sections": calculation_view(line, out_rows), "rows": _with_gids(out_rows, t_graph, d_graph),
+            "graph": _keep_graphs(t_graph, d_graph, line)}
 
 
 # ---- the worksheet's calculation view: coverage groups, in the order the engine computed them -----------------------
@@ -486,3 +492,72 @@ def calculation_view(line: str, rows: list) -> list:
                                                    gi.get(s["group"], len(order)) if s["group"] else -1))
     return [{"key": s["key"], "label": s["label"], "group": s["group"], "paths": [r["path"] for r in s["rows"]]}
             for s in out]
+
+
+
+# ---- G2: why this value (docs/RATING-GRAPH-PLAN.md) ------------------------------------------------------------------
+
+from collections import OrderedDict as _OD
+import uuid as _uuid
+
+#: The last few worksheets' graphs, by token: a drill-down reads them instead of rating again.
+_GRAPHS = _OD()
+_GRAPHS_KEEP = 8
+
+
+def _keep_graphs(t_graph, d_graph, line: str):
+    if t_graph is None:
+        return None
+    tok = _uuid.uuid4().hex[:16]
+    affected = set()
+    if d_graph is not None:
+        comp = [n["id"] for n in d_graph.nodes if n["kind"] == "company" or
+                (n["kind"] == "table" and n.get("company"))]
+        affected = d_graph.reach(comp) | set(comp)
+    _GRAPHS[tok] = {"technical": t_graph, "deviated": d_graph, "affected": affected, "line": line}
+    while len(_GRAPHS) > _GRAPHS_KEEP:
+        _GRAPHS.popitem(last=False)
+    return tok
+
+
+def _with_gids(rows: list, t_graph, d_graph) -> list:
+    for r in rows:
+        if t_graph is not None and r.get("technical") is not None and not r.get("applied"):
+            r["tg"] = t_graph.final.get(r["path"])
+        if d_graph is not None and r.get("deviated") is not None and not r.get("applied"):
+            r["dg"] = d_graph.final.get(r["path"])
+    return rows
+
+
+def _decorate(a: dict, line: str, affected: set) -> dict:
+    """Name a node the way the worksheet does, and say whether the carrier's filing reached it."""
+    p = a.get("path") or ""
+    if a["kind"] == "table":
+        a["name"] = f"{a['table']}[{', '.join(a.get('keys') or [])}].{a['column']}"
+    elif a["kind"] == "company":
+        a["name"] = a.get("label") or "company source"
+    else:
+        a["name"] = _label(p) if p else a["kind"]
+        a["item"] = _item(p) if p else ""
+    a["affected"] = a["id"] in affected
+    for c in a.get("from", []):
+        _decorate(c, line, affected)
+    return a
+
+
+def why(token: str, side: str, gid: int, depth: int = 3) -> dict:
+    """A value's ancestry (`depth` levels) and everything it ultimately came from, from a worksheet's graphs."""
+    got = _GRAPHS.get(token)
+    if got is None:
+        return {"error": "this worksheet is no longer in memory: open it again"}
+    g = got.get(side)
+    if g is None or not (0 <= int(gid) < len(g.nodes)):
+        return {"error": f"no {side} value with id {gid}"}
+    aff = got["affected"] if side == "deviated" else set()
+    tree_ = _decorate(g.ancestry(int(gid), max(0, min(int(depth), 8))), got["line"], aff)
+    src = g.sources(int(gid))
+    for x in src:
+        _decorate(x, got["line"], aff)
+    order = {"company": 0, "table": 1, "input": 2}
+    src.sort(key=lambda x: (order.get(x["kind"], 3), x.get("name", "")))
+    return {"side": side, "node": tree_, "sources": src}
