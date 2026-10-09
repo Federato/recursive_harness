@@ -561,3 +561,17 @@ def why(token: str, side: str, gid: int, depth: int = 3) -> dict:
     order = {"company": 0, "table": 1, "input": 2}
     src.sort(key=lambda x: (order.get(x["kind"], 3), x.get("name", "")))
     return {"side": side, "node": tree_, "sources": src}
+
+
+def formulas(token: str, side: str) -> dict:
+    """The worksheet's Formula view: how the premium was computed, from the worksheet's rating graph."""
+    from . import formula as FX
+    got = _GRAPHS.get(token)
+    if got is None:
+        return {"error": "this worksheet is no longer in memory: open it again"}
+    g = got.get(side)
+    if g is None:
+        return {"error": f"no {side} rating in this worksheet"}
+    out = FX.tree(g, got["affected"] if side == "deviated" else set(), _label, _item)
+    out["side"] = side
+    return out

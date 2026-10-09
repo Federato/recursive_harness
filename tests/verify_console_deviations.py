@@ -10,6 +10,7 @@
   F  the rating worksheet: every field, Technical | ISO | Deviated, free, with the rule that wrote each value
   G  why this value: a worksheet value's ancestry from the rating graph, its sources, the carrier's path marked
   H  Carrier Filings: the filings log, each filing's sources re-hashed and openable, each company's versions
+  I  the worksheet's Formula view: each premium as arithmetic with its actual factors, checked against the engine
 
     python tests/verify_console_deviations.py
 """
@@ -321,9 +322,58 @@ def part_h():
     check("H7 the page has the Carrier Filings tab and draws it", 'id="s-filings"' in html and "flLoad" in html)
 
 
+def part_i():
+    print("I. the worksheet's Formula view: each premium as arithmetic with its factors, checked against the engine")
+    from decimal import Decimal
+    text = json.dumps(pr.sample("IA", "2025-07-01"))
+    code, w = post("worksheet", {"text": text, "company": "UFC", "policyType": "New"})
+    code, d = post("formula", {"token": w["graph"], "side": "deviated"})
+    root = d.get("root") or {}
+    check("I1 the formula tree starts at the policy's total premium, the worksheet's deviated premium",
+          code == 200 and root.get("name") == "Policy total premium" and Decimal(root["value"]) ==
+          Decimal(w["premium"]["deviated"]), {k: root.get(k) for k in ("name", "value")})
+    flat = []
+
+    def walk(f):
+        if f.get("op") and not f.get("seeAbove"):
+            flat.append(f)
+            for t in f.get("terms", []):
+                walk(t)
+    walk(root)
+    sc = {"": 1, "÷ 100": Decimal("0.01"), "÷ 1,000": Decimal("0.001"), "× 100": 100}
+    bad = []
+    for f in flat:
+        if not f["checks"] or f.get("step") or f["op"] == "Mixed" or (f.get("note") and f.get("exact") == "0"):
+            continue
+        vals = [Decimal(t["value"]) for t in f["terms"]]
+        got = sum(vals, Decimal(0)) if f["op"] == "Sum" else __import__("math").prod(vals) * Decimal(str(sc[f.get("scale") or ""]))
+        if abs(got - Decimal(f["value"])) > Decimal("0.5"):
+            bad.append((f["name"], f["value"], str(got)))
+    check("I2 every formula shown reproduces its value from the terms shown (re-done here, independently)",
+          flat and not bad, str(bad[:3]))
+    ok = sum(1 for f in flat if f["checks"])
+    check("I3 nearly every step is reconstructed (the rest say 'computed from', never a guessed formula)",
+          ok >= 0.9 * len(flat) and all(f.get("note") for f in flat if not f["checks"]), f"{ok} of {len(flat)}")
+
+    def leaves(f):
+        for t in f.get("terms", []):
+            yield t
+            yield from leaves(t)
+    lcm = [t for t in leaves(root) if t.get("source") == "filing"]
+    check("I4 the filing's LCMs appear as factors, marked as the carrier's, e.g. Group II 3.28",
+          any(t["value"] == "3.28" for t in lcm) and all(t["affected"] for t in lcm), [(t["name"], t["value"]) for t in lcm][:4])
+    code, t = post("formula", {"token": w["graph"], "side": "technical"})
+    tl = list(leaves(t["root"]))
+    check("I5 technical's formulas carry no filing factor", not any(x.get("source") == "filing" for x in tl))
+    code, e = post("formula", {"token": "nope", "side": "deviated"})
+    check("I6 an expired worksheet says to open it again", "open it again" in e.get("error", ""))
+    code, html, _ = CP.dispatch("GET", "/console", {}, None)
+    check("I7 the page has the Formula view", 'data-wv="' in html and "fxPanel" in html and "formula" in html)
+
+
 def main() -> int:
     setup()
-    for part in (part_a, part_b, part_c, part_d, part_e, part_f, part_g, part_h):
+    for part in (part_a, part_b, part_c, part_d, part_e, part_f, part_g, part_h, part_i):
         part()
     bad = [n for n, ok in RESULTS if not ok]
     print(f"\n{len(RESULTS) - len(bad)}/{len(RESULTS)} passed" + (f"; FAILED: {', '.join(bad)}" if bad else ""))
