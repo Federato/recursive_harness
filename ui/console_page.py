@@ -165,7 +165,7 @@ def workbench(method: str, op: str, query: dict, b: dict):
             return js(200, WB.worksheet(who["line"], req, (b.get("company") or "").strip(), b.get("policyType") or "New"))
         if op == "formula" and method == "POST":
             # how the premium was computed: each step as arithmetic with its factors, checked against the engine
-            return js(200, WB.formulas(str(b.get("token") or ""), b.get("side") or "technical"))
+            return js(200, WB.formulas(str(b.get("token") or ""), b.get("side") or "both"))
         if op == "why" and method == "POST":
             # G2: why a worksheet value is what it is -- its ancestry from the worksheet's rating graph
             return js(200, WB.why(str(b.get("token") or ""), b.get("side") or "technical", int(b.get("gid") or 0),
@@ -1585,6 +1585,10 @@ details.fx>summary{cursor:pointer;padding:2px 0}
 .fx-op{color:var(--color-neutral-700);font-weight:600;padding:0 3px}
 .fx-aff,.fx-t.fx-aff{background:var(--color-accent-100)}
 .fx-no{color:var(--color-neutral-700)}
+.fx-3{display:inline-block;margin-left:10px;font-variant-numeric:tabular-nums;font-weight:600}
+.fx-3 i{font-style:normal;font-weight:400;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--color-neutral-700)}
+.fx-was{color:var(--color-neutral-700);font-weight:400}
+.fx-tech{color:var(--color-neutral-700)}.fx-tech i{font-style:normal;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em}
 .fx-src{margin:2px 0 4px 14px;padding-left:16px;font-size:11.5px}
 .fx-leaf{margin:4px 0 4px 18px}
 .ws-tbl a.ws-why{cursor:pointer;color:inherit;text-decoration:underline dotted;text-underline-offset:2px}
@@ -1700,7 +1704,15 @@ function wsDraw(){const d=WS.d,el=document.getElementById('up-ws');
 function fxNum(v,isPrem){const n=Number(v);if(v===null||v===undefined||v===''||!isFinite(n))return esc(String(v??'—'));
   return isPrem?n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}):(Math.abs(n)>=1000?n.toLocaleString('en-US'):esc(String(v)));}
 function fxIsPrem(t){return /premium/i.test(t.name||'');}
-function fxTerm(t){return '<span class="fx-t'+(t.affected?' fx-aff':'')+'" title="'+esc(t.detail||t.source||'')+'"><b>'+fxNum(t.value,fxIsPrem(t))+'</b> '+esc(t.name)+'</span>';}
+function fxChg(t){return t.tech!==undefined&&t.tech!==null&&Number(t.tech)!==Number(t.value);}
+function fxTerm(t){return '<span class="fx-t'+(t.affected?' fx-aff':'')+'" title="'+esc(t.detail||t.source||'')+'">'+
+  (fxChg(t)?'<s class="fx-was" title="technical">'+fxNum(t.tech,fxIsPrem(t))+'</s> → ':'')+'<b>'+fxNum(t.value,fxIsPrem(t))+'</b> '+esc(t.name)+'</span>';}
+function fxTrio(f){const P=fxIsPrem(f),c=(k,l)=>f[k]!==undefined&&f[k]!==null?'<span class="fx-3"><i>'+l+'</i> '+fxNum(f[k],P)+'</span>':'';
+  return c('tech','Technical')+c('iso','ISO')+c('dev','Deviated');}
+function fxTechEq(f){if(f.dev===undefined||f.tech===undefined||Number(f.tech)===Number(f.dev))return '';
+  if(!f.checks||f.step||f.op==='Mixed'||!f.terms.every(t=>t.tech!==undefined))return '<div class="mx-msg">Technical: '+fxNum(f.tech,fxIsPrem(f))+'</div>';
+  const op=f.op==='Sum'?' + ':' × ';
+  return '<div class="fx-eq fx-tech"><i>Technical</i> = '+f.terms.map(t=>fxNum(t.tech,fxIsPrem(t))).join(op)+(f.scale?' '+esc(f.scale):'')+' = '+fxNum(f.tech,fxIsPrem(f))+'</div>';}
 function fxEq(f){const op=f.op==='Sum'?' + ':' × ';
   if(!f.checks)return '<div class="fx-eq fx-no">Computed from: '+f.terms.map(fxTerm).join(', ')+'<div class="mx-msg">'+esc(f.note||'')+'</div></div>';
   if(f.note&&f.exact==='0')return '<div class="fx-eq">= '+f.terms.map(fxTerm).join('')+' <span class="mx-msg">'+esc(f.note)+'</span></div>';
@@ -1719,20 +1731,21 @@ function fxSrc(f){const leaves=f.terms.filter(t=>!t.op&&t.source&&t.source!=='fo
   return '<ul class="fx-src">'+leaves.map(t=>'<li'+(t.affected?' class="fx-aff"':'')+'>'+esc(t.name)+' <b>'+fxNum(t.value,fxIsPrem(t))+'</b> <span class="mx-msg">· '+
     esc(({input:'from the request',table:'',filing:'carrier filing',constant:'set by the rule',rule:''})[t.source]??'')+(t.detail&&t.source!=='input'?(t.source==='table'?'':' ')+esc(t.detail):'')+'</span></li>').join('')+'</ul>';}
 function fxNode(f,depth){if(!f.op)return '';
-  const head='<span class="fx-n'+(f.affected?' fx-aff':'')+'">'+esc(f.name)+'</span>'+(f.item&&depth>0?' <span class="mx-msg">'+esc(f.item)+'</span>':'')+' <b class="fx-v">'+fxNum(f.value,fxIsPrem(f))+'</b>';
+  const head='<span class="fx-n'+(f.affected?' fx-aff':'')+'">'+esc(f.name)+'</span>'+(f.item&&depth>0?' <span class="mx-msg">'+esc(f.item)+'</span>':'')+' '+fxTrio(f);
   if(f.seeAbove)return '<div class="fx-leaf">'+head+' <span class="mx-msg">(computed above)</span></div>';
   const kids=f.terms.filter(t=>t.op&&!t.seeAbove);
-  return '<details class="fx"'+(depth<2?' open':'')+'><summary>'+head+'</summary>'+fxEq(f)+fxSrc(f)+kids.map(k=>fxNode(k,depth+1)).join('')+
+  return '<details class="fx"'+(depth<2?' open':'')+'><summary>'+head+'</summary>'+fxEq(f)+fxTechEq(f)+fxSrc(f)+kids.map(k=>fxNode(k,depth+1)).join('')+
     f.terms.filter(t=>t.op&&t.seeAbove).map(k=>fxNode(k,depth+1)).join('')+'</details>';}
-function fxPanel(d,hasDev){const side=hasDev?WS.fxSide:'technical',got=WS.fx[side];
+function fxPanel(d,hasDev){const side='both',got=WS.fx[side];
   if(!d.graph)return '<div class="mx-empty">No rating graph for this worksheet: open it again.</div>';
   if(!got){WS.fx[side]={loading:true};wbJSON('/api/console/workbench/formula',{token:d.graph,side}).then(j=>{WS.fx[side]=j;if(WS.view==='formula')wsDraw();})
     .catch(e=>{WS.fx[side]={error:String(e)};wsDraw();});}
-  const tog=hasDev?'<div class="ws-tools"><span>Show</span>'+['deviated','technical'].map(s=>'<button class="btn'+(side===s?' on':'')+'" data-fxs="'+s+'">'+(s==='deviated'?'Deviated ('+esc(d.company)+')':'Technical (pure ISO)')+'</button>').join('')+'</div>':'';
+  const tog='<div class="mx-msg" style="margin-top:6px">'+(hasDev?'Each line: <b>Technical</b> (pure ISO, our engine) · <b>ISO</b> (its answer, where it was asked) · <b>Deviated</b> ('+esc(d.company)+'). The formula is the deviated one; a factor the filing changed shows technical\u2019s value struck through, then the deviated value, and the line underneath gives technical\u2019s own arithmetic.':
+    'Each line: <b>Technical</b> (our engine) · <b>ISO</b> (its answer, where it was asked). Pick a writing company to add <b>Deviated</b>.')+'</div>';
   const g=WS.fx[side];
   const body=!g||g.loading?'<div class="mx-msg">Working out the formulas…</div>':g.error?'<div class="mx-empty">'+esc(g.error)+'</div>':fxNode(g.root,0);
   return tog+'<div class="fx-wrap">'+body+'</div><div class="mx-msg">Each line is the arithmetic the engine did, with the values it used, and is shown only when that arithmetic reproduces the engine’s own figure (to the rule’s rounding). Click a line to open or close it. Hover a factor for the table row it came from.'+
-    (side==='deviated'?' Highlighted: changed by the carrier’s filing.':'')+' “Computed from” means the rule combines those inputs in a way this view doesn’t reconstruct.</div>';}
+    (hasDev?' Highlighted: reached by the carrier’s filing.':'')+' “Computed from” means the rule combines those inputs in a way this view doesn’t reconstruct.</div>';}
 function wsCSV(){const d=WS.d,hasDev=!!d.company,qq=v=>v===null||v===undefined?'':'"'+String(v).replace(/"/g,'""')+'"';
   const head=['Section','Record','Field','Technical','ISO'].concat(hasDev?['Deviated']:[]).concat(['Technical vs ISO','Changed by deviations','Written by','Tables']);
   const rank={};(d.sections||[]).forEach((sc,i)=>sc.paths.forEach((p,j)=>{rank[p]=[i,j];}));

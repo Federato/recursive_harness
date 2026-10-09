@@ -335,3 +335,59 @@ def tree(graph, affected: set | None = None, label=None, item=None, max_nodes: i
     root = build(top)
     root["name"] = "Policy total premium"
     return {"root": root, "count": count[0]}
+
+
+def compare(root: dict | None, base, tech, iso: dict) -> None:
+    """Give each formula line its Technical, ISO and Deviated values, and each factor its technical value.
+
+    `base` is the graph the tree was built from (deviated when there is a company); `tech` the technical graph, or
+    None when there is no company (then base is technical). A line's counterpart in technical is the write of the
+    same field and version; a factor's is the input of the same field (or table) in that counterpart's formula, or
+    for the carrier's own LCM, the one input technical has in its place (else none: x 1). ISO answers only final
+    values, so a line shows ISO's figure only where it is the field's final value."""
+    if root is None:
+        return
+    Ft = Formulas(tech) if tech is not None else None
+    idx = {}
+    if tech is not None:
+        for gid, n in enumerate(tech.nodes):
+            if n["kind"] == "write" and n.get("path"):
+                idx[(n["path"], n.get("version"))] = gid
+
+    def walk(f):
+        if not f.get("op") or f.get("seeAbove"):
+            return
+        n = base.nodes[f["id"]]
+        path = n.get("path")
+        f["dev" if tech is not None else "tech"] = f["value"]
+        if path and base.final.get(path) == f["id"] and path in iso:
+            f["iso"] = iso[path]
+        if tech is not None:
+            tg = idx.get((path, n.get("version")))
+            if tg is not None:
+                tf = Ft.formula(tg)
+                f["tech"] = tf.get("value")
+                tterms = tf.get("terms", []) + tf.get("neutral", []) + tf.get("omitted", [])
+                by = {_key(tech, t["id"]): t for t in tterms}
+                mine = {_key(base, t["id"]) for t in f.get("terms", [])}
+                spare = [t for t in tterms if _key(tech, t["id"]) not in mine]
+                for t in f.get("terms", []):
+                    m = by.get(_key(base, t["id"]))
+                    if m is None and t.get("source") == "filing":
+                        m = spare[0] if len(spare) == 1 else {"value": "1"}
+                    if m is not None:
+                        t["tech"] = m["value"]
+        for t in f.get("terms", []):
+            walk(t)
+
+    walk(root)
+
+
+def _key(g, gid: int) -> str:
+    """What a term is, the same on both sides: its field, or its table and column."""
+    n = g.nodes[gid]
+    if n.get("path"):
+        return n["path"]
+    if n["kind"] == "table":
+        return f"table:{n['table']}.{n['column']}"
+    return f"{n['kind']}:{n.get('label') or ''}"

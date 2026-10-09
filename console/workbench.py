@@ -387,7 +387,9 @@ def worksheet(line: str, payload: dict, company: str = "", policy_type: str = "N
             "iso": iso_state, "isoHash": store.request_hash(plain),
             "deviation": {k: (dev or {}).get(k) for k in ("filings", "edition", "waterfall", "warnings")} if dev else None,
             "sections": calculation_view(line, out_rows), "rows": _with_gids(out_rows, t_graph, d_graph),
-            "graph": _keep_graphs(t_graph, d_graph, line)}
+            "graph": _keep_graphs(t_graph, d_graph, line,
+                                  {r["path"]: r["iso"] for r in out_rows if r.get("iso") is not None},
+                                  None if iso_prem is None else str(iso_prem))}
 
 
 # ---- the worksheet's calculation view: coverage groups, in the order the engine computed them -----------------------
@@ -505,7 +507,7 @@ _GRAPHS = _OD()
 _GRAPHS_KEEP = 8
 
 
-def _keep_graphs(t_graph, d_graph, line: str):
+def _keep_graphs(t_graph, d_graph, line: str, iso: dict | None = None, iso_premium: str | None = None):
     if t_graph is None:
         return None
     tok = _uuid.uuid4().hex[:16]
@@ -514,7 +516,8 @@ def _keep_graphs(t_graph, d_graph, line: str):
         comp = [n["id"] for n in d_graph.nodes if n["kind"] == "company" or
                 (n["kind"] == "table" and n.get("company"))]
         affected = d_graph.reach(comp) | set(comp)
-    _GRAPHS[tok] = {"technical": t_graph, "deviated": d_graph, "affected": affected, "line": line}
+    _GRAPHS[tok] = {"technical": t_graph, "deviated": d_graph, "affected": affected, "line": line, "iso": iso or {},
+                    "isoPremium": iso_premium}
     while len(_GRAPHS) > _GRAPHS_KEEP:
         _GRAPHS.popitem(last=False)
     return tok
@@ -563,15 +566,27 @@ def why(token: str, side: str, gid: int, depth: int = 3) -> dict:
     return {"side": side, "node": tree_, "sources": src}
 
 
-def formulas(token: str, side: str) -> dict:
-    """The worksheet's Formula view: how the premium was computed, from the worksheet's rating graph."""
+def formulas(token: str, side: str = "both") -> dict:
+    """The worksheet's Formula view: how the premium was computed, from the worksheet's rating graphs.
+
+    `both` (the default): the deviated formulas when there is a company (else technical's), each line carrying
+    Technical, ISO and Deviated, and each factor its technical value beside the deviated one."""
     from . import formula as FX
     got = _GRAPHS.get(token)
     if got is None:
         return {"error": "this worksheet is no longer in memory: open it again"}
-    g = got.get(side)
-    if g is None:
-        return {"error": f"no {side} rating in this worksheet"}
-    out = FX.tree(g, got["affected"] if side == "deviated" else set(), _label, _item)
-    out["side"] = side
+    if side != "both":
+        g = got.get(side)
+        if g is None:
+            return {"error": f"no {side} rating in this worksheet"}
+        out = FX.tree(g, got["affected"] if side == "deviated" else set(), _label, _item)
+        out["side"] = side
+        return out
+    tg, dg = got["technical"], got.get("deviated")
+    base = dg or tg
+    out = FX.tree(base, got["affected"] if dg is not None else set(), _label, _item)
+    FX.compare(out.get("root"), base, tg if dg is not None else None, got.get("iso") or {})
+    if out.get("root") is not None and got.get("isoPremium") is not None:
+        out["root"]["iso"] = got["isoPremium"]           # the policy total: ISO's premium for the request
+    out.update(side="both", hasDeviated=dg is not None)
     return out

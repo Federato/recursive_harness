@@ -365,6 +365,24 @@ def part_i():
     code, t = post("formula", {"token": w["graph"], "side": "technical"})
     tl = list(leaves(t["root"]))
     check("I5 technical's formulas carry no filing factor", not any(x.get("source") == "filing" for x in tl))
+    code, both = post("formula", {"token": w["graph"]})
+    rb = both.get("root") or {}
+    check("I6a the combined view: each line carries Technical and Deviated (and ISO where ISO answered)",
+          Decimal(rb.get("tech")) == Decimal(w["premium"]["technical"]) and Decimal(rb.get("dev")) ==
+          Decimal(w["premium"]["deviated"]) and (w["premium"]["iso"] is None or
+                                                 Decimal(rb.get("iso")) == Decimal(w["premium"]["iso"])),
+          {k: rb.get(k) for k in ("tech", "iso", "dev")})
+    lb = [t for t in leaves(rb) if t.get("source") == "filing"]
+    check("I6b a factor the filing changed shows both: technical's LCM beside the filed one (1 -> 3.28)",
+          any(t["value"] == "3.28" and Decimal(t.get("tech") or 0) == 1 for t in lb),
+          [(t["name"], t.get("tech"), t["value"]) for t in lb][:4])
+    same = [t for t in leaves(rb) if t.get("source") == "table" and t.get("tech") is not None]
+    check("I6c an ISO table factor the filing didn't touch has the same value on both sides",
+          same and all(Decimal(t["tech"]) == Decimal(t["value"]) for t in same), len(same))
+    code, w0 = post("worksheet", {"text": text})
+    code, b0 = post("formula", {"token": w0["graph"]})
+    check("I6d with no writing company: Technical only (and ISO where answered), no Deviated",
+          b0["root"].get("tech") is not None and "dev" not in b0["root"] and b0.get("hasDeviated") is False)
     code, e = post("formula", {"token": "nope", "side": "deviated"})
     check("I6 an expired worksheet says to open it again", "open it again" in e.get("error", ""))
     code, html, _ = CP.dispatch("GET", "/console", {}, None)
