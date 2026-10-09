@@ -8,7 +8,7 @@ listed. All gaps are decided (2026-10-09) and folded into `DEVIATIONS-PLAN.md` v
 - **G6 → CF first**, then GL.
 - G2, G3, G5, G7 → the proposals below, accepted.
 
-Sources (not copied into the repo):
+Sources (archived in `C:\FederatoProjects\Carriers\UFG\sources\UNFG-134289779\`; see `FILINGS-LOG.md` DEV-001):
 - `C:\Users\droma\Downloads\UFG_IA_CP_LCM_Filing_UNFG-134289779.pdf`. This is 16 pages: the
   explanatory memo, the exception page (LCM table) on pp. 2–3, twelve supporting forms on pp. 4–15,
   and the permissible loss ratio on p. 16.
