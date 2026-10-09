@@ -1588,6 +1588,9 @@ UP_CSS = """
 
 UP_JS = r"""
 const UP={rows:[],seq:0,busy:false,q:Promise.resolve(),spec:{}};
+function money(v){if(v===null||v===undefined||v==='')return v;const n=Number(v);return isFinite(n)?n.toFixed(2):String(v);}
+function signed(v){const n=Number(v);return isFinite(n)?(n>=0?'+':'')+n.toFixed(2):String(v);}
+function isPrem(r){return /Premium(Sum)?$/i.test(r.field||'');}   // a premium, not PremiumIndicator or a ...PremiumAnd...Factor
 function upAdd(name,text){
   let v;try{v=JSON.parse(text);}catch(e){UP.rows.push({id:++UP.seq,name,err:'Not valid JSON: '+e.message});upDraw();return;}
   const list=Array.isArray(v)?v:[v];
@@ -1613,8 +1616,8 @@ function upDraw(){
     UP.rows.map(x=>{const r=x.r,s=r&&r.stored,rm='<button class="x" data-x="'+x.id+'" title="Remove">×</button>';
       if(x.err)return '<tr><td class="file">'+esc(x.name)+'</td><td colspan="6"><span class="up-res"><span class="chip mismatch">!</span><span>'+esc(x.err)+'</span></span></td><td>'+rm+'</td></tr>';
       if(!r)return '<tr><td class="file">'+esc(x.name)+'</td><td colspan="6" class="mx-msg">Rating on our engine…</td><td></td></tr>';
-      const ours=r.outcome==='rated'?esc(r.premium):esc(r.outcome);
-      const iso=x.busy==='sending'?'<span class="mx-msg">asking ISO…</span>':!s?'<span class="mx-msg">—</span>':s.outcome==='rated'?esc(s.iso)+'<div class="mx-msg">stored '+esc((s.stored_at||s.date||'').slice(0,10))+(s.freshness==='stale'?' · stale':'')+'</div>':'refused';
+      const ours=r.outcome==='rated'?esc(money(r.premium)):esc(r.outcome);
+      const iso=x.busy==='sending'?'<span class="mx-msg">asking ISO…</span>':!s?'<span class="mx-msg">—</span>':s.outcome==='rated'?esc(money(s.iso))+'<div class="mx-msg">stored '+esc((s.stored_at||s.date||'').slice(0,10))+(s.freshness==='stale'?' · stale':'')+'</div>':'refused';
       return '<tr'+(UP.sel===x.id?' class="sel"':'')+'><td class="file">'+esc(x.name)+(r.outcome!=='rated'?'<div class="mx-msg">'+esc((r.detail||'').slice(0,200))+'</div>':'')+'</td><td>'+(r.line==='GL'?'General Liability':'Property')+' · '+esc(r.state)+'</td><td>'+esc(r.effective)+
         '</td><td class="v">'+ours+'</td><td class="v">'+iso+'</td><td class="v">'+upCarrier(x)+'</td><td>'+upVerdict(r)+'</td><td>'+
         '<span class="acts">'+(s&&s.outcome==='rated'?'<a href="#trace?lob='+r.line+'&scenario='+encodeURIComponent(s.scenario)+'">Trace Diff</a>':'')+'<a data-ws="'+x.id+'" title="Every field, Technical | ISO | Deviated">Worksheet</a><a data-dl="'+x.id+'" title="Save this request as a .json file">Download</a><a data-ed="'+x.id+'" title="Copy into the paste box to change it">Edit</a></span>'+rm+'</td></tr>';}).join('')+'</table>';
@@ -1626,13 +1629,13 @@ function upCarrier(x){const r=x.r,c=r&&r.carrier;
   if(!c)return '<span class="mx-msg">—</span>';
   if(c.outcome!=='rated')return '<a class="car" data-dv="'+x.id+'">refused</a>';
   const d=r.premium!=null?Number(c.premium)-Number(r.premium):null;
-  return '<a class="car" data-dv="'+x.id+'" title="What the deviations did">'+esc(c.premium)+'</a>'+(d!==null?'<div class="mx-msg">'+(d>=0?'+':'')+d.toFixed(0)+' vs technical</div>':'');}
+  return '<a class="car" data-dv="'+x.id+'" title="What the deviations did">'+esc(money(c.premium))+'</a>'+(d!==null?'<div class="mx-msg">'+signed(d)+' vs technical</div>':'');}
 function upDev(x){const r=x.r,d=r.deviation||{},k=(t,v)=>'<tr><td>'+t+'</td><td style="text-align:right">'+v+'</td></tr>';
   const f=(d.filings||[]).map(f=>esc(f.id)+' v'+f.version+'<br>new '+esc(f.new_eff)+'<br>renewal '+esc(f.renewal_eff)).join('<br>')||'<i>no filing in force</i>';
   return '<div class="cap2">What the deviations did</div><div class="up-dv"><b>'+esc(x.name)+'</b><table>'+
     k('Writing company',esc(r.company)+' · '+esc(r.policyType))+k('Filing',f)+k('ISO edition',esc(d.edition||'')+(d.pinned?' (pinned)':''))+
-    k('Technical (pure ISO)',esc(d.technicalPremium??'—'))+k('Carrier',esc(d.carrierPremium??'—'))+'</table>'+
-    '<div class="cap2" style="margin-top:8px">Step by step</div><table>'+(d.waterfall||[]).map(s=>k(esc(s.step),(Number(s.effect)>=0?'+':'')+esc(s.effect))).join('')+'</table>'+
+    k('Technical (pure ISO)',esc(money(d.technicalPremium)??'—'))+k('Carrier',esc(money(d.carrierPremium)??'—'))+'</table>'+
+    '<div class="cap2" style="margin-top:8px">Step by step</div><table>'+(d.waterfall||[]).map(s=>k(esc(s.step),esc(signed(s.effect)))).join('')+'</table>'+
     '<div class="mx-msg">'+(d.changedFields||0)+' fields differ from technical. ISO is asked about the non-deviated request only; the carrier is never sent.</div>'+
     (d.refused?'<div class="w"><b>Refused:</b> '+esc(d.refused)+'</div>':'')+
     ((d.warnings||[]).length?'<div class="w"><b>Warnings</b><br>'+d.warnings.map(esc).join('<br>')+'</div>':'')+
@@ -1651,8 +1654,8 @@ function wsOpen(x){const el=document.getElementById('up-ws');WS.name=x.name;WS.s
 function wsShown(){const d=WS.d,q=WS.q.toLowerCase();
   return d.rows.filter(r=>(WS.filter==='all'||(WS.filter==='diff'&&(r.techIso===false||r.changed))||(WS.filter==='dev'&&r.changed)||
     (WS.filter==='iso'&&r.techIso===false)||(WS.filter==='num'&&r.kind==='number'))&&(!q||(r.path+' '+r.rule).toLowerCase().includes(q)));}
-function wsCell(v){return v===null||v===undefined?'<span class="mx-msg">—</span>':esc(String(v));}
-function wsVal(r,side){const v=side==='technical'?r.technical:r.deviated,g=side==='technical'?r.tg:r.dg;
+function wsCell(v,r){return v===null||v===undefined?'<span class="mx-msg">—</span>':esc(String(r&&isPrem(r)?money(v):v));}
+function wsVal(r,side){const v0=side==='technical'?r.technical:r.deviated,g=side==='technical'?r.tg:r.dg,v=isPrem(r)?money(v0):v0;
   return g===undefined||g===null||v===null||v===undefined?wsCell(v):'<a class="ws-why" data-side="'+side+'" data-gid="'+g+'" title="Why this value">'+esc(String(v))+'</a>';}
 function wsDraw(){const d=WS.d,el=document.getElementById('up-ws');
   if(d.error){el.innerHTML='<div class="ws"><div class="mx-empty">'+esc(d.error)+'</div></div>';return;}
@@ -1664,8 +1667,8 @@ function wsDraw(){const d=WS.d,el=document.getElementById('up-ws');
   const cnt=f=>d.rows.filter(f).length,btn=(k,t)=>'<button class="btn'+(WS.filter===k?' on':'')+'" data-wf="'+k+'">'+t+'</button>';
   el.innerHTML='<div class="ws"><div class="ws-hd"><h2>Rating worksheet · '+esc(WS.name)+'</h2><span class="mx-msg">'+(d.line==='GL'?'General Liability':'Property')+' · '+esc(d.state)+
     (hasDev?' · writing company '+esc(d.company)+' · '+esc(d.policyType):' · no writing company')+'</span><a data-wclose="1" style="cursor:pointer;margin-left:auto">Close</a></div>'+
-    '<div class="ws-prem"><div>Technical<b>'+wsCell(P.technical)+'</b>our engine, pure ISO</div><div>ISO<b>'+wsCell(P.iso)+'</b>its answer to the same request'+esc(isoNote)+'</div>'+
-    (hasDev?'<div>Deviated<b>'+wsCell(P.deviated)+'</b>our engine with the filing, never sent to ISO</div>':'')+'</div>'+
+    '<div class="ws-prem"><div>Technical<b>'+wsCell(money(P.technical))+'</b>our engine, pure ISO</div><div>ISO<b>'+wsCell(money(P.iso))+'</b>its answer to the same request'+esc(isoNote)+'</div>'+
+    (hasDev?'<div>Deviated<b>'+wsCell(money(P.deviated))+'</b>our engine with the filing, never sent to ISO</div>':'')+'</div>'+
     '<div class="ws-tools">'+btn('all','All fields · '+d.rows.length)+btn('diff','Any difference · '+cnt(r=>r.techIso===false||r.changed))+
     (hasDev?btn('dev','Deviated changes · '+cnt(r=>r.changed)):'')+btn('iso','Technical ≠ ISO · '+cnt(r=>r.techIso===false))+btn('num','Numbers only')+
     '<span style="margin-left:8px">View</span>'+['calc','record'].map(v=>'<button class="btn'+(WS.view===v?' on':'')+'" data-wv="'+v+'">'+(v==='calc'?'By calculation':'By record')+'</button>').join('')+
@@ -1674,7 +1677,7 @@ function wsDraw(){const d=WS.d,el=document.getElementById('up-ws');
     Object.entries(by).map(([rec,rs])=>{const shut=WS.shut.has(rec);
       const calc=WS.view==='calc',parts=calc?[]:rec.split('/').filter(Boolean),name=calc?rec:(parts.pop()||'(policy)'),trail=parts.map(x=>x.replace(/^CommercialProperty|^GeneralLiability/,'')||x).join(' › ');
       return '<tr class="rec" data-rec="'+esc(rec)+'" title="'+esc(rec)+'"><td colspan="'+(hasDev?5:4)+'">'+(shut?'▸ ':'▾ ')+esc(name)+' <span class="mx-msg">'+rs.length+' field'+(rs.length>1?'s':'')+(trail?' · in '+esc(trail):'')+'</span></td></tr>'+
-        (shut?'':rs.map(r=>'<tr'+(r.applied?' class="ws-app"':'')+'><td title="'+esc(r.path)+'">'+esc(calc?(r.label||r.field):r.field)+(r.note?'<div class="mx-msg">'+esc(r.note)+'</div>':'')+'</td><td class="v">'+wsVal(r,'technical')+'</td><td class="v'+(r.techIso===false&&d.iso==='rated'?' bad':'')+'">'+wsCell(r.iso)+'</td>'+
+        (shut?'':rs.map(r=>'<tr'+(r.applied?' class="ws-app"':'')+'><td title="'+esc(r.path)+'">'+esc(calc?(r.label||r.field):r.field)+(r.note?'<div class="mx-msg">'+esc(r.note)+'</div>':'')+'</td><td class="v">'+wsVal(r,'technical')+'</td><td class="v'+(r.techIso===false&&d.iso==='rated'?' bad':'')+'">'+wsCell(r.iso,r)+'</td>'+
           (hasDev?'<td class="v'+(r.changed?' chg':'')+'">'+wsVal(r,'deviated')+'</td>':'')+'<td class="src">'+esc(r.rule||'')+(r.tables&&r.tables.length?' · '+esc(r.tables.join(', ')):'')+'</td></tr>').join(''));}).join('')+
     '</table></div><div class="mx-msg">Click a technical or deviated value to see what it was computed from. By calculation: one section per coverage group of each rated item, its factors in the order our engine computed them (inputs first). <b>LCM applied</b>: the LCM that group rate was multiplied by (Property applies one per coverage group; ISO and technical apply the one record LCM to every group). Red ISO value: technical and ISO differ there. Highlighted deviated value: the filing changed it. "Written by" is the ERC rule file (and the tables read just before) that wrote the technical value.</div></div>';
   const q=document.getElementById('ws-q');q.oninput=()=>{WS.q=q.value;const pos=q.selectionStart;wsDraw();const n=document.getElementById('ws-q');n.focus();n.setSelectionRange(pos,pos);};}
@@ -1682,8 +1685,8 @@ function wsCSV(){const d=WS.d,hasDev=!!d.company,qq=v=>v===null||v===undefined?'
   const head=['Section','Record','Field','Technical','ISO'].concat(hasDev?['Deviated']:[]).concat(['Technical vs ISO','Changed by deviations','Written by','Tables']);
   const rank={};(d.sections||[]).forEach((sc,i)=>sc.paths.forEach((p,j)=>{rank[p]=[i,j];}));
   const shown=wsShown().slice().sort((a,b)=>{const x=rank[a.path]||[1e9,0],y=rank[b.path]||[1e9,0];return x[0]-y[0]||x[1]-y[1];});
-  const lines=[head.map(qq).join(',')].concat(shown.map(r=>[r.sectionLabel||'',r.record,r.label||r.field,r.technical,r.iso].concat(hasDev?[r.deviated]:[])
-    .concat([r.techIso===null?'':r.techIso?'agree':'differ',hasDev?(r.changed?'yes':'no'):'',r.rule,(r.tables||[]).join('; ')]).map(qq).join(',')));
+  const lines=[head.map(qq).join(',')].concat(shown.map(r=>{const m=v=>isPrem(r)?money(v):v;return [r.sectionLabel||'',r.record,r.label||r.field,m(r.technical),m(r.iso)].concat(hasDev?[m(r.deviated)]:[])
+    .concat([r.techIso===null?'':r.techIso?'agree':'differ',hasDev?(r.changed?'yes':'no'):'',r.rule,(r.tables||[]).join('; ')]).map(qq).join(',');}));
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([lines.join('\r\n')],{type:'text/csv'}));
   a.download='worksheet-'+d.line+'-'+d.state+(d.company?'-'+d.company:'')+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
 function wsWhy(side,gid){WS.why={loading:true,side};upSide();
