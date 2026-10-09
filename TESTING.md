@@ -75,7 +75,7 @@ python tests/verify_deviations_engine.py          44/44  the engine with a writi
                                                          rated, pins, refusals, what ISO may see
 python tests/verify_deviations_proof.py           57/57   P3 (T4-T7, T9 offline; T3 and T8 re-judged
                                                          from ISO's stored answers, no calls)
-python tests/verify_console_deviations.py         37/37   P4: the writing-company picker, Technical / ISO /
+python tests/verify_console_deviations.py         40/40   P4: the writing-company picker, Technical / ISO /
                                                          Carrier, rating worksheets, the Deviations Proof board
 python Agentic/iso-circular-expert/tools/smoke_test.py     19/19
 python Agentic/iso-erc-expert/tools/smoke_test.py       88 checks

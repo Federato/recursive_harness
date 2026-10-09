@@ -223,6 +223,56 @@ def send_technical(line: str, payload: dict, company: str, reuse: bool = True, o
     return send(line, plain, reuse=reuse, override=override, client=client)
 
 
+_GROUP_FIELD = {"GroupI": "GroupILCMApplied", "GroupII": "GroupIILCMApplied", "Broad": "BroadLCMApplied",
+                "Special": "SpecialLCMApplied", "Earthquake": "EarthquakeLCMApplied"}
+
+
+def _node_paths(tree) -> dict:
+    """id(node) -> the normalised path of every record in a rated tree (the worksheet's path form)."""
+    from . import worksheet as W
+    out: dict = {}
+
+    def walk(node, prefix):
+        seen: dict = {}
+        for c in node.children:
+            i = seen.get(c.tag, 0)
+            seen[c.tag] = i + 1
+            p = f"{prefix}/{c.tag}[{i}]"
+            if c.children:
+                out[id(c)] = W.normalise(p)
+                walk(c, p)
+    walk(tree, "")
+    return out
+
+
+def _applied_lcms(t_tree, d_tree, carrier_trace, body, key) -> list:
+    """One worksheet row per record and coverage group where the carrier applied a group LCM (D17): the value each
+    group's rate was actually multiplied by, which no single tree field holds. Technical and ISO show the record's
+    own LCM there (ISO applies one LCM to every group)."""
+    from . import worksheet as W
+    paths = _node_paths(d_tree)
+    tech_leaves, _ = W.our_leaves(t_tree)
+    iso_leaves = W.iso_leaves(body) if body is not None else {}
+    rows, seen = [], set()
+    for n, t in enumerate(carrier_trace):
+        if t.kind != "company-group-lcm":
+            continue
+        d = t.data or {}
+        rec = paths.get(d.get("node"))
+        if rec is None or not rec.startswith(f"/{key}") or (rec, d["group"]) in seen:
+            continue
+        seen.add((rec, d["group"]))
+        tech = tech_leaves.get(f"{rec}/LossCostMultiplier")
+        iso = iso_leaves.get(f"{rec}/LossCostMultiplier")
+        rows.append({"path": f"{rec}/{_GROUP_FIELD[d['group']]}", "record": rec,
+                     "field": _GROUP_FIELD[d["group"]], "kind": "number", "technical": tech, "iso": iso,
+                     "deviated": d["value"], "techIso": None if iso is None or tech is None else W.same(tech, iso),
+                     "changed": not W.same(d["value"], tech), "rule": "company group LCM (D17), applied to "
+                     + ", ".join(d.get("operands") or []), "tables": [d.get("explain", "")], "order": n,
+                     "applied": True})
+    return rows
+
+
 def worksheet(line: str, payload: dict, company: str = "", policy_type: str = "New", root=None) -> dict:
     """The rating worksheet for one request: every field, record by record, as Technical | ISO | Deviated.
 
@@ -245,6 +295,7 @@ def worksheet(line: str, payload: dict, company: str = "", policy_type: str = "N
     else:
         plain = req
     dev = None
+    carrier_trace: list = []
     if line == "GL":
         from gl_engine.rating import Kernel
         k = Kernel()
@@ -265,6 +316,7 @@ def worksheet(line: str, payload: dict, company: str = "", policy_type: str = "N
             tech = r.technical
             t_tree, t_trace, t_prem = (tech.tree, tech.ip.trace, tech.premium) if tech and tech.complete else (None, [], None)
             d_tree, d_prem = (r.tree, r.premium) if r.complete else (None, None)
+            carrier_trace = r.ip.trace if r.ip is not None else []
             dev = r.deviation
         else:
             r = cf_rate(req)
@@ -297,6 +349,7 @@ def worksheet(line: str, payload: dict, company: str = "", policy_type: str = "N
         tops = (f"/{key}",)
         deviated = {p: v for p, v in deviated.items() if p.startswith(tops)}
     out_rows, seen = [], set()
+    applied = _applied_lcms(t_tree, d_tree, carrier_trace, body, key) if (line == "CP" and d_tree is not None) else []
     for x in rows:
         if not x["in_ours"]:
             continue                          # an ISO-only field: listed after, with no technical value
@@ -307,6 +360,10 @@ def worksheet(line: str, payload: dict, company: str = "", policy_type: str = "N
                          "technical": x["ours"], "iso": x["iso"], "deviated": d,
                          "techIso": x["match"], "changed": (d_tree is not None and not W.same(d, x["ours"])),
                          "rule": x["rule_file"], "tables": x["tables"], "order": x["order"]})
+    out_rows += applied
+    for r in out_rows:
+        if line == "CP" and r["field"] == "LossCostMultiplier" and d_tree is not None:
+            r["note"] = "the record's LCM: holds the Group I value (G2); each coverage group applies its own, "                         "shown as 'LCM applied' in that group's section"
     for p, v in deviated.items():             # fields only the deviated rating writes (e.g. a record's LCM)
         if p not in seen:
             out_rows.append({"path": p, "record": W.record_of(p), "field": p.rsplit("/", 1)[-1], "kind": W.kind(v),
@@ -410,6 +467,8 @@ def calculation_view(line: str, rows: list) -> list:
         key = f"{item}|{g or '~shared'}"
         r["section"] = key
         r["label"] = _label(r["path"])
+        if r.get("applied"):
+            r["label"] = r["label"].rsplit("›", 1)[0].strip() + " › LCM applied" if "›" in r["label"] else "LCM applied"
         r["sectionLabel"] = f"{item} · {labels[g]}" if g else f"{item} · shared factors and other fields"
         r["group"] = g
         first_seen.setdefault(item, i)

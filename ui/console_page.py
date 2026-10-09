@@ -1558,6 +1558,7 @@ UP_CSS = """
 .ws-tbl .v{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 .ws-tbl tr.rec td{background:var(--color-neutral-100,#eee);font-weight:600;cursor:pointer;overflow-wrap:anywhere}
 .ws-tbl td.bad{color:#9b1c1c;font-weight:600}.ws-tbl td.chg{background:var(--color-accent-100);font-weight:600}
+.ws-tbl tr.ws-app td{border-top:1px dashed var(--color-accent-700)}.ws-tbl tr.ws-app td:first-child{font-weight:600}
 .ws-tbl .src{color:var(--color-neutral-700);font-size:11px;overflow-wrap:anywhere;max-width:340px}
 .ws-scroll{max-height:70vh;overflow:auto;border:1px solid var(--color-divider);border-radius:4px}
 .up-co{margin-top:8px}.up-tbl a.car{cursor:pointer;font-weight:600}.up-tbl tr.sel td{background:var(--color-accent-100)}
@@ -1651,9 +1652,9 @@ function wsDraw(){const d=WS.d,el=document.getElementById('up-ws');
     Object.entries(by).map(([rec,rs])=>{const shut=WS.shut.has(rec);
       const calc=WS.view==='calc',parts=calc?[]:rec.split('/').filter(Boolean),name=calc?rec:(parts.pop()||'(policy)'),trail=parts.map(x=>x.replace(/^CommercialProperty|^GeneralLiability/,'')||x).join(' › ');
       return '<tr class="rec" data-rec="'+esc(rec)+'" title="'+esc(rec)+'"><td colspan="'+(hasDev?5:4)+'">'+(shut?'▸ ':'▾ ')+esc(name)+' <span class="mx-msg">'+rs.length+' field'+(rs.length>1?'s':'')+(trail?' · in '+esc(trail):'')+'</span></td></tr>'+
-        (shut?'':rs.map(r=>'<tr><td title="'+esc(r.path)+'">'+esc(calc?(r.label||r.field):r.field)+'</td><td class="v">'+wsCell(r.technical)+'</td><td class="v'+(r.techIso===false&&d.iso==='rated'?' bad':'')+'">'+wsCell(r.iso)+'</td>'+
+        (shut?'':rs.map(r=>'<tr'+(r.applied?' class="ws-app"':'')+'><td title="'+esc(r.path)+'">'+esc(calc?(r.label||r.field):r.field)+(r.note?'<div class="mx-msg">'+esc(r.note)+'</div>':'')+'</td><td class="v">'+wsCell(r.technical)+'</td><td class="v'+(r.techIso===false&&d.iso==='rated'?' bad':'')+'">'+wsCell(r.iso)+'</td>'+
           (hasDev?'<td class="v'+(r.changed?' chg':'')+'">'+wsCell(r.deviated)+'</td>':'')+'<td class="src">'+esc(r.rule||'')+(r.tables&&r.tables.length?' · '+esc(r.tables.join(', ')):'')+'</td></tr>').join(''));}).join('')+
-    '</table></div><div class="mx-msg">By calculation: one section per coverage group of each rated item, its factors in the order our engine computed them (inputs first). Red ISO value: technical and ISO differ there. Highlighted deviated value: the filing changed it. "Written by" is the ERC rule file (and the tables read just before) that wrote the technical value.</div></div>';
+    '</table></div><div class="mx-msg">By calculation: one section per coverage group of each rated item, its factors in the order our engine computed them (inputs first). <b>LCM applied</b>: the LCM that group rate was multiplied by (Property applies one per coverage group; ISO and technical apply the one record LCM to every group). Red ISO value: technical and ISO differ there. Highlighted deviated value: the filing changed it. "Written by" is the ERC rule file (and the tables read just before) that wrote the technical value.</div></div>';
   const q=document.getElementById('ws-q');q.oninput=()=>{WS.q=q.value;const pos=q.selectionStart;wsDraw();const n=document.getElementById('ws-q');n.focus();n.setSelectionRange(pos,pos);};}
 function wsCSV(){const d=WS.d,hasDev=!!d.company,qq=v=>v===null||v===undefined?'':'"'+String(v).replace(/"/g,'""')+'"';
   const head=['Section','Record','Field','Technical','ISO'].concat(hasDev?['Deviated']:[]).concat(['Technical vs ISO','Changed by deviations','Written by','Tables']);

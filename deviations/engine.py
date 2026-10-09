@@ -267,7 +267,7 @@ class GroupLCM:
             ip.taint.hit()
         ip.note("company-group-lcm", f"{group}/{basis}/{cls} -> {v} ({entry[2]})",
                 self.plan.ref or "", group=group, basis=basis, class_code=cls, value=str(v),
-                explain=entry[2], operands=names)
+                explain=entry[2], operands=names, node=id(node))
         return {at: v}
 
 

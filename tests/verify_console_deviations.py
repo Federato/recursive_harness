@@ -187,7 +187,7 @@ def part_f():
           and w["premium"]["deviated"] and rows, {k: w.get(k) for k in ("premium", "iso", "error")})
     check("F2 every row says where it sits: record, field, technical, ISO, deviated, the rule that wrote it",
           all({"record", "field", "technical", "iso", "deviated", "rule", "tables"} <= set(r) for r in rows))
-    ch = [r for r in rows if r["changed"]]
+    ch = [r for r in rows if r["changed"] and not r.get("applied")]
     check("F3 the deviated changes are the fields the filing moved (67 on this risk, as the panel says)",
           len(ch) == 67 and any(r["field"] == "LossCostMultiplier" and r["deviated"] == "1.511" for r in ch),
           len(ch))
@@ -216,6 +216,17 @@ def part_f():
           all(f"Location › Building · {g}" in secs for g in ("Basic Group II", "Broad", "Special", "Earthquake")))
     check("F12 a field under a coverage record says which: 'BuildingBasicGroupICoverage › Premium'",
           any(by[p]["label"] == "BuildingBasicGroupICoverage › Premium" for p in g1["paths"]) if g1 else False)
+    g2 = secs.get("Location › Building · Basic Group II")
+    g2rows = [by[p] for p in (g2 or {}).get("paths", [])]
+    ap = [r for r in g2rows if r.get("applied")]
+    check("F14 each group shows the LCM its rate was multiplied by: Building · Basic Group II applies 3.28 "
+          "(the record field holds Group I's 1.511)",
+          len(ap) == 1 and ap[0]["deviated"] == "3.28" and ap[0]["label"] == "LCM applied", [r["deviated"] for r in ap])
+    fl = [r["field"] for r in g2rows]
+    check("F15 ...placed in the chain: after the base rate, before the rate it multiplies",
+          ap and fl.index("BasicGroupIIBaseRate") < fl.index(ap[0]["field"]) < fl.index("BasicGroupIIRate"), fl[:10])
+    rec = [r for r in rows if r["field"] == "LossCostMultiplier" and r.get("note")]
+    check("F16 the record's LossCostMultiplier says it is the Group I value", rec and "Group I" in rec[0]["note"])
     from console import catalog
     code, wg = post("worksheet", {"text": json.dumps(catalog.build("GL", "TX", {}))})
     labels = [sc["label"] for sc in wg.get("sections", [])]
