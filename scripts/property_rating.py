@@ -280,6 +280,8 @@ def rate_company(payload: dict, with_technical: bool = False, compare_with=None,
     r = cf_rate(payload, with_technical=True)
     result = shape(r)
     result["deviation"] = r.deviation
+    # the two payloads (D21): non-deviated goes to ISO and rates as technical; deviated is rated by us only, as carrier
+    result["payloads"] = {"nonDeviated": iso_request(payload, "CF")[0], "deviated": payload}
     tech = shape(r.technical) if r.technical is not None else None
     if with_technical and tech is not None:
         result["technical"] = tech

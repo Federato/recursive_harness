@@ -75,7 +75,8 @@ All but `--send` are free; `--judge` re-reads ISO's stored answers.
 4. **O6: ISO refuses every Property LCM below 1.00.** Its stat-code rule keys `Round(LCM, 2) × 100` as "88.00";
    the table files "88". Found on UFG's group-B Group I LCM (0.875), confirmed on a plain ISO request at 0.95.
    **Decided: no LCM is sent to ISO (D21).** Our engine rates such an ISO-only request ($4,103 at 0.95) where ISO
-   refuses; only an ISO-only request with an LCM below 1 can reach that difference, and it is left as is.
+   refuses, and keeps doing so by decision: the non-deviated payload is the ISO test, and the deviated payload
+   (LCMs below 1.00 included) is rated by our engine to show what the deviations do.
 
 ---
 

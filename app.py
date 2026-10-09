@@ -378,6 +378,10 @@ def rate(payload: dict, mode: str, rounding: str, compare: bool = False,
 
     if r.deviation is not None:
         result["deviation"] = r.deviation
+        # the two payloads (D21): the non-deviated one is what ISO is sent and what technical rates; the deviated
+        # one, naming the company, is rated by our engine only, as carrier
+        from deviations.engine import iso_request
+        result["payloads"] = {"nonDeviated": iso_request(payload, "GL")[0], "deviated": payload}
         if with_technical and r.technical is not None:
             result["technical"] = {"premium": str(r.technical.premium) if r.technical.complete else None,
                                    "complete": r.technical.complete, "packages": list(r.technical.packages),
