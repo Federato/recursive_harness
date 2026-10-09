@@ -99,6 +99,8 @@ class Rating:
     deviation: dict | None = None
     #: The technical rating from the same call, when asked for (`with_technical`).
     technical: "Rating | None" = None
+    #: Dependency tracking from a company rating asked to track it (deviations T4); None otherwise.
+    taint: object = None
 
     @property
     def packages(self) -> tuple[str, ...]:
@@ -152,7 +154,7 @@ class Kernel:
     def rate(self, payload: dict | str | Path,
             version: str | None = None, *, company: str | None = None,
             with_technical: bool = False, waterfall: bool = True,
-            root: Path | None = None) -> Rating:
+            root: Path | None = None, track: bool = False) -> Rating:
         """Rate one RAaS-shaped submission.
 
         `version`, if given, pins the SAME package version the payload was
@@ -172,7 +174,7 @@ class Kernel:
             header = payload.get("header") or {}
             if company or any(k in header for k in OWN_HEADER):
                 return self._rate_company(payload, version, company, with_technical,
-                                          waterfall, root)
+                                          waterfall, root, track)
             data, juris, asof = from_raas(payload)
 
         book = ResolvedBook(self.resolver.resolve(juris, asof, version))
@@ -188,6 +190,7 @@ class Kernel:
         try:
             interp.run(data)
             result.complete = True
+            result.taint = interp.taint
         except Exception as exc:                     # noqa: BLE001 - reported
             result.stopped = exc
             return result
@@ -206,7 +209,7 @@ class Kernel:
     # ------------------------------------------------ a writing company (P2)
 
     def _rate_company(self, payload: dict, version, company, with_technical, waterfall,
-                      root) -> Rating:
+                      root, track: bool = False) -> Rating:
         """Technical and carrier from one call (DEVIATIONS-PLAN.md §3, §4).
 
         Our header fields are removed before anything else (M6); with no
@@ -224,8 +227,9 @@ class Kernel:
 
         from deviations import engine as dv, report
         lcm_warnings: list = []
-        for gl in (clean.get("body") or {}).get("GeneralLiability") or []:
-            dv.strip_lcms(gl, lcm_warnings, "GeneralLiability", key="LCM")
+        # a list of policies, or one object: strip_lcms walks either
+        dv.strip_lcms((clean.get("body") or {}).get("GeneralLiability"), lcm_warnings,
+                      "GeneralLiability", key="LCM")
         data, juris, asof = from_raas(clean)
         date = f"{asof[:4]}-{asof[4:6]}-{asof[6:]}"
         iso_book = ResolvedBook(self.resolver.resolve(juris, asof, version))
@@ -233,6 +237,7 @@ class Kernel:
             plan = dv.plan_for("GL", wc, juris, date, header.get("PolicyType"),
                                **({"root": root} if root else {}))
             book = dv.book_for(plan) if plan.pin else iso_book
+            plan.track = track
             for w in lcm_warnings:
                 plan.warn(w)
             technical = self._rate_book(data, juris, asof, book)

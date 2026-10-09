@@ -118,13 +118,29 @@ def _ctx() -> ssl.SSLContext:
 OWN_HEADER_FIELDS = ("WritingCompany", "PolicyType")
 
 
+#: LCM fields, per line. A request naming a writing company reaches ISO without them (O6, decided 2026-10-09): ISO
+#: only ever rates TECHNICAL, and the carrier's LCMs are proved against technical, never sent.
+LCM_FIELDS = ("LossCostMultiplier", "LCM")
+
+
+def _strip_lcms(obj):
+    if isinstance(obj, dict):
+        return {k: _strip_lcms(v) for k, v in obj.items() if k not in LCM_FIELDS}
+    if isinstance(obj, list):
+        return [_strip_lcms(v) for v in obj]
+    return obj
+
+
 def without_own_fields(payload):
-    """The request as ISO may see it: our header fields removed; everything else, and the original, untouched."""
+    """The request as ISO may see it: our header fields removed, and -- when it named a writing company -- every
+    LCM removed too, so ISO rates exactly the technical request. The original is untouched."""
     hdr = payload.get("header") if isinstance(payload, dict) else None
     if not isinstance(hdr, dict) or not any(k in hdr for k in OWN_HEADER_FIELDS):
         return payload
     out = dict(payload)
     out["header"] = {k: v for k, v in hdr.items() if k not in OWN_HEADER_FIELDS}
+    if hdr.get("WritingCompany") and isinstance(payload.get("body"), dict):
+        out["body"] = _strip_lcms(payload["body"])
     return out
 
 

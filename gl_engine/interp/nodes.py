@@ -142,6 +142,8 @@ def _value(ip, el, fr):
     # address an explicitly nillable element. The guard against nulls sits at
     # the arithmetic boundary (§12.3), which is where a null becomes a wrong
     # premium rather than merely an absent one.
+    if ip.taint is not None:
+        ip.taint.read(tree.select_one(path, fr.data))
     return coerce(tree.read(path, fr.data), typ, where)
 
 
@@ -169,6 +171,8 @@ def _first_value(ip, el, fr):
     typ = el.attrib.get("Type", "string")
     path = el.attrib.get("FromDataDef")
     if path is not None:
+        if ip.taint is not None:
+            ip.taint.read(tree.select_one(path, fr.data))
         raw = tree.read(path, fr.data)
         if raw is not None and str(raw) != "":
             return coerce(raw, typ, where)
@@ -698,6 +702,8 @@ def _copy(ip, el, fr):
     if path is None:
         raise InterpretError(
             "Copy with neither @FromDataDef nor @FromParam", "§9", where)
+    if ip.taint is not None:
+        ip.taint.read(tree.select_one(path, fr.data))
     return coerce(tree.read(path, fr.data), typ, where)
 
 

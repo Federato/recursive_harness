@@ -270,6 +270,10 @@ class Interpreter:
         "GreaterThan", "GreaterThanOrEqual", "LessThan", "LessThanOrEqual",
     })
 
+    #: Dependency tracking (`taint.Taint`): off unless a caller sets it. A class default, so an interpreter built
+    #: without `__init__` (the fragment evaluator in `verify_interp.py`) has it too.
+    taint = None
+
     def __init__(self, book, rounding: str = "ROUND_HALF_UP",
                  trace: bool = True, null_arithmetic: str | None = None,
                  guard_null_premium: bool = True,
@@ -284,6 +288,8 @@ class Interpreter:
                 f"unknown null_arithmetic mode {null_arithmetic!r}; "
                 f"one of {self.NULL_ARITHMETIC}", "§12.3", "")
         self.book = book
+        #: Dependency tracking (`taint.Taint`), set by a caller only; None for every ordinary rating.
+        self.taint = None
         self.rounding_name = rounding
         self.rounding = ROUNDING_MODES[rounding]
         self.null_arithmetic = null_arithmetic
@@ -447,6 +453,11 @@ class Interpreter:
     # ------------------------------------------------------------------ eval
 
     def eval(self, el, frame: Frame):
+        if self.taint is not None:
+            return self.taint.around(self._eval, el, frame)
+        return self._eval(el, frame)
+
+    def _eval(self, el, frame: Frame):
         name = self.tag(el)
         fn = nodes.EVAL.get(name)
         if fn is None:
@@ -508,6 +519,8 @@ class Interpreter:
                     f"that missed -- and the trace above names it",
                     "§12.3", name)
             written = tree.write(to, frame.write_target, value)
+            if self.taint is not None:
+                self.taint.wrote(written)
             if getattr(self, "_writes", None) is not None:
                 self._writes.add(id(written))
             # `node`: which node took the value (an object id, valid while the tree lives), and the rule file and
@@ -573,10 +586,16 @@ class Interpreter:
                   program.pkg_id)
 
         out = None
-        for ch in el:
-            if self.tag(ch) == "Param":
-                continue                      # a declaration, bound at the call
-            out = self.eval(ch, inner)
+        if self.taint is not None:
+            self.taint.enter_rule()
+        try:
+            for ch in el:
+                if self.tag(ch) == "Param":
+                    continue                      # a declaration, bound at the call
+                out = self.eval(ch, inner)
+        finally:
+            if self.taint is not None:
+                self.taint.leave_rule()
 
         declared = el.attrib.get("Type", "none")
         if declared == "none":
@@ -636,6 +655,8 @@ class Interpreter:
         """Match `keys` against the table's key columns, in filed order (§7)."""
         table, kind = self._find_table(name, where)
         defn = table.definition
+        if self.taint is not None and "+" in str(table.package):
+            self.taint.hit()                  # a table a carrier overrode (deviations P3, T4)
 
         if defn.key_ranges:
             return self._lookup_banded(table, kind, name, col, keys, mode,

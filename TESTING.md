@@ -70,9 +70,11 @@ python tests/verify_notebooks.py                 28/28   every notebook cell, en
                                                          harness set, executes against the code
 python tests/verify_deviations_files.py          78/78   carrier deviation files (T10): the UFG Iowa
                                                          filing compiles, imports and reads back
-python tests/verify_deviations_engine.py          42/42  the engine with a writing company (P2): T1 and
+python tests/verify_deviations_engine.py          44/44  the engine with a writing company (P2): T1 and
                                                          T2 on a sample of every state, the UFG filing
                                                          rated, pins, refusals, what ISO may see
+python tests/verify_deviations_proof.py           57/57   P3 (T4-T7, T9 offline; T3 and T8 re-judged
+                                                         from ISO's stored answers, no calls)
 python Agentic/iso-circular-expert/tools/smoke_test.py     19/19
 python Agentic/iso-erc-expert/tools/smoke_test.py       88 checks
 python -m gl_engine.cli check 20260811 --deep              13/13
@@ -674,6 +676,11 @@ python scripts/cf/206_snapshot_regression.py --check --jobs 12
 today's engine, field for field; T2: a company whose every row is neutral rates exactly as technical),
 then rates the UFG filing and checks pins, refusals, the waterfall and what ISO may see. The snapshot
 regression is T1 over the whole stored population and is the one to run after any interpreter change.
+
+**The proof against ISO (P3), added 2026-10-09.** `verify_deviations_proof.py` is free; the live part is
+`scripts/deviations_p3.py` (`--plan`, `--send`, `--judge`, `--promote`), which sends ISO only TECHNICAL requests
+(D21: never an LCM) and keeps every answer in the store, so a re-run spends nothing unless a request changes.
+The gate record is [`docs/gates/GATE-DEVIATIONS.md`](docs/gates/GATE-DEVIATIONS.md).
 
 ---
 

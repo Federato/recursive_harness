@@ -111,7 +111,8 @@ def _total(data: Node) -> str | None:
 
 
 def rate(request: dict, company: str | None = None, *, with_technical: bool = False,
-         waterfall: bool = True, trace: bool = True, root: Path | None = None) -> PropertyRating:
+         waterfall: bool = True, trace: bool = True, root: Path | None = None,
+         track: bool = False) -> PropertyRating:
     """Rate a Property request; with a writing company, the carrier result with `deviation` set."""
     header = dict(request.get("header") or {})
     wc = company or header.get("WritingCompany")
@@ -129,8 +130,8 @@ def rate(request: dict, company: str | None = None, *, with_technical: bool = Fa
     from deviations import engine as dv
     st, eff = _scheme(clean)
     lcm_warnings: list = []
-    for cp in clean["body"]["CommercialProperty"]:
-        dv.strip_lcms(cp, lcm_warnings, "CommercialProperty")
+    # the block is a list of policies, or ONE object (ISO accepts both; stored requests use both)
+    dv.strip_lcms(clean["body"]["CommercialProperty"], lcm_warnings, "CommercialProperty")
     try:
         plan = dv.plan_for("CF", wc, st, eff, header.get("PolicyType"),
                            **({"root": root} if root else {}))
@@ -140,6 +141,7 @@ def rate(request: dict, company: str | None = None, *, with_technical: bool = Fa
         r.outcome = {"status": "refused", "reasons": [{"kind": exc.outcome_kind, "detail": str(exc)}]}
         r.deviation = {"writingCompany": wc, "refused": str(exc)}
         return r
+    plan.track = track
     if company and header.get("WritingCompany") and header["WritingCompany"] != company:
         plan.warn(f"company={company} given; header.WritingCompany {header['WritingCompany']} not used")
     for w in lcm_warnings:

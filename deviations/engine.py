@@ -71,6 +71,12 @@ class Plan:
     #: ISO table name -> {"col", "keys", "rows": {key tuple: (value, mode, explain)}}
     overrides: dict = field(default_factory=dict)
     warnings: list = field(default_factory=list)
+    #: Track which fields the company's inputs reach (T4, P3). Off for every ordinary rating.
+    track: bool = False
+    #: id(record node) -> (class, rating type) as submitted, fixed before the rules run: the record LCM and every
+    #: group LCM on that record use the same class, the one ISO's service sees on the request (P3 finding: a
+    #: contents record ISO's rules later stamp with the building's class kept two classes otherwise).
+    record_class: dict = field(default_factory=dict)
 
     @property
     def ref(self) -> str | None:
@@ -192,7 +198,7 @@ _GROUPS = (("Earthquake", re.compile(r"EQ|Earthquake")),
            ("Broad", re.compile(r"Broad")),
            ("GroupII", re.compile(r"GroupII|BGII")),
            ("GroupI", re.compile(r"GroupI(?!I)|BGI(?!I)")),
-           ("Special", re.compile(r"Special(?!Class)")))
+           ("Special", re.compile(r"Special(?!Class|Coinsurance)")))
 
 
 def group_of(names) -> str | None:
@@ -213,10 +219,10 @@ def _up(node, tag: str):
     return None
 
 
-def _basis(node, group: str, names) -> str:
+def _basis(node, group: str, names, fixed_rt=None) -> str:
     if any(n.startswith("Specific") for n in names):
         return "Specific"
-    rt = (_up(node, "RatingTypeBasicGroupII") if group == "GroupII" else None) or _up(node, "RatingType")
+    rt = (_up(node, "RatingTypeBasicGroupII") if group == "GroupII" else None) or fixed_rt or _up(node, "RatingType")
     return "Specific" if rt == "Specific" else "Class"
 
 
@@ -246,16 +252,19 @@ class GroupLCM:
         if group is None:
             return None
         node = fr.data
-        cls = _up(node, "ClassCode")
+        fixed = _fixed_class(self.plan, node)
+        cls = fixed[0] if fixed else _up(node, "ClassCode")
         if cls is None:
             self.plan.warn(f"a {group} rate on {node.tag} has no class: it keeps the record's LCM")
             return None
-        basis = _basis(node, group, names)
+        basis = _basis(node, group, names, fixed[1] if fixed else None)
         entry = self.plan.group_lcm.get((group, basis, cls))
         if entry is None:
             self.plan.warn(f"no company {group} LCM for class {cls} ({basis}): ISO's LCM applies")
             return None
         v = _final(entry, self.iso_lcm)
+        if ip.taint is not None:
+            ip.taint.hit()
         ip.note("company-group-lcm", f"{group}/{basis}/{cls} -> {v} ({entry[2]})",
                 self.plan.ref or "", group=group, basis=basis, class_code=cls, value=str(v),
                 explain=entry[2], operands=names)
@@ -306,9 +315,18 @@ def iso_request(payload: dict, line: str) -> tuple[dict, list]:
             hdr.pop(k, None)
     warnings: list = []
     block = "CommercialProperty" if line == "CF" else "GeneralLiability"
-    for rec in (out.get("body") or {}).get(block) or []:
-        strip_lcms(rec, warnings, block, LCM_FIELD[line])
+    strip_lcms((out.get("body") or {}).get(block), warnings, block, LCM_FIELD[line])
     return out, warnings
+
+
+def _fixed_class(plan: Plan, node):
+    n = node
+    while n is not None:
+        got = plan.record_class.get(id(n))
+        if got is not None:
+            return got
+        n = n.parent
+    return None
 
 
 def write_record_lcms(plan: Plan, data, iso_lcm: Decimal, ip=None) -> int:
@@ -323,16 +341,20 @@ def write_record_lcms(plan: Plan, data, iso_lcm: Decimal, ip=None) -> int:
         cls = _up(node, "ClassCode")
         if cls is None:
             continue
-        basis = "Specific" if _up(node, "RatingType") == "Specific" else "Class"
+        rt = _up(node, "RatingType")
+        plan.record_class[id(node)] = (cls, rt)
+        basis = "Specific" if rt == "Specific" else "Class"
         entry = plan.group_lcm.get(("GroupI", basis, cls))
         if entry is None:
             continue
         v = _final(entry, iso_lcm)
         f = node.first("LossCostMultiplier")
         if f is None:
-            node.add("LossCostMultiplier", str(v))
+            f = node.add("LossCostMultiplier", str(v))
         else:
             f.text = str(v)
+        if ip is not None and ip.taint is not None:
+            ip.taint.mark(f)
         n += 1
         if ip is not None:
             ip.note("company-record-lcm", f"{node.tag} class {cls} -> {v} ({entry[2]})",
@@ -382,9 +404,11 @@ def write_gl_lcms(plan: Plan, data, book, ip=None) -> int:
         v = _final(entry, iso_lcm[cov])
         f = node.first("LCM")
         if f is None:
-            node.add("LCM", str(v))
+            f = node.add("LCM", str(v))
         else:
             f.text = str(v)
+        if ip is not None and ip.taint is not None:
+            ip.taint.mark(f)
         n += 1
         if ip is not None:
             ip.note("company-record-lcm", f"{node.tag} class {cls} -> {v} ({entry[2]})", plan.ref or "")
@@ -399,6 +423,9 @@ class CompanyRunChecks:
 
     def before(self, ip, data):
         quiet = getattr(ip, "_lookahead", False)
+        if self.plan.track and not quiet:
+            from gl_engine.interp.taint import Taint
+            ip.taint = Taint()
         if self.plan.group_lcm:
             ip.group_lcm = GroupLCM(self.plan, self.iso_lcm)
             write_record_lcms(self.plan, data, self.iso_lcm, None if quiet else ip)

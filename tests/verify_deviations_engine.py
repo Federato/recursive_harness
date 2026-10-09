@@ -527,6 +527,12 @@ def i_m6(root: Path) -> None:
     check("I4 the ISO client strips our header fields itself, whoever calls it",
           "WritingCompany" not in w["header"] and "authorization" in w["header"]
           and req["header"]["WritingCompany"] == "UFC")
+    check("I4b ...and, for a request naming a company, every LCM too: ISO only rates technical (D21, O6)",
+          "LossCostMultiplier" not in json.dumps(w["body"]) and "LossCostMultiplier" in json.dumps(req["body"]))
+    plain = ia_sample(None)
+    plain["header"]["PolicyType"] = "New"
+    check("I4c a request naming no company keeps its LCMs on the way to ISO",
+          "LossCostMultiplier" in json.dumps(without_own_fields(plain)["body"]))
     r = rate(req, with_technical=True, root=root)
     check("I5 a submitted LCM of 1.10 is named in the warnings (D13)",
           any("1.1" in x and "D13" in x for x in r.deviation["warnings"]), str(r.deviation["warnings"]))
