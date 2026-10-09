@@ -22,6 +22,7 @@ produce a wrong price.
 """
 from __future__ import annotations
 
+import copy
 import json
 from dataclasses import dataclass, field
 from decimal import Decimal
@@ -42,6 +43,10 @@ MODES = (STRICT, UNDERWRITING)
 #: Where the analysis phase left the referral register.
 REGISTER = (Path(__file__).resolve().parent.parent.parent
             / "scripts" / "erc" / "out" / "referral_register.json")
+
+#: Header fields we own (DEVIATIONS-PLAN.md §3b): removed before ISO's rules
+#: run and before any call to ISO's service (M6).
+OWN_HEADER = ("WritingCompany", "PolicyType")
 
 #: Paths the kernel reads a result out of, relative to a `GeneralLiability`.
 TOTAL = "Premium"
@@ -89,6 +94,11 @@ class Rating:
     referrals: list = field(default_factory=list)
     complete: bool = False
     stopped: Exception | None = None
+    #: Set only when a writing company rated (DEVIATIONS-PLAN.md §3c): what the
+    #: company's filing did, beside the ISO-shaped tree.
+    deviation: dict | None = None
+    #: The technical rating from the same call, when asked for (`with_technical`).
+    technical: "Rating | None" = None
 
     @property
     def packages(self) -> tuple[str, ...]:
@@ -140,7 +150,9 @@ class Kernel:
     # ------------------------------------------------------------------ rate
 
     def rate(self, payload: dict | str | Path,
-            version: str | None = None) -> Rating:
+            version: str | None = None, *, company: str | None = None,
+            with_technical: bool = False, waterfall: bool = True,
+            root: Path | None = None) -> Rating:
         """Rate one RAaS-shaped submission.
 
         `version`, if given, pins the SAME package version the payload was
@@ -157,9 +169,17 @@ class Kernel:
         if isinstance(payload, (str, Path)):
             data, juris, asof = load_submission(payload)
         else:
+            header = payload.get("header") or {}
+            if company or any(k in header for k in OWN_HEADER):
+                return self._rate_company(payload, version, company, with_technical,
+                                          waterfall, root)
             data, juris, asof = from_raas(payload)
 
         book = ResolvedBook(self.resolver.resolve(juris, asof, version))
+        return self._rate_book(data, juris, asof, book)
+
+    def _rate_book(self, data: Node, juris: str, asof: str, book) -> Rating:
+        """One rating of one tree on one book (ISO's, or a company's in front of it)."""
         interp = Interpreter(book, rounding=self.rounding)
 
         result = Rating(juris=juris, asof=asof, mode=self.mode, book=book,
@@ -182,6 +202,61 @@ class Kernel:
         if self.mode == UNDERWRITING:
             self._apply_register(result)
         return result
+
+    # ------------------------------------------------ a writing company (P2)
+
+    def _rate_company(self, payload: dict, version, company, with_technical, waterfall,
+                      root) -> Rating:
+        """Technical and carrier from one call (DEVIATIONS-PLAN.md §3, §4).
+
+        Our header fields are removed before anything else (M6); with no
+        company named that is all that happens. With one, submitted LCMs are
+        removed (D13), technical is rated on the edition the carrier uses (M3),
+        and the carrier is rated through the company's book.
+        """
+        header = payload.get("header") or {}
+        wc = company or header.get("WritingCompany")
+        clean = copy.deepcopy(payload)
+        for k in OWN_HEADER:
+            clean.setdefault("header", {}).pop(k, None)
+        if not wc:
+            return self.rate(clean, version)
+
+        from deviations import engine as dv, report
+        lcm_warnings: list = []
+        for gl in (clean.get("body") or {}).get("GeneralLiability") or []:
+            dv.strip_lcms(gl, lcm_warnings, "GeneralLiability", key="LCM")
+        data, juris, asof = from_raas(clean)
+        date = f"{asof[:4]}-{asof[4:6]}-{asof[6:]}"
+        iso_book = ResolvedBook(self.resolver.resolve(juris, asof, version))
+        try:
+            plan = dv.plan_for("GL", wc, juris, date, header.get("PolicyType"),
+                               **({"root": root} if root else {}))
+            book = dv.book_for(plan) if plan.pin else iso_book
+            for w in lcm_warnings:
+                plan.warn(w)
+            technical = self._rate_book(data, juris, asof, book)
+            cbook = dv.CompanyBook(book, plan)
+        except dv.Refused as exc:
+            out = Rating(juris=juris, asof=asof, mode=self.mode, book=iso_book,
+                         tree=data, trace=[], stopped=exc)
+            out.deviation = {"writingCompany": wc, "refused": str(exc)}
+            return out
+
+        def again(book_):
+            return self._rate_book(from_raas(clean)[0], juris, asof, book_)
+
+        carrier = again(cbook)
+        current = again(iso_book).premium if (waterfall and plan.pin) else None
+        carrier.deviation = report.build(
+            plan, book.resolution.state.pkg_id,
+            str(technical.premium) if technical.complete else None,
+            str(carrier.premium) if carrier.complete else None,
+            technical.tree, carrier.tree,
+            lambda p: again(dv.CompanyBook(book, p)).premium, current, waterfall)
+        if with_technical:
+            carrier.technical = technical
+        return carrier
 
     # ------------------------------------------------------ OI-94, the refusal
 

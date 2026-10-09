@@ -241,6 +241,58 @@ def _engine(payload: dict):
             list(ip.messages), ip.outcome)
 
 
+def _tree_premiums(data) -> tuple[dict, str | None]:
+    """({coverage: premium} summed over a rated tree, the policy Premium) -- what `_engine` reads."""
+    premiums: dict = {}
+
+    def walk(node):
+        for c in node.children:
+            if c.tag.endswith("Coverage"):
+                p = c.first("Premium")
+                if p is not None and p.text not in (None, ""):
+                    premiums[c.tag] = premiums.get(c.tag, Decimal(0)) + Decimal(p.text)
+            walk(c)
+    walk(data)
+    cp = data.first("CommercialPropertyTable").first("CommercialProperty")
+    total = cp.first("Premium")
+    return premiums, (total.text if total is not None else None)
+
+
+def rate_company(payload: dict, with_technical: bool = False, compare_with=None, no_iso=frozenset()) -> dict:
+    """A request naming a writing company (header.WritingCompany, DEVIATIONS-PLAN.md P2): the carrier result in
+    `rate`'s shape, plus `deviation`, plus `technical` when asked. ISO is compared with TECHNICAL, on the request
+    ISO may see (our header fields and submitted LCMs removed): a carrier premium is not ISO's to agree with."""
+    from cf_engine.rating import rate as cf_rate
+    from deviations.engine import iso_request
+
+    def shape(r) -> dict:
+        out = {"line": "property", "jurisdiction": r.juris, "asof": r.asof, "packages": r.packages,
+               "outcome": r.outcome, "messages": list(r.ip.messages) if r.ip is not None else [],
+               "complete": r.complete}
+        if r.complete:
+            premiums, total = _tree_premiums(r.tree)
+            grid, other = _cells(premiums)
+            out.update(premium=_num(total) if total is not None else None, grid=grid, other=other)
+        else:
+            out["stopped"] = "; ".join(x.get("detail", "") for x in r.outcome.get("reasons", [])) or "did not rate"
+        return out
+
+    r = cf_rate(payload, with_technical=True)
+    result = shape(r)
+    result["deviation"] = r.deviation
+    tech = shape(r.technical) if r.technical is not None else None
+    if with_technical and tech is not None:
+        result["technical"] = tech
+    if compare_with is not None:
+        client = compare_with() if callable(compare_with) else compare_with
+        if tech is not None and tech["complete"]:
+            result["iso"] = compare(iso_request(payload, "CF")[0], tech, client, no_iso)
+            result["iso"]["compared"] = "technical"
+        else:
+            result["iso"] = {"available": False, "reason": "technical did not rate, so ISO was not called"}
+    return result
+
+
 def _iso_premiums(body) -> dict:
     """{coverage: premium} summed over ISO's response tree."""
     out: dict = {}

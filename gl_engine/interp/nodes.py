@@ -749,8 +749,14 @@ def _product(ip, el, fr):
     """
     skip = getattr(ip, "product_skips_null", False)
     out = None
-    for ch in _kids(el):
-        raw = ip.eval(ch, fr)
+    kids = _kids(el)
+    # Carrier group LCMs (deviations D17): when a company is rating, the hook may
+    # give the `LossCostMultiplier` operand of a group's rate product the
+    # company's LCM for that group. Absent for every ISO-only rating (I4).
+    hook = getattr(ip, "group_lcm", None)
+    subs = hook(ip, el, kids, fr) if hook is not None else None
+    for i, ch in enumerate(kids):
+        raw = subs[i] if subs and i in subs else ip.eval(ch, fr)
         if raw is None and skip:
             ip.null_skips.append(ip.where(ch))
             ip.note("product-null-skipped",

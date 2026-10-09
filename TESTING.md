@@ -70,6 +70,9 @@ python tests/verify_notebooks.py                 28/28   every notebook cell, en
                                                          harness set, executes against the code
 python tests/verify_deviations_files.py          78/78   carrier deviation files (T10): the UFG Iowa
                                                          filing compiles, imports and reads back
+python tests/verify_deviations_engine.py          42/42  the engine with a writing company (P2): T1 and
+                                                         T2 on a sample of every state, the UFG filing
+                                                         rated, pins, refusals, what ISO may see
 python Agentic/iso-circular-expert/tools/smoke_test.py     19/19
 python Agentic/iso-erc-expert/tools/smoke_test.py       88 checks
 python -m gl_engine.cli check 20260811 --deep              13/13
@@ -658,6 +661,19 @@ companies, hand-authored from the PDF) and never writes under `CARRIERS_ROOT`
 
 What v1 refuses rather than half-supports: LCMs keyed by territory, limit or deductible (they
 arrive with the GL engine step) and overrides of banded ISO tables.
+
+**The engine side (P2), added 2026-10-09.**
+
+```
+python tests/verify_deviations_engine.py         # P2 gate; ~2 stored requests per state, no calls
+python scripts/cf/206_snapshot_regression.py --check --jobs 12
+                                                 # every stored Property request: nothing moved
+```
+
+`verify_deviations_engine.py` proves the two things P2's gate asks for on a sample (T1: no company is
+today's engine, field for field; T2: a company whose every row is neutral rates exactly as technical),
+then rates the UFG filing and checks pins, refusals, the waterfall and what ISO may see. The snapshot
+regression is T1 over the whole stored population and is the one to run after any interpreter change.
 
 ---
 

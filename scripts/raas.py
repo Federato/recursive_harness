@@ -113,6 +113,21 @@ def _ctx() -> ssl.SSLContext:
     return ctx
 
 
+#: Request header fields the harness owns (carrier deviations, DEVIATIONS-PLAN.md §3b). They name a writing
+#: company and new/renewal business for OUR engine; ISO's service never sees them (M6).
+OWN_HEADER_FIELDS = ("WritingCompany", "PolicyType")
+
+
+def without_own_fields(payload):
+    """The request as ISO may see it: our header fields removed; everything else, and the original, untouched."""
+    hdr = payload.get("header") if isinstance(payload, dict) else None
+    if not isinstance(hdr, dict) or not any(k in hdr for k in OWN_HEADER_FIELDS):
+        return payload
+    out = dict(payload)
+    out["header"] = {k: v for k, v in hdr.items() if k not in OWN_HEADER_FIELDS}
+    return out
+
+
 class RaaS:
     """Authenticate once, rate many. Retries a rotated token exactly once."""
 
@@ -210,6 +225,7 @@ class RaaS:
         if _root not in _sys.path:
             _sys.path.insert(0, _root)
         from console import ledger, store
+        payload = without_own_fields(payload)
         try:
             used_override = ledger.admit(self.lane, self.override)
         except ledger.CapReached as exc:

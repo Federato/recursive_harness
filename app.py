@@ -349,10 +349,15 @@ def _factors(rating) -> list:
     return out
 
 
-def rate(payload: dict, mode: str, rounding: str, compare: bool = False) -> dict:
+def rate(payload: dict, mode: str, rounding: str, compare: bool = False,
+         with_technical: bool = False) -> dict:
     kernel = KERNELS[mode] if rounding == "ROUND_HALF_UP" else Kernel(
         mode=mode, rounding=rounding, resolver=RESOLVER)
-    r = kernel.rate(payload)
+    # A request naming a writing company (header.WritingCompany) rates as that
+    # company: the carrier result, with `deviation` beside it (P2). ISO is then
+    # compared with TECHNICAL, on the request ISO may see.
+    company = isinstance(payload.get("header"), dict) and payload["header"].get("WritingCompany")
+    r = kernel.rate(payload, with_technical=bool(company and (with_technical or compare)))
 
     result = {
         "jurisdiction": r.juris, "asof": r.asof, "mode": r.mode,
@@ -371,8 +376,23 @@ def rate(payload: dict, mode: str, rounding: str, compare: bool = False) -> dict
         findings = []
         result["schema_error"] = str(exc)
 
+    if r.deviation is not None:
+        result["deviation"] = r.deviation
+        if with_technical and r.technical is not None:
+            result["technical"] = {"premium": str(r.technical.premium) if r.technical.complete else None,
+                                   "complete": r.technical.complete, "packages": list(r.technical.packages),
+                                   "by_coverage": [{"coverage": k, "premium": str(v)}
+                                                   for k, v in sorted(r.technical.by_coverage.items())]}
     if compare:
-        result["iso"] = compare_with_iso(payload, r)
+        if r.deviation is not None:
+            from deviations.engine import iso_request
+            if r.technical is not None and r.technical.complete:
+                result["iso"] = compare_with_iso(iso_request(payload, "GL")[0], r.technical)
+                result["iso"]["compared"] = "technical"
+            else:
+                result["iso"] = {"available": False, "reason": "technical did not rate"}
+        else:
+            result["iso"] = compare_with_iso(payload, r)
 
     result.update({
         "premium": str(r.premium),
@@ -944,19 +964,27 @@ class Handler(BaseHTTPRequestHandler):
                                                "compare": compare}))
 
         payload = req.get("payload") or {}
+        with_technical = dict(parse_qsl(parsed.query)).get("with") == "technical"
+        company = isinstance(payload.get("header"), dict) and payload["header"].get("WritingCompany")
         if is_property(payload):
             if property_states()[1]:
                 return self._send(200, json.dumps({"error": property_states()[1]}))
             try:
-                result = property_rating.rate(payload, compare_with=iso_client if req.get("compare") else None,
-                                              no_iso=NO_ISO)
+                if company:                                 # a writing company: carrier + Deviation (P2)
+                    result = property_rating.rate_company(
+                        payload, with_technical=with_technical,
+                        compare_with=iso_client if req.get("compare") else None, no_iso=NO_ISO)
+                else:
+                    result = property_rating.rate(payload, compare_with=iso_client if req.get("compare") else None,
+                                                  no_iso=NO_ISO)
             except Exception as exc:                        # noqa: BLE001
                 return self._send(200, json.dumps({"error": f"{type(exc).__name__}: {exc}"}))
             return self._send(200, json.dumps(result))
         try:
             result = rate(payload, mode,
                           req.get("rounding", "ROUND_HALF_UP"),
-                          compare=bool(req.get("compare")))
+                          compare=bool(req.get("compare")),
+                          with_technical=with_technical)
         except Exception as exc:                            # noqa: BLE001
             # A refusal is a legitimate answer and is shown as one, not as a
             # server error -- the engine declining to guess is the product.

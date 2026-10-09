@@ -1,6 +1,6 @@
 # Carrier Deviations — Plan for sign-off
 
-**Status: v3, 2026-10-09. v2 signed off; v3 folds in the P0 decisions (D17–D20) from the UFG Iowa CF filing — see `docs/deviations/P0-UFG-IA-CF.md`. P0 and P1 done; P2 (engine) not started.** This is Phase 4 of the original programme
+**Status: v3, 2026-10-09. v2 signed off; v3 folds in the P0 decisions (D17–D20) from the UFG Iowa CF filing — see `docs/deviations/P0-UFG-IA-CF.md`. P0, P1 and P2 done; P3 (proof) next.** This is Phase 4 of the original programme
 (`EXECUTIVE-SUMMARY.md` §6, `BACKLOG-2026-08-14.md` items 7 and 8).
 
 **v2 refocus (same day):** the goal is to **prove that deviations can be layered on without
@@ -213,70 +213,17 @@ The engine entry point becomes `Kernel.rate(payload, company=None)` (and the sam
   - Trace lookups record the company row they came from.
   - GL's N3, CF's fallback when a state table is empty, and `strict_single_result` are untouched.
 - **4d. Untouched:** ISO's rules, rounding, `_collect`. The only interpreter change is the group-LCM substitution in 4b′, which is inactive when `company=None` (I4).
-
----
-
-## 5. The proof suite — "without breaking ISO" as tests
-
-All of this runs in the existing harness (`results/`, ledger-capped ISO calls, Trace Diff's
-`same()` on stable paths). Each test is a gate condition for Phase 3. **ISO** means ISO's live
-service, and **identical** means every leaf ISO publishes, compared by Trace Diff, not just the
-total.
-
-| # | Test | What it proves | Population | Costs ISO calls |
-|---|---|---|---|---|
-| **T1** | **No-company sameness.** No `WritingCompany` gives results byte-identical to today's engine. | The new code changes nothing when it's not asked to | Every existing case: the 50/50, Regression Library, Quick smoke, and the 921 STC request fixtures | No |
-| **T2** | **Identity deviations.** A company whose every row is neutral (LCM 1.0 replace; multiply 1.0 on every table ISO's definitions list) gives results identical to technical. | Every code path the layer opens leaves ISO untouched | Same as T1, both lines, every state | No |
-| **T3** | **Technical still equals ISO.** With a company header present, the technical result equals ISO's service, and equals T1. | Our header fields never leak into the ISO tree or the ISO call | Quick smoke, 1 per state per line | Yes, about 100 |
-| **T4** | **Only what was deviated changes.** For each deviation, compare technical and carrier field by field. Every changed path must be (a) downstream of a deviated lookup in the trace, and (b) explained by a row in `changedPaths`. Any other changed path fails. | Locality: a deviation can't move what it doesn't touch | One case per deviable table kind × both lines + the P0 filing. Group LCMs change each group's rate paths, and those must be explained too. | No |
-| **T5** | **LCMs against ISO.** The carrier request with LCMs written in, sent to ISO's service, gives an identical tree. Includes LCMs keyed by class group, territory and limit. **Group LCMs use the split check:** one ISO call per distinct LCM, each group's rate compared with its matching call. | The LCM part is right by ISO's own arithmetic, not ours | GL + CF, about 10 states, each subline and keying, plus the UFG filing (both companies × class groups A/B/C) | Yes, about 180 |
-| **T6** | **Override arithmetic.** For single-override cases, the downstream value ÷ technical equals the factor, within the declared rounding. Cases where a minimum premium applies are flagged and checked separately, since the floor breaks the ratio. The waterfall adds up exactly to carrier − technical on every case. | The overrides that ISO can't check are still checked | T4's set + T5's set | No |
-| **T7** | **Boundaries.** A TX filing doesn't touch OK. A Prem/Ops LCM doesn't touch Products. The day before vs on the new date, and new vs renewal. A withdrawn version, superseded versions, a state opted out after the all-states shortcut, and a 52nd jurisdiction added later. | Deviations apply exactly where and when they're filed | Constructed cases | No |
-| **T8** | **Pins.** A pinned company with no rows gives results identical to ISO-only rating of that edition. Impossible pins are refused. When ISO's service resolves the same edition, compare with it. | Pinning swaps the edition and nothing else | Constructed cases + whatever ISO's service accepts (O2) | A few |
-| **T9** | **ISO revision.** The same filing rated over two editions: multiply rows follow the new ISO values and replace rows don't, and the "ISO changed" flag is raised. | A deviation survives ISO's revision correctly | Constructed cases on two editions | No |
-| **T10** | **Files round trip.** Authored → compiled → `show` gives the same rows. Spreadsheet import → the same compiled files as hand-authoring. `validate` refuses each bad case. | The files say what people wrote | Unit tests | No |
-
-**ISO budget:** about 280 calls for the whole suite (T5 tripled by the group-LCM split check), once T3, T5 and T8 are run. Everything else
-is our engine against itself.
-
-**A regression lane:** T1–T2 and T4–T10 join the Regression Library, so every future engine
-change re-proves "no company = ISO" and "deviations stay local".
-
----
-
-## 6. UI in this plan (minimal)
-
-- **Upload & Compare:** a writing-company picker that fills the header field. The result shows
-  ISO's service, technical and carrier side by side, the breakdown by deviation, and the
-  `Deviation` block's warnings.
-- **Proof results:** T1–T10 shown on the Readiness Matrix / Coverage Board pattern that already
-  exists. Each test is a row with pass/fail and a link into Trace Diff.
-- Everything else (the filings board, editor, review queue, impact preview, SERFF screen) waits.
-  The wireframes are the reference when it comes.
-
----
-
-## 7. Phases and gates
-
-| Phase | Builds | Gate |
-|---|---|---|
-| **P0 — First real case** | Map your filing onto §3a by hand. No code. | Every item can be expressed, or the gaps are listed. §3 is revised here if needed. **Done 2026-10-09** (UFG IA CF; gaps G1–G7 decided as D17–D20). |
-| **P1 — Files** | Authored format, compiler, `deviations` command-line tools, class groups, all-states shortcut and opt-out, workflow log, spreadsheet import. | **T10** passes. The P0 filing compiles and reads back. **Done 2026-10-09:** `deviations/`, `tests/verify_deviations_files.py` 78/78. Deferred by name: territory/limit/deductible-keyed LCMs (GL step, P2) and banded-table overrides. |
-| **P2 — Engine + payloads (CF, then GL — D19)** | Header fields, `company=` context, pin, LCM step, group-LCM substitution (CF), `CompanyBook`, `Deviation` block, `?with=technical`, refusals. | **T1, T2** pass across the whole existing population. The P0 filing rates. |
-| **P3 — Proof** | Dependency tracking in the trace if it only records lookups today (T4 needs "which values came from which lookup"). The T3–T9 runner, inputs built for each test, ledger plan, results into the Regression Library. | **T1–T10 all pass**, recorded in `docs/gates/GATE-DEVIATIONS.md`. **This is the "doesn't break ISO" sign-off.** |
-| **P4 — Minimal UI** | §6. | Compare shows the P0 filing correctly. The proof results are visible. |
-| *Later* | The full Deviations tab (wireframes), SERFF intake, impact preview. | — |
-
-Each committed phase adds a row to `C:\FederatoProjects\R_REBUILD.md`.
-
----
-
-## 8. Open items
-
-| # | Item | When |
-|---|---|---|
-| O1 | New vs renewal: use an ISO request field if one exists, otherwise `header.PolicyType` (default New, with a warning). | P2 |
-| O2 | Whether ISO's service will rate a pinned older edition. Where it won't, T8 is internal-only, and Compare says "not comparable" rather than showing a mismatch. | P3 |
-| O3 | ~~Minimum premiums and the terrorism percentage~~ **Decided 2026-10-09: follow the deviated premium.** ISO's rules calculate both from the carrier's deviated premiums; no special handling. A carrier that files its own minimum or terrorism percentage uses a factor override. | Closed |
-| O4 | Expense constants, schedule-rating bounds, tiering: beyond v1. | Later |
-| O5 | Carrier visibility of ISO tables is a licensing question. | Later |
+- **4e. As built (P2), and its v1 limits.**
+  - Property's entry point is `cf_engine.rating.rate(request, company=None, with_technical=...)`; GL's is
+    `Kernel.rate(payload, company=None, with_technical=...)`. A request names its company in
+    `header.WritingCompany`; the HTTP `/api/rate` does the same, with `?with=technical`.
+  - Group LCMs (4b′) are matched to a group by ISO's own operand names (`BasicGroupIBaseRate`, `EQBaseRate`, ...).
+    A rate product whose operand names no group (flood, terrorism, sublimits, endorsements) reads the record's
+    LCM, which holds the Group I value (G2).
+  - Records with no class anywhere above them, and the policy and location records, keep ISO's LCM; a warning
+    says so when a group rate meets one.
+  - One filing is in force per company, state and line: the latest effective date, then the highest version.
+    Two filings in force at once (an LCM filing and a separate rule filing) would need composing across
+    filings; not in v1.
+  - The waterfall re-rates once per step; a Property company rating with a table override costs one rating
+    per overridden table on top of technical and carrier.
