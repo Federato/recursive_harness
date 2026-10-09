@@ -279,7 +279,9 @@ def _tree(line: str, r):
 def judge(case: dict) -> dict:
     line, r = case["line"], case["result"]
     tech = r.technical
-    out = {"id": case["id"], "test": case["test"], "line": line, "state": case["state"]}
+    from console import store
+    out = {"id": case["id"], "test": case["test"], "line": line, "state": case["state"],
+           "hash": store.request_hash(case["requests"][0][1])}    # the technical request ISO answered: Trace Diff's
     ans = {label: answer(req) for label, req in case["requests"]}
     missing = [k for k, (s, _) in ans.items() if s == "missing"]
     if missing:

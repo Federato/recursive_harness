@@ -1,6 +1,6 @@
 # Carrier Deviations — Plan for sign-off
 
-**Status: v3, 2026-10-09. v2 signed off; v3 folds in the P0 decisions (D17–D20) from the UFG Iowa CF filing — see `docs/deviations/P0-UFG-IA-CF.md`. P0–P3 done; P4 (minimal UI) next. Gate record: `docs/gates/GATE-DEVIATIONS.md`.** This is Phase 4 of the original programme
+**Status: v3, 2026-10-09. v2 signed off; v3 folds in the P0 decisions (D17–D20) from the UFG Iowa CF filing — see `docs/deviations/P0-UFG-IA-CF.md`. P0–P4 done (the plan's scope); later work is the full Deviations tab, SERFF intake and impact preview. Gate record: `docs/gates/GATE-DEVIATIONS.md`.** This is Phase 4 of the original programme
 (`EXECUTIVE-SUMMARY.md` §6, `BACKLOG-2026-08-14.md` items 7 and 8).
 
 **v2 refocus (same day):** the goal is to **prove that deviations can be layered on without
@@ -279,7 +279,7 @@ change re-proves "no company = ISO" and "deviations stay local".
 | **P1 — Files** | Authored format, compiler, `deviations` command-line tools, class groups, all-states shortcut and opt-out, workflow log, spreadsheet import. | **T10** passes. The P0 filing compiles and reads back. **Done 2026-10-09:** `deviations/`, `tests/verify_deviations_files.py` 78/78. Deferred by name: territory/limit/deductible-keyed LCMs (GL step, P2) and banded-table overrides. |
 | **P2 — Engine + payloads (CF, then GL — D19)** | Header fields, `company=` context, pin, LCM step, group-LCM substitution (CF), `CompanyBook`, `Deviation` block, `?with=technical`, refusals. | **T1, T2** pass across the whole existing population. The P0 filing rates. **Done 2026-10-09** (`5aeffe9`): `cf_engine/rating.py`, `Kernel.rate(company=)`, `deviations/engine.py` + `report.py`; `tests/verify_deviations_engine.py`; snapshot over 2,082 stored Property requests clean. v1 limits in §4e. |
 | **P3 — Proof** | Dependency tracking in the trace (`gl_engine/interp/taint.py`, off by default). The T3/T8 runner (`scripts/deviations_p3.py`), inputs built for each test, ledger plan, results into the Regression Library. | **T1–T10 all pass**, recorded in `docs/gates/GATE-DEVIATIONS.md`. **Done 2026-10-09**, with O6 decided (D21). |
-| **P4 — Minimal UI** | §6. | Compare shows the P0 filing correctly. The proof results are visible. |
+| **P4 — Minimal UI** | §6. | Compare shows the P0 filing correctly. The proof results are visible. **Done 2026-10-09:** Upload & Compare's writing-company picker (New / Renewal) shows Technical / ISO / Carrier per request, the ISO test on technical, and a deviations panel (filing, waterfall, warnings); asking ISO sends the non-deviated payload only. The Deviations Proof tab shows T1–T10 from each suite's last run, with T3 and T8's ISO cases linked into Trace Diff. `tests/verify_console_deviations.py` 24/24. |
 | *Later* | The full Deviations tab (wireframes), SERFF intake, impact preview. | — |
 
 Each committed phase adds a row to `C:\FederatoProjects\R_REBUILD.md`.

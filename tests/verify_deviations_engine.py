@@ -45,7 +45,11 @@ FIX = ROOT / "tests" / "fixtures" / "deviations"
 FAILED = []
 
 
+CHECKS = []
+
+
 def check(label: str, ok: bool, detail: str = "") -> None:
+    CHECKS.append((label, ok))
     print(f"  {'ok  ' if ok else 'FAIL'}  {label}"
           + (f"\n          {detail}" if detail and not ok else ""))
     if not ok:
@@ -602,6 +606,8 @@ def main() -> int:
     for step in (e_p0, f_waterfall, g_pin, h_refusals, i_m6, j_gl):
         step(root)
     shutil.rmtree(root, ignore_errors=True)
+    from deviations import suite_log
+    suite_log.record("engine", CHECKS)
     print(f"\n{'FAILED: ' + ', '.join(FAILED) if FAILED else 'all passed'}")
     return 1 if FAILED else 0
 

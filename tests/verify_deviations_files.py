@@ -46,7 +46,11 @@ REF = "IA-CF-UNFG-134289779.v1"
 FAILED = []
 
 
+CHECKS = []
+
+
 def check(label: str, ok: bool, detail: str = "") -> None:
+    CHECKS.append((label, ok))
     print(f"  {'ok  ' if ok else 'FAIL'}  {label}"
           + (f"\n          {detail}" if detail and not ok else ""))
     if not ok:
@@ -484,6 +488,8 @@ def main() -> int:
     for step in (a_ufg, b_import, c_refusals, d_approval, e_compose, f_all_states,
                  g_overrides, h_diff, i_gl):
         step()
+    from deviations import suite_log
+    suite_log.record("files", CHECKS)
     print(f"\n{'FAILED: ' + ', '.join(FAILED) if FAILED else 'all passed'}")
     return 1 if FAILED else 0
 

@@ -149,3 +149,75 @@ def every_state(config: dict, states: list, mode: str = "strict-erc", rounding: 
                 and Decimal(x["stored"]["iso"]) == Decimal(x["premium"]))
     return {"rows": rows, "callsToSend": calls, "storedAgree": agree,
             "applicable": sum(1 for x in rows if x["outcome"] != "not applicable")}
+
+
+# ---- carrier deviations on Upload & Compare (DEVIATIONS-PLAN.md P4) ---------------------------------------------------
+
+def companies(root=None) -> list:
+    """Every writing company with a compiled filing: its code, name, carrier, and the filings it can rate under
+    (approved now, by the file and the workflow log). Read from CARRIERS_ROOT; nothing is written."""
+    from deviations.config import CARRIERS_ROOT
+    from deviations.files import carrier_json, read_json, workflow_status
+    root = Path(root or CARRIERS_ROOT)
+    out = []
+    for cj in sorted(root.glob("*/*/company.json")):
+        cdir, carrier = cj.parent, cj.parent.parent
+        info = read_json(cj)
+        need = int(carrier_json(carrier).get("approval", {}).get("signoffs", 1))
+        filings = []
+        for m in sorted(cdir.glob("compiled/*/*/*/manifest.json")):
+            man = read_json(m)
+            st = workflow_status(cdir, man["filing"], man["version"], need)["status"]
+            filings.append({"line": man["line"], "juris": man["juris"], "filing": man["filing"],
+                            "version": man["version"], "new_eff": man["new_eff"], "renewal_eff": man["renewal_eff"],
+                            "approved": st == "approved" and man["header"].get("status") == "approved"})
+        out.append({"code": info.get("code", cdir.name), "name": info.get("name", cdir.name),
+                    "carrier": carrier.name, "filings": filings})
+    return out
+
+
+def rate_company(line: str, payload: dict, company: str, policy_type: str = "New", root=None) -> dict:
+    """Technical / ISO / Carrier for one request (D21). `premium` and `outcome` are TECHNICAL's -- the rating set
+    beside ISO's answer, as an upload without a company is -- and `stored` is ISO's answer to the NON-DEVIATED
+    payload, the only one ISO is ever sent. `carrier` is our rating of the deviated payload, never sent."""
+    from deviations.engine import iso_request
+    req = copy.deepcopy(payload)
+    req.setdefault("header", {})
+    req["header"]["WritingCompany"] = company
+    req["header"]["PolicyType"] = policy_type or "New"
+    ln = "CF" if line == "CP" else "GL"
+    plain, _ = iso_request(req, ln)
+    if line == "GL":
+        from gl_engine.rating import Kernel
+        r = Kernel().rate(req, with_technical=True, **({"root": root} if root else {}))
+        t = r.technical
+        tech = (str(t.premium), "rated") if t is not None and t.complete else (None, "refused")
+        car = (str(r.premium), "rated") if r.complete else (None, "refused")
+        detail = "" if r.complete else str(r.stopped or (r.deviation or {}).get("refused", ""))[:400]
+    else:
+        from cf_engine.rating import rate as cf_rate
+        r = cf_rate(req, with_technical=True, **({"root": root} if root else {}))
+        t = r.technical
+        tech = (t.premium, "rated") if t is not None and t.complete else (None, "refused")
+        car = (r.premium, "rated") if r.complete else (None, "refused")
+        detail = "" if r.complete else "; ".join(x.get("detail", "") for x in r.outcome.get("reasons", []))[:400]
+    dev = r.deviation or {}
+    return {"line": line, "company": company, "policyType": req["header"]["PolicyType"],
+            "hash": store.request_hash(plain), "premium": tech[0], "outcome": tech[1],
+            "detail": detail if tech[1] != "rated" else "",
+            "carrier": {"premium": car[0], "outcome": car[1], "detail": detail},
+            "deviation": {k: dev.get(k) for k in ("writingCompany", "policyType", "edition", "pinned", "filings",
+                                                  "technicalPremium", "carrierPremium", "waterfall", "warnings",
+                                                  "refused")}
+                         | {"changedFields": len(dev.get("changedPaths") or [])},
+            "stored": stored(plain)}
+
+
+def send_technical(line: str, payload: dict, company: str, reuse: bool = True, override: str | None = None,
+                   client=None) -> dict:
+    """Ask ISO about a company request: the NON-DEVIATED payload only (D21)."""
+    from deviations.engine import iso_request
+    req = copy.deepcopy(payload)
+    req.setdefault("header", {})["WritingCompany"] = company
+    plain, _ = iso_request(req, "CF" if line == "CP" else "GL")
+    return send(line, plain, reuse=reuse, override=override, client=client)

@@ -34,6 +34,7 @@ SCREENS = (
     ("workbench", "Scenario Workbench", "TC-23"),
     ("library", "Regression Library", "TC-33"),
     ("queue", "Queue & Run Log", "TC-31"),
+    ("proof", "Deviations Proof", "P4"),
 )
 
 LANE_NAMES = {"active": "Active plans", "refresh": "Change & stale refresh", "adhoc": "Ad hoc & triage"}
@@ -148,6 +149,9 @@ def workbench(method: str, op: str, query: dict, b: dict):
             # Upload & Compare's generator: the Workbench's base request for a line and state (GL from ISO's declared
             # domains, CP the state's sample risk), returned as text for the page to keep as it would an uploaded file
             return js(200, {"line": line, "state": state, "text": json.dumps(WB.build(line, state), indent=1)})
+        if op == "companies":
+            # Upload & Compare's writing-company picker (deviations P4): every company with a compiled filing
+            return js(200, {"companies": WB.companies()})
         if op in ("upload", "upload-send") and method == "POST":
             # Upload & Compare: the request as given (GL or CP, read from its ProductName); rated free, or one call
             # parsed here, from the text as uploaded: a browser's JSON round trip turns 1.0 into 1, so the request
@@ -159,9 +163,17 @@ def workbench(method: str, op: str, query: dict, b: dict):
                 who = WB.identify(req)
             except (ValueError, IndexError) as exc:
                 return js(400, {"error": str(exc)[:400]})
+            company = (b.get("company") or "").strip()
             if op == "upload-send":
+                if company:              # D21: ISO is sent the NON-DEVIATED payload only, never a company's LCMs
+                    return js(200, {**who, **WB.send_technical(who["line"], req, company,
+                                                               reuse=b.get("reuse", True) is not False,
+                                                               override=b.get("override") or None)})
                 return js(200, {**who, **WB.send(who["line"], req, reuse=b.get("reuse", True) is not False,
                                                  override=b.get("override") or None)})
+            if company:                  # Technical / ISO / Carrier for one request (P4)
+                return js(200, {**who, **WB.rate_company(who["line"], req, company,
+                                                         b.get("policyType") or "New")})
             return js(200, {**who, **WB.rate(who["line"], req, b.get("mode") or "strict-erc",
                                              b.get("rounding") or "ROUND_HALF_UP")})
         if op == "where" and method == "POST":
@@ -382,7 +394,7 @@ document.addEventListener('DOMContentLoaded',()=>{const m=document.querySelector
 })();
 </script>"""
     shim = shim.replace("__SNAP__", json.dumps(snap).replace("</", "<\\/")).replace("__META__", json.dumps(meta))
-    html = page(app_only=frozenset({"compare", "plan", "workbench"}))
+    html = page(app_only=frozenset({"compare", "plan", "workbench", "proof"}))
     i = html.index("<script>")
     return html[:i] + shim + html[i:]
 
@@ -518,6 +530,9 @@ def dispatch(method: str, path: str, query: dict, body):
             return 200, json.dumps(tracediff.diff(query.get("scenario", ""))), "json"
         except KeyError as exc:
             return 404, json.dumps({"error": str(exc)}), "json"
+    if method == "GET" and path == "/api/console/deviations/proof":
+        from console import deviations_proof
+        return 200, json.dumps(deviations_proof.proof()), "json"
     if method != "GET":
         return None
     if path == "/console":
@@ -560,8 +575,8 @@ def page(app_only: frozenset = frozenset()) -> str:
                          f'(docs/TC-PLAN.md).<span class="filter"></span></div></section>')
         for i, (k, label, task) in enumerate(SCREENS, 1))
     return (PAGE.replace("{{TABS}}", tabs).replace("{{SCREENS}}", screens)
-            .replace("/*{{CSS}}*/", INSP_CSS + UP_CSS + MATRIX_CSS + BOARD_CSS + TRACE_CSS + WB_CSS + PLAN_CSS + QUEUE_CSS + LIB_CSS)
-            .replace("/*{{JS}}*/", INSP_JS + UP_JS + MATRIX_JS + BOARD_JS + TRACE_JS + WB_JS + PLAN_JS + QUEUE_JS + LIB_JS)
+            .replace("/*{{CSS}}*/", INSP_CSS + UP_CSS + MATRIX_CSS + BOARD_CSS + TRACE_CSS + WB_CSS + PLAN_CSS + QUEUE_CSS + LIB_CSS + PROOF_CSS)
+            .replace("/*{{JS}}*/", INSP_JS + UP_JS + MATRIX_JS + BOARD_JS + TRACE_JS + WB_JS + PLAN_JS + QUEUE_JS + LIB_JS + PROOF_JS)
             .replace("{{BOOT}}", json.dumps({"cap": cap(), "legend": legend(), "names": STATE_NAMES, "categories": categories()})))
 
 
@@ -1489,6 +1504,11 @@ UP_HTML = """<section class="screen" id="s-compare" hidden><div class="mx-wrap">
     <label>Line <select id="up-lob"><option value="GL">General Liability</option><option value="CP">Commercial Property</option></select></label>
     <label>State <select id="up-state"></select></label><button class="btn" id="up-gen">Generate and rate · free</button>
     <span class="mx-msg">a working request for the state: GL from ISO's own options, Property the state's sample risk</span></div>
+  <div class="up-gen up-co"><b>Writing company</b>
+    <label><select id="up-company"><option value="">None: ISO only</option></select></label>
+    <label>Business <select id="up-pt"><option>New</option><option>Renewal</option></select></label>
+    <span class="mx-msg" id="up-comsg">With a company, each request is rated twice: <b>technical</b> (pure ISO, the request ISO is asked about)
+    and <b>carrier</b> (through the company's filing, never sent to ISO). Click a carrier figure to see what the deviations did.</span></div>
   <label class="up-drop" id="up-drop"><input type="file" id="up-file" accept=".json,application/json" multiple hidden>
     <b>Drop request files here, or choose files</b><span class="mx-msg">.json · one request per file, or a list of them · GL and Property can be mixed</span></label>
   <details class="up-paste"><summary>Or paste a request</summary><textarea id="up-text" spellcheck="false" placeholder='{"header": {...}, "body": {"SchemeKeys": {"ProductName": "General Liability OH", ...}, ...}}'></textarea>
@@ -1516,6 +1536,9 @@ UP_CSS = """
 .up-gen{display:flex;gap:12px;flex-wrap:wrap;align-items:center;font-size:12.5px;margin-top:14px;padding:10px 12px;border:1px solid var(--color-divider);border-radius:var(--radius-lg)}
 .up-gen select{font:inherit;padding:5px 7px;border:1px solid var(--color-divider);border-radius:4px;background:#fff}
 .up-tbl .acts{white-space:nowrap}.up-tbl .acts a{margin-right:8px;cursor:pointer}
+.up-co{margin-top:8px}.up-tbl a.car{cursor:pointer;font-weight:600}.up-tbl tr.sel td{background:var(--color-accent-100)}
+.up-dv table{width:100%;font-size:12px;table-layout:fixed}.up-dv td{padding:2px 0;overflow-wrap:anywhere;vertical-align:top}
+.up-dv td:first-child{width:42%;padding-right:6px}.up-dv td+td{text-align:right}.up-dv .w{color:var(--color-neutral-700);font-size:11.5px;margin-top:6px}
 """
 
 UP_JS = r"""
@@ -1527,7 +1550,8 @@ function upAdd(name,text){
   upDraw();
 }
 function upRate(row){row.busy='rating';
-  return UP.q=UP.q.then(()=>wbJSON('/api/console/workbench/upload',{text:row.text,index:row.index}).then(r=>{row.busy='';if(r.error)row.err=r.error;else{row.err='';row.r=r;}upDraw();})
+  const co=UP.company||'',pt=UP.pt||'New';
+  return UP.q=UP.q.then(()=>wbJSON('/api/console/workbench/upload',{text:row.text,index:row.index,company:co,policyType:pt}).then(r=>{row.busy='';if(r.error)row.err=r.error;else{row.err='';row.r=r;}upDraw();})
     .catch(e=>{row.busy='';row.err=String(e);upDraw();}));}
 function upNeeds(){return UP.rows.filter(x=>x.r&&!x.r.stored&&!x.busy);}
 function upVerdict(r){const s=r.stored;
@@ -1540,20 +1564,43 @@ function upVerdict(r){const s=r.stored;
 function upDraw(){
   const out=document.getElementById('up-out');
   if(!UP.rows.length)out.innerHTML='<div class="mx-empty">No requests yet.</div>';
-  else out.innerHTML='<table class="up-tbl"><tr><th>Request</th><th>Line · state</th><th>Effective</th><th class="v">Ours</th><th class="v">ISO</th><th>Result</th><th></th></tr>'+
+  else out.innerHTML='<table class="up-tbl"><tr><th>Request</th><th>Line · state</th><th>Effective</th><th class="v">Technical</th><th class="v">ISO</th><th class="v">Carrier</th><th>ISO test</th><th></th></tr>'+
     UP.rows.map(x=>{const r=x.r,s=r&&r.stored,rm='<button class="x" data-x="'+x.id+'" title="Remove">×</button>';
-      if(x.err)return '<tr><td class="file">'+esc(x.name)+'</td><td colspan="5"><span class="up-res"><span class="chip mismatch">!</span><span>'+esc(x.err)+'</span></span></td><td>'+rm+'</td></tr>';
-      if(!r)return '<tr><td class="file">'+esc(x.name)+'</td><td colspan="5" class="mx-msg">Rating on our engine…</td><td></td></tr>';
+      if(x.err)return '<tr><td class="file">'+esc(x.name)+'</td><td colspan="6"><span class="up-res"><span class="chip mismatch">!</span><span>'+esc(x.err)+'</span></span></td><td>'+rm+'</td></tr>';
+      if(!r)return '<tr><td class="file">'+esc(x.name)+'</td><td colspan="6" class="mx-msg">Rating on our engine…</td><td></td></tr>';
       const ours=r.outcome==='rated'?esc(r.premium):esc(r.outcome);
       const iso=x.busy==='sending'?'<span class="mx-msg">asking ISO…</span>':!s?'<span class="mx-msg">—</span>':s.outcome==='rated'?esc(s.iso)+'<div class="mx-msg">stored '+esc((s.stored_at||s.date||'').slice(0,10))+(s.freshness==='stale'?' · stale':'')+'</div>':'refused';
-      return '<tr><td class="file">'+esc(x.name)+(r.outcome!=='rated'?'<div class="mx-msg">'+esc((r.detail||'').slice(0,200))+'</div>':'')+'</td><td>'+(r.line==='GL'?'General Liability':'Property')+' · '+esc(r.state)+'</td><td>'+esc(r.effective)+
-        '</td><td class="v">'+ours+'</td><td class="v">'+iso+'</td><td>'+upVerdict(r)+'</td><td>'+
+      return '<tr'+(UP.sel===x.id?' class="sel"':'')+'><td class="file">'+esc(x.name)+(r.outcome!=='rated'?'<div class="mx-msg">'+esc((r.detail||'').slice(0,200))+'</div>':'')+'</td><td>'+(r.line==='GL'?'General Liability':'Property')+' · '+esc(r.state)+'</td><td>'+esc(r.effective)+
+        '</td><td class="v">'+ours+'</td><td class="v">'+iso+'</td><td class="v">'+upCarrier(x)+'</td><td>'+upVerdict(r)+'</td><td>'+
         '<span class="acts">'+(s&&s.outcome==='rated'?'<a href="#trace?lob='+r.line+'&scenario='+encodeURIComponent(s.scenario)+'">Trace Diff</a>':'')+'<a data-dl="'+x.id+'" title="Save this request as a .json file">Download</a><a data-ed="'+x.id+'" title="Copy into the paste box to change it">Edit</a></span>'+rm+'</td></tr>';}).join('')+'</table>';
   const n=upNeeds().length,b=document.getElementById('up-send');
   b.disabled=!n||UP.busy;b.textContent=n?'Compare with ISO · '+n+' call'+(n>1?'s':'')+'…':'Compare with ISO…';
   upSide();
 }
+function upCarrier(x){const r=x.r,c=r&&r.carrier;
+  if(!c)return '<span class="mx-msg">—</span>';
+  if(c.outcome!=='rated')return '<a class="car" data-dv="'+x.id+'">refused</a>';
+  const d=r.premium!=null?Number(c.premium)-Number(r.premium):null;
+  return '<a class="car" data-dv="'+x.id+'" title="What the deviations did">'+esc(c.premium)+'</a>'+(d!==null?'<div class="mx-msg">'+(d>=0?'+':'')+d.toFixed(0)+' vs technical</div>':'');}
+function upDev(x){const r=x.r,d=r.deviation||{},k=(t,v)=>'<tr><td>'+t+'</td><td style="text-align:right">'+v+'</td></tr>';
+  const f=(d.filings||[]).map(f=>esc(f.id)+' v'+f.version+'<br>new '+esc(f.new_eff)+'<br>renewal '+esc(f.renewal_eff)).join('<br>')||'<i>no filing in force</i>';
+  return '<div class="cap2">What the deviations did</div><div class="up-dv"><b>'+esc(x.name)+'</b><table>'+
+    k('Writing company',esc(r.company)+' · '+esc(r.policyType))+k('Filing',f)+k('ISO edition',esc(d.edition||'')+(d.pinned?' (pinned)':''))+
+    k('Technical (pure ISO)',esc(d.technicalPremium??'—'))+k('Carrier',esc(d.carrierPremium??'—'))+'</table>'+
+    '<div class="cap2" style="margin-top:8px">Step by step</div><table>'+(d.waterfall||[]).map(s=>k(esc(s.step),(Number(s.effect)>=0?'+':'')+esc(s.effect))).join('')+'</table>'+
+    '<div class="mx-msg">'+(d.changedFields||0)+' fields differ from technical. ISO is asked about the non-deviated request only; the carrier is never sent.</div>'+
+    (d.refused?'<div class="w"><b>Refused:</b> '+esc(d.refused)+'</div>':'')+
+    ((d.warnings||[]).length?'<div class="w"><b>Warnings</b><br>'+d.warnings.map(esc).join('<br>')+'</div>':'')+
+    '<div class="td-tools"><a data-unsel="1" style="cursor:pointer">Back to the upload summary</a></div></div>';}
+function upCompanies(){fetch('/api/console/workbench/companies').then(r=>r.json()).then(j=>{const sel=document.getElementById('up-company');
+  (j.companies||[]).forEach(c=>{const o=document.createElement('option');o.value=c.code;
+    const fs=c.filings.filter(f=>f.approved).map(f=>f.line+' '+f.juris).join(', ');
+    o.textContent=c.code+' · '+c.name+' ('+c.carrier+(fs?': '+fs:'')+')';sel.appendChild(o);});}).catch(()=>{});}
+function upRerate(){UP.company=document.getElementById('up-company').value;UP.pt=document.getElementById('up-pt').value;UP.sel=null;
+  UP.rows.filter(x=>!x.err&&x.text).forEach(x=>{x.r=null;upRate(x);});upDraw();}
 function upSide(){
+  const sx=UP.sel&&UP.rows.find(x=>x.id===UP.sel&&x.r&&x.r.carrier);
+  if(sx){document.getElementById('up-side').innerHTML=upDev(sx);return;}
   const R=UP.rows.filter(x=>x.r).map(x=>x.r),both=R.filter(r=>r.stored&&r.stored.outcome==='rated'&&r.outcome==='rated');
   const agree=both.filter(r=>Number(r.premium)===Number(r.stored.iso)).length;
   const k=(t,v)=>'<tr><td>'+t+'</td><td style="text-align:right">'+v+'</td></tr>';
@@ -1579,7 +1626,7 @@ async function upSend(rows,why){
   UP.busy=true;const msg=document.getElementById('up-msg');let sent=0,reused=0,stop='';
   for(const row of rows){
     row.busy='sending';upDraw();msg.textContent='Asking ISO: '+(sent+reused+1)+' of '+rows.length+'…';
-    let j;try{j=await wbJSON('/api/console/workbench/upload-send',{text:row.text,index:row.index,reuse:true,override:why});}catch(e){j={error:String(e)};}
+    let j;try{j=await wbJSON('/api/console/workbench/upload-send',{text:row.text,index:row.index,reuse:true,override:why,company:(row.r&&row.r.company)||''});}catch(e){j={error:String(e)};}
     row.busy='';
     if(j.error){stop=(j.capped?'Stopped at the cap: ':'Stopped: ')+j.error;upDraw();break;}
     j.reused?reused++:sent++;row.r.stored=j.stored;upDraw();}
@@ -1609,13 +1656,69 @@ function upFiles(files){[...files].forEach(f=>f.text().then(t=>upAdd(f.name,t)))
   document.getElementById('up-add').onclick=()=>{const t=document.getElementById('up-text');if(!t.value.trim())return;upAdd(UP.editName||'Pasted request',t.value);t.value='';UP.editName='';};
   document.getElementById('up-send').onclick=upSendDialog;
   document.getElementById('up-clear').onclick=()=>{if(UP.busy)return;UP.rows=[];document.getElementById('up-msg').textContent='';document.getElementById('up-confirm').innerHTML='';upDraw();};
-  document.getElementById('up-out').addEventListener('click',ev=>{const dl=ev.target.closest('[data-dl]'),ed=ev.target.closest('[data-ed]');
+  document.getElementById('up-out').addEventListener('click',ev=>{const dv=ev.target.closest('[data-dv]');
+    if(dv){UP.sel=Number(dv.dataset.dv);upDraw();return;}
+    const dl=ev.target.closest('[data-dl]'),ed=ev.target.closest('[data-ed]');
     if(dl||ed){const x=UP.rows.find(r=>String(r.id)===(dl||ed).dataset[dl?'dl':'ed']);if(x)(dl?upDownload:upEdit)(x);return;}
     const b=ev.target.closest('[data-x]');if(!b||UP.busy)return;UP.rows=UP.rows.filter(x=>String(x.id)!==b.dataset.x);upDraw();});
   document.getElementById('up-lob').onchange=upGenStates;
+  document.getElementById('up-company').onchange=upRerate;document.getElementById('up-pt').onchange=upRerate;
+  document.getElementById('up-side').addEventListener('click',ev=>{if(ev.target.closest('[data-unsel]')){UP.sel=null;upDraw();}});
+  upCompanies();
   document.getElementById('up-gen').onclick=upGen;
   upGenStates();upSide();})();
 """
+
+# ---- P4: the Deviations Proof board ---------------------------------------------------------------------------------
+# T1-T10 of DEVIATIONS-PLAN.md as rows, each from the last run of the suite that proves it (`console.deviations_proof`);
+# T3 and T8 list every case ISO answered, each linked into Trace Diff. Nothing here rates or spends a call.
+
+PROOF_HTML = """<section class="screen" id="s-proof" hidden><div class="mx-wrap"><div class="mx-main">
+  <div class="mx-head"><div><div class="eyebrow">Carrier deviations · Technical, ISO, Carrier</div><h1>Deviations Proof</h1></div>
+    <p>Each row is one of the plan's ten tests, read from the last run of the suite that proves it. ISO is only ever asked about
+    the non-deviated (technical) request; the carrier is proved against technical. Click a row for its checks, and for
+    T3 and T8 the cases ISO answered, each opening in Trace Diff.</p></div>
+  <div class="mx-stats" id="pf-stats"></div>
+  <div id="pf-out"><div class="mx-loading">Loading…</div></div>
+</div><aside class="mx-side" id="pf-side" aria-live="polite"></aside></div></section>"""
+
+BUILT["proof"] = PROOF_HTML
+
+PROOF_CSS = """
+.pf-tbl{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:10px}
+.pf-tbl th{text-align:left;font-weight:600;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-neutral-700);padding:4px 6px}
+.pf-tbl td{padding:7px 6px;border-top:1px solid var(--color-divider);vertical-align:top}
+.pf-tbl tr{cursor:pointer}.pf-tbl tr.sel td{background:var(--color-accent-100)}
+.pf-tbl .v{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.pf-cases td,.pf-checks td{padding:2px 4px;font-size:11.5px;border-top:1px solid var(--color-divider)}
+"""
+
+PROOF_JS = r"""
+const PF={d:null,sel:null};
+function pfChip(s){return s==='pass'?'<span class="chip verified">✓</span>':s==='fail'?'<span class="chip mismatch">×</span>':'<span class="chip untested">·</span>';}
+function pfDraw(){const d=PF.d;if(!d)return;
+  const n=s=>d.tests.filter(t=>t.status===s).length;
+  document.getElementById('pf-stats').innerHTML='<div><b>'+n('pass')+'</b> of 10 pass</div><div><b>'+n('fail')+'</b> fail</div><div><b>'+n('not run')+'</b> not run</div>';
+  document.getElementById('pf-out').innerHTML='<table class="pf-tbl"><tr><th></th><th>Test</th><th>What it proves</th><th class="v">Checks</th><th>Suite</th><th>Last run</th></tr>'+
+    d.tests.map(t=>'<tr data-t="'+t.test+'"'+(PF.sel===t.test?' class="sel"':'')+'><td>'+pfChip(t.status)+'</td><td><b>'+t.test+'</b></td><td>'+esc(t.claim)+
+      (t.cases.length?'<div class="mx-msg">'+t.cases.filter(c=>c.verdict==='pass').length+' of '+t.cases.length+' ISO cases agree</div>':'')+
+      '</td><td class="v">'+t.passed+' / '+t.total+'</td><td class="mx-msg">'+esc(t.suite)+'</td><td class="mx-msg">'+esc((t.ranAt||'never').replace('T',' '))+(t.commit?' · '+esc(t.commit):'')+'</td></tr>').join('')+'</table>'+
+    '<div class="mx-msg" style="margin-top:8px">Gate record: '+esc(d.gate)+'. T1 over every stored Property request: '+esc(d.snapshot)+'.</div>';
+  pfSide();}
+function pfSide(){const el=document.getElementById('pf-side'),t=PF.d&&PF.d.tests.find(x=>x.test===PF.sel);
+  if(!t){el.innerHTML='<div class="cap2">Deviations proof</div><div class="mx-msg">Click a test to see its checks. Re-run a suite to refresh its row: '+
+    PF.d.tests.map(x=>x.command).filter((v,i,a)=>a.indexOf(v)===i).map(c=>'<div><code>'+esc(c)+'</code></div>').join('')+'</div>';return;}
+  el.innerHTML='<div class="cap2">'+t.test+' · '+esc(t.claim)+'</div><div class="mx-msg"><code>'+esc(t.command)+'</code></div>'+
+    '<table class="pf-checks">'+t.checks.map(c=>'<tr><td>'+(c[1]?'✓':'×')+'</td><td>'+esc(c[0])+'</td></tr>').join('')+'</table>'+
+    (t.cases.length?'<div class="cap2" style="margin-top:8px">Cases ISO answered</div><table class="pf-cases">'+t.cases.map(c=>'<tr><td>'+pfChip(c.verdict==='known'?'':c.verdict)+'</td><td>'+esc(c.line+' '+c.state)+'</td><td>'+
+      (c.scenario?'<a href="#trace?lob='+c.line+'&scenario='+encodeURIComponent(c.scenario)+'">Trace Diff</a>':'')+'</td></tr>').join('')+'</table>':'');}
+function pfLoad(){fetch('/api/console/deviations/proof').then(r=>r.json()).then(d=>{PF.d=d;pfDraw();})
+  .catch(e=>{document.getElementById('pf-out').innerHTML='<div class="mx-empty">Could not load the proof: '+esc(String(e))+'</div>';});}
+document.getElementById('pf-out').addEventListener('click',ev=>{const tr=ev.target.closest('[data-t]');if(!tr)return;PF.sel=tr.dataset.t;pfDraw();});
+addEventListener('hashchange',()=>{if((location.hash||'').startsWith('#proof'))pfLoad();});
+if((location.hash||'').startsWith('#proof'))pfLoad();
+"""
+
 
 # ---- TC-27 / TC-29: the Test Plan Builder -----------------------------------------------------------------------------
 # A line, states (no waves, D3) and per dimension the values to cover (from ISO's own domains, TC-26); a reduced grid,
