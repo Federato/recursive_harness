@@ -324,4 +324,106 @@ def worksheet(line: str, payload: dict, company: str = "", policy_type: str = "N
             "premium": {"technical": t_prem, "iso": None if iso_prem is None else str(iso_prem), "deviated": d_prem},
             "iso": iso_state, "isoHash": store.request_hash(plain),
             "deviation": {k: (dev or {}).get(k) for k in ("filings", "edition", "waterfall", "warnings")} if dev else None,
-            "rows": out_rows}
+            "sections": calculation_view(line, out_rows), "rows": out_rows}
+
+
+# ---- the worksheet's calculation view: coverage groups, in the order the engine computed them -----------------------
+
+import re as _re
+
+#: Property's coverage groups (the deviations engine's own matcher, D17) and GL's sublines, in display order.
+_CF_GROUPS = (("GroupI", "Basic Group I"), ("GroupII", "Basic Group II"), ("Broad", "Broad"),
+              ("Special", "Special"), ("Earthquake", "Earthquake"))
+_GL_GROUPS = (("PremOps", "Premises/Operations", _re.compile(r"PremOps|PremisesOperations")),
+              ("ProdsCompldOps", "Products/Completed Operations", _re.compile(r"ProdsCompldOps|ProdCompldOps|ProductsCompleted")),
+              ("Liquor", "Liquor Liability", _re.compile(r"Liquor")),
+              ("OCP", "Owners and Contractors Protective", _re.compile(r"OwnersContractors|OwnersContrctrs")),
+              ("Railroad", "Railroad Protective", _re.compile(r"Railroad")),
+              ("Pollution", "Pollution", _re.compile(r"Pollution")),
+              ("ProductWithdrawal", "Product Withdrawal", _re.compile(r"ProductWithdrawal")),
+              ("Terrorism", "Terrorism", _re.compile(r"Terror|TRIA|CertfdActs|CertifiedActs")))
+#: The records a worksheet section belongs to (the item being rated), innermost wins.
+_ITEMS = {"CommercialPropertyLocation": "Location", "CommercialPropertyStructure": "Building",
+          "CommercialPropertyOccupClass": "Occupancy", "CommercialPropertyPersonalProperty": "Personal property",
+          "CommercialPropertyBusinessIncome": "Business income", "CommercialPropertySpecialClass": "Special class",
+          "CommercialPropertySpecialClassBusnIncome": "Special class business income",
+          "GeneralLiabilityLocation": "Location", "GeneralLiabilityClassification": "Classification"}
+_SEG = _re.compile(r"^(\w+?)(?:\[(\d+)\])?$")
+
+
+def _group(line: str, path: str):
+    """(key, label) of the coverage group a field belongs to, by its own name first, then its records'."""
+    names = [p for p in path.strip("/").split("/")]
+    names = [_SEG.match(n).group(1) if _SEG.match(n) else n for n in names]
+    field, recs = names[-1], list(reversed(names[:-1]))
+    if line == "CP":
+        from deviations.engine import group_of
+        for n in [field] + recs:
+            g = group_of([n])
+            if g:
+                return g, dict(_CF_GROUPS)[g]
+        return None, None
+    for n in [field] + recs:
+        for key, label, rx in _GL_GROUPS:
+            if rx.search(n):
+                return key, label
+    return None, None
+
+
+def _item(path: str) -> str:
+    """'Location 2 › Building › Personal property' -- the rated item a field sits under (indices are 1-based)."""
+    out = []
+    for seg in path.strip("/").split("/")[:-1]:
+        m = _SEG.match(seg)
+        if not m or m.group(1) not in _ITEMS:
+            continue
+        label = _ITEMS[m.group(1)]
+        out.append(f"{label} {int(m.group(2)) + 1}" if m.group(2) else label)
+    return " › ".join(out) or "Policy"
+
+
+_TRIM = _re.compile(r"^(CommercialProperty|GeneralLiability)(Structure|PersonalProperty|BusinessIncome|SpecialClass|"
+                    r"Classification|Location|OccupClass)?")
+
+
+def _label(path: str) -> str:
+    """The field, prefixed by any record between the rated item and it: 'BuildingBasicGroupICoverage › Premium'."""
+    segs = path.strip("/").split("/")
+    last = max((i for i, sg in enumerate(segs[:-1]) if _SEG.match(sg) and _SEG.match(sg).group(1) in _ITEMS),
+               default=-1)
+    sub = [(_TRIM.sub("", _SEG.match(sg).group(1)) or _SEG.match(sg).group(1)) + (
+        f" {int(_SEG.match(sg).group(2)) + 1}" if _SEG.match(sg).group(2) else "")
+        for sg in segs[last + 1:-1] if _SEG.match(sg)]
+    return " › ".join(sub + [segs[-1]])
+
+
+def calculation_view(line: str, rows: list) -> list:
+    """Give each worksheet row its section (item × coverage group) and an order inside it; returns the sections in
+    display order. A section's rows run in the order our engine wrote them, so a group's chain reads top to bottom:
+    base rate, LCM, adjustments, final rate, premium. Inputs (nothing wrote them) come first."""
+    order = [k for k, *_ in (_CF_GROUPS if line == "CP" else _GL_GROUPS)]
+    labels = dict((k, lab) for k, lab, *_ in (_CF_GROUPS if line == "CP" else _GL_GROUPS))
+    first_seen: dict = {}
+    for i, r in enumerate(rows):
+        g, _ = _group(line, r["path"])
+        item = _item(r["path"])
+        key = f"{item}|{g or '~shared'}"
+        r["section"] = key
+        r["label"] = _label(r["path"])
+        r["sectionLabel"] = f"{item} · {labels[g]}" if g else f"{item} · shared factors and other fields"
+        r["group"] = g
+        first_seen.setdefault(item, i)
+        r["_sort"] = (r["order"] is not None, r["order"] if r["order"] is not None else i)
+    sections: dict = {}
+    for r in rows:
+        sections.setdefault(r["section"], {"key": r["section"], "label": r["sectionLabel"], "group": r["group"],
+                                           "item": r["section"].split("|")[0], "rows": []})["rows"].append(r)
+    for sec in sections.values():
+        sec["rows"].sort(key=lambda r: r["_sort"])
+    for r in rows:
+        r.pop("_sort", None)
+    gi = {k: n for n, k in enumerate(order)}
+    out = sorted(sections.values(), key=lambda s: (first_seen[s["item"]],
+                                                   gi.get(s["group"], len(order)) if s["group"] else -1))
+    return [{"key": s["key"], "label": s["label"], "group": s["group"], "paths": [r["path"] for r in s["rows"]]}
+            for s in out]

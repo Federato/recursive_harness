@@ -201,9 +201,30 @@ def part_f():
     check("F7 with no company: Technical and ISO only, no deviated column",
           code == 200 and w2["company"] is None and w2["premium"]["deviated"] is None
           and not any(r["changed"] for r in w2["rows"]))
+    secs = {sc["label"]: sc for sc in w.get("sections", [])}
+    by = {r["path"]: r for r in rows}
+    g1 = secs.get("Location › Building · Basic Group I")
+    check("F9 by calculation: one section per coverage group of each rated item, every row in exactly one",
+          g1 and sum(len(sc["paths"]) for sc in w["sections"]) == len(rows)
+          and len({p for sc in w["sections"] for p in sc["paths"]}) == len(rows), list(secs)[:6])
+    chain = [by[p]["field"] for p in (g1 or {}).get("paths", [])]
+    want = ["BasicGroupIBaseRate", "BasicGroupIRate", "AdjustedBasicGroupIRate", "FinalBasicGroupIRate"]
+    check("F10 a group's factors run in the order the engine computed them: base rate, rate, adjusted, final",
+          all(f in chain for f in want) and [chain.index(f) for f in want] == sorted(chain.index(f) for f in want),
+          chain[:12])
+    check("F11 Basic Group II, Broad, Special and Earthquake each have their own section for the building",
+          all(f"Location › Building · {g}" in secs for g in ("Basic Group II", "Broad", "Special", "Earthquake")))
+    check("F12 a field under a coverage record says which: 'BuildingBasicGroupICoverage › Premium'",
+          any(by[p]["label"] == "BuildingBasicGroupICoverage › Premium" for p in g1["paths"]) if g1 else False)
+    from console import catalog
+    code, wg = post("worksheet", {"text": json.dumps(catalog.build("GL", "TX", {}))})
+    labels = [sc["label"] for sc in wg.get("sections", [])]
+    check("F13 GL groups by subline: Premises/Operations and Products/Completed Operations for the classification",
+          "Location › Classification · Premises/Operations" in labels
+          and "Location › Classification · Products/Completed Operations" in labels, labels[:8])
     code, html, _ = CP.dispatch("GET", "/console", {}, None)
     check("F8 each row has a Worksheet link, and the worksheet has its filters and a CSV download",
-          "data-ws=" in html and "data-wcsv" in html and "Deviated changes" in html)
+          "data-ws=" in html and "data-wcsv" in html and "Deviated changes" in html and "By calculation" in html)
 
 
 def main() -> int:

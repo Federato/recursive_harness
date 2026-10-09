@@ -1622,7 +1622,7 @@ function upCompanies(){fetch('/api/console/workbench/companies').then(r=>r.json(
     o.textContent=c.code+' · '+c.name+' ('+c.carrier+(fs?': '+fs:'')+')';sel.appendChild(o);});}).catch(()=>{});}
 function upRerate(){UP.company=document.getElementById('up-company').value;UP.pt=document.getElementById('up-pt').value;UP.sel=null;
   UP.rows.filter(x=>!x.err&&x.text).forEach(x=>{x.r=null;upRate(x);});upDraw();}
-const WS={d:null,name:'',filter:'all',q:'',shut:new Set()};
+const WS={d:null,name:'',filter:'all',q:'',shut:new Set(),view:'calc'};
 function wsOpen(x){const el=document.getElementById('up-ws');WS.name=x.name;WS.shut=new Set();
   el.innerHTML='<div class="ws"><div class="mx-msg">Building the worksheet for '+esc(x.name)+'… (two ratings, no ISO call)</div></div>';el.scrollIntoView({block:'start'});
   wbJSON('/api/console/workbench/worksheet',{text:x.text,index:x.index,company:(x.r&&x.r.company)||'',policyType:(x.r&&x.r.policyType)||'New'})
@@ -1634,7 +1634,10 @@ function wsCell(v){return v===null||v===undefined?'<span class="mx-msg">—</spa
 function wsDraw(){const d=WS.d,el=document.getElementById('up-ws');
   if(d.error){el.innerHTML='<div class="ws"><div class="mx-empty">'+esc(d.error)+'</div></div>';return;}
   const hasDev=!!d.company,P=d.premium,isoNote=d.iso==='rated'?'':d.iso==='refused'?' (ISO refused it)':' (not asked yet: Compare with ISO to fill this column)';
-  const rows=wsShown(),by={};rows.forEach(r=>{(by[r.record]=by[r.record]||[]).push(r);});
+  const rows=wsShown(),by={};
+  if(WS.view==='calc'){const keep=new Set(rows.map(r=>r.path)),all={};d.rows.forEach(r=>{all[r.path]=r;});
+    (d.sections||[]).forEach(sc=>{const rs=sc.paths.filter(p=>keep.has(p)).map(p=>all[p]);if(rs.length)by[sc.label]=rs;});}
+  else rows.forEach(r=>{(by[r.record]=by[r.record]||[]).push(r);});
   const cnt=f=>d.rows.filter(f).length,btn=(k,t)=>'<button class="btn'+(WS.filter===k?' on':'')+'" data-wf="'+k+'">'+t+'</button>';
   el.innerHTML='<div class="ws"><div class="ws-hd"><h2>Rating worksheet · '+esc(WS.name)+'</h2><span class="mx-msg">'+(d.line==='GL'?'General Liability':'Property')+' · '+esc(d.state)+
     (hasDev?' · writing company '+esc(d.company)+' · '+esc(d.policyType):' · no writing company')+'</span><a data-wclose="1" style="cursor:pointer;margin-left:auto">Close</a></div>'+
@@ -1642,18 +1645,21 @@ function wsDraw(){const d=WS.d,el=document.getElementById('up-ws');
     (hasDev?'<div>Deviated<b>'+wsCell(P.deviated)+'</b>our engine with the filing, never sent to ISO</div>':'')+'</div>'+
     '<div class="ws-tools">'+btn('all','All fields · '+d.rows.length)+btn('diff','Any difference · '+cnt(r=>r.techIso===false||r.changed))+
     (hasDev?btn('dev','Deviated changes · '+cnt(r=>r.changed)):'')+btn('iso','Technical ≠ ISO · '+cnt(r=>r.techIso===false))+btn('num','Numbers only')+
+    '<span style="margin-left:8px">View</span>'+['calc','record'].map(v=>'<button class="btn'+(WS.view===v?' on':'')+'" data-wv="'+v+'">'+(v==='calc'?'By calculation':'By record')+'</button>').join('')+
     '<input id="ws-q" placeholder="Find a field, record or rule" value="'+esc(WS.q)+'" style="flex:1;min-width:180px"><button class="btn" data-wcsv="1">Download CSV</button></div>'+
     '<div class="ws-scroll"><table class="ws-tbl"><tr><th>Field</th><th class="v">Technical</th><th class="v">ISO</th>'+(hasDev?'<th class="v">Deviated</th>':'')+'<th>Written by (technical)</th></tr>'+
     Object.entries(by).map(([rec,rs])=>{const shut=WS.shut.has(rec);
-      const parts=rec.split('/').filter(Boolean),name=parts.pop()||'(policy)',trail=parts.map(x=>x.replace(/^CommercialProperty|^GeneralLiability/,'')||x).join(' › ');
+      const calc=WS.view==='calc',parts=calc?[]:rec.split('/').filter(Boolean),name=calc?rec:(parts.pop()||'(policy)'),trail=parts.map(x=>x.replace(/^CommercialProperty|^GeneralLiability/,'')||x).join(' › ');
       return '<tr class="rec" data-rec="'+esc(rec)+'" title="'+esc(rec)+'"><td colspan="'+(hasDev?5:4)+'">'+(shut?'▸ ':'▾ ')+esc(name)+' <span class="mx-msg">'+rs.length+' field'+(rs.length>1?'s':'')+(trail?' · in '+esc(trail):'')+'</span></td></tr>'+
-        (shut?'':rs.map(r=>'<tr><td>'+esc(r.field)+'</td><td class="v">'+wsCell(r.technical)+'</td><td class="v'+(r.techIso===false&&d.iso==='rated'?' bad':'')+'">'+wsCell(r.iso)+'</td>'+
+        (shut?'':rs.map(r=>'<tr><td title="'+esc(r.path)+'">'+esc(calc?(r.label||r.field):r.field)+'</td><td class="v">'+wsCell(r.technical)+'</td><td class="v'+(r.techIso===false&&d.iso==='rated'?' bad':'')+'">'+wsCell(r.iso)+'</td>'+
           (hasDev?'<td class="v'+(r.changed?' chg':'')+'">'+wsCell(r.deviated)+'</td>':'')+'<td class="src">'+esc(r.rule||'')+(r.tables&&r.tables.length?' · '+esc(r.tables.join(', ')):'')+'</td></tr>').join(''));}).join('')+
-    '</table></div><div class="mx-msg">Red ISO value: technical and ISO differ there. Highlighted deviated value: the filing changed it. "Written by" is the ERC rule file (and the tables read just before) that wrote the technical value.</div></div>';
+    '</table></div><div class="mx-msg">By calculation: one section per coverage group of each rated item, its factors in the order our engine computed them (inputs first). Red ISO value: technical and ISO differ there. Highlighted deviated value: the filing changed it. "Written by" is the ERC rule file (and the tables read just before) that wrote the technical value.</div></div>';
   const q=document.getElementById('ws-q');q.oninput=()=>{WS.q=q.value;const pos=q.selectionStart;wsDraw();const n=document.getElementById('ws-q');n.focus();n.setSelectionRange(pos,pos);};}
 function wsCSV(){const d=WS.d,hasDev=!!d.company,qq=v=>v===null||v===undefined?'':'"'+String(v).replace(/"/g,'""')+'"';
-  const head=['Record','Field','Technical','ISO'].concat(hasDev?['Deviated']:[]).concat(['Technical vs ISO','Changed by deviations','Written by','Tables']);
-  const lines=[head.map(qq).join(',')].concat(wsShown().map(r=>[r.record,r.field,r.technical,r.iso].concat(hasDev?[r.deviated]:[])
+  const head=['Section','Record','Field','Technical','ISO'].concat(hasDev?['Deviated']:[]).concat(['Technical vs ISO','Changed by deviations','Written by','Tables']);
+  const rank={};(d.sections||[]).forEach((sc,i)=>sc.paths.forEach((p,j)=>{rank[p]=[i,j];}));
+  const shown=wsShown().slice().sort((a,b)=>{const x=rank[a.path]||[1e9,0],y=rank[b.path]||[1e9,0];return x[0]-y[0]||x[1]-y[1];});
+  const lines=[head.map(qq).join(',')].concat(shown.map(r=>[r.sectionLabel||'',r.record,r.label||r.field,r.technical,r.iso].concat(hasDev?[r.deviated]:[])
     .concat([r.techIso===null?'':r.techIso?'agree':'differ',hasDev?(r.changed?'yes':'no'):'',r.rule,(r.tables||[]).join('; ')]).map(qq).join(',')));
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([lines.join('\r\n')],{type:'text/csv'}));
   a.download='worksheet-'+d.line+'-'+d.state+(d.company?'-'+d.company:'')+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
@@ -1661,6 +1667,7 @@ document.getElementById('up-ws').addEventListener('click',ev=>{const t=ev.target
   if(t.closest('[data-wclose]')){document.getElementById('up-ws').innerHTML='';WS.d=null;return;}
   if(t.closest('[data-wcsv]')){wsCSV();return;}
   const f=t.closest('[data-wf]');if(f){WS.filter=f.dataset.wf;wsDraw();return;}
+  const v=t.closest('[data-wv]');if(v){WS.view=v.dataset.wv;WS.shut=new Set();wsDraw();return;}
   const rc=t.closest('[data-rec]');if(rc){const k=rc.dataset.rec;WS.shut.has(k)?WS.shut.delete(k):WS.shut.add(k);wsDraw();}});
 function upSide(){
   const sx=UP.sel&&UP.rows.find(x=>x.id===UP.sel&&x.r&&x.r.carrier);
