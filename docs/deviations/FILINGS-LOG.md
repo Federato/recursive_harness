@@ -92,7 +92,7 @@ These are not Iowa's groups (different ranges), so Alabama has its own, at carri
 | | Decision |
 |---|---|
 | Scope | LCMs only (you, 2026-10-09). The exception manual's other changes are not authored: e.g. minimum premium $300 (rules 8, A4), terrorism at 2% of property premium (A11), deductible and windstorm tables (33, 81, 82), Group I class protection factors (85), age-of-building factors, Ultra Property Plus endorsements, IRPM ±25%. |
-| Renewal date | The filed exception page and the CSV say **11-01-2025**; the SERFF summary's *requested* renewal date is 12/01/2025. Authored as 11-01-2025, following DEV-001's rule that the filed document wins. Say if it should be 12/01. |
+| Renewal date | The filed exception page and the CSV say **11-01-2025**; the SERFF summary's *requested* renewal date is 12/01/2025. **Decided (you, 2026-10-09): the filed document wins, 11-01-2025.** |
 | Status | Alabama shows the filing as *Filed* (file-and-use), not approved; authored as in force from its effective dates. |
 
 **How it was proved** (`python scripts/filings/DEV-002_prove.py`, on the live carrier store, 2026-10-09: **22 of 22 pass**)
@@ -111,7 +111,6 @@ These are not Iowa's groups (different ranges), so Alabama has its own, at carri
 
 **Open on this filing**
 
-- The renewal date (11-01 vs 12-01), above.
 - The non-LCM exception pages, if you ever want them.
 
 ---
