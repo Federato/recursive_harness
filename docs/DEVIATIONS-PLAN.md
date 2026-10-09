@@ -1,6 +1,6 @@
 # Carrier Deviations — Plan for sign-off
 
-**Status: v3, 2026-10-09. v2 signed off; v3 folds in the P0 decisions (D17–D20) from the UFG Iowa CF filing — see `docs/deviations/P0-UFG-IA-CF.md`. Nothing built.** This is Phase 4 of the original programme
+**Status: v3, 2026-10-09. v2 signed off; v3 folds in the P0 decisions (D17–D20) from the UFG Iowa CF filing — see `docs/deviations/P0-UFG-IA-CF.md`. P0 and P1 done; P2 (engine) not started.** This is Phase 4 of the original programme
 (`EXECUTIVE-SUMMARY.md` §6, `BACKLOG-2026-08-14.md` items 7 and 8).
 
 **v2 refocus (same day):** the goal is to **prove that deviations can be layered on without
@@ -261,7 +261,7 @@ change re-proves "no company = ISO" and "deviations stay local".
 | Phase | Builds | Gate |
 |---|---|---|
 | **P0 — First real case** | Map your filing onto §3a by hand. No code. | Every item can be expressed, or the gaps are listed. §3 is revised here if needed. **Done 2026-10-09** (UFG IA CF; gaps G1–G7 decided as D17–D20). |
-| **P1 — Files** | Authored format, compiler, `deviations` command-line tools, class groups, all-states shortcut and opt-out, workflow log, spreadsheet import. | **T10** passes. The P0 filing compiles and reads back. |
+| **P1 — Files** | Authored format, compiler, `deviations` command-line tools, class groups, all-states shortcut and opt-out, workflow log, spreadsheet import. | **T10** passes. The P0 filing compiles and reads back. **Done 2026-10-09:** `deviations/`, `tests/verify_deviations_files.py` 78/78. Deferred by name: territory/limit/deductible-keyed LCMs (GL step, P2) and banded-table overrides. |
 | **P2 — Engine + payloads (CF, then GL — D19)** | Header fields, `company=` context, pin, LCM step, group-LCM substitution (CF), `CompanyBook`, `Deviation` block, `?with=technical`, refusals. | **T1, T2** pass across the whole existing population. The P0 filing rates. |
 | **P3 — Proof** | Dependency tracking in the trace if it only records lookups today (T4 needs "which values came from which lookup"). The T3–T9 runner, inputs built for each test, ledger plan, results into the Regression Library. | **T1–T10 all pass**, recorded in `docs/gates/GATE-DEVIATIONS.md`. **This is the "doesn't break ISO" sign-off.** |
 | **P4 — Minimal UI** | §6. | Compare shows the P0 filing correctly. The proof results are visible. |

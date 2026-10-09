@@ -68,6 +68,8 @@ python tests/verify_layers.py                    30/30   the layered programme: 
                                                          the allowance, the run file -- no calls
 python tests/verify_notebooks.py                 28/28   every notebook cell, engine set and
                                                          harness set, executes against the code
+python tests/verify_deviations_files.py          78/78   carrier deviation files (T10): the UFG Iowa
+                                                         filing compiles, imports and reads back
 python Agentic/iso-circular-expert/tools/smoke_test.py     19/19
 python Agentic/iso-erc-expert/tools/smoke_test.py       88 checks
 python -m gl_engine.cli check 20260811 --deep              13/13
@@ -635,6 +637,27 @@ nothing.
 **Corrections are kept, never tidied away.** Anything found here belongs in
 [`BUILD-LOG.md`](BUILD-LOG.md) with what it revealed — that record is the raw material for the
 self-correcting harness, which is the end goal.
+
+---
+
+## Carrier deviations — the files (P1)
+
+**Added 2026-10-09.** Phase P1 of [`docs/DEVIATIONS-PLAN.md`](docs/DEVIATIONS-PLAN.md): a
+writing company's filing as authored JSON, compiled into ISO's table shape, and read back. Nothing
+here rates; the engine reads the compiled files from P2.
+
+```
+python tests/verify_deviations_files.py          # 78/78, no server, no calls
+python -m deviations -h                          # validate | compile | show | diff |
+                                                 # import-xlsx | propose | sign-off | ...
+```
+
+The suite works in temporary copies of `tests/fixtures/deviations/UFG` (the P0 filing, both
+companies, hand-authored from the PDF) and never writes under `CARRIERS_ROOT`
+(default `C:\FederatoProjects\Carriers`). It needs both corpora, as every suite does.
+
+What v1 refuses rather than half-supports: LCMs keyed by territory, limit or deductible (they
+arrive with the GL engine step) and overrides of banded ISO tables.
 
 ---
 
