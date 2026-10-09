@@ -9,6 +9,7 @@
   E  the Deviations Proof board: T1-T10 as rows from each suite's last run; T3 and T8 list ISO's cases
   F  the rating worksheet: every field, Technical | ISO | Deviated, free, with the rule that wrote each value
   G  why this value: a worksheet value's ancestry from the rating graph, its sources, the carrier's path marked
+  H  Carrier Filings: the filings log, each filing's sources re-hashed and openable, each company's versions
 
     python tests/verify_console_deviations.py
 """
@@ -139,8 +140,8 @@ def part_c():
 def part_d():
     print("D. the page")
     code, html, kind = CP.dispatch("GET", "/console", {}, None)
-    check("D1 nine tabs, Deviations Proof last", html.count('class="tab"') == 9
-          and [k for k, _, _ in CP.SCREENS][-1] == "proof")
+    check("D1 ten tabs, Deviations Proof then Carrier Filings last", html.count('class="tab"') == 10
+          and [k for k, _, _ in CP.SCREENS][-2:] == ["proof", "filings"])
     check("D2 the writing-company picker and New / Renewal", 'id="up-company"' in html and 'id="up-pt"' in html)
     check("D3 the table reads Technical, ISO, Carrier, and the ISO test",
           all(s in html for s in ("<th class=\"v\">Technical</th>", "<th class=\"v\">ISO</th>",
@@ -271,9 +272,58 @@ def part_g():
     check("G8 the page makes worksheet values clickable and draws the panel", "ws-why" in html and "wyHtml" in html)
 
 
+def part_h():
+    print("H. Carrier Filings: the filings log, its archived sources (re-hashed) and where each company's versions stand")
+    import hashlib
+    src = TMP / "carriers" / "UFG" / "sources" / "UNFG-134289779"
+    src.mkdir(parents=True)
+    csv = (ROOT / "tests" / "fixtures" / "deviations" / "UFG_IA_CP_LCMs.csv").read_bytes()
+    (src / "UFG_IA_CP_LCMs.csv").write_bytes(csv)
+    (src / "memo.pdf").write_bytes(b"%PDF-1.4 edited after it arrived")
+    (src / "source.json").write_text(json.dumps({
+        "serff": "UNFG-134289779", "carrier": "UFG", "companies": ["UFC", "ADD"], "line": "CF", "juris": ["IA"],
+        "received": "2026-10-08", "files": [
+            {"name": "UFG_IA_CP_LCMs.csv", "what": "the LCM table", "sha256": hashlib.sha256(csv).hexdigest()},
+            {"name": "memo.pdf", "what": "the memo", "sha256": "0" * 64},
+            {"name": "gone.pdf", "what": "never copied", "sha256": "1" * 64}]}), encoding="utf-8")
+    new = TMP / "carriers" / "UFG" / "sources" / "UNFG-999"
+    new.mkdir(parents=True)
+    (new / "source.json").write_text(json.dumps({"serff": "UNFG-999", "carrier": "UFG", "companies": ["UFC"],
+                                                 "line": "GL", "juris": ["IA"], "files": []}), encoding="utf-8")
+    code, d = get("/api/console/filings")
+    f = next((x for x in d["filings"] if x["id"] == "DEV-001"), None)
+    check("H1 the log's DEV-001 is listed, with its carrier, line, state and SERFF",
+          code == 200 and f and (f["carrier"], f["line"], f["state"], f["serff"]) == ("UFG", "CF", "IA", "UNFG-134289779"),
+          f and {k: f[k] for k in ("carrier", "line", "state", "serff")})
+    by = {x["name"]: x for x in f["sources"]}
+    check("H2 each source is re-hashed: the CSV unchanged, the edited memo changed, the uncopied file missing",
+          by["UFG_IA_CP_LCMs.csv"]["intact"] and by["memo.pdf"]["present"] and not by["memo.pdf"]["intact"]
+          and not by["gone.pdf"]["present"], {k: (v["present"], v["intact"]) for k, v in by.items()})
+    st = {v["company"]: v["status"] for v in f["versions"]}
+    check("H3 each writing company's authored version, read from its workflow log (UFC approved, ADD withdrawn)",
+          st == {"UFC": "approved", "ADD": "withdrawn"} and all(v["rows"] == 13 for v in f["versions"]), st)
+    code, body, kind = CP.dispatch("GET", "/api/console/filings/source",
+                                   {"carrier": "UFG", "serff": "UNFG-134289779", "file": "UFG_IA_CP_LCMs.csv"}, None)
+    bad = [CP.dispatch("GET", "/api/console/filings/source", q, None)[0] for q in (
+        {"carrier": "UFG", "serff": "..", "file": "UFC/workflow.jsonl"},
+        {"carrier": "UFG", "serff": "UNFG-134289779", "file": "source.json"},
+        {"carrier": "UFG", "serff": "UNFG-134289779", "file": "gone.pdf"})]
+    check("H4 a source opens exactly as received; nothing outside the archive, and not source.json",
+          code == 200 and kind == "csv" and body == csv and bad == [404, 404, 404], (code, kind, bad))
+    u = next((x for x in d["filings"] if x["serff"] == "UNFG-999"), None)
+    check("H5 a filing archived but not yet logged still shows, as received and not logged",
+          u and u["id"] == "" and u["status"] == "Received, not logged", u and u["status"])
+    e = f["entry"]
+    check("H6 the log entry is rendered: its tables, its source hashes, no raw markdown",
+          "<table" in e and "c3fd5ef14ab5" in e and "Decisions made on this filing" in e
+          and "|" not in re.sub(r"<[^>]+>", "", e) and "**" not in e)
+    code, html, _ = CP.dispatch("GET", "/console", {}, None)
+    check("H7 the page has the Carrier Filings tab and draws it", 'id="s-filings"' in html and "flLoad" in html)
+
+
 def main() -> int:
     setup()
-    for part in (part_a, part_b, part_c, part_d, part_e, part_f, part_g):
+    for part in (part_a, part_b, part_c, part_d, part_e, part_f, part_g, part_h):
         part()
     bad = [n for n, ok in RESULTS if not ok]
     print(f"\n{len(RESULTS) - len(bad)}/{len(RESULTS)} passed" + (f"; FAILED: {', '.join(bad)}" if bad else ""))

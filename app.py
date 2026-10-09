@@ -873,8 +873,8 @@ class Handler(BaseHTTPRequestHandler):
         if out is None:
             return False
         code, payload, kind = out
-        self._send(code, payload,
-                   "text/html" if kind == "html" else "application/json")
+        self._send(code, payload, {"html": "text/html", "pdf": "application/pdf", "csv": "text/csv",
+                                   "text": "text/plain"}.get(kind, "application/json"))
         return True
 
     def do_GET(self):

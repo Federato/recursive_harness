@@ -35,6 +35,7 @@ SCREENS = (
     ("library", "Regression Library", "TC-33"),
     ("queue", "Queue & Run Log", "TC-31"),
     ("proof", "Deviations Proof", "P4"),
+    ("filings", "Carrier Filings", "DEV"),
 )
 
 LANE_NAMES = {"active": "Active plans", "refresh": "Change & stale refresh", "adhoc": "Ad hoc & triage"}
@@ -408,7 +409,7 @@ document.addEventListener('DOMContentLoaded',()=>{const m=document.querySelector
 })();
 </script>"""
     shim = shim.replace("__SNAP__", json.dumps(snap).replace("</", "<\\/")).replace("__META__", json.dumps(meta))
-    html = page(app_only=frozenset({"compare", "plan", "workbench", "proof"}))
+    html = page(app_only=frozenset({"compare", "plan", "workbench", "proof", "filings"}))
     i = html.index("<script>")
     return html[:i] + shim + html[i:]
 
@@ -544,6 +545,15 @@ def dispatch(method: str, path: str, query: dict, body):
             return 200, json.dumps(tracediff.diff(query.get("scenario", ""))), "json"
         except KeyError as exc:
             return 404, json.dumps({"error": str(exc)}), "json"
+    if method == "GET" and path == "/api/console/filings":
+        from console import filings
+        return 200, json.dumps(filings.filings()), "json"
+    if method == "GET" and path == "/api/console/filings/source":
+        from console import filings
+        got = filings.source(query)
+        if got is None:
+            return 404, json.dumps({"error": "no such source document"}), "json"
+        return 200, got[0], got[1]
     if method == "GET" and path == "/api/console/deviations/proof":
         from console import deviations_proof
         return 200, json.dumps(deviations_proof.proof()), "json"
@@ -589,8 +599,8 @@ def page(app_only: frozenset = frozenset()) -> str:
                          f'(docs/TC-PLAN.md).<span class="filter"></span></div></section>')
         for i, (k, label, task) in enumerate(SCREENS, 1))
     return (PAGE.replace("{{TABS}}", tabs).replace("{{SCREENS}}", screens)
-            .replace("/*{{CSS}}*/", INSP_CSS + UP_CSS + MATRIX_CSS + BOARD_CSS + TRACE_CSS + WB_CSS + PLAN_CSS + QUEUE_CSS + LIB_CSS + PROOF_CSS)
-            .replace("/*{{JS}}*/", INSP_JS + UP_JS + MATRIX_JS + BOARD_JS + TRACE_JS + WB_JS + PLAN_JS + QUEUE_JS + LIB_JS + PROOF_JS)
+            .replace("/*{{CSS}}*/", INSP_CSS + UP_CSS + MATRIX_CSS + BOARD_CSS + TRACE_CSS + WB_CSS + PLAN_CSS + QUEUE_CSS + LIB_CSS + PROOF_CSS + FILINGS_CSS)
+            .replace("/*{{JS}}*/", INSP_JS + UP_JS + MATRIX_JS + BOARD_JS + TRACE_JS + WB_JS + PLAN_JS + QUEUE_JS + LIB_JS + PROOF_JS + FILINGS_JS)
             .replace("{{BOOT}}", json.dumps({"cap": cap(), "legend": legend(), "names": STATE_NAMES, "categories": categories()})))
 
 
@@ -1827,6 +1837,74 @@ function pfLoad(){fetch('/api/console/deviations/proof').then(r=>r.json()).then(
 document.getElementById('pf-out').addEventListener('click',ev=>{const tr=ev.target.closest('[data-t]');if(!tr)return;PF.sel=tr.dataset.t;pfDraw();});
 addEventListener('hashchange',()=>{if((location.hash||'').startsWith('#proof'))pfLoad();});
 if((location.hash||'').startsWith('#proof'))pfLoad();
+"""
+
+
+# ---- Carrier Filings: the filings log, in the console ---------------------------------------------------------------
+# Every filing we have worked on (`console.filings`): its entry in docs/deviations/FILINGS-LOG.md, its source documents
+# as received (re-hashed against source.json, openable), and where each writing company's authored versions stand.
+
+FILINGS_HTML = """<section class="screen" id="s-filings" hidden><div class="mx-wrap"><div class="mx-main">
+  <div class="mx-head"><div><div class="eyebrow">Carrier deviations · filings log</div><h1>Carrier Filings</h1></div>
+    <p>Every carrier filing we have worked on, newest first: where it came from, what was built from it, what was decided and
+    how it was proved. Source documents are kept exactly as received in the carrier store, and each is checked against the
+    hash recorded when it arrived. Click a filing for its full entry and to open its documents.</p></div>
+  <div class="mx-stats" id="fl-stats"></div>
+  <div id="fl-out"><div class="mx-loading">Loading…</div></div>
+  <div id="fl-entry"></div>
+</div><aside class="mx-side" id="fl-side" aria-live="polite"></aside></div></section>"""
+
+BUILT["filings"] = FILINGS_HTML
+
+FILINGS_CSS = """
+.fl-tbl{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:10px}
+.fl-tbl th{text-align:left;font-weight:600;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-neutral-700);padding:4px 6px}
+.fl-tbl td{padding:7px 6px;border-top:1px solid var(--color-divider);vertical-align:top}
+.fl-tbl tr[data-f]{cursor:pointer}.fl-tbl tr.sel td{background:var(--color-accent-100)}
+.fl-doc{border-top:1px solid var(--color-divider);padding:6px 0;font-size:12px;overflow-wrap:anywhere}
+.fl-doc code{font-size:10.5px}
+.fl-entry{font-size:12.5px;margin-top:18px;border-top:1px solid var(--color-divider);padding-top:8px;max-width:980px}
+.fl-entry h4{margin:14px 0 4px;font-size:12.5px}.fl-entry p{margin:6px 0}.fl-entry ul{margin:4px 0;padding-left:18px}
+.fl-entry code{overflow-wrap:anywhere}.fl-mdw{overflow-x:auto}
+.fl-md{width:100%;border-collapse:collapse;font-size:12px;margin:6px 0}
+.fl-md th{text-align:left;font-weight:600;font-size:11px;color:var(--color-neutral-700)}
+.fl-md th,.fl-md td{padding:3px 6px;border-top:1px solid var(--color-divider);text-align:left;vertical-align:top}
+.fl-md td:first-child{white-space:nowrap}
+"""
+
+FILINGS_JS = r"""
+const FL={d:null,sel:null};
+function flKey(f){return f.id||f.serff;}
+function flVer(v){return esc(v.company)+' v'+esc(String(v.version))+' <span class="mx-msg">'+esc(v.status)+(v.signers.length?' · '+esc(v.signers.join(', ')):'')+'</span>';}
+function flChip(ok){return ok?'<span class="chip verified">✓</span> ':'<span class="chip mismatch">×</span> ';}
+function flDraw(){const d=FL.d;if(!d)return;const fs=d.filings;
+  const docs=fs.reduce((n,f)=>n+f.sources.length,0),bad=fs.reduce((n,f)=>n+f.sources.filter(x=>!x.intact).length,0);
+  document.getElementById('fl-stats').innerHTML='<div><b>'+fs.length+'</b> filings</div><div><b>'+docs+'</b> source documents</div><div><b>'+bad+'</b> missing or changed</div>';
+  document.getElementById('fl-out').innerHTML=fs.length?'<table class="fl-tbl"><tr><th>#</th><th>Carrier</th><th>Line · state</th><th>SERFF</th><th>Effective</th><th>Companies</th><th>Sources</th><th>Status</th></tr>'+
+    fs.map(f=>'<tr data-f="'+esc(flKey(f))+'"'+(FL.sel===flKey(f)?' class="sel"':'')+'><td><b>'+esc(f.id||'—')+'</b></td><td>'+esc(f.carrier)+'</td><td>'+esc(f.line+' · '+f.state)+'</td><td>'+esc(f.serff)+
+      '</td><td class="mx-msg">'+esc(f.effective)+'</td><td>'+(f.versions.length?f.versions.map(flVer).join('<br>'):esc(f.companies.join(', ')))+'</td><td>'+
+      (f.sources.length?flChip(f.sources.every(x=>x.intact))+f.sources.length:'<span class="mx-msg">not archived</span>')+
+      '</td><td>'+esc(f.status)+'</td></tr>').join('')+'</table>'+
+    '<div class="mx-msg" style="margin-top:8px">Log: '+esc(d.log)+' · source documents: '+esc(d.store)+'\\(carrier)\\sources\\(SERFF)</div>'
+    :'<div class="mx-empty">No filings logged yet.</div>';
+  flSide();}
+function flSide(){const el=document.getElementById('fl-side'),f=FL.d&&FL.d.filings.find(x=>flKey(x)===FL.sel);
+  if(!f){document.getElementById('fl-entry').innerHTML='';el.innerHTML='<div class="cap2">Carrier filings</div><div class="mx-msg">Click a filing for its log entry and its source documents. '+
+    'For now filings are passed in the Claude Code session; each is archived as received and logged in '+esc(FL.d?FL.d.log:'the filings log')+'.</div>';return;}
+  el.innerHTML='<div class="cap2">'+esc((f.id?f.id+' · ':'')+f.carrier+' '+f.line+' '+f.state)+'</div><div class="mx-msg">SERFF '+esc(f.serff)+(f.received?' · received '+esc(f.received):'')+'</div>'+
+    '<div class="cap2" style="margin-top:8px">Source documents</div>'+(f.sources.length?f.sources.map(x=>'<div class="fl-doc">'+flChip(x.intact)+
+      (x.present?'<a href="'+esc(x.url)+'" target="_blank" rel="noopener">'+esc(x.name)+'</a>':esc(x.name))+
+      '<div class="mx-msg">'+esc(x.what)+'</div><div class="mx-msg">'+(x.intact?'unchanged since it arrived':x.present?'<b>changed since it arrived</b>':'<b>missing</b>')+
+      ' · SHA-256 <code>'+esc(x.sha256||'')+'</code></div></div>').join(''):'<div class="mx-msg">Not archived.</div>')+
+    (f.versions.length?'<div class="cap2" style="margin-top:8px">Authored</div>'+f.versions.map(v=>'<div class="fl-doc">'+flVer(v)+'<div class="mx-msg">'+esc(v.file)+' · '+v.rows+' rows'+
+      (v.lastAt?' · '+esc(v.lastAction)+' '+esc(v.lastAt.replace('T',' ').replace('Z','')):'')+'</div></div>').join(''):'')+
+    '';
+  document.getElementById('fl-entry').innerHTML=f.entry?'<div class="fl-entry"><div class="cap2">'+esc(f.id)+' · log entry</div>'+f.entry+'</div>':'';}
+function flLoad(){fetch('/api/console/filings').then(r=>r.json()).then(d=>{FL.d=d;if(!FL.sel&&d.filings.length)FL.sel=flKey(d.filings[0]);flDraw();})
+  .catch(e=>{document.getElementById('fl-out').innerHTML='<div class="mx-empty">Could not load the filings: '+esc(String(e))+'</div>';});}
+document.getElementById('fl-out').addEventListener('click',ev=>{const tr=ev.target.closest('[data-f]');if(!tr)return;FL.sel=tr.dataset.f;flDraw();});
+addEventListener('hashchange',()=>{if((location.hash||'').startsWith('#filings'))flLoad();});
+if((location.hash||'').startsWith('#filings'))flLoad();
 """
 
 

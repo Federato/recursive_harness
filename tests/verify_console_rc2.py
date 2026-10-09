@@ -38,11 +38,11 @@ def part_a():
 
         code, html, kind = console_page.dispatch("GET", "/console", {}, None)
         check("A1 /console is served by the console mount", code == 200 and kind == "html")
-        check("A2 Upload & Compare (the landing screen), the seven screens in the brief's order, then Deviations Proof",
+        check("A2 Upload & Compare (the landing screen), the seven screens in the brief's order, then Deviations Proof and Carrier Filings",
               [label for _, label, _ in console_page.SCREENS] == [
                   "Upload & Compare", "Coverage Board", "Readiness Matrix", "Test Plan Builder", "Trace Diff",
-                  "Scenario Workbench", "Regression Library", "Queue & Run Log", "Deviations Proof"]
-              and html.count('class="tab"') == 9)
+                  "Scenario Workbench", "Regression Library", "Queue & Run Log", "Deviations Proof", "Carrier Filings"]
+              and html.count('class="tab"') == 10)
         check("A3 no external fonts, scripts or stylesheets (D7)",
               not any(s in html for s in ("<link", "src=\"http", "@import", "fonts.googleapis")))
 
