@@ -307,6 +307,14 @@ def group_f():
     kernel = Kernel()
     rated = matched = reconciled = 0
     stopped = []
+    # OI-92: ISO's own GA example omits its rating-required prem/ops territory and used to rate products only
+    # (6845, which ISO matched on the same deficient input). Since OI-134 the engine refuses it, naming the
+    # field. That one refusal is expected; it is counted here and nowhere else.
+    known = []
+
+    def is_known(name, r):
+        return (name == "GA" and not r.complete
+                and "GeneralLiabilityLocation.PremisesOperationsTerritory" in str(r.stopped))
     for d in sorted(p for p in payloads.iterdir() if p.is_dir()):
         src = d / "1. Input.json"
         if not src.exists():
@@ -315,6 +323,9 @@ def group_f():
             r = kernel.rate(src)
         except Exception as exc:                          # noqa: BLE001
             stopped.append(f"{d.name}: {type(exc).__name__}")
+            continue
+        if is_known(d.name, r):
+            known.append(d.name)
             continue
         if not r.complete:
             stopped.append(f"{d.name}: {str(r.stopped)[:40]}")
@@ -352,15 +363,17 @@ def group_f():
         except Exception:                                 # noqa: BLE001
             pass
 
-    check(f"F1 every payload rates end to end (>= {BASELINE_RATED})",
-          rated >= BASELINE_RATED,
+    check("F0 ISO's GA example is refused for the territory it omits (OI-92, OI-134)",
+          known == ["GA"], f"{known or 'not refused'}")
+    check(f"F1 every payload rates end to end (>= {BASELINE_RATED}, GA's known refusal counted)",
+          rated + len(known) >= BASELINE_RATED and not stopped,
           f"{rated} rated" + (f"; stopped: {stopped[:3]}" if stopped else ""))
     check(f"F2 exact agreement as filed does not regress (>= {BASELINE_MATCH})",
           matched >= BASELINE_MATCH, f"{matched} of {rated} match to the penny")
     check(f"F3 agreement with ISO's own TerrorismCoverage does not regress "
           f"(>= {BASELINE_RECONCILED})",
-          reconciled >= BASELINE_RECONCILED,
-          f"{reconciled} of {rated}")
+          reconciled + len(known) >= BASELINE_RECONCILED,
+          f"{reconciled} of {rated}, plus GA's known refusal")
 
     # F4 is the honest headline: every pair whose output actually came from its
     # input. The two exclusions are established from the files by
@@ -382,13 +395,16 @@ def group_f():
         alt = rap.reconciled(src, oracle)
         try:
             rr = kernel.rate(alt if alt is not None else src)
+            if is_known(d.name, rr):
+                comp_total -= 1           # not comparable: we refuse the input ISO rated half of (OI-92)
+                continue
             if rr.complete and rr.premium == rap.iso_premium(oracle):
                 comp_match += 1
         except Exception:                                 # noqa: BLE001
             pass
     check(f"F4 every usable oracle agrees (>= {BASELINE_COMPARABLE} of "
           f"{BASELINE_COMPARABLE})",
-          comp_match >= BASELINE_COMPARABLE and comp_match == comp_total,
+          comp_match + len(known) >= BASELINE_COMPARABLE and comp_match == comp_total,
           f"{comp_match} of {comp_total} comparable pairs match to the penny")
 
 

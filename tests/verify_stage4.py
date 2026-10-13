@@ -145,7 +145,7 @@ def group_b2():
 
 def group_c():
     print("\nC  ISO'S OWN 50 SUBMISSIONS VALIDATE")
-    errs, warns, n = 0, 0, 0
+    errs, warns, n, known = 0, 0, 0, 0
     worst = []
     for d in sorted(p for p in PAYLOADS.iterdir() if p.is_dir()):
         src = d / "1. Input.json"
@@ -155,11 +155,18 @@ def group_c():
         p = json.loads(src.read_text(encoding="utf-8-sig"))
         eff = p["body"]["SchemeKeys"]["EffectiveDateTime"][:10].replace("-", "")
         f = validate(p, schema_for(d.name, eff))
-        e = [x for x in f if x.level == "error"]
+        # OI-92: ISO's own GA example omits its rating-required prem/ops territory (it rates products only:
+        # 6845, not 7366). Since OI-134 the validator reports that as the V7 error it is; it is the one expected.
+        e = [x for x in f if x.level == "error"
+             and not (d.name == "GA" and x.code == "V7"
+                      and x.where == "GeneralLiabilityLocation.PremisesOperationsTerritory")]
+        known += sum(1 for x in f if x.level == "error") - len(e)
         errs += len(e)
         warns += sum(1 for x in f if x.level == "warning")
         if e:
             worst.append(f"{d.name}: {e[0]}")
+    check("C0 ISO's GA example is reported missing its prem/ops territory (OI-92, found again by OI-134's V7)",
+          known == 1, f"{known} known error(s)")
     check("C1 every ISO submission validates with no errors", errs == 0,
           f"{n} payloads, {errs} errors, {warns} warnings"
           + (f"; {worst[:2]}" if worst else ""))
@@ -300,10 +307,76 @@ def group_g():
           f"{'looked up' if has_lc else 'NEVER LOOKED UP'}")
 
 
+def group_h():
+    print("\nH  REQUIRED INPUTS -- ISO's conditions evaluated, missing rating inputs refused (OI-134)")
+    import copy
+    from gl_engine.interp.tree import Node
+    from gl_engine.interp import tree as T
+    from gl_engine.schema.condition import ConditionError, holds
+    from gl_engine.schema.validate import rating_inputs
+
+    root = Node.from_dict("Root", {"GeneralLiabilityTable": {"GeneralLiability": {
+        "Subline": "Premises/Operations and Products/Completed Operations", "ProdsCompldOpsExclusion": "No",
+        "GeneralLiabilityLocationTable": {"GeneralLiabilityLocation": {"GeneralLiabilityClassificationTable": {
+            "GeneralLiabilityClassification": {"ClassCode": "10020", "PremOpsPDDeductible": "500 Per Claim"}}}}}}})
+    gl = T.select("GeneralLiabilityTable/GeneralLiability", root)[0]
+    cl = T.select("GeneralLiabilityLocationTable/GeneralLiabilityLocation/GeneralLiabilityClassificationTable/"
+                  "GeneralLiabilityClassification", gl)[0]
+    cases = [
+        (gl, "Subline[.='Premises/Operations and Products/Completed Operations']", True),
+        (gl, "Subline[.= 'Products/Completed Operations' or .='Liquor']", False),
+        (cl, "((../../../../Subline[.='Premises/Operations and Products/Completed Operations'] and "
+             "../../../../ProdsCompldOpsExclusion[.='No'])  or ../../../../Subline[.='Products/Completed Operations'])"
+             " and ClassCode[.='10011' or .='10020']", True),
+        (cl, "../../../../Subline[.='Premises/Operations and Products/Completed Operations'] and "
+             "PremOpsPDDeductible[contains(.,'Per Claim')]", True),
+        (cl, "count(../../GeneralLiabilityClassificationTable/GeneralLiabilityClassification) > 1", False),
+        (gl, "ScheduleRatingModificationApplies [.= 'Yes']", False),
+    ]
+    bad = [c for n, c, want in cases if holds(c, n) != want]
+    check("H1 ISO's condition slice evaluates: paths, predicates, or/and, contains(), count()",
+          not bad, f"{len(cases) - len(bad)} of {len(cases)}" + (f"; wrong: {bad[0][:60]}" if bad else ""))
+    try:
+        holds("substring(Subline,1,3)='Pre'", gl)
+        refused = False
+    except ConditionError:
+        refused = True
+    check("H2 a function outside the slice is refused, not guessed", refused)
+
+    inputs = rating_inputs()
+    check("H3 the measured rating inputs are loaded (57_rating_inputs.py)",
+          {"GeneralLiability.Subline", "GeneralLiability.ProdsCompldOpsExclusion"} <= inputs, f"{len(inputs)} fields")
+
+    sys.path.insert(0, str(ROOT / "scripts"))
+    from console import workbench as WB
+    k = Kernel(resolver=RESOLVER)
+    req = WB.build("GL", "TX", {"effective_date": "20270501"})
+    ok = k.rate(copy.deepcopy(req))
+    omit = copy.deepcopy(req)
+    omit["body"]["GeneralLiability"][0].pop("ProdsCompldOpsExclusion")
+    r = k.rate(omit)
+    check("H4 TX 2027 with ProdsCompldOpsExclusion rates; without it the engine refuses, naming it "
+          "(ISO prices $895 vs $7,740, no message)",
+          ok.complete and ok.premium == Decimal("7740") and not r.complete
+          and "ProdsCompldOpsExclusion" in str(r.stopped), f"{ok.premium}; refused: {str(r.stopped)[:90]}")
+    f = [x for x in validate(omit, schema_for("TX", "20270501")) if x.code == "V7"]
+    check("H5 the validator reports it as a V7 error", len(f) == 1 and f[0].level == "error",
+          f"{[x.where for x in f]}")
+    no_sub = copy.deepcopy(req)
+    no_sub["body"]["GeneralLiability"][0].pop("Subline")
+    r = k.rate(no_sub)
+    check("H6 an unconditional rating input (Subline: priced $0 without it) refuses too",
+          not r.complete and "Subline" in str(r.stopped), str(r.stopped)[:90])
+    warn = [x for x in validate(req, schema_for("TX", "20270501")) if x.code in ("V6", "V7")]
+    check("H7 an informational required field left out is a warning, never an error",
+          warn and all(x.level != "error" for x in warn if x.code == "V6") and not any(x.code == "V7" for x in warn),
+          f"{len(warn)} V6 finding(s) on the console's TX request")
+
+
 def main() -> int:
     print("Stage 4 acceptance -- schemas and payloads")
     group_a(); group_b(); group_b2(); group_c(); group_d(); group_e()
-    group_f(); group_g()
+    group_f(); group_g(); group_h()
     total = len(PASS) + len(FAIL)
     print(f"\n{len(PASS)}/{total} passed")
     if FAIL:

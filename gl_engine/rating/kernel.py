@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import copy
 import json
+import os
 from dataclasses import dataclass, field
 from decimal import Decimal
 from pathlib import Path
@@ -36,6 +37,9 @@ from . import referrals
 from .submission import from_raas, load as load_submission
 
 #: The two behavioural modes. One engine, one code path, two policies.
+#: OI-134: "on" refuses a submission missing a required rating input; "off" for measuring (57_rating_inputs.py).
+RATING_INPUTS_CHECK = os.environ.get("ERC_RATING_INPUTS", "on")
+
 STRICT = "strict-erc"
 UNDERWRITING = "underwriting"
 MODES = (STRICT, UNDERWRITING)
@@ -148,6 +152,7 @@ class Kernel:
         self.rounding = rounding
         self.resolver = resolver or EditionResolver()
         self.register = _load_register()
+        self._schemas: dict = {}           # OI-134: one Schema per resolved package pair
 
     # ------------------------------------------------------------------ rate
 
@@ -190,6 +195,11 @@ class Kernel:
         result = Rating(juris=juris, asof=asof, mode=self.mode, book=book,
                         tree=data, trace=interp.trace,
                         messages=interp.messages)
+        try:
+            self._refuse_missing_rating_inputs(data, book)
+        except RatingError as exc:
+            result.stopped = exc
+            return result
         try:
             interp.run(data)
             result.complete = True
@@ -266,6 +276,42 @@ class Kernel:
         if with_technical:
             carrier.technical = technical
         return carrier
+
+    # --------------------------------------------- OI-134, a missing rating input
+
+    def _refuse_missing_rating_inputs(self, data: Node, book) -> None:
+        """Refuse a submission that leaves out an input ISO requires and the premium depends on. **OI-134.**
+
+        ISO's field file marks each input required, often only when a condition holds
+        (`ProdsCompldOpsExclusion` when the subline includes Products). ISO's rating service does not apply
+        its own form's requirements: left out, `ProdsCompldOpsExclusion` switches Products/Completed Ops off
+        and ISO prices TX at $895 instead of $7,740, with no message (confirmed live 2026-10-13). Measured by
+        `scripts/erc/57_rating_inputs.py`, fourteen such inputs move the premium silently when left out
+        (`Subline` to $0, a premium basis to $6,783,982). **A missing rating input is not a zero-rated risk;
+        it is an unrated one** -- the same distinction as OI-94 one step earlier.
+
+        Only the inputs in `rating_inputs.json` refuse; every other missing required field is a validator
+        warning (V6), because ISO rates without it and the premium does not move. A condition the evaluator
+        cannot read reports nothing rather than guess. `ERC_RATING_INPUTS=off` disables the check (the
+        measuring script needs it off).
+        """
+        if RATING_INPUTS_CHECK == "off":
+            return
+        from ..schema import Schema
+        from ..schema.validate import missing_required
+        key = tuple(getattr(x, "pkg_id", None) for x in (book.resolution.state, book.resolution.parent))
+        schema = self._schemas.get(key)
+        if schema is None:
+            schema = self._schemas[key] = Schema.for_book(book)
+        missing = [m for m in missing_required(data, schema)[0] if m.rating_input]
+        if not missing:
+            return
+        m = missing[0]
+        others = f" (and {len(missing) - 1} more: {', '.join(x.name for x in missing[1:4])})" if len(missing) > 1 else ""
+        raise RatingError(
+            f"{m.name} is required{' when ' + m.condition if m.condition else ''} and was not supplied{others}. "
+            f"ISO's form requires it and the premium depends on it: left out, the rules price the risk as if it "
+            f"were absent, with no message (ISO's own service does the same). Supply it to rate (OI-134).")
 
     # ------------------------------------------------------ OI-94, the refusal
 

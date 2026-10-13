@@ -33,10 +33,13 @@ Five checks, and each says what it does *not* cover:
 """
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass
+from pathlib import Path
 
 from ..interp import tree
 from ..rating.submission import from_raas
+from .condition import ConditionError, holds
 
 #: Measured, not asserted: exactly these four back
 #: `GeneralLiabilityLocation.TerrorismTerritory` with `TerrorismTerritoryCode`,
@@ -96,6 +99,89 @@ def _walk(node, table: str, out: list) -> None:
             out.append((table, c.tag, c))
 
 
+#: The required fields whose absence changes the premium without a refusal (OI-134). Measured, not chosen:
+#: `scripts/erc/57_rating_inputs.py` drops each ISO-required field a request carries, one at a time, in every
+#: state, and lists those where the premium moves and the engine does not stop. Regenerate it when ISO files.
+RATING_INPUTS_FILE = Path(__file__).with_name("rating_inputs.json")
+
+
+def rating_inputs() -> frozenset:
+    """`Table.Column` names from `rating_inputs.json`; empty if the file is absent."""
+    global _RATING_INPUTS
+    if _RATING_INPUTS is None:
+        try:
+            _RATING_INPUTS = frozenset(json.loads(RATING_INPUTS_FILE.read_text(encoding="utf-8"))["fields"])
+        except (OSError, ValueError, KeyError):
+            _RATING_INPUTS = frozenset()
+    return _RATING_INPUTS
+
+
+_RATING_INPUTS = None
+
+
+def _rows(node, table: str, out: list) -> list:
+    """(table, row) for every row of every table, with ISO's table naming (as `_walk` names leaves)."""
+    out.append((table, node))
+    for c in node.children:
+        if _is_wrapper(c):
+            for item in c.children:
+                _rows(item, c.tag[:-5], out)
+        elif c.children:
+            _rows(c, f"{table}.{c.tag}", out)
+    return out
+
+
+@dataclass(frozen=True)
+class Missing:
+    """An ISO-required input absent from a row where ISO's conditions say it is required."""
+
+    table: str
+    column: str
+    condition: str          # ISO's RequiredCondition (or display Condition) that held; "" when unconditional
+    rating_input: bool      # in rating_inputs.json: leaving it out changes the premium silently
+
+    @property
+    def name(self) -> str:
+        return f"{self.table}.{self.column}"
+
+
+def missing_required(root, schema) -> tuple[list, list]:
+    """Every required input absent where ISO's conditions hold, and the conditions that could not be read.
+
+    `root` is the data tree (`from_raas(...)[0]`). A field is required on a row when ISO marks it
+    PolicyRequired, it is an input, and both its display `Condition` and its `RequiredCondition` (when present)
+    hold for that row -- evaluated by `condition.holds`. A condition outside that evaluator's slice is returned
+    in the second list and the field is NOT reported: never guess a requirement.
+    """
+    by_table: dict = {}
+    for risk in tree.select("GeneralLiabilityTable/GeneralLiability", root):
+        for t, n in _rows(risk, "GeneralLiability", []):
+            by_table.setdefault(t, []).append(n)
+    inputs = rating_inputs()
+    out, unread, seen = [], [], set()
+    for f in schema:
+        if not f.policy_required or not f.is_input:
+            continue
+        for row in by_table.get(f.table, ()):
+            held, ok = "", True
+            for cond in (f.condition, f.required_condition):
+                if not cond:
+                    continue
+                try:
+                    if not holds(cond, row):
+                        ok = False
+                        break
+                    held = cond
+                except ConditionError:
+                    unread.append(cond)
+                    ok = False
+                    break
+            if ok and row.first(f.column) is None and (f.table, f.column) not in seen:
+                seen.add((f.table, f.column))
+                out.append(Missing(f.table, f.column, held, f"{f.table}.{f.column}" in inputs))
+    return out, unread
+
+
 def validate(payload: dict, schema) -> list:
     """Every finding, in payload order. Never raises on a bad submission."""
     try:
@@ -142,6 +228,26 @@ def validate(payload: dict, schema) -> list:
             findings.append(Finding(
                 ERROR, "V2", f"GeneralLiability.{f.column}",
                 f"required on a policy in {schema.juris} and not supplied"))
+
+    # V6 / V7 (OI-134): conditional requirements too, evaluated. A rating input missing is an error (the engine
+    # refuses it); any other required field missing is a warning -- ISO rates without it.
+    reported = {(x.code, x.where) for x in findings}
+    missing, unread = missing_required(root, schema)
+    for m in missing:
+        if m.rating_input:
+            findings.append(Finding(
+                ERROR, "V7", m.name,
+                f"a rating input ISO requires{' when ' + m.condition if m.condition else ''}, not supplied: "
+                f"leaving it out changes the premium, so the engine refuses (OI-134)"))
+        elif ("V2", m.name) not in reported:
+            findings.append(Finding(
+                WARNING, "V6", m.name,
+                f"ISO's form requires it{' when ' + m.condition if m.condition else ''}; not supplied "
+                f"(ISO rates without it; it does not change the premium)"))
+    if unread:
+        findings.append(Finding(
+            INFO, "V6", "conditions",
+            f"{len(set(unread))} required-field condition(s) outside the evaluated slice; those fields not checked"))
 
     if schema.juris in PLACE_CODED:
         for i, loc in enumerate(tree.select(

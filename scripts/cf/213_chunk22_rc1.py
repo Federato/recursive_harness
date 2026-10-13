@@ -396,7 +396,11 @@ def touchpoints():
         "gl_engine/interp/graph.py": "rating graph G1 (27e7328): records only, never changes a value; 157_ --all 293 of 293 and "
                                      "snapshot clean, 2026-10-13 (missed from this list on 2026-10-09)",
         "gl_engine/rating/kernel.py": "deviations P2/P3 (5aeffe9, df47960): Kernel.rate(company=), inactive without one; "
-                                      "157_ --all 293 of 293 and snapshot clean, 2026-10-13 (missed from this list on 2026-10-09)",
+                                      "157_ --all 293 of 293 and snapshot clean, 2026-10-13 (missed from this list on 2026-10-09); "
+                                      "OI-134 missing-rating-input refusal, GL only (Property never reaches the GL kernel): "
+                                      "snapshot clean but for OI-135's known flake, 170 GL requests 1 deliberate change, 2026-10-13",
+        "gl_engine/schema/validate.py": "OI-134 V6/V7 (ISO's required-field conditions evaluated): GL only, Property never reaches "
+                                        "it; verify_stage4 38/38, snapshot clean but for OI-135's known flake, 2026-10-13",
         "gl_engine/interp/interpreter.py": "C28-05 strict SingleResult; C28-08 / C28-09 submitted inputs (OI-125 / OI-112); 157_ --all 293 of 293, 2026-10-05; "
                                            "C28-19 older package, then C28-21 (Property steps moved out to run_hooks); 157_ --all 293 of 293 after each, snapshot clean, 2026-10-06",
         "cf_engine/resolve/book.py": "C28-05 strict default and EQ stub; C28-08 / C28-09 switches; 157_ --all 293 of 293, 2026-10-05; "

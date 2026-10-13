@@ -542,7 +542,7 @@ live match (`scripts/erc/out/phase2.csv`: 50 MATCH, edition agrees in all 50), O
 pass, no ISO calls. **This section supersedes each item's own status row.** Backlog: `docs/BACKLOG-2026-10-13.md`.
 
 **Result:** CLOSE 26 · STILL OPEN 19 · PARK 16 · MERGE 5 (OI-14, OI-30, OI-33 into OI-87; OI-23 into OI-54;
-OI-64 into OI-81) · new: OI-134. **Since:** OI-127 closed (fixed, ISO-confirmed); OI-135 raised.
+OI-64 into OI-81) · new: OI-134. **Since:** OI-127 closed (fixed, ISO-confirmed); OI-134 closed (missing rating inputs refuse); OI-135 raised.
 
 **Corrections found on the way:**
 - OI-127 to OI-132 cite `630ba2f`; that is a Property chunk 27 commit. The reconciliation that raised them is
@@ -556,11 +556,17 @@ OI-64 into OI-81) · new: OI-134. **Since:** OI-127 closed (fixed, ISO-confirmed
   message parity is proven on Property only. OI-75 closes on that evidence; a GL message comparison would make it
   airtight.
 
-### OI-134 · New · The 2027-04-01 fixes for OI-96 and OI-97 exist only in the test generator
+### OI-134 · CLOSED 2026-10-13 · The 2027-04-01 fixes for OI-96 and OI-97 existed only in the test generator
 
 | # | Item | Status | Detail |
 |---|---|---|---|
 | **OI-134** | **A real submission on a 2027-04-01+ GL edition can price silently wrong** | `BUILD WORK` **2026-10-13** — an engine / intake change, needs the user's go | The OI-96 / OI-97 handling lives only in `scripts/variants.py` (`_apply_effective_date`), which builds test variants; nothing in `gl_engine`, the console or `/api/rate` applies it. **Reproduced offline 2026-10-13:** the console's TX request on 2027-05-01 rates **$7,740** with `ProdsCompldOpsExclusion = "No"` and **$895** with the field omitted: Products/Completed Operations drops to $0 with no message and no referral. Same shape: a pre-2027 `" CSL"` limit leaves `CSLILF` null while Prem/Ops still writes a plausible `FinalILF` (0.007 in TX), and OI-130(d), Stop Gap's old `" BI"` suffix. **ISO does the same on the same input**, so a comparison with ISO cannot catch any of them: it has to be a refusal or referral on our side when the 2027 edition resolves and the field is absent or carries a retired limit form. Backlog RC-2 |
+
+### OI-134 · how it closed (backlog B-27)
+
+| # | Item | Status | Detail |
+|---|---|---|---|
+| **OI-134** | **A submission missing an input ISO requires, and the premium depends on, priced silently** | `CLOSED` **2026-10-13** | **ISO, 2 calls (TX 2027-05-01):** with `ProdsCompldOpsExclusion = "No"` ISO and we price $7,740 (Products $6,845); left out, both price **$895** (Products indicator 0, premium 0), no message. **ISO's form file requires the field** when the subline includes Products and defaults it to "No"; ISO's rating service does not apply its own form. **It was one of fourteen.** `scripts/erc/57_rating_inputs.py` drops each required input a request carries, one at a time, in all 51 states at 2026-08-01 and 2027-05-01: 4,385 drops, **964 silent** (premium moves, nothing refuses) across 14 fields -- `Subline` left out prices **$0**, a premium basis **$6,783,982**, the occurrence limit **$2** (AL), NY's `ClassCode` **$0**; 204 stop, 3,217 change nothing. **Fix:** `gl_engine/schema/condition.py` evaluates ISO's `RequiredCondition` / `Condition` (an XPath slice: paths, predicates, or/and, comparisons, contains(), count(), not(); 377 distinct conditions, all read; anything else refuses to evaluate rather than guess); `gl_engine/schema/rating_inputs.json` (the 14, written by `57_`); the validator reports a missing rating input as **V7 (error)** and any other missing required field as **V6 (warning)** -- every request omits some informational required field and ISO rates it; **the kernel refuses** a missing rating input where ISO's conditions require it, naming the field and condition (`ERC_RATING_INPUTS=off` for measuring). **It found OI-92 again on its own**: ISO's GA example still omits its prem/ops territory (`verify_stage4` C0). **Checked:** 170 GL requests (stored ISO answers and the 51 samples) -- one outcome changes, the deliberate TX probe; `verify_stage4` 38/38 (H1-H7, C0 new), `verify_stage3` 39/39 (F0 new: GA's refusal expected, the other 49 examples rate and the 48 comparable match ISO), `verify_interp` 80/80, Property snapshot clean but for OI-135's known flake, full regression `104_` 186/186 (run in two parts after a low-memory stop; `213_` re-verification list given `validate.py`). **Scope:** GL. The drone `" CSL"` limit and Stop Gap's `" BI"` suffix (OI-130(d)) are values outside the 2027 domains, which the validator's V3 should report (not yet checked); that, and refusing on it, is OI-130's step |
 
 ### OI-127 · CLOSED 2026-10-13 · fixed, confirmed by ISO (backlog B-06)
 
