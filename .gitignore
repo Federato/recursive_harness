@@ -83,3 +83,7 @@ Thumbs.db
 
 # Incoming carrier filings dropped here; archived (hash-checked) in Carriers/<carrier>/sources/<SERFF>
 DeviationDocs/
+
+# Local reference files, kept out of git (2026-10-13)
+Outputs/
+Design brief questionnaire.zip
