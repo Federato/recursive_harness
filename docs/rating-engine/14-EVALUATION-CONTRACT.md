@@ -431,6 +431,14 @@ child. Args are evaluated **before** the call, in order, in the caller's frame. 
 holds a `RunRule` (46,556)** — arguments are frequently themselves calls, which is why evaluation
 order has to be stated rather than left to the implementation.
 
+**A `WithArgs`'s Args see the Args bound before them** (OI-128, 2026-10-13). Each is evaluated in the
+caller's frame *plus* its earlier siblings, so a later Arg may be computed from an earlier one, and a
+sibling shadows an enclosing binding of the same name. 34 rule sites rely on it (5 GL, 29 Property;
+e.g. Limited Product Withdrawal's `SetMinPremium`, whose `MaxAdjustedMinPremium` reads its two
+siblings). Binding them all in the caller's frame alone stopped every pre-2027 Limited Product
+Withdrawal policy; ISO, 2 calls, rates them ($888 MO sample, $8,321 TX) exactly as in-order binding
+does. `ERC_WITHARGS_BIND=parallel` restores the old binding for comparison.
+
 ---
 
 ## 9. Iteration and the output tree

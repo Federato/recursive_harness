@@ -613,12 +613,19 @@ def _arg(ip, el, fr):
     raise InterpretError("Arg outside a call or WithArgs", "§8", ip.where(el))
 
 
+#: OI-128: how a `WithArgs`'s Args see each other. "sequential" (each Arg sees the ones bound before it, as ISO's
+#: rules are written: `SetMinPremium`'s `MaxAdjustedMinPremium` reads its two sibling Args, and every pre-2027
+#: Limited Product Withdrawal policy stopped on it) or "parallel" (every Arg in the enclosing frame only: the
+#: engine before OI-128, kept for comparison). 34 sites read an earlier sibling (5 GL, 29 Property).
+WITHARGS_BIND = os.environ.get("ERC_WITHARGS_BIND", "sequential")
+
+
 @node("WithArgs")
 def _with_args(ip, el, fr):
     """Bind parameters around a body (contract §8).
 
-    Args come first and are evaluated in the enclosing frame; every remaining
-    child is the body, evaluated with the bindings visible.
+    Args come first, in order, each evaluated in the enclosing frame plus the Args bound before it (OI-128);
+    every remaining child is the body, evaluated with all the bindings visible.
     """
     bindings = {}
     body = []
@@ -629,7 +636,11 @@ def _with_args(ip, el, fr):
                 raise InterpretError(
                     "WithArgs has an Arg after the body began", "§8",
                     ip.where(el))
-            bindings.update(_arg_binding(ip, ch, fr, prov))
+            at = fr.with_params(bindings) if WITHARGS_BIND == "sequential" else fr
+            if prov is not None and at.params is not fr.params:
+                ip.deps.bind(at.params, dict(prov))
+                ip.deps.inherit(at.params, fr.params)
+            bindings.update(_arg_binding(ip, ch, at, prov))
         else:
             body.append(ch)
     inner = fr.with_params(bindings)

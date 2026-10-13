@@ -483,10 +483,32 @@ def group_i():
     check("I13 R30 and R31 are wired as detectors", {"R30", "R31"} <= set(RF.DETECTORS))
 
 
+def group_j():
+    print("\nJ  PRE-2027 LIMITED PRODUCT WITHDRAWAL RATES (OI-128, B-08)")
+    import copy
+    sys.path.insert(0, str(ROOT / "scripts"))
+    from console import workbench as WB
+    from gl_engine.interp import tree
+    k = Kernel(resolver=RESOLVER)
+    p = WB.build("GL", "TX", {"effective_date": "20260801"})
+    g = p["body"]["GeneralLiability"][0]
+    g.update(ProdsWithdrawalCoverage="Yes", ProductWithdrawalParticipationPercentage="50", PremiumDiscountPercentage=0)
+    g["GeneralLiabilityLimitedProductWithdrawalExpenseEndtPolLvl"] = [
+        {"AggregateLimit": "100,000", "Deductible": "1,000 Per Occurrence", "ManualPremium": 500.0}]
+    r = k.rate(copy.deepcopy(p))
+    lpw = [c.first("Premium").text for c in tree.select(
+        "GeneralLiabilityTable/GeneralLiability/GeneralLiabilityLimitedProductWithdrawalExpenseEndtPolLvlTable/"
+        "GeneralLiabilityLimitedProductWithdrawalExpenseEndtPolLvl/GeneralLiabilityLimitedProductWithdrawalExpenseCoverage",
+        r.tree)] if r.complete else []
+    check("J1 TX 2026-08 with Limited Product Withdrawal rates as ISO does: $8,321, the endorsement $500 (it stopped: "
+          "SetMinPremium's Arg read its siblings)", r.complete and r.premium == Decimal("8321") and lpw == ["500"],
+          f"{r.premium if r.complete else str(r.stopped)[:80]}; LPW {lpw}")
+
+
 def main() -> int:
     print("Stage 4 acceptance -- schemas and payloads")
     group_a(); group_b(); group_b2(); group_c(); group_d(); group_e()
-    group_f(); group_g(); group_h(); group_i()
+    group_f(); group_g(); group_h(); group_i(); group_j()
     total = len(PASS) + len(FAIL)
     print(f"\n{len(PASS)}/{total} passed")
     if FAIL:

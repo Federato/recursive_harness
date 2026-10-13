@@ -558,6 +558,33 @@ def group_b() -> None:
     finally:
         N.FOREACH_YIELD = was
 
+    # OI-128: Limited Product Withdrawal's `SetMinPremium` -- a third Arg computed from its two siblings. ISO
+    # binds Args in order (2 calls, 2026-10-13: MO sample $888, TX $8,321, both stopped here before).
+    sib = ('<rul:WithArgs>'
+           '<rul:Arg Type="decimal" Param="P"><rul:Constant Type="decimal">3</rul:Constant></rul:Arg>'
+           '<rul:Arg Type="decimal" Param="Q"><rul:Product><rul:Value Type="decimal" FromParam="P"/>'
+           '<rul:Constant Type="decimal">2</rul:Constant></rul:Product></rul:Arg>'
+           '<rul:Value Type="decimal" FromParam="Q"/></rul:WithArgs>')
+    was = N.WITHARGS_BIND
+    try:
+        N.WITHARGS_BIND = "sequential"
+        v, _, _ = run(sib)
+        check("B41 a WithArgs Arg reads the Args bound before it (OI-128)", v == Decimal(6), repr(v))
+        v, _, _ = run('<rul:WithArgs><rul:Arg Type="decimal" Param="P"><rul:Constant Type="decimal">9</rul:Constant>'
+                      '</rul:Arg>' + sib + '</rul:WithArgs>')
+        check("B42 ... and a sibling shadows an enclosing binding of the same name (inner P 3, not outer 9)",
+              v == Decimal(6), repr(v))
+        N.WITHARGS_BIND = "parallel"
+        try:
+            run(sib)
+            stopped = False
+        except Exception as exc:                                 # noqa: BLE001
+            stopped = "not bound" in str(exc)
+        check("B43 with ERC_WITHARGS_BIND=parallel the old behaviour is still reachable: unbound, stops",
+              stopped)
+    finally:
+        N.WITHARGS_BIND = was
+
 
 # ------------------------------------------------------------------- C the real
 

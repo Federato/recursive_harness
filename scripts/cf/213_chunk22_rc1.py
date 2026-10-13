@@ -390,7 +390,9 @@ def touchpoints():
     # the quick tier, which skips this script). Both fixed: a git error fails the check, and the changes are listed.
     REVERIFIED = {
         "gl_engine/interp/nodes.py": "c7ffe66 chunk 24; C28-07 (OI-126 / OI-123) and C28-10 (OI-114); 157_ --all 293 of 293, 2026-10-05; "
-                                     "OI-127 ForEach yields every value child; 157_ --all 293 of 293, snapshot clean, 2026-10-13",
+                                     "OI-127 ForEach yields every value child; 157_ --all 293 of 293, snapshot clean, 2026-10-13; "
+                                     "OI-128 WithArgs binds its Args in order (ISO 2 calls); 157_ --all 293 of 293, snapshot clean, "
+                                     "175 GL requests 2 changes (both stopped LPW policies, now ISO's figure), 2026-10-13",
         "cf_engine/rating.py": "deviations P2 (5aeffe9, a company hook: inactive without a WritingCompany); 157_ --all 293 of 293 "
                                "and snapshot clean, 2026-10-13 (missed from this list on 2026-10-09)",
         "gl_engine/interp/graph.py": "rating graph G1 (27e7328): records only, never changes a value; 157_ --all 293 of 293 and "
