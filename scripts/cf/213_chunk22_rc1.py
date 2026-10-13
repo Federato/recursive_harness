@@ -398,9 +398,11 @@ def touchpoints():
         "gl_engine/rating/kernel.py": "deviations P2/P3 (5aeffe9, df47960): Kernel.rate(company=), inactive without one; "
                                       "157_ --all 293 of 293 and snapshot clean, 2026-10-13 (missed from this list on 2026-10-09); "
                                       "OI-134 missing-rating-input refusal, GL only (Property never reaches the GL kernel): "
-                                      "snapshot clean but for OI-135's known flake, 170 GL requests 1 deliberate change, 2026-10-13",
+                                      "snapshot clean but for OI-135's known flake, 170 GL requests 1 deliberate change, 2026-10-13"
+                                      "OI-130 (B-07) off-list / Stop Gap refusals and R30 / R31 notices, GL only: 157_ --all 293 of 293, snapshot clean, 170 GL requests no new change, 2026-10-13",
         "gl_engine/schema/validate.py": "OI-134 V6/V7 (ISO's required-field conditions evaluated): GL only, Property never reaches "
-                                        "it; verify_stage4 38/38, snapshot clean but for OI-135's known flake, 2026-10-13",
+                                        "it; verify_stage4 38/38, snapshot clean but for OI-135's known flake, 2026-10-13"
+                                        "OI-130 (B-07) off-list / Stop Gap refusals and R30 / R31 notices, GL only: 157_ --all 293 of 293, snapshot clean, 170 GL requests no new change, 2026-10-13",
         "gl_engine/interp/interpreter.py": "C28-05 strict SingleResult; C28-08 / C28-09 submitted inputs (OI-125 / OI-112); 157_ --all 293 of 293, 2026-10-05; "
                                            "C28-19 older package, then C28-21 (Property steps moved out to run_hooks); 157_ --all 293 of 293 after each, snapshot clean, 2026-10-06",
         "cf_engine/resolve/book.py": "C28-05 strict default and EQ stub; C28-08 / C28-09 switches; 157_ --all 293 of 293, 2026-10-05; "
@@ -410,6 +412,9 @@ def touchpoints():
         "cf_engine/run_checks.py": "C28-21: chunk 28's Property steps, moved unchanged from the interpreter; 157_ --all 293 of 293, snapshot clean (no rebaseline), 2026-10-06",
         "cf_engine/__init__.py": "C28-21: docstring only; no rating code",
         "cf_engine/config.py": "the corpus root's default moved to F: (new PC, 2026-10-05); no rating code",
+        "gl_engine/rating/referrals.py": "OI-130 (B-07): R30 / R31 detectors and the not-offered label, notices and underwriting referrals only, never a value; GL only; 157_ --all 293 of 293, snapshot clean, 2026-10-13",
+        "gl_engine/schema/condition.py": "OI-134 (B-27): reads ISO's required-field conditions, GL only; Property never reaches it; 157_ --all 293 of 293, snapshot clean, 2026-10-13 (missed from this list at B-27)",
+        "gl_engine/schema/rating_inputs.json": "OI-134 / OI-130 data (57_ --write): 17 fields, 35 list fields; GL only; 157_ --all 293 of 293, snapshot clean, 2026-10-13",
         "gl_engine/config.py": "the corpus root's default moved to F: (new PC, 2026-10-05); no rating code",
     }
     git = subprocess.run(["git", "diff", "--name-only", "5a35c1f", "--", "cf_engine", "gl_engine"],

@@ -1,15 +1,84 @@
 {
- "what": "ISO-required inputs whose absence changes the premium with no refusal (OI-134). The engine refuses a rating that leaves one out where ISO's conditions require it.",
+ "what": "Answers whose absence (fields) or off-list value (list_fields) changes the premium with no refusal and no ISO message (OI-134, OI-130). The engine refuses a rating that leaves a field out or blank where ISO's conditions require it, or gives a list field a value not on ISO's list.",
  "measured": "2026-10-13",
  "by": "scripts/erc/57_rating_inputs.py",
  "dates": [
   "20260801",
   "20270501"
  ],
- "drops": {
-  "same": 3217,
-  "silent": 964,
-  "stops": 204
+ "population": [
+  "console-AK",
+  "console-AL",
+  "console-AR",
+  "console-AZ",
+  "console-CA",
+  "console-CO",
+  "console-CT",
+  "console-DC",
+  "console-DE",
+  "console-FL",
+  "console-GA",
+  "console-IA",
+  "console-ID",
+  "console-IL",
+  "console-IN",
+  "console-KS",
+  "console-KY",
+  "console-LA",
+  "console-MA",
+  "console-MD",
+  "console-ME",
+  "console-MI",
+  "console-MN",
+  "console-MO",
+  "console-MS",
+  "console-MT",
+  "console-NC",
+  "console-ND",
+  "console-NE",
+  "console-NH",
+  "console-NJ",
+  "console-NM",
+  "console-NV",
+  "console-NY",
+  "console-OH",
+  "console-OK",
+  "console-OR",
+  "console-PA",
+  "console-PR",
+  "console-RI",
+  "console-SC",
+  "console-SD",
+  "console-TN",
+  "console-TX",
+  "console-UT",
+  "console-VA",
+  "console-VT",
+  "console-WA",
+  "console-WI",
+  "console-WV",
+  "console-WY",
+  "OCP-WY",
+  "Liquor-AL",
+  "Railroad-RI",
+  "Railroad-NH",
+  "Cyber-IL",
+  "Drone-TX",
+  "StopGap-ND",
+  "StopGap-WA",
+  "StopGapManual-ND",
+  "Company-TX",
+  "Terrorism-NY"
+ ],
+ "tries": {
+  "invalid messaged": 9,
+  "invalid same": 3101,
+  "invalid silent": 714,
+  "invalid stops": 1230,
+  "missing messaged": 35,
+  "missing same": 3737,
+  "missing silent": 1177,
+  "missing stops": 233
  },
  "fields": [
   "GeneralLiability.GeneralAggregateLimit",
@@ -22,67 +91,445 @@
   "GeneralLiabilityCertifiedActsOfTerrorismAggregateLimitCapOnLossesFromCertifiedActsOfTerrorismPremOps.AggregateLimit",
   "GeneralLiabilityClassification.ClassCode",
   "GeneralLiabilityClassification.OtherThanProdsCompldOpsCov",
+  "GeneralLiabilityClassification.PremOpsIncrdLimitTableAssignmentOverride",
   "GeneralLiabilityClassification.PremOpsPremiumBasis",
   "GeneralLiabilityClassification.ProdsCompldOpsCov",
+  "GeneralLiabilityClassification.ProdsCompldOpsIncrdLimitTableAssignmentOverride",
   "GeneralLiabilityClassification.ProdsCompldOpsPremiumBasis",
+  "GeneralLiabilityLocation.CertifiedActsOfTerrorismManhattan",
   "GeneralLiabilityLocation.PremisesOperationsTerritory"
  ],
+ "list_fields": [
+  "GeneralLiability.CyberIncidentLiabilityCoverageApplies",
+  "GeneralLiability.GeneralAggregateLimit",
+  "GeneralLiability.LimitedCovForDesignatedUnmannedAircraft",
+  "GeneralLiability.OwnersContractorsAggregateLimit",
+  "GeneralLiability.OwnersContractorsEachOccurrenceLimit",
+  "GeneralLiability.PremOpsProdsCoverageForm",
+  "GeneralLiability.RailroadAggregateLimit",
+  "GeneralLiability.RailroadEachOccurrenceLimit",
+  "GeneralLiability.StopGap",
+  "GeneralLiability.Subline",
+  "GeneralLiability.TRIPTerminatesBeforeExpirationDate",
+  "GeneralLiability.TerrorismCoverage",
+  "GeneralLiabilityCertifiedActsOfTerrorismAggregateLimitCapOnLossesFromCertifiedActsOfTerrorismPremOps.AggregateLimit",
+  "GeneralLiabilityClassification.LiquorPremiumBasis",
+  "GeneralLiabilityClassification.NumPassgrFreightTrains",
+  "GeneralLiabilityClassification.OtherThanProdsCompldOpsCov",
+  "GeneralLiabilityClassification.PremOpsBIDeductible",
+  "GeneralLiabilityClassification.PremOpsPDDeductible",
+  "GeneralLiabilityClassification.PremOpsPremiumBasis",
+  "GeneralLiabilityClassification.ProdsCompldOpsBIDeductible",
+  "GeneralLiabilityClassification.ProdsCompldOpsCov",
+  "GeneralLiabilityClassification.ProdsCompldOpsPDDeductible",
+  "GeneralLiabilityClassification.ProdsCompldOpsPremiumBasis",
+  "GeneralLiabilityLocation.CertifiedActsOfTerrorismManhattan",
+  "GeneralLiabilityLocation.PremisesOperationsTerritory",
+  "GeneralLiabilityLocation.TerrorismTerritory",
+  "GeneralLiabilityStopGapEmployersLiabilityCoverageEndorsementPolLvl.LimitBodilyInjuryByAccident",
+  "GeneralLiabilityStopGapEmployersLiabilityCoverageEndorsementPolLvl.LimitBodilyInjuryByDiseaseAggregate",
+  "GeneralLiabilityStopGapEmployersLiabilityCoverageEndorsementPolLvl.LimitBodilyInjuryByDiseaseEachEmployee",
+  "GeneralLiabilityUnmannedAircraft.BIPDDeductible",
+  "GeneralLiabilityUnmannedAircraft.CovAApplies",
+  "GeneralLiabilityUnmannedAircraft.CovBApplies",
+  "GeneralLiabilityUnmannedAircraft.OwnershipAndOperation",
+  "GeneralLiabilityUnmannedAircraft.PrimaryPlaceOfOperation",
+  "GeneralLiabilityUnmannedAircraft.Usage"
+ ],
  "evidence": {
-  "GeneralLiability.GeneralAggregateLimit": {
-   "silent_in": 102,
-   "example": "AK 20260801: 7386 -> 6784"
+  "missing": {
+   "GeneralLiability.GeneralAggregateLimit": {
+    "silent_in": 112,
+    "example": "console-AK 20260801: 7386 -> 6784"
+   },
+   "GeneralLiability.PremOpsProdsCoverageForm": {
+    "silent_in": 116,
+    "example": "console-AK 20260801: 7386 -> 602"
+   },
+   "GeneralLiability.PremOpsProdsEachOccurrenceLimit": {
+    "silent_in": 114,
+    "example": "console-AK 20260801: 7386 -> 1501"
+   },
+   "GeneralLiability.ProdsCompldOpsAggregateLimit": {
+    "silent_in": 112,
+    "example": "console-AK 20260801: 7386 -> 602"
+   },
+   "GeneralLiability.ProdsCompldOpsExclusion": {
+    "silent_in": 51,
+    "example": "console-AK 20270501: 7370 -> 587"
+   },
+   "GeneralLiability.Subline": {
+    "silent_in": 122,
+    "example": "console-AK 20260801: 7386 -> 0"
+   },
+   "GeneralLiabilityAlaskaChangesAttorneysFeesPolLvl.Limit": {
+    "silent_in": 2,
+    "example": "console-AK 20260801: 7386 -> 7388"
+   },
+   "GeneralLiabilityCertifiedActsOfTerrorismAggregateLimitCapOnLossesFromCertifiedActsOfTerrorismPremOps.AggregateLimit": {
+    "silent_in": 6,
+    "example": "console-MT 20260801: 7892 -> 7877"
+   },
+   "GeneralLiabilityClassification.ClassCode": {
+    "silent_in": 4,
+    "example": "console-NY 20260801: 12141 -> 0"
+   },
+   "GeneralLiabilityClassification.OtherThanProdsCompldOpsCov": {
+    "silent_in": 116,
+    "example": "console-AK 20260801: 7386 -> 6784"
+   },
+   "GeneralLiabilityClassification.PremOpsIncrdLimitTableAssignmentOverride": {
+    "silent_in": 2,
+    "example": "Company-TX 20260801: 8808 -> 4183"
+   },
+   "GeneralLiabilityClassification.PremOpsPremiumBasis": {
+    "silent_in": 51,
+    "example": "console-AK 20270501: 7370 -> 593453"
+   },
+   "GeneralLiabilityClassification.ProdsCompldOpsCov": {
+    "silent_in": 116,
+    "example": "console-AK 20260801: 7386 -> 602"
+   },
+   "GeneralLiabilityClassification.ProdsCompldOpsIncrdLimitTableAssignmentOverride": {
+    "silent_in": 2,
+    "example": "Company-TX 20260801: 8808 -> 4633"
+   },
+   "GeneralLiabilityClassification.ProdsCompldOpsPremiumBasis": {
+    "silent_in": 51,
+    "example": "console-AK 20270501: 7370 -> 6783982"
+   },
+   "GeneralLiabilityLocation.PremisesOperationsTerritory": {
+    "silent_in": 112,
+    "example": "console-AK 20260801: 7386 -> 6783"
+   },
+   "GeneralLiabilityLocation.CertifiedActsOfTerrorismManhattan": {
+    "silent_in": 2,
+    "example": "Terrorism-NY 20260801: 12602 -> 12141"
+   }
   },
-  "GeneralLiability.PremOpsProdsCoverageForm": {
-   "silent_in": 102,
-   "example": "AK 20260801: 7386 -> 602"
-  },
-  "GeneralLiability.PremOpsProdsEachOccurrenceLimit": {
-   "silent_in": 102,
-   "example": "AK 20260801: 7386 -> 1501"
-  },
-  "GeneralLiability.ProdsCompldOpsAggregateLimit": {
-   "silent_in": 102,
-   "example": "AK 20260801: 7386 -> 602"
-  },
-  "GeneralLiability.ProdsCompldOpsExclusion": {
-   "silent_in": 46,
-   "example": "AK 20270501: 7370 -> 587"
-  },
-  "GeneralLiability.Subline": {
-   "silent_in": 102,
-   "example": "AK 20260801: 7386 -> 0"
-  },
-  "GeneralLiabilityAlaskaChangesAttorneysFeesPolLvl.Limit": {
+  "invalid": {
+   "GeneralLiability.CyberIncidentLiabilityCoverageApplies": {
+    "silent_in": 2,
+    "example": "Cyber-IL 20260801: 57768 -> 57721"
+   },
+   "GeneralLiability.GeneralAggregateLimit": {
+    "silent_in": 49,
+    "example": "console-AK 20270501: 7370 -> 6784"
+   },
+   "GeneralLiability.LimitedCovForDesignatedUnmannedAircraft": {
+    "silent_in": 1,
+    "example": "Drone-TX 20260801: 8232 -> 7821"
+   },
+   "GeneralLiability.OwnersContractorsAggregateLimit": {
+    "silent_in": 2,
+    "example": "OCP-WY 20260801: 569 -> 500"
+   },
+   "GeneralLiability.OwnersContractorsEachOccurrenceLimit": {
+    "silent_in": 2,
+    "example": "OCP-WY 20260801: 569 -> 500"
+   },
+   "GeneralLiability.PremOpsProdsCoverageForm": {
+    "silent_in": 4,
+    "example": "console-NY 20260801: 12141 -> 6"
+   },
+   "GeneralLiability.RailroadAggregateLimit": {
+    "silent_in": 4,
+    "example": "Railroad-RI 20260801: 1706 -> 1000"
+   },
+   "GeneralLiability.RailroadEachOccurrenceLimit": {
+    "silent_in": 4,
+    "example": "Railroad-RI 20260801: 1706 -> 1000"
+   },
+   "GeneralLiability.StopGap": {
+    "silent_in": 5,
+    "example": "StopGap-ND 20260801: 7406 -> 7396"
+   },
+   "GeneralLiability.Subline": {
+    "silent_in": 122,
+    "example": "console-AK 20260801: 7386 -> 0"
+   },
+   "GeneralLiability.TRIPTerminatesBeforeExpirationDate": {
+    "silent_in": 2,
+    "example": "Cyber-IL 20260801: 57768 -> 58694"
+   },
+   "GeneralLiability.TerrorismCoverage": {
+    "silent_in": 4,
+    "example": "Cyber-IL 20260801: 57768 -> 55045"
+   },
+   "GeneralLiabilityCertifiedActsOfTerrorismAggregateLimitCapOnLossesFromCertifiedActsOfTerrorismPremOps.AggregateLimit": {
+    "silent_in": 3,
+    "example": "console-MT 20270501: 8539 -> 8527"
+   },
+   "GeneralLiabilityClassification.LiquorPremiumBasis": {
+    "silent_in": 2,
+    "example": "Liquor-AL 20260801: 3015 -> 2914600"
+   },
+   "GeneralLiabilityClassification.NumPassgrFreightTrains": {
+    "silent_in": 4,
+    "example": "Railroad-RI 20260801: 1706 -> 1000"
+   },
+   "GeneralLiabilityClassification.OtherThanProdsCompldOpsCov": {
+    "silent_in": 116,
+    "example": "console-AK 20260801: 7386 -> 6784"
+   },
+   "GeneralLiabilityClassification.PremOpsBIDeductible": {
+    "silent_in": 2,
+    "example": "Cyber-IL 20260801: 57768 -> 57842"
+   },
+   "GeneralLiabilityClassification.PremOpsPDDeductible": {
+    "silent_in": 2,
+    "example": "Cyber-IL 20260801: 57768 -> 57842"
+   },
+   "GeneralLiabilityClassification.PremOpsPremiumBasis": {
+    "silent_in": 116,
+    "example": "console-AK 20260801: 7386 -> 609175"
+   },
+   "GeneralLiabilityClassification.ProdsCompldOpsBIDeductible": {
+    "silent_in": 2,
+    "example": "Cyber-IL 20260801: 57768 -> 57771"
+   },
+   "GeneralLiabilityClassification.ProdsCompldOpsCov": {
+    "silent_in": 116,
+    "example": "console-AK 20260801: 7386 -> 602"
+   },
+   "GeneralLiabilityClassification.ProdsCompldOpsPDDeductible": {
+    "silent_in": 2,
+    "example": "Cyber-IL 20260801: 57768 -> 57779"
+   },
+   "GeneralLiabilityClassification.ProdsCompldOpsPremiumBasis": {
+    "silent_in": 116,
+    "example": "console-AK 20260801: 7386 -> 6783997"
+   },
+   "GeneralLiabilityLocation.CertifiedActsOfTerrorismManhattan": {
+    "silent_in": 2,
+    "example": "Terrorism-NY 20260801: 12602 -> 12141"
+   },
+   "GeneralLiabilityLocation.PremisesOperationsTerritory": {
+    "silent_in": 8,
+    "example": "console-CA 20260801: 7586 -> 6845"
+   },
+   "GeneralLiabilityLocation.TerrorismTerritory": {
+    "silent_in": 2,
+    "example": "Cyber-IL 20260801: 57768 -> 55046"
+   },
+   "GeneralLiabilityStopGapEmployersLiabilityCoverageEndorsementPolLvl.LimitBodilyInjuryByAccident": {
+    "silent_in": 3,
+    "example": "StopGap-ND 20260801: 7406 -> 7396"
+   },
+   "GeneralLiabilityStopGapEmployersLiabilityCoverageEndorsementPolLvl.LimitBodilyInjuryByDiseaseAggregate": {
+    "silent_in": 3,
+    "example": "StopGap-ND 20260801: 7406 -> 7396"
+   },
+   "GeneralLiabilityStopGapEmployersLiabilityCoverageEndorsementPolLvl.LimitBodilyInjuryByDiseaseEachEmployee": {
+    "silent_in": 3,
+    "example": "StopGap-ND 20260801: 7406 -> 7396"
+   },
+   "GeneralLiabilityUnmannedAircraft.BIPDDeductible": {
+    "silent_in": 1,
+    "example": "Drone-TX 20270501: 8151 -> 7908"
+   },
+   "GeneralLiabilityUnmannedAircraft.CovAApplies": {
+    "silent_in": 2,
+    "example": "Drone-TX 20260801: 8232 -> 7988"
+   },
+   "GeneralLiabilityUnmannedAircraft.CovBApplies": {
+    "silent_in": 2,
+    "example": "Drone-TX 20260801: 8232 -> 8065"
+   },
+   "GeneralLiabilityUnmannedAircraft.OwnershipAndOperation": {
+    "silent_in": 2,
+    "example": "Drone-TX 20260801: 8232 -> 7821"
+   },
+   "GeneralLiabilityUnmannedAircraft.PrimaryPlaceOfOperation": {
+    "silent_in": 2,
+    "example": "Drone-TX 20260801: 8232 -> 7821"
+   },
+   "GeneralLiabilityUnmannedAircraft.Usage": {
+    "silent_in": 2,
+    "example": "Drone-TX 20260801: 8232 -> 7821"
+   }
+  }
+ },
+ "missing_candidates": {
+  "GeneralLiability.AggregateLimit": {
    "silent_in": 2,
-   "example": "AK 20260801: 7386 -> 7388"
+   "same": 0,
+   "example": "Liquor-AL 20260801: 3015 -> 100"
   },
-  "GeneralLiabilityCertifiedActsOfTerrorismAggregateLimitCapOnLossesFromCertifiedActsOfTerrorismPremOps.AggregateLimit": {
-   "silent_in": 6,
-   "example": "MT 20260801: 7892 -> 7877"
-  },
-  "GeneralLiabilityClassification.ClassCode": {
+  "GeneralLiability.CyberIncidentLiabilityCoverageApplies": {
    "silent_in": 2,
-   "example": "NY 20260801: 12141 -> 0"
+   "same": 110,
+   "example": "Cyber-IL 20260801: 57768 -> 57721"
   },
-  "GeneralLiabilityClassification.OtherThanProdsCompldOpsCov": {
-   "silent_in": 102,
-   "example": "AK 20260801: 7386 -> 6784"
+  "GeneralLiability.EachCommonCauseLimit": {
+   "silent_in": 2,
+   "same": 0,
+   "example": "Liquor-AL 20260801: 3015 -> 100"
   },
-  "GeneralLiabilityClassification.PremOpsPremiumBasis": {
-   "silent_in": 46,
-   "example": "AK 20270501: 7370 -> 593453"
+  "GeneralLiability.LimitedCovForDesignatedUnmannedAircraft": {
+   "silent_in": 1,
+   "same": 64,
+   "example": "Drone-TX 20260801: 8232 -> 7821"
   },
-  "GeneralLiabilityClassification.ProdsCompldOpsCov": {
-   "silent_in": 102,
-   "example": "AK 20260801: 7386 -> 602"
+  "GeneralLiability.LiquorCoverageForm": {
+   "silent_in": 2,
+   "same": 0,
+   "example": "Liquor-AL 20260801: 3015 -> 100"
   },
-  "GeneralLiabilityClassification.ProdsCompldOpsPremiumBasis": {
-   "silent_in": 46,
-   "example": "AK 20270501: 7370 -> 6783982"
+  "GeneralLiability.OwnersContractorsAggregateLimit": {
+   "silent_in": 2,
+   "same": 0,
+   "example": "OCP-WY 20260801: 569 -> 500"
   },
-  "GeneralLiabilityLocation.PremisesOperationsTerritory": {
-   "silent_in": 102,
-   "example": "AK 20260801: 7386 -> 6783"
+  "GeneralLiability.OwnersContractorsEachOccurrenceLimit": {
+   "silent_in": 2,
+   "same": 0,
+   "example": "OCP-WY 20260801: 569 -> 500"
+  },
+  "GeneralLiability.RailroadAggregateLimit": {
+   "silent_in": 4,
+   "same": 0,
+   "example": "Railroad-RI 20260801: 1706 -> 1000"
+  },
+  "GeneralLiability.RailroadEachOccurrenceLimit": {
+   "silent_in": 4,
+   "same": 0,
+   "example": "Railroad-RI 20260801: 1706 -> 1000"
+  },
+  "GeneralLiability.StopGap": {
+   "silent_in": 3,
+   "same": 6,
+   "example": "StopGap-WA 20260801: 8481 -> 8471"
+  },
+  "GeneralLiability.TRIPTerminatesBeforeExpirationDate": {
+   "silent_in": 2,
+   "same": 122,
+   "example": "Cyber-IL 20260801: 57768 -> 58694"
+  },
+  "GeneralLiability.TerrorismCoverage": {
+   "silent_in": 4,
+   "same": 120,
+   "example": "Cyber-IL 20260801: 57768 -> 55045"
+  },
+  "GeneralLiabilityCapOnLossesFromCertifiedActsOfTerrorism.ManualPremium": {
+   "silent_in": 2,
+   "same": 0,
+   "example": "Cyber-IL 20260801: 57768 -> 57668"
+  },
+  "GeneralLiabilityClassification.LiquorPremiumBasis": {
+   "silent_in": 1,
+   "same": 0,
+   "example": "Liquor-AL 20270501: 2625 -> 101"
+  },
+  "GeneralLiabilityClassification.NumPassgrFreightTrains": {
+   "silent_in": 4,
+   "same": 0,
+   "example": "Railroad-RI 20260801: 1706 -> 1000"
+  },
+  "GeneralLiabilityClassification.PremOpsBIDeductible": {
+   "silent_in": 2,
+   "same": 114,
+   "example": "Cyber-IL 20260801: 57768 -> 57842"
+  },
+  "GeneralLiabilityClassification.PremOpsPDDeductible": {
+   "silent_in": 2,
+   "same": 114,
+   "example": "Cyber-IL 20260801: 57768 -> 57842"
+  },
+  "GeneralLiabilityClassification.ProdsCompldOpsBIDeductible": {
+   "silent_in": 2,
+   "same": 114,
+   "example": "Cyber-IL 20260801: 57768 -> 57771"
+  },
+  "GeneralLiabilityClassification.ProdsCompldOpsBIPDDeductible": {
+   "silent_in": 2,
+   "same": 114,
+   "example": "Cyber-IL 20260801: 57768 -> 57782"
+  },
+  "GeneralLiabilityClassification.ProdsCompldOpsPDDeductible": {
+   "silent_in": 2,
+   "same": 114,
+   "example": "Cyber-IL 20260801: 57768 -> 57779"
+  },
+  "GeneralLiabilityCyberIncidentLiabilityCovSubjectToEachCyberIncidentOccurrenceAndAggregateLimits.CyberIncidentAggregateLimit": {
+   "silent_in": 2,
+   "same": 0,
+   "example": "Cyber-IL 20260801: 57768 -> 57721"
+  },
+  "GeneralLiabilityCyberIncidentLiabilityCovSubjectToEachCyberIncidentOccurrenceAndAggregateLimits.EachCyberIncidentOccurrenceLimit": {
+   "silent_in": 2,
+   "same": 0,
+   "example": "Cyber-IL 20260801: 57768 -> 57721"
+  },
+  "GeneralLiabilityExclMedPayCovInmatesPatientsPrisoners.ManualPremium": {
+   "silent_in": 2,
+   "same": 0,
+   "example": "Cyber-IL 20260801: 57768 -> 57267"
+  },
+  "GeneralLiabilityExclusionOfCertifiedActsOfTerrorism.ManualPremium": {
+   "silent_in": 4,
+   "same": 6,
+   "example": "OCP-WY 20260801: 569 -> 69"
+  },
+  "GeneralLiabilityExclusionPFASRailroad.ManualPremium": {
+   "silent_in": 4,
+   "same": 0,
+   "example": "Railroad-RI 20260801: 1706 -> 706"
+  },
+  "GeneralLiabilityLocation.ProdsCompldOpsTerritory": {
+   "silent_in": 2,
+   "same": 114,
+   "example": "Cyber-IL 20260801: 57768 -> 51862"
+  },
+  "GeneralLiabilityLocation.TerrorismTerritory": {
+   "silent_in": 2,
+   "same": 6,
+   "example": "Cyber-IL 20260801: 57768 -> 55046"
+  },
+  "GeneralLiabilityStopGapEmployersLiabilityCoverageEndorsementPolLvl.LimitBodilyInjuryByAccident": {
+   "silent_in": 3,
+   "same": 3,
+   "example": "StopGap-ND 20260801: 7406 -> 7396"
+  },
+  "GeneralLiabilityStopGapEmployersLiabilityCoverageEndorsementPolLvl.LimitBodilyInjuryByDiseaseAggregate": {
+   "silent_in": 3,
+   "same": 3,
+   "example": "StopGap-ND 20260801: 7406 -> 7396"
+  },
+  "GeneralLiabilityStopGapEmployersLiabilityCoverageEndorsementPolLvl.LimitBodilyInjuryByDiseaseEachEmployee": {
+   "silent_in": 3,
+   "same": 3,
+   "example": "StopGap-ND 20260801: 7406 -> 7396"
+  },
+  "GeneralLiabilityStopGapEmployersLiabilityCoverageEndorsementPolLvl.ManualPremium": {
+   "silent_in": 2,
+   "same": 0,
+   "example": "StopGapManual-ND 20260801: 7646 -> 7396"
+  },
+  "GeneralLiabilityUnmannedAircraft.CovAApplies": {
+   "silent_in": 2,
+   "same": 0,
+   "example": "Drone-TX 20260801: 8232 -> 7988"
+  },
+  "GeneralLiabilityUnmannedAircraft.CovBApplies": {
+   "silent_in": 2,
+   "same": 0,
+   "example": "Drone-TX 20260801: 8232 -> 8065"
+  },
+  "GeneralLiabilityUnmannedAircraft.OwnershipAndOperation": {
+   "silent_in": 2,
+   "same": 0,
+   "example": "Drone-TX 20260801: 8232 -> 7821"
+  },
+  "GeneralLiabilityUnmannedAircraft.PrimaryPlaceOfOperation": {
+   "silent_in": 2,
+   "same": 0,
+   "example": "Drone-TX 20260801: 8232 -> 7821"
+  },
+  "GeneralLiabilityUnmannedAircraft.Usage": {
+   "silent_in": 2,
+   "same": 0,
+   "example": "Drone-TX 20260801: 8232 -> 7821"
   }
  }
 }

@@ -248,12 +248,30 @@ def main() -> int:
         d = V.Declared(juris)
         return V.probe_no_op(cfg, d, kern, kern.rate(d.base()).premium)
 
-    ny = probe("NY", {"terrorism": "Yes"})
+    # The INERT VALUE this test was built on was OI-130: NY terrorism in territory 001 without the Manhattan
+    # answer priced terrorism $0. B-07 fixed the builder (it answers Manhattan) and made the engine refuse the
+    # unanswered form, so the shape is reproduced here on purpose: a jurisdiction that does not declare the
+    # Manhattan question, with the rating-input refusals off. The detector must still name it.
+    from gl_engine.rating import kernel as KM
+
+    class NoManhattan(V.Declared):
+        def values(self, table, column):
+            return [] if column == "CertifiedActsOfTerrorismManhattan" else super().values(table, column)
+
+    was, KM.RATING_INPUTS_CHECK = KM.RATING_INPUTS_CHECK, "off"
+    try:
+        d = NoManhattan("NY")
+        ny = V.probe_no_op({"terrorism": "Yes"}, d, kern, kern.rate(d.base()).premium)
+    finally:
+        KM.RATING_INPUTS_CHECK = was
     check("D4 an INERT VALUE is named, with the value that would have moved it",
           ny["verdict"] == V.INERT_VALUE and ny["chosen"] == "001"
           and ny["moves_with"] == "002",
           f"NY {ny.get('column')}={ny.get('chosen')} does nothing; "
           f"{ny.get('moves_with')} gives {ny.get('premium')}")
+    ny_now = probe("NY", {"terrorism": "Yes"})
+    check("D4b and since B-07 (OI-130) the builder answers Manhattan, so NY terrorism moves the premium",
+          ny_now["verdict"] == V.MOVED, f"NY terrorism: {ny_now['verdict']} {ny_now.get('premium', '')}")
     ok_sched = probe("OK", {"schedule_rating": "Yes"})
     check("D5 an INERT CONTROL is distinguished from it -- that one is ISO's "
           "filing, not our pick",

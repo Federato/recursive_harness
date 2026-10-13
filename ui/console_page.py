@@ -1561,6 +1561,7 @@ UP_CSS = """
 .up-tbl .file{max-width:240px;overflow-wrap:anywhere}
 .up-tbl .x{border:0;background:none;cursor:pointer;color:var(--color-neutral-600);font-size:15px}
 .up-res{display:flex;gap:6px;align-items:flex-start}
+.up-tbl .w{font-size:11.5px;color:var(--color-warning-700,#8a5a00);background:var(--color-warning-50,#fdf4e3);border-radius:4px;padding:3px 6px;max-width:420px}
 .up-gen{display:flex;gap:12px;flex-wrap:wrap;align-items:center;font-size:12.5px;margin-top:14px;padding:10px 12px;border:1px solid var(--color-divider);border-radius:var(--radius-lg)}
 .up-gen select{font:inherit;padding:5px 7px;border:1px solid var(--color-divider);border-radius:4px;background:#fff}
 .up-tbl .acts{white-space:nowrap}.up-tbl .acts a{margin-right:8px;cursor:pointer}
@@ -1637,13 +1638,18 @@ function upDraw(){
       if(!r)return '<tr><td class="file">'+esc(x.name)+'</td><td colspan="6" class="mx-msg">Rating on our engine…</td><td></td></tr>';
       const ours=r.outcome==='rated'?esc(money(r.premium)):esc(r.outcome);
       const iso=x.busy==='sending'?'<span class="mx-msg">asking ISO…</span>':!s?'<span class="mx-msg">—</span>':s.outcome==='rated'?esc(money(s.iso))+'<div class="mx-msg">stored '+esc((s.stored_at||s.date||'').slice(0,10))+(s.freshness==='stale'?' · stale':'')+'</div>':'refused';
-      return '<tr'+(UP.sel===x.id?' class="sel"':'')+'><td class="file">'+esc(x.name)+(r.outcome!=='rated'?'<div class="mx-msg">'+esc((r.detail||'').slice(0,200))+'</div>':'')+'</td><td>'+(r.line==='GL'?'General Liability':'Property')+' · '+esc(r.state)+'</td><td>'+esc(r.effective)+
+      return '<tr'+(UP.sel===x.id?' class="sel"':'')+'><td class="file">'+esc(x.name)+(r.outcome!=='rated'?'<div class="mx-msg">'+esc((r.detail||'').slice(0,200))+'</div>':'')+upNotes(r)+'</td><td>'+(r.line==='GL'?'General Liability':'Property')+' · '+esc(r.state)+'</td><td>'+esc(r.effective)+
         '</td><td class="v">'+ours+'</td><td class="v">'+iso+'</td><td class="v">'+upCarrier(x)+'</td><td>'+upVerdict(r)+'</td><td>'+
         '<span class="acts">'+(s&&s.outcome==='rated'?'<a href="#trace?lob='+r.line+'&scenario='+encodeURIComponent(s.scenario)+'">Trace Diff</a>':'')+'<a data-ws="'+x.id+'" title="Every field, Technical | ISO | Deviated">Worksheet</a><a data-dl="'+x.id+'" title="Save this request as a .json file">Download</a><a data-ed="'+x.id+'" title="Copy into the paste box to change it">Edit</a></span>'+rm+'</td></tr>';}).join('')+'</table>';
   const n=upNeeds().length,b=document.getElementById('up-send');
   b.disabled=!n||UP.busy;b.textContent=n?'Compare with ISO · '+n+' call'+(n>1?'s':'')+'…':'Compare with ISO…';
   upSide();
 }
+// B-07 part 4/5: our notices (not offered; R30 a coverage priced $0 or $1 silently; R31) and ISO's own messages
+function upNotes(r){if(!r||r.outcome!=='rated')return '';let h='';
+  (r.notices||[]).forEach(n=>{h+='<div class="w" style="margin-top:4px"><b>'+(n.startsWith('Not offered')?'Note':'Check')+':</b> '+esc(n.slice(0,240))+'</div>';});
+  const m=r.messages||[];if(m.length)h+='<div class="mx-msg" title="'+esc(m.join('\n'))+'">ISO message'+(m.length>1?'s':'')+' ('+m.length+'): '+esc(m[0].slice(0,140))+(m.length>1?' …':'')+'</div>';
+  return h;}
 function upCarrier(x){const r=x.r,c=r&&r.carrier;
   if(!c)return '<span class="mx-msg">—</span>';
   if(c.outcome!=='rated')return '<a class="car" data-dv="'+x.id+'">refused</a>';

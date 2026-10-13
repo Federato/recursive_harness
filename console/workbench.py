@@ -63,7 +63,9 @@ def rate(line: str, payload: dict, mode: str = "strict-erc", rounding: str = "RO
             from . import catalog
             out.update(premium=str(r.premium), packages=list(r.packages), juris=r.juris, asof=r.asof,
                        paths=sorted(signature.gl_signature(r)), referrals=len(r.referrals),
-                       classification=catalog.gl_class_of(payload))
+                       classification=catalog.gl_class_of(payload),
+                       # B-07 part 4: ISO's own messages and our notices (not offered; R30 / R31), shown by the row
+                       messages=[str(m) for m in r.messages][:20], notices=list(r.notices))
         else:
             tree, trace, total = W.rate("CP", payload)
             out.update(premium=total, paths=sorted(signature.cp_signature(tree)),

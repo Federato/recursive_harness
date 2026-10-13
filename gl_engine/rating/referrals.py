@@ -27,6 +27,7 @@ be wrong.
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
@@ -250,6 +251,124 @@ def d_split_base_table(rating) -> list:
                     f"may be empty while sharded rows carry the data")]
 
 
+def not_offered(rating) -> dict:
+    """`{class code: [coverage, ...]}` where ISO's ELP text for the class reads "Not Applicable".
+
+    GATE-336: `ELPText = "Not Applicable"` means **the coverage is not offered for this class** -- NOT_OFFERED,
+    never a silent 0 (OI-130 (b), B-07 part 3e). The rules still price it at $0 (or the $1 floor in 2027);
+    this names why, from ISO's own lookup, so the $0 is labelled rather than mistaken for a failure.
+    """
+    out: dict = {}
+    for t in rating.trace or ():
+        d = str(getattr(t, "detail", ""))
+        if t.kind == "lookup" and "ELPText[" in d and d.endswith("-> 'Not Applicable'"):
+            cov = d.split("ELPText[", 1)[0]
+            keys = d.split("keys=", 1)[-1].split("]", 1)[0]
+            code = keys.strip("[]").split(",")[-1].strip(" '")
+            out.setdefault(code, set()).add(cov)
+    return {k: sorted(v) for k, v in out.items()}
+
+
+def d_terrorism_endorsement_factor(rating) -> list:
+    """R31 (OI-130, B-07 part 3f, the user's decision 2026-10-13: refer, not refuse).
+
+    Terrorism bought, an endorsement on the policy carrying a manual premium, and no
+    `CertifiedActsofTerrorismExposureClassFactor`: the terrorism charge on those endorsements prices $0 (pre-2027)
+    or the $1 floor (2027) with no message (offline 2026-10-13: OK, $4 -> $0 / $1).
+    """
+    out = []
+    for risk in tree.select("GeneralLiabilityTable/GeneralLiability", rating.tree):
+        if str(tree.read("TerrorismCoverage", risk) or "").strip() != "Yes":
+            continue
+        te = risk.first("GeneralLiabilityTerrorismEndorsementCoverage")
+        if te is None or str(getattr(te.first("CoverageOnPolicyIndicator"), "text", "")).strip() not in ("1", "1.0"):
+            continue
+        fac = te.first("CertifiedActsofTerrorismExposureClassFactor")
+        if fac is not None and str(fac.text or "").strip() not in ("", "0", "0.0"):
+            continue
+        priced = False
+        stack = [c for c in risk.children if c is not te]
+        while stack and not priced:
+            n = stack.pop()
+            mp = n.first("ManualPremium") if n.children else None
+            try:
+                priced = mp is not None and Decimal(str(mp.text)) > 0
+            except (InvalidOperation, ValueError, TypeError):
+                pass
+            stack.extend(n.children)
+        if priced:
+            out.append(Finding("R31", "GeneralLiabilityTerrorismEndorsementCoverage",
+                               "terrorism is bought and an endorsement carries a premium, but no exposure-class "
+                               "factor (CertifiedActsofTerrorismExposureClassFactor) was given: the terrorism charge "
+                               "on endorsements prices $0 or the $1 minimum"))
+    return out
+
+
+#: An ISO message that asks for an input (the 17 ISO-messaged OI-130 routes all do), as against a form message.
+_ASKS_FOR_INPUT = re.compile(r"\bmust enter\b|\bmust be entered\b|\bplease enter\b", re.I)
+
+
+def d_silent_zero(rating) -> list:
+    """R30 (OI-130 / B-07 part 5, the user's decision 2026-10-13): a safety net under ISO's quiet failures.
+
+    A coverage ISO's own rules put on the policy (`CoverageOnPolicyIndicator = 1`) whose premium came out $0 or
+    the $1 minimum. Every silent route the OI-130 reproduction found ends here -- a lookup that matched no row,
+    an unanswered question, an off-list value -- and ISO prices them the same way, so no comparison catches
+    them. A warning on every rating (`Rating.notices`), a referral in underwriting mode; never a refusal,
+    because some $0s are right (OK files a Products loss cost of 0; a tiny exposure rounds to 0). Top-up
+    records (`...PremiumToReachMin...`) are skipped: $0 there means the minimum was already met.
+    """
+    out = []
+    # ISO already asked for an input ("Must enter ...", "... must be entered", "Please enter ..."): the $0 is
+    # messaged, not silent, and stays as ISO prices it (B-07 part 4). ISO's messages do not name the coverage, so
+    # the whole rating is quiet -- a second, unrelated $0 on the same policy goes unflagged here. ISO's form
+    # messages ("... cannot be attached") ask for nothing and do not count.
+    if any(_ASKS_FOR_INPUT.search(str(m)) for m in rating.messages or ()):
+        return out
+    labelled = not_offered(rating)
+
+    no_terror = {id(r) for r in tree.select("GeneralLiabilityTable/GeneralLiability", rating.tree)
+                 if str(tree.read("TerrorismCoverage", r) or "").strip() != "Yes"}
+
+    def is_labelled(node) -> bool:
+        # the terrorism charge on endorsements is $0 (pre-2027) or the $1 floor (2027) whenever no endorsement
+        # carries a premium -- by design; its real failure, a missing exposure-class factor, is R31's
+        if node.tag == "GeneralLiabilityTerrorismEndorsementCoverage":
+            return True
+        # terrorism not bought: its coverages sit on the policy at $0 by design (measured: 11 of the 15 clean
+        # requests R30 first flagged, 2026-10-13)
+        if "Terrorism" in node.tag:
+            p = node.parent
+            while p is not None and p.tag != "GeneralLiability":
+                p = p.parent
+            if p is not None and id(p) in no_terror:
+                return True
+        cc = node.first("ClassCode")
+        covs = labelled.get(str(cc.text).strip(), ()) if cc is not None else ()
+        return any(cov and cov in node.tag for cov in covs)
+
+    def walk(node, path):
+        for c in node.children:
+            here = f"{path}/{c.tag}"
+            ind = c.first("CoverageOnPolicyIndicator")
+            prem = c.first("Premium")
+            if (ind is not None and str(ind.text).strip() in ("1", "1.0") and prem is not None
+                    and "PremiumToReachMin" not in c.tag and not is_labelled(c)):
+                try:
+                    v = Decimal(str(prem.text))
+                except (InvalidOperation, ValueError, TypeError):
+                    v = None
+                if v is not None and v in (Decimal(0), Decimal(1)):
+                    out.append(Finding("R30", here.rsplit("/", 1)[-1],
+                                       f"on the policy but priced ${v:.0f} with no refusal: an unanswered question, "
+                                       f"an answer off ISO's list or a lookup that matched nothing prices this way "
+                                       f"silently (ISO too); check the request"))
+            walk(c, here)
+
+    walk(rating.tree, "")
+    return out
+
+
 #: code -> detector. Everything not here and not classified above is PENDING.
 #: R29 is not one of the 28 entries the analysis phase produced (`REGISTER_PATH`,
 #: as-of 2026-08-12) -- it is OI-95, found afterward. `Kernel.coverage()` only
@@ -264,6 +383,8 @@ DETECTORS = {
     "R14": d_zero_rating_factor,
     "R13": d_split_base_table,
     "R29": d_elp_override_needed,
+    "R30": d_silent_zero,
+    "R31": d_terrorism_endorsement_factor,
 }
 
 #: Detectors that report under more than one code.

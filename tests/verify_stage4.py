@@ -373,10 +373,120 @@ def group_h():
           f"{len(warn)} V6 finding(s) on the console's TX request")
 
 
+def group_i():
+    print("\nI  SILENT ZEROS (OI-130, B-07): blanks, off-list answers, form combinations, the safety net")
+    import copy
+    sys.path.insert(0, str(ROOT / "scripts"))
+    from console import workbench as WB
+    from gl_engine.rating import referrals as RF
+    from gl_engine.schema.validate import list_inputs
+    k = Kernel(resolver=RESOLVER)
+    uw = Kernel(mode="underwriting", resolver=RESOLVER)
+
+    def gl(p):
+        return p["body"]["GeneralLiability"][0]
+
+    def cls(p):
+        return gl(p)["GeneralLiabilityLocation"][0]["GeneralLiabilityClassification"][0]
+
+    tx = WB.build("GL", "TX", {"effective_date": "20270501"})
+    p = copy.deepcopy(tx)
+    gl(p)["Subline"] = "  "
+    r = k.rate(p)
+    check("I1 a blank answer is no answer: Subline '  ' refuses (it priced $0 past OI-134)",
+          not r.complete and "Subline" in str(r.stopped), str(r.stopped)[:80])
+
+    check("I2 the measured list fields are loaded (57_rating_inputs.py)", len(list_inputs()) > 0,
+          f"{len(list_inputs())} list fields")
+    p = copy.deepcopy(tx)
+    gl(p)["Subline"] = "Premises/Operations"          # not a 2027 value: the whole policy priced $0
+    r = k.rate(p)
+    check("I3 an answer off ISO's list refuses, naming it (2027 'Premises/Operations' alone: was $0)",
+          not r.complete and "not on ISO's list" in str(r.stopped), str(r.stopped)[:90])
+
+    ny = WB.build("GL", "NY", {"terrorism": "Yes"})
+    check("I4 the console answers NY's Manhattan question when terrorism is on (it priced terrorism $0)",
+          gl(ny)["GeneralLiabilityLocation"][0].get("CertifiedActsOfTerrorismManhattan") is not None
+          and k.rate(copy.deepcopy(ny)).premium == Decimal("12602"))
+    p = copy.deepcopy(ny)
+    gl(p)["GeneralLiabilityLocation"][0].pop("CertifiedActsOfTerrorismManhattan")
+    r = k.rate(p)
+    check("I5 NY terrorism without the Manhattan answer refuses", not r.complete
+          and "Manhattan" in str(r.stopped), str(r.stopped)[:90])
+
+    sg = WB.build("GL", "ND", {"effective_date": "20260801"})
+    gl(sg)["StopGap"] = "Yes"
+    gl(sg)["GeneralLiabilityStopGapEmployersLiabilityCoverageEndorsementPolLvl"] = [{
+        "LimitBodilyInjuryByAccident": "100,000 BI", "LimitBodilyInjuryByDiseaseEachEmployee": "100,000 BI",
+        "LimitBodilyInjuryByDiseaseAggregate": "500,000 BI"}]
+    ok = k.rate(copy.deepcopy(sg))
+    p = copy.deepcopy(sg)
+    gl(p).pop("StopGap")
+    r = k.rate(p)
+    p2 = copy.deepcopy(sg)
+    gl(p2)["StopGap"] = "No"
+    r2 = k.rate(p2)
+    f2 = [x for x in validate(p2, schema_for("ND")) if x.code == "V8"]
+    check("I6 Stop Gap details with the question unanswered refuse; answered 'No' rates with a V8 warning",
+          ok.complete and not r.complete and "StopGap" in str(r.stopped) and r2.complete
+          and f2 and f2[0].level == "warning", f"{ok.premium}; {str(r.stopped)[:50]}; {r2.premium}")
+    p = copy.deepcopy(sg)
+    gl(p)["GeneralLiabilityStopGapEmployersLiabilityCoverageEndorsementPolLvl"][0][
+        "LimitBodilyInjuryByDiseaseEachEmployee"] = "500,000 BI"
+    r = k.rate(p)
+    check("I7 Stop Gap limits off ISO's combinations with no manual premium refuse (ISO's form requires it)",
+          not r.complete and "ManualPremium" in str(r.stopped), str(r.stopped)[:90])
+
+    p = copy.deepcopy(tx)
+    cls(p).update(ClassCode="54444", PremOpsELPOverride=0.5, ProdsCompldOpsELPOverride=0.5)
+    r = k.rate(p)
+    check("I8 a company rate without its limit-table override refuses (priced $8 for $4,633 of Prem/Ops)",
+          not r.complete and "IncrdLimitTableAssignmentOverride" in str(r.stopped), str(r.stopped)[:90])
+
+    p = copy.deepcopy(tx)
+    cls(p).update(ClassCode="10113", ClassDescription="Barber Shops")
+    r = k.rate(p)
+    check("I9 a class whose Products ISO marks 'Not Applicable' prices, labelled not offered (no R30)",
+          r.complete and any(n.startswith("Not offered") for n in r.notices)
+          and not any(n.startswith("R30") for n in r.notices), str(r.notices)[:120])
+
+    clean = [k.rate(copy.deepcopy(WB.build("GL", s, {"effective_date": d})))
+             for s in ("TX", "OK", "OR", "MT") for d in ("20260801", "20270501")]
+    check("I10 the safety net (R30) is quiet on clean requests", all(c.complete and not c.notices for c in clean),
+          f"{sum(1 for c in clean if c.notices)} of {len(clean)} with notices")
+    os_ = __import__("os")
+    os_.environ["ERC_RATING_INPUTS"] = "off"
+    from gl_engine.rating import kernel as KM
+    was, KM.RATING_INPUTS_CHECK = KM.RATING_INPUTS_CHECK, "off"
+    try:
+        p = copy.deepcopy(tx)
+        gl(p)["PremOpsProdsCoverageForm"] = ""
+        r = k.rate(p)
+        ru = uw.rate(copy.deepcopy(p))
+    finally:
+        KM.RATING_INPUTS_CHECK = was
+    check("I11 with the refusals off, a silent $0 coverage raises R30: a notice, and a referral in underwriting",
+          r.complete and any(n.startswith("R30") for n in r.notices) and any(x.code == "R30" for x in ru.referrals),
+          f"{[n[:40] for n in r.notices]}; {[x.code for x in ru.referrals]}")
+
+    te = WB.build("GL", "OK", {"effective_date": "20260801", "terrorism": "Yes"})
+    gl(te)["GeneralLiabilityAddlInsdLessorOfLeasedEquipmtAutomtcStatusWhenReqdInLeaseAgrmtWithYou"] = [
+        {"ManualPremium": 1000.0}]
+    gl(te)["GeneralLiabilityTerrorismEndorsementCoverage"] = {"CertifiedActsofTerrorismExposureClassFactor": 0.004}
+    good = k.rate(copy.deepcopy(te))
+    gl(te)["GeneralLiabilityTerrorismEndorsementCoverage"] = {}
+    r = k.rate(copy.deepcopy(te))
+    ru = uw.rate(copy.deepcopy(te))
+    check("I12 terrorism on endorsements without its factor: R31 notice, and a referral in underwriting",
+          not good.notices and any(n.startswith("R31") for n in r.notices) and any(x.code == "R31" for x in ru.referrals),
+          f"{good.premium} -> {r.premium}")
+    check("I13 R30 and R31 are wired as detectors", {"R30", "R31"} <= set(RF.DETECTORS))
+
+
 def main() -> int:
     print("Stage 4 acceptance -- schemas and payloads")
     group_a(); group_b(); group_b2(); group_c(); group_d(); group_e()
-    group_f(); group_g(); group_h()
+    group_f(); group_g(); group_h(); group_i()
     total = len(PASS) + len(FAIL)
     print(f"\n{len(PASS)}/{total} passed")
     if FAIL:

@@ -105,6 +105,10 @@ class Rating:
     technical: "Rating | None" = None
     #: The rating graph, when asked for (`graph=True`: a `RatingGraph`); None otherwise.
     deps: object = None
+    #: Our own warnings, on every rating in every mode (OI-130, B-07): coverages ISO's table marks "Not
+    #: Applicable" for the class (not offered), and coverages on the policy that priced $0 or $1 silently
+    #: (R30; a referral too in underwriting mode). ISO's own messages stay in `messages`.
+    notices: list = field(default_factory=list)
 
     @property
     def packages(self) -> tuple[str, ...]:
@@ -217,6 +221,11 @@ class Kernel:
             result.complete = False
             result.stopped = exc
             return result
+        for code, covs in referrals.not_offered(result).items():
+            result.notices.append(f"Not offered: {', '.join(covs)} for class {code} (ISO's table reads "
+                                  f"\"Not Applicable\"); it prices $0 or the $1 minimum by design")
+        for f in referrals.d_silent_zero(result) + referrals.d_terrorism_endorsement_factor(result):
+            result.notices.append(f"{f.code} {f.where}: {f.detail}")
         if self.mode == UNDERWRITING:
             self._apply_register(result)
         return result
@@ -298,13 +307,35 @@ class Kernel:
         if RATING_INPUTS_CHECK == "off":
             return
         from ..schema import Schema
-        from ..schema.validate import missing_required
+        from ..schema.validate import (invalid_values, list_inputs, missing_required, stop_gap_conflict,
+                                       stop_gap_unrated_limits)
         key = tuple(getattr(x, "pkg_id", None) for x in (book.resolution.state, book.resolution.parent))
         schema = self._schemas.get(key)
         if schema is None:
             schema = self._schemas[key] = Schema.for_book(book)
+        if stop_gap_conflict(data) == "unanswered":
+            raise RatingError(
+                "Stop Gap details were sent but GeneralLiability.StopGap was not answered. Without the answer the "
+                "rules price Stop Gap at $0 with no message (ISO's own service does the same). Answer StopGap "
+                "\"Yes\" to price it, or \"No\" to leave it off (OI-130).")
+        if stop_gap_unrated_limits(data):
+            raise RatingError(
+                "Stop Gap's accident limit differs from its each-employee disease limit and no ManualPremium was "
+                "given. ISO's rules rate Stop Gap only when the two are equal; otherwise it prices $0 with no message "
+                "(ISO's own service does the same). Give a ManualPremium, or equal limits, to rate (OI-130).")
         missing = [m for m in missing_required(data, schema)[0] if m.rating_input]
         if not missing:
+            # OI-130 (B-07 part 2): an answer not on ISO's list for this edition -- a retired class code, last
+            # edition's limit spelling -- matches no row and prices that part at $0 or the $1 floor, silently
+            # (ISO does the same). Only the measured `list_fields` refuse; the rest stay validator V3 errors.
+            bad = invalid_values(data, schema, list_inputs())
+            if bad:
+                name, value, legal = bad[0]
+                more = f" (and {len(bad) - 1} more: {', '.join(b[0] for b in bad[1:4])})" if len(bad) > 1 else ""
+                raise RatingError(
+                    f"{name} = {value!r} is not on ISO's list for this edition (e.g. {legal}){more}. The rules "
+                    f"match no row for it and price that part at $0 or the $1 minimum, with no message (ISO's "
+                    f"own service does the same). Use a value from ISO's list to rate (OI-130).")
             return
         m = missing[0]
         others = f" (and {len(missing) - 1} more: {', '.join(x.name for x in missing[1:4])})" if len(missing) > 1 else ""

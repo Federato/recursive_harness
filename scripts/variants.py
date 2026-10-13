@@ -876,8 +876,15 @@ def _apply_terrorism(p, value, d, config):
         # terrorism rates, and the premium moves.
         return
     field, val = place
+    # OI-130 (c): NY requires the Manhattan answer for territories 001 and 010, and without it prices terrorism
+    # at 0 (461 -> 0, offline 2026-10-13). This builder sent territory 001 and no answer. Answer it, recorded and
+    # pinnable like every other pick; only where the jurisdiction declares the field.
+    manhattan = d.values("GeneralLiabilityLocation", "CertifiedActsOfTerrorismManhattan")
+    pick_m = d.pick("GeneralLiabilityLocation", "CertifiedActsOfTerrorismManhattan", manhattan) if manhattan else None
     for loc in _locations(p):
         loc[field] = val
+        if pick_m is not None:
+            loc.setdefault("CertifiedActsOfTerrorismManhattan", pick_m)
 
 
 #: Fields the stored base submissions carry a limit figure in, mapped to the

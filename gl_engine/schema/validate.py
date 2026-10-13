@@ -105,18 +105,96 @@ def _walk(node, table: str, out: list) -> None:
 RATING_INPUTS_FILE = Path(__file__).with_name("rating_inputs.json")
 
 
-def rating_inputs() -> frozenset:
-    """`Table.Column` names from `rating_inputs.json`; empty if the file is absent."""
+def _inputs_file() -> dict:
     global _RATING_INPUTS
     if _RATING_INPUTS is None:
         try:
-            _RATING_INPUTS = frozenset(json.loads(RATING_INPUTS_FILE.read_text(encoding="utf-8"))["fields"])
-        except (OSError, ValueError, KeyError):
-            _RATING_INPUTS = frozenset()
+            _RATING_INPUTS = json.loads(RATING_INPUTS_FILE.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            _RATING_INPUTS = {}
     return _RATING_INPUTS
 
 
+def rating_inputs() -> frozenset:
+    """`Table.Column` names that must not be missing or blank (`fields`); empty if the file is absent."""
+    return frozenset(_inputs_file().get("fields", ()))
+
+
+def list_inputs() -> frozenset:
+    """`Table.Column` names whose value must be on ISO's list for the edition (`list_fields`, OI-130)."""
+    return frozenset(_inputs_file().get("list_fields", ()))
+
+
 _RATING_INPUTS = None
+
+
+STOP_GAP = "GeneralLiabilityStopGapEmployersLiabilityCoverageEndorsementPolLvl"
+
+
+def stop_gap_conflict(root) -> str | None:
+    """OI-130 (B-07 part 3c): Stop Gap details sent, but the Stop Gap question not answered "Yes".
+
+    "unanswered" -- the details are there and `StopGap` is absent or blank: the engine refuses (3c1; ISO's form
+    requires the answer only from 2027, and before that the endorsement silently prices 0).
+    "no" -- the details are there and `StopGap` is "No": $0 is right, the details look like a leftover (3c2, a
+    warning). None otherwise.
+    """
+    for risk in tree.select("GeneralLiabilityTable/GeneralLiability", root):
+        if not any(c.tag in (STOP_GAP, STOP_GAP + "Table") for c in risk.children):
+            continue
+        ans = risk.first("StopGap")
+        if _unanswered(ans):
+            return "unanswered"
+        if str(ans.text).strip() == "No":
+            return "no"
+    return None
+
+
+def stop_gap_unrated_limits(root) -> bool:
+    """OI-130 (B-07 part 3c, route (e)): Stop Gap bought with limits ISO's rules cannot rate, and no manual premium.
+
+    ISO's `SetStopGapIncrdLimitFactor` (every ND / WA edition) looks the ILF up only when the accident limit equals
+    the each-employee disease limit; otherwise the factor is 0 and Stop Gap prices $0 with no message -- the
+    manual's "refer to company" combination, which ISO's form expects a `ManualPremium` for.
+    """
+    for risk in tree.select("GeneralLiabilityTable/GeneralLiability", root):
+        if str(tree.read("StopGap", risk) or "").strip() != "Yes":
+            continue
+        for rec in tree.select(f"{STOP_GAP}Table/{STOP_GAP}", risk) + [c for c in risk.children if c.tag == STOP_GAP]:
+            acc = str(tree.read("LimitBodilyInjuryByAccident", rec) or "").strip()
+            emp = str(tree.read("LimitBodilyInjuryByDiseaseEachEmployee", rec) or "").strip()
+            try:
+                manual = float(str(tree.read("ManualPremium", rec) or 0)) > 0
+            except ValueError:
+                manual = False
+            if acc and acc != emp and not manual:
+                return True
+    return False
+
+
+def invalid_values(root, schema, only: frozenset | None = None) -> list:
+    """`(Table.Column, value, legal sample)` for every answer not on ISO's list for this edition.
+
+    The list is `Schema.resolved_values`: exact where ISO declares a dependency, otherwise a safe superset --
+    which can let an illegal value through but never rejects a legal one, so a refusal built on this never
+    refuses a value ISO accepts. `only` restricts it to those names (the engine passes `list_inputs()`).
+    """
+    leaves: list = []
+    for risk in tree.select("GeneralLiabilityTable/GeneralLiability", root):
+        _walk(risk, "GeneralLiability", leaves)
+    out = []
+    for table, column, node in leaves:
+        name = f"{table}.{column}"
+        if only is not None and name not in only:
+            continue
+        f = schema.get(table, column)
+        if f is None or not f.domain:
+            continue
+        legal, _exact = schema.resolved_values(table, column, node)
+        value = node.text
+        if legal and value not in ("", None) and str(value) not in legal:
+            out.append((name, str(value), sorted(legal)[:4]))
+    return out
 
 
 def _rows(node, table: str, out: list) -> list:
@@ -143,6 +221,13 @@ class Missing:
     @property
     def name(self) -> str:
         return f"{self.table}.{self.column}"
+
+
+def _unanswered(node) -> bool:
+    """Absent, or present and blank. A blank answer is no answer (B-07 part 1, the user's decision 2026-10-13):
+    ISO's rules read `""` exactly as they read an absent field -- `Subline: ""` priced the policy at $0 past the
+    OI-134 check, which had only looked for absence."""
+    return node is None or (not node.children and (node.text is None or not str(node.text).strip()))
 
 
 def missing_required(root, schema) -> tuple[list, list]:
@@ -176,7 +261,7 @@ def missing_required(root, schema) -> tuple[list, list]:
                     unread.append(cond)
                     ok = False
                     break
-            if ok and row.first(f.column) is None and (f.table, f.column) not in seen:
+            if ok and _unanswered(row.first(f.column)) and (f.table, f.column) not in seen:
                 seen.add((f.table, f.column))
                 out.append(Missing(f.table, f.column, held, f"{f.table}.{f.column}" in inputs))
     return out, unread
@@ -219,7 +304,9 @@ def validate(payload: dict, schema) -> list:
                 f"{value!r} is not in {f.domain} "
                 f"({len(legal)} legal value(s), "
                 f"{'exact' if exact else 'superset -- dependency not declared'}"
-                f"; e.g. {list(legal)[:3]})"))
+                f"; e.g. {list(legal)[:3]})"
+                + ("; it changes the premium, so the engine refuses (OI-130)"
+                   if f"{table}.{column}" in list_inputs() else "")))
 
     for f in schema.required():
         if not f.is_input:
@@ -244,6 +331,20 @@ def validate(payload: dict, schema) -> list:
                 WARNING, "V6", m.name,
                 f"ISO's form requires it{' when ' + m.condition if m.condition else ''}; not supplied "
                 f"(ISO rates without it; it does not change the premium)"))
+    sg = stop_gap_conflict(root)
+    if sg == "unanswered":
+        findings.append(Finding(
+            ERROR, "V8", "GeneralLiability.StopGap",
+            "Stop Gap details are sent but the Stop Gap question is not answered: the engine refuses (OI-130)"))
+    elif sg == "no":
+        findings.append(Finding(
+            WARNING, "V8", "GeneralLiability.StopGap",
+            "Stop Gap is answered \"No\" but Stop Gap details are sent; they are ignored (Stop Gap prices $0)"))
+    if stop_gap_unrated_limits(root):
+        findings.append(Finding(
+            ERROR, "V8", f"{STOP_GAP}.ManualPremium",
+            "the accident limit differs from the each-employee limit, which ISO's rules do not rate: give a "
+            "ManualPremium (the engine refuses without one, OI-130)"))
     if unread:
         findings.append(Finding(
             INFO, "V6", "conditions",

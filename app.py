@@ -411,6 +411,7 @@ def rate(payload: dict, mode: str, rounding: str, compare: bool = False,
                        "clears_with": x.needs or "", "where": x.where}
                       for x in r.referrals],
         "messages": r.messages,
+        "notices": r.notices,
         "findings": [{"level": f.level, "code": f.code, "where": f.where,
                       "detail": f.detail} for f in findings],
         "trace_len": len(r.trace),
