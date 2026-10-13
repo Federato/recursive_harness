@@ -530,10 +530,10 @@ def main():
                     help="run only scripts whose filename starts with these")
     ap.add_argument("--no-gl", action="store_true",
                     help="skip the 16 General Liability suites")
-    ap.add_argument("--jobs", type=int, default=6,
-                    help="scripts run at once (default 6; 1 = the old serial run). Each script is its "
-                         "own process, 180-470 MB each measured 2026-09-30; 6 fits in the 16 GB dev machine, "
-                         "8 risks swapping on the heaviest scripts")
+    ap.add_argument("--jobs", type=int, default=int(os.environ.get("ERC_MAX_WORKERS", "2")),
+                    help="scripts run at once (default ERC_MAX_WORKERS, 2). Each script is its own process, "
+                         "180-470 MB measured 2026-09-30 and more since; 6 at once crashed the 16 GB dev "
+                         "machine as the suites grew (2026-10-13)")
     ap.add_argument("--gate", action="store_true",
                     help="chunk gate: the slow exhaustive scripts run their FULL grids (no sampling). "
                          "Without it they run a deterministic sample (scripts/cf/_regress.py)")

@@ -243,7 +243,7 @@ def _t2_one(args):
 def pool_map(fn, items, jobs):
     if jobs <= 1:
         return [fn(x) for x in items]
-    with ProcessPoolExecutor(max_workers=jobs) as ex:
+    with ProcessPoolExecutor(max_workers=jobs, max_tasks_per_child=1) as ex:
         return list(ex.map(fn, items, chunksize=1))
 
 
@@ -595,7 +595,7 @@ def j_gl(root: Path) -> None:
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--jobs", type=int, default=max(1, (os.cpu_count() or 4) - 4))
+    ap.add_argument("--jobs", type=int, default=int(os.environ.get("ERC_MAX_WORKERS", "2")))  # memory-bound machine
     ap.add_argument("--per-state", type=int, default=2)
     a = ap.parse_args()
     a_t1_property(a.jobs, a.per_state)

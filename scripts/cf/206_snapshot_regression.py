@@ -123,7 +123,7 @@ def rate_one(path_str):
 def rate_all(files, jobs):
     res = {}
     n = len(files)
-    with ProcessPoolExecutor(max_workers=jobs) as ex:
+    with ProcessPoolExecutor(max_workers=jobs, max_tasks_per_child=1) as ex:
         futs = {ex.submit(rate_one, str(f)): f for f in files}
         for i, fut in enumerate(as_completed(futs), 1):
             f = futs[fut]
@@ -163,7 +163,7 @@ def main():
     g.add_argument("--baseline", action="store_true")
     g.add_argument("--check", action="store_true")
     g.add_argument("--selftest", action="store_true")
-    ap.add_argument("--jobs", type=int, default=max(1, (os.cpu_count() or 4) - 4))
+    ap.add_argument("--jobs", type=int, default=int(os.environ.get("ERC_MAX_WORKERS", "2")))  # memory-bound machine
     ap.add_argument("--only")
     a = ap.parse_args()
     SNAP.mkdir(parents=True, exist_ok=True)

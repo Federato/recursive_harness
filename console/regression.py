@@ -33,6 +33,9 @@ from . import library, ledger, readiness, store
 ROOT = Path(__file__).resolve().parent.parent
 RUNS = ROOT / "results" / "tc" / "library_runs"
 PROGRESS = RUNS / "current.json"
+#: Memory, not CPU, limits this machine (16 GB; parallel runs that keep every book loaded have crashed it):
+#: two workers unless ERC_MAX_WORKERS says otherwise, and a fresh worker per task so memory stays bounded (recycling every 25 stalled on Python 3.12, 2026-10-13).
+MAX_WORKERS = max(1, int(os.environ.get("ERC_MAX_WORKERS", "2")))
 PREMIUM_FIELDS = ("Premium", "ErcCalculatedTotalPremium")
 
 
@@ -133,20 +136,20 @@ def run(entries: list | None = None, workers: int | None = None, progress: bool 
     calls_before = ledger.used()["total"]
     RUNS.mkdir(parents=True, exist_ok=True)
     out, t0 = [], time.monotonic()
-    workers = workers or max(1, min(8, (os.cpu_count() or 2) - 1))
+    workers = min(workers or 1, MAX_WORKERS)
 
     def note(done):
         if progress:
             PROGRESS.write_text(json.dumps({"run": rid, "build": build, "done": done, "total": len(entries),
                                             "seconds": round(time.monotonic() - t0)}), encoding="utf-8")
     note(0)
-    if workers == 1:
+    if workers == 1 and len(entries) <= 5:
         for i, e in enumerate(entries, 1):
             out.append(check(e))
             if i % 10 == 0:
                 note(i)
     else:
-        with ProcessPoolExecutor(max_workers=workers) as ex:
+        with ProcessPoolExecutor(max_workers=workers, max_tasks_per_child=1) as ex:
             futs = [ex.submit(_job, e) for e in entries]
             for i, f in enumerate(as_completed(futs), 1):
                 out.append(f.result())
