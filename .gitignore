@@ -80,3 +80,6 @@ Thumbs.db
 
 # Working scratch -- throwaway scripts, not part of the build record.
 .scratch/
+
+# Incoming carrier filings dropped here; archived (hash-checked) in Carriers/<carrier>/sources/<SERFF>
+DeviationDocs/
