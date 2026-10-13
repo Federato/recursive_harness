@@ -4,6 +4,8 @@ Consolidated register of everything still unresolved across both derivations of 
 General Liability program — the PDF manuals and the ERC packages — plus the three rating plans
 added on 2026-08-10.
 
+> **Triaged 2026-10-13 (section I at the end).** Every not-closed item was checked against the work since August: 26 close, 19 stay open, 16 parked, 5 merged, and one new item (**OI-134**, a silent wrong number at the 2027-04-01 cliff). Where an item's row above disagrees, section I wins.
+>
 > **A counting discipline was added 2026-08-11 (Step 40)** after five wrong figures in one day, all
 > of them aggregates or negatives. Build plan §9 **habit 8**: *a search predicate must never define a
 > population.* Enforced by **`scripts/erc/34_crosscheck.py`**, now part of the verification routine —
@@ -529,3 +531,104 @@ after the territory definitions (Step 8), the reproducibility gap (Step 11) and 
 Here, "no ZIP table" was read as "cannot determine territory," when it actually meant "needs no
 ZIP table." Nobody checked what the states without one actually contained until a domain expert
 said the obvious thing out loud.
+
+---
+
+## I. Triage, 2026-10-13
+
+Every OI not marked closed above (66 distinct items) was checked against the work since August: the 50 of 50
+live match (`scripts/erc/out/phase2.csv`: 50 MATCH, edition agrees in all 50), OI-70, the Property chunks, the
+2026-10-02 GL rating-path reconciliation, and `git log` / `git show` of every `gl_engine` commit since. Read-only
+pass, no ISO calls. **This section supersedes each item's own status row.** Backlog: `docs/BACKLOG-2026-10-13.md`.
+
+**Result:** CLOSE 26 · STILL OPEN 19 · PARK 16 · MERGE 5 (OI-14, OI-30, OI-33 into OI-87; OI-23 into OI-54;
+OI-64 into OI-81) · new: OI-134.
+
+**Corrections found on the way:**
+- OI-127 to OI-132 cite `630ba2f`; that is a Property chunk 27 commit. The reconciliation that raised them is
+  `c832139` (which records it was checked against the engine at `630ba2f`).
+- OI-06's row in section B still read OPEN; the same dependency was closed in section H (Workers Compensation loss
+  costs, 2026-08-11). Closed here.
+- Statuses in use but missing from the vocabulary table: `FIXED` (read as CLOSED), `PARTIALLY BUILT`, `ESCALATED`,
+  `DECIDED`, `VERIFY`, `SCOPE` / `SCOPE BOUNDARY`, `REPORT` / `RAISE UPSTREAM`, `MERGED`. From here on, every item is
+  one of the vocabulary's statuses, plus `MERGED INTO OI-x`.
+- GL live comparison counts ISO's messages but does not compare their text (`scripts/phase2_compare.py:145`);
+  message parity is proven on Property only. OI-75 closes on that evidence; a GL message comparison would make it
+  airtight.
+
+### OI-134 · New · The 2027-04-01 fixes for OI-96 and OI-97 exist only in the test generator
+
+| # | Item | Status | Detail |
+|---|---|---|---|
+| **OI-134** | **A real submission on a 2027-04-01+ GL edition can price silently wrong** | `BUILD WORK` **2026-10-13** — an engine / intake change, needs the user's go | The OI-96 / OI-97 handling lives only in `scripts/variants.py` (`_apply_effective_date`), which builds test variants; nothing in `gl_engine`, the console or `/api/rate` applies it. **Reproduced offline 2026-10-13:** the console's TX request on 2027-05-01 rates **$7,740** with `ProdsCompldOpsExclusion = "No"` and **$895** with the field omitted: Products/Completed Operations drops to $0 with no message and no referral. Same shape: a pre-2027 `" CSL"` limit leaves `CSLILF` null while Prem/Ops still writes a plausible `FinalILF` (0.007 in TX), and OI-130(d), Stop Gap's old `" BI"` suffix. **ISO does the same on the same input**, so a comparison with ISO cannot catch any of them: it has to be a refusal or referral on our side when the 2027 edition resolves and the field is absent or carries a retired limit form. Backlog RC-2 |
+
+### The triage, item by item
+
+| OI | Current status in register | Proposed | Evidence (commit / doc:line) | One-line reason |
+|---|---|---|---|---|
+| OI-05 | BY-DESIGN (L170) | CLOSE | `5aeffe9` (Deviations P2: engine rates writing companies, CF then GL), `df47960` (P3), `50b0eef` (P4) | The carrier LCM input it called "the carrier supplies it" now has a built deviations layer. Nothing is left to source. |
+| OI-06 | OPEN (L171) | CLOSE (duplicate of a closed row) | L364, the "Workers Compensation loss costs" row, is CLOSED. Note that `docs/BACKLOG-2026-10-13.md:79` (B-26) still lists OI-06 as waiting on a product decision | `WorkersCompensationRate` is a declared submission field, the 0.75 is in ERC, and the 2027 program retires class 15191. The register already closed it under a different label. |
+| OI-08 | AUDIT (L180) | CLOSE | L357 (OI-37 closed 2026-08-12 by GATE-TERRORISM); OI-91 L418 (terrorism rates 51/51, live MATCH) | The population audit it asked for ran. |
+| OI-09 | OPEN, priority raised (L394; also L188) | CLOSE | `b4ab47d` "OI-70 closed: ISO rounds half-up"; L398 (four engineered ties, plus a CF fifth) | The tie-break mode is settled as half-up, on four live discriminating ties. |
+| OI-10 | OPEN (L189) | PARK | E4, cosmetic, per L189 | Undefined vocabulary that is never acted on. Nothing to build, and no source can answer it. |
+| OI-14 | OPEN (L193) | MERGE INTO OI-87 | phase2.csv 50/50 MATCH; OI-87 L414 | "Needs an engine" is now satisfied. What remains is breadth of inputs, which is exactly OI-87. |
+| OI-16 | OPEN (L195) | PARK | OI-15 §H L315 (all use 999); phase2.csv 50/50 MATCH | Whether `{999}` is intentional is ISO's question. The engine reproduces ISO's products premium in 50/50, so it is not an engine issue. |
+| OI-17 | BUILD WORK (L205) | CLOSE (residue in OI-81 / OI-131) | `gl_engine/rating/referrals.py:94` (R03 refer sentinel), `:183-204` (R14/R19/R20 zero-factor detector); register tally: R03, R14, R19, R20 DETECTED; N17 ELPText; R29 (`52c2de9`) | The zero-sentinel catalogue is built into detectors. Over-firing is OI-131 and the remaining pending conditions are OI-81. |
+| OI-18 | OPEN (L206) | PARK | grep `interpolat` in `gl_engine` finds only size-of-risk value ranges (`gl_engine/erc/tables.py:17`); limits are domain-enumerated (stage 4 validation); `ILFOverride` path (OI-129) | Off-table limits are outside both ERC and ISO's service, which take only filed domain limits. It is a scope boundary, not a defect. Settled only by a decision to support non-filed limits. |
+| OI-21 | OPEN, confirmed (L209) | CLOSE | L209 (rule adopted: "a coverage is identified by its DataDefGroup"); OI-85 L412 (statistical codes written by ISO's rules, 0 mismatches vs ISO) | The finding was confirmed and turned into a design rule. Stat codes now match ISO, so nothing is left open. |
+| OI-22 | OPEN (L210) | PARK | `docs/BACKLOG-2026-10-13.md` (not listed); no crosswalk in either corpus | It needs a source neither corpus has. It matters only for re-rating a pre-revision risk on a post-revision edition. |
+| OI-23 | OPEN (L218) | MERGE INTO OI-54 | L379 | Same Hawaii question, restated there as a scope boundary. |
+| OI-24 | HYGIENE (L219) | STILL OPEN | `Agentic/iso-circular-expert/text/{losscosts,rules}/...-003-C.txt` are still 0 bytes (checked) | Not re-downloaded. Low value because a prior notice exists. |
+| OI-25 | HYGIENE (L220) | CLOSE | `gl_engine/erc/discovery.py:5,25-27` ("N6: identity comes from the XSD targetNamespace, never the directory") | The mitigation the item named is built into ingestion. |
+| OI-26 | HYGIENE (L221) | PARK | `docs/rating-engine/A3-ENDORSEMENT-CATALOG.md` exists, scripts not persisted | Housekeeping with no consumer asking for regeneration. |
+| OI-27 | HYGIENE (L222) | CLOSE (MERGE INTO OI-73) | L401 (OI-73 CLOSED: dedupe by package id in stage 1 and analysis scripts) | Same five byte-identical dirs, already handled on read. |
+| OI-28 | OPEN (L247) | CLOSE | `scripts/phase2_compare.py:118-125` (MATCH only if the premium is equal AND 0 published fields differ); `scripts/erc/out/phase2.csv` 50/50 MATCH; OI-70 (rounding) | De facto decided: cent-exact on the premium and on every published field, and the rounding blocker is gone. |
+| OI-29 | OPEN (L248) | CLOSE | L518 (OI-80: ISO's `Scheme` header names the edition); phase2.csv `edition_agrees` 50/50; `phase2_compare.py:104-110` | The oracle's governing edition is now read from ISO's response, and ours agrees in 50/50. The AL stale oracle is superseded by live calls. |
+| OI-30 | OPEN (L249) | MERGE INTO OI-87 | `c832139` (GL_Algorithm per-subline docs reconciled against the built engine); OI-87 L414 | The engine scope is every GL coverage. What remains, "how many more payload sets", is OI-87's breadth. |
+| OI-31 | OPEN (L250) | STILL OPEN (unverified) | `ISO_ERC_Files/.../GL CW 20260101 V01/Rules/GeneralLiabilityRules.Rule.xml:21356-21360` (input read by `FirstValue` DataDef, else 0.0); terrorism breadth MATCH (OI-91 L418) | The rules show the input is consumed. No discriminating call has sent a non-default input factor. One live call with a deliberately different factor in one of the 22 states would close it. |
+| OI-32 | HYGIENE (L251) | CLOSE | `Engine_Payloads/NV/submission.json` = "1,000,000 CSL" vs `Payloads/NV/1. Input.json` "100,000 CSL"; `scripts/phase2_compare.py:50` (`SAMPLES = Engine_Payloads`) | The working sample set is aligned. The residue survives only in the legacy `Payloads/` set, which is no longer the oracle. |
+| OI-33 | OPEN (L252) | MERGE INTO OI-87 | L414; BACKLOG-2026-10-13 B-12 | Same "one cell" problem, restated as OI-87. |
+| OI-35 | OPEN, narrowed (L356) | PARK | E11; engine matches ISO 50/50 | An ISO question (is 334's omission intended?) with no premium effect. |
+| OI-38 | OPEN (L363) | PARK | E14; "zero premium effect" L363 | A vestigial lookup that would need an answer from ISO. |
+| OI-41 | BUILD WORK (L393) | CLOSE | `gl_engine/config.py:21-23` (`MIN_ASOF = "20220901"`); `gl_engine/assertions.py:162` (A3); `gl_engine/errors.py:35`; `gl_engine/resolve/resolver.py:48-50` | The fail-loud as-of floor is built. |
+| OI-43 | REPORT UPSTREAM (L368) | PARK | BACKLOG-2026-10-13 B-25 | Waiting on someone to report it to ISO. |
+| OI-44 | BUILD WORK (L369) | CLOSE (residue OI-131) | `gl_engine/rating/referrals.py:183-204` (R14 fires on any liquor zero-factor lookup); register tally R14 = DETECTED | All 21 zero liquor deductible cells are now caught, not just the guarded 10. The over-fire on "No Deductible" is OI-131. |
+| OI-47 | BUILD WORK (L372) | CLOSE | `gl_engine/assertions.py:24-25, 321-337` (A10: "both spellings of ProductWithdraw(a)l survive distinctly (OI-47)") | The load-time assertion it asked for exists. |
+| OI-52 | RAISE UPSTREAM (L377) | PARK | BACKLOG-2026-10-13 B-25 | Waiting on someone to report it to ISO. |
+| OI-53 | OPEN, dated (L378) | CLOSE | L378 ("ANSWERED 2026-08-12 ... a WITHDRAWAL"; A9 built); `gl_engine/assertions.py:310` (A9) | The engine side is answered and pinned. The leftover ("the manual is silent") is an observation with no action. |
+| OI-54 | SCOPE BOUNDARY (L379) | PARK | `gl_engine/resolve/resolver.py:155` (no edition in force raises, so there is no CW fallback); B-26 | A deliberate scope boundary. The engine already fails loudly for a jurisdiction it holds no package for. |
+| OI-56 | HYGIENE (L381) | STILL OPEN | `Agentic/iso-circular-expert/knowledge/notices.json`: GL-MO-2027-RU-003 registered, GL-MI-2027-LC-003 absent, no `readable:false` (checked) | The inconsistency it describes still exists. |
+| OI-57 | OPEN (L382) | CLOSE (residue OI-66) | `gl_engine/rating/referrals.py:55` (R27 NOT_REFERRAL: "ERC implements the full-term treatment"); OI-65 L390 (step 3, all 13 decisions) | Decided by R27 (the full-term option). The leftover oracle question is OI-66. |
+| OI-58 | OPEN (L383) | CLOSE | phase2.csv row CA: `GL_CA_20241101_V01 over GL_CW_20231201_V02`, 7586 MATCH; OI-94 L419 (CA 7586 with size-of-risk matches ISO); D02 (L383) | The premium half is now proven against ISO on CA's older parent. The referral half was decided by design (D02). |
+| OI-59 | BUILD WORK (L384) | CLOSE | OI-87 L414 (breadth: "claims-made at two maturities", OK and NY, 31/31 MATCH); register R06 (informational) | NY claims-made agrees with ISO live, so the N16 fallback risk did not materialise. |
+| OI-60 | BUILD WORK (L385) | STILL OPEN (unverified) | No evidence of an item-13 capture-not-rate disposition; NY base samples carry no endorsements | Nothing found that settles the 83 empty `ErcRate` endorsements. Needs an NY endorsement-attached live comparison. |
+| OI-61 | SCOPE (L386) | PARK | OI-86 L413 (PR not entitled, disregarded); B-26 | PR has no oracle by decision. |
+| OI-62 | BUILD WORK (L387) | CLOSE | `gl_engine/interp/interpreter.py:433-447` (`round_to` quantizes to any integer `@DecimalPlaces`, with no fixed list) | 8dp is handled generically. No four-value list exists in the engine. |
+| OI-63 | AUDIT (L388) | PARK | L388 "Not urgent" | An analysis-script metric with no engine or premium effect. |
+| OI-64 | BUILD WORK (L389) | MERGE INTO OI-81 | Register entry R02 ("gate state-specific / OI-64") = PENDING (computed) | It is one of OI-81's 14 pending referral conditions. |
+| OI-65 | BUILD WORK (L390) | CLOSE (residue OI-81) | L390 ("STEP 3 COMPLETE 2026-08-12 — all 13 decisions taken") | The census and decisions are done. Implementation is tracked as OI-81. |
+| OI-66 | VERIFY (L391) | PARK | BACKLOG-2026-10-13 B-26 (transactional scope); `referrals.py:55` R27 | Waiting on a scope decision. It is cheap to test once someone wants it: one live 2027 policy spanning 2027-12-31. |
+| OI-67 | HYGIENE (L392) | CLOSE | `tests/verify_california.py:8-18` (CORRECTED docstring, 53 rated outputs) | The correction it describes was made. |
+| OI-68 | ESCALATED E20 (L396) | PARK | `gl_engine/assertions.py:51` (`KNOWN_NONMONOTONIC`) | Allowed past by decision and refers either way. Only ISO can arbitrate. |
+| OI-75 | OPEN (L403) | CLOSE | `scripts/cf/121_chunk11_c11-09_messages.py` (our message set compared with ISO's saved `RatingMessages`); chunk 28 rows OI-123/125/126 (L502-L512: messages equal ISO) | The open question (does RAaS add anything beyond what the rules pass in?) is answered on the shared interpreter: message sets equal ISO's. GL's `phase2_compare.py:145` only counts messages, so a GL text comparison would make this airtight. |
+| OI-76 | BUILD WORK (L404) | CLOSE | `40f6f0d` "OI-78 closed: 48 of 48 usable oracles agree"; OI-79 L407 (49/49); phase2.csv 50/50 MATCH | All 28 disagreements traced to the oracle, and live ISO agrees 50/50. |
+| OI-77 | HYGIENE (L405) | CLOSE | `scripts/phase2_compare.py:50` (Engine_Payloads vs live ISO); phase2.csv 50/50 | The altered `Payloads/` pairs are no longer the oracle. The live service replaced them. |
+| OI-81 | BUILD WORK (L408) | STILL OPEN | Computed tally: PENDING 14 = R01 R02 R04 R05 R06 R07 R08 R09 R12 R15 R17 R23 R25 R26 (identical to L408); `referrals.py` last changed `52c2de9` | Unchanged since August. B-14. |
+| OI-82 | BUILD WORK (L409) | STILL OPEN | Only `scripts/erc/49_doc_workbook.py` / `41_` read the DOC workbook; nothing in `gl_engine` does | The ISO "Refer to Company" set has not been checked against ours (B-14). |
+| OI-83 | HYGIENE (L410) | STILL OPEN (partial) | Form Related Fields now read (`gl_engine/schema/fields.py`, OI-84); no GL reader of Metadata, Ratebook Tables or GL STC (B-15) | One of the four directories is consumed. Three are not. |
+| OI-84 | BUILD WORK (L411) | STILL OPEN | L411 (61 of 90 on the superset); no later commit | Needs ISO declarations or per-field mapping. |
+| OI-86 | DECIDED (L413) | CLOSE | `scripts/raas.py:56` (`NO_ISO = frozenset({"PR"})`); L413 | Decided and implemented. The "no external confirmation" consequence is kept by OI-61 (PARK). |
+| OI-87 | BUILD WORK (L414) | STILL OPEN | `39d6a09`, `c627b95`, `316996e` (2026-10-07: console tooling for class mixes and quick smoke; no recorded GL class-family live results); BACKLOG-2026-10-13 B-12/B-13; START-HERE-TOMORROW.md:381 ("coverage measure reads 1 of 19") | Tooling exists but the live GL population is still essentially one risk shape per state. |
+| OI-89 | OPEN (L416) | STILL OPEN | START-HERE-TOMORROW.md:375-379 (synthetic loss histories approved, not run); `scripts/variants.py:539-554` | The experience-rating side of the gate is still unexercised, and the "requested, not applied" message decision is untaken. |
+| OI-95 | PARTIALLY BUILT (L420-479) | STILL OPEN (partial) | `52c2de9` (R29 built); L475-479 (remaining: hard refusal vs referral; live ISO enforcement) | The remaining decision and live check are not done. |
+| OI-96 | PARTIALLY BUILT (L519) | STILL OPEN (partial) | `80cf958` (payload-side renormalisation in `scripts/variants.py` only); `gl_engine` has no tolerant-match change | The engine-side fix (option 1) and a live 2027 premium check are both outstanding. A real submission still hits the miss (see the summary). |
+| OI-97 | PARTIALLY BUILT (L520) | STILL OPEN (partial) | `666e12a` (stopgap in `scripts/variants.py`); grep `ProdsCompldOpsExclusion` hits only `scripts/variants.py`, `scripts/erc/56_edition_review.py`, `scripts/tc/tc19_seed_evidence.py`, `tests/verify_breadth.py`, with nothing in `gl_engine` | The stopgap covers generated variants only. The engine raises no referral when the field is missing. |
+| OI-98 | OPEN (L515) | PARK | L515 ("What would settle this: a decision on lifecycle scope"); B-26 | A scope decision. Measurement is complete. |
+| OI-117 | PARKING LOT (L497) | PARK (no change) | L497; BACKLOG-2026-10-13 L80 | Already parked by the user's decision. |
+| OI-121 | FIXED (L501) | CLOSE (status wording only) | L501 (fixed 2026-10-01, engine equals ISO on L1-L5) | Done. "FIXED" is not in the status vocabulary (L124-133), so mark it CLOSED. |
+| OI-127 | OPEN (L504) | STILL OPEN (confirmed) | `gl_engine/interp/nodes.py:663-673` (`out` overwritten per child; only the last appended) | No fix. The only `nodes.py` changes since `630ba2f` (`27e7328`, `5aeffe9`, `df47960`, `a9031d9`, `daba876`) are graph capture, deviations and Property-only branches. |
+| OI-128 | OPEN (L505) | STILL OPEN (confirmed) | No `gl_engine` diff since `630ba2f` touches `WithArgs` binding except graph provenance (`27e7328`, "never changes a value") | No fix. |
+| OI-129 | OPEN (L506) | STILL OPEN (confirmed) | No `ILFOverride`/referral change in any `gl_engine` commit since `630ba2f`; `referrals.py` last changed `52c2de9` (2026-08-31) | No fix. |
+| OI-130 | OPEN (L507) | STILL OPEN (confirmed) | `_refuse_null_loss_cost` untouched since `630ba2f`; `scripts/variants.py` last changed `7a7785e` (class basis display, not the " BI" suffix) | No fix. |
+| OI-131 | OPEN (L508) | STILL OPEN (confirmed) | `gl_engine/rating/referrals.py:183-204` (R14/R19 fire on any zero lookup whose detail contains Liquor/UnmannedAircraft/Drone); file unchanged since `52c2de9` | No fix. The code reads exactly as the misfire described. |
+| OI-132 | OPEN (L509) | STILL OPEN (confirmed) | No `by_coverage` / `PremiumToReachMin` change in any `gl_engine` diff since `630ba2f` | No fix. Display only. |
