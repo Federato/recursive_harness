@@ -542,7 +542,7 @@ live match (`scripts/erc/out/phase2.csv`: 50 MATCH, edition agrees in all 50), O
 pass, no ISO calls. **This section supersedes each item's own status row.** Backlog: `docs/BACKLOG-2026-10-13.md`.
 
 **Result:** CLOSE 26 · STILL OPEN 19 · PARK 16 · MERGE 5 (OI-14, OI-30, OI-33 into OI-87; OI-23 into OI-54;
-OI-64 into OI-81) · new: OI-134.
+OI-64 into OI-81) · new: OI-134. **Since:** OI-127 closed (fixed, ISO-confirmed); OI-135 raised.
 
 **Corrections found on the way:**
 - OI-127 to OI-132 cite `630ba2f`; that is a Property chunk 27 commit. The reconciliation that raised them is
@@ -561,6 +561,18 @@ OI-64 into OI-81) · new: OI-134.
 | # | Item | Status | Detail |
 |---|---|---|---|
 | **OI-134** | **A real submission on a 2027-04-01+ GL edition can price silently wrong** | `BUILD WORK` **2026-10-13** — an engine / intake change, needs the user's go | The OI-96 / OI-97 handling lives only in `scripts/variants.py` (`_apply_effective_date`), which builds test variants; nothing in `gl_engine`, the console or `/api/rate` applies it. **Reproduced offline 2026-10-13:** the console's TX request on 2027-05-01 rates **$7,740** with `ProdsCompldOpsExclusion = "No"` and **$895** with the field omitted: Products/Completed Operations drops to $0 with no message and no referral. Same shape: a pre-2027 `" CSL"` limit leaves `CSLILF` null while Prem/Ops still writes a plausible `FinalILF` (0.007 in TX), and OI-130(d), Stop Gap's old `" BI"` suffix. **ISO does the same on the same input**, so a comparison with ISO cannot catch any of them: it has to be a refusal or referral on our side when the 2027 edition resolves and the field is absent or carries a retired limit form. Backlog RC-2 |
+
+### OI-127 · CLOSED 2026-10-13 · fixed, confirmed by ISO (backlog B-06)
+
+| # | Item | Status | Detail |
+|---|---|---|---|
+| **OI-127** | **`ForEach` kept only the last child's value per iteration** | `CLOSED` **2026-10-13** | **Wider than raised.** A scan of every rule file found **12 sites** whose loop body has two or more value children inside an aggregate: GL `SetTotalUnmannedAircraftPremium`, `SetTotalCyberIncidentLiabilityPremium`, `SetTotalLossOfElectronicDataPremium` (`Sum`) and **`AttachFormExclPersonalAdvertisingInjury`** (`Sum` over two class lists, one `If` each: classes on the first list never attached the exclusion); 8 Property sites under `FirstNonNull`. **ISO, 3 calls (TX, 2026-10-13, all premiums equal to ours):** class 43200 and class 91130 → ISO attaches the Personal and Advertising Injury exclusion (we did not); one drone, Cov A $42 + Cov B $66 → ISO's `TotalUnmannedAircraftPremium` **108** (we gave 66). **Fix:** `gl_engine/interp/nodes.py` `_for_each`: a body with two or more value children (no `ToDataDef`, not a statement) yields each one's value; every other body is unchanged. `ERC_FOREACH_YIELD=last` restores the old behaviour for comparison. **Checked:** 165 stored GL requests unchanged (none had a drone or a first-list class), Property snapshot 2,082 clean, `157_ --all` 293 of 293, full regression `104_` 185 of 186 (the one, `213_`, a re-verification list missing three files since the 10-09 deviations work, fails identically without this change; entries added, then all pass), `verify_interp.py` 80 of 80 (B38-B40 new). No premium changes today: the totals feed premiums-to-reach-minimum whose filed minimums are 0 |
+
+### OI-135 · New · A Property rating can depend on what was rated before it in the same process
+
+| # | Item | Status | Detail |
+|---|---|---|---|
+| **OI-135** | **State leaks between ratings: `chunk23_rc3_Z6` loses `EQLimitToUse` (400000 → None) depending on which requests ran before it in the same worker** | `OPEN` **2026-10-13** — found during OI-127's checks, reproduced on the code before that change | `206_snapshot_regression.py --check --only chunk23 --jobs 8` on unchanged code: clean on one run, moved on the next; the same request alone is clean every time. Something cached (a table, a resolved book, a frame) carries one rating's state into the next. **Matters for the app**, which rates many requests in one long-running process. Settle by: run the chunk 23 set in a fixed order in one process until it reproduces, bisect the preceding request, then find the cache |
 
 ### The triage, item by item
 

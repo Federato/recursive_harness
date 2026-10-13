@@ -532,6 +532,32 @@ def group_b() -> None:
     check("B23 Guid is seeded and reproducible, not random (§9)",
           v != v2 and v.endswith("-000000000000"), f"{v} then {v2}")
 
+    # OI-127: the drone total's shape -- one iteration, two value children (Cov A, Cov B). ISO answered 108 for
+    # A 42 + B 66 (2026-10-13, TX), so every value child counts, not only the last.
+    from gl_engine.interp import nodes as N
+    two = ('<rul:Sum><rul:ForEach AtInputDataDef="T/Row">'
+           '<rul:Value Type="decimal" FromDataDef="A"/><rul:Value Type="decimal" FromDataDef="B"/>'
+           '</rul:ForEach></rul:Sum>')
+    rows = {"T": {"Row": [{"A": "42", "B": "66"}, {"A": "1", "B": "2"}]}}
+    was = N.FOREACH_YIELD
+    try:
+        N.FOREACH_YIELD = "every"
+        v, _, _ = run(two, rows)
+        check("B38 Sum over a ForEach with two value children totals both, every row (OI-127)",
+              v == Decimal(111), repr(v))
+        # a write in the body is a statement, not an addend: only the bare value counts
+        v, _, _ = run('<rul:Sum><rul:ForEach AtInputDataDef="T/Row">'
+                      '<rul:Constant Type="decimal" ToDataDef="W">5</rul:Constant>'
+                      '<rul:Value Type="decimal" FromDataDef="A"/></rul:ForEach></rul:Sum>', rows)
+        check("B39 a write beside one value keeps today's yield: the last child (OI-127)",
+              v == Decimal(43), repr(v))
+        N.FOREACH_YIELD = "last"
+        v, _, _ = run(two, rows)
+        check("B40 with ERC_FOREACH_YIELD=last the old behaviour is still reachable (B only)",
+              v == Decimal(68), repr(v))
+    finally:
+        N.FOREACH_YIELD = was
+
 
 # ------------------------------------------------------------------- C the real
 

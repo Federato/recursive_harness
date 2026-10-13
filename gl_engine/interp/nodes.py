@@ -13,6 +13,7 @@ Implementation order follows the corpus, not the alphabet: the top 20 nodes are
 from __future__ import annotations
 
 import datetime as _dt
+import os
 from decimal import Decimal, InvalidOperation
 
 from . import tree
@@ -643,6 +644,23 @@ def _with_args(ip, el, fr):
 
 # ------------------------------------------------------------------ iteration
 
+#: OI-127: what one `ForEach` iteration yields when its body has several value
+#: children: "every" (each value child's value; ISO, confirmed live 2026-10-13:
+#: a drone's Cov A + Cov B total, and an exclusion attached from either of two
+#: class lists) or "last" (the engine before OI-127, kept for comparison).
+FOREACH_YIELD = os.environ.get("ERC_FOREACH_YIELD", "every")
+
+#: Children whose value is a statement's side effect, not an operand.
+_STATEMENTS = frozenset({"Locate", "Remove", "Sequence", "DoMessage", "Break"})
+
+
+def _yields_value(ch) -> bool:
+    tag = ch.tag.split("}")[-1]
+    if tag == "RunRule" and ch.attrib.get("Type", "none") == "none":
+        return False
+    return ch.attrib.get("ToDataDef") is None and tag not in _STATEMENTS
+
+
 @node("ForEach")
 def _for_each(ip, el, fr):
     """Iterate in filed document order (contract §9).
@@ -660,17 +678,31 @@ def _for_each(ip, el, fr):
     # `ToDataDef` in the body still means the enclosing record (contract §9).
     # Only `AtDataDef` rebinds writes along with reads.
     keep_write_root = at_path is None
+    kids = _kids(el)
+    # OI-127: a body with two or more value children (12 rule sites, e.g. the
+    # drone total's Cov A and Cov B `If`s) yields each one's value, not only the
+    # last. Every other body is unchanged.
+    every = FOREACH_YIELD == "every" and sum(map(_yields_value, kids)) > 1
     yielded = []
     for item in tree.select(path, fr.data):
         inner = fr.at(item, keep_write_root=keep_write_root)
         out = None
+        got = []
         try:
-            for ch in _kids(el):
+            for ch in kids:
                 out = ip.eval(ch, inner)
+                if every and _yields_value(ch):
+                    got.append(out)
         except BreakLoop as brk:
-            yielded.append(brk.value if brk.has_value else out)
+            if every:
+                yielded.extend(got + ([brk.value] if brk.has_value else []))
+            else:
+                yielded.append(brk.value if brk.has_value else out)
             break
-        yielded.append(out)
+        if every:
+            yielded.extend(got)
+        else:
+            yielded.append(out)
     # A collection, not the last value: `Sum` over a `ForEach` must total every
     # iteration. Statement contexts discard it, so this is free there.
     return Multi(yielded)

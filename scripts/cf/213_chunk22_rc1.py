@@ -389,7 +389,14 @@ def touchpoints():
     # repository's ownership check on a new PC), and had been failing since c7ffe66 unseen (the chunk 24-27 gates ran
     # the quick tier, which skips this script). Both fixed: a git error fails the check, and the changes are listed.
     REVERIFIED = {
-        "gl_engine/interp/nodes.py": "c7ffe66 chunk 24; C28-07 (OI-126 / OI-123) and C28-10 (OI-114); 157_ --all 293 of 293, 2026-10-05",
+        "gl_engine/interp/nodes.py": "c7ffe66 chunk 24; C28-07 (OI-126 / OI-123) and C28-10 (OI-114); 157_ --all 293 of 293, 2026-10-05; "
+                                     "OI-127 ForEach yields every value child; 157_ --all 293 of 293, snapshot clean, 2026-10-13",
+        "cf_engine/rating.py": "deviations P2 (5aeffe9, a company hook: inactive without a WritingCompany); 157_ --all 293 of 293 "
+                               "and snapshot clean, 2026-10-13 (missed from this list on 2026-10-09)",
+        "gl_engine/interp/graph.py": "rating graph G1 (27e7328): records only, never changes a value; 157_ --all 293 of 293 and "
+                                     "snapshot clean, 2026-10-13 (missed from this list on 2026-10-09)",
+        "gl_engine/rating/kernel.py": "deviations P2/P3 (5aeffe9, df47960): Kernel.rate(company=), inactive without one; "
+                                      "157_ --all 293 of 293 and snapshot clean, 2026-10-13 (missed from this list on 2026-10-09)",
         "gl_engine/interp/interpreter.py": "C28-05 strict SingleResult; C28-08 / C28-09 submitted inputs (OI-125 / OI-112); 157_ --all 293 of 293, 2026-10-05; "
                                            "C28-19 older package, then C28-21 (Property steps moved out to run_hooks); 157_ --all 293 of 293 after each, snapshot clean, 2026-10-06",
         "cf_engine/resolve/book.py": "C28-05 strict default and EQ stub; C28-08 / C28-09 switches; 157_ --all 293 of 293, 2026-10-05; "
