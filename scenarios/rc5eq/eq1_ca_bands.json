@@ -1,0 +1,92 @@
+{
+ "name": "eq1_ca_bands",
+ "states": [
+  "CA"
+ ],
+ "edits": [
+  {
+   "sheet": "IN - Schedule",
+   "cell": "U8",
+   "value": "Earthquake Form (CP 10 28)"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "V8",
+   "value": "1",
+   "text": true
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "AO51",
+   "value": "Yes, Not Included in Blanket"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "AP51",
+   "value": "C1"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "AQ51",
+   "value": "2,500",
+   "text": true
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "AR51",
+   "value": "Yes"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "AS51",
+   "value": "10% to 50%"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "V137",
+   "value": "Yes, Not Included in Blanket"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "W137",
+   "value": "2",
+   "text": true
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "L51",
+   "value": "8",
+   "text": true
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "U51",
+   "value": 0.9
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "G137",
+   "value": 0.7
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "N51",
+   "value": 300000
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "AN51",
+   "value": 300000
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "E137",
+   "value": 300000
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "U137",
+   "value": 300000
+  }
+ ]
+}

@@ -1,0 +1,13 @@
+{
+ "name": "rc2_w5_contents_coins_100",
+ "states": [
+  "AK"
+ ],
+ "edits": [
+  {
+   "sheet": "IN - Schedule",
+   "cell": "G136",
+   "value": 1.0
+  }
+ ]
+}

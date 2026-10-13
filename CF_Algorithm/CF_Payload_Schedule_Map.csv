@@ -1,0 +1,129 @@
+block,column,schedule_header,iso_record,parent_block,iso_field,kind,conversion,note
+LOCATION,A,ID,CommercialPropertyLocation,,(key),key/filter,,join key; not sent
+LOCATION,B,Active,CommercialPropertyLocation,,(filter),key/filter,,emit only Active = Yes
+LOCATION,C,State,CommercialPropertyLocation,,SchemeKeys.ProductName,sent,"""Commercial Property "" & State",T-3: not a field -- one payload per state
+LOCATION,D,ZipCode,CommercialPropertyLocation,,ZipCode,sent,"text, 5 digits",T-2
+LOCATION,E,City,CommercialPropertyLocation,,City,sent,,
+LOCATION,F,ProtClass,CommercialPropertyLocation,,ProtectClass,sent,text,
+LOCATION,G,BGITerr,CommercialPropertyLocation,,BasicGroupIRatingTerr,sent,,
+LOCATION,H,District,CommercialPropertyLocation,,District,sent,,alias resolved in Step 3
+LOCATION,I,BGIITerr,CommercialPropertyLocation,,BasicGroupIIRatingTerr,sent,,
+LOCATION,J,SpecialTerr,CommercialPropertyLocation,,SpecialRatingTerr,sent,,
+LOCATION,K,WindHailDed,CommercialPropertyLocation,,WindstormOrHailDeductible,sent,,ISO refused Contents payloads without it (chunk 4)
+LOCATION,L,MultiResCredit,CommercialPropertyLocation,,MultipleResidentialPropSpecialCredit,sent,,
+LOCATION,M,HeatingPlantLoc,CommercialPropertyLocation,,-,not sent,,OMIT v1 -- no ISO field in 408 payloads; check DataDef
+LOCATION,N,PerLocationDed,CommercialPropertyLocation,,(record),record,Yes -> CommercialPropertyDeductiblesByLocationBldg [{Deductible}] on each Structure,"an endorsement record, not a field (fixed 2026-09-22)"
+BUILDING,A,ID,CommercialPropertyStructure,LOCATION,(key),key/filter,,join key; not sent
+BUILDING,B,ParentID,CommercialPropertyStructure,LOCATION,(join -> LOCATION.ID),key/filter,,
+BUILDING,C,Active,CommercialPropertyStructure,LOCATION,(filter),key/filter,,emit only Active = Yes
+BUILDING,D,CovType,CommercialPropertyStructure,LOCATION,CovType,sent,,
+BUILDING,E,ClassCode,CommercialPropertyStructure,LOCATION,ClassCode,sent,"text, 4 digits",
+BUILDING,F,ClassDesc,CommercialPropertyStructure,LOCATION,ClassificationDescription,sent,,alias
+BUILDING,G,RatingType,CommercialPropertyStructure,LOCATION,"RatingType; RatingTypeBasicGroupII = ""Class""",sent,,the rater applies a specific rate to Group I only; Defaults #10 (= RatingType) made ISO price Group II at 0 on a Specific building (fixed 2026-09-22)
+BUILDING,H,ConstrCode,CommercialPropertyStructure,LOCATION,-,not sent,,T-5: not sent; ISO derives it from ConstructionType
+BUILDING,I,ConstrType,CommercialPropertyStructure,LOCATION,ConstructionType,sent,,T-5
+BUILDING,J,ConstrSymbol,CommercialPropertyStructure,LOCATION,BasicGroupIISymbol,sent,,alias
+BUILDING,K,NumStories,CommercialPropertyStructure,LOCATION,NumStories,sent,,
+BUILDING,L,BCEG,CommercialPropertyStructure,LOCATION,BCEG (+ BCEGClass),sent,,T-4
+BUILDING,M,OpenSides,CommercialPropertyStructure,LOCATION,OpenSides,sent,,
+BUILDING,N,Limit,CommercialPropertyStructure,LOCATION,Limit + FullBldgValue,sent,FullBldgValue = Limit,D-2 decision
+BUILDING,O,SpecificRate,CommercialPropertyStructure,LOCATION,SpecificGroupIRate,sent,,alias; only when RatingType = Specific
+BUILDING,P,CauseOfLoss,CommercialPropertyStructure,LOCATION,CauseOfLoss,sent,,
+BUILDING,Q,Deductible,CommercialPropertyStructure,LOCATION,Deductible,sent,,"T-6: already ""2,500"""
+BUILDING,R,TheftDed,CommercialPropertyStructure,LOCATION,TheftDeductible,sent,,
+BUILDING,S,WindHailDed,CommercialPropertyStructure,LOCATION,WindstormOrHailDeductible,sent,,
+BUILDING,T,Valuation,CommercialPropertyStructure,LOCATION,ValuationType,sent,,alias
+BUILDING,U,Coinsurance,CommercialPropertyStructure,LOCATION,Coinsurance,sent,"0.8 -> ""80%""",T-1
+BUILDING,V,SprinklerSystem,CommercialPropertyStructure,LOCATION,SprinklerSystem,sent,,
+BUILDING,W,SprinklerLeakageExcl,CommercialPropertyStructure,LOCATION,(record),record,Yes -> [{}],RECORDS block
+BUILDING,X,Vacancy,CommercialPropertyStructure,LOCATION,VacantBuilding,sent,,alias
+BUILDING,Y,RoofSurfacing,CommercialPropertyStructure,LOCATION,(record),record,Paragraph A/B/A and B -> [{Applicability: value}],CommercialPropertyLimitationsOnCovForRoofSurfacing -- Step 3 said omit; it moves the premium (fixed 2026-09-22)
+BUILDING,Z,SubStdA,CommercialPropertyStructure,LOCATION,SubStdConditionA,sent,,
+BUILDING,AA,SubStdB,CommercialPropertyStructure,LOCATION,SubStdConditionB,sent,,
+BUILDING,AB,SubStdC,CommercialPropertyStructure,LOCATION,SubStdConditionC,sent,,
+BUILDING,AC,SubStdD,CommercialPropertyStructure,LOCATION,SubStdConditionD,sent,,
+BUILDING,AD,SubStdE,CommercialPropertyStructure,LOCATION,SubStdConditionE,sent,,
+BUILDING,AE,WindHailExcl,CommercialPropertyStructure,LOCATION,(record),record,Yes -> [{}],RECORDS: Structure wind/hail exclusion
+BUILDING,AF,VandalismExcl,CommercialPropertyStructure,LOCATION,(record),record,Yes -> [{}],RECORDS: CommercialPropertyVandalismExclusion
+BUILDING,AG,TheftExcl,CommercialPropertyStructure,LOCATION,(record),record,Yes -> [{}],RECORDS: Structure theft exclusion
+BUILDING,AH,AddlInsurableIntOption,CommercialPropertyStructure,LOCATION,AddlInsurableIntOption,sent,,Legal Liability only (Z-1)
+BUILDING,AI,ConstrDesc,CommercialPropertyStructure,LOCATION,-,not sent,,derived; not sent
+OCCUPANCY CLASS,A,ID,CommercialPropertyOccupClass,BUILDING,(key),key/filter,,join key; not sent
+OCCUPANCY CLASS,B,ParentID,CommercialPropertyOccupClass,BUILDING,(join -> BUILDING.ID),key/filter,,
+OCCUPANCY CLASS,C,Active,CommercialPropertyOccupClass,BUILDING,(filter),key/filter,,emit only Active = Yes
+OCCUPANCY CLASS,D,ClassCode,CommercialPropertyOccupClass,BUILDING,ClassCode,sent,"text, 4 digits",the tenant class code
+OCCUPANCY CLASS,E,OccupCategory,CommercialPropertyOccupClass,BUILDING,OccupCategory,sent,,
+OCCUPANCY CLASS,F,OccupSeverity,CommercialPropertyOccupClass,BUILDING,-,not sent,,OMIT v1 -- derived; check DataDef
+OCCUPANCY CLASS,G,ContentsGroup,CommercialPropertyOccupClass,BUILDING,-,not sent,,derived; not sent
+OCCUPANCY CLASS,H,CovForm,CommercialPropertyOccupClass,BUILDING,CovForm,sent,,"selects the Legal Liability form; when it does, also emit CommercialPropertyLegalLiabilityCoverageFormOccupClass [{AddlInsurableInt: description, AddlInsurableIntOption}] from the building's option, or ISO's contents AII factor is 0.0 (Z-1)"
+OCCUPANCY CLASS,I,YardProperty,CommercialPropertyOccupClass,BUILDING,-,not sent,,OMIT v1 -- check DataDef
+CONTENTS,A,ID,CommercialPropertyPersonalProperty,OCCUPANCY CLASS,(key),key/filter,,join key; not sent
+CONTENTS,B,ParentID,CommercialPropertyPersonalProperty,OCCUPANCY CLASS,(join -> OCCUPANCY CLASS.ID),key/filter,,
+CONTENTS,C,Active,CommercialPropertyPersonalProperty,OCCUPANCY CLASS,(filter),key/filter,,emit only Active = Yes
+CONTENTS,D,CovType,CommercialPropertyPersonalProperty,OCCUPANCY CLASS,CovType,sent,,
+CONTENTS,E,Limit,CommercialPropertyPersonalProperty,OCCUPANCY CLASS,Limit,sent,,
+CONTENTS,F,SpecificRate,CommercialPropertyPersonalProperty,OCCUPANCY CLASS,SpecificGroupIRate,sent,only when the building is Specific,the rater uses it (Contents row 3); ISO reads it on the PP record
+CONTENTS,G,Coinsurance,CommercialPropertyPersonalProperty,OCCUPANCY CLASS,Coinsurance,sent,"0.8 -> ""80%""",T-1
+CONTENTS,H,Valuation,CommercialPropertyPersonalProperty,OCCUPANCY CLASS,ValuationType,sent,,
+CONTENTS,I,WindHailExcl,CommercialPropertyPersonalProperty,OCCUPANCY CLASS,(record),record,Yes -> [{}],RECORDS: ...ExclusionPrsnlProp
+CONTENTS,J,VandalismExcl,CommercialPropertyPersonalProperty,OCCUPANCY CLASS,(record),record,Yes -> [{}],RECORDS
+CONTENTS,K,TheftExcl,CommercialPropertyPersonalProperty,OCCUPANCY CLASS,(record),record,Yes -> [{}],RECORDS
+CONTENTS,L,ParentBldg,CommercialPropertyPersonalProperty,OCCUPANCY CLASS,-,not sent,,derived key; not sent
+CONTENTS,M,WatchmanService,CommercialPropertyPersonalProperty,OCCUPANCY CLASS,-,not sent,,OMIT v1 -- check DataDef
+CONTENTS,N,BurglaryAlarmType,CommercialPropertyPersonalProperty,OCCUPANCY CLASS,-,not sent,,OMIT v1 -- check DataDef
+CONTENTS,O,BurglaryRange,CommercialPropertyPersonalProperty,OCCUPANCY CLASS,-,not sent,,derived; not sent
+CONTENTS,P,BurglaryFactor,CommercialPropertyPersonalProperty,OCCUPANCY CLASS,-,not sent,,OMIT v1
+BUSINESS INCOME,A,ID,CommercialPropertyBusinessIncome,BUILDING,(key),key/filter,,join key; not sent
+BUSINESS INCOME,B,ParentID,CommercialPropertyBusinessIncome,BUILDING,(join -> BUILDING.ID),key/filter,,"parent is the Structure, not the OccupClass"
+BUSINESS INCOME,C,Active,CommercialPropertyBusinessIncome,BUILDING,(filter),key/filter,,emit only Active = Yes
+BUSINESS INCOME,D,CovType,CommercialPropertyBusinessIncome,BUILDING,CovType,sent,,
+BUSINESS INCOME,E,TypeOfRisk,CommercialPropertyBusinessIncome,BUILDING,TypeOfRisk,sent,,
+BUSINESS INCOME,F,PctType1,CommercialPropertyBusinessIncome,BUILDING,-,not sent,,T-7: maps into the shared BI Factor
+BUSINESS INCOME,G,PctType2,CommercialPropertyBusinessIncome,BUILDING,-,not sent,,T-7
+BUSINESS INCOME,H,Limit,CommercialPropertyBusinessIncome,BUILDING,Limit,sent,,
+BUSINESS INCOME,I,SpecificRate,CommercialPropertyBusinessIncome,BUILDING,SpecificGroupIRate,sent,only when the building is Specific,the rater uses it (BI row 3)
+BUSINESS INCOME,J,Coinsurance,CommercialPropertyBusinessIncome,BUILDING,Coinsurance,sent,"0.8 -> ""80%""",T-1
+BUSINESS INCOME,K,MaxPeriodIndemnity,CommercialPropertyBusinessIncome,BUILDING,MaxPeriod,sent,,
+BUSINESS INCOME,L,MonthlyLimitIndemnity,CommercialPropertyBusinessIncome,BUILDING,MonthlyLimitOfIndemnity,sent,,
+BUSINESS INCOME,M,ExtraExpenseSchedule,CommercialPropertyBusinessIncome,BUILDING,ExtraExpenseLimitOnLossPayment,sent,,alias (Extra Expense Loss Payment Schedule)
+BUSINESS INCOME,N,WindHailExcl,CommercialPropertyBusinessIncome,BUILDING,(record),record,Yes -> [{}],RECORDS
+BUSINESS INCOME,O,VandalismExcl,CommercialPropertyBusinessIncome,BUILDING,(record),record,Yes -> [{}],RECORDS
+BUSINESS INCOME,P,TheftExcl,CommercialPropertyBusinessIncome,BUILDING,(record),record,Yes -> [{}],RECORDS
+SPECIAL CLASS,A,ID,CommercialPropertySpecialClass,LOCATION,(key),key/filter,,join key; not sent
+SPECIAL CLASS,B,ParentID,CommercialPropertySpecialClass,LOCATION,(join -> LOCATION.ID),key/filter,,
+SPECIAL CLASS,C,Active,CommercialPropertySpecialClass,LOCATION,(filter),key/filter,,emit only Active = Yes
+SPECIAL CLASS,D,ItemDesc,CommercialPropertySpecialClass,LOCATION,ClassDescription,sent,,
+SPECIAL CLASS,E,CauseOfLoss,CommercialPropertySpecialClass,LOCATION,CauseOfLoss,sent,,
+SPECIAL CLASS,F,InclInBlanket,CommercialPropertySpecialClass,LOCATION,IncludedInBlkt,sent,,
+SPECIAL CLASS,G,ValuationType,CommercialPropertySpecialClass,LOCATION,ValuationType,sent,,
+SPECIAL CLASS,H,AgreedValue,CommercialPropertySpecialClass,LOCATION,AgreedValueOption,sent,,alias
+SPECIAL CLASS,I,BuildingCoins,CommercialPropertySpecialClass,LOCATION,Coinsurance,sent,"0.8 -> ""80%""",T-1
+SPECIAL CLASS,J,ContentsCoins,CommercialPropertySpecialClass,LOCATION,-,not sent,,not sent -- ISO SpecialClass carries one Coinsurance
+SPECIAL CLASS,K,BuildingLimit,CommercialPropertySpecialClass,LOCATION,Limit + FullSpecialClassValue,sent,FullSpecialClassValue = Limit,D-2
+SPECIAL CLASS,L,LimitInclInBuilding,CommercialPropertySpecialClass,LOCATION,IncludedInBuilding,sent,,alias
+SPECIAL CLASS,M,LinkedBuildingItemID,CommercialPropertySpecialClass,LOCATION,-,not sent,,derived; not sent
+SPECIAL CLASS,N,Deductible,CommercialPropertySpecialClass,LOCATION,Deductible,sent,,
+SPECIAL CLASS,O,DedByLocation,CommercialPropertySpecialClass,LOCATION,(record),record,Yes -> CommercialPropertyDeductiblesByLocationSpecialClass [{Deductible}],"an endorsement record (fixed 2026-09-22); ClassCode is also sent, from the rater's own derivation (Special Class row 173) -- ISO's vandalism rule gates on it"
+SPECIAL CLASS,P,ProtClass,CommercialPropertySpecialClass,LOCATION,-,not sent,,not sent -- ISO SpecialClass has no ProtectClass; it inherits the Location's. The rater prices on the item's own (W-10)
+SPECIAL CLASS,Q,BGIITerr,CommercialPropertySpecialClass,LOCATION,BasicGroupIIRatingTerr,sent,,ISO copies it from the Location
+SPECIAL CLASS,R,ConstrSymbol,CommercialPropertySpecialClass,LOCATION,BasicGroupIISymbol,sent,,W-8: the item's own symbol
+SPECIAL CLASS,S,WindHailDed,CommercialPropertySpecialClass,LOCATION,WindstormOrHailDeductible,sent,,
+SPECIAL CLASS,T,TheftDed,CommercialPropertySpecialClass,LOCATION,TheftDeductible,sent,,
+SPECIAL CLASS,U,VandalismExcl,CommercialPropertySpecialClass,LOCATION,(record),record,Yes -> [{}],RECORDS: ...ExclusionSpecialClass
+SPECIAL CLASS,V,WindHailExcl,CommercialPropertySpecialClass,LOCATION,(record),record,Yes -> [{}],RECORDS
+SPECIAL CLASS,W,TheftExcl,CommercialPropertySpecialClass,LOCATION,(record),record,Yes -> [{}],RECORDS
+SC BUSINESS INCOME,A,ID,CommercialPropertySpecialClassBusnIncome,SPECIAL CLASS,(key),key/filter,,join key; not sent
+SC BUSINESS INCOME,B,ParentID,CommercialPropertySpecialClassBusnIncome,SPECIAL CLASS,(join -> SPECIAL CLASS.ID),key/filter,,
+SC BUSINESS INCOME,C,Active,CommercialPropertySpecialClassBusnIncome,SPECIAL CLASS,(filter),key/filter,,emit only Active = Yes
+SC BUSINESS INCOME,D,CovType,CommercialPropertySpecialClassBusnIncome,SPECIAL CLASS,CovType,sent,,
+SC BUSINESS INCOME,E,TypeOfRisk,CommercialPropertySpecialClassBusnIncome,SPECIAL CLASS,TypeOfRisk,sent,,
+SC BUSINESS INCOME,F,PctType1,CommercialPropertySpecialClassBusnIncome,SPECIAL CLASS,-,not sent,,T-7
+SC BUSINESS INCOME,G,PctType2,CommercialPropertySpecialClassBusnIncome,SPECIAL CLASS,-,not sent,,T-7
+SC BUSINESS INCOME,H,Limit,CommercialPropertySpecialClassBusnIncome,SPECIAL CLASS,Limit,sent,,the priced SC BI limit (W-9 resolved)
+SC BUSINESS INCOME,I,Coinsurance,CommercialPropertySpecialClassBusnIncome,SPECIAL CLASS,Coinsurance,sent,"0.8 -> ""80%""",T-1
+SC BUSINESS INCOME,J,MaxPeriodIndemnity,CommercialPropertySpecialClassBusnIncome,SPECIAL CLASS,MaxPeriod,sent,,
+SC BUSINESS INCOME,K,MonthlyLimitIndemnity,CommercialPropertySpecialClassBusnIncome,SPECIAL CLASS,MonthlyLimitOfIndemnity,sent,,
+SC BUSINESS INCOME,L,ExtraExpenseSchedule,CommercialPropertySpecialClassBusnIncome,SPECIAL CLASS,ExtraExpenseLimitOnLossPayment,sent,,alias
+SC BUSINESS INCOME,M,VandalismExcl,CommercialPropertySpecialClassBusnIncome,SPECIAL CLASS,(record),record,Yes -> [{}],RECORDS: ...SpclClassBusnIncome -- S-1 now separately electable
+SC BUSINESS INCOME,N,WindHailExcl,CommercialPropertySpecialClassBusnIncome,SPECIAL CLASS,(record),record,Yes -> [{}],RECORDS -- S-2
+SC BUSINESS INCOME,O,TheftExcl,CommercialPropertySpecialClassBusnIncome,SPECIAL CLASS,(record),record,Yes -> [{}],RECORDS -- S-3

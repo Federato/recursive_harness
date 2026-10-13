@@ -1,0 +1,288 @@
+{
+ "name": "rc5_blanket_ca_combined",
+ "states": [
+  "CA"
+ ],
+ "edits": [
+  {
+   "sheet": "IN - Schedule",
+   "cell": "A52",
+   "value": "'4 - 2"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "B52",
+   "value": 4.0
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "C52",
+   "value": "Yes"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "D52",
+   "value": "Building"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "E52",
+   "value": "'0311"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "F52",
+   "value": "Apartments without Mercantile Occupancies - Up to 10 Units"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "G52",
+   "value": "Class"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "H52",
+   "value": 5.0
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "I52",
+   "value": "Modified Fire Resistive - Reinforced Masonry - Light Steel"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "J52",
+   "value": "A"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "K52",
+   "value": "'8"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "L52",
+   "value": "'4"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "M52",
+   "value": "No"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "N52",
+   "value": 5125255.0
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "O52",
+   "value": 0.0
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "P52",
+   "value": "Special"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "Q52",
+   "value": "'2,500"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "R52",
+   "value": "'2,500"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "S52",
+   "value": "Not Applicable"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "T52",
+   "value": "Actual Cash Value"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "U52",
+   "value": 0.8
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "V52",
+   "value": "Select"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "W52",
+   "value": "No"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "X52",
+   "value": "No"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "Y52",
+   "value": "Not Applicable"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "Z52",
+   "value": "No"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "AA52",
+   "value": "No"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "AB52",
+   "value": "No"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "AC52",
+   "value": "No"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "AD52",
+   "value": "No"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "AE52",
+   "value": "No"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "AF52",
+   "value": "No"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "AG52",
+   "value": "Yes"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "AH52",
+   "value": "Not Applicable"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "AI52",
+   "value": "Modified Fire Resistive"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "AJ52",
+   "value": "Class"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "AK52",
+   "value": 0.0
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "AL52",
+   "value": "No"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "AM52",
+   "value": 0.0
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "AL51",
+   "value": "Yes"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "AM51",
+   "value": 1
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "AN51",
+   "value": 4000000
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "AL52",
+   "value": "Yes"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "AM52",
+   "value": 1
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "AN52",
+   "value": 2000000
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "N52",
+   "value": 2000000
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "N51",
+   "value": 4000000
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "S137",
+   "value": "Yes"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "T137",
+   "value": 1
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "U137",
+   "value": 3000000
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "E137",
+   "value": 3000000
+  },
+  {
+   "sheet": "IN - Blanket",
+   "cell": "B5",
+   "value": "Building & Personal Property Combined"
+  },
+  {
+   "sheet": "IN - Blanket",
+   "cell": "C5",
+   "value": "Average"
+  },
+  {
+   "sheet": "IN - Blanket",
+   "cell": "D5",
+   "value": "Special"
+  },
+  {
+   "sheet": "IN - Blanket",
+   "cell": "E5",
+   "value": "'90%"
+  },
+  {
+   "sheet": "IN - Blanket",
+   "cell": "F5",
+   "value": 8100000
+  }
+ ]
+}

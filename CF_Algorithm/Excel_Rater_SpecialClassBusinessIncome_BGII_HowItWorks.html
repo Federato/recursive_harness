@@ -1,0 +1,369 @@
+
+<!-- RC-1 stale-name notice -->
+<div style="border:2px solid #b45309;background:#fef3c7;color:#1f2937;padding:10px 14px;margin:12px;border-radius:6px;font:14px/1.45 system-ui,sans-serif"><b>Notice (2026-09-23):</b> Written before the 2026-09-22 restructure. Sheet names have changed: Policy Inputs → IN - Policy; Bldg / Contents / BI Rating Worksheet → CALC - Bldg / Contents / BI Rating; Special Class Worksheet → CALC - Special Class; CoreScratchpad → CALC - CoreScratchpad. <b>Location Inputs / IN - Location and Special Class Inputs / IN - Special Class no longer exist</b>: every record is entered on <b>IN - Schedule</b> (one row per record, 40 per block), so input-sheet cell addresses here are out of date, and calc-sheet column C is record 1 of 40. Current state: CF_Algorithm/CF_Rater_RESUME.md.</div>
+<title>How Special Class Business Income Basic Group II Rating Works</title>
+<meta charset="utf-8">
+<style>
+  body { font-family: Georgia, "Times New Roman", serif; max-width: 980px; margin: 0 auto; padding: 32px 24px 80px; line-height: 1.55; color: #1c2733; background: #fff; }
+  @media (prefers-color-scheme: dark) {
+    body { background: #14181d; color: #dfe4e9; }
+    a { color: #7fb6b8; }
+    table, th, td { border-color: #3a4048 !important; }
+    thead th { background: #24313a !important; color: #eef4f3 !important; }
+    code { background: #262c33 !important; color: #dfe4e9; }
+    pre { background: #262c33 !important; border-color: #3a4048 !important; color: #dfe4e9; }
+    .note { background: #2c2a1c !important; color: #e0c064 !important; }
+    .note.good { background: #1b3226 !important; color: #63c090 !important; }
+    .note.warn2 { background: #2a1f2c !important; color: #d69ad0 !important; }
+    .shared { background: #1d2b33 !important; color: #9fd4dc !important; }
+    td.tag-shared { background: #1d2b33 !important; color: #9fd4dc !important; }
+    td.tag-own { background: #221f2b !important; color: #b9aee0 !important; }
+  }
+  h1 { font-size: 26px; font-weight: 400; margin-bottom: 4px; }
+  h2 { font-size: 19px; font-weight: 700; margin-top: 42px; border-bottom: 2px solid #1e3a45; padding-bottom: 4px; }
+  h3 { font-size: 15px; font-weight: 700; margin-top: 26px; }
+  .meta { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13px; color: #55606b; margin: 6px 0 4px; }
+  code { font-family: ui-monospace, Consolas, monospace; font-size: 0.92em; background: #eef1f4; padding: 1px 5px; border-radius: 3px; }
+  table { border-collapse: collapse; width: 100%; margin: 14px 0 22px; font-size: 14px; }
+  th, td { border: 1px solid #d7dce2; padding: 8px 10px; text-align: left; vertical-align: top; }
+  thead th { background: #1e3a45; color: #eef4f3; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 12px; text-transform: uppercase; letter-spacing: 0.03em; }
+  table.grid td:nth-child(1) { font-family: ui-monospace, Consolas, monospace; font-size: 12px; text-align: center; }
+  .note { background: #f7ddd4; color: #a53d26; padding: 12px 16px; border-radius: 6px; margin: 16px 0; font-size: 14px; }
+  .note.warn2 { background: #f2e6c4; color: #a67c1e; }
+  .note.good { background: #dcefe4; color: #2f7d5a; }
+  .note.shared { background: #dde9ee; color: #1e5567; }
+  .note b { font-weight: 700; }
+  pre { background: #eef1f4; border: 1px solid #d7dce2; border-radius: 6px; padding: 14px 16px; overflow-x: auto; font-family: ui-monospace, Consolas, monospace; font-size: 13px; }
+  ol, ul { padding-left: 22px; }
+  hr { border: none; border-top: 1px solid #d7dce2; margin: 40px 0; }
+  td.tag-shared { background: #dde9ee; color: #1e5567; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 12px; font-weight: 700; text-align: center; white-space: nowrap; }
+  td.tag-own { background: #e8e4f2; color: #4b3d7a; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 12px; font-weight: 700; text-align: center; white-space: nowrap; }
+</style>
+
+<h1>How Special Class Business Income Basic Group II Rating Works</h1>
+<p class="meta"><b>Written:</b> 2026-09-16. <b>Source:</b>
+<code>CommercialPropertySpecialClassBusnIncomeRules.Rule.xml</code> and
+<code>CommercialPropertySpecialClassBusnIncomeBasicGroupIICoverageRules.Rule.xml</code> (CW 20260601 V01),
+read directly this session, plus an all-batch sweep of every rate table below at each state's adopted
+edition. Companion to the Basic Group I page on the same datadef group.</p>
+<div class="note good"><b>Status: traced, not built.</b> No Business Income rows exist on
+<code>Special Class Worksheet</code>. Basic Group I's wiring (steps 1&ndash;8 of the BGI formulas page) is
+the prerequisite &mdash; BGII reuses its <code>Factor</code> and its premium shape.</div>
+
+<h2>1. What's different about this chain, in plain English</h2>
+<p><b>Basic Group II does its own lookup. Basic Group I did not.</b> On the BGI side, step 1 was a straight
+<code>Copy</code> of the parent Special Class item's already-computed rate. Basic Group II instead runs a
+real matrix lookup against <code>BasicGroupIIRate</code>.</p>
+<p><b>But every key it looks up with is borrowed.</b> Territory, symbol and the class hazard number are all
+read two levels up from the coinsured Special Class item (<code>../../</code>). Business Income contributes
+no dimension of its own to the base rate &mdash; it contributes the same single time-element
+<code>Factor</code> that Basic Group I contributes, and nothing else. So "does its own lookup" describes the
+plumbing, not the pricing: the numbers are still the building's.</p>
+<div class="note warn2"><b>The thing most likely to be built wrong:</b> this chain has
+<b>no BCEG factor, no Builders Risk factor and no Standard Property Policy factor</b>. All three appear in
+at least one sibling Basic Group II chain, and none of them appears here. See section 7 &mdash; the
+temptation is to copy a sibling's formula and inherit a multiplier that Special Class Business Income
+does not apply.</div>
+
+<h2>2. The rating chain, step by step</h2>
+<p><code>SetBGIIRatesAndFactors</code> is four steps.</p>
+<table class="grid">
+<thead><tr><th>#</th><th>Step</th><th>What it does</th></tr></thead>
+<tbody>
+<tr><td>1</td><td><code>SetBasicGroupIIBaseRate</code></td>
+<td>Gated on <code>../../BasicGroupIIRatingTerr</code> <b>and</b> <code>../../BasicGroupIISymbol</code> both
+non-blank. If either is blank the base rate is <code>0.0</code>. Otherwise
+<code>LookupBasicGroupIIRate(State|CW, ../../BasicGroupIIRatingTerr, ../../BasicGroupIISymbol, "Bldg")</code>.</td></tr>
+<tr><td>2</td><td><code>SetLowestBasicGroupIIBaseRate</code></td>
+<td>Same shape, one key shorter &mdash; <code>LookupLowestBasicGroupIIRate(State|CW, ../../BasicGroupIISymbol,
+"Bldg")</code>. No territory. Only ever used by step 4's second branch.</td></tr>
+<tr><td>3</td><td><code>SetBasicGroupIIRate</code></td>
+<td><code>BasicGroupIIBaseRate &times; LossCostMultiplier &times; ../../BasicGroupIINumericValue</code>,
+rounded to 3 decimals at both products.</td></tr>
+<tr><td>4</td><td><code>SetBasicGroupIICauseOfLossAdjustment</code></td>
+<td>Two branches on whether a wind/hail exclusion record exists &mdash; see below.</td></tr>
+</tbody>
+</table>
+
+<h3>Step 4, written out</h3>
+<pre>no CommercialPropertyWindstormOrHailExclusionSpclClassBusnIncome record:
+    BasicGroupIICauseOfLossAdjustment = BasicGroupIIRate            &lt;- straight Copy, nothing applied
+
+otherwise:
+    BasicGroupIICauseOfLossAdjustment =
+        LowestBasicGroupIIBaseRate x LossCostMultiplier x WindstormOrHailExclFactor</pre>
+<p>The excluded branch does not discount the rate you just built &mdash; it <b>rebuilds it from the lowest
+base rate</b> and never refers to <code>BasicGroupIIRate</code> at all. Note what that discards:
+<code>../../BasicGroupIINumericValue</code> is in the normal rate and absent from the wind/hail-excluded
+rate. Excluding wind and hail therefore drops the class hazard load as a side effect.</p>
+<div class="note warn2"><b>Accepted simplification &mdash; logged, not fixed.</b> ISO files
+<i>two</i> wind/hail exclusion records: <code>&hellip;WindstormOrHailExclusionSpecialClass</code> on the
+building item and <code>&hellip;WindstormOrHailExclusionSpclClassBusnIncome</code> on this group. The
+<b>lookup</b> is genuinely shared (same matrix, same single key, and this group reads the key off the
+building item anyway) &mdash; only the <b>gate</b> differs. The rater points Business Income at the Special
+Class building's <code>WindstormOrHailExclFactor</code> cell, so a risk cannot exclude wind/hail on one and
+not the other. Decided 2026-09-16. Tracked as <b>S-2</b> in
+<code>Rater_Simplifications_Backlog.md</code>, alongside the identical vandalism case (S-1).</div>
+
+<h2>3. The full algorithm, end to end</h2>
+<p><code>[borrowed]</code> = read from the parent Special Class item two levels up.
+<code>[policy]</code> = read seven levels up from the policy record.</p>
+<pre>════════════════════════════════════════════════════════════════════════════════
+PREP  (runs once per Business Income item, before any form's chain)
+════════════════════════════════════════════════════════════════════════════════
+LossCostMultiplier   = Copy ../../LossCostMultiplier                   [borrowed]
+CoinsuranceToUse     = Coinsurance, or the blanket scan when blanketed
+
+WindstormOrHailExclFactor =
+    if a CommercialPropertyWindstormOrHailExclusionSpclClassBusnIncome record
+       exists AND ../../BasicGroupIISymbol &lt;&gt; "":
+         LookupWindstormOrHailExclFactor(State|CW, ../../BasicGroupIISymbol)
+    else: unset
+
+Factor =                                            &lt;- one Choose, first match wins
+      MaxPeriodOfIndemnityFactor       if MaxPeriod = "Yes"
+    | MonthlyLimitOfIndemnityFactor    elif MonthlyLimitOfIndemnity &lt;&gt; "Not Applicable"
+    | ExtraExpenseFactor               elif CovType = "Extra Expense Only"
+    | TypeOfRiskFactor                 otherwise
+                                       └─ "Educational Institutions":
+                                            round(TuitionAndFeesFactor
+                                                  x ChangesEducationalInstitutionsExtensionOfRecoveryFactor, 3)
+                                          "Combined ... Operations":
+                                            round(round(pct1/100 x TypeRiskCombination1Factor
+                                                      + pct2/100 x TypeRiskCombination2Factor, 3), 3)
+                                          otherwise:
+                                            LookupBusnIncomeFactor(State|CW, CovType,
+                                                                   TypeOfRisk, CoinsuranceToUse)
+        Factor is SHARED with Basic Group I. Broad, Special and EQ never use it.
+
+════════════════════════════════════════════════════════════════════════════════
+SetBGIIRatesAndFactors  (4 steps)
+════════════════════════════════════════════════════════════════════════════════
+1  BasicGroupIIBaseRate =
+       if ../../BasicGroupIIRatingTerr &lt;&gt; "" AND ../../BasicGroupIISymbol &lt;&gt; "":   [borrowed x2]
+            LookupBasicGroupIIRate(State|CW, ../../BasicGroupIIRatingTerr,
+                                   ../../BasicGroupIISymbol, "Bldg")
+       else 0.0
+
+2  LowestBasicGroupIIBaseRate =
+       if ../../BasicGroupIISymbol &lt;&gt; "":                                          [borrowed]
+            LookupLowestBasicGroupIIRate(State|CW, ../../BasicGroupIISymbol, "Bldg")
+       else 0.0
+
+3  BasicGroupIIRate = round(round(BasicGroupIIBaseRate x LossCostMultiplier, 3)
+                            x ../../BasicGroupIINumericValue, 3)                   [borrowed]
+
+4  BasicGroupIICauseOfLossAdjustment =
+       if NO wind/hail exclusion record:
+            = BasicGroupIIRate                                    &lt;- bare Copy
+       else:
+            = round(round(LowestBasicGroupIIBaseRate x LossCostMultiplier, 3)
+                    x WindstormOrHailExclFactor, 3)
+                    ^ note: ../../BasicGroupIINumericValue is NOT in this branch
+
+════════════════════════════════════════════════════════════════════════════════
+SetFinalRates
+════════════════════════════════════════════════════════════════════════════════
+FinalBasicGroupIIRate = round(BasicGroupIICauseOfLossAdjustment x Factor, 3)
+
+════════════════════════════════════════════════════════════════════════════════
+PREMIUM   CommercialPropertySpecialClassBusnIncomeBasicGroupIICoverageRules
+════════════════════════════════════════════════════════════════════════════════
+CoverageOnPolicyIndicator = 1                                  &lt;- hardcoded, no gate
+
+Branch A   ../IncludedInBlkt = "No"
+  Premium = round(round( IRPMFactor x PackageModFactor                   [policy x2]
+                         x FinalBasicGroupIIRate
+                         x (Limit / 100) , 0), 0)
+            x CyberIncidentExclusionFactorBGII                           [policy]
+            x CyberIncidentExclusionCOLExcptnsFactorBusnIncomeBGIIToUse
+
+Branch B   ../IncludedInBlkt &lt;&gt; "No"  AND  BlktTotalFullValueAmount &gt; 0
+  Premium = round(round( IRPMFactor x PackageModFactor                   [policy x2]
+                         x BlktBasicGroupIIAvgRate
+                         x (FullBusnIncomeValue / BlktTotalFullValueAmount)
+                         x (BlktLimit / 100) , 0), 0)
+            x CyberIncidentExclusionFactorBGII                           [policy]
+            x CyberIncidentExclusionCOLExcptnsFactorBusnIncomeBGIIToUse
+
+  else  Premium = 0.0
+
+PremiumIndicator gates CalculateTotalPremium: total = Premium only when
+PremiumIndicator = 1 and Premium &lt;&gt; 0, else 0.
+
+════════════════════════════════════════════════════════════════════════════════
+NOT IN THIS CHAIN (each appears in a sibling BGII chain):
+  BCEGFactor · BuildersRiskFactor · StdPropPolGroupIIFactor ·
+  MultiPremiumAndDispersionCreditFactor (populated in prep, never read)
+════════════════════════════════════════════════════════════════════════════════</pre>
+<p>The premium file is the Basic Group I premium file with the datadef names swapped &mdash; same hardcoded
+<code>CoverageOnPolicyIndicator = 1</code>, same two branches, same double <code>round(&hellip;, 0)</code>,
+same seven-level climb for the policy factors. Nothing about Group II's premium is distinctive.</p>
+
+<h2>4. Shared factors &mdash; what this chain reads rather than computes</h2>
+<p>Eleven values feed the Basic Group II premium. <b>Three</b> are computed inside the Special Class Business
+Income group. The rest are read from somewhere else, and the rater should <b>point at those cells, not
+recompute or copy them</b>.</p>
+<table>
+<thead><tr><th>Value</th><th>Scope</th><th>Where it is set</th><th>Who else reads the same value</th></tr></thead>
+<tbody>
+<tr><td><code>BasicGroupIIBaseRate</code>, <code>LowestBasicGroupIIBaseRate</code>, <code>BasicGroupIIRate</code></td>
+<td class="tag-own">own</td><td>This group, steps 1&ndash;3</td><td>Nobody &mdash; local to this chain</td></tr>
+
+<tr><td><code>../../BasicGroupIIRatingTerr</code></td><td class="tag-shared">borrowed</td>
+<td>The parent <b>Special Class item</b></td>
+<td>Special Class Building's own BGII chain. One resolution, two consumers.</td></tr>
+
+<tr><td><code>../../BasicGroupIISymbol</code></td><td class="tag-shared">borrowed</td>
+<td>The parent Special Class item</td>
+<td>Special Class Building BGII, and this group's own <code>WindstormOrHailExclFactor</code> lookup.
+Used as a key in three places.</td></tr>
+
+<tr><td><code>../../BasicGroupIINumericValue</code></td><td class="tag-shared">borrowed</td>
+<td>The parent Special Class item, resolved by <b>ClassDescription</b> via
+<code>SpecialClassBasicGroupIINumber</code> &mdash; not by ClassCode</td>
+<td>Special Class Building BGII. Business Income never recomputes the class hazard load.</td></tr>
+
+<tr><td><code>LossCostMultiplier</code></td><td class="tag-shared">borrowed</td>
+<td><code>SetLossCostMultiplier</code> is a straight <code>Copy</code> of
+<code>../../LossCostMultiplier</code> &mdash; the parent Special Class item's, not one of its own</td>
+<td>Every form in this group &mdash; BGI, BGII, Broad, Special, EQ &mdash; and the parent item itself</td></tr>
+
+<tr><td><code>WindstormOrHailExclFactor</code></td><td class="tag-own">own</td>
+<td>This group's <code>SetWindstormOrHailExclFactor</code>, keyed on the <i>parent's</i> symbol</td>
+<td>Set per datadef group, but off a shared table and a borrowed key &mdash; see section 4</td></tr>
+
+<tr><td><code>Factor</code></td><td class="tag-shared">shared within group</td>
+<td><code>SetFactor</code> &mdash; one four-way <code>Choose</code>, computed once</td>
+<td><b>Basic Group I and Basic Group II only.</b> Broad, Special and Earthquake never multiply by it.
+Build it once and point both rows at it.</td></tr>
+
+<tr><td><code>CyberIncidentExclusionFactorBGII</code></td><td class="tag-shared">policy-level</td>
+<td><code>CommercialPropertyRules.Rule.xml</code>, <code>DataDefGroup="CommercialProperty"</code> &mdash;
+seven levels up</td>
+<td><b>Everything on the policy rating Basic Group II</b> &mdash; Building, Contents, Special Class,
+plain Business Income, this group. One cell, many readers.</td></tr>
+
+<tr><td><code>CyberIncidentExclusionCOLExcptnsFactorBusnIncomeBGIIToUse</code></td>
+<td class="tag-shared">coverage-family</td>
+<td>This group, from the policy-level <code>&hellip;COLExcptnsFactorBGII</code></td>
+<td>The Business-Income family only. Property-damage coverages read
+<code>CyberIncidentExclusionCOLExcptnsFactorBGII</code> instead &mdash; <b>different datadef, do not
+cross-wire</b>.</td></tr>
+
+<tr><td><code>IRPMFactor</code>, <code>PackageModFactor</code></td><td class="tag-shared">policy-level</td>
+<td>Policy record, read seven <code>../</code> levels up</td><td>Every coverage on the policy</td></tr>
+</tbody>
+</table>
+
+<div class="note shared"><b>The rule of thumb.</b> If a value is set at <code>DataDefGroup="CommercialProperty"</code>
+or read with <code>../</code>, it is <b>one value with many readers</b>, not a per-coverage value that
+happens to agree. In the workbook that means a cell reference. Two cells holding 0.995 today is the failure
+mode &mdash; a circular changes one and the copy diverges silently.</div>
+
+<h3>Factors that are conspicuously <i>not</i> here</h3>
+<table>
+<thead><tr><th>Factor</th><th>Applied by</th><th>Not applied by this chain</th></tr></thead>
+<tbody>
+<tr><td><code>BCEGFactor</code></td><td>Plain Business Income's BGII rate</td>
+<td>Correct &mdash; matches Special Class <i>Building</i>, which also has no BCEG term</td></tr>
+<tr><td><code>BuildersRiskFactor</code></td><td>Plain Business Income's BGII cause-of-loss adjustment</td>
+<td>Absent from both branches here</td></tr>
+<tr><td><code>StdPropPolGroupIIFactor</code></td><td>Special Class Building's BGII adjustment</td>
+<td>Absent from both branches here</td></tr>
+<tr><td><code>MultiPremiumAndDispersionCreditFactor</code></td><td>Nobody, in any BI premium formula</td>
+<td>The datadef is populated during shared prep and then never read &mdash; same as plain Business Income</td></tr>
+</tbody>
+</table>
+
+<h2>5. Shared tables &mdash; every matrix this chain touches</h2>
+<p>Row counts are from an all-batch sweep at each state's adopted edition
+(<code>State_ERC_CW_Editions.csv</code>), not from the newest package alone.</p>
+<table>
+<thead><tr><th>Matrix</th><th>Keys</th><th>Shared with</th><th>Coverage</th></tr></thead>
+<tbody>
+<tr><td><code>BasicGroupIIRate</code></td>
+<td>State, BasicGroupIIRatingTerr, BasicGroupIISymbol, CovType&nbsp;=&nbsp;<code>"Bldg"</code></td>
+<td><b>Building, plain Business Income, Special Class Business Income</b> &mdash; one table, three coverages,
+identical four-key shape</td>
+<td><b>CW is empty by design (0 rows).</b> 45 states file their own. <b>FL and PR file none</b> &rarr; no
+Basic Group II base rate resolves at all in those two.</td></tr>
+
+<tr><td><code>LowestBasicGroupIIRate</code></td>
+<td>State, BasicGroupIISymbol, CovType&nbsp;=&nbsp;<code>"Bldg"</code></td>
+<td>Same three coverages</td>
+<td><b>CW empty (0 rows).</b> 39 states file. <b>8 do not: AR, DC, FL, KS, NY, PR, RI, TX</b> &rarr; the
+wind/hail-excluded branch is unresolvable there.</td></tr>
+
+<tr><td><code>WindstormOrHailExclFactor</code></td><td>State, BasicGroupIISymbol</td>
+<td>Every Basic Group II chain in the package</td>
+<td>CW files 4 rows (A 0.35, AA 0.35, AB 0.315, B 0.315). Only <b>CO and MT</b> file their own.</td></tr>
+
+<tr><td><code>BusnIncomeFactor</code></td><td>State, CovType, TypeOfRisk, CoinsuranceToUse</td>
+<td><b>Plain Business Income and Special Class Business Income &mdash; the identical table</b>, not a
+Special-Class-specific copy</td><td>131 CW rows; FL is the only diverging state</td></tr>
+
+<tr><td><code>MaxPeriodOfIndemnityFactor</code>, <code>MonthlyLimitOfIndemnityFactor</code>,
+<code>ExtraExpenseFactor</code>, <code>TuitionAndFeesFactor</code>,
+<code>BusnIncomeEducationalInstitutionsExtOfRecoveryFactor</code>,
+<code>ExpandedLimitsOnLossPaymentFactor</code></td>
+<td>various &mdash; all State-keyed</td>
+<td>The rest of the <code>Factor</code> chain, shared with plain Business Income</td>
+<td>All present; FL diverges on all but the educational table. Already expanded in
+<code>BusinessIncome_FactorAndEnums_Tables.xlsx</code>.</td></tr>
+
+<tr><td><code>CyberIncidentExclusionFactors</code></td>
+<td>State, CausesOfLossOrPerilGroup &mdash; keyed with the literal <code>"Basic Group II"</code></td>
+<td>Policy-level. Every coverage in the package.</td>
+<td>8 CW rows, <b>no state files its own</b>. Basic Group II = <code>0.995</code> countrywide.</td></tr>
+
+<tr><td><code>CyberIncidentExclusionWithEnsuingCauseOfLossExceptionsFactors</code></td>
+<td>State, peril group, exception options</td><td>Policy-level, same as above</td>
+<td>32 CW rows, no state filings</td></tr>
+</tbody>
+</table>
+
+<div class="note"><b>The blocker, stated plainly.</b> <code>BasicGroupIIRate</code> and
+<code>LowestBasicGroupIIRate</code> hold <b>no countrywide rows at all</b>. Unlike every other table on this
+page there is no CW fallback to lean on &mdash; the state row is the only row. A rater that pastes "the CW
+table" for Basic Group II pastes an empty range. All 45/39 state tables have to be loaded, and FL and PR
+have to be handled as "cannot rate Basic Group II" rather than as a lookup miss returning zero.</div>
+
+<h2>6. What is genuinely this group's own</h2>
+<ol>
+<li>The three rate datadefs in steps 1&ndash;3.</li>
+<li>The decision to gate on the parent's territory <i>and</i> symbol, defaulting to <code>0.0</code>.</li>
+<li>The wind/hail branch choice &mdash; rebuild from lowest base rate rather than discount.</li>
+</ol>
+<p>Everything else on this page is borrowed, shared, or policy-level.</p>
+
+<h2>7. How it differs from its three siblings</h2>
+<table>
+<thead><tr><th></th><th>SC Business Income BGII</th><th>Special Class Building BGII</th><th>Plain Business Income BGII</th></tr></thead>
+<tbody>
+<tr><td>Base rate</td><td>Own lookup, parent's keys</td><td>Own lookup</td><td>Own lookup, parent's keys</td></tr>
+<tr><td>BCEG factor</td><td><b>no</b></td><td>no</td><td><b>yes</b></td></tr>
+<tr><td>Class hazard number</td><td>Borrowed <code>../../</code></td><td>Own</td><td>Own</td></tr>
+<tr><td>No-exclusion COL branch</td><td><b>Bare copy</b></td><td>&times; <code>StdPropPolGroupIIFactor</code></td><td>&times; <code>BuildersRiskFactor</code></td></tr>
+<tr><td>Shared <code>Factor</code> applied</td><td><b>yes</b></td><td>n/a &mdash; no Factor concept</td><td><b>yes</b></td></tr>
+<tr><td>Cyber factors</td><td>BGII + BusnIncome variant</td><td>BGII + property-damage variant</td><td>BGII + BusnIncome variant</td></tr>
+</tbody>
+</table>
+
+<h2>8. What to build, in order</h2>
+<ol>
+<li><b>Finish Basic Group I first.</b> <code>Factor</code> and the premium shape come from there; BGII adds
+no new machinery to either.</li>
+<li><b>Load the two Basic Group II base-rate tables per state.</b> This is the real work &mdash; 45 and 39
+state tables, no countrywide fallback. Expand every state into its own rows.</li>
+<li><b>Point, do not copy</b>, at the parent Special Class item for territory, symbol and numeric value, and
+at the policy level for the cyber, IRPM and package-mod factors.</li>
+<li><b>Handle FL and PR explicitly</b> as "no Basic Group II base rate filed" rather than letting a missing
+lookup fall through to zero &mdash; a silent zero here reads as a free coverage.</li>
+<li><b>Flag the 8 no-lowest-rate states</b> (AR, DC, FL, KS, NY, PR, RI, TX) on the wind/hail-exclusion path
+for the same reason.</li>
+</ol>
+
+<hr>
+<p class="meta">Traced from the ERC rule XML and rate tables only. Nothing in the live rater was opened or
+modified for this page.</p>

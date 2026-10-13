@@ -1,0 +1,334 @@
+<title>Special Class Business Income — What You Can Copy, Step by Step</title>
+<meta charset="utf-8">
+<style>
+  body { font-family: Georgia, "Times New Roman", serif; max-width: 1040px; margin: 0 auto; padding: 32px 24px 80px; line-height: 1.55; color: #1c2733; background: #fff; }
+  @media (prefers-color-scheme: dark) {
+    body { background: #14181d; color: #dfe4e9; }
+    a { color: #7fb6b8; }
+    table, th, td { border-color: #3a4048 !important; }
+    thead th { background: #24313a !important; color: #eef4f3 !important; }
+    code { background: #262c33 !important; color: #dfe4e9; }
+    pre { background: #262c33 !important; border-color: #3a4048 !important; color: #dfe4e9; }
+    .note { background: #2c2a1c !important; color: #e0c064 !important; }
+    .note.good { background: #1b3226 !important; color: #63c090 !important; }
+    .note.warn2 { background: #2a1f2c !important; color: #d69ad0 !important; }
+    .note.shared { background: #1d2b33 !important; color: #9fd4dc !important; }
+    td.v-copy { background: #1b3226 !important; color: #63c090 !important; }
+    td.v-gate { background: #2c2a1c !important; color: #e0c064 !important; }
+    td.v-own  { background: #33201f !important; color: #e08b7a !important; }
+  }
+  h1 { font-size: 26px; font-weight: 400; margin-bottom: 4px; }
+  h2 { font-size: 19px; font-weight: 700; margin-top: 42px; border-bottom: 2px solid #1e3a45; padding-bottom: 4px; }
+  h3 { font-size: 15px; font-weight: 700; margin-top: 26px; }
+  .meta { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13px; color: #55606b; margin: 6px 0 4px; }
+  code { font-family: ui-monospace, Consolas, monospace; font-size: 0.92em; background: #eef1f4; padding: 1px 5px; border-radius: 3px; }
+  table { border-collapse: collapse; width: 100%; margin: 14px 0 22px; font-size: 14px; }
+  th, td { border: 1px solid #d7dce2; padding: 8px 10px; text-align: left; vertical-align: top; }
+  thead th { background: #1e3a45; color: #eef4f3; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 12px; text-transform: uppercase; letter-spacing: 0.03em; }
+  table.grid td:nth-child(1) { font-family: ui-monospace, Consolas, monospace; font-size: 12px; text-align: center; white-space: nowrap; }
+  .note { background: #f7ddd4; color: #a53d26; padding: 12px 16px; border-radius: 6px; margin: 16px 0; font-size: 14px; }
+  .note.warn2 { background: #f2e6c4; color: #a67c1e; }
+  .note.good { background: #dcefe4; color: #2f7d5a; }
+  .note.shared { background: #dde9ee; color: #1e5567; }
+  .note b { font-weight: 700; }
+  pre { background: #eef1f4; border: 1px solid #d7dce2; border-radius: 6px; padding: 14px 16px; overflow-x: auto; font-family: ui-monospace, Consolas, monospace; font-size: 13px; }
+  ol, ul { padding-left: 22px; }
+  hr { border: none; border-top: 1px solid #d7dce2; margin: 40px 0; }
+  td.v-copy, td.v-gate, td.v-own { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 12px; font-weight: 700; text-align: center; white-space: nowrap; }
+  td.v-copy { background: #dcefe4; color: #2f7d5a; }
+  td.v-gate { background: #f2e6c4; color: #a67c1e; }
+  td.v-own  { background: #f7ddd4; color: #a53d26; }
+</style>
+
+<h1>Special Class Business Income &mdash; what you can copy, step by step</h1>
+<p class="meta"><b>Written:</b> 2026-09-16. <b>Source:</b> a rule-by-rule diff of
+<code>CommercialPropertySpecialClassRules.Rule.xml</code> (the building item) against
+<code>CommercialPropertySpecialClassBusnIncomeRules.Rule.xml</code> (this group), CW 20260601 V01 &mdash;
+68 rule names appear in both files, 40 only in Business Income, 58 only on the building side. Every verdict
+below comes from reading both bodies, not from the name matching.</p>
+
+<div class="note shared"><b>Read this first.</b> A rule with the <i>same name</i> in both files is not
+evidence of the same value. Three of the shared names are literal <code>Copy</code> rules, four are
+independent lookups that happen to land on the same number, and two share a table but gate on a
+<b>different endorsement record</b>. The name tells you nothing; the body does.</div>
+
+<h2>The three verdicts</h2>
+<table>
+<thead><tr><th>Verdict</th><th>Means</th><th>In the workbook</th></tr></thead>
+<tbody>
+<tr><td class="v-copy">COPY</td><td>The filed rule is itself a <code>Copy</code>, or every input is borrowed,
+so the two values are equal <b>by construction</b></td><td>A cell reference. Safe.</td></tr>
+<tr><td class="v-gate">SHARE THE TABLE</td><td>Same matrix and same keys, but the <b>gate</b> is a different
+input &mdash; the looked-up number matches, the applied value may not</td>
+<td>One shared lookup block, own <code>IF</code> around it</td></tr>
+<tr><td class="v-own">BUILD OWN</td><td>Different table, different keys, or the concept does not exist on
+the other side</td><td>Its own block. Copying is wrong today, not just fragile.</td></tr>
+</tbody>
+</table>
+
+<h2>Basic Group I &mdash; step by step</h2>
+<table class="grid">
+<thead><tr><th>Step</th><th>Value</th><th>From Building?</th><th>Why</th></tr></thead>
+<tbody>
+<tr><td>1</td><td><code>BasicGroupIRate</code></td><td class="v-copy">COPY</td>
+<td>The filed rule <i>is</i> <code>Copy ../../BasicGroupIRate</code>. Not "equivalent" &mdash; the same
+value. Point at the building's BGI rate cell.</td></tr>
+
+<tr><td>prep</td><td><code>LossCostMultiplier</code></td><td class="v-copy">COPY</td>
+<td><code>Copy ../../LossCostMultiplier</code>. Same.</td></tr>
+
+<tr><td>2</td><td><code>VandalismExclFactor</code></td><td class="v-gate">SHARE THE TABLE</td>
+<td>Same <code>VandalismExclFactor</code> matrix both sides. But the building gates on
+<code>CommercialPropertyVandalismExclusion</code> and this group on
+<code>&hellip;VandalismExclusionSpclClassBusnIncome</code> &mdash; two records.
+Backlog <b>S-1</b>. <b>FL is different again</b>: it files a <i>rate</i>, subtracted, not a factor.</td></tr>
+
+<tr><td>3</td><td><code>Factor</code> (MaxPeriod / MonthlyLimit / ExtraExpense / TypeOfRisk)</td>
+<td class="v-own">BUILD OWN</td>
+<td>The building has no <code>SetFactor</code> at all &mdash; the concept is Business Income only. Nothing
+to copy from. <b>Do</b> share it with BGII (see below).</td></tr>
+
+<tr><td>4</td><td><code>CyberIncidentExclusionFactorBGI</code></td><td class="v-copy">COPY</td>
+<td>Set once at <code>DataDefGroup="CommercialProperty"</code>, read seven levels up. Building, Contents,
+Special Class and this group all read the <b>same cell</b>.</td></tr>
+
+<tr><td>4</td><td><code>CyberIncidentExclusionCOLExcptnsFactorBusnIncomeBGIToUse</code></td>
+<td class="v-own">BUILD OWN</td>
+<td>The building reads <code>&hellip;COLExcptnsFactorBGI</code> &mdash; the property-damage variant.
+Different datadef. Do not cross-wire.</td></tr>
+
+<tr><td>4</td><td><code>IRPMFactor</code>, <code>PackageModFactor</code></td><td class="v-copy">COPY</td>
+<td>Policy record, seven levels up, every coverage.</td></tr>
+</tbody>
+</table>
+
+<h2>Basic Group II &mdash; step by step</h2>
+<table class="grid">
+<thead><tr><th>Step</th><th>Value</th><th>From Building?</th><th>Why</th></tr></thead>
+<tbody>
+<tr><td>keys</td><td><code>BasicGroupIIRatingTerr</code>, <code>BasicGroupIISymbol</code>,
+<code>BasicGroupIINumericValue</code></td><td class="v-copy">COPY</td>
+<td>All three are read <code>../../</code> off the building item. Business Income has no
+<code>SetBasicGroupIINumericValue</code>, no <code>&hellip;RatingTerr</code>, no
+<code>&hellip;SymbolNum</code> &mdash; those rules exist only on the building side.</td></tr>
+
+<tr><td>1</td><td><code>BasicGroupIIBaseRate</code></td><td class="v-copy">COPY</td>
+<td>Independent lookup, but same <code>BasicGroupIIRate</code> matrix, same four keys, same
+<code>"Bldg"</code> literal &mdash; and the keys are the building's. Equal by construction.
+<i>Safer still:</i> repeat the lookup, which is literally what is filed.</td></tr>
+
+<tr><td>2</td><td><code>LowestBasicGroupIIBaseRate</code></td><td class="v-copy">COPY</td>
+<td>Same story, one key shorter.</td></tr>
+
+<tr><td>3</td><td><code>BasicGroupIIRate</code></td><td class="v-copy">COPY</td>
+<td><code>BaseRate &times; LCM &times; NumericValue</code> on both sides, every term equal by the rows
+above. The two rates are identical.</td></tr>
+
+<tr><td>4</td><td><code>WindstormOrHailExclFactor</code></td><td class="v-gate">SHARE THE TABLE</td>
+<td>Same matrix, same single key (the building's symbol). Gate differs:
+<code>&hellip;ExclusionSpecialClass</code> vs <code>&hellip;ExclusionSpclClassBusnIncome</code>.
+Backlog <b>S-2</b> &mdash; pointing for now, by decision.</td></tr>
+
+<tr><td>4</td><td><code>StdPropPolGroupIIFactor</code></td><td class="v-own">DO NOT PULL IN</td>
+<td>The building multiplies by it. <b>Business Income does not</b> &mdash; its no-exclusion branch is a bare
+copy. The factor itself is a shared policy-level value; the point is that this chain never applies it.</td></tr>
+
+<tr><td>5</td><td><code>Factor</code></td><td class="v-own">BUILD OWN</td>
+<td>Business Income only &mdash; but the <b>same cell as BGI</b>.</td></tr>
+
+<tr><td>6</td><td>Cyber / IRPM / PackageMod</td><td class="v-copy">COPY</td>
+<td>Identical to Basic Group I, with the <code>BGII</code> suffix and the
+<code>&hellip;BusnIncomeBGIIToUse</code> exceptions variant.</td></tr>
+</tbody>
+</table>
+
+<h2>Broad &mdash; step by step</h2>
+<p>Two steps, the shortest of the five forms. <b>Same matrix as the building, different row.</b> This is the
+one chain where "same table" is most misleading.</p>
+<table class="grid">
+<thead><tr><th>Step</th><th>Value</th><th>From Building?</th><th>Why</th></tr></thead>
+<tbody>
+<tr><td>gate</td><td><code>CauseOfLossToUse = "Broad"</code></td><td class="v-own">BUILD OWN</td>
+<td>The building <b>also</b> tests <code>PolicyType = "Commercial Property Policy"</code>. Business Income
+does not &mdash; cause of loss alone. A Standard Property Policy therefore rates Broad here and not on the
+building side.</td></tr>
+
+<tr><td>1</td><td><code>BroadBaseRate</code></td><td class="v-own">BUILD OWN</td>
+<td>Same <code>BroadFormBaseRate</code> matrix, same hardcoded <code>"Frame"</code> construction key
+&mdash; but the third key differs. Building passes the literal <code>"Bldg"</code>; Business Income passes
+<code>"Business Income Without Extra Expense"</code> when <code>CovType</code> matches, else the literal
+<code>"All Other"</code>. <b>Different rows, different numbers.</b></td></tr>
+
+<tr><td>prep</td><td><code>LossCostMultiplier</code></td><td class="v-copy">COPY</td>
+<td>Same <code>Copy</code> as every other form.</td></tr>
+
+<tr><td>2</td><td><code>BroadRate</code></td><td class="v-own">BUILD OWN</td>
+<td><code>BroadBaseRate &times; LossCostMultiplier</code> &mdash; the same two-term product the building
+uses, but term one differs by the row above, so the result differs.</td></tr>
+
+<tr><td>3</td><td><code>FinalBroadRate</code></td><td class="v-own">DO NOT COPY THE FORMULA</td>
+<td>Business Income: <code>Copy BroadRate</code>. Building:
+<code>AdjustedBroadRate &times; DeductibleByLocationFactor &times; DeductibleFactorBroad</code>.
+<b>No cause-of-loss adjustment, no <code>Factor</code>, no deductible, no LOI</b> anywhere in Business
+Income's Broad chain.</td></tr>
+
+<tr><td>4</td><td>Cyber / IRPM / PackageMod</td><td class="v-copy">COPY</td>
+<td><code>CyberIncidentExclusionFactorBroad</code> is policy-level as always; the exceptions variant is
+<code>&hellip;COLExcptnsFactorBusnIncomeBroadToUse</code>.</td></tr>
+</tbody>
+</table>
+
+<div class="note"><b>What copying the building's Broad base rate would cost you.</b> Countrywide, on the
+<code>"Frame"</code> row that both sides are hardcoded to:</div>
+<table>
+<thead><tr><th>CovType key</th><th>CW rate</th><th>Who uses it</th></tr></thead>
+<tbody>
+<tr><td><code>Bldg</code></td><td>0.015</td><td>Special Class building</td></tr>
+<tr><td><code>Business Income Without Extra Expense</code></td><td><b>0.011</b></td><td>Business Income, when CovType matches</td></tr>
+<tr><td><code>All Other</code></td><td><b>0.023</b></td><td>Business Income, every other CovType &mdash; With Extra Expense, Extra Expense Only</td></tr>
+</tbody>
+</table>
+<p>Point at the building and you are 36&nbsp;% high on one CovType and 35&nbsp;% low on the other. This is
+the clearest "same table, do not copy" case in the whole group.</p>
+
+<h2>Special &mdash; step by step</h2>
+<p>Six steps on paper, but the rate chain is the same two-term product as Broad with one factor after it.
+<b>Nothing here is copyable from the building side</b> &mdash; both tables are different, not just the keys.</p>
+<table class="grid">
+<thead><tr><th>Step</th><th>Value</th><th>From Building?</th><th>Why</th></tr></thead>
+<tbody>
+<tr><td>1</td><td><code>SpecialTheftExclusionIndicator</code></td><td class="v-own">BUILD OWN</td>
+<td>Gates on <code>CommercialPropertyTheftExclusionSpclClassBusnIncome</code> &mdash; its own endorsement
+record, distinct from the building's. Same two-record pattern as S-1 and S-2.</td></tr>
+
+<tr><td>2</td><td><code>SpecialTheftExclusionFactor</code></td><td class="v-own">BUILD OWN</td>
+<td><b>Different table.</b> Business Income reads
+<code>SpecialLeaseHoldTimeElementTheftExclusionFactor</code> (State + <code>ApartmentCondoIndicator</code>,
+hardcoded <code>"No"</code>) &rarr; <b>0.86</b>. The building reads
+<code>SpecialBldgTheftExclusionFactor</code> (State + <code>"Y"</code>) &rarr; <b>0.88</b>.
+Same rule name, same datadef name, two matrices.</td></tr>
+
+<tr><td>3</td><td><code>SpecialBaseRate</code></td><td class="v-own">BUILD OWN</td>
+<td><b>Different table again.</b> Business Income:
+<code>SpecialFormIncldgTheftTimeElementBaseRate</code>, keyed State + <code>"Frame"</code> +
+CovType + <code>"Other than Apartments and Condominiums"</code> &mdash; <b>three of the four keys are
+literals</b>. Building: <code>SpecialBuildingRate</code>, keyed State + <code>"Y"</code>.</td></tr>
+
+<tr><td>4</td><td><code>SpecialRate</code></td><td class="v-own">BUILD OWN</td>
+<td><code>SpecialBaseRate &times; LossCostMultiplier</code> &mdash; same shape both sides, different
+first term.</td></tr>
+
+<tr><td>5</td><td><code>SpecialCauseOfLossAdjustment</code></td><td class="v-gate">SAME SHAPE ONLY</td>
+<td><code>SpecialRate &times; SpecialTheftExclusionFactor</code>, an unconditional <code>Product</code> in
+<b>both</b> files &mdash; byte-identical logic. Copy the <i>formula</i>, never the inputs.</td></tr>
+
+<tr><td>6</td><td><code>FinalSpecialRate</code></td><td class="v-own">DO NOT COPY THE FORMULA</td>
+<td>Business Income: <code>Copy SpecialCauseOfLossAdjustment</code>. Building:
+<code>AdjustedSpecialRate &times; DeductibleByLocationFactor &times; DeductibleFactorSpecial</code>, where
+<code>AdjustedSpecialRate = SpecialCauseOfLossAdjustment &times; CoinsuranceFactor</code>.
+<b>No <code>Factor</code> on either side</b> &mdash; Special is not a BGI/BGII form.</td></tr>
+
+<tr><td>7</td><td>Cyber / IRPM / PackageMod</td><td class="v-copy">COPY</td>
+<td><code>CyberIncidentExclusionFactorSpecial</code> policy-level; exceptions variant is
+<code>&hellip;COLExcptnsFactorBusnIncomeSpecialToUse</code>.</td></tr>
+</tbody>
+</table>
+
+<div class="note warn2"><b>Half of Business Income's Special base-rate table is unreachable.</b> The risk-type
+key is hardcoded to <code>"Other than Apartments and Condominiums"</code>, and the theft-exclusion key is
+hardcoded to <code>"No"</code>. So the apartment/condo half of both tables can never be hit from this
+chain &mdash; filed, and dead on this path.</div>
+<table>
+<thead><tr><th>CovType</th><th>Risk type</th><th>CW rate</th><th>Reachable?</th></tr></thead>
+<tbody>
+<tr><td>Business Income Without Extra Expense</td><td>Other than Apartments and Condominiums</td><td><b>0.033</b></td><td>Yes</td></tr>
+<tr><td>All Other</td><td>Other than Apartments and Condominiums</td><td><b>0.047</b></td><td>Yes</td></tr>
+<tr><td>Business Income Without Extra Expense</td><td>Apartments and Condominiums</td><td>0.016</td><td>No &mdash; key hardcoded</td></tr>
+<tr><td>All Other</td><td>Apartments and Condominiums</td><td>0.029</td><td>No &mdash; key hardcoded</td></tr>
+</tbody>
+</table>
+<p>Same story on the factor: <code>SpecialLeaseHoldTimeElementTheftExclusionFactor</code> files
+<code>Yes &rarr; 0.96</code> and <code>No &rarr; 0.86</code>, and only <b>0.86</b> is reachable.
+All four construction rows collapse too, since <code>"Frame"</code> is hardcoded &mdash; but unlike Broad,
+every construction type carries the same rate here, so that one costs nothing.</p>
+
+<div class="note"><b>State coverage.</b> <code>SpecialFormIncldgTheftTimeElementBaseRate</code> has 24 CW
+rows and only <b>2</b> states filing their own, so it is effectively countrywide.
+<code>SpecialLeaseHoldTimeElementTheftExclusionFactor</code> is CW-only, no state filings. Contrast the
+building side: <code>SpecialBuildingRate</code> has <b>zero CW rows</b> &mdash; 45 states file it, FL and PR
+file nothing &mdash; and <code>SpecialBldgTheftExclusionFactor</code> is state-filed in 31.
+The two chains do not even have the same countrywide-vs-state shape.</div>
+
+<h2>What BGI and BGII share with <i>each other</i></h2>
+<table>
+<thead><tr><th>Value</th><th>Shared?</th><th>Note</th></tr></thead>
+<tbody>
+<tr><td><code>Factor</code></td><td class="v-copy">ONE CELL</td>
+<td>Computed once in prep, read by both final-rate steps. No BGII variant exists. Broad and Special never
+use it; Earthquake has its own <code>EQFactor</code>.</td></tr>
+<tr><td><code>LossCostMultiplier</code></td><td class="v-copy">ONE CELL</td><td>Per item, all five forms</td></tr>
+<tr><td><code>CoinsuranceToUse</code></td><td class="v-copy">ONE CELL</td><td>Per item, feeds <code>Factor</code></td></tr>
+<tr><td>Cause-of-loss factor</td><td class="v-own">NOT SHARED</td>
+<td>BGI uses <code>VandalismExclFactor</code>, unconditionally multiplied. BGII uses
+<code>WindstormOrHailExclFactor</code>, only on the exclusion branch, where it <b>rebuilds</b> the rate from
+the lowest base rate instead of discounting. Different factor, different shape.</td></tr>
+<tr><td>Base rate</td><td class="v-own">NOT SHARED</td>
+<td>BGI copies the parent's finished rate; BGII runs its own lookup. Opposite mechanisms.</td></tr>
+<tr><td>Premium shape</td><td class="v-copy">SAME FILE, RENAMED</td>
+<td>The BGII premium file is the BGI premium file with datadefs swapped. Build once, copy across.</td></tr>
+</tbody>
+</table>
+
+<h2>Building-side values that must <i>not</i> follow the coverage across</h2>
+<p>These 58 rules exist only in <code>CommercialPropertySpecialClassRules.Rule.xml</code>. Business Income
+has no counterpart, and pulling one in would add a multiplier ISO does not apply to time-element coverage.</p>
+<table>
+<thead><tr><th>Family</th><th>Examples</th><th>Why Business Income has none</th></tr></thead>
+<tbody>
+<tr><td>Deductible</td><td><code>SetDeductibleFactorBasicGroupI/II/Broad/Special</code>,
+<code>SetDeductibleByLocationFactor</code>, <code>SetWindstormOrHailDeductibleFactor</code>,
+<code>SetEQDeductibleFactor</code></td>
+<td>No per-dollar deductible table anywhere in the Business Income chain</td></tr>
+<tr><td>Coinsurance</td><td><code>SetCoinsuranceFactor</code>, <code>SetBasicGroupIICoinsuranceFactor</code>,
+<code>SetEQCoinsuranceFactor</code></td>
+<td><code>Factor</code> is Business Income's coinsurance analogue &mdash; it already folds coinsurance in via
+<code>BusnIncomeFactor</code></td></tr>
+<tr><td>Limit of insurance</td><td><code>SetLimitToUse</code>, <code>SetTotAmtInsurance</code>,
+<code>SetTotalAmountsToUse</code>, <code>SetMarginClauseFactor</code></td>
+<td>No LOI factor in the Business Income chain at all</td></tr>
+<tr><td>Property characteristics</td><td><code>SetProtectionClassFactor</code>,
+<code>SetBasicGroupIISymbolNum</code>, <code>SetBasicGroupIIRatingTerr</code></td>
+<td>Already baked into the borrowed rate or the borrowed key</td></tr>
+<tr><td>Standard Property Policy</td><td><code>SetStdPropPolGroupIFactor</code>,
+<code>SetStdPropPolGroupIIFactor</code></td>
+<td>Building applies them; this chain does not</td></tr>
+<tr><td>Adjusted rates</td><td><code>SetAdjustedBasicGroupIRate</code>, <code>&hellip;IIRate</code>,
+<code>&hellip;BroadRate</code>, <code>&hellip;SpecialRate</code></td>
+<td>The building's post-coinsurance/LOI layer. Business Income stops at
+<code>FinalBasicGroupIRate</code>.</td></tr>
+</tbody>
+</table>
+
+<h2>The traps, ranked</h2>
+<ol>
+<li><b>Same rule name, different table.</b> <code>SetSpecialBaseRate</code> reads
+<code>SpecialBuildingRate</code> on the building and
+<code>SpecialFormIncldgTheftTimeElementBaseRate</code> here. <code>SetSpecialTheftExclusionFactor</code>
+reads <code>SpecialBldgTheftExclusionFactor</code> vs
+<code>SpecialLeaseHoldTimeElementTheftExclusionFactor</code>. Two of the most copy-able-looking names on the
+list are the two that are flatly wrong to copy &mdash; 0.86 vs 0.88 on the theft factor, and two unrelated
+base-rate matrices. See the Special section.</li>
+<li><b>Same table, different key.</b> Broad reads the same <code>BroadFormBaseRate</code> matrix on both
+sides and the same hardcoded <code>"Frame"</code> &mdash; but a different <code>CovType</code> key, so a
+different row. 0.015 vs 0.011 vs 0.023 countrywide.</li>
+<li><b>Same table, different gate.</b> Vandalism and wind/hail &mdash; S-1 and S-2.</li>
+<li><b>Same everything, but the other side applies an extra multiplier.</b>
+<code>StdPropPolGroupIIFactor</code>. Copy the formula and you inherit it.</li>
+<li><b>FL.</b> Vandalism becomes a subtracted rate, and FL files no
+<code>BasicGroupIIRate</code> rows at all.</li>
+</ol>
+
+<hr>
+<p class="meta">Companion to the Basic Group I and Basic Group II How-It-Works pages. Simplifications S-1 and
+S-2 are tracked in <code>Rater_Simplifications_Backlog.md</code>. Traced from ERC only &mdash; the live
+rater was not opened.</p>

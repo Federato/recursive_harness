@@ -1,0 +1,18 @@
+{
+ "name": "rc5_fl_pool_inground_pc5",
+ "states": [
+  "FL"
+ ],
+ "edits": [
+  {
+   "sheet": "IN - Schedule",
+   "cell": "D220",
+   "value": "Swimming Pools in the Open - in Ground (All Other)"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "F5",
+   "value": "5"
+  }
+ ]
+}

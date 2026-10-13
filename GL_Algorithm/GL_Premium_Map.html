@@ -1,0 +1,496 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GL premium map — derivation and roll-up to the account total</title>
+<style>
+:root{--bg:#fbfbfd;--fg:#1d1d20;--mut:#63636b;--line:#e3e3e8;--accent:#1f3864;
+--code-bg:#f4f4f7;--tbl-head:#1f3864;--mark:#fff3cd;--del:#a11}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+background:var(--bg);color:var(--fg)}
+header{background:var(--accent);color:#fff;padding:22px 32px 0}
+header h1{margin:0 0 4px;font-size:20px;font-weight:650;letter-spacing:-.01em}
+header .sub{opacity:.72;font-size:13px;margin-bottom:16px}
+nav{display:flex;gap:4px}
+nav button{appearance:none;border:0;background:rgba(255,255,255,.10);color:#fff;cursor:pointer;
+font:inherit;font-size:14px;padding:10px 18px;border-radius:7px 7px 0 0;opacity:.75}
+nav button:hover{opacity:1;background:rgba(255,255,255,.18)}
+nav button[aria-selected="true"]{background:var(--bg);color:var(--accent);font-weight:640;opacity:1}
+.wrap{display:grid;grid-template-columns:250px minmax(0,1fr);gap:34px;
+max-width:1360px;margin:0 auto;padding:30px 32px 90px}
+aside{position:sticky;top:22px;align-self:start;max-height:calc(100vh - 50px);overflow:auto;
+font-size:13.5px;border-left:2px solid var(--line);padding-left:14px}
+aside .lbl{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--mut);
+font-weight:700;margin-bottom:9px}
+aside ul{list-style:none;margin:0;padding:0}
+aside ul ul{padding-left:13px}
+aside a{color:var(--mut);text-decoration:none;display:block;padding:3px 0;line-height:1.4}
+aside a:hover{color:var(--accent)}
+article{min-width:0;background:#fff;border:1px solid var(--line);border-radius:11px;padding:34px 42px 54px}
+article h1{font-size:27px;margin:0 0 8px;letter-spacing:-.02em}
+article h2{font-size:20px;margin:38px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--line);
+letter-spacing:-.01em}
+article h3{font-size:16.5px;margin:26px 0 9px}
+article h4{font-size:15px;margin:20px 0 7px;color:var(--mut)}
+p,li{max-width:74ch}
+code{background:var(--code-bg);padding:.13em .38em;border-radius:4px;
+font:13.5px/1.5 "SF Mono",Consolas,"Liberation Mono",Menlo,monospace}
+pre{background:var(--code-bg);border:1px solid var(--line);border-radius:8px;padding:14px 17px;
+overflow-x:auto}
+pre code{background:none;padding:0;font-size:13px;line-height:1.55}
+table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14.2px;display:block;overflow-x:auto}
+th{background:var(--tbl-head);color:#fff;text-align:left;font-weight:600;padding:9px 12px;
+white-space:nowrap}
+td{border-bottom:1px solid var(--line);padding:9px 12px;vertical-align:top}
+tr:nth-child(even) td{background:#fafafc}
+blockquote{margin:16px 0;padding:12px 18px;background:#f6f8fc;border-left:4px solid var(--accent);
+border-radius:0 7px 7px 0}
+blockquote p{margin:.45em 0}
+del{color:var(--del);text-decoration-thickness:1px}
+hr{border:0;border-top:1px solid var(--line);margin:30px 0}
+a{color:var(--accent)}
+.meta{font-size:12.5px;color:var(--mut);margin:0 0 22px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.panel[hidden]{display:none}
+@media(max-width:1000px){.wrap{grid-template-columns:1fr;padding:20px}aside{display:none}
+article{padding:24px 20px 40px}}
+@media print{header,aside,nav{display:none}.wrap{display:block;padding:0}
+article{border:0;padding:0}.panel[hidden]{display:block!important}}
+
+.wrap{display:block;max-width:60rem;margin:0 auto;padding:0 1.5rem 5rem}
+article{max-width:none}
+.toc-box{border:1px solid var(--line);border-radius:8px;padding:1rem 1.25rem;
+margin:1.5rem 0 2.5rem;background:#fff}
+.toc-box .lbl{font-weight:600;color:var(--accent);margin-bottom:.4rem}
+.toc-box ul{margin:.2rem 0;padding-left:1.1rem}
+.toc-box>ul>li{margin:.15rem 0}
+h2{margin-top:2.6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h1+p+h2,h2:first-of-type{border-top:none}
+table{font-size:.95em}
+@media print{header{position:static}.toc-box{break-inside:avoid}}
+</style></head><body>
+<header><h1>GL premium map — derivation and roll-up to the account total</h1>
+<div class="sub">General Liability · GL CW 20270401 (V01 and V02) · 571 groups, every one reaching ErcCalculatedTotalPremium · reconciled against the engine 2026-10-02</div></header>
+<div class="wrap"><article>
+<p class="meta">Source: <code>GL_Algorithm/GL_Premium_Map.md</code> &nbsp;·&nbsp; 2,458 words &nbsp;·&nbsp; rendered 2026-10-02</p>
+<div class="toc-box"><div class="lbl">On this page</div><div class="toc">
+<ul>
+<li><a href="#1-three-mechanisms-and-only-three">1. Three mechanisms, and only three</a></li>
+<li><a href="#2-rate-and-premium-are-separate-phases">2. Rate and premium are separate phases</a></li>
+<li><a href="#3-how-a-premium-climbs-to-the-account-total">3. How a premium climbs to the account total</a></li>
+<li><a href="#4-the-premium-fields-themselves">4. The premium fields themselves</a></li>
+<li><a href="#5-interim-premium-written-pro-rata-endorsement-not-in-the-ruleset">5. Interim premium — written, pro-rata, endorsement: not in the ruleset</a></li>
+<li><a href="#6-reading-this-for-a-specific-premium">6. Reading this for a specific premium</a></li>
+<li><a href="#7-what-the-state-packages-do-to-this">7. What the state packages do to this</a></li>
+<li><a href="#8-limits-of-this-map">8. Limits of this map</a></li>
+</ul>
+</div>
+</div>
+<h1 id="gl-premium-map-every-premium-field-what-feeds-it-where-it-ends-up">GL premium map — every premium field, what feeds it, where it ends up</h1>
+<p><strong>The question this answers:</strong> for General Liability, where does every premium number come
+from, and how does it reach the one figure that is the account's premium?</p>
+<p><strong>The answer in one line:</strong>
+<code>GeneralLiability.ErcCalculatedTotalPremium</code> is the account total, and <strong>every one of the
+571 groups that carry a premium reaches it</strong> — through at most four levels of summation.</p>
+<p><strong>Source:</strong> <code>GL CW 20270401 V01</code>, countrywide, 572 rule files.
+<strong>Navigable version:</strong> <code>GL_Algorithm/GL_Premium_Tree.html</code> — the same tree, collapsible and
+searchable, with a jurisdiction selector that overlays what each of the 51 state packages adds
+or rewrites.</p>
+<p><strong>Companion data:</strong> <code>GL_Algorithm/GL_Premium_Map.xlsx</code> — four sheets: <code>Summary</code>,
+<code>RollUpTree</code> (571 rows, one per group), <code>PremiumSources</code> (322 rows, one per premium
+calculation), <code>PremiumFields</code> (163 rows).</p>
+<p><strong>Written:</strong> 2026-09-17.</p>
+<p><strong>Reconciled against the built engine:</strong> 2026-10-02 (commit <code>630ba2f</code>) — <code>01_premium_map.py</code> and
+<code>02_premium_tree.py</code> re-run on the current corpus reproduce every count below unchanged, and the
+engine (<code>gl_engine</code>, offline, strict-erc) rates Oklahoma at 2027-04-01 (<code>GL_OK_20270401_V04</code> over
+<code>GL_CW_20270401_V02</code>) to <strong>8,198</strong> through exactly this roll-up; all 16 <code>tests/verify_*</code> suites pass.</p>
+<blockquote>
+<p><strong>Edition scope — read before using any of this for a live policy.</strong> Everything here is the
+<strong>2027-04-01 countrywide edition</strong>. <code>GL CW 20270401 V02</code> (the parent 38 jurisdictions declare at
+that date; 8 declare V01) differs from V01 in five rule files — validation messages, a dropped
+classification <code>SetCounty</code> step, Cyber limit checks and Product Withdrawal form conditions, none
+of them a <code>SetPremium</code> or <code>CalculateTotalPremium</code> — so its premium structure is identical
+(re-run: same 571 / 112 / 322 / depth 4). <strong>Policies effective before 2027-04-01 resolve older parents</strong> — today
+<code>GL CW 20260101 V01</code> for 46 jurisdictions, <code>20261001 V01</code> for OK, <code>20231201 V03</code> for NJ, TX, VT
+and <code>20231201 V02</code> for CA — and those differ in ways that change premiums: the Prem/Ops,
+Products and Special Combined <code>…PremiumToReachMinCoverage</code> records <strong>compute</strong> a minimum-premium
+top-up, Med Pay is a separate per-class <code>MedicalPaymentsCharge</code> rather than an ILF term, and
+there is no $1 premium floor. GA, NJ, NY, WA (CW 20260101 V01) and CA (CW 20231201 V02) keep
+those older parents even after 2027-04-01. The engine picks the parent the state package
+declares, as of the submission's effective date (decision A3); nothing here changes that.</p>
+</blockquote>
+<hr />
+<h2 id="1-three-mechanisms-and-only-three">1. Three mechanisms, and only three</h2>
+<p>The whole premium architecture is three rule names repeated across the corpus:</p>
+<table>
+<thead>
+<tr>
+<th>Rule</th>
+<th>Count</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>SetPremium</code></td>
+<td><strong>322</strong></td>
+<td>turns a rate into dollars on one record</td>
+</tr>
+<tr>
+<td><code>SetPremiumIndicator</code></td>
+<td><strong>322</strong></td>
+<td>says whether that record produced a premium at all</td>
+</tr>
+<tr>
+<td><code>CalculateTotalPremium</code></td>
+<td><strong>571</strong></td>
+<td>collects premium upward, one level at a time</td>
+</tr>
+</tbody>
+</table>
+<p>There is no fourth mechanism and no special case at the top. The account total is produced
+by the same rule name as every subtotal beneath it.</p>
+<hr />
+<h2 id="2-rate-and-premium-are-separate-phases">2. Rate and premium are separate phases</h2>
+<p><strong>Not one of the 322 <code>SetPremium</code> rules performs a table lookup.</strong> Checked directly: zero
+<code>MatrixDef</code> references across all of them.</p>
+<p>By the time <code>SetPremium</code> runs, the rating chain has already resolved the record's
+<code>FinalRate</code> and written it to the record. <code>SetPremium</code> only converts. The canonical case,
+<code>GeneralLiabilityClassificationPremOpsCoverage</code>, reads exactly four values:</p>
+<pre><code>FinalRate                  the rate, already computed
+PremiumBasis               which divisor applies (Admissions, Area, Gross Sales, Payroll …)
+../PremOpsCovExposure      the exposure, from the parent classification
+../Subline                 which subline is in force
+</code></pre>
+<p>and uses two operators — <code>Product</code> and <code>Divide</code>. That is the entire premium calculation:
+<strong>rate × exposure ÷ basis divisor.</strong></p>
+<p>This split matters for anyone reading a wrong premium: a wrong number is either a wrong
+<em>rate</em> (the rating chain) or a wrong <em>exposure/basis</em> (the premium chain). The two are
+cleanly separable, and <code>FinalRate</code> is the seam.</p>
+<hr />
+<h2 id="3-how-a-premium-climbs-to-the-account-total">3. How a premium climbs to the account total</h2>
+<h3 id="at-a-leaf-a-coverage-record">At a leaf — a coverage record</h3>
+<p><code>CalculateTotalPremium</code> on a leaf is a gate, not a sum:</p>
+<pre><code>if PremiumIndicator = 1 AND Premium &lt;&gt; 0:
+        contribute Premium
+else:
+        contribute 0
+</code></pre>
+<p><strong>Two conditions, not one.</strong> A record with a premium but an indicator of 0 contributes
+nothing, and so does a record whose premium is exactly zero. <code>PremiumIndicator</code> is what
+distinguishes <em>"this coverage rated to zero"</em> from <em>"this coverage was not on the policy"</em> —
+and both contribute the same 0, so the indicator is the only place that difference survives.</p>
+<h3 id="at-an-aggregator-a-location-a-classification-the-policy">At an aggregator — a location, a classification, the policy</h3>
+<pre><code>ErcCalculatedTotalPremium = Sum(
+    for each child record:  that child's CalculateTotalPremium
+)
+</code></pre>
+<p>Children are reached two different ways, and <strong>reading only one of them silently loses
+premium</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Child kind</th>
+<th>How it is summed</th>
+<th>Payload form</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>repeating</td>
+<td><code>&lt;rul:ForEach AtDataDef="XTable/X"&gt;</code></td>
+<td>JSON array</td>
+</tr>
+<tr>
+<td>singleton</td>
+<td><code>&lt;rul:Locate AtDataDef="X"&gt;</code></td>
+<td>JSON object</td>
+</tr>
+</tbody>
+</table>
+<p>This is the same array-vs-object distinction that governs the request format. At the root,
+<strong>400 children are repeating and 19 are singletons</strong> — a reader that handled only <code>ForEach</code>
+would miss 19 whole endorsement families.</p>
+<h3 id="the-spine">The spine</h3>
+<pre><code>GeneralLiability                                   depth 0   419 children   ← ACCOUNT TOTAL
+└── GeneralLiabilityLocation                       depth 1    18 children
+    └── GeneralLiabilityClassification             depth 2    19 children
+        ├── …PremOpsCoverage                       depth 3   leaf, SetPremium
+        ├── …ProdsCompldOpsCoverage                depth 3   leaf, SetPremium
+        ├── GeneralLiabilityTerrorism              depth 3    3 children
+        │   └── …TerrorismPremOpsCoverage          depth 4   leaf, SetPremium
+        └── GeneralLiabilityUnmannedAircraft       depth 3    3 children
+            └── …UnmannedAircraftCovABIPDCoverage  depth 4   leaf, SetPremium
+</code></pre>
+<p><strong>Confirmed by the engine (2026-10-02).</strong> Rating Oklahoma's engine base submission at
+2027-04-01 (<code>GL_OK_20270401_V04</code> over <code>GL_CW_20270401_V02</code>, class 50017, $5,000,000 gross sales)
+writes exactly this spine: Prem/Ops <code>Premium</code> <strong>965</strong> and Products <strong>7,215</strong> at depth 3; the
+terrorism coverages <strong>2</strong> and <strong>16</strong> at depth 4, summed to <code>GeneralLiabilityTerrorism</code>
+<strong>18</strong> at depth 3; then <code>ErcCalculatedTotalPremium</code> <strong>8,198</strong> at the classification, the
+location and the policy. The engine reads the account figure from <code>GeneralLiability.Premium</code>
+and refuses the rating if it disagrees with <code>ErcCalculatedTotalPremium</code>
+(<code>gl_engine/rating/kernel.py</code>, <code>_collect</code>); a submission carrying several <code>GeneralLiability</code>
+risks is the sum of their totals.</p>
+<p><strong>Location and Classification contribute their own <code>Premium</code> as well as their children's</strong> —
+they are not pure containers. A premium can be written at any level.</p>
+<h3 id="depth-distribution">Depth distribution</h3>
+<table>
+<thead>
+<tr>
+<th>Depth below the account total</th>
+<th>Groups</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0 — the account itself</td>
+<td>1</td>
+</tr>
+<tr>
+<td>1</td>
+<td>419</td>
+</tr>
+<tr>
+<td>2</td>
+<td>110</td>
+</tr>
+<tr>
+<td>3</td>
+<td>34</td>
+</tr>
+<tr>
+<td>4 — deepest</td>
+<td>7</td>
+</tr>
+</tbody>
+</table>
+<p><strong>The tree is wide, not deep.</strong> 419 of 571 groups hang directly off the policy — almost all
+of them endorsements that price at policy level rather than against a classification. Only 7
+groups sit four levels down: the three Terrorism coverages, the three Unmanned Aircraft
+coverages, and Medical Payments Exclusion Coverage C.</p>
+<p><strong>Every group reaches the root. Zero orphans</strong> — no group computes a premium that the
+account total fails to collect.</p>
+<hr />
+<h2 id="4-the-premium-fields-themselves">4. The premium fields themselves</h2>
+<p><strong>163 distinct premium-named fields exist in the DataDef. Only 22 are ever written by a
+rule.</strong> The other 141 are carried, not computed.</p>
+<p>Twelve of them are declared on <strong>all 1,025 datadef groups</strong> — the standard premium block
+every record carries whether or not it ever holds a premium:</p>
+<p><code>Premium</code> · <code>PremiumIndicator</code> · <code>AnnualPremium</code> · <code>PolicyTermPremium</code> · <code>ProRatedPremium</code> ·
+<code>PriorPremium</code> · <code>ProRatedPriorPremium</code> · <code>ChangePremium</code> · <code>ProRatedChangePremium</code> ·
+<code>TotalProRatedChangePremium</code> · <code>EvaluatedPremium</code> · <code>OverridePremium</code></p>
+<p>Of those twelve, <strong>the rules write exactly two — <code>Premium</code> and <code>PremiumIndicator</code>.</strong> The
+other ten are policy-administration fields, and §5 measures just how inert they are: zero
+writes and zero reads across all 52 jurisdictions. A reader who assumes <code>AnnualPremium</code> is
+computed will find nothing computing it, in any state.</p>
+<h3 id="what-the-rules-actually-write">What the rules actually write</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Writes</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>PremiumIndicator</code></td>
+<td>644</td>
+<td>did this record produce a premium</td>
+</tr>
+<tr>
+<td><code>Premium</code></td>
+<td>393</td>
+<td>the record's own premium</td>
+</tr>
+<tr>
+<td><code>ErcCalculatedTotalPremium</code></td>
+<td>112</td>
+<td>a subtotal, at each aggregating level</td>
+</tr>
+<tr>
+<td><code>BasicLimitPremium</code></td>
+<td>9</td>
+<td>pre-ILF premium</td>
+</tr>
+<tr>
+<td><code>PremiumDiscountCharge</code></td>
+<td>6</td>
+<td></td>
+</tr>
+<tr>
+<td><code>PremiumBasis</code></td>
+<td>6</td>
+<td></td>
+</tr>
+<tr>
+<td><code>MinPremium</code></td>
+<td>4</td>
+<td></td>
+</tr>
+<tr>
+<td>the remaining 15</td>
+<td>1–3 each</td>
+<td>coverage-specific totals</td>
+</tr>
+</tbody>
+</table>
+<p><code>ErcCalculatedTotalPremium</code> being written 112 times against 571 participating groups is the
+aggregator count: <strong>112 groups hold a subtotal, 459 are leaves</strong> that hand their <code>Premium</code>
+upward without storing one.</p>
+<hr />
+<h2 id="5-interim-premium-written-pro-rata-endorsement-not-in-the-ruleset">5. Interim premium — written, pro-rata, endorsement: not in the ruleset</h2>
+<p>A fair question about any premium map is whether it covers the <em>transaction</em> side: written
+premium, pro-rata, earned, endorsement change. <strong>It does not, because ISO's ruleset does not
+compute any of it.</strong> That is a finding, not an omission in the map — and it was checked
+rather than assumed.</p>
+<p>Every record in the corpus carries a <strong>fourteen-field policy-administration block</strong>, declared
+on all 1,025 datadef groups. Measured across <strong>all 52 jurisdictions</strong>, every one of the
+fourteen is written <strong>zero</strong> times and read <strong>zero</strong> times by any rule:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Writes</th>
+<th>Reads</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>AnnualPremium</code> · <code>PolicyTermPremium</code> · <code>PriorPremium</code></td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td><code>ProRatedPremium</code> · <code>ProRatedPriorPremium</code> · <code>ProRatedChangePremium</code> · <code>TotalProRatedChangePremium</code></td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td><code>ChangePremium</code> · <code>EvaluatedPremium</code> · <code>OverridePremium</code></td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td><code>ProRateFactor</code> · <code>ProRateIndicator</code> · <code>TermFactorIndicator</code> · <code>EarnedInFullIndicator</code></td>
+<td>0</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<p>Nothing computes them; nothing consumes them. They are <strong>inert carriers</strong> — a shape a policy
+administration system is expected to fill, shipped inside ISO's schema so a round-tripped
+record has somewhere to put them.</p>
+<p><strong>What this means in practice.</strong> The engine produces <strong>one number: the full-term premium at
+the effective date supplied in <code>SchemeKeys</code>.</strong> (Confirmed 2026-10-02: the kernel resolves the
+edition from <code>SchemeKeys.EffectiveDateTime</code> — decision A3 — and ISO's own rules then write
+<code>ExpDate</code> one year later, 2027-04-01 → 2028-04-01; no rule reads a term or a pro-rata factor.)
+Proration, mid-term endorsement pricing,
+written-vs-earned splits and cancellation return arithmetic are <strong>entirely the calling
+system's job.</strong> Re-rating at a new effective date and differencing the results is the only
+transaction mechanism ISO's content offers, and even that is the caller's construction.</p>
+<blockquote>
+<p><strong>One name that looks like an exception and is not.</strong> <code>EndorsementPremium</code> <em>is</em> live — one
+write, two reads. But it sits on <code>GeneralLiabilityTerrorismEndorsementCoverage</code>, and
+<code>SetEndorsementPremium</code> sums the terrorism contributions of ~40 endorsement coverages.
+It means <em>"premium for the terrorism endorsement"</em>, not <em>"premium change from an
+endorsement transaction"</em>. Same word, unrelated concept — the same shared-name trap this
+project keeps hitting.</p>
+</blockquote>
+<p><strong>Also worth knowing:</strong> <code>ErcCalculatedTotalPremium</code> is written 200 times across the corpus and
+<strong>read zero times</strong>. The roll-up passes values through <code>RunRule</code> return values, never by
+reading the stored subtotal. Each level's stored total is an <em>output for the caller</em>, not an
+input to the level above — so a caller may treat every subtotal as reportable without
+worrying that something downstream depends on it.</p>
+<hr />
+<h2 id="6-reading-this-for-a-specific-premium">6. Reading this for a specific premium</h2>
+<p>To trace any number on a GL result:</p>
+<ol>
+<li><strong>Find the group in <code>RollUpTree</code>.</strong> Its <code>Path to account total</code> column is the full chain
+   of summations between that record and the account figure.</li>
+<li><strong>If it is a leaf</strong>, its <code>Premium</code> came from <code>SetPremium</code> — look it up in
+   <code>PremiumSources</code> for the exact fields that rule reads.</li>
+<li><strong>If it is an aggregator</strong>, its <code>ErcCalculatedTotalPremium</code> is the sum of its children
+   plus, where marked, its own <code>Premium</code>.</li>
+<li><strong>If a premium is missing rather than wrong</strong>, check <code>PremiumIndicator</code> before checking
+   the arithmetic. A zero contribution and an absent coverage are indistinguishable in the
+   total; the indicator is the only discriminator.</li>
+</ol>
+<hr />
+<h2 id="7-what-the-state-packages-do-to-this">7. What the state packages do to this</h2>
+<p>The countrywide tree is the shape; the 51 state packages change it in two ways and, notably,
+<strong>never in a third</strong>.</p>
+<p><strong>They add.</strong> <strong>457 distinct premium-bearing groups exist only in state packages</strong> — state
+endorsements, each arriving with its own <code>CalculateTotalPremium</code> so it rolls up like any other
+child. The heaviest: <strong>WA 33, IL 27, MO 26, NY 25, NC 24, NH 23</strong>; the lightest, WV with 4.
+Every one of the 780 state <code>CalculateTotalPremium</code> rules is scoped <code>RuleTypeSystem</code> — machinery
+that comes with the group, not a rewrite of countrywide's.</p>
+<p><strong>They rewrite, but barely, and only in one place.</strong> Exactly <strong>12 <code>SetPremium</code> overrides</strong> exist
+across all 51 states, and <strong>all 12 are Terrorism</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Group</th>
+<th>States</th>
+<th>CW size</th>
+<th>State size</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>…TerrorismAllOtherSublineCoverage</code></td>
+<td>AK, FL, NY, TX, VA, VT</td>
+<td>40,846</td>
+<td>17,214 – 42,613</td>
+</tr>
+<tr>
+<td><code>…TerrorismPremOpsCoverage</code></td>
+<td>FL, NY</td>
+<td>10,549</td>
+<td>2,725 – 3,339</td>
+</tr>
+<tr>
+<td><code>…TerrorismProdsCompldOpsCoverage</code></td>
+<td>FL, NY</td>
+<td>11,144</td>
+<td>2,742 – 3,635</td>
+</tr>
+<tr>
+<td><code>…UnmannedAircraftTerrorismCoverage</code></td>
+<td>FL, NY</td>
+<td>12,667</td>
+<td>2,861 – 3,470</td>
+</tr>
+</tbody>
+</table>
+<p>FL and NY replace the terrorism premium calculation with rules a quarter to a fifth the size —
+substantially different logic, not a tweak. AK's is slightly <em>larger</em> than countrywide's.
+<strong>No other countrywide premium formula is rewritten by any state.</strong></p>
+<p><strong>They never delete.</strong> Zero empty-body premium overrides anywhere in the corpus. This is worth
+stating because it is the opposite of CF's validation messages, where 316 countrywide rules are
+switched off by a state override with an empty body. <strong>Premium rules are only ever added to or
+replaced — never silently removed.</strong></p>
+<hr />
+<h2 id="8-limits-of-this-map">8. Limits of this map</h2>
+<ul>
+<li><strong>Countrywide sheets, state overlay in §7.</strong> The workbook's <code>RollUpTree</code> and
+  <code>PremiumSources</code> are countrywide; what the state packages add or rewrite is measured in §7
+  and drawn per jurisdiction in <code>GL_Premium_Tree.html</code>, using each state's <em>latest-dated</em>
+  package — which can be later than the package a given effective date resolves. The engine
+  applies whichever state override is in force automatically.</li>
+<li><strong>One edition.</strong> This is the 2027-04-01 countrywide edition (V01; V02 identical in premium
+  structure). Earlier parents still in force differ — see <em>Edition scope</em> at the top.</li>
+<li><strong>Structural, now confirmed by evaluation.</strong> The tree is read from the rule XML. Since
+  2026-10-02 it has also been exercised: the engine's ratings follow this roll-up level for
+  level (§3), the Oklahoma golden case reproduces ISO's own premium (<code>tests/verify_golden.py</code>
+  80/80), and the engine agrees with ISO's live service on 50 of 50 standard risks
+  (<code>scripts/erc/out/phase2.csv</code>, 50 <code>MATCH</code>, BUILD-LOG Entry 12) and 184 of 184 varied risks in
+  11 jurisdictions (BUILD-LOG Entry 24). <strong>Every one of those ISO comparisons was made on a
+  pre-2027 edition</strong> (CW 20260101 V01 and earlier); the 2027-04-01 figures quoted here are the
+  engine's, not yet confirmed against ISO live (<code>docs/PRD-GL-RATING-ENGINE.md</code> §8, item C8).</li>
+<li><strong><code>SetPremium</code> inputs are the fields the rule reads</strong>, flattened from nested conditions.
+  A rule reading eight fields may only need two in any given branch.</li>
+<li><strong><code>FinalRate</code> is where this map stops.</strong> How a rate becomes <code>FinalRate</code> is the rating
+  chain, which is a separate body of work — this map covers the rate-to-dollars half and the
+  aggregation above it.</li>
+</ul>
+</article></div></body></html>

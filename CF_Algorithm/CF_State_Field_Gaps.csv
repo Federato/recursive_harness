@@ -1,0 +1,359 @@
+state,package,record,field,label,type,required,default,min,max,condition,domain
+AL,CF AL 20270301 V01,SpecialClass,ConformsToCondoActs,Conforms to AL Condominium Act of 1991,SELECT,True,,,,,ConformsToCondoRule
+AL,CF AL 20270301 V01,SpecialClass,PublicInstitutionalPlanApply,Public And Institutional Property Plan Apply,SELECT,True,,,,,PublicInstitutionalPlanApplySpecialClass
+AL,CF AL 20270301 V01,PersonalProperty,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"../../../../RatingTypeBasicGroupII = ""Specific""",
+AL,CF AL 20270301 V01,OccupClass,PublicInstitutionalPlanApply,Public And Institutional Property Plan Apply,SELECT,True,,,,,PublicInstitutionalPlanApplyOccupClass
+AL,CF AL 20270301 V01,OccupClass,ConformsToCondoActs,Conforms to AL Condominium Act of 1991,SELECT,True,,,,,ConformsToCondoRuleOccupClass
+AL,CF AL 20270301 V01,Structure,PublicInstitutionalPlanApply,Public And Institutional Property Plan Apply,SELECT,True,,,,,PublicInstitutionalPlanApplyBldg
+AL,CF AL 20270301 V01,Structure,InsuredHoldsAnIBHSHurricaneCertificateOrAnIBHSHighWindAndHailCertificate,Does this insured hold an Institute for Business & Home Safety® (IBHS) Hurricane Certificate or an IBHS High Wind and Hail Certificate?,SELECT,True,,,,,IBHSHurricaneCertificateOrAnIBHSHighWindAndHailCertificate
+AL,CF AL 20270301 V01,Structure,CertificateType,Certificate Type,SELECT,True,,,,,CertificateType
+AL,CF AL 20270301 V01,Structure,CertificateLevel,Certificate Level,SELECT,True,,,,,CertificationLevel
+AL,CF AL 20270301 V01,Structure,RoofLevel,Is The Roof Made Of Metal Or Other?,SELECT,True,,,,,RoofLevel
+AL,CF AL 20270301 V01,Structure,RoofSubDecking,Roof Sub-Decking,SELECT,True,,,,,RoofSubDecking
+AL,CF AL 20270301 V01,Structure,AgeOfTheRoof,Age Of The Roof,TEXT,True,,,,,AgeOfTheRoof
+AL,CF AL 20270301 V01,Structure,ConformsToCondoActs,Conforms to AL Condominium Act of 1991,SELECT,True,,,,,ConformsToCondoRuleBldg
+AL,CF AL 20270301 V01,Structure,GeographicWindHazardLevel,Geographic Wind Hazard Level,TEXT,False,,,,"RatingTypeBasicGroupII = ""Specific""",
+AL,CF AL 20270301 V01,Structure,SquareFootageOfBuilding,Square Footage of Building,TEXT,True,0,0,99999999,"RatingTypeBasicGroupII = ""Specific""",
+AL,CF AL 20270301 V01,Structure,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"RatingTypeBasicGroupII = ""Specific""",
+AL,CF AL 20270301 V01,Location,GeographicWindHazardLevelTerritory,Geographic Wind Hazard Level Territory,SELECT,True,,,,,GeographicWindHazardLevelTerritory
+AR,CF AR 20260701 V01,PersonalProperty,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,,0,9999.9999,"../../../../RatingTypeBasicGroupII = ""Specific""",
+AR,CF AR 20260701 V01,Structure,WindstormConstructionProgram,Windstorm Construction Program Applies,SELECT,True,No,,,,YesNo
+AR,CF AR 20260701 V01,Structure,WindstormConstructionFeaturesHeader,Windstorm Construction Features,TEXT,False,,,,,
+AR,CF AR 20260701 V01,Structure,WCFWindstormLossMitigationEligibility,Is the Residential Property eligible for credit,SELECT,True,,,,,WCFWindstormLossMitigationEligibility
+AR,CF AR 20260701 V01,Structure,WCFProofOfCompliance,Does the Insured have Proof Of Compliance,SELECT,True,,,,,WCFProofOfCompliance
+AR,CF AR 20260701 V01,Structure,IBHSFORTIFIEDHomeHighWindAndHailCertificateLevel,IBHS FORTIFIED Home High Wind and Hail Certificate Level,SELECT,True,,,,,IBHSFORTIFIEDHomeHighWindAndHailCertificateLevel
+AR,CF AR 20260701 V01,Structure,GeographicWindHazardLevel,Geographic Wind Hazard Level,TEXT,False,,,,"RatingTypeBasicGroupII = ""Specific""",
+AR,CF AR 20260701 V01,Structure,SquareFootageOfBuilding,Square Footage of Building,TEXT,True,0,0,99999999,"RatingTypeBasicGroupII = ""Specific""",
+AR,CF AR 20260701 V01,Structure,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"RatingTypeBasicGroupII = ""Specific""",
+AR,CF AR 20260701 V01,Location,GeographicWindHazardLevelTerritory,Geographic Wind Hazard Level Territory,SELECT,True,Entire State,,,,GeographicWindHazardLevelTerritory
+AZ,CF AZ 20260601 V01,SpecialClass,ConformsToCondoActs,Conforms to Condominium Rules of 1985,SELECT,True,Yes,,,,ConformsToCondoRuleSpecialClass
+AZ,CF AZ 20260601 V01,OccupClass,ConformsToCondoActs,Conforms to Condominium Rules of 1985,SELECT,True,Yes,,,,ConformsToCondoRuleOccupClass
+AZ,CF AZ 20260601 V01,Structure,UnderFourUnits,Is this under 4 units?,SELECT,True,No,,,ClassCode[.='0311'] or ClassCode[.='0331'] or ClassCode[.='0341'],ClassCodeBldg1
+AZ,CF AZ 20260601 V01,Structure,ConformsToCondoActs,Conforms to Condominium Rules of 1985,SELECT,True,Yes,,,,ConformsToCondominiumActsBldg
+AZ,CF AZ 20260601 V01,Location,BasicGroupIReductionCredit,Private Fire Department Credit,TEXT,True,1,0.5,1,,
+CA,CF CA 20261101 V01,PersonalProperty,LimitedEQIndicator,Limited EQ on Residential Property Applies,SELECT,True,Not Applicable,,,../../../../../../EQCauseOfLossForm[.='Limited Earthquake Endorsement (CP 10 43),LimitedEQCA
+CA,CF CA 20261101 V01,Structure,NumberOfUnits,Number Of Units Is Between 1-4 Units?,SELECT,True,No,,,ClassCode[.='0074' or .='0077' or .='0196' or .='0197' or .='0198' or .='0331' o,YesNo
+CA,CF CA 20261101 V01,Structure,LimitedEQIndicator,Limited EQ on Residential Risk Applies,SELECT,True,Not Applicable,,,../../EQCauseOfLossForm[.='Limited Earthquake Endorsement (CP 10 43)'],LimitedEQCA
+CA,CF CA 20261101 V01,Structure,WildfireMitigation,Wildfire Mitigation,SELECT,True,,,,,WildfireMitigation
+CA,CF CA 20261101 V01,Structure,WildfireMitigationCommunityLevelHeader,Community-Level Wildfire Mitigation Risk Characteristics,TEXT,False,,,,WildfireMitigation[.='Yes'],
+CA,CF CA 20261101 V01,Structure,FireRiskReductionCommunity,Fire Risk Reduction Community,SELECT,True,,,,WildfireMitigation[.='Yes'],WildfireMitigationCharacteristics
+CA,CF CA 20261101 V01,Structure,FirewiseSiteInGoodStanding,Firewise USA Site in Good Standing,SELECT,True,,,,WildfireMitigation[.='Yes'],WildfireMitigationCharacteristics
+CA,CF CA 20261101 V01,Structure,WildfireMitigationPropertyLevelHeader,Property-Level Wildfire Mitigation Risk Characteristics,TEXT,False,,,,WildfireMitigation[.='Yes'],
+CA,CF CA 20261101 V01,Structure,ClearingOfVegetationDebris,Clearing of vegetation and debris from under decks,SELECT,True,,,,WildfireMitigation[.='Yes'],WildfireMitigationCharacteristics
+CA,CF CA 20261101 V01,Structure,ClearingOfVegetationDebrisMulchStoredCombustibleMaterials,"Clearing of vegetation, debris, mulch, stored combustible materials, and any and all movable combustible objects, from the area within five feet of the building being evaluated",SELECT,True,,,,WildfireMitigation[.='Yes'],WildfireMitigationCharacteristics
+CA,CF CA 20261101 V01,Structure,IncorporationOfOnlyNonCombustibleMaterials,"Incorporation of only noncombustible materials into that portion of any improvements, including fences and gates, which is situated within five feet of the building being evaluated",SELECT,True,,,,WildfireMitigation[.='Yes'],WildfireMitigationCharacteristics
+CA,CF CA 20261101 V01,Structure,AbsenceOfCombustibleStructures,"Removal or absence of combustible structures, including sheds and other outbuildings, from the area within thirty feet of the building being evaluated",SELECT,True,,,,WildfireMitigation[.='Yes'],WildfireMitigationCharacteristics
+CA,CF CA 20261101 V01,Structure,ApplicantControlThirtyFeetFromBuilding,Does the applicant control the entirety of the area extending thirty feet from the building being evaluated?,SELECT,True,,,,WildfireMitigation[.='Yes'] and ClearingOfVegetationDebris[.='Yes'] and Clearing,WildfireMitigationImmediateSurroundingsAdditionalCredit2Characteristics
+CA,CF CA 20261101 V01,Structure,CompliesWithSection4291,"The property upon which the building being evaluated is situated complies with Section 4291 of the Public Resources Code, and any applicable local ordinances, governing defensible space",SELECT,True,,,,WildfireMitigation[.='Yes'],WildfireMitigationCharacteristics
+CA,CF CA 20261101 V01,Structure,ClassAFireRatedRoof,Class-A Fire Rated Roof,SELECT,True,,,,WildfireMitigation[.='Yes'],WildfireMitigationCharacteristics
+CA,CF CA 20261101 V01,Structure,EnclosedEaves,Enclosed Eaves,SELECT,True,,,,WildfireMitigation[.='Yes'],WildfireMitigationCharacteristics
+CA,CF CA 20261101 V01,Structure,FireResistantVents,Fire-Resistant Vents,SELECT,True,,,,WildfireMitigation[.='Yes'],WildfireMitigationCharacteristics
+CA,CF CA 20261101 V01,Structure,MultipaneWindows,"Multipane windows, including dual pane windows, or functional shutters, which when closed, cover the entire window and do not have openings",SELECT,True,,,,WildfireMitigation[.='Yes'],WildfireMitigationCharacteristics
+CA,CF CA 20261101 V01,Structure,NonCombustibleVerticalClearanceAtBottom,"At least six inches of noncombustible vertical clearance at the bottom of the exterior surface of the building, measured from the ground up",SELECT,True,,,,WildfireMitigation[.='Yes'],WildfireMitigationCharacteristics
+CA,CF CA 20261101 V01,Structure,NonCombustibleVerticalClearanceFromTheGroundUp,The entire vertical clearance of the exterior surface of the building is noncombustible from the ground up,SELECT,True,,,,WildfireMitigation[.='Yes'],WildfireMitigationCharacteristics
+CA,CF CA 20261101 V01,Location,FireDepartment,Fire Department,SELECT,True,,,,,FireDepartment
+CO,CF CO 20260601 V01,PersonalProperty,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"../../../../RatingTypeBasicGroupII = ""Specific""",
+CO,CF CO 20260601 V01,Structure,GeographicWindHazardLevel,Geographic Wind Hazard Level,TEXT,False,,,,"RatingTypeBasicGroupII = ""Specific""",
+CO,CF CO 20260601 V01,Structure,SquareFootageOfBuilding,Square Footage of Building,TEXT,True,0,0,99999999,"RatingTypeBasicGroupII = ""Specific""",
+CO,CF CO 20260601 V01,Structure,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"RatingTypeBasicGroupII = ""Specific""",
+CO,CF CO 20260601 V01,Location,GeographicWindHazardLevelTerritory,Geographic Wind Hazard Level Territory,SELECT,True,,,,,GeographicWindHazardLevelTerritory
+CT,CF CT 20270301 V01,SpecialClass,ConformsToCondoActs,Conforms to Common Interest Ownership Act of 1984,SELECT,True,Yes,,,,ConformsToCondoRule
+CT,CF CT 20270301 V01,PersonalProperty,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,,0,9999.9999,"../../../../RatingTypeBasicGroupII = ""Specific""",
+CT,CF CT 20270301 V01,OccupClass,ConformsToCondoActs,Conforms to Common Interest Ownership Act of 1984,SELECT,True,Yes,,,,ConformsToCondoRuleOccupClass
+CT,CF CT 20270301 V01,Structure,ConformsToCondoActs,Conforms to Common Interest Ownership Act of 1984,SELECT,True,Yes,,,,ConformsToCondoRuleBldg
+CT,CF CT 20270301 V01,Structure,GeographicWindHazardLevel,Geographic Wind Hazard Level,TEXT,False,,,,"RatingTypeBasicGroupII = ""Specific""",
+CT,CF CT 20270301 V01,Structure,SquareFootageOfBuilding,Square Footage of Building,TEXT,True,0,0,99999999,"RatingTypeBasicGroupII = ""Specific""",
+CT,CF CT 20270301 V01,Structure,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"RatingTypeBasicGroupII = ""Specific""",
+CT,CF CT 20270301 V01,Location,GeographicWindHazardLevelTerritory,Geographic Wind Hazard Level Territory,SELECT,True,,,,,GeographicWindHazardLevelTerritory
+CW,CF CW 20230801 V04,Structure,FungusWetRotDryRotBacteriaCovSubLimit,Sub Limit,TEXT,False,0,0,,../../FungusWetRotDryRotBacteriaCovLocApply[.='No'],FungusWetRotDryRotBacteriaSubLimitStruct
+CW,CF CW 20230801 V04,Location,FungusWetRotDryRotBacteriaCovSubLimit,Sub Limit,TEXT,True,0,,,../../FungusWetRotDryRotBacteriaCov[.='Separate Limits'],FungusWetRotDryRotBacteriaSublimitLoc
+DE,CF DE 20260601 V01,PersonalProperty,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"../../../../RatingTypeBasicGroupII = ""Specific""",
+DE,CF DE 20260601 V01,Structure,GeographicWindHazardLevel,Geographic Wind Hazard Level,TEXT,False,,,,"RatingTypeBasicGroupII = ""Specific""",
+DE,CF DE 20260601 V01,Structure,SquareFootageOfBuilding,Square Footage of Building,TEXT,True,0,0,99999999,"RatingTypeBasicGroupII = ""Specific""",
+DE,CF DE 20260601 V01,Structure,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"RatingTypeBasicGroupII = ""Specific""",
+DE,CF DE 20260601 V01,Location,TerritorialZone,Territorial Zone,SELECT,True,,,,,TerritoryCodeLocation
+DE,CF DE 20260601 V01,Location,GeographicWindHazardLevelTerritory,Geographic Wind Hazard Level Territory,SELECT,True,,,,,GeographicWindHazardLevelTerritory
+FL,CF FL 20241201 V01,SpecialClass,ItemsBelongToResidentialCondo,Item(s) Belong To A Residential Condominium,SELECT,True,,,,CovForm[.='Condominium Association Coverage Form'] or CovForm[.='Condominium Com,YesNo
+FL,CF FL 20241201 V01,PersonalProperty,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"../../../../RatingTypeBasicGroupII = ""Specific""",
+FL,CF FL 20241201 V01,Structure,HurricaneDeductibleType,Windstorm/Hail/Hurricane Deductible Type,SELECT,True,,,,,HurricaneDeductibleType
+FL,CF FL 20241201 V01,Structure,WindstormCredit,Risk Eligible For Windstorm Mitigation Credit,SELECT,True,,,,,YesNo
+FL,CF FL 20241201 V01,Structure,GeographicWindHazardLevel,Geographic Wind Hazard Level,TEXT,False,,,,"RatingTypeBasicGroupII = ""Specific""",
+FL,CF FL 20241201 V01,Structure,SquareFootageOfBuilding,Square Footage of Building,TEXT,True,0,0,99999999,"RatingTypeBasicGroupII = ""Specific""",
+FL,CF FL 20241201 V01,Structure,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"RatingTypeBasicGroupII = ""Specific""",
+FL,CF FL 20241201 V01,Location,AreaServicedByFireDept,Fire Department servicing this area,SELECT,True,,,,,AreaServicedByFireDept
+FL,CF FL 20241201 V01,Location,GeographicWindHazardLevelTerritory,Geographic Wind Hazard Level Territory,SELECT,True,Entire State,,,,GeographicWindHazardLevelTerritory
+GA,CF GA 20260601 V01,PersonalProperty,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"../../../../RatingTypeBasicGroupII = ""Specific""",
+GA,CF GA 20260601 V01,Structure,WindstormMitigationDiscountApplies,Windstorm Mitigation Discount Applies,SELECT,True,No,,,,YesNo
+GA,CF GA 20260601 V01,Structure,CertificateType,Certificate Type,SELECT,True,,,,,CertificateType
+GA,CF GA 20260601 V01,Structure,CertificateLevel,Certificate Level,SELECT,True,,,,WindstormMitigationDiscountApplies ='Yes',CertificationLevel
+GA,CF GA 20260601 V01,Structure,GeographicWindHazardLevel,Geographic Wind Hazard Level,TEXT,False,,,,"RatingTypeBasicGroupII = ""Specific""",
+GA,CF GA 20260601 V01,Structure,SquareFootageOfBuilding,Square Footage of Building,TEXT,True,0,0,99999999,"RatingTypeBasicGroupII = ""Specific""",
+GA,CF GA 20260601 V01,Structure,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"RatingTypeBasicGroupII = ""Specific""",
+GA,CF GA 20260601 V01,Location,AreaServicedByFireDept,Fire Department servicing this area,SELECT,True,,,,,AreaServicedByFireDept
+GA,CF GA 20260601 V01,Location,GeographicWindHazardLevelTerritory,Geographic Wind Hazard Level Territory,SELECT,True,,,,,GeographicWindHazardLevelTerritory
+IA,CF IA 20261101 V01,PersonalProperty,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"../../../../RatingTypeBasicGroupII = ""Specific""",
+IA,CF IA 20261101 V01,Structure,GeographicWindHazardLevel,Geographic Wind Hazard Level,TEXT,False,,,,"RatingTypeBasicGroupII = ""Specific""",
+IA,CF IA 20261101 V01,Structure,SquareFootageOfBuilding,Square Footage of Building,TEXT,True,0,0,99999999,"RatingTypeBasicGroupII = ""Specific""",
+IA,CF IA 20261101 V01,Structure,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"RatingTypeBasicGroupII = ""Specific""",
+IA,CF IA 20261101 V01,Location,GeographicWindHazardLevelTerritory,Geographic Wind Hazard Level Territory,SELECT,True,,,,,GeographicWindHazardLevelTerritory
+IA,CF IA 20261101 V01,Policy,CountyMutualInsurance,Issued by a county mutual insurance association or a state mutual insurance association as established under Iowa state law?,SELECT,True,No,,,,YesNo
+IL,CF IL 20260701 V02,PersonalProperty,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"../../../../RatingTypeBasicGroupII = ""Specific""",
+IL,CF IL 20260701 V02,Structure,GeographicWindHazardLevel,Geographic Wind Hazard Level,TEXT,False,,,,"RatingTypeBasicGroupII = ""Specific""",
+IL,CF IL 20260701 V02,Structure,SquareFootageOfBuilding,Square Footage of Building,TEXT,True,0,0,99999999,"RatingTypeBasicGroupII = ""Specific""",
+IL,CF IL 20260701 V02,Structure,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"RatingTypeBasicGroupII = ""Specific""",
+IL,CF IL 20260701 V02,Structure,MineSubsidenceHeader,Mine Subsidence Coverage,TEXT,False,,,,,
+IL,CF IL 20260701 V02,Structure,MineSubsidenceType,Structure Type,SELECT,True,,,,,MineSubsidenceStructType
+IL,CF IL 20260701 V02,Structure,MineSubsidenceLimit,Limit,TEXT,True,0,,,../../../../MineSubsidenceCoverage[.='Scheduled Buildings'],MineSubsidenceLimitStructure
+IL,CF IL 20260701 V02,Location,GeographicWindHazardLevelTerritory,Geographic Wind Hazard Level Territory,SELECT,True,,,,,GeographicWindHazardLevelTerritory
+IL,CF IL 20260701 V02,Policy,MineSubsidenceHeader,Mine Subsidence Coverage,TEXT,False,,,,,
+IL,CF IL 20260701 V02,Policy,MineSubsidenceCoverage,Coverage,SELECT,True,No Coverage,,,,MineSubsidenceCoveragePolicy
+IL,CF IL 20260701 V02,Policy,CommercialPropertyMineSubsidenceCoverage.PolicyTermPremium,Premium,TEXT,False,0,0,99999999,,
+IL,CF IL 20260701 V02,Policy,MineSubsidenceRatingOption,Rating Option,SELECT,True,,,,,MineSubsidenceRatingOption
+IL,CF IL 20260701 V02,Policy,MineSubsidenceLimit,Limit,TEXT,True,0,0,99999999,,MineSubsidenceLimitPolicy
+IN,CF IN 20260701 V02,PersonalProperty,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"../../../../RatingTypeBasicGroupII = ""Specific""",
+IN,CF IN 20260701 V02,Structure,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"RatingTypeBasicGroupII = ""Specific""",
+IN,CF IN 20260701 V02,Structure,SquareFootageOfBuilding,Square Footage of Building,TEXT,True,0,0,99999999,"RatingTypeBasicGroupII = ""Specific""",
+IN,CF IN 20260701 V02,Structure,GeographicWindHazardLevel,Geographic Wind Hazard Level,TEXT,False,,,,"RatingTypeBasicGroupII = ""Specific""",
+IN,CF IN 20260701 V02,Structure,MineSubsidenceHeader,Mine Subsidence Coverage,TEXT,False,,,,,
+IN,CF IN 20260701 V02,Structure,MineSubsidenceType,Structure Type,SELECT,True,,,,,MineSubsidenceStructType
+IN,CF IN 20260701 V02,Structure,CommercialPropertyStructureMineSubsidenceCoverage.PolicyTermPremium,Premium,TEXT,False,,,,,
+IN,CF IN 20260701 V02,Structure,MineSubsidenceLimit,Limit,TEXT,True,0,,,../../../../MineSubsidenceCoverage[.='Scheduled Buildings'],MineSubsidenceLimitStructure
+IN,CF IN 20260701 V02,Structure,CommercialPropertyStructureMineSubsidenceCoverage.ManualPremium,Manual Premium,TEXT,True,,0,999999999,../../../../MineSubsidenceCoverage[.='Scheduled Buildings'],
+IN,CF IN 20260701 V02,Structure,CommercialPropertyMineSubsidenceAdditionalLivingExpenseStructureCoverage.AdditionalLivingExpense,Additional Living Expense (Yes/No),SELECT,True,No,,,../../../../MineSubsidenceCoverage[.='Scheduled Buildings'],YesNo
+IN,CF IN 20260701 V02,Structure,CommercialPropertyMineSubsidenceAdditionalLivingExpenseStructureCoverage.PolicyTermPremium,Premium,TEXT,False,,,,,
+IN,CF IN 20260701 V02,Structure,CommercialPropertyMineSubsidenceAdditionalLivingExpenseStructureCoverage.AdditionalLivingExpenseLimit,Additional Living Expense Limit,TEXT,True,,,,../../../../MineSubsidenceCoverage[.='Scheduled Buildings'] and CommercialProper,
+IN,CF IN 20260701 V02,Structure,CommercialPropertyMineSubsidenceAdditionalLivingExpenseStructureCoverage.ManualPremium,Manual Premium,TEXT,True,,0,999999999,../../../../MineSubsidenceCoverage[.='Scheduled Buildings'] and CommercialProper,
+IN,CF IN 20260701 V02,Location,GeographicWindHazardLevelTerritory,Geographic Wind Hazard Level Territory,SELECT,True,,,,,GeographicWindHazardLevelTerritory
+IN,CF IN 20260701 V02,Policy,MineSubsidenceHeader,Mine Subsidence Coverage,TEXT,False,,,,,
+IN,CF IN 20260701 V02,Policy,MineSubsidenceCoverage,Coverage,SELECT,True,No Coverage,,,,MineSubsidenceCoveragePolicy
+IN,CF IN 20260701 V02,Policy,CommercialPropertyMineSubsidenceCoverage.PolicyTermPremium,Premium,TEXT,False,,,,,
+IN,CF IN 20260701 V02,Policy,MineSubsidenceLimit,Limit,TEXT,True,0,0,500000,,MineSubsidenceLimitPolicy
+IN,CF IN 20260701 V02,Policy,CommercialPropertyMineSubsidenceCoverage.ManualPremium,Manual Premium,TEXT,True,,0,999999999,MineSubsidenceCoverage[.='All Buildings'],
+IN,CF IN 20260701 V02,Policy,CommercialPropertyMineSubsidenceAdditionalLivingExpenseCoverage.AdditionalLivingExpense,Additional Living Expense (Yes/No),SELECT,True,No,,,MineSubsidenceCoverage[.='All Buildings'],YesNo
+IN,CF IN 20260701 V02,Policy,CommercialPropertyMineSubsidenceAdditionalLivingExpenseCoverage.PolicyTermPremium,Premium,TEXT,False,,,,,
+IN,CF IN 20260701 V02,Policy,CommercialPropertyMineSubsidenceAdditionalLivingExpenseCoverage.AdditionalLivingExpenseLimit,Additional Living Expense Limit,TEXT,True,,,,MineSubsidenceCoverage[.='All Buildings'] and CommercialPropertyMineSubsidenceAd,
+IN,CF IN 20260701 V02,Policy,CommercialPropertyMineSubsidenceAdditionalLivingExpenseCoverage.ManualPremium,Manual Premium,TEXT,True,,0,999999999,MineSubsidenceCoverage[.='All Buildings'] and CommercialPropertyMineSubsidenceAd,
+KS,CF KS 20260601 V01,SpecialClass,PublicInstitutionalPlanApply,Public And Institutional Property Plan Applies,SELECT,True,No,,,,PublicInstitutionalPlanApplySpecialClass
+KS,CF KS 20260601 V01,PersonalProperty,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"../../../../RatingTypeBasicGroupII = ""Specific""",
+KS,CF KS 20260601 V01,OccupClass,PublicInstitutionalPlanApply,Public And Institutional Property Plan Applies,SELECT,True,No,,,,PublicInstitutionalPlanApplyOccupClass
+KS,CF KS 20260601 V01,Structure,PublicInstitutionalPlanApply,Public And Institutional Property Plan Applies,SELECT,True,No,,,,PublicInstitutionalPlanApplyBldg
+KS,CF KS 20260601 V01,Structure,GeographicWindHazardLevel,Geographic Wind Hazard Level,TEXT,False,,,,"RatingTypeBasicGroupII = ""Specific""",
+KS,CF KS 20260601 V01,Structure,SquareFootageOfBuilding,Square Footage of Building,TEXT,True,0,0,99999999,"RatingTypeBasicGroupII = ""Specific""",
+KS,CF KS 20260601 V01,Structure,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"RatingTypeBasicGroupII = ""Specific""",
+KS,CF KS 20260601 V01,Location,GeographicWindHazardLevelTerritory,Geographic Wind Hazard Level Territory,SELECT,True,Entire State,,,,GeographicWindHazardLevelTerritory
+KY,CF KY 20260601 V01,PersonalProperty,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"../../../../RatingTypeBasicGroupII = ""Specific""",
+KY,CF KY 20260601 V01,Structure,WindstormConstructionProgram,Windstorm Construction Program Applies,SELECT,True,No,,,,YesNo
+KY,CF KY 20260601 V01,Structure,WindstormConstructionFeaturesHeader,Windstorm Construction Features,TEXT,False,,,,,
+KY,CF KY 20260601 V01,Structure,WCFWindstormLossMitigationEligibility,Is the Residential Property eligible for credit,SELECT,True,,,,,WCFWindstormLossMitigationEligibility
+KY,CF KY 20260601 V01,Structure,WCFProofOfCompliance,Does the Insured have Proof Of Compliance,SELECT,True,,,,,WCFProofOfCompliance
+KY,CF KY 20260601 V01,Structure,CertificateType,Certificate Type,SELECT,True,,,,,CertificateType
+KY,CF KY 20260601 V01,Structure,CertificateLevel,Certificate Level,SELECT,True,,,,,CertificationLevel
+KY,CF KY 20260601 V01,Structure,GeographicWindHazardLevel,Geographic Wind Hazard Level,TEXT,False,,,,"RatingTypeBasicGroupII = ""Specific""",
+KY,CF KY 20260601 V01,Structure,SquareFootageOfBuilding,Square Footage of Building,TEXT,True,0,0,99999999,"RatingTypeBasicGroupII = ""Specific""",
+KY,CF KY 20260601 V01,Structure,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"RatingTypeBasicGroupII = ""Specific""",
+KY,CF KY 20260601 V01,Structure,MineSubsidenceHeader,Mine Subsidence Coverage,TEXT,False,,,,,
+KY,CF KY 20260601 V01,Structure,MineSubsidenceType,Structure Type,SELECT,True,,,,,MineSubsidenceStructType
+KY,CF KY 20260601 V01,Structure,MineSubsidenceLimit,Limit,TEXT,True,0,,,../../../../MineSubsidenceCoverage[.='Scheduled Buildings'],MineSubsidenceLimitStructure
+KY,CF KY 20260601 V01,Location,GeographicWindHazardLevelTerritory,Geographic Wind Hazard Level Territory,SELECT,True,,,,,GeographicWindHazardLevelTerritory
+KY,CF KY 20260601 V01,Policy,MineSubsidenceHeader,Mine Subsidence Coverage,TEXT,False,,,,,
+KY,CF KY 20260601 V01,Policy,MineSubsidenceCoverage,Coverage,SELECT,True,No Coverage,,,,MineSubsidenceCoveragePolicy
+KY,CF KY 20260601 V01,Policy,CommercialPropertyMineSubsidenceCoverage.PolicyTermPremium,Premium,TEXT,False,0,0,99999999,,
+KY,CF KY 20260601 V01,Policy,MineSubsidenceLimit,Limit,TEXT,True,0,0,99999999,,MineSubsidenceLimitPolicy
+MA,CF MA 20261001 V01,PersonalProperty,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"../../../../RatingTypeBasicGroupII = ""Specific""",
+MA,CF MA 20261001 V01,Structure,GeographicWindHazardLevel,Geographic Wind Hazard Level,TEXT,False,,,,"RatingTypeBasicGroupII = ""Specific""",
+MA,CF MA 20261001 V01,Structure,SquareFootageOfBuilding,Square Footage of Building,TEXT,True,0,0,99999999,"RatingTypeBasicGroupII = ""Specific""",
+MA,CF MA 20261001 V01,Structure,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"RatingTypeBasicGroupII = ""Specific""",
+MA,CF MA 20261001 V01,Location,GeographicWindHazardLevelTerritory,Geographic Wind Hazard Level Territory,SELECT,True,,,,,GeographicWindHazardLevelTerritory
+MA,CF MA 20261001 V01,Location,CommercialPropertyLocationRemediationForReleaseOfHeatingOilPollutantCleanUpCreditCoverage.PolicyTermPremium,Remediation For Release Of Heating Oil Pollutant Clean Up Credit,TEXT,False,,,,CommercialPropertyLocationRemediationForReleaseOfHeatingOilPollutantCleanUpCredi,
+MD,CF MD 20261101 V02,SpecialClass,ConformsToCondoActs,Conforms to Condominium Rules of 1981,SELECT,True,,,,,ConformsToCondoRuleSpecialClass
+MD,CF MD 20261101 V02,PersonalProperty,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"../../../../RatingTypeBasicGroupII = ""Specific""",
+MD,CF MD 20261101 V02,OccupClass,ConformsToCondoActs,Conforms to Condominium Rules of 1981,SELECT,True,,,,,ConformsToCondominiumActsOccupClass
+MD,CF MD 20261101 V02,Structure,ConformsToCondoActs,Conforms to Condominium Rules of 1981,SELECT,True,,,,,ConformsToCondominiumActsBldg
+MD,CF MD 20261101 V02,Structure,GeographicWindHazardLevel,Geographic Wind Hazard Level,TEXT,False,,,,"RatingTypeBasicGroupII = ""Specific""",
+MD,CF MD 20261101 V02,Structure,SquareFootageOfBuilding,Square Footage of Building,TEXT,True,0,0,99999999,"RatingTypeBasicGroupII = ""Specific""",
+MD,CF MD 20261101 V02,Structure,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"RatingTypeBasicGroupII = ""Specific""",
+MD,CF MD 20261101 V02,Location,GeographicWindHazardLevelTerritory,Geographic Wind Hazard Level Territory,SELECT,True,,,,,GeographicWindHazardLevelTerritory
+ME,CF ME 20260701 V01,SpecialClass,ConformsToCondoActs,Conforms to ME Condominium Act of 1983,SELECT,True,Yes,,,,ConformsToCondoRule
+ME,CF ME 20260701 V01,OccupClass,ConformsToCondoActs,Conforms to ME Condominium Act of 1983,SELECT,True,Yes,,,,ConformsToCondoRuleOccupClass
+ME,CF ME 20260701 V01,Structure,ConformsToCondoActs,Conforms to ME Condominium Act of 1983,SELECT,True,Yes,,,,ConformsToCondoRuleBldg
+MI,CF MI 20260601 V02,PersonalProperty,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"../../../../RatingTypeBasicGroupII = ""Specific""",
+MI,CF MI 20260601 V02,Structure,GeographicWindHazardLevel,Geographic Wind Hazard Level,TEXT,False,,,,"RatingTypeBasicGroupII = ""Specific""",
+MI,CF MI 20260601 V02,Structure,SquareFootageOfBuilding,Square Footage of Building,TEXT,True,0,0,99999999,"RatingTypeBasicGroupII = ""Specific""",
+MI,CF MI 20260601 V02,Structure,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"RatingTypeBasicGroupII = ""Specific""",
+MI,CF MI 20260601 V02,Location,GeographicWindHazardLevelTerritory,Geographic Wind Hazard Level Territory,SELECT,True,,,,,GeographicWindHazardLevelTerritory
+MN,CF MN 20260601 V03,SpecialClass,ConformsToCondoActs,Conforms to Condominium Acts,SELECT,True,,,,,ConformsToCondominiumActs
+MN,CF MN 20260601 V03,PersonalProperty,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"../../../../RatingTypeBasicGroupII = ""Specific""",
+MN,CF MN 20260601 V03,OccupClass,ConformsToCondoActs,Conforms to Condominium Acts,SELECT,True,,,,,ConformsToCondominiumActs
+MN,CF MN 20260601 V03,Structure,ConformsToCondoActs,Conforms to Condominium Acts,SELECT,True,Yes,,,,ConformsToCondominiumActsBldg
+MN,CF MN 20260601 V03,Structure,GeographicWindHazardLevel,Geographic Wind Hazard Level,TEXT,False,,,,"RatingTypeBasicGroupII = ""Specific""",
+MN,CF MN 20260601 V03,Structure,SquareFootageOfBuilding,Square Footage of Building,TEXT,True,0,0,99999999,"RatingTypeBasicGroupII = ""Specific""",
+MN,CF MN 20260601 V03,Structure,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"RatingTypeBasicGroupII = ""Specific""",
+MN,CF MN 20260601 V03,Location,GeographicWindHazardLevelTerritory,Geographic Wind Hazard Level Territory,SELECT,True,,,,,GeographicWindHazardLevelTerritory
+MO,CF MO 20261001 V01,SpecialClass,ConformsToCondoActs,Conforms to Condominium Rules of 1983,SELECT,True,Yes,,,,ConformsToCondoRuleSpecialClass
+MO,CF MO 20261001 V01,PersonalProperty,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"../../../../RatingTypeBasicGroupII = ""Specific""",
+MO,CF MO 20261001 V01,OccupClass,ConformsToCondoActs,Conforms to Condominium Rules of 1983,SELECT,True,Yes,,,,ConformsToCondominiumActsOccupClass
+MO,CF MO 20261001 V01,Structure,ConformsToCondoActs,Conforms to Condominium Rules of 1983,SELECT,True,Yes,,,,ConformsToCondominiumActsBldg
+MO,CF MO 20261001 V01,Structure,GeographicWindHazardLevel,Geographic Wind Hazard Level,TEXT,False,,,,"RatingTypeBasicGroupII = ""Specific""",
+MO,CF MO 20261001 V01,Structure,SquareFootageOfBuilding,Square Footage of Building,TEXT,True,0,0,99999999,"RatingTypeBasicGroupII = ""Specific""",
+MO,CF MO 20261001 V01,Structure,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"RatingTypeBasicGroupII = ""Specific""",
+MO,CF MO 20261001 V01,Location,GeographicWindHazardLevelTerritory,Geographic Wind Hazard Level Territory,SELECT,True,,,,,GeographicWindHazardLevelTerritory
+MT,CF MT 20260601 V01,PersonalProperty,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"../../../../RatingTypeBasicGroupII = ""Specific""",
+MT,CF MT 20260601 V01,Structure,GeographicWindHazardLevel,GeographicWindHazardLevel,TEXT,False,,,,"RatingTypeBasicGroupII = ""Specific""",
+MT,CF MT 20260601 V01,Structure,SquareFootageOfBuilding,Square Footage of Building,TEXT,True,0,0,99999999,"RatingTypeBasicGroupII = ""Specific""",
+MT,CF MT 20260601 V01,Structure,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"RatingTypeBasicGroupII = ""Specific""",
+MT,CF MT 20260601 V01,Location,GeographicWindHazardLevelTerritory,Geographic Wind Hazard Level Territory,SELECT,True,,,,,GeographicWindHazardLevelTerritory
+NC,CF NC 20261201 V01,SpecialClass,ConformsToCondoActs,Conforms to Condominium Rules of 1986,SELECT,True,,,,,ConformsToCondoRuleSpecialClass
+NC,CF NC 20261201 V01,SpecialClass,NamedStormPctDeductibleApplies,Named Storm Percentage Deductible Applies,SELECT,True,No,,,,YesNo
+NC,CF NC 20261201 V01,SpecialClass,NamedStormPctDeductible,Named Storm Percentage Deductible,SELECT,True,,,,NamedStormPctDeductibleApplies[.='Yes'],NamedStormPercentageDeductible
+NC,CF NC 20261201 V01,PersonalProperty,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"../../../../RatingTypeBasicGroupII = ""Specific""",
+NC,CF NC 20261201 V01,OccupClass,ConformsToCondoActs,Conforms to Condominium Rules of 1986,SELECT,True,,,,,ConformsToCondoRuleOccupClass
+NC,CF NC 20261201 V01,Structure,NamedStormPctDeductibleApplies,Named Storm Deductible Applies,SELECT,True,No,,,,YesNo
+NC,CF NC 20261201 V01,Structure,NamedStormPctDeductible,Named Storm Percentage Deductible,SELECT,True,,,,NamedStormPctDeductibleApplies[.='Yes'],NamedStormPercentageDeductible
+NC,CF NC 20261201 V01,Structure,ConformsToCondoActs,Conforms to Condominium Rules of 1986,SELECT,True,,,,,ConformsToCondoRuleBldg
+NC,CF NC 20261201 V01,Structure,GeographicWindHazardLevel,Geographic Wind Hazard Level,TEXT,False,,,,"RatingTypeBasicGroupII = ""Specific""",
+NC,CF NC 20261201 V01,Structure,SquareFootageOfBuilding,Square Footage of Building,TEXT,True,0,0,99999999,"RatingTypeBasicGroupII = ""Specific""",
+NC,CF NC 20261201 V01,Structure,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"RatingTypeBasicGroupII = ""Specific""",
+NC,CF NC 20261201 V01,Location,TerritorialZone,Territorial Zone,SELECT,True,,,,,TerritorialZone
+NC,CF NC 20261201 V01,Location,GeographicWindHazardLevelTerritory,Geographic Wind Hazard Level Territory,SELECT,True,,,,,GeographicWindHazardLevelTerritory
+ND,CF ND 20261001 V02,PersonalProperty,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"../../../../RatingTypeBasicGroupII = ""Specific""",
+ND,CF ND 20261001 V02,Structure,GeographicWindHazardLevel,Geographic Wind Hazard Level,TEXT,False,,,,"RatingTypeBasicGroupII = ""Specific""",
+ND,CF ND 20261001 V02,Structure,SquareFootageOfBuilding,Square Footage of Building,TEXT,True,0,0,99999999,"RatingTypeBasicGroupII = ""Specific""",
+ND,CF ND 20261001 V02,Structure,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"RatingTypeBasicGroupII = ""Specific""",
+ND,CF ND 20261001 V02,Location,GeographicWindHazardLevelTerritory,Geographic Wind Hazard Level Territory,SELECT,True,,,,,GeographicWindHazardLevelTerritory
+NE,CF NE 20260601 V02,PersonalProperty,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"../../../../RatingTypeBasicGroupII = ""Specific""",
+NE,CF NE 20260601 V02,Structure,GeographicWindHazardLevel,Geographic Wind Hazard Level,TEXT,False,,,,"RatingTypeBasicGroupII = ""Specific""",
+NE,CF NE 20260601 V02,Structure,SquareFootageOfBuilding,Square Footage of Building,TEXT,True,0,0,99999999,"RatingTypeBasicGroupII = ""Specific""",
+NE,CF NE 20260601 V02,Structure,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"RatingTypeBasicGroupII = ""Specific""",
+NE,CF NE 20260601 V02,Location,GeographicWindHazardLevelTerritory,Geographic Wind Hazard Level Territory,SELECT,True,Entire State (East and West),,,,GeographicWindHazardLevelTerritory
+NH,CF NH 20260701 V01,PersonalProperty,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"../../../../RatingTypeBasicGroupII = ""Specific""",
+NH,CF NH 20260701 V01,Structure,GeographicWindHazardLevel,Geographic Wind Hazard Level,TEXT,False,,,,"RatingTypeBasicGroupII = ""Specific""",
+NH,CF NH 20260701 V01,Structure,SquareFootageOfBuilding,Square Footage of Building,TEXT,True,0,0,99999999,"RatingTypeBasicGroupII = ""Specific""",
+NH,CF NH 20260701 V01,Structure,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"RatingTypeBasicGroupII = ""Specific""",
+NH,CF NH 20260701 V01,Location,TerritorialZone,Territorial Zone,SELECT,True,,,,,TerritoryCodeLocation
+NH,CF NH 20260701 V01,Location,GeographicWindHazardLevelTerritory,Geographic Wind Hazard Level Territory,SELECT,True,,,,,GeographicWindHazardLevelTerritory
+NJ,CF NJ 20261001 V02,PersonalProperty,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"../../../../RatingTypeBasicGroupII = ""Specific""",
+NJ,CF NJ 20261001 V02,Structure,GeographicWindHazardLevel,Geographic Wind Hazard Level,TEXT,False,,,,"RatingTypeBasicGroupII = ""Specific""",
+NJ,CF NJ 20261001 V02,Structure,SquareFootageOfBuilding,Square Footage of Building,TEXT,True,0,0,99999999,"RatingTypeBasicGroupII = ""Specific""",
+NJ,CF NJ 20261001 V02,Structure,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"RatingTypeBasicGroupII = ""Specific""",
+NJ,CF NJ 20261001 V02,Location,GeographicWindHazardLevelTerritory,Geographic Wind Hazard Level Territory,SELECT,True,,,,,GeographicWindHazardLevelTerritory
+NM,CF NM 20270301 V01,SpecialClass,ConformsToCondoActs,Conforms to NM Condominium Act of 1982,SELECT,True,,,,,ConformsToCondoRule
+NM,CF NM 20270301 V01,PersonalProperty,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"../../../../RatingTypeBasicGroupII = ""Specific""",
+NM,CF NM 20270301 V01,OccupClass,ConformsToCondoActs,Conforms to NM Condominium Act of 1982,SELECT,True,,,,,ConformsToCondoRuleOccupClass
+NM,CF NM 20270301 V01,Structure,ConformsToCondoActs,Conforms to NM Condominium Act of 1982,SELECT,True,,,,,ConformsToCondoRuleBldg
+NM,CF NM 20270301 V01,Structure,GeographicWindHazardLevel,Geographic Wind Hazard Level,TEXT,False,,,,"RatingTypeBasicGroupII = ""Specific""",
+NM,CF NM 20270301 V01,Structure,SquareFootageOfBuilding,Square Footage of Building,TEXT,True,0,0,99999999,"RatingTypeBasicGroupII = ""Specific""",
+NM,CF NM 20270301 V01,Structure,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"RatingTypeBasicGroupII = ""Specific""",
+NM,CF NM 20270301 V01,Location,GeographicWindHazardLevelTerritory,Geographic Wind Hazard Level Territory,SELECT,True,,,,,GeographicWindHazardLevelTerritory
+NY,CF NY 20260801 V01,SpecialClass,SpecialClassDescConvertedOption,Special Class Description Converted Option,SELECT,True,,,,,SpecialClassDescConvertedOptionNY
+NY,CF NY 20260801 V01,PersonalProperty,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"../../../../RatingTypeBasicGroupII = ""Specific""",
+NY,CF NY 20260801 V01,Structure,PlasticGreenhouse,Plastic Greenhouse,SELECT,True,,,,,PlasticGreenhouse
+NY,CF NY 20260801 V01,Structure,IncApt,Incidental Apartment,SELECT,True,Not Applicable,,,,IncApt
+NY,CF NY 20260801 V01,Structure,GeographicWindHazardLevel,Geographic Wind Hazard Level,TEXT,False,,,,"RatingTypeBasicGroupII = ""Specific""",
+NY,CF NY 20260801 V01,Structure,SquareFootageOfBuilding,Square Footage of Building,TEXT,True,,0,99999999,"RatingTypeBasicGroupII = ""Specific""",
+NY,CF NY 20260801 V01,Structure,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"RatingTypeBasicGroupII = ""Specific""",
+NY,CF NY 20260801 V01,Location,GeographicWindHazardLevelTerritory,Geographic Wind Hazard Level Territory,SELECT,True,,,,,GeographicWindHazardLevelTerritory
+NY,CF NY 20260801 V01,Location,ShoreFrontOceanOrGreatLakes,Shore-front of Ocean or Great Lakes,SELECT,True,Not Applicable,,,,ShoreFrontOceanOrGreatLakes
+OH,CF OH 20260701 V01,PersonalProperty,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"../../../../RatingTypeBasicGroupII = ""Specific""",
+OH,CF OH 20260701 V01,Structure,GeographicWindHazardLevel,Geographic Wind Hazard Level,TEXT,False,,,,"RatingTypeBasicGroupII = ""Specific""",
+OH,CF OH 20260701 V01,Structure,SquareFootageOfBuilding,Square Footage of Building,TEXT,True,0,0,99999999,"RatingTypeBasicGroupII = ""Specific""",
+OH,CF OH 20260701 V01,Structure,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"RatingTypeBasicGroupII = ""Specific""",
+OH,CF OH 20260701 V01,Location,GeographicWindHazardLevelTerritory,Geographic Wind Hazard Level Territory,SELECT,True,,,,,GeographicWindHazardLevelTerritory
+OK,CF OK 20260601 V01,PersonalProperty,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"../../../../RatingTypeBasicGroupII = ""Specific""",
+OK,CF OK 20260601 V01,Structure,WindstormConstructionProgram,Windstorm Construction Program Applies,SELECT,True,No,,,,YesNo
+OK,CF OK 20260601 V01,Structure,WindstormConstructionFeaturesHeader,Windstorm Construction Features,TEXT,False,,,,,
+OK,CF OK 20260601 V01,Structure,WCFWindstormLossMitigationEligibility,Is the Residential Property eligible for credit,SELECT,True,,,,,WCFWindstormLossMitigationEligibility
+OK,CF OK 20260601 V01,Structure,WCFProofOfCompliance,Does the Insured have Proof Of Compliance,SELECT,True,,,,,WCFProofOfCompliance
+OK,CF OK 20260601 V01,Structure,IBHSFORTIFIEDHomeHighWindAndHailCertificateLevel,IBHS FORTIFIED Home High Wind and Hail Certificate Level,SELECT,True,,,,,IBHSFORTIFIEDHomeHighWindAndHailCertificateLevel
+OK,CF OK 20260601 V01,Structure,GeographicWindHazardLevel,Geographic Wind Hazard Level,TEXT,False,,,,"RatingTypeBasicGroupII = ""Specific""",
+OK,CF OK 20260601 V01,Structure,SquareFootageOfBuilding,Square Footage of Building,TEXT,True,0,0,99999999,"RatingTypeBasicGroupII = ""Specific""",
+OK,CF OK 20260601 V01,Structure,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,99999999,"RatingTypeBasicGroupII = ""Specific""",
+OK,CF OK 20260601 V01,Structure,MineSubsidenceHeader,Mine Subsidence Coverage,TEXT,False,,,,../../../../MineSubsidenceCoverage[.='Scheduled Buildings'],
+OK,CF OK 20260601 V01,Structure,MineSubsidenceManualPremium,ManualPremium,TEXT,True,0,0,99999999,../../../../MineSubsidenceCoverage[.='Scheduled Buildings'],MineSubsidenceLimitStructure
+OK,CF OK 20260601 V01,Location,GeographicWindHazardLevelTerritory,Geographic Wind Hazard Level Territory,SELECT,True,Entire State,,,,GeographicWindHazardLevelTerritory
+OK,CF OK 20260601 V01,Policy,MineSubsidenceHeader,Mine Subsidence Coverage,TEXT,False,,,,,
+OK,CF OK 20260601 V01,Policy,MineSubsidenceCoverage,Coverage,SELECT,True,No Coverage,,,,MineSubsidenceCoveragePolicy
+OK,CF OK 20260601 V01,Policy,CommercialPropertyMineSubsidenceCoverage.PolicyTermPremium,Premium,TEXT,False,,,,,
+OK,CF OK 20260601 V01,Policy,CommercialPropertyMineSubsidenceCoverage.ManualPremium,Manual Premium,TEXT,True,,0,99999999,,MineSubsidenceLimitPolicy
+PA,CF PA 20260901 V01,SpecialClass,ConformsToCondoActs,Conforms to PA Condominium Act of 1980,SELECT,True,,,,CovForm[.='Condominium Association Coverage Form'],ConformsToCondoRule
+PA,CF PA 20260901 V01,PersonalProperty,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"../../../../RatingTypeBasicGroupII = ""Specific""",
+PA,CF PA 20260901 V01,OccupClass,ConformsToCondoActs,Conforms to PA Condominium Act of 1980,SELECT,True,,,,,ConformsToCondoRuleOccupClass
+PA,CF PA 20260901 V01,Structure,ConformsToCondoActs,Conforms to PA Condominium Act of 1980,SELECT,True,,,,,ConformsToCondoRuleBldg
+PA,CF PA 20260901 V01,Structure,GeographicWindHazardLevel,Geographic Wind Hazard Level,TEXT,False,,,,"RatingTypeBasicGroupII = ""Specific""",
+PA,CF PA 20260901 V01,Structure,SquareFootageOfBuilding,Square Footage of Building,TEXT,True,0,0,99999999,"RatingTypeBasicGroupII = ""Specific""",
+PA,CF PA 20260901 V01,Structure,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"RatingTypeBasicGroupII = ""Specific""",
+PA,CF PA 20260901 V01,Location,GeographicWindHazardLevelTerritory,Geographic Wind Hazard Level Territory,SELECT,True,,,,,GeographicWindHazardLevelTerritory
+RI,CF RI 20260401 V02,SpecialClass,ConformsToCondoActs,Conforms to RI Condominium Act of 1982,SELECT,True,Yes,,,,ConformsToCondoRule
+RI,CF RI 20260401 V02,SpecialClass,PublicInstitutionalPlanApply,Public And Institutional Property Plan Apply,SELECT,True,,,,,PublicInstitutionalPlanApplySpecialClass
+RI,CF RI 20260401 V02,SpecialClass,NamedStormPctDeductibleApplies,Named Storm Percentage Deductible Applies,SELECT,True,No,,,,YesNo
+RI,CF RI 20260401 V02,SpecialClass,NamedStormPctDeductible,Named Storm Percentage Deductible,SELECT,True,,,,NamedStormPctDeductibleApplies[.='Yes'],NamedStormPercentageDeductible
+RI,CF RI 20260401 V02,PersonalProperty,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"../../../../RatingTypeBasicGroupII = ""Specific""",
+RI,CF RI 20260401 V02,OccupClass,PublicInstitutionalPlanApply,Public And Institutional Property Plan Apply,SELECT,True,,,,,PublicInstitutionalPlanApplyOccupClass
+RI,CF RI 20260401 V02,OccupClass,ConformsToCondoActs,Conforms to RI Condominium Act of 1982,SELECT,True,Yes,,,,ConformsToCondoRuleOccupClass
+RI,CF RI 20260401 V02,Structure,PublicInstitutionalPlanApply,Public And Institutional Property Plan Apply,SELECT,True,,,,,PublicInstitutionalPlanApplyBldg
+RI,CF RI 20260401 V02,Structure,NamedStormPctDeductibleApplies,Named Storm Percentage Deductibles Applies,SELECT,True,No,,,,YesNo
+RI,CF RI 20260401 V02,Structure,NamedStormPctDeductible,Named Storm Percentage Deductible,SELECT,True,,,,NamedStormPctDeductibleApplies[.='Yes'],NamedStormPercentageDeductible
+RI,CF RI 20260401 V02,Structure,ConformsToCondoActs,Conforms to RI Condominium Act of 1982,SELECT,True,Yes,,,,ConformsToCondoRuleBldg
+RI,CF RI 20260401 V02,Structure,GeographicWindHazardLevel,Geographic Wind Hazard Level,TEXT,False,,,,"RatingTypeBasicGroupII = ""Specific""",
+RI,CF RI 20260401 V02,Structure,SquareFootageOfBuilding,Square Footage of Building,TEXT,True,0,0,99999999,"RatingTypeBasicGroupII = ""Specific""",
+RI,CF RI 20260401 V02,Structure,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"RatingTypeBasicGroupII = ""Specific""",
+RI,CF RI 20260401 V02,Location,GeographicWindHazardLevelTerritory,Geographic Wind Hazard Level Territory,SELECT,True,Entire State,,,,GeographicWindHazardLevelTerritory
+SC,CF SC 20260601 V01,SpecialClass,ValuationLawStructure,Valuation Clause,SELECT,True,No,,,,ValuationLawSpecialClassStructures
+SC,CF SC 20260601 V01,SpecialClass,ValuationLaw,Valuation Law,SELECT,True,,,,,ValuationLawSpecialClass
+SC,CF SC 20260601 V01,PersonalProperty,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"../../../../RatingTypeBasicGroupII = ""Specific""",
+SC,CF SC 20260601 V01,Structure,WindstormCredit,Windstorm Loss Mitigation Credit Applies,SELECT,True,,,,,YesNo
+SC,CF SC 20260601 V01,Structure,ValuationLaw,Valuation Law,SELECT,True,,,,,ValuationLaw
+SC,CF SC 20260601 V01,Structure,GeographicWindHazardLevel,Geographic Wind Hazard Level,TEXT,False,,,,"RatingTypeBasicGroupII = ""Specific""",
+SC,CF SC 20260601 V01,Structure,SquareFootageOfBuilding,Square Footage of Building,TEXT,True,0,0,99999999,"RatingTypeBasicGroupII = ""Specific""",
+SC,CF SC 20260601 V01,Structure,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"RatingTypeBasicGroupII = ""Specific""",
+SC,CF SC 20260601 V01,Location,GeographicWindHazardLevelTerritory,Geographic Wind Hazard Level Territory,SELECT,True,,,,,GeographicWindHazardLevelTerritory
+SD,CF SD 20260601 V01,PersonalProperty,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"../../../../RatingTypeBasicGroupII = ""Specific""",
+SD,CF SD 20260601 V01,Structure,GeographicWindHazardLevel,Geographic Wind Hazard Level,TEXT,False,,,,"RatingTypeBasicGroupII = ""Specific""",
+SD,CF SD 20260601 V01,Structure,SquareFootageOfBuilding,Square Footage of Building,TEXT,True,0,0,99999999,"RatingTypeBasicGroupII = ""Specific""",
+SD,CF SD 20260601 V01,Structure,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"RatingTypeBasicGroupII = ""Specific""",
+SD,CF SD 20260601 V01,Location,GeographicWindHazardLevelTerritory,Geographic Wind Hazard Level Territory,SELECT,True,,,,,GeographicWindHazardLevelTerritory
+TN,CF TN 20260601 V01,PersonalProperty,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"../../../../RatingTypeBasicGroupII = ""Specific""",
+TN,CF TN 20260601 V01,Structure,GeographicWindHazardLevel,Geographic Wind Hazard Level,TEXT,False,,,,"RatingTypeBasicGroupII = ""Specific""",
+TN,CF TN 20260601 V01,Structure,SquareFootageOfBuilding,Square Footage of Building,TEXT,True,0,0,99999999,"RatingTypeBasicGroupII = ""Specific""",
+TN,CF TN 20260601 V01,Structure,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"RatingTypeBasicGroupII = ""Specific""",
+TN,CF TN 20260601 V01,Location,GeographicWindHazardLevelTerritory,Geographic Wind Hazard Level Territory,SELECT,True,,,,,GeographicWindHazardLevelTerritory
+TX,CF TX 20260901 V03,SpecialClass,ConformsToCondoActs,Conforms to Condominium Rules,SELECT,True,Yes,,,,ConformsToCondoRuleSpecialClass
+TX,CF TX 20260901 V03,PersonalProperty,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"../../../../RatingTypeBasicGroupII = ""Specific""",
+TX,CF TX 20260901 V03,OccupClass,ConformsToCondoActs,Conforms to Condominium Rules,SELECT,True,Yes,,,,ConformsToCondoRuleOccupClass
+TX,CF TX 20260901 V03,Structure,ConformsToCondoActs,Conforms to Condominium Rules,SELECT,True,Yes,,,,ConformsToCondominiumActsBldg
+TX,CF TX 20260901 V03,Structure,GeographicWindHazardLevel,Geographic Wind Hazard Level,TEXT,False,,,,"RatingTypeBasicGroupII = ""Specific""",
+TX,CF TX 20260901 V03,Structure,SquareFootageOfBuilding,Square Footage of Building,TEXT,True,0,0,99999999,"RatingTypeBasicGroupII = ""Specific""",
+TX,CF TX 20260901 V03,Structure,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"RatingTypeBasicGroupII = ""Specific""",
+TX,CF TX 20260901 V03,Location,DesignatedCatastropheArea,Designated Catastrophe Area,SELECT,True,No,,,,YesNo
+TX,CF TX 20260901 V03,Location,GeographicWindHazardLevelTerritory,Geographic Wind Hazard Level Territory,SELECT,True,Entire State,,,,GeographicWindHazardLevelTerritory
+UT,CF UT 20260601 V01,Location,AreaServicedByFireDept,Fire Department servicing this area,SELECT,True,,,,,AreaServicedByFireDept
+VA,CF VA 20260601 V01,PersonalProperty,StateOwnedProperty,State Owned Property,SELECT,True,No,,,,StateOwnedPersonalProperty
+VA,CF VA 20260601 V01,PersonalProperty,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"../../../../RatingTypeBasicGroupII = ""Specific""",
+VA,CF VA 20260601 V01,Structure,StateOwnedProperty,State Owned Property,SELECT,True,No,,,,StateOwnedProperty
+VA,CF VA 20260601 V01,Structure,GeographicWindHazardLevel,Geographic Wind Hazard Level,TEXT,False,,,,"RatingTypeBasicGroupII = ""Specific""",
+VA,CF VA 20260601 V01,Structure,SquareFootageOfBuilding,Square Footage of Building,TEXT,True,0,0,99999999,"RatingTypeBasicGroupII = ""Specific""",
+VA,CF VA 20260601 V01,Structure,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"RatingTypeBasicGroupII = ""Specific""",
+VA,CF VA 20260601 V01,Location,TerritorialZone,Territorial Zone,SELECT,True,,,,,TerritorialZone
+VA,CF VA 20260601 V01,Location,GeographicWindHazardLevelTerritory,Geographic Wind Hazard Level Territory,SELECT,True,,,,,GeographicWindHazardLevelTerritory
+VA,CF VA 20260601 V01,Location,CommercialPropertyLocationFireDepartmentCharge.FireDepartmentTypeApplyOnPolicyIndicator,Volunteer Fire Department,SELECT,True,No,,,CommercialPropertyLocationFireDepartmentCharge/FireIncreaseLimitApplyOnPolicyInd,YesNo
+VA,CF VA 20260601 V01,Location,CommercialPropertyLocationFireDepartmentCharge.VolunteerLimit,Fire Department Volunteer Limit,TEXT,True,250,250,999999999,CommercialPropertyLocationFireDepartmentCharge/FireIncreaseLimitApplyOnPolicyInd,
+WI,CF WI 20260901 V01,PersonalProperty,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"../../../../RatingTypeBasicGroupII = ""Specific""",
+WI,CF WI 20260901 V01,Structure,GeographicWindHazardLevel,Geographic Wind Hazard Level,TEXT,False,,,,"RatingTypeBasicGroupII = ""Specific""",
+WI,CF WI 20260901 V01,Structure,SquareFootageOfBuilding,Square Footage of Building,TEXT,True,0,0,99999999,"RatingTypeBasicGroupII = ""Specific""",
+WI,CF WI 20260901 V01,Structure,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"RatingTypeBasicGroupII = ""Specific""",
+WI,CF WI 20260901 V01,Location,GeographicWindHazardLevelTerritory,Geographic Wind Hazard Level Territory,SELECT,True,,,,,GeographicWindHazardLevelTerritory
+WV,CF WV 20260801 V01,SpecialClass,ConformsToCondoActs,Conforms to Condominium Rules of 1980,SELECT,True,Yes,,,,ConformsToCondoRuleSpecialClass
+WV,CF WV 20260801 V01,OccupClass,ConformsToCondoActs,Conforms to Condominium Rules of 1980,SELECT,True,Yes,,,,ConformsToCondominiumActsOccupClass
+WV,CF WV 20260801 V01,Structure,ConformsToCondoActs,Conforms to Condominium Rules of 1980,SELECT,True,Yes,,,,ConformsToCondominiumActsBldg
+WV,CF WV 20260801 V01,Structure,MineSubsidenceHeader,Mine Subsidence Coverage,TEXT,False,,,,,
+WV,CF WV 20260801 V01,Structure,MineSubsidenceType,Structure Type,SELECT,True,,,,,MineSubsidenceStructureType
+WV,CF WV 20260801 V01,Location,MineCoverage,Mine Subsidence Coverage,SELECT,True,,,,,MineSubsidenceCoverage
+WV,CF WV 20260801 V01,Policy,MineSubsidenceHeader,Mine Subsidence Coverage,TEXT,False,,,,,
+WV,CF WV 20260801 V01,Policy,MineSubsidenceCoverage,Coverage,SELECT,True,No Coverage,,,,MineSubsidenceCoveragePolicy
+WV,CF WV 20260801 V01,Policy,CommercialPropertyMineSubsidenceCoverage.PolicyTermPremium,Premium,TEXT,False,,,,,
+WV,CF WV 20260801 V01,Policy,MineSubsidenceLimit,Limit,TEXT,True,0,0,99999999,MineSubsidenceCoverage[.='All Buildings'],MineSubsidenceLimitPolicy
+WV,CF WV 20260801 V01,Policy,CommercialPropertyMineSubsidenceCoverage.ManualPremium,Manual Premium,TEXT,True,,0,999999999,MineSubsidenceCoverage[.='All Buildings'],
+WY,CF WY 20260901 V01,PersonalProperty,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"../../../../RatingTypeBasicGroupII = ""Specific""",
+WY,CF WY 20260901 V01,Structure,GeographicWindHazardLevel,Geographic Wind Hazard Level,TEXT,False,,,,"RatingTypeBasicGroupII = ""Specific""",
+WY,CF WY 20260901 V01,Structure,SquareFootageOfBuilding,Square Footage of Building,TEXT,True,0,0,99999999,"RatingTypeBasicGroupII = ""Specific""",
+WY,CF WY 20260901 V01,Structure,SpecificGroupIIRate,Basic Group II Specific Loss Cost,TEXT,True,0,0,9999.9999,"RatingTypeBasicGroupII = ""Specific""",
+WY,CF WY 20260901 V01,Location,GeographicWindHazardLevelTerritory,Geographic Wind Hazard Level Territory,SELECT,True,,,,,GeographicWindHazardLevelTerritory

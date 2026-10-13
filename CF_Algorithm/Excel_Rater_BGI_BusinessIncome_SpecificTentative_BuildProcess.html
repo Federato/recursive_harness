@@ -1,0 +1,237 @@
+<title>Build Process — BGI Business Income Specific/Tentative Rating</title>
+<meta charset="utf-8">
+<style>
+  body { font-family: Georgia, "Times New Roman", serif; max-width: 980px; margin: 0 auto; padding: 32px 24px 80px; line-height: 1.55; color: #1c2733; background: #fff; }
+  @media (prefers-color-scheme: dark) {
+    body { background: #14181d; color: #dfe4e9; }
+    a { color: #7fb6b8; }
+    table, th, td { border-color: #3a4048 !important; }
+    thead th { background: #24313a !important; color: #eef4f3 !important; }
+    code { background: #262c33 !important; color: #dfe4e9; }
+    .note { background: #2c2a1c !important; color: #e0c064 !important; }
+    .note.warn2 { background: #2a1f2c !important; color: #d69ad0 !important; }
+  }
+  h1 { font-size: 26px; font-weight: 400; margin-bottom: 4px; }
+  h2 { font-size: 19px; font-weight: 700; margin-top: 42px; border-bottom: 2px solid #1e3a45; padding-bottom: 4px; }
+  h3 { font-size: 15px; font-weight: 700; margin-top: 26px; }
+  .meta { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13px; color: #55606b; margin: 6px 0 4px; }
+  code { font-family: ui-monospace, Consolas, monospace; font-size: 0.92em; background: #eef1f4; padding: 1px 5px; border-radius: 3px; }
+  table { border-collapse: collapse; width: 100%; margin: 14px 0 22px; font-size: 14px; }
+  th, td { border: 1px solid #d7dce2; padding: 8px 10px; text-align: left; vertical-align: top; }
+  thead th { background: #1e3a45; color: #eef4f3; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 12px; text-transform: uppercase; letter-spacing: 0.03em; }
+  table.grid td:nth-child(1) { font-family: ui-monospace, Consolas, monospace; font-size: 12px; text-align: center; }
+  tr.confirmed td:nth-child(3) { color: #2f7d5a; }
+  tr.assumed td:nth-child(3) { color: #a53d26; font-weight: 700; }
+  tr.special td:nth-child(3) { color: #a67c1e; font-weight: 700; }
+  tr.na td:nth-child(3) { color: #8b95a1; font-style: italic; }
+  .note { background: #f7ddd4; color: #a53d26; padding: 12px 16px; border-radius: 6px; margin: 16px 0; font-size: 14px; }
+  .note.warn2 { background: #f2e6c4; color: #a67c1e; }
+  .note b { font-weight: 700; }
+  pre { background: #eef1f4; border: 1px solid #d7dce2; border-radius: 6px; padding: 14px 16px; overflow-x: auto; font-family: ui-monospace, Consolas, monospace; font-size: 13px; }
+  ol, ul { padding-left: 22px; }
+  hr { border: none; border-top: 1px solid #d7dce2; margin: 40px 0; }
+</style>
+
+<h1>Build Process — Basic Group I Business Income Specific/Tentative Rating</h1>
+<p class="meta"><b>Written:</b> 2026-09-14. <b>Source:</b> <code>Excel_Rater_BusinessIncome_BasicGroupI.md</code> §4
+and §8 (traced 2026-09-04) — this page restates it as an ordered build procedure and a factor-by-factor grid.
+Companion to <code>Excel_Rater_BGI_SpecificTentative_BuildProcess.html</code> (Building) and
+<code>Excel_Rater_BGI_PersonalProperty_SpecificTentative_BuildProcess.html</code> (Contents) — read those first for
+the base pattern; this page only calls out where Business Income diverges from it.</p>
+<div class="note"><b>Status: analysis only, nothing built yet.</b> Per standing project rule, nothing here gets entered
+into the live workbook until you say go.</div>
+
+<h2>1. What's different here, in plain English</h2>
+<p>Business Income's Basic Group I chain is only 3 steps where Building's is 8 — because for the <em>Class-rated</em>
+path, Business Income doesn't compute its own base rate at all. It cross-references
+<code>Calc_Building_BGI.BaseRate</code>, the value Building's own tab already looked up for the same structure. Rate
+the Building first; Business Income is arithmetically downstream of it.</p>
+<div class="note warn2"><b>That borrowing stops under Specific/Tentative rating.</b> The source doc is explicit about
+this: <em>"Note what this branch does not read: <code>Calc_Building_BGI.BaseRate</code>."</em> Under Specific/
+Tentative rating, Business Income substitutes its own <code>SpecificGroupIRate</code> directly — same pattern as
+Building and Contents, no cross-tab dependency for this branch specifically.</div>
+<p>Two more things make this coverage's version of the formula its own shape, not a copy of Building's or Contents':
+an extra multiplier neither of the other two coverages has at all, and a downstream chain that's genuinely shorter
+regardless of which rating path produced <code>Rate</code>.</p>
+
+<h2>2. The rating grid — every Business Income factor, Class vs. Specific/Tentative</h2>
+<p>Same method as the other two grids: <b>of every factor that feeds a Class-rated Business Income row's
+<code>FinalRate</code>, which ones still apply under Specific/Tentative rating, and which ones don't?</b></p>
+<div class="note"><b>Assumption applied in this grid:</b> where the source doesn't clearly state a rate or factor
+applies, it's treated as neutralized — <code>1.0</code> for a multiplicative factor, <code>0</code> for an additive
+addend — rather than assumed carried over. That's a stated assumption, not a confirmed ISO rule, called out per row.</div>
+
+<table class="grid">
+<thead><tr><th>#</th><th>Factor</th><th>Class-rated role</th><th>Specific/Tentative — Business Income</th><th>Why</th></tr></thead>
+<tbody>
+<tr class="confirmed"><td>—</td><td><code>BI_SpecificGroupIRate</code></td><td><em>(doesn't exist on this path)</em></td>
+  <td><b>used as the rate itself</b></td>
+  <td>Own column, separate from Building's and Contents' — the source doc explicitly says not to assume all three carry the same value for the same building.</td></tr>
+<tr class="confirmed"><td>1</td><td><code>Calc_Building_BGI.BaseRate</code> (cross-tab reference)</td><td>borrowed directly — Business Income's defining trait for Class rating</td>
+  <td><b>not read</b></td>
+  <td>Confirmed explicitly in the source: this branch does not read Building's <code>BaseRate</code> at all. <code>BI_SpecificGroupIRate</code> replaces it outright.</td></tr>
+<tr class="confirmed"><td>2</td><td><code>LCM</code> (loss cost multiplier)</td><td>multiplies <code>BaseRate</code></td>
+  <td><b>still applies</b>, named explicitly in the formula</td>
+  <td>Confirmed — appears directly in the §8 formula.</td></tr>
+<tr class="assumed"><td>3</td><td><code>SubStdConditionRate</code></td><td>added to <code>BaseRate × LCM</code></td>
+  <td><b>assumed 0</b> (no addend)</td>
+  <td>Omitted from the Specific/Tentative formula with no explanation — assumed neutralized, same convention as Building's and Contents' equivalent rows.</td></tr>
+<tr class="assumed"><td>4</td><td><code>VacantBuildingRate</code></td><td>added to <code>BaseRate × LCM</code></td>
+  <td><b>assumed 0</b> (no addend)</td>
+  <td>Same — omitted, assumed neutralized, not confirmed.</td></tr>
+<tr class="assumed"><td>5</td><td><code>BasicGroupIRatingTerrFactor</code></td><td>multiplies the addend sum</td>
+  <td><b>assumed 1.0</b></td>
+  <td>Business Income's own name for the territory factor (not Building's plain <code>TerritoryFactor</code>) — omitted from the Specific/Tentative formula, not confirmed either way, defaulted to 1.0.</td></tr>
+<tr class="assumed"><td>6</td><td><code>ProtectionClassFactor</code></td><td>multiplies the addend sum</td>
+  <td><b>assumed 1.0</b></td>
+  <td>Same reasoning as row 5 — omitted, not confirmed, defaulted to 1.0.</td></tr>
+<tr class="confirmed"><td>7</td><td><code>BGIBaseRateAdjustmentFactor</code></td><td>multiplies the addend sum — a Business-Income-only header CW table</td>
+  <td><b>still applies</b>, named explicitly in <em>both</em> formulas</td>
+  <td>Confirmed — the one factor Building and Contents don't have at all, and the one thing that doesn't change between Class and Specific/Tentative for this coverage.</td></tr>
+<tr class="na"><td>—</td><td><code>RoofSurfacingACVFactor</code></td><td><em>never part of any Business Income formula, Class-rated or not</em></td>
+  <td><b>N/A — not a neutralization question</b></td>
+  <td>Not named in either the Class-rated or Specific/Tentative formula — structurally absent for this coverage the same way it's absent from Contents, just for a different reason (Building's own roof condition doesn't carry into a time-element coverage).</td></tr>
+<tr class="confirmed"><td>8</td><td><code>SprinklerLeakageNotExcludedFactor</code></td><td><em>(not part of Class-rated <code>Rate</code> at all)</em></td>
+  <td><b>applies</b>, named explicitly in the formula</td>
+  <td>Confirmed — and confirmed as the <em>same table</em> Building's own chain reads; the source doc explicitly says no separate Business-Income instance exists, so no new <code>Rate_Tables</code> block is needed here.</td></tr>
+<tr class="confirmed"><td>9</td><td><code>SprinklerLeakageExclNonSprinkleredRate</code> (subtracted in <code>COLAdj</code>)</td><td><code>ROUND(Rate − this, 3)</code>, always recomputes, no null-guard</td>
+  <td><b>still applies, unchanged</b></td>
+  <td>Nothing in §8 makes <code>COLAdj</code> conditional on rating type — it reads whichever <code>Rate</code> the branch above produced, same as Building's and Contents' downstream steps.</td></tr>
+<tr class="confirmed"><td>10</td><td><code>SprinklerLeakageExclSprinkleredFactor</code></td><td>multiplies <code>COLAdj</code></td>
+  <td><b>still applies, unchanged</b></td><td>Same.</td></tr>
+<tr class="confirmed"><td>11</td><td><code>VandalismExclFactor</code></td><td>multiplies <code>COLAdj</code></td>
+  <td><b>still applies, unchanged</b></td><td>Same.</td></tr>
+<tr class="confirmed"><td>12</td><td><code>BuildersRiskFactor</code></td><td>multiplies <code>COLAdj</code> — Business Income's replacement for Building's <code>StdPropPolGroupIFactor</code>; the "standard property policy" concept doesn't exist for this coverage</td>
+  <td><b>still applies, unchanged</b></td><td>Same — rating-type-independent.</td></tr>
+<tr class="confirmed"><td>13</td><td>the shared <code>Factor</code> step (coinsurance / type-of-risk, collapsed)</td><td>replaces Building's separate <code>CoinsuranceFactor</code> + <code>LOIFactor</code> + <code>DeductibleFactor</code> steps entirely</td>
+  <td><b>still applies, unchanged</b></td>
+  <td>Confirmed — this step reads <code>BI_TypeOfRisk</code>/<code>BI_CovType</code>/etc., none of which have any documented interaction with <code>RatingType</code>.</td></tr>
+<tr class="na"><td>—</td><td><code>CoinsuranceFactor</code> / <code>LOIFactor</code> / <code>DeductibleFactor</code> / <code>DeductibleByLocationFactor</code> / <code>MultiResidentialPropSpecialCreditFactor</code></td>
+  <td><em>none of these exist as separate steps for Business Income</em></td>
+  <td><b>N/A — structurally absent</b></td>
+  <td>Confirmed in §1 of the source doc: "no LOI factor, no deductible factor at all" — this is true for Business Income regardless of rating type, not something Specific/Tentative rating turns off.</td></tr>
+</tbody>
+</table>
+
+<p><b>Reading this grid:</b> rows 3, 5, and 6 (red) are where the neutralization assumption applies — same shape as
+the other two coverages' gaps. Row 7 (green) is the interesting exception: it's the one factor <em>unique</em> to
+this coverage, and it's confirmed to apply under both rating types, not just Class. The gray rows are structural
+absences that have nothing to do with rating type — Business Income simply never had a roof factor or a separate
+coinsurance/LOI/deductible chain, Class-rated or not.</p>
+
+<div class="note warn2"><b>One more branch, and it's genuinely unresolved — not just a naming difference.</b>
+Building has a confirmed third <code>Otherwise → 1.0</code> branch for any <code>RatingType</code> value besides
+<code>Class</code>/<code>Specific</code>/<code>Tentative</code>. Contents has a confirmed broad
+<code>≠ "Class"</code> gate with no catch-all at all. <b>Business Income's source doc shows only three branches</b>
+— the blanket/max-period aggregate, <code>Class</code>, and <code>Specific</code>/<code>Tentative</code> — with
+<b>no fourth branch documented either way</b>. Don't assume it matches Building's <code>1.0</code> fallback or
+Contents' "runs anyway" behavior — treat this as a genuinely open question, not settled by analogy to its
+siblings, until the ISO rule XML is checked directly.</div>
+
+<div class="note"><b>The blanket/max-period branch takes priority over both rating types.</b> Before <code>Rate</code>
+even checks <code>RatingType</code>, it first checks whether <code>BI_MaxPeriod = "Y"</code>,
+<code>BI_MonthlyLimitOfIndemnity &lt;&gt; "Not Applicable"</code>, or <code>BI_CovType = "Extra Expense Only"</code>
+— combined with <code>BI_BldgIncludedInOperationalUnit = "Y"</code>. If that combination holds, an entirely
+different aggregate formula fires (<code>HighestBusnIncomeBasicGroupIBaseRate × BGIBaseRateAdjustmentFactor</code>,
+not built this pass) regardless of whether the building is Class- or Specific/Tentative-rated. This isn't part of
+the neutralization grid above — it's a gate that sits in front of the whole Class-vs-Specific question.</div>
+
+<h2>3. Before you build anything: the open questions</h2>
+<p><b><code>BI_SpecificGroupIRate</code> carries the same open question as Building's and Contents' versions.</b> No
+<code>Set</code> or <code>Lookup</code> rule populates it anywhere in the Business Income rating-algorithm doc
+either. Same best-supported-but-unconfirmed guess: a user- or schedule-entered value. Build it as its own column
+with the same open-question comment — don't reuse Building's or Contents' column, and don't assume the three values
+match for the same building.</p>
+<p><b>The missing fourth branch (see the note above) is a second open question specific to this coverage</b> — treat
+it as unresolved rather than defaulting it to either sibling coverage's behavior.</p>
+
+<h2>4. Build order</h2>
+<p>If Building's and Contents' Specific/Tentative branches are already built, the <code>RatingType</code> switch
+itself already exists on <code>Locations_Buildings</code>. This form adds one more rate-entry column and one more
+tab-level branch.</p>
+
+<h3>Step 1 — Add the rate-entry column to <code>Locations_Buildings</code></h3>
+<table><thead><tr><th>Column</th><th>Feeds</th><th>Notes</th></tr></thead>
+<tbody>
+<tr><td><code>BI_SpecificGroupIRate</code></td><td>Business Income's Specific/Tentative <code>Rate</code> formula</td>
+  <td>user-entered; add a cell comment citing the open question in §3; separate from <code>Bldg_SpecificGroupIRate</code> and <code>PP_SpecificGroupIRate</code></td></tr>
+</tbody></table>
+
+<h3>Step 2 — No new <code>Rate_Tables</code> entry needed</h3>
+<p><code>SprinklerLeakageNotExcludedFactor</code> is the same table Building's own chain already reads — confirmed
+in the source doc, no separate Business-Income instance exists. If Building's branch is already built, this table
+is already wired in.</p>
+
+<h3>Step 3 — Add the third <code>Rate</code> branch on <code>Calc_BusinessIncome_BGI</code></h3>
+<p>This is step 2 of that tab's 3-step chain, and it sits <em>after</em> the blanket/max-period check, not in place
+of it:</p>
+<pre>Rate =
+    if (BI_MaxPeriod = "Y" or BI_MonthlyLimitOfIndemnity &lt;&gt; "Not Applicable" or BI_CovType = "Extra Expense Only")
+       and BI_BldgIncludedInOperationalUnit = "Y":
+        [blanket/multi-unit aggregate — not built this pass, see §7 of the source doc]
+    elif RatingType = "Class":
+        &lt;the Class-rated formula already built — Excel_Rater_BusinessIncome_BasicGroupI.md §4 step 2&gt;
+    elif RatingType in ("Specific","Tentative"):
+        BI_SpecificGroupIRate × LCM × SprinklerLeakageNotExcludedFactor × BGIBaseRateAdjustmentFactor
+    else:
+        [undocumented — see the open question in §3; do not assume 1.0 or a pass-through without checking the rule XML]</pre>
+<p>Everything after <code>Rate</code> — <code>COLAdj</code>, <code>Factor</code>, <code>FinalRate</code> — is
+already built and needs <b>no changes</b>. It reads whichever <code>Rate</code> this branch produced, same as it
+already does for the Class-rated path.</p>
+
+<h3>Step 4 — Nothing changes in <code>Premium_Summary</code></h3>
+<p>The <code>BI_BGI_Premium</code> formula in §5 of the source doc reads
+<code>Calc_BusinessIncome_BGI.FinalRate</code> regardless of which rating path produced it. No new formula needed.</p>
+
+<h2>5. Test cases to build alongside the formula</h2>
+<ol>
+<li>A building with <code>RatingType = "Class"</code> — confirms the new branch doesn't disturb the existing path,
+and that it still correctly reads <code>Calc_Building_BGI.BaseRate</code>.</li>
+<li>A building with <code>RatingType = "Specific"</code> and a <code>BI_SpecificGroupIRate</code> entered — confirms
+the new branch fires, does <em>not</em> read Building's <code>BaseRate</code>, and downstream <code>COLAdj</code>/
+<code>Factor</code> steps still apply correctly.</li>
+<li>A building with <code>RatingType = "Tentative"</code> — should produce the identical result to the
+<code>"Specific"</code> row above with the same inputs.</li>
+<li>A building where the blanket/max-period condition (<code>BI_MaxPeriod = "Y"</code> etc., plus
+<code>BI_BldgIncludedInOperationalUnit = "Y"</code>) is also true, with <code>RatingType = "Specific"</code> —
+confirms the blanket/max-period branch correctly takes priority and the Specific/Tentative formula never fires,
+since that branch isn't built this pass and shouldn't silently fall through to it.</li>
+<li>A building with a non-trivial <code>BasicGroupIRatingTerrFactor</code> and <code>ProtectionClassFactor</code> on
+the Class-rated row for the same building/location — flip to <code>Specific</code> and confirm the workbook drops
+them (per the §2 grid) rather than carrying them through from a stale reference.</li>
+<li>A building with some other/blank <code>RatingType</code> value — <b>do not assume an expected result</b> for
+this one. Flag it in review as the open question from §3; whatever the workbook currently does with it (falls to
+Class, falls to Specific/Tentative, produces an error, or something else) needs to be checked against ISO's rule
+XML before being treated as correct.</li>
+</ol>
+
+<h2>6. How to configure this once built</h2>
+<ol>
+<li>On <code>Locations_Buildings</code>, find the row for the building in question and set <code>RatingType</code>
+to <code>Class</code>, <code>Specific</code>, or <code>Tentative</code> — this is the same switch Building's and
+Contents' branches already use.</li>
+<li>If you set it to <code>Specific</code> or <code>Tentative</code>, fill in <code>BI_SpecificGroupIRate</code>
+with the rate you were given for Business Income specifically — do not reuse the Building or Contents value, even
+if they happen to look similar for this risk.</li>
+<li>Leave everything else on the row exactly as you would for a Class-rated building — the coinsurance/type-of-risk
+<code>Factor</code> step and the limit still apply the same way.</li>
+<li>Check <code>Calc_BusinessIncome_BGI</code> for that row: <code>Rate</code> should now reflect the
+Specific/Tentative formula instead of the borrowed Building rate, and <code>COLAdj</code>/<code>Factor</code>/
+<code>FinalRate</code> should populate normally from it.</li>
+<li>If the resulting premium looks wrong, check <code>BI_SpecificGroupIRate</code> first — same caveat as the other
+two coverages, this workbook cannot detect a wrong hand-entered rate the way it might catch a bad table lookup.</li>
+</ol>
+
+<hr>
+
+<h2>Remaining steps</h2>
+<ol>
+<li>Verify the three assumed-neutralized rows in the §2 grid (<code>SubStdConditionRate</code>,
+<code>BasicGroupIRatingTerrFactor</code>, <code>ProtectionClassFactor</code>) against ISO's actual rule XML.</li>
+<li>Verify the open question in §3 — check ISO's rule XML directly for any rule that sets
+<code>BI_SpecificGroupIRate</code>.</li>
+<li><b>Resolve the missing fourth branch</b> — the single biggest open item on this page. Check ISO's rule XML for
+what happens when <code>RatingType</code> is neither <code>Class</code> nor <code>Specific</code>/
+<code>Tentative</code> for Business Income specifically; don't assume it matches Building's or Contents' behavior.</li>
+<li>Nothing gets built into the live workbook until you say go.</li>
+</ol>

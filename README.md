@@ -11,15 +11,47 @@ against ISO's own rating service.
 | | |
 |---|---|
 | **[docs/EXECUTIVE-SUMMARY.md](docs/EXECUTIVE-SUMMARY.md)** | **Read this one.** What we are building, why it is hard, where we are, the architecture decision *and the honest case against it*, how it gets proved against ISO's own service, the self-correcting harness, and how carrier deviations layer on top |
-| [docs/WHERE-WE-PAUSED-2026-08-12.md](docs/WHERE-WE-PAUSED-2026-08-12.md) | The most recent working session, written to be read cold |
+| **[BUILD-LOG.md](BUILD-LOG.md)** | **The build diary — what was built, what broke, what the fix revealed. Entry 33 is the current handoff** |
+| **[docs/qa-plan-proposal_20260817.html](docs/qa-plan-proposal_20260817.html)** | **The QA programme, proposed 2026-08-17.** Full 51-jurisdiction coverage sized from ISO's own declared content — two matrices not one, wireframes for terminal and button, the ISO call budget, and what can and cannot be proven. **Nothing in it is built** |
+| **[docs/UI-STRATEGY.md](docs/UI-STRATEGY.md)** | **The test page and the layered programme, built 2026-08-18.** Four layers of test case, every state on every run, an allowance that thins configurations and never states, one standalone file per run, an aggregate view with a verdict per layer and a trend, and a per-run review page that needs no API key |
+| **[docs/HOW-TO-USE-THE-TESTER.md](docs/HOW-TO-USE-THE-TESTER.md)** | **How to run the tests and read the results**, for someone who does not code. Rendered as [`how-to-use-the-tester.html`](docs/how-to-use-the-tester.html) |
+| **[docs/START-HERE-TOMORROW.md](docs/START-HERE-TOMORROW.md)** | **Read this first if you are picking the project up.** What to do next, what is waiting on a person, the backlog as it stands, and how far off a product UI is. Rendered as [`start-here-tomorrow_20260818.html`](docs/start-here-tomorrow_20260818.html) |
+| **[docs/WHAT-THE-HARNESS-TAUGHT-US.md](docs/WHAT-THE-HARNESS-TAUGHT-US.md)** | **The running learnings record, in plain English** — one dated section per session, each with the pattern underneath. **17 Aug 2026:** seven defects in one day against ISO. **17 Sep 2026:** reading ISO's corpus for Commercial Property — why the schema cannot tell you what is required, and why test fixtures are not a test suite. Rendered as [`what-the-harness-taught-us.html`](docs/what-the-harness-taught-us.html) — regenerate with `python scripts/build_backlog_html.py taught`. The older `_20260817.html` is a frozen August-only snapshot |
+| **[docs/WHATS-LEFT-PLAIN-ENGLISH.md](docs/WHATS-LEFT-PLAIN-ENGLISH.md)** | What is left, for people who do not read code. Rendered as [`backlog_20260817.html`](docs/backlog_20260817.html) |
+| [docs/WHAT-I-NEED-FROM-YOU.md](docs/WHAT-I-NEED-FROM-YOU.md) | The asks: what only a person can supply, what each unblocks, and the default if it is never answered. **Section A all decided 2026-08-17** |
+| [docs/THE-HARNESS-FOUND-THESE.md](docs/THE-HARNESS-FOUND-THESE.md) | The 17 August session — five defects closed and how each was found. Not one by reading code |
+| [docs/BACKLOG-FEATURE-SETS.md](docs/BACKLOG-FEATURE-SETS.md) | The backlog grouped into seven feature sets — what you are choosing between, rather than what is next |
+| [docs/BACKLOG-2026-08-14.md](docs/BACKLOG-2026-08-14.md) | What to do next, ordered. **Opens with the three known defects** — D1/D2 high, D3 medium — then the numbered work, each item naming the open item it closes |
 | [docs/BUILD-STAGES.md](docs/BUILD-STAGES.md) | The six build stages and the phases that follow them |
-| [TESTING.md](TESTING.md) | **Every command, phase by phase.** Each one has been run and its stated output verified |
-| [BUILD-LOG.md](BUILD-LOG.md) | The build diary — what was built, what broke, what the fix revealed |
-| [docs/OPEN-ITEMS.md](docs/OPEN-ITEMS.md) | Everything unresolved — 69 tracked items |
-| [docs/PRD-GL-RATING-ENGINE.md](docs/PRD-GL-RATING-ENGINE.md) | Full status and history. §0 is the latest update |
+| [TESTING.md](TESTING.md) | **Every command, stage by stage.** Each one has been run and its stated output verified |
+| [docs/OPEN-ITEMS.md](docs/OPEN-ITEMS.md) | **OI-1 to OI-94.** Resolved items are kept and marked, not deleted |
+| [docs/WHERE-WE-PAUSED-2026-08-12.md](docs/WHERE-WE-PAUSED-2026-08-12.md) | The 12 August session, read cold. **Superseded** — everything after it is in the build log |
+| **[docs/PREMIUM-ANALYSIS-WORKFLOW.md](docs/PREMIUM-ANALYSIS-WORKFLOW.md)** | **Read first for any premium analysis.** The method, what is already built (so it is not rebuilt), ISO's premium model in both lines, where coverage totals do and do not exist, and the eight traps that have already produced a wrong answer. Rendered as [`premium-analysis-workflow.html`](docs/premium-analysis-workflow.html) |
+| **[GL_Algorithm/GL_Account_Premium_Bracket.html](GL_Algorithm/GL_Account_Premium_Bracket.html)** | **The roll-up drawn as a bracket** — two locations, three classifications, liquor on two of them, terrorism accepted. Every box is a real datadef field; each merge is one `CalculateTotalPremium`. Amounts are placeholders, labelled as such |
+| **[GL_Algorithm/GL_Scenario_Premium_Buildup.md](GL_Algorithm/GL_Scenario_Premium_Buildup.md)** | **A worked scenario** — Premises/Operations + Products + Liquor + Med Pay $10,000 + TRIA, and exactly how they combine into one policy premium. **Med Pay is not a premium**; terrorism is a percentage of the others; the minimum-premium top-up is yours to compute  Plain-English version, no jargon: [`…_PlainEnglish.html`](GL_Algorithm/GL_Scenario_Premium_Buildup_PlainEnglish.html) |
+| **[GL_Algorithm/GL_PremOps_Prods_Premium_Trace.md](GL_Algorithm/GL_PremOps_Prods_Premium_Trace.md)** | **Full trace of the two core coverages** — Premises/Operations and Products/Completed Operations, every premium value computed and which one becomes money. Plain-English version, no jargon: [`…_PlainEnglish.html`](GL_Algorithm/GL_PremOps_Prods_Premium_Trace_PlainEnglish.html) |
+| **[GL_Algorithm/GL_Premium_Tree.html](GL_Algorithm/GL_Premium_Tree.html)** | **The premium tree, navigable** — 571 groups, collapsible and searchable, with a jurisdiction selector showing what each of the 51 states adds or rewrites. Self-contained; download and open |
+| **[GL_Algorithm/GL_Premium_Map.md](GL_Algorithm/GL_Premium_Map.md)** | **Where every GL premium comes from and how it reaches the account total** — 571 groups, all four levels, every one reaching `ErcCalculatedTotalPremium`. Rate and premium are separate phases and `FinalRate` is the seam. Data in [`GL_Premium_Map.xlsx`](GL_Algorithm/GL_Premium_Map.xlsx); rendered as [`GL_Premium_Map.html`](GL_Algorithm/GL_Premium_Map.html) |
+| [docs/PRD-GL-RATING-ENGINE.md](docs/PRD-GL-RATING-ENGINE.md) | What's built, verified, and in scope today — for a third party getting up to speed. Not the backlog; see `OPEN-ITEMS.md` for that |
 | [docs/GL-RATING-ENGINE-BUILD-PLAN.md](docs/GL-RATING-ENGINE-BUILD-PLAN.md) | The technical plan — architecture, the 18 non-negotiables, deviation constraints C1–C3 |
 | [docs/FROM-PLANNING-TO-BUILD.md](docs/FROM-PLANNING-TO-BUILD.md) | Did the analysis pay off? Written *before* each stage, so it is allowed to be wrong |
-| [PROCESS_LOG.md](PROCESS_LOG.md) | The full analysis record, 51 steps. Long, and complete |
+| [PROCESS_LOG.md](PROCESS_LOG.md) | The full analysis record, 51 steps. Closed — the build is logged in `BUILD-LOG.md` |
+
+### Commercial Property (CF)
+
+| | |
+|---|---|
+| **[CF_Algorithm/CF_Payload_ClassRated_Bldg_PP_Alabama.md](CF_Algorithm/CF_Payload_ClassRated_Bldg_PP_Alabama.md)** | **What a CF rating request looks like** — class-rated Building and Personal Property, Alabama. Derived from ISO's own STC payloads, not from the schema; says what a submission carries versus what the engine derives. **Removes the blocker on `cf_engine/schema/fields.py`** |
+| **[CF_Algorithm/CF_Payload_Completion_Tracker.md](CF_Algorithm/CF_Payload_Completion_Tracker.md)** | **What remains before that spec is complete**, by feature set, status per item. Rendered as [`CF_Payload_Completion_Tracker.html`](CF_Algorithm/CF_Payload_Completion_Tracker.html) |
+| **[STC_Corpus_Index.xlsx](STC_Corpus_Index.xlsx)** | **Every ISO-authored rating payload shipped inside the ERC packages, indexed** — 921 cases (364 CF, 557 GL), one row each: jurisdiction, edition, record counts per level, and the rating-path switches each case exercises. **Inputs only — ISO ships no expected outputs**, so these are request fixtures, not a regression suite; the oracle is still ISO's rating service |
+| **[CF_Algorithm/CF_Account_Premium_Bracket.html](CF_Algorithm/CF_Account_Premium_Bracket.html)** | **The CF roll-up drawn as a bracket** — two locations, three buildings, four occupancy classes, business income, TRIA accepted. Columns are **depth**, because Building, Business Income and Contents enter at depths 3, 4 and 5 |
+| **[CF_Algorithm/CF_Premium_Map.md](CF_Algorithm/CF_Premium_Map.md)** | **Where every CF premium comes from and how it reaches the account total** — 881 groups, **seven** levels deep, and **213 formulas that some state rewrites** (GL rewrites 4). Data in [`CF_Premium_Map.xlsx`](CF_Algorithm/CF_Premium_Map.xlsx); rendered as [`CF_Premium_Map.html`](CF_Algorithm/CF_Premium_Map.html) |
+| **[CF_Algorithm/CF_Premium_Tree.html](CF_Algorithm/CF_Premium_Tree.html)** | **The CF premium tree, navigable** — collapsible and searchable, with a jurisdiction selector. Self-contained; download and open |
+| [docs/CF-PROPERTY-BUILD-ORDER.md](docs/CF-PROPERTY-BUILD-ORDER.md) | The CF build order, by coverage |
+| [docs/CF-CHUNK0-BUILD-SPEC.md](docs/CF-CHUNK0-BUILD-SPEC.md) | Chunk 0 specified file by file. **The spec, not the authorization** |
+| **[CF_Algorithm/CF_Message_Register.md](CF_Algorithm/CF_Message_Register.md)** | **Every validation message ISO has actually returned**, what caused it, how it was fixed, and the check that was missing. Diagnose a new one with `python scripts/cf/07_diagnose_message.py` |
+| [CF_Algorithm/CF_Validation_Messages.md](CF_Algorithm/CF_Validation_Messages.md) | **The whole `DoMessage` rule set analysed** — 1,621 rules, 48 jurisdictions. Why a payload can rate *and* return errors, and how states switch messages off |
+| [CF_Algorithm/CF_Data_Dictionary.xlsx](CF_Algorithm/CF_Data_Dictionary.xlsx) | Every datadef group and field across countrywide and all 47 state packages. GL's equivalent is [GL_Data_Dictionary.xlsx](GL_Algorithm/GL_Data_Dictionary.xlsx) |
 
 ### The formatted HTML versions
 
@@ -32,6 +64,9 @@ to be **downloaded and opened in a browser**:
 | `docs/THE-BUILD-END-TO-END.html` | The executive summary and the whole build, with contents sidebar. Same content as `EXECUTIVE-SUMMARY.md` |
 | `docs/THE-PLAN-IN-PLAIN-ENGLISH.html` | Why this is hard and what changed the design |
 | `docs/GL-RATING-ENGINE-DOCS.html` | Every technical and gate document in one page, 24 tabs |
+| `docs/qa-plan-proposal_20260817.html` | The QA programme proposal, self-contained, with six wireframes |
+| `docs/backlog_20260817.html` | The plain-English backlog, rendered by `scripts/build_backlog_html.py` |
+| `docs/what-the-harness-taught-us.html` | The running learnings record, both sessions, with a per-session contents sidebar |
 | `docs/index.html` | A landing page linking all of the above |
 
 **Quickest way to read them:** clone the repository and open the file, or use the "Download raw
@@ -71,14 +106,90 @@ public, that file and 33 of the 65 documents would have to be scrubbed *and purg
 
 ## Status
 
+**As of 2026-08-14.**
+
 | | |
 |---|---|
 | Analysis | Complete — 14 coverage walkthroughs, 18 non-negotiables, 13 decisions taken |
-| **Stage 1 — which rulebook applies** | ✅ Built. 1,814 lines, no third-party dependencies |
-| Stage 2 — the interpreter | Next |
-| Stages 3–6 | Premium and referrals · state input formats · field catalogue · interface |
-| Then | Proof against RAaS → the self-correcting harness → company deviations |
-| Tests | 20 acceptance cases · 13 load-time safety checks, green at two dates |
+| **Stage 1 — which rulebook applies** | ✅ Built |
+| **Stage 2 — the interpreter** | ✅ Built. 54 language nodes, ISO's rules executed rather than re-implemented |
+| **Stage 3 — premium and referrals** | ✅ Built. Two modes, one code path |
+| **Stage 4 — state input formats** | ✅ Built. 51 sample submissions, the same risk in every state |
+| **Stage 5 — the field catalogue** | ✅ Built. Every field and its legal values, from ISO's own tables |
+| **Stage 6 — the interface** | ✅ Built. Paste a submission, read every factor and its source |
+| **Phase 2 — proof against ISO's live service** | ✅ Live. **50 of 50 agree, on every field ISO publishes** |
+| Then | Phase 3 — the self-correcting harness → Phase 4 — company deviations |
+| **The variable tester** | ✅ Built. Dropdowns from ISO's declared domains, every jurisdiction in one run, and the coverage view that says how narrow the claim still is |
+| **The layered programme** | ✅ Built 2026-08-18. Four layers of test case, a `/tests` page to run them from, an allowance that thins configurations and never states, and one standalone file per run — see [`docs/UI-STRATEGY.md`](docs/UI-STRATEGY.md) |
+| Tests | **Fifteen suites, all green** — see [`TESTING.md`](TESTING.md) |
+
+**The honest caveat, stated where the good number is.** All 51 submissions are **the same risk** —
+one location, one classification, class `50017`, gross sales, no deductible, no rating plans. That
+was chosen so differences between states would be attributable, and it worked, but **fifty matches
+on one risk shape is a narrower claim than it sounds.** Widening it is the next work (OI-87), and it
+is expected to find defects.
+
+**Breadth began 2026-08-14, and it did find one.** `scripts/breadth.py` varies the *submission*
+instead of the state — 17 variants over 7 groups, every value taken from ISO's own declared domains
+and refused at build time if it is not in one. Run live: **OK 16 of 16, NY 15 of 15** agree with ISO
+on the premium and every published field, now including deductibles, two locations, two
+classifications, a non-Gross-Sales basis, both directions of the ILF table, claims-made, schedule
+rating and terrorism on. It raised **OI-88** — a real engine defect, the first found by an external
+oracle: size-of-risk refuses in OK where **ISO rates it at 8816** — plus **OI-89**, a filed gate
+tying schedule rating to experience credibility, and **OI-90**, closed the same day.
+
+**And breadth now has a front door.** `python app.py` then
+**[/tester](http://127.0.0.1:8765/tester)**: **19 controls in 8 groups** — deductibles, limits,
+classification, exposure, coverage form, subline, locations, the rating plans, terrorism — every
+option read from ISO's declared domain **for that jurisdiction**, run across all 51 with **our
+premium, ISO's premium and the difference** as the three columns that matter. The comparison is on
+by default and states its cost first; engine-only is ~90 seconds and free for iterating. Results append to
+a permanent store behind four views: **coverage** (which controls have ever been exercised where),
+agreement over time, premium response curves, and a defect log with first-seen and last-seen.
+**The coverage view starts nearly empty, which is the point of having it.**
+
+**Puerto Rico is excluded from the comparison** — not on the ISO subscription and that entitlement is
+not available to us (OI-86). It still rates; it is simply the one jurisdiction with **no external
+check of any kind**. Every count of live agreement here is out of 50.
+
+---
+
+## Running the app
+
+A viewer for the engine's output — paste a submission, read the premium and every factor behind it.
+**Python 3 is the only requirement**; the app uses the standard library, so there is nothing to
+install.
+
+**Windows**
+
+```
+start.bat
+```
+
+**macOS**
+
+```
+./start.command
+```
+
+Or double-click either file. The app serves on <http://127.0.0.1:8765> and opens a browser
+automatically. `Ctrl-C` in the terminal stops it.
+
+| | |
+|---|---|
+| `start.bat 9000` / `./start.command 9000` | serve on a different port |
+| `start.bat --no-browser` | serve without opening a browser |
+
+**It needs ISO's ERC files, which are not in this repository.** The engine reads them from
+`C:\Projects\ISO_ERC_Files\General_Liability`; point `GL_ERC_ROOT` at your own copy to change that:
+
+```
+set GL_ERC_ROOT=D:\path\to\General_Liability      &:: Windows
+export GL_ERC_ROOT=/path/to/General_Liability     #   macOS
+```
+
+Sample submissions to paste are in `Engine_Payloads/<STATE>/submission.json`. The first rating in a
+process takes about two seconds while ISO's content loads, and about one second thereafter.
 
 ---
 
@@ -88,15 +199,17 @@ public, that file and 33 of the 65 documents would have to be scrubbed *and purg
 |---|---|
 | **Reading it cold, in one sitting** | [`docs/THE-PLAN-IN-PLAIN-ENGLISH.html`](docs/THE-PLAN-IN-PLAIN-ENGLISH.html) — the whole plan on one page, plain English, ~2,500 words. Open it in a browser. **Start here** |
 | **New to the project** | [`docs/PRD-GL-RATING-ENGINE.md`](docs/PRD-GL-RATING-ENGINE.md) — what we're building, every step taken to get here, requirements and risks. Plain language, no insurance or technical background assumed |
-| **Tracking what's unresolved** | [`docs/OPEN-ITEMS.md`](docs/OPEN-ITEMS.md) — 67 items, source-tagged and reconciled against the escalation register |
+| **Tracking what's unresolved** | [`docs/OPEN-ITEMS.md`](docs/OPEN-ITEMS.md) — OI-1 to OI-92, source-tagged and reconciled against the escalation register |
 | **Wanting the earlier overview** | [`docs/BUILD-PLAN-PLAIN-ENGLISH.md`](docs/BUILD-PLAN-PLAIN-ENGLISH.md) — plain-English build plan written before the ERC work; PDF-only scope |
-| **About to build the engine** | [`docs/BUILD-STAGES.md`](docs/BUILD-STAGES.md) — **the staged build plan, awaiting sign-off on stage 1** · [`docs/GL-RATING-ENGINE-BUILD-PLAN.md`](docs/GL-RATING-ENGINE-BUILD-PLAN.md) — architecture, doctrine, the 18 non-negotiables |
-| **The engine** | [`gl_engine/`](gl_engine/) — stage 1: load and resolve. `python -m gl_engine.cli check 20260811 --deep` |
+| **About to build the engine** | [`docs/BUILD-STAGES.md`](docs/BUILD-STAGES.md) — the staged build plan, **all six now built** · [`docs/GL-RATING-ENGINE-BUILD-PLAN.md`](docs/GL-RATING-ENGINE-BUILD-PLAN.md) — architecture, doctrine, the 18 non-negotiables |
+| **The engine** | [`gl_engine/`](gl_engine/) — all six stages. `python -m gl_engine.cli check 20260811 --deep` for the load-time checks; `python app.py 8776` to rate something and read every factor |
+| **Rating something now** | `python app.py 8776`, then open `http://127.0.0.1:8776`. Pick a state, tick **Compare with ISO**, press Rate |
 | **Briefing a sponsor** | **[`docs/THE-BUILD-END-TO-END.html`](docs/THE-BUILD-END-TO-END.html) — executive summary + the whole build in plain English: engine, RAaS proof, self-correcting harness, company deviations** · [`docs/EXECUTIVE-SUMMARY.md`](docs/EXECUTIVE-SUMMARY.md) — the same, as markdown |
-| **Catching up in plain English** | [`docs/WHERE-WE-PAUSED-2026-08-12.md`](docs/WHERE-WE-PAUSED-2026-08-12.md) — the whole of 12 August, readable cold |
+| **Catching up in plain English** | [`BUILD-LOG.md`](BUILD-LOG.md) **Entry 13** — the current handoff · [`docs/WHERE-WE-PAUSED-2026-08-12.md`](docs/WHERE-WE-PAUSED-2026-08-12.md) — the whole of 12 August, readable cold, now superseded |
 | **Running the tests** | [`TESTING.md`](TESTING.md) — **every command, phase by phase**, each one run and its output verified |
 | **Following the build** | [`BUILD-LOG.md`](BUILD-LOG.md) — the build diary · [`docs/FROM-PLANNING-TO-BUILD.md`](docs/FROM-PLANNING-TO-BUILD.md) — what each stage expected to inherit from the analysis, written **before** the stage |
-| **Building a subline** | [`docs/gates/`](docs/gates/) — the per-item gates. **eleven passed**; **three to go** (item 12 in progress) |
+| **Building a subline** | [`docs/gates/`](docs/gates/) — the per-item gates, all filed before the build began |
+| **Browsing a subline's rate build-up visually** | [`GL_Algorithm/gl-rating-chains.html`](GL_Algorithm/gl-rating-chains.html) — 23 mermaid flowcharts across the seven rate-driven gates plus Terrorism/TRIA, open in a browser |
 | **Checking a spec claim is current** | [`docs/gates/RECONCILIATION.md`](docs/gates/RECONCILIATION.md) — what the gates superseded in the two specifications, and why |
 | **Checking a *count* is current** | [`docs/gates/OI-40-ASOF-RECOUNT.md`](docs/gates/OI-40-ASOF-RECOUNT.md) — every load-bearing figure re-measured as of today, 2027-04-01 and the end state. Two survived, three needed their tense fixed |
 | **Planning the build** | [`docs/PHASE-SIZING.md`](docs/PHASE-SIZING.md) — what each build-order item actually contains, measured. **Three countrywide calculators, not two** |
@@ -109,7 +222,7 @@ public, that file and 33 of the 65 documents would have to be scrubbed *and purg
 | **Reading the manual spec** | [`docs/rating-engine/README.md`](docs/rating-engine/README.md) — 14 documents + 4 appendices, PDF-derived |
 | **Reading the ERC spec** | [`docs/erc/`](docs/erc/) — 6 documents, derived in isolation from the ERC packages |
 | **Checking a premium against the manual** | [`Agentic/iso-circular-expert/`](Agentic/iso-circular-expert/) — a working expert agent with a query tool |
-| **Resuming work** | [`PROCESS_LOG.md`](PROCESS_LOG.md) **Step 51** — paused 2026-08-12. **Item 12 steps 1 and 2 are done**; the referral register is at `scripts/erc/out/referral_register.json`. **Stage 1 of the engine is BUILT** — `gl_engine/`, 1,814 lines, load and resolve, 18/18 acceptance and 13/13 load-time assertions. Stage 2 (the interpreter) awaits sign-off |
+| **Resuming work** | [`BUILD-LOG.md`](BUILD-LOG.md) **Entry 15** — 2026-08-14. All six stages built; Phase 2 live, 50 of 50 against ISO's own service; **breadth run in OK and NY, 31 of 31, and it found OI-88; the variable tester is live at `/tester`.** Next is the decision on **OI-88's null-in-`FirstNonNull` semantics** — the tester reproduces it in one click — then filling the coverage grid. *(`PROCESS_LOG.md` Step 51 closes the analysis phase; everything after it is in the build log)* |
 | **Wondering how a number was derived** | [`PROCESS_LOG.md`](PROCESS_LOG.md) — every step, its reasoning, its findings, and its corrections |
 | **Re-deriving the analysis** | [`scripts/README.md`](scripts/README.md) — the pipeline, in order |
 
@@ -132,6 +245,11 @@ Commercial Line Manuals/GL/     the source corpora — 4.1 GB, not derived from 
 C:\Projects\ISO_ERC_Files\General_Liability\   the ERC corpus — 567 packages, 87k files
                                 (separate root; 51 jurisdictions + countrywide)
 
+GL_Algorithm/                   the seven rate-driven gates plus Terrorism/TRIA, reformatted as rate-build-up
+                                 and premium docs plus gl-rating-chains.html (18 flowcharts) —
+                                 a documentation port of docs/gates/, not new derivation
+CF_Algorithm/                   the same shape, for the sister Commercial Fire project
+
 docs/
   PRD-GL-RATING-ENGINE.md         plain-language PRD: the journey, requirements, risks
   GL-RATING-ENGINE-BUILD-PLAN.md  the Python build plan
@@ -151,10 +269,17 @@ Agentic/iso-circular-expert/    manual authority — 32 invariants, 19 smoke che
                                 schedule & experience, composite rating
 Agentic/iso-erc-expert/         ERC authority — 26 invariants, 83 smoke checks
 
-scripts/                        15 scripts — the PDF pipeline
-scripts/erc/                    42 scripts — the ERC pipeline
-tests/                          4 suites — golden case (80), California (11),
-                                New York (10), OI-50 (7). No engine required
+gl_engine/                      the engine — resolve, interpret, rate
+  interp/                       the interpreter: 54 language nodes, ISO's path dialect
+  rating/                       the kernel, two modes, the referral register
+  schema/                       input schemas and legal values, from ISO's own tables
+app.py                          the interface — http.server, no framework
+scripts/                        the PDF pipeline, the RAaS client, the comparison
+scripts/erc/                    51 scripts — the ERC pipeline
+tests/                          12 suites, all green. Stage 1 (20), golden case (80),
+                                California (11), New York (10), OI-50 (7), the
+                                contract figures, the interpreter (58), stages 3-6
+                                (38/28/18/30) and Phase 2 (11)
 
 PROCESS_LOG.md                  chronological record of every step, with its corrections
 GL_ERC_Edition_Hierarchy.xlsx   ERC edition hierarchy and circular index
@@ -342,22 +467,20 @@ Python 3, no third-party dependencies at query time.
 
 ## What is not here
 
-Four inputs are referenced by the manual as separate publications and are genuinely absent from
-both corpora. The engine treats each as a declared external dependency producing a **referral**,
-never a guess:
+Four inputs were recorded as separate publications genuinely absent from both corpora. **Three of
+the four dissolved on inspection, and the strikethroughs are kept because the pattern is the point:
+each was a confident negative that nobody had checked.**
 
-| Missing | Effect |
+| Recorded as missing | What it turned out to be |
 |---|---|
-| Terrorism Supplement | Terrorism premium cannot be computed |
-| Company loss cost multiplier | Carrier input by design — every stored value is a pre-LCM ISO loss cost |
-| Experience / schedule / composite rating plans | Individual-risk credits and debits |
-| ~~Workers Compensation loss costs~~ | **Not a gap** — see below |
+| **Company loss cost multiplier** | **Still a real external input** — carrier input by design. Every stored value is a pre-LCM ISO loss cost, and the engine refers rather than guesses |
+| ~~Terrorism Supplement~~ | **On disk the whole time.** 3 notices, 113–118 pages, simply never ingested into the expert agent. Manual against ERC is exact: 4 of 4 factors, 142 of 142 above-average classes. *"Terrorism premium cannot be computed"* is retired |
+| ~~Experience / schedule / composite rating plans~~ | **Also on disk** — 142 documents, 654 pages. Composite Rating moved to the **Interline** manual in 2017, so 51 of its 90 filings begin `IL-` and a `GL-*` sweep finds 39. Now aligned: schedule 8 of 8, experience 97 of 97 bands and 291 cells, composite executable |
+| ~~Workers Compensation loss costs~~ | **Not a publication at all.** The 75% is a countrywide ERC cell (`PrincipalsProtvLiabFactor = 0.75`) and the WC rate is a **declared submission field** real ISO submissions supply — retired entirely by the 2027 program |
 
-**The Workers Compensation entry was wrong and is struck through.** The 75% is in ERC as a
-countrywide cell (`PrincipalsProtvLiabFactor = 0.75`) and the WC rate is a **declared submission
-field** that real ISO submissions supply — a submission requirement, not a missing publication, and
-retired entirely by the 2027 program. Found by gate 335, and it is the second "missing input" to
-dissolve this way after geocoding.
+**Three of four, and each found the same way: by searching the file system rather than trusting the
+record.** That is why rule #1 of this project is *before deriving anything from examples, enumerate
+the directories and ask what each one is for.*
 
 **Hawaii** appears in neither corpus. Whether that is a download gap or a filing fact is
 unresolved.
@@ -380,8 +503,11 @@ arithmetically (territories × classes × 2 = cell count).
 every caption and reference match must be whitespace-normalised. This has caused two false
 negatives in this project; in this domain a false negative reads as *"the manual is silent"*.
 
-**This is not a git repository.** The `scripts/` intermediates (~200 MB of extracted text) are
-regenerable and should be excluded if that changes.
+**This is a git repository as of 2026-08-12**, and the `scripts/` intermediates (~200 MB of
+extracted text) are excluded because they are regenerable — along with everything ISO licenses.
+[`.gitignore`](.gitignore) explains each exclusion. **Commits name their paths explicitly rather
+than `git add -A`**, because one careless stage would publish licensed content into history where
+deleting it later does not remove it.
 
 **One reproducibility gap is known and recorded.** `A3-ENDORSEMENT-CATALOG.md` was produced by
 scripts from an early session that were never persisted; the catalog is intact and sourced but

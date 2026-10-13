@@ -1,0 +1,136 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Results Inspection Wireframes</title>
+<style>
+:root{--bg:#f4f4f6;--paper:#fff;--ink:#222;--mut:#6b6b74;--line:#c9c9d1;--soft:#ececf1;--hi:#1f3864;--ok:#1e6b3a;--bad:#a11;--exc:#7a5a00;--note:#fff6d6}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#131418;--paper:#1c1d22;--ink:#e6e6ea;--mut:#9a9aa5;--line:#3a3b45;--soft:#262730;--hi:#9db6e6;--ok:#6fcf8f;--bad:#ff8a8a;--exc:#e0b25a;--note:#2b2618}}
+:root[data-theme="dark"]{--bg:#131418;--paper:#1c1d22;--ink:#e6e6ea;--mut:#9a9aa5;--line:#3a3b45;--soft:#262730;--hi:#9db6e6;--ok:#6fcf8f;--bad:#ff8a8a;--exc:#e0b25a;--note:#2b2618}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.5 -apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+main{max-width:1180px;margin:0 auto;padding:28px 16px 80px}
+h1{font-size:24px;margin:0 0 4px}
+.sub{color:var(--mut);margin-bottom:22px}
+h2{font-size:17px;margin:34px 0 4px}
+.why{color:var(--mut);margin:0 0 10px;max-width:90ch}
+.frame{background:var(--paper);border:2px solid var(--line);border-radius:8px;overflow:hidden}
+.chrome{display:flex;gap:6px;align-items:center;padding:8px 12px;border-bottom:1px solid var(--line);background:var(--soft);font-size:12.5px;flex-wrap:wrap}
+.chrome b{margin-right:auto}
+.tab{padding:2px 9px;border:1px solid var(--line);border-radius:4px;color:var(--mut)}
+.tab.on{border-color:var(--hi);color:var(--hi);font-weight:650}
+.budget{padding:5px 12px;font-size:12px;color:var(--mut);border-bottom:1px dashed var(--line)}
+.body{padding:16px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.btn{display:inline-flex;align-items:center;gap:4px;border:1.5px solid var(--line);border-radius:5px;padding:3px 9px;font-size:12.5px;background:var(--paper);white-space:nowrap}
+.btn.ok{border-color:var(--ok);color:var(--ok)}.btn.bad{border-color:var(--bad);color:var(--bad)}.btn.exc{border-color:var(--exc);color:var(--exc)}
+.btn.pri{background:var(--hi);color:var(--paper);border-color:var(--hi)}
+.btn.dis{opacity:.45}
+.bar{height:12px;border:1px solid var(--line);border-radius:6px;overflow:hidden;width:320px;max-width:100%;display:flex}
+.bar i{display:block;height:100%}
+.chip{border:1px solid var(--line);border-radius:12px;padding:1px 9px;font-size:12px;color:var(--mut)}
+.chip.on{border-color:var(--hi);color:var(--hi)}
+.scroll{overflow-x:auto;margin-top:12px}
+table{border-collapse:collapse;width:100%;min-width:760px;font-size:13px}
+th,td{border-bottom:1px solid var(--line);padding:7px 8px;text-align:left;vertical-align:top}
+th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--mut)}
+td.n{text-align:right;font-variant-numeric:tabular-nums}
+.auto{font-weight:650}.auto.m{color:var(--ok)}.auto.r{color:var(--exc)}.auto.x{color:var(--bad)}
+.msg{color:var(--mut);font-size:12px;font-style:italic}
+.verdict{font-size:12.5px}.verdict .u{color:var(--hi);text-decoration:underline;margin-left:6px}
+.ann{background:var(--note);border-left:3px solid var(--exc);padding:6px 10px;font-size:12.5px;margin-top:10px;border-radius:0 4px 4px 0}
+.pop{border:2px dashed var(--bad);border-radius:6px;padding:10px;margin-top:10px;max-width:520px;background:var(--paper)}
+.pop .f{border:1px solid var(--line);border-radius:4px;padding:4px 8px;color:var(--mut);margin:4px 0}
+.split{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:0}
+.split>.main{padding:14px;border-right:1px solid var(--line)}
+.split>.side{padding:14px}
+.grid{display:grid;grid-template-columns:40px repeat(8,26px);gap:3px;font-size:11px;margin-top:8px}
+.grid span{height:24px;border:1px solid var(--line);border-radius:3px;display:flex;align-items:center;justify-content:center;position:relative}
+.grid span.v{color:var(--ok)}
+.grid span.d::after{content:"";position:absolute;top:2px;right:2px;width:6px;height:6px;border-radius:50%;background:var(--exc)}
+.grid span.h{border:0;justify-content:flex-start;font-weight:650}
+.stats{display:flex;gap:10px;flex-wrap:wrap}
+.stat{border:1px solid var(--line);border-radius:6px;padding:6px 12px;font-size:12px;color:var(--mut)}
+.stat b{display:block;font-size:18px;color:var(--ink)}
+.stat.hot{border-color:var(--exc)}
+.legend{display:grid;grid-template-columns:auto 1fr auto;gap:6px 14px;align-items:center;max-width:820px;margin-top:10px}
+.decide{background:var(--paper);border:2px solid var(--hi);border-radius:8px;padding:14px 18px;margin-top:34px}
+.decide h2{margin-top:0}
+.opt{border:1px solid var(--line);border-radius:6px;padding:10px 12px;margin:8px 0}
+.opt b{color:var(--hi)}
+@media (max-width:760px){.split{grid-template-columns:1fr}.split>.main{border-right:0;border-bottom:1px solid var(--line)}}
+</style></head><body><main>
+<h1>Results Inspection · wireframes</h1>
+<div class="sub">After a plan's results come back from ISO, a person reviews each one and records a verdict. Low fidelity: layout and behaviour, not final styling. Data is real: today's GL quick smoke.</div>
+
+<h2>1 · Queue &amp; Run Log → finished plan → Inspect results</h2>
+<p class="why">The main place to inspect. Opens from a finished plan. Matches can be passed in bulk; refusals and mismatches are looked at one by one.</p>
+<div class="frame">
+ <div class="chrome"><b>ISO Rating Test Console</b><span class="tab">Board</span><span class="tab">Matrix</span><span class="tab">Plan</span><span class="tab">Trace</span><span class="tab">Workbench</span><span class="tab">Library</span><span class="tab on">Queue</span></div>
+ <div class="budget">Today · active 3/150 · refresh 0/50 · ad hoc 50/50</div>
+ <div class="body">
+  <div class="row"><span class="msg">‹ Plans</span><b>GL plan, 51 states</b><span class="msg">done 15:27 · 0 sent · 51 reused · 50 match · 1 refused</span><span style="margin-left:auto" class="btn">Report ↗</span></div>
+  <div class="row" style="margin-top:12px"><b>Inspection</b>
+   <div class="bar"><i style="width:98%;background:var(--ok)"></i><i style="width:2%;background:var(--soft)"></i></div>
+   <span>50 of 51 inspected</span></div>
+  <div class="row" style="margin-top:4px;font-size:12.5px;color:var(--mut)"><span style="color:var(--ok)">50 ✓ passed</span>·<span>0 × failed</span>·<span>0 ⊘ excused</span>·<b style="color:var(--exc)">1 awaiting</b></div>
+  <div class="row" style="margin-top:12px">Show <span class="chip on">Awaiting</span><span class="chip">All</span> · Result <span class="chip on">All</span><span class="chip">Match</span><span class="chip">Mismatch</span><span class="chip">Refused</span>
+   <span class="btn ok" style="margin-left:auto">✓ Pass all 50 matches</span></div>
+  <div class="scroll"><table>
+   <tr><th>St</th><th>Scenario</th><th class="n">Ours</th><th class="n">ISO</th><th>Auto</th><th>Inspector</th></tr>
+   <tr><td><b>PR</b></td><td>11127 clothing store · $1M sales<div class="msg">"Permission is not granted to GL PR for rating. Please check subscription."</div></td><td class="n">716</td><td class="n">—</td><td class="auto r">Refused</td>
+    <td><span class="btn ok">✓</span> <span class="btn bad">×</span> <span class="btn exc">⊘</span> <span class="btn">Trace ↗</span></td></tr>
+   <tr><td><b>NY</b></td><td>11127 clothing store · $1M sales</td><td class="n">2,686</td><td class="n">2,686</td><td class="auto m">Match</td><td class="verdict"><span style="color:var(--ok)">✓ Passed</span> · Dan 15:31<span class="u">undo</span></td></tr>
+   <tr><td><b>OH</b></td><td>11127 clothing store · $1M sales</td><td class="n">…</td><td class="n">…</td><td class="auto m">Match</td><td class="verdict"><span style="color:var(--ok)">✓ Passed</span> · Dan 15:31<span class="u">undo</span></td></tr>
+  </table></div>
+  <div class="pop"><b>⊘ Excuse · PR</b><div class="f">Reason: GL PR is not in our RaaS subscription; not a test of the engine</div>
+   <div class="row"><span class="btn pri">Save</span><span class="btn">Cancel</span><span class="msg">× Fail also asks for a category (true engine defect, input mapping, …)</span></div></div>
+  <div class="row" style="margin-top:14px"><span class="btn dis">Sign off this plan</span><span class="msg">enabled once nothing is awaiting · records who and when</span></div>
+ </div>
+</div>
+
+<h2>2 · Trace Diff · the same verdict in the header</h2>
+<p class="why">When a result needs investigating, Trace ↗ opens it here; the investigation ends with the same three buttons, so the verdict lands on the plan too.</p>
+<div class="frame">
+ <div class="chrome"><b>ISO Rating Test Console</b><span class="tab">Board</span><span class="tab">Matrix</span><span class="tab">Plan</span><span class="tab on">Trace</span><span class="tab">Workbench</span><span class="tab">Library</span><span class="tab">Queue</span></div>
+ <div class="body">
+  <div class="row"><b>GL-PR-…</b><span class="msg">Ours 716 · ISO refused · plan GL plan, 51 states</span>
+   <span style="margin-left:auto" class="btn ok">✓ Pass</span><span class="btn bad">× Fail</span><span class="btn exc">⊘ Excuse</span></div>
+  <div class="ann">Below: unchanged. First divergence · flows from · seen before · Classify this scenario · Copy brief · Promote to Regression Library.</div>
+ </div>
+</div>
+
+<h2>3 · Coverage Board · results awaiting inspection are visible</h2>
+<p class="why">A new figure in the stats, a small dot on cells whose ISO results nobody has inspected, and the verdicts in the cell panel.</p>
+<div class="frame">
+ <div class="chrome"><b>ISO Rating Test Console</b><span class="tab on">Board</span><span class="tab">Matrix</span><span class="tab">Plan</span><span class="tab">Trace</span><span class="tab">Workbench</span><span class="tab">Library</span><span class="tab">Queue</span></div>
+ <div class="split">
+  <div class="main">
+   <div class="stats"><div class="stat">Path coverage<b>61%</b></div><div class="stat">RaaS-verified<b>48%</b></div><div class="stat hot">Awaiting inspection<b>1 ▸</b></div><div class="stat">Open mismatches<b>…</b></div></div>
+   <div class="grid"><span class="h"></span><span class="h">u</span><span class="h">s</span><span class="h">p</span><span class="h">a</span><span class="h">e</span><span class="h">l</span><span class="h">m</span><span class="h">c</span>
+    <span class="h">NY</span><span class="v">✓</span><span class="v">✓</span><span>–</span><span>–</span><span class="v">✓</span><span class="v">✓</span><span class="v">✓</span><span class="v">✓</span>
+    <span class="h">OH</span><span class="v d">✓</span><span class="v">✓</span><span>–</span><span>–</span><span class="v">✓</span><span class="v d">✓</span><span class="v">✓</span><span>○</span>
+    <span class="h">PR</span><span>·</span><span class="d">–</span><span>·</span><span>·</span><span>–</span><span>–</span><span>–</span><span>·</span></div>
+   <div class="msg" style="margin-top:8px">● dot = ISO has answered, nobody has inspected yet</div>
+  </div>
+  <div class="side"><div class="msg">Selected cell · GL · OH</div><b>Prem/Ops · units</b>
+   <div class="scroll"><table style="min-width:0"><tr><th>Scenario</th><th>Ours / ISO</th><th>Verdict</th></tr>
+    <tr><td>GL-OH-…</td><td>1,784 / 1,784</td><td><span class="btn ok">✓</span> <span class="btn bad">×</span> <span class="btn exc">⊘</span></td></tr></table></div>
+   <div class="ann">Run tests for this cell (Find scenarios, Send ticked) stays as it is.</div></div>
+ </div>
+</div>
+
+<h2>What each button means</h2>
+<div class="legend">
+ <span class="btn ok">✓ Pass</span><span>I've looked; our result is right.</span><span class="msg">nothing to fill in</span>
+ <span class="btn bad">× Fail</span><span>Our result is wrong.</span><span class="msg">reason + category</span>
+ <span class="btn exc">⊘ Excuse</span><span>Not a test of our engine: ISO refused for subscription, a RaaS anomaly.</span><span class="msg">reason</span>
+ <span class="btn">Trace ↗</span><span>Open in Trace Diff to investigate first.</span><span class="msg">—</span>
+</div>
+<p class="why" style="margin-top:10px">Every verdict records who and when, and can be undone. Verdicts are added, never overwritten; the latest one counts.</p>
+
+<div class="decide"><h2>Two decisions before building</h2>
+ <div class="opt"><b>1 · Should inspection gate the Board's ✓?</b><br>
+  (a) A cell shows ✓ only once its ISO results are inspected.<br>
+  (b) <b>Suggested:</b> ✓ when ISO matches, as today; inspection is a separate layer (the dot, the "Awaiting inspection" count).</div>
+ <div class="opt"><b>2 · Does the layout work?</b> Inspect inside the Queue's plan view, the same buttons in Trace Diff's header, and the Board indicators.</div>
+</div>
+</main></body></html>

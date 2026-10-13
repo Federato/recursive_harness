@@ -1,0 +1,224 @@
+
+<!-- RC-1 stale-name notice -->
+<div style="border:2px solid #b45309;background:#fef3c7;color:#1f2937;padding:10px 14px;margin:12px;border-radius:6px;font:14px/1.45 system-ui,sans-serif"><b>Notice (2026-09-23):</b> Written before the 2026-09-22 restructure. Sheet names have changed: Policy Inputs → IN - Policy; Bldg / Contents / BI Rating Worksheet → CALC - Bldg / Contents / BI Rating; Special Class Worksheet → CALC - Special Class; CoreScratchpad → CALC - CoreScratchpad. <b>Location Inputs / IN - Location and Special Class Inputs / IN - Special Class no longer exist</b>: every record is entered on <b>IN - Schedule</b> (one row per record, 40 per block), so input-sheet cell addresses here are out of date, and calc-sheet column C is record 1 of 40. Current state: CF_Algorithm/CF_Rater_RESUME.md.</div>
+<title>All Rating Paths — Build Status Grid</title>
+<style>
+  :root {
+    --bg: #eef1f4; --paper: #ffffff; --ink: #1c2733; --ink-soft: #55606b; --ink-faint: #8b95a1;
+    --grid-line: #d7dce2; --header-fill: #e4e8ed; --header-fill-strong: #1e3a45; --header-text-strong: #eef4f3;
+    --accent: #1e3a45; --accent-soft: #cfe0e0; --accent-warm: #b96a2c; --accent-warm-soft: #f3e2cf;
+    --good: #2f7d5a; --good-soft: #dcefe4; --warn: #a53d26; --warn-soft: #f7ddd4;
+    --unk: #7a6a1f; --unk-soft: #f5edd0;
+    --shadow: 0 1px 2px rgba(28,39,51,0.06), 0 8px 24px rgba(28,39,51,0.07);
+    --font-display: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+    --font-body: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+    --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, "Liberation Mono", monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #10151b; --paper: #161d25; --ink: #e7ecf1; --ink-soft: #a3aebb; --ink-faint: #6d7885;
+      --grid-line: #2b3742; --header-fill: #1b242d; --header-fill-strong: #21504f; --header-text-strong: #eaf3f1;
+      --accent: #59a9ac; --accent-soft: #1d3535; --accent-warm: #dd9a5c; --accent-warm-soft: #372a1c;
+      --good: #63c090; --good-soft: #1b3226; --warn: #e0806a; --warn-soft: #3a2019;
+      --unk: #d9c164; --unk-soft: #3a331a;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 28px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #10151b; --paper: #161d25; --ink: #e7ecf1; --ink-soft: #a3aebb; --ink-faint: #6d7885;
+    --grid-line: #2b3742; --header-fill: #1b242d; --header-fill-strong: #21504f; --header-text-strong: #eaf3f1;
+    --accent: #59a9ac; --accent-soft: #1d3535; --accent-warm: #dd9a5c; --accent-warm-soft: #372a1c;
+    --good: #63c090; --good-soft: #1b3226; --warn: #e0806a; --warn-soft: #3a2019;
+    --unk: #d9c164; --unk-soft: #3a331a;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 28px rgba(0,0,0,0.35);
+  }
+  :root[data-theme="light"] {
+    --bg: #eef1f4; --paper: #ffffff; --ink: #1c2733; --ink-soft: #55606b; --ink-faint: #8b95a1;
+    --grid-line: #d7dce2; --header-fill: #e4e8ed; --header-fill-strong: #1e3a45; --header-text-strong: #eef4f3;
+    --accent: #1e3a45; --accent-soft: #cfe0e0; --accent-warm: #b96a2c; --accent-warm-soft: #f3e2cf;
+    --good: #2f7d5a; --good-soft: #dcefe4; --warn: #a53d26; --warn-soft: #f7ddd4;
+    --unk: #7a6a1f; --unk-soft: #f5edd0;
+    --shadow: 0 1px 2px rgba(28,39,51,0.06), 0 8px 24px rgba(28,39,51,0.07);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); line-height: 1.6; overflow-x: hidden; }
+  a { color: var(--accent); }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 0 24px 96px; }
+
+  header.masthead { padding: 56px 24px 28px; max-width: 1200px; margin: 0 auto; }
+  .eyebrow { font-family: var(--font-ui); font-size: 12px; letter-spacing: 0.11em; text-transform: uppercase; color: var(--accent-warm); font-weight: 600; margin: 0 0 10px; }
+  h1.title { font-family: var(--font-display); font-size: clamp(26px, 4vw, 38px); font-weight: 400; margin: 0 0 14px; text-wrap: balance; }
+  .dek { font-size: 16px; color: var(--ink-soft); max-width: 92ch; margin: 0 0 6px; }
+  .dek code { font-family: var(--font-mono); font-size: 14px; background: var(--header-fill); padding: 1px 5px; border-radius: 3px; }
+
+  section.sect { padding-top: 44px; }
+  .sect-heading { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 6px; }
+  .sect-index { font-family: var(--font-mono); font-size: 13px; color: var(--accent-warm); }
+  h2.sect-title { font-family: var(--font-display); font-size: 22px; font-weight: 400; margin: 0; }
+  .sect-role { font-family: var(--font-ui); font-size: 13px; color: var(--ink-soft); margin: 0 0 16px; max-width: 100ch; }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 8px 18px; margin: 6px 0 20px; padding: 12px 16px; background: var(--paper); border: 1px solid var(--grid-line); border-radius: 8px; box-shadow: var(--shadow); font-family: var(--font-ui); font-size: 12.5px; }
+  .legend-item { display: flex; align-items: center; gap: 8px; }
+  .dot { width: 11px; height: 11px; border-radius: 50%; flex: none; }
+  .dot.built { background: var(--good); }
+  .dot.notbuilt { background: var(--warn); }
+  .dot.unchecked { background: var(--unk); }
+
+  .tblscroll { overflow-x: auto; border-radius: 8px; box-shadow: var(--shadow); margin-bottom: 8px; }
+  table.grid { border-collapse: collapse; width: 100%; min-width: 880px; font-size: 13px; background: var(--paper); }
+  table.grid th, table.grid td { border: 1px solid var(--grid-line); padding: 8px 11px; text-align: left; vertical-align: top; }
+  table.grid thead th { background: var(--header-fill-strong); color: var(--header-text-strong); font-family: var(--font-ui); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; }
+  table.grid td.coverage { font-family: var(--font-ui); font-weight: 700; font-size: 12.5px; }
+  table.grid td.note { font-family: var(--font-ui); font-size: 12px; color: var(--ink-soft); }
+  table.grid td.status { white-space: nowrap; text-align: center; width: 1%; }
+  .badge { display: inline-flex; align-items: center; gap: 5px; font-family: var(--font-ui); font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; padding: 3px 9px; border-radius: 10px; }
+  .badge.built { background: var(--good-soft); color: var(--good); }
+  .badge.notbuilt { background: var(--warn-soft); color: var(--warn); }
+  .badge.unchecked { background: var(--unk-soft); color: var(--unk); }
+  tr.group-header td { background: var(--header-fill); font-family: var(--font-ui); font-weight: 700; font-size: 12px; text-transform: uppercase; letter-spacing: 0.03em; color: var(--ink-soft); }
+
+  .callout { display: flex; gap: 10px; padding: 12px 14px; border-radius: 5px; max-width: 100ch; font-size: 14px; margin-top: 14px; }
+  .callout.warn { background: var(--warn-soft); color: var(--warn); }
+  .callout.unk { background: var(--unk-soft); color: var(--unk); }
+  .callout.good { background: var(--good-soft); color: var(--good); }
+  .callout b { font-weight: 700; }
+  .callout-mark { flex: none; font-weight: 700; }
+
+  hr.divider { border: none; border-top: 1px solid var(--grid-line); margin: 44px 0 0; }
+  footer.closing { max-width: 1200px; margin: 52px auto 0; padding: 0 24px 64px; }
+  footer.closing h2 { font-family: var(--font-display); font-weight: 400; font-size: 20px; margin: 0 0 10px; }
+  footer.closing p.note-foot { margin-top: 14px; font-size: 13px; color: var(--ink-faint); font-family: var(--font-ui); }
+</style>
+
+<header class="masthead">
+  <p class="eyebrow">CF_Algorithm &middot; CFRater1.01.xlsb &middot; build status</p>
+  <h1 class="title">Every rating path, and whether it's built</h1>
+  <p class="dek">Granular: form &times; rating type &times; coverage, not just "Business Income exists." Status
+    is read directly out of <code>CFRater1.01.xlsb</code> (read-only, confirmed against actual formulas, not
+    guessed from labels) where checked, and marked <span style="color:var(--unk);font-weight:700;">unverified</span>
+    everywhere it wasn't — a large majority of rows below have never been opened. Checked 2026-09-11.</p>
+</header>
+
+<div class="wrap">
+
+  <section class="sect" id="legend">
+    <div class="legend">
+      <div class="legend-item"><span class="dot built"></span>Built &mdash; confirmed real formulas produce a value</div>
+      <div class="legend-item"><span class="dot notbuilt"></span>Confirmed not built &mdash; checked directly, genuinely absent</div>
+      <div class="legend-item"><span class="dot unchecked"></span>Not checked this session &mdash; status unknown, not "probably missing"</div>
+    </div>
+  </section>
+
+  <section class="sect" id="s1">
+    <div class="sect-heading"><span class="sect-index">&#9670;</span><h2 class="sect-title">Building &amp; Contents</h2></div>
+    <p class="sect-role">Every form's Class-rated path is built. Specific/Tentative rating is confirmed absent
+      for every form, every coverage &mdash; a single, project-wide gap, not a per-form omission. Confirmed by
+      scanning <code>Bldg Rating Worksheet</code>, <code>Contents Rating Worksheet</code>, and
+      <code>CoreScratchpad</code> for any reference to "Specific," "Tentative," or the <code>RatingType</code>
+      input actually branching anything &mdash; zero hits, even though "Rating Type" exists as a dropdown on
+      <code>Location Inputs</code>.</p>
+    <div class="tblscroll">
+      <table class="grid">
+        <thead><tr><th>Coverage</th><th>Form</th><th>Rating type</th><th class="status">Status</th><th>Note</th></tr></thead>
+        <tbody>
+          <tr><td class="coverage">Building</td><td>Basic Group I</td><td>Class Rated</td><td class="status"><span class="badge built">Built</span></td><td class="note">Full chain, `Bldg Rating Worksheet` rows 2-29</td></tr>
+          <tr><td class="coverage">Building</td><td>Basic Group I</td><td>Specific / Tentative</td><td class="status"><span class="badge notbuilt">Not built</span></td><td class="note">Confirmed absent — SpecificGroupIRate never referenced anywhere</td></tr>
+          <tr><td class="coverage">Building</td><td>Basic Group II</td><td>Class Rated</td><td class="status"><span class="badge built">Built</span></td><td class="note">Includes windstorm/hail-exclusion branch, fixed this session — rows 32-55</td></tr>
+          <tr><td class="coverage">Building</td><td>Broad</td><td>(one rating basis)</td><td class="status"><span class="badge built">Built</span></td><td class="note">Rows 57-76</td></tr>
+          <tr><td class="coverage">Building</td><td>Special</td><td>(one rating basis)</td><td class="status"><span class="badge built">Built</span></td><td class="note">Rows 78-99, includes roof-surfacing / theft-exclusion / coinsurance / LOI / deductible chain</td></tr>
+          <tr><td class="coverage">Contents</td><td>Basic Group I</td><td>Class Rated</td><td class="status"><span class="badge built">Built</span></td><td class="note">Full chain, `Contents Rating Worksheet` rows 2-27</td></tr>
+          <tr><td class="coverage">Contents</td><td>Basic Group I</td><td>Specific / Tentative</td><td class="status"><span class="badge notbuilt">Not built</span></td><td class="note">Same project-wide gap</td></tr>
+          <tr><td class="coverage">Contents</td><td>Basic Group II</td><td>Class Rated</td><td class="status"><span class="badge built">Built</span></td><td class="note">Rows 29-51, includes windstorm/hail fix</td></tr>
+          <tr><td class="coverage">Contents</td><td>Broad</td><td>(one rating basis)</td><td class="status"><span class="badge built">Built</span></td><td class="note">Rows 53-65</td></tr>
+          <tr><td class="coverage">Contents</td><td>Special</td><td>(one rating basis)</td><td class="status"><span class="badge unchecked">Unverified</span></td><td class="note">Existence assumed from sheet structure, not individually re-confirmed this session</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <section class="sect" id="s2">
+    <div class="sect-heading"><span class="sect-index">&#9670;</span><h2 class="sect-title">Business Income &mdash; main forms</h2></div>
+    <p class="sect-role">All four main forms are built for Class-rated risks; Specific/Tentative doesn't apply
+      to Business Income the way it does Building (the source doc's own algorithm ties Specific/Tentative to
+      Building's rate specifically). Cyber Incident Exclusion factors fixed this session for all four.</p>
+    <div class="tblscroll">
+      <table class="grid">
+        <thead><tr><th>Coverage</th><th>Form</th><th>Rating type</th><th class="status">Status</th><th>Note</th></tr></thead>
+        <tbody>
+          <tr><td class="coverage">Business Income</td><td>Basic Group I</td><td>Class Rated</td><td class="status"><span class="badge built">Built</span></td><td class="note">`BI Rating Worksheet` rows 2-26</td></tr>
+          <tr><td class="coverage">Business Income</td><td>Basic Group II</td><td>Class Rated</td><td class="status"><span class="badge built">Built</span></td><td class="note">Rows 27-46, windstorm/hail branch fixed this session</td></tr>
+          <tr><td class="coverage">Business Income</td><td>Broad</td><td>&mdash;</td><td class="status"><span class="badge built">Built</span></td><td class="note">Rows 47-60 — zero for all 4 test rows because none use CauseOfLoss="Broad" (a gate, not a bug)</td></tr>
+          <tr><td class="coverage">Business Income</td><td>Special</td><td>&mdash;</td><td class="status"><span class="badge built">Built</span></td><td class="note">Rows 61-75, Cyber factor bug fixed this session</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <section class="sect" id="s3">
+    <div class="sect-heading"><span class="sect-index">&#9670;</span><h2 class="sect-title">Business Income &mdash; everything else</h2></div>
+    <p class="sect-role">Confirmed to exist in ISO's own rule package (traced 2026-09-11, see
+      <code>BUILD-LOG.md</code> Entry 28), <b>none of it has been checked against the live rater at all</b> —
+      not "confirmed missing," genuinely not looked at yet.</p>
+    <div class="tblscroll">
+      <table class="grid">
+        <thead><tr><th>Coverage</th><th>Path</th><th class="status">Status</th><th>Note</th></tr></thead>
+        <tbody>
+          <tr><td class="coverage">Business Income</td><td>Earthquake (plain rate chain)</td><td class="status"><span class="badge unchecked">Unverified</span></td><td class="note">8-step chain confirmed in ISO's rules; not opened in the rater</td></tr>
+          <tr><td class="coverage">Business Income</td><td>Agreed Value (all 4 forms + EQ)</td><td class="status"><span class="badge unchecked">Unverified</span></td><td class="note">Incremental (Factor&minus;1)&times;Rate surcharge shape, distinct premium mechanism</td></tr>
+          <tr><td class="coverage">Business Income</td><td>Extended Period of Indemnity (5 files)</td><td class="status"><span class="badge unchecked">Unverified</span></td><td class="note">Same surcharge shape as Agreed Value</td></tr>
+          <tr><td class="coverage">Special Class Business Income</td><td>BGI / BGII / Broad / Special / Agreed-Val-EQ</td><td class="status"><span class="badge unchecked">Unverified</span></td><td class="note">Entire parallel datadef group, confirmed by directory listing only, mirrors plain Business Income one-for-one</td></tr>
+          <tr><td class="coverage">Mining Properties Business Income</td><td>BGI / BGII</td><td class="status"><span class="badge unchecked">Unverified</span></td><td class="note">Parallel rule files, not in the source algorithm doc at all</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <section class="sect" id="s4">
+    <div class="sect-heading"><span class="sect-index">&#9670;</span><h2 class="sect-title">Business Income &mdash; the ~34 optional endorsements</h2></div>
+    <p class="sect-role">Every one of these is filed under "Business Income Detail, Optional" in ISO's Form
+      Pages. None has been checked against the live rater. Grouped, not itemized 34 separate rows — the full
+      list lives in <code>BUILD-LOG.md</code> Entry 28 / <code>project_businessincome-mapping-status</code> memory.</p>
+    <div class="tblscroll">
+      <table class="grid">
+        <thead><tr><th>Cluster</th><th>Members</th><th class="status">Status</th></tr></thead>
+        <tbody>
+          <tr><td class="coverage">Dependent Properties</td><td class="note">Business Income (Broad/Limited/Intl), Extra Expense (plain/Intl) &mdash; 5 files</td><td class="status"><span class="badge unchecked">Unverified</span></td></tr>
+          <tr><td class="coverage">Time-element / restoration-period</td><td class="note">Beginning of Period of Restoration, Ordinance or Law &mdash; Increased Period, Civil Authority Change(s), Off-Premises Interruption, Utility Services &mdash; Time Element, Discharge From Sewer/Drain/Sump</td><td class="status"><span class="badge unchecked">Unverified</span></td></tr>
+          <tr><td class="coverage">Exclusion / peril toggles (beyond the base 4)</td><td class="note">Watercraft, Radioactive Contamination, Molten Material, Food Contamination, Cannabis (x3), Pier and Wharf</td><td class="status"><span class="badge unchecked">Unverified</span></td></tr>
+          <tr><td class="coverage">Premium / limit adjustments</td><td class="note">Premium Adjustment, Discretionary Payroll, Payroll Limitation, Higher Limits, Green Upgrades, Unmanned Aircraft</td><td class="status"><span class="badge unchecked">Unverified</span></td></tr>
+          <tr><td class="coverage">Other</td><td class="note">Landlord as Additional Insured (Rental Value), Radio/TV Antennas, Y2K endorsement, Joint or Disputed Loss Agreement, Flood Coverage Endorsement</td><td class="status"><span class="badge unchecked">Unverified</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <section class="sect" id="s5">
+    <div class="sect-heading"><span class="sect-index">&#9670;</span><h2 class="sect-title">Reading this honestly</h2></div>
+    <div class="callout good"><span class="callout-mark">&#10003;</span><span><b>11 of 24 rows on this page are confirmed built</b> (the 34 endorsements are grouped into 5 cluster-rows above, not itemized individually). That's every core form for every coverage, Class-rated — the gap is almost entirely in optional add-ons and alternate rating bases, not in the primary chains.</span></div>
+    <div class="callout warn"><span class="callout-mark">&#9888;</span><span><b>Specific/Tentative rating is the one confirmed, real gap inside the core paths.</b> It applies to every Building and Contents form and is currently not built anywhere, not just overlooked in one form.</span></div>
+    <div class="callout unk"><span class="callout-mark">?</span><span><b>Most rows on this page are "unverified," not "not built."</b> Don't read this grid as "everything below the fold is missing" &mdash; it means nobody has opened those rule files or checked the rater against them yet. Some may already be built and simply not documented; the honest status is "don't know."</span></div>
+  </section>
+
+  <hr class="divider" />
+
+  <footer class="closing">
+    <h2>Remaining steps</h2>
+    <p class="note-foot">Built from the live rater (read-only, confirmed closed/checked carefully) plus
+      <code>CauseOfLoss_BusinessIncome_RatingAlgorithms.md</code> and <code>BUILD-LOG.md</code> Entry 28.
+      Next natural step: pick one "Unverified" cluster and actually check it against the rater the way
+      Building/Contents/Business Income's main forms were checked, rather than adding more unverified rows.
+      Nothing gets built until you say go.</p>
+  </footer>
+
+</div>

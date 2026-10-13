@@ -1,0 +1,1226 @@
+"""What may be varied, what each option legally holds, and how to apply it.
+
+**One definition, read by three callers**: `scripts/breadth.py` (the CLI variant
+sweep), `ui/` (the dropdowns) and `tests/verify_tester.py`. A second list of
+legal values maintained next to the first would drift, and the drift would look
+like a rating defect.
+
+Nothing here renders anything and nothing here imports `ui`. The dependency runs
+one way: `ui` -> `variants` -> `gl_engine`. **`gl_engine` imports neither.**
+
+### The rule this module exists to enforce
+
+**Options come from ISO's declaration, per jurisdiction.** Not from the sample
+submission, not from a hardcoded list, and not from what happened to work once.
+`Control.options(declared)` reads the domain table; `Declared.require` refuses a
+value that is not in it. A dropdown that offers an illegal value is a bug here,
+not a finding about the engine.
+
+### Three things the declaration says that a UI has to respect
+
+* **A legal set is per state.** `Claims Made` is legal in **50 of 51** -- NY
+  declares `Occurrence` as the only coverage form. **20 states declare exactly
+  one prem/ops territory**, so a two-location test is not merely unusual there,
+  it is undeclarable. Such a state is `NOT APPLICABLE`, which is a **third
+  outcome** and must never be counted as a disagreement.
+* **Some legal sets depend on other answers.** The combined BI/PD deductible is
+  keyed on the BI/PD pair: with either one set, the only legal combined value is
+  `No Deductible`. The aggregate limits are keyed on the occurrence limit.
+  Applying one control therefore has to re-derive the others.
+* **`Type` is a form control, not a data type** (`gl_engine/schema/fields.py`).
+  `YearInClaimsMade` is declared `TEXT` and ISO rejects a string for it --
+  OI-90, found by spending a live call. `Control.cast` carries the data type so
+  that is asked once, here.
+"""
+from __future__ import annotations
+
+import copy
+import hashlib
+import json
+from dataclasses import dataclass, field as dc_field
+import sys
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parent.parent
+if getattr(sys, "frozen", False):        # the packaged app: this module sits in _internal, not _internal/scripts
+    ROOT = Path(sys._MEIPASS)
+SAMPLES = ROOT / "Engine_Payloads"
+
+from gl_engine import EditionResolver, ResolvedBook          # noqa: E402
+from gl_engine.config import CLASS_BASIS_CLIFF, MIN_ASOF     # noqa: E402
+from gl_engine.schema import Schema                          # noqa: E402
+
+#: The as-of date the stored base submissions carry.
+DEFAULT_ASOF = "20260801"
+
+#: `Subline` has 8 to 10 declared values, and **the stored base submissions are
+#: shaped for the premises/operations family only** -- a Liquor risk needs
+#: Liquor classifications, a Liquor coverage form and its own class-code domain.
+#: These three are buildable by editing the base; the other seven need a base
+#: submission of their own, which is follow-on work and is shown in the UI as
+#: exactly that rather than left out silently.
+SUBLINES_FROM_THIS_BASE = (
+    "Premises/Operations and Products/Completed Operations",
+    "Premises/Operations",
+    "Products/Completed Operations",
+)
+
+
+#: When a second classification needs a different premium basis, prefer these,
+#: **in this order**. They are the bases ISO's own multi-class samples actually
+#: mix -- their four-class Alaska sample puts Payroll beside Gross Sales at the
+#: same 1,500,000 exposure.
+#:
+#: **Payroll is first because it is money, like Gross Sales.** An extra
+#: classification inherits the first one's exposure, which stays plausible
+#: between two dollar-denominated bases and stops being plausible the moment it
+#: is not: 5,000,000 of Gross Sales is an ordinary mid-size risk, 5,000,000
+#: square feet of Area is a hundred city blocks. Both are *legal*, and ISO will
+#: price either, so this is about the variant resembling a real risk rather than
+#: about correctness. The exotic tail -- Gallons has 11 classes, Acres 8,
+#: "Passenger Days" 1 -- is reachable by asking for more classifications, and
+#: is deliberately not the default shape.
+PREFERRED_SECOND_BASIS = ("Payroll", "Area")
+
+
+class VariantError(RuntimeError):
+    """A value outside the declaration, or a shape this base cannot express."""
+
+
+# --------------------------------------------------------------- declaration
+
+class Declared:
+    """ISO's declared legal values for one jurisdiction. Invents nothing."""
+
+    _resolver = None
+
+    def __init__(self, juris: str, asof: str = DEFAULT_ASOF,
+                version: str | None = None):
+        if Declared._resolver is None:
+            # One corpus scan per process: it costs about four seconds and
+            # every jurisdiction after the first costs about eighty
+            # milliseconds. A page that rebuilt it per request would be unusable.
+            Declared._resolver = EditionResolver()
+        self.juris = juris
+        self.asof = asof
+        self.version = version
+        self.book = ResolvedBook(Declared._resolver.resolve(juris, asof, version))
+        self.schema = Schema.for_book(self.book)
+        #: Every place a variant had to choose one value out of several, as
+        #: `(table, column) -> (chosen, all_legal)`. Recorded because the choice
+        #: is arbitrary and **an arbitrary choice can be a no-op** -- OI-93.
+        self.picks: dict = {}
+        #: Overrides for those choices, `(table, column) -> value`. The probe
+        #: sets these to ask *"would a different legal value have moved the
+        #: premium?"*, which is the question that separates an inert control
+        #: from an inert value.
+        self.pins: dict = {}
+
+    # ------------------------------------------------------------ the choice
+
+    def pick(self, table: str, col: str, legal) -> str:
+        """Choose one of ISO's declared values, recording that a choice was made.
+
+        **The first value is not a neutral default.** In NY,
+        `TerrorismTerritory` `001` carries no terrorism charge while `002`-`006`
+        each charge 110, so taking `legal[0]` produces a variant that rates,
+        reports as rated, and **exercises nothing** (OI-93). The pick is
+        recorded so a caller can ask what the alternatives would have done, and
+        pinnable so it can find out.
+        """
+        legal = tuple(legal)
+        if not legal:
+            raise VariantError(f"{self.juris} declares no legal value for "
+                               f"{table}.{col}")
+        chosen = self.pins.get((table, col), legal[0])
+        if str(chosen) not in [str(x) for x in legal]:
+            raise VariantError(f"pinned {table}.{col}={chosen!r} is not one of "
+                               f"{len(legal)} declared values in {self.juris}")
+        self.picks[(table, col)] = (chosen, legal)
+        return chosen
+
+    @classmethod
+    def resolver(cls):
+        if cls._resolver is None:
+            cls._resolver = EditionResolver()
+        return cls._resolver
+
+    @classmethod
+    def for_config(cls, juris: str, config: dict | None = None) -> "Declared":
+        """`Declared` at the date a config's own `effective_date` implies.
+
+        **The one correct way to construct `Declared` once a config might set
+        `effective_date`.** Falls back to `DEFAULT_ASOF` when it doesn't, same
+        as calling `Declared(juris)` directly. Reading "what's legal" and
+        rating "what gets sent" from two different dates is decision A3's
+        whole defect -- this closes it by construction: the same string
+        resolves the rulebook here and gets written into the payload by
+        `_apply_effective_date`, so they cannot diverge within one call.
+
+        **`package_version`, if the config sets it, pins the resolved edition
+        to a specific filed version instead of the newest on disk** -- the
+        same closure applied to a second axis: a test run that pins a
+        version and a rulebook resolved at a different one is exactly the
+        silent-drift shape OI-97 found, so this is the one place both are
+        read from the same config together.
+        """
+        asof = str((config or {}).get("effective_date") or DEFAULT_ASOF)
+        version = (config or {}).get("package_version") or None
+        return cls(juris, asof, version)
+
+    @classmethod
+    def jurisdictions(cls) -> tuple[str, ...]:
+        """The jurisdictions that have a stored base submission."""
+        if not SAMPLES.is_dir():
+            return ()
+        return tuple(sorted(p.name for p in SAMPLES.iterdir()
+                            if p.is_dir() and (p / "submission.json").exists()))
+
+    def base(self) -> dict:
+        p = SAMPLES / self.juris / "submission.json"
+        if not p.exists():
+            raise VariantError(f"no base submission for {self.juris}")
+        return json.loads(p.read_text(encoding="utf-8"))
+
+    # ------------------------------------------------------------- values
+
+    def values(self, table: str, col: str) -> tuple[str, ...]:
+        vals, _exact = self.schema.resolved_values(table, col)
+        return vals
+
+    def require(self, table: str, col: str, value):
+        legal = self.values(table, col)
+        if legal and str(value) not in legal:
+            raise VariantError(
+                f"{table}.{col}={value!r} is not declared legal in "
+                f"{self.juris}; {len(legal)} legal: {list(legal)[:6]}")
+        return value
+
+    def dependent(self, table: str, col: str, deps: dict) -> tuple[str, ...]:
+        """The legal values once the dependency columns are pinned.
+
+        `deps` maps a dependency column name to its value. **Every dependency
+        column the table declares and `deps` names is matched**, which is what
+        the combined deductible needs -- it is keyed on a pair, and matching
+        only the first would return a set that is legal for the BI value and
+        wrong for the PD one.
+
+        `Schema.resolved_values` resolves ISO's declared `RelatedXPath` against
+        a rated tree. Here there is no tree: the submission is still being
+        built, so the domain table is filtered directly.
+        """
+        t = self.schema.domain_table(table, col)
+        cols = self.schema.dependency_columns(table, col)
+        if t is None or not cols:
+            return self.values(table, col)
+        pinned = [(t.col(c), str(deps[c])) for c in cols
+                  if c in deps and c in t.header]
+        if not pinned:
+            return self.values(table, col)
+        vi = t.col("DataValue")
+        si = t.col("StateCode") if "StateCode" in t.header else None
+        out, seen = [], set()
+        for row in t.rows:
+            if si is not None and row[si] not in (self.juris, "CW"):
+                continue
+            if any(str(row[i]) != want for i, want in pinned):
+                continue
+            v = str(row[vi])
+            if v not in seen:
+                seen.add(v)
+                out.append(v)
+        return tuple(out)
+
+    def description(self, code: str) -> str:
+        """ISO's own description for a class code.
+
+        `ClassDescription` is rating-required and carries no domain of its own,
+        so a code change must take the description from ISO's table -- a code
+        and a description that disagree is a submission no underwriter sends.
+        """
+        t = self.book.table("DomainClassDescriptionByClassCodes", "Domain")
+        ci, vi = t.col("ClassCodeForClassDescription"), t.col("DataValue")
+        for row in t.rows:
+            if str(row[ci]) == str(code):
+                return str(row[vi])
+        raise VariantError(f"class code {code} has no declared description "
+                           f"in {self.juris}")
+
+    def codes_for_basis(self, basis: str, which: str = "PremOps") -> tuple[str, ...]:
+        col = f"{which}PremiumBasis"
+        t = self.schema.domain_table("GeneralLiabilityClassification", col)
+        cols = self.schema.dependency_columns("GeneralLiabilityClassification", col)
+        if t is None or not cols:
+            return ()
+        di, vi = t.col(cols[0]), t.col("DataValue")
+        si = t.col("StateCode") if "StateCode" in t.header else None
+        out, seen = [], set()
+        for row in t.rows:
+            if si is not None and row[si] not in (self.juris, "CW"):
+                continue
+            if str(row[vi]) != basis:
+                continue
+            code = str(row[di])
+            if code not in seen:
+                seen.add(code)
+                out.append(code)
+        return tuple(out)
+
+    def all_class_codes(self, which: str = "PremOps") -> tuple[str, ...]:
+        """Every class code ISO declares, from the basis table's key column.
+
+        **`ClassCode` is declared `TEXT` with no domain of its own**, so there
+        is no list to read directly -- the enumerable list is the dependency
+        column of `PremiumBasis{which}ClassCode`, which names a code per row.
+        Asking the field for its legal values returns nothing, which is correct
+        and useless; this is where the codes actually are.
+        """
+        t = self.schema.domain_table(CLS, f"{which}PremiumBasis")
+        cols = self.schema.dependency_columns(CLS, f"{which}PremiumBasis")
+        if t is None or not cols:
+            return ()
+        di = t.col(cols[0])
+        si = t.col("StateCode") if "StateCode" in t.header else None
+        out, seen = [], set()
+        for row in t.rows:
+            if si is not None and row[si] not in (self.juris, "CW"):
+                continue
+            code = str(row[di])
+            if code not in seen:
+                seen.add(code)
+                out.append(code)
+        return tuple(out)
+
+    def basis_for(self, code: str, which: str = "PremOps") -> str:
+        vals = self.dependent("GeneralLiabilityClassification",
+                              f"{which}PremiumBasis", {"ClassCode": code})
+        if not vals:
+            raise VariantError(f"no {which} premium basis declared for class "
+                               f"{code} in {self.juris}")
+        return self.pick("GeneralLiabilityClassification",
+                         f"{which}PremiumBasis", vals)
+
+    def aggregates_for(self, occurrence: str) -> tuple[str, ...]:
+        """The aggregate limits ISO declares legal with this occurrence limit.
+
+        Both `GeneralAggregateLimit` and `ProdsCompldOpsAggregateLimit` are
+        keyed on `EachOccurrenceLimit` and on nothing else, and at every
+        occurrence limit measured they declare the **same** legal set. One
+        lookup therefore serves both, and the aggregate can be a single axis
+        rather than two.
+
+        **The set is per jurisdiction and per occurrence limit.** At 25,000 in
+        TX there are four legal aggregates; at 1,000,000 there are eight. A plan
+        that names a position -- lowest, middle, highest -- rather than a figure
+        is the only kind that can be run in all 51, and what each position
+        resolved to has to be recorded, because it is a different number in
+        different states.
+        """
+        return self.dependent(GL, "GeneralAggregateLimit",
+                              {"EachOccurrenceLimit": occurrence})
+
+    def territories(self) -> tuple[str, ...]:
+        return self.values("GeneralLiabilityLocation",
+                           "PremisesOperationsTerritory")
+
+    def terrorism_place(self) -> tuple[str, str] | None:
+        """`(field, value)` locating a risk for terrorism, or None to send none.
+
+        **Exactly 15 jurisdictions file a terrorism location, and all 15 file
+        the same field** -- `GeneralLiabilityLocation.TerrorismTerritory`. Four
+        (CA, FL, NY, TX) back it with `TerrorismTerritoryCode`, whose values
+        cannot be derived from a ZIP (E8; an unmatched one refers, R22); the
+        other eleven back it with `TerritoryCodeByZipCode`. **That four/eleven
+        split is a subdivision of the fifteen, not a separate population** --
+        OI-91, closed 2026-08-17 by running both measurements side by side
+        (`scripts/erc/52_oi91_terrorism_place.py`).
+
+        `None` means **there is nothing to send, and terrorism still rates.**
+        Countrywide references `TerrorismTerritory` in zero of its rule files,
+        so the other 36 are not missing an input -- there is no input to miss.
+        The `ZipCode` fallback this used to apply was **inert**: AL, OK, GA, IA,
+        MO and TN rate terrorism identically with it and without it. It was the
+        sole cause of the 16/20 split, which says nothing about terrorism.
+        """
+        tt = self.values("GeneralLiabilityLocation", "TerrorismTerritory")
+        if not tt:
+            return None
+        return ("TerrorismTerritory",
+                self.pick("GeneralLiabilityLocation", "TerrorismTerritory", tt))
+
+
+# ------------------------------------------------------------------ controls
+
+@dataclass(frozen=True)
+class Control:
+    """One thing a person may vary, and everything a UI needs to offer it."""
+
+    id: str
+    label: str
+    group: str
+    exercises: str
+    kind: str = "select"              # select | number
+    table: str = ""
+    column: str = ""
+    #: Control ids whose values key this one's domain, mapped to the dependency
+    #: COLUMN name ISO's domain table declares.
+    keyed_by: dict = dc_field(default_factory=dict)
+    #: Python type the request must carry. OI-90: the form control type is not
+    #: this, and guessing cost a live call.
+    cast: str = "str"
+    unit_from: str = ""               # a control naming this one's units
+    note: str = ""
+    #: Set when the options are not a domain of this field's own. `ClassCode`
+    #: is declared `TEXT` with no domain; its enumerable list is the key column
+    #: of the premium-basis table. Naming that here keeps the exception in one
+    #: place instead of spreading a special case through the callers.
+    derive: str = ""
+
+    def options(self, d: Declared, config: dict | None = None) -> tuple[str, ...]:
+        """Legal values in this jurisdiction, given the answers so far."""
+        if self.derive == "class_codes":
+            basis = (config or {}).get("premium_basis")
+            if basis:
+                return d.codes_for_basis(str(basis))
+            return d.all_class_codes()
+        if self.derive == "effective_dates":
+            # No ISO field declares a domain of legal effective dates -- a date
+            # isn't a rated value. The nearest thing to a declaration is the
+            # corpus's own edition history: the dates on which this
+            # jurisdiction's own rulebook actually changed, read from
+            # `EditionResolver`, not invented. `MIN_ASOF` and
+            # `CLASS_BASIS_CLIFF` are added because both are already-proven
+            # landmarks -- the resolution floor and the 2027 basis cliff --
+            # even where they don't happen to be one of this state's own
+            # filing dates.
+            pkgs = Declared.resolver().by_juris.get(d.juris.upper(), [])
+            dates = {p.identity.edition for p in pkgs
+                    if p.identity.edition >= MIN_ASOF}
+            dates |= {MIN_ASOF, CLASS_BASIS_CLIFF}
+            return tuple(sorted(dates))
+        if self.derive == "package_versions":
+            # Not a domain of ISO's -- ISO's live service has no "which
+            # version" input; this asks the corpus what it holds. Keyed off
+            # `d` rather than `config['effective_date']` directly: `d` was
+            # already constructed at whatever date is currently chosen (or
+            # DEFAULT_ASOF if none), so this always answers for the edition
+            # that date actually resolves to, not the raw date string.
+            edition = d.book.resolution.state.identity.edition
+            return tuple(Declared.resolver().versions(d.juris, edition))
+        if not self.column:
+            return ()
+        if self.keyed_by and config:
+            deps = {}
+            for cid, dep_col in self.keyed_by.items():
+                v = config.get(cid)
+                if v not in (None, ""):
+                    deps[dep_col] = v
+            if deps:
+                return d.dependent(self.table, self.column, deps)
+        return d.values(self.table, self.column)
+
+
+GL = "GeneralLiability"
+LOC = "GeneralLiabilityLocation"
+CLS = "GeneralLiabilityClassification"
+
+CONTROLS: tuple[Control, ...] = (
+    # ---------------------------------------------------- 1. deductibles (6)
+    Control("premops_bi_deductible", "Prem/Ops BI deductible", "Deductibles",
+            "the bodily-injury deductible credit chain, prem/ops",
+            table=GL, column="PremOpsBIDeductible"),
+    Control("premops_pd_deductible", "Prem/Ops PD deductible", "Deductibles",
+            "the property-damage deductible credit chain, prem/ops",
+            table=GL, column="PremOpsPDDeductible"),
+    Control("premops_bipd_deductible", "Prem/Ops combined BI/PD", "Deductibles",
+            "the combined deductible, which ISO declares legal only while BI "
+            "and PD are both No Deductible",
+            table=GL, column="PremOpsBIPDDeductible",
+            keyed_by={"premops_bi_deductible": "PremOpsBIDeductible",
+                      "premops_pd_deductible": "PremOpsPDDeductible"},
+            note="Keyed on the BI/PD pair across 961 declared dependency keys."),
+    Control("prods_bi_deductible", "Products BI deductible", "Deductibles",
+            "the deductible chain on the products side, a separate table family",
+            table=GL, column="ProdsCompldOpsBIDeductible"),
+    Control("prods_pd_deductible", "Products PD deductible", "Deductibles",
+            "the products-side PD deductible",
+            table=GL, column="ProdsCompldOpsPDDeductible"),
+    Control("prods_bipd_deductible", "Products combined BI/PD", "Deductibles",
+            "the products-side combined deductible, same exclusion as prem/ops",
+            table=GL, column="ProdsCompldOpsBIPDDeductible",
+            keyed_by={"prods_bi_deductible": "ProdsCompldOpsBIDeductible",
+                      "prods_pd_deductible": "ProdsCompldOpsPDDeductible"}),
+
+    # --------------------------------------------------------- 2. limits (2)
+    Control("occurrence_limit", "Each-occurrence limit", "Limits",
+            "the increased-limit factor table, in both directions from the "
+            "1,000,000 default",
+            table=GL, column="PremOpsProdsEachOccurrenceLimit",
+            note="Setting this alone also sets GeneralAggregateLimit and "
+                 "ProdsCompldOpsAggregateLimit to the first value ISO declares "
+                 "legal with it. Set the aggregate as well and that derivation "
+                 "stands aside -- the aggregate control is then authoritative."),
+    Control("general_aggregate", "Aggregate limit", "Limits",
+            "the other half of the increased-limit key: the same occurrence "
+            "limit against a low, ordinary and high aggregate",
+            table=GL, column="GeneralAggregateLimit",
+            keyed_by={"occurrence_limit": "EachOccurrenceLimit"},
+            note="Sets the products aggregate to match, because ISO keys both "
+                 "on the occurrence limit and declares the same legal set for "
+                 "each. Varying the two aggregates against each other is a "
+                 "further axis and is not this one."),
+
+    # ------------------------------------------------- 3-4. classification (3)
+    Control("premium_basis", "Premium basis", "Classification",
+            "the exposure divisor and its rounding; every basis other than "
+            "Gross Sales is untested territory",
+            table=CLS, column="PremOpsPremiumBasis"),
+    Control("class_code", "Class code", "Classification",
+            "the loss cost, the ELP and the increased-limit table assignment "
+            "-- the deepest single input in the submission",
+            table=CLS, column="ClassCode", derive="class_codes",
+            note="`ClassCode` is declared TEXT with no domain, so the options "
+                 "are the class codes ISO declares for the chosen basis -- "
+                 "narrowed as soon as a basis is picked. The description comes "
+                 "from ISO's own table, never from the previous class."),
+    Control("exposure", "Exposure amount", "Classification",
+            "the size-of-risk bands and the minimum-premium comparison",
+            kind="number", cast="float",
+            unit_from="premium_basis"),
+
+    # -------------------------------------------------- 5. coverage form (2)
+    Control("coverage_form", "Coverage form", "Coverage form",
+            "the claims-made form, which no stored sample uses",
+            table=GL, column="PremOpsProdsCoverageForm",
+            note="Declared legal in 50 of 51 jurisdictions; NY declares "
+                 "Occurrence only."),
+    Control("claims_made_year", "Year in claims-made", "Coverage form",
+            "the claims-made maturity step, a different row of the same table",
+            kind="number", cast="int",
+            note="An Int32 -- OI-90. Applies only when the form is Claims Made."),
+
+    # -------------------------------------------------------- 6. subline (1)
+    Control("subline", "Subline", "Subline",
+            "the premises/operations and products sides independently; only 1 "
+            "of the 10 declared sublines has ever been rated",
+            table=GL, column="Subline",
+            note="Seven of the declared sublines need a base submission of "
+                 "their own -- Liquor classifications, a Liquor coverage form "
+                 "and its own class-code domain -- and are offered as "
+                 "unbuildable from this base rather than hidden."),
+
+    # ------------------------------------------------------ 7. structure (1)
+    Control("classifications", "Classifications", "Structure",
+            "two or more classifications in ONE location -- the class loop, "
+            "the per-class premium basis divisor, and the aggregation that "
+            "sums a premium across classes rather than rating one",
+            kind="number", cast="int",
+            note="Each extra classification takes a DIFFERENT declared class "
+                 "code, and where the jurisdiction declares one, a different "
+                 "premium BASIS -- 99 of ISO's own 114 multi-class locations "
+                 "use different codes, and their examples mix Payroll with "
+                 "Gross Sales in a single location. Two classes on the same "
+                 "code and basis exercise the loop and nothing else."),
+    Control("locations", "Locations", "Structure",
+            "location allocation and the ForEach aggregation that was "
+            "silently wrong once; each location takes the next declared "
+            "territory, so the territory factor differs between them",
+            kind="number", cast="int",
+            note="20 jurisdictions declare exactly one prem/ops territory. "
+                 "Asking for two there is NOT APPLICABLE, not a failure."),
+
+    # --------------------------------------------------- 8-9. the plans (4)
+    Control("size_of_risk", "Size-of-risk rating", "Rating plans",
+            "the interpolated banded lookups, built in stage 3 and never "
+            "exercised by a stored submission",
+            table=GL, column="SizeOfRiskRatingApplies",
+            note="Reproduces OI-88 today: our engine refuses in OK where ISO "
+                 "rates it at 8816."),
+    Control("experience_rating", "Experience rating", "Rating plans",
+            "the experience rating plan, and the credibility factor that "
+            "gates schedule rating",
+            table=GL, column="ExperienceRatingApplies",
+            note="Turning this on alone is not enough to earn credibility -- "
+                 "ISO declares about twenty further dated fields, which is "
+                 "follow-on work (OI-89)."),
+    Control("schedule_rating", "Schedule rating", "Rating plans",
+            "the schedule rating plan and R15's plus/minus 25% cap",
+            table=GL, column="ScheduleRatingModificationApplies"),
+    Control("schedule_pct", "Schedule modification", "Rating plans",
+            "one scheduled modification at a declared percentage",
+            table=GL, column="SRPClassificationPct",
+            note="On the prem/ops sublines ISO applies this only when "
+                 "ERPCredibilityFactor >= 0.03, so it is a no-op without "
+                 "experience credibility -- OI-89. It moves the premium in "
+                 "jurisdictions whose own rules override that gate."),
+
+    # ------------------------------------------------------ 10. terrorism (1)
+    Control("terrorism", "Terrorism coverage", "Terrorism",
+            "certified-acts terrorism, and the place ISO needs to rate it",
+            table=GL, column="TerrorismCoverage",
+            note="The ZIP or territory is supplied from the declaration. 20 "
+                 "jurisdictions declare neither (OI-91)."),
+
+    # ------------------------------------------------------------ 11. timing (1)
+    Control("effective_date", "Effective date", "Timing",
+            "which rulebook edition prices the risk -- the resolution floor, "
+            "the 2027 basis cliff, and every edition boundary in between",
+            kind="select", derive="effective_dates",
+            note="Decision A3, 2026-08-19: carried into the payload's "
+                 "SchemeKeys.EffectiveDateTime AND used to resolve the legal "
+                 "values of every other control in the same build, so the two "
+                 "cannot disagree. Callers that build a config containing this "
+                 "must construct `Declared` at this date -- `Declared.for_config()` "
+                 "does that."),
+    Control("package_version", "Package version", "Timing",
+            "pin the specific filed version of the resolved edition, instead "
+            "of the newest one on disk -- OI-97's ND/NH drift was invisible "
+            "until a live call happened to catch it",
+            kind="select", derive="package_versions",
+            note="Not a submission field -- ISO's live service has no "
+                 "equivalent input, so this writes nothing to the payload. "
+                 "It only changes which rulebook `Declared` resolves against. "
+                 "Options depend on which effective date is selected: they "
+                 "are every version the corpus holds for that date's own "
+                 "resolved edition. Leaving this unset keeps today's default "
+                 "-- the newest version on disk."),
+)
+
+BY_ID = {c.id: c for c in CONTROLS}
+GROUPS = tuple(dict.fromkeys(c.group for c in CONTROLS))
+
+
+# ------------------------------------------------------------------- editing
+
+def _gl(p: dict) -> dict:
+    return p["body"]["GeneralLiability"][0]
+
+
+def _locations(p: dict) -> list:
+    return _gl(p)["GeneralLiabilityLocation"]
+
+
+def _classes(loc: dict) -> list:
+    return loc["GeneralLiabilityClassification"]
+
+
+def _set_everywhere(p: dict, field: str, value) -> int:
+    """Set a field at every level of the submission that already carries it.
+
+    The deductible fields are declared on the risk, on the location **and** on
+    the classification, and the stored bases carry all three. Setting only the
+    top one leaves the classification -- the level the rating reads -- saying
+    something else, which produces a difference from ISO that is the harness's
+    fault. Levels absent from the base are never invented.
+    """
+    n = 0
+    risk = _gl(p)
+    if field in risk:
+        risk[field] = value
+        n += 1
+    for loc in _locations(p):
+        if field in loc:
+            loc[field] = value
+            n += 1
+        for cls in _classes(loc):
+            if field in cls:
+                cls[field] = value
+                n += 1
+    return n
+
+
+def _cast(control: Control, value):
+    if control.cast == "int":
+        return int(value)
+    if control.cast == "float":
+        return float(value)
+    return value
+
+
+# Each applier mutates the payload and may raise VariantError with a reason a
+# person can read. Signature: (payload, value, d, config) -> None
+def _apply_deductible(field):
+    def apply(p, value, d, config):
+        if _set_everywhere(p, field, value) == 0:
+            raise VariantError(
+                f"{field} is absent from {d.juris}'s base submission at every "
+                f"level; setting it would be an invention")
+    return apply
+
+
+def _apply_occurrence_limit(p, value, d, config):
+    _gl(p)["PremOpsProdsEachOccurrenceLimit"] = value
+    if config.get("general_aggregate"):
+        # The aggregate control runs next and is authoritative. Deriving a
+        # value here first would be overwritten, and `pick` would record a
+        # choice that never reached the payload -- which is the kind of
+        # bookkeeping that makes `probe_no_op` report on a value nobody used.
+        return
+    for col in ("GeneralAggregateLimit", "ProdsCompldOpsAggregateLimit"):
+        legal = d.dependent(GL, col, {"EachOccurrenceLimit": value})
+        if not legal:
+            raise VariantError(f"{d.juris} declares no {col} legal with "
+                               f"{value}")
+        _gl(p)[col] = d.pick(GL, col, legal)
+
+
+def _apply_general_aggregate(p, value, d, config):
+    """Set both aggregates, checked against the occurrence limit in force.
+
+    The occurrence limit that governs is the one in the payload, not the one in
+    the configuration -- a run may vary the aggregate and leave the occurrence
+    limit at whatever the base submission carries, and the legal set is keyed on
+    the real value either way.
+    """
+    occurrence = _gl(p).get("PremOpsProdsEachOccurrenceLimit")
+    legal = d.aggregates_for(occurrence) if occurrence else ()
+    if legal and str(value) not in [str(x) for x in legal]:
+        raise VariantError(
+            f"{d.juris} declares {value!r} illegal as an aggregate with an "
+            f"each-occurrence limit of {occurrence}; {len(legal)} legal: "
+            f"{list(legal)[:5]}")
+    _gl(p)["GeneralAggregateLimit"] = value
+    prods = d.dependent(GL, "ProdsCompldOpsAggregateLimit",
+                        {"EachOccurrenceLimit": occurrence}) if occurrence else ()
+    if not prods or str(value) in [str(x) for x in prods]:
+        _gl(p)["ProdsCompldOpsAggregateLimit"] = value
+    else:
+        _gl(p)["ProdsCompldOpsAggregateLimit"] = d.pick(
+            GL, "ProdsCompldOpsAggregateLimit", prods)
+
+
+def _apply_class(p, value, d, config):
+    """Code, description and both bases move together, each from ISO's table."""
+    desc = d.description(value)
+    prem = d.basis_for(value, "PremOps")
+    prods = d.dependent(CLS, "ProdsCompldOpsPremiumBasis", {"ClassCode": value})
+    for loc in _locations(p):
+        for cls in _classes(loc):
+            cls["ClassCode"] = value
+            cls["ClassDescription"] = desc
+            cls["PremOpsPremiumBasis"] = prem
+            if prods:
+                cls["ProdsCompldOpsPremiumBasis"] = d.pick(
+                    CLS, "ProdsCompldOpsPremiumBasis", prods)
+
+
+def _apply_exposure(p, value, d, config):
+    for loc in _locations(p):
+        for cls in _classes(loc):
+            if "PremOpsCovExposure" in cls:
+                cls["PremOpsCovExposure"] = value
+            if "ProdsCompldOpsCovExposure" in cls:
+                cls["ProdsCompldOpsCovExposure"] = value
+
+
+def _apply_premium_basis(p, value, d, config):
+    """Only meaningful with a class code that declares it; the class applier
+    sets the basis itself, so this exists to keep the two consistent when a
+    basis is chosen and a code is not."""
+    codes = d.codes_for_basis(value, "PremOps")
+    if not codes:
+        raise VariantError(f"{d.juris} declares no class code with premium "
+                           f"basis {value!r}")
+    if config.get("class_code"):
+        return                      # the class applier is authoritative
+    _apply_class(p, codes[0], d, config)
+
+
+def _apply_coverage_form(p, value, d, config):
+    _gl(p)["PremOpsProdsCoverageForm"] = value
+    if value == "Claims Made":
+        # ISO declares RetroactiveDate to apply only when this is Yes; leaving
+        # it No keeps the variant to one change.
+        _gl(p)["RetroactiveDateApplies"] = d.require(
+            GL, "RetroactiveDateApplies", "No")
+        _gl(p).setdefault("YearInClaimsMade", 1)
+
+
+def _apply_claims_made_year(p, value, d, config):
+    if _gl(p).get("PremOpsProdsCoverageForm") != "Claims Made":
+        raise VariantError("a claims-made year applies only to the "
+                           "claims-made form; set the coverage form first")
+    _gl(p)["YearInClaimsMade"] = value          # Int32 -- OI-90
+
+
+def _apply_subline(p, value, d, config):
+    if value not in SUBLINES_FROM_THIS_BASE:
+        raise VariantError(
+            f"{value!r} needs a base submission of its own -- its own "
+            f"classifications, coverage form and class-code domain. The "
+            f"stored bases are shaped for the premises/operations family")
+    _gl(p)["Subline"] = value
+
+
+def _apply_classifications(p, value, d, config):
+    """Put `value` classifications in the first location.
+
+    **The array twice is the easy half.** The half that matters is that the
+    entries differ: ISO's own sample submissions use **different class codes in
+    99 of their 114 multi-class locations**, and their examples mix premium
+    bases inside one location -- Payroll next to Gross Sales. Two identical
+    classifications exercise the loop and nothing else, which is exactly the
+    kind of variant OI-93 exists to catch.
+
+    So each extra classification takes a different declared class code, and
+    **prefers one whose premium basis differs from the first**. That is the
+    trap worth aiming at: the exposure divisor is per basis -- per $1,000 for
+    Gross Sales and Payroll, per 1,000 square feet for Area, and **no divisor at
+    all for `Each` and `Units`** -- so a single divisor applied across a
+    location is wrong the moment the bases differ.
+
+    Refuses rather than inventing when the jurisdiction cannot supply enough
+    distinct codes, which is the third outcome and not a failure.
+    """
+    n = int(value)
+    if n < 1:
+        raise VariantError("classifications must be at least 1")
+    locs = _locations(p)
+    if not locs:
+        raise VariantError(f"{d.juris}'s base submission carries no location")
+    first_loc = locs[0]
+    existing = _classes(first_loc)
+    if not existing:
+        raise VariantError(f"{d.juris}'s base location carries no "
+                           f"classification to copy")
+    template = existing[0]
+    base_code = str(template.get("ClassCode"))
+    base_basis = d.basis_for(base_code, "PremOps") if base_code else ""
+
+    if n <= len(existing):
+        del existing[n:]
+        return
+
+    # Codes whose basis differs come first: the divisor is the point. Ask the
+    # declaration by basis rather than scanning every class code, because
+    # scanning stops at the first different basis it happens to meet -- which
+    # is how this picked Area (5,000,000 square feet) over Payroll.
+    wanted = n - len(existing)
+    picks = []
+    for basis in PREFERRED_SECOND_BASIS:
+        if basis == base_basis:
+            continue
+        for code in d.codes_for_basis(basis):
+            code = str(code)
+            if code != base_code and code not in [c for c, _ in picks]:
+                picks.append((code, basis))
+            if len(picks) >= wanted:
+                break
+        if len(picks) >= wanted:
+            break
+    if len(picks) < wanted:                       # fall back to the same basis
+        for code in d.codes_for_basis(base_basis):
+            code = str(code)
+            if code != base_code and code not in [c for c, _ in picks]:
+                picks.append((code, base_basis))
+            if len(picks) >= wanted:
+                break
+    if len(picks) < wanted:
+        raise VariantError(
+            f"{d.juris} declares only {len(picks) + len(existing)} usable "
+            f"classification codes; {n} were asked for")
+
+    for code, basis in picks:
+        extra = copy.deepcopy(template)
+        extra["ClassCode"] = code
+        extra["ClassDescription"] = d.description(code)
+        extra["PremOpsPremiumBasis"] = basis
+        prods = d.dependent(CLS, "ProdsCompldOpsPremiumBasis",
+                            {"ClassCode": code})
+        if prods:
+            extra["ProdsCompldOpsPremiumBasis"] = d.pick(
+                CLS, "ProdsCompldOpsPremiumBasis", prods)
+        existing.append(extra)
+
+
+def _apply_locations(p, value, d, config):
+    terrs = d.territories()
+    n = int(value)
+    if n < 1:
+        raise VariantError("a submission needs at least one location")
+    if n > len(terrs):
+        raise VariantError(
+            f"{d.juris} declares {len(terrs)} prem/ops territor"
+            f"{'y' if len(terrs) == 1 else 'ies'}, so {n} locations in "
+            f"different territories cannot be built here")
+    locs = _locations(p)
+    first = copy.deepcopy(locs[0])
+    del locs[:]
+    for i in range(n):
+        loc = copy.deepcopy(first)
+        loc["PremisesOperationsTerritory"] = terrs[i]
+        locs.append(loc)
+
+
+def _apply_risk_field(field):
+    def apply(p, value, d, config):
+        _gl(p)[field] = value
+    return apply
+
+
+def _apply_schedule_pct(p, value, d, config):
+    if config.get("schedule_rating") != "Yes":
+        raise VariantError("a scheduled modification applies only when "
+                           "schedule rating is Yes")
+    _gl(p)["SRPClassificationPct"] = value
+
+
+def _apply_terrorism(p, value, d, config):
+    _gl(p)["TerrorismCoverage"] = value
+    if value != "Yes":
+        return
+    place = d.terrorism_place()
+    if place is None:
+        # OI-91: 36 jurisdictions file no terrorism location and countrywide
+        # reads none, so there is nothing to send. That is not a refusal --
+        # terrorism rates, and the premium moves.
+        return
+    field, val = place
+    for loc in _locations(p):
+        loc[field] = val
+
+
+#: Fields the stored base submissions carry a limit figure in, mapped to the
+#: control id that -- IF set in the same config -- already resolves them
+#: fresh against `d` and makes renormalizing here redundant. OI-96: the 2027
+#: filing dropped the `" CSL"` suffix from every one of these (measured
+#: corpus-wide, `scripts/erc/54_oi96_csl_suffix.py`) -- same table, same
+#: column, same factor, reformatted value. A base submission built for a
+#: pre-2027 edition carries the old format and misses every lookup keyed on
+#: it once the resolved edition has moved past the cliff.
+_LIMIT_FIELDS = {
+    "PremOpsProdsEachOccurrenceLimit": "occurrence_limit",
+    "GeneralAggregateLimit": "general_aggregate",
+    "ProdsCompldOpsAggregateLimit": "general_aggregate",
+}
+
+
+def _renormalize_limit(d: Declared, column: str, value: str) -> str:
+    """Match `value` to the resolved edition's OWN declared spelling of the
+    same figure, tolerant of a unit suffix an edition transition added or
+    dropped.
+
+    **Reads the resolved book's own domain, never guesses a format.** A
+    figure can legally appear more than once with different suffixes in the
+    same edition -- `"2,000,000 BI"` and `"2,000,000 CSL"` are two distinct
+    declared values pre-2027, a real distinction (bodily-injury-only versus
+    combined-single-limit), not formatting noise. Renormalizing is only safe
+    when exactly one legal value shares the bare number; more than one is
+    genuine ambiguity this function must not resolve by picking one, and
+    leaving the value alone lets the ordinary legality check catch it rather
+    than silently guessing.
+    """
+    legal = d.values(GL, column)
+    if not legal or value in legal:
+        return value
+    bare = value.split(" ", 1)[0]
+    matches = [v for v in legal if v.split(" ", 1)[0] == bare]
+    if len(matches) == 1:
+        return matches[0]
+    return value
+
+
+def _apply_effective_date(p, value, d, config):
+    """Write the SAME date `d` was resolved at -- see `Declared.for_config()`.
+
+    This applier only writes the payload; it does not choose the edition.
+    A caller that constructs `Declared(juris, some_other_asof)` and then
+    applies `effective_date` here has already made the two disagree -- this
+    cannot catch that from inside `build()`, because by the time an applier
+    runs, `d.book` is already resolved. `Declared.for_config()` is the one correct
+    way to avoid it.
+
+    Also renormalizes `_LIMIT_FIELDS` still carrying the base submission's own
+    figures (OI-96) -- see `_renormalize_limit`. Skipped for any field a
+    control in this same config already owns, since that control resolves
+    the value fresh against `d` on its own turn.
+
+    **OI-97: also supplies `ProdsCompldOpsExclusion` when the resolved
+    edition declares it and the submission doesn't already answer it.** The
+    2027-04-01 filing added this field and made Products/Completed
+    Operations pricing conditional on it being present and not `"Yes"` --
+    left absent (every base submission predates this field), ISO's own rule
+    reads that as "exclude," and the whole coverage silently drops to zero
+    with no message and no referral. Defaulting to `"No"` keeps pricing the
+    coverage the submission actually asked for, the same as every pre-2027
+    edition did with no such field to answer -- **this is a stopgap that
+    picks a side, not a fix for the underlying gap**: a real submission
+    still needs to say deliberately whether Products/CompldOps is excluded,
+    and silently answering "No" here is exactly the kind of default this
+    project otherwise refuses to invent. Logged as a standing lesson, not
+    just a fix -- BUILD-LOG.md Entry 56.
+    """
+    v = str(value)
+    if len(v) != 8 or not v.isdigit():
+        raise VariantError(f"effective date must be YYYYMMDD, got {value!r}")
+    iso = f"{v[0:4]}-{v[4:6]}-{v[6:8]}T00:00:00"
+    p.setdefault("body", {}).setdefault("SchemeKeys", {})["EffectiveDateTime"] = iso
+
+    risk = _gl(p)
+    for field, owner in _LIMIT_FIELDS.items():
+        if owner in config:
+            continue                      # that control is authoritative
+        current = risk.get(field)
+        if isinstance(current, str):
+            risk[field] = _renormalize_limit(d, field, current)
+
+    # OI-97: see the docstring above -- this is a stopgap default, not a
+    # resolved answer.
+    if "ProdsCompldOpsExclusion" not in risk:
+        legal_excl = d.values(GL, "ProdsCompldOpsExclusion")
+        if "No" in legal_excl:
+            risk["ProdsCompldOpsExclusion"] = "No"
+
+
+def _apply_package_version(p, value, d, config):
+    """No-op on purpose. `package_version` has already done its only job by
+    the time an applier runs: `Declared.for_config()` read it and resolved
+    `d.book` against that specific version. There is no submission field to
+    write -- ISO's live service has no equivalent input to pin its own
+    version choice, so a live comparison run always tests our pinned version
+    against whatever ISO currently resolves, which is the point of the
+    control (catching exactly the drift OI-97 found), not a mismatch to
+    paper over."""
+
+
+APPLIERS = {
+    "premops_bi_deductible": _apply_deductible("PremOpsBIDeductible"),
+    "premops_pd_deductible": _apply_deductible("PremOpsPDDeductible"),
+    "premops_bipd_deductible": _apply_deductible("PremOpsBIPDDeductible"),
+    "prods_bi_deductible": _apply_deductible("ProdsCompldOpsBIDeductible"),
+    "prods_pd_deductible": _apply_deductible("ProdsCompldOpsPDDeductible"),
+    "prods_bipd_deductible": _apply_deductible("ProdsCompldOpsBIPDDeductible"),
+    "occurrence_limit": _apply_occurrence_limit,
+    "general_aggregate": _apply_general_aggregate,
+    "premium_basis": _apply_premium_basis,
+    "class_code": _apply_class,
+    "exposure": _apply_exposure,
+    "coverage_form": _apply_coverage_form,
+    "claims_made_year": _apply_claims_made_year,
+    "subline": _apply_subline,
+    "classifications": _apply_classifications,
+    "locations": _apply_locations,
+    "size_of_risk": _apply_risk_field("SizeOfRiskRatingApplies"),
+    "experience_rating": _apply_risk_field("ExperienceRatingApplies"),
+    "schedule_rating": _apply_risk_field("ScheduleRatingModificationApplies"),
+    "schedule_pct": _apply_schedule_pct,
+    "terrorism": _apply_terrorism,
+    "effective_date": _apply_effective_date,
+    "package_version": _apply_package_version,
+}
+
+#: Order matters: a control whose applier reads another's answer must run after
+#: it. The coverage form writes a default claims-made year, so the year runs
+#: later and overwrites it; the class code sets the basis, so the basis runs
+#: first and defers. `effective_date` reads nothing another applier sets, so
+#: its position here doesn't matter -- what matters is that `Declared` was
+#: already constructed at this same date before `build()` was ever called
+#: (`Declared.for_config()`).
+ORDER = ("subline", "premium_basis", "class_code", "exposure", "classifications", "locations",
+         "occurrence_limit", "general_aggregate",
+         "premops_bi_deductible", "premops_pd_deductible",
+         "premops_bipd_deductible", "prods_bi_deductible",
+         "prods_pd_deductible", "prods_bipd_deductible", "coverage_form",
+         "claims_made_year", "size_of_risk", "experience_rating",
+         "schedule_rating", "schedule_pct", "terrorism", "effective_date",
+         "package_version")
+
+
+# ------------------------------------------------------------------ building
+
+def clean(config: dict) -> dict:
+    """Drop blanks and unknown ids. A blank means *leave the base alone*."""
+    return {k: v for k, v in (config or {}).items()
+            if k in BY_ID and v not in ("", None)}
+
+
+def fingerprint(config: dict) -> str:
+    """A stable id for a configuration, so runs of it can be compared later."""
+    c = clean(config)
+    blob = json.dumps({k: str(c[k]) for k in sorted(c)}, sort_keys=True)
+    return hashlib.sha256(blob.encode("utf-8")).hexdigest()[:12]
+
+
+def describe(config: dict) -> str:
+    c = clean(config)
+    if not c:
+        return "the base risk, unvaried"
+    return ", ".join(f"{BY_ID[k].label}={c[k]}" for k in ORDER if k in c)
+
+
+def build(config: dict, d: Declared, base: dict | None = None) -> dict:
+    """Apply a configuration to a jurisdiction's base submission.
+
+    Raises `VariantError` with a readable reason when the jurisdiction cannot
+    express the configuration -- which is a **third outcome**, distinct from
+    disagreeing with ISO, and the caller must report it as one.
+    """
+    c = clean(config)
+    p = copy.deepcopy(base if base is not None else d.base())
+    for cid in ORDER:
+        if cid not in c:
+            continue
+        control = BY_ID[cid]
+        value = _cast(control, c[cid])
+        if control.column:
+            legal = control.options(d, c)
+            if legal and str(value) not in [str(x) for x in legal]:
+                raise VariantError(
+                    f"{control.label}={value!r} is not declared legal in "
+                    f"{d.juris}"
+                    + (f" with {', '.join(BY_ID[k].label + '=' + str(c[k]) for k in control.keyed_by if k in c)}"
+                       if control.keyed_by and any(k in c for k in control.keyed_by)
+                       else "")
+                    + f"; {len(legal)} legal: {list(legal)[:5]}")
+        APPLIERS[cid](p, value, d, c)
+    return p
+
+
+#: What `probe_no_op` concluded about a variant that did not move the premium.
+INERT_CONTROL = "INERT CONTROL"      # no declared value moves it: about ISO
+INERT_VALUE = "INERT VALUE"          # this one does not, another would: about us
+MOVED = "MOVED"                      # it moved after all
+
+
+def probe_no_op(config: dict, d: Declared, kernel, base_premium,
+                limit: int = 12) -> dict:
+    """Why did this variant not move the premium -- ISO's content, or our pick?
+
+    **OI-93.** A variant that rates and leaves the premium alone reads exactly
+    like one that worked. Two very different things produce it:
+
+    * **`INERT CONTROL`** -- no declared value moves the premium. That is a fact
+      about ISO's filing and a real finding (OI-89's schedule rating gate is
+      one).
+    * **`INERT VALUE`** -- the value we happened to choose does nothing, and
+      another declared value would have moved it. That is a fact about **our
+      harness**, and it silently weakens every breadth figure it appears in.
+
+    Nothing distinguished them before this. The probe re-rates the same
+    configuration with each alternative at every recorded `pick` site, offline,
+    and names the first value that moves the premium.
+
+    `limit` caps the alternatives tried per site, because a domain can hold
+    thousands of class codes and this is a diagnostic rather than a sweep.
+    Whatever it skips is reported rather than dropped.
+    """
+    d.picks.clear()
+    d.pins.clear()
+    try:
+        first = kernel.rate(build(config, d))
+    except VariantError as exc:
+        return {"verdict": "NOT APPLICABLE", "detail": str(exc)[:200]}
+    if not first.complete:
+        return {"verdict": "ENGINE STOPPED", "detail": str(first.stopped)[:200]}
+    if base_premium is not None and first.premium != base_premium:
+        return {"verdict": MOVED, "premium": str(first.premium)}
+
+    sites = dict(d.picks)
+    tried = movers = 0
+    skipped = []
+    for (table, col), (chosen, legal) in sorted(sites.items()):
+        others = [v for v in legal if str(v) != str(chosen)]
+        if len(others) > limit:
+            skipped.append(f"{table}.{col} ({len(others)} alternatives, "
+                           f"{limit} tried)")
+            others = others[:limit]
+        for alt in others:
+            d.pins = {(table, col): alt}
+            d.picks.clear()
+            try:
+                r = kernel.rate(build(config, d))
+            except Exception:                                 # noqa: BLE001
+                continue
+            tried += 1
+            if r.complete and r.premium != first.premium:
+                movers += 1
+                d.pins.clear()
+                return {"verdict": INERT_VALUE, "table": table, "column": col,
+                        "chosen": str(chosen), "moves_with": str(alt),
+                        "premium": str(r.premium), "was": str(first.premium),
+                        "alternatives": len(legal) - 1, "tried": tried,
+                        "skipped": skipped}
+    d.pins.clear()
+    return {"verdict": INERT_CONTROL, "sites": len(sites), "tried": tried,
+            "skipped": skipped,
+            "detail": f"{tried} alternative values across {len(sites)} choice "
+                      f"sites, none moved the premium"}
+
+
+def options_for(d: Declared, config: dict | None = None) -> dict:
+    """Every control's legal options in one jurisdiction, given the answers.
+
+    The numeric controls carry their bounds instead: `locations` is bounded by
+    the declared territory count, which is the fact that makes a two-location
+    test impossible in 20 jurisdictions.
+    """
+    c = clean(config or {})
+    out = {}
+    for control in CONTROLS:
+        if control.kind == "number":
+            if control.id == "classifications":
+                out[control.id] = {"kind": "number", "min": 1, "max": 4}
+            elif control.id == "locations":
+                out[control.id] = {"kind": "number", "min": 1,
+                                   "max": len(d.territories())}
+            elif control.id == "claims_made_year":
+                out[control.id] = {"kind": "number", "min": 1, "max": 10}
+            else:
+                out[control.id] = {"kind": "number", "min": 0, "max": None}
+            continue
+        vals = list(control.options(d, c))
+        entry = {"kind": "select", "values": vals}
+        if control.id == "subline":
+            entry["unbuildable"] = [v for v in vals
+                                    if v not in SUBLINES_FROM_THIS_BASE]
+        out[control.id] = entry
+    return out
+
+
+def union_options(jurisdictions=None, asof: str = DEFAULT_ASOF) -> dict:
+    """Every control's options across jurisdictions, with where each is legal.
+
+    **This is the union, deliberately.** Offering only the intersection would
+    remove `Claims Made` -- legal in 50 of 51 -- and every multi-location test,
+    because one jurisdiction narrows each. A value is offered with the list of
+    jurisdictions that declare it, and a run in a jurisdiction that does not
+    reports `NOT APPLICABLE`.
+    """
+    js = list(jurisdictions or Declared.jurisdictions())
+    acc: dict = {c.id: {} for c in CONTROLS}
+    numeric: dict = {c.id: {} for c in CONTROLS if c.kind == "number"}
+    failed = {}
+    for j in js:
+        try:
+            d = Declared(j, asof)
+        except Exception as exc:                             # noqa: BLE001
+            failed[j] = f"{type(exc).__name__}: {exc}"
+            continue
+        opts = options_for(d)
+        for cid, spec in opts.items():
+            if spec["kind"] == "number":
+                numeric[cid][j] = spec
+                continue
+            for v in spec["values"]:
+                acc[cid].setdefault(v, []).append(j)
+    out = {}
+    for control in CONTROLS:
+        if control.kind == "number":
+            maxes = {j: s.get("max") for j, s in numeric[control.id].items()}
+            out[control.id] = {
+                "kind": "number",
+                "max_by_juris": maxes,
+                "max": max((m for m in maxes.values() if m), default=None),
+            }
+            continue
+        vals = acc[control.id]
+        out[control.id] = {
+            "kind": "select",
+            "values": [{"value": v, "states": sorted(w),
+                        "everywhere": len(w) == len(js) - len(failed)}
+                       for v, w in vals.items()],
+            "unbuildable": ([v for v in vals if v not in SUBLINES_FROM_THIS_BASE]
+                            if control.id == "subline" else []),
+        }
+    return {"asof": asof, "jurisdictions": js, "failed": failed,
+            "controls": out}

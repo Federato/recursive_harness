@@ -1,0 +1,205 @@
+
+<!-- RC-1 stale-name notice -->
+<div style="border:2px solid #b45309;background:#fef3c7;color:#1f2937;padding:10px 14px;margin:12px;border-radius:6px;font:14px/1.45 system-ui,sans-serif"><b>Notice (2026-09-23):</b> Written before the 2026-09-22 restructure. Sheet names have changed: Policy Inputs → IN - Policy; Bldg / Contents / BI Rating Worksheet → CALC - Bldg / Contents / BI Rating; Special Class Worksheet → CALC - Special Class; CoreScratchpad → CALC - CoreScratchpad. <b>Location Inputs / IN - Location and Special Class Inputs / IN - Special Class no longer exist</b>: every record is entered on <b>IN - Schedule</b> (one row per record, 40 per block), so input-sheet cell addresses here are out of date, and calc-sheet column C is record 1 of 40. Current state: CF_Algorithm/CF_Rater_RESUME.md.</div>
+<title>How Special Class Broad Form Rating Works</title>
+<meta charset="utf-8">
+<style>
+  body { font-family: Georgia, "Times New Roman", serif; max-width: 980px; margin: 0 auto; padding: 32px 24px 80px; line-height: 1.55; color: #1c2733; background: #fff; }
+  @media (prefers-color-scheme: dark) {
+    body { background: #14181d; color: #dfe4e9; }
+    a { color: #7fb6b8; }
+    table, th, td { border-color: #3a4048 !important; }
+    thead th { background: #24313a !important; color: #eef4f3 !important; }
+    code { background: #262c33 !important; color: #dfe4e9; }
+    pre { background: #262c33 !important; border-color: #3a4048 !important; color: #dfe4e9; }
+    .note { background: #2c2a1c !important; color: #e0c064 !important; }
+    .note.good { background: #1b3226 !important; color: #63c090 !important; }
+    .note.warn2 { background: #2a1f2c !important; color: #d69ad0 !important; }
+  }
+  h1 { font-size: 26px; font-weight: 400; margin-bottom: 4px; }
+  h2 { font-size: 19px; font-weight: 700; margin-top: 42px; border-bottom: 2px solid #1e3a45; padding-bottom: 4px; }
+  h3 { font-size: 15px; font-weight: 700; margin-top: 26px; }
+  .meta { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13px; color: #55606b; margin: 6px 0 4px; }
+  code { font-family: ui-monospace, Consolas, monospace; font-size: 0.92em; background: #eef1f4; padding: 1px 5px; border-radius: 3px; }
+  table { border-collapse: collapse; width: 100%; margin: 14px 0 22px; font-size: 14px; }
+  th, td { border: 1px solid #d7dce2; padding: 8px 10px; text-align: left; vertical-align: top; }
+  thead th { background: #1e3a45; color: #eef4f3; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 12px; text-transform: uppercase; letter-spacing: 0.03em; }
+  table.grid td:nth-child(1) { font-family: ui-monospace, Consolas, monospace; font-size: 12px; text-align: center; }
+  tr.open td:nth-child(3) { color: #8b95a1; font-style: italic; }
+  .note { background: #f7ddd4; color: #a53d26; padding: 12px 16px; border-radius: 6px; margin: 16px 0; font-size: 14px; }
+  .note.warn2 { background: #f2e6c4; color: #a67c1e; }
+  .note.good { background: #dcefe4; color: #2f7d5a; }
+  .note b { font-weight: 700; }
+  pre { background: #eef1f4; border: 1px solid #d7dce2; border-radius: 6px; padding: 14px 16px; overflow-x: auto; font-family: ui-monospace, Consolas, monospace; font-size: 13px; }
+  ol, ul { padding-left: 22px; }
+  hr { border: none; border-top: 1px solid #d7dce2; margin: 40px 0; }
+</style>
+
+<h1>How Special Class Broad Form Rating Works</h1>
+<p class="meta"><b>Written:</b> 2026-09-15. <b>Source:</b> <code>CommercialPropertySpecialClassRules.Rule.xml</code> and
+<code>CommercialPropertySpecialClassBroadCoverageRules.Rule.xml</code>, read directly this session, plus a
+full 47-state sweep of both the rate tables <b>and</b> the state rule files. Companion to
+<code>Excel_Rater_SpecialClass_HowItWorks.html</code> (Basic Group I) and
+<code>Excel_Rater_SpecialClass_BGII_HowItWorks.html</code> (Basic Group II) &mdash; this page is Special
+Class's own Broad form, standalone.</p>
+<div class="note good"><b>Status: traced, not built.</b> Nothing here has been entered into the live workbook.
+On <code>Special Class Worksheet</code>, Basic Group I is complete through premium and Basic Group II stops at
+<code>DeductibleFactorBasicGroupII</code>; <b>Broad has no rows at all</b>.</div>
+
+<h2>1. What's different about Special Class's Broad, in plain English</h2>
+<p>This is by far the <b>shortest chain in the whole coverage</b> &mdash; five steps against Basic Group II's
+ten. Broad form for Special Class does almost nothing clever: it takes one flat countrywide rate, multiplies
+by the loss cost multiplier, applies coinsurance, applies two deductible factors, and stops.</p>
+<p>The reason it is so short is that <b>Special Class's Broad rate is construction-blind</b>. Building's Broad
+form picks a base rate by construction type; Special Class hard-codes the key to
+<code>"Frame"</code> and reads that single row no matter what the property actually is. There is no territory,
+no symbol, no protection class, no class description &mdash; the base rate is the same
+<b>0.015</b> for every Special Class item countrywide.</p>
+<div class="note warn2"><b>The consequence worth understanding:</b> two Special Class items in the same state
+with wildly different hazard &mdash; a concrete bridge and a wood cooling tower &mdash; get the
+<b>identical Broad base rate</b>. Every dimension that separates them in Basic Group I and Basic Group II
+disappears here. If a Broad-form Special Class premium looks suspiciously flat across a schedule, this is why,
+and it is correct.</div>
+
+<h2>2. The rating chain, step by step</h2>
+<table class="grid">
+<thead><tr><th>#</th><th>Step</th><th>What it does</th></tr></thead>
+<tbody>
+<tr><td>1</td><td><code>BroadBaseRate</code></td>
+  <td>Two conditions, both required: <code>CauseOfLossToUse = "Broad"</code> <b>and</b>
+  <code>PolicyType = "Commercial Property Policy"</code>. If either fails, <code>0.0</code>. When both pass,
+  <code>LookupBroadFormBaseRate</code> keys on State|CW plus the literal constants
+  <code>"Frame"</code> and <code>"Bldg"</code> against <code>BroadFormBaseRate</code> &mdash;
+  <b>the construction key is a hard-coded literal, not the item's real construction</b>. CW value
+  <b>0.015</b>.</td></tr>
+<tr><td>2</td><td><code>BroadRate</code></td>
+  <td><code>BroadBaseRate &times; LossCostMultiplier</code>, rounded to 3 dp. Two factors &mdash; the shortest
+  rate step anywhere in this coverage. No numeric value, no symbol, no exclusion factors.</td></tr>
+<tr><td>3</td><td><code>AdjustedBroadRate</code></td>
+  <td><code>BroadRate &times; CoinsuranceFactor</code>, 3 dp. Uses the <b>shared</b>
+  <code>CoinsuranceFactor</code> the item's Basic Group I chain already computed &mdash; <b>not</b> Basic Group
+  II's flat 1.5 surcharge branch. Broad has no coinsurance rule of its own.</td></tr>
+<tr><td>4</td><td><code>DeductibleFactorBroad</code></td>
+  <td>A flat three-way <code>Choose</code>, far simpler than Basic Group II's two-level version:
+  <code>Deductible = "250"</code> &rarr; <code>LookupDeductible250Factor("Broad")</code> = <b>1.05</b>;
+  a real deductible &rarr; <code>LookupDeductibleFactor</code> keyed on <code>Deductible</code>,
+  <code>TotAmtInsuranceToUse</code> and <code>"Other Cause Of Loss"</code>; anything else &rarr;
+  <code>0.0</code>. <b>No wind/hail branch at all</b> &mdash; Broad never looks at
+  <code>WindstormOrHailDeductible</code>.</td></tr>
+<tr><td>5</td><td><code>FinalBroadRate</code></td>
+  <td><code>AdjustedBroadRate &times; DeductibleByLocationFactor &times; DeductibleFactorBroad</code> &mdash;
+  and note it reads the <b>shared</b> <code>DeductibleByLocationFactor</code> (Basic Group I's), not a
+  Broad-specific one. There is no <code>BroadDeductibleByLocationFactor</code> datadef.</td></tr>
+</tbody>
+</table>
+
+<h2>3. The full formula, end to end</h2>
+<pre>BroadBaseRate =
+    LookupBroadFormBaseRate(State|CW, "Frame", "Bldg")      # CW 0.015
+        if CauseOfLossToUse = "Broad" and PolicyType = "Commercial Property Policy"
+    else 0.0
+
+BroadRate =
+    BroadBaseRate &times; LossCostMultiplier
+    (round to 3 dp)
+
+AdjustedBroadRate =
+    BroadRate &times; CoinsuranceFactor      # the shared BGI coinsurance result
+    (round to 3 dp)
+
+DeductibleFactorBroad =
+    LookupDeductible250Factor("Broad")                      # 1.05    if Deductible = "250"
+    elif Deductible is a real value:
+        LookupDeductibleFactor(Deductible, TotAmtInsuranceToUse, "Other Cause Of Loss")
+    else 0.0
+
+FinalBroadRate =
+    AdjustedBroadRate &times; DeductibleByLocationFactor &times; DeductibleFactorBroad
+    (round to 3 dp)
+
+Premium (scheduled, IncludedInBlkt &lt;&gt; "Yes") =
+    round((Limit/100) &times; FinalBroadRate &times; PackageModFactor
+          &times; MultiPremiumAndDispersionCreditFactor &times; IRPMFactor, 0)
+      &times; CyberIncidentExclusionFactorBroad &times; CyberIncidentExclusionCOLExcptnsFactorBroad
+
+Premium (blanket, IncludedInBlkt = "Yes", zero if BlktTotalFullValueAmount = 0) =
+    round((BlktLimit/100) &times; (FullSpecialClassValue/BlktTotalFullValueAmount) &times; BlktBroadAvgRate
+          &times; PackageModFactor &times; MultiPremiumAndDispersionCreditFactor &times; IRPMFactor, 0)
+      &times; CyberIncidentExclusionFactorBroad &times; CyberIncidentExclusionCOLExcptnsFactorBroad</pre>
+<p style="font-family: -apple-system, 'Segoe UI', sans-serif; font-size: 13px; color: #55606b;">Five
+rating-chain steps, against Basic Group I's eight and Basic Group II's ten.</p>
+
+<h2>4. Premium</h2>
+<p><code>CommercialPropertySpecialClassBroadCoverageRules.Rule.xml</code> is structurally identical to the
+Basic Group I and Basic Group II premium files, confirmed by direct read: same two branches (blanket /
+scheduled), <code>BlktBroadAvgRate</code> and <code>FinalBroadRate</code> substituted for the other forms'
+datadefs, and the two cyber factors applied <b>outside</b> the rounded product. No Legal Liability branch.</p>
+<p>The two cyber factors here are the <b>Broad</b> members of the same policy-level pair documented for Basic
+Group II &mdash; set once per policy in <code>CommercialPropertyRules.Rule.xml</code>, never copied onto the
+item. <code>CyberIncidentExclusionFactorBroad</code> is <b>0.995</b> when CP 10 75 is attached;
+<code>CyberIncidentExclusionCOLExcptnsFactorBroad</code> runs 1.000 / 1.000 / 0.998 / 0.997 across the
+Full&nbsp;Limit and Sublimit &times; aggregate combinations &mdash; the same values Basic Group II carries.</p>
+<div class="note"><b>Not verified for Broad specifically:</b> New York overrides both cyber rules for Basic
+Group II (killing the CP 10 75 credit outright and turning CP 10 76 into a <b>1.005 surcharge</b>). Whether NY
+does the same to the Broad pair has not been checked &mdash; it is likely, given the pattern, but it is an
+assumption until swept.</div>
+
+<h2>5. What's shared with other forms vs. genuinely Broad-specific</h2>
+<table>
+<thead><tr><th>Piece</th><th>Status</th><th>Note</th></tr></thead>
+<tbody>
+<tr><td><code>BroadFormBaseRate</code></td><td>Shared table, Special-Class-only key</td><td>Building and Personal Property read this same table, but pick their real construction type. Special Class always reads the <code>"Frame"</code> row. Same table, fundamentally different use.</td></tr>
+<tr><td><code>CoinsuranceFactor</code></td><td>Fully shared</td><td>The item's own Basic Group I result, reused as-is. Broad has no coinsurance rule &mdash; which means all six state variations documented for Basic Group I (FL's 1.42/1.14, NY's graduated scale, PR's missing sub-80% branch, AL/KS/RI's public-institutional branch) flow straight through to Broad.</td></tr>
+<tr><td><code>DeductibleByLocationFactor</code></td><td>Fully shared</td><td>Basic Group I's, not a Broad-specific field. CW <b>0.995</b>, no state deviates. <b>Note this is the plain by-location factor, not Basic Group II's</b> &mdash; there is no wind/hail indicator gate on this one.</td></tr>
+<tr><td><code>DeductibleFactor</code>, cause-of-loss key</td><td>Shared with <b>Special</b>, not with the Basic groups</td><td>Broad passes <code>"Other Cause Of Loss"</code>. Basic Group I passes <code>"Basic Group I"</code>, Basic Group II passes <code>"Basic Group II"</code>. Same table, three different columns of values &mdash; identical only at countrywide; every state that files its own table files genuinely different numbers per column.</td></tr>
+<tr><td><code>Deductible250Factor</code></td><td>Shared table, own key</td><td>Broad passes <code>"Broad"</code> &rarr; CW <b>1.05</b>, same as Basic. (Special and All Other are 1.10.)</td></tr>
+<tr><td>Wind/hail anything</td><td><b>Absent</b></td><td>No exclusion factor, no wind/hail deductible branch, no indicator. Broad carries no windstorm dimension whatsoever.</td></tr>
+<tr><td><code>StdPropPolGroupIFactor</code></td><td><b>Absent from the chain</b></td><td>Computed during shared prep but never multiplied into any Broad step &mdash; and moot anyway, since step 1 zeroes the rate on a Standard Property Policy in 45 states.</td></tr>
+</tbody></table>
+
+<h2>6. State deviations &mdash; swept, not assumed</h2>
+<p>Both the rate tables and the 47 state <b>rule</b> files were compared against countrywide. Table sweeps
+alone would have missed all five of the rule overrides below.</p>
+<table>
+<thead><tr><th>State(s)</th><th>What deviates</th><th>Effect</th></tr></thead>
+<tbody>
+<tr><td><b>PR</b></td><td><code>BroadFormBaseRate</code> table</td><td>Files its own Frame/Bldg row at <b>0.011</b> against CW's <b>0.015</b> &mdash; roughly a 27% lower base rate. The only state to deviate on this table.</td></tr>
+<tr><td><b>AL, KS, RI</b></td><td><code>SetBroadRate</code> rule</td><td>Adds a third multiplier: <code>BroadRate = BroadBaseRate &times; LossCostMultiplier &times; PublicInstitutionalPlanFactor</code>. The factor is <b>0.85</b> in all three states &mdash; a 15% credit &mdash; applied when <code>PublicInstitutionalPlanApply = "Yes"</code> <b>and</b> coinsurance is 90% or 100% (blanket coinsurance if the item is blanketed). Otherwise 1.0.</td></tr>
+<tr><td><b>KS, NY</b></td><td><code>SetBroadBaseRate</code> rule</td><td>Drop the <code>PolicyType = "Commercial Property Policy"</code> half of the gate; the test is just <code>CauseOfLossToUse = "Broad"</code>. Consistent with KS and NY not offering Standard Property Policy for Special Class at all &mdash; the condition is redundant there rather than a real difference in outcome.</td></tr>
+<tr><td><b>FL</b></td><td><code>SetFinalBroadRate</code> rule</td><td>Drops <code>DeductibleByLocationFactor</code> entirely: <code>FinalBroadRate = AdjustedBroadRate &times; DeductibleFactorBroad</code>. Consistent with Florida also blanking <code>SetDeductibleByLocationFactor</code> to an empty sequence. <b>Florida gets no by-location deductible credit on Broad.</b></td></tr>
+<tr><td>All other 42</td><td>&mdash;</td><td>Countrywide rules and the CW <code>BroadFormBaseRate</code> row throughout.</td></tr>
+</tbody></table>
+<div class="note"><b>The deductible tables are the real state story, as everywhere in this coverage.</b>
+46 of 47 states file their own <code>DeductibleFactor</code> table with state-specific limit bands, and the
+<code>"Other Cause Of Loss"</code> column Broad reads is a genuinely different set of values from the Basic
+Group columns. The extraction already done for Basic Group II
+(<code>SpecialClass_BGII_DeductibleFactors.xlsx</code>) <b>does not cover Broad</b> &mdash; it was filtered to
+<code>"Basic Group II"</code>. A Broad build needs the same pull re-run on the other column.</div>
+
+<h2>7. Why this one should be cheap to build</h2>
+<p>Five steps, three of which are plain products, and every table it touches is already extracted or already in
+the workbook:</p>
+<ul>
+<li><b>Step 1</b> is one constant per state &mdash; 46 states at 0.015, Puerto Rico at 0.011. A two-column
+lookup, or arguably a single <code>IF</code>.</li>
+<li><b>Step 3</b> reuses the coinsurance cell already built for Basic Group I. No new work.</li>
+<li><b>Step 5</b> reuses the by-location cell already built for Basic Group I, with a Florida exception.</li>
+<li><b>Step 4</b> is the only genuine lift: a re-pull of the deductible table on the
+<code>"Other Cause Of Loss"</code> column, all 47 states with their own bands.</li>
+</ul>
+<p>Against Basic Group II &mdash; which needed a class-description numeric value, a symbol, a territory, an
+exclusion factor, a policy-type factor, two coinsurance mechanisms and a two-level deductible branch &mdash;
+Broad is a fraction of the work.</p>
+
+<hr>
+
+<h2>Remaining steps</h2>
+<ol>
+<li>Re-pull the deductible table on the <code>"Other Cause Of Loss"</code> column, 47 states, for Broad and
+Special together &mdash; they share the key, so one extraction serves both forms.</li>
+<li>Confirm whether New York overrides the <b>Broad</b> cyber pair the way it overrides the Basic Group II
+pair. Flagged in &sect;4 as an assumption, not a finding.</li>
+<li>Finish Basic Group II first if the goal is a complete form: it still stops at
+<code>DeductibleFactorBasicGroupII</code>, with no <code>FINALRATE</code> or premium rows.</li>
+<li>Nothing gets built into the live workbook until you say go.</li>
+</ol>

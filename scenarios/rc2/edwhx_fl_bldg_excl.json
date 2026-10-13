@@ -1,0 +1,28 @@
+{
+ "name": "rc2_edwhx_fl_bldg_excl",
+ "states": [
+  "FL"
+ ],
+ "edits": [
+  {
+   "sheet": "IN - Schedule",
+   "cell": "AE48",
+   "value": "Yes"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "I134",
+   "value": "Yes"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "N177",
+   "value": "Yes"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "V220",
+   "value": "Yes"
+  }
+ ]
+}

@@ -1,0 +1,551 @@
+# 14 — The evaluation contract
+
+**Stage 2, deliverable 1. Written 2026-08-13, before any interpreter code exists.**
+
+This document says what each node of ISO's rule language *means*, so that the interpreter can be
+written against a fixed target rather than discovered by trial. E3 deferred it during analysis on
+the grounds that it was only needed if we chose to execute ISO's rules rather than re-implement
+them. We chose to execute them, so it is now due.
+
+**Everything here is read from the corpus, not from the schema and not from memory.** Four scripts
+produce it and each figure below names the one it came from:
+
+| Script | Output | What it establishes |
+|---|---|---|
+| `scripts/erc/42_node_surface.py` | `out/node_surface.{txt,csv}`, `node_attrs.csv`, `node_children.csv` | every element, attribute, value domain, child and parent in the language |
+| `scripts/erc/43_default_block.py` | `out/default_block.txt`, `default_blocks.csv` | the program's true entry point |
+| `scripts/erc/44_contract_questions.py` | `out/contract_questions.txt` | the named open semantics, answered or declared open |
+| `scripts/erc/23_rule_program.py` | `out/rule_program.txt` | the prior census this one corrects |
+
+**Population: 570 packages, 21,288 rule files, 2,113,344 element occurrences.** The corpus holds 575
+package directories; five are byte-identical re-unpacks under a `_MachineReadableContent` wrapper
+and are de-duplicated exactly as `gl_engine/erc/discovery.py` does it, so the analysis population
+and the engine's population agree by construction.
+
+---
+
+## 0. Three corrections to what we thought we knew
+
+The contract had to begin by re-measuring, and re-measuring moved three numbers. All three had been
+carried forward from a derived census rather than from the XML.
+
+**The node count is right, and for a reason we had not checked.** The plan's *"58 node types, 54
+executable"* is exactly correct: 58 distinct element names, of which 4 (`Rules`, `Rule`, `MetaData`,
+`MetaDataCode`) carry the document rather than the language, leaving **54 language nodes**. That it
+matched is worth stating plainly, because the next two did not.
+
+**The prior operator census was missing two of the 54.** `23_rule_program.py` P5 enumerated 52
+operators. The two it never saw are **`Default` and `DateAdd`**, and the reason is structural:
+`Default` is a child of the document root `Rules`, not of `Rule`, and every census this project ever
+ran walked `Rule` elements. `DateAdd` was invisible because it lives inside `Default`. **They are
+not rare — both appear in all 570 packages.** §2 is about what they do, and it matters more than the
+count.
+
+**The long tail is 9 nodes, not 14.** The plan records *"14 node types appear fewer than 500 times
+each"*. Measured from source it is **9 of 54**: `GreaterThanOrEqual` (431), `Length` (404),
+`PadLeft` (164), `Max` (108), `Break` (88), `Truncate` (67), `DateCreate` (66), `DateDifference`
+(33), `GetList` (2). The plan's *"one appears twice"* is right — that is `GetList`.
+
+> **The pattern is the project's signature one again: measured in one place, stated about
+> everything.** A census that walks `Rule` cannot find a node that is not inside a `Rule`, and it
+> will report a clean total while blind. This is the same shape as OI-67 and as the split loss-cost
+> defect. **It is now the third time, so the rule is promoted:** a census states the element it
+> walked and the population it walked over, or it does not get quoted.
+
+### Coverage, re-measured
+
+| Top *n* by occurrence | Share of all language nodes |
+|---|---|
+| 5 | 53.48% |
+| 10 | 74.71% |
+| 15 | 87.50% |
+| **20** | **94.03%** |
+| 30 | 98.65% |
+| 40 | 99.76% |
+
+The plan's 94.1% for the top 20 survives at **94.03%**. The architectural decision it justified —
+build the language once rather than transliterate 4,461 rules per rulebook — stands unchanged.
+
+---
+
+## 1. The type system
+
+Five types appear, and they are declared on the node rather than inferred:
+
+| `@Type` | Where it appears | Contract |
+|---|---|---|
+| `string` | everywhere | text; **never coerced to a number** |
+| `decimal` | all arithmetic | **`decimal.Decimal`, never float (N10)** |
+| `integer` | counts, indicators, keys | exact integer |
+| `long` | 26 `Constant`s, 104 `Value`s | exact integer, distinct only in declaration |
+| `dateTime` | `EffDate`, `ExpDate`, 1,642 `FirstValue`s | date, no timezone anywhere in the corpus |
+
+**Null is a first-class value and is not zero.** The corpus distinguishes them deliberately: eight
+meanings of zero were catalogued during analysis, and `IsNull`/`IsNotNull`/`Exist`/`NotExist` exist
+precisely so a rule can ask which it has. **An interpreter that folds null into zero produces a
+complete, plausible, wrong premium** — the failure mode stage 1 was built to refuse.
+
+**Null is also not the empty string, and this one was measurable.** *(Q1, script 44)*
+
+> **21,383 `Constant` nodes carry no text. Every single one is `Type="string"`.** No `decimal`,
+> `integer`, `long` or `dateTime` `Constant` is ever empty, in any of the 570 packages. 3,504 of
+> them *write* to a DataDef.
+
+An empty string-typed `Constant` is **the empty string**. Returning null there would silently change
+the behaviour of every `FirstNonNull` that uses one as its fallback — and §4 shows that 89% of them
+do.
+
+---
+
+## 2. The entry point — the `Default` block
+
+**This is the finding that changes how stage 3 must be wired, and it was invisible to every prior
+analysis.**
+
+`23_rule_program.py` P3 derived the program's entry point by taking the rules that no `RunRule`
+anywhere targets, and concluded it was `(GeneralLiabilityRules, ErcProcess)`. That is a true
+statement about *rules*. It is not the top of the program.
+
+Every package carries exactly one `Default` block, in `Overall Rating.Rule.xml`:
+
+```xml
+<rul:Default>
+  <rul:Sequence>
+    <rul:Constant Type="integer" ToDataDef="Renewal">0</rul:Constant>
+    <rul:Constant Type="string"  ToDataDef="State/Code">CW</rul:Constant>
+    <rul:Constant Type="string"  ToDataDef="State/Name">Countrywide</rul:Constant>
+    <rul:DateAdd ToDataDef="ExpDate" UnitType="Years">
+      <rul:Value Type="dateTime" FromDataDef="EffDate" />
+      <rul:Constant Type="integer">1</rul:Constant>
+    </rul:DateAdd>
+    <!--Assume Policy rather than Quote for a Rating as a Service Request-->
+    <rul:Locate AtOutputDataDef="Policy" OutputAction="Append"><rul:Sequence /></rul:Locate>
+    <rul:ForEach AtDataDef="GeneralLiabilityTable/GeneralLiability">
+      <rul:RunRule FileName="GeneralLiabilityRules" Rule="InitializeRuleSet"        ClearCache="true" />
+      <rul:RunRule FileName="GeneralLiabilityRules" Rule="ErcProcess"               ClearCache="true" />
+      <rul:RunRule FileName="GeneralLiabilityRules" Rule="ErcCalculateTotalPremium" ClearCache="true" />
+    </rul:ForEach>
+  </rul:Sequence>
+</rul:Default>
+```
+
+**An interpreter entered at `ErcProcess` skips five things and reports success.** *(D2–D4, script 43)*
+
+1. `Renewal` defaults to 0
+2. `State/Code` and `State/Name` are seeded
+3. **`ExpDate` is computed as `EffDate` + 1 year** — nothing else in the corpus computes it
+4. a `Policy` node is appended to the output tree, ISO's own comment saying this assumes a policy
+   rather than a quote **for a Rating as a Service request** — the same RAaS the harness will later
+   diff against
+5. **`ErcCalculateTotalPremium` runs after `ErcProcess`** — the total is a separate top-level call,
+   not something `ErcProcess` produces
+
+And the loop matters as much as the body: the three calls run **once per `GeneralLiability` row**,
+which is where multi-risk submissions are actually iterated.
+
+### It is uniform, which is why it can be a contract
+
+Measured across all 570 packages *(script 43)*:
+
+| | |
+|---|---|
+| Packages carrying exactly one `Default` block | **570 of 570** |
+| Distinct files carrying it | **1** — always `Overall Rating.Rule.xml` |
+| Distinct call sequences | **1** |
+| Distinct iteration targets | **1** — `GeneralLiabilityTable/GeneralLiability` |
+| Distinct seed shapes | **52** — one per jurisdiction, differing only in `State/Code` and `State/Name` |
+| Jurisdictions whose seed shape changed across editions | **0 of 52** |
+
+**Contract.** Execution begins at the `Default` block of the resolved package's
+`Overall Rating.Rule.xml`. The engine does not accept an entry point as a parameter, and it does not
+start at `ErcProcess`. **If a resolved package has no `Default` block, the engine fails — it does
+not fall back to a rule.**
+
+---
+
+## 3. Sequencing, and the shape of a rule
+
+| Node | Occurrences | Contract |
+|---|---|---|
+| `Rule` | — | a named body in a file, addressed as (file, name); `@Type` gives its return type, `none` meaning it returns nothing and runs for effect |
+| `Sequence` | 190,589 | evaluate children **left to right, all of them**; the value is the last child's if any. Observed width **0 to 438** — an empty `Sequence` is legal and is a no-op |
+| `Break` | 88 | terminate the **nearest enclosing iteration** |
+
+**`Break` took two measurements to read, and the first one was the wrong axis.** By *direct parent*
+it looks incoherent: `Sum` (70), `Sequence` (14), `GetList` (2) — dominated by an arithmetic
+aggregation rather than by a loop, which the name does not explain. That was recorded as OI-74, an
+open question.
+
+**By *nearest enclosing loop* it is completely uniform: `ForEach` 82, `GetList` 2 — 84 of 84.**
+There is no occurrence anywhere in the corpus outside a loop. The `Sum` cases are aggregations that
+themselves sit inside a `ForEach`; the direct parent was never the semantically relevant relation.
+
+Seen in context the idiom is unmistakable — this is ISO scanning locations for the highest ILF and
+stopping once it knows the answer:
+
+```xml
+<rul:ForEach AtInputDataDef="GeneralLiabilityClassificationTable/GeneralLiabilityClassification">
+  <rul:If>
+    <rul:Test><rul:GreaterThan> … </rul:GreaterThan></rul:Test>
+    <rul:Then><rul:Sequence>
+      <rul:Constant Type="string" ToDataDef="HighestLmtdProdsWithdrawalFinalILFFlag">No</rul:Constant>
+      <rul:Break />
+    </rul:Sequence></rul:Then>
+  </rul:If>
+</rul:ForEach>
+```
+
+**Contract: `Break` terminates the nearest enclosing `ForEach` or `GetList`, and a `Break` with no
+enclosing loop is a hard failure** — which the corpus says cannot happen. **OI-74 is closed.**
+
+> **The lesson is the one this project keeps relearning, rotated again.** The direct parent and the
+> nearest enclosing loop are different questions, and the node's meaning lives in the second. **A
+> census measures the relation it was asked for, not the relation that matters** — which is the same
+> error as measuring one edition, one directory, or one element type and generalising.
+
+`Sequence` nests inside `Rule`, `Then`, `Else`, `Locate`, `Otherwise`, `Default` and itself.
+
+---
+
+## 4. Values and null
+
+### `Constant`
+342,916 occurrences, **18.4% of the whole language and the single most common node.** Leaf: never
+has children. Text payload is the value; absent text means the empty string (§1). `@ToDataDef`
+present on 25,536 makes it a write.
+
+### `Value`
+Reads a DataDef by path. `@AllowNullReturn="true"` on **8,595 nodes — always exactly that value,
+never `false`** *(script 42, N3)*.
+
+> **This clause was wrong in the first draft and is corrected here.** The draft made the rule
+> attribute the sole authority on nullability: without `@AllowNullReturn`, a `Value` resolving to
+> nothing raised. That was inferred from the attribute's *name* rather than measured, and it stopped
+> a real ISO payload dead on `TRIAExpirationDate` — which ISO's own rules read with a bare `Value`
+> and which the schema declares `nillable="true"`.
+>
+> Measured across all 570 packages *(script 45)*: **50,538 of 67,090 element declarations (75.33%)
+> are nillable, and not one `Value` read anywhere — bare or otherwise — targets a non-nillable
+> element.** 30,550 bare reads address an explicitly nillable one. Nullability is close to universal
+> in this schema, so it cannot be what `@AllowNullReturn` gates.
+
+**Contract.** **A `Value` that resolves to nothing returns null and does not raise**, with or
+without `@AllowNullReturn`. The attribute records the author's intent that a null is expected here;
+it is not a permission gate, and treating it as one makes 28,347 legitimate reads fail.
+
+**The guard against nulls sits at the arithmetic boundary instead (§12.3), which is the right place
+for it** — a null that is read and then tested by `IsNull` is ISO working as designed, whereas a
+null that reaches a multiplication is a wrong premium. Guarding the read protects nothing and breaks
+the common case; guarding the arithmetic catches the damage where it happens.
+
+*(Q4)* The `@AllowNullReturn` nulls are concentrated where you would expect a coverage to be
+genuinely absent —
+`GeneralLiabilityClassification*` (947), `GeneralLiabilityRules` (867), the two classification
+coverage files (760 and 739), `GeneralLiabilityUnmannedAircraft*` (680 and 665) and
+`GeneralLiabilityTerrorism` (552). By type: 4,629 decimal, 1,647 string, 1,281 integer.
+
+### `FirstValue` — **the four-way precedence collapses to two**
+
+`@Order="DataDefInputParamConstant"` declares a precedence over four sources: DataDef, then Input,
+then Param, then Constant. P5 listed working out that precedence as a thing an implementer must pin
+down. **The corpus settles it.** *(Q2, script 44)*
+
+| Attribute | Present on |
+|---|---|
+| `FromDataDef` | **179,364 of 179,364 (100%)** |
+| `FromConstant` | **179,364 of 179,364 (100%)** |
+| `FromInput` | **0** |
+| `FromParam` | **0** |
+| Distinct source combinations filed | **1** — `(FromDataDef, FromConstant)` |
+
+`@Order` itself carries **one value corpus-wide**.
+
+**Contract.** `FirstValue` returns the DataDef value if it is non-null, otherwise the constant.
+**On `FirstValue`, `FromInput` and `FromParam` are not implemented, and encountering either is a
+hard failure rather than a guess** — the engine must never invent a precedence it has never seen
+exercised.
+
+> **This is a statement about `FirstValue` and nothing else. Parameters are real.** `Value` carries
+> `@FromParam` on **62,280 of 132,311 nodes — 47.07%**, nearly as often as `@FromDataDef` (70,031).
+> Read carelessly, C2 says "params don't exist" and an implementer skips half the reads in the
+> language. **The four-source precedence is unused; the parameter mechanism is heavily used.** They
+> are different claims and this note exists because the first draft did not separate them. (C13)
+
+`@FromConstant` values are themselves telling: `(empty)` 97,954, `0` 49,353, `0.0` 30,295 and
+`01/01/0001` 1,762 — the last being the dateTime zero, which is a sentinel and **not a date to
+compute with.**
+
+### `FirstNonNull` — **and it can genuinely exhaust**
+
+Returns the first non-null child. The plan asks directly: *what does it do when everything is null?*
+
+**It is not hypothetical.** *(Q3, script 44)*
+
+| Last child (what decides exhaustion) | Count |
+|---|---|
+| `Constant` — a total fallback, can never be null | 34,051 |
+| `Lookup` | 4,239 |
+| `RunRule` | 48 |
+| `Convert` | 22 |
+| `Round` | 18 |
+
+**34,051 of 38,378 (88.73%) end in a `Constant` and cannot exhaust. The other 4,327 can — and they
+appear in 330 of 570 packages.** Arity is 2 or 3 children, never more, never one.
+
+**Contract.** An exhausted `FirstNonNull` **returns null and does not raise.** The reason is the
+89%: ISO's own idiom is to append a total fallback when it wants a guaranteed value — very often the
+literal string `Value Not Found`. Where it omits the fallback, it is deliberately allowing the null
+to travel, and `@AllowNullReturn` exists downstream to receive it. **The engine records an exhausted
+`FirstNonNull` in the trace**, because a null arriving at an arithmetic node is where this becomes a
+defect, and that is where it must be caught.
+
+### `Exist` / `NotExist` / `IsNull` / `IsNotNull`
+`Exist` (8,498) and `NotExist` (10,462) are leaves testing a path's presence in the tree. `IsNull`
+(13,241) and `IsNotNull` (18,573) take exactly one child and test its evaluated value. **Presence
+and nullity are different questions and the corpus asks both** — a path can exist holding null.
+
+---
+
+## 5. Conditionals
+
+Structure measured from `node_children.csv`, not assumed:
+
+| Node | Children | Contract |
+|---|---|---|
+| `If` | `Test` 71,484 · `Then` 71,484 · `Else` **41,809** | `Test` and `Then` are mandatory and paired; **`Else` is optional and absent 41% of the time**. An `If` with no `Else` whose test is false yields null, not zero |
+| `Test` | exactly 1 | evaluates to a boolean |
+| `Then` / `Else` | exactly 1 | the branch value |
+| `Choose` | `When` 12,346 · `Otherwise` 4,816 | evaluate each `When` in order, take the first whose `Test` is true; **`Otherwise` is optional** and its absence with no match yields null |
+| `When` | `Test` + `Then`, exactly | same pairing as `If` |
+
+`Test` most often holds `And` (35,862), then `IsNull` (13,120), `Equal` (9,631), `NotExist` (8,839),
+`Or` (6,245), `NotEqual` (6,504).
+
+**Comparison and boolean nodes.** `Equal` (85,411) and `NotEqual` (37,950) take exactly 2 children.
+So do `GreaterThan` (7,331), `LessThan` (1,091), `LessThanOrEqual` (696) and `GreaterThanOrEqual`
+(431). **`And` (39,575) and `Or` (13,477) are variadic — observed at 2 to 76 and 2 to 26 children.**
+
+**Contract.** `And` and `Or` **short-circuit**, left to right. This is a decision, not a reading: the
+corpus cannot show it, because nothing in the language has a side effect inside a boolean. It is
+recorded here so that if a future filing puts a `RunRule` under an `And`, the behaviour is already
+written down rather than discovered.
+
+---
+
+## 6. Arithmetic and rounding
+
+| Node | Occurrences | Arity | Contract |
+|---|---|---|---|
+| `Sum` | 10,598 | 1 to 419 | add all children; over a `ForEach` (18,933 of its children) it is the aggregation idiom |
+| `Product` | 8,131 | 2 to 10 | multiply all children, then apply `@DecimalPlaces` |
+| `Subtract` | 1,138 | 2 | left minus right |
+| `Divide` | 1,104 | 2 | left over right, then `@DecimalPlaces`. **Division by zero is a hard failure** |
+| `Max` | 108 | 2 | larger of two |
+| `Round` | 630 | 1 | round the child to `@DecimalPlaces` |
+| `Truncate` | 67 | 1 | toward zero |
+| `Count` | 1,828 | leaf | cardinality of a path |
+
+### The rounding decision — **OPEN, and it stays open**
+
+Every `@DecimalPlaces` in the corpus *(Q6, script 44)*:
+
+| Node | Places in use |
+|---|---|
+| `Divide` | 0 (348) · 3 (37) · **8 (30)** |
+| `Product` | 0 (5,284) · 3 (1,267) · 4 (120) |
+| `Round` | 0 (238) · 2 (22) · 3 (290) · 4 (32) |
+
+The 8-decimal case found on 12 August is real and lives on `Divide`. **No node anywhere declares a
+rounding *mode*.** Half-up, half-even and truncate are indistinguishable in the content, and they
+differ on exactly the inputs a rating engine hits constantly — a half-cent.
+
+**Contract.** The mode is a single engine-wide setting, defaulting to **`ROUND_HALF_UP`**, and it is
+**recorded in the trace on every rounded value**. It is not guessed per node and it is not hidden.
+**This is the first thing the RAaS comparison in Phase 2 should be pointed at**, because a mode
+mismatch produces small, systematic, everywhere differences — which is precisely what that
+comparison is good at finding and what reading the files never will.
+
+---
+
+## 7. Lookup
+
+`Lookup` (57,130) takes exactly one child, a `Keys` (57,130). `Keys` holds 2 to 10 children:
+`Constant` (125,187), `Value` (32,247), `FirstValue` (8,167), `RunRule` (1,168).
+
+`@ResultMode` *(Q7, script 44)*:
+
+| Mode | Occurrences | Packages |
+|---|---|---|
+| `FirstResult` | 51,409 | **570 of 570** |
+| `SingleResult` | 5,721 | 371 of 570 |
+
+**Contract.** `SingleResult` matching more than one row is **a hard failure** — it is ISO asserting
+uniqueness, and a violated assertion is a defect in our table loading or in the filing, either of
+which must surface. `FirstResult` returns the first match **in filed row order**, and the engine
+preserves that order from the CSV rather than sorting. Where the declared key is not unique (3.79%
+of tables, measured in `10_key_uniqueness.py`), `FirstResult` is order-dependent and **the trace
+records that a non-unique key was hit**, so a wrong answer is attributable rather than mysterious.
+
+A `Lookup` that matches nothing returns null — which is what feeds the 3,920 exhaustible
+`FirstNonNull`s in §4.
+
+---
+
+## 8. Dispatch
+
+`RunRule` (179,233) is the third most common node in the language. `@Type` is `none` on 104,841 —
+**most calls are for effect, not for a value.**
+
+**`@ClearCache` is `true` on all 179,233 nodes that carry it.** *(script 42, N3)* P5 listed *"what
+is cached and for how long"* as unspecified. **There is nothing to specify: the corpus never once
+asks for a cached call.**
+
+> **Contract. The interpreter does not memoise rule calls, at all.** This is a correctness decision
+> before it is a performance one — rules write to a shared tree, so a cached call is only sound if
+> nothing it touched has changed, and ISO evidently does not want us assuming that. If a future
+> filing carries `ClearCache="false"`, that is **a hard failure**, not a silent optimisation.
+
+Dispatch is three-way *(Q5, script 44)*:
+
+| Kind | Occurrences |
+|---|---|
+| Sibling file, same package | 70,296 |
+| Same file | 57,628 |
+| **Parent package, via `@ProjectName`** | **51,309** |
+
+`@ProjectName` names **11 distinct countrywide packages** — `GL CW 20260101 V01` (28,697),
+`GL CW 20231201 V03` (11,782), `GL CW 20231201 V02` (3,839) and seven more. **This is N5 and N2
+meeting in the content:** a state package calls into the countrywide parent *it declares*, by name,
+and stage 1 already resolves exactly that parent.
+
+**Contract (N2).** A call carrying `@ProjectName` dispatches to the declared parent package. **The
+parent's own rules resolve within the parent and must not re-enter the state package** — the
+4,598 call-super rules make an accidental recursion easy and non-obvious. The interpreter carries an
+explicit current-package frame and **a parent-directed call cannot be re-parented**. Depth is
+bounded and exceeding the bound is a hard failure, because the corpus's own call graph is acyclic
+(measured in `23_rule_program.py` P4, 0 back-edges) and a cycle therefore means the engine is wrong,
+not the content.
+
+**Arguments.** `WithArgs` (6,512, 2 to 303 children) wraps a call; `Arg` (76,243) holds exactly one
+child. Args are evaluated **before** the call, in order, in the caller's frame. **`Arg` most often
+holds a `RunRule` (46,556)** — arguments are frequently themselves calls, which is why evaluation
+order has to be stated rather than left to the implementation.
+
+---
+
+## 9. Iteration and the output tree
+
+`ForEach` (51,893) iterates `@AtDataDef`, or `@AtInputDataDef` on 0.18% of nodes. It holds `RunRule`
+(56,225), `FirstValue` (3,998), **`ForEach` (3,495 — it nests)**, `If` (3,096).
+
+**Contract.** Iteration is in filed document order. The loop variable is a frame, not a global.
+Nesting is supported to arbitrary depth. **A `ForEach` over an absent or empty path executes zero
+times and is not an error** — that is how an absent coverage is meant to disappear.
+
+The output-tree nodes are where an interpreter can quietly corrupt state:
+
+| Node | Occurrences | Contract |
+|---|---|---|
+| `Locate` | 18,842 | positions subsequent writes at `@AtOutputDataDef`. `@OutputAction` is **`Append` on all 9,199 that carry it**; absent on the other 51%, which means *position at the existing node*. Holds a `Sequence` (17,355) evaluated in that position |
+| `Remove` | 7,384 | leaf. **`@RemoveMultiple` is `true` on all 7,384** — removal is always all-matching, never first-matching |
+| `Copy` | 2,274 | leaf; copies a subtree |
+| `Guid` | 4,484 | leaf; **`@ToDataDef` is `ErcMessageTableId` on all 4,484 occurrences.** Its only job in this corpus is to identify a message row |
+
+**`Guid` is the one node whose output cannot be reproducible**, and it is the only source of
+non-determinism in the language. Because it writes nothing but a message-row identity, **the engine
+generates them from a seeded, per-run counter rather than a random source**, so that two runs of the
+same submission produce byte-identical traces and the Phase 2 RAaS diff is not full of false
+positives.
+
+---
+
+## 10. Strings, dates, conversion
+
+| Node | Occurrences | Contract |
+|---|---|---|
+| `Concat` | 1,380 | exactly 2 children, string join |
+| `Length` | 404 | 1 child, string length. Only 20 packages |
+| `PadLeft` | 164 | exactly 3 children. `@ToDataDef` is always a stat code — `LCMStatCode` (70), `ExposureStatCode` (70), `RatingModificationFactorStatCode` (10). **This is fixed-width statistical reporting, not arithmetic** |
+| `Convert` | 1,648 | 1 child, retype to `@Type`. Nests inside itself (330) |
+| `DatePart` | 880 | 1 child. `@UnitType` ∈ {`Months` 420, `Years` 320, `Days` 60} |
+| `DateAdd` | 570 | 2 children. **`@ToDataDef` is `ExpDate` and `@UnitType` is `Years` on all 570** — it exists to do one job, §2 |
+| `DateCreate` | 66 | exactly 3 children — year, month, day |
+| `DateDifference` | 33 | 2 children, `@UnitType` always `Days` |
+| `GetList` | 2 | the whole tail. Holds a `Constant` and a `Break`, in 2 packages |
+
+---
+
+## 11. The decisions, in one table
+
+| # | Question | Verdict | Basis |
+|---|---|---|---|
+| C1 | Where does execution begin? | **ANSWERED** — the `Default` block of `Overall Rating.Rule.xml`, not `ErcProcess` | 570 of 570 packages, one shape |
+| C2 | `FirstValue` four-way precedence | **ANSWERED** — two-way; `FromInput`/`FromParam` never filed, so unimplemented and a hard failure | 179,364 of 179,364 |
+| C3 | `RunRule` caching | **ANSWERED** — never cache; `ClearCache="false"` is a hard failure | 179,233 of 179,233 `true` |
+| C4 | Empty `Constant` — null or empty string? | **ANSWERED** — empty string; only ever `string`-typed | 21,383 of 21,383 |
+| C5 | `Remove` multiplicity | **ANSWERED** — always all-matching | 7,384 of 7,384 `true` |
+| C6 | `FirstNonNull` exhaustion | **CONSTRAINED** — returns null, does not raise, and is traced | 4,327 of 38,378 can exhaust, in 330 packages |
+| C7 | `Lookup` non-unique key under `FirstResult` | **CONSTRAINED** — filed row order, and the trace records the collision | 3.79% of tables |
+| C8 | `Locate` positioning | **CONSTRAINED** — `Append` where declared, position-at-existing otherwise | 9,199 declared of 18,842 |
+| C9 | Parent dispatch and recursion (N2) | **CONSTRAINED** — explicit package frame, no re-parenting, bounded depth | 51,309 cross-package calls, 11 parents, acyclic |
+| C10 | **Rounding mode** | **OPEN** — engine-wide `ROUND_HALF_UP`, traced on every rounded value, first target of the RAaS diff | no mode declared anywhere |
+| C11 | `And`/`Or` short-circuit | **OPEN but inert** — short-circuit, left to right; nothing in the corpus can observe the difference | decision, recorded against future filings |
+| C12 | `Break` | **ANSWERED** — terminates the nearest enclosing loop | 84 of 84 are inside one (`ForEach` 82, `GetList` 2). OI-74 closed |
+| C13 | `Value@FromParam` | **ANSWERED** — parameters are real and must be implemented; **C2's finding is about `FirstValue` only** | 62,280 of 132,311 `Value` nodes, 47.07% |
+
+**Four questions P5 called unspecified turned out to have exactly one answer in the content.** The
+language ISO *declares* is materially larger than the language ISO *uses*, and the difference is
+where an interpreter would otherwise have had to guess.
+
+---
+
+## 12. What the engine refuses to do
+
+Carried forward from stage 1, whose whole purpose was refusing to guess:
+
+1. **An unknown node type is a hard failure.** All 54 are enumerated; a 55th means ISO filed
+   something new and the engine must stop rather than skip it.
+2. **An unknown attribute value is a hard failure** — `ClearCache="false"`, a `FirstValue` with
+   `FromInput`, a fifth `@Type`, a rounding place not in {0,2,3,4,8}.
+3. **Null reaching arithmetic is a hard failure**, not a coerced zero.
+4. **`SingleResult` matching more than one row is a hard failure.**
+5. **Division by zero is a hard failure.**
+6. **A missing `Default` block is a hard failure.**
+
+Every one of these is a case where the alternative is a complete, plausible, wrong premium.
+
+---
+
+## 13. What this changes about the build
+
+**Stage 2 gets smaller and stage 3 gets a correction.**
+
+Smaller, because C2, C3, C4 and C5 remove four of the guesses the interpreter was expected to
+carry, and the long tail is 9 nodes rather than 14.
+
+Corrected, because **§2 moves the entry point.** The kernel in stage 3 was specified as
+*submission → resolved packages → execute → premium*, and "execute" was going to mean `ErcProcess`.
+It has to mean the `Default` block, which brings `ExpDate`, the `Policy` node, the per-risk loop and
+`ErcCalculateTotalPremium` inside the engine's responsibility rather than the caller's.
+
+**The order of implementation follows the coverage curve.** The top 20 nodes are 94.03% of the
+corpus and are the first target; the 9-node tail is last, and `GetList`, at 2 occurrences in 2
+packages, may reasonably be left as a hard failure until something needs it.
+
+---
+
+## 14. Open items raised by this document
+
+| Item | |
+|---|---|
+| **OI-70** | The rounding mode is undeterminable from the content (C10). Resolvable only against RAaS or an ISO clarification. First target of the Phase 2 diff |
+| **OI-71** | `23_rule_program.py` P5's operator census is missing `Default` and `DateAdd`; any figure quoting "52 operators" is superseded by the 54 here |
+| **OI-72** | The plan's "14 node types under 500 occurrences" is 9. Correct where quoted |
+| **OI-73** | Five packages are unpacked twice under a `_MachineReadableContent` wrapper. Byte-identical, and both the engine and these scripts de-duplicate — recorded so no future count reports 572 |
+| ~~OI-74~~ | **Closed the day it was raised.** `Break` terminates the nearest enclosing loop — 84 of 84 occurrences sit inside one. The open question was an artefact of measuring the direct parent instead |
+
+---
+
+**Next:** `gl_engine/interp/` — the node evaluators, written against this contract, top 20 first.
+The eleven coverage walkthroughs are the acceptance target, and the contract above is what they are
+checked against.

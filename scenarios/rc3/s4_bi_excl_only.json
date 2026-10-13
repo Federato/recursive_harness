@@ -1,0 +1,18 @@
+{
+ "name": "rc3_s4_bi_excl_only",
+ "states": [
+  "FL"
+ ],
+ "edits": [
+  {
+   "sheet": "IN - Schedule",
+   "cell": "W48",
+   "value": "No"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "Q177",
+   "value": "Yes"
+  }
+ ]
+}

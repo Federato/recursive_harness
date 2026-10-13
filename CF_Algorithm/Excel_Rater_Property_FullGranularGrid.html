@@ -1,0 +1,290 @@
+<title>CF Property — Full Granular Coverage &times; Form Grid</title>
+<style>
+  :root {
+    --bg: #eef1f4; --paper: #ffffff; --ink: #1c2733; --ink-soft: #55606b; --ink-faint: #8b95a1;
+    --grid-line: #d7dce2; --header-fill: #e4e8ed; --header-fill-strong: #1e3a45; --header-text-strong: #eef4f3;
+    --accent: #1e3a45; --accent-soft: #cfe0e0; --accent-warm: #b96a2c; --accent-warm-soft: #f3e2cf;
+    --good: #2f7d5a; --good-soft: #dcefe4; --warn: #a53d26; --warn-soft: #f7ddd4;
+    --shadow: 0 1px 2px rgba(28,39,51,0.06), 0 8px 24px rgba(28,39,51,0.07);
+    --font-display: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+    --font-body: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+    --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, "Liberation Mono", monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #10151b; --paper: #161d25; --ink: #e7ecf1; --ink-soft: #a3aebb; --ink-faint: #6d7885;
+      --grid-line: #2b3742; --header-fill: #1b242d; --header-fill-strong: #21504f; --header-text-strong: #eaf3f1;
+      --accent: #59a9ac; --accent-soft: #1d3535; --accent-warm: #dd9a5c; --accent-warm-soft: #372a1c;
+      --good: #63c090; --good-soft: #1b3226; --warn: #e0806a; --warn-soft: #3a2019;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 28px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #10151b; --paper: #161d25; --ink: #e7ecf1; --ink-soft: #a3aebb; --ink-faint: #6d7885;
+    --grid-line: #2b3742; --header-fill: #1b242d; --header-fill-strong: #21504f; --header-text-strong: #eaf3f1;
+    --accent: #59a9ac; --accent-soft: #1d3535; --accent-warm: #dd9a5c; --accent-warm-soft: #372a1c;
+    --good: #63c090; --good-soft: #1b3226; --warn: #e0806a; --warn-soft: #3a2019;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 28px rgba(0,0,0,0.35);
+  }
+  :root[data-theme="light"] {
+    --bg: #eef1f4; --paper: #ffffff; --ink: #1c2733; --ink-soft: #55606b; --ink-faint: #8b95a1;
+    --grid-line: #d7dce2; --header-fill: #e4e8ed; --header-fill-strong: #1e3a45; --header-text-strong: #eef4f3;
+    --accent: #1e3a45; --accent-soft: #cfe0e0; --accent-warm: #b96a2c; --accent-warm-soft: #f3e2cf;
+    --good: #2f7d5a; --good-soft: #dcefe4; --warn: #a53d26; --warn-soft: #f7ddd4;
+    --shadow: 0 1px 2px rgba(28,39,51,0.06), 0 8px 24px rgba(28,39,51,0.07);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); line-height: 1.6; overflow-x: hidden; }
+  a { color: var(--accent); }
+  .wrap { max-width: 1320px; margin: 0 auto; padding: 0 24px 96px; }
+
+  header.masthead { padding: 56px 24px 28px; max-width: 1320px; margin: 0 auto; }
+  .eyebrow { font-family: var(--font-ui); font-size: 12px; letter-spacing: 0.11em; text-transform: uppercase; color: var(--accent-warm); font-weight: 600; margin: 0 0 10px; }
+  h1.title { font-family: var(--font-display); font-size: clamp(26px, 4vw, 38px); font-weight: 400; margin: 0 0 14px; text-wrap: balance; }
+  .dek { font-size: 16px; color: var(--ink-soft); max-width: 96ch; margin: 0 0 6px; }
+  .dek code { font-family: var(--font-mono); font-size: 14px; background: var(--header-fill); padding: 1px 5px; border-radius: 3px; }
+
+  section.sect { padding-top: 44px; }
+  .sect-heading { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 6px; }
+  .sect-index { font-family: var(--font-mono); font-size: 13px; color: var(--accent-warm); }
+  h2.sect-title { font-family: var(--font-display); font-size: 22px; font-weight: 400; margin: 0; }
+  .sect-role { font-family: var(--font-ui); font-size: 13px; color: var(--ink-soft); margin: 0 0 16px; max-width: 100ch; }
+
+  .callout { display: flex; gap: 10px; padding: 12px 14px; border-radius: 5px; max-width: 100ch; font-size: 14px; margin: 14px 0; }
+  .callout.warn { background: var(--warn-soft); color: var(--warn); }
+  .callout.warm { background: var(--accent-warm-soft); color: var(--accent-warm); }
+  .callout.good { background: var(--good-soft); color: var(--good); }
+  .callout b { font-weight: 700; }
+  .callout-mark { flex: none; font-weight: 700; }
+
+  .tblscroll { overflow-x: auto; border-radius: 8px; box-shadow: var(--shadow); margin-bottom: 8px; }
+  table.grid { border-collapse: collapse; width: 100%; min-width: 1080px; font-size: 12.5px; background: var(--paper); }
+  table.grid th, table.grid td { border: 1px solid var(--grid-line); padding: 6px 9px; text-align: left; vertical-align: top; }
+  table.grid thead th { background: var(--header-fill-strong); color: var(--header-text-strong); font-family: var(--font-ui); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; position: sticky; top: 0; }
+  table.grid td.fam { font-family: var(--font-mono); font-size: 11px; font-weight: 600; width: 26%; }
+  table.grid td.cnt { text-align: center; font-family: var(--font-ui); font-size: 11px; color: var(--ink-faint); width: 3%; }
+  table.grid td.cell { text-align: center; width: 14.25%; }
+  table.grid td.cell.na { color: var(--grid-line); }
+  table.grid td.cell.hit { color: var(--good); font-weight: 700; }
+  table.grid .forms { font-family: var(--font-ui); font-size: 10.5px; font-weight: 600; color: var(--good); }
+  tr.core-row td { background: var(--accent-warm-soft); }
+  tr.core-row td.fam { font-weight: 700; }
+
+  hr.divider { border: none; border-top: 1px solid var(--grid-line); margin: 44px 0 0; }
+  footer.closing { max-width: 1320px; margin: 52px auto 0; padding: 0 24px 64px; }
+  footer.closing h2 { font-family: var(--font-display); font-weight: 400; font-size: 20px; margin: 0 0 10px; }
+  footer.closing p.note-foot { margin-top: 14px; font-size: 13px; color: var(--ink-faint); font-family: var(--font-ui); }
+</style>
+
+<header class="masthead">
+  <p class="eyebrow">CF_Algorithm &middot; whole Property line &middot; existence matrix, not build status</p>
+  <h1 class="title">Every named family, coverage &times; cause-of-loss form, one table</h1>
+  <p class="dek">Same granularity as the core 22-row grid, extended to all 161 remaining families this
+    project has named. This shows <b>whether ISO filed a rule for that coverage/form combination</b> —
+    not whether it's built in the live rater (deliberately dropped this pass, per direction). &#10003;
+    means a form-agnostic single file exists; a list of forms (BGI &middot; BGII &middot; ...) means
+    separate files exist per cause-of-loss form. Built by mechanically parsing all 546
+    <code>SetPremium</code>-bearing rule files in the ERC package — treat as a first-pass existence map,
+    not a verified trace (same standing caveat <code>Coverage_Inventory_And_Tracking.md</code> already
+    carries).</p>
+</header>
+
+<div class="wrap">
+
+  <section class="sect" id="s1">
+    <div class="sect-heading"><span class="sect-index">&#9670;</span><h2 class="sect-title">The full grid</h2></div>
+    <p class="sect-role">Highlighted rows at the top are the 5 core coverages (full algorithm docs exist
+      for all 5 — see <code>Coverage_Inventory_And_Tracking.md</code> Part A); everything below is an
+      endorsement/rider family, named but not traced. Sorted alphabetically within each block since 161
+      families don't cluster cleanly by theme in a single sort — thematic grouping for the top ~150 lives
+      in that document's Parts B1-B10/B11/C/D instead.</p>
+    <div class="tblscroll">
+      <table class="grid">
+        <thead>
+          <tr><th>Family</th><th>#</th><th>Building</th><th>Personal Property</th><th>Special Class</th><th>Business Income</th><th>Special Class Business Income</th></tr>
+        </thead>
+        <tbody>
+          <tr class="core-row"><td class="fam">Building / Structure (core)</td><td class="cnt">4</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+          <tr class="core-row"><td class="fam">Personal Property (core)</td><td class="cnt">4</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+          <tr class="core-row"><td class="fam">Special Class (core)</td><td class="cnt">4</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+          <tr class="core-row"><td class="fam">Business Income (core)</td><td class="cnt">5</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td></tr>
+          <tr class="core-row"><td class="fam">Special Class Business Income (core)</td><td class="cnt">5</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td></tr>
+
+<tr><td class="fam">AdditionalCoveredPropertyDetail</td><td class="cnt">2</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">AdditionalLocationsCoinsuranceGeneralInformationEarthquake</td><td class="cnt">1</td><td class="cell hit"><span class="forms">Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">AdditionalLocationsCoinsuranceGeneralInformationSpecial</td><td class="cnt">1</td><td class="cell hit"><span class="forms">Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">AdditionalLocationsCoinsuranceProvisionsEarthquake</td><td class="cnt">1</td><td class="cell hit"><span class="forms">Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">AdditionalLocationsCoinsuranceProvisionsSpecial</td><td class="cnt">1</td><td class="cell hit"><span class="forms">Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">AdditionalLocationsSpecialCoinsuranceGeneralInformation</td><td class="cnt">3</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">AdditionalLocationsSpecialCoinsuranceProvisions</td><td class="cnt">3</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">AgreedVal</td><td class="cnt">20</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td></tr>
+<tr><td class="fam">AndOrExtraExpnCovForY2KComputerRelatedAndOtherElectronicProblems</td><td class="cnt">1</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">AndVolcanicEruptionCoverageSubLimitFormWithFlatDollarDeductible</td><td class="cnt">4</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">EQ</span></td><td class="cell hit"><span class="forms">EQ</span></td><td class="cell hit"><span class="forms">EQ</span></td><td class="cell hit"><span class="forms">EQ</span></td></tr>
+<tr><td class="fam">AndVolcanicEruptionCoverageSubLimitFormWithFlatDollarDeductibleBldg</td><td class="cnt">1</td><td class="cell hit"><span class="forms">EQ</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">AndVolcanicEruptionCoverageWithFlatDollarDeductible</td><td class="cnt">4</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">EQ</span></td><td class="cell hit"><span class="forms">EQ</span></td><td class="cell hit"><span class="forms">EQ</span></td><td class="cell hit"><span class="forms">EQ</span></td></tr>
+<tr><td class="fam">AndVolcanicEruptionCoverageWithFlatDollarDeductibleBldg</td><td class="cnt">1</td><td class="cell hit"><span class="forms">EQ</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">AndVolcanicEruptionEndorsement</td><td class="cnt">5</td><td class="cell hit"><span class="forms">EQ</span></td><td class="cell hit"><span class="forms">EQ</span></td><td class="cell hit"><span class="forms">EQ</span></td><td class="cell hit"><span class="forms">EQ</span></td><td class="cell hit"><span class="forms">EQ</span></td></tr>
+<tr><td class="fam">AndVolcanicEruptionEndorsementSubLimitForm</td><td class="cnt">5</td><td class="cell hit"><span class="forms">EQ</span></td><td class="cell hit"><span class="forms">EQ</span></td><td class="cell hit"><span class="forms">EQ</span></td><td class="cell hit"><span class="forms">EQ</span></td><td class="cell hit"><span class="forms">EQ</span></td></tr>
+<tr><td class="fam">BrandsAndLabels</td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">BuildersRiskCollapseDuringConstruction</td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">BuildersRiskPremiumAdjustmentFormDetail</td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">BuildersRiskPremiumAdjustmentFormDetailBlanket</td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">BuildersRiskRenovations</td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">BuildersRiskReportingForm</td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">BuildersRiskTheftOfBuildingMaterialsFixturesMachineryEquipment</td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">BusinessIncomeFromDependentPropertiesBroadForm</td><td class="cnt">2</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII</span></td></tr>
+<tr><td class="fam">BusinessIncomeFromDependentPropertiesFormBroad</td><td class="cnt">1</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">Broad</span></td></tr>
+<tr><td class="fam">BusinessIncomeFromDependentPropertiesFormEarthquake</td><td class="cnt">1</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">Broad</span></td></tr>
+<tr><td class="fam">BusinessIncomeFromDependentPropertiesFormSpecial</td><td class="cnt">1</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">Broad</span></td></tr>
+<tr><td class="fam">BusinessIncomeFromDependentPropertiesLimitedForm</td><td class="cnt">5</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td></tr>
+<tr><td class="fam">BusinessIncomeLandlordAsAdditionalInsuredRentalValue</td><td class="cnt">5</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td></tr>
+<tr><td class="fam">BusnIncomeChangesBeginningOfThePerOfRestrtnNoWaitingPer</td><td class="cnt">3</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; EQ</span></td></tr>
+<tr><td class="fam">BusnIncomeFromDependentPropertiesLimitedInternationalCov</td><td class="cnt">1</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit">&#10003;</td></tr>
+<tr><td class="fam">BusnLimitedInternationalCov</td><td class="cnt">1</td><td class="cell na">&mdash;</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">CannabisExclusion</td><td class="cnt">4</td><td class="cell na">&mdash;</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td></tr>
+<tr><td class="fam">CannabisExclusionBuilding</td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">CannabisExclusionWithHempException</td><td class="cnt">4</td><td class="cell na">&mdash;</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td></tr>
+<tr><td class="fam">CannabisExclusionWithHempExceptionBuilding</td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">ChangesBeginningOfThePeriodOfRestorationNoWaitingPeriod</td><td class="cnt">3</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; EQ</span></td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">ChangesFungusWetRotDryRotBacteria</td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">CivilAuthorityIncreasedCoveragePeriod</td><td class="cnt">10</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td></tr>
+<tr><td class="fam">CivilAuthorityIncreasedCoveragePeriodRadius</td><td class="cnt">2</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit">&#10003;</td></tr>
+<tr><td class="fam">COLFursFurGarmentsAndGarmentsTrimmedWithFur</td><td class="cnt">1</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">COLJewelryWatchesPearlsBullionGoldSilverPlatinumAndOtherPreciousMetals</td><td class="cnt">1</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">COLPatternsDiesMoldsAndForms</td><td class="cnt">1</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">COLStampsTicketsAndLettersOfCredit</td><td class="cnt">1</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">CondominiumCommercialUnitOwnersOptionalCovLossAssmt</td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">CondominiumCommercialUnitOwnersOptionalCovMiscRealProp</td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">DebrisRemovalAdditionalInsurance</td><td class="cnt">15</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">DischargeFromSewerDrainOrSumpNotFloodReltd</td><td class="cnt">4</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td></tr>
+<tr><td class="fam">DischargeFromSewerDrainOrSumpNotFloodReltdSpclClass</td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">DiscretionaryPayrollExpense</td><td class="cnt">2</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit">&#10003;</td></tr>
+<tr><td class="fam">ElectronicCommerceLossOfCov</td><td class="cnt">1</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">ElectronicCommerceLossOfDataCov</td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">EquipmentBreakdownCauseOfLossBldgAmmoniaContaminationCov</td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">EquipmentBreakdownCauseOfLossBldgEBCov</td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">EquipmentBreakdownCauseOfLossBldgHazardousSubstanceOtherThanAmmoniaCov</td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">EquipmentBreakdownCauseOfLossBusnInc</td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">EquipmentBreakdownCauseOfLossBusnIncWaitingPeriod</td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">ExtendedPeriodOfIndemnityCoverage</td><td class="cnt">10</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td></tr>
+<tr><td class="fam">ExtraExpenseFromDependentPropertiesDetail</td><td class="cnt">10</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td></tr>
+<tr><td class="fam">ExtraExpenseFromDependentPropertiesLimitedInternationalCov</td><td class="cnt">2</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit">&#10003;</td></tr>
+<tr><td class="fam">FloodCovEndtBlanketRatingDetail</td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">FloodCoverageEndorsement</td><td class="cnt">5</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td></tr>
+<tr><td class="fam">FoodContaminationBusinessInterruptionAndExtraExpenseAddlAdvCov</td><td class="cnt">2</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit">&#10003;</td></tr>
+<tr><td class="fam">FoodContaminationBusinessInterruptionAndExtraExpenseFoodOnlyCov</td><td class="cnt">2</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit">&#10003;</td></tr>
+<tr><td class="fam">FromDependentPropertiesBroadForm</td><td class="cnt">2</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII</span></td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">FromDependentPropertiesFormBroad</td><td class="cnt">1</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">Broad</span></td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">FromDependentPropertiesFormEarthquake</td><td class="cnt">1</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">Broad</span></td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">FromDependentPropertiesFormSpecial</td><td class="cnt">1</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">Broad</span></td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">FromDependentPropertiesLimitedForm</td><td class="cnt">5</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">FromDependentPropertiesLimitedInternationalCov</td><td class="cnt">1</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">FunctionalBuildingValuation</td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">FunctionalValuationOtherThanStock</td><td class="cnt">5</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">HouseholdCoverageDetail</td><td class="cnt">5</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">IncreasedCostOfLossAndRelatedExpensesForGreenUpgradesEndtBldgCov</td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">IncreasedCostOfLossAndRelatedExpensesForGreenUpgradesEndtBusIncCov</td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">IncreasedCostOfLossAndRelatedExpensesForGreenUpgradesEndtCov</td><td class="cnt">10</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td></tr>
+<tr><td class="fam">IncreasedCostOfLossAndRelatedExpensesForGreenUpgradesEndtPersPropCov</td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">IncreaseInRebuildingExpensesFollowingDisasterCov</td><td class="cnt">10</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">InflationGuard</td><td class="cnt">10</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">InterruptionOfComputerOperations</td><td class="cnt">2</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td></tr>
+<tr><td class="fam">LandlordAsAdditionalInsuredRentalValue</td><td class="cnt">5</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">LeasedPropertyDetailCov</td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">LeasedPropertyDetailueCov</td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">LeaseholdInterestCoverageFormBonusPaymentsCoverage</td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">LeaseholdInterestCoverageFormImprovementsCoverage</td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">LeaseholdInterestCoverageFormPrepaidRentCoverage</td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">LeaseholdInterestCoverageFormTenantsLeaseCoverage</td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">LimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoverageDetailDroneCov</td><td class="cnt">4</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">LimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoverageDetailEQCov</td><td class="cnt">4</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">LimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoverageDtlDroneCov</td><td class="cnt">1</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit">&#10003;</td></tr>
+<tr><td class="fam">LimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoverageDtlEQCov</td><td class="cnt">1</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit">&#10003;</td></tr>
+<tr><td class="fam">LocationFireDepartmentCharge</td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">LocationNewlyAcquiredLocationTimeElement</td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">ManufacturersConsequentialLossAssumption</td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">MiningProperties</td><td class="cnt">4</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII</span></td><td class="cell hit"><span class="forms">BGI &middot; BGII</span></td></tr>
+<tr><td class="fam">MoltenMaterial</td><td class="cnt">5</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td></tr>
+<tr><td class="fam">MortgageholdersErrorsAndOmissionsCoverageForm</td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">NewlyAcquiredOrConstructedPropertyIncreasedLimit</td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">NonOwnedTrailers</td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">OccupClassTemporarilyInPortableStorageUnits</td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">OffPremInterruptionOfBusnVehsMobileEquipmtBusnIncDetailCollision</td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">OffPremInterruptionOfBusnVehsMobileEquipmtBusnIncDetailOTC</td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">OffPremInterruptionOfBusnVehsMobileEquipmtDetailCollision</td><td class="cnt">1</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit">&#10003;</td></tr>
+<tr><td class="fam">OffPremInterruptionOfBusnVehsMobileEquipmtDetailOTC</td><td class="cnt">1</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit">&#10003;</td></tr>
+<tr><td class="fam">OrdinanceOrLawCovACoverage</td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">OrdinanceOrLawCovBAndCCoverage</td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">OrdinanceOrLawCovBCoverage</td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">OrdinanceOrLawCovCCoverage</td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">OrdinanceOrLawCoverageForTenantsInterestInImprovementsAndBettermentsCovA (+BGI/BGII/EQ file variants)</td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">OrdinanceOrLawCoverageForTenantsInterestInImprovementsAndBettermentsCovB (+BGI/BGII/EQ file variants)</td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">OrdinanceOrLawCoverageForTenantsInterestInImprovementsAndBettermentsCovBandC (+BGI/BGII/EQ file variants)</td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">OrdinanceOrLawCoverageForTenantsInterestInImprovementsAndBettermentsCovC (+BGI/BGII/EQ file variants)</td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">OrdinanceOrLawIncreasedPeriodOfRestoration</td><td class="cnt">10</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td></tr>
+<tr><td class="fam">OrdinaryPayrollLimitationOrExclusion</td><td class="cnt">6</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; EQ</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; EQ</span></td></tr>
+<tr><td class="fam">OutdoorTreesShrubsAndPlants</td><td class="cnt">4</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">OutsideSignsDetail</td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">PeakSeasonLimitOfInsuranceDetail</td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">PierAndWharfAdditionalCoveredCausesOfLoss</td><td class="cnt">3</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell hit">&#10003;</td></tr>
+<tr><td class="fam">PierAndWharfAdditionalCoveredCausesOfLossStruct</td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">PollutantCleanUpAndRemovalAdditionalAggregateLimitOfInsuranceLocation</td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">PostTRIA</td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">PowerHeatAndRefrigerationDeduction</td><td class="cnt">6</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; EQ</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; EQ</span></td></tr>
+<tr><td class="fam">PropInProcessOfMfrByOthersLimitedInternationalCov</td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">RadioactiveContamination</td><td class="cnt">5</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td></tr>
+<tr><td class="fam">RadioOrTelevisionAntennasDetail</td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">RadioOrTelevisionAntennasOrExtraExpense</td><td class="cnt">4</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; Special</span></td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">ScheduledBuildingPropertyTenantsPolicyBuildingGlassCov</td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">ScheduledBuildingPropertyTenantsPolicyDetailBuildingPropertyOtherThanGlassCov</td><td class="cnt">4</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">ScheduledBuildingPropertyTenantsPolicyDetailBuildingPropertyOtherThanGlassEQCov</td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">SpecifiedBusnTempAwayFromPremisesDetailCov</td><td class="cnt">5</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">Spoilage</td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">StructureBuildersRiskBuildingMaterialsAndSuppliesOfOthers</td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">TheftOfBuildingMaterialsAndSuppliesOtherThanBuildersRisk</td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">TobaccoSalesWarehouses</td><td class="cnt">1</td><td class="cell na">&mdash;</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">UnscheduledBuildingPropertyTenantsPolicyBuildingGlassCov</td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">UnscheduledBuildingPropertyTenantsPolicyBuildingPropertyOtherThanGlassCov</td><td class="cnt">4</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">UnscheduledBuildingPropertyTenantsPolicyBuildingPropertyOtherThanGlassEQCov</td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">UtilityServicesDirectDamageBldgDetail</td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">UtilityServicesDirectDamageDetail</td><td class="cnt">10</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">UtilityServicesTimeElementDetail</td><td class="cnt">10</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td></tr>
+<tr><td class="fam">VacancyPermit</td><td class="cnt">10</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">VacancyPermitMoltenMaterial</td><td class="cnt">2</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">VacancyPermitRadioactiveContamination</td><td class="cnt">2</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">ValuablePapersAndRecsOTElectronicData</td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">ValueReportingForm</td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">ValueReportingFormGeneralInformation</td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">WatercraftExclusionBuyback</td><td class="cnt">2</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td></tr>
+<tr><td class="fam">ZzDisclosureOfPremiumEstimatedPremiumCertifiedActsTerrorismPursuantTerrorismAct2002</td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">ZzDisclosureOfPremiumThrough123105CertifiedActsTerrorismPursuantTerrorismAct2002</td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr><td class="fam">ZzDisclosurePursuantToTerrorismRiskInsAct2002</td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+
+        </tbody>
+      </table>
+    </div>
+    <div class="callout warn"><span class="callout-mark">&#9888;</span><span><b>Known rough edges, flagged not hidden.</b> A few family names still show naming collisions from
+      the mechanical stripping (e.g. <code>LeasedPropertyDetailCov</code> / <code>LeasedPropertyDetailueCov</code>
+      are almost certainly the plain and Agreed-Value variants of one family, split by an imperfect strip of
+      "Val" from "AgreedValue"; the four <code>BusinessIncomeFromDependentProperties...</code> /
+      <code>FromDependentProperties...</code> pairs likely double-count the same underlying families across
+      Business Income and Special Class Business Income). Not hand-corrected in this pass — same standing
+      caveat the source document carries: family boundaries are approximate until someone traces each one.</span></div>
+  </section>
+
+  <hr class="divider" />
+
+  <footer class="closing">
+    <h2>Remaining steps</h2>
+    <p class="note-foot">Source: mechanical parse of all 546 <code>SetPremium</code>-bearing files in
+      <code>CFCW20260601V01\Rules</code>, cross-referenced against
+      <code>Coverage_Inventory_And_Tracking.md</code> Parts A-D, 2026-09-11. This is an existence map, not
+      a build-status or algorithm-detail view — for the 5 core coverages' actual algorithms, see the
+      individual <code>Excel_Rater_*.html</code> docs; for the endorsement families, nothing beyond the
+      name and coverage/form existence is known yet. Next: pick any row and actually open the rule file.</p>
+  </footer>
+
+</div>

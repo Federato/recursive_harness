@@ -1,0 +1,594 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Earthquake Rating Chains</title>
+<style>
+  :root {
+    --ink: #101b24;
+    --paper: #edf0ec;
+    --paper-line: #c7d2ce;
+    --blueprint: #2e6e8e;
+    --blueprint-soft: #e4ebef;
+    --stamp: #c77f32;
+    --caution: #b14b39;
+    --ledger: #3f8f6e;
+    --surface: #f4f6f3;
+    --panel: #ffffff;
+    --sidebar: #e8ede8;
+    --text: var(--ink);
+    --muted: #5b6b72;
+    --border: #cdd6d2;
+    --font-display: Cambria, 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+    --font-body: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+    --font-mono: 'Cascadia Code', 'Cascadia Mono', Consolas, 'SFMono-Regular', ui-monospace, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --surface: #0b141a;
+      --panel: #101b22;
+      --sidebar: #0e1a20;
+      --text: #e7ece9;
+      --muted: #93a3a0;
+      --border: #223138;
+      --blueprint-soft: #16232b;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --surface: #0b141a;
+    --panel: #101b22;
+    --sidebar: #0e1a20;
+    --text: #e7ece9;
+    --muted: #93a3a0;
+    --border: #223138;
+    --blueprint-soft: #16232b;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; background: var(--surface); color: var(--text);
+    font-family: var(--font-body); -webkit-font-smoothing: antialiased;
+  }
+  body { display: flex; flex-direction: column; min-height: 100vh; }
+  a { color: inherit; }
+  code { font-family: var(--font-mono); font-size: 0.92em; }
+  ::selection { background: var(--stamp); color: #101b24; }
+
+  /* header */
+  header.masthead {
+    display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap;
+    padding: 1.1rem 1.6rem; border-bottom: 1px solid var(--border);
+    background: var(--panel);
+  }
+  header.masthead h1 {
+    font-family: var(--font-display); font-weight: 600; font-size: 1.35rem;
+    margin: 0; letter-spacing: 0.01em; text-wrap: balance;
+  }
+  header.masthead .rule { width: 1px; align-self: stretch; background: var(--border); }
+  header.masthead p { margin: 0; font-size: 0.82rem; color: var(--muted); max-width: 52ch; }
+  header.masthead .src {
+    margin-left: auto; font-family: var(--font-mono); font-size: 0.72rem;
+    color: var(--muted); text-align: right; line-height: 1.5;
+  }
+
+  /* shell */
+  .shell { display: flex; flex: 1; min-height: 0; }
+
+  nav.toc {
+    width: 258px; flex: none; background: var(--sidebar);
+    border-right: 1px solid var(--border);
+    padding: 1rem 0 2rem; overflow-y: auto;
+  }
+  nav.toc .group-label {
+    font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--muted); padding: 0.5rem 1.2rem 0.35rem;
+  }
+  nav.toc button.navlink {
+    display: block; width: 100%; text-align: left; background: none; border: none;
+    font-family: var(--font-body); font-size: 0.86rem; color: var(--text);
+    padding: 0.42rem 1.2rem 0.42rem 1.6rem; cursor: pointer;
+    border-left: 3px solid transparent;
+  }
+  nav.toc button.navlink:hover { background: var(--blueprint-soft); }
+  nav.toc button.navlink.active {
+    background: var(--blueprint-soft); border-left-color: var(--blueprint); font-weight: 600;
+  }
+  nav.toc button.navlink .chain-len {
+    display: block; font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); font-weight: 400;
+  }
+  nav.toc hr { border: none; border-top: 1px solid var(--border); margin: 0.6rem 1.2rem; }
+
+  nav.toc .legend {
+    margin: 1rem 1.2rem 0; padding: 0.8rem 0.9rem; border: 1px solid var(--border);
+    border-radius: 3px; background: var(--panel);
+  }
+  nav.toc .legend h4 {
+    margin: 0 0 0.5rem; font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--muted); font-weight: 600;
+  }
+  nav.toc .legend .row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.74rem; margin-bottom: 0.35rem; }
+  nav.toc .legend .swatch { width: 13px; height: 13px; flex: none; border-radius: 2px; border-width: 1.5px; border-style: solid; }
+  .sw-gate { background: #f4e4ce; border-color: #c77f32; }
+  .sw-zero { background: #f3dcd6; border-color: #b14b39; }
+  .sw-final { background: #dceee4; border-color: #3f8f6e; }
+  .sw-step { background: #e4ebef; border-color: #2e6e8e; }
+  .sw-openq { background: #f4e4ce; border-color: #b14b39; border-style: dashed !important; }
+  .sw-engine { background: #e6e1f0; border-color: #5a4c8a; }
+
+  main { flex: 1; min-width: 0; overflow-y: auto; padding: 1.6rem 2rem 4rem; }
+
+  .intro { max-width: 70ch; margin-bottom: 1.4rem; }
+  .intro h2 { font-family: var(--font-display); font-size: 1.25rem; margin: 0 0 0.5rem; text-wrap: balance; }
+  .intro p { font-size: 0.92rem; line-height: 1.6; color: var(--muted); margin: 0 0 0.6rem; }
+
+  /* tables */
+  .tablewrap { overflow-x: auto; margin-bottom: 1.4rem; }
+  table.grid { border-collapse: collapse; width: 100%; max-width: 1100px; background: var(--panel); }
+  table.grid caption {
+    text-align: left; font-family: var(--font-mono); font-size: 0.7rem; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem;
+  }
+  table.grid th, table.grid td {
+    border: 1px solid var(--border); padding: 0.5rem 0.7rem; font-size: 0.82rem;
+    text-align: left; vertical-align: top; line-height: 1.45;
+  }
+  table.grid thead th {
+    font-family: var(--font-mono); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--muted); background: var(--blueprint-soft); font-weight: 600;
+  }
+  table.grid tbody th { font-weight: 600; white-space: nowrap; }
+  table.grid td.num { font-family: var(--font-mono); text-align: right; white-space: nowrap; }
+  table.grid tr.hl td, table.grid tr.hl th { background: var(--blueprint-soft); }
+  table.grid td .tag {
+    font-family: var(--font-mono); font-size: 0.66rem; padding: 0.05rem 0.35rem; border-radius: 2px;
+    border: 1px solid var(--border); color: var(--muted); white-space: nowrap;
+  }
+  table.grid td .tag.a { border-color: var(--blueprint); color: var(--blueprint); }
+  table.grid td .tag.b { border-color: var(--ledger); color: var(--ledger); }
+  table.grid td .tag.bad { border-color: var(--caution); color: var(--caution); }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.9rem; max-width: 1100px; margin-bottom: 1.4rem; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 3px; padding: 0.9rem 1rem; }
+  .card .k { font-family: var(--font-mono); font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
+  .card .v { font-family: var(--font-display); font-size: 1.5rem; margin: 0.2rem 0 0.25rem; font-variant-numeric: tabular-nums; }
+  .card p { margin: 0; font-size: 0.8rem; color: var(--muted); line-height: 1.45; }
+  .card button.go {
+    margin-top: 0.6rem; background: none; border: 1px solid var(--blueprint); color: var(--blueprint);
+    font-family: var(--font-mono); font-size: 0.7rem; padding: 0.3rem 0.6rem; border-radius: 2px; cursor: pointer;
+  }
+  .card button.go:hover { background: var(--blueprint-soft); }
+
+  /* sheet */
+  .sheet-view { display: none; }
+  .sheet-view.active { display: block; }
+
+  .titleblock {
+    display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--border);
+    margin-bottom: 1.1rem; background: var(--panel);
+  }
+  .titleblock .field { padding: 0.6rem 0.9rem; border-right: 1px solid var(--border); }
+  .titleblock .field:last-child { border-right: none; }
+  .titleblock .field .k {
+    font-family: var(--font-mono); font-size: 0.63rem; text-transform: uppercase; letter-spacing: 0.07em;
+    color: var(--muted); display: block; margin-bottom: 0.15rem;
+  }
+  .titleblock .field .v { font-family: var(--font-mono); font-size: 0.82rem; color: var(--text); line-height: 1.35; }
+  .titleblock .field.wide { grid-column: span 4; border-top: 1px solid var(--border); border-right: none; }
+
+  .sheet {
+    background: var(--paper); border: 1px solid var(--paper-line); border-radius: 2px;
+    padding: 1.4rem 1.2rem 1rem; position: relative; overflow-x: auto;
+    background-image:
+      linear-gradient(var(--paper-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--paper-line) 1px, transparent 1px);
+    background-size: 28px 28px; background-position: -1px -1px;
+    background-color: var(--paper);
+  }
+  .sheet .corner { position: absolute; width: 14px; height: 14px; }
+  .sheet .corner.tl { top: 6px; left: 6px; border-top: 1.5px solid #7d8f8a; border-left: 1.5px solid #7d8f8a; }
+  .sheet .corner.tr { top: 6px; right: 6px; border-top: 1.5px solid #7d8f8a; border-right: 1.5px solid #7d8f8a; }
+  .sheet .corner.bl { bottom: 6px; left: 6px; border-bottom: 1.5px solid #7d8f8a; border-left: 1.5px solid #7d8f8a; }
+  .sheet .corner.br { bottom: 6px; right: 6px; border-bottom: 1.5px solid #7d8f8a; border-right: 1.5px solid #7d8f8a; }
+  .sheet pre.mermaid { margin: 0; background: transparent; min-width: 760px; color: #101b24; }
+
+  .notes { margin-top: 1.1rem; display: grid; grid-template-columns: 1.4fr 1fr; gap: 1.2rem; }
+  .notes h3 {
+    font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--muted); margin: 0 0 0.5rem;
+  }
+  .notes ul { margin: 0; padding-left: 1.1rem; font-size: 0.86rem; line-height: 1.55; }
+  .notes ul li { margin-bottom: 0.4rem; }
+  .notes .delta { border: 1px solid var(--border); background: var(--panel); padding: 0.8rem 0.9rem; border-radius: 3px; font-size: 0.86rem; line-height: 1.55; }
+  .notes .delta.openq { border-color: var(--caution); }
+  .notes .delta + .delta { margin-top: 0.8rem; }
+
+  h3.section {
+    font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--muted); margin: 1.6rem 0 0.6rem;
+  }
+
+  footer.doc-footer {
+    padding: 1rem 2rem 2rem; font-size: 0.76rem; color: var(--muted); border-top: 1px solid var(--border);
+  }
+  footer.doc-footer strong { color: var(--text); }
+
+  @media (max-width: 900px) {
+    .notes { grid-template-columns: 1fr; }
+    .titleblock { grid-template-columns: 1fr 1fr; }
+    .titleblock .field.wide { grid-column: span 2; }
+  }
+  @media (max-width: 720px) {
+    .shell { flex-direction: column; }
+    nav.toc { width: 100%; border-right: none; border-bottom: 1px solid var(--border); padding: 0.6rem 0; }
+    nav.toc .legend { display: none; }
+    main { padding: 1.2rem 16px 3rem; }
+    header.masthead { padding: 1rem 16px; }
+    header.masthead .src { margin-left: 0; text-align: left; }
+    header.masthead .rule { display: none; }
+    .titleblock { grid-template-columns: 1fr; }
+    .titleblock .field { border-right: none; border-bottom: 1px solid var(--border); }
+    .titleblock .field.wide { grid-column: span 1; }
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <h1>Earthquake Rating Chains</h1>
+  <div class="rule"></div>
+  <p>Every gate, branch and terminal in Commercial Property Earthquake for the two coverages the all-coverage page drew: Business Income and Special Class Business Income, from the earthquake rate chain through the endorsement record that charges it (CP 10 40, 10 45, 10 28 or 10 29) and the Agreed Value increment. Every rule and branch is checked against the built engine and ISO's rule XML as of 2026-10-06. CW 2023-08 V04 and CW 2026-06 are drawn together because their earthquake rules are byte-identical.</p>
+  <div class="src">Engine at 542f0e1 (stage2-interpreter; probed at 3ceff3c)<br>Rule files: CommercialProperty{BusinessIncome, SpecialClassBusnIncome}Rules SetEQRatesAndFactors + the four EQ endorsement premium files per coverage + AgreedValEarthquakeCoverageRules<br>Companion: cf-bgi-chains.html · docs/CF-CHUNK10-* (C10-11, C10-12)</div>
+</header>
+
+<div class="shell">
+  <nav class="toc" id="toc">
+    <button class="navlink active" data-target="overview">Overview<span class="chain-len">a base rate x the BI factor, charged by one record</span></button>
+    <hr>
+    <div class="group-label">Decision chains</div>
+    <button class="navlink" data-target="bi">Business Income<span class="chain-len">building's loss cost + 4 factors · 9 rules</span></button>
+    <button class="navlink" data-target="scbi">Special Class Business Income<span class="chain-len">item's base x LCM · 9 rules</span></button>
+    <hr>
+    <div class="group-label">Comparison</div>
+    <button class="navlink" data-target="diff">Side by side<span class="chain-len">the two chains · states · editions</span></button>
+    <hr>
+    <div class="group-label">Review</div>
+    <button class="navlink" data-target="review">Why the old sheets were replaced<span class="chain-len">23 items · 10 corrections</span></button>
+
+    <div class="legend">
+      <h4>Reading the chains</h4>
+      <div class="row"><span class="swatch sw-gate"></span> gate / branch condition</div>
+      <div class="row"><span class="swatch sw-step"></span> computed factor</div>
+      <div class="row"><span class="swatch sw-final"></span> premium resolves</div>
+      <div class="row"><span class="swatch sw-zero"></span> zero, refusal or clamp</div>
+      <div class="row"><span class="swatch sw-openq"></span> silent gap / open question</div>
+      <div class="row"><span class="swatch sw-engine"></span> engine layer, not an ISO rule</div>
+    </div>
+  </nav>
+
+  <main id="main">
+
+    <!-- ============================= OVERVIEW ============================= -->
+    <section class="sheet-view active" id="view-overview">
+      <div class="intro">
+        <h2>A borrowed base rate, the Business Income factor, and one endorsement record</h2>
+        <p>Neither Business Income coverage has an earthquake premium in its own file. The location's earthquake form (CP 10 40, 10 45, 10 28 or 10 29) decides which single endorsement record attaches, and that record charges the premium: final rate x the Business Income limit (or the sub-limit), then two cyber factors. Agreed Value adds only a 10% increment on top. A record attaches only when the coverage's own <code>EQCovIndicator</code> is a "Yes" value and the location's form names it.</p>
+        <p>Both chains start from a borrowed base rate, not a finished one. Business Income takes the building's filed earthquake loss cost and four building factors; Special Class Business Income takes the Special Class item's earthquake base rate x LCM. Both are then multiplied by the ordinary Business Income factor, so coinsurance, maximum period, monthly limit, type of risk and extra expense all move earthquake. The rules are byte-identical in CW 2023-08 V04 and CW 2026-06. Probes ran in UT and IN (Business Income) and OH (SC Business Income).</p>
+      </div>
+
+      <div class="cards">
+        <div class="card">
+          <div class="k">Not a finished rate</div>
+          <div class="v">Base x LCM</div>
+          <p>The building's or item's earthquake deductible and coinsurance never reach Business Income: the building's deductible probes move it $72 / $42 / $0 while BI stays $420.</p>
+          <button class="go" data-target="bi">See Business Income →</button>
+        </div>
+        <div class="card">
+          <div class="k">Not pure pass-through</div>
+          <div class="v">x BI factor</div>
+          <p>Without a sub-limit form, the earthquake factor is a copy of the shared Business Income factor: SC Business Income moves from $2,500 to $8,500 across coinsurance and cover types.</p>
+          <button class="go" data-target="scbi">See SC Business Income →</button>
+        </div>
+        <div class="card">
+          <div class="k">Operational unit</div>
+          <div class="v">Always $0</div>
+          <p>ISO's rule for the op-unit highest earthquake rate never writes its maximum, so that path always rates 0. The engine follows the XML; not checked against live ISO.</p>
+          <button class="go" data-target="bi">See the branch →</button>
+        </div>
+      </div>
+
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart LR
+    bldg(["Building: EQ loss cost<br/>[EQ class, EQ territory]"]) -->|"base + 4 factors"| bi["Business Income EQ rate<br/>x own LCM x BI factor"]:::step
+    item(["Special Class item:<br/>EQ base x LCM"]) -->|"copied"| scbi["SC Business Income EQ rate<br/>x BI factor"]:::step
+    form(["Location EQ form:<br/>10 40 / 10 45 / 10 28 / 10 29"]) --> rec["One endorsement record:<br/>rate x limit (or sub-limit) x cyber"]:::final
+    bi --> rec
+    scbi --> rec
+    rec --> av["+ Agreed Value increment<br/>r3(rate x 0.1) x AV limit"]:::final
+
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>Earthquake ignores the Business Income cause of loss, construction and the building's own earthquake election: Basic, Broad, Special and blank all give $420.</li>
+            <li>A sub-limit form (CP 10 45 / 10 29) swaps the Business Income factor for one based on the sub-limit against annual net income, and charges on the sub-limit.</li>
+            <li>No deductible, IRPM, package modifier or multi-premium credit applies to either endorsement premium.</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>Nothing on these chains refuses for a missing input.</strong> A blank earthquake class or territory, a blank cover type or monthly limit, the operational-unit path, "Included in Blanket" with no earthquake blanket, and Agreed Value with a blank agreed-value limit all price earthquake $0 with outcome "rated". 542f0e1's refusal list has no earthquake entry. Unfiled classes and territories refuse at the table lookup.</div>
+      </div>
+    </section>
+
+    <!-- ============================= BUSINESS INCOME ============================= -->
+    <section class="sheet-view" id="view-bi">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Business Income (child of Structure)</span></div>
+        <div class="field"><span class="k">Editions</span><span class="v">CW 2023-08 V04 = CW 2026-06 (byte-identical); UT and IN override nothing</span></div>
+        <div class="field"><span class="k">Master chain</span><span class="v">SetEQRatesAndFactors :6951 (BusinessIncomeRules), 9 rules: six sub-limit rules (:6964–:7729), SetEQFactor, SetEQRate, SetEQCauseOfLossAdjustment; then SetFinalEQRate :8096. Building loss cost: SetEQBaseRate :11132 (StructureRules).</span></div>
+        <div class="field"><span class="k">Premium files</span><span class="v">CP 10 40 / 10 28 SetPremium :111 · CP 10 45 / 10 29 SetPremium :81 · Agreed Value :101</span></div>
+        <div class="field wide"><span class="k">Coverage gate</span><span class="v">A record attaches (:2264 / :2314 / :2364 / :2414) only when the BI's EQCovIndicator is "Yes, Included in Blanket" or "Yes, Not Included in Blanket" and the Location's EQCauseOfLossForm names that form; otherwise it is removed. One record at a time.</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["Business Income record, child of Structure<br/>EQ inputs: Location EQ form + EQTerr,<br/>Structure EQClass, BI EQCovIndicator"]) --> attach{"BI EQCovIndicator 'Yes, Included' or<br/>'Yes, Not Included' AND Location form =<br/>CP 10 40 / 10 45 / 10 28 / 10 29?"}
+    attach -->|"No"| noRec["No EQ record: removed if sent<br/>FinalEQRate still computed, nothing charges it"]:::zero
+    attach -->|"Yes: exactly one record,<br/>picked by the Location form"| baseGate
+    baseGate{"Structure: Location EQ form set AND<br/>EQClass AND EQTerr non-blank?"}
+    baseGate -->|"No"| baseZero["Structure.EQBaseRate = 0.0"]:::zero
+    baseGate -->|"Yes"| baseLook["Structure.EQBaseRate = EQLossCostBldg<br/>[state, else CW; EQClass; EQTerr]<br/>CW has no rows. UT A1/3 0.073, IN 0.016"]:::step
+    baseLook --> ouGate
+    baseZero --> ouGate{"(MaxPeriod Yes OR MonthlyLOI set OR<br/>CovType EE Only) AND building<br/>in an operational unit?"}
+    ouGate -->|"Yes"| ouRate["EQRate from Location<br/>HighestBusnIncomeEQBaseRate: its rule<br/>never writes the max, always 0.0"]:::zero
+    ouGate -->|"No"| stdRate["EQRate = r3(r3(Structure.EQBaseRate x LCM)<br/>x SoftStory x EQSprinkleredRisk x BldgHeight<br/>x BCEGEQ x BuildersRiskEQ)<br/>building base + factors, BI's own LCM"]:::step
+    ouRate --> colAdj
+    stdRate --> colAdj["EQCOLAdj = r3(StoryMod x r3(BuildersRisk<br/>x r3(EQRate x EQSprinklerLeakageOnlyBldg)))<br/>BI SprinklerLeakageOnly Yes: CW 0.21"]:::step
+    colAdj --> subGate{"Sub-limit record<br/>CP 10 45 / 10 29?"}
+    subGate -->|"No"| facCopy["EQFactor = copy of BI Factor<br/>type of risk x coinsurance, MaxPeriod,<br/>MonthlyLOI or EE factor (0.55 here)"]:::step
+    subGate -->|"Yes"| subFac["band = sub-limit / AnnualNetIncome<br/>EQFactor = r3(BusnIncomeFactor<br/>[CovType, TypeOfRisk, band] x 0.999)"]:::step
+    facCopy --> finalRate
+    subFac --> finalRate["FinalEQRate = r3(EQCOLAdj x EQFactor)<br/>no EQ coinsurance or EQ deductible factor"]:::step
+    finalRate --> formGate{"Which record<br/>is attached?"}
+    formGate -->|"CP 10 40 / 10 28"| covBlkt{"EQCovIndicator =<br/>'Yes, Included in Blanket'?"}
+    covBlkt -->|"No"| premSched["r0(r0(r0(FinalEQRate x BI Limit/100)<br/>x CyberEQ) x CyberCOL)<br/>UT $420, IN $90"]:::final
+    covBlkt -->|"Yes"| premBlkt["same nesting on BlktEQAvgRate<br/>x EQLimitToUse/100"]:::final
+    formGate -->|"CP 10 45 / 10 29"| subBlkt{"EQCovIndicator =<br/>'Yes, Included in Blanket'?"}
+    subBlkt -->|"No"| premSub["r0(sub-limit/100 x FinalEQRate<br/>x CyberEQ x CyberCOL)<br/>UT $306 on 600k"]:::final
+    subBlkt -->|"Yes"| subZero["Premium = 0.0 on this record"]:::zero
+    finalRate --> avGate{"Agreed Value: AgreedValueOption Yes,<br/>not in blanket OR BlktEQAgreedVal Yes,<br/>in blanket?"}
+    avGate -->|"No"| avZero["AV EQ premium = 0.0"]:::zero
+    avGate -->|"Yes, not in blanket"| avB["r0(r0(r0(r3(FinalEQRate x r3(1.1 - 1))<br/>x AgreedValueLimit/100) x CyberEQ) x CyberCOL)<br/>increment only, also on a sub-limit: UT $40"]:::final
+    avGate -->|"Yes, in blanket"| avA["same on BlktEQAvgRate<br/>x EQLimitToUse/100"]:::final
+    baseZero -.->|"EQClass or EQTerr blank"| silent["Engine: $0, indicator 0, outcome 'rated'<br/>not in SILENT_ZERO_INPUTS"]:::eng
+    ouRate -.->|"op unit"| silent
+    facCopy -.->|"CovType blank: Factor 0"| silent
+    premBlkt -.->|"no matching EQ blanket"| silent
+    avB -.->|"AgreedValueLimit blank"| silent
+    baseLook -.->|"class or terr unfiled"| refuse["Engine: refused, SingleResult no row<br/>BuildingHeightFactor / EarthquakeDeductibleTier"]:::eng
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class attach,baseGate,ouGate,subGate,formGate,covBlkt,subBlkt,avGate gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>The rate starts from the building's filed earthquake loss cost (by class and territory) and four building factors, not the building's finished earthquake rate. The building's earthquake deductible and coinsurance never reach Business Income.</li>
+            <li>The Business Income factor does the rest: coinsurance, max period, monthly limit, type of risk and extra expense move earthquake ($420 → $580 / $870 / $730 / $540 / $380).</li>
+            <li>A sub-limit form charges on the sub-limit with a band factor: 600k of 1M gives $306, 400k of 1M gives $588 ("No Coinsurance" is dearer).</li>
+            <li>Agreed Value has an inner 3-place rounding (Indiana gives $10, not $9), and its gate is always true, so it also charges on top of a sub-limit form.</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>The operational-unit path is always $0.</strong> <code>SetHighestBusnIncomeEQBaseRate</code> (Location :1184) resets its working value to 0 and writes the maximum only if that value is null, which never happens; the Group I version compares and copies directly. The engine follows the XML: $0, outcome "rated". Also silent: blank class or territory, blank cover type, "Included in Blanket" with no blanket, blank agreed-value limit. <strong>State watch-items:</strong> CA overrides all four premium files; NY and DC drop the BCEG factor (DC also the story factor); PR rewrites the chain; FL and several 2023 V01 packages use the roof-tank factor instead of soft story; TX has its own sub-limit factor.</div>
+      </div>
+    </section>
+
+    <!-- ============================= SC BUSINESS INCOME ============================= -->
+    <section class="sheet-view" id="view-scbi">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Special Class Business Income (child of a Special Class item)</span></div>
+        <div class="field"><span class="k">Editions</span><span class="v">CW 2023-08 V04 = CW 2026-06 (byte-identical); OH overrides nothing</span></div>
+        <div class="field"><span class="k">Master chain</span><span class="v">SetEQRatesAndFactors :5910 (SpecialClassBusnIncomeRules), 9 rules: six sub-limit rules, SetEQFactor :6704, SetEQRate :6882, SetEQCauseOfLossAdjustment :6898; then SetFinalEQRate :7003. Item's EQRate set at :4377 (SpecialClassRules).</span></div>
+        <div class="field"><span class="k">Premium files</span><span class="v">CP 10 40 / 10 28 SetPremium :111 · CP 10 45 / 10 29 SetPremium :81 · Agreed Value :101</span></div>
+        <div class="field wide"><span class="k">Coverage gate</span><span class="v">A record attaches (:2178 / :2228 / :2278 / :2328) only when this record's own EQCovIndicator is a "Yes" value and the location's form names it. The Special Class item does not need to elect earthquake.</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["SCBI record, child of a<br/>Special Class item"]) --> itemGate{"ITEM: EQClass set AND<br/>location EQTerr set?"}
+    itemGate -->|"No"| baseZero["Item EQBaseRate stays blank,<br/>so EQRate = 0.0"]:::zero
+    baseZero --> engZ1["Engine: $0, outcome 'rated'"]:::eng
+    itemGate -->|"Yes"| lookup["Item EQBaseRate =<br/>EQLossCostBldg[state, raw EQClass, EQTerr]<br/>CW has no rows; every state files<br/>(OH E2 0.003). Unfiled: refused"]:::step
+    lookup --> itemRate["Item EQRate = r3(EQBaseRate x item LCM)<br/>item step 2 of 8"]:::step
+    itemRate --> copy["SCBI EQRate = copy of item EQRate<br/>(if blank). NOT the item's final rate:<br/>its EQ coinsurance, EQ deductible,<br/>sub-limit and PIP factor never reach SCBI.<br/>SCBI's own LCM is not used"]:::step
+    copy --> colGate{"SCBI EQCovIndicator =<br/>'Not Applicable' or 'No Coverage'?"}
+    colGate -->|"Yes"| colZero["COLAdj = 0.0<br/>(no record attaches anyway)"]:::zero
+    colGate -->|"No"| colCopy["COLAdj = EQRate<br/>(no multiplier)"]:::step
+    colCopy --> subGate{"SCBI has a sub-limit<br/>record (CP 10 45 / 10 29)?"}
+    subGate -->|"No"| factor["EQFactor = copy of the shared Factor<br/>(BusnIncomeFactor: CovType, TypeOfRisk,<br/>SCBI coinsurance; or MaxPeriod /<br/>monthly LOI / EE Only factor)"]:::step
+    factor -->|"monthly LOI or CovType blank"| fZero["Factor = 0"]:::zero
+    subGate -->|"Yes"| subF["EQFactor = r3(BusnIncomeFactor[CovType,<br/>TypeOfRisk, band from Limit / ANI]<br/>x 0.999). Seasonal, or Educational with<br/>No Coinsurance: 0.0"]:::step
+    subF -->|"ANI blank, or over 125%"| fZero
+    fZero --> engZ1
+    factor --> final["FinalEQRate = r3(COLAdj x EQFactor)<br/>(SetFinalRates)"]:::step
+    subF --> final
+    final --> formGate{"Record attached? SCBI EQCovIndicator<br/>'Yes, ...' AND location form names it"}
+    formGate -->|"No"| noRec["No EQ record, no EQ premium<br/>(rate still computed)"]:::zero
+    formGate -->|"CP 10 40 or CP 10 28"| blk1{"EQCovIndicator =<br/>'Yes, Included in Blanket'?"}
+    blk1 -->|"No"| p40["r0(r0(r0(FinalEQRate x SCBI Limit/100)<br/>x 2 cyber factors)). No deductible,<br/>IRPM, PackageMod or MultiPrem"]:::final
+    blk1 -->|"Yes"| p40b["r0(r0(r0(BlktEQAvgRate x EQLimitToUse/100)<br/>x 2 cyber factors))"]:::final
+    p40b -->|"no EQ blanket: avg 0"| engZ2["Engine: $0 'rated',<br/>with ISO blanket-ID messages"]:::eng
+    formGate -->|"CP 10 45 or CP 10 29"| blk2{"EQCovIndicator =<br/>'Yes, Included in Blanket'?"}
+    blk2 -->|"Yes"| p45z["Premium = 0.0<br/>(no sub-limit blanket for SCBI)"]:::zero
+    blk2 -->|"No"| p45["r0(r0(r0(sub-limit Limit/100 x FinalEQRate)<br/>x 2 cyber factors))"]:::final
+    p40 --> avGate
+    p45 --> avGate
+    avGate{"AV on: AgreedValueOption 'Yes' and<br/>'Not Included', or BlktEQAgreedVal 'Yes'<br/>and 'Included'? (sub-limit test is an<br/>OR, so it never blocks)"}
+    avGate -->|"No"| avOff["AV premium 0.0 (coverage off)"]:::zero
+    avGate -->|"Yes"| avP["Increment = r0(r0(r0(r3(FinalEQRate x<br/>r3(1.1 - 1)) x AgreedValueLimit/100)<br/>x 2 cyber factors)). Blanket: BlktEQAvgRate,<br/>EQLimitToUse"]:::final
+    avP -->|"AgreedValueLimit blank"| engZ1
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class itemGate,colGate,subGate,formGate,blk1,blk2,avGate gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>The copied rate is the item's earthquake base x LCM, written at the item's second step. With an item base of 0.5, SCBI uses 0.5 while the item's own finished rate is 0.352.</li>
+            <li>The item's earthquake coinsurance and deductible leave SCBI at $2,750; doubling the item's LCM doubles it ($5,500). SCBI's own LCM, class and territory are never read.</li>
+            <li>The rate is then multiplied by the Business Income factor; with a sub-limit record, by a sub-limit band x 0.999 (0.669, $2,010).</li>
+            <li>Chunk 10's $5 result only works from base x LCM: a finished-rate copy would give $3.</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>Nine silent $0 endings.</strong> Blank item earthquake class or location territory, blank SCBI limit, blank monthly limit or cover type, a sub-limit form with no annual net income or sub-limit inputs, a sub-limit over 125%, "Included in Blanket" with no earthquake blanket, and Agreed Value with a blank agreed-value limit all price $0 "rated". Refusals are table misses only: unfiled class or territory, a percentage deductible on a flat-dollar form, Seasonal Leases. <strong>State watch-items:</strong> NY and PR override the SCBI steps; FL overrides the final rates and Agreed Value and files its own factor; NV and UT at 2026-01 resolve CW V01, which overwrites a submitted rate; WA has no package in the corpus.</div>
+      </div>
+    </section>
+
+    <!-- ============================= SIDE BY SIDE ============================= -->
+    <section class="sheet-view" id="view-diff">
+      <div class="intro">
+        <h2>Two chains, one shape</h2>
+        <p>Each row is one step.</p>
+      </div>
+      <div class="tablewrap">
+        <table class="grid">
+          <thead><tr><th>Step</th><th>Business Income</th><th>SC Business Income</th></tr></thead>
+          <tbody>
+            <tr><th>Starting rate</th><td>Building's EQ loss cost [class, territory] x own LCM x 4 building factors (BCEG, soft story, sprinkler, building height)</td><td>Item's EQ base x LCM, copied (a submitted rate is kept)</td></tr>
+            <tr><th>Cause-of-loss adjustment</th><td>Story x Builders Risk x rate x the BI's own sprinkler-leakage-only factor</td><td>Straight copy (0 only for "No Coverage" / N/A, which attach no record)</td></tr>
+            <tr><th>Factor</th><td>Copy of the BI factor, or sub-limit band x 0.999</td><td>Same</td></tr>
+            <tr><th>Op-unit branch</th><td>Always rate 0 (ISO rule never writes its maximum)</td><td>—</td></tr>
+            <tr><th>Premium</th><td>One record: rate x BI limit (sub-limit for 10 45 / 10 29) x 2 cyber factors</td><td>Same, on the SCBI limit</td></tr>
+            <tr><th>Agreed Value</th><td>+ r3(rate x 0.1) x AV limit; also on sub-limit forms</td><td>Same ($280 on 10,000; $340 on a sub-limit form)</td></tr>
+            <tr><th>Not applied</th><td>Deductible, IRPM, package, multi-premium, cause of loss</td><td>Same, plus SCBI's own LCM, class and territory</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="intro">
+        <h2>Editions: nothing changed; states: earthquake is state-heavy</h2>
+        <p>Every rule and table on both chains is byte-identical in CW 2023-08 V04 and CW 2026-06. The countrywide earthquake loss-cost table is empty, so every state files its own. CA overrides the Business Income premium files; NY, DC, PR, FL and TX change parts of the rate chain; WA has no package in the corpus. Packages still on CW 2023 V01 lack the null guards and use the roof-tank factor.</p>
+      </div>
+    </section>
+
+    <!-- ============================= REVIEW ============================= -->
+    <section class="sheet-view" id="view-review">
+      <div class="intro">
+        <h2>What the all-coverage page got wrong or left out for Earthquake</h2>
+        <p><code>cf-rating-chains.html</code> drew one Earthquake sheet each for Business Income and SC Business Income. On 2026-10-06 they were removed and now link here; that page is now an index only.</p>
+      </div>
+      <div class="tablewrap">
+        <table class="grid">
+          <caption>Business Income</caption>
+          <thead><tr><th>#</th><th>All-coverage page said</th><th>Engine / XML shows</th><th>Kind</th></tr></thead>
+          <tbody>
+            <tr><th>1</th><td>Coverage gate: "Agreed Value is the only path to a chargeable premium"</td><td><strong>One endorsement record charges the full rate, picked by the location's form; Agreed Value adds only the increment</strong></td><td><span class="tag bad">correction</span></td></tr>
+            <tr><th>2</th><td>"Blanket/max-period" branch</td><td><strong>The operational-unit test, and its rate is always 0</strong> (ISO's rule never writes its maximum)</td><td><span class="tag bad">correction</span></td></tr>
+            <tr><th>3</th><td>EQ factor "distinct from the shared Factor"</td><td><strong>A copy of the BI factor unless a sub-limit record exists</strong>; coinsurance, max period and the rest move earthquake</td><td><span class="tag bad">correction</span></td></tr>
+            <tr><th>4</th><td>Rate "reuses the building's own earthquake rate" (open question)</td><td><strong>Reuses the building's base loss cost and four factors, not its finished rate</strong>; BI's own LCM applies</td><td><span class="tag bad">correction</span></td></tr>
+            <tr><th>5</th><td>"8-step chain"</td><td>Nine rules</td><td><span class="tag bad">correction</span></td></tr>
+            <tr><th>6</th><td>Premium file: Agreed Value + the endorsement files</td><td>Four record files (:111 / :81) and Agreed Value (:101)</td><td>incomplete</td></tr>
+            <tr><th>7</th><td>Endorsement premium on EQLimitToUse</td><td>Scheduled 10 40 / 10 28 use the BI limit; sub-limit forms the sub-limit; "Included in Blanket" sub-limit → $0</td><td>incomplete</td></tr>
+            <tr><th>8</th><td>Agreed Value formula (open question)</td><td>Closed: an inner r3 (IN $10, not $9); a blank AV limit gives $0 with the record on</td><td>incomplete</td></tr>
+            <tr><th>9</th><td>Agreed Value on sub-limit forms not mentioned</td><td>Its gate is always true, so it charges on a sub-limited BI too</td><td>missing</td></tr>
+            <tr><th>10</th><td>No zeros drawn</td><td>Blank class / territory / cover type, op unit, blanket without match, blank AV limit: $0 "rated"</td><td>missing</td></tr>
+            <tr><th>11</th><td>Dependencies not stated</td><td>Independent of cause of loss, construction, IncludedInBlkt and the building's own EQ election</td><td>missing</td></tr>
+            <tr><th>12</th><td>Six-step sub-limit machinery, not traced</td><td>Sub-limit / annual net income → coinsurance band → BusnIncomeFactor x 0.999</td><td>clarified</td></tr>
+            <tr><td colspan="4">Confirmed: master chain :6951, cause-of-loss adjustment formula (own sprinkler-leakage factor), final rate with no EQ coinsurance or deductible, one record by location form, chunk 10's $5, Agreed Value increment-only, editions.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="tablewrap">
+        <table class="grid">
+          <caption>Special Class Business Income</caption>
+          <thead><tr><th>#</th><th>All-coverage page said</th><th>Engine / XML shows</th><th>Kind</th></tr></thead>
+          <tbody>
+            <tr><th>13</th><td>Borrows the item's "already fully-rated" EQ rate</td><td><strong>Copies the item's base x LCM (0.5, not the finished 0.352)</strong>; item coinsurance and deductible don't move it</td><td><span class="tag bad">correction</span></td></tr>
+            <tr><th>14</th><td>Overview: borrows the finished rate "wholesale" in two of five forms</td><td><strong>Wrong for both forms:</strong> Basic Group I and Earthquake both copy base x LCM</td><td><span class="tag bad">correction</span></td></tr>
+            <tr><th>15</th><td>EQ factor "distinct from the shared Factor"</td><td><strong>A straight copy of the BI factor without a sub-limit record</strong> ($2,500 to $8,500)</td><td><span class="tag bad">correction</span></td></tr>
+            <tr><th>16</th><td>"Applies no multiplier at all"; "a two-line copy-then-gate"</td><td><strong>The BI factor is a real multiplier, and the record adds the limit and cyber factors</strong></td><td><span class="tag bad">correction</span></td></tr>
+            <tr><th>17</th><td>Delta: "no work beyond the gate", unlike plain BI</td><td>Overstated: both start from a base x LCM; SCBI adds the factor</td><td><span class="tag bad">correction</span></td></tr>
+            <tr><th>18</th><td>Coverage gate</td><td>Its own EQCovIndicator and the location's form; the item need not elect earthquake</td><td>incomplete</td></tr>
+            <tr><th>19</th><td>Sub-limit machinery, not traced</td><td>Traced: band x 0.999 (0.669, $2,010)</td><td>incomplete</td></tr>
+            <tr><th>20</th><td>Agreed Value branch B</td><td>$280 confirmed; blank AV limit → $0 rated; also charges on a sub-limit form ($340)</td><td>incomplete</td></tr>
+            <tr><th>21</th><td>Endorsement premium formula not given</td><td>Rate x SCBI limit (or sub-limit) x 2 cyber factors; no deductible, IRPM, package or multi-premium</td><td>missing</td></tr>
+            <tr><th>22</th><td>No zeros drawn</td><td>Nine silent $0 endings; refusals at lookups only</td><td>missing</td></tr>
+            <tr><th>23</th><td>Cause-of-loss 0.0 branch</td><td>Never reaches a premium: no record attaches for those values</td><td>clarified</td></tr>
+            <tr><td colspan="4">Confirmed: master chain :5910, 9 steps, null-guarded copy (a submitted rate is kept), no soft-story / sprinkler / height / BCEG / Builders Risk factor in SCBI, final rate, chunk 10's $5.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="doc-footer">
+  Sources: the built engine (<strong>cf_engine</strong> / interpreter at 542f0e1; probed at 3ceff3c), probed offline on 2026-10-06 with no calls to ISO: Business Income in UT and IN, Special Class Business Income in OH, each at a date resolving CW 2023-08 V04 and one resolving CW 2026-06; chunk 10's Oregon case re-run offline. The op-unit $0 and the ISO messages on the 125% and blanket cases are not checked against live ISO. ISO rule XML is under <code>F:\ISO_ERC_Files\CF</code>. Companion docs are in <code>CF_Algorithm</code>: <code>CauseOfLoss_BusinessIncome_RatingAlgorithms.md</code>, <code>CauseOfLoss_SpecialClassBusinessIncome_RatingAlgorithms.md</code> and the four cause-of-loss chain pages.
+</footer>
+
+<script>
+  (function () {
+    var toc = document.getElementById('toc');
+    var main = document.getElementById('main');
+
+    function activate(target) {
+      var views = main.querySelectorAll('.sheet-view');
+      for (var i = 0; i < views.length; i++) views[i].classList.remove('active');
+      var view = document.getElementById('view-' + target);
+      if (view) view.classList.add('active');
+
+      var links = toc.querySelectorAll('.navlink');
+      for (var j = 0; j < links.length; j++) {
+        links[j].classList.toggle('active', links[j].getAttribute('data-target') === target);
+      }
+      main.scrollTop = 0;
+      window.scrollTo(0, 0);
+    }
+
+    document.addEventListener('click', function (e) {
+      var btn = e.target.closest('button[data-target]');
+      if (btn) activate(btn.getAttribute('data-target'));
+    });
+
+    var hash = location.hash.slice(1);
+    if (hash && document.getElementById('view-' + hash)) activate(hash);
+  })();
+</script>
+
+<style>.mermaid-rendering .sheet-view{display:block!important}</style>
+<script type="module">
+  // Render every diagram once, with all sheets briefly visible so hidden tabs get real sizes.
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({ startOnLoad: false, securityLevel: "strict", flowchart: { wrappingWidth: 260 } });
+  document.documentElement.classList.add("mermaid-rendering");
+  try { await mermaid.run({ querySelector: "pre.mermaid" }); }
+  finally { document.documentElement.classList.remove("mermaid-rendering"); }
+</script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+{
+ "name": "rc3_sc_unlinked_small",
+ "states": [
+  "FL"
+ ],
+ "edits": [
+  {
+   "sheet": "IN - Schedule",
+   "cell": "K220",
+   "value": 40000
+  }
+ ]
+}

@@ -1,0 +1,500 @@
+<title>CF Property — Categorized &amp; Filterable Coverage Grid</title>
+<style>
+  :root {
+    --bg: #eef1f4; --paper: #ffffff; --ink: #1c2733; --ink-soft: #55606b; --ink-faint: #8b95a1;
+    --grid-line: #d7dce2; --header-fill: #e4e8ed; --header-fill-strong: #1e3a45; --header-text-strong: #eef4f3;
+    --accent: #1e3a45; --accent-soft: #cfe0e0; --accent-warm: #b96a2c; --accent-warm-soft: #f3e2cf;
+    --good: #2f7d5a; --good-soft: #dcefe4; --warn: #a53d26; --warn-soft: #f7ddd4;
+    --shadow: 0 1px 2px rgba(28,39,51,0.06), 0 8px 24px rgba(28,39,51,0.07);
+    --font-display: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+    --font-body: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+    --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, "Liberation Mono", monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #10151b; --paper: #161d25; --ink: #e7ecf1; --ink-soft: #a3aebb; --ink-faint: #6d7885;
+      --grid-line: #2b3742; --header-fill: #1b242d; --header-fill-strong: #21504f; --header-text-strong: #eaf3f1;
+      --accent: #59a9ac; --accent-soft: #1d3535; --accent-warm: #dd9a5c; --accent-warm-soft: #372a1c;
+      --good: #63c090; --good-soft: #1b3226; --warn: #e0806a; --warn-soft: #3a2019;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 28px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #10151b; --paper: #161d25; --ink: #e7ecf1; --ink-soft: #a3aebb; --ink-faint: #6d7885;
+    --grid-line: #2b3742; --header-fill: #1b242d; --header-fill-strong: #21504f; --header-text-strong: #eaf3f1;
+    --accent: #59a9ac; --accent-soft: #1d3535; --accent-warm: #dd9a5c; --accent-warm-soft: #372a1c;
+    --good: #63c090; --good-soft: #1b3226; --warn: #e0806a; --warn-soft: #3a2019;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 28px rgba(0,0,0,0.35);
+  }
+  :root[data-theme="light"] {
+    --bg: #eef1f4; --paper: #ffffff; --ink: #1c2733; --ink-soft: #55606b; --ink-faint: #8b95a1;
+    --grid-line: #d7dce2; --header-fill: #e4e8ed; --header-fill-strong: #1e3a45; --header-text-strong: #eef4f3;
+    --accent: #1e3a45; --accent-soft: #cfe0e0; --accent-warm: #b96a2c; --accent-warm-soft: #f3e2cf;
+    --good: #2f7d5a; --good-soft: #dcefe4; --warn: #a53d26; --warn-soft: #f7ddd4;
+    --shadow: 0 1px 2px rgba(28,39,51,0.06), 0 8px 24px rgba(28,39,51,0.07);
+  }
+
+  /* ---- build-status visualization ---------------------------------------- */
+  .status-sect { padding-top: 34px; }
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(212px, 1fr)); gap: 14px; margin: 18px 0 8px; }
+  .tile { background: var(--paper); border: 1px solid var(--grid-line); border-radius: 10px; padding: 16px 18px; box-shadow: var(--shadow); }
+  .tile .num { font-family: var(--font-display); font-size: 34px; line-height: 1.05; font-variant-numeric: tabular-nums; }
+  .tile .num small { font-size: 16px; color: var(--ink-faint); }
+  .tile .cap { font-family: var(--font-ui); font-size: 12px; color: var(--ink-soft); margin-top: 6px; }
+  .meter { height: 8px; border-radius: 4px; background: var(--header-fill); margin-top: 11px; display: flex; gap: 2px; overflow: hidden; }
+  .meter i { display: block; height: 100%; }
+  .meter i.built  { background: var(--good); border-radius: 4px 0 0 4px; }
+  .meter i.traced { background: var(--accent-warm); }
+  .meter i.none   { background: var(--header-fill); }
+
+  table.matrix { border-collapse: separate; border-spacing: 2px; width: 100%; margin: 6px 0 4px; }
+  table.matrix th { font-family: var(--font-ui); font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .04em; color: var(--ink-soft); padding: 4px 6px; text-align: center; background: none; border: none; }
+  table.matrix th.rowhead { text-align: left; width: 21%; color: var(--ink); font-size: 11.5px; text-transform: none; letter-spacing: 0; }
+  table.matrix td { border-radius: 6px; padding: 9px 8px; text-align: center; font-family: var(--font-ui);
+    font-size: 11px; font-weight: 600; border: 1px solid transparent; }
+  table.matrix td .g { display: block; font-size: 13px; line-height: 1.1; margin-bottom: 2px; }
+  td.st-built  { background: var(--good-soft);        color: var(--good); }
+  td.st-traced { background: var(--accent-warm-soft); color: var(--accent-warm); }
+  td.st-none   { background: var(--header-fill);      color: var(--ink-faint); }
+  td.st-absent { background: none;                    color: var(--ink-faint); border: 1px dashed var(--grid-line); font-style: italic; }
+  .vizlegend { display: flex; flex-wrap: wrap; gap: 14px; margin: 12px 0 2px; font-family: var(--font-ui); font-size: 12px; color: var(--ink-soft); }
+  .vizlegend span { display: inline-flex; align-items: center; gap: 6px; }
+  .vizlegend i { width: 13px; height: 13px; border-radius: 4px; display: inline-block; }
+  .viz-note { font-family: var(--font-ui); font-size: 12.5px; color: var(--ink-soft); max-width: 100ch; margin: 10px 0 0; }
+  h3.vizsub { font-family: var(--font-display); font-weight: 400; font-size: 17px; margin: 24px 0 2px; }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); line-height: 1.6; overflow-x: hidden; }
+  a { color: var(--accent); }
+  .wrap { max-width: 1320px; margin: 0 auto; padding: 0 24px 96px; }
+
+  header.masthead { padding: 56px 24px 28px; max-width: 1320px; margin: 0 auto; }
+  .eyebrow { font-family: var(--font-ui); font-size: 12px; letter-spacing: 0.11em; text-transform: uppercase; color: var(--accent-warm); font-weight: 600; margin: 0 0 10px; }
+  h1.title { font-family: var(--font-display); font-size: clamp(26px, 4vw, 38px); font-weight: 400; margin: 0 0 14px; text-wrap: balance; }
+  .dek { font-size: 16px; color: var(--ink-soft); max-width: 96ch; margin: 0 0 6px; }
+  .dek code { font-family: var(--font-mono); font-size: 14px; background: var(--header-fill); padding: 1px 5px; border-radius: 3px; }
+
+  section.sect { padding-top: 36px; }
+  .sect-heading { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 6px; }
+  .sect-index { font-family: var(--font-mono); font-size: 13px; color: var(--accent-warm); }
+  h2.sect-title { font-family: var(--font-display); font-size: 22px; font-weight: 400; margin: 0; }
+  .sect-role { font-family: var(--font-ui); font-size: 13px; color: var(--ink-soft); margin: 0 0 16px; max-width: 100ch; }
+
+  .filterbar { position: sticky; top: 0; z-index: 20; background: var(--bg); padding: 14px 0 12px; margin-bottom: 8px; border-bottom: 1px solid var(--grid-line); }
+  .filterbar-inner { display: flex; flex-wrap: wrap; gap: 8px; }
+  .catbtn { font-family: var(--font-ui); font-size: 12px; font-weight: 600; padding: 6px 12px; border-radius: 16px; border: 1px solid var(--grid-line); background: var(--paper); color: var(--ink-soft); cursor: pointer; transition: all .12s ease; }
+  .catbtn:hover { border-color: var(--accent-warm); color: var(--ink); }
+  .catbtn.active { background: var(--accent); color: var(--header-text-strong); border-color: var(--accent); }
+  .catbtn .n { font-family: var(--font-mono); font-size: 10.5px; opacity: .75; margin-left: 3px; }
+  #resultcount { font-family: var(--font-ui); font-size: 12.5px; color: var(--ink-faint); margin: 8px 0 14px; }
+
+  .callout { display: flex; gap: 10px; padding: 12px 14px; border-radius: 5px; max-width: 100ch; font-size: 14px; margin: 14px 0; }
+  .callout.warn { background: var(--warn-soft); color: var(--warn); }
+  .callout.good { background: var(--good-soft); color: var(--good); }
+  .callout b { font-weight: 700; }
+  .callout-mark { flex: none; font-weight: 700; }
+
+  .tblscroll { overflow-x: auto; overflow-y: clip; border-radius: 8px; box-shadow: var(--shadow); margin-bottom: 8px; }
+  table.grid { border-collapse: collapse; width: 100%; min-width: 1080px; font-size: 12.5px; background: var(--paper); }
+  table.grid th, table.grid td { border: 1px solid var(--grid-line); padding: 6px 9px; text-align: left; vertical-align: top; }
+  table.grid thead th { background: var(--header-fill-strong); color: var(--header-text-strong); font-family: var(--font-ui); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; line-height: 1.25; position: sticky; top: var(--stick-top, 96px); z-index: 4; box-shadow: 0 1px 0 var(--grid-line); }
+  table.grid thead th:nth-child(1) { width: 24%; }
+  table.grid thead th:nth-child(2) { width: 3%; text-align: center; }
+  table.grid thead th:nth-child(n+3) { width: 14.6%; text-align: center; }
+  table.grid td.fam { font-family: var(--font-mono); font-size: 11px; font-weight: 600; width: 24%; }
+  table.grid td.cnt { text-align: center; font-family: var(--font-ui); font-size: 11px; color: var(--ink-faint); width: 3%; }
+  table.grid td.cell { text-align: center; width: 14.6%; }
+  table.grid td.cell.na { color: var(--grid-line); }
+  table.grid td.cell.hit { color: var(--good); font-weight: 700; }
+  table.grid .forms { font-family: var(--font-ui); font-size: 10.5px; font-weight: 600; color: var(--good); }
+  .cats { margin-top: 3px; }
+  .catbadge { display: inline-block; font-family: var(--font-ui); font-size: 8.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .02em; padding: 1px 6px; border-radius: 7px; background: var(--accent-soft); color: var(--accent); margin: 1px 2px 0 0; }
+  .catbadge.core { background: var(--accent-warm-soft); color: var(--accent-warm); }
+  tr.core-row td { background: var(--accent-warm-soft); }
+  tr.core-row td.fam { font-weight: 700; }
+  tr.hidden-row { display: none; }
+
+  hr.divider { border: none; border-top: 1px solid var(--grid-line); margin: 44px 0 0; }
+  footer.closing { max-width: 1320px; margin: 52px auto 0; padding: 0 24px 64px; }
+  footer.closing h2 { font-family: var(--font-display); font-weight: 400; font-size: 20px; margin: 0 0 10px; }
+  footer.closing p.note-foot { margin-top: 14px; font-size: 13px; color: var(--ink-faint); font-family: var(--font-ui); }
+</style>
+
+<header class="masthead">
+  <p class="eyebrow">CF_Algorithm &middot; whole Property line &middot; categorized, filterable architecture</p>
+  <h1 class="title">166 families, sorted into 21 categories &mdash; click one to filter</h1>
+  <p class="dek">Same coverage &times; cause-of-loss-form data as the full granular grid, now bundled into
+    thematic categories &mdash; click <b>Earthquake &amp; Volcanic Eruption</b> below to see just that
+    cluster, the way you'd filter to just Earthquake as a coverage. Categories are assigned mechanically
+    by name pattern, not individually verified &mdash; treat category boundaries the same way the
+    underlying family names are already treated in <code>Coverage_Inventory_And_Tracking.md</code>:
+    approximate until someone traces each one.</p>
+</header>
+
+<div class="wrap">
+
+
+  <section class="status-sect" id="s0">
+    <div class="sect-heading"><span class="sect-index">00</span>
+      <h2 class="sect-title">What is built in the Excel rater</h2></div>
+    <p class="sect-role">Status as of 2026-09-16, rolled up from
+      <code>Excel_Rater_CoreCoverages_RatingGrid.html</code>. Every cell carries a word as well as a colour
+      &mdash; the fill is decoration, the label is the data.</p>
+
+    <div class="tiles">
+      <div class="tile">
+        <div class="num">20<small>&thinsp;/&thinsp;30</small></div>
+        <div class="cap">Core rate chains built &mdash; 6 coverages &times; 5 cause-of-loss forms</div>
+        <div class="meter" title="20 built, 10 not started"><i class="built" style="width:67%"></i><i class="none" style="width:33%"></i></div>
+      </div>
+      <div class="tile">
+        <div class="num">10<small>&thinsp;/&thinsp;24</small></div>
+        <div class="cap">Rating-path cells built &mdash; 5 traced but not built, 8 confirmed absent</div>
+        <div class="meter" title="10 built, 5 traced, 8 absent, 1 not started"><i class="built" style="width:42%"></i><i class="traced" style="width:21%"></i><i class="none" style="width:37%"></i></div>
+      </div>
+      <div class="tile">
+        <div class="num">5<small>&thinsp;/&thinsp;166</small></div>
+        <div class="cap">Families in this grid traced end to end &mdash; the five core rows, nothing else</div>
+        <div class="meter" title="5 traced, 161 untouched"><i class="built" style="width:3%"></i><i class="none" style="width:97%"></i></div>
+      </div>
+    </div>
+
+    <div class="vizlegend">
+      <span><i style="background:var(--good-soft);border:1px solid var(--good)"></i> &#9679; Built into the calc tab</span>
+      <span><i style="background:var(--accent-warm-soft);border:1px solid var(--accent-warm)"></i> &#9682; Formula traced, not built</span>
+      <span><i style="background:var(--header-fill);border:1px solid var(--grid-line)"></i> &#9675; Not started</span>
+      <span><i style="border:1px dashed var(--grid-line)"></i> &#10005; Structurally absent &mdash; nothing to build</span>
+    </div>
+
+    <h3 class="vizsub">By cause-of-loss form</h3>
+    <div class="tblscroll">
+      <table class="matrix">
+        <thead><tr><th class="rowhead">Coverage</th><th>Basic Group I</th><th>Basic Group II</th><th>Broad</th><th>Special</th><th>Earthquake</th></tr></thead>
+        <tbody>
+<tr><th class="rowhead">Building</th><td class="st-built" title="Built into the calc tab"><span class="g">&#9679;</span>Built</td><td class="st-built" title="Built into the calc tab"><span class="g">&#9679;</span>Built</td><td class="st-built" title="Built into the calc tab"><span class="g">&#9679;</span>Built</td><td class="st-built" title="Built into the calc tab"><span class="g">&#9679;</span>Built</td><td class="st-none" title="Not started - no chain traced"><span class="g">&#9675;</span>Not started</td></tr>
+<tr><th class="rowhead">Personal Property</th><td class="st-built" title="Built into the calc tab"><span class="g">&#9679;</span>Built</td><td class="st-built" title="Built into the calc tab"><span class="g">&#9679;</span>Built</td><td class="st-built" title="Built into the calc tab"><span class="g">&#9679;</span>Built</td><td class="st-built" title="Built into the calc tab"><span class="g">&#9679;</span>Built</td><td class="st-none" title="Not started - no chain traced"><span class="g">&#9675;</span>Not started</td></tr>
+<tr><th class="rowhead">Special Class</th><td class="st-built" title="Built into the calc tab"><span class="g">&#9679;</span>Built</td><td class="st-built" title="Built into the calc tab"><span class="g">&#9679;</span>Built</td><td class="st-built" title="Built into the calc tab"><span class="g">&#9679;</span>Built</td><td class="st-built" title="Built into the calc tab"><span class="g">&#9679;</span>Built</td><td class="st-none" title="Not started - no chain traced"><span class="g">&#9675;</span>Not started</td></tr>
+<tr><th class="rowhead">Business Income</th><td class="st-built" title="Built into the calc tab"><span class="g">&#9679;</span>Built</td><td class="st-built" title="Built into the calc tab"><span class="g">&#9679;</span>Built</td><td class="st-built" title="Built into the calc tab"><span class="g">&#9679;</span>Built</td><td class="st-built" title="Built into the calc tab"><span class="g">&#9679;</span>Built</td><td class="st-none" title="Not started - no chain traced"><span class="g">&#9675;</span>Not started</td></tr>
+<tr><th class="rowhead">Special Class Business Income</th><td class="st-built" title="Built into the calc tab"><span class="g">&#9679;</span>Built</td><td class="st-built" title="Built into the calc tab"><span class="g">&#9679;</span>Built</td><td class="st-built" title="Built into the calc tab"><span class="g">&#9679;</span>Built</td><td class="st-built" title="Built into the calc tab"><span class="g">&#9679;</span>Built</td><td class="st-none" title="Not started - no chain traced"><span class="g">&#9675;</span>Not started</td></tr>
+<tr><th class="rowhead">Leasehold Interest <span style="font-weight:400;color:var(--ink-faint)">(4 sub-coverages)</span></th><td class="st-none" title="Not started - no chain traced"><span class="g">&#9675;</span>Not started</td><td class="st-none" title="Not started - no chain traced"><span class="g">&#9675;</span>Not started</td><td class="st-none" title="Not started - no chain traced"><span class="g">&#9675;</span>Not started</td><td class="st-none" title="Not started - no chain traced"><span class="g">&#9675;</span>Not started</td><td class="st-none" title="Not started - no chain traced"><span class="g">&#9675;</span>Not started</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="viz-note"><b>Every coverage stops in the same place.</b> Four forms built five times over, and the
+      fifth column empty five times over. Earthquake is not one gap among many &mdash; it is the only remaining
+      form, and roughly 29 Special Class rule files ship an Earthquake wrapper that cannot be built until that
+      chain is traced. <b>Leasehold Interest is empty across the board</b> &mdash; added here 2026-09-16 after
+      a survey found it is a coverage in its own right (32 rule files, 4 sub-coverages, a present-value annuity
+      for its exposure), not a rating path under Building.</p>
+
+    <h3 class="vizsub">By rating path</h3>
+    <div class="tblscroll">
+      <table class="matrix">
+        <thead><tr><th class="rowhead">Coverage</th><th>Class-rated</th><th>Specific / Tentative</th><th>Legal Liability</th><th>Blanket-rated</th></tr></thead>
+        <tbody>
+<tr><th class="rowhead">Building</th><td class="st-built" title="Built into the calc tab"><span class="g">&#9679;</span>Built</td><td class="st-built" title="Built into the calc tab"><span class="g">&#9679;</span>Built</td><td class="st-built" title="Built into the calc tab"><span class="g">&#9679;</span>Built</td><td class="st-traced" title="Formula traced, not built into the calc tab"><span class="g">&#9682;</span>Traced</td></tr>
+<tr><th class="rowhead">Personal Property</th><td class="st-built" title="Built into the calc tab"><span class="g">&#9679;</span>Built</td><td class="st-built" title="Built into the calc tab"><span class="g">&#9679;</span>Built</td><td class="st-built" title="Built into the calc tab"><span class="g">&#9679;</span>Built</td><td class="st-traced" title="Formula traced, not built into the calc tab"><span class="g">&#9682;</span>Traced</td></tr>
+<tr><th class="rowhead">Special Class</th><td class="st-built" title="Built into the calc tab"><span class="g">&#9679;</span>Built</td><td class="st-absent" title="Structurally absent - no RatingType in the ruleset"><span class="g">&#10005;</span>n/a</td><td class="st-absent" title="Structurally absent - no CovType taxonomy"><span class="g">&#10005;</span>n/a</td><td class="st-traced" title="Formula traced, not built into the calc tab"><span class="g">&#9682;</span>Traced</td></tr>
+<tr><th class="rowhead">Business Income</th><td class="st-built" title="Built into the calc tab"><span class="g">&#9679;</span>Built</td><td class="st-built" title="Built into the calc tab"><span class="g">&#9679;</span>Built</td><td class="st-absent" title="Structurally absent - no Legal Liability for Business Income"><span class="g">&#10005;</span>n/a</td><td class="st-traced" title="Formula traced, not built into the calc tab"><span class="g">&#9682;</span>Traced</td></tr>
+<tr><th class="rowhead">Special Class Business Income</th><td class="st-built" title="Built into the calc tab"><span class="g">&#9679;</span>Built</td><td class="st-absent" title="Structurally absent - no RatingType on this group"><span class="g">&#10005;</span>n/a</td><td class="st-absent" title="Structurally absent on both axes"><span class="g">&#10005;</span>n/a</td><td class="st-traced" title="Formula traced, not built into the calc tab"><span class="g">&#9682;</span>Traced</td></tr>
+<tr><th class="rowhead">Leasehold Interest</th><td class="st-none" title="Not started - no chain traced"><span class="g">&#9675;</span>Not started</td><td class="st-absent" title="Structurally absent - no RatingType in any of its 32 rule files"><span class="g">&#10005;</span>n/a</td><td class="st-absent" title="Legal Liability is a sibling CovType, not a sub-path"><span class="g">&#10005;</span>n/a</td><td class="st-absent" title="Structurally absent - no IncludedInBlkt anywhere in the ruleset"><span class="g">&#10005;</span>n/a</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="viz-note"><b>Blanket is now the only real gap left in this matrix</b> &mdash; traced everywhere, built nowhere, and
+      Branch B is already a stub in every premium file that has been built. The dashed cells are not work:
+      Specific/Tentative and Legal Liability were confirmed structurally absent on 2026-09-16 by sweeping the
+      rule files, so five of those cells are closed questions rather than pending ones.</p>
+
+    <hr class="divider" />
+  </section>
+  <section class="sect" id="s1">
+    <div class="filterbar">
+      <div class="filterbar-inner" id="filterbar">
+          <button class="catbtn active" data-cat="all">All <span class="n">166</span></button>
+          <button class="catbtn" data-cat="core">Core Coverage <span class="n">5</span></button>
+          <button class="catbtn" data-cat="bitimeelement">Business Income Time-Element & Dependent Properties <span class="n">38</span></button>
+          <button class="catbtn" data-cat="misc">Miscellaneous / Single-Purpose <span class="n">25</span></button>
+          <button class="catbtn" data-cat="ordlaw">Ordinance or Law <span class="n">21</span></button>
+          <button class="catbtn" data-cat="earthquake">Earthquake & Volcanic Eruption <span class="n">8</span></button>
+          <button class="catbtn" data-cat="buildersrisk">Builders Risk <span class="n">8</span></button>
+          <button class="catbtn" data-cat="specialcoins">Special Coinsurance / Additional Locations <span class="n">6</span></button>
+          <button class="catbtn" data-cat="vacancy">Vacancy & Special Perils <span class="n">6</span></button>
+          <button class="catbtn" data-cat="leasehold">Leasehold / Leased Property <span class="n">6</span></button>
+          <button class="catbtn" data-cat="tenantspolicy">Scheduled/Unscheduled Tenants Policy Building Property <span class="n">6</span></button>
+          <button class="catbtn" data-cat="eqbreakdown">Equipment Breakdown <span class="n">5</span></button>
+          <button class="catbtn" data-cat="greenupgrades">Green Upgrades / Rebuilding Cost Increases <span class="n">5</span></button>
+          <button class="catbtn" data-cat="valuation">Valuation Overlays (Agreed Value / Inflation Guard) <span class="n">4</span></button>
+          <button class="catbtn" data-cat="cannabis">Cannabis <span class="n">4</span></button>
+          <button class="catbtn" data-cat="valuables">Special Class Scheduled Valuables <span class="n">4</span></button>
+          <button class="catbtn" data-cat="flood">Flood <span class="n">4</span></button>
+          <button class="catbtn" data-cat="drone">Unmanned Aircraft / Drone <span class="n">4</span></button>
+          <button class="catbtn" data-cat="terrorism">Terrorism / TRIA Disclosure <span class="n">4</span></button>
+          <button class="catbtn" data-cat="utility">Utility Services <span class="n">3</span></button>
+          <button class="catbtn" data-cat="pierwharf">Pier & Wharf <span class="n">2</span></button>
+          <button class="catbtn" data-cat="debris">Debris Removal <span class="n">1</span></button>
+      </div>
+    </div>
+    <p id="resultcount"></p>
+    <div class="tblscroll">
+      <table class="grid">
+        <thead>
+          <tr><th>Family</th><th>#</th><th>Building</th><th>Personal Property</th><th>Special Class</th><th>Business Income</th><th>Special Class Business Income</th></tr>
+        </thead>
+        <tbody id="gridbody">
+<tr class="core-row" data-cats="core"><td class="fam">Building / Structure (core)<div class="cats"><span class="catbadge core">Core Coverage</span></div></td><td class="cnt">4</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr class="core-row" data-cats="core"><td class="fam">Personal Property (core)<div class="cats"><span class="catbadge core">Core Coverage</span></div></td><td class="cnt">4</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr class="core-row" data-cats="core"><td class="fam">Special Class (core)<div class="cats"><span class="catbadge core">Core Coverage</span></div></td><td class="cnt">4</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr class="core-row" data-cats="core"><td class="fam">Business Income (core)<div class="cats"><span class="catbadge core">Core Coverage</span></div></td><td class="cnt">5</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td></tr>
+<tr class="core-row" data-cats="core"><td class="fam">Special Class Business Income (core)<div class="cats"><span class="catbadge core">Core Coverage</span></div></td><td class="cnt">5</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td></tr>
+<tr data-cats="misc"><td class="fam">AdditionalCoveredPropertyDetail<div class="cats"><span class="catbadge">Miscellaneous / Single-Purpose</span></div></td><td class="cnt">2</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="earthquake specialcoins"><td class="fam">AdditionalLocationsCoinsuranceGeneralInformationEarthquake<div class="cats"><span class="catbadge">Earthquake & Volcanic Eruption</span> <span class="catbadge">Special Coinsurance / Additional Locations</span></div></td><td class="cnt">1</td><td class="cell hit"><span class="forms">Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="specialcoins"><td class="fam">AdditionalLocationsCoinsuranceGeneralInformationSpecial<div class="cats"><span class="catbadge">Special Coinsurance / Additional Locations</span></div></td><td class="cnt">1</td><td class="cell hit"><span class="forms">Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="earthquake specialcoins"><td class="fam">AdditionalLocationsCoinsuranceProvisionsEarthquake<div class="cats"><span class="catbadge">Earthquake & Volcanic Eruption</span> <span class="catbadge">Special Coinsurance / Additional Locations</span></div></td><td class="cnt">1</td><td class="cell hit"><span class="forms">Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="specialcoins"><td class="fam">AdditionalLocationsCoinsuranceProvisionsSpecial<div class="cats"><span class="catbadge">Special Coinsurance / Additional Locations</span></div></td><td class="cnt">1</td><td class="cell hit"><span class="forms">Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="specialcoins"><td class="fam">AdditionalLocationsSpecialCoinsuranceGeneralInformation<div class="cats"><span class="catbadge">Special Coinsurance / Additional Locations</span></div></td><td class="cnt">3</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="specialcoins"><td class="fam">AdditionalLocationsSpecialCoinsuranceProvisions<div class="cats"><span class="catbadge">Special Coinsurance / Additional Locations</span></div></td><td class="cnt">3</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="valuation"><td class="fam">AgreedVal<div class="cats"><span class="catbadge">Valuation Overlays (Agreed Value / Inflation Guard)</span></div></td><td class="cnt">20</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td></tr>
+<tr data-cats="bitimeelement"><td class="fam">AndOrExtraExpnCovForY2KComputerRelatedAndOtherElectronicProblems<div class="cats"><span class="catbadge">Business Income Time-Element & Dependent Properties</span></div></td><td class="cnt">1</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="earthquake"><td class="fam">AndVolcanicEruptionCoverageSubLimitFormWithFlatDollarDeductible<div class="cats"><span class="catbadge">Earthquake & Volcanic Eruption</span></div></td><td class="cnt">4</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">EQ</span></td><td class="cell hit"><span class="forms">EQ</span></td><td class="cell hit"><span class="forms">EQ</span></td><td class="cell hit"><span class="forms">EQ</span></td></tr>
+<tr data-cats="earthquake"><td class="fam">AndVolcanicEruptionCoverageSubLimitFormWithFlatDollarDeductibleBldg<div class="cats"><span class="catbadge">Earthquake & Volcanic Eruption</span></div></td><td class="cnt">1</td><td class="cell hit"><span class="forms">EQ</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="earthquake"><td class="fam">AndVolcanicEruptionCoverageWithFlatDollarDeductible<div class="cats"><span class="catbadge">Earthquake & Volcanic Eruption</span></div></td><td class="cnt">4</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">EQ</span></td><td class="cell hit"><span class="forms">EQ</span></td><td class="cell hit"><span class="forms">EQ</span></td><td class="cell hit"><span class="forms">EQ</span></td></tr>
+<tr data-cats="earthquake"><td class="fam">AndVolcanicEruptionCoverageWithFlatDollarDeductibleBldg<div class="cats"><span class="catbadge">Earthquake & Volcanic Eruption</span></div></td><td class="cnt">1</td><td class="cell hit"><span class="forms">EQ</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="earthquake"><td class="fam">AndVolcanicEruptionEndorsement<div class="cats"><span class="catbadge">Earthquake & Volcanic Eruption</span></div></td><td class="cnt">5</td><td class="cell hit"><span class="forms">EQ</span></td><td class="cell hit"><span class="forms">EQ</span></td><td class="cell hit"><span class="forms">EQ</span></td><td class="cell hit"><span class="forms">EQ</span></td><td class="cell hit"><span class="forms">EQ</span></td></tr>
+<tr data-cats="earthquake"><td class="fam">AndVolcanicEruptionEndorsementSubLimitForm<div class="cats"><span class="catbadge">Earthquake & Volcanic Eruption</span></div></td><td class="cnt">5</td><td class="cell hit"><span class="forms">EQ</span></td><td class="cell hit"><span class="forms">EQ</span></td><td class="cell hit"><span class="forms">EQ</span></td><td class="cell hit"><span class="forms">EQ</span></td><td class="cell hit"><span class="forms">EQ</span></td></tr>
+<tr data-cats="misc"><td class="fam">BrandsAndLabels<div class="cats"><span class="catbadge">Miscellaneous / Single-Purpose</span></div></td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="buildersrisk"><td class="fam">BuildersRiskCollapseDuringConstruction<div class="cats"><span class="catbadge">Builders Risk</span></div></td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="buildersrisk"><td class="fam">BuildersRiskPremiumAdjustmentFormDetail<div class="cats"><span class="catbadge">Builders Risk</span></div></td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="buildersrisk"><td class="fam">BuildersRiskPremiumAdjustmentFormDetailBlanket<div class="cats"><span class="catbadge">Builders Risk</span></div></td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="buildersrisk"><td class="fam">BuildersRiskRenovations<div class="cats"><span class="catbadge">Builders Risk</span></div></td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="buildersrisk"><td class="fam">BuildersRiskReportingForm<div class="cats"><span class="catbadge">Builders Risk</span></div></td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="buildersrisk"><td class="fam">BuildersRiskTheftOfBuildingMaterialsFixturesMachineryEquipment<div class="cats"><span class="catbadge">Builders Risk</span></div></td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="bitimeelement"><td class="fam">BusinessIncomeFromDependentPropertiesBroadForm<div class="cats"><span class="catbadge">Business Income Time-Element & Dependent Properties</span></div></td><td class="cnt">2</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII</span></td></tr>
+<tr data-cats="bitimeelement"><td class="fam">BusinessIncomeFromDependentPropertiesFormBroad<div class="cats"><span class="catbadge">Business Income Time-Element & Dependent Properties</span></div></td><td class="cnt">1</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">Broad</span></td></tr>
+<tr data-cats="bitimeelement"><td class="fam">BusinessIncomeFromDependentPropertiesFormEarthquake<div class="cats"><span class="catbadge">Business Income Time-Element & Dependent Properties</span></div></td><td class="cnt">1</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">Broad</span></td></tr>
+<tr data-cats="bitimeelement"><td class="fam">BusinessIncomeFromDependentPropertiesFormSpecial<div class="cats"><span class="catbadge">Business Income Time-Element & Dependent Properties</span></div></td><td class="cnt">1</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">Broad</span></td></tr>
+<tr data-cats="bitimeelement"><td class="fam">BusinessIncomeFromDependentPropertiesLimitedForm<div class="cats"><span class="catbadge">Business Income Time-Element & Dependent Properties</span></div></td><td class="cnt">5</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td></tr>
+<tr data-cats="bitimeelement"><td class="fam">BusinessIncomeLandlordAsAdditionalInsuredRentalValue<div class="cats"><span class="catbadge">Business Income Time-Element & Dependent Properties</span></div></td><td class="cnt">5</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td></tr>
+<tr data-cats="bitimeelement"><td class="fam">BusnIncomeChangesBeginningOfThePerOfRestrtnNoWaitingPer<div class="cats"><span class="catbadge">Business Income Time-Element & Dependent Properties</span></div></td><td class="cnt">3</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; EQ</span></td></tr>
+<tr data-cats="bitimeelement"><td class="fam">BusnIncomeFromDependentPropertiesLimitedInternationalCov<div class="cats"><span class="catbadge">Business Income Time-Element & Dependent Properties</span></div></td><td class="cnt">1</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit">&#10003;</td></tr>
+<tr data-cats="misc"><td class="fam">BusnLimitedInternationalCov<div class="cats"><span class="catbadge">Miscellaneous / Single-Purpose</span></div></td><td class="cnt">1</td><td class="cell na">&mdash;</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="cannabis"><td class="fam">CannabisExclusion<div class="cats"><span class="catbadge">Cannabis</span></div></td><td class="cnt">4</td><td class="cell na">&mdash;</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td></tr>
+<tr data-cats="cannabis"><td class="fam">CannabisExclusionBuilding<div class="cats"><span class="catbadge">Cannabis</span></div></td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="cannabis"><td class="fam">CannabisExclusionWithHempException<div class="cats"><span class="catbadge">Cannabis</span></div></td><td class="cnt">4</td><td class="cell na">&mdash;</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td></tr>
+<tr data-cats="cannabis"><td class="fam">CannabisExclusionWithHempExceptionBuilding<div class="cats"><span class="catbadge">Cannabis</span></div></td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="bitimeelement"><td class="fam">ChangesBeginningOfThePeriodOfRestorationNoWaitingPeriod<div class="cats"><span class="catbadge">Business Income Time-Element & Dependent Properties</span></div></td><td class="cnt">3</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; EQ</span></td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="vacancy"><td class="fam">ChangesFungusWetRotDryRotBacteria<div class="cats"><span class="catbadge">Vacancy & Special Perils</span></div></td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="bitimeelement"><td class="fam">CivilAuthorityIncreasedCoveragePeriod<div class="cats"><span class="catbadge">Business Income Time-Element & Dependent Properties</span></div></td><td class="cnt">10</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td></tr>
+<tr data-cats="bitimeelement"><td class="fam">CivilAuthorityIncreasedCoveragePeriodRadius<div class="cats"><span class="catbadge">Business Income Time-Element & Dependent Properties</span></div></td><td class="cnt">2</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit">&#10003;</td></tr>
+<tr data-cats="valuables"><td class="fam">COLFursFurGarmentsAndGarmentsTrimmedWithFur<div class="cats"><span class="catbadge">Special Class Scheduled Valuables</span></div></td><td class="cnt">1</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="valuables"><td class="fam">COLJewelryWatchesPearlsBullionGoldSilverPlatinumAndOtherPreciousMetals<div class="cats"><span class="catbadge">Special Class Scheduled Valuables</span></div></td><td class="cnt">1</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="valuables"><td class="fam">COLPatternsDiesMoldsAndForms<div class="cats"><span class="catbadge">Special Class Scheduled Valuables</span></div></td><td class="cnt">1</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="valuables"><td class="fam">COLStampsTicketsAndLettersOfCredit<div class="cats"><span class="catbadge">Special Class Scheduled Valuables</span></div></td><td class="cnt">1</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="misc"><td class="fam">CondominiumCommercialUnitOwnersOptionalCovLossAssmt<div class="cats"><span class="catbadge">Miscellaneous / Single-Purpose</span></div></td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="misc"><td class="fam">CondominiumCommercialUnitOwnersOptionalCovMiscRealProp<div class="cats"><span class="catbadge">Miscellaneous / Single-Purpose</span></div></td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="debris"><td class="fam">DebrisRemovalAdditionalInsurance<div class="cats"><span class="catbadge">Debris Removal</span></div></td><td class="cnt">15</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="flood"><td class="fam">DischargeFromSewerDrainOrSumpNotFloodReltd<div class="cats"><span class="catbadge">Flood</span></div></td><td class="cnt">4</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td></tr>
+<tr data-cats="flood"><td class="fam">DischargeFromSewerDrainOrSumpNotFloodReltdSpclClass<div class="cats"><span class="catbadge">Flood</span></div></td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="bitimeelement"><td class="fam">DiscretionaryPayrollExpense<div class="cats"><span class="catbadge">Business Income Time-Element & Dependent Properties</span></div></td><td class="cnt">2</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit">&#10003;</td></tr>
+<tr data-cats="bitimeelement"><td class="fam">ElectronicCommerceLossOfCov<div class="cats"><span class="catbadge">Business Income Time-Element & Dependent Properties</span></div></td><td class="cnt">1</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="bitimeelement"><td class="fam">ElectronicCommerceLossOfDataCov<div class="cats"><span class="catbadge">Business Income Time-Element & Dependent Properties</span></div></td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="eqbreakdown"><td class="fam">EquipmentBreakdownCauseOfLossBldgAmmoniaContaminationCov<div class="cats"><span class="catbadge">Equipment Breakdown</span></div></td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="eqbreakdown"><td class="fam">EquipmentBreakdownCauseOfLossBldgEBCov<div class="cats"><span class="catbadge">Equipment Breakdown</span></div></td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="eqbreakdown"><td class="fam">EquipmentBreakdownCauseOfLossBldgHazardousSubstanceOtherThanAmmoniaCov<div class="cats"><span class="catbadge">Equipment Breakdown</span></div></td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="eqbreakdown"><td class="fam">EquipmentBreakdownCauseOfLossBusnInc<div class="cats"><span class="catbadge">Equipment Breakdown</span></div></td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="eqbreakdown"><td class="fam">EquipmentBreakdownCauseOfLossBusnIncWaitingPeriod<div class="cats"><span class="catbadge">Equipment Breakdown</span></div></td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="bitimeelement"><td class="fam">ExtendedPeriodOfIndemnityCoverage<div class="cats"><span class="catbadge">Business Income Time-Element & Dependent Properties</span></div></td><td class="cnt">10</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td></tr>
+<tr data-cats="bitimeelement"><td class="fam">ExtraExpenseFromDependentPropertiesDetail<div class="cats"><span class="catbadge">Business Income Time-Element & Dependent Properties</span></div></td><td class="cnt">10</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td></tr>
+<tr data-cats="bitimeelement"><td class="fam">ExtraExpenseFromDependentPropertiesLimitedInternationalCov<div class="cats"><span class="catbadge">Business Income Time-Element & Dependent Properties</span></div></td><td class="cnt">2</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit">&#10003;</td></tr>
+<tr data-cats="flood"><td class="fam">FloodCovEndtBlanketRatingDetail<div class="cats"><span class="catbadge">Flood</span></div></td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="flood"><td class="fam">FloodCoverageEndorsement<div class="cats"><span class="catbadge">Flood</span></div></td><td class="cnt">5</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td></tr>
+<tr data-cats="bitimeelement"><td class="fam">FoodContaminationBusinessInterruptionAndExtraExpenseAddlAdvCov<div class="cats"><span class="catbadge">Business Income Time-Element & Dependent Properties</span></div></td><td class="cnt">2</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit">&#10003;</td></tr>
+<tr data-cats="bitimeelement"><td class="fam">FoodContaminationBusinessInterruptionAndExtraExpenseFoodOnlyCov<div class="cats"><span class="catbadge">Business Income Time-Element & Dependent Properties</span></div></td><td class="cnt">2</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit">&#10003;</td></tr>
+<tr data-cats="bitimeelement"><td class="fam">FromDependentPropertiesBroadForm<div class="cats"><span class="catbadge">Business Income Time-Element & Dependent Properties</span></div></td><td class="cnt">2</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII</span></td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="bitimeelement"><td class="fam">FromDependentPropertiesFormBroad<div class="cats"><span class="catbadge">Business Income Time-Element & Dependent Properties</span></div></td><td class="cnt">1</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">Broad</span></td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="bitimeelement"><td class="fam">FromDependentPropertiesFormEarthquake<div class="cats"><span class="catbadge">Business Income Time-Element & Dependent Properties</span></div></td><td class="cnt">1</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">Broad</span></td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="bitimeelement"><td class="fam">FromDependentPropertiesFormSpecial<div class="cats"><span class="catbadge">Business Income Time-Element & Dependent Properties</span></div></td><td class="cnt">1</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">Broad</span></td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="bitimeelement"><td class="fam">FromDependentPropertiesLimitedForm<div class="cats"><span class="catbadge">Business Income Time-Element & Dependent Properties</span></div></td><td class="cnt">5</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="bitimeelement"><td class="fam">FromDependentPropertiesLimitedInternationalCov<div class="cats"><span class="catbadge">Business Income Time-Element & Dependent Properties</span></div></td><td class="cnt">1</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="valuation"><td class="fam">FunctionalBuildingValuation<div class="cats"><span class="catbadge">Valuation Overlays (Agreed Value / Inflation Guard)</span></div></td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="valuation"><td class="fam">FunctionalValuationOtherThanStock<div class="cats"><span class="catbadge">Valuation Overlays (Agreed Value / Inflation Guard)</span></div></td><td class="cnt">5</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="misc"><td class="fam">HouseholdCoverageDetail<div class="cats"><span class="catbadge">Miscellaneous / Single-Purpose</span></div></td><td class="cnt">5</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="greenupgrades"><td class="fam">IncreasedCostOfLossAndRelatedExpensesForGreenUpgradesEndtBldgCov<div class="cats"><span class="catbadge">Green Upgrades / Rebuilding Cost Increases</span></div></td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="greenupgrades"><td class="fam">IncreasedCostOfLossAndRelatedExpensesForGreenUpgradesEndtBusIncCov<div class="cats"><span class="catbadge">Green Upgrades / Rebuilding Cost Increases</span></div></td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="greenupgrades"><td class="fam">IncreasedCostOfLossAndRelatedExpensesForGreenUpgradesEndtCov<div class="cats"><span class="catbadge">Green Upgrades / Rebuilding Cost Increases</span></div></td><td class="cnt">10</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td></tr>
+<tr data-cats="greenupgrades"><td class="fam">IncreasedCostOfLossAndRelatedExpensesForGreenUpgradesEndtPersPropCov<div class="cats"><span class="catbadge">Green Upgrades / Rebuilding Cost Increases</span></div></td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="greenupgrades"><td class="fam">IncreaseInRebuildingExpensesFollowingDisasterCov<div class="cats"><span class="catbadge">Green Upgrades / Rebuilding Cost Increases</span></div></td><td class="cnt">10</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="valuation"><td class="fam">InflationGuard<div class="cats"><span class="catbadge">Valuation Overlays (Agreed Value / Inflation Guard)</span></div></td><td class="cnt">10</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="bitimeelement"><td class="fam">InterruptionOfComputerOperations<div class="cats"><span class="catbadge">Business Income Time-Element & Dependent Properties</span></div></td><td class="cnt">2</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td></tr>
+<tr data-cats="bitimeelement"><td class="fam">LandlordAsAdditionalInsuredRentalValue<div class="cats"><span class="catbadge">Business Income Time-Element & Dependent Properties</span></div></td><td class="cnt">5</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="leasehold"><td class="fam">LeasedPropertyDetailCov<div class="cats"><span class="catbadge">Leasehold / Leased Property</span></div></td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="leasehold"><td class="fam">LeasedPropertyDetailueCov<div class="cats"><span class="catbadge">Leasehold / Leased Property</span></div></td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="leasehold"><td class="fam">LeaseholdInterestCoverageFormBonusPaymentsCoverage<div class="cats"><span class="catbadge">Leasehold / Leased Property</span></div></td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="leasehold"><td class="fam">LeaseholdInterestCoverageFormImprovementsCoverage<div class="cats"><span class="catbadge">Leasehold / Leased Property</span></div></td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="leasehold"><td class="fam">LeaseholdInterestCoverageFormPrepaidRentCoverage<div class="cats"><span class="catbadge">Leasehold / Leased Property</span></div></td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="leasehold"><td class="fam">LeaseholdInterestCoverageFormTenantsLeaseCoverage<div class="cats"><span class="catbadge">Leasehold / Leased Property</span></div></td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="drone"><td class="fam">LimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoverageDetailDroneCov<div class="cats"><span class="catbadge">Unmanned Aircraft / Drone</span></div></td><td class="cnt">4</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="drone"><td class="fam">LimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoverageDetailEQCov<div class="cats"><span class="catbadge">Unmanned Aircraft / Drone</span></div></td><td class="cnt">4</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="drone"><td class="fam">LimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoverageDtlDroneCov<div class="cats"><span class="catbadge">Unmanned Aircraft / Drone</span></div></td><td class="cnt">1</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit">&#10003;</td></tr>
+<tr data-cats="drone"><td class="fam">LimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoverageDtlEQCov<div class="cats"><span class="catbadge">Unmanned Aircraft / Drone</span></div></td><td class="cnt">1</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit">&#10003;</td></tr>
+<tr data-cats="misc"><td class="fam">LocationFireDepartmentCharge<div class="cats"><span class="catbadge">Miscellaneous / Single-Purpose</span></div></td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="misc"><td class="fam">LocationNewlyAcquiredLocationTimeElement<div class="cats"><span class="catbadge">Miscellaneous / Single-Purpose</span></div></td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="misc"><td class="fam">ManufacturersConsequentialLossAssumption<div class="cats"><span class="catbadge">Miscellaneous / Single-Purpose</span></div></td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="bitimeelement"><td class="fam">MiningProperties<div class="cats"><span class="catbadge">Business Income Time-Element & Dependent Properties</span></div></td><td class="cnt">4</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII</span></td><td class="cell hit"><span class="forms">BGI &middot; BGII</span></td></tr>
+<tr data-cats="vacancy"><td class="fam">MoltenMaterial<div class="cats"><span class="catbadge">Vacancy & Special Perils</span></div></td><td class="cnt">5</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td></tr>
+<tr data-cats="misc"><td class="fam">MortgageholdersErrorsAndOmissionsCoverageForm<div class="cats"><span class="catbadge">Miscellaneous / Single-Purpose</span></div></td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="misc"><td class="fam">NewlyAcquiredOrConstructedPropertyIncreasedLimit<div class="cats"><span class="catbadge">Miscellaneous / Single-Purpose</span></div></td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="misc"><td class="fam">NonOwnedTrailers<div class="cats"><span class="catbadge">Miscellaneous / Single-Purpose</span></div></td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="misc"><td class="fam">OccupClassTemporarilyInPortableStorageUnits<div class="cats"><span class="catbadge">Miscellaneous / Single-Purpose</span></div></td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="bitimeelement"><td class="fam">OffPremInterruptionOfBusnVehsMobileEquipmtBusnIncDetailCollision<div class="cats"><span class="catbadge">Business Income Time-Element & Dependent Properties</span></div></td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="bitimeelement"><td class="fam">OffPremInterruptionOfBusnVehsMobileEquipmtBusnIncDetailOTC<div class="cats"><span class="catbadge">Business Income Time-Element & Dependent Properties</span></div></td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="bitimeelement"><td class="fam">OffPremInterruptionOfBusnVehsMobileEquipmtDetailCollision<div class="cats"><span class="catbadge">Business Income Time-Element & Dependent Properties</span></div></td><td class="cnt">1</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit">&#10003;</td></tr>
+<tr data-cats="bitimeelement"><td class="fam">OffPremInterruptionOfBusnVehsMobileEquipmtDetailOTC<div class="cats"><span class="catbadge">Business Income Time-Element & Dependent Properties</span></div></td><td class="cnt">1</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit">&#10003;</td></tr>
+<tr data-cats="ordlaw"><td class="fam">OrdinanceOrLawCovACoverage<div class="cats"><span class="catbadge">Ordinance or Law</span></div></td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="ordlaw"><td class="fam">OrdinanceOrLawCovBAndCCoverage<div class="cats"><span class="catbadge">Ordinance or Law</span></div></td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="ordlaw"><td class="fam">OrdinanceOrLawCovBCoverage<div class="cats"><span class="catbadge">Ordinance or Law</span></div></td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="ordlaw"><td class="fam">OrdinanceOrLawCovCCoverage<div class="cats"><span class="catbadge">Ordinance or Law</span></div></td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="ordlaw"><td class="fam">OrdinanceOrLawCoverageForTenantsInterestInImprovementsAndBettermentsCovA<div class="cats"><span class="catbadge">Ordinance or Law</span></div></td><td class="cnt">2</td><td class="cell hit"><span class="forms">Broad &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="ordlaw"><td class="fam">OrdinanceOrLawCoverageForTenantsInterestInImprovementsAndBettermentsCovABGI<div class="cats"><span class="catbadge">Ordinance or Law</span></div></td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="ordlaw"><td class="fam">OrdinanceOrLawCoverageForTenantsInterestInImprovementsAndBettermentsCovABGII<div class="cats"><span class="catbadge">Ordinance or Law</span></div></td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="ordlaw"><td class="fam">OrdinanceOrLawCoverageForTenantsInterestInImprovementsAndBettermentsCovAEQ<div class="cats"><span class="catbadge">Ordinance or Law</span></div></td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="ordlaw"><td class="fam">OrdinanceOrLawCoverageForTenantsInterestInImprovementsAndBettermentsCovB<div class="cats"><span class="catbadge">Ordinance or Law</span></div></td><td class="cnt">2</td><td class="cell hit"><span class="forms">Broad &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="ordlaw"><td class="fam">OrdinanceOrLawCoverageForTenantsInterestInImprovementsAndBettermentsCovBandC<div class="cats"><span class="catbadge">Ordinance or Law</span></div></td><td class="cnt">2</td><td class="cell hit"><span class="forms">Broad &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="ordlaw"><td class="fam">OrdinanceOrLawCoverageForTenantsInterestInImprovementsAndBettermentsCovBandCBGI<div class="cats"><span class="catbadge">Ordinance or Law</span></div></td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="ordlaw"><td class="fam">OrdinanceOrLawCoverageForTenantsInterestInImprovementsAndBettermentsCovBandCBGII<div class="cats"><span class="catbadge">Ordinance or Law</span></div></td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="ordlaw"><td class="fam">OrdinanceOrLawCoverageForTenantsInterestInImprovementsAndBettermentsCovBandCEQ<div class="cats"><span class="catbadge">Ordinance or Law</span></div></td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="ordlaw"><td class="fam">OrdinanceOrLawCoverageForTenantsInterestInImprovementsAndBettermentsCovBBGI<div class="cats"><span class="catbadge">Ordinance or Law</span></div></td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="ordlaw"><td class="fam">OrdinanceOrLawCoverageForTenantsInterestInImprovementsAndBettermentsCovBBGII<div class="cats"><span class="catbadge">Ordinance or Law</span></div></td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="ordlaw"><td class="fam">OrdinanceOrLawCoverageForTenantsInterestInImprovementsAndBettermentsCovBEQ<div class="cats"><span class="catbadge">Ordinance or Law</span></div></td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="ordlaw"><td class="fam">OrdinanceOrLawCoverageForTenantsInterestInImprovementsAndBettermentsCovC<div class="cats"><span class="catbadge">Ordinance or Law</span></div></td><td class="cnt">2</td><td class="cell hit"><span class="forms">Broad &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="ordlaw"><td class="fam">OrdinanceOrLawCoverageForTenantsInterestInImprovementsAndBettermentsCovCBGI<div class="cats"><span class="catbadge">Ordinance or Law</span></div></td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="ordlaw"><td class="fam">OrdinanceOrLawCoverageForTenantsInterestInImprovementsAndBettermentsCovCBGII<div class="cats"><span class="catbadge">Ordinance or Law</span></div></td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="ordlaw"><td class="fam">OrdinanceOrLawCoverageForTenantsInterestInImprovementsAndBettermentsCovCEQ<div class="cats"><span class="catbadge">Ordinance or Law</span></div></td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="bitimeelement ordlaw"><td class="fam">OrdinanceOrLawIncreasedPeriodOfRestoration<div class="cats"><span class="catbadge">Business Income Time-Element & Dependent Properties</span> <span class="catbadge">Ordinance or Law</span></div></td><td class="cnt">10</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td></tr>
+<tr data-cats="bitimeelement"><td class="fam">OrdinaryPayrollLimitationOrExclusion<div class="cats"><span class="catbadge">Business Income Time-Element & Dependent Properties</span></div></td><td class="cnt">6</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; EQ</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; EQ</span></td></tr>
+<tr data-cats="misc"><td class="fam">OutdoorTreesShrubsAndPlants<div class="cats"><span class="catbadge">Miscellaneous / Single-Purpose</span></div></td><td class="cnt">4</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="misc"><td class="fam">OutsideSignsDetail<div class="cats"><span class="catbadge">Miscellaneous / Single-Purpose</span></div></td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="misc"><td class="fam">PeakSeasonLimitOfInsuranceDetail<div class="cats"><span class="catbadge">Miscellaneous / Single-Purpose</span></div></td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="pierwharf"><td class="fam">PierAndWharfAdditionalCoveredCausesOfLoss<div class="cats"><span class="catbadge">Pier & Wharf</span></div></td><td class="cnt">3</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell hit">&#10003;</td></tr>
+<tr data-cats="pierwharf"><td class="fam">PierAndWharfAdditionalCoveredCausesOfLossStruct<div class="cats"><span class="catbadge">Pier & Wharf</span></div></td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="misc"><td class="fam">PollutantCleanUpAndRemovalAdditionalAggregateLimitOfInsuranceLocation<div class="cats"><span class="catbadge">Miscellaneous / Single-Purpose</span></div></td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="terrorism"><td class="fam">PostTRIA<div class="cats"><span class="catbadge">Terrorism / TRIA Disclosure</span></div></td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="bitimeelement"><td class="fam">PowerHeatAndRefrigerationDeduction<div class="cats"><span class="catbadge">Business Income Time-Element & Dependent Properties</span></div></td><td class="cnt">6</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; EQ</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; EQ</span></td></tr>
+<tr data-cats="misc"><td class="fam">PropInProcessOfMfrByOthersLimitedInternationalCov<div class="cats"><span class="catbadge">Miscellaneous / Single-Purpose</span></div></td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="vacancy"><td class="fam">RadioactiveContamination<div class="cats"><span class="catbadge">Vacancy & Special Perils</span></div></td><td class="cnt">5</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td></tr>
+<tr data-cats="misc"><td class="fam">RadioOrTelevisionAntennasDetail<div class="cats"><span class="catbadge">Miscellaneous / Single-Purpose</span></div></td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="bitimeelement"><td class="fam">RadioOrTelevisionAntennasOrExtraExpense<div class="cats"><span class="catbadge">Business Income Time-Element & Dependent Properties</span></div></td><td class="cnt">4</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; Special</span></td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="tenantspolicy"><td class="fam">ScheduledBuildingPropertyTenantsPolicyBuildingGlassCov<div class="cats"><span class="catbadge">Scheduled/Unscheduled Tenants Policy Building Property</span></div></td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="tenantspolicy"><td class="fam">ScheduledBuildingPropertyTenantsPolicyDetailBuildingPropertyOtherThanGlassCov<div class="cats"><span class="catbadge">Scheduled/Unscheduled Tenants Policy Building Property</span></div></td><td class="cnt">4</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="tenantspolicy"><td class="fam">ScheduledBuildingPropertyTenantsPolicyDetailBuildingPropertyOtherThanGlassEQCov<div class="cats"><span class="catbadge">Scheduled/Unscheduled Tenants Policy Building Property</span></div></td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="misc"><td class="fam">SpecifiedBusnTempAwayFromPremisesDetailCov<div class="cats"><span class="catbadge">Miscellaneous / Single-Purpose</span></div></td><td class="cnt">5</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="misc"><td class="fam">Spoilage<div class="cats"><span class="catbadge">Miscellaneous / Single-Purpose</span></div></td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="buildersrisk"><td class="fam">StructureBuildersRiskBuildingMaterialsAndSuppliesOfOthers<div class="cats"><span class="catbadge">Builders Risk</span></div></td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="buildersrisk"><td class="fam">TheftOfBuildingMaterialsAndSuppliesOtherThanBuildersRisk<div class="cats"><span class="catbadge">Builders Risk</span></div></td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="misc"><td class="fam">TobaccoSalesWarehouses<div class="cats"><span class="catbadge">Miscellaneous / Single-Purpose</span></div></td><td class="cnt">1</td><td class="cell na">&mdash;</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="tenantspolicy"><td class="fam">UnscheduledBuildingPropertyTenantsPolicyBuildingGlassCov<div class="cats"><span class="catbadge">Scheduled/Unscheduled Tenants Policy Building Property</span></div></td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="tenantspolicy"><td class="fam">UnscheduledBuildingPropertyTenantsPolicyBuildingPropertyOtherThanGlassCov<div class="cats"><span class="catbadge">Scheduled/Unscheduled Tenants Policy Building Property</span></div></td><td class="cnt">4</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="tenantspolicy"><td class="fam">UnscheduledBuildingPropertyTenantsPolicyBuildingPropertyOtherThanGlassEQCov<div class="cats"><span class="catbadge">Scheduled/Unscheduled Tenants Policy Building Property</span></div></td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="utility"><td class="fam">UtilityServicesDirectDamageBldgDetail<div class="cats"><span class="catbadge">Utility Services</span></div></td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="utility"><td class="fam">UtilityServicesDirectDamageDetail<div class="cats"><span class="catbadge">Utility Services</span></div></td><td class="cnt">10</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="utility"><td class="fam">UtilityServicesTimeElementDetail<div class="cats"><span class="catbadge">Utility Services</span></div></td><td class="cnt">10</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td></tr>
+<tr data-cats="vacancy"><td class="fam">VacancyPermit<div class="cats"><span class="catbadge">Vacancy & Special Perils</span></div></td><td class="cnt">10</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="vacancy"><td class="fam">VacancyPermitMoltenMaterial<div class="cats"><span class="catbadge">Vacancy & Special Perils</span></div></td><td class="cnt">2</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="vacancy"><td class="fam">VacancyPermitRadioactiveContamination<div class="cats"><span class="catbadge">Vacancy & Special Perils</span></div></td><td class="cnt">2</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="misc"><td class="fam">ValuablePapersAndRecsOTElectronicData<div class="cats"><span class="catbadge">Miscellaneous / Single-Purpose</span></div></td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="misc"><td class="fam">ValueReportingForm<div class="cats"><span class="catbadge">Miscellaneous / Single-Purpose</span></div></td><td class="cnt">5</td><td class="cell hit"><span class="forms">BGI &middot; BGII &middot; Broad &middot; EQ &middot; Special</span></td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="misc"><td class="fam">ValueReportingFormGeneralInformation<div class="cats"><span class="catbadge">Miscellaneous / Single-Purpose</span></div></td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="bitimeelement"><td class="fam">WatercraftExclusionBuyback<div class="cats"><span class="catbadge">Business Income Time-Element & Dependent Properties</span></div></td><td class="cnt">2</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell hit">&#10003;</td><td class="cell hit">&#10003;</td></tr>
+<tr data-cats="terrorism"><td class="fam">ZzDisclosureOfPremiumEstimatedPremiumCertifiedActsTerrorismPursuantTerrorismAct2002<div class="cats"><span class="catbadge">Terrorism / TRIA Disclosure</span></div></td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="terrorism"><td class="fam">ZzDisclosureOfPremiumThrough123105CertifiedActsTerrorismPursuantTerrorismAct2002<div class="cats"><span class="catbadge">Terrorism / TRIA Disclosure</span></div></td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+<tr data-cats="terrorism"><td class="fam">ZzDisclosurePursuantToTerrorismRiskInsAct2002<div class="cats"><span class="catbadge">Terrorism / TRIA Disclosure</span></div></td><td class="cnt">1</td><td class="cell hit">&#10003;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td><td class="cell na">&mdash;</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout warn"><span class="callout-mark">&#9888;</span><span><b>Known rough edges, same as the full grid.</b> A handful of families likely double-count across
+      category boundaries or split what's really one family (e.g. the several
+      <code>...DependentProperties...</code> variants) &mdash; not hand-corrected this pass. Category
+      assignment is regex-based name matching, same "approximate boundaries" caveat as everything else in
+      this inventory.</span></div>
+  </section>
+
+  <hr class="divider" />
+
+  <footer class="closing">
+    <h2>Remaining steps</h2>
+    <p class="note-foot">Source: same mechanical parse as <code>Excel_Rater_Property_FullGranularGrid.html</code>,
+      re-organized into 21 categories, 2026-09-11. Filtering is pure client-side JS
+      &mdash; works offline, no server needed. The 166 family rows are unchanged: this is an inventory of what
+      ISO files, not a build tracker, and nothing about the filed inventory has moved.</p>
+
+    <p class="note-foot"><b>Traced since, 2026-09-16.</b> The "pick one family and actually read the rule file"
+      step has now been done for the whole Special Class column and its Business Income sibling:</p>
+    <ul class="note-foot">
+      <li><b>Special Class &mdash; core</b> and <b>Special Class Business Income &mdash; core</b>: BGI, BGII,
+        Broad and Special traced end to end. Earthquake not started. See
+        <code>Excel_Rater_SpecialClassBusinessIncome_BGI_HowItWorks.html</code>,
+        <code>&hellip;_BGII_HowItWorks.html</code> and
+        <code>Excel_Rater_SpecialClassBusinessIncome_ReuseMap.html</code>.</li>
+      <li><b>Vandalism Exclusion</b>, <b>Windstorm or Hail Exclusion</b> and <b>Theft Exclusion</b> traced on
+        both the Special Class and Special Class Business Income sides. All three turn out to file
+        <b>two separate endorsement records</b> &mdash; one on the item, one on the Business Income group.
+        Two are logged as accepted simplifications (S-1, S-2) in
+        <code>Rater_Simplifications_Backlog.md</code>; theft is not yet logged.</li>
+    </ul>
+
+    <p class="note-foot"><b>What this inventory does not show, and should be read alongside.</b> The columns tell
+      you a family exists for a coverage; they do not tell you whether two columns share a table. Several
+      families read the <i>same</i> matrix from different chains with different hardcoded keys &mdash;
+      <code>BroadFormBaseRate</code> and <code>SpecialFormIncldgTheftTimeElementBaseRate</code> are both read by
+      five or more chains at different rows. Treat a shared family name as a question, not an answer; the
+      reuse map above is where that question gets settled.</p>
+
+    <p class="note-foot"><b>Next.</b> Earthquake is the only remaining form and gates roughly 29 Special Class
+      rule files, every one of which ships an Earthquake wrapper. Trace it before any further endorsement
+      family in this grid.</p>
+  </footer>
+
+</div>
+
+<script>
+(function() {
+  var buttons = document.querySelectorAll('.catbtn');
+  var rows = document.querySelectorAll('#gridbody tr');
+  var countEl = document.getElementById('resultcount');
+
+  function applyFilter(cat) {
+    var visible = 0;
+    rows.forEach(function(row) {
+      var cats = (row.getAttribute('data-cats') || '').split(' ');
+      var show = (cat === 'all') || cats.indexOf(cat) !== -1;
+      row.classList.toggle('hidden-row', !show);
+      if (show) visible++;
+    });
+    countEl.textContent = 'Showing ' + visible + ' of 166 families';
+  }
+
+  buttons.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      buttons.forEach(function(b) { b.classList.remove('active'); });
+      btn.classList.add('active');
+      applyFilter(btn.getAttribute('data-cat'));
+    });
+  });
+
+  applyFilter('all');
+
+  // the filter bar wraps to 2-3 rows depending on width; measure it instead of
+  // hardcoding an offset, so the sticky table header never slides under it
+  var fb = document.querySelector('.filterbar');
+  function setStickTop() {
+    if (!fb) return;
+    document.documentElement.style.setProperty('--stick-top', fb.offsetHeight + 'px');
+  }
+  setStickTop();
+  window.addEventListener('resize', setStickTop);
+})();
+</script>

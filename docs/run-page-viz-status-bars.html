@@ -1,0 +1,56 @@
+<!doctype html><html><head><meta charset="utf-8">
+<title>Option 2 -- status_bars in the Result card</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+:root{--ink:#1a1d21;--muted:#6b7580;--line:#e3e8ee;--blue:#2b6cb0;
+--red:#c0392b;--amber:#b7791f;--grey:#9aa5b1;--bg:#f7f9fb}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+font:14px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+header{background:#fff;border-bottom:1px solid var(--line);padding:12px 20px}
+header h1{font-size:16px;margin:0;font-weight:650}
+header .sub{color:var(--muted);font-size:12.5px}
+main{padding:16px 20px;max-width:900px}
+.card{background:#fff;border:1px solid var(--line);border-radius:8px;
+padding:14px 16px;margin-bottom:16px}
+.card h2{font-size:12px;text-transform:uppercase;letter-spacing:.05em;
+color:var(--muted);margin:0 0 11px;font-weight:650}
+select,input{padding:6px 7px;border:1px solid #cbd2d9;
+border-radius:5px;font-size:12.5px;background:#fff;color:var(--ink);width:auto}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:11px}
+.note{font-size:11.5px;color:var(--muted);border-left:2px solid var(--line);
+padding-left:8px;margin-top:9px}
+.gridwrap{border:1px solid var(--line);border-radius:6px;overflow:hidden}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:left;font-weight:650;color:var(--muted);font-size:11px;
+text-transform:uppercase;letter-spacing:.04em;background:#f7f9fb;
+border-bottom:1px solid var(--line);border-right:1px solid var(--line);
+padding:7px 9px}
+th:last-child,td:last-child{border-right:0}
+td{padding:6px 9px;border-bottom:1px solid var(--line);
+border-right:1px solid var(--line);vertical-align:top}
+tr:last-child>td{border-bottom:0}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;
+font-family:ui-monospace,"SF Mono",Consolas,monospace}
+tr.total td{font-weight:650;background:#f7f9fb}
+td.lbl{font-weight:650}
+.det{color:var(--muted);font-size:11.5px}
+.callout{position:fixed;top:14px;right:20px;background:#1a1d21;color:#fff;
+font-size:12px;padding:8px 13px;border-radius:6px;max-width:280px;
+box-shadow:0 4px 14px rgba(0,0,0,.18)}
+.dot{display:inline-block;width:9px;height:9px;border-radius:99px;margin-right:7px;
+vertical-align:middle}
+.dot.agree{background:var(--blue)}
+.dot.differ{background:var(--red)}
+.dot.partial{background:var(--amber)}
+.dot.na{background:var(--grey)}
+</style></head><body>
+<div class="callout">Option 2 &middot; the real ui/charts.py status_bars() chart, dropped into the Result card after a run finishes. One horizontal bar, segmented by outcome.</div>
+<header>
+  <h1>Layered tests</h1>
+  <div class="sub">Option 2 -- status_bars in the Result card</div>
+</header>
+<main>
+<div class='card'><h2>Result</h2><div class='det' style='margin-bottom:10px'>L3 Limits &middot; 51 rated, live-compared</div><svg viewBox="0 0 620 66" width="100%" height="66" role="img" style="font-family:ui-sans-serif,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;overflow:visible"><title>Outcomes for this run</title><rect x="0.0" y="4" width="547.5" height="22" fill="#2b6cb0" rx="2"><title>46 agree with ISO</title></rect><text x="274.2" y="19.0" font-size="11" fill="#fff" text-anchor="middle" font-weight="600">46</text><rect x="548.5" y="4" width="10.9" height="22" fill="#b7791f" rx="2"><title>1 premium agrees, fields differ</title></rect><rect x="560.4" y="4" width="22.8" height="22" fill="#c0392b" rx="2"><title>2 disagree</title></rect><rect x="584.2" y="4" width="10.9" height="22" fill="#c0392b" rx="2"><title>1 engine refused</title></rect><rect x="596.2" y="4" width="22.8" height="22" fill="#9aa5b1" rx="2"><title>2 not applicable here</title></rect><rect x="0.0" y="48" width="9" height="9" fill="#2b6cb0" rx="2"/><text x="13.0" y="56.0" font-size="10" fill="#6b7580" text-anchor="start" font-weight="400">agree with ISO (46)</text><rect x="110.0" y="48" width="9" height="9" fill="#b7791f" rx="2"/><text x="123.0" y="56.0" font-size="10" fill="#6b7580" text-anchor="start" font-weight="400">premium agrees, fields differ (1)</text><rect x="310.0" y="48" width="9" height="9" fill="#c0392b" rx="2"/><text x="323.0" y="56.0" font-size="10" fill="#6b7580" text-anchor="start" font-weight="400">disagree (2)</text><rect x="384.0" y="48" width="9" height="9" fill="#c0392b" rx="2"/><text x="397.0" y="56.0" font-size="10" fill="#6b7580" text-anchor="start" font-weight="400">engine refused (1)</text><rect x="494.0" y="48" width="9" height="9" fill="#9aa5b1" rx="2"/><text x="507.0" y="56.0" font-size="10" fill="#6b7580" text-anchor="start" font-weight="400">not applicable here (2)</text></svg><div class='note'>Existing code, existing palette -- this chart already exists in ui/charts.py and is used on the QA tab. It has never been wired into /tests.</div></div>
+</main>
+</body></html>

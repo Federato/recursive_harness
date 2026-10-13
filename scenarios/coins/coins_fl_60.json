@@ -1,0 +1,43 @@
+{
+ "name": "coins_fl_60",
+ "states": [
+  "FL"
+ ],
+ "edits": [
+  {
+   "sheet": "IN - Schedule",
+   "cell": "D48",
+   "value": "Building"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "AH48",
+   "value": "Not Applicable"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "H91",
+   "value": "Building and Personal Property Coverage Form"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "U48",
+   "value": 0.6
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "G134",
+   "value": 0.6
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "L5",
+   "value": "No"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "M5",
+   "value": "No"
+  }
+ ]
+}

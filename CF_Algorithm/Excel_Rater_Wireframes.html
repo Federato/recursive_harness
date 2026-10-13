@@ -1,0 +1,2886 @@
+<title>CF Rater Wireframes — Basic Group I, Building &amp; Contents</title>
+<style>
+  :root {
+    --bg: #eef1f4;
+    --paper: #ffffff;
+    --ink: #1c2733;
+    --ink-soft: #55606b;
+    --ink-faint: #8b95a1;
+    --grid-line: #d7dce2;
+    --header-fill: #e4e8ed;
+    --header-fill-strong: #1e3a45;
+    --header-text-strong: #eef4f3;
+    --accent: #1e3a45;
+    --accent-soft: #cfe0e0;
+    --accent-warm: #b96a2c;
+    --accent-warm-soft: #f3e2cf;
+    --good: #2f7d5a;
+    --good-soft: #dcefe4;
+    --warn: #a53d26;
+    --warn-soft: #f7ddd4;
+    --shadow: 0 1px 2px rgba(28,39,51,0.06), 0 8px 24px rgba(28,39,51,0.07);
+    --font-display: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+    --font-body: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+    --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, "Liberation Mono", monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #10151b;
+      --paper: #161d25;
+      --ink: #e7ecf1;
+      --ink-soft: #a3aebb;
+      --ink-faint: #6d7885;
+      --grid-line: #2b3742;
+      --header-fill: #1b242d;
+      --header-fill-strong: #21504f;
+      --header-text-strong: #eaf3f1;
+      --accent: #59a9ac;
+      --accent-soft: #1d3535;
+      --accent-warm: #dd9a5c;
+      --accent-warm-soft: #372a1c;
+      --good: #63c090;
+      --good-soft: #1b3226;
+      --warn: #e0806a;
+      --warn-soft: #3a2019;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 28px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #10151b; --paper: #161d25; --ink: #e7ecf1; --ink-soft: #a3aebb; --ink-faint: #6d7885;
+    --grid-line: #2b3742; --header-fill: #1b242d; --header-fill-strong: #21504f; --header-text-strong: #eaf3f1;
+    --accent: #59a9ac; --accent-soft: #1d3535; --accent-warm: #dd9a5c; --accent-warm-soft: #372a1c;
+    --good: #63c090; --good-soft: #1b3226; --warn: #e0806a; --warn-soft: #3a2019;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 28px rgba(0,0,0,0.35);
+  }
+  :root[data-theme="light"] {
+    --bg: #eef1f4; --paper: #ffffff; --ink: #1c2733; --ink-soft: #55606b; --ink-faint: #8b95a1;
+    --grid-line: #d7dce2; --header-fill: #e4e8ed; --header-fill-strong: #1e3a45; --header-text-strong: #eef4f3;
+    --accent: #1e3a45; --accent-soft: #cfe0e0; --accent-warm: #b96a2c; --accent-warm-soft: #f3e2cf;
+    --good: #2f7d5a; --good-soft: #dcefe4; --warn: #a53d26; --warn-soft: #f7ddd4;
+    --shadow: 0 1px 2px rgba(28,39,51,0.06), 0 8px 24px rgba(28,39,51,0.07);
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    line-height: 1.55;
+  }
+
+  a { color: var(--accent); }
+  a:focus-visible, button:focus-visible, .jump:focus-visible {
+    outline: 2px solid var(--accent-warm);
+    outline-offset: 2px;
+  }
+
+  .wrap {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 0 24px 96px;
+  }
+
+  /* ---------- Masthead ---------- */
+  header.masthead {
+    padding: 56px 24px 28px;
+    max-width: 980px;
+    margin: 0 auto;
+  }
+  .eyebrow {
+    font-family: var(--font-ui);
+    font-size: 12px;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    color: var(--accent-warm);
+    font-weight: 600;
+    margin: 0 0 10px;
+  }
+  h1.title {
+    font-family: var(--font-display);
+    font-size: clamp(28px, 4vw, 40px);
+    font-weight: 400;
+    margin: 0 0 14px;
+    text-wrap: balance;
+    color: var(--ink);
+  }
+  .dek {
+    font-size: 17px;
+    color: var(--ink-soft);
+    max-width: 62ch;
+    margin: 0 0 6px;
+  }
+  .dek + .dek { margin-top: 10px; }
+
+  /* ---------- Jump nav ---------- */
+  nav.jumpbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: var(--header-fill-strong);
+    border-bottom: 1px solid var(--grid-line);
+  }
+  .jumpbar-inner {
+    max-width: 980px;
+    margin: 0 auto;
+    display: flex;
+    align-items: stretch;
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+  .jumpbar-label {
+    font-family: var(--font-ui);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--header-text-strong);
+    opacity: 0.6;
+    align-self: center;
+    padding: 0 12px 0 20px;
+    white-space: nowrap;
+    flex: none;
+  }
+  .jump {
+    font-family: var(--font-ui);
+    font-size: 13px;
+    color: var(--header-text-strong);
+    text-decoration: none;
+    white-space: nowrap;
+    padding: 13px 16px;
+    border-bottom: 3px solid transparent;
+    opacity: 0.72;
+    flex: none;
+  }
+  .jump:hover { opacity: 1; }
+  .jump.current {
+    opacity: 1;
+    border-bottom-color: var(--accent-warm);
+    font-weight: 600;
+  }
+
+  /* ---------- Sections ---------- */
+  section.sheet-block {
+    padding-top: 64px;
+    scroll-margin-top: 56px;
+  }
+  .sheet-heading {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 6px;
+  }
+  .sheet-index {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--accent-warm);
+    font-variant-numeric: tabular-nums;
+  }
+  h2.sheet-title {
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight: 400;
+    margin: 0;
+    color: var(--ink);
+  }
+  .sheet-role {
+    font-family: var(--font-ui);
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin: 0 0 22px;
+  }
+
+  /* ---------- Excel-window chrome ---------- */
+  .xl-window {
+    background: var(--paper);
+    border: 1px solid var(--grid-line);
+    border-radius: 6px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .xl-titlebar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 14px;
+    background: var(--header-fill-strong);
+    color: var(--header-text-strong);
+    font-family: var(--font-ui);
+    font-size: 12.5px;
+  }
+  .xl-dots { display: flex; gap: 5px; flex: none; }
+  .xl-dots span {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: currentColor; opacity: 0.35;
+  }
+  .xl-filename { opacity: 0.92; }
+  .xl-filename b { font-weight: 600; }
+  .xl-titlebar-spacer { flex: 1; }
+  .xl-mode {
+    font-size: 10.5px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    opacity: 0.55;
+  }
+  .xl-formulabar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 12px;
+    background: var(--header-fill);
+    border-bottom: 1px solid var(--grid-line);
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+  .xl-cellref {
+    background: var(--paper);
+    border: 1px solid var(--grid-line);
+    border-radius: 3px;
+    padding: 2px 8px;
+    color: var(--accent);
+    font-weight: 600;
+    flex: none;
+    min-width: 46px;
+    text-align: center;
+  }
+  .xl-fx {
+    color: var(--ink-faint);
+    flex: none;
+    font-style: italic;
+  }
+  .xl-formula {
+    color: var(--ink-soft);
+    overflow-x: auto;
+    white-space: nowrap;
+    padding-right: 4px;
+  }
+
+  .xl-scroll { overflow-x: auto; }
+
+  table.xl-grid {
+    border-collapse: collapse;
+    width: 100%;
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+  }
+  table.xl-grid th, table.xl-grid td {
+    border: 1px solid var(--grid-line);
+    padding: 6px 10px;
+    text-align: left;
+    white-space: nowrap;
+  }
+  .colletters th {
+    background: var(--header-fill);
+    color: var(--ink-faint);
+    font-family: var(--font-ui);
+    font-size: 10.5px;
+    text-align: center;
+    padding: 3px 10px;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+  }
+  .rownum {
+    background: var(--header-fill);
+    color: var(--ink-faint);
+    font-family: var(--font-ui);
+    font-size: 11px;
+    text-align: center !important;
+    font-weight: 600;
+    width: 1%;
+  }
+  .fieldrow th {
+    background: var(--accent);
+    color: var(--header-text-strong);
+    font-family: var(--font-ui);
+    font-size: 11.5px;
+    font-weight: 600;
+    text-align: left;
+  }
+  .fieldrow th.group-shared { background: var(--accent); }
+  .fieldrow th.group-bldg { background: #3a6b57; }
+  .fieldrow th.group-pp { background: #8a5a2a; }
+  .fieldrow th.group-table { background: var(--accent); }
+
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  td.formula-cell {
+    background: color-mix(in srgb, var(--accent-warm-soft) 100%, transparent);
+    color: var(--accent-warm);
+    font-weight: 600;
+  }
+  td.warn-cell {
+    background: var(--warn-soft);
+    color: var(--warn);
+    font-weight: 600;
+  }
+  td.good-cell {
+    background: var(--good-soft);
+    color: var(--good);
+  }
+  td.total-cell {
+    background: var(--header-fill);
+    font-weight: 700;
+  }
+  tr.total-row td { background: var(--header-fill); font-weight: 700; }
+  .subtle { color: var(--ink-faint); font-style: italic; }
+
+  /* sheet tabs at bottom of the excel window */
+  .xl-sheettabs {
+    display: flex;
+    align-items: flex-end;
+    gap: 2px;
+    padding: 8px 10px 0;
+    background: var(--header-fill);
+    overflow-x: auto;
+  }
+  .xl-sheettab {
+    font-family: var(--font-ui);
+    font-size: 11px;
+    padding: 6px 12px;
+    color: var(--ink-faint);
+    background: var(--header-fill);
+    border: 1px solid var(--grid-line);
+    border-bottom: none;
+    border-radius: 4px 4px 0 0;
+    white-space: nowrap;
+  }
+  .xl-sheettab.active {
+    background: var(--paper);
+    color: var(--ink);
+    font-weight: 600;
+    border-color: var(--grid-line);
+  }
+
+  /* ---------- Instructions ---------- */
+  .instructions {
+    margin-top: 22px;
+    display: grid;
+    gap: 14px;
+  }
+  .instructions p {
+    margin: 0;
+    font-size: 15.5px;
+    color: var(--ink);
+    max-width: 68ch;
+  }
+  .instructions p.lede {
+    font-size: 16.5px;
+  }
+  .field-notes {
+    margin: 4px 0 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 9px;
+    max-width: 68ch;
+  }
+  .field-notes li {
+    font-size: 14.5px;
+    color: var(--ink-soft);
+    padding-left: 16px;
+    border-left: 2px solid var(--grid-line);
+  }
+  .field-notes b {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--ink);
+    background: var(--header-fill);
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+
+  .callout {
+    display: flex;
+    gap: 10px;
+    padding: 12px 14px;
+    border-radius: 5px;
+    max-width: 68ch;
+    font-size: 14.5px;
+  }
+  .callout.warn { background: var(--warn-soft); color: var(--warn); }
+  .callout.warm { background: var(--accent-warm-soft); color: var(--accent-warm); }
+  .callout b { font-weight: 700; }
+  .callout-mark { flex: none; font-family: var(--font-ui); font-weight: 700; }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 14px;
+    font-family: var(--font-ui);
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .swatch { width: 11px; height: 11px; border-radius: 2px; display: inline-block; }
+
+  /* ---------- Flow diagrams (input -> output) ---------- */
+  .flow-scroll { overflow-x: auto; padding-bottom: 6px; }
+  .flow-stages {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    width: max-content;
+  }
+  .flow-stage {
+    background: var(--paper);
+    border: 1px solid var(--grid-line);
+    border-radius: 6px;
+    padding: 13px 15px;
+    width: 196px;
+    flex: none;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    box-shadow: var(--shadow);
+  }
+  .flow-stage.branch { border-color: var(--accent-warm); border-style: dashed; }
+  .flow-stage-num {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--accent-warm);
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+  .flow-stage-title {
+    font-family: var(--font-ui);
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1.25;
+  }
+  .flow-stage-reads {
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--ink-soft);
+    line-height: 1.55;
+  }
+  .flow-stage-out {
+    margin-top: auto;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    background: var(--header-fill);
+    color: var(--ink);
+    padding: 4px 8px;
+    border-radius: 3px;
+    align-self: flex-start;
+    font-weight: 600;
+  }
+  .flow-stage.branch .flow-stage-out { background: var(--accent-warm-soft); color: var(--accent-warm); }
+  .flow-arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    flex: none;
+    color: var(--ink-faint);
+    font-size: 17px;
+  }
+  .flow-caption {
+    font-family: var(--font-ui);
+    font-size: 12px;
+    color: var(--ink-faint);
+    margin-top: 10px;
+  }
+
+  .formula-label {
+    font-family: var(--font-ui);
+    font-size: 11px;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin: 28px 0 10px;
+  }
+  .formula-label:first-child { margin-top: 0; }
+  .formula-panel {
+    background: var(--header-fill-strong);
+    color: var(--header-text-strong);
+    border-radius: 6px;
+    padding: 16px 18px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    line-height: 1.75;
+    overflow-x: auto;
+  }
+  .formula-panel pre { margin: 0; white-space: pre; }
+  .formula-panel .kw { color: var(--accent-warm); font-weight: 700; }
+  .formula-panel .fn { color: #a9d6d8; }
+  .formula-panel .cm { opacity: 0.55; font-style: italic; }
+
+  hr.divider {
+    border: none;
+    border-top: 1px solid var(--grid-line);
+    margin: 64px 0 0;
+  }
+
+  footer.closing {
+    max-width: 980px;
+    margin: 72px auto 0;
+    padding: 0 24px 64px;
+  }
+  footer.closing h2 {
+    font-family: var(--font-display);
+    font-weight: 400;
+    font-size: 22px;
+    margin: 0 0 12px;
+  }
+  footer.closing ol {
+    padding-left: 20px;
+    display: grid;
+    gap: 8px;
+    max-width: 62ch;
+  }
+  footer.closing li { font-size: 15px; color: var(--ink-soft); }
+  footer.closing p.note {
+    margin-top: 20px;
+    font-size: 13px;
+    color: var(--ink-faint);
+    font-family: var(--font-ui);
+  }
+</style>
+
+<header class="masthead">
+  <p class="eyebrow">CF_Algorithm &middot; Excel Rater Wireframes</p>
+  <h1 class="title">What the Commercial&nbsp;Property rater looks like before anyone builds it</h1>
+  <p class="dek">Sixteen mock spreadsheet tabs — <b>Policy</b>, <b>Locations &amp; Buildings</b>, <b>Rate Tables</b>, Building and Contents calculation tabs for all four cause-of-loss forms, four more <b>Business Income</b> calculation tabs, and <b>Premium Summary</b> — laid out the way they'd actually sit in Excel, with the reasoning behind each one written in plain language underneath.</p>
+  <p class="dek">After each Building/Contents form's pair of calculation tabs sits a diagram, not a spreadsheet: what feeds the loss cost, what each stage produces, and the full rating formula with every if/then branch spelled out — the same walkthrough as each form's own build guide, drawn instead of written. Business Income's four tabs are short enough that the formula bar and instructions carry that same walkthrough directly, without a separate diagram.</p>
+  <p class="dek">These are pictures of a workbook, not a workbook. No cell here is live; every value shown is a plausible example chosen to make the layout readable. The real formulas are written out in <span class="subtle">Excel_Rater_BasicGroupI.md</span>, <span class="subtle">Excel_Rater_BasicGroupII.md</span>, <span class="subtle">Excel_Rater_Broad.md</span>, <span class="subtle">Excel_Rater_Special.md</span>, and the <span class="subtle">Excel_Rater_BusinessIncome_*.md</span> set.</p>
+</header>
+
+<nav class="jumpbar" aria-label="Jump to sheet">
+  <div class="jumpbar-inner">
+    <span class="jumpbar-label">Sheet tabs</span>
+    <a class="jump" href="#policy">Policy</a>
+    <a class="jump" href="#locations">Locations_Buildings</a>
+    <a class="jump" href="#tables">Rate_Tables</a>
+    <a class="jump" href="#calcbldg">Calc_Building_BGI</a>
+    <a class="jump" href="#calcpp">Calc_Contents_BGI</a>
+    <a class="jump" href="#flowbgi">Inputs&nbsp;&rarr;&nbsp;Output, BGI</a>
+    <a class="jump" href="#calcbldg2">Calc_Building_BGII</a>
+    <a class="jump" href="#calcpp2">Calc_Contents_BGII</a>
+    <a class="jump" href="#flowbgii">Inputs&nbsp;&rarr;&nbsp;Output, BGII</a>
+    <a class="jump" href="#calcbldg3">Calc_Building_Broad</a>
+    <a class="jump" href="#calcpp3">Calc_Contents_Broad</a>
+    <a class="jump" href="#flowbroad">Inputs&nbsp;&rarr;&nbsp;Output, Broad</a>
+    <a class="jump" href="#calcbldg4">Calc_Building_Special</a>
+    <a class="jump" href="#calcpp4">Calc_Contents_Special</a>
+    <a class="jump" href="#flowspecial">Inputs&nbsp;&rarr;&nbsp;Output, Special</a>
+    <a class="jump" href="#bibgi">BI:&nbsp;Calc_BGI</a>
+    <a class="jump" href="#bibgii">BI:&nbsp;Calc_BGII</a>
+    <a class="jump" href="#bibroad">BI:&nbsp;Calc_Broad</a>
+    <a class="jump" href="#bispecial">BI:&nbsp;Calc_Special</a>
+    <a class="jump" href="#summary">Premium_Summary</a>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <!-- ================= 1. POLICY ================= -->
+  <section class="sheet-block" id="policy">
+    <div class="sheet-heading">
+      <span class="sheet-index">Tab 1 of 16</span>
+      <h2 class="sheet-title">Policy</h2>
+    </div>
+    <p class="sheet-role">One row per policy — the handful of numbers every building and every coverage reads from.</p>
+
+    <div class="xl-window">
+      <div class="xl-titlebar">
+        <div class="xl-dots"><span></span><span></span><span></span></div>
+        <span class="xl-filename">CF_BGI_Rater.xlsx &nbsp;&mdash;&nbsp; <b>Policy</b></span>
+        <div class="xl-titlebar-spacer"></div>
+        <span class="xl-mode">Wireframe</span>
+      </div>
+      <div class="xl-formulabar">
+        <span class="xl-cellref">D2</span>
+        <span class="xl-fx">fx</span>
+        <span class="xl-formula">0.941 &nbsp;<span class="subtle">— filed Loss Cost Multiplier, this state &amp; edition</span></span>
+      </div>
+      <div class="xl-scroll">
+        <table class="xl-grid">
+          <tr class="colletters">
+            <th></th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>G</th>
+          </tr>
+          <tr class="fieldrow">
+            <th class="rownum">1</th>
+            <th class="group-shared">PolicyNumber</th>
+            <th class="group-shared">State</th>
+            <th class="group-shared">EffectiveDate</th>
+            <th class="group-shared">LossCostMultiplier</th>
+            <th class="group-shared">IRPMFactor</th>
+            <th class="group-shared">PackageModFactor</th>
+            <th class="group-shared">MultiPremiumAndDispersionCreditFactor</th>
+          </tr>
+          <tr>
+            <td class="rownum">2</td>
+            <td>CF-2026-004821</td>
+            <td>OH</td>
+            <td>06/01/2026</td>
+            <td class="formula-cell num">0.941</td>
+            <td class="num">1.000</td>
+            <td class="num">1.050</td>
+            <td class="num">1.000</td>
+          </tr>
+        </table>
+      </div>
+      <div class="xl-sheettabs">
+        <span class="xl-sheettab active">Policy</span>
+        <span class="xl-sheettab">Locations_Buildings</span>
+        <span class="xl-sheettab">Rate_Tables</span>
+        <span class="xl-sheettab">Calc_Building_BGI</span>
+        <span class="xl-sheettab">Calc_Contents_BGI</span>
+        <span class="xl-sheettab">Calc_Building_BGII</span>
+        <span class="xl-sheettab">Calc_Contents_BGII</span>
+        <span class="xl-sheettab">Calc_Building_Broad</span>
+        <span class="xl-sheettab">Calc_Contents_Broad</span>
+        <span class="xl-sheettab">Calc_Building_Special</span>
+        <span class="xl-sheettab">Calc_Contents_Special</span>
+        <span class="xl-sheettab">Calc_BI_BGI</span>
+        <span class="xl-sheettab">Calc_BI_BGII</span>
+        <span class="xl-sheettab">Calc_BI_Broad</span>
+        <span class="xl-sheettab">Calc_BI_Special</span>
+        <span class="xl-sheettab">Premium_Summary</span>
+      </div>
+    </div>
+
+    <div class="instructions">
+      <p class="lede">Everything on this row is a value you supply or schedule-rate yourself — none of it comes from an ISO rate table. That's the whole point of giving it its own tab: it's the short list of numbers that get read from <i>every other tab</i>, so there's exactly one place to change them.</p>
+      <ul class="field-notes">
+        <li><b>State</b> and <b>EffectiveDate</b> decide which edition of every rate table downstream applies to this policy.</li>
+        <li><b>LossCostMultiplier</b> is the one ISO-adjacent number that lives here rather than on a rate table — it's filed per state and line of business, not looked up per building.</li>
+        <li><b>IRPMFactor</b>, <b>PackageModFactor</b>, and <b>MultiPremiumAndDispersionCreditFactor</b> are all schedule-rating inputs — an underwriter's judgment, not a lookup. Every premium formula on the Premium_Summary tab multiplies by these three.</li>
+      </ul>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- ================= 2. LOCATIONS & BUILDINGS ================= -->
+  <section class="sheet-block" id="locations">
+    <div class="sheet-heading">
+      <span class="sheet-index">Tab 2 of 16</span>
+      <h2 class="sheet-title">Locations_Buildings</h2>
+    </div>
+    <p class="sheet-role">One row per building — physical facts both coverages share, then a Building block, then a Contents block.</p>
+
+    <div class="xl-window">
+      <div class="xl-titlebar">
+        <div class="xl-dots"><span></span><span></span><span></span></div>
+        <span class="xl-filename">CF_BGI_Rater.xlsx &nbsp;&mdash;&nbsp; <b>Locations_Buildings</b></span>
+        <div class="xl-titlebar-spacer"></div>
+        <span class="xl-mode">Wireframe</span>
+      </div>
+      <div class="xl-formulabar">
+        <span class="xl-cellref">P2</span>
+        <span class="xl-fx">fx</span>
+        <span class="xl-formula">"PersProp" &nbsp;<span class="subtle">— PP_Group feeds the Contents base-rate lookup; Building has no equivalent column</span></span>
+      </div>
+      <div class="xl-scroll">
+        <table class="xl-grid">
+          <tr class="colletters">
+            <th></th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>G</th><th>H</th>
+            <th>I</th><th>J</th><th>K</th><th>L</th><th>M</th>
+          </tr>
+          <tr class="fieldrow">
+            <th class="rownum">1</th>
+            <th class="group-shared">LocationID</th>
+            <th class="group-shared">BuildingID</th>
+            <th class="group-shared">ClassCode</th>
+            <th class="group-shared">ConstructionCode</th>
+            <th class="group-shared">Territory</th>
+            <th class="group-shared">ProtectionClass</th>
+            <th class="group-shared">Coinsurance</th>
+            <th class="group-shared">Deductible</th>
+            <th class="group-bldg">Bldg_CovType</th>
+            <th class="group-bldg">Bldg_Limit</th>
+            <th class="group-pp">PP_CovForm</th>
+            <th class="group-pp">PP_Group</th>
+            <th class="group-pp">PP_Limit</th>
+          </tr>
+          <tr>
+            <td class="rownum">2</td>
+            <td>LOC-01</td><td>BLDG-A</td><td>0912</td><td class="num">4</td><td>014</td><td class="num">06</td>
+            <td class="num">80%</td><td>1000</td>
+            <td>Building</td><td class="num">2,400,000</td>
+            <td>&mdash;</td><td>B</td><td class="num">650,000</td>
+          </tr>
+          <tr>
+            <td class="rownum">3</td>
+            <td>LOC-01</td><td>BLDG-B</td><td>0570</td><td class="num">6</td><td>014</td><td class="num">04</td>
+            <td class="num">90%</td><td>2500</td>
+            <td>Improvements and Betterments</td><td class="num">180,000</td>
+            <td>&mdash;</td><td>A</td><td class="num">95,000</td>
+          </tr>
+        </table>
+      </div>
+      <div class="xl-sheettabs">
+        <span class="xl-sheettab">Policy</span>
+        <span class="xl-sheettab active">Locations_Buildings</span>
+        <span class="xl-sheettab">Rate_Tables</span>
+        <span class="xl-sheettab">Calc_Building_BGI</span>
+        <span class="xl-sheettab">Calc_Contents_BGI</span>
+        <span class="xl-sheettab">Calc_Building_BGII</span>
+        <span class="xl-sheettab">Calc_Contents_BGII</span>
+        <span class="xl-sheettab">Calc_Building_Broad</span>
+        <span class="xl-sheettab">Calc_Contents_Broad</span>
+        <span class="xl-sheettab">Calc_Building_Special</span>
+        <span class="xl-sheettab">Calc_Contents_Special</span>
+        <span class="xl-sheettab">Calc_BI_BGI</span>
+        <span class="xl-sheettab">Calc_BI_BGII</span>
+        <span class="xl-sheettab">Calc_BI_Broad</span>
+        <span class="xl-sheettab">Calc_BI_Special</span>
+        <span class="xl-sheettab">Premium_Summary</span>
+      </div>
+    </div>
+    <div class="legend">
+      <span><i class="swatch" style="background:#1e3a45"></i>Shared / physical</span>
+      <span><i class="swatch" style="background:#3a6b57"></i>Building-only</span>
+      <span><i class="swatch" style="background:#8a5a2a"></i>Contents-only</span>
+    </div>
+
+    <div class="instructions">
+      <p class="lede">This is the widest tab in the workbook, and it's wide on purpose: Building and Contents rate the same physical building differently enough that each needs its own set of columns, even though <b>ClassCode</b>, <b>ConstructionCode</b>, <b>Territory</b>, and <b>ProtectionClass</b> only need to be entered once per building.</p>
+      <p>In the real workbook this tab runs about twenty columns wide — the mockup above shows a representative slice of each of the three blocks (shared, Building, Contents) rather than all of them, so the grouping reads clearly.</p>
+      <ul class="field-notes">
+        <li><b>ClassCode</b> means two slightly different things depending which coverage reads it — Building's rules call the same value <b>ClassCodeToUse</b>, Contents' call it <b>BldgClassCode</b> — but it's one column here, entered once.</li>
+        <li><b>PP_Group</b> (A / B / C / YARD) has no Building equivalent at all — it's an occupancy grouping unique to how Contents looks up its base rate.</li>
+        <li><b>Bldg_CovType</b> and <b>PP_CovForm</b> look like the same idea but drive different downstream branches — Building's premium formula branches on <i>coverage type</i>, Contents' on <i>coverage form</i>. Keeping them as separate columns, rather than one shared "coverage" field, avoids a mismatch neither rule file actually makes.</li>
+        <li>Basic Group II adds five more columns not shown above (kept off this mockup to keep it legible): <b>NumStories</b>, <b>OpenSides</b>, <b>BasicGroupIIRatingTerr</b>, <b>WindstormOrHailExclusion</b>, and a <b>ConstructionSymbol</b> column that's <i>computed</i>, not entered — resolved once here so both Basic Group II calc tabs can read the same value instead of each re-deriving it.</li>
+      </ul>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- ================= 3. RATE TABLES ================= -->
+  <section class="sheet-block" id="tables">
+    <div class="sheet-heading">
+      <span class="sheet-index">Tab 3 of 16</span>
+      <h2 class="sheet-title">Rate_Tables</h2>
+    </div>
+    <p class="sheet-role">Flat reference tables, pasted straight from ISO's filed rate files — one block per table, stacked down the sheet.</p>
+
+    <div class="xl-window">
+      <div class="xl-titlebar">
+        <div class="xl-dots"><span></span><span></span><span></span></div>
+        <span class="xl-filename">CF_BGI_Rater.xlsx &nbsp;&mdash;&nbsp; <b>Rate_Tables</b></span>
+        <div class="xl-titlebar-spacer"></div>
+        <span class="xl-mode">Wireframe</span>
+      </div>
+      <div class="xl-formulabar">
+        <span class="xl-cellref">F5</span>
+        <span class="xl-fx">fx</span>
+        <span class="xl-formula">&mdash; &nbsp;<span class="subtle">no countrywide row filed for this key combination</span></span>
+      </div>
+      <div class="xl-scroll">
+        <table class="xl-grid">
+          <tr class="colletters">
+            <th></th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th>
+          </tr>
+          <tr class="fieldrow">
+            <th class="rownum">1</th>
+            <th class="group-table" colspan="6">BasicGroupIRate &nbsp;<span style="font-weight:400; opacity:0.75;">— shared by Building and Contents</span></th>
+          </tr>
+          <tr class="fieldrow">
+            <th class="rownum">2</th>
+            <th class="group-table">State|CW</th>
+            <th class="group-table">ClassCode</th>
+            <th class="group-table">ConstructionCode</th>
+            <th class="group-table">Group</th>
+            <th class="group-table">CovType</th>
+            <th class="group-table">Rate</th>
+          </tr>
+          <tr>
+            <td class="rownum">3</td>
+            <td>OH</td><td>0912</td><td class="num">4</td><td>Not Applicable</td><td>Building</td><td class="num good-cell">0.412</td>
+          </tr>
+          <tr>
+            <td class="rownum">4</td>
+            <td>OH</td><td>0570</td><td class="num">6</td><td>B</td><td>PersProp</td><td class="num good-cell">0.588</td>
+          </tr>
+          <tr>
+            <td class="rownum">5</td>
+            <td>CW</td><td>0912</td><td class="num">4</td><td>Not Applicable</td><td>Building</td><td class="num warn-cell">— no row filed —</td>
+          </tr>
+          <tr>
+            <td class="rownum">6</td><td colspan="6" style="border:none;">&nbsp;</td>
+          </tr>
+          <tr class="fieldrow">
+            <th class="rownum">7</th>
+            <th class="group-table" colspan="6">ProtectionClassFactor</th>
+          </tr>
+          <tr class="fieldrow">
+            <th class="rownum">8</th>
+            <th class="group-table">State|CW</th>
+            <th class="group-table">ProtectionClass</th>
+            <th class="group-table">ConstructionCode</th>
+            <th class="group-table" colspan="2">Factor</th>
+            <th class="group-table"></th>
+          </tr>
+          <tr>
+            <td class="rownum">9</td>
+            <td>CW</td><td class="num">06</td><td class="num">4</td><td class="num good-cell" colspan="2">1.180</td><td></td>
+          </tr>
+        </table>
+      </div>
+      <div class="xl-sheettabs">
+        <span class="xl-sheettab">Policy</span>
+        <span class="xl-sheettab">Locations_Buildings</span>
+        <span class="xl-sheettab active">Rate_Tables</span>
+        <span class="xl-sheettab">Calc_Building_BGI</span>
+        <span class="xl-sheettab">Calc_Contents_BGI</span>
+        <span class="xl-sheettab">Calc_Building_BGII</span>
+        <span class="xl-sheettab">Calc_Contents_BGII</span>
+        <span class="xl-sheettab">Calc_Building_Broad</span>
+        <span class="xl-sheettab">Calc_Contents_Broad</span>
+        <span class="xl-sheettab">Calc_Building_Special</span>
+        <span class="xl-sheettab">Calc_Contents_Special</span>
+        <span class="xl-sheettab">Calc_BI_BGI</span>
+        <span class="xl-sheettab">Calc_BI_BGII</span>
+        <span class="xl-sheettab">Calc_BI_Broad</span>
+        <span class="xl-sheettab">Calc_BI_Special</span>
+        <span class="xl-sheettab">Premium_Summary</span>
+      </div>
+    </div>
+
+    <div class="instructions">
+      <p class="lede">Every table here is pasted in once, in the same shape ISO filed it — a state-or-countrywide key column, then whatever keys that specific table needs, then the rate or factor. The calc tabs look values up here; nothing on this tab is computed.</p>
+      <p>The two-pass lookup every table uses is the same idea repeated: try the state's own row first, and only fall back to the <b>CW</b> row if the state hasn't filed one. In Excel that's <code>IFERROR(XLOOKUP(state combo, …), XLOOKUP(CW combo, …))</code> — one formula pattern, reused down the whole tab.</p>
+      <div class="callout warn">
+        <span class="callout-mark">!</span>
+        <p><b>Known gap, not a bug:</b> <b>BasicGroupIRate</b>'s countrywide rows are confirmed empty in the actual ISO package this project traced — zero data rows filed at the CW level, for both Building and Personal Property. Row 5 above shows what that looks like in the workbook: a visible red flag, not a silent blank or a zero. Any state without its own filed row will hit this — build the lookup so the gap is loud.</p>
+      </div>
+      <p>Basic Group II adds two more tables to this tab, and both are in worse shape: <b>BasicGroupIIRate</b> and <b>LowestBasicGroupIIRate</b> are <i>each</i> confirmed header-only at the countrywide level, for both Building and Contents — meaning Basic Group II's loss cost cannot resolve at all, under any symbol/territory combination, without a state filing. See the Basic Group II calc tabs below for what that looks like once it reaches a formula.</p>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- ================= 4. CALC BUILDING BGI ================= -->
+  <section class="sheet-block" id="calcbldg">
+    <div class="sheet-heading">
+      <span class="sheet-index">Tab 4 of 16</span>
+      <h2 class="sheet-title">Calc_Building_BGI</h2>
+    </div>
+    <p class="sheet-role">One row per building — the eight-step Basic Group I rate build-up for Building, in order.</p>
+
+    <div class="xl-window">
+      <div class="xl-titlebar">
+        <div class="xl-dots"><span></span><span></span><span></span></div>
+        <span class="xl-filename">CF_BGI_Rater.xlsx &nbsp;&mdash;&nbsp; <b>Calc_Building_BGI</b></span>
+        <div class="xl-titlebar-spacer"></div>
+        <span class="xl-mode">Wireframe</span>
+      </div>
+      <div class="xl-formulabar">
+        <span class="xl-cellref">D2</span>
+        <span class="xl-fx">fx</span>
+        <span class="xl-formula">=((B2*Policy!$D$2)+SubStd+Vacant)*TerrFactor*ProtClassFactor*RoofACV</span>
+      </div>
+      <div class="xl-scroll">
+        <table class="xl-grid">
+          <tr class="colletters">
+            <th></th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>G</th><th>H</th><th>I</th>
+          </tr>
+          <tr class="fieldrow">
+            <th class="rownum">1</th>
+            <th class="group-bldg">BuildingID</th>
+            <th class="group-bldg">1&nbsp;BaseRate</th>
+            <th class="group-bldg">2&nbsp;Rate</th>
+            <th class="group-bldg">3&nbsp;COLAdj</th>
+            <th class="group-bldg">4&nbsp;CoinsFactor</th>
+            <th class="group-bldg">5&nbsp;LOIFactor</th>
+            <th class="group-bldg">6&nbsp;AdjustedRate</th>
+            <th class="group-bldg">7&nbsp;DeductFactor</th>
+            <th class="group-bldg">8&nbsp;FinalRate</th>
+          </tr>
+          <tr>
+            <td class="rownum">2</td>
+            <td>BLDG-A</td>
+            <td class="num formula-cell">0.412</td>
+            <td class="num formula-cell">0.556</td>
+            <td class="num formula-cell">0.531</td>
+            <td class="num">1.000</td>
+            <td class="num">0.940</td>
+            <td class="num formula-cell">0.499</td>
+            <td class="num">0.930</td>
+            <td class="num total-cell">0.464</td>
+          </tr>
+          <tr>
+            <td class="rownum">3</td>
+            <td>BLDG-B</td>
+            <td class="num warn-cell">— no CW rate —</td>
+            <td class="num">&mdash;</td>
+            <td class="num">&mdash;</td>
+            <td class="num">1.000</td>
+            <td class="num">0.910</td>
+            <td class="num">&mdash;</td>
+            <td class="num">0.880</td>
+            <td class="num total-cell">&mdash;</td>
+          </tr>
+        </table>
+      </div>
+      <div class="xl-sheettabs">
+        <span class="xl-sheettab">Policy</span>
+        <span class="xl-sheettab">Locations_Buildings</span>
+        <span class="xl-sheettab">Rate_Tables</span>
+        <span class="xl-sheettab active">Calc_Building_BGI</span>
+        <span class="xl-sheettab">Calc_Contents_BGI</span>
+        <span class="xl-sheettab">Calc_Building_BGII</span>
+        <span class="xl-sheettab">Calc_Contents_BGII</span>
+        <span class="xl-sheettab">Calc_Building_Broad</span>
+        <span class="xl-sheettab">Calc_Contents_Broad</span>
+        <span class="xl-sheettab">Calc_Building_Special</span>
+        <span class="xl-sheettab">Calc_Contents_Special</span>
+        <span class="xl-sheettab">Calc_BI_BGI</span>
+        <span class="xl-sheettab">Calc_BI_BGII</span>
+        <span class="xl-sheettab">Calc_BI_Broad</span>
+        <span class="xl-sheettab">Calc_BI_Special</span>
+        <span class="xl-sheettab">Premium_Summary</span>
+      </div>
+    </div>
+
+    <div class="instructions">
+      <p class="lede">Read left to right and each column is one rating step, in the exact order ISO's own rule file runs them — base rate, then rate, then a cause-of-loss adjustment, then coinsurance and limit-of-insurance factors, then deductible, landing on <b>FinalRate</b>.</p>
+      <p><b>BLDG-B</b>'s row shows the empty-CW-table gap arriving downstream: because <b>BaseRate</b> can't resolve for a state that hasn't filed its own row, every column after it that depends on it goes blank too, all the way to <b>FinalRate</b>. That's deliberate — a wrong-but-present number would be worse than a visible break in the chain.</p>
+      <ul class="field-notes">
+        <li><b>Rate</b> (step 2) is the only column with an addition inside it — base rate times the loss-cost multiplier, <i>plus</i> a substandard-condition addend and a vacant-building addend, before the multipliers apply.</li>
+        <li><b>CoinsuranceFactor</b> (step 4) is sometimes left exactly as-is rather than recalculated — for class code 1150 or a Functional Valuation policy, the rule skips this step entirely rather than overwriting it with 1.0.</li>
+      </ul>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- ================= 5. CALC CONTENTS BGI ================= -->
+  <section class="sheet-block" id="calcpp">
+    <div class="sheet-heading">
+      <span class="sheet-index">Tab 5 of 16</span>
+      <h2 class="sheet-title">Calc_Contents_BGI</h2>
+    </div>
+    <p class="sheet-role">One row per building — the parallel build-up for Personal Property, same shape, genuinely different math.</p>
+
+    <div class="xl-window">
+      <div class="xl-titlebar">
+        <div class="xl-dots"><span></span><span></span><span></span></div>
+        <span class="xl-filename">CF_BGI_Rater.xlsx &nbsp;&mdash;&nbsp; <b>Calc_Contents_BGI</b></span>
+        <div class="xl-titlebar-spacer"></div>
+        <span class="xl-mode">Wireframe</span>
+      </div>
+      <div class="xl-formulabar">
+        <span class="xl-cellref">C2</span>
+        <span class="xl-fx">fx</span>
+        <span class="xl-formula">=IF(PP_FireSafeVault="Y", 0.50, 1.00) &nbsp;<span class="subtle">— no Building column feeds this</span></span>
+      </div>
+      <div class="xl-scroll">
+        <table class="xl-grid">
+          <tr class="colletters">
+            <th></th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>G</th><th>H</th><th>I</th><th>J</th><th>K</th>
+          </tr>
+          <tr class="fieldrow">
+            <th class="rownum">1</th>
+            <th class="group-pp">BuildingID</th>
+            <th class="group-pp">1&nbsp;BaseRate</th>
+            <th class="group-pp">2&nbsp;VaultFactor</th>
+            <th class="group-pp">3&nbsp;ProtClassFactor</th>
+            <th class="group-pp">4&nbsp;Rate</th>
+            <th class="group-pp">5&nbsp;COLAdj</th>
+            <th class="group-pp">6&nbsp;CoinsFactor</th>
+            <th class="group-pp">7&nbsp;LOIFactor</th>
+            <th class="group-pp">8&nbsp;AdjustedRate</th>
+            <th class="group-pp">9&nbsp;DeductFactor&nbsp;&#9733;</th>
+            <th class="group-pp">FinalRate</th>
+          </tr>
+          <tr>
+            <td class="rownum">2</td>
+            <td>BLDG-A</td>
+            <td class="num">0.588</td>
+            <td class="num formula-cell">1.000</td>
+            <td class="num">1.220</td>
+            <td class="num formula-cell">0.895</td>
+            <td class="num formula-cell">0.842</td>
+            <td class="num">1.000</td>
+            <td class="num">0.905</td>
+            <td class="num formula-cell">0.762</td>
+            <td class="num">0.960</td>
+            <td class="num total-cell">0.732</td>
+          </tr>
+          <tr>
+            <td class="rownum">3</td>
+            <td>BLDG-B</td>
+            <td class="num">0.401</td>
+            <td class="num formula-cell">0.500</td>
+            <td class="num">1.050</td>
+            <td class="num formula-cell">0.221</td>
+            <td class="num formula-cell">0.203</td>
+            <td class="num">1.000</td>
+            <td class="num">0.870</td>
+            <td class="num formula-cell">0.177</td>
+            <td class="num">0.930</td>
+            <td class="num total-cell">0.164</td>
+          </tr>
+        </table>
+      </div>
+      <div class="xl-sheettabs">
+        <span class="xl-sheettab">Policy</span>
+        <span class="xl-sheettab">Locations_Buildings</span>
+        <span class="xl-sheettab">Rate_Tables</span>
+        <span class="xl-sheettab">Calc_Building_BGI</span>
+        <span class="xl-sheettab active">Calc_Contents_BGI</span>
+        <span class="xl-sheettab">Calc_Building_BGII</span>
+        <span class="xl-sheettab">Calc_Contents_BGII</span>
+        <span class="xl-sheettab">Calc_Building_Broad</span>
+        <span class="xl-sheettab">Calc_Contents_Broad</span>
+        <span class="xl-sheettab">Calc_Building_Special</span>
+        <span class="xl-sheettab">Calc_Contents_Special</span>
+        <span class="xl-sheettab">Calc_BI_BGI</span>
+        <span class="xl-sheettab">Calc_BI_BGII</span>
+        <span class="xl-sheettab">Calc_BI_Broad</span>
+        <span class="xl-sheettab">Calc_BI_Special</span>
+        <span class="xl-sheettab">Premium_Summary</span>
+      </div>
+    </div>
+
+    <div class="instructions">
+      <p class="lede">Same nine-step shape as the Building tab, but don't assume the columns line up one-for-one — three of ISO's real differences are visible right in this layout, not just in the numbers.</p>
+      <ul class="field-notes">
+        <li><b>VaultFactor</b> (step 2) has no column on the Building tab at all — a 0.50 credit for contents kept in a fire-rated vault, a concept that only makes sense for contents in the first place. <b>BLDG-B</b>'s row shows it applied.</li>
+        <li><b>Rate</b> (step 4) is <i>missing</i> two things the Building tab's equivalent step has: no vacant-building addend, and no roof-surfacing factor. Contents don't have a roof, and vacancy for contents is rated by a separate endorsement, not folded in here.</li>
+        <li><b>FinalRate</b> has no multi-residential credit multiplier — that Building-only discount doesn't exist anywhere in ISO's Personal Property rules.</li>
+      </ul>
+      <div class="callout warm">
+        <span class="callout-mark">&#9733;</span>
+        <p><b>Column 9, DeductFactor, is a documented deviation, not a guess.</b> In ISO's own rule files, this value is copied down from an unrelated ancestor record rather than computed inside the Personal Property ruleset — an organizational quirk of how ISO split its files, not a different formula. This workbook builds it as the same local lookup used on the Building tab, since the underlying table and logic are identical. If a real ISO test system ever disagrees with this workbook on a Contents deductible factor, this is the first cell to check.</p>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- ================= INPUTS -> OUTPUT, BASIC GROUP I ================= -->
+  <section class="sheet-block" id="flowbgi">
+    <div class="sheet-heading">
+      <span class="sheet-index">Diagram, not a tab</span>
+      <h2 class="sheet-title">Inputs &rarr; rating output — Basic Group I</h2>
+    </div>
+    <p class="sheet-role">The same nine columns from the two tabs above, redrawn as a chain: what each stage reads, what it hands to the next one.</p>
+
+    <p class="formula-label">Building — stage by stage</p>
+    <div class="flow-scroll">
+      <div class="flow-stages">
+        <div class="flow-stage">
+          <span class="flow-stage-num">STAGE 0 — THE LOSS COST</span>
+          <span class="flow-stage-title">Base rate lookup</span>
+          <span class="flow-stage-reads">ClassCode<br>ConstructionCode<br>&rarr; BasicGroupIRate</span>
+          <span class="flow-stage-out">BaseRate</span>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-stage">
+          <span class="flow-stage-num">STAGE 1</span>
+          <span class="flow-stage-title">Turn it into a rate</span>
+          <span class="flow-stage-reads">BaseRate, LCM<br>SubStdConditionRate<br>VacantBuildingRate<br>Territory, ProtClass<br>RoofSurfacingACV</span>
+          <span class="flow-stage-out">Rate</span>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-stage">
+          <span class="flow-stage-num">STAGE 2</span>
+          <span class="flow-stage-title">Cause-of-loss adjustment</span>
+          <span class="flow-stage-reads">Rate<br>SprinklerLeakage&times;2<br>VandalismExclFactor<br>StdPropPolGroupIFactor</span>
+          <span class="flow-stage-out">COLAdj</span>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-stage branch">
+          <span class="flow-stage-num">STAGE 3 — IF/THEN</span>
+          <span class="flow-stage-title">Coinsurance &amp; limit of insurance</span>
+          <span class="flow-stage-reads">COLAdj, Coinsurance<br>ClassCode = "1150"?<br>ValuationType, Limit</span>
+          <span class="flow-stage-out">AdjustedRate</span>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-stage">
+          <span class="flow-stage-num">STAGE 4</span>
+          <span class="flow-stage-title">Deductible</span>
+          <span class="flow-stage-reads">AdjustedRate<br>Deductible, Limit<br>MultiResIndicator</span>
+          <span class="flow-stage-out">FinalRate</span>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-stage">
+          <span class="flow-stage-num">Premium_Summary</span>
+          <span class="flow-stage-title">Dollar premium</span>
+          <span class="flow-stage-reads">FinalRate, Limit<br>IRPM, PackageMod<br>MultiPremium, Cyber&times;2</span>
+          <span class="flow-stage-out">Bldg_Premium</span>
+        </div>
+      </div>
+    </div>
+    <p class="flow-caption">"Loss cost" is ISO's own term for the unloaded, company-neutral number the bureau files before any carrier prices it — that's Stage 0's output, before the Loss Cost Multiplier ever touches it.</p>
+
+    <p class="formula-label">Building — full formula</p>
+    <div class="formula-panel"><pre><span class="kw">BaseRate</span> = <span class="fn">Lookup</span>(BasicGroupIRate: ClassCode, ConstructionCode, "Not Applicable", "Building")
+    <span class="kw">if</span> RatingType = "Class" and ClassCode &lt;&gt; "" and ConstructionCode &lt;&gt; 0
+    <span class="kw">else</span> 0.0
+
+<span class="kw">Rate</span> =
+    <span class="kw">if</span> RatingType = "Class":
+        ((BaseRate &times; LCM) + SubStdConditionRate + VacantBuildingRate)
+          &times; TerrFactor &times; ProtClassFactor &times; RoofSurfacingACVFactor
+    <span class="kw">elif</span> RatingType in ("Specific","Tentative"):
+        SpecificGroupIRate &times; LCM &times; SprinklerLeakageNotExcludedFactor
+    <span class="kw">else</span>: 1.0                                            <span class="cm">(round to 3dp)</span>
+
+<span class="kw">COLAdj</span> = <span class="fn">Round</span>(Rate - SprinklerLeakageExclNonSprinkleredBldgRate, 3)
+          &times; SprinklerLeakageExclSprinkleredFactor &times; VandalismExclFactor &times; StdPropPolGroupIFactor
+<span class="cm">(...BldgRate = Round(rate &times; LCM, 3) -- at LCM=1.0 this rounds the filed 0.0006 up to 0.001, a ~67% jump from crossing the 3dp boundary)</span>
+
+<span class="kw">CoinsuranceFactor</span> =
+    &lt;left unchanged&gt;   <span class="kw">if</span> ClassCode = "1150" or ValuationType = "Functional Valuation"
+    <span class="kw">else</span> &lt;standard 80/90/100% lookup&gt;
+
+<span class="kw">AdjustedRate</span> = COLAdj &times; CoinsuranceFactor &times; LOIFactor
+
+<span class="kw">DeductibleFactor</span> =
+    <span class="fn">Lookup</span>(Deductible250Factor)                        <span class="kw">if</span> Deductible = "250"
+    <span class="kw">else</span> <span class="fn">Lookup</span>(DeductibleFactor: Deductible, TotAmtInsurance, "Other Cause Of Loss")
+    <span class="cm">(★ corrected: TotAmtInsurance = Bldg limit + every Contents item's limit at the location + Special Class Risk -- NOT Bldg limit alone. Live rater still uses Bldg-only; backlogged until Contents is built.)</span>
+
+<span class="kw">FinalRate</span> = AdjustedRate &times; DeductibleByLocationFactor &times; DeductibleFactor &times; MultiResidentialPropSpecialCreditFactor
+
+<span class="kw">Bldg_Premium</span> =
+    <span class="kw">if</span> Bldg_CovType in ("Building","Builders Risk","Improvements and Betterments","Condominium Association")
+       and Bldg_IncludedInBlkt = "No":
+        <span class="fn">Round</span>(IRPM &times; MultiPremiumDispersion &times; PackageMod &times; FinalRate &times; (Limit/100), 0)
+          &times; CyberExclFactorBGI &times; CyberExclCOLExcptnsFactorBGI
+    <span class="kw">elif</span> Bldg_CovType = "Legal Liability": <span class="cm">[not built this pass]</span>
+    <span class="kw">elif</span> Bldg_IncludedInBlkt = "Yes":     <span class="cm">[blanket — not built this pass]</span>
+    <span class="kw">else</span>: 0.0</pre></div>
+
+    <p class="formula-label">Contents — stage by stage</p>
+    <div class="flow-scroll">
+      <div class="flow-stages">
+        <div class="flow-stage">
+          <span class="flow-stage-num">STAGE 0 — THE LOSS COST</span>
+          <span class="flow-stage-title">Base rate lookup</span>
+          <span class="flow-stage-reads">ClassCode, ConstructionCode<br>PP_Group (A/B/C/YARD)<br>&rarr; BasicGroupIRate</span>
+          <span class="flow-stage-out">BaseRate</span>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-stage">
+          <span class="flow-stage-num">STAGE 1</span>
+          <span class="flow-stage-title">Turn it into a rate</span>
+          <span class="flow-stage-reads">BaseRate, LCM<br>SubStdConditionRate<br>PP_FireSafeVault<br>ProtClass, Territory<br><i>no vacancy, no roof</i></span>
+          <span class="flow-stage-out">Rate</span>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-stage branch">
+          <span class="flow-stage-num">STAGE 2 — IF/THEN</span>
+          <span class="flow-stage-title">Cause-of-loss adjustment</span>
+          <span class="flow-stage-reads">PP_ValuablePapers = Y?<br>else SprinklerLeakage&times;2<br>Vandalism, StdPropPolGroupI</span>
+          <span class="flow-stage-out">COLAdj</span>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-stage branch">
+          <span class="flow-stage-num">STAGE 3 — IF/THEN</span>
+          <span class="flow-stage-title">Coinsurance &amp; LOI</span>
+          <span class="flow-stage-reads">SpecialCoins/ValueReporting<br>record exists? forces 100%<br>PP_CovForm, PP_Limit</span>
+          <span class="flow-stage-out">AdjustedRate</span>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-stage">
+          <span class="flow-stage-num">STAGE 4 &#9733;</span>
+          <span class="flow-stage-title">Deductible</span>
+          <span class="flow-stage-reads">AdjustedRate, Deductible<br><i>no multi-res input</i></span>
+          <span class="flow-stage-out">FinalRate</span>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-stage">
+          <span class="flow-stage-num">Premium_Summary</span>
+          <span class="flow-stage-title">Dollar premium</span>
+          <span class="flow-stage-reads">FinalRate, PP_Limit<br>same 3 Policy factors</span>
+          <span class="flow-stage-out">PP_Premium</span>
+        </div>
+      </div>
+    </div>
+
+    <p class="formula-label">Contents — full formula</p>
+    <div class="formula-panel"><pre><span class="kw">BaseRate</span> =
+    <span class="kw">if</span> RatingType = "Class" and ClassCode &lt;&gt; "1150":
+        <span class="kw">if</span> PP_Group = "YARD":
+            <span class="fn">Lookup</span>(constCode = 1 or 3 by YardPropertyIndicator, group="YARD", covType="PersProp")
+        <span class="kw">elif</span> ConstructionCode &lt;&gt; 0 and PP_Group &lt;&gt; "":
+            <span class="fn">Lookup</span>(ClassCode, ConstructionCode, PP_Group, "PersProp")
+        <span class="kw">else</span>: 0.0
+    <span class="kw">else</span>: 0.0
+
+<span class="kw">FireSafeVaultFactor</span> = 0.50 <span class="kw">if</span> PP_FireSafeVault = "Y" <span class="kw">else</span> 1.0   <span class="cm">(0.0 unless RatingType = "Class")</span>
+
+<span class="kw">Rate</span> = ((BaseRate &times; LCM) + SubStdConditionRate) &times; FireSafeVaultFactor &times; ProtClassFactor &times; TerrFactor
+       <span class="cm">(no vacancy addend, no roof factor at any branch)</span>
+
+<span class="kw">COLAdj</span> =
+    0.0   <span class="kw">if</span> PP_ValuablePapers = "Y"
+    <span class="kw">else</span> <span class="fn">Round</span>(Rate - SprinklerLeakageExclNonSprinkleredRate, 3)
+           &times; SprinklerLeakageExclSprinkleredFactor &times; VandalismExclFactor &times; StdPropPolGroupIFactor
+    <span class="cm">(Contents' own datadef group names its LCM-scaled value "Rate" with no suffix -- different from Building's "...BldgRate" above)</span>
+
+<span class="kw">CoinsuranceFactor</span> =
+    &lt;forced to the 100% lookup value&gt;
+        <span class="kw">if</span> (SpecialCoinsuranceProvisions or ValueReportingForm record exists
+             or Coinsurance in ("Daily","Weekly","Monthly","Quarterly","Policy Year Reporting"))
+           and ValuationType &lt;&gt; "Functional Valuation"
+    <span class="kw">else</span> &lt;standard lookup&gt;
+
+<span class="kw">LOIFactor</span> =
+    &lt;blanket copy&gt;   <span class="kw">if</span> PP_IncludedInBlkt = "Yes" and BlktIDNum &gt; 0
+    <span class="kw">elif</span> PP_CovForm not in ("Legal Liability Coverage Form","Tobacco Sales Warehouse Coverage Form"):
+        <span class="fn">Lookup</span>(BasicGroupILOIFactorPersProp: PP_Limit)
+    <span class="kw">else</span>: 1.0
+
+<span class="kw">AdjustedRate</span> = LOIFactor &times; COLAdj &times; CoinsuranceFactor
+
+<span class="kw">DeductibleFactor</span> = &lt;same local Choose Building uses&gt;  <span class="cm">(★ documented deviation — ISO copies this from an ancestor record)</span>
+
+<span class="kw">FinalRate</span> = AdjustedRate &times; DeductibleByLocationFactor &times; DeductibleFactor  <span class="cm">(no multi-res multiplier, any branch)</span>
+
+<span class="kw">PP_Premium</span> =
+    <span class="kw">if</span> PP_CovForm not in ("Legal Liability Coverage Form","Tobacco Sales Warehouse Coverage Form",
+                           "Class Rated Building Only, No Personal Property Coverage")
+       and PP_IncludedInBlkt = "No":
+        <span class="fn">Round</span>(IRPM &times; MultiPremiumDispersion &times; PackageMod &times; FinalRate &times; (PP_Limit/100), 0)
+          &times; CyberExclFactorBGI &times; CyberExclCOLExcptnsFactorBGI
+    <span class="kw">elif</span> PP_CovForm = "Legal Liability Coverage Form": <span class="cm">[not built this pass]</span>
+    <span class="kw">elif</span> PP_IncludedInBlkt = "Yes":     <span class="cm">[blanket — not built this pass]</span>
+    <span class="kw">else</span>: 0.0</pre></div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- ================= 6. CALC BUILDING BGII ================= -->
+  <section class="sheet-block" id="calcbldg2">
+    <div class="sheet-heading">
+      <span class="sheet-index">Tab 6 of 16</span>
+      <h2 class="sheet-title">Calc_Building_BGII</h2>
+    </div>
+    <p class="sheet-role">One row per building — territory + construction symbol drive this rate, not class + construction code.</p>
+
+    <div class="xl-window">
+      <div class="xl-titlebar">
+        <div class="xl-dots"><span></span><span></span><span></span></div>
+        <span class="xl-filename">CF_BGI_Rater.xlsx &nbsp;&mdash;&nbsp; <b>Calc_Building_BGII</b></span>
+        <div class="xl-titlebar-spacer"></div>
+        <span class="xl-mode">Wireframe</span>
+      </div>
+      <div class="xl-formulabar">
+        <span class="xl-cellref">D2</span>
+        <span class="xl-fx">fx</span>
+        <span class="xl-formula">=IF(WindstormOrHailExclusion="Y", LowestBaseRate*LCM*WindFactor*StdFactor, BaseRate*LCM*NumericValue*BCEG)</span>
+      </div>
+      <div class="xl-scroll">
+        <table class="xl-grid">
+          <tr class="colletters">
+            <th></th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>G</th><th>H</th><th>I</th><th>J</th><th>K</th><th>L</th>
+          </tr>
+          <tr class="fieldrow">
+            <th class="rownum">1</th>
+            <th class="group-bldg">BuildingID</th>
+            <th class="group-bldg">Symbol</th>
+            <th class="group-bldg">1&nbsp;BaseRate</th>
+            <th class="group-bldg">LowestBaseRate</th>
+            <th class="group-bldg">NumericValue</th>
+            <th class="group-bldg">2&nbsp;Rate</th>
+            <th class="group-bldg">3&nbsp;COLAdj</th>
+            <th class="group-bldg">CoinsFactor</th>
+            <th class="group-bldg">LOIFactor</th>
+            <th class="group-bldg">AdjustedRate</th>
+            <th class="group-bldg">DeductFactor</th>
+            <th class="group-bldg">FinalRate</th>
+          </tr>
+          <tr>
+            <td class="rownum">2</td>
+            <td>BLDG-A</td>
+            <td>4A</td>
+            <td class="num warn-cell">— no CW rate —</td>
+            <td class="num warn-cell">— no CW rate —</td>
+            <td class="num">1.000</td>
+            <td class="num">&mdash;</td>
+            <td class="num">&mdash;</td>
+            <td class="num">1.000</td>
+            <td class="num">0.870</td>
+            <td class="num">&mdash;</td>
+            <td class="num">0.910</td>
+            <td class="num total-cell">&mdash;</td>
+          </tr>
+          <tr>
+            <td class="rownum">3</td>
+            <td>BLDG-B &#9733;</td>
+            <td>6B</td>
+            <td class="num warn-cell">— no CW rate —</td>
+            <td class="num warn-cell">— no CW rate —</td>
+            <td class="num formula-cell">1.000</td>
+            <td class="num">&mdash;</td>
+            <td class="num formula-cell">&mdash;</td>
+            <td class="num">1.000</td>
+            <td class="num">0.900</td>
+            <td class="num">&mdash;</td>
+            <td class="num">0.940</td>
+            <td class="num total-cell">&mdash;</td>
+          </tr>
+        </table>
+      </div>
+      <div class="xl-sheettabs">
+        <span class="xl-sheettab">Policy</span>
+        <span class="xl-sheettab">Locations_Buildings</span>
+        <span class="xl-sheettab">Rate_Tables</span>
+        <span class="xl-sheettab">Calc_Building_BGI</span>
+        <span class="xl-sheettab">Calc_Contents_BGI</span>
+        <span class="xl-sheettab active">Calc_Building_BGII</span>
+        <span class="xl-sheettab">Calc_Contents_BGII</span>
+        <span class="xl-sheettab">Calc_Building_Broad</span>
+        <span class="xl-sheettab">Calc_Contents_Broad</span>
+        <span class="xl-sheettab">Calc_Building_Special</span>
+        <span class="xl-sheettab">Calc_Contents_Special</span>
+        <span class="xl-sheettab">Calc_BI_BGI</span>
+        <span class="xl-sheettab">Calc_BI_BGII</span>
+        <span class="xl-sheettab">Calc_BI_Broad</span>
+        <span class="xl-sheettab">Calc_BI_Special</span>
+        <span class="xl-sheettab">Premium_Summary</span>
+      </div>
+    </div>
+
+    <div class="instructions">
+      <p class="lede">Both rows show the same countrywide gap flagged on the Rate_Tables tab, because <b>neither</b> <b>BasicGroupIIRate</b> nor <b>LowestBasicGroupIIRate</b> has a filed CW row — worse than Basic Group I, which at least resolves for some class/construction combinations. Every column after <b>BaseRate</b> is blank here for the same reason Basic Group I's BLDG-B row was blank: nothing downstream should silently compute from a missing input.</p>
+      <ul class="field-notes">
+        <li><b>Symbol</b> isn't computed on this tab at all — it's pulled from <b>Locations_Buildings.ConstructionSymbol</b>, resolved once and read by both Basic Group II calc tabs, because ISO's own rules copy it down from a shared ancestor context rather than recomputing it per coverage.</li>
+        <li><b>BLDG-B &#9733;</b> has a windstorm/hail exclusion on the policy — that's what routes its <b>COLAdj</b> through <b>LowestBaseRate</b> instead of <b>Rate</b>, per the formula bar above. Basic Group I has no equivalent second rate path at all.</li>
+      </ul>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- ================= 7. CALC CONTENTS BGII ================= -->
+  <section class="sheet-block" id="calcpp2">
+    <div class="sheet-heading">
+      <span class="sheet-index">Tab 7 of 16</span>
+      <h2 class="sheet-title">Calc_Contents_BGII</h2>
+    </div>
+    <p class="sheet-role">One row per building — same symbol/territory shape as Building, no roof factors, one fewer LOI branch.</p>
+
+    <div class="xl-window">
+      <div class="xl-titlebar">
+        <div class="xl-dots"><span></span><span></span><span></span></div>
+        <span class="xl-filename">CF_BGI_Rater.xlsx &nbsp;&mdash;&nbsp; <b>Calc_Contents_BGII</b></span>
+        <div class="xl-titlebar-spacer"></div>
+        <span class="xl-mode">Wireframe</span>
+      </div>
+      <div class="xl-formulabar">
+        <span class="xl-cellref">F2</span>
+        <span class="xl-fx">fx</span>
+        <span class="xl-formula">=BaseRate*LCM*NumericValue*BCEGFactor &nbsp;<span class="subtle">— no roof factors, unlike Building's Rate column</span></span>
+      </div>
+      <div class="xl-scroll">
+        <table class="xl-grid">
+          <tr class="colletters">
+            <th></th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>G</th><th>H</th><th>I</th><th>J</th><th>K</th>
+          </tr>
+          <tr class="fieldrow">
+            <th class="rownum">1</th>
+            <th class="group-pp">BuildingID</th>
+            <th class="group-pp">Symbol</th>
+            <th class="group-pp">1&nbsp;BaseRate</th>
+            <th class="group-pp">LowestBaseRate</th>
+            <th class="group-pp">NumericValue</th>
+            <th class="group-pp">2&nbsp;Rate</th>
+            <th class="group-pp">3&nbsp;COLAdj</th>
+            <th class="group-pp">LOIFactor</th>
+            <th class="group-pp">AdjustedRate</th>
+            <th class="group-pp">DeductFactor&nbsp;&#9733;</th>
+            <th class="group-pp">FinalRate</th>
+          </tr>
+          <tr>
+            <td class="rownum">2</td>
+            <td>BLDG-A</td>
+            <td>4A</td>
+            <td class="num warn-cell">— no CW rate —</td>
+            <td class="num warn-cell">— no CW rate —</td>
+            <td class="num">1.000</td>
+            <td class="num">&mdash;</td>
+            <td class="num">&mdash;</td>
+            <td class="num">0.860</td>
+            <td class="num">&mdash;</td>
+            <td class="num">0.930</td>
+            <td class="num total-cell">&mdash;</td>
+          </tr>
+          <tr>
+            <td class="rownum">3</td>
+            <td>BLDG-B</td>
+            <td>6B</td>
+            <td class="num warn-cell">— no CW rate —</td>
+            <td class="num warn-cell">— no CW rate —</td>
+            <td class="num">1.000</td>
+            <td class="num">&mdash;</td>
+            <td class="num">&mdash;</td>
+            <td class="num">0.905</td>
+            <td class="num">&mdash;</td>
+            <td class="num">0.950</td>
+            <td class="num total-cell">&mdash;</td>
+          </tr>
+        </table>
+      </div>
+      <div class="xl-sheettabs">
+        <span class="xl-sheettab">Policy</span>
+        <span class="xl-sheettab">Locations_Buildings</span>
+        <span class="xl-sheettab">Rate_Tables</span>
+        <span class="xl-sheettab">Calc_Building_BGI</span>
+        <span class="xl-sheettab">Calc_Contents_BGI</span>
+        <span class="xl-sheettab">Calc_Building_BGII</span>
+        <span class="xl-sheettab active">Calc_Contents_BGII</span>
+        <span class="xl-sheettab">Calc_Building_Broad</span>
+        <span class="xl-sheettab">Calc_Contents_Broad</span>
+        <span class="xl-sheettab">Calc_Building_Special</span>
+        <span class="xl-sheettab">Calc_Contents_Special</span>
+        <span class="xl-sheettab">Calc_BI_BGI</span>
+        <span class="xl-sheettab">Calc_BI_BGII</span>
+        <span class="xl-sheettab">Calc_BI_Broad</span>
+        <span class="xl-sheettab">Calc_BI_Special</span>
+        <span class="xl-sheettab">Premium_Summary</span>
+      </div>
+    </div>
+
+    <div class="instructions">
+      <p class="lede">Column count drops from Building's twelve to eleven — no roof-surfacing factor anywhere in this chain, at any branch, consistent with Contents never having a roof under Basic Group I either.</p>
+      <ul class="field-notes">
+        <li><b>Symbol</b> here is the exact same value as Building's — pulled from the shared <b>Locations_Buildings</b> column, not re-resolved.</li>
+        <li><b>DeductFactor &#9733;</b> carries the same documented-deviation note as Basic Group I's Contents tab — ISO copies this value from an ancestor record rather than computing it in the Personal Property ruleset; built here as the same local lookup Building uses.</li>
+      </ul>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- ================= INPUTS -> OUTPUT, BASIC GROUP II ================= -->
+  <section class="sheet-block" id="flowbgii">
+    <div class="sheet-heading">
+      <span class="sheet-index">Diagram, not a tab</span>
+      <h2 class="sheet-title">Inputs &rarr; rating output — Basic Group II</h2>
+    </div>
+    <p class="sheet-role">Same shape as the Basic Group I diagram — one new stage in front, for resolving the construction symbol both coverages share.</p>
+
+    <p class="formula-label">Building — stage by stage</p>
+    <div class="flow-scroll">
+      <div class="flow-stages">
+        <div class="flow-stage branch">
+          <span class="flow-stage-num">STAGE &minus;1 — SHARED, ONCE</span>
+          <span class="flow-stage-title">Resolve construction symbol</span>
+          <span class="flow-stage-reads">ConstructionType<br>NumStories<br>&rarr; symbol overrides by class</span>
+          <span class="flow-stage-out">ConstructionSymbol</span>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-stage">
+          <span class="flow-stage-num">STAGE 0 — THE LOSS COST</span>
+          <span class="flow-stage-title">Base rate lookup</span>
+          <span class="flow-stage-reads">ConstructionSymbol<br>BasicGroupIIRatingTerr<br>&rarr; BasicGroupIIRate</span>
+          <span class="flow-stage-out">BaseRate + LowestBaseRate</span>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-stage">
+          <span class="flow-stage-num">STAGE 1</span>
+          <span class="flow-stage-title">Turn it into a rate</span>
+          <span class="flow-stage-reads">BaseRate, LCM<br>NumericValue, BCEG<br>RoofACV + RoofCosmetic</span>
+          <span class="flow-stage-out">Rate</span>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-stage branch">
+          <span class="flow-stage-num">STAGE 2 — IF/THEN</span>
+          <span class="flow-stage-title">Cause-of-loss adjustment</span>
+          <span class="flow-stage-reads">fire-only CauseOfLoss?<br>WindstormOrHailExclusion?<br>&rarr; swaps in LowestBaseRate</span>
+          <span class="flow-stage-out">COLAdj</span>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-stage">
+          <span class="flow-stage-num">STAGE 3</span>
+          <span class="flow-stage-title">Coinsurance &amp; LOI</span>
+          <span class="flow-stage-reads">Coinsurance, Bldg_CovType<br>Bldg_Limit</span>
+          <span class="flow-stage-out">AdjustedRate</span>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-stage branch">
+          <span class="flow-stage-num">STAGE 4 — IF/THEN</span>
+          <span class="flow-stage-title">Deductible</span>
+          <span class="flow-stage-reads">Bldg_WindstormOrHailDeductible<br>or plain Deductible<br>MultiResIndicator</span>
+          <span class="flow-stage-out">FinalRate</span>
+        </div>
+      </div>
+    </div>
+
+    <p class="formula-label">Building — full formula</p>
+    <div class="formula-panel"><pre><span class="kw">ConstructionSymbol</span> = <span class="fn">Lookup</span>(BasicGroupIIConstructionSymbol: ConstructionType, NumStories)
+    <span class="cm">then replaced, in order, by whichever override matches:</span>
+    <span class="fn">Lookup</span>(...RoofConstruction) &rarr; <span class="fn">Lookup</span>(...AdditionalClasses, e.g. 0580/0585) &rarr; <span class="fn">Lookup</span>(...OilDistributingStations)
+
+<span class="kw">BaseRate</span> = <span class="fn">Lookup</span>(BasicGroupIIRate: Terr, Symbol, "Bldg")   <span class="kw">if</span> both non-blank <span class="kw">else</span> 0.0
+<span class="kw">LowestBaseRate</span> = <span class="fn">Lookup</span>(LowestBasicGroupIIRate: Symbol, "Bldg")   <span class="cm">(no territory key)</span>
+
+<span class="kw">NumericValue</span> =
+    1.0                                                    <span class="kw">if</span> WindstormOrHailExclusion = Y
+    <span class="kw">elif</span> ClassCode in (0580,0585,1150,1300,1650): <span class="fn">Lookup</span>(GroupIINumericValue: ClassCode, ConstructionCode)
+    <span class="kw">elif</span> OpenSides = Y and ConstructionCode &lt;&gt; 0:  <span class="fn">Lookup</span>(GroupIIOpenSidesNumericValue: ConstructionCode)
+    <span class="kw">else</span>: 1.0
+
+<span class="kw">Rate</span> = BaseRate &times; LCM &times; NumericValue &times; RoofSurfacingACVFactor &times; RoofSurfacingCosmeticExclFactor &times; BCEGFactor
+
+<span class="kw">COLAdj</span> =
+    0.0   <span class="kw">if</span> CauseOfLoss in ("Fire","Fire and Vandalism","Fire and Sprinkler Leakage","Fire, Vandalism and Sprinkler Leakage")
+    <span class="kw">elif</span> WindstormOrHailExclusion &lt;&gt; Y:
+        Rate &times; StdPropPolGroupIIFactor
+    <span class="kw">else</span>:
+        LowestBaseRate &times; LCM &times; RoofSurfacingACVFactor &times; RoofSurfacingCosmeticExclFactor &times; WindstormOrHailExclFactor &times; StdPropPolGroupIIFactor
+
+<span class="kw">CoinsuranceFactor</span> = <span class="fn">Lookup</span>(flat, "Y") <span class="kw">if</span> Coinsurance in ("50%","60%","70%","None") <span class="kw">else</span> &lt;shared Basic Group I value&gt;
+
+<span class="kw">LOIFactor</span> =
+    &lt;blanket copy&gt;                       <span class="kw">if</span> Bldg_IncludedInBlkt = "Yes"
+    <span class="kw">elif</span> Bldg_CovType = "Builders Risk":  <span class="fn">LookupWithArgs</span>(...) <span class="kw">or</span> 0.0 <span class="kw">if</span> limit absent
+    <span class="kw">elif</span> Bldg_CovType not in ("Leasehold Interest","Legal Liability","No Coverage"): <span class="fn">Lookup</span>(BasicGroupIILOIFactorBldg)
+    <span class="kw">else</span>: 1.0
+
+<span class="kw">AdjustedRate</span> = COLAdj &times; CoinsuranceFactor &times; LOIFactor
+
+<span class="kw">BGIIDeductibleByLocationFactor</span> = <span class="fn">Lookup</span>(...)  <span class="kw">if</span> WindstormHailIndicator = 0 and a wind/hail-by-location record exists  <span class="kw">else</span> 1.0
+
+<span class="kw">DeductibleFactor</span> =
+    &lt;same Choose Basic Group I uses&gt;   <span class="kw">if</span> Bldg_WindstormOrHailDeductible blank/N-A/= Deductible
+    <span class="kw">else</span> &lt;branch on Bldg_WindstormOrHailDeductible instead&gt;
+
+<span class="kw">FinalRate</span> = AdjustedRate &times; BGIIDeductibleByLocationFactor &times; DeductibleFactor &times; MultiResidentialPropSpecialCreditFactor</pre></div>
+
+    <div class="callout warn">
+      <span class="callout-mark">!</span>
+      <p><b><code>DeductibleFactor</code> here is the same 7-state-shape table Basic Group I uses</b> (47 states, 2-pass State-then-CW <code>XLOOKUP</code>, worked example in <code>BldgBGIRating</code>'s Deductible Factor walkthrough) — the only thing Basic Group II adds is the outer branch that swaps the lookup key from <code>Deductible</code> to <code>Bldg_WindstormOrHailDeductible</code> when a distinct wind/hail deductible is scheduled. Build the table once, reuse it for both forms; don't re-derive it per form.</p>
+    </div>
+    <div class="callout warm">
+      <span class="callout-mark">!</span>
+      <p><b><code>MultiResidentialPropSpecialCreditFactor</code> is the exact same mechanism as Basic Group I's</b> — same gate (12 apartment class codes, <code>MultipleResidentialPropSpecialCredit &lt;&gt; "No"</code>), same Heat &times; Control combine, and the same state variation: <b>CT</b> discounts the Control factor to 0.50 (vs. CW's 0.70); <b>MA</b>/<b>ME</b> disable the credit entirely via a restricted input domain, not a rate override. Full mechanism, all three tables, and a live worked walkthrough: <code>Excel_Rater_MultiResCredit_Walkthrough.html</code> and <code>BGI_MultiResidentialPropSpecialCredit.xlsx</code>. Wire the same two lookups into <code>Calc_Building_BGII</code>'s own <code>FinalRate</code> — don't rebuild the tables a second time.</p>
+    </div>
+
+    <p class="formula-label">Contents — stage by stage</p>
+    <div class="flow-scroll">
+      <div class="flow-stages">
+        <div class="flow-stage">
+          <span class="flow-stage-num">STAGE &minus;1</span>
+          <span class="flow-stage-title">Symbol (reused, not recomputed)</span>
+          <span class="flow-stage-reads">pulled from Building's<br>derivation on Locations_Buildings</span>
+          <span class="flow-stage-out">ConstructionSymbol</span>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-stage">
+          <span class="flow-stage-num">STAGE 0 — THE LOSS COST</span>
+          <span class="flow-stage-title">Base rate lookup</span>
+          <span class="flow-stage-reads">Symbol, RatingTerr<br>&rarr; BasicGroupIIRate, "PersProp"</span>
+          <span class="flow-stage-out">BaseRate + LowestBaseRate</span>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-stage">
+          <span class="flow-stage-num">STAGE 1</span>
+          <span class="flow-stage-title">Turn it into a rate</span>
+          <span class="flow-stage-reads">BaseRate, LCM<br>NumericValue, BCEG<br><i>no roof factors</i></span>
+          <span class="flow-stage-out">Rate</span>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-stage branch">
+          <span class="flow-stage-num">STAGE 2 — IF/THEN</span>
+          <span class="flow-stage-title">Cause-of-loss adjustment</span>
+          <span class="flow-stage-reads">fire-only OR ValuablePapers?<br>WindstormOrHailExclusion?</span>
+          <span class="flow-stage-out">COLAdj</span>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-stage">
+          <span class="flow-stage-num">STAGE 3</span>
+          <span class="flow-stage-title">Coinsurance &amp; LOI</span>
+          <span class="flow-stage-reads">Coinsurance, PP_CovForm<br>OccupTotalLOIToUse</span>
+          <span class="flow-stage-out">AdjustedRate</span>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-stage branch">
+          <span class="flow-stage-num">STAGE 4 &#9733;</span>
+          <span class="flow-stage-title">Deductible</span>
+          <span class="flow-stage-reads">PP_WindstormHailIndicator<br><i>no multi-res input</i></span>
+          <span class="flow-stage-out">FinalRate</span>
+        </div>
+      </div>
+    </div>
+
+    <p class="formula-label">Contents — full formula</p>
+    <div class="formula-panel"><pre><span class="kw">BaseRate</span> = <span class="fn">Lookup</span>(BasicGroupIIRate: Terr, Symbol, "PersProp")
+<span class="kw">LowestBaseRate</span> = <span class="fn">Lookup</span>(LowestBasicGroupIIRate: Symbol, "PersProp")
+
+<span class="kw">NumericValue</span> = <span class="cm">(same three-way logic as Building, keyed on BldgClassCode)</span>
+
+<span class="kw">Rate</span> = BaseRate &times; LCM &times; NumericValue &times; BCEGFactor   <span class="cm">(no roof factor at any branch)</span>
+
+<span class="kw">COLAdj</span> =
+    0.0   <span class="kw">if</span> fire-only cause of loss <span class="kw">or</span> PP_ValuablePapers = "Y"
+    <span class="kw">elif</span> WindstormOrHailExclusion &lt;&gt; Y:
+        Rate &times; StdPropPolGroupIIFactor
+    <span class="kw">else</span>:
+        LowestBaseRate &times; LCM &times; WindstormOrHailExclFactor &times; StdPropPolGroupIIFactor   <span class="cm">(still no roof factors)</span>
+
+<span class="kw">CoinsuranceFactor</span> = &lt;same flat/shared logic as Building&gt;
+
+<span class="kw">LOIFactor</span> =
+    &lt;blanket copy&gt;   <span class="kw">if</span> PP_IncludedInBlkt = "Yes"
+    <span class="kw">elif</span> PP_CovForm not in ("Legal Liability Coverage Form","Tobacco Sales Warehouse Coverage Form") and OccupTotalLOIToUse &gt; 0:
+        <span class="fn">Lookup</span>(BasicGroupIILOIFactorPersProp: OccupTotalLOIToUse)
+    <span class="kw">else</span>: 1.0                                       <span class="cm">(no separate Builders Risk branch, unlike Building)</span>
+
+<span class="kw">AdjustedRate</span> = LOIFactor &times; COLAdj &times; CoinsuranceFactor
+
+<span class="kw">BGIIDeductibleByLocationFactor</span> = <span class="fn">Lookup</span>(...)  <span class="kw">if</span> PP_WindstormHailIndicator = 0 and a record exists  <span class="kw">else</span> 1.0
+
+<span class="kw">DeductibleFactor</span> = &lt;same local Choose used on the Building tab&gt;   <span class="cm">(★ documented deviation, same as Basic Group I)</span>
+
+<span class="kw">FinalRate</span> = AdjustedRate &times; BGIIDeductibleByLocationFactor &times; DeductibleFactor   <span class="cm">(no multi-res multiplier, any branch)</span></pre></div>
+
+    <div class="callout warm">
+      <span class="callout-mark">!</span>
+      <p><b>One rounding divergence to remember when the blanket branch gets built:</b> Basic Group I's blanket premium divides the limit ratio plainly (<code>BlktLimit / 100</code>); Basic Group II's <i>truncates</i> it first (<code>Truncate(BlktLimit / 100)</code>) — a small but real difference that a naive copy-and-rename from Basic Group I would get wrong.</p>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- ================= CALC BUILDING BROAD ================= -->
+  <section class="sheet-block" id="calcbldg3">
+    <div class="sheet-heading">
+      <span class="sheet-index">Tab 8 of 16</span>
+      <h2 class="sheet-title">Calc_Building_Broad</h2>
+    </div>
+    <p class="sheet-role">One row per building — the shortest chain of the three forms built so far, and the first with a rate that resolves at CW level.</p>
+
+    <div class="xl-window">
+      <div class="xl-titlebar">
+        <div class="xl-dots"><span></span><span></span><span></span></div>
+        <span class="xl-filename">CF_BGI_Rater.xlsx &nbsp;&mdash;&nbsp; <b>Calc_Building_Broad</b></span>
+        <div class="xl-titlebar-spacer"></div>
+        <span class="xl-mode">Wireframe</span>
+      </div>
+      <div class="xl-formulabar">
+        <span class="xl-cellref">B2</span>
+        <span class="xl-fx">fx</span>
+        <span class="xl-formula">=IF(ClassCode="1150", Lookup(...,"BldrRisk"), Lookup(...,"Bldg")) &nbsp;<span class="subtle">— Building's only Builders Risk branch in this chain</span></span>
+      </div>
+      <div class="xl-scroll">
+        <table class="xl-grid">
+          <tr class="colletters">
+            <th></th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>G</th>
+          </tr>
+          <tr class="fieldrow">
+            <th class="rownum">1</th>
+            <th class="group-bldg">BuildingID</th>
+            <th class="group-bldg">1&nbsp;BaseRate</th>
+            <th class="group-bldg">2&nbsp;Rate</th>
+            <th class="group-bldg">3&nbsp;LOIFactor</th>
+            <th class="group-bldg">4&nbsp;AdjustedRate</th>
+            <th class="group-bldg">5&nbsp;DeductFactor</th>
+            <th class="group-bldg">6&nbsp;FinalRate</th>
+          </tr>
+          <tr>
+            <td class="rownum">2</td>
+            <td>BLDG-A</td>
+            <td class="num good-cell">0.015</td>
+            <td class="num formula-cell">0.014</td>
+            <td class="num">0.860</td>
+            <td class="num formula-cell">0.011</td>
+            <td class="num">0.930</td>
+            <td class="num total-cell">0.010</td>
+          </tr>
+          <tr>
+            <td class="rownum">3</td>
+            <td>BLDG-B &#9733;</td>
+            <td class="num good-cell">0.012</td>
+            <td class="num formula-cell">0.011</td>
+            <td class="num">1.000</td>
+            <td class="num formula-cell">&mdash;</td>
+            <td class="num warn-cell">$0 factor</td>
+            <td class="num total-cell">0.000</td>
+          </tr>
+        </table>
+      </div>
+      <div class="xl-sheettabs">
+        <span class="xl-sheettab">Policy</span>
+        <span class="xl-sheettab">Locations_Buildings</span>
+        <span class="xl-sheettab">Rate_Tables</span>
+        <span class="xl-sheettab">Calc_Building_BGI</span>
+        <span class="xl-sheettab">Calc_Contents_BGI</span>
+        <span class="xl-sheettab">Calc_Building_BGII</span>
+        <span class="xl-sheettab">Calc_Contents_BGII</span>
+        <span class="xl-sheettab active">Calc_Building_Broad</span>
+        <span class="xl-sheettab">Calc_Contents_Broad</span>
+        <span class="xl-sheettab">Calc_Building_Special</span>
+        <span class="xl-sheettab">Calc_Contents_Special</span>
+        <span class="xl-sheettab">Calc_BI_BGI</span>
+        <span class="xl-sheettab">Calc_BI_BGII</span>
+        <span class="xl-sheettab">Calc_BI_Broad</span>
+        <span class="xl-sheettab">Calc_BI_Special</span>
+        <span class="xl-sheettab">Premium_Summary</span>
+      </div>
+    </div>
+
+    <div class="instructions">
+      <p class="lede"><b>BaseRate</b> is the first green cell of any calc tab in this workbook — <b>BroadFormBaseRate</b> has real countrywide rows, so both buildings resolve here regardless of what state they're in. The gap that broke Basic Group I and II simply doesn't exist for this table.</p>
+      <ul class="field-notes">
+        <li>Only six columns wide — no cause-of-loss-adjustment column at all. <b>Rate</b> feeds straight into <b>AdjustedRate</b>; there is nothing between them.</li>
+        <li><b>BLDG-B &#9733;</b> has a blank <b>Deductible</b> — Broad's deductible rule is the only one of the three forms whose "otherwise" branch resolves to <b>0.0</b> rather than <b>1.0</b>, so a missing deductible zeroes this building's Building premium entirely, even though its loss cost resolved cleanly.</li>
+      </ul>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- ================= CALC CONTENTS BROAD ================= -->
+  <section class="sheet-block" id="calcpp3">
+    <div class="sheet-heading">
+      <span class="sheet-index">Tab 9 of 16</span>
+      <h2 class="sheet-title">Calc_Contents_Broad</h2>
+    </div>
+    <p class="sheet-role">One row per building — five columns, the shortest chain in the whole workbook, and the one with the least of its own math.</p>
+
+    <div class="xl-window">
+      <div class="xl-titlebar">
+        <div class="xl-dots"><span></span><span></span><span></span></div>
+        <span class="xl-filename">CF_BGI_Rater.xlsx &nbsp;&mdash;&nbsp; <b>Calc_Contents_Broad</b></span>
+        <div class="xl-titlebar-spacer"></div>
+        <span class="xl-mode">Wireframe</span>
+      </div>
+      <div class="xl-formulabar">
+        <span class="xl-cellref">D2</span>
+        <span class="xl-fx">fx</span>
+        <span class="xl-formula">=IF(OR(CauseOfLoss&lt;&gt;"Broad", PP_ValuablePapers="Y"), 0, BaseRate*LCM)</span>
+      </div>
+      <div class="xl-scroll">
+        <table class="xl-grid">
+          <tr class="colletters">
+            <th></th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th>
+          </tr>
+          <tr class="fieldrow">
+            <th class="rownum">1</th>
+            <th class="group-pp">BuildingID</th>
+            <th class="group-pp">1&nbsp;LOIFactor</th>
+            <th class="group-pp">2&nbsp;BaseRate</th>
+            <th class="group-pp">3&nbsp;Rate</th>
+            <th class="group-pp">4&nbsp;AdjustedRate</th>
+            <th class="group-pp">5&nbsp;FinalRate&nbsp;&#9733;</th>
+          </tr>
+          <tr>
+            <td class="rownum">2</td>
+            <td>BLDG-A</td>
+            <td class="num">0.900</td>
+            <td class="num good-cell">0.021</td>
+            <td class="num formula-cell">0.020</td>
+            <td class="num formula-cell">0.018</td>
+            <td class="num total-cell">0.017</td>
+          </tr>
+          <tr>
+            <td class="rownum">3</td>
+            <td>BLDG-B</td>
+            <td class="num">1.000</td>
+            <td class="num good-cell">0.021</td>
+            <td class="num formula-cell">0.020</td>
+            <td class="num formula-cell">0.020</td>
+            <td class="num total-cell">0.019</td>
+          </tr>
+        </table>
+      </div>
+      <div class="xl-sheettabs">
+        <span class="xl-sheettab">Policy</span>
+        <span class="xl-sheettab">Locations_Buildings</span>
+        <span class="xl-sheettab">Rate_Tables</span>
+        <span class="xl-sheettab">Calc_Building_BGI</span>
+        <span class="xl-sheettab">Calc_Contents_BGI</span>
+        <span class="xl-sheettab">Calc_Building_BGII</span>
+        <span class="xl-sheettab">Calc_Contents_BGII</span>
+        <span class="xl-sheettab">Calc_Building_Broad</span>
+        <span class="xl-sheettab active">Calc_Contents_Broad</span>
+        <span class="xl-sheettab">Calc_Building_Special</span>
+        <span class="xl-sheettab">Calc_Contents_Special</span>
+        <span class="xl-sheettab">Calc_BI_BGI</span>
+        <span class="xl-sheettab">Calc_BI_BGII</span>
+        <span class="xl-sheettab">Calc_BI_Broad</span>
+        <span class="xl-sheettab">Calc_BI_Special</span>
+        <span class="xl-sheettab">Premium_Summary</span>
+      </div>
+    </div>
+
+    <div class="instructions">
+      <p class="lede"><b>LOIFactor</b> is column 1 here, same reordering quirk as Basic Group I's Contents tab — computed before the rate it will eventually multiply, because that's the order ISO's own rule file runs them in. The math doesn't care about column order; the workbook mirrors ISO's order anyway so a reviewer can follow along step for step.</p>
+      <ul class="field-notes">
+        <li><b>BaseRate</b> has no Builders Risk branch at all, unlike the Building tab's column B — every row reads <b>covType="PersProp"</b> regardless of class code.</li>
+        <li><b>FinalRate &#9733;</b> depends on a <b>DeductibleFactor</b> that isn't computed anywhere in this ruleset — ISO reads it from four levels up the tree with no local rule of any kind. Build it as the same local lookup used on the Building tab; that's a documented deviation from ISO's file layout, not a guess at the math.</li>
+      </ul>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- ================= INPUTS -> OUTPUT, BROAD ================= -->
+  <section class="sheet-block" id="flowbroad">
+    <div class="sheet-heading">
+      <span class="sheet-index">Diagram, not a tab</span>
+      <h2 class="sheet-title">Inputs &rarr; rating output — Broad</h2>
+    </div>
+    <p class="sheet-role">One stage shorter than Basic Group I or II — Broad has no cause-of-loss-adjustment stage in either coverage.</p>
+
+    <p class="formula-label">Building — stage by stage</p>
+    <div class="flow-scroll">
+      <div class="flow-stages">
+        <div class="flow-stage">
+          <span class="flow-stage-num">STAGE 0 — THE LOSS COST</span>
+          <span class="flow-stage-title">Base rate lookup</span>
+          <span class="flow-stage-reads">ConstructionType<br>ClassCode = "1150"?<br>&rarr; BroadFormBaseRate</span>
+          <span class="flow-stage-out">BaseRate &#10003; resolves at CW</span>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-stage">
+          <span class="flow-stage-num">STAGE 1</span>
+          <span class="flow-stage-title">Turn it into a rate</span>
+          <span class="flow-stage-reads">BaseRate, LCM<br><i>no addends, no other factors</i></span>
+          <span class="flow-stage-out">Rate</span>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-stage">
+          <span class="flow-stage-num">STAGE 2</span>
+          <span class="flow-stage-title">Coinsurance &amp; LOI</span>
+          <span class="flow-stage-reads">Rate, RoofSurfacingACV<br>Coinsurance, Bldg_CovType<br>Bldg_Limit</span>
+          <span class="flow-stage-out">AdjustedRate</span>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-stage branch">
+          <span class="flow-stage-num">STAGE 3 — IF/THEN &#9733;</span>
+          <span class="flow-stage-title">Deductible</span>
+          <span class="flow-stage-reads">Deductible: 250 / N-A / value / blank<br>blank &rarr; 0.0, not 1.0</span>
+          <span class="flow-stage-out">FinalRate</span>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-stage">
+          <span class="flow-stage-num">Premium_Summary</span>
+          <span class="flow-stage-title">Dollar premium</span>
+          <span class="flow-stage-reads">FinalRate, Bldg_Limit<br>IRPM, PackageMod, MultiPremium</span>
+          <span class="flow-stage-out">Bldg_Premium</span>
+        </div>
+      </div>
+    </div>
+    <p class="flow-caption">No cause-of-loss-adjustment stage anywhere in this chain — Basic Group I and II both insert one between Rate and the coinsurance/LOI stage; Broad goes straight through.</p>
+
+    <p class="formula-label">Building — full formula</p>
+    <div class="formula-panel"><pre><span class="kw">BaseRate</span> =
+    <span class="kw">if</span> CauseOfLoss = "Broad" and ConstructionType &lt;&gt; "":
+        <span class="kw">if</span> ClassCode = "1150":
+            <span class="fn">Lookup</span>(BroadFormBaseRate: ConstructionType, "BldrRisk")
+        <span class="kw">else</span>:
+            <span class="fn">Lookup</span>(BroadFormBaseRate: ConstructionType, "Bldg")
+    <span class="kw">else</span>: 0.0
+
+<span class="kw">Rate</span> = BaseRate &times; LCM                              <span class="cm">(round to 3dp — the simplest Rate formula of any form)</span>
+
+<span class="kw">LOIFactor</span> =
+    &lt;blanket copy&gt;                                     <span class="kw">if</span> Bldg_IncludedInBlkt = "Yes" and BlktIDNum &gt; 0
+    <span class="kw">elif</span> Bldg_CovType = "Builders Risk":               <span class="fn">LookupWithArgs</span>(...) <span class="kw">or</span> 0.0 <span class="kw">if</span> limit absent
+    <span class="kw">elif</span> Bldg_CovType not in ("Leasehold Interest","Legal Liability","No Coverage") and Bldg_Limit &lt;&gt; "":
+        <span class="fn">Lookup</span>(BroadSpecialLOIFactorBldg: Bldg_Limit)
+    <span class="kw">else</span>: 1.0
+
+<span class="kw">AdjustedRate</span> = Rate &times; RoofSurfacingACVFactor &times; CoinsuranceFactor &times; LOIFactor
+
+<span class="kw">DeductibleFactor</span> =
+    <span class="fn">Lookup</span>(Deductible250Factor: "Broad")                <span class="kw">if</span> Deductible = "250"
+    <span class="kw">elif</span> Deductible = "Not Applicable": 1.0
+    <span class="kw">elif</span> Deductible &lt;&gt; "":  <span class="fn">Lookup</span>(DeductibleFactor: Deductible, TotAmtInsurance, "Other Cause Of Loss")
+    <span class="kw">else</span>: 0.0                                         <span class="cm">(★ blank deductible zeroes the rate, not 1.0)</span>
+    <span class="cm">(★ corrected: TotAmtInsurance = Bldg limit + every Contents item's limit at the location + Special Class Risk -- NOT Bldg limit alone. Backlogged until Contents is built.)</span>
+
+<span class="kw">FinalRate</span> = AdjustedRate &times; DeductibleByLocationFactor &times; DeductibleFactor &times; MultiResidentialPropSpecialCreditFactor
+
+<span class="kw">Bldg_Premium</span> =
+    <span class="kw">if</span> Bldg_CovType in ("Building","Builders Risk","Improvements and Betterments","Condominium Association")
+       and CauseOfLoss = "Broad" and Bldg_IncludedInBlkt = "No":
+        <span class="fn">Round</span>(IRPM &times; MultiPremiumDispersion &times; PackageMod &times; FinalRate &times; (Bldg_Limit/100), 0)
+          &times; CyberExclFactorBroad &times; CyberExclCOLExcptnsFactorBroad
+    <span class="kw">elif</span> Bldg_CovType = "Legal Liability" and CauseOfLoss = "Broad": <span class="cm">[not built this pass]</span>
+    <span class="kw">elif</span> Bldg_IncludedInBlkt = "Yes" and BlktCauseOfLossValue = "Broad": <span class="cm">[blanket — not built this pass]</span>
+    <span class="kw">else</span>: 0.0</pre></div>
+
+    <p class="formula-label">Contents — stage by stage</p>
+    <div class="flow-scroll">
+      <div class="flow-stages">
+        <div class="flow-stage">
+          <span class="flow-stage-num">STAGE 0 — THE LOSS COST</span>
+          <span class="flow-stage-title">Base rate lookup</span>
+          <span class="flow-stage-reads">ConstructionType only<br><i>no ClassCode check</i><br>&rarr; BroadFormBaseRate, "PersProp"</span>
+          <span class="flow-stage-out">BaseRate &#10003; resolves at CW</span>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-stage branch">
+          <span class="flow-stage-num">STAGE 1 — IF/THEN</span>
+          <span class="flow-stage-title">Rate, with the exclusion gate folded in</span>
+          <span class="flow-stage-reads">BaseRate, LCM<br>PP_ValuablePapers = Y? &rarr; 0</span>
+          <span class="flow-stage-out">Rate</span>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-stage">
+          <span class="flow-stage-num">STAGE 2</span>
+          <span class="flow-stage-title">Coinsurance &amp; LOI</span>
+          <span class="flow-stage-reads">Rate, Coinsurance<br>PP_CovForm, OccupTotalLOIToUse<br><i>no roof input</i></span>
+          <span class="flow-stage-out">AdjustedRate</span>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-stage branch">
+          <span class="flow-stage-num">STAGE 3 &#9733;</span>
+          <span class="flow-stage-title">Deductible</span>
+          <span class="flow-stage-reads"><i>no local rule at all</i><br>read 4 levels up the tree</span>
+          <span class="flow-stage-out">FinalRate</span>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-stage">
+          <span class="flow-stage-num">Premium_Summary</span>
+          <span class="flow-stage-title">Dollar premium</span>
+          <span class="flow-stage-reads">FinalRate, PP_Limit<br>same 3 Policy factors</span>
+          <span class="flow-stage-out">PP_Premium</span>
+        </div>
+      </div>
+    </div>
+
+    <p class="formula-label">Contents — full formula</p>
+    <div class="formula-panel"><pre><span class="kw">LOIFactor</span> =
+    &lt;blanket copy&gt;                                       <span class="kw">if</span> PP_IncludedInBlkt = "Yes"
+    <span class="kw">elif</span> PP_CovForm not in ("Legal Liability Coverage Form","Tobacco Sales Warehouse Coverage Form") and OccupTotalLOIToUse &gt; 0:
+        <span class="fn">Lookup</span>(BroadSpecialLOIFactorPrsnlProp: OccupTotalLOIToUse)
+    <span class="kw">else</span>: 1.0                                             <span class="cm">(no Builders Risk branch, unlike Building)</span>
+
+<span class="kw">BaseRate</span> =
+    <span class="fn">Lookup</span>(BroadFormBaseRate: ConstructionType, "PersProp")   <span class="kw">if</span> CauseOfLoss = "Broad" and ConstructionType &lt;&gt; ""
+    <span class="kw">else</span>: 0.0                                             <span class="cm">(always "PersProp" — no class-code check)</span>
+
+<span class="kw">Rate</span> =
+    0.0   <span class="kw">if</span> CauseOfLoss &lt;&gt; "Broad" or PP_ValuablePapers = "Y"
+    <span class="kw">else</span>: BaseRate &times; LCM                                <span class="cm">(round to 3dp)</span>
+
+<span class="kw">AdjustedRate</span> = LOIFactor &times; Rate &times; CoinsuranceFactor              <span class="cm">(no roof-surfacing factor, any branch)</span>
+
+<span class="kw">FinalRate</span> = AdjustedRate &times; DeductibleByLocationFactor &times; DeductibleFactor
+    <span class="cm">(★ DeductibleFactor: same local Choose as Building's — the most externally-sourced deductible factor of any Contents form built so far)</span>
+
+<span class="kw">PP_Premium</span> =
+    <span class="kw">if</span> PP_CovForm not in ("Legal Liability Coverage Form","Tobacco Sales Warehouse Coverage Form")
+       and CauseOfLoss = "Broad" and PP_IncludedInBlkt = "No":
+        <span class="fn">Round</span>(IRPM &times; MultiPremiumDispersion &times; PackageMod &times; FinalRate &times; (PP_Limit/100), 0)
+          &times; CyberExclFactorBroad &times; CyberExclCOLExcptnsFactorBroad
+    <span class="kw">elif</span> PP_CovForm = "Legal Liability Coverage Form" and CauseOfLoss = "Broad": <span class="cm">[not built this pass]</span>
+    <span class="kw">elif</span> PP_IncludedInBlkt = "Yes" and BlktCauseOfLossValue = "Broad": <span class="cm">[blanket — not built this pass]</span>
+    <span class="kw">else</span>: 0.0</pre></div>
+
+    <div class="callout warm">
+      <span class="callout-mark">&#10003;</span>
+      <p><b>The first genuinely good news in this workbook:</b> <b>BroadFormBaseRate</b> has real countrywide rows for every construction type, both coverages — the first loss cost in this whole document set that resolves without a state filing. Don't extend that confidence to <b>BroadSpecialLOIFactorBldg</b>/<b>...Prsnlprop</b> a few steps later, though — that table hasn't been row-counted yet, unlike this one.</p>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- ================= CALC BUILDING SPECIAL ================= -->
+  <section class="sheet-block" id="calcbldg4">
+    <div class="sheet-heading">
+      <span class="sheet-index">Tab 10 of 16</span>
+      <h2 class="sheet-title">Calc_Building_Special</h2>
+    </div>
+    <p class="sheet-role">One row per building — the shortest, flattest chain in the whole workbook: no class, no construction, no territory at all.</p>
+
+    <div class="xl-window">
+      <div class="xl-titlebar">
+        <div class="xl-dots"><span></span><span></span><span></span></div>
+        <span class="xl-filename">CF_BGI_Rater.xlsx &nbsp;&mdash;&nbsp; <b>Calc_Building_Special</b></span>
+        <div class="xl-titlebar-spacer"></div>
+        <span class="xl-mode">Wireframe</span>
+      </div>
+      <div class="xl-formulabar">
+        <span class="xl-cellref">B2</span>
+        <span class="xl-fx">fx</span>
+        <span class="xl-formula">=IF(ClassCode="1150", Lookup(SpecialBuildersRiskRate,"Y"), Lookup(SpecialBuildingRate,"Y")) &nbsp;<span class="subtle">— flat statewide constant, no other key</span></span>
+      </div>
+      <div class="xl-scroll">
+        <table class="xl-grid">
+          <tr class="colletters">
+            <th></th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>G</th><th>H</th><th>I</th>
+          </tr>
+          <tr class="fieldrow">
+            <th class="rownum">1</th>
+            <th class="group-bldg">BuildingID</th>
+            <th class="group-bldg">1&nbsp;TheftExclFactor</th>
+            <th class="group-bldg">2&nbsp;BaseRate</th>
+            <th class="group-bldg">3&nbsp;Rate</th>
+            <th class="group-bldg">4&nbsp;COLAdj</th>
+            <th class="group-bldg">5&nbsp;LOIFactor</th>
+            <th class="group-bldg">6&nbsp;AdjustedRate</th>
+            <th class="group-bldg">8&nbsp;DeductFactor</th>
+            <th class="group-bldg">9&nbsp;FinalRate</th>
+          </tr>
+          <tr>
+            <td class="rownum">2</td>
+            <td>BLDG-A</td>
+            <td class="num">1.000</td>
+            <td class="num warn-cell">— no CW rate —</td>
+            <td class="num">&mdash;</td>
+            <td class="num">&mdash;</td>
+            <td class="num">0.870</td>
+            <td class="num">&mdash;</td>
+            <td class="num">0.900</td>
+            <td class="num total-cell">&mdash;</td>
+          </tr>
+          <tr>
+            <td class="rownum">3</td>
+            <td>BLDG-B &#9733; (1150)</td>
+            <td class="num formula-cell">0.880</td>
+            <td class="num good-cell">0.015</td>
+            <td class="num formula-cell">0.014</td>
+            <td class="num formula-cell">0.011</td>
+            <td class="num">1.000</td>
+            <td class="num formula-cell">0.009</td>
+            <td class="num">0.930</td>
+            <td class="num total-cell">0.008</td>
+          </tr>
+        </table>
+      </div>
+      <div class="xl-sheettabs">
+        <span class="xl-sheettab">Policy</span>
+        <span class="xl-sheettab">Locations_Buildings</span>
+        <span class="xl-sheettab">Rate_Tables</span>
+        <span class="xl-sheettab">Calc_Building_BGI</span>
+        <span class="xl-sheettab">Calc_Contents_BGI</span>
+        <span class="xl-sheettab">Calc_Building_BGII</span>
+        <span class="xl-sheettab">Calc_Contents_BGII</span>
+        <span class="xl-sheettab">Calc_Building_Broad</span>
+        <span class="xl-sheettab">Calc_Contents_Broad</span>
+        <span class="xl-sheettab active">Calc_Building_Special</span>
+        <span class="xl-sheettab">Calc_Contents_Special</span>
+        <span class="xl-sheettab">Calc_BI_BGI</span>
+        <span class="xl-sheettab">Calc_BI_BGII</span>
+        <span class="xl-sheettab">Calc_BI_Broad</span>
+        <span class="xl-sheettab">Calc_BI_Special</span>
+        <span class="xl-sheettab">Premium_Summary</span>
+      </div>
+    </div>
+
+    <div class="instructions">
+      <p class="lede">Nine columns, and not one of them reads <b>ClassCode</b>, <b>ConstructionCode</b>, or <b>Territory</b> — the only form in this workbook with zero rating-territory dependency of any kind. <b>BLDG-A</b> reads the same countrywide gap Building's Special always has (<b>SpecialBuildingRate</b> is header-only); <b>BLDG-B &#9733;</b> is a Builders Risk building (class 1150), which routes through <b>SpecialBuildersRiskRate</b> instead — the one Special base-rate table that <i>does</i> resolve at CW level, same as Broad's good-news table.</p>
+      <ul class="field-notes">
+        <li><b>COLAdj</b> (column 4) has no null-guard in ISO's own rule — it always recomputes from <b>Rate</b>, unlike the Basic forms' COL-adjustment steps which skip recalculation once already set.</li>
+        <li>There's no column 7 — this workbook numbers steps to match ISO's own rule sequence, and Special's deductible-by-location factor (which would be step 7) is folded into the same tab without its own numbered column since it feeds <b>FinalRate</b> alongside <b>DeductFactor</b> rather than producing an intermediate rate.</li>
+      </ul>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- ================= CALC CONTENTS SPECIAL ================= -->
+  <section class="sheet-block" id="calcpp4">
+    <div class="sheet-heading">
+      <span class="sheet-index">Tab 11 of 16</span>
+      <h2 class="sheet-title">Calc_Contents_Special</h2>
+    </div>
+    <p class="sheet-role">One row per building — the longest, richest chain in the whole workbook. The pattern inverts here: Building's Special is the simplest form; Contents' is the most complex.</p>
+
+    <div class="xl-window">
+      <div class="xl-titlebar">
+        <div class="xl-dots"><span></span><span></span><span></span></div>
+        <span class="xl-filename">CF_BGI_Rater.xlsx &nbsp;&mdash;&nbsp; <b>Calc_Contents_Special</b></span>
+        <div class="xl-titlebar-spacer"></div>
+        <span class="xl-mode">Wireframe</span>
+      </div>
+      <div class="xl-formulabar">
+        <span class="xl-cellref">E2</span>
+        <span class="xl-fx">fx</span>
+        <span class="xl-formula">=Lookup(PrsnlPropTerrMultiplier: PP_SpecialRatingTerr) &nbsp;<span class="subtle">— a territory concept Building's Special doesn't have at all</span></span>
+      </div>
+      <div class="xl-scroll">
+        <table class="xl-grid">
+          <tr class="colletters">
+            <th></th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>G</th><th>H</th><th>I</th><th>J</th><th>K</th><th>L</th>
+          </tr>
+          <tr class="fieldrow">
+            <th class="rownum">1</th>
+            <th class="group-pp">BuildingID</th>
+            <th class="group-pp">1&nbsp;DeductByLoc&nbsp;&#9733;</th>
+            <th class="group-pp">2&nbsp;DeductFactor</th>
+            <th class="group-pp">3&nbsp;TheftExclFactor</th>
+            <th class="group-pp">4&nbsp;BaseRate</th>
+            <th class="group-pp">5&nbsp;TerrMultiplier</th>
+            <th class="group-pp">6&nbsp;Rate</th>
+            <th class="group-pp">7&nbsp;COLAdj</th>
+            <th class="group-pp">8/9&nbsp;Watch/BurglaryCredit</th>
+            <th class="group-pp">10&nbsp;LOIFactor</th>
+            <th class="group-pp">11&nbsp;AdjustedRate</th>
+            <th class="group-pp">12&nbsp;FinalRate</th>
+          </tr>
+          <tr>
+            <td class="rownum">2</td>
+            <td>BLDG-A</td>
+            <td class="num formula-cell">1.000</td>
+            <td class="num">0.930</td>
+            <td class="num">1.000</td>
+            <td class="num warn-cell">— no CW rate —</td>
+            <td class="num warn-cell">— no CW rate —</td>
+            <td class="num">&mdash;</td>
+            <td class="num">&mdash;</td>
+            <td class="num">1.00 / 0.95</td>
+            <td class="num">0.900</td>
+            <td class="num">&mdash;</td>
+            <td class="num total-cell">&mdash;</td>
+          </tr>
+          <tr>
+            <td class="rownum">3</td>
+            <td>BLDG-B &#9733;</td>
+            <td class="num formula-cell">1.000</td>
+            <td class="num">0.910</td>
+            <td class="num">1.000</td>
+            <td class="num warn-cell">— no CW rate —</td>
+            <td class="num warn-cell">— no CW rate —</td>
+            <td class="num">&mdash;</td>
+            <td class="num">&mdash;</td>
+            <td class="num formula-cell">0.90 / 1.00</td>
+            <td class="num">0.940</td>
+            <td class="num">&mdash;</td>
+            <td class="num total-cell">&mdash;</td>
+          </tr>
+        </table>
+      </div>
+      <div class="xl-sheettabs">
+        <span class="xl-sheettab">Policy</span>
+        <span class="xl-sheettab">Locations_Buildings</span>
+        <span class="xl-sheettab">Rate_Tables</span>
+        <span class="xl-sheettab">Calc_Building_BGI</span>
+        <span class="xl-sheettab">Calc_Contents_BGI</span>
+        <span class="xl-sheettab">Calc_Building_BGII</span>
+        <span class="xl-sheettab">Calc_Contents_BGII</span>
+        <span class="xl-sheettab">Calc_Building_Broad</span>
+        <span class="xl-sheettab">Calc_Contents_Broad</span>
+        <span class="xl-sheettab">Calc_Building_Special</span>
+        <span class="xl-sheettab active">Calc_Contents_Special</span>
+        <span class="xl-sheettab">Calc_BI_BGI</span>
+        <span class="xl-sheettab">Calc_BI_BGII</span>
+        <span class="xl-sheettab">Calc_BI_Broad</span>
+        <span class="xl-sheettab">Calc_BI_Special</span>
+        <span class="xl-sheettab">Premium_Summary</span>
+      </div>
+    </div>
+
+    <div class="instructions">
+      <p class="lede">Twelve columns — the widest calc tab in the workbook — and three of them (<b>BaseRate</b>, <b>TerrMultiplier</b>, and, one column later, <b>TheftExclFactor</b>'s own table) sit on countrywide gaps at once. That's worse than any other form/coverage pair built so far: every prior gap was one or two tables; this is three, stacked on the same chain.</p>
+      <ul class="field-notes">
+        <li><b>DeductByLoc &#9733;</b> (column 1) and <b>DeductFactor</b> (column 2) are computed first, same reordering pattern seen on every Contents tab — but note <b>DeductFactor</b> here is genuinely computed locally in ISO's own rules, unlike every other Contents form's ancestor-<code>Copy</code>'d deductible factor.</li>
+        <li><b>Watch/BurglaryCredit</b> (columns 8&ndash;9, shown combined) has no Building equivalent at all — these are schedule-entered values copied from the insured's protective-safeguards record, not rate-table lookups. <b>BLDG-B &#9733;</b> shows a credit actually applying (0.90 watchman factor); <b>BLDG-A</b> shows the no-safeguards default of 1.00 for both.</li>
+        <li><b>TerrMultiplier</b> (column 5) is a concept Building's Special never has — Building's Special is flat statewide, full stop. Contents' Special is the only Contents form with its own territory dimension too.</li>
+      </ul>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- ================= INPUTS -> OUTPUT, SPECIAL ================= -->
+  <section class="sheet-block" id="flowspecial">
+    <div class="sheet-heading">
+      <span class="sheet-index">Diagram, not a tab</span>
+      <h2 class="sheet-title">Inputs &rarr; rating output — Special</h2>
+    </div>
+    <p class="sheet-role">The pattern inverts here — Building's is the shortest chain in the workbook, Contents' is the longest.</p>
+
+    <p class="formula-label">Building — stage by stage</p>
+    <div class="flow-scroll">
+      <div class="flow-stages">
+        <div class="flow-stage">
+          <span class="flow-stage-num">STAGE 0 — THE LOSS COST</span>
+          <span class="flow-stage-title">Base rate lookup</span>
+          <span class="flow-stage-reads">ClassCode = "1150"?<br>&rarr; flat statewide constant<br><i>no other key at all</i></span>
+          <span class="flow-stage-out">BaseRate</span>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-stage">
+          <span class="flow-stage-num">STAGE 1</span>
+          <span class="flow-stage-title">Turn it into a rate</span>
+          <span class="flow-stage-reads">BaseRate, LCM<br><i>no addends, no other factors</i></span>
+          <span class="flow-stage-out">Rate</span>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-stage">
+          <span class="flow-stage-num">STAGE 2</span>
+          <span class="flow-stage-title">Theft &amp; roof adjustment</span>
+          <span class="flow-stage-reads">Rate, TheftExclusionAttached<br>RoofSurfacingACV<br><i>always recomputes, no guard</i></span>
+          <span class="flow-stage-out">COLAdj</span>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-stage">
+          <span class="flow-stage-num">STAGE 3</span>
+          <span class="flow-stage-title">Coinsurance &amp; LOI</span>
+          <span class="flow-stage-reads">COLAdj, Coinsurance<br>Bldg_CovType, Bldg_Limit</span>
+          <span class="flow-stage-out">AdjustedRate</span>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-stage branch">
+          <span class="flow-stage-num">STAGE 4 — IF/THEN</span>
+          <span class="flow-stage-title">Deductible (theft-aware)</span>
+          <span class="flow-stage-reads">Deductible, TheftDeductible<br>4-branch Choose</span>
+          <span class="flow-stage-out">FinalRate</span>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-stage">
+          <span class="flow-stage-num">Premium_Summary</span>
+          <span class="flow-stage-title">Dollar premium</span>
+          <span class="flow-stage-reads">FinalRate, Bldg_Limit<br>nested Product, no Round</span>
+          <span class="flow-stage-out">Bldg_Premium</span>
+        </div>
+      </div>
+    </div>
+    <p class="flow-caption">The flattest loss cost in the workbook — one flag (Builders Risk class 1150) is the only rating key. No class code, no construction, no territory, no protection class.</p>
+
+    <p class="formula-label">Building — full formula</p>
+    <div class="formula-panel"><pre><span class="kw">TheftExclusionFactor</span> = <span class="fn">Lookup</span>(SpecialBldgTheftExclusionFactor: "Y")   <span class="kw">if</span> CauseOfLoss = "Special" and TheftExclusionAttached = "Y"   <span class="kw">else</span> 1.0
+
+<span class="kw">BaseRate</span> =
+    <span class="kw">if</span> CauseOfLoss = "Special":
+        <span class="kw">if</span> ClassCode = "1150": <span class="fn">Lookup</span>(SpecialBuildersRiskRate: "Y")      <span class="cm">(CW 0.015)</span>
+        <span class="kw">else</span>: <span class="fn">Lookup</span>(SpecialBuildingRate: "Y")                        <span class="cm">(no CW row)</span>
+    <span class="kw">else</span>: 0.0
+
+<span class="kw">Rate</span> = BaseRate &times; LCM                                          <span class="cm">(round to 3dp — the entire rate step)</span>
+
+<span class="kw">COLAdj</span> = Rate &times; TheftExclusionFactor &times; RoofSurfacingACVFactor       <span class="cm">(always recomputes — no null-guard)</span>
+
+<span class="kw">LOIFactor</span> =
+    &lt;blanket copy&gt;                                                <span class="kw">if</span> Bldg_IncludedInBlkt = "Yes" and BlktIDNum &gt; 0
+    <span class="kw">elif</span> Bldg_CovType = "Builders Risk":  <span class="fn">LookupWithArgs</span>(...) <span class="kw">or</span> 0.0 <span class="kw">if</span> limit absent
+    <span class="kw">elif</span> Bldg_CovType not in ("Leasehold Interest","Legal Liability","No Coverage"):
+        <span class="fn">Lookup</span>(BroadSpecialLOIFactorBldg: Bldg_Limit)
+    <span class="kw">else</span>: 1.0
+
+<span class="kw">AdjustedRate</span> = COLAdj &times; CoinsuranceFactor &times; LOIFactor
+
+<span class="kw">DeductibleByLocationFactor</span> = <span class="fn">Lookup</span>(...)  <span class="kw">if</span> a by-location record exists and TheftDeductible non-blank/non-N-A  <span class="kw">else</span> 1.0
+
+<span class="kw">DeductibleFactor</span> =
+    <span class="fn">Lookup</span>(DeductibleFactor: TheftDeductible, SpecialIncludingTheftTotAmtInsurance, "Other Cause Of Loss")
+        <span class="kw">if</span> TheftExclusionAttached &lt;&gt; "Y" and TheftDeductible not in ("","Not Applicable","250") and TheftDeductible &lt;&gt; Deductible
+    <span class="kw">elif</span> Deductible = "250" and TheftDeductible = "250": <span class="fn">Lookup</span>(Deductible250Factor: "Special")
+    <span class="kw">elif</span> Deductible = "Not Applicable": 1.0
+    <span class="kw">elif</span> Deductible &lt;&gt; "": <span class="fn">Lookup</span>(DeductibleFactor: Deductible, SpecialTotAmtInsurance, "Other Cause Of Loss")
+
+<span class="kw">FinalRate</span> = AdjustedRate &times; DeductibleByLocationFactor &times; DeductibleFactor &times; MultiResidentialPropSpecialCreditFactor
+
+<span class="kw">Bldg_Premium</span> =
+    <span class="kw">if</span> Bldg_CovType in ("Building","Builders Risk","Improvements and Betterments","Condominium Association")
+       and CauseOfLoss = "Special" and Bldg_IncludedInBlkt = "No":
+        FinalRate &times; (Bldg_Limit/100) &times; PackageMod &times; MultiPremiumDispersion &times; IRPM
+          &times; CyberExclFactorSpecial &times; CyberExclCOLExcptnsFactorSpecial   <span class="cm">(nested Product, no outer Round)</span>
+    <span class="kw">elif</span> Bldg_CovType = "Legal Liability" and CauseOfLoss = "Special": <span class="cm">[not built — uses raw Rate, not COLAdj]</span>
+    <span class="kw">elif</span> Bldg_IncludedInBlkt = "Yes" and BlktCauseOfLossValue = "Special": <span class="cm">[blanket — not built this pass]</span>
+    <span class="kw">else</span>: 0.0</pre></div>
+
+    <p class="formula-label">Contents — stage by stage</p>
+    <div class="flow-scroll">
+      <div class="flow-stages">
+        <div class="flow-stage">
+          <span class="flow-stage-num">STAGE 0 — THE LOSS COST</span>
+          <span class="flow-stage-title">Base rate + territory</span>
+          <span class="flow-stage-reads">PP_OccupCategory<br>PP_OccupCategoryRiskSeverity<br>PP_SpecialRatingTerr</span>
+          <span class="flow-stage-out">BaseRate &times; TerrMultiplier</span>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-stage">
+          <span class="flow-stage-num">STAGE 1</span>
+          <span class="flow-stage-title">Turn it into a rate</span>
+          <span class="flow-stage-reads">BaseRate, TerrMultiplier, LCM</span>
+          <span class="flow-stage-out">Rate</span>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-stage branch">
+          <span class="flow-stage-num">STAGE 2 — IF/THEN</span>
+          <span class="flow-stage-title">Theft adjustment</span>
+          <span class="flow-stage-reads">PP_CovType = Valuable Papers?<br>TheftExclusionAttached, PP_OccupCategory<br><i>no roof — none exists</i></span>
+          <span class="flow-stage-out">COLAdj</span>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-stage branch">
+          <span class="flow-stage-num">STAGE 3 — PP-ONLY</span>
+          <span class="flow-stage-title">Protective-safeguard credits + coinsurance/LOI</span>
+          <span class="flow-stage-reads">PP_WatchmanCreditFactor<br>PP_BurglaryAlarmCreditFactor<br>Coinsurance, PP_CovForm, PP_Limit</span>
+          <span class="flow-stage-out">AdjustedRate</span>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-stage">
+          <span class="flow-stage-num">STAGE 4</span>
+          <span class="flow-stage-title">Deductible (computed locally)</span>
+          <span class="flow-stage-reads">Deductible, TheftDeductible<br><i>the one local Contents deductible</i></span>
+          <span class="flow-stage-out">FinalRate</span>
+        </div>
+        <div class="flow-arrow">&rarr;</div>
+        <div class="flow-stage branch">
+          <span class="flow-stage-num">Premium_Summary &#9733;</span>
+          <span class="flow-stage-title">Dollar premium</span>
+          <span class="flow-stage-reads">FinalRate, PP_LimitToUse<br><i>not plain PP_Limit — see gate below</i></span>
+          <span class="flow-stage-out">PP_Premium</span>
+        </div>
+      </div>
+    </div>
+
+    <p class="formula-label">Contents — full formula</p>
+    <div class="formula-panel"><pre><span class="kw">DeductibleFactor</span> = <span class="cm">(the one Contents deductible factor computed locally, not copied — same branches as Building's)</span>
+
+<span class="kw">TheftExclusionFactor</span> =
+    <span class="kw">if</span> CauseOfLoss = "Special" and TheftExclusionAttached = "Y":
+        <span class="fn">Lookup</span>(SpecialPrsnlPropTheftExclusionFactor: PP_OccupCategory)   <span class="kw">if</span> PP_OccupCategory &lt;&gt; ""   <span class="cm">(no CW row)</span>
+        <span class="kw">else</span>: 0.0
+    <span class="kw">else</span>: 1.0
+
+<span class="kw">BaseRate</span> = <span class="fn">Lookup</span>(SpecialPrsnlPropRate: PP_OccupCategory, PP_OccupCategoryRiskSeverity)   <span class="cm">(no CW row)</span>
+    <span class="kw">if</span> CauseOfLoss = "Special" and both keys non-blank   <span class="kw">else</span>: 0.0
+
+<span class="kw">TerrMultiplier</span> = <span class="fn">Lookup</span>(PrsnlPropTerrMultiplier: PP_SpecialRatingTerr)   <span class="cm">(no CW row — no Building equivalent)</span>
+    <span class="kw">if</span> CauseOfLoss = "Special" and PP_SpecialRatingTerr &lt;&gt; ""   <span class="kw">else</span>: 0.0
+
+<span class="kw">Rate</span> = 0.0 <span class="kw">if</span> CauseOfLoss &lt;&gt; "Special" <span class="kw">else</span> TerrMultiplier &times; (BaseRate &times; LCM)   <span class="cm">(round to 3dp)</span>
+
+<span class="kw">COLAdj</span> = 0.0 <span class="kw">if</span> PP_CovType = "Valuable Papers and Records - Other Than Electronic Data" <span class="kw">else</span> Rate &times; TheftExclusionFactor
+
+<span class="kw">WatchmanCreditFactor</span> = PP_WatchmanCreditFactor   <span class="kw">if</span> SpecialTheftExclusionIndicator = 0 and PP_ProtectiveSafeguardsOnFile = "Y"   <span class="kw">else</span> 1.0
+<span class="kw">BurglaryAlarmCreditFactor</span> = PP_BurglaryAlarmCreditFactor   <span class="cm">(same gate)</span>
+
+<span class="kw">LOIFactor</span> =
+    &lt;blanket copy&gt;   <span class="kw">if</span> PP_IncludedInBlkt = "Yes"
+    <span class="kw">elif</span> PP_CovForm not in ("Legal Liability Coverage Form","Tobacco Sales Warehouse Coverage Form") and OccupSpecialTotAmtInsurance &gt; 0:
+        <span class="fn">Lookup</span>(BroadSpecialLOIFactorPrsnlProp: OccupSpecialTotAmtInsurance)
+    <span class="kw">else</span>: 1.0
+
+<span class="kw">AdjustedRate</span> = COLAdj &times; CoinsuranceFactor &times; WatchmanCreditFactor &times; BurglaryAlarmCreditFactor &times; LOIFactor
+
+<span class="kw">FinalRate</span> = AdjustedRate &times; DeductibleByLocationFactor &times; DeductibleFactor   <span class="cm">(no multi-res multiplier)</span>
+
+<span class="kw">PP_LimitToUse</span> = PP_AlcoholicBeveragesTaxExclusionLimit   <span class="kw">if</span> PP_AlcoholicBeveragesTaxExclusion = "Y"   <span class="kw">else</span> PP_Limit
+
+<span class="kw">PP_Premium</span> =
+    <span class="kw">if</span> PP_CovForm not in ("Legal Liability Coverage Form","Tobacco Sales Warehouse Coverage Form")
+       and CauseOfLoss = "Special" and PP_IncludedInBlkt = "No":
+        FinalRate &times; (PP_LimitToUse/100) &times; PackageMod &times; MultiPremiumDispersion &times; IRPM
+          &times; CyberExclFactorSpecial &times; CyberExclCOLExcptnsFactorSpecial
+    <span class="kw">elif</span> PP_CovForm = "Legal Liability Coverage Form" and CauseOfLoss = "Special": <span class="cm">[not built — uses COLAdj, unlike Building's raw Rate]</span>
+    <span class="kw">elif</span> PP_IncludedInBlkt = "Yes" and BlktCauseOfLossValue = "Special": <span class="cm">[blanket — not built this pass]</span>
+    <span class="kw">else</span>: 0.0</pre></div>
+
+    <div class="callout warn">
+      <span class="callout-mark">!</span>
+      <p><b>Three stacked countrywide gaps, the worst in this workbook:</b> <b>SpecialPrsnlPropRate</b>, <b>SpecialPrsnlPropTheftExclusionFactor</b>, and <b>PrsnlPropTerrMultiplier</b> are all confirmed header-only. Every prior form's Contents chain had at most one gap feeding it; this one has three feeding two different stages of the same chain.</p>
+    </div>
+    <div class="callout warm">
+      <span class="callout-mark">!</span>
+      <p><b>When the Legal Liability branch gets built, don't copy Building's formula onto Contents.</b> Building's Legal Liability premium uses the <i>raw</i> <b>Rate</b> — the theft-exclusion factor never reaches it. Contents' uses <b>COLAdj</b>, which already includes that same theft factor. Same form, same branch name, genuinely different formula.</p>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- ================= BUSINESS INCOME — BGI ================= -->
+  <section class="sheet-block" id="bibgi">
+    <div class="sheet-heading">
+      <span class="sheet-index">Tab 12 of 16</span>
+      <h2 class="sheet-title">Calc_BusinessIncome_BGI</h2>
+    </div>
+    <p class="sheet-role">One row per building — a new coverage enters the workbook, and it doesn't compute its own base rate. It reads the Building's.</p>
+
+    <div class="xl-window">
+      <div class="xl-titlebar">
+        <div class="xl-dots"><span></span><span></span><span></span></div>
+        <span class="xl-filename">CF_BGI_Rater.xlsx &nbsp;&mdash;&nbsp; <b>Calc_BusinessIncome_BGI</b></span>
+        <div class="xl-titlebar-spacer"></div>
+        <span class="xl-mode">Wireframe</span>
+      </div>
+      <div class="xl-formulabar">
+        <span class="xl-cellref">C2</span>
+        <span class="xl-fx">fx</span>
+        <span class="xl-formula">=(Calc_Building_BGI!B2*LCM+SubStd+Vacant)*TerrFactor*ProtClass*BGIBaseRateAdjFactor &nbsp;<span class="subtle">— reads Calc_Building_BGI's own BaseRate cell</span></span>
+      </div>
+      <div class="xl-scroll">
+        <table class="xl-grid">
+          <tr class="colletters">
+            <th></th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th>
+          </tr>
+          <tr class="fieldrow">
+            <th class="rownum">1</th>
+            <th class="group-shared">BuildingID</th>
+            <th class="group-shared">1&nbsp;AdjFactor</th>
+            <th class="group-shared">2&nbsp;Rate</th>
+            <th class="group-shared">3&nbsp;COLAdj</th>
+            <th class="group-shared">Factor</th>
+            <th class="group-shared">FinalRate</th>
+          </tr>
+          <tr>
+            <td class="rownum">2</td>
+            <td>BLDG-A</td>
+            <td class="num warn-cell">— no CW factor —</td>
+            <td class="num warn-cell">&larr; Calc_Building_BGI's own gap</td>
+            <td class="num">&mdash;</td>
+            <td class="num">0.760</td>
+            <td class="num total-cell">&mdash;</td>
+          </tr>
+          <tr>
+            <td class="rownum">3</td>
+            <td>BLDG-B</td>
+            <td class="num warn-cell">— no CW factor —</td>
+            <td class="num warn-cell">&larr; Calc_Building_BGI's own gap</td>
+            <td class="num">&mdash;</td>
+            <td class="num">0.810</td>
+            <td class="num total-cell">&mdash;</td>
+          </tr>
+        </table>
+      </div>
+      <div class="xl-sheettabs">
+        <span class="xl-sheettab">Policy</span>
+        <span class="xl-sheettab">Locations_Buildings</span>
+        <span class="xl-sheettab">Rate_Tables</span>
+        <span class="xl-sheettab">Calc_Building_BGI</span>
+        <span class="xl-sheettab">Calc_Contents_BGI</span>
+        <span class="xl-sheettab">Calc_Building_BGII</span>
+        <span class="xl-sheettab">Calc_Contents_BGII</span>
+        <span class="xl-sheettab">Calc_Building_Broad</span>
+        <span class="xl-sheettab">Calc_Contents_Broad</span>
+        <span class="xl-sheettab">Calc_Building_Special</span>
+        <span class="xl-sheettab">Calc_Contents_Special</span>
+        <span class="xl-sheettab active">Calc_BI_BGI</span>
+        <span class="xl-sheettab">Calc_BI_BGII</span>
+        <span class="xl-sheettab">Calc_BI_Broad</span>
+        <span class="xl-sheettab">Calc_BI_Special</span>
+        <span class="xl-sheettab">Premium_Summary</span>
+      </div>
+    </div>
+
+    <div class="instructions">
+      <p class="lede">Only six columns — the shortest calc tab of any coverage so far — because this form borrows its base rate from <b>Calc_Building_BGI</b> instead of computing one. Column B's formula bar above shows the actual cross-tab reference: this is the first calc tab in the workbook whose formulas read another coverage's calc tab, not just <b>Locations_Buildings</b> and <b>Rate_Tables</b>.</p>
+      <ul class="field-notes">
+        <li>Both rows are flagged, and it's a <i>double</i> gap: <b>Calc_Building_BGI</b>'s own <b>BaseRate</b> already can't resolve (its countrywide table is empty), <i>and</i> this form's own <b>BaseRateAdjustmentFactor</b> table is separately empty. A state filing has to cover both before this column produces a number.</li>
+        <li><b>Factor</b> — the shared coinsurance/type-of-risk multiplier — is the one column here that <i>does</i> resolve; it's built once and read by both this tab and <b>Calc_BI_BGII</b> rather than recomputed twice.</li>
+        <li>There's no coinsurance step, no LOI step, no deductible step. <b>COLAdj</b> feeds <b>FinalRate</b> by way of <b>Factor</b> alone — the three separate Building-style steps collapse into one multiplication, and only for this form and Basic Group II.</li>
+      </ul>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- ================= BUSINESS INCOME — BGII ================= -->
+  <section class="sheet-block" id="bibgii">
+    <div class="sheet-heading">
+      <span class="sheet-index">Tab 13 of 16</span>
+      <h2 class="sheet-title">Calc_BusinessIncome_BGII</h2>
+    </div>
+    <p class="sheet-role">One row per building — same borrowing pattern as BGI, but this time it's a shared table lookup, not a copied scalar.</p>
+
+    <div class="xl-window">
+      <div class="xl-titlebar">
+        <div class="xl-dots"><span></span><span></span><span></span></div>
+        <span class="xl-filename">CF_BGI_Rater.xlsx &nbsp;&mdash;&nbsp; <b>Calc_BusinessIncome_BGII</b></span>
+        <div class="xl-titlebar-spacer"></div>
+        <span class="xl-mode">Wireframe</span>
+      </div>
+      <div class="xl-formulabar">
+        <span class="xl-cellref">B2</span>
+        <span class="xl-fx">fx</span>
+        <span class="xl-formula">=Lookup(BasicGroupIIRate: Terr, Calc_Building_BGII!Symbol, "Bldg") &nbsp;<span class="subtle">— same table, same symbol Building's own tab already resolved</span></span>
+      </div>
+      <div class="xl-scroll">
+        <table class="xl-grid">
+          <tr class="colletters">
+            <th></th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>G</th><th>H</th>
+          </tr>
+          <tr class="fieldrow">
+            <th class="rownum">1</th>
+            <th class="group-shared">BuildingID</th>
+            <th class="group-shared">1&nbsp;BaseRate</th>
+            <th class="group-shared">LowestBaseRate</th>
+            <th class="group-shared">2&nbsp;AdjFactor</th>
+            <th class="group-shared">3&nbsp;Rate</th>
+            <th class="group-shared">4&nbsp;COLAdj</th>
+            <th class="group-shared">Factor</th>
+            <th class="group-shared">FinalRate</th>
+          </tr>
+          <tr>
+            <td class="rownum">2</td>
+            <td>BLDG-A</td>
+            <td class="num warn-cell">— no CW rate —</td>
+            <td class="num warn-cell">— no CW rate —</td>
+            <td class="num warn-cell">— no CW factor —</td>
+            <td class="num">&mdash;</td>
+            <td class="num">&mdash;</td>
+            <td class="num">0.760</td>
+            <td class="num total-cell">&mdash;</td>
+          </tr>
+          <tr>
+            <td class="rownum">3</td>
+            <td>BLDG-B</td>
+            <td class="num warn-cell">— no CW rate —</td>
+            <td class="num warn-cell">— no CW rate —</td>
+            <td class="num warn-cell">— no CW factor —</td>
+            <td class="num">&mdash;</td>
+            <td class="num">&mdash;</td>
+            <td class="num">0.810</td>
+            <td class="num total-cell">&mdash;</td>
+          </tr>
+        </table>
+      </div>
+      <div class="xl-sheettabs">
+        <span class="xl-sheettab">Policy</span>
+        <span class="xl-sheettab">Locations_Buildings</span>
+        <span class="xl-sheettab">Rate_Tables</span>
+        <span class="xl-sheettab">Calc_Building_BGI</span>
+        <span class="xl-sheettab">Calc_Contents_BGI</span>
+        <span class="xl-sheettab">Calc_Building_BGII</span>
+        <span class="xl-sheettab">Calc_Contents_BGII</span>
+        <span class="xl-sheettab">Calc_Building_Broad</span>
+        <span class="xl-sheettab">Calc_Contents_Broad</span>
+        <span class="xl-sheettab">Calc_Building_Special</span>
+        <span class="xl-sheettab">Calc_Contents_Special</span>
+        <span class="xl-sheettab">Calc_BI_BGI</span>
+        <span class="xl-sheettab active">Calc_BI_BGII</span>
+        <span class="xl-sheettab">Calc_BI_Broad</span>
+        <span class="xl-sheettab">Calc_BI_Special</span>
+        <span class="xl-sheettab">Premium_Summary</span>
+      </div>
+    </div>
+
+    <div class="instructions">
+      <p class="lede">Three independent empty tables feed this one row — worse than any other cross-tab dependency in the workbook. <b>BaseRate</b> and <b>LowestBaseRate</b> both fail because <b>BasicGroupIIRate</b>/<b>LowestBasicGroupIIRate</b> are the exact same empty tables Building's own tab already flagged; <b>AdjFactor</b> fails independently because this form's own adjustment table is separately empty.</p>
+      <ul class="field-notes">
+        <li>Column B's formula bar shows this tab querying <b>Rate_Tables.BasicGroupIIRate</b> directly — unlike BGI, which just copies a value, BGII runs its own lookup, keyed on the territory this tab reads plus the construction symbol <b>Calc_Building_BGII</b> already resolved.</li>
+        <li><b>Factor</b> is the one column that resolves — the same shared helper column BGI reads, built once.</li>
+      </ul>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- ================= BUSINESS INCOME — BROAD ================= -->
+  <section class="sheet-block" id="bibroad">
+    <div class="sheet-heading">
+      <span class="sheet-index">Tab 14 of 16</span>
+      <h2 class="sheet-title">Calc_BusinessIncome_Broad</h2>
+    </div>
+    <p class="sheet-role">One row per building — three columns. The shortest calc tab in the entire workbook, Building or Business Income.</p>
+
+    <div class="xl-window">
+      <div class="xl-titlebar">
+        <div class="xl-dots"><span></span><span></span><span></span></div>
+        <span class="xl-filename">CF_BGI_Rater.xlsx &nbsp;&mdash;&nbsp; <b>Calc_BusinessIncome_Broad</b></span>
+        <div class="xl-titlebar-spacer"></div>
+        <span class="xl-mode">Wireframe</span>
+      </div>
+      <div class="xl-formulabar">
+        <span class="xl-cellref">D2</span>
+        <span class="xl-fx">fx</span>
+        <span class="xl-formula">=C2 &nbsp;<span class="subtle">— FinalRate is a straight copy of Rate; nothing else happens to it</span></span>
+      </div>
+      <div class="xl-scroll">
+        <table class="xl-grid">
+          <tr class="colletters">
+            <th></th><th>A</th><th>B</th><th>C</th><th>D</th>
+          </tr>
+          <tr class="fieldrow">
+            <th class="rownum">1</th>
+            <th class="group-shared">BuildingID</th>
+            <th class="group-shared">1&nbsp;BaseRate</th>
+            <th class="group-shared">2&nbsp;Rate</th>
+            <th class="group-shared">FinalRate</th>
+          </tr>
+          <tr>
+            <td class="rownum">2</td>
+            <td>BLDG-A</td>
+            <td class="num good-cell">0.011</td>
+            <td class="num formula-cell">0.010</td>
+            <td class="num total-cell">0.010</td>
+          </tr>
+          <tr>
+            <td class="rownum">3</td>
+            <td>BLDG-B</td>
+            <td class="num good-cell">0.011</td>
+            <td class="num formula-cell">0.010</td>
+            <td class="num total-cell">0.010</td>
+          </tr>
+        </table>
+      </div>
+      <div class="xl-sheettabs">
+        <span class="xl-sheettab">Policy</span>
+        <span class="xl-sheettab">Locations_Buildings</span>
+        <span class="xl-sheettab">Rate_Tables</span>
+        <span class="xl-sheettab">Calc_Building_BGI</span>
+        <span class="xl-sheettab">Calc_Contents_BGI</span>
+        <span class="xl-sheettab">Calc_Building_BGII</span>
+        <span class="xl-sheettab">Calc_Contents_BGII</span>
+        <span class="xl-sheettab">Calc_Building_Broad</span>
+        <span class="xl-sheettab">Calc_Contents_Broad</span>
+        <span class="xl-sheettab">Calc_Building_Special</span>
+        <span class="xl-sheettab">Calc_Contents_Special</span>
+        <span class="xl-sheettab">Calc_BI_BGI</span>
+        <span class="xl-sheettab">Calc_BI_BGII</span>
+        <span class="xl-sheettab active">Calc_BI_Broad</span>
+        <span class="xl-sheettab">Calc_BI_Special</span>
+        <span class="xl-sheettab">Premium_Summary</span>
+      </div>
+    </div>
+
+    <div class="instructions">
+      <p class="lede">No cross-tab dependency, no cause-of-loss adjustment, no <b>Factor</b>, no coinsurance, no LOI, no deductible. <b>BaseRate</b> reads green here — this table's Business Income rows have real countrywide data, the same good news Building's own Broad tab already showed for its rows in the same table.</p>
+      <ul class="field-notes">
+        <li>Both buildings show 0.011 — the CW rate for the four combustible construction types under the <b>"Business Income Without Extra Expense"</b> key. A Modified Fire Resistive or Fire Resistive building would read 0.007 instead.</li>
+      </ul>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- ================= BUSINESS INCOME — SPECIAL ================= -->
+  <section class="sheet-block" id="bispecial">
+    <div class="sheet-heading">
+      <span class="sheet-index">Tab 15 of 16</span>
+      <h2 class="sheet-title">Calc_BusinessIncome_Special</h2>
+    </div>
+    <p class="sheet-role">One row per building — the one form where Business Income and Building genuinely diverge, and the coverage's own second table that resolves cleanly.</p>
+
+    <div class="xl-window">
+      <div class="xl-titlebar">
+        <div class="xl-dots"><span></span><span></span><span></span></div>
+        <span class="xl-filename">CF_BGI_Rater.xlsx &nbsp;&mdash;&nbsp; <b>Calc_BusinessIncome_Special</b></span>
+        <div class="xl-titlebar-spacer"></div>
+        <span class="xl-mode">Wireframe</span>
+      </div>
+      <div class="xl-formulabar">
+        <span class="xl-cellref">D2</span>
+        <span class="xl-fx">fx</span>
+        <span class="xl-formula">=Lookup(SpecialFormIncldgTheftTimeElementBaseRate: ConstructionType, BI_CovType, TypeRisk) &nbsp;<span class="subtle">— varies by construction, unlike Building's flat Special rate</span></span>
+      </div>
+      <div class="xl-scroll">
+        <table class="xl-grid">
+          <tr class="colletters">
+            <th></th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th>
+          </tr>
+          <tr class="fieldrow">
+            <th class="rownum">1</th>
+            <th class="group-shared">BuildingID</th>
+            <th class="group-shared">1&nbsp;TheftExclInd</th>
+            <th class="group-shared">2&nbsp;TypeRisk</th>
+            <th class="group-shared">3&nbsp;TheftExclFactor</th>
+            <th class="group-shared">4&nbsp;BaseRate</th>
+            <th class="group-shared">5&nbsp;Rate&nbsp;/&nbsp;6&nbsp;FinalRate</th>
+          </tr>
+          <tr>
+            <td class="rownum">2</td>
+            <td>BLDG-A</td>
+            <td class="num">0</td>
+            <td>Apts &amp; Condos</td>
+            <td class="num">1.000</td>
+            <td class="num good-cell">0.016</td>
+            <td class="num total-cell">0.015</td>
+          </tr>
+          <tr>
+            <td class="rownum">3</td>
+            <td>BLDG-B &#9733; (1150)</td>
+            <td class="num formula-cell">1</td>
+            <td>&mdash;</td>
+            <td class="num formula-cell">0.930</td>
+            <td class="num good-cell">0.018</td>
+            <td class="num total-cell">0.017</td>
+          </tr>
+        </table>
+      </div>
+      <div class="xl-sheettabs">
+        <span class="xl-sheettab">Policy</span>
+        <span class="xl-sheettab">Locations_Buildings</span>
+        <span class="xl-sheettab">Rate_Tables</span>
+        <span class="xl-sheettab">Calc_Building_BGI</span>
+        <span class="xl-sheettab">Calc_Contents_BGI</span>
+        <span class="xl-sheettab">Calc_Building_BGII</span>
+        <span class="xl-sheettab">Calc_Contents_BGII</span>
+        <span class="xl-sheettab">Calc_Building_Broad</span>
+        <span class="xl-sheettab">Calc_Contents_Broad</span>
+        <span class="xl-sheettab">Calc_Building_Special</span>
+        <span class="xl-sheettab">Calc_Contents_Special</span>
+        <span class="xl-sheettab">Calc_BI_BGI</span>
+        <span class="xl-sheettab">Calc_BI_BGII</span>
+        <span class="xl-sheettab">Calc_BI_Broad</span>
+        <span class="xl-sheettab active">Calc_BI_Special</span>
+        <span class="xl-sheettab">Premium_Summary</span>
+      </div>
+    </div>
+
+    <div class="instructions">
+      <p class="lede">Every cell here resolves — the third form (after Broad, and Building's own Broad) where this workbook hits no countrywide gap at all. Unlike Building's flat statewide Special rate, <b>BaseRate</b> here varies by construction type and by an apartment/condo classification neither Building's Special nor any Contents form has an equivalent for.</p>
+      <ul class="field-notes">
+        <li><b>BLDG-B &#9733;</b> is class 1150 (Builders Risk) — it routes through the flat CW 0.018 table instead of the construction-keyed one, the same branch pattern Building's own Special Builders-Risk row uses.</li>
+        <li><b>FinalRate</b> is a straight copy of <b>Rate × TheftExclFactor</b> — no roof factor (none exists for Business Income), no <b>Factor</b> multiplication (Special never uses it, same as Broad).</li>
+      </ul>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- ================= 6. PREMIUM SUMMARY ================= -->
+  <section class="sheet-block" id="summary">
+    <div class="sheet-heading">
+      <span class="sheet-index">Tab 16 of 16</span>
+      <h2 class="sheet-title">Premium_Summary</h2>
+    </div>
+    <p class="sheet-role">One row per building — where every calc tab's FinalRate turns into an actual dollar premium, one column pair per Building/Contents form plus one column per Business Income form.</p>
+
+    <div class="xl-window">
+      <div class="xl-titlebar">
+        <div class="xl-dots"><span></span><span></span><span></span></div>
+        <span class="xl-filename">CF_BGI_Rater.xlsx &nbsp;&mdash;&nbsp; <b>Premium_Summary</b></span>
+        <div class="xl-titlebar-spacer"></div>
+        <span class="xl-mode">Wireframe</span>
+      </div>
+      <div class="xl-formulabar">
+        <span class="xl-cellref">D2</span>
+        <span class="xl-fx">fx</span>
+        <span class="xl-formula">=ROUND(IRPM*MultiPrem*PackageMod*FinalRate*(Limit/100),0)*CyberFactor*CyberCOLExcptns</span>
+      </div>
+      <div class="xl-scroll">
+        <table class="xl-grid">
+          <tr class="colletters">
+            <th></th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>G</th><th>H</th><th>I</th><th>J</th><th>K</th><th>L</th><th>M</th><th>N</th><th>O</th>
+          </tr>
+          <tr class="fieldrow">
+            <th class="rownum">1</th>
+            <th class="group-shared">BuildingID</th>
+            <th class="group-bldg">Bldg_BGI_Premium</th>
+            <th class="group-pp">PP_BGI_Premium</th>
+            <th class="group-bldg">Bldg_BGII_Premium</th>
+            <th class="group-pp">PP_BGII_Premium</th>
+            <th class="group-bldg">Bldg_Broad_Premium</th>
+            <th class="group-pp">PP_Broad_Premium</th>
+            <th class="group-bldg">Bldg_Special_Premium</th>
+            <th class="group-pp">PP_Special_Premium</th>
+            <th class="group-shared">BI_BGI</th>
+            <th class="group-shared">BI_BGII</th>
+            <th class="group-shared">BI_Broad</th>
+            <th class="group-shared">BI_Special</th>
+            <th class="group-shared" colspan="2">Building&nbsp;/&nbsp;Contents&nbsp;/&nbsp;BI Totals</th>
+          </tr>
+          <tr>
+            <td class="rownum">2</td>
+            <td>BLDG-A</td>
+            <td class="num formula-cell">$11,681</td>
+            <td class="num formula-cell">$5,009</td>
+            <td class="num warn-cell">$0 &#9888;</td>
+            <td class="num warn-cell">$0 &#9888;</td>
+            <td class="num">$0</td>
+            <td class="num">$0</td>
+            <td class="num warn-cell">$0 &#9888;</td>
+            <td class="num warn-cell">$0 &#9888;</td>
+            <td class="num warn-cell">$0 &#9888;</td>
+            <td class="num warn-cell">$0 &#9888;</td>
+            <td class="num">$0</td>
+            <td class="num warn-cell">$0 &#9888;</td>
+            <td class="num total-cell" colspan="2">$11,681&nbsp;/&nbsp;$5,009&nbsp;/&nbsp;$0</td>
+          </tr>
+          <tr>
+            <td class="rownum">3</td>
+            <td>BLDG-B &#9733;</td>
+            <td class="num warn-cell">$0 &#9888;</td>
+            <td class="num formula-cell">$163</td>
+            <td class="num warn-cell">$0 &#9888;</td>
+            <td class="num warn-cell">$0 &#9888;</td>
+            <td class="num warn-cell">$0 &#9888;</td>
+            <td class="num">$0</td>
+            <td class="num formula-cell">$15</td>
+            <td class="num warn-cell">$0 &#9888;</td>
+            <td class="num warn-cell">$0 &#9888;</td>
+            <td class="num warn-cell">$0 &#9888;</td>
+            <td class="num">$0</td>
+            <td class="num formula-cell">$9</td>
+            <td class="num total-cell" colspan="2">$15&nbsp;/&nbsp;$163&nbsp;/&nbsp;$9</td>
+          </tr>
+          <tr class="total-row">
+            <td class="rownum">4</td>
+            <td>Policy total</td>
+            <td class="num total-cell">$11,681</td>
+            <td class="num total-cell">$5,172</td>
+            <td class="num total-cell">$0</td>
+            <td class="num total-cell">$0</td>
+            <td class="num total-cell">$0</td>
+            <td class="num total-cell">$0</td>
+            <td class="num total-cell">$15</td>
+            <td class="num total-cell">$0</td>
+            <td class="num total-cell">$0</td>
+            <td class="num total-cell">$0</td>
+            <td class="num total-cell">$0</td>
+            <td class="num total-cell">$9</td>
+            <td class="num total-cell" colspan="2">$11,696&nbsp;/&nbsp;$5,172&nbsp;/&nbsp;$9</td>
+          </tr>
+        </table>
+      </div>
+      <div class="xl-sheettabs">
+        <span class="xl-sheettab">Policy</span>
+        <span class="xl-sheettab">Locations_Buildings</span>
+        <span class="xl-sheettab">Rate_Tables</span>
+        <span class="xl-sheettab">Calc_Building_BGI</span>
+        <span class="xl-sheettab">Calc_Contents_BGI</span>
+        <span class="xl-sheettab">Calc_Building_BGII</span>
+        <span class="xl-sheettab">Calc_Contents_BGII</span>
+        <span class="xl-sheettab">Calc_Building_Broad</span>
+        <span class="xl-sheettab">Calc_Contents_Broad</span>
+        <span class="xl-sheettab">Calc_Building_Special</span>
+        <span class="xl-sheettab">Calc_Contents_Special</span>
+        <span class="xl-sheettab">Calc_BI_BGI</span>
+        <span class="xl-sheettab">Calc_BI_BGII</span>
+        <span class="xl-sheettab">Calc_BI_Broad</span>
+        <span class="xl-sheettab">Calc_BI_Special</span>
+        <span class="xl-sheettab active">Premium_Summary</span>
+      </div>
+    </div>
+
+    <div class="instructions">
+      <p class="lede">One premium column pair per cause-of-loss form built so far — every pair shares the exact same shape, round the rate times the limit times three schedule-rating factors to whole dollars, then multiply by two cyber-exclusion factors — because that's what ISO's own rule files do for every form's scheduled, non-blanket, non-Legal-Liability branch.</p>
+      <p><b>BLDG-A</b> and <b>BLDG-B</b> both read <b>$0</b> across every Basic Group II column, and for a different reason than the earlier Basic Group I gap: it isn't that one building's rate failed to resolve — <i>no</i> building's Basic Group II rate can resolve yet, because both <b>BasicGroupIIRate</b> and <b>LowestBasicGroupIIRate</b> are empty at the countrywide level for every symbol/territory combination. <b>BLDG-B</b>'s Basic Group I <i>Building</i> premium is also flagged, for the original, narrower reason — its own class/construction combination has no filed row.</p>
+      <p>The <b>Broad</b> columns read a plain, unflagged <b>$0</b> — not a warning — because neither building's policy selected Broad as its cause of loss in this example; the gate on <b>Bldg_CovType</b>/<b>PP_CovForm</b> plus <b>CauseOfLoss = "Broad"</b> simply doesn't fire. That's the distinction the flag exists to protect: a legitimately-inapplicable form and a broken lookup both produce <b>0</b>, but only one of them should carry a warning icon.</p>
+      <p><b>Special</b> tells the third version of this same story. <b>BLDG-B &#9733;</b> is a Builders Risk building (class 1150) — its <b>Bldg_Special_Premium</b> actually resolves, <b>$15</b>, because <b>SpecialBuildersRiskRate</b> is one of the few tables in this form that has real CW data. Its <b>PP_Special_Premium</b> is flagged anyway, because Contents' Special depends on three <i>different</i> tables (<b>SpecialPrsnlPropRate</b>, <b>SpecialPrsnlPropTheftExclusionFactor</b>, <b>PrsnlPropTerrMultiplier</b>) that are all empty — the same building, same form, one coverage resolves and the other can't, for entirely independent reasons.</p>
+      <p>The four <b>BI_*</b> columns are one coverage, not two — Business Income doesn't split into a Building/Contents pair the way every other coverage in this workbook does, so it earns four columns instead of eight. <b>BI_BGI</b> and <b>BI_BGII</b> both read <b>$0 &#9888;</b> for every building — not because either building's data is unusual, but because these two forms doubly (BGII: triply) depend on countrywide tables already confirmed empty, on top of a Business-Income-specific adjustment table that's <i>also</i> empty. <b>BI_Broad</b> reads a plain unflagged <b>$0</b>, same "not selected" story as the Building/Contents Broad columns. <b>BI_Special</b> is the one Business Income column that resolves for <b>BLDG-B &#9733;</b> — <b>$9</b> — because, like Building's own Special, its Builders Risk table has real data; unlike Contents' Special, Business Income's Special has no data gap of its own at all.</p>
+      <div class="callout warn">
+        <span class="callout-mark">!</span>
+        <p>Zero and "couldn't calculate" must never look the same on this tab. A legitimately zero premium (say, a coverage type this pass doesn't rate yet, or — as with Broad here — a cause of loss the policy didn't select) and a broken lookup upstream both produce the number <b>0</b> unless the flag column is built in — treat the flag as load-bearing, not decorative. That matters more, not less, now that three coverages and four-to-eight forms apiece can all land premium columns on the same row.</p>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<footer class="closing">
+  <h2>Remaining steps</h2>
+  <ol>
+    <li>Confirm this layout and grouping match how you want to work in the actual file — column order, which fields live on Locations_Buildings versus a calc tab, anything that reads wrong.</li>
+    <li>All four cause-of-loss forms for Building and Contents, plus all four non-Earthquake forms for Business Income, are now built. Next is either the real <code>.xlsx</code> to this spec, the Legal Liability/blanket branches, Business Income's Earthquake/Agreed Value mechanism, or a different coverage or LOB entirely.</li>
+    <li>Nothing here is a live spreadsheet yet — every value shown is illustrative, chosen to make the layout legible rather than to be arithmetically exact.</li>
+  </ol>
+  <p class="note">Source formulas and the full field-by-field spec live in CF_Algorithm/Excel_Rater_Overview.md, Excel_Rater_BasicGroupI.md, Excel_Rater_BasicGroupII.md, Excel_Rater_Broad.md, Excel_Rater_Special.md, and the Excel_Rater_BusinessIncome_*.md set — each built from CauseOfLoss_Building_RatingAlgorithms.md, CauseOfLoss_PersonalProperty_RatingAlgorithms.md, and CauseOfLoss_BusinessIncome_RatingAlgorithms.md.</p>
+</footer>
+
+<script>
+  (function () {
+    var links = Array.prototype.slice.call(document.querySelectorAll('.jump'));
+    var sections = links.map(function (a) {
+      return document.querySelector(a.getAttribute('href'));
+    });
+    function onScroll() {
+      var pos = window.scrollY + 90;
+      var current = 0;
+      for (var i = 0; i < sections.length; i++) {
+        if (sections[i] && sections[i].offsetTop <= pos) current = i;
+      }
+      links.forEach(function (a, i) {
+        a.classList.toggle('current', i === current);
+      });
+    }
+    document.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+  })();
+</script>

@@ -1,0 +1,26 @@
+{
+ "name": "rc4_mods",
+ "states": [
+  "FL",
+  "NY",
+  "AK",
+  "CA"
+ ],
+ "edits": [
+  {
+   "sheet": "IN - Policy",
+   "cell": "C22",
+   "value": 0.9
+  },
+  {
+   "sheet": "IN - Policy",
+   "cell": "C23",
+   "value": 0.95
+  },
+  {
+   "sheet": "IN - Policy",
+   "cell": "C24",
+   "value": 0.97
+  }
+ ]
+}

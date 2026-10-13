@@ -1,0 +1,113 @@
+{
+ "name": "rc5_blanket_ny_sc_combined",
+ "states": [
+  "NY"
+ ],
+ "edits": [
+  {
+   "sheet": "IN - Schedule",
+   "cell": "B220",
+   "value": 2
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "Q220",
+   "value": "III"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "C221",
+   "value": "Yes"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "B221",
+   "value": 2
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "D221",
+   "value": "Other - Masonry or Metal or Other Non-combustible Materials, Stock or Equipment"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "K221",
+   "value": 200000
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "Q221",
+   "value": "III"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "P221",
+   "value": "2"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "AL49",
+   "value": "Yes"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "AM49",
+   "value": 1
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "F220",
+   "value": "Yes"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "X220",
+   "value": 1
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "Y220",
+   "value": 513000
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "F221",
+   "value": "Yes"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "X221",
+   "value": 1
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "Y221",
+   "value": 200000
+  },
+  {
+   "sheet": "IN - Blanket",
+   "cell": "B5",
+   "value": "Building & Personal Property Combined"
+  },
+  {
+   "sheet": "IN - Blanket",
+   "cell": "C5",
+   "value": "Average"
+  },
+  {
+   "sheet": "IN - Blanket",
+   "cell": "D5",
+   "value": "Special"
+  },
+  {
+   "sheet": "IN - Blanket",
+   "cell": "E5",
+   "value": "'90%"
+  },
+  {
+   "sheet": "IN - Blanket",
+   "cell": "F5",
+   "value": 1100000
+  }
+ ]
+}

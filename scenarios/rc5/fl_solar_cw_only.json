@@ -1,0 +1,13 @@
+{
+ "name": "rc5_fl_solar_cw_only",
+ "states": [
+  "FL"
+ ],
+ "edits": [
+  {
+   "sheet": "IN - Schedule",
+   "cell": "D220",
+   "value": "Solar Panel Arrays - Freestanding (Not on Buildings), including strut support"
+  }
+ ]
+}

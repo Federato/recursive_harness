@@ -1,0 +1,261 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CF validation message register</title>
+<style>
+:root{--bg:#fbfbfd;--fg:#1d1d20;--mut:#63636b;--line:#e3e3e8;--accent:#1f3864;
+--code-bg:#f4f4f7;--tbl-head:#1f3864;--mark:#fff3cd;--del:#a11}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+background:var(--bg);color:var(--fg)}
+header{background:var(--accent);color:#fff;padding:22px 32px 0}
+header h1{margin:0 0 4px;font-size:20px;font-weight:650;letter-spacing:-.01em}
+header .sub{opacity:.72;font-size:13px;margin-bottom:16px}
+nav{display:flex;gap:4px}
+nav button{appearance:none;border:0;background:rgba(255,255,255,.10);color:#fff;cursor:pointer;
+font:inherit;font-size:14px;padding:10px 18px;border-radius:7px 7px 0 0;opacity:.75}
+nav button:hover{opacity:1;background:rgba(255,255,255,.18)}
+nav button[aria-selected="true"]{background:var(--bg);color:var(--accent);font-weight:640;opacity:1}
+.wrap{display:grid;grid-template-columns:250px minmax(0,1fr);gap:34px;
+max-width:1360px;margin:0 auto;padding:30px 32px 90px}
+aside{position:sticky;top:22px;align-self:start;max-height:calc(100vh - 50px);overflow:auto;
+font-size:13.5px;border-left:2px solid var(--line);padding-left:14px}
+aside .lbl{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--mut);
+font-weight:700;margin-bottom:9px}
+aside ul{list-style:none;margin:0;padding:0}
+aside ul ul{padding-left:13px}
+aside a{color:var(--mut);text-decoration:none;display:block;padding:3px 0;line-height:1.4}
+aside a:hover{color:var(--accent)}
+article{min-width:0;background:#fff;border:1px solid var(--line);border-radius:11px;padding:34px 42px 54px}
+article h1{font-size:27px;margin:0 0 8px;letter-spacing:-.02em}
+article h2{font-size:20px;margin:38px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--line);
+letter-spacing:-.01em}
+article h3{font-size:16.5px;margin:26px 0 9px}
+article h4{font-size:15px;margin:20px 0 7px;color:var(--mut)}
+p,li{max-width:74ch}
+code{background:var(--code-bg);padding:.13em .38em;border-radius:4px;
+font:13.5px/1.5 "SF Mono",Consolas,"Liberation Mono",Menlo,monospace}
+pre{background:var(--code-bg);border:1px solid var(--line);border-radius:8px;padding:14px 17px;
+overflow-x:auto}
+pre code{background:none;padding:0;font-size:13px;line-height:1.55}
+table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14.2px;display:block;overflow-x:auto}
+th{background:var(--tbl-head);color:#fff;text-align:left;font-weight:600;padding:9px 12px;
+white-space:nowrap}
+td{border-bottom:1px solid var(--line);padding:9px 12px;vertical-align:top}
+tr:nth-child(even) td{background:#fafafc}
+blockquote{margin:16px 0;padding:12px 18px;background:#f6f8fc;border-left:4px solid var(--accent);
+border-radius:0 7px 7px 0}
+blockquote p{margin:.45em 0}
+del{color:var(--del);text-decoration-thickness:1px}
+hr{border:0;border-top:1px solid var(--line);margin:30px 0}
+a{color:var(--accent)}
+.meta{font-size:12.5px;color:var(--mut);margin:0 0 22px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.panel[hidden]{display:none}
+@media(max-width:1000px){.wrap{grid-template-columns:1fr;padding:20px}aside{display:none}
+article{padding:24px 20px 40px}}
+@media print{header,aside,nav{display:none}.wrap{display:block;padding:0}
+article{border:0;padding:0}.panel[hidden]{display:block!important}}
+
+.wrap{display:block;max-width:60rem;margin:0 auto;padding:0 1.5rem 5rem}
+article{max-width:none}
+.toc-box{border:1px solid var(--line);border-radius:8px;padding:1rem 1.25rem;
+margin:1.5rem 0 2.5rem;background:#fff}
+.toc-box .lbl{font-weight:600;color:var(--accent);margin-bottom:.4rem}
+.toc-box ul{margin:.2rem 0;padding-left:1.1rem}
+.toc-box>ul>li{margin:.15rem 0}
+h2{margin-top:2.6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h1+p+h2,h2:first-of-type{border-top:none}
+table{font-size:.95em}
+@media print{header{position:static}.toc-box{break-inside:avoid}}
+</style></head><body>
+<header><h1>CF validation message register</h1>
+<div class="sub">Commercial Property · every message ISO returned, what caused it, and the check that was missing</div></header>
+<div class="wrap"><article>
+<p class="meta">Source: <code>CF_Algorithm/CF_Message_Register.md</code> &nbsp;·&nbsp; 1,031 words &nbsp;·&nbsp; rendered 2026-09-17</p>
+<div class="toc-box"><div class="lbl">On this page</div><div class="toc">
+<ul>
+<li><a href="#the-loop">The loop</a></li>
+<li><a href="#register">Register</a></li>
+<li><a href="#standing-checks-this-register-has-produced">Standing checks this register has produced</a></li>
+<li><a href="#what-a-pre-flight-validator-would-be">What a pre-flight validator would be</a></li>
+</ul>
+</div>
+</div>
+<h1 id="cf-validation-message-register">CF validation message register</h1>
+<p><strong>A running log of every validation message ISO has actually returned to us</strong>, what caused
+it, how it was resolved, and what the resolution generalises to.</p>
+<p>The point is not the diary. The point is that each message should make the <em>next</em> payload
+better — either by changing how payloads are built, or by adding a check that catches the
+same class of problem before a request is sent.</p>
+<p><strong>Related:</strong>
+<code>CF_Validation_Messages.md</code> (what the whole rule set looks like) ·
+<code>CF_Validation_Messages.xlsx</code> (all 1,621 rules) ·
+<code>CF_Payload_ClassRated_Bldg_PP_Alabama.md</code> (the request spec) ·
+<code>scripts/cf/07_diagnose_message.py</code> (the diagnostic)</p>
+<p><strong>Opened:</strong> 2026-09-17.</p>
+<hr />
+<h2 id="the-loop">The loop</h2>
+<p><strong>1 · Observe.</strong> Paste the message into the register below — verbatim, with <code>TableName</code>,
+the state, and the payload that produced it. <code>TableName</code> matters: the same message text is
+filed on several coverages, and without it you will read the wrong rule.</p>
+<p><strong>2 · Diagnose.</strong> Run the rule down rather than guessing:</p>
+<pre><code class="language-bash">python scripts/cf/07_diagnose_message.py \
+    --message &quot;CP 03 20 Must Be Attached When Fixed Dollar&quot; \
+    --table   CommercialPropertyStructure \
+    --state   AL \
+    --payload CF_Algorithm/sample_payloads/AL_class_rated_bldg_pp_special.json
+</code></pre>
+<p>It finds the rule, decodes the condition, and prints every comparison with the value the
+payload supplies and whether it is true — including field-to-field comparisons, which are
+usually the deciding half and the easiest to miss by eye.</p>
+<p><strong>3 · Classify.</strong> Which of these is it?</p>
+<table>
+<thead>
+<tr>
+<th>Class</th>
+<th>Meaning</th>
+<th>Typical fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Payload defect</strong></td>
+<td>we sent something incoherent</td>
+<td>fix the payload; consider a pre-flight check</td>
+</tr>
+<tr>
+<td><strong>Spec gap</strong></td>
+<td>the spec did not say a field was required or constrained</td>
+<td>update the spec</td>
+</tr>
+<tr>
+<td><strong>Missing endorsement</strong></td>
+<td>a selection implies a form we did not attach</td>
+<td>attach it — but check for the mirror rule first</td>
+</tr>
+<tr>
+<td><strong>State-specific</strong></td>
+<td>the rule exists only in that state's package</td>
+<td>note it in the state's section of the spec</td>
+</tr>
+<tr>
+<td><strong>ISO data defect</strong></td>
+<td>the rule or the data behind it is wrong</td>
+<td>log it, raise it, do not code around it</td>
+</tr>
+</tbody>
+</table>
+<p><strong>4 · Fix, and check the mirror.</strong> Over half the rules are form-attachment checks, and some
+come in opposing pairs: one fires if a form is missing, its mirror if the same form is
+attached when it should not be. Before attaching anything, search the inventory for the
+opposite message.</p>
+<p><strong>5 · Generalise.</strong> Write the lesson as a <strong>missing check</strong>, not as a thing to remember.
+"Watch out for deductibles" is not a lesson. "Nothing compares the theft deductible against
+the base deductible before we send" is.</p>
+<hr />
+<h2 id="register">Register</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Date</th>
+<th>State</th>
+<th>Message (abbreviated)</th>
+<th>TableName</th>
+<th>Class</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>M-001</td>
+<td>2026-09-17</td>
+<td>AL</td>
+<td>CP 03 20 Must Be Attached When Fixed Dollar Amount Deductible For Each Location Are Different Than Windstorm Or Hail Deductible Or Theft Deductible</td>
+<td><code>CommercialPropertyStructure</code></td>
+<td>Payload defect</td>
+<td><strong>Resolved</strong></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="m-001-cp-03-20-must-be-attached">M-001 — CP 03 20 must be attached</h3>
+<p><strong>Reported:</strong> 2026-09-17, Alabama, from the first sample payload. <strong>The submission rated</strong>
+and returned this alongside the premium.</p>
+<p><strong>Rule:</strong>
+<code>DoMessageCP0320MustBeAttachedWhenFixedDollarAmountDeductibleForEachLocationAreDifferentThanWindstormOrHailDeductibleOrTheftDeductible</code>,
+<code>CommercialPropertyStructureRules.Rule.xml</code>, countrywide — Alabama does not override it.</p>
+<p><strong>Condition</strong> — fires when all three hold:</p>
+<ol>
+<li><code>CovType</code> ∈ {<code>Building</code>, <code>Condominium Association</code>, <code>Builders Risk</code>,
+   <code>Improvements and Betterments</code>} <strong>or</strong> <code>OccupClassCovFormInList</code> = <code>true</code>; <strong>and</strong></li>
+<li><strong>any</strong> of —
+   - <code>WindstormOrHailDeductible</code> not in {<code>1%</code>, <code>2%</code>, <code>5%</code>, <code>Not Applicable</code>} <strong>and</strong>
+     ≠ <code>Deductible</code>
+   - <code>TheftDeductible</code> ≠ <code>Not Applicable</code> <strong>and</strong> ≠ <code>Deductible</code>
+   - <code>OccupClassTheftDedConditionsMet</code> = <code>true</code> — derived by comparing each <strong>occupancy
+     class's</strong> <code>TheftDeductible</code> against the <strong>structure's</strong> <code>Deductible</code>; <strong>and</strong></li>
+<li>no <code>CommercialPropertyMultipleDeductibleFormFixedDollarDeductibles</code> record attached.</li>
+</ol>
+<p><strong>Root cause — ours, not ISO's.</strong> The sample carried <code>Deductible: "1,000"</code> with
+<code>TheftDeductible: "2,500"</code> at both Structure and OccupClass. Two of the three sub-conditions
+in (2) fired: the structure comparison directly, and the occupancy comparison through the
+derived flag. The value <code>2,500</code> was chosen for realism with no thought about coherence.</p>
+<p><strong>Fix applied.</strong> Aligned <code>TheftDeductible</code> to <code>"1,000"</code> at both levels — verified legal in
+<code>DomainBuildingTheftDeductible</code> for AL. All three arms of (2) now evaluate false.</p>
+<p><strong>The alternative, for a risk that genuinely wants a separate theft deductible:</strong> keep the
+deductibles different and attach the CP 03 20 record, which makes (3) false instead.</p>
+<blockquote>
+<p><strong>Mirror rule exists.</strong>
+<code>DoMessageMultipleDeductibleFormCP0320ShouldNotBeAttachedWithTheSameFixedDollarAmountDeductiblesForEachLocation</code>
+fires if the form is attached while the deductibles <em>are</em> the same. Different deductibles
+<strong>and</strong> the form, or the same deductibles <strong>and</strong> no form. Nothing in between.</p>
+</blockquote>
+<p><strong>Lesson — stated as the missing check.</strong> <em>Nothing compares a payload's deductible fields
+against each other before the request is sent.</em> Three deductible fields
+(<code>Deductible</code>, <code>TheftDeductible</code>, <code>WindstormOrHailDeductible</code>) exist at two levels, and
+their coherence is a precondition ISO enforces but our builder does not test. The
+generalisation is wider than deductibles: <strong>the payload spec validates each field in
+isolation — name, group, legal enum value — and nothing validates fields against each
+other.</strong> That is the gap M-001 exposed.</p>
+<p><strong>Also produced:</strong> the diagnostic script, because working this out by hand took about an
+hour and should take a minute.</p>
+<hr />
+<h2 id="standing-checks-this-register-has-produced">Standing checks this register has produced</h2>
+<p>Each one is a check that does not exist yet. They are listed so that the next person builds
+the check rather than re-learning the lesson.</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Check</th>
+<th>From</th>
+<th>Built?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>C-1</td>
+<td>Deductible coherence: <code>TheftDeductible</code> and <code>WindstormOrHailDeductible</code> vs <code>Deductible</code>, at Structure <strong>and</strong> OccupClass, with CP 03 20 attached iff they differ</td>
+<td>M-001</td>
+<td><strong>no</strong></td>
+</tr>
+<tr>
+<td>C-2</td>
+<td>Mirror-pair awareness: before attaching any endorsement to silence a message, assert its opposite rule will not fire</td>
+<td>M-001</td>
+<td><strong>no</strong></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="what-a-pre-flight-validator-would-be">What a pre-flight validator would be</h2>
+<p>The destination this register points at is a local check that runs the applicable
+<code>DoMessage</code> conditions against a payload <strong>before</strong> it is sent, so messages are designed out
+rather than discovered. The inventory needed for it already exists
+(<code>CF_Validation_Messages.xlsx</code>, 1,621 rules with their conditions).</p>
+<p>It is <strong>not built, and should not be started without an explicit go</strong> — evaluating rule
+conditions is engine work, and the engine is deliberately unstarted. Until then this
+register plus the diagnostic script is the loop: observe, diagnose in a minute, fix, and
+record the check that was missing.</p>
+</article></div></body></html>

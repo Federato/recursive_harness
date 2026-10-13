@@ -1,0 +1,314 @@
+<title>Special — Building vs. Business Income, Side by Side</title>
+<style>
+  :root {
+    --bg: #eef1f4; --paper: #ffffff; --ink: #1c2733; --ink-soft: #55606b; --ink-faint: #8b95a1;
+    --grid-line: #d7dce2; --header-fill: #e4e8ed; --header-fill-strong: #1e3a45; --header-text-strong: #eef4f3;
+    --accent: #1e3a45; --accent-soft: #cfe0e0; --accent-warm: #b96a2c; --accent-warm-soft: #f3e2cf;
+    --good: #2f7d5a; --good-soft: #dcefe4; --warn: #a53d26; --warn-soft: #f7ddd4;
+    --shadow: 0 1px 2px rgba(28,39,51,0.06), 0 8px 24px rgba(28,39,51,0.07);
+    --font-display: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+    --font-body: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+    --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, "Liberation Mono", monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #10151b; --paper: #161d25; --ink: #e7ecf1; --ink-soft: #a3aebb; --ink-faint: #6d7885;
+      --grid-line: #2b3742; --header-fill: #1b242d; --header-fill-strong: #21504f; --header-text-strong: #eaf3f1;
+      --accent: #59a9ac; --accent-soft: #1d3535; --accent-warm: #dd9a5c; --accent-warm-soft: #372a1c;
+      --good: #63c090; --good-soft: #1b3226; --warn: #e0806a; --warn-soft: #3a2019;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 28px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #10151b; --paper: #161d25; --ink: #e7ecf1; --ink-soft: #a3aebb; --ink-faint: #6d7885;
+    --grid-line: #2b3742; --header-fill: #1b242d; --header-fill-strong: #21504f; --header-text-strong: #eaf3f1;
+    --accent: #59a9ac; --accent-soft: #1d3535; --accent-warm: #dd9a5c; --accent-warm-soft: #372a1c;
+    --good: #63c090; --good-soft: #1b3226; --warn: #e0806a; --warn-soft: #3a2019;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 28px rgba(0,0,0,0.35);
+  }
+  :root[data-theme="light"] {
+    --bg: #eef1f4; --paper: #ffffff; --ink: #1c2733; --ink-soft: #55606b; --ink-faint: #8b95a1;
+    --grid-line: #d7dce2; --header-fill: #e4e8ed; --header-fill-strong: #1e3a45; --header-text-strong: #eef4f3;
+    --accent: #1e3a45; --accent-soft: #cfe0e0; --accent-warm: #b96a2c; --accent-warm-soft: #f3e2cf;
+    --good: #2f7d5a; --good-soft: #dcefe4; --warn: #a53d26; --warn-soft: #f7ddd4;
+    --shadow: 0 1px 2px rgba(28,39,51,0.06), 0 8px 24px rgba(28,39,51,0.07);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); line-height: 1.6; overflow-x: hidden; }
+  a { color: var(--accent); }
+  a:focus-visible { outline: 2px solid var(--accent-warm); outline-offset: 2px; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 24px 96px; }
+
+  header.masthead { padding: 56px 24px 28px; max-width: 1180px; margin: 0 auto; }
+  .eyebrow { font-family: var(--font-ui); font-size: 12px; letter-spacing: 0.11em; text-transform: uppercase; color: var(--accent-warm); font-weight: 600; margin: 0 0 10px; }
+  h1.title { font-family: var(--font-display); font-size: clamp(28px, 4vw, 40px); font-weight: 400; margin: 0 0 14px; text-wrap: balance; color: var(--ink); }
+  .dek { font-size: 17px; color: var(--ink-soft); max-width: 78ch; margin: 0 0 6px; }
+  .dek code { font-family: var(--font-mono); font-size: 14.5px; background: var(--header-fill); padding: 1px 5px; border-radius: 3px; }
+
+  section.sect { padding-top: 48px; }
+  .sect-heading { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 6px; }
+  .sect-index { font-family: var(--font-mono); font-size: 13px; color: var(--accent-warm); font-variant-numeric: tabular-nums; }
+  h2.sect-title { font-family: var(--font-display); font-size: 24px; font-weight: 400; margin: 0; color: var(--ink); }
+  .sect-role { font-family: var(--font-ui); font-size: 13px; color: var(--ink-soft); margin: 0 0 18px; max-width: 90ch; }
+
+  .tblscroll { overflow-x: auto; border-radius: 8px; box-shadow: var(--shadow); }
+  table.grid { border-collapse: collapse; width: 100%; min-width: 900px; font-size: 13.5px; background: var(--paper); }
+  table.grid th, table.grid td { border: 1px solid var(--grid-line); padding: 10px 13px; text-align: left; vertical-align: top; }
+  table.grid thead th { background: var(--header-fill-strong); color: var(--header-text-strong); font-family: var(--font-ui); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; position: sticky; top: 0; }
+  table.grid td.stage { background: var(--header-fill); font-family: var(--font-ui); font-weight: 700; font-size: 12.5px; color: var(--ink-soft); width: 15%; }
+  table.grid td code, table.grid td .fname { font-family: var(--font-mono); font-size: 12px; }
+  table.grid td .fname { display: block; color: var(--accent); font-weight: 700; margin-bottom: 5px; }
+  table.grid td pre { font-family: var(--font-mono); font-size: 12px; white-space: pre-wrap; margin: 0; line-height: 1.55; }
+  table.grid td.bldg { width: 42.5%; }
+  table.grid td.bi { width: 42.5%; }
+  table.grid td.diverge { background: var(--warn-soft); }
+  table.grid td.match { background: var(--good-soft); }
+  .tag { display: inline-block; font-family: var(--font-ui); font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 2px 7px; border-radius: 3px; margin-bottom: 6px; }
+  .tag.same { background: var(--good-soft); color: var(--good); }
+  .tag.differs { background: var(--warn-soft); color: var(--warn); }
+  .tag.only-c { background: var(--accent-warm-soft); color: var(--accent-warm); }
+
+  .callout { display: flex; gap: 10px; padding: 12px 14px; border-radius: 5px; max-width: 90ch; font-size: 14.5px; margin-top: 14px; }
+  .callout.warn { background: var(--warn-soft); color: var(--warn); }
+  .callout.warm { background: var(--accent-warm-soft); color: var(--accent-warm); }
+  .callout.good { background: var(--good-soft); color: var(--good); }
+  .callout b { font-weight: 700; }
+  .callout-mark { flex: none; font-family: var(--font-ui); font-weight: 700; }
+
+  hr.divider { border: none; border-top: 1px solid var(--grid-line); margin: 48px 0 0; }
+  footer.closing { max-width: 1180px; margin: 56px auto 0; padding: 0 24px 64px; }
+  footer.closing h2 { font-family: var(--font-display); font-weight: 400; font-size: 21px; margin: 0 0 10px; }
+  footer.closing p.note { margin-top: 14px; font-size: 13px; color: var(--ink-faint); font-family: var(--font-ui); }
+</style>
+
+<header class="masthead">
+  <p class="eyebrow">CF_Algorithm &middot; Commercial Property &middot; Special</p>
+  <h1 class="title">Building vs. Business Income, stage by stage</h1>
+  <p class="dek">The one form in this whole coverage where Business Income and Building share almost nothing — not the tables, not the keys, not even the shape of "flat vs. construction-dependent." Rows shaded <span style="color:var(--good);font-weight:700;">green</span> are genuinely the same mechanism; rows shaded <span style="color:var(--warn);font-weight:700;">amber</span> are where the two coverages diverge. Source: <code>SetSpecialBaseRate</code>/<code>SetSpecialRate</code>/<code>SetSpecialCauseOfLossAdjustment</code>/<code>SetFinalSpecialRate</code> in both <code>CommercialPropertyStructureRules.Rule.xml</code> (Building) and <code>CommercialPropertyBusinessIncomeRules.Rule.xml</code> (Business Income), traced 2026-09-11.</p>
+</header>
+
+<div class="wrap">
+
+  <section class="sect" id="s1">
+    <div class="sect-heading"><span class="sect-index">&#9670;</span><h2 class="sect-title">The full chain, stage by stage</h2></div>
+    <p class="sect-role">Building's Special building rate is a flat statewide constant with no construction dependency at all. Business Income's is richly keyed. That single fact cascades through every stage below.</p>
+    <div class="tblscroll">
+      <table class="grid">
+        <thead>
+          <tr><th>Stage</th><th>Building — <code>Calc_Building_Special</code></th><th>Business Income — <code>Calc_BusinessIncome_Special</code></th></tr>
+        </thead>
+        <tbody>
+
+          <tr>
+            <td class="stage">0<br>Loss cost</td>
+            <td class="bldg diverge">
+              <span class="tag differs">Flat statewide constant</span>
+              <span class="fname">SpecialBaseRate</span>
+              <pre>Builders Risk (class 1150):
+  Lookup(SpecialBuildersRiskRate:
+    State, "Y")
+else:
+  Lookup(SpecialBuildingRate:
+    State, "Y")
+&#9733; NO construction-type key, NO
+theft/occupancy key of any kind
+&mdash; single value per state, period.</pre>
+            </td>
+            <td class="bi diverge">
+              <span class="tag differs">Richest key set of any BI form</span>
+              <span class="fname">SpecialBaseRate</span>
+              <pre>Builders Risk (class 1150):
+  Lookup(SpecialFormBldrsRisk
+    TimeElementBaseRate: State, "Y")
+else:
+  Lookup(SpecialFormIncldgTheft
+    TimeElementBaseRate: State,
+    ConstructionTypeToUse, CovType,
+    SpecialIncludingTheftTypeRisk)
+&#9733; 4-key lookup, construction type
+AND apartment/condo classification
+both matter. Zero table overlap
+with Building's version &mdash; entirely
+different table names.</pre>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="stage">1<br>Turn loss cost into a rate</td>
+            <td class="bldg match">
+              <span class="tag same">Same shape</span>
+              <span class="fname">SpecialRate</span>
+              <pre>SpecialBaseRate &times; LossCostMultiplier
+(round 3dp)</pre>
+            </td>
+            <td class="bi match">
+              <span class="tag same">Same shape</span>
+              <span class="fname">SpecialRate</span>
+              <pre>SpecialBaseRate &times; LossCostMultiplier
+(round 3dp &mdash; identical 2-term
+product, just different inputs
+feeding it)</pre>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="stage">1.5<br>Theft exclusion factor</td>
+            <td class="bldg diverge">
+              <span class="tag differs">Flat statewide constant, no gate on classification</span>
+              <span class="fname">SpecialTheftExclusionFactor</span>
+              <pre>if CauseOfLossToUse="Special" and
+  SpecialTheftExclusionIndicator=1:
+    Lookup(SpecialBldgTheftExclusion
+      Factor: State, "Y")
+else: 1.0
+&#9733; single value per state &mdash; no
+ApartmentCondoIndicator key at all,
+unlike Business Income's version</pre>
+            </td>
+            <td class="bi diverge">
+              <span class="tag differs">Keyed on apartment/condo classification</span>
+              <span class="fname">SpecialTheftExclusionFactor</span>
+              <pre>if CauseOfLossToUse="Special" and
+  SpecialTheftExclusionIndicator=1
+  and ApartmentCondoIndicator&ne;"":
+    Lookup(SpecialLeaseHoldTimeElement
+      TheftExclusionFactor: State,
+      ApartmentCondoIndicator)
+else: 1.0
+&#9733; different table, different key
+shape, extra gate condition Building
+doesn't have</pre>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="stage">2<br>Cause-of-loss adjustment</td>
+            <td class="bldg diverge">
+              <span class="tag differs">3-term product, includes roof factor</span>
+              <span class="fname">SpecialCauseOfLossAdjustment</span>
+              <pre>SpecialRate &times; SpecialTheftExclusion
+  Factor &times; LimitationsOnCovForRoof
+  SurfacingACVFactor
+&#9733; same roof-limitation factor
+seen in Basic Group II's wind/hail-
+excluded branch &mdash; Building's Special
+carries a roof-surfacing concept,
+confirmed present here</pre>
+            </td>
+            <td class="bi diverge">
+              <span class="tag differs">2-term product, no roof factor</span>
+              <span class="fname">SpecialCauseOfLossAdjustment</span>
+              <pre>SpecialRate &times; SpecialTheftExclusion
+  Factor
+&#9733; confirmed: no roof-surfacing
+concept anywhere in Business Income,
+any form, any coverage &mdash; this is
+the one term Building's version has
+that BI's genuinely never will</pre>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="stage">3<br>Insured's-choice adjustment</td>
+            <td class="bldg diverge">
+              <span class="tag differs">Real steps exist here</span>
+              <span class="fname">CoinsuranceFactor, LOIFactor</span>
+              <pre>Own SetSpecialLOIFactor rule,
+own coinsurance handling &mdash; a full
+"ADJUSTED RATE" stage sits between
+COLAdj and FinalRate.</pre>
+            </td>
+            <td class="bi"><span class="tag only-c" style="visibility:hidden;">n/a</span><em style="color:var(--ink-faint);">&mdash; no equivalent stage &mdash;</em></td>
+          </tr>
+
+          <tr>
+            <td class="stage">4<br>Deductible</td>
+            <td class="bldg diverge">
+              <span class="tag differs">Own step, own table</span>
+              <span class="fname">DeductibleByLocationFactor, DeductibleFactor</span>
+              <pre>Same DeductibleFactor mechanism
+every Building form in this
+coverage reads, plus its own
+by-location factor.</pre>
+            </td>
+            <td class="bi"><span class="tag only-c" style="visibility:hidden;">n/a</span><em style="color:var(--ink-faint);">&mdash; no equivalent stage &mdash;</em></td>
+          </tr>
+
+          <tr>
+            <td class="stage">5<br>Final rate</td>
+            <td class="bldg diverge">
+              <span class="tag differs">Multi-term product</span>
+              <span class="fname">FinalRate</span>
+              <pre>AdjustedRate &times; DeductibleByLocation
+  Factor &times; DeductibleFactor &times;
+  MultiResidentialPropSpecialCredit
+  Factor</pre>
+            </td>
+            <td class="bi diverge">
+              <span class="tag differs">Literal Copy, nothing multiplied in</span>
+              <span class="fname">FinalSpecialRate</span>
+              <pre>= SpecialCauseOfLossAdjustment
+&#9733; confirmed line 8080 &mdash; no
+coinsurance, no LOI, no deductible,
+no multi-res credit of any kind.
+This is the entire final-rate step.</pre>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="stage">6<br>Premium gate</td>
+            <td class="bldg diverge">
+              <span class="tag differs">Building's own gate shape</span>
+              <span class="fname">CoverageOnPolicyIndicator</span>
+              <pre>Building's own Special premium
+file has real structural differences
+from the Basic-form pattern (different
+rounding, extra CauseOfLoss guards).</pre>
+            </td>
+            <td class="bi match">
+              <span class="tag same">Same shape as Business Income's Broad</span>
+              <span class="fname">CoverageOnPolicyIndicator</span>
+              <pre>= 1 if CauseOfLossToUse="Special"
+Confirmed structurally identical to
+Business Income's own Broad premium
+file, line by line &mdash; Business
+Income's Special does NOT carry
+forward Building's Special-specific
+premium divergence.</pre>
+            </td>
+          </tr>
+
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <section class="sect" id="s2">
+    <div class="sect-heading"><span class="sect-index">&#9670;</span><h2 class="sect-title">Reading the grid</h2></div>
+    <div class="tblscroll" style="box-shadow:none;">
+      <table class="grid" style="min-width:0;">
+        <tr><td class="match" style="width:1%;white-space:nowrap;"><span class="tag same">Same</span></td><td>Genuinely the same mechanism — same shape, same math, differing only in what feeds it.</td></tr>
+        <tr><td class="diverge" style="white-space:nowrap;"><span class="tag differs">Differs</span></td><td>A real difference — different table, different key shape, different term count, or a stage that exists on one side and not the other.</td></tr>
+        <tr><td style="white-space:nowrap;"><span class="tag only-c">No equivalent</span></td><td>The stage doesn't exist at all for that side.</td></tr>
+      </table>
+    </div>
+    <p class="sect-role" style="margin-top:16px;">Only two stages genuinely match: <code>SpecialRate</code>'s 2-term shape, and the premium gate (where, notably, it's <i>Business Income's</i> Special that matches its own Broad form rather than matching Building's Special). Everything else diverges, and two whole stages (insured's-choice adjustment, deductible) simply don't exist on the Business Income side — folded into nothing, not into a shared <code>Factor</code> the way Basic Group I/II handle it. Special is the only Business Income form with this shape: no <code>Factor</code>, but also no roof, no coinsurance, no LOI, no deductible of its own to replace it with. <code>FinalSpecialRate</code> really is just <code>SpecialCauseOfLossAdjustment</code>, full stop.</p>
+  </section>
+
+  <hr class="divider" />
+
+  <footer class="closing">
+    <h2>Remaining steps</h2>
+    <p class="note">Read-only comparison view — nothing here changes what's documented in
+      <code>Excel_Rater_BusinessIncome_Special.html</code>, it re-presents it side by side against
+      Building's own Special. Consolidated from that doc plus direct rule-XML tracing of Building's
+      <code>SetSpecialBaseRate</code>/<code>SetSpecialRate</code>/<code>SetSpecialCauseOfLossAdjustment</code>/
+      <code>SetSpecialTheftExclusionFactor</code>, 2026-09-11 &middot; CFCW20260601V01.</p>
+  </footer>
+
+</div>

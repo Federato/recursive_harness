@@ -1,0 +1,155 @@
+{
+  "header": {
+    "quoteback": "",
+    "authorization": {
+      "orgId": "106169",
+      "shipId": "106169"
+    }
+  },
+
+  "body": {
+    "SchemeKeys": {
+      "ProductName": "Commercial Property AL",
+      "EffectiveDateTime": "2027-03-01T00:00:00"
+    },
+    "CommercialProperty": [
+      {
+        "PolicyType": "Commercial Property Policy",
+        "BlktRated": "No",
+        "MUBlktRated": "No",
+        "MUPolicyType": "No",
+        "PackageModFactor": 1.0,
+        "IRPMApplies": "No",
+        "CPPIRPMFactor": 0.0,
+        "MultiPremiumAndDispersionCreditFactorUser": 0.0,
+        "TerrorismIndicator": "Yes",
+        "CoverageForCertifiedActs": "No",
+        "TRIAType": "Is in Effect for the Next 12 Months",
+        "FungusWetRotDryRotBacteriaCov": "15,000 Sub Limit",
+        "EQSubLimitBlktIndicator": "No",
+        "FloodCovEndtBlktIndicator": "No",
+
+        "CommercialPropertyPostTRIACoverage": {},
+        "CommercialPropertyTotPremiumCoverage": {},
+        "CommercialPropertyCyberIncidentExclusion": [{}],
+
+        "CommercialPropertyLocation": [
+          {
+            "UnitNumber": 1,
+            "City": "Birmingham",
+            "County": "Jefferson",
+            "ZipCode": "35203",
+            "ProtectClass": "1",
+            "BasicGroupIRatingTerr": "Birmingham",
+            "BasicGroupIIRatingTerr": "Inland Territory",
+            "SpecialRatingTerr": "Jefferson",
+            "GeographicWindHazardLevelTerritory": "Jefferson",
+            "TerrorismTerritory": "Statewide",
+            "EQTerr": "1",
+            "EQCauseOfLossForm": "Not Applicable",
+            "FloodCovIndicator": "No",
+            "OperationalUnitIndicator": "No",
+            "MultipleResidentialPropSpecialCredit": "No",
+
+            "CommercialPropertyLocationFireDepartmentCharge": {
+              "FireIncreaseLimitApplyOnPolicyIndicator": "No"
+            },
+            "CommercialPropertyLocationNewlyAcquiredLocationTimeElement": {
+              "Indicator": "No"
+            },
+
+            "CommercialPropertyStructure": [
+              {
+                "UnitNumber": 1,
+                "RatingType": "Class",
+                "RatingTypeBasicGroupII": "Class",
+                "ClassCode": "0701",
+                "ClassificationDescription": "Offices - Governmental",
+                "ConstructionType": "Frame",
+                "CovType": "Building",
+                "CauseOfLoss": "Special",
+                "Limit": 500000,
+                "FullBldgValue": 550000,
+                "Coinsurance": "80%",
+                "Deductible": "1,000",
+                "TheftDeductible": "1,000",
+                "WindstormOrHailDeductible": "Not Applicable",
+                "ValuationType": "Actual Cash Value",
+                "IncludedInBlkt": "No",
+                "VacantBuilding": "No",
+                "SprinklerSystem": "None",
+                "OpenSides": "No",
+                "NumStories": "1-3",
+                "YearOfConstructionCode": 2000,
+                "BCEG": "Ungraded",
+                "BCEGClass": "Not Graded",
+                "RoofLevel": "Not Applicable",
+                "RoofSubDecking": "Not Applicable",
+                "AgeOfTheRoof": 0,
+                "CertificateType": "No Certificate",
+                "CertificateLevel": "Not Applicable",
+                "InsuredHoldsAnIBHSHurricaneCertificateOrAnIBHSHighWindAndHailCertificate": "Not Applicable",
+                "PublicInstitutionalPlanApply": "No",
+                "ConformsToCondoActs": "Not Applicable",
+                "RentalProperty": "No",
+                "AgreedValueOption": "No",
+                "InflationGuard": "Not Applicable",
+                "TerrorismOverride": "No",
+                "EQCovIndicator": "No Coverage",
+                "EQCoinsurance": "Not Applicable",
+                "EQSprinklerLeakageOnly": "Not Applicable",
+                "SpecificGroupIRate": 0.0,
+
+                "CommercialPropertyStructureBuildingBasicGroupICoverage": {},
+                "CommercialPropertyStructureBuildingBasicGroupIICoverage": {},
+                "CommercialPropertyStructureBuildingBroadCoverage": {},
+                "CommercialPropertyStructureBuildingSpecialCoverage": {},
+
+                "CommercialPropertyOccupClass": [
+                  {
+                    "ClassCode": "0701",
+                    "ClassDesc": "Governmental Subdivisions - Town halls, offices, morgues, post offices, court houses",
+                    "CovForm": "Building and Personal Property Coverage Form",
+                    "OccupCategory": "Offices",
+                    "OccupCategoryRiskSeverity": "Not Applicable",
+                    "SprinklerSystem": "None",
+                    "TheftDeductible": "1,000",
+                    "PublicInstitutionalPlanApply": "No",
+                    "ConformsToCondoActs": "Not Applicable",
+
+                    "CommercialPropertyPersonalProperty": [
+                      {
+                        "UnitNumber": 1,
+                        "CovType": "All Personal Property",
+                        "CauseOfLoss": "Special",
+                        "Limit": 150000,
+                        "FullPrsnlPropValue": 175000,
+                        "Coinsurance": "80%",
+                        "ValuationType": "Actual Cash Value",
+                        "IncludedInBlkt": "No",
+                        "AgreedValueOption": "No",
+                        "InflationGuard": "Not Applicable",
+                        "OccupCategory": "Offices",
+                        "OccupCategoryRiskSeverity": "Not Applicable",
+                        "TerrorismOverride": "No",
+                        "TerrorismSubLimit": 0,
+                        "EQCovIndicator": "No Coverage",
+                        "EQCoinsurance": "Not Applicable",
+                        "EQSprinklerLeakageOnly": "Not Applicable",
+
+                        "CommercialPropertyPersonalPropertyPrsnlPropBasicGroupICoverage": {},
+                        "CommercialPropertyPersonalPropertyPrsnlPropBasicGroupIICoverage": {},
+                        "CommercialPropertyPersonalPropertyPrsnlPropBroadCoverage": {},
+                        "CommercialPropertyPersonalPropertyPrsnlPropSpecialCoverage": {}
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

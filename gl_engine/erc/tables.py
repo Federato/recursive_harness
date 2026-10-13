@@ -127,15 +127,36 @@ class TableDef:
     value_cols: tuple[Column, ...] = ()
     value_ranges: tuple[Range, ...] = ()
     declared: bool = True              # False when reconstructed from a bare CSV
+    #: Keys in ISO's own DECLARED order, ranges interleaved where they were
+    #: filed: a tuple of `(Column | Range)`. `key_cols` and `key_ranges` split
+    #: them by type and so cannot say which came first.
+    #:
+    #: **This exists because "the band is the last key" is not true.** It is
+    #: true of General Liability -- 218 definitions with a key range, 218 with
+    #: it declared last -- and it is false of Commercial Property, where 19
+    #: table names declare a range somewhere in the middle. `DeductibleFactor`
+    #: is `StateCode, Deductible, Range(Limit), CauseOfLossDeductible`, and
+    #: reading its third key as its fourth sends the cause-of-loss string into
+    #: arithmetic. Positional key matching has to follow this order, not a
+    #: type-sorted one.
+    key_items: tuple = ()
+
+    def __post_init__(self):
+        if not self.key_items:
+            # Older callers that built a TableDef by hand get the historical
+            # ordering, which is correct whenever there is at most one range.
+            object.__setattr__(self, "key_items",
+                               tuple(self.key_cols) + tuple(self.key_ranges))
 
     @property
     def header(self) -> list[str]:
         """The physical column order ISO declares, ranges expanded in place."""
         out: list[str] = []
-        for c in self.key_cols:
-            out.append(c.name)
-        for r in self.key_ranges:
-            out += [r.lo_col, r.hi_col]
+        for item in self.key_items:
+            if isinstance(item, Range):
+                out += [item.lo_col, item.hi_col]
+            else:
+                out.append(item.name)
         for c in self.value_cols:
             out.append(c.name)
         for r in self.value_ranges:
@@ -162,29 +183,35 @@ class TableDef:
         return "string"
 
 
-def _cols(node, tag: str, ns: str) -> tuple[list[Column], list[Range]]:
+def _cols(node, tag: str, ns: str):
+    """Returns `(cols, ranges, items)` -- the third being ISO's filed order."""
     cols: list[Column] = []
     rngs: list[Range] = []
+    items: list = []
     if node is None:
-        return cols, rngs
+        return cols, rngs, items
     for child in node:
         lt = child.tag.rsplit("}", 1)[-1]
         if lt in ("KeyCol", "ValueCol"):
-            cols.append(Column(
+            c = Column(
                 child.get("Name", ""),
                 child.get("Type", "string"),
-                child.get("CaseInsensitive", "false").lower() == "true"))
+                child.get("CaseInsensitive", "false").lower() == "true")
+            cols.append(c)
+            items.append(c)
         elif lt == "Range":
             bounds = [g.get("Name", "") for g in child]
             if len(bounds) != 2:
                 raise TableError(
                     f"Range {child.get('Name')!r} declares {len(bounds)} bound "
                     f"columns; exactly 2 are required")
-            rngs.append(Range(
+            r = Range(
                 child.get("Name", ""), child.get("Type", "string"),
                 child.get("RangeType", ""), bounds[0], bounds[1],
-                child.get("InterpolateMode"), child.get("RangeKeyCol")))
-    return cols, rngs
+                child.get("InterpolateMode"), child.get("RangeKeyCol"))
+            rngs.append(r)
+            items.append(r)
+    return cols, rngs, items
 
 
 def parse_def(path: Path, name: str, kind: str) -> TableDef:
@@ -200,9 +227,10 @@ def parse_def(path: Path, name: str, kind: str) -> TableDef:
     md = find("MetaData")
     codes = tuple(c.text or "" for c in (md or ())
                   if c.tag.rsplit("}", 1)[-1] == "MetaDataCode")
-    kc, kr = _cols(find("KeyCols"), "KeyCol", ns)
-    vc, vr = _cols(find("ValueCols"), "ValueCol", ns)
-    return TableDef(name, kind, codes, tuple(kc), tuple(kr), tuple(vc), tuple(vr))
+    kc, kr, ki = _cols(find("KeyCols"), "KeyCol", ns)
+    vc, vr, _ = _cols(find("ValueCols"), "ValueCol", ns)
+    return TableDef(name, kind, codes, tuple(kc), tuple(kr), tuple(vc),
+                    tuple(vr), key_items=tuple(ki))
 
 
 # --------------------------------------------------------------------- table
@@ -275,8 +303,14 @@ class Table:
                 f"{self.population.value} {len(self.rows)} rows>")
 
 
+#: `FormPage` was added for stage 2. The interpreter's single most common
+#: `Lookup` target is `Pages`, which lives in `Form Pages/` and not in either
+#: table directory -- 22,694 lookups for a form's `Name` and 22,694 for its
+#: `Number`, out of 54,716 in the corpus. It arrives as a bare CSV with no
+#: definition file, which `load_table` already supports.
 _SUFFIX = {"Rate": (".RateTableDef.xml", ".RateTable.csv", "Rate Tables"),
-           "Domain": (".DomainTableDef.xml", ".DomainTable.csv", "Domain Tables")}
+           "Domain": (".DomainTableDef.xml", ".DomainTable.csv", "Domain Tables"),
+           "FormPage": (".FormPageDef.xml", ".FormPage.csv", "Form Pages")}
 
 
 def load_table(content: Path, kind: str, name: str, package: str,

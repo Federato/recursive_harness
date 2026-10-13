@@ -1,0 +1,13 @@
+{
+ "name": "rc4_fl_sc_pool",
+ "states": [
+  "FL"
+ ],
+ "edits": [
+  {
+   "sheet": "IN - Schedule",
+   "cell": "D220",
+   "value": "Swimming Pools in the Open - Above Ground (All Other)"
+  }
+ ]
+}

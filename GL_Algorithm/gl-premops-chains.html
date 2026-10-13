@@ -1,0 +1,709 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Premises/Operations Rating Chains</title>
+<style>
+  :root {
+    --ink: #101b24;
+    --paper: #edf0ec;
+    --paper-line: #c7d2ce;
+    --blueprint: #2e6e8e;
+    --blueprint-soft: #e4ebef;
+    --stamp: #c77f32;
+    --caution: #b14b39;
+    --ledger: #3f8f6e;
+    --surface: #f4f6f3;
+    --panel: #ffffff;
+    --sidebar: #e8ede8;
+    --text: var(--ink);
+    --muted: #5b6b72;
+    --border: #cdd6d2;
+    --font-display: Cambria, 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+    --font-body: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+    --font-mono: 'Cascadia Code', 'Cascadia Mono', Consolas, 'SFMono-Regular', ui-monospace, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --surface: #0b141a;
+      --panel: #101b22;
+      --sidebar: #0e1a20;
+      --text: #e7ece9;
+      --muted: #93a3a0;
+      --border: #223138;
+      --blueprint-soft: #16232b;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --surface: #0b141a;
+    --panel: #101b22;
+    --sidebar: #0e1a20;
+    --text: #e7ece9;
+    --muted: #93a3a0;
+    --border: #223138;
+    --blueprint-soft: #16232b;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; background: var(--surface); color: var(--text);
+    font-family: var(--font-body); -webkit-font-smoothing: antialiased;
+  }
+  body { display: flex; flex-direction: column; min-height: 100vh; }
+  a { color: inherit; }
+  code { font-family: var(--font-mono); font-size: 0.92em; }
+  ::selection { background: var(--stamp); color: #101b24; }
+
+  /* header */
+  header.masthead {
+    display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap;
+    padding: 1.1rem 1.6rem; border-bottom: 1px solid var(--border);
+    background: var(--panel);
+  }
+  header.masthead h1 {
+    font-family: var(--font-display); font-weight: 600; font-size: 1.35rem;
+    margin: 0; letter-spacing: 0.01em; text-wrap: balance;
+  }
+  header.masthead .rule { width: 1px; align-self: stretch; background: var(--border); }
+  header.masthead p { margin: 0; font-size: 0.82rem; color: var(--muted); max-width: 52ch; }
+  header.masthead .src {
+    margin-left: auto; font-family: var(--font-mono); font-size: 0.72rem;
+    color: var(--muted); text-align: right; line-height: 1.5;
+  }
+
+  /* shell */
+  .shell { display: flex; flex: 1; min-height: 0; }
+
+  nav.toc {
+    width: 258px; flex: none; background: var(--sidebar);
+    border-right: 1px solid var(--border);
+    padding: 1rem 0 2rem; overflow-y: auto;
+  }
+  nav.toc .group-label {
+    font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--muted); padding: 0.5rem 1.2rem 0.35rem;
+  }
+  nav.toc button.navlink {
+    display: block; width: 100%; text-align: left; background: none; border: none;
+    font-family: var(--font-body); font-size: 0.86rem; color: var(--text);
+    padding: 0.42rem 1.2rem 0.42rem 1.6rem; cursor: pointer;
+    border-left: 3px solid transparent;
+  }
+  nav.toc button.navlink:hover { background: var(--blueprint-soft); }
+  nav.toc button.navlink.active {
+    background: var(--blueprint-soft); border-left-color: var(--blueprint); font-weight: 600;
+  }
+  nav.toc button.navlink .chain-len {
+    display: block; font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); font-weight: 400;
+  }
+  nav.toc hr { border: none; border-top: 1px solid var(--border); margin: 0.6rem 1.2rem; }
+
+  nav.toc .legend {
+    margin: 1rem 1.2rem 0; padding: 0.8rem 0.9rem; border: 1px solid var(--border);
+    border-radius: 3px; background: var(--panel);
+  }
+  nav.toc .legend h4 {
+    margin: 0 0 0.5rem; font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--muted); font-weight: 600;
+  }
+  nav.toc .legend .row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.74rem; margin-bottom: 0.35rem; }
+  nav.toc .legend .swatch { width: 13px; height: 13px; flex: none; border-radius: 2px; border-width: 1.5px; border-style: solid; }
+  .sw-gate { background: #f4e4ce; border-color: #c77f32; }
+  .sw-zero { background: #f3dcd6; border-color: #b14b39; }
+  .sw-final { background: #dceee4; border-color: #3f8f6e; }
+  .sw-step { background: #e4ebef; border-color: #2e6e8e; }
+  .sw-openq { background: #f4e4ce; border-color: #b14b39; border-style: dashed !important; }
+  .sw-engine { background: #e6e1f0; border-color: #5a4c8a; }
+
+  main { flex: 1; min-width: 0; overflow-y: auto; padding: 1.6rem 2rem 4rem; }
+
+  .intro { max-width: 70ch; margin-bottom: 1.4rem; }
+  .intro h2 { font-family: var(--font-display); font-size: 1.25rem; margin: 0 0 0.5rem; text-wrap: balance; }
+  .intro p { font-size: 0.92rem; line-height: 1.6; color: var(--muted); margin: 0 0 0.6rem; }
+
+  /* tables */
+  .tablewrap { overflow-x: auto; margin-bottom: 1.4rem; }
+  table.grid { border-collapse: collapse; width: 100%; max-width: 1100px; background: var(--panel); }
+  table.grid caption {
+    text-align: left; font-family: var(--font-mono); font-size: 0.7rem; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem;
+  }
+  table.grid th, table.grid td {
+    border: 1px solid var(--border); padding: 0.5rem 0.7rem; font-size: 0.82rem;
+    text-align: left; vertical-align: top; line-height: 1.45;
+  }
+  table.grid thead th {
+    font-family: var(--font-mono); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--muted); background: var(--blueprint-soft); font-weight: 600;
+  }
+  table.grid tbody th { font-weight: 600; white-space: nowrap; }
+  table.grid td.num { font-family: var(--font-mono); text-align: right; white-space: nowrap; }
+  table.grid tr.hl td, table.grid tr.hl th { background: var(--blueprint-soft); }
+  table.grid td .tag {
+    font-family: var(--font-mono); font-size: 0.66rem; padding: 0.05rem 0.35rem; border-radius: 2px;
+    border: 1px solid var(--border); color: var(--muted); white-space: nowrap;
+  }
+  table.grid td .tag.a { border-color: var(--blueprint); color: var(--blueprint); }
+  table.grid td .tag.b { border-color: var(--ledger); color: var(--ledger); }
+  table.grid td .tag.bad { border-color: var(--caution); color: var(--caution); }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.9rem; max-width: 1100px; margin-bottom: 1.4rem; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 3px; padding: 0.9rem 1rem; }
+  .card .k { font-family: var(--font-mono); font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
+  .card .v { font-family: var(--font-display); font-size: 1.5rem; margin: 0.2rem 0 0.25rem; font-variant-numeric: tabular-nums; }
+  .card p { margin: 0; font-size: 0.8rem; color: var(--muted); line-height: 1.45; }
+  .card button.go {
+    margin-top: 0.6rem; background: none; border: 1px solid var(--blueprint); color: var(--blueprint);
+    font-family: var(--font-mono); font-size: 0.7rem; padding: 0.3rem 0.6rem; border-radius: 2px; cursor: pointer;
+  }
+  .card button.go:hover { background: var(--blueprint-soft); }
+
+  /* sheet */
+  .sheet-view { display: none; }
+  .sheet-view.active { display: block; }
+
+  .titleblock {
+    display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--border);
+    margin-bottom: 1.1rem; background: var(--panel);
+  }
+  .titleblock .field { padding: 0.6rem 0.9rem; border-right: 1px solid var(--border); }
+  .titleblock .field:last-child { border-right: none; }
+  .titleblock .field .k {
+    font-family: var(--font-mono); font-size: 0.63rem; text-transform: uppercase; letter-spacing: 0.07em;
+    color: var(--muted); display: block; margin-bottom: 0.15rem;
+  }
+  .titleblock .field .v { font-family: var(--font-mono); font-size: 0.82rem; color: var(--text); line-height: 1.35; }
+  .titleblock .field.wide { grid-column: span 4; border-top: 1px solid var(--border); border-right: none; }
+
+  .sheet {
+    background: var(--paper); border: 1px solid var(--paper-line); border-radius: 2px;
+    padding: 1.4rem 1.2rem 1rem; position: relative; overflow-x: auto;
+    background-image:
+      linear-gradient(var(--paper-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--paper-line) 1px, transparent 1px);
+    background-size: 28px 28px; background-position: -1px -1px;
+    background-color: var(--paper);
+  }
+  .sheet .corner { position: absolute; width: 14px; height: 14px; }
+  .sheet .corner.tl { top: 6px; left: 6px; border-top: 1.5px solid #7d8f8a; border-left: 1.5px solid #7d8f8a; }
+  .sheet .corner.tr { top: 6px; right: 6px; border-top: 1.5px solid #7d8f8a; border-right: 1.5px solid #7d8f8a; }
+  .sheet .corner.bl { bottom: 6px; left: 6px; border-bottom: 1.5px solid #7d8f8a; border-left: 1.5px solid #7d8f8a; }
+  .sheet .corner.br { bottom: 6px; right: 6px; border-bottom: 1.5px solid #7d8f8a; border-right: 1.5px solid #7d8f8a; }
+  .sheet pre.mermaid { margin: 0; background: transparent; min-width: 760px; color: #101b24; }
+
+  .notes { margin-top: 1.1rem; display: grid; grid-template-columns: 1.4fr 1fr; gap: 1.2rem; }
+  .notes h3 {
+    font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--muted); margin: 0 0 0.5rem;
+  }
+  .notes ul { margin: 0; padding-left: 1.1rem; font-size: 0.86rem; line-height: 1.55; }
+  .notes ul li { margin-bottom: 0.4rem; }
+  .notes .delta { border: 1px solid var(--border); background: var(--panel); padding: 0.8rem 0.9rem; border-radius: 3px; font-size: 0.86rem; line-height: 1.55; }
+  .notes .delta.openq { border-color: var(--caution); }
+  .notes .delta + .delta { margin-top: 0.8rem; }
+
+  h3.section {
+    font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--muted); margin: 1.6rem 0 0.6rem;
+  }
+
+  footer.doc-footer {
+    padding: 1rem 2rem 2rem; font-size: 0.76rem; color: var(--muted); border-top: 1px solid var(--border);
+  }
+  footer.doc-footer strong { color: var(--text); }
+
+  @media (max-width: 900px) {
+    .notes { grid-template-columns: 1fr; }
+    .titleblock { grid-template-columns: 1fr 1fr; }
+    .titleblock .field.wide { grid-column: span 2; }
+  }
+  @media (max-width: 720px) {
+    .shell { flex-direction: column; }
+    nav.toc { width: 100%; border-right: none; border-bottom: 1px solid var(--border); padding: 0.6rem 0; }
+    nav.toc .legend { display: none; }
+    main { padding: 1.2rem 16px 3rem; }
+    header.masthead { padding: 1rem 16px; }
+    header.masthead .src { margin-left: 0; text-align: left; }
+    header.masthead .rule { display: none; }
+    .titleblock { grid-template-columns: 1fr; }
+    .titleblock .field { border-right: none; border-bottom: 1px solid var(--border); }
+    .titleblock .field.wide { grid-column: span 1; }
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <h1>Premises/Operations Rating Chains</h1>
+  <div class="rule"></div>
+  <p>Every gate, branch and terminal in subline 334's rate build-up and premium, drawn separately for the two rule sets ISO files: pre-2027 and CW 2027. Every rule and branch is checked against the built engine (<code>gl_engine</code>) and ISO's rule XML as of 2026-10-05.</p>
+  <div class="src">Engine at 62eb125 (GL rating path unchanged since the 630ba2f reconciliation)<br>Rule file: GeneralLiabilityClassificationPremOpsCoverageRules.Rule.xml<br>Companion: PremisesOperations_RatingAlgorithms.md · docs/gates/GATE-334</div>
+</header>
+
+<div class="shell">
+  <nav class="toc" id="toc">
+    <button class="navlink active" data-target="overview">Overview<span class="chain-len">which chain a quote lands on</span></button>
+    <hr>
+    <div class="group-label">Decision chains</div>
+    <button class="navlink" data-target="cw23">Pre-2027<span class="chain-len">9 + 38 + 9 steps · policy top-up · no floor</span></button>
+    <button class="navlink" data-target="cw27">CW 2027<span class="chain-len">9 + 29 + 4 steps · med pay in ILF · $1 floor</span></button>
+    <hr>
+    <div class="group-label">Comparison</div>
+    <button class="navlink" data-target="diff">Side by side<span class="chain-len">14 differences, rule by rule</span></button>
+    <hr>
+    <div class="group-label">Review</div>
+    <button class="navlink" data-target="review">Why the old sheets were replaced<span class="chain-len">10 items · 1 new finding</span></button>
+
+    <div class="legend">
+      <h4>Reading the chains</h4>
+      <div class="row"><span class="swatch sw-gate"></span> gate / branch condition</div>
+      <div class="row"><span class="swatch sw-step"></span> computed factor</div>
+      <div class="row"><span class="swatch sw-final"></span> premium resolves</div>
+      <div class="row"><span class="swatch sw-zero"></span> zero, refusal or clamp</div>
+      <div class="row"><span class="swatch sw-openq"></span> silent gap / open question</div>
+      <div class="row"><span class="swatch sw-engine"></span> engine layer, not an ISO rule</div>
+    </div>
+  </nav>
+
+  <main id="main">
+
+    <!-- ============================= OVERVIEW ============================= -->
+    <section class="sheet-view active" id="view-overview">
+      <div class="intro">
+        <h2>One rate build-up, two rule sets, and the date decides which</h2>
+        <p>Premises/Operations has no edition switch of its own. The engine resolves the state package in force on the effective date, then the countrywide parent that package <em>declares</em>. That parent's copy of the Premises rule file is the chain that runs. Diffing the file across the five live countrywide editions gives exactly two shapes. Pre-2027 (CW 20231201 V02/V03, 20260101 V01, 20261001 V01) is one. CW 2027 (20270401 V01 and V02) is the other.</p>
+        <p>As of today every jurisdiction rates on the pre-2027 chain. On 2027-04-01, 46 move to CW 2027. California, Georgia, New Jersey, New York and Washington keep a pre-2027 parent.</p>
+      </div>
+
+      <div class="cards">
+        <div class="card">
+          <div class="k">Pre-2027 chain</div>
+          <div class="v">9 + 38 + 9</div>
+          <p>Classification, coverage and premium steps. Med pay is a separate charge, and a policy-level minimum premium can top up.</p>
+          <button class="go" data-target="cw23">Open chain →</button>
+        </div>
+        <div class="card">
+          <div class="k">CW 2027 chain</div>
+          <div class="v">9 + 29 + 4</div>
+          <p>Med pay folds into FinalILF, the minimum premium is gone, and a $1 floor replaces a zero premium.</p>
+          <button class="go" data-target="cw27">Open chain →</button>
+        </div>
+        <div class="card">
+          <div class="k">Jurisdictions on CW 2027</div>
+          <div class="v">0 → 46</div>
+          <p>All 51 are on pre-2027 today. At 2027-04-01, 8 go to V01 and 38 to V02. CA, GA, NJ, NY and WA stay on pre-2027.</p>
+          <button class="go" data-target="diff">Side by side →</button>
+        </div>
+      </div>
+
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart LR
+    quote(["Submission: jurisdiction + EffectiveDateTime"]) --> pin{"package_version pinned?"}
+    pin -->|"Yes"| pinned["That version of the state package"]:::step
+    pin -->|"No"| inforce["State package in force on the effective date"]:::step
+    pinned --> parent["Its DECLARED countrywide parent, never the newest CW (N5)"]:::eng
+    inforce --> parent
+    parent --> which{"Parent edition?"}
+    which -->|"CW 20231201 V02 / V03, 20260101 V01, 20261001 V01 and earlier"| A["Pre-2027 chain: 9 + 38 + 9 steps"]:::final
+    which -->|"CW 20270401 V01 / V02"| B["CW 2027 chain: 9 + 29 + 4 steps"]:::final
+    A --> today["Today 2026-10-05: all 51. CA on 20231201 V02 · NJ TX VT on 20231201 V03 · OK on 20261001 V01 · 46 on 20260101 V01"]:::step
+    A --> stay["At 2027-04-01: CA on 20231201 V02 · GA NJ NY WA on 20260101 V01"]:::step
+    B --> v1["At 2027-04-01 on V01: AK DC MA NC SC TX WI WV"]:::step
+    B --> v2["At 2027-04-01 on V02: the other 38"]:::step
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class pin,which gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>There is no hand-written calculator per edition. The engine interprets whichever countrywide rule XML the resolver hands it, so the edition dispatch <em>is</em> the resolver (<code>gl_engine/resolve/resolver.py</code>).</li>
+            <li>The payload carries no package version. A submission built against one version and rated without <code>version=</code> silently re-resolves to the newest state package, which may have a different parent (<code>Kernel.rate</code> docstring).</li>
+            <li>The 2027 ILF keys drop the <code>" CSL"</code> suffix. A payload still sending <code>"1,000,000 CSL"</code> misses every 2027 ILF row. The variant builder renormalizes it payload-side (OI-96/97).</li>
+          </ul>
+        </div>
+        <div class="delta"><strong>Census, measured 2026-10-05.</strong> <code>EditionResolver</code> run over all 51 jurisdictions at both dates. The groupings in the diagram are its output, and they agree with the 2026-10-02 reconciliation.</div>
+      </div>
+    </section>
+
+    <!-- ============================= PRE-2027 ============================= -->
+    <section class="sheet-view" id="view-cw23">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Premises/Operations (subline 334)</span></div>
+        <div class="field"><span class="k">Edition</span><span class="v">Pre-2027: CW 20231201 V02/V03, 20260101 V01, 20261001 V01 and earlier. Identical in this rule file.</span></div>
+        <div class="field"><span class="k">Master chain</span><span class="v">Classification ErcSetRatesAndFactors (9 of 42 steps feed 334) → coverage ErcSetRatesAndFactors (38) → ErcRate (9) → policy-level PremiumToReachMin</span></div>
+        <div class="field"><span class="k">Rate sources</span><span class="v">Loss cost by state, territory and class, or ELP when none applies · ILF by state, table and limits · med-pay and deductible factors countrywide</span></div>
+        <div class="field wide"><span class="k">Coverage gate</span><span class="v">No explicit gate flag. Referrals degrade silently into numbers: "Refer To Co." ILF assignment, empty class/territory, empty premium basis, "Per Claim" deductibles. Only a loss-cost lookup that finds no row is refused, and the engine does that refusal, not ISO's rules (OI-94).</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec','clusterBkg':'#f7f9f6','clusterBorder':'#7d8f8a'}}}%%
+flowchart TD
+    subgraph CL["CLASSIFICATION LEVEL · GeneralLiabilityClassificationRules · ErcSetRatesAndFactors"]
+        start(["Premises/Operations classification"]) --> sub["SetSubline = 334 · ClassificationType = lookup ClassificationType(class)"]:::step
+        sub --> expCalc{"Basis per 1000?"}
+        expCalc -->|"Yes"| expDiv["Nine bases incl. Passenger Days: PremOpsExposureCalc = truncate(Exposure / 1000)"]:::step
+        expCalc -->|"No, or empty"| expRaw["Other basis, or an EMPTY one: PremOpsExposureCalc = Exposure, raw. 1000x overcharge when empty"]:::openq
+        expDiv --> scmi["SpecialCombinedMinPremiumClassIndicator lookup: pre-2027 only"]:::step
+        expRaw --> scmi
+        scmi --> homog["HomogeneityIndex = lookup, state-only table"]:::step
+        homog --> ilta{"ILF table = Refer To Co.?"}
+        ilta -->|"No"| iltaOk["table no. = lookup PremOpsIncrdLimitTableAssignment(state, class)"]:::step
+        ilta -->|"Yes, override supplied"| iltaOv["table no. = PremOpsIncrdLimitTableAssignmentOverride"]:::step
+        ilta -->|"Yes, no override"| iltaNull["assignment null, Int = 0"]:::openq
+        iltaOk --> elptext["PremOpsELP text selector = lookup PremOpsELPText: 'Rate/Loss Cost Applies' or 'Company' ..."]:::step
+        iltaOv --> elptext
+        iltaNull --> elptext
+        elptext --> ilfQ{"ILF keys all set?"}
+        ilfQ -->|"Yes"| ilfOk["PremOpsIncrdLimitFactor = ILFPremOps(state, table, '1,000,000 CSL', '2,000,000 CSL')"]:::step
+        ilfQ -->|"No"| ilf0["PremOpsIncrdLimitFactor = 0.0"]:::zero
+    end
+
+    subgraph CV["COVERAGE LEVEL · PremOpsCoverageRules · ErcSetRatesAndFactors, 38 steps"]
+        cc["ClassCode, PremiumBasis copied, else empty · SetSprayPainting"]:::step
+        cc --> lcGate{"Class and territory set?"}
+        lcGate -->|"No"| lc0["PremOpsLossCost = 0.0: silently rerouted to the ELP path"]:::openq
+        lcGate -->|"Yes"| sorQ{"Size of risk applies?"}
+        sorQ -->|"Yes"| lcSor["lookup PremOpsSizeOfRiskLossCost, state then CW"]:::step
+        sorQ -->|"No"| lcStd["lookup PremOpsLossCost(state, terr, class), then the CW row"]:::step
+        lcSor --> found{"Row found?"}
+        lcStd --> found
+        found -->|"No, null"| refuse["ENGINE REFUSES: incomplete rating, no premium (OI-94, every mode)"]:::eng
+        found -->|"Yes, 0 included"| elpQ
+        lc0 --> elpQ{"ELP override?"}
+        elpQ -->|"Yes"| elpOv["PremOpsELP = override"]:::step
+        elpQ -->|"No, class set"| elpLk["PremOpsELP = lookup PremOpsELP, else 0.0"]:::step
+        elpOv --> lcm["LCM = PremOpsLCM(state, Y), falling back to the filed CW row = 1 · BYOA factor for 16905/16906 only"]:::step
+        elpLk --> lcm
+        lcm --> cmQ{"Claims made?"}
+        cmQ -->|"Yes"| cmY["CMM = PremOpsClaimsMadeMultiplier(state, min(year, 5), ClassCode)"]:::step
+        cmQ -->|"No"| cmN["ClaimsMadeMultiplier = 1.0"]:::step
+        cmY --> brQ{"LossCost not 0?"}
+        cmN --> brQ
+        brQ -->|"Yes"| brLC["BaseRate = round(LossCost x BYOA x LCM x CMM, 3). MA, NY, TX override SetBaseRate"]:::step
+        brQ -->|"No"| brELP["BaseRate = round(ELP x LCM x CMM, 3)"]:::step
+        brLC --> mpfQ{"Med pay excluded?"}
+        brELP --> mpfQ
+        mpfQ -->|"No"| mpfY["MedicalPaymentsFactor = MedPayFactor(CW, class)"]:::step
+        mpfQ -->|"Yes, or class empty"| mpf0["MedicalPaymentsFactor = 0.0, harmless: the charge is gated the same way"]:::step
+        mpfY --> csl["CSLILF = copy of PremOpsIncrdLimitFactor · BIILF, PDILF and the BI / PD / constant split-limit weights"]:::step
+        mpf0 --> csl
+        csl --> dedQ{"Deductible override?"}
+        dedQ -->|"Yes"| dedOv["DeductibleFactor = override"]:::step
+        dedQ -->|"No"| dedPre["Before-adjustment factor = DedFactorPremOpsCSL(CW, table, deductible)"]:::step
+        dedPre --> adjQ{"Carve-out risk?"}
+        adjQ -->|"Yes"| adjY["SprayPainting = Yes, or class 10075, 10368, 98303-98307, 98309, 99003, 99004, with a deductible: factor = before-adjustment minus DedFactorPremOpsPD250PerClaim"]:::step
+        adjQ -->|"No"| adjN["factor = before-adjustment"]:::step
+        dedOv --> sentQ{"Per Claim row?"}
+        adjY --> sentQ
+        adjN --> sentQ
+        sentQ -->|"Yes"| sent0["Table factor is 0 on all 45 rows: only a DoMessage guards it"]:::openq
+        sentQ -->|"No"| sentOk["Per Occurrence factor, 0.008 to 0.496"]:::step
+        sent0 --> fdf["FinalDeductibleFactor = CSL factor, or BI + PD, or one side, or 0"]:::step
+        sentOk --> fdf
+        fdf --> filf["FinalILF = round(CSLILF - FinalDeductibleFactor, 3)"]:::step
+        filf --> clampQ{"FinalILF at or below 0?"}
+        clampQ -->|"Yes"| clamp0["FinalILF = 0.0"]:::zero
+        clampQ -->|"No"| sor["Size of risk: relativity, 4dp, clamped to class min/max. Omitted from the formulas when not applied"]:::step
+        clamp0 --> sor
+        sor --> blp["BasicLimitPremium = round(BaseRate x (1 - FDF) [x SoR] x PackageMod x Exposure[/1000], 0). Reporting only, not the subline premium"]:::step
+    end
+
+    subgraph RT["ErcRate · 9 steps"]
+        fr["FinalRate = round(BaseRate x FinalILF [x SoR] x PackageMod x ExpMod x ExpenseMod x ModToUse, 3)"]:::step
+        fr --> mpcQ{"Limit 10,000, not excluded?"}
+        mpcQ -->|"No"| mpc0["MedicalPaymentsCharge = 0"]:::step
+        mpcQ -->|"Yes"| mpcY["MedicalPaymentsCharge = round(LossCost, or ELP when the text selector is not 'Rate/Loss Cost Applies', x LCM x CMM x (MedPayFactor - 1) x mods x Exposure[/1000], 0)"]:::step
+        mpc0 --> aif["AdditionalInterestFactor = input, else 1.0"]:::step
+        mpcY --> aif
+        aif --> minp["MinimumPremium = PremOpsMinPremium(table) · MinPremium = round(Min x FinalILF x AIF, 0) when IfAnyBasis = No · SpecialCombined pair. Every filed CW minimum is 0"]:::step
+        minp --> prem["Premium = round(FinalRate x Exposure[/1000] + MedicalPaymentsCharge, 0), only when Subline is Prem/Ops or Prem/Ops and Prods"]:::step
+        prem --> zQ{"Premium = 0?"}
+        zQ -->|"Yes"| z0["Stays 0: no floor in this edition"]:::zero
+        zQ -->|"No"| ok["Premium stands, PremiumIndicator = 1"]:::final
+    end
+
+    subgraph PL["POLICY LEVEL · PremOpsPremiumToReachMinCoverage"]
+        topQ{"Top-up conditions met?"}
+        topQ -->|"Yes"| topY["PackagePolicy and multistate blank, a class with IfAnyBasis = No and exposure, SpecialCombined indicator = 1: top-up = max(0, max MinPremium - sum of class Premiums)"]:::final
+        topQ -->|"No"| topN["Top-up = 0"]:::step
+        topY --> kern["Kernel: Premium must equal ErcCalculatedTotalPremium · underwriting mode raises R03 / R29"]:::eng
+        topN --> kern
+    end
+
+    ilfOk --> cc
+    ilf0 --> cc
+    blp --> fr
+    ok --> topQ
+    z0 --> topQ
+    iltaNull -.->|"with an ELP override"| gap["Refer To Co. + ELP override, no ILF override: FinalILF 0, premium = med-pay charge only, a small fraction of the correctly rated premium. No Prem/Ops message"]:::openq
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class expCalc,ilta,ilfQ,lcGate,sorQ,found,elpQ,cmQ,brQ,mpfQ,dedQ,adjQ,sentQ,clampQ,mpcQ,zQ,topQ gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>Medical payments is a <strong>separate, additive, 0-decimal charge</strong>. It fires only at the 10,000 limit and is built from the unrounded loss cost (or the ELP), not from BaseRate.</li>
+            <li>The minimum premium is computed on the coverage, but <code>SetPremium</code> does not read it. It feeds the policy-level top-up, and every filed countrywide minimum is 0, so on filed data the top-up is 0.</li>
+            <li><code>AdditionalInterestFactor</code> is read here by the two minimum-premium rules. It is not a premium multiplier, but it is not dead in this edition (E11 is CW 2027 only).</li>
+            <li>The deductible has a pre-adjustment stage that CW 2027 drops. Spray painting and ten named classes subtract the PD 250 Per Claim factor.</li>
+            <li><code>BasicLimitPremium</code> is a policy reporting figure, not the subline premium. Three earlier documents confused the two.</li>
+          </ul>
+        </div>
+        <div>
+          <div class="delta openq"><strong>New finding, 2026-10-05.</strong> On any "Refer To Co." class, supplying the ELP override without the ILF-table override rates with FinalILF 0. The premium collapses to the med-pay charge, a small fraction of what the class rates at with both overrides. ISO raises no Premises message for the missing ILF override. Strict mode prices it, and underwriting mode catches it only through R03.</div>
+          <div class="delta"><strong>Engine layer.</strong> The purple nodes are the kernel, not ISO rules. One is the OI-94 null-loss-cost refusal (all modes). The other is the total check plus, in underwriting mode only, the referral register (R03 "Refer To Co." text in a rated value, R29 ISO's own "Must enter ELP Override" message).</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================= CW 2027 ============================= -->
+    <section class="sheet-view" id="view-cw27">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Premises/Operations (subline 334)</span></div>
+        <div class="field"><span class="k">Edition</span><span class="v">CW 20270401 V01 and V02, identical in this rule file. Parent of 46 jurisdictions from 2027-04-01.</span></div>
+        <div class="field"><span class="k">Master chain</span><span class="v">Classification ErcSetRatesAndFactors (40 steps V01 / 39 V02, 9 feed 334) → coverage (29) → ErcRate (4: FinalRate, AdditionalInterestFactor, Premium, PremiumIndicator)</span></div>
+        <div class="field"><span class="k">Rate sources</span><span class="v">Same as pre-2027, except med pay is keyed by classification type and limit, and claims-made by classification type</span></div>
+        <div class="field wide"><span class="k">Removed vs pre-2027</span><span class="v">SetMedicalPaymentsCharge, SetMinimumPremium/SetMinPremium, the SpecialCombined pair, SetBIILF/SetPDILF and the split-limit weights, the deductible pre-adjustment stage, SetSprayPainting, and the policy-level top-up rules. The elevator/escalator inspection charge is absent from the rule list.</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec','clusterBkg':'#f7f9f6','clusterBorder':'#7d8f8a'}}}%%
+flowchart TD
+    subgraph CL["CLASSIFICATION LEVEL · ErcSetRatesAndFactors"]
+        start(["Premises/Operations classification, CW 2027"]) --> sub["SetSubline = 334 · ClassificationType = lookup ClassificationType(class), 1,163 rows"]:::step
+        sub --> expCalc{"Basis per 1000?"}
+        expCalc -->|"Yes"| expDiv["Nine bases, Kilowatt-hours IN, Passenger Days OUT: PremOpsExposureCalc = truncate(Exposure / 1000)"]:::step
+        expCalc -->|"No, or empty"| expRaw["Other basis, or an EMPTY one: PremOpsExposureCalc = Exposure, raw. 1000x overcharge when empty"]:::openq
+        expDiv --> homog["HomogeneityIndex = lookup. No SpecialCombined indicator in this edition"]:::step
+        expRaw --> homog
+        homog --> ilta{"ILF table = Refer To Co.?"}
+        ilta -->|"No"| iltaOk["table no. = lookup PremOpsIncrdLimitTableAssignment(state, class)"]:::step
+        ilta -->|"Yes, override supplied"| iltaOv["table no. = override"]:::step
+        ilta -->|"Yes, no override"| iltaNull["assignment null, Int = 0"]:::openq
+        iltaOk --> elptext["PremOpsELP text selector = lookup PremOpsELPText"]:::step
+        iltaOv --> elptext
+        iltaNull --> elptext
+        elptext --> ilfQ{"ILF keys set and matching?"}
+        ilfQ -->|"Yes"| ilfOk["PremOpsIncrdLimitFactor = ILFPremOps(state, table, '1,000,000', '2,000,000'): no CSL suffix"]:::step
+        ilfQ -->|"No, or stale CSL key"| ilf0["PremOpsIncrdLimitFactor = 0.0 (OI-96/97)"]:::zero
+    end
+
+    subgraph CV["COVERAGE LEVEL · ErcSetRatesAndFactors, 29 steps"]
+        cc["ClassCode, PremiumBasis copied · LCM = filed CW row 1, now right after PremiumBasis"]:::step
+        cc --> lcGate{"Class and territory set?"}
+        lcGate -->|"No"| lc0["PremOpsLossCost = 0.0: silently rerouted to the ELP path"]:::openq
+        lcGate -->|"Yes"| sorQ{"Size of risk applies?"}
+        sorQ -->|"Yes"| lcSor["lookup PremOpsSizeOfRiskLossCost"]:::step
+        sorQ -->|"No"| lcStd["lookup PremOpsLossCost(state, terr, class), then the CW row"]:::step
+        lcSor --> found{"Row found?"}
+        lcStd --> found
+        found -->|"No, null"| refuse["ENGINE REFUSES (OI-94), e.g. size of risk on in a state that never filed PremOpsSizeOfRiskLossCost"]:::eng
+        found -->|"Yes"| elpQ
+        lc0 --> elpQ{"ELP override?"}
+        elpQ -->|"Yes"| elpOv["PremOpsELP = override"]:::step
+        elpQ -->|"No, class set"| elpLk["PremOpsELP = lookup PremOpsELP, else 0.0"]:::step
+        elpOv --> cmQ{"Claims made?"}
+        elpLk --> cmQ
+        cmQ -->|"Yes"| cmY["CMM = ClaimsMadeMultiplierPremOps(state, min(year, 5), ClassificationType): new table, new key"]:::step
+        cmQ -->|"No"| cmN["ClaimsMadeMultiplier = 1.0"]:::step
+        cmY --> brQ{"LossCost not 0?"}
+        cmN --> brQ
+        brQ -->|"Yes"| brLC["BaseRate = round(LossCost x BYOA x LCM x CMM, 3). MA, NY, TX override SetBaseRate"]:::step
+        brQ -->|"No"| brELP["BaseRate = round(ELP x LCM x CMM, 3)"]:::step
+        brLC --> csl["CSLILF = copy of PremOpsIncrdLimitFactor. No BI/PD ILF, no split limits"]:::step
+        brELP --> csl
+        csl --> mpfQ{"Increased med pay?"}
+        mpfQ -->|"Yes"| mpfY["Not excluded, type set, limit set and not 5,000: MedicalPaymentsFactor = IncreasedMedPayLimitFactor(CW, type, limit)"]:::step
+        mpfQ -->|"No"| mpf1["MedicalPaymentsFactor = 1.0, a neutral term"]:::step
+        mpfY --> dedQ{"Deductible override?"}
+        mpf1 --> dedQ
+        dedQ -->|"Yes"| dedOv["DeductibleFactor = override"]:::step
+        dedQ -->|"No"| dedLk["DeductibleFactor = DedFactorPremOpsCSL(CW, table, deductible), else 0.0. No pre-adjustment stage"]:::step
+        dedOv --> sentQ{"Per Claim row?"}
+        dedLk --> sentQ
+        sentQ -->|"Yes"| sent0["Table factor is 0 on all 45 rows: only a DoMessage guards it"]:::openq
+        sentQ -->|"No"| sentOk["Per Occurrence factor, 0.008 to 0.496"]:::step
+        sent0 --> fdf["FinalDeductibleFactor = CSL factor, or BI + PD, or one side, or 0"]:::step
+        sentOk --> fdf
+        fdf --> foldQ{"Fold med pay in?"}
+        foldQ -->|"Yes"| filfM["FinalILF = round(CSLILF + MedicalPaymentsFactor - 1 - FDF, 3)"]:::step
+        foldQ -->|"No"| filfP["FinalILF = round(CSLILF - FDF, 3)"]:::step
+        filfM --> clampQ{"FinalILF at or below 0?"}
+        filfP --> clampQ
+        clampQ -->|"Yes"| clamp0["FinalILF = 0.0"]:::zero
+        clampQ -->|"No"| sor["Size of risk: relativity clamped to class min/max, omitted when not applied"]:::step
+        clamp0 --> sor
+        sor --> blp["BasicLimitPremium = round(BaseRate x (1 - FDF) [x SoR] x PackageMod x Exposure[/1000], 0). Reporting only"]:::step
+    end
+
+    subgraph RT["ErcRate · 4 steps"]
+        fr["FinalRate = round(BaseRate x FinalILF [x SoR] x PackageMod x ExpMod x ExpenseMod x ModToUse, 3)"]:::step
+        fr --> aif["AdditionalInterestFactor = input, else 1.0. Read by nothing (E11)"]:::openq
+        aif --> subQ{"Combined subline?"}
+        subQ -->|"No"| sub0["Premium = 0.0. 'Premises/Operations' alone no longer rates"]:::zero
+        subQ -->|"Yes"| prem["Subline is Premises/Operations and Products/Completed Operations: Premium = round(FinalRate x Exposure[/1000], 0). No med-pay term"]:::step
+        prem --> floorQ{"Premium 0, exposure on?"}
+        floorQ -->|"Yes"| floored["Premium 0 and PremOpsCovExposure above 0: Premium = 1.0, the $1 floor, undocumented in the manual"]:::final
+        floorQ -->|"No, Premium not 0"| ok["Premium stands, PremiumIndicator = 1"]:::final
+        floorQ -->|"No, exposure 0"| stays0["Premium stays 0.0"]:::zero
+    end
+
+    subgraph PL["POLICY LEVEL"]
+        nomin["PremiumToReachMin record runs InitializeRuleSet / ErcProcess only: no minimum premium exists"]:::zero
+        nomin --> kern["Kernel: Premium must equal ErcCalculatedTotalPremium · underwriting mode raises R03 / R29"]:::eng
+    end
+
+    ilfOk --> cc
+    ilf0 --> cc
+    blp --> fr
+    ok --> nomin
+    floored --> nomin
+    iltaNull -.->|"med pay still folds in"| gap["Refer To Co., no ILF override: FinalILF = 0 + MedicalPaymentsFactor - 1, a few thousandths, above 0 so the clamp never fires. With an ELP override the risk rates at a small fraction of the correct premium. No Prem/Ops message"]:::openq
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class expCalc,ilta,ilfQ,lcGate,sorQ,found,elpQ,cmQ,brQ,mpfQ,dedQ,sentQ,foldQ,clampQ,subQ,floorQ gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>Med pay becomes a term inside <code>FinalILF</code> (+ factor − 1) rather than a separate charge. The algebra is close to pre-2027, but rounding lands elsewhere. The same inputs can come out a dollar apart.</li>
+            <li>The <strong>$1 floor</strong> is new. A risk whose rate rounds to 0 with exposure on the record now prices at 1. Pre-2027 leaves it at 0, and the 2027 manual does not mention the floor.</li>
+            <li>No minimum premium survives anywhere: not on the coverage, and not in the policy-level record.</li>
+            <li>Claims-made changes table <em>and</em> key, from ClassCode to ClassificationType. Years still cap at 5.</li>
+          </ul>
+        </div>
+        <div>
+          <div class="delta openq"><strong>New finding, 2026-10-05, and worse here.</strong> Pre-2027, a missing ILF on a "Refer To Co." class zeroes FinalILF. In 2027 the med-pay fold leaves FinalILF at MedicalPaymentsFactor − 1, just above 0, so the clamp never fires. Supplying only the ELP override rates the risk at a small fraction of the correct premium. Without the ELP override the BaseRate is 0 and the $1 floor applies.</div>
+          <div class="delta"><strong>vs. pre-2027.</strong> Same rate sources and mostly the same rule names. The formulas differ at FinalILF (med pay folded in), SetPremium (no charge term, the floor, a stricter subline test) and the deductible (direct lookup). Fourteen rows in all: see Side by side.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================= SIDE BY SIDE ============================= -->
+    <section class="sheet-view" id="view-diff">
+      <div class="intro">
+        <h2>Fourteen differences, every one read from the rule XML</h2>
+        <p>Rows are ordered as the chain runs. Each pre-2027 cell holds for CW 20231201 V02/V03, 20260101 V01 and 20261001 V01. Each CW 2027 cell holds for 20270401 V01 and V02.</p>
+      </div>
+      <div class="tablewrap">
+        <table class="grid">
+          <thead><tr><th>Step</th><th>Pre-2027</th><th>CW 2027</th><th>Premium effect</th></tr></thead>
+          <tbody>
+            <tr><th>Rule count</th><td>38 coverage + ErcRate 9</td><td>29 coverage + ErcRate 4</td><td>—</td></tr>
+            <tr><th>÷1000 bases</th><td>9, incl. Passenger Days</td><td>9, incl. Kilowatt-hours; Passenger Days dropped</td><td>Passenger Days rated 1000× higher in 2027 unless the basis moves</td></tr>
+            <tr><th>ILF keys</th><td><code>"1,000,000 CSL"</code></td><td><code>"1,000,000"</code></td><td>A stale key misses every row → ILF 0 (OI-96/97)</td></tr>
+            <tr><th>Split limits</th><td>BIILF, PDILF + weights BI/PD/constant</td><td>absent</td><td>Split-limit risks have no 2027 path</td></tr>
+            <tr><th>Claims-made</th><td><code>PremOpsClaimsMadeMultiplier</code> (state, yr, ClassCode)</td><td><code>ClaimsMadeMultiplierPremOps</code> (state, yr, ClassificationType)</td><td>Factor can move by class grouping</td></tr>
+            <tr><th>Med-pay factor</th><td><code>MedPayFactor</code> (CW, ClassCode) · 0.0 when excluded</td><td><code>IncreasedMedPayLimitFactor</code> (CW, type, limit) · 1.0 when excluded, blank or 5,000</td><td>Factor changes for most classes</td></tr>
+            <tr><th>Deductible</th><td>Pre-adjustment stage; PD 250 Per Claim carve-out for spray painting and 10 classes</td><td>Direct <code>DedFactorPremOpsCSL</code> lookup</td><td>Carve-out classes lose the subtraction</td></tr>
+            <tr><th>FinalILF</th><td><code>round(CSLILF − FDF, 3)</code></td><td><code>round(CSLILF + MPF − 1 − FDF, 3)</code> unless excluded / 5,000</td><td>Med pay now compounds with all modifiers</td></tr>
+            <tr><th>Med-pay charge</th><td>Separate, 0dp, 10,000 limit only, from unrounded LossCost/ELP</td><td><strong>No rule exists</strong></td><td>Rounding moves, so the same inputs can differ by a dollar</td></tr>
+            <tr><th>Subline test in SetPremium</th><td>"Premises/Operations" or the combined subline</td><td>Combined subline only</td><td>Prem/Ops-only subline → 0</td></tr>
+            <tr><th>Zero premium</th><td>Stays 0</td><td>$1 floor when exposure &gt; 0</td><td>Exposure 1: 0 → 1</td></tr>
+            <tr><th>Minimum premium</th><td>Coverage MinPremium + SpecialCombined pair; policy top-up <code>max(0, Min − Σ)</code></td><td>Removed everywhere</td><td>Nil on filed data (all CW minimums 0)</td></tr>
+            <tr><th>AdditionalInterestFactor</th><td>Read by the two min-premium rules</td><td>Read by nothing (E11)</td><td>None</td></tr>
+            <tr><th>Refer To Co., no ILF override</th><td>FinalILF 0</td><td>FinalILF = MedicalPaymentsFactor − 1, so the clamp misses it</td><td>With an ELP override, both price at a small fraction of the correct premium</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="intro"><p>Unchanged in both: loss cost and ELP selection, the silent ELP reroute on empty class/territory, LCM (filed CW row 1), BaseRate formula, the "Per Claim" zero sentinel, the FinalILF ≤ 0 clamp, size-of-risk, FinalRate, BasicLimitPremium, PremiumIndicator, and both engine-layer behaviours (OI-94 refusal, R03/R29 in underwriting mode).</p></div>
+    </section>
+
+    <!-- ============================= REVIEW ============================= -->
+    <section class="sheet-view" id="view-review">
+      <div class="intro">
+        <h2>What the all-coverage page gets wrong or leaves out for Premises</h2>
+        <p><code>gl-rating-chains.html</code> was reconciled on 2026-10-02, and the GL rating path has not changed since. These were the gaps between its two Premises sheets and the engine, the XML and the 2026-10-02 companion doc. On 2026-10-05 those sheets were removed and now link here. Item 10 was fixed on that page.</p>
+      </div>
+      <div class="tablewrap">
+        <table class="grid">
+          <thead><tr><th>#</th><th>All-coverage page says</th><th>Engine / XML shows</th><th>Kind</th></tr></thead>
+          <tbody>
+            <tr><th>1</th><td>Per Occurrence deductible factor "0.005-0.018"</td><td>0.008 to 0.496 in <code>DedFactorPremOpsCSL</code> (CW 20261001 V01). 45 Per Claim rows are all 0.</td><td><span class="tag bad">wrong</span></td></tr>
+            <tr><th>2</th><td>Pre-2027 non-override deductible = direct <code>DedFactorPremOpsCSL</code> lookup</td><td>Goes through <code>BIPDDeductibleFactorBeforeAdjustment</code>, with the PD 250 Per Claim carve-out (spray painting + 10 classes)</td><td><span class="tag bad">wrong</span></td></tr>
+            <tr><th>3</th><td>CW 2027: "nine-base /1000 set drops Passenger Days"</td><td>It also <em>adds</em> Kilowatt-hours. Still nine bases.</td><td>incomplete</td></tr>
+            <tr><th>4</th><td>CW 2027 sheet has no loss-cost refusal node</td><td>OI-94 refuses in both editions, e.g. size of risk on where the state never filed that table.</td><td>missing</td></tr>
+            <tr><th>5</th><td>"Refer To Co." shown as an ILF-only path</td><td>Those classes also select ELP text "Company", so BaseRate is 0 first. ISO adds "Must enter ELP Override". Premium 0 pre-2027, $1 in 2027.</td><td>incomplete</td></tr>
+            <tr><th>6</th><td>—</td><td><strong>New:</strong> ELP override without an ILF override underprices silently in both editions. In 2027 FinalILF stays just above 0 and escapes the clamp.</td><td><span class="tag bad">new finding</span></td></tr>
+            <tr><th>7</th><td>Pre-2027 med-pay factor always looked up</td><td>0.0 when excluded or class empty. 2027 uses 1.0, and only for a limit other than 5,000.</td><td>incomplete</td></tr>
+            <tr><th>8</th><td>Pre-2027 policy top-up shown unconditional</td><td>Needs PackagePolicy and multistate blank, IfAnyBasis = No with exposure, and the SpecialCombined indicator = 1</td><td>incomplete</td></tr>
+            <tr><th>9</th><td>Split limits, claims-made key change, the 2027 subline test, R03/R29 referrals</td><td>Not drawn. All four are in the chains here.</td><td>missing</td></tr>
+            <tr><th>10</th><td>Footer path <code>C:\Projects\Recursive_Harness_2.0\GL_Algorithm</code></td><td>The project moved to <code>F:\Recursive_Harness_2.0</code> (c68bcdd)</td><td>stale path</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="doc-footer">
+  Sources: the built engine (<strong>gl_engine</strong> at 62eb125: <code>rating/kernel.py</code>, <code>rating/referrals.py</code>, <code>resolve/</code>, <code>interp/</code>), rated through <code>scripts/variants.py</code> on 2026-10-05. ISO rule XML and rate tables are under <code>F:\ISO_ERC_Files\General_Liability</code>. Companion docs are <code>GL_Algorithm\PremisesOperations_RatingAlgorithms.md</code> (reconciled 2026-10-02) and <code>docs\gates\GATE-334-PREMISES-OPERATIONS.md</code>. State deviations (19 of 51 override something, 8 touch premium) are the gate's census, not re-measured.
+</footer>
+
+<script>
+  (function () {
+    var toc = document.getElementById('toc');
+    var main = document.getElementById('main');
+
+    function activate(target) {
+      var views = main.querySelectorAll('.sheet-view');
+      for (var i = 0; i < views.length; i++) views[i].classList.remove('active');
+      var view = document.getElementById('view-' + target);
+      if (view) view.classList.add('active');
+
+      var links = toc.querySelectorAll('.navlink');
+      for (var j = 0; j < links.length; j++) {
+        links[j].classList.toggle('active', links[j].getAttribute('data-target') === target);
+      }
+      main.scrollTop = 0;
+      window.scrollTo(0, 0);
+    }
+
+    document.addEventListener('click', function (e) {
+      var btn = e.target.closest('button[data-target]');
+      if (btn) activate(btn.getAttribute('data-target'));
+    });
+  })();
+</script>
+
+<style>.mermaid-rendering .sheet-view{display:block!important}</style>
+<script type="module">
+  // Render every diagram once, with all sheets briefly visible so hidden tabs get real sizes.
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({ startOnLoad: false, securityLevel: "strict", flowchart: { wrappingWidth: 260 } });
+  document.documentElement.classList.add("mermaid-rendering");
+  try { await mermaid.run({ querySelector: "pre.mermaid" }); }
+  finally { document.documentElement.classList.remove("mermaid-rendering"); }
+</script>
+</body>
+</html>

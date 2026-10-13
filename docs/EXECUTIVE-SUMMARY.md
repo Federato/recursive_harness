@@ -1,5 +1,22 @@
 # General Liability Rating Engine — Executive Summary
 
+> **Status note — 17 August 2026.** Four defects closed, one raised and closed the same day, and the
+> project's oldest open question settled. **Size-of-risk went from rating correctly in zero of 51
+> jurisdictions to 37, refusing in 14 exactly as ISO does. Terrorism went from 31 to 51. ISO rounds
+> half-up**, settled on four engineered ties. Breadth widened from two jurisdictions to eleven:
+> **184 of 184 comparable outcomes agree.**
+>
+> A QA programme covering all 51 jurisdictions is proposed in
+> [`qa-plan-proposal_20260817.html`](qa-plan-proposal_20260817.html) — sized from ISO's own declared
+> content, and **not built**. What is still unproven is set out plainly in
+> [`WHATS-LEFT-PLAIN-ENGLISH.md`](WHATS-LEFT-PLAIN-ENGLISH.md); the decisions taken on how the
+> programme runs are in [`WHAT-I-NEED-FROM-YOU.md`](WHAT-I-NEED-FROM-YOU.md).
+>
+> **The honest caveat, unchanged in shape and sharper in detail:** the population is still **one class
+> family**. The coverage grid reads **1 of 19**. We have proven the engine across *geography*, not
+> across *the variety of business a carrier writes*.
+
+
 **Progress briefing. 12 August 2026.** Plain language; no insurance or engineering background
 assumed.
 
@@ -62,12 +79,24 @@ not anticipated.
 ```
 ANALYSIS                                          BUILD
 ├─ Source collection & conversion       ████ done  ├─ 1. Load & resolve      ████ DONE
-├─ Two independent specifications       ████ done  ├─ 2. The interpreter     ░░░░ next
-├─ 14 coverage walkthroughs             ████ done  ├─ 3. Produce a premium   ░░░░
-├─ Every count re-measured by date      ████ done  ├─ 4. State input formats ░░░░
-├─ Referral rules + 13 decisions        ████ done  ├─ 5. Field/value catalog ░░░░
-└─ Architecture decision                ████ done  └─ 6. Simple interface    ░░░░
+├─ Two independent specifications       ████ done  ├─ 2. The interpreter     ████ DONE
+├─ 14 coverage walkthroughs             ████ done  ├─ 3. Produce a premium   ████ DONE
+├─ Every count re-measured by date      ████ done  ├─ 4. State input formats ████ DONE
+├─ Referral rules + 13 decisions        ████ done  ├─ 5. Field/value catalog ████ DONE
+└─ Architecture decision                ████ done  └─ 6. Simple interface    ████ DONE
+
+                                                   PROOF
+                                                   ├─ Against ISO's service  ████ 50 of 50
+                                                   ├─ Self-correcting loop   ░░░░ phase 3
+                                                   └─ Company deviations     ░░░░ phase 4
 ```
+
+**As of 2026-08-13: all six stages are built, and the engine has been checked against ISO's own
+rating service on fifty jurisdictions — agreeing on the premium and on every field ISO publishes.**
+
+**The caveat belongs next to the number.** All 51 test submissions are **the same risk shape**, so
+fifty matches is a narrower claim than it sounds. Widening it is the next work, and it is expected
+to find defects.
 
 **Three weeks. Zero production code until the specification was finished and signed off** — a
 deliberate constraint set by the project sponsor and held to.
@@ -81,12 +110,13 @@ deliberate constraint set by the project sponsor and held to.
 | Coverage specifications ("walkthroughs") | **14**, one per rating item, each independently evidenced |
 | Design rules that cannot be violated | **18**, each measured rather than asserted |
 | Questions escalated to the business | **20** raised, 13 decided, rest tracked |
-| Tracked open items | **69** |
+| Tracked open items | **87** — resolved ones kept and marked, not deleted |
 | **Real ISO-priced example policies to test against** | **54**, covering 50 states |
 | Automated expert reviewers (manual + data) | **2**, 107 self-checks between them |
 | Reproducible analysis scripts | **57** |
-| **Working engine code** | **1,814 lines** — stage 1 |
-| **Engine tests** | 20 acceptance cases, 13 safety checks, green at two dates |
+| **Working engine code** | All six stages — resolve, interpret, rate, plus the interface |
+| **Engine tests** | **Twelve suites, all green** — 20+80+11+10+7+58+38+28+18+30+11 checks, plus 13 load-time assertions |
+| **Agreement with ISO's live service** | **50 of 50 jurisdictions**, on every field ISO publishes |
 
 ---
 
@@ -221,24 +251,31 @@ presented as one.
 | Stage | What it delivers | Status |
 |---|---|---|
 | **1 · Load and resolve** | Which rulebook applies, for any state and date | **✅ Built and tested** |
-| **2 · The interpreter** | Executes ISO's rules. **The only genuinely new engineering** | ▶ Next |
-| **3 · Premium and referrals** | A submission goes in, a price and its components come out — in two modes | — |
-| **4 · State input formats** | One sample submission per state, so differences are visible and attributable | — |
-| **5 · Field and value catalogue** | Every field a submission can carry and its legal values, from ISO's own tables | — |
-| **6 · Simple interface** | Paste a submission, price it, read every factor | — |
+| **2 · The interpreter** | Executes ISO's rules. **The only genuinely new engineering** | **✅ Built and tested** |
+| **3 · Premium and referrals** | A submission goes in, a price and its components come out — in two modes | **✅ Built and tested** |
+| **4 · State input formats** | One sample submission per state, so differences are visible and attributable | **✅ Built and tested** |
+| **5 · Field and value catalogue** | Every field a submission can carry and its legal values, from ISO's own tables | **✅ Built and tested** |
+| **6 · Simple interface** | Paste a submission, price it, read every factor | **✅ Built and tested** |
 
 **Then, and only then:**
 
 | Phase | What it delivers | When |
 |---|---|---|
-| **Proof against RAaS** | The engine's answer compared against ISO's own live service, risk by risk. Any difference is our defect until proven otherwise | After stage 6 |
-| **The self-correcting harness** | That comparison run continuously and automatically, with findings fed back as fixes | After proof |
+| **Proof against RAaS** | The engine's answer compared against ISO's own live service, risk by risk. Any difference is our defect until proven otherwise | **✅ Live — 50 of 50 agree** |
+| **The self-correcting harness** | That comparison run continuously and automatically, with findings fed back as fixes | **Next but one** — see below |
 | **Company deviations** | The carrier's own loss costs, factors, rules and coverages layered on top of ISO's | **Only once the ISO baseline is trusted** |
 
-**Stage 2 is the critical path.** Its largest single piece is writing down what each of ISO's 54
-instructions means — deferred deliberately during analysis because it was only needed if we chose to
-run the rules. We chose to run them, so it is now due. **That written-down specification is the main
-thing engineering inherits**, and it is worth more than the code around it.
+**Stage 2 was the critical path, and the bet paid.** Its largest single piece was writing down what
+each of ISO's 54 instructions means — deferred deliberately during analysis because it was only
+needed if we chose to run the rules. **That written-down specification is the main thing engineering
+inherits, and it is worth more than the code around it.** The claim it was built to test held: the
+coverage walkthroughs are reproduced **with no coverage-specific code at all**.
+
+**What comes next is breadth, not the harness.** Every submission tested so far is one location, one
+classification, no deductible, no rating plans. **A harness that adjudicates differences is worth
+building once there are differences to adjudicate** — and on a single risk shape there are none. So
+the next work widens the population deliberately, expecting it to find defects. Ordered in
+[`BACKLOG-2026-08-14.md`](BACKLOG-2026-08-14.md).
 
 **Two modes, one code path**, from stage 3 onward:
 
@@ -305,10 +342,22 @@ reasonable.
 Keeping strict/ISO-only permanently runnable is what allows the ISO foundation to go on being
 verified against RAaS forever, even after deviations exist on top of it.
 
-### Two questions deliberately left open
+### Two questions left open — the first is now answered
 
-**How deviations get authored.** In ISO's own format — best for the engine, verbose for humans — or
-in a simpler overlay we convert. Worth deciding against a real deviation, not in the abstract.
+**How deviations get authored. — ANSWERED 2026-08-14: a friendlier format that compiles to ISO's
+shape**, and deviations are stored **per jurisdiction always**, because a carrier files a national
+deviation state by state. *"Applies to all jurisdictions"* is an authoring affordance that fans out,
+never a distinct kind of object. See [backlog item 7](BACKLOG-2026-08-14.md), which also records the
+consequence for decision 1's precedence question.
+
+**A third question, raised and answered 2026-08-14: can a carrier be pinned to an older ERC
+edition?** Carriers do not all adopt every edition; one may be filed on something from years ago.
+**Yes, and most of the machinery already exists** — every edition is retained, the resolver already
+returns non-current ones, and **the countrywide parent already follows the state package's own
+declaration rather than the newest** (N5), which is exactly the rule that stops a pin pairing an old
+state package with a current national one. What is missing is one input: `(carrier, jurisdiction,
+as-of)` in place of `(jurisdiction, as-of)`. Built for backdating, and the same machinery serves
+both. See [backlog item 8](BACKLOG-2026-08-14.md).
 
 **Whether ISO's vocabulary can express everything a carrier wants.** ISO's 58 instructions express
 what ISO needed. A tier factor, a model score, or a rating step ISO does not have may not be

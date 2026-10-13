@@ -4,7 +4,7 @@ import openpyxl
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 PAGES = os.path.join(HERE, "lc_pages")
-ROOT = r"C:\Projects\Recursive_Harness_2.0"
+ROOT = r"F:\Recursive_Harness_2.0"
 
 # ---------------- 1. Parse each loss-cost notice page 1 ----------------
 CIRC_RE = re.compile(r"\b(LI-[A-Z]{2,3}-\d{4}-\d{3})\b")

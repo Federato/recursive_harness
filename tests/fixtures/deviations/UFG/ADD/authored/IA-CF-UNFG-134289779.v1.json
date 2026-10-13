@@ -1,0 +1,131 @@
+{
+  "filing": "IA-CF-UNFG-134289779",
+  "company": "ADD",
+  "line": "CF",
+  "juris": [
+    "IA"
+  ],
+  "version": 1,
+  "status": "approved",
+  "serff": "UNFG-134289779",
+  "approved": "2025-05-06",
+  "new_eff": "2025-06-01",
+  "renewal_eff": "2025-10-01",
+  "rows": [
+    {
+      "target": "LCM:GroupI",
+      "scope": {},
+      "value": 1.813,
+      "mode": "replace",
+      "cite": "Exc p3; OKLCF p12"
+    },
+    {
+      "target": "LCM:GroupI",
+      "scope": {
+        "class_group": "UFG-A@v1"
+      },
+      "value": 1.279,
+      "mode": "replace",
+      "cite": "Exc p2; OKLCF p10"
+    },
+    {
+      "target": "LCM:GroupI",
+      "scope": {
+        "class_group": "UFG-B@v1"
+      },
+      "value": 1.051,
+      "mode": "replace",
+      "cite": "Exc p3; OKLCF p11"
+    },
+    {
+      "target": "LCM:GroupII",
+      "scope": {},
+      "value": 3.934,
+      "mode": "replace",
+      "cite": "Exc p3; OKLCF p15"
+    },
+    {
+      "target": "LCM:GroupII",
+      "scope": {
+        "class_group": "UFG-A@v1"
+      },
+      "value": 2.938,
+      "mode": "replace",
+      "cite": "Exc p2; OKLCF p13"
+    },
+    {
+      "target": "LCM:GroupII",
+      "scope": {
+        "class_group": "UFG-B@v1"
+      },
+      "value": 2.474,
+      "mode": "replace",
+      "cite": "Exc p3; OKLCF p14"
+    },
+    {
+      "target": "LCM:Broad",
+      "scope": {},
+      "value": 3.934,
+      "mode": "replace",
+      "cite": "Exc p2-3"
+    },
+    {
+      "target": "LCM:Broad",
+      "scope": {
+        "class_group": "UFG-A@v1"
+      },
+      "value": 2.938,
+      "mode": "replace",
+      "cite": "Exc p2-3"
+    },
+    {
+      "target": "LCM:Broad",
+      "scope": {
+        "class_group": "UFG-B@v1"
+      },
+      "value": 2.474,
+      "mode": "replace",
+      "cite": "Exc p2-3"
+    },
+    {
+      "target": "LCM:Special",
+      "scope": {},
+      "value": 3.934,
+      "mode": "replace",
+      "cite": "Exc p2-3"
+    },
+    {
+      "target": "LCM:Special",
+      "scope": {
+        "class_group": "UFG-A@v1"
+      },
+      "value": 2.938,
+      "mode": "replace",
+      "cite": "Exc p2-3"
+    },
+    {
+      "target": "LCM:Special",
+      "scope": {
+        "class_group": "UFG-B@v1"
+      },
+      "value": 2.474,
+      "mode": "replace",
+      "cite": "Exc p2-3"
+    },
+    {
+      "target": "LCM:Earthquake",
+      "scope": {},
+      "value": 2.64,
+      "mode": "replace",
+      "cite": "Exc p2-3"
+    }
+  ],
+  "meta": {
+    "elr": {
+      "GroupI": 0.543,
+      "GroupII": 0.477
+    },
+    "rate_level_change": 0.010,
+    "source": "UFG_IA_CP_LCM_Filing_UNFG-134289779.pdf (exception page pp. 2-3); dates per D18"
+  }
+}

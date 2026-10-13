@@ -1,0 +1,120 @@
+<title>Special Class — Own Tab vs. Conditions on Building</title>
+<meta charset="utf-8">
+<style>
+  body { font-family: Georgia, "Times New Roman", serif; max-width: 980px; margin: 0 auto; padding: 32px 24px 80px; line-height: 1.55; color: #1c2733; background: #fff; }
+  @media (prefers-color-scheme: dark) {
+    body { background: #14181d; color: #dfe4e9; }
+    a { color: #7fb6b8; }
+    table, th, td { border-color: #3a4048 !important; }
+    thead th { background: #24313a !important; color: #eef4f3 !important; }
+    code { background: #262c33 !important; color: #dfe4e9; }
+    .note { background: #2c2a1c !important; color: #e0c064 !important; }
+    .note.good { background: #1b3226 !important; color: #63c090 !important; }
+    .note.warn2 { background: #2a1f2c !important; color: #d69ad0 !important; }
+  }
+  h1 { font-size: 26px; font-weight: 400; margin-bottom: 4px; }
+  h2 { font-size: 19px; font-weight: 700; margin-top: 42px; border-bottom: 2px solid #1e3a45; padding-bottom: 4px; }
+  h3 { font-size: 15px; font-weight: 700; margin-top: 26px; }
+  .meta { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13px; color: #55606b; margin: 6px 0 4px; }
+  code { font-family: ui-monospace, Consolas, monospace; font-size: 0.92em; background: #eef1f4; padding: 1px 5px; border-radius: 3px; }
+  table { border-collapse: collapse; width: 100%; margin: 14px 0 22px; font-size: 14px; }
+  th, td { border: 1px solid #d7dce2; padding: 8px 10px; text-align: left; vertical-align: top; }
+  thead th { background: #1e3a45; color: #eef4f3; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 12px; text-transform: uppercase; letter-spacing: 0.03em; }
+  td.good2 { background: #dcefe4; }
+  td.bad2 { background: #f7ddd4; }
+  .note { background: #f7ddd4; color: #a53d26; padding: 12px 16px; border-radius: 6px; margin: 16px 0; font-size: 14px; }
+  .note.good { background: #dcefe4; color: #2f7d5a; }
+  .note.warn2 { background: #f2e6c4; color: #a67c1e; }
+  .note b { font-weight: 700; }
+  .verdict { background: #1e3a45; color: #eef4f3; padding: 16px 20px; border-radius: 8px; margin: 20px 0; font-family: -apple-system, "Segoe UI", sans-serif; }
+  .verdict .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; opacity: 0.8; margin-bottom: 4px; }
+  .verdict .answer { font-size: 20px; font-weight: 700; font-family: Georgia, serif; }
+  ol, ul { padding-left: 22px; }
+  hr { border: none; border-top: 1px solid #d7dce2; margin: 40px 0; }
+</style>
+
+<h1>Special Class — Own Tab, or Conditions on Building's Tab?</h1>
+<p class="meta"><b>Written:</b> 2026-09-14. <b>Question:</b> should Special Class Basic Group I rating be added into
+the existing <code>Calc_Building_BGI</code> workflow as conditional branches, or built as its own tab, following the
+pattern already used for Building, Contents, and Business Income? <b>Basis:</b> the factor-by-factor comparison in
+<code>Excel_Rater_SpecialClass_HowItWorks.html</code>.</p>
+<div class="note"><b>Status: recommendation only, nothing built.</b> Per standing project rule, nothing gets entered
+into the live workbook until you say go.</div>
+
+<div class="verdict">
+  <div class="label">Recommendation</div>
+  <div class="answer">Own tab — <code>Calc_SpecialClass_BGI</code> — not conditions on <code>Calc_Building_BGI</code></div>
+</div>
+
+<h2>1. Why: the two coverages barely share any surface area</h2>
+<p>Building and Special Class share the general <b><code>Rate</code> → <code>COLAdj</code> → <code>AdjustedRate</code>
+→ <code>FinalRate</code></b> shape — that's it. Below that shape, almost every column diverges:</p>
+<table>
+<thead><tr><th>Step</th><th>Building</th><th>Special Class</th><th>Shareable?</th></tr></thead>
+<tbody>
+<tr><td>Rating key</td><td><code>ClassCode</code> + <code>ConstructionCode</code></td><td><code>ClassDescription</code> (converted, 71 options)</td><td class="bad2">No — different key, different table entirely</td></tr>
+<tr><td>Protection class</td><td>separate multiplier</td><td>folded into the base-rate lookup key</td><td class="bad2">No — different mechanism, not just a different value</td></tr>
+<tr><td>Territory / roof / substandard / vacancy</td><td>4 distinct terms</td><td>none of them exist</td><td class="bad2">No — Building's columns would just be blank/1.0 for every Special Class row</td></tr>
+<tr><td>Sprinkler-leakage dimension in COL adjustment</td><td>present</td><td>absent</td><td class="bad2">No</td></tr>
+<tr><td>LOI factor</td><td>present, every form</td><td>absent, confirmed by exhaustive search, every form</td><td class="bad2">No</td></tr>
+<tr><td>Multi-residential credit</td><td>present</td><td>absent</td><td class="bad2">No</td></tr>
+<tr><td>Deductible AOI field</td><td><code>TotAmtInsurance</code></td><td><code>TotAmtInsuranceToUse</code></td><td class="bad2">No — different field, would need its own column regardless</td></tr>
+<tr><td>Premium branches</td><td>4 (scheduled / Legal Liability / blanket / otherwise-zero)</td><td>2 (blanket / scheduled only)</td><td class="bad2">No — no <code>CovType</code> taxonomy to key off</td></tr>
+<tr><td>LCM, Vandalism/StdPropPol factors, DeductibleByLocationFactor</td><td>present</td><td>present, same mechanism</td><td class="good2">Yes — genuinely shared upstream inputs</td></tr>
+</tbody>
+</table>
+<p>One shareable row out of nine. Building conditions in would mean most of <code>Calc_Building_BGI</code>'s columns
+carrying an <code>if RatingType-equivalent</code> branch just to go blank or <code>1.0</code> for Special Class
+rows — the same neutralization problem this project already had to work through for Specific/Tentative rating,
+except here it would apply to <em>every</em> column, not four.</p>
+
+<h2>2. It also breaks the pattern already established</h2>
+<p>This project already treats "coverage" as the tab boundary, not "form" or "rating variant":
+<code>Calc_Building_BGI</code>, <code>Calc_Contents_BGI</code>, and <code>Calc_BusinessIncome_BGI</code> are one tab
+per coverage. Within a single coverage's tab, conditions are the right tool when the branches genuinely share a
+rating key and most of the downstream chain — that's exactly what Building's own Class-vs-Specific/Tentative branch
+does, because both paths read the same <code>ClassCode</code>/<code>ConstructionCode</code>-adjacent columns and
+the same downstream COL/coinsurance/deductible steps.</p>
+<p>Special Class doesn't meet that bar. It's a sixth core coverage with its own rating key, not a rating variant of
+Building. Folding it in as conditions would be the first place in the workbook where "conditions" stops meaning
+"same shape, different rate source" and starts meaning "different coverage wearing Building's column headers."</p>
+
+<h2>3. The tradeoff, honestly stated</h2>
+<table>
+<thead><tr><th></th><th>Own tab (<code>Calc_SpecialClass_BGI</code>)</th><th>Conditions on <code>Calc_Building_BGI</code></th></tr></thead>
+<tbody>
+<tr><td>Workbook surface area</td><td>+1 tab, +2 new <code>Locations_Buildings</code> columns (<code>ClassDescription</code>, and reuse of <code>ProtectClass</code>)</td><td>no new tab, but most existing Building columns need a second branch</td></tr>
+<tr><td>Formula clarity</td><td>each tab's formulas read cleanly top to bottom, one coverage's logic at a time</td><td>nearly every cell becomes an <code>if</code>, even ones (roof, sprinkler, territory) that only ever apply to one side of the branch</td></tr>
+<tr><td>Risk of a stale reference</td><td>low — Special Class's columns simply don't exist where they're not needed</td><td>high — same failure mode already flagged for the Specific/Tentative build (§2 of the companion build docs): a factor that should go blank instead silently carries a Building value through</td></tr>
+<tr><td>Consistency with existing tabs</td><td>matches the established one-tab-per-coverage pattern</td><td>would be the first coverage-as-condition exception in the workbook</td></tr>
+</tbody>
+</table>
+<div class="note good"><b>Net: the own-tab cost is small and one-time (a tab, two columns); the conditions cost
+compounds across nearly every row of an existing, already-built tab.</b> That asymmetry is why the recommendation
+leans firmly toward a new tab rather than presenting this as a close call.</div>
+
+<h2>4. What the new tab would look like, at a glance</h2>
+<ul>
+<li><b><code>Calc_SpecialClass_BGI</code></b> — same shape as the other three coverage tabs: one row per scheduled
+Special Class item, <code>Rate → COLAdj → AdjustedRate → FinalRate</code>, feeding its own premium branch in
+<code>Premium_Summary</code>.</li>
+<li>New <code>Locations_Buildings</code> (or an item-level equivalent, if Special Class items don't map 1:1 to
+buildings) columns: <code>ClassDescription</code>, and confirmation that the existing <code>ProtectClass</code>
+input can be read directly rather than re-entered.</li>
+<li>Reads shared, already-existing inputs for everything else — <code>Coinsurance</code>/<code>BlktCoinsurance</code>,
+<code>Deductible</code>, <code>Limit</code>/<code>BlktLimit</code>, <code>IncludedInBlkt</code>,
+<code>Bldg_VandalismExcluded</code>, <code>Bldg_StdPropertyPolicy</code>, and the policy-level <code>LCM</code>/
+<code>PackageModFactor</code>/<code>MultiPremiumAndDispersionCreditFactor</code>/<code>IRPMFactor</code> — see
+<code>Excel_Rater_SpecialClass_HowItWorks.html</code> §5 for the full input-field breakdown.</li>
+</ul>
+
+<hr>
+
+<h2>Remaining steps</h2>
+<ol>
+<li>Confirm this recommendation before any tab gets added — this page argues one side, it doesn't decide it.</li>
+<li>If accepted, Basic Group II, Broad, and Special still need the same depth of tracing
+<code>Excel_Rater_SpecialClass_HowItWorks.html</code> gave Basic Group I before <code>Calc_SpecialClass_BGI</code>
+could cover all four forms, not just one.</li>
+<li>Nothing gets built into the live workbook until you say go.</li>
+</ol>

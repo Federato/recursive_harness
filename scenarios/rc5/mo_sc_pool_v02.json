@@ -1,0 +1,63 @@
+{
+ "name": "rc5_mo_sc_pool",
+ "states": [
+  "MO"
+ ],
+ "edits": [
+  {
+   "sheet": "IN - Schedule",
+   "cell": "C5",
+   "value": "MO"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "D5",
+   "value": 63005
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "G5",
+   "value": "Kansas City"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "I5",
+   "value": "Entire State"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "J5",
+   "value": "Jackson (including entire city of Kansas City)"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "H5",
+   "r1c1": "=IF(RC3=\"NY\",IF(OR(RC17=\"\",RC17=\"Not Applicable\"),\"Select\",IFERROR(VLOOKUP(RC17,'TBL - NYCounty'!R2C1:R63C3,3,FALSE),\"Select\")),IF(RC3=\"AK\",IF(OR(RC15=\"\",RC15=\"Not Applicable\"),\"Select\",IFERROR(VLOOKUP(RC15&\"|\"&IF(RC15=\"Remainder of State\",RC16,\"Not Applicable\"),'TBL - AKRatingArea'!R2C1:R12C5,5,FALSE),\"Select\")),IF(RC3=\"CA\",\"Select\",\"Not Applicable\")))"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "O5",
+   "value": "Not Applicable"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "P5",
+   "value": "Not Applicable"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "Q5",
+   "value": "Not Applicable"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "D220",
+   "value": "Swimming Pools in the Open - Above Ground (All Other)"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "Q220",
+   "value": "Entire State"
+  }
+ ]
+}

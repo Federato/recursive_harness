@@ -37,7 +37,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 c = import_module("00_common")
 csv.field_size_limit(1 << 24)
 
-KB = Path(r"C:\Projects\Recursive_Harness_2.0\Agentic\iso-erc-expert\knowledge")
+KB = Path(r"F:\Recursive_Harness_2.0\Agentic\iso-erc-expert\knowledge")
 KB.mkdir(parents=True, exist_ok=True)
 
 
@@ -386,7 +386,7 @@ def main():
     dump("corpus.json", dict(
         _note="Headline counts for drift detection. Re-derive with "
               "scripts/erc/01_inventory.py.",
-        corpus_root=r"C:\Projects\ISO_ERC_Files\General_Liability",
+        corpus_root=r"F:\ISO_ERC_Files\General_Liability",
         excluded_dirs=sorted(c.EXCLUDE_DIRS),
         package_directories=len(pkgs_csv), distinct_packages=len(packages),
         countrywide_packages=sum(1 for p in packages.values()

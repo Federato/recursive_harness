@@ -45,7 +45,7 @@ import re
 import sys
 from collections import Counter, defaultdict
 
-ROOT = r"C:\Projects\ISO_ERC_Files\General_Liability"
+ROOT = r"F:\ISO_ERC_Files\General_Liability"
 EXCLUDE = {"_quarantine_misfiled", ".claude"}
 CLIFF = "20270401"
 

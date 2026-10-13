@@ -1,0 +1,33 @@
+{
+ "name": "rc2_w3_perloc_large",
+ "states": [
+  "AK"
+ ],
+ "edits": [
+  {
+   "sheet": "IN - Schedule",
+   "cell": "N7",
+   "value": "Yes"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "AE50",
+   "value": "Yes"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "I136",
+   "value": "No"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "N50",
+   "value": 20000000
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "E136",
+   "value": 10000000
+  }
+ ]
+}

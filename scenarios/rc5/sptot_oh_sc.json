@@ -1,0 +1,163 @@
+{
+ "name": "rc5_sptot_oh_sc",
+ "states": [
+  "OH"
+ ],
+ "edits": [
+  {
+   "sheet": "IN - Schedule",
+   "cell": "C8",
+   "value": "OH"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "D8",
+   "value": 43001
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "G8",
+   "value": "Akron"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "I8",
+   "value": "Entire State"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "J8",
+   "value": "Cuyahoga"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "O8",
+   "value": "Not Applicable"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "P8",
+   "value": "Not Applicable"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "Q8",
+   "value": "Not Applicable"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "H8",
+   "r1c1": "=IF(RC3=\"NY\",IF(OR(RC17=\"\",RC17=\"Not Applicable\"),\"Select\",IFERROR(VLOOKUP(RC17,'TBL - NYCounty'!R2C1:R63C3,3,FALSE),\"Select\")),IF(RC3=\"AK\",IF(OR(RC15=\"\",RC15=\"Not Applicable\"),\"Select\",IFERROR(VLOOKUP(RC15&\"|\"&IF(RC15=\"Remainder of State\",RC16,\"Not Applicable\"),'TBL - AKRatingArea'!R2C1:R12C5,5,FALSE),\"Select\")),IF(RC3=\"CA\",\"Select\",\"Not Applicable\")))"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "S51",
+   "value": "'1%"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "N51",
+   "value": 150000
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "AN51",
+   "value": 150000
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "C137",
+   "value": "No"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "C223",
+   "value": "Yes"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "D223",
+   "value": "Artificial Turf"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "E223",
+   "value": "Special"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "F223",
+   "value": "No"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "K223",
+   "value": 100000
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "L223",
+   "value": "Yes"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "M223",
+   "value": "'4 - 1"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "N223",
+   "value": "'2,500"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "O223",
+   "value": "No"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "P223",
+   "value": "'5"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "Q223",
+   "value": "Entire State"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "R223",
+   "value": "B"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "S223",
+   "value": "Not Applicable"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "T223",
+   "value": "'2,500"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "U223",
+   "value": "No"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "V223",
+   "value": "No"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "W223",
+   "value": "Yes"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "Y223",
+   "value": 100000
+  }
+ ]
+}

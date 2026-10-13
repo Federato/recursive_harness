@@ -12,6 +12,10 @@
 
 # ISO manuals and circulars (~4 GB of source PDFs)
 Commercial Line Manuals/
+#  The same content also lands WITHOUT the spaces. The spaced spelling above did
+#  not match `CommercialLineManuals/`, and 5.1 GB of ISO manuals sat untracked
+#  and stageable for eight chunks. Found 2026-09-18 while staging chunk 8.
+CommercialLineManuals/
 
 # Text extracted from those manuals — derived licensed content, 1,122 documents
 Agentic/*/text/
@@ -26,6 +30,18 @@ Engine_Payloads/
 # Bulk extractions of ISO rating content (~305 MB of CSV dumps)
 scripts/erc/out/
 scripts/erc/census_334.json
+
+# The tester's option cache — ISO's declared class codes, deductible amounts
+# and limit values for all 51 jurisdictions. Derived from licensed content, so
+# it is excluded for the same reason the corpus itself is.
+ui/cache/
+
+# Sweep results — every stored run carries ISO premiums and the configuration
+# that produced them. That covers results/runs/, the standalone HTML file the
+# layered programme writes per run, and results/reviews/, the per-run review
+# record beside it: both are renderings of the same licensed premiums and are
+# named here so nobody has to work that out again.
+results/
 
 # ISO-derived workbooks and generated hierarchies
 *.xlsx
@@ -58,3 +74,16 @@ Thumbs.db
 .vscode/
 *.log
 *.tmp
+
+# Jupyter autosaves -- duplicates of notebooks/, and they can hold outputs
+.ipynb_checkpoints/
+
+# Working scratch -- throwaway scripts, not part of the build record.
+.scratch/
+
+# Incoming carrier filings dropped here; archived (hash-checked) in Carriers/<carrier>/sources/<SERFF>
+DeviationDocs/
+
+# Local reference files, kept out of git (2026-10-13)
+Outputs/
+Design brief questionnaire.zip

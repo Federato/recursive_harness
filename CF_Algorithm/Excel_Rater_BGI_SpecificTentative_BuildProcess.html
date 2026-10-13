@@ -1,0 +1,273 @@
+<title>Build Process — BGI Specific/Tentative Rating</title>
+<meta charset="utf-8">
+<style>
+  body { font-family: Georgia, "Times New Roman", serif; max-width: 980px; margin: 0 auto; padding: 32px 24px 80px; line-height: 1.55; color: #1c2733; background: #fff; }
+  @media (prefers-color-scheme: dark) {
+    body { background: #14181d; color: #dfe4e9; }
+    a { color: #7fb6b8; }
+    table, th, td { border-color: #3a4048 !important; }
+    thead th { background: #24313a !important; color: #eef4f3 !important; }
+    code { background: #262c33 !important; color: #dfe4e9; }
+    .note { background: #2c2a1c !important; color: #e0c064 !important; }
+    tr.core { background: #26301f !important; }
+  }
+  h1 { font-size: 26px; font-weight: 400; margin-bottom: 4px; }
+  h2 { font-size: 19px; font-weight: 700; margin-top: 42px; border-bottom: 2px solid #1e3a45; padding-bottom: 4px; }
+  h3 { font-size: 15px; font-weight: 700; margin-top: 26px; }
+  .meta { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13px; color: #55606b; margin: 6px 0 4px; }
+  code { font-family: ui-monospace, Consolas, monospace; font-size: 0.92em; background: #eef1f4; padding: 1px 5px; border-radius: 3px; }
+  table { border-collapse: collapse; width: 100%; margin: 14px 0 22px; font-size: 14px; }
+  th, td { border: 1px solid #d7dce2; padding: 8px 10px; text-align: left; vertical-align: top; }
+  thead th { background: #1e3a45; color: #eef4f3; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 12px; text-transform: uppercase; letter-spacing: 0.03em; }
+  table.grid td:nth-child(1) { font-family: ui-monospace, Consolas, monospace; font-size: 12px; text-align: center; }
+  tr.confirmed td:nth-child(3) { color: #2f7d5a; }
+  tr.assumed td:nth-child(3) { color: #a53d26; font-weight: 700; }
+  .note { background: #f7ddd4; color: #a53d26; padding: 12px 16px; border-radius: 6px; margin: 16px 0; font-size: 14px; }
+  .note b { font-weight: 700; }
+  pre { background: #eef1f4; border: 1px solid #d7dce2; border-radius: 6px; padding: 14px 16px; overflow-x: auto; font-family: ui-monospace, Consolas, monospace; font-size: 13px; }
+  ol, ul { padding-left: 22px; }
+  hr { border: none; border-top: 1px solid #d7dce2; margin: 40px 0; }
+</style>
+
+<h1>Build Process — Basic Group I Specific/Tentative Rating</h1>
+<p class="meta"><b>Written:</b> 2026-09-14. <b>Source:</b> <code>Excel_Rater_BasicGroupI.md</code> §9 (traced 2026-09-04) —
+this page restates it as an ordered build procedure and a factor-by-factor grid; it doesn't add new findings.</p>
+<div class="note"><b>Status: analysis only, nothing built yet.</b> Per standing project rule, nothing here gets entered
+into the live workbook until you say go.</div>
+
+<h2>1. What this is, in plain English</h2>
+<p>Basic Group I is the only Commercial Fire form that gives an underwriter a second way to rate a building or its
+contents. The normal way — <b>Class rating</b> — looks up a rate from ISO's class/construction tables based on the
+building's occupancy and construction. <b>Specific/Tentative rating</b> skips that lookup entirely and instead uses a
+rate someone else has already decided on and typed in — no table, no class code, no construction code. Basic Group II,
+Broad, and Special don't have this second path at all; Class rating is their only option, confirmed directly from the
+source rule comparison table.</p>
+<p>Think of it as an escape hatch: for a small number of risks, ISO lets the rate come from outside its own tables.
+The workbook needs a fork in the road — "which kind of rate am I using for this building?" — and then two different
+ways of computing <code>Rate</code> depending on the answer.</p>
+
+<h2>2. The rating grid — every Building factor, Class vs. Specific/Tentative</h2>
+<p>The question to answer before building anything: <b>of every factor that feeds a Class-rated Building's
+<code>FinalRate</code>, which ones still apply when the building is Specific/Tentative-rated, and which ones
+don't?</b> Building only for now — Contents follows the same method but isn't gridded out yet.</p>
+<p>The source doc gives one explicit formula for the Specific/Tentative <code>Rate</code> step and says everything
+after <code>Rate</code> is "unchanged." It does <b>not</b> individually confirm, factor by factor, whether the
+class/construction-side factors it silently drops are meant to be excluded or were just never mentioned.</p>
+<div class="note"><b>Assumption applied in this grid:</b> where the source doesn't clearly state a rate or factor
+applies, it's treated as neutralized — <code>1.0</code> for a multiplicative factor, <code>0</code> for an additive
+addend — rather than assumed carried over. That's a stated assumption, not a confirmed ISO rule, and it's called out
+per row below.</div>
+
+<table class="grid">
+<thead><tr><th>#</th><th>Factor</th><th>Class-rated role</th><th>Specific/Tentative — Building</th><th>Why</th></tr></thead>
+<tbody>
+<tr class="confirmed"><td>—</td><td><code>SpecificGroupIRate</code></td><td><em>(doesn't exist on this path)</em></td>
+  <td><b>used as the rate itself</b></td>
+  <td>Replaces <code>BaseRate</code> outright — see the open question in §3. Not a "factor," the substitute for the whole lookup.</td></tr>
+<tr class="confirmed"><td>1</td><td><code>BaseRate</code> (class/construction lookup)</td><td>looked up from <code>BasicGroupIRate</code></td>
+  <td><b>not used</b></td>
+  <td>Specific/Tentative rating exists specifically to bypass this lookup — confirmed, not assumed (<code>SetBasicGroupIBaseRate</code> only runs <code>if RatingType = "Class"</code>).</td></tr>
+<tr class="confirmed"><td>2</td><td><code>LCM</code> (loss cost multiplier)</td><td>multiplies <code>BaseRate</code></td>
+  <td><b>still applies</b>, named explicitly in the formula</td>
+  <td>Confirmed — appears directly in the §9 formula.</td></tr>
+<tr class="assumed"><td>3</td><td><code>SubStdConditionRate</code></td><td>added to <code>BaseRate × LCM</code></td>
+  <td><b>assumed 0</b> (no addend)</td>
+  <td>Omitted from the §9 formula with no explanation — assumed neutralized, not confirmed excluded by the source.</td></tr>
+<tr class="assumed"><td>4</td><td><code>VacantBuildingRate</code></td><td>added to <code>BaseRate × LCM</code></td>
+  <td><b>assumed 0</b> (no addend)</td>
+  <td>Same — omitted, assumed neutralized, not confirmed.</td></tr>
+<tr class="assumed"><td>5</td><td><code>TerritoryFactor</code></td><td>multiplies the addend sum</td>
+  <td><b>assumed 1.0</b></td>
+  <td>Omitted from the §9 formula. Territory ordinarily prices <em>where</em> the building is, with no obvious reason to stop mattering — but the source doesn't say either way, so this defaults to 1.0 until confirmed.</td></tr>
+<tr class="assumed"><td>6</td><td><code>ProtectionClassFactor</code></td><td>multiplies the addend sum</td>
+  <td><b>assumed 1.0</b></td>
+  <td>Same reasoning and caveat as <code>TerritoryFactor</code> — omitted, not confirmed, defaulted to 1.0.</td></tr>
+<tr class="confirmed"><td>7</td><td><code>RoofSurfacingACVFactor</code></td><td>multiplies the addend sum</td>
+  <td><b>still applies</b>, named explicitly in the formula</td>
+  <td>Confirmed.</td></tr>
+<tr class="confirmed"><td>8</td><td><code>SprinklerLeakageNotExcludedFactor</code></td><td><em>(not part of Class-rated <code>Rate</code> — different table from row 9)</em></td>
+  <td><b>applies</b>, named explicitly in the formula</td>
+  <td>Confirmed. Don't confuse with row 9's similarly-named table — different ERC tables feeding different steps.</td></tr>
+<tr class="confirmed"><td>9</td><td><code>SprinklerLeakageExclNonSprinkleredBldgRate</code> (subtracted in <code>COLAdj</code>)</td><td><code>ROUND(Rate − this, 3)</code></td>
+  <td><b>still applies, unchanged</b></td>
+  <td>§9 explicitly says <code>COLAdj</code> downstream is unchanged and "reads the same" inputs regardless of rating type.</td></tr>
+<tr class="confirmed"><td>10</td><td><code>SprinklerLeakageExclSprinkleredFactor</code></td><td>multiplies <code>COLAdj</code></td>
+  <td><b>still applies, unchanged</b></td><td>Same explicit statement as row 9.</td></tr>
+<tr class="confirmed"><td>11</td><td><code>VandalismExclFactor</code></td><td>multiplies <code>COLAdj</code></td>
+  <td><b>still applies, unchanged</b></td><td>Same.</td></tr>
+<tr class="confirmed"><td>12</td><td><code>StdPropPolGroupIFactor</code></td><td>multiplies <code>COLAdj</code></td>
+  <td><b>still applies, unchanged</b></td><td>Same.</td></tr>
+<tr class="confirmed"><td>13</td><td><code>CoinsuranceFactor</code></td><td>lookup, skipped if <code>ClassCode = "1150"</code> or Functional Valuation</td>
+  <td><b>still applies, unchanged</b> — same skip condition</td>
+  <td>§9 says everything after <code>Rate</code> is unchanged; no separate rule touches this step.</td></tr>
+<tr class="confirmed"><td>14</td><td><code>LOIFactor</code></td><td><code>LookupBasicGroupILOIFactorBldg(Limit, ...)</code></td>
+  <td><b>still applies, unchanged</b></td><td>Same.</td></tr>
+<tr class="confirmed"><td>15</td><td><code>DeductibleFactor</code></td><td><code>Choose</code> on <code>Deductible</code></td>
+  <td><b>still applies, unchanged</b></td><td>Same.</td></tr>
+<tr class="confirmed"><td>16</td><td><code>DeductibleByLocationFactor</code></td><td>multiplies <code>FinalRate</code></td>
+  <td><b>still applies, unchanged</b></td><td>Same.</td></tr>
+<tr class="confirmed"><td>17</td><td><code>MultiResidentialPropSpecialCreditFactor</code></td><td>multiplies <code>FinalRate</code></td>
+  <td><b>still applies, unchanged</b></td><td>Same.</td></tr>
+</tbody>
+</table>
+
+<p><b>Reading this grid:</b> rows 3–6 (red) are the ones the neutralization assumption actually changes. Rows 1 and
+8–17 (green) are things the source document confirms one way or the other — either "this replaces the lookup" or
+"this stays unchanged." Rows 3–6 are the genuine gaps: factors the Class-rated formula uses that the
+Specific/Tentative formula's text simply doesn't mention. Two of them (<code>SubStdConditionRate</code>,
+<code>VacantBuildingRate</code>) are <em>additive</em> addends, so "neutralize" means drop them to <code>0</code>, not
+<code>1.0</code> — multiplying by <code>1.0</code> wouldn't remove them from a sum. <code>TerritoryFactor</code> and
+<code>ProtectionClassFactor</code> are multiplicative, so neutralizing means <code>1.0</code>.</p>
+
+<div class="note"><b>One more open branch, not in the grid above:</b> if <code>RatingType</code> is set to something
+other than <code>Class</code>, <code>Specific</code>, or <code>Tentative</code>, Building's own <code>Rate</code>
+formula collapses to a flat <code>1.0</code> before any of this even runs — that's the third, <code>Otherwise</code>
+branch confirmed in §9, distinct from the neutralization question this grid is answering.</div>
+
+<h2>3. Before you build anything: the one open question</h2>
+<p><b><code>SpecificGroupIRate</code> — the rate itself — is not populated by any rule in either coverage's traced
+source document.</b> No <code>Set</code> rule, no <code>Lookup</code> rule, nothing. This isn't a table someone
+forgot to count; the source docs never say where the number comes from at all.</p>
+<p>The best-supported guess is that it's a rate an underwriter or MGA schedules by hand for that specific risk —
+that's what "specific" and "tentative" mean as insurance terms — but that is an inference from the name and
+industry convention, not a confirmed fact. <b>Treat this as unresolved until someone checks the actual ISO rule
+XML.</b> The build below treats it as a user-entered field for that reason, not a <code>Rate_Tables</code> lookup —
+but flag it visibly in the workbook so nobody mistakes "we typed it in" for "we looked it up."</p>
+
+<h2>4. Build order</h2>
+<p>Build in this order — each step only makes sense once the one before it exists.</p>
+
+<h3>Step 1 — Add the rate-type switch to <code>Locations_Buildings</code></h3>
+<p><code>RatingType</code> already exists on this tab (<code>Excel_Rater_Overview.md</code> §4), but up to this
+point it's been an unused placeholder. This build is what actually turns it into a working enum:</p>
+<table><thead><tr><th>Value</th><th>Meaning</th></tr></thead>
+<tbody>
+<tr><td><code>Class</code></td><td>the path already built — class/construction lookup</td></tr>
+<tr><td><code>Specific</code></td><td>this path — pre-set rate</td></tr>
+<tr><td><code>Tentative</code></td><td>this path — pre-set rate, same formula as <code>Specific</code></td></tr>
+<tr><td>anything else (Building only)</td><td>falls through to a flat <code>1.0</code> — a real branch in ISO's own rule, not an error state</td></tr>
+</tbody></table>
+
+<h3>Step 2 — Add the two rate-entry columns to <code>Locations_Buildings</code></h3>
+<table><thead><tr><th>Column</th><th>Feeds</th><th>Notes</th></tr></thead>
+<tbody>
+<tr><td><code>Bldg_SpecificGroupIRate</code></td><td>Building's Specific/Tentative <code>Rate</code> formula</td>
+  <td>user-entered; add a cell comment citing the open question in §3 above</td></tr>
+<tr><td><code>PP_SpecificGroupIRate</code></td><td>Contents' Specific/Tentative <code>Rate</code> formula</td>
+  <td>separate column from Building's — a building's Building and Contents specific rates don't have to match</td></tr>
+</tbody></table>
+
+<h3>Step 3 — Confirm the sprinkler-leakage table row exists</h3>
+<p>Both formulas below multiply by a sprinkler-leakage factor. Before wiring the formula, check:</p>
+<table><thead><tr><th>Table</th><th>Confirmed?</th></tr></thead>
+<tbody>
+<tr><td><code>SprinklerLeakageNotExcluded</code> (Building)</td>
+  <td>present by the original sweep, <b>not independently row-counted</b> — verify the CW row before relying on it</td></tr>
+<tr><td><code>SprinklerLeakageNotExcludedFactor</code> (Contents)</td>
+  <td>confirmed with a real CW row in <code>PersonalProperty_ERC_Tables.md</code> — the more reliable of the two</td></tr>
+</tbody></table>
+<p>If Building's row turns out missing when checked, that blocks this build for Building specifically — don't
+assume it's there because Contents' sibling table is.</p>
+
+<h3>Step 4 — Add the second <code>Rate</code> branch on <code>Calc_Building_BGI</code></h3>
+<p>This is step 2 of that tab's chain (right after <code>BaseRate</code>, which the Class-rated path already
+computes but this path ignores). Add it as an explicit if/elif/else, not a separate hidden column:</p>
+<pre>Rate =
+    if RatingType = "Class":
+        &lt;the Class-rated formula already built — Excel_Rater_BasicGroupI.md §4 step 2&gt;
+    elif RatingType in ("Specific","Tentative"):
+        Bldg_SpecificGroupIRate × LCM × SprinklerLeakageNotExcludedFactor × RoofSurfacingACVFactor
+    else:
+        1.0</pre>
+<p>Everything after <code>Rate</code> in that tab's chain — <code>COLAdj</code>, <code>CoinsuranceFactor</code>,
+<code>LOIFactor</code>, <code>AdjustedRate</code>, <code>DeductibleFactor</code>, <code>FinalRate</code> — is
+already built and needs <b>no changes</b>. It just reads whichever <code>Rate</code> this new branch produced, the
+same as it already reads the Class-rated <code>Rate</code> today.</p>
+
+<h3>Step 5 — Add the second <code>Rate</code> branch on <code>Calc_Contents_BGI</code></h3>
+<p>Same idea, step 4 of that tab's chain, but note two differences from Building:</p>
+<ul>
+<li>The gate is broader: <code>RatingType &lt;&gt; "Class"</code> (not just the two named values) routes here —
+any value that isn't <code>"Class"</code> falls into this branch.</li>
+<li><b>No roof factor</b>, and <b>no 1.0 catch-all</b> — the source doc doesn't give Contents an equivalent
+fallback branch, so don't add one that isn't there.</li>
+</ul>
+<pre>Rate =
+    if RatingType = "Class":
+        &lt;the Class-rated formula already built — Excel_Rater_BasicGroupI.md §5 step 4&gt;
+    else:   # RatingType &lt;&gt; "Class" — covers "Specific", "Tentative", and anything else
+        PP_SpecificGroupIRate × LCM × SprinklerLeakageNotExcludedFactor</pre>
+<p>As with Building, everything downstream (<code>COLAdj</code> through <code>FinalRate</code>) is already built
+and unchanged.</p>
+
+<h3>Step 6 — Nothing changes in <code>Premium_Summary</code></h3>
+<p>The premium formulas in §6 of <code>Excel_Rater_BasicGroupI.md</code> read
+<code>Calc_Building_BGI.FinalRate</code> and <code>Calc_Contents_BGI.FinalRate</code> regardless of which rating
+path produced them. No new formula is needed there — this is exactly why the branch belongs inside the
+<code>Rate</code> step rather than as a parallel premium calculation.</p>
+
+<h2>5. What Class-rated and Specific/Tentative-rated share, side by side</h2>
+<table><thead><tr><th></th><th>Building</th><th>Contents</th></tr></thead>
+<tbody>
+<tr><td>Skips</td><td>class/construction lookup, territory/protection-class factors, substandard/vacancy addends</td>
+  <td>class/construction lookup, <code>FireSafeVaultFactor</code>, <code>ProtectionClassFactor</code>, substandard addend</td></tr>
+<tr><td>Uses instead</td><td><code>SpecificGroupIRate × LCM × SprinklerLeakageNotExcludedFactor × RoofSurfacingACVFactor</code></td>
+  <td><code>SpecificGroupIRate × LCM × SprinklerLeakageNotExcludedFactor</code></td></tr>
+<tr><td>Everything after <code>Rate</code></td><td>unchanged, same formulas as Class-rated</td><td>unchanged, same formulas as Class-rated</td></tr>
+</tbody></table>
+
+<h2>6. Test cases to build alongside the formula</h2>
+<p>Per this project's standing practice, don't build the branch without example rows to prove it against:</p>
+<ol>
+<li>A building with <code>RatingType = "Class"</code> — confirms the new <code>if</code> doesn't disturb the existing path.</li>
+<li>A building with <code>RatingType = "Specific"</code> and a <code>Bldg_SpecificGroupIRate</code> entered —
+confirms the new branch fires and downstream steps (COL adjustment, LOI, deductible) still apply correctly.</li>
+<li>A building with <code>RatingType = "Tentative"</code> — should produce the identical result to the
+<code>"Specific"</code> row above with the same inputs, since Building's formula treats them identically.</li>
+<li>A building with some other/blank <code>RatingType</code> value — Building should fall to <code>Rate = 1.0</code>;
+Contents (no catch-all) should still run its Specific/Tentative formula, since its gate is "not Class," not "is
+Specific or Tentative." This divergence is the one case most likely to get built wrong by copying Building's logic
+onto Contents — call it out explicitly in review.</li>
+<li>A <code>Specific</code>-rated building with a non-trivial <code>TerritoryFactor</code> and
+<code>ProtectionClassFactor</code> on the Class-rated row for the <em>same</em> class/construction/location — pick a
+test building where those two factors are visibly not <code>1.0</code> when Class-rated, then flip it to
+<code>Specific</code> with the same location data and confirm the workbook actually drops them (per the §2 grid)
+rather than silently carrying them through from a stale formula reference. This is the row most likely to get built
+wrong quietly, since nothing in the formula text stops a careless copy-paste from including a
+<code>TerritoryFactor</code> cell reference that happens to still resolve to a number.</li>
+</ol>
+
+<h2>7. How to configure this once built</h2>
+<ol>
+<li>On <code>Locations_Buildings</code>, find the row for the building in question and set <code>RatingType</code>
+to <code>Class</code>, <code>Specific</code>, or <code>Tentative</code>.</li>
+<li>If you set it to <code>Specific</code> or <code>Tentative</code>, fill in
+<code>Bldg_SpecificGroupIRate</code> and/or <code>PP_SpecificGroupIRate</code> with the rate you were given for that
+risk — these are typed in by hand, not looked up, because ISO's own rules don't say where this number comes from
+(see §3).</li>
+<li>Leave everything else on the row exactly as you would for a Class-rated building — deductible, coinsurance,
+limit, and all the other columns still apply the same way.</li>
+<li>Check <code>Calc_Building_BGI</code> / <code>Calc_Contents_BGI</code> for that row: <code>Rate</code> should now
+reflect the Specific/Tentative formula instead of the class lookup, and every column after it should populate
+normally.</li>
+<li>If the resulting premium looks wrong, the first thing to check is whether <code>SpecificGroupIRate</code> was
+filled in correctly — this workbook cannot detect a wrong hand-entered rate the way it might catch a bad table
+lookup.</li>
+</ol>
+
+<hr>
+
+<h2>Remaining steps</h2>
+<ol>
+<li>Verify the four assumed-neutralized rows in the §2 grid (<code>SubStdConditionRate</code>,
+<code>VacantBuildingRate</code>, <code>TerritoryFactor</code>, <code>ProtectionClassFactor</code>) against ISO's
+actual rule XML — the grid currently defaults them to 0/1.0 because the source doc's §9 formula simply omits them,
+not because any rule confirms they're meant to drop out.</li>
+<li>Verify the open question in §3 — check ISO's rule XML directly for any rule that sets
+<code>SpecificGroupIRate</code>, rather than relying on the "user-entered" inference.</li>
+<li>Verify Building's <code>SprinklerLeakageNotExcluded</code> CW row (§4) — it's confirmed present but not
+independently row-counted, unlike Contents' sibling table.</li>
+<li>Once Building's grid is confirmed, build the same factor-by-factor grid for Contents — deferred here per your
+instruction to focus on Building first.</li>
+<li>Nothing gets built into the live workbook until you say go.</li>
+</ol>

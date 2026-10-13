@@ -1,0 +1,428 @@
+<title>Business Income — All Four Forms, Stage by Stage</title>
+<style>
+  :root {
+    --bg: #eef1f4; --paper: #ffffff; --ink: #1c2733; --ink-soft: #55606b; --ink-faint: #8b95a1;
+    --grid-line: #d7dce2; --header-fill: #e4e8ed; --header-fill-strong: #1e3a45; --header-text-strong: #eef4f3;
+    --accent: #1e3a45; --accent-soft: #cfe0e0; --accent-warm: #b96a2c; --accent-warm-soft: #f3e2cf;
+    --good: #2f7d5a; --good-soft: #dcefe4; --warn: #a53d26; --warn-soft: #f7ddd4;
+    --shadow: 0 1px 2px rgba(28,39,51,0.06), 0 8px 24px rgba(28,39,51,0.07);
+    --font-display: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+    --font-body: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+    --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, "Liberation Mono", monospace;
+
+    /* Stage-group categorical palette (validated: node scripts/validate_palette.js — ALL CHECKS PASS) */
+    --s1: #2a78d6; --s1-tint: #dceaf9;  /* Setup / Building copies */
+    --s2: #eb6834; --s2-tint: #fbe4d8;  /* BaseRate — the loss cost */
+    --s3: #1baf7a; --s3-tint: #d7f0e6;  /* Rate */
+    --s4: #eda100; --s4-tint: #fbecd0;  /* COLAdj — cause-of-loss adjustment */
+    --s5: #e87ba4; --s5-tint: #fbe1ea;  /* Factor — coinsurance/type-of-risk */
+    --s6: #4a3aa7; --s6-tint: #e3dff5;  /* FinalRate — combine */
+    --s7: #e34948; --s7-tint: #fbdcdc;  /* Premium */
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #10151b; --paper: #161d25; --ink: #e7ecf1; --ink-soft: #a3aebb; --ink-faint: #6d7885;
+      --grid-line: #2b3742; --header-fill: #1b242d; --header-fill-strong: #21504f; --header-text-strong: #eaf3f1;
+      --accent: #59a9ac; --accent-soft: #1d3535; --accent-warm: #dd9a5c; --accent-warm-soft: #372a1c;
+      --good: #63c090; --good-soft: #1b3226; --warn: #e0806a; --warn-soft: #3a2019;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 28px rgba(0,0,0,0.35);
+      --s1: #3987e5; --s1-tint: #17293f;
+      --s2: #d95926; --s2-tint: #3a2013;
+      --s3: #199e70; --s3-tint: #113328;
+      --s4: #c98500; --s4-tint: #3a2c08;
+      --s5: #d55181; --s5-tint: #3a1b28;
+      --s6: #9085e9; --s6-tint: #241f3f;
+      --s7: #e66767; --s7-tint: #3a1717;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #10151b; --paper: #161d25; --ink: #e7ecf1; --ink-soft: #a3aebb; --ink-faint: #6d7885;
+    --grid-line: #2b3742; --header-fill: #1b242d; --header-fill-strong: #21504f; --header-text-strong: #eaf3f1;
+    --accent: #59a9ac; --accent-soft: #1d3535; --accent-warm: #dd9a5c; --accent-warm-soft: #372a1c;
+    --good: #63c090; --good-soft: #1b3226; --warn: #e0806a; --warn-soft: #3a2019;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 28px rgba(0,0,0,0.35);
+    --s1: #3987e5; --s1-tint: #17293f;
+    --s2: #d95926; --s2-tint: #3a2013;
+    --s3: #199e70; --s3-tint: #113328;
+    --s4: #c98500; --s4-tint: #3a2c08;
+    --s5: #d55181; --s5-tint: #3a1b28;
+    --s6: #9085e9; --s6-tint: #241f3f;
+    --s7: #e66767; --s7-tint: #3a1717;
+  }
+  :root[data-theme="light"] {
+    --bg: #eef1f4; --paper: #ffffff; --ink: #1c2733; --ink-soft: #55606b; --ink-faint: #8b95a1;
+    --grid-line: #d7dce2; --header-fill: #e4e8ed; --header-fill-strong: #1e3a45; --header-text-strong: #eef4f3;
+    --accent: #1e3a45; --accent-soft: #cfe0e0; --accent-warm: #b96a2c; --accent-warm-soft: #f3e2cf;
+    --good: #2f7d5a; --good-soft: #dcefe4; --warn: #a53d26; --warn-soft: #f7ddd4;
+    --shadow: 0 1px 2px rgba(28,39,51,0.06), 0 8px 24px rgba(28,39,51,0.07);
+    --s1: #2a78d6; --s1-tint: #dceaf9;
+    --s2: #eb6834; --s2-tint: #fbe4d8;
+    --s3: #1baf7a; --s3-tint: #d7f0e6;
+    --s4: #eda100; --s4-tint: #fbecd0;
+    --s5: #e87ba4; --s5-tint: #fbe1ea;
+    --s6: #4a3aa7; --s6-tint: #e3dff5;
+    --s7: #e34948; --s7-tint: #fbdcdc;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); line-height: 1.6; overflow-x: hidden; }
+  a { color: var(--accent); }
+  a:focus-visible { outline: 2px solid var(--accent-warm); outline-offset: 2px; }
+  .wrap { max-width: 1440px; margin: 0 auto; padding: 0 24px 96px; }
+
+  header.masthead { padding: 56px 24px 28px; max-width: 1440px; margin: 0 auto; }
+  .eyebrow { font-family: var(--font-ui); font-size: 12px; letter-spacing: 0.11em; text-transform: uppercase; color: var(--accent-warm); font-weight: 600; margin: 0 0 10px; }
+  h1.title { font-family: var(--font-display); font-size: clamp(28px, 4vw, 40px); font-weight: 400; margin: 0 0 14px; text-wrap: balance; color: var(--ink); }
+  .dek { font-size: 17px; color: var(--ink-soft); max-width: 92ch; margin: 0 0 6px; }
+  .dek code { font-family: var(--font-mono); font-size: 14.5px; background: var(--header-fill); padding: 1px 5px; border-radius: 3px; }
+
+  section.sect { padding-top: 48px; }
+  .sect-heading { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 6px; }
+  .sect-index { font-family: var(--font-mono); font-size: 13px; color: var(--accent-warm); font-variant-numeric: tabular-nums; }
+  h2.sect-title { font-family: var(--font-display); font-size: 24px; font-weight: 400; margin: 0; color: var(--ink); }
+  .sect-role { font-family: var(--font-ui); font-size: 13px; color: var(--ink-soft); margin: 0 0 18px; max-width: 100ch; }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 8px 18px; margin: 6px 0 22px; padding: 14px 16px; background: var(--paper); border: 1px solid var(--grid-line); border-radius: 8px; box-shadow: var(--shadow); }
+  .legend-item { display: flex; align-items: center; gap: 8px; font-family: var(--font-ui); font-size: 12.5px; color: var(--ink); }
+  .legend-swatch { width: 13px; height: 13px; border-radius: 3px; flex: none; }
+
+  .tblscroll { overflow-x: auto; border-radius: 8px; box-shadow: var(--shadow); }
+  table.grid { border-collapse: collapse; width: 100%; min-width: 1320px; font-size: 12.5px; background: var(--paper); }
+  table.grid th, table.grid td { border: 1px solid var(--grid-line); padding: 9px 11px; text-align: left; vertical-align: top; }
+  table.grid thead th { background: var(--header-fill-strong); color: var(--header-text-strong); font-family: var(--font-ui); font-size: 11.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; position: sticky; top: 0; }
+  table.grid td.stage { font-family: var(--font-ui); font-weight: 700; font-size: 11.5px; color: var(--ink-soft); width: 10%; }
+  table.grid td .fname { display: block; color: var(--ink); font-weight: 700; margin-bottom: 5px; font-family: var(--font-mono); font-size: 11.5px; }
+  table.grid td pre { font-family: var(--font-mono); font-size: 11px; white-space: pre-wrap; margin: 0; line-height: 1.5; color: var(--ink-soft); }
+  table.grid td.form { width: 22.5%; background: var(--paper); }
+  table.grid td.na { color: var(--ink-faint); font-style: italic; font-family: var(--font-ui); font-size: 12px; background: var(--paper); }
+
+  .note { display: inline-block; font-family: var(--font-ui); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--ink-faint); margin-bottom: 5px; }
+  .copytag { display: inline-block; font-family: var(--font-ui); font-size: 9.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--good); background: var(--good-soft); padding: 1px 6px; border-radius: 8px; margin-left: 6px; }
+
+  tr.g1 td.stage { border-left: 5px solid var(--s1); background: var(--s1-tint); }
+  tr.g2 td.stage { border-left: 5px solid var(--s2); background: var(--s2-tint); }
+  tr.g3 td.stage { border-left: 5px solid var(--s3); background: var(--s3-tint); }
+  tr.g4 td.stage { border-left: 5px solid var(--s4); background: var(--s4-tint); }
+  tr.g5 td.stage { border-left: 5px solid var(--s5); background: var(--s5-tint); }
+  tr.g6 td.stage { border-left: 5px solid var(--s6); background: var(--s6-tint); }
+  tr.g7 td.stage { border-left: 5px solid var(--s7); background: var(--s7-tint); }
+
+  .callout { display: flex; gap: 10px; padding: 12px 14px; border-radius: 5px; max-width: 100ch; font-size: 14.5px; margin-top: 14px; }
+  .callout.warn { background: var(--warn-soft); color: var(--warn); }
+  .callout.warm { background: var(--accent-warm-soft); color: var(--accent-warm); }
+  .callout.good { background: var(--good-soft); color: var(--good); }
+  .callout b { font-weight: 700; }
+  .callout-mark { flex: none; font-family: var(--font-ui); font-weight: 700; }
+
+  hr.divider { border: none; border-top: 1px solid var(--grid-line); margin: 48px 0 0; }
+  footer.closing { max-width: 1440px; margin: 56px auto 0; padding: 0 24px 64px; }
+  footer.closing h2 { font-family: var(--font-display); font-weight: 400; font-size: 21px; margin: 0 0 10px; }
+  footer.closing p.note-foot { margin-top: 14px; font-size: 13px; color: var(--ink-faint); font-family: var(--font-ui); }
+</style>
+
+<header class="masthead">
+  <p class="eyebrow">CF_Algorithm &middot; Business Income &middot; all four traced forms</p>
+  <h1 class="title">Business Income, side by side: Basic Group I &middot; Basic Group II &middot; Broad &middot; Special</h1>
+  <p class="dek">One row per calculation stage, one column per form — the same "stage, not verdict" color coding used for the Contents grid. <code>&mdash;</code> means that form's chain has no equivalent step at all. <span class="copytag">copy</span> flags a field that's a literal Building cell reference, not computed by Business Income at all. Sources: <code>Excel_Rater_BusinessIncome_BasicGroupI.html</code>, <code>...BasicGroupII.html</code>, <code>...Broad.html</code>, <code>...Special.html</code>, <code>...FactorDecisionTree.html</code> — all traced directly against <code>CommercialPropertyBusinessIncomeRules.Rule.xml</code>, 2026-09-11.</p>
+</header>
+
+<div class="wrap">
+
+  <section class="sect" id="s1">
+    <div class="sect-heading"><span class="sect-index">&#9670;</span><h2 class="sect-title">The full chain, stage by stage</h2></div>
+    <p class="sect-role">Chain lengths: 7 stages (BGI), 8 (BGII, once the missing wind/hail branch is counted), 3 (Broad), 7 (Special) — they don't line up 1:1. Broad and Special are the outliers worth watching for: neither has a <code>Factor</code> stage at all, and Broad has no cause-of-loss adjustment of any kind.</p>
+
+    <div class="legend">
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--s1);"></span>Setup — Building copies</div>
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--s2);"></span>BaseRate — the loss cost</div>
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--s3);"></span>Rate</div>
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--s4);"></span>COLAdj — cause-of-loss adjustment</div>
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--s5);"></span>Factor — coinsurance / type-of-risk</div>
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--s6);"></span>FinalRate — combine</div>
+      <div class="legend-item"><span class="legend-swatch" style="background:var(--s7);"></span>Premium</div>
+    </div>
+
+    <div class="tblscroll">
+      <table class="grid">
+        <thead>
+          <tr><th>Stage</th><th>BGI</th><th>BGII</th><th>Broad</th><th>Special</th></tr>
+        </thead>
+        <tbody>
+
+          <tr class="g1">
+            <td class="stage">Setup<br>(Building copies)</td>
+            <td class="form na">&mdash;</td>
+            <td class="form">
+              <span class="fname">BasicGroupIISymbolToUse<span class="copytag">copy</span><br>BasicGroupIIRatingTerr<span class="copytag">copy</span><br>BasicGroupIINumericValue<span class="copytag">copy</span><br>BCEGFactor<span class="copytag">copy</span></span>
+              <pre>Four confirmed literal Copy's from
+Calc_Building_BGII — none of these
+are computed by Business Income at
+all. The most copy-heavy form.</pre>
+            </td>
+            <td class="form">
+              <span class="fname">ConstructionTypeToUse<span class="copytag">copy</span></span>
+              <pre>One field, confirmed Copy from
+Calc_Building_Broad. Nothing else
+needed before the lookup.</pre>
+            </td>
+            <td class="form">
+              <span class="fname">ConstructionTypeToUse<span class="copytag">copy</span><br>ApartmentCondoIndicator<span class="copytag">copy</span></span>
+              <pre>Two fields, both confirmed Copy's
+from Calc_Building_Special. The
+apartment/condo flag feeds the
+theft-classification derivation.</pre>
+            </td>
+          </tr>
+
+          <tr class="g2">
+            <td class="stage">BaseRate</td>
+            <td class="form">
+              <span class="note">Borrowed value, not re-derived</span>
+              <span class="fname">(no local BaseRate step)</span>
+              <pre>Reads Calc_Building_BGI.BaseRate
+directly — a cross-tab VALUE
+reference, the one true borrow
+in this whole coverage.</pre>
+            </td>
+            <td class="form">
+              <span class="note">Own lookup, Building's key &rarr; same answer either way</span>
+              <span class="fname">BasicGroupIIBaseRate</span>
+              <pre>Lookup(BasicGroupIIRate: State,
+  BasicGroupIIRatingTerr,
+  BasicGroupIISymbolToUse, "Bldg")
+Same table, same key Building's
+own tab reads &rarr; mathematically
+guaranteed same number.</pre>
+            </td>
+            <td class="form">
+              <span class="note">Genuinely own — not a cross-reference</span>
+              <span class="fname">BroadBaseRate</span>
+              <pre>Lookup(BroadFormBaseRate: State,
+  ConstructionTypeToUse,
+  "Business Income Without Extra
+   Expense" / "All Other")
+Shared TABLE, own covType key —
+own DATA, not Building's value.</pre>
+            </td>
+            <td class="form">
+              <span class="note">Most independent of the four</span>
+              <span class="fname">SpecialBaseRate</span>
+              <pre>Builders Risk (class 1150):
+  Lookup(SpecialFormBldrsRisk
+  TimeElementBaseRate: "Y")
+else: Lookup(SpecialFormIncldg
+  TheftTimeElementBaseRate: State,
+  ConstructionTypeToUse, CovType,
+  SpecialIncludingTheftTypeRisk)
+4-key lookup — richest key set
+of any Business Income form.</pre>
+            </td>
+          </tr>
+
+          <tr class="g3">
+            <td class="stage">Rate</td>
+            <td class="form">
+              <span class="fname">Rate</span>
+              <pre>((BaseRate&times;LCM)+SubStdCondition
+  Rate+VacantBuildingRate)
+  &times; TerrFactor &times; ProtClassFactor
+  &times; BGIBaseRateAdjustmentFactor</pre>
+            </td>
+            <td class="form">
+              <span class="fname">Rate</span>
+              <pre>BaseRate &times; LCM &times;
+  BasicGroupIINumericValue &times;
+  BCEGFactor &times;
+  BGIIBaseRateAdjustmentFactor
+(2 of 5 multiplicands are
+Building copies from stage 0)</pre>
+            </td>
+            <td class="form">
+              <span class="fname">BroadRate</span>
+              <pre>BroadBaseRate &times; LCM
+(the whole step — no territory,
+no protection class, no
+adjustment factor of any kind)</pre>
+            </td>
+            <td class="form">
+              <span class="fname">SpecialRate</span>
+              <pre>SpecialBaseRate &times; LCM
+(same 2-term shape as Broad)</pre>
+            </td>
+          </tr>
+
+          <tr class="g4">
+            <td class="stage">COLAdj</td>
+            <td class="form">
+              <span class="fname">COLAdj</span>
+              <pre>ROUND(Rate - SprinklerLeakage
+  ExclNonSprinkleredRate,3)
+  &times; SprinklerLeakageExclSprinkl
+    eredFactor &times; VandalismExcl
+    Factor &times; BuildersRiskFactor
+Same tables Building reads.</pre>
+            </td>
+            <td class="form">
+              <span class="note">Confirmed gap in the live workbook</span>
+              <span class="fname">COLAdj</span>
+              <pre>if no wind/hail-excl record:
+  Rate &times; BuildersRiskFactor
+else: LowestBaseRate &times; LCM &times;
+  WindstormOrHailExclFactor &times;
+  BuildersRiskFactor
+&#9888; CFRater1.01.xlsb currently
+hardcodes the "no exclusion"
+branch unconditionally &mdash; the
+else branch is unwired.</pre>
+            </td>
+            <td class="form na">
+              <b style="color:var(--ink-soft);">&#10005; Does not exist for this form</b>
+              <pre style="margin-top:6px;">Confirmed — no cause-of-loss
+adjustment stage anywhere in
+Broad's chain. Rate goes straight
+to FinalRate.</pre>
+            </td>
+            <td class="form">
+              <span class="fname">SpecialCauseOfLossAdjustment</span>
+              <pre>SpecialRate &times;
+  SpecialTheftExclusionFactor
+Unconditional product, no gate.
+No roof-surfacing concept &mdash;
+confirmed absent everywhere in
+this coverage, any form.</pre>
+            </td>
+          </tr>
+
+          <tr class="g5">
+            <td class="stage">Factor<br>(coinsurance /<br>type of risk)</td>
+            <td class="form">
+              <span class="note">The 6-branch shared helper</span>
+              <span class="fname">Factor</span>
+              <pre>MaxPeriod / MonthlyLimitOfIndem
+  / ExtraExpenseOnly / Combined
+  TypeOfRisk / plain Educational
+  Institutions / otherwise
+Computed ONCE per building &mdash;
+identical value feeds BGI and
+BGII, confirmed not recomputed
+per form (SetFactor runs after
+both SetBGIRatesAndFactors AND
+SetBGIIRatesAndFactors).</pre>
+            </td>
+            <td class="form">
+              <span class="note">Same single shared value as BGI</span>
+              <span class="fname">Factor</span>
+              <pre>(see BGI's cell — literally the
+same computed value, not a
+separate instance)</pre>
+            </td>
+            <td class="form na">
+              <b style="color:var(--ink-soft);">&#10005; Never read</b>
+              <pre style="margin-top:6px;">Confirmed: FinalBroadRate is a
+straight Copy of BroadRate.
+Factor is computed during shared
+prep but Broad's FinalRate step
+never touches it.</pre>
+            </td>
+            <td class="form na">
+              <b style="color:var(--ink-soft);">&#10005; Never read</b>
+              <pre style="margin-top:6px;">Same as Broad &mdash; FinalSpecialRate
+is a straight Copy of
+SpecialCauseOfLossAdjustment.
+Factor is BGI/BGII only.</pre>
+            </td>
+          </tr>
+
+          <tr class="g6">
+            <td class="stage">FinalRate</td>
+            <td class="form">
+              <span class="fname">FinalRate</span>
+              <pre>COLAdj &times; Factor</pre>
+            </td>
+            <td class="form">
+              <span class="fname">FinalRate</span>
+              <pre>COLAdj &times; Factor
+(same 2-term shape as BGI)</pre>
+            </td>
+            <td class="form">
+              <span class="fname">FinalBroadRate</span>
+              <pre>= BroadRate
+(literal Copy &mdash; no multiplier
+of any kind, confirmed line 8064)</pre>
+            </td>
+            <td class="form">
+              <span class="fname">FinalSpecialRate</span>
+              <pre>= SpecialCauseOfLossAdjustment
+(literal Copy, confirmed line
+8080 &mdash; matches Broad's shape)</pre>
+            </td>
+          </tr>
+
+          <tr class="g7">
+            <td class="stage">Premium</td>
+            <td class="form">
+              <span class="note">Hardcoded gate, 2 branches</span>
+              <span class="fname">BI_BGI_Premium</span>
+              <pre>CoverageOnPolicyIndicator=1
+  (hardcoded, no test)
+ROUND(ROUND(IRPM&times;PackageMod&times;
+  FinalRate&times;(Limit/100),0),0)
+  &times; CyberExclFactorBGI &times;
+  CyberExclCOLExcptnsFactorBGI</pre>
+            </td>
+            <td class="form">
+              <span class="note">Byte-shape-identical to BGI's</span>
+              <span class="fname">BI_BGII_Premium</span>
+              <pre>Same hardcoded gate, same
+2-branch shape, datadef names
+swapped to BGII &mdash; confirmed a
+direct rename, not a rebuild.</pre>
+            </td>
+            <td class="form">
+              <span class="note">Exact-equality gate, not hardcoded</span>
+              <span class="fname">BI_Broad_Premium</span>
+              <pre>CoverageOnPolicyIndicator=1
+  IF CauseOfLossToUse="Broad"
+  (real test, unlike BGI/BGII)
+Same 2-branch shape otherwise.</pre>
+            </td>
+            <td class="form">
+              <span class="note">Same exact-equality shape as Broad</span>
+              <span class="fname">BI_Special_Premium</span>
+              <pre>CoverageOnPolicyIndicator=1
+  IF CauseOfLossToUse="Special"
+Confirmed structurally identical
+to Broad's premium file, line by
+line &mdash; a genuine departure from
+Building, where Special's own
+premium file is NOT a rename of
+the Basic-form pattern.</pre>
+            </td>
+          </tr>
+
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <section class="sect" id="s2">
+    <div class="sect-heading"><span class="sect-index">&#9670;</span><h2 class="sect-title">What's constant, what actually diverges</h2></div>
+    <div class="callout good"><span class="callout-mark">&#10003;</span><span><b><code>Factor</code> is one shared value, not four.</b> Confirmed by call order: <code>SetFactor</code> runs after both <code>SetBGIRatesAndFactors</code> and <code>SetBGIIRatesAndFactors</code> have already finished. It can never differ between BGI and BGII for the same building — and it never exists at all for Broad or Special.</span></div>
+    <div class="callout good"><span class="callout-mark">&#10003;</span><span><b><code>BuildersRiskFactor</code> is also one shared value.</b> Computed once during shared prep (<code>SetBuildersRiskFactor</code>, before any per-form chain runs), read by BGI's and BGII's COLAdj — same gate (<code>ClassCodeToUse="1150"</code>, <code>CovType&ne;"Extra Expense Only"</code>), confirmed CW-only 2.0 constant, zero state overrides across all 47 states.</span></div>
+    <div class="callout warn"><span class="callout-mark">&#9888;</span><span><b>BGII's wind/hail-exclusion branch is confirmed missing from the live workbook, both Building and Contents.</b> The floor-rate lookup (<code>LowestBaseRate</code>) is correctly wired; the <code>WindstormOrHailExclFactor</code> table is never looked up anywhere in <code>CoreScratchpad</code>, and <code>CAUSE OF LOSS ADJUSTMENT</code> is an unconditional <code>RATE &times; StdPropPolGroupIIFactor</code> with no branch at all. Business Income hasn't been built yet, so this is a design note for that build, not a live gap in this coverage specifically.</span></div>
+    <div class="callout good"><span class="callout-mark">&#10003;</span><span><b>Broad and Special are structural twins of each other, not of BGI/BGII.</b> Same premium-file shape (exact <code>CauseOfLossToUse</code> equality gate, not a hardcoded 1), same "no <code>Factor</code>, straight <code>Copy</code> to <code>FinalRate</code>" pattern. Broad has no COLAdj at all; Special's COLAdj is the simplest of any form that has one (a single unconditional product, no branching).</span></div>
+    <div class="callout warn"><span class="callout-mark">&#9888;</span><span><b>BGII is the most Building-copy-heavy form in the coverage.</b> Four of the five inputs feeding <code>Rate</code> are literal Building copies (<code>BasicGroupIISymbolToUse</code>, <code>BasicGroupIIRatingTerr</code>, <code>BasicGroupIINumericValue</code>, <code>BCEGFactor</code>) — only <code>BGIIBaseRateAdjustmentFactor</code> is genuinely independent math at that stage. <code>BaseRate</code> itself is technically its own lookup, but keyed entirely on Building's own field, so it lands on the same number either way.</span></div>
+  </section>
+
+  <hr class="divider" />
+
+  <footer class="closing">
+    <h2>Remaining steps</h2>
+    <p class="note-foot">Read-only comparison view — nothing here changes what's documented in each form's own build reference, it re-presents it side by side. Consolidated from Excel_Rater_BusinessIncome_BasicGroupI.html, ...BasicGroupII.html, ...Broad.html, ...Special.html, ...FactorDecisionTree.html &middot; all traced against CommercialPropertyBusinessIncomeRules.Rule.xml 2026-09-11 &middot; CFCW20260601V01. Next: the all-batch per-state checks still open on BGII's and Special's tables, or building the BGII wind/hail fix once you say go.</p>
+  </footer>
+
+</div>

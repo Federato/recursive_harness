@@ -1,0 +1,360 @@
+<title>Broad — Full Rating Scope</title>
+<style>
+  :root {
+    --bg: #eef1f4; --paper: #ffffff; --ink: #1c2733; --ink-soft: #55606b; --ink-faint: #8b95a1;
+    --grid-line: #d7dce2; --header-fill: #e4e8ed; --header-fill-strong: #1e3a45; --header-text-strong: #eef4f3;
+    --accent: #1e3a45; --accent-soft: #cfe0e0; --accent-warm: #b96a2c; --accent-warm-soft: #f3e2cf;
+    --good: #2f7d5a; --good-soft: #dcefe4; --warn: #a53d26; --warn-soft: #f7ddd4;
+    --shadow: 0 1px 2px rgba(28,39,51,0.06), 0 8px 24px rgba(28,39,51,0.07);
+    --font-display: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+    --font-body: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+    --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, "Liberation Mono", monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #10151b; --paper: #161d25; --ink: #e7ecf1; --ink-soft: #a3aebb; --ink-faint: #6d7885;
+      --grid-line: #2b3742; --header-fill: #1b242d; --header-fill-strong: #21504f; --header-text-strong: #eaf3f1;
+      --accent: #59a9ac; --accent-soft: #1d3535; --accent-warm: #dd9a5c; --accent-warm-soft: #372a1c;
+      --good: #63c090; --good-soft: #1b3226; --warn: #e0806a; --warn-soft: #3a2019;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 28px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #10151b; --paper: #161d25; --ink: #e7ecf1; --ink-soft: #a3aebb; --ink-faint: #6d7885;
+    --grid-line: #2b3742; --header-fill: #1b242d; --header-fill-strong: #21504f; --header-text-strong: #eaf3f1;
+    --accent: #59a9ac; --accent-soft: #1d3535; --accent-warm: #dd9a5c; --accent-warm-soft: #372a1c;
+    --good: #63c090; --good-soft: #1b3226; --warn: #e0806a; --warn-soft: #3a2019;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 28px rgba(0,0,0,0.35);
+  }
+  :root[data-theme="light"] {
+    --bg: #eef1f4; --paper: #ffffff; --ink: #1c2733; --ink-soft: #55606b; --ink-faint: #8b95a1;
+    --grid-line: #d7dce2; --header-fill: #e4e8ed; --header-fill-strong: #1e3a45; --header-text-strong: #eef4f3;
+    --accent: #1e3a45; --accent-soft: #cfe0e0; --accent-warm: #b96a2c; --accent-warm-soft: #f3e2cf;
+    --good: #2f7d5a; --good-soft: #dcefe4; --warn: #a53d26; --warn-soft: #f7ddd4;
+    --shadow: 0 1px 2px rgba(28,39,51,0.06), 0 8px 24px rgba(28,39,51,0.07);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); line-height: 1.6; overflow-x: hidden; }
+  a { color: var(--accent); }
+  a:focus-visible, button:focus-visible, .jump:focus-visible { outline: 2px solid var(--accent-warm); outline-offset: 2px; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 24px 96px; }
+
+  header.masthead { padding: 56px 24px 28px; max-width: 980px; margin: 0 auto; }
+  .eyebrow { font-family: var(--font-ui); font-size: 12px; letter-spacing: 0.11em; text-transform: uppercase; color: var(--accent-warm); font-weight: 600; margin: 0 0 10px; }
+  h1.title { font-family: var(--font-display); font-size: clamp(28px, 4vw, 40px); font-weight: 400; margin: 0 0 14px; text-wrap: balance; color: var(--ink); }
+  .dek { font-size: 17px; color: var(--ink-soft); max-width: 70ch; margin: 0 0 6px; }
+  .dek + .dek { margin-top: 10px; }
+  .dek code { font-family: var(--font-mono); font-size: 14.5px; background: var(--header-fill); padding: 1px 5px; border-radius: 3px; }
+
+  nav.jumpbar { position: sticky; top: 0; z-index: 20; background: var(--header-fill-strong); border-bottom: 1px solid var(--grid-line); }
+  .jumpbar-inner { max-width: 980px; margin: 0 auto; display: flex; align-items: stretch; overflow-x: auto; scrollbar-width: thin; }
+  .jumpbar-label { font-family: var(--font-ui); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--header-text-strong); opacity: 0.6; align-self: center; padding: 0 12px 0 20px; white-space: nowrap; flex: none; }
+  .jump { font-family: var(--font-ui); font-size: 13px; color: var(--header-text-strong); text-decoration: none; white-space: nowrap; padding: 13px 16px; border-bottom: 3px solid transparent; opacity: 0.72; flex: none; }
+  .jump:hover { opacity: 1; }
+
+  section.sect { padding-top: 56px; scroll-margin-top: 56px; }
+  .sect-heading { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 6px; }
+  .sect-index { font-family: var(--font-mono); font-size: 13px; color: var(--accent-warm); font-variant-numeric: tabular-nums; }
+  h2.sect-title { font-family: var(--font-display); font-size: 25px; font-weight: 400; margin: 0; color: var(--ink); }
+  .sect-role { font-family: var(--font-ui); font-size: 13px; color: var(--ink-soft); margin: 0 0 20px; }
+
+  table.scope-table { border-collapse: collapse; width: 100%; font-size: 14px; margin: 10px 0 4px; }
+  table.scope-table th, table.scope-table td { border: 1px solid var(--grid-line); padding: 8px 11px; text-align: left; vertical-align: top; }
+  table.scope-table th { background: var(--header-fill); font-family: var(--font-ui); font-size: 12px; font-weight: 700; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.02em; }
+  table.scope-table td code { font-family: var(--font-mono); font-size: 12.5px; background: var(--header-fill); padding: 1px 4px; border-radius: 3px; }
+  .status-ok { color: var(--good); font-weight: 700; }
+  .status-partial { color: var(--accent-warm); font-weight: 700; }
+  .status-none { color: var(--warn); font-weight: 700; }
+  .status-na { color: var(--ink-faint); }
+  .tblscroll { overflow-x: auto; }
+
+  .instructions { margin-top: 16px; display: grid; gap: 12px; }
+  .instructions p { margin: 0; font-size: 15.5px; color: var(--ink); max-width: 74ch; }
+  .instructions p.lede { font-size: 16.5px; }
+
+  .callout { display: flex; gap: 10px; padding: 12px 14px; border-radius: 5px; max-width: 74ch; font-size: 14.5px; margin-top: 14px; }
+  .callout.warn { background: var(--warn-soft); color: var(--warn); }
+  .callout.warm { background: var(--accent-warm-soft); color: var(--accent-warm); }
+  .callout.good { background: var(--good-soft); color: var(--good); }
+  .callout b { font-weight: 700; }
+  .callout-mark { flex: none; font-family: var(--font-ui); font-weight: 700; }
+
+  .formula-panel { background: var(--header-fill-strong); color: var(--header-text-strong); border-radius: 6px; padding: 16px 18px; font-family: var(--font-mono); font-size: 12px; line-height: 1.75; overflow-x: auto; margin: 10px 0; }
+  .formula-panel pre { margin: 0; white-space: pre; }
+  .formula-panel .kw { color: var(--accent-warm); font-weight: 700; }
+  .formula-panel .fn { color: #a9d6d8; }
+  .formula-panel .cm { opacity: 0.55; font-style: italic; }
+
+  .filecard { background: var(--paper); border: 1px solid var(--grid-line); border-radius: 6px; padding: 14px 16px; box-shadow: var(--shadow); margin: 10px 0; max-width: 74ch; }
+  .filecard .fname { font-family: var(--font-mono); font-size: 13.5px; font-weight: 700; color: var(--accent); }
+  .filecard .fdesc { font-size: 14px; color: var(--ink-soft); margin-top: 4px; }
+
+  .featureset { background: var(--paper); border: 1px solid var(--grid-line); border-radius: 6px; padding: 16px 18px; box-shadow: var(--shadow); margin: 14px 0; }
+  .featureset .fs-letter { font-family: var(--font-mono); font-size: 13px; color: var(--accent-warm); font-weight: 700; }
+  .featureset .fs-title { font-family: var(--font-ui); font-weight: 700; font-size: 15px; margin: 2px 0 6px; }
+  .featureset .fs-buys { font-size: 14px; color: var(--ink-soft); }
+  .featureset .fs-buys b { color: var(--ink); font-weight: 700; }
+
+  hr.divider { border: none; border-top: 1px solid var(--grid-line); margin: 56px 0 0; }
+
+  footer.closing { max-width: 980px; margin: 64px auto 0; padding: 0 24px 64px; }
+  footer.closing h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0 0 12px; }
+  footer.closing ol { padding-left: 20px; display: grid; gap: 8px; max-width: 66ch; }
+  footer.closing li { font-size: 15px; color: var(--ink-soft); }
+  footer.closing p.note { margin-top: 20px; font-size: 13px; color: var(--ink-faint); font-family: var(--font-ui); }
+</style>
+
+<header class="masthead">
+  <p class="eyebrow">CF_Algorithm &middot; Commercial Property &middot; Countrywide 06-01-2026</p>
+  <h1 class="title">Broad — Full Rating Scope</h1>
+  <p class="dek">Everything traced, everything built, and everything still open for the Broad cause-of-loss form, Building and Contents. Same three-leg framing as <code>Excel_Rater_FullBuildout_Scope.md</code>, same section shape as <code>Excel_Rater_BasicGroupII_Scope.html</code> — but Broad has had none of BGII's follow-up deep-dive sessions yet, so §5's state-variation table is mostly open, not mostly checked.</p>
+  <p class="dek">Source docs this page consolidates: <code>CauseOfLoss_Building_RatingAlgorithms.md</code> &amp; <code>CauseOfLoss_PersonalProperty_RatingAlgorithms.md</code> (Broad sections), <code>Excel_Rater_Broad.md</code>, <code>Excel_Rater_RatingPaths_Checklist.md</code>, <code>Excel_Rater_Wireframes.html</code>.</p>
+</header>
+
+<nav class="jumpbar" aria-label="Jump to section">
+  <div class="jumpbar-inner">
+    <span class="jumpbar-label">Sections</span>
+    <a class="jump" href="#s1">1&nbsp;Vs.&nbsp;other&nbsp;forms</a>
+    <a class="jump" href="#s2">2&nbsp;Building&nbsp;chain</a>
+    <a class="jump" href="#s3">3&nbsp;Contents&nbsp;chain</a>
+    <a class="jump" href="#s4">4&nbsp;Tables</a>
+    <a class="jump" href="#s5">5&nbsp;State&nbsp;variation</a>
+    <a class="jump" href="#s6">6&nbsp;Rating&nbsp;paths</a>
+    <a class="jump" href="#s7">7&nbsp;Built&nbsp;artifacts</a>
+    <a class="jump" href="#s8">8&nbsp;Backlog</a>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <!-- SECTION 1 -->
+  <section class="sect" id="s1">
+    <div class="sect-heading"><span class="sect-index">1</span><h2 class="sect-title">What actually changes, versus Basic Group I/II</h2></div>
+    <p class="sect-role">The shortest chain of any form documented so far — and the first with a rate that resolves at CW level without a state filing.</p>
+    <div class="tblscroll">
+      <table class="scope-table">
+        <tr><th></th><th>Basic Group I</th><th>Basic Group II</th><th>Broad</th></tr>
+        <tr><td>Chain length</td><td>8 steps (Bldg) / 9 (Contents)</td><td>13 steps (Bldg) / 12 (Contents)</td><td><b>6 steps (Bldg) / 5 (Contents)</b></td></tr>
+        <tr><td>Rate key</td><td>ClassCode + ConstructionCode</td><td>Territory + Symbol</td><td><b>ConstructionType alone</b> — no class code, no territory, no protection class, no symbol</td></tr>
+        <tr><td>Cause-of-loss adjustment stage</td><td>Yes — sprinkler/vandalism election step</td><td>Yes — fire-only gate + wind/hail-excluded rebuild</td><td><b>None at all.</b> Goes straight from <code>Rate</code> to <code>AdjustedRate</code></td></tr>
+        <tr><td>Base rate CW resolution</td><td>Header-only at CW, needs state filing</td><td>Header-only at CW, needs state filing</td><td><b>Resolves at CW for every construction type, both coverages</b> — the first form in this project where that's true</td></tr>
+        <tr><td>Builders Risk branch (Building)</td><td>n/a</td><td>n/a</td><td>Yes — <code>ClassCode=1150</code> routes to its own <code>covType="BldrRisk"</code> lookup</td></tr>
+        <tr><td>Builders Risk branch (Contents)</td><td>n/a</td><td>n/a</td><td><b>None</b> — always <code>covType="PersProp"</code> regardless of class code</td></tr>
+        <tr><td>Contents deductible factor</td><td><code>Copy</code>'d from ancestor, documented deviation</td><td><code>Copy</code>'d from ancestor, documented deviation</td><td><b>No local rule of any kind</b> — read from 4 levels up the tree with nothing local at all, the most externally-sourced of the three</td></tr>
+        <tr><td>Blank-deductible behavior</td><td>n/a this pass</td><td>n/a this pass</td><td><b>Zeroes the whole rate</b> (0.0), not a 1.0 no-op — a real trap if a rater leaves this optional</td></tr>
+      </table>
+    </div>
+    <div class="callout good"><span class="callout-mark">&#10003;</span><span><b>Genuinely good news:</b> <code>BroadFormBaseRate</code> has real CW rows for all 6 construction types, both coverages — <code>0.015</code>/<code>0.012</code>/<code>0.021</code> for the four combustible/light constructions, <code>0.010</code>/<code>0.012</code>/<code>0.011</code> for the two fire-resistive ones (Bldg/BldrRisk/PersProp). Don't let this create false confidence about the rest of the chain, though — the LOI table this form needs hasn't been row-counted the way the base rate table has (see &sect;4).</span></div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- SECTION 2 -->
+  <section class="sect" id="s2">
+    <div class="sect-heading"><span class="sect-index">2</span><h2 class="sect-title">Building — the full 6-step chain</h2></div>
+    <p class="sect-role"><code>Calc_Building_Broad</code>, one row per building.</p>
+    <div class="formula-panel"><pre><span class="kw">BaseRate</span> =
+    <span class="kw">if</span> CauseOfLoss = "Broad" and ConstructionType &lt;&gt; "":
+        <span class="kw">if</span> ClassCode = "1150":
+            <span class="fn">LookupBroadFormBaseRate</span>(State|CW, ConstructionType, "BldrRisk")
+        <span class="kw">else</span>:
+            <span class="fn">LookupBroadFormBaseRate</span>(State|CW, ConstructionType, "Bldg")
+    <span class="kw">else</span>:
+        0.0
+
+<span class="kw">Rate</span> = BaseRate &times; LCM   <span class="cm">(round 3dp -- no addends, no other factors, the simplest Rate of any form built so far)</span>
+
+<span class="kw">LOIFactor</span> =
+    &lt;blanket copy&gt;                       <span class="kw">if</span> Bldg_IncludedInBlkt = "Yes" and BlktIDNum &gt; 0
+    <span class="kw">elif</span> Bldg_CovType = "Builders Risk":
+        <span class="fn">LookupBroadSpecialLOIFactorWithArgs</span>(...) <span class="kw">or</span> 0.0 <span class="kw">if</span> limit absent
+    <span class="kw">elif</span> Bldg_CovType not in ("Leasehold Interest","Legal Liability","No Coverage") and Bldg_Limit &lt;&gt; "":
+        <span class="fn">LookupBroadSpecialLOIFactorBldg</span>(State|CW, Bldg_Limit)
+    <span class="kw">else</span>:
+        1.0
+
+<span class="kw">AdjustedRate</span> = Rate &times; RoofSurfacingACVFactor &times; CoinsuranceFactor &times; LOIFactor
+    <span class="cm">(no cause-of-loss-adjustment stage at all -- straight from Rate to here)</span>
+
+<span class="kw">DeductibleFactor</span> =
+    <span class="fn">LookupDeductible250Factor</span>("Broad")                        <span class="kw">if</span> Deductible = "250"
+    <span class="kw">elif</span> Deductible = "Not Applicable": 1.0
+    <span class="kw">elif</span> Deductible &lt;&gt; "":  <span class="fn">LookupDeductibleFactor</span>(Deductible, TotAmtInsurance, "Other Cause Of Loss")
+    <span class="kw">else</span>: 0.0   <span class="cm">&#9733; blank deductible ZEROES the rate, not a 1.0 no-op</span>
+    <span class="cm">&#9733; corrected: TotAmtInsurance = StructureLimitToUse + OccupancyTotAmtInsuranceSum + SpecialClassRiskTotAmtInsurance -- Bldg limit PLUS every Contents item's limit at the location PLUS Special Class Risk. NOT Bldg_Limit alone (was wrong here). Live rater still uses Bldg-only; backlogged until Contents is built.</span>
+
+<span class="kw">FinalRate</span> = AdjustedRate &times; DeductibleByLocationFactor &times; DeductibleFactor &times; MultiResidentialPropSpecialCreditFactor
+
+<span class="kw">Bldg_Premium</span> =
+    <span class="kw">if</span> Bldg_CovType in ("Building","Builders Risk","Improvements and Betterments","Condominium Association")
+       and CauseOfLoss = "Broad" and Bldg_IncludedInBlkt = "No":
+        <span class="fn">round</span>(IRPM &times; MultiPremiumDispersion &times; PackageMod &times; FinalRate &times; (Bldg_Limit/100), 0)
+          &times; CyberExclFactorBroad &times; CyberExclCOLExcptnsFactorBroad
+    <span class="kw">elif</span> Bldg_CovType = "Legal Liability" and CauseOfLoss = "Broad": [not built this pass]
+    <span class="kw">elif</span> Bldg_IncludedInBlkt = "Yes" and BlktCauseOfLossValue = "Broad": [blanket, not built this pass]
+    <span class="kw">else</span>: 0.0</pre></div>
+    <div class="callout warn"><span class="callout-mark">&#9888;</span><span><b>Blank deductible zeroes the entire rate</b> — the same class of trap already found live in this project's own <code>BasicGroupIILOIFactor</code>/BCEG builds (a factor whose "no input" default is <code>0.0</code> instead of the usual <code>1.0</code> no-op). If Broad is ever wired into the rater, <code>Deductible</code> needs to be a required field, not an optional one with a sensible default.</span></div>
+    <div class="callout warm"><span class="callout-mark">&#9888;</span><span>Both Legal Liability branches (Building and Contents) use the <b>raw, un-adjusted <code>Rate</code></b> — not <code>FinalRate</code> or any coinsurance/LOI/deductible-adjusted value. Same pattern as every other form's Legal Liability branch, worth restating since Broad has no COL-adjustment stage to have skipped in the first place.</span></div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- SECTION 3 -->
+  <section class="sect" id="s3">
+    <div class="sect-heading"><span class="sect-index">3</span><h2 class="sect-title">Contents — the full 5-step chain</h2></div>
+    <p class="sect-role"><code>Calc_Contents_Broad</code>, one row per building — no Builders Risk branch, no roof factor, no local deductible rule at all.</p>
+    <div class="formula-panel"><pre><span class="kw">LOIFactor</span> = <span class="cm">(computed FIRST -- order doesn't affect the math)</span>
+    &lt;blanket copy&gt;                                  <span class="kw">if</span> PP_IncludedInBlkt = "Yes"
+    <span class="kw">elif</span> PP_CovForm not in ("Legal Liability Coverage Form","Tobacco Sales Warehouse Coverage Form")
+         and OccupTotalLOIToUse &gt; 0:
+        <span class="fn">LookupBroadSpecialLOIFactorPrsnlProp</span>(State|CW, OccupTotalLOIToUse)
+    <span class="kw">else</span>:
+        1.0                                          <span class="cm">(no Builders Risk branch, unlike Building)</span>
+
+<span class="kw">BaseRate</span> =
+    <span class="fn">LookupBroadFormBaseRate</span>(State|CW, ConstructionType, "PersProp")   <span class="kw">if</span> CauseOfLoss = "Broad" and ConstructionType &lt;&gt; ""
+    <span class="kw">else</span> 0.0    <span class="cm">(always "PersProp" -- no class-code check at all)</span>
+
+<span class="kw">Rate</span> =
+    0.0    <span class="kw">if</span> CauseOfLoss &lt;&gt; "Broad" or PP_ValuablePapers = "Y"
+    <span class="kw">else</span> BaseRate &times; LCM   <span class="cm">(round 3dp -- Valuable-Papers zeroing lives HERE, one stage earlier than Basic I/II since there's no COL-adjustment stage to carry it)</span>
+
+<span class="kw">AdjustedRate</span> = LOIFactor &times; Rate &times; CoinsuranceFactor   <span class="cm">(no roof-surfacing factor, any branch)</span>
+
+<span class="kw">FinalRate</span> = AdjustedRate &times; DeductibleByLocationFactor &times; DeductibleFactor
+    <span class="cm">DeductibleFactor: same local Choose as Building's -- documented deviation, see &sect;4</span>
+
+<span class="kw">PP_Premium</span> =
+    <span class="kw">if</span> PP_CovForm not in ("Legal Liability Coverage Form","Tobacco Sales Warehouse Coverage Form")
+       and CauseOfLoss = "Broad" and PP_IncludedInBlkt = "No":
+        <span class="fn">round</span>(IRPM &times; MultiPremiumDispersion &times; PackageMod &times; FinalRate &times; (PP_Limit/100), 0)
+          &times; CyberExclFactorBroad &times; CyberExclCOLExcptnsFactorBroad
+    <span class="kw">elif</span> PP_CovForm = "Legal Liability Coverage Form" and CauseOfLoss = "Broad": [not built this pass]
+    <span class="kw">elif</span> PP_IncludedInBlkt = "Yes" and BlktCauseOfLossValue = "Broad": [blanket, not built this pass]
+    <span class="kw">else</span>: 0.0</pre></div>
+    <div class="callout warn"><span class="callout-mark">&#9888;</span><span><b><code>DeductibleFactor</code> has no local rule anywhere in Contents' own ruleset</b> — the source doc confirms it's read directly from an ancestor context, four levels up, with nothing local at all. This project's own documented convention (same treatment as Basic Group I &sect;5 step 9, Basic Group II &sect;5 step 11) is to build it as the same local <code>Choose</code> Building's chain already uses, with the same cell comment flagging the deviation. Given the <code>CauseOfLossDeductible</code> key-mismatch finding from the Basic Group II deductible review, <b>this table also needs its own 47-state pull filtered to the correct group key</b> before trusting it — not yet done for Broad.</span></div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- SECTION 4 -->
+  <section class="sect" id="s4">
+    <div class="sect-heading"><span class="sect-index">4</span><h2 class="sect-title">Rate tables required</h2></div>
+    <p class="sect-role">Only one table is genuinely new to this form — everything else was already built for an earlier form.</p>
+    <div class="tblscroll">
+      <table class="scope-table">
+        <tr><th>Table</th><th>Building keys</th><th>Contents keys</th><th>CW rows filed?</th></tr>
+        <tr><td><code>BroadFormBaseRate</code> (new to this form)</td><td>State|CW, ConstructionType, "Bldg"/"BldrRisk"</td><td>State|CW, ConstructionType, "PersProp"</td><td><span class="status-ok">Yes — real CW rows for all 6 construction types, both coverages</span></td></tr>
+        <tr><td><code>BroadSpecialLOIFactorBldg</code> / <code>...Prsnlprop</code></td><td colspan="2">State|CW, Limit</td><td><span class="status-none">Not independently row-counted yet</span> — shared with Special, also not yet built. Flagged per <code>Excel_Rater_Overview.md</code> &sect;5 discipline, don't assume safe because <code>BroadFormBaseRate</code> was</td></tr>
+        <tr><td><code>CoinsuranceFactor</code></td><td colspan="2">Already built (shared across every form)</td><td><span class="status-ok">Yes</span></td></tr>
+        <tr><td><code>DeductibleByLocationFactor</code></td><td colspan="2">Already built (shared, flat 0.995, zero state variation)</td><td><span class="status-ok">Yes</span></td></tr>
+        <tr><td><code>Deductible250Factor</code>, causeOfLoss="Broad"</td><td colspan="2">Building only — Contents has no local deductible rule at all</td><td><span class="status-ok">Yes — flat, universal, zero state overrides (matches Basic/Special/All Other pattern)</span></td></tr>
+        <tr><td><code>DeductibleFactor</code>, causeOfLossDed="Other Cause Of Loss"</td><td colspan="2">Building's local rule; Contents borrows the same table with no local rule</td><td><span class="status-ok">Confirmed 2026-09-08: NOT the same slice BGI (<code>"Basic Group I"</code>) or BGII (<code>"Basic Group II"</code>) use — <code>"Other Cause Of Loss"</code> is a genuinely distinct 80-row slice. Fresh 47-state pull built in <code>Broad_DeductibleFactor.xlsx</code>.</span></td></tr>
+        <tr><td><code>CyberIncidentExclusionFactors</code> / <code>...WithEnsuingCauseOfLossExceptionsFactors</code>, group="Broad"</td><td colspan="2">Shared table, Broad-specific key</td><td><span class="status-partial">Table confirmed flat/zero-state-variation for Basic Group I/II's keys (this session) — <b>Broad's own key value not yet spot-checked</b>, though the table's own structure strongly suggests it'll match</td></tr>
+      </table>
+    </div>
+    <div class="callout warn"><span class="callout-mark">&#9888;</span><span><b>The <code>DeductibleFactor</code> key question deserves direct attention before building this form.</b> This project already found, for Basic Group II, that <code>DeductibleFactor</code>'s <code>CauseOfLossDeductible</code> column carries genuinely different values per cause-of-loss group in every state that files its own table — even though CW alone made two groups look byte-identical. Broad's own rule passes <code>"Other Cause Of Loss"</code> as this key (the same key Basic Group I uses) — worth directly confirming that's really shared with BGI rather than assuming, the same way the BGII assumption turned out wrong.</span></div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- SECTION 5 -->
+  <section class="sect" id="s5">
+    <div class="sect-heading"><span class="sect-index">5</span><h2 class="sect-title">State variation — what's checked, what isn't</h2></div>
+    <p class="sect-role">Broad hasn't had the deep-dive follow-up sessions Basic Group I and II have both had — most rows here are genuinely open, not just under-documented.</p>
+    <div class="tblscroll">
+      <table class="scope-table">
+        <tr><th>Table</th><th>State variation status</th></tr>
+        <tr><td><code>BroadFormBaseRate</code></td><td><span class="status-none">Not checked</span> — CW row-count confirmed good (&sect;1/&sect;4), but no per-state override pass has been run. Unlike <code>BasicGroupIIRate</code>, this one at least resolves at CW, so a state-override check here is about refinement, not resolvability.</td></tr>
+        <tr><td><code>BroadSpecialLOIFactorBldg</code> / <code>...Prsnlprop</code></td><td><span class="status-none">Not checked</span> — not even CW row-counted yet, let alone state variance. First real gap to close for this form.</td></tr>
+        <tr><td><code>DeductibleFactor</code> (Broad's own key usage)</td><td><span class="status-none">Not checked</span> — see &sect;4's callout. Given the BGII precedent, treat "shares BGI's key" as unverified until directly confirmed.</td></tr>
+        <tr><td><code>DeductibleByLocationFactor</code>, <code>Deductible250Factor</code></td><td><span class="status-ok">Already fully checked</span> — both are the same shared, flat, zero-state-variation tables confirmed in the Basic Group I/II passes. No new work needed for Broad specifically.</td></tr>
+        <tr><td><code>CyberIncidentExclusionFactors</code> family</td><td><span class="status-partial">Mechanism and BGI/BGII keys fully checked (zero state variation, this session)</span> — Broad's own <code>"Broad"</code> key not directly spot-checked, but given the table's demonstrated flatness across every other key checked, low risk.</td></tr>
+        <tr><td><code>CoinsuranceFactor</code></td><td><span class="status-ok">Already fully checked</span> — shared table, same finding as every other form (FL's unreachable 70% row, otherwise flat structure already documented).</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- SECTION 6 -->
+  <section class="sect" id="s6">
+    <div class="sect-heading"><span class="sect-index">6</span><h2 class="sect-title">Rating paths — what's built vs. formula-only vs. absent</h2></div>
+    <p class="sect-role">Per <code>Excel_Rater_RatingPaths_Checklist.md</code>'s grain: Coverage &times; Rating type &times; Premium branch.</p>
+    <div class="tblscroll">
+      <table class="scope-table">
+        <tr><th>Coverage</th><th>Primary scheduled path</th><th>Specific/Tentative</th><th>Legal Liability</th><th>Blanket-rated</th></tr>
+        <tr><td>Building</td><td><span class="status-ok">&#10003; Built</span> — &sect;2 above</td><td><span class="status-na">Confirmed absent</span></td><td><span class="status-partial">Formula documented (&sect;2, uses raw <code>Rate</code>), not built into calc-tab columns</span></td><td><span class="status-partial">Not built</span></td></tr>
+        <tr><td>Contents</td><td><span class="status-ok">&#10003; Built</span> — &sect;3 above</td><td><span class="status-na">Confirmed absent</span></td><td><span class="status-partial">Not built</span></td><td><span class="status-partial">Not built</span></td></tr>
+      </table>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- SECTION 7 -->
+  <section class="sect" id="s7">
+    <div class="sect-heading"><span class="sect-index">7</span><h2 class="sect-title">What's already built for this form</h2></div>
+    <p class="sect-role">Thinner than Basic Group I/II's artifact list — Broad hasn't had a follow-up factor-by-factor pass yet.</p>
+    <div class="filecard"><div class="fname">Excel_Rater_Broad.md</div><div class="fdesc">The canonical build guide — full step-by-step chains for both coverages, every table, every column addition to <code>Locations_Buildings</code>, the Premium_Summary formulas, and what's deliberately out of scope (&sect;7 of that doc).</div></div>
+    <div class="filecard"><div class="fname">Excel_Rater_Wireframes.html — Calc_Building_Broad / Calc_Contents_Broad / flow diagram</div><div class="fdesc">Tab mockups and a full inputs&rarr;output diagram for both coverages — the shortest of the three forms wireframed so far, consistent with its 6/5-step chain.</div></div>
+    <div class="filecard"><div class="fname">Excel_Rater_RatingPaths_Checklist.md</div><div class="fdesc">Tracks Broad's four rating-path cells (Primary/Specific-Tentative/Legal Liability/Blanket) for both coverages, alongside every other form.</div></div>
+    <div class="callout warn"><span class="callout-mark">&#9888;</span><span>No standalone Supporting Tables workbook exists for Broad yet — no <code>BroadFormBaseRate</code> pull, no LOI factor build, nothing wired into <code>CFRater1.01.xlsb</code>. Every workbook this project has built so far (Deductible/LOI/BCEG/Territory/NumericValue/MultiResCredit/Cyber) has been for Basic Group I or II specifically.</span></div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- SECTION 8 -->
+  <section class="sect" id="s8">
+    <div class="sect-heading"><span class="sect-index">8</span><h2 class="sect-title">Feature-set backlog</h2></div>
+    <p class="sect-role">Grouped by what each buys, not a flat queue.</p>
+
+    <div class="featureset">
+      <div class="fs-letter">A</div>
+      <div class="fs-title">Row-count and pull <code>BroadSpecialLOIFactorBldg</code> / <code>...Prsnlprop</code>, all states</div>
+      <div class="fs-buys"><b>Buys:</b> the one table this form genuinely needs that hasn't been touched at all yet — not even a CW row count. Also unblocks Special, which needs the same table. Highest-value single item for this form.</div>
+    </div>
+    <div class="featureset">
+      <div class="fs-letter">B</div>
+      <div class="fs-title">DONE 2026-09-08 — Broad's <code>DeductibleFactor</code> key ("Other Cause Of Loss") is NOT shared with Basic Group I or Basic Group II</div>
+      <div class="fs-buys"><b>Confirmed:</b> genuinely distinct 80-row slice from both BGI's (<code>"Basic Group I"</code>) and BGII's (<code>"Basic Group II"</code>) — checked directly against the rule XML and spot-verified against live-rater data. Even the CW-level coincidence this project relied on earlier (BGI/BGII claimed byte-identical) turned out backwards — it's actually BGII and Other-Cause-Of-Loss that match at CW, and that match doesn't hold per-state either (5,580 differing rows across 46 states). Fresh 47-state pull built in <code>Broad_DeductibleFactor.xlsx</code>.</div>
+    </div>
+    <div class="featureset">
+      <div class="fs-letter">C</div>
+      <div class="fs-title">Build the actual Supporting Tables workbook set for Broad (base rate, LOI, deductible reuse)</div>
+      <div class="fs-buys"><b>Buys:</b> the same live-formula-ready foundation Basic Group I and II both have — right now Broad has zero standalone workbooks, despite being fully documented at the algorithm level.</div>
+    </div>
+    <div class="featureset">
+      <div class="fs-letter">D</div>
+      <div class="fs-title">Promote Legal Liability and Blanket from formula-only to built</div>
+      <div class="fs-buys"><b>Buys:</b> complete premium calculation for both coverages — formulas already exist in <code>Excel_Rater_Broad.md</code> &sect;6, this is a calc-tab-column exercise, not new tracing. Remember both Legal Liability branches use raw <code>Rate</code>, not <code>FinalRate</code>.</div>
+    </div>
+    <div class="featureset">
+      <div class="fs-letter">E</div>
+      <div class="fs-title">Enforce Deductible as a required field before this form goes anywhere near production</div>
+      <div class="fs-buys"><b>Buys:</b> closes the blank-deductible-zeroes-the-rate trap flagged in &sect;2 — cheap to fix (a required-field validation), expensive to discover after the fact (silent zero premiums).</div>
+    </div>
+    <div class="featureset">
+      <div class="fs-letter">F</div>
+      <div class="fs-title">Rewire DeductibleFactor to use TotAmtInsurance (Bldg + Contents + Special Class), not Bldg limit alone</div>
+      <div class="fs-buys"><b>Buys:</b> fixes a confirmed live-rater bug, not just a doc gap — <code>TotAmtInsurance</code> is a genuine combined location total per the rule XML, and every DeductibleFactor build in this project (BGI, BGII, and this doc) used the Building's own limit only. Deliberately backlogged until Contents is built for these forms, since that's what makes the bug visible (see project memory on this).</div>
+    </div>
+
+  </section>
+
+  <hr class="divider" />
+
+  <footer class="closing">
+    <h2>Remaining steps</h2>
+    <ol>
+      <li>Nothing here recommends an order — A (the untouched LOI table) blocks the most (also unblocks Special); B is the cheapest way to avoid repeating the BGII deductible mistake.</li>
+      <li>Confirm whether Special should be built alongside Broad's LOI table pull (A), since they share it, or kept as a fully separate pass.</li>
+      <li>Nothing gets built until you say go.</li>
+    </ol>
+    <p class="note">Consolidated from Excel_Rater_Broad.md, CauseOfLoss_Building_RatingAlgorithms.md, CauseOfLoss_PersonalProperty_RatingAlgorithms.md, Excel_Rater_RatingPaths_Checklist.md, Excel_Rater_Wireframes.html &middot; CFCW20260601V01</p>
+  </footer>
+
+</div>

@@ -1,0 +1,409 @@
+<title>CF Rating Decision Chains</title>
+<style>
+  @font-face {
+    font-family: 'system-mono';
+    src: local('Cascadia Code'), local('Consolas');
+  }
+  :root {
+    --ink: #101b24;
+    --paper: #edf0ec;
+    --paper-line: #c7d2ce;
+    --blueprint: #2e6e8e;
+    --blueprint-soft: #e4ebef;
+    --stamp: #c77f32;
+    --caution: #b14b39;
+    --ledger: #3f8f6e;
+    --surface: #f4f6f3;
+    --panel: #ffffff;
+    --sidebar: #e8ede8;
+    --text: var(--ink);
+    --muted: #5b6b72;
+    --border: #cdd6d2;
+    --font-display: Cambria, 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+    --font-body: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+    --font-mono: 'Cascadia Code', 'Cascadia Mono', Consolas, 'SFMono-Regular', ui-monospace, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --surface: #0b141a;
+      --panel: #101b22;
+      --sidebar: #0e1a20;
+      --text: #e7ece9;
+      --muted: #93a3a0;
+      --border: #223138;
+      --blueprint-soft: #16232b;
+    }
+  }
+  :root[data-theme="dark"] {
+    --surface: #0b141a;
+    --panel: #101b22;
+    --sidebar: #0e1a20;
+    --text: #e7ece9;
+    --muted: #93a3a0;
+    --border: #223138;
+    --blueprint-soft: #16232b;
+  }
+  :root[data-theme="light"] {
+    --surface: #f4f6f3;
+    --panel: #ffffff;
+    --sidebar: #e8ede8;
+    --text: #101b24;
+    --muted: #5b6b72;
+    --border: #cdd6d2;
+    --blueprint-soft: #e4ebef;
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; background: var(--surface); color: var(--text);
+    font-family: var(--font-body); -webkit-font-smoothing: antialiased;
+  }
+  body { display: flex; flex-direction: column; min-height: 100vh; }
+  a { color: inherit; }
+  ::selection { background: var(--stamp); color: #101b24; }
+
+  /* header */
+  header.masthead {
+    display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap;
+    padding: 1.1rem 1.6rem; border-bottom: 1px solid var(--border);
+    background: var(--panel);
+  }
+  header.masthead h1 {
+    font-family: var(--font-display); font-weight: 600; font-size: 1.35rem;
+    margin: 0; letter-spacing: 0.01em; text-wrap: balance;
+  }
+  header.masthead .rule {
+    width: 1px; align-self: stretch; background: var(--border);
+  }
+  header.masthead p {
+    margin: 0; font-size: 0.82rem; color: var(--muted); max-width: 46ch;
+  }
+  header.masthead .src {
+    margin-left: auto; font-family: var(--font-mono); font-size: 0.72rem;
+    color: var(--muted); text-align: right; line-height: 1.5;
+  }
+
+  /* shell */
+  .shell { display: flex; flex: 1; min-height: 0; }
+
+  nav.toc {
+    width: 258px; flex: none; background: var(--sidebar);
+    border-right: 1px solid var(--border);
+    padding: 1rem 0 2rem; overflow-y: auto;
+  }
+  nav.toc .group { margin-bottom: 0.35rem; }
+  nav.toc .group-label {
+    font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--muted); padding: 0.5rem 1.2rem 0.35rem;
+  }
+  nav.toc button.navlink {
+    display: block; width: 100%; text-align: left; background: none; border: none;
+    font-family: var(--font-body); font-size: 0.86rem; color: var(--text);
+    padding: 0.42rem 1.2rem 0.42rem 1.6rem; cursor: pointer; position: relative;
+    border-left: 3px solid transparent;
+  }
+  nav.toc button.navlink:hover { background: var(--blueprint-soft); }
+  nav.toc button.navlink.active {
+    background: var(--blueprint-soft); border-left-color: var(--blueprint);
+    font-weight: 600;
+  }
+  nav.toc .navlink .chain-len {
+    display: block; font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); font-weight: 400;
+  }
+  nav.toc button.overview-link {
+    display: block; width: 100%; text-align: left; background: none; border: none;
+    font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.05em; text-transform: uppercase;
+    color: var(--blueprint); padding: 0.6rem 1.2rem; cursor: pointer; border-left: 3px solid transparent;
+  }
+  nav.toc button.overview-link.active { border-left-color: var(--blueprint); background: var(--blueprint-soft); }
+  nav.toc hr { border: none; border-top: 1px solid var(--border); margin: 0.6rem 1.2rem; }
+
+  nav.toc .legend {
+    margin: 1rem 1.2rem 0; padding: 0.8rem 0.9rem; border: 1px solid var(--border);
+    border-radius: 3px; background: var(--panel);
+  }
+  nav.toc .legend h4 {
+    margin: 0 0 0.5rem; font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--muted); font-weight: 600;
+  }
+  nav.toc .legend .row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.74rem; margin-bottom: 0.35rem; }
+  nav.toc .legend .swatch { width: 13px; height: 13px; flex: none; border-radius: 2px; border-width: 1.5px; border-style: solid; }
+  nav.toc .legend .sw-gate { background: #f4e4ce; border-color: #c77f32; }
+  nav.toc .legend .sw-zero { background: #f3dcd6; border-color: #b14b39; }
+  nav.toc .legend .sw-final { background: #dceee4; border-color: #3f8f6e; }
+  nav.toc .legend .sw-step { background: #e4ebef; border-color: #2e6e8e; }
+  nav.toc .legend .sw-openq { background: #f4e4ce; border-color: #b14b39; border-style: dashed; }
+
+  main { flex: 1; min-width: 0; overflow-y: auto; padding: 1.6rem 2rem 4rem; }
+
+  /* overview */
+  #view-overview .intro { max-width: 62ch; margin-bottom: 1.6rem; }
+  #view-overview .intro h2 { font-family: var(--font-display); font-size: 1.25rem; margin: 0 0 0.5rem; text-wrap: balance; }
+  #view-overview .intro p { font-size: 0.92rem; line-height: 1.6; color: var(--muted); margin: 0 0 0.6rem; }
+
+  table.matrix { border-collapse: collapse; width: 100%; max-width: 780px; }
+  table.matrix caption { text-align: left; font-family: var(--font-mono); font-size: 0.7rem; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem; }
+  table.matrix th, table.matrix td { border: 1px solid var(--border); padding: 0; }
+  table.matrix thead th {
+    font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em;
+    color: var(--muted); background: var(--panel); padding: 0.6rem 0.8rem; text-align: left;
+  }
+  table.matrix tbody th {
+    font-family: var(--font-body); font-weight: 600; font-size: 0.86rem; text-align: left;
+    padding: 0.6rem 0.8rem; background: var(--panel); white-space: nowrap;
+  }
+  table.matrix td button.cell {
+    display: block; width: 100%; height: 100%; background: var(--panel); border: none; cursor: pointer;
+    padding: 0.6rem 0.8rem; text-align: left; font-family: var(--font-body); color: var(--text);
+  }
+  table.matrix td button.cell:hover { background: var(--blueprint-soft); }
+  table.matrix td button.cell .n { font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); display: block; }
+
+  /* sheet */
+  .sheet-view { display: none; }
+  .sheet-view.active { display: block; }
+
+  .titleblock {
+    display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--border);
+    margin-bottom: 1.1rem; background: var(--panel);
+  }
+  .titleblock .field { padding: 0.6rem 0.9rem; border-right: 1px solid var(--border); }
+  .titleblock .field:last-child { border-right: none; }
+  .titleblock .field .k {
+    font-family: var(--font-mono); font-size: 0.63rem; text-transform: uppercase; letter-spacing: 0.07em;
+    color: var(--muted); display: block; margin-bottom: 0.15rem;
+  }
+  .titleblock .field .v { font-family: var(--font-mono); font-size: 0.82rem; color: var(--text); line-height: 1.35; }
+  .titleblock .field.wide { grid-column: span 4; border-top: 1px solid var(--border); }
+
+  .sheet {
+    background: var(--paper); border: 1px solid var(--paper-line); border-radius: 2px;
+    padding: 1.4rem 1.2rem 1rem; position: relative; overflow-x: auto;
+    background-image:
+      linear-gradient(var(--paper-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--paper-line) 1px, transparent 1px);
+    background-size: 28px 28px; background-position: -1px -1px;
+    background-color: var(--paper);
+  }
+  .sheet::before, .sheet::after,
+  .sheet .tick-tl, .sheet .tick-br { content: ""; }
+  .sheet .corner { position: absolute; width: 14px; height: 14px; border-color: #7d8f8a; }
+  .sheet .corner.tl { top: 6px; left: 6px; border-top: 1.5px solid #7d8f8a; border-left: 1.5px solid #7d8f8a; }
+  .sheet .corner.tr { top: 6px; right: 6px; border-top: 1.5px solid #7d8f8a; border-right: 1.5px solid #7d8f8a; }
+  .sheet .corner.bl { bottom: 6px; left: 6px; border-bottom: 1.5px solid #7d8f8a; border-left: 1.5px solid #7d8f8a; }
+  .sheet .corner.br { bottom: 6px; right: 6px; border-bottom: 1.5px solid #7d8f8a; border-right: 1.5px solid #7d8f8a; }
+  .sheet pre.mermaid { margin: 0; background: transparent; min-width: 640px; color: #101b24; }
+
+  .notes { margin-top: 1.1rem; display: grid; grid-template-columns: 1.4fr 1fr; gap: 1.2rem; }
+  @media (max-width: 900px) { .notes { grid-template-columns: 1fr; } }
+  .notes h3 {
+    font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--muted); margin: 0 0 0.5rem;
+  }
+  .notes ul { margin: 0; padding-left: 1.1rem; font-size: 0.86rem; line-height: 1.55; }
+  .notes ul li { margin-bottom: 0.4rem; }
+  .notes .delta { border: 1px solid var(--border); background: var(--panel); padding: 0.8rem 0.9rem; border-radius: 3px; }
+  .notes .delta.openq { border-color: var(--caution); }
+
+  footer.doc-footer {
+    padding: 1rem 2rem 2rem; font-size: 0.76rem; color: var(--muted); border-top: 1px solid var(--border);
+  }
+  footer.doc-footer strong { color: var(--text); }
+  nav.toc a.navlink { display: block; text-decoration: none; font-family: var(--font-body); font-size: 0.86rem; color: var(--text); padding: 0.42rem 1.2rem 0.42rem 1.6rem; border-left: 3px solid transparent; }
+  nav.toc a.navlink:hover { background: var(--blueprint-soft); }
+  table.matrix td a.cell { display: block; text-decoration: none; padding: 0.6rem 0.8rem; color: var(--blueprint); }
+  table.matrix td a.cell:hover { background: var(--blueprint-soft); }
+  table.matrix td a.cell .n { font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); display: block; }
+</style>
+
+<header class="masthead">
+  <h1>CF Rating Decision Chains</h1>
+  <div class="rule"></div>
+  <p>Every gate, branch, and terminal in ISO's Commercial Property rate build-up and premium calculation, for the five premium-bearing groups of the core coverages (Building, Personal Property, Special Class, Business Income, Special Class Business Income).</p>
+  <p style="margin-top:0.6rem"><strong>Reconciled against the built engine on 2026-10-02 (commit 630ba2f; chunks 1&ndash;27 gated).</strong> Every open question and watch-item was checked against the chunk task lists and gate files, and each is now marked resolved with its evidence; the Business Income earthquake premium path was re-run offline (<code style="font-family:var(--font-mono)">scripts/cf/95_chunk10_c10-11_all_groups_chain.py</code>: BI and SCBI endorsement premium $5 each, hand = engine). The diagrams still describe ISO's countrywide rules; every chain on this page is built and ISO-confirmed in the engine (546 of 546 countrywide premium files, 46 states).</p>
+  <div class="src">CFCW20260601V01 · Countrywide · 06-01-2026<br>companion to CauseOfLoss_*_RatingAlgorithms.md</div>
+</header>
+
+<div class="shell">
+  <nav class="toc" id="toc">
+    <button class="overview-link active" data-target="overview">Overview matrix</button>
+    <hr>
+    <div class="group">
+      <div class="group-label">Building</div>
+      <a class="navlink" href="cf-bgi-chains.html#bldg">Basic Group I<span class="chain-len">moved to its own page ↗</span></a>
+      <a class="navlink" href="cf-bgii-chains.html#bldg">Basic Group II<span class="chain-len">moved to its own page ↗</span></a>
+      <a class="navlink" href="cf-broad-chains.html#bldg">Broad<span class="chain-len">moved to its own page ↗</span></a>
+      <a class="navlink" href="cf-special-chains.html#bldg">Special<span class="chain-len">moved to its own page ↗</span></a>
+    </div>
+    <hr>
+    <div class="group">
+      <div class="group-label">Personal Property</div>
+      <a class="navlink" href="cf-bgi-chains.html#pp">Basic Group I<span class="chain-len">moved to its own page ↗</span></a>
+      <a class="navlink" href="cf-bgii-chains.html#pp">Basic Group II<span class="chain-len">moved to its own page ↗</span></a>
+      <a class="navlink" href="cf-broad-chains.html#pp">Broad<span class="chain-len">moved to its own page ↗</span></a>
+      <a class="navlink" href="cf-special-chains.html#pp">Special<span class="chain-len">moved to its own page ↗</span></a>
+    </div>
+    <hr>
+    <div class="group">
+      <div class="group-label">Special Class</div>
+      <a class="navlink" href="cf-bgi-chains.html#sc">Basic Group I<span class="chain-len">moved to its own page ↗</span></a>
+      <a class="navlink" href="cf-bgii-chains.html#sc">Basic Group II<span class="chain-len">moved to its own page ↗</span></a>
+      <a class="navlink" href="cf-broad-chains.html#sc">Broad<span class="chain-len">moved to its own page ↗</span></a>
+      <a class="navlink" href="cf-special-chains.html#sc">Special<span class="chain-len">moved to its own page ↗</span></a>
+    </div>
+    <hr>
+    <div class="group">
+      <div class="group-label">Business Income</div>
+      <a class="navlink" href="cf-bgi-chains.html#bi">Basic Group I<span class="chain-len">moved to its own page ↗</span></a>
+      <a class="navlink" href="cf-bgii-chains.html#bi">Basic Group II<span class="chain-len">moved to its own page ↗</span></a>
+      <a class="navlink" href="cf-broad-chains.html#bi">Broad<span class="chain-len">moved to its own page ↗</span></a>
+      <a class="navlink" href="cf-special-chains.html#bi">Special<span class="chain-len">moved to its own page ↗</span></a>
+      <a class="navlink" href="cf-earthquake-chains.html#bi">Earthquake<span class="chain-len">moved to its own page ↗</span></a>
+    </div>
+    <hr>
+    <div class="group">
+      <div class="group-label">Special Class Business Income</div>
+      <a class="navlink" href="cf-bgi-chains.html#scbi">Basic Group I<span class="chain-len">moved to its own page ↗</span></a>
+      <a class="navlink" href="cf-bgii-chains.html#scbi">Basic Group II<span class="chain-len">moved to its own page ↗</span></a>
+      <a class="navlink" href="cf-broad-chains.html#scbi">Broad<span class="chain-len">moved to its own page ↗</span></a>
+      <a class="navlink" href="cf-special-chains.html#scbi">Special<span class="chain-len">moved to its own page ↗</span></a>
+      <a class="navlink" href="cf-earthquake-chains.html#scbi">Earthquake<span class="chain-len">moved to its own page ↗</span></a>
+    </div>
+
+    <div class="legend">
+      <h4>Reading the chains</h4>
+      <div class="row"><span class="swatch sw-gate"></span> gate / branch condition</div>
+      <div class="row"><span class="swatch sw-step"></span> computed factor</div>
+      <div class="row"><span class="swatch sw-final"></span> premium resolves</div>
+      <div class="row"><span class="swatch sw-zero"></span> premium = 0.0</div>
+      <div class="row"><span class="swatch sw-openq"></span> flagged finding / open question</div>
+    </div>
+  </nav>
+
+  <main id="main">
+
+    <section class="sheet-view active" id="view-overview">
+      <div class="intro">
+        <h2>Twenty-two chains, one shape, a lot of exceptions</h2>
+        <p><strong>2026-10-06: this page is now an index.</strong> Every chain moved to its own page, each re-checked against the built engine and ISO&rsquo;s rule XML: <a href="cf-bgi-chains.html">Basic Group I</a>, <a href="cf-bgii-chains.html">Basic Group II</a>, <a href="cf-broad-chains.html">Broad</a>, <a href="cf-special-chains.html">Special</a> and <a href="cf-earthquake-chains.html">Earthquake</a>. The matrix below links to each one; the text above it is the original 2026-10-02 summary, and the new pages correct parts of it.</p>
+        <p>Building, Personal Property, and Special Class each run four cause-of-loss chains — Basic Group I, Basic Group II, Broad, Special — that compute a rate unconditionally, then let a coverage gate decide which one actually produces premium. The two Business Income coverages run those same four <em>plus a real fifth chain, Earthquake</em> — and Earthquake's rate is charged through the per-group Earthquake and Volcanic Eruption endorsement records (CP 10 40 / 10 45 / 10 28 / 10 29), with Agreed Value adding only its increment (corrected 2026-10-02; chunk 10, C10-11). Special Class Business Income is the tightest-coupled of the five coverages: two of its five forms don't rate anything at all — they borrow the coinsured Special Class item's <em>already-finished</em> rate wholesale. Click any cell for its full decision tree: every gate, every branch, every terminal, cited back to the source rule.</p>
+        <p>Dashed amber-and-rust nodes mark a flagged finding — an empty rate table, an unresolved reference, a hard-coded value — logged in <code style="font-family:var(--font-mono)">BUILD-LOG.md</code> rather than guessed at. <strong>2026-10-02:</strong> every open question on this page (Q1&ndash;Q7, the CA / AK District split, the Special Class symbol) has since been answered by the gated build; each note says how. A dashed node now marks a real quirk of ISO's rules that the engine reproduces and ISO confirms, not an unknown.</p>
+      </div>
+      <table class="matrix">
+        <caption>Click a cell to open its decision chain</caption>
+        <thead>
+          <tr><th>Form</th><th>Building</th><th>Personal Property</th><th>Special Class</th><th>Business Income</th><th>Special Class Business Income</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th>Basic Group I</th>
+            <td><a class="cell" href="cf-bgi-chains.html#bldg">Class + construction rated<span class="n">own page ↗</span></a></td>
+            <td><a class="cell" href="cf-bgi-chains.html#pp">Class + Group rated, N per location<span class="n">own page ↗</span></a></td>
+            <td><a class="cell" href="cf-bgi-chains.html#sc">Named class + protection class<span class="n">own page ↗</span></a></td>
+            <td><a class="cell" href="cf-bgi-chains.html#bi">Rate borrowed from Building<span class="n">own page ↗</span></a></td>
+            <td><a class="cell" href="cf-bgi-chains.html#scbi">Pure pass-through of Spec. Class rate<span class="n">own page ↗</span></a></td>
+          </tr>
+          <tr>
+            <th>Basic Group II</th>
+            <td><a class="cell" href="cf-bgii-chains.html#bldg">Symbol + territory rated<span class="n">own page ↗</span></a></td>
+            <td><a class="cell" href="cf-bgii-chains.html#pp">Symbol/territory copied down<span class="n">own page ↗</span></a></td>
+            <td><a class="cell" href="cf-bgii-chains.html#sc">Symbol is a submitted input<span class="n">own page ↗</span></a></td>
+            <td><a class="cell" href="cf-bgii-chains.html#bi">Rate borrowed from Building<span class="n">own page ↗</span></a></td>
+            <td><a class="cell" href="cf-bgii-chains.html#scbi">Own lookup, tables empty at CW<span class="n">own page ↗</span></a></td>
+          </tr>
+          <tr>
+            <th>Broad</th>
+            <td><a class="cell" href="cf-broad-chains.html#bldg">Construction-keyed<span class="n">own page ↗</span></a></td>
+            <td><a class="cell" href="cf-broad-chains.html#pp">PersProp only, no Builders Risk<span class="n">own page ↗</span></a></td>
+            <td><a class="cell" href="cf-broad-chains.html#sc">Hard-coded "Frame" key<span class="n">own page ↗</span></a></td>
+            <td><a class="cell" href="cf-broad-chains.html#bi">Shortest chain of all twelve<span class="n">own page ↗</span></a></td>
+            <td><a class="cell" href="cf-broad-chains.html#scbi">Also hard-coded "Frame" key<span class="n">own page ↗</span></a></td>
+          </tr>
+          <tr>
+            <th>Special</th>
+            <td><a class="cell" href="cf-special-chains.html#bldg">Flat statewide rate<span class="n">own page ↗</span></a></td>
+            <td><a class="cell" href="cf-special-chains.html#pp">Richest chain — occupancy + territory<span class="n">own page ↗</span></a></td>
+            <td><a class="cell" href="cf-special-chains.html#sc">Shares Building's empty table<span class="n">own page ↗</span></a></td>
+            <td><a class="cell" href="cf-special-chains.html#bi">Varies by construction, unlike Bldg's<span class="n">own page ↗</span></a></td>
+            <td><a class="cell" href="cf-special-chains.html#scbi">Double hard-coded key, no Bldrs Risk<span class="n">own page ↗</span></a></td>
+          </tr>
+          <tr>
+            <th>Earthquake</th>
+            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">no chain in this datadef group</span></td>
+            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">separate chain (EQ endorsement records), built chunk 10</span></td>
+            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">native chain, built chunk 10</span></td>
+            <td><a class="cell" href="cf-earthquake-chains.html#bi">Real chain; charged by the EQ endorsement records<span class="n">own page ↗</span></a></td>
+            <td><a class="cell" href="cf-earthquake-chains.html#scbi">Pure pass-through; charged by the EQ endorsement records<span class="n">own page ↗</span></a></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Building Basic Group I moved to cf-bgi-chains.html on 2026-10-06. -->
+
+    <!-- Building Basic Group II moved to cf-bgii-chains.html on 2026-10-06. -->
+
+    <!-- Building Broad moved to cf-broad-chains.html on 2026-10-06. -->
+
+    <!-- Building Special moved to cf-special-chains.html on 2026-10-06. -->
+
+    <!-- Personal Property Special moved to cf-special-chains.html on 2026-10-06. -->
+
+    <!-- Special Class Special moved to cf-special-chains.html on 2026-10-06. -->
+
+    <!-- Business Income Special moved to cf-special-chains.html on 2026-10-06. -->
+
+    <!-- Business Income Earthquake moved to cf-earthquake-chains.html on 2026-10-06. -->
+
+    <!-- Special Class Business Income Earthquake moved to cf-earthquake-chains.html on 2026-10-06. -->
+
+  </main>
+</div>
+
+<footer class="doc-footer">
+  Source: <strong>CFCW20260601V01</strong>, Countrywide, edition 06-01-2026. Full citations, formulas, and open-question detail live in the companion markdown docs (<code style="font-family:var(--font-mono)">CauseOfLoss_*_RatingAlgorithms.md</code>) and <code style="font-family:var(--font-mono)">BUILD-LOG.md</code>, both in <code style="font-family:var(--font-mono)">C:\Projects\Spreadsheet_Rater\CF</code> and mirrored in <code style="font-family:var(--font-mono)">Recursive_Harness_2.0\CF_Algorithm</code>.
+</footer>
+
+<script>
+  (function () {
+    var toc = document.getElementById('toc');
+    var main = document.getElementById('main');
+
+    function activate(target) {
+      var views = main.querySelectorAll('.sheet-view');
+      for (var i = 0; i < views.length; i++) views[i].classList.remove('active');
+      var view = document.getElementById('view-' + target);
+      if (view) view.classList.add('active');
+
+      var links = toc.querySelectorAll('.navlink, .overview-link');
+      for (var j = 0; j < links.length; j++) links[j].classList.remove('active');
+      var activeLinks = toc.querySelectorAll('[data-target="' + target + '"]');
+      for (var k = 0; k < activeLinks.length; k++) activeLinks[k].classList.add('active');
+
+      main.scrollTop = 0;
+    }
+
+    toc.addEventListener('click', function (e) {
+      var btn = e.target.closest('[data-target]');
+      if (!btn) return;
+      activate(btn.getAttribute('data-target'));
+    });
+
+    main.addEventListener('click', function (e) {
+      var btn = e.target.closest('button.cell[data-target]');
+      if (!btn) return;
+      activate(btn.getAttribute('data-target'));
+    });
+  })();
+</script>
+
+<style>.mermaid-rendering .sheet-view{display:block!important}</style>
+<script type="module">
+  // Render every mermaid diagram once, with all sheets briefly visible so hidden tabs get real sizes.
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({ startOnLoad: false, securityLevel: "strict" });
+  document.documentElement.classList.add("mermaid-rendering");
+  try { await mermaid.run({ querySelector: "pre.mermaid" }); }
+  finally { document.documentElement.classList.remove("mermaid-rendering"); }
+</script>

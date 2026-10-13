@@ -1,0 +1,875 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Endorsement Rating Chains</title>
+<style>
+  :root {
+    --ink: #101b24;
+    --paper: #edf0ec;
+    --paper-line: #c7d2ce;
+    --blueprint: #2e6e8e;
+    --blueprint-soft: #e4ebef;
+    --stamp: #c77f32;
+    --caution: #b14b39;
+    --ledger: #3f8f6e;
+    --surface: #f4f6f3;
+    --panel: #ffffff;
+    --sidebar: #e8ede8;
+    --text: var(--ink);
+    --muted: #5b6b72;
+    --border: #cdd6d2;
+    --font-display: Cambria, 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+    --font-body: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+    --font-mono: 'Cascadia Code', 'Cascadia Mono', Consolas, 'SFMono-Regular', ui-monospace, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --surface: #0b141a;
+      --panel: #101b22;
+      --sidebar: #0e1a20;
+      --text: #e7ece9;
+      --muted: #93a3a0;
+      --border: #223138;
+      --blueprint-soft: #16232b;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --surface: #0b141a;
+    --panel: #101b22;
+    --sidebar: #0e1a20;
+    --text: #e7ece9;
+    --muted: #93a3a0;
+    --border: #223138;
+    --blueprint-soft: #16232b;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; background: var(--surface); color: var(--text);
+    font-family: var(--font-body); -webkit-font-smoothing: antialiased;
+  }
+  body { display: flex; flex-direction: column; min-height: 100vh; }
+  a { color: inherit; }
+  code { font-family: var(--font-mono); font-size: 0.92em; }
+  ::selection { background: var(--stamp); color: #101b24; }
+
+  /* header */
+  header.masthead {
+    display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap;
+    padding: 1.1rem 1.6rem; border-bottom: 1px solid var(--border);
+    background: var(--panel);
+  }
+  header.masthead h1 {
+    font-family: var(--font-display); font-weight: 600; font-size: 1.35rem;
+    margin: 0; letter-spacing: 0.01em; text-wrap: balance;
+  }
+  header.masthead .rule { width: 1px; align-self: stretch; background: var(--border); }
+  header.masthead p { margin: 0; font-size: 0.82rem; color: var(--muted); max-width: 52ch; }
+  header.masthead .src {
+    margin-left: auto; font-family: var(--font-mono); font-size: 0.72rem;
+    color: var(--muted); text-align: right; line-height: 1.5;
+  }
+
+  /* shell */
+  .shell { display: flex; flex: 1; min-height: 0; }
+
+  nav.toc {
+    width: 258px; flex: none; background: var(--sidebar);
+    border-right: 1px solid var(--border);
+    padding: 1rem 0 2rem; overflow-y: auto;
+  }
+  nav.toc .group-label {
+    font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--muted); padding: 0.5rem 1.2rem 0.35rem;
+  }
+  nav.toc button.navlink {
+    display: block; width: 100%; text-align: left; background: none; border: none;
+    font-family: var(--font-body); font-size: 0.86rem; color: var(--text);
+    padding: 0.42rem 1.2rem 0.42rem 1.6rem; cursor: pointer;
+    border-left: 3px solid transparent;
+  }
+  nav.toc button.navlink:hover { background: var(--blueprint-soft); }
+  nav.toc button.navlink.active {
+    background: var(--blueprint-soft); border-left-color: var(--blueprint); font-weight: 600;
+  }
+  nav.toc button.navlink .chain-len {
+    display: block; font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); font-weight: 400;
+  }
+  nav.toc hr { border: none; border-top: 1px solid var(--border); margin: 0.6rem 1.2rem; }
+
+  nav.toc .legend {
+    margin: 1rem 1.2rem 0; padding: 0.8rem 0.9rem; border: 1px solid var(--border);
+    border-radius: 3px; background: var(--panel);
+  }
+  nav.toc .legend h4 {
+    margin: 0 0 0.5rem; font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--muted); font-weight: 600;
+  }
+  nav.toc .legend .row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.74rem; margin-bottom: 0.35rem; }
+  nav.toc .legend .swatch { width: 13px; height: 13px; flex: none; border-radius: 2px; border-width: 1.5px; border-style: solid; }
+  .sw-gate { background: #f4e4ce; border-color: #c77f32; }
+  .sw-zero { background: #f3dcd6; border-color: #b14b39; }
+  .sw-final { background: #dceee4; border-color: #3f8f6e; }
+  .sw-step { background: #e4ebef; border-color: #2e6e8e; }
+  .sw-openq { background: #f4e4ce; border-color: #b14b39; border-style: dashed !important; }
+  .sw-engine { background: #e6e1f0; border-color: #5a4c8a; }
+
+  main { flex: 1; min-width: 0; overflow-y: auto; padding: 1.6rem 2rem 4rem; }
+
+  .intro { max-width: 70ch; margin-bottom: 1.4rem; }
+  .intro h2 { font-family: var(--font-display); font-size: 1.25rem; margin: 0 0 0.5rem; text-wrap: balance; }
+  .intro p { font-size: 0.92rem; line-height: 1.6; color: var(--muted); margin: 0 0 0.6rem; }
+
+  /* tables */
+  .tablewrap { overflow-x: auto; margin-bottom: 1.4rem; }
+  table.grid { border-collapse: collapse; width: 100%; max-width: 1100px; background: var(--panel); }
+  table.grid caption {
+    text-align: left; font-family: var(--font-mono); font-size: 0.7rem; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem;
+  }
+  table.grid th, table.grid td {
+    border: 1px solid var(--border); padding: 0.5rem 0.7rem; font-size: 0.82rem;
+    text-align: left; vertical-align: top; line-height: 1.45;
+  }
+  table.grid thead th {
+    font-family: var(--font-mono); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--muted); background: var(--blueprint-soft); font-weight: 600;
+  }
+  table.grid tbody th { font-weight: 600; white-space: nowrap; }
+  table.grid td.num { font-family: var(--font-mono); text-align: right; white-space: nowrap; }
+  table.grid tr.hl td, table.grid tr.hl th { background: var(--blueprint-soft); }
+  table.grid td .tag {
+    font-family: var(--font-mono); font-size: 0.66rem; padding: 0.05rem 0.35rem; border-radius: 2px;
+    border: 1px solid var(--border); color: var(--muted); white-space: nowrap;
+  }
+  table.grid td .tag.a { border-color: var(--blueprint); color: var(--blueprint); }
+  table.grid td .tag.b { border-color: var(--ledger); color: var(--ledger); }
+  table.grid td .tag.bad { border-color: var(--caution); color: var(--caution); }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.9rem; max-width: 1100px; margin-bottom: 1.4rem; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 3px; padding: 0.9rem 1rem; }
+  .card .k { font-family: var(--font-mono); font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
+  .card .v { font-family: var(--font-display); font-size: 1.5rem; margin: 0.2rem 0 0.25rem; font-variant-numeric: tabular-nums; }
+  .card p { margin: 0; font-size: 0.8rem; color: var(--muted); line-height: 1.45; }
+  .card button.go {
+    margin-top: 0.6rem; background: none; border: 1px solid var(--blueprint); color: var(--blueprint);
+    font-family: var(--font-mono); font-size: 0.7rem; padding: 0.3rem 0.6rem; border-radius: 2px; cursor: pointer;
+  }
+  .card button.go:hover { background: var(--blueprint-soft); }
+
+  /* sheet */
+  .sheet-view { display: none; }
+  .sheet-view.active { display: block; }
+
+  .titleblock {
+    display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--border);
+    margin-bottom: 1.1rem; background: var(--panel);
+  }
+  .titleblock .field { padding: 0.6rem 0.9rem; border-right: 1px solid var(--border); }
+  .titleblock .field:last-child { border-right: none; }
+  .titleblock .field .k {
+    font-family: var(--font-mono); font-size: 0.63rem; text-transform: uppercase; letter-spacing: 0.07em;
+    color: var(--muted); display: block; margin-bottom: 0.15rem;
+  }
+  .titleblock .field .v { font-family: var(--font-mono); font-size: 0.82rem; color: var(--text); line-height: 1.35; }
+  .titleblock .field.wide { grid-column: span 4; border-top: 1px solid var(--border); border-right: none; }
+
+  .sheet {
+    background: var(--paper); border: 1px solid var(--paper-line); border-radius: 2px;
+    padding: 1.4rem 1.2rem 1rem; position: relative; overflow-x: auto;
+    background-image:
+      linear-gradient(var(--paper-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--paper-line) 1px, transparent 1px);
+    background-size: 28px 28px; background-position: -1px -1px;
+    background-color: var(--paper);
+  }
+  .sheet .corner { position: absolute; width: 14px; height: 14px; }
+  .sheet .corner.tl { top: 6px; left: 6px; border-top: 1.5px solid #7d8f8a; border-left: 1.5px solid #7d8f8a; }
+  .sheet .corner.tr { top: 6px; right: 6px; border-top: 1.5px solid #7d8f8a; border-right: 1.5px solid #7d8f8a; }
+  .sheet .corner.bl { bottom: 6px; left: 6px; border-bottom: 1.5px solid #7d8f8a; border-left: 1.5px solid #7d8f8a; }
+  .sheet .corner.br { bottom: 6px; right: 6px; border-bottom: 1.5px solid #7d8f8a; border-right: 1.5px solid #7d8f8a; }
+  .sheet pre.mermaid { margin: 0; background: transparent; min-width: 760px; color: #101b24; }
+
+  .notes { margin-top: 1.1rem; display: grid; grid-template-columns: 1.4fr 1fr; gap: 1.2rem; }
+  .notes h3 {
+    font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--muted); margin: 0 0 0.5rem;
+  }
+  .notes ul { margin: 0; padding-left: 1.1rem; font-size: 0.86rem; line-height: 1.55; }
+  .notes ul li { margin-bottom: 0.4rem; }
+  .notes .delta { border: 1px solid var(--border); background: var(--panel); padding: 0.8rem 0.9rem; border-radius: 3px; font-size: 0.86rem; line-height: 1.55; }
+  .notes .delta.openq { border-color: var(--caution); }
+  .notes .delta + .delta { margin-top: 0.8rem; }
+
+  h3.section {
+    font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--muted); margin: 1.6rem 0 0.6rem;
+  }
+
+  footer.doc-footer {
+    padding: 1rem 2rem 2rem; font-size: 0.76rem; color: var(--muted); border-top: 1px solid var(--border);
+  }
+  footer.doc-footer strong { color: var(--text); }
+
+  @media (max-width: 900px) {
+    .notes { grid-template-columns: 1fr; }
+    .titleblock { grid-template-columns: 1fr 1fr; }
+    .titleblock .field.wide { grid-column: span 2; }
+  }
+  @media (max-width: 720px) {
+    .shell { flex-direction: column; }
+    nav.toc { width: 100%; border-right: none; border-bottom: 1px solid var(--border); padding: 0.6rem 0; }
+    nav.toc .legend { display: none; }
+    main { padding: 1.2rem 16px 3rem; }
+    header.masthead { padding: 1rem 16px; }
+    header.masthead .src { margin-left: 0; text-align: left; }
+    header.masthead .rule { display: none; }
+    .titleblock { grid-template-columns: 1fr; }
+    .titleblock .field { border-right: none; border-bottom: 1px solid var(--border); }
+    .titleblock .field.wide { grid-column: span 1; }
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <h1>Endorsement Rating Chains</h1>
+  <div class="rule"></div>
+  <p>Every gate, branch and terminal in six Commercial Property endorsement families: Debris Removal (CP 04 15), Ordinance or Law (CP 04 05, CP 04 26 and the Increased Period of Restoration), Utility Services (CP 04 17, CP 15 45), Dependent Properties (CP 15 08 and its variants), Green Upgrades (CP 04 02) and Unmanned Aircraft (CP 04 14). Checked against the built engine and ISO's rule XML as of 2026-10-06. CW 2023-08 V04 and CW 2026-06 are drawn together because every one of these families is byte-identical between them.</p>
+  <div class="src">Engine at 542f0e1 (stage2-interpreter; probed at 4aabfd3)<br>Rule files: 223 across the six families (DebrisRemoval* 18, OrdinanceOrLaw* 55, UtilityServices* 35, DependentProperties* 50, GreenUpgrades* 30, LimitedCoverageForUnmannedAircraft* 20 + tables)<br>Companion: docs/CF-CHUNK12-GATE.md and the six CF-CHUNK12 family records</div>
+</header>
+
+<div class="shell">
+  <nav class="toc" id="toc">
+    <button class="navlink active" data-target="overview">Overview<span class="chain-len">six families, three ways to price</span></button>
+    <hr>
+    <div class="group-label">Property endorsements</div>
+    <button class="navlink" data-target="dr">Debris Removal<span class="chain-len">a slice of the parent's rate · negative below the minimum</span></button>
+    <button class="navlink" data-target="ol">Ordinance or Law<span class="chain-len">Cov A loading · Cov B / C as extra limit</span></button>
+    <button class="navlink" data-target="gu">Green Upgrades<span class="chain-len">the parent's adjusted rate · BI is different</span></button>
+    <hr>
+    <div class="group-label">Own-rate endorsements</div>
+    <button class="navlink" data-target="us">Utility Services<span class="chain-len">own rate tables · blank means two things</span></button>
+    <button class="navlink" data-target="dp">Dependent Properties<span class="chain-len">submitted rates · insured's own limit</span></button>
+    <button class="navlink" data-target="ua">Unmanned Aircraft<span class="chain-len">own loss cost · Special only, EQ not</span></button>
+    <hr>
+    <div class="group-label">Reference</div>
+    <button class="navlink" data-target="states">Editions and states<span class="chain-len">FL, PR, NY, CA, VA, WV</span></button>
+    <hr>
+    <div class="group-label">Review</div>
+    <button class="navlink" data-target="review">Chunk 12 claims re-checked<span class="chain-len">19 claims · 5 corrections</span></button>
+
+    <div class="legend">
+      <h4>Reading the chains</h4>
+      <div class="row"><span class="swatch sw-gate"></span> gate / branch condition</div>
+      <div class="row"><span class="swatch sw-step"></span> computed factor</div>
+      <div class="row"><span class="swatch sw-final"></span> premium resolves</div>
+      <div class="row"><span class="swatch sw-zero"></span> zero, refusal or clamp</div>
+      <div class="row"><span class="swatch sw-openq"></span> silent gap / open question</div>
+      <div class="row"><span class="swatch sw-engine"></span> engine layer, not an ISO rule</div>
+    </div>
+  </nav>
+
+  <main id="main">
+
+    <!-- ============================= OVERVIEW ============================= -->
+    <section class="sheet-view active" id="view-overview">
+      <div class="intro">
+        <h2>Three ways an endorsement finds its rate</h2>
+        <p>Each family attaches one record per coverage it can sit on, and auto-creates one cell per cause-of-loss form (Group I, Group II, Broad, Special, Earthquake). What differs is where the rate comes from. Debris Removal, Ordinance or Law and Green Upgrades are a slice or loading of the parent coverage's own rate. Utility Services and Unmanned Aircraft carry their own rate tables. Dependent Properties takes rates the submitter supplies for the dependent property. Every cell rolls into its record, then the parent coverage's total, then the policy.</p>
+        <p>All 223 rule files and their tables are byte-identical in CW 2023-08 V04 and CW 2026-06. The state changes cluster in Florida (which switches several of these off), Puerto Rico, New York, California, Virginia and West Virginia. Probes ran in OH, OR, IL (clean) and FL, NY, PR; every chunk 12 golden and zero case reproduces.</p>
+      </div>
+
+      <div class="cards">
+        <div class="card">
+          <div class="k">Debris Removal</div>
+          <div class="v">Negative premium</div>
+          <p>A debris limit below the $25,000 minimum is switched on and prices <em>negative</em> (OH −$36, rolled into the building), with only an error message.</p>
+          <button class="go" data-target="dr">See Debris Removal →</button>
+        </div>
+        <div class="card">
+          <div class="k">Ordinance or Law</div>
+          <div class="v">CP 04 26</div>
+          <p>21 of the 55 files are the tenants' improvements form, which chunk 12 never described: its Coverage A reads the adjusted rate, not the final one.</p>
+          <button class="go" data-target="ol">See Ordinance or Law →</button>
+        </div>
+        <div class="card">
+          <div class="k">Florida</div>
+          <div class="v">Switched off</div>
+          <p>Florida turns off drones, Contents debris removal and CP 04 26, and its post-loss O&amp;L option equals "No".</p>
+          <button class="go" data-target="states">See the states →</button>
+        </div>
+      </div>
+
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart LR
+    p(["Parent coverage's<br/>own rate"]) --> dr["Debris Removal<br/>COL adj x 0.5 / EQ x 0.75"]:::step
+    p --> ol["Ordinance or Law<br/>A: (1.15 − 1) x final rate"]:::step
+    p --> gu["Green Upgrades<br/>RMF x adjusted rate"]:::step
+    t(["Endorsement's<br/>own tables"]) --> us["Utility Services<br/>by utility and form"]:::step
+    t --> ua["Unmanned Aircraft<br/>loss cost x deductible"]:::step
+    s(["Submitted rates"]) --> dp["Dependent Properties<br/>dependent property's rates"]:::step
+    dr --> r["record → parent total → policy"]:::final
+    ol --> r
+    gu --> r
+    us --> r
+    ua --> r
+    dp --> r
+
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>The families that borrow the parent's rate inherit its exclusions: a vandalism exclusion moves Green Upgrades ($30 → $28) and Ordinance or Law, but not Debris Removal's flat Broad / Special 0.01.</li>
+            <li>Business Income versions are often a different coverage in all but name: Green Upgrades on BI never reads the Green Upgrades limit or percentage.</li>
+            <li>Several submitted values survive their rules (null guards): a debris minimum limit of 0, an Ordinance or Law factor, a Green Upgrades modification factor, a Dependent Properties rate.</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>No zero in these six families refuses after 542f0e1.</strong> C28-17 covers only building inputs. Blank limits, percentages, utility types, waiting periods, natures of dependency, operations and deductibles all price $0 (or the undiscounted rate, or negative) with outcome "rated". The only refusals are table misses that ISO also refuses: an unfiled Green Upgrades percentage, waiting period or nature of dependency.</div>
+      </div>
+    </section>
+
+    <!-- ============================= DEBRIS REMOVAL ============================= -->
+    <section class="sheet-view" id="view-dr">
+      <div class="titleblock">
+        <div class="field"><span class="k">Form</span><span class="v">CP 04 15 Debris Removal Additional Insurance: records on Building, Contents and Special Class</span></div>
+        <div class="field"><span class="k">Editions</span><span class="v">18 rule files and the family's tables identical in V04 and 2026</span></div>
+        <div class="field"><span class="k">Tables</span><span class="v">DebrisRemovalRate (CW only): Group I 0.5, Group II 0.5, EQ 0.75, Broad 0.01, Special 0.01 · minimum limit CW 25,000, FL 10,000</span></div>
+        <div class="field"><span class="k">Premium</span><span class="v">Group I / II: r0(r3(r3(COL adj x 0.5) x LOI) x (Limit − Min)/100) x Pkg, MPDC, IRPM, cyber · Broad / Special: 0.01 x LCM instead · EQ: COL adj x 0.75, no Pkg / MPDC / IRPM · Special Class: no LOI, policy MPDC</span></div>
+        <div class="field wide"><span class="k">Gate</span><span class="v">Cell on when Limit &gt; minimum, evaluated before the minimum is set, so any limit above 0 switches it on. Broad / Special on the parent's cause; EQ on the parent's EQ indicator. Negatives roll up.</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["Debris Removal record (CP 04 15)<br/>CW 2023 V04 = CW 2026-06"]) --> par{"Which parent?"}
+    par -->|"Building"| bct{"Building CovType?"}
+    bct -->|"Legal Liability / Leasehold"| msgLL["Error: CP 04 15 not valid<br/>with selected Coverage<br/>(still priced)"]:::gate
+    bct -->|"No Coverage"| nocov["No message;<br/>still charged OH $55 + $13"]:::openq
+    msgLL --> loi1["LOI factors fall to 1.0"]:::zero
+    nocov --> loi1
+    bct -->|"Building / other"| bloi["LOI on the BUILDING's limit<br/>(FullBldgValue if blanket,<br/>BR reporting limit if BR)"]:::step
+    par -->|"Contents"| ppct{"Building CovType<br/>No Coverage?"}
+    ppct -->|"No"| ppmsg["Error: only valid if Building<br/>is No Coverage (still priced)"]:::gate
+    ppct -->|"Yes"| pploi["PersProp LOI tables on the<br/>occupancy TotAmtInsurance"]:::step
+    ppmsg --> pploi
+    par -->|"Special Class"| scno["No LOI factor at all"]:::step
+    loi1 --> fac["DebrisRemovalRate (CW only):<br/>G1 0.5, G2 0.5, EQ 0.75 multiply<br/>the parent's COL adjustment;<br/>Broad / Special 0.01 flat x LCM"]:::step
+    bloi --> fac
+    pploi --> fac
+    scno --> fac
+    fac --> minl["MinimumLimit: CW 25,000, FL 10,000<br/>(IsNull guard: a submitted value wins)"]:::step
+    minl --> on{"Limit &gt; MinimumLimit?<br/>(checked at setup, before the<br/>minimum is looked up: Limit &gt; 0)"}:::gate
+    on -->|"Limit blank"| off["Every cell off, $0<br/>+ CP 04 15 limit error"]:::zero
+    on -->|"any Limit &gt; 0"| cell{"Which cell?"}:::gate
+    cell -->|"Group I / II: always on"| g12["r3(r3(COL adj x factor) x LOI)<br/>x (Limit - Min)/100<br/>x Pkg x MPDC x IRPM x cyber x2"]:::final
+    cell -->|"Broad: cause Broad<br/>Special: cause Special"| bs["r3(r3(0.01 x LCM) x LOI)<br/>x (Limit - Min)/100 x same mods"]:::final
+    cell -->|"EQ: EQCovIndicator Yes<br/>(SC: an SC EQ form exists)"| eq["r3(EQ COL adj x 0.75)<br/>x (Limit - Min)/100 x cyber x2<br/>(no Pkg / MPDC / IRPM)"]:::final
+    g12 -.- neg["Limit 25,000: on, $0 + error<br/>Limit 10,000: NEGATIVE<br/>OH -$29 / -$7, rolls up -$36"]:::zero
+    g12 --> roll["Cells sum to the record total,<br/>then into the parent's total"]:::step
+    bs --> roll
+    eq --> roll
+    roll -.- engn["Engine: every DR zero or negative<br/>is 'rated'; no C28-17 check<br/>covers Debris Removal"]:::eng
+    fac -.- fl["FL: min 10,000; Contents cells<br/>always off; G2 adds sinkhole,<br/>no cyber. NY: EQ cell, no cyber"]:::openq
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class par,bct,ppct gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>Debris Removal is a slice of the parent's own cause-of-loss adjustment (x 0.5, EQ x 0.75). The LOI factor comes from the parent's limit, never the debris limit (200,000 still gives 1.172).</li>
+            <li>Only the amount above the minimum is charged. A limit at the minimum is on at $0; below it, the premium is negative (OH −$29 / −$7, rolled into the building).</li>
+            <li>A "No Coverage" building still pays ($55 + $13) with no message; the "not valid" message lists only Legal Liability and Leasehold.</li>
+            <li>The Contents record is meant for a tenant whose building is "No Coverage"; otherwise ISO fires an error but still prices it ($67).</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>Submitted values are honoured:</strong> a minimum limit of 0 or a factor of 5 ($110 + $28; $642). <strong>State watch-items:</strong> FL minimum 10,000, Contents cells off, a sinkhole term on Group I / II; NY's Building EQ cell has no cyber factors. CW 2027-01 re-keys Group I LOI on <code>CSPConstructionCode</code>.</div>
+      </div>
+    </section>
+
+    <!-- ============================= ORDINANCE OR LAW ============================= -->
+    <section class="sheet-view" id="view-ol">
+      <div class="titleblock">
+        <div class="field"><span class="k">Forms</span><span class="v">CP 04 05 on a building · CP 04 26 on an Improvements and Betterments building · Increased Period of Restoration on Business Income and SC Business Income</span></div>
+        <div class="field"><span class="k">Editions</span><span class="v">55 rule files and 11 tables identical in V04 and 2026</span></div>
+        <div class="field"><span class="k">Tables</span><span class="v">Cov A 1.15 · Cov A EQ 1.85 · post-loss 1.02 · IPR 1.2 · IPR EQ 2 (MN files Cov A 1.05 / EQ 1.5)</span></div>
+        <div class="field"><span class="k">Premium</span><span class="v">Cov A: r0(r3((Factor x PostLoss − 1) x FinalRate) x LimitToUse/100) x Pkg, MPDC, IRPM, cyber · Cov B / C / B&amp;C: rebuilt from the COL adjustment through LOI and deductibles on their own limits · IPR: r0(r3(FinalRate x (1.2 x PostLoss − 1)) x LimitToUse/100), no MPDC</span></div>
+        <div class="field wide"><span class="k">Gate</span><span class="v">Cell on/off from CovType (A: not "Coverage C Only"; B: "A and B" or Separate; C: "C Only" or Separate; B&amp;C: Combined), the cause (Broad / Special) and the EQ indicator. IPR Group I / II always on.</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["Ordinance or Law<br/>CW 2023 V04 = CW 2026-06<br/>55 files"]) --> rec{"Which record?"}
+    rec -->|"CP 04 05 on a Building<br/>CP 04 26 on an I&amp;B building"| msgs["Messages only, still priced:<br/>not valid with No Cov / BR / LL;<br/>Cov C needs Replacement Cost;<br/>80% coinsurance minimum"]:::gate
+    msgs --> post{"PostLoss option Yes?"}:::gate
+    post -->|"Yes"| pl2["PostLossFactor 1.02"]:::step
+    post -->|"No / blank"| pl1["PostLossFactor 1.0"]:::step
+    pl2 --> ct{"CovType?"}:::gate
+    pl1 --> ct
+    ct -->|"Coverage A Only"| cA["A cells only"]:::step
+    ct -->|"blank"| cAb["A cells only:<br/>blank is not 'C Only'"]:::openq
+    ct -->|"A and B"| cAB["A + B cells"]:::step
+    ct -->|"A and B &amp; C Separate"| cABC["A + B + C cells"]:::step
+    ct -->|"A and B &amp; C Combined"| cABCc["A + B&amp;C cells"]:::step
+    ct -->|"Coverage C Only"| cC["C cells; A Factor 1.0"]:::step
+    cA --> fA["Cov A = r3((1.15 x PostLoss - 1)<br/>x bldg FINAL rate) x LimitToUse/100<br/>x Pkg x MPDC x IRPM x cyber<br/>MN 1.05; EQ 1.85 (MN 1.5)"]:::final
+    cAb --> fA
+    cAB --> fA
+    cABC --> fA
+    cABCc --> fA
+    cAB --> fBC["Cov B / C / B&amp;C = r3 chain:<br/>COL adj x PostLoss x bldg LOI<br/>x ded-by-loc x ded x multi-res credit<br/>x own limit/100 x the same mods"]:::final
+    cABC --> fBC
+    cABCc --> fBC
+    cC --> fBC
+    fA --> forms{"Which form cell?"}:::gate
+    fBC --> forms
+    forms -->|"G1 / G2: always<br/>Broad / Special: cause matches"| roll["Cells sum to the record total<br/>and into the building"]:::step
+    forms -->|"EQ: EQCovIndicator Yes"| eqc["EQ: A on FinalEQRate x EQLimitToUse;<br/>B/C on EQ COL adj x EQ deds;<br/>cyber only, no Pkg / MPDC / IRPM"]:::final
+    eqc --> roll
+    fBC -.- nul["B / C limit blank: null skipped,<br/>priced as one $100 unit:<br/>$0 at LCM 1, $1 at LCM 3"]:::eng
+    rec -->|"IPR on BI / SC BI"| ipr["IPR = r3(final rate x (1.2 x PostLoss - 1))<br/>x LimitToUse/100 x Pkg x IRPM x cyber<br/>EQ factor 2; no MPDC; no CovType"]:::final
+    ipr --> roll
+    fA -.- tiib["CP 04 26: Cov A on the ADJUSTED rate;<br/>B/C without deductible factors;<br/>FL: every cell off"]:::openq
+    roll -.- st["States: FL whole 1.15, no post-loss;<br/>CA schools Field Act branch; AK min C;<br/>NY EQ; VA own form; WV flood (Flood page)"]:::openq
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class rec gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>Coverage A is a loading on the building's own final rate: 0.15 x rate x the full building limit (OH $53). Coverages B and C are priced like extra building limit.</li>
+            <li>A blank CovType charges Coverage A (the test is "not Coverage C Only"); B and C need an explicit choice. A blank post-loss option means "No".</li>
+            <li>A blank B or C limit isn't refused: the null limit is skipped and one $100 unit is priced, $0 at LCM 1 but $1 per cell at LCM 3.</li>
+            <li>CP 04 26's Coverage A reads the adjusted rate, and its B / C cells skip the deductible and multi-residential factors (OH B $74 against $72).</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>State watch-items:</strong> FL charges the whole Cov A factor (1.15, not 0.15), empties the post-loss factor (Yes = No), adds sinkhole to Group II and switches CP 04 26 off. CA prices public schools at $0 only with the Field Act exclusion; otherwise a No-Field-Act surcharge (factor 3 / 2). AK has its own minimum Coverage C; NY rewrites the nine EQ cells; VA adds a 43-file state broad form; WV's flood Ordinance or Law files are on the Flood page.</div>
+      </div>
+    </section>
+
+    <!-- ============================= GREEN UPGRADES ============================= -->
+    <section class="sheet-view" id="view-gu">
+      <div class="titleblock">
+        <div class="field"><span class="k">Form</span><span class="v">CP 04 02 Green Upgrades (Increased Cost of Loss and Related Expenses): Building, Contents, Special Class, BI, SC BI</span></div>
+        <div class="field"><span class="k">Editions</span><span class="v">30 rule files and 4 tables identical in V02–V04, 2026 and 2027; V01 has no null guards</span></div>
+        <div class="field"><span class="k">Tables</span><span class="v">Increased cost % (10–50%) · RateModificationFactor (12 bands, 1.0 to 0.5) · related expenses 0.1 · period of restoration (30–180 days → 1.0–1.06)</span></div>
+        <div class="field"><span class="k">Premium</span><span class="v">Property: GreenUpgradesPremium = r0 chain(r3(RMF x the parent's adjusted rate) x Limit/100 x Pkg x MultiPrem x IRPM x cyber); RelatedExpensesPremium likewise · BI: r0 chain(r3((POR factor − 1) x BI rate) x BI LimitToUse/100 …)</span></div>
+        <div class="field wide"><span class="k">Gate</span><span class="v">Group I / II always on; Broad / Special on the parent's cause; EQ on the EQ indicator (no Pkg / MultiPrem / IRPM). Five underwriting messages fire only when PolicyType = Commercial Property Policy.</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["Green Upgrades record (CP 04 02)<br/>CW 2023-08 V02-V04 = CW 2026-06"]) --> which{"Attached to?"}
+    which -->|"Building / Contents /<br/>Special Class"| pct{"IncreasedCostOfLossPct<br/>blank?"}
+    pct -->|"Yes"| ratio0["Pct = 0.0, Ratio = 0.0"]:::openq
+    pct -->|"No"| pctLk["Lookup IncreasedCostOfLossPercentConverted<br/>10% to 50%"]:::step
+    pctLk -->|"unfiled value, e.g. 25%"| refPct["Refused: SingleResult no row<br/>(C28-05; ISO refuses too)"]:::eng
+    pctLk --> limGate{"Limit &gt; 0?"}
+    limGate -->|"No"| ratio0
+    limGate -->|"Yes"| ratio["Ratio = r3(r3(Limit / parent LimitToUse) / Pct)<br/>RatioToUse = Ratio x 1000"]:::step
+    ratio0 --> rmf["RateModificationFactor by RatioToUse band<br/>0: 1.0 | 0-100: 0.95 ... 900+: 0.5"]:::step
+    ratio --> rmf
+    rmf --> cells{"Cell on?"}
+    cells -->|"BGI, BGII: always"| greenB["Green = r0(r3(RMF x parent Adjusted rate)<br/>x Limit/100) x PackageMod x MultiPrem<br/>x IRPM x 2 cyber factors"]:::step
+    cells -->|"Broad / Special:<br/>CauseOfLossToUse"| greenB
+    cells -->|"EQ: EQCovIndicator Yes"| greenEQ["Green = r0(r3(RMF x AdjustedEQRate)<br/>x Limit/100) x 2 cyber factors only"]:::step
+    cells -->|"form not selected"| offZero["Cell Premium = 0.0"]:::zero
+    greenB --> relGate{"RelatedExpenses &gt; 0?"}
+    greenEQ --> relGate
+    relGate -->|"No"| relZero["RelatedExpensesRate = 0.0"]:::zero
+    relGate -->|"Yes"| rel["Related = r0(RelatedExpenses/100<br/>x r3(Adjusted rate x 0.1)) x same mods"]:::step
+    relZero --> cellPrem["Cell Premium = Green + Related"]:::final
+    rel --> cellPrem
+    cellPrem --> parentSum["Parent sums GreenUpgradesPremium and<br/>RelatedExpensesPremium over 5 cells (18 writes each)"]:::final
+    which -->|"Business Income /<br/>SC Business Income"| por{"PeriodOfRestoration blank?"}
+    por -->|"Yes"| biZero["Every BI cell Premium = 0.0<br/>(rated, no message)"]:::zero
+    por -->|"No"| porLk["PORFactor = Lookup(30-180 days: 1.0-1.06) - 1<br/>30 days gives 0.0"]:::step
+    porLk --> biPrem["BI cell = r0(r3(PORFactor x BI COL rate)<br/>x BI LimitToUse/100) x PackageMod x IRPM x cyber<br/>GU Limit, Pct, RelatedExpenses never read"]:::final
+    ratio0 -.- note1["Blank pct takes the undiscounted factor 1.0:<br/>premium nearly doubles ($30 to $56)"]:::openq
+    start -.- msgs["Messages live on the parent coverage, not here:<br/>no Replacement Cost / ratio &gt; 1 / wrong form /<br/>BI without Bldg or Contents GU (error, still rated)"]:::eng
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class which,pct,limGate,cells,relGate,por gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>It prices off the parent's own adjusted rate per cause of loss, so an exclusion that moves that rate flows through (vandalism: $30 → $28). Golden case: $30 + $3 = $33.</li>
+            <li>A blank percentage is the most expensive answer: ratio 0 selects factor 1.0, the undiscounted rate ($33 → $63). An unfiled percentage now refuses, as ISO does.</li>
+            <li>The Business Income version reads only the period of restoration and the BI record's own limit and rates; the Green Upgrades limit, percentage and related expenses are never read. A blank or 30-day period gives $0.</li>
+            <li>Its messages (no replacement cost, ratio over 1, wrong form, BI without a property Green Upgrades) are errors; the policy still rates.</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>V01 is not Florida's any more:</strong> FL now resolves to V04, while OR, GA, OH, PA, CA, MO, TX and NC resolved to V01 on 2025-01-01, where a submitted modification factor is recomputed. FL changes only the Group II cells (sinkhole, no cyber).</div>
+      </div>
+    </section>
+
+    <!-- ============================= UTILITY SERVICES ============================= -->
+    <section class="sheet-view" id="view-us">
+      <div class="titleblock">
+        <div class="field"><span class="k">Forms</span><span class="v">CP 04 17 direct damage (Building, Contents, Special Class) · CP 15 45 time element (BI, SC BI)</span></div>
+        <div class="field"><span class="k">Editions</span><span class="v">35 rule files, 9 tables identical in V04 and 2026 (and V03); V02 differs in 9 rules</span></div>
+        <div class="field"><span class="k">Rates</span><span class="v">The family's own 9 CW tables, never the parent's rate. Direct damage keys on utility type + form; time element on the utility group + public / non-public (non-public filed at 0)</span></div>
+        <div class="field"><span class="k">Premium</span><span class="v">Direct damage: r0(rate x LimitToUse/100) x Pkg, IRPM, cyber (limit defaults to the building's) · Time element: r0(r3(rate x waiting-period factor) x LimitToUse/100) …</span></div>
+        <div class="field wide"><span class="k">Gate</span><span class="v">Records are submitted; five cells per Detail. Cells on the detail's cause of loss and EQ indicator; a Fire-only cause zeroes Group II.</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    parent(["Building / Contents / Special Class<br/>or Business Income / SC Business Income"]) --> rec["Utility Services record<br/>submitted only, never auto-created"]:::step
+    rec --> det["One Detail per utility<br/>UtilityType, Utility, Limit, CauseOfLoss"]:::step
+    det --> lim{"Detail Limit &gt; 0?"}
+    lim -->|"Yes"| limOwn["LimitToUse = own Limit"]:::step
+    lim -->|"No / blank"| limPar["LimitToUse = parent's<br/>whole coverage limit"]:::openq
+    limOwn --> half{"Which half?"}
+    limPar --> half
+    half -->|"Direct damage"| ddType{"UtilityType blank?"}
+    ddType -->|"Yes"| ddZero["all base rates 0.0<br/>cells on, $0"]:::zero
+    ddType -->|"No"| ddBase["Base = WaterPowerComm table<br/>keyed UtilityType + form<br/>Utility itself not a key"]:::step
+    ddBase --> ddOH{"Utility incl.<br/>overhead lines?"}
+    ddOH -->|"Yes"| ddAdd["+ OverheadLines rate"]:::step
+    ddOH -->|"No"| ddRate["Rate = r3 base x LCM<br/>+ r3 overhead x LCM"]:::step
+    ddAdd --> ddRate
+    ddRate --> ddFire{"Detail COL a Fire form?"}
+    ddFire -->|"Yes"| ddG2["Group II rate 0.0<br/>Bldg misspells 'Vandalsim'"]:::openq
+    ddFire -->|"No"| ddCells{"Detail CauseOfLoss?"}
+    ddG2 --> ddCells
+    ddCells -->|"blank"| ddOff["all cells off, $0"]:::zero
+    ddCells -->|"any value"| ddG["Group I + II on<br/>Broad if 'Broad', Special if 'Special'<br/>EQ if detail EQCovIndicator Yes"]:::gate
+    ddG --> ddPrem["Premium = r0 Rate x Limit/100<br/>x PackageMod x MultiPrem x IRPM<br/>x 2 cyber; EQ: x cyber only"]:::final
+    half -->|"Time element"| teU{"Utility?"}
+    teU -->|"Water / Wastewater / Power"| teWP["WaterAndPower table"]:::step
+    teU -->|"Communications"| teCo["Communications table"]:::step
+    teU -->|"blank"| teZ0["base 0.0, $0"]:::zero
+    teWP --> teT{"UtilityType?"}
+    teCo --> teT
+    teT -->|"Other Than Public"| teNP["NonPublic tables:<br/>every rate filed 0 -&gt; $0"]:::zero
+    teT -->|"Public or blank"| teOH["+ overhead rate if incl. lines<br/>Rate = r3 sum x LCM"]:::step
+    teOH --> teW{"WaitingPeriod?"}
+    teW -->|"blank"| teW0["factor 0.0 -&gt; $0, rated"]:::zero
+    teW -->|"unfiled e.g. 36 hours"| teRef["Refused: SingleResult<br/>no row, as ISO"]:::eng
+    teW -->|"filed 12-168 h / none"| teWF["factor 0.88 .. 1.15<br/>72 h = 1.0"]:::step
+    teWF --> tePrem["Premium = r0 r3 Rate x WPF<br/>x Limit/100 x PackageMod x IRPM<br/>x 2 cyber; no MultiPrem"]:::final
+    teWF --> teMsg{"BI CovType Extra Expense Only<br/>AND 1st detail not 72 h?"}
+    teMsg -->|"Yes"| teErr["Error message only<br/>engine still 'rated'"]:::eng
+    ddPrem --> roll["Cells -&gt; Detail total -&gt; record total<br/>-&gt; parent coverage -&gt; policy"]:::final
+    tePrem --> roll
+    roll -.- st["FL: TE drops WPF + cyber; Wastewater off-domain<br/>PR: TE drops WPF; Special cell needs<br/>'Special Including/Excluding Theft'"]:::openq
+    ddZero -.- silent["C28-17 refuses none of these $0 endings:<br/>all rate silently, outcome 'rated'"]:::eng
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class lim,half,ddType,ddOH,ddFire,ddCells,teU,teT,teW,teMsg gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>Direct damage asks only "public or not" plus the form; which utility it is matters only for the overhead-lines add-on.</li>
+            <li>Blank means different things: a blank utility type gives $0 on direct damage but full public rates on time element ($9 + $4).</li>
+            <li>A blank waiting period gives factor 0 and $0; an unfiled one now refuses, as ISO does. FL and PR read no waiting period, so the same blank charges full rate.</li>
+            <li>Building's rule misspells "Fire, Vandalsim and Sprinkler Leakage", so the real value still charges Group II on Building ($4) but not on Contents ($0). Contents' Special uses a different row (0.021, $8) from Building's (0.006, $2).</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>State watch-items:</strong> FL (14 rule files) and PR (17) override this family; no other state does. In FL, "Wastewater Removal" is off the domain but, if sent, prices at communications rates ($18 + $18). Every stored ISO response from chunk 12 equals today's engine output.</div>
+      </div>
+    </section>
+
+    <!-- ============================= DEPENDENT PROPERTIES ============================= -->
+    <section class="sheet-view" id="view-dp">
+      <div class="titleblock">
+        <div class="field"><span class="k">Forms</span><span class="v">CP 15 08 Business Income from Dependent Properties (Broad, Limited), Extra Expense from Dependent Properties, and the Limited International variants: BI and SC BI only</span></div>
+        <div class="field"><span class="k">Editions</span><span class="v">50 rule files and 6 tables identical in V04 and 2026; V02 / V03 differ in 3 statistical rules</span></div>
+        <div class="field"><span class="k">Rates</span><span class="v">Group I / II / EQ: submitted on each dependent property (no rule computes them) · Broad / Special: table-driven by construction</span></div>
+        <div class="field"><span class="k">Premium</span><span class="v">Broad / Limited: r0 chain(r3(rate x LCM x nature-of-dependency factor [x secondary-location 1.5]) x exposure/100 …) · International: a manual premium x Pkg x MultiPrem x IRPM</span></div>
+        <div class="field wide"><span class="k">Exposure</span><span class="v">Broad form and Extra Expense price on the insured's own BI limit; only the Limited form uses the sum of the dependent properties' limits. With several properties the record takes the highest adjusted rate.</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    bi(["Business Income or<br/>SC Business Income only"]) --> kind{"Which record?<br/>submitted only"}
+    kind -->|"International BI / EE"| intl["Premium = r0 ManualPremium<br/>x PackageMod x MultiPrem x IRPM<br/>Detail records inert"]:::final
+    kind -->|"Broad / Limited form"| det["Detail per dependent property<br/>submitted GI, GII, EQ rates"]:::step
+    kind -->|"Extra Expense"| ee["Detail per property<br/>cells sit on each Detail"]:::step
+    det --> nat{"NatureOfDependency?"}
+    nat -->|"blank"| nat0["factor 0.0 -&gt; $0, rated"]:::zero
+    nat -->|"unfiled value"| natRef["Refused: SingleResult<br/>no row, as ISO"]:::eng
+    nat -->|"Only source"| nat1["factor 1.0"]:::step
+    nat -->|"Not the only source"| nat2["Broad 0.4 / Limited 0.5"]:::step
+    nat1 --> adj["Adj = r3 r3 rate x LCM x nature<br/>GI, GII, EQ from submitted rates"]:::step
+    nat2 --> adj
+    adj --> col{"BI CauseOfLossToUse?"}
+    col -->|"Broad"| br["Broad = BroadFormBaseRate<br/>construction x LCM x nature"]:::step
+    col -->|"Special"| spc{"Construction known?"}
+    spc -->|"No"| sp0["Special rate 0.0"]:::zero
+    spc -->|"Yes"| sp["Special = SpclInclTheft TE base<br/>x LCM x theft excl x nature"]:::step
+    col -->|"Basic"| maxr
+    br --> maxr["Record rate = MAX over details<br/>none -&gt; 0"]:::step
+    sp --> maxr
+    sp0 --> maxr
+    maxr --> sec{"Any secondary location Yes?"}
+    sec -->|"Yes"| sec15["factor 1.5"]:::step
+    sec -->|"No"| sec1["factor 1.0"]:::step
+    sec15 --> form{"Form?"}
+    sec1 --> form
+    form -->|"Broad"| pB["Premium = r0 r3 rate x secondary<br/>x BI LimitToUse/100 x PackageMod<br/>x IRPM x 2 cyber"]:::final
+    form -->|"Limited"| pL["same, exposure = TotalLimit<br/>sum of detail limits"]:::final
+    ee --> eeAdj["Adj = r3 rate x LCM<br/>no nature, no secondary, no max"]:::step
+    eeAdj --> eeP["Premium per detail = r0 Adj<br/>x BI Limit/100 x PackageMod x IRPM<br/>x 2 cyber; detail's own limit unused"]:::openq
+    pB --> roll["Cells -&gt; record -&gt; BI total -&gt; policy"]:::final
+    pL --> roll
+    eeP --> roll
+    intl --> roll
+    roll -.- st["FL: no secondary factor, no cyber<br/>PR: Special literals 'Special Incl/Excl Theft'<br/>+ ExclgTheft table"]:::openq
+    nat0 -.- silent["C28-17 refuses none of these $0 endings:<br/>all rate silently, outcome 'rated'"]:::eng
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class kind,nat,col,spc,sec,form gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>The submitter supplies the rate. A missing Group I rate quietly gives Group I $0; with several properties, the highest adjusted rate wins ($500 beats $80).</li>
+            <li>The exposure is the insured's own limit: Extra Expense prices $200 + $30 on a BI limit of 100,000 even though the detail says 30,000; the detail's limit is never read.</li>
+            <li>A blank nature of dependency is $0, rated with no message; an unfiled one now refuses, as ISO does. The secondary-location 1.5 applies once to the whole record.</li>
+            <li>Earthquake uses the submitted rate, not a table; Broad and Special use tables.</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>State watch-items:</strong> FL drops the secondary-location factor ($120 → $80) and has its own Special rows; PR files its own Special tables and keys Special on "Special Including / Excluding Theft", so plain "Special" gets no Special cell, silently.</div>
+      </div>
+    </section>
+
+    <!-- ============================= UNMANNED AIRCRAFT ============================= -->
+    <section class="sheet-view" id="view-ua">
+      <div class="titleblock">
+        <div class="field"><span class="k">Form</span><span class="v">CP 04 14 Limited Coverage for Unmanned Aircraft (scheduled and/or blanket): Building, Contents, Special Class, BI, SC BI</span></div>
+        <div class="field"><span class="k">Editions</span><span class="v">20 rule files and 36 tables identical in V04 and 2026; V03 9 rules, V02 12, V01 46 differ; CW 2027-01 changes the EQ gate on 4 of 5 attachments</span></div>
+        <div class="field"><span class="k">Rate</span><span class="v">The family's own loss cost (2.525 or 1.625 by operations) x a deductible factor (no deductible 1.15) x newly-acquired 1.05; the parent supplies only LCM, vandalism, sprinkler, theft, wind (keyed on symbol 'B') and the modifiers</span></div>
+        <div class="field"><span class="k">Premium</span><span class="v">Drone: Special only, r0 chain(r3 chain(base x LCM x factors) x limit/100 x Pkg x MultiPrem x IRPM x cyber) · EQ cell: EQ COL adjustment x EQ deductible factors x limit/100</span></div>
+        <div class="field wide"><span class="k">Gate</span><span class="v">The drone cell prices only on Special. The EQ cell is on for anything but "Not Applicable" / "No Coverage", including blank, and prices $0 without an EQ deductible factor.</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["Unmanned Aircraft (CP 04 14)<br/>on Bldg / Contents / Special Class / BI / SC BI<br/>CW 2023-08 V04 = CW 2026-06"]) --> detail["One Detail per drone schedule<br/>(DroneCov + EQCov cells under each)"]:::step
+    detail --> blk{"Blanket answer = Yes?"}
+    blk -->|"Yes"| limB["LimitToUse = BlanketLimitOfInsurance"]:::step
+    blk -->|"No or blank"| limS["LimitToUse = LimitOfInsurance"]:::step
+    limB --> tsl["TotalScheduleLimit = sum of LimitToUse &gt; 0<br/>(V02/V03: Sum with Break, OI-108, fixed)"]:::step
+    limS --> tsl
+    tsl --> ops{"TypeOfOperations blank?"}
+    ops -->|"Yes"| baseZero["RiskClass blank, BaseRate = 0.0"]:::zero
+    ops -->|"No"| base["Search &amp; Rescue / Firefighting / Weather: 2.525<br/>All Other: 1.625"]:::step
+    base --> ded{"Deductible?"}
+    baseZero --> ded
+    ded -->|"Not Applicable"| d115["NoDeductibleFactor 1.15"]:::step
+    ded -->|"250"| d250["Deductible250Factor All Other 1.1"]:::step
+    ded -->|"other"| dTab["DeductibleFactor on ded, TotalScheduleLimit,<br/>Other Cause Of Loss (1,000: 0.96)"]:::step
+    ded -->|"blank"| dZero["DeductibleFactor = 0.0"]:::zero
+    d115 --> mods["NewlyAcquired 1.05 (scheduled only)<br/>Wind excl: constant key B, 0.315<br/>Vandalism, SprinklerLeak, Theft from parent"]:::step
+    d250 --> mods
+    dTab --> mods
+    dZero --> mods
+    mods --> sp{"Parent CauseOfLossToUse<br/>= Special?"}
+    sp -->|"No (Basic / Broad)"| droneZero["Drone Premium = 0.0"]:::zero
+    sp -->|"Yes"| drone["Drone = r0(r3 chain x LimitToUse/100)<br/>x PackageMod x MultiPrem x IRPM x 2 cyber"]:::final
+    detail --> eqGate{"Parent EQCovIndicator =<br/>Not Applicable or No Coverage?"}
+    eqGate -->|"Yes"| eqOff["EQ cell off, 0.0"]:::zero
+    eqGate -->|"No (blank too)"| eqRate["EQRate = EQLossCostPrsnlProp[EQClass, EQTerr, 2]<br/>x LCM x parent EQ factors"]:::step
+    eqRate --> eqDed{"EQ form on parent AND<br/>EQDeductible set?"}
+    eqDed -->|"No"| eqDZero["EQDeductibleFactor = 0.0"]:::zero
+    eqDed -->|"Yes"| eqDF["Flat / percentage / sub-limit tier factor"]:::step
+    eqDF --> eqPrem["EQ = r0(r3(r3(EQCOLAdj x DedByLoc) x EQDedFactor)<br/>x LimitToUse/100) x 2 cyber; any form"]:::final
+    eqDZero --> eqPrem
+    drone --> roll["Detail total, then parent total<br/>(ErcCalculatedTotalPremium)"]:::final
+    eqPrem --> roll
+    start -.- bi["BI / SC BI: no deductible or newly-acquired;<br/>x BI Factor x BeginPOR x ExtPOI, on the<br/>interruption limit; EQ x BI EQFactor"]:::step
+    start -.- fl["FL (FL 20241201 V02): drone and EQ cells<br/>hard-set off; every drone rates $0"]:::eng
+    tsl -.- msg["Blanket plus a 2nd Detail: error message,<br/>both still rated (BI: any 2nd Detail)"]:::eng
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class blk,ops,ded,sp,eqGate,eqDed gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>It has its own rate: golden Contents Special drone $187 (OR, OH, both dates); search and rescue $290; deductible 1,000 $156, 250 $179, blank $0.</li>
+            <li>Blanket and scheduled share one Detail: a blanket "Yes" swaps the limit and turns off newly-acquired; a blanket with no blanket limit falls to a null limit, skipped → $2.</li>
+            <li>A blanket plus a second Detail fires an error but still rates both ($374).</li>
+            <li>The Business Income drone uses the BI Factor and the interruption limit ($89).</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>State watch-items:</strong> AR, DC, KS, NY and RI drop the wind factor from every drone premium, not just BI; AL and TX have their own wind rule; AK, CA and GA change the EQ deductible; Florida switches drones and drone EQ off entirely ($0 everywhere).</div>
+      </div>
+    </section>
+
+    <!-- ============================= STATES ============================= -->
+    <section class="sheet-view" id="view-states">
+      <div class="intro">
+        <h2>Editions and states</h2>
+        <p>All six families are byte-identical in CW 2023-08 V04 and CW 2026-06. Older parents still matter: V01 (no null guards, so submitted values are recomputed) was the parent for OR, GA, OH, PA, CA, MO, TX and NC on 2025-01-01; V02 / V03 keep the drone blanket <code>Sum(…, Break)</code> shape behind OI-108, now handled.</p>
+      </div>
+      <div class="tablewrap">
+        <table class="grid">
+          <thead><tr><th>State</th><th>Endorsement changes</th></tr></thead>
+          <tbody>
+            <tr><th>FL</th><td>Debris Removal minimum 10,000, Contents cells off, sinkhole on Group I / II · O&amp;L: whole Cov A factor, post-loss Yes = No, CP 04 26 off · Utility Services and Dependent Properties: own rules (no waiting period; no secondary-location factor) · Green Upgrades Group II: sinkhole, no cyber · drones off.</td></tr>
+            <tr><th>PR</th><td>Utility Services (17 files) and Dependent Properties (12): no waiting period; Special only on "Special Including / Excluding Theft".</td></tr>
+            <tr><th>NY</th><td>Debris Removal Building EQ and the nine O&amp;L EQ cells rewritten; no wind factor on drones.</td></tr>
+            <tr><th>CA</th><td>O&amp;L public schools: $0 only with the Field Act exclusion, else a No-Field-Act surcharge; drone EQ deductible.</td></tr>
+            <tr><th>VA</th><td>A 43-file state Ordinance or Law broad form, rated alongside the countrywide one.</td></tr>
+            <tr><th>WV</th><td>Ordinance or Law "B &amp; C Separate / Combined" with no Coverage A, and flood O&amp;L files (Flood page).</td></tr>
+            <tr><th>AK, MN</th><td>AK its own minimum Coverage C and drone EQ deductible; MN its own Cov A factors (1.05 / 1.5).</td></tr>
+            <tr><th>AR, DC, KS, RI</th><td>No wind factor on drones.</td></tr>
+            <tr><th>AL, TX, GA</th><td>AL and TX their own drone wind rule; GA the percentage drone EQ deductible.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============================= REVIEW ============================= -->
+    <section class="sheet-view" id="view-review">
+      <div class="intro">
+        <h2>Chunk 12's claims, re-checked</h2>
+        <p>No endorsement chain was ever drawn, so this table re-checks what chunk 12 recorded. Every chunk 12 golden and zero case reproduces, every stored ISO response for Utility Services and Dependent Properties equals today's engine, and the engine never disagreed with chunk 16's independent premium evaluator on 772 Debris Removal and Ordinance or Law cells.</p>
+      </div>
+      <div class="tablewrap">
+        <table class="grid">
+          <thead><tr><th>#</th><th>Chunk 12 said</th><th>Engine / XML now shows</th><th>Kind</th></tr></thead>
+          <tbody>
+            <tr><th>1</th><td>Florida is the only state that files Utility Services / Dependent Properties rules</td><td><strong>Puerto Rico also overrides both</strong> (its 2026-06 package is in force); chunk 12's scan skipped PR</td><td><span class="tag bad">correction</span></td></tr>
+            <tr><th>2</th><td>Green Upgrades is CP 04 23</td><td><strong>CP 04 02</strong> (ISO's own page table and messages)</td><td><span class="tag bad">correction</span></td></tr>
+            <tr><th>3</th><td>Unmanned Aircraft is CP 04 64</td><td><strong>CP 04 14</strong></td><td><span class="tag bad">correction</span></td></tr>
+            <tr><th>4</th><td>Unmanned Aircraft: about 16 files</td><td><strong>20</strong>: five attachments x (parent, Detail, Drone, EQ)</td><td><span class="tag bad">correction</span></td></tr>
+            <tr><th>5</th><td>CA: Ordinance or Law is $0 for public schools</td><td><strong>Only when the Field Act exclusion is attached</strong>; otherwise a No-Field-Act surcharge</td><td><span class="tag bad">correction</span></td></tr>
+            <tr><th>6</th><td>Unfiled waiting period: ISO refuses, ours $0</td><td>Ours now refuses too (C28-05)</td><td>out of date</td></tr>
+            <tr><th>7</th><td>Unfiled nature of dependency gives $0</td><td>Ours now refuses (C28-05)</td><td>out of date</td></tr>
+            <tr><th>8</th><td>Unfiled Green Upgrades percentage: ours $56, ISO refuses</td><td>Ours now refuses</td><td>out of date</td></tr>
+            <tr><th>9</th><td>Florida's parent is CW 2023 V01, with no null guards</td><td>FL now rides CW 2023 V04, which has them (a submitted minimum 0 is honoured: $77)</td><td>out of date</td></tr>
+            <tr><th>10</th><td>Ordinance or Law: 55 files</td><td>21 of them are CP 04 26 (tenants' improvements), never described</td><td>missing</td></tr>
+            <tr><th>11</th><td>Blank B / C limits price $0</td><td>A rounding coincidence: one $100 unit is priced, $1 per cell at LCM 3</td><td>clarified</td></tr>
+            <tr><th>12</th><td>A "No Coverage" building still pays Debris Removal</td><td>Yes, and no message fires</td><td>clarified</td></tr>
+            <tr><th>13</th><td>The five Utility Services attachments read the same fields</td><td>Contents' Special uses a different row (0.021 vs 0.006); a misspelt Fire value on Building</td><td>clarified</td></tr>
+            <tr><th>14</th><td>Dependent Properties' rate is always submitted; riders price EQ from own tables</td><td>Group I / II / EQ are submitted; Broad and Special are table-driven; no EQ table is read</td><td>clarified</td></tr>
+            <tr><th>15</th><td>Green Upgrades BI uses the restoration formula</td><td>And never reads the Green Upgrades limit, percentage or related expenses</td><td>incomplete</td></tr>
+            <tr><th>16</th><td>Green Upgrades messages: two</td><td>Five, gated on PolicyType, never exercised by chunk 12's cases</td><td>missing</td></tr>
+            <tr><th>17</th><td>AR, DC, KS, NY, RI: the BI drone and its wind factor</td><td>They drop the wind factor from every drone cell</td><td>incomplete</td></tr>
+            <tr><th>18</th><td>Florida: own copy of the drone tables</td><td>Florida also switches drones and drone EQ off: every drone $0</td><td>missing</td></tr>
+            <tr><th>19</th><td>Drones rate only on Special</td><td>True for the drone cell; the EQ cell has no Special gate</td><td>incomplete</td></tr>
+            <tr><td colspan="4">Confirmed: Debris Removal's rate table, minimums, parent-limit LOI, negative below the minimum, FL / NY changes, submitted minimum and factor kept; O&amp;L Coverage A loading (OH $53), blank CovType charges A, post-loss 1.02, submitted factor 2.0 kept, MN / AK / NY / VA / WV changes, IPR formula; Utility Services own EQ rows, non-public free, blank waiting period $0, missing limit covers the whole building, no cause-of-loss adjustment; Dependent Properties' Extra Expense on the BI limit, submitted rates kept; Green Upgrades golden $33, blank % → factor 1.0, vandalism flows, FL Group II only; drone golden $187 and every zero case; edition counts for every family.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="doc-footer">
+  Sources: the built engine (<strong>cf_engine</strong> / interpreter at 542f0e1; probed at 4aabfd3, some runs on a clean archive copy), offline on 2026-10-06 with no calls to ISO: Debris Removal and Ordinance or Law in OH, FL and NY; Utility Services and Dependent Properties in OR, IL, FL and PR; Green Upgrades and Unmanned Aircraft in OR, OH and FL; each at a CW 2023 V04 date and a CW 2026-06 date. The Special Class and SC BI versions of Green Upgrades and Unmanned Aircraft, and SC BI Utility Services, come from the XML only. ISO rule XML is under <code>F:\ISO_ERC_Files\CF</code>. Chunk 12's records are <code>docs/CF-CHUNK12-*.md</code>.
+</footer>
+
+<script>
+  (function () {
+    var toc = document.getElementById('toc');
+    var main = document.getElementById('main');
+
+    function activate(target) {
+      var views = main.querySelectorAll('.sheet-view');
+      for (var i = 0; i < views.length; i++) views[i].classList.remove('active');
+      var view = document.getElementById('view-' + target);
+      if (view) view.classList.add('active');
+
+      var links = toc.querySelectorAll('.navlink');
+      for (var j = 0; j < links.length; j++) {
+        links[j].classList.toggle('active', links[j].getAttribute('data-target') === target);
+      }
+      main.scrollTop = 0;
+      window.scrollTo(0, 0);
+    }
+
+    document.addEventListener('click', function (e) {
+      var btn = e.target.closest('button[data-target]');
+      if (btn) activate(btn.getAttribute('data-target'));
+    });
+
+    var hash = location.hash.slice(1);
+    if (hash && document.getElementById('view-' + hash)) activate(hash);
+  })();
+</script>
+
+<style>.mermaid-rendering .sheet-view{display:block!important}</style>
+<script type="module">
+  // Render every diagram once, with all sheets briefly visible so hidden tabs get real sizes.
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({ startOnLoad: false, securityLevel: "strict", flowchart: { wrappingWidth: 260 } });
+  document.documentElement.classList.add("mermaid-rendering");
+  try { await mermaid.run({ querySelector: "pre.mermaid" }); }
+  finally { document.documentElement.classList.remove("mermaid-rendering"); }
+</script>
+</body>
+</html>

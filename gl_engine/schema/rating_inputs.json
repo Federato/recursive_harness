@@ -1,0 +1,88 @@
+{
+ "what": "ISO-required inputs whose absence changes the premium with no refusal (OI-134). The engine refuses a rating that leaves one out where ISO's conditions require it.",
+ "measured": "2026-10-13",
+ "by": "scripts/erc/57_rating_inputs.py",
+ "dates": [
+  "20260801",
+  "20270501"
+ ],
+ "drops": {
+  "same": 3217,
+  "silent": 964,
+  "stops": 204
+ },
+ "fields": [
+  "GeneralLiability.GeneralAggregateLimit",
+  "GeneralLiability.PremOpsProdsCoverageForm",
+  "GeneralLiability.PremOpsProdsEachOccurrenceLimit",
+  "GeneralLiability.ProdsCompldOpsAggregateLimit",
+  "GeneralLiability.ProdsCompldOpsExclusion",
+  "GeneralLiability.Subline",
+  "GeneralLiabilityAlaskaChangesAttorneysFeesPolLvl.Limit",
+  "GeneralLiabilityCertifiedActsOfTerrorismAggregateLimitCapOnLossesFromCertifiedActsOfTerrorismPremOps.AggregateLimit",
+  "GeneralLiabilityClassification.ClassCode",
+  "GeneralLiabilityClassification.OtherThanProdsCompldOpsCov",
+  "GeneralLiabilityClassification.PremOpsPremiumBasis",
+  "GeneralLiabilityClassification.ProdsCompldOpsCov",
+  "GeneralLiabilityClassification.ProdsCompldOpsPremiumBasis",
+  "GeneralLiabilityLocation.PremisesOperationsTerritory"
+ ],
+ "evidence": {
+  "GeneralLiability.GeneralAggregateLimit": {
+   "silent_in": 102,
+   "example": "AK 20260801: 7386 -> 6784"
+  },
+  "GeneralLiability.PremOpsProdsCoverageForm": {
+   "silent_in": 102,
+   "example": "AK 20260801: 7386 -> 602"
+  },
+  "GeneralLiability.PremOpsProdsEachOccurrenceLimit": {
+   "silent_in": 102,
+   "example": "AK 20260801: 7386 -> 1501"
+  },
+  "GeneralLiability.ProdsCompldOpsAggregateLimit": {
+   "silent_in": 102,
+   "example": "AK 20260801: 7386 -> 602"
+  },
+  "GeneralLiability.ProdsCompldOpsExclusion": {
+   "silent_in": 46,
+   "example": "AK 20270501: 7370 -> 587"
+  },
+  "GeneralLiability.Subline": {
+   "silent_in": 102,
+   "example": "AK 20260801: 7386 -> 0"
+  },
+  "GeneralLiabilityAlaskaChangesAttorneysFeesPolLvl.Limit": {
+   "silent_in": 2,
+   "example": "AK 20260801: 7386 -> 7388"
+  },
+  "GeneralLiabilityCertifiedActsOfTerrorismAggregateLimitCapOnLossesFromCertifiedActsOfTerrorismPremOps.AggregateLimit": {
+   "silent_in": 6,
+   "example": "MT 20260801: 7892 -> 7877"
+  },
+  "GeneralLiabilityClassification.ClassCode": {
+   "silent_in": 2,
+   "example": "NY 20260801: 12141 -> 0"
+  },
+  "GeneralLiabilityClassification.OtherThanProdsCompldOpsCov": {
+   "silent_in": 102,
+   "example": "AK 20260801: 7386 -> 6784"
+  },
+  "GeneralLiabilityClassification.PremOpsPremiumBasis": {
+   "silent_in": 46,
+   "example": "AK 20270501: 7370 -> 593453"
+  },
+  "GeneralLiabilityClassification.ProdsCompldOpsCov": {
+   "silent_in": 102,
+   "example": "AK 20260801: 7386 -> 602"
+  },
+  "GeneralLiabilityClassification.ProdsCompldOpsPremiumBasis": {
+   "silent_in": 46,
+   "example": "AK 20270501: 7370 -> 6783982"
+  },
+  "GeneralLiabilityLocation.PremisesOperationsTerritory": {
+   "silent_in": 102,
+   "example": "AK 20260801: 7386 -> 6783"
+  }
+ }
+}

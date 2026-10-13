@@ -1,0 +1,220 @@
+<title>R-8 Phase 0 — making the workbook hold ISO's hierarchy</title>
+<meta charset="utf-8">
+<style>
+  body { font-family: Georgia, "Times New Roman", serif; max-width: 1120px; margin: 0 auto; padding: 32px 24px 80px; line-height: 1.55; color: #1c2733; background: #fff; }
+  @media (prefers-color-scheme: dark) {
+    body { background: #14181d; color: #dfe4e9; }
+    table, th, td { border-color: #3a4048 !important; }
+    thead th { background: #24313a !important; color: #eef4f3 !important; }
+    code, pre { background: #262c33 !important; color: #dfe4e9; }
+    .note { background: #2c2a1c !important; color: #e0c064 !important; }
+    .note.good { background: #1b3226 !important; color: #63c090 !important; }
+    .note.shared { background: #1d2b33 !important; color: #9fd4dc !important; }
+    .ph { border-color: #2b3742 !important; background: #171d24 !important; }
+    .n { background: #1d3535 !important; color: #7fd3d0 !important; }
+    .tag { background: #222a32 !important; color: #a3aebb !important; }
+    .tag.gate { background: #1b3226 !important; color: #63c090 !important; }
+    .tag.risk { background: #34211c !important; color: #e08a72 !important; }
+    .xl { border-color: #3a4048 !important; }
+    .xl th { background: #24313a !important; color: #9aa5b1 !important; border-color: #3a4048 !important; }
+    .xl td { border-color: #303740 !important; background: #171d24; color: #dfe4e9; }
+    .xl td.rh { background: #24313a !important; color: #9aa5b1 !important; }
+    .xl td.blk { background: #1e3a45 !important; color: #9fd4dc !important; }
+    .xl td.hdr { background: #232a31 !important; color: #cfd6dd !important; }
+    .xl td.new { background: #16281f !important; }
+    .xl td.dim { background: #15191e !important; color: #8b95a1 !important; }
+  }
+  h1 { font-size: 26px; font-weight: 400; margin-bottom: 4px; }
+  h2 { font-size: 19px; font-weight: 700; margin-top: 40px; border-bottom: 2px solid #1e3a45; padding-bottom: 4px; }
+  h3 { font-size: 15px; margin: 22px 0 6px; }
+  .meta { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13px; color: #55606b; margin: 6px 0 4px; }
+  code { font-family: ui-monospace, Consolas, monospace; font-size: 0.87em; background: #eef1f4; padding: 1px 5px; border-radius: 3px; }
+  pre { font-family: ui-monospace, Consolas, monospace; font-size: 12.5px; background: #eef1f4; padding: 12px 14px; border-radius: 6px; overflow-x: auto; }
+  table { border-collapse: collapse; width: 100%; margin: 12px 0 8px; font-size: 13.5px; }
+  th, td { border: 1px solid #d7dce2; padding: 6px 9px; text-align: left; vertical-align: top; }
+  thead th { background: #1e3a45; color: #eef4f3; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 11.5px; text-transform: uppercase; letter-spacing: .03em; }
+  td.num { text-align: center; width: 38px; color: #8b95a1; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 12px; }
+  .note { background: #f7ddd4; color: #a53d26; padding: 12px 16px; border-radius: 6px; margin: 16px 0; font-size: 14px; }
+  .note.good { background: #dcefe4; color: #2f7d5a; }
+  .note.shared { background: #dde9ee; color: #1e5567; }
+  .ph { border: 1px solid #d7dce2; border-left: 5px solid #1e3a45; border-radius: 8px; padding: 14px 18px; margin: 16px 0; background: #fcfcfd; }
+  .ph h3 { margin: 0 0 6px; font-size: 15px; font-weight: 700; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .n { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 12px; font-weight: 700; background: #cfe0e0; color: #14484a; padding: 2px 9px; border-radius: 99px; }
+  .tag { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; background: #eef1f4; color: #55606b; padding: 2px 7px; border-radius: 4px; }
+  .tag.gate { background: #dcefe4; color: #2f7d5a; }
+  .tag.risk { background: #f7ddd4; color: #a53d26; }
+  .scroll { overflow-x: auto; margin: 10px 0 6px; }
+  table.xl { border-collapse: collapse; width: auto; font-family: ui-monospace, Consolas, monospace; font-size: 11.5px; border: 1px solid #b8c0c9; }
+  .xl th { background: #e7eaee; color: #55606b; border: 1px solid #b8c0c9; padding: 2px 8px; font-weight: 700; text-align: center; font-size: 10.5px; }
+  .xl td { border: 1px solid #d7dce2; padding: 3px 8px; white-space: nowrap; background: #fff; }
+  .xl td.rh { background: #e7eaee; color: #55606b; text-align: center; font-weight: 700; font-size: 10.5px; }
+  .xl td.blk { background: #1e3a45; color: #cfe0e0; font-weight: 700; letter-spacing: .04em; }
+  .xl td.hdr { background: #eef1f4; font-weight: 700; }
+  .xl td.new { background: #eef7f1; }
+  .xl td.dim { background: #f7f8f9; color: #8b95a1; }
+  .sub { font-size: 12.5px; color: #8b95a1; font-family: -apple-system, "Segoe UI", sans-serif; }
+  ol.steps li { margin: 8px 0; font-size: 14px; }
+</style>
+
+<h1>R-8 Phase 0 &mdash; making the workbook hold ISO's hierarchy</h1>
+<p class="meta"><b>2026-09-22. Spec only &mdash; nothing has been built.</b> You chose the real structure
+over the cheap "fake items sharing a building" workaround. This says what gets built, in what order, and
+what each step has to prove before the next one starts.</p>
+
+<div class="note good"><b>The decision behind this.</b> Multiple contents types on one building &mdash;
+Stock, Machinery, Tenants Improvements &mdash; cannot be expressed today. Faking it with separate items
+fragments <code>CoreScratchpad</code>'s <code>TOTAL LIMIT</code>, which drives the banded deductible
+factor, and double-counts the building's own limit. It would price simple risks right and complex ones
+wrong, silently. <b>16 Personal Property coverage types exist in ISO's domain</b>; the workbook holds one
+per building.</div>
+
+<h2>1. The target</h2>
+
+<pre>Location (N)
+  └─ Building (N)                    ← today: 1
+       ├─ Occupancy Class (N)        ← today: 1
+       │    └─ Contents record (N)   ← today: 1   ⟵ the one you asked about
+       └─ Business Income (N)        ← today: 1
+Location (N)
+  └─ Special Class item (N)
+       └─ SC Business Income (N)</pre>
+
+<p><b>Four separate "only one allowed" ceilings</b>, not one. Today a single column means
+location <i>and</i> building <i>and</i> occupancy class <i>and</i> contents record, all at once.</p>
+
+<h2>2. Decision one &mdash; where the inputs live</h2>
+
+<p><b>One new sheet, <code>IN - Schedule</code>, with stacked blocks</b> &mdash; not seven new input tabs.</p>
+
+<div class="scroll">
+<table class="xl">
+<tr><th>&nbsp;</th><th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>&hellip;</th></tr>
+<tr><td class="rh">1</td><td class="blk" colspan="6">LOCATION</td></tr>
+<tr><td class="rh">2</td><td class="hdr">LocID</td><td class="hdr">State</td><td class="hdr">ZipCode</td><td class="hdr">ProtClass</td><td class="hdr">&hellip;</td><td class="hdr">&nbsp;</td></tr>
+<tr><td class="rh">3</td><td class="new">1</td><td class="new">FL</td><td class="new">32809</td><td class="new">4</td><td class="dim">&hellip;</td><td class="dim">&nbsp;</td></tr>
+<tr><td class="rh">&nbsp;</td><td class="blk" colspan="6">BUILDING</td></tr>
+<tr><td class="rh">&nbsp;</td><td class="hdr">BldgID</td><td class="hdr">ParentLoc</td><td class="hdr">ClassCode</td><td class="hdr">Limit</td><td class="hdr">Deductible</td><td class="hdr">&hellip;</td></tr>
+<tr><td class="rh">&nbsp;</td><td class="new">1-1</td><td class="new">1</td><td class="new">0311</td><td class="new">675000</td><td class="new">2,500</td><td class="dim">&hellip;</td></tr>
+<tr><td class="rh">&nbsp;</td><td class="new">1-2</td><td class="new">1</td><td class="new">0322</td><td class="new">410000</td><td class="new">2,500</td><td class="dim">&hellip;</td></tr>
+<tr><td class="rh">&nbsp;</td><td class="blk" colspan="6">OCCUPANCY CLASS</td></tr>
+<tr><td class="rh">&nbsp;</td><td class="hdr">OccID</td><td class="hdr">ParentBldg</td><td class="hdr">ClassCode</td><td class="hdr">OccupCategory</td><td class="hdr">&hellip;</td><td class="hdr">&nbsp;</td></tr>
+<tr><td class="rh">&nbsp;</td><td class="new">1-1-1</td><td class="new">1-1</td><td class="new">0520</td><td class="new">Mercantile</td><td class="dim">&hellip;</td><td class="dim">&nbsp;</td></tr>
+<tr><td class="rh">&nbsp;</td><td class="blk" colspan="6">CONTENTS</td></tr>
+<tr><td class="rh">&nbsp;</td><td class="hdr">ConID</td><td class="hdr">ParentOcc</td><td class="hdr">CovType</td><td class="hdr">Limit</td><td class="hdr">Coinsurance</td><td class="hdr">&hellip;</td></tr>
+<tr><td class="rh">&nbsp;</td><td class="new">1-1-1-1</td><td class="new">1-1-1</td><td class="new">Stock</td><td class="new">300000</td><td class="new">80%</td><td class="dim">&hellip;</td></tr>
+<tr><td class="rh">&nbsp;</td><td class="new">1-1-1-2</td><td class="new">1-1-1</td><td class="new">Machinery and Equipment</td><td class="new">215000</td><td class="new">80%</td><td class="dim">&hellip;</td></tr>
+</table>
+</div>
+
+<p><b>Why one sheet, and why this shape:</b> it is <b>exactly the <code>Payload Export</code> layout</b>
+already specified for the generator. Building the input model in that shape means
+<b>Phase 6 deletes the export sheet rather than rewriting it</b> &mdash; the inputs become the payload
+structure. Two jobs, one build.</p>
+
+<h2>3. Decision two &mdash; the calc sheets keep their orientation</h2>
+
+<div class="note shared"><b>The tempting move is to flip the calc sheets to one row per record. I am
+recommending against it.</b>
+<p>Today every <code>CALC -</code> sheet is <b>rows = rating steps, columns = items</b>. The idiomatic
+Excel answer for N records is to flip that &mdash; records down, steps across. But:</p>
+<ul>
+<li><b>R-3's Source and Check columns assume rows = steps.</b> 434 annotated rows and 174 live checks,
+built today, would all need rebuilding.</li>
+<li><b>R-7's diagnostics roll-up reads those columns.</b> It would follow.</li>
+<li><b>Every <code>CoreScratchpad</code> block is built that way</b> &mdash; it is the shared machinery
+behind all four coverages.</li>
+</ul>
+<p><b>Recommendation: keep rows = steps and add columns.</b> What changes is only what a column
+<i>means</i>: today it is "location + building + occupancy + contents" fused together; afterwards it is
+"one record of this coverage". Different sheets get different column counts &mdash;
+<code>CALC - Bldg Rating</code> one per building, <code>CALC - Contents Rating</code> one per contents
+record.</p>
+<p>Formulas fill <i>right</i> instead of down. Excel allows 16,384 columns; provisioning 40 records per
+coverage costs nothing and preserves R-3, R-7 and CoreScratchpad intact. <b>The cost is honest: wide
+sheets are less pleasant to read than tall ones.</b> That is the trade, and it is worth it to avoid
+rebuilding three days of work.</p></div>
+
+<h2>4. The mechanism that actually fixes your question</h2>
+
+<p>The deductible factor is keyed on <code>CoreScratchpad!B138 TOTAL LIMIT</code>, today a flat
+<code>Building + Contents</code> for one fused item. It becomes a roll-up over every contents record
+sharing a building:</p>
+
+<pre>TOTAL LIMIT (per building)
+  = building's own Limit
+  + SUMIFS( Contents.Limit , Contents.ParentOcc , <i>occupancy classes under this building</i> )</pre>
+
+<p>So a building with $300k Stock and $215k Machinery still sees <b>$1,190,000</b> &mdash; one correct
+deductible band &mdash; while each contents record carries its own rate. <b>That single formula is the
+difference between the real structure and the cheap one.</b></p>
+
+<h2>5. Phases, and what each must prove</h2>
+
+<div class="ph">
+<h3><span class="n">1</span> New model alongside the old <span class="tag">~&frac12; day</span> <span class="tag gate">Gate: nothing reads it, premiums provably untouched</span></h3>
+<p>Build <code>IN - Schedule</code> with all six blocks, populated from the current risk so the two models
+describe the same policy. Nothing is wired. This is deliberately inert.</p>
+</div>
+
+<div class="ph">
+<h3><span class="n">2</span> Migrate Contents only <span class="tag">~1 day</span> <span class="tag gate">Gate: Contents premium still 8,022</span></h3>
+<p>Repoint <code>CALC - Contents Rating</code> at the new blocks; widen it to one column per contents
+record; rebuild the <code>TOTAL LIMIT</code> roll-up. <b>Contents is chosen first because it is where the
+16 CovTypes live</b> &mdash; it is the coverage the whole exercise is for.</p>
+</div>
+
+<div class="ph">
+<h3><span class="n">3</span> Prove multi-record <span class="tag">~&frac12; day</span> <span class="tag gate">Gate: ISO agrees, via RAaS</span></h3>
+<p>Add a second contents type and rate it. <b>Verified against ISO, not against ourselves</b> &mdash; an
+internally consistent answer proves nothing here, because the whole question is whether ISO sums a
+repeating group the way we do. Harness chunk 4 says it does; this confirms it in the workbook.</p>
+<p class="note" style="margin:8px 0 0"><b>This is the phase that decides the project.</b> If ISO
+disagrees, phases 4&ndash;6 do not happen and we have spent two days, not six.</p>
+</div>
+
+<div class="ph">
+<h3><span class="n">4</span> Building, BI, Special Class, SCBI <span class="tag">~2&ndash;3 days</span> <span class="tag gate">Gate: each premium unchanged, one coverage at a time</span></h3>
+<p>Same pattern, one coverage per step, premium diffed after each. No coverage starts until the previous
+one's gate passes.</p>
+</div>
+
+<div class="ph">
+<h3><span class="n">5</span> Retire the old inputs <span class="tag">~&frac12; day</span> <span class="tag gate">Gate: all five premiums unchanged</span></h3>
+<p><code>IN - Location</code> and <code>IN - Special Class</code> become read-only remnants, then are
+removed once nothing references them. <b>Not deleted earlier</b> &mdash; they are the fallback if a gate
+fails mid-migration.</p>
+</div>
+
+<div class="ph">
+<h3><span class="n">6</span> Collapse the payload export <span class="tag">~&frac12; day</span></h3>
+<p>The export sheet exists to transpose column-per-item into row-per-record. After Phase 1 the inputs
+<i>are</i> row-per-record, so most blocks become direct references and the sheet largely disappears.
+Payload-generator Step 4 then becomes trivial.</p>
+</div>
+
+<h2>6. Risks, named up front</h2>
+<table>
+<thead><tr><th class="num">#</th><th>Risk</th><th>How it is handled</th></tr></thead>
+<tbody>
+<tr><td class="num">1</td><td><b>This is not additive.</b> R-3, R-6 and R-7 could not change a premium by construction. Every phase here can</td><td>A premium gate after every phase; the script aborts without saving on any mismatch, as all seven prior changes did</td></tr>
+<tr><td class="num">2</td><td><b><code>CoreScratchpad</code> is keyed per item column</b> and is shared across all four coverages. This is the hardest single piece</td><td>Phase 2 touches only the Contents slice of it. If that proves intractable, we learn it on day 2 rather than day 5</td></tr>
+<tr><td class="num">3</td><td><b>The six R-5 helpers are the same problem in miniature</b> &mdash; exclusion logic keyed per item column</td><td><b>Resolve them first, in Phase 2.</b> They are a cheap rehearsal for the CoreScratchpad re-key</td></tr>
+<tr><td class="num">4</td><td><b>Performance.</b> A 5.4 MB workbook with 40+ records &times; full formula chains may get slow</td><td>Measured in Phase 3, not discovered in Phase 6. If recalculation becomes unusable the design changes before the bulk of the work</td></tr>
+<tr><td class="num">5</td><td><b>R-1's named ranges are row-ranges</b> (<code>$C$26:$L$26</code>) sized to 10 items</td><td>They widen with the sheets. The names survive; only their extent changes</td></tr>
+<tr><td class="num">6</td><td><b>Your inputs get re-entered</b> &mdash; the current risk has to be expressed in the new model</td><td>Phase 1 populates it from the existing sheets so both describe the same policy; that equivalence is what makes the Phase 2 gate meaningful</td></tr>
+</tbody>
+</table>
+
+<h2>7. What I need from you</h2>
+<ol class="steps">
+<li><b>Confirm decision two</b> &mdash; calc sheets keep rows = steps and grow wide, rather than flipping.
+It is the one call here I would most like a second opinion on, because it trades readability for not
+rebuilding R-3 and R-7.</li>
+<li><b>How many records to provision per coverage?</b> I would set 40 with an Active flag, matching
+today's 10-slot pattern. Say if your book routinely goes wider.</li>
+<li><b>Then Phase 1 starts</b>, and nothing is wired until its gate passes.</li>
+</ol>
+
+<p class="sub">Phase 0 of 6. Nothing built. Related: <code>CF_Rater_Streamline_Wireframes.html</code> (R-1
+to R-8), <code>CF_Payload_Sheet_Wireframes.html</code> (the export layout this mirrors),
+<code>CF_R5_Implementation_Record.md</code> (the six helpers Phase 2 must resolve).</p>

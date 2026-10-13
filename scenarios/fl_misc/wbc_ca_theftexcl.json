@@ -1,0 +1,48 @@
+{
+ "name": "wbc_ca_theftexcl",
+ "states": [
+  "CA"
+ ],
+ "edits": [
+  {
+   "sheet": "IN - Schedule",
+   "cell": "N51",
+   "value": 300000
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "AN51",
+   "value": 300000
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "E137",
+   "value": 300000
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "U137",
+   "value": 300000
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "K137",
+   "value": "Yes"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "M137",
+   "value": "Service Applying Within the Insured's Premises, Requiring Hourly Rounds and Signals Hourly to a Station Outside Location"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "N137",
+   "value": "Central Station With Keys"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "P137",
+   "value": 0.8
+  }
+ ]
+}

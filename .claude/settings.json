@@ -1,0 +1,28 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python scripts/cf/hook_status_sync.py",
+            "timeout": 60,
+            "statusMessage": "Checking status docs are in sync..."
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python scripts/tc/build_tracker.py --hook",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}

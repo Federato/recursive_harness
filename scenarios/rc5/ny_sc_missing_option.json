@@ -1,0 +1,48 @@
+{
+ "name": "rc5_ny_sc_missing_option",
+ "states": [
+  "NY"
+ ],
+ "edits": [
+  {
+   "sheet": "IN - Schedule",
+   "cell": "B220",
+   "value": 2
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "Q220",
+   "value": "III"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "C221",
+   "value": "Yes"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "B221",
+   "value": 2
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "K221",
+   "value": 200000
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "Q221",
+   "value": "III"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "P221",
+   "value": "2"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "D221",
+   "value": "Bridges, Aqueducts - Concrete, Including Supports and Deck"
+  }
+ ]
+}

@@ -1,0 +1,33 @@
+{
+ "name": "coins_ca_cont90",
+ "states": [
+  "CA"
+ ],
+ "edits": [
+  {
+   "sheet": "IN - Schedule",
+   "cell": "N51",
+   "value": 300000
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "AN51",
+   "value": 300000
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "E137",
+   "value": 300000
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "U137",
+   "value": 300000
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "G137",
+   "value": 0.9
+  }
+ ]
+}

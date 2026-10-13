@@ -1,0 +1,56 @@
+<!doctype html><html><head><meta charset="utf-8">
+<title>Option 1 -- status dots on existing rows</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+:root{--ink:#1a1d21;--muted:#6b7580;--line:#e3e8ee;--blue:#2b6cb0;
+--red:#c0392b;--amber:#b7791f;--grey:#9aa5b1;--bg:#f7f9fb}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+font:14px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+header{background:#fff;border-bottom:1px solid var(--line);padding:12px 20px}
+header h1{font-size:16px;margin:0;font-weight:650}
+header .sub{color:var(--muted);font-size:12.5px}
+main{padding:16px 20px;max-width:900px}
+.card{background:#fff;border:1px solid var(--line);border-radius:8px;
+padding:14px 16px;margin-bottom:16px}
+.card h2{font-size:12px;text-transform:uppercase;letter-spacing:.05em;
+color:var(--muted);margin:0 0 11px;font-weight:650}
+select,input{padding:6px 7px;border:1px solid #cbd2d9;
+border-radius:5px;font-size:12.5px;background:#fff;color:var(--ink);width:auto}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:11px}
+.note{font-size:11.5px;color:var(--muted);border-left:2px solid var(--line);
+padding-left:8px;margin-top:9px}
+.gridwrap{border:1px solid var(--line);border-radius:6px;overflow:hidden}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:left;font-weight:650;color:var(--muted);font-size:11px;
+text-transform:uppercase;letter-spacing:.04em;background:#f7f9fb;
+border-bottom:1px solid var(--line);border-right:1px solid var(--line);
+padding:7px 9px}
+th:last-child,td:last-child{border-right:0}
+td{padding:6px 9px;border-bottom:1px solid var(--line);
+border-right:1px solid var(--line);vertical-align:top}
+tr:last-child>td{border-bottom:0}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;
+font-family:ui-monospace,"SF Mono",Consolas,monospace}
+tr.total td{font-weight:650;background:#f7f9fb}
+td.lbl{font-weight:650}
+.det{color:var(--muted);font-size:11.5px}
+.callout{position:fixed;top:14px;right:20px;background:#1a1d21;color:#fff;
+font-size:12px;padding:8px 13px;border-radius:6px;max-width:280px;
+box-shadow:0 4px 14px rgba(0,0,0,.18)}
+.dot{display:inline-block;width:9px;height:9px;border-radius:99px;margin-right:7px;
+vertical-align:middle}
+.dot.agree{background:var(--blue)}
+.dot.differ{background:var(--red)}
+.dot.partial{background:var(--amber)}
+.dot.na{background:var(--grey)}
+</style></head><body>
+<div class="callout">Option 1 &middot; a small colored dot added to the Layer and Run columns already there -- blue/red/amber/grey, no new chart, cheapest to build.</div>
+<header>
+  <h1>Layered tests</h1>
+  <div class="sub">Option 1 -- status dots on existing rows</div>
+</header>
+<main>
+<div class='card'><h2>Aggregate</h2><div class='gridwrap'><table><tr><th>Layer<th class=n>Scenarios<th class=n>Rated<th class=n>Agree<th class=n>Differ<th class=n>N/A<th class=n>Refused</tr><tr><td class=lbl><span class='dot differ'></span>L1 Smoke<td class=n>6<td class=n>18<td class=n>15<td class=n>1<td class=n>0<td class=n>2</tr><tr><td class=lbl><span class='dot partial'></span>L2 Classification<td class=n>3<td class=n>9<td class=n>8<td class=n>0<td class=n>1<td class=n>0</tr><tr><td class=lbl><span class='dot differ'></span>L3 Limits<td class=n>5<td class=n>60<td class=n>55<td class=n>3<td class=n>2<td class=n>0</tr><tr><td class=lbl><span class='dot partial'></span>L4 Deductibles<td class=n>4<td class=n>24<td class=n>22<td class=n>0<td class=n>2<td class=n>0</tr><tr class=total><td class=lbl>All layers<td class=n>18<td class=n>111<td class=n>100<td class=n>4<td class=n>5<td class=n>2</tr></table></div><div class='note'>The dot is the worst outcome in that layer's totals: blue agrees, red differs or was refused, amber is partial (some N/A, nothing wrong), grey is entirely not-applicable.</div></div><div class='card'><h2>Run files</h2><div class='row'><select><option>All runs</option></select><input placeholder='Filter by class' style='width:140px'></div><div class='gridwrap'><table><tr><th>When<th>Run<th>Class<th class=n>Agree<th class=n>Differ</tr><tr><td class=det>08-18 15:12<td><span class='dot agree'></span>L1 Smoke<td>--<td class=n>3<td class=n>0</tr><tr><td class=det>08-18 14:37<td><span class='dot agree'></span>L1 Smoke<td>--<td class=n>3<td class=n>0</tr><tr><td class=det>08-18 12:24<td><span class='dot differ'></span>L4 Deductibles<td>--<td class=n>5<td class=n>1</tr><tr><td class=det>08-18 12:09<td><span class='dot partial'></span>L3 Limits<td>--<td class=n>10<td class=n>0</tr><tr><td class=det>08-18 10:51<td><span class='dot agree'></span>L2 Classification<td>13352<td class=n>3<td class=n>0</tr></table></div><div class='note'>One dot per run, same worst-outcome rule: a run that differed or was refused anywhere reads red at a glance, no need to scan the Differ column first.</div></div>
+</main>
+</body></html>

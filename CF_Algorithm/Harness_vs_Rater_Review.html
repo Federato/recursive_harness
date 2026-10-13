@@ -1,0 +1,302 @@
+<title>Harness vs Excel rater &mdash; category by category</title>
+<meta charset="utf-8">
+<style>
+  body { font-family: Georgia, "Times New Roman", serif; max-width: 1060px; margin: 0 auto; padding: 32px 24px 80px; line-height: 1.55; color: #1c2733; background: #fff; }
+  @media (prefers-color-scheme: dark) {
+    body { background: #14181d; color: #dfe4e9; }
+    table, th, td { border-color: #3a4048 !important; }
+    thead th { background: #24313a !important; color: #eef4f3 !important; }
+    code { background: #262c33 !important; color: #dfe4e9; }
+    .note { background: #2c2a1c !important; color: #e0c064 !important; }
+    .note.good { background: #1b3226 !important; color: #63c090 !important; }
+    .note.shared { background: #1d2b33 !important; color: #9fd4dc !important; }
+    .cat { border-color: #2b3742 !important; background: #171d24 !important; }
+    .cat.parity { border-left-color: #3f8f66 !important; }
+    .cat.partial { border-left-color: #dd9a5c !important; }
+    .cat.gap { border-left-color: #b4523c !important; }
+    .cat.both { border-left-color: #3a4048 !important; }
+    .n { background: #1d3535 !important; color: #7fd3d0 !important; }
+    .tag { background: #222a32 !important; color: #a3aebb !important; }
+    .tag.parity { background: #1b3226 !important; color: #63c090 !important; }
+    .tag.partial { background: #3a3319 !important; color: #e0c064 !important; }
+    .tag.gap { background: #34211c !important; color: #e08a72 !important; }
+    .tag.both { background: #2a2f36 !important; color: #9aa5b1 !important; }
+    .bar { background: #262c33 !important; }
+  }
+  h1 { font-size: 26px; font-weight: 400; margin-bottom: 4px; }
+  h2 { font-size: 19px; font-weight: 700; margin-top: 40px; border-bottom: 2px solid #1e3a45; padding-bottom: 4px; }
+  .meta { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13px; color: #55606b; margin: 6px 0 4px; }
+  code { font-family: ui-monospace, Consolas, monospace; font-size: 0.88em; background: #eef1f4; padding: 1px 5px; border-radius: 3px; }
+  table { border-collapse: collapse; width: 100%; margin: 12px 0 8px; font-size: 13.5px; }
+  th, td { border: 1px solid #d7dce2; padding: 6px 9px; text-align: left; vertical-align: top; }
+  thead th { background: #1e3a45; color: #eef4f3; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 11.5px; text-transform: uppercase; letter-spacing: .03em; }
+  td.num { text-align: center; width: 34px; color: #8b95a1; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 12px; }
+  .note { background: #f7ddd4; color: #a53d26; padding: 12px 16px; border-radius: 6px; margin: 16px 0; font-size: 14px; }
+  .note.good { background: #dcefe4; color: #2f7d5a; }
+  .note.shared { background: #dde9ee; color: #1e5567; }
+  .cat { border: 1px solid #d7dce2; border-left: 5px solid #1e3a45; border-radius: 8px; padding: 14px 18px; margin: 16px 0; background: #fcfcfd; }
+  .cat.parity { border-left-color: #2f7d5a; }
+  .cat.partial { border-left-color: #b96a2c; }
+  .cat.gap { border-left-color: #9e4630; }
+  .cat.both { border-left-color: #b8c0c9; background: #fbfbfc; }
+  .cat h3 { margin: 0 0 6px; font-size: 16px; font-weight: 700; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .n { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 12px; font-weight: 700; background: #cfe0e0; color: #14484a; padding: 2px 9px; border-radius: 99px; }
+  .tag { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; background: #eef1f4; color: #55606b; padding: 2px 7px; border-radius: 4px; }
+  .tag.parity { background: #dcefe4; color: #2f7d5a; }
+  .tag.partial { background: #f2e6c4; color: #a67c1e; }
+  .tag.gap { background: #f7ddd4; color: #a53d26; }
+  .tag.both { background: #eef1f4; color: #7d8792; }
+  .cat p { margin: 8px 0; font-size: 14px; }
+  .lab { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; color: #8b95a1; }
+  .sub { font-size: 12.5px; color: #8b95a1; font-family: -apple-system, "Segoe UI", sans-serif; }
+  ol.steps { font-size: 14px; }
+  ol.steps li { margin: 6px 0; }
+</style>
+
+<h1>Harness vs Excel rater &mdash; where the rater is missing what the harness has built</h1>
+<p class="meta"><b>As of 2026-09-22.</b> Ten categories, each read in plain English, each capped at
+200 words. Sources on the harness side: <code>docs/CF-BUILD-STATUS.html</code> (chunks 0&ndash;10).
+Sources on the rater side: <code>Excel_Rater_AllRatingPaths_BuildStatus.html</code>,
+<code>BUILD-LOG.md</code> Entries 33&ndash;35, <code>Rater_Simplifications_Backlog.md</code>,
+<code>Excel_Rater_FullBuildout_Scope.md</code>.</p>
+
+<div class="note"><b>What the rater side of this document is, and is not.</b>
+<code>CFRater1.01.xlsb</code> was <b>not opened</b> to produce this review &mdash; the standing rule is
+that the live rater is not touched without an explicit go. Every statement about the rater is drawn
+from the rater's own written records. The last direct read-only check of the workbook was
+<b>2026-09-11</b>; the Special Class tabs were being built live on <b>2026-09-14</b> and have not been
+read since. <b>Category 4 is therefore the least reliable line in this document</b>, and a read-only
+pass is what would settle it.</p></div>
+
+<div class="note good"><b>CORRECTION &mdash; 2026-09-22, later the same day. The read-only pass happened, and
+four claims below were wrong.</b> All four run the same direction: <b>the rater is further along than its
+own status page said.</b> (1) <b>Specific/Tentative rating is built</b> &mdash; <code>Rating Type</code>
+offers <code>Specific</code>, with dedicated Specific/Tentative rate rows for Building, Contents and
+Business Income, and a live <code>Specific</code> risk in column C. (2) <b>Special Class is built and
+rating</b> &mdash; <code>Policy Inputs!I6</code> = <b>$1,434</b>. (3) <b>Special Class Business Income is
+built and rating</b> &mdash; <code>I7</code> = <b>$406</b>. (4) <b>Legal Liability is built</b> &mdash; it
+is a selectable <code>Building Coverage Type</code> with the additional-insurable-interest input wired.
+Categories 1, 4, 5 and 6, the summary table and the ranking are all corrected in place below.
+<b>The process gap:</b> this review trusted a status page instead of the artefact, because Rule #0 made
+the artefact expensive to check, and the status page carried no per-claim staleness marker. Any
+build-status page here should date each claim, not just its header &mdash; a claim's age is part of the
+claim. Full detail: <code>CF_Payload_Excel_Input_Inventory.md</code> &sect;4.</div>
+
+<h2>The whole comparison at a glance</h2>
+
+<table>
+<thead><tr><th class="num">#</th><th>Category</th><th>Harness</th><th>Rater</th><th>Verdict</th></tr></thead>
+<tbody>
+<tr><td class="num">1</td><td>Building &mdash; BGI, BGII, Broad, Special</td><td>Chunks 1&ndash;3 gated, ISO-confirmed</td><td>All four forms built</td><td><span class="tag parity">Near parity</span></td></tr>
+<tr><td class="num">2</td><td>Contents (Personal Property)</td><td>Chunk 4 gated, 46 of 47 states</td><td>BGI/BGII/Broad built; Special unverified</td><td><span class="tag partial">Partial</span></td></tr>
+<tr><td class="num">3</td><td>Business Income</td><td>Chunk 5 gated, four forms</td><td>All four forms built</td><td><span class="tag parity">Parity</span></td></tr>
+<tr><td class="num">4</td><td>Special Class &mdash; building side</td><td>Chunk 6 gated, 47 of 47 states</td><td><b>Built and rating</b> ($1,434) &mdash; corrected</td><td><span class="tag parity">Near parity</span></td></tr>
+<tr><td class="num">5</td><td>Special Class Business Income</td><td>Chunk 7 gated, 47 of 47 states</td><td><b>Built and rating</b> ($406) &mdash; corrected</td><td><span class="tag parity">Near parity</span></td></tr>
+<tr><td class="num">6</td><td>Legal Liability</td><td>Chunk 8 gated, 47 of 47 states</td><td><b>Built</b> as a coverage type &mdash; corrected</td><td><span class="tag parity">Near parity</span></td></tr>
+<tr><td class="num">7</td><td>Blanket rating</td><td>Chunk 9 closed 9 of 9, ISO-confirmed</td><td>Unbuilt line-wide</td><td><span class="tag gap">Widest gap</span></td></tr>
+<tr><td class="num">8</td><td>Earthquake</td><td>Chunk 10 opened &mdash; census only</td><td>Untraced, unbuilt</td><td><span class="tag both">Missing in both</span></td></tr>
+<tr><td class="num">9</td><td>State and edition resolution</td><td>Resolver runs at rate time</td><td>Resolved once, outside the workbook</td><td><span class="tag gap">Structural gap</span></td></tr>
+<tr><td class="num">10</td><td>Proof and verification</td><td>Nine-point gate, live ISO calls</td><td>Read-only review, spot checks</td><td><span class="tag gap">Deepest gap</span></td></tr>
+</tbody>
+</table>
+
+<h2>Category by category</h2>
+
+<div class="cat parity">
+<h3><span class="n">1</span> Building &mdash; Basic Group I, II, Broad, Special <span class="tag parity">Near parity</span></h3>
+<p>Closest to parity. All four forms are built in the rater (<code>Bldg Rating Worksheet</code> rows
+2&ndash;99) and all four are gated in the harness (chunks 1&ndash;3). What the rater is missing is the
+<i>edges</i> the harness proved: Florida and Puerto Rico rate Special through their own overriding rule
+and a differently-named table (PR keys on construction type and uses a cause-of-loss domain that does
+not exist countrywide) &mdash; the rater has no such branch. The harness also catalogued eight
+"absent input prices at zero in silence" cases, including a correctly-spelled
+<code>ConstructionType</code> like <i>Joisted Masonry</i> that zeroes the whole Broad chain; the rater
+has no equivalent guard cells. Rounding is settled in the harness as <code>ROUND_HALF_UP</code>, proven
+over 58,656 combinations and two ISO tie-break calls; the rater has never had its rounding tested.
+<s>Specific/Tentative rating is absent from both, so that is a shared gap, not a rater gap.</s></p>
+<p><b>Corrected 2026-09-22:</b> Specific/Tentative is <b>built in the rater</b> &mdash;
+<code>Location Inputs!B28</code> offers <code>Specific</code>, and B44/B46/B48 carry dedicated
+Specific/Tentative rate inputs for Building, Contents and Business Income. It remains absent from the
+harness, so the direction of this gap is <b>reversed</b>: here the rater is ahead.</p>
+</div>
+
+<div class="cat partial">
+<h3><span class="n">2</span> Contents (Personal Property) <span class="tag partial">Partial</span></h3>
+<p>The harness rates all four forms (<b>$223 / $24 / $16 / $137</b>, ISO-confirmed) across 46 of 47
+jurisdictions, and chunk 4 was the first to rate a <b>repeating group</b> &mdash; N occupancy classes
+per location, iterated and summed the way ISO sums them. The rater has Basic Group I, II and Broad
+built; <b>Contents Special has never been confirmed built</b> (it is "assumed from sheet structure,"
+unverified as of 2026-09-11). More consequentially, nothing in the rater's records shows the
+multi-occupancy-class iteration &mdash; a Contents Rating Worksheet with fixed rows cannot reproduce a
+location carrying several occupancy classes the way the harness does. The harness also carries the
+Group A/B/C/YARD two-key mechanism (building class code gates eligibility, a separate tenant-level code
+picks the group) and ISO's refusal of four Contents payloads missing
+<code>WindstormOrHailDeductible</code> &mdash; the rater prices those happily, with no message.</p>
+</div>
+
+<div class="cat parity">
+<h3><span class="n">3</span> Business Income <span class="tag parity">Parity</span></h3>
+<p>Roughly at parity on the core, and this is the one category where the rater is not materially
+behind. Both sides have Basic Group I, II, Broad and Special; the rater's four are built in
+<code>BI Rating Worksheet</code> rows 2&ndash;75, with a real Cyber Incident Exclusion premium bug found
+and fixed on 2026-09-11. The harness (chunk 5) adds the proof layer rather than new coverage: four forms
+at <b>$112 / $13 / $23 / $47</b>, ISO-confirmed, plus the finding that three of five forms are
+arithmetically downstream of Building &mdash; they read Building's already-computed rate rather than
+their own. Everything else is missing from <i>both</i>: Earthquake's plain rate chain, Agreed Value /
+Extended Period of Indemnity's incremental <code>(Factor &minus; 1) &times; Rate &times; Limit</code>
+surcharge shape, and ~34 optional endorsements. The one rater-specific risk is the shared
+<code>Factor</code> (MaxPeriodOfIndemnity / MonthlyLimit / ExtraExpense / TypeOfRisk) zero-out case
+logged as Z-3 &mdash; filed ISO behaviour the rater is meant to reproduce deliberately, with a visible
+check cell, and does not yet.</p>
+</div>
+
+<div class="cat parity">
+<h3><span class="n">4</span> Special Class &mdash; building side <span class="tag parity">Near parity &mdash; corrected</span></h3>
+<p>A real gap. The harness closed chunk 6 &mdash; all four forms rating at <b>$66 / $209 / $14 / $44</b>
+across <b>47 of 47 states</b>, with the free-text class <i>description</i> driving two lookups in
+series, and Special Class correctly hung off the Location rather than inside a building record. The
+rater has the design work (four <code>HowItWorks</code> pages, an input wireframe, the Item ID scheme)
+and live <code>Special Class Inputs</code> / <code>Special Class Worksheet</code> tabs that were started
+on 2026-09-14 &mdash; but Broad and Special were explicitly left "not built into the live workbook until
+you say go," and how far the live tabs have moved since is unknown here. Two state traps the harness
+handles and the rater's tables do not: <b>NY genuinely deviates</b> on
+<code>BasicGroupIRateSpecialClass</code> (84 differing values, swings over 400%), and <b>11 of Florida's
+<code>SpecialClassDescription</code> strings do not exist in the countrywide list at all</b> &mdash; a
+rater keying that table off countrywide descriptions silently misses in FL.</p>
+<p><b>Corrected 2026-09-22:</b> Broad and Special <b>are</b> built &mdash; Special Class rates
+<b>$1,434</b> at <code>Policy Inputs!I6</code>, off a populated <code>Special Class Inputs</code> tab
+(3 item columns, 40 fields). The coverage is at near parity; what survives is the <b>NY and FL data
+traps</b> above, which are about table content, not about the chain being absent.</p>
+</div>
+
+<div class="cat parity">
+<h3><span class="n">5</span> Special Class Business Income <span class="tag parity">Near parity &mdash; corrected</span></h3>
+<p>The largest clean gap. The harness closed chunk 7 &mdash; four forms rating at
+<b>$39 / $123 / $23 / $47</b> across 47 of 47 states, the deepest nesting in the project, and the first
+coverage that borrows a <i>fully rated</i> rate: eleven values cross the coverage boundary and not one
+of them is a base rate. In the rater this is documentation only &mdash; a reuse map with COPY / SHARE
+THE TABLE / BUILD OWN verdicts per value, a BGII walkthrough, and vandalism formulas. Nothing is in the
+workbook. Three traps are already written down and waiting: Broad reads the same
+<code>BroadFormBaseRate</code> table as the building side but passes a different CovType, so pointing
+one at the other is 36% high on one and 35% low on the other; Special reads <i>entirely different
+tables</i> despite identical rule and datadef names (0.88 building vs 0.86 Business Income); and the
+vandalism, wind/hail and theft exclusions each file two separate endorsement records, which the rater's
+single shared Yes/No input cannot express (backlog S-1 / S-2 / S-3).</p>
+<p><b>Corrected 2026-09-22:</b> "Nothing is in the workbook" was <b>wrong</b>. SC Business Income rates
+<b>$406</b> at <code>Policy Inputs!I7</code>, with its own input block on
+<code>Special Class Inputs</code> (B37&ndash;B46: coverage type, type of risk, both percentages, limit,
+and all three indemnity inputs). The three rate traps listed above are still worth checking against the
+built formulas &mdash; they are why this is "near parity" and not "parity".</p>
+</div>
+
+<div class="cat parity">
+<h3><span class="n">6</span> Legal Liability <span class="tag parity">Near parity &mdash; corrected</span></h3>
+<p>Complete gap in the rater. The harness closed chunk 8 with Building at
+<b>$60 / $7 / $4 / $12</b> and Contents at <b>$132 / $15 / $11 / $93</b>, 47 of 47 states. In the rater,
+Legal Liability is formula-only &mdash; written down, never built into calc columns. The mechanism the
+harness implements and the rater does not: the fork is in the <b>premium</b>, not the rate chain
+&mdash; the Legal Liability branch picks the rate up three steps earlier than the Class-rated branch, so
+coinsurance, the LOI factor and the deductible factors are computed and then ignored, and
+<code>MultiPremiumAndDispersionCreditFactor</code> is never applied. Building and Contents do not share
+the mechanism, only the table: Building gates on <code>CovType</code>, Contents on <code>CovForm</code>
+inherited from the occupancy class, so Legal Liability and ordinary contents cannot be mixed inside one
+occupancy class. Also unbuilt in the rater: <code>AddlInsurableIntOption</code> as a <b>mandatory</b>
+four-option input &mdash; blank drives the factor to 0.0 and the premium to zero (backlog Z-1).</p>
+<p><b>Corrected 2026-09-22:</b> Legal Liability <b>is</b> built. It is a selectable
+<code>Building Coverage Type</code> (<code>Location Inputs!B8</code>, live in column C) with the matching
+<code>Legal Liability Coverage Form</code> on the Contents side, and the additional-insurable-interest
+input <i>is</i> wired &mdash; B92 holds <code>Option 1</code> with its decoded description at B93. The
+Z-1 zero-premium guard is the part still worth verifying; the chain itself is not missing.</p>
+</div>
+
+<div class="cat gap">
+<h3><span class="n">7</span> Blanket rating <span class="tag gap">Widest gap</span></h3>
+<p>The single widest gap, and the one that touches every other category. The harness closed chunk 9 at
+9 of 9 &mdash; the only chunk to date that passes every gate point &mdash; with a golden case of
+<b>$255 / $510</b>, hand-derived, exact, and <b>confirmed live against ISO to the dollar with all three
+validation messages included</b>. It also overturned the premise: no premium file stubs blanket out; all
+20 carry the complete filed formula, and the missing piece was an interpreter bug in
+<code>ForEach AtInputDataDef</code> that reparented writes onto the iterated record. In the rater,
+blanket is unbuilt line-wide. Every coverage's Branch B is dead, which blocks
+<code>FullSpecialClassValue</code>, <code>BlktCoinsurance</code> and <code>BlktLimit</code> everywhere
+&mdash; not just on Special Class. Related and also unbuilt: the harness confirmed
+<code>MultiPremiumAndDispersionCreditFactor</code> is live on 12 of 20 premium files and genuinely
+absent on the other 8, and that IRPM/PackageMod level counts vary by group (5/7/9, not uniformly 5). The
+rater carries independent flat <code>1.0</code> rows per tab &mdash; flagged in Entry 33, never fixed.</p>
+</div>
+
+<div class="cat both">
+<h3><span class="n">8</span> Earthquake <span class="tag both">Missing in both</span></h3>
+<p>Near-parity at zero, with the harness slightly ahead on the map. Chunk 10 opened 2026-09-22 with a
+census and 21 open tasks; no engine code, nothing run. But the census already corrects the shape: the 97
+<code>*Earthquake*</code>-named rule files are <b>not</b> the rating engine &mdash; the real chain
+(<code>SetEQBaseRate</code>, <code>SetEQRate</code>, <code>SetFinalEQRate</code>,
+<code>SetEQCauseOfLossAdjustment</code>) lives inside the same five parent files chunks 1&ndash;9 already
+opened, and those 97 files run a <i>wholly separate</i> <code>SetPremium</code> that adds its own
+premium node. Two premium trees on one submission &mdash; the opposite shape from blanket. Earthquake
+shares zero multipliers with the ordinary chain and runs on 57 distinct EQ-prefixed
+deductible/coinsurance names. <code>EQClass</code> and <code>EQTerr</code> are pure submission inputs,
+never derived. The rater has none of this: Earthquake is untraced and unbuilt for every coverage, and it
+gates ~29 Special Class rule files that each ship an Earthquake wrapper. The harness also has a ready
+regression set &mdash; 69 of ISO's 924 STC payloads elect Earthquake across at least 8 states.</p>
+</div>
+
+<div class="cat gap">
+<h3><span class="n">9</span> State and edition resolution <span class="tag gap">Structural gap</span></h3>
+<p>Structural, not per-coverage. The harness has a resolver that walks countrywide base &rarr; state
+child &rarr; edition chain <i>at rate time</i>, and every chunk enumerates 46&ndash;47 of 47
+jurisdictions with a premium <b>predicted before the run</b>, not sampled. The rater resolves state and
+edition <i>outside</i> the workbook: rates were pulled into Supporting Tables workbooks with the edition
+picked once by a 9/1/2026 cutoff, and the workbook itself has no edition-transition logic &mdash;
+<code>Policy.EffectiveDate</code> exists as a column with a note that this pass assumes one edition.
+Practical consequences: a filing that takes effect after the pull date silently does not apply; the
+AK / CA / NY District-split states are in the rater as known-inaccurate shortcuts (NY a built shortcut,
+AK a ZIP mapping), not production-ready; and HI, ID, LA, MS, WA are structurally absent from the corpus
+in both. The harness also found a real ISO filed-data defect &mdash;
+<code>LowestBasicGroupIIRate</code> symbol A PersProp in <code>CF AL 20270301 V01</code> is 0.8 where
+eight prior editions file 0.08, a 10&times; error that hits the wind/hail-excluded Contents branch.</p>
+</div>
+
+<div class="cat gap">
+<h3><span class="n">10</span> Proof and verification <span class="tag gap">Deepest gap</span></h3>
+<p>This is the deepest difference, and it is not a coverage at all. The harness gates every chunk
+against nine points: a golden case hand-derived <i>before</i> code with every intermediate traced to a
+named rule and table row; every table's row count stated; every state enumerated rather than sampled;
+every <code>0</code> tested against its consuming branch; every hardcoded literal listed; shared-name
+traps diffed (83 across the corpus once <code>RunRule</code> delegation was followed); every exclusion's
+endorsement record identified per datadef group; the edition basis stated; and no unexplained validation
+message. Points 1&ndash;7 hold on all eight closed chunks, and premiums have been confirmed against live
+ISO RAaS calls repeatedly &mdash; seven calls in chunk 3 alone, with <b>message counts matching
+exactly</b> in all seven. The rater has none of this scaffolding: no regression suite, no ISO call
+comparison, no zero-case catalogue, no message register. Its verification is read-only formula review
+plus spot checks &mdash; which is how three genuine bugs were caught, but it is a per-session activity,
+not a standing gate. Point 9 (validation messages) is owed on harness chunks 1&ndash;8 too.</p>
+</div>
+
+<h2>Where that leaves things</h2>
+
+<p>Ranked by what the rater would gain per unit of work:</p>
+
+<table>
+<thead><tr><th class="num">#</th><th>Move</th><th>Why it ranks here</th></tr></thead>
+<tbody>
+<tr><td class="num">1</td><td><b>Blanket rating</b></td><td>The widest single gap. One shared mechanism, already fully traced and ISO-confirmed in the harness, that unblocks Branch B on every coverage at once &mdash; not fifteen separate pieces of work</td></tr>
+<tr><td class="num">2</td><td><b>The multi-record shapes</b></td><td>Revised 2026-09-22. The workbook models 10 locations &times; <b>1</b> building &times; <b>1</b> occupancy class. The payload and the harness both allow N of each, and chunk 4 proved ISO sums multiple occupancy classes. This is now the largest <i>structural</i> gap, having been masked by the coverage gaps that turned out not to exist</td></tr>
+<tr><td class="num">3</td><td><b>Verify the corrected four</b></td><td>Revised 2026-09-22. Special Class, SC Business Income, Legal Liability and Specific/Tentative are all built but none has been checked against ISO or the harness. Built &ne; correct &mdash; the rate traps in categories 4&ndash;6 are still live questions against the formulas that now exist</td></tr>
+<tr><td class="num">4</td><td><s>Special Class &mdash; Broad and Special</s></td><td><s>Back half of a coverage whose front half is already live</s> &mdash; <b>withdrawn, it is built.</b> What survives is the NY and FL data traps, folded into row 3 above</td></tr>
+<tr><td class="num">5</td><td><i>Earthquake</i></td><td><b>Not</b> a catch-up item &mdash; missing from both sides. Ranked last deliberately so it is not mistaken for a rater gap</td></tr>
+</tbody>
+</table>
+
+<h2>Remaining steps</h2>
+<ol class="steps">
+<li>Pick a category above and it gets a deep dive &mdash; exact cells against the exact harness chunk,
+not a summary.</li>
+<li>Category 4 (Special Class) needs a read-only pass over <code>CFRater1.01.xlsb</code> to be trusted;
+that needs an explicit go, since the standing rule is that the live rater is not touched.</li>
+<li>Nothing gets built in either track until you say go.</li>
+</ol>
+
+<p class="sub">Written 2026-09-22. Companion to <code>docs/CF-BUILD-STATUS.html</code> (harness side)
+and <code>Excel_Rater_AllRatingPaths_BuildStatus.html</code> (rater side) &mdash; this document compares
+them, it does not replace either.</p>

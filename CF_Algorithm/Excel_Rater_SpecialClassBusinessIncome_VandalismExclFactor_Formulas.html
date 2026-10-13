@@ -1,0 +1,347 @@
+
+<!-- RC-1 stale-name notice -->
+<div style="border:2px solid #b45309;background:#fef3c7;color:#1f2937;padding:10px 14px;margin:12px;border-radius:6px;font:14px/1.45 system-ui,sans-serif"><b>Notice (2026-09-23):</b> Written before the 2026-09-22 restructure. Sheet names have changed: Policy Inputs → IN - Policy; Bldg / Contents / BI Rating Worksheet → CALC - Bldg / Contents / BI Rating; Special Class Worksheet → CALC - Special Class; CoreScratchpad → CALC - CoreScratchpad. <b>Location Inputs / IN - Location and Special Class Inputs / IN - Special Class no longer exist</b>: every record is entered on <b>IN - Schedule</b> (one row per record, 40 per block), so input-sheet cell addresses here are out of date, and calc-sheet column C is record 1 of 40. Current state: CF_Algorithm/CF_Rater_RESUME.md.</div>
+<title>Special Class Business Income &mdash; VandalismExclFactor Formulas</title>
+<meta charset="utf-8">
+<style>
+  :root {
+    --bg: #eef1f4; --paper: #ffffff; --ink: #1c2733; --ink-soft: #55606b; --ink-faint: #8b95a1;
+    --grid-line: #d7dce2; --header-fill: #e4e8ed; --header-fill-strong: #1e3a45; --header-text-strong: #eef4f3;
+    --accent: #1e3a45; --accent-soft: #cfe0e0; --accent-warm: #b96a2c; --accent-warm-soft: #f3e2cf;
+    --good: #2f7d5a; --good-soft: #dcefe4; --warn: #a53d26; --warn-soft: #f7ddd4;
+    --shadow: 0 1px 2px rgba(28,39,51,0.06), 0 8px 24px rgba(28,39,51,0.07);
+    --font-display: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+    --font-body: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+    --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, "Liberation Mono", monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #10151b; --paper: #161d25; --ink: #e7ecf1; --ink-soft: #a3aebb; --ink-faint: #6d7885;
+      --grid-line: #2b3742; --header-fill: #1b242d; --header-fill-strong: #21504f; --header-text-strong: #eaf3f1;
+      --accent: #59a9ac; --accent-soft: #1d3535; --accent-warm: #dd9a5c; --accent-warm-soft: #372a1c;
+      --good: #63c090; --good-soft: #1b3226; --warn: #e0806a; --warn-soft: #3a2019;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 28px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #10151b; --paper: #161d25; --ink: #e7ecf1; --ink-soft: #a3aebb; --ink-faint: #6d7885;
+    --grid-line: #2b3742; --header-fill: #1b242d; --header-fill-strong: #21504f; --header-text-strong: #eaf3f1;
+    --accent: #59a9ac; --accent-soft: #1d3535; --accent-warm: #dd9a5c; --accent-warm-soft: #372a1c;
+    --good: #63c090; --good-soft: #1b3226; --warn: #e0806a; --warn-soft: #3a2019;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 28px rgba(0,0,0,0.35);
+  }
+  :root[data-theme="light"] {
+    --bg: #eef1f4; --paper: #ffffff; --ink: #1c2733; --ink-soft: #55606b; --ink-faint: #8b95a1;
+    --grid-line: #d7dce2; --header-fill: #e4e8ed; --header-fill-strong: #1e3a45; --header-text-strong: #eef4f3;
+    --accent: #1e3a45; --accent-soft: #cfe0e0; --accent-warm: #b96a2c; --accent-warm-soft: #f3e2cf;
+    --good: #2f7d5a; --good-soft: #dcefe4; --warn: #a53d26; --warn-soft: #f7ddd4;
+    --shadow: 0 1px 2px rgba(28,39,51,0.06), 0 8px 24px rgba(28,39,51,0.07);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); line-height: 1.55; overflow-x: hidden; }
+  a { color: var(--accent); }
+  a:focus-visible, button:focus-visible, .jump:focus-visible { outline: 2px solid var(--accent-warm); outline-offset: 2px; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 24px 96px; }
+
+  header.masthead { padding: 56px 24px 28px; max-width: 980px; margin: 0 auto; }
+  .eyebrow { font-family: var(--font-ui); font-size: 12px; letter-spacing: 0.11em; text-transform: uppercase; color: var(--accent-warm); font-weight: 600; margin: 0 0 10px; }
+  h1.title { font-family: var(--font-display); font-size: clamp(28px, 4vw, 40px); font-weight: 400; margin: 0 0 14px; text-wrap: balance; color: var(--ink); }
+  .dek { font-size: 17px; color: var(--ink-soft); max-width: 66ch; margin: 0 0 6px; }
+  .dek + .dek { margin-top: 10px; }
+  .dek code { font-family: var(--font-mono); font-size: 14.5px; background: var(--header-fill); padding: 1px 5px; border-radius: 3px; }
+
+  nav.jumpbar { position: sticky; top: 0; z-index: 20; background: var(--header-fill-strong); border-bottom: 1px solid var(--grid-line); }
+  .jumpbar-inner { max-width: 980px; margin: 0 auto; display: flex; align-items: stretch; overflow-x: auto; scrollbar-width: thin; }
+  .jumpbar-label { font-family: var(--font-ui); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--header-text-strong); opacity: 0.6; align-self: center; padding: 0 12px 0 20px; white-space: nowrap; flex: none; }
+  .jump { font-family: var(--font-ui); font-size: 13px; color: var(--header-text-strong); text-decoration: none; white-space: nowrap; padding: 13px 16px; border-bottom: 3px solid transparent; opacity: 0.72; flex: none; }
+  .jump:hover { opacity: 1; }
+  .jump .step-no { font-family: var(--font-mono); opacity: 0.7; margin-right: 6px; }
+
+  section.step-block { padding-top: 64px; scroll-margin-top: 56px; }
+  .step-heading { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 6px; }
+  .step-index { font-family: var(--font-mono); font-size: 13px; color: var(--accent-warm); font-variant-numeric: tabular-nums; }
+  h2.step-title { font-family: var(--font-display); font-size: 26px; font-weight: 400; margin: 0; color: var(--ink); }
+  .step-role { font-family: var(--font-ui); font-size: 13px; color: var(--ink-soft); margin: 0 0 22px; }
+
+  .xl-window { background: var(--paper); border: 1px solid var(--grid-line); border-radius: 6px; box-shadow: var(--shadow); overflow: hidden; }
+  .xl-titlebar { display: flex; align-items: center; gap: 10px; padding: 9px 14px; background: var(--header-fill-strong); color: var(--header-text-strong); font-family: var(--font-ui); font-size: 12.5px; }
+  .xl-dots { display: flex; gap: 5px; flex: none; }
+  .xl-dots span { width: 8px; height: 8px; border-radius: 50%; background: currentColor; opacity: 0.35; }
+  .xl-filename { opacity: 0.92; }
+  .xl-filename b { font-weight: 600; }
+  .xl-titlebar-spacer { flex: 1; }
+  .xl-mode { font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.55; }
+  .xl-formulabar { display: flex; align-items: center; gap: 10px; padding: 6px 12px; background: var(--header-fill); border-bottom: 1px solid var(--grid-line); font-family: var(--font-mono); font-size: 12px; }
+  .xl-cellref { background: var(--paper); border: 1px solid var(--grid-line); border-radius: 3px; padding: 2px 8px; color: var(--accent); font-weight: 600; flex: none; min-width: 46px; text-align: center; }
+  .xl-fx { color: var(--ink-faint); flex: none; font-style: italic; }
+  .xl-formula { color: var(--ink-soft); overflow-x: auto; white-space: nowrap; padding-right: 4px; }
+  .xl-scroll { overflow-x: auto; }
+  table.xl-grid { border-collapse: collapse; width: 100%; font-family: var(--font-mono); font-size: 12.5px; }
+  table.xl-grid th, table.xl-grid td { border: 1px solid var(--grid-line); padding: 6px 10px; text-align: left; white-space: nowrap; }
+  .colletters th { background: var(--header-fill); color: var(--ink-faint); font-family: var(--font-ui); font-size: 10.5px; text-align: center; padding: 3px 10px; font-weight: 600; position: sticky; top: 0; }
+  .rownum { background: var(--header-fill); color: var(--ink-faint); font-family: var(--font-ui); font-size: 11px; text-align: center !important; font-weight: 600; width: 1%; }
+  .fieldrow th { background: var(--accent); color: var(--header-text-strong); font-family: var(--font-ui); font-size: 11.5px; font-weight: 600; text-align: left; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  td.formula-cell { background: color-mix(in srgb, var(--accent-warm-soft) 100%, transparent); color: var(--accent-warm); font-weight: 600; }
+  td.warn-cell { background: var(--warn-soft); color: var(--warn); font-weight: 600; }
+  td.good-cell { background: var(--good-soft); color: var(--good); }
+  td.total-cell { background: var(--header-fill); font-weight: 700; }
+  .subtle { color: var(--ink-faint); font-style: italic; }
+
+  .instructions { margin-top: 22px; display: grid; gap: 14px; }
+  .instructions p { margin: 0; font-size: 15.5px; color: var(--ink); max-width: 70ch; }
+  .instructions p.lede { font-size: 16.5px; }
+  .field-notes { margin: 4px 0 0; padding: 0; list-style: none; display: grid; gap: 9px; max-width: 70ch; }
+  .field-notes li { font-size: 14.5px; color: var(--ink-soft); padding-left: 16px; border-left: 2px solid var(--grid-line); }
+  .field-notes b { font-family: var(--font-mono); font-size: 13px; color: var(--ink); background: var(--header-fill); padding: 1px 5px; border-radius: 3px; }
+
+  .callout { display: flex; gap: 10px; padding: 12px 14px; border-radius: 5px; max-width: 70ch; font-size: 14.5px; margin-top: 14px; }
+  .callout.warn { background: var(--warn-soft); color: var(--warn); }
+  .callout.warm { background: var(--accent-warm-soft); color: var(--accent-warm); }
+  .callout.good { background: var(--good-soft); color: var(--good); }
+  .callout b { font-weight: 700; }
+  .callout-mark { flex: none; font-family: var(--font-ui); font-weight: 700; }
+
+  .formula-label { font-family: var(--font-ui); font-size: 11px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--ink-faint); margin: 28px 0 10px; }
+  .formula-label:first-child { margin-top: 0; }
+  .formula-panel { background: var(--header-fill-strong); color: var(--header-text-strong); border-radius: 6px; padding: 16px 18px; font-family: var(--font-mono); font-size: 12px; line-height: 1.75; overflow-x: auto; }
+  .formula-panel pre { margin: 0; white-space: pre; }
+  .formula-panel .kw { color: var(--accent-warm); font-weight: 700; }
+  .formula-panel .fn { color: #a9d6d8; }
+  .formula-panel .cm { opacity: 0.55; font-style: italic; }
+
+  .progress-rail { display: flex; gap: 6px; margin: 4px 0 26px; }
+  .progress-rail .dot { height: 4px; flex: 1; border-radius: 2px; background: var(--grid-line); }
+  .progress-rail .dot.done { background: var(--accent-warm); }
+
+  hr.divider { border: none; border-top: 1px solid var(--grid-line); margin: 64px 0 0; }
+
+  footer.closing { max-width: 980px; margin: 72px auto 0; padding: 0 24px 64px; }
+  footer.closing h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0 0 12px; }
+  footer.closing ol { padding-left: 20px; display: grid; gap: 8px; max-width: 64ch; }
+  footer.closing li { font-size: 15px; color: var(--ink-soft); }
+  footer.closing p.note { margin-top: 20px; font-size: 13px; color: var(--ink-faint); font-family: var(--font-ui); }
+</style>
+<header class="masthead">
+  <p class="eyebrow">CF_Algorithm &middot; Special Class Business Income &middot; Basic Group I &middot; Step 2 of 4</p>
+  <h1 class="title">Suggested formulas for Business Income&rsquo;s <code>VandalismExclFactor</code></h1>
+  <p class="dek"><b>Read 2026-09-15, read-only</b> via <code>pyxlsb</code> from disk. Every range and cell address
+  below was read out of the live workbook. Column <code>C</code> is item&nbsp;1; copy right for the rest.</p>
+  <div class="callout warm">
+    <span class="callout-mark">&#9888;</span>
+    <span><b>Everything needed already exists in the workbook.</b> The vandalism table is pasted at
+    <code>BldgBGIRating!AI2:AL162</code>, the class code is derived at <code>CoreScratchpad!C214</code>, and the
+    Yes/No input is on the Special Class Inputs tab. No new tables to import &mdash; this is wiring only.</span>
+  </div>
+</header>
+
+<nav class="jumpbar" aria-label="Jump to step">
+  <div class="jumpbar-inner">
+    <span class="jumpbar-label">Steps</span>
+    <a class="jump" href="#s1"><span class="step-no">1</span>What&rsquo;s already there</a>
+    <a class="jump" href="#s2"><span class="step-no">2</span>The rule</a>
+    <a class="jump" href="#s3"><span class="step-no">3</span>The gate</a>
+    <a class="jump" href="#s4"><span class="step-no">4</span>The lookup</a>
+    <a class="jump" href="#s5"><span class="step-no">5</span>Wire it up</a>
+    <a class="jump" href="#s6"><span class="step-no">6</span>What&rsquo;s left open</a>
+    <a class="jump" href="#s7"><span class="step-no">7</span>Florida is different</a>
+    <a class="jump" href="#s8"><span class="step-no">8</span>The Florida fix</a>
+  </div>
+</nav>
+
+<div class="wrap">
+  <section class="step-block" id="s1">
+    <div class="step-heading"><span class="step-index">STEP 1 / 8</span><h2 class="step-title">What is already in the workbook</h2></div>
+    <p class="step-role">All four pieces, with their real addresses.</p><div class="progress-rail"><div class="dot done"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+
+    <div class="xl-window">
+      <div class="xl-titlebar"><div class="xl-dots"><span></span><span></span><span></span></div><div class="xl-filename">CFRater1.01.xlsb &mdash; <b>CFRater1.01.xlsb</b></div><div class="xl-titlebar-spacer"></div><div class="xl-mode">Read-only</div></div>
+      <div class="xl-scroll">
+        <table class="xl-grid">
+          <tr class="colletters"><th></th><th>Address</th><th>Label</th><th>Value</th><th>&nbsp;</th><th>Note</th></tr>
+          <tr><td class="good-cell">BldgBGIRating!AI2:AL162</td><td>Code &middot; Excl &middot; Class &middot; Factor</td><td>161 rows</td><td>Vandalism factor table &mdash; key is <code>"Yes"&amp;ClassCode</code></td></tr>
+          <tr><td class="good-cell">CoreScratchpad!C214</td><td>Special Class Code Lookup</td><td>1190</td><td>Already derived from the class description</td></tr>
+          <tr><td class="good-cell">'Special Class Inputs'!C26</td><td>Vandalism Exclusion:</td><td>Yes</td><td>The per-item Yes/No</td></tr>
+          <tr><td>'Policy Inputs'!C3</td><td>Policy Type:</td><td>Commercial Property Policy</td><td></td></tr>
+          <tr><td>'Special Class Inputs'!C12</td><td>Cause of Loss:</td><td>Special</td><td></td></tr>
+          <tr><td class="good-cell">CoreScratchpad!C2</td><td>State</td><td>FL</td><td></td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="instructions"><p><b>The table holds only <code>Excl = "Yes"</code> rows</b> &mdash; all 161 of them. There is no <code>"No"</code> half, so a <code>"No"&amp;ClassCode</code> key would always miss. The gate in step&nbsp;3 has to decide; the lookup cannot.</p>
+    <p><b>Target cell:</b> <code>'Special Class Worksheet'!C93</code> &mdash; the label <code>VandalismExclFactor</code> sits under <b>BUSINESS INCOME BGI</b> with nothing in it. <code>CoreScratchpad</code> is populated through row&nbsp;247, so the new block starts at 249.</p></div>
+  </section>
+  <section class="step-block" id="s2">
+    <div class="step-heading"><span class="step-index">STEP 2 / 8</span><h2 class="step-title">The filed rule, in plain English</h2></div>
+    <p class="step-role">Two completely different triggers behind one factor, depending on policy type.</p><div class="progress-rail"><div class="dot done"></div><div class="dot done"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+
+    <div class="xl-scroll">
+      <table class="xl-grid">
+        <tr class="colletters"><th>Policy Type</th><th>What has to be true</th><th>Then</th></tr>
+        <tr><td>Commercial Property Policy</td><td>a Vandalism Exclusion record exists on the Business Income item &mdash; <b>cause of loss is never tested</b></td><td class="good-cell">look up the factor</td></tr>
+        <tr><td>Standard Property Policy</td><td>Cause of Loss is <code>Fire</code>, <code>Fire and Allied Lines</code>, <code>Fire, Vandalism and Allied Lines</code> or <code>Fire, Sprinkler Leakage and Allied Lines</code> &mdash; <b>the endorsement is never tested</b></td><td class="good-cell">look up the factor</td></tr>
+        <tr><td>either, gate fails</td><td>&mdash;</td><td>1.0</td></tr>
+        <tr><td>either, gate passes but ClassCode is blank</td><td>&mdash;</td><td><b>0.0</b> &mdash; zero rate, silently</td></tr>
+      </table>
+    </div>
+    <div class="callout warm"><span class="callout-mark">&#9888;</span><span><b><code>"Fire, Vandalism and Allied Lines"</code> is in the qualifying list.</b> A cause of loss that explicitly <i>includes</i> vandalism still earns the vandalism-exclusion credit on a Standard Property Policy. That reads wrong on its face; it is what is filed, and no rule elsewhere reverses it. Reproduced here rather than corrected.</span></div>
+    <div class="instructions"><p><b>Three states override the rule:</b> VT, KS and NY drop the outer gate entirely &mdash; no policy-type test, no cause-of-loss list. In those three the endorsement is required regardless of policy type, which is handled in step&nbsp;3.</p></div>
+  </section>
+  <section class="step-block" id="s3">
+    <div class="step-heading"><span class="step-index">STEP 3 / 8</span><h2 class="step-title">The gate</h2></div>
+    <p class="step-role">One boolean cell, so the lookup in step&nbsp;4 stays readable.</p><div class="progress-rail"><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+
+    <div class="xl-window">
+      <div class="xl-titlebar"><div class="xl-dots"><span></span><span></span><span></span></div><div class="xl-filename">CFRater1.01.xlsb &mdash; <b>CoreScratchpad</b></div><div class="xl-titlebar-spacer"></div><div class="xl-mode">New rows</div></div>
+      <div class="xl-formulabar"><span class="xl-cellref">C249</span><span class="xl-fx">fx</span><span class="xl-formula">=OR(AND('Policy Inputs'!$C$3="Commercial Property Policy",'Special Class Inputs'!C$26="Yes"),AND('Policy Inputs'!$C$3="Standard Property Policy",ISNA(MATCH(C$2,{"VT","KS","NY"},0)),ISNUMBER(MATCH('Special Class Inputs'!C$12,{"Fire","Fire and Allied Lines","Fire, Vandalism and Allied Lines","Fire, Sprinkler Leakage and Allied Lines"},0))))</span></div>
+      <div class="xl-scroll">
+        <table class="xl-grid">
+          <tr class="colletters"><th></th><th>B</th><th>C</th></tr>
+          <tr><td class="rownum">249</td><td>SC BI &mdash; Vandalism Excl Gate?</td><td class="good-cell">TRUE</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="instructions"><p><code>ISNA(MATCH(C$2,{"VT","KS","NY"},0))</code> is what removes the Standard-Property-Policy arm in those three states &mdash; it reads &ldquo;state is <b>not</b> one of these three.&rdquo; On a Commercial Property Policy the first arm carries regardless of state, so no exclusion list is needed there.</p>
+    <p><b>Use <code>MATCH</code>, not <code>COUNTIF</code>, for both list tests.</b> <code>COUNTIF</code>&rsquo;s first argument must be a real cell range &mdash; hand it an array constant like <code>{"VT","KS","NY"}</code> and Excel rejects the formula outright. <code>MATCH</code> takes array constants happily, so <code>ISNA(MATCH(&hellip;))</code> and <code>ISNUMBER(MATCH(&hellip;))</code> are the working equivalents of &ldquo;not in the list&rdquo; and &ldquo;in the list.&rdquo;</p>
+    <p>If you would rather avoid array constants altogether, expand both tests to explicit comparisons &mdash; <code>C$2&lt;&gt;"VT",C$2&lt;&gt;"KS",C$2&lt;&gt;"NY"</code> and <code>OR(&hellip;="Fire",&hellip;="Fire and Allied Lines",&hellip;)</code>. Same result, longer formula, no array syntax to get wrong.</p></div>
+  </section>
+  <section class="step-block" id="s4">
+    <div class="step-heading"><span class="step-index">STEP 4 / 8</span><h2 class="step-title">The lookup</h2></div>
+    <p class="step-role">Gate first, blank-class-code second, then the table.</p><div class="progress-rail"><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+
+    <div class="xl-window">
+      <div class="xl-titlebar"><div class="xl-dots"><span></span><span></span><span></span></div><div class="xl-filename">CFRater1.01.xlsb &mdash; <b>CoreScratchpad</b></div><div class="xl-titlebar-spacer"></div><div class="xl-mode">New rows</div></div>
+      <div class="xl-formulabar"><span class="xl-cellref">C250</span><span class="xl-fx">fx</span><span class="xl-formula">=IF(NOT(C$249),1,IF(C$214="",0,IFERROR(INDEX(BldgBGIRating!$AL$2:$AL$162,MATCH("Yes"&amp;C$214,BldgBGIRating!$AI$2:$AI$162,0)),0)))</span></div>
+      <div class="xl-scroll">
+        <table class="xl-grid">
+          <tr class="colletters"><th></th><th>B</th><th>C</th></tr>
+          <tr><td class="rownum">250</td><td>SC BI &mdash; VandalismExclFactor</td><td class="good-cell">0.95</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="instructions"><p><b>The <code>"Yes"&amp;</code> prefix is hard-coded</b> because the table has no <code>"No"</code> rows &mdash; see step&nbsp;1.</p>
+    <p><b>On <code>IFERROR &rarr; 0</code> rather than 1:</b> that is what the filed rule does. A gate that passes with an unmatched or blank class code falls through to <code>0.0</code>, not to a neutral 1. Leaving it at 0 keeps the workbook honest; add a check cell if you would rather see it than have it quietly zero a premium.</p>
+    <p><b>Expected value on the current FL item:</b> class code 1190 with <code>C26 = "Yes"</code> &rarr; <code>Yes1190</code> &rarr; <b>0.95</b>, matching the item-level factor already sitting at worksheet row&nbsp;7.</p></div>
+  </section>
+  <section class="step-block" id="s5">
+    <div class="step-heading"><span class="step-index">STEP 5 / 8</span><h2 class="step-title">Wire it to the worksheet</h2></div>
+    <p class="step-role">The cell that is currently empty.</p><div class="progress-rail"><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+
+    <div class="xl-window">
+      <div class="xl-titlebar"><div class="xl-dots"><span></span><span></span><span></span></div><div class="xl-filename">CFRater1.01.xlsb &mdash; <b>Special Class Worksheet</b></div><div class="xl-titlebar-spacer"></div><div class="xl-mode">The empty cell</div></div>
+      <div class="xl-formulabar"><span class="xl-cellref">C93</span><span class="xl-fx">fx</span><span class="xl-formula">=CoreScratchpad!C250</span></div>
+      <div class="xl-scroll">
+        <table class="xl-grid">
+          <tr class="colletters"><th></th><th>B</th><th>C</th></tr>
+          <tr><td class="rownum">90</td><td>BUSINESS INCOME BGI</td><td>1</td></tr>
+          <tr><td class="rownum">91</td><td>BaseRate</td><td>0.189</td></tr>
+          <tr><td class="rownum">92</td><td>BasicGroupIRate</td><td>0.189</td></tr>
+          <tr><td class="rownum">93</td><td>VandalismExclFactor</td><td class="good-cell">0.95</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="instructions"><p>Copy both CoreScratchpad rows and this cell right across the item columns. Row&nbsp;92 is already the inherited rate copied from the parent item &mdash; row&nbsp;93 is the only factor Business Income Basic Group I applies before the composite <code>Factor</code>.</p></div>
+  </section>
+  <section class="step-block" id="s6">
+    <div class="step-heading"><span class="step-index">STEP 6 / 8</span><h2 class="step-title">What is left open &mdash; and one thing that is not</h2></div>
+    <p class="step-role">Steps 1&ndash;5 are complete and correct for 45 states. Florida is the exception and gets its own two steps below.</p><div class="progress-rail"><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot"></div><div class="dot"></div></div>
+
+    <div class="note-good" style="background:#dcefe4;color:#2f7d5a;padding:12px 16px;border-radius:6px;margin:16px 0;font-size:14px;">
+      <b>Corrected 2026-09-15 &mdash; the 45 non-FL states need no state logic at all.</b> An earlier pass
+      flagged six states (VT, CA, GA, KS, KY, NY) as filing their own 152-row tables and implied the
+      countrywide fallback mattered. It does not. All six file <b>identical values</b> to countrywide on the
+      152 class codes they list, and the nine they omit
+      (<code>0535 0574 0575 0585 1255 2205 2215 5105 5155</code>) fall through the standard
+      <code>FirstNonNull(state, CW)</code> to the same countrywide number. <b>Zero value differences across
+      all six.</b> The countrywide range already pasted at <code>BldgBGIRating!AI2:AL162</code> is correct in
+      every state except Florida.
+    </div>
+    <div class="xl-scroll">
+      <table class="xl-grid">
+        <tr class="colletters"><th>Item</th><th>Status</th><th>Detail</th></tr>
+        <tr><td><b>Six states filing their own table</b></td><td class="good-cell">Not an issue</td><td>Identical values; CW fallback lands on the same number. No formula change needed. The only exposure is structural &mdash; the pasted range has no State column, so it could not express a <i>future</i> deviation. Worth a re-pull as <code>State|"Yes"&amp;ClassCode</code> if you want that insurance; not required today.</td></tr>
+        <tr><td><b>Florida uses a rate, not a factor</b></td><td>Real, and live</td><td>Steps 7 and 8. Item&nbsp;1 is currently FL, so row&nbsp;93 is wrong as built.</td></tr>
+        <tr><td><b>One input, two datadefs</b></td><td>Accepted simplification</td><td>ERC has a separate vandalism exclusion record on the Business Income group (<code>CommercialPropertyVandalismExclusionSpclClassBusnIncome</code>), distinct from the item&rsquo;s own. Reusing <code>'Special Class Inputs'!C26</code> for both means a risk cannot exclude vandalism on Business Income but not on the building. Reasonable &mdash; just not what is filed.</td></tr>
+        <tr><td><b>The item-level factor at worksheet row&nbsp;7</b></td><td>Unchecked</td><td>It also shows 0.95 for the FL item. The rule sweep that found Florida&rsquo;s rate mechanism covered the <b>Business Income</b> group only &mdash; the building-side Special Class chains were not swept for the same pattern. Worth checking before trusting row&nbsp;7.</td></tr>
+      </table>
+    </div>
+  </section>
+  <section class="step-block" id="s7">
+    <div class="step-heading"><span class="step-index">STEP 7 / 8</span><h2 class="step-title">Florida does not use a factor at all</h2></div>
+    <p class="step-role">Same gate, completely different arithmetic after it. This is the one state where steps 3&ndash;5 give the wrong answer.</p><div class="progress-rail"><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot"></div></div>
+
+    <div class="xl-window">
+      <div class="xl-titlebar"><div class="xl-dots"><span></span><span></span><span></span></div><div class="xl-filename">CF FL 20241201 V01 &mdash; <b>CommercialPropertySpecialClassBusnIncomeRules.Rule.xml</b></div><div class="xl-titlebar-spacer"></div><div class="xl-mode">Filed rule</div></div>
+      <div class="xl-scroll">
+        <table class="xl-grid">
+          <tr class="colletters"><th>Step</th><th>What Florida files</th></tr>
+          <tr><td>VandalismExclBaseRate</td><td><code>LookupVandalismExclRate(State, ClassCode)</code> &mdash; a <b>rate</b>, not a factor. Gate is identical to countrywide&rsquo;s. Else <code>0.0</code>.</td></tr>
+          <tr><td>VandalismExclRate</td><td><code>VandalismExclBaseRate &times; LossCostMultiplier</code>, round 3 dp</td></tr>
+          <tr><td>CauseOfLossAdjustment</td><td class="good-cell"><code>round(BasicGroupIRate &minus; VandalismExclRate, 3)</code> &mdash; <b>subtraction</b></td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="instructions"><p><b>Florida empties the factor table on purpose.</b> <code>VandalismExclFactor.RateTable.csv</code> in the FL package has <b>zero rows</b>. It files <code>VandalismExclRate</code> instead &mdash; 149 rows, FL only, keyed <code>StateCode + ClassCode</code>.</p>
+    <p><b>And there is no countrywide fallback.</b> CW ships <code>VandalismExclRate</code> as a zero-row placeholder, so the second pass finds nothing. The twelve class codes missing from FL&rsquo;s table (<code>0535 0574 0575 0585 1160 1165 1170 1255 2205 2215 5105 5155</code>) resolve to <b>0.0</b> &mdash; no vandalism credit at all in Florida for those.</p></div>
+    <div class="xl-scroll">
+      <table class="xl-grid">
+        <tr class="colletters"><th>FL rate</th><th>Applies to</th></tr>
+        <tr><td>0.006</td><td>126 class codes</td></tr>
+        <tr><td>0.021</td><td>20 class codes</td></tr>
+        <tr><td class="good-cell">0.016</td><td class="good-cell">1190 &mdash; Special Class, property in the open</td></tr>
+        <tr><td>0.010</td><td>1150 &mdash; Builders&rsquo; Risks</td></tr>
+        <tr><td>0.379</td><td>1185</td></tr>
+      </table>
+    </div>
+    <div class="callout warm"><span class="callout-mark">&#9888;</span><span><b>What it is costing right now.</b>
+      Item&nbsp;1 &mdash; FL, class 1190, <code>BasicGroupIRate</code> 0.189, LCM 1.0:<br>
+      Correct: <code>0.189 &minus; (0.016 &times; 1.0) = <b>0.173</b></code><br>
+      As built: <code>0.189 &times; 0.95 = <b>0.180</b></code><br>
+      About 4% light on the rate, and it compounds through <code>Factor</code> into the premium.</span></div>
+  </section>
+  <section class="step-block" id="s8">
+    <div class="step-heading"><span class="step-index">STEP 8 / 8</span><h2 class="step-title">The Florida fix &mdash; start here tomorrow</h2></div>
+    <p class="step-role">Four changes, in this order. The gate from step&nbsp;3 is reused unchanged.</p><div class="progress-rail"><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div></div>
+
+    <div class="instructions"><p><b>1. Paste Florida&rsquo;s rate table.</b> 149 rows, <code>State | ClassCode | Rate</code>, into the next free block on the <code>Special Class</code> tab &mdash; <code>CG:CI</code> below assumes that. Build the key column as <code>State&amp;"|"&amp;ClassCode</code> so it can take another state later if ISO ever files one.</p></div>
+    <div class="xl-window">
+      <div class="xl-titlebar"><div class="xl-dots"><span></span><span></span><span></span></div><div class="xl-filename">CFRater1.01.xlsb &mdash; <b>CoreScratchpad</b></div><div class="xl-titlebar-spacer"></div><div class="xl-mode">New rows &mdash; 251 &amp; 252</div></div>
+      <div class="xl-formulabar"><span class="xl-cellref">C251</span><span class="xl-fx">fx</span><span class="xl-formula">=IF(NOT(C$249),0,IFERROR(INDEX('Special Class'!$CI$2:$CI$150,MATCH(C$2&amp;"|"&amp;C$214,'Special Class'!$CG$2:$CG$150,0)),0))</span></div>
+      <div class="xl-formulabar"><span class="xl-cellref">C252</span><span class="xl-fx">fx</span><span class="xl-formula">=ROUND(C$251*LossCostMultiplier_cell,3)</span></div>
+      <div class="xl-scroll">
+        <table class="xl-grid">
+          <tr class="colletters"><th></th><th>B</th><th>C</th></tr>
+          <tr><td class="rownum">251</td><td>SC BI &mdash; Vandalism Excl Base Rate (rate states)</td><td class="good-cell">0.016</td></tr>
+          <tr><td class="rownum">252</td><td>SC BI &mdash; Vandalism Excl Rate</td><td class="good-cell">0.016</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="instructions"><p><b>2.</b> <code>C$249</code> is the gate you already built in step&nbsp;3 &mdash; same gate, reused as-is. Replace <code>LossCostMultiplier_cell</code> with whatever feeds worksheet row&nbsp;5.</p>
+    <p><b>Note the <code>IFERROR &rarr; 0</code>, not 1.</b> A missing class code in Florida means <i>no credit</i> &mdash; a rate of zero, not a neutral factor. Getting this backwards would hand out a full credit where ISO gives none.</p></div>
+    <div class="xl-window" style="margin-top:18px">
+      <div class="xl-titlebar"><div class="xl-dots"><span></span><span></span><span></span></div><div class="xl-filename">CFRater1.01.xlsb &mdash; <b>Special Class Worksheet</b></div><div class="xl-titlebar-spacer"></div><div class="xl-mode">Rows 93 &amp; 94</div></div>
+      <div class="xl-formulabar"><span class="xl-cellref">C94</span><span class="xl-fx">fx</span><span class="xl-formula">=IF(CoreScratchpad!C$2="FL",ROUND(C$92-CoreScratchpad!C$252,3),ROUND(C$92*C$93,3))</span></div>
+      <div class="xl-formulabar"><span class="xl-cellref">C93</span><span class="xl-fx">fx</span><span class="xl-formula">=IF(CoreScratchpad!C$2="FL","n/a - FL uses a rate",CoreScratchpad!C250)</span></div>
+      <div class="xl-scroll">
+        <table class="xl-grid">
+          <tr class="colletters"><th></th><th>B</th><th>C</th></tr>
+          <tr><td class="rownum">92</td><td>BasicGroupIRate</td><td>0.189</td></tr>
+          <tr><td class="rownum">93</td><td>VandalismExclFactor</td><td class="good-cell">n/a - FL uses a rate</td></tr>
+          <tr><td class="rownum">94</td><td>CAUSEOFLOSSADJUSTMENT</td><td class="good-cell">0.173</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="instructions"><p><b>3. The branch has to live at row&nbsp;94, not row&nbsp;93.</b> The arithmetic itself changes &mdash; multiply versus subtract &mdash; so it cannot be hidden inside a factor cell. This is the one structural difference in the whole chain.</p>
+    <p><b>4. Make row&nbsp;93 honest in Florida.</b> Left alone it shows 0.95, which means nothing there and invites someone to reuse it. The text version above makes the mechanism visible. If you would rather keep the row numeric, <code>=IF(&hellip;="FL",1,CoreScratchpad!C250)</code> also works &mdash; the 1 is inert because row&nbsp;94 never multiplies by it in Florida &mdash; but it hides what is going on.</p>
+    <p><b>5. Spot-check.</b> FL item&nbsp;1: row 251 = <b>0.016</b>, row 252 = <b>0.016</b>, row 94 = <b>0.173</b>. A non-FL item with the endorsement and class 1190: row 93 = <b>0.95</b>, row 94 = rate &times; 0.95. Then copy rows 251&ndash;252 and cells C93/C94 right across the item columns.</p></div>
+  </section>
+</div>

@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Business Income — Basic Group II</title>
+<style>
+  body { font-family: Georgia, "Iowan Old Style", serif; max-width: 980px; margin: 0 auto; padding: 40px 24px 80px; color: #1b232e; background: #f5f6f4; line-height: 1.55; }
+  h1 { font-size: 26px; margin-bottom: 4px; }
+  .subtitle { font-family: -apple-system, "Segoe UI", sans-serif; color: #55606e; font-size: 15px; margin-bottom: 28px; }
+  .banner { background: #eef3ee; border: 1px solid #b9cdb9; border-radius: 6px; padding: 14px 16px; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13.5px; margin-bottom: 32px; }
+  .banner b { color: #2f6b4f; }
+  h2 { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 21px; border-bottom: 3px solid #b9a577; padding-bottom: 8px; margin-top: 52px; }
+  h2 .count { font-size: 12px; letter-spacing: .05em; text-transform: uppercase; color: #8a5a1f; background: #f4e7d4; padding: 2px 9px; border-radius: 10px; margin-left: 10px; vertical-align: middle; }
+  h3 { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 16px; margin-top: 28px; }
+  p.section-intro { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13.5px; color: #444; background: #fff; border-left: 3px solid #b9a577; padding: 10px 16px; margin: 14px 0 20px; }
+  p.note { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13.5px; color: #55606e; }
+  table { width: 100%; border-collapse: collapse; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13px; margin: 16px 0 28px; }
+  th, td { border: 1px solid #d5d9d0; padding: 8px 10px; text-align: left; vertical-align: top; }
+  th { background: #e2e6dc; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
+  td.factor { font-weight: 600; }
+  .confirmed { color: #2f6b4f; }
+  .gap { color: #9a5b1f; font-weight: 600; }
+  .missing { color: #999; font-style: italic; }
+  code { font-family: ui-monospace, Consolas, monospace; background: #eceee8; padding: 1px 5px; border-radius: 3px; font-size: .92em; }
+  .algo { background: #101720; color: #dbe6ee; border-radius: 8px; padding: 18px 20px; font-family: ui-monospace, Consolas, monospace; font-size: 13px; line-height: 1.7; overflow-x: auto; margin: 14px 0 24px; white-space: pre; }
+  .algo .kw { color: #e3b873; }
+  .algo .tbl { color: #9fd4c4; }
+  .algo .cm { color: #7f8b98; font-style: italic; }
+  .stepnum { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; background: #8a5a1f; color: #fff; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 12px; font-weight: 700; margin-right: 8px; }
+  blockquote { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13px; background: #fff; border-left: 3px solid #b9a577; padding: 8px 14px; margin: 10px 0; color: #444; }
+
+  .tag { display: inline-block; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; padding: 2px 8px; border-radius: 10px; margin-left: 8px; vertical-align: middle; }
+  .tag.copy { background: #eef3ee; color: #2f6b4f; }
+  .tag.samevalue { background: #f4e7d4; color: #8a5a1f; }
+  .tag.own { background: #e2e6dc; color: #445; }
+  .copybox { border: 1px solid #b9cdb9; background: #f4f9f4; border-radius: 6px; padding: 12px 16px; margin: 10px 0 20px; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13.5px; color: #2f5c40; }
+  .copybox b { color: #234a30; }
+</style>
+</head>
+<body>
+
+<h1>Business Income — Basic Group II</h1>
+<p class="subtitle">Class-rated path · which columns are practically a copy of Building's, and which genuinely aren't · CFRater1.01.xlsb build reference</p>
+
+<div class="banner">
+  <b>Source.</b> Translated from <code>Excel_Rater_BusinessIncome_BasicGroupII.md</code> and
+  <code>CauseOfLoss_BusinessIncome_RatingAlgorithms.md</code> §"Basic Group II — differences", re-traced
+  directly against <code>SetBGIIRatesAndFactors</code> (line 3694), <code>SetBasicGroupIIBaseRate</code>
+  (line 3703), and <code>LookupBasicGroupIIRate</code>/<code>LookupLowestBasicGroupIIRate</code>
+  (lines 13482 &amp; 13795) in <code>CommercialPropertyBusinessIncomeRules.Rule.xml</code>, 2026-09-11.
+  Same visual format as <code>Excel_Rater_BusinessIncome_BasicGroupI.html</code>, extended with a
+  copy-vs-recompute column since that distinction matters much more here than it did for Basic Group I.
+</div>
+
+<h2>1. The headline finding — most of this chain can be a straight copy of Building's own columns</h2>
+<p class="section-intro">
+  Basic Group I borrows exactly one value from Building (<code>BaseRate</code>). Basic Group II looks like
+  it does more independent work — five steps instead of three — but tracing every field in the rule XML
+  (not just the ones the source doc's prose called out) shows <b>four</b> of the inputs feeding
+  <code>Rate</code> are literal <code>Copy</code> rules from Building, not independent computation at all.
+  Three different relationships show up across the whole chain, and they should be built three different
+  ways.
+</p>
+
+<table>
+<tr><th>Column</th><th>Relationship to Building</th><th>Build it as</th></tr>
+<tr>
+  <td class="factor"><code>BasicGroupIISymbolToUse</code></td>
+  <td><span class="tag copy">Literal copy</span> — confirmed set entirely inside
+    <code>CommercialPropertyStructureRules.Rule.xml</code> (Building's own rule file). Business Income
+    never computes this; it only ever reads it via <code>../../</code>.</td>
+  <td><b>A plain cell reference</b> to <code>Calc_Building_BGII</code>'s own resolved symbol column. No
+    formula, no lookup.</td>
+</tr>
+<tr>
+  <td class="factor"><code>BasicGroupIIRatingTerr</code></td>
+  <td><span class="tag copy">Literal copy</span> — confirmed: <code>SetBasicGroupIIRatingTerr</code>
+    (line 2767) is a single-line <code>Copy</code> from <code>../../BasicGroupIIRatingTerr</code>. Not an
+    independently-entered field, even though it lives on <code>Locations_Buildings</code> — it's populated
+    from Building's own resolved territory.</td>
+  <td><b>A plain cell reference</b>, same as above.</td>
+</tr>
+<tr>
+  <td class="factor"><code>BasicGroupIINumericValue</code> <span class="count">roof/occupancy hazard load</span></td>
+  <td><span class="tag copy">Literal copy</span> — read straight from
+    <code>Calc_Building_BGII.BasicGroupIINumericValue</code> via <code>../../</code>, never recomputed by
+    Business Income at all.</td>
+  <td><b>A plain cell reference</b>, same as above.</td>
+</tr>
+<tr>
+  <td class="factor"><code>BCEGFactor</code></td>
+  <td><span class="tag copy">Literal copy</span> — confirmed: <code>SetBCEGFactor</code> (line 2772) is a
+    <code>Copy</code> from <code>../../BCEGFactor</code>, guarded only by an <code>IsNull</code> check. The
+    real computation (<code>LookupBCEGFactor</code>) lives entirely in
+    <code>CommercialPropertyStructureRules.Rule.xml</code> — Building's chain, not Business Income's.</td>
+  <td><b>A plain cell reference</b>, same as above.</td>
+</tr>
+<tr>
+  <td class="factor"><code>BasicGroupIIBaseRate</code></td>
+  <td><span class="tag samevalue">Same value, different path</span> — Business Income runs its <i>own</i>
+    <code>Lookup(BasicGroupIIRate: ...)</code> call, but the key it uses
+    (<code>BasicGroupIISymbolToUse</code>) is itself a Building-owned field. Same table, same key, same
+    territory &rarr; mathematically guaranteed to land on the same number Building's own tab already has.</td>
+  <td><b>Could be built as a copy of <code>Calc_Building_BGII.BaseRate</code></b> instead of a second
+    lookup — same result, one less formula to maintain. Documented as its own lookup below because that's
+    what the rule literally does, but there's no practical reason to duplicate the lookup in the
+    workbook.</td>
+</tr>
+<tr>
+  <td class="factor"><code>LowestBaseRate</code></td>
+  <td><span class="tag samevalue">Same value, different path</span> — identical relationship to
+    <code>BasicGroupIIBaseRate</code> above, same <code>BasicGroupIISymbolToUse</code> key, no territory
+    component.</td>
+  <td><b>Could also be a copy</b> of Building's own <code>LowestBaseRate</code> column, same reasoning.</td>
+</tr>
+<tr>
+  <td class="factor"><code>BGIIBaseRateAdjustmentFactor</code></td>
+  <td><span class="tag own">Genuinely Business-Income-only</span> — no Building equivalent exists at all.</td>
+  <td>Its own lookup — see §4 step 3.</td>
+</tr>
+<tr>
+  <td class="factor"><code>BuildersRiskFactor</code></td>
+  <td><span class="tag own">Genuinely Business-Income-only</span> — confirmed CW-only constant (2.0),
+    no state ever overrides it, no Building equivalent.</td>
+  <td>Its own lookup/constant — see §4 step 5.</td>
+</tr>
+<tr>
+  <td class="factor"><code>Factor</code> <span class="count">the whole shared step</span></td>
+  <td><span class="tag own">Genuinely Business-Income-only</span> — replaces Building's three separate
+    coinsurance/LOI/deductible steps entirely. No Building equivalent of any kind.</td>
+  <td>The six-branch decision tree — see <code>Excel_Rater_BusinessIncome_FactorDecisionTree.html</code>,
+    identical mechanism for Basic Group I and II.</td>
+</tr>
+</table>
+
+<div class="copybox">
+  <b>Practical takeaway:</b> four of the columns feeding <code>Rate</code>
+  (<code>BasicGroupIISymbolToUse</code>, <code>BasicGroupIIRatingTerr</code>,
+  <code>BasicGroupIINumericValue</code>, <code>BCEGFactor</code>) are literal <code>Copy</code> rules from
+  Building — confirmed in the rule XML, not inferred from field-name similarity. Two more
+  (<code>BaseRate</code>, <code>LowestBaseRate</code>) <i>can safely be built as copies</i> even though the
+  rule technically re-derives them — same table, same Building-owned key, guaranteed identical result. That
+  leaves only three genuinely independent pieces of math in this whole form:
+  <code>BGIIBaseRateAdjustmentFactor</code>, <code>BuildersRiskFactor</code>, and the shared
+  <code>Factor</code> step. Of the seven inputs <code>Rate</code> and <code>COLAdj</code> touch, six are
+  either literally Building's cell or might as well be — only <code>BGIIBaseRateAdjustmentFactor</code> and
+  <code>BuildersRiskFactor</code> are Business-Income-only math before you even get to <code>Factor</code>.
+</div>
+
+<h2>2. Required inputs</h2>
+<p class="section-intro">Same shared Business Income shell inputs as Basic Group I, plus what Basic Group II
+  specifically reads from Building.</p>
+<table>
+<tr><th>Field</th><th>Feeds</th><th>Note</th></tr>
+<tr><td class="factor"><code>Calc_Building_BGII.BasicGroupIISymbolToUse</code></td><td><code>BaseRate</code> and <code>LowestBaseRate</code> lookup key</td><td><span class="tag copy">copy</span> — Building's own resolved symbol, never independently entered (<code>SetBasicGroupIISymbolToUse</code> lives entirely in Structure rules)</td></tr>
+<tr><td class="factor"><code>Calc_Building_BGII.BasicGroupIIRatingTerr</code></td><td><code>BaseRate</code> lookup key</td><td><span class="tag copy">copy</span> — confirmed line 2767, a one-line <code>Copy</code> from Building's own resolved territory, not an independently-entered field despite living on <code>Locations_Buildings</code></td></tr>
+<tr><td class="factor"><code>Calc_Building_BGII.BasicGroupIINumericValue</code></td><td><code>Rate</code></td><td><span class="tag copy">copy</span> — occupancy/roof hazard load, not recomputed</td></tr>
+<tr><td class="factor"><code>Calc_Building_BGII.BCEGFactor</code></td><td><code>Rate</code></td><td><span class="tag copy">copy</span> — confirmed line 2772; the real <code>LookupBCEGFactor</code> computation lives entirely in Structure rules</td></tr>
+<tr><td class="factor"><code>BI_MaxPeriod</code>, <code>BI_MonthlyLimitOfIndemnity</code>, <code>BI_CovType</code>, <code>BI_TypeOfRisk</code>, <code>CoinsuranceToUse</code></td><td><code>Factor</code></td><td>Same shell inputs Basic Group I already reads</td></tr>
+<tr><td class="factor">a wind/hail-exclusion-for-Business-Income record</td><td><code>COLAdj</code> branch gate</td><td>Existence test, not a field value — see §4 step 5</td></tr>
+</table>
+
+<h2>3. Required tables</h2>
+<p class="section-intro">Three tables specific to this form's rate step, all header-only at CW — but with a
+  real state-then-CW fallback built into the lookup rule, unlike a flat CW-only table.</p>
+<table>
+<tr><th>Table</th><th>Keys</th><th>CW status</th></tr>
+<tr>
+  <td class="factor">BasicGroupIIRate</td>
+  <td>State, BasicGroupIIRatingTerr, BasicGroupIISymbolToUse, "Bldg"</td>
+  <td><span class="gap">Header-only at CW</span> — same table Building's own tab reads (confirmed
+    <code>Excel_Rater_BasicGroupII.md</code> §3). <code>FirstNonNull</code> lookup structure (state row
+    first, CW fallback second) — not yet re-checked across all 8 ERC batches the way
+    <code>BaseRateAdjustmentFactor</code> was for Basic Group I; do that before assuming it's actually
+    unresolvable per state.</td>
+</tr>
+<tr>
+  <td class="factor">LowestBasicGroupIIRate</td>
+  <td>State, BasicGroupIISymbolToUse, "Bldg"</td>
+  <td><span class="gap">Header-only at CW</span>, same caveat as above — same table Building's tab reads.</td>
+</tr>
+<tr>
+  <td class="factor">BaseRateAdjustmentFactor</td>
+  <td>State, "Basic Group II"</td>
+  <td><span class="confirmed">Resolved.</span> Same table as Basic Group I's version, different key —
+    confirmed filed in 46 of 47 states once checked across all 8 batches (only Puerto Rico has no row
+    for this table at all). See <code>BGIBaseRateAdjustmentFactor_Tables.xlsx</code>.</td>
+</tr>
+</table>
+
+<h2>4. The algorithm</h2>
+
+<h3><span class="stepnum">1</span>Four Building copies, confirmed in the rule XML <span class="tag copy">copy</span></h3>
+<div class="algo">BasicGroupIISymbolToUse = <span class="tbl">Calc_Building_BGII.BasicGroupIISymbolToUse</span>   <span class="cm">-- SetBasicGroupIISymbolToUse, Structure rules only</span>
+BasicGroupIIRatingTerr  = <span class="tbl">Calc_Building_BGII.BasicGroupIIRatingTerr</span>    <span class="cm">-- SetBasicGroupIIRatingTerr, line 2767: Copy, one line</span>
+BasicGroupIINumericValue= <span class="tbl">Calc_Building_BGII.BasicGroupIINumericValue</span>  <span class="cm">-- read via ../../, never recomputed</span>
+BCEGFactor              = <span class="tbl">Calc_Building_BGII.BCEGFactor</span>                <span class="cm">-- SetBCEGFactor, line 2772: Copy, IsNull-guarded</span></div>
+<p class="note">All four are plain cell references in the workbook — no formula, no lookup. Confirmed by
+  reading each <code>Set*</code> rule directly rather than trusting the field name alone (same discipline
+  that caught the earlier <code>SprinklerLeakageExclNonSprinkleredRate</code> naming trap).</p>
+
+<h3><span class="stepnum">2</span>BaseRate <span class="tag samevalue">same value as Building's, either copy it or re-derive it</span></h3>
+<div class="algo"><span class="kw">if</span> (BI_MaxPeriod = "Y" <span class="kw">or</span> BI_MonthlyLimitOfIndemnity &lt;&gt; "Not Applicable" <span class="kw">or</span> BI_CovType = "Extra Expense Only")
+   <span class="kw">and</span> BI_BldgIncludedInOperationalUnit = "Y":
+      HighestBusnIncomeBasicGroupIIBaseRate   <span class="cm">-- blanket/multi-unit, out of scope</span>
+
+<span class="kw">elif</span> BasicGroupIIRatingTerr &lt;&gt; "" <span class="kw">and</span> BasicGroupIISymbolToUse &lt;&gt; "":
+      <span class="kw">Lookup</span>(<span class="tbl">BasicGroupIIRate</span>: State, BasicGroupIIRatingTerr, BasicGroupIISymbolToUse, "Bldg")
+        &rarr; falls back to (CW, ...) if the state has no row
+      <span class="cm">-- equivalently: Copy(Calc_Building_BGII.BaseRate) -- same table, same key,
+      -- guaranteed same answer, one less formula</span>
+
+<span class="kw">else</span>: 0.0</div>
+
+<h3><span class="stepnum">2.5</span>LowestBaseRate <span class="tag samevalue">same relationship</span></h3>
+<div class="algo"><span class="kw">Lookup</span>(<span class="tbl">LowestBasicGroupIIRate</span>: State, BasicGroupIISymbolToUse, "Bldg")
+  &rarr; falls back to (CW, ...) if the state has no row
+<span class="cm">-- equivalently: Copy(Calc_Building_BGII.LowestBaseRate)</span></div>
+
+<h3><span class="stepnum">3</span>BGIIBaseRateAdjustmentFactor <span class="tag own">own lookup</span></h3>
+<div class="algo"><span class="kw">Lookup</span>(<span class="tbl">BaseRateAdjustmentFactor</span>: State, <span class="cm">"Basic Group II"</span>)
+  &rarr; falls back to (CW, "Basic Group II") if the state has no row</div>
+
+<h3><span class="stepnum">4</span>Rate</h3>
+<div class="algo">BaseRate &times; LCM &times; BasicGroupIINumericValue &times; BCEGFactor &times; BGIIBaseRateAdjustmentFactor
+<span class="cm">-- round to 3dp -- of these five multiplicands, only BaseRate (step 2, same value as
+-- Building's) and BGIIBaseRateAdjustmentFactor (step 3, genuinely own) aren't a plain
+-- Building copy -- BasicGroupIINumericValue and BCEGFactor are copies from step 1</span></div>
+
+<h3><span class="stepnum">5</span>COLAdj <span class="tag own">own gate, own factor</span></h3>
+<div class="algo"><span class="kw">if</span> no wind/hail-exclusion-for-Business-Income record exists:
+      Rate &times; BuildersRiskFactor
+<span class="kw">else</span>:
+      LowestBaseRate &times; LCM &times; WindstormOrHailExclFactor &times; BuildersRiskFactor</div>
+<p class="note">The gate itself is genuinely different from Basic Group I's (sprinkler-related test) — this
+  is a record-existence check, not a field comparison. <code>BuildersRiskFactor</code> is the same
+  confirmed-CW-only 2.0-constant walked through separately — no per-state variation found anywhere.</p>
+
+<h3><span class="stepnum">6</span>Factor <span class="tag own">identical shared mechanism to Basic Group I</span></h3>
+<div class="algo"><span class="cm">-- the full six-branch decision tree: MaxPeriod / MonthlyLimitOfIndemnity /
+-- ExtraExpenseOnly / Combined TypeOfRisk / plain Educational Institutions / otherwise
+-- see Excel_Rater_BusinessIncome_FactorDecisionTree.html -- no Basic-Group-II-specific
+-- variant of any branch</span></div>
+
+<h3><span class="stepnum">7</span>FinalRate</h3>
+<div class="algo">COLAdj &times; Factor</div>
+
+<h2>5. Premium</h2>
+<div class="algo"><span class="kw">if</span> BI_IncludedInBlkt = "No":
+    <span class="kw">ROUND</span>(<span class="kw">ROUND</span>(IRPMFactor &times; PackageModFactor &times; FinalRate &times; (BI_Limit / 100), 0), 0)
+      &times; CyberIncidentExclusionFactorBGII
+      &times; CyberIncidentExclusionCOLExcptnsFactorBusnIncomeBGIIToUse
+
+<span class="kw">elif</span> BI_IncludedInBlkt = "Yes" <span class="kw">and</span> BlktTotalFullValueAmount &gt; 0:
+    <span class="cm">-- blanket branch, out of scope, same as Basic Group I</span>
+
+<span class="kw">else</span>: 0.0</div>
+<p class="note">Confirmed byte-shape-identical to Basic Group I's premium formula, datadef names swapped —
+  <code>Bldg</code> and its Building-facing analog aside, this is the one place the two forms are
+  structurally a rename of each other, not just a similar shape.</p>
+
+<h2>6. Inputs → output, the full picture</h2>
+<table>
+<tr><th>Stage</th><th>Reads from</th><th>Produces</th><th>Relationship</th></tr>
+<tr><td>0 — symbol, territory, hazard load, BCEG — all four borrowed</td><td><code>Calc_Building_BGII</code></td><td><em>not recomputed, any of them</em></td><td><span class="tag copy">copy</span></td></tr>
+<tr><td>1 — the loss cost</td><td><code>BasicGroupIIRate</code> table via Building's symbol</td><td><code>BaseRate</code>, <code>LowestBaseRate</code></td><td><span class="tag samevalue">same value as Building's</span></td></tr>
+<tr><td>2 — Business-Income-specific adjustment</td><td><code>BaseRateAdjustmentFactor</code></td><td><code>BGIIBaseRateAdjustmentFactor</code></td><td><span class="tag own">own</span></td></tr>
+<tr><td>3 — turn it into a rate</td><td><code>BaseRate</code>, LCM, <code>BasicGroupIINumericValue</code>, <code>BCEGFactor</code>, adjustment factor</td><td><code>Rate</code></td><td>2 copies + 1 same-value + 1 own, multiplied together</td></tr>
+<tr><td>4 — wind/hail + Builders Risk adjustment</td><td><code>Rate</code> or <code>LowestBaseRate</code>, wind/hail record, <code>BuildersRiskFactor</code></td><td><code>COLAdj</code></td><td><span class="tag own">own</span></td></tr>
+<tr><td>5 — apply the shared Factor</td><td><code>COLAdj</code>, <code>Factor</code></td><td><code>FinalRate</code></td><td><span class="tag own">own</span></td></tr>
+<tr><td>6 — turn the rate into a dollar premium</td><td><code>FinalRate</code>, <code>BI_Limit</code>, IRPM, PackageMod</td><td>premium</td><td>identical shape to BGI</td></tr>
+</table>
+
+<h2>7. Deliberately out of scope for the first build</h2>
+<ul style="font-family: -apple-system, 'Segoe UI', sans-serif; font-size: 13.5px; line-height: 1.9;">
+  <li>The blanket/max-period/multi-unit base-rate branch — needs <code>HighestBusnIncomeBasicGroupIIBaseRate</code>, same open item as Basic Group I's own version.</li>
+  <li>The blanket premium branch — same tables Basic Group I's version needs.</li>
+  <li>The Combined Type of Risk / plain Educational Institutions branches inside <code>Factor</code> are
+    <b>not</b> out of scope — confirmed filed and traced, identical mechanism to Basic Group I's. See
+    <code>Excel_Rater_BusinessIncome_FactorDecisionTree.html</code>.</li>
+  <li><code>BasicGroupIIRate</code> / <code>LowestBasicGroupIIRate</code> haven't been re-checked across all
+    8 ERC batches yet the way <code>BaseRateAdjustmentFactor</code> was — the "header-only at CW" label
+    above may overstate the gap the same way it did before that check was run for Basic Group I.</li>
+</ul>
+
+<blockquote>
+Traced 2026-09-11 against the rule XML directly, building on <code>Excel_Rater_BusinessIncome_BasicGroupII.md</code>
+(written 2026-09-02). Same visual format as <code>Excel_Rater_BusinessIncome_BasicGroupI.html</code>. Next:
+the same treatment for Broad and Special, or the all-batch per-state check on <code>BasicGroupIIRate</code>/
+<code>LowestBasicGroupIIRate</code> — your call. Nothing gets built until you say go.
+</blockquote>
+
+</body>
+</html>

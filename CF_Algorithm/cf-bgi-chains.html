@@ -1,0 +1,920 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Basic Group I Rating Chains</title>
+<style>
+  :root {
+    --ink: #101b24;
+    --paper: #edf0ec;
+    --paper-line: #c7d2ce;
+    --blueprint: #2e6e8e;
+    --blueprint-soft: #e4ebef;
+    --stamp: #c77f32;
+    --caution: #b14b39;
+    --ledger: #3f8f6e;
+    --surface: #f4f6f3;
+    --panel: #ffffff;
+    --sidebar: #e8ede8;
+    --text: var(--ink);
+    --muted: #5b6b72;
+    --border: #cdd6d2;
+    --font-display: Cambria, 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+    --font-body: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+    --font-mono: 'Cascadia Code', 'Cascadia Mono', Consolas, 'SFMono-Regular', ui-monospace, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --surface: #0b141a;
+      --panel: #101b22;
+      --sidebar: #0e1a20;
+      --text: #e7ece9;
+      --muted: #93a3a0;
+      --border: #223138;
+      --blueprint-soft: #16232b;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --surface: #0b141a;
+    --panel: #101b22;
+    --sidebar: #0e1a20;
+    --text: #e7ece9;
+    --muted: #93a3a0;
+    --border: #223138;
+    --blueprint-soft: #16232b;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; background: var(--surface); color: var(--text);
+    font-family: var(--font-body); -webkit-font-smoothing: antialiased;
+  }
+  body { display: flex; flex-direction: column; min-height: 100vh; }
+  a { color: inherit; }
+  code { font-family: var(--font-mono); font-size: 0.92em; }
+  ::selection { background: var(--stamp); color: #101b24; }
+
+  /* header */
+  header.masthead {
+    display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap;
+    padding: 1.1rem 1.6rem; border-bottom: 1px solid var(--border);
+    background: var(--panel);
+  }
+  header.masthead h1 {
+    font-family: var(--font-display); font-weight: 600; font-size: 1.35rem;
+    margin: 0; letter-spacing: 0.01em; text-wrap: balance;
+  }
+  header.masthead .rule { width: 1px; align-self: stretch; background: var(--border); }
+  header.masthead p { margin: 0; font-size: 0.82rem; color: var(--muted); max-width: 52ch; }
+  header.masthead .src {
+    margin-left: auto; font-family: var(--font-mono); font-size: 0.72rem;
+    color: var(--muted); text-align: right; line-height: 1.5;
+  }
+
+  /* shell */
+  .shell { display: flex; flex: 1; min-height: 0; }
+
+  nav.toc {
+    width: 258px; flex: none; background: var(--sidebar);
+    border-right: 1px solid var(--border);
+    padding: 1rem 0 2rem; overflow-y: auto;
+  }
+  nav.toc .group-label {
+    font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--muted); padding: 0.5rem 1.2rem 0.35rem;
+  }
+  nav.toc button.navlink {
+    display: block; width: 100%; text-align: left; background: none; border: none;
+    font-family: var(--font-body); font-size: 0.86rem; color: var(--text);
+    padding: 0.42rem 1.2rem 0.42rem 1.6rem; cursor: pointer;
+    border-left: 3px solid transparent;
+  }
+  nav.toc button.navlink:hover { background: var(--blueprint-soft); }
+  nav.toc button.navlink.active {
+    background: var(--blueprint-soft); border-left-color: var(--blueprint); font-weight: 600;
+  }
+  nav.toc button.navlink .chain-len {
+    display: block; font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); font-weight: 400;
+  }
+  nav.toc hr { border: none; border-top: 1px solid var(--border); margin: 0.6rem 1.2rem; }
+
+  nav.toc .legend {
+    margin: 1rem 1.2rem 0; padding: 0.8rem 0.9rem; border: 1px solid var(--border);
+    border-radius: 3px; background: var(--panel);
+  }
+  nav.toc .legend h4 {
+    margin: 0 0 0.5rem; font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--muted); font-weight: 600;
+  }
+  nav.toc .legend .row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.74rem; margin-bottom: 0.35rem; }
+  nav.toc .legend .swatch { width: 13px; height: 13px; flex: none; border-radius: 2px; border-width: 1.5px; border-style: solid; }
+  .sw-gate { background: #f4e4ce; border-color: #c77f32; }
+  .sw-zero { background: #f3dcd6; border-color: #b14b39; }
+  .sw-final { background: #dceee4; border-color: #3f8f6e; }
+  .sw-step { background: #e4ebef; border-color: #2e6e8e; }
+  .sw-openq { background: #f4e4ce; border-color: #b14b39; border-style: dashed !important; }
+  .sw-engine { background: #e6e1f0; border-color: #5a4c8a; }
+
+  main { flex: 1; min-width: 0; overflow-y: auto; padding: 1.6rem 2rem 4rem; }
+
+  .intro { max-width: 70ch; margin-bottom: 1.4rem; }
+  .intro h2 { font-family: var(--font-display); font-size: 1.25rem; margin: 0 0 0.5rem; text-wrap: balance; }
+  .intro p { font-size: 0.92rem; line-height: 1.6; color: var(--muted); margin: 0 0 0.6rem; }
+
+  /* tables */
+  .tablewrap { overflow-x: auto; margin-bottom: 1.4rem; }
+  table.grid { border-collapse: collapse; width: 100%; max-width: 1100px; background: var(--panel); }
+  table.grid caption {
+    text-align: left; font-family: var(--font-mono); font-size: 0.7rem; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem;
+  }
+  table.grid th, table.grid td {
+    border: 1px solid var(--border); padding: 0.5rem 0.7rem; font-size: 0.82rem;
+    text-align: left; vertical-align: top; line-height: 1.45;
+  }
+  table.grid thead th {
+    font-family: var(--font-mono); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--muted); background: var(--blueprint-soft); font-weight: 600;
+  }
+  table.grid tbody th { font-weight: 600; white-space: nowrap; }
+  table.grid td.num { font-family: var(--font-mono); text-align: right; white-space: nowrap; }
+  table.grid tr.hl td, table.grid tr.hl th { background: var(--blueprint-soft); }
+  table.grid td .tag {
+    font-family: var(--font-mono); font-size: 0.66rem; padding: 0.05rem 0.35rem; border-radius: 2px;
+    border: 1px solid var(--border); color: var(--muted); white-space: nowrap;
+  }
+  table.grid td .tag.a { border-color: var(--blueprint); color: var(--blueprint); }
+  table.grid td .tag.b { border-color: var(--ledger); color: var(--ledger); }
+  table.grid td .tag.bad { border-color: var(--caution); color: var(--caution); }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.9rem; max-width: 1100px; margin-bottom: 1.4rem; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 3px; padding: 0.9rem 1rem; }
+  .card .k { font-family: var(--font-mono); font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
+  .card .v { font-family: var(--font-display); font-size: 1.5rem; margin: 0.2rem 0 0.25rem; font-variant-numeric: tabular-nums; }
+  .card p { margin: 0; font-size: 0.8rem; color: var(--muted); line-height: 1.45; }
+  .card button.go {
+    margin-top: 0.6rem; background: none; border: 1px solid var(--blueprint); color: var(--blueprint);
+    font-family: var(--font-mono); font-size: 0.7rem; padding: 0.3rem 0.6rem; border-radius: 2px; cursor: pointer;
+  }
+  .card button.go:hover { background: var(--blueprint-soft); }
+
+  /* sheet */
+  .sheet-view { display: none; }
+  .sheet-view.active { display: block; }
+
+  .titleblock {
+    display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--border);
+    margin-bottom: 1.1rem; background: var(--panel);
+  }
+  .titleblock .field { padding: 0.6rem 0.9rem; border-right: 1px solid var(--border); }
+  .titleblock .field:last-child { border-right: none; }
+  .titleblock .field .k {
+    font-family: var(--font-mono); font-size: 0.63rem; text-transform: uppercase; letter-spacing: 0.07em;
+    color: var(--muted); display: block; margin-bottom: 0.15rem;
+  }
+  .titleblock .field .v { font-family: var(--font-mono); font-size: 0.82rem; color: var(--text); line-height: 1.35; }
+  .titleblock .field.wide { grid-column: span 4; border-top: 1px solid var(--border); border-right: none; }
+
+  .sheet {
+    background: var(--paper); border: 1px solid var(--paper-line); border-radius: 2px;
+    padding: 1.4rem 1.2rem 1rem; position: relative; overflow-x: auto;
+    background-image:
+      linear-gradient(var(--paper-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--paper-line) 1px, transparent 1px);
+    background-size: 28px 28px; background-position: -1px -1px;
+    background-color: var(--paper);
+  }
+  .sheet .corner { position: absolute; width: 14px; height: 14px; }
+  .sheet .corner.tl { top: 6px; left: 6px; border-top: 1.5px solid #7d8f8a; border-left: 1.5px solid #7d8f8a; }
+  .sheet .corner.tr { top: 6px; right: 6px; border-top: 1.5px solid #7d8f8a; border-right: 1.5px solid #7d8f8a; }
+  .sheet .corner.bl { bottom: 6px; left: 6px; border-bottom: 1.5px solid #7d8f8a; border-left: 1.5px solid #7d8f8a; }
+  .sheet .corner.br { bottom: 6px; right: 6px; border-bottom: 1.5px solid #7d8f8a; border-right: 1.5px solid #7d8f8a; }
+  .sheet pre.mermaid { margin: 0; background: transparent; min-width: 760px; color: #101b24; }
+
+  .notes { margin-top: 1.1rem; display: grid; grid-template-columns: 1.4fr 1fr; gap: 1.2rem; }
+  .notes h3 {
+    font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--muted); margin: 0 0 0.5rem;
+  }
+  .notes ul { margin: 0; padding-left: 1.1rem; font-size: 0.86rem; line-height: 1.55; }
+  .notes ul li { margin-bottom: 0.4rem; }
+  .notes .delta { border: 1px solid var(--border); background: var(--panel); padding: 0.8rem 0.9rem; border-radius: 3px; font-size: 0.86rem; line-height: 1.55; }
+  .notes .delta.openq { border-color: var(--caution); }
+  .notes .delta + .delta { margin-top: 0.8rem; }
+
+  h3.section {
+    font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--muted); margin: 1.6rem 0 0.6rem;
+  }
+
+  footer.doc-footer {
+    padding: 1rem 2rem 2rem; font-size: 0.76rem; color: var(--muted); border-top: 1px solid var(--border);
+  }
+  footer.doc-footer strong { color: var(--text); }
+
+  @media (max-width: 900px) {
+    .notes { grid-template-columns: 1fr; }
+    .titleblock { grid-template-columns: 1fr 1fr; }
+    .titleblock .field.wide { grid-column: span 2; }
+  }
+  @media (max-width: 720px) {
+    .shell { flex-direction: column; }
+    nav.toc { width: 100%; border-right: none; border-bottom: 1px solid var(--border); padding: 0.6rem 0; }
+    nav.toc .legend { display: none; }
+    main { padding: 1.2rem 16px 3rem; }
+    header.masthead { padding: 1rem 16px; }
+    header.masthead .src { margin-left: 0; text-align: left; }
+    header.masthead .rule { display: none; }
+    .titleblock { grid-template-columns: 1fr; }
+    .titleblock .field { border-right: none; border-bottom: 1px solid var(--border); }
+    .titleblock .field.wide { grid-column: span 1; }
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <h1>Basic Group I Rating Chains</h1>
+  <div class="rule"></div>
+  <p>Every gate, branch and terminal in Commercial Property Basic Group I (fire, lightning, explosion, vandalism) for the five coverages that rate it: Building, Personal Property, Special Class, Business Income and Special Class Business Income. Every rule and branch is checked against the built engine and ISO's rule XML as of 2026-10-06. CW 2023-08 V04 and CW 2026-06 are drawn together because their Basic Group I rules are byte-identical.</p>
+  <div class="src">Engine at 542f0e1 (stage2-interpreter, after the C28-17/18 silent-zero refusals)<br>Rule files: CommercialProperty{Structure, PersonalProperty, SpecialClass, BusinessIncome, SpecialClassBusnIncome}Rules + each coverage's BasicGroupICoverageRules<br>Companion: CauseOfLoss_*_RatingAlgorithms.md · BasicGroupI_ERC_Tables.md · docs/CF-CHUNK28-SILENT-ZEROS.md</div>
+</header>
+
+<div class="shell">
+  <nav class="toc" id="toc">
+    <button class="navlink active" data-target="overview">Overview<span class="chain-len">five coverages, two rate sources</span></button>
+    <hr>
+    <div class="group-label">Decision chains</div>
+    <button class="navlink" data-target="bldg">Building<span class="chain-len">class, specific or 1.0 · four premium branches</span></button>
+    <button class="navlink" data-target="pp">Personal Property<span class="chain-len">inherits the building's type, class, deductible</span></button>
+    <button class="navlink" data-target="sc">Special Class<span class="chain-len">named class + protection band · always on</span></button>
+    <button class="navlink" data-target="bi">Business Income<span class="chain-len">building's rate x one factor</span></button>
+    <button class="navlink" data-target="scbi">Special Class Business Income<span class="chain-len">item's base x LCM, not its final rate</span></button>
+    <hr>
+    <div class="group-label">Comparison</div>
+    <button class="navlink" data-target="diff">Side by side<span class="chain-len">10 steps across 5 coverages · editions</span></button>
+    <hr>
+    <div class="group-label">Review</div>
+    <button class="navlink" data-target="review">Why the old sheets were replaced<span class="chain-len">53 items · 13 corrections</span></button>
+
+    <div class="legend">
+      <h4>Reading the chains</h4>
+      <div class="row"><span class="swatch sw-gate"></span> gate / branch condition</div>
+      <div class="row"><span class="swatch sw-step"></span> computed factor</div>
+      <div class="row"><span class="swatch sw-final"></span> premium resolves</div>
+      <div class="row"><span class="swatch sw-zero"></span> zero, refusal or clamp</div>
+      <div class="row"><span class="swatch sw-openq"></span> silent gap / open question</div>
+      <div class="row"><span class="swatch sw-engine"></span> engine layer, not an ISO rule</div>
+    </div>
+  </nav>
+
+  <main id="main">
+
+    <!-- ============================= OVERVIEW ============================= -->
+    <section class="sheet-view active" id="view-overview">
+      <div class="intro">
+        <h2>Two coverages look up a Group I rate; the other three borrow one</h2>
+        <p>Basic Group I is the fire-and-lightning part of every Commercial Property premium. Building and Special Class each look up their own base rate: Building by class and construction, Special Class by a named class and a protection-class band. Personal Property looks up its own rate too, but it takes the rating type, class code, construction and deductible from the building. Business Income and Special Class Business Income have no Group I rate table at all. They start from their parent's rate and multiply by one Business Income factor.</p>
+        <p>Every Basic Group I rule file and every countrywide table these chains read is byte-identical between CW 2023-08 V04 and CW 2026-06. Each probe gave the same premium at both editions, so one chain per coverage covers both. Some states override pieces: AL, CA, AK, FL, NJ, DC and PR are noted where they matter.</p>
+      </div>
+
+      <div class="cards">
+        <div class="card">
+          <div class="k">Editions</div>
+          <div class="v">No change</div>
+          <p>All ten Basic Group I rule files and their countrywide tables are byte-identical in CW 2023 V04 and CW 2026-06. Premiums move only through state data.</p>
+          <button class="go" data-target="diff">Side by side →</button>
+        </div>
+        <div class="card">
+          <div class="k">Silent $0 paths</div>
+          <div class="v">Still "rated"</div>
+          <p>Commit 542f0e1 refuses silent zeros on building inputs only. For Group I that is Arizona's missing reduction credit. Every other zero ending prices $0 without a message, as ISO does.</p>
+          <button class="go" data-target="bldg">See Building →</button>
+        </div>
+        <div class="card">
+          <div class="k">Biggest correction</div>
+          <div class="v">Base x LCM</div>
+          <p>Special Class Business Income copies the item's base rate x LCM, not its finished rate. The item's coinsurance and deductible never reach it.</p>
+          <button class="go" data-target="scbi">Open chain →</button>
+        </div>
+      </div>
+
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart LR
+    bldg(["Building: BasicGroupIRate<br/>by class + construction"]) --> bfin["Building premium"]:::final
+    bldg -->|"rating type, class, construction,<br/>deductible factor"| pp["Personal Property: own lookup<br/>on the building's keys"]:::step
+    pp --> ppfin["Contents premium"]:::final
+    bldg -->|"base rate, specific rate,<br/>or op-unit highest rate"| bi["Business Income:<br/>rate x one BI factor"]:::step
+    bi --> bifin["BI premium"]:::final
+    sc(["Special Class: rate by<br/>named class + PC band"]) --> scfin["Special Class premium"]:::final
+    sc -->|"base x LCM only"| scbi["SC Business Income:<br/>rate x one BI factor"]:::step
+    scbi --> scbifin["SCBI premium"]:::final
+
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>Rate the building first. Contents and Business Income read values the building chain has already written.</li>
+            <li>The Business Income coverages have no coinsurance, LOI or deductible step of their own. One factor replaces them, and coinsurance is priced inside it.</li>
+            <li>Special Class and both Business Income coverages are always on. Their Basic Group I record is created for every item, whatever the cause of loss.</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>No referral fires on a zero.</strong> A missing class code, construction, territory, deductible or blanket match prices Group I at $0 with outcome "rated". The engine refuses only where a lookup that must return one row finds none, as ISO does.</div>
+      </div>
+    </section>
+
+    <!-- ============================= BUILDING ============================= -->
+    <section class="sheet-view" id="view-bldg">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Building / Structure</span></div>
+        <div class="field"><span class="k">Editions</span><span class="v">CW 2023-08 V04 = CW 2026-06 (byte-identical)</span></div>
+        <div class="field"><span class="k">Master chain</span><span class="v">SetBGIRatesAndFactors :7533 (StructureRules): BaseRate :7545 → Rate :7599 → COL :7698 → Coinsurance :7717 → LOI :7907 → Adjusted :8104 → Deductible :8126 → Final :8234</span></div>
+        <div class="field"><span class="k">Premium file</span><span class="v">…StructureBuildingBasicGroupICoverageRules SetPremium :66</span></div>
+        <div class="field wide"><span class="k">Coverage gate</span><span class="v">CauseOfLossToUse is neither "" nor "Not Applicable" (SetCoverageOnPolicyIndicator :32). A blanketed building copies it from its blanket Detail, so a blanket ID that matches nothing turns the coverage off.</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["Basic Group I building record<br/>CW 2023-08 V04 = CW 2026-06"]) --> ratingType{"RatingType?"}
+    ratingType -->|"Class"| classGate{"ClassCodeToUse set AND<br/>ConstructionCode not 0?"}
+    classGate -->|"No"| baseZero["BaseRate = 0.0"]:::zero
+    classGate -->|"Yes"| baseLookup["Lookup BasicGroupIRate<br/>state row, else CW (CW is empty)"]:::step
+    baseLookup -->|"no row"| refRow["Refused: SingleResult no row<br/>(e.g. unknown class)"]:::eng
+    baseLookup --> classRate["Rate = (Base x LCM + SubStd + Vacant)<br/>x Terr x ProtClass x RoofACV"]:::step
+    baseZero --> classRate
+    ratingType -->|"Specific / Tentative"| specRate["Rate = SpecificGroupIRate x LCM<br/>x SprinklerNotExcl x RoofACV"]:::step
+    ratingType -->|"anything else, incl. blank"| rateOne["Rate = 1.0<br/>prices high, no message"]:::openq
+    classRate --> colAdj["COLAdj = r3(Rate - SprinklerExclRate)<br/>x SprinklerExcl x Vandalism x StdPolicy"]:::step
+    specRate --> colAdj
+    rateOne --> colAdj
+    colAdj --> coinsGate{"ClassCodeToUse = 1150 OR<br/>Functional Valuation?"}
+    coinsGate -->|"Yes"| coinsSkip["Coinsurance = 1.0"]:::step
+    coinsGate -->|"No"| coinsChoose{"Coinsurance?"}
+    coinsChoose -->|"80/90/100, IncludedInBlkt = No"| coinsLookup["Lookup CoinsuranceFactor"]:::step
+    coinsChoose -->|"Blkt 80/90/100, IncludedInBlkt = Yes"| coinsBlkt["Lookup BlktCoinsuranceFactor"]:::step
+    coinsChoose -->|"50/60/70/None"| coinsLow["Lookup LessThan80Pct factor"]:::step
+    coinsChoose -->|"other"| coinsOne["Coinsurance = 1.0"]:::step
+    coinsSkip --> loiGate{"LOI branch?"}
+    coinsLookup --> loiGate
+    coinsBlkt --> loiGate
+    coinsLow --> loiGate
+    coinsOne --> loiGate
+    loiGate -->|"IncludedInBlkt = Yes, BlktIDNum &gt; 0"| loiBlkt["Copy BlktBasicGroupILOIFactor"]:::step
+    loiGate -->|"Builders Risk + BR reporting form"| loiBR["Lookup on the form's limit<br/>(0.0 if ConstructionCode 0)"]:::step
+    loiGate -->|"not Leasehold / LL / No Coverage"| loiStd{"Limit &gt; 0 AND<br/>ConstructionCode not 0?"}
+    loiStd -->|"Yes"| loiLookup["Lookup BasicGroupILOIFactor"]:::step
+    loiStd -->|"No"| loiZero["LOI = 0.0"]:::zero
+    loiGate -->|"Leasehold / LL / No Coverage"| loiOne["LOI = 1.0"]:::step
+    loiBlkt --> adjRate["Adjusted = r3(r3(COLAdj x Coins) x LOI)"]:::step
+    loiBR --> adjRate
+    loiLookup --> adjRate
+    loiZero --> adjRate
+    loiOne --> adjRate
+    adjRate --> dedChoose{"Deductible?"}
+    dedChoose -->|"250"| ded250["Lookup Deductible250Factor"]:::step
+    dedChoose -->|"Not Applicable"| dedOne["Ded = 1.0"]:::step
+    dedChoose -->|"other value"| dedLookup["Lookup DeductibleFactor<br/>on the location total"]:::step
+    dedChoose -->|"blank"| dedZero["Ded = 0.0"]:::zero
+    ded250 --> finalRate["Final = Adjusted x DedByLoc<br/>x Ded x MultiResCredit"]:::step
+    dedOne --> finalRate
+    dedLookup --> finalRate
+    dedZero --> finalRate
+    finalRate --> covGate{"CauseOfLossToUse blank or<br/>'Not Applicable'?"}
+    covGate -->|"Yes"| premZero1["Premium = 0.0"]:::zero
+    covGate -->|"No"| brGate{"BR reporting form exists<br/>AND CovType = Builders Risk?"}
+    brGate -->|"Yes"| premZero2["Premium = 0.0"]:::zero
+    brGate -->|"No"| covType{"CovType / IncludedInBlkt?"}
+    covType -->|"Bldg / BR / I&amp;B / Condo Assn,<br/>IncludedInBlkt = No, no BR form"| branchA["Premium = r0(IRPM x MultiPrem x PackageMod<br/>x Final x Limit/100) x cyber factors"]:::final
+    covType -->|"Legal Liability"| branchB["Premium = COLAdj x LegalLiabilityFactor<br/>x AddlInsInt x Limit/100 x PackageMod<br/>x IRPM x cyber factors"]:::final
+    covType -->|"not Leasehold, IncludedInBlkt = Yes"| blktGate{"BlktTotalFullValueAmount &gt; 0?"}
+    blktGate -->|"No"| premZero3["Premium = 0.0"]:::zero
+    blktGate -->|"Yes"| branchC["Premium = r0(IRPM x MultiPrem x PackageMod<br/>x BlktLimit/100 x FullBldgValue/BlktTotal<br/>x BlktAvgRate) x cyber factors"]:::final
+    covType -->|"not Leasehold, IncludedInBlkt<br/>blank or other"| premZero5["Premium = 0.0"]:::zero
+    covType -->|"Leasehold Interest"| premZero4["Premium = 0.0"]:::zero
+    premZero1 -.- silent["Engine: every 0.0 here rates silently<br/>(outcome 'rated'). Only AZ's missing<br/>BasicGroupIReductionCredit refuses (C28-17)"]:::eng
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class ratingType,classGate,coinsGate,coinsChoose,loiGate,loiStd,dedChoose,covGate,brGate,covType,blktGate gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>The rating type only picks the starting rate. Class, Specific, Tentative and a blank type all go on through cause of loss, coinsurance, LOI and deductible.</li>
+            <li>A blank rating type is not a zero. It sets the rate to 1.0 and prices high: $1,091 against $720 on the Oklahoma probe policy.</li>
+            <li>Legal Liability skips coinsurance, LOI, deductible and the multi-premium credit. It multiplies straight off the cause-of-loss rate.</li>
+            <li>LOI and deductible each have a 0.0 branch: no limit or no construction zeroes LOI, and a blank deductible zeroes the deductible factor.</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>Silent $0 paths.</strong> No class code, no construction, no territory, a blank deductible, a blank IncludedInBlkt, a Leasehold item or an unmatched blanket ID all price $0 with outcome "rated". C28-17 adds one Group I refusal: Arizona without <code>BasicGroupIReductionCredit</code>. An unknown class or an unfiled construction type refuses at the table lookup, as ISO does. <strong>State watch-item:</strong> CA and AK rate from District I / II tables; CA without <code>District</code> still prices $0 silently (chunk 27 C27-06).</div>
+      </div>
+    </section>
+
+    <!-- ============================= PERSONAL PROPERTY ============================= -->
+    <section class="sheet-view" id="view-pp">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Personal Property (one record per occupancy class)</span></div>
+        <div class="field"><span class="k">Editions</span><span class="v">CW 2023-08 V04 = CW 2026-06 (byte-identical)</span></div>
+        <div class="field"><span class="k">Master chain</span><span class="v">SetBGIRatesAndFactors :2771 (PersonalPropertyRules): LOI :2784 → Coinsurance :2902 → BaseRate :3076 → Vault :3248 → ProtClass :3320 → Rate :3418 → COL :3503 → Adjusted :3539 → Final :3561 (Deductible :3584 is a Copy)</span></div>
+        <div class="field"><span class="k">Premium file</span><span class="v">…PersonalPropertyPrsnlPropBasicGroupICoverageRules SetPremium :60</span></div>
+        <div class="field wide"><span class="k">Coverage gate</span><span class="v">NOT Exist(SpecialCoinsuranceProvisions) AND NOT Exist(ValueReportingForm). No cause-of-loss test: an item with a blank cause of loss still prices. RatingType, class code and construction are copied from the building (:1199, :1147, :1168).</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["PP item, 1 of N per Occupancy Class<br/>CW 2023-08 V04 = CW 2026-06"]) --> inherit["RatingType, class code, construction<br/>are copied from the building"]:::step
+    inherit --> rtGate{"RatingType (the building's)?"}
+    rtGate -->|"Specific / Tentative / other"| specRate["Rate = SpecificGroupIRate x LCM<br/>x SprinklerNotExcl (no roof factor)"]:::step
+    rtGate -->|"Class"| classGate{"BldgClassCode set<br/>and not 1150?"}
+    classGate -->|"No"| baseZero["BaseRate = 0.0"]:::zero
+    classGate -->|"Yes"| groupGate{"Group?"}
+    groupGate -->|"YARD: class 1400/1650/1700<br/>+ yard indicator"| yardGate{"Yard Property - Combustible?"}
+    yardGate -->|"Yes"| yardC["Lookup, constCode = 1"]:::step
+    yardGate -->|"No"| yardNC["Lookup, constCode = 3"]:::step
+    groupGate -->|"Group set AND<br/>ConstructionCode not 0"| baseLookup["Lookup BasicGroupIRate, PersProp<br/>(table shared with Building, CW empty)"]:::step
+    groupGate -->|"otherwise"| baseZero
+    baseLookup -->|"no row"| refRow["Refused: SingleResult no row"]:::eng
+    yardC --> vaultGate{"CovType = PP in a Vault with<br/>an Approved Fire Rating?"}
+    yardNC --> vaultGate
+    baseLookup --> vaultGate
+    baseZero --> vaultGate
+    vaultGate -->|"Yes"| vaultCredit["Lookup FireSafeVaultFactor (CW 0.5)"]:::step
+    vaultGate -->|"No"| vaultOne["Vault = 1.0"]:::step
+    vaultCredit --> pcGate{"Yard Non-Combustible<br/>or class 1751/1752?"}
+    vaultOne --> pcGate
+    pcGate -->|"Yes"| pcOne["ProtClass = 1.0"]:::step
+    pcGate -->|"No"| pcSet{"ProtectClass set AND<br/>ConstructionCode not 0?"}
+    pcSet -->|"Yes"| pcLookup["Lookup ProtectionClassFactor"]:::step
+    pcSet -->|"No"| pcZero["ProtClass = 0.0"]:::zero
+    pcOne --> rate["Rate = r3((Base x LCM + SubStd)<br/>x Vault x ProtClass x Terr), one rounding"]:::step
+    pcLookup --> rate
+    pcZero --> rate
+    rate --> vpGate{"CovType = Valuable Papers<br/>and Records?"}
+    specRate --> vpGate
+    vpGate -->|"Yes"| colZero["COLAdj = 0.0 (rated by its<br/>own Valuable Papers file)"]:::zero
+    vpGate -->|"No"| colStd["COLAdj = r3(Rate - SprinklerExclRate)<br/>x Sprinkler x Vandalism x StdPolicy"]:::step
+    colZero --> coinsGate{"Functional Valuation?"}
+    colStd --> coinsGate
+    coinsGate -->|"Yes"| coinsSkip["Coinsurance = 1.0"]:::step
+    coinsGate -->|"No"| coinsChoose{"Coinsurance?"}
+    coinsChoose -->|"Reporting value, or SCP /<br/>VRF record exists"| coinsForce["Lookup the 100% factor"]:::step
+    coinsChoose -->|"80/90/100"| coinsLookup["Lookup CoinsuranceFactor"]:::step
+    coinsChoose -->|"50/60/70/None"| coinsLow["Lookup LessThan80Pct factor"]:::step
+    coinsChoose -->|"other"| coinsOne["Coinsurance = 1.0"]:::step
+    coinsSkip --> loiGate{"LOI branch?"}
+    coinsForce --> loiGate
+    coinsLookup --> loiGate
+    coinsLow --> loiGate
+    coinsOne --> loiGate
+    loiGate -->|"IncludedInBlkt = Yes, BlktIDNum &gt; 0"| loiBlkt["Copy BlktBasicGroupILOIFactor"]:::step
+    loiGate -->|"building CovType LL,<br/>or item Tobacco"| loiOne["LOI = 1.0"]:::step
+    loiGate -->|"else, ConstructionCode not 0"| loiLookup["Lookup on OccupTotalLOIToUse"]:::step
+    loiGate -->|"else, ConstructionCode 0"| loiOne
+    loiBlkt --> adjRate["Adjusted = r3(LOI x r3(COLAdj x Coins))"]:::step
+    loiOne --> adjRate
+    loiLookup --> adjRate
+    adjRate --> dedCopy["Ded = Copy of the building's<br/>DeductibleFactorBasicGroupI"]:::step
+    dedCopy -->|"building Deductible blank"| refDed["Refused: DeductibleStatCode<br/>no row (keys CW, blank)"]:::eng
+    dedCopy --> finalRate["Final = Adjusted x DedByLoc x Ded"]:::step
+    finalRate --> covGate{"SCP record OR VRF record?<br/>(reporting coinsurance attaches VRF)"}
+    covGate -->|"Yes"| premZero1["Premium = 0.0 here;<br/>priced by the SCP / VRF rules"]:::zero
+    covGate -->|"No"| covForm{"CovForm / IncludedInBlkt?"}
+    covForm -->|"not LL/Tobacco/ClassRatedOnly,<br/>IncludedInBlkt = No"| branchA["Premium = r0(IRPM x MultiPrem x PackageMod<br/>x Final x Limit/100) x cyber factors<br/>(IRPM, PackageMod 9 levels up)"]:::final
+    covForm -->|"Legal Liability Coverage Form"| branchB["Premium = Limit/100 x r3(AddlInsInt<br/>x r3(LegalLiabFactor x COLAdj))<br/>x PackageMod x IRPM x cyber factors"]:::final
+    covForm -->|"not LL/Tobacco/ClassRatedOnly,<br/>IncludedInBlkt = Yes"| blktGate{"BlktTotalFullValueAmount &gt; 0?"}
+    blktGate -->|"No"| premZero2["Premium = 0.0"]:::zero
+    blktGate -->|"Yes"| branchC["Premium = r0(IRPM x MultiPrem x PackageMod<br/>x BlktAvgRate x FullPPValue/BlktTotal<br/>x BlktLimit/100) x cyber factors"]:::final
+    covForm -->|"Tobacco / ClassRatedOnly /<br/>IncludedInBlkt blank"| premZero3["Premium = 0.0"]:::zero
+    premZero2 -.- silent["Engine: every 0.0 here rates silently<br/>(outcome 'rated'); C28-17 has<br/>no Personal Property check"]:::eng
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class rtGate,classGate,groupGate,yardGate,vaultGate,pcGate,pcSet,vpGate,coinsGate,coinsChoose,loiGate,covGate,covForm,blktGate gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>The item does not choose its own rating type or class. Both come from the building, and values typed on the item are overwritten.</li>
+            <li>Contents has a real Specific/Tentative path. A Specific building gives Specific contents ($253 in the probe), not $0.</li>
+            <li>A missing protection class zeroes Contents but not Building: Building uses 1.0 there and prices $751.</li>
+            <li>The forced-100% coinsurance branch never reaches this premium. The same conditions switch the coverage off, and the reporting-form rules charge it.</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>More silent zeros than Building, and C28-17 checks none of them.</strong> No building class code, construction or territory, no location protection class, class 1150, or a Yard item with no construction all price Contents $0 with outcome "rated". In three of these the whole policy totals $0 and is still "rated". One change goes the other way: a blank <em>building</em> deductible now refuses the policy at the <code>DeductibleStatCode</code> lookup (C28-05). It no longer gives Contents a silent $0.</div>
+      </div>
+    </section>
+
+    <!-- ============================= SPECIAL CLASS ============================= -->
+    <section class="sheet-view" id="view-sc">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Special Class</span></div>
+        <div class="field"><span class="k">Editions</span><span class="v">CW 2023-08 V04 = CW 2026-06 (byte-identical)</span></div>
+        <div class="field"><span class="k">Master chain</span><span class="v">SetBGIRatesAndFactors :2812 (SpecialClassRules), 7 steps, coinsurance first; called from SetBlanketRatesAndFactors :1864</span></div>
+        <div class="field"><span class="k">Premium file</span><span class="v">…SpecialClassBasicGroupICoverageRules SetPremium :43</span></div>
+        <div class="field wide"><span class="k">Coverage gate</span><span class="v">The constant 1 (SetCoverageOnPolicyIndicator :32). The item's InitializeRuleSet creates the Group I record whenever it is missing and never tests cause of loss, so Group I prices on Basic, Broad and Special items alike ($66 each).</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["Special Class item<br/>BGI record always created,<br/>any cause of loss"]) --> coins{"Coinsurance?<br/>(computed FIRST)"}
+    coins -->|"80% / 90%, or 100% scheduled"| cTab["CoinsuranceFactor<br/>80% 1.0 · 90% 0.95 · 100% 0.90"]:::step
+    coins -->|"blanket + Blkt 80/90/100%"| cBlk["CoinsuranceFactorBlkt 0.95"]:::step
+    coins -->|"50 / 60 / 70% / None"| cLow["LessThan80Pct factor 1.5"]:::step
+    coins -->|"anything else, incl. blank"| cOne["CoinsuranceFactor = 1.0"]:::step
+    cTab --> baseGate
+    cBlk --> baseGate
+    cLow --> baseGate
+    cOne --> baseGate
+    baseGate{"ConvertedOption AND<br/>ProtectionClassToUse non-blank?"}
+    baseGate -->|"No: ClassDescription blank"| baseZero["BaseRate = 0.0"]:::zero
+    baseZero --> engZero1["Engine: rates $0,<br/>outcome 'rated', no message"]:::eng
+    baseGate -->|"Yes"| convert["ClassDescription to ConvertedOption<br/>(71 rows, e.g. Option34a)"]:::step
+    convert -->|"spelling not filed"| refuse["Engine: refused<br/>(no row; ISO refuses too)"]:::eng
+    convert --> baseLookup["BasicGroupIRateSpecialClass<br/>[ConvertedOption, PC band]<br/>no construction key"]:::step
+    baseLookup --> rate["Rate = r3(Base x LCM)"]:::step
+    rate --> colAdj["COLAdj = r3(Rate x VandalismExcl<br/>x StdPropPolGroupI)"]:::step
+    colAdj --> adjRate["Adjusted = r3(COLAdj x Coinsurance)<br/>no LOI factor"]:::step
+    adjRate --> dedChoose{"Deductible?"}
+    dedChoose -->|"250"| ded250["Deductible250Factor[Basic] 1.05"]:::step
+    dedChoose -->|"other non-blank"| dedLookup["DeductibleFactor[ded,<br/>TotAmtInsuranceToUse band, BGI]"]:::step
+    dedChoose -->|"blank"| dedZero["DedFactor = 0.0"]:::zero
+    dedZero --> engZero2["Engine: rates $0,<br/>outcome 'rated'"]:::eng
+    ded250 --> finalRate["Final = r3(Adjusted x DedByLoc x Ded)"]:::step
+    dedLookup --> finalRate
+    finalRate --> blktTest{"IncludedInBlkt = 'Yes'?"}
+    blktTest -->|"No, or blank"| branchB["Scheduled: Limit/100 x Final,<br/>then x PackageMod, x MultiPrem,<br/>x IRPM, x 2 cyber factors.<br/>Rounded to $1 after EACH step"]:::final
+    blktTest -->|"Yes"| blktGate{"BlktTotalFullValueAmount &gt; 0?<br/>(written from the policy<br/>blanket record)"}
+    blktGate -->|"No"| premZero["Premium = 0.0"]:::zero
+    premZero --> engZero3["Engine: rates $0,<br/>outcome 'rated'"]:::eng
+    blktGate -->|"Yes"| branchA["Blanket: BlktLimit/100 x<br/>Full/BlktTotal x BlktAvgRate,<br/>then the same factor ladder.<br/>Item's Final rate is not read"]:::final
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class coins,baseGate,dedChoose,blktTest,blktGate gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>Two lookups in a row make the base rate: class description to option code, then option code and protection-class band to the rate. Construction plays no part.</li>
+            <li>The band can't really be blank. The location writes "1 to 4", "5 to 8" or "9 to 10", and a missing ProtectClass becomes "9 to 10". In practice the base-rate gate tests only the class description.</li>
+            <li>No LOI factor, no sprinkler term, no territory and no multi-residential credit anywhere in the chain.</li>
+            <li>The premium is rounded to whole dollars after every multiplication, and two cyber factors apply. Package mod 0.75 with IRPM 0.99 gives $50, where one rounding would give $49.</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>Silent $0 paths.</strong> A blank deductible, a blank class description, or a blanketed item with no policy blanket record prices Group I at $0 with outcome "rated". A class description spelled the way another state files it (Florida's spelling sent in Ohio) refuses at the option lookup, as ISO does.</div>
+      </div>
+    </section>
+
+    <!-- ============================= BUSINESS INCOME ============================= -->
+    <section class="sheet-view" id="view-bi">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Business Income (child of Structure)</span></div>
+        <div class="field"><span class="k">Editions</span><span class="v">CW 2023-08 V04 = CW 2026-06 (byte-identical)</span></div>
+        <div class="field"><span class="k">Master chain</span><span class="v">SetBGIRatesAndFactors :3500 (BusinessIncomeRules): Adjustment :3507 → Rate :3527 → COL :3675; then SetFactor :6865 and SetFinalBasicGroupIRate :8026. Six steps to premium.</span></div>
+        <div class="field"><span class="k">Premium file</span><span class="v">…BusinessIncomeBasicGroupICoverageRules SetPremium :43</span></div>
+        <div class="field wide"><span class="k">Coverage gate</span><span class="v">The constant 1 (:32). The BI InitializeRuleSet adds the Group I record to every Business Income record, so the gate can never be 0. A Broad cause of loss still prices Group I.</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["Business Income record, child of Structure<br/>BGI coverage record auto-added to every BI"]) --> adj["Adj = BaseRateAdjustmentFactor<br/>[state, 'Basic Group I']<br/>CW table empty, state rows (IN 0.85)"]:::step
+    adj --> opGate{"MaxPeriod=Yes OR MonthlyLOI set<br/>OR CovType=Extra Expense Only,<br/>AND building in operational unit?"}
+    opGate -->|"Yes"| opRate["Rate = r3(Location.HighestBusnIncome-<br/>BasicGroupIBaseRate x Adj)<br/>= Group I rate of the op-unit building<br/>with the highest COLAdj. Not blanket"]:::step
+    opGate -->|"No"| rt{"Structure.RatingType?"}
+    rt -->|"Class"| classRate["Rate = r3(r3(r3(Structure.BasicGroupIBaseRate<br/>x BI LCM) + SubStd + Vacant)<br/>x TerrFactor x ProtClass) x Adj"]:::step
+    rt -->|"Specific / Tentative"| specRate["Rate = r3(r3(r3(Structure.SpecificGroupIRate<br/>x BI LCM) x SprinklerLeakageNotExcl) x Adj)"]:::step
+    rt -->|"blank / anything else"| oneRate["Rate = 1.0, no Adj<br/>IN: BI $550 vs $163 class"]:::openq
+    classRate -.->|"no Group I territory"| terr0["TerrFactor 0: Bldg and BI $0<br/>silent"]:::zero
+    specRate -.->|"no SpecificGroupIRate"| spec0["Rate 0: Bldg and BI $0<br/>silent"]:::zero
+    opRate --> colAdj["COLAdj = r3(r3(r3(r3(Rate - SprinklerExclNonSprRate)<br/>x SprinklerExclSprFactor) x VandalismExcl)<br/>x BuildersRiskFactor)"]:::step
+    classRate --> colAdj
+    specRate --> colAdj
+    oneRate --> colAdj
+    colAdj --> factorPick{"Factor = first match<br/>(SetFactor, a selector)"}
+    factorPick -->|"MaxPeriod=Yes"| fMP["MaxPeriodOfIndemnityFactor<br/>[CovType, TypeOfRisk]"]:::step
+    factorPick -->|"MonthlyLOI set"| fML["MonthlyLimitOfIndemnityFactor<br/>[CovType, TypeOfRisk, 1/3 1/4 1/6]"]:::step
+    factorPick -->|"Extra Expense Only"| fEE["ExtraExpenseFactor<br/>[limit-on-loss-payment option]"]:::step
+    factorPick -->|"otherwise"| fTR["TypeOfRiskFactor = BusnIncomeFactor<br/>[CovType, TypeOfRisk, CoinsuranceToUse]<br/>coinsurance is priced here"]:::step
+    fMP -.->|"no row, e.g. with Extra Expense Only"| refuse["Refused: NO row in factor table<br/>ISO refuses too (C28-06 P6)"]:::eng
+    fTR -.->|"off-domain TypeOfRisk"| refuse
+    fMP --> finalRate["FinalRate = r3(COLAdj x Factor)<br/>no deductible step, no LOI table"]:::step
+    fML --> finalRate
+    fEE --> finalRate
+    fTR --> finalRate
+    finalRate --> covGate["CoverageOnPolicyIndicator = 1, hard-coded<br/>no cause-of-loss test: BI CauseOfLoss<br/>'Broad' still prices BGI"]:::step
+    covGate --> blktTest{"IncludedInBlkt = 'No'?"}
+    blktTest -->|"Yes"| branchA["Scheduled = r0(r0(IRPM x PackageMod x FinalRate<br/>x Limit/100)) x CyberExclFactorBGI<br/>x CyberCOLExcptnsFactorBGIToUse<br/>MultiPremiumAndDispersion not read"]:::final
+    blktTest -->|"No"| blktAmt{"BlktTotalFullValueAmount &gt; 0?<br/>derived from blanket records"}
+    blktAmt -->|"Yes"| branchB["Blanket = r0(r0(IRPM x PackageMod x BlktBasicGroupIAvgRate<br/>x FullBusnIncomeValue / BlktTotalFullValueAmount<br/>x BlktLimit/100)) x same 2 cyber factors<br/>FinalRate not read"]:::final
+    blktAmt -->|"No"| premZero["Premium = 0.0"]:::zero
+    premZero -.-> zeroEng["Engine: outcome 'rated', no refusal<br/>C28-17 checks Building coverages only"]:::eng
+    terr0 -.-> zeroEng
+    spec0 -.-> zeroEng
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class opGate,rt,factorPick,blktTest,blktAmt gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>Business Income has no Group I rate table. It starts from the building's class base rate or specific rate, or from the highest building rate in an operational unit. A blank rating type falls back to 1.0.</li>
+            <li>The operational-unit branch is not about blanket. It takes the highest-rated building at the location, so one expensive building raises every unit member's Business Income ($371 to $587 in Indiana).</li>
+            <li>Coinsurance is priced inside the type-of-risk factor: 50% gives $245, 90% gives $178. No deductible applies anywhere in this chain.</li>
+            <li>The multi-premium credit is never multiplied in. Submitting 0.9 leaves the premium unchanged.</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>Silent $0 paths.</strong> A blanket record with no blanket value, a Specific building with no <code>SpecificGroupIRate</code>, and a location with no Group I territory all price $0 with outcome "rated". The last two zero the Building's Group I premium too. A blank rating type goes the other way and overprices at 1.0. State overrides not drawn: FL, NJ, DC and PR.</div>
+      </div>
+    </section>
+
+    <!-- ============================= SC BUSINESS INCOME ============================= -->
+    <section class="sheet-view" id="view-scbi">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Special Class Business Income (child of a Special Class item)</span></div>
+        <div class="field"><span class="k">Editions</span><span class="v">CW 2023-08 V04 = CW 2026-06 (byte-identical)</span></div>
+        <div class="field"><span class="k">Master chain</span><span class="v">SetBGIRatesAndFactors :2924 (SpecialClassBusnIncomeRules): Rate :2930 → COL :2946; then SetFactor :5824 and SetFinalBasicGroupIRate :6933</span></div>
+        <div class="field"><span class="k">Premium file</span><span class="v">…SpecialClassBusnIncomeBasicGroupICoverageRules SetPremium :43</span></div>
+        <div class="field wide"><span class="k">Coverage gate</span><span class="v">The constant 1 (:32). The record is always created, whatever the cause of loss ($39 under Basic, Broad and Special).</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["SCBI record,<br/>child of a Special Class item"]) --> rateGate{"BasicGroupIRate<br/>already set?"}
+    rateGate -->|"No"| rateCopy["Rate = parent's BasicGroupIRate<br/>= parent Base x parent LCM.<br/>NOT the parent's final rate"]:::step
+    rateGate -->|"Yes, submitted"| rateKeep["Keep the submitted value<br/>(engine honours it)"]:::step
+    rateCopy --> colAdj["COLAdj = r3(Rate x own<br/>VandalismExclFactor)"]:::step
+    rateKeep --> colAdj
+    colAdj --> factorPick{"SetFactor, first match wins"}
+    factorPick -->|"MaxPeriod = 'Yes'"| fMax["MaxPeriodOfIndemnityFactor<br/>[CovType, TypeOfRisk]"]:::step
+    factorPick -->|"MonthlyLOI ≠ 'Not Applicable'<br/>(blank also matches)"| fMon{"MonthlyLOI<br/>non-blank?"}
+    fMon -->|"Yes"| fMonL["MonthlyLimitOfIndemnityFactor<br/>[CovType, TypeOfRisk, fraction]"]:::step
+    fMon -->|"No, blank"| monZero["Factor = 0.0"]:::zero
+    factorPick -->|"CovType = 'Extra<br/>Expense Only'"| fEE{"Limit-on-loss %<br/>given?"}
+    fEE -->|"Yes"| fEEL["ExtraExpenseFactor[%]"]:::step
+    fEE -->|"No / No Coverage"| eeZero["Factor = 0.0"]:::zero
+    factorPick -->|"otherwise"| fTor["TypeOfRiskFactor = BusnIncomeFactor<br/>[CovType, TypeOfRisk, Coinsurance]"]:::step
+    fMax --> finalRate
+    fMonL --> finalRate
+    fEEL --> finalRate
+    fTor --> finalRate
+    monZero --> engZ1["Engine: rates $0,<br/>outcome 'rated'"]:::eng
+    eeZero --> engZ1
+    finalRate["Final = r3(COLAdj x Factor)<br/>no coinsurance, LOI or<br/>deductible step"]:::step
+    finalRate --> blktTest{"IncludedInBlkt = 'No'?"}
+    blktTest -->|"Yes"| branchA["Scheduled: round(IRPM x PackageMod<br/>x Final x Limit/100), then<br/>x 2 cyber factors. No MultiPrem"]:::final
+    blktTest -->|"'Yes' or blank"| blktAmt{"BlktTotalFullValueAmount &gt; 0?"}
+    blktAmt -->|"No"| premZero["Premium = 0.0"]:::zero
+    premZero --> engZ2["Engine: rates $0, outcome 'rated'.<br/>A blank IncludedInBlkt lands here"]:::eng
+    blktAmt -->|"Yes"| branchB["Blanket: round(IRPM x PackageMod<br/>x BlktAvgRate x Full/BlktTotal<br/>x BlktLimit/100) x 2 cyber factors"]:::final
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class rateGate,factorPick,fMon,fEE,blktTest,blktAmt gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>The rate is copied from the Special Class item part-way through its chain: base rate x LCM. The item's vandalism, policy-form, coinsurance and deductible factors never reach it.</li>
+            <li>The proof: changing the item's coinsurance to 100% or its deductible to 250 moves the item ($62, $70) but leaves this premium at $39. Doubling the item's LCM moves both ($130 and $77).</li>
+            <li>This record's own LCM does nothing (5.0 still gives $39), and the multi-premium credit is not applied.</li>
+            <li>Blank is not "Not Applicable". A blank monthly limit picks the monthly branch, finds no factor and prices $0.</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>Silent $0 paths.</strong> A blank monthly limit, Extra Expense Only with no limit-on-loss, and a blank <code>IncludedInBlkt</code> (it falls to the blanket side) all price $0 with outcome "rated". 542f0e1's refusal layer does not cover this coverage.</div>
+      </div>
+    </section>
+
+    <!-- ============================= SIDE BY SIDE ============================= -->
+    <section class="sheet-view" id="view-diff">
+      <div class="intro">
+        <h2>One fire peril, five different chains</h2>
+        <p>The coverages share the cause-of-loss idea and little else. Each row is one step; a dash means the coverage has no such step.</p>
+      </div>
+      <div class="tablewrap">
+        <table class="grid">
+          <thead><tr><th>Step</th><th>Building</th><th>Personal Property</th><th>Special Class</th><th>Business Income</th><th>SC Business Income</th></tr></thead>
+          <tbody>
+            <tr><th>Base rate</th><td>BasicGroupIRate by class + construction (state rows; CW empty)</td><td>Same table, PersProp rows, on the building's keys; Yard rows by combustibility</td><td>BasicGroupIRateSpecialClass by option code + PC band</td><td>Building's base or specific rate, or op-unit highest; x BaseRateAdjustmentFactor</td><td>Item's base x LCM, copied</td></tr>
+            <tr><th>Rate multipliers</th><td>LCM, SubStd + Vacant, territory, protection, roof</td><td>LCM, SubStd, vault, protection, territory</td><td>LCM only</td><td>BI's own LCM, SubStd + Vacant, territory, protection</td><td>—</td></tr>
+            <tr><th>Rating type fallback</th><td>Blank → 1.0</td><td>Non-class → specific rate</td><td>—</td><td>Blank → 1.0</td><td>—</td></tr>
+            <tr><th>Cause-of-loss adjustment</th><td>Sprinkler, vandalism, policy form</td><td>Same; Valuable Papers → 0</td><td>Vandalism, policy form</td><td>Sprinkler, vandalism, Builders Risk</td><td>Vandalism only</td></tr>
+            <tr><th>Coinsurance</th><td>Four branches; 1150 / Functional → 1.0</td><td>Four branches; Functional → 1.0; reporting forced to 100%</td><td>Four branches, computed first</td><td>Inside the type-of-risk factor</td><td>Inside the type-of-risk factor</td></tr>
+            <tr><th>LOI</th><td>Four branches, one writes 0.0</td><td>Blanket / 1.0 / lookup</td><td>—</td><td>— (one BI factor instead)</td><td>— (one BI factor instead)</td></tr>
+            <tr><th>Deductible</th><td>250 / N/A / lookup / blank → 0</td><td>Copied from the building</td><td>250 / lookup / blank → 0</td><td>—</td><td>—</td></tr>
+            <tr><th>Coverage gate</th><td>Cause of loss not blank or N/A</td><td>No SCP or value-reporting form</td><td>Always on</td><td>Always on</td><td>Always on</td></tr>
+            <tr><th>Premium branches</th><td>Scheduled, Legal Liability, blanket, $0</td><td>Scheduled, Legal Liability, blanket, $0</td><td>Scheduled, blanket</td><td>Scheduled, blanket</td><td>Scheduled, blanket</td></tr>
+            <tr><th>Multi-premium credit</th><td>Applied (not on LL)</td><td>Applied (not on LL)</td><td>Applied</td><td>Not applied</td><td>Not applied</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="intro">
+        <h2>Editions: nothing changed</h2>
+        <p>All ten rule files (five rate chains, five premium files) are byte-identical in CW 2023-08 V04 and CW 2026-06, so every line number on this page holds for both. So are the countrywide tables: <code>BasicGroupIRate</code> (header-only in both), <code>BasicGroupIRateSpecialClass</code>, <code>SpecialClassDescriptionConvertedOption</code>, the coinsurance, deductible and LOI tables, and the five Business Income factor tables. CW 2026-06's rule changes are elsewhere: War and Military Action, Space Weather and Litigation Funding forms, plus Flood, Fire Department Charge, Peak Season and Vacancy Permit. Probes in OK, OH and IN gave the same Group I premium at both editions. Indiana's Business Income moved only because its own territory factor changed (1.429 to 1.4).</p>
+      </div>
+    </section>
+
+    <!-- ============================= REVIEW ============================= -->
+    <section class="sheet-view" id="view-review">
+      <div class="intro">
+        <h2>What the all-coverage page got wrong or left out for Basic Group I</h2>
+        <p><code>cf-rating-chains.html</code> drew one Basic Group I sheet per coverage from the CW 2026-06 rule XML. On 2026-10-06 those five sheets were removed and now link here. Items the engine confirmed are listed at the foot of each table.</p>
+      </div>
+      <div class="tablewrap">
+        <table class="grid">
+          <caption>Building</caption>
+          <thead><tr><th>#</th><th>All-coverage page said</th><th>Engine / XML shows</th><th>Kind</th></tr></thead>
+          <tbody>
+            <tr><th>1</th><td>Specific / Tentative rate "used as-is downstream"</td><td><strong>The cause-of-loss step, coinsurance, LOI and deductible all apply.</strong> Specific 0.300 prices $327.</td><td><span class="tag bad">correction</span></td></tr>
+            <tr><th>2</th><td>"other → Rate = 1.0", a dead end</td><td>It runs the full chain. A blank rating type prices $1,091 against $720.</td><td>incomplete</td></tr>
+            <tr><th>3</th><td>"BaseRate = 0.0" ends the chain</td><td>The 0 flows into the rate with the SubStd and Vacant add-ons; $0 only when those are 0 too</td><td>incomplete</td></tr>
+            <tr><th>4</th><td>Class gate reads ClassCode</td><td>It reads ClassCodeToUse, copied from ClassCode</td><td>clarified</td></tr>
+            <tr><th>5</th><td>Coinsurance skip leaves the factor "unchanged"</td><td>The skip sets it to 1.0</td><td>clarified</td></tr>
+            <tr><th>6</th><td>Coinsurance: lookup or "other tier"</td><td>Four branches: scheduled 80/90/100, blanket 80/90/100, 50/60/70/None (x1.5), else 1.0</td><td>incomplete</td></tr>
+            <tr><th>7</th><td>LOI one step</td><td>Four branches; the standard one writes 0.0 when the limit or construction is 0</td><td>missing</td></tr>
+            <tr><th>8</th><td>Deductible one unlabelled edge</td><td>250 / "Not Applicable" 1.0 / lookup / blank 0.0</td><td>missing</td></tr>
+            <tr><th>9</th><td>Blanket: total &gt; 0 else $0</td><td>An unmatched blanket ID is stopped earlier, at the coverage gate</td><td>clarified</td></tr>
+            <tr><th>10</th><td>"Leasehold Interest / other → $0"</td><td>Two exits: Leasehold, and a blank or odd IncludedInBlkt</td><td>clarified</td></tr>
+            <tr><th>11</th><td>No engine behaviour drawn</td><td>Zeros rate silently; refusals only at single-row lookups and AZ's credit</td><td>missing</td></tr>
+            <tr><td colspan="4">Confirmed: rule and premium line numbers, coverage gate, class rate formula, cause-of-loss formula, final rate, Builders Risk $0, scheduled and Legal Liability formulas, CA District note.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="tablewrap">
+        <table class="grid">
+          <caption>Personal Property</caption>
+          <thead><tr><th>#</th><th>All-coverage page said</th><th>Engine / XML shows</th><th>Kind</th></tr></thead>
+          <tbody>
+            <tr><th>12</th><td>Non-class items: BaseRate 0.0</td><td><strong>They have their own specific rate.</strong> A Specific building's contents price $253.</td><td><span class="tag bad">correction</span></td></tr>
+            <tr><th>13</th><td>"Class Rated Building Only" rated by its own rule file</td><td>It means no contents cover; no such file exists</td><td><span class="tag bad">correction</span></td></tr>
+            <tr><th>14</th><td>Blank building deductible gives Contents a silent $0</td><td>The policy now refuses at <code>DeductibleStatCode</code> (C28-05)</td><td>out of date</td></tr>
+            <tr><th>15</th><td>Rating type and class on the item</td><td>Both copied from the building; item values overwritten</td><td>missing</td></tr>
+            <tr><th>16</th><td>Protection class a plain multiplier</td><td>It has a 0.0 branch; no ProtectClass zeroes Contents</td><td>incomplete</td></tr>
+            <tr><th>17</th><td>Coinsurance "normal branch"</td><td>Functional → 1.0 (no 1150 test); then three lookups; no blanket branch</td><td>incomplete</td></tr>
+            <tr><th>18</th><td>Legal Liability premium, no formula</td><td>Limit/100 x r3(AddlInsInt x r3(0.5 x COLAdj)) x mods x cyber</td><td>incomplete</td></tr>
+            <tr><th>19</th><td>Forced-100% coinsurance "a real divergence"</td><td>The same conditions turn this coverage off; the factor feeds the reporting-form premiums only</td><td>clarified</td></tr>
+            <tr><th>20</th><td>Vault "= 0.50"</td><td>A table lookup (CW 0.5), class-rated only</td><td>clarified</td></tr>
+            <tr><th>21</th><td>Yard and Group gate</td><td>YARD needs class 1400/1650/1700 and a yard flag; construction 0 or blank Group → 0.0</td><td>clarified</td></tr>
+            <tr><th>22</th><td>Adjusted = LOI x COLAdj x Coins</td><td>Rounded r3(LOI x r3(COLAdj x Coins))</td><td>clarified</td></tr>
+            <tr><td colspan="4">Confirmed: line numbers, coverage gate, Valuable Papers carve-out, deductible copied four levels up, factors read nine levels up, blanket branch, empty CW BasicGroupIRate.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="tablewrap">
+        <table class="grid">
+          <caption>Special Class</caption>
+          <thead><tr><th>#</th><th>All-coverage page said</th><th>Engine / XML shows</th><th>Kind</th></tr></thead>
+          <tbody>
+            <tr><th>23</th><td>Cause of loss "enforced upstream by which coverage record exists"</td><td><strong>The record is always created.</strong> Group I prices on Basic, Broad and Special items alike.</td><td><span class="tag bad">correction</span></td></tr>
+            <tr><th>24</th><td>Blanket premium rounded once, one cyber factor</td><td>Rounded after every factor; two cyber factors ($50, not $49)</td><td><span class="tag bad">correction</span></td></tr>
+            <tr><th>25</th><td>Scheduled premium rounded once, one cyber factor</td><td>Same per-step rounding and two cyber factors; multi-premium credit applied</td><td><span class="tag bad">correction</span></td></tr>
+            <tr><th>26</th><td>Coinsurance one box</td><td>Four branches; blank gives 1.0 ($69)</td><td>incomplete</td></tr>
+            <tr><th>27</th><td>Base gate on option and protection band</td><td>A blank band becomes "9 to 10", so only a blank class description reaches 0.0</td><td>clarified</td></tr>
+            <tr><th>28</th><td>No refusal drawn</td><td>An unfiled class description refuses, as ISO does</td><td>missing</td></tr>
+            <tr><th>29</th><td>No sprinkler term (open question)</td><td>Confirmed from the XML; closed</td><td>clarified</td></tr>
+            <tr><th>30</th><td>No LOI factor (open question)</td><td>Confirmed from the XML; closed</td><td>clarified</td></tr>
+            <tr><th>31</th><td>Blanket total from the item</td><td>Overwritten from the policy blanket record; with none it prices $0</td><td>clarified</td></tr>
+            <tr><th>32</th><td>Blank IncludedInBlkt not drawn</td><td>Takes the scheduled branch ($66)</td><td>missing</td></tr>
+            <tr><td colspan="4">Confirmed: line numbers, coinsurance first, lookup keys with no construction, Rate = Base x LCM, deductible branches, final rate with no multi-residential credit, two premium branches, unused ProtectionClassFactor.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="tablewrap">
+        <table class="grid">
+          <caption>Business Income</caption>
+          <thead><tr><th>#</th><th>All-coverage page said</th><th>Engine / XML shows</th><th>Kind</th></tr></thead>
+          <tbody>
+            <tr><th>33</th><td>"Blanket/max-period" branch, a blanket aggregate</td><td><strong>Not blanket.</strong> The location's highest Group I rate among buildings in the operational unit.</td><td><span class="tag bad">correction</span></td></tr>
+            <tr><th>34</th><td>Coinsurance, LOI and deductible "collapse into this Factor"</td><td><strong>Coinsurance is priced in the factor; there is no deductible and no LOI table.</strong></td><td><span class="tag bad">correction</span></td></tr>
+            <tr><th>35</th><td>"3-step chain"</td><td>The master rule holds 3 of 6 steps to premium</td><td><span class="tag bad">correction</span></td></tr>
+            <tr><th>36</th><td>Three rate branches</td><td>A fourth: blank rating type → 1.0 ($550 against $163)</td><td>missing</td></tr>
+            <tr><th>37</th><td>Factor pick never fails</td><td>MaxPeriod with Extra Expense Only, or an unknown type of risk, refuses (ISO too)</td><td>missing</td></tr>
+            <tr><th>38</th><td>Scheduled premium x cyber</td><td>Two cyber factors</td><td>incomplete</td></tr>
+            <tr><th>39</th><td>Blanket premium, no formula</td><td>Uses BlktBasicGroupIAvgRate x value share x blanket limit; FinalRate not read</td><td>incomplete</td></tr>
+            <tr><th>40</th><td>No zero from rate inputs</td><td>No territory or no specific rate: Building and BI both $0, "rated"</td><td>missing</td></tr>
+            <tr><th>41</th><td>BaseRateAdjustmentFactor lookup</td><td>CW table empty; state rows (IN 0.85); skipped on the 1.0 branch</td><td>clarified</td></tr>
+            <tr><th>42</th><td>Same shape as Building's class rate</td><td>BI applies its own LCM; rounding per step</td><td>clarified</td></tr>
+            <tr><th>43</th><td>"Always priced if the record exists"</td><td>The record always exists; the BI ruleset creates it</td><td>clarified</td></tr>
+            <tr><td colspan="4">Confirmed: line numbers, always-on gate, branch test, class and specific branches, cause-of-loss formula, factor priority order, unused multi-premium credit, two premium branches, blanket $0.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="tablewrap">
+        <table class="grid">
+          <caption>Special Class Business Income</caption>
+          <thead><tr><th>#</th><th>All-coverage page said</th><th>Engine / XML shows</th><th>Kind</th></tr></thead>
+          <tbody>
+            <tr><th>44</th><td>Copies the item's "already fully-rated" rate</td><td><strong>Copies base x LCM, before vandalism, policy form, coinsurance and deductible.</strong> 0.07, not the final 0.066.</td><td><span class="tag bad">correction</span></td></tr>
+            <tr><th>45</th><td>"Tightest dependency"; waits for the item's finished chain</td><td>Needs only the item's third step</td><td><span class="tag bad">correction</span></td></tr>
+            <tr><th>46</th><td>Else branch is "IncludedInBlkt = Yes"</td><td>Anything but "No", including blank, which prices $0</td><td><span class="tag bad">correction</span></td></tr>
+            <tr><th>47</th><td>Factor pick in priority order</td><td>A blank monthly limit matches the monthly test and prices $0</td><td>incomplete</td></tr>
+            <tr><th>48</th><td>Extra Expense factor</td><td>No limit-on-loss gives 0.0 and $0</td><td>missing</td></tr>
+            <tr><th>49</th><td>Master chain "2 steps"</td><td>Factor and final rate are set later, at :5824 and :6933</td><td>clarified</td></tr>
+            <tr><th>50</th><td>Vandalism only (open question)</td><td>Confirmed; it is the record's own vandalism factor</td><td>clarified</td></tr>
+            <tr><th>51</th><td>Blanket premium "byte-shape-identical"</td><td>Formula now drawn</td><td>clarified</td></tr>
+            <tr><th>52</th><td>Delta: borrows the final rate, adds a COL multiplier</td><td>Borrows base x LCM, then its own vandalism and a BI factor</td><td><span class="tag bad">correction</span></td></tr>
+            <tr><th>53</th><td>Two cyber factors not named</td><td>Policy BGI factor x the record's own COL-exceptions factor</td><td>clarified</td></tr>
+            <tr><td colspan="4">Confirmed: always-on gate, null-then-copy rate rule (a submitted rate is kept), no adjustment table, final rate with no coinsurance, LOI or deductible, scheduled premium with no multi-premium credit.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="intro"><p>The same wrong claims about Special Class Business Income sit in <code>CauseOfLoss_SpecialClassBusinessIncome_RatingAlgorithms.md</code> and the chunk 7 notes. This page corrects the drawing only; those documents are unchanged.</p></div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="doc-footer">
+  Sources: the built engine (<strong>cf_engine</strong> / interpreter at 542f0e1), probed offline on 2026-10-06 with no calls to ISO: Building and Personal Property in OK, Special Class and Special Class Business Income in OH, Business Income in IN, each at a date resolving CW 2023-08 V04 and one resolving CW 2026-06 (AZ for the C28-17 credit refusal). The blanket Business Income formula and the Builders Risk reporting branches come from the XML only. ISO rule XML is under <code>F:\ISO_ERC_Files\CF</code>. Companion docs are in <code>CF_Algorithm</code>: <code>CauseOfLoss_*_RatingAlgorithms.md</code> and <code>BasicGroupI_ERC_Tables.md</code>.
+</footer>
+
+<script>
+  (function () {
+    var toc = document.getElementById('toc');
+    var main = document.getElementById('main');
+
+    function activate(target) {
+      var views = main.querySelectorAll('.sheet-view');
+      for (var i = 0; i < views.length; i++) views[i].classList.remove('active');
+      var view = document.getElementById('view-' + target);
+      if (view) view.classList.add('active');
+
+      var links = toc.querySelectorAll('.navlink');
+      for (var j = 0; j < links.length; j++) {
+        links[j].classList.toggle('active', links[j].getAttribute('data-target') === target);
+      }
+      main.scrollTop = 0;
+      window.scrollTo(0, 0);
+    }
+
+    document.addEventListener('click', function (e) {
+      var btn = e.target.closest('button[data-target]');
+      if (btn) activate(btn.getAttribute('data-target'));
+    });
+
+    var hash = location.hash.slice(1);
+    if (hash && document.getElementById('view-' + hash)) activate(hash);
+  })();
+</script>
+
+<style>.mermaid-rendering .sheet-view{display:block!important}</style>
+<script type="module">
+  // Render every diagram once, with all sheets briefly visible so hidden tabs get real sizes.
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({ startOnLoad: false, securityLevel: "strict", flowchart: { wrappingWidth: 260 } });
+  document.documentElement.classList.add("mermaid-rendering");
+  try { await mermaid.run({ querySelector: "pre.mermaid" }); }
+  finally { document.documentElement.classList.remove("mermaid-rendering"); }
+</script>
+</body>
+</html>

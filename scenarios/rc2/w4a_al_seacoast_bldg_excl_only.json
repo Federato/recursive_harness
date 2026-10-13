@@ -1,0 +1,68 @@
+{
+ "name": "rc2_w4a_al_seacoast_bldg_excl_only",
+ "states": [
+  "AL"
+ ],
+ "edits": [
+  {
+   "sheet": "IN - Schedule",
+   "cell": "C5",
+   "value": "AL"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "D5",
+   "value": 35004
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "G5",
+   "value": "Birmingham"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "I5",
+   "value": "Beach Territory"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "J5",
+   "value": "Jefferson"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "H5",
+   "r1c1": "=IF(RC3=\"NY\",IF(OR(RC17=\"\",RC17=\"Not Applicable\"),\"Select\",IFERROR(VLOOKUP(RC17,'TBL - NYCounty'!R2C1:R63C3,3,FALSE),\"Select\")),IF(RC3=\"AK\",IF(OR(RC15=\"\",RC15=\"Not Applicable\"),\"Select\",IFERROR(VLOOKUP(RC15&\"|\"&IF(RC15=\"Remainder of State\",RC16,\"Not Applicable\"),'TBL - AKRatingArea'!R2C1:R12C5,5,FALSE),\"Select\")),IF(RC3=\"CA\",\"Select\",\"Not Applicable\")))"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "O5",
+   "value": "Not Applicable"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "P5",
+   "value": "Not Applicable"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "Q5",
+   "value": "Not Applicable"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "I5",
+   "value": "Seacoast Territory"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "AE48",
+   "value": "Yes"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "N177",
+   "value": "No"
+  }
+ ]
+}

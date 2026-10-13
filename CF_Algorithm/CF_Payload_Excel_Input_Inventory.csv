@@ -1,0 +1,158 @@
+Sheet,LabelCell,Row,Label,Kind,FirstValueCell,SampleValue
+Policy Inputs,B2,2,Policy Inputs,SECTION,,
+Policy Inputs,B3,3,Policy Type:,FIELD,C3,Commercial Property Policy
+Policy Inputs,B4,4,Building Coverage Type:,FIELD,C4,Building
+Policy Inputs,B5,5,Contents Coverage Type:,FIELD,C5,All Personal Property
+Policy Inputs,B6,6,Business Income Coverage Type:,FIELD,C6,Business Income Without Extra Expense
+Policy Inputs,B7,7,Cause of Loss:,FIELD,C7,Special
+Policy Inputs,B8,8,Policy Deductible:,FIELD,C8,"2,500"
+Policy Inputs,B9,9,Windstorm or Hail Deductible:,FIELD,C9,Not Applicable
+Policy Inputs,B10,10,Theft Deductible:,FIELD,C10,"2,500"
+Policy Inputs,B11,11,Valuation:,FIELD,C11,Actual Cash Value
+Policy Inputs,B12,12,Building Coinsurance:,FIELD,C12,0.8
+Policy Inputs,B13,13,Contents Coinsurance:,FIELD,C13,0.8
+Policy Inputs,B14,14,Business Income Coinsurance:,FIELD,C14,0.8
+Policy Inputs,B16,16,Exclusions,SECTION,,
+Policy Inputs,B17,17,Windstorm or Hail Exclusion:,FIELD,C17,No
+Policy Inputs,B18,18,Vandalism Exclusion:,FIELD,C18,No
+Policy Inputs,B19,19,Theft Exclusion:,FIELD,C19,Yes
+Policy Inputs,E2,2,Cyber Incident Exclusion,SECTION,,
+Policy Inputs,E3,3,Cyber Incident Exclusion:,FIELD,F3,Yes
+Policy Inputs,E4,4,With Ensuing Cause of Loss Exceptions:,FIELD,F4,Yes
+Policy Inputs,E5,5,Property Damage Sublimit:,FIELD,F5,500000.0
+Policy Inputs,E6,6,Aggregate Limit:,FIELD,F6,500000.0
+Location Inputs,B3,3,Building Information,SECTION,,
+Location Inputs,B4,4,Location #:,FIELD,C4,1.0
+Location Inputs,B5,5,Building #:,FIELD,C5,1.0
+Location Inputs,B6,6,Item ID:,FIELD,C6,1 - 1
+Location Inputs,B7,7,Coverage Types,SECTION,,
+Location Inputs,B8,8,Building Coverage Type:,FIELD,C8,Legal Liability
+Location Inputs,B9,9,Personal Property Coverage Type:,FIELD,C9,All Personal Property
+Location Inputs,B10,10,Personal Property Coverage Form:,FIELD,C10,Legal Liability Coverage Form
+Location Inputs,B11,11,Business Income Coverage Type:,FIELD,C11,Business Income Without Extra Expense
+Location Inputs,B12,12,Location Info,SECTION,,
+Location Inputs,B13,13,Zip Code:,FIELD,C13,32809.0
+Location Inputs,B14,14,City:,FIELD,C14,Orlando
+Location Inputs,B15,15,State:,FIELD,C15,FL
+Location Inputs,B16,16,Territory Information,SECTION,,
+Location Inputs,B17,17,BGI Territory:,FIELD,C17,Miami
+Location Inputs,B18,18,"District (Alaska, California, New York):",FIELD,C18,Not Applicable
+Location Inputs,B19,19,BGII Territory:,FIELD,C19,Inland
+Location Inputs,B20,20,Special Territory:,FIELD,C20,Miami-Dade
+Location Inputs,B21,21,Protection & Construction Characteristics,SECTION,,
+Location Inputs,B22,22,Protection Class:,FIELD,C22,4
+Location Inputs,B23,23,Building Code Effectiveness Grade (BCEG):,FIELD,C23,1
+Location Inputs,B24,24,Limitations on Coverage for Roof Surfacing:,FIELD,C24,Paragraph A and B
+Location Inputs,B25,25,Classification Information,SECTION,,
+Location Inputs,B26,26,Building Class Code:,FIELD,C26,0311
+Location Inputs,B27,27,Tenants Class Code:,FIELD,C27,0520
+Location Inputs,B28,28,Rating Type:,FIELD,C28,Specific
+Location Inputs,B29,29,Class Description:,FIELD,C29,Apartments without Mercantile Occupancies - Up to 10 Units
+Location Inputs,B30,30,Yard Property Description,FIELD,C30,Not Applicable
+Location Inputs,B31,31,Occupancy Information,SECTION,,
+Location Inputs,B32,32,Occupancy Category:,FIELD,C32,Residential Apartments and Condominiums
+Location Inputs,B33,33,Occupancy Severity:,FIELD,C33,Not Applicable
+Location Inputs,B34,34,Contents Group:,FIELD,C34,Not Applicable
+Location Inputs,B35,35,Time Element Details,SECTION,,
+Location Inputs,B36,36,Business Income Type of Risk:,FIELD,C36,Rental Properties
+Location Inputs,B37,37,Percentage (Type 1):,FIELD,C37,1.0
+Location Inputs,B38,38,Percentage (Type 2):,FIELD,C38,0.0
+Location Inputs,B39,39,Max Period of Indemnity:,FIELD,C39,Yes
+Location Inputs,B40,40,Monthly Limit of Indemnity:,FIELD,C40,Not Applicable
+Location Inputs,B41,41,Extra Expense Loss Payment Schedule:,FIELD,C41,Not Applicable
+Location Inputs,B42,42,Limits & Specific/Tentative Rates,SECTION,,
+Location Inputs,B43,43,Building Limit:,FIELD,C43,675000.0
+Location Inputs,B44,44,Building Specific/Tentative Rate:,FIELD,C44,0.25
+Location Inputs,B45,45,Contents Limit:,FIELD,C45,515000.0
+Location Inputs,B46,46,Contents Specific/Tentative Rate:,FIELD,C46,0.175
+Location Inputs,B47,47,Business Income Limit:,FIELD,C47,275500.0
+Location Inputs,B48,48,Business Income Specific/Tentative Rate:,FIELD,C48,0.25
+Location Inputs,B49,49,Cause of Loss,SECTION,,
+Location Inputs,B50,50,Cause of Loss:,FIELD,C50,Special
+Location Inputs,B51,51,Deductibles,SECTION,,
+Location Inputs,B52,52,Deductible:,FIELD,C52,"2,500"
+Location Inputs,B53,53,Windstorm or Hail Deductible:,FIELD,C53,Not Applicable
+Location Inputs,B54,54,Theft Deductible:,FIELD,C54,"2,500"
+Location Inputs,B55,55,Per Location Deductible:,FIELD,C55,No
+Location Inputs,B56,56,Multi Residential Property Special Credits,SECTION,,
+Location Inputs,B57,57,Multi Residential Property Special Credits:,FIELD,C57,"Yes, under single supervision, maintenance and control"
+Location Inputs,B58,58,Location of Heating Plant:,FIELD,C58,Yes
+Location Inputs,B59,59,Construction Information,SECTION,,
+Location Inputs,B60,60,Construction Code:,FIELD,C60,2.0
+Location Inputs,B61,61,Description:,FIELD,C61,Joisted Masonry
+Location Inputs,B62,62,Construction Type:,FIELD,C62,Joisted Masonry - Reinforced
+Location Inputs,B63,63,Number of Stories:,FIELD,C63,1-3
+Location Inputs,B64,64,Construction Symbol:,FIELD,C64,AB
+Location Inputs,B65,65,Open Sides:,FIELD,C65,Yes
+Location Inputs,B66,66,Valuation & Coinsurance,SECTION,,
+Location Inputs,B67,67,Valuation:,FIELD,C67,Actual Cash Value
+Location Inputs,B68,68,Building Coinsurance:,FIELD,C68,0.8
+Location Inputs,B69,69,Contents Coinsurance:,FIELD,C69,0.8
+Location Inputs,B70,70,Business Income Coinsurance:,FIELD,C70,0.8
+Location Inputs,B71,71,Sprinkler System & Leakage,SECTION,,
+Location Inputs,B72,72,Sprinkler System:,FIELD,C72,"Sprinklered Building, but Not Rated as Sprinklered"
+Location Inputs,B73,73,Sprinkler Leakage Excluded:,FIELD,C73,Yes
+Location Inputs,B74,74,Exclusions,SECTION,,
+Location Inputs,B75,75,Windstorm or Hail Exclusion:,FIELD,C75,No
+Location Inputs,B76,76,Vandalism Exclusion:,FIELD,C76,No
+Location Inputs,B77,77,Theft Exclusion:,FIELD,C77,Yes
+Location Inputs,B78,78,Sub Standard Conditions,SECTION,,
+Location Inputs,B79,79,Sub Standard Condition - Heating and Cooking:,FIELD,C79,No
+Location Inputs,B80,80,Sub Standard Condition - Wiring:,FIELD,C80,Yes
+Location Inputs,B81,81,Sub Standard Condition - Conversion:,FIELD,C81,No
+Location Inputs,B82,82,Sub Standard Condition - Physical Condition & Housekeeping:,FIELD,C82,Yes
+Location Inputs,B83,83,Sub Standard Condition - Exposure:,FIELD,C83,No
+Location Inputs,B84,84,Vacancy,SECTION,,
+Location Inputs,B85,85,Vacancy:,FIELD,C85,Yes
+Location Inputs,B86,86,Watchman & Burglary Systems,SECTION,,
+Location Inputs,B87,87,Type of Watchman Service:,FIELD,C87,Not Applicable
+Location Inputs,B88,88,Type of Burglary Alarm System:,FIELD,C88,Not Applicable
+Location Inputs,B89,89,Burglary System Range:,FIELD,C89,1.00 - 1.00
+Location Inputs,B90,90,Selected Burglary System Factor:,FIELD,C90,1.0
+Location Inputs,B91,91,Legal Liability Additional Insurable Interests,SECTION,,
+Location Inputs,B92,92,Additional Insurable Interest Option:,FIELD,C92,Option 1
+Location Inputs,B93,93,Description:,FIELD,C93,"General Lessees, Managers or Operators of Premises — in poli"
+Special Class Inputs,B3,3,Item Information,SECTION,,
+Special Class Inputs,B4,4,Location #:,FIELD,C4,1.0
+Special Class Inputs,B5,5,Item #:,FIELD,C5,1.0
+Special Class Inputs,B6,6,Item ID:,FIELD,C6,1 - 1
+Special Class Inputs,B7,7,Zip Code:,FIELD,C7,32809.0
+Special Class Inputs,B8,8,City:,FIELD,C8,Orlando
+Special Class Inputs,B9,9,State:,FIELD,C9,FL
+Special Class Inputs,B10,10,Item Description,FIELD,C10,Artificial Turf
+Special Class Inputs,B11,11,Coverage Terms,SECTION,,
+Special Class Inputs,B12,12,Cause of Loss:,FIELD,C12,Special
+Special Class Inputs,B13,13,Included in Blanket:,FIELD,C13,No
+Special Class Inputs,B14,14,Special Valuation Type:,FIELD,C14,Actual Cash Value
+Special Class Inputs,B15,15,Special Agreed Value:,FIELD,C15,Not Applicable
+Special Class Inputs,B16,16,Special Class Building Coinsurance:,FIELD,C16,0.8
+Special Class Inputs,B17,17,Special Class Contents Coinsurance:,FIELD,C17,0.8
+Special Class Inputs,B18,18,Special Class Business Income Coinsurance:,FIELD,C18,0.8
+Special Class Inputs,B19,19,Special Class Building Limit:,FIELD,C19,513000.0
+Special Class Inputs,B20,20,Special Class Business Income Limit:,FIELD,C20,213000.0
+Special Class Inputs,B21,21,Limit Included in Building?,FIELD,C21,No
+Special Class Inputs,B22,22,Linked Building Item ID,FIELD,C22,N/A
+Special Class Inputs,B23,23,Building ID Found?,FIELD,C23,n/a
+Special Class Inputs,B24,24,Deductible:,FIELD,C24,"2,500"
+Special Class Inputs,B25,25,Deductible By Location:,FIELD,C25,Yes
+Special Class Inputs,B26,26,Protection Class & Vandalism,SECTION,,
+Special Class Inputs,B27,27,Protection Class:,FIELD,C27,5
+Special Class Inputs,B28,28,Vandalism Exclusion:,FIELD,C28,Yes
+Special Class Inputs,B29,29,Windstorm/Hail Inputs,SECTION,,
+Special Class Inputs,B30,30,BGII Territory:,FIELD,C30,Inland
+Special Class Inputs,B31,31,Construction Symbol:,FIELD,C31,B
+Special Class Inputs,B32,32,Windstorm/Hail Exclusion:,FIELD,C32,No
+Special Class Inputs,B33,33,Windstorm/Hail Deductible:,FIELD,C33,"2,500"
+Special Class Inputs,B34,34,Theft Inputs,SECTION,,
+Special Class Inputs,B35,35,Theft Exclusion:,FIELD,C35,Yes
+Special Class Inputs,B36,36,Theft Deductible:,FIELD,C36,"2,500"
+Special Class Inputs,B37,37,Business Income Inputs,SECTION,,
+Special Class Inputs,B38,38,Coverage Type:,FIELD,C38,Business Income Without Extra Expense
+Special Class Inputs,B39,39,Type of Risk:,FIELD,C39,Rental Properties
+Special Class Inputs,B40,40,Percentage (Type 1):,FIELD,C40,1.0
+Special Class Inputs,B41,41,Percentage (Type 2):,FIELD,C41,0.0
+Special Class Inputs,B42,42,Business Income Limit:,FIELD,C42,223000.0
+Special Class Inputs,B43,43,Indemnity Inputs,SECTION,,
+Special Class Inputs,B44,44,Max Period of Indemnity:,FIELD,C44,No
+Special Class Inputs,B45,45,Monthly Limit of Indemnity:,FIELD,C45,Not Applicable
+Special Class Inputs,B46,46,Extra Expense Loss Payment Schedule:,FIELD,C46,Not Applicable
