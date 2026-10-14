@@ -211,7 +211,7 @@ class Kernel:
             if hasattr(interp.deps, "finalize"):
                 interp.deps.finalize(data)
         except Exception as exc:                     # noqa: BLE001 - reported
-            result.stopped = exc
+            result.stopped = self._ilf_override_needed(data, exc) or exc
             return result
 
         try:
@@ -343,6 +343,51 @@ class Kernel:
             f"{m.name} is required{' when ' + m.condition if m.condition else ''} and was not supplied{others}. "
             f"ISO's form requires it and the premium depends on it: left out, the rules price the risk as if it "
             f"were absent, with no message (ISO's own service does the same). Supply it to rate (OI-134).")
+
+    # ------------------------------------------- OI-129, LoED refer-to-company
+
+    #: The Loss of Electronic Data hosts whose `SetILF` copies `ILFOverride` in a refer band.
+    LOED_HOSTS = ("GeneralLiabilityClassificationLossOfElectronicDataPremOpsCoverage",
+                  "GeneralLiabilityClassificationLossOfElectronicDataProdsCompldOpsCoverage")
+
+    @classmethod
+    def _ilf_override_needed(cls, data: Node, exc: Exception) -> "RatingError | None":
+        """A Loss of Electronic Data limit in a refer band, with no `ILFOverride`, refuses by name. **OI-129.**
+
+        `SetILF`'s first branch fires when the (limit, aggregate) pair falls in one of 13 filed "refer to company"
+        bands -- $100,000 under a standard $2,000,000 aggregate is one -- and copies the submitted `ILFOverride`.
+        Left out, `ILF` is null and the rating stops at `SetFinalILF` with a bare null-in-arithmetic, before
+        `DoMessageILF` can say why. ISO's service (2 calls, IL@20270401, 2026-10-14) prices both hosts at
+        `FinalILF 0`, LoED $0, and raises the error quoted below; with the override it matches us to the dollar.
+
+        **Observed, not re-derived:** the bands are not copied here. This reads what ISO's rule did -- a host
+        whose `ILF` was written null with no override answered -- and only turns that one stop into a refusal.
+        ISO's schema cannot say it: it marks `ILFOverride` required whenever LoED applies, band or not.
+        """
+        from ..interp.values import NullInArithmetic
+        from ..schema.validate import _unanswered
+        if not isinstance(exc, NullInArithmetic):
+            return None
+        hosts = []
+
+        def walk(node):
+            for child in node.children:
+                if child.tag in cls.LOED_HOSTS:
+                    ilf = child.first("ILF")
+                    if ilf is not None and ilf.text is None and _unanswered(child.first("ILFOverride")):
+                        hosts.append(f"{child.tag}.ILFOverride")
+                walk(child)
+
+        walk(data)
+        if not hosts:
+            return None
+        return RatingError(
+            f"{', '.join(dict.fromkeys(hosts))} is required: the Loss of Electronic Data limit and the aggregate "
+            f"fall in a filed refer-to-company band, where ISO's rules take the ILF from the submission. ISO's "
+            f"service says \"The ILF for The Loss of Electronic data Limit and the General Aggregate Limit is refer "
+            f"to company, please enter the ILF override\" and prices Loss of Electronic Data at $0. Supply the "
+            f"company's ILF to rate; the Products/Completed Operations host reads the same bands against its own "
+            f"aggregate (OI-129).")
 
     # ------------------------------------------------------ OI-94, the refusal
 

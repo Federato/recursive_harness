@@ -505,10 +505,45 @@ def group_j():
           f"{r.premium if r.complete else str(r.stopped)[:80]}; LPW {lpw}")
 
 
+def group_k():
+    print("\nK  LOSS OF ELECTRONIC DATA IN A REFER BAND (OI-129, B-09)")
+    import copy
+    from variants import Declared
+    k = Kernel(resolver=RESOLVER)
+    hosts = Kernel.LOED_HOSTS
+
+    def loed(juris, asof, limit, override=None):
+        p = copy.deepcopy(Declared(juris, asof).base())
+        g = p["body"]["GeneralLiability"][0]
+        g["LossOfElectronicDataCoverageApplies"] = "Yes"
+        g["GeneralLiabilityLossOfElectronicDataFromPhysicalInjuryToTangiblePropLiabCovSubToCyberIncidentExcl"] = [
+            {"LossOfElectronicDataLimit": limit}]
+        if override is not None:
+            c = g["GeneralLiabilityLocation"][0]["GeneralLiabilityClassification"][0]
+            for h in hosts:
+                c.setdefault(h, {})["ILFOverride"] = override
+        return p
+
+    for mode in ("strict-erc", "underwriting"):
+        r = Kernel(mode=mode, resolver=RESOLVER).rate(loed("IL", "20270401", "100,000"))
+        check(f"K1 {mode}: $100,000 under a $2M aggregate with no ILFOverride refuses by name (it stopped on a bare "
+              f"null; ISO prices LoED $0 with 'please enter the ILF override')",
+              not r.complete and f"{hosts[0]}.ILFOverride is required" in str(r.stopped), str(r.stopped)[:90])
+    r = k.rate(loed("IL", "20270401", "100,000", 1.1))
+    check("K2 with ILFOverride 1.1 it rates as ISO does: $8,387 (ISO 2026-10-14)",
+          r.complete and r.premium == Decimal("8387"), f"{r.premium if r.complete else str(r.stopped)[:80]}")
+    r = k.rate(loed("IL", "20270401", "200,000"))
+    check("K3 $200,000 is no refer band: rates without an override, $8,387", r.complete and r.premium == Decimal("8387"),
+          f"{r.premium if r.complete else str(r.stopped)[:80]}")
+    r = k.rate(loed("TX", "20261002", "100,000"))
+    check("K4 last edition (TX 2026-10-02) refuses the same way", f"{hosts[0]}.ILFOverride is required" in str(r.stopped),
+          str(r.stopped)[:90])
+
+
 def main() -> int:
     print("Stage 4 acceptance -- schemas and payloads")
     group_a(); group_b(); group_b2(); group_c(); group_d(); group_e()
-    group_f(); group_g(); group_h(); group_i(); group_j()
+    group_f(); group_g(); group_h(); group_i(); group_j(); group_k()
     total = len(PASS) + len(FAIL)
     print(f"\n{len(PASS)}/{total} passed")
     if FAIL:

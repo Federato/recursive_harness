@@ -293,8 +293,10 @@ to a required submission field plus a guard, not an unimplemented gap.
 
 **Engine behaviour.** A band hit without `ILFOverride` copies a null `ILF`, and the engine refuses to
 coerce it: the rating stops **INCOMPLETE** (*"null reached arithmetic ... at Subtract"*, in
-`SetFinalILF`) before `DoMessageILF` can run -- in both `strict-erc` and `underwriting` modes, with no
-referral-register code raised. Note the bands bite at ordinary limits: a $100,000 LoED limit under a
+`SetFinalILF`) before `DoMessageILF` can run -- in both `strict-erc` and `underwriting` modes. **Since
+2026-10-14 (OI-129, B-09) that stop is a named refusal** (`...Coverage.ILFOverride is required`, quoting ISO's
+message). ISO's own service (IL@20270401, 2 calls) prices LoED $0 there, `FinalILF 0`, and returns that
+message as an error; with the override it matches the engine exactly ($8,387). Note the bands bite at ordinary limits: a $100,000 LoED limit under a
 standard $2,000,000 general aggregate is a refer (IL@20270401, reproduced). Supplying
 `ILFOverride` on each host's coverage record rates normally (IL@20270401: `ILF = 1.1` / `1.05` copied).
 
@@ -414,7 +416,7 @@ Gate           = SetCoverageOnPolicyIndicator: schedule present AND LossOfElectr
 Limit          = LossOfElectronicDataLimit                          [from CG 04 37 / CG 04 71 / CG 04 95 schedule]
 
 ILF            = ILFOverride                                        if (Limit, aggregate) hits one of 13 filed "refer" bands
-                                                                    [engine: null override -> INCOMPLETE stop]
+                                                                    [engine: null override -> refused by name, OI-129]
                | LookupILFPremOps|Prods(host table assignment, Limit[+" CSL" pre-2027], host aggregate)   [host's own ILF table]
                | 0.0
 
