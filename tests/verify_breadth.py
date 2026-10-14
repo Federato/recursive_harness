@@ -332,9 +332,11 @@ def main() -> int:
     # edition filed and never reach the field at all.
     # CA 7586 -> 7611 on 2026-10-14 (B-38): GL CA 20270101 V01, a package the
     # corpus lacked, now in it; ISO rates the same request $7,611 on it.
+    # NJ 9444 -> 10429 (GL NJ 20270101 V03) and RI 8715 -> 8695 (GL RI 20270401
+    # V03), the same day: ISO's own figures for these requests on those packages.
     expected_cliff = {
-        "NY": "12141", "CA": "7611", "NJ": "9444", "OH": "7670", "TX": "7740",
-        "FL": "8610", "PA": "10570", "GA": "7366", "RI": "8715", "MT": "8539",
+        "NY": "12141", "CA": "7611", "NJ": "10429", "OH": "7670", "TX": "7740",
+        "FL": "8610", "PA": "10570", "GA": "7366", "RI": "8695", "MT": "8539",
         "WY": "8245", "DE": "8320",
     }
     check("E13 ...and the premiums are the exact figures measured when this "
