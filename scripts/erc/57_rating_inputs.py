@@ -80,7 +80,12 @@ ADD_FIELDS = ("GeneralLiabilityClassification.PremOpsIncrdLimitTableAssignmentOv
               # prices $0 without its participation or its manual premium -- unlike the other ManualPremiums, an
               # optional extra charge, this one IS the endorsement's price
               "GeneralLiability.ProductWithdrawalParticipationPercentage",
-              "GeneralLiabilityLimitedProductWithdrawalExpenseEndtPolLvl.ManualPremium")
+              "GeneralLiabilityLimitedProductWithdrawalExpenseEndtPolLvl.ManualPremium",
+              # B-37 (2026-10-14): ISO files no rates for Pollution, UST or Electronic Data Liability; each coverage is
+              # its manual premium x the mods, so left out it is free
+              "GeneralLiabilityClassification.GeneralLiabilityClassificationPollutionCoverage.ManualPremium",
+              "GeneralLiabilityClassification.GeneralLiabilityClassificationUndergroundStorageTankCoverage.ManualPremium",
+              "GeneralLiabilityClassification.GeneralLiabilityClassificationElectronicDataLiabilityCoverage.ManualPremium")
 
 #: List fields decided rather than measured (B-29 E, 2026-10-14): an answer off ISO's list for the edition refuses by
 #: name. The 2027 Limited Product Withdrawal deductibles drop "Per Occurrence", so last edition's "1,000 Per
@@ -115,6 +120,8 @@ NOT_REFUSED = {
     "GeneralLiabilityClassification.ProdsCompldOpsPDDeductible": "prices as No Deductible",
     "GeneralLiability.ProdsWithdrawalCoverage": "prices as No",
     "GeneralLiabilityLimitedProductWithdrawalExpenseEndtPolLvl.Deductible": "prices as No Deductible",
+    "GeneralLiability.GeneralLiabilityMedPayCoverage.Limit": "prices as the $5,000 basic limit, the manual's included limit (B-37)",
+    "GeneralLiability.GeneralLiabilityTerrorismEndorsementCoverage.CertifiedActsofTerrorismExposureClassFactor": "R31 flags it (notice; referral in underwriting) (B-37)",
     "GeneralLiability.StopGap": "refused already when Stop Gap details are sent (B-07)",
     "GeneralLiabilityStopGapEmployersLiabilityCoverageEndorsementPolLvl.LimitBodilyInjuryByDiseaseEachEmployee":
         "refused already: limits ISO does not rate, no ManualPremium (B-07)",
@@ -209,6 +216,45 @@ def _built(name, date):
         r["LimitBodilyInjuryByDiseaseEachEmployee"] = "500,000" if date >= "20270401" else "500,000 BI"
         r["ManualPremium"] = 250.0
         return p
+    if name in ("Pollution-OH", "UST-OH", "EDL-OH"):   # B-13 / B-37: ISO files no rates; manual premium x mods
+        sub, cov, pol, cls = {
+            "Pollution-OH": ("Pollution", "GeneralLiabilityClassificationPollutionCoverage",
+                             {"EachPollutionIncidentLimit": "1,000,000", "PollutionAggregateLimit": "1,000,000",
+                              "PollutionCoverageForm": "Claims Made", "PollutionCleanUpCoverage": "No",
+                              "RetroactiveDateApplies": "No"},
+                             {"PollutionPremiumBasis": "Number of Tanks", "PollutionExposure": 2}),
+            "UST-OH": ("Underground Storage Tank", "GeneralLiabilityClassificationUndergroundStorageTankCoverage",
+                       {"USTAggregateLimit": "1,000,000", "USTCoverageForm": "Claims Made", "RetroactiveDateApplies": "No"},
+                       {"USTPremiumBasis": "Number of Tanks", "USTExposure": 2}),
+            "EDL-OH": ("Electronic Data Liability", "GeneralLiabilityClassificationElectronicDataLiabilityCoverage",
+                       {"EachElectronicDataIncidentLimit": "1,000,000"}, {"EDLExposure": 1}),
+        }[name]
+        p = WB.build("GL", "OH", {"effective_date": date})
+        g = _gl(p)
+        g["Subline"] = sub
+        g.update(pol)
+        for loc in g["GeneralLiabilityLocation"]:
+            if sub == "Pollution":
+                loc["PollutionTerritory"] = "999"
+            for c in loc["GeneralLiabilityClassification"]:
+                c.update(cls)
+                c[cov] = {"ManualPremium": 1000.0}
+        return p
+    if name == "SPH-NY":                      # B-13 / B-37: NY Special Protective & Highway (loss costs filed 0)
+        p = WB.build("GL", "NY", {"effective_date": date})
+        g = _gl(p)
+        g.update(Subline="Special Protective And Highway", OwnersContractorsEachOccurrenceLimit="1,000,000",
+                 OwnersContractorsAggregateLimit="2,000,000", OwnersContractorsCoverageForm="Occurrence",
+                 ExistenceHazardAggregateLimit="2,000,000", ExperienceRatingApplies="No",
+                 ScheduleRatingModificationApplies="No")
+        for loc in g["GeneralLiabilityLocation"]:
+            loc["OwnersContractorsTerritory"] = "999"
+            for c in loc["GeneralLiabilityClassification"]:
+                c.update(MiscIfAnyBasis="No", SpecialProtectiveHighwayPremiumBasis="Total Cost",
+                         SpecialProtectiveHighwayExposure=500000,
+                         SpecialProtectiveHighwayClassDescription="Highway or Roads - Department of Transportation, "
+                                                                  "State of NY")
+        return p
     if name == "LPW-TX":                      # Limited Product Withdrawal (B-08, B-29): its discount and deductible
         p = WB.build("GL", "TX", {"effective_date": date})
         g = _gl(p)
@@ -255,6 +301,12 @@ def one(job):
                 yield from visit(val, f"{table}.{key}", path + [key])
             else:
                 f = sch.get(table, key)
+                if f is None and "." in table:
+                    # a field of a nested coverage record: ISO's schema keys it (record, "Coverage.field"), not
+                    # ("record.Coverage", field). Missed until B-37 (2026-10-14): 53 such inputs in OH alone --
+                    # ManualPremium, ILFOverride, Limit, the terrorism exposure class factor, composite rating
+                    head, cov = table.rsplit(".", 1)
+                    f = sch.get(head.rsplit(".", 1)[-1], f"{cov}.{key}")
                 if f is not None and f.is_input:
                     yield path, key, f
 
@@ -298,7 +350,8 @@ def main() -> int:
     a = ap.parse_args()
     states = sorted(Path(p).parent.name for p in glob.glob(str(ROOT / "Engine_Payloads" / "*" / "submission.json")))
     names = [f"console-{s}" for s in states] + list(SAMPLES) + ["Drone-TX", "StopGap-ND", "StopGap-WA",
-                                                                    "StopGapManual-ND", "Company-TX", "Terrorism-NY", "LPW-TX"]
+                                                                    "StopGapManual-ND", "Company-TX", "Terrorism-NY", "LPW-TX",
+                                                                    "Pollution-OH", "UST-OH", "EDL-OH", "SPH-NY"]
     rows = []
     # a fresh worker per request: each loads one state's book and exits, so memory stays at one book per worker
     # (a long-lived worker keeps every book it has loaded; at 6 workers that exhausted a 16 GB machine)

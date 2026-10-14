@@ -201,14 +201,33 @@ def invalid_values(root, schema, only: frozenset | None = None) -> list:
         name = f"{table}.{column}"
         if only is not None and name not in only:
             continue
-        f = schema.get(table, column)
+        f = _field(schema, table, column)
         if f is None or not f.domain:
             continue
-        legal, _exact = schema.resolved_values(table, column, node)
+        legal, _exact = schema.resolved_values(f.table, f.column, node)
         value = node.text
         if legal and value not in ("", None) and str(value) not in legal:
             out.append((name, str(value), sorted(legal)[:4]))
     return out
+
+
+def _field(schema, table: str, column: str):
+    """The schema field for a leaf `_walk` named `(table, column)`. A leaf of a nested coverage record is named
+    `("Record.Coverage", "field")` by the walk but keyed `("Record", "Coverage.field")` by ISO's schema (B-37,
+    2026-10-14: the Med Pay limit, every coverage's ManualPremium, ILFOverride). Either way the dotted name is the same."""
+    f = schema.get(table, column)
+    if f is None and "." in table:
+        head, cov = table.rsplit(".", 1)
+        f = schema.get(head, f"{cov}.{column}")
+    return f
+
+
+def _child(row, column: str):
+    """`row`'s value node for a column that may be dotted (`Coverage.field`, a nested coverage record's field)."""
+    node = row
+    for part in column.split("."):
+        node = node.first(part) if node is not None else None
+    return node
 
 
 def _rows(node, table: str, out: list) -> list:
@@ -277,7 +296,7 @@ def missing_required(root, schema) -> tuple[list, list]:
                     unread.append(cond)
                     ok = False
                     break
-            if ok and _unanswered(row.first(f.column)) and (f.table, f.column) not in seen:
+            if ok and _unanswered(_child(row, f.column)) and (f.table, f.column) not in seen:
                 seen.add((f.table, f.column))
                 out.append(Missing(f.table, f.column, held, f"{f.table}.{f.column}" in inputs))
     return out, unread
@@ -299,7 +318,7 @@ def validate(payload: dict, schema) -> list:
     exact_n = superset_n = 0
     for table, column, node in leaves:
         present.add((table, column))
-        f = schema.get(table, column)
+        f = _field(schema, table, column)
         if f is None and (table, column) in OWN_FIELDS:
             findings.append(Finding(INFO, "V1", f"{table}.{column}", "ours, not ISO's: read by the engine, never sent to ISO"))
             continue
@@ -312,8 +331,8 @@ def validate(payload: dict, schema) -> list:
         if not f.domain:
             continue
 
-        legal, exact = schema.resolved_values(table, column, node)
-        if schema.dependency_columns(table, column):
+        legal, exact = schema.resolved_values(f.table, f.column, node)
+        if schema.dependency_columns(f.table, f.column):
             exact_n += 1 if exact else 0
             superset_n += 0 if exact else 1
         value = node.text

@@ -406,7 +406,7 @@ def touchpoints():
         "gl_engine/schema/validate.py": "OI-134 V6/V7 (ISO's required-field conditions evaluated): GL only, Property never reaches "
                                         "it; verify_stage4 38/38, snapshot clean but for OI-135's known flake, 2026-10-13"
                                         "OI-130 (B-07) off-list / Stop Gap refusals and R30 / R31 notices, GL only: 157_ --all 293 of 293, snapshot clean, 170 GL requests no new change, 2026-10-13; "
-                                        "B-29 condition overrides for decided rating inputs (conditions in rating_inputs.json), GL only; 177 clean GL requests unchanged, 2026-10-14",
+                                        "B-29 condition overrides for decided rating inputs (conditions in rating_inputs.json), GL only; 177 clean GL requests unchanged, 2026-10-14; B-14 OWN_FIELDS (V1 info); B-37 nested coverage fields resolved (_field, _child), 177 unchanged, ISO's 50 examples 0 errors, 2026-10-14",
         "gl_engine/interp/interpreter.py": "C28-05 strict SingleResult; C28-08 / C28-09 submitted inputs (OI-125 / OI-112); 157_ --all 293 of 293, 2026-10-05; "
                                            "C28-19 older package, then C28-21 (Property steps moved out to run_hooks); 157_ --all 293 of 293 after each, snapshot clean, 2026-10-06; "
                                            "B-36 stamp() holds trace-stamped nodes (labels only, never a value); 157_ --all 293 of 293, 2026-10-14",
@@ -422,7 +422,7 @@ def touchpoints():
                                          "OI-131 (B-10) R13 / R14 / R19 scoped and B-35 R30 skips a real-rate $1: referrals only, GL only; 224 ratings no premium moved, 2026-10-14; B-14 R15 / R17 / R25 / R26 detectors, 0 pending; 224 ratings no referral change, 2026-10-14",
         "gl_engine/schema/condition.py": "OI-134 (B-27): reads ISO's required-field conditions, GL only; Property never reaches it; 157_ --all 293 of 293, snapshot clean, 2026-10-13 (missed from this list at B-27)",
         "gl_engine/schema/rating_inputs.json": "OI-134 / OI-130 data (57_ --write): 17 fields, 35 list fields; GL only; 157_ --all 293 of 293, snapshot clean, 2026-10-13; "
-                                               "B-29: 40 fields, 37 list fields, 2 condition overrides, GL only (Property never reads it); 177 clean GL requests unchanged, 2026-10-14",
+                                               "B-29: 40 fields, 37 list fields, 2 condition overrides, GL only (Property never reads it); 177 clean GL requests unchanged, 2026-10-14; B-37: 43 fields, 38 list fields (nested coverage fields now measured), 177 unchanged, 2026-10-14",
         "gl_engine/config.py": "the corpus root's default moved to F: (new PC, 2026-10-05); no rating code",
     }
     git = subprocess.run(["git", "diff", "--name-only", "5a35c1f", "--", "cf_engine", "gl_engine"],

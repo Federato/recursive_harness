@@ -69,17 +69,21 @@
   "StopGapManual-ND",
   "Company-TX",
   "Terrorism-NY",
-  "LPW-TX"
+  "LPW-TX",
+  "Pollution-OH",
+  "UST-OH",
+  "EDL-OH",
+  "SPH-NY"
  ],
  "tries": {
   "invalid messaged": 9,
-  "invalid same": 3153,
-  "invalid silent": 727,
-  "invalid stops": 1255,
+  "invalid same": 3618,
+  "invalid silent": 849,
+  "invalid stops": 1304,
   "missing messaged": 38,
-  "missing same": 3803,
-  "missing silent": 1200,
-  "missing stops": 237
+  "missing same": 4396,
+  "missing silent": 1305,
+  "missing stops": 240
  },
  "fields": [
   "GeneralLiability.AggregateLimit",
@@ -101,6 +105,9 @@
   "GeneralLiabilityAlaskaChangesAttorneysFeesPolLvl.Limit",
   "GeneralLiabilityCertifiedActsOfTerrorismAggregateLimitCapOnLossesFromCertifiedActsOfTerrorismPremOps.AggregateLimit",
   "GeneralLiabilityClassification.ClassCode",
+  "GeneralLiabilityClassification.GeneralLiabilityClassificationElectronicDataLiabilityCoverage.ManualPremium",
+  "GeneralLiabilityClassification.GeneralLiabilityClassificationPollutionCoverage.ManualPremium",
+  "GeneralLiabilityClassification.GeneralLiabilityClassificationUndergroundStorageTankCoverage.ManualPremium",
   "GeneralLiabilityClassification.LiquorPremiumBasis",
   "GeneralLiabilityClassification.NumPassgrFreightTrains",
   "GeneralLiabilityClassification.OtherThanProdsCompldOpsCov",
@@ -126,6 +133,7 @@
  "list_fields": [
   "GeneralLiability.CyberIncidentLiabilityCoverageApplies",
   "GeneralLiability.GeneralAggregateLimit",
+  "GeneralLiability.GeneralLiabilityMedPayCoverage.Limit",
   "GeneralLiability.LimitedCovForDesignatedUnmannedAircraft",
   "GeneralLiability.OwnersContractorsAggregateLimit",
   "GeneralLiability.OwnersContractorsEachOccurrenceLimit",
@@ -208,6 +216,10 @@
     "silent_in": 52,
     "example": "console-AK 20270501: 7370 -> 587"
    },
+   "GeneralLiability.ProductWithdrawalParticipationPercentage": {
+    "silent_in": 1,
+    "example": "LPW-TX 20260801: 8321 -> 7821"
+   },
    "GeneralLiability.RailroadAggregateLimit": {
     "silent_in": 4,
     "example": "Railroad-RI 20260801: 1706 -> 1000"
@@ -217,7 +229,7 @@
     "example": "Railroad-RI 20260801: 1706 -> 1000"
    },
    "GeneralLiability.Subline": {
-    "silent_in": 124,
+    "silent_in": 130,
     "example": "console-AK 20260801: 7386 -> 0"
    },
    "GeneralLiability.TRIPTerminatesBeforeExpirationDate": {
@@ -280,6 +292,10 @@
     "silent_in": 2,
     "example": "Cyber-IL 20260801: 57768 -> 57721"
    },
+   "GeneralLiabilityLimitedProductWithdrawalExpenseEndtPolLvl.ManualPremium": {
+    "silent_in": 1,
+    "example": "LPW-TX 20260801: 8321 -> 7821"
+   },
    "GeneralLiabilityLocation.CertifiedActsOfTerrorismManhattan": {
     "silent_in": 2,
     "example": "Terrorism-NY 20260801: 12602 -> 12141"
@@ -326,6 +342,10 @@
     "silent_in": 50,
     "example": "console-AK 20270501: 7370 -> 6784"
    },
+   "GeneralLiability.GeneralLiabilityMedPayCoverage.Limit": {
+    "silent_in": 116,
+    "example": "console-AK 20260801: 7386 -> 7385"
+   },
    "GeneralLiability.LimitedCovForDesignatedUnmannedAircraft": {
     "silent_in": 1,
     "example": "Drone-TX 20260801: 8232 -> 7821"
@@ -359,7 +379,7 @@
     "example": "StopGap-ND 20260801: 7406 -> 7396"
    },
    "GeneralLiability.Subline": {
-    "silent_in": 124,
+    "silent_in": 130,
     "example": "console-AK 20260801: 7386 -> 0"
    },
    "GeneralLiability.TRIPTerminatesBeforeExpirationDate": {
@@ -479,11 +499,13 @@
   "GeneralLiabilityClassification.PremOpsPDDeductible": "prices as No Deductible",
   "GeneralLiabilityClassification.ProdsCompldOpsBIDeductible": "prices as No Deductible",
   "GeneralLiabilityClassification.ProdsCompldOpsPDDeductible": "prices as No Deductible",
+  "GeneralLiability.ProdsWithdrawalCoverage": "prices as No",
+  "GeneralLiabilityLimitedProductWithdrawalExpenseEndtPolLvl.Deductible": "prices as No Deductible",
   "GeneralLiability.StopGap": "refused already when Stop Gap details are sent (B-07)",
   "GeneralLiabilityStopGapEmployersLiabilityCoverageEndorsementPolLvl.LimitBodilyInjuryByDiseaseEachEmployee": "refused already: limits ISO does not rate, no ManualPremium (B-07)",
   "GeneralLiabilityStopGapEmployersLiabilityCoverageEndorsementPolLvl.ManualPremium": "refused already: limits ISO does not rate, no ManualPremium (B-07)",
-  "GeneralLiability.ProdsWithdrawalCoverage": "prices as No",
-  "GeneralLiabilityLimitedProductWithdrawalExpenseEndtPolLvl.Deductible": "prices as No Deductible"
+  "GeneralLiability.GeneralLiabilityMedPayCoverage.Limit": "prices as the $5,000 basic limit, the manual's included limit (B-37)",
+  "GeneralLiability.GeneralLiabilityTerrorismEndorsementCoverage.CertifiedActsofTerrorismExposureClassFactor": "R31 flags it (notice; referral in underwriting) (B-37)"
  },
  "conditions": {
   "GeneralLiabilityClassification.LiquorPremiumBasis": "../../../../Subline[.='Liquor']",

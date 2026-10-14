@@ -687,10 +687,43 @@ def group_n():
     check("N6 R25's own field never reaches ISO", "RailroadConstructionOperations" not in json.dumps(without_own_fields(p)))
 
 
+def group_o():
+    print("\nO  NESTED COVERAGE FIELDS, AND THE SUBLINES B-29 NEVER SAW (B-37)")
+    import copy
+    import importlib.util
+    from console import workbench as WB
+    spec = importlib.util.spec_from_file_location("ri", ROOT / "scripts" / "erc" / "57_rating_inputs.py")
+    ri = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(ri)
+    k = Kernel(resolver=RESOLVER)
+    for name, cov in (("Pollution-OH", "GeneralLiabilityClassificationPollutionCoverage"),
+                      ("UST-OH", "GeneralLiabilityClassificationUndergroundStorageTankCoverage"),
+                      ("EDL-OH", "GeneralLiabilityClassificationElectronicDataLiabilityCoverage")):
+        p = ri._built(name, "20260801")
+        r = k.rate(copy.deepcopy(p))
+        for loc in p["body"]["GeneralLiability"][0]["GeneralLiabilityLocation"]:
+            for c in loc["GeneralLiabilityClassification"]:
+                c[cov].pop("ManualPremium")
+        r2 = k.rate(p)
+        check(f"O1 {name}: the manual premium IS the price (ISO files no rates): present rates $1,000, missing "
+              f"refuses by name (it priced $0)", r.complete and r.premium == Decimal("1000") and not r2.complete
+              and f"{cov}.ManualPremium is required" in str(r2.stopped), f"{r.premium}; {str(r2.stopped)[:50]}")
+    p = WB.build("GL", "TX", {"effective_date": "20260801"})
+    p["body"]["GeneralLiability"][0]["GeneralLiabilityMedPayCoverage"] = {"Limit": "12,345"}
+    r = k.rate(p)
+    check("O2 a nested list field is checked: Med Pay limit 12,345 refuses as off-list (it priced as $5,000)",
+          not r.complete and "GeneralLiabilityMedPayCoverage.Limit = '12,345' is not on ISO's list" in str(r.stopped))
+    p = WB.build("GL", "TX", {"effective_date": "20260801"})
+    p["body"]["GeneralLiability"][0].pop("GeneralLiabilityMedPayCoverage", None)
+    r = k.rate(p)
+    check("O3 decided not refused: no Med Pay limit prices as the $5,000 basic limit ($7,820)",
+          r.complete and r.premium == Decimal("7820"), r.premium if r.complete else str(r.stopped)[:60])
+
+
 def main() -> int:
     print("Stage 4 acceptance -- schemas and payloads")
     group_a(); group_b(); group_b2(); group_c(); group_d(); group_e()
-    group_f(); group_g(); group_h(); group_i(); group_j(); group_k(); group_l(); group_m(); group_n()
+    group_f(); group_g(); group_h(); group_i(); group_j(); group_k(); group_l(); group_m(); group_n(); group_o()
     total = len(PASS) + len(FAIL)
     print(f"\n{len(PASS)}/{total} passed")
     if FAIL:
