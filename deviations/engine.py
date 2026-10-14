@@ -265,7 +265,7 @@ class GroupLCM:
             ip.deps.company(f"{group} LCM", v, entry[2], group=group, class_code=cls, basis=basis)
         ip.note("company-group-lcm", f"{group}/{basis}/{cls} -> {v} ({entry[2]})",
                 self.plan.ref or "", group=group, basis=basis, class_code=cls, value=str(v),
-                explain=entry[2], operands=names, node=id(node))
+                explain=entry[2], operands=names, node=ip.stamp(node))
         return {at: v}
 
 

@@ -408,7 +408,8 @@ def touchpoints():
                                         "OI-130 (B-07) off-list / Stop Gap refusals and R30 / R31 notices, GL only: 157_ --all 293 of 293, snapshot clean, 170 GL requests no new change, 2026-10-13; "
                                         "B-29 condition overrides for decided rating inputs (conditions in rating_inputs.json), GL only; 177 clean GL requests unchanged, 2026-10-14",
         "gl_engine/interp/interpreter.py": "C28-05 strict SingleResult; C28-08 / C28-09 submitted inputs (OI-125 / OI-112); 157_ --all 293 of 293, 2026-10-05; "
-                                           "C28-19 older package, then C28-21 (Property steps moved out to run_hooks); 157_ --all 293 of 293 after each, snapshot clean, 2026-10-06",
+                                           "C28-19 older package, then C28-21 (Property steps moved out to run_hooks); 157_ --all 293 of 293 after each, snapshot clean, 2026-10-06; "
+                                           "B-36 stamp() holds trace-stamped nodes (labels only, never a value); 157_ --all 293 of 293, 2026-10-14",
         "cf_engine/resolve/book.py": "C28-05 strict default and EQ stub; C28-08 / C28-09 switches; 157_ --all 293 of 293, 2026-10-05; "
                                      "C28-19 older_than_iso, C28-21 run_hooks; 157_ --all 293 of 293 after each, 2026-10-06; "
                                      "OI-133 NO_EMPTY_FALLBACK_STATE (FL cyber tables); 259_ 5 of 5 live, snapshot clean, 2026-10-06",

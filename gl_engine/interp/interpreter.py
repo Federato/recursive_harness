@@ -356,6 +356,10 @@ class Interpreter:
         self.coercions: list[str] = []
         self.tracing = trace
         self.trace: list[TraceEntry] = []
+        #: Every node whose id a trace entry carries (`stamp`), held for the run (B-36): a `Remove` could otherwise
+        #: free a stamped node and let a node created later take its id, and the worksheet would credit that later
+        #: field with the earlier write's rule file, order and tables. The OI-135 hazard, on labels only.
+        self._stamped: list = []
         #: ISO's own validation messages, in the order the rules raised them.
         #: These are the `RatingMessages` of a RAaS response.
         self.messages: list[str] = []
@@ -382,6 +386,13 @@ class Interpreter:
     def note(self, kind: str, detail: str, source: str = "", **data) -> None:
         if self.tracing:
             self.trace.append(TraceEntry(kind, detail, source, data))
+
+    def stamp(self, node) -> int:
+        """`id(node)` for a trace entry, the node held so the id cannot be reused while the run lasts (B-36)."""
+        if self.tracing:
+            # getattr, as for `_writes`: a subclass that skips __init__ (the tests' fragment interpreter) still traces
+            self.__dict__.setdefault("_stamped", []).append(node)
+        return id(node)
 
     def trace_exhausted(self, el) -> None:
         """Contract C6: an exhausted FirstNonNull is recorded, not raised."""
@@ -527,7 +538,7 @@ class Interpreter:
             # `node`: which node took the value (an object id, valid while the tree lives), and the rule file and
             # package that wrote it, so a reader can tie each field of the rated tree to its ERC source -- the test
             # console's Trace Diff (TC-21). Data only: nothing reads it to rate.
-            self.note("write", f"{to} = {value!r}", name, node=id(written), rule_file=frame.rule_file,
+            self.note("write", f"{to} = {value!r}", name, node=self.stamp(written), rule_file=frame.rule_file,
                       package=getattr(frame.program, "pkg_id", ""))
         return value
 
