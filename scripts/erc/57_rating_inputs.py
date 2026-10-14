@@ -81,6 +81,9 @@ ADD_FIELDS = ("GeneralLiabilityClassification.PremOpsIncrdLimitTableAssignmentOv
               # optional extra charge, this one IS the endorsement's price
               "GeneralLiability.ProductWithdrawalParticipationPercentage",
               "GeneralLiabilityLimitedProductWithdrawalExpenseEndtPolLvl.ManualPremium",
+              # B-12 (2026-10-14): a drone without its own BI / PD deductible -- ISO's service refuses it (400, its
+              # single-result deductible lookup finds no row on the CW 2026+ rules); we priced it as no deductible
+              "GeneralLiabilityUnmannedAircraft.BIDeductible", "GeneralLiabilityUnmannedAircraft.PDDeductible",
               # B-37 (2026-10-14): ISO files no rates for Pollution, UST or Electronic Data Liability; each coverage is
               # its manual premium x the mods, so left out it is free
               "GeneralLiabilityClassification.GeneralLiabilityClassificationPollutionCoverage.ManualPremium",
@@ -191,7 +194,7 @@ def _built(name, date):
         g["GeneralLiabilityLocation"][0]["GeneralLiabilityClassification"][0]["GeneralLiabilityUnmannedAircraft"] = [{
             "PrimaryPlaceOfOperation": "Rural",
             "OwnershipAndOperation": "Unmanned aircraft owned and operated by the insured",
-            "BIPDDeductible": "No Deductible",
+            "BIPDDeductible": "No Deductible", "BIDeductible": "No Deductible", "PDDeductible": "No Deductible",
             "Usage": "Aerial photography, surveillance, inspection, survey, data collection, media services",
             "CovAApplies": "Yes", "CovBApplies": "Yes", "MaximumTakeoffWeight": 10, "AggregateLimit": "1,000,000"}]
         return p

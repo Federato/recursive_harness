@@ -126,7 +126,9 @@
   "GeneralLiabilityLocation.TerrorismTerritory",
   "GeneralLiabilityStopGapEmployersLiabilityCoverageEndorsementPolLvl.LimitBodilyInjuryByAccident",
   "GeneralLiabilityStopGapEmployersLiabilityCoverageEndorsementPolLvl.LimitBodilyInjuryByDiseaseAggregate",
+  "GeneralLiabilityUnmannedAircraft.BIDeductible",
   "GeneralLiabilityUnmannedAircraft.OwnershipAndOperation",
+  "GeneralLiabilityUnmannedAircraft.PDDeductible",
   "GeneralLiabilityUnmannedAircraft.PrimaryPlaceOfOperation",
   "GeneralLiabilityUnmannedAircraft.Usage"
  ],
