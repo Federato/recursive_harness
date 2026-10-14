@@ -177,10 +177,16 @@ class PropertyRunChecks:
         writes seen so far; the real run decides.
         """
         copy_of: dict[int, Node] = {}
+        # Every copy stays referenced until the pass is read (OI-135, B-28). `copy_of` is keyed by `id()`, and a
+        # rule's `Remove` detaches copies from the twin; a freed copy's id could be reused by a node the pass
+        # creates later, so a write there blanked an unrelated submitted value. It depended on memory layout:
+        # chunk23_rc3_Z6's EQLimitToUse came out None (ISO: 400000) after some requests and not others.
+        keep: list[Node] = []
 
         def clone(n: Node, parent: Node | None) -> Node:
             c = Node(n.tag, parent, n.text)
             copy_of[id(c)] = n
+            keep.append(c)
             c.children = [clone(k, c) for k in n.children]
             return c
 

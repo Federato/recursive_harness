@@ -412,7 +412,8 @@ def touchpoints():
                                      "C28-19 older_than_iso, C28-21 run_hooks; 157_ --all 293 of 293 after each, 2026-10-06; "
                                      "OI-133 NO_EMPTY_FALLBACK_STATE (FL cyber tables); 259_ 5 of 5 live, snapshot clean, 2026-10-06",
         "cf_engine/resolve/iso_packages.json": "C28-19's data (255_ --write); 157_ --all 293 of 293 and snapshot clean after every refresh, 2026-10-06",
-        "cf_engine/run_checks.py": "C28-21: chunk 28's Property steps, moved unchanged from the interpreter; 157_ --all 293 of 293, snapshot clean (no rebaseline), 2026-10-06",
+        "cf_engine/run_checks.py": "C28-21: chunk 28's Property steps, moved unchanged from the interpreter; 157_ --all 293 of 293, snapshot clean (no rebaseline), 2026-10-06; "
+                                   "OI-135 (B-28) the look-ahead holds its copies (an id-reuse leak between ratings); 157_ --all 293 of 293, snapshot clean (2,082), 2026-10-14",
         "cf_engine/__init__.py": "C28-21: docstring only; no rating code",
         "cf_engine/config.py": "the corpus root's default moved to F: (new PC, 2026-10-05); no rating code",
         "gl_engine/rating/referrals.py": "OI-130 (B-07): R30 / R31 detectors and the not-offered label, notices and underwriting referrals only, never a value; GL only; 157_ --all 293 of 293, snapshot clean, 2026-10-13; "
