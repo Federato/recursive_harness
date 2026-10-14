@@ -99,6 +99,13 @@ def _walk(node, table: str, out: list) -> None:
             out.append((table, c.tag, c))
 
 
+#: Submission fields that are OURS, not ISO's: the engine reads them, ISO's form does not declare them, and the RaaS
+#: client strips them before a request reaches ISO (`scripts/raas.py` `without_own_fields`). `(table, column)`.
+#: R25 (decided 2026-08-12, field chosen 2026-10-14): whether a Railroad class 40014 risk is construction work --
+#: ISO's ELP Supplement rates construction at 150% of class 16292 and refers everything else; ERC prices it all.
+OWN_FIELDS = frozenset({("GeneralLiabilityClassification", "RailroadConstructionOperations")})
+
+
 #: The required fields whose absence changes the premium without a refusal (OI-134). Measured, not chosen:
 #: `scripts/erc/57_rating_inputs.py` drops each ISO-required field a request carries, one at a time, in every
 #: state, and lists those where the premium moves and the engine does not stop. Regenerate it when ISO files.
@@ -293,6 +300,9 @@ def validate(payload: dict, schema) -> list:
     for table, column, node in leaves:
         present.add((table, column))
         f = schema.get(table, column)
+        if f is None and (table, column) in OWN_FIELDS:
+            findings.append(Finding(INFO, "V1", f"{table}.{column}", "ours, not ISO's: read by the engine, never sent to ISO"))
+            continue
         if f is None:
             findings.append(Finding(
                 WARNING, "V1", f"{table}.{column}",

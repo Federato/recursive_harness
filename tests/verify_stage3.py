@@ -222,12 +222,15 @@ def group_d():
     check("D4 every register entry has an explicit disposition",
           total == len(k.register),
           " ".join(f"{key}={len(v)}" for key, v in sorted(cov.items())))
+    # B-14 (2026-10-14): R12 (MA and TX give no BYOA credit by filing, ISO 1 call) and the map of the nine pending
+    # entries against ISO's refer list and service -- R01, R04-R09, R23 recorded with their evidence; R02 covered by R30
     check("D5 nothing decided NOT to be a referral can raise",
-          set(cov["NOT_REFERRAL"]) == {"R21", "R24", "R27", "R28"},
+          set(cov["NOT_REFERRAL"]) == {"R01", "R04", "R05", "R06", "R07", "R08", "R09", "R12", "R21", "R23", "R24",
+                                       "R27", "R28"},
           str(cov["NOT_REFERRAL"]))
-    check("D6 un-enforced entries are named individually, never a count",
-          all(c.startswith("R") for c in k.unenforced) and k.unenforced,
-          f"{len(k.unenforced)} pending: {', '.join(k.unenforced)}")
+    check("D6 un-enforced entries are named individually, never a count -- and none is left (B-14)",
+          all(c.startswith("R") for c in k.unenforced) and not k.unenforced,
+          f"{len(k.unenforced)} pending" + (f": {', '.join(k.unenforced)}" if k.unenforced else ""))
 
     # A real referral, on a real submission, that ISO itself errors on:
     # Alaska's attorney's-fee limit is below the subline limit, ISO returns

@@ -57,6 +57,24 @@ NOT_REFERRALS = {
            "treatment and the manual permits it",
     "R28": "Puerto Rico Schedule & Experience is confirmed adopted; only "
            "composite rating is open, and that is not rated here",
+    "R12": "MA and TX empty BringYourOwnAlcoholExclusionFactor by design -- B-14, "
+           "2026-10-14: both override SetBringYourOwnAlcoholExclusionFactor AND "
+           "SetBaseRate, and their base rate never reads the factor, so those "
+           "filings give no BYOA credit; no null reaches a premium (OH applies 0.95)",
+    # B-14 map, the user's decision 2026-10-14: each checked against ISO's own refer list (DOC, 838 rules) and, where
+    # it claims a number, against ISO's service
+    "R01": "Railroad's manual refer (Rule 49) is guidance, not a pricing gap: ISO's service rates Railroad and we match "
+           "it (RI, both editions); the one specific refer case, class 40014 non-construction, is R25",
+    "R04": "the 15 states' own terrorism territory factors are read as filed: terrorism agrees with ISO in 18 states",
+    "R05": "California's withdrawal of LoED and Cyber is ISO's own rule switching the coverage off; nothing prices",
+    "R06": "New York offers no claims-made form; a claims-made request refuses by name (B-07 off-list, "
+           "PremOpsProdsCoverageForm)",
+    "R07": "California and New York switch size-of-risk off by rule; nothing to refer",
+    "R08": "Nebraska's own schedule-rating mechanism runs as ISO's does: 50% asked, factor 1.0, $3,597 (ISO 1 call)",
+    "R09": "the redirected liquor grade tables (IA, MO, OK) are read: each matches ISO (3 calls); NY's policy adjustment "
+           "factors are overridden rules the interpreter runs as filed",
+    "R23": "class 15191 without its workers' compensation rate refuses (a null loss cost, OI-94): the submission "
+           "requirement is enforced as a refusal, as R24 is",
 }
 
 #: Answered when the engine is configured, not per rating.
@@ -242,6 +260,79 @@ def d_elp_override_needed(rating) -> list:
     return [Finding("R29", "messages", m) for m in rating.messages if text in m]
 
 
+def d_schedule_cap(rating) -> list:
+    """R15 -- a schedule modification beyond the filed +/-25%, reported by ISO's own message.
+
+    Measured 2026-10-14 (B-14), against the register's wording: the cap DOES clamp. Every schedule item at its
+    maximum debit sums to 50%; ISO and we apply 1.25 (AL liquor $3,742, ISO 1 call) and raise *"Schedule Rating
+    Modification credit or debit cannot exceed 25 percent"*. No wrong number -- but the request asked for a
+    modification the filing does not allow, so an underwriter sees it, the same way R29 reads ISO's ELP message.
+    """
+    text = "Schedule Rating Modification credit or debit cannot exceed"
+    return [Finding("R15", "messages", m) for m in rating.messages if text in m]
+
+
+def d_terrorism_factor_bound(rating) -> list:
+    """R17 -- the endorsement terrorism factor above its filed 0.004, reported by ISO's own message.
+
+    `DoMessageWhenNoClassIsAnAboveAverageExposureClassTheExposureClassFactorCanBeFrom0to004` is the bound's only
+    home. It raises a message and does NOT clamp: 0.01 prices the endorsements' terrorism at $10 where the filing
+    allows $4 (TX, both editions, 2026-10-14). The number is wrong and ISO says so; refer on what ISO said.
+    """
+    text = "the exposure class factor can be from 0 to .004"
+    return [Finding("R17", "messages", m) for m in rating.messages if text in m]
+
+
+def d_size_of_risk_zero_loss_cost(rating) -> list:
+    """R26 -- a coverage on the policy whose loss cost is 0 under size-of-risk (decided 2026-08-12: refer and resolve).
+
+    Ten cannabis and hemp classes carry a real ordinary loss cost and a zero one under size-of-risk, in 34 of 35
+    shipping states. Measured 2026-10-14: class 10011 with size-of-risk prices the WHOLE policy at $0 in OH and CO,
+    with only an unrelated R29 -- R30 stays quiet because ISO's own "Must enter" message is present. Observed, not
+    listed: a Premises/Operations or Products coverage on the policy, size-of-risk on, loss cost AND base rate exactly
+    0. The loss cost alone is not enough: an ELP-rated Products coverage reads 0 there and rates from its ELP (class
+    50017: loss cost 0, base rate 0.82, $7,215). (Where the state ships no size-of-risk loss costs at all, OI-94
+    refuses first.)
+    """
+    out = []
+    for risk in _rows(rating, "GeneralLiabilityTable/GeneralLiability"):
+        if (tree.read("SizeOfRiskRatingApplies", risk) or "").strip() != "Yes":
+            continue
+        for cls in tree.select("GeneralLiabilityLocationTable/GeneralLiabilityLocation/"
+                               "GeneralLiabilityClassificationTable/GeneralLiabilityClassification", risk):
+            for cov in ("PremOps", "ProdsCompldOps"):
+                node = cls.first(f"GeneralLiabilityClassification{cov}Coverage")
+                if node is None or str(tree.read("CoverageOnPolicyIndicator", node) or "").strip() not in ("1", "1.0"):
+                    continue
+                lc, br = _num(tree.read(f"{cov}LossCost", node)), _num(tree.read("BaseRate", node))
+                if lc is not None and lc == 0 and br is not None and br == 0:
+                    out.append(Finding("R26", cls.path, f"class {tree.read('ClassCode', cls)}: {cov} loss cost is 0 "
+                                                        f"under size-of-risk; the class prices $0 (refer and resolve)"))
+    return out
+
+
+def d_railroad_non_construction(rating) -> list:
+    """R25 -- Railroad class 40014 work that is not construction (decided 2026-08-12; field chosen 2026-10-14).
+
+    ISO's ELP Supplement rates construction at 150% of class 16292 and refers everything else; ERC implements only
+    the construction branch and tests `RailroadClassDescription` for emptiness, never content. Our own field
+    `RailroadConstructionOperations` (`validate.OWN_FIELDS`, never sent to ISO) answers it: "Yes" rates as filed;
+    "No" or missing refers, by the user's decision.
+    """
+    out = []
+    for cls in tree.select("GeneralLiabilityTable/GeneralLiability/GeneralLiabilityLocationTable/"
+                           "GeneralLiabilityLocation/GeneralLiabilityClassificationTable/"
+                           "GeneralLiabilityClassification", rating.tree):
+        if str(tree.read("RailroadClassCode", cls) or "").strip() != "40014":
+            continue
+        ans = str(tree.read("RailroadConstructionOperations", cls) or "").strip()
+        if ans != "Yes":
+            out.append(Finding("R25", cls.path, "Railroad class 40014: " + (
+                "not construction work -- ISO's ELP Supplement refers it" if ans == "No" else
+                "RailroadConstructionOperations not answered; only construction work rates as filed")))
+    return out
+
+
 def d_split_base_table(rating) -> list:
     """R13 -- a base loss-cost table present and EMPTY where rows are sharded.
 
@@ -403,12 +494,18 @@ DETECTORS = {
     "R14": d_zero_rating_factor,
     "R13": d_split_base_table,
     "R29": d_elp_override_needed,
+    "R15": d_schedule_cap,
+    "R17": d_terrorism_factor_bound,
+    "R25": d_railroad_non_construction,
+    "R26": d_size_of_risk_zero_loss_cost,
     "R30": d_silent_zero,
     "R31": d_terrorism_endorsement_factor,
 }
 
 #: Detectors that report under more than one code.
-ALSO_COVERED = {"R11": "R10", "R19": "R14", "R20": "R14"}
+#: R02 (B-14, 2026-10-14): NY Special Protective & Highway's loss costs are filed at 0; ISO prices it $0 and refers it
+#: in its manual (Rule 46.1.12); R30 flags every such policy (notice; referral in underwriting).
+ALSO_COVERED = {"R11": "R10", "R19": "R14", "R20": "R14", "R02": "R30"}
 
 
 def load_register(path: Path | None = None) -> list:

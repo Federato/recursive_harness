@@ -643,10 +643,54 @@ def group_m():
           not r.complete and "is not on ISO's list" in str(r.stopped), str(r.stopped)[:70])
 
 
+def group_n():
+    print("\nN  THE REFERRALS THAT CAN MISPRICE, BUILT (B-14: R15, R17, R25, R26)")
+    import importlib.util
+    from console import workbench as WB
+    spec = importlib.util.spec_from_file_location("ri", ROOT / "scripts" / "erc" / "57_rating_inputs.py")
+    ri = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(ri)
+    k = Kernel(mode="underwriting", resolver=RESOLVER)
+    gl = lambda p: p["body"]["GeneralLiability"][0]
+    classes = lambda p: [c for l in gl(p)["GeneralLiabilityLocation"] for c in l["GeneralLiabilityClassification"]]
+    codes = lambda p: {f.code for f in k.rate(p).referrals}
+    stacked = {"SRPLocationExposureInsidePremisesPct": "5%", "SRPLocationExposureOutsidePremisesPct": "5%",
+               "SRPPremisesPct": "10%", "SRPEquipmentPct": "10%", "SRPClassificationPct": "10%", "SRPEmployeesPct": "6%",
+               "SRPCooperationMedicalFacilitiesPct": "2%", "SRPCooperationSafetyProgramPct": "2%"}
+    d = "20260801"
+    p = ri._built("Liquor-AL", d); gl(p).update(ScheduleRatingModificationApplies="Yes", **stacked)
+    r = k.rate(p)
+    check("N1 R15: a 50% schedule modification is capped at 1.25 ($3,742, as ISO) and refers on ISO's message",
+          r.premium == Decimal("3742") and "R15" in {f.code for f in r.referrals}, r.premium)
+    p = ri._built("Liquor-AL", d); gl(p).update(ScheduleRatingModificationApplies="Yes", SRPClassificationPct="10%")
+    check("N2 R15 quiet within the cap (10%)", "R15" not in codes(p))
+    for f, want in ((0.01, True), (0.004, False)):
+        p = WB.build("GL", "TX", {"effective_date": d, "terrorism": "Yes"})
+        gl(p).setdefault("GeneralLiabilityTerrorismEndorsementCoverage", {})["CertifiedActsofTerrorismExposureClassFactor"] = f
+        gl(p)["GeneralLiabilityExclMedPayCovInmatesPatientsPrisoners"] = [{"ManualPremium": 1000.0}]
+        check(f"N3 R17 {'fires' if want else 'quiet'}: endorsement terrorism factor {f} (bound 0.004, not clamped)",
+              ("R17" in codes(p)) == want)
+    for cc, want in (("10011", True), ("50017", False)):
+        p = WB.build("GL", "OH", {"effective_date": d}); gl(p)["SizeOfRiskRatingApplies"] = "Yes"
+        for c in classes(p):
+            c["ClassCode"] = cc
+        check(f"N4 R26 {'fires' if want else 'quiet'}: size-of-risk, class {cc} "
+              f"({'cannabis: the policy prices $0' if want else 'Products rates from its ELP'})", ("R26" in codes(p)) == want)
+    for ans, want in (("Yes", False), ("No", True), (None, True)):
+        p = ri._built("Railroad-RI", d)
+        for c in classes(p):
+            c["RailroadClassCode"] = "40014"
+            if ans is not None:
+                c["RailroadConstructionOperations"] = ans
+        check(f"N5 R25 {'fires' if want else 'quiet'}: Railroad 40014, construction = {ans}", ("R25" in codes(p)) == want)
+    from raas import without_own_fields
+    check("N6 R25's own field never reaches ISO", "RailroadConstructionOperations" not in json.dumps(without_own_fields(p)))
+
+
 def main() -> int:
     print("Stage 4 acceptance -- schemas and payloads")
     group_a(); group_b(); group_b2(); group_c(); group_d(); group_e()
-    group_f(); group_g(); group_h(); group_i(); group_j(); group_k(); group_l(); group_m()
+    group_f(); group_g(); group_h(); group_i(); group_j(); group_k(); group_l(); group_m(); group_n()
     total = len(PASS) + len(FAIL)
     print(f"\n{len(PASS)}/{total} passed")
     if FAIL:

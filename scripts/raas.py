@@ -122,6 +122,18 @@ OWN_HEADER_FIELDS = ("WritingCompany", "PolicyType")
 #: only ever rates TECHNICAL, and the carrier's LCMs are proved against technical, never sent.
 LCM_FIELDS = ("LossCostMultiplier", "LCM")
 
+#: Body fields the harness owns (`gl_engine.schema.validate.OWN_FIELDS`, e.g. R25's RailroadConstructionOperations):
+#: always removed before a request reaches ISO, whatever the header says.
+OWN_BODY_FIELDS = ("RailroadConstructionOperations",)
+
+
+def _strip_own(obj):
+    if isinstance(obj, dict):
+        return {k: _strip_own(v) for k, v in obj.items() if k not in OWN_BODY_FIELDS}
+    if isinstance(obj, list):
+        return [_strip_own(v) for v in obj]
+    return obj
+
 
 def _strip_lcms(obj):
     if isinstance(obj, dict):
@@ -134,6 +146,8 @@ def _strip_lcms(obj):
 def without_own_fields(payload):
     """The request as ISO may see it: our header fields removed, and -- when it named a writing company -- every
     LCM removed too, so ISO rates exactly the technical request. The original is untouched."""
+    if isinstance(payload, dict) and isinstance(payload.get("body"), dict):
+        payload = dict(payload, body=_strip_own(payload["body"]))
     hdr = payload.get("header") if isinstance(payload, dict) else None
     if not isinstance(hdr, dict) or not any(k in hdr for k in OWN_HEADER_FIELDS):
         return payload
