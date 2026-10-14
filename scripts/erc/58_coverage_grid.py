@@ -122,7 +122,8 @@ def main() -> int:
             else:
                 g["disagree"] += 1
     filled = sum(1 for g in grid.values() if g["answers"])
-    print(f"{n} GL ISO answers; {filled} of {len(FAMILIES)} coverage families priced by ISO at least once\n")
+    print(f"{n} GL ISO answers; {filled} of {len(FAMILIES)} coverage families priced by ISO at least once; "
+          f"{len(NOT_PRICEABLE)} cannot be priced separately\n")
     print(f"| # | Family | ISO answers | States | Lines agree | Lines differ |\n|---|---|---|---|---|---|")
     for i, (name, _) in enumerate(FAMILIES, 1):
         g = grid[name]
