@@ -422,7 +422,9 @@ deductible factor of `0` with no error message — priced as though it had no de
 > including `DedFactorLiquor['CW', 'No Deductible'] → 0`, the one legitimate zero, and a Company
 > class's `LiquorELP → 0`. Every liquor risk rated with "No Deductible" (all of ISO's liquor STCs)
 > is therefore referred under R14 in `underwriting` mode (AL and IL @2026-10-02 and @2027-04-01). The
-> register's own wording targets only the ten unguarded "Per Common Cause" cells.
+> register's own wording targets only the ten unguarded "Per Common Cause" cells. **Fixed 2026-10-14
+> (OI-131, B-10):** R14 now reads `DedFactorLiquor` only and skips "No Deductible"; a Per Common Cause
+> deductible still refers. A Company class's zero ELP is left to R29, which reads ISO's own message.
 
 ---
 

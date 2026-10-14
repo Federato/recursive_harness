@@ -68,7 +68,7 @@ none of these three apply to Coverage B.
 
 | Table | Used for | Notes |
 |---|---|---|
-| `UnmannedAircraftMinPremium` | Minimum premium floor | 1 row, CW, **value 0** — E16 confirmed a fourth time on this subline. **(engine)** Keys `['CW','Y']`. It is read by `GeneralLiabilityUnmannedAircraftRules` (≤ 20261001) and by `…LimitedCovForDesignatedUnmannedAircraftPremiumToReachMinCoverage` (2027). The 0 it returns trips referral R19 on every drone policy in `underwriting` mode (false positive) |
+| `UnmannedAircraftMinPremium` | Minimum premium floor | 1 row, CW, **value 0** — E16 confirmed a fourth time on this subline. **(engine)** Keys `['CW','Y']`. It is read by `GeneralLiabilityUnmannedAircraftRules` (≤ 20261001) and by `…LimitedCovForDesignatedUnmannedAircraftPremiumToReachMinCoverage` (2027). The 0 it returns tripped referral R19 on every drone policy in `underwriting` mode (false positive; **fixed 2026-10-14, OI-131**: R19 skips the min-premium row) |
 | (governmental-units ILF variant, via `LookupGovernmentalUnitsPremisesOperationsIncreasedLimitsFactor`) | Replaces `SetAggregateLimit`/`SetILF` in 8 states | IN, MO, MT, ND, NH, OK, TN, UT — one deviation, eight filings |
 | `PackageModFactor`, `ExperienceRatingModificationFactor`, `ExpenseModification`, `ModToUse` | Premium-level multipliers in `SetPremium` | Not resolved in source docs — whether these are filed rate tables or policy-level copied values (the gate doc lists them as multipliers without stating the ERC mechanism); see "Not ERC tables" caveat below |
 

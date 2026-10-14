@@ -415,7 +415,8 @@ def touchpoints():
         "cf_engine/run_checks.py": "C28-21: chunk 28's Property steps, moved unchanged from the interpreter; 157_ --all 293 of 293, snapshot clean (no rebaseline), 2026-10-06",
         "cf_engine/__init__.py": "C28-21: docstring only; no rating code",
         "cf_engine/config.py": "the corpus root's default moved to F: (new PC, 2026-10-05); no rating code",
-        "gl_engine/rating/referrals.py": "OI-130 (B-07): R30 / R31 detectors and the not-offered label, notices and underwriting referrals only, never a value; GL only; 157_ --all 293 of 293, snapshot clean, 2026-10-13",
+        "gl_engine/rating/referrals.py": "OI-130 (B-07): R30 / R31 detectors and the not-offered label, notices and underwriting referrals only, never a value; GL only; 157_ --all 293 of 293, snapshot clean, 2026-10-13; "
+                                         "OI-131 (B-10) R13 / R14 / R19 scoped and B-35 R30 skips a real-rate $1: referrals only, GL only; 224 ratings no premium moved, 2026-10-14",
         "gl_engine/schema/condition.py": "OI-134 (B-27): reads ISO's required-field conditions, GL only; Property never reaches it; 157_ --all 293 of 293, snapshot clean, 2026-10-13 (missed from this list at B-27)",
         "gl_engine/schema/rating_inputs.json": "OI-134 / OI-130 data (57_ --write): 17 fields, 35 list fields; GL only; 157_ --all 293 of 293, snapshot clean, 2026-10-13",
         "gl_engine/config.py": "the corpus root's default moved to F: (new PC, 2026-10-05); no rating code",

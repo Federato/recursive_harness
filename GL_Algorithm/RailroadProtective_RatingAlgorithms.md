@@ -420,7 +420,8 @@ Per gate doc §7, re-checked against the engine 2026-10-02:
 
 R29 never fires for Railroad: ISO's `DoMessageMustEnterEstimatedLossPotentialFactorOverride` has
 OCP, Liquor and Product Withdrawal branches but no Railroad branch, and `RailroadELP` is
-`"Industry"` in all 204 rows.
+`"Industry"` in all 204 rows. **That is correct, not a gap** (OI-131 closed 2026-10-14): there is no
+Company-rated Railroad class for R29 to refer.
 
 ---
 

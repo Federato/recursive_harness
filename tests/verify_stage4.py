@@ -540,10 +540,57 @@ def group_k():
           str(r.stopped)[:90])
 
 
+def group_l():
+    print("\nL  REFERRALS THAT FIRED ON EVERY RISK OF A KIND (OI-131 B-10, B-35)")
+    import copy
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("ri", ROOT / "scripts" / "erc" / "57_rating_inputs.py")
+    ri = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(ri)
+    k = Kernel(mode="underwriting", resolver=RESOLVER)
+
+    def codes(p):
+        r = k.rate(p)
+        return sorted({f.code for f in r.referrals}) if r.complete else ["STOP"]
+
+    def deductible(p, v):
+        g = p["body"]["GeneralLiability"][0]
+        g["LiquorDeductible"] = v
+        for loc in g["GeneralLiabilityLocation"]:
+            loc["LiquorDeductible"] = v
+            for c in loc["GeneralLiabilityClassification"]:
+                c["LiquorDeductible"] = v
+        return p
+
+    def usage(p, v):
+        p["body"]["GeneralLiability"][0]["GeneralLiabilityLocation"][0]["GeneralLiabilityClassification"][0][
+            "GeneralLiabilityUnmannedAircraft"][0]["Usage"] = v
+        return p
+
+    for d in ("20261002", "20270401"):
+        got = codes(ri._built("Liquor-AL", d))
+        check(f"L1 {d} ISO's AL liquor sample, No Deductible: no R14 (the one legitimate zero)", "R14" not in got, got)
+        got = codes(deductible(ri._built("Liquor-AL", d), "5,000 Per Common Cause"))
+        check(f"L2 {d} a Per Common Cause deductible, unguarded and zero: R14", "R14" in got, got)
+        got = codes(ri._built("Drone-TX", d))
+        check(f"L3 {d} a photography drone: no R19 (the $0 min-premium row) and no R13 (banded loss costs resolve)",
+              not {"R13", "R19"} & set(got), got)
+        got = codes(usage(ri._built("Drone-TX", d), "Crop spraying, dispersing of chemicals"))
+        check(f"L4 {d} a crop-spraying drone, a refer-to-company cell: R19", "R19" in got, got)
+    p = copy.deepcopy(ri._built("console-IL", "20270401"))
+    g = p["body"]["GeneralLiability"][0]
+    g["LossOfElectronicDataCoverageApplies"] = "Yes"
+    g["GeneralLiabilityLossOfElectronicDataFromPhysicalInjuryToTangiblePropLiabCovSubToCyberIncidentExcl"] = [
+        {"LossOfElectronicDataLimit": "200,000"}]
+    r = k.rate(p)
+    check("L5 LoED's $1 Prem/Ops premium from a real rate is not R30 (B-35; ISO prices it $1)",
+          r.complete and "R30" not in {f.code for f in r.referrals}, f"{r.premium if r.complete else r.stopped}")
+
+
 def main() -> int:
     print("Stage 4 acceptance -- schemas and payloads")
     group_a(); group_b(); group_b2(); group_c(); group_d(); group_e()
-    group_f(); group_g(); group_h(); group_i(); group_j(); group_k()
+    group_f(); group_g(); group_h(); group_i(); group_j(); group_k(); group_l()
     total = len(PASS) + len(FAIL)
     print(f"\n{len(PASS)}/{total} passed")
     if FAIL:

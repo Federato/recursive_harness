@@ -189,18 +189,25 @@ def d_zero_rating_factor(rating) -> list:
     premium: the ten unguarded liquor deductible cells (R14), and the drone
     cells that are refer-to-company or `Unknown`/`Not Applicable` markers
     (R19/R20, decided 2026-08-12 to refer).
+
+    **Scoped to those cells (OI-131, B-10).** Matching any `Liquor` or drone
+    table referred every liquor risk on `DedFactorLiquor['No Deductible']`,
+    the one legitimate zero, and a Company class's `LiquorELP` (R29's, by
+    ISO's own message); and every drone policy on `UnmannedAircraftMinPremium`,
+    a one-row $0 floor, not a rating cell.
     """
-    watch = (("Liquor", "R14"), ("UnmannedAircraft", "R19"), ("Drone", "R19"))
     out = []
     for t in rating.trace:
         if t.kind not in ("lookup", "lookup-banded"):
             continue
         if "-> Decimal('0')" not in t.detail and "-> '0'" not in t.detail:
             continue
-        for token, code in watch:
-            if token in t.detail:
-                out.append(Finding(code, "lookup", t.detail))
-                break
+        table = t.detail.split("[", 1)[0]
+        if table == "DedFactorLiquor":
+            if "'No Deductible'" not in t.detail:
+                out.append(Finding("R14", "lookup", t.detail))
+        elif table.startswith("UnmannedAircraft") and "MinPremium" not in table:
+            out.append(Finding("R19", "lookup", t.detail))
     return out
 
 
@@ -241,9 +248,17 @@ def d_split_base_table(rating) -> list:
     CA, NJ, NY and OH file the rows under per-territory names. Falling through
     to the parent is wrong (N3), and the visible symptom in a rating is a
     loss-cost lookup that misses in the state and then misses again countrywide.
+
+    A miss on a table that a later lookup resolved does not count (OI-131, B-10):
+    every drone loss cost records one exact-key miss before its weight band
+    resolves (`UnmannedAircraftLimitedLiabilityBIPDLossCost` -> 154.26), which
+    referred every drone policy.
     """
+    resolved = {t.detail.split("[", 1)[0] for t in rating.trace
+                if t.kind in ("lookup", "lookup-banded") and "LossCost" in t.detail}
     misses = [t for t in rating.trace
-              if t.kind == "lookup-miss" and "LossCost" in t.detail]
+              if t.kind == "lookup-miss" and "LossCost" in t.detail
+              and t.detail.split("[", 1)[0] not in resolved]
     if len(misses) < 2:
         return []
     return [Finding("R13", "lookup",
@@ -357,6 +372,11 @@ def d_silent_zero(rating) -> list:
                 try:
                     v = Decimal(str(prem.text))
                 except (InvalidOperation, ValueError, TypeError):
+                    v = None
+                # a $1 from a real filed rate is a small premium, not a floor over a failure (B-35, 2026-10-14):
+                # LoED's Prem/Ops host, FinalRate 0.0001 on $5M, is ISO's own $1. Every silent route rates at 0.
+                rate = _num(c.first("FinalRate").text) if c.first("FinalRate") is not None else None
+                if v == Decimal(1) and rate is not None and rate > 0:
                     v = None
                 if v is not None and v in (Decimal(0), Decimal(1)):
                     out.append(Finding("R30", here.rsplit("/", 1)[-1],
