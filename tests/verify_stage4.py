@@ -145,7 +145,7 @@ def group_b2():
 
 def group_c():
     print("\nC  ISO'S OWN 50 SUBMISSIONS VALIDATE")
-    errs, warns, n, known = 0, 0, 0, 0
+    errs, warns, n, known, known_oi77 = 0, 0, 0, 0, 0
     worst = []
     for d in sorted(p for p in PAYLOADS.iterdir() if p.is_dir()):
         src = d / "1. Input.json"
@@ -157,16 +157,27 @@ def group_c():
         f = validate(p, schema_for(d.name, eff))
         # OI-92: ISO's own GA example omits its rating-required prem/ops territory (it rates products only:
         # 6845, not 7366). Since OI-134 the validator reports that as the V7 error it is; it is the one expected.
+        # B-29: the OI-77 examples carry terrorism "Yes" with no TerrorismTerritory, though ISO priced them with
+        # terrorism off (its output echoes "No"); the V7 for the territory is right as filed, and expected.
+        try:
+            out = json.loads((d / "1. Output.json").read_text(encoding="utf-8-sig"))
+            oi77 = out["Body"]["GeneralLiability"][0].get("TerrorismCoverage") == "No"
+        except Exception:                                 # noqa: BLE001
+            oi77 = False
         e = [x for x in f if x.level == "error"
              and not (d.name == "GA" and x.code == "V7"
-                      and x.where == "GeneralLiabilityLocation.PremisesOperationsTerritory")]
+                      and x.where == "GeneralLiabilityLocation.PremisesOperationsTerritory")
+             and not (oi77 and x.code == "V7" and x.where == "GeneralLiabilityLocation.TerrorismTerritory")]
+        known_oi77 += sum(1 for x in f if oi77 and x.code == "V7" and x.where == "GeneralLiabilityLocation.TerrorismTerritory")
         known += sum(1 for x in f if x.level == "error") - len(e)
         errs += len(e)
         warns += sum(1 for x in f if x.level == "warning")
         if e:
             worst.append(f"{d.name}: {e[0]}")
     check("C0 ISO's GA example is reported missing its prem/ops territory (OI-92, found again by OI-134's V7)",
-          known == 1, f"{known} known error(s)")
+          known - known_oi77 == 1, f"{known - known_oi77} known error(s)")
+    check("C0b the 12 OI-77 examples are reported missing their terrorism territory (B-29)",
+          known_oi77 == 12, f"{known_oi77}")
     check("C1 every ISO submission validates with no errors", errs == 0,
           f"{n} payloads, {errs} errors, {warns} warnings"
           + (f"; {worst[:2]}" if worst else ""))
@@ -587,10 +598,55 @@ def group_l():
           r.complete and "R30" not in {f.code for f in r.referrals}, f"{r.premium if r.complete else r.stopped}")
 
 
+def group_m():
+    print("\nM  SILENT MISSING INPUTS, DECIDED FIELD BY FIELD (B-29)")
+    import copy
+    import importlib.util
+    spec = importlib.util.spec_from_file_location("ri", ROOT / "scripts" / "erc" / "57_rating_inputs.py")
+    ri = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(ri)
+    k = Kernel(resolver=RESOLVER)
+
+    def without(name, date, field, at=lambda g: g):
+        p = copy.deepcopy(ri._built(name, date))
+        at(p["body"]["GeneralLiability"][0]).pop(field, None)
+        return k.rate(p)
+
+    cls = lambda g: g["GeneralLiabilityLocation"][0]["GeneralLiabilityClassification"][0]
+    loc = lambda g: g["GeneralLiabilityLocation"][0]
+    lpw = lambda g: g["GeneralLiabilityLimitedProductWithdrawalExpenseEndtPolLvl"][0]
+    for label, name, date, field, at in (
+            ("M1 liquor without its aggregate limit (it priced $100)", "Liquor-AL", "20260801", "AggregateLimit", None),
+            ("M2 liquor without its premium basis on 2026, where ISO does not mark it required",
+             "Liquor-AL", "20260801", "LiquorPremiumBasis", cls),
+            ("M3 Railroad without its occurrence limit (the $1,000 minimum)", "Railroad-RI", "20260801",
+             "RailroadEachOccurrenceLimit", None),
+            ("M4 a drone without its usage (drone $0)", "Drone-TX", "20260801", "Usage",
+             lambda g: cls(g)["GeneralLiabilityUnmannedAircraft"][0]),
+            ("M5 no Products territory (IL $57,768 -> $51,862)", "Cyber-IL", "20260801", "ProdsCompldOpsTerritory", loc),
+            ("M6 TRIP termination left out (it priced as 'Yes')", "Cyber-IL", "20260801",
+             "TRIPTerminatesBeforeExpirationDate", None),
+            ("M7 LPW without its manual premium on 2026 (ISO's condition never holds; the endorsement was free)",
+             "LPW-TX", "20260801", "ManualPremium", lpw)):
+        r = without(name, date, field, at or (lambda g: g))
+        check(f"{label}: refuses by name", not r.complete and f".{field} is required" in str(r.stopped),
+              str(r.stopped)[:70] if not r.complete else r.premium)
+    r = without("Cyber-IL", "20260801", "TerrorismCoverage")
+    check("M8 decided not refused: TerrorismCoverage left out prices as 'No'", r.complete, r.premium if r.complete else "")
+    r = without("console-IL", "20260801", "PremOpsBIDeductible", cls)
+    check("M9 decided not refused: a deductible left out prices as No Deductible", r.complete and r.premium == Decimal("8381"),
+          r.premium if r.complete else str(r.stopped)[:60])
+    p = copy.deepcopy(ri._built("LPW-TX", "20270501"))
+    lpw(p["body"]["GeneralLiability"][0])["Deductible"] = "1,000 Per Occurrence"
+    r = k.rate(p)
+    check("M10 2027 LPW deductible in last edition's spelling refuses as off-list (it stopped on a null)",
+          not r.complete and "is not on ISO's list" in str(r.stopped), str(r.stopped)[:70])
+
+
 def main() -> int:
     print("Stage 4 acceptance -- schemas and payloads")
     group_a(); group_b(); group_b2(); group_c(); group_d(); group_e()
-    group_f(); group_g(); group_h(); group_i(); group_j(); group_k(); group_l()
+    group_f(); group_g(); group_h(); group_i(); group_j(); group_k(); group_l(); group_m()
     total = len(PASS) + len(FAIL)
     print(f"\n{len(PASS)}/{total} passed")
     if FAIL:

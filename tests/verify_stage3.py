@@ -293,7 +293,10 @@ def group_e():
 #: agreement from 28 to 47, which a wrong engine could not do -- so both are
 #: tracked and neither is allowed to fall.
 BASELINE_RATED = 50
-BASELINE_MATCH = 28
+#: 28 until 2026-10-14. B-29 refuses the 12 OI-77 examples as filed (terrorism "Yes", no territory); they matched
+#: only because their silent $0 terrorism equalled ISO's terrorism-off price. F3 still compares all of them.
+BASELINE_MATCH = 16
+BASELINE_OI77_REFUSED = 12
 BASELINE_RECONCILED = 48
 #: Against the oracle that actually corresponds to each input, excluding the two
 #: pairs where none does (OI-78). This is the honest headline and it is exact.
@@ -311,10 +314,20 @@ def group_f():
     # (6845, which ISO matched on the same deficient input). Since OI-134 the engine refuses it, naming the
     # field. That one refusal is expected; it is counted here and nowhere else.
     known = []
+    # B-29 (2026-10-14): 12 OI-77 examples carry terrorism "Yes" with no TerrorismTerritory, and ISO priced them with
+    # terrorism off (its output echoes "No"). As filed they now refuse, naming the territory -- right, the input asks
+    # for terrorism and gives nothing to price it with; it "matched" before only because the silent $0 terrorism
+    # equalled ISO's terrorism-off price. With ISO's echoed value no territory is needed, so the reconciled rating
+    # below still runs and still compares.
+    known_oi77 = []
 
     def is_known(name, r):
         return (name == "GA" and not r.complete
                 and "GeneralLiabilityLocation.PremisesOperationsTerritory" in str(r.stopped))
+
+    def oi77_refusal(r, gl0):
+        return (not r.complete and "GeneralLiabilityLocation.TerrorismTerritory is required" in str(r.stopped)
+                and gl0 is not None and gl0.get("TerrorismCoverage") == "No")
     for d in sorted(p for p in payloads.iterdir() if p.is_dir()):
         src = d / "1. Input.json"
         if not src.exists():
@@ -327,20 +340,23 @@ def group_f():
         if is_known(d.name, r):
             known.append(d.name)
             continue
-        if not r.complete:
-            stopped.append(f"{d.name}: {str(r.stopped)[:40]}")
-            continue
-        rated += 1
         out = d / "1. Output.json"
-        if not out.exists():
-            continue
         try:
             iso = json.loads(out.read_text(encoding="utf-8-sig"))
             gl0 = iso["Body"]["GeneralLiability"][0]
             want = Decimal(str(gl0["Premium"]))
         except Exception:                                 # noqa: BLE001
+            gl0 = want = None
+        if oi77_refusal(r, gl0):
+            known_oi77.append(d.name)
+        elif not r.complete:
+            stopped.append(f"{d.name}: {str(r.stopped)[:40]}")
             continue
-        if want == r.premium:
+        else:
+            rated += 1
+        if want is None:
+            continue
+        if r.complete and want == r.premium:
             matched += 1
             reconciled += 1
             continue
@@ -365,15 +381,17 @@ def group_f():
 
     check("F0 ISO's GA example is refused for the territory it omits (OI-92, OI-134)",
           known == ["GA"], f"{known or 'not refused'}")
-    check(f"F1 every payload rates end to end (>= {BASELINE_RATED}, GA's known refusal counted)",
-          rated + len(known) >= BASELINE_RATED and not stopped,
+    check(f"F0b the OI-77 examples (terrorism 'Yes' in, 'No' out, no territory) refuse as filed: "
+          f"{BASELINE_OI77_REFUSED} (B-29)", len(known_oi77) == BASELINE_OI77_REFUSED, f"{known_oi77}")
+    check(f"F1 every payload rates end to end (>= {BASELINE_RATED}, the known refusals counted)",
+          rated + len(known) + len(known_oi77) >= BASELINE_RATED and not stopped,
           f"{rated} rated" + (f"; stopped: {stopped[:3]}" if stopped else ""))
     check(f"F2 exact agreement as filed does not regress (>= {BASELINE_MATCH})",
           matched >= BASELINE_MATCH, f"{matched} of {rated} match to the penny")
     check(f"F3 agreement with ISO's own TerrorismCoverage does not regress "
           f"(>= {BASELINE_RECONCILED})",
           reconciled + len(known) >= BASELINE_RECONCILED,
-          f"{reconciled} of {rated}, plus GA's known refusal")
+          f"{reconciled} of {rated + len(known_oi77)}, plus GA's known refusal")
 
     # F4 is the honest headline: every pair whose output actually came from its
     # input. The two exclusions are established from the files by

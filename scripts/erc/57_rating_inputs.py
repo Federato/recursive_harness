@@ -53,7 +53,74 @@ NOT_ON_LIST = "ZZ-NOT-ON-ISO-LIST"
 #: terrorism $0 (Terrorism-NY 12602 -> 12141).
 ADD_FIELDS = ("GeneralLiabilityClassification.PremOpsIncrdLimitTableAssignmentOverride",
               "GeneralLiabilityClassification.ProdsCompldOpsIncrdLimitTableAssignmentOverride",
-              "GeneralLiabilityLocation.CertifiedActsOfTerrorismManhattan")
+              "GeneralLiabilityLocation.CertifiedActsOfTerrorismManhattan",
+              # B-29, the user's decision 2026-10-14, field by field. The coverage is on and the field left out prices
+              # it at $0 or its minimum (Liquor AL $3,015 -> $100, Railroad RI $1,706 -> the $1,000 minimum, drone $0,
+              # the Products territory IL $57,768 -> $51,862, the Limited Product Withdrawal endorsement $500 -> $0):
+              "GeneralLiability.AggregateLimit", "GeneralLiability.EachCommonCauseLimit",
+              "GeneralLiability.LiquorCoverageForm", "GeneralLiabilityClassification.LiquorPremiumBasis",
+              "GeneralLiability.OwnersContractorsAggregateLimit", "GeneralLiability.OwnersContractorsEachOccurrenceLimit",
+              "GeneralLiability.RailroadAggregateLimit", "GeneralLiability.RailroadEachOccurrenceLimit",
+              "GeneralLiabilityClassification.NumPassgrFreightTrains",
+              "GeneralLiabilityCyberIncidentLiabilityCovSubjectToEachCyberIncidentOccurrenceAndAggregateLimits."
+              "CyberIncidentAggregateLimit",
+              "GeneralLiabilityCyberIncidentLiabilityCovSubjectToEachCyberIncidentOccurrenceAndAggregateLimits."
+              "EachCyberIncidentOccurrenceLimit",
+              "GeneralLiabilityUnmannedAircraft.OwnershipAndOperation",
+              "GeneralLiabilityUnmannedAircraft.PrimaryPlaceOfOperation", "GeneralLiabilityUnmannedAircraft.Usage",
+              "GeneralLiabilityStopGapEmployersLiabilityCoverageEndorsementPolLvl.LimitBodilyInjuryByAccident",
+              "GeneralLiabilityStopGapEmployersLiabilityCoverageEndorsementPolLvl.LimitBodilyInjuryByDiseaseAggregate",
+              "GeneralLiabilityLocation.ProdsCompldOpsTerritory", "GeneralLiabilityLocation.TerrorismTerritory",
+              "GeneralLiability.PremiumDiscountPercentage",
+              # ... and left out it silently takes a meaningful answer: TRIP termination prices as "Yes" (IL +$926),
+              # the Products BI/PD deductible as a 250 deductible rather than none
+              "GeneralLiability.TRIPTerminatesBeforeExpirationDate",
+              "GeneralLiabilityClassification.ProdsCompldOpsBIPDDeductible",
+              # Limited Product Withdrawal, found once LPW-TX joined the population: on 2026 editions the endorsement
+              # prices $0 without its participation or its manual premium -- unlike the other ManualPremiums, an
+              # optional extra charge, this one IS the endorsement's price
+              "GeneralLiability.ProductWithdrawalParticipationPercentage",
+              "GeneralLiabilityLimitedProductWithdrawalExpenseEndtPolLvl.ManualPremium")
+
+#: List fields decided rather than measured (B-29 E, 2026-10-14): an answer off ISO's list for the edition refuses by
+#: name. The 2027 Limited Product Withdrawal deductibles drop "Per Occurrence", so last edition's "1,000 Per
+#: Occurrence" stopped on a bare null -- a stop, so the silent-only measurement never lists it.
+ADD_LIST_FIELDS = ("GeneralLiabilityLimitedProductWithdrawalExpenseEndtPolLvl.Deductible",)
+
+#: Where ISO's own condition cannot serve a decided field (B-29, 2026-10-14), the condition it is required under:
+#: `LiquorPremiumBasis` is not marked required on the 2026 editions (only displayed when the subline is Liquor), and
+#: the Limited Product Withdrawal `ManualPremium`'s condition reads the participation percentage one level too
+#: shallow (`../`, where `../../ProdsWithdrawalCoverage` beside it is right), so it never holds.
+CONDITIONS = {
+    "GeneralLiabilityClassification.LiquorPremiumBasis": "../../../../Subline[.='Liquor']",
+    "GeneralLiabilityLimitedProductWithdrawalExpenseEndtPolLvl.ManualPremium": "../../ProdsWithdrawalCoverage[.='Yes'] and ../../ProductWithdrawalParticipationPercentage[.!='0']",
+}
+
+#: B-29, decided NOT to refuse (2026-10-14): left out, each prices exactly as its "off" answer -- "No", 0 or
+#: "No Deductible" -- measured against every legal answer, or another check already refuses it (Stop Gap, B-07).
+#: Kept out of `missing_candidates` so the review list holds only what is undecided.
+NOT_REFUSED = {
+    "GeneralLiability.CyberIncidentLiabilityCoverageApplies": "prices as No",
+    "GeneralLiability.LimitedCovForDesignatedUnmannedAircraft": "prices as No",
+    "GeneralLiability.TerrorismCoverage": "prices as No",
+    "GeneralLiabilityUnmannedAircraft.CovAApplies": "prices as No",
+    "GeneralLiabilityUnmannedAircraft.CovBApplies": "prices as No",
+    "GeneralLiabilityCapOnLossesFromCertifiedActsOfTerrorism.ManualPremium": "prices as 0",
+    "GeneralLiabilityExclMedPayCovInmatesPatientsPrisoners.ManualPremium": "prices as 0",
+    "GeneralLiabilityExclusionOfCertifiedActsOfTerrorism.ManualPremium": "prices as 0",
+    "GeneralLiabilityExclusionPFASRailroad.ManualPremium": "prices as 0",
+    "GeneralLiabilityClassification.PremOpsBIDeductible": "prices as No Deductible",
+    "GeneralLiabilityClassification.PremOpsPDDeductible": "prices as No Deductible",
+    "GeneralLiabilityClassification.ProdsCompldOpsBIDeductible": "prices as No Deductible",
+    "GeneralLiabilityClassification.ProdsCompldOpsPDDeductible": "prices as No Deductible",
+    "GeneralLiability.ProdsWithdrawalCoverage": "prices as No",
+    "GeneralLiabilityLimitedProductWithdrawalExpenseEndtPolLvl.Deductible": "prices as No Deductible",
+    "GeneralLiability.StopGap": "refused already when Stop Gap details are sent (B-07)",
+    "GeneralLiabilityStopGapEmployersLiabilityCoverageEndorsementPolLvl.LimitBodilyInjuryByDiseaseEachEmployee":
+        "refused already: limits ISO does not rate, no ManualPremium (B-07)",
+    "GeneralLiabilityStopGapEmployersLiabilityCoverageEndorsementPolLvl.ManualPremium":
+        "refused already: limits ISO does not rate, no ManualPremium (B-07)",
+}
 
 #: ISO's own sample policies (`<state>/**/STC/<file>`), one classification kept where noted. Chosen
 #: 2026-10-13 by the OI-130 reproduction: each carries a coverage the console request does not.
@@ -142,6 +209,15 @@ def _built(name, date):
         r["LimitBodilyInjuryByDiseaseEachEmployee"] = "500,000" if date >= "20270401" else "500,000 BI"
         r["ManualPremium"] = 250.0
         return p
+    if name == "LPW-TX":                      # Limited Product Withdrawal (B-08, B-29): its discount and deductible
+        p = WB.build("GL", "TX", {"effective_date": date})
+        g = _gl(p)
+        g.update(ProdsWithdrawalCoverage="Yes", ProductWithdrawalParticipationPercentage="50",
+                 PremiumDiscountPercentage=0)
+        g["GeneralLiabilityLimitedProductWithdrawalExpenseEndtPolLvl"] = [
+            {"AggregateLimit": "100,000", "Deductible": "1,000" if date >= "20270401" else "1,000 Per Occurrence",
+             "ManualPremium": 500.0}]
+        return p
     if name == "Terrorism-NY":
         p = WB.build("GL", "NY", {"effective_date": date, "terrorism": "Yes"})
         for loc in _gl(p)["GeneralLiabilityLocation"]:
@@ -222,7 +298,7 @@ def main() -> int:
     a = ap.parse_args()
     states = sorted(Path(p).parent.name for p in glob.glob(str(ROOT / "Engine_Payloads" / "*" / "submission.json")))
     names = [f"console-{s}" for s in states] + list(SAMPLES) + ["Drone-TX", "StopGap-ND", "StopGap-WA",
-                                                                    "StopGapManual-ND", "Company-TX", "Terrorism-NY"]
+                                                                    "StopGapManual-ND", "Company-TX", "Terrorism-NY", "LPW-TX"]
     rows = []
     # a fresh worker per request: each loads one state's book and exits, so memory stays at one book per worker
     # (a long-lived worker keeps every book it has loaded; at 6 workers that exhausted a 16 GB machine)
@@ -264,14 +340,17 @@ def main() -> int:
             "population": names,
             "tries": {f"{h} {c}": v for (h, c), v in sorted(tally.items())},
             "fields": decided,
-            "list_fields": sorted(found["invalid"]),
+            "list_fields": sorted(set(found["invalid"]) | set(ADD_LIST_FIELDS)),
             "evidence": {h: {n: {"silent_in": len(e["silent"]), "example": e["example"]}
                              for n, e in sorted(found[h].items()) if h == "invalid" or n in decided}
                          for h in found},
             "missing_candidates": {n: {"silent_in": len(e["silent"]), "same": e["same"], "example": e["example"]}
-                                   for n, e in sorted(found["missing"].items()) if n not in decided},
+                                   for n, e in sorted(found["missing"].items())
+                                   if n not in decided and n not in NOT_REFUSED},
+            "not_refused": NOT_REFUSED,
+            "conditions": CONDITIONS,
         }, indent=1) + "\n", encoding="utf-8")
-        cands = len(set(found["missing"]) - set(decided))
+        cands = len(set(found["missing"]) - set(decided) - set(NOT_REFUSED))
         print(f"\nwrote {OUT.relative_to(ROOT)}: {len(decided)} fields (decided), {len(found['invalid'])} list "
               f"fields, {cands} missing candidates for review")
     return 0

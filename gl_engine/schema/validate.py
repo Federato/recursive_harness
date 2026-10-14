@@ -125,6 +125,13 @@ def list_inputs() -> frozenset:
     return frozenset(_inputs_file().get("list_fields", ()))
 
 
+def condition_overrides() -> dict:
+    """`Table.Column` -> the condition under which a decided rating input is required, where ISO's own cannot serve
+    (`conditions`, B-29): ISO does not mark it required on some edition, or its condition can never hold. Used in
+    place of ISO's conditions, in the same dialect, and only for fields in `fields`."""
+    return dict(_inputs_file().get("conditions", {}))
+
+
 _RATING_INPUTS = None
 
 
@@ -243,13 +250,15 @@ def missing_required(root, schema) -> tuple[list, list]:
         for t, n in _rows(risk, "GeneralLiability", []):
             by_table.setdefault(t, []).append(n)
     inputs = rating_inputs()
+    overrides = {k: v for k, v in condition_overrides().items() if k in inputs}
     out, unread, seen = [], [], set()
     for f in schema:
-        if not f.policy_required or not f.is_input:
+        override = overrides.get(f"{f.table}.{f.column}")
+        if not f.is_input or (not f.policy_required and override is None):
             continue
         for row in by_table.get(f.table, ()):
             held, ok = "", True
-            for cond in (f.condition, f.required_condition):
+            for cond in ((override,) if override is not None else (f.condition, f.required_condition)):
                 if not cond:
                     continue
                 try:
