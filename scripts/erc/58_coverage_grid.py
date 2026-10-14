@@ -48,6 +48,17 @@ FAMILIES = [
 ]
 
 
+#: Families ISO cannot price separately, with the evidence (B-13, 2026-10-14). The grid shows them empty by design.
+NOT_PRICEABLE = {
+    "Special Combined": "a minimum-premium top-up for certain class combinations, not a coverage; ISO files every "
+                        "minimum at $0, so it never fires on ISO's content",
+    "NY Special Protective & Highway": "ISO's loss costs are filed at 0 for all three classes; ISO prices it $0 with no "
+                                       "message (2 calls, both editions; our R30 flags it)",
+    "Damage to Premises Rented": "its rules write Premium but never PremiumIndicator: carried inside Premises/Operations",
+    "Med Pay": "its rules write Premium but never PremiumIndicator: carried inside Premises/Operations",
+}
+
+
 def iso_money(body) -> collections.Counter:
     """coverage tag -> summed Premium where ISO marks it money (PremiumIndicator 1), from a RaaS response body."""
     out: collections.Counter = collections.Counter()
@@ -115,7 +126,8 @@ def main() -> int:
     print(f"| # | Family | ISO answers | States | Lines agree | Lines differ |\n|---|---|---|---|---|---|")
     for i, (name, _) in enumerate(FAMILIES, 1):
         g = grid[name]
-        print(f"| {i} | {name} | {g['answers']} | {len(g['states'])} | {g['agree']} | {g['disagree']} |")
+        why = f" ({NOT_PRICEABLE[name]})" if name in NOT_PRICEABLE else ""
+        print(f"| {i} | {name}{why} | {g['answers']} | {len(g['states'])} | {g['agree']} | {g['disagree']} |")
     return 0
 
 
