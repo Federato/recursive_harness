@@ -400,7 +400,7 @@ def touchpoints():
         "gl_engine/rating/kernel.py": "deviations P2/P3 (5aeffe9, df47960): Kernel.rate(company=), inactive without one; "
                                       "157_ --all 293 of 293 and snapshot clean, 2026-10-13 (missed from this list on 2026-10-09); "
                                       "OI-134 missing-rating-input refusal, GL only (Property never reaches the GL kernel): "
-                                      "snapshot clean but for OI-135's known flake, 170 GL requests 1 deliberate change, 2026-10-13"
+                                      "snapshot clean but for OI-135's known flake, 170 GL requests 1 deliberate change, 2026-10-13; OI-129 (B-09) LoED refer-band refusal 2026-10-14; OI-132 (B-11) by_coverage from PremiumIndicator, display only, 159 ratings add up, 2026-10-14"
                                       "OI-130 (B-07) off-list / Stop Gap refusals and R30 / R31 notices, GL only: 157_ --all 293 of 293, snapshot clean, 170 GL requests no new change, 2026-10-13; "
                                       "OI-129 (B-09) LoED refer-band stop named, GL only and only on a stopped rating: 50 ISO examples and 153 samples / base risks unchanged, 2026-10-14",
         "gl_engine/schema/validate.py": "OI-134 V6/V7 (ISO's required-field conditions evaluated): GL only, Property never reaches "

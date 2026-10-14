@@ -175,6 +175,16 @@ def group_c(r):
           isinstance(r.premium, Decimal), type(r.premium).__name__)
     check("C2 the parts are broken out per coverage",
           len(r.by_coverage) >= 2, f"{len(r.by_coverage)} coverages")
+    # OI-132 (B-11): the parts are ISO's money-marked premiums (PremiumIndicator = 1), named by coverage, and they add
+    # up. They were the min-premium top-up groups' names pre-2027, and nothing at all from CW 2027 on.
+    check("C2b the parts add up to the premium, named by coverage, not by min-premium top-up group",
+          sum(r.by_coverage.values()) == r.premium and not any("ToReachMin" in c for c in r.by_coverage),
+          ", ".join(f"{c.replace('GeneralLiability', '')} {v}" for c, v in sorted(r.by_coverage.items())))
+    from console import workbench as WB
+    r27 = Kernel().rate(WB.build("GL", "TX", {"effective_date": "20270501"}))
+    check("C2c on the 2027 edition the parts exist and add up too (the breakdown was empty)",
+          r27.complete and len(r27.by_coverage) >= 2 and sum(r27.by_coverage.values()) == r27.premium,
+          f"{r27.premium if r27.complete else r27.stopped}: {len(r27.by_coverage)} parts")
     check("C3 the rating names the packages that priced it",
           len(r.packages) == 2, " over ".join(r.packages))
     check("C4 the trace records every lookup with its source",

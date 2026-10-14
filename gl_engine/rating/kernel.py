@@ -480,17 +480,20 @@ class Kernel:
                 raise RatingError(
                     f"{TOTAL}={raw} disagrees with {TOTAL_CHECK}={check}")
 
-            for cov in risk.children:
-                # `CoveragePremium` is where the money is in the 14
-                # `PremiumToReachMinCoverage` groups; `Premium` sits alongside
-                # it holding 0. Taking the first node that EXISTS finds the
-                # zero and reports no coverages at all, so take the first that
-                # carries a non-zero value and fall back to `Premium`.
-                for tag in ("CoveragePremium", "Premium"):
-                    node = cov.first(tag)
-                    if node is not None and node.text not in (None, "", "0"):
-                        result.by_coverage[cov.tag] = Decimal(node.text)
-                        break
+            # The breakdown is every `Premium` ISO's rules mark as money (`PremiumIndicator = 1`), at whatever level it
+            # sits, summed per coverage across locations and classifications (OI-132, B-11). It used to read the 14
+            # policy-level `PremiumToReachMinCoverage` groups' `CoveragePremium`: pre-2027 that showed the coverage
+            # under its minimum-premium top-up's name and dropped the top-up itself; from CW 2027, which stubs those
+            # groups, the breakdown was empty on every rating. Measured 2026-10-14: the marked premiums add up to
+            # ErcCalculatedTotalPremium on every request tried, both editions, every subline.
+            def money(node):
+                for c in node.children:
+                    prem, ind = c.first("Premium"), c.first("PremiumIndicator")
+                    if (prem is not None and ind is not None and str(ind.text).strip() in ("1", "1.0")
+                            and prem.text not in (None, "")):
+                        result.by_coverage[c.tag] = result.by_coverage.get(c.tag, Decimal(0)) + Decimal(prem.text)
+                    money(c)
+            money(risk)
 
         result.premium = total
 
