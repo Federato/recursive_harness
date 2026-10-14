@@ -330,8 +330,10 @@ def main() -> int:
     # MT, WY, DE were all silently pricing Products/Completed Operations at
     # zero until now. NY, CA, NJ, GA are unchanged -- they have no 2027
     # edition filed and never reach the field at all.
+    # CA 7586 -> 7611 on 2026-10-14 (B-38): GL CA 20270101 V01, a package the
+    # corpus lacked, now in it; ISO rates the same request $7,611 on it.
     expected_cliff = {
-        "NY": "12141", "CA": "7586", "NJ": "9444", "OH": "7670", "TX": "7740",
+        "NY": "12141", "CA": "7611", "NJ": "9444", "OH": "7670", "TX": "7740",
         "FL": "8610", "PA": "10570", "GA": "7366", "RI": "8715", "MT": "8539",
         "WY": "8245", "DE": "8320",
     }
