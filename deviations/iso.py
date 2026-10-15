@@ -54,19 +54,25 @@ def jurisdictions(line: str, date: str) -> list[str]:
     return out
 
 
-#: The table that lists every class the line rates, per line. Property's
-#: occupancy-group domain holds all 154 CSP class codes (every UFG range
-#: endpoint is in it); GL's classification-type table holds all 1,188.
-_CLASS_TABLE = {"CF": ("DomainOccupancyGroup", "Domain"),
-                "GL": ("ClassificationType", "Rate")}
+#: The tables that together list every class the line rates, per line. Property's
+#: occupancy-group domain holds the 154 CSP class codes (every UFG range endpoint
+#: is in it) but not the special classes 1160-1200, which ISO lists in the
+#: occupancy-group-number table and the special-class domain (found 2026-10-15 by
+#: D22: they were missing from every compiled filing). GL's classification-type
+#: table holds all 1,188.
+_CLASS_TABLES = {"CF": (("DomainOccupancyGroup", "Domain"), ("OccupancyGroupNumber", "Rate"),
+                        ("DomainClassCodeDescriptionForSpecialClass", "Domain")),
+                 "GL": (("ClassificationType", "Rate"),)}
 
 
 @lru_cache(maxsize=None)
 def class_codes(line: str, juris: str, date: str) -> tuple[str, ...]:
-    name, kind = _CLASS_TABLE[line]
-    t = book(line, juris, date).table(name, kind)
-    i = t.col("ClassCode")
-    return tuple(sorted({str(r[i]) for r in t.rows if str(r[i]).strip()}))
+    codes = set()
+    for name, kind in _CLASS_TABLES[line]:
+        t = book(line, juris, date).table(name, kind)
+        i = t.col("ClassCode")
+        codes |= {str(r[i]) for r in t.rows if str(r[i]).strip()}
+    return tuple(sorted(codes))
 
 
 def table(line: str, juris: str, date: str, name: str) -> Table:

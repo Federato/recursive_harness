@@ -287,6 +287,38 @@ def t7(root: Path) -> None:
         i = rate_cf(il, root).deviation["filings"]
         check("T7i rated: Oregon is under it; Iowa and Illinois are not", o and not ia and not i,
               f"OR {o}, IA {ia}, IL {i}")
+    # D22: a class ISO adds after the filing compiled takes the "all other classes" rows. Simulated by compiling
+    # one copy against an edition without the sample's classes; it must rate exactly as the copy that had them.
+    from deviations import iso as dv_iso
+    sample_classes = set()
+    stack = [E.ia_sample()["body"]]
+    while stack:
+        o = stack.pop()
+        if isinstance(o, dict):
+            sample_classes.update(str(v) for k, v in o.items() if k == "ClassCode")
+            stack.extend(o.values())
+        elif isinstance(o, list):
+            stack.extend(o)
+    rows = [{"target": "LCM:All", "scope": {}, "value": "1.4", "mode": "replace"},
+            {"target": "LCM:GroupII", "scope": {}, "value": "1.1", "mode": "multiply"}]
+    for code in ("T7UK", "T7UN"):
+        cdir = root / "UFG" / code
+        cdir.mkdir(parents=True, exist_ok=True)
+        (cdir / "company.json").write_text(json.dumps({"code": code}), encoding="utf-8")
+    E.filing(root, "T7UK", "IA-UK", "CF", ["IA"], "2025-06-01", rows)
+    real = dv_iso.class_codes
+    dv_iso.class_codes = lambda *a: tuple(c for c in real(*a) if c not in sample_classes)
+    try:
+        E.filing(root, "T7UN", "IA-UN", "CF", ["IA"], "2025-06-01", rows)
+    finally:
+        dv_iso.class_codes = real
+    known = rate_cf(E.ia_sample("T7UK"), root, with_technical=True)
+    added = rate_cf(E.ia_sample("T7UN"), root)
+    d22 = [w for w in added.deviation["warnings"] if "D22" in w]
+    check(f"T7j a class added after the filing (classes {sorted(sample_classes)}) takes 'all other': "
+          f"{added.premium} = {known.premium}, technical {known.technical.premium}",
+          sample_classes and added.premium == known.premium != known.technical.premium and d22
+          and not [w for w in known.deviation["warnings"] if "D22" in w], str(added.deviation["warnings"][:3]))
 
 
 # --------------------------------------------------------------------- T9
@@ -348,7 +380,8 @@ def t5() -> None:
             iso_lcm = dv.iso_state_lcm(book, "CF")
             notes = [n.data for n in r.ip.trace if n.kind == "company-group-lcm"]
             bad = [n for n in notes if Decimal(n["value"]) != dv._final(
-                plan.group_lcm[(n["group"], n["basis"], n["class_code"])], iso_lcm)]
+                plan.group_lcm.get((n["group"], n["basis"], n["class_code"]))
+                or plan.unlisted_lcm[(n["group"], n["basis"])], iso_lcm)]
             groups = sorted({n["group"] for n in notes})
             check(f"T5 {c['id']}: {len(notes)} group-rate products read exactly the filed LCM "
                   f"({', '.join(groups)})", notes and not bad, str(bad[:2]))

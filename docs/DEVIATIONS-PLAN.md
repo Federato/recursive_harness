@@ -71,6 +71,7 @@ produces two results from the same request:
 | D19 | Which line the engine work starts with | **CF first, then GL** (the P0 filing is CF). |
 | D21 | What ISO is sent (O6, decided 2026-10-09) | **Technical only, never an LCM.** The comparison pattern is **Technical** (ours, pure ISO) / **ISO** (its answer to that same request) / **Carrier** (ours, proved against technical). The ISO client itself strips every LCM from a request that named a writing company. |
 | D20 | Smaller P0 gaps | Stat code reports the Group I LCM (G2). One authored file per company, sharing the SERFF id (G3). Scope gains a **rating basis** key, specific or class (G5). Class groups may sit at carrier level and use code ranges, expanded against the edition's class list (G7). |
+| D22 | A class the filing never listed: one ISO adds after the filing compiled (B-17, decided 2026-10-15) | **"All other classes" applies, until a filing says otherwise.** The compiled filing carries what its rows written for no class and no class group compose to (`unlisted_class_lcm`); the engine charges that to any class missing from the compiled keys and says so on the worksheet. Found with it: Property's class list left out the 7 special classes 1160-1200, so UFG's "all other" LCM never reached them (ISO's applied); the list is now 161 classes. Tested in T7j |
 
 ### My calls (push back if wrong)
 

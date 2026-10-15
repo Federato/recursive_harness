@@ -68,6 +68,8 @@ class Plan:
     group_lcm: dict = field(default_factory=dict)
     #: GL: (coverage, class) -> (value, mode, explain)
     lcm: dict = field(default_factory=dict)
+    #: D22, a class the filing's edition lacked: CF (group, basis) / GL (coverage,) -> (value, mode, explain)
+    unlisted_lcm: dict = field(default_factory=dict)
     #: ISO table name -> {"col", "keys", "rows": {key tuple: (value, mode, explain)}}
     overrides: dict = field(default_factory=dict)
     warnings: list = field(default_factory=list)
@@ -88,7 +90,7 @@ class Plan:
         """A copy with parts removed: the waterfall rates the deviations one step at a time."""
         p = dataclasses.replace(self, warnings=list(self.warnings))
         if lcm:
-            p.group_lcm, p.lcm = {}, {}
+            p.group_lcm, p.lcm, p.unlisted_lcm = {}, {}, {}
         if tables:
             p.overrides = {k: v for k, v in self.overrides.items() if k not in set(tables)}
         return p
@@ -148,6 +150,8 @@ def plan_for(line: str, company: str, juris: str, date: str, policy_type: str | 
                   f"{pt.lower()} business on {date}: carrier equals technical")
         return plan
     plan.filing_dir, plan.manifest = d, read_json(d / "manifest.json")
+    plan.unlisted_lcm = {tuple(k.split("|")): (Decimal(v), m, x)
+                         for k, (v, m, x) in plan.manifest.get("unlisted_class_lcm", {}).items()}
     for tname, meta in plan.manifest["tables"].items():
         header, rows = _read_table(d / f"{tname}.RateTable.csv")
         n = len(meta["keys"])
@@ -229,6 +233,16 @@ def _final(entry, iso_lcm: Decimal) -> Decimal:
     return value if mode == "replace" else iso_lcm * value
 
 
+def unlisted(plan: Plan, cls: str, key: tuple):
+    """D22: a class the filing never saw (ISO added it after the filing compiled) takes the filing's
+    "all other classes" rows; None when the filing has none for this key."""
+    entry = plan.unlisted_lcm.get(key)
+    if entry is not None:
+        plan.warn(f"class {cls} is not in the ISO edition {plan.ref} was compiled against: "
+                  f"its {'/'.join(key)} LCM is the filing's 'all other classes' row (D22)")
+    return entry
+
+
 class GroupLCM:
     """The interpreter's `group_lcm` hook for one company rating (D17)."""
 
@@ -256,7 +270,7 @@ class GroupLCM:
             self.plan.warn(f"a {group} rate on {node.tag} has no class: it keeps the record's LCM")
             return None
         basis = _basis(node, group, names, fixed[1] if fixed else None)
-        entry = self.plan.group_lcm.get((group, basis, cls))
+        entry = self.plan.group_lcm.get((group, basis, cls)) or unlisted(self.plan, cls, (group, basis))
         if entry is None:
             self.plan.warn(f"no company {group} LCM for class {cls} ({basis}): ISO's LCM applies")
             return None
@@ -396,7 +410,7 @@ def write_gl_lcms(plan: Plan, data, book, ip=None) -> int:
             continue
         cov = got[0]
         cls = _up(node, "ClassCode")
-        entry = plan.lcm.get((cov, cls)) if cls else None
+        entry = (plan.lcm.get((cov, cls)) or unlisted(plan, cls, (cov,))) if cls else None
         if entry is None:
             continue
         v = _final(entry, iso_lcm[cov])

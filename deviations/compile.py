@@ -22,6 +22,7 @@ wrote -- and `verify_deviations_files.py` holds it to that (T10).
 from __future__ import annotations
 
 import csv
+import dataclasses
 import io
 import shutil
 from decimal import Decimal
@@ -31,7 +32,7 @@ from xml.sax.saxutils import quoteattr
 
 from . import iso
 from .config import LCM_TARGETS, RATING_BASES
-from .expand import Context, canon, lcm_header
+from .expand import Context, canon, compose, expand, lcm_header
 from .files import compiled_dir, dumps, read_json, write_json
 from .validate import Report, approval
 
@@ -71,6 +72,21 @@ def _write(path: Path, text: str) -> None:
 
 def lcm_table_name(line: str) -> str:
     return "GroupLCM" if line == "CF" else "LCM"
+
+
+#: The class key an "all other" row is composed for, standing in for every class the edition lacked at compile.
+UNLISTED = "*"
+
+
+def unlisted_lcms(rows, ctx: Context) -> dict:
+    """D22: what a class ISO adds after the filing compiled is charged -- the rows written for no class and no
+    class group ("all other classes"), composed as for any class, until a filing says otherwise.
+    {"<target>[|<basis>]": [value, mode, explain]}; empty when the filing has no such row."""
+    u = dataclasses.replace(ctx, classes=(UNLISTED,))
+    mine = [r for r in rows if r.target.startswith("LCM:") and not {"class", "class_group"} & set(r.scope)]
+    composed, _ = compose([expand(r, u) for r in mine])
+    return {"|".join(k[:-1]): [canon(c.value), c.mode, c.explain]
+            for k, c in sorted(composed.get(("LCM",), {}).items())}
 
 
 def compile_filing(rep: Report, *, require_approval: bool = True) -> list[Path]:
@@ -126,6 +142,7 @@ def compile_filing(rep: Report, *, require_approval: bool = True) -> list[Path]:
             "header": header,
             "class_groups": ctx.class_groups,
             "tables": tables,
+            "unlisted_class_lcm": unlisted_lcms(f.rows, ctx),
             "rows": [{"id": r.id, "cite": r.cite, "note": r.note} for r in f.rows],
         }
         write_json(d / "manifest.json", manifest)

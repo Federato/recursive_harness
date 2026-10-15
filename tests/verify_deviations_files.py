@@ -122,8 +122,8 @@ def a_ufg() -> None:
         rep = validate(load_filing(p))
         check(f"A1 {co} validates", rep.ok, "; ".join(rep.errors))
         n = sum(len(k) for _, _, comp, _, _ in rep.plans.values() for k in comp.values())
-        check(f"A2 {co} reaches every key once: 5 groups x 2 bases x 154 classes",
-              n == 1540, f"got {n}")
+        check(f"A2 {co} reaches every key once: 5 groups x 2 bases x 161 classes (154 CSP + 7 special, D22)",
+              n == 1610, f"got {n}")
         check(f"A3 {co} both dates fall in CF_IA_20250401_V01",
               rep.plans["IA"][3]["state"] == "CF_IA_20250401_V01" == rep.plans["IA"][4]["state"])
         approve(p)

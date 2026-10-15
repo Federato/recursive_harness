@@ -187,5 +187,5 @@ loss ratios 0.543 (Group I) and 0.477 (Group II); rate level change +20.9% UFC, 
 
 **Open on this filing**
 
-- Whether the "all other" row should apply automatically to classes ISO adds after v1 is offered, not decided.
+- ~~Whether the "all other" row should apply automatically to classes ISO adds after v1~~ **Decided 2026-10-15 (D22): yes, until a filing says otherwise.** Recompiled: the 7 Property special classes 1160-1200, missing from the compiled class list until now, take "all other" (UFC 1.511 / 3.280 / 2.11, ADD 1.813 / 3.934 / 2.64); before, ISO's LCM applied to them. Same for UFG Alabama (DEV-002).
 - Companion filings UNFG-134204780 (CPP plan) and UNFG-134266109 (forms) haven't been received.
