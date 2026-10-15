@@ -21,9 +21,9 @@ corpus resolves to ISO's package in 100 of 100 state × edition combinations (B-
 | A2 | **Schedule rating on Prem/Ops** | Runs; capped at ±25% (R15, ISO-confirmed) | `schedule_rating`, `schedule_pct` | Liquor (AL), OK, NY, NE — never Prem/Ops with experience on | On Prem/Ops it applies only when experience credibility ≥ 0.03 (OI-89), so it has never been exercised there; needs A1 first **Done 2026-10-15 (B-41): ISO 7 of 7 exact, incl. the cap both ways and the 0.03 gate.** |
 | A3 | **Composite rating** | Rates ISO's 2 composite samples (WV liquor: $764 of classes re-expressed to $255 at the audited exposure) | **No control** | **None** | Builder; ISO comparison **Done 2026-10-15 (B-42): control added; ISO 8 of 8 exact (above, below, equal, 0, multi-class, 2027, FL, NY).** |
 | A4 | **R16 refers every composite risk whose audited exposure is below the estimate** | The composite adjustment is negative by design (WV sample: −$509); R16 reads any negative premium as a defect | — | — | False referral: exempt the composite adjustment. **Fixed 2026-10-15 (B-39)**; re-measured, the WV sample gives 743 → 248, −495 |
-| A5 | **Package modification factor** | Applies (0.9 → TX $7,036) | **No control** | **None** | Control; ISO comparison |
-| A6 | **How the modifiers combine** (`ModToUse`, experience × schedule × package) | Runs | — | Only ever one at a time, each at 1 except schedule | ISO comparison with two or more on |
-| A7 | **Modifiers on endorsement premiums** | 281 endorsements are the carrier's manual premium × the rating mods | — | The manual-premium mechanism is proven (8 endorsements), always with mods at 1 | ISO comparison with a mod ≠ 1 |
+| A5 | **Package modification factor** | Applies (0.9 → TX $7,036) | **No control** | **None** | Control; ISO comparison **Done 2026-10-15 (B-43): ISO 8 of 8 exact.** |
+| A6 | **How the modifiers combine** (`ModToUse`, experience × schedule × package) | Runs | — | Only ever one at a time, each at 1 except schedule | ISO comparison with two or more on **Done 2026-10-15 (B-43): ISO 8 of 8 exact.** |
+| A7 | **Modifiers on endorsement premiums** | 281 endorsements are the carrier's manual premium × the rating mods | — | The manual-premium mechanism is proven (8 endorsements), always with mods at 1 | ISO comparison with a mod ≠ 1 **Done 2026-10-15 (B-43): ISO 8 of 8 exact.** |
 
 ## B · Rating paths
 

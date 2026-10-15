@@ -471,6 +471,29 @@ def main() -> int:
     check("X16 ...and refers nothing in underwriting mode (B-39)", not below.referrals,
           "; ".join(r.code for r in below.referrals) or "no referrals")
 
+    # B-43, ISO-confirmed 2026-10-15 (8 calls, every published field exact): the package factor, a manual-premium
+    # endorsement under it, and every modifier on at once (the package factor also shrinks experience's subject loss
+    # cost, so credibility 0.22 -> 0.21 and the mod 0.903 -> 0.908, as ISO does)
+    big = 50000000
+    for label, cfg, want in (
+            ("X17 package 0.9", {"package_mod": 0.9}, 7407),
+            ("X18 package 0.9 + CG 21 73 at $100 (the endorsement prices $90)",
+             {"package_mod": 0.9, "exclusion_endorsement_premium": 100}, 7497),
+            ("X19 experience + schedule -10% + package 0.9 + endorsement",
+             {"experience_rating": "Yes", "exposure": big, "schedule_rating": "Yes", "schedule_pct": "-10%",
+              "package_mod": 0.9, "exclusion_endorsement_premium": 100}, 60580),
+            ("X20 every debit at once", {"experience_rating": "Yes", "exposure": big, "erp_annual_loss": 100000,
+                                         "schedule_rating": "Yes", "schedule_extreme": "Maximum debit",
+                                         "package_mod": 1.1, "exclusion_endorsement_premium": 100}, 166245)):
+        got = _k.rate(V.build(cfg, ok)).premium
+        check(f"{label} prices as ISO does", got == want, f"{got}, ISO {want}")
+    try:
+        V.build({"terrorism": "Yes", "exclusion_endorsement_premium": 100}, ok)
+        refused = False
+    except V.VariantError:
+        refused = True
+    check("X21 the terrorism exclusion with terrorism coverage on is refused", refused)
+
 
     print("\nE  THE STORE, AND THE LONG VIEW BUILT FROM IT")
     tmp = Path(tempfile.mkdtemp(prefix="tester-store-"))

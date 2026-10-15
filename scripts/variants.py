@@ -582,6 +582,19 @@ CONTROLS: tuple[Control, ...] = (
                  "only when schedule rating is Yes; overrides Schedule "
                  "modification (B-41)."),
 
+    Control("package_mod", "Package modification factor", "Rating plans",
+            "the package factor, which multiplies Prem/Ops and Products and "
+            "every manual-premium endorsement (298 countrywide rule files)",
+            kind="number", cast="float",
+            note="`PackageModFactor` is a rule input, not a declared form "
+                 "field: ISO's 568 samples all send 1.0, and a 0 or a blank "
+                 "reads as 1.0 (B-43)."),
+    Control("exclusion_endorsement_premium", "Terrorism exclusion endorsement premium", "Rating plans",
+            "a manual-premium endorsement (CG 21 73, Exclusion of Certified "
+            "Acts of Terrorism), priced as the premium entered x the package factor",
+            kind="number", cast="float",
+            note="Only with terrorism coverage not Yes (the exclusion and the "
+                 "coverage cannot both be on). B-43."),
     Control("composite_rating", "Composite rating", "Rating plans",
             "composite rating's audit: the classes' premium re-expressed as a "
             "rate per unit of one exposure, re-priced at the audited exposure",
@@ -990,6 +1003,18 @@ def _apply_composite(p, value, d, config):
                     "CompositeExposure": _num_out(est), "FinalAdjustedCompositeExposure": _num_out(aud)}
 
 
+def _apply_package_mod(p, value, d, config):
+    if float(value) <= 0:
+        raise VariantError("a package modification factor must be above 0 (ISO reads 0 as 1.0)")
+    _gl(p)["PackageModFactor"] = value
+
+
+def _apply_exclusion_endorsement(p, value, d, config):
+    if config.get("terrorism") == "Yes" or _gl(p).get("TerrorismCoverage") == "Yes":
+        raise VariantError("the terrorism exclusion endorsement applies only when terrorism coverage is not Yes")
+    _gl(p)["GeneralLiabilityExclusionOfCertifiedActsOfTerrorism"] = [{"ManualPremium": value}]
+
+
 def _apply_composite_detail(p, value, d, config):
     """Written by `_apply_composite`; alone they mean nothing."""
     if config.get("composite_rating") != "Yes":
@@ -1174,6 +1199,8 @@ APPLIERS = {
     "schedule_rating": _apply_risk_field("ScheduleRatingModificationApplies"),
     "schedule_pct": _apply_schedule_pct,
     "schedule_extreme": _apply_schedule_extreme,
+    "package_mod": _apply_package_mod,
+    "exclusion_endorsement_premium": _apply_exclusion_endorsement,
     "composite_rating": _apply_composite,
     "composite_basis": _apply_composite_detail,
     "composite_exposure": _apply_composite_detail,
@@ -1197,7 +1224,8 @@ ORDER = ("subline", "premium_basis", "class_code", "exposure", "classifications"
          "prods_pd_deductible", "prods_bipd_deductible", "coverage_form",
          "claims_made_year", "size_of_risk", "experience_rating", "erp_years", "erp_annual_loss",
          "schedule_rating", "schedule_pct", "schedule_extreme",
-         "composite_rating", "composite_basis", "composite_exposure", "composite_audited", "terrorism", "effective_date",
+         "package_mod", "composite_rating", "composite_basis", "composite_exposure", "composite_audited", "terrorism",
+         "exclusion_endorsement_premium", "effective_date",
          "package_version")
 
 
