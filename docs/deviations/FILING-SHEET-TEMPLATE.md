@@ -6,7 +6,7 @@ Filings screen. It is our reading of the filing; the filed document wins where t
 
 ## In short
 
-One paragraph anyone can read: who, what line and state, from when, what changes against ISO in percentages, the effect on typical businesses, and whether it is proven. No codes. The Carrier Filings screen shows it first.
+One paragraph anyone can read. Start with **what was filed**, named and with its values (e.g. "UFG filed loss cost multipliers (LCMs) for general liability in Iowa: 0.942 for premises and operations, 6% below ISO, …"), and say in a few words what that kind of change does. Then who, from when, what is left out, the effect on typical businesses, and whether it is proven. The Carrier Filings screen shows it first.
 
 **Stage:** Received → Mapped → Draft impact → Built → Proved  ·  **DEV number:** DEV-nnn (assigned when logged)
 
