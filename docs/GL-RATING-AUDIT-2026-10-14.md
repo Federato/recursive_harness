@@ -29,7 +29,7 @@ corpus resolves to ISO's package in 100 of 100 state × edition combinations (B-
 
 | # | Item | Engine | Builders | ISO evidence | Gap |
 |---|---|---|---|---|---|
-| B1 | **Size-of-risk** | Rates where filed (OH, CO); refuses in the 14 states with no size-of-risk loss costs (R10); R26 refers the cannabis zeros | `size_of_risk` | **None** | ISO comparison in a filing state |
+| B1 | **Size-of-risk** | Rates where filed (OH, CO); refuses in the 14 states with no size-of-risk loss costs (R10); R26 refers the cannabis zeros | `size_of_risk` | **None** | ISO comparison in a filing state **Done 2026-10-15 (B-44): ISO 10 of 10 agree, refusals included; rates in 35 states on 2026-10, only NJ and WA on 2027.** |
 | B2 | **Claims-made** | Runs | `coverage_form`, `claims_made_year` | OK and NY, two maturities (August); 87 ISO samples unpriced | Years 3–5+, retroactive dates, more states |
 | B3 | **Multi-location / multi-class** | Runs | `locations`, `classifications` | OK and NY, 2 locations / 2 classes (August); none in the stored answers | More states; 3+ locations / classes; mixed bases |
 | B4 | **Territories** | Runs (place-coded CA, FL, NY, TX proven, E8) | Location territory | At most 2 per state; 10 of 50 states with more than one | A territory sweep (e.g. OH files 10) |

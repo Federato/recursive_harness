@@ -494,6 +494,19 @@ def main() -> int:
         refused = True
     check("X21 the terrorism exclusion with terrorism coverage on is refused", refused)
 
+    # B-44, ISO-confirmed 2026-10-15 (10 calls): size-of-risk prices as ISO does, and where we refuse, ISO refuses too
+    for label, st, cfg, want in (
+            ("X22 size-of-risk, OK 2026, small risk (relativity 1.6489)", "OK", {"exposure": 100000}, 251),
+            ("X23 size-of-risk, NJ 2027 (its own tables survive the 2027 countrywide)", "NJ",
+             {"effective_date": "20270401"}, 11700)):
+        dd = V.Declared.for_config(st, {"effective_date": cfg.get("effective_date", "20261001")})
+        got = _k.rate(V.build({"size_of_risk": "Yes", "effective_date": "20261001", **cfg}, dd)).premium
+        check(f"{label} prices as ISO does", got == want, f"{got}, ISO {want}")
+    d27 = V.Declared.for_config("OK", {"effective_date": "20270401"})
+    r27 = _k.rate(V.build({"size_of_risk": "Yes", "effective_date": "20270401"}, d27))
+    check("X24 size-of-risk, OK 2027: we refuse, as ISO does (a 400 on the PremOps loss cost lookup)",
+          not r27.complete, str(r27.stopped)[:80])
+
 
     print("\nE  THE STORE, AND THE LONG VIEW BUILT FROM IT")
     tmp = Path(tempfile.mkdtemp(prefix="tester-store-"))
