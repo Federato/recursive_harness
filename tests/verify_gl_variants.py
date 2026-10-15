@@ -556,6 +556,17 @@ def main() -> int:
     r506 = _k.rate(catalog.build("GL", "PA", {**now, "territory": "506"}))
     check("X43 PA territory 506: class 50017 has no loss cost there; we refuse, as ISO does", not r506.complete,
           str(r506.stopped)[:70])
+    # B-50 / B-51, ISO-confirmed 2026-10-15 (56 + 15 calls)
+    for label, st, cfg, want in (
+            ("X44 Admissions basis (40063)", "OK", {**now, "class_code": "40063"}, 12395),
+            ("X45 Vehicles basis (49292) at the measure default 100,000, not a count's 10", "OK",
+             {**now, "class_code": "49292"}, 394),
+            ("X46 No Exposure basis (46510) with an ELP override", "OK",
+             {**now, "class_code": "46510", "elp_override_premops": 1.0}, 203380),
+            ("X47 AL on its 2026-01-01 package", "AL", {"effective_date": "20260101"}, 7106),
+            ("X48 IL on its 2026-09-01 package", "IL", {"effective_date": "20260901"}, 8381)):
+        got = _k.rate(catalog.build("GL", st, cfg)).premium
+        check(f"{label} prices as ISO does", got == want, f"{got}, ISO {want}")
     retro = V._gl(catalog.build("GL", "OK", {**cm, "retro_years": 5}))
     check("X36 the retroactive date is written five years back", retro.get("RetroactiveDateApplies") == "Yes"
           and retro.get("PremOpsProdsRetroactiveDate") == "2021-10-15", retro.get("PremOpsProdsRetroactiveDate"))

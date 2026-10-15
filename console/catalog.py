@@ -263,10 +263,12 @@ def build(line: str, state: str, config: dict | None = None) -> dict:
 
 def basis_exposure(basis: str):
     """A realistic exposure for a premium basis (ours): the four common bases by table; a count ("Number of ...",
-    "Each ...", "Per ...") 10; any other measure (admissions, gallons, total cost) 100,000."""
+    "Each ...", "Per ...", Acres) 10; any other measure (admissions, gallons, total cost, vehicles, passenger days) 100,000."""
     if basis in BASIS_EXPOSURE:
         return BASIS_EXPOSURE[basis]
-    if basis.startswith(("Number of", "Each", "Per ")) or basis in ("Vehicles", "Acres", "Passenger Days"):
+    # Vehicles and Passenger Days are rated per 1,000 (B-50: at 10 a toll bridge or a tour operator priced $0, ISO
+    # agreeing), so they take the measure default below, not a count's.
+    if basis.startswith(("Number of", "Each", "Per ")) or basis == "Acres":
         return 10
     return 100000
 
