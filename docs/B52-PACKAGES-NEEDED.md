@@ -1,5 +1,7 @@
 # B-52 -- GL packages ISO rates with on 2026-10-15 that the corpus lacks
 
+**Status 2026-10-15: 44 of 45 ingested** (plus PR 20261001 V01; OK 20261001 V01 was already on disk, same contents). **Still needed: `GL CO 20261001 V03`.** After ingesting, all 46 probed states resolve to ISO's package and price the base risk as ISO does (ND now $8,111); 364 of 369 stored ISO GL answers exact, 5 deliberate refusals.
+
 Measured 2026-10-15: one ISO call per state on the base risk (46, refresh lane) plus B-44's four (OH, CO, PA, MI).
 Current already: CA, DC, GA, NY, OK. Not on the subscription: PR. The countrywide GL CW 20261001 V01 is already on disk.
 
