@@ -11,6 +11,8 @@
   G  why this value: a worksheet value's ancestry from the rating graph, its sources, the carrier's path marked
   H  Carrier Filings: the filings log, each filing's sources re-hashed and openable, each company's versions
   I  the worksheet's Formula view: each premium as arithmetic with its actual factors, checked against the engine
+  J  B-20's demo view: the filings board (company x line and state, pins), each filing's rows, its impact previews
+     (built and draft), its filing sheet rendered, and its proving suite's last run
 
     python tests/verify_console_deviations.py
 """
@@ -389,9 +391,76 @@ def part_i():
     check("I7 the page has the Formula view", 'data-wv="' in html and "fxPanel" in html and "formula" in html)
 
 
+def part_j():
+    print("J. B-20 demo view: the board, each filing's rows, impact previews, filing sheet and proof")
+    import hashlib
+    from deviations import suite_log
+    from deviations.compile import compile_filing
+    from deviations.files import load_filing, log_action
+    from deviations.validate import validate
+    gl = load_filing(TMP / "carriers" / "UFG" / "UFC" / "authored" / "IA-GL-UNFG-134374972.v1.json")
+    for action in ("propose", "sign-off"):
+        log_action(gl.company_dir, gl.filing, gl.version, action, "Dan Roman")
+    compile_filing(validate(gl))
+    code, b = get("/api/console/filings/board")
+    cell = {(c["company"], c["line"], c["state"]): c for c in b["cells"]}
+    ufc_gl = cell.get(("UFC", "GL", "IA"))
+    check("J1 the board: UFC rates CF and GL in Iowa, GL pinned to GL_IA_20240401_V01; ADD's CF filing is withdrawn",
+          code == 200 and cell.get(("UFC", "CF", "IA"), {}).get("status") == "approved" and ufc_gl
+          and ufc_gl["status"] == "approved" and ufc_gl["pin"] == "GL_IA_20240401_V01"
+          and cell.get(("ADD", "CF", "IA"), {}).get("status") == "withdrawn"
+          and {"line": "GL", "state": "IA"} in b["columns"], {k: (v["status"], v["pin"]) for k, v in cell.items()})
+    src = TMP / "carriers" / "UFG" / "sources" / "UNFG-134374972"
+    src.mkdir(parents=True, exist_ok=True)
+    sheet = "\n".join(["# Filing sheet: UFG Iowa GL", "", "| Company | LCM |", "|---|---|", "| UFC | **0.942** |", ""])
+    (src / "sheet.md").write_text(sheet, encoding="utf-8")
+    (src / "source.json").write_text(json.dumps({
+        "serff": "UNFG-134374972", "carrier": "UFG", "companies": ["UFC"], "line": "GL", "juris": ["IA"],
+        "sheet": "sheet.md", "suite": "ufg_test", "files": [{"name": "sheet.md", "what": "our filing sheet",
+                                                             "sha256": hashlib.sha256(sheet.encode()).hexdigest()}]}),
+        encoding="utf-8")
+    imp = TMP / "impact"
+    imp.mkdir(exist_ok=True)
+    os.environ["IMPACT_DIR"] = str(imp)
+    base = {"company": "UFC", "line": "GL", "states": {"IA": {"date": "2025-07-15"}}, "all": {"change": "28.7",
+            "risks": 30, "rated": 30, "min": "-6.0", "max": "80.0"}, "by_risk_type": {"Retail": {"change": "-5.0"}},
+            "by_coverage": {"All": {"Premises/Operations": {"change": "-5.8"}}}, "by_state": {}, "drivers": [],
+            "refused": []}
+    (imp / "UFC-GL-IA.json").write_text(json.dumps(base), encoding="utf-8")
+    (imp / "UFC-GL-IA-draft-x.json").write_text(json.dumps({**base, "draft": "IA-GL-X.v2"}), encoding="utf-8")
+    (imp / "ADD-GL-IA.json").write_text(json.dumps({**base, "company": "ADD"}), encoding="utf-8")
+    (imp / "UFC-CF-IA.json").write_text(json.dumps({**base, "line": "CF"}), encoding="utf-8")
+    keep = suite_log.DIR
+    suite_log.DIR = TMP / "suites"
+    try:
+        suite_log.record("ufg_test", [("U1 files", True), ("U2 lcm", True)])
+        code, d = get("/api/console/filings")
+    finally:
+        suite_log.DIR = keep
+    f = next((x for x in d["filings"] if x["serff"] == "UNFG-134374972"), None)
+    v = f and next((x for x in f["versions"] if x["company"] == "UFC"), None)
+    check("J2 each version carries its rows (target, scope, value), its compiled keys and its pin",
+          v and len(v["detail"]) == 4 and v["detail"][0]["value"] == "0.942" and v["detail"][2]["scope"]
+          == {"class_group": "UFG-IA-GL-aRated-PremOps@v1"} and v["compiledKeys"] > 0
+          and v["pins"] == {"IA": "GL_IA_20240401_V01"}, v and {k: v[k] for k in ("compiledKeys", "pins")})
+    got = sorted((i["company"], i["draft"] or "") for i in (f or {}).get("impacts", []))
+    check("J3 the filing's impact previews: built and draft, for its own companies and line only",
+          got == [("UFC", ""), ("UFC", "IA-GL-X.v2")], got)
+    check("J4 the filing sheet is rendered: its table, no raw markdown",
+          f and "<table" in f["sheet"] and "<b>0.942</b>" in f["sheet"] and "|" not in re.sub(r"<[^>]+>", "", f["sheet"]))
+    code, body, kind = CP.dispatch("GET", "/api/console/filings/source",
+                                   {"carrier": "UFG", "serff": "UNFG-134374972", "file": "sheet.md"}, None)
+    check("J5 a filing sheet opens as a page, rendered", code == 200 and kind == "html" and b"<table" in body, (code, kind))
+    p = f and f["proof"]
+    check("J6 the proving suite's last run: 2 of 2", p and p["ran"] and p["passed"] and (p["ok"], p["checks"]) == (2, 2), p)
+    code, html, _ = CP.dispatch("GET", "/console", {}, None)
+    check("J7 the page draws the board, the rows, the impact and the proof", all(
+        k in html for k in ('id="fl-board"', "flBoard", "flRows", "flImpact", "flProof")))
+
+
 def main() -> int:
     setup()
-    for part in (part_a, part_b, part_c, part_d, part_e, part_f, part_g, part_h, part_i):
+    for part in (part_a, part_b, part_c, part_d, part_e, part_f, part_g, part_h, part_i, part_j):
         part()
     bad = [n for n, ok in RESULTS if not ok]
     print(f"\n{len(RESULTS) - len(bad)}/{len(RESULTS)} passed" + (f"; FAILED: {', '.join(bad)}" if bad else ""))

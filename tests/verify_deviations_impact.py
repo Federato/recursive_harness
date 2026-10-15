@@ -9,6 +9,7 @@ Run: python tests/verify_deviations_impact.py    (offline; no ISO calls)
                 2.448 for class group A, 2.062 for B, 3.280 for all other (UFC Iowa)
   I4  GL        on a constructed TX filing (PremOps LCM 1.3), Prem/Ops moves by 1.3 over ISO's LCM and Products not
   I5  no ISO    the run never loads the ISO client
+  I6  draft     a draft's impact (B-20) rates in a scratch store: the real store keeps it a draft, uncompiled
 """
 from __future__ import annotations
 
@@ -101,6 +102,28 @@ def main() -> int:
               str(po))
         check(f"I4 Products does not move ({pr and pr['change']}%)", pr is None or pr["technical"] == pr["carrier"],
               str(pr))
+        print("\nI6  a draft's impact, before it is approved or built (B-20)")
+        from deviations.files import read_json, write_json
+        src = root / "UFG" / "UFC" / "authored" / "IA-GL-UNFG-134374972.v1.json"
+        d = read_json(src)
+        d.update(version=2, status="draft")
+        d["rows"][0]["value"] = Decimal("1.0")                 # Prem/Ops at 1.0: only Products should move
+        draft = src.with_name("IA-GL-UNFG-134374972.v2.json")
+        write_json(draft, d)
+        wf = root / "UFG" / "UFC" / "workflow.jsonl"
+        wf_before = wf.read_text(encoding="utf-8") if wf.exists() else ""
+        dr = I.run_draft(draft, root=root)
+        cov = dr["by_coverage"]["All"]
+        po, pr = cov.get("Premises/Operations", {}), cov.get("Products/Completed Ops", {})
+        check(f"I6 the draft rates: {dr['all']['rated']} of {dr['all']['risks']} risks, overall {dr['all']['change']}%, "
+              f"labelled {dr.get('draft')}", dr["all"]["rated"] == dr["all"]["risks"] > 0
+              and dr.get("draft") == "IA-GL-UNFG-134374972.v2")
+        check(f"I6 Prem/Ops at the draft's 1.0 does not move ({po.get('change')}%); Products does ({pr.get('change')}%)",
+              po.get("technical") == po.get("carrier") and pr and Decimal(pr["change"]) > 0, str(cov))
+        check("I6 the real store is untouched: the draft is still a draft, not compiled, nothing in the workflow log",
+              read_json(draft)["status"] == "draft"
+              and not list((root / "UFG" / "UFC" / "compiled").glob("GL/IA/*v2"))
+              and (wf.read_text(encoding="utf-8") if wf.exists() else "") == wf_before)
         check("I5 no ISO client was loaded", "raas" not in sys.modules)
     finally:
         shutil.rmtree(root, ignore_errors=True)

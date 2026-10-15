@@ -204,6 +204,39 @@ def run(company: str, line: str = "CF", states: list[str] | None = None, root: P
     return summarize(company, line, meta_states, risks)
 
 
+def run_draft(authored: Path, root: Path = CARRIERS_ROOT, progress=None) -> dict:
+    """B-20: a draft's impact before it is built. The carrier's files are copied to a scratch store, where the draft
+    alone is marked approved, signed off and compiled; the projected book is rated there. The real store is not
+    touched, and nothing is approved in it."""
+    import shutil
+    import tempfile
+    from .compile import compile_filing
+    from .files import load_filing, log_action, read_json, write_json
+    from .validate import validate
+    a = Path(authored).resolve()
+    f = load_filing(a)
+    tmp = Path(tempfile.mkdtemp(prefix="impact_draft_"))
+    try:
+        dst = tmp / f.carrier_dir.name
+        shutil.copytree(f.carrier_dir, dst, ignore=shutil.ignore_patterns("sources"))
+        p = dst / a.relative_to(f.carrier_dir)
+        d = read_json(p)
+        d["status"] = "approved"
+        write_json(p, d)
+        g = load_filing(p)
+        rep = validate(g)
+        if not rep.ok:
+            raise ValueError(f"{g.ref} does not validate: " + "; ".join(rep.errors))
+        compile_filing(rep, require_approval=False)
+        for action in ("propose", "sign-off"):
+            log_action(g.company_dir, g.filing, g.version, action, "impact preview (draft, scratch store)")
+        out = run(g.company, g.line, list(rep.juris), tmp, progress=progress)
+    finally:
+        shutil.rmtree(tmp, ignore_errors=True)
+    out["draft"] = f.ref
+    return out
+
+
 def _agg(risks: list[Risk]) -> dict:
     rated = [r for r in risks if r.status == "rated"]
     t = sum((r.technical for r in rated), Decimal(0))
@@ -269,7 +302,7 @@ def markdown(rep: dict) -> str:
         return out
 
     st = ", ".join(f"{s} ({v['filing']}, {v['date']})" for s, v in rep["states"].items())
-    out = [f"# Impact preview: {rep['company']} {rep['line']}", "",
+    out = [f"# Impact preview: {rep['company']} {rep['line']}" + (f" -- DRAFT {rep['draft']}, not approved" if rep.get("draft") else ""), "",
            f"Filings: {st}. Projected book, every risk weighted the same; technical vs carrier on our engine, "
            f"{rep['iso_calls']} ISO calls.",
            f"\n**Overall: {rep['all']['change']}%** ({rep['all']['rated']} of {rep['all']['risks']} risks rated; "
@@ -296,7 +329,9 @@ def markdown(rep: dict) -> str:
 
 def write(rep: dict, out_dir: Path) -> tuple[Path, Path]:
     out_dir.mkdir(parents=True, exist_ok=True)
-    stem = f"{rep['company']}-{rep['line']}-{'-'.join(rep['states'])}"
+    import time
+    rep.setdefault("generated", time.strftime("%Y-%m-%dT%H:%M:%S"))
+    stem = f"{rep['company']}-{rep['line']}-{'-'.join(rep['states'])}" + (f"-draft-{rep['draft']}" if rep.get("draft") else "")
     j, m = out_dir / f"{stem}.json", out_dir / f"{stem}.md"
     j.write_text(json.dumps(rep, indent=1), encoding="utf-8")
     m.write_text(markdown(rep), encoding="utf-8")

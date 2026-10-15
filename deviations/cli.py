@@ -11,6 +11,7 @@
   status   <authored.json>               where a version stands
   impact   <COMPANY> --line CF [--state IA]
                                          B-18: technical vs carrier over a projected book, by risk type
+  impact   --draft <authored.json>       B-20: the same for a draft, before it is approved or built
 
 Exit status is 0 on success, 1 when the filing has problems, 2 on bad usage.
 """
@@ -56,7 +57,8 @@ def main(argv=None) -> int:
         w.add_argument("--by", required=True)
         w.add_argument("--note", default="")
     ip = sub.add_parser("impact")
-    ip.add_argument("company")
+    ip.add_argument("company", nargs="?")
+    ip.add_argument("--draft", type=Path, help="an authored draft: its impact in a scratch store, before approval")
     ip.add_argument("--line", default="CF", choices=("CF", "GL"))
     ip.add_argument("--state", action="append", default=[])
     ip.add_argument("--root", type=Path, default=CARRIERS_ROOT)
@@ -80,14 +82,20 @@ def main(argv=None) -> int:
 
     try:
         if a.cmd == "impact":
-            from .impact import run, write
+            from .impact import run, run_draft, write
             n = [0]
 
             def tick(r):
                 n[0] += 1
                 if n[0] % 25 == 0:
                     print(f"  {n[0]} risks rated", flush=True)
-            rep = run(a.company, a.line, a.state or None, a.root, progress=tick)
+            if a.draft:
+                rep = run_draft(a.draft, progress=tick)
+            elif a.company:
+                rep = run(a.company, a.line, a.state or None, a.root, progress=tick)
+            else:
+                print("impact needs a company, or --draft <authored.json>", file=sys.stderr)
+                return 2
             j, m = write(rep, a.out)
             print(f"  {rep['company']} {rep['line']}: {rep['all']['rated']} of {rep['all']['risks']} risks, "
                   f"overall {rep['all']['change']}%, 0 ISO calls")

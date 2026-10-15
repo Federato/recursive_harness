@@ -156,13 +156,19 @@ def workbench(method: str, op: str, query: dict, b: dict):
         if op == "worksheet" and method == "POST":
             # the rating worksheet for one uploaded request: Technical | ISO | Deviated, field by field (free)
             try:
-                req = json.loads(b["text"]) if "text" in b else b.get("request")
-                if isinstance(req, list):
-                    req = req[int(b.get("index") or 0)]
+                req = _one_request(b)
                 who = WB.identify(req)
             except (ValueError, IndexError) as exc:
                 return js(400, {"error": str(exc)[:400]})
             return js(200, WB.worksheet(who["line"], req, (b.get("company") or "").strip(), b.get("policyType") or "New"))
+        if op == "download" and method == "POST":
+            # an Upload & Compare row's Download: the request and every output (technical, ISO's stored, deviated)
+            try:
+                req = _one_request(b)
+                who = WB.identify(req)
+            except (ValueError, IndexError) as exc:
+                return js(400, {"error": str(exc)[:400]})
+            return js(200, WB.download(who["line"], req, (b.get("company") or "").strip(), b.get("policyType") or "New"))
         if op == "formula" and method == "POST":
             # how the premium was computed: each step as arithmetic with its factors, checked against the engine
             return js(200, WB.formulas(str(b.get("token") or ""), b.get("side") or "both"))
@@ -175,9 +181,7 @@ def workbench(method: str, op: str, query: dict, b: dict):
             # parsed here, from the text as uploaded: a browser's JSON round trip turns 1.0 into 1, so the request
             # would no longer hash to ISO's stored answer for it
             try:
-                req = json.loads(b["text"]) if "text" in b else b.get("request")
-                if isinstance(req, list):
-                    req = req[int(b.get("index") or 0)]
+                req = _one_request(b)
                 who = WB.identify(req)
             except (ValueError, IndexError) as exc:
                 return js(400, {"error": str(exc)[:400]})
@@ -212,6 +216,17 @@ def workbench(method: str, op: str, query: dict, b: dict):
     except Exception as exc:                                  # noqa: BLE001 -- shown on the page, never a crash
         return js(400, {"error": f"{type(exc).__name__}: {exc}"[:400]})
     return js(404, {"error": f"no workbench route {op!r}"})
+
+
+def _one_request(b: dict) -> dict:
+    """The request a workbench route was handed: parsed from the text as uploaded, one item of a list, and the request
+    inside a row's Download (input and outputs in one file) when that file is uploaded again."""
+    req = json.loads(b["text"]) if "text" in b else b.get("request")
+    if isinstance(req, list):
+        req = req[int(b.get("index") or 0)]
+    if isinstance(req, dict) and isinstance((req.get("input") or {}).get("request"), dict):
+        req = req["input"]["request"]
+    return req
 
 
 def _dispatcher_on():
@@ -551,6 +566,9 @@ def dispatch(method: str, path: str, query: dict, body):
     if method == "GET" and path == "/api/console/filings":
         from console import filings
         return 200, json.dumps(filings.filings()), "json"
+    if method == "GET" and path == "/api/console/filings/board":
+        from console import filings
+        return 200, json.dumps(filings.board()), "json"
     if method == "GET" and path == "/api/console/filings/source":
         from console import filings
         got = filings.source(query)
@@ -1640,7 +1658,7 @@ function upDraw(){
       const iso=x.busy==='sending'?'<span class="mx-msg">asking ISO…</span>':!s?'<span class="mx-msg">—</span>':s.outcome==='rated'?esc(money(s.iso))+'<div class="mx-msg">stored '+esc((s.stored_at||s.date||'').slice(0,10))+(s.freshness==='stale'?' · stale':'')+'</div>':'refused';
       return '<tr'+(UP.sel===x.id?' class="sel"':'')+'><td class="file">'+esc(x.name)+(r.outcome!=='rated'?'<div class="mx-msg">'+esc((r.detail||'').slice(0,200))+'</div>':'')+upNotes(r)+'</td><td>'+(r.line==='GL'?'General Liability':'Property')+' · '+esc(r.state)+'</td><td>'+esc(r.effective)+
         '</td><td class="v">'+ours+'</td><td class="v">'+iso+'</td><td class="v">'+upCarrier(x)+'</td><td>'+upVerdict(r)+'</td><td>'+
-        '<span class="acts">'+(s&&s.outcome==='rated'?'<a href="#trace?lob='+r.line+'&scenario='+encodeURIComponent(s.scenario)+'">Trace Diff</a>':'')+'<a data-ws="'+x.id+'" title="Every field, Technical | ISO | Deviated">Worksheet</a><a data-dl="'+x.id+'" title="Save this request as a .json file">Download</a><a data-ed="'+x.id+'" title="Copy into the paste box to change it">Edit</a></span>'+rm+'</td></tr>';}).join('')+'</table>';
+        '<span class="acts">'+(s&&s.outcome==='rated'?'<a href="#trace?lob='+r.line+'&scenario='+encodeURIComponent(s.scenario)+'">Trace Diff</a>':'')+'<a data-ws="'+x.id+'" title="Every field, Technical | ISO | Deviated">Worksheet</a><a data-dl="'+x.id+'" title="Save the rating input and outputs (technical, ISO, deviated) as one .json file">Download</a><a data-ed="'+x.id+'" title="Copy into the paste box to change it">Edit</a></span>'+rm+'</td></tr>';}).join('')+'</table>';
   const n=upNeeds().length,b=document.getElementById('up-send');
   b.disabled=!n||UP.busy;b.textContent=n?'Compare with ISO · '+n+' call'+(n>1?'s':'')+'…':'Compare with ISO…';
   upSide();
@@ -1829,9 +1847,14 @@ async function upSend(rows,why){
   upDraw();
 }
 function upItem(x){const v=JSON.parse(x.text);return JSON.stringify(Array.isArray(v)?v[x.index]:v,null,1);}
-function upDownload(x){const a=document.createElement('a'),r=x.r;
-  a.href=URL.createObjectURL(new Blob([x.list?upItem(x):x.text],{type:'application/json'}));
-  a.download=(r?r.line+'-'+r.state+(x.gen?'':'-'+x.name.replace(/\.json.*$/i,'')):x.name.replace(/\.json.*$/i,''))+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
+// a row's Download: the rating input (the request; with a company, also what ISO is sent) and every output -- technical,
+// ISO's stored request and response, deviated -- in one .json file, rated afresh on the server (free, never asks ISO)
+function upDownload(x){const r=x.r,co=(r&&r.company)||'',base=(r?r.line+'-'+r.state+(x.gen?'':'-'+x.name.replace(/\.json.*$/i,'')):x.name.replace(/\.json.*$/i,''))+(co?'-'+co:'');
+  const save=(t,n)=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:'application/json'}));a.download=n;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);};
+  if(!r){save(x.list?upItem(x):x.text,base+'.json');return;}
+  wbJSON('/api/console/workbench/download',{text:x.text,index:x.index,company:co,policyType:UP.pt||'New'})
+    .then(j=>{if(j.error)throw new Error(j.error);save(JSON.stringify(j,null,1),base+'-input-output.json');})
+    .catch(e=>{document.getElementById('up-msg').textContent='Download failed: '+e.message;});}
 function upEdit(x){const d=document.querySelector('.up-paste'),t=document.getElementById('up-text');d.open=true;t.value=x.list?upItem(x):x.text;
   UP.editName='Edited '+x.name.replace(/^(Generated|Edited) /,'');t.focus();t.setSelectionRange(0,0);t.scrollTop=0;t.scrollIntoView({block:'center'});}
 function upGenStates(){const lob=document.getElementById('up-lob').value,sel=document.getElementById('up-state');
@@ -1925,6 +1948,9 @@ FILINGS_HTML = """<section class="screen" id="s-filings" hidden><div class="mx-w
     how it was proved. Source documents are kept exactly as received in the carrier store, and each is checked against the
     hash recorded when it arrived. Click a filing for its full entry and to open its documents.</p></div>
   <div class="mx-stats" id="fl-stats"></div>
+  <div class="cap2" style="margin-top:6px">What rates where · each writing company by line and state</div>
+  <div id="fl-board"><div class="mx-loading">Loading…</div></div>
+  <div class="cap2" style="margin-top:14px">Filings</div>
   <div id="fl-out"><div class="mx-loading">Loading…</div></div>
   <div id="fl-entry"></div>
 </div><aside class="mx-side" id="fl-side" aria-live="polite"></aside></div></section>"""
@@ -1945,6 +1971,14 @@ FILINGS_CSS = """
 .fl-md th{text-align:left;font-weight:600;font-size:11px;color:var(--color-neutral-700)}
 .fl-md th,.fl-md td{padding:3px 6px;border-top:1px solid var(--color-divider);text-align:left;vertical-align:top}
 .fl-md td:first-child{white-space:nowrap}
+.fl-bd{border-collapse:collapse;font-size:12px;margin-top:6px}
+.fl-bd th{font-weight:600;font-size:11px;color:var(--color-neutral-700);padding:4px 8px;text-align:left}
+.fl-bd td{border-top:1px solid var(--color-divider);padding:6px 8px;vertical-align:top}
+.fl-bd td[data-f]{cursor:pointer}.fl-bd td[data-f]:hover{background:var(--color-accent-100)}
+.fl-bd .fl-tech{color:var(--color-neutral-700);font-size:11px}
+.fl-sec{margin-top:14px;max-width:980px}
+.fl-pct{font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
+.fl-md .nw{white-space:nowrap}
 """
 
 FILINGS_JS = r"""
@@ -1974,10 +2008,53 @@ function flSide(){const el=document.getElementById('fl-side'),f=FL.d&&FL.d.filin
     (f.versions.length?'<div class="cap2" style="margin-top:8px">Authored</div>'+f.versions.map(v=>'<div class="fl-doc">'+flVer(v)+'<div class="mx-msg">'+esc(v.file)+' · '+v.rows+' rows'+
       (v.lastAt?' · '+esc(v.lastAction)+' '+esc(v.lastAt.replace('T',' ').replace('Z','')):'')+'</div></div>').join(''):'')+
     '';
-  document.getElementById('fl-entry').innerHTML=f.entry?'<div class="fl-entry"><div class="cap2">'+esc(f.id)+' · log entry</div>'+f.entry+'</div>':'';}
-function flLoad(){fetch('/api/console/filings').then(r=>r.json()).then(d=>{FL.d=d;if(!FL.sel&&d.filings.length)FL.sel=flKey(d.filings[0]);flDraw();})
+  document.getElementById('fl-entry').innerHTML=flProof(f)+flRows(f)+flImpact(f)+
+    (f.sheet?'<div class="fl-entry"><div class="cap2">Filing sheet</div>'+f.sheet+'</div>':'')+
+    (f.entry?'<div class="fl-entry"><div class="cap2">'+esc(f.id)+' · log entry</div>'+f.entry+'</div>':'');}
+function flScope(sc){const k=Object.keys(sc||{});if(!k.length)return 'every class';
+  return k.map(x=>(x==='class_group'?'class group ':x==='class'?'class ':x+' ')+esc(String(sc[x]))).join(', ');}
+function flPct(v){return v==null?'—':(Number(v)>0?'+':'')+esc(String(v))+'%';}
+function flBoard(){const b=FL.b,el=document.getElementById('fl-board');if(!b)return;
+  if(!b.cells.length){el.innerHTML='<div class="mx-empty">No compiled filings in the carrier store.</div>';return;}
+  const key=c=>c.line+'|'+c.state;
+  el.innerHTML='<div class="fl-mdw"><table class="fl-bd"><tr><th>Company</th>'+b.columns.map(c=>'<th>'+esc(c.line+' · '+c.state)+'</th>').join('')+'</tr>'+
+    b.companies.map(co=>'<tr><td><b>'+esc(co.code)+'</b><div class="mx-msg">'+esc(co.name)+(co.naic?' · NAIC '+esc(co.naic):'')+'</div></td>'+
+      b.columns.map(col=>{const c=b.cells.find(x=>x.company===co.code&&key(x)===key(col));
+        if(!c)return '<td class="fl-tech">technical only</td>';
+        const f=FL.d&&FL.d.filings.find(x=>x.versions.some(v=>v.company===c.company&&v.filing===c.filing));
+        return '<td'+(f?' data-f="'+esc(flKey(f))+'"':'')+'>'+flChip(c.status==='approved')+esc(c.filing?c.filing.replace(/^[A-Z]{2}-[A-Z]{2}-/,'')+' v'+c.version:'no filing')+
+          '<div class="mx-msg">'+esc(c.status)+(c.new_eff?' · new '+esc(c.new_eff)+' · renewal '+esc(c.renewal_eff):'')+'</div>'+
+          (c.pin?'<div class="mx-msg">pinned to '+esc(c.pin)+'</div>':'')+'</td>';}).join('')+'</tr>').join('')+'</table></div>'+
+    '<div class="mx-msg" style="margin-top:4px">A state a company has no filing in rates on technical only: pure ISO. Click a cell for its filing.</div>';}
+function flRows(f){if(!f.versions.length)return '';
+  return '<div class="fl-sec"><div class="cap2">What was built · rows each company rates with</div>'+f.versions.map(v=>
+    '<div class="fl-doc"><b>'+esc(v.company)+'</b> '+esc(v.filing+' v'+v.version)+' <span class="mx-msg">'+esc(v.line+' '+(v.juris||[]).join(', ')+
+    ' · new '+(v.new_eff||'')+' · renewal '+(v.renewal_eff||'')+' · '+v.compiledKeys+' compiled keys'+
+    Object.entries(v.pins||{}).map(([j,p])=>' · '+j+' pinned to '+p).join(''))+'</span>'+
+    '<div class="fl-mdw"><table class="fl-md"><tr><th>Target</th><th>Applies to</th><th>Value</th><th>Mode</th><th>Cite</th><th>Note</th></tr>'+
+    (v.detail||[]).map(r=>'<tr><td><code>'+esc(r.target)+'</code></td><td>'+flScope(r.scope)+'</td><td class="fl-pct">'+esc(r.value)+'</td><td>'+esc(r.mode)+
+      '</td><td>'+esc(r.cite)+'</td><td class="mx-msg">'+esc(r.note)+'</td></tr>').join('')+'</table></div></div>').join('')+'</div>';}
+function flImpact(f){const st=String(f.state||'').split(',').map(s=>s.trim());if(!f.impacts||!f.impacts.length)
+    return '<div class="fl-sec"><div class="cap2">Impact preview</div><div class="mx-msg">None yet: <code>python -m deviations impact &lt;COMPANY&gt; --line '+esc(f.line)+'</code>, or <code>--draft &lt;authored.json&gt;</code> before it is built.</div></div>';
+  return '<div class="fl-sec"><div class="cap2">Impact preview · technical vs carrier over a projected book, our engine, 0 ISO calls</div>'+f.impacts.map(i=>{
+    const own=st.map(s=>i.byState&&i.byState[s]).filter(Boolean),a=own.length===1?own[0]:i.all,many=Object.keys(i.states||{}).length>1;
+    const groups=Object.keys((i.byCoverage||{}).All||{});
+    return '<div class="fl-doc"><b>'+esc(i.company)+'</b> '+(i.draft?'<span class="chip mismatch">draft</span> '+esc(i.draft):'built')+
+      ' <span class="mx-msg">'+esc(i.generated||'')+' · '+esc(i.file)+'</span>'+
+      '<div style="margin:4px 0"><b>'+flPct(a.change)+'</b> overall'+(own.length===1&&many?' in '+esc(st.join(', ')):'')+' · '+a.rated+' of '+a.risks+' risks · per risk '+flPct(a.min)+' to '+flPct(a.max)+'</div>'+
+      '<div class="fl-mdw"><table class="fl-md"><tr><th>Risk type</th><th>Change</th><th>Range</th>'+groups.map(g=>'<th>'+esc(g)+'</th>').join('')+'</tr>'+
+      Object.entries(i.byRiskType||{}).map(([k,v])=>'<tr><td>'+esc(k)+'</td><td class="fl-pct"><b>'+flPct(v.change)+'</b></td><td class="mx-msg">'+flPct(v.min)+' to '+flPct(v.max)+'</td>'+
+        groups.map(g=>{const c=((i.byCoverage||{})[k]||{})[g];return '<td class="fl-pct">'+(c?flPct(c.change):'—')+'</td>';}).join('')+'</tr>').join('')+'</table></div>'+
+      (many?'<div class="mx-msg">Risk-type rows cover '+esc(Object.keys(i.states).join(' and '))+' together.</div>':'')+'</div>';}).join('')+'</div>';}
+function flProof(f){const p=f.proof;if(!p)return '';
+  return '<div class="fl-sec"><div class="cap2">Proof</div><div class="fl-doc">'+(p.ran?flChip(p.passed)+'<code>'+esc(p.suite)+'</code> '+p.ok+' of '+p.checks+' checks · last run '+
+    esc((p.ranAt||'').replace('T',' '))+(p.commit?' at '+esc(p.commit):''):'<code>'+esc(p.suite)+'</code> has not been run')+'</div></div>';}
+function flLoad(){fetch('/api/console/filings/board').then(r=>r.json()).then(b=>{FL.b=b;flBoard();}).catch(()=>{});
+  fetch('/api/console/filings').then(r=>r.json()).then(d=>{FL.d=d;if(!FL.sel&&d.filings.length)FL.sel=flKey(d.filings[0]);flDraw();flBoard();})
   .catch(e=>{document.getElementById('fl-out').innerHTML='<div class="mx-empty">Could not load the filings: '+esc(String(e))+'</div>';});}
 document.getElementById('fl-out').addEventListener('click',ev=>{const tr=ev.target.closest('[data-f]');if(!tr)return;FL.sel=tr.dataset.f;flDraw();});
+document.getElementById('fl-board').addEventListener('click',ev=>{const td=ev.target.closest('[data-f]');if(!td)return;FL.sel=td.dataset.f;flDraw();
+  document.getElementById('fl-entry').scrollIntoView({behavior:'smooth',block:'start'});});
 addEventListener('hashchange',()=>{if((location.hash||'').startsWith('#filings'))flLoad();});
 if((location.hash||'').startsWith('#filings'))flLoad();
 """
