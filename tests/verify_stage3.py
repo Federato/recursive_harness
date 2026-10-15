@@ -23,16 +23,16 @@ sys.path.insert(0, str(ROOT))
 from gl_engine.rating import (Kernel, RatingError, STRICT,        # noqa: E402
                               UNDERWRITING)
 from gl_engine.interp import tree                                 # noqa: E402
-from gl_engine.config import CORPUS_ROOT                          # noqa: E402
+from gl_engine.erc.discovery import discover                      # noqa: E402
 
 FIXTURE = ROOT / "tests" / "fixtures" / "golden-ok-2025.json"
-ISO_DIR = Path(r"F:\ISO_ERC_Files\General_Liability\OK"
-               r"\GL_OK 20250601 V01\GL OK 20250601 V01\STC")
+# packages are found by identity, not path: the corpus is grouped by countrywide parent (2026-10-15)
+_PKGS = {p.pkg_id: p.content for p in discover()}
+ISO_DIR = _PKGS["GL_OK_20250601_V01"] / "STC"
 ISO_IN = ISO_DIR / "1. Input.json"
 ISO_OUT = ISO_DIR / "1. Output.json"
 # ISO's composite-rated sample (B-39): audited 2 convention days against an estimate of 6
-WV_COMPOSITE = (CORPUS_ROOT / "WV" / "GL_WV 20251101 V01_MachineReadableContent" / "GL WV 20251101 V01"
-                / "STC" / "STC_GL000145648.json")
+WV_COMPOSITE = _PKGS["GL_WV_20251101_V01"] / "STC" / "STC_GL000145648.json"
 
 PASS, FAIL = [], []
 

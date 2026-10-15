@@ -33,7 +33,7 @@ sys.path.insert(0, str(ROOT / "scripts"))
 from breadth import (BreadthError, Declared, catalogue,      # noqa: E402
                      classifications, gl, locations)
 from gl_engine import EditionResolver                        # noqa: E402
-from gl_engine.config import CLASS_BASIS_CLIFF, CORPUS_ROOT   # noqa: E402
+from gl_engine.config import CLASS_BASIS_CLIFF                # noqa: E402
 from gl_engine.rating import Kernel, STRICT, UNDERWRITING    # noqa: E402
 from gl_engine.schema import validate                        # noqa: E402
 
@@ -56,8 +56,7 @@ def _ok_stc_input(class_code: str | None = None) -> dict:
     with its classification's `ClassCode` swapped -- for OI-95, to reach a
     class ISO's own tables mark `Company` (no published ELP) rather than the
     fixture's own `50017` (`Industry`, ELP `0.82`, already confirmed correct)."""
-    p = (CORPUS_ROOT / "OK" / "GL_OK 20250601 V01" / "GL OK 20250601 V01"
-         / "STC" / "1. Input.json")
+    p = EditionResolver().by_id["GL_OK_20250601_V01"].content / "STC" / "1. Input.json"
     data = json.loads(p.read_text(encoding="utf-8-sig"))
     if class_code is not None:
         cls = (data["body"]["GeneralLiability"][0]["GeneralLiabilityLocation"][0]

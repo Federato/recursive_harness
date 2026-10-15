@@ -150,7 +150,8 @@ def _gl(p):
 def _sample(name, date):
     from gl_engine.config import CORPUS_ROOT as ERC_ROOT
     st, fname, keep = SAMPLES[name]
-    f = glob.glob(os.path.join(str(ERC_ROOT), st, "**", fname), recursive=True)[0]
+    # the corpus is grouped by countrywide parent (2026-10-15): <root>/<GL_CW_...>/<GL_ST package>/...
+    f = glob.glob(os.path.join(str(ERC_ROOT), "*", f"GL[_ ]{st} *", "**", fname), recursive=True)[0]
     p = {"header": {"quoteback": "", "authorization": {}}, "body": json.load(open(f, encoding="utf-8-sig"))}
     p["body"]["SchemeKeys"]["EffectiveDateTime"] = f"{date[:4]}-{date[4:6]}-{date[6:]}T00:00:00"
     g = _gl(p)
