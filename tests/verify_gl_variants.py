@@ -540,6 +540,22 @@ def main() -> int:
             ("X35 four classes", {**now, "classifications": 4}, 43297)):
         got = _k.rate(catalog.build("GL", "OK", cfg)).premium
         check(f"{label} prices as ISO does", got == want, f"{got}, ISO {want}")
+    # B-48 / B-49, ISO-confirmed 2026-10-15 (36 calls: 35 exact, 1 refused by both)
+    for label, st, cfg, want in (
+            ("X37 OK BI 1,000 Per Occurrence gives a credit", "OK", {"premops_bi_deductible": "1,000 Per Occurrence"},
+             8224),
+            ("X38 ...and 1,000 Per Claim gives none, as ISO", "OK", {"premops_bi_deductible": "1,000 Per Claim"}, 8229),
+            ("X39 OK BI/PD split 25,000 Per Occurrence", "OK", {"premops_bi_deductible": "25,000 Per Occurrence",
+                                                               "premops_pd_deductible": "25,000 Per Occurrence"}, 8139),
+            ("X40 OK combined 100,000 Per Occurrence", "OK", {"premops_bipd_deductible": "100,000 Per Occurrence"},
+             8054),
+            ("X41 OH territory 504", "OH", {"territory": "504"}, 7460),
+            ("X42 PA territory 511", "PA", {"territory": "511"}, 9108)):
+        got = _k.rate(catalog.build("GL", st, {**now, **cfg})).premium
+        check(f"{label} prices as ISO does", got == want, f"{got}, ISO {want}")
+    r506 = _k.rate(catalog.build("GL", "PA", {**now, "territory": "506"}))
+    check("X43 PA territory 506: class 50017 has no loss cost there; we refuse, as ISO does", not r506.complete,
+          str(r506.stopped)[:70])
     retro = V._gl(catalog.build("GL", "OK", {**cm, "retro_years": 5}))
     check("X36 the retroactive date is written five years back", retro.get("RetroactiveDateApplies") == "Yes"
           and retro.get("PremOpsProdsRetroactiveDate") == "2021-10-15", retro.get("PremOpsProdsRetroactiveDate"))

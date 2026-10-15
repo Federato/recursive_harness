@@ -557,6 +557,13 @@ CONTROLS: tuple[Control, ...] = (
             note="20 jurisdictions declare exactly one prem/ops territory. "
                  "Asking for two there is NOT APPLICABLE, not a failure."),
 
+    Control("territory", "Prem/Ops territory", "Structure",
+            "the territory factor and loss-cost row: the first location's "
+            "declared Prem/Ops territory",
+            table=LOC, column="PremisesOperationsTerritory",
+            note="Sets the first location only; further locations keep the "
+                 "next territories the Locations control gives them (B-49)."),
+
     # --------------------------------------------------- 8-9. the plans (4)
     Control("size_of_risk", "Size-of-risk rating", "Rating plans",
             "the interpolated banded lookups, built in stage 3 and never "
@@ -830,6 +837,10 @@ def _apply_claims_made_year(p, value, d, config):
         raise VariantError("a claims-made year applies only to the "
                            "claims-made form; set the coverage form first")
     _gl(p)["YearInClaimsMade"] = value          # Int32 -- OI-90
+
+
+def _apply_territory(p, value, d, config):
+    _locations(p)[0]["PremisesOperationsTerritory"] = value
 
 
 def _apply_retro_years(p, value, d, config):
@@ -1242,6 +1253,7 @@ APPLIERS = {
     "coverage_form": _apply_coverage_form,
     "claims_made_year": _apply_claims_made_year,
     "retro_years": _apply_retro_years,
+    "territory": _apply_territory,
     "subline": _apply_subline,
     "classifications": _apply_classifications,
     "locations": _apply_locations,
@@ -1274,7 +1286,7 @@ APPLIERS = {
 #: its position here doesn't matter -- what matters is that `Declared` was
 #: already constructed at this same date before `build()` was ever called
 #: (`Declared.for_config()`).
-ORDER = ("subline", "premium_basis", "class_code", "exposure", "classifications", "locations",
+ORDER = ("subline", "premium_basis", "class_code", "exposure", "classifications", "locations", "territory",
          "elp_override_premops", "elp_override_prods", "ilf_table_premops", "ilf_table_prods",
          "occurrence_limit", "general_aggregate",
          "premops_bi_deductible", "premops_pd_deductible",
