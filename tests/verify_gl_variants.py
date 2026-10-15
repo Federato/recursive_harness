@@ -527,6 +527,23 @@ def main() -> int:
         refused = True
     check("X28 an ELP override on a class ISO does not list for it is refused", refused)
 
+    # B-46 / B-47, ISO-confirmed 2026-10-15 (27 calls, every published field exact) at the current packages
+    now = {"effective_date": "20261015"}
+    cm = {**now, "coverage_form": "Claims Made"}
+    for label, cfg, want in (
+            ("X29 claims-made year 1", {**cm, "claims_made_year": 1}, 4651),
+            ("X30 claims-made year 4", {**cm, "claims_made_year": 4}, 6695),
+            ("X31 claims-made year 7 prices as year 5 (mature)", {**cm, "claims_made_year": 7}, 7362),
+            ("X32 a retroactive date moves no premium", {**cm, "claims_made_year": 3, "retro_years": 5}, 6520),
+            ("X33 three locations", {**now, "locations": 3}, 24286),
+            ("X34 two locations x three classes", {**now, "locations": 2, "classifications": 3}, 23089),
+            ("X35 four classes", {**now, "classifications": 4}, 43297)):
+        got = _k.rate(catalog.build("GL", "OK", cfg)).premium
+        check(f"{label} prices as ISO does", got == want, f"{got}, ISO {want}")
+    retro = V._gl(catalog.build("GL", "OK", {**cm, "retro_years": 5}))
+    check("X36 the retroactive date is written five years back", retro.get("RetroactiveDateApplies") == "Yes"
+          and retro.get("PremOpsProdsRetroactiveDate") == "2021-10-15", retro.get("PremOpsProdsRetroactiveDate"))
+
 
     print("\nE  THE STORE, AND THE LONG VIEW BUILT FROM IT")
     tmp = Path(tempfile.mkdtemp(prefix="tester-store-"))

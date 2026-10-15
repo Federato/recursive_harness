@@ -520,6 +520,12 @@ CONTROLS: tuple[Control, ...] = (
             "the claims-made maturity step, a different row of the same table",
             kind="number", cast="int",
             note="An Int32 -- OI-90. Applies only when the form is Claims Made."),
+    Control("retro_years", "Retroactive date, years back", "Coverage form",
+            "a claims-made retroactive date: RetroactiveDateApplies = Yes and the "
+            "date this many years before the effective date",
+            kind="number", cast="int",
+            note="Applies only when the form is Claims Made. ISO's rules read the "
+                 "date for the coverage statistical code, not the premium (B-46)."),
 
     # -------------------------------------------------------- 6. subline (1)
     Control("subline", "Subline", "Subline",
@@ -824,6 +830,14 @@ def _apply_claims_made_year(p, value, d, config):
         raise VariantError("a claims-made year applies only to the "
                            "claims-made form; set the coverage form first")
     _gl(p)["YearInClaimsMade"] = value          # Int32 -- OI-90
+
+
+def _apply_retro_years(p, value, d, config):
+    if _gl(p).get("PremOpsProdsCoverageForm") != "Claims Made":
+        raise VariantError("a retroactive date applies only to the claims-made form; set the coverage form first")
+    eff = str(config.get("effective_date") or d.asof)
+    _gl(p)["RetroactiveDateApplies"] = d.require(GL, "RetroactiveDateApplies", "Yes")
+    _gl(p)["PremOpsProdsRetroactiveDate"] = _months_before(eff, 12 * int(value))
 
 
 def _apply_subline(p, value, d, config):
@@ -1227,6 +1241,7 @@ APPLIERS = {
     "exposure": _apply_exposure,
     "coverage_form": _apply_coverage_form,
     "claims_made_year": _apply_claims_made_year,
+    "retro_years": _apply_retro_years,
     "subline": _apply_subline,
     "classifications": _apply_classifications,
     "locations": _apply_locations,
@@ -1265,7 +1280,7 @@ ORDER = ("subline", "premium_basis", "class_code", "exposure", "classifications"
          "premops_bi_deductible", "premops_pd_deductible",
          "premops_bipd_deductible", "prods_bi_deductible",
          "prods_pd_deductible", "prods_bipd_deductible", "coverage_form",
-         "claims_made_year", "size_of_risk", "experience_rating", "erp_years", "erp_annual_loss",
+         "claims_made_year", "retro_years", "size_of_risk", "experience_rating", "erp_years", "erp_annual_loss",
          "schedule_rating", "schedule_pct", "schedule_extreme",
          "package_mod", "composite_rating", "composite_basis", "composite_exposure", "composite_audited", "terrorism",
          "exclusion_endorsement_premium", "effective_date",

@@ -30,8 +30,8 @@ corpus resolves to ISO's package in 100 of 100 state × edition combinations (B-
 | # | Item | Engine | Builders | ISO evidence | Gap |
 |---|---|---|---|---|---|
 | B1 | **Size-of-risk** | Rates where filed (OH, CO); refuses in the 14 states with no size-of-risk loss costs (R10); R26 refers the cannabis zeros | `size_of_risk` | **None** | ISO comparison in a filing state **Done 2026-10-15 (B-44): ISO 10 of 10 agree, refusals included; rates in 35 states on 2026-10, only NJ and WA on 2027.** |
-| B2 | **Claims-made** | Runs | `coverage_form`, `claims_made_year` | OK and NY, two maturities (August); 87 ISO samples unpriced | Years 3–5+, retroactive dates, more states |
-| B3 | **Multi-location / multi-class** | Runs | `locations`, `classifications` | OK and NY, 2 locations / 2 classes (August); none in the stored answers | More states; 3+ locations / classes; mixed bases |
+| B2 | **Claims-made** | Runs | `coverage_form`, `claims_made_year` | OK and NY, two maturities (August); 87 ISO samples unpriced | Years 3–5+, retroactive dates, more states **Done 2026-10-15 (B-46): ISO 15 of 15 exact.** |
+| B3 | **Multi-location / multi-class** | Runs | `locations`, `classifications` | OK and NY, 2 locations / 2 classes (August); none in the stored answers | More states; 3+ locations / classes; mixed bases **Done 2026-10-15 (B-47): ISO 12 of 12 exact.** |
 | B4 | **Territories** | Runs (place-coded CA, FL, NY, TX proven, E8) | Location territory | At most 2 per state; 10 of 50 states with more than one | A territory sweep (e.g. OH files 10) |
 | B5 | **Class codes and premium bases** | Runs | `class_code`, `premium_basis` | 17 of ~1,160 class codes; 6 of ~60 bases | The long tail: Admissions, Gallons, Acres, per-student, the "Number of …" bases |
 | B6 | **Deductibles** | Runs | 6 deductible controls | Stored: only "250 Per Occurrence"; August: 6 shapes in OK and NY | Per Claim, BI / PD split, large deductibles, more states |
