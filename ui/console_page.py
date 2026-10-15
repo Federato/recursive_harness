@@ -1950,11 +1950,12 @@ if((location.hash||'').startsWith('#proof'))pfLoad();
 # as received (re-hashed against source.json, openable), and where each writing company's authored versions stand.
 
 FILINGS_HTML = """<section class="screen" id="s-filings" hidden><div class="mx-wrap"><div class="mx-main">
-  <div class="mx-head"><div><div class="eyebrow">Carrier deviations</div><h1>Carrier Filings</h1></div>
-    <p>What each writing company rates with, by line and state. Click a filing to see it.</p>
-    <div class="td-tools"><label class="btn" for="fl-file">Upload filing packet…</label><input type="file" id="fl-file" accept=".zip" hidden>
-      <span class="mx-msg">a .zip with packet.json, sources/ and drafts/</span></div></div>
+  <div class="mx-head"><div><div class="eyebrow">Carrier deviations</div><h1>Carrier rate filings</h1></div>
+    <p>How each insurer's state-approved rates differ from ISO's standard rates, and what that does to premiums.</p>
+    <div class="td-tools"><label class="btn" for="fl-file">Upload a filing packet…</label><input type="file" id="fl-file" accept=".zip" hidden>
+      <label class="td-chk"><input type="checkbox" id="fl-tech"> Show technical details</label></div></div>
   <div id="fl-up"></div>
+  <div class="cap2" style="margin-top:6px">Who has filed where</div>
   <div id="fl-board"><div class="mx-loading">Loading…</div></div>
   <div id="fl-out"></div>
   <div id="fl-entry"></div>
@@ -1964,126 +1965,148 @@ BUILT["filings"] = FILINGS_HTML
 
 FILINGS_CSS = """
 .fl-bd{border-collapse:collapse;font-size:12.5px;margin-top:4px}
-.fl-bd th{font-weight:600;font-size:11px;color:var(--color-neutral-700);padding:4px 10px;text-align:left}
-.fl-bd td{border-top:1px solid var(--color-divider);padding:7px 10px;vertical-align:middle;white-space:nowrap}
+.fl-bd th{font-weight:600;font-size:11.5px;color:var(--color-neutral-700);padding:4px 12px;text-align:left}
+.fl-bd td{border-top:1px solid var(--color-divider);padding:8px 12px;vertical-align:top}
 .fl-bd td[data-f]{cursor:pointer}.fl-bd td[data-f]:hover,.fl-bd td.sel{background:var(--color-accent-100)}
-.fl-bd .fl-tech{color:var(--color-neutral-500,#999)}
-.fl-tag{font-size:10.5px;color:var(--color-neutral-700);border:1px solid var(--color-divider);border-radius:8px;padding:0 5px;margin-left:4px}
-.fl-list{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0 4px}
-.fl-list button{font:inherit;font-size:12px;padding:4px 10px;border-radius:12px;border:1px solid var(--color-divider);background:#fff;cursor:pointer;color:var(--color-text)}
+.fl-bd .fl-tech{color:var(--color-neutral-700)}
+.fl-tag{font-size:10.5px;color:var(--color-neutral-700);border:1px solid var(--color-divider);border-radius:8px;padding:0 6px;margin-left:4px;white-space:nowrap}
+.fl-list{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0 4px}
+.fl-list button{font:inherit;font-size:12.5px;padding:5px 12px;border-radius:14px;border:1px solid var(--color-divider);background:#fff;cursor:pointer;color:var(--color-text)}
 .fl-list button[aria-pressed="true"]{background:var(--color-accent-700);border-color:var(--color-accent-700);color:var(--color-accent-100)}
-.fl-card{margin-top:10px;border-top:1px solid var(--color-divider);padding-top:10px;max-width:980px;font-size:12.5px}
-.fl-card h2{font:600 17px var(--font-heading);margin:0}
-.fl-tabs{display:flex;gap:2px;margin:10px 0 8px;border-bottom:1px solid var(--color-divider)}
-.fl-tabs button{font:inherit;font-size:12px;padding:5px 10px;border:0;background:none;cursor:pointer;color:var(--color-neutral-700);border-bottom:2px solid transparent}
+.fl-card{margin-top:12px;border-top:1px solid var(--color-divider);padding-top:12px;max-width:980px;font-size:13px}
+.fl-card h2{font:600 18px var(--font-heading);margin:0 0 4px}
+.fl-steps{display:flex;gap:4px;margin:8px 0;flex-wrap:wrap}
+.fl-steps span{font-size:11.5px;padding:3px 10px;border-radius:12px;border:1px solid var(--color-divider);color:var(--color-neutral-700)}
+.fl-steps span.done{background:var(--color-accent-100);color:var(--color-text)}
+.fl-steps span.now{background:var(--color-accent-700);border-color:var(--color-accent-700);color:var(--color-accent-100);font-weight:600}
+.fl-short{font-size:13.5px;line-height:1.5;margin:10px 0;max-width:860px}
+.fl-tabs{display:flex;gap:2px;margin:12px 0 8px;border-bottom:1px solid var(--color-divider);flex-wrap:wrap}
+.fl-tabs button{font:inherit;font-size:12.5px;padding:6px 12px;border:0;background:none;cursor:pointer;color:var(--color-neutral-700);border-bottom:2px solid transparent}
 .fl-tabs button[aria-selected="true"]{color:var(--color-text);border-bottom-color:var(--color-accent-700);font-weight:600}
-.fl-doc{border-top:1px solid var(--color-divider);padding:6px 0;font-size:12px;overflow-wrap:anywhere}
+.fl-doc{border-top:1px solid var(--color-divider);padding:7px 0;font-size:12.5px;overflow-wrap:anywhere}
 .fl-entry h4{margin:14px 0 4px;font-size:12.5px}.fl-entry p{margin:6px 0}.fl-entry ul{margin:4px 0;padding-left:18px}
 .fl-entry code{overflow-wrap:anywhere}.fl-mdw{overflow-x:auto}
-.fl-md{width:100%;border-collapse:collapse;font-size:12px;margin:6px 0}
-.fl-md th{text-align:left;font-weight:600;font-size:11px;color:var(--color-neutral-700)}
-.fl-md th,.fl-md td{padding:4px 6px;border-top:1px solid var(--color-divider);text-align:left;vertical-align:top}
-.fl-md td:first-child{white-space:nowrap}.fl-md .nw{white-space:nowrap}
+.fl-md{width:100%;border-collapse:collapse;font-size:12.5px;margin:6px 0}
+.fl-md th{text-align:left;font-weight:600;font-size:11.5px;color:var(--color-neutral-700)}
+.fl-md th,.fl-md td{padding:5px 8px;border-top:1px solid var(--color-divider);text-align:left;vertical-align:top}
+.fl-md .nw{white-space:nowrap}
 .fl-pct{font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
 .fl-big{font:600 15px var(--font-heading)}
+.fl-gl dt{font-weight:600;font-size:12px;margin-top:8px}.fl-gl dd{margin:2px 0 0;font-size:12px;color:var(--color-neutral-700)}
+details.fl-more{margin-top:8px;font-size:12px}details.fl-more summary{cursor:pointer;color:var(--color-neutral-700)}
 """
 
 FILINGS_JS = r"""
-const FL={d:null,b:null,sel:null,tab:'summary'};
-const FL_TARGET={PremOps:'Prem/Ops',ProdsCompldOps:'Products',GroupI:'Group I',GroupII:'Group II',Broad:'Broad',Special:'Special',Earthquake:'Earthquake',All:'All'};
+const FL={d:null,b:null,sel:null,tab:'overview',tech:false,up:null};
+const FL_COV={'Premises/Operations':'Premises','Products/Completed Ops':'Products','Group I':'Fire & lightning','Group II':'Wind & hail',
+  'Broad':'Broad form','Special':'Special form','Earthquake':'Earthquake'};
+const FL_GLOSS=[['ISO','Insurance Services Office: publishes the standard rates, rules and forms most US commercial insurers start from.'],
+  ['Rate filing','An insurer\u2019s request, approved by the state, to charge differently from ISO.'],
+  ['Loss cost multiplier','The factor an insurer applies to ISO\u2019s rates. 1.10 means 10% above ISO; 0.94 means 6% below.'],
+  ['Class','ISO\u2019s code for the kind of business, such as a retail store or a contractor.'],
+  ['\u201ca\u201d-rated class','A specialty class ISO publishes no rate for; the insurer sets the rate itself.'],
+  ['Effective dates','When a filing starts: one date for new policies, often a later one for renewals.'],
+  ['ISO edition','ISO revises its rates; a filing can name an older edition and keep using it.'],
+  ['Typical businesses','A set of sample risks we price both ways to estimate the effect. Not real customers.']];
 function flKey(f){return f.id||f.serff;}
 function flChip(ok){return ok?'<span class="chip verified">✓</span> ':'<span class="chip mismatch">×</span> ';}
 function flPct(v){return v==null?'—':(Number(v)>0?'+':'')+esc(String(v))+'%';}
-function flTgt(t){const k=String(t||'').replace(/^LCM:/,'');return esc(FL_TARGET[k]||k);}
-function flScope(sc){const k=Object.keys(sc||{});if(!k.length)return 'every class';
-  return k.map(x=>(x==='class_group'?'class group ':x==='class'?'class ':x+' ')+esc(String(sc[x]))).join(', ');}
-function flSel(){return FL.d&&FL.d.filings.find(x=>flKey(x)===FL.sel);}
+function flCov(g){return esc(FL_COV[g]||g);}
+function flSel(){return FL.d&&FL.d.filings.find(x=>flKey(x)===FL.sel||x.serff===FL.sel);}
 function flBoard(){const b=FL.b,el=document.getElementById('fl-board');if(!b)return;
-  if(!b.cells.length){el.innerHTML='<div class="mx-empty">No compiled filings yet.</div>';return;}
+  if(!b.cells.length){el.innerHTML='<div class="mx-empty">No filings yet. Upload a filing packet to start.</div>';return;}
   const key=c=>c.line+'|'+c.state,sel=flSel();
-  el.innerHTML='<div class="fl-mdw"><table class="fl-bd"><tr><th></th>'+b.columns.map(c=>'<th>'+esc(c.line+' · '+c.state)+'</th>').join('')+'</tr>'+
-    b.companies.map(co=>'<tr><td title="'+esc(co.name+(co.naic?' · NAIC '+co.naic:''))+'"><b>'+esc(co.code)+'</b></td>'+
+  el.innerHTML='<div class="fl-mdw"><table class="fl-bd"><tr><th></th>'+b.columns.map(c=>'<th>'+esc(c.plain||c.line+' · '+c.state)+'</th>').join('')+'</tr>'+
+    b.companies.map(co=>'<tr><td title="'+esc(co.code+(co.naic?' · NAIC '+co.naic:''))+'"><b>'+esc(co.name||co.code)+'</b></td>'+
       b.columns.map(col=>{const c=b.cells.find(x=>x.company===co.code&&key(x)===key(col));
-        if(!c)return '<td class="fl-tech" title="no filing: rates on pure ISO">—</td>';
+        if(!c)return '<td class="fl-tech">ISO\u2019s rates</td>';
         const f=FL.d&&FL.d.filings.find(x=>x.versions.some(v=>v.company===c.company&&v.filing===c.filing));
-        const tip=(c.filing||'')+' v'+(c.version||'')+' · '+c.status+(c.new_eff?' · new '+c.new_eff+' · renewal '+c.renewal_eff:'')+(c.pin?' · pinned to '+c.pin:'');
-        const tag=c.status==='draft'?'<span class="fl-tag">draft</span> ':flChip(c.status==='approved');
-        return '<td'+(f?' data-f="'+esc(flKey(f))+'"':'')+(f&&sel===f?' class="sel"':'')+' title="'+esc(tip+((c.drafts||[]).length?' · draft '+c.drafts.join(', '):''))+'">'+tag+
-          esc(f&&f.id?f.id:'v'+c.version)+(c.pin?'<span class="fl-tag">pinned</span>':'')+((c.drafts||[]).length?'<span class="fl-tag">draft</span>':'')+'</td>';}).join('')+'</tr>').join('')+'</table></div>';}
-function flOwnImpact(f,co){const st=String(f.state||'').split(',').map(s=>s.trim());
-  const i=(f.impacts||[]).filter(x=>x.company===co&&!x.draft).pop();if(!i)return null;
-  const own=st.map(s=>i.byState&&i.byState[s]).filter(Boolean);return own.length===1?own[0]:i.all;}
-function flDraftImpact(f,v){const i=(f.impacts||[]).filter(x=>x.company===v.company&&x.draft===v.filing+'.v'+v.version).pop();if(!i)return null;
-  const st=String(f.state||'').split(',').map(s=>s.trim()),own=st.map(s=>i.byState&&i.byState[s]).filter(Boolean);
-  return {a:own.length===1?own[0]:i.all,vc:i.vsCurrent};}
-function flSummary(f){const rows=f.versions.map(v=>{const d=v.detail||[],base=d.filter(r=>!Object.keys(r.scope||{}).length),ex=d.length-base.length;
-    const dr=v.status!=='approved'?flDraftImpact(f,v):null,a=v.status==='approved'?flOwnImpact(f,v.company):null;
-    const imp=dr?'<span class="fl-big">'+flPct(dr.a.change)+'</span>'+(dr.vc?'<div class="mx-msg">'+flPct(dr.vc.change)+' vs in force</div>':''):a?'<span class="fl-big">'+flPct(a.change)+'</span>':'—';
-    return '<tr><td><b>'+esc(v.company)+'</b> <span class="mx-msg">v'+esc(String(v.version))+(v.status!=='approved'?' · '+esc(v.status):'')+'</span></td><td>'+(base.map(r=>flTgt(r.target)+' <b>'+esc(r.value)+'</b>').join(' · ')||'—')+
-      (ex?' <span class="mx-msg">+ '+ex+' scoped row'+(ex>1?'s':'')+'</span>':'')+'</td><td class="mx-msg">'+(Object.values(v.pins||{}).join(', ')||'—')+
-      '</td><td class="fl-pct">'+imp+'</td></tr>';}).join('');
-  return '<div class="fl-mdw"><table class="fl-md"><tr><th>Company</th><th>Multipliers (every class)</th><th>ISO edition pin</th><th class="fl-pct">Impact</th></tr>'+rows+'</table></div>'+
-    '<div class="mx-msg" style="margin-top:6px">Impact: a projected book of typical risks, carrier vs pure ISO, on our engine.</div>';}
-function flRows(f){if(!f.versions.length)return '<div class="mx-msg">Nothing authored yet.</div>';
-  return f.versions.map(v=>'<div class="fl-doc"><b>'+esc(v.company)+'</b> <span class="mx-msg">'+esc(v.filing+' v'+v.version+' · '+v.compiledKeys+' compiled keys')+'</span>'+
-    '<div class="fl-mdw"><table class="fl-md"><tr><th>Target</th><th>Applies to</th><th class="fl-pct">Value</th><th>Mode</th><th>Note</th></tr>'+
-    (v.detail||[]).map(r=>'<tr><td class="nw">'+flTgt(r.target)+'</td><td>'+flScope(r.scope)+'</td><td class="fl-pct">'+esc(r.value)+'</td><td class="nw">'+esc(r.mode)+
-      '</td><td class="mx-msg">'+esc(r.note)+(r.cite?' <span title="cite">['+esc(r.cite)+']</span>':'')+'</td></tr>').join('')+'</table></div></div>').join('');}
-function flImpact(f){const st=String(f.state||'').split(',').map(s=>s.trim());if(!f.impacts||!f.impacts.length)
-    return '<div class="mx-msg">No impact preview yet. It runs on our engine: <code>python -m deviations impact &lt;COMPANY&gt; --line '+esc(f.line)+'</code>, or <code>--draft &lt;authored.json&gt;</code> before a filing is built.</div>';
-  return f.impacts.map(i=>{const own=st.map(s=>i.byState&&i.byState[s]).filter(Boolean),a=own.length===1?own[0]:i.all,vc=i.vsCurrent;
-    const groups=Object.keys((i.byCoverage||{}).All||{});
-    return '<div class="fl-doc"><b>'+esc(i.company)+'</b> '+(i.draft?'<span class="chip mismatch">draft</span> ':'')+'<span class="fl-big">'+flPct(a.change)+'</span>'+
-      ' <span class="mx-msg">vs pure ISO · '+a.rated+' risks · '+flPct(a.min)+' to '+flPct(a.max)+'</span>'+
-      (vc?'<div><span class="fl-big">'+flPct(vc.change)+'</span> <span class="mx-msg">vs what is in force ('+esc(Object.entries(vc.filings||{}).map(([s,x])=>s+' '+(x||'technical only')).join(', '))+')</span></div>':'')+
-      '<div class="fl-mdw"><table class="fl-md"><tr><th>Risk type</th><th class="fl-pct">vs ISO</th>'+(vc?'<th class="fl-pct">vs in force</th>':'')+groups.map(g=>'<th class="fl-pct">'+esc(g)+'</th>').join('')+'</tr>'+
-      Object.entries(i.byRiskType||{}).map(([k,v])=>'<tr><td>'+esc(k)+'</td><td class="fl-pct"><b>'+flPct(v.change)+'</b></td>'+(vc?'<td class="fl-pct"><b>'+flPct((vc.by_risk_type||{})[k])+'</b></td>':'')+
-        groups.map(g=>{const c=((i.byCoverage||{})[k]||{})[g];return '<td class="fl-pct">'+(c?flPct(c.change):'—')+'</td>';}).join('')+'</tr>').join('')+'</table></div></div>';}).join('');}
-function flProof(f){const p=f.proof;if(!p)return '';
-  return p.ran?flChip(p.passed)+p.ok+' of '+p.checks+' checks':esc(p.suite)+' has not been run';}
-function flSources(f){return f.sources.length?f.sources.map(x=>'<div class="fl-doc">'+flChip(x.intact)+
-    (x.present?'<a href="'+esc(x.url)+'" target="_blank" rel="noopener">'+esc(x.name)+'</a>':esc(x.name))+
-    '<div class="mx-msg">'+esc(x.what)+'</div><div class="mx-msg" title="SHA-256 '+esc(x.sha256||'')+'">'+(x.intact?'unchanged since it arrived':x.present?'<b>changed since it arrived</b>':'<b>missing</b>')+'</div></div>').join('')
-    :'<div class="mx-msg">Not archived.</div>';}
+        const p=c.plain||{},draft=c.status==='draft';
+        const tip=FL.tech?(c.filing||'')+' v'+(c.version||'')+' · '+c.status+(c.pin?' · '+c.pin:''):(p.pin||'');
+        return '<td'+(f?' data-f="'+esc(flKey(f))+'"':'')+(f&&sel===f?' class="sel"':'')+(tip?' title="'+esc(tip)+'"':'')+'>'+(draft?'':flChip(c.status==='approved'))+
+          '<b>'+esc(p.status||c.status)+'</b>'+(p.since&&!draft?' <span class="mx-msg">since '+esc(p.since)+'</span>':'')+
+          (c.pin?'<span class="fl-tag">older ISO rates</span>':'')+((c.drafts||[]).length?'<span class="fl-tag">proposal pending</span>':'')+'</td>';}).join('')+'</tr>').join('')+'</table></div>';}
+function flSummary(f){const imp=v=>{const i=(f.impacts||[]).filter(x=>x.company===v.company&&(v.status==='approved'?!x.draft:x.draft===v.filing+'.v'+v.version)).pop();
+      if(!i)return '<span class="mx-msg">not worked out yet</span>';const p=i.plain||{};
+      return '<span class="fl-big">'+esc(p.vsIso||'')+'</span>'+(p.vsNow?'<div class="mx-msg">'+esc(p.vsNow)+'</div>':'');};
+  const n=(f.impacts||[]).map(i=>(i.plain||{}).risks).find(Boolean);
+  return '<div class="fl-mdw"><table class="fl-md"><tr><th>Insurer</th><th>What changes</th><th>Starts from</th><th>Effect on premium</th></tr>'+
+    f.versions.map(v=>{const p=v.plain||{};return '<tr><td><b>'+esc(p.company||v.company)+'</b><div class="mx-msg">'+esc(p.status||v.status)+'</div></td><td>'+esc(p.changes||'')+
+      '</td><td class="mx-msg">'+esc(p.pin||'')+'</td><td>'+imp(v)+'</td></tr>';}).join('')+'</table></div>'+
+    '<div class="mx-msg" style="margin-top:6px">Effect: estimated by pricing '+(n?n+' ':'')+'typical businesses both ways, the insurer\u2019s rates against ISO\u2019s, on our own engine. '+
+    (f.plain&&f.plain.proof?flChip(true)+esc(f.plain.proof)+'.':'')+'</div>';}
+function flRows(f){if(!f.versions.length)return '<div class="mx-msg">Nothing proposed yet.</div>';
+  return f.versions.map(v=>{const p=v.plain||{};return '<div class="fl-doc"><b>'+esc(p.company||v.company)+'</b> <span class="mx-msg">'+esc(p.status||'')+'</span>'+
+    '<div class="fl-mdw"><table class="fl-md"><tr><th>Coverage</th><th>Applies to</th><th>Change</th><th>Why</th></tr>'+
+    (p.rows||[]).map(r=>'<tr><td class="nw">'+esc(r.what)+'</td><td>'+esc(r.where)+'</td><td class="nw"><b>'+esc(r.change)+'</b></td><td class="mx-msg">'+esc(r.note||'')+'</td></tr>').join('')+'</table></div>'+
+    (FL.tech?'<div class="mx-msg">'+esc(v.filing+' v'+v.version+' · '+v.compiledKeys+' compiled keys'+Object.entries(v.pins||{}).map(([j,x])=>' · '+j+' pinned to '+x).join(''))+'</div>'+
+      '<div class="fl-mdw"><table class="fl-md"><tr><th>Target</th><th>Scope</th><th class="fl-pct">Value</th><th>Mode</th><th>Cite</th></tr>'+
+      (v.detail||[]).map(r=>'<tr><td><code>'+esc(r.target)+'</code></td><td><code>'+esc(JSON.stringify(r.scope||{}))+'</code></td><td class="fl-pct">'+esc(r.value)+'</td><td>'+esc(r.mode)+'</td><td>'+esc(r.cite)+'</td></tr>').join('')+'</table></div>':'')+'</div>';}).join('');}
+function flDraftImpact(f,v){return (f.impacts||[]).filter(x=>x.company===v.company&&x.draft===v.filing+'.v'+v.version).pop()||null;}
+function flImpact(f){const st=String(f.state||'').split(',').map(s=>s.trim());
+  if(!f.impacts||!f.impacts.length)return '<div class="mx-msg">Not worked out yet. It runs on our own engine when a filing is uploaded or built.</div>';
+  return f.impacts.map(i=>{const own=st.map(s=>i.byState&&i.byState[s]).filter(Boolean),a=own.length===1?own[0]:i.all,vc=i.vsCurrent,p=i.plain||{};
+    const now=p.vsNow,groups=Object.keys((i.byCoverage||{}).All||{});
+    return '<div class="fl-doc"><b>'+esc(p.company||i.company)+'</b> '+(i.draft?'<span class="fl-tag">proposal</span> ':'')+'<span class="fl-big">'+esc(p.vsIso||'')+'</span>'+
+      (now?' <span class="mx-msg">· '+esc(now)+'</span>':'')+
+      '<div class="fl-mdw"><table class="fl-md"><tr><th>Type of business</th><th class="fl-pct">vs ISO</th>'+(now?'<th class="fl-pct">vs today</th>':'')+groups.map(g=>'<th class="fl-pct">'+flCov(g)+'</th>').join('')+'</tr>'+
+      Object.entries(i.byRiskType||{}).map(([k,v])=>'<tr><td>'+esc(k)+'</td><td class="fl-pct"><b>'+flPct(v.change)+'</b></td>'+(now?'<td class="fl-pct"><b>'+flPct((vc.by_risk_type||{})[k])+'</b></td>':'')+
+        groups.map(g=>{const c=((i.byCoverage||{})[k]||{})[g];return '<td class="fl-pct">'+(c?flPct(c.change):'—')+'</td>';}).join('')+'</tr>').join('')+'</table></div>'+
+      '<div class="mx-msg">Coverage columns: how much each part of the premium moves against ISO.'+(FL.tech?' · '+a.rated+' risks, '+flPct(a.min)+' to '+flPct(a.max)+' per risk · '+esc(i.file)+' · '+esc(i.generated||''):'')+'</div></div>';}).join('');}
+function flProof(f){const p=f.proof;if(!p)return '';return p.ran?flChip(p.passed)+p.ok+' of '+p.checks+' checks':esc(p.suite)+' has not been run';}
+function flSources(f){if(!f.sources.length)return '<div class="mx-msg">No documents saved.</div>';
+  const all=f.sources.every(x=>x.intact);
+  return '<div class="mx-msg">'+flChip(all)+(all?'Original documents, unchanged since we received them.':'<b>Some documents are missing or have changed since we received them.</b>')+'</div>'+
+    f.sources.map(x=>'<div class="fl-doc">'+(x.present?'<a href="'+esc(x.url)+'" target="_blank" rel="noopener">'+esc(x.name)+'</a>':esc(x.name)+' <b>(missing)</b>')+
+      (x.present&&!x.intact?' <b>(changed)</b>':'')+'<div class="mx-msg">'+esc(x.what)+'</div>'+(FL.tech?'<div class="mx-msg">SHA-256 <code>'+esc(x.sha256||'')+'</code></div>':'')+'</div>').join('');}
+function flHistory(f){const s=f.plain&&f.plain.historyShort;
+  if(!f.entry)return '<div class="mx-msg">Not in the filings log yet.</div>';
+  return (s?'<p class="fl-short">'+esc(s)+'</p>':'')+'<details class="fl-more"'+(s?'':' open')+'><summary>The full log entry</summary><div class="fl-entry">'+f.entry+'</div></details>';}
+function flSide(){const el=document.getElementById('fl-side');
+  el.innerHTML='<div class="cap2">How a filing gets here</div><div class="mx-msg">1. The filing is passed in the Claude Code session, which writes our review and the proposals.<br>'+
+    '2. Its packet is uploaded here. Nothing is put in use by an upload.<br>3. The effect on premiums is worked out.<br>4. It is put in use, tested against ISO and logged.</div>'+
+    '<div class="cap2" style="margin-top:12px">Words on this page</div><dl class="fl-gl">'+FL_GLOSS.map(([k,v])=>'<dt>'+esc(k)+'</dt><dd>'+esc(v)+'</dd>').join('')+'</dl>';}
 function flDraw(){const d=FL.d;if(!d)return;
-  document.getElementById('fl-out').innerHTML=d.filings.length?'<div class="fl-list">'+d.filings.map(f=>'<button data-f="'+esc(flKey(f))+'" aria-pressed="'+(FL.sel===flKey(f))+'">'+
-    esc((f.id?f.id+' · ':'')+f.carrier+' '+f.line+' · '+f.state)+(f.stage&&f.stage!=='Proved'?' · '+esc(f.stage):'')+'</button>').join('')+'</div>':'<div class="mx-empty">No filings logged yet.</div>';
-  const f=flSel(),el=document.getElementById('fl-entry');flBoard();
-  document.getElementById('fl-side').innerHTML='<div class="cap2">How a filing gets here</div><div class="mx-msg">1. The filing is passed in the Claude Code session, which writes the review (filing sheet) and drafts.<br>'+
-    '2. Its packet is uploaded here: documents, review and drafts land in the store, never approved.<br>'+
-    '3. The draft impact preview runs, before anything is built.<br>4. Built, tested against ISO, logged.</div>';
+  document.getElementById('fl-out').innerHTML=d.filings.length?'<div class="fl-list">'+d.filings.map(f=>{const p=f.plain||{};
+    return '<button data-f="'+esc(flKey(f))+'" aria-pressed="'+(FL.sel===flKey(f))+'">'+esc(p.title||f.carrier+' '+f.line+' '+f.state)+(p.step&&p.step!=='Proven'?' · '+esc(p.step.toLowerCase()):'')+'</button>';}).join('')+'</div>'
+    :'<div class="mx-empty">No filings yet.</div>';
+  const f=flSel(),el=document.getElementById('fl-entry');flBoard();flSide();
   if(!f){el.innerHTML='';return;}
-  const tabs=[['summary','Summary'],['rows','Rows'],['impact','Impact'],['sheet','Filing sheet'],['log','Log entry'],['sources','Sources']].filter(([k])=>k!=='sheet'||f.sheet);
-  if(!tabs.some(([k])=>k===FL.tab))FL.tab='summary';
-  const body={summary:()=>flSummary(f),rows:()=>flRows(f),impact:()=>flImpact(f),sheet:()=>'<div class="fl-entry">'+f.sheet+'</div>',
-    log:()=>f.entry?'<div class="fl-entry">'+f.entry+'</div>':'<div class="mx-msg">Not logged yet.</div>',sources:()=>flSources(f)}[FL.tab]();
-  el.innerHTML='<div class="fl-card"><h2>'+esc((f.id?f.id+' · ':'')+f.carrier+' '+f.line+' · '+f.state)+'</h2>'+
-    '<div class="mx-msg"><b>'+esc(f.stage||'')+'</b> · '+esc(f.status)+' · SERFF '+esc(f.serff)+(f.effective?' · '+esc(f.effective):'')+(f.proof?' · '+flProof(f):'')+'</div>'+
+  const p=f.plain||{},steps=p.steps||[],at=steps.indexOf(p.step);
+  const tabs=[['overview','Overview'],['rows','What changes'],['impact','Effect on premium'],['sheet','Our review'],['log','History'],['sources','Documents']].filter(([k])=>k!=='sheet'||f.sheet);
+  if(!tabs.some(([k])=>k===FL.tab))FL.tab='overview';
+  const body={overview:()=>flSummary(f),rows:()=>flRows(f),impact:()=>flImpact(f),sheet:()=>'<div class="fl-entry">'+f.sheet+'</div>',log:()=>flHistory(f),sources:()=>flSources(f)}[FL.tab]();
+  el.innerHTML='<div class="fl-card"><h2>'+esc(p.title||'')+'</h2>'+
+    '<div class="fl-steps">'+steps.map((s,i)=>'<span class="'+(i<at?'done':i===at?'now':'')+'">'+(i<at?'✓ ':'')+esc(s)+'</span>').join('')+'</div>'+
+    (p.effective?'<div class="mx-msg">'+esc(p.effective)+'</div>':'')+(p.inShort?'<p class="fl-short">'+esc(p.inShort)+'</p>':'')+
+    (FL.tech?'<div class="mx-msg">'+esc((f.id?f.id+' · ':'')+'SERFF '+f.serff+' · '+f.status+' · stage '+f.stage)+(f.proof?' · '+flProof(f):'')+'</div>':'')+
     '<div class="fl-tabs" role="tablist">'+tabs.map(([k,n])=>'<button role="tab" data-tab="'+k+'" aria-selected="'+(FL.tab===k)+'">'+n+'</button>').join('')+'</div>'+body+'</div>';}
+function flUpShow(r){const el=document.getElementById('fl-up');if(!r){el.innerHTML='';return;}
+  if(r.error){el.innerHTML='<div class="fl-card"><b>This file couldn\u2019t be read as a filing packet.</b><div class="mx-msg">'+esc(r.error)+'</div></div>';return;}
+  const p=r.plain||{},j=r.impact,li=xs=>xs.map(x=>'<div class="mx-msg">'+esc(x)+'</div>').join('');
+  el.innerHTML='<div class="fl-card"><b>'+esc(p.headline||'')+'</b>'+(p.saved?'<div class="mx-msg">'+esc(p.saved)+'</div>':'')+
+    (p.problems&&p.problems.length?li(p.problems):'')+
+    (j?'<div class="mx-msg" style="margin-top:4px">'+(j.state==='running'?'Working out the effect on premiums… '+j.done+' of '+j.total:'Effect on premiums worked out.')+
+      (j.plain||[]).map(m=>'<br>'+esc(m)).join('')+'</div>':'')+
+    '<details class="fl-more"><summary>Show what was saved</summary>'+li((r.written||[]).map(x=>'saved '+x))+li((r.skips||[]).map(x=>'already had '+x))+
+      li((r.problems||[]))+(r.validation||[]).map(v=>'<div class="mx-msg">'+flChip(v.ok)+'checked '+esc(v.draft)+(v.ok?'':': '+esc(v.errors.join('; ')))+'</div>').join('')+'</details></div>';}
+function flPoll(serff){fetch('/api/console/filings/jobs').then(r=>r.json()).then(d=>{const j=d.jobs.find(x=>x.serff===serff);if(!j||!FL.up)return;
+  FL.up.impact=j;flUpShow(FL.up);if(j.state==='running')setTimeout(()=>flPoll(serff),3000);else flLoad();}).catch(()=>{});}
 function flLoad(){Promise.all([fetch('/api/console/filings/board').then(r=>r.json()),fetch('/api/console/filings').then(r=>r.json())])
   .then(([b,d])=>{FL.b=b;FL.d=d;if(!FL.sel&&d.filings.length)FL.sel=flKey(d.filings[0]);flDraw();})
   .catch(e=>{document.getElementById('fl-board').innerHTML='<div class="mx-empty">Could not load the filings: '+esc(String(e))+'</div>';});}
-function flUpShow(r){const el=document.getElementById('fl-up');if(!r){el.innerHTML='';return;}
-  if(r.error){el.innerHTML='<div class="fl-card"><b>Packet refused</b><div class="mx-msg">'+esc(r.error)+'</div></div>';return;}
-  const li=(xs,cls)=>xs.map(x=>'<div class="mx-msg"'+(cls?' style="color:var(--color-danger,#b00)"':'')+'>'+esc(x)+'</div>').join('');
-  const j=r.impact;
-  el.innerHTML='<div class="fl-card"><b>'+(r.ok?'Packet received':'Packet refused: nothing was written')+'</b> <span class="mx-msg">'+esc(r.name||'')+' · '+esc(r.carrier+' '+r.line+' · '+(r.juris||[]).join(', ')+' · SERFF '+r.serff)+'</span>'+
-    (r.problems.length?li(r.problems,true):'')+(r.ok?li(r.written.map(x=>'wrote '+x))+li(r.skips.map(x=>'skipped '+x)):'')+
-    (r.validation||[]).map(v=>'<div class="mx-msg">'+flChip(v.ok)+'validate '+esc(v.draft)+(v.ok?'':': '+esc(v.errors.join('; ')))+'</div>').join('')+
-    (j?'<div class="mx-msg" id="fl-job">Impact preview: '+esc(j.state)+' · '+j.done+' of '+j.total+' drafts'+(j.messages||[]).map(m=>'<br>'+esc(m)).join('')+'</div>':'')+'</div>';}
-function flPoll(serff){fetch('/api/console/filings/jobs').then(r=>r.json()).then(d=>{const j=d.jobs.find(x=>x.serff===serff);if(!j||!FL.up)return;
-  FL.up.impact=j;flUpShow(FL.up);if(j.state==='running')setTimeout(()=>flPoll(serff),3000);else flLoad();}).catch(()=>{});}
-document.getElementById('fl-file').addEventListener('change',ev=>{const f=ev.target.files[0];if(!f)return;const rd=new FileReader();
-  document.getElementById('fl-up').innerHTML='<div class="fl-card mx-msg">Reading '+esc(f.name)+'…</div>';
-  rd.onload=()=>{const data=String(rd.result).split(',')[1]||'';
-    fetch('/api/console/filings/packet',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:f.name,data})})
-      .then(r=>r.json()).then(r=>{FL.up=r;flUpShow(r);if(r.ok){const k=(FL.d&&FL.d.filings.find(x=>x.serff===r.serff));FL.sel=k?flKey(k):r.serff;flLoad();if(r.impact)flPoll(r.serff);}})
-      .catch(e=>flUpShow({error:String(e)}));ev.target.value='';};
-  rd.readAsDataURL(f);});
 function flPick(ev){const x=ev.target.closest('[data-f]');if(!x)return;FL.sel=x.dataset.f;flDraw();}
 document.getElementById('fl-out').addEventListener('click',flPick);
 document.getElementById('fl-board').addEventListener('click',flPick);
 document.getElementById('fl-entry').addEventListener('click',ev=>{const x=ev.target.closest('[data-tab]');if(!x)return;FL.tab=x.dataset.tab;flDraw();});
+document.getElementById('fl-tech').addEventListener('change',ev=>{FL.tech=ev.target.checked;flDraw();});
+document.getElementById('fl-file').addEventListener('change',ev=>{const f=ev.target.files[0];if(!f)return;const rd=new FileReader();
+  document.getElementById('fl-up').innerHTML='<div class="fl-card mx-msg">Reading '+esc(f.name)+'…</div>';
+  rd.onload=()=>{const data=String(rd.result).split(',')[1]||'';
+    fetch('/api/console/filings/packet',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:f.name,data})})
+      .then(r=>r.json()).then(r=>{FL.up=r;flUpShow(r);if(r.ok){FL.sel=r.serff;flLoad();if(r.impact)flPoll(r.serff);}})
+      .catch(e=>flUpShow({error:String(e)}));ev.target.value='';};
+  rd.readAsDataURL(f);});
 addEventListener('hashchange',()=>{if((location.hash||'').startsWith('#filings'))flLoad();});
 if((location.hash||'').startsWith('#filings'))flLoad();
 """

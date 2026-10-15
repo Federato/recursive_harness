@@ -270,19 +270,26 @@ def board() -> dict:
                 if (line, juris) not in seen:
                     cells.append({"company": code, "carrier": carrier, "line": line, "state": juris,
                                   "filing": None, "status": "pinned only", "pin": pkg})
+    from console import plain as P
+    for x in cells:
+        x["plain"] = {"status": P.CELL.get(x["status"], x["status"]),
+                      "since": P.money_date(x.get("new_eff")) if x.get("new_eff") else "",
+                      "pin": P.pin(x.get("pin")) if x.get("pin") else ""}
     cols = sorted({(x["line"], x["state"]) for x in cells})
-    return {"companies": companies, "columns": [{"line": a, "state": b} for a, b in cols], "cells": cells}
+    return {"companies": companies, "cells": cells,
+            "columns": [{"line": a, "state": b, "plain": f"{P.line(a)} · {P.state(b)}"} for a, b in cols]}
 
 
 def _extras(s: dict, carrier: str, companies: list, line: str, states) -> dict:
     """The filing sheet (rendered), the proving suite's last run, and the impact previews for this filing."""
     states = [states] if isinstance(states, str) else list(states)
-    sheet = ""
+    sheet, raw = "", ""
     if s.get("sheet") and carrier:
         p = _carriers() / carrier / "sources" / s.get("serff", "") / s["sheet"]
         if p.is_file():
-            sheet = render(p.read_text(encoding="utf-8-sig"))
-    return {"sheet": sheet, "proof": _proof(s.get("suite")), "impacts": impacts(companies, line, states, s.get("serff", "")),
+            raw = p.read_text(encoding="utf-8-sig")
+            sheet = render(raw)
+    return {"sheet": sheet, "_sheetRaw": raw, "proof": _proof(s.get("suite")), "impacts": impacts(companies, line, states, s.get("serff", "")),
             "stageDeclared": s.get("stage")}
 
 
@@ -303,6 +310,48 @@ def _stage(row: dict) -> str:
     return "Received"
 
 
+def _company_name(carrier: str, code: str) -> str:
+    return _json(_carriers() / carrier / code / "company.json").get("name") or code
+
+
+def _plain(r: dict, sheet_raw: str, log_raw: str) -> dict:
+    """The filing in plain words (console/plain.py): what the main view shows."""
+    from console import plain as P
+    carrier = _json(_carriers() / r["carrier"] / "carrier.json").get("name") or r["carrier"]
+    new = sorted({v.get("new_eff") for v in r["versions"] if v.get("new_eff")})
+    ren = sorted({v.get("renewal_eff") for v in r["versions"] if v.get("renewal_eff")})
+    for v in r["versions"]:
+        v["plain"] = {"company": _company_name(r["carrier"], v["company"]),
+                      "changes": P.company_rows(v.get("detail") or []),
+                      "pin": "; ".join(P.pin(x) for x in (v.get("pins") or {}).values()) or "ISO's current rates",
+                      "status": P.CELL.get(v["status"], v["status"]),
+                      "rows": [{"what": P.target(x["target"]), "where": P.scope(x.get("scope")),
+                                "change": P.versus_iso(x["value"], x.get("mode", "replace")), "note": x.get("note", "")}
+                               for x in v.get("detail") or []]}
+    st = [x.strip() for x in str(r.get("state", "")).split(",")]
+    for i in r.get("impacts", []):
+        own = [i["byState"][x] for x in st if i.get("byState", {}).get(x)]
+        a = own[0] if len(own) == 1 else (i.get("all") or {})
+        vc = i.get("vsCurrent") or {}
+        has_now = any(vc.get("filings", {}).values())
+        i["plain"] = {"company": _company_name(r["carrier"], i["company"]),
+                      "vsIso": P.change(a.get("change"), "ISO") if a else "",
+                      "vsNow": (P.change(vc.get("change"), "today's rates") if has_now else "") if vc else "",
+                      "risks": a.get("rated") if a else None,
+                      "byType": {k: {"vsIso": P.change(v.get("change"), "ISO"),
+                                     "vsNow": P.change((vc.get("by_risk_type") or {}).get(k), "today") if has_now else ""}
+                                 for k, v in (i.get("byRiskType") or {}).items()}}
+    return {"title": f"{carrier} · {P.line(r.get('line', ''))} · {P.state(r.get('state', ''))}",
+            "carrier": carrier, "line": P.line(r.get("line", "")), "state": P.state(r.get("state", "")),
+            "step": P.STAGES.get(r["stage"], r["stage"]), "steps": P.STEPS,
+            "effective": ("New policies from " + " / ".join(P.money_date(x) for x in new)
+                          + ("; renewals from " + " / ".join(P.money_date(x) for x in ren) if ren else "")) if new else "",
+            "inShort": P.in_short(sheet_raw) or P.in_short(log_raw),
+            "historyShort": P.in_short(log_raw),
+            "proof": (f"Checked: {r['proof']['ok']} of {r['proof']['checks']} automatic tests pass"
+                      if (r.get("proof") or {}).get("ran") else "")}
+
+
 def filings() -> dict:
     log = _log()
     text = log.read_text(encoding="utf-8") if log.exists() else ""
@@ -319,7 +368,7 @@ def filings() -> dict:
                      "state": r.get("State", ""), "serff": serff, "effective": r.get("Effective", ""),
                      "status": r.get("Status", ""), "received": s.get("received"), "sources": s.get("files", []),
                      "archived": bool(s), "versions": _versions(carrier, companies, serff) if carrier else [],
-                     "entry": render(sections.get(dev, "")),
+                     "entry": render(sections.get(dev, "")), "_logRaw": sections.get(dev, ""),
                      **_extras(s, carrier, companies, r.get("Line", ""), r.get("State", ""))})
     # archived but not yet in the log: shown, so nothing received goes unseen
     for serff, s in src.items():
@@ -334,6 +383,7 @@ def filings() -> dict:
         r["stage"] = _stage(r)
         if r["stage"] not in ("Built", "Proved"):
             r["proof"] = None                  # a suite's last run proves a built filing, not a draft
+        r["plain"] = _plain(r, r.pop("_sheetRaw", ""), r.pop("_logRaw", ""))
     return {"filings": rows, "log": "docs/deviations/FILINGS-LOG.md", "store": str(_carriers()), "stages": list(STAGES)}
 
 
@@ -374,6 +424,17 @@ def upload(body: dict) -> tuple[int, dict]:
     except PK.PacketError as exc:
         return 400, {"error": str(exc)}
     rep["name"] = str(body.get("name") or "")
+    from console import plain as P
+    docs = [w for w in rep.get("writes", []) if "/sources/" in w]
+    props = rep.get("validation", [])
+    rep["plain"] = {
+        "headline": (f"Received {_json(_carriers() / rep['carrier'] / 'carrier.json').get('name') or rep['carrier']}'s "
+                     f"{P.line(rep['line'])} filing for {P.state(', '.join(rep['juris']))}." if rep["ok"]
+                     else "This packet couldn't be accepted. Nothing was saved."),
+        "saved": (f"{len(docs)} document{'s' if len(docs) != 1 else ''} saved; "
+                  f"{sum(1 for v in props if v['ok'])} of {len(props)} proposal{'s' if len(props) != 1 else ''} checked "
+                  f"and valid." + (" Already had everything else." if rep.get("skips") else "")) if rep["ok"] else "",
+        "problems": list(dict.fromkeys(P.problem(x) for x in rep.get("problems", [])))}
     if rep["ok"]:
         todo = [v["draft"] for v in rep.get("validation", []) if v["ok"]]
         if todo and JOBS.get(rep["serff"], {}).get("state") != "running":
@@ -393,6 +454,11 @@ def _impact_job(job: dict, drafts: list) -> None:
             write(rep, _impact_dir())
             job["messages"].append(f"{rel}: {rep['all']['change']}% vs pure ISO"
                                    + (f", {rep['vs_current']['change']}% vs in force" if rep.get("vs_current") else ""))
+            from console import plain as P
+            now = rep.get("vs_current") or {}
+            job.setdefault("plain", []).append(
+                f"{_company_name(rel.split('/')[0], rep['company'])}: {P.change(rep['all']['change'], 'ISO')}"
+                + (f", {P.change(now['change'], 'its rates today')}" if any((now.get('filings') or {}).values()) else ""))
         except Exception as exc:                               # noqa: BLE001  (shown on the screen)
             job["messages"].append(f"{rel}: no impact preview ({str(exc)[:200]})")
         job["done"] += 1

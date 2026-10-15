@@ -4,6 +4,10 @@
 `Carriers\<carrier>\sources\<SERFF>\<SERFF>-filing-sheet.md`, listed in `source.json`, shown on the Carrier
 Filings screen. It is our reading of the filing; the filed document wins where they disagree (D18).*
 
+## In short
+
+One paragraph anyone can read: who, what line and state, from when, what changes against ISO in percentages, the effect on typical businesses, and whether it is proven. No codes. The Carrier Filings screen shows it first.
+
 **Stage:** Received → Mapped → Draft impact → Built → Proved  ·  **DEV number:** DEV-nnn (assigned when logged)
 
 ## The filing

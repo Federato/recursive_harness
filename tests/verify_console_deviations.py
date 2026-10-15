@@ -409,7 +409,7 @@ def part_j():
           code == 200 and cell.get(("UFC", "CF", "IA"), {}).get("status") == "approved" and ufc_gl
           and ufc_gl["status"] == "approved" and ufc_gl["pin"] == "GL_IA_20240401_V01"
           and cell.get(("ADD", "CF", "IA"), {}).get("status") == "withdrawn"
-          and {"line": "GL", "state": "IA"} in b["columns"], {k: (v["status"], v["pin"]) for k, v in cell.items()})
+          and any((c["line"], c["state"]) == ("GL", "IA") for c in b["columns"]), {k: (v["status"], v["pin"]) for k, v in cell.items()})
     src = TMP / "carriers" / "UFG" / "sources" / "UNFG-134374972"
     src.mkdir(parents=True, exist_ok=True)
     sheet = "\n".join(["# Filing sheet: UFG Iowa GL", "", "| Company | LCM |", "|---|---|", "| UFC | **0.942** |", ""])
@@ -480,8 +480,25 @@ def part_j():
     vers = sorted((v["company"], v["version"], v["status"]) for v in f["versions"])
     check("J10 the draft's impact carries its change from what is in force, and the draft is listed as a version",
           dv and dv["vsCurrent"]["change"] == "6.2" and ("UFC", 2, "draft") in vers, (dv and dv.get("vsCurrent"), vers))
-    check("J11 the page shows stages, drafts and the in-force comparison",
-          all(k in html for k in ("f.stage", "flDraftImpact", "vs in force")))
+    check("J11 the page shows stages, drafts and the comparison with today's rates",
+          all(k in html for k in ("fl-steps", "flDraftImpact", "vs today")))
+    import re as _re
+    texts = [f["plain"]["title"], f["plain"]["effective"], f["plain"]["step"]]
+    for v in f["versions"]:
+        texts += [v["plain"]["company"], v["plain"]["changes"], v["plain"]["pin"], v["plain"]["status"]]
+        texts += [x for r in v["plain"]["rows"] for x in (r["what"], r["where"], r["change"])]
+    for i in f["impacts"]:
+        texts += [i["plain"]["company"], i["plain"]["vsIso"], i["plain"]["vsNow"]]
+    texts += [c["plain"] for c in b["columns"]] + [x for c in b["cells"] for x in c["plain"].values()]
+    codes = [t for t in texts if _re.search(r"LCM:|@v\d|GL_[A-Z]{2}_|CF_[A-Z]{2}_|UFG-IA|ProdsCompldOps|PremOps", t or "")]
+    ufc = next(v for v in f["versions"] if v["company"] == "UFC" and v["version"] == 1)
+    check("J12 the main view's words carry no codes, and say what the filing does",
+          not codes and ufc["plain"]["changes"].startswith("Premises and operations 6% below ISO; Products and completed "
+                                                          "work 79% above ISO") and "specialty" in ufc["plain"]["changes"].lower()
+          and ufc["plain"]["pin"] == "ISO's Iowa rates of Apr 1, 2024" and ufc["plain"]["company"] == "United Fire & Casualty Company"
+          and f["plain"]["steps"] == ["Received", "Reviewed", "Impact checked", "In use", "Proven"], codes[:4] or ufc["plain"])
+    check("J13 the page has the technical switch, the glossary and plain tab names",
+          all(k in html for k in ('id="fl-tech"', "Words on this page", "Effect on premium", "What changes", "Our review")))
 
 
 def main() -> int:
