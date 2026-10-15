@@ -442,6 +442,20 @@ def main() -> int:
         got = _k.rate(V.build({"experience_rating": "Yes", **cfg}, ok)).premium
         check(f"{label} prices as ISO does", got == want, f"{got}, ISO {want}")
 
+    # B-41, ISO-confirmed 2026-10-15 (7 calls, every published field exact): schedule rating on Prem/Ops applies from
+    # experience credibility 0.03 (the base risk), not below it, and the +/-25% cap holds against 50% asked
+    srp = {"experience_rating": "Yes", "schedule_rating": "Yes"}
+    ext = V._gl(V.build({**srp, "schedule_extreme": "Maximum debit"}, ok))
+    check("X7 every characteristic at its declared maximum asks for 50%",
+          sum(V._pct(v) for k, v in ext.items() if k.startswith("SRP") and k.endswith("Pct")) == 50)
+    for label, cfg, want in (("X8 schedule +10% at credibility 0.03", {"schedule_pct": "10%"}, 9057),
+                             ("X9 maximum debit capped at +25%", {"schedule_extreme": "Maximum debit"}, 10289),
+                             ("X10 maximum credit capped at -25%", {"schedule_extreme": "Maximum credit"}, 6169),
+                             ("X11 credibility 0 (1 year): schedule does nothing", {"erp_years": 1, "schedule_pct": "10%"},
+                              base_prem)):
+        got = _k.rate(V.build({**srp, **cfg}, ok)).premium
+        check(f"{label} prices as ISO does", got == want, f"{got}, ISO {want}")
+
 
     print("\nE  THE STORE, AND THE LONG VIEW BUILT FROM IT")
     tmp = Path(tempfile.mkdtemp(prefix="tester-store-"))

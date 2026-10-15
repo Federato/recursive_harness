@@ -398,6 +398,8 @@ class Control:
                     if p.identity.edition >= MIN_ASOF}
             dates |= {MIN_ASOF, CLASS_BASIS_CLIFF}
             return tuple(sorted(dates))
+        if self.derive == "schedule_extremes":
+            return SCHEDULE_EXTREMES if _schedule_fields(d) else ()
         if self.derive == "package_versions":
             # Not a domain of ISO's -- ISO's live service has no "which
             # version" input; this asks the corpus what it holds. Keyed off
@@ -569,6 +571,15 @@ CONTROLS: tuple[Control, ...] = (
                  "ERPCredibilityFactor >= 0.03, so it is a no-op without "
                  "experience credibility -- OI-89. It moves the premium in "
                  "jurisdictions whose own rules override that gate."),
+    Control("schedule_extreme", "Schedule, every characteristic", "Rating plans",
+            "the plus/minus 25% cap (R15): every characteristic at its declared "
+            "maximum debit or credit asks for far more than the cap allows",
+            derive="schedule_extremes",
+            note="Sets each SRP...Pct ISO declares (location, premises, "
+                 "equipment, classification, employees, cooperation) to the "
+                 "top or bottom of its own domain: 50% asked in OK. Applies "
+                 "only when schedule rating is Yes; overrides Schedule "
+                 "modification (B-41)."),
 
     # ------------------------------------------------------ 10. terrorism (1)
     Control("terrorism", "Terrorism coverage", "Terrorism",
@@ -933,6 +944,35 @@ def _apply_schedule_pct(p, value, d, config):
     _gl(p)["SRPClassificationPct"] = value
 
 
+SCHEDULE_EXTREMES = ("Maximum debit", "Maximum credit")
+
+
+def _pct(v: str) -> float:
+    return float(str(v).rstrip("%"))
+
+
+def _schedule_fields(d) -> dict:
+    """Each schedule characteristic this jurisdiction declares (SRP...Pct with a domain) -> its legal values."""
+    out = {}
+    for f in d.schema:
+        if f.table == GL and f.column.startswith("SRP") and f.column.endswith("Pct") and f.domain and f.is_input:
+            vals = d.values(GL, f.column)
+            if vals:
+                out[f.column] = vals
+    return out
+
+
+def _apply_schedule_extreme(p, value, d, config):
+    """Every declared characteristic at the top (debit) or bottom (credit) of its own domain (B-41)."""
+    if config.get("schedule_rating") != "Yes":
+        raise VariantError("a scheduled modification applies only when schedule rating is Yes")
+    if value not in SCHEDULE_EXTREMES:
+        raise VariantError(f"schedule, every characteristic: {value!r} is not one of {list(SCHEDULE_EXTREMES)}")
+    pick = max if value == "Maximum debit" else min
+    for col, vals in _schedule_fields(d).items():
+        _gl(p)[col] = pick(vals, key=_pct)
+
+
 def _apply_terrorism(p, value, d, config):
     _gl(p)["TerrorismCoverage"] = value
     if value != "Yes":
@@ -1081,6 +1121,7 @@ APPLIERS = {
     "erp_annual_loss": _apply_experience_detail,
     "schedule_rating": _apply_risk_field("ScheduleRatingModificationApplies"),
     "schedule_pct": _apply_schedule_pct,
+    "schedule_extreme": _apply_schedule_extreme,
     "terrorism": _apply_terrorism,
     "effective_date": _apply_effective_date,
     "package_version": _apply_package_version,
@@ -1099,7 +1140,7 @@ ORDER = ("subline", "premium_basis", "class_code", "exposure", "classifications"
          "premops_bipd_deductible", "prods_bi_deductible",
          "prods_pd_deductible", "prods_bipd_deductible", "coverage_form",
          "claims_made_year", "size_of_risk", "experience_rating", "erp_years", "erp_annual_loss",
-         "schedule_rating", "schedule_pct", "terrorism", "effective_date",
+         "schedule_rating", "schedule_pct", "schedule_extreme", "terrorism", "effective_date",
          "package_version")
 
 
