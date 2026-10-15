@@ -1943,118 +1943,113 @@ if((location.hash||'').startsWith('#proof'))pfLoad();
 # as received (re-hashed against source.json, openable), and where each writing company's authored versions stand.
 
 FILINGS_HTML = """<section class="screen" id="s-filings" hidden><div class="mx-wrap"><div class="mx-main">
-  <div class="mx-head"><div><div class="eyebrow">Carrier deviations · filings log</div><h1>Carrier Filings</h1></div>
-    <p>Every carrier filing we have worked on, newest first: where it came from, what was built from it, what was decided and
-    how it was proved. Source documents are kept exactly as received in the carrier store, and each is checked against the
-    hash recorded when it arrived. Click a filing for its full entry and to open its documents.</p></div>
-  <div class="mx-stats" id="fl-stats"></div>
-  <div class="cap2" style="margin-top:6px">What rates where · each writing company by line and state</div>
+  <div class="mx-head"><div><div class="eyebrow">Carrier deviations</div><h1>Carrier Filings</h1></div>
+    <p>What each writing company rates with, by line and state. Click a filing to see it.</p></div>
   <div id="fl-board"><div class="mx-loading">Loading…</div></div>
-  <div class="cap2" style="margin-top:14px">Filings</div>
-  <div id="fl-out"><div class="mx-loading">Loading…</div></div>
+  <div id="fl-out"></div>
   <div id="fl-entry"></div>
 </div><aside class="mx-side" id="fl-side" aria-live="polite"></aside></div></section>"""
 
 BUILT["filings"] = FILINGS_HTML
 
 FILINGS_CSS = """
-.fl-tbl{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:10px}
-.fl-tbl th{text-align:left;font-weight:600;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-neutral-700);padding:4px 6px}
-.fl-tbl td{padding:7px 6px;border-top:1px solid var(--color-divider);vertical-align:top}
-.fl-tbl tr[data-f]{cursor:pointer}.fl-tbl tr.sel td{background:var(--color-accent-100)}
+.fl-bd{border-collapse:collapse;font-size:12.5px;margin-top:4px}
+.fl-bd th{font-weight:600;font-size:11px;color:var(--color-neutral-700);padding:4px 10px;text-align:left}
+.fl-bd td{border-top:1px solid var(--color-divider);padding:7px 10px;vertical-align:middle;white-space:nowrap}
+.fl-bd td[data-f]{cursor:pointer}.fl-bd td[data-f]:hover,.fl-bd td.sel{background:var(--color-accent-100)}
+.fl-bd .fl-tech{color:var(--color-neutral-500,#999)}
+.fl-tag{font-size:10.5px;color:var(--color-neutral-700);border:1px solid var(--color-divider);border-radius:8px;padding:0 5px;margin-left:4px}
+.fl-list{display:flex;flex-wrap:wrap;gap:6px;margin:14px 0 4px}
+.fl-list button{font:inherit;font-size:12px;padding:4px 10px;border-radius:12px;border:1px solid var(--color-divider);background:#fff;cursor:pointer;color:var(--color-text)}
+.fl-list button[aria-pressed="true"]{background:var(--color-accent-700);border-color:var(--color-accent-700);color:var(--color-accent-100)}
+.fl-card{margin-top:10px;border-top:1px solid var(--color-divider);padding-top:10px;max-width:980px;font-size:12.5px}
+.fl-card h2{font:600 17px var(--font-heading);margin:0}
+.fl-tabs{display:flex;gap:2px;margin:10px 0 8px;border-bottom:1px solid var(--color-divider)}
+.fl-tabs button{font:inherit;font-size:12px;padding:5px 10px;border:0;background:none;cursor:pointer;color:var(--color-neutral-700);border-bottom:2px solid transparent}
+.fl-tabs button[aria-selected="true"]{color:var(--color-text);border-bottom-color:var(--color-accent-700);font-weight:600}
 .fl-doc{border-top:1px solid var(--color-divider);padding:6px 0;font-size:12px;overflow-wrap:anywhere}
-.fl-doc code{font-size:10.5px}
-.fl-entry{font-size:12.5px;margin-top:18px;border-top:1px solid var(--color-divider);padding-top:8px;max-width:980px}
 .fl-entry h4{margin:14px 0 4px;font-size:12.5px}.fl-entry p{margin:6px 0}.fl-entry ul{margin:4px 0;padding-left:18px}
 .fl-entry code{overflow-wrap:anywhere}.fl-mdw{overflow-x:auto}
 .fl-md{width:100%;border-collapse:collapse;font-size:12px;margin:6px 0}
 .fl-md th{text-align:left;font-weight:600;font-size:11px;color:var(--color-neutral-700)}
-.fl-md th,.fl-md td{padding:3px 6px;border-top:1px solid var(--color-divider);text-align:left;vertical-align:top}
-.fl-md td:first-child{white-space:nowrap}
-.fl-bd{border-collapse:collapse;font-size:12px;margin-top:6px}
-.fl-bd th{font-weight:600;font-size:11px;color:var(--color-neutral-700);padding:4px 8px;text-align:left}
-.fl-bd td{border-top:1px solid var(--color-divider);padding:6px 8px;vertical-align:top}
-.fl-bd td[data-f]{cursor:pointer}.fl-bd td[data-f]:hover{background:var(--color-accent-100)}
-.fl-bd .fl-tech{color:var(--color-neutral-700);font-size:11px}
-.fl-sec{margin-top:14px;max-width:980px}
+.fl-md th,.fl-md td{padding:4px 6px;border-top:1px solid var(--color-divider);text-align:left;vertical-align:top}
+.fl-md td:first-child{white-space:nowrap}.fl-md .nw{white-space:nowrap}
 .fl-pct{font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
-.fl-md .nw{white-space:nowrap}
+.fl-big{font:600 15px var(--font-heading)}
 """
 
 FILINGS_JS = r"""
-const FL={d:null,sel:null};
+const FL={d:null,b:null,sel:null,tab:'summary'};
+const FL_TARGET={PremOps:'Prem/Ops',ProdsCompldOps:'Products',GroupI:'Group I',GroupII:'Group II',Broad:'Broad',Special:'Special',Earthquake:'Earthquake',All:'All'};
 function flKey(f){return f.id||f.serff;}
-function flVer(v){return esc(v.company)+' v'+esc(String(v.version))+' <span class="mx-msg">'+esc(v.status)+(v.signers.length?' · '+esc(v.signers.join(', ')):'')+'</span>';}
 function flChip(ok){return ok?'<span class="chip verified">✓</span> ':'<span class="chip mismatch">×</span> ';}
-function flDraw(){const d=FL.d;if(!d)return;const fs=d.filings;
-  const docs=fs.reduce((n,f)=>n+f.sources.length,0),bad=fs.reduce((n,f)=>n+f.sources.filter(x=>!x.intact).length,0);
-  document.getElementById('fl-stats').innerHTML='<div><b>'+fs.length+'</b> filings</div><div><b>'+docs+'</b> source documents</div><div><b>'+bad+'</b> missing or changed</div>';
-  document.getElementById('fl-out').innerHTML=fs.length?'<table class="fl-tbl"><tr><th>#</th><th>Carrier</th><th>Line · state</th><th>SERFF</th><th>Effective</th><th>Companies</th><th>Sources</th><th>Status</th></tr>'+
-    fs.map(f=>'<tr data-f="'+esc(flKey(f))+'"'+(FL.sel===flKey(f)?' class="sel"':'')+'><td><b>'+esc(f.id||'—')+'</b></td><td>'+esc(f.carrier)+'</td><td>'+esc(f.line+' · '+f.state)+'</td><td>'+esc(f.serff)+
-      '</td><td class="mx-msg">'+esc(f.effective)+'</td><td>'+(f.versions.length?f.versions.map(flVer).join('<br>'):esc(f.companies.join(', ')))+'</td><td>'+
-      (f.sources.length?flChip(f.sources.every(x=>x.intact))+f.sources.length:'<span class="mx-msg">not archived</span>')+
-      '</td><td>'+esc(f.status)+'</td></tr>').join('')+'</table>'+
-    '<div class="mx-msg" style="margin-top:8px">Log: '+esc(d.log)+' · source documents: '+esc(d.store)+'\\(carrier)\\sources\\(SERFF)</div>'
-    :'<div class="mx-empty">No filings logged yet.</div>';
-  flSide();}
-function flSide(){const el=document.getElementById('fl-side'),f=FL.d&&FL.d.filings.find(x=>flKey(x)===FL.sel);
-  if(!f){document.getElementById('fl-entry').innerHTML='';el.innerHTML='<div class="cap2">Carrier filings</div><div class="mx-msg">Click a filing for its log entry and its source documents. '+
-    'For now filings are passed in the Claude Code session; each is archived as received and logged in '+esc(FL.d?FL.d.log:'the filings log')+'.</div>';return;}
-  el.innerHTML='<div class="cap2">'+esc((f.id?f.id+' · ':'')+f.carrier+' '+f.line+' '+f.state)+'</div><div class="mx-msg">SERFF '+esc(f.serff)+(f.received?' · received '+esc(f.received):'')+'</div>'+
-    '<div class="cap2" style="margin-top:8px">Source documents</div>'+(f.sources.length?f.sources.map(x=>'<div class="fl-doc">'+flChip(x.intact)+
-      (x.present?'<a href="'+esc(x.url)+'" target="_blank" rel="noopener">'+esc(x.name)+'</a>':esc(x.name))+
-      '<div class="mx-msg">'+esc(x.what)+'</div><div class="mx-msg">'+(x.intact?'unchanged since it arrived':x.present?'<b>changed since it arrived</b>':'<b>missing</b>')+
-      ' · SHA-256 <code>'+esc(x.sha256||'')+'</code></div></div>').join(''):'<div class="mx-msg">Not archived.</div>')+
-    (f.versions.length?'<div class="cap2" style="margin-top:8px">Authored</div>'+f.versions.map(v=>'<div class="fl-doc">'+flVer(v)+'<div class="mx-msg">'+esc(v.file)+' · '+v.rows+' rows'+
-      (v.lastAt?' · '+esc(v.lastAction)+' '+esc(v.lastAt.replace('T',' ').replace('Z','')):'')+'</div></div>').join(''):'')+
-    '';
-  document.getElementById('fl-entry').innerHTML=flProof(f)+flRows(f)+flImpact(f)+
-    (f.sheet?'<div class="fl-entry"><div class="cap2">Filing sheet</div>'+f.sheet+'</div>':'')+
-    (f.entry?'<div class="fl-entry"><div class="cap2">'+esc(f.id)+' · log entry</div>'+f.entry+'</div>':'');}
+function flPct(v){return v==null?'—':(Number(v)>0?'+':'')+esc(String(v))+'%';}
+function flTgt(t){const k=String(t||'').replace(/^LCM:/,'');return esc(FL_TARGET[k]||k);}
 function flScope(sc){const k=Object.keys(sc||{});if(!k.length)return 'every class';
   return k.map(x=>(x==='class_group'?'class group ':x==='class'?'class ':x+' ')+esc(String(sc[x]))).join(', ');}
-function flPct(v){return v==null?'—':(Number(v)>0?'+':'')+esc(String(v))+'%';}
+function flSel(){return FL.d&&FL.d.filings.find(x=>flKey(x)===FL.sel);}
 function flBoard(){const b=FL.b,el=document.getElementById('fl-board');if(!b)return;
-  if(!b.cells.length){el.innerHTML='<div class="mx-empty">No compiled filings in the carrier store.</div>';return;}
-  const key=c=>c.line+'|'+c.state;
-  el.innerHTML='<div class="fl-mdw"><table class="fl-bd"><tr><th>Company</th>'+b.columns.map(c=>'<th>'+esc(c.line+' · '+c.state)+'</th>').join('')+'</tr>'+
-    b.companies.map(co=>'<tr><td><b>'+esc(co.code)+'</b><div class="mx-msg">'+esc(co.name)+(co.naic?' · NAIC '+esc(co.naic):'')+'</div></td>'+
+  if(!b.cells.length){el.innerHTML='<div class="mx-empty">No compiled filings yet.</div>';return;}
+  const key=c=>c.line+'|'+c.state,sel=flSel();
+  el.innerHTML='<div class="fl-mdw"><table class="fl-bd"><tr><th></th>'+b.columns.map(c=>'<th>'+esc(c.line+' · '+c.state)+'</th>').join('')+'</tr>'+
+    b.companies.map(co=>'<tr><td title="'+esc(co.name+(co.naic?' · NAIC '+co.naic:''))+'"><b>'+esc(co.code)+'</b></td>'+
       b.columns.map(col=>{const c=b.cells.find(x=>x.company===co.code&&key(x)===key(col));
-        if(!c)return '<td class="fl-tech">technical only</td>';
+        if(!c)return '<td class="fl-tech" title="no filing: rates on pure ISO">—</td>';
         const f=FL.d&&FL.d.filings.find(x=>x.versions.some(v=>v.company===c.company&&v.filing===c.filing));
-        return '<td'+(f?' data-f="'+esc(flKey(f))+'"':'')+'>'+flChip(c.status==='approved')+esc(c.filing?c.filing.replace(/^[A-Z]{2}-[A-Z]{2}-/,'')+' v'+c.version:'no filing')+
-          '<div class="mx-msg">'+esc(c.status)+(c.new_eff?' · new '+esc(c.new_eff)+' · renewal '+esc(c.renewal_eff):'')+'</div>'+
-          (c.pin?'<div class="mx-msg">pinned to '+esc(c.pin)+'</div>':'')+'</td>';}).join('')+'</tr>').join('')+'</table></div>'+
-    '<div class="mx-msg" style="margin-top:4px">A state a company has no filing in rates on technical only: pure ISO. Click a cell for its filing.</div>';}
-function flRows(f){if(!f.versions.length)return '';
-  return '<div class="fl-sec"><div class="cap2">What was built · rows each company rates with</div>'+f.versions.map(v=>
-    '<div class="fl-doc"><b>'+esc(v.company)+'</b> '+esc(v.filing+' v'+v.version)+' <span class="mx-msg">'+esc(v.line+' '+(v.juris||[]).join(', ')+
-    ' · new '+(v.new_eff||'')+' · renewal '+(v.renewal_eff||'')+' · '+v.compiledKeys+' compiled keys'+
-    Object.entries(v.pins||{}).map(([j,p])=>' · '+j+' pinned to '+p).join(''))+'</span>'+
-    '<div class="fl-mdw"><table class="fl-md"><tr><th>Target</th><th>Applies to</th><th>Value</th><th>Mode</th><th>Cite</th><th>Note</th></tr>'+
-    (v.detail||[]).map(r=>'<tr><td><code>'+esc(r.target)+'</code></td><td>'+flScope(r.scope)+'</td><td class="fl-pct">'+esc(r.value)+'</td><td>'+esc(r.mode)+
-      '</td><td>'+esc(r.cite)+'</td><td class="mx-msg">'+esc(r.note)+'</td></tr>').join('')+'</table></div></div>').join('')+'</div>';}
+        const tip=(c.filing||'')+' v'+(c.version||'')+' · '+c.status+(c.new_eff?' · new '+c.new_eff+' · renewal '+c.renewal_eff:'')+(c.pin?' · pinned to '+c.pin:'');
+        return '<td'+(f?' data-f="'+esc(flKey(f))+'"':'')+(f&&sel===f?' class="sel"':'')+' title="'+esc(tip)+'">'+flChip(c.status==='approved')+
+          esc(f&&f.id?f.id:'v'+c.version)+(c.pin?'<span class="fl-tag">pinned</span>':'')+'</td>';}).join('')+'</tr>').join('')+'</table></div>';}
+function flOwnImpact(f,co){const st=String(f.state||'').split(',').map(s=>s.trim());
+  const i=(f.impacts||[]).filter(x=>x.company===co&&!x.draft).pop();if(!i)return null;
+  const own=st.map(s=>i.byState&&i.byState[s]).filter(Boolean);return own.length===1?own[0]:i.all;}
+function flSummary(f){const rows=f.versions.map(v=>{const d=v.detail||[],base=d.filter(r=>!Object.keys(r.scope||{}).length),ex=d.length-base.length;
+    const a=flOwnImpact(f,v.company);
+    return '<tr><td><b>'+esc(v.company)+'</b></td><td>'+(base.map(r=>flTgt(r.target)+' <b>'+esc(r.value)+'</b>').join(' · ')||'—')+
+      (ex?' <span class="mx-msg">+ '+ex+' scoped row'+(ex>1?'s':'')+'</span>':'')+'</td><td class="mx-msg">'+(Object.values(v.pins||{}).join(', ')||'—')+
+      '</td><td class="fl-pct">'+(a?'<span class="fl-big">'+flPct(a.change)+'</span>':'—')+'</td></tr>';}).join('');
+  return '<div class="fl-mdw"><table class="fl-md"><tr><th>Company</th><th>Multipliers (every class)</th><th>ISO edition pin</th><th class="fl-pct">Impact</th></tr>'+rows+'</table></div>'+
+    '<div class="mx-msg" style="margin-top:6px">Impact: a projected book of typical risks, carrier vs pure ISO, on our engine.</div>';}
+function flRows(f){if(!f.versions.length)return '<div class="mx-msg">Nothing authored yet.</div>';
+  return f.versions.map(v=>'<div class="fl-doc"><b>'+esc(v.company)+'</b> <span class="mx-msg">'+esc(v.filing+' v'+v.version+' · '+v.compiledKeys+' compiled keys')+'</span>'+
+    '<div class="fl-mdw"><table class="fl-md"><tr><th>Target</th><th>Applies to</th><th class="fl-pct">Value</th><th>Mode</th><th>Note</th></tr>'+
+    (v.detail||[]).map(r=>'<tr><td class="nw">'+flTgt(r.target)+'</td><td>'+flScope(r.scope)+'</td><td class="fl-pct">'+esc(r.value)+'</td><td class="nw">'+esc(r.mode)+
+      '</td><td class="mx-msg">'+esc(r.note)+(r.cite?' <span title="cite">['+esc(r.cite)+']</span>':'')+'</td></tr>').join('')+'</table></div></div>').join('');}
 function flImpact(f){const st=String(f.state||'').split(',').map(s=>s.trim());if(!f.impacts||!f.impacts.length)
-    return '<div class="fl-sec"><div class="cap2">Impact preview</div><div class="mx-msg">None yet: <code>python -m deviations impact &lt;COMPANY&gt; --line '+esc(f.line)+'</code>, or <code>--draft &lt;authored.json&gt;</code> before it is built.</div></div>';
-  return '<div class="fl-sec"><div class="cap2">Impact preview · technical vs carrier over a projected book, our engine, 0 ISO calls</div>'+f.impacts.map(i=>{
-    const own=st.map(s=>i.byState&&i.byState[s]).filter(Boolean),a=own.length===1?own[0]:i.all,many=Object.keys(i.states||{}).length>1;
+    return '<div class="mx-msg">No impact preview yet. It runs on our engine: <code>python -m deviations impact &lt;COMPANY&gt; --line '+esc(f.line)+'</code>, or <code>--draft &lt;authored.json&gt;</code> before a filing is built.</div>';
+  return f.impacts.map(i=>{const own=st.map(s=>i.byState&&i.byState[s]).filter(Boolean),a=own.length===1?own[0]:i.all;
     const groups=Object.keys((i.byCoverage||{}).All||{});
-    return '<div class="fl-doc"><b>'+esc(i.company)+'</b> '+(i.draft?'<span class="chip mismatch">draft</span> '+esc(i.draft):'built')+
-      ' <span class="mx-msg">'+esc(i.generated||'')+' · '+esc(i.file)+'</span>'+
-      '<div style="margin:4px 0"><b>'+flPct(a.change)+'</b> overall'+(own.length===1&&many?' in '+esc(st.join(', ')):'')+' · '+a.rated+' of '+a.risks+' risks · per risk '+flPct(a.min)+' to '+flPct(a.max)+'</div>'+
-      '<div class="fl-mdw"><table class="fl-md"><tr><th>Risk type</th><th>Change</th><th>Range</th>'+groups.map(g=>'<th>'+esc(g)+'</th>').join('')+'</tr>'+
-      Object.entries(i.byRiskType||{}).map(([k,v])=>'<tr><td>'+esc(k)+'</td><td class="fl-pct"><b>'+flPct(v.change)+'</b></td><td class="mx-msg">'+flPct(v.min)+' to '+flPct(v.max)+'</td>'+
-        groups.map(g=>{const c=((i.byCoverage||{})[k]||{})[g];return '<td class="fl-pct">'+(c?flPct(c.change):'—')+'</td>';}).join('')+'</tr>').join('')+'</table></div>'+
-      (many?'<div class="mx-msg">Risk-type rows cover '+esc(Object.keys(i.states).join(' and '))+' together.</div>':'')+'</div>';}).join('')+'</div>';}
+    return '<div class="fl-doc"><b>'+esc(i.company)+'</b> '+(i.draft?'<span class="chip mismatch">draft</span> ':'')+'<span class="fl-big">'+flPct(a.change)+'</span>'+
+      ' <span class="mx-msg">'+a.rated+' risks · '+flPct(a.min)+' to '+flPct(a.max)+'</span>'+
+      '<div class="fl-mdw"><table class="fl-md"><tr><th>Risk type</th><th class="fl-pct">Change</th>'+groups.map(g=>'<th class="fl-pct">'+esc(g)+'</th>').join('')+'</tr>'+
+      Object.entries(i.byRiskType||{}).map(([k,v])=>'<tr><td>'+esc(k)+'</td><td class="fl-pct"><b>'+flPct(v.change)+'</b></td>'+
+        groups.map(g=>{const c=((i.byCoverage||{})[k]||{})[g];return '<td class="fl-pct">'+(c?flPct(c.change):'—')+'</td>';}).join('')+'</tr>').join('')+'</table></div></div>';}).join('');}
 function flProof(f){const p=f.proof;if(!p)return '';
-  return '<div class="fl-sec"><div class="cap2">Proof</div><div class="fl-doc">'+(p.ran?flChip(p.passed)+'<code>'+esc(p.suite)+'</code> '+p.ok+' of '+p.checks+' checks · last run '+
-    esc((p.ranAt||'').replace('T',' '))+(p.commit?' at '+esc(p.commit):''):'<code>'+esc(p.suite)+'</code> has not been run')+'</div></div>';}
-function flLoad(){fetch('/api/console/filings/board').then(r=>r.json()).then(b=>{FL.b=b;flBoard();}).catch(()=>{});
-  fetch('/api/console/filings').then(r=>r.json()).then(d=>{FL.d=d;if(!FL.sel&&d.filings.length)FL.sel=flKey(d.filings[0]);flDraw();flBoard();})
-  .catch(e=>{document.getElementById('fl-out').innerHTML='<div class="mx-empty">Could not load the filings: '+esc(String(e))+'</div>';});}
-document.getElementById('fl-out').addEventListener('click',ev=>{const tr=ev.target.closest('[data-f]');if(!tr)return;FL.sel=tr.dataset.f;flDraw();});
-document.getElementById('fl-board').addEventListener('click',ev=>{const td=ev.target.closest('[data-f]');if(!td)return;FL.sel=td.dataset.f;flDraw();
-  document.getElementById('fl-entry').scrollIntoView({behavior:'smooth',block:'start'});});
+  return p.ran?flChip(p.passed)+p.ok+' of '+p.checks+' checks':esc(p.suite)+' has not been run';}
+function flSources(f){return f.sources.length?f.sources.map(x=>'<div class="fl-doc">'+flChip(x.intact)+
+    (x.present?'<a href="'+esc(x.url)+'" target="_blank" rel="noopener">'+esc(x.name)+'</a>':esc(x.name))+
+    '<div class="mx-msg">'+esc(x.what)+'</div><div class="mx-msg" title="SHA-256 '+esc(x.sha256||'')+'">'+(x.intact?'unchanged since it arrived':x.present?'<b>changed since it arrived</b>':'<b>missing</b>')+'</div></div>').join('')
+    :'<div class="mx-msg">Not archived.</div>';}
+function flDraw(){const d=FL.d;if(!d)return;
+  document.getElementById('fl-out').innerHTML=d.filings.length?'<div class="fl-list">'+d.filings.map(f=>'<button data-f="'+esc(flKey(f))+'" aria-pressed="'+(FL.sel===flKey(f))+'">'+
+    esc((f.id?f.id+' · ':'')+f.carrier+' '+f.line+' · '+f.state)+'</button>').join('')+'</div>':'<div class="mx-empty">No filings logged yet.</div>';
+  const f=flSel(),el=document.getElementById('fl-entry');flBoard();
+  document.getElementById('fl-side').innerHTML='<div class="cap2">How a filing gets here</div><div class="mx-msg">1. You pass it in the Claude Code session.<br>2. A filing sheet is written beside its sources.<br>'+
+    '3. A draft impact preview, before anything is built.<br>4. Built, tested against ISO, logged.</div>';
+  if(!f){el.innerHTML='';return;}
+  const tabs=[['summary','Summary'],['rows','Rows'],['impact','Impact'],['sheet','Filing sheet'],['log','Log entry'],['sources','Sources']].filter(([k])=>k!=='sheet'||f.sheet);
+  if(!tabs.some(([k])=>k===FL.tab))FL.tab='summary';
+  const body={summary:()=>flSummary(f),rows:()=>flRows(f),impact:()=>flImpact(f),sheet:()=>'<div class="fl-entry">'+f.sheet+'</div>',
+    log:()=>f.entry?'<div class="fl-entry">'+f.entry+'</div>':'<div class="mx-msg">Not logged yet.</div>',sources:()=>flSources(f)}[FL.tab]();
+  el.innerHTML='<div class="fl-card"><h2>'+esc((f.id?f.id+' · ':'')+f.carrier+' '+f.line+' · '+f.state)+'</h2>'+
+    '<div class="mx-msg">'+esc(f.status)+' · SERFF '+esc(f.serff)+(f.effective?' · '+esc(f.effective):'')+(f.proof?' · '+flProof(f):'')+'</div>'+
+    '<div class="fl-tabs" role="tablist">'+tabs.map(([k,n])=>'<button role="tab" data-tab="'+k+'" aria-selected="'+(FL.tab===k)+'">'+n+'</button>').join('')+'</div>'+body+'</div>';}
+function flLoad(){Promise.all([fetch('/api/console/filings/board').then(r=>r.json()),fetch('/api/console/filings').then(r=>r.json())])
+  .then(([b,d])=>{FL.b=b;FL.d=d;if(!FL.sel&&d.filings.length)FL.sel=flKey(d.filings[0]);flDraw();})
+  .catch(e=>{document.getElementById('fl-board').innerHTML='<div class="mx-empty">Could not load the filings: '+esc(String(e))+'</div>';});}
+function flPick(ev){const x=ev.target.closest('[data-f]');if(!x)return;FL.sel=x.dataset.f;flDraw();}
+document.getElementById('fl-out').addEventListener('click',flPick);
+document.getElementById('fl-board').addEventListener('click',flPick);
+document.getElementById('fl-entry').addEventListener('click',ev=>{const x=ev.target.closest('[data-tab]');if(!x)return;FL.tab=x.dataset.tab;flDraw();});
 addEventListener('hashchange',()=>{if((location.hash||'').startsWith('#filings'))flLoad();});
 if((location.hash||'').startsWith('#filings'))flLoad();
 """
