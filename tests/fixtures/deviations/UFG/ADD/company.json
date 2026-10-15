@@ -1,5 +1,10 @@
 {
   "code": "ADD",
   "name": "Addison Insurance Company",
-  "naic": "10324"
+  "naic": "10324",
+  "edition_pins": {
+    "GL": {
+      "IA": "GL_IA_20240401_V01"
+    }
+  }
 }

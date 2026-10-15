@@ -200,7 +200,7 @@ def b_import() -> None:
         cj = json.loads((root / "UFG" / "carrier.json").read_text())
         hj = json.loads((FIX / "UFG" / "carrier.json").read_text())
         check(f"B3 {label}: class groups land at carrier level, as hand-written (G7)",
-              cj["class_groups"] == hj["class_groups"])
+              cj["class_groups"] == {k: hj["class_groups"][k] for k in ("UFG-A@v1", "UFG-B@v1")})
         for co in ("UFC", "ADD"):
             p = root / "UFG" / co / "authored" / f"{REF}.json"
             d = json.loads(p.read_text(), parse_float=Decimal)

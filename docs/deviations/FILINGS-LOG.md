@@ -12,6 +12,7 @@ SHA-256. Check a copy with `sha256sum` against the hash below.
 
 | # | Carrier | Companies | Line | State | SERFF | Effective | Status |
 |---|---|---|---|---|---|---|---|
+| [DEV-003](#dev-003) | UFG | UFC, ADD | GL | IA | UNFG-134374972 | 2025-07-15 new · 2025-11-01 renewal | Live, proved offline (live ISO check pending) |
 | [DEV-002](#dev-002) | UFG | UFC, LAF | CF | AL | UNFG-134461534 | 2025-07-15 new · 2025-11-01 renewal | Live, proved (LCMs only) |
 | [DEV-001](#dev-001) | UFG | UFC, ADD | CF | IA | UNFG-134289779 | 2025-06-01 new · 2025-10-01 renewal | Live, proved (T1–T10) |
 
@@ -29,6 +30,88 @@ SHA-256. Check a copy with `sha256sum` against the hash below.
 
 A new version of a filing (a correction, or a later filing that replaces it) is a new entry that names the one it
 supersedes.
+
+---
+
+## DEV-003
+
+**UFG Iowa Commercial General Liability loss cost multipliers**: *Live, proved offline; the live ISO check (U8) is pending*
+
+The first real GL filing (B-19).
+
+| | |
+|---|---|
+| Carrier | UFG Insurance (`UFG`) |
+| Writing companies | United Fire & Casualty Company (`UFC`, NAIC 13021) · Addison Insurance Company (`ADD`, NAIC 10324) |
+| Line / state | General Liability (GL) · Iowa |
+| SERFF | UNFG-134374972 (Rate/Rule, TOI 17.0 / 17.0001; companions not received: UNFG-134204780 package plan, UNFG-134564539 multistate note; replaces the three-tier LCMs of UNFG-133187379, 7/1/2022) |
+| Approved | 2025-05-13 (submitted 2025-01-17) |
+| Effective | **2025-07-15 new business, 2025-11-01 renewal** (the revised exception manual dated 4/2/25; the memo and ELP pages say 6/1 and 10/1) |
+| ISO loss costs | **GL-2023-BGL1**: ISO's `GL_IA_20240401_V01`; on the effective dates ISO's Iowa edition in force is `GL_IA_20250401_V01` (GL-2024-BGL1) |
+| Received | 2026-10-15, three files in `Downloads` |
+| Worked | 2026-10-15 |
+
+**Source documents** (`C:\FederatoProjects\Carriers\UFG\sources\UNFG-134374972\`). **A typed extraction, not the filed PDF**: the
+exception page manual (`CG-IA-UFC-ADD-071525 - PC Only - Checked Out LAK v2.pdf`, pp. 1-2, Rule 1.D.2) wasn't received. The
+workbook's cell comments quote its text ("Premise/Ops: 0.942" ...). Per D18 the PDF would win if it ever disagrees.
+
+| File | What it is | SHA-256 |
+|---|---|---|
+| `UFG_IA_GL_LCM_2025.xlsx` (13,018 bytes) | LCM_2025 (four LCMs, quoted sources), Apply_LCM (calculator, placeholder ISO inputs), Filing_Info | `2231e98a1a812d90fea60a02ee27f93c10136d0ce3b2030dd550ad420db1524f` |
+| `UFG_IA_GL_LCM_2025_Explainer.md` (4,584 bytes) | Explainer: LCMs, exclusions, OCP, indication, date discrepancy | `0eb460a6712d6a533ec702f22cd1d0c33fafd804fd28f388bda23bb7d06a5353` |
+| `UFG_IA_GL_LCM_2025.zip` (14,251 bytes) | The two files above, byte-identical | `10e69a3e2aa6cebbb658490626d50396467eb0c3448883d39ea306d3b6fec3da` |
+
+**What was filed** (Rule 1.D.2): one multiplier per company per subline, every class
+
+| Company | Premises/Operations (334) | Products/Completed Operations (336) |
+|---|---|---|
+| UFC | 0.942 | 1.789 |
+| ADD | 1.272 | 2.415 |
+
+Not on loss cost × LCM: **"a"-rated classes** (UFG's ELP ranges, separate manual), **policy writing minimums** (UFC $500,
+ADD $625), **OCP** (Rule 46: Prem/Ops LCM on UFG's *own* base loss costs). Also filed, ISO's: ILFs (GL-2021-IALL1),
+deductibles (GL-2014-RDD14); UFG's: schedule rating ±25%, experience rating ELR 68.6%.
+
+**What we built**
+
+| | |
+|---|---|
+| Authored | `Carriers\UFG\{UFC,ADD}\authored\IA-GL-UNFG-134374972.v1.json`: 4 rows each. `LCM:PremOps` and `LCM:ProdsCompldOps` unscoped at the filed value; the same two at **1.0 on the "a"-rated classes** (class groups `UFG-IA-GL-aRated-PremOps@v1`, 68 classes, and `…-Prods@v1`, 98: the classes ISO publishes no loss cost for, whose schema takes a company ELP). Minimums, schedule and experience bounds are in `meta`, not rated |
+| Pin | `edition_pins.GL.IA = GL_IA_20240401_V01` in both `company.json` (**decided by you, 2026-10-15: rate on the loss costs the filing names until UFG files newer**) |
+| Validated / compiled | Clean, 2,376 keys each (2 sublines × 1,188 classes); `compiled\GL\IA\` |
+| Approval | v1 proposed and signed off as Dan Roman, 2026-10-15 (as DEV-001/002) |
+| Engine | No change |
+| Fixture | Both filings, the class groups and the pins in `tests/fixtures/deviations/UFG/` |
+
+**Decisions made on this filing**
+
+| | Decision |
+|---|---|
+| Loss costs | Pin to GL-2023-BGL1 (`GL_IA_20240401_V01`), not ISO's edition in force (you, 2026-10-15). Effect on class 18501: ISO in force 2,987 → pinned 2,734 (−253) |
+| Dates | The exception manual's 7/15/2025 and 11/1/2025 (the explainer's item 1; D18 spirit: the document carrying the LCMs) |
+| "a"-rated | LCM held at 1.0 on ISO's "a"-rated classes per subline. Without it the engine multiplied the company-entered rate (a $830 test rate became $1,660 under LCM 2) |
+| OCP | Not built: UFG's own OCP base loss costs aren't in what we received. OCP keeps ISO's LCM |
+| Minimums, schedule ±25%, ELR | Not rated: plan O4 (B-21) |
+
+**How it was proved** (`python tests/verify_deviations_ufg_ia_gl.py`: **22 of 22 pass offline**)
+
+- T10: both files validate, compile and read back as the rows written.
+- T5: Prem/Ops and Products records carry exactly 0.942 / 1.789 (UFC) and 1.272 / 2.415 (ADD); each subline's premium
+  moves by its LCM within ISO's whole-dollar rounding (class 18501: Prem/Ops 2,715 → 2,558 / 3,454; Products 19 → 34 / 46).
+- "a"-rated class 10119 (company ELP 0.5) keeps LCM 1.0 and its premium (785).
+- T7: in force for new business from 7/15/2025 (not 7/14), renewals from 11/1/2025 (not 10/31).
+- T8: technical rates on `GL_IA_20240401_V01` and equals an ISO-only rating dated 3/1/2025 (2,734); the waterfall is
+  edition pin −253, LCM −142 (UFC) / +766 (ADD), from 2,987 to 2,592 / 3,500.
+- T4: 21 changed paths, all on the Prem/Ops and Products records or the premiums they roll into.
+- Carrier on 7/15/2025 equals ISO's own rules run on the pinned edition with UFG's LCMs written into the request.
+- **Pending (U8, 3 ISO calls):** ISO's service asked that same request dated 3/1/2025.
+
+**Open on this filing**
+
+- The filed PDF (exception page manual), to confirm the typed values.
+- U8, the live check, when calls allow.
+- OCP on UFG's own base loss costs; minimums and rating bounds (B-21).
+- Multistate accounts stay on legacy rates until every state approves (UNFG-134564539): not modelled.
 
 ---
 
