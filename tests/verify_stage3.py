@@ -23,12 +23,16 @@ sys.path.insert(0, str(ROOT))
 from gl_engine.rating import (Kernel, RatingError, STRICT,        # noqa: E402
                               UNDERWRITING)
 from gl_engine.interp import tree                                 # noqa: E402
+from gl_engine.config import CORPUS_ROOT                          # noqa: E402
 
 FIXTURE = ROOT / "tests" / "fixtures" / "golden-ok-2025.json"
 ISO_DIR = Path(r"F:\ISO_ERC_Files\General_Liability\OK"
                r"\GL_OK 20250601 V01\GL OK 20250601 V01\STC")
 ISO_IN = ISO_DIR / "1. Input.json"
 ISO_OUT = ISO_DIR / "1. Output.json"
+# ISO's composite-rated sample (B-39): audited 2 convention days against an estimate of 6
+WV_COMPOSITE = (CORPUS_ROOT / "WV" / "GL_WV 20251101 V01_MachineReadableContent" / "GL WV 20251101 V01"
+                / "STC" / "STC_GL000145648.json")
 
 PASS, FAIL = [], []
 
@@ -241,6 +245,13 @@ def group_d():
     check("D7 a negative premium component raises R16 on a real submission",
           any(r.code == "R16" for r in ak.referrals),
           "; ".join(r.code for r in ak.referrals) or "none")
+    # B-39: composite rating's audit adjustment is negative by design (audited exposure below the estimate)
+    wv = Kernel(mode=UNDERWRITING).rate(WV_COMPOSITE)
+    adj = tree.select("/*/GeneralLiabilityTable/GeneralLiability/GeneralLiabilityCompositeRating/Premium", wv.tree)
+    check("D7b a negative composite audit adjustment does not raise R16 (B-39)",
+          adj and Decimal(adj[0].text) < 0 and not any(r.code == "R16" for r in wv.referrals),
+          f"adjustment {adj[0].text if adj else 'missing'}; "
+          + ("; ".join(r.code for r in wv.referrals) or "no referrals"))
     check("D8 ISO's own validation message is captured verbatim",
           any("Attorneys Fee Limit" in m for m in ak.messages),
           f"{len(ak.messages)} messages")

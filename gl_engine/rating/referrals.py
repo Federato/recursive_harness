@@ -136,21 +136,32 @@ def d_negative_factor(rating) -> list:
     Two guards are all that stand between this and a negative premium. A
     negative factor or premium anywhere is not a price, so it is caught here
     regardless of which coverage produced it.
+
+    One negative is a price: composite rating's `Premium` is the audit
+    adjustment `FinalCompositeRatingPremium - TotalClassificationsPremium`,
+    negative whenever the audited exposure is below the estimate (ISO's WV
+    sample: 743 of classes re-expressed to 248, -495). B-39 exempts that one
+    node; both of its operands are still guarded.
     """
     out = []
 
-    def walk(n):
+    def walk(n, parent_tag=None):
         if n.text is not None and (
                 n.tag.endswith("ILF") or n.tag.endswith("Factor")
-                or n.tag == "Premium" or n.tag.endswith("Premium")):
+                or n.tag == "Premium" or n.tag.endswith("Premium")) \
+                and not (n.tag == "Premium" and parent_tag == COMPOSITE):
             v = _num(n.text)
             if v is not None and v < 0:
                 out.append(Finding("R16", n.path, f"{n.tag} = {v}"))
         for c in n.children:
-            walk(c)
+            walk(c, n.tag)
 
     walk(rating.tree)
     return out
+
+
+#: The record whose `Premium` is an audit adjustment, negative by design (B-39).
+COMPOSITE = "GeneralLiabilityCompositeRating"
 
 
 def d_territory_unmatched(rating) -> list:

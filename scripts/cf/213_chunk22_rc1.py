@@ -419,7 +419,8 @@ def touchpoints():
         "cf_engine/__init__.py": "C28-21: docstring only; no rating code",
         "cf_engine/config.py": "the corpus root's default moved to F: (new PC, 2026-10-05); no rating code",
         "gl_engine/rating/referrals.py": "OI-130 (B-07): R30 / R31 detectors and the not-offered label, notices and underwriting referrals only, never a value; GL only; 157_ --all 293 of 293, snapshot clean, 2026-10-13; "
-                                         "OI-131 (B-10) R13 / R14 / R19 scoped and B-35 R30 skips a real-rate $1: referrals only, GL only; 224 ratings no premium moved, 2026-10-14; B-14 R15 / R17 / R25 / R26 detectors, 0 pending; 224 ratings no referral change, 2026-10-14",
+                                         "OI-131 (B-10) R13 / R14 / R19 scoped and B-35 R30 skips a real-rate $1: referrals only, GL only; 224 ratings no premium moved, 2026-10-14; B-14 R15 / R17 / R25 / R26 detectors, 0 pending; 224 ratings no referral change, 2026-10-14; "
+                                         "B-39 R16 exempts the composite audit adjustment: 567 ISO samples, 0 premiums moved, 1 referral removed, 2026-10-15",
         "gl_engine/schema/condition.py": "OI-134 (B-27): reads ISO's required-field conditions, GL only; Property never reaches it; 157_ --all 293 of 293, snapshot clean, 2026-10-13 (missed from this list at B-27)",
         "gl_engine/schema/rating_inputs.json": "OI-134 / OI-130 data (57_ --write): 17 fields, 35 list fields; GL only; 157_ --all 293 of 293, snapshot clean, 2026-10-13; "
                                                "B-29: 40 fields, 37 list fields, 2 condition overrides, GL only (Property never reads it); 177 clean GL requests unchanged, 2026-10-14; B-37: 43 fields, 38 list fields (nested coverage fields now measured), 177 unchanged, 2026-10-14",
