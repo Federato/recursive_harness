@@ -9,6 +9,8 @@
   propose | sign-off | reject | withdraw <authored.json> --by NAME
                                          one line in the workflow log
   status   <authored.json>               where a version stands
+  impact   <COMPANY> --line CF [--state IA]
+                                         B-18: technical vs carrier over a projected book, by risk type
 
 Exit status is 0 on success, 1 when the filing has problems, 2 on bad usage.
 """
@@ -53,6 +55,12 @@ def main(argv=None) -> int:
         w.add_argument("filing", type=Path)
         w.add_argument("--by", required=True)
         w.add_argument("--note", default="")
+    ip = sub.add_parser("impact")
+    ip.add_argument("company")
+    ip.add_argument("--line", default="CF", choices=("CF", "GL"))
+    ip.add_argument("--state", action="append", default=[])
+    ip.add_argument("--root", type=Path, default=CARRIERS_ROOT)
+    ip.add_argument("--out", type=Path, default=Path(__file__).resolve().parent.parent / "results" / "impact")
     im = sub.add_parser("import-xlsx")
     im.add_argument("sheet", type=Path)
     im.add_argument("--root", type=Path, default=CARRIERS_ROOT)
@@ -71,6 +79,21 @@ def main(argv=None) -> int:
     a = ap.parse_args(argv)
 
     try:
+        if a.cmd == "impact":
+            from .impact import run, write
+            n = [0]
+
+            def tick(r):
+                n[0] += 1
+                if n[0] % 25 == 0:
+                    print(f"  {n[0]} risks rated", flush=True)
+            rep = run(a.company, a.line, a.state or None, a.root, progress=tick)
+            j, m = write(rep, a.out)
+            print(f"  {rep['company']} {rep['line']}: {rep['all']['rated']} of {rep['all']['risks']} risks, "
+                  f"overall {rep['all']['change']}%, 0 ISO calls")
+            print(f"  wrote {j}")
+            print(f"  wrote {m}")
+            return 0
         if a.cmd == "import-xlsx":
             cmap = dict(c.split("=", 1) for c in a.company)
             files, warns = import_sheet(
