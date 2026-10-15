@@ -540,9 +540,25 @@ CONTROLS: tuple[Control, ...] = (
             "the experience rating plan, and the credibility factor that "
             "gates schedule rating",
             table=GL, column="ExperienceRatingApplies",
-            note="Turning this on alone is not enough to earn credibility -- "
-                 "ISO declares about twenty further dated fields, which is "
-                 "follow-on work (OI-89)."),
+            note="Yes also writes the experience period ISO's 11 experience-rated "
+                 "samples carry (B-40): up to three occurrence policy years with "
+                 "the same carrier, the latest starting 28 months before the "
+                 "effective date, valued 10 months before it. Credibility then "
+                 "comes from the risk's own size; the losses and the years are "
+                 "the two controls below."),
+    Control("erp_years", "Years of experience", "Rating plans",
+            "the experience period's length, which sets how many policy years "
+            "of losses and subject loss cost the modification weighs",
+            table=GL, column="ERPYearsOfExperienceIncurred", cast="int",
+            note="Applies only when experience rating is Yes. Default 3, as in "
+                 "every ISO sample."),
+    Control("erp_annual_loss", "Losses per experience year", "Rating plans",
+            "the actual losses against the expected: 0 earns the full credit, "
+            "losses above the expected level produce a debit",
+            kind="number", cast="float",
+            note="Applies only when experience rating is Yes. The same total "
+                 "included loss is written for each year in the period. Default 0, "
+                 "as in every ISO sample."),
     Control("schedule_rating", "Schedule rating", "Rating plans",
             "the schedule rating plan and R15's plus/minus 25% cap",
             table=GL, column="ScheduleRatingModificationApplies"),
@@ -858,6 +874,58 @@ def _apply_risk_field(field):
     return apply
 
 
+#: The experience period's policy years, latest first, as ISO names them.
+ERP_YEARS = ("LatestYear", "SecondLatestYear", "ThirdLatestYear")
+
+
+def _months_before(yyyymmdd: str, months: int) -> str:
+    import calendar
+    y, m, day = int(yyyymmdd[0:4]), int(yyyymmdd[4:6]), int(yyyymmdd[6:8])
+    total = y * 12 + (m - 1) - months
+    y, m = divmod(total, 12)
+    m += 1
+    return f"{y:04d}-{m:02d}-{min(day, calendar.monthrange(y, m)[1]):02d}"
+
+
+def _apply_experience(p, value, d, config):
+    """`ExperienceRatingApplies`, and with Yes the experience period ISO's samples carry (B-40).
+
+    Switched on alone the plan has no history, so credibility is 0 and nothing moves. ISO's 11 experience-rated
+    samples all carry the same shape: three occurrence policy years with the same carrier, the latest starting 28
+    months before the effective date (so it ended more than 6 months before it), all valued 10 months before it,
+    no override, no expense variation, no dramatic change in exposure. Years beyond `erp_years` get no dates (ISO
+    asks for them only within the period) and no losses.
+    """
+    risk = _gl(p)
+    risk["ExperienceRatingApplies"] = value
+    if value != "Yes":
+        return
+    eff = str(config.get("effective_date") or d.asof)
+    years = int(config.get("erp_years") or 3)
+    loss = float(config.get("erp_annual_loss") or 0.0)
+    valued = _months_before(eff, 10)
+    for i, y in enumerate(ERP_YEARS):
+        inside = i < years
+        if inside:
+            risk[f"ERP{y}EffectiveDate"] = _months_before(eff, 28 + 12 * i)
+            risk[f"ERP{y}LatestValuationDate"] = valued
+        risk[f"ERP{y}WithSameCarrier"] = "Yes"
+        risk[f"ERP{y}TypeOfPolicy"] = "Occurrence"
+        risk[f"ERP{y}TotalIncludedLoss"] = loss if inside else 0.0
+    risk["ExperienceBusinessStartDate"] = _months_before(eff, 28 + 12 * (years - 1))
+    risk["ERPYearsOfExperienceIncurred"] = years
+    risk["ERPPeriodEnds6MonthsPrior"] = "Yes"
+    risk["ERPDramaticChangeOnExposure"] = "No"
+    risk["ERPExpenseVariationApplies"] = "No"
+    risk["ERPExperienceModificationOverride"] = 0.0
+
+
+def _apply_experience_detail(p, value, d, config):
+    """`erp_years` and `erp_annual_loss` are written by `_apply_experience`; alone they mean nothing."""
+    if config.get("experience_rating") != "Yes":
+        raise VariantError("years of experience and losses apply only when experience rating is Yes")
+
+
 def _apply_schedule_pct(p, value, d, config):
     if config.get("schedule_rating") != "Yes":
         raise VariantError("a scheduled modification applies only when "
@@ -1008,7 +1076,9 @@ APPLIERS = {
     "classifications": _apply_classifications,
     "locations": _apply_locations,
     "size_of_risk": _apply_risk_field("SizeOfRiskRatingApplies"),
-    "experience_rating": _apply_risk_field("ExperienceRatingApplies"),
+    "experience_rating": _apply_experience,
+    "erp_years": _apply_experience_detail,
+    "erp_annual_loss": _apply_experience_detail,
     "schedule_rating": _apply_risk_field("ScheduleRatingModificationApplies"),
     "schedule_pct": _apply_schedule_pct,
     "terrorism": _apply_terrorism,
@@ -1028,7 +1098,7 @@ ORDER = ("subline", "premium_basis", "class_code", "exposure", "classifications"
          "premops_bi_deductible", "premops_pd_deductible",
          "premops_bipd_deductible", "prods_bi_deductible",
          "prods_pd_deductible", "prods_bipd_deductible", "coverage_form",
-         "claims_made_year", "size_of_risk", "experience_rating",
+         "claims_made_year", "size_of_risk", "experience_rating", "erp_years", "erp_annual_loss",
          "schedule_rating", "schedule_pct", "terrorism", "effective_date",
          "package_version")
 

@@ -418,6 +418,30 @@ def main() -> int:
     check("M7 asking for one leaves one",
           len(V._classes(V._locations(one)[0])) == 1)
 
+    print("\nX  EXPERIENCE RATING -- THE PERIOD ISO'S SAMPLES CARRY (B-40)")
+    xp = V.build({"experience_rating": "Yes", "erp_years": 2}, ok)
+    risk = V._gl(xp)
+    check("X1 Yes writes the experience period, dated from the effective date",
+          risk.get("ERPLatestYearEffectiveDate") == "2024-04-01"
+          and risk.get("ERPLatestYearLatestValuationDate") == "2025-10-01"
+          and risk.get("ERPSecondLatestYearEffectiveDate") == "2023-04-01",
+          f"{risk.get('ERPLatestYearEffectiveDate')} valued {risk.get('ERPLatestYearLatestValuationDate')}")
+    check("X2 a year outside the period gets no dates and no losses",
+          "ERPThirdLatestYearEffectiveDate" not in risk and risk.get("ERPThirdLatestYearTotalIncludedLoss") == 0.0
+          and risk.get("ExperienceBusinessStartDate") == "2023-04-01")
+    try:
+        V.build({"erp_annual_loss": 1000}, ok)
+        refused = False
+    except V.VariantError:
+        refused = True
+    check("X3 losses without experience rating are refused, not ignored", refused)
+    # ISO-confirmed 2026-10-15 (10 calls, every published field exact): credit, debit and the 0.07 credibility gate
+    for label, cfg, want in (("X4 credit", {"exposure": 50000000}, 74323),
+                             ("X5 debit", {"exposure": 50000000, "erp_annual_loss": 100000}, 122233),
+                             ("X6 credibility 0.03, below ISO's 0.07: no modification", {}, base_prem)):
+        got = _k.rate(V.build({"experience_rating": "Yes", **cfg}, ok)).premium
+        check(f"{label} prices as ISO does", got == want, f"{got}, ISO {want}")
+
 
     print("\nE  THE STORE, AND THE LONG VIEW BUILT FROM IT")
     tmp = Path(tempfile.mkdtemp(prefix="tester-store-"))
