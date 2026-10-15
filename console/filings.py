@@ -14,7 +14,12 @@ from pathlib import Path
 from urllib.parse import urlencode
 
 ROOT = Path(__file__).resolve().parent.parent
-LOG = ROOT / "docs" / "deviations" / "FILINGS-LOG.md"
+LOG = ROOT / "docs" / "deviations" / "FILINGS-LOG.md"     # FILINGS_LOG overrides it (start-demo.bat: an empty one)
+
+
+def _log() -> Path:
+    import os
+    return Path(os.environ.get("FILINGS_LOG") or LOG)
 KINDS = {".pdf": "pdf", ".csv": "csv", ".md": "html"}
 
 
@@ -288,11 +293,9 @@ def _stage(row: dict) -> str:
     """Where a filing is: what source.json says, else what the store shows."""
     if row.get("stageDeclared") in STAGES:
         return row["stageDeclared"]
-    p = row.get("proof") or {}
-    if p.get("passed"):
-        return "Proved"
-    if any(v["status"] == "approved" and v.get("compiledKeys") for v in row.get("versions", [])):
-        return "Built"
+    built = any(v["status"] == "approved" and v.get("compiledKeys") for v in row.get("versions", []))
+    if built:
+        return "Proved" if (row.get("proof") or {}).get("passed") else "Built"
     if any(i.get("draft") for i in row.get("impacts", [])):
         return "Draft impact"
     if row.get("sheet") or row.get("versions"):
@@ -301,7 +304,8 @@ def _stage(row: dict) -> str:
 
 
 def filings() -> dict:
-    text = LOG.read_text(encoding="utf-8") if LOG.exists() else ""
+    log = _log()
+    text = log.read_text(encoding="utf-8") if log.exists() else ""
     sections, src = _sections(text), _sources()
     rows, seen = [], set()
     for r in _index(text):
@@ -328,6 +332,8 @@ def filings() -> dict:
                          **_extras(s, s["carrier"], s.get("companies", []), s.get("line", ""), s.get("juris", []))})
     for r in rows:
         r["stage"] = _stage(r)
+        if r["stage"] not in ("Built", "Proved"):
+            r["proof"] = None                  # a suite's last run proves a built filing, not a draft
     return {"filings": rows, "log": "docs/deviations/FILINGS-LOG.md", "store": str(_carriers()), "stages": list(STAGES)}
 
 
@@ -346,3 +352,52 @@ def source(query: dict):
                 "td,th{border-top:1px solid #ddd;padding:3px 8px;text-align:left;vertical-align:top}</style>" + body)
         return page.encode("utf-8"), "html"
     return p.read_bytes(), KINDS.get(p.suffix.lower(), "text")
+
+
+# --------------------------------------------------------- packet upload (B-20)
+# A filing packet (deviations/packet.py) uploaded on the Carrier Filings screen: checked, then written to the carrier
+# store (never approved), then each draft's impact preview runs in the background. One job per SERFF number.
+
+JOBS: dict = {}
+
+
+def upload(body: dict) -> tuple[int, dict]:
+    import base64
+    import threading
+    from deviations import packet as PK
+    try:
+        data = base64.b64decode(str(body.get("data") or ""), validate=True)
+    except ValueError:
+        return 400, {"error": "the upload is not base64"}
+    try:
+        rep = PK.ingest(data, _carriers())
+    except PK.PacketError as exc:
+        return 400, {"error": str(exc)}
+    rep["name"] = str(body.get("name") or "")
+    if rep["ok"]:
+        todo = [v["draft"] for v in rep.get("validation", []) if v["ok"]]
+        if todo and JOBS.get(rep["serff"], {}).get("state") != "running":
+            job = {"serff": rep["serff"], "state": "running", "total": len(todo), "done": 0, "messages": [],
+                   "started": __import__("time").strftime("%Y-%m-%dT%H:%M:%S")}
+            JOBS[rep["serff"]] = job
+            threading.Thread(target=_impact_job, args=(job, todo), daemon=True).start()
+        rep["impact"] = JOBS.get(rep["serff"])
+    return 200, rep
+
+
+def _impact_job(job: dict, drafts: list) -> None:
+    from deviations.impact import run_draft, write
+    for rel in drafts:
+        try:
+            rep = run_draft(_carriers() / rel)
+            write(rep, _impact_dir())
+            job["messages"].append(f"{rel}: {rep['all']['change']}% vs pure ISO"
+                                   + (f", {rep['vs_current']['change']}% vs in force" if rep.get("vs_current") else ""))
+        except Exception as exc:                               # noqa: BLE001  (shown on the screen)
+            job["messages"].append(f"{rel}: no impact preview ({str(exc)[:200]})")
+        job["done"] += 1
+    job["state"] = "done"
+
+
+def jobs() -> dict:
+    return {"jobs": list(JOBS.values())}

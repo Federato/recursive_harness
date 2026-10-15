@@ -566,6 +566,13 @@ def dispatch(method: str, path: str, query: dict, body):
     if method == "GET" and path == "/api/console/filings":
         from console import filings
         return 200, json.dumps(filings.filings()), "json"
+    if method == "POST" and path == "/api/console/filings/packet":
+        from console import filings
+        code, out = filings.upload(body or {})
+        return code, json.dumps(out), "json"
+    if method == "GET" and path == "/api/console/filings/jobs":
+        from console import filings
+        return 200, json.dumps(filings.jobs()), "json"
     if method == "GET" and path == "/api/console/filings/board":
         from console import filings
         return 200, json.dumps(filings.board()), "json"
@@ -1944,7 +1951,10 @@ if((location.hash||'').startsWith('#proof'))pfLoad();
 
 FILINGS_HTML = """<section class="screen" id="s-filings" hidden><div class="mx-wrap"><div class="mx-main">
   <div class="mx-head"><div><div class="eyebrow">Carrier deviations</div><h1>Carrier Filings</h1></div>
-    <p>What each writing company rates with, by line and state. Click a filing to see it.</p></div>
+    <p>What each writing company rates with, by line and state. Click a filing to see it.</p>
+    <div class="td-tools"><label class="btn" for="fl-file">Upload filing packet…</label><input type="file" id="fl-file" accept=".zip" hidden>
+      <span class="mx-msg">a .zip with packet.json, sources/ and drafts/</span></div></div>
+  <div id="fl-up"></div>
   <div id="fl-board"><div class="mx-loading">Loading…</div></div>
   <div id="fl-out"></div>
   <div id="fl-entry"></div>
@@ -2039,8 +2049,9 @@ function flDraw(){const d=FL.d;if(!d)return;
   document.getElementById('fl-out').innerHTML=d.filings.length?'<div class="fl-list">'+d.filings.map(f=>'<button data-f="'+esc(flKey(f))+'" aria-pressed="'+(FL.sel===flKey(f))+'">'+
     esc((f.id?f.id+' · ':'')+f.carrier+' '+f.line+' · '+f.state)+(f.stage&&f.stage!=='Proved'?' · '+esc(f.stage):'')+'</button>').join('')+'</div>':'<div class="mx-empty">No filings logged yet.</div>';
   const f=flSel(),el=document.getElementById('fl-entry');flBoard();
-  document.getElementById('fl-side').innerHTML='<div class="cap2">How a filing gets here</div><div class="mx-msg">1. You pass it in the Claude Code session.<br>2. A filing sheet is written beside its sources.<br>'+
-    '3. A draft impact preview, before anything is built.<br>4. Built, tested against ISO, logged.</div>';
+  document.getElementById('fl-side').innerHTML='<div class="cap2">How a filing gets here</div><div class="mx-msg">1. The filing is passed in the Claude Code session, which writes the review (filing sheet) and drafts.<br>'+
+    '2. Its packet is uploaded here: documents, review and drafts land in the store, never approved.<br>'+
+    '3. The draft impact preview runs, before anything is built.<br>4. Built, tested against ISO, logged.</div>';
   if(!f){el.innerHTML='';return;}
   const tabs=[['summary','Summary'],['rows','Rows'],['impact','Impact'],['sheet','Filing sheet'],['log','Log entry'],['sources','Sources']].filter(([k])=>k!=='sheet'||f.sheet);
   if(!tabs.some(([k])=>k===FL.tab))FL.tab='summary';
@@ -2052,6 +2063,23 @@ function flDraw(){const d=FL.d;if(!d)return;
 function flLoad(){Promise.all([fetch('/api/console/filings/board').then(r=>r.json()),fetch('/api/console/filings').then(r=>r.json())])
   .then(([b,d])=>{FL.b=b;FL.d=d;if(!FL.sel&&d.filings.length)FL.sel=flKey(d.filings[0]);flDraw();})
   .catch(e=>{document.getElementById('fl-board').innerHTML='<div class="mx-empty">Could not load the filings: '+esc(String(e))+'</div>';});}
+function flUpShow(r){const el=document.getElementById('fl-up');if(!r){el.innerHTML='';return;}
+  if(r.error){el.innerHTML='<div class="fl-card"><b>Packet refused</b><div class="mx-msg">'+esc(r.error)+'</div></div>';return;}
+  const li=(xs,cls)=>xs.map(x=>'<div class="mx-msg"'+(cls?' style="color:var(--color-danger,#b00)"':'')+'>'+esc(x)+'</div>').join('');
+  const j=r.impact;
+  el.innerHTML='<div class="fl-card"><b>'+(r.ok?'Packet received':'Packet refused: nothing was written')+'</b> <span class="mx-msg">'+esc(r.name||'')+' · '+esc(r.carrier+' '+r.line+' · '+(r.juris||[]).join(', ')+' · SERFF '+r.serff)+'</span>'+
+    (r.problems.length?li(r.problems,true):'')+(r.ok?li(r.written.map(x=>'wrote '+x))+li(r.skips.map(x=>'skipped '+x)):'')+
+    (r.validation||[]).map(v=>'<div class="mx-msg">'+flChip(v.ok)+'validate '+esc(v.draft)+(v.ok?'':': '+esc(v.errors.join('; ')))+'</div>').join('')+
+    (j?'<div class="mx-msg" id="fl-job">Impact preview: '+esc(j.state)+' · '+j.done+' of '+j.total+' drafts'+(j.messages||[]).map(m=>'<br>'+esc(m)).join('')+'</div>':'')+'</div>';}
+function flPoll(serff){fetch('/api/console/filings/jobs').then(r=>r.json()).then(d=>{const j=d.jobs.find(x=>x.serff===serff);if(!j||!FL.up)return;
+  FL.up.impact=j;flUpShow(FL.up);if(j.state==='running')setTimeout(()=>flPoll(serff),3000);else flLoad();}).catch(()=>{});}
+document.getElementById('fl-file').addEventListener('change',ev=>{const f=ev.target.files[0];if(!f)return;const rd=new FileReader();
+  document.getElementById('fl-up').innerHTML='<div class="fl-card mx-msg">Reading '+esc(f.name)+'…</div>';
+  rd.onload=()=>{const data=String(rd.result).split(',')[1]||'';
+    fetch('/api/console/filings/packet',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:f.name,data})})
+      .then(r=>r.json()).then(r=>{FL.up=r;flUpShow(r);if(r.ok){const k=(FL.d&&FL.d.filings.find(x=>x.serff===r.serff));FL.sel=k?flKey(k):r.serff;flLoad();if(r.impact)flPoll(r.serff);}})
+      .catch(e=>flUpShow({error:String(e)}));ev.target.value='';};
+  rd.readAsDataURL(f);});
 function flPick(ev){const x=ev.target.closest('[data-f]');if(!x)return;FL.sel=x.dataset.f;flDraw();}
 document.getElementById('fl-out').addEventListener('click',flPick);
 document.getElementById('fl-board').addEventListener('click',flPick);

@@ -12,6 +12,8 @@
   impact   <COMPANY> --line CF [--state IA]
                                          B-18: technical vs carrier over a projected book, by risk type
   impact   --draft <authored.json>       B-20: the same for a draft, before it is approved or built
+  packet   build <SERFF> --out <zip>     a filing packet from the store: documents, filing sheet, drafts
+  packet   ingest <zip>                  the same as the console's upload: checked, then written; never approved
 
 Exit status is 0 on success, 1 when the filing has problems, 2 on bad usage.
 """
@@ -63,6 +65,12 @@ def main(argv=None) -> int:
     ip.add_argument("--state", action="append", default=[])
     ip.add_argument("--root", type=Path, default=CARRIERS_ROOT)
     ip.add_argument("--out", type=Path, default=Path(__file__).resolve().parent.parent / "results" / "impact")
+    pk = sub.add_parser("packet")
+    pk.add_argument("op", choices=("build", "ingest", "check"))
+    pk.add_argument("target", help="build: a SERFF number; ingest / check: a packet zip")
+    pk.add_argument("--out", type=Path)
+    pk.add_argument("--carrier")
+    pk.add_argument("--root", type=Path, default=CARRIERS_ROOT)
     im = sub.add_parser("import-xlsx")
     im.add_argument("sheet", type=Path)
     im.add_argument("--root", type=Path, default=CARRIERS_ROOT)
@@ -81,6 +89,28 @@ def main(argv=None) -> int:
     a = ap.parse_args(argv)
 
     try:
+        if a.cmd == "packet":
+            from . import packet as PK
+            try:
+                if a.op == "build":
+                    out = PK.build(a.target, a.out or Path(f"{a.target}-packet.zip"), a.root, a.carrier)
+                    print(f"  wrote {out}")
+                    return 0
+                data = Path(a.target).read_bytes()
+                rep = PK.ingest(data, a.root) if a.op == "ingest" else {
+                    k: v for k, v in PK.plan(data, a.root).items() if not k.startswith("_")}
+            except PK.PacketError as exc:
+                print(f"  FAIL  {exc}")
+                return 1
+            for w in rep["writes"]:
+                print(f"  {'write' if a.op == 'check' else 'wrote'} {w}")
+            for s_ in rep["skips"]:
+                print(f"  skip  {s_}")
+            for p_ in rep["problems"]:
+                print(f"  FAIL  {p_}")
+            for v in rep.get("validation", []):
+                print(f"  {'ok  ' if v['ok'] else 'FAIL'}  validate {v['draft']}" + ("" if v["ok"] else ": " + "; ".join(v["errors"][:3])))
+            return 0 if rep["ok"] else 1
         if a.cmd == "impact":
             from .impact import run, run_draft, write
             n = [0]
