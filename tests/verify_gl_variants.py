@@ -456,6 +456,21 @@ def main() -> int:
         got = _k.rate(V.build({**srp, **cfg}, ok)).premium
         check(f"{label} prices as ISO does", got == want, f"{got}, ISO {want}")
 
+    # B-42, ISO-confirmed 2026-10-15 (8 calls, every published field exact, the composite record's own numbers included)
+    comp = V._gl(V.build({"composite_rating": "Yes"}, ok))["GeneralLiabilityCompositeRating"]
+    check("X12 composite Yes alone: Gross Sales, audit equal to the classes' exposure",
+          comp == {"CompositeRating": "Yes", "CompositeRatingExposureBasis": "Gross Sales",
+                   "CompositeExposure": 5000000, "FinalAdjustedCompositeExposure": 5000000}, str(comp))
+    for label, aud, want in (("X13 audited above the estimate", 6000000, 9875),
+                             ("X14 audited below: the adjustment is -4,114", 2500000, 4115),
+                             ("X15 audited 0: no composite, the classes' premium", 0, base_prem)):
+        got = _k.rate(V.build({"composite_rating": "Yes", "composite_audited": aud}, ok)).premium
+        check(f"{label} prices as ISO does", got == want, f"{got}, ISO {want}")
+    from gl_engine.rating import UNDERWRITING as _U
+    below = _K(mode=_U, resolver=_R()).rate(V.build({"composite_rating": "Yes", "composite_audited": 2500000}, ok))
+    check("X16 ...and refers nothing in underwriting mode (B-39)", not below.referrals,
+          "; ".join(r.code for r in below.referrals) or "no referrals")
+
 
     print("\nE  THE STORE, AND THE LONG VIEW BUILT FROM IT")
     tmp = Path(tempfile.mkdtemp(prefix="tester-store-"))

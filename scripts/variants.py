@@ -425,6 +425,7 @@ class Control:
 GL = "GeneralLiability"
 LOC = "GeneralLiabilityLocation"
 CLS = "GeneralLiabilityClassification"
+COMP = "GeneralLiabilityCompositeRating"
 
 CONTROLS: tuple[Control, ...] = (
     # ---------------------------------------------------- 1. deductibles (6)
@@ -580,6 +581,29 @@ CONTROLS: tuple[Control, ...] = (
                  "top or bottom of its own domain: 50% asked in OK. Applies "
                  "only when schedule rating is Yes; overrides Schedule "
                  "modification (B-41)."),
+
+    Control("composite_rating", "Composite rating", "Rating plans",
+            "composite rating's audit: the classes' premium re-expressed as a "
+            "rate per unit of one exposure, re-priced at the audited exposure",
+            table=GL, column=f"{COMP}.CompositeRating",
+            note="Yes alone composites on Gross Sales with the estimate and the "
+                 "audit both equal to the classes' own exposure (no adjustment). "
+                 "ISO's WV sample nests the record as one object (B-42)."),
+    Control("composite_basis", "Composite exposure basis", "Rating plans",
+            "the unit the composite rate is expressed in",
+            table=GL, column=f"{COMP}.CompositeRatingExposureBasis",
+            note="Applies only when composite rating is Yes. Default Gross Sales."),
+    Control("composite_exposure", "Composite estimated exposure", "Rating plans",
+            "the divisor of the composite rate: classes' premium / this",
+            kind="number", cast="float",
+            note="Applies only when composite rating is Yes. Default: the "
+                 "classifications' own exposure, summed."),
+    Control("composite_audited", "Composite audited exposure", "Rating plans",
+            "the audit: above the estimate charges more, below it returns "
+            "premium (a negative adjustment, not a defect -- B-39)",
+            kind="number", cast="float",
+            note="Applies only when composite rating is Yes. Default: the "
+                 "estimate, which leaves the premium where it was."),
 
     # ------------------------------------------------------ 10. terrorism (1)
     Control("terrorism", "Terrorism coverage", "Terrorism",
@@ -944,6 +968,34 @@ def _apply_schedule_pct(p, value, d, config):
     _gl(p)["SRPClassificationPct"] = value
 
 
+def _num_out(x: float):
+    return int(x) if float(x).is_integer() else x
+
+
+def _apply_composite(p, value, d, config):
+    """The composite record, shaped as ISO's WV sample nests it (B-42); its details come from the controls below."""
+    if value != "Yes":
+        _gl(p)[COMP] = {"CompositeRating": value}
+        return
+    est = config.get("composite_exposure")
+    if est in (None, ""):
+        est = sum(float(c.get("PremOpsCovExposure") or 0) for loc in _locations(p) for c in _classes(loc))
+    est = float(est)
+    aud = config.get("composite_audited")
+    aud = est if aud in (None, "") else float(aud)
+    basis = config.get("composite_basis") or "Gross Sales"
+    if basis not in d.values(GL, f"{COMP}.CompositeRatingExposureBasis"):
+        raise VariantError(f"composite exposure basis {basis!r} is not declared legal in {d.juris}")
+    _gl(p)[COMP] = {"CompositeRating": "Yes", "CompositeRatingExposureBasis": basis,
+                    "CompositeExposure": _num_out(est), "FinalAdjustedCompositeExposure": _num_out(aud)}
+
+
+def _apply_composite_detail(p, value, d, config):
+    """Written by `_apply_composite`; alone they mean nothing."""
+    if config.get("composite_rating") != "Yes":
+        raise VariantError("the composite basis and exposures apply only when composite rating is Yes")
+
+
 SCHEDULE_EXTREMES = ("Maximum debit", "Maximum credit")
 
 
@@ -1122,6 +1174,10 @@ APPLIERS = {
     "schedule_rating": _apply_risk_field("ScheduleRatingModificationApplies"),
     "schedule_pct": _apply_schedule_pct,
     "schedule_extreme": _apply_schedule_extreme,
+    "composite_rating": _apply_composite,
+    "composite_basis": _apply_composite_detail,
+    "composite_exposure": _apply_composite_detail,
+    "composite_audited": _apply_composite_detail,
     "terrorism": _apply_terrorism,
     "effective_date": _apply_effective_date,
     "package_version": _apply_package_version,
@@ -1140,7 +1196,8 @@ ORDER = ("subline", "premium_basis", "class_code", "exposure", "classifications"
          "premops_bipd_deductible", "prods_bi_deductible",
          "prods_pd_deductible", "prods_bipd_deductible", "coverage_form",
          "claims_made_year", "size_of_risk", "experience_rating", "erp_years", "erp_annual_loss",
-         "schedule_rating", "schedule_pct", "schedule_extreme", "terrorism", "effective_date",
+         "schedule_rating", "schedule_pct", "schedule_extreme",
+         "composite_rating", "composite_basis", "composite_exposure", "composite_audited", "terrorism", "effective_date",
          "package_version")
 
 
