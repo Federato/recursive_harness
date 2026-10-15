@@ -507,6 +507,26 @@ def main() -> int:
     check("X24 size-of-risk, OK 2027: we refuse, as ISO does (a 400 on the PremOps loss cost lookup)",
           not r27.complete, str(r27.stopped)[:80])
 
+    # B-45, ISO-confirmed 2026-10-15 (6 calls, every published field exact): company-rated classes with overrides
+    from console import catalog                      # the console's build: a class gets its own basis's exposure
+    for label, cfg, want in (
+            ("X25 10119 with a Prem/Ops ELP override of 1.5", {"class_code": "10119", "elp_override_premops": 1.5},
+             3051),
+            ("X26 10020 with a Products ELP override of 2.0", {"class_code": "10020", "elp_override_prods": 2.0},
+             16788),
+            ("X27 54444 with ILF tables 2 / B and both ELPs", {"class_code": "54444", "ilf_table_premops": "2",
+                                                              "ilf_table_prods": "B", "elp_override_premops": 0.8,
+                                                              "elp_override_prods": 0.6}, 2671)):
+        rr = _k.rate(catalog.build("GL", "OK", cfg))
+        check(f"{label} prices as ISO does, with no 'Must enter' message", rr.premium == want and not rr.messages,
+              f"{rr.premium}, ISO {want}; {len(rr.messages)} messages")
+    try:
+        V.build({"elp_override_premops": 1.5}, ok)
+        refused = False
+    except V.VariantError:
+        refused = True
+    check("X28 an ELP override on a class ISO does not list for it is refused", refused)
+
 
     print("\nE  THE STORE, AND THE LONG VIEW BUILT FROM IT")
     tmp = Path(tempfile.mkdtemp(prefix="tester-store-"))

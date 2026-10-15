@@ -491,6 +491,25 @@ CONTROLS: tuple[Control, ...] = (
             kind="number", cast="float",
             unit_from="premium_basis"),
 
+    Control("elp_override_premops", "Prem/Ops ELP override", "Classification",
+            "a company-rated class's own Estimated Loss Potential, where ISO "
+            "publishes none (R29 refers without it and the class prices $0)",
+            kind="number", cast="float",
+            note="Declared only for the class codes ISO lists in its condition "
+                 "(68 in OK), 0 to 9,999.999. Written on every classification "
+                 "whose code ISO lists for it. B-45."),
+    Control("elp_override_prods", "Products ELP override", "Classification",
+            "the Products/Completed Operations ELP for a company-rated class",
+            kind="number", cast="float",
+            note="As the Prem/Ops one: 98 class codes in OK. B-45."),
+    Control("ilf_table_premops", "Prem/Ops ILF table override", "Classification",
+            "the increased-limits table for a class ISO assigns none "
+            "(54444, 94444): without it the request refuses",
+            table=CLS, column="PremOpsIncrdLimitTableAssignmentOverride"),
+    Control("ilf_table_prods", "Products ILF table override", "Classification",
+            "the Products/Completed Operations increased-limits table for the same classes",
+            table=CLS, column="ProdsCompldOpsIncrdLimitTableAssignmentOverride"),
+
     # -------------------------------------------------- 5. coverage form (2)
     Control("coverage_form", "Coverage form", "Coverage form",
             "the claims-made form, which no stored sample uses",
@@ -1003,6 +1022,25 @@ def _apply_composite(p, value, d, config):
                     "CompositeExposure": _num_out(est), "FinalAdjustedCompositeExposure": _num_out(aud)}
 
 
+def _apply_class_override(field):
+    """Write a class-conditioned override on each classification ISO's own condition lists it for (B-45)."""
+    import re as _re
+
+    def apply(p, value, d, config):
+        f = d.schema.get(CLS, field)
+        codes = set(_re.findall(r"'(\d{5})'", f.condition)) if f else set()
+        n = 0
+        for loc in _locations(p):
+            for cls in _classes(loc):
+                if str(cls.get("ClassCode")) in codes:
+                    cls[field] = value
+                    n += 1
+        if not n:
+            raise VariantError(f"{field} is declared in {d.juris} only for {len(codes)} class codes, and no "
+                               f"classification here carries one")
+    return apply
+
+
 def _apply_package_mod(p, value, d, config):
     if float(value) <= 0:
         raise VariantError("a package modification factor must be above 0 (ISO reads 0 as 1.0)")
@@ -1199,6 +1237,10 @@ APPLIERS = {
     "schedule_rating": _apply_risk_field("ScheduleRatingModificationApplies"),
     "schedule_pct": _apply_schedule_pct,
     "schedule_extreme": _apply_schedule_extreme,
+    "elp_override_premops": _apply_class_override("PremOpsELPOverride"),
+    "elp_override_prods": _apply_class_override("ProdsCompldOpsELPOverride"),
+    "ilf_table_premops": _apply_class_override("PremOpsIncrdLimitTableAssignmentOverride"),
+    "ilf_table_prods": _apply_class_override("ProdsCompldOpsIncrdLimitTableAssignmentOverride"),
     "package_mod": _apply_package_mod,
     "exclusion_endorsement_premium": _apply_exclusion_endorsement,
     "composite_rating": _apply_composite,
@@ -1218,6 +1260,7 @@ APPLIERS = {
 #: already constructed at this same date before `build()` was ever called
 #: (`Declared.for_config()`).
 ORDER = ("subline", "premium_basis", "class_code", "exposure", "classifications", "locations",
+         "elp_override_premops", "elp_override_prods", "ilf_table_premops", "ilf_table_prods",
          "occurrence_limit", "general_aggregate",
          "premops_bi_deductible", "premops_pd_deductible",
          "premops_bipd_deductible", "prods_bi_deductible",

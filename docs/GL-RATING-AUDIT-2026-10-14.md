@@ -35,7 +35,7 @@ corpus resolves to ISO's package in 100 of 100 state × edition combinations (B-
 | B4 | **Territories** | Runs (place-coded CA, FL, NY, TX proven, E8) | Location territory | At most 2 per state; 10 of 50 states with more than one | A territory sweep (e.g. OH files 10) |
 | B5 | **Class codes and premium bases** | Runs | `class_code`, `premium_basis` | 17 of ~1,160 class codes; 6 of ~60 bases | The long tail: Admissions, Gallons, Acres, per-student, the "Number of …" bases |
 | B6 | **Deductibles** | Runs | 6 deductible controls | Stored: only "250 Per Occurrence"; August: 6 shapes in OK and NY | Per Claim, BI / PD split, large deductibles, more states |
-| B7 | **Company-rated classes** (ELP override, ILF table override) | Runs; missing overrides refuse (B-07); R29 refers on ISO's message | Not in `variants` | **None** | ISO comparison with the overrides supplied |
+| B7 | **Company-rated classes** (ELP override, ILF table override) | Runs; missing overrides refuse (B-07); R29 refers on ISO's message | Not in `variants` | **None** | ISO comparison with the overrides supplied **Done 2026-10-15 (B-45): ISO 6 of 6 exact with the overrides supplied; only 54444/94444 refuse without them, the rest price the ELP part $0 and refer (R29).** |
 | B8 | **As-of dates** | Resolver covers every edition in force from 2022-09 | `effective_date` | Essentially two dates (2026-08-01, 2027-05-01) | The other editions in force, e.g. early 2026 and the 2026-10 / 2027-01 packages |
 
 ## C · By design, or tracked elsewhere (not gaps)
