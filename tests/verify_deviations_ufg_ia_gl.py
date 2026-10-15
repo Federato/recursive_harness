@@ -1,6 +1,6 @@
 """B-19 / DEV-003: UFG's Iowa GL filing (SERFF UNFG-134374972), proved end to end on a real GL filing.
 
-Run: python tests/verify_deviations_ufg_ia_gl.py [--live]    (offline unless --live: 3 ISO calls)
+Run: python tests/verify_deviations_ufg_ia_gl.py [--live [--override REASON]]    (offline unless --live: 3 ISO calls)
 
 The filing: one LCM per company per subline -- UFC Prem/Ops 0.942, Products 1.789; Addison 1.272, 2.415 -- on
 every class except "a"-rated ones (UFG's own ELP ranges); new business 7/15/2025, renewal 11/1/2025; on ISO's
@@ -41,6 +41,13 @@ INSIDE_PIN = "20250301"                     # a date ISO resolves to the pinned 
 A_RATED = ("10119", {"elp_override_premops": "0.5"})
 
 
+def _num(v):
+    try:
+        return Decimal(str(v))
+    except Exception:                                          # a refusal's text is not a premium
+        return None
+
+
 def check(label: str, ok: bool, detail: str = "") -> None:
     CHECKS.append((label, bool(ok)))
     print(f"  {'ok  ' if ok else 'FAIL'}  {label}" + ("" if ok else f"  [{detail}]"))
@@ -72,6 +79,7 @@ def records(tree) -> dict:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--live", action="store_true")
+    ap.add_argument("--override", help="a reason, when the adhoc lane is full and the user approved going over it")
     a = ap.parse_args()
     from gl_engine.rating import Kernel
     from deviations import proof as P
@@ -152,7 +160,7 @@ def main() -> int:
     if a.live:
         print("\nU8  live")
         import raas
-        client = raas.RaaS(lane="adhoc", origin="B-19 UFG IA GL (DEV-003)")
+        client = raas.RaaS(lane="adhoc", origin="B-19 UFG IA GL (DEV-003)", override=a.override)
         for name, creq, ours in live_cases:
             try:
                 resp = client.rate(creq)
@@ -160,7 +168,7 @@ def main() -> int:
             except raas.RaaSError as exc:
                 iso = f"refused: {str(exc)[:120]}"
             check(f"U8 {name}: ISO prices the pinned edition with UFG's LCMs at {iso}, ours {ours}",
-                  str(iso) == str(ours), str(iso))
+                  isinstance(iso, (int, float, str)) and _num(iso) == _num(ours), str(iso))
     from deviations import suite_log
     suite_log.record("ufg_ia_gl", CHECKS)
     print(f"\n{'FAILED: ' + ', '.join(FAILED) if FAILED else 'all passed'}")

@@ -12,7 +12,7 @@ SHA-256. Check a copy with `sha256sum` against the hash below.
 
 | # | Carrier | Companies | Line | State | SERFF | Effective | Status |
 |---|---|---|---|---|---|---|---|
-| [DEV-003](#dev-003) | UFG | UFC, ADD | GL | IA | UNFG-134374972 | 2025-07-15 new · 2025-11-01 renewal | Live, proved offline (live ISO check pending) |
+| [DEV-003](#dev-003) | UFG | UFC, ADD | GL | IA | UNFG-134374972 | 2025-07-15 new · 2025-11-01 renewal | Live, proved (22 offline + 3 live) |
 | [DEV-002](#dev-002) | UFG | UFC, LAF | CF | AL | UNFG-134461534 | 2025-07-15 new · 2025-11-01 renewal | Live, proved (LCMs only) |
 | [DEV-001](#dev-001) | UFG | UFC, ADD | CF | IA | UNFG-134289779 | 2025-06-01 new · 2025-10-01 renewal | Live, proved (T1–T10) |
 
@@ -35,7 +35,7 @@ supersedes.
 
 ## DEV-003
 
-**UFG Iowa Commercial General Liability loss cost multipliers**: *Live, proved offline; the live ISO check (U8) is pending*
+**UFG Iowa Commercial General Liability loss cost multipliers**: *Live, proved (22 offline checks, 3 live)*
 
 The first real GL filing (B-19).
 
@@ -104,12 +104,13 @@ deductibles (GL-2014-RDD14); UFG's: schedule rating ±25%, experience rating ELR
   edition pin −253, LCM −142 (UFC) / +766 (ADD), from 2,987 to 2,592 / 3,500.
 - T4: 21 changed paths, all on the Prem/Ops and Products records or the premiums they roll into.
 - Carrier on 7/15/2025 equals ISO's own rules run on the pinned edition with UFG's LCMs written into the request.
-- **Pending (U8, 3 ISO calls):** ISO's service asked that same request dated 3/1/2025.
+- **Live (U8, 2026-10-15, 3 ISO calls on the adhoc lane over its cap, approved by you):** ISO's service, asked that same
+  request dated 3/1/2025, priced it exactly as we do: UFC 18501 **2,592**, Addison 18501 **3,500**, UFC "a"-rated 10119 **785**.
+  (The run printed FAIL on a text comparison, "2592.0" vs "2592"; the check now compares numbers.)
 
 **Open on this filing**
 
 - The filed PDF (exception page manual), to confirm the typed values.
-- U8, the live check, when calls allow.
 - OCP on UFG's own base loss costs; minimums and rating bounds (B-21).
 - Multistate accounts stay on legacy rates until every state approves (UNFG-134564539): not modelled.
 
