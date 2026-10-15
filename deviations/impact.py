@@ -185,14 +185,15 @@ def _rate_one(line: str, company: str, state: str, date: str, risk: Risk, cfg: d
 
 
 def run(company: str, line: str = "CF", states: list[str] | None = None, root: Path = CARRIERS_ROOT,
-        limit: int | None = None, progress=None) -> dict:
-    """Rate the projected book for one company and line; the result is plain JSON-ready data."""
+        limit: int | None = None, progress=None, dates: dict | None = None) -> dict:
+    """Rate the projected book for one company and line; the result is plain JSON-ready data. `dates` fixes the
+    effective date per state (a draft's comparison with the filing in force rates both on the draft's date)."""
     from .engine import plan_for
     states = states or company_states(company, line, root)
     risks: list[Risk] = []
     meta_states = {}
     for st in states:
-        date = _filing_date(company, line, st, root)
+        date = (dates or {}).get(st) or _filing_date(company, line, st, root)
         plan = plan_for(line, company, st, date, "New", root=root)
         meta_states[st] = {"date": date, "filing": plan.ref}
         for i, (risk, cfg) in enumerate(_risks(line, st)):
@@ -234,7 +235,39 @@ def run_draft(authored: Path, root: Path = CARRIERS_ROOT, progress=None) -> dict
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
     out["draft"] = f.ref
+    # the same book on the same dates under what is in force today (a filing, or technical where there is none)
+    cur = run(f.company, f.line, list(out["states"]), f.carrier_dir.parent, progress=progress,
+              dates={st: v["date"] for st, v in out["states"].items()})
+    out["current"] = {"states": cur["states"], "all": cur["all"]}
+    out["vs_current"] = versus(cur, out)
     return out
+
+
+def versus(cur: dict, new: dict) -> dict:
+    """The change from one rating of the projected book to another, risk for risk: overall, by risk type, by coverage
+    group. Both must be the same book (same states, classes, sizes, constructions)."""
+    def key(r):
+        return (r["state"], r["risk_type"], r["class"], r["size"], r["construction"])
+    a = {key(r): r for r in cur["risks"] if r["status"] == "rated"}
+    pairs = [(a[key(r)], r) for r in new["risks"] if r["status"] == "rated" and key(r) in a]
+
+    def ch(x, y):
+        return _pct(y / x - 1) if x else None
+    tot = [Decimal(0), Decimal(0)]
+    by_type: dict = defaultdict(lambda: [Decimal(0), Decimal(0)])
+    by_cov: dict = defaultdict(lambda: [Decimal(0), Decimal(0)])
+    for o, n in pairs:
+        tot[0] += Decimal(o["carrier"])
+        tot[1] += Decimal(n["carrier"])
+        by_type[n["risk_type"]][0] += Decimal(o["carrier"])
+        by_type[n["risk_type"]][1] += Decimal(n["carrier"])
+        for g, v in (n.get("groups") or {}).items():
+            by_cov[g][1] += Decimal(v[1])
+        for g, v in (o.get("groups") or {}).items():
+            by_cov[g][0] += Decimal(v[1])
+    return {"risks": len(pairs), "change": ch(*tot), "by_risk_type": {k: ch(*v) for k, v in by_type.items()},
+            "by_coverage": {k: ch(*v) for k, v in sorted(by_cov.items())},
+            "filings": {st: v.get("filing") for st, v in cur["states"].items()}}
 
 
 def _agg(risks: list[Risk]) -> dict:
@@ -286,7 +319,8 @@ def summarize(company: str, line: str, states: dict, risks: list[Risk]) -> dict:
                      "detail": r.detail} for r in risks if r.status != "rated"],
         "risks": [{"state": r.state, "risk_type": r.risk_type, "class": r.class_code, "size": r.size,
                    "construction": r.construction, "status": r.status, "technical": str(r.technical),
-                   "carrier": str(r.carrier), "change": _pct(r.change) if r.change is not None else None}
+                   "carrier": str(r.carrier), "change": _pct(r.change) if r.change is not None else None,
+                   "groups": {g: [str(t), str(c)] for g, (t, c) in r.by_group.items()}}
                   for r in risks],
     }
 
@@ -320,6 +354,11 @@ def markdown(rep: dict) -> str:
         out += table("By construction", rep["by_construction"], "Construction")
     out += ["\n### What drives each class\n", "| State | Risk type | Class | Filing reaches it as |", "|---|---|---|---|"]
     out += [f"| {d['state']} | {d['risk_type']} | {d['class']} | {d['driver']} |" for d in rep["drivers"]]
+    vc = rep.get("vs_current")
+    if vc:
+        cur = ", ".join(f"{s} {f or 'technical only'}" for s, f in vc["filings"].items())
+        out += [f"\n### Draft vs what is in force ({cur})\n", f"Overall **{vc['change']}%** over {vc['risks']} risks.\n",
+                "| Risk type | Change |", "|---|---|"] + [f"| {k} | {v}% |" for k, v in vc["by_risk_type"].items()]
     if rep["refused"]:
         out += ["\n### Not rated\n", "| State | Class | Size | Construction | Why |", "|---|---|---|---|---|"]
         out += [f"| {r['state']} | {r['class']} | {r['size']} | {r['construction']} | {r['detail'][:120]} |"

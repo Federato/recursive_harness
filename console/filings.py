@@ -180,18 +180,23 @@ def _json(p: Path) -> dict:
         return {}
 
 
-def impacts(companies: list, line: str, states: list) -> list:
-    """The impact previews (B-18; drafts, B-20) for these companies on this line in these states: the summaries the
-    screen draws, not every risk. Built filings first, then drafts, each company's newest last."""
+def impacts(companies: list, line: str, states: list, serff: str = "") -> list:
+    """The impact previews (B-18; drafts, B-20) of this filing: for its companies, line and states, and rated under
+    it -- its SERFF number in the draft's ref or in a state's filing in force. The summaries the screen draws, not
+    every risk. Built filings first, then drafts, each company's newest last."""
     out = []
     for p in sorted(_impact_dir().glob("*.json")):
         d = _json(p)
         if d.get("company") not in companies or d.get("line") != line or not set(d.get("states", {})) & set(states):
             continue
+        refs = [d.get("draft") or ""] + [str(v.get("filing") or "") for v in d.get("states", {}).values()]
+        if serff and not any(serff in r for r in refs):
+            continue
         out.append({"file": p.name, "company": d["company"], "draft": d.get("draft"), "generated": d.get("generated"),
                     "states": d["states"], "all": d.get("all"), "byRiskType": d.get("by_risk_type", {}),
                     "byCoverage": d.get("by_coverage", {}), "byState": d.get("by_state", {}),
-                    "drivers": d.get("drivers", []), "refused": len(d.get("refused", []))})
+                    "drivers": d.get("drivers", []), "refused": len(d.get("refused", [])),
+                    "current": d.get("current"), "vsCurrent": d.get("vs_current")})
     return sorted(out, key=lambda x: (x["company"], bool(x["draft"]), x.get("generated") or ""))
 
 
@@ -237,6 +242,24 @@ def board() -> dict:
                           "filing": d.get("filing"), "version": d.get("version"), "status": w["status"],
                           "new_eff": d.get("new_eff"), "renewal_eff": d.get("renewal_eff"),
                           "pin": (pins.get(line) or {}).get(juris)})
+        # drafts: authored, not approved -- on their own cell, or tagged on the filing in force they would replace
+        for a in sorted(cdir.glob("authored/*.json")):
+            d = _json(a)
+            w = F.workflow_status(cdir, d.get("filing", ""), int(d.get("version", 1)), need)
+            if w["status"] in ("approved", "withdrawn", "rejected"):
+                continue                       # in force, or ended: only a version still in the works is a draft
+            for juris in d.get("juris", []):
+                line = d.get("line", "")
+                live = next((x for x in cells if x["company"] == code and x["line"] == line and x["state"] == juris
+                             and x.get("filing")), None)
+                if live:
+                    live.setdefault("drafts", []).append(f"{d.get('filing')} v{d.get('version')}")
+                else:
+                    seen.add((line, juris))
+                    cells.append({"company": code, "carrier": carrier, "line": line, "state": juris,
+                                  "filing": d.get("filing"), "version": d.get("version"), "status": "draft",
+                                  "new_eff": d.get("new_eff"), "renewal_eff": d.get("renewal_eff"),
+                                  "pin": (pins.get(line) or {}).get(juris)})
         for line, by in pins.items():
             for juris, pkg in by.items():
                 if (line, juris) not in seen:
@@ -254,7 +277,27 @@ def _extras(s: dict, carrier: str, companies: list, line: str, states) -> dict:
         p = _carriers() / carrier / "sources" / s.get("serff", "") / s["sheet"]
         if p.is_file():
             sheet = render(p.read_text(encoding="utf-8-sig"))
-    return {"sheet": sheet, "proof": _proof(s.get("suite")), "impacts": impacts(companies, line, states)}
+    return {"sheet": sheet, "proof": _proof(s.get("suite")), "impacts": impacts(companies, line, states, s.get("serff", "")),
+            "stageDeclared": s.get("stage")}
+
+
+STAGES = ("Received", "Mapped", "Draft impact", "Built", "Proved")
+
+
+def _stage(row: dict) -> str:
+    """Where a filing is: what source.json says, else what the store shows."""
+    if row.get("stageDeclared") in STAGES:
+        return row["stageDeclared"]
+    p = row.get("proof") or {}
+    if p.get("passed"):
+        return "Proved"
+    if any(v["status"] == "approved" and v.get("compiledKeys") for v in row.get("versions", [])):
+        return "Built"
+    if any(i.get("draft") for i in row.get("impacts", [])):
+        return "Draft impact"
+    if row.get("sheet") or row.get("versions"):
+        return "Mapped"
+    return "Received"
 
 
 def filings() -> dict:
@@ -283,7 +326,9 @@ def filings() -> dict:
                          "sources": s["files"], "archived": True,
                          "versions": _versions(s["carrier"], s.get("companies", []), serff), "entry": "",
                          **_extras(s, s["carrier"], s.get("companies", []), s.get("line", ""), s.get("juris", []))})
-    return {"filings": rows, "log": "docs/deviations/FILINGS-LOG.md", "store": str(_carriers())}
+    for r in rows:
+        r["stage"] = _stage(r)
+    return {"filings": rows, "log": "docs/deviations/FILINGS-LOG.md", "store": str(_carriers()), "stages": list(STAGES)}
 
 
 def source(query: dict):

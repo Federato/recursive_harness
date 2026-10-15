@@ -422,12 +422,13 @@ def part_j():
     imp = TMP / "impact"
     imp.mkdir(exist_ok=True)
     os.environ["IMPACT_DIR"] = str(imp)
-    base = {"company": "UFC", "line": "GL", "states": {"IA": {"date": "2025-07-15"}}, "all": {"change": "28.7",
+    base = {"company": "UFC", "line": "GL", "states": {"IA": {"date": "2025-07-15", "filing": "IA-GL-UNFG-134374972.v1"}},
+            "all": {"change": "28.7",
             "risks": 30, "rated": 30, "min": "-6.0", "max": "80.0"}, "by_risk_type": {"Retail": {"change": "-5.0"}},
             "by_coverage": {"All": {"Premises/Operations": {"change": "-5.8"}}}, "by_state": {}, "drivers": [],
             "refused": []}
     (imp / "UFC-GL-IA.json").write_text(json.dumps(base), encoding="utf-8")
-    (imp / "UFC-GL-IA-draft-x.json").write_text(json.dumps({**base, "draft": "IA-GL-X.v2"}), encoding="utf-8")
+    (imp / "UFC-GL-IA-draft-x.json").write_text(json.dumps({**base, "draft": "IA-GL-UNFG-134374972.v9"}), encoding="utf-8")
     (imp / "ADD-GL-IA.json").write_text(json.dumps({**base, "company": "ADD"}), encoding="utf-8")
     (imp / "UFC-CF-IA.json").write_text(json.dumps({**base, "line": "CF"}), encoding="utf-8")
     keep = suite_log.DIR
@@ -445,7 +446,7 @@ def part_j():
           and v["pins"] == {"IA": "GL_IA_20240401_V01"}, v and {k: v[k] for k in ("compiledKeys", "pins")})
     got = sorted((i["company"], i["draft"] or "") for i in (f or {}).get("impacts", []))
     check("J3 the filing's impact previews: built and draft, for its own companies and line only",
-          got == [("UFC", ""), ("UFC", "IA-GL-X.v2")], got)
+          got == [("UFC", ""), ("UFC", "IA-GL-UNFG-134374972.v9")], got)
     check("J4 the filing sheet is rendered: its table, no raw markdown",
           f and "<table" in f["sheet"] and "<b>0.942</b>" in f["sheet"] and "|" not in re.sub(r"<[^>]+>", "", f["sheet"]))
     code, body, kind = CP.dispatch("GET", "/api/console/filings/source",
@@ -456,6 +457,31 @@ def part_j():
     code, html, _ = CP.dispatch("GET", "/console", {}, None)
     check("J7 the page draws the board, the rows, the impact and the proof", all(
         k in html for k in ('id="fl-board"', "flBoard", "flRows", "flImpact", "flProof")))
+    stages = {x["serff"]: x["stage"] for x in d["filings"]}
+    check("J8 each filing's stage: DEV-003 proved (its suite passed), UNFG-999 only received",
+          stages.get("UNFG-134374972") == "Proved" and stages.get("UNFG-999") == "Received", stages)
+    from deviations.files import read_json, write_json
+    v2 = read_json(gl.path) if hasattr(gl, "path") else read_json(
+        TMP / "carriers" / "UFG" / "UFC" / "authored" / "IA-GL-UNFG-134374972.v1.json")
+    v2.update(version=2, status="draft")
+    write_json(TMP / "carriers" / "UFG" / "UFC" / "authored" / "IA-GL-UNFG-134374972.v2.json", v2)
+    (imp / "UFC-GL-IA-draft-x.json").write_text(json.dumps({**base, "draft": "IA-GL-UNFG-134374972.v2",
+        "vs_current": {"risks": 30, "change": "6.2", "by_risk_type": {"Retail": "6.2"}, "by_coverage": {},
+                       "filings": {"IA": "IA-GL-UNFG-134374972.v1"}}}), encoding="utf-8")
+    code, b = get("/api/console/filings/board")
+    cell = {(c["company"], c["line"], c["state"]): c for c in b["cells"]}
+    check("J9 drafts on the board: UFC's v2 tagged on the GL filing in force; ADD's unapproved GL v1 on its own cell",
+          cell[("UFC", "GL", "IA")].get("drafts") == ["IA-GL-UNFG-134374972 v2"]
+          and cell.get(("ADD", "GL", "IA"), {}).get("status") == "draft",
+          {k: (v["status"], v.get("drafts")) for k, v in cell.items()})
+    code, d = get("/api/console/filings")
+    f = next(x for x in d["filings"] if x["serff"] == "UNFG-134374972")
+    dv = next((i for i in f["impacts"] if i["draft"] == "IA-GL-UNFG-134374972.v2"), None)
+    vers = sorted((v["company"], v["version"], v["status"]) for v in f["versions"])
+    check("J10 the draft's impact carries its change from what is in force, and the draft is listed as a version",
+          dv and dv["vsCurrent"]["change"] == "6.2" and ("UFC", 2, "draft") in vers, (dv and dv.get("vsCurrent"), vers))
+    check("J11 the page shows stages, drafts and the in-force comparison",
+          all(k in html for k in ("f.stage", "flDraftImpact", "vs in force")))
 
 
 def main() -> int:

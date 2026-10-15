@@ -1997,16 +1997,21 @@ function flBoard(){const b=FL.b,el=document.getElementById('fl-board');if(!b)ret
         if(!c)return '<td class="fl-tech" title="no filing: rates on pure ISO">—</td>';
         const f=FL.d&&FL.d.filings.find(x=>x.versions.some(v=>v.company===c.company&&v.filing===c.filing));
         const tip=(c.filing||'')+' v'+(c.version||'')+' · '+c.status+(c.new_eff?' · new '+c.new_eff+' · renewal '+c.renewal_eff:'')+(c.pin?' · pinned to '+c.pin:'');
-        return '<td'+(f?' data-f="'+esc(flKey(f))+'"':'')+(f&&sel===f?' class="sel"':'')+' title="'+esc(tip)+'">'+flChip(c.status==='approved')+
-          esc(f&&f.id?f.id:'v'+c.version)+(c.pin?'<span class="fl-tag">pinned</span>':'')+'</td>';}).join('')+'</tr>').join('')+'</table></div>';}
+        const tag=c.status==='draft'?'<span class="fl-tag">draft</span> ':flChip(c.status==='approved');
+        return '<td'+(f?' data-f="'+esc(flKey(f))+'"':'')+(f&&sel===f?' class="sel"':'')+' title="'+esc(tip+((c.drafts||[]).length?' · draft '+c.drafts.join(', '):''))+'">'+tag+
+          esc(f&&f.id?f.id:'v'+c.version)+(c.pin?'<span class="fl-tag">pinned</span>':'')+((c.drafts||[]).length?'<span class="fl-tag">draft</span>':'')+'</td>';}).join('')+'</tr>').join('')+'</table></div>';}
 function flOwnImpact(f,co){const st=String(f.state||'').split(',').map(s=>s.trim());
   const i=(f.impacts||[]).filter(x=>x.company===co&&!x.draft).pop();if(!i)return null;
   const own=st.map(s=>i.byState&&i.byState[s]).filter(Boolean);return own.length===1?own[0]:i.all;}
+function flDraftImpact(f,v){const i=(f.impacts||[]).filter(x=>x.company===v.company&&x.draft===v.filing+'.v'+v.version).pop();if(!i)return null;
+  const st=String(f.state||'').split(',').map(s=>s.trim()),own=st.map(s=>i.byState&&i.byState[s]).filter(Boolean);
+  return {a:own.length===1?own[0]:i.all,vc:i.vsCurrent};}
 function flSummary(f){const rows=f.versions.map(v=>{const d=v.detail||[],base=d.filter(r=>!Object.keys(r.scope||{}).length),ex=d.length-base.length;
-    const a=flOwnImpact(f,v.company);
-    return '<tr><td><b>'+esc(v.company)+'</b></td><td>'+(base.map(r=>flTgt(r.target)+' <b>'+esc(r.value)+'</b>').join(' · ')||'—')+
+    const dr=v.status!=='approved'?flDraftImpact(f,v):null,a=v.status==='approved'?flOwnImpact(f,v.company):null;
+    const imp=dr?'<span class="fl-big">'+flPct(dr.a.change)+'</span>'+(dr.vc?'<div class="mx-msg">'+flPct(dr.vc.change)+' vs in force</div>':''):a?'<span class="fl-big">'+flPct(a.change)+'</span>':'—';
+    return '<tr><td><b>'+esc(v.company)+'</b> <span class="mx-msg">v'+esc(String(v.version))+(v.status!=='approved'?' · '+esc(v.status):'')+'</span></td><td>'+(base.map(r=>flTgt(r.target)+' <b>'+esc(r.value)+'</b>').join(' · ')||'—')+
       (ex?' <span class="mx-msg">+ '+ex+' scoped row'+(ex>1?'s':'')+'</span>':'')+'</td><td class="mx-msg">'+(Object.values(v.pins||{}).join(', ')||'—')+
-      '</td><td class="fl-pct">'+(a?'<span class="fl-big">'+flPct(a.change)+'</span>':'—')+'</td></tr>';}).join('');
+      '</td><td class="fl-pct">'+imp+'</td></tr>';}).join('');
   return '<div class="fl-mdw"><table class="fl-md"><tr><th>Company</th><th>Multipliers (every class)</th><th>ISO edition pin</th><th class="fl-pct">Impact</th></tr>'+rows+'</table></div>'+
     '<div class="mx-msg" style="margin-top:6px">Impact: a projected book of typical risks, carrier vs pure ISO, on our engine.</div>';}
 function flRows(f){if(!f.versions.length)return '<div class="mx-msg">Nothing authored yet.</div>';
@@ -2016,12 +2021,13 @@ function flRows(f){if(!f.versions.length)return '<div class="mx-msg">Nothing aut
       '</td><td class="mx-msg">'+esc(r.note)+(r.cite?' <span title="cite">['+esc(r.cite)+']</span>':'')+'</td></tr>').join('')+'</table></div></div>').join('');}
 function flImpact(f){const st=String(f.state||'').split(',').map(s=>s.trim());if(!f.impacts||!f.impacts.length)
     return '<div class="mx-msg">No impact preview yet. It runs on our engine: <code>python -m deviations impact &lt;COMPANY&gt; --line '+esc(f.line)+'</code>, or <code>--draft &lt;authored.json&gt;</code> before a filing is built.</div>';
-  return f.impacts.map(i=>{const own=st.map(s=>i.byState&&i.byState[s]).filter(Boolean),a=own.length===1?own[0]:i.all;
+  return f.impacts.map(i=>{const own=st.map(s=>i.byState&&i.byState[s]).filter(Boolean),a=own.length===1?own[0]:i.all,vc=i.vsCurrent;
     const groups=Object.keys((i.byCoverage||{}).All||{});
     return '<div class="fl-doc"><b>'+esc(i.company)+'</b> '+(i.draft?'<span class="chip mismatch">draft</span> ':'')+'<span class="fl-big">'+flPct(a.change)+'</span>'+
-      ' <span class="mx-msg">'+a.rated+' risks · '+flPct(a.min)+' to '+flPct(a.max)+'</span>'+
-      '<div class="fl-mdw"><table class="fl-md"><tr><th>Risk type</th><th class="fl-pct">Change</th>'+groups.map(g=>'<th class="fl-pct">'+esc(g)+'</th>').join('')+'</tr>'+
-      Object.entries(i.byRiskType||{}).map(([k,v])=>'<tr><td>'+esc(k)+'</td><td class="fl-pct"><b>'+flPct(v.change)+'</b></td>'+
+      ' <span class="mx-msg">vs pure ISO · '+a.rated+' risks · '+flPct(a.min)+' to '+flPct(a.max)+'</span>'+
+      (vc?'<div><span class="fl-big">'+flPct(vc.change)+'</span> <span class="mx-msg">vs what is in force ('+esc(Object.entries(vc.filings||{}).map(([s,x])=>s+' '+(x||'technical only')).join(', '))+')</span></div>':'')+
+      '<div class="fl-mdw"><table class="fl-md"><tr><th>Risk type</th><th class="fl-pct">vs ISO</th>'+(vc?'<th class="fl-pct">vs in force</th>':'')+groups.map(g=>'<th class="fl-pct">'+esc(g)+'</th>').join('')+'</tr>'+
+      Object.entries(i.byRiskType||{}).map(([k,v])=>'<tr><td>'+esc(k)+'</td><td class="fl-pct"><b>'+flPct(v.change)+'</b></td>'+(vc?'<td class="fl-pct"><b>'+flPct((vc.by_risk_type||{})[k])+'</b></td>':'')+
         groups.map(g=>{const c=((i.byCoverage||{})[k]||{})[g];return '<td class="fl-pct">'+(c?flPct(c.change):'—')+'</td>';}).join('')+'</tr>').join('')+'</table></div></div>';}).join('');}
 function flProof(f){const p=f.proof;if(!p)return '';
   return p.ran?flChip(p.passed)+p.ok+' of '+p.checks+' checks':esc(p.suite)+' has not been run';}
@@ -2031,7 +2037,7 @@ function flSources(f){return f.sources.length?f.sources.map(x=>'<div class="fl-d
     :'<div class="mx-msg">Not archived.</div>';}
 function flDraw(){const d=FL.d;if(!d)return;
   document.getElementById('fl-out').innerHTML=d.filings.length?'<div class="fl-list">'+d.filings.map(f=>'<button data-f="'+esc(flKey(f))+'" aria-pressed="'+(FL.sel===flKey(f))+'">'+
-    esc((f.id?f.id+' · ':'')+f.carrier+' '+f.line+' · '+f.state)+'</button>').join('')+'</div>':'<div class="mx-empty">No filings logged yet.</div>';
+    esc((f.id?f.id+' · ':'')+f.carrier+' '+f.line+' · '+f.state)+(f.stage&&f.stage!=='Proved'?' · '+esc(f.stage):'')+'</button>').join('')+'</div>':'<div class="mx-empty">No filings logged yet.</div>';
   const f=flSel(),el=document.getElementById('fl-entry');flBoard();
   document.getElementById('fl-side').innerHTML='<div class="cap2">How a filing gets here</div><div class="mx-msg">1. You pass it in the Claude Code session.<br>2. A filing sheet is written beside its sources.<br>'+
     '3. A draft impact preview, before anything is built.<br>4. Built, tested against ISO, logged.</div>';
@@ -2041,7 +2047,7 @@ function flDraw(){const d=FL.d;if(!d)return;
   const body={summary:()=>flSummary(f),rows:()=>flRows(f),impact:()=>flImpact(f),sheet:()=>'<div class="fl-entry">'+f.sheet+'</div>',
     log:()=>f.entry?'<div class="fl-entry">'+f.entry+'</div>':'<div class="mx-msg">Not logged yet.</div>',sources:()=>flSources(f)}[FL.tab]();
   el.innerHTML='<div class="fl-card"><h2>'+esc((f.id?f.id+' · ':'')+f.carrier+' '+f.line+' · '+f.state)+'</h2>'+
-    '<div class="mx-msg">'+esc(f.status)+' · SERFF '+esc(f.serff)+(f.effective?' · '+esc(f.effective):'')+(f.proof?' · '+flProof(f):'')+'</div>'+
+    '<div class="mx-msg"><b>'+esc(f.stage||'')+'</b> · '+esc(f.status)+' · SERFF '+esc(f.serff)+(f.effective?' · '+esc(f.effective):'')+(f.proof?' · '+flProof(f):'')+'</div>'+
     '<div class="fl-tabs" role="tablist">'+tabs.map(([k,n])=>'<button role="tab" data-tab="'+k+'" aria-selected="'+(FL.tab===k)+'">'+n+'</button>').join('')+'</div>'+body+'</div>';}
 function flLoad(){Promise.all([fetch('/api/console/filings/board').then(r=>r.json()),fetch('/api/console/filings').then(r=>r.json())])
   .then(([b,d])=>{FL.b=b;FL.d=d;if(!FL.sel&&d.filings.length)FL.sel=flKey(d.filings[0]);flDraw();})

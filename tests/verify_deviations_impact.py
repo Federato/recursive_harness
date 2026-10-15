@@ -10,6 +10,7 @@ Run: python tests/verify_deviations_impact.py    (offline; no ISO calls)
   I4  GL        on a constructed TX filing (PremOps LCM 1.3), Prem/Ops moves by 1.3 over ISO's LCM and Products not
   I5  no ISO    the run never loads the ISO client
   I6  draft     a draft's impact (B-20) rates in a scratch store: the real store keeps it a draft, uncompiled
+  I7  vs today  the draft is also set against what is in force on its date: here, only Prem/Ops moves, by 1.0/0.942
 """
 from __future__ import annotations
 
@@ -110,6 +111,11 @@ def main() -> int:
         d["rows"][0]["value"] = Decimal("1.0")                 # Prem/Ops at 1.0: only Products should move
         draft = src.with_name("IA-GL-UNFG-134374972.v2.json")
         write_json(draft, d)
+        from deviations.files import load_filing, log_action
+        v1 = load_filing(src)                                   # v1 in force, so the draft has something to replace
+        for action in ("propose", "sign-off"):
+            log_action(v1.company_dir, v1.filing, v1.version, action, "Dan Roman")
+        E.build(src)
         wf = root / "UFG" / "UFC" / "workflow.jsonl"
         wf_before = wf.read_text(encoding="utf-8") if wf.exists() else ""
         dr = I.run_draft(draft, root=root)
@@ -124,6 +130,15 @@ def main() -> int:
               read_json(draft)["status"] == "draft"
               and not list((root / "UFG" / "UFC" / "compiled").glob("GL/IA/*v2"))
               and (wf.read_text(encoding="utf-8") if wf.exists() else "") == wf_before)
+        vc = dr.get("vs_current") or {}
+        vcov = vc.get("by_coverage", {})
+        check(f"I7 the draft against the filing in force ({vc.get('filings')}): Prem/Ops {vcov.get('Premises/Operations')}% "
+              f"(1.0 over 0.942), Products {vcov.get('Products/Completed Ops')}% (unchanged)",
+              vc.get("filings") == {"IA": "IA-GL-UNFG-134374972.v1"} and vc.get("risks") == dr["all"]["rated"]
+              and vcov.get("Premises/Operations") == "6.2" and vcov.get("Products/Completed Ops") == "0.0", str(vc)[:300])
+        check("I7 the in-force rating is the real store's v1 on the draft's date",
+              dr["current"]["states"]["IA"] == {"date": dr["states"]["IA"]["date"], "filing": "IA-GL-UNFG-134374972.v1"},
+              str(dr.get("current", {}).get("states")))
         check("I5 no ISO client was loaded", "raas" not in sys.modules)
     finally:
         shutil.rmtree(root, ignore_errors=True)
