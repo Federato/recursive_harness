@@ -146,7 +146,7 @@ needs the user's go to start.
 | CG-7 | Product Studio view and findings | C-28 to C-31 | 2-3 |
 | CG-8 | Waiting on someone else | — | — |
 
-### CG-1 · Foundations (5 tasks)
+### CG-1 · Foundations (5 tasks) — ✅ COMPLETE 2026-10-16
 
 **Release gate:** the harness imports cleanly from here; the inventory reproduces §3 and §4's counts for the
 in-force edition and covers all 5 editions; every table the Iowa programs name loads; graph lookups equal the
@@ -158,7 +158,7 @@ engine's on 200 sampled keys, range keys included.
 | ~~C-02~~ | ✅ **DONE 2026-10-16**: **Harness link** `cg/harness.py`: the harness on the import path in one place; `GL_ERC_ROOT` / `CF_ERC_ROOT` / `CARRIERS_ROOT` set to the C: roots when unset, and refused if on F: (the engine's own defaults still name F:). `tests/verify_harness_link.py` 7 of 7: Iowa's sample (GL_IA_20261001_V01 over GL_CW_20261001_V01) rates $450 here and identically in the harness's own process | Small | — |
 | ~~C-03~~ | ✅ **DONE 2026-10-16**: **Inventory** `cg/inventory.py` (`python -m cg.inventory`): all 5 editions walked from the entry point as the engine calls rules, 0 load errors; hard instructions by rule and purpose; writes by resolved field. Gate 18 of 18 (§3's census reproduced). Summary `docs/INVENTORY.md`. Found on the way: harness **OI-136** (477 corpus files past the Windows path limit; fixed in the harness) and the countrywide copies the first census missed (§4 corrected) | Small | — |
 | ~~C-04~~ | ✅ **DONE 2026-10-16**: **Graph format** `cg/model.py` (`iso-compute-graph/1`): Product Studio's six kinds (input, rate table, lookup, step, condition, write / premium) plus marked extras (constant, group, aggregate, create, ensure, remove, message); guards for branches, `seq` for ISO's run order, versions per field (a later step names the write it saw), `src` back to ISO's rule; validation, dependency order, JSON. `tests/verify_model.py` 23 of 23: Product Studio's own example, an ISO-shaped graph with every extra, byte-exact round trip, 13 malformed shapes refused | Small-medium | — |
-| C-05 | **Tables as shared rate tables**, loaded once per edition through `load_table` / `ResolvedBook.table`; lookups with multi-key, range keys and interpolation | Medium | — |
+| ~~C-05~~ | ✅ **DONE 2026-10-16**: **Tables as shared rate tables** `cg/tables.py`: one object per (package, kind, name), parsed by the harness; the graph's own `lookup` (equality, undeclared, banded, linear interpolation, FirstResult / SingleResult) written from contract §7. `tests/verify_tables.py` 12 of 12: every table the 5 editions' reachable programs name loads (188, 168 in 2027); **1,000 of 1,000** sampled lookups equal the engine's `Interpreter.lookup` (249 banded, 39 interpolated, 100 misses); two editions on one parent share its 154 tables. None of the 5 editions shares a parent with another, so sharing was proved on 20260401 / 20260601 | Medium | — |
 
 ### CG-2 · Compiler, straight-line (5 tasks)
 
@@ -295,3 +295,4 @@ answers in its answer store (§5, step 3).
 | 2026-10-16 | C-02 done: `cg/harness.py`; `verify_harness_link.py` 7 of 7 (Iowa sample $450, same as the harness at home). CG-1 left: C-03, C-04, C-05 |
 | 2026-10-16 | C-03 done: inventory of 5 editions, gate 18 of 18. §4 corrected (reachable program: 2,227 loops, not 1,030; `Remove` and most `Append` are forms only; 41 true overwrites). Harness OI-136 found and fixed (files past the Windows path limit). CG-1 left: C-04, C-05 |
 | 2026-10-16 | C-04 done: graph format `iso-compute-graph/1`, `verify_model.py` 23 of 23. CG-1 left: C-05 |
+| 2026-10-16 | C-05 done: shared table store and the graph's own lookup, 1,000 of 1,000 equal to the engine. **CG-1 COMPLETE**: harness link 7/7, inventory 18/18, format 23/23, tables 12/12. Next: CG-2 (needs the go) |
