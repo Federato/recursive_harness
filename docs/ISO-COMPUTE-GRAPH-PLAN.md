@@ -167,7 +167,7 @@ listed by rule.
 
 | # | Task | Size | Needs |
 |---|---|---|---|
-| C-06 | **Rules inlined** from `Default` down (`RunRule`, `WithArgs` / `Arg` / `Param`); state rule over countrywide by name, as the engine does | Medium | — |
+| ~~C-06~~ | ✅ **DONE 2026-10-16**: **Rules inlined** `cg/inline.py`: every `RunRule` replaced by a copy of the rule it reaches (state first, countrywide when the state has none, `@ProjectName` to the countrywide copy; `MessageHelper` kept as a builtin), every `@FromParam` read linked to the `Arg` that binds it, data path and write record carried on each op. In force: 92,014 ops, 5,732 inlined calls of 4,575 rules. `tests/verify_inline.py` 15 of 15: 5 editions, 0 missing rules, 0 unbound parameters, 0 recursion; every one of 14,369 rule calls the engine made rating the 11 stored Iowa ISO requests and the 5 package samples is in the inlined program, from the same package | Medium | — |
 | C-07 | **Steps**: arithmetic, rounding, conversion, dates, text | Small | — |
 | C-08 | **Conditions** from `If` / `Choose` / `When` and the tests under them, on every step a branch decides | Medium | — |
 | C-09 | **First-of steps** (`FirstValue`, `FirstNonNull`) and **versions** for fields written more than once | Medium | — |
@@ -296,3 +296,4 @@ answers in its answer store (§5, step 3).
 | 2026-10-16 | C-03 done: inventory of 5 editions, gate 18 of 18. §4 corrected (reachable program: 2,227 loops, not 1,030; `Remove` and most `Append` are forms only; 41 true overwrites). Harness OI-136 found and fixed (files past the Windows path limit). CG-1 left: C-04, C-05 |
 | 2026-10-16 | C-04 done: graph format `iso-compute-graph/1`, `verify_model.py` 23 of 23. CG-1 left: C-05 |
 | 2026-10-16 | C-05 done: shared table store and the graph's own lookup, 1,000 of 1,000 equal to the engine. **CG-1 COMPLETE**: harness link 7/7, inventory 18/18, format 23/23, tables 12/12. Next: CG-2 (needs the go) |
+| 2026-10-16 | C-06 done: rules inlined, `verify_inline.py` 15 of 15 (14,369 engine calls on 16 requests all present). Note for C-21: the 3 stored answers on 20250401 are DEV-003's U8 requests, stored as sent to ISO (technical only). CG-2 left: C-07 to C-10 |
