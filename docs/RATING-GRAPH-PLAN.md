@@ -111,3 +111,43 @@ already re-rates fully in under a second per step. Revisit only if speed becomes
 - **G3.** On all five T4 cases the graph's reach equals the old tracker's exactly (101, 101, 232, 34 and 31 fields)
   and covers every changed field (67, 67, 153, 31, 26). T4 now uses the graph; `taint.py` and the `track` option are
   gone.
+
+## 10. Beside Product Studio's compute graph (B-30, 2026-10-16)
+
+**In short.** Federato's Product Studio now rates a product on a *compute graph* compiled from the actuary's Excel
+workbook (`docs/external/federato-compute-graphs_20261014.md`). It is the same picture as our rating graph, built
+the other way round. Theirs **is the program**: built once from the workbook, then run for every policy, and held to
+the workbook's answer. Ours **is a record**: written down while ISO's rules run for one risk, never run itself, and
+held to ISO's answer. We explain a premium the way their graph does; the answer we are held to is ISO's.
+
+**Their six kinds, in our terms**
+
+| Product Studio | Our graph | Difference |
+|---|---|---|
+| Policy information (inputs) | `input` node | Same: a submitted value the rating read |
+| Rate table | — (no node for a whole table) | We only record the row a lookup returned, inside the `table` node (package, table, keys, column) |
+| Lookup | `table` node + `lookup` edges | Their lookup is the entry found; our `table` node is that row, and `lookup` edges join its keys to it and it to the write |
+| Rating step | `write` node | Ours is versioned: a field written twice is two nodes (`#1`, `#2`). A workbook cell is written once |
+| Coverage condition | a `write` with `control` edges | Theirs is a kind of node; ours is a kind of edge. Any write decided by an `If` / `Choose` / `When` / `ForEach` / `FirstNonNull` test carries its test's reads as `control` edges |
+| Premium (outputs) | `write` nodes on premium output fields | No separate kind; a premium is the last write to an output field |
+| — | `company` node | Ours only: the carrier filing row a deviated value came from. In Product Studio the carrier's rates are simply the workbook's tables |
+
+**Where they differ in kind**
+
+| | Product Studio | Ours |
+|---|---|---|
+| Direction | Workbook → graph, ahead of time | ISO's rule programs run; the graph is written down as they run |
+| Shape | One graph per product version | One graph per rating: a risk with three locations unrolls `ForEach` into three copies |
+| Authority | The actuary's workbook (*"it gets Excel's answer"*) | ISO's rating service (T1; technical exact in 96 of 96 states) |
+| Runs | Yes: it is the rating engine (~100x faster than running the workbook) | Never: a byproduct, off unless asked (§1) |
+| A rejected step | Upload findings name the sheet, cell and formula | A refusal names the rule file and the field, as ISO's would |
+
+**Why we don't run ours (B-33).** Their speed gain is against running a spreadsheet. Ours would be against an
+interpreter that already rates a full risk in under a second, and running the graph means re-running only what
+changed, which §7 rules out: rule order, overwrites (California's recompute, the minimum premium re-evaluation) and
+control flow mean a partial run can differ from a full one. A graph also captures only the branches one risk took,
+so it cannot rate a different risk. Revisit only with a speed problem.
+
+**What a port would take (B-34, parked).** Putting ISO GL into Product Studio means workbooks their extractor
+accepts, per state and edition, with our ISO comparison run over them, because a workbook can match itself and
+still be wrong against ISO. B-32 (one state, one upload) sizes it first; neither starts without a business ask.

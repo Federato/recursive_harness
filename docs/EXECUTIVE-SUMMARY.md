@@ -244,6 +244,26 @@ change instead of a release.** That is a margin and time-to-market statement.
 **maintenance leverage.** That is a defensible trade. It is not a free win, and it has not been
 presented as one.
 
+### A neighbour that went the other way: Product Studio's compute graph *(added 16 October 2026)*
+
+Federato's Product Studio now rates a product on a **compute graph** compiled from the actuary's
+Excel workbook: inputs, rate tables, lookups, rating steps, coverage conditions and premiums, each
+with a name and a value. Our engine keeps a **rating graph** with almost the same pieces, so a
+premium is explained the same way in both: click it, see what it was made from.
+
+The difference is which way round it is built and what it answers to:
+
+| | Product Studio | This engine |
+|---|---|---|
+| The graph is | the program: built once from the workbook, run for every policy | a record: written down while ISO's rules run for one risk |
+| Held to | the workbook's answer | ISO's own rating service |
+| Runs the graph? | Yes, for speed (~100x over running the spreadsheet) | No: a full rating already takes under a second, and a partial re-run can drift from a full one |
+
+**We explain a premium the way their graph does, but the answer we are held to is ISO's, not a
+workbook's.** A workbook can agree with itself and still disagree with ISO. That is why moving ISO GL
+into Product Studio stays parked until there is a business reason for it, and why it would carry our
+ISO comparison along. The term-by-term mapping is in `docs/RATING-GRAPH-PLAN.md` §10.
+
 ---
 
 ## 5. What remains
@@ -537,5 +557,6 @@ what it does, what it was checked against, and what it cannot yet do.
 | What was built, what broke, what it revealed | `BUILD-LOG.md` |
 | Did the analysis pay off? (written before each stage) | `docs/FROM-PLANNING-TO-BUILD.md` |
 | Everything unresolved | `docs/OPEN-ITEMS.md` |
+| The rating graph, and how it maps to Product Studio's compute graph | `docs/RATING-GRAPH-PLAN.md` |
 
 Everything in one page: `docs/GL-RATING-ENGINE-DOCS.html`.
