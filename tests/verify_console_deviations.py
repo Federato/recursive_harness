@@ -6,12 +6,12 @@
      ISO), the carrier is ours only, and the deviations panel carries the filing, the waterfall and the warnings
   C  asking ISO about a company request sends the NON-DEVIATED payload: no company, no PolicyType, no LCM (D21)
   D  the page: the picker, the Technical / ISO / Carrier columns, the Deviations Proof tab; the JS parses
-  E  the Deviations Proof board: T1-T10 as rows from each suite's last run; T3 and T8 list ISO's cases
+  E  the Deviations Proof board: T1-T10 (T8 retired) as rows from each suite's last run; T3 lists ISO's cases
   F  the rating worksheet: every field, Technical | ISO | Deviated, free, with the rule that wrote each value
   G  why this value: a worksheet value's ancestry from the rating graph, its sources, the carrier's path marked
   H  Carrier Filings: the filings log, each filing's sources re-hashed and openable, each company's versions
   I  the worksheet's Formula view: each premium as arithmetic with its actual factors, checked against the engine
-  J  B-20's demo view: the filings board (company x line and state, pins), each filing's rows, its impact previews
+  J  B-20's demo view: the filings board (company x line and state), each filing's rows, its impact previews
      (built and draft), its filing sheet rendered, and its proving suite's last run
 
     python tests/verify_console_deviations.py
@@ -174,7 +174,8 @@ def part_e():
     finally:
         suite_log.DIR = keep
     t = {r["test"]: r for r in j["tests"]}
-    check("E1 ten rows, T1 to T10", code == 200 and [r["test"] for r in j["tests"]] == [f"T{i}" for i in range(1, 11)])
+    check("E1 nine rows, T1 to T10 without T8 (retired with edition pins)", code == 200
+          and [r["test"] for r in j["tests"]] == [f"T{i}" for i in range(1, 11) if i != 8])
     check("E2 a row passes when every check of its own passes (T1 = the engine suite's A checks)",
           t["T1"]["status"] == "pass" and t["T1"]["total"] == 1, t["T1"])
     check("E3 ...and fails when one fails (T2 = its C and D checks)", t["T2"]["status"] == "fail" and t["T2"]["total"] == 2)
@@ -405,11 +406,11 @@ def part_j():
     code, b = get("/api/console/filings/board")
     cell = {(c["company"], c["line"], c["state"]): c for c in b["cells"]}
     ufc_gl = cell.get(("UFC", "GL", "IA"))
-    check("J1 the board: UFC rates CF and GL in Iowa, GL pinned to GL_IA_20240401_V01; ADD's CF filing is withdrawn",
+    check("J1 the board: UFC rates CF and GL in Iowa, no edition pin; ADD's CF filing is withdrawn",
           code == 200 and cell.get(("UFC", "CF", "IA"), {}).get("status") == "approved" and ufc_gl
-          and ufc_gl["status"] == "approved" and ufc_gl["pin"] == "GL_IA_20240401_V01"
+          and ufc_gl["status"] == "approved" and "pin" not in ufc_gl
           and cell.get(("ADD", "CF", "IA"), {}).get("status") == "withdrawn"
-          and any((c["line"], c["state"]) == ("GL", "IA") for c in b["columns"]), {k: (v["status"], v["pin"]) for k, v in cell.items()})
+          and any((c["line"], c["state"]) == ("GL", "IA") for c in b["columns"]), {k: v["status"] for k, v in cell.items()})
     src = TMP / "carriers" / "UFG" / "sources" / "UNFG-134374972"
     src.mkdir(parents=True, exist_ok=True)
     sheet = "\n".join(["# Filing sheet: UFG Iowa GL", "", "| Company | LCM |", "|---|---|", "| UFC | **0.942** |", ""])
@@ -439,11 +440,11 @@ def part_j():
     finally:
         suite_log.DIR = keep
     f = next((x for x in d["filings"] if x["serff"] == "UNFG-134374972"), None)
-    v = f and next((x for x in f["versions"] if x["company"] == "UFC"), None)
-    check("J2 each version carries its rows (target, scope, value), its compiled keys and its pin",
+    v = f and next((x for x in f["versions"] if x["company"] == "UFC" and x["version"] == 1), None)
+    check("J2 each version carries its rows (target, scope, value) and its compiled keys, no pin",
           v and len(v["detail"]) == 4 and v["detail"][0]["value"] == "0.942" and v["detail"][2]["scope"]
           == {"class_group": "UFG-IA-GL-aRated-PremOps@v1"} and v["compiledKeys"] > 0
-          and v["pins"] == {"IA": "GL_IA_20240401_V01"}, v and {k: v[k] for k in ("compiledKeys", "pins")})
+          and "pins" not in v, v and {k: v.get(k) for k in ("compiledKeys", "pins")})
     got = sorted((i["company"], i["draft"] or "") for i in (f or {}).get("impacts", []))
     check("J3 the filing's impact previews: built and draft, for its own companies and line only",
           got == [("UFC", ""), ("UFC", "IA-GL-UNFG-134374972.v9")], got)
@@ -485,7 +486,7 @@ def part_j():
     import re as _re
     texts = [f["plain"]["title"], f["plain"]["effective"], f["plain"]["step"]]
     for v in f["versions"]:
-        texts += [v["plain"]["company"], v["plain"]["changes"], v["plain"]["pin"], v["plain"]["status"]]
+        texts += [v["plain"]["company"], v["plain"]["changes"], v["plain"]["status"]]
         texts += [x for r in v["plain"]["rows"] for x in (r["what"], r["where"], r["change"])]
     for i in f["impacts"]:
         texts += [i["plain"]["company"], i["plain"]["vsIso"], i["plain"]["vsNow"]]
@@ -495,7 +496,7 @@ def part_j():
     check("J12 the main view's words carry no codes, and say what the filing does",
           not codes and ufc["plain"]["changes"].startswith("Premises and operations 6% below ISO; Products and completed "
                                                           "work 79% above ISO") and "specialty" in ufc["plain"]["changes"].lower()
-          and ufc["plain"]["pin"] == "ISO's Iowa rates of Apr 1, 2024" and ufc["plain"]["company"] == "United Fire & Casualty Company"
+          and "pin" not in ufc["plain"] and ufc["plain"]["company"] == "United Fire & Casualty Company"
           and f["plain"]["steps"] == ["Received", "Reviewed", "Impact checked", "In use", "Proven"], codes[:4] or ufc["plain"])
     check("J13 the page has the technical switch, the glossary and plain tab names",
           all(k in html for k in ('id="fl-tech"', "Words on this page", "Effect on premium", "What changes", "Our review")))

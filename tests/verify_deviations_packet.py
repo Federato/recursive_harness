@@ -3,11 +3,11 @@
 Run: python tests/verify_deviations_packet.py    (offline; no ISO calls; scratch stores only)
 
   P1  build    a packet of an archived filing: its documents, its filing sheet, every company's versions, the class
-               groups its rows name and the companies' pins for its line and states
+               groups its rows name
   P2  ingest   into an empty store: a new carrier and companies, the documents re-hashed into source.json, the
                drafts as drafts (never approved, nothing in the workflow log), each validated
   P3  again    the same packet again changes nothing: every file identical, skipped
-  P4  refused  a changed document, a name outside its folder, an unlisted file, a conflicting class group or pin:
+  P4  refused  a changed document, a name outside its folder, an unlisted file, a conflicting class group, a pin:
                refused, and nothing is written
   P5  console  the upload route ingests a packet and runs each draft's impact preview in the background; the filing
                then shows on the screen at "Draft impact", with its documents and drafts
@@ -86,13 +86,14 @@ def main() -> int:
     data = zp.read_bytes()
     z = zipfile.ZipFile(io.BytesIO(data))
     meta = json.loads(z.read("packet.json"))
-    check("P1 the packet carries the documents and both companies' versions",
-          sorted(z.namelist()) == sorted(["packet.json", "sources/filing.pdf", f"sources/{SERFF}-filing-sheet.md",
-                                          f"drafts/ADD/IA-GL-{SERFF}.v1.json", f"drafts/UFC/IA-GL-{SERFF}.v1.json"]),
+    check("P1 the packet carries the documents and both companies' versions (v1 and v2, B-21)",
+          sorted(z.namelist()) == sorted(["packet.json", "sources/filing.pdf", f"sources/{SERFF}-filing-sheet.md"]
+                                         + [f"drafts/{c}/IA-GL-{SERFF}.v{v}.json" for c in ("ADD", "UFC")
+                                            for v in (1, 2)]),
           z.namelist())
-    check("P1 ... the class groups its rows name, and the companies' Iowa GL pins",
+    check("P1 ... the class groups its rows name, and no edition pins (retired)",
           sorted(meta["carrier_json"]["class_groups"]) == ["UFG-IA-GL-aRated-PremOps@v1", "UFG-IA-GL-aRated-Prods@v1"]
-          and meta["companies_json"]["UFC"]["edition_pins"] == {"GL": {"IA": "GL_IA_20240401_V01"}}
+          and "edition_pins" not in meta["companies_json"]["UFC"]
           and meta["sheet"] == f"{SERFF}-filing-sheet.md", meta["carrier_json"].keys())
 
     print("\nP2  ingest into an empty store")
@@ -102,8 +103,8 @@ def main() -> int:
     check(f"P2 accepted: {len(rep['written'])} written, no problems", rep["ok"] and not rep["problems"], rep["problems"])
     car = json.loads((store / "UFG" / "carrier.json").read_text())
     ufc = json.loads((store / "UFG" / "UFC" / "company.json").read_text())
-    check("P2 a new carrier with the class groups, a new company with its pin",
-          len(car["class_groups"]) == 2 and ufc.get("edition_pins") == {"GL": {"IA": "GL_IA_20240401_V01"}}
+    check("P2 a new carrier with the class groups, a new company with no pin",
+          len(car["class_groups"]) == 2 and "edition_pins" not in ufc
           and ufc.get("naic") == "13021", (car.keys(), ufc))
     sj = json.loads((store / "UFG" / "sources" / SERFF / "source.json").read_text())
     check("P2 the documents are archived and re-hashed in source.json, with the sheet named",
@@ -112,7 +113,7 @@ def main() -> int:
     d = json.loads((store / "UFG" / "UFC" / "authored" / f"IA-GL-{SERFF}.v1.json").read_text())
     check("P2 the drafts land as drafts, nothing in the workflow log, and validate",
           d["status"] == "draft" and not (store / "UFG" / "UFC" / "workflow.jsonl").exists()
-          and all(v["ok"] for v in rep["validation"]) and len(rep["validation"]) == 2, rep["validation"])
+          and all(v["ok"] for v in rep["validation"]) and len(rep["validation"]) == 4, rep["validation"])
 
     print("\nP3  the same packet again")
     before = tree(store)
@@ -128,7 +129,7 @@ def main() -> int:
         "a conflicting class group": lambda n, b: json.dumps({**json.loads(b), "carrier_json": {
             **json.loads(b)["carrier_json"], "class_groups": {"UFG-IA-GL-aRated-PremOps@v1": ["10001"]}}}).encode()
             if n == "packet.json" else b,
-        "a conflicting pin": lambda n, b: json.dumps({**json.loads(b), "companies_json": {
+        "an edition pin (retired)": lambda n, b: json.dumps({**json.loads(b), "companies_json": {
             "UFC": {"code": "UFC", "edition_pins": {"GL": {"IA": "GL_IA_20250401_V01"}}}}}).encode()
             if n == "packet.json" else b,
     }
@@ -159,19 +160,19 @@ def main() -> int:
                                     {"name": "p.zip", "data": base64.b64encode(data).decode()})
         r = json.loads(body)
         check("P5 the upload is accepted and starts the impact previews", code == 200 and r["ok"] and r.get("impact")
-              and r["impact"]["total"] == 2, {k: r.get(k) for k in ("ok", "problems", "impact")})
+              and r["impact"]["total"] == 4, {k: r.get(k) for k in ("ok", "problems", "impact")})
         t0 = time.time()
         while F.JOBS[SERFF]["state"] == "running" and time.time() - t0 < 900:
             time.sleep(2)
         j = F.JOBS[SERFF]
-        check(f"P5 both drafts' impact previews finish ({'; '.join(j['messages'])[:160]})",
-              j["state"] == "done" and j["done"] == 2 and all("vs pure ISO" in m for m in j["messages"]), j)
+        check(f"P5 every draft's impact preview finishes ({'; '.join(j['messages'])[:160]})",
+              j["state"] == "done" and j["done"] == 4 and all("vs pure ISO" in m for m in j["messages"]), j)
         code, body, _ = CP.dispatch("GET", "/api/console/filings", {}, None)
         f = next((x for x in json.loads(body)["filings"] if x["serff"] == SERFF), None)
-        check("P5 the filing shows at Draft impact, with its documents, its two drafts and their impact",
+        check("P5 the filing shows at Draft impact, with its documents, its four drafts and their impact",
               f and f["stage"] == "Draft impact" and len(f["sources"]) == 2
-              and sorted((v["company"], v["status"]) for v in f["versions"]) == [("ADD", "draft"), ("UFC", "draft")]
-              and sorted(i["company"] for i in f["impacts"] if i["draft"]) == ["ADD", "UFC"],
+              and sorted((v["company"], v["status"]) for v in f["versions"]) == [("ADD", "draft")] * 2 + [("UFC", "draft")] * 2
+              and sorted(i["company"] for i in f["impacts"] if i["draft"]) == ["ADD", "ADD", "UFC", "UFC"],
               f and (f["stage"], [(v["company"], v["status"]) for v in f["versions"]]))
         code, body, _ = CP.dispatch("POST", "/api/console/filings/packet", {}, {"name": "x.zip", "data": "bm90IGEgemlw"})
         check("P5 a file that isn't a zip is refused with the reason", code == 400 and "zip" in json.loads(body)["error"])

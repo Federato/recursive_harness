@@ -1,7 +1,8 @@
-"""The Deviations Proof board (DEVIATIONS-PLAN.md P4): T1-T10 as rows, each from the suite that proves it.
+"""The Deviations Proof board (DEVIATIONS-PLAN.md P4): T1-T10 as rows, each from the suite that proves it (T8,
+edition pins, retired with the pins on 2026-10-16).
 
-Nothing here rates or calls ISO. Each row is read from the last run of its suite (`deviations.suite_log`); T3 and
-T8 also list every case ISO answered (`results/deviations/p3/verdicts.json`), each with its Trace Diff scenario.
+Nothing here rates or calls ISO. Each row is read from the last run of its suite (`deviations.suite_log`); T3
+also lists every case ISO answered (`results/deviations/p3/verdicts.json`), each with its Trace Diff scenario.
 """
 from __future__ import annotations
 
@@ -20,7 +21,6 @@ TESTS = (
     ("T5", "The LCMs applied are the ones filed", "proof", ("T5",)),
     ("T6", "A table override, to the digit", "proof", ("T6",)),
     ("T7", "Where and when a filing applies", "proof", ("T7",)),
-    ("T8", "Edition pins match ISO", "proof", ("T8",)),
     ("T9", "A filing over an ISO revision", "proof", ("T9",)),
     ("T10", "The files say what people wrote", "files", None),
 )
@@ -54,15 +54,14 @@ def proof() -> dict:
         checks = [c for c in (s or {}).get("checks", []) if _match(c[0], prefixes)]
         status = "not run" if not checks else "pass" if all(ok for _, ok in checks) else "fail"
         cases = []
-        if tid in ("T3", "T8"):
+        if tid == "T3":
             for v in verdicts:
                 if v.get("test") != tid:
                     continue
                 sid = tracediff.scenario_id(LINE[v["line"]], v["state"], v["hash"]) if v.get("hash") else None
                 cases.append({"id": v["id"], "line": LINE[v["line"]], "state": v["state"], "verdict": v["verdict"],
                               "scenario": sid, "detail": str(v.get("detail", ""))[:200],
-                              "premium": v.get("premium") or {k: v.get(k) for k in ("pinned_technical", "iso_at_date")
-                                                              if k in v}})
+                              "premium": v.get("premium")})
         rows.append({"test": tid, "claim": claim, "suite": suite, "command": SUITE_CMD[suite], "status": status,
                      "passed": sum(1 for _, ok in checks if ok), "total": len(checks),
                      "checks": checks, "ranAt": (s or {}).get("ran_at"), "commit": (s or {}).get("commit"),

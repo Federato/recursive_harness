@@ -1,6 +1,6 @@
 """P3's proof against ISO's live service: the cases, the requests ISO is sent, and how its answers are judged.
 
-Three tests spend ISO calls (DEVIATIONS-PLAN.md §5); everything else is our engine against itself.
+Two tests spend ISO calls (DEVIATIONS-PLAN.md §5); everything else is our engine against itself.
 
   * **T3 technical still equals ISO.** One stored request per state per line, sent as a writing company's
     TECHNICAL request (our header fields and submitted LCMs removed). ISO must rate it, its answer must match
@@ -13,8 +13,7 @@ Three tests spend ISO calls (DEVIATIONS-PLAN.md §5); everything else is our eng
     call made with its own group's LCMs. A field that belongs to no group is judged in the Group I call (the
     record's LCM is the Group I value, G2); a roll-up that mixes groups can match no single call and is listed
     as a roll-up rather than hidden.
-  * **T8 pins.** ISO takes no edition pin: its effective date chooses the edition (O2). So a pinned rating is
-    compared with ISO's answer to the technical request dated inside the pinned edition.
+  * T8 (edition pins) was retired with the pins on 2026-10-16: a filing rides ISO's edition in force.
 
 Calls go through `scripts/raas.py` (the ledger, the answer store) in the `active` lane. A request whose exact
 hash already has an answer is not sent again, so a re-run spends only what is new.

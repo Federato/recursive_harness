@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""P3: prove carrier deviations against ISO's live service (DEVIATIONS-PLAN.md §5: T3 and T8).
+"""P3: prove carrier deviations against ISO's live service (DEVIATIONS-PLAN.md §5: T3; T8 retired with edition pins,
+2026-10-16).
 
 **ISO only ever rates TECHNICAL (D21, O6 decided 2026-10-09).** No request carrying a company's LCMs is sent:
 the pattern is Technical (ours) / ISO (its answer to the same technical request) / Carrier (ours, proved against
@@ -16,8 +17,8 @@ request hash; a request already answered is never sent again. `--judge` reads th
 verdicts can be recomputed at any time, for free (`tests/verify_deviations_proof.py` does).
 
 The test companies live under `results/deviations/p3/carriers`, rebuilt from `tests/fixtures/deviations` on every
-run: UFG's two companies (the P0 filing), `P3CF` / `P3GL` (one constructed filing per T5 state) and `P3PIN`
-(edition pins, no rows). Nothing here writes under CARRIERS_ROOT.
+run: UFG's two companies (the P0 filing) and `P3CF` / `P3GL` (one constructed filing per T5 state). Nothing here
+writes under CARRIERS_ROOT.
 """
 from __future__ import annotations
 
@@ -45,8 +46,6 @@ T5_CF_STATES = ("OR", "NY", "FL", "TX", "CA", "VA", "MO", "IL", "MA")
 T5_GL_STATES = ("TX", "NY", "CA", "OH", "FL", "IL", "PA", "GA", "NC", "MI")
 #: Historical only: the T5 split check sent carrier LCMs to ISO; D21 retired it (re-judged from stored answers).
 WITH_T5_LIVE = False
-CF_PIN = ("IA", "CF_IA_20250101_V01", "2025-02-01")       # state, package, an ISO date inside that edition
-GL_PIN = ("TX", "GL_TX_20240801_V01", "2025-01-15")
 
 
 # ---------------------------------------------------------------- the companies
@@ -123,7 +122,6 @@ def build_carriers(t3: dict) -> None:
         if cls:
             rows.append({"target": "LCM:PremOps", "scope": {"class": cls}, "value": "1.1", "mode": "multiply"})
         _filing(gl, f"{st}-GL-P3", "GL", st, _eff(req), rows)
-    _company("P3PIN", {"edition_pins": {"CF": {CF_PIN[0]: CF_PIN[1]}, "GL": {GL_PIN[0]: GL_PIN[1]}}})
 
 
 # ---------------------------------------------------------------- the cases
@@ -182,8 +180,6 @@ def cases() -> list:
         for st in T5_GL_STATES:
             out.append({"id": f"T5-GL-{st}", "test": "T5", "line": "GL", "state": st, "company": "P3GL",
                         "stored": t3[("GL", st)]})
-    out.append({"id": "T8-CF-IA", "test": "T8", "line": "CF", "state": CF_PIN[0], "pin": CF_PIN})
-    out.append({"id": "T8-GL-TX", "test": "T8", "line": "GL", "state": GL_PIN[0], "pin": GL_PIN})
     return out, t3
 
 
@@ -203,7 +199,7 @@ def prepare(case: dict) -> dict:
     """Our side of a case (free) and the requests ISO must answer for it."""
     line = case["line"]
     base = _base(case)
-    company = case.get("company") or ("P3PIN" if case["test"] == "T8" else "UFC")
+    company = case.get("company") or "UFC"
     r = P.rate(line, P.with_company(base, company), root=CARRIERS, with_technical=True, waterfall=False)
     tech_req, warns = iso_request(P.with_company(base, company), line)
     reqs = [("technical", tech_req)]
@@ -220,12 +216,6 @@ def prepare(case: dict) -> dict:
             from deviations import engine as dv
             plan = dv.plan_for("GL", company, case["state"], _eff(base), "New", root=CARRIERS)
             reqs.append(("carrier", P.gl_carrier_request(plan, P.with_company(base, company), dv.book_for(plan))))
-    if case["test"] == "T8":
-        _, pkg, iso_date = case["pin"]
-        moved = copy.deepcopy(tech_req)
-        moved["body"]["SchemeKeys"]["EffectiveDateTime"] = f"{iso_date}T00:00:00"
-        reqs = [("pinned-date", moved)]
-        case["iso_date"] = iso_date
     case["requests"] = reqs
     return case
 
@@ -330,21 +320,7 @@ def judge(case: dict) -> dict:
         return {**out, "verdict": "pass" if ok else "fail", **j, "preexisting": len(baseline),
                 "premium": {"ours_carrier": r.premium, "ours_technical": tech.premium},
                 "detail": "" if ok else f"{j['wrong'][:3]}"}
-    # T8
-    if refused:
-        return {**out, "verdict": "fail", "detail": f"ISO refused the pinned-date request: {refused}"}
-    a = ans["pinned-date"][1]
-    pinned = P.premium_of(line, tech)
-    iso_p = _iso_total(line, a)
-    moved = copy.deepcopy(case["requests"][0][1])
-    ours_at_date = P.premium_of(line, P.rate(line, moved))
-    pkg = case["pin"][1]
-    used = (tech.packages[0] if line == "CF" else tech.packages[0]) if tech else None
-    ok = used == pkg and pinned is not None and Decimal(str(pinned)) == Decimal(str(iso_p)) \
-        and Decimal(str(pinned)) == Decimal(str(ours_at_date))
-    return {**out, "verdict": "pass" if ok else "fail", "package": used, "pinned_technical": pinned,
-            "iso_at_date": iso_p, "ours_iso_only_at_date": ours_at_date, "iso_date": case["iso_date"],
-            "detail": "" if ok else f"pinned {pinned} vs ISO {iso_p} vs ours-at-date {ours_at_date} on {used}"}
+    return {**out, "verdict": "error", "detail": f"no judge for test {case['test']}"}
 
 
 def _lcm_below_1(req: dict) -> bool:

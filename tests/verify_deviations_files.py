@@ -14,6 +14,8 @@ Run: python tests/verify_deviations_files.py      (offline; makes no ISO calls)
   G  overrides   an ISO table override compiles in ISO's keys and reads back
   H  diff        versions compare row by row
   I  GL          the same machinery on a GL LCM filing
+  J  policy      B-21 policy items (MIN:Policy, PCT:Terrorism): compile to the manifest, read back,
+                 and validate refuses a scope, a multiply, a share written as a percent, a CF item on GL
 
 Every case works in a temporary copy: nothing here writes under CARRIERS_ROOT.
 Needs the CF and GL corpora (CF_ERC_ROOT / GL_ERC_ROOT), as every suite does.
@@ -484,9 +486,47 @@ def i_gl() -> None:
     shutil.rmtree(root)
 
 
+def j_policy() -> None:
+    print("\nJ  policy-level items (B-21)")
+    root = tmp_root()
+    co = root / "UFG" / "UFC"
+    rows = [{"target": "LCM:GroupI", "scope": {}, "value": "2.185", "mode": "replace"},
+            {"target": "PCT:Terrorism", "scope": {}, "value": "0.02", "mode": "replace", "cite": "Exc p27"},
+            {"target": "MIN:Policy", "scope": {}, "value": "300", "mode": "replace", "cite": "Exc p3"}]
+    p = new_filing(co, rows, filing="AL-CF", juris=["AL"], new="2025-07-15", renewal="2025-11-01")
+    approve(p)
+    _, dirs = build(p)
+    man = json.loads((dirs[0] / "manifest.json").read_text(encoding="utf-8"))
+    check("J1 the two policy items compile into the manifest, one value each",
+          {k: v[:2] for k, v in man["policy"].items()} == {"PCT:Terrorism": ["0.02", "replace"],
+                                                           "MIN:Policy": ["300", "replace"]}, str(man["policy"]))
+    check("J2 they add no table", set(man["tables"]) == {"GroupLCM.Company"}, str(list(man["tables"])))
+    s = show(co, "CF", "AL-CF.v1")
+    check("J3 show reads all three rows back, citations kept",
+          same_rows(s["rows"], json.loads(p.read_text(), parse_float=Decimal)["rows"])
+          and [r.get("cite") for r in s["rows"]] == [None, "Exc p27", "Exc p3"], str(s["rows"]))
+    bad = {"J4 a policy item takes no scope": ({"target": "MIN:Policy", "scope": {"class": "0511"},
+                                                "value": "300", "mode": "replace"}, "takes no scope"),
+           "J5 a policy item is replace only": ({"target": "MIN:Policy", "scope": {}, "value": "1.1",
+                                                 "mode": "multiply"}, "mode must be replace"),
+           "J6 a share written as a percent is refused": ({"target": "PCT:Terrorism", "scope": {}, "value": "2",
+                                                           "mode": "replace"}, "write 2% as"),
+           "J7 terrorism as a share is a Property item, refused on GL": (
+               {"target": "PCT:Terrorism", "scope": {}, "value": "0.02", "mode": "replace"}, "is not one GL has")}
+    for i, (label, (row, want)) in enumerate(bad.items()):
+        gl = label.startswith("J7")
+        q = new_filing(co, [row], filing=f"BAD{i}", line="GL" if gl else "CF", juris=["IA"],
+                       new="2025-07-15", renewal="2025-11-01")
+        check(label, want in errors_of(q), errors_of(q))
+    q = new_filing(co, [{"target": "MIN:Policy", "scope": {}, "value": "500", "mode": "replace"}], filing="IA-GLMIN",
+                   line="GL", juris=["IA"], new="2025-07-15", renewal="2025-11-01")
+    check("J8 a GL minimum validates", not errors_of(q), errors_of(q))
+    shutil.rmtree(root)
+
+
 def main() -> int:
     for step in (a_ufg, b_import, c_refusals, d_approval, e_compose, f_all_states,
-                 g_overrides, h_diff, i_gl):
+                 g_overrides, h_diff, i_gl, j_policy):
         step()
     from deviations import suite_log
     suite_log.record("files", CHECKS)

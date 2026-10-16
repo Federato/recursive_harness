@@ -42,7 +42,7 @@ STAGES = {"Received": "Received", "Mapped": "Reviewed", "Draft impact": "Impact 
 STEPS = ["Received", "Reviewed", "Impact checked", "In use", "Proven"]
 
 CELL = {"approved": "In use", "draft": "Proposed", "proposed": "Proposed", "withdrawn": "Withdrawn",
-        "rejected": "Rejected", "pinned only": "ISO's rates, older edition"}
+        "rejected": "Rejected"}
 
 GLOSSARY = [
     ("ISO", "Insurance Services Office: publishes the standard rates, rules and forms most US commercial insurers start from."),
@@ -51,7 +51,7 @@ GLOSSARY = [
     ("Class", "ISO's code for the kind of business, for example a retail store or a contractor."),
     ("\"a\"-rated class", "A specialty class ISO publishes no rate for; the insurer sets the rate itself."),
     ("Effective dates", "When the filing starts: one date for new policies, often a later one for renewals."),
-    ("ISO edition", "ISO revises its rates; a filing can name an older edition and keep using it."),
+    ("ISO edition", "ISO revises its rates; a filing's changes always apply to ISO's rates in force on the policy date."),
     ("Projected book", "A set of typical businesses we rate both ways to estimate the effect. No real customers."),
 ]
 
@@ -75,6 +75,10 @@ def state(code: str) -> str:
 
 def target(t: str) -> str:
     k = str(t or "").split(":", 1)[-1]
+    named = {"MIN:Policy": "Minimum premium", "PCT:Terrorism": "Terrorism",
+             "TABLE:ExpectedLossRatio.Factor": "Experience rating expected loss ratio"}
+    if str(t) in named:
+        return named[str(t)]
     if str(t).startswith("TABLE:"):
         return "ISO table " + k.rsplit(".", 1)[0]
     return TARGETS.get(k, k)
@@ -108,14 +112,6 @@ def scope(sc: dict | None) -> str:
     return f"class group {name}" if name else "a group of classes"
 
 
-def pin(pkg: str | None) -> str:
-    """'GL_IA_20240401_V01' -> "ISO's Iowa rates of Apr 1, 2024"."""
-    m = re.match(r"^(GL|CF)_([A-Z]{2})_(\d{4})(\d{2})(\d{2})_V\d+$", str(pkg or ""))
-    if not m:
-        return str(pkg or "")
-    return f"ISO's {STATES.get(m.group(2), m.group(2))} rates of {money_date(f'{m.group(3)}-{m.group(4)}-{m.group(5)}')}"
-
-
 def change(pct, against: str = "ISO") -> str:
     """'28.7' -> 'about 29% higher than ISO'; '-5.8' -> 'about 6% lower than ISO'."""
     try:
@@ -142,10 +138,46 @@ def _same(rows: list) -> str:
     return "; ".join(parts)
 
 
+def _money(v) -> str:
+    d = Decimal(str(v))
+    return f"${d:,.0f}" if d == d.to_integral_value() else f"${d:,.2f}"
+
+
+def _pct(v) -> str:
+    return format((Decimal(str(v)) * 100).normalize(), "f") + "%"
+
+
+def item(r: dict) -> str | None:
+    """B-21: a policy-wide item, or a table row with a meaning of its own, as one sentence; None for the rest."""
+    t, v = str(r.get("target", "")), r.get("value")
+    if t == "MIN:Policy":
+        return f"Minimum premium {_money(v)} per policy."
+    if t == "PCT:Terrorism":
+        return f"Terrorism is charged at {_pct(v)} of the property premium when the coverage is taken."
+    if t == "TABLE:ExpectedLossRatio.Factor" and r.get("mode", "replace") == "replace":
+        return f"Experience rating uses an expected loss ratio of {_pct(v)} (ISO's is 100%)."
+    return None
+
+
+def row_change(r: dict) -> str:
+    """One row's value as the rows table shows it: against ISO for a multiplier, as itself for a B-21 item."""
+    t, v = str(r.get("target", "")), r.get("value")
+    if t == "MIN:Policy":
+        return f"{_money(v)} per policy"
+    if t == "PCT:Terrorism":
+        return f"{_pct(v)} of the property premium"
+    if t == "TABLE:ExpectedLossRatio.Factor" and r.get("mode", "replace") == "replace":
+        return f"{_pct(v)} (ISO's is 100%)"
+    return versus_iso(v, r.get("mode", "replace"))
+
+
 def company_rows(rows: list) -> str:
     """A version's rows as plain sentences: the rates for every class (or "all other classes" when groups have their
     own), then each group, e.g. 'Premises and operations 6% below ISO; Products and completed work 79% above ISO.
-    Specialty ("a"-rated) classes stay at ISO's rate.'"""
+    Specialty ("a"-rated) classes stay at ISO's rate.' Policy-wide items (a minimum premium, terrorism as a share of
+    premium) and the expected loss ratio follow, one sentence each."""
+    items = [x for x in (item(r) for r in rows) if x]
+    rows = [r for r in rows if item(r) is None]
     base = [r for r in rows if not (r.get("scope") or {})]
     groups: dict = {}
     for r in rows:
@@ -161,7 +193,7 @@ def company_rows(rows: list) -> str:
             out.append(f"{cap} stay at ISO's rate.")
         else:
             out.append(f"{cap}: {_same(rs)}.")
-    return " ".join(out)
+    return " ".join(out + items)
 
 
 def in_short(md: str) -> str:

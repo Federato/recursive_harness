@@ -5,8 +5,9 @@ never imports this module (I4). With a company, three things change and nothing
 else does:
 
   * **4a resolution** -- the company's filing in force for the state, line and
-    new/renewal date is picked from its compiled files; an edition pin, if the
-    company has one, chooses the ISO package.
+    new/renewal date is picked from its compiled files. The ISO edition is always
+    the one in force on the policy date: a filing has its own effective dates and
+    rides ISO's revisions (the user's decision, 2026-10-16: edition pins retired).
   * **4b LCMs** -- submitted LCMs are removed (D13) and the company's are written
     onto each record before ISO's rules run. In Property the record carries the
     Group I LCM (G2), and each coverage group's rate product reads the
@@ -61,7 +62,6 @@ class Plan:
     date: str                                  # the request's effective date, YYYY-MM-DD
     policy_type: str                           # "New" | "Renewal"
     company_dir: Path
-    pin: str | None = None
     filing_dir: Path | None = None
     manifest: dict | None = None
     #: CF: (group, rating basis, class) -> (value, mode, explain)
@@ -72,6 +72,8 @@ class Plan:
     unlisted_lcm: dict = field(default_factory=dict)
     #: ISO table name -> {"col", "keys", "rows": {key tuple: (value, mode, explain)}}
     overrides: dict = field(default_factory=dict)
+    #: B-21 policy-level items: "MIN:Policy" / "PCT:Terrorism" -> (value, mode, explain), applied after the rules
+    policy: dict = field(default_factory=dict)
     warnings: list = field(default_factory=list)
     #: id(record node) -> (class, rating type) as submitted, fixed before the rules run: the record LCM and every
     #: group LCM on that record use the same class, the one ISO's service sees on the request (P3 finding: a
@@ -86,13 +88,15 @@ class Plan:
         if msg not in self.warnings:
             self.warnings.append(msg)
 
-    def without(self, *, lcm: bool = False, tables=()) -> "Plan":
+    def without(self, *, lcm: bool = False, tables=(), policy=()) -> "Plan":
         """A copy with parts removed: the waterfall rates the deviations one step at a time."""
         p = dataclasses.replace(self, warnings=list(self.warnings))
         if lcm:
             p.group_lcm, p.lcm, p.unlisted_lcm = {}, {}, {}
         if tables:
             p.overrides = {k: v for k, v in self.overrides.items() if k not in set(tables)}
+        if policy:
+            p.policy = {k: v for k, v in self.policy.items() if k not in set(policy)}
         return p
 
 
@@ -143,13 +147,17 @@ def plan_for(line: str, company: str, juris: str, date: str, policy_type: str | 
     plan = Plan(line, company, juris, date, pt, cdir)
     if policy_type is None:
         plan.warn("header.PolicyType not given: rated as New business (O1)")
-    plan.pin = ((company_json(cdir).get("edition_pins") or {}).get(line) or {}).get(juris)
+    if company_json(cdir).get("edition_pins"):
+        raise Refused(f"{company}'s company.json names edition pins; pins are retired (2026-10-16): a carrier's "
+                      f"deviations have their own effective dates and ride ISO's edition in force. Remove "
+                      f"edition_pins to rate")
     d = select_filing(cdir, line, juris, date, pt)
     if d is None:
         plan.warn(f"{company} has no approved {line} filing in force in {juris} for "
                   f"{pt.lower()} business on {date}: carrier equals technical")
         return plan
     plan.filing_dir, plan.manifest = d, read_json(d / "manifest.json")
+    plan.policy = {k: (Decimal(v), m, x) for k, (v, m, x) in plan.manifest.get("policy", {}).items()}
     plan.unlisted_lcm = {tuple(k.split("|")): (Decimal(v), m, x)
                          for k, (v, m, x) in plan.manifest.get("unlisted_class_lcm", {}).items()}
     for tname, meta in plan.manifest["tables"].items():
@@ -168,26 +176,8 @@ def plan_for(line: str, company: str, juris: str, date: str, policy_type: str | 
 
 
 def book_for(plan: Plan):
-    """The ISO book this rating uses: the pinned package, or the edition in force."""
-    if not plan.pin:
-        return iso.book(plan.line, plan.juris, plan.date)
-    m = re.match(r"^(CF|GL)_([A-Z]{2})_(\d{8})_(V\d+)$", plan.pin)
-    if not m or m.group(1) != plan.line or m.group(2) != plan.juris:
-        raise Refused(f"edition pin {plan.pin!r} is not a {plan.line} {plan.juris} package id")
-    ed, ver = m.group(3), m.group(4)
-    try:
-        if plan.line == "CF":
-            from cf_engine.resolve.book import book_for as cf_book
-            b = cf_book(plan.juris, ed, ver)
-        else:
-            from gl_engine.resolve.book import ResolvedBook
-            b = ResolvedBook(iso.resolver("GL").resolve(plan.juris, ed, ver))
-    except Exception as e:
-        raise Refused(f"edition pin {plan.pin} cannot be honoured: {e}") from None
-    if b.state.pkg_id != plan.pin:
-        raise Refused(f"edition pin {plan.pin} cannot be honoured: {ed} resolves to "
-                      f"{b.state.pkg_id}")
-    return b
+    """The ISO book this rating uses: the edition in force on the policy date (no pins, 2026-10-16)."""
+    return iso.book(plan.line, plan.juris, plan.date)
 
 
 # --------------------------------------------------------- 4b' group LCMs
@@ -501,3 +491,139 @@ class CompanyBook:
                           f"{'/'.join(sorted(missing)[0])}, which {t.package} does not have "
                           f"({len(missing)} key{'s' if len(missing) != 1 else ''} missing)")
         return dataclasses.replace(t, rows=rows, package=f"{t.package}+{self.plan.ref}")
+
+
+# ------------------------------------------------- B-21 policy-level items
+
+#: The order policy items apply in, and so the waterfall's order: terrorism is a share of the premium before the
+#: minimum, and the minimum floors the total with terrorism in it (the user's decision, 2026-10-16).
+POLICY_ORDER = ("PCT:Terrorism", "MIN:Policy")
+
+
+def policy_label(plan: Plan, target: str) -> str:
+    v = plan.policy[target][0]
+    if target == "MIN:Policy":
+        return f"policy minimum ${format(v.normalize(), ',f')}"
+    return f"terrorism at {format((v * 100).normalize(), 'f')}% of premium"
+
+
+def _dollars(d: Decimal) -> str:
+    return format(d.quantize(Decimal(1)) if d == d.to_integral_value() else d.normalize(), "f")
+
+
+def _set(node, tag: str, value) -> None:
+    f = node.first(tag)
+    if f is None:
+        node.add(tag, str(value))
+    else:
+        f.text = str(value)
+
+
+def apply_policy(plan: Plan, line: str, tree, ip=None) -> dict:
+    """Apply the filing's policy-level items to a rated carrier tree, after ISO's rules (B-21).
+
+    Returns {"premium": the carrier total after them (Decimal), "terrorism": (ISO's, the company's) or None,
+    "topUp": the minimum's top-up or None}; {} when the plan has none or the tree carries no total. The tree is
+    written so the worksheet, the download and changedPaths see what the carrier charges:
+
+      * GL `MIN:Policy`: ISO's own declared field `GeneralLiability.PolicyWritingMinimum` (no ISO rule reads it,
+        CLM Rule 8 "refer to company") carries the minimum; a total under it is raised to it, the top-up added to
+        the first risk's `Premium` and `ErcCalculatedTotalPremium`.
+      * CF `PCT:Terrorism`: ISO's terrorism charge (the sum of its per-coverage terrorism premiums, in the total)
+        is replaced by the share of the rest of the premium, which already carries IRPM, rounded to the dollar;
+        nothing is charged when ISO charges none (terrorism not taken). `CompanyTerrorismPremium` holds it.
+      * CF `MIN:Policy`: `MinimumPremium` (the request input ISO's 2027 minimum-premium rule reads) carries the
+        minimum; a total under it is raised, as for GL.
+    """
+    if not plan.policy or tree is None:
+        return {}
+    if line == "GL":
+        return _apply_gl(plan, tree, ip)
+    return _apply_cf(plan, tree, ip)
+
+
+def _note(ip, kind: str, msg: str, plan: Plan, **data) -> None:
+    if ip is not None:
+        ip.note(kind, msg, plan.ref or "", **data)
+
+
+def _floor(plan: Plan, total: Decimal, carry, fields, ip) -> tuple[Decimal, Decimal | None]:
+    """The policy minimum: (new total, top-up or None). `carry` is the record the minimum is written on and the
+    top-up added to, `fields` its total fields."""
+    entry = plan.policy.get("MIN:Policy")
+    if entry is None:
+        return total, None
+    minimum = entry[0]
+    _set(carry, fields[0], _dollars(minimum))
+    if total >= minimum:
+        _note(ip, "company-minimum", f"total {total} is not under the minimum {minimum} ({entry[2]})", plan)
+        return total, None
+    top = minimum - total
+    for f in fields[1:]:
+        c = carry.first(f)
+        if c is not None and c.text not in (None, ""):
+            c.text = _dollars(Decimal(c.text) + top)
+    _note(ip, "company-minimum", f"total {total} raised to the minimum {minimum}: top-up {top} ({entry[2]})",
+          plan, top_up=str(top))
+    return minimum, top
+
+
+def _apply_gl(plan: Plan, tree, ip) -> dict:
+    risks = [r for t in tree.children if t.tag == "GeneralLiabilityTable" for r in t.children
+             if r.tag == "GeneralLiability"]
+    if not risks or any(r.first("Premium") is None or r.first("Premium").text in (None, "") for r in risks):
+        return {}
+    total = sum(Decimal(r.first("Premium").text) for r in risks)
+    total, top = _floor(plan, total, risks[0], ("PolicyWritingMinimum", "Premium", "ErcCalculatedTotalPremium"), ip)
+    return {"premium": total, "terrorism": None, "topUp": top}
+
+
+def _apply_cf(plan: Plan, tree, ip) -> dict:
+    """ISO's terrorism charge is each coverage's `TerrorismPremium`, summed onto the TRIA disclosure record's
+    `Premium` and from there into the policy's `ErcCalculatedTotalPremium` / `Premium` only (a coverage's and a
+    location's totals leave it out; IRPM never reaches it). Measured on the AL sample with CoverageForCertifiedActs
+    Yes: coverages 1 + 1 + 5, disclosure Premium 7, policy 8,006 -> 8,013."""
+    from decimal import ROUND_HALF_UP
+    pols = [p for t in tree.children if t.tag == "CommercialPropertyTable" for p in t.children]
+    if not pols:
+        return {}
+    pol = pols[0]
+    tot = pol.first("ErcCalculatedTotalPremium")
+    if tot is None or tot.text in (None, ""):
+        return {}
+    total = Decimal(tot.text)
+    fields = ("MinimumPremium", "ErcCalculatedTotalPremium", "Premium")
+    terr = None
+    entry = plan.policy.get("PCT:Terrorism")
+    if entry is not None:
+        iso_t = Decimal(0)
+        stack = [pol]
+        while stack:
+            n = stack.pop()
+            stack.extend(n.children)
+            if n.tag == "TerrorismPremium" and n.text not in (None, ""):
+                iso_t += Decimal(n.text)
+        if iso_t == 0:
+            _note(ip, "company-terrorism", f"no terrorism charged by ISO's rules (coverage for certified acts not "
+                                           f"taken): the {entry[0]} share is not charged ({entry[2]})", plan)
+        else:
+            base = total - iso_t
+            mine = (base * entry[0]).quantize(Decimal(1), rounding=ROUND_HALF_UP)
+            delta = mine - iso_t
+            for t in pol.children:                   # the disclosure record ISO sums the charge onto
+                if t.tag.endswith("Table") and "Terror" in t.tag and "Disclosure" in t.tag:
+                    for rec in t.children:
+                        p = rec.first("Premium")
+                        if p is not None and p.text not in (None, "") and Decimal(p.text) == iso_t:
+                            p.text = _dollars(mine)
+            for f in fields[1:]:
+                c = pol.first(f)
+                if c is not None and c.text not in (None, ""):
+                    c.text = _dollars(Decimal(c.text) + delta)
+            _set(pol, "CompanyTerrorismPremium", _dollars(mine))
+            total += delta
+            terr = (iso_t, mine)
+            _note(ip, "company-terrorism", f"terrorism {iso_t} -> {mine}: {entry[0]} x {base} ({entry[2]})", plan,
+                  iso=str(iso_t), company=str(mine), base=str(base))
+    total, top = _floor(plan, total, pol, fields, ip)
+    return {"premium": total, "terrorism": terr, "topUp": top}

@@ -12,8 +12,8 @@ SHA-256. Check a copy with `sha256sum` against the hash below.
 
 | # | Carrier | Companies | Line | State | SERFF | Effective | Status |
 |---|---|---|---|---|---|---|---|
-| [DEV-003](#dev-003) | UFG | UFC, ADD | GL | IA | UNFG-134374972 | 2025-07-15 new · 2025-11-01 renewal | Live, proved (22 offline + 3 live) |
-| [DEV-002](#dev-002) | UFG | UFC, LAF | CF | AL | UNFG-134461534 | 2025-07-15 new · 2025-11-01 renewal | Live, proved (LCMs only) |
+| [DEV-003](#dev-003) | UFG | UFC, ADD | GL | IA | UNFG-134374972 | 2025-07-15 new · 2025-11-01 renewal | Live, proved (v2, 38 offline; live to redo unpinned) |
+| [DEV-002](#dev-002) | UFG | UFC, LAF | CF | AL | UNFG-134461534 | 2025-07-15 new · 2025-11-01 renewal | Live, proved (LCMs; v2 minimum and terrorism) |
 | [DEV-001](#dev-001) | UFG | UFC, ADD | CF | IA | UNFG-134289779 | 2025-06-01 new · 2025-10-01 renewal | Live, proved (T1–T10) |
 
 ## How a filing is logged
@@ -35,9 +35,9 @@ supersedes.
 
 ## DEV-003
 
-**UFG Iowa Commercial General Liability loss cost multipliers**: *Live, proved (22 offline checks, 3 live)*
+**UFG Iowa Commercial General Liability loss cost multipliers**: *Live, proved (v2, 38 offline checks; live check to redo on ISO's edition in force)*
 
-**In short:** UFG filed loss cost multipliers (LCMs) for general liability in Iowa: factors applied to ISO's loss costs, one per company and coverage. United Fire filed 0.942 for premises and operations (6% below ISO) and 1.789 for products and completed work (79% above); Addison filed 1.272 and 2.415 (27% and 142% above). They apply from July 15, 2025 for new policies and November 1, 2025 for renewals, on ISO's April 2024 Iowa loss costs, which the filing names; specialty ("a"-rated) classes are left out. On a set of typical businesses United Fire comes out about 29% above ISO and Addison about 74%, mostly through products coverage. Our results match ISO's own system.
+**In short:** UFG filed loss cost multipliers (LCMs) for general liability in Iowa: factors applied to ISO's loss costs, one per company and coverage. United Fire filed 0.942 for premises and operations (6% below ISO) and 1.789 for products and completed work (79% above); Addison filed 1.272 and 2.415 (27% and 142% above). They apply from July 15, 2025 for new policies and November 1, 2025 for renewals, on ISO's Iowa rates in force on the policy date; specialty ("a"-rated) classes are left out. Since October 16, 2026 the filing's minimum premium (United Fire $500, Addison $625 a policy) and its experience rating expected loss ratio (68.6%) are built too. On a set of typical businesses United Fire comes out about 26% above ISO and Addison about 70%, mostly through products coverage.
 
 The first real GL filing (B-19).
 
@@ -49,7 +49,7 @@ The first real GL filing (B-19).
 | SERFF | UNFG-134374972 (Rate/Rule, TOI 17.0 / 17.0001; companions not received: UNFG-134204780 package plan, UNFG-134564539 multistate note; replaces the three-tier LCMs of UNFG-133187379, 7/1/2022) |
 | Approved | 2025-05-13 (submitted 2025-01-17) |
 | Effective | **2025-07-15 new business, 2025-11-01 renewal** (the revised exception manual dated 4/2/25; the memo and ELP pages say 6/1 and 10/1) |
-| ISO loss costs | **GL-2023-BGL1**: ISO's `GL_IA_20240401_V01`; on the effective dates ISO's Iowa edition in force is `GL_IA_20250401_V01` (GL-2024-BGL1) |
+| ISO loss costs | The filing names **GL-2023-BGL1** (`GL_IA_20240401_V01`). **Rated on ISO's edition in force on the policy date** (`GL_IA_20250401_V01`, GL-2024-BGL1, on the effective dates): edition pins retired 2026-10-16, your decision |
 | Received | 2026-10-15, three files in `Downloads` |
 | Worked | 2026-10-15 |
 
@@ -78,51 +78,59 @@ deductibles (GL-2014-RDD14); UFG's: schedule rating ±25%, experience rating ELR
 
 | | |
 |---|---|
-| Authored | `Carriers\UFG\{UFC,ADD}\authored\IA-GL-UNFG-134374972.v1.json`: 4 rows each. `LCM:PremOps` and `LCM:ProdsCompldOps` unscoped at the filed value; the same two at **1.0 on the "a"-rated classes** (class groups `UFG-IA-GL-aRated-PremOps@v1`, 68 classes, and `…-Prods@v1`, 98: the classes ISO publishes no loss cost for, whose schema takes a company ELP). Minimums, schedule and experience bounds are in `meta`, not rated |
-| Pin | `edition_pins.GL.IA = GL_IA_20240401_V01` in both `company.json` (**decided by you, 2026-10-15: rate on the loss costs the filing names until UFG files newer**) |
+| Authored | `Carriers\UFG\{UFC,ADD}\authored\IA-GL-UNFG-134374972.v1.json`: 4 rows each. `LCM:PremOps` and `LCM:ProdsCompldOps` unscoped at the filed value; the same two at **1.0 on the "a"-rated classes** (class groups `UFG-IA-GL-aRated-PremOps@v1`, 68 classes, and `…-Prods@v1`, 98: the classes ISO publishes no loss cost for, whose schema takes a company ELP). Minimums, schedule and experience bounds in `meta` (v1) |
+| v2 (B-21) | `…v2.json`: v1's 4 rows plus `TABLE:ExpectedLossRatio.Factor` 0.686 (ISO's ELR table, 1) and `MIN:Policy` 500 (UFC) / 625 (ADD), a policy item applied after ISO's rules and written on ISO's own declared field `GeneralLiability.PolicyWritingMinimum`; 6 rows, 2,378 compiled keys. Proposed, signed off (Dan Roman) and compiled 2026-10-16 |
+| Pin | ~~`edition_pins.GL.IA = GL_IA_20240401_V01`~~ **removed 2026-10-16**: pins retired, the filing rides ISO's edition in force |
 | Validated / compiled | Clean, 2,376 keys each (2 sublines × 1,188 classes); `compiled\GL\IA\` |
 | Approval | v1 proposed and signed off as Dan Roman, 2026-10-15 (as DEV-001/002) |
-| Engine | No change |
-| Fixture | Both filings, the class groups and the pins in `tests/fixtures/deviations/UFG/` |
+| Engine | v1: no change. v2: B-21's policy-level items; pins removed from the engine |
+| Fixture | Both filings (v1, v2) and the class groups in `tests/fixtures/deviations/UFG/` |
 
 **Decisions made on this filing**
 
 | | Decision |
 |---|---|
-| Loss costs | Pin to GL-2023-BGL1 (`GL_IA_20240401_V01`), not ISO's edition in force (you, 2026-10-15). Effect on class 18501: ISO in force 2,987 → pinned 2,734 (−253) |
+| Loss costs | ~~Pin to GL-2023-BGL1 (you, 2026-10-15)~~ **Superseded 2026-10-16 (you): no pins; a filing has its own dates and rides ISO's edition in force.** Class 18501 technical is now 2,987 (was 2,734 pinned) |
 | Dates | The exception manual's 7/15/2025 and 11/1/2025 (the explainer's item 1; D18 spirit: the document carrying the LCMs) |
 | "a"-rated | LCM held at 1.0 on ISO's "a"-rated classes per subline. Without it the engine multiplied the company-entered rate (a $830 test rate became $1,660 under LCM 2) |
 | OCP | Not built: UFG's own OCP base loss costs aren't in what we received. OCP keeps ISO's LCM |
-| Minimums, schedule ±25%, ELR | Not rated: plan O4 (B-21) |
+| Minimums, schedule ±25%, ELR | **v2 (B-21, 2026-10-16):** the minimum raises the whole GL total to $500 / $625, per annual period, GL only (your defaults, the exception page not received); one ELR 68.6% for both sublines and every class, accepting that a lower ELR lowers credibility and can switch experience (0.07) or schedule (0.03) rating off, as ISO's plan does (you). Schedule ±25% is ISO's own bound: no row |
 
-**How it was proved** (`python tests/verify_deviations_ufg_ia_gl.py`: **22 of 22 pass offline**)
+**How it was proved** (`python tests/verify_deviations_ufg_ia_gl.py`: **38 of 38 pass offline**, 2026-10-16, on ISO's
+edition in force)
 
-- T10: both files validate, compile and read back as the rows written.
-- T5: Prem/Ops and Products records carry exactly 0.942 / 1.789 (UFC) and 1.272 / 2.415 (ADD); each subline's premium
-  moves by its LCM within ISO's whole-dollar rounding (class 18501: Prem/Ops 2,715 → 2,558 / 3,454; Products 19 → 34 / 46).
-- "a"-rated class 10119 (company ELP 0.5) keeps LCM 1.0 and its premium (785).
+- T10: v1 and v2 validate, compile and read back as the rows written (v2: the ELR a table row, the minimum a policy item).
+- T5: Prem/Ops and Products records carry exactly 0.942 / 1.789 (UFC) and 1.272 / 2.415 (ADD), and each base rate is
+  technical's × its LCM to ISO's three places (class 18501 Prem/Ops 1.88 → 1.771 / 2.391; premium 2,971 → 2,798 / 3,778).
+- "a"-rated class 10119 (company ELP 0.5) keeps LCM 1.0 and its premium (830).
 - T7: in force for new business from 7/15/2025 (not 7/14), renewals from 11/1/2025 (not 10/31).
-- T8: technical rates on `GL_IA_20240401_V01` and equals an ISO-only rating dated 3/1/2025 (2,734); the waterfall is
-  edition pin −253, LCM −142 (UFC) / +766 (ADD), from 2,987 to 2,592 / 3,500.
-- T4: 21 changed paths, all on the Prem/Ops and Products records or the premiums they roll into.
-- Carrier on 7/15/2025 equals ISO's own rules run on the pinned edition with UFG's LCMs written into the request.
-- **Live (U8, 2026-10-15, 3 ISO calls on the adhoc lane over its cap, approved by you):** ISO's service, asked that same
-  request dated 3/1/2025, priced it exactly as we do: UFC 18501 **2,592**, Addison 18501 **3,500**, UFC "a"-rated 10119 **785**.
-  (The run printed FAIL on a text comparison, "2592.0" vs "2592"; the check now compares numbers.)
+- Technical rates on `GL_IA_20250401_V01`, ISO's edition in force on 7/15/2025, and equals an ISO-only rating that day
+  (2,987); the waterfall is LCM −159 (UFC) / +831 (ADD), from 2,987 to 2,828 / 3,818, no edition step.
+- T4: only the Prem/Ops and Products records and the premiums they roll into change (v2 adds `PolicyWritingMinimum` and
+  `ERPExpectedLossRatio`).
+- Carrier on 7/15/2025 equals ISO's own rules run that day with UFG's LCMs written into the request.
+- v2 ELR: an experience-rated 18501 (exposure 50,000,000) reads `ERPExpectedLossRatio` 0.686 (technical 1); carrier
+  110,687 → 117,775 (UFC) and 140,105 → 150,637 (ADD), the ELR step the whole difference.
+- v2 minimum: a small risk (technical 60) is raised from 57 to $500 (UFC) and from 77 to $625 (ADD), the top-up its own
+  line and waterfall step; a risk above the minimum is unchanged.
+- **Live (U8):** on 2026-10-15 ISO's service priced the pinned-edition requests exactly as we did (2,592 / 3,500 / 785).
+  With the pin gone those numbers no longer apply; re-running U8 on the edition in force costs 3 calls and waits for
+  your go. The carrier's v2 items are ours only (D21) and never go to ISO.
 
 **Open on this filing**
 
 - The filed PDF (exception page manual), to confirm the typed values.
-- OCP on UFG's own base loss costs; minimums and rating bounds (B-21).
+- OCP on UFG's own base loss costs.
+- U8 live on the edition in force (3 calls, your go).
 - Multistate accounts stay on legacy rates until every state approves (UNFG-134564539): not modelled.
 
 ---
 
 ## DEV-002
 
-**UFG Alabama Commercial Property loss cost multipliers**: *Live, proved (LCMs only)*
+**UFG Alabama Commercial Property loss cost multipliers, minimum premium and terrorism**: *Live, proved (v2, 2026-10-16)*
 
-**In short:** UFG filed loss cost multipliers (LCMs) for commercial property in Alabama: factors applied to ISO's loss costs, by kind of business (three class groups) and type of loss. For most classes United Fire filed 2.185 for fire and lightning and 2.192 for other perils (about 119% above ISO), and Lafayette 2.731 and 2.740 (about 174% above); two groups of classes have lower multipliers. They apply from July 15, 2025 for new policies and November 1, 2025 for renewals. On a set of typical businesses United Fire comes out about 109% above ISO and Lafayette about 161%. Only the multipliers were built; the filing's other pages (minimum premium, terrorism, deductibles) were not.
+**In short:** UFG filed loss cost multipliers (LCMs) for commercial property in Alabama: factors applied to ISO's loss costs, by kind of business (three class groups) and type of loss. For most classes United Fire filed 2.185 for fire and lightning and 2.192 for other perils (about 119% above ISO), and Lafayette 2.731 and 2.740 (about 174% above); two groups of classes have lower multipliers. They apply from July 15, 2025 for new policies and November 1, 2025 for renewals. Since October 16, 2026 two more of its pages are built: every policy pays at least $300, and when terrorism coverage is taken it costs 2% of the property premium instead of ISO's charge (ISO's $7 becomes $350 for United Fire on the sample building). On a set of typical businesses United Fire comes out about 109% above ISO and Lafayette about 161%. The filing's other pages (deductibles, building age and others) are not built.
 
 | | |
 |---|---|
@@ -132,7 +140,7 @@ deductibles (GL-2014-RDD14); UFG's: schedule rating ±25%, experience rating ELR
 | SERFF | UNFG-134461534 (Rate/Rule; replaces UNFG-133706267; associated UNFG-134461533, CPP plan UNFG-134205156) |
 | Filed | 2025-04-14 (submitted 2025-04-09; SERFF status Closed-Filed) |
 | Effective | **2025-07-15 new business, 2025-11-01 renewal** (the exception page; the SERFF summary's *requested* renewal date is 12/01/2025) |
-| Scope | **LCMs only**, by your instruction (2026-10-09). The exception manual's other pages are archived, not authored. |
+| Scope | LCMs (v1, 2026-10-09, your instruction), plus the policy minimum (Rule 8) and terrorism pricing (Rule A11.C) in v2 (B-21, 2026-10-16). The other exception pages are archived, not authored. |
 | Received | 2026-10-09, in `DeviationDocs\UFGAL` |
 | Worked | 2026-10-09 (received → proved the same day) |
 
@@ -172,14 +180,17 @@ These are not Iowa's groups (different ranges), so Alabama has its own, at carri
 | New company | `Carriers\UFG\LAF\company.json` (Lafayette Insurance Company, NAIC 18295) |
 | Validated | Both files clean, no warnings: every class range exists in ISO's Alabama class list on 2025-07-15; 1,540 compiled keys each |
 | Compiled | `Carriers\UFG\<company>\compiled\CF\AL\` |
-| Approval | v1 proposed and signed off by Dan Roman, 2026-10-09 (`workflow.jsonl` in each company) |
-| Engine | No change: Alabama uses the same group-LCM path as Iowa (D17) |
+| Approval | v1 proposed and signed off by Dan Roman, 2026-10-09; v2 the same, 2026-10-16 (`workflow.jsonl` in each company) |
+| v2 (B-21) | `…v2.json`: v1's 13 rows plus `PCT:Terrorism` 0.02 (`Exc p27 Rule A11.C`) and `MIN:Policy` 300 (`Exc p3 Rule 8`); 15 rows, 1,612 compiled keys; the two policy items live in the manifest's `policy`, applied by our engine after ISO's rules |
+| Engine | v1: no change (the group-LCM path, D17). v2: the policy-level items of B-21 (`deviations.engine.apply_policy`) |
 
 **Decisions made on this filing**
 
 | | Decision |
 |---|---|
-| Scope | LCMs only (you, 2026-10-09). The exception manual's other changes are not authored: e.g. minimum premium $300 (rules 8, A4), terrorism at 2% of property premium (A11), deductible and windstorm tables (33, 81, 82), Group I class protection factors (85), age-of-building factors, Ultra Property Plus endorsements, IRPM ±25%. |
+| Scope | LCMs only (you, 2026-10-09). **v2 adds the minimum premium $300 (Rule 8) and terrorism at 2% (A11), B-21 (2026-10-16).** Still not authored: Rule A4's public and institutional plan minimum (ISO has no machine content for the plan), deductible and windstorm tables (33, 81, 82), Group I class protection factors (85), age-of-building factors, Ultra Property Plus and Equipment Breakdown percentages. IRPM ±25% is ISO's own bound: no row. |
+| Terrorism (v2) | 2% of the property premium after IRPM, before the minimum; the minimum floors the total with terrorism in it (you, 2026-10-16). Charged only when ISO's rules charge terrorism (coverage for certified acts taken: `CoverageForCertifiedActs` Yes, which attaches IL 09 52); it replaces ISO's per-coverage charge, which stays visible in the coverage records, and is written as `CompanyTerrorismPremium` and on the TRIA disclosure record. |
+| Minimum (v2) | Raise to $300 (you, 2026-10-16), written as `MinimumPremium` (the input ISO's 2027 minimum rule reads); ISO's Alabama editions in force have no working minimum. |
 | Renewal date | The filed exception page and the CSV say **11-01-2025**; the SERFF summary's *requested* renewal date is 12/01/2025. **Decided (you, 2026-10-09): the filed document wins, 11-01-2025.** |
 | Status | Alabama shows the filing as *Filed* (file-and-use), not approved; authored as in force from its effective dates. |
 
@@ -196,10 +207,15 @@ These are not Iowa's groups (different ranges), so Alabama has its own, at carri
 - Sample premiums (technical → carrier): class 0951 8,006 → UFC 17,503 / LAF 21,883; class 1150 2,190 → 4,588 /
   5,744; class 0511 3,149 → 6,036 / 7,546.
 - Iowa (DEV-001) unchanged: UFC 9,026, ADD 10,822 on the Iowa sample, as before.
+- **v2 (2026-10-16, same script, 10 more checks, all pass):** v2 in force with both items; with no terrorism taken
+  neither ISO nor the carrier charges it; with terrorism taken technical carries ISO's $7 and the carrier 2% of the rest
+  of its premium (UFC $350 on 17,503; LAF $438 on 21,883), the waterfall adding up (UFC: LCM +9,497, terrorism +343,
+  minimum 0); a small risk (limits a hundredth of the sample's) is raised from 229 (UFC) / 286 (LAF) to $300. Our
+  engine only (D21): ISO's service never sees a carrier's items.
 
 **Open on this filing**
 
-- The non-LCM exception pages, if you ever want them.
+- The remaining exception pages (deductibles, building age, Equipment Breakdown, Ultra Property Plus), if you want them.
 
 ---
 

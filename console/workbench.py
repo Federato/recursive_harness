@@ -208,7 +208,7 @@ def rate_company(line: str, payload: dict, company: str, policy_type: str = "New
             "hash": store.request_hash(plain), "premium": tech[0], "outcome": tech[1],
             "detail": detail if tech[1] != "rated" else "",
             "carrier": {"premium": car[0], "outcome": car[1], "detail": detail},
-            "deviation": {k: dev.get(k) for k in ("writingCompany", "policyType", "edition", "pinned", "filings",
+            "deviation": {k: dev.get(k) for k in ("writingCompany", "policyType", "edition", "filings",
                                                   "technicalPremium", "carrierPremium", "waterfall", "warnings",
                                                   "refused")}
                          | {"changedFields": len(dev.get("changedPaths") or [])},

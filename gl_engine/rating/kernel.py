@@ -260,7 +260,7 @@ class Kernel:
         try:
             plan = dv.plan_for("GL", wc, juris, date, header.get("PolicyType"),
                                **({"root": root} if root else {}))
-            book = dv.book_for(plan) if plan.pin else iso_book
+            book = iso_book                  # the edition in force: no pins (2026-10-16)
             for w in lcm_warnings:
                 plan.warn(w)
             technical = self._rate_book(data, juris, asof, book, graph)
@@ -274,14 +274,23 @@ class Kernel:
         def again(book_, g=False):
             return self._rate_book(from_raas(clean)[0], juris, asof, book_, g)
 
-        carrier = again(cbook, graph)
-        current = again(iso_book).premium if (waterfall and plan.pin) else None
+        def policy(p, r):
+            # B-21: the filing's policy minimum on a rated carrier, after the rules (ISO's service never sees it)
+            if p.policy and r.complete:
+                got = dv.apply_policy(p, "GL", r.tree)
+                if got:
+                    r.premium = got["premium"]
+                    if got["topUp"] is not None:
+                        r.by_coverage["PolicyWritingMinimum"] = got["topUp"]
+            return r
+
+        carrier = policy(plan, again(cbook, graph))
         carrier.deviation = report.build(
             plan, book.resolution.state.pkg_id,
             str(technical.premium) if technical.complete else None,
             str(carrier.premium) if carrier.complete else None,
             technical.tree, carrier.tree,
-            lambda p: again(dv.CompanyBook(book, p)).premium, current, waterfall)
+            lambda p: policy(p, again(dv.CompanyBook(book, p))).premium, waterfall)
         if with_technical:
             carrier.technical = technical
         return carrier

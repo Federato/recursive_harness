@@ -166,24 +166,31 @@ def rate(request: dict, company: str | None = None, *, with_technical: bool = Fa
         r.deviation = {"writingCompany": wc, "refused": str(exc), "warnings": plan.warnings}
         r.technical = technical if with_technical else None
         return r
-    carrier = _run(clean, cbook, trace, graph)
+    carrier = _policy(plan, _run(clean, cbook, trace, graph))
     carrier.deviation = _deviation(plan, book, technical, carrier, clean, trace, waterfall)
     if with_technical:
         carrier.technical = technical
     return carrier
 
 
+def _policy(plan, r: PropertyRating) -> PropertyRating:
+    """B-21: the filing's policy-level items (terrorism share, minimum premium) on a rated carrier, after the rules."""
+    if plan.policy and r.tree is not None:
+        from deviations import engine as dv
+        got = dv.apply_policy(plan, "CF", r.tree, r.ip)
+        if got:
+            r.premium = format(got["premium"].normalize(), "f")
+    return r
+
+
 # ------------------------------------------------------------------ the Deviation block
 
 def _deviation(plan, book, technical, carrier, clean, trace, waterfall) -> dict:
     from deviations import engine as dv, report
-    current = None
-    if waterfall and plan.pin:
-        current = _run(clean, dv.iso.book("CF", plan.juris, plan.date), trace=False).premium
     dev = report.build(plan, book.state.pkg_id, technical.premium, carrier.premium,
                        technical.tree, carrier.tree,
-                       lambda p: _run(clean, dv.CompanyBook(book, p), trace=False).premium,
-                       current, waterfall)
+                       lambda p: _policy(p, _run(clean, dv.CompanyBook(book, p), trace=False)).premium,
+                       waterfall)
     if technical.outcome.get("status") == "refused":
         dev["warnings"].append("technical was refused: " + "; ".join(
             r.get("detail", "") for r in technical.outcome.get("reasons", [])))

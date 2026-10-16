@@ -1,0 +1,73 @@
+{
+  "filing": "IA-GL-UNFG-134374972",
+  "company": "ADD",
+  "line": "GL",
+  "juris": [
+    "IA"
+  ],
+  "version": 2,
+  "status": "approved",
+  "serff": "UNFG-134374972",
+  "approved": "2025-05-13",
+  "new_eff": "2025-07-15",
+  "renewal_eff": "2025-11-01",
+  "meta": {
+    "iso_loss_costs": "the filing names GL-2023-BGL1; rated on ISO's edition in force on the policy date (edition pins retired, the user's decision 2026-10-16)",
+    "schedule_rating_max": "0.25: ISO's own filed bound (ScheduleRatingMaximumDebit/Credit 25/-25), so no row (B-21)",
+    "not_built": "OCP (Rule 46) on UFG's own base loss costs",
+    "source": "UFG_IA_GL_LCM_2025.xlsx / _Explainer.md (typed extraction of the Exception Page Manual 'CG-IA-UFC-ADD-071525', pp. 1-2, Rule 1.D.2; PDF not received); dates per the exception manual (explainer item 1)",
+    "b21": "v2 adds the policy writing minimum and the experience rating ELR (B-21, 2026-10-16). Exception page PDF not received: the minimum is taken as GL-only, per annual period, on the whole GL total (the user's defaults, 2026-10-16); one ELR for both sublines and every class"
+  },
+  "rows": [
+    {
+      "target": "LCM:PremOps",
+      "scope": {},
+      "value": 1.272,
+      "mode": "replace",
+      "cite": "Exc Rule 1.D.2"
+    },
+    {
+      "target": "LCM:ProdsCompldOps",
+      "scope": {},
+      "value": 2.415,
+      "mode": "replace",
+      "cite": "Exc Rule 1.D.2"
+    },
+    {
+      "target": "LCM:PremOps",
+      "scope": {
+        "class_group": "UFG-IA-GL-aRated-PremOps@v1"
+      },
+      "value": 1,
+      "mode": "replace",
+      "cite": "Exc Rule 1.D.2",
+      "note": "'a'-rated classes are rated from UFG's ELP ranges, not loss cost x LCM: the LCM does not apply"
+    },
+    {
+      "target": "LCM:ProdsCompldOps",
+      "scope": {
+        "class_group": "UFG-IA-GL-aRated-Prods@v1"
+      },
+      "value": 1,
+      "mode": "replace",
+      "cite": "Exc Rule 1.D.2",
+      "note": "'a'-rated classes are rated from UFG's ELP ranges, not loss cost x LCM: the LCM does not apply"
+    },
+    {
+      "target": "TABLE:ExpectedLossRatio.Factor",
+      "scope": {},
+      "value": 0.686,
+      "mode": "replace",
+      "cite": "Explainer l.42 (Exc: experience rating ELR 68.6%)",
+      "note": "CGL Experience and Schedule Rating Plan Rule 1.D: the company's own ELR replaces ISO's 1"
+    },
+    {
+      "target": "MIN:Policy",
+      "scope": {},
+      "value": 625,
+      "mode": "replace",
+      "cite": "Explainer l.43 (Exc: policy minimum premium)",
+      "note": "CLM Rule 8 'refer to company'; LCMs do not apply to it"
+    }
+  ]
+}

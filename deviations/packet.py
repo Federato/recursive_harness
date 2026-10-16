@@ -12,11 +12,12 @@
      "sheet": "UNFG-134374972-filing-sheet.md",
      "files": [{"name": "<file>", "what": "<what it is>"}, ...],
      "carrier_json": {"carrier": "UFG", "name": "...", "class_groups": {...}},      new carrier, or groups to add
-     "companies_json": {"UFC": {"code": "UFC", "name": "...", "naic": "...", "edition_pins": {...}}}}
+     "companies_json": {"UFC": {"code": "UFC", "name": "...", "naic": "..."}}}
 
 **Ingest never overwrites and never approves.** Everything is checked before anything is written: a document or a
-draft that is already in the store must be byte-identical (then it is skipped), a class group or pin already defined
-must say the same thing, and every name stays inside its folder. Drafts land as `status: draft` with nothing in the
+draft that is already in the store must be byte-identical (then it is skipped), a class group already defined
+must say the same thing, a packet naming edition pins is refused (pins are retired, 2026-10-16), and every name
+stays inside its folder. Drafts land as `status: draft` with nothing in the
 workflow log, whatever the packet says. Building and approving stay a separate, deliberate step.
 """
 from __future__ import annotations
@@ -58,7 +59,7 @@ def _read(path: Path) -> dict:
 
 def build(serff: str, out: Path, root: Path = CARRIERS_ROOT, carrier: str | None = None) -> Path:
     """A packet of one archived filing, from the store: its documents, its sheet, every company's authored versions
-    of it, the class groups those rows name and the companies' pins for its line and states."""
+    of it and the class groups those rows name."""
     root = Path(root)
     hits = sorted(root.glob(f"{carrier or '*'}/sources/{serff}/source.json"))
     if len(hits) != 1:
@@ -71,10 +72,7 @@ def build(serff: str, out: Path, root: Path = CARRIERS_ROOT, carrier: str | None
     drafts, groups, companies_json = {}, set(), {}
     for co in src.get("companies", []):
         cj = _read(cdir / co / "company.json") if (cdir / co / "company.json").exists() else {"code": co}
-        pins = {line: {j: p for j, p in ((cj.get("edition_pins") or {}).get(line) or {}).items() if j in juris}}
         companies_json[co] = {k: cj[k] for k in ("code", "name", "naic") if k in cj}
-        if pins[line]:
-            companies_json[co]["edition_pins"] = pins
         for a in sorted((cdir / co / "authored").glob(f"*{serff}*.json")):
             d = _read(a)
             groups |= {str(r["scope"]["class_group"]) for r in d.get("rows", []) if "class_group" in (r.get("scope") or {})}
@@ -151,7 +149,7 @@ def plan(data: bytes, root: Path = CARRIERS_ROOT) -> dict:
     problems += [f"sources/{n}: listed in packet.json but not in the zip" for n in sorted(listed - present)]
     problems += [f"sources/{n}: in the zip but not listed in packet.json" for n in sorted(present - listed)]
 
-    # carrier, companies, class groups, pins
+    # carrier, companies, class groups
     cj_new = meta.get("carrier_json") or {}
     car = _read(cdir / "carrier.json") if (cdir / "carrier.json").exists() else None
     if car is None:
@@ -170,19 +168,13 @@ def plan(data: bytes, root: Path = CARRIERS_ROOT) -> dict:
     for co in companies:
         p = cdir / co / "company.json"
         new = comp_json.get(co) or {}
+        if new.get("edition_pins"):
+            problems.append(f"{co} names edition pins: pins are retired, a filing rides ISO's edition in force")
         if not p.exists():
             if not new.get("name"):
                 problems.append(f"company {co} is new to the store: packet.json needs companies_json.{co} with its name")
             writes.append(f"{carrier}/{co}/company.json (new company)")
             continue
-        have = _read(p)
-        for ln, by in (new.get("edition_pins") or {}).items():
-            for j, pkg in by.items():
-                old = ((have.get("edition_pins") or {}).get(ln) or {}).get(j)
-                if old is None:
-                    writes.append(f"{carrier}/{co}/company.json: {ln} {j} pinned to {pkg}")
-                elif old != pkg:
-                    problems.append(f"{co} already pins {ln} {j} to {old}, not {pkg}")
 
     # documents and drafts
     sdir = cdir / "sources" / serff
@@ -243,8 +235,6 @@ def ingest(data: bytes, root: Path = CARRIERS_ROOT) -> dict:
         new = (meta.get("companies_json") or {}).get(co) or {}
         have = _read(p) if p.exists() else {k: new[k] for k in ("code", "name", "naic") if k in new}
         have.setdefault("code", co)
-        for ln, by in (new.get("edition_pins") or {}).items():
-            have.setdefault("edition_pins", {}).setdefault(ln, {}).update(by)
         p.parent.mkdir(parents=True, exist_ok=True)
         write_json(p, have)
     sdir = cdir / "sources" / pl["serff"]

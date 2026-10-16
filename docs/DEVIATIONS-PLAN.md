@@ -54,7 +54,7 @@ produces two results from the same request:
 | D7 | Combining deviations | **Each row is `replace` or `multiply`** |
 | D8 | Comparison | **ISO service, our technical, our carrier, plus the breakdown by deviation** |
 | D9 | When ISO revises an edition | **Carry forward and flag** |
-| D10 | Edition pinning | **In scope** |
+| D10 | Edition pinning | ~~In scope~~ **Retired 2026-10-16 (your decision): a carrier's deviations have their own effective dates and ride ISO's edition in force on the policy date.** A company file naming a pin is refused; T8 is retired. B-19's Iowa GL pin (GL_IA_20240401_V01) was removed. |
 | D11 | Checking against ISO's service | ~~Yes for LCM~~ **Revised 2026-10-09 (D21): ISO checks technical only.** The carrier's LCMs are never sent; they are proved against technical (T4, T5, T6). |
 | D12 | Storage | **Per-company content in ERC shape** (RateTable CSV + Def XML), plus workflow metadata |
 | D13 | LCM already in the request | **Carrier deviation wins**, with a warning if the request's value isn't 1. Technical ignores any value in the request. |
@@ -79,7 +79,7 @@ produces two results from the same request:
 |---|---|
 | M1 | Layer chain: **company-state > ISO-state > ISO-countrywide** (follows from I2). |
 | M2 | **LCM is written onto the request; group LCMs (D17) are substituted inside the group products; factor overrides are a table layer.** See §4. |
-| M3 | Technical is rated on the **same edition** as carrier (the pinned one if there is a pin), so a carrier-vs-technical difference is only ever deviations. |
+| M3 | Technical is rated on the **same edition** as carrier (ISO's edition in force on the policy date), so a carrier-vs-technical difference is only ever deviations. |
 | M4 | Workflow metadata is append-only JSONL, latest line wins (the console's convention). Only approved versions compile. |
 | M5 | Class groups, territory lists and the all-states shortcut are **expanded to explicit keys at compile time**. Each compiled row remembers the authored row it came from. |
 | M6 | **Our own fields never go into the ISO tree.** The request's company and new/renewal fields are removed before ISO's rules run and before any call to ISO's service. Our results go in a separate `Deviation` block beside the ISO tree (§3c). |
@@ -93,7 +93,7 @@ produces two results from the same request:
 ```
 <CARRIERS_ROOT>/                                   outside the repo and the ZIPs; configured like GL_ERC_ROOT
   <carrier>/carrier.json                           approval policy, shared class groups (versioned, code ranges allowed)
-  <carrier>/<company>/company.json                 code (e.g. HP-CAS), edition pins, class groups that override the carrier's
+  <carrier>/<company>/company.json                 code (e.g. HP-CAS), class groups that override the carrier's
   <carrier>/<company>/workflow.jsonl               proposals, sign-offs, rejections (append-only)
   <carrier>/<company>/authored/<filing>.v<n>.json  the friendly form — what people edit
   <carrier>/<company>/compiled/<line>/<juris>/<filing>.v<n>/
@@ -155,14 +155,13 @@ A normal ISO request with two optional header fields we own:
 { "<ISO-shaped rated tree, carrier values>": "...",
   "Deviation": {
     "writingCompany": "HP-CAS", "policyType": "New",
-    "edition": "GL TX 20260601 V01", "pinned": false,
+    "edition": "GL TX 20260601 V01",
     "filings": [{"id": "TX-GL", "version": 3, "new_eff": "2026-07-01", "renewal_eff": "2026-08-01"}],
     "technicalPremium": 3730, "carrierPremium": 4399,
-    "waterfall": [ {"step": "edition pin", "effect": 0},
-                   {"step": "LCM", "effect": 748},
+    "waterfall": [ {"step": "LCM", "effect": 748},
                    {"step": "ILFPremOps", "effect": -79},
                    {"step": "rounding left over", "effect": 0} ],
-    // Step order is fixed: edition pin, then LCM, then factor overrides in ISO table order.
+    // Step order is fixed: LCM, then factor overrides in ISO table order, then policy items (B-21).
     // Multiplied effects depend on order, so the order is fixed to keep the breakdown repeatable.
     "changedPaths": [ {"path": "…/GeneralLiabilityClassificationPremOpsCoverage/LCM",
                        "iso": 1.0, "carrier": 1.12, "row": "TX-GL.v3#1"}, "…" ],
@@ -172,7 +171,7 @@ A normal ISO request with two optional header fields we own:
 - **`technical` is a separate, untouched result** from the same call (`?with=technical`), not a
   field inside the carrier result.
 - A request that can't be rated for the company is **refused with the reason**, never rated
-  technical without saying so. Examples: a pin that can't be honoured, an unknown company code, or
+  technical without saying so. Examples: a company file that names a pin (retired), an unknown company code, or
   a filing that's approved but has a key missing from the edition.
 
 ---
@@ -183,9 +182,8 @@ The engine entry point becomes `Kernel.rate(payload, company=None)` (and the sam
 `None` loads none of the new code: no company layer and no LCM step (I4).
 
 - **4a. Resolution.**
-  - `(company, juris, line)` → edition pin. The pin overrides the date choice at `resolver.py:105`.
-  - The countrywide parent follows the pinned package's own declaration (N5). An impossible pin is
-    refused.
+  - The ISO edition is the one in force on the policy date, for carrier and technical alike (D10 revised
+    2026-10-16: no pins).
   - The filing is picked by company, state, line and new/renewal date. The latest effective
     version wins.
 - **4b. LCM, written onto each coverage record before rating.**
@@ -248,7 +246,7 @@ total.
 | **T5** | **LCMs, against technical (D21).** Every group-rate product reads exactly the filed LCM for its group, rating basis and class; each group's rate scales by its own LCM within ISO's rounding; every GL coverage record carries exactly its filed LCM. *Before D21 this sent the carrier's LCMs to ISO (the split check): 24 of 25 agreed, the 25th was O6.* | The LCMs a carrier applies are the ones it filed, where it filed them | UFG Iowa (both companies, 3 risks) + 9 more Property states + 10 GL states | No |
 | **T6** | **Override arithmetic.** For single-override cases, the downstream value ÷ technical equals the factor, within the declared rounding. Cases where a minimum premium applies are flagged and checked separately, since the floor breaks the ratio. The waterfall adds up exactly to carrier − technical on every case. | The overrides that ISO can't check are still checked | T4's set + T5's set | No |
 | **T7** | **Boundaries.** A TX filing doesn't touch OK. A Prem/Ops LCM doesn't touch Products. The day before vs on the new date, and new vs renewal. A withdrawn version, superseded versions, a state opted out after the all-states shortcut, and a 52nd jurisdiction added later. | Deviations apply exactly where and when they're filed | Constructed cases | No |
-| **T8** | **Pins.** A pinned company with no rows gives results identical to ISO-only rating of that edition. Impossible pins are refused. When ISO's service resolves the same edition, compare with it. | Pinning swaps the edition and nothing else | Constructed cases + whatever ISO's service accepts (O2) | A few |
+| ~~**T8**~~ | **Retired 2026-10-16 with edition pins.** ~~Pins.~~ A pinned company with no rows gives results identical to ISO-only rating of that edition. Impossible pins are refused. When ISO's service resolves the same edition, compare with it. | Pinning swaps the edition and nothing else | Constructed cases + whatever ISO's service accepts (O2) | A few |
 | **T9** | **ISO revision.** The same filing rated over two editions: multiply rows follow the new ISO values and replace rows don't, and the "ISO changed" flag is raised. | A deviation survives ISO's revision correctly | Constructed cases on two editions | No |
 | **T10** | **Files round trip.** Authored → compiled → `show` gives the same rows. Spreadsheet import → the same compiled files as hand-authoring. `validate` refuses each bad case. | The files say what people wrote | Unit tests | No |
 
@@ -293,7 +291,7 @@ Each committed phase adds a row to `C:\FederatoProjects\R_REBUILD.md`.
 |---|---|---|
 | O1 | ~~New vs renewal~~ **Closed 2026-10-09:** ISO's policy record has `Renewal` / `RenewalStatus`, but no rule reads them, so `header.PolicyType` decides (default New, with a warning). | Closed |
 | O2 | ~~Whether ISO's service will rate a pinned older edition~~ **Answered 2026-10-09:** ISO takes no pin; its effective date chooses the edition. T8 compares a pinned rating with ISO's answer dated inside the pinned edition: 2 of 2 agree. | Closed |
-| O3 | ~~Minimum premiums and the terrorism percentage~~ **Decided 2026-10-09: follow the deviated premium.** ISO's rules calculate both from the carrier's deviated premiums; no special handling. A carrier that files its own minimum or terrorism percentage uses a factor override. | Closed |
-| O4 | Expense constants, schedule-rating bounds, tiering: beyond v1. | Later |
+| O3 | ~~Minimum premiums and the terrorism percentage~~ **Decided 2026-10-09: follow the deviated premium.** ISO's rules calculate both from the carrier's deviated premiums; no special handling. **Corrected 2026-10-16 (B-21):** "a carrier's own minimum or terrorism percentage uses a factor override" was wrong. ISO's Property books before CW 2027 have no working minimum premium (an empty `MinimumPremium` table no rule reads), GL's policy writing minimum is "refer to company" (a declared field, no rule), and ISO's terrorism charge is a rate per $100 of limit, which no factor turns into a share of premium. Both are now their own row kinds (O4). | Closed |
+| O4 | ~~Expense constants, schedule-rating bounds, tiering~~ **Built 2026-10-16 (B-21) for what UFG's filings rate:** `MIN:Policy` (policy minimum premium, dollars, both lines) and `PCT:Terrorism` (Property: terrorism as a share of the premium, in place of ISO's charge) are policy-level items: one value per policy, `replace` only, no scope, compiled into the manifest and applied by our engine after ISO's rules, terrorism first and the minimum last on the total with terrorism in it (your decisions). GL's experience rating ELR needed no code: ISO's `ExpectedLossRatio` table (1) takes an ordinary table row. Schedule rating / IRPM ±25% is ISO's own bound: no row. **Not built, no filing rates them:** expense constants, tiering (moved to RC-6). | Closed |
 | O6 | ~~ISO refuses every Property LCM below 1.00~~ **Decided 2026-10-09 (D21):** no LCM is sent to ISO, so carrier ratings never meet it. Found by T5: ISO's LCM stat-code lookup keys on `Round(LCM,2) x 100` as "88.00" where the table files "88", and refuses (confirmed on a plain ISO request at 0.95). Our engine rates such a request ($4,103 vs ISO's refusal). **Kept on purpose (user, 2026-10-09):** our engine rates LCMs below 1.00. Every company rating is two payloads: the **non-deviated** one (header fields and LCMs removed) is the ISO test and rates as technical; the **deviated** one is rated by our engine only, as carrier, and carrier minus technical is what the deviations did. `/api/rate` returns both under `payloads`. | Closed |
 | O5 | Carrier visibility of ISO tables is a licensing question. | Later |

@@ -34,7 +34,7 @@ from decimal import Decimal
 from itertools import product
 
 from . import iso
-from .config import LCM_SCOPE_KEYS, LCM_SCOPE_LATER, LCM_TARGETS, RATING_BASES
+from .config import LCM_SCOPE_KEYS, LCM_SCOPE_LATER, LCM_TARGETS, POLICY_TARGETS, RATING_BASES
 from .files import Row
 
 
@@ -56,7 +56,7 @@ class Context:
 @dataclass
 class Expanded:
     row: Row
-    space: tuple                                # ('LCM',) or ('TABLE', name, col)
+    space: tuple                                # ('LCM',), ('TABLE', name, col) or ('POLICY', target)
     keys: list[tuple] = field(default_factory=list)
     spec: int = 0
     problems: list[str] = field(default_factory=list)
@@ -64,7 +64,10 @@ class Expanded:
 
 
 def parse_target(target: str, line: str):
-    """'LCM:GroupI' -> ('LCM', 'GroupI'); 'TABLE:X.Factor' -> ('TABLE', 'X', 'Factor')."""
+    """'LCM:GroupI' -> ('LCM', 'GroupI'); 'TABLE:X.Factor' -> ('TABLE', 'X', 'Factor');
+    'MIN:Policy' -> ('POLICY', 'MIN:Policy')."""
+    if target in POLICY_TARGETS.get(line, ()):
+        return ("POLICY", target)
     kind, _, rest = target.partition(":")
     if kind == "LCM":
         if rest == "All" or rest in LCM_TARGETS.get(line, ()):
@@ -98,10 +101,13 @@ def expand(row: Row, ctx: Context) -> Expanded:
         e = Expanded(row, ())
         e.problems.append(f"target {row.target!r} is not one {ctx.line} has "
                           f"(LCM:{'|'.join(('All',) + LCM_TARGETS.get(ctx.line, ()))} "
-                          f"or TABLE:<table>.<value column>)")
+                          f"or TABLE:<table>.<value column>"
+                          + "".join(f" or {x}" for x in POLICY_TARGETS.get(ctx.line, ())) + ")")
         return e
     if t[0] == "LCM":
         return _expand_lcm(row, t[1], ctx)
+    if t[0] == "POLICY":
+        return _expand_policy(row, t[1])
     return _expand_table(row, t[1], t[2], ctx)
 
 
@@ -151,6 +157,22 @@ def _expand_lcm(row: Row, target: str, ctx: Context) -> Expanded:
         e.keys = list(product(targets, bases, classes))
     else:
         e.keys = list(product(targets, classes))
+    return e
+
+
+def _expand_policy(row: Row, target: str) -> Expanded:
+    """A policy-level item (B-21) reaches one key, the policy: no scope, replace only."""
+    e = Expanded(row, ("POLICY", target))
+    if row.scope:
+        e.problems.append(f"{target} applies to the whole policy and takes no scope "
+                          f"(got {', '.join(map(str, row.scope))})")
+    if row.mode != "replace":
+        e.problems.append(f"{target} is one value per policy: mode must be replace")
+    if target.startswith("PCT:") and row.value is not None and row.value >= 1:
+        e.problems.append(f"{target} is a share of premium: write {row.value}% as "
+                          f"{row.value / 100} (got {row.value})")
+    if not e.problems:
+        e.keys = [()]
     return e
 
 
@@ -255,4 +277,6 @@ def compose(expanded: list[Expanded]) -> tuple[dict, list[str]]:
 def _fmt(space, key) -> str:
     if space[0] == "LCM":
         return "LCM " + "/".join(key)
+    if space[0] == "POLICY":
+        return space[1]
     return f"{space[1]}.{space[2]} " + "/".join(key)

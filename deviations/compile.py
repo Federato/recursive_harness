@@ -7,8 +7,9 @@
   * `Rate Tables/<ISO table>.Company`: the same, for each ISO table the filing
     overrides, keyed exactly as ISO keys that table.
   * `manifest.json`: dates, the ISO edition each date resolves to, the class
-    groups as compiled, and per authored row its citation and note -- the only
-    things a table cannot carry.
+    groups as compiled, the policy-level items (`policy`: a minimum premium, a
+    terrorism share -- one value each, so no table), and per authored row its
+    citation and note -- the only things a table cannot carry.
 
 Each table has a `.CompanyDef.RateTableDef.xml` in ISO's own definition schema,
 so the engine's table reader loads it like any ISO table.
@@ -105,9 +106,12 @@ def compile_filing(rep: Report, *, require_approval: bool = True) -> list[Path]:
         d = compiled_dir(f.company_dir, f.line, j, f.ref)
         if d.exists():
             shutil.rmtree(d)            # derived content: always rebuilt whole
-        tables = {}
+        tables, policy = {}, {}
         for space, keys in sorted(composed.items()):
-            if space[0] == "LCM":
+            if space[0] == "POLICY":                 # B-21: one value per policy, kept in the manifest
+                c = keys[()]
+                policy[space[1]] = [canon(c.value), c.mode, c.explain]
+            elif space[0] == "LCM":
                 name = lcm_table_name(f.line)
                 kh = lcm_header(f.line)
                 rows = [[j, *k, canon(c.value), c.mode, c.explain]
@@ -142,6 +146,7 @@ def compile_filing(rep: Report, *, require_approval: bool = True) -> list[Path]:
             "header": header,
             "class_groups": ctx.class_groups,
             "tables": tables,
+            "policy": policy,
             "unlisted_class_lcm": unlisted_lcms(f.rows, ctx),
             "rows": [{"id": r.id, "cite": r.cite, "note": r.note} for r in f.rows],
         }
@@ -258,6 +263,9 @@ def show(company_dir: Path, line: str, ref: str) -> dict:
                            "scope": scope if scope is not None else {"unexplained_keys": len(keys)},
                            "value": Decimal(value), "mode": mode}
                     _merge(rebuilt, rid, row, j)
+        for target, (value, mode, explain) in manifest.get("policy", {}).items():
+            for rid, _, _ in _tokens(explain):
+                _merge(rebuilt, rid, {"target": target, "scope": {}, "value": Decimal(value), "mode": mode}, j)
     meta_rows = {r["id"]: r for r in manifest["rows"]}
     rows = []
     for rid in sorted(rebuilt, key=lambda r: int(r.rsplit("#", 1)[1])):

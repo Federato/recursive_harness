@@ -12,8 +12,8 @@ Run: python tests/verify_deviations_engine.py [--jobs N] [--per-state N]    (off
   E  P0 filing     UFG Iowa rates: each group's rate scales by exactly its filed LCM, for both companies,
                    on the default class group and on class group A
   F  waterfall     LCM and a table override, stepped; the steps add up to carrier - technical
-  G  pin           an edition pin rates on the pinned package, technical too (M3), and is a waterfall step
-  H  refusals      unknown company, impossible pin, an override key the edition lacks, a bad policy
+  G  no pin        carrier and technical ride ISO's edition in force; a company file naming a pin is refused
+  H  refusals      unknown company, an override key the edition lacks, a bad policy
                    type -- refused with the reason; a withdrawn filing is not in force (said so)
   I  M6 / D13      our header fields and submitted LCMs never reach ISO's request; a submitted LCM is named
   J  GL company    PremOps and Products LCMs, a class-scoped multiply, a GL table override
@@ -439,23 +439,21 @@ def f_waterfall(root: Path) -> None:
 # ------------------------------------------------------------------------- G
 
 def g_pin(root: Path) -> None:
-    print("\nG  an edition pin")
+    print("\nG  no edition pins (retired 2026-10-16)")
     from cf_engine.rating import rate
     cj = root / "UFG" / "UFC" / "company.json"
     base = json.loads(cj.read_text(encoding="utf-8"))
-    cj.write_text(json.dumps(base | {"edition_pins": {"CF": {"IA": "CF_IA_20250101_V01"}}}), encoding="utf-8")
     r = rate(ia_sample("UFC"), with_technical=True, root=root)
-    check("G1 the carrier rates on the pinned package", r.complete and r.packages[0] == "CF_IA_20250101_V01",
-          f"{r.packages} {r.outcome}")
-    check("G2 technical rates on the same pinned package (M3)",
-          r.technical.packages[0] == "CF_IA_20250101_V01", str(r.technical.packages))
-    check("G3 the pin is reported and is the waterfall's first step",
-          r.deviation["pinned"] and r.deviation["waterfall"][0]["step"] == "edition pin",
-          str(r.deviation["waterfall"]))
-    cj.write_text(json.dumps(base | {"edition_pins": {"CF": {"IA": "CF_IA_20990101_V01"}}}), encoding="utf-8")
+    from deviations import iso
+    in_force = iso.book("CF", "IA", r.asof).state.pkg_id
+    check(f"G1 carrier and technical rate on ISO's edition in force on the policy date ({in_force})",
+          r.complete and r.packages[0] == r.technical.packages[0] == in_force, f"{r.packages} {r.technical.packages}")
+    check("G2 the waterfall has no edition step", "edition pin" not in [s["step"] for s in r.deviation["waterfall"]]
+          and "pinned" not in r.deviation, str(r.deviation["waterfall"]))
+    cj.write_text(json.dumps(base | {"edition_pins": {"CF": {"IA": "CF_IA_20250101_V01"}}}), encoding="utf-8")
     r = rate(ia_sample("UFC"), root=root)
-    check("G4 a pin that cannot be honoured is refused with the reason",
-          r.outcome["status"] == "refused" and "cannot be honoured" in r.outcome["reasons"][0]["detail"],
+    check("G3 a company file that still names a pin is refused, saying pins are retired",
+          r.outcome["status"] == "refused" and "pins are retired" in r.outcome["reasons"][0]["detail"],
           str(r.outcome))
     cj.write_text(json.dumps(base), encoding="utf-8")
 

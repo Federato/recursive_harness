@@ -52,5 +52,15 @@ LCM_BANDS = {
     ("GL", "ProdsCompldOps"): (Decimal("0.25"), Decimal("3")),
 }
 
+#: Policy-level items (B-21, plan O4): what a filing sets on the whole policy rather than on a table. Applied by our
+#: engine after ISO's rules have rated the carrier; ISO's service never sees them (D21). Each is one value per
+#: policy, so `replace` only and no scope.
+#:   MIN:Policy        the policy minimum premium, in dollars: a carrier total under it is raised to it
+#:   PCT:Terrorism     CF: terrorism as a share of the property premium (0.02 = 2%), in place of ISO's charge
+POLICY_TARGETS = {
+    "CF": ("MIN:Policy", "PCT:Terrorism"),
+    "GL": ("MIN:Policy",),
+}
+
 MODES = ("replace", "multiply")
 STATUSES = ("draft", "proposed", "approved", "withdrawn")

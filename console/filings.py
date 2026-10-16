@@ -162,7 +162,6 @@ def _versions(carrier: str, companies: list, serff: str) -> list:
             w = F.workflow_status(base / co, d.get("filing", ""), int(d.get("version", 1)), need)
             last = w["lines"][-1] if w["lines"] else {}
             line = d.get("line", "")
-            pins = (_json(base / co / "company.json").get("edition_pins") or {}).get(line) or {}
             keys = 0
             for m in (base / co / "compiled" / line).glob(f"*/{d.get('filing')}.v{d.get('version')}/manifest.json"):
                 keys += sum(int(t.get("rows", 0)) for t in _json(m).get("tables", {}).values())
@@ -171,7 +170,6 @@ def _versions(carrier: str, companies: list, serff: str) -> list:
                         "signers": w["signers"], "lastAt": last.get("ts"), "lastAction": last.get("action"),
                         "line": line, "juris": d.get("juris", []), "new_eff": d.get("new_eff"),
                         "renewal_eff": d.get("renewal_eff"), "compiledKeys": keys,
-                        "pins": {j: pins[j] for j in d.get("juris", []) if j in pins},
                         "detail": [{"target": r.get("target"), "scope": r.get("scope") or {}, "value": str(r.get("value")),
                                     "mode": r.get("mode"), "cite": r.get("cite", ""), "note": r.get("note", "")}
                                    for r in d.get("rows", [])]})
@@ -223,7 +221,7 @@ def _proof(suite):
 
 def board() -> dict:
     """Every writing company by line and state: what rates there (B-20's filings board). A cell is a company's
-    compiled filing in a state, or a pin with no filing; a state with neither rates on technical only."""
+    compiled filing in a state; a state with none rates on technical only."""
     from deviations import files as F
     base = _carriers()
     companies, cells = [], []
@@ -236,17 +234,13 @@ def board() -> dict:
         except ValueError:
             need = 1
         companies.append({"carrier": carrier, "code": code, "name": c.get("name", ""), "naic": c.get("naic", "")})
-        pins = c.get("edition_pins") or {}
-        seen = set()
         for m in sorted(cdir.glob("compiled/*/*/*/manifest.json")):
             d = _json(m)
             line, juris = m.parent.parent.parent.name, m.parent.parent.name
             w = F.workflow_status(cdir, d.get("filing", ""), int(d.get("version", 1)), need)
-            seen.add((line, juris))
             cells.append({"company": code, "carrier": carrier, "line": line, "state": juris,
                           "filing": d.get("filing"), "version": d.get("version"), "status": w["status"],
-                          "new_eff": d.get("new_eff"), "renewal_eff": d.get("renewal_eff"),
-                          "pin": (pins.get(line) or {}).get(juris)})
+                          "new_eff": d.get("new_eff"), "renewal_eff": d.get("renewal_eff")})
         # drafts: authored, not approved -- on their own cell, or tagged on the filing in force they would replace
         for a in sorted(cdir.glob("authored/*.json")):
             d = _json(a)
@@ -260,21 +254,13 @@ def board() -> dict:
                 if live:
                     live.setdefault("drafts", []).append(f"{d.get('filing')} v{d.get('version')}")
                 else:
-                    seen.add((line, juris))
                     cells.append({"company": code, "carrier": carrier, "line": line, "state": juris,
                                   "filing": d.get("filing"), "version": d.get("version"), "status": "draft",
-                                  "new_eff": d.get("new_eff"), "renewal_eff": d.get("renewal_eff"),
-                                  "pin": (pins.get(line) or {}).get(juris)})
-        for line, by in pins.items():
-            for juris, pkg in by.items():
-                if (line, juris) not in seen:
-                    cells.append({"company": code, "carrier": carrier, "line": line, "state": juris,
-                                  "filing": None, "status": "pinned only", "pin": pkg})
+                                  "new_eff": d.get("new_eff"), "renewal_eff": d.get("renewal_eff")})
     from console import plain as P
     for x in cells:
         x["plain"] = {"status": P.CELL.get(x["status"], x["status"]),
-                      "since": P.money_date(x.get("new_eff")) if x.get("new_eff") else "",
-                      "pin": P.pin(x.get("pin")) if x.get("pin") else ""}
+                      "since": P.money_date(x.get("new_eff")) if x.get("new_eff") else ""}
     cols = sorted({(x["line"], x["state"]) for x in cells})
     return {"companies": companies, "cells": cells,
             "columns": [{"line": a, "state": b, "plain": f"{P.line(a)} · {P.state(b)}"} for a, b in cols]}
@@ -323,10 +309,10 @@ def _plain(r: dict, sheet_raw: str, log_raw: str) -> dict:
     for v in r["versions"]:
         v["plain"] = {"company": _company_name(r["carrier"], v["company"]),
                       "changes": P.company_rows(v.get("detail") or []),
-                      "pin": "; ".join(P.pin(x) for x in (v.get("pins") or {}).values()) or "ISO's current rates",
                       "status": P.CELL.get(v["status"], v["status"]),
-                      "rows": [{"what": P.target(x["target"]), "where": P.scope(x.get("scope")),
-                                "change": P.versus_iso(x["value"], x.get("mode", "replace")), "note": x.get("note", "")}
+                      "rows": [{"what": P.target(x["target"]), "where": ("the whole policy" if str(x["target"]).startswith(("MIN:", "PCT:"))
+                                          else P.scope(x.get("scope"))),
+                                "change": P.row_change(x), "note": x.get("note", "")}
                                for x in v.get("detail") or []]}
     st = [x.strip() for x in str(r.get("state", "")).split(",")]
     for i in r.get("impacts", []):

@@ -12,7 +12,7 @@ Run: python tests/verify_deviations_proof.py [--no-live]        (offline; makes 
                   new value, and the "ISO revised" flag is raised
   T5  LCMs       every group LCM a carrier applies is exactly the filed one, and each group's rate scales by its
                   own LCM -- proved against technical, offline (D21: ISO only ever rates technical; no LCM is sent)
-  L   live        T3 and T8 re-judged from the answers ISO gave (`scripts/deviations_p3.py --judge`); skipped
+  L   live        T3 re-judged from the answers ISO gave (`scripts/deviations_p3.py --judge`); skipped
                   with --no-live. A case ISO has not answered yet is reported "not run", which fails the gate.
 
 T1, T2 and T10 are `verify_deviations_engine.py` and `verify_deviations_files.py`.
@@ -418,7 +418,7 @@ def t5() -> None:
 # --------------------------------------------------------------------- live
 
 def live() -> None:
-    print("\nL  T3 and T8 re-judged from ISO's stored answers (no calls)")
+    print("\nL  T3 re-judged from ISO's stored answers (no calls)")
     import deviations_p3 as L
     cs, t3 = L.cases()
     L.build_carriers(t3)

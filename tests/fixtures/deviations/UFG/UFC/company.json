@@ -1,10 +1,5 @@
 {
   "code": "UFC",
   "name": "United Fire & Casualty Company",
-  "naic": "13021",
-  "edition_pins": {
-    "GL": {
-      "IA": "GL_IA_20240401_V01"
-    }
-  }
+  "naic": "13021"
 }

@@ -3,8 +3,9 @@
 Shared by both lines. The caller supplies two rated trees (technical and carrier), their premiums, and a way to
 re-rate under a reduced plan, which is how the waterfall attributes the difference one step at a time.
 
-**The waterfall's order is fixed** (plan v2 fix): edition pin, then LCM, then each overridden ISO table in name
-order. Multiplied effects depend on order, so a fixed order is what makes the breakdown repeatable. The last
+**The waterfall's order is fixed** (plan v2 fix): LCM, then each overridden ISO table in name
+order, then the policy-level items in the order they apply (B-21: terrorism as a share of premium, then the policy
+minimum). Multiplied effects depend on order, so a fixed order is what makes the breakdown repeatable. The last
 step, "rounding left over", is carrier minus everything before it; with cumulative steps it is zero by
 construction, and a non-zero value there means a step could not be rated.
 """
@@ -60,32 +61,30 @@ def changed_paths(technical, carrier, lcm_field: str) -> list:
 
 
 def build(plan, edition: str, technical_premium, carrier_premium, technical_tree, carrier_tree,
-          rerun, current_premium=None, waterfall: bool = True) -> dict:
-    """`rerun(reduced_plan)` -> premium; `current_premium` is technical on today's edition (pinned only)."""
+          rerun, waterfall: bool = True) -> dict:
+    """`rerun(reduced_plan)` -> premium."""
     from .engine import LCM_FIELD
     tp, cp = _num(technical_premium), _num(carrier_premium)
     m = plan.manifest
     dev = {"writingCompany": plan.company, "policyType": plan.policy_type,
-           "edition": edition, "pinned": bool(plan.pin),
+           "edition": edition,
            "filings": ([{"id": m["filing"], "version": m["version"], "new_eff": m["new_eff"],
                          "renewal_eff": m["renewal_eff"]}] if m else []),
            "technicalPremium": technical_premium, "carrierPremium": carrier_premium}
     steps = []
     if waterfall and tp is not None and cp is not None:
-        if plan.pin and _num(current_premium) is not None:
-            steps.append({"step": "edition pin", "effect": str(tp - _num(current_premium))})
+        from .engine import POLICY_ORDER, policy_label
         prev = tp
-        tables = sorted(plan.overrides)
-        if plan.group_lcm or plan.lcm:
-            v = cp if not tables else _num(rerun(plan.without(tables=tables)))
+        order = ((["LCM"] if plan.group_lcm or plan.lcm else []) + sorted(plan.overrides)
+                 + [k for k in POLICY_ORDER if k in plan.policy])
+        for i, name in enumerate(order):
+            rest = order[i + 1:]
+            v = cp if not rest else _num(rerun(plan.without(
+                lcm="LCM" in rest, tables=[t for t in rest if t in plan.overrides],
+                policy=[t for t in rest if t in plan.policy])))
             if v is not None:
-                steps.append({"step": "LCM", "effect": str(v - prev)})
-                prev = v
-        for i, name in enumerate(tables):
-            rest = tables[i + 1:]
-            v = cp if not rest else _num(rerun(plan.without(tables=rest)))
-            if v is not None:
-                steps.append({"step": name, "effect": str(v - prev)})
+                steps.append({"step": policy_label(plan, name) if name in plan.policy else name,
+                              "effect": str(v - prev)})
                 prev = v
         steps.append({"step": "rounding left over", "effect": str(cp - prev)})
     dev["waterfall"] = steps

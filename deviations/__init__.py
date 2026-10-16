@@ -11,7 +11,7 @@ only guarantees that what reaches the engine says exactly what the filing says.
 Layout under `CARRIERS_ROOT` (outside the repo and the ZIPs, like the corpus):
 
     <carrier>/carrier.json                       approval policy, shared class groups
-    <carrier>/<company>/company.json             code, NAIC, edition pins, class groups
+    <carrier>/<company>/company.json             code, NAIC, class groups
     <carrier>/<company>/workflow.jsonl           propose / sign-off / reject / withdraw
     <carrier>/<company>/authored/<filing>.v<n>.json
     <carrier>/<company>/compiled/<line>/<juris>/<filing>.v<n>/

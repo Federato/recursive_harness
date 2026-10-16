@@ -1684,7 +1684,7 @@ function upCarrier(x){const r=x.r,c=r&&r.carrier;
 function upDev(x){const r=x.r,d=r.deviation||{},k=(t,v)=>'<tr><td>'+t+'</td><td style="text-align:right">'+v+'</td></tr>';
   const f=(d.filings||[]).map(f=>esc(f.id)+' v'+f.version+'<br>new '+esc(f.new_eff)+'<br>renewal '+esc(f.renewal_eff)).join('<br>')||'<i>no filing in force</i>';
   return '<div class="cap2">What the deviations did</div><div class="up-dv"><b>'+esc(x.name)+'</b><table>'+
-    k('Writing company',esc(r.company)+' · '+esc(r.policyType))+k('Filing',f)+k('ISO edition',esc(d.edition||'')+(d.pinned?' (pinned)':''))+
+    k('Writing company',esc(r.company)+' · '+esc(r.policyType))+k('Filing',f)+k('ISO edition',esc(d.edition||''))+
     k('Technical (pure ISO)',esc(money(d.technicalPremium)??'—'))+k('Carrier',esc(money(d.carrierPremium)??'—'))+'</table>'+
     '<div class="cap2" style="margin-top:8px">Step by step</div><table>'+(d.waterfall||[]).map(s=>k(esc(s.step),esc(signed(s.effect)))).join('')+'</table>'+
     '<div class="mx-msg">'+(d.changedFields||0)+' fields differ from technical. ISO is asked about the non-deviated request only; the carrier is never sent.</div>'+
@@ -2028,24 +2028,24 @@ function flBoard(){const b=FL.b,el=document.getElementById('fl-board');if(!b)ret
         if(!c)return '<td class="fl-tech">ISO\u2019s rates</td>';
         const f=FL.d&&FL.d.filings.find(x=>x.versions.some(v=>v.company===c.company&&v.filing===c.filing));
         const p=c.plain||{},draft=c.status==='draft';
-        const tip=FL.tech?(c.filing||'')+' v'+(c.version||'')+' · '+c.status+(c.pin?' · '+c.pin:''):(p.pin||'');
+        const tip=FL.tech?(c.filing||'')+' v'+(c.version||'')+' · '+c.status:'';
         return '<td'+(f?' data-f="'+esc(flKey(f))+'"':'')+(f&&sel===f?' class="sel"':'')+(tip?' title="'+esc(tip)+'"':'')+'>'+(draft?'':flChip(c.status==='approved'))+
           '<b>'+esc(p.status||c.status)+'</b>'+(p.since&&!draft?' <span class="mx-msg">since '+esc(p.since)+'</span>':'')+
-          (c.pin?'<span class="fl-tag">older ISO rates</span>':'')+((c.drafts||[]).length?'<span class="fl-tag">proposal pending</span>':'')+'</td>';}).join('')+'</tr>').join('')+'</table></div>';}
+          ((c.drafts||[]).length?'<span class="fl-tag">proposal pending</span>':'')+'</td>';}).join('')+'</tr>').join('')+'</table></div>';}
 function flSummary(f){const imp=v=>{const i=(f.impacts||[]).filter(x=>x.company===v.company&&(v.status==='approved'?!x.draft:x.draft===v.filing+'.v'+v.version)).pop();
       if(!i)return '<span class="mx-msg">not worked out yet</span>';const p=i.plain||{};
       return '<span class="fl-big">'+esc(p.vsIso||'')+'</span>'+(p.vsNow?'<div class="mx-msg">'+esc(p.vsNow)+'</div>':'');};
   const n=(f.impacts||[]).map(i=>(i.plain||{}).risks).find(Boolean);
-  return '<div class="fl-mdw"><table class="fl-md"><tr><th>Insurer</th><th>What changes</th><th>Starts from</th><th>Effect on premium</th></tr>'+
+  return '<div class="fl-mdw"><table class="fl-md"><tr><th>Insurer</th><th>What changes</th><th>Effect on premium</th></tr>'+
     f.versions.map(v=>{const p=v.plain||{};return '<tr><td><b>'+esc(p.company||v.company)+'</b><div class="mx-msg">'+esc(p.status||v.status)+'</div></td><td>'+esc(p.changes||'')+
-      '</td><td class="mx-msg">'+esc(p.pin||'')+'</td><td>'+imp(v)+'</td></tr>';}).join('')+'</table></div>'+
+      '</td><td>'+imp(v)+'</td></tr>';}).join('')+'</table></div>'+
     '<div class="mx-msg" style="margin-top:6px">Effect: estimated by pricing '+(n?n+' ':'')+'typical businesses both ways, the insurer\u2019s rates against ISO\u2019s, on our own engine. '+
     (f.plain&&f.plain.proof?flChip(true)+esc(f.plain.proof)+'.':'')+'</div>';}
 function flRows(f){if(!f.versions.length)return '<div class="mx-msg">Nothing proposed yet.</div>';
   return f.versions.map(v=>{const p=v.plain||{};return '<div class="fl-doc"><b>'+esc(p.company||v.company)+'</b> <span class="mx-msg">'+esc(p.status||'')+'</span>'+
     '<div class="fl-mdw"><table class="fl-md"><tr><th>Coverage</th><th>Applies to</th><th>Change</th><th>Why</th></tr>'+
     (p.rows||[]).map(r=>'<tr><td class="nw">'+esc(r.what)+'</td><td>'+esc(r.where)+'</td><td class="nw"><b>'+esc(r.change)+'</b></td><td class="mx-msg">'+esc(r.note||'')+'</td></tr>').join('')+'</table></div>'+
-    (FL.tech?'<div class="mx-msg">'+esc(v.filing+' v'+v.version+' · '+v.compiledKeys+' compiled keys'+Object.entries(v.pins||{}).map(([j,x])=>' · '+j+' pinned to '+x).join(''))+'</div>'+
+    (FL.tech?'<div class="mx-msg">'+esc(v.filing+' v'+v.version+' · '+v.compiledKeys+' compiled keys')+'</div>'+
       '<div class="fl-mdw"><table class="fl-md"><tr><th>Target</th><th>Scope</th><th class="fl-pct">Value</th><th>Mode</th><th>Cite</th></tr>'+
       (v.detail||[]).map(r=>'<tr><td><code>'+esc(r.target)+'</code></td><td><code>'+esc(JSON.stringify(r.scope||{}))+'</code></td><td class="fl-pct">'+esc(r.value)+'</td><td>'+esc(r.mode)+'</td><td>'+esc(r.cite)+'</td></tr>').join('')+'</table></div>':'')+'</div>';}).join('');}
 function flDraftImpact(f,v){return (f.impacts||[]).filter(x=>x.company===v.company&&x.draft===v.filing+'.v'+v.version).pop()||null;}
