@@ -2,16 +2,20 @@
 
 # ISO compute graph — proof of concept plan
 
-**Status: drafted 2026-10-16, not started. Needs the user's go to begin P1.**
+**Status: drafted 2026-10-16, revised the same day (the harness loop; ISO without deviations first). Not
+started. Needs the user's go to begin P1.**
 Master copy: `C:\FederatoProjects\ISOComputeGraph\docs\PLAN.md`. Synced copy:
 `C:\FederatoProjects\Recursive_Harness_2.0\docs\ISO-COMPUTE-GRAPH-PLAN.md` (`python tools/sync_plan.py`).
 Harness backlog item: **B-55** (RC-5).
 
 **In short.** Take ISO's Iowa General Liability rules and rate tables and turn them into one fixed flowchart:
-a *compute graph* in the shape Federato's Product Studio uses. No Excel. Then rate policies on that flowchart
-and check that every premium is exactly what our engine and ISO give. It answers four questions: can ISO's
-rules become a fixed graph, where does that break, does a carrier deviation sit on top cleanly, and what
-would Product Studio have to add to run ISO this way. About **10 to 15 working days**, **0 ISO calls**.
+a *compute graph* in the shape Federato's Product Studio uses. No Excel. Then test it the way the harness tests
+itself: send the same request to ISO's rating service, to our engine and to the graph, and treat every
+difference as a defect to find, judge, fix and re-run. The first passes are ISO's own rating only, with no
+carrier deviation; UFG's deviation comes after the plain ISO passes are clean. It answers four questions: can
+ISO's rules become a fixed graph, where does that break, does a deviation sit on top cleanly, and what would
+Product Studio have to add. About **10 to 15 working days**; stored ISO answers first, live ISO calls only
+for what the stored set doesn't cover, with a go per pass.
 
 ## 1. Goal, and what this is not
 
@@ -19,9 +23,9 @@ would Product Studio have to add to run ISO this way. About **10 to 15 working d
 |---|---|
 | A compiler: ISO rule programs + tables → a fixed graph, per Iowa GL edition | Uploading anything to Product Studio (it accepts only Excel today) |
 | An executor that rates a request on that graph | Replacing or changing the harness engine |
-| Proof: same answer as the engine, field for field, and as ISO's stored answers | Property, other states (later, if this works) |
-| DEV-003 (UFG Iowa GL) on top of the graph | Speed tuning beyond measuring it |
-| A drawing of the graph in Product Studio's six kinds (absorbs B-31) | Spending ISO calls |
+| The harness loop, three ways: ISO, engine, graph (§5) | Property, other states (later, if this works) |
+| ISO's rating first; DEV-003 (UFG Iowa GL) only after | Speed tuning beyond measuring it |
+| A drawing of the graph in Product Studio's six kinds (absorbs B-31) | |
 | A findings list: what Product Studio would need | |
 
 ## 2. Decisions taken (2026-10-16)
@@ -32,7 +36,10 @@ would Product Studio have to add to run ISO this way. About **10 to 15 working d
 | D2 | Which copy of this plan is edited | **This one.** `tools/sync_plan.py` copies it to the harness and refuses if the copy was edited by hand |
 | D3 | First scope | **Iowa GL** |
 | D4 | Version control | **Local git** in this folder, no remote for now |
-| D5 | What the proof stands on | **Every Iowa GL edition with stored ISO answers** (5 editions, 11 answers) plus DEV-003's U8, and the engine on generated requests. 0 ISO calls |
+| D5 | What the proof stands on | **Every Iowa GL edition with stored ISO answers** (5 editions, 11 answers), and the engine on generated requests |
+| D6 | How it is tested | **The harness's own loop**, with the graph as a third party: same request to ISO, engine and graph; every difference judged, fixed in the right project, re-run, recorded (§5) |
+| D7 | ISO calls | **Stored answers first, then live**: each pass runs free on the stored answers; live calls only for requests the stored set doesn't cover, through the harness's call ledger (lane `active`, shown as *Planned work*, origin `iso-compute-graph`), **up to 25 a pass, with the user's go per pass** |
+| D8 | Deviations | **ISO without deviation first.** Passes 1 onward rate ISO's technical premium only; DEV-003 starts only when the technical loop is clean (P8) |
 
 ## 3. What we start from (measured 2026-10-16)
 
@@ -42,8 +49,10 @@ would Product Studio have to add to run ISO this way. About **10 to 15 working d
 | Rule programs, in force | IA 15 files / 56 rules; CW 563 files / 4,557 rules; **effective 571 files, 4,590 rules** + `Default` (a state rule replaces a countrywide one by name) | `gl_engine/interp/program.py`, `interpreter.py:567-590` |
 | Stored ISO answers, Iowa GL | **11**, all rated: 3 on 20240401, 3 on 20250401, 3 on 20260601, 1 on 20261001_V01, 1 on 20270401_V04. Plus 18 premium-only rows on 20260601 | `results/tc/answers/`, index `results/tc/reference_index.json` |
 | Package samples | 1 (`STC/STC_GL000201550.json`, IA package) | corpus |
-| DEV-003 check (U8) | 3 risks dated 7/15/2025 (edition 20250401): **2,828 / 3,818 / 830**, ISO exact | `tests/verify_deviations_ufg_ia_gl.py`, `docs/deviations/FILINGS-LOG.md:108-118` |
-| Engine entry | `Kernel.rate(payload, version=None, *, company=None, with_technical=False, graph=False, ...)` | `gl_engine/rating/kernel.py:163` |
+| ISO's rating service | `scripts/raas.py` `RaaS(lane=..., origin=..., override=...)`; ledger cap 250 a day: `active` 150, `refresh` 50, `adhoc` 50 | `console/ledger.py:23-24` |
+| Expert reviewers | `gl-authority`, `gl-engine-code-expert`, `iso-circular-expert` (user-level agents, usable from this folder) | `~/.claude/agents/` |
+| DEV-003 check (U8), for P8 | 3 risks dated 7/15/2025 (edition 20250401): **2,828 / 3,818 / 830**, ISO exact | `tests/verify_deviations_ufg_ia_gl.py`, `docs/deviations/FILINGS-LOG.md:108-118` |
+| Engine entry | `Kernel.rate(payload, version=None, *, company=None, with_technical=False, graph=False, ...)`; no `WritingCompany` in the request = technical only | `gl_engine/rating/kernel.py:163, 186` |
 | Rating graph (per rating) | `RatingGraph.to_json()`: input / write / table / company nodes; data / control edges | `gl_engine/interp/graph.py:275` |
 | Rounding | Half-up by `@DecimalPlaces`; reuse `Interpreter.round_to` | `interpreter.py:444-458` |
 | Look-ahead (OI-125) | **Property only**; not in GL | `cf_engine/run_checks.py:162-208` |
@@ -70,9 +79,53 @@ in-force program.
 | `Guid` | 134 | A generated id; must be made repeatable for a comparison | Check |
 | `Custom`, `FromList`, `LastNonNull`, `Power`, `Null` | 0 | — | — |
 
-## 5. Phases and gates
+## 5. The loop: ISO, engine and graph
+
+The harness's loop is *same submission to ISO and to our engine → difference → every gap is our defect or a
+finding about ISO → expert reviewers judge it against the manual and the files → fix, re-run, record*. Here the
+graph joins as a third party, and the engine stays the referee for the graph.
+
+```
+  request set (stored, generated, then new)
+        │ same request, technical only (no WritingCompany)
+        ├──────────────► ISO RaaS   (stored answer first; live only if none, D7)
+        ├──────────────► harness engine
+        └──────────────► compiled graph
+                              │
+                    three-way difference, field by field
+                              │
+              judge each gap (expert reviewers) ──► fix in the right project
+                              │
+                    re-run everything so far, record the pass
+```
+
+**Where each difference goes**
+
+| Graph | Engine | ISO | Means | Goes to |
+|---|---|---|---|---|
+| = | = | = | Clean | Recorded |
+| ≠ | = | = | The compiler or executor is wrong | Fixed here |
+| = | ≠ | = | The graph caught an engine defect | Logged and fixed in the harness (`docs/OPEN-ITEMS.md`), then re-run here |
+| = | = | ≠ | Both ours differ from ISO the same way | A harness defect or an ISO finding: logged in the harness |
+| ≠ | ≠ | any | Unclear | Judged first by `gl-authority`; nothing is fixed until it is placed |
+| — | — | refuses | ISO refuses the request | The graph must refuse it too, as the engine does |
+
+**Each pass**
+
+| Step | What happens |
+|---|---|
+| 1. Request set | Everything from earlier passes plus this pass's new requests (regression grows, never shrinks) |
+| 2. Free run | ISO side from stored answers; engine and graph rate everything |
+| 3. Live gap | Requests with no stored ISO answer are listed with a call count; **live calls only with the user's go** (≤ 25, lane `active`, origin `iso-compute-graph`). New answers are stored in the harness's answer store (`results/tc/answers/`) so both projects reuse them; the only harness write besides the plan copy |
+| 4. Judge | Every gap placed by the table above, using the expert reviewers where it isn't obvious |
+| 5. Fix | In the project the table names; a harness fix goes through the harness's own gates |
+| 6. Record | `results/passes/pass-NN.json` (requests, three answers, every gap and where it went) and a line in §10's log |
+| 7. Exit | A pass is clean when every request is graph = engine = ISO, or each remaining gap is a recorded finding |
+
+## 6. Phases and gates
 
 Each phase ends at its gate. A gate that fails stops the next phase until fixed or re-scoped with the user.
+**P1 to P7 are ISO only (no deviation).**
 
 | Phase | Builds | Gate | Days |
 |---|---|---|---|
@@ -82,41 +135,46 @@ Each phase ends at its gate. A gate that fails stops the next phase until fixed 
 | **P3 · Compiler, straight-line** | `cg/compile.py`: rules inlined, steps, lookups, conditions, versions; loops and record changes left as marked holes | Compiles all 5 editions with no crash; every hole is one of the hard instructions in §4 | 2-3 |
 | **P4 · Compiler, the hard part** | Repeating groups, created / removed records, `Exist` / `Count` in order, `Break`, `Guid` | Holes = 0, or each remaining one is a named finding with its rule and why | 2-4 |
 | **P5 · Executor** | `cg/run.py`: rates a request on the graph in dependency order, half-up rounding reused from the harness | Rates the IA sample end to end on the in-force edition | 1-2 |
-| **P6 · Proof** | `cg/prove.py` | **(a)** All 11 stored ISO answers: every premium exact. **(b)** Engine vs graph, field for field (all output fields), on the 11 stored requests, the package sample and Iowa requests generated by `scripts/variants.py`, on each of the 5 editions. **(c)** Replay: every plain arithmetic step re-computes from its inputs | 1-2 |
-| **P7 · DEV-003** | UFG's compiled rows (`Carriers\UFG\{UFC,ADD}\compiled\GL\IA\IA-GL-UNFG-134374972.v2`) as override tables and policy-level steps on the graph | U8's three risks: **2,828 / 3,818 / 830**; technical side unchanged | 1 |
-| **P8 · Product Studio view** | Export and a page drawing the graph in their six kinds, extras marked (absorbs B-31) | One premium traced from inputs to output on the page, matching the harness worksheet | 1-2 |
-| **P9 · Findings** | `docs/FINDINGS.md`: what compiled, what didn't, graph size, speed vs the engine, what Product Studio would need, effort to reach 51 states | Reviewed with the user | 1 |
+| **P6 · The loop** | `cg/loop.py`: the pass of §5, three-way difference, pass records | Runs a pass on the 11 stored requests and the sample, free | 1 |
+| **P7 · Technical passes** | Pass 1: the 11 stored requests + the sample. Pass 2: Iowa requests generated by `scripts/variants.py` on all 5 editions (live gap per D7). More passes until clean. Every plain arithmetic step also replays from its inputs | **Clean pass**: graph = engine = ISO on every request, field for field (all output fields), or each gap a recorded finding | 1-3 |
+| **P8 · DEV-003** *(after P7 is clean)* | UFG's compiled rows (`Carriers\UFG\{UFC,ADD}\compiled\GL\IA\IA-GL-UNFG-134374972.v2`) as override tables and policy-level steps; the loop re-run with the carrier side added | U8's three risks: **2,828 / 3,818 / 830**; technical side unchanged; the technical regression still clean | 1 |
+| **P9 · Product Studio view** | Export and a page drawing the graph in their six kinds, extras marked (absorbs B-31) | One premium traced from inputs to output on the page, matching the harness worksheet | 1-2 |
+| **P10 · Findings** | `docs/FINDINGS.md`: what compiled, what didn't, graph size, speed vs the engine, engine defects the graph found, what Product Studio would need, effort to reach 51 states | Reviewed with the user | 1 |
 
-**Total: about 10 to 15 working days.** The low end assumes P4 goes cleanly; the high end assumes it doesn't.
+**Total: about 11 to 17 working days.** The low end assumes P4 goes cleanly and the first technical passes
+are close; the high end assumes neither.
 
-## 6. Layout
+## 7. Layout
 
 ```
 ISOComputeGraph/
   CLAUDE.md          how this project relates to the harness
   docs/PLAN.md       this plan (master)
-  docs/FINDINGS.md   P9
-  cg/                inventory, model, compile, run, prove, export
+  docs/FINDINGS.md   P10
+  cg/                harness (import), inventory, model, compile, run, loop, export
   tests/             one verify_ script per gate
   tools/sync_plan.py plan sync
-  results/           compiled graphs and proof runs (git-ignored if large)
+  results/passes/    one record per loop pass
+  results/           compiled graphs (git-ignored if large)
 ```
 
 The harness is put on the import path by `cg/harness.py` (one place), with `GL_ERC_ROOT` and `CARRIERS_ROOT`
-as the harness sets them. Nothing here writes into the harness folder except the synced plan copy.
+as the harness sets them. Nothing here writes into the harness folder except the synced plan copy and new ISO
+answers in its answer store (§5, step 3).
 
-## 7. Risks
+## 8. Risks
 
 | Risk | Handling |
 |---|---|
 | Records created and removed during a rating (§4) may not fit a fixed graph | That is the question being asked. P4 records each case as compiled or as a named finding |
-| A compiled graph is a second implementation and can drift from ISO | The engine stays the referee; every graph is proved against it (P6) before anything else |
-| Only 1 stored ISO answer on today's edition | D5: 5 editions, 11 answers, plus the engine on generated requests |
+| A compiled graph is a second implementation and can drift from ISO | The loop: every request goes to ISO, engine and graph, every pass, and the regression only grows |
+| Only 1 stored ISO answer on today's edition | D5 and D7: 5 editions, 11 answers, and live calls for the gaps with a go per pass |
+| Live calls share the harness's 250 a day | ≤ 25 a pass, lane `active`, with a go; the ledger refuses a full lane |
 | `Guid` makes ids differ run to run | Compare by field, not by generated id; seed if needed |
 | 18 countrywide rule-file paths are 260+ characters | Read through the harness's own loader; any script reading files directly uses the `\\?\` prefix |
-| 16 GB PC | Proof runs one process at a time, 2 workers max |
+| 16 GB PC | Passes run one process at a time, 2 workers max |
 
-## 8. Questions for Federato (collected for P9, not asked yet)
+## 9. Questions for Federato (collected for P10, not asked yet)
 
 | # | Question |
 |---|---|
@@ -128,8 +186,9 @@ as the harness sets them. Nothing here writes into the harness folder except the
 | F6 | Can one rate table be shared by many products and versioned by edition? |
 | F7 | Multi-key and range-key lookups with interpolation? |
 
-## 9. Log
+## 10. Log
 
 | Date | Entry |
 |---|---|
-| 2026-10-16 | Plan drafted; D1-D5 taken; P0 done. Waiting for the go on P1 |
+| 2026-10-16 | Plan drafted; D1-D5 taken; P0 done |
+| 2026-10-16 | Revised by the user: the harness loop three ways (D6), stored answers then live with a go per pass (D7), ISO without deviation first, DEV-003 moved to P8 (D8). Waiting for the go on P1 |
