@@ -245,6 +245,7 @@ ISOComputeGraph/
   CLAUDE.md          how this project relates to the harness
   docs/PLAN.md       this plan (master)
   docs/FINDINGS.md   CG-7
+  docs/tracker.html  progress page, built from §6 (tools/tracker.py; sync rebuilds it)
   cg/                harness (import), inventory, model, compile, run, loop, export
   tests/             one verify_ script per gate
   tools/sync_plan.py plan sync
