@@ -140,7 +140,6 @@ held to ISO's answer. We explain a premium the way their graph does; the answer 
 | Shape | One graph per product version | One graph per rating: a risk with three locations unrolls `ForEach` into three copies |
 | Authority | The actuary's workbook (*"it gets Excel's answer"*) | ISO's rating service (T1; technical exact in 96 of 96 states) |
 | Runs | Yes: it is the rating engine (~100x faster than running the workbook) | Never: a byproduct, off unless asked (§1) |
-| A rejected step | Upload findings name the sheet, cell and formula | A refusal names the rule file and the field, as ISO's would |
 
 **Why we don't run ours (B-33).** Their speed gain is against running a spreadsheet. Ours would be against an
 interpreter that already rates a full risk in under a second, and running the graph means re-running only what
