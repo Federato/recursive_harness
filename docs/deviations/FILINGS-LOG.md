@@ -39,8 +39,6 @@ supersedes.
 
 **In short:** UFG filed loss cost multipliers (LCMs) for general liability in Iowa: factors applied to ISO's loss costs, one per company and coverage. United Fire filed 0.942 for premises and operations (6% below ISO) and 1.789 for products and completed work (79% above); Addison filed 1.272 and 2.415 (27% and 142% above). They apply from July 15, 2025 for new policies and November 1, 2025 for renewals, on ISO's Iowa rates in force on the policy date; specialty ("a"-rated) classes are left out. Since October 16, 2026 the filing's minimum premium (United Fire $500, Addison $625 a policy) and its experience rating expected loss ratio (68.6%) are built too. On a set of typical businesses United Fire comes out about 26% above ISO and Addison about 70%, mostly through products coverage.
 
-**Is it right, in short:** ISO's own system priced three test policies exactly as we do: $2,828 and $830 for United Fire, $3,818 for Addison (checked October 16, 2026). Our own checks confirm every multiplier lands where the filing puts it, specialty businesses keep their own rate, small policies are raised to the minimum, and the changes start on the filing's dates, not a day earlier.
-
 The first real GL filing (B-19).
 
 | | |
@@ -134,8 +132,6 @@ edition in force)
 
 **In short:** UFG filed loss cost multipliers (LCMs) for commercial property in Alabama: factors applied to ISO's loss costs, by kind of business (three class groups) and type of loss. For most classes United Fire filed 2.185 for fire and lightning and 2.192 for other perils (about 119% above ISO), and Lafayette 2.731 and 2.740 (about 174% above); two groups of classes have lower multipliers. They apply from July 15, 2025 for new policies and November 1, 2025 for renewals. Since October 16, 2026 two more of its pages are built: every policy pays at least $300, and when terrorism coverage is taken it costs 2% of the property premium instead of ISO's charge (ISO's $7 becomes $350 for United Fire on the sample building). On a set of typical businesses United Fire comes out about 109% above ISO and Lafayette about 161%. The filing's other pages (deductibles, building age and others) are not built.
 
-**Is it right, in short:** Our standard price matches ISO's own system in Alabama. Our own checks confirm every multiplier lands where the filing puts it for both companies, terrorism costs 2% of the premium only when the cover is taken, small policies are raised to $300, and the changes start on the filing's dates. ISO's system never sees an insurer's own changes, so those are checked by us, against the standard price.
-
 | | |
 |---|---|
 | Carrier | UFG Insurance (`UFG`) |
@@ -228,8 +224,6 @@ These are not Iowa's groups (different ranges), so Alabama has its own, at carri
 **UFG Iowa Commercial Property loss cost multipliers**: *Live, proved*
 
 **In short:** UFG filed loss cost multipliers (LCMs) for commercial property in Iowa: factors applied to ISO's loss costs, by kind of business (three class groups) and type of loss. For most classes United Fire filed 1.511 for fire and lightning (51% above ISO) and 3.280 for wind, hail and other perils (228% above), with lower multipliers for two groups of classes; Addison's multipliers are about 20% higher than United Fire's. They apply from June 1, 2025 for new policies and October 1, 2025 for renewals. On a set of typical businesses United Fire's Iowa property comes out about 68% above ISO and Addison's about 102%. Proven in full against ISO's own system.
-
-**Is it right, in short:** Proven in full against ISO's own system on October 9, 2026: our standard price matched ISO in all 96 states checked, and every multiplier lands where the filing puts it, for both companies, from the filing's dates.
 
 | | |
 |---|---|

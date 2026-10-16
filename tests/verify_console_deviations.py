@@ -507,7 +507,7 @@ def part_j():
     want = "New policies from Jul 15, 2025; renewals from Nov 1, 2025"
     check("J15 each change says when it starts: the version's summary and every row carry its filing's dates",
           ufc["plain"]["starts"] == want and ufc["plain"]["rows"] and all(r["starts"] == want for r in ufc["plain"]["rows"])
-          and "<b>Starts:</b>" in html, (ufc["plain"].get("starts"), [r.get("starts") for r in ufc["plain"]["rows"]][:2]))
+          and "<th>Starts</th>" in html, (ufc["plain"].get("starts"), [r.get("starts") for r in ufc["plain"]["rows"]][:2]))
 
 
 def main() -> int:
