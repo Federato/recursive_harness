@@ -294,9 +294,19 @@ def answer_entry(h: str, payload: dict) -> dict | None:
 
 
 def save_answer(payload: dict, response: dict | None, refusal: str | None) -> Path:
-    """Keep one answer from the ledger (D21): request plus response or refusal, named by request hash."""
+    """Keep one answer from the ledger (D21): request plus response or refusal, named by request hash. A re-send of a
+    request already answered moves the earlier answer to `answers/history/` first, stamped with when it was kept, so
+    the newest answer is the one in force (a refusal never sits beside an older response) and none is lost."""
     ANSWERS.mkdir(parents=True, exist_ok=True)
     h = request_hash(payload)
+    old = [ANSWERS / f"{h}_{k}.json" for k in ("request", "response", "refusal")]
+    if any(f.exists() for f in old[1:]):
+        hist = ANSWERS / "history"
+        hist.mkdir(exist_ok=True)
+        stamp = time.strftime("%Y%m%dT%H%M%S", time.localtime(max(f.stat().st_mtime for f in old if f.exists())))
+        for f in old:
+            if f.exists():
+                f.replace(hist / f"{h}_{stamp}_{f.name.split('_', 1)[1]}")
     (ANSWERS / f"{h}_request.json").write_text(json.dumps(payload, indent=1), encoding="utf-8")
     if response is not None:
         p = ANSWERS / f"{h}_response.json"

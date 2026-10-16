@@ -6,14 +6,19 @@ ISO's stored answer for exactly that request; the rest sent one call each after 
   B  rating: every GL and Property sample, uploaded as its file's text, rates as the engine does; the stored answer
      is found from the text as uploaded (a browser's JSON round trip would turn 1.0 into 1 and miss it)
   C  sending: a request ISO already answered is reused, no call; otherwise the route hands the request as uploaded to
-     the Workbench's send (ad hoc lane, the reason past the cap)
+     the Workbench's send (ad hoc lane, the reason past the cap); asked again with reuse off, it is sent though
+     stored, and the earlier answer moves to history
   D  the page: the first tab and where /console opens; app-only in the read-only snapshot; the JS parses
   E  generating: a working request for a line and state (the Workbench's base request), rated like an upload
+  F  a row's Download: a .zip of input and output JSON for our engine, RaaS and deviated; engine/input.json
+     uploads again as the request
 
     python tests/verify_console_upload.py
 """
 from __future__ import annotations
 
+import base64
+import io
 import json
 import os
 import re
@@ -21,6 +26,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import zipfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -130,6 +136,32 @@ def part_c():
           code == 200 and r.get("sent") and seen.get("line") == "CP" and seen.get("payload") == req
           and seen.get("reuse") is True and seen.get("override") == "triage", seen)
 
+    # asking again: a stored request goes to ISO when the page asks with reuse off ("Ask ISO again")
+    from console import store
+
+    class Stand:
+        calls = []
+
+        def rate(self, payload):
+            self.calls.append(payload)
+    stand = Stand()
+    r = WB.send("GL", json.loads(text), reuse=False, client=stand)
+    check("C4 with reuse off, a request ISO already answered is sent again", r.get("sent") and len(stand.calls) == 1, r)
+    real_dir = store.ANSWERS
+    store.ANSWERS = TMP / "answers"
+    try:
+        p = {"body": {"SchemeKeys": {"ProductName": "General Liability OH"}}}
+        h = store.request_hash(p)
+        store.save_answer(p, {"Body": {"first": 1}}, None)
+        store.save_answer(p, None, "ISO refused the second time")
+        e = store.answer_entry(h, p)
+        hist = sorted(f.name for f in (store.ANSWERS / "history").iterdir())
+        check("C5 the newest answer is in force (a refusal never sits beside an older response); the earlier is kept",
+              e["outcome"] == "refused" and not (store.ANSWERS / f"{h}_response.json").exists()
+              and [n.rsplit("_", 1)[-1] for n in hist] == ["request.json", "response.json"], (e["outcome"], hist))
+    finally:
+        store.ANSWERS = real_dir
+
 
 def part_e():
     print("E. generating a request")
@@ -147,6 +179,38 @@ def part_e():
     g = get({"lob": "GL", "state": "OH"})
     check("E3 it is sent as text, as an uploaded file is (1.0 stays 1.0)", isinstance(g["text"], str)
           and json.loads(g["text"]) == WB.build("GL", "OH"))
+
+
+def unzip(j):
+    with zipfile.ZipFile(io.BytesIO(base64.b64decode(j["zip"]))) as z:
+        return {n: json.loads(z.read(n)) for n in z.namelist()}
+
+
+def part_f():
+    print("F. a row's Download: a zip of inputs and outputs")
+    gl = (SAMPLES / "OH" / "submission.json").read_text(encoding="utf-8")
+    for lob, text in (("GL", gl), ("CP", json.dumps(pr.sample("OH")))):
+        key, prem = ("GeneralLiability", "Premium") if lob == "GL" else ("CommercialProperty", "ErcCalculatedTotalPremium")
+        _, j = post("download", {"text": text})
+        z = unzip(j)
+        sm, out = z["summary.json"], z["engine/output.json"]
+        _, up = post("upload", {"text": text})
+        check(f"F1 {lob}: engine input is the request, its output the response Body, premium in the summary",
+              z["engine/input.json"] == json.loads(text) and sm["engine"]["premium"] == up["premium"]
+              and str(out["Body"][key][0][prem]) == up["premium"], (sm["engine"].get("premium"), up.get("premium")))
+        asked = sm["raas"]["outcome"] == "rated"
+        check(f"F2 {lob}: RaaS input and output when ISO was asked, input only when not",
+              ("raas/output.json" in z and "Body" in z["raas/output.json"] if asked else "raas/output.json" not in z)
+              and "raas/input.json" in z and (asked == bool(up.get("stored"))), sorted(z))
+        _, again = post("upload", {"text": json.dumps(z["engine/input.json"])})
+        check(f"F3 {lob}: engine/input.json uploads again as its request", again.get("premium") == up["premium"], again)
+    co = WB.companies()[0]["code"]
+    _, j = post("download", {"text": gl, "company": co})
+    z = unzip(j)
+    check("F4 with a writing company: deviated input and output, the request RaaS is sent is non-deviated",
+          {"deviated/input.json", "deviated/output.json"} <= set(z) and z["summary.json"]["deviated"]["outcome"] == "rated"
+          and z["deviated/input.json"]["header"]["WritingCompany"] == co
+          and "WritingCompany" not in (z["raas/input.json"].get("header") or {}), sorted(z))
 
 
 def part_d():
@@ -173,7 +237,7 @@ def part_d():
 
 if __name__ == "__main__":
     try:
-        part_a(); part_b(); part_c(); part_d(); part_e()
+        part_a(); part_b(); part_c(); part_d(); part_e(); part_f()
     finally:
         shutil.rmtree(TMP, ignore_errors=True)
     n = sum(ok for _, ok in RESULTS)

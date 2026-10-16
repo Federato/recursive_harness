@@ -162,13 +162,16 @@ def workbench(method: str, op: str, query: dict, b: dict):
                 return js(400, {"error": str(exc)[:400]})
             return js(200, WB.worksheet(who["line"], req, (b.get("company") or "").strip(), b.get("policyType") or "New"))
         if op == "download" and method == "POST":
-            # an Upload & Compare row's Download: the request and every output (technical, ISO's stored, deviated)
+            # an Upload & Compare row's Download: a .zip of input and output JSON for our engine, RaaS and deviated,
+            # handed to the page as base64 (the page saves it as a file)
+            import base64
             try:
                 req = _one_request(b)
                 who = WB.identify(req)
             except (ValueError, IndexError) as exc:
                 return js(400, {"error": str(exc)[:400]})
-            return js(200, WB.download(who["line"], req, (b.get("company") or "").strip(), b.get("policyType") or "New"))
+            files = WB.download(who["line"], req, (b.get("company") or "").strip(), b.get("policyType") or "New")
+            return js(200, {"files": list(files), "zip": base64.b64encode(WB.download_zip(files)).decode("ascii")})
         if op == "formula" and method == "POST":
             # how the premium was computed: each step as arithmetic with its factors, checked against the engine
             return js(200, WB.formulas(str(b.get("token") or ""), b.get("side") or "both"))
@@ -219,13 +222,10 @@ def workbench(method: str, op: str, query: dict, b: dict):
 
 
 def _one_request(b: dict) -> dict:
-    """The request a workbench route was handed: parsed from the text as uploaded, one item of a list, and the request
-    inside a row's Download (input and outputs in one file) when that file is uploaded again."""
+    """The request a workbench route was handed: parsed from the text as uploaded, or one item of a list."""
     req = json.loads(b["text"]) if "text" in b else b.get("request")
     if isinstance(req, list):
         req = req[int(b.get("index") or 0)]
-    if isinstance(req, dict) and isinstance((req.get("input") or {}).get("request"), dict):
-        req = req["input"]["request"]
     return req
 
 
@@ -1565,7 +1565,7 @@ UP_HTML = """<section class="screen" id="s-compare" hidden><div class="mx-wrap">
     <b>Drop request files here, or choose files</b><span class="mx-msg">.json · one request per file, or a list of them · GL and Property can be mixed</span></label>
   <details class="up-paste"><summary>Or paste a request</summary><textarea id="up-text" spellcheck="false" placeholder='{"header": {...}, "body": {"SchemeKeys": {"ProductName": "General Liability OH", ...}, ...}}'></textarea>
     <div class="td-tools"><button class="btn" id="up-add">Add and rate · free</button></div></details>
-  <div class="td-tools"><button class="btn" id="up-send" disabled>Compare with ISO…</button><button class="btn" id="up-clear">Clear</button><span class="mx-msg" id="up-msg"></span></div>
+  <div class="td-tools"><button class="btn" id="up-send" disabled>Compare with ISO…</button><label class="mx-msg" title="Ask ISO even where an answer is stored; the newest answer is the one in force, earlier ones are kept in history"><input type="checkbox" id="up-fresh"> Ask again where stored</label><button class="btn" id="up-clear">Clear</button><span class="mx-msg" id="up-msg"></span></div>
   <div id="up-confirm"></div>
   <div id="up-out"><div class="mx-empty">No requests yet.</div></div>
   <div id="up-ws"></div>
@@ -1646,7 +1646,8 @@ function upRate(row){row.busy='rating';
   const co=UP.company||'',pt=UP.pt||'New';
   return UP.q=UP.q.then(()=>wbJSON('/api/console/workbench/upload',{text:row.text,index:row.index,company:co,policyType:pt}).then(r=>{row.busy='';if(r.error)row.err=r.error;else{row.err='';row.r=r;}upDraw();})
     .catch(e=>{row.busy='';row.err=String(e);upDraw();}));}
-function upNeeds(){return UP.rows.filter(x=>x.r&&!x.r.stored&&!x.busy);}
+// the rows a Compare sends: those ISO has not answered, or every rated row with "Ask again where stored" ticked
+function upNeeds(){const f=UP.fresh;return UP.rows.filter(x=>x.r&&!x.busy&&(f||!x.r.stored));}
 function upVerdict(r){const s=r.stored;
   if(!s)return '<span class="mx-msg">not asked yet</span>';
   if(s.outcome!=='rated')return '<span class="up-res"><span class="chip untested">·</span><span>ISO refused<div class="mx-msg">'+esc((s.message||'').slice(0,160))+'</div></span></span>';
@@ -1665,9 +1666,9 @@ function upDraw(){
       const iso=x.busy==='sending'?'<span class="mx-msg">asking ISO…</span>':!s?'<span class="mx-msg">—</span>':s.outcome==='rated'?esc(money(s.iso))+'<div class="mx-msg">stored '+esc((s.stored_at||s.date||'').slice(0,10))+(s.freshness==='stale'?' · stale':'')+'</div>':'refused';
       return '<tr'+(UP.sel===x.id?' class="sel"':'')+'><td class="file">'+esc(x.name)+(r.outcome!=='rated'?'<div class="mx-msg">'+esc((r.detail||'').slice(0,200))+'</div>':'')+upNotes(r)+'</td><td>'+(r.line==='GL'?'General Liability':'Property')+' · '+esc(r.state)+'</td><td>'+esc(r.effective)+
         '</td><td class="v">'+ours+'</td><td class="v">'+iso+'</td><td class="v">'+upCarrier(x)+'</td><td>'+upVerdict(r)+'</td><td>'+
-        '<span class="acts">'+(s&&s.outcome==='rated'?'<a href="#trace?lob='+r.line+'&scenario='+encodeURIComponent(s.scenario)+'">Trace Diff</a>':'')+'<a data-ws="'+x.id+'" title="Every field, Technical | ISO | Deviated">Worksheet</a><a data-dl="'+x.id+'" title="Save the rating input and outputs (technical, ISO, deviated) as one .json file">Download</a><a data-ed="'+x.id+'" title="Copy into the paste box to change it">Edit</a></span>'+rm+'</td></tr>';}).join('')+'</table>';
+        '<span class="acts">'+(s&&s.outcome==='rated'?'<a href="#trace?lob='+r.line+'&scenario='+encodeURIComponent(s.scenario)+'">Trace Diff</a>':'')+'<a data-ws="'+x.id+'" title="Every field, Technical | ISO | Deviated">Worksheet</a><a data-dl="'+x.id+'" title="Save input and output JSON for our engine, RaaS and deviated as one .zip">Download</a>'+(s&&!x.busy&&!UP.busy?'<a data-again="'+x.id+'" title="Spend one call to ask ISO again, though an answer is stored">Ask ISO again</a>':'')+'<a data-ed="'+x.id+'" title="Copy into the paste box to change it">Edit</a></span>'+rm+'</td></tr>';}).join('')+'</table>';
   const n=upNeeds().length,b=document.getElementById('up-send');
-  b.disabled=!n||UP.busy;b.textContent=n?'Compare with ISO · '+n+' call'+(n>1?'s':'')+'…':'Compare with ISO…';
+  b.disabled=!n||UP.busy;b.textContent=n?(UP.fresh?'Ask ISO again':'Compare with ISO')+' · '+n+' call'+(n>1?'s':'')+'…':'Compare with ISO…';
   upSide();
 }
 // B-07 part 4/5: our notices (not offered; R30 a coverage priced $0 or $1 silently; R31) and ISO's own messages
@@ -1828,24 +1829,25 @@ function upSide(){
     k('Could not be read',UP.rows.filter(x=>x.err).length)+'</table><div class="mx-msg">Rated with strict ERC and ROUND_HALF_UP, as the Workbench does; for another mode use <a href="/">the rating page</a>. '+
     'A request ISO already answered is never sent again: its stored answer is used, free. Each answer ISO gives is stored, so it shows in Trace Diff and counts as evidence.</div>';
 }
-function upSendDialog(){
-  const need=upNeeds(),el=document.getElementById('up-confirm');if(!need.length)return;
+function upSendDialog(only){
+  const need=only?[only]:upNeeds(),el=document.getElementById('up-confirm');if(!need.length)return;
+  const again=need.filter(x=>x.r.stored).length;
   fetch('/api/console/cap').then(r=>r.json()).then(c=>{
     const ad=c.lanes.find(l=>l.key==='adhoc'),room=Math.max(0,Math.min(ad.cap-ad.used,c.left)),over=need.length>room,n=need.length,pl=n>1?'s':'';
     el.innerHTML='<div class="wb-conf'+(over?' full':'')+'"><b>Ask ISO about '+n+' request'+pl+'?</b>'+
-      '<div>No stored answer covers '+(n>1?'them':'it')+': this spends <b>'+n+' call'+pl+'</b> from the ad hoc lane, one at a time, each logged in the ledger.</div>'+
+      '<div>'+(again?(again===n?(n>1?'All have':'It has')+' a stored answer; ISO is asked again':again+' of '+n+' have a stored answer; ISO is asked again for those too')+'. The new answer is the one in force; the earlier one is kept in history. ':'No stored answer covers '+(n>1?'them':'it')+': ')+'this spends <b>'+n+' call'+pl+'</b> from the ad hoc lane, one at a time, each logged in the ledger.</div>'+
       '<div class="mx-msg">Ad hoc lane: '+ad.used+' of '+ad.cap+' used today · '+c.left+' of '+c.cap+' left in all'+(over?' · <b>'+(n-room)+' would go past the cap</b>: they need a reason, logged with each.':'')+'</div>'+
       '<div class="td-tools">'+(over?'<input id="up-reason" placeholder="Reason for going past the cap" style="flex:1">':'')+'<button class="btn" id="up-go">Send · '+n+' call'+pl+'</button><button class="btn" id="up-cancel">Cancel</button></div><div class="mx-msg" id="up-cmsg"></div></div>';
     document.getElementById('up-cancel').onclick=()=>{el.innerHTML='';};
     document.getElementById('up-go').onclick=()=>{const rs=document.getElementById('up-reason'),why=rs?rs.value.trim():'';
       if(over&&!why){document.getElementById('up-cmsg').textContent='A reason is needed past the cap.';return;}
-      el.innerHTML='';upSend(need,why);};});
+      el.innerHTML='';upSend(need,why,!!again);};});
 }
-async function upSend(rows,why){
+async function upSend(rows,why,fresh){
   UP.busy=true;const msg=document.getElementById('up-msg');let sent=0,reused=0,stop='';
   for(const row of rows){
     row.busy='sending';upDraw();msg.textContent='Asking ISO: '+(sent+reused+1)+' of '+rows.length+'…';
-    let j;try{j=await wbJSON('/api/console/workbench/upload-send',{text:row.text,index:row.index,reuse:true,override:why,company:(row.r&&row.r.company)||''});}catch(e){j={error:String(e)};}
+    let j;try{j=await wbJSON('/api/console/workbench/upload-send',{text:row.text,index:row.index,reuse:!fresh,override:why,company:(row.r&&row.r.company)||''});}catch(e){j={error:String(e)};}
     row.busy='';
     if(j.error){stop=(j.capped?'Stopped at the cap: ':'Stopped: ')+j.error;upDraw();break;}
     j.reused?reused++:sent++;row.r.stored=j.stored;upDraw();}
@@ -1854,13 +1856,14 @@ async function upSend(rows,why){
   upDraw();
 }
 function upItem(x){const v=JSON.parse(x.text);return JSON.stringify(Array.isArray(v)?v[x.index]:v,null,1);}
-// a row's Download: the rating input (the request; with a company, also what ISO is sent) and every output -- technical,
-// ISO's stored request and response, deviated -- in one .json file, rated afresh on the server (free, never asks ISO)
+// a row's Download: a .zip with input.json and output.json for our engine, RaaS (ISO's stored request and response;
+// what it would be sent when not asked) and, with a company, deviated, plus summary.json -- rated afresh on the
+// server (free, never asks ISO)
 function upDownload(x){const r=x.r,co=(r&&r.company)||'',base=(r?r.line+'-'+r.state+(x.gen?'':'-'+x.name.replace(/\.json.*$/i,'')):x.name.replace(/\.json.*$/i,''))+(co?'-'+co:'');
-  const save=(t,n)=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:'application/json'}));a.download=n;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);};
+  const save=(t,n,ty)=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:ty||'application/json'}));a.download=n;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);};
   if(!r){save(x.list?upItem(x):x.text,base+'.json');return;}
   wbJSON('/api/console/workbench/download',{text:x.text,index:x.index,company:co,policyType:UP.pt||'New'})
-    .then(j=>{if(j.error)throw new Error(j.error);save(JSON.stringify(j,null,1),base+'-input-output.json');})
+    .then(j=>{if(j.error)throw new Error(j.error);save(Uint8Array.from(atob(j.zip),c=>c.charCodeAt(0)),base+'.zip','application/zip');})
     .catch(e=>{document.getElementById('up-msg').textContent='Download failed: '+e.message;});}
 function upEdit(x){const d=document.querySelector('.up-paste'),t=document.getElementById('up-text');d.open=true;t.value=x.list?upItem(x):x.text;
   UP.editName='Edited '+x.name.replace(/^(Generated|Edited) /,'');t.focus();t.setSelectionRange(0,0);t.scrollTop=0;t.scrollIntoView({block:'center'});}
@@ -1878,13 +1881,16 @@ function upFiles(files){[...files].forEach(f=>f.text().then(t=>upAdd(f.name,t)))
   ['dragleave','drop'].forEach(e=>d.addEventListener(e,ev=>{ev.preventDefault();d.classList.remove('over');}));
   d.addEventListener('drop',ev=>upFiles(ev.dataTransfer.files));
   document.getElementById('up-add').onclick=()=>{const t=document.getElementById('up-text');if(!t.value.trim())return;upAdd(UP.editName||'Pasted request',t.value);t.value='';UP.editName='';};
-  document.getElementById('up-send').onclick=upSendDialog;
+  document.getElementById('up-send').onclick=()=>upSendDialog();
+  document.getElementById('up-fresh').onchange=e=>{UP.fresh=e.target.checked;upDraw();};
   document.getElementById('up-clear').onclick=()=>{if(UP.busy)return;UP.rows=[];document.getElementById('up-msg').textContent='';document.getElementById('up-confirm').innerHTML='';upDraw();};
   document.getElementById('up-out').addEventListener('click',ev=>{const dv=ev.target.closest('[data-dv]');
     if(dv){UP.sel=Number(dv.dataset.dv);upDraw();return;}
     const ws=ev.target.closest('[data-ws]');if(ws){const x=UP.rows.find(r=>String(r.id)===ws.dataset.ws);if(x)wsOpen(x);return;}
     const dl=ev.target.closest('[data-dl]'),ed=ev.target.closest('[data-ed]');
     if(dl||ed){const x=UP.rows.find(r=>String(r.id)===(dl||ed).dataset[dl?'dl':'ed']);if(x)(dl?upDownload:upEdit)(x);return;}
+    const ag=ev.target.closest('[data-again]');
+    if(ag){const x=UP.rows.find(r=>String(r.id)===ag.dataset.again);if(x)upSendDialog(x);return;}
     const b=ev.target.closest('[data-x]');if(!b||UP.busy)return;UP.rows=UP.rows.filter(x=>String(x.id)!==b.dataset.x);upDraw();});
   document.getElementById('up-lob').onchange=upGenStates;
   document.getElementById('up-company').onchange=upRerate;document.getElementById('up-pt').onchange=upRerate;

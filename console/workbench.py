@@ -225,6 +225,96 @@ def send_technical(line: str, payload: dict, company: str, reuse: bool = True, o
     return send(line, plain, reuse=reuse, override=override, client=client)
 
 
+def response_of(tree, line: str) -> dict:
+    """Our rated tree in the shape of ISO's response `Body`: the line's records only, the `XTable` containers ISO does
+    not emit dropped (`worksheet.normalise`'s rule), every record a list as ISO writes it, empty fields left out."""
+    def rec(node) -> dict:
+        out: dict = {}
+        for c in node.children:
+            kids = c.children
+            if kids and c.tag.endswith("Table") and all(k.tag == c.tag[:-5] for k in kids):
+                out.setdefault(c.tag[:-5], []).extend(rec(k) for k in kids)
+            elif kids:
+                out.setdefault(c.tag, []).append(rec(c))
+            elif c.text not in (None, ""):
+                out[c.tag] = c.text
+        return out
+    key = "CommercialProperty" if line == "CP" else "GeneralLiability"
+    return {k: v for k, v in rec(tree).items() if k == key}
+
+
+def download(line: str, payload: dict, company: str = "", policy_type: str = "New") -> dict:
+    """One request's rating inputs and outputs, file by file (the Upload & Compare row's Download, zipped by
+    `download_zip`): `engine/` our engine's Technical (pure ISO) request and rated response; `raas/` ISO's stored
+    request and response for the non-deviated payload when ISO was asked (never asks now; when not, `input.json` is
+    what RaaS would be sent and there is no output); with a writing company, `deviated/`; `summary.json` the outcomes
+    and premiums side by side. Free."""
+    import json
+    req = copy.deepcopy(payload)
+    if company:
+        from deviations.engine import iso_request
+        req.setdefault("header", {})
+        req["header"]["WritingCompany"] = company
+        req["header"]["PolicyType"] = policy_type or "New"
+        plain, _ = iso_request(req, "CF" if line == "CP" else "GL")
+    else:
+        plain = req
+
+    def side(complete, premium, tree, detail=""):
+        if not complete:
+            return {"outcome": "refused", "detail": str(detail)[:400]}, {"outcome": "refused", "detail": str(detail)}
+        return {"outcome": "rated", "premium": str(premium)}, {"Body": response_of(tree, line)}
+
+    if line == "GL":
+        from gl_engine.rating import Kernel
+        r = Kernel().rate(req, with_technical=bool(company))
+        t = r.technical if company else r
+        tech = side(t is not None and t.complete, t and t.premium, t and t.tree, getattr(t, "stopped", "") or "")
+        if company:
+            dev = side(r.complete, r.premium, r.tree, r.stopped or (r.deviation or {}).get("refused", ""))
+    else:
+        from cf_engine.rating import rate as cf_rate
+        r = cf_rate(req, with_technical=bool(company))
+        t = r.technical if company else r
+        why = lambda x: "; ".join(y.get("detail", "") for y in (x.outcome or {}).get("reasons", []))  # noqa: E731
+        tech = side(t is not None and t.complete, t and t.premium, t and t.tree, why(t) if t is not None else "")
+        if company:
+            dev = side(r.complete, r.premium, r.tree, why(r))
+    files = {"engine/input.json": plain, "engine/output.json": tech[1]}
+    iso: dict = {"outcome": "not asked", "note": "raas/input.json is what RaaS would be sent; ISO has not answered it"}
+    files["raas/input.json"] = plain
+    e = store.lookup(plain)
+    if e:
+        kept = {f.rsplit("_", 1)[-1]: f for f in e.get("files", [])}
+        s = stored(plain) or {}
+        iso = {"outcome": e["outcome"], "premium": s.get("iso"), "date": e.get("date"),
+               "stored_at": e.get("stored_at", ""), "message": e.get("message", "")}
+        for part, name in (("request", "input"), ("response", "output")):
+            f = kept.get(f"{part}.json")
+            if f and (ROOT / f).exists():
+                files[f"raas/{name}.json"] = json.loads((ROOT / f).read_text(encoding="utf-8"))
+    summary = {"kind": "rating-test-console download", "line": line, **identify(payload),
+               "writingCompany": company or None, "policyType": (policy_type or "New") if company else None,
+               "engine": tech[0], "raas": iso}
+    if company:                         # D21: RaaS is (or would be) sent the non-deviated payload only
+        files["deviated/input.json"], files["deviated/output.json"] = req, dev[1]
+        summary["deviated"] = dev[0]
+        summary["deviation"] = {k: (r.deviation or {}).get(k) for k in ("filings", "edition", "waterfall", "warnings")}
+    return {"summary.json": summary, **files}
+
+
+def download_zip(files: dict) -> bytes:
+    """`download`'s files as one .zip, each an indented JSON file at its path."""
+    import io
+    import json
+    import zipfile
+    buf = io.BytesIO()
+    with zipfile.ZipFile(buf, "w", zipfile.ZIP_DEFLATED) as z:
+        for name, obj in files.items():
+            z.writestr(name, json.dumps(obj, indent=1, default=str))
+    return buf.getvalue()
+
+
 _GROUP_FIELD = {"GroupI": "GroupILCMApplied", "GroupII": "GroupIILCMApplied", "Broad": "BroadLCMApplied",
                 "Special": "SpecialLCMApplied", "Earthquake": "EarthquakeLCMApplied"}
 
