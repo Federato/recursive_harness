@@ -33,7 +33,7 @@ from functools import lru_cache
 from pathlib import Path
 
 from ..errors import TableError
-from .discovery import read_text
+from .discovery import exists, read_text
 
 # --------------------------------------------------------------------- shape
 
@@ -319,17 +319,17 @@ def load_table(content: Path, kind: str, name: str, package: str,
     defsuf, datasuf, cat = _SUFFIX[kind]
     dpath = content / cat / f"{name}Def{defsuf}"
     cpath = content / cat / f"{name}{datasuf}"
-    if not dpath.exists() and not cpath.exists():
+    if not exists(dpath) and not exists(cpath):
         raise TableError(f"{package}: no {kind} table named {name!r}")
 
-    if dpath.exists():
+    if exists(dpath):
         d = parse_def(dpath, name, kind)
     else:
         d = TableDef(name, kind, declared=False)
 
     header: list[str] = []
     data: list[list[str]] = []
-    if cpath.exists():
+    if exists(cpath):
         rdr = csv.reader(io.StringIO(read_text(cpath)))
         for i, row in enumerate(rdr):
             if i == 0:
