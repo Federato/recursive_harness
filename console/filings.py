@@ -262,7 +262,10 @@ def board() -> dict:
         x["plain"] = {"status": P.CELL.get(x["status"], x["status"]),
                       "since": P.money_date(x.get("new_eff")) if x.get("new_eff") else ""}
     cols = sorted({(x["line"], x["state"]) for x in cells})
-    return {"companies": companies, "cells": cells,
+    # the carrier picker: every carrier in the store, by its own name (carrier.json), even one with no filing yet
+    carriers = [{"code": d.name, "name": _json(d / "carrier.json").get("name") or d.name}
+                for d in sorted(base.iterdir()) if (d / "carrier.json").exists()] if base.exists() else []
+    return {"companies": companies, "cells": cells, "carriers": carriers,
             "columns": [{"line": a, "state": b, "plain": f"{P.line(a)} · {P.state(b)}"} for a, b in cols]}
 
 

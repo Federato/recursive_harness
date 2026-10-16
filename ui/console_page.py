@@ -1958,7 +1958,8 @@ if((location.hash||'').startsWith('#proof'))pfLoad();
 FILINGS_HTML = """<section class="screen" id="s-filings" hidden><div class="mx-wrap"><div class="mx-main">
   <div class="mx-head"><div><div class="eyebrow">Carrier deviations</div><h1>Carrier rate filings</h1></div>
     <p>How each insurer's state-approved rates differ from ISO's standard rates, and what that does to premiums.</p>
-    <div class="td-tools"><label class="btn" for="fl-file">Upload a filing packet…</label><input type="file" id="fl-file" accept=".zip" hidden>
+    <div class="td-tools"><label class="td-chk" for="fl-carrier">Carrier <select id="fl-carrier"><option value="">All carriers</option></select></label>
+      <label class="btn" for="fl-file">Upload a filing packet…</label><input type="file" id="fl-file" accept=".zip" hidden>
       <label class="td-chk"><input type="checkbox" id="fl-tech"> Show technical details</label></div></div>
   <div id="fl-up"></div>
   <div class="cap2" style="margin-top:6px">Who has filed where</div>
@@ -2003,7 +2004,11 @@ details.fl-more{margin-top:8px;font-size:12px}details.fl-more summary{cursor:poi
 """
 
 FILINGS_JS = r"""
-const FL={d:null,b:null,sel:null,tab:'overview',tech:false,up:null};
+const FL={d:null,b:null,sel:null,tab:'overview',tech:false,up:null,carrier:''};
+// the carrier picker: '' is every carrier; remembered per viewer, quietly, where the browser allows it
+try{FL.carrier=localStorage.getItem('fl-carrier')||'';}catch(e){}
+function flMine(x){return !FL.carrier||x.carrier===FL.carrier;}
+function flFilings(){return FL.d?FL.d.filings.filter(flMine):[];}
 const FL_COV={'Premises/Operations':'Premises','Products/Completed Ops':'Products','Group I':'Fire & lightning','Group II':'Wind & hail',
   'Broad':'Broad form','Special':'Special form','Earthquake':'Earthquake'};
 const FL_GLOSS=[['ISO','Insurance Services Office: publishes the standard rates, rules and forms most US commercial insurers start from.'],
@@ -2018,13 +2023,14 @@ function flKey(f){return f.id||f.serff;}
 function flChip(ok){return ok?'<span class="chip verified">✓</span> ':'<span class="chip mismatch">×</span> ';}
 function flPct(v){return v==null?'—':(Number(v)>0?'+':'')+esc(String(v))+'%';}
 function flCov(g){return esc(FL_COV[g]||g);}
-function flSel(){return FL.d&&FL.d.filings.find(x=>flKey(x)===FL.sel||x.serff===FL.sel);}
+function flSel(){return flFilings().find(x=>flKey(x)===FL.sel||x.serff===FL.sel);}
 function flBoard(){const b=FL.b,el=document.getElementById('fl-board');if(!b)return;
-  if(!b.cells.length){el.innerHTML='<div class="mx-empty">No filings yet. Upload a filing packet to start.</div>';return;}
-  const key=c=>c.line+'|'+c.state,sel=flSel();
-  el.innerHTML='<div class="fl-mdw"><table class="fl-bd"><tr><th></th>'+b.columns.map(c=>'<th>'+esc(c.plain||c.line+' · '+c.state)+'</th>').join('')+'</tr>'+
-    b.companies.map(co=>'<tr><td title="'+esc(co.code+(co.naic?' · NAIC '+co.naic:''))+'"><b>'+esc(co.name||co.code)+'</b></td>'+
-      b.columns.map(col=>{const c=b.cells.find(x=>x.company===co.code&&key(x)===key(col));
+  const key=c=>c.line+'|'+c.state,sel=flSel(),cells=b.cells.filter(flMine);
+  if(!cells.length){el.innerHTML='<div class="mx-empty">'+(FL.carrier?'No filings yet for this carrier.':'No filings yet. Upload a filing packet to start.')+'</div>';return;}
+  const cols=b.columns.filter(c=>cells.some(x=>key(x)===key(c))),cos=b.companies.filter(flMine);
+  el.innerHTML='<div class="fl-mdw"><table class="fl-bd"><tr><th></th>'+cols.map(c=>'<th>'+esc(c.plain||c.line+' · '+c.state)+'</th>').join('')+'</tr>'+
+    cos.map(co=>'<tr><td title="'+esc(co.code+(co.naic?' · NAIC '+co.naic:''))+'"><b>'+esc(co.name||co.code)+'</b></td>'+
+      cols.map(col=>{const c=cells.find(x=>x.company===co.code&&key(x)===key(col));
         if(!c)return '<td class="fl-tech">ISO\u2019s rates</td>';
         const f=FL.d&&FL.d.filings.find(x=>x.versions.some(v=>v.company===c.company&&v.filing===c.filing));
         const p=c.plain||{},draft=c.status==='draft';
@@ -2072,10 +2078,11 @@ function flSide(){const el=document.getElementById('fl-side');
   el.innerHTML='<div class="cap2">How a filing gets here</div><div class="mx-msg">1. The filing is passed in the Claude Code session, which writes our review and the proposals.<br>'+
     '2. Its packet is uploaded here. Nothing is put in use by an upload.<br>3. The effect on premiums is worked out.<br>4. It is put in use, tested against ISO and logged.</div>'+
     '<div class="cap2" style="margin-top:12px">Words on this page</div><dl class="fl-gl">'+FL_GLOSS.map(([k,v])=>'<dt>'+esc(k)+'</dt><dd>'+esc(v)+'</dd>').join('')+'</dl>';}
-function flDraw(){const d=FL.d;if(!d)return;
-  document.getElementById('fl-out').innerHTML=d.filings.length?'<div class="fl-list">'+d.filings.map(f=>{const p=f.plain||{};
+function flDraw(){const d=FL.d;if(!d)return;const fs=flFilings();
+  if(!flSel()&&fs.length)FL.sel=flKey(fs[0]);
+  document.getElementById('fl-out').innerHTML=fs.length?'<div class="fl-list">'+fs.map(f=>{const p=f.plain||{};
     return '<button data-f="'+esc(flKey(f))+'" aria-pressed="'+(FL.sel===flKey(f))+'">'+esc(p.title||f.carrier+' '+f.line+' '+f.state)+(p.step&&p.step!=='Proven'?' · '+esc(p.step.toLowerCase()):'')+'</button>';}).join('')+'</div>'
-    :'<div class="mx-empty">No filings yet.</div>';
+    :'<div class="mx-empty">No filings yet'+(FL.carrier?' for this carrier':'')+'.</div>';
   const f=flSel(),el=document.getElementById('fl-entry');flBoard();flSide();
   if(!f){el.innerHTML='';return;}
   const p=f.plain||{},steps=p.steps||[],at=steps.indexOf(p.step);
@@ -2099,13 +2106,20 @@ function flUpShow(r){const el=document.getElementById('fl-up');if(!r){el.innerHT
 function flPoll(serff){fetch('/api/console/filings/jobs').then(r=>r.json()).then(d=>{const j=d.jobs.find(x=>x.serff===serff);if(!j||!FL.up)return;
   FL.up.impact=j;flUpShow(FL.up);if(j.state==='running')setTimeout(()=>flPoll(serff),3000);else flLoad();}).catch(()=>{});}
 function flLoad(){Promise.all([fetch('/api/console/filings/board').then(r=>r.json()),fetch('/api/console/filings').then(r=>r.json())])
-  .then(([b,d])=>{FL.b=b;FL.d=d;if(!FL.sel&&d.filings.length)FL.sel=flKey(d.filings[0]);flDraw();})
+  .then(([b,d])=>{FL.b=b;FL.d=d;flCarriers();flDraw();})
   .catch(e=>{document.getElementById('fl-board').innerHTML='<div class="mx-empty">Could not load the filings: '+esc(String(e))+'</div>';});}
 function flPick(ev){const x=ev.target.closest('[data-f]');if(!x)return;FL.sel=x.dataset.f;flDraw();}
 document.getElementById('fl-out').addEventListener('click',flPick);
 document.getElementById('fl-board').addEventListener('click',flPick);
 document.getElementById('fl-entry').addEventListener('click',ev=>{const x=ev.target.closest('[data-tab]');if(!x)return;FL.tab=x.dataset.tab;flDraw();});
 document.getElementById('fl-tech').addEventListener('change',ev=>{FL.tech=ev.target.checked;flDraw();});
+// the carrier picker: every carrier in the store; a remembered carrier that has gone falls back to all
+function flCarriers(){const sel=document.getElementById('fl-carrier'),cs=(FL.b&&FL.b.carriers)||[];
+  if(FL.carrier&&!cs.some(c=>c.code===FL.carrier))FL.carrier='';
+  sel.innerHTML='<option value="">All carriers</option>'+cs.map(c=>'<option value="'+esc(c.code)+'">'+esc(c.name)+'</option>').join('');
+  sel.value=FL.carrier;}
+document.getElementById('fl-carrier').addEventListener('change',ev=>{FL.carrier=ev.target.value;FL.sel=null;
+  try{localStorage.setItem('fl-carrier',FL.carrier);}catch(e){}flDraw();});
 document.getElementById('fl-file').addEventListener('change',ev=>{const f=ev.target.files[0];if(!f)return;const rd=new FileReader();
   document.getElementById('fl-up').innerHTML='<div class="fl-card mx-msg">Reading '+esc(f.name)+'…</div>';
   rd.onload=()=>{const data=String(rd.result).split(',')[1]||'';

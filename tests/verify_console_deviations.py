@@ -11,7 +11,7 @@
   G  why this value: a worksheet value's ancestry from the rating graph, its sources, the carrier's path marked
   H  Carrier Filings: the filings log, each filing's sources re-hashed and openable, each company's versions
   I  the worksheet's Formula view: each premium as arithmetic with its actual factors, checked against the engine
-  J  B-20's demo view: the filings board (company x line and state), each filing's rows, its impact previews
+  J  B-20's demo view: the filings board (company x line and state, a carrier picker), each filing's rows, its impact previews
      (built and draft), its filing sheet rendered, and its proving suite's last run
 
     python tests/verify_console_deviations.py
@@ -500,6 +500,10 @@ def part_j():
           and f["plain"]["steps"] == ["Received", "Reviewed", "Impact checked", "In use", "Proven"], codes[:4] or ufc["plain"])
     check("J13 the page has the technical switch, the glossary and plain tab names",
           all(k in html for k in ('id="fl-tech"', "Words on this page", "Effect on premium", "What changes", "Our review")))
+    check("J14 the carrier picker: the board lists every carrier in the store by name, and the page filters by it",
+          [c["code"] for c in b.get("carriers", [])] == ["UFG"] and b["carriers"][0]["name"] == "UFG Insurance"
+          and all(k in html for k in ('id="fl-carrier"', "All carriers", "function flMine", "flFilings()")),
+          b.get("carriers"))
 
 
 def main() -> int:

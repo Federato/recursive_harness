@@ -12,7 +12,7 @@ SHA-256. Check a copy with `sha256sum` against the hash below.
 
 | # | Carrier | Companies | Line | State | SERFF | Effective | Status |
 |---|---|---|---|---|---|---|---|
-| [DEV-003](#dev-003) | UFG | UFC, ADD | GL | IA | UNFG-134374972 | 2025-07-15 new · 2025-11-01 renewal | Live, proved (v2, 38 offline; live to redo unpinned) |
+| [DEV-003](#dev-003) | UFG | UFC, ADD | GL | IA | UNFG-134374972 | 2025-07-15 new · 2025-11-01 renewal | Live, proved (v2, 38 offline + 3 live) |
 | [DEV-002](#dev-002) | UFG | UFC, LAF | CF | AL | UNFG-134461534 | 2025-07-15 new · 2025-11-01 renewal | Live, proved (LCMs; v2 minimum and terrorism) |
 | [DEV-001](#dev-001) | UFG | UFC, ADD | CF | IA | UNFG-134289779 | 2025-06-01 new · 2025-10-01 renewal | Live, proved (T1–T10) |
 
@@ -35,7 +35,7 @@ supersedes.
 
 ## DEV-003
 
-**UFG Iowa Commercial General Liability loss cost multipliers**: *Live, proved (v2, 38 offline checks; live check to redo on ISO's edition in force)*
+**UFG Iowa Commercial General Liability loss cost multipliers**: *Live, proved (v2, 38 offline checks, 3 live on ISO's edition in force)*
 
 **In short:** UFG filed loss cost multipliers (LCMs) for general liability in Iowa: factors applied to ISO's loss costs, one per company and coverage. United Fire filed 0.942 for premises and operations (6% below ISO) and 1.789 for products and completed work (79% above); Addison filed 1.272 and 2.415 (27% and 142% above). They apply from July 15, 2025 for new policies and November 1, 2025 for renewals, on ISO's Iowa rates in force on the policy date; specialty ("a"-rated) classes are left out. Since October 16, 2026 the filing's minimum premium (United Fire $500, Addison $625 a policy) and its experience rating expected loss ratio (68.6%) are built too. On a set of typical businesses United Fire comes out about 26% above ISO and Addison about 70%, mostly through products coverage.
 
@@ -113,15 +113,15 @@ edition in force)
   110,687 → 117,775 (UFC) and 140,105 → 150,637 (ADD), the ELR step the whole difference.
 - v2 minimum: a small risk (technical 60) is raised from 57 to $500 (UFC) and from 77 to $625 (ADD), the top-up its own
   line and waterfall step; a risk above the minimum is unchanged.
-- **Live (U8):** on 2026-10-15 ISO's service priced the pinned-edition requests exactly as we did (2,592 / 3,500 / 785).
-  With the pin gone those numbers no longer apply; re-running U8 on the edition in force costs 3 calls and waits for
-  your go. The carrier's v2 items are ours only (D21) and never go to ISO.
+- **Live (U8, 2026-10-16, 3 ISO calls, adhoc lane, your go):** ISO's service, asked the request dated 7/15/2025 with
+  UFG's LCMs written in, priced it exactly as we do on its edition in force: UFC 18501 **2,828**, Addison 18501
+  **3,818**, UFC "a"-rated 10119 **830**. (On 2026-10-15 the same check on the then-pinned edition gave 2,592 / 3,500 /
+  785, also exact.) The carrier's v2 items are ours only (D21) and never go to ISO.
 
 **Open on this filing**
 
 - The filed PDF (exception page manual), to confirm the typed values.
 - OCP on UFG's own base loss costs.
-- U8 live on the edition in force (3 calls, your go).
 - Multistate accounts stay on legacy rates until every state approves (UNFG-134564539): not modelled.
 
 ---
