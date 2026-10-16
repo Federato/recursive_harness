@@ -38,7 +38,7 @@ SCREENS = (
     ("filings", "Carrier Filings", "DEV"),
 )
 
-LANE_NAMES = {"active": "Active plans", "refresh": "Change & stale refresh", "adhoc": "Ad hoc & triage"}
+LANE_NAMES = {"active": "Planned work", "refresh": "Refreshes", "adhoc": "One-offs"}
 
 
 def cap(now: datetime | None = None) -> dict:
@@ -638,9 +638,9 @@ def page(app_only: frozenset = frozenset()) -> str:
 # Board on that line and state. Sign-off (D4) only on a Passed cell. Nothing on this screen spends a call.
 
 MATRIX_HTML = """<section class="screen" id="s-matrix" hidden><div class="mx-wrap"><div class="mx-main">
-  <div class="mx-head"><div><div class="eyebrow">What's passed · what's still needed</div><h1>Readiness Matrix</h1></div>
-    <p>Passed = every rating path in the coverage is RaaS-verified, with no open mismatches and no stale references.
-    Click a cell to see what it needs; double-click to open it on the Coverage Board.</p></div>
+  <div class="mx-head"><div><div class="eyebrow">Readiness Matrix</div><h1>Which states are ready to rely on?</h1></div>
+    <p>A coverage is ready when every way of pricing it has been checked against ISO, we agree on all of them, and
+    nothing has gone out of date. Click a cell to see what's still missing; double-click to open it on the Coverage Board.</p></div>
   <div class="mx-stats" id="mx-stats"></div>
   <div class="mx-trend"><div class="mx-trend-hd"><span>Agreement with ISO over time</span><span class="mx-key" id="mx-key"></span></div>
     <div id="mx-chart"></div></div>
@@ -936,7 +936,7 @@ h1{margin:2px 0 0;font:400 38px/1.15 var(--font-heading)}
 /*{{CSS}}*/
 </style></head><body>
 <header>
-  <div class="brand"><b>ISO Rating Test Console</b><span>Internal engine vs. ISO RaaS (UAT) · GL &amp; CP · <a href="/" title="The rating page: paste or edit one submission and rate it">Rate a submission</a></span></div>
+  <div class="brand"><b>Rating Console</b><span>Our engine, side by side with ISO's · General Liability and Property · <a href="/" title="The rating page: paste or edit one submission and rate it">Rate a submission</a></span></div>
   <nav>{{TABS}}</nav>
   <div class="cap" title="Every ISO call, wherever it starts, counts here (D21)">
     <div class="lanes"><div class="hd"><span id="cap-hd"></span><span id="cap-ov"></span></div>
@@ -958,11 +958,11 @@ const BOOT={{BOOT}};
 const FILL={active:'var(--color-accent-700)',refresh:'var(--color-accent-500)',adhoc:'var(--color-accent-300)'};
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 function drawCap(c){
-  document.getElementById('cap-hd').textContent='RaaS UAT · daily cap '+c.cap;
+  document.getElementById('cap-hd').textContent='ISO calls · '+c.cap+' a day';
   document.getElementById('cap-ov').textContent=c.overrides?c.overrides+' override'+(c.overrides>1?'s':'')+' today':'';
   document.getElementById('cap-bars').innerHTML=c.lanes.map(l=>'<div style="flex:'+l.cap+'" class="'+(l.used>=l.cap?'full':'')+
     '" title="'+esc(l.name)+': '+l.used+' of '+l.cap+'"><i style="width:'+Math.min(100,100*l.used/l.cap)+'%;background:'+FILL[l.key]+'"></i></div>').join('');
-  document.getElementById('cap-lbl').innerHTML=c.lanes.map(l=>'<div style="flex:'+l.cap+'">'+esc(l.name.split(' ')[0])+' '+l.used+'/'+l.cap+'</div>').join('');
+  document.getElementById('cap-lbl').innerHTML=c.lanes.map(l=>'<div style="flex:'+l.cap+'">'+esc(l.name)+' '+l.used+'/'+l.cap+'</div>').join('');
   document.getElementById('cap-used').textContent=c.used;
   document.getElementById('cap-left').textContent=c.left;
   document.getElementById('cap-queued').textContent=c.queued;
@@ -998,9 +998,10 @@ setInterval(()=>fetch('/api/console/cap').then(r=>r.json()).then(drawCap).catch(
 # verdict per state is `console.board.verdict`. Beside it, D18's control x state grid. Nothing here spends a call.
 
 BOARD_HTML = """<section class="screen" id="s-board" hidden><div class="mx-wrap"><div class="mx-main">
-  <div class="mx-head"><div><div class="eyebrow">Go / no-go · straight ISO build</div><h1>Coverage Board</h1></div>
-    <p>Rows: states · Columns: rating paths, grouped by coverage · Click a cell for its scenarios, a state for its
-    readiness. Number = scenarios in the cell (mismatch and stale cells show the affected count).</p>
+  <div class="mx-head"><div><div class="eyebrow">Coverage Board</div><h1>Where have we checked our work?</h1></div>
+    <p>Each row is a state and each column a way of pricing a coverage. A passed cell means ISO has priced it and we
+    agree; anything else is a gap worth a look. The number is how many requests sit in the cell. Click a cell to see
+    them, or a state to see how ready it is.</p>
     <div class="bd-lines" id="bd-lines" role="group" aria-label="Line"><button data-l="GL">General Liability</button><button data-l="CP">Commercial Property</button></div></div>
   <div class="mx-stats bd-stats" id="bd-stats"></div>
   <div class="mx-scroll bd-scroll"><div id="bd-grid" class="bd-grid"><div class="mx-loading">Loading the board…</div></div></div>
@@ -1235,9 +1236,9 @@ setInterval(()=>{if(!document.getElementById('s-board').hidden&&BD.data)bdLoad()
 # spends nothing.
 
 TRACE_HTML = """<section class="screen" id="s-trace" hidden><div class="mx-wrap"><div class="mx-main">
-  <div class="mx-head"><div><div class="eyebrow">Seeing why · ours vs ISO, step by step</div><h1>Trace Diff</h1></div>
-    <p>A stored ISO answer re-rated on today's engine and lined up field by field. The first divergent step is the
-    earliest number we computed that ISO disagrees with; what follows from it is tagged. Re-rating spends no call.</p></div>
+  <div class="mx-head"><div><div class="eyebrow">Trace Diff</div><h1>Where did we and ISO part ways?</h1></div>
+    <p>Pick a request ISO has priced. We price it again on today's engine and line the two up step by step, so you can
+    see the first number we got differently and everything that followed from it. This never uses a call.</p></div>
   <div class="td-pick"><div class="bd-lines" id="td-lines" role="group" aria-label="Line"><button data-l="CP">Commercial Property</button><button data-l="GL">General Liability</button></div>
     <input id="td-state" placeholder="State" maxlength="2" aria-label="State filter">
     <label class="td-chk"><input type="checkbox" id="td-differ"> differing only</label>
@@ -1387,15 +1388,15 @@ if((location.hash||'').startsWith('#trace'))tdRoute();else tdList();
 # every state (D19, free; committing it as a plan is RC-4's); response curves (D18); promote to the library (TC-24).
 
 WB_HTML = """<section class="screen" id="s-workbench" hidden><div class="mx-wrap"><div class="mx-main">
-  <div class="mx-head"><div><div class="eyebrow">One scenario · free, or one call</div><h1>Scenario Workbench</h1></div>
-    <p>Build a risk from ISO's own domains, rate it on our engine for free, and send it to ISO only when no stored answer
-    already covers it. Nothing here spends a call until you confirm one.</p>
+  <div class="mx-head"><div><div class="eyebrow">Scenario Workbench</div><h1>Build a risk and see what it costs</h1></div>
+    <p>Describe a business with ISO's own choices and we'll price it instantly on our engine, free. When you want ISO's
+    view too, send it; we only ask if ISO hasn't already priced the same thing, and never without your go.</p>
     <div class="bd-lines" id="wb-lines" role="group" aria-label="Line"><button data-l="GL">General Liability</button><button data-l="CP">Commercial Property</button></div></div>
   <div class="wb-top"><label>State <select id="wb-state"></select></label>
     <label id="wb-model">Mode <select id="wb-mode"></select></label><label id="wb-roundl">Rounding <select id="wb-round"></select></label></div>
   <div id="wb-inputs"></div>
-  <div class="td-tools"><button class="btn" id="wb-rate">Rate internally · free</button><button class="btn" id="wb-send">Send to RaaS · 1 call…</button>
-    <button class="btn" id="wb-where">Check where it applies · free</button><button class="btn" id="wb-every">Run in every state…</button></div>
+  <div class="td-tools"><button class="btn" id="wb-rate">Price it on our engine · free</button><button class="btn" id="wb-send">Ask ISO too · 1 call…</button>
+    <button class="btn" id="wb-where">Which states can take it? · free</button><button class="btn" id="wb-every">Price it in every state…</button></div>
   <div id="wb-confirm"></div>
   <div id="wb-out"></div>
   <div class="mx-trend"><div class="mx-trend-hd"><span>Response curve · premium by value, from the runs that varied one control</span>
@@ -1486,7 +1487,7 @@ function wbSendDialog(){
     wbJSON('/api/console/workbench/rate',body).then(r=>{
       const el=document.getElementById('wb-confirm');
       let h='<div class="wb-conf'+(full?' full':'')+'"><b>Send this scenario to ISO?</b><div>'+(r.stored?'<b>A stored answer covers this exact request.</b> Reusing it costs nothing.':'No stored answer covers it: this spends <b>1 call</b> from the ad hoc lane.')+'</div>'+
-        '<div class="mx-msg">Ad hoc lane: '+ad.used+' of '+ad.cap+' used today · '+c.left+' of '+c.cap+' left in all'+(full?' · <b>full</b>: a call needs a reason, logged with it.':'')+'</div>';
+        '<div class="mx-msg">One-offs: '+ad.used+' of '+ad.cap+' used today · '+c.left+' of '+c.cap+' left in all'+(full?' · <b>full</b>: a call needs a reason, logged with it.':'')+'</div>';
       if(r.stored)h+='<div class="td-tools"><button class="btn" id="wb-reuse">Use the stored answer · free</button>'+(full?'<input id="wb-reason" placeholder="Reason, to spend past the cap" style="flex:1">':'')+'<button class="btn" id="wb-spend">Spend a call anyway</button><button class="btn" id="wb-cancel">Cancel</button></div>';
       else h+='<div class="td-tools">'+(full?'<input id="wb-reason" placeholder="Reason for going past the cap" style="flex:1">':'')+'<button class="btn" id="wb-spend">Send · 1 call</button><button class="btn" id="wb-cancel">Cancel</button></div>';
       el.innerHTML=h+'<div class="mx-msg" id="wb-sendmsg"></div></div>';
@@ -1549,12 +1550,13 @@ addEventListener('hashchange',wbRoute);wbRoute();
 # one; the rest sent to ISO only after a confirmation that says what it spends (ad hoc lane, through the ledger).
 
 UP_HTML = """<section class="screen" id="s-compare" hidden><div class="mx-wrap"><div class="mx-main">
-  <div class="mx-head"><div><div class="eyebrow">Your requests · free to rate, one call each to ask ISO</div><h1>Upload &amp; Compare</h1></div>
-    <p>Drop in GL or Property requests in ISO's request format. Each is rated on our engine for free and set beside ISO's
-    answer when one is already stored for that exact request. Or generate a working request for any state. Asking ISO about the rest spends calls, and nothing is sent until you confirm.</p></div>
+  <div class="mx-head"><div><div class="eyebrow">Upload &amp; Compare</div><h1>Does our price match ISO's?</h1></div>
+    <p>Drop in a rating request and we'll price it on our own engine straight away, free. If ISO has already answered
+    that exact request, you'll see both prices side by side. No file to hand? Make a sample for any state. Anything ISO
+    hasn't seen yet waits for you to say go.</p></div>
   <div class="up-gen"><b>Generate a request</b>
     <label>Line <select id="up-lob"><option value="GL">General Liability</option><option value="CP">Commercial Property</option></select></label>
-    <label>State <select id="up-state"></select></label><button class="btn" id="up-gen">Generate and rate · free</button>
+    <label>State <select id="up-state"></select></label><button class="btn" id="up-gen">Make one and price it · free</button>
     <span class="mx-msg">a working request for the state: GL from ISO's own options, Property the state's sample risk</span></div>
   <div class="up-gen up-co"><b>Writing company</b>
     <label><select id="up-company"><option value="">None: ISO only</option></select></label>
@@ -1564,7 +1566,7 @@ UP_HTML = """<section class="screen" id="s-compare" hidden><div class="mx-wrap">
   <label class="up-drop" id="up-drop"><input type="file" id="up-file" accept=".json,application/json" multiple hidden>
     <b>Drop request files here, or choose files</b><span class="mx-msg">.json · one request per file, or a list of them · GL and Property can be mixed</span></label>
   <details class="up-paste"><summary>Or paste a request</summary><textarea id="up-text" spellcheck="false" placeholder='{"header": {...}, "body": {"SchemeKeys": {"ProductName": "General Liability OH", ...}, ...}}'></textarea>
-    <div class="td-tools"><button class="btn" id="up-add">Add and rate · free</button></div></details>
+    <div class="td-tools"><button class="btn" id="up-add">Add and price · free</button></div></details>
   <div class="td-tools"><button class="btn" id="up-send" disabled>Compare with ISO…</button><label class="mx-msg" title="Ask ISO even where an answer is stored; the newest answer is the one in force, earlier ones are kept in history"><input type="checkbox" id="up-fresh"> Ask again where stored</label><button class="btn" id="up-clear">Clear</button><span class="mx-msg" id="up-msg"></span></div>
   <div id="up-confirm"></div>
   <div id="up-out"><div class="mx-empty">No requests yet.</div></div>
@@ -1836,7 +1838,7 @@ function upSendDialog(only){
     const ad=c.lanes.find(l=>l.key==='adhoc'),room=Math.max(0,Math.min(ad.cap-ad.used,c.left)),over=need.length>room,n=need.length,pl=n>1?'s':'';
     el.innerHTML='<div class="wb-conf'+(over?' full':'')+'"><b>Ask ISO about '+n+' request'+pl+'?</b>'+
       '<div>'+(again?(again===n?(n>1?'All have':'It has')+' a stored answer; ISO is asked again':again+' of '+n+' have a stored answer; ISO is asked again for those too')+'. The new answer is the one in force; the earlier one is kept in history. ':'No stored answer covers '+(n>1?'them':'it')+': ')+'this spends <b>'+n+' call'+pl+'</b> from the ad hoc lane, one at a time, each logged in the ledger.</div>'+
-      '<div class="mx-msg">Ad hoc lane: '+ad.used+' of '+ad.cap+' used today · '+c.left+' of '+c.cap+' left in all'+(over?' · <b>'+(n-room)+' would go past the cap</b>: they need a reason, logged with each.':'')+'</div>'+
+      '<div class="mx-msg">One-offs: '+ad.used+' of '+ad.cap+' used today · '+c.left+' of '+c.cap+' left in all'+(over?' · <b>'+(n-room)+' would go past the cap</b>: they need a reason, logged with each.':'')+'</div>'+
       '<div class="td-tools">'+(over?'<input id="up-reason" placeholder="Reason for going past the cap" style="flex:1">':'')+'<button class="btn" id="up-go">Send · '+n+' call'+pl+'</button><button class="btn" id="up-cancel">Cancel</button></div><div class="mx-msg" id="up-cmsg"></div></div>';
     document.getElementById('up-cancel').onclick=()=>{el.innerHTML='';};
     document.getElementById('up-go').onclick=()=>{const rs=document.getElementById('up-reason'),why=rs?rs.value.trim():'';
@@ -1905,10 +1907,10 @@ function upFiles(files){[...files].forEach(f=>f.text().then(t=>upAdd(f.name,t)))
 # T3 and T8 list every case ISO answered, each linked into Trace Diff. Nothing here rates or spends a call.
 
 PROOF_HTML = """<section class="screen" id="s-proof" hidden><div class="mx-wrap"><div class="mx-main">
-  <div class="mx-head"><div><div class="eyebrow">Carrier deviations · Technical, ISO, Carrier</div><h1>Deviations Proof</h1></div>
-    <p>Each row is one of the plan's ten tests, read from the last run of the suite that proves it. ISO is only ever asked about
-    the non-deviated (technical) request; the carrier is proved against technical. Click a row for its checks, and for
-    T3 and T8 the cases ISO answered, each opening in Trace Diff.</p></div>
+  <div class="mx-head"><div><div class="eyebrow">Deviations Proof</div><h1>Can we trust the carriers' changes?</h1></div>
+    <p>When we price for a carrier, we layer its filed changes on top of ISO's price. Each row is a promise that layering
+    has to keep, read from the last run of the tests that check it. ISO itself only ever sees the standard request.
+    Click a row for its checks, and for T3 the requests ISO answered, each opening in Trace Diff.</p></div>
   <div class="mx-stats" id="pf-stats"></div>
   <div id="pf-out"><div class="mx-loading">Loading…</div></div>
 </div><aside class="mx-side" id="pf-side" aria-live="polite"></aside></div></section>"""
@@ -1956,8 +1958,9 @@ if((location.hash||'').startsWith('#proof'))pfLoad();
 # as received (re-hashed against source.json, openable), and where each writing company's authored versions stand.
 
 FILINGS_HTML = """<section class="screen" id="s-filings" hidden><div class="mx-wrap"><div class="mx-main">
-  <div class="mx-head"><div><div class="eyebrow">Carrier deviations</div><h1>Carrier rate filings</h1></div>
-    <p>How each insurer's state-approved rates differ from ISO's standard rates, and what that does to premiums.</p>
+  <div class="mx-head"><div><div class="eyebrow">Carrier Filings</div><h1>How each insurer prices differently from ISO</h1></div>
+    <p>Insurers file their own changes to ISO's rates with each state. Here's what each one changed, when it starts, and
+    what it does to a typical premium. Changes always sit on top of ISO's rates in force on the policy date.</p>
     <div class="td-tools"><label class="td-chk" for="fl-carrier">Carrier <select id="fl-carrier"><option value="">All carriers</option></select></label>
       <label class="btn" for="fl-file">Upload a filing packet…</label><input type="file" id="fl-file" accept=".zip" hidden>
       <label class="td-chk"><input type="checkbox" id="fl-tech"> Show technical details</label></div></div>
@@ -2138,9 +2141,10 @@ if((location.hash||'').startsWith('#filings'))flLoad();
 # confirmation of what it will spend. Prefilled from the Readiness Matrix's gaps.
 
 PLAN_HTML = """<section class="screen" id="s-plan" hidden><div class="mx-wrap"><div class="mx-main">
-  <div class="mx-head"><div><div class="eyebrow">Planning · nothing spent until committed</div><h1>Test Plan Builder</h1></div>
-    <p>Choose states and the dimensions to cover, from ISO's own domains. Pairwise covers every pair of values once;
-    edges try each dimension at its extremes. Answers ISO already gave are reused, not asked again.</p>
+  <div class="mx-head"><div><div class="eyebrow">Test Plan Builder</div><h1>Plan a round of checks</h1></div>
+    <p>Tell us which states and which kinds of risk you care about. We build the smallest set of requests that covers
+    them ("pairwise" tries every pair of choices once; "edges" tries each choice at its extremes), reuse every answer ISO
+    has already given, and show the cost before anything is sent.</p>
     <div class="bd-lines" id="pl-lines" role="group" aria-label="Line"><button data-l="CP">Commercial Property</button><button data-l="GL">General Liability</button></div></div>
   <div class="pl-sec"><div class="cap2">States · <span id="pl-stc"></span></div>
     <div class="td-tools"><button class="btn" data-st="all">All</button><button class="btn" data-st="none">None</button><button class="btn" data-st="gaps">Still to test</button><span class="mx-msg" id="pl-prefill"></span></div>
@@ -2280,9 +2284,9 @@ addEventListener('hashchange',plRoute);plRoute();
 # ---- TC-31 / TC-32: the Queue & Run Log ------------------------------------------------------------------------------
 
 QUEUE_HTML = """<section class="screen" id="s-queue" hidden><div class="mx-wrap"><div class="mx-main">
-  <div class="mx-head"><div><div class="eyebrow">Spending calls · every one logged</div><h1>Queue &amp; Run Log</h1></div>
-    <p>Committed plans and what they spend, lane by lane; the dispatch order; every call and what came of it. Pause,
-    resume, or stop a plan and keep what it found.</p></div>
+  <div class="mx-head"><div><div class="eyebrow">Queue &amp; Run Log</div><h1>What's running, and what it found</h1></div>
+    <p>ISO allows a set number of calls a day, shared out so planned work, refreshes and quick one-offs each get their
+    turn. See what's waiting, pause or stop a plan and keep what it found, and read back every call we've made.</p></div>
   <div class="mx-stats" id="qu-lanes" style="grid-template-columns:repeat(4,minmax(0,1fr))"></div>
   <div id="qu-insp" hidden></div>
   <div class="cap2">Plans</div><div id="qu-plans"></div>
@@ -2422,11 +2426,12 @@ addEventListener('hashchange',quRoute);quRoute();
 # and its defect history (D18); a free re-run; the stale answers and a refresh plan for the refresh lane.
 
 LIB_HTML = """<section class="screen" id="s-library" hidden><div class="mx-wrap"><div class="mx-main">
-  <div class="mx-head"><div><div class="eyebrow">Keeping it true · re-run on every build, free</div><h1>Regression Library</h1></div>
-    <p>Every scenario we trust: ISO's fixtures, the golden cases, the app's samples and what you promote. Each re-run
-    rates them all on today's engine against their reference and spends nothing.</p></div>
+  <div class="mx-head"><div><div class="eyebrow">Regression Library</div><h1>The cases we trust</h1></div>
+    <p>These are the requests we know the right answer to: ISO's own examples, our hand-checked golden cases, the app's
+    samples and anything you've promoted. Re-run them any time to make sure today's engine still gets every one right.
+    It's free.</p></div>
   <div class="mx-stats" id="lb-stats" style="grid-template-columns:repeat(5,minmax(0,1fr))"></div>
-  <div class="td-tools"><button class="btn" id="lb-rerun">Re-run now · free</button><span class="mx-msg" id="lb-prog"></span></div>
+  <div class="td-tools"><button class="btn" id="lb-rerun">Re-run them all · free</button><span class="mx-msg" id="lb-prog"></span></div>
   <div class="td-tools lb-filters">
     <select id="lb-line"><option value="">both lines</option><option>CP</option><option>GL</option></select>
     <select id="lb-origin"><option value="">every origin</option><option value="fixture">ISO fixtures</option><option value="golden">golden cases</option><option value="sample">samples</option><option value="trace">promoted from Trace Diff</option><option value="workbench">promoted from the Workbench</option></select>
