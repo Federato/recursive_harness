@@ -59,24 +59,28 @@ for what the stored set doesn't cover, with a go per pass.
 
 ## 4. How ISO's rules map to the graph
 
-The graph keeps Product Studio's six kinds and adds what ISO's rules need. Counts are uses in Iowa's effective
-in-force program.
+The graph keeps Product Studio's six kinds and adds what ISO's rules need. Counts are uses in what Iowa's
+in-force program can actually run, walked from its entry point as the engine calls rules (C-03,
+`docs/INVENTORY.md`). The first draft counted only the state's copy of each rule and missed the countrywide copies
+that `ErcProcess`, `InitializeRuleSet` and `CalculateTotalPremium` call after their own part, so loops were
+undercounted by half. *Purpose* splits each hard instruction by ISO's rule names: rating, forms (`AttachForm...`),
+messages.
 
 | ISO instruction | Uses | Graph piece | Difficulty |
 |---|---|---|---|
-| `Value`, `Copy`, `Param` / `Arg` / `WithArgs` | 4,342 / 140 / 1,854 | **Input**, or an edge from an earlier step | Easy |
-| `Lookup` + `Keys` | 2,324 | **Rate table** (loaded once, shared) + **Lookup** (keys, column, range keys) | Easy: table and column are named in the rule |
-| `Sum`, `Product`, `Subtract`, `Divide`, `Max`, `Round`, `Truncate`, `Convert`, dates, text | ~1,630 | **Rating step** | Easy |
-| `RunRule` | 4,010 | Inlined: the rule's steps are copied in where it is called | Easy: the rule is named |
-| `If` / `Choose` / `When`, comparisons, `And` / `Or` | 3,333 / 124 / 315, ~8,400 | **Condition** on the steps the branch decides (any step, not only charges) | Medium |
-| `FirstValue`, `FirstNonNull` | 7,460 / 1,721 | A step that takes the first non-empty of its inputs | Medium |
-| Fields written more than once | 307 of 351 write targets at more than one site (overstated: paths are relative) | **Versions** of a value, as the rating graph keeps them | Medium |
-| `ForEach` | 1,030 | **Repeating group**: steps repeated per location, class, coverage | **Hard**: the count isn't known until the request arrives |
-| `Locate` with `Append` | 135 (of 319 `Locate`) | **Record created during the rating** | **Hard** |
-| `Remove` | 62 | **Record removed during the rating**: later steps see fewer | **Hard** |
-| `Exist` / `NotExist` / `Count` | 389 / 193 / 61 | A test on which records exist **at that point in the order** | Medium-hard |
-| `Break` | 4 | "Stop at the first match" condition | Medium |
-| `Guid` | 134 | A generated id; must be made repeatable for a comparison | Check |
+| `Value`, `Copy`, `Param` / `Arg` / `WithArgs` | 4,022 / 140 / 1,548 | **Input**, or an edge from an earlier step | Easy |
+| `Lookup` + `Keys` | 2,306 | **Rate table** (loaded once, shared) + **Lookup** (keys, column, range keys) | Easy: table and column are named in the rule |
+| `Sum`, `Product`, `Subtract`, `Divide`, `Max`, `Round`, `Truncate`, `Convert`, dates, text | 1,625 | **Rating step** | Easy |
+| `RunRule` | 5,500 (12 of them call the countrywide copy of the same rule) | Inlined: the rule's steps are copied in where it is called | Easy: the rule is named |
+| `If` / `Choose` / `When`, comparisons, `And` / `Or` | 3,356 / 124 / 315, 8,404 | **Condition** on the steps the branch decides (any step, not only charges) | Medium |
+| `FirstValue`, `FirstNonNull` | 7,447 / 1,706 | A step that takes the first non-empty of its inputs | Medium |
+| Fields written more than once | 2,251 fields written; 1,095 at more than one site, mostly one rule's branches; **41 written by two or more rules** (the true overwrites) | **Versions** of a value, as the rating graph keeps them | Medium |
+| `ForEach` | 2,227 (rating 2,032, forms 174, messages 21) | **Repeating group**: steps repeated per location, class, coverage | **Hard**: the count isn't known until the request arrives |
+| `Locate` with `Append` | 168 of 423 `Locate`: **43 truly add a record** (all rating, in 7 `InitializeRuleSet`-type rules); 125 only make sure row 1 exists (all forms) | **Record created during the rating** | **Hard** for the 43; the 125 are "ensure" |
+| `Remove` | 62, **all forms** (a form attached, then taken off) | **Record removed during the rating**: later steps see fewer | **Hard**, but forms only |
+| `Exist` / `NotExist` / `Count` | 387 / 226 / 61 (rating 378, forms 164, messages 132) | A test on which records exist **at that point in the order** | Medium-hard |
+| `Break` | 4 (rating 1, forms 2, messages 1) | "Stop at the first match" condition | Medium |
+| `Guid` | 134 (messages 125, rating 9) | A generated id; must be made repeatable for a comparison | Check |
 | `Custom`, `FromList`, `LastNonNull`, `Power`, `Null` | 0 | — | — |
 
 ## 5. The loop: ISO, engine and graph
@@ -152,7 +156,7 @@ engine's on 200 sampled keys, range keys included.
 |---|---|---|---|
 | ~~C-01~~ | ✅ **DONE 2026-10-16**: folder, local git, `CLAUDE.md`, plan sync, B-55 in the harness backlog | — | — |
 | ~~C-02~~ | ✅ **DONE 2026-10-16**: **Harness link** `cg/harness.py`: the harness on the import path in one place; `GL_ERC_ROOT` / `CF_ERC_ROOT` / `CARRIERS_ROOT` set to the C: roots when unset, and refused if on F: (the engine's own defaults still name F:). `tests/verify_harness_link.py` 7 of 7: Iowa's sample (GL_IA_20261001_V01 over GL_CW_20261001_V01) rates $450 here and identically in the harness's own process | Small | — |
-| C-03 | **Inventory** `cg/inventory.py`: per edition (20240401, 20250401, 20260601, 20261001, 20270401_V04), instruction counts, the rules each hard instruction sits in, write sites by resolved field. Output `results/inventory.json` and a plain summary | Small | — |
+| ~~C-03~~ | ✅ **DONE 2026-10-16**: **Inventory** `cg/inventory.py` (`python -m cg.inventory`): all 5 editions walked from the entry point as the engine calls rules, 0 load errors; hard instructions by rule and purpose; writes by resolved field. Gate 18 of 18 (§3's census reproduced). Summary `docs/INVENTORY.md`. Found on the way: harness **OI-136** (477 corpus files past the Windows path limit; fixed in the harness) and the countrywide copies the first census missed (§4 corrected) | Small | — |
 | C-04 | **Graph format** `cg/model.py`: input, rate table, lookup, step, condition, repeat group, record create / remove, premium; versions; JSON in and out | Small-medium | — |
 | C-05 | **Tables as shared rate tables**, loaded once per edition through `load_table` / `ResolvedBook.table`; lookups with multi-key, range keys and interpolation | Medium | — |
 
@@ -176,10 +180,10 @@ why it resists a fixed graph). This group is where the effort can grow.
 
 | # | Task | Size | Needs |
 |---|---|---|---|
-| C-11 | **Repeating groups** for `ForEach` (1,030 in force): steps repeated per location, class, coverage | Medium-large | — |
-| C-12 | **Records created** by `Locate` with `Append` (135) | Medium | — |
-| C-13 | **Records removed** by `Remove` (62): later steps see fewer | Medium | — |
-| C-14 | **Tests in order**: `Exist` / `NotExist` / `Count` (643) answered as of their point in the run | Medium | — |
+| C-11 | **Repeating groups** for `ForEach` (2,227 in force, 2,032 of them rating): steps repeated per location, class, coverage | Medium-large | — |
+| C-12 | **Records created** by `Locate` with `Append`: 43 that truly add a record (rating), 125 that only ensure row 1 (forms) | Medium | — |
+| C-13 | **Records removed** by `Remove` (62, all forms): later steps see fewer | Medium | — |
+| C-14 | **Tests in order**: `Exist` / `NotExist` / `Count` (674) answered as of their point in the run | Medium | — |
 | C-15 | **Early exit**: `Break` (4) as "stop at the first match" | Small | — |
 | C-16 | **Generated ids**: `Guid` (134) made repeatable so runs compare | Small | — |
 
@@ -289,3 +293,4 @@ answers in its answer store (§5, step 3).
 | 2026-10-16 | Revised by the user: the harness loop three ways (D6), stored answers then live with a go per pass (D7), ISO without deviation first, DEV-003 moved after the technical loop (D8) |
 | 2026-10-16 | Re-organised into release-candidate groups CG-1 to CG-8, tasks C-01 to C-31 (C-01 done). About 12-20 days. Waiting for the go on CG-1 |
 | 2026-10-16 | C-02 done: `cg/harness.py`; `verify_harness_link.py` 7 of 7 (Iowa sample $450, same as the harness at home). CG-1 left: C-03, C-04, C-05 |
+| 2026-10-16 | C-03 done: inventory of 5 editions, gate 18 of 18. §4 corrected (reachable program: 2,227 loops, not 1,030; `Remove` and most `Append` are forms only; 41 true overwrites). Harness OI-136 found and fixed (files past the Windows path limit). CG-1 left: C-04, C-05 |
