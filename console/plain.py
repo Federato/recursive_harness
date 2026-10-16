@@ -170,6 +170,39 @@ def item(r: dict) -> str | None:
     return None
 
 
+def tone(r: dict) -> str:
+    """'up' (dearer than ISO), 'down' (cheaper), 'same', or 'rule' (a policy-wide item): the screen's colour."""
+    if item(r) is not None:
+        return "rule"
+    try:
+        v = Decimal(str(r.get("value")))
+    except InvalidOperation:
+        return "same"
+    return "up" if v > 1 else "down" if v < 1 else "same"
+
+
+def checked_short(md: str) -> str:
+    """A log entry's '**Is it right, in short:** ...' line: how it was checked, for every reader."""
+    m = re.search(r"^\*\*Is it right, in short:?\*\*:?\s*(.+?)(?=\n\s*\n|\Z)", md or "", flags=re.S | re.M)
+    return " ".join(m.group(1).split()) if m else ""
+
+
+def proved(md: str) -> list:
+    """The log entry's 'How it was proved' bullets, in words: markdown marks and test labels (T5:, U8) taken off."""
+    m = re.search(r"\*\*How it was proved\*\*.*?\n(?=- )(.+?)(?=\n\s*\n\*\*|\n---|\Z)", md or "", flags=re.S)
+    if not m:
+        return []
+    out = []
+    for b in re.split(r"\n- ", "\n" + m.group(1).strip()):
+        t = " ".join(b.split())
+        t = re.sub(r"\*\*|`", "", t)
+        t = re.sub(r"^(T\d+|U\d+)(,\s*\w+)*\s*:\s*", "", t)
+        t = re.sub(r"^\((?:U\d+|T\d+)[^)]*\)\s*", "", t)
+        if t:
+            out.append(t[0].upper() + t[1:])
+    return out
+
+
 def row_change(r: dict) -> str:
     """One row's value as the rows table shows it: against ISO for a multiplier, as itself for a B-21 item."""
     t, v = str(r.get("target", "")), r.get("value")

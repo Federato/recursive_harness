@@ -198,6 +198,7 @@ def impacts(companies: list, line: str, states: list, serff: str = "") -> list:
         out.append({"file": p.name, "company": d["company"], "draft": d.get("draft"), "generated": d.get("generated"),
                     "states": d["states"], "all": d.get("all"), "byRiskType": d.get("by_risk_type", {}),
                     "byCoverage": d.get("by_coverage", {}), "byState": d.get("by_state", {}),
+                    "byStateRiskType": d.get("by_state_risk_type", {}),
                     "drivers": d.get("drivers", []), "refused": len(d.get("refused", [])),
                     "current": d.get("current"), "vsCurrent": d.get("vs_current")})
     return sorted(out, key=lambda x: (x["company"], bool(x["draft"]), x.get("generated") or ""))
@@ -309,19 +310,32 @@ def _plain(r: dict, sheet_raw: str, log_raw: str) -> dict:
     carrier = _json(_carriers() / r["carrier"] / "carrier.json").get("name") or r["carrier"]
     new = sorted({v.get("new_eff") for v in r["versions"] if v.get("new_eff")})
     ren = sorted({v.get("renewal_eff") for v in r["versions"] if v.get("renewal_eff")})
+    # each company's version in force: its newest approved one (older approved versions are history)
+    newest = {}
     for v in r["versions"]:
+        if v["status"] == "approved" and v.get("version", 0) > newest.get(v["company"], 0):
+            newest[v["company"]] = v["version"]
+    for v in r["versions"]:
+        v["current"] = v["status"] == "approved" and newest.get(v["company"]) == v.get("version")
         when = P.starts(v.get("new_eff"), v.get("renewal_eff"))
         v["plain"] = {"company": _company_name(r["carrier"], v["company"]),
                       "changes": P.company_rows(v.get("detail") or []), "starts": when,
                       "status": P.CELL.get(v["status"], v["status"]),
                       "rows": [{"what": P.target(x["target"]), "where": ("the whole policy" if str(x["target"]).startswith(("MIN:", "PCT:"))
                                           else P.scope(x.get("scope"))),
-                                "change": P.row_change(x), "starts": when, "note": x.get("note", "")}
+                                "change": P.row_change(x), "starts": when, "note": x.get("note", ""),
+                                "rule": P.item(x) is not None, "tone": P.tone(x)}
                                for x in v.get("detail") or []]}
     st = [x.strip() for x in str(r.get("state", "")).split(",")]
     for i in r.get("impacts", []):
         own = [i["byState"][x] for x in st if i.get("byState", {}).get(x)]
         a = own[0] if len(own) == 1 else (i.get("all") or {})
+        # a preview over several states: this filing's own state's figures by type of business, when it has one
+        if len(own) == 1:
+            mine = {k.split(" | ", 1)[1]: v for k, v in (i.get("byStateRiskType") or {}).items()
+                    if k.split(" | ", 1)[0] == [x for x in st if i.get("byState", {}).get(x)][0]}
+            if mine:
+                i["byRiskType"] = mine
         vc = i.get("vsCurrent") or {}
         has_now = any(vc.get("filings", {}).values())
         i["plain"] = {"company": _company_name(r["carrier"], i["company"]),
@@ -339,7 +353,8 @@ def _plain(r: dict, sheet_raw: str, log_raw: str) -> dict:
             "inShort": P.in_short(sheet_raw) or P.in_short(log_raw),
             "historyShort": P.in_short(log_raw),
             "proof": (f"Checked: {r['proof']['ok']} of {r['proof']['checks']} automatic tests pass"
-                      if (r.get("proof") or {}).get("ran") else "")}
+                      if (r.get("proof") or {}).get("ran") else ""),
+            "proved": P.proved(log_raw), "checked": P.checked_short(log_raw)}
 
 
 def filings() -> dict:

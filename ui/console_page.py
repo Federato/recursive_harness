@@ -1956,51 +1956,99 @@ if((location.hash||'').startsWith('#proof'))pfLoad();
 # as received (re-hashed against source.json, openable), and where each writing company's authored versions stand.
 
 FILINGS_HTML = """<section class="screen" id="s-filings" hidden><div class="mx-wrap"><div class="mx-main">
-  <div class="mx-head"><div><div class="eyebrow">Carrier deviations</div><h1>Carrier rate filings</h1></div>
-    <p>How each insurer's state-approved rates differ from ISO's standard rates, and what that does to premiums.</p>
-    <div class="td-tools"><label class="td-chk" for="fl-carrier">Carrier <select id="fl-carrier"><option value="">All carriers</option></select></label>
+  <div class="mx-head fl-head"><div class="fl-title"><div class="eyebrow fl-eyebrow">Carrier deviations</div><h1>How each insurer's rates differ from ISO's</h1>
+    <p>ISO publishes standard rates. An insurer files changes to them with the state. Every change here sits on top of ISO's rates in force on the policy date, from the day the filing says it starts.</p></div>
+    <div class="fl-tools"><div class="fl-pick"><label for="fl-carrier">Carrier</label><select id="fl-carrier"><option value="">All carriers</option></select></div>
       <label class="btn" for="fl-file">Upload a filing packet…</label><input type="file" id="fl-file" accept=".zip" hidden>
       <label class="td-chk"><input type="checkbox" id="fl-tech"> Show technical details</label></div></div>
   <div id="fl-up"></div>
-  <div class="cap2" style="margin-top:6px">Who has filed where</div>
-  <div id="fl-board"><div class="mx-loading">Loading…</div></div>
-  <div id="fl-out"></div>
-  <div id="fl-entry"></div>
+  <div class="fl-cols">
+    <nav class="fl-nav" aria-label="Filings"><div class="fl-count" id="fl-count"></div><div id="fl-out"></div></nav>
+    <div class="fl-main"><div id="fl-entry"></div>
+      <div class="fl-card fl-boardcard"><h3>Who has filed where</h3><div id="fl-board"><div class="mx-loading">Loading…</div></div></div></div>
+  </div>
 </div><aside class="mx-side" id="fl-side" aria-live="polite"></aside></div></section>"""
 
 BUILT["filings"] = FILINGS_HTML
 
 FILINGS_CSS = """
-.fl-bd{border-collapse:collapse;font-size:12.5px;margin-top:4px}
-.fl-bd th{font-weight:600;font-size:11.5px;color:var(--color-neutral-700);padding:4px 12px;text-align:left}
-.fl-bd td{border-top:1px solid var(--color-divider);padding:8px 12px;vertical-align:top}
-.fl-bd td[data-f]{cursor:pointer}.fl-bd td[data-f]:hover,.fl-bd td.sel{background:var(--color-accent-100)}
-.fl-bd .fl-tech{color:var(--color-neutral-700)}
-.fl-tag{font-size:10.5px;color:var(--color-neutral-700);border:1px solid var(--color-divider);border-radius:8px;padding:0 6px;margin-left:4px;white-space:nowrap}
-.fl-list{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0 4px}
-.fl-list button{font:inherit;font-size:12.5px;padding:5px 12px;border-radius:14px;border:1px solid var(--color-divider);background:#fff;cursor:pointer;color:var(--color-text)}
-.fl-list button[aria-pressed="true"]{background:var(--color-accent-700);border-color:var(--color-accent-700);color:var(--color-accent-100)}
-.fl-card{margin-top:12px;border-top:1px solid var(--color-divider);padding-top:12px;max-width:980px;font-size:13px}
-.fl-card h2{font:600 18px var(--font-heading);margin:0 0 4px}
-.fl-steps{display:flex;gap:4px;margin:8px 0;flex-wrap:wrap}
-.fl-steps span{font-size:11.5px;padding:3px 10px;border-radius:12px;border:1px solid var(--color-divider);color:var(--color-neutral-700)}
-.fl-steps span.done{background:var(--color-accent-100);color:var(--color-text)}
-.fl-steps span.now{background:var(--color-accent-700);border-color:var(--color-accent-700);color:var(--color-accent-100);font-weight:600}
-.fl-short{font-size:13.5px;line-height:1.5;margin:10px 0;max-width:860px}
-.fl-tabs{display:flex;gap:2px;margin:12px 0 8px;border-bottom:1px solid var(--color-divider);flex-wrap:wrap}
-.fl-tabs button{font:inherit;font-size:12.5px;padding:6px 12px;border:0;background:none;cursor:pointer;color:var(--color-neutral-700);border-bottom:2px solid transparent}
-.fl-tabs button[aria-selected="true"]{color:var(--color-text);border-bottom-color:var(--color-accent-700);font-weight:600}
-.fl-doc{border-top:1px solid var(--color-divider);padding:7px 0;font-size:12.5px;overflow-wrap:anywhere}
-.fl-entry h4{margin:14px 0 4px;font-size:12.5px}.fl-entry p{margin:6px 0}.fl-entry ul{margin:4px 0;padding-left:18px}
+#s-filings{--fl-ink:#17202B;--fl-muted:#4E5A68;--fl-line:#DCE0E5;--fl-soft:#F8F9FA;--fl-rule:#EEF0F3;--fl-teal:#0E5E6F;--fl-teal-d:#0A4553;
+  --fl-teal-bg:#E3F1F3;--fl-up:#9A4A0B;--fl-down:#1D5FA8;--fl-upbar:#D98A3D;--fl-downbar:#3D7CC9;
+  --fl-serif:"Source Serif 4","Source Serif Pro",Georgia,serif;font-family:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;color:var(--fl-ink)}
+#s-filings a{color:var(--fl-teal)}#s-filings a:hover{color:var(--fl-teal-d)}
+.fl-head{justify-content:space-between}
+.fl-title{display:flex;flex-direction:column;gap:6px;max-width:720px}
+.fl-title h1{font:600 34px/1.15 var(--fl-serif);margin:0;color:var(--fl-ink)}
+.fl-title p{margin:0;font-size:15px;line-height:1.55;color:var(--fl-muted)}
+.fl-eyebrow{color:var(--fl-teal)}
+.fl-tools{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end}
+.fl-pick{display:flex;flex-direction:column;gap:4px}
+.fl-pick label{font-size:12.5px;font-weight:600;color:var(--fl-muted)}
+.fl-pick select{min-height:44px;min-width:220px;padding:0 12px;font:inherit;font-size:14.5px;color:var(--fl-ink);background:#fff;border:1px solid #C5CBD3;border-radius:8px}
+.fl-cols{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-start}
+.fl-nav{flex:1 1 230px;max-width:300px;display:flex;flex-direction:column;gap:8px}
+.fl-count{font-size:12.5px;font-weight:600;color:var(--fl-muted)}
+#fl-out{display:flex;flex-direction:column;gap:8px}
+.fl-fi{display:block;width:100%;text-align:left;font:inherit;color:var(--fl-ink);background:#fff;border:1px solid var(--fl-line);border-radius:10px;padding:12px 14px;cursor:pointer;min-height:44px}
+.fl-fi:hover{border-color:var(--fl-teal)}
+.fl-fi[aria-pressed="true"]{border:2px solid var(--fl-teal);padding:11px 13px}
+.fl-fi b{display:block;font-size:15px}.fl-fi span{display:block;font-size:13px;color:var(--fl-muted);margin-top:3px}
+.fl-main{flex:999 1 520px;min-width:0;display:flex;flex-direction:column;gap:16px}
+.fl-card{background:#fff;border:1px solid var(--fl-line);border-radius:12px;padding:22px 24px;display:flex;flex-direction:column;gap:14px;font-size:14px}
+.fl-card h2{font:600 26px/1.2 var(--fl-serif);margin:0}
+.fl-card h3{font-size:15px;margin:0}
+.fl-cardhead{display:flex;flex-wrap:wrap;gap:10px;align-items:baseline;justify-content:space-between}
+.fl-badge{font-size:12.5px;font-weight:600;color:var(--fl-teal);background:var(--fl-teal-bg);border-radius:999px;padding:5px 12px;white-space:nowrap}
+.fl-badge.wait{color:var(--fl-up);background:#FBEFE3}
+.fl-short{font-size:15px;line-height:1.6;margin:0;max-width:860px;color:#2A3442}
+.fl-dates{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+.fl-date{border:1px solid var(--fl-line);border-radius:10px;padding:12px 14px}
+.fl-date small{display:block;font-size:12.5px;color:var(--fl-muted)}.fl-date b{display:block;font-size:16px;margin-top:3px}
+.fl-steps{display:flex;gap:4px;flex-wrap:wrap}
+.fl-steps span{font-size:12px;padding:3px 10px;border-radius:12px;border:1px solid var(--fl-line);color:var(--fl-muted)}
+.fl-steps span.done{background:var(--fl-teal-bg);border-color:var(--fl-teal-bg);color:var(--fl-teal-d)}
+.fl-steps span.now{background:var(--fl-teal);border-color:var(--fl-teal);color:#fff;font-weight:600}
+.fl-tabs{display:flex;gap:2px;border-bottom:1px solid var(--fl-line);flex-wrap:wrap}
+.fl-tabs button{font:inherit;font-size:14.5px;min-height:44px;padding:0 14px;border:0;background:none;cursor:pointer;color:var(--fl-muted);border-bottom:3px solid transparent;margin-bottom:-1px}
+.fl-tabs button[aria-selected="true"]{color:var(--fl-teal);border-bottom-color:var(--fl-teal);font-weight:600}
+.fl-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.fl-co{border:1px solid var(--fl-line);border-radius:10px;overflow:hidden;display:flex;flex-direction:column}
+.fl-co-h{padding:12px 16px;background:var(--fl-soft);border-bottom:1px solid var(--fl-line);font-weight:600;display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;align-items:baseline}
+.fl-co-h span{font-weight:400;font-size:12.5px;color:var(--fl-muted)}
+.fl-co-b{padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.fl-up{color:var(--fl-up);font-weight:600}.fl-down{color:var(--fl-down);font-weight:600}.fl-same{color:var(--fl-muted);font-weight:600}
+.fl-rule{display:flex;gap:12px;align-items:flex-start;border:1px solid var(--fl-line);border-radius:10px;padding:12px 14px}
+.fl-rule svg{flex:none;margin-top:2px}.fl-rule b{display:block}.fl-rule div div{font-size:13px;color:var(--fl-muted);margin-top:3px}
+.fl-why{display:block;font-size:12px;color:var(--fl-muted);margin-top:2px}
+.fl-bigpct{font:600 32px var(--fl-serif);color:var(--fl-up)}.fl-bigpct.down{color:var(--fl-down)}
+.fl-bars{display:flex;flex-direction:column;gap:9px}
+.fl-barrow{display:flex;justify-content:space-between;gap:8px;font-size:13.5px}
+.fl-bar{height:8px;background:var(--fl-rule);border-radius:4px;overflow:hidden;margin-top:4px}
+.fl-bar i{display:block;height:100%;border-radius:4px;background:var(--fl-upbar)}.fl-bar i.down{background:var(--fl-downbar)}
+.fl-ok{display:flex;gap:12px;align-items:center;background:var(--fl-teal-bg);border-radius:10px;padding:14px 16px;font-weight:600;color:var(--fl-teal-d);line-height:1.5}
+.fl-ok.no{background:#FBEFE3;color:var(--fl-up)}
+.fl-ok svg{flex:none}
+.fl-checks{display:flex;flex-direction:column;gap:8px;margin:0;padding-left:20px;font-size:13.5px;line-height:1.5}
+.fl-boardcard{gap:8px}
+.fl-bd{border-collapse:collapse;font-size:13px}
+.fl-bd th{font-weight:600;font-size:12px;color:var(--fl-muted);padding:6px 12px;text-align:left}
+.fl-bd td{border-top:1px solid var(--fl-rule);padding:9px 12px;vertical-align:top}
+.fl-bd td[data-f]{cursor:pointer}.fl-bd td[data-f]:hover,.fl-bd td.sel{background:var(--fl-teal-bg)}
+.fl-bd .fl-tech{color:var(--fl-muted)}
+.fl-tag{font-size:11px;color:var(--fl-muted);border:1px solid var(--fl-line);border-radius:8px;padding:0 6px;margin-left:4px;white-space:nowrap}
+.fl-doc{border-top:1px solid var(--fl-rule);padding:9px 0;font-size:13.5px;overflow-wrap:anywhere}
+.fl-entry h4{margin:14px 0 4px;font-size:13px}.fl-entry p{margin:6px 0}.fl-entry ul{margin:4px 0;padding-left:18px}
 .fl-entry code{overflow-wrap:anywhere}.fl-mdw{overflow-x:auto}
-.fl-md{width:100%;border-collapse:collapse;font-size:12.5px;margin:6px 0}
-.fl-md th{text-align:left;font-weight:600;font-size:11.5px;color:var(--color-neutral-700)}
-.fl-md th,.fl-md td{padding:5px 8px;border-top:1px solid var(--color-divider);text-align:left;vertical-align:top}
+.fl-md{width:100%;border-collapse:collapse;font-size:13.5px}
+.fl-md th{text-align:left;font-weight:600;font-size:12.5px;color:var(--fl-muted)}
+.fl-md th,.fl-md td{padding:8px 10px;border-top:1px solid var(--fl-rule);text-align:left;vertical-align:top}
+.fl-md tr:first-child th{border-top:0}
 .fl-md .nw{white-space:nowrap}
 .fl-pct{font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
-.fl-big{font:600 15px var(--font-heading)}
-.fl-gl dt{font-weight:600;font-size:12px;margin-top:8px}.fl-gl dd{margin:2px 0 0;font-size:12px;color:var(--color-neutral-700)}
-details.fl-more{margin-top:8px;font-size:12px}details.fl-more summary{cursor:pointer;color:var(--color-neutral-700)}
+.fl-big{font:600 16px var(--fl-serif)}
+.fl-note{font-size:12.5px;color:var(--fl-muted);line-height:1.5;margin:0}
+.fl-gl dt{font-weight:600;font-size:12.5px;margin-top:8px}.fl-gl dd{margin:2px 0 0;font-size:12.5px;color:var(--fl-muted)}
+details.fl-more{font-size:13px}details.fl-more summary{cursor:pointer;color:var(--fl-muted);min-height:32px}
 """
 
 FILINGS_JS = r"""
@@ -2017,13 +2065,22 @@ const FL_GLOSS=[['ISO','Insurance Services Office: publishes the standard rates,
   ['Class','ISO\u2019s code for the kind of business, such as a retail store or a contractor.'],
   ['\u201ca\u201d-rated class','A specialty class ISO publishes no rate for; the insurer sets the rate itself.'],
   ['Effective dates','When a filing starts: one date for new policies, often a later one for renewals.'],
-  ['ISO edition','ISO revises its rates; a filing can name an older edition and keep using it.'],
+  ['ISO edition','ISO revises its rates; a filing’s changes always apply to ISO’s rates in force on the policy date.'],
   ['Typical businesses','A set of sample risks we price both ways to estimate the effect. Not real customers.']];
 function flKey(f){return f.id||f.serff;}
 function flChip(ok){return ok?'<span class="chip verified">✓</span> ':'<span class="chip mismatch">×</span> ';}
 function flPct(v){return v==null?'—':(Number(v)>0?'+':'')+esc(String(v))+'%';}
 function flCov(g){return esc(FL_COV[g]||g);}
 function flSel(){return flFilings().find(x=>flKey(x)===FL.sel||x.serff===FL.sel);}
+const FL_KIND={'Mercantile':'Shops and stores','Retail':'Shops and stores','Lessor’s risk':'Building owners renting out','Lessor\'s risk':'Building owners renting out'};
+const FL_OK='<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>';
+const FL_RULE='<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0E5E6F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h10M4 17h7"></path></svg>';
+function flDate(iso){if(!iso)return '';const d=new Date(String(iso).slice(0,10)+'T00:00:00Z');
+  return isNaN(d)?String(iso):d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'});}
+// what a filing shows: each company's version in force, then its proposals; older versions are history
+function flShown(f){const cur=f.versions.filter(v=>v.current),draft=f.versions.filter(v=>v.status!=='approved'&&v.status!=='withdrawn'&&v.status!=='rejected');
+  return cur.concat(draft);}
+function flCompanies(f){const n=[];flShown(f).forEach(v=>{const c=(v.plain||{}).company||v.company;if(n.indexOf(c)<0)n.push(c);});return n;}
 function flBoard(){const b=FL.b,el=document.getElementById('fl-board');if(!b)return;
   const key=c=>c.line+'|'+c.state,sel=flSel(),cells=b.cells.filter(flMine);
   if(!cells.length){el.innerHTML='<div class="mx-empty">'+(FL.carrier?'No filings yet for this carrier.':'No filings yet. Upload a filing packet to start.')+'</div>';return;}
@@ -2031,41 +2088,61 @@ function flBoard(){const b=FL.b,el=document.getElementById('fl-board');if(!b)ret
   el.innerHTML='<div class="fl-mdw"><table class="fl-bd"><tr><th></th>'+cols.map(c=>'<th>'+esc(c.plain||c.line+' · '+c.state)+'</th>').join('')+'</tr>'+
     cos.map(co=>'<tr><td title="'+esc(co.code+(co.naic?' · NAIC '+co.naic:''))+'"><b>'+esc(co.name||co.code)+'</b></td>'+
       cols.map(col=>{const c=cells.find(x=>x.company===co.code&&key(x)===key(col));
-        if(!c)return '<td class="fl-tech">ISO\u2019s rates</td>';
+        if(!c)return '<td class="fl-tech">ISO’s rates</td>';
         const f=FL.d&&FL.d.filings.find(x=>x.versions.some(v=>v.company===c.company&&v.filing===c.filing));
         const p=c.plain||{},draft=c.status==='draft';
         const tip=FL.tech?(c.filing||'')+' v'+(c.version||'')+' · '+c.status:'';
         return '<td'+(f?' data-f="'+esc(flKey(f))+'"':'')+(f&&sel===f?' class="sel"':'')+(tip?' title="'+esc(tip)+'"':'')+'>'+(draft?'':flChip(c.status==='approved'))+
           '<b>'+esc(p.status||c.status)+'</b>'+(p.since&&!draft?' <span class="mx-msg">since '+esc(p.since)+'</span>':'')+
           ((c.drafts||[]).length?'<span class="fl-tag">proposal pending</span>':'')+'</td>';}).join('')+'</tr>').join('')+'</table></div>';}
-function flSummary(f){const imp=v=>{const i=(f.impacts||[]).filter(x=>x.company===v.company&&(v.status==='approved'?!x.draft:x.draft===v.filing+'.v'+v.version)).pop();
-      if(!i)return '<span class="mx-msg">not worked out yet</span>';const p=i.plain||{};
-      return '<span class="fl-big">'+esc(p.vsIso||'')+'</span>'+(p.vsNow?'<div class="mx-msg">'+esc(p.vsNow)+'</div>':'');};
-  const n=(f.impacts||[]).map(i=>(i.plain||{}).risks).find(Boolean);
-  return '<div class="fl-mdw"><table class="fl-md"><tr><th>Insurer</th><th>What changes</th><th>Effect on premium</th></tr>'+
-    f.versions.map(v=>{const p=v.plain||{};return '<tr><td><b>'+esc(p.company||v.company)+'</b><div class="mx-msg">'+esc(p.status||v.status)+'</div></td><td>'+esc(p.changes||'')+(p.starts?'<div class="mx-msg">'+esc(p.starts)+'</div>':'')+
-      '</td><td>'+imp(v)+'</td></tr>';}).join('')+'</table></div>'+
-    '<div class="mx-msg" style="margin-top:6px">Effect: estimated by pricing '+(n?n+' ':'')+'typical businesses both ways, the insurer\u2019s rates against ISO\u2019s, on our own engine. '+
-    (f.plain&&f.plain.proof?flChip(true)+esc(f.plain.proof)+'.':'')+'</div>';}
-function flRows(f){if(!f.versions.length)return '<div class="mx-msg">Nothing proposed yet.</div>';
-  return f.versions.map(v=>{const p=v.plain||{};return '<div class="fl-doc"><b>'+esc(p.company||v.company)+'</b> <span class="mx-msg">'+esc(p.status||'')+'</span>'+
-    '<div class="fl-mdw"><table class="fl-md"><tr><th>Coverage</th><th>Applies to</th><th>Change</th><th>Starts</th><th>Why</th></tr>'+
-    (p.rows||[]).map(r=>'<tr><td class="nw">'+esc(r.what)+'</td><td>'+esc(r.where)+'</td><td class="nw"><b>'+esc(r.change)+'</b></td><td class="mx-msg">'+esc(r.starts||'')+'</td><td class="mx-msg">'+esc(r.note||'')+'</td></tr>').join('')+'</table></div>'+
-    (FL.tech?'<div class="mx-msg">'+esc(v.filing+' v'+v.version+' · '+v.compiledKeys+' compiled keys')+'</div>'+
-      '<div class="fl-mdw"><table class="fl-md"><tr><th>Target</th><th>Scope</th><th class="fl-pct">Value</th><th>Mode</th><th>Cite</th></tr>'+
-      (v.detail||[]).map(r=>'<tr><td><code>'+esc(r.target)+'</code></td><td><code>'+esc(JSON.stringify(r.scope||{}))+'</code></td><td class="fl-pct">'+esc(r.value)+'</td><td>'+esc(r.mode)+'</td><td>'+esc(r.cite)+'</td></tr>').join('')+'</table></div>':'')+'</div>';}).join('');}
+// an impact preview's figures for this filing's own state (a preview can span several)
+function flOwn(f,i){const st=String(f.state||'').split(',').map(s=>s.trim()),own=st.map(s=>i.byState&&i.byState[s]).filter(Boolean);return own.length===1?own[0]:(i.all||{});}
+function flImpactOf(f,v){return v.status==='approved'?(f.impacts||[]).filter(x=>x.company===v.company&&!x.draft).pop()||null:flDraftImpact(f,v);}
+function flSummary(f){const vs=flShown(f);if(!vs.length)return '<div class="mx-msg">Nothing proposed yet.</div>';
+  return '<div class="fl-grid">'+vs.map(v=>{const p=v.plain||{},i=flImpactOf(f,v),ip=(i&&i.plain)||{};
+    return '<div class="fl-co"><div class="fl-co-h">'+esc(p.company||v.company)+'<span>'+esc(v.status==='approved'?p.status||'In use':'Proposal')+'</span></div><div class="fl-co-b">'+
+      '<div>'+esc(p.changes||'')+'</div>'+(p.starts?'<div class="fl-note">'+esc(p.starts)+'</div>':'')+
+      (i?'<div><span class="fl-big">'+esc(ip.vsIso||'')+'</span>'+(ip.vsNow?'<div class="fl-note">'+esc(ip.vsNow)+'</div>':'')+'</div>':'<div class="fl-note">Effect on premium not worked out yet.</div>')+
+    '</div></div>';}).join('')+'</div>'+
+    '<p class="fl-note">Effect: estimated by pricing '+((((f.impacts||[]).map(x=>(x.plain||{}).risks).find(Boolean))||'')+' ').replace(/^ /,'')+'typical businesses both ways, the insurer’s rates against ISO’s, on our own engine.'+
+    (f.plain&&f.plain.checked?' '+esc(f.plain.checked.split('. ')[0])+'.':'')+'</p>';}
+function flRows(f){const vs=flShown(f);if(!vs.length)return '<div class="mx-msg">Nothing proposed yet.</div>';
+  const tone=t=>t==='up'?'fl-up':t==='down'?'fl-down':'fl-same';
+  return '<div class="fl-grid">'+vs.map(v=>{const p=v.plain||{},rows=(p.rows||[]).filter(r=>!r.rule),rules=(p.rows||[]).filter(r=>r.rule);
+    return '<div class="fl-co"><div class="fl-co-h">'+esc(p.company||v.company)+'<span>'+esc(v.status==='approved'?p.status||'In use':'Proposal')+'</span></div><div class="fl-co-b">'+
+      (p.starts?'<div class="fl-note"><b>Starts:</b> '+esc(p.starts)+'</div>':'')+
+      (rows.length?'<div class="fl-mdw"><table class="fl-md"><tr><th>Coverage</th><th>Applies to</th><th class="fl-pct">Change</th></tr>'+
+        rows.map(r=>{const own=/^specialty/.test(r.where||'')&&r.tone==='same';
+          return '<tr><td>'+esc(r.what)+(FL.tech&&r.note?'<span class="fl-why">'+esc(r.note)+'</span>':'')+'</td><td>'+esc(r.where)+'</td><td class="fl-pct '+tone(r.tone)+'">'+esc(own?'their own rate':r.change)+'</td></tr>';}).join('')+'</table></div>':'')+
+      (rules.length?'<h3>Rules for the whole policy</h3>'+rules.map(r=>'<div class="fl-rule">'+FL_RULE+'<div><b>'+esc(r.what)+': '+esc(r.change)+'</b>'+
+        (FL.tech&&r.note?'<div>'+esc(r.note)+'</div>':'')+'</div></div>').join(''):'')+
+      (FL.tech?'<div class="fl-note">'+esc(v.filing+' v'+v.version+' · '+v.compiledKeys+' compiled keys')+'</div>'+
+        '<div class="fl-mdw"><table class="fl-md"><tr><th>Target</th><th>Scope</th><th class="fl-pct">Value</th><th>Mode</th><th>Cite</th></tr>'+
+        (v.detail||[]).map(r=>'<tr><td><code>'+esc(r.target)+'</code></td><td><code>'+esc(JSON.stringify(r.scope||{}))+'</code></td><td class="fl-pct">'+esc(r.value)+'</td><td>'+esc(r.mode)+'</td><td>'+esc(r.cite)+'</td></tr>').join('')+'</table></div>':'')+
+    '</div></div>';}).join('')+'</div>'+
+    '<p class="fl-note">Every change applies on top of ISO’s rates in force on the policy date.'+
+    (FL.tech?' Earlier versions on file: '+(f.versions.filter(v=>v.status==='approved'&&!v.current).map(v=>v.company+' v'+v.version).join(', ')||'none')+'.':'')+'</p>';}
 function flDraftImpact(f,v){return (f.impacts||[]).filter(x=>x.company===v.company&&x.draft===v.filing+'.v'+v.version).pop()||null;}
-function flImpact(f){const st=String(f.state||'').split(',').map(s=>s.trim());
+function flImpact(f){
   if(!f.impacts||!f.impacts.length)return '<div class="mx-msg">Not worked out yet. It runs on our own engine when a filing is uploaded or built.</div>';
-  return f.impacts.map(i=>{const own=st.map(s=>i.byState&&i.byState[s]).filter(Boolean),a=own.length===1?own[0]:i.all,vc=i.vsCurrent,p=i.plain||{};
-    const now=p.vsNow,groups=Object.keys((i.byCoverage||{}).All||{});
-    return '<div class="fl-doc"><b>'+esc(p.company||i.company)+'</b> '+(i.draft?'<span class="fl-tag">proposal</span> ':'')+'<span class="fl-big">'+esc(p.vsIso||'')+'</span>'+
-      (now?' <span class="mx-msg">· '+esc(now)+'</span>':'')+
-      '<div class="fl-mdw"><table class="fl-md"><tr><th>Type of business</th><th class="fl-pct">vs ISO</th>'+(now?'<th class="fl-pct">vs today</th>':'')+groups.map(g=>'<th class="fl-pct">'+flCov(g)+'</th>').join('')+'</tr>'+
-      Object.entries(i.byRiskType||{}).map(([k,v])=>'<tr><td>'+esc(k)+'</td><td class="fl-pct"><b>'+flPct(v.change)+'</b></td>'+(now?'<td class="fl-pct"><b>'+flPct((vc.by_risk_type||{})[k])+'</b></td>':'')+
-        groups.map(g=>{const c=((i.byCoverage||{})[k]||{})[g];return '<td class="fl-pct">'+(c?flPct(c.change):'—')+'</td>';}).join('')+'</tr>').join('')+'</table></div>'+
-      '<div class="mx-msg">Coverage columns: how much each part of the premium moves against ISO.'+(FL.tech?' · '+a.rated+' risks, '+flPct(a.min)+' to '+flPct(a.max)+' per risk · '+esc(i.file)+' · '+esc(i.generated||''):'')+'</div></div>';}).join('');}
+  const all=[];f.impacts.forEach(i=>Object.values(i.byRiskType||{}).forEach(v=>all.push(Math.abs(Number(v.change)||0))));const max=Math.max(1,...all);
+  return '<p class="fl-note">Estimated by pricing a set of typical businesses both ways, the insurer’s rates against ISO’s. No real customers.</p><div class="fl-grid">'+
+    f.impacts.map(i=>{const a=flOwn(f,i),vc=i.vsCurrent,p=i.plain||{},now=p.vsNow,ch=Number(a.change),groups=Object.keys((i.byCoverage||{}).All||{});
+    return '<div class="fl-co"><div class="fl-co-h">'+esc(p.company||i.company)+'<span>'+(i.draft?'Proposal':'overall')+'</span></div><div class="fl-co-b">'+
+      '<div class="fl-bigpct'+(ch<0?' down':'')+'">'+flPct(isNaN(ch)?null:Math.round(ch))+'</div>'+(now?'<div class="fl-note">'+esc(now)+' (vs today)</div>':'')+
+      '<div class="fl-bars">'+Object.entries(i.byRiskType||{}).map(([k,v])=>{const c=Number(v.change),n=(vc&&vc.by_risk_type||{})[k];
+        return '<div><div class="fl-barrow"><span>'+esc(FL_KIND[k]||k)+'</span><span class="'+(c<0?'fl-down':'fl-up')+'">'+flPct(Math.round(c))+
+          (now&&n!=null?' <span class="fl-note">· '+flPct(n)+' vs today</span>':'')+'</span></div>'+
+          '<div class="fl-bar"><i class="'+(c<0?'down':'')+'" style="width:'+Math.max(2,Math.abs(c)/max*100).toFixed(1)+'%"></i></div></div>';}).join('')+'</div>'+
+      (groups.length?'<div class="fl-note">By part of the premium: '+groups.map(g=>{const c=((i.byCoverage||{}).All||{})[g];return flCov(g)+' '+(c?flPct(Math.round(Number(c.change))):'—');}).join(' · ')+'</div>':'')+
+      (FL.tech?'<div class="fl-note">'+a.rated+' risks, '+flPct(a.min)+' to '+flPct(a.max)+' per risk · '+esc(i.file)+' · '+esc(i.generated||'')+'</div>':'')+
+    '</div></div>';}).join('')+'</div>';}
 function flProof(f){const p=f.proof;if(!p)return '';return p.ran?flChip(p.passed)+p.ok+' of '+p.checks+' checks':esc(p.suite)+' has not been run';}
+function flChecked(f){const p=f.plain||{},line=p.checked||p.proof;
+  return '<div class="fl-ok'+(line?'':' no')+'">'+FL_OK+'<div>'+esc(line||'Not checked yet: it is checked when the filing is built.')+'</div></div>'+
+    (f.proof&&f.proof.ran?'<div class="fl-note">'+flProof(f)+' (automatic tests, last run).</div>':'')+
+    (FL.tech&&(p.proved||[]).length?'<h3>How it was proved, in detail</h3><ul class="fl-checks">'+p.proved.map(x=>'<li>'+esc(x)+'</li>').join('')+'</ul>':'')+
+    '<p class="fl-note">ISO’s system only ever prices the standard request. The insurer’s own changes are checked by us, rule by rule, against that standard price.</p>';}
 function flSources(f){if(!f.sources.length)return '<div class="mx-msg">No documents saved.</div>';
   const all=f.sources.every(x=>x.intact);
   return '<div class="mx-msg">'+flChip(all)+(all?'Original documents, unchanged since we received them.':'<b>Some documents are missing or have changed since we received them.</b>')+'</div>'+
@@ -2080,20 +2157,26 @@ function flSide(){const el=document.getElementById('fl-side');
     '<div class="cap2" style="margin-top:12px">Words on this page</div><dl class="fl-gl">'+FL_GLOSS.map(([k,v])=>'<dt>'+esc(k)+'</dt><dd>'+esc(v)+'</dd>').join('')+'</dl>';}
 function flDraw(){const d=FL.d;if(!d)return;const fs=flFilings();
   if(!flSel()&&fs.length)FL.sel=flKey(fs[0]);
-  document.getElementById('fl-out').innerHTML=fs.length?'<div class="fl-list">'+fs.map(f=>{const p=f.plain||{};
-    return '<button data-f="'+esc(flKey(f))+'" aria-pressed="'+(FL.sel===flKey(f))+'">'+esc(p.title||f.carrier+' '+f.line+' '+f.state)+(p.step&&p.step!=='Proven'?' · '+esc(p.step.toLowerCase()):'')+'</button>';}).join('')+'</div>'
+  document.getElementById('fl-count').textContent=fs.length+(fs.length===1?' filing':' filings')+(FL.carrier?'':' across all carriers');
+  document.getElementById('fl-out').innerHTML=fs.length?fs.map(f=>{const p=f.plain||{},inuse=f.versions.some(v=>v.current);
+    return '<button type="button" class="fl-fi" data-f="'+esc(flKey(f))+'" aria-pressed="'+(FL.sel===flKey(f))+'"><b>'+esc((p.state||f.state)+' · '+(p.line||f.line))+'</b>'+
+      '<span>'+esc(flCompanies(f).join(', ')||p.carrier||f.carrier)+'</span><span>'+esc((inuse?'In use':(p.step||''))+(p.effective?' · '+p.effective.split(';')[0].replace(/^New policies/,'new policies'):''))+'</span></button>';}).join('')
     :'<div class="mx-empty">No filings yet'+(FL.carrier?' for this carrier':'')+'.</div>';
   const f=flSel(),el=document.getElementById('fl-entry');flBoard();flSide();
   if(!f){el.innerHTML='';return;}
-  const p=f.plain||{},steps=p.steps||[],at=steps.indexOf(p.step);
-  const tabs=[['overview','Overview'],['rows','What changes'],['impact','Effect on premium'],['sheet','Our review'],['log','History'],['sources','Documents']].filter(([k])=>k!=='sheet'||f.sheet);
+  const p=f.plain||{},steps=p.steps||[],at=steps.indexOf(p.step),vs=flShown(f),inuse=f.versions.some(v=>v.current);
+  const tabs=[['overview','Overview'],['rows','What changes'],['impact','Effect on premium'],['check','Is it right?'],['sheet','Our review'],['log','History'],['sources','Documents']].filter(([k])=>k!=='sheet'||f.sheet);
   if(!tabs.some(([k])=>k===FL.tab))FL.tab='overview';
-  const body={overview:()=>flSummary(f),rows:()=>flRows(f),impact:()=>flImpact(f),sheet:()=>'<div class="fl-entry">'+f.sheet+'</div>',log:()=>flHistory(f),sources:()=>flSources(f)}[FL.tab]();
-  el.innerHTML='<div class="fl-card"><h2>'+esc(p.title||'')+'</h2>'+
+  const body={overview:()=>flSummary(f),rows:()=>flRows(f),impact:()=>flImpact(f),check:()=>flChecked(f),sheet:()=>'<div class="fl-entry">'+f.sheet+'</div>',log:()=>flHistory(f),sources:()=>flSources(f)}[FL.tab]();
+  const nw=[...new Set(vs.map(v=>v.new_eff).filter(Boolean))].map(flDate).join(' / '),rn=[...new Set(vs.map(v=>v.renewal_eff).filter(Boolean))].map(flDate).join(' / ');
+  el.innerHTML='<div class="fl-card"><div class="fl-cardhead"><h2>'+esc((p.carrier||f.carrier)+' · '+(p.state||f.state)+' '+(p.line||f.line))+'</h2>'+
+    '<span class="fl-badge'+(inuse?'':' wait')+'">'+esc(inuse?'In use':(p.step||'Received'))+'</span></div>'+
     '<div class="fl-steps">'+steps.map((s,i)=>'<span class="'+(i<at?'done':i===at?'now':'')+'">'+(i<at?'✓ ':'')+esc(s)+'</span>').join('')+'</div>'+
-    (p.effective?'<div class="mx-msg">'+esc(p.effective)+'</div>':'')+(p.inShort?'<p class="fl-short">'+esc(p.inShort)+'</p>':'')+
+    (p.inShort?'<p class="fl-short">'+esc(p.inShort)+'</p>':'')+
+    '<div class="fl-dates"><div class="fl-date"><small>New policies from</small><b>'+esc(nw||'—')+'</b></div><div class="fl-date"><small>Renewals from</small><b>'+esc(rn||'—')+'</b></div>'+
+      '<div class="fl-date"><small>Written by</small><b>'+esc(flCompanies(f).join(', ')||'—')+'</b></div></div>'+
     (FL.tech?'<div class="mx-msg">'+esc((f.id?f.id+' · ':'')+'SERFF '+f.serff+' · '+f.status+' · stage '+f.stage)+(f.proof?' · '+flProof(f):'')+'</div>':'')+
-    '<div class="fl-tabs" role="tablist">'+tabs.map(([k,n])=>'<button role="tab" data-tab="'+k+'" aria-selected="'+(FL.tab===k)+'">'+n+'</button>').join('')+'</div>'+body+'</div>';}
+    '<div class="fl-tabs" role="tablist" aria-label="Filing details">'+tabs.map(([k,n])=>'<button type="button" role="tab" data-tab="'+k+'" aria-selected="'+(FL.tab===k)+'">'+n+'</button>').join('')+'</div>'+body+'</div>';}
 function flUpShow(r){const el=document.getElementById('fl-up');if(!r){el.innerHTML='';return;}
   if(r.error){el.innerHTML='<div class="fl-card"><b>This file couldn\u2019t be read as a filing packet.</b><div class="mx-msg">'+esc(r.error)+'</div></div>';return;}
   const p=r.plain||{},j=r.impact,li=xs=>xs.map(x=>'<div class="mx-msg">'+esc(x)+'</div>').join('');
