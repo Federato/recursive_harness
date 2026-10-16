@@ -65,6 +65,17 @@ def money_date(iso: str | None) -> str:
         return str(iso or "")
 
 
+def starts(new: str | None, renewal: str | None) -> str:
+    """When a change takes effect: 'New policies from Jul 15, 2025; renewals from Nov 1, 2025' (one date said once)."""
+    if not new and not renewal:
+        return ""
+    if new == renewal or not renewal:
+        return f"New policies and renewals from {money_date(new)}"
+    if not new:
+        return f"Renewals from {money_date(renewal)}"
+    return f"New policies from {money_date(new)}; renewals from {money_date(renewal)}"
+
+
 def line(code: str) -> str:
     return LINES.get(code, code)
 

@@ -2043,14 +2043,14 @@ function flSummary(f){const imp=v=>{const i=(f.impacts||[]).filter(x=>x.company=
       return '<span class="fl-big">'+esc(p.vsIso||'')+'</span>'+(p.vsNow?'<div class="mx-msg">'+esc(p.vsNow)+'</div>':'');};
   const n=(f.impacts||[]).map(i=>(i.plain||{}).risks).find(Boolean);
   return '<div class="fl-mdw"><table class="fl-md"><tr><th>Insurer</th><th>What changes</th><th>Effect on premium</th></tr>'+
-    f.versions.map(v=>{const p=v.plain||{};return '<tr><td><b>'+esc(p.company||v.company)+'</b><div class="mx-msg">'+esc(p.status||v.status)+'</div></td><td>'+esc(p.changes||'')+
+    f.versions.map(v=>{const p=v.plain||{};return '<tr><td><b>'+esc(p.company||v.company)+'</b><div class="mx-msg">'+esc(p.status||v.status)+'</div></td><td>'+esc(p.changes||'')+(p.starts?'<div class="mx-msg">'+esc(p.starts)+'</div>':'')+
       '</td><td>'+imp(v)+'</td></tr>';}).join('')+'</table></div>'+
     '<div class="mx-msg" style="margin-top:6px">Effect: estimated by pricing '+(n?n+' ':'')+'typical businesses both ways, the insurer\u2019s rates against ISO\u2019s, on our own engine. '+
     (f.plain&&f.plain.proof?flChip(true)+esc(f.plain.proof)+'.':'')+'</div>';}
 function flRows(f){if(!f.versions.length)return '<div class="mx-msg">Nothing proposed yet.</div>';
   return f.versions.map(v=>{const p=v.plain||{};return '<div class="fl-doc"><b>'+esc(p.company||v.company)+'</b> <span class="mx-msg">'+esc(p.status||'')+'</span>'+
-    '<div class="fl-mdw"><table class="fl-md"><tr><th>Coverage</th><th>Applies to</th><th>Change</th><th>Why</th></tr>'+
-    (p.rows||[]).map(r=>'<tr><td class="nw">'+esc(r.what)+'</td><td>'+esc(r.where)+'</td><td class="nw"><b>'+esc(r.change)+'</b></td><td class="mx-msg">'+esc(r.note||'')+'</td></tr>').join('')+'</table></div>'+
+    '<div class="fl-mdw"><table class="fl-md"><tr><th>Coverage</th><th>Applies to</th><th>Change</th><th>Starts</th><th>Why</th></tr>'+
+    (p.rows||[]).map(r=>'<tr><td class="nw">'+esc(r.what)+'</td><td>'+esc(r.where)+'</td><td class="nw"><b>'+esc(r.change)+'</b></td><td class="mx-msg">'+esc(r.starts||'')+'</td><td class="mx-msg">'+esc(r.note||'')+'</td></tr>').join('')+'</table></div>'+
     (FL.tech?'<div class="mx-msg">'+esc(v.filing+' v'+v.version+' · '+v.compiledKeys+' compiled keys')+'</div>'+
       '<div class="fl-mdw"><table class="fl-md"><tr><th>Target</th><th>Scope</th><th class="fl-pct">Value</th><th>Mode</th><th>Cite</th></tr>'+
       (v.detail||[]).map(r=>'<tr><td><code>'+esc(r.target)+'</code></td><td><code>'+esc(JSON.stringify(r.scope||{}))+'</code></td><td class="fl-pct">'+esc(r.value)+'</td><td>'+esc(r.mode)+'</td><td>'+esc(r.cite)+'</td></tr>').join('')+'</table></div>':'')+'</div>';}).join('');}

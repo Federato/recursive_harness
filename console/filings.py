@@ -310,12 +310,13 @@ def _plain(r: dict, sheet_raw: str, log_raw: str) -> dict:
     new = sorted({v.get("new_eff") for v in r["versions"] if v.get("new_eff")})
     ren = sorted({v.get("renewal_eff") for v in r["versions"] if v.get("renewal_eff")})
     for v in r["versions"]:
+        when = P.starts(v.get("new_eff"), v.get("renewal_eff"))
         v["plain"] = {"company": _company_name(r["carrier"], v["company"]),
-                      "changes": P.company_rows(v.get("detail") or []),
+                      "changes": P.company_rows(v.get("detail") or []), "starts": when,
                       "status": P.CELL.get(v["status"], v["status"]),
                       "rows": [{"what": P.target(x["target"]), "where": ("the whole policy" if str(x["target"]).startswith(("MIN:", "PCT:"))
                                           else P.scope(x.get("scope"))),
-                                "change": P.row_change(x), "note": x.get("note", "")}
+                                "change": P.row_change(x), "starts": when, "note": x.get("note", "")}
                                for x in v.get("detail") or []]}
     st = [x.strip() for x in str(r.get("state", "")).split(",")]
     for i in r.get("impacts", []):
