@@ -151,7 +151,7 @@ engine's on 200 sampled keys, range keys included.
 | # | Task | Size | Needs |
 |---|---|---|---|
 | ~~C-01~~ | ✅ **DONE 2026-10-16**: folder, local git, `CLAUDE.md`, plan sync, B-55 in the harness backlog | — | — |
-| C-02 | **Harness link** `cg/harness.py`: the harness on the import path in one place, `GL_ERC_ROOT` / `CARRIERS_ROOT` set as the harness sets them; `tests/verify_harness_link.py` rates the IA sample through `Kernel.rate` from here | Small | — |
+| ~~C-02~~ | ✅ **DONE 2026-10-16**: **Harness link** `cg/harness.py`: the harness on the import path in one place; `GL_ERC_ROOT` / `CF_ERC_ROOT` / `CARRIERS_ROOT` set to the C: roots when unset, and refused if on F: (the engine's own defaults still name F:). `tests/verify_harness_link.py` 7 of 7: Iowa's sample (GL_IA_20261001_V01 over GL_CW_20261001_V01) rates $450 here and identically in the harness's own process | Small | — |
 | C-03 | **Inventory** `cg/inventory.py`: per edition (20240401, 20250401, 20260601, 20261001, 20270401_V04), instruction counts, the rules each hard instruction sits in, write sites by resolved field. Output `results/inventory.json` and a plain summary | Small | — |
 | C-04 | **Graph format** `cg/model.py`: input, rate table, lookup, step, condition, repeat group, record create / remove, premium; versions; JSON in and out | Small-medium | — |
 | C-05 | **Tables as shared rate tables**, loaded once per edition through `load_table` / `ResolvedBook.table`; lookups with multi-key, range keys and interpolation | Medium | — |
@@ -288,3 +288,4 @@ answers in its answer store (§5, step 3).
 | 2026-10-16 | Plan drafted; D1-D5 taken; setup done (now C-01) |
 | 2026-10-16 | Revised by the user: the harness loop three ways (D6), stored answers then live with a go per pass (D7), ISO without deviation first, DEV-003 moved after the technical loop (D8) |
 | 2026-10-16 | Re-organised into release-candidate groups CG-1 to CG-8, tasks C-01 to C-31 (C-01 done). About 12-20 days. Waiting for the go on CG-1 |
+| 2026-10-16 | C-02 done: `cg/harness.py`; `verify_harness_link.py` 7 of 7 (Iowa sample $450, same as the harness at home). CG-1 left: C-03, C-04, C-05 |
