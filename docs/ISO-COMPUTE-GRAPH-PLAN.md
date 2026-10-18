@@ -2,10 +2,10 @@
 
 # ISO compute graph — proof of concept plan
 
-**Status (end of 2026-10-16): CG-1, CG-2 and CG-3 complete (C-01 to C-16, 16 of 31 tasks). Every instruction in
-ISO's Iowa GL programs now compiles into the graph: 0 holes in all 5 editions, and every gate passes (15 test
-scripts). Next: CG-4 (C-17 executor: rate a whole request on the graph), which needs the user's go. Organised in
-release-candidate groups CG-1 to CG-8 (§6).**
+**Status (2026-10-18): CG-1, CG-2 and CG-3 complete; CG-4 started (C-01 to C-17, 17 of 31 tasks). Every
+instruction in ISO's Iowa GL programs compiles into the graph (0 holes in all 5 editions), and whole requests now rate
+on it: the executor equals the engine on all 5 package samples and all 11 stored ISO requests, field for field
+(16 gate scripts pass). Next: C-18, the three-way loop. Organised in release-candidate groups CG-1 to CG-8 (§6).**
 Master copy: `C:\FederatoProjects\ISOComputeGraph\docs\PLAN.md`. Synced copy:
 `C:\FederatoProjects\Recursive_Harness_2.0\docs\ISO-COMPUTE-GRAPH-PLAN.md` (`python tools/sync_plan.py`).
 Harness backlog item: **B-55** (RC-5).
@@ -196,7 +196,7 @@ the sample, and writes its record.
 
 | # | Task | Size | Needs |
 |---|---|---|---|
-| C-17 | **Executor** `cg/run.py`: rates a request on the graph in dependency order; half-up rounding from the harness; refuses where the engine refuses | Medium | — |
+| ~~C-17~~ | ✅ **DONE 2026-10-18**: **Executor** `cg/run.py` (`GraphRater().rate(request)`): the engine's own steps with the rules replaced by the graph. The request becomes the engine's tree and edition (a writing company refused until CG-6); the engine's request checks run in place (OI-134, OI-130); the edition's graph (compiled once, kept; 2-4 s, about 240 MB) runs from its top node in ISO's run order, each node after the inputs it asks for; the rated tree is rebuilt from what the run left and the engine's after-checks read it in place (OI-129, OI-94, total and check figure, coverages). Half-up rounding, checked against the engine's mode at import. A rating takes 0.2-0.8 s. `tests/verify_run.py` 28 of 28: all 5 editions compile whole; **5 package samples and 11 stored ISO requests** (3 / 3 / 3 / 1 / 1 by edition) equal the engine: premium, coverages, messages and **every field of the rated tree**, message ids included (12,260 / 452 / 450 / 450 / 648; 785 / 3,500 / 2,592 / 2,828 / 3,818 / 830 / 782 / 3,597 / 8,016 / 8,016 / 7,970); **240 of 240 variants** (a field dropped, changed or junk, a record repeated) equal the engine, refusals at the same point: 158 rated, 48 refused before the rules, 27 while they ran, 6 after them, 1 with no edition; a mutant rounding half-even differs on 11 of the 158 rated. Only the OI-94 explanation is shorter (it names the empty table from the engine's trace, which the graph does not keep) | Medium | — |
 | C-18 | **The loop** `cg/loop.py`: the pass of §5: request set, ISO side (stored first), engine, graph, three-way difference field by field | Medium | — |
 | C-19 | **Pass records** `results/passes/pass-NN.json` and §5's triage table (where each gap goes) | Small | — |
 | C-20 | **Replay**: every plain arithmetic step re-computes from its inputs, as the rating graph's gate does | Small | — |
@@ -308,3 +308,4 @@ answers in its answer store (§5, step 3).
 | 2026-10-16 | C-14 done: tests in order. verify_tests 23/23 (6,432 trials over 2,144 whole rule calls equal the engine; shapes 1,800/1,800); every earlier gate passes. 139 holes left in force (Guid, Break, GetList). Next: C-15 |
 | 2026-10-16 | C-15 done: early exit. verify_breaks 17/17 (4,000 real trials, 6 shapes 1,800/1,800); every earlier gate passes. Only Guid (134 in force) remains. Next: C-16 |
 | 2026-10-16 | C-16 done. **CG-3 COMPLETE**: 0 holes in all 5 editions; verify_ids 23/23 (30,640 trials over the 766 id-making rule calls and 22,500 over 7,500 sampled calls equal the engine); all 15 gates pass. Next: CG-4 (needs the go) |
+| 2026-10-18 | Go for CG-4. C-17 done: executor `cg/run.py`; verify_run 28/28 (5 samples + 11 stored ISO requests equal the engine field for field; 240 of 240 variants, refusals included). Next: C-18 |
