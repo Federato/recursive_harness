@@ -2,13 +2,13 @@
 
 # ISO compute graph — proof of concept plan
 
-**Status (2026-10-18): CG-1 to CG-4 complete, CG-5 under way (C-01 to C-22, 22 of 31 tasks). Every instruction in
-ISO's Iowa GL programs compiles into the graph (0 holes in all 5 editions); whole requests rate on it equal to the
-engine, field for field; the three-way loop records its passes. **Pass 3** (`results/passes/pass-03.json`): 362
-requests on all 5 editions, graph = engine on every one, the 23 ISO premiums equal three ways, exit clean; the only
-gaps with ISO are the GL form labels (harness OI-106, a recorded finding for C-25). 339 generated requests have no
-ISO answer: the live gap. Next: C-23, live calls, which needs the user's go and a choice of which 25. Organised in
-release-candidate groups CG-1 to CG-8 (§6).**
+**Status (2026-10-18): CG-1 to CG-4 complete, CG-5 under way (C-01 to C-22 done, C-23 in progress; 22 of 31
+tasks). Every instruction in ISO's Iowa GL programs compiles into the graph (0 holes in all 5 editions); whole requests
+rate on it equal to the engine, field for field. **Pass 5** (`results/passes/pass-05.json`): 362 requests on all 5
+editions, graph = engine on every one, **73 ISO answers** (50 of them live, group 1 of C-23) equal three ways: 45
+premiums with every published field and message, 5 refused by ISO where ours refuses, exit clean; the only gaps with
+ISO are the GL form labels (harness OI-106, a recorded finding for C-25). Left: C-23 groups 2 to 7 (289 calls), each
+on the user's go. Organised in release-candidate groups CG-1 to CG-8 (§6).**
 Master copy: `C:\FederatoProjects\ISOComputeGraph\docs\PLAN.md`. Synced copy:
 `C:\FederatoProjects\Recursive_Harness_2.0\docs\ISO-COMPUTE-GRAPH-PLAN.md` (`python tools/sync_plan.py`).
 Harness backlog item: **B-55** (RC-5).
@@ -43,7 +43,7 @@ for what the stored set doesn't cover, with a go per pass.
 | D4 | Version control | **Local git** in this folder, no remote for now |
 | D5 | What the proof stands on | **Every Iowa GL edition with stored ISO answers** (5 editions, 11 answers), and the engine on generated requests |
 | D6 | How it is tested | **The harness's own loop**, with the graph as a third party: same request to ISO, engine and graph; every difference judged, fixed in the right project, re-run, recorded (§5) |
-| D7 | ISO calls | **Stored answers first, then live**: each pass runs free on the stored answers; live calls only for requests the stored set doesn't cover, through the harness's call ledger (lane `active`, shown as *Planned work*, origin `iso-compute-graph`), **up to 25 a pass, with the user's go per pass** |
+| D7 | ISO calls | **Stored answers first, then live**: each pass runs free on the stored answers; live calls only for requests the stored set doesn't cover, through the harness's call ledger (lane `active`, shown as *Planned work*, origin `iso-compute-graph`), **up to 25 a pass, with the user's go per pass**. *2026-10-18, the user:* live calls in fixed groups of **50**, one group per go (`cg/live.py`) |
 | D8 | Deviations | **ISO without deviation first.** Passes 1 onward rate ISO's technical premium only; DEV-003 starts only when the technical loop is clean (CG-6) |
 
 ## 3. What we start from (measured 2026-10-16)
@@ -213,7 +213,7 @@ finding. Harness defects found are logged in the harness's `docs/OPEN-ITEMS.md`.
 |---|---|---|---|
 | ~~C-21~~ | ✅ **DONE 2026-10-18**: **Pass 1, free** (`results/passes/pass-01.json`): the 11 stored requests on 5 editions, the 5 package samples, and the harness's **premium-only ISO rows** for Iowa rebuilt (`cg/requests.py`): of 18, 5 are a stored request already, 1 a repeat, **12 rebuilt** by the harness's own builder (`scripts/variants.py`, as `sweep.py` built them) and kept only because the engine prices each today as it did when ISO was asked (0 moved). 28 requests, **graph = engine on all 28, the 23 ISO premiums (12 premium only) equal three ways**, exit clean (156 form-label gaps, OI-106-GL). `tests/verify_pass1.py` 5 of 5 | Small | — |
 | ~~C-22~~ | ✅ **DONE 2026-10-18**: **Pass 2, free side** (`pass-02.json`, re-run as `pass-03.json`): pass 1's requests and **334 Iowa requests generated** by `scripts/variants.py` on all 5 editions (65 / 63 / 67 / 69 / 70: every control's declared options one at a time, up to 3 each and 6 class codes, prerequisites set; then 15 mixes of 2 to 4 controls an edition; 77 configurations an edition cannot express, 78 repeats; seeded, rebuilt to the same requests by hash, each request keeps its config). Pass 2 left **5 gaps, placed here**: the same refusals (3 null in arithmetic, 2 OI-94) worded differently, the engine naming the instruction or the empty table from its trace; **fixed here** (the loop compares a refusal by kind and code, as C-17 does). **Pass 3**: 362 requests, **graph = engine on all 362** (357 rated, 5 refused; 174,891 tree fields), the 23 ISO premiums equal three ways, exit clean. **Live gap: 339 requests with no stored ISO answer** (334 generated, 5 samples), 14 passes at 25. `tests/verify_pass2.py` 7 of 7 | Small-medium | — |
-| C-23 | **Live gap**: ISO for C-22's uncovered requests; answers stored in the harness's answer store | Small | **your go**, ≤ 25 ISO calls a pass (lane `active`) |
+| C-23 | 🟡 **IN PROGRESS**: **Live gap** `cg/live.py`: pass 3's 339 requests with no stored ISO answer in **7 fixed groups of 50** (the user's size; 50 x 6 + 39; `results/passes/live-groups.json`; group 1 leads with the 5 package samples and the 5 requests our side refuses, then each group takes the editions in turn); each request rebuilt and checked by hash before it is sent, stored answers first, every call through the harness's client (lane `active`, origin `iso-compute-graph`), answers in the harness's answer store. **Group 1 sent 2026-10-18 (50 calls): 45 rated, every premium equal; 5 refused by ISO at the same lookup ours refuses** (ILFPremOps for aggregates 50,000 / 20,000,000 / 300,000; the size-of-risk loss cost, OI-94). Pass 4 counted the 5 samples twice (as stored too), fixed here: a request this project sent keeps its own source. **Pass 5**: the same 362 requests, graph = engine on all, 73 ISO answers equal three ways (16,793 published fields of the 50 new compared), exit clean (860 form-label gaps, OI-106-GL). `tests/verify_live.py` 7 of 7. Left: groups 2-7, 289 calls, a go each | Small | **your go** per group of 50 (lane `active`) |
 | C-24 | **Fix and re-run** until clean; each gap placed by §5's table, expert reviewers where it isn't obvious | Medium | further passes may need calls, a go each |
 | C-25 | **Hand-offs**: engine defects or ISO findings written up in the harness (OPEN-ITEMS, backlog) | Small | — |
 
@@ -315,3 +315,4 @@ answers in its answer store (§5, step 3).
 | 2026-10-18 | C-18 done: the three-way loop, verify_loop 20/20. Free pass on 16 requests: graph = engine everywhere, the 11 ISO premiums equal three ways; 156 form-label differences G=E!=I (OI-106 on GL, for C-25). Next: C-19 |
 | 2026-10-18 | C-19 and C-20 done. **CG-4 COMPLETE**: run 28/28, loop 20/20, passes 11/11, replay 4/4. `results/passes/pass-00.json` (16 requests, exit clean; 156 form-label gaps, recorded finding OI-106-GL). Next: CG-5 (needs the go) |
 | 2026-10-18 | Go for C-21 and C-22. C-21 done: pass 1 (28 requests incl. 12 premium-only ISO rows rebuilt), clean. C-22 done: pass 2 with 334 generated requests left 5 gaps placed here (refusal wording), fixed in the comparison; pass 3 clean, graph = engine on all 362. Live gap 339 requests. Next: C-23 (needs the go and a choice of 25) |
+| 2026-10-18 | The user: live calls in groups of 50; go for group 1. C-23 group 1 sent (50 calls, lane active): 45 premiums equal, 5 refused alike. Pass 4 (samples counted twice, fixed), pass 5 clean: 73 ISO answers three ways. Left: groups 2-7 (289 calls) |
