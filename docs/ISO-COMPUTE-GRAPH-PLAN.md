@@ -2,10 +2,12 @@
 
 # ISO compute graph — proof of concept plan
 
-**Status (2026-10-18): CG-1, CG-2 and CG-3 complete; CG-4 started (C-01 to C-17, 17 of 31 tasks). Every
-instruction in ISO's Iowa GL programs compiles into the graph (0 holes in all 5 editions), and whole requests now rate
-on it: the executor equals the engine on all 5 package samples and all 11 stored ISO requests, field for field
-(16 gate scripts pass). Next: C-18, the three-way loop. Organised in release-candidate groups CG-1 to CG-8 (§6).**
+**Status (2026-10-18): CG-1, CG-2 and CG-3 complete; CG-4 under way (C-01 to C-18, 18 of 31 tasks). Every
+instruction in ISO's Iowa GL programs compiles into the graph (0 holes in all 5 editions); whole requests rate on it
+equal to the engine, field for field; and the three-way loop runs free on the stored answers: all 11 ISO premiums
+equal on all three sides. First finding: GL form names and numbers read "Value Not Found" in the engine and the graph
+where ISO prints them (harness OI-106, fixed for Property only), for C-25. Next: C-19, pass records. Organised in
+release-candidate groups CG-1 to CG-8 (§6).**
 Master copy: `C:\FederatoProjects\ISOComputeGraph\docs\PLAN.md`. Synced copy:
 `C:\FederatoProjects\Recursive_Harness_2.0\docs\ISO-COMPUTE-GRAPH-PLAN.md` (`python tools/sync_plan.py`).
 Harness backlog item: **B-55** (RC-5).
@@ -197,7 +199,7 @@ the sample, and writes its record.
 | # | Task | Size | Needs |
 |---|---|---|---|
 | ~~C-17~~ | ✅ **DONE 2026-10-18**: **Executor** `cg/run.py` (`GraphRater().rate(request)`): the engine's own steps with the rules replaced by the graph. The request becomes the engine's tree and edition (a writing company refused until CG-6); the engine's request checks run in place (OI-134, OI-130); the edition's graph (compiled once, kept; 2-4 s, about 240 MB) runs from its top node in ISO's run order, each node after the inputs it asks for; the rated tree is rebuilt from what the run left and the engine's after-checks read it in place (OI-129, OI-94, total and check figure, coverages). Half-up rounding, checked against the engine's mode at import. A rating takes 0.2-0.8 s. `tests/verify_run.py` 28 of 28: all 5 editions compile whole; **5 package samples and 11 stored ISO requests** (3 / 3 / 3 / 1 / 1 by edition) equal the engine: premium, coverages, messages and **every field of the rated tree**, message ids included (12,260 / 452 / 450 / 450 / 648; 785 / 3,500 / 2,592 / 2,828 / 3,818 / 830 / 782 / 3,597 / 8,016 / 8,016 / 7,970); **240 of 240 variants** (a field dropped, changed or junk, a record repeated) equal the engine, refusals at the same point: 158 rated, 48 refused before the rules, 27 while they ran, 6 after them, 1 with no edition; a mutant rounding half-even differs on 11 of the 158 rated. Only the OI-94 explanation is shorter (it names the empty table from the engine's trace, which the graph does not keep) | Medium | — |
-| C-18 | **The loop** `cg/loop.py`: the pass of §5: request set, ISO side (stored first), engine, graph, three-way difference field by field | Medium | — |
+| ~~C-18~~ | ✅ **DONE 2026-10-18**: **The loop** `cg/loop.py` (`Loop().run(request_set())`, `python -m cg.loop`): the request set (every stored Iowa GL request in the harness's answer store, each edition's package sample); ISO's side found as the harness finds it (`console.store.lookup`, by request hash), no live call (a request with no stored answer is listed, the list for C-23); engine and graph; the difference three ways: outcome and premium, edition, every field ISO publishes (aligned by the harness's worksheet map, `console.worksheet`: numbers by value, dates in either format, generated ids never differ), ISO's messages as a set, and graph against engine on every field of the rated tree. Each difference keeps the three values and which pairs agree, labelled `G=E=I` / `G!=E=I` / `G=I!=E` / `G=E!=I` / `G!=E!=I` for §5's table (C-19). `tests/verify_loop.py` 20 of 20: **16 requests (11 with ISO's answer, ISO's edition = ours on all 11)**; graph = engine on all 16 (7,626 tree fields); **the three premiums agree on all 11**; 3,959 published fields compared; **156 differences left, all `G=E!=I`, all form labels**: `ErcFormName` / `ErcFormNumber` read "Value Not Found" in the engine (and so the graph) where ISO prints the form (harness **OI-106**, closed for Property on 2026-10-05 by `CFResolvedBook._form_pages`; GL's book still resolves `FormPage` wholesale; no premium or message effect; for C-25). 12 built cases on one stored request's real ratings: each change found with the right label (graph wrong, engine wrong, both off ISO, all three apart, a field left out, a premium, a refusal on either side, a message), and 785.0 / 785, two date formats, ids, an ISO-only zero not counted | Medium | — |
 | C-19 | **Pass records** `results/passes/pass-NN.json` and §5's triage table (where each gap goes) | Small | — |
 | C-20 | **Replay**: every plain arithmetic step re-computes from its inputs, as the rating graph's gate does | Small | — |
 
@@ -309,3 +311,4 @@ answers in its answer store (§5, step 3).
 | 2026-10-16 | C-15 done: early exit. verify_breaks 17/17 (4,000 real trials, 6 shapes 1,800/1,800); every earlier gate passes. Only Guid (134 in force) remains. Next: C-16 |
 | 2026-10-16 | C-16 done. **CG-3 COMPLETE**: 0 holes in all 5 editions; verify_ids 23/23 (30,640 trials over the 766 id-making rule calls and 22,500 over 7,500 sampled calls equal the engine); all 15 gates pass. Next: CG-4 (needs the go) |
 | 2026-10-18 | Go for CG-4. C-17 done: executor `cg/run.py`; verify_run 28/28 (5 samples + 11 stored ISO requests equal the engine field for field; 240 of 240 variants, refusals included). Next: C-18 |
+| 2026-10-18 | C-18 done: the three-way loop, verify_loop 20/20. Free pass on 16 requests: graph = engine everywhere, the 11 ISO premiums equal three ways; 156 form-label differences G=E!=I (OI-106 on GL, for C-25). Next: C-19 |
