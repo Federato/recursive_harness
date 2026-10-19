@@ -15,7 +15,6 @@ for it*.
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from functools import lru_cache
 
 from ..domain import Citation
 from ..errors import TableError
@@ -25,24 +24,33 @@ from ..erc.tables import (Population, Table, list_tables, load_table,
 from .resolver import Resolution
 
 
-@dataclass(eq=False)          # identity hash: lru_cache below needs `self` hashable
+@dataclass(eq=False)
 class Layer:
-    """One package, with its table inventory read from disk and cached."""
+    """One package, with its table inventory read from disk and cached.
+
+    The caches live on the instance, so a layer and its parsed tables are freed with
+    its book. (They were `@lru_cache` methods, whose module-level cache kept every
+    layer ever built alive: about 7 MB more per rating, OI-138.)
+    """
 
     package: Package
     _tables: dict = field(default_factory=dict, repr=False)
+    _names: dict = field(default_factory=dict, repr=False)
+    _families: dict = field(default_factory=dict, repr=False)
 
     @property
     def pkg_id(self) -> str:
         return self.package.pkg_id
 
-    @lru_cache(maxsize=None)
     def names(self, kind: str) -> tuple[str, ...]:
-        return tuple(list_tables(self.package.content, kind))
+        if kind not in self._names:
+            self._names[kind] = tuple(list_tables(self.package.content, kind))
+        return self._names[kind]
 
-    @lru_cache(maxsize=None)
     def families(self, kind: str) -> dict:
-        return split_families(self.names(kind))
+        if kind not in self._families:
+            self._families[kind] = split_families(self.names(kind))
+        return self._families[kind]
 
     def has(self, kind: str, name: str) -> bool:
         return name in self.names(kind)
