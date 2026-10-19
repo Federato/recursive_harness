@@ -2,7 +2,7 @@
 
 # ISO compute graph — proof of concept plan
 
-**Status (2026-10-19): CG-1 to CG-7 complete; GL in every jurisdiction planned as CG-9 to CG-12 (§11; decisions D9-D12 and the go for CG-9 needed) (C-01 to C-31 done; 31 of 31
+**Status (2026-10-19): CG-1 to CG-7 complete; GL in every jurisdiction planned as CG-9 to CG-12 (§11; decisions D9-D12 and the go for CG-9 needed; D13, the graph as a rating engine, in CG-12) (C-01 to C-31 done; 31 of 31
 tasks); CG-7 signed off by the user (findings and estimate reviewed; C-31: `docs/ESTIMATE.md`, all 51 GL jurisdictions compile with 0 holes; C-28: the graph drawn in Product Studio's kinds, `docs/studio.html`; C-29: `docs/MEASUREMENTS.md`, 2 to 3 s to compile an edition, rating 1.13x the engine; C-30: `docs/FINDINGS.md`). **DEV-003 sits on the graph as data** (CG-6): UFG's LCMs, its ELR
 override table and its policy minimum in front of the edition's graph, nothing recompiled; U8 three ways 2,828 / 3,818
 / 830. Every instruction in ISO's Iowa GL programs compiles into the graph (0 holes in all 5 editions); whole requests
@@ -156,7 +156,7 @@ jurisdiction (added 2026-10-19, §11):** CG-9 → CG-10 → CG-11 → CG-12.
 | CG-9 | GL everywhere: the ground work (leak fixed, state as a parameter, every edition compiled) | C-32 to C-35 | 2-3 |
 | CG-10 | GL everywhere: free passes (stored answers and generated requests, no calls) | C-36 to C-38 | 1.5-2.5 |
 | CG-11 | GL everywhere: ISO live, in waves | C-39 to C-40 | 1-2, over 3-5 weeks of calls |
-| CG-12 | GL everywhere: findings and close | C-41 to C-42 | 0.5-1 |
+| CG-12 | GL everywhere: findings, **the graph as a rating engine of its own**, and close | C-41 to C-46 | 3.5-5 |
 
 ### CG-1 · Foundations (5 tasks) — ✅ COMPLETE 2026-10-16
 
@@ -287,14 +287,20 @@ ISO, or each gap a recorded finding).
 | C-39 | **Live waves**: the requests with no stored answer, about **3,600 calls** at D11's sizes, in fixed groups of 50 (`cg/live.py`, lane `active`, origin `iso-compute-graph`), **each group only with the user's go**; groups follow the waves (D12), each wave followed by its pass. At 150 a day (the `active` lane, shared with the harness's own work) about 24 days of calls; faster only by the user's instruction, logged as an override | Small effort, 3-5 weeks elapsed | the user's go per group |
 | C-40 | **Fix and re-run** after each wave: each gap placed by §5's table, expert reviewers where it isn't obvious; graph gaps fixed here, engine gaps logged in the harness (each fix the harness's, with its own go); the whole regression re-run, Iowa included | Medium | — |
 
-### CG-12 · GL everywhere, findings and close (2 tasks)
+### CG-12 · GL everywhere, a rating engine of its own, findings and close (6 tasks)
 
-**Release gate:** the findings reviewed with the user.
+**Release gate:** **the graph rates through its own entry point and endpoint without the engine's `Kernel`**,
+equal to the engine on every request of the regression (all 51 jurisdictions) and U8, and its lean executor equals
+the checking one field for field (D13); the findings reviewed with the user.
 
 | # | Task | Size | Needs |
 |---|---|---|---|
 | C-41 | **Measurements and the Product Studio view, everywhere**: `cg.measure` and `cg.studio` census per jurisdiction (sizes, compile, rating time); one premium traced in a second state beside the harness worksheet | Small | — |
-| C-42 | **Findings for all GL**: `docs/FINDINGS.md` updated: what differs by state (new instruction shapes, state-only rules, editions on another countrywide parent), engine defects found per state, F1-F10 restated with 51 jurisdictions' counts; `docs/ESTIMATE.md` updated for Property and a Product Studio load | Small | — |
+| C-42 | **Its own rating entry point** (D13): `cg.rate(request)` chooses the edition (the harness's resolver), runs the request checks, the graph and the after-checks (refusals, referrals, total and check figure, coverages) and returns the rating, **with no engine `Kernel` made**. Today `GraphRater` holds a `Kernel` and calls its private checks in place (`_refuse_missing_rating_inputs`, `_ilf_override_needed`, `_refuse_null_loss_cost`, `_collect`); under D1 they are not copied, so the harness exposes them as plain functions, a small harness change with its own go. Gate: the whole regression and U8 equal the engine through it, and no `Kernel` exists in the process | Medium | the user's go for the harness part |
+| C-43 | **A way in**: a local endpoint, `POST /rate`, taking and returning the harness's `/api/rate` shapes, so the console or a client can point at either engine; plus a command line (`python -m cg.rate request.json`). Refusals and referrals in the same form as the engine's. Gate: the regression and U8 through the endpoint equal the engine | Small-medium | — |
+| C-44 | **A lean executor**: the same compiled graph run without recording every value for the trace (the checking executor keeps a value per node and binding, which is what C-28's trace and C-20's replay read). Only what the rating's output needs is kept; the checking executor stays as the referee and for traces. Gate: lean = checking on every request, field for field; speed and memory measured against the engine (C-29 measured the checking one at 1.13x) | Medium | — |
+| C-45 | **Rating-engine gate**: through the endpoint, the regression, U8 and 1,000 repeated ratings: equal to the engine, memory flat, timings added to `docs/MEASUREMENTS.md` | Small | — |
+| C-46 | **Findings for all GL**: `docs/FINDINGS.md` updated: what differs by state (new instruction shapes, state-only rules, editions on another countrywide parent), engine defects found per state, F1-F10 restated with 51 jurisdictions' counts; `docs/ESTIMATE.md` updated for Property and a Product Studio load | Small | — |
 
 ## 7. Layout
 
@@ -379,7 +385,7 @@ answers in its answer store (§5, step 3).
 | 2026-10-19 | Go for C-30. Done: `docs/FINDINGS.md` (what compiled, the 7 extras and why, engine items, F1-F10 with what each needs; §9 gains F8-F10). The user asked for the harness leak fixed: per-book caches in `gl_engine/resolve/book.py`, drafted in the harness working tree; testing and committing it was blocked by permissions in this session. Next: C-31 |
 | 2026-10-19 | Go for C-31. Done: `cg/survey.py`, `docs/ESTIMATE.md`: all 51 GL jurisdictions compile (0 holes), Property census of 47; GL 51 is 4-6 days over 3-5 weeks of calls, Property 8-12 days, a Product Studio load waits on F1-F10. All 31 tasks done; **CG-7's gate (the findings reviewed with the user) is open** |
 | 2026-10-19 | The user signed off CG-7 (findings and estimate reviewed). **CG-7 COMPLETE; the proof of concept's planned work is done.** Left: CG-8 (waiting on others) and the harness leak fix (drafted, to be tested and committed in the harness) |
-| 2026-10-19 | The user asked for the plan to finish GL in every state. Added CG-9 to CG-12 (C-32 to C-42) and §11 (scope, waves, D9-D12 proposed). About 5-8 working days over 3-5 weeks of ISO calls. Waiting for the user's decisions D9-D12 and the go for CG-9 |
+| 2026-10-19 | The user asked for the plan to finish GL in every state. Added CG-9 to CG-12 (C-32 to C-46) and §11 (scope, waves, D9-D12 proposed). The user then added the graph as a rating engine of its own (D13, CG-12, C-42 to C-45). About 8-12 working days over 3-5 weeks of ISO calls. Waiting for the user's decisions D9-D12 and the go for CG-9 |
 | 2026-10-19 | The user: go for the next 100 (groups 3 and 4). Sent (100 calls, lane active, now 150 of 150 today): 100 premiums equal. Pass 7 clean: 223 ISO answers three ways, graph = engine on all 362; verify_live 10/10. Left: groups 5-7 (139 calls) |
 
 ## 11. GL in every jurisdiction (CG-9 to CG-12, added 2026-10-19)
@@ -399,6 +405,7 @@ graph, every difference judged and fixed. The work is small; **ISO's calls set t
 | D9 | Order | GL everywhere before Property; the leak fixed first (C-32) |
 | D10 | Which editions | Per jurisdiction: **the edition in force**, **every edition with a stored ISO answer** (free), and **the next edition filed** (free passes only; live calls only if its pass shows a gap). About 4 to 6 editions each, ~250 graphs, ~13 minutes to compile them all |
 | D11 | How many requests | Edition in force: **about 70**, as Iowa (each control's options one at a time, 15 mixes); next edition: about 25, free only. About 3,600 requests need a live call |
+| D13 | The graph as a rating engine | **Yes** (the user, 2026-10-19): its own entry point, endpoint and a lean executor, in CG-12 (C-42 to C-45), once every jurisdiction is proven. Still on the harness's file reading, tables, resolver and carrier reader (D1: imported, not copied). Property stays after GL (D9) |
 | D12 | Waves | Jurisdictions in **5 waves**, lowest risk first, a pass after each: **W1** 10 on Iowa's countrywide parent (GL_CW_20261001_V01), **W2-W4** the other 33 on it (Iowa, done, is the 44th), **W5** the 7 on another edition or version (CA 2024-11-01, NY 2026-08-01, DC 2026-06-01, CO / ND / NM / SD V03) and Puerto Rico (no stored answers) |
 
 **ISO calls.** About 3,600 calls, 72 groups of 50, each with the user's go (several groups can share one go, as
@@ -412,11 +419,11 @@ are the harness's too.
 | CG-9 ground work | 2-3 | — |
 | CG-10 free passes | 1.5-2.5 | — |
 | CG-11 live and fixing | 1-2 | 3-5 weeks of calls |
-| CG-12 findings | 0.5-1 | — |
-| **Total** | **5-8** | **about 4-6 weeks** |
+| CG-12 rating engine, findings | 3.5-5 | — |
+| **Total** | **8-12** | **about 4-6 weeks** |
 
-Slightly above C-31's 4-6 days: this plan also prices the leak fix, the state parameter and the wider set of
-editions.
+Above C-31's 4-6 days: this plan also prices the leak fix, the state parameter, the wider set of editions and
+(3-4 days) the graph as a rating engine of its own (D13).
 
 **Risks.**
 
