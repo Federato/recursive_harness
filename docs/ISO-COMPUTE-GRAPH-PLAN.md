@@ -2,7 +2,7 @@
 
 # ISO compute graph — proof of concept plan
 
-**Status (2026-10-19): CG-1 to CG-7 complete (C-01 to C-31 done; 31 of 31
+**Status (2026-10-19): CG-1 to CG-7 complete; GL in every jurisdiction planned as CG-9 to CG-12 (§11; decisions D9-D12 and the go for CG-9 needed) (C-01 to C-31 done; 31 of 31
 tasks); CG-7 signed off by the user (findings and estimate reviewed; C-31: `docs/ESTIMATE.md`, all 51 GL jurisdictions compile with 0 holes; C-28: the graph drawn in Product Studio's kinds, `docs/studio.html`; C-29: `docs/MEASUREMENTS.md`, 2 to 3 s to compile an edition, rating 1.13x the engine; C-30: `docs/FINDINGS.md`). **DEV-003 sits on the graph as data** (CG-6): UFG's LCMs, its ELR
 override table and its policy minimum in front of the edition's graph, nothing recompiled; U8 three ways 2,828 / 3,818
 / 830. Every instruction in ISO's Iowa GL programs compiles into the graph (0 holes in all 5 editions); whole requests
@@ -140,7 +140,8 @@ numbers. Each group ships as a unit and closes at its **release gate**. A gate t
 group until fixed or re-scoped with the user. **CG-1 to CG-5 are ISO only, with no deviation (D8).** Each group
 needs the user's go to start.
 
-**Order:** CG-1 → CG-2 → CG-3 → CG-4 → CG-5 → CG-6 → CG-7. CG-8 waits on others.
+**Order:** CG-1 → CG-2 → CG-3 → CG-4 → CG-5 → CG-6 → CG-7. CG-8 waits on others. **Then GL in every
+jurisdiction (added 2026-10-19, §11):** CG-9 → CG-10 → CG-11 → CG-12.
 
 | Group | What it delivers | Tasks | Days |
 |---|---|---|---|
@@ -152,6 +153,10 @@ needs the user's go to start.
 | CG-6 | DEV-003 on the graph | C-26 to C-27 | 1 |
 | CG-7 | Product Studio view and findings | C-28 to C-31 | 2-3 |
 | CG-8 | Waiting on someone else | — | — |
+| CG-9 | GL everywhere: the ground work (leak fixed, state as a parameter, every edition compiled) | C-32 to C-35 | 2-3 |
+| CG-10 | GL everywhere: free passes (stored answers and generated requests, no calls) | C-36 to C-38 | 1.5-2.5 |
+| CG-11 | GL everywhere: ISO live, in waves | C-39 to C-40 | 1-2, over 3-5 weeks of calls |
+| CG-12 | GL everywhere: findings and close | C-41 to C-42 | 0.5-1 |
 
 ### CG-1 · Foundations (5 tasks) — ✅ COMPLETE 2026-10-16
 
@@ -247,7 +252,49 @@ regression still clean. Starts only after CG-5 closes (D8).
 | **Load the graph into Product Studio** (harness B-32 / B-34) | Federato: a way to load a graph without Excel (§9 F1), and a business reason |
 | **§9's questions F1-F7** put to the Product Studio team | the user's call on when and who |
 | **Property proof of concept** (brings in the look-ahead, OI-125) | CG-7's findings and the user's call |
-| **More GL states** | CG-7's findings and the user's call |
+| **More GL states** | CG-7's findings and the user's call. **Planned as CG-9 to CG-12** (2026-10-19) |
+
+### CG-9 · GL everywhere, the ground work (4 tasks)
+
+**Release gate:** the engine's memory stays flat over 1,000 ratings; Iowa's pass re-run through the new state
+parameter is identical to pass 12; every edition in scope (D10) compiles with 0 holes and validates.
+
+| # | Task | Size | Needs |
+|---|---|---|---|
+| C-32 | **The engine's memory leak, fixed in the harness** (to be OI-138): `gl_engine/resolve/book.py` per-book caches (drafted 2026-10-19, in the harness working tree). Measured before and after (`cg.measure --memory`), the harness's own gates, the stored-answer snapshot showing no premium moved; logged and committed in the harness, `book.py` only. Without it a pass of thousands of requests needs far more than 16 GB | Small | the user's go (a harness change) |
+| C-33 | **State as a parameter**: Iowa is fixed in `cg/inventory.py` (`EDITIONS`), `cg/requests.py` (`"IA"`), `cg/live.py`, the passes and the tests. A new `cg/scope.py` holds the jurisdictions and, per jurisdiction, the editions in scope (D10); everything else takes them from there. `docs/KNOWN-GAPS.json` findings gain a state field (`OI-106-GL` and `OI-96-GL` are not Iowa's alone). Gate: Iowa through the new code gives pass 12's record again, every request and difference | Medium | — |
+| C-34 | **Graphs on demand, memory bounded**: the executor keeps at most a few compiled editions (about 150 MB each; 51 x 2-5 editions will not all fit) and compiles the rest when asked (2.5-3.2 s); passes run one jurisdiction at a time, 2 workers at most | Small | — |
+| C-35 | **Every edition in scope compiled**: `cg.survey` widened from the edition in force to D10's set (about 51 x 4 to 6 editions); 0 holes, all valid, and a census by Product Studio kind per jurisdiction. A hole here is the first new instruction shape outside Iowa: placed and compiled before CG-10 | Small | — |
+
+### CG-10 · GL everywhere, free passes (3 tasks)
+
+**Release gate:** graph = engine on every request in every jurisdiction, field for field; the 516 stored ISO
+answers compared three ways, each gap placed and every open one a recorded finding.
+
+| # | Task | Size | Needs |
+|---|---|---|---|
+| C-36 | **Request sets per jurisdiction**: stored ISO answers (516 rated, all but Puerto Rico), premium-only rows rebuilt, package samples, and requests generated by the harness's builder (`scripts/variants.py`) at D11's sizes; configurations a state cannot express counted, not sent (Iowa: 77). State rules the builder must meet are listed per state (e.g. NY terrorism needs the Manhattan input, OI-130) | Small-medium | — |
+| C-37 | **Free pass, graph against engine**: every request in every jurisdiction (about 5,000 to 6,000, about 35 minutes a pass); every difference is the graph's and is fixed here, then re-run until graph = engine everywhere. One pass record per wave of jurisdictions (D12) | Medium | — |
+| C-38 | **Stored-answer pass, three ways**: the 516 stored ISO answers (3 to 5 dates a jurisdiction, so older editions too). Gaps placed by §5's table; the two known engine gaps matched by state; new engine gaps written up in the harness (as C-25) | Small-medium | — |
+
+### CG-11 · GL everywhere, ISO live (2 tasks)
+
+**Release gate:** every request in scope has ISO's answer; a clean pass in every jurisdiction (graph = engine =
+ISO, or each gap a recorded finding).
+
+| # | Task | Size | Needs |
+|---|---|---|---|
+| C-39 | **Live waves**: the requests with no stored answer, about **3,600 calls** at D11's sizes, in fixed groups of 50 (`cg/live.py`, lane `active`, origin `iso-compute-graph`), **each group only with the user's go**; groups follow the waves (D12), each wave followed by its pass. At 150 a day (the `active` lane, shared with the harness's own work) about 24 days of calls; faster only by the user's instruction, logged as an override | Small effort, 3-5 weeks elapsed | the user's go per group |
+| C-40 | **Fix and re-run** after each wave: each gap placed by §5's table, expert reviewers where it isn't obvious; graph gaps fixed here, engine gaps logged in the harness (each fix the harness's, with its own go); the whole regression re-run, Iowa included | Medium | — |
+
+### CG-12 · GL everywhere, findings and close (2 tasks)
+
+**Release gate:** the findings reviewed with the user.
+
+| # | Task | Size | Needs |
+|---|---|---|---|
+| C-41 | **Measurements and the Product Studio view, everywhere**: `cg.measure` and `cg.studio` census per jurisdiction (sizes, compile, rating time); one premium traced in a second state beside the harness worksheet | Small | — |
+| C-42 | **Findings for all GL**: `docs/FINDINGS.md` updated: what differs by state (new instruction shapes, state-only rules, editions on another countrywide parent), engine defects found per state, F1-F10 restated with 51 jurisdictions' counts; `docs/ESTIMATE.md` updated for Property and a Product Studio load | Small | — |
 
 ## 7. Layout
 
@@ -332,4 +379,51 @@ answers in its answer store (§5, step 3).
 | 2026-10-19 | Go for C-30. Done: `docs/FINDINGS.md` (what compiled, the 7 extras and why, engine items, F1-F10 with what each needs; §9 gains F8-F10). The user asked for the harness leak fixed: per-book caches in `gl_engine/resolve/book.py`, drafted in the harness working tree; testing and committing it was blocked by permissions in this session. Next: C-31 |
 | 2026-10-19 | Go for C-31. Done: `cg/survey.py`, `docs/ESTIMATE.md`: all 51 GL jurisdictions compile (0 holes), Property census of 47; GL 51 is 4-6 days over 3-5 weeks of calls, Property 8-12 days, a Product Studio load waits on F1-F10. All 31 tasks done; **CG-7's gate (the findings reviewed with the user) is open** |
 | 2026-10-19 | The user signed off CG-7 (findings and estimate reviewed). **CG-7 COMPLETE; the proof of concept's planned work is done.** Left: CG-8 (waiting on others) and the harness leak fix (drafted, to be tested and committed in the harness) |
+| 2026-10-19 | The user asked for the plan to finish GL in every state. Added CG-9 to CG-12 (C-32 to C-42) and §11 (scope, waves, D9-D12 proposed). About 5-8 working days over 3-5 weeks of ISO calls. Waiting for the user's decisions D9-D12 and the go for CG-9 |
 | 2026-10-19 | The user: go for the next 100 (groups 3 and 4). Sent (100 calls, lane active, now 150 of 150 today): 100 premiums equal. Pass 7 clean: 223 ISO answers three ways, graph = engine on all 362; verify_live 10/10. Left: groups 5-7 (139 calls) |
+
+## 11. GL in every jurisdiction (CG-9 to CG-12, added 2026-10-19)
+
+**In short.** The compiler already handles every GL jurisdiction: all 51 editions in force compile with 0 holes
+(C-31, `docs/ESTIMATE.md`). What is left is Iowa's loop run 51 times: the same requests to ISO, the engine and the
+graph, every difference judged and fixed. The work is small; **ISO's calls set the pace**.
+
+**Scope, measured 2026-10-19** (`results/survey.json`): 51 jurisdictions (49 states, DC, Puerto Rico; no Hawaii);
+552 GL editions on disk, 5 to 10 a jurisdiction since 2024; one edition still to come in 35 jurisdictions and two in
+14 (46 file 2027-04-01); stored ISO answers on 3 to 5 dates in 50 of them (516 rated), none in Puerto Rico.
+
+**Decisions needed (proposed; the user's to take):**
+
+| # | Question | Proposed |
+|---|---|---|
+| D9 | Order | GL everywhere before Property; the leak fixed first (C-32) |
+| D10 | Which editions | Per jurisdiction: **the edition in force**, **every edition with a stored ISO answer** (free), and **the next edition filed** (free passes only; live calls only if its pass shows a gap). About 4 to 6 editions each, ~250 graphs, ~13 minutes to compile them all |
+| D11 | How many requests | Edition in force: **about 70**, as Iowa (each control's options one at a time, 15 mixes); next edition: about 25, free only. About 3,600 requests need a live call |
+| D12 | Waves | Jurisdictions in **5 waves**, lowest risk first, a pass after each: **W1** 10 on Iowa's countrywide parent (GL_CW_20261001_V01), **W2-W4** the other 33 on it (Iowa, done, is the 44th), **W5** the 7 on another edition or version (CA 2024-11-01, NY 2026-08-01, DC 2026-06-01, CO / ND / NM / SD V03) and Puerto Rico (no stored answers) |
+
+**ISO calls.** About 3,600 calls, 72 groups of 50, each with the user's go (several groups can share one go, as
+groups 3-4 did). At the `active` lane's 150 a day that is about 24 days of calls; at the full 250, 15. These lanes
+are the harness's too.
+
+**Effort.**
+
+| Group | Working days | Elapsed |
+|---|---|---|
+| CG-9 ground work | 2-3 | — |
+| CG-10 free passes | 1.5-2.5 | — |
+| CG-11 live and fixing | 1-2 | 3-5 weeks of calls |
+| CG-12 findings | 0.5-1 | — |
+| **Total** | **5-8** | **about 4-6 weeks** |
+
+Slightly above C-31's 4-6 days: this plan also prices the leak fix, the state parameter and the wider set of
+editions.
+
+**Risks.**
+
+| Risk | Handling |
+|---|---|
+| A state's rules use a shape Iowa does not | C-35 compiles every edition in scope first; a hole stops CG-10 until placed |
+| The engine's known gaps recur in every state (OI-137 form labels, OI-96) | Findings matched by state; fixing them is the harness's, with its own go. OI-137 alone would put thousands of form-label differences in each pass until fixed |
+| Memory on 16 GB | C-32 (the leak) and C-34 (graphs on demand), one jurisdiction at a time, 2 workers |
+| Calls compete with the harness's own work | Lane `active` at 150 a day; going past it only by the user's instruction, logged |
+| A state rule the builder cannot express | Counted and listed per state (C-36), not sent |
