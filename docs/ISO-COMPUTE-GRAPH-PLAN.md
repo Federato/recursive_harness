@@ -2,7 +2,7 @@
 
 # ISO compute graph — proof of concept plan
 
-**Status (2026-10-19): CG-1 to CG-7 complete; GL in every jurisdiction planned as CG-9 to CG-12 (§11; decisions D9-D12 and the go for CG-9 needed; D13, the graph as a rating engine, in CG-12) (C-01 to C-31 done; 31 of 31
+**Status (2026-10-19): CG-1 to CG-7 complete; GL in every jurisdiction planned as CG-9 to CG-12 (§11; decisions D9-D14 taken, CG-9 under way; D13, the graph as a rating engine, in CG-12) (C-01 to C-31 done; 31 of 31
 tasks); CG-7 signed off by the user (findings and estimate reviewed; C-31: `docs/ESTIMATE.md`, all 51 GL jurisdictions compile with 0 holes; C-28: the graph drawn in Product Studio's kinds, `docs/studio.html`; C-29: `docs/MEASUREMENTS.md`, 2 to 3 s to compile an edition, rating 1.13x the engine; C-30: `docs/FINDINGS.md`). **DEV-003 sits on the graph as data** (CG-6): UFG's LCMs, its ELR
 override table and its policy minimum in front of the edition's graph, nothing recompiled; U8 three ways 2,828 / 3,818
 / 830. Every instruction in ISO's Iowa GL programs compiles into the graph (0 holes in all 5 editions); whole requests
@@ -284,7 +284,7 @@ ISO, or each gap a recorded finding).
 
 | # | Task | Size | Needs |
 |---|---|---|---|
-| C-39 | **Live waves**: the requests with no stored answer, about **3,600 calls** at D11's sizes, in fixed groups of 50 (`cg/live.py`, lane `active`, origin `iso-compute-graph`), **each group only with the user's go**; groups follow the waves (D12), each wave followed by its pass. At 150 a day (the `active` lane, shared with the harness's own work) about 24 days of calls; faster only by the user's instruction, logged as an override | Small effort, 3-5 weeks elapsed | the user's go per group |
+| C-39 | **Live waves**: the requests with no stored answer, about **3,600 calls** at D11's sizes, in fixed groups of 100 (D14; `cg/live.py`, lane `active`, origin `iso-compute-graph`), **each group only with the user's go**; groups follow the waves (D12), each wave followed by its pass. At 150 a day (the `active` lane, shared with the harness's own work) about 24 days of calls; faster only by the user's instruction, logged as an override | Small effort, 3-5 weeks elapsed | the user's go per group |
 | C-40 | **Fix and re-run** after each wave: each gap placed by §5's table, expert reviewers where it isn't obvious; graph gaps fixed here, engine gaps logged in the harness (each fix the harness's, with its own go); the whole regression re-run, Iowa included | Medium | — |
 
 ### CG-12 · GL everywhere, a rating engine of its own, findings and close (6 tasks)
@@ -386,6 +386,7 @@ answers in its answer store (§5, step 3).
 | 2026-10-19 | Go for C-31. Done: `cg/survey.py`, `docs/ESTIMATE.md`: all 51 GL jurisdictions compile (0 holes), Property census of 47; GL 51 is 4-6 days over 3-5 weeks of calls, Property 8-12 days, a Product Studio load waits on F1-F10. All 31 tasks done; **CG-7's gate (the findings reviewed with the user) is open** |
 | 2026-10-19 | The user signed off CG-7 (findings and estimate reviewed). **CG-7 COMPLETE; the proof of concept's planned work is done.** Left: CG-8 (waiting on others) and the harness leak fix (drafted, to be tested and committed in the harness) |
 | 2026-10-19 | The user asked for the plan to finish GL in every state. Added CG-9 to CG-12 (C-32 to C-46) and §11 (scope, waves, D9-D12 proposed). The user then added the graph as a rating engine of its own (D13, CG-12, C-42 to C-45). About 8-12 working days over 3-5 weeks of ISO calls. Waiting for the user's decisions D9-D12 and the go for CG-9 |
+| 2026-10-19 | The user took D9-D12 as proposed and D14 (live calls in groups of 100, a go per group); go for CG-9, starting with C-32 |
 | 2026-10-19 | The user: go for the next 100 (groups 3 and 4). Sent (100 calls, lane active, now 150 of 150 today): 100 premiums equal. Pass 7 clean: 223 ISO answers three ways, graph = engine on all 362; verify_live 10/10. Left: groups 5-7 (139 calls) |
 
 ## 11. GL in every jurisdiction (CG-9 to CG-12, added 2026-10-19)
@@ -398,7 +399,7 @@ graph, every difference judged and fixed. The work is small; **ISO's calls set t
 552 GL editions on disk, 5 to 10 a jurisdiction since 2024; one edition still to come in 35 jurisdictions and two in
 14 (46 file 2027-04-01); stored ISO answers on 3 to 5 dates in 50 of them (516 rated), none in Puerto Rico.
 
-**Decisions needed (proposed; the user's to take):**
+**Decisions taken (the user, 2026-10-19, each as proposed; D14 the user's own):**
 
 | # | Question | Proposed |
 |---|---|---|
@@ -406,11 +407,11 @@ graph, every difference judged and fixed. The work is small; **ISO's calls set t
 | D10 | Which editions | Per jurisdiction: **the edition in force**, **every edition with a stored ISO answer** (free), and **the next edition filed** (free passes only; live calls only if its pass shows a gap). About 4 to 6 editions each, ~250 graphs, ~13 minutes to compile them all |
 | D11 | How many requests | Edition in force: **about 70**, as Iowa (each control's options one at a time, 15 mixes); next edition: about 25, free only. About 3,600 requests need a live call |
 | D13 | The graph as a rating engine | **Yes** (the user, 2026-10-19): its own entry point, endpoint and a lean executor, in CG-12 (C-42 to C-45), once every jurisdiction is proven. Still on the harness's file reading, tables, resolver and carrier reader (D1: imported, not copied). Property stays after GL (D9) |
+| D14 | Live call groups | **100 calls a group, each group only with the user's go for it** (the user, 2026-10-19; replaces D7's 50 for CG-11). About 36 groups; the `active` lane still stops at 150 a day unless the user says otherwise |
 | D12 | Waves | Jurisdictions in **5 waves**, lowest risk first, a pass after each: **W1** 10 on Iowa's countrywide parent (GL_CW_20261001_V01), **W2-W4** the other 33 on it (Iowa, done, is the 44th), **W5** the 7 on another edition or version (CA 2024-11-01, NY 2026-08-01, DC 2026-06-01, CO / ND / NM / SD V03) and Puerto Rico (no stored answers) |
 
-**ISO calls.** About 3,600 calls, 72 groups of 50, each with the user's go (several groups can share one go, as
-groups 3-4 did). At the `active` lane's 150 a day that is about 24 days of calls; at the full 250, 15. These lanes
-are the harness's too.
+**ISO calls.** About 3,600 calls, **36 groups of 100, each with the user's go** (D14). At the `active` lane's 150 a
+day that is about 24 days of calls; at the full 250, 15. These lanes are the harness's too.
 
 **Effort.**
 
