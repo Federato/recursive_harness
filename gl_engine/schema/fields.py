@@ -28,7 +28,6 @@ from __future__ import annotations
 import csv
 import io
 from dataclasses import dataclass
-from functools import lru_cache
 from pathlib import Path
 
 from ..erc.discovery import read_text
@@ -120,6 +119,8 @@ class Schema:
         #: (table, column) -> the path to the field this one's legal values
         #: depend on. ISO files it; 29 of the 90 dependent domains carry one.
         self._related: dict[tuple[str, str], str] = {}
+        #: (table, column) -> legal values, kept on the schema so it goes with it (OI-141)
+        self._legal: dict[tuple[str, str], tuple[str, ...]] = {}
         self._load()
 
     @classmethod
@@ -201,8 +202,19 @@ class Schema:
     def rating_required(self) -> tuple[Field, ...]:
         return tuple(f for f in self if f.rating_required)
 
-    @lru_cache(maxsize=None)
     def legal_values(self, table: str, column: str) -> tuple[str, ...]:
+        """The values ISO's own domain table permits, or () if unconstrained; once per (table, column) per schema.
+
+        **OI-141:** this was an `@lru_cache(maxsize=None)` method. A method cache lives at module level and keeps
+        every `self` it has seen, so every `Schema` -- and the book it holds, with every table it read -- stayed
+        alive; `app.py` builds one per request (`validate`), so a long-running console grew ~3.6 MB a request.
+        """
+        key = (table, column)
+        if key not in self._legal:
+            self._legal[key] = self._legal_values(table, column)
+        return self._legal[key]
+
+    def _legal_values(self, table: str, column: str) -> tuple[str, ...]:
         """The values ISO's own domain table permits, or () if unconstrained.
 
         Read from the domain table rather than from anything we wrote down --
