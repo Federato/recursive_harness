@@ -315,7 +315,7 @@ with the user. Starts only with the user's go, after D16-D21 (§12).
 
 | # | Task | Size | Needs |
 |---|---|---|---|
-| C-47 | 🟡 **IN PROGRESS**: **The shell.** `cg.serve` also serves the page (`GET /`) and its data: `/api/states` (jurisdictions, editions in scope, the edition in force), `/api/requests?state=` (the regression set's requests, by kind, searchable), `/api/request/<hash>`. One page, plain HTML and JS in `cg/console_page.html`, no build step, nothing fetched (fonts by name, as the harness's D7). The **dark Federato palette** as tokens (D17) and three tabs: *Rate*, *Compare*, *Deviations*. The page states which executor rates (lean) and the harness commit | S | D16, D17 |
+| C-47 | 🟡 **IN PROGRESS**: **The shell.** (steps C-47.1 to C-47.6, §12) `cg.serve` also serves the page (`GET /`) and its data: `/api/states` (jurisdictions, editions in scope, the edition in force), `/api/requests?state=` (the regression set's requests, by kind, searchable), `/api/request/<hash>`. One page, plain HTML and JS in `cg/console_page.html`, no build step, nothing fetched (fonts by name, as the harness's D7). The **dark Federato palette** as tokens (D17) and three tabs: *Rate*, *Compare*, *Deviations*. The page states which executor rates (lean) and the harness commit | S | D16, D17 |
 | C-48 | **Rate.** Pick a jurisdiction, a date and a request (from the set, or pasted JSON, or a short form over the common fields: class, exposure, limits, deductible, writing company, which edits the JSON); the version follows the date unless pinned. Answer: premium, by coverage, messages and notices, a refusal with its step named; the **trace** (`Evaluator.trace`), step by step, foldable. Same answer as `POST /rate`; `Ctrl+Enter` rates | M | C-47 |
 | C-49 | **Compare.** `POST /api/compare`: the request to the graph, the engine (in the same process, as `cg.loop.Loop` does; D18) and ISO's stored answer (by hash, `cg.loop.iso_side`). Three columns: outcome and premium; below, only the fields that differ, in Signal orange, each placed by §5's table and matched to `docs/KNOWN-GAPS.json` (as `cg.stored.judge`); "all equal" when they are. No stored answer: says so, and offers *Ask ISO* (C-50) | M | C-48, D18 |
 | C-50 | **Ask ISO.** One request to ISO from the page, only after a confirm that names the request and the lane's count today; through the harness's ledger (lane `active`, origin `iso-compute-graph`, as `cg.live`), stopping at the lane's cap. ISO's answer is stored as `cg.live`'s are, so the request has a stored answer from then on and *Compare* shows it. Each click is one group of one (D19) | M | C-49, D19 |
@@ -509,6 +509,53 @@ to approve a filing: drafts only, in their own root. No underwriting mode, as C-
 | D19 | ISO live from the page | ✅ **TAKEN 2026-10-21** (as proposed): **One request a click, after a confirm**: each click is its own group of one and the click is the user's go for it (D14's rule, kept per call); lane `active`, origin `iso-compute-graph`, the cap enforced by the ledger and shown; stored answers always first |
 | D20 | Where drafts live | ✅ **TAKEN 2026-10-21** (the user: here, plus a *Promote* button): drafts in **`results/console/carriers`**, in this project. **Promote** copies one draft into `C:\FederatoProjects\Carriers\<group>\<company>\authored` as a new version with status *draft*, after a confirm naming the file, never over an existing version, and logged in the harness's workflow log (`log_action`); the only write to the real root. Approving it stays the harness's workflow (`propose`, `sign-off`), outside this page |
 | D21 | What a draft can change | ✅ **TAKEN 2026-10-21** (as proposed): **What the harness's filing format holds** (LCMs by coverage and class, ISO table overrides, the policy minimum), no new kinds: the page edits the authored JSON's rows; the harness's code validates and compiles them |
+
+**Steps** (each task broken out, 2026-10-21; a step is marked as a task is, at the start of its cell: `✅ **DONE <date>**`
+or `🟡 **IN PROGRESS**`; the console tracker shows them under their task):
+
+| Step | What | Done when |
+|---|---|---|
+| C-47.1 | 🟡 **IN PROGRESS**: **Request index.** `cg/console.py` indexes the regression's saved requests (`results/rate-gate/<ST>-engine.jsonl`: name, source, version, payload) with their kind and whether ISO's answer is stored (the latest pass), cached in `results/console/index.json` | 6,174 requests indexed; counts by jurisdiction equal `docs/REQUESTS.md` |
+| C-47.2 | **Data routes** on `cg.serve`: `GET /api/states`, `GET /api/requests?state=&kind=&q=`, `GET /api/request/<name>`; `/rate`, `/api/rate` and `/health` unchanged | each route answers; `/rate` gives the same answer as before on a sample |
+| C-47.3 | **Page skeleton.** `GET /` serves `cg/console_page.html`: header (name, jurisdiction, date, executor, harness commit), tabs *Rate*, *Compare*, *Deviations* (empty panes), the tab kept in the address (`#rate`) | the page opens on 8766 and the tabs switch |
+| C-47.4 | **Theme** (D17): the dark tokens on `:root`, type (Reckless, Case, fallbacks), primary button in teal, secondary, inputs, tables, pills, the orange difference style; phone width with a 16 px gutter, no sideways scroll | every component on one sample strip in the page, checked by eye at 1440 and 390 px |
+| C-47.5 | **Health for the header**: `GET /api/about` (executor, harness commit, editions kept, process memory) | the header shows them |
+| C-47.6 | **Check.** `tests/verify_console.py` begun with the shell's checks (routes, index counts, `/rate` unchanged); the page in Chrome: no console error, screenshots at 1440 and 390 px | the test passes; screenshots in `results/console/shots` |
+| C-48.1 | **Pick a request**: jurisdiction, kind and search over the index; the chosen request opens in the editor | any of the 6,174 can be opened |
+| C-48.2 | **Paste or edit** the request as JSON; bad JSON said plainly, at its line | a pasted request rates |
+| C-48.3 | **Short form** over the common fields (date, class, exposure, limits, deductible, writing company), editing the JSON and read back from it | a change in either shows in the other |
+| C-48.4 | **Rate and the answer**: `POST /rate`; premium, by coverage, messages and notices; a refusal with its step named; `Ctrl+Enter` rates | the answer equals `cg.rate`'s |
+| C-48.5 | **Trace**: `POST /rate?trace=1` adds `Evaluator.trace`'s lines (the answer otherwise unchanged); shown step by step, foldable | the trace of an Iowa request reads as the engine's |
+| C-48.6 | **Check**: the page's answer = `cg.rate` on a sample per jurisdiction (`verify_console`) | 51 of 51 equal |
+| C-49.1 | **`POST /api/compare`**: graph, engine (in the process, as `cg.loop.Loop`; D18) and ISO's stored answer (`cg.loop.iso_side`), put side by side by `cg.loop.three_way` | an answer for any indexed request |
+| C-49.2 | **Judged**: each difference placed by §5's table and matched to `docs/KNOWN-GAPS.json`, as `cg.stored.judge` | the verdicts equal pass 32's for the same requests |
+| C-49.3 | **The view**: three columns (outcome, premium); below, only the fields that differ, in orange, with their finding; "all equal" when so | read at a glance on U8 and a NY request |
+| C-49.4 | **No stored answer**: said so, with the place for *Ask ISO* (C-50) | shown for a generated request |
+| C-49.5 | **Check**: a sample per jurisdiction and U8 (2,828 / 3,818 / 830) through `/api/compare` = pass 32 (`verify_console`) | all equal |
+| C-50.1 | **The lane**: `GET /api/iso/lane` reads the harness's ledger: lane `active`, today's count, the cap | the count equals the ledger's |
+| C-50.2 | **`POST /api/iso/ask`**: one request sent as `cg.live` sends one (origin `iso-compute-graph`), ISO's answer stored as `cg.live` stores it; refused at the cap | tested on a dry run (nothing sent) |
+| C-50.3 | **The confirm** in the page (its own dialog, not the browser's): the request, its jurisdiction and today's count; nothing is sent without it (D19) | no path sends without the confirm |
+| C-50.4 | **After the answer**: *Compare* re-reads it as stored | the request shows three ways |
+| C-50.5 | **First real call**: only on your click | one request three ways, logged in the ledger |
+| C-51.1 | **How a draft compiles**: read the harness's `deviations` (`impact --draft`, `compile_filing`, `approval`); write the way chosen here; a harness change, if needed, logged in the harness for your go | the way written in this row |
+| C-51.2 | **Filings list**: `GET /api/filings`, the real root (read only) and the draft root, by company, line, state, version and status | UFG's four filings listed |
+| C-51.3 | **A filing, read only**: rows (target, scope, value, mode, citation), dates, status, SERFF number | DEV-003 v2 reads as its authored file |
+| C-51.4 | **Drafts**: *New draft* (a copy, or empty) into `results/console/carriers`; rows edited, added, removed; saved | a draft saved and reopened unchanged |
+| C-51.5 | **Validate, Compile, Show, Diff** by the harness's own code; each problem against its row | DEV-003's copy validates; a broken row is named |
+| C-51.6 | **Promote** (D20): confirm naming the file; a new version, status *draft*, never over one that exists; a line in the workflow log | tested into a scratch root first; the real root only on your click |
+| C-51.7 | **Check**: authored → compiled → shown = authored; nothing outside `results/console` but *Promote* | `verify_console` passes |
+| C-52.1 | **Targets**: each row target the harness's `compile` can write, against what `cg.carrier` applies today | the list, with the gaps |
+| C-52.2 | **Widen `cg.carrier`**, one target at a time, each checked against the engine; a target not done is refused by name | each target equal to the engine |
+| C-52.3 | **Rate with a filing** (approved or draft; the draft root first for this rating only): technical and carrier, the waterfall | U8's waterfall reads as the engine's |
+| C-52.4 | **Compared**: with the engine on the same filing; with ISO for the request with the LCMs written in (`deviations.engine.iso_request`), stored or *Ask ISO*; what ISO cannot be given marked engine-only | shown for U8 and a draft |
+| C-52.5 | **Check**: U8 2,828 / 3,818 / 830 three ways; a draft graph = engine (`verify_console`) | passes |
+| C-53.1 | **Run a set**: `POST /api/sets` (a jurisdiction, a kind or a search), run in the background as `cg.passes` runs, one set at a time, at most 2 workers; `GET /api/sets/<id>` for progress | a state's set runs from the page |
+| C-53.2 | **The summary** as a pass gives it, and the list, each opening in *Compare* | equal to `cg.passes` on the same set |
+| C-53.3 | **Saved as a pass** (`results/passes/pass-NN.json`) | the next pass number taken |
+| C-54.1 | **`tests/verify_console.py` whole**: every check above | passes |
+| C-54.2 | **In Chrome**: every tab, no console error, dark theme, 1440 and 390 px | screenshots kept |
+| C-54.3 | **The whole regression**, one test at a time | every test passes |
+| C-54.4 | **Review with you** | your sign-off |
 
 **Effort.** 4 to 6 working days: shell and Rate 1-1.5, Compare and Ask ISO 1-1.5, Deviations 1.5-2, sets and gate
 0.5-1. No live call is planned; each one is a click with its own go.
