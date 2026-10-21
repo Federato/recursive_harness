@@ -2,7 +2,7 @@
 
 # ISO compute graph — proof of concept plan
 
-**Status (2026-10-21): CG-1 to CG-7 complete; GL in every jurisdiction planned as CG-9 to CG-12 (§11; decisions D9-D15 taken, **CG-9 complete** (the engine's leak fixed, OI-138; the state a parameter; graphs on demand; all 175 editions in scope compile whole); **CG-10 complete** (6,170 requests in 51 jurisdictions, graph = engine on every one, every wave clean; every stored ISO answer three ways, clean); **CG-11 complete** (D15, the minimal live set: 573 calls, all equal three ways; pass 31 over all 6,173 requests clean; 29 tests pass); **CG-12 complete** (the graph rates with no engine Kernel, behind the harness's own `/api/rate`, on a lean executor 2.03x the engine, memory flat over 2,046 ratings in every jurisdiction; findings and estimate for all GL, `docs/FINDINGS.md`, `docs/ESTIMATE.md`); **GL in every jurisdiction done**; next: the user's call (CG-8: F1-F10 to Federato, Property); D13, the graph as a rating engine, in CG-12) (C-01 to C-31 done; 31 of 31
+**Status (2026-10-21): CG-1 to CG-7 complete; GL in every jurisdiction planned as CG-9 to CG-12 (§11; decisions D9-D15 taken, **CG-9 complete** (the engine's leak fixed, OI-138; the state a parameter; graphs on demand; all 175 editions in scope compile whole); **CG-10 complete** (6,170 requests in 51 jurisdictions, graph = engine on every one, every wave clean; every stored ISO answer three ways, clean); **CG-11 complete** (D15, the minimal live set: 573 calls, all equal three ways; pass 31 over all 6,173 requests clean; 29 tests pass); **CG-12 complete** (the graph rates with no engine Kernel, behind the harness's own `/api/rate`, on a lean executor 2.03x the engine, memory flat over 2,046 ratings in every jurisdiction; findings and estimate for all GL, `docs/FINDINGS.md`, `docs/ESTIMATE.md`); **GL in every jurisdiction done**; next: the user's call (CG-8: F1-F10 and the Product Studio load in the parking lot, 2026-10-21; Property open); D13, the graph as a rating engine, in CG-12) (C-01 to C-31 done; 31 of 31
 tasks); CG-7 signed off by the user (findings and estimate reviewed; C-31: `docs/ESTIMATE.md`, all 51 GL jurisdictions compile with 0 holes; C-28: the graph drawn in Product Studio's kinds, `docs/studio.html`; C-29: `docs/MEASUREMENTS.md`, 2 to 3 s to compile an edition, rating 1.13x the engine; C-30: `docs/FINDINGS.md`). **DEV-003 sits on the graph as data** (CG-6): UFG's LCMs, its ELR
 override table and its policy minimum in front of the edition's graph, nothing recompiled; U8 three ways 2,828 / 3,818
 / 830. Every instruction in ISO's Iowa GL programs compiles into the graph (0 holes in all 5 editions); whole requests
@@ -249,8 +249,8 @@ regression still clean. Starts only after CG-5 closes (D8).
 
 | Item | Waiting on |
 |---|---|
-| **Load the graph into Product Studio** (harness B-32 / B-34) | Federato: a way to load a graph without Excel (§9 F1), and a business reason |
-| **§9's questions F1-F7** put to the Product Studio team | the user's call on when and who |
+| **Load the graph into Product Studio** (harness B-32 / B-34) | Federato: a way to load a graph without Excel (§9 F1), and a business reason. **Parking lot** (the user, 2026-10-21) |
+| **§9's questions F1-F10** put to the Product Studio team (counts for all 51 in `docs/FINDINGS.md` §4) | the user's call on when and who. **Parking lot** (the user, 2026-10-21) |
 | **Property proof of concept** (brings in the look-ahead, OI-125) | CG-7's findings and the user's call |
 | **More GL states** | CG-7's findings and the user's call. **Planned as CG-9 to CG-12** (2026-10-19) |
 
@@ -403,6 +403,7 @@ answers in its answer store (§5, step 3).
 | 2026-10-21 | Go for C-44. Done: `cg.lean`, the same rating as the checking executor on all 6,173 requests, field for field; 2.03x the engine (checking 1.09x); `cg.rate` / `cg.serve` lean by default. A new NY stored answer from the harness console moved `verify_requests_scope` (7/9), for C-45. Next: C-45 |
 | 2026-10-21 | Go for C-45, step by step. (1) the regression through the lean endpoint: equal on 6,173 (the full run stopped for low memory after 44 jurisdictions; the user chose to run the last 8 alone). (2) the user: take in the new NY stored answer; pass 32 clean. (3) the endpoint's growth found and fixed here (two caches), 2,046 ratings with memory flat. Next: C-46 |
 | 2026-10-21 | Go for C-46. Done: `docs/FINDINGS.md` and `docs/ESTIMATE.md` for all GL (Property now 6-9 days). **CG-12 COMPLETE; GL in every jurisdiction done.** Next: the user's call (CG-8) |
+| 2026-10-21 | The user: F1-F10 to Federato and the Product Studio load go to the parking lot (CG-8). Asked whether there is a UI for using the graph |
 | 2026-10-19 | The user: go for the next 100 (groups 3 and 4). Sent (100 calls, lane active, now 150 of 150 today): 100 premiums equal. Pass 7 clean: 223 ISO answers three ways, graph = engine on all 362; verify_live 10/10. Left: groups 5-7 (139 calls) |
 
 ## 11. GL in every jurisdiction (CG-9 to CG-12, added 2026-10-19)
