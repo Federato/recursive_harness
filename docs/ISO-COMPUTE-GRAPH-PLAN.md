@@ -2,7 +2,7 @@
 
 # ISO compute graph — proof of concept plan
 
-**Status (2026-10-21): CG-1 to CG-7 complete; GL in every jurisdiction planned as CG-9 to CG-12 (§11; decisions D9-D15 taken, **CG-9 complete** (the engine's leak fixed, OI-138; the state a parameter; graphs on demand; all 175 editions in scope compile whole); **CG-10 complete** (6,170 requests in 51 jurisdictions, graph = engine on every one, every wave clean; every stored ISO answer three ways, clean); **CG-11 complete** (D15, the minimal live set: 573 calls, all equal three ways; pass 31 over all 6,173 requests clean; 29 tests pass); **CG-12 complete** (the graph rates with no engine Kernel, behind the harness's own `/api/rate`, on a lean executor 2.03x the engine, memory flat over 2,046 ratings in every jurisdiction; findings and estimate for all GL, `docs/FINDINGS.md`, `docs/ESTIMATE.md`); **GL in every jurisdiction done**; next: the user's call (CG-8: F1-F10 and the Product Studio load in the parking lot, 2026-10-21; Property open); D13, the graph as a rating engine, in CG-12) (C-01 to C-31 done; 31 of 31
+**Status (2026-10-21): CG-1 to CG-7 complete; GL in every jurisdiction planned as CG-9 to CG-12 (§11; decisions D9-D15 taken, **CG-9 complete** (the engine's leak fixed, OI-138; the state a parameter; graphs on demand; all 175 editions in scope compile whole); **CG-10 complete** (6,170 requests in 51 jurisdictions, graph = engine on every one, every wave clean; every stored ISO answer three ways, clean); **CG-11 complete** (D15, the minimal live set: 573 calls, all equal three ways; pass 31 over all 6,173 requests clean; 29 tests pass); **CG-12 complete** (the graph rates with no engine Kernel, behind the harness's own `/api/rate`, on a lean executor 2.03x the engine, memory flat over 2,046 ratings in every jurisdiction; findings and estimate for all GL, `docs/FINDINGS.md`, `docs/ESTIMATE.md`); **GL in every jurisdiction done**; next: the user's call (CG-8: F1-F10 and the Product Studio load in the parking lot, 2026-10-21; Property open); **CG-13 under way 2026-10-21** (a small rating console on the graph: rate, compare with the engine and ISO, author deviations; §12; D16-D21 taken, the go for all of it); D13, the graph as a rating engine, in CG-12) (C-01 to C-31 done; 31 of 31
 tasks); CG-7 signed off by the user (findings and estimate reviewed; C-31: `docs/ESTIMATE.md`, all 51 GL jurisdictions compile with 0 holes; C-28: the graph drawn in Product Studio's kinds, `docs/studio.html`; C-29: `docs/MEASUREMENTS.md`, 2 to 3 s to compile an edition, rating 1.13x the engine; C-30: `docs/FINDINGS.md`). **DEV-003 sits on the graph as data** (CG-6): UFG's LCMs, its ELR
 override table and its policy minimum in front of the edition's graph, nothing recompiled; U8 three ways 2,828 / 3,818
 / 830. Every instruction in ISO's Iowa GL programs compiles into the graph (0 holes in all 5 editions); whole requests
@@ -141,7 +141,7 @@ group until fixed or re-scoped with the user. **CG-1 to CG-5 are ISO only, with 
 needs the user's go to start.
 
 **Order:** CG-1 → CG-2 → CG-3 → CG-4 → CG-5 → CG-6 → CG-7. CG-8 waits on others. **Then GL in every
-jurisdiction (added 2026-10-19, §11):** CG-9 → CG-10 → CG-11 → CG-12.
+jurisdiction (added 2026-10-19, §11):** CG-9 → CG-10 → CG-11 → CG-12. **Then a rating console on the graph (proposed 2026-10-21, §12):** CG-13.
 
 | Group | What it delivers | Tasks | Days |
 |---|---|---|---|
@@ -157,6 +157,7 @@ jurisdiction (added 2026-10-19, §11):** CG-9 → CG-10 → CG-11 → CG-12.
 | CG-10 | GL everywhere: free passes (stored answers and generated requests, no calls) | C-36 to C-38 | 1.5-2.5 |
 | CG-11 | GL everywhere: ISO live, in waves | C-39 to C-40 | 1-2, over 3-5 weeks of calls |
 | CG-12 | GL everywhere: findings, **the graph as a rating engine of its own**, and close | C-41 to C-46 | 3.5-5 |
+| CG-13 | **A rating console on the graph**: rate, compare with the engine and ISO, author deviations (dark Federato theme) | C-47 to C-54 | 4-6 |
 
 ### CG-1 · Foundations (5 tasks) — ✅ COMPLETE 2026-10-16
 
@@ -302,6 +303,27 @@ the checking one field for field (D13); the findings reviewed with the user.
 | ~~C-45~~ | ✅ **DONE 2026-10-21**: **the graph as a rating engine.** (1) ✅ the regression through the endpoint on the lean default: all 6,173 requests = the harness's answer but `trace_len` (`verify_serve`; the full run was stopped by Claude Code for low memory after 44 jurisdictions, all equal, the last 8 run on their own, 3/3). (2) ✅ the NY stored answer the harness console added 2026-10-21 (plan `20261021-105357-GL`, premium $1,169) taken in: `python -m cg.requests --manifest NY` rebuilds one jurisdiction, 6,171 in the manifest, `verify_requests_scope` 9/9; pass 32 (NY stored) clean, ISO = engine = graph on it, its 10 field differences OI-106-GL; NY re-run in `verify_rate`, `verify_lean` 5/5, `verify_serve` 3/3 (the regression is now 6,174). (3) ✅ **memory flat**: the endpoint's ~18 MB a jurisdiction (C-43) was two things kept forever, found by probing what stays alive jurisdiction by jurisdiction: OI-134's schema for every edition the rater had rated (`GraphRater._schemas`, this project: now dropped with its edition) and every ISO rule file the harness has parsed (`gl_engine.interp.program._PARSED`, a cache kept on purpose for the engine's speed, which the graph reads only while compiling: the lean rater empties it after each compile; no harness edit). A first suspect, `Program.file_names`'s method cache, was checked and ruled out (no `Program` alive). **Gate `tests/verify_engine.py`** (one endpoint, lean, no Kernel, 2 editions kept; 41 min): **2,046 ratings**, 20 requests of every jurisdiction and U8's carrier, jurisdiction after jurisdiction, twice: every answer = the harness's but `trace_len`, round 2 = round 1 byte for byte, **memory 518 to 543 MB after warming up through both rounds** (before: 581 to 860 MB over 14 jurisdictions), per rating median 0.17 s, 90th percentile 3.2 s (an edition compiled), slowest 27 s; 4/4; `docs/MEASUREMENTS.md`. `verify_lean` (IA, carrier) 5/5, `verify_graph_cache` 4/4, `verify_carrier` 14/14, `verify_replay` 4/4 again on the changed rater. Was: **Rating-engine gate**: through the endpoint, the regression, U8 and 1,000 repeated ratings: equal to the engine, memory flat, timings added to `docs/MEASUREMENTS.md` | Small | — |
 | ~~C-46~~ | ✅ **DONE 2026-10-21**: **findings and estimate for all GL.** `docs/FINDINGS.md` now opens with GL in all 51: 179 editions compile whole with Iowa's compiler (no new instruction shape, no compiler change for any state); 6,174 requests graph = engine; 1,307 stored answers and 573 live calls, every difference a recorded finding; **what differs by state** (48 of 51 in force on `GL_CW_20261001_V01`, DC and NY on `GL_CW_20260101_V01`, CA on `GL_CW_20231201_V02`; 179 editions on 6 countrywide parents; own rule files 3 (AL) to 134 (NY), own nodes 613 to 9,916 of ~99k; the 7 extras in nearly the same numbers everywhere); the engine's findings by state (no new defect after Iowa; OI-141 added); **F1-F10 restated with the 51 editions' ranges** (e.g. F2 2,501-2,648 repeating groups, F4 2,918-3,984 conditions, F7 4,721-5,142 lookups). Iowa's detail kept below it. `docs/ESTIMATE.md`: GL in all 51 took 3 days and 573 calls (estimated 4-6 days over 3-5 weeks, 3,600 calls), the estimate as made kept for the record; **Property revised to 6-9 working days (was 8-12)**, the null mode and the look-ahead still unproven; a Product Studio load still waits on F1-F10 (1-2 weeks for Iowa, then 2-4 days for the other 50, if F1 is yes); the graph as a rating engine named as the route that needs no answer from Federato. Writing only, nothing re-run. **CG-12 COMPLETE.** Was: **Findings for all GL**: `docs/FINDINGS.md` updated: what differs by state (new instruction shapes, state-only rules, editions on another countrywide parent), engine defects found per state, F1-F10 restated with 51 jurisdictions' counts; `docs/ESTIMATE.md` updated for Property and a Product Studio load | Small | — |
 
+### CG-13 · A rating console on the graph (8 tasks) — 🟡 IN PROGRESS
+
+**Release gate:** in the page, on one local process: **any GL request in the 51 jurisdictions rates on the graph**
+(equal to `cg.rate`, the trace shown); **compared three ways** with the engine and ISO's stored answer, every
+difference shown and matched to its recorded finding (equal to the pass's verdict for the same request); **U8's three
+risks 2,828 / 3,818 / 830** three ways from the page; **a new draft deviation authored in the page**, validated and
+compiled by the harness's own `deviations` code, rated on the graph equal to the engine with the same draft; nothing
+written to the harness or to `C:\FederatoProjects\Carriers` except by *Promote* (a new draft version, never approved, never over an existing one); the dark Federato theme throughout; the page reviewed
+with the user. Starts only with the user's go, after D16-D21 (§12).
+
+| # | Task | Size | Needs |
+|---|---|---|---|
+| C-47 | 🟡 **IN PROGRESS**: **The shell.** `cg.serve` also serves the page (`GET /`) and its data: `/api/states` (jurisdictions, editions in scope, the edition in force), `/api/requests?state=` (the regression set's requests, by kind, searchable), `/api/request/<hash>`. One page, plain HTML and JS in `cg/console_page.html`, no build step, nothing fetched (fonts by name, as the harness's D7). The **dark Federato palette** as tokens (D17) and three tabs: *Rate*, *Compare*, *Deviations*. The page states which executor rates (lean) and the harness commit | S | D16, D17 |
+| C-48 | **Rate.** Pick a jurisdiction, a date and a request (from the set, or pasted JSON, or a short form over the common fields: class, exposure, limits, deductible, writing company, which edits the JSON); the version follows the date unless pinned. Answer: premium, by coverage, messages and notices, a refusal with its step named; the **trace** (`Evaluator.trace`), step by step, foldable. Same answer as `POST /rate`; `Ctrl+Enter` rates | M | C-47 |
+| C-49 | **Compare.** `POST /api/compare`: the request to the graph, the engine (in the same process, as `cg.loop.Loop` does; D18) and ISO's stored answer (by hash, `cg.loop.iso_side`). Three columns: outcome and premium; below, only the fields that differ, in Signal orange, each placed by §5's table and matched to `docs/KNOWN-GAPS.json` (as `cg.stored.judge`); "all equal" when they are. No stored answer: says so, and offers *Ask ISO* (C-50) | M | C-48, D18 |
+| C-50 | **Ask ISO.** One request to ISO from the page, only after a confirm that names the request and the lane's count today; through the harness's ledger (lane `active`, origin `iso-compute-graph`, as `cg.live`), stopping at the lane's cap. ISO's answer is stored as `cg.live`'s are, so the request has a stored answer from then on and *Compare* shows it. Each click is one group of one (D19) | M | C-49, D19 |
+| C-51 | **Deviations: authoring.** List the carriers' filings (`Carriers\<group>\<company>\authored`) and open one read-only: its rows (target, scope, value, mode, citation), dates and status. *New draft* copies a filing (or starts empty) into the **draft root** (D20, `results/console/carriers`, never the real one); rows edited, added and removed in a table; *Validate* and *Compile* run the harness's own `deviations` code (`validate`, `compile_filing`, `show`), every problem listed against its row; *Diff* against the filing it came from and against ISO's values (`diff_versions`, `diff_iso`); *Promote* a validated draft into the real `authored` folder as a new draft version (D20). First: find how the harness rates a draft (`impact --draft`); if a draft cannot be compiled without a harness change, that change is logged in the harness for the user's go | M-L | C-47, D20, D21 |
+| C-52 | **Deviations: rating.** A request rated technical and carrier with a chosen filing, approved or draft (the draft root put first for this rating only): the **waterfall** (technical, LCMs, overrides, minimum, carrier premium). Compared with the engine rated with the same filing, and with ISO where ISO can say anything: ISO's stored answer, or *Ask ISO*, for the request with the carrier's LCMs written in (as C-27, `deviations.engine.iso_request`); overrides ISO cannot be given (an ELR table, a policy minimum) compared with the engine only, and the page says so. First: widen `cg.carrier` from DEV-003 to whatever a filing's rows target (each target the harness's `compile` can write), each new target checked against the engine | M | C-49, C-51 |
+| C-53 | **Sets.** Run a set from the page (a jurisdiction's regression set, a kind, or the requests found by a search) three ways, one set at a time, at most 2 workers; progress, then the summary as a pass gives it (equal, differences by finding, refusals, no ISO answer) and the list to open in *Compare*. Saved as a pass (`results/passes/pass-NN.json`), so it counts as one | S-M | C-49 |
+| C-54 | **The gate.** `tests/verify_console.py`: every endpoint's answer equal to `cg.rate` and the latest pass on a sample per jurisdiction and on U8; a draft round trip (authored → compiled → shown back = authored); a draft rated on the graph = the engine; nothing written outside `results/console` but by *Promote*, which writes one new draft version and its log line; the page loads in Chrome with no console error, in the dark theme, at 1440 px and at phone width (screenshots kept). The whole regression still passes, one test at a time. Then the review with the user | S | C-47 to C-53 |
+
 ## 7. Layout
 
 ```
@@ -404,6 +426,8 @@ answers in its answer store (§5, step 3).
 | 2026-10-21 | Go for C-45, step by step. (1) the regression through the lean endpoint: equal on 6,173 (the full run stopped for low memory after 44 jurisdictions; the user chose to run the last 8 alone). (2) the user: take in the new NY stored answer; pass 32 clean. (3) the endpoint's growth found and fixed here (two caches), 2,046 ratings with memory flat. Next: C-46 |
 | 2026-10-21 | Go for C-46. Done: `docs/FINDINGS.md` and `docs/ESTIMATE.md` for all GL (Property now 6-9 days). **CG-12 COMPLETE; GL in every jurisdiction done.** Next: the user's call (CG-8) |
 | 2026-10-21 | The user: F1-F10 to Federato and the Product Studio load go to the parking lot (CG-8). Asked whether there is a UI for using the graph |
+| 2026-10-21 | The user asked for a plan for a small UI: rate on the graph, test against the harness and ISO, implement deviations, in the dark Federato theme. Planned as **CG-13** (C-47 to C-54, 4-6 days, §12); D16-D21 proposed, awaiting the user |
+| 2026-10-21 | The user took D16-D21, one at a time: all as proposed but D20 (drafts here, **plus a *Promote* button** that writes a validated draft into the real `authored` folder as a new draft version, after a confirm). **Go for all of CG-13**, stopping where a harness change or a live call needs a go, and at the gate. Next: C-47 |
 | 2026-10-19 | The user: go for the next 100 (groups 3 and 4). Sent (100 calls, lane active, now 150 of 150 today): 100 premiums equal. Pass 7 clean: 223 ISO answers three ways, graph = engine on all 362; verify_live 10/10. Left: groups 5-7 (139 calls) |
 
 ## 11. GL in every jurisdiction (CG-9 to CG-12, added 2026-10-19)
@@ -454,3 +478,47 @@ Above C-31's 4-6 days: this plan also prices the leak fix, the state parameter, 
 | Memory on 16 GB | C-32 (the leak) and C-34 (graphs on demand), one jurisdiction at a time, 2 workers |
 | Calls compete with the harness's own work | Lane `active` at 150 a day; going past it only by the user's instruction, logged |
 | A state rule the builder cannot express | Counted and listed per state (C-36), not sent |
+
+## 12. A rating console on the graph (CG-13, proposed 2026-10-21)
+
+**In short.** The graph already rates through its own endpoint (`cg.serve`, C-43) and every check it needs exists:
+the three-way comparison (`cg.loop`), the judging against recorded findings (`cg.stored`), live calls through the
+harness's ledger (`cg.live`), a carrier's filing in front of the graph (`cg.carrier`), and the harness's own
+deviation tooling (`deviations`: validate, compile, show, diff). CG-13 puts one small page over them. Almost no new
+rating code: the page asks what the command line already answers. The one widening is `cg.carrier`, built for
+DEV-003's three pieces, to any row a filing can hold (C-52).
+
+**What it is not.** Not the harness's console (that stays the referee's, on 8765) and not Product Studio. Not a place
+to approve a filing: drafts only, in their own root. No underwriting mode, as C-43.
+
+**The page.** One screen, three tabs, a header with the jurisdiction, the date and the executor.
+
+| Tab | What you do | What it calls |
+|---|---|---|
+| Rate | pick or paste a request, rate it, read the premium and the trace | `cg.rate` |
+| Compare | the same request on the graph, the engine and ISO; only the differences, each with its finding; *Ask ISO* when nothing is stored; run a set | `cg.loop`, `cg.stored`, `cg.live` |
+| Deviations | open a filing, copy it to a draft, edit rows, validate, compile, rate technical against carrier, compare | harness `deviations`, `cg.carrier` |
+
+**Decisions to take (proposed; the user's).** A decision taken is marked at the start of its cell: `✅ **TAKEN <date>**`, then what was taken if it differs. Progress on CG-13 has its own page, `docs/console-tracker.html` (`python tools/console_tracker.py --open`; sync rebuilds it).
+
+| # | Question | Proposed |
+|---|---|---|
+| D16 | Where it runs | ✅ **TAKEN 2026-10-21** (as proposed): **On `cg.serve`** (127.0.0.1:8766): the page and its API in the process that already rates; local only; plain HTML and JS, no build step, nothing fetched. Not a published page, since it needs the local endpoint |
+| D17 | The theme | ✅ **TAKEN 2026-10-21** (as proposed): **Federato's palette, dark only**: ground Meridian `#1f1512`, panels `#2d1d1a`, raised `#3a2a22`, lines `#4e4432`, text cream `#f7f7e3`, quiet text `#c2b893`, accent gold `#e9d491`; **Beacon teal `#47fac4` for the one action that matters** on each tab (Rate, Compare, Validate), dark text on it; **Signal orange `#f55a26` only for a difference or a refusal**; equal in a soft green. Headings in Reckless, text in Case, where installed (system serif and sans otherwise), as the harness's console. Compact tables, figures aligned. The dark form of the palette `docs/schema-many-to-many_20261019.html` already uses in the harness |
+| D18 | The engine side | ✅ **TAKEN 2026-10-21** (as proposed): **In the same process**, as `cg.loop.Loop` builds it (the harness imported, D1). One process to start; the engine's ~11 MB per edition rated is held by the LRU of 6. The harness's own console is not needed running |
+| D19 | ISO live from the page | ✅ **TAKEN 2026-10-21** (as proposed): **One request a click, after a confirm**: each click is its own group of one and the click is the user's go for it (D14's rule, kept per call); lane `active`, origin `iso-compute-graph`, the cap enforced by the ledger and shown; stored answers always first |
+| D20 | Where drafts live | ✅ **TAKEN 2026-10-21** (the user: here, plus a *Promote* button): drafts in **`results/console/carriers`**, in this project. **Promote** copies one draft into `C:\FederatoProjects\Carriers\<group>\<company>\authored` as a new version with status *draft*, after a confirm naming the file, never over an existing version, and logged in the harness's workflow log (`log_action`); the only write to the real root. Approving it stays the harness's workflow (`propose`, `sign-off`), outside this page |
+| D21 | What a draft can change | ✅ **TAKEN 2026-10-21** (as proposed): **What the harness's filing format holds** (LCMs by coverage and class, ISO table overrides, the policy minimum), no new kinds: the page edits the authored JSON's rows; the harness's code validates and compiles them |
+
+**Effort.** 4 to 6 working days: shell and Rate 1-1.5, Compare and Ask ISO 1-1.5, Deviations 1.5-2, sets and gate
+0.5-1. No live call is planned; each one is a click with its own go.
+
+**Risks.**
+
+| Risk | Handling |
+|---|---|
+| Memory: graph and engine in one process, beside the harness's work | LRU of 6 editions each; sets one at a time, 2 workers; `/health` shows the process's memory |
+| A click spends an ISO call | a confirm naming the request and today's count; stored answer first; the ledger's cap |
+| A draft mistaken for a filing in force | its own root, marked *draft* on every screen; *Promote* writes only a new version with status *draft*, which the harness does not rate until approved, after a confirm |
+| The harness cannot compile a draft without approval | found first in C-51; a harness item with its own go if a change is needed |
+| A filing row `cg.carrier` does not yet apply | C-52 widens it target by target, each checked against the engine; a target not yet done is refused by name, not ignored |
