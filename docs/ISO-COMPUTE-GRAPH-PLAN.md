@@ -162,7 +162,7 @@ jurisdiction (added 2026-10-19, §11):** CG-9 → CG-10 → CG-11 → CG-12. **T
 | CG-15 | **An installed app**: Windows installer, then Mac; rates offline, stored answers, Ask ISO with the company login | C-56 to C-61 | 3-5 |
 | CG-16 | **Property: one state** (Iowa) on the graph: the compiler's second mode, the new instructions (§13) | C-62 to C-65 | 2-3 |
 | CG-17 | **Property: the look-ahead** (OI-125) and a fast, isolated executor | C-66 to C-68 | 1.5-2.5 |
-| CG-18 | **Property everywhere: free passes** (47 jurisdictions, no calls) | C-69 to C-71 | 1.5-2.5 |
+| CG-18 | **Property everywhere: free passes** (47 jurisdictions, all 391 editions, no calls) | C-69 to C-71 | 2.5-4 |
 | CG-19 | **Property everywhere: ISO live** (a minimal set, a go per group of 100) | C-72 to C-73 | 1-2, over the days the calls take |
 | CG-20 | **Property in the console and the app**, carriers included | C-74 to C-79 | 2-3 |
 
@@ -414,14 +414,14 @@ the same request alike whatever ran before it); memory flat over 1,000 Property 
 
 ### CG-18 · Property everywhere: free passes (3 tasks) — proposed 2026-10-22
 
-**Release gate:** every jurisdiction's Property editions in scope compile whole (47 jurisdictions; HI, ID, LA, MS
+**Release gate:** **every Property edition on disk compiles whole (391, D32;** 47 jurisdictions; HI, ID, LA, MS
 and WA have none in the corpus); request sets per state built; graph = engine on every request; every stored ISO
 answer three ways, clean or recorded. No live calls.
 
 | # | Task | Size | Needs |
 |---|---|---|---|
-| C-69 | **Scope.** `cg.scope` for Property: the editions in force and in scope per jurisdiction (D32: in force plus the next, as GL), all compiled whole; `docs/SCOPE.md` gains Property | S | CG-17 |
-| C-70 | **Request sets per state.** The stored answers (2,455 rated, 3,006 in all), the harness's Property samples, and generated requests over the coverages each state files (as C-36), per state; `docs/REQUESTS.md` gains Property | M | C-69 |
+| C-69 | **Scope.** `cg.scope` for Property: **all 391 editions** (D32), each compiled whole (about 2.7x GL's size each: compile time measured, run per jurisdiction in short processes, 2 workers at most); `docs/SCOPE.md` gains Property | M | CG-17 |
+| C-70 | **Request sets per edition.** The stored answers (2,455 rated, 3,006 in all), the harness's Property samples, and generated requests dated into **each edition's effective window** over the coverages it files (as C-36); `docs/REQUESTS.md` gains Property | M-L | C-69 |
 | C-71 | **Free passes in waves.** Graph = engine on every request; every stored answer three ways (as C-37, C-38); findings recorded (`docs/KNOWN-GAPS.json`); a pass per wave, clean | M | C-70 |
 
 ### CG-19 · Property everywhere: ISO live (2 tasks) — proposed 2026-10-22
@@ -431,7 +431,7 @@ ways; the whole regression, GL and Property together, one pass, clean; every tes
 
 | # | Task | Size | Needs |
 |---|---|---|---|
-| C-72 | **The minimal live set** (D30). `cg.cover` on Property's graphs picks the requests that reach every state-own node with no stored answer; sent in groups of 100, **one go per group** (D14), lane `active`, origin `iso-compute-graph`; Puerto Rico only if ISO rates Property there | M | CG-18 |
+| C-72 | **The minimal live set** (D30). `cg.cover` on Property's graphs picks the requests that reach every state-own node **of every edition (D32)** with no stored answer, its size measured and shown to the user before any call; sent in groups of 100, **one go per group** (D14), lane `active`, origin `iso-compute-graph`; Puerto Rico only if ISO rates Property there | M | CG-18 |
 | C-73 | **Fix and close.** Each difference fixed in the right project or recorded; the whole regression (GL and Property) as one pass, clean; every test, one at a time | M | C-72 |
 
 ### CG-20 · Property in the console and the app (6 tasks) — proposed 2026-10-22
@@ -575,6 +575,7 @@ answers in its answer store (§5, step 3).
 | 2026-10-22 | The user: the dev server stopped; someone with a Mac will run C-61 (`docs/MAC-BUILD.md`); **CG-8 parked** (findings to Federato, the Property PoC, the Product Studio load) while a spike runs soon |
 | 2026-10-22 | The Windows installer on Google Drive (the user) and in the Ideation ISO Project's downloads: Federato/Ideation PR #816, merged and deployed 2026-10-22 (index card, `project.json`). The Mac build kit (`dist/ISOComputeGraph-MacBuildKit-2026.10.22-31eddeb.zip`) for the user's colleague; the Mac app joins the page when its `.dmg` exists |
 | 2026-10-22 | The user: plan Commercial Property in release-candidate groups with tasks. Planned as **CG-16 to CG-20** (C-62 to C-79, 8 to 13 working days, §13); D28-D34 proposed, awaiting the user. The Mac `.dmg` still awaited |
+| 2026-10-22 | D28-D34 taken (the user, one at a time): all as proposed but **D32: every Property edition on disk (391)**; CG-18 re-sized (2.5-4 days), total 9 to 15 days. Awaiting the go |
 | 2026-10-19 | The user: go for the next 100 (groups 3 and 4). Sent (100 calls, lane active, now 150 of 150 today): 100 premiums equal. Pass 7 clean: 223 ISO answers three ways, graph = engine on all 362; verify_live 10/10. Left: groups 5-7 (139 calls) |
 
 ## 11. GL in every jurisdiction (CG-9 to CG-12, added 2026-10-19)
@@ -747,10 +748,10 @@ the last the least proven.
 |---|---|---|---|
 | CG-16 | One state (Iowa) on the graph: the compiler's second mode, the new instructions | C-62 to C-65 | 2-3 days |
 | CG-17 | The look-ahead and a fast, isolated executor | C-66 to C-68 | 1.5-2.5 days |
-| CG-18 | Property everywhere, free passes (no calls) | C-69 to C-71 | 1.5-2.5 days |
+| CG-18 | Property everywhere, free passes (no calls), **all 391 editions** (D32) | C-69 to C-71 | 2.5-4 days |
 | CG-19 | Property everywhere, ISO live (a minimal set, a go per group of 100) | C-72 to C-73 | 1-2 days, over the days the calls take |
 | CG-20 | Property in the console and the installed app, carriers included | C-74 to C-79 | 2-3 days |
-| **Total** | | 18 tasks | **8 to 13 working days** (C-46: 6 to 9 for the engine part, CG-16 to CG-19; plus the console and app) |
+| **Total** | | 18 tasks | **9 to 15 working days** (C-46: 6 to 9 for the engine part with editions in force; every edition (D32) adds 1 to 2; plus the console and app) |
 
 **Calls:** none before CG-19. GL's minimal set was 573 calls for 49 jurisdictions; Property's will be measured by
 `cg.cover` (C-72) and planned in groups of 100 before any is sent. **Risks:** the look-ahead (CG-17) is the one piece
@@ -763,12 +764,12 @@ A decision taken is marked at the start of its cell: `✅ **TAKEN <date>**`, the
 
 | # | Decision | Proposed |
 |---|---|---|
-| D28 | The first state | **Iowa**: two companies' Property filings, and Iowa GL to hold the tooling to |
-| D29 | The look-ahead | **Two runs, as the engine**: a probe run on a copy learns which fields the rules write, then the real run; shown in the trace |
-| D30 | ISO live for Property | **As GL** (D14, D15): stored answers first, then a minimal live set, groups of 100, one go per group |
-| D31 | Where Property stops if the look-ahead will not match | **The user's call at CG-17's gate**: wait, or let the engine rate those requests behind the endpoint, marked |
-| D32 | Scope | **As GL**: each jurisdiction's edition in force plus the next |
-| D33 | The app | **One app, both lines**: the lean bundle gains Property's editions in force and its stored answers (size measured at C-78) |
-| D34 | Carriers | **The four Property filings in the store**, rated and authored as GL's (D20, D21 kept) |
+| D28 | The first state | ✅ **TAKEN 2026-10-22** (as proposed): **Iowa**: two companies' Property filings, and Iowa GL to hold the tooling to |
+| D29 | The look-ahead | ✅ **TAKEN 2026-10-22** (as proposed): **Two runs, as the engine**: a probe run on a copy learns which fields the rules write, then the real run; shown in the trace |
+| D30 | ISO live for Property | ✅ **TAKEN 2026-10-22** (as proposed): **As GL** (D14, D15): stored answers first, then a minimal live set, groups of 100, one go per group |
+| D31 | Where Property stops if the look-ahead will not match | ✅ **TAKEN 2026-10-22** (as proposed): **The user's call at CG-17's gate**: wait, or let the engine rate those requests behind the endpoint, marked |
+| D32 | Scope | ✅ **TAKEN 2026-10-22**, **not as proposed: every Property edition on disk (391)**, not in force plus the next. CG-18 re-sized (C-69 to C-71, C-72's live set covers each edition's own nodes) |
+| D33 | The app | ✅ **TAKEN 2026-10-22** (as proposed): **One app, both lines**, Property's editions **in force** only in the app (all 391 stay on the graph here): the lean bundle gains Property's editions in force and its stored answers (size measured at C-78) |
+| D34 | Carriers | ✅ **TAKEN 2026-10-22** (as proposed): **The four Property filings in the store**, rated and authored as GL's (D20, D21 kept) |
 
-**Starts only with the user's go** after D28-D34.
+**Starts only with the user's go.** D28-D34 taken 2026-10-22 (the user, one at a time).
