@@ -409,7 +409,7 @@ the same request alike whatever ran before it); memory flat over 1,000 Property 
 | # | Task | Size | Needs |
 |---|---|---|---|
 | ~~C-66~~ | ✅ **DONE 2026-10-22**: **The look-ahead on the graph** (D29). `cg/cf_run.py` `lookahead`: the graph run once, every submitted field a rule wrote blanked, then the real run. Of 2,122 stored Property requests the look-ahead changes the engine's answer on one, K4d (Oregon: a wrong "Only one Apartment…" message): graph = engine with and without it, ISO agrees (`tests/verify_cf_lookahead.py` 3/3); on Iowa's 37 it blanks what the engine's does (151 values; `verify_cf_iowa` 4/4). K4d moved into the other 46 states is refused there (its Oregon territory), so no more cases: CG-18 holds the blanked values equal on every stored request (C-71). As planned: The executor runs the graph once on a copy to learn which fields its rules write, then the real run ignoring those submitted values, as the engine does (`cf_engine/run_checks.py`); the probe run shown in the trace; twice the rating time, as the engine | M | C-65 |
-| C-67 | 🟡 **IN PROGRESS**: **The lean executor for Property.** Lean = checking on Iowa's 37 and K4d (38 of 38, the look-ahead's two runs on one graph); `concrete` finds a path's loop steps once per edition (5x on that step); a Property rating on the lean graph ≈ the engine's time (~0.9 s, the look-ahead's two runs). **Open (paused 2026-10-22):** GL `verify_lean --resume` (stopped at 22 of 52) and `verify_cf_iowa` with its new lean check (5 checks). As planned: C-44's indexes and caches on Property's tables; the look-ahead's two runs sharing one compiled graph; lean = checking on Iowa | S | C-66 |
+| C-67 | 🟡 **IN PROGRESS**: **The lean executor for Property.** Lean = checking on Iowa's 37 and K4d (38 of 38, the look-ahead's two runs on one graph); `concrete` finds a path's loop steps once per edition (5x on that step); a Property rating on the lean graph ≈ the engine's time (~0.9 s, the look-ahead's two runs). **Open (paused 2026-10-22):** GL `verify_lean --resume` (stopped at 22 of 52) and `verify_cf_iowa` with its new lean check (5 checks) (steps C-67.1 to C-67.6, §13.4). As planned: C-44's indexes and caches on Property's tables; the look-ahead's two runs sharing one compiled graph; lean = checking on Iowa | S | C-66 |
 | C-68 | **Iowa clean and isolated.** Iowa's stored answers three ways in any order and in fresh processes, equal; memory over 1,000 ratings; `verify_cf_iowa` grows | S | C-66, C-67 |
 
 ### CG-18 · Property everywhere: free passes (3 tasks) — proposed 2026-10-22
@@ -776,3 +776,17 @@ A decision taken is marked at the start of its cell: `✅ **TAKEN <date>**`, the
 | D34 | Carriers | ✅ **TAKEN 2026-10-22** (as proposed): **The four Property filings in the store**, rated and authored as GL's (D20, D21 kept) |
 
 **Starts only with the user's go.** D28-D34 taken 2026-10-22 (the user, one at a time).
+
+### 13.4 Steps
+
+Tasks broken into steps where that shows progress better (C-67, 2026-10-23). A step is marked as a task is, at the
+start of its cell: `✅ **DONE <date>**` or `🟡 **IN PROGRESS**`; the Property tracker shows them under their task.
+
+| Step | What | Done when |
+|---|---|---|
+| C-67.1 | ✅ **DONE 2026-10-22**: **Indexes and caches on Property's tables.** C-44's indexed lookups and per-edition caches, used by Property's graphs | lean = checking on Iowa's 37 stored requests |
+| C-67.2 | ✅ **DONE 2026-10-22**: **The look-ahead's two runs on one graph.** The probe run and the real run share one compiled graph on the lean executor | lean = checking on K4d with the look-ahead on (38 of 38 with C-67.1) |
+| C-67.3 | ✅ **DONE 2026-10-22**: **Speed.** `cg/lean.py` `concrete` finds a path's loop steps once per edition, not once per rating (5x on that step) | a Property rating on the lean graph ≈ the engine's time. Done: ~0.9 s a rating (the look-ahead's two runs) |
+| C-67.4 | 🟡 **IN PROGRESS**: **GL unchanged.** `python tests/verify_lean.py --resume` after the `concrete` change (~35 min left) | lean = checking on all 52 sets (22 done when paused 2026-10-22) |
+| C-67.5 | **Iowa Property's gate.** `python tests/verify_cf_iowa.py`, now 5 checks (adds lean = checking and timings) | 5/5 |
+| C-67.6 | **Close C-67.** Mark it done here, `tools/sync_plan.py`, commit both repos | the tracker shows C-67 done; C-68 ready for the user's go |
