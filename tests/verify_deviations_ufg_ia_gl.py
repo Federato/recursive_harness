@@ -112,6 +112,16 @@ def v2(K, root, v1, show, load_filing, log_action, read_json) -> None:
         got = sorted(map(key, show(f.company_dir, "GL", REF2)["rows"]))
         check(f"U9 {co}: v2 validates, compiles and reads back as its {len(wrote)} rows", got == wrote,
               f"{got} vs {wrote}")
+        from deviations.diff import diff_iso
+        from deviations.validate import validate
+        try:
+            lines = diff_iso(validate(f))
+        except Exception as exc:  # noqa: BLE001 - OI-142 raised here
+            lines = [f"raised {exc!r}"]
+        mn = MINIMUM[co]
+        check(f"U13 {co}: diff --iso reads v2 whole: the policy minimum {mn} against ISO none, beside the LCMs (OI-142)",
+              any(x.split() == ["MIN:Policy", "ISO", "none", "company", str(mn), "(replace)"] for x in lines)
+              and any(x.strip().startswith("LCM PremOps") for x in lines), "; ".join(lines[:6]))
     for co, mn in MINIMUM.items():
         print(f"\n{co} v2")
         r = K.rate(request(co, **EXPERIENCED), root=root, with_technical=True)

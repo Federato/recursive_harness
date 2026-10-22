@@ -59,6 +59,10 @@ def diff_iso(rep: Report) -> list[str]:
                     hi = max(_final(c, isov) for c in vals)
                     out.append(f"  LCM {tgt:<15} ISO {isov}  company {lo}"
                                + (f" to {hi}" if hi != lo else "") + f"  ({len(vals)} keys)")
+            elif space[0] == "POLICY":
+                # OI-142: a policy item (B-21 `MIN:Policy`) has no ISO table; ISO files no such value.
+                for c in keys.values():
+                    out.append(f"  {space[1]:<19} ISO none  company {c.value} ({c.mode})")
             else:
                 _, tname, col = space
                 t = iso.table(f.line, j, ctx.date, tname)
