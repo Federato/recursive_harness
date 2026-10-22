@@ -496,7 +496,7 @@ answers in its answer store (§5, step 3).
 | 2026-10-22 | Go for CG-15 (the user). Inno Setup 6 and pywebview installed. C-56 started |
 | 2026-10-22 | C-56 to C-60 done: the Windows installer (19 MB) passes its gate from the installed copy, 6/6; the user's first ISO call from the installed app (Iowa UFC new) equal, $13,661. C-61 prepared; needs a Mac |
 | 2026-10-22 | The user: the dev server stopped; someone with a Mac will run C-61 (`docs/MAC-BUILD.md`); **CG-8 parked** (findings to Federato, the Property PoC, the Product Studio load) while a spike runs soon |
-| 2026-10-22 | The Windows installer on Google Drive (the user) and in the Ideation ISO Project's downloads: Federato/Ideation PR #816 (branch `dan/iso-compute-graph-app-20261022`; index card, `project.json`). The Mac build kit (`dist/ISOComputeGraph-MacBuildKit-2026.10.22-31eddeb.zip`) for the user's colleague; the Mac app joins the page when its `.dmg` exists |
+| 2026-10-22 | The Windows installer on Google Drive (the user) and in the Ideation ISO Project's downloads: Federato/Ideation PR #816, merged and deployed 2026-10-22 (index card, `project.json`). The Mac build kit (`dist/ISOComputeGraph-MacBuildKit-2026.10.22-31eddeb.zip`) for the user's colleague; the Mac app joins the page when its `.dmg` exists |
 | 2026-10-19 | The user: go for the next 100 (groups 3 and 4). Sent (100 calls, lane active, now 150 of 150 today): 100 premiums equal. Pass 7 clean: 223 ISO answers three ways, graph = engine on all 362; verify_live 10/10. Left: groups 5-7 (139 calls) |
 
 ## 11. GL in every jurisdiction (CG-9 to CG-12, added 2026-10-19)
