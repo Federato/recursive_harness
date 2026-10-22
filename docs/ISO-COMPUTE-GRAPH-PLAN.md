@@ -160,6 +160,11 @@ jurisdiction (added 2026-10-19, §11):** CG-9 → CG-10 → CG-11 → CG-12. **T
 | CG-13 | **A rating console on the graph**: rate, compare with the engine and ISO, author deviations (dark Federato theme) | C-47 to C-54 | 4-6 |
 | CG-14 | **Rate as the harness does**: state, line and carrier pickers, compared with ISO | C-55 | 0.5-1 |
 | CG-15 | **An installed app**: Windows installer, then Mac; rates offline, stored answers, Ask ISO with the company login | C-56 to C-61 | 3-5 |
+| CG-16 | **Property: one state** (Iowa) on the graph: the compiler's second mode, the new instructions (§13) | C-62 to C-65 | 2-3 |
+| CG-17 | **Property: the look-ahead** (OI-125) and a fast, isolated executor | C-66 to C-68 | 1.5-2.5 |
+| CG-18 | **Property everywhere: free passes** (47 jurisdictions, no calls) | C-69 to C-71 | 1.5-2.5 |
+| CG-19 | **Property everywhere: ISO live** (a minimal set, a go per group of 100) | C-72 to C-73 | 1-2, over the days the calls take |
+| CG-20 | **Property in the console and the app**, carriers included | C-74 to C-79 | 2-3 |
 
 ### CG-1 · Foundations (5 tasks) — ✅ COMPLETE 2026-10-16
 
@@ -254,7 +259,7 @@ regression still clean. Starts only after CG-5 closes (D8).
 |---|---|
 | **Load the graph into Product Studio** (harness B-32 / B-34) | Federato: a way to load a graph without Excel (§9 F1), and a business reason. **Parking lot** (the user, 2026-10-21) |
 | **§9's questions F1-F10** put to the Product Studio team (counts for all 51 in `docs/FINDINGS.md` §4) | the user's call on when and who. **Parking lot** (the user, 2026-10-21) |
-| **Property proof of concept** (brings in the look-ahead, OI-125) | CG-7's findings and the user's call |
+| **Property proof of concept** (brings in the look-ahead, OI-125) | CG-7's findings and the user's call. **Planned as CG-16 to CG-20** (2026-10-22, §13): Property everywhere, live, in the console and the app |
 | **More GL states** | CG-7's findings and the user's call. **Planned as CG-9 to CG-12** (2026-10-19) |
 
 ### CG-9 · GL everywhere, the ground work (4 tasks) — ✅ COMPLETE 2026-10-19
@@ -372,6 +377,78 @@ folder** (proved with a Python audit hook over a scripted session). Then the Mac
 **Tools to install on this PC (free):** Inno Setup 6 (`winget install JRSoftware.InnoSetup`) and pywebview (`pip install pywebview`). PyInstaller 6.22 is installed.
 
 **Sizes (2026-10-22):** ISO's GL files 1.2 GB (all editions); the harness's folder 7.2 GB, mostly results; this project's saved requests 304 MB (left out of the lean app). Lean installer estimated 100-200 MB.
+
+### CG-16 · Property: one state on the graph (4 tasks) — proposed 2026-10-22, awaiting the user's go
+
+**Why first:** as Iowa GL was (CG-1 to CG-6), one state end to end before any scale: the compiler on Property's
+rules, its null mode and the three instructions GL never used. **Iowa** (D28): the state with Property filings for
+two companies (UFC, ADD) and a GL twin to hold the tooling to.
+
+**Release gate:** Iowa's Commercial Property edition in force compiles whole (0 holes); the graph equals the
+harness's Property engine (`cf_engine.rating.rate`) on every stored ISO answer for Iowa, field by field; ISO three
+ways on those answers clean, or each difference placed and recorded as a finding. GL unchanged (`verify_rate`,
+`verify_console` pass). The look-ahead is CG-17's: requests it touches are listed here, not yet judged.
+
+| # | Task | Size | Needs |
+|---|---|---|---|
+| C-62 | **What Property is.** The census per jurisdiction (§13.1: instructions, loops, records, tests, messages, editions), the stored answers per state (2,455 rated), the harness's Property pieces this project will import in place (`cf_engine` resolver, run checks, rating, its sample requests), and which of GL's tools serve as they are; `docs/PROPERTY.md` | S | — |
+| C-63 | **The compiler's second mode.** A line parameter through compile, run and the lean executor: Property's resolver and settings (`product_skips_null`: a null in arithmetic is skipped, not refused), each step's meaning checked against the engine in both modes; GL's 179 editions recompile unchanged | M | C-62 |
+| C-64 | **The three new instructions.** `Power`, `LastNonNull`, and `Custom` (ISO's leap-day function, not published): the graph copies the engine's rule (OI-121: the case ISO confirmed, refused otherwise), never more | S | C-63 |
+| C-65 | **Iowa Property end to end.** Compiles whole; `cg.loop` on Iowa's stored answers three ways; `cg.passes` kind `cf`; every difference placed (§5) and matched to a finding; `tests/verify_cf_iowa.py` | M | C-63, C-64 |
+
+### CG-17 · Property: the look-ahead and a fast executor (3 tasks) — proposed 2026-10-22
+
+**Why its own group:** the one thing in Property the graph cannot show as a fixed picture (harness OI-125): a value
+the request submits is ignored when a rule writes that field later in the same rating, decided per request. It is
+most of the risk in the estimate.
+
+**Release gate:** the graph equals the engine on every Iowa stored answer, the look-ahead's included; the lean
+executor equals the checking one on them; no state carried between ratings (harness OI-135's lesson: a worker rates
+the same request alike whatever ran before it); memory flat over 1,000 Property ratings.
+
+| # | Task | Size | Needs |
+|---|---|---|---|
+| C-66 | **The look-ahead on the graph** (D29). The executor runs the graph once on a copy to learn which fields its rules write, then the real run ignoring those submitted values, as the engine does (`cf_engine/run_checks.py`); the probe run shown in the trace; twice the rating time, as the engine | M | C-65 |
+| C-67 | **The lean executor for Property.** C-44's indexes and caches on Property's tables; the look-ahead's two runs sharing one compiled graph; lean = checking on Iowa | S | C-66 |
+| C-68 | **Iowa clean and isolated.** Iowa's stored answers three ways in any order and in fresh processes, equal; memory over 1,000 ratings; `verify_cf_iowa` grows | S | C-66, C-67 |
+
+### CG-18 · Property everywhere: free passes (3 tasks) — proposed 2026-10-22
+
+**Release gate:** every jurisdiction's Property editions in scope compile whole (47 jurisdictions; HI, ID, LA, MS
+and WA have none in the corpus); request sets per state built; graph = engine on every request; every stored ISO
+answer three ways, clean or recorded. No live calls.
+
+| # | Task | Size | Needs |
+|---|---|---|---|
+| C-69 | **Scope.** `cg.scope` for Property: the editions in force and in scope per jurisdiction (D32: in force plus the next, as GL), all compiled whole; `docs/SCOPE.md` gains Property | S | CG-17 |
+| C-70 | **Request sets per state.** The stored answers (2,455 rated, 3,006 in all), the harness's Property samples, and generated requests over the coverages each state files (as C-36), per state; `docs/REQUESTS.md` gains Property | M | C-69 |
+| C-71 | **Free passes in waves.** Graph = engine on every request; every stored answer three ways (as C-37, C-38); findings recorded (`docs/KNOWN-GAPS.json`); a pass per wave, clean | M | C-70 |
+
+### CG-19 · Property everywhere: ISO live (2 tasks) — proposed 2026-10-22
+
+**Release gate:** a minimal live set covering each state's own Property nodes (as D15 for GL) sent and judged three
+ways; the whole regression, GL and Property together, one pass, clean; every test passes.
+
+| # | Task | Size | Needs |
+|---|---|---|---|
+| C-72 | **The minimal live set** (D30). `cg.cover` on Property's graphs picks the requests that reach every state-own node with no stored answer; sent in groups of 100, **one go per group** (D14), lane `active`, origin `iso-compute-graph`; Puerto Rico only if ISO rates Property there | M | CG-18 |
+| C-73 | **Fix and close.** Each difference fixed in the right project or recorded; the whole regression (GL and Property) as one pass, clean; every test, one at a time | M | C-72 |
+
+### CG-20 · Property in the console and the app (6 tasks) — proposed 2026-10-22
+
+**Release gate:** the Rate tab's Line picker offers Commercial Property: any of the 47 jurisdictions rates from the
+pickers, graph = engine, ISO's stored answer beside it; Iowa with UFC and ADD and Alabama with UFC and Lafayette rate
+with their Property filings, graph = engine; Compare, Ask ISO and Sets work for Property; the installed app (Windows
+and Mac) carries Property and passes `verify_installed` for both lines; the Ideation page updated.
+
+| # | Task | Size | Needs |
+|---|---|---|---|
+| C-74 | **The endpoint for Property.** `cg.rate` and `POST /rate` take Property requests (the harness's own answer shape for Property); `verify_rate`, `verify_serve` and `verify_lean` grow a Property part | S | CG-19 |
+| C-75 | **Rate and Compare for Property.** The Line picker enables Commercial Property; the sample per state (the harness's `workbench.build("CP", state)`); the answer three ways, Property's coverages and steps; Compare and Sets for Property requests | M | C-74 |
+| C-76 | **Property carriers.** The four Property filings in the store (UFC and ADD in Iowa; UFC and Lafayette in Alabama) rated with their deviations on the graph = the engine (`cf_engine` with a company); the Deviations tab authors and rates Property drafts (D34) | M | C-75 |
+| C-77 | **Ask ISO for Property.** Plans and calls for Property requests through the same confirm and ledger (D19); a carrier's Property request with its LCMs written in, as GL's | S | C-75 |
+| C-78 | **The app with Property** (D33). The lean bundle gains Property's editions in force and its stored answers (size measured); `tools/reads.py` and `verify_installed` cover both lines; Windows installer and Mac kit rebuilt; the Ideation download updated | M | C-75 to C-77 |
+| C-79 | **Findings and the gate.** `docs/FINDINGS.md` and `docs/ESTIMATE.md` for Property; `verify_console` and the whole regression; the review with the user | S | C-74 to C-78 |
 
 
 ## 7. Layout
@@ -497,6 +574,7 @@ answers in its answer store (§5, step 3).
 | 2026-10-22 | C-56 to C-60 done: the Windows installer (19 MB) passes its gate from the installed copy, 6/6; the user's first ISO call from the installed app (Iowa UFC new) equal, $13,661. C-61 prepared; needs a Mac |
 | 2026-10-22 | The user: the dev server stopped; someone with a Mac will run C-61 (`docs/MAC-BUILD.md`); **CG-8 parked** (findings to Federato, the Property PoC, the Product Studio load) while a spike runs soon |
 | 2026-10-22 | The Windows installer on Google Drive (the user) and in the Ideation ISO Project's downloads: Federato/Ideation PR #816, merged and deployed 2026-10-22 (index card, `project.json`). The Mac build kit (`dist/ISOComputeGraph-MacBuildKit-2026.10.22-31eddeb.zip`) for the user's colleague; the Mac app joins the page when its `.dmg` exists |
+| 2026-10-22 | The user: plan Commercial Property in release-candidate groups with tasks. Planned as **CG-16 to CG-20** (C-62 to C-79, 8 to 13 working days, §13); D28-D34 proposed, awaiting the user. The Mac `.dmg` still awaited |
 | 2026-10-19 | The user: go for the next 100 (groups 3 and 4). Sent (100 calls, lane active, now 150 of 150 today): 100 premiums equal. Pass 7 clean: 223 ISO answers three ways, graph = engine on all 362; verify_live 10/10. Left: groups 5-7 (139 calls) |
 
 ## 11. GL in every jurisdiction (CG-9 to CG-12, added 2026-10-19)
@@ -638,3 +716,59 @@ or `🟡 **IN PROGRESS**`; the console tracker shows them under their task):
 | A draft mistaken for a filing in force | its own root, marked *draft* on every screen; *Promote* writes only a new version with status *draft*, which the harness does not rate until approved, after a confirm |
 | The harness cannot compile a draft without approval | found first in C-51; a harness item with its own go if a change is needed |
 | A filing row `cg.carrier` does not yet apply | C-52 widens it target by target, each checked against the engine; a target not yet done is refused by name, not ignored |
+
+## 13. Commercial Property on the graph (CG-16 to CG-20, proposed 2026-10-22)
+
+**Asked by the user 2026-10-22:** a plan, in release-candidate groups with tasks, to bring in Commercial Property.
+It takes over CG-8's "Property proof of concept" and goes past it: Property everywhere, live, and in the console
+and the installed app.
+
+### 13.1 What Property is (C-46's census, `docs/ESTIMATE.md` §3)
+
+| | Property | Iowa GL, for scale |
+|---|---|---|
+| Jurisdictions | 47 (no HI, ID, LA, MS or WA in the corpus) | 51 for GL |
+| Instructions in a state's program | 193,111 to 209,157 (median 203,925) | 74,984 (about 2.7x smaller) |
+| Records added or made sure of (`Locate`) | ~1,950 | 581 |
+| Record tests (`Exist` / `NotExist` / `Count`) | ~2,190 | 946 |
+| Instructions GL never uses | `Custom` and `Power` (all 47), `LastNonNull` (2) | — |
+| Editions on disk | 391 | 179 GL editions in scope |
+| Stored ISO answers | **2,455 rated** (3,006 in all) | 1,440 GL |
+| Carriers' filings | UFC and ADD (Iowa), UFC and Lafayette (Alabama) | UFC and ADD (Iowa) |
+
+**What GL built that Property uses as it is:** the state as a parameter, graphs on demand, request sets per state,
+the loop and passes, the minimal live set (`cg.cover`), the lean executor, the rating endpoint, the console, the
+bundle and installer. **What is new:** Property's null mode, the three instructions, and the look-ahead (OI-125),
+the last the least proven.
+
+### 13.2 The groups
+
+| Group | What | Tasks | Estimate |
+|---|---|---|---|
+| CG-16 | One state (Iowa) on the graph: the compiler's second mode, the new instructions | C-62 to C-65 | 2-3 days |
+| CG-17 | The look-ahead and a fast, isolated executor | C-66 to C-68 | 1.5-2.5 days |
+| CG-18 | Property everywhere, free passes (no calls) | C-69 to C-71 | 1.5-2.5 days |
+| CG-19 | Property everywhere, ISO live (a minimal set, a go per group of 100) | C-72 to C-73 | 1-2 days, over the days the calls take |
+| CG-20 | Property in the console and the installed app, carriers included | C-74 to C-79 | 2-3 days |
+| **Total** | | 18 tasks | **8 to 13 working days** (C-46: 6 to 9 for the engine part, CG-16 to CG-19; plus the console and app) |
+
+**Calls:** none before CG-19. GL's minimal set was 573 calls for 49 jurisdictions; Property's will be measured by
+`cg.cover` (C-72) and planned in groups of 100 before any is sent. **Risks:** the look-ahead (CG-17) is the one piece
+with no GL precedent; if the two-run executor cannot match the engine, Property requests the look-ahead touches are
+rated by the harness's engine behind the endpoint and marked so, and the graph covers the rest (the user decides).
+
+### 13.3 Decisions to take (proposed; the user's)
+
+A decision taken is marked at the start of its cell: `✅ **TAKEN <date>**`, then what was taken if it differs.
+
+| # | Decision | Proposed |
+|---|---|---|
+| D28 | The first state | **Iowa**: two companies' Property filings, and Iowa GL to hold the tooling to |
+| D29 | The look-ahead | **Two runs, as the engine**: a probe run on a copy learns which fields the rules write, then the real run; shown in the trace |
+| D30 | ISO live for Property | **As GL** (D14, D15): stored answers first, then a minimal live set, groups of 100, one go per group |
+| D31 | Where Property stops if the look-ahead will not match | **The user's call at CG-17's gate**: wait, or let the engine rate those requests behind the endpoint, marked |
+| D32 | Scope | **As GL**: each jurisdiction's edition in force plus the next |
+| D33 | The app | **One app, both lines**: the lean bundle gains Property's editions in force and its stored answers (size measured at C-78) |
+| D34 | Carriers | **The four Property filings in the store**, rated and authored as GL's (D20, D21 kept) |
+
+**Starts only with the user's go** after D28-D34.
