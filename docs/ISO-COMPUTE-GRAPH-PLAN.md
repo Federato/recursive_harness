@@ -396,7 +396,7 @@ ways on those answers clean, or each difference placed and recorded as a finding
 | ~~C-64~~ | ✅ **DONE 2026-10-22**: **The three new instructions.** `Power`, `LastNonNull`, `Custom` (the engine's one answered case, OI-121); Iowa compiles whole, 308,398 nodes, 0 holes. As planned: `Power`, `LastNonNull`, and `Custom` (ISO's leap-day function, not published): the graph copies the engine's rule (OI-121: the case ISO confirmed, refused otherwise), never more | S | C-63 |
 | ~~C-65~~ | ✅ **DONE 2026-10-22**: **Iowa Property end to end.** `cg/cf_run.py` (the Property rater), `tests/verify_cf_iowa.py` 3/3: Iowa's 3 editions whole; graph = engine on 37 of 37 stored requests; ISO 33 equal, 2 ISO service errors, 2 the harness's C28-17 decision; the look-ahead touched all 37 and changed none. GL unchanged: `verify_rate` 3/3 (6,174 requests = the engine), `verify_console` 50/50. As planned: Compiles whole; `cg.loop` on Iowa's stored answers three ways; `cg.passes` kind `cf`; every difference placed (§5) and matched to a finding; `tests/verify_cf_iowa.py` | M | C-63, C-64 |
 
-### CG-17 · Property: the look-ahead and a fast executor (3 tasks) — proposed 2026-10-22
+### CG-17 · Property: the look-ahead and a fast executor (3 tasks) — 🟡 IN PROGRESS
 
 **Why its own group:** the one thing in Property the graph cannot show as a fixed picture (harness OI-125): a value
 the request submits is ignored when a rule writes that field later in the same rating, decided per request. It is
@@ -408,7 +408,7 @@ the same request alike whatever ran before it); memory flat over 1,000 Property 
 
 | # | Task | Size | Needs |
 |---|---|---|---|
-| C-66 | **The look-ahead on the graph** (D29). The executor runs the graph once on a copy to learn which fields its rules write, then the real run ignoring those submitted values, as the engine does (`cf_engine/run_checks.py`); the probe run shown in the trace; twice the rating time, as the engine | M | C-65 |
+| ~~C-66~~ | ✅ **DONE 2026-10-22**: **The look-ahead on the graph** (D29). `cg/cf_run.py` `lookahead`: the graph run once, every submitted field a rule wrote blanked, then the real run. Of 2,122 stored Property requests the look-ahead changes the engine's answer on one, K4d (Oregon: a wrong "Only one Apartment…" message): graph = engine with and without it, ISO agrees (`tests/verify_cf_lookahead.py` 3/3); on Iowa's 37 it blanks what the engine's does (151 values; `verify_cf_iowa` 4/4). K4d moved into the other 46 states is refused there (its Oregon territory), so no more cases: CG-18 holds the blanked values equal on every stored request (C-71). As planned: The executor runs the graph once on a copy to learn which fields its rules write, then the real run ignoring those submitted values, as the engine does (`cf_engine/run_checks.py`); the probe run shown in the trace; twice the rating time, as the engine | M | C-65 |
 | C-67 | **The lean executor for Property.** C-44's indexes and caches on Property's tables; the look-ahead's two runs sharing one compiled graph; lean = checking on Iowa | S | C-66 |
 | C-68 | **Iowa clean and isolated.** Iowa's stored answers three ways in any order and in fresh processes, equal; memory over 1,000 ratings; `verify_cf_iowa` grows | S | C-66, C-67 |
 
@@ -422,7 +422,7 @@ answer three ways, clean or recorded. No live calls.
 |---|---|---|---|
 | C-69 | **Scope.** `cg.scope` for Property: **all 391 editions** (D32), each compiled whole (about 2.7x GL's size each: compile time measured, run per jurisdiction in short processes, 2 workers at most); `docs/SCOPE.md` gains Property | M | CG-17 |
 | C-70 | **Request sets per edition.** The stored answers (2,455 rated, 3,006 in all), the harness's Property samples, and generated requests dated into **each edition's effective window** over the coverages it files (as C-36); `docs/REQUESTS.md` gains Property | M-L | C-69 |
-| C-71 | **Free passes in waves.** Graph = engine on every request; every stored answer three ways (as C-37, C-38); findings recorded (`docs/KNOWN-GAPS.json`); a pass per wave, clean | M | C-70 |
+| C-71 | **Free passes in waves.** Graph = engine on every request, **the look-ahead's blanked values included (C-66)**; every stored answer three ways (as C-37, C-38); findings recorded (`docs/KNOWN-GAPS.json`); a pass per wave, clean | M | C-70 |
 
 ### CG-19 · Property everywhere: ISO live (2 tasks) — proposed 2026-10-22
 
@@ -577,6 +577,7 @@ answers in its answer store (§5, step 3).
 | 2026-10-22 | The user: plan Commercial Property in release-candidate groups with tasks. Planned as **CG-16 to CG-20** (C-62 to C-79, 8 to 13 working days, §13); D28-D34 proposed, awaiting the user. The Mac `.dmg` still awaited |
 | 2026-10-22 | D28-D34 taken (the user, one at a time): all as proposed but **D32: every Property edition on disk (391)**; CG-18 re-sized (2.5-4 days), total 9 to 15 days. Awaiting the go |
 | 2026-10-22 | Go for CG-16 (the user). **CG-16 COMPLETE**: C-62 `docs/PROPERTY.md`; C-63 the line switch and Property's null rule; C-64 Power, LastNonNull, Custom; C-65 the Property rater, Iowa's 3 editions whole, graph = engine on 37 of 37 stored requests, ISO 33 equal (2 ISO service errors, 2 the harness's C28-17 decision); GL unchanged (`verify_rate` 3/3, `verify_console` 50/50). The look-ahead changed no Iowa answer: CG-17 needs requests built where it does. Next: the go for CG-17 |
+| 2026-10-22 | The user: do C-66. **C-66 done**: the look-ahead on the graph = the engine's; it changes 1 of 2,122 stored requests (K4d), graph = engine with and without it, ISO agrees; Iowa 4/4 with it on (151 values blanked alike). Next: C-67 (the fast executor), on the user's go |
 | 2026-10-19 | The user: go for the next 100 (groups 3 and 4). Sent (100 calls, lane active, now 150 of 150 today): 100 premiums equal. Pass 7 clean: 223 ISO answers three ways, graph = engine on all 362; verify_live 10/10. Left: groups 5-7 (139 calls) |
 
 ## 11. GL in every jurisdiction (CG-9 to CG-12, added 2026-10-19)
