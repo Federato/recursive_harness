@@ -158,6 +158,7 @@ jurisdiction (added 2026-10-19, §11):** CG-9 → CG-10 → CG-11 → CG-12. **T
 | CG-11 | GL everywhere: ISO live, in waves | C-39 to C-40 | 1-2, over 3-5 weeks of calls |
 | CG-12 | GL everywhere: findings, **the graph as a rating engine of its own**, and close | C-41 to C-46 | 3.5-5 |
 | CG-13 | **A rating console on the graph**: rate, compare with the engine and ISO, author deviations (dark Federato theme) | C-47 to C-54 | 4-6 |
+| CG-14 | **Rate as the harness does**: state, line and carrier pickers, compared with ISO | C-55 | 0.5-1 |
 
 ### CG-1 · Foundations (5 tasks) — ✅ COMPLETE 2026-10-16
 
@@ -324,6 +325,24 @@ with the user. Starts only with the user's go, after D16-D21 (§12).
 | ~~C-53~~ | ✅ **DONE 2026-10-21**: **Sets.** (C-53.1 to C-53.3) *Run a set* on the Compare tab (`cg/sets.py`; `POST /api/sets`, `GET /api/sets/<id>`): every request matching a jurisdiction, a kind and a search, run by `cg.loop.Loop` in its own process (`python -m cg.sets --run`; one set at a time, one worker), progress per request, recorded by `cg.passes.record` as the next pass (kind `console`, the filter in its note). Alaska's 107 in 104 s, peak 871 MB in the set's process; Vermont's 106 in 58 s. `verify_console` 44/44. As planned: Run a set from the page (a jurisdiction's regression set, a kind, or the requests found by a search) three ways, one set at a time, at most 2 workers; progress, then the summary as a pass gives it (equal, differences by finding, refusals, no ISO answer) and the list to open in *Compare*. Saved as a pass (`results/passes/pass-NN.json`), so it counts as one | S-M | C-49 |
 | ~~C-54~~ | ✅ **DONE 2026-10-22**: **The gate.** `tests/verify_console.py`: every endpoint's answer equal to `cg.rate` and the latest pass on a sample per jurisdiction and on U8; a draft round trip (authored → compiled → shown back = authored); a draft rated on the graph = the engine; nothing written outside `results/console` but by *Promote*, which writes one new draft version and its log line; the page loads in Chrome with no console error, in the dark theme, at 1440 px and at phone width (screenshots kept). The whole regression still passes, one test at a time. Then the review with the user | S | C-47 to C-53 |
 
+### CG-14 · Rate as the harness does: state, line, carrier (1 task) — ✅ COMPLETE 2026-10-22
+
+**Asked by the user 2026-10-22:** the Rate tab like the harness's *Compare* tab: choose state, line and carrier, rate,
+and compare with ISO. The user's choices: **GL only, Commercial Property shown but not offered** ("not on the graph
+yet"); **the new flow on top of the Rate tab, the saved-request picker and the editors folded below it**.
+
+**Release gate:** on the Rate tab, any of the 51 GL jurisdictions with no carrier, and Iowa with UFC and ADD (new and
+renewal), rates from the pickers alone: the technical premium on the graph = the engine, ISO's stored answer beside
+it when there is one; with a carrier, the carrier's premium and waterfall on the graph = the engine, ISO beside it for
+the request with the carrier's LCMs written in; with no stored answer, *Compare with ISO* opens the existing confirm
+(one click, one call, D19) and nothing is sent without it. The sample is the harness's own (`console.workbench.build`,
+imported in place), built on the server, so a stored answer is matched by its exact text. `verify_console` grows a
+check for it and still passes whole.
+
+| # | Task | Size | Needs |
+|---|---|---|---|
+| ~~C-55~~ | ✅ **DONE 2026-10-22**: **Price a risk.** Iowa's sample $8,016, Texas's $7,821, Alaska's $7,386 equal three ways; Iowa with UFC $13,661 graph = engine (ISO not asked yet); `verify_console` 50/50 (the total had missed the Promote check: 45 before, not 44). As planned: `GET /api/price/options` (lines, the 51 jurisdictions with names, the writing companies with an approved GL filing and the states it covers, from the harness's `workbench.companies`); `POST /api/price` `{line, state, carrier, policy_type}`: the sample for the state, compared three ways as `/api/compare` does, and with a carrier rated as `/api/drafts/rate` does with the filing in force (`deviations.engine.plan_for`); `/api/iso/plan` and `/ask` take `{sample}` in place of a payload. The page: Line, State, Carrier, Business (new or renewal, with a carrier only); *Compare with ISO* and *Just price it · free*; the answer three ways, the carrier's waterfall, the graph's coverages and steps; *Edit this request* puts the sample into the folded editors | S-M | C-48 to C-52 |
+
 ## 7. Layout
 
 ```
@@ -441,6 +460,7 @@ answers in its answer store (§5, step 3).
 | 2026-10-21 | The gate reviewed with the user. The user: the open items (OI-142, Promote, sets as real passes, the demo draft) are the first thing to work on 2026-10-22, before the sign-off |
 | 2026-10-22 | The open items settled with the user: OI-142 fixed in the harness (`7a1c2d3`); v3 promoted by the user from the page; the demo draft deleted; the whole regression as a set from the console, pass 33, clean. The Promote dialog now shows its result (`verify_console` 44/44). Next: the user's sign-off of CG-13 |
 | 2026-10-22 | The user signed off CG-13. **CG-13 COMPLETE.** Open: CG-8 (F1-F10 to Federato, the Property proof of concept, the Product Studio load), the user's call |
+| 2026-10-22 | The user: a desktop app for the console (`app/`, shortcut on the desktop and in the Start menu, port 8767, 634c132). Then: the Rate tab like the harness's, choosing state, line and carrier; GL only with CP shown greyed, the new flow on top and the picker folded (the user's choices). Planned as **CG-14** (C-55), started; done the same day (`verify_console` 50/50) |
 | 2026-10-19 | The user: go for the next 100 (groups 3 and 4). Sent (100 calls, lane active, now 150 of 150 today): 100 premiums equal. Pass 7 clean: 223 ISO answers three ways, graph = engine on all 362; verify_live 10/10. Left: groups 5-7 (139 calls) |
 
 ## 11. GL in every jurisdiction (CG-9 to CG-12, added 2026-10-19)
