@@ -378,7 +378,7 @@ folder** (proved with a Python audit hook over a scripted session). Then the Mac
 
 **Sizes (2026-10-22):** ISO's GL files 1.2 GB (all editions); the harness's folder 7.2 GB, mostly results; this project's saved requests 304 MB (left out of the lean app). Lean installer estimated 100-200 MB.
 
-### CG-16 · Property: one state on the graph (4 tasks) — proposed 2026-10-22, awaiting the user's go
+### CG-16 · Property: one state on the graph (4 tasks) — 🟡 IN PROGRESS
 
 **Why first:** as Iowa GL was (CG-1 to CG-6), one state end to end before any scale: the compiler on Property's
 rules, its null mode and the three instructions GL never used. **Iowa** (D28): the state with Property filings for
@@ -391,8 +391,8 @@ ways on those answers clean, or each difference placed and recorded as a finding
 
 | # | Task | Size | Needs |
 |---|---|---|---|
-| C-62 | **What Property is.** The census per jurisdiction (§13.1: instructions, loops, records, tests, messages, editions), the stored answers per state (2,455 rated), the harness's Property pieces this project will import in place (`cf_engine` resolver, run checks, rating, its sample requests), and which of GL's tools serve as they are; `docs/PROPERTY.md` | S | — |
-| C-63 | **The compiler's second mode.** A line parameter through compile, run and the lean executor: Property's resolver and settings (`product_skips_null`: a null in arithmetic is skipped, not refused), each step's meaning checked against the engine in both modes; GL's 179 editions recompile unchanged | M | C-62 |
+| ~~C-62~~ | ✅ **DONE 2026-10-22**: **What Property is.** `docs/PROPERTY.md`: 47 jurisdictions, 391 editions, 3,007 stored answers (2,456 rated); Iowa in force CF_IA_20260601_V01, 49 stored (45 rated); the harness's Property flow (same interpreter, Property's book, settings and run hooks; the look-ahead in the hooks); the line is wired in two places only (`cg/inventory`, `cg/tables`). As planned: The census per jurisdiction (§13.1: instructions, loops, records, tests, messages, editions), the stored answers per state (2,455 rated), the harness's Property pieces this project will import in place (`cf_engine` resolver, run checks, rating, its sample requests), and which of GL's tools serve as they are; `docs/PROPERTY.md` | S | — |
+| C-63 | 🟡 **IN PROGRESS**: **The compiler's second mode.** A line parameter through compile, run and the lean executor: Property's resolver and settings (`product_skips_null`: a null in arithmetic is skipped, not refused), each step's meaning checked against the engine in both modes; GL's 179 editions recompile unchanged | M | C-62 |
 | C-64 | **The three new instructions.** `Power`, `LastNonNull`, and `Custom` (ISO's leap-day function, not published): the graph copies the engine's rule (OI-121: the case ISO confirmed, refused otherwise), never more | S | C-63 |
 | C-65 | **Iowa Property end to end.** Compiles whole; `cg.loop` on Iowa's stored answers three ways; `cg.passes` kind `cf`; every difference placed (§5) and matched to a finding; `tests/verify_cf_iowa.py` | M | C-63, C-64 |
 
