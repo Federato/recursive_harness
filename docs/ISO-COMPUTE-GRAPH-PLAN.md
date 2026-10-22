@@ -159,6 +159,7 @@ jurisdiction (added 2026-10-19, §11):** CG-9 → CG-10 → CG-11 → CG-12. **T
 | CG-12 | GL everywhere: findings, **the graph as a rating engine of its own**, and close | C-41 to C-46 | 3.5-5 |
 | CG-13 | **A rating console on the graph**: rate, compare with the engine and ISO, author deviations (dark Federato theme) | C-47 to C-54 | 4-6 |
 | CG-14 | **Rate as the harness does**: state, line and carrier pickers, compared with ISO | C-55 | 0.5-1 |
+| CG-15 | **An installed app**: Windows installer, then Mac; rates offline, stored answers, Ask ISO with the company login | C-56 to C-61 | 3-5 |
 
 ### CG-1 · Foundations (5 tasks) — ✅ COMPLETE 2026-10-16
 
@@ -343,6 +344,36 @@ check for it and still passes whole.
 |---|---|---|---|
 | ~~C-55~~ | ✅ **DONE 2026-10-22**: **Price a risk.** Iowa's sample $8,016, Texas's $7,821, Alaska's $7,386 equal three ways; Iowa with UFC $13,661 graph = engine (ISO not asked yet); `verify_console` 50/50 (the total had missed the Promote check: 45 before, not 44). As planned: `GET /api/price/options` (lines, the 51 jurisdictions with names, the writing companies with an approved GL filing and the states it covers, from the harness's `workbench.companies`); `POST /api/price` `{line, state, carrier, policy_type}`: the sample for the state, compared three ways as `/api/compare` does, and with a carrier rated as `/api/drafts/rate` does with the filing in force (`deviations.engine.plan_for`); `/api/iso/plan` and `/ask` take `{sample}` in place of a payload. The page: Line, State, Carrier, Business (new or renewal, with a carrier only); *Compare with ISO* and *Just price it · free*; the answer three ways, the carrier's waterfall, the graph's coverages and steps; *Edit this request* puts the sample into the folded editors | S-M | C-48 to C-52 |
 
+### CG-15 · An installed app for Windows, then Mac (6 tasks) — proposed 2026-10-22, awaiting the user's go
+
+**Asked by the user 2026-10-22:** the console packaged as an installed app for Windows and Mac, for other people,
+able to rate. **The user's decisions (D22-D27, 2026-10-22):** others will install it; a frozen copy of the harness's
+code inside the installer only (D22); ISO's rule files and stored answers go with it, covered by Federato's ISO
+license (D23); the company's ISO login built into the installer (D24; the user was told anyone with the installer can
+extract it); each computer's own call ledger, 150 calls a day as here (D25); a lean installer (D26); Windows first,
+Mac soon after (D27).
+
+**Release gate:** a Windows installer (`ISOComputeGraph-Setup-<version>.exe`, per user, no admin rights) installs,
+puts the app in the Start menu and on the desktop, and uninstalls clean. The installed app opens in its own window
+(no browser); on the pickers it rates every one of the 51 GL jurisdictions' samples and Iowa with UFC and ADD equal
+to this project's console (graph, engine, ISO's stored answer, the carrier's waterfall); *Ask ISO* plans and dry-runs
+with the built-in login and its own ledger. **It reads nothing outside its install folder and the user's app-data
+folder** (proved with a Python audit hook over a scripted session). Then the Mac build from the same script.
+
+| # | Task | Size | Needs |
+|---|---|---|---|
+| C-56 | **What the app reads.** A scripted session of the console (the pickers in all 51 jurisdictions, with and without a carrier, both kinds of business; *Ask ISO* planned and dry-run) under a Python audit hook that records every file opened: the list of ISO editions, stored answers, carriers' files and harness modules the lean app needs, written to `docs/BUNDLE.md` | S | C-55 |
+| C-57 | **One place for every path.** The installed app sets the harness's own switches (`GL_ERC_ROOT`, `CARRIERS_ROOT`, `RAAS_LEDGER_DIR`, `RAAS_ENV_FILE`) and this project's `results` to folders inside the install; the frozen harness copy keeps its stored answers beside its code, as here. No change to the harness; if one is needed it is logged there for the user's go | S | C-56 |
+| C-58 | **The lean bundle.** `tools/bundle.py`: a staging folder from the two repositories at named commits (`git archive`, code only), the ISO editions in force and their parents, the stored answers the pickers can reach, the carriers' filings, the login file (D24) and the ledger set to 150 a day (D25); the folded regression picker hidden when its saved requests are absent. Size measured | M | C-56, C-57 |
+| C-59 | **Its own window.** `app/desktop.py`: the server in the app's process on a free port, the page in a native window (pywebview: WebView2 on Windows, WebKit on Mac), closed together. The icon on the window, the taskbar and the installer | S | — |
+| C-60 | **The Windows installer.** PyInstaller (one folder) and Inno Setup (per user, no admin; Start menu, desktop, uninstall), from one command, `python tools/build_installer.py`. The gate above on this PC from the installed copy, the audit hook proving nothing is read from `C:\FederatoProjects`. Unsigned: Windows shows *Windows protected your PC* (More info → Run anyway) until a code-signing certificate is bought | M | C-58, C-59 |
+| C-61 | **The Mac build.** The same build script on macOS (a `.app` in a `.dmg`), run on a Mac or by a GitHub Actions workflow on a macOS runner; unsigned until an Apple Developer ID: right-click → Open the first time | M | C-60, a Mac or GitHub Actions |
+
+**Tools to install on this PC (free):** Inno Setup 6 (`winget install JRSoftware.InnoSetup`) and pywebview (`pip install pywebview`). PyInstaller 6.22 is installed.
+
+**Sizes (2026-10-22):** ISO's GL files 1.2 GB (all editions); the harness's folder 7.2 GB, mostly results; this project's saved requests 304 MB (left out of the lean app). Lean installer estimated 100-200 MB.
+
+
 ## 7. Layout
 
 ```
@@ -461,6 +492,7 @@ answers in its answer store (§5, step 3).
 | 2026-10-22 | The open items settled with the user: OI-142 fixed in the harness (`7a1c2d3`); v3 promoted by the user from the page; the demo draft deleted; the whole regression as a set from the console, pass 33, clean. The Promote dialog now shows its result (`verify_console` 44/44). Next: the user's sign-off of CG-13 |
 | 2026-10-22 | The user signed off CG-13. **CG-13 COMPLETE.** Open: CG-8 (F1-F10 to Federato, the Property proof of concept, the Product Studio load), the user's call |
 | 2026-10-22 | The user: a desktop app for the console (`app/`, shortcut on the desktop and in the Start menu, port 8767, 634c132). Then: the Rate tab like the harness's, choosing state, line and carrier; GL only with CP shown greyed, the new flow on top and the picker folded (the user's choices). Planned as **CG-14** (C-55), started; done the same day (`verify_console` 50/50) |
+| 2026-10-22 | The user: package the console as an installed app for Windows and Mac, for others, able to rate. Decisions D22-D27 taken (§6 CG-15: harness copy inside the installer only; ISO data covered by Federato's license; the company login built in, its risk told; 150 calls a day per computer; lean; Windows first). Planned as **CG-15** (C-56 to C-61), awaiting the go |
 | 2026-10-19 | The user: go for the next 100 (groups 3 and 4). Sent (100 calls, lane active, now 150 of 150 today): 100 premiums equal. Pass 7 clean: 223 ISO answers three ways, graph = engine on all 362; verify_live 10/10. Left: groups 5-7 (139 calls) |
 
 ## 11. GL in every jurisdiction (CG-9 to CG-12, added 2026-10-19)
