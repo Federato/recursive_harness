@@ -420,7 +420,7 @@ answer three ways, clean or recorded. No live calls.
 
 | # | Task | Size | Needs |
 |---|---|---|---|
-| C-69 | **Scope.** `cg.scope` for Property: **all 391 editions** (D32), each compiled whole (about 2.7x GL's size each: compile time measured, run per jurisdiction in short processes, 2 workers at most); `docs/SCOPE.md` gains Property | M | CG-17 |
+| C-69 | **Scope.** `cg.scope` for Property: **all 391 editions** (D32), each compiled whole (about 2.7x GL's size each: compile time measured, run per jurisdiction in short processes, 2 workers at most); `docs/SCOPE.md` gains Property (steps C-69.1 to C-69.5, §13.4) | M | CG-17 |
 | C-70 | **Request sets per edition.** The stored answers (2,455 rated, 3,006 in all), the harness's Property samples, and generated requests dated into **each edition's effective window** over the coverages it files (as C-36); `docs/REQUESTS.md` gains Property | M-L | C-69 |
 | C-71 | **Free passes in waves.** Graph = engine on every request, **the look-ahead's blanked values included (C-66)**; every stored answer three ways (as C-37, C-38); findings recorded (`docs/KNOWN-GAPS.json`); a pass per wave, clean | M | C-70 |
 
@@ -577,7 +577,7 @@ answers in its answer store (§5, step 3).
 | 2026-10-22 | The user: plan Commercial Property in release-candidate groups with tasks. Planned as **CG-16 to CG-20** (C-62 to C-79, 8 to 13 working days, §13); D28-D34 proposed, awaiting the user. The Mac `.dmg` still awaited |
 | 2026-10-22 | D28-D34 taken (the user, one at a time): all as proposed but **D32: every Property edition on disk (391)**; CG-18 re-sized (2.5-4 days), total 9 to 15 days. Awaiting the go |
 | 2026-10-22 | Go for CG-16 (the user). **CG-16 COMPLETE**: C-62 `docs/PROPERTY.md`; C-63 the line switch and Property's null rule; C-64 Power, LastNonNull, Custom; C-65 the Property rater, Iowa's 3 editions whole, graph = engine on 37 of 37 stored requests, ISO 33 equal (2 ISO service errors, 2 the harness's C28-17 decision); GL unchanged (`verify_rate` 3/3, `verify_console` 50/50). The look-ahead changed no Iowa answer: CG-17 needs requests built where it does. Next: the go for CG-17 |
-| 2026-10-23 | The user: rerun `--memory`. Checks 1 to 5's ratings and raters released before check 6; `verify_cf_iowa --memory` 8/8 (memory flat, -6 MB). **C-68.5 done.** C-68.6: the four conditions reviewed; the user signed off CG-17. **C-68 done; CG-17 COMPLETE** |
+| 2026-10-23 | The user: rerun `--memory`. Checks 1 to 5's ratings and raters released before check 6; `verify_cf_iowa --memory` 8/8 (memory flat, -6 MB). **C-68.5 done.** C-68.6: the four conditions reviewed; the user signed off CG-17. **C-68 done; CG-17 COMPLETE**. C-69 broken into steps (C-69.1 to C-69.5, §13.4), the user's call |
 | 2026-10-22 | The user: do C-66. **C-66 done**: the look-ahead on the graph = the engine's; it changes 1 of 2,122 stored requests (K4d), graph = engine with and without it, ISO agrees; Iowa 4/4 with it on (151 values blanked alike). Next: C-67 (the fast executor), on the user's go |
 | 2026-10-22 | The user: do C-67. Lean = checking on Property (38 of 38); `cg/lean.py` `concrete` sped up; about the engine's speed. **Paused for the day (the user)**: GL `verify_lean --resume` and `verify_cf_iowa` (5 checks) to run before C-67 closes |
 | 2026-10-22 | C-67 and C-68 broken into steps (§13.4; the Property tracker shows them). The user: run C-67.4 and C-67.5: GL `verify_lean` 5/5, `verify_cf_iowa` 5/5 (lean 1.38 s a Property rating, the engine 1.04 s). **C-67 done.** Next: C-68, on the user's go |
@@ -782,7 +782,7 @@ A decision taken is marked at the start of its cell: `✅ **TAKEN <date>**`, the
 
 ### 13.4 Steps
 
-Tasks broken into steps where that shows progress better (C-67 and C-68, 2026-10-22). A step is marked as a task is, at the
+Tasks broken into steps where that shows progress better (C-67 and C-68, 2026-10-22; C-69, 2026-10-23). A step is marked as a task is, at the
 start of its cell: `✅ **DONE <date>**` or `🟡 **IN PROGRESS**`; the Property tracker shows them under their task.
 
 | Step | What | Done when |
@@ -799,3 +799,8 @@ start of its cell: `✅ **DONE <date>**` or `🟡 **IN PROGRESS**`; the Property
 | C-68.4 | ✅ **DONE 2026-10-22**: **Fix what leaks or differs.** Any state carried between ratings or memory growth found in C-68.1 to C-68.3, fixed where it lives (here, or logged in the harness's OPEN-ITEMS for its own gates) | nothing to fix, or fixed and C-68.1 to C-68.3 re-run clean; if `cg/` changed, GL's `verify_lean` and `verify_rate` still pass. Done: nothing to fix: C-68.1 to C-68.3 found no state carried and no growth; `cg/` unchanged, so GL's gates stand |
 | C-68.5 | ✅ **DONE 2026-10-23**: **`verify_cf_iowa` grows.** C-68.1 to C-68.3 become its checks 6 to 8 (the memory run behind a flag if it is long) | 8/8. Done: `python tests/verify_cf_iowa.py --memory` 8/8 (49 min). The first run (7/8) read memory inside this test's process, which gave back checks 1 to 7's ~4.4 GB while it was read; check 8 now runs in its own process, and checks 1 to 5's ratings, raters and editions are released before check 6. Check 8: 1,026 answers = their first; memory 984 MB after round 1, then 990 to 1,003, ending 993 (-6 MB) |
 | C-68.6 | ✅ **DONE 2026-10-23**: **CG-17's gate.** Review with the user: the gate's four conditions (graph = engine with the look-ahead, lean = checking, nothing carried between ratings, memory flat) | the user signs off CG-17. Done: all four met (graph = engine on 37 of 37 with the look-ahead's 151 values; lean = checking in every order and process; memory -6 MB over 1,026); signed off by the user. Noted: lean 1.23 s a Property rating against the engine's 0.77 s |
+| C-69.1 | **List and measure.** The 391 Property editions counted by jurisdiction; a few compiled in short processes, time and memory measured | an estimate of the full run's time and memory |
+| C-69.2 | **Compile all 391.** One jurisdiction at a time in short processes, 2 workers at most; results saved, so the run can resume | every edition compiled, its holes counted |
+| C-69.3 | **Fix the holes.** Each fixed where it lives (here, or logged in the harness's OPEN-ITEMS for its own gates) | 0 holes in all 391; if `cg/` changed, GL's `verify_lean` and `verify_rate` and `verify_cf_iowa` still pass |
+| C-69.4 | **Write it up.** `docs/SCOPE.md` gains Property: editions by jurisdiction, compile times, sizes | the page shows all 391 |
+| C-69.5 | **Close C-69.** Mark it done here, `tools/sync_plan.py`, commit both repos | the tracker shows C-69 done; C-70 ready for the user's go |
