@@ -728,6 +728,14 @@ def _get_list(ip, el, fr):
             out = ip.eval(ch, fr)
     except BreakLoop:
         pass
+    if el.attrib.get("Distinct") == "true":
+        # OI-143: only Indiana Property's IL 09 03 rule (8 editions) files it, under a `Count`; ISO counts the
+        # distinct values (one live call, 2026-10-25)
+        seen = []
+        for v in flatten(out):
+            if v not in seen:
+                seen.append(v)
+        return Multi(seen)
     return out
 
 
@@ -943,8 +951,12 @@ def _truncate(ip, el, fr):
 
 @node("Count")
 def _count(ip, el, fr):
-    path = el.attrib.get("AtInputDataDef", "")
-    return len(tree.select(path, fr.data))
+    path = el.attrib.get("AtInputDataDef")
+    kids = _kids(el)
+    if path is None and kids:
+        # OI-143: no path, a child list (Indiana Property's `Count(GetList Distinct)`, 8 editions): count its values
+        return len(flatten(ip.eval(_only(el, ip), fr)))
+    return len(tree.select(path or "", fr.data))
 
 
 # -------------------------------------------------------- strings and dates
