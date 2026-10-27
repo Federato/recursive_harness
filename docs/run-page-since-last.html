@@ -1,0 +1,315 @@
+<!doctype html><html><head><meta charset="utf-8">
+<title>Run page — what changed since last run</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+:root{--ink:#1a1d21;--muted:#6b7580;--line:#e3e8ee;--blue:#2b6cb0;
+--red:#c0392b;--amber:#b7791f;--grey:#9aa5b1;--green:#2f855a;--bg:#f7f9fb}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+font:14px/1.55 ui-sans-serif,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+header{background:#1f2933;color:#fff;padding:18px 24px}
+header h1{margin:0 0 4px;font-size:18px;font-weight:650}
+header p{margin:0;opacity:.75;font-size:13px;max-width:78ch}
+.warn{background:#fff8e6;border-bottom:1px solid #f0e0b8;padding:10px 24px;
+font-size:12.5px;color:#7a5c12}
+nav{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--line);
+padding:10px 24px;display:flex;gap:7px;flex-wrap:wrap;z-index:20}
+nav button{background:#fff;color:var(--ink);border:1px solid #cbd2d9;
+border-radius:6px;padding:6px 12px;font-size:13px;cursor:pointer}
+nav button.on{background:var(--blue);color:#fff;border-color:var(--blue);font-weight:650}
+main{padding:20px 24px;max-width:1060px}
+section{display:none} section.on{display:block}
+.lede{background:#fff;border:1px solid var(--line);border-left:3px solid var(--blue);
+border-radius:6px;padding:12px 15px;margin-bottom:16px;font-size:13px}
+.lede b{display:block;margin-bottom:3px}
+.lede .cost{color:var(--muted);font-size:12.5px;margin-top:6px}
+.page{background:#eef1f5;border:1px solid var(--line);border-radius:10px;padding:14px}
+.page > .caption{font-size:11px;text-transform:uppercase;letter-spacing:.05em;
+color:var(--muted);margin-bottom:9px;font-weight:650}
+.card{background:#fff;border:1px solid var(--line);border-radius:8px;
+padding:14px 16px;margin-bottom:12px}
+.card h2{font-size:11px;text-transform:uppercase;letter-spacing:.05em;
+color:var(--muted);margin:0 0 10px;font-weight:650}
+.big{font-size:15px;font-weight:650;margin:0 0 6px}
+.counts{display:flex;gap:24px;flex-wrap:wrap;margin:6px 0 2px}
+.counts div{font-size:12px;color:var(--muted)}
+.counts b{display:block;font-size:21px;color:var(--ink);
+font-variant-numeric:tabular-nums;font-weight:650}
+.counts b.bad{color:var(--red)} .counts b.ok{color:var(--green)}
+.counts b.new{color:var(--amber)}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:left;font-weight:650;color:var(--muted);font-size:10.5px;
+text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--line);
+padding:6px 7px}
+td{padding:5px 7px;border-bottom:1px solid #f0f3f6;vertical-align:top}
+td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.st{font-weight:650;font-size:11.5px;white-space:nowrap}
+.st.MATCH{color:var(--blue)} .st.DIFF{color:var(--red)}
+.st.PREMIUM{color:var(--amber)} .st.NA{color:var(--grey)}
+.det{color:var(--muted);font-size:11.5px}
+.note{font-size:11.5px;color:var(--muted);border-left:2px solid var(--line);
+padding-left:9px;margin-top:8px}
+.badge{display:inline-block;font-size:10px;font-weight:650;padding:1px 6px;
+border-radius:99px;margin-left:6px;letter-spacing:.02em}
+.b-new{background:#fdeaea;color:#a2312a}
+.b-fix{background:#e6f4ec;color:#1f6b45}
+.b-old{background:#f0f3f6;color:#6b7580}
+.b-first{background:#eef6ff;color:#1f4f7a}
+.chg{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media(max-width:760px){.chg{grid-template-columns:repeat(2,1fr)}}
+.chg > div{border:1px solid var(--line);border-radius:7px;padding:10px 12px}
+.chg .k{font-size:11.5px;color:var(--muted)}
+.chg .v{font-size:26px;font-weight:650;font-variant-numeric:tabular-nums;
+line-height:1.15}
+.chg .w{font-size:11.5px;color:var(--muted);margin-top:3px}
+.chg .v.bad{color:var(--red)} .chg .v.ok{color:var(--green)}
+.chg .v.new{color:var(--blue)}
+.prev{font-size:11.5px;color:var(--muted);margin-top:6px}
+.matrix{font-size:11.5px}
+.matrix th{font-size:10px;padding:4px 2px;text-align:center}
+.matrix td{text-align:center;padding:2px;border-bottom:1px solid #f6f8fa}
+.matrix td.rowhead,.matrix th.rowhead{text-align:left;white-space:nowrap;
+color:var(--ink);font-weight:600;padding-right:10px}
+.cell{display:inline-block;width:16px;height:16px;border-radius:3px}
+.c-ok{background:#bcd7ef} .c-bad{background:var(--red)}
+.c-amb{background:var(--amber)} .c-na{background:#e3e8ee}
+.cell.isnew{box-shadow:0 0 0 2px #1a1d21}
+.cell.isfix{box-shadow:0 0 0 2px #2f855a}
+.legend{font-size:11.5px;color:var(--muted);margin-top:8px;display:flex;
+gap:14px;flex-wrap:wrap;align-items:center}
+.legend span{display:flex;gap:5px;align-items:center}
+h3.sub{font-size:13px;margin:18px 0 8px;font-weight:650}
+</style></head><body>
+
+<header>
+  <h1>“What changed since last run” — three ways to place it</h1>
+  <p>The proposal's W3 leads with it: new problems, problems fixed, still open,
+     newly covered ground. It is the one element of section 6 we have not
+     placed. Everything else on these pages is already agreed —
+     verdict, lead visual, matrix, table.</p>
+</header>
+<div class="warn"><b>Mockup.</b> Invented numbers. Same run throughout: L3 Limits,
+  class 91340, compared against the previous L3 run of the same class on 15 August.</div>
+
+<nav>
+  <button class="on" data-t="a">1 · A block under the verdict</button>
+  <button data-t="b">2 · Badges on the rows and cells</button>
+  <button data-t="c">3 · No comparison at all</button>
+</nav>
+
+<main>
+
+<!-- ================================================================ 1 -->
+<section id="a" class="on">
+<div class="lede"><b>1 · One block, directly under the verdict</b>
+  Four counts comparing this run with the previous run of the same layer and
+  class, computed when the file is written and frozen into it. The rest of the
+  page is untouched.
+  <div class="cost">Answers “did my change help” in one line. Needs a rule for
+    what counts as “the previous run” — and a first run of anything has nothing
+    to compare against, so it has to say that rather than show four zeros.</div>
+</div>
+
+<div class="page"><div class="caption">L3-91340-20260818T1120.html</div>
+  <div class="card">
+    <p class="big">186 agree · 11 differ · 3 not applicable</p>
+    <div class="counts">
+      <div><b class="ok">93.0%</b>agree</div><div><b class="bad">11</b>differ</div>
+      <div><b>3</b>not applicable</div><div><b>200</b>ISO calls</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>What changed since 15 August</h2>
+    <div class="chg">
+      <div><div class="k">New problems</div><div class="v bad">1</div>
+        <div class="w">NY at 5,000,000 × highest</div></div>
+      <div><div class="k">Problems fixed</div><div class="v ok">4</div>
+        <div class="w">CA, OH, RI, GA</div></div>
+      <div><div class="k">Still open from before</div><div class="v">10</div>
+        <div class="w">oldest first seen 12 Aug</div></div>
+      <div><div class="k">Newly covered</div><div class="v new">+51</div>
+        <div class="w">the 5,000,000 limit, never run before</div></div>
+    </div>
+    <div class="prev">Compared with <b>L3-91340-20260815T0910.html</b> — same
+      layer, same class, 4 configurations, 51 jurisdictions. Two configurations
+      differ between the runs and are excluded from the comparison.</div>
+    <div class="note">Frozen at write time. This file will say the same thing in
+      a month, whatever has been run since — which is the point of a run being a
+      record rather than a view.</div>
+  </div>
+
+  <div class="card"><h2>Configuration × jurisdiction</h2>
+    <div style="overflow-x:auto"><table class="matrix" id="m1"></table></div>
+    <div class="legend">
+      <span><i class="cell c-ok"></i> agrees</span>
+      <span><i class="cell c-amb"></i> premium only</span>
+      <span><i class="cell c-bad"></i> differs</span>
+      <span><i class="cell c-na"></i> not applicable</span></div>
+  </div>
+
+  <div class="card"><h2>Every state, worst first</h2>
+    <table id="t1"></table></div>
+</div>
+</section>
+
+<!-- ================================================================ 2 -->
+<section id="b">
+<div class="lede"><b>2 · The block, plus a mark on every row and cell that moved</b>
+  Same block at the top, and then <i>new</i> and <i>fixed</i> are carried down
+  into the matrix and the table, so you can see which cell is the new one
+  without cross-referencing.
+  <div class="cost">The most informative and the busiest. Two extra states to
+    render in every cell, and a run with a lot of churn gets noisy.</div>
+</div>
+
+<div class="page"><div class="caption">L3-91340-20260818T1120.html</div>
+  <div class="card">
+    <p class="big">186 agree · 11 differ · 3 not applicable</p>
+    <div class="counts">
+      <div><b class="ok">93.0%</b>agree</div><div><b class="bad">11</b>differ</div>
+      <div><b class="new">1</b>newly broken</div><div><b class="ok">4</b>newly fixed</div>
+      <div><b>200</b>ISO calls</div>
+    </div>
+    <div class="prev">Compared with the L3 run of this class on 15 August.</div>
+  </div>
+
+  <div class="card"><h2>Configuration × jurisdiction</h2>
+    <div style="overflow-x:auto"><table class="matrix" id="m2"></table></div>
+    <div class="legend">
+      <span><i class="cell c-ok"></i> agrees</span>
+      <span><i class="cell c-bad"></i> differs</span>
+      <span><i class="cell c-na"></i> not applicable</span>
+      <span><i class="cell c-bad isnew"></i> new since last run</span>
+      <span><i class="cell c-ok isfix"></i> fixed since last run</span></div>
+    <div class="note">The outline says <b>this cell moved</b>. The fill still
+      says what it is now, so the grid reads the same way as before.</div>
+  </div>
+
+  <div class="card"><h2>Every state, worst first</h2>
+    <table id="t2"></table>
+    <div class="note">A row with no badge was the same last time. Badges are the
+      exceptions, so a quiet run has almost none.</div></div>
+</div>
+</section>
+
+<!-- ================================================================ 3 -->
+<section id="c">
+<div class="lede"><b>3 · No comparison — a run says what this run found</b>
+  The file records one run and nothing else. Comparing runs is what the index
+  and the defect register are for.
+  <div class="cost">Nothing to define, nothing to get wrong, and no risk of a
+    file quietly comparing against the wrong predecessor. You answer “did my
+    change help” by opening two files.</div>
+</div>
+
+<div class="page"><div class="caption">L3-91340-20260818T1120.html</div>
+  <div class="card">
+    <p class="big">186 agree · 11 differ · 3 not applicable</p>
+    <div class="counts">
+      <div><b class="ok">93.0%</b>agree</div><div><b class="bad">11</b>differ</div>
+      <div><b>3</b>not applicable</div><div><b>0</b>engine refused</div>
+      <div><b>200</b>ISO calls</div>
+    </div>
+    <div class="note">Not applicable is a third outcome and never a failure.</div>
+  </div>
+  <div class="card"><h2>Configuration × jurisdiction</h2>
+    <div style="overflow-x:auto"><table class="matrix" id="m3"></table></div>
+  </div>
+  <div class="card"><h2>Every state, worst first</h2><table id="t3"></table></div>
+</div>
+
+<h3 class="sub">and the comparison lives here instead — the run index</h3>
+<div class="page"><div class="caption">results/runs/index.html</div>
+  <div class="card">
+    <table>
+      <tr><th>When<th>Run<th>Class<th class="n">Agree<th class="n">Differ<th>Against the run before</tr>
+      <tr><td class="det">18 Aug 11:20<td><b>L3 Limits</b><td>91340<td class="n">186<td class="n">11
+          <td><span class="badge b-new">+1 new</span><span class="badge b-fix">−4 fixed</span></tr>
+      <tr><td class="det">15 Aug 09:10<td><b>L3 Limits</b><td>91340<td class="n">183<td class="n">14
+          <td><span class="badge b-new">+2 new</span><span class="badge b-fix">−1 fixed</span></tr>
+      <tr><td class="det">14 Aug 16:40<td><b>L3 Limits</b><td>91340<td class="n">184<td class="n">13
+          <td><span class="badge b-first">first run of this class</span></tr>
+    </table>
+    <div class="note">The index already knows every run, so the trend belongs
+      here — and unlike a run file it can be recomputed when the definition of
+      “the run before” improves.</div>
+  </div>
+</div>
+</section>
+
+</main>
+<script>
+document.querySelectorAll('nav button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('nav button').forEach(x => x.classList.remove('on'));
+  document.querySelectorAll('section').forEach(x => x.classList.remove('on'));
+  b.classList.add('on');
+  document.getElementById(b.dataset.t).classList.add('on');
+  scrollTo(0,0);
+});
+
+const STATES=['AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','IA','IL',
+              'LA','MT','NY','OH','OK','RI','TX','WA'];
+const CONFIGS=['500,000 × lowest','1,000,000 × middle','2,000,000 × middle',
+               '5,000,000 × highest'];
+const BASE={AL:1980,AK:2240,AZ:2010,AR:2150,CA:3340,CO:2240,CT:2890,DE:2340,
+            FL:3010,GA:2480,IA:2110,IL:2610,LA:3140,MT:2300,NY:3470,OH:2660,
+            OK:2900,RI:3020,TX:2731,WA:2780};
+const BAD5=['AK','CO','FL','IL','LA','NY','OK','TX','WA'];
+// what moved since the previous run
+const NEW=[['NY',3]];                       // newly broken
+const FIXED=[['CA',3],['OH',3],['RI',3],['GA',3]];
+const CELLS=[];
+CONFIGS.forEach((cfg,ci)=>STATES.forEach(st=>{
+  let status='MATCH',ours=BASE[st],iso=BASE[st];
+  if(ci===3&&st==='MT') status='NOT APPLICABLE';
+  else if(ci===3&&BAD5.includes(st)){status='DIFF';ours=Math.round(BASE[st]*2.1);}
+  else if(ci===2&&st==='OK'){status='DIFF';ours=BASE[st]+160;}
+  else if(ci===1&&st==='NY') status='PREMIUM ONLY';
+  const isNew=NEW.some(([s,c])=>s===st&&c===ci);
+  const isFix=FIXED.some(([s,c])=>s===st&&c===ci);
+  CELLS.push({cfg,ci,st,status,ours,iso,isNew,isFix});
+}));
+const K={'MATCH':'c-ok','DIFF':'c-bad','PREMIUM ONLY':'c-amb','NOT APPLICABLE':'c-na'};
+
+function matrix(el,marks){
+  let h='<tr><th class="rowhead">Configuration</th>'
+      + STATES.map(s=>`<th>${s}</th>`).join('')+'</tr>';
+  CONFIGS.forEach((cfg,ci)=>{
+    h+=`<tr><td class="rowhead">${cfg}</td>`;
+    STATES.forEach(st=>{
+      const c=CELLS.find(x=>x.ci===ci&&x.st===st);
+      let extra='';
+      if(marks&&c.isNew) extra=' isnew';
+      if(marks&&c.isFix) extra=' isfix';
+      h+=`<td><i class="cell ${K[c.status]}${extra}" title="${c.st} · ${c.cfg} · ${c.status}"></i></td>`;
+    });
+    h+='</tr>';
+  });
+  document.getElementById(el).innerHTML=h;
+}
+function tbl(el,badges){
+  const rows=CELLS.filter(c=>c.status!=='MATCH'||c.isFix)
+    .sort((a,b)=>Math.abs(b.ours-b.iso)-Math.abs(a.ours-a.iso));
+  let h='<tr><th>State<th>Configuration<th>Status<th class="n">Ours'
+      + '<th class="n">ISO<th class="n">Difference</tr>';
+  rows.slice(0,12).forEach(c=>{
+    const d=c.ours-c.iso;
+    const k=c.status==='NOT APPLICABLE'?'NA':c.status.split(' ')[0];
+    let b='';
+    if(badges&&c.isNew) b='<span class="badge b-new">new</span>';
+    if(badges&&c.isFix) b='<span class="badge b-fix">fixed</span>';
+    h+=`<tr><td><b>${c.st}</b>${b}<td class="det">${c.cfg}`
+     + `<td class="st ${k}">${c.status}`
+     + `<td class="n">${c.status==='NOT APPLICABLE'?'—':c.ours.toLocaleString()}`
+     + `<td class="n">${c.status==='NOT APPLICABLE'?'—':c.iso.toLocaleString()}`
+     + `<td class="n">${d?(d>0?'+':'')+d.toLocaleString():'—'}</tr>`;
+  });
+  h+=`<tr><td colspan="6" class="det">… ${rows.length-12} more</tr>`;
+  document.getElementById(el).innerHTML=h;
+}
+matrix('m1',false); tbl('t1',false);
+matrix('m2',true);  tbl('t2',true);
+matrix('m3',false); tbl('t3',false);
+</script>
+</body></html>

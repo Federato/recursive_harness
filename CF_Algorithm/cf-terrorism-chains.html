@@ -1,0 +1,922 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Terrorism Rating Chains</title>
+<style>
+  :root {
+    --ink: #101b24;
+    --paper: #edf0ec;
+    --paper-line: #c7d2ce;
+    --blueprint: #2e6e8e;
+    --blueprint-soft: #e4ebef;
+    --stamp: #c77f32;
+    --caution: #b14b39;
+    --ledger: #3f8f6e;
+    --surface: #f4f6f3;
+    --panel: #ffffff;
+    --sidebar: #e8ede8;
+    --text: var(--ink);
+    --muted: #5b6b72;
+    --border: #cdd6d2;
+    --font-display: Cambria, 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+    --font-body: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+    --font-mono: 'Cascadia Code', 'Cascadia Mono', Consolas, 'SFMono-Regular', ui-monospace, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --surface: #0b141a;
+      --panel: #101b22;
+      --sidebar: #0e1a20;
+      --text: #e7ece9;
+      --muted: #93a3a0;
+      --border: #223138;
+      --blueprint-soft: #16232b;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --surface: #0b141a;
+    --panel: #101b22;
+    --sidebar: #0e1a20;
+    --text: #e7ece9;
+    --muted: #93a3a0;
+    --border: #223138;
+    --blueprint-soft: #16232b;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; background: var(--surface); color: var(--text);
+    font-family: var(--font-body); -webkit-font-smoothing: antialiased;
+  }
+  body { display: flex; flex-direction: column; min-height: 100vh; }
+  a { color: inherit; }
+  code { font-family: var(--font-mono); font-size: 0.92em; }
+  ::selection { background: var(--stamp); color: #101b24; }
+
+  /* header */
+  header.masthead {
+    display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap;
+    padding: 1.1rem 1.6rem; border-bottom: 1px solid var(--border);
+    background: var(--panel);
+  }
+  header.masthead h1 {
+    font-family: var(--font-display); font-weight: 600; font-size: 1.35rem;
+    margin: 0; letter-spacing: 0.01em; text-wrap: balance;
+  }
+  header.masthead .rule { width: 1px; align-self: stretch; background: var(--border); }
+  header.masthead p { margin: 0; font-size: 0.82rem; color: var(--muted); max-width: 52ch; }
+  header.masthead .src {
+    margin-left: auto; font-family: var(--font-mono); font-size: 0.72rem;
+    color: var(--muted); text-align: right; line-height: 1.5;
+  }
+
+  /* shell */
+  .shell { display: flex; flex: 1; min-height: 0; }
+
+  nav.toc {
+    width: 258px; flex: none; background: var(--sidebar);
+    border-right: 1px solid var(--border);
+    padding: 1rem 0 2rem; overflow-y: auto;
+  }
+  nav.toc .group-label {
+    font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--muted); padding: 0.5rem 1.2rem 0.35rem;
+  }
+  nav.toc button.navlink {
+    display: block; width: 100%; text-align: left; background: none; border: none;
+    font-family: var(--font-body); font-size: 0.86rem; color: var(--text);
+    padding: 0.42rem 1.2rem 0.42rem 1.6rem; cursor: pointer;
+    border-left: 3px solid transparent;
+  }
+  nav.toc button.navlink:hover { background: var(--blueprint-soft); }
+  nav.toc button.navlink.active {
+    background: var(--blueprint-soft); border-left-color: var(--blueprint); font-weight: 600;
+  }
+  nav.toc button.navlink .chain-len {
+    display: block; font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); font-weight: 400;
+  }
+  nav.toc hr { border: none; border-top: 1px solid var(--border); margin: 0.6rem 1.2rem; }
+
+  nav.toc .legend {
+    margin: 1rem 1.2rem 0; padding: 0.8rem 0.9rem; border: 1px solid var(--border);
+    border-radius: 3px; background: var(--panel);
+  }
+  nav.toc .legend h4 {
+    margin: 0 0 0.5rem; font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--muted); font-weight: 600;
+  }
+  nav.toc .legend .row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.74rem; margin-bottom: 0.35rem; }
+  nav.toc .legend .swatch { width: 13px; height: 13px; flex: none; border-radius: 2px; border-width: 1.5px; border-style: solid; }
+  .sw-gate { background: #f4e4ce; border-color: #c77f32; }
+  .sw-zero { background: #f3dcd6; border-color: #b14b39; }
+  .sw-final { background: #dceee4; border-color: #3f8f6e; }
+  .sw-step { background: #e4ebef; border-color: #2e6e8e; }
+  .sw-openq { background: #f4e4ce; border-color: #b14b39; border-style: dashed !important; }
+  .sw-engine { background: #e6e1f0; border-color: #5a4c8a; }
+
+  main { flex: 1; min-width: 0; overflow-y: auto; padding: 1.6rem 2rem 4rem; }
+
+  .intro { max-width: 70ch; margin-bottom: 1.4rem; }
+  .intro h2 { font-family: var(--font-display); font-size: 1.25rem; margin: 0 0 0.5rem; text-wrap: balance; }
+  .intro p { font-size: 0.92rem; line-height: 1.6; color: var(--muted); margin: 0 0 0.6rem; }
+
+  /* tables */
+  .tablewrap { overflow-x: auto; margin-bottom: 1.4rem; }
+  table.grid { border-collapse: collapse; width: 100%; max-width: 1100px; background: var(--panel); }
+  table.grid caption {
+    text-align: left; font-family: var(--font-mono); font-size: 0.7rem; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem;
+  }
+  table.grid th, table.grid td {
+    border: 1px solid var(--border); padding: 0.5rem 0.7rem; font-size: 0.82rem;
+    text-align: left; vertical-align: top; line-height: 1.45;
+  }
+  table.grid thead th {
+    font-family: var(--font-mono); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--muted); background: var(--blueprint-soft); font-weight: 600;
+  }
+  table.grid tbody th { font-weight: 600; white-space: nowrap; }
+  table.grid td.num { font-family: var(--font-mono); text-align: right; white-space: nowrap; }
+  table.grid tr.hl td, table.grid tr.hl th { background: var(--blueprint-soft); }
+  table.grid td .tag {
+    font-family: var(--font-mono); font-size: 0.66rem; padding: 0.05rem 0.35rem; border-radius: 2px;
+    border: 1px solid var(--border); color: var(--muted); white-space: nowrap;
+  }
+  table.grid td .tag.a { border-color: var(--blueprint); color: var(--blueprint); }
+  table.grid td .tag.b { border-color: var(--ledger); color: var(--ledger); }
+  table.grid td .tag.bad { border-color: var(--caution); color: var(--caution); }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.9rem; max-width: 1100px; margin-bottom: 1.4rem; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 3px; padding: 0.9rem 1rem; }
+  .card .k { font-family: var(--font-mono); font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
+  .card .v { font-family: var(--font-display); font-size: 1.5rem; margin: 0.2rem 0 0.25rem; font-variant-numeric: tabular-nums; }
+  .card p { margin: 0; font-size: 0.8rem; color: var(--muted); line-height: 1.45; }
+  .card button.go {
+    margin-top: 0.6rem; background: none; border: 1px solid var(--blueprint); color: var(--blueprint);
+    font-family: var(--font-mono); font-size: 0.7rem; padding: 0.3rem 0.6rem; border-radius: 2px; cursor: pointer;
+  }
+  .card button.go:hover { background: var(--blueprint-soft); }
+
+  /* sheet */
+  .sheet-view { display: none; }
+  .sheet-view.active { display: block; }
+
+  .titleblock {
+    display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--border);
+    margin-bottom: 1.1rem; background: var(--panel);
+  }
+  .titleblock .field { padding: 0.6rem 0.9rem; border-right: 1px solid var(--border); }
+  .titleblock .field:last-child { border-right: none; }
+  .titleblock .field .k {
+    font-family: var(--font-mono); font-size: 0.63rem; text-transform: uppercase; letter-spacing: 0.07em;
+    color: var(--muted); display: block; margin-bottom: 0.15rem;
+  }
+  .titleblock .field .v { font-family: var(--font-mono); font-size: 0.82rem; color: var(--text); line-height: 1.35; }
+  .titleblock .field.wide { grid-column: span 4; border-top: 1px solid var(--border); border-right: none; }
+
+  .sheet {
+    background: var(--paper); border: 1px solid var(--paper-line); border-radius: 2px;
+    padding: 1.4rem 1.2rem 1rem; position: relative; overflow-x: auto;
+    background-image:
+      linear-gradient(var(--paper-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--paper-line) 1px, transparent 1px);
+    background-size: 28px 28px; background-position: -1px -1px;
+    background-color: var(--paper);
+  }
+  .sheet .corner { position: absolute; width: 14px; height: 14px; }
+  .sheet .corner.tl { top: 6px; left: 6px; border-top: 1.5px solid #7d8f8a; border-left: 1.5px solid #7d8f8a; }
+  .sheet .corner.tr { top: 6px; right: 6px; border-top: 1.5px solid #7d8f8a; border-right: 1.5px solid #7d8f8a; }
+  .sheet .corner.bl { bottom: 6px; left: 6px; border-bottom: 1.5px solid #7d8f8a; border-left: 1.5px solid #7d8f8a; }
+  .sheet .corner.br { bottom: 6px; right: 6px; border-bottom: 1.5px solid #7d8f8a; border-right: 1.5px solid #7d8f8a; }
+  .sheet pre.mermaid { margin: 0; background: transparent; min-width: 760px; color: #101b24; }
+
+  .notes { margin-top: 1.1rem; display: grid; grid-template-columns: 1.4fr 1fr; gap: 1.2rem; }
+  .notes h3 {
+    font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--muted); margin: 0 0 0.5rem;
+  }
+  .notes ul { margin: 0; padding-left: 1.1rem; font-size: 0.86rem; line-height: 1.55; }
+  .notes ul li { margin-bottom: 0.4rem; }
+  .notes .delta { border: 1px solid var(--border); background: var(--panel); padding: 0.8rem 0.9rem; border-radius: 3px; font-size: 0.86rem; line-height: 1.55; }
+  .notes .delta.openq { border-color: var(--caution); }
+  .notes .delta + .delta { margin-top: 0.8rem; }
+
+  h3.section {
+    font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--muted); margin: 1.6rem 0 0.6rem;
+  }
+
+  footer.doc-footer {
+    padding: 1rem 2rem 2rem; font-size: 0.76rem; color: var(--muted); border-top: 1px solid var(--border);
+  }
+  footer.doc-footer strong { color: var(--text); }
+
+  @media (max-width: 900px) {
+    .notes { grid-template-columns: 1fr; }
+    .titleblock { grid-template-columns: 1fr 1fr; }
+    .titleblock .field.wide { grid-column: span 2; }
+  }
+  @media (max-width: 720px) {
+    .shell { flex-direction: column; }
+    nav.toc { width: 100%; border-right: none; border-bottom: 1px solid var(--border); padding: 0.6rem 0; }
+    nav.toc .legend { display: none; }
+    main { padding: 1.2rem 16px 3rem; }
+    header.masthead { padding: 1rem 16px; }
+    header.masthead .src { margin-left: 0; text-align: left; }
+    header.masthead .rule { display: none; }
+    .titleblock { grid-template-columns: 1fr; }
+    .titleblock .field { border-right: none; border-bottom: 1px solid var(--border); }
+    .titleblock .field.wide { grid-column: span 1; }
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <h1>Terrorism Rating Chains</h1>
+  <div class="rule"></div>
+  <p>Every gate, branch and terminal in Commercial Property terrorism (certified acts, TRIA): how <code>TRIAType</code> attaches the forms, how each coverage prices its own terrorism premium, how the policy is charged through a roll-up, the TRIA expiry split, overrides, the 25% cap and every state that changes it. Checked against the built engine and ISO's rule XML as of 2026-10-06. CW 2023-08 V04 and CW 2026-06 are drawn together because their terrorism rules are byte-identical.</p>
+  <div class="src">Engine at 542f0e1 (stage2-interpreter; probed at 979ddf2)<br>Rule files: CommercialPropertyRules (attach, TRIA split) · 17 terrorism rule files (disclosures, PostTRIA, cap and sub-limit forms) · each coverage's own terrorism rules<br>Companion: docs/CF-CHUNK13-GATE.md · CF-CHUNK13-TASKS.md · scripts 143_–152_</div>
+</header>
+
+<div class="shell">
+  <nav class="toc" id="toc">
+    <button class="navlink active" data-target="overview">Overview<span class="chain-len">TRIAType → forms → coverages → roll-up</span></button>
+    <button class="navlink" data-target="split">TRIA split and override<span class="chain-len">days / 365, rounded · override first</span></button>
+    <hr>
+    <div class="group-label">Coverage chains</div>
+    <button class="navlink" data-target="bldg">Building<span class="chain-len">limit x rate x PC x coins x ded</span></button>
+    <button class="navlink" data-target="pp">Personal Property<span class="chain-len">own PC and coins · building's deductible</span></button>
+    <button class="navlink" data-target="sc">Special Class<span class="chain-len">no protection class</span></button>
+    <button class="navlink" data-target="bi">Business Income<span class="chain-len">building's PC x BI factor · no sub-limit</span></button>
+    <button class="navlink" data-target="scbi">Special Class Business Income<span class="chain-len">BI factor only</span></button>
+    <hr>
+    <div class="group-label">States</div>
+    <button class="navlink" data-target="states">State map<span class="chain-len">22 of 46 change terrorism</span></button>
+    <hr>
+    <div class="group-label">Review</div>
+    <button class="navlink" data-target="review">Chunk 13 claims re-checked<span class="chain-len">18 claims · 5 corrections</span></button>
+
+    <div class="legend">
+      <h4>Reading the chains</h4>
+      <div class="row"><span class="swatch sw-gate"></span> gate / branch condition</div>
+      <div class="row"><span class="swatch sw-step"></span> computed factor</div>
+      <div class="row"><span class="swatch sw-final"></span> premium resolves</div>
+      <div class="row"><span class="swatch sw-zero"></span> zero, refusal or clamp</div>
+      <div class="row"><span class="swatch sw-openq"></span> silent gap / open question</div>
+      <div class="row"><span class="swatch sw-engine"></span> engine layer, not an ISO rule</div>
+    </div>
+  </nav>
+
+  <main id="main">
+
+    <!-- ============================= OVERVIEW ============================= -->
+    <section class="sheet-view active" id="view-overview">
+      <div class="intro">
+        <h2>Every coverage prices its own terrorism; the policy pays only the roll-up</h2>
+        <p>Terrorism is not a coverage. It is an extra premium charged on every coverage the policy has, for losses from certified acts of terrorism, backed by the federal TRIA program. <code>TRIAType</code> decides everything: it attaches one family of forms (the in-effect disclosure with IL 09 52 / 53 / 86 / 87, the expiring cap forms IL 09 95 / 96 / 97, or the post-TRIA exclusions IL 00 30 / 31 / 32). If it is blank, nothing attaches and any submitted form is removed silently.</p>
+        <p>Each coverage then prices its own terrorism on its <em>limit</em>, not its premium: limit / 100 x a terrorism rate (loss cost by territory tier x the form's factor) x a few of the coverage's own factors. No coverage total includes that figure. The policy is charged through a roll-up record that sums them; in six states that roll-up is capped at 25% of the rest of the policy. The rules are byte-identical in CW 2023-08 V04 and CW 2026-06. Probes ran in OK, OH, VA, OR, NY, AZ, CT and FL.</p>
+      </div>
+
+      <div class="cards">
+        <div class="card">
+          <div class="k">Sub-limit</div>
+          <div class="v">Of full value</div>
+          <p>The 5–100% test is against the full value, not the limit. A sub-limit above the limit but within full value prices <em>more</em> ($173 against $89), not $0.</p>
+          <button class="go" data-target="bldg">See Building →</button>
+        </div>
+        <div class="card">
+          <div class="k">Override</div>
+          <div class="v">Charged whole</div>
+          <p>An override is prorated only on the estimated disclosure. Every other roll-up charges it in full ($500 where the rated premium was $63).</p>
+          <button class="go" data-target="split">See the split →</button>
+        </div>
+        <div class="card">
+          <div class="k">Silent zeros</div>
+          <div class="v">None refuse</div>
+          <p>No terrorism input is in the C28-17 refusal list. A blank <code>TRIAType</code>, territory, full value or deductible prices terrorism $0 "rated".</p>
+          <button class="go" data-target="review">See the checks →</button>
+        </div>
+      </div>
+
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["Policy record (CommercialProperty)<br/>CW 2023-08 V04 = CW 2026-06"]) --> attach["TerrorismFormsConditionalLogic<br/>13 attach rules: attach, else REMOVE"]:::step
+    attach --> tria{"TRIAType?"}
+    tria -->|"blank"| noForm["No terrorism form, no roll-up<br/>submitted forms removed, no message"]:::zero
+    tria -->|"value not in domain"| oddVal["IL 09 5x attaches (test is 'not Post')<br/>but no disclosure: $0, no message"]:::openq
+    tria -->|"Is in Effect"| discT["Disc-TRIA roll-up record"]:::step
+    tria -->|"Will Expire"| opt{"ConditionalExclusion<br/>RatingOption?"}
+    tria -->|"Expired, Use Conditional"| discEC["Disc-Estimated (any option)<br/>days = 0: all Post"]:::step
+    tria -->|"Already Expired, Post-TRIA"| postEx{"PostTRIAExclusion?"}
+    opt -->|"Entire Term"| discE["Disc-Estimated<br/>Pre + Post"]:::step
+    opt -->|"Calendar Year"| disc12["Disc 12/31/05<br/>Pre share only"]:::step
+    opt -->|"blank"| noDisc["No disclosure: coverage $0<br/>IL 09 52 still attached"]:::zero
+    discT --> cert{"CoverageForCertifiedActs?<br/>(any TRIAType but Post)"}
+    discE --> cert
+    disc12 --> cert
+    discEC --> cert
+    cert -->|"Yes"| f52["IL 09 52 cap"]:::step
+    cert -->|"No"| f53["IL 09 53 fire only<br/>CW factor 0"]:::step
+    cert -->|"excl NBC / sub-limit"| f8687["IL 09 86 / IL 09 87"]:::step
+    cert -->|"blank"| certZ["No IL 09 form: rate 0"]:::zero
+    discE -.->|"Will Expire / Expired-Cond"| condX["TRIAConditionalExclusion:<br/>IL 09 95 / 96 / 97 or none"]:::step
+    discEC -.-> condX
+    postEx -->|"Exclude / NBC / Sub-Limit"| f00["IL 00 30 / 31 / 32<br/>PostTRIA on"]:::step
+    postEx -->|"No Exclusion"| ptOn["PostTRIA on, no form"]:::step
+    postEx -->|"blank"| ptOff["PostTRIA off: $0"]:::zero
+    f52 --> cov["Each coverage: SetTerrorismPremium<br/>override, or branch on which roll-up exists"]:::step
+    f53 --> cov
+    f8687 --> cov
+    certZ --> cov
+    condX --> cov
+    f00 --> cov
+    ptOn --> cov
+    cov --> roll["Roll-up record: sum r2(TerrorismPremium)<br/>over every location; Premium = r0(sum)"]:::step
+    roll --> capQ{"Cap state?<br/>CA DC IL MD NY VA"}
+    capQ -->|"No"| ind["PremiumIndicator = 1 if Premium not 0"]:::step
+    capQ -->|"Yes"| cap["Premium = r0(0.25 x rest of policy)<br/>if roll-up is greater"]:::step
+    cap --> ind
+    ind --> total["ErcCalculatedTotalPremium = rest of policy<br/>+ roll-up Premium (if Indicator 1)"]:::final
+    noForm -.- silent["Engine: every terrorism zero here rates<br/>silently ('rated'). No C28-17 check<br/>covers a terrorism input"]:::eng
+    cov -.- refuse["Engine: unfiled TerrorismTerritory<br/>refuses (C28-05), as ISO does;<br/>blank territory rates $0"]:::eng
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class tria,opt,postEx,cert,capQ gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li><code>TerrorismIndicator</code> changes nothing about the premium. "No" is still charged; without CP 00 70 it only raises an ISO error message, and our outcome stays "rated".</li>
+            <li>A coverage can show a terrorism premium the policy never charges: with an override but no roll-up record, the building shows $500 and the policy pays $0.</li>
+            <li>The cap cuts only the roll-up. Coverage premiums and the pre/post totals stay uncapped (VA: 1,689 / 804 under a $74 charge). NY caps only the in-effect and post-TRIA roll-ups.</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>No terrorism zero refuses.</strong> 204 policy-layer probes: 200 rated, 4 refused, all four an unfiled territory (C28-05, as ISO does). Every other $0 rates silently: blank or off-domain <code>TRIAType</code>, blank certified-acts answer, "Will Expire" with no rating option, post-TRIA with no exclusion answer, IL 09 53 outside the fire-exception states, IL 00 30 under CW, blank territory.</div>
+      </div>
+    </section>
+
+    <!-- ============================= TRIA SPLIT ============================= -->
+    <section class="sheet-view" id="view-split">
+      <div class="titleblock">
+        <div class="field"><span class="k">Scope</span><span class="v">Policy layer: TRIA expiry split and override</span></div>
+        <div class="field"><span class="k">Editions</span><span class="v">CW 2023-08 V04 = CW 2026-06 (17 terrorism files byte-identical)</span></div>
+        <div class="field"><span class="k">Split rules</span><span class="v">CommercialPropertyRules: SetDaysUntilTRIAExpiration 2004 → SetTerrorismProratingProgYr3Factor 2077 (Divide, 2 places) → SetTerrorismProratingFullFactor 2150; Overall Rating 10–13 sets ExpDate = EffDate + 1 year</span></div>
+        <div class="field"><span class="k">Roll-ups</span><span class="v">Disc-TRIA and 12/31/05: SetPremium 234 (r0); Estimated: round0(Pre + Post) 425; PostTRIA 234, zeroed when off (ErcProcess 272)</span></div>
+        <div class="field wide"><span class="k">Cap</span><span class="v">CA, DC, IL, MD, NY, VA: after the CW ErcProcess, TerrorismCapStatePremiumCheck sets the roll-up to r0(0.25 x rest of policy) when larger. Constant 0.25 everywhere; NY caps only Disc-TRIA and PostTRIA.</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["SetDaysUntilTRIAExpiration<br/>(policy, ErcSetRatesAndFactors)"]) --> typ{"TRIAType?"}
+    typ -->|"Will Expire AND<br/>TRIAExpirationDate set"| diff["days = TRIAExpirationDate - EffDate<br/>(dates only; ExpDate never read)"]:::step
+    typ -->|"Is in Effect"| d365["days = 365"]:::step
+    typ -->|"anything else, incl. no date"| d0["days = 0"]:::step
+    diff --> f3{"days?"}
+    d365 --> f3
+    d0 --> f3
+    f3 -->|"&gt;= 365"| y1["Yr3 = 1.0"]:::step
+    f3 -->|"&lt;= 0"| y0["Yr3 = 0.0"]:::step
+    f3 -->|"1 to 364"| yr["Yr3 = r2(days / 365)<br/>1 day = 0.00, 364 = 1.00"]:::step
+    y1 --> full["Full = 1.0 if Yr3 = 0.0<br/>else 1 - Yr3"]:::step
+    y0 --> full
+    yr --> full
+    full -.- subm["Both IsNull-guarded:<br/>a submitted factor is used as sent"]:::openq
+    full --> ovr{"Coverage TerrorismOverride = Yes?"}
+    ovr -->|"Yes"| oRec{"Which roll-up?"}
+    oRec -->|"Disc-Estimated"| oSplit["Pre = r0(Ovr x Yr3)<br/>Post = r0(Ovr x Full); T = Ovr"]:::final
+    oRec -->|"Disc-TRIA, 12/31/05, PostTRIA"| oWhole["T = Ovr, charged whole<br/>(not prorated)"]:::final
+    oRec -->|"none"| oNone["T = Ovr on the coverage<br/>policy charged $0"]:::zero
+    ovr -->|"Yes, no premium"| oBlank["T null: $0"]:::zero
+    ovr -->|"No / blank"| rRec{"Which roll-up?"}
+    rRec -->|"Disc-TRIA"| rT["T = full rate, no proration"]:::final
+    rRec -->|"Disc-Estimated"| rE["Pre at TRIA rate x Yr3<br/>Post at conditional rate x Full<br/>T = r0(Pre + Post)"]:::final
+    rRec -->|"Disc 12/31/05"| rC["T = TRIA rate x Yr3<br/>post share dropped"]:::final
+    rRec -->|"PostTRIA on"| rP["T = PostTRIA exclusion rate"]:::final
+    rRec -->|"none"| rZ["T = 0.0"]:::zero
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class typ,f3,ovr,oRec,rRec gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>Days are counted from the effective date and divided by 365, rounded to two places. One day left rounds to 0.00 (all charged as expired); 364 days rounds to 1.00 (all in force).</li>
+            <li>A submitted <code>ExpDate</code> is overwritten to EffDate + 1 year, so a short-term policy cannot change the split.</li>
+            <li>A submitted <code>TerrorismProratingProgYr3Factor</code> is used as sent (the rule only fills it when blank).</li>
+            <li>The override is applied first on each coverage, even with <code>TRIAType</code> blank, and copied unrounded (123.45).</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>Three behaviours follow the XML but are not ISO-confirmed:</strong> the whole override charged under the calendar-year disclosure, the submitted proration factor being used, and the forced <code>ExpDate</code>. No live calls were made for this page.</div>
+      </div>
+    </section>
+
+    <!-- ============================= BUILDING ============================= -->
+    <section class="sheet-view" id="view-bldg">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Building / Structure: terrorism on the building record</span></div>
+        <div class="field"><span class="k">Editions</span><span class="v">CW 2023-08 V04 = CW 2026-06; CW 2023 V03 reads the sub-limit as a percentage</span></div>
+        <div class="field"><span class="k">Factor rules</span><span class="v">ErcSetRatesAndFactors :2244: SublimitPct :2343 → SublimitFactor :2424 → TRIAExclFactor :2505 → CondExclFactor :2607 → PostTRIAExclFactor :2688 → three rates :2769–:2869</span></div>
+        <div class="field"><span class="k">Premium rules</span><span class="v">ErcRate :12715, last: SetPreTRIAPremium :12757, SetPostTRIAPremium :12817, SetTerrorismPremium :12877 (override → Disc-TRIA → 12/31 → Estimated → post-TRIA → 0)</span></div>
+        <div class="field wide"><span class="k">Gate</span><span class="v">None by cause of loss: Basic, Broad, Special and blank all give $89. Priced whenever a disclosure or PostTRIA record is attached. Factors: the building's protection class, coinsurance and Group I deductible.</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["Building record<br/>CW 2023-08 V04 = CW 2026-06<br/>cause of loss not read"]) --> inLoc["Location input: tier from<br/>TerrorismTerritory, LC PY3, LC Full<br/>= r3(state row x policy LCM),<br/>NBC factor, OR fire factor"]:::step
+    inLoc --> inPol["Policy input (other page): forms<br/>attached by TRIAType, proration<br/>factors PY3 / Full"]:::step
+    inPol --> slForm{"Sub-limit form attached?<br/>IL 09 87 / 09 97 / 00 32"}
+    slForm -->|"No"| slNone["SubLimitPct 100,<br/>SubLimitFactor 1.0"]:::step
+    slForm -->|"Yes"| slPct["SubLimitPct = trunc(r0(SubLimit<br/>x 100 / FullBldgValue)),<br/>0 if FullBldgValue blank"]:::step
+    slPct --> slBand{"5 &lt;= pct &lt;= 100?"}
+    slBand -->|"Yes"| slLook["SubLimitFactor = r3(state band,<br/>linear: OK 5% 8.4, 30% 2.54)"]:::step
+    slBand -->|"No"| slZero["SubLimitFactor = 0.0"]:::zero
+    slNone --> tlu{"IncludedInBlkt = No<br/>AND sub-limit form?"}
+    slLook --> tlu
+    slZero --> tlu
+    tlu -->|"Yes"| tluSub["TerrorismLimitToUse =<br/>TerrorismSubLimit"]:::step
+    tlu -->|"No"| tluLim["TerrorismLimitToUse = LimitToUse<br/>(BlktIDNum &gt; 0: r0(FullBldgValue<br/>/ BlktTotal x BlktLimit))"]:::step
+    tluSub --> fac1
+    tluLim --> fac1["TRIAExclFactor: IL 09 52 1.0,<br/>IL 09 53 0.0 (OR: fire factor),<br/>IL 09 86 NBC, IL 09 87 SubLimitFactor,<br/>none 0.0"]:::step
+    fac1 --> rate1["TRIAExclusionRate =<br/>r4(LC PY3 x TRIAExclFactor)"]:::step
+    rate1 --> fac2["CondExclFactor: IL 09 95 0.0<br/>(OR: fire), IL 09 96 NBC,<br/>IL 09 97 SubLimitFactor, none 1.0"]:::step
+    fac2 --> rate2["ConditionalTerrorRate = r4(LC x factor):<br/>LC PY3 with a 09 95/96/97 form,<br/>else LC Full"]:::step
+    rate2 --> fac3["PostTRIAExclFactor: IL 00 30 0.0<br/>(OR: fire), IL 00 31 NBC,<br/>IL 00 32 SubLimitFactor, none 1.0"]:::step
+    fac3 --> rate3["PostTRIAExclusionRate =<br/>r4(LC Full x factor) if an IL 00 3x<br/>form or 'No Exclusion', else 0.0"]:::step
+    rate3 --> ovr{"TerrorismOverride = Yes?<br/>(tested before any form)"}
+    ovr -->|"Yes"| ovrT["TerrorismPremium =<br/>TerrorOverridePremium, copied,<br/>not rounded (blank: null)"]:::final
+    ovr -->|"No"| rec{"Policy record attached?<br/>(first match)"}
+    rec -->|"Disc-TRIA (in effect)"| pIn["T = r0(r4(r4(r4(TLU/100<br/>x TRIARate) x PC) x Coins) x DedBGI)"]:::final
+    rec -->|"Disc to 12/31 (calendar)"| pCal["Same, with x PY3 proration<br/>inside the first r4"]:::final
+    rec -->|"Disc estimated premium"| pEst["Pre = r0(... TRIARate x PY3 ...)<br/>Post = r0(... CondRate x Full ...)<br/>T = r0(Pre + Post)"]:::final
+    rec -->|"IL 00 30/31/32, or post-TRIA<br/>with 'No Exclusion'"| pPost["T = r0(r4(r4(r4(TLU/100<br/>x PostTRIARate) x PC) x Coins) x DedBGI)"]:::final
+    rec -->|"none (TRIAType blank)"| pZero["TerrorismPremium = 0.0"]:::zero
+    ovrT --> roll["To the policy roll-up<br/>(other page)"]:::step
+    pIn --> roll
+    pCal --> roll
+    pEst --> roll
+    pPost --> roll
+    ovrT -.- ovrEst["Estimated disclosure only:<br/>Pre = r0(override x PY3),<br/>Post = r0(override x Full)"]:::step
+    pIn -.- dedZ["DedBGI from the Group I chain:<br/>blank Deductible gives 0.0,<br/>terrorism $0"]:::zero
+    pZero -.- e1["Engine: every $0 ending here rates,<br/>outcome 'rated'. C28-17 has no<br/>terrorism check. Unfiled territory<br/>refuses, as at ISO"]:::eng
+    ovrT -.- e2["Engine: override with TRIAType blank<br/>shows 500 on the building, but no<br/>roll-up record: policy total unchanged"]:::eng
+    tluSub -.- q1["Not ISO-tested: sub-limit above the<br/>limit but within full value prices<br/>on the sub-limit ($173 vs $89)"]:::openq
+    tluLim -.- q2["Not ISO-tested: blanket + sub-limit<br/>form uses the blanket limit x the<br/>sub-limit factor ($681 vs $268)"]:::openq
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class slForm,slBand,tlu,ovr,rec gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>Terrorism is charged on the limit: r0(r4(r4(r4(Limit/100 x rate) x PC) x coins) x ded). The cause of loss is never read.</li>
+            <li>The sub-limit percentage is sub-limit ÷ full value, rounded before it is truncated. 150,000 on a 100,000 limit with 200,000 full value is 75%, charged on 150,000: $173. Above 100% of full value it is $0.</li>
+            <li>A blanketed building keeps the sub-limit factor but not the amount: its 300,000 blanket share x the 30% factor gives $681, against $268.</li>
+            <li>Under IL 09 87, a coverage without its own sub-limit prices $0 (with the "sub-limit is needed" message).</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>Silent $0 with no message:</strong> a blank full value under a sub-limit form, Limit 0, a blanketed building at full value 0, a blank deductible, IL 09 53 outside the fire-exception states, no territory, a blank <code>TRIAType</code>. <strong>State watch-items:</strong> the fire-exception states override all three exclusion factors (OR: IL 09 53 $36, IL 00 30 $36 where OK gives $0). States on CW 2023 V03 (CA, NC; OR before 2026-06) and V02 (MO) read the sub-limit as a percentage; under IL 09 87 the V03 building prices $247 where 2026 gives $0.</div>
+      </div>
+    </section>
+
+    <!-- ============================= PERSONAL PROPERTY ============================= -->
+    <section class="sheet-view" id="view-pp">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Personal Property: terrorism on each contents record</span></div>
+        <div class="field"><span class="k">Editions</span><span class="v">CW 2023-08 V04 = CW 2026-06; V03 percentage sub-limit</span></div>
+        <div class="field"><span class="k">Factor rules</span><span class="v">ErcSetPostRatesAndFactors :2312, called from the OccupClass record (:1000): SublimitPct :7201 … PostTRIAExclusionRate :7727</span></div>
+        <div class="field"><span class="k">Premium rules</span><span class="v">ErcRate :7779: Pre :7846, Post :7906, Terrorism :7966 (same order and rounding as the building)</span></div>
+        <div class="field wide"><span class="k">Gate</span><span class="v">None by cause of loss ($90 for each). Own protection class (:3320) and coinsurance (:2902); the Group I deductible factor is copied from the building (:3594). Full value is "Full Property Value".</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["Personal property record<br/>CW 2023-08 V04 = CW 2026-06<br/>run from OccupClass post-rates step"]) --> inLoc["Location input (6 levels up): tier,<br/>LC PY3, LC Full = r3(row x LCM),<br/>NBC factor, OR fire factor"]:::step
+    inLoc --> inPol["Policy input (other page): forms<br/>by TRIAType, proration PY3 / Full"]:::step
+    inPol --> slForm{"Sub-limit form attached?<br/>IL 09 87 / 09 97 / 00 32"}
+    slForm -->|"No"| slNone["SubLimitPct 100,<br/>SubLimitFactor 1.0"]:::step
+    slForm -->|"Yes"| slPct["SubLimitPct = trunc(r0(SubLimit<br/>x 100 / FullPrsnlPropValue)),<br/>0 if full value blank"]:::step
+    slPct --> slBand{"5 &lt;= pct &lt;= 100?"}
+    slBand -->|"Yes"| slLook["SubLimitFactor = r3(state band,<br/>linear)"]:::step
+    slBand -->|"No"| slZero["SubLimitFactor = 0.0"]:::zero
+    slNone --> tlu{"IncludedInBlkt = No<br/>AND sub-limit form?"}
+    slLook --> tlu
+    slZero --> tlu
+    tlu -->|"Yes"| tluSub["TerrorismLimitToUse =<br/>TerrorismSubLimit"]:::step
+    tlu -->|"No"| tluLim["TerrorismLimitToUse = LimitToUse<br/>(blanket: FullPrsnlPropValue /<br/>BlktTotal x BlktLimit)"]:::step
+    tluSub --> fac1
+    tluLim --> fac1["TRIAExclFactor: IL 09 52 1.0,<br/>IL 09 53 0.0 (OR: fire factor),<br/>IL 09 86 NBC, IL 09 87 SubLimitFactor,<br/>none 0.0"]:::step
+    fac1 --> rate1["TRIAExclusionRate =<br/>r4(LC PY3 x TRIAExclFactor)"]:::step
+    rate1 --> fac2["CondExclFactor: IL 09 95 0.0<br/>(OR: fire), IL 09 96 NBC,<br/>IL 09 97 SubLimitFactor, none 1.0"]:::step
+    fac2 --> rate2["ConditionalTerrorRate = r4(LC x factor):<br/>LC PY3 with a 09 95/96/97 form,<br/>else LC Full"]:::step
+    rate2 --> fac3["PostTRIAExclFactor: IL 00 30 0.0<br/>(OR: fire), IL 00 31 NBC,<br/>IL 00 32 SubLimitFactor, none 1.0"]:::step
+    fac3 --> rate3["PostTRIAExclusionRate =<br/>r4(LC Full x factor) if an IL 00 3x<br/>form or 'No Exclusion', else 0.0"]:::step
+    rate3 --> fct["Factors: PP's own PC and Coins,<br/>DedBGI copied from the building<br/>unless the PP record has one"]:::step
+    fct --> ovr{"TerrorismOverride = Yes?<br/>(tested before any form)"}
+    ovr -->|"Yes"| ovrT["TerrorismPremium =<br/>TerrorOverridePremium, copied,<br/>not rounded (blank: null)"]:::final
+    ovr -->|"No"| rec{"Policy record attached?<br/>(first match)"}
+    rec -->|"Disc-TRIA (in effect)"| pIn["T = r0(r4(r4(r4(TLU/100<br/>x TRIARate) x PC) x Coins) x DedBGI)"]:::final
+    rec -->|"Disc to 12/31 (calendar)"| pCal["Same, with x PY3 proration<br/>inside the first r4"]:::final
+    rec -->|"Disc estimated premium"| pEst["Pre = r0(... TRIARate x PY3 ...)<br/>Post = r0(... CondRate x Full ...)<br/>T = r0(Pre + Post)"]:::final
+    rec -->|"IL 00 30/31/32, or post-TRIA<br/>with 'No Exclusion'"| pPost["T = r0(r4(r4(r4(TLU/100<br/>x PostTRIARate) x PC) x Coins) x DedBGI)"]:::final
+    rec -->|"none (TRIAType blank)"| pZero["TerrorismPremium = 0.0"]:::zero
+    ovrT --> roll["To the policy roll-up<br/>(other page)"]:::step
+    pIn --> roll
+    pCal --> roll
+    pEst --> roll
+    pPost --> roll
+    fct -.- dedRef["Engine: building Deductible blank<br/>refuses (DeductibleStatCode, no row<br/>for a blank key), not C28-17"]:::eng
+    pZero -.- e1["Engine: every terrorism $0 rates,<br/>outcome 'rated'. C28-17 has no<br/>terrorism check"]:::eng
+    tluSub -.- q1["Not ISO-tested: sub-limit above the<br/>limit but within full value prices<br/>on the sub-limit ($175 vs $90)"]:::openq
+    tluLim -.- q2["Not ISO-tested: blanket + sub-limit<br/>form uses the blanket limit x the<br/>sub-limit factor ($688 vs $271)"]:::openq
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class slForm,slBand,tlu,ovr,rec gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>Contents are priced exactly like the building, on their own limit, with their own protection class and coinsurance.</li>
+            <li>The deductible factor is the building's: blanking the contents' deductible changes nothing; blanking the building's makes the policy refuse.</li>
+            <li>The sub-limit is measured against "Full Property Value". The chunk 4 builder leaves it blank, so any sub-limit there prices $0 silently; with it entered, 150,000 on a 100,000 limit gives $175.</li>
+            <li>IL 09 87 is a policy form: when only the contents carry a sub-limit, the building beside them prices $0.</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>No terrorism zero refuses; a neighbouring input does.</strong> Silent $0: blank full value under a sub-limit form, Limit 0, blanketed contents at full value 0, no territory, IL 09 53 outside the fire states, blank <code>TRIAType</code>. A blank <em>building</em> deductible refuses the policy at the <code>DeductibleStatCode</code> lookup (C28-05). OR overrides the same three fire-exception rules.</div>
+      </div>
+    </section>
+
+    <!-- ============================= SPECIAL CLASS ============================= -->
+    <section class="sheet-view" id="view-sc">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Special Class: terrorism on each item</span></div>
+        <div class="field"><span class="k">Editions</span><span class="v">CW 2023-08 V04 = CW 2026-06; V03 percentage sub-limit</span></div>
+        <div class="field"><span class="k">Factor rules</span><span class="v">ErcSetRatesAndFactors :1851: SetLimitsToUse :5406 → SublimitPct :5768 … PostTRIAExclusionRate :6292</span></div>
+        <div class="field"><span class="k">Premium rules</span><span class="v">ErcRate :6344: Pre :6386, Post :6443, Terrorism :6500; no protection class in any branch</span></div>
+        <div class="field wide"><span class="k">Gate</span><span class="v">None by cause of loss ($93 for each). Own coinsurance (:2823) and Group I deductible (:3078). Full value is "Full Item Value".</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["Special class record<br/>CW 2023-08 V04 = CW 2026-06<br/>cause of loss not read"]) --> inLoc["Location input: tier, LC PY3,<br/>LC Full = r3(row x LCM),<br/>NBC factor, OR fire factor"]:::step
+    inLoc --> inPol["Policy input (other page): forms<br/>by TRIAType, proration PY3 / Full"]:::step
+    inPol --> lim["LimitToUse: Limit if IncludedInBlkt = No,<br/>blanket: r0(FullSpecialClassValue<br/>/ BlktTotal x BlktLimit), 0 if total 0"]:::step
+    lim --> slForm{"Sub-limit form attached?<br/>IL 09 87 / 09 97 / 00 32"}
+    slForm -->|"No"| slNone["SubLimitPct 100,<br/>SubLimitFactor 1.0"]:::step
+    slForm -->|"Yes"| slPct["SubLimitPct = trunc(r0(SubLimit<br/>x 100 / FullSpecialClassValue)),<br/>0 if full value blank"]:::step
+    slPct --> slBand{"5 &lt;= pct &lt;= 100?"}
+    slBand -->|"Yes"| slLook["SubLimitFactor = r3(state band,<br/>linear)"]:::step
+    slBand -->|"No"| slZero["SubLimitFactor = 0.0"]:::zero
+    slNone --> tlu{"IncludedInBlkt = No<br/>AND sub-limit form?"}
+    slLook --> tlu
+    slZero --> tlu
+    tlu -->|"Yes"| tluSub["TerrorismLimitToUse =<br/>TerrorismSubLimit"]:::step
+    tlu -->|"No"| tluLim["TerrorismLimitToUse =<br/>LimitToUse"]:::step
+    tluSub --> fac1
+    tluLim --> fac1["TRIAExclFactor: IL 09 52 1.0,<br/>IL 09 53 0.0 (OR: fire factor),<br/>IL 09 86 NBC, IL 09 87 SubLimitFactor,<br/>none 0.0"]:::step
+    fac1 --> rate1["TRIAExclusionRate =<br/>r4(LC PY3 x TRIAExclFactor)"]:::step
+    rate1 --> fac2["CondExclFactor: IL 09 95 0.0<br/>(OR: fire), IL 09 96 NBC,<br/>IL 09 97 SubLimitFactor, none 1.0"]:::step
+    fac2 --> rate2["ConditionalTerrorRate = r4(LC x factor):<br/>LC PY3 with a 09 95/96/97 form,<br/>else LC Full"]:::step
+    rate2 --> fac3["PostTRIAExclFactor: IL 00 30 0.0<br/>(OR: fire), IL 00 31 NBC,<br/>IL 00 32 SubLimitFactor, none 1.0"]:::step
+    fac3 --> rate3["PostTRIAExclusionRate =<br/>r4(LC Full x factor) if an IL 00 3x<br/>form or 'No Exclusion', else 0.0"]:::step
+    rate3 --> ovr{"TerrorismOverride = Yes?<br/>(tested before any form)"}
+    ovr -->|"Yes"| ovrT["TerrorismPremium =<br/>TerrorOverridePremium, copied,<br/>not rounded (blank: null)"]:::final
+    ovr -->|"No"| rec{"Policy record attached?<br/>(first match)"}
+    rec -->|"Disc-TRIA (in effect)"| pIn["T = r0(r4(r4(TLU/100<br/>x TRIARate) x Coins) x DedBGI)<br/>no protection class"]:::final
+    rec -->|"Disc to 12/31 (calendar)"| pCal["Same, with x PY3 proration<br/>inside the first r4"]:::final
+    rec -->|"Disc estimated premium"| pEst["Pre = r0(... TRIARate x PY3 ...)<br/>Post = r0(... CondRate x Full ...)<br/>T = r0(Pre + Post)"]:::final
+    rec -->|"IL 00 30/31/32, or post-TRIA<br/>with 'No Exclusion'"| pPost["T = r0(r4(r4(TLU/100<br/>x PostTRIARate) x Coins) x DedBGI)"]:::final
+    rec -->|"none (TRIAType blank)"| pZero["TerrorismPremium = 0.0"]:::zero
+    ovrT --> roll["To the policy roll-up<br/>(other page)"]:::step
+    pIn --> roll
+    pCal --> roll
+    pEst --> roll
+    pPost --> roll
+    pIn -.- dedZ["DedBGI is the item's own:<br/>blank Deductible gives 0.0,<br/>terrorism $0"]:::zero
+    pZero -.- e1["Engine: every terrorism $0 rates,<br/>outcome 'rated'. C28-17 has no<br/>Special Class check"]:::eng
+    tluSub -.- q1["Not ISO-tested: sub-limit above the<br/>limit but within full value prices<br/>on the sub-limit ($180 vs $93)"]:::openq
+    tluLim -.- q2["Not ISO-tested: blanket + sub-limit<br/>form uses the blanket limit x the<br/>sub-limit factor ($709 vs $279)"]:::openq
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class slForm,slBand,tlu,ovr,rec gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>Special Class skips the protection class: $93 where the building gives $89. The item carries a factor (0.96) that terrorism never uses.</li>
+            <li>Its deductible is its own: a blank item deductible prices terrorism $0 silently; a $250 deductible (1.05) raises it to $100.</li>
+            <li>Splitting the year can add a dollar: pre and post are rounded before they are added (47 + 47 = $94 against $93).</li>
+            <li>Same sub-limit traps as the building, against "Full Item Value" ($180 above the limit; $709 blanketed).</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>No terrorism zero refuses.</strong> Silent $0: blank item deductible, blank full value under a sub-limit form, Limit 0, a blanketed item at full value 0, no territory, IL 09 53 outside the fire states, blank <code>TRIAType</code>. OR: IL 09 53 $37, IL 00 30 $37.</div>
+      </div>
+    </section>
+
+    <!-- ============================= BUSINESS INCOME ============================= -->
+    <section class="sheet-view" id="view-bi">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Business Income (child of Structure)</span></div>
+        <div class="field"><span class="k">Editions</span><span class="v">CW 2023-08 V04 = CW 2026-06; CW 2022-10 and 2023 V01–V03 multiply a submitted sub-limit %</span></div>
+        <div class="field"><span class="k">Factor rules</span><span class="v">ErcSetRatesAndFactors :1126 runs :1132–:1139: SublimitPct :1753 … PostTRIAExclusionRate :2149; base SetLimitsToUse :1438</span></div>
+        <div class="field"><span class="k">Premium rules</span><span class="v">ErcRate :8122: Pre :8165, Post :8222, Terrorism :8279</span></div>
+        <div class="field wide"><span class="k">Gate</span><span class="v">No coverage indicator: decided by which policy-level form records exist (../x6) and the override. Factors: the building's protection class and the BI Factor; no coinsurance, deductible or cause-of-loss adjustment.</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["BI record, child of Structure<br/>inputs: policy forms (by TRIAType),<br/>Location PY3 / Full loss cost, proration"]) --> lim
+    lim{"IncludedInBlkt = Yes?"}
+    lim -->|"No"| limS["LimitToUse = Limit"]:::step
+    lim -->|"Yes"| limB["LimitToUse = r0(FullBusnIncomeValue<br/>/ BlktTotalFullValueAmount x BlktLimit)"]:::step
+    limB -.->|"no blanket record"| lim0["LimitToUse 0: terrorism $0"]:::zero
+    limS --> sub
+    limB --> sub["TerrorismSubLimitFactor = 1.0 default<br/>TerrorismSubLimit is never read"]:::step
+    sub --> fac{"Which IL 09 form<br/>is on the policy?"}
+    fac -->|"52 cap"| f52["TRIAExclFactor 1.0"]:::step
+    fac -->|"53 fire"| f53["0.0; fire-exception states:<br/>Location TerrorismFireExcptnFactor"]:::step
+    fac -->|"86 NBC"| f86["Location TerrorismNBCExclFactor"]:::step
+    fac -->|"87 sub-limit"| f87["SubLimitFactor = 1.0<br/>full rate, sub-limit ignored"]:::step
+    fac -->|"none"| f0["0.0"]:::zero
+    f52 --> rates
+    f53 --> rates
+    f86 --> rates
+    f87 --> rates
+    f0 --> rates["TRIAExclusionRate = r4(PY3 x TRIAExclFactor)<br/>CondTerrorRate: IL 09 95/96/97 r4(PY3 x f),<br/>else r4(Full x 1.0)<br/>PostTRIAExclRate = r4(Full x PostExclFactor)"]:::step
+    rates --> ovr{"TerrorismOverride = Yes?"}
+    ovr -->|"Yes"| ovrP["Premium = TerrorOverridePremium<br/>Pre / Post = r0(override x proration)"]:::final
+    ovr -->|"No"| disc{"Which roll-up record<br/>is attached?"}
+    disc -->|"Disc-TRIA"| pTria["r0(r4(r4(LimitToUse/100 x TRIAExclRate)<br/>x Structure PC) x BI Factor)<br/>OR $5, OH $3"]:::final
+    disc -->|"12/31/05 calendar"| p1231["same x ProgYr3 proration<br/>pre-TRIA share only"]:::final
+    disc -->|"Estimated"| pEst["r0(Pre + Post); Pre on TRIAExclRate x PY3 share,<br/>Post on CondTerrorRate x Full share"]:::final
+    disc -->|"post forms, or post-TRIA<br/>&amp; No Exclusion"| pPost["r0(r4(r4(PostTRIAExclRate x L/100)<br/>x PC) x Factor)"]:::final
+    disc -->|"none"| pZero["TerrorismPremium 0.0"]:::zero
+    pTria --> roll["Read only by the policy roll-ups,<br/>never by the BI coverage total"]:::step
+    p1231 --> roll
+    pEst --> roll
+    pPost --> roll
+    ovrP --> roll
+    pZero -.-> silent["Engine: every terrorism $0 is 'rated'<br/>none is in SILENT_ZERO_INPUTS"]:::eng
+    lim0 -.-> silent
+    ovr -.->|"Yes, no premium"| ovrNull["Engine: TerrorismPremium blank,<br/>roll-up reads $0, 'rated'"]:::eng
+    sub -.->|"factor submitted"| subSub["Engine: submitted SubLimitFactor<br/>wins (0.5: $3 to $1)"]:::eng
+    pPost -.->|"NY 'Has Already Expired'"| nyq["NY literal charges BI $53;<br/>ISO not checked"]:::openq
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class lim,fac,ovr,disc gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>BI = r0(r4(r4(Limit/100 x rate) x the building's protection class) x BI Factor). Oregon $5, Ohio $3, New York $34.</li>
+            <li>The terrorism sub-limit never reaches BI: a 120% sub-limit takes the building to $0 while BI stays at $3 / $5. In NY and FL, IL 09 87 gives BI $0 (no sub-limit branch).</li>
+            <li>At a 100,000 limit most exclusion factors round BI to $0, so fire-exception states only show at larger limits (1M: OR $5, NY $240).</li>
+            <li>No cause-of-loss or earthquake premium feeds it: Basic, Broad and Special all give $5; with earthquake elected, terrorism stays $5.</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>Every terrorism $0 is "rated".</strong> Blank <code>TRIAType</code>, no territory, IL 09 53 or IL 00 30 in a CW state, a blanket with no blanket record, NY/FL sub-limit forms. Override "Yes" with no premium leaves the premium blank, not 0. A submitted <code>TerrorismSubLimitFactor</code> is honoured (0.5 takes $3 to $1).</div>
+      </div>
+    </section>
+
+    <!-- ============================= SCBI ============================= -->
+    <section class="sheet-view" id="view-scbi">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Special Class Business Income (child of a Special Class item)</span></div>
+        <div class="field"><span class="k">Editions</span><span class="v">CW 2023-08 V04 = CW 2026-06; V01–V03 submitted sub-limit %</span></div>
+        <div class="field"><span class="k">Factor rules</span><span class="v">ErcSetRatesAndFactors :1063 runs :1069–:1076: SublimitPct :1679, SublimitFactor :1695 (spelled TerrorismSublimitFactor) … PostTRIAExclusionRate</span></div>
+        <div class="field"><span class="k">Premium rules</span><span class="v">ErcRate :7029: Pre :7071, Post :7125, Terrorism :7179</span></div>
+        <div class="field wide"><span class="k">Gate</span><span class="v">Same as BI: the policy forms (../x6) and the override. No protection class, coinsurance or deductible factor.</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["SCBI record, child of Special Class<br/>forms at ../ x6, Location at ../ x4"]) --> lim
+    lim{"IncludedInBlkt = Yes?"}
+    lim -->|"No"| limS["LimitToUse = Limit"]:::step
+    lim -->|"Yes"| limB["LimitToUse = r0(FullBusnIncomeValue<br/>/ BlktTotalFullValueAmount x BlktLimit)"]:::step
+    limB -.->|"no blanket record"| lim0["LimitToUse 0: terrorism $0"]:::zero
+    limS --> sub
+    limB --> sub["TerrorismSublimitFactor (lower-case l)<br/>= 1.0 default; sub-limit never read"]:::step
+    sub --> fac{"Which IL 09 form<br/>is on the policy?"}
+    fac -->|"52 cap"| f52["TRIAExclFactor 1.0"]:::step
+    fac -->|"53 fire"| f53["0.0; fire-exception states:<br/>Location fire factor (AZ: never)"]:::step
+    fac -->|"86 NBC"| f86["Location TerrorismNBCExclFactor"]:::step
+    fac -->|"87 sub-limit"| f87["Sublimit factor 1.0: full rate"]:::step
+    fac -->|"none"| f0["0.0"]:::zero
+    f52 --> rates
+    f53 --> rates
+    f86 --> rates
+    f87 --> rates
+    f0 --> rates["same three rates as BI:<br/>TRIAExclRate, CondTerrorRate,<br/>PostTRIAExclRate"]:::step
+    rates --> ovr{"TerrorismOverride = Yes?"}
+    ovr -->|"Yes"| ovrP["Premium = TerrorOverridePremium<br/>Pre / Post prorated"]:::final
+    ovr -->|"No"| disc{"Which roll-up record<br/>is attached?"}
+    disc -->|"Disc-TRIA"| pTria["r0(r4(LimitToUse/100 x TRIAExclRate)<br/>x SCBI Factor)<br/>no protection class: OR $5, OH $3"]:::final
+    disc -->|"12/31/05 calendar"| p1231["same x ProgYr3 proration"]:::final
+    disc -->|"Estimated"| pEst["r0(Pre + Post)"]:::final
+    disc -->|"post forms, or post-TRIA<br/>&amp; No Exclusion"| pPost["r0(r4(PostTRIAExclRate x L/100)<br/>x Factor)"]:::final
+    disc -->|"none"| pZero["TerrorismPremium 0.0"]:::zero
+    pTria --> roll["Read only by the policy roll-ups"]:::step
+    p1231 --> roll
+    pEst --> roll
+    pPost --> roll
+    ovrP --> roll
+    pZero -.-> silent["Engine: $0 'rated',<br/>never refused"]:::eng
+    lim0 -.-> silent
+    ovr -.->|"Yes, no premium"| ovrNull["Engine: premium blank, 'rated'"]:::eng
+    sub -.->|"factor submitted"| subSub["Engine: submitted factor wins<br/>(0.5: $3 to $1)"]:::eng
+    pPost -.->|"NY 'Has Already Expired'"| nyq["NY literal charges SCBI $55;<br/>ISO not checked"]:::openq
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class lim,fac,ovr,disc gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>The BI formula without protection class: r0(r4(Limit/100 x rate) x Factor). Oregon 9 x 0.55 → $5.</li>
+            <li>The sub-limit is ignored as on BI. The factor field is spelled <code>TerrorismSublimitFactor</code> here (lower-case l): consistent in the XML, but a submitted value must use that spelling.</li>
+            <li>Arizona's fire exception never reaches SCBI: AZ overrides BI, Structure and Contents but not SCBI (BI $3, SCBI $0 at 1M).</li>
+            <li>Override, blank <code>TRIAType</code>, no territory and <code>TerrorismIndicator</code> "No" behave as on BI.</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>NY rates SCBI like NY BI:</strong> Pre/Post rules are blanked, the in-effect disclosure carries both shares, and the override is not prorated. Every terrorism $0 is "rated".</div>
+      </div>
+    </section>
+
+    <!-- ============================= STATE MAP ============================= -->
+    <section class="sheet-view" id="view-states">
+      <div class="intro">
+        <h2>22 of 46 states change terrorism</h2>
+        <p>Every terrorism-named rule in each state's in-force package, compared with its countrywide parent, at 2026-01-01 and 2026-09-17. "Fire pattern": the state files a <code>TerrorismFireExcptnFactor</code> by tier, and IL 09 53, IL 09 95 and IL 00 30 take it in place of CW's 0.0 on all five coverages.</p>
+      </div>
+      <div class="tablewrap">
+        <table class="grid">
+          <thead><tr><th>State</th><th>What it changes</th></tr></thead>
+          <tbody>
+            <tr><th>AK</th><td>Its own Alaska forms replace CW's in the factor, rate and premium rules; PostTRIA roll-up rewritten; no fire table.</td></tr>
+            <tr><th>AZ</th><td>Fire factor only when the structure is <code>UnderFourUnits</code>, on BI, Structure and Contents; never SCBI. Own sub-limit exclusion factor. CP 09 01 amendment.</td></tr>
+            <tr><th>CA</th><td>Fire pattern; 25% cap on the three disclosures and PostTRIA. Resolves CW 2023 V03 (percentage sub-limit).</td></tr>
+            <tr><th>CT, MA, VA</th><td>Fire table, but IL 09 53 stays 0.0. The calendar-year disclosure is rewritten to charge pre-TRIA plus a post-TRIA leg at the fire rate (CT BI 1M: $54 where CW charges pre only). VA also caps at 25%.</td></tr>
+            <tr><th>DC, MD</th><td>25% cap only.</td></tr>
+            <tr><th>FL</th><td>Override or the in-effect disclosure only: no pre/post split, no conditional or post-TRIA rate; only IL 09 52 is charged; post-TRIA is $0.</td></tr>
+            <tr><th>GA, IA, ME, MO, NC, NJ, OR, RI, WI, WV</th><td>Fire pattern (1 to 5 tiers).</td></tr>
+            <tr><th>IL</th><td>Fire pattern; 25% cap; ZIP / county territory messages.</td></tr>
+            <tr><th>NY</th><td>Own <code>TRIAType</code> values; pre/post rules blanked; the in-effect disclosure carries both shares; IL 09 53 takes the fire factor (0.7 / 0.3 / 0.1 / 0.4 by tier); IL 09 86 / 87 → 0; 25% cap on two roll-ups.</td></tr>
+            <tr><th>TX</th><td>Blanks the two CP 00 70 terrorism messages; no premium change.</td></tr>
+            <tr><th>AL</th><td>2026-01-01 package only: territory pinned to "Statewide".</td></tr>
+            <tr><th>24 others</th><td>No terrorism rule changed; they file territory tiers, loss costs, NBC and sub-limit rows only (AR CO DE IN KS KY MI MN MT ND NE NH NM NV OH OK PA SC SD TN UT VT WY).</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="intro"><p>PostTRIA coverage rules are rewritten in eight states (AK CA DC FL IL MD NY VA). States whose package sits on CW 2023 V01–V03 (CA, NC, MO and others at some dates) read the sub-limit as a percentage.</p></div>
+    </section>
+
+    <!-- ============================= REVIEW ============================= -->
+    <section class="sheet-view" id="view-review">
+      <div class="intro">
+        <h2>Chunk 13's claims, re-checked</h2>
+        <p>No terrorism chain was ever drawn, so this table re-checks what chunk 13 (gated 2026-09-24) recorded, against the XML and fresh offline probes. Chunk 13's offline scripts 149_, 150_ and 151_ still reproduce every pinned figure (5 of 5, 9 of 9, 36 of 36).</p>
+      </div>
+      <div class="tablewrap">
+        <table class="grid">
+          <thead><tr><th>#</th><th>Chunk 13 said</th><th>Engine / XML now shows</th><th>Kind</th></tr></thead>
+          <tbody>
+            <tr><th>1</th><td>A sub-limit above the building's limit prices terrorism $0</td><td><strong>The 5–100% test is on sub-limit ÷ full value.</strong> Above the limit but within full value it prices on the sub-limit ($173 / $175 / $180); $0 only above full value</td><td><span class="tag bad">correction</span></td></tr>
+            <tr><th>2</th><td>The override is prorated</td><td><strong>Only on the estimated disclosure.</strong> In-effect, calendar-year and post-TRIA roll-ups charge it whole ($500 where rated was $63)</td><td><span class="tag bad">correction</span></td></tr>
+            <tr><th>3</th><td>The editions differ only by three inert Detail files</td><td><strong>True for V04 vs 2026; not for V01–V03</strong>, whose coverage rules read the sub-limit as a percentage (V03 building $247 vs $0)</td><td><span class="tag bad">correction</span></td></tr>
+            <tr><th>4</th><td>20 of 46 states change terrorism</td><td><strong>22</strong>: DC and MD (cap only) were missing from the count</td><td><span class="tag bad">correction</span></td></tr>
+            <tr><th>5</th><td>NY writes 0 for IL 09 53</td><td><strong>NY applies its fire factor (0.7).</strong> ISO's own stored NY response agrees (building $398)</td><td><span class="tag bad">correction</span></td></tr>
+            <tr><th>6</th><td>Unfiled territory: ISO refuses, ours $0</td><td>Ours now refuses too (C28-05)</td><td>out of date</td></tr>
+            <tr><th>7</th><td>FL and NY never charge post-TRIA</td><td>FL confirmed. NY only for the CW wording, which is off NY's domain; NY's own "Has Already Expired" + "No Exclusion" charges BI $53, SCBI $55. Needs a live ISO call</td><td>open question</td></tr>
+            <tr><th>8</th><td><code>TerrorismIndicator</code> switches nothing off</td><td>Still charged; "No" without CP 00 70 raises an ISO error message, outcome "rated"</td><td>clarified</td></tr>
+            <tr><th>9</th><td>Attach map by <code>TRIAType</code></td><td>Two extra cases: "Will Expire" with a blank option attaches IL 09 52 but no disclosure ($0); expired-conditional takes the estimated disclosure whatever the option</td><td>clarified</td></tr>
+            <tr><th>10</th><td>Override "Yes" with no premium → $0</td><td>The coverage premium is blank, not 0; the roll-up reads $0</td><td>clarified</td></tr>
+            <tr><th>11</th><td>Days counted from EffDate</td><td>Yes; <code>ExpDate</code> is overwritten to EffDate + 1 year and never read</td><td>clarified</td></tr>
+            <tr><th>12</th><td>33.3% "rounds to 33"</td><td>Rounds before it truncates: 4.6% → 5, 100.6% → 101 ($0)</td><td>clarified</td></tr>
+            <tr><th>13</th><td>No sub-limit entered → $0</td><td>With a message; a blank full value gives $0 with no message</td><td>incomplete</td></tr>
+            <tr><th>14</th><td>Contents = the building's PC x coinsurance x deductible</td><td>Own PC and coinsurance; only the deductible is the building's</td><td>clarified</td></tr>
+            <tr><th>15</th><td>15 fire-exception states; IL 09 53 in 12</td><td>17 file the table; IL 09 53 in 13 (NY included); AZ only under four units</td><td>clarified</td></tr>
+            <tr><th>16</th><td>CT, MA, VA keep the exception off IL 09 53</td><td>Confirmed; they also rewrite the calendar-year disclosure</td><td>incomplete</td></tr>
+            <tr><th>17</th><td>AZ only residential under four units</td><td>Confirmed for BI, Structure, Contents; never SCBI</td><td>incomplete</td></tr>
+            <tr><th>18</th><td>BI ignores the sub-limit</td><td>Confirmed, SCBI too; a submitted factor is honoured; NY / FL give $0 under IL 09 87</td><td>clarified</td></tr>
+            <tr><td colspan="4">Confirmed: <code>TRIAType</code> drives everything; 13 attach rules each attach or remove silently; each coverage prices its own terrorism and no coverage total includes it; roll-ups run after the last location; the 25% cap in exactly CA, DC, IL, MD, NY, VA; one day left counts as expired; no EffDate refuses; Special Class has no protection class; BI = building PC x BI Factor, SCBI = Factor only; FL charges only IL 09 52; heavy changes in FL, NY, AK; PostTRIA rewritten in 8 states; 17 terrorism rule files.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="doc-footer">
+  Sources: the built engine (<strong>cf_engine</strong> / interpreter at 542f0e1; probed at 979ddf2), offline on 2026-10-06 with no calls to ISO: policy layer in OK and VA; Building, Contents and Special Class in OK and OR; Business Income and SC Business Income in OH, OR and NY, with AZ, CT and FL; each at a date resolving CW 2023-08 V04 and one resolving CW 2026-06; the state map across all 46 states at both dates. ISO rule XML is under <code>F:\ISO_ERC_Files\CF</code>. Chunk 13's records are <code>docs/CF-CHUNK13-GATE.md</code> and <code>CF-CHUNK13-TASKS.md</code>.
+</footer>
+
+<script>
+  (function () {
+    var toc = document.getElementById('toc');
+    var main = document.getElementById('main');
+
+    function activate(target) {
+      var views = main.querySelectorAll('.sheet-view');
+      for (var i = 0; i < views.length; i++) views[i].classList.remove('active');
+      var view = document.getElementById('view-' + target);
+      if (view) view.classList.add('active');
+
+      var links = toc.querySelectorAll('.navlink');
+      for (var j = 0; j < links.length; j++) {
+        links[j].classList.toggle('active', links[j].getAttribute('data-target') === target);
+      }
+      main.scrollTop = 0;
+      window.scrollTo(0, 0);
+    }
+
+    document.addEventListener('click', function (e) {
+      var btn = e.target.closest('button[data-target]');
+      if (btn) activate(btn.getAttribute('data-target'));
+    });
+
+    var hash = location.hash.slice(1);
+    if (hash && document.getElementById('view-' + hash)) activate(hash);
+  })();
+</script>
+
+<style>.mermaid-rendering .sheet-view{display:block!important}</style>
+<script type="module">
+  // Render every diagram once, with all sheets briefly visible so hidden tabs get real sizes.
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({ startOnLoad: false, securityLevel: "strict", flowchart: { wrappingWidth: 260 } });
+  document.documentElement.classList.add("mermaid-rendering");
+  try { await mermaid.run({ querySelector: "pre.mermaid" }); }
+  finally { document.documentElement.classList.remove("mermaid-rendering"); }
+</script>
+</body>
+</html>

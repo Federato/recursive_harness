@@ -1,0 +1,353 @@
+<title>Basic Group I — Building vs. Contents, Side by Side</title>
+<style>
+  :root {
+    --bg: #eef1f4; --paper: #ffffff; --ink: #1c2733; --ink-soft: #55606b; --ink-faint: #8b95a1;
+    --grid-line: #d7dce2; --header-fill: #e4e8ed; --header-fill-strong: #1e3a45; --header-text-strong: #eef4f3;
+    --accent: #1e3a45; --accent-soft: #cfe0e0; --accent-warm: #b96a2c; --accent-warm-soft: #f3e2cf;
+    --good: #2f7d5a; --good-soft: #dcefe4; --warn: #a53d26; --warn-soft: #f7ddd4;
+    --shadow: 0 1px 2px rgba(28,39,51,0.06), 0 8px 24px rgba(28,39,51,0.07);
+    --font-display: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+    --font-body: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+    --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, "Liberation Mono", monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #10151b; --paper: #161d25; --ink: #e7ecf1; --ink-soft: #a3aebb; --ink-faint: #6d7885;
+      --grid-line: #2b3742; --header-fill: #1b242d; --header-fill-strong: #21504f; --header-text-strong: #eaf3f1;
+      --accent: #59a9ac; --accent-soft: #1d3535; --accent-warm: #dd9a5c; --accent-warm-soft: #372a1c;
+      --good: #63c090; --good-soft: #1b3226; --warn: #e0806a; --warn-soft: #3a2019;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 28px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #10151b; --paper: #161d25; --ink: #e7ecf1; --ink-soft: #a3aebb; --ink-faint: #6d7885;
+    --grid-line: #2b3742; --header-fill: #1b242d; --header-fill-strong: #21504f; --header-text-strong: #eaf3f1;
+    --accent: #59a9ac; --accent-soft: #1d3535; --accent-warm: #dd9a5c; --accent-warm-soft: #372a1c;
+    --good: #63c090; --good-soft: #1b3226; --warn: #e0806a; --warn-soft: #3a2019;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 28px rgba(0,0,0,0.35);
+  }
+  :root[data-theme="light"] {
+    --bg: #eef1f4; --paper: #ffffff; --ink: #1c2733; --ink-soft: #55606b; --ink-faint: #8b95a1;
+    --grid-line: #d7dce2; --header-fill: #e4e8ed; --header-fill-strong: #1e3a45; --header-text-strong: #eef4f3;
+    --accent: #1e3a45; --accent-soft: #cfe0e0; --accent-warm: #b96a2c; --accent-warm-soft: #f3e2cf;
+    --good: #2f7d5a; --good-soft: #dcefe4; --warn: #a53d26; --warn-soft: #f7ddd4;
+    --shadow: 0 1px 2px rgba(28,39,51,0.06), 0 8px 24px rgba(28,39,51,0.07);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); line-height: 1.6; overflow-x: hidden; }
+  a { color: var(--accent); }
+  a:focus-visible { outline: 2px solid var(--accent-warm); outline-offset: 2px; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 24px 96px; }
+
+  header.masthead { padding: 56px 24px 28px; max-width: 1180px; margin: 0 auto; }
+  .eyebrow { font-family: var(--font-ui); font-size: 12px; letter-spacing: 0.11em; text-transform: uppercase; color: var(--accent-warm); font-weight: 600; margin: 0 0 10px; }
+  h1.title { font-family: var(--font-display); font-size: clamp(28px, 4vw, 40px); font-weight: 400; margin: 0 0 14px; text-wrap: balance; color: var(--ink); }
+  .dek { font-size: 17px; color: var(--ink-soft); max-width: 78ch; margin: 0 0 6px; }
+  .dek code { font-family: var(--font-mono); font-size: 14.5px; background: var(--header-fill); padding: 1px 5px; border-radius: 3px; }
+
+  section.sect { padding-top: 48px; }
+  .sect-heading { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 6px; }
+  .sect-index { font-family: var(--font-mono); font-size: 13px; color: var(--accent-warm); font-variant-numeric: tabular-nums; }
+  h2.sect-title { font-family: var(--font-display); font-size: 24px; font-weight: 400; margin: 0; color: var(--ink); }
+  .sect-role { font-family: var(--font-ui); font-size: 13px; color: var(--ink-soft); margin: 0 0 18px; max-width: 90ch; }
+
+  .tblscroll { overflow-x: auto; border-radius: 8px; box-shadow: var(--shadow); }
+  table.grid { border-collapse: collapse; width: 100%; min-width: 900px; font-size: 13.5px; background: var(--paper); }
+  table.grid th, table.grid td { border: 1px solid var(--grid-line); padding: 10px 13px; text-align: left; vertical-align: top; }
+  table.grid thead th { background: var(--header-fill-strong); color: var(--header-text-strong); font-family: var(--font-ui); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; position: sticky; top: 0; }
+  table.grid td.stage { background: var(--header-fill); font-family: var(--font-ui); font-weight: 700; font-size: 12.5px; color: var(--ink-soft); width: 15%; }
+  table.grid td code, table.grid td .fname { font-family: var(--font-mono); font-size: 12px; }
+  table.grid td .fname { display: block; color: var(--accent); font-weight: 700; margin-bottom: 5px; }
+  table.grid td pre { font-family: var(--font-mono); font-size: 12px; white-space: pre-wrap; margin: 0; line-height: 1.55; }
+  table.grid td.bldg { width: 42.5%; }
+  table.grid td.cont { width: 42.5%; }
+  table.grid td.diverge { background: var(--warn-soft); }
+  table.grid td.match { background: var(--good-soft); }
+  .tag { display: inline-block; font-family: var(--font-ui); font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; padding: 2px 7px; border-radius: 3px; margin-bottom: 6px; }
+  .tag.same { background: var(--good-soft); color: var(--good); }
+  .tag.differs { background: var(--warn-soft); color: var(--warn); }
+  .tag.only-c { background: var(--accent-warm-soft); color: var(--accent-warm); }
+
+  .callout { display: flex; gap: 10px; padding: 12px 14px; border-radius: 5px; max-width: 90ch; font-size: 14.5px; margin-top: 14px; }
+  .callout.warn { background: var(--warn-soft); color: var(--warn); }
+  .callout.warm { background: var(--accent-warm-soft); color: var(--accent-warm); }
+  .callout.good { background: var(--good-soft); color: var(--good); }
+  .callout b { font-weight: 700; }
+  .callout-mark { flex: none; font-family: var(--font-ui); font-weight: 700; }
+
+  hr.divider { border: none; border-top: 1px solid var(--grid-line); margin: 48px 0 0; }
+  footer.closing { max-width: 1180px; margin: 56px auto 0; padding: 0 24px 64px; }
+  footer.closing h2 { font-family: var(--font-display); font-weight: 400; font-size: 21px; margin: 0 0 10px; }
+  footer.closing p.note { margin-top: 14px; font-size: 13px; color: var(--ink-faint); font-family: var(--font-ui); }
+</style>
+
+<header class="masthead">
+  <p class="eyebrow">CF_Algorithm &middot; Commercial Property &middot; Basic Group I</p>
+  <h1 class="title">Building vs. Contents, stage by stage</h1>
+  <p class="dek">Same five-stage shape both coverages share (loss cost &rarr; rate &rarr; cause-of-loss adjustment &rarr; insured's-choice adjustment &rarr; deductible), read side by side rather than as two separate lists. Rows shaded <span style="color:var(--good);font-weight:700;">green</span> are genuinely the same mechanism; rows shaded <span style="color:var(--warn);font-weight:700;">amber</span> are where the two coverages actually diverge. Source: <code>Excel_Rater_BasicGroupI.md</code> &sect;4, &sect;5, &sect;8.</p>
+</header>
+
+<div class="wrap">
+
+  <section class="sect" id="s1">
+    <div class="sect-heading"><span class="sect-index">&#9670;</span><h2 class="sect-title">Class-rated path (the one actually built end-to-end)</h2></div>
+    <p class="sect-role">Basic Group I is the only form in this project with a <code>RatingType</code> branch at all — this grid covers the <code>RatingType = "Class"</code> path. The Specific/Tentative alternate path (&sect;9 of the source doc) is a straight substitution at the <code>Rate</code> row only; see the callout below the grid.</p>
+    <div class="tblscroll">
+      <table class="grid">
+        <thead>
+          <tr><th>Stage</th><th>Building — <code>Calc_Building_BGI</code></th><th>Contents — <code>Calc_Contents_BGI</code></th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="stage">0<br>Loss cost</td>
+            <td class="bldg match">
+              <span class="tag same">Same table</span>
+              <span class="fname">BaseRate</span>
+              <pre>LookupBasicGroupIRate(
+  State|CW, ClassCode,
+  ConstructionCode,
+  "Not Applicable", "Building")</pre>
+            </td>
+            <td class="cont diverge">
+              <span class="tag differs">Different keys</span>
+              <span class="fname">BaseRate</span>
+              <pre>if PP_Group = "YARD":
+  LookupBasicGroupIRate(
+    constCode=1|3 by YardPropertyIndicator,
+    group="YARD", covType="PersProp")
+else:
+  LookupBasicGroupIRate(
+    State|CW, ClassCode, ConstructionCode,
+    PP_Group, "PersProp")
+gate: ClassCode &ne; "1150"
+  (Builders Risk excluded for Contents)</pre>
+            </td>
+          </tr>
+          <tr>
+            <td class="stage">0.5<br>Contents-only prerequisite</td>
+            <td class="bldg"><span class="tag only-c" style="visibility:hidden;">n/a</span><em style="color:var(--ink-faint);">— no equivalent —</em></td>
+            <td class="cont">
+              <span class="tag only-c">Contents only</span>
+              <span class="fname">FireSafeVaultFactor</span>
+              <pre>0.50  if PP_FireSafeVault = "Y"
+1.0   otherwise
+(only when RatingType="Class")</pre>
+            </td>
+          </tr>
+          <tr>
+            <td class="stage">1<br>Turn loss cost into a rate</td>
+            <td class="bldg diverge">
+              <span class="tag differs">Building-only addends</span>
+              <span class="fname">Rate</span>
+              <pre>( (BaseRate &times; LCM)
+  + SubStdConditionRate
+  + VacantBuildingRate )
+  &times; TerritoryFactor
+  &times; ProtectionClassFactor
+  &times; RoofSurfacingACVFactor
+(round 3dp)</pre>
+            </td>
+            <td class="cont diverge">
+              <span class="tag differs">No vacancy, no roof</span>
+              <span class="fname">Rate</span>
+              <pre>( (BaseRate &times; LCM)
+  + SubStdConditionRate )
+  &times; FireSafeVaultFactor
+  &times; ProtectionClassFactor
+  &times; TerritoryFactor
+(round 3dp — no vacancy addend,
+ no roof factor, ever)</pre>
+            </td>
+          </tr>
+          <tr>
+            <td class="stage">2<br>Cause-of-loss adjustment</td>
+            <td class="bldg match">
+              <span class="tag same">Same mechanism</span>
+              <span class="fname">COLAdj</span>
+              <pre>ROUND(Rate
+  - SprinklerLeakageExclNonSprinkleredBldgRate, 3)
+  &times; SprinklerLeakageExclSprinkleredFactor
+  &times; VandalismExclFactor
+  &times; StdPropPolGroupIFactor</pre>
+            </td>
+            <td class="cont diverge">
+              <span class="tag differs">Extra zero-gate</span>
+              <span class="fname">COLAdj</span>
+              <pre>0.0  if PP_ValuablePapers = "Y"
+else ROUND(Rate
+  - SprinklerLeakageExclNonSprinkleredRate, 3)
+  &times; SprinklerLeakageExclSprinkleredFactor
+  &times; VandalismExclFactor
+  &times; StdPropPolGroupIFactor
+(note: plain "...Rate" name, not
+ Building's "...BldgRate")</pre>
+            </td>
+          </tr>
+          <tr>
+            <td class="stage">3a<br>Coinsurance</td>
+            <td class="bldg diverge">
+              <span class="tag differs">"Leave unchanged"</span>
+              <span class="fname">CoinsuranceFactor</span>
+              <pre>&lt;left unchanged from prior value&gt;
+  if ClassCode = "1150"
+  OR ValuationType = "Functional Valuation"
+else &lt;standard 80/90/100% lookup&gt;</pre>
+            </td>
+            <td class="cont diverge">
+              <span class="tag differs">Forced to 100%</span>
+              <span class="fname">CoinsuranceFactor</span>
+              <pre>&lt;forced to 100% lookup value&gt;
+  if a SpecialCoinsurance or
+     ValueReportingForm record exists,
+     OR Coinsurance is reporting-form
+     (Daily/Weekly/Monthly/Quarterly/
+      Policy Year Reporting)
+  AND ValuationType &ne; "Functional Valuation"
+else &lt;standard lookup&gt;
+(stricter than Building's "leave unchanged")</pre>
+            </td>
+          </tr>
+          <tr>
+            <td class="stage">3b<br>Limit of Insurance</td>
+            <td class="bldg match">
+              <span class="tag same">Same shape</span>
+              <span class="fname">LOIFactor</span>
+              <pre>LookupBasicGroupILOIFactorBldg(Limit, ...)</pre>
+            </td>
+            <td class="cont diverge">
+              <span class="tag differs">Own table + extra gate</span>
+              <span class="fname">LOIFactor</span>
+              <pre>&lt;blanket copy&gt;  if IncludedInBlkt="Yes"
+  and BlktIDNum&gt;0
+elif CovForm not in ("Legal Liability
+  Coverage Form","Tobacco Sales
+  Warehouse Coverage Form")
+  and ConstructionCode &ne; 0:
+    LookupBasicGroupILOIFactorPersProp(Limit)
+else: 1.0</pre>
+            </td>
+          </tr>
+          <tr>
+            <td class="stage">3c<br>Combine</td>
+            <td class="bldg match">
+              <span class="tag same">Same product</span>
+              <span class="fname">AdjustedRate</span>
+              <pre>COLAdj &times; CoinsuranceFactor &times; LOIFactor</pre>
+            </td>
+            <td class="cont match">
+              <span class="tag same">Same three factors</span>
+              <span class="fname">AdjustedRate</span>
+              <pre>LOIFactor &times; COLAdj &times; CoinsuranceFactor
+(order written differently, same product)</pre>
+            </td>
+          </tr>
+          <tr>
+            <td class="stage">4<br>Deductible</td>
+            <td class="bldg match">
+              <span class="tag same">Same table &amp; shape</span>
+              <span class="fname">DeductibleFactor</span>
+              <pre>LookupDeductible250Factor("Basic Group I")
+  if Deductible = "250"
+else LookupDeductibleFactor(
+  Deductible, TotAmtInsurance,
+  "Other Cause Of Loss")</pre>
+            </td>
+            <td class="cont match">
+              <span class="tag same">Copy of Building's — same table</span>
+              <span class="fname">DeductibleFactor</span>
+              <pre>&lt;Copy'd from an ancestor record in
+ISO's own rule engine — build as the
+SAME local Choose Building's tab uses&gt;
+(the real logic lives in a DIFFERENT
+ISO rule file, CommercialPropertySpecial-
+ClassRules.Rule.xml — a documented
+deviation in file organization, not math)</pre>
+            </td>
+          </tr>
+          <tr>
+            <td class="stage">5<br>Final rate</td>
+            <td class="bldg diverge">
+              <span class="tag differs">Has multi-res credit</span>
+              <span class="fname">FinalRate</span>
+              <pre>AdjustedRate
+  &times; DeductibleByLocationFactor
+  &times; DeductibleFactor
+  &times; MultiResidentialPropSpecialCreditFactor</pre>
+            </td>
+            <td class="cont diverge">
+              <span class="tag differs">No multi-res credit</span>
+              <span class="fname">FinalRate</span>
+              <pre>AdjustedRate
+  &times; DeductibleByLocationFactor
+  &times; DeductibleFactor
+(no multi-residential multiplier —
+doesn't exist for Contents, any form)</pre>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout warn"><span class="callout-mark">&#9888;</span><span><b>Correction already on record for both sides:</b> <code>TotAmtInsurance</code> in Building's <code>DeductibleFactor</code> step is NOT the Building's own limit — confirmed against the rule XML as <code>StructureLimitToUse + OccupancyTotAmtInsuranceSum + SpecialClassRiskTotAmtInsurance</code>, a genuine combined-location total. The live rater currently uses the Building-only limit for both coverages — a real bug once a location has Contents coverage, deliberately backlogged until Contents is built (project memory <code>project_deductiblefactor-uses-location-total-not-building-limit</code>).</span></div>
+  </section>
+
+  <hr class="divider" />
+
+  <section class="sect" id="s2">
+    <div class="sect-heading"><span class="sect-index">&#9670;</span><h2 class="sect-title">Specific/Tentative path — a substitution at one row only</h2></div>
+    <p class="sect-role">The only other <code>RatingType</code> value BGI supports. Everything below <code>Rate</code> in the grid above is unchanged — same COLAdj, same coinsurance/LOI, same deductible, same final-rate shape. Only the <code>Rate</code> row itself swaps.</p>
+    <div class="tblscroll">
+      <table class="grid">
+        <thead>
+          <tr><th>Stage</th><th>Building</th><th>Contents</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="stage">1&prime;<br>Rate (Specific/Tentative)</td>
+            <td class="bldg diverge">
+              <span class="tag differs">Has roof factor + explicit else</span>
+              <pre>SpecificGroupIRate &times; LCM
+  &times; SprinklerLeakageNotExcludedFactor
+  &times; RoofSurfacingACVFactor
+gate: RatingType in ("Specific","Tentative")
+else (any other value): Rate = 1.0</pre>
+            </td>
+            <td class="cont diverge">
+              <span class="tag differs">No roof factor, broader gate</span>
+              <pre>SpecificGroupIRate &times; LCM
+  &times; SprinklerLeakageNotExcludedFactor
+gate: RatingType &ne; "Class"
+(broader than Building's named-value test —
+ no catch-all "else 1.0" per source doc)</pre>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="callout warn"><span class="callout-mark">&#9888;</span><span><b><code>SpecificGroupIRate</code> is a genuinely open question, not a filed lookup.</b> No <code>Set</code> or <code>Lookup</code> rule populates it anywhere in either coverage's traced source doc — most likely a user-/schedule-entered value (industry convention for underwriter-assigned "specific" rates), but that's inference, not confirmed. Build as a user-entered column (<code>Bldg_SpecificGroupIRate</code> / <code>PP_SpecificGroupIRate</code>, separate per coverage) with a visible open-question comment, not a <code>Rate_Tables</code> lookup.</span></div>
+  </section>
+
+  <hr class="divider" />
+
+  <section class="sect" id="s3">
+    <div class="sect-heading"><span class="sect-index">&#9670;</span><h2 class="sect-title">Reading the grid</h2></div>
+    <div class="tblscroll" style="box-shadow:none;">
+      <table class="grid" style="min-width:0;">
+        <tr><td class="match" style="width:1%;white-space:nowrap;"><span class="tag same">Same</span></td><td>Genuinely the same table, same key structure, same math — a difference in field <em>names</em> only (e.g. <code>...NonSprinkleredBldgRate</code> vs. <code>...NonSprinkleredRate</code>), not in what gets computed.</td></tr>
+        <tr><td class="diverge" style="white-space:nowrap;"><span class="tag differs">Differs</span></td><td>A real difference in the mechanism — extra gate, different table, different addend set, different multiplier count.</td></tr>
+        <tr><td style="white-space:nowrap;"><span class="tag only-c">Contents only</span></td><td>No Building equivalent exists at all for this stage.</td></tr>
+      </table>
+    </div>
+    <p class="sect-role" style="margin-top:16px;">Five of nine comparable stages diverge in a real way (BaseRate's keys, Rate's addend set, Coinsurance's gate, LOIFactor's table and gate, FinalRate's multiplier count) — consistent with <code>Excel_Rater_BasicGroupI.md</code> &sect;1's framing that Building and Contents "can't share a formula" for this form. <code>AdjustedRate</code> and <code>DeductibleFactor</code> are the two stages that are genuinely identical mechanisms, not just similarly-shaped ones.</p>
+  </section>
+
+  <hr class="divider" />
+
+  <footer class="closing">
+    <h2>Remaining steps</h2>
+    <p class="note">This is a read-only comparison view — nothing here changes what's documented in <code>Excel_Rater_BasicGroupI.md</code> &sect;4/&sect;5/&sect;8/&sect;9, it just re-presents it side by side. Consolidated from Excel_Rater_BasicGroupI.md &middot; CFCW20260601V01</p>
+  </footer>
+
+</div>

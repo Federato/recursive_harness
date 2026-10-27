@@ -7,7 +7,7 @@ comes from the XSD targetNamespace, and the parent from its xs:import.
 import os, re, json, sys
 from collections import defaultdict
 
-ROOT = r"C:\Projects\ISO_ERC_Files\General_Liability"
+ROOT = r"F:\ISO_ERC_Files\General_Liability"
 PREMOPS = "GeneralLiabilityClassificationPremOpsCoverageRules.Rule.xml"
 CLASSIF = "GeneralLiabilityClassificationRules.Rule.xml"
 

@@ -1,6 +1,8 @@
 # The Build — staged plan, for sign-off
 
-**Written 2026-08-12. No code exists. Nothing below is built until you approve the stage.**
+**Written 2026-08-12, when no code existed. Updated 2026-08-13: all six stages are built and Phase 2
+is live.** The plan is kept in its original shape rather than rewritten as a description of what was
+built — the point of a plan is to be checkable against the outcome afterwards.
 
 This is the plan for the engine itself. It follows the twelve directives of 2026-08-12 and the
 architecture decided with them: **execute ISO's filed rules rather than re-implement them**, two
@@ -55,7 +57,7 @@ recorded).** See [`BUILD-LOG.md`](../BUILD-LOG.md) Entry 2.
 
 ---
 
-## Stage 2 — The interpreter  ⏸ AWAITING SIGN-OFF
+## Stage 2 — The interpreter  ✅ BUILT 2026-08-13
 
 **Deliverable:** `gl_engine/interp/`. Executes ERC rules.
 
@@ -79,9 +81,19 @@ arithmetic; the interpreter should reproduce them without any coverage-specific 
 **The honest risk:** the long tail. 14 node types appear fewer than 500 times each and one appears
 twice. They are cheap individually but they are where surprises live.
 
+**Built and verified.** `gl_engine/interp/` — 6 modules, no third-party dependency. All **54**
+language nodes have an evaluator, and `tests/verify_interp.py` reads the list of 54 from the corpus
+census rather than from the test, so a 55th node in a future filing fails the suite. **52/52.**
+
+**The long-tail risk did not materialise; the risk was elsewhere.** The tail is **9** nodes, not 14,
+and none was reached. What actually cost the time was the **entry point** (the `Default` block, which
+every prior census was structurally unable to see), **`ForEach` yielding a collection**, and
+**positional predicates**. See [`14-EVALUATION-CONTRACT.md`](../rating-engine/14-EVALUATION-CONTRACT.md)
+and `BUILD-LOG.md` Entries 3 and 4.
+
 ---
 
-## Stage 3 — The kernel and the two modes
+## Stage 3 — The kernel and the two modes  ✅ COMPLETE 2026-08-13
 
 **Deliverable:** `gl_engine/rating/kernel.py`, `escalate/`, `trace/`. A submission goes in, a premium
 and its factors come out.
@@ -96,9 +108,34 @@ and its factors come out.
 
 **How you check it:** rate Oklahoma's golden case and reproduce `976 + 6,845 + 18 = 7,839` exactly.
 
+**Built and verified.** `gl_engine/rating/` — `submission.py` and `kernel.py`. **31/31.**
+
+**The golden case reproduces exactly**, and every one of the **83 policy-level numbers ISO
+published** agrees field by field — a total can be right for the wrong reasons, so the total alone
+was never going to be the test.
+
+**Breadth, against ISO's own 50 priced examples: 50 of 50 rate end to end, 22 agree to the penny.**
+Both figures are frozen in `verify_stage3.py` group F as a **ratchet, not a target**.
+`python scripts/rate_all_payloads.py` is the report. **Every one of the 28 differences is our defect
+until proven otherwise** — that is what strict mode is for, and it is the next work.
+
+**Both owed items are now done.**
+
+**Banded and interpolated lookups.** The population was measured before it was built
+(`scripts/erc/46_banded_lookups.py`): **11 table names, every one reachable, each with exactly one
+key range**, two boundary types, and **two interpolated tables**, both size-of-risk relativity, both
+`Linear`. Boundaries and linear interpolation are pinned by `verify_interp` group F.
+
+**The referral register.** All **28** entries now carry an explicit disposition — **9 DETECTED,
+4 NOT_REFERRAL, 1 CONFIG, 14 PENDING** — and `Kernel.unenforced` names the pending ones
+individually. On the 50 payloads the two modes return **identical premiums**, detectors fire on
+**exactly one** submission, and that one is real: Alaska's attorney's-fee limit is below the subline
+limit, the endorsement prices at **−70**, and **ISO's own response carries the same −70 and an
+error message we reproduce verbatim**.
+
 ---
 
-## Stage 4 — Schemas and payloads
+## Stage 4 — Schemas and payloads  ✅ COMPLETE 2026-08-13
 
 **Deliverable:** `gl_engine/schema/`, and `Engine_Payloads/` with one sample per jurisdiction.
 
@@ -116,9 +153,30 @@ state — California and New Jersey put the territory in the filename with three
 Texas use four columns, New York uses its own column names. **The interpreter handles this by
 construction**, which makes stage 4 an early proof that stage 2 was built right.
 
+**Built and verified. 23/23.**
+
+**The schema is read, not designed.** `Form Fields/Fields.FormField.csv` is ISO's own declaration of
+every field per jurisdiction — control, requiredness, default, bounds, condition, and the domain
+table naming its legal values. Countrywide declares **1,381 fields over 429 tables**; each
+jurisdiction resolves to **1,252–1,321**. `gl_engine/schema/` loads it; `validate()` reports findings
+rather than raising, and **ISO's own 50 submissions validate with zero errors**.
+
+**One sample submission per jurisdiction, the same risk in every one** — class `50017`, £5m gross
+sales, 1M/2M CSL — so a price difference is attributable to the jurisdiction and nothing else.
+**All 51 rate end to end**, and the spread on identical risk is **GA 6,845 to NY 12,141**.
+Puerto Rico has no ISO payload of its own, so **its sample is built from ISO's domain tables** rather
+than invented. `python scripts/build_sample_payloads.py`.
+
+**E8 restated from measurement.** There is no county field. **Exactly four jurisdictions — CA, FL,
+NY, TX — code terrorism territory explicitly (`TerrorismTerritoryCode`)**; 11 others derive it from
+a ZIP, and NY alone adds a Manhattan flag. The four are warned about when the field is absent,
+because it cannot be derived and an unmatched one refers (R22).
+
+**Hawaii is confirmed absent from the corpus** and stated as a test rather than a footnote.
+
 ---
 
-## Stage 5 — The enum workbook
+## Stage 5 — The enum workbook  ✅ COMPLETE 2026-08-13
 
 **Deliverable:** an Excel workbook listing every field a payload can carry and its legal values.
 
@@ -127,9 +185,29 @@ a limit"* is answered by ISO's filing rather than by us. Cross-referenced agains
 fields** measured in the corpus, and against the 53 real submissions, so the workbook covers what is
 actually used rather than everything conceivable.
 
+**Built and verified. 18/18.** `GL-Submission-Fields.xlsx`, seven sheets, written with the
+**standard library only** — the engine has no third-party dependency and a deliverable should not
+introduce one (`scripts/xlsx.py`).
+
+**The plan predicted the hard part correctly, and it was scope.** ISO declares **1,259 fields**
+countrywide; the 50 real submissions between them use **77 — 6.1%** — of which **41 are used by all
+50**, and a single submission carries **43–54**. The `Used in practice` sheet is ordered by how often
+a field is actually sent, so the workbook opens on what matters rather than on an alphabet.
+
+**Every column names the ISO file it came from**, and the `Read me` sheet lists them: fields and
+requiredness from `Form Fields`, legal values from `Domain Tables` (`DataValue`), declared
+dependencies from `Form Related Fields`, required-to-rate from `Ratebook Columns`, and — found by
+Rule #1 during this stage — **data types and 2,489 class codes from ISO's own `DOC` workbook**.
+
+**A large domain is summarised, never silently truncated:** `ZipCode` at 765 values is a lookup, not
+a choice, and the sheet says so rather than listing it.
+
+The workbook is **gitignored with the rest of the ISO-derived content**; the generator is committed
+and rebuilds it in seconds.
+
 ---
 
-## Stage 6 — The UI
+## Stage 6 — The UI  ✅ COMPLETE 2026-08-13
 
 **Deliverable:** a separate application file. Paste a payload, rate it, read the result.
 
@@ -142,13 +220,33 @@ actually used rather than everything conceivable.
 from a notebook — which is the secondary integration you asked for, and comes free if the separation
 holds.
 
+**Built and verified. 23/23.** `app.py` — one file, **standard library only**, no framework and no
+build step. `python app.py`, then open `http://127.0.0.1:8765`.
+
+**The separation held.** No engine change was needed to build it: the whole UI is assembled from
+`premium`, `by_coverage`, `referrals`, `messages`, `trace`, `tree` and `packages`. The test suite
+checks this by **reading the engine's source** for an import of the UI rather than trusting that
+nobody added one, and confirms `Kernel().rate(path).premium` works with the UI never imported.
+
+**But asking for one item on this list found a real engine defect.** *Premiums per subline* needs the
+subline statistical code ISO writes on each coverage — and we were writing **none of the statistical
+codes**, because `ErcSetStatisticalCodes` is guarded by `Exist ancestor::MasterGLCW/Policy` and the
+**`ancestor::` axis was not implemented**. An unimplemented axis matches nothing, the guard reads
+false, and the block was skipped **with the premium still exactly right**. Measured before fixing:
+**942 paths, one axis, 34 forms, no other axis anywhere in the corpus.** With it implemented, every
+statistical code matches ISO's golden output — **0 mismatches**.
+
+> **A deliverable that renders everything finds things a deliverable that asserts something specific
+> never will.** Four stages of tests and 49 of 49 exact premiums had not noticed, because every check
+> so far compared numbers and a statistical code is a string.
+
 ---
 
 ## After the six stages — the phases that follow
 
 The six stages above build **the ISO engine**. Three phases follow, in this order and for a reason.
 
-### Phase 2 — Proof against RAaS
+### Phase 2 — Proof against RAaS  ✅ CONNECTED 2026-08-13
 
 Run the same submission through the engine in `strict-erc` mode and through ISO's own service, and
 compare. **Any difference is our defect until proven otherwise.** This is the whole point of strict
@@ -156,6 +254,35 @@ mode existing.
 
 Doable partly offline first: **54 ISO-priced example policies covering 50 jurisdictions** are already
 on disk, which is enough to find systemic errors before the connection exists.
+
+**Connected and run. `verify_phase2.py` 11/11.**
+
+| | |
+|---|---|
+| Jurisdictions rated through ISO's live service | **50 of the 51** |
+| Premium **and every published field** agree | **50 of 50** |
+| ISO used the edition we resolved | **50 of 50**, confirmed by its own response header |
+| Never sent | **PR** — `401 "Permission is not granted to GL PR for rating"`, an entitlement on the ISO account. **Decided 2026-08-13: that entitlement is not available, so PR is out of the comparison from here on** (OI-86). It still rates; it is simply the one jurisdiction with no external check of any kind |
+
+`scripts/raas.py` is the client — **standard library only**, so the project still has no third-party
+dependency. A working `httpx` client existed in a prior build; the protocol is OAuth 2.0
+client-credentials and a JSON POST, which `urllib` does without adding a dependency. Credentials come
+from the environment and **nothing logs a secret** — asserted by parsing the source rather than
+grepping it.
+
+**Our request needed no reshaping.** The samples stage 4 generated are sent to ISO exactly as filed,
+with only the authorisation block added.
+
+**What Phase 2 settled about the rounding mode (OI-70), and what it did not.** *Truncation is ruled
+out*: `ROUND_DOWN` changes the premium in **37 of 51** jurisdictions and ISO agrees with rounding in
+all 50. Arkansas exercises a genuine tie — a `Product` of exactly `1.5000` at 0dp — where truncation
+gives 7,871 and ISO gives 7,872. *Half-up versus half-even remains open*: they differ on **0 of 51**,
+because the only tie in the population is `1.5`, where both give 2. **Separating them needs a
+submission engineered to produce `x.5` with `x` even.** Recorded rather than glossed.
+
+**The limit is now the population, not the engine (OI-87).** All 51 submissions are the same risk —
+one location, one class, no deductible, no rating plans — chosen in stage 4 so state differences
+would be attributable. The live service will rate anything, so breadth is the next work.
 
 ### Phase 3 — The harness closes the loop
 
@@ -209,4 +336,7 @@ Each stage is presented before the next begins, exactly as the analysis gates we
 what it was checked against, and what it cannot yet do.** You run tests, corrections get recorded,
 and we move on.
 
-**Stage 1 is built. Awaiting your approval of stage 2.**
+**All six stages are built and Phase 2 is live** (2026-08-13). The current handoff is
+[`BUILD-LOG.md`](../BUILD-LOG.md) Entry 13, and the next work is ordered in
+[`BACKLOG-2026-08-14.md`](BACKLOG-2026-08-14.md) — **breadth first**, because every submission tested
+so far is the same risk shape.

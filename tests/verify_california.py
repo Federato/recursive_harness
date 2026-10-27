@@ -292,8 +292,13 @@ def _():
                     recursive=True)
     assert len(erc) == 1, [os.path.relpath(o, ROOT) for o in erc]
     assert os.path.relpath(erc[0], ROOT).split(os.sep)[0] == "OK"
+    # 519 since 2026-08-13: the three packages supplied that day ship one STC
+    # file between them (GL_OK_20261001_V01). OI-79. 560 since 2026-08-31: the
+    # fresher 2027-04-01 pull (OI-97, BUILD-LOG.md Entry 54) added 41 more STC
+    # files across the 42 new packages -- still no second Output file, still
+    # one oracle.
     assert len(glob.glob(os.path.join(ROOT, "**", "STC", "*.json"),
-                         recursive=True)) == 517
+                         recursive=True)) == 560
 
     pay = sorted(glob.glob(os.path.join(PROJ, "Payloads", "*", "*Output*.json")))
     assert len(pay) == 53, len(pay)

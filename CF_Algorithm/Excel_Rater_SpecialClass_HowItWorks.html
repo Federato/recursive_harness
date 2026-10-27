@@ -1,0 +1,251 @@
+<title>How Special Class Rating Works — Basic Group I</title>
+<meta charset="utf-8">
+<style>
+  body { font-family: Georgia, "Times New Roman", serif; max-width: 980px; margin: 0 auto; padding: 32px 24px 80px; line-height: 1.55; color: #1c2733; background: #fff; }
+  @media (prefers-color-scheme: dark) {
+    body { background: #14181d; color: #dfe4e9; }
+    a { color: #7fb6b8; }
+    table, th, td { border-color: #3a4048 !important; }
+    thead th { background: #24313a !important; color: #eef4f3 !important; }
+    code { background: #262c33 !important; color: #dfe4e9; }
+    .note { background: #2c2a1c !important; color: #e0c064 !important; }
+    .note.warn2 { background: #2a1f2c !important; color: #d69ad0 !important; }
+    .note.good { background: #1b3226 !important; color: #63c090 !important; }
+  }
+  h1 { font-size: 26px; font-weight: 400; margin-bottom: 4px; }
+  h2 { font-size: 19px; font-weight: 700; margin-top: 42px; border-bottom: 2px solid #1e3a45; padding-bottom: 4px; }
+  h3 { font-size: 15px; font-weight: 700; margin-top: 26px; }
+  .meta { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13px; color: #55606b; margin: 6px 0 4px; }
+  code { font-family: ui-monospace, Consolas, monospace; font-size: 0.92em; background: #eef1f4; padding: 1px 5px; border-radius: 3px; }
+  table { border-collapse: collapse; width: 100%; margin: 14px 0 22px; font-size: 14px; }
+  th, td { border: 1px solid #d7dce2; padding: 8px 10px; text-align: left; vertical-align: top; }
+  thead th { background: #1e3a45; color: #eef4f3; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 12px; text-transform: uppercase; letter-spacing: 0.03em; }
+  table.grid td:nth-child(1) { font-family: ui-monospace, Consolas, monospace; font-size: 12px; text-align: center; }
+  tr.same td:nth-child(3) { color: #2f7d5a; }
+  tr.diff td:nth-child(3) { color: #a67c1e; font-weight: 700; }
+  tr.gone td:nth-child(3) { color: #a53d26; font-weight: 700; }
+  tr.open td:nth-child(3) { color: #8b95a1; font-style: italic; }
+  .note { background: #f7ddd4; color: #a53d26; padding: 12px 16px; border-radius: 6px; margin: 16px 0; font-size: 14px; }
+  .note.warn2 { background: #f2e6c4; color: #a67c1e; }
+  .note.good { background: #dcefe4; color: #2f7d5a; }
+  .note b { font-weight: 700; }
+  pre { background: #eef1f4; border: 1px solid #d7dce2; border-radius: 6px; padding: 14px 16px; overflow-x: auto; font-family: ui-monospace, Consolas, monospace; font-size: 13px; }
+  ol, ul { padding-left: 22px; }
+  hr { border: none; border-top: 1px solid #d7dce2; margin: 40px 0; }
+</style>
+
+<h1>How Special Class Rating Works — Basic Group I</h1>
+<p class="meta"><b>Written:</b> 2026-09-14. <b>Source:</b> <code>CauseOfLoss_SpecialClass_RatingAlgorithms.md</code>
+(traced 2026-08-19) — the rule file itself, read for the first time for this purpose. Unlike the three companion
+build-process docs (Building, Personal Property, Business Income), <b>this page reflects genuinely new tracing</b>,
+not a restatement of existing work — no <code>Excel_Rater_SpecialClass.md</code> exists yet, so nothing here has
+been through a build pass.</p>
+<div class="note"><b>Status: analysis only, nothing built.</b> No workbook design has started for Special Class at
+all — this page explains the mechanism, it isn't a build procedure yet. Per standing project rule, nothing gets
+entered into the live workbook until you say go.</div>
+
+<h2>1. What Special Class is, in plain English</h2>
+<p>Special Class covers <b>named, scheduled classes of property</b> that don't fit generic Building or Personal
+Property rating — commodities, agricultural products, signs, antennas, and similar items that ISO gives their own
+filed rate rather than pricing off construction type. Where Building is rated by <em>what the structure is made
+of</em>, Special Class is rated by <em>what the scheduled item is</em> — a free-text/named
+<code>ClassDescription</code> (e.g. "Aircraft Stored in the Open") converted through a 71-option lookup table into
+the actual rate-table key.</p>
+<p>Four cause-of-loss chains exist, same four forms as Building — Basic Group I, Basic Group II, Broad, Special —
+plus a fifth, Earthquake, that's native to this same rule file rather than an outside endorsement. This page covers
+Basic Group I only, the shortest and simplest of the four; the others are summarized at the end for context.</p>
+
+<h2>2. The open question, resolved: there is no Specific/Tentative path for Special Class</h2>
+<div class="note good"><b>Confirmed, not just presumed by analogy.</b> Earlier analysis of this project flagged
+Special Class's Specific/Tentative status as "presumed absent, unverified" — a guess based on Building's pattern,
+not a checked fact. Now checked: a full-text search of <code>CauseOfLoss_SpecialClass_RatingAlgorithms.md</code> for
+<code>RatingType</code>, <code>Specific</code>, and <code>Tentative</code> returns <b>zero matches, anywhere in the
+document</b> — not in Basic Group I, not in any of the other three forms. Special Class has exactly one rating path
+per cause-of-loss form: the scheduled rate built below. There's nothing to neutralize a factor list against,
+because there's no second path to compare it to.</div>
+<p>This means a "Special Class Specific/Tentative" build-process doc, structured the way the Building/Contents/
+Business Income ones are, isn't just unbuilt — like Basic Group II, Broad, and Special before it, there's nothing
+there to build. The rest of this page instead does what <em>is</em> useful at this stage: trace how Special Class's
+one path actually works, and hold it up against Building's Basic Group I chain to show exactly where the two
+diverge.</p>
+
+<h2>3. The comparison grid — every Building Basic Group I factor, held against Special Class</h2>
+<p>Same spirit as the neutralization grids, different question: not "which factors turn off under a second path,"
+but <b>"of everything Building's Basic Group I chain does, what does Special Class's Basic Group I chain do
+instead?"</b> Every row below is a fact traced directly from the source doc, not an assumption.</p>
+
+<table class="grid">
+<thead><tr><th>#</th><th>Factor / step</th><th>Building's Basic Group I</th><th>Special Class's Basic Group I</th></tr></thead>
+<tbody>
+<tr class="diff"><td>1</td><td>Rating key</td><td><code>ClassCode</code> + <code>ConstructionCode</code></td>
+  <td><b>replaced</b> — <code>ClassDescription</code>, converted via <code>SpecialClassDescConvertedOption</code> (71 named options); <b>no construction key exists at all</b></td></tr>
+<tr class="diff"><td>2</td><td>Protection class</td><td>a separate multiplicative <code>ProtectionClassFactor</code></td>
+  <td><b>folded into the base-rate lookup key itself</b> (<code>ProtectionClassToUse</code>) — the standalone <code>ProtectionClassFactor</code> is still computed elsewhere in the rule file but never multiplied into any of Special Class's five chains (see the orphaned-factor note below)</td></tr>
+<tr class="same"><td>3</td><td><code>BaseRate</code></td><td><code>LookupBasicGroupIRate(...)</code></td>
+  <td>same idea, different table/keys — <code>LookupBasicGroupIRateSpecialClass(State|CW, SpecialClassDescConvertedOption, ProtectionClassToUse)</code>, gated on both keys non-blank else <code>0.0</code></td></tr>
+<tr class="same"><td>4</td><td><code>LCM</code> (loss cost multiplier)</td><td>multiplies <code>BaseRate</code></td>
+  <td><b>applies</b> — <code>Rate = BaseRate × LCM</code>, computed only when currently null</td></tr>
+<tr class="gone"><td>5</td><td><code>SubStdConditionRate</code> / <code>VacantBuildingRate</code> addends</td><td>added to <code>BaseRate × LCM</code></td>
+  <td><b>absent</b> — no addends of any kind in the <code>Rate</code> step; confirmed, the source doc states this explicitly ("no territory factor, no protection-class factor, no substandard-condition or vacant-building addend, no roof-surfacing ACV factor")</td></tr>
+<tr class="gone"><td>6</td><td><code>TerritoryFactor</code></td><td>multiplies the addend sum</td>
+  <td><b>absent</b> — confirmed, same statement as row 5</td></tr>
+<tr class="gone"><td>7</td><td><code>RoofSurfacingACVFactor</code></td><td>multiplies the addend sum</td>
+  <td><b>absent</b> — confirmed, same statement as row 5; true for all four Special Class forms, not just Basic Group I</td></tr>
+<tr class="gone"><td>8</td><td>Sprinkler-leakage dimension in <code>COLAdj</code> (subtract-and-multiply)</td><td>subtracts a sprinkler-exclusion rate, multiplies a sprinkler-exclusion factor</td>
+  <td><b>absent</b> — Special Class's cause-of-loss adjustment has no sprinkler-leakage term at all: <code>COLAdj = Rate × VandalismExclFactor × StdPropPolGroupIFactor</code>, confirmed by reading the rule directly</td></tr>
+<tr class="same"><td>9</td><td><code>VandalismExclFactor</code></td><td>multiplies <code>COLAdj</code></td>
+  <td><b>applies</b>, same role, unconditional (no null-guard) — confirmed</td></tr>
+<tr class="same"><td>10</td><td><code>StdPropPolGroupIFactor</code></td><td>multiplies <code>COLAdj</code></td>
+  <td><b>applies</b>, same role — confirmed</td></tr>
+<tr class="diff"><td>11</td><td><code>CoinsuranceFactor</code></td><td>a lookup, skipped for <code>ClassCode = "1150"</code> or Functional Valuation</td>
+  <td><b>computed first, before the base rate</b> — not after, the way Building sequences it — via its own 4-way <code>Choose</code> on <code>Coinsurance</code>/<code>BlktCoinsurance</code>; shared downstream by Basic Group I, Broad, and Special (Basic Group II gets its own)</td></tr>
+<tr class="gone"><td>12</td><td><code>LOIFactor</code></td><td><code>LookupBasicGroupILOIFactorBldg(Limit, ...)</code></td>
+  <td><b>absent — confirmed by exhaustive search.</b> No rule name containing <code>LOIFactor</code> exists anywhere in <code>CommercialPropertySpecialClassRules.Rule.xml</code>. True for all four core forms and all four premium files — <code>Limit</code> is applied directly in the premium formula with no LOI-factor multiplier anywhere in this coverage.</td></tr>
+<tr class="diff"><td>13</td><td><code>DeductibleFactor</code></td><td><code>Choose</code> on <code>Deductible</code>, keyed against <code>TotAmtInsurance</code>, <code>"Basic Group I"</code></td>
+  <td>same shape <code>Choose</code>, but keyed against <b><code>TotAmtInsuranceToUse</code></b> — a Special-Class-scoped total, a different field from Building's <code>TotAmtInsurance</code></td></tr>
+<tr class="same"><td>14</td><td><code>DeductibleByLocationFactor</code></td><td>multiplies <code>FinalRate</code></td>
+  <td><b>applies</b>, shared factor — confirmed</td></tr>
+<tr class="gone"><td>15</td><td><code>MultiResidentialPropSpecialCreditFactor</code></td><td>multiplies <code>FinalRate</code></td>
+  <td><b>absent</b> — not applied anywhere in any Special Class chain, confirmed; this credit is Building/Personal-Property specific and doesn't extend to scheduled Special Class items</td></tr>
+<tr class="diff"><td>16</td><td>Coverage-on-policy gate</td><td>tests <code>CauseOfLossToUse</code> not blank / not "Not Applicable"</td>
+  <td><b>hard-coded to <code>1</code></b> — always on whenever a Basic-Group-I Special Class coverage record exists; cause-of-loss selection is enforced upstream by which coverage record is instantiated, not by a test inside this rule</td></tr>
+<tr class="diff"><td>17</td><td>Premium branches</td><td>4 — scheduled / Legal Liability / blanket / otherwise-zero</td>
+  <td><b>2 — blanket / scheduled only.</b> No Legal Liability branch, no <code>CovType</code> taxonomy at all (no Builders Risk / Improvements &amp; Betterments / Leasehold Interest distinctions) — Special Class items are always either scheduled individually or folded into a blanket</td></tr>
+</tbody>
+</table>
+
+<p><b>Reading this grid:</b> green rows are places Special Class does the same job as Building, sometimes through a
+different table. Amber rows are places the same <em>concept</em> exists but works differently enough to matter for
+a build (protection class as a key instead of a factor; coinsurance computed first instead of mid-chain; a
+different deductible AOI field). Red rows are things that simply don't exist in this coverage at all — confirmed
+absences, not gaps to fill in later.</p>
+
+<div class="note warn2"><b>Open question carried over from the source doc: <code>ProtectionClassFactor</code> may be
+orphaned.</b> The rule file computes a standalone <code>ProtectionClassFactor</code> (line 5724, run last, after all
+five cause-of-loss chains) — but a full-text search for anywhere it's <em>read</em> turns up only its own two
+null-guard checks. It's never multiplied into Basic Group I, Basic Group II, Broad, Special, or Earthquake's rate
+chains. Protection class instead enters Basic Group I's rate through the base-rate lookup <b>key</b>
+(<code>ProtectionClassToUse</code>), as row 2 above describes. Whether the standalone factor feeds some
+stat/reporting rule not traced here, or is genuinely vestigial, is unresolved — flagged in the source doc as an
+open question, not answered here either.</div>
+
+<h2>4. The full formula, end to end</h2>
+<pre>ConvertedOption = LookupSpecialClassDescriptionConvertedOption(State|CW, ClassDescription)
+
+BaseRate = LookupBasicGroupIRateSpecialClass(State|CW, ConvertedOption, ProtectionClassToUse)
+           if ConvertedOption and ProtectionClassToUse both non-blank
+           else 0.0
+
+Rate = BaseRate × LossCostMultiplier    (3dp, only when currently null)
+
+COLAdj = Rate × VandalismExclFactor × StdPropPolGroupIFactor    (3dp, unconditional)
+
+AdjustedRate = COLAdj × CoinsuranceFactor    [no LOI factor]
+
+FinalRate = AdjustedRate × DeductibleByLocationFactor × DeductibleFactorBasicGroupI
+
+Premium (scheduled, IncludedInBlkt <> "Yes") =
+    round((Limit/100) × FinalRate × PackageModFactor × MultiPremiumAndDispersionCreditFactor × IRPMFactor, 0)
+      × CyberIncidentExclusionFactorBGI × CyberIncidentExclusionCOLExcptnsFactorBGI
+
+Premium (blanket, IncludedInBlkt = "Yes", zero if BlktTotalFullValueAmount = 0) =
+    round((BlktLimit/100) × (FullSpecialClassValue/BlktTotalFullValueAmount) × BlktBasicGroupIAvgRate
+          × PackageModFactor × MultiPremiumAndDispersionCreditFactor × IRPMFactor, 0)
+      × CyberIncidentExclusionFactorBGI × CyberIncidentExclusionCOLExcptnsFactorBGI</pre>
+<p style="font-family: -apple-system, 'Segoe UI', sans-serif; font-size: 13px; color: #55606b;">Seven rating-chain
+steps total — one shorter than Building's own Basic Group I (8 steps), because Special Class has no LOI-factor step
+at all.</p>
+
+<h2>5. Input fields that enable Special Class Basic Group I rating</h2>
+<p>Every field below is traced directly from the formula in §4 — nothing here is a guess about what a rater "should"
+ask for. Split into two groups: fields that are genuinely new for this coverage, and fields Special Class reuses
+from mechanisms Building/the policy already have, just consumed differently or gating a different branch.</p>
+
+<h3>New to Special Class — nothing else in this project collects these</h3>
+<table>
+<thead><tr><th>Field</th><th>Feeds</th><th>Notes</th></tr></thead>
+<tbody>
+<tr><td><code>ClassDescription</code></td><td><code>SpecialClassDescConvertedOption</code> lookup → the <code>BaseRate</code> key</td>
+  <td><b>The field that replaces Building's <code>ClassCode</code> + <code>ConstructionCode</code> entirely.</b>
+  Free-text/named class (e.g. "Aircraft Stored in the Open"), converted through a 71-option table
+  (<code>SpecialClassDescriptionConvertedOption.RateTable.csv</code>) before it ever reaches the rate lookup.
+  Without this field, <code>BaseRate</code> has no key and falls to <code>0.0</code>.</td></tr>
+<tr><td><code>FullSpecialClassValue</code></td><td>blanket premium's proration numerator</td>
+  <td>This item's own scheduled value — only matters when <code>IncludedInBlkt = "Yes"</code>. Divided by
+  <code>BlktTotalFullValueAmount</code> to get this item's share of the blanket rate.</td></tr>
+</tbody></table>
+
+<h3>Reused from Building/policy-level mechanisms, but consumed differently here</h3>
+<table>
+<thead><tr><th>Field</th><th>Already exists for</th><th>Feeds, for Special Class</th><th>What's different</th></tr></thead>
+<tbody>
+<tr><td><code>ProtectClass</code> (→ <code>ProtectionClassToUse</code>)</td><td>Building's <code>ProtectionClassFactor</code></td>
+  <td><code>BaseRate</code> lookup key, directly</td>
+  <td>Same input field, but it's folded into the rate-table key instead of applied as a separate multiplier — see the orphaned-factor note in §3.</td></tr>
+<tr><td><code>Coinsurance</code></td><td>Building's <code>CoinsuranceFactor</code></td><td><code>CoinsuranceFactor</code> branch 1 (scheduled)</td>
+  <td>Same field; but for Special Class this factor is computed <em>first</em>, before the base rate — not mid-chain the way Building sequences it.</td></tr>
+<tr><td><code>BlktCoinsurance</code></td><td>shared blanket-rating mechanism</td><td><code>CoinsuranceFactor</code> branch 2 (blanket)</td>
+  <td>Only relevant when <code>IncludedInBlkt = "Yes"</code>.</td></tr>
+<tr><td><code>IncludedInBlkt</code> (Yes/No)</td><td>shared blanket-rating mechanism</td>
+  <td>gates the entire scheduled-vs-blanket premium branch, <em>and</em> which <code>CoinsuranceFactor</code> branch fires</td>
+  <td>Does more work here than for Building — it's a 2-way gate on the whole premium formula, not one of four <code>CovType</code>-driven branches.</td></tr>
+<tr><td><code>Deductible</code></td><td>Building's <code>DeductibleFactor</code></td><td><code>DeductibleFactorBasicGroupI</code></td>
+  <td>Same shape <code>Choose</code>, but keyed against <code>TotAmtInsuranceToUse</code> — a Special-Class-scoped total, not Building's <code>TotAmtInsurance</code>.</td></tr>
+<tr><td><code>Limit</code></td><td>every coverage's premium formula</td><td>scheduled premium, directly</td>
+  <td>No LOI-factor step to pass through first — Special Class has none (§3, row 12).</td></tr>
+<tr><td><code>BlktLimit</code></td><td>shared blanket-rating mechanism</td><td>blanket premium</td><td>—</td></tr>
+<tr><td><code>BlktTotalFullValueAmount</code></td><td>shared blanket-rating mechanism</td><td>blanket premium's proration denominator</td>
+  <td>Aggregated across every item in the blanket — not a Special-Class-specific field, but Special Class's blanket premium can't compute without it.</td></tr>
+<tr><td><code>Bldg_VandalismExcluded</code> (Y/N)</td><td>Building's <code>VandalismExclFactor</code></td><td><code>VandalismExclFactor</code> in <code>COLAdj</code></td>
+  <td>Same shared factor and, presumably, the same input — the source doc names the rule (<code>SetVandalismExclFactor</code>) but doesn't re-derive it for Special Class, consistent with it being a shared upstream computation.</td></tr>
+<tr><td><code>Bldg_StdPropertyPolicy</code> (Y/N) / <code>PolicyType</code></td><td>Building's <code>StdPropPolGroupIFactor</code></td><td><code>StdPropPolGroupIFactor</code> in <code>COLAdj</code></td>
+  <td>Same story as <code>VandalismExclFactor</code> — shared upstream computation, not re-traced for this coverage.</td></tr>
+<tr><td><code>State</code> (falls back to <code>CW</code>)</td><td>every table lookup in this project</td><td>every <code>State|CW</code>-keyed lookup in the chain</td><td>—</td></tr>
+<tr><td><code>LossCostMultiplier</code>, <code>PackageModFactor</code>, <code>MultiPremiumAndDispersionCreditFactor</code>, <code>IRPMFactor</code></td>
+  <td>policy-level, every coverage</td><td><code>Rate</code> and the premium formula</td><td>—</td></tr>
+</tbody></table>
+
+<div class="note"><b>What you don't need to ask for.</b> Because of the absences confirmed in §3, none of the
+following Building-specific inputs feed Special Class at all: <code>ConstructionCode</code>/<code>ConstructionType</code>,
+roof-surfacing condition, sprinkler-system status (for this cause-of-loss adjustment specifically), substandard-condition
+and vacant-building flags, or a multi-residential indicator. If a Special Class item entry screen ends up collecting
+any of these, that's scope creep from Building's form, not something this rating chain actually reads.</div>
+
+<h2>6. The other three forms, briefly</h2>
+<p>Not traced to the same depth as Basic Group I on this page — this is the source doc's own four-way comparison,
+included for context on how consistent (or not) these patterns are across the whole coverage.</p>
+<table>
+<thead><tr><th></th><th>Basic Group I</th><th>Basic Group II</th><th>Broad</th><th>Special</th></tr></thead>
+<tbody>
+<tr><td>Chain length</td><td>7</td><td>10</td><td>5</td><td>9</td></tr>
+<tr><td>Base rate keys</td><td><code>SpecialClassDescConvertedOption</code> + <code>ProtectionClassToUse</code></td>
+  <td><code>BasicGroupIIRatingTerr</code> + <code>BasicGroupIISymbol</code> — symbol's own origin unresolved, open question</td>
+  <td>literal <code>"Frame"</code> — construction-blind, always reads the same rate row regardless of actual construction</td>
+  <td>flat statewide constant — unfilled at CW, open question</td></tr>
+<tr><td>LOI factor</td><td colspan="4" style="text-align:center;"><b>none, in any of the four forms</b></td></tr>
+<tr><td>MultiResidentialPropSpecialCreditFactor</td><td colspan="4" style="text-align:center;"><b>not applied, in any of the four forms</b></td></tr>
+<tr><td>Legal Liability branch</td><td colspan="4" style="text-align:center;"><b>none, in any of the four forms</b></td></tr>
+<tr><td>Premium branches</td><td colspan="4" style="text-align:center;">2 (blanket / scheduled), in all four forms</td></tr>
+</tbody>
+</table>
+<p>Two forms carry their own open questions worth flagging up front, before any build starts: Basic Group II's
+construction symbol origin isn't traced, and Special's flat statewide base rate has no CW row filed. Broad's
+"always Frame" base-rate key is confirmed, not an open question — it's a genuine quirk in ISO's own filing, not a
+gap in this project's tracing.</p>
+
+<hr>
+
+<h2>Remaining steps</h2>
+<ol>
+<li>This page only traces Basic Group I in full — including its input fields (§5). Basic Group II, Broad, and
+Special need the same depth of treatment, input fields included, before an <code>Excel_Rater_SpecialClass.md</code>
+build guide could be written — the four-way table in §6 is a map of what to expect, not a substitute for tracing
+each one.</li>
+<li>Resolve the orphaned <code>ProtectionClassFactor</code> question (§3) — check whether any stat/reporting rule
+outside the rate/premium files consumes it.</li>
+<li>Resolve Basic Group II's construction-symbol origin and Special's unfilled CW base rate before either of those
+two forms can be built with any confidence.</li>
+<li>Special Class Business Income — the sixth core-coverage row still sitting at "not started" — is a separate
+tracing effort, not covered by this page at all.</li>
+<li>Nothing gets built into the live workbook until you say go.</li>
+</ol>

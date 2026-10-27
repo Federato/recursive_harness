@@ -4,7 +4,7 @@
   "provenance": {
     "input": "OK/GL_OK 20250601 V01/GL OK 20250601 V01/STC/1. Input.json",
     "expected": "OK/GL_OK 20250601 V01/GL OK 20250601 V01/STC/1. Output.json",
-    "corpus_root": "C:\\Projects\\ISO_ERC_Files\\General_Liability",
+    "corpus_root": "F:\\ISO_ERC_Files\\General_Liability",
     "package": "GL_OK_20250601_V01",
     "package_identity_from": "DataDefs/MasterGLOK.DataDef.xsd targetNamespace",
     "countrywide_parent": "GL_CW_20231201_V03",

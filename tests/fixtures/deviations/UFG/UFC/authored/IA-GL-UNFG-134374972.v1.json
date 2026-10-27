@@ -1,0 +1,58 @@
+{
+  "filing": "IA-GL-UNFG-134374972",
+  "company": "UFC",
+  "line": "GL",
+  "juris": [
+    "IA"
+  ],
+  "version": 1,
+  "status": "approved",
+  "serff": "UNFG-134374972",
+  "approved": "2025-05-13",
+  "new_eff": "2025-07-15",
+  "renewal_eff": "2025-11-01",
+  "meta": {
+    "iso_loss_costs": "GL-2023-BGL1 (pinned: GL_IA_20240401_V01, decided 2026-10-15)",
+    "minimum_premium": 500,
+    "schedule_rating_max": 0.25,
+    "experience_rating_elr": 0.686,
+    "not_built": "OCP (Rule 46) on UFG's own base loss costs; policy writing minimum; schedule and experience rating bounds (plan O4, B-21)",
+    "source": "UFG_IA_GL_LCM_2025.xlsx / _Explainer.md (typed extraction of the Exception Page Manual 'CG-IA-UFC-ADD-071525', pp. 1-2, Rule 1.D.2; PDF not received); dates per the exception manual (explainer item 1)"
+  },
+  "rows": [
+    {
+      "target": "LCM:PremOps",
+      "scope": {},
+      "value": 0.942,
+      "mode": "replace",
+      "cite": "Exc Rule 1.D.2"
+    },
+    {
+      "target": "LCM:ProdsCompldOps",
+      "scope": {},
+      "value": 1.789,
+      "mode": "replace",
+      "cite": "Exc Rule 1.D.2"
+    },
+    {
+      "target": "LCM:PremOps",
+      "scope": {
+        "class_group": "UFG-IA-GL-aRated-PremOps@v1"
+      },
+      "value": 1,
+      "mode": "replace",
+      "cite": "Exc Rule 1.D.2",
+      "note": "'a'-rated classes are rated from UFG's ELP ranges, not loss cost x LCM: the LCM does not apply"
+    },
+    {
+      "target": "LCM:ProdsCompldOps",
+      "scope": {
+        "class_group": "UFG-IA-GL-aRated-Prods@v1"
+      },
+      "value": 1,
+      "mode": "replace",
+      "cite": "Exc Rule 1.D.2",
+      "note": "'a'-rated classes are rated from UFG's ELP ranges, not loss cost x LCM: the LCM does not apply"
+    }
+  ]
+}

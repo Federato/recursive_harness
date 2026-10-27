@@ -1,0 +1,607 @@
+<title>CF Data Definition Tree</title>
+<meta charset="utf-8">
+<style>
+  body { font-family: Georgia, "Times New Roman", serif; max-width: 1100px; margin: 0 auto; padding: 32px 24px 80px; line-height: 1.5; color: #1c2733; background: #fff; }
+  @media (prefers-color-scheme: dark) {
+    body { background: #14181d; color: #dfe4e9; }
+    table, th, td { border-color: #3a4048 !important; }
+    thead th { background: #24313a !important; color: #eef4f3 !important; }
+    code { background: #262c33 !important; color: #dfe4e9; }
+    pre { background: #262c33 !important; border-color: #3a4048 !important; color: #dfe4e9; }
+    .note { background: #2c2a1c !important; color: #e0c064 !important; }
+    .note.shared { background: #1d2b33 !important; color: #9fd4dc !important; }
+    ul.tree li { border-color: #2b3742 !important; }
+    .nm.spine { background: #1d3535 !important; color: #7fd3d0 !important; }
+    .meta, .cnt { color: #8b95a1 !important; }
+    .dup, .cyc { color: #b08a4a !important; }
+  }
+  h1 { font-size: 26px; font-weight: 400; margin-bottom: 4px; }
+  h2 { font-size: 19px; font-weight: 700; margin-top: 38px; border-bottom: 2px solid #1e3a45; padding-bottom: 4px; }
+  .meta-line { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13px; color: #55606b; margin: 6px 0 4px; }
+  code { font-family: ui-monospace, Consolas, monospace; font-size: 0.92em; background: #eef1f4; padding: 1px 5px; border-radius: 3px; }
+  pre { background: #eef1f4; border: 1px solid #d7dce2; border-radius: 6px; padding: 14px 16px; overflow-x: auto; font-family: ui-monospace, Consolas, monospace; font-size: 13px; }
+  table { border-collapse: collapse; width: 100%; margin: 14px 0 22px; font-size: 14px; }
+  th, td { border: 1px solid #d7dce2; padding: 7px 10px; text-align: left; }
+  thead th { background: #1e3a45; color: #eef4f3; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 12px; text-transform: uppercase; letter-spacing: .03em; }
+  .note { background: #f7ddd4; color: #a53d26; padding: 12px 16px; border-radius: 6px; margin: 16px 0; font-size: 14px; }
+  .note.shared { background: #dde9ee; color: #1e5567; }
+  ul.tree, ul.tree ul { list-style: none; margin: 0; padding-left: 18px; }
+  ul.tree { padding-left: 0; }
+  ul.tree li { border-left: 1px solid #d7dce2; padding: 1px 0 1px 12px; }
+  ul.tree > li { border-left: none; padding-left: 0; }
+  summary { cursor: pointer; }
+  summary::marker { color: #8b95a1; }
+  .nm { font-family: ui-monospace, Consolas, monospace; font-size: 12.5px; }
+  .nm.spine { background: #cfe0e0; color: #14484a; font-weight: 700; padding: 1px 6px; border-radius: 3px; }
+  .meta { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 11px; color: #8b95a1; margin-left: 8px; }
+  .cnt { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 11px; color: #8b95a1; margin-left: 6px; }
+  .cnt::before { content: "\2022 "; }
+  .dup, .cyc { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 11px; color: #a67c1e; margin-left: 8px; }
+  .leaf { opacity: .92; }
+  hr { border: none; border-top: 1px solid #d7dce2; margin: 36px 0; }
+</style>
+
+<h1>CF data definition tree</h1>
+<p class="meta-line"><b>Generated:</b> 2026-09-16 from
+<code>MasterCFCW.DataDef.xsd</code> (CW 20260601 V01) &mdash; 1,275 complexTypes,
+390 of them table wrappers. Containment is read from the
+<code>&lt;xs:element name="&hellip;Table"&gt;</code> declarations, which is exactly what a rule's
+<code>../</code> path walks.</p>
+
+<div class="note shared"><b>How to read a <code>../</code> path against this tree.</b> Every parent&ndash;child
+step in ERC is really two hops &mdash; through a <code>&hellip;Table</code> wrapper and then into the row
+type. So from <code>PersonalProperty</code>, <code>../</code> is
+<code>PersonalPropertyTable</code> and <code>../../</code> is <code>OccupClass</code>. That is why the
+Contents rules reach the occupancy class with two dots, and why the policy-level factors sit five, seven or
+nine levels up depending on which branch you started in.</div>
+
+<h2>The rating spine</h2>
+<p>The path a property premium actually travels. Everything else in the tree hangs off one of these five.</p>
+<pre>CommercialProperty                    policy
+  |
+  +-- Location                        location
+        |
+        +-- Structure                 the building item      &lt;- CovType here
+              |
+              +-- OccupClass          occupancy class        &lt;- CovType and CovForm here
+                    |
+                    +-- PersonalProperty   the contents item &lt;- CovType here</pre>
+<table>
+<thead><tr><th>Node</th><th>Own fields</th><th>Child tables</th><th>CovType</th><th>CovForm</th></tr></thead>
+<tbody>
+<tr><td><code>CommercialProperty (policy root)</code></td><td>195</td><td>34</td><td>&mdash;</td><td>&mdash;</td></tr>
+<tr><td><code>Location</code></td><td>171</td><td>7</td><td>&mdash;</td><td>&mdash;</td></tr>
+<tr><td><code>Structure</code></td><td>766</td><td>74</td><td>yes</td><td>yes</td></tr>
+<tr><td><code>OccupClass</code></td><td>131</td><td>9</td><td>yes</td><td>yes</td></tr>
+<tr><td><code>PersonalProperty</code></td><td>520</td><td>49</td><td>yes</td><td>yes</td></tr>
+</tbody>
+</table>
+<div class="note"><b>No rule assigns <code>CovType</code> on any of these.</b> A sweep for
+<code>ToDataDef="CovType"</code> across every rule file returns two hits, both on Business Income
+Landlord-as-Additional-Insured groups. On the property spine it is a <b>submission input</b>, entered
+per record &mdash; which is why two buildings at one location can carry different coverage types, and why
+<code>CovForm</code> being copied down from <code>OccupClass</code> means contents items cannot.</div>
+
+<h2>Where the bulk sits</h2>
+<p>Twelve nodes carry most of the structure. The long tail is endorsement detail tables.</p>
+<table>
+<thead><tr><th>Node</th><th>Child tables</th><th>Own fields</th></tr></thead>
+<tbody>
+<tr><td><code>Structure</code></td><td>74</td><td>766</td></tr>
+<tr><td><code>PersonalProperty</code></td><td>49</td><td>520</td></tr>
+<tr><td><code>BusinessIncome</code></td><td>49</td><td>333</td></tr>
+<tr><td><code>SpecialClassBusnIncome</code></td><td>47</td><td>268</td></tr>
+<tr><td><code>SpecialClass</code></td><td>42</td><td>380</td></tr>
+<tr><td><code>CommercialProperty (policy root)</code></td><td>34</td><td>195</td></tr>
+<tr><td><code>OccupClass</code></td><td>9</td><td>131</td></tr>
+<tr><td><code>Location</code></td><td>7</td><td>171</td></tr>
+<tr><td><code>CommercialProperty (policy root)</code></td><td>1</td><td>33</td></tr>
+<tr><td><code>UtilityServicesTimeElementSpclClassBusnIncome</code></td><td>1</td><td>70</td></tr>
+<tr><td><code>UtilityServicesTimeElement</code></td><td>1</td><td>81</td></tr>
+<tr><td><code>UtilityServicesDirectDamageSpecialClass</code></td><td>1</td><td>52</td></tr>
+</tbody>
+</table>
+
+<h2>The full tree</h2>
+<p class="meta-line">Spine nodes are highlighted. A node that appears under more than one parent is expanded
+once and marked <span class="dup">&#8599;</span> thereafter; anything self-referential is marked
+<span class="cyc">&#8635;</span>. Click to expand.</p>
+<ul class="tree">
+<li><details open><summary><span class="nm spine">CommercialProperty (policy root)</span><span class="meta">195 fields</span><span class="cnt">34</span></summary>
+<ul>
+<li class="leaf"><span class="nm">AdditionalLocationsSpecialCoinsuranceGeneralInformation</span><span class="meta">98 fields</span></li>
+<li><details open><summary><span class="nm">BlanketRating</span><span class="meta">43 fields</span><span class="cnt">1</span></summary>
+<ul>
+<li class="leaf"><span class="nm">BlanketRatingDetail</span><span class="meta">247 fields</span></li>
+</ul></details></li>
+<li class="leaf"><span class="nm">CalculationOfPremium</span><span class="meta">42 fields</span></li>
+<li class="leaf"><span class="nm">CapOnLossesFromCertifiedActsOfTerrorism</span><span class="meta">53 fields</span></li>
+<li class="leaf"><span class="nm">Changes</span><span class="meta">42 fields</span></li>
+<li class="leaf"><span class="nm">ChangesCancellationAndNonrenewal</span><span class="meta">42 fields</span></li>
+<li class="leaf"><span class="nm">ChangesFungusWetRotDryRotBacteria</span><span class="meta">56 fields</span></li>
+<li class="leaf"><span class="nm">CommercialPropertyConditions</span><span class="meta">42 fields</span></li>
+<li class="leaf"><span class="nm">CommonPolicyConditions</span><span class="meta">42 fields</span></li>
+<li class="leaf"><span class="nm">ConditionLitigationFundingMutualDisclosure</span><span class="meta">42 fields</span></li>
+<li class="leaf"><span class="nm">CoveragePartPolicyChanges</span><span class="meta">57 fields</span></li>
+<li class="leaf"><span class="nm">CyberIncidentExclusion</span><span class="meta">42 fields</span></li>
+<li class="leaf"><span class="nm">CyberIncidentExclusionWithEnsuingCausesOfLossExceptions</span><span class="meta">51 fields</span></li>
+<li><details open><summary><span class="nm">EQSubLimitBlanketRating</span><span class="meta">43 fields</span><span class="cnt">1</span></summary>
+<ul>
+<li class="leaf"><span class="nm">EQSubLimitBlanketRatingDetail</span><span class="meta">56 fields</span></li>
+</ul></details></li>
+<li class="leaf"><span class="nm">ElectronicCommerce</span><span class="meta">53 fields</span></li>
+<li class="leaf"><span class="nm">ExclCertfdActsOfTerrsmInvolvingNuclearBiologicalChmclTerrsmCapOnCovdCertfdActsLosses</span><span class="meta">56 fields</span></li>
+<li class="leaf"><span class="nm">ExclCertfdActsTerrsmCovFireLosses</span><span class="meta">56 fields</span></li>
+<li class="leaf"><span class="nm">ExclusionOfCertainComputerRelatedLosses</span><span class="meta">42 fields</span></li>
+<li class="leaf"><span class="nm">ExclusionOfLossDueToVirusOrBacteriaEndorsement</span><span class="meta">42 fields</span></li>
+<li class="leaf"><span class="nm">ExclusionWarAndMilitaryAction</span><span class="meta">42 fields</span></li>
+<li><details open><summary><span class="nm">FloodCovEndtBlanketRating</span><span class="meta">44 fields</span><span class="cnt">1</span></summary>
+<ul>
+<li class="leaf"><span class="nm">FloodCovEndtBlanketRatingDetail</span><span class="meta">80 fields</span></li>
+</ul></details></li>
+<li class="leaf"><span class="nm">HigherLimits</span><span class="meta">54 fields</span></li>
+<li class="leaf"><span class="nm">IRPM</span><span class="meta">96 fields</span></li>
+<li><details open><summary><span class="nm">LimitationOfCoverageForCertifiedActsOfTerrorismSubLimitOnAnnualAggregateBasis</span><span class="meta">63 fields</span><span class="cnt">1</span></summary>
+<ul>
+<li class="leaf"><span class="nm">LimitationOfCoverageForCertifiedActsOfTerrorismSubLimitOnAnnualAggregateBasisDetail</span><span class="meta">47 fields</span></li>
+</ul></details></li>
+<li><details open><summary><span class="nm spine">Location</span><span class="meta">171 fields</span><span class="cnt">7</span></summary>
+<ul>
+<li class="leaf"><span class="nm">EarthquakeInceptionExtension</span><span class="meta">42 fields</span></li>
+<li class="leaf"><span class="nm">ElectricalApparatus</span><span class="meta">42 fields</span></li>
+<li class="leaf"><span class="nm">FloodCovEndtLocation</span><span class="meta">68 fields</span></li>
+<li class="leaf"><span class="nm">HigherLimitsLocation</span><span class="meta">54 fields</span></li>
+<li class="leaf"><span class="nm">PollutantCleanUpAndRemovalAdditionalAggregateLimitOfInsuranceLocation</span><span class="meta">105 fields</span></li>
+<li><details><summary><span class="nm spine">SpecialClass</span><span class="meta">380 fields</span><span class="cnt">42</span></summary>
+<ul>
+<li><details><summary><span class="nm">AdditionalCoveredPropertySpecialClass</span><span class="meta">47 fields</span><span class="cnt">1</span></summary>
+<ul>
+<li class="leaf"><span class="nm">AdditionalCoveredPropertySpecialClassDetail</span><span class="meta">75 fields</span></li>
+</ul></details></li>
+<li class="leaf"><span class="nm">AdditionalPropertyNotCoveredSpecialClass</span><span class="meta">68 fields</span></li>
+<li class="leaf"><span class="nm">BuildingAndPersonalPropertyCoverageFormSpecialClass</span><span class="meta">42 fields</span></li>
+<li class="leaf"><span class="nm">CannabisExclusionSpecialClass</span><span class="meta">43 fields</span></li>
+<li class="leaf"><span class="nm">CannabisExclusionWithHempExceptionSpecialClass</span><span class="meta">43 fields</span></li>
+<li class="leaf"><span class="nm">CauseOfLossBasicFormSpecialClass</span><span class="meta">42 fields</span></li>
+<li class="leaf"><span class="nm">CauseOfLossBroadFormSpecialClass</span><span class="meta">42 fields</span></li>
+<li class="leaf"><span class="nm">CauseOfLossSpecialFormSpecialClass</span><span class="meta">42 fields</span></li>
+<li class="leaf"><span class="nm">CondominiumAssociationChangesStandardPropertyPolicyEndtSpecialClass</span><span class="meta">42 fields</span></li>
+<li class="leaf"><span class="nm">CondominiumAssociationCoverageFormSpecialClass</span><span class="meta">42 fields</span></li>
+<li class="leaf"><span class="nm">CondominiumCommercialUnitOwnersChangesStandardPropertyPolicySpecialClass</span><span class="meta">42 fields</span></li>
+<li class="leaf"><span class="nm">CondominiumCommercialUnitOwnersCoverageFormSpecialClass</span><span class="meta">42 fields</span></li>
+<li><details><summary><span class="nm">ContributingInsuranceSpecialClass</span><span class="meta">47 fields</span><span class="cnt">1</span></summary>
+<ul>
+<li class="leaf"><span class="nm">ContributingInsuranceSpecialClassDetail</span><span class="meta">50 fields</span></li>
+</ul></details></li>
+<li class="leaf"><span class="nm">DebrisRemovalAdditionalInsuranceSpecialClass</span><span class="meta">76 fields</span></li>
+<li class="leaf"><span class="nm">DeductiblesByLocationSpecialClass</span><span class="meta">54 fields</span></li>
+<li class="leaf"><span class="nm">DischargeFromSewerDrainOrSumpNotFloodReltdSpclClass</span><span class="meta">53 fields</span></li>
+<li class="leaf"><span class="nm">EarthquakeAndVolcanicEruptionCoverageSubLimitFormWithFlatDollarDeductibleSpecialClass</span><span class="meta">59 fields</span></li>
+<li class="leaf"><span class="nm">EarthquakeAndVolcanicEruptionCoverageWithFlatDollarDeductibleSpecialClass</span><span class="meta">56 fields</span></li>
+<li class="leaf"><span class="nm">EarthquakeAndVolcanicEruptionEndorsementSpecialClass</span><span class="meta">66 fields</span></li>
+<li class="leaf"><span class="nm">EarthquakeAndVolcanicEruptionEndorsementSubLimitFormSpecialClass</span><span class="meta">68 fields</span></li>
+<li class="leaf"><span class="nm">ExclusionOfLossDueToByProductsOfProductionORProcessingOperationsFormSpecialClass</span><span class="meta">45 fields</span></li>
+<li class="leaf"><span class="nm">FloodCoverageEndorsementSpecialClass</span><span class="meta">81 fields</span></li>
+<li class="leaf"><span class="nm">IncreaseInRebuildingExpensesFollowingDisasterSpecialClass</span><span class="meta">50 fields</span></li>
+<li class="leaf"><span class="nm">IncreasedCostOfLossAndRelatedExpensesForGreenUpgradesEndtSpecialClass</span><span class="meta">57 fields</span></li>
+<li class="leaf"><span class="nm">JointOrDisputedLossAgreementSpecialClass</span><span class="meta">42 fields</span></li>
+<li><details><summary><span class="nm">LimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoverageSpecialClass</span><span class="meta">49 fields</span><span class="cnt">1</span></summary>
+<ul>
+<li class="leaf"><span class="nm">LimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoverageSpecialClassDetail</span><span class="meta">95 fields</span></li>
+</ul></details></li>
+<li><details><summary><span class="nm">LossPayableProvisionsSpecialClass</span><span class="meta">43 fields</span><span class="cnt">1</span></summary>
+<ul>
+<li class="leaf"><span class="nm">LossPayableProvisionsDetailSpecialClass</span><span class="meta">48 fields</span></li>
+</ul></details></li>
+<li class="leaf"><span class="nm">MoltenMaterialSpecialClass</span><span class="meta">44 fields</span></li>
+<li class="leaf"><span class="nm">MultipleDeductibleFormFixedDollarDeductiblesSpecialClass</span><span class="meta">54 fields</span></li>
+<li class="leaf"><span class="nm">OutsideSignsSpecialClass</span><span class="meta">48 fields</span></li>
+<li class="leaf"><span class="nm">PierAndWharfAdditionalCoveredCausesOfLossSpecialClass</span><span class="meta">46 fields</span></li>
+<li class="leaf"><span class="nm">RadioOrTelevisionAntennasSpecialClass</span><span class="meta">48 fields</span></li>
+<li class="leaf"><span class="nm">RadioactiveContaminationSpecialClass</span><span class="meta">54 fields</span></li>
+<li><details><summary><span class="nm spine">SpecialClassBusnIncome</span><span class="meta">268 fields</span><span class="cnt">47</span></summary>
+<ul>
+<li class="leaf"><span class="nm">BusinessIncomeAndExtraExpenseCoverageFormSpclClassBusnIncome</span><span class="meta">47 fields</span></li>
+<li class="leaf"><span class="nm">BusinessIncomeChangesBeginningOfThePeriodOfRestorationNoWaitingPeriodSpclClassBusnIncome</span><span class="meta">69 fields</span></li>
+<li class="leaf"><span class="nm">BusinessIncomeChangesEducationalInstitutionsSpclClassBusnIncome</span><span class="meta">49 fields</span></li>
+<li><details><summary><span class="nm">BusinessIncomeFromDependentPropertiesBroadFormSpclClassBusnIncome</span><span class="meta">77 fields</span><span class="cnt">1</span></summary>
+<ul>
+<li class="leaf"><span class="nm">BusinessIncomeFromDependentPropertiesBroadFormSpclClassBusnIncomeDetail</span><span class="meta">71 fields</span></li>
+</ul></details></li>
+<li><details><summary><span class="nm">BusinessIncomeFromDependentPropertiesLimitedFormSpclClassBusnIncome</span><span class="meta">77 fields</span><span class="cnt">1</span></summary>
+<ul>
+<li class="leaf"><span class="nm">BusinessIncomeFromDependentPropertiesLimitedFormSpclClassBusnIncomeDetail</span><span class="meta">74 fields</span></li>
+</ul></details></li>
+<li class="leaf"><span class="nm">BusinessIncomeLandlordAsAdditionalInsuredRentalValueSpclClassBusnIncome</span><span class="meta">69 fields</span></li>
+<li class="leaf"><span class="nm">BusinessIncomePremiumAdjustmentFormSpclClassBusnIncome</span><span class="meta">42 fields</span></li>
+<li class="leaf"><span class="nm">BusinessIncomeWithoutExtraExpenseCoverageFormSpclClassBusnIncome</span><span class="meta">49 fields</span></li>
+<li><details><summary><span class="nm">BusnIncomeFromDependentPropertiesLimitedInternationalCovSpclClassBusnIncome</span><span class="meta">48 fields</span><span class="cnt">1</span></summary>
+<ul>
+<li class="leaf"><span class="nm">BusnIncomeFromDependentPropertiesLimitedInternationalCovSpclClassBusnIncomeDetail</span><span class="meta">53 fields</span></li>
+</ul></details></li>
+<li class="leaf"><span class="nm">CannabisCoverageSpecialClassBusinessIncome</span><span class="meta">54 fields</span></li>
+<li class="leaf"><span class="nm">CannabisExclusionSpecialClassBusinessIncome</span><span class="meta">43 fields</span></li>
+<li class="leaf"><span class="nm">CannabisExclusionWithHempExceptionSpecialClassBusinessIncome</span><span class="meta">43 fields</span></li>
+<li class="leaf"><span class="nm">CauseOfLossBasicFormSpclClassBusnIncome</span><span class="meta">42 fields</span></li>
+<li class="leaf"><span class="nm">CauseOfLossBroadFormSpclClassBusnIncome</span><span class="meta">42 fields</span></li>
+<li class="leaf"><span class="nm">CauseOfLossSpecialFormSpclClassBusnIncome</span><span class="meta">42 fields</span></li>
+<li><details><summary><span class="nm">CivilAuthorityIncreasedCoveragePeriodSpclClassBusnIncome</span><span class="meta">72 fields</span><span class="cnt">1</span></summary>
+<ul>
+<li class="leaf"><span class="nm">CivilAuthorityChangesSpclClassBusnIncomeDetail</span><span class="meta">44 fields</span></li>
+</ul></details></li>
+<li class="leaf"><span class="nm">DischargeFromSewerDrainOrSumpNotFloodReltdSpclClassBusnIncome</span><span class="meta">53 fields</span></li>
+<li><details><summary><span class="nm">DiscretionaryPayrollExpenseSpclClassBusnIncome</span><span class="meta">44 fields</span><span class="cnt">1</span></summary>
+<ul>
+<li class="leaf"><span class="nm">DiscretionaryPayrollExpenseSpclClassBusnIncomeDetail</span><span class="meta">42 fields</span></li>
+</ul></details></li>
+<li class="leaf"><span class="nm">EarthquakeAndVolcanicEruptionCoverageSubLimitFormWithFlatDollarDeductibleSpclClassBusnIncome</span><span class="meta">60 fields</span></li>
+<li class="leaf"><span class="nm">EarthquakeAndVolcanicEruptionCoverageWithFlatDollarDeductibleSpclClassBusnIncome</span><span class="meta">56 fields</span></li>
+<li class="leaf"><span class="nm">EarthquakeAndVolcanicEruptionEndorsementSpclClassBusnIncome</span><span class="meta">60 fields</span></li>
+<li class="leaf"><span class="nm">EarthquakeAndVolcanicEruptionEndorsementSubLimitFormSpclClassBusnIncome</span><span class="meta">68 fields</span></li>
+<li class="leaf"><span class="nm">ExpandedLimitsOnLossPaymentSpclClassBusnIncome</span><span class="meta">100 fields</span></li>
+<li class="leaf"><span class="nm">ExtraExpenseCoverageFormSpclClassBusnIncome</span><span class="meta">49 fields</span></li>
+<li><details><summary><span class="nm">ExtraExpenseFromDependentPropertiesLimitedInternationalCovSpclClassBusnIncome</span><span class="meta">48 fields</span><span class="cnt">1</span></summary>
+<ul>
+<li class="leaf"><span class="nm">ExtraExpenseFromDependentPropertiesLimitedInternationalCovSpclClassBusnIncomeDetail</span><span class="meta">52 fields</span></li>
+</ul></details></li>
+<li><details><summary><span class="nm">ExtraExpenseFromDependentPropertiesSpclClassBusnIncome</span><span class="meta">71 fields</span><span class="cnt">1</span></summary>
+<ul>
+<li class="leaf"><span class="nm">ExtraExpenseFromDependentPropertiesSpclClassBusnIncomeDetail</span><span class="meta">79 fields</span></li>
+</ul></details></li>
+<li class="leaf"><span class="nm">FloodCoverageEndorsementSpclClassBusnIncome</span><span class="meta">73 fields</span></li>
+<li class="leaf"><span class="nm">FoodContaminationBusinessInterruptionAndExtraExpenseSpclClassBusnIncome</span><span class="meta">48 fields</span></li>
+<li class="leaf"><span class="nm">HigherLimitsSpecialClassBusinessInc</span><span class="meta">48 fields</span></li>
+<li class="leaf"><span class="nm">IncreasedCostOfLossAndRelatedExpensesForGreenUpgradesEndtSpclClassBusnIncome</span><span class="meta">52 fields</span></li>
+<li class="leaf"><span class="nm">JointOrDisputedLossAgreementSpecialClassBusinessIncome</span><span class="meta">42 fields</span></li>
+<li><details><summary><span class="nm">LimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoverageSpclClassBusnIncome</span><span class="meta">49 fields</span><span class="cnt">1</span></summary>
+<ul>
+<li class="leaf"><span class="nm">LimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoverageSpclClassBusnIncomeDetail</span><span class="meta">100 fields</span></li>
+</ul></details></li>
+<li class="leaf"><span class="nm">MiningPropertiesSpclClassBusnIncome</span><span class="meta">65 fields</span></li>
+<li class="leaf"><span class="nm">MoltenMaterialSpclClassBusnIncome</span><span class="meta">49 fields</span></li>
+<li><details><summary><span class="nm">OffPremInterruptionOfBusnVehsMobileEquipmtSpclClassBusnIncome</span><span class="meta">58 fields</span><span class="cnt">1</span></summary>
+<ul>
+<li class="leaf"><span class="nm">OffPremInterruptionOfBusnVehsMobileEquipmtSpclClassBusnIncomeDetail</span><span class="meta">51 fields</span></li>
+</ul></details></li>
+<li class="leaf"><span class="nm">OrdinanceOrLawIncreasedPeriodOfRestorationSpclClassBusnIncome</span><span class="meta">75 fields</span></li>
+<li><details><summary><span class="nm">OrdinaryPayrollLimitationOrExclusionSpclClassBusnIncome</span><span class="meta">70 fields</span><span class="cnt">1</span></summary>
+<ul>
+<li class="leaf"><span class="nm">OrdinaryPayrollLimitationOrExclusionSpclClassBusnIncomeDetail</span><span class="meta">49 fields</span></li>
+</ul></details></li>
+<li class="leaf"><span class="nm">PierAndWharfAdditionalCoveredCausesOfLossSpclClassBusnIncome</span><span class="meta">52 fields</span></li>
+<li class="leaf"><span class="nm">PowerHeatAndRefrigerationDeductionSpclClassBusnIncome</span><span class="meta">68 fields</span></li>
+<li class="leaf"><span class="nm">RadioOrTelevisionAntennasBusinessIncomeOrExtraExpenseSpclClassBusnIncome</span><span class="meta">69 fields</span></li>
+<li class="leaf"><span class="nm">RadioactiveContaminationSpclClassBusnIncome</span><span class="meta">54 fields</span></li>
+<li class="leaf"><span class="nm">SeasonalLeasesMonthlyLimitsOnLossPaymentSpclClassBusnIncome</span><span class="meta">63 fields</span></li>
+<li class="leaf"><span class="nm">TheftExclusionSpclClassBusnIncome</span><span class="meta">44 fields</span></li>
+<li><details><summary><span class="nm">UtilityServicesTimeElementSpclClassBusnIncome</span><span class="meta">70 fields</span><span class="cnt">1</span></summary>
+<ul>
+<li class="leaf"><span class="nm">UtilityServicesTimeElementSpclClassBusnIncomeDetail</span><span class="meta">89 fields</span></li>
+</ul></details></li>
+<li class="leaf"><span class="nm">VandalismExclusionSpclClassBusnIncome</span><span class="meta">44 fields</span></li>
+<li class="leaf"><span class="nm">WatercraftExclusionSpclClassBusnIncome</span><span class="meta">58 fields</span></li>
+<li class="leaf"><span class="nm">WindstormOrHailExclusionSpclClassBusnIncome</span><span class="meta">48 fields</span></li>
+</ul></details></li>
+<li class="leaf"><span class="nm">SpecialClassLimitationOnLossSettlementBlanketInsuranceMarginClause</span><span class="meta">46 fields</span></li>
+<li class="leaf"><span class="nm">StatementOfValuesSpecialClass</span><span class="meta">66 fields</span></li>
+<li class="leaf"><span class="nm">TheftExclusionSpecialClass</span><span class="meta">44 fields</span></li>
+<li><details><summary><span class="nm">UtilityServicesDirectDamageSpecialClass</span><span class="meta">52 fields</span><span class="cnt">1</span></summary>
+<ul>
+<li class="leaf"><span class="nm">UtilityServicesDirectDamageSpecialClassDetail</span><span class="meta">88 fields</span></li>
+</ul></details></li>
+<li class="leaf"><span class="nm">VandalismExclusionSpecialClass</span><span class="meta">44 fields</span></li>
+<li class="leaf"><span class="nm">WatercraftExclusionSpecialClass</span><span class="meta">56 fields</span></li>
+<li class="leaf"><span class="nm">WindstormOrHailExclusionSpecialClass</span><span class="meta">48 fields</span></li>
+<li class="leaf"><span class="nm">WindstormOrHailPercentageDeductibleSpecialClass</span><span class="meta">50 fields</span></li>
+</ul></details></li>
+<li><details><summary><span class="nm spine">Structure</span><span class="meta">766 fields</span><span class="cnt">74</span></summary>
+<ul>
+<li><details><summary><span class="nm">AdditionalBuildingProperty</span><span class="meta">44 fields</span><span class="cnt">1</span></summary>
+<ul>
+<li class="leaf"><span class="nm">AdditionalBuildingPropertyDetail</span><span class="meta">43 fields</span></li>
+</ul></details></li>
+<li><details><summary><span class="nm">AdditionalCoveredProperty</span><span class="meta">46 fields</span><span class="cnt">1</span></summary>
+<ul>
+<li class="leaf"><span class="nm">AdditionalCoveredPropertyDetail</span><span class="meta">75 fields</span></li>
+</ul></details></li>
+<li><details><summary><span class="nm">AdditionalInsuredBuildingOwner</span><span class="meta">43 fields</span><span class="cnt">1</span></summary>
+<ul>
+<li class="leaf"><span class="nm">AdditionalInsuredBuildingOwnerDetail</span><span class="meta">45 fields</span></li>
+</ul></details></li>
+<li class="leaf"><span class="nm">AdditionalPropertyNotCovered</span><span class="meta">71 fields</span></li>
+<li><details><summary><span class="nm">BrokenOrCrackedGlassExclusion</span><span class="meta">43 fields</span><span class="cnt">1</span></summary>
+<ul>
+<li class="leaf"><span class="nm">BrokenOrCrackedGlassExclusionDetail</span><span class="meta">47 fields</span></li>
+</ul></details></li>
+<li class="leaf"><span class="nm">BuildersRiskChangesStandardProperty</span><span class="meta">42 fields</span></li>
+<li class="leaf"><span class="nm">BuildersRiskCollapseDuringConstruction</span><span class="meta">60 fields</span></li>
+<li class="leaf"><span class="nm">BuildersRiskCoverageForm</span><span class="meta">63 fields</span></li>
+<li><details><summary><span class="nm">BuildersRiskPremiumAdjustmentForm</span><span class="meta">75 fields</span><span class="cnt">1</span></summary>
+<ul>
+<li class="leaf"><span class="nm">BuildersRiskPremiumAdjustmentFormDetail</span><span class="meta">81 fields</span></li>
+</ul></details></li>
+<li><details><summary><span class="nm">BuildersRiskRenovations</span><span class="meta">177 fields</span><span class="cnt">1</span></summary>
+<ul>
+<li class="leaf"><span class="nm">BuildersRiskRenovationsDetail</span><span class="meta">45 fields</span></li>
+</ul></details></li>
+<li class="leaf"><span class="nm">BuildersRiskReportingForm</span><span class="meta">117 fields</span></li>
+<li><details><summary><span class="nm">BuildersRiskSeparateOrSubContractorsCoverage</span><span class="meta">43 fields</span><span class="cnt">1</span></summary>
+<ul>
+<li class="leaf"><span class="nm">BuildersRiskSeparateOrSubContractorsCoverageDetail</span><span class="meta">45 fields</span></li>
+</ul></details></li>
+<li><details><summary><span class="nm">BuildersRiskSeparateOrSubContractorsExclusion</span><span class="meta">43 fields</span><span class="cnt">1</span></summary>
+<ul>
+<li class="leaf"><span class="nm">BuildersRiskSeparateOrSubContractorsExclusionDetail</span><span class="meta">45 fields</span></li>
+</ul></details></li>
+<li class="leaf"><span class="nm">BuildersRiskTheftOfBuildingMaterialsFixturesMachineryEquipment</span><span class="meta">61 fields</span></li>
+<li class="leaf"><span class="nm">BuildingAndPersonalPropertyCoverageForm</span><span class="meta">42 fields</span></li>
+<li class="leaf"><span class="nm">BurglaryAndRobberyProtectiveSafeguards</span><span class="meta">67 fields</span></li>
+<li><details><summary><span class="nm spine">BusinessIncome</span><span class="meta">333 fields</span><span class="cnt">49</span></summary>
+<ul>
+<li class="leaf"><span class="nm">BusinessIncomeAndExtraExpenseCoverageForm</span><span class="meta">47 fields</span></li>
+<li class="leaf"><span class="nm">BusinessIncomeChangesBeginningOfThePeriodOfRestorationNoWaitingPeriod</span><span class="meta">72 fields</span></li>
+<li class="leaf"><span class="nm">BusinessIncomeChangesEducationalInstitutions</span><span class="meta">49 fields</span></li>
+<li><details><summary><span class="nm">BusinessIncomeFromDependentPropertiesBroadForm</span><span class="meta">77 fields</span><span class="cnt">1</span></summary>
+<ul>
+<li class="leaf"><span class="nm">BusinessIncomeFromDependentPropertiesBroadFormDetail</span><span class="meta">71 fields</span></li>
+</ul></details></li>
+<li><details><summary><span class="nm">BusinessIncomeFromDependentPropertiesLimitedForm</span><span class="meta">78 fields</span><span class="cnt">1</span></summary>
+<ul>
+<li class="leaf"><span class="nm">BusinessIncomeFromDependentPropertiesLimitedFormDetail</span><span class="meta">74 fields</span></li>
+</ul></details></li>
+<li class="leaf"><span class="nm">BusinessIncomeLandlordAsAdditionalInsuredRentalValue</span><span class="meta">69 fields</span></li>
+<li class="leaf"><span class="nm">BusinessIncomePremiumAdjustmentForm</span><span class="meta">42 fields</span></li>
+<li class="leaf"><span class="nm">BusinessIncomeWithoutExtraExpenseCoverageForm</span><span class="meta">49 fields</span></li>
+<li><details><summary><span class="nm">BusnIncomeFromDependentPropertiesLimitedInternationalCov</span><span class="meta">48 fields</span><span class="cnt">1</span></summary>
+<ul>
+<li class="leaf"><span class="nm">BusnIncomeFromDependentPropertiesLimitedInternationalCovDetail</span><span class="meta">53 fields</span></li>
+</ul></details></li>
+<li class="leaf"><span class="nm">CannabisCoverageBusinessIncome</span><span class="meta">54 fields</span></li>
+<li class="leaf"><span class="nm">CannabisExclusionBusinessIncome</span><span class="meta">43 fields</span></li>
+<li class="leaf"><span class="nm">CannabisExclusionWithHempExceptionBusinessIncome</span><span class="meta">43 fields</span></li>
+<li class="leaf"><span class="nm">CauseOfLossBasicFormBusnIncome</span><span class="meta">42 fields</span></li>
+<li class="leaf"><span class="nm">CauseOfLossBroadFormBusnIncome</span><span class="meta">42 fields</span></li>
+<li class="leaf"><span class="nm">CauseOfLossSpecialFormBusnIncome</span><span class="meta">42 fields</span></li>
+<li><details><summary><span class="nm">CivilAuthorityIncreasedCoveragePeriod</span><span class="meta">75 fields</span><span class="cnt">1</span></summary>
+<ul>
+<li class="leaf"><span class="nm">CivilAuthorityChangesDetail</span><span class="meta">44 fields</span></li>
+</ul></details></li>
+<li class="leaf"><span class="nm">DischargeFromSewerDrainOrSumpNotFloodReltdBusnIncome</span><span class="meta">53 fields</span></li>
+<li><details><summary><span class="nm">DiscretionaryPayrollExpense</span><span class="meta">44 fields</span><span class="cnt">1</span></summary>
+<ul>
+<li class="leaf"><span class="nm">DiscretionaryPayrollExpenseDetail</span><span class="meta">42 fields</span></li>
+</ul></details></li>
+<li class="leaf"><span class="nm">EarthquakeAndVolcanicEruptionCoverageSubLimitFormWithFlatDollarDeductibleBusnIncome</span><span class="meta">60 fields</span></li>
+<li class="leaf"><span class="nm">EarthquakeAndVolcanicEruptionCoverageWithFlatDollarDeductibleBusnIncome</span><span class="meta">57 fields</span></li>
+<li class="leaf"><span class="nm">EarthquakeAndVolcanicEruptionEndorsementBusnIncome</span><span class="meta">61 fields</span></li>
+<li class="leaf"><span class="nm">EarthquakeAndVolcanicEruptionEndorsementSubLimitFormBusnIncome</span><span class="meta">69 fields</span></li>
+<li class="leaf"><span class="nm">EquipmentBreakdownCauseOfLossBusnInc</span><span class="meta">52 fields</span></li>
+<li class="leaf"><span class="nm">ExpandedLimitsOnLossPayment</span><span class="meta">100 fields</span></li>
+<li class="leaf"><span class="nm">ExtraExpenseCoverageForm</span><span class="meta">49 fields</span></li>
+<li><details><summary><span class="nm">ExtraExpenseFromDependentProperties</span><span class="meta">72 fields</span><span class="cnt">1</span></summary>
+<ul>
+<li class="leaf"><span class="nm">ExtraExpenseFromDependentPropertiesDetail</span><span class="meta">79 fields</span></li>
+</ul></details></li>
+<li><details><summary><span class="nm">ExtraExpenseFromDependentPropertiesLimitedInternationalCov</span><span class="meta">46 fields</span><span class="cnt">1</span></summary>
+<ul>
+<li class="leaf"><span class="nm">ExtraExpenseFromDependentPropertiesLimitedInternationalCovDetail</span><span class="meta">52 fields</span></li>
+</ul></details></li>
+<li class="leaf"><span class="nm">FloodCoverageEndorsementBusnIncome</span><span class="meta">71 fields</span></li>
+<li class="leaf"><span class="nm">FoodContaminationBusinessInterruptionAndExtraExpense</span><span class="meta">48 fields</span></li>
+<li class="leaf"><span class="nm">HigherLimitsBusinessInc</span><span class="meta">51 fields</span></li>
+<li class="leaf"><span class="nm">IncreasedCostOfLossAndRelatedExpensesForGreenUpgradesEndtBusInc</span><span class="meta">52 fields</span></li>
+<li class="leaf"><span class="nm">JointOrDisputedLossAgreementBusinessIncome</span><span class="meta">42 fields</span></li>
+<li><details><summary><span class="nm">LimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoverageBusnIncome</span><span class="meta">49 fields</span><span class="cnt">1</span></summary>
+<ul>
+<li class="leaf"><span class="nm">LimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoverageBusnIncomeDetail</span><span class="meta">102 fields</span></li>
+</ul></details></li>
+<li class="leaf"><span class="nm">MiningPropertiesBusinessIncome</span><span class="meta">66 fields</span></li>
+<li class="leaf"><span class="nm">MoltenMaterialBusnIncome</span><span class="meta">50 fields</span></li>
+<li><details><summary><span class="nm">OffPremInterruptionOfBusnVehsMobileEquipmtBusnInc</span><span class="meta">58 fields</span><span class="cnt">1</span></summary>
+<ul>
+<li class="leaf"><span class="nm">OffPremInterruptionOfBusnVehsMobileEquipmtBusnIncDetail</span><span class="meta">51 fields</span></li>
+</ul></details></li>
+<li class="leaf"><span class="nm">OrdinanceOrLawIncreasedPeriodOfRestoration</span><span class="meta">77 fields</span></li>
+<li><details><summary><span class="nm">OrdinaryPayrollLimitationOrExclusion</span><span class="meta">71 fields</span><span class="cnt">1</span></summary>
+<ul>
+<li class="leaf"><span class="nm">OrdinaryPayrollLimitationOrExclusionDetail</span><span class="meta">49 fields</span></li>
+</ul></details></li>
+<li class="leaf"><span class="nm">PierAndWharfAdditionalCoveredCausesOfLoss</span><span class="meta">53 fields</span></li>
+<li class="leaf"><span class="nm">PowerHeatAndRefrigerationDeduction</span><span class="meta">69 fields</span></li>
+<li class="leaf"><span class="nm">RadioOrTelevisionAntennasBusinessIncomeOrExtraExpense</span><span class="meta">90 fields</span></li>
+<li class="leaf"><span class="nm">RadioactiveContaminationBusnIncome</span><span class="meta">54 fields</span></li>
+<li class="leaf"><span class="nm">SeasonalLeasesMonthlyLimitsOnLossPayment</span><span class="meta">63 fields</span></li>
+<li class="leaf"><span class="nm">SprinklerLeakageExclusionBusnIncome</span><span class="meta">44 fields</span></li>
+<li class="leaf"><span class="nm">TheftExclusionBusnIncome</span><span class="meta">44 fields</span></li>
+<li><details><summary><span class="nm">UtilityServicesTimeElement</span><span class="meta">81 fields</span><span class="cnt">1</span></summary>
+<ul>
+<li class="leaf"><span class="nm">UtilityServicesTimeElementDetail</span><span class="meta">91 fields</span></li>
+</ul></details></li>
+<li class="leaf"><span class="nm">VandalismExclusionBusnIncome</span><span class="meta">44 fields</span></li>
+<li class="leaf"><span class="nm">WatercraftExclusionBusnIncome</span><span class="meta">60 fields</span></li>
+<li class="leaf"><span class="nm">WindstormOrHailExclusionBusnIncome</span><span class="meta">48 fields</span></li>
+</ul></details></li>
+<li class="leaf"><span class="nm">CannabisExclusionBuilding</span><span class="meta">43 fields</span></li>
+<li class="leaf"><span class="nm">CannabisExclusionWithHempExceptionBuilding</span><span class="meta">43 fields</span></li>
+<li class="leaf"><span class="nm">CauseOfLossBasicFormBldg</span><span class="meta">42 fields</span></li>
+<li class="leaf"><span class="nm">CauseOfLossBroadFormBldg</span><span class="meta">42 fields</span></li>
+<li class="leaf"><span class="nm">CauseOfLossSpecialFormBldg</span><span class="meta">42 fields</span></li>
+<li class="leaf"><span class="nm">CondominiumAssociationChangesStandardPropertyPolicy</span><span class="meta">42 fields</span></li>
+<li class="leaf"><span class="nm">CondominiumAssociationCoverageForm</span><span class="meta">42 fields</span></li>
+<li><details><summary><span class="nm">ContributingInsurance</span><span class="meta">48 fields</span><span class="cnt">1</span></summary>
+<ul>
+<li class="leaf"><span class="nm">ContributingInsuranceDetail</span><span class="meta">51 fields</span></li>
+</ul></details></li>
+<li class="leaf"><span class="nm">DebrisRemovalAdditionalInsurance</span><span class="meta">84 fields</span></li>
+<li class="leaf"><span class="nm">DeductiblesByLocationBldg</span><span class="meta">54 fields</span></li>
+<li class="leaf"><span class="nm">DischargeFromSewerDrainOrSumpNotFloodReltd</span><span class="meta">53 fields</span></li>
+<li class="leaf"><span class="nm">EarthquakeAndVolcanicEruptionCoverageSubLimitFormWithFlatDollarDeductibleBldg</span><span class="meta">62 fields</span></li>
+<li class="leaf"><span class="nm">EarthquakeAndVolcanicEruptionCoverageWithFlatDollarDeductibleBldg</span><span class="meta">59 fields</span></li>
+<li class="leaf"><span class="nm">EarthquakeAndVolcanicEruptionEndorsement</span><span class="meta">66 fields</span></li>
+<li class="leaf"><span class="nm">EarthquakeAndVolcanicEruptionEndorsementSubLimitForm</span><span class="meta">69 fields</span></li>
+<li class="leaf"><span class="nm">EquipmentBreakdownCauseOfLossBldg</span><span class="meta">56 fields</span></li>
+<li class="leaf"><span class="nm">ExclusionOfLossDueToByProductsOfProductionORProcessingOperationsFormBuilding</span><span class="meta">45 fields</span></li>
+<li class="leaf"><span class="nm">FloodCoverageEndorsement</span><span class="meta">79 fields</span></li>
+<li class="leaf"><span class="nm">FunctionalBuildingValuation</span><span class="meta">83 fields</span></li>
+<li class="leaf"><span class="nm">GrainPropertiesExplosionLimitation</span><span class="meta">42 fields</span></li>
+<li class="leaf"><span class="nm">HigherLimitsStructure</span><span class="meta">49 fields</span></li>
+<li class="leaf"><span class="nm">IncreaseInRebuildingExpensesFollowingDisaster</span><span class="meta">51 fields</span></li>
+<li class="leaf"><span class="nm">IncreasedCostOfLossAndRelatedExpensesForGreenUpgradesEndtBldg</span><span class="meta">57 fields</span></li>
+<li class="leaf"><span class="nm">JointOrDisputedLossAgreement</span><span class="meta">42 fields</span></li>
+<li class="leaf"><span class="nm">LeaseholdInterestCoverageForm</span><span class="meta">110 fields</span></li>
+<li class="leaf"><span class="nm">LegalLiabilityCoverageForm</span><span class="meta">50 fields</span></li>
+<li class="leaf"><span class="nm">LimitationsOnCovForRoofSurfacing</span><span class="meta">45 fields</span></li>
+<li><details><summary><span class="nm">LimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoverage</span><span class="meta">49 fields</span><span class="cnt">1</span></summary>
+<ul>
+<li class="leaf"><span class="nm">LimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoverageDetail</span><span class="meta">97 fields</span></li>
+</ul></details></li>
+<li><details><summary><span class="nm">LossPayableProvisions</span><span class="meta">44 fields</span><span class="cnt">1</span></summary>
+<ul>
+<li class="leaf"><span class="nm">LossPayableProvisionsDetail</span><span class="meta">56 fields</span></li>
+</ul></details></li>
+<li class="leaf"><span class="nm">MoltenMaterial</span><span class="meta">47 fields</span></li>
+<li class="leaf"><span class="nm">MultipleDeductibleFormFixedDollarDeductibles</span><span class="meta">54 fields</span></li>
+<li class="leaf"><span class="nm">NewlyAcquiredOrConstructedPropertyIncreasedLimit</span><span class="meta">48 fields</span></li>
+<li><details><summary><span class="nm spine">OccupClass</span><span class="meta">131 fields</span><span class="cnt">9</span></summary>
+<ul>
+<li class="leaf"><span class="nm">BuildingAndPersonalPropertyCoverageFormOccupClass</span><span class="meta">42 fields</span></li>
+<li class="leaf"><span class="nm">CondominiumAssociationChangesStandardPropertyPolicyOccupClass</span><span class="meta">42 fields</span></li>
+<li class="leaf"><span class="nm">CondominiumAssociationCoverageFormOccupClass</span><span class="meta">42 fields</span></li>
+<li class="leaf"><span class="nm">CondominiumCommercialUnitOwnersChangesStandardPropertyPolicy</span><span class="meta">42 fields</span></li>
+<li class="leaf"><span class="nm">CondominiumCommercialUnitOwnersCoverageForm</span><span class="meta">42 fields</span></li>
+<li class="leaf"><span class="nm">HigherLimitsOccupClass</span><span class="meta">50 fields</span></li>
+<li class="leaf"><span class="nm">LegalLiabilityCoverageFormOccupClass</span><span class="meta">47 fields</span></li>
+<li><details><summary><span class="nm spine">PersonalProperty</span><span class="meta">520 fields</span><span class="cnt">49</span></summary>
+<ul>
+<li><details><summary><span class="nm">AdditionalCoveredPropertyPrsnlProp</span><span class="meta">44 fields</span><span class="cnt">1</span></summary>
+<ul>
+<li class="leaf"><span class="nm">AdditionalCoveredPropertyPrsnlPropDetail</span><span class="meta">70 fields</span></li>
+</ul></details></li>
+<li class="leaf"><span class="nm">AdditionalLocationsSpecialCoinsuranceProvisions</span><span class="meta">51 fields</span></li>
+<li class="leaf"><span class="nm">AgriculturalProductsStorage</span><span class="meta">42 fields</span></li>
+<li class="leaf"><span class="nm">AlcoholicBeveragesTaxExclusion</span><span class="meta">50 fields</span></li>
+<li class="leaf"><span class="nm">BrandsAndLabels</span><span class="meta">76 fields</span></li>
+<li class="leaf"><span class="nm">BusnPrsnlPropLimitedInternationalCov</span><span class="meta">52 fields</span></li>
+<li class="leaf"><span class="nm">CannabisCoveragePersonalProperty</span><span class="meta">54 fields</span></li>
+<li class="leaf"><span class="nm">CannabisExclusionPersonalProperty</span><span class="meta">43 fields</span></li>
+<li class="leaf"><span class="nm">CannabisExclusionWithHempExceptionPersonalProperty</span><span class="meta">43 fields</span></li>
+<li class="leaf"><span class="nm">CauseOfLossBasicFormPrsnlProp</span><span class="meta">42 fields</span></li>
+<li class="leaf"><span class="nm">CauseOfLossBroadFormPrsnlProp</span><span class="meta">42 fields</span></li>
+<li class="leaf"><span class="nm">CauseOfLossSpecialFormPrsnlProp</span><span class="meta">42 fields</span></li>
+<li class="leaf"><span class="nm">CondominiumCommercialUnitOwnersOptionalCoverages</span><span class="meta">81 fields</span></li>
+<li class="leaf"><span class="nm">DebrisRemovalAdditionalInsurancePrsnlProp</span><span class="meta">79 fields</span></li>
+<li class="leaf"><span class="nm">DischargeFromSewerDrainOrSumpNotFloodReltdPrsnlProp</span><span class="meta">52 fields</span></li>
+<li class="leaf"><span class="nm">DistilledSpiritsAndWinesMarketValue</span><span class="meta">47 fields</span></li>
+<li class="leaf"><span class="nm">EarthquakeAndVolcanicEruptionCoverageSubLimitFormWithFlatDollarDeductiblePrsnlProp</span><span class="meta">60 fields</span></li>
+<li class="leaf"><span class="nm">EarthquakeAndVolcanicEruptionCoverageWithFlatDollarDeductiblePrsnlProp</span><span class="meta">58 fields</span></li>
+<li class="leaf"><span class="nm">EarthquakeAndVolcanicEruptionEndorsementPrsnlProp</span><span class="meta">68 fields</span></li>
+<li class="leaf"><span class="nm">EarthquakeAndVolcanicEruptionEndorsementSubLimitFormPrsnlProp</span><span class="meta">71 fields</span></li>
+<li class="leaf"><span class="nm">FloodCoverageEndorsementPrsnlProp</span><span class="meta">79 fields</span></li>
+<li class="leaf"><span class="nm">FunctionalPersonalPropertyValuationOtherThanStock</span><span class="meta">78 fields</span></li>
+<li class="leaf"><span class="nm">HigherLimitsPersonalProperty</span><span class="meta">74 fields</span></li>
+<li><details><summary><span class="nm">HouseholdPersonalPropertyCoverage</span><span class="meta">48 fields</span><span class="cnt">1</span></summary>
+<ul>
+<li class="leaf"><span class="nm">HouseholdPersonalPropertyCoverageDetail</span><span class="meta">44 fields</span></li>
+</ul></details></li>
+<li class="leaf"><span class="nm">IncreasedCostOfLossAndRelatedExpensesForGreenUpgradesEndtPersProp</span><span class="meta">57 fields</span></li>
+<li><details><summary><span class="nm">LeasedProperty</span><span class="meta">43 fields</span><span class="cnt">1</span></summary>
+<ul>
+<li class="leaf"><span class="nm">LeasedPropertyDetail</span><span class="meta">51 fields</span></li>
+</ul></details></li>
+<li><details><summary><span class="nm">LimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoveragePrsnlProp</span><span class="meta">49 fields</span><span class="cnt">1</span></summary>
+<ul>
+<li class="leaf"><span class="nm">LimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoveragePrsnlPropDetail</span><span class="meta">97 fields</span></li>
+</ul></details></li>
+<li class="leaf"><span class="nm">ManufacturersConsequentialLossAssumption</span><span class="meta">77 fields</span></li>
+<li class="leaf"><span class="nm">ManufacturersSellingPriceFinishedStockOnly</span><span class="meta">42 fields</span></li>
+<li class="leaf"><span class="nm">MarketValueStock</span><span class="meta">42 fields</span></li>
+<li class="leaf"><span class="nm">MoltenMaterialPrsnlProp</span><span class="meta">47 fields</span></li>
+<li><details><summary><span class="nm">PeakSeasonLimitOfInsurance</span><span class="meta">92 fields</span><span class="cnt">1</span></summary>
+<ul>
+<li class="leaf"><span class="nm">PeakSeasonLimitOfInsuranceDetail</span><span class="meta">101 fields</span></li>
+</ul></details></li>
+<li class="leaf"><span class="nm">PropInProcessOfMfrByOthersLimitedInternationalCov</span><span class="meta">51 fields</span></li>
+<li class="leaf"><span class="nm">RadioactiveContaminationPrsnlProp</span><span class="meta">54 fields</span></li>
+<li class="leaf"><span class="nm">ReportOfValues</span><span class="meta">60 fields</span></li>
+<li><details><summary><span class="nm">SpecifiedBusnPrsnlPropTempAwayFromPremises</span><span class="meta">43 fields</span><span class="cnt">1</span></summary>
+<ul>
+<li class="leaf"><span class="nm">SpecifiedBusnPrsnlPropTempAwayFromPremisesDetail</span><span class="meta">43 fields</span></li>
+</ul></details></li>
+<li class="leaf"><span class="nm">SpoilageCoverage</span><span class="meta">61 fields</span></li>
+<li class="leaf"><span class="nm">SprinklerLeakageExclusionPrsnlProp</span><span class="meta">44 fields</span></li>
+<li class="leaf"><span class="nm">StatementOfValuesPrsnlProp</span><span class="meta">66 fields</span></li>
+<li class="leaf"><span class="nm">StorageOrRepairsLimitedLiability</span><span class="meta">42 fields</span></li>
+<li class="leaf"><span class="nm">SupplementalReportOfValues</span><span class="meta">55 fields</span></li>
+<li class="leaf"><span class="nm">TheftExclusionPrsnlProp</span><span class="meta">44 fields</span></li>
+<li><details><summary><span class="nm">UtilityServicesDirectDamagePrsnlProp</span><span class="meta">73 fields</span><span class="cnt">1</span></summary>
+<ul>
+<li class="leaf"><span class="nm">UtilityServicesDirectDamagePrsnlPropDetail</span><span class="meta">89 fields</span></li>
+</ul></details></li>
+<li class="leaf"><span class="nm">VacancyChangesPrsnlProp</span><span class="meta">45 fields</span></li>
+<li class="leaf"><span class="nm">VacancyPermitPrsnlProp</span><span class="meta">112 fields</span></li>
+<li class="leaf"><span class="nm">ValueReportingForm</span><span class="meta">84 fields</span></li>
+<li class="leaf"><span class="nm">VandalismExclusionPrsnlProp</span><span class="meta">44 fields</span></li>
+<li class="leaf"><span class="nm">WindstormOrHailExclusionPrsnlProp</span><span class="meta">48 fields</span></li>
+<li class="leaf"><span class="nm">YourBusinessPersonalPropertySeparationOfCoverage</span><span class="meta">49 fields</span></li>
+</ul></details></li>
+<li class="leaf"><span class="nm">TobaccoSalesWarehousesCoverageForm</span><span class="meta">52 fields</span></li>
+</ul></details></li>
+<li class="leaf"><span class="nm">OrdinanceOrLawCoverage</span><span class="meta">96 fields</span></li>
+<li class="leaf"><span class="nm">OrdinanceOrLawCoverageForTenantsInterestInImprovementsAndBetterments</span><span class="meta">62 fields</span></li>
+<li class="leaf"><span class="nm">OutdoorTreesShrubsAndPlants</span><span class="meta">101 fields</span></li>
+<li><details><summary><span class="nm">OutsideSigns</span><span class="meta">99 fields</span><span class="cnt">1</span></summary>
+<ul>
+<li class="leaf"><span class="nm">OutsideSignsDetail</span><span class="meta">126 fields</span></li>
+</ul></details></li>
+<li class="leaf"><span class="nm">PierAndWharfAdditionalCoveredCausesOfLossStruct</span><span class="meta">46 fields</span></li>
+<li><details><summary><span class="nm">ProtectiveSafeguards</span><span class="meta">45 fields</span><span class="cnt">1</span></summary>
+<ul>
+<li class="leaf"><span class="nm">ProtectiveSafeguardsDetail</span><span class="meta">46 fields</span></li>
+</ul></details></li>
+<li><details><summary><span class="nm">RadioOrTelevisionAntennas</span><span class="meta">92 fields</span><span class="cnt">1</span></summary>
+<ul>
+<li class="leaf"><span class="nm">RadioOrTelevisionAntennasDetail</span><span class="meta">109 fields</span></li>
+</ul></details></li>
+<li class="leaf"><span class="nm">RadioactiveContamination</span><span class="meta">54 fields</span></li>
+<li><details><summary><span class="nm">ScheduledBuildingPropertyTenantsPolicy</span><span class="meta">87 fields</span><span class="cnt">1</span></summary>
+<ul>
+<li class="leaf"><span class="nm">ScheduledBuildingPropertyTenantsPolicyDetail</span><span class="meta">43 fields</span></li>
+</ul></details></li>
+<li class="leaf"><span class="nm">SprinklerLeakageExclusion</span><span class="meta">44 fields</span></li>
+<li class="leaf"><span class="nm">StatementOfValues</span><span class="meta">66 fields</span></li>
+<li class="leaf"><span class="nm">StructureLimitationOnLossSettlementBlanketInsuranceMarginClause</span><span class="meta">46 fields</span></li>
+<li class="leaf"><span class="nm">SuspensionOrReinstatementOfCovForLossCausedByBreakdownOfCertainEquipment</span><span class="meta">48 fields</span></li>
+<li class="leaf"><span class="nm">TentativeRate</span><span class="meta">42 fields</span></li>
+<li class="leaf"><span class="nm">TheftExclusion</span><span class="meta">44 fields</span></li>
+<li class="leaf"><span class="nm">TheftOfBuildingMaterialsAndSuppliesOtherThanBuildersRisk</span><span class="meta">51 fields</span></li>
+<li class="leaf"><span class="nm">UnscheduledBuildingPropertyTenantsPolicy</span><span class="meta">86 fields</span></li>
+<li><details><summary><span class="nm">UtilityServicesDirectDamageBldg</span><span class="meta">82 fields</span><span class="cnt">1</span></summary>
+<ul>
+<li class="leaf"><span class="nm">UtilityServicesDirectDamageBldgDetail</span><span class="meta">89 fields</span></li>
+</ul></details></li>
+<li class="leaf"><span class="nm">VacancyChanges</span><span class="meta">45 fields</span></li>
+<li class="leaf"><span class="nm">VacancyPermit</span><span class="meta">157 fields</span></li>
+<li class="leaf"><span class="nm">VandalismExclusion</span><span class="meta">44 fields</span></li>
+<li class="leaf"><span class="nm">WatercraftExclusion</span><span class="meta">42 fields</span></li>
+<li class="leaf"><span class="nm">WindstormOrHailExclusion</span><span class="meta">48 fields</span></li>
+<li class="leaf"><span class="nm">WindstormOrHailPercentageDeductibleForm</span><span class="meta">49 fields</span></li>
+</ul></details></li>
+</ul></details></li>
+<li class="leaf"><span class="nm">MortgageholdersErrorsAndOmissionsCoverageForm</span><span class="meta">62 fields</span></li>
+<li><details open><summary><span class="nm">PeakSeasonGeneralInformation</span><span class="meta">53 fields</span><span class="cnt">1</span></summary>
+<ul>
+<li class="leaf"><span class="nm">PeakSeasonGeneralInformationDetail</span><span class="meta">93 fields</span></li>
+</ul></details></li>
+<li class="leaf"><span class="nm">PolicyChanges</span><span class="meta">82 fields</span></li>
+<li class="leaf"><span class="nm">PremiumAdjustmentForm</span><span class="meta">47 fields</span></li>
+<li class="leaf"><span class="nm">ResidentAgentCountersignatureEndorsement</span><span class="meta">48 fields</span></li>
+<li class="leaf"><span class="nm">SpaceWeatherExclusion</span><span class="meta">42 fields</span></li>
+<li class="leaf"><span class="nm">StandardPropertyPolicy</span><span class="meta">42 fields</span></li>
+<li class="leaf"><span class="nm">VacancyChangesPolicy</span><span class="meta">45 fields</span></li>
+<li class="leaf"><span class="nm">ValueReportingFormGeneralInformation</span><span class="meta">114 fields</span></li>
+</ul></details></li>
+</ul>
+
+<hr>
+<p class="meta-line">Generated mechanically from the schema. Containment is accurate; whether a given branch
+is ever populated on a real submission is a separate question the schema cannot answer.</p>

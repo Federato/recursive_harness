@@ -39,6 +39,22 @@ after is seconds to minutes.
 Script 03 also feeds the agent: copy `lc_pypdf/*.txt` to
 `Agentic/iso-circular-expert/text/losscosts/`.
 
+### The test harness is separate again — and it is not a pipeline
+
+The numbered scripts derive content once. These run every day and answer *"does the engine still
+agree with ISO"*. They share the run store and nothing else with the pipeline above.
+
+| Script | What it is |
+|---|---|
+| `variants.py` | **What may be varied and what each option legally holds**, read from ISO's declaration per jurisdiction. 20 controls. The most-read file here |
+| `sweep.py` | One configuration across jurisdictions, engine-only or against ISO. **Three outcomes, not two** — a state that cannot express the configuration is `NOT APPLICABLE` and says why |
+| `qa.py` | **The tier programme** — T0–T4, a pairwise matrix, a cost estimate and a budget gate |
+| `layers.py` | **The layered programme** — four layers, an allowance that thins configurations and never states, and a ticker instead of a gate. Added 2026-08-18; see [`docs/UI-STRATEGY.md`](../docs/UI-STRATEGY.md) |
+| `qa_review.py` | The review passes: is a *not applicable* real, is a refusal ours or ISO's |
+| `reviews.py` | **Per-run review records** — a mechanical pattern match first, a markdown brief for what it can't explain, and a place to paste back what a person said. No API key anywhere in it. Added 2026-08-18; see [`docs/UI-STRATEGY.md`](../docs/UI-STRATEGY.md) |
+| `runstore.py` | **Every run, kept.** Append-only JSON lines under `results/`. A store that is rewritten cannot answer *when did this start disagreeing* |
+| `phase2_compare.py` | **The one definition of agreement.** Everything else calls it, so there is never a second one to drift |
+
 ### The ERC pipeline is separate — `scripts/erc/`
 
 Scripts 01–12 above derive from the **manual PDFs**. The ERC clean-room derivation lives in

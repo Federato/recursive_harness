@@ -1,0 +1,23 @@
+{
+ "name": "rc5_bgii_specific_ny",
+ "states": [
+  "NY"
+ ],
+ "edits": [
+  {
+   "sheet": "IN - Schedule",
+   "cell": "AJ49",
+   "value": "Specific"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "AK49",
+   "value": 0.05
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "R135",
+   "value": 0.04
+  }
+ ]
+}

@@ -1,0 +1,18 @@
+{
+ "name": "rc3_sc_linked",
+ "states": [
+  "FL"
+ ],
+ "edits": [
+  {
+   "sheet": "IN - Schedule",
+   "cell": "L220",
+   "value": "Yes"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "M220",
+   "value": "'1 - 1"
+  }
+ ]
+}

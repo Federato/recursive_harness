@@ -2,7 +2,7 @@
 import os, re, json, warnings
 from concurrent.futures import ProcessPoolExecutor
 
-SRC = r"C:\Projects\Recursive_Harness_2.0\Commercial Line Manuals\GL\Rules"
+SRC = r"F:\Recursive_Harness_2.0\Commercial Line Manuals\GL\Rules"
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 ZIPROW = re.compile(r"(?<!\d)(\d{5})\s+([A-Z][A-Z .'&/-]{1,28}?)\s+(\d{3})(?!\d)")

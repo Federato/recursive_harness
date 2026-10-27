@@ -1,0 +1,636 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Liquor Liability Rating Chains</title>
+<style>
+  :root {
+    --ink: #101b24;
+    --paper: #edf0ec;
+    --paper-line: #c7d2ce;
+    --blueprint: #2e6e8e;
+    --blueprint-soft: #e4ebef;
+    --stamp: #c77f32;
+    --caution: #b14b39;
+    --ledger: #3f8f6e;
+    --surface: #f4f6f3;
+    --panel: #ffffff;
+    --sidebar: #e8ede8;
+    --text: var(--ink);
+    --muted: #5b6b72;
+    --border: #cdd6d2;
+    --font-display: Cambria, 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+    --font-body: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+    --font-mono: 'Cascadia Code', 'Cascadia Mono', Consolas, 'SFMono-Regular', ui-monospace, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --surface: #0b141a;
+      --panel: #101b22;
+      --sidebar: #0e1a20;
+      --text: #e7ece9;
+      --muted: #93a3a0;
+      --border: #223138;
+      --blueprint-soft: #16232b;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --surface: #0b141a;
+    --panel: #101b22;
+    --sidebar: #0e1a20;
+    --text: #e7ece9;
+    --muted: #93a3a0;
+    --border: #223138;
+    --blueprint-soft: #16232b;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; background: var(--surface); color: var(--text);
+    font-family: var(--font-body); -webkit-font-smoothing: antialiased;
+  }
+  body { display: flex; flex-direction: column; min-height: 100vh; }
+  a { color: inherit; }
+  code { font-family: var(--font-mono); font-size: 0.92em; }
+  ::selection { background: var(--stamp); color: #101b24; }
+
+  /* header */
+  header.masthead {
+    display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap;
+    padding: 1.1rem 1.6rem; border-bottom: 1px solid var(--border);
+    background: var(--panel);
+  }
+  header.masthead h1 {
+    font-family: var(--font-display); font-weight: 600; font-size: 1.35rem;
+    margin: 0; letter-spacing: 0.01em; text-wrap: balance;
+  }
+  header.masthead .rule { width: 1px; align-self: stretch; background: var(--border); }
+  header.masthead p { margin: 0; font-size: 0.82rem; color: var(--muted); max-width: 52ch; }
+  header.masthead .src {
+    margin-left: auto; font-family: var(--font-mono); font-size: 0.72rem;
+    color: var(--muted); text-align: right; line-height: 1.5;
+  }
+
+  /* shell */
+  .shell { display: flex; flex: 1; min-height: 0; }
+
+  nav.toc {
+    width: 258px; flex: none; background: var(--sidebar);
+    border-right: 1px solid var(--border);
+    padding: 1rem 0 2rem; overflow-y: auto;
+  }
+  nav.toc .group-label {
+    font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--muted); padding: 0.5rem 1.2rem 0.35rem;
+  }
+  nav.toc button.navlink {
+    display: block; width: 100%; text-align: left; background: none; border: none;
+    font-family: var(--font-body); font-size: 0.86rem; color: var(--text);
+    padding: 0.42rem 1.2rem 0.42rem 1.6rem; cursor: pointer;
+    border-left: 3px solid transparent;
+  }
+  nav.toc button.navlink:hover { background: var(--blueprint-soft); }
+  nav.toc button.navlink.active {
+    background: var(--blueprint-soft); border-left-color: var(--blueprint); font-weight: 600;
+  }
+  nav.toc button.navlink .chain-len {
+    display: block; font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); font-weight: 400;
+  }
+  nav.toc hr { border: none; border-top: 1px solid var(--border); margin: 0.6rem 1.2rem; }
+
+  nav.toc .legend {
+    margin: 1rem 1.2rem 0; padding: 0.8rem 0.9rem; border: 1px solid var(--border);
+    border-radius: 3px; background: var(--panel);
+  }
+  nav.toc .legend h4 {
+    margin: 0 0 0.5rem; font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--muted); font-weight: 600;
+  }
+  nav.toc .legend .row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.74rem; margin-bottom: 0.35rem; }
+  nav.toc .legend .swatch { width: 13px; height: 13px; flex: none; border-radius: 2px; border-width: 1.5px; border-style: solid; }
+  .sw-gate { background: #f4e4ce; border-color: #c77f32; }
+  .sw-zero { background: #f3dcd6; border-color: #b14b39; }
+  .sw-final { background: #dceee4; border-color: #3f8f6e; }
+  .sw-step { background: #e4ebef; border-color: #2e6e8e; }
+  .sw-openq { background: #f4e4ce; border-color: #b14b39; border-style: dashed !important; }
+  .sw-engine { background: #e6e1f0; border-color: #5a4c8a; }
+
+  main { flex: 1; min-width: 0; overflow-y: auto; padding: 1.6rem 2rem 4rem; }
+
+  .intro { max-width: 70ch; margin-bottom: 1.4rem; }
+  .intro h2 { font-family: var(--font-display); font-size: 1.25rem; margin: 0 0 0.5rem; text-wrap: balance; }
+  .intro p { font-size: 0.92rem; line-height: 1.6; color: var(--muted); margin: 0 0 0.6rem; }
+
+  /* tables */
+  .tablewrap { overflow-x: auto; margin-bottom: 1.4rem; }
+  table.grid { border-collapse: collapse; width: 100%; max-width: 1100px; background: var(--panel); }
+  table.grid caption {
+    text-align: left; font-family: var(--font-mono); font-size: 0.7rem; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem;
+  }
+  table.grid th, table.grid td {
+    border: 1px solid var(--border); padding: 0.5rem 0.7rem; font-size: 0.82rem;
+    text-align: left; vertical-align: top; line-height: 1.45;
+  }
+  table.grid thead th {
+    font-family: var(--font-mono); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--muted); background: var(--blueprint-soft); font-weight: 600;
+  }
+  table.grid tbody th { font-weight: 600; white-space: nowrap; }
+  table.grid td.num { font-family: var(--font-mono); text-align: right; white-space: nowrap; }
+  table.grid tr.hl td, table.grid tr.hl th { background: var(--blueprint-soft); }
+  table.grid td .tag {
+    font-family: var(--font-mono); font-size: 0.66rem; padding: 0.05rem 0.35rem; border-radius: 2px;
+    border: 1px solid var(--border); color: var(--muted); white-space: nowrap;
+  }
+  table.grid td .tag.a { border-color: var(--blueprint); color: var(--blueprint); }
+  table.grid td .tag.b { border-color: var(--ledger); color: var(--ledger); }
+  table.grid td .tag.bad { border-color: var(--caution); color: var(--caution); }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.9rem; max-width: 1100px; margin-bottom: 1.4rem; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 3px; padding: 0.9rem 1rem; }
+  .card .k { font-family: var(--font-mono); font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
+  .card .v { font-family: var(--font-display); font-size: 1.5rem; margin: 0.2rem 0 0.25rem; font-variant-numeric: tabular-nums; }
+  .card p { margin: 0; font-size: 0.8rem; color: var(--muted); line-height: 1.45; }
+  .card button.go {
+    margin-top: 0.6rem; background: none; border: 1px solid var(--blueprint); color: var(--blueprint);
+    font-family: var(--font-mono); font-size: 0.7rem; padding: 0.3rem 0.6rem; border-radius: 2px; cursor: pointer;
+  }
+  .card button.go:hover { background: var(--blueprint-soft); }
+
+  /* sheet */
+  .sheet-view { display: none; }
+  .sheet-view.active { display: block; }
+
+  .titleblock {
+    display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--border);
+    margin-bottom: 1.1rem; background: var(--panel);
+  }
+  .titleblock .field { padding: 0.6rem 0.9rem; border-right: 1px solid var(--border); }
+  .titleblock .field:last-child { border-right: none; }
+  .titleblock .field .k {
+    font-family: var(--font-mono); font-size: 0.63rem; text-transform: uppercase; letter-spacing: 0.07em;
+    color: var(--muted); display: block; margin-bottom: 0.15rem;
+  }
+  .titleblock .field .v { font-family: var(--font-mono); font-size: 0.82rem; color: var(--text); line-height: 1.35; }
+  .titleblock .field.wide { grid-column: span 4; border-top: 1px solid var(--border); border-right: none; }
+
+  .sheet {
+    background: var(--paper); border: 1px solid var(--paper-line); border-radius: 2px;
+    padding: 1.4rem 1.2rem 1rem; position: relative; overflow-x: auto;
+    background-image:
+      linear-gradient(var(--paper-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--paper-line) 1px, transparent 1px);
+    background-size: 28px 28px; background-position: -1px -1px;
+    background-color: var(--paper);
+  }
+  .sheet .corner { position: absolute; width: 14px; height: 14px; }
+  .sheet .corner.tl { top: 6px; left: 6px; border-top: 1.5px solid #7d8f8a; border-left: 1.5px solid #7d8f8a; }
+  .sheet .corner.tr { top: 6px; right: 6px; border-top: 1.5px solid #7d8f8a; border-right: 1.5px solid #7d8f8a; }
+  .sheet .corner.bl { bottom: 6px; left: 6px; border-bottom: 1.5px solid #7d8f8a; border-left: 1.5px solid #7d8f8a; }
+  .sheet .corner.br { bottom: 6px; right: 6px; border-bottom: 1.5px solid #7d8f8a; border-right: 1.5px solid #7d8f8a; }
+  .sheet pre.mermaid { margin: 0; background: transparent; min-width: 760px; color: #101b24; }
+
+  .notes { margin-top: 1.1rem; display: grid; grid-template-columns: 1.4fr 1fr; gap: 1.2rem; }
+  .notes h3 {
+    font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--muted); margin: 0 0 0.5rem;
+  }
+  .notes ul { margin: 0; padding-left: 1.1rem; font-size: 0.86rem; line-height: 1.55; }
+  .notes ul li { margin-bottom: 0.4rem; }
+  .notes .delta { border: 1px solid var(--border); background: var(--panel); padding: 0.8rem 0.9rem; border-radius: 3px; font-size: 0.86rem; line-height: 1.55; }
+  .notes .delta.openq { border-color: var(--caution); }
+  .notes .delta + .delta { margin-top: 0.8rem; }
+
+  h3.section {
+    font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--muted); margin: 1.6rem 0 0.6rem;
+  }
+
+  footer.doc-footer {
+    padding: 1rem 2rem 2rem; font-size: 0.76rem; color: var(--muted); border-top: 1px solid var(--border);
+  }
+  footer.doc-footer strong { color: var(--text); }
+
+  @media (max-width: 900px) {
+    .notes { grid-template-columns: 1fr; }
+    .titleblock { grid-template-columns: 1fr 1fr; }
+    .titleblock .field.wide { grid-column: span 2; }
+  }
+  @media (max-width: 720px) {
+    .shell { flex-direction: column; }
+    nav.toc { width: 100%; border-right: none; border-bottom: 1px solid var(--border); padding: 0.6rem 0; }
+    nav.toc .legend { display: none; }
+    main { padding: 1.2rem 16px 3rem; }
+    header.masthead { padding: 1rem 16px; }
+    header.masthead .src { margin-left: 0; text-align: left; }
+    header.masthead .rule { display: none; }
+    .titleblock { grid-template-columns: 1fr; }
+    .titleblock .field { border-right: none; border-bottom: 1px solid var(--border); }
+    .titleblock .field.wide { grid-column: span 1; }
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <h1>Liquor Liability Rating Chains</h1>
+  <div class="rule"></div>
+  <p>Every gate, branch and terminal in subline 332's rate build-up and premium (Rule 45), drawn separately for the two rule sets ISO files: pre-2027 and CW 2027. Every rule and branch is checked against the built engine (<code>gl_engine</code>) and ISO's rule XML as of 2026-10-05.</p>
+  <div class="src">Engine at 62eb125 (GL rating path unchanged since the 630ba2f reconciliation)<br>Rule file: GeneralLiabilityClassificationLiquorCoverageRules.Rule.xml<br>Companion: LiquorLiability_RatingAlgorithms.md · docs/gates/GATE-332</div>
+</header>
+
+<div class="shell">
+  <nav class="toc" id="toc">
+    <button class="navlink active" data-target="overview">Overview<span class="chain-len">an ELP surrogate for a rate ISO never files</span></button>
+    <hr>
+    <div class="group-label">Decision chains</div>
+    <button class="navlink" data-target="cw23">Pre-2027<span class="chain-len">12 + 4 steps · 9 basis types · top-up</span></button>
+    <button class="navlink" data-target="cw27">CW 2027<span class="chain-len">12 + 2 steps · new basis vocabulary · $1 floor</span></button>
+    <hr>
+    <div class="group-label">Comparison</div>
+    <button class="navlink" data-target="diff">Side by side<span class="chain-len">10 differences, rule by rule</span></button>
+    <hr>
+    <div class="group-label">Review</div>
+    <button class="navlink" data-target="review">Why the old sheet was replaced<span class="chain-len">9 items · 1 new finding</span></button>
+
+    <div class="legend">
+      <h4>Reading the chains</h4>
+      <div class="row"><span class="swatch sw-gate"></span> gate / branch condition</div>
+      <div class="row"><span class="swatch sw-step"></span> computed factor</div>
+      <div class="row"><span class="swatch sw-final"></span> premium resolves</div>
+      <div class="row"><span class="swatch sw-zero"></span> zero, refusal or clamp</div>
+      <div class="row"><span class="swatch sw-openq"></span> silent gap / open question</div>
+      <div class="row"><span class="swatch sw-engine"></span> engine layer, not an ISO rule</div>
+    </div>
+  </nav>
+
+  <main id="main">
+
+    <!-- ============================= OVERVIEW ============================= -->
+    <section class="sheet-view active" id="view-overview">
+      <div class="intro">
+        <h2>No loss cost, by rule: the whole chain is an ELP surrogate</h2>
+        <p>Rule 45.E says "For rates, refer to company." ISO publishes no liquor loss cost, so the base rate is always the expected loss potential (ELP) times a loss cost multiplier that is itself a placeholder of 1. Every deductible factor is 0, also by rule (45.J.3). What ERC computes is a starting point a carrier is expected to replace.</p>
+        <p>Liquor needs its own policy record with subline "Liquor". Nothing else puts the coverage on the policy. The edition is picked the same way as every GL subline: all 51 jurisdictions run pre-2027 today. On 2027-04-01, 46 move to CW 2027, and CA, GA, NJ, NY and WA stay.</p>
+      </div>
+
+      <div class="cards">
+        <div class="card">
+          <div class="k">Pre-2027 chain</div>
+          <div class="v">12 + 4</div>
+          <p>Rate-build and premium steps. Nine per-$1,000 premium bases, a "Refer To Co." basis that prices 0, and a policy-level minimum premium that is always 0.</p>
+          <button class="go" data-target="cw23">Open chain →</button>
+        </div>
+        <div class="card">
+          <div class="k">CW 2027 chain</div>
+          <div class="v">12 + 2</div>
+          <p>A new basis vocabulary with two per-$1,000 bases, the class code replacing the description as the gate, no minimum premium, and a $1 floor on a rounded-zero premium.</p>
+          <button class="go" data-target="cw27">Open chain →</button>
+        </div>
+        <div class="card">
+          <div class="k">Stale basis in 2027</div>
+          <div class="v">1000×</div>
+          <p>An active 2027 class sent with a pre-2027 basis such as "Gross Sales" falls to the per-unit branch and prices a thousand times too high, with no message.</p>
+          <button class="go" data-target="cw27">See where →</button>
+        </div>
+      </div>
+
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart LR
+    elp(["ELP for state and class, or the carrier's override"]) --> base["BaseRate = ELP x LCM [x claims-made multiplier]"]:::step
+    base --> rate["FinalRate = BaseRate x (ILF - deductible factor) x policy modifiers"]:::step
+    rate --> basis{"Premium basis?"}
+    basis -->|"per $1,000 basis"| div["Premium = FinalRate x exposure / 1000"]:::final
+    basis -->|"per-unit basis"| unit["Premium = FinalRate x exposure"]:::final
+    basis -->|"blank or refer to company"| ref["0 pre-2027, $1 in 2027"]:::openq
+
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    class basis gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>The premium basis decides the arithmetic: per $1,000, per unit, or a referral. It is the most consequential input on a liquor risk, and in 2027 its whole vocabulary changes.</li>
+            <li>Liquor borrows two Products tables: the claims-made multiplier and the minimum premium (at a hardcoded table letter "C"). The manual directs both.</li>
+            <li>Limits are "each common cause" and aggregate, with no <code>" CSL"</code> suffix in any edition. Illinois rates from its own table keyed on the aggregate alone, and Minnesota overrides the ILF rule with a sub-limit lookup.</li>
+          </ul>
+        </div>
+        <div class="delta"><strong>New York disables claims-made liquor.</strong> NY's <code>SetBaseRate</code> requires an Occurrence form, and its claims-made rules are constant stubs. A claims-made liquor risk in NY prices 0 with no message. NY stays on pre-2027 at 2027-04-01.</div>
+      </div>
+    </section>
+
+    <!-- ============================= PRE-2027 ============================= -->
+    <section class="sheet-view" id="view-cw23">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Liquor Liability (subline 332, Rule 45)</span></div>
+        <div class="field"><span class="k">Edition</span><span class="v">Pre-2027: CW 20231201 V03, 20260101 V01, 20261001 V01 identical. CA's 20231201 V02 lacks only the "supplied value wins" guards.</span></div>
+        <div class="field"><span class="k">Master chain</span><span class="v">ErcProcess → ErcSetRatesAndFactors (12) → ErcRate (4) → policy-level LiquorPremiumToReachMin</span></div>
+        <div class="field"><span class="k">Rate sources</span><span class="v">ELP by state and class · ILF by state and the two limits · LCM, deductible, claims-made and minimum factors countrywide</span></div>
+        <div class="field wide"><span class="k">Coverage gate</span><span class="v">The policy subline must be "Liquor", or ErcProcess writes Premium 0. Silent zeros: blank class description, blank coverage form, blank or "Refer To Co." basis, a missing policy modifier, a premium under 0.5, and a Company class without an override (ISO messages that one).</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec','clusterBkg':'#f7f9f6','clusterBorder':'#7d8f8a'}}}%%
+flowchart TD
+    subgraph POL["POLICY"]
+        start(["Liquor Liability policy record"]) --> subQ{"Subline = Liquor?"}
+        subQ -->|"No"| off["CoverageOnPolicyIndicator = 0: ErcProcess writes Premium 0"]:::zero
+    end
+
+    subgraph SRF["ErcSetRatesAndFactors · 12 steps"]
+        basis["PremiumBasis = LiquorPremiumBasis, else empty · ELP and deductible overrides copied, else 0"]:::step
+        basis --> elpQ{"Class description and code set?"}
+        elpQ -->|"No"| elp0["ELP = 0.0, and an ELP override is ignored"]:::openq
+        elpQ -->|"Yes"| ovQ{"ELP override?"}
+        ovQ -->|"Yes"| elpOv["ELP = LiquorELPOverride"]:::step
+        ovQ -->|"No"| elpLk["ELP = lookup LiquorELP(state, class). No loss-cost table exists for liquor"]:::step
+        elpLk -.->|"Company class"| comp["Company class: ELP 0, ISO message 'Must enter Estimated Loss Potential Override', premium 0. Underwriting mode: R29"]:::openq
+        elp0 --> lcm["LCM = LiquorLCM, CW row 1: a placeholder for the carrier's own multiplier (E15)"]:::step
+        elpOv --> lcm
+        elpLk --> lcm
+        lcm --> cm["Claims made: YearInClaimsMade from the policy, CMM = ProdsCompldOpsClaimsMadeMultiplier(min(year, 5)), Products' table. Otherwise 1.0"]:::step
+        cm --> formQ{"Coverage form?"}
+        formQ -->|"blank"| br0["BaseRate = 0.0, no message"]:::openq
+        formQ -->|"Claims Made"| brCM["BaseRate = round(ELP x LCM x CMM, 3)"]:::step
+        formQ -->|"any other value"| brOcc["BaseRate = round(ELP x LCM, 3)"]:::step
+        br0 --> ilfQ{"Description and both limits set?"}
+        brCM --> ilfQ
+        brOcc --> ilfQ
+        ilfQ -->|"Yes"| ilf["ILF = ILFLiquor(state, each common cause, aggregate). IL: ILFLiquorStException on the aggregate alone · MN: sub-limit lookup"]:::step
+        ilfQ -->|"No"| ilf0["ILF = 0.0"]:::zero
+        ilf --> dedQ{"Description and deductible set?"}
+        ilf0 --> dedQ
+        dedQ -->|"No"| ded0["DeductibleFactor = 0.0"]:::step
+        dedQ -->|"Yes"| dovQ{"Deductible override?"}
+        dovQ -->|"Yes"| dedOv["DeductibleFactor = override"]:::step
+        dovQ -->|"No"| dedLk["DeductibleFactor = DedFactorLiquor(CW, deductible): all 21 options are 0 by rule"]:::step
+        dedLk --> guardQ{"Per Claim option?"}
+        guardQ -->|"Yes, 10 options"| guardY["ISO message: Must enter Deductible Factor Override"]:::step
+        guardQ -->|"No: Per Common Cause or No Deductible"| guardN["Per Common Cause prices as no deductible, with no message (OI-44)"]:::openq
+        ded0 --> filf["FinalILF = round(ILF - DeductibleFactor, 3)"]:::step
+        dedOv --> filf
+        guardY --> filf
+        guardN --> filf
+        filf --> fr["FinalRate = round(BaseRate x FinalILF x PackageMod x ExpMod x ExpenseMod x ModToUse, 3). A missing modifier reads as 0 and zeroes the rate"]:::step
+    end
+
+    subgraph RT["ErcRate · 4 steps"]
+        minp["MinimumPremium = ProdsCompldOpsMinPremium(CW, 'C'), hardcoded · MinPremium = round(Min x FinalILF, 0) when MiscIfAnyBasis = No. Filed value 0"]:::step
+        minp --> pbQ{"Premium basis?"}
+        pbQ -->|"blank or 'Refer To Co.'"| pRef["Premium = 0.0: a referral, not a price. Underwriting mode: R03 on the sentinel"]:::openq
+        pbQ -->|"one of nine per-1000 bases"| pDiv["Admissions, Area, Gallons, Gross Sales, Passenger Days, Payroll, Total Cost, Total Operating Expenses, Vehicles: Premium = round(FinalRate x LiquorExposure / 1000, 0)"]:::step
+        pbQ -->|"any other value"| pUnit["Premium = round(FinalRate x LiquorExposure, 0)"]:::step
+        pDiv --> zQ{"Premium = 0?"}
+        pUnit --> zQ
+        zQ -->|"Yes"| z0["Stays 0, including any premium under 0.5. No floor in this edition"]:::zero
+        zQ -->|"No"| ok["Premium stands, PremiumIndicator = 1"]:::final
+    end
+
+    subgraph PL["POLICY LEVEL · LiquorPremiumToReachMin"]
+        topQ{"Top-up conditions met?"}
+        topQ -->|"Yes"| topY["PackagePolicy and multistate blank, a class with MiscIfAnyBasis = No: top-up = max(0, max MinPremium - sum of class Premiums)"]:::final
+        topQ -->|"No"| topN["Top-up = 0"]:::step
+        topY --> kern["Kernel: total check · underwriting mode: R29 on Company classes, R03 on refer bases, R14 on every liquor risk (over-broad)"]:::eng
+        topN --> kern
+    end
+
+    subQ -->|"Yes"| basis
+    fr --> minp
+    ok --> topQ
+    z0 --> topQ
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class subQ,elpQ,ovQ,formQ,ilfQ,dedQ,dovQ,guardQ,pbQ,zQ,topQ gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>The class description gates the ELP, the ILF and the deductible. A risk with the code but no description gets ELP 0 and ILF 0 and prices 0, with no message.</li>
+            <li>The base rate needs a filled coverage form. Any value other than "Claims Made" takes the occurrence formula. Only a blank form gives 0.</li>
+            <li>Of the 21 zero deductible factors, ISO guards only the 10 "Per Claim" options with a message. A "Per Common Cause" deductible is priced as no deductible, silently (OI-44).</li>
+            <li>The minimum premium uses Products' table at letter "C", which is 0 everywhere. The top-up is always 0 on filed data.</li>
+          </ul>
+        </div>
+        <div>
+          <div class="delta openq"><strong>Silent zeros, 2026-10-05.</strong> Six inputs price 0 with no message: a blank description, a blank coverage form, a blank or "Refer To Co." basis, a missing policy modifier, and any premium that rounds below 0.5. A Company class also prices 0, but ISO messages it. Underwriting mode adds R03 for the refer sentinel and R29 for Company classes.</div>
+          <div class="delta"><strong>R14 over-fires.</strong> The engine's zero-factor detector raises R14 on any liquor lookup that returns 0. Since "No Deductible" is a filed 0, every liquor risk is referred in underwriting mode, though the register meant only the ten unguarded Per Common Cause options.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================= CW 2027 ============================= -->
+    <section class="sheet-view" id="view-cw27">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Liquor Liability (subline 332, Rule 45)</span></div>
+        <div class="field"><span class="k">Edition</span><span class="v">CW 20270401 V01 and V02, identical in this rule file. Parent of 46 jurisdictions from 2027-04-01.</span></div>
+        <div class="field"><span class="k">Master chain</span><span class="v">ErcProcess → ErcSetRatesAndFactors (12) → ErcRate (2: SetPremium, SetPremiumIndicator). The top-up record has no rating rules.</span></div>
+        <div class="field"><span class="k">Rate sources</span><span class="v">Same tables as pre-2027. The minimum-premium table is emptied, and 16 new class codes (50941–50957) replace the old ones.</span></div>
+        <div class="field wide"><span class="k">Changed vs pre-2027</span><span class="v">SetMinimumPremium and SetMinPremium removed. SetELP, SetILF and SetDeductibleFactor gate on the class code instead of the description. SetPremium has a new basis vocabulary, no subline test (the coverage gate still requires "Liquor") and a $1 floor.</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec','clusterBkg':'#f7f9f6','clusterBorder':'#7d8f8a'}}}%%
+flowchart TD
+    subgraph POL["POLICY"]
+        start(["Liquor Liability policy record, CW 2027"]) --> subQ{"Subline = Liquor?"}
+        subQ -->|"No"| off["CoverageOnPolicyIndicator = 0: ErcProcess writes Premium 0"]:::zero
+    end
+
+    subgraph SRF["ErcSetRatesAndFactors · 12 steps"]
+        basis["PremiumBasis = LiquorPremiumBasis, else empty · ELP and deductible overrides copied, else 0"]:::step
+        basis --> elpQ{"Class code set?"}
+        elpQ -->|"No"| elp0["ELP = 0.0"]:::zero
+        elpQ -->|"Yes"| ovQ{"ELP override?"}
+        ovQ -->|"Yes"| elpOv["ELP = LiquorELPOverride. The description no longer gates it"]:::step
+        ovQ -->|"No"| elpLk["ELP = lookup LiquorELP(state, class)"]:::step
+        elpLk --> found{"Class filed in the state?"}
+        found -->|"No: a retired pre-2027 code"| elpNull["ELP = null, so BaseRate is 0 and the $1 floor prices it. No refusal: there is no loss-cost node"]:::openq
+        found -->|"Yes"| lcm
+        elpLk -.->|"Company class, e.g. basis 'Refer to Company'"| comp["Company class: ELP 0, ISO message, $1 floor. Underwriting mode: R29"]:::openq
+        elp0 --> lcm["LCM = LiquorLCM, CW row 1 (E15)"]:::step
+        elpOv --> lcm
+        elpNull --> lcm
+        lcm --> cm["Claims made: CMM = ProdsCompldOpsClaimsMadeMultiplier(min(year, 5)). Otherwise 1.0"]:::step
+        cm --> formQ{"Coverage form?"}
+        formQ -->|"blank"| br0["BaseRate = 0.0, then the $1 floor"]:::openq
+        formQ -->|"Claims Made"| brCM["BaseRate = round(ELP x LCM x CMM, 3)"]:::step
+        formQ -->|"any other value"| brOcc["BaseRate = round(ELP x LCM, 3)"]:::step
+        br0 --> ilfQ{"Class code and both limits set?"}
+        brCM --> ilfQ
+        brOcc --> ilfQ
+        ilfQ -->|"Yes"| ilf["ILF = ILFLiquor(state, each common cause, aggregate). IL and MN overrides as before"]:::step
+        ilfQ -->|"No"| ilf0["ILF = 0.0"]:::zero
+        ilf --> dedQ{"Class code and deductible set?"}
+        ilf0 --> dedQ
+        dedQ -->|"No"| ded0["DeductibleFactor = 0.0"]:::step
+        dedQ -->|"Yes"| dedLk["DeductibleFactor = override, else DedFactorLiquor: all 21 options 0. Per Claim raises ISO's message, Per Common Cause does not (OI-44)"]:::openq
+        ded0 --> filf["FinalILF = round(ILF - DeductibleFactor, 3)"]:::step
+        dedLk --> filf
+        filf --> fr["FinalRate = round(BaseRate x FinalILF x PackageMod x ExpMod x ExpenseMod x ModToUse, 3)"]:::step
+    end
+
+    subgraph RT["ErcRate · 2 steps"]
+        pbQ{"Premium basis?"}
+        pbQ -->|"blank or 'Refer to Company'"| p0["0, then the floor"]:::openq
+        pbQ -->|"two Gross Sales bases"| pDiv["Gross Sales of Alcoholic Beverages, or of Food and Beverages: Premium = round(FinalRate x LiquorExposure / 1000, 0)"]:::step
+        pbQ -->|"any other value"| pUnit["Each License, Each Licensed Location, Each Self-serve Station: Premium = round(FinalRate x LiquorExposure, 0)"]:::step
+        pUnit -.->|"a pre-2027 value"| stale["'Gross Sales' or the old 'Refer To Co.' spelling also lands here: an active class prices at 1000x, with no message"]:::openq
+        p0 --> floorQ{"Rounded 0, exposure on?"}
+        pDiv --> floorQ
+        pUnit --> floorQ
+        floorQ -->|"Yes"| floored["Rounded premium 0 and LiquorExposure above 0: Premium = 1.0, the $1 floor. Catches premiums under 0.5 too"]:::final
+        floorQ -->|"No"| ok["Premium stands, PremiumIndicator = 1"]:::final
+        floorQ -->|"No, exposure 0"| stays0["Premium stays 0.0"]:::zero
+    end
+
+    subgraph PL["POLICY LEVEL"]
+        nomin["LiquorPremiumToReachMin holds no rating rules: no minimum premium exists"]:::zero
+        nomin --> kern["Kernel: total check · underwriting mode: R29, R03, and R14 on every liquor risk"]:::eng
+    end
+
+    subQ -->|"Yes"| basis
+    fr --> pbQ
+    floored --> nomin
+    ok --> nomin
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class subQ,elpQ,ovQ,found,formQ,ilfQ,dedQ,pbQ,floorQ gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>The premium rule sorts bases into three groups: blank or "Refer to Company", the two "Gross Sales of …" bases, and <em>everything else</em>, which is per unit. Any pre-2027 value falls into the per-unit group, including "Gross Sales" and the old "Refer To Co." spelling. On an active 2027 class that is a premium 1,000 times too high.</li>
+            <li>The $1 floor tests the rounded premium, as Premises and Products do (OCP tests the unrounded sum). So a blank basis, a refer basis, a blank form, a retired class and a tiny exposure all price at $1.</li>
+            <li>A blank class description no longer zeroes anything. The class code now gates the ELP, the ILF and the deductible.</li>
+            <li>The statistical-code rule still tests the old vocabulary, so reported exposure on the Gross Sales bases is 1,000× too large (OI-43). The premium is unaffected.</li>
+          </ul>
+        </div>
+        <div>
+          <div class="delta openq"><strong>New finding, 2026-10-05.</strong> An active 2027 class rated with the pre-2027 basis "Gross Sales" priced at 681,200 against 681 with "Gross Sales of Alcoholic Beverages". The old "Refer To Co." spelling did the same. ISO raises no message. Underwriting mode refers it only through R14, which fires on every liquor risk anyway, and through R03 for the refer spelling.</div>
+          <div class="delta"><strong>vs. pre-2027.</strong> The rate build-up is identical apart from which field gates it. The minimum premium is gone, the floor arrives, and the basis vocabulary is replaced. Any submission or mapping that carries liquor bases across the 2027-04-01 boundary has to translate them.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================= SIDE BY SIDE ============================= -->
+    <section class="sheet-view" id="view-diff">
+      <div class="intro">
+        <h2>Ten differences, every one read from the rule XML</h2>
+        <p>The rule file goes from 50 rules to 48: 2 removed and 5 changed. Each pre-2027 cell holds for CW 20231201 V03, 20260101 V01 and 20261001 V01 (and CA's V02, which only lacks the override guards). Each CW 2027 cell holds for 20270401 V01 and V02.</p>
+      </div>
+      <div class="tablewrap">
+        <table class="grid">
+          <thead><tr><th>Step</th><th>Pre-2027</th><th>CW 2027</th><th>Premium effect</th></tr></thead>
+          <tbody>
+            <tr><th>Chain length</th><td>12 + 4 steps</td><td>12 + 2 steps</td><td>—</td></tr>
+            <tr><th>SetELP gate</th><td>Class description and code</td><td>Class code</td><td>Blank description: 0 vs a normal premium</td></tr>
+            <tr><th>SetILF gate</th><td>Description and both limits</td><td>Class code and both limits</td><td>Same</td></tr>
+            <tr><th>SetDeductibleFactor gate</th><td>Description and deductible</td><td>Class code and deductible</td><td>None (factors all 0)</td></tr>
+            <tr><th>Per-$1,000 bases</th><td>Admissions, Area, Gallons, Gross Sales, Passenger Days, Payroll, Total Cost, Total Operating Expenses, Vehicles</td><td>Gross Sales of Alcoholic Beverages; Gross Sales of Food and Beverages</td><td>Every old basis becomes per-unit: 1000×</td></tr>
+            <tr><th>Refer sentinel</th><td><code>"Refer To Co."</code></td><td><code>"Refer to Company"</code></td><td>Old spelling rates per unit in 2027 (E17)</td></tr>
+            <tr><th>Subline test in SetPremium</th><td>Must be "Liquor"</td><td>None</td><td>None: the coverage gate still requires "Liquor"</td></tr>
+            <tr><th>Zero premium</th><td>Stays 0</td><td>$1 when the rounded premium is 0 and exposure &gt; 0</td><td>Refer and blank bases: 0 → 1</td></tr>
+            <tr><th>Minimum premium</th><td>ProdsCompldOpsMinPremium letter "C" × FinalILF; policy top-up</td><td>Removed; table emptied</td><td>Nil on filed data (value 0)</td></tr>
+            <tr><th>Class list</th><td>Pre-2027 codes</td><td>50941–50957; old codes have no ELP row</td><td>Old codes rate $1, no refusal</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="intro"><p>Unchanged in both: the "Liquor" coverage gate, no loss cost, the ELP override, the LCM placeholder (CW row 1), the borrowed Products claims-made table, SetBaseRate (blank form → 0), the IL and MN ILF overrides, all-zero deductible factors with the Per Claim guard only, SetFinalILF, SetFinalRate, NY's claims-made shutdown, and the engine's R29, R03 and over-broad R14.</p></div>
+    </section>
+
+    <!-- ============================= REVIEW ============================= -->
+    <section class="sheet-view" id="view-review">
+      <div class="intro">
+        <h2>What the all-coverage page got wrong or left out for Liquor</h2>
+        <p><code>gl-rating-chains.html</code> drew one pre-2027 Liquor chain and left CW 2027 to a note. Its 2026-10-02 corrections sat in notes under a diagram that was never redrawn. On 2026-10-05 that sheet was removed and now links here.</p>
+      </div>
+      <div class="tablewrap">
+        <table class="grid">
+          <thead><tr><th>#</th><th>All-coverage page said</th><th>Engine / XML shows</th><th>Kind</th></tr></thead>
+          <tbody>
+            <tr><th>1</th><td>One chain; CW 2027 "not modeled above"</td><td>Two chains, CW 2027 drawn in full</td><td>restructured</td></tr>
+            <tr><th>2</th><td>—</td><td><strong>Stale basis in 2027:</strong> an active class sent with "Gross Sales" or "Refer To Co." rates per unit, 1000× the correct premium, with no message</td><td><span class="tag bad">new finding</span></td></tr>
+            <tr><th>3</th><td>Coverage form "other/absent" → BaseRate 0</td><td>Only a <em>blank</em> form gives 0. Any filled value other than "Claims Made" takes the occurrence formula.</td><td>imprecise</td></tr>
+            <tr><th>4</th><td>Premium gate: "Subline = 'Liquor'" inside SetPremium</td><td>True pre-2027, but redundant. The coverage-on-policy gate already requires "Liquor" in both editions, so dropping it in 2027 changes nothing.</td><td>clarified</td></tr>
+            <tr><th>5</th><td>ILF override attributed to Illinois only</td><td>IL uses ILFLiquorStException; MN overrides SetILF with its own sub-limit lookup</td><td>incomplete</td></tr>
+            <tr><th>6</th><td>Refer basis → 0 in all editions</td><td>0 pre-2027, $1 under CW 2027 (the floor catches it)</td><td>out of date in diagram</td></tr>
+            <tr><th>7</th><td>Deductible guard covers "10/21" options</td><td>Confirmed: Per Claim raises "Must enter Deductible Factor Override"; Per Common Cause prices as no deductible, silently</td><td>confirmed</td></tr>
+            <tr><th>8</th><td>No refusal or referral layer drawn</td><td>Drawn: R29, R03, and R14, which fires on every liquor risk in underwriting mode. Retired 2027 classes rate $1 with no refusal.</td><td>missing</td></tr>
+            <tr><th>9</th><td>CW 2027 floor described as "zero-computing premium"</td><td>Tests the rounded premium, so it also catches a premium under 0.5 (unlike OCP's unrounded test)</td><td>clarified</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="doc-footer">
+  Sources: the built engine (<strong>gl_engine</strong> at 62eb125: <code>rating/kernel.py</code>, <code>rating/referrals.py</code>, <code>resolve/</code>, <code>interp/</code>), probed on 2026-10-05 with ISO's Alabama liquor STC submission re-dated to each edition. ISO rule XML and rate tables are under <code>F:\ISO_ERC_Files\General_Liability</code>. Companion docs are <code>GL_Algorithm\LiquorLiability_RatingAlgorithms.md</code> (reconciled 2026-10-02) and <code>docs\gates\GATE-332-LIQUOR-LIABILITY.md</code>. Table counts and the state-override census are the 2026-10-02 figures, not re-measured.
+</footer>
+
+<script>
+  (function () {
+    var toc = document.getElementById('toc');
+    var main = document.getElementById('main');
+
+    function activate(target) {
+      var views = main.querySelectorAll('.sheet-view');
+      for (var i = 0; i < views.length; i++) views[i].classList.remove('active');
+      var view = document.getElementById('view-' + target);
+      if (view) view.classList.add('active');
+
+      var links = toc.querySelectorAll('.navlink');
+      for (var j = 0; j < links.length; j++) {
+        links[j].classList.toggle('active', links[j].getAttribute('data-target') === target);
+      }
+      main.scrollTop = 0;
+      window.scrollTo(0, 0);
+    }
+
+    document.addEventListener('click', function (e) {
+      var btn = e.target.closest('button[data-target]');
+      if (btn) activate(btn.getAttribute('data-target'));
+    });
+  })();
+</script>
+
+<style>.mermaid-rendering .sheet-view{display:block!important}</style>
+<script type="module">
+  // Render every diagram once, with all sheets briefly visible so hidden tabs get real sizes.
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({ startOnLoad: false, securityLevel: "strict", flowchart: { wrappingWidth: 260 } });
+  document.documentElement.classList.add("mermaid-rendering");
+  try { await mermaid.run({ querySelector: "pre.mermaid" }); }
+  finally { document.documentElement.classList.remove("mermaid-rendering"); }
+</script>
+</body>
+</html>

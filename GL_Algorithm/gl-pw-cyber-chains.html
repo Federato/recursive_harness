@@ -1,0 +1,693 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Product Withdrawal &amp; Cyber Rating Chains</title>
+<style>
+  :root {
+    --ink: #101b24;
+    --paper: #edf0ec;
+    --paper-line: #c7d2ce;
+    --blueprint: #2e6e8e;
+    --blueprint-soft: #e4ebef;
+    --stamp: #c77f32;
+    --caution: #b14b39;
+    --ledger: #3f8f6e;
+    --surface: #f4f6f3;
+    --panel: #ffffff;
+    --sidebar: #e8ede8;
+    --text: var(--ink);
+    --muted: #5b6b72;
+    --border: #cdd6d2;
+    --font-display: Cambria, 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+    --font-body: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+    --font-mono: 'Cascadia Code', 'Cascadia Mono', Consolas, 'SFMono-Regular', ui-monospace, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --surface: #0b141a;
+      --panel: #101b22;
+      --sidebar: #0e1a20;
+      --text: #e7ece9;
+      --muted: #93a3a0;
+      --border: #223138;
+      --blueprint-soft: #16232b;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --surface: #0b141a;
+    --panel: #101b22;
+    --sidebar: #0e1a20;
+    --text: #e7ece9;
+    --muted: #93a3a0;
+    --border: #223138;
+    --blueprint-soft: #16232b;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; background: var(--surface); color: var(--text);
+    font-family: var(--font-body); -webkit-font-smoothing: antialiased;
+  }
+  body { display: flex; flex-direction: column; min-height: 100vh; }
+  a { color: inherit; }
+  code { font-family: var(--font-mono); font-size: 0.92em; }
+  ::selection { background: var(--stamp); color: #101b24; }
+
+  /* header */
+  header.masthead {
+    display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap;
+    padding: 1.1rem 1.6rem; border-bottom: 1px solid var(--border);
+    background: var(--panel);
+  }
+  header.masthead h1 {
+    font-family: var(--font-display); font-weight: 600; font-size: 1.35rem;
+    margin: 0; letter-spacing: 0.01em; text-wrap: balance;
+  }
+  header.masthead .rule { width: 1px; align-self: stretch; background: var(--border); }
+  header.masthead p { margin: 0; font-size: 0.82rem; color: var(--muted); max-width: 52ch; }
+  header.masthead .src {
+    margin-left: auto; font-family: var(--font-mono); font-size: 0.72rem;
+    color: var(--muted); text-align: right; line-height: 1.5;
+  }
+
+  /* shell */
+  .shell { display: flex; flex: 1; min-height: 0; }
+
+  nav.toc {
+    width: 258px; flex: none; background: var(--sidebar);
+    border-right: 1px solid var(--border);
+    padding: 1rem 0 2rem; overflow-y: auto;
+  }
+  nav.toc .group-label {
+    font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--muted); padding: 0.5rem 1.2rem 0.35rem;
+  }
+  nav.toc button.navlink {
+    display: block; width: 100%; text-align: left; background: none; border: none;
+    font-family: var(--font-body); font-size: 0.86rem; color: var(--text);
+    padding: 0.42rem 1.2rem 0.42rem 1.6rem; cursor: pointer;
+    border-left: 3px solid transparent;
+  }
+  nav.toc button.navlink:hover { background: var(--blueprint-soft); }
+  nav.toc button.navlink.active {
+    background: var(--blueprint-soft); border-left-color: var(--blueprint); font-weight: 600;
+  }
+  nav.toc button.navlink .chain-len {
+    display: block; font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); font-weight: 400;
+  }
+  nav.toc hr { border: none; border-top: 1px solid var(--border); margin: 0.6rem 1.2rem; }
+
+  nav.toc .legend {
+    margin: 1rem 1.2rem 0; padding: 0.8rem 0.9rem; border: 1px solid var(--border);
+    border-radius: 3px; background: var(--panel);
+  }
+  nav.toc .legend h4 {
+    margin: 0 0 0.5rem; font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--muted); font-weight: 600;
+  }
+  nav.toc .legend .row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.74rem; margin-bottom: 0.35rem; }
+  nav.toc .legend .swatch { width: 13px; height: 13px; flex: none; border-radius: 2px; border-width: 1.5px; border-style: solid; }
+  .sw-gate { background: #f4e4ce; border-color: #c77f32; }
+  .sw-zero { background: #f3dcd6; border-color: #b14b39; }
+  .sw-final { background: #dceee4; border-color: #3f8f6e; }
+  .sw-step { background: #e4ebef; border-color: #2e6e8e; }
+  .sw-openq { background: #f4e4ce; border-color: #b14b39; border-style: dashed !important; }
+  .sw-engine { background: #e6e1f0; border-color: #5a4c8a; }
+
+  main { flex: 1; min-width: 0; overflow-y: auto; padding: 1.6rem 2rem 4rem; }
+
+  .intro { max-width: 70ch; margin-bottom: 1.4rem; }
+  .intro h2 { font-family: var(--font-display); font-size: 1.25rem; margin: 0 0 0.5rem; text-wrap: balance; }
+  .intro p { font-size: 0.92rem; line-height: 1.6; color: var(--muted); margin: 0 0 0.6rem; }
+
+  /* tables */
+  .tablewrap { overflow-x: auto; margin-bottom: 1.4rem; }
+  table.grid { border-collapse: collapse; width: 100%; max-width: 1100px; background: var(--panel); }
+  table.grid caption {
+    text-align: left; font-family: var(--font-mono); font-size: 0.7rem; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem;
+  }
+  table.grid th, table.grid td {
+    border: 1px solid var(--border); padding: 0.5rem 0.7rem; font-size: 0.82rem;
+    text-align: left; vertical-align: top; line-height: 1.45;
+  }
+  table.grid thead th {
+    font-family: var(--font-mono); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--muted); background: var(--blueprint-soft); font-weight: 600;
+  }
+  table.grid tbody th { font-weight: 600; white-space: nowrap; }
+  table.grid td.num { font-family: var(--font-mono); text-align: right; white-space: nowrap; }
+  table.grid tr.hl td, table.grid tr.hl th { background: var(--blueprint-soft); }
+  table.grid td .tag {
+    font-family: var(--font-mono); font-size: 0.66rem; padding: 0.05rem 0.35rem; border-radius: 2px;
+    border: 1px solid var(--border); color: var(--muted); white-space: nowrap;
+  }
+  table.grid td .tag.a { border-color: var(--blueprint); color: var(--blueprint); }
+  table.grid td .tag.b { border-color: var(--ledger); color: var(--ledger); }
+  table.grid td .tag.bad { border-color: var(--caution); color: var(--caution); }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.9rem; max-width: 1100px; margin-bottom: 1.4rem; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 3px; padding: 0.9rem 1rem; }
+  .card .k { font-family: var(--font-mono); font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
+  .card .v { font-family: var(--font-display); font-size: 1.5rem; margin: 0.2rem 0 0.25rem; font-variant-numeric: tabular-nums; }
+  .card p { margin: 0; font-size: 0.8rem; color: var(--muted); line-height: 1.45; }
+  .card button.go {
+    margin-top: 0.6rem; background: none; border: 1px solid var(--blueprint); color: var(--blueprint);
+    font-family: var(--font-mono); font-size: 0.7rem; padding: 0.3rem 0.6rem; border-radius: 2px; cursor: pointer;
+  }
+  .card button.go:hover { background: var(--blueprint-soft); }
+
+  /* sheet */
+  .sheet-view { display: none; }
+  .sheet-view.active { display: block; }
+
+  .titleblock {
+    display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--border);
+    margin-bottom: 1.1rem; background: var(--panel);
+  }
+  .titleblock .field { padding: 0.6rem 0.9rem; border-right: 1px solid var(--border); }
+  .titleblock .field:last-child { border-right: none; }
+  .titleblock .field .k {
+    font-family: var(--font-mono); font-size: 0.63rem; text-transform: uppercase; letter-spacing: 0.07em;
+    color: var(--muted); display: block; margin-bottom: 0.15rem;
+  }
+  .titleblock .field .v { font-family: var(--font-mono); font-size: 0.82rem; color: var(--text); line-height: 1.35; }
+  .titleblock .field.wide { grid-column: span 4; border-top: 1px solid var(--border); border-right: none; }
+
+  .sheet {
+    background: var(--paper); border: 1px solid var(--paper-line); border-radius: 2px;
+    padding: 1.4rem 1.2rem 1rem; position: relative; overflow-x: auto;
+    background-image:
+      linear-gradient(var(--paper-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--paper-line) 1px, transparent 1px);
+    background-size: 28px 28px; background-position: -1px -1px;
+    background-color: var(--paper);
+  }
+  .sheet .corner { position: absolute; width: 14px; height: 14px; }
+  .sheet .corner.tl { top: 6px; left: 6px; border-top: 1.5px solid #7d8f8a; border-left: 1.5px solid #7d8f8a; }
+  .sheet .corner.tr { top: 6px; right: 6px; border-top: 1.5px solid #7d8f8a; border-right: 1.5px solid #7d8f8a; }
+  .sheet .corner.bl { bottom: 6px; left: 6px; border-bottom: 1.5px solid #7d8f8a; border-left: 1.5px solid #7d8f8a; }
+  .sheet .corner.br { bottom: 6px; right: 6px; border-bottom: 1.5px solid #7d8f8a; border-right: 1.5px solid #7d8f8a; }
+  .sheet pre.mermaid { margin: 0; background: transparent; min-width: 760px; color: #101b24; }
+
+  .notes { margin-top: 1.1rem; display: grid; grid-template-columns: 1.4fr 1fr; gap: 1.2rem; }
+  .notes h3 {
+    font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--muted); margin: 0 0 0.5rem;
+  }
+  .notes ul { margin: 0; padding-left: 1.1rem; font-size: 0.86rem; line-height: 1.55; }
+  .notes ul li { margin-bottom: 0.4rem; }
+  .notes .delta { border: 1px solid var(--border); background: var(--panel); padding: 0.8rem 0.9rem; border-radius: 3px; font-size: 0.86rem; line-height: 1.55; }
+  .notes .delta.openq { border-color: var(--caution); }
+  .notes .delta + .delta { margin-top: 0.8rem; }
+
+  h3.section {
+    font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--muted); margin: 1.6rem 0 0.6rem;
+  }
+
+  footer.doc-footer {
+    padding: 1rem 2rem 2rem; font-size: 0.76rem; color: var(--muted); border-top: 1px solid var(--border);
+  }
+  footer.doc-footer strong { color: var(--text); }
+
+  @media (max-width: 900px) {
+    .notes { grid-template-columns: 1fr; }
+    .titleblock { grid-template-columns: 1fr 1fr; }
+    .titleblock .field.wide { grid-column: span 2; }
+  }
+  @media (max-width: 720px) {
+    .shell { flex-direction: column; }
+    nav.toc { width: 100%; border-right: none; border-bottom: 1px solid var(--border); padding: 0.6rem 0; }
+    nav.toc .legend { display: none; }
+    main { padding: 1.2rem 16px 3rem; }
+    header.masthead { padding: 1rem 16px; }
+    header.masthead .src { margin-left: 0; text-align: left; }
+    header.masthead .rule { display: none; }
+    .titleblock { grid-template-columns: 1fr; }
+    .titleblock .field { border-right: none; border-bottom: 1px solid var(--border); }
+    .titleblock .field.wide { grid-column: span 1; }
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <h1>Product Withdrawal &amp; Cyber Rating Chains</h1>
+  <div class="rule"></div>
+  <p>Every gate, branch and terminal for the five coverages ISO groups with Product Withdrawal: Product Withdrawal Coverage A and B (subline 365), Limited Product Withdrawal (CG 04 36), Loss of Electronic Data (CG 04 37 / 04 71 / 04 95) and Cyber Incident Liability, drawn for pre-2027 and CW 2027. Every rule and branch is checked against the built engine (<code>gl_engine</code>) and ISO's rule XML as of 2026-10-05.</p>
+  <div class="src">Engine at 62eb125 (GL rating path unchanged since the 630ba2f reconciliation)<br>11 rule files: ExclusionCoverageA/B, ProductWithdrawalCoverageForm, LimitedProductWithdrawal×3, LossOfElectronicData×2, CyberIncidentLiability×2<br>Companion: ProductWithdrawalCyber_RatingAlgorithms.md · LossOfElectronicData_RatingAlgorithms.md · GATE-365</div>
+</header>
+
+<div class="shell">
+  <nav class="toc" id="toc">
+    <button class="navlink active" data-target="overview">Overview<span class="chain-len">five coverages, all priced off a host</span></button>
+    <hr>
+    <div class="group-label">Decision chains</div>
+    <button class="navlink" data-target="cw23">Pre-2027<span class="chain-len">3 diagrams · no floors · engine stops on Limited PW</span></button>
+    <button class="navlink" data-target="cw27">CW 2027<span class="chain-len">3 diagrams · new deductible table · $1 floors</span></button>
+    <hr>
+    <div class="group-label">Comparison</div>
+    <button class="navlink" data-target="diff">Side by side<span class="chain-len">12 differences, file by file</span></button>
+    <hr>
+    <div class="group-label">Review</div>
+    <button class="navlink" data-target="review">Why the old sheets were replaced<span class="chain-len">11 items · 3 new findings</span></button>
+
+    <div class="legend">
+      <h4>Reading the chains</h4>
+      <div class="row"><span class="swatch sw-gate"></span> gate / branch condition</div>
+      <div class="row"><span class="swatch sw-step"></span> computed factor</div>
+      <div class="row"><span class="swatch sw-final"></span> premium resolves</div>
+      <div class="row"><span class="swatch sw-zero"></span> zero, refusal or clamp</div>
+      <div class="row"><span class="swatch sw-openq"></span> silent gap / open question</div>
+      <div class="row"><span class="swatch sw-engine"></span> engine layer, not an ISO rule</div>
+    </div>
+  </nav>
+
+  <main id="main">
+
+    <!-- ============================= OVERVIEW ============================= -->
+    <section class="sheet-view active" id="view-overview">
+      <div class="intro">
+        <h2>Five coverages that share rule names and no code, each priced off a host</h2>
+        <p>None of these has a rate of its own. Product Withdrawal A and B multiply a small factor into the Products/Completed Operations loss cost or ELP, looked up again from Products' tables on a separate policy record whose subline is "Product Withdrawal". Limited Product Withdrawal is an endorsement on a Products classification and reads that classification's already-computed Products result. LoED and Cyber each rate twice per classification, once on the Premises host and once on the Products host, from the host's computed base rate.</p>
+        <p>The edition is picked the same way as every GL subline: all 51 jurisdictions are on pre-2027 today, and 46 move on 2027-04-01. Edition changes here are narrow: a new Product Withdrawal deductible table, $1 floors, a renamed participation field, subline tests on the LoED and Cyber gates, and bare (non-"CSL") ILF keys.</p>
+      </div>
+
+      <div class="cards">
+        <div class="card">
+          <div class="k">Pre-2027</div>
+          <div class="v">3 chains</div>
+          <p>No floors. Product Withdrawal uses Products' deductible table. The engine cannot finish a Limited Product Withdrawal rating in this edition.</p>
+          <button class="go" data-target="cw23">Open chains →</button>
+        </div>
+        <div class="card">
+          <div class="k">CW 2027</div>
+          <div class="v">3 chains</div>
+          <p>A Product Withdrawal deductible table with bare keys, $1 floors on every coverage, a participation field renamed, and subline tests on four of the six LoED/Cyber gates.</p>
+          <button class="go" data-target="cw27">Open chains →</button>
+        </div>
+        <div class="card">
+          <div class="k">California</div>
+          <div class="v">Off</div>
+          <p>All six LoED and Cyber gates are stubbed to 0 in CA's package, so neither coverage ever rates there in either edition.</p>
+          <button class="go" data-target="diff">Side by side →</button>
+        </div>
+      </div>
+
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart LR
+    prods(["Products/Completed Operations: loss cost, ELP, base rate"]) -->|"tables looked up again"| pw["Product Withdrawal A and B: own policy record, subline 'Product Withdrawal'"]:::step
+    prods -->|"computed value read (E18)"| lpw["Limited Product Withdrawal, CG 04 36 on a Products classification"]:::step
+    prods -->|"computed base rate read (E18)"| hostP["LoED and Cyber, Products host"]:::step
+    premops(["Premises/Operations: loss cost or ELP, LCM, claims-made, size of risk"]) -->|"computed values read (E18)"| hostO["LoED and Cyber, Premises host"]:::step
+    hostP --> grade["x hazard-grade factor by class"]:::final
+    hostO --> grade
+    pw --> fac["x factor by ILF table letter"]:::final
+    lpw --> fac
+
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>Because LoED, Cyber and Limited PW read a host's <em>computed</em> values, they cannot be rated apart from the host, and a host's edition changes reach them without a rule of their own changing.</li>
+            <li>Three factor tables share the A/B/C table-letter axis: Expense 0.25 / 0.19 / 0.13, Liability 0.13 / 0.10 / 0.07, and Limited 0.20 / 0.15 / 0.10. The Limited table's name is misspelled in ERC: <code>ProductWithdrawlFactor</code>.</li>
+            <li>The Products/Completed Operations host for LoED and Cyber is rated even when Products itself is excluded, if the 2027 exclusion answer is missing. See CW 2027.</li>
+          </ul>
+        </div>
+        <div class="delta"><strong>No ISO oracle for these premiums.</strong> The engine reproduces the companion doc's 2026-10-02 numbers and rates ISO's own Illinois Cyber and Missouri Limited PW samples. The full Product Withdrawal coverage has no ISO sample, so it was rated on a second policy record built from the rule file's own input fields.</div>
+      </div>
+    </section>
+
+    <!-- ============================= PRE-2027 ============================= -->
+    <section class="sheet-view" id="view-cw23">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverages</span><span class="v">Product Withdrawal A/B (365) · Limited Product Withdrawal (CG 04 36) · LoED (CG 04 37/71/95) · Cyber Incident Liability</span></div>
+        <div class="field"><span class="k">Edition</span><span class="v">Pre-2027: CW 20231201 V03, 20260101 V01, 20261001 V01, identical in all 11 files</span></div>
+        <div class="field"><span class="k">Rules</span><span class="v">PW A 27 · PW B 27 · coverage form 30 · topper 9 · Limited PW 11 + 24 + 7 + 8 · LoED 25 × 2 · Cyber 23 × 2</span></div>
+        <div class="field"><span class="k">Floors</span><span class="v">None. A zero premium stays 0 on every coverage in this edition.</span></div>
+        <div class="field wide"><span class="k">Engine limits</span><span class="v">Limited PW stops INCOMPLETE at the policy-level SetMinPremium ('ErcNodeSublineParam' not bound). A 2027-style Product Withdrawal deductible ("1,000") misses Products' table and stops at FinalILF. LoED stops without an ILF override in its 13 refer bands.</span></div>
+      </div>
+
+      <h3 class="section">1 · Product Withdrawal, Coverage A (Expense) and B (Liability)</h3>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["Policy record with Subline = Product Withdrawal"]) --> typeQ{"Coverage type?"}
+    typeQ -->|"Expense"| onA["Coverage A on"]:::step
+    typeQ -->|"Liability"| onB["Coverage B on"]:::step
+    typeQ -->|"Both Expense and Liability"| onAB["A and B on, rated separately"]:::step
+    onA --> fac["Factor by the PW ILF table letter: A 0.25 / 0.19 / 0.13 · B 0.13 / 0.10 / 0.07 · LCM = ProductWithdrawalLCM, CW 1"]:::step
+    onB --> fac
+    onAB --> fac
+    fac --> elpQ{"Products ELP text = Company?"}
+    elpQ -->|"No"| elpLk["ELP = ProdsCompldOpsELPFactor(state, class): Products' own table"]:::step
+    elpQ -->|"Yes"| elpOv["ELP = PW ELP override, else 0. ISO message; R29 in underwriting mode"]:::openq
+    elpLk --> ilf["CSLILF = PW ILF(state, letter, PW aggregate limit): state-filed only"]:::step
+    elpOv --> ilf
+    ilf --> dedQ{"Deductible?"}
+    dedQ -->|"override supplied"| dOv["DeductibleFactor = override"]:::step
+    dedQ -->|"'No Deductible' or 'X Per Occurrence'"| dLk["DeductibleFactor = DedFactorProdsCSL(CW, letter, deductible): Products' table"]:::step
+    dedQ -->|"bare '1,000' (2027 style)"| dStop["Lookup misses, factor null: the engine stops INCOMPLETE at FinalILF"]:::eng
+    dOv --> filf["FinalILF = round(CSLILF - DeductibleFactor, 3). No floor"]:::step
+    dLk --> filf
+    filf --> lc["LossCost = ProdsCompldOpsLossCost(state, Products territory, class), 0 if class or territory blank"]:::step
+    lc --> brQ{"LossCost = 0?"}
+    brQ -->|"Yes"| brE["BaseRate = round(ELP x factor x LCM, 3)"]:::step
+    brQ -->|"No"| brL["BaseRate = round(LossCost x factor x LCM, 3)"]:::step
+    brE --> fr["FinalRate = round(BaseRate x FinalILF x PackageMod x ExpMod x ExpenseMod x ModToUse x discount, 3). Discount = round(1 - percent / 100, 3), else 1.0"]:::step
+    brL --> fr
+    fr --> pbQ{"Basis per 1000?"}
+    pbQ -->|"7 bases, incl. Passenger Days"| pD["Premium = round(FinalRate x PW exposure / 1000, 0)"]:::step
+    pbQ -->|"other"| pU["Premium = round(FinalRate x PW exposure, 0)"]:::step
+    pD --> zQ{"Premium = 0?"}
+    pU --> zQ
+    zQ -->|"Yes"| z0["Stays 0: no floor"]:::zero
+    zQ -->|"No"| ok["Premium stands"]:::final
+    ok --> form["Coverage form: MinPremium = round(FinalILF x ProductWithdrawalMinPremium, 0), CW 0 · the PW topper never computes: its indicator is set before the form record exists"]:::zero
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class typeQ,elpQ,dedQ,brQ,pbQ,zQ gate
+        </pre>
+      </div>
+
+      <h3 class="section">2 · Limited Product Withdrawal Expense (CG 04 36)</h3>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["Products classification with the CG 04 36 endorsement"]) --> gate{"ProdsWithdrawalCoverage = Yes, endorsement record, Products coverage on the class?"}
+    gate -->|"No"| off["Every Limited value 0. ISO message if no Products class is selected"]:::zero
+    gate -->|"Yes"| fac["Factor = ProductWithdrawlFactor, misspelled table, by Products ILF letter: 0.20 / 0.15 / 0.10 · LCM = CW 1"]:::step
+    fac --> base["LmtdBaseRate = round((the Products group's computed LossCost if not 0, else FinalProdsCompldOpsELP) x LCM x factor, 3): reads the sibling result (E18)"]:::openq
+    base --> ilf["ILF = PW ILF(state, Products letter, endorsement aggregate)"]:::step
+    ilf --> dedQ{"Deductible override?"}
+    dedQ -->|"Yes"| dOv["Deductible factor = override"]:::step
+    dedQ -->|"No"| dLk["Deductible factor = DedFactorProdsCSL(CW, letter, 'X Per Occurrence')"]:::step
+    dOv --> filf["FinalILF = ILF - deductible factor: unrounded, no floor"]:::step
+    dLk --> filf
+    filf -.->|"deductible above ILF"| guard["ISO message: the deductible factor cannot exceed the ILF. The only negative-premium guard in the GL corpus"]:::openq
+    filf --> fr["LmtdFinalRate = round(BaseRate x FinalILF x PackageMod, 3): no other modifiers"]:::step
+    fr --> lp["LmtdPremium = round(FinalRate x Products exposure [/1000], 0)"]:::step
+    lp --> sum["ClassPremium = sum over classifications"]:::step
+    sum --> partQ{"Participation percentage (string field)?"}
+    partQ -->|"not '0', ManualPremium set"| pM["Premium = round(ManualPremium x PackageMod x discount, 0). The computed class premium is not used"]:::step
+    partQ -->|"'0'"| pC["Premium = round(ClassPremium, 0)"]:::step
+    partQ -->|"otherwise"| p0["Premium = 0"]:::zero
+    pM --> minp["Policy-level SetMinPremium: the engine stops INCOMPLETE here, 'ErcNodeSublineParam' is not bound"]:::eng
+    pC --> minp
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class gate,dedQ,partQ gate
+        </pre>
+      </div>
+
+      <h3 class="section">3 · Loss of Electronic Data and Cyber Incident Liability, each on two hosts</h3>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["Classification with an LoED or Cyber schedule"]) --> caQ{"California?"}
+    caQ -->|"Yes"| ca["All six gates stubbed to 0: never rates"]:::zero
+    caQ -->|"No"| gate{"Schedule record exists and the coverage-applies flag = Yes?"}
+    gate -->|"No"| off["Premium 0"]:::zero
+    gate -->|"Yes, no subline test"| lim["Limits: LoED one limit · Cyber each-incident occurrence and aggregate"]:::step
+    lim --> ilf["ILF from the host's ILF table, ' CSL' keys. LoED: 13 refer bands need an ILF override, or the engine stops"]:::step
+    ilf --> ded["Deductible = the host's factor. FinalILF = max(round(ILF - deductible, 3), 0)"]:::step
+    ded --> hostQ{"Host?"}
+    hostQ -->|"Premises"| adjO["AdjustedBaseRate = round((host LossCost or ELP) x host LCM [x claims-made] [x size of risk] x FinalILF, 4): computed host values (E18)"]:::openq
+    hostQ -->|"Products"| adjP["AdjustedBaseRate = round(host BaseRate [x size of risk] x FinalILF, 4): a different shape, no LCM term"]:::openq
+    adjO --> hz["HazardGrade by class: 1,188-row CW tables, the largest in the corpus"]:::step
+    adjP --> hz
+    hz --> cf["Factor by hazard grade: LoED CG0437 or CG0471 table (CG 04 95 uses CG0437) · Cyber 0.001 / 0.004 / 0.007 / 0.01"]:::step
+    cf --> fr["FinalRate = round(AdjustedBaseRate x factor x PackageMod x ExpMod x ExpenseMod x ModToUse, 4)"]:::step
+    fr --> prem["Premium = round(FinalRate x host exposure [/1000], 0). No floor"]:::final
+    prem --> top["Policy topper: minimum CW 0, computes in every edition. Engine: its total keeps only the last host's premium (ForEach)"]:::eng
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class caQ,gate,hostQ gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>Product Withdrawal A/B have both a loss-cost and an ELP path, taken from Products' tables. Liquor and Railroad each have only one route to a base rate.</li>
+            <li>Pre-2027 Limited PW premium does not use the computed class premium when a participation percentage is given. It uses a supplied ManualPremium instead.</li>
+            <li>The two LoED/Cyber hosts compute their adjusted base rate differently: the Premises host rebuilds it from host components, and the Products host takes the finished Products base rate.</li>
+          </ul>
+        </div>
+        <div>
+          <div class="delta"><strong>Engine limits, 2026-10-05.</strong> The engine cannot finish a pre-2027 Limited PW rating. It computes the class premium, then stops at the policy-level minimum rule. It also stops when a deductible spelling from the other edition reaches Product Withdrawal, and when an LoED limit falls in a refer band with no override. All three are refusals, not wrong numbers.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================= CW 2027 ============================= -->
+    <section class="sheet-view" id="view-cw27">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverages</span><span class="v">Same five coverages</span></div>
+        <div class="field"><span class="k">Edition</span><span class="v">CW 20270401 V01 and V02. V02 differs only in Cyber aggregate messages and PW stat codes.</span></div>
+        <div class="field"><span class="k">Rules</span><span class="v">PW A/B 27 each · coverage form 20 · topper 4 · Limited PW 10 + 24 + 7 + 8 · LoED 25 × 2 · Cyber 23 × 2</span></div>
+        <div class="field"><span class="k">Floors</span><span class="v">$1 on every coverage when the rounded premium is 0: with exposure &gt; 0 for PW, LoED and Cyber; unconditionally for Limited PW</span></div>
+        <div class="field wide"><span class="k">Changed vs pre-2027</span><span class="v">PW deductible moves to DedFactorProdsProdWithdrawl with bare keys and no override. The PW coverage-form minimum and topper are removed. Limited PW reads a new participation field and drops its Highest flag and policy SetMinPremium. LoED and Cyber gain subline tests and bare ILF keys.</span></div>
+      </div>
+
+      <h3 class="section">1 · Product Withdrawal, Coverage A and B</h3>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["Policy record with Subline = Product Withdrawal"]) --> typeQ{"Coverage type?"}
+    typeQ -->|"Expense, Liability or Both"| on["A, B or both on"]:::step
+    on --> fac["Factor by letter (A 0.25 / 0.19 / 0.13 · B 0.13 / 0.10 / 0.07) · LCM CW 1 · ELP from Products' table, or the override for Company classes"]:::step
+    fac --> ilf["CSLILF = PW ILF(state, letter, PW aggregate)"]:::step
+    ilf --> dedQ{"Deductible?"}
+    dedQ -->|"'No Deductible' or bare '1,000'"| dLk["DeductibleFactor = DedFactorProdsProdWithdrawl(CW, letter, deductible): new 48-row table. No override"]:::step
+    dedQ -->|"'X Per Occurrence' (pre-2027 style)"| dStop["Lookup misses, null: the engine stops INCOMPLETE"]:::eng
+    dLk --> filf["FinalILF = round(CSLILF - DeductibleFactor, 3)"]:::step
+    filf --> br["BaseRate = round((LossCost if not 0, else ELP) x factor x LCM, 3)"]:::step
+    br --> fr["FinalRate = round(BaseRate x FinalILF x 4 modifiers x discount, 3)"]:::step
+    fr --> pbQ{"Basis per 1000?"}
+    pbQ -->|"9 bases, incl. Kilowatt-hours and Vehicles"| pD["round(FinalRate x exposure / 1000, 0)"]:::step
+    pbQ -->|"other"| pU["round(FinalRate x exposure, 0)"]:::step
+    pD --> floorQ{"Rounded 0, exposure on?"}
+    pU --> floorQ
+    floorQ -->|"Yes"| fl["Premium = 1.0"]:::final
+    floorQ -->|"No"| ok["Premium stands"]:::final
+    ok --> form["Coverage form keeps only stat codes. Topper indicator hard-wired to 0. No minimum premium"]:::zero
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class typeQ,dedQ,pbQ,floorQ gate
+        </pre>
+      </div>
+
+      <h3 class="section">2 · Limited Product Withdrawal Expense (CG 04 36)</h3>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["Products classification with CG 04 36"]) --> gate{"Endorsement attached to a Products class?"}
+    gate -->|"No"| off["Limited values 0"]:::zero
+    gate -->|"Yes"| base["LmtdBaseRate = round((Products group's LossCost, else ELP) x LCM x misspelled-table factor, 3)"]:::step
+    base --> ilf["ILF = PW ILF(state, letter, endorsement aggregate) · deductible = DedFactorProdsProdWithdrawl(CW, letter, '1,000'), or override"]:::step
+    ilf --> filf["FinalILF = ILF - deductible, no floor; ISO's deductible-above-ILF guard stays"]:::step
+    filf --> lp["LmtdPremium = round(round(BaseRate x FinalILF x PackageMod, 3) x Products exposure [/1000], 0); ClassPremium = sum"]:::step
+    lp --> partQ{"ProductWithdrawalParticipationPercentageInt not 0, or cut-off date = Yes?"}
+    partQ -->|"Yes"| pD["Premium = round(ClassPremium x discount, 0)"]:::step
+    partQ -->|"No, or only the old string field sent"| pN["Premium = round(ClassPremium, 0): discount not applied"]:::openq
+    pD --> floorQ{"Premium = 0?"}
+    pN --> floorQ
+    floorQ -->|"Yes"| fl["Premium = 1.0, with no exposure test"]:::final
+    floorQ -->|"No"| ok["Premium stands. ISO checks the participation percentage"]:::final
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    class gate,partQ,floorQ gate
+        </pre>
+      </div>
+
+      <h3 class="section">3 · Loss of Electronic Data and Cyber Incident Liability</h3>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["Classification with an LoED or Cyber schedule"]) --> which{"Which gate?"}
+    which -->|"Cyber, Premises host"| gC["Schedule and applies flag only: no subline test"]:::step
+    which -->|"LoED, Premises host"| gL["Also needs Subline = Premises/Operations and Products/Completed Operations"]:::step
+    which -->|"LoED or Cyber, Products host"| gP{"Combined subline with exclusion not 'Yes', or Products-only?"}
+    gP -->|"Yes, including a missing exclusion answer"| onP["Products host on"]:::step
+    gP -->|"No"| offP["Premium 0"]:::zero
+    onP -.->|"exclusion answer missing"| gap["Products itself is off the policy (OI-97) but this host still rates, off a Products base rate that is never billed"]:::openq
+    gC --> ilf["ILF from the host table with bare limits · FinalILF floored at 0"]:::step
+    gL --> ilf
+    onP --> ilf
+    ilf --> adj["AdjustedBaseRate: Premises host from host components, Products host from host BaseRate, rounded to 4"]:::step
+    adj --> fr["FinalRate = round(AdjustedBaseRate x hazard-grade factor x 4 modifiers, 4)"]:::step
+    fr --> prem["Premium = round(FinalRate x host exposure [/1000], 0)"]:::step
+    prem --> floorQ{"Rounded 0, host exposure on?"}
+    floorQ -->|"Yes"| fl["Premium = 1.0"]:::final
+    floorQ -->|"No"| ok["Premium stands · CA still stubbed off"]:::final
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    class which,gP,floorQ gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>The Product Withdrawal deductible keys change from "1,000 Per Occurrence" to "1,000", and the override is gone. A value in the other edition's spelling stops the engine either way.</li>
+            <li>Limited PW now uses the computed class premium and applies the discount only through the new <code>ProductWithdrawalParticipationPercentageInt</code> or a cut-off date. Its floor has no exposure test.</li>
+            <li>The LoED Premises host now requires the combined subline. The Cyber Premises host does not. The two Products hosts accept a missing exclusion answer as "not excluded".</li>
+          </ul>
+        </div>
+        <div>
+          <div class="delta openq"><strong>New findings, 2026-10-05.</strong> (1) A pre-2027 submission sends the participation percentage in the old string field. CW 2027 ignores it, so the discount is lost: Missouri's sample rates 27 instead of 14. (2) With the exclusion answer missing, Illinois' sample rated Products at 0 but Cyber's Products host at 5, a premium built on an unbilled Products base. Neither raises a message or a referral.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================= SIDE BY SIDE ============================= -->
+    <section class="sheet-view" id="view-diff">
+      <div class="intro">
+        <h2>Twelve differences across eleven rule files</h2>
+        <p>Each pre-2027 cell holds for CW 20231201 V03, 20260101 V01 and 20261001 V01, which are identical in every file here. Each CW 2027 cell holds for 20270401 V01 and V02, apart from the V02 Cyber aggregate messages and PW stat codes.</p>
+      </div>
+      <div class="tablewrap">
+        <table class="grid">
+          <thead><tr><th>Item</th><th>Pre-2027</th><th>CW 2027</th><th>Premium effect</th></tr></thead>
+          <tbody>
+            <tr><th>PW deductible</th><td>DedFactorProdsCSL, "X Per Occurrence", or override</td><td>DedFactorProdsProdWithdrawl (48 rows), bare "X", no override</td><td>Other edition's spelling: engine stops</td></tr>
+            <tr><th>PW ÷1000 bases</th><td>7, incl. Passenger Days</td><td>9, incl. Kilowatt-hours and Vehicles</td><td>Vehicles and Kilowatt-hours bases drop 1000×</td></tr>
+            <tr><th>PW zero premium</th><td>Stays 0</td><td>$1 when exposure &gt; 0</td><td>0 → 1</td></tr>
+            <tr><th>PW minimum premium</th><td>Coverage-form MinPremium (CW 0); topper never computes</td><td>Removed; topper hard 0</td><td>None</td></tr>
+            <tr><th>Limited PW coverage premium</th><td>ManualPremium × PackageMod × discount (participation ≠ "0"), else ClassPremium</td><td>ClassPremium × discount (participation Int ≠ 0 or cut-off), else ClassPremium</td><td>Old participation field ignored: discount lost</td></tr>
+            <tr><th>Limited PW deductible</th><td>DedFactorProdsCSL or override</td><td>DedFactorProdsProdWithdrawl or override</td><td>Spelling must match the edition</td></tr>
+            <tr><th>Limited PW policy SetMinPremium</th><td>Present; engine cannot evaluate it</td><td>Removed</td><td>Rates end to end only in 2027</td></tr>
+            <tr><th>Limited PW zero premium</th><td>0</td><td>$1, no exposure test</td><td>0 → 1</td></tr>
+            <tr><th>LoED Premises gate</th><td>Schedule + applies flag</td><td>Also requires the combined subline</td><td>Premises-only policy: LoED off</td></tr>
+            <tr><th>LoED/Cyber Products gates</th><td>Schedule + applies flag</td><td>Also combined subline with exclusion not "Yes" (missing counts as no), or Products-only</td><td>Rates even when Products is off for a missing answer</td></tr>
+            <tr><th>LoED/Cyber ILF keys</th><td>" CSL" suffix</td><td>Bare limits</td><td>Stale keys miss</td></tr>
+            <tr><th>LoED/Cyber zero premium</th><td>Stays 0</td><td>$1 when host exposure &gt; 0</td><td>0 → 1</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="intro"><p>Unchanged in both: the three factor tables and their A/B/C values, the LCM (CW 1), Products as the source of PW's loss cost and ELP, Limited PW's reads of the sibling Products result, its deductible-above-ILF and negative-premium guards, the hazard-grade tables and factors, the two adjusted-base-rate shapes, 4-decimal rounding on LoED/Cyber rates, California's stubs, and the LoED/Cyber toppers (minimum 0).</p></div>
+    </section>
+
+    <!-- ============================= REVIEW ============================= -->
+    <section class="sheet-view" id="view-review">
+      <div class="intro">
+        <h2>What the all-coverage page got wrong or left out for these coverages</h2>
+        <p><code>gl-rating-chains.html</code> had four sheets: PW Coverage A, PW Coverage B, Limited PW and LoED/Cyber. Each mixed both editions into one diagram. On 2026-10-05 the four sheets were removed and now link here.</p>
+      </div>
+      <div class="tablewrap">
+        <table class="grid">
+          <thead><tr><th>#</th><th>All-coverage page said</th><th>Engine / XML shows</th><th>Kind</th></tr></thead>
+          <tbody>
+            <tr><th>1</th><td>Four sheets, editions mixed inside nodes</td><td>Three diagrams per edition, with PW A and B together since they differ only in the factor</td><td>restructured</td></tr>
+            <tr><th>2</th><td>—</td><td><strong>Participation field renamed in 2027:</strong> the old string field is ignored and the Limited PW discount is lost (27 vs 14 on Missouri's sample)</td><td><span class="tag bad">new finding</span></td></tr>
+            <tr><th>3</th><td>—</td><td><strong>LoED/Cyber Products hosts rate when Products is off</strong> for a missing 2027 exclusion answer (Products 0, Cyber 5 on Illinois' sample)</td><td><span class="tag bad">new finding</span></td></tr>
+            <tr><th>4</th><td>LoED/Cyber: "CW 2027 adds a Subline test to the gate"</td><td>Four of six gates change: the LoED Premises host requires the combined subline; both Products hosts take the exclusion test; the Cyber Premises host is unchanged</td><td><span class="tag bad">new finding</span></td></tr>
+            <tr><th>5</th><td>PW: one deductible node with both tables</td><td>Drawn per edition; the other edition's spelling stops the engine in both directions</td><td>clarified</td></tr>
+            <tr><th>6</th><td>PW ÷1000 test "exposure basis /1000?"</td><td>7 bases pre-2027 (Passenger Days); 9 in 2027 (adds Kilowatt-hours and Vehicles)</td><td>incomplete</td></tr>
+            <tr><th>7</th><td>PW and LoED/Cyber floors noted, not drawn</td><td>$1 floors drawn on every 2027 coverage; Limited PW's has no exposure test</td><td>missing</td></tr>
+            <tr><th>8</th><td>Limited PW 2027 coverage premium as Σ × discount</td><td>Discount applies only via the new Int field or a cut-off date</td><td>incomplete</td></tr>
+            <tr><th>9</th><td>Pre-2027 Limited PW premium</td><td>Uses a supplied ManualPremium, not the computed class premium, when a participation percentage is given. The engine stops before it finishes.</td><td>clarified</td></tr>
+            <tr><th>10</th><td>LoED/Cyber example figures (TX 1 / 5)</td><td>Class-specific values are left off this page; the chain describes the rules</td><td>generalized</td></tr>
+            <tr><th>11</th><td>Companion doc source line cites <code>C:\Projects\…\GATE-365…</code></td><td>The project is on <code>F:</code>; the doc line is left as history, this page cites F:</td><td>stale path</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="doc-footer">
+  Sources: the built engine (<strong>gl_engine</strong> at 62eb125), probed on 2026-10-05 with a Product Withdrawal record added to the Illinois engine base, ISO's Missouri Limited PW sample (STC_GL000142249) and ISO's Illinois Cyber sample (STC_GL000110216), re-dated to each edition. ISO rule XML is under <code>F:\ISO_ERC_Files\General_Liability</code>. Companion docs are <code>GL_Algorithm\ProductWithdrawalCyber_RatingAlgorithms.md</code>, <code>GL_Algorithm\LossOfElectronicData_RatingAlgorithms.md</code> (reconciled 2026-10-02) and <code>docs\gates\GATE-365-WITHDRAWAL-LOED-CYBER.md</code>. Table row counts are the 2026-10-02 census, not re-measured.
+</footer>
+
+<script>
+  (function () {
+    var toc = document.getElementById('toc');
+    var main = document.getElementById('main');
+
+    function activate(target) {
+      var views = main.querySelectorAll('.sheet-view');
+      for (var i = 0; i < views.length; i++) views[i].classList.remove('active');
+      var view = document.getElementById('view-' + target);
+      if (view) view.classList.add('active');
+
+      var links = toc.querySelectorAll('.navlink');
+      for (var j = 0; j < links.length; j++) {
+        links[j].classList.toggle('active', links[j].getAttribute('data-target') === target);
+      }
+      main.scrollTop = 0;
+      window.scrollTo(0, 0);
+    }
+
+    document.addEventListener('click', function (e) {
+      var btn = e.target.closest('button[data-target]');
+      if (btn) activate(btn.getAttribute('data-target'));
+    });
+  })();
+</script>
+
+<style>.mermaid-rendering .sheet-view{display:block!important}</style>
+<script type="module">
+  // Render every diagram once, with all sheets briefly visible so hidden tabs get real sizes.
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({ startOnLoad: false, securityLevel: "strict", flowchart: { wrappingWidth: 260 } });
+  document.documentElement.classList.add("mermaid-rendering");
+  try { await mermaid.run({ querySelector: "pre.mermaid" }); }
+  finally { document.documentElement.classList.remove("mermaid-rendering"); }
+</script>
+</body>
+</html>

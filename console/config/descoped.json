@@ -1,0 +1,4 @@
+{
+  "about": "Paths taken out of a cell's denominator, each with a reason (spec 3; D5). lines -> line -> state ('*' = every state) -> path id -> reason. Listed in the cell's side panel; never counted as a gap.",
+  "lines": {}
+}

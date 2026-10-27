@@ -1,0 +1,373 @@
+<title>Carrier Filings, Redesign</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&family=Instrument+Sans:wght@400;500;600&display=swap">
+<style>
+/* Locked direction (docs/compare-wireframe_20261016.html): Federato palette, rounded, soft, streamlined.
+   Layout: a summary strip, a view switcher (filings / companies / timeline) for the high level, one filing opened below
+   with four sections for the detail, and the side panel for context. Live data from /api/console/filings, 2026-10-16. */
+:root{
+  --bg:#f7f7e3;--panel:#f1edd6;--card:#fcfcf3;--text:#2d1d1a;--muted:#5c5240;--line:#d9d0b0;
+  --brown:#8a5634;--accent-100:#f3ecc6;--teal:#47fac4;--teal-hover:#06d899;--teal-soft:#d4f6e8;--teal-mid:#8ee9c8;
+  --h1:#efe3b4;--h2:#e9d491;--h3:#f6b48f;--h4:#f58a63;--ox:#f55a26;--ox-tint:#fde4d9;
+  --display:"Newsreader","Reckless Standard M",Georgia,serif;--body:"Instrument Sans",Case,Arial,sans-serif;
+  --r-sm:6px;--r-md:10px;--r-lg:16px;color-scheme:light;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font:15px/1.55 var(--body);font-variant-numeric:tabular-nums;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 48px}
+.wrap{max-width:1280px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:24px;align-items:start}
+.main{display:flex;flex-direction:column;gap:22px;min-width:0}
+@media (max-width:1000px){.wrap{grid-template-columns:minmax(0,1fr)}}
+.eyebrow{font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--brown)}
+h1{margin:4px 0 6px;font:400 36px/1.15 var(--display);text-wrap:balance}
+h2{margin:0;font:400 23px/1.2 var(--display);text-wrap:balance}
+h3{margin:0;font:500 18px/1.3 var(--display)}
+.lede{margin:0;color:var(--muted);max-width:68ch}
+.msg{font-size:13.5px;color:var(--muted)}
+.head{display:flex;gap:16px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn{border:1px solid #4e4432;color:#4e4432;background:transparent;border-radius:999px;padding:7px 16px;font:500 14px var(--body);cursor:pointer}
+.btn.primary{background:var(--teal);border-color:var(--teal);color:var(--text);font-weight:600}
+select{font:15px var(--body);color:var(--text);background:#fff;border:1px solid var(--line);border-radius:var(--r-md);padding:8px 12px;max-width:100%}
+.sw{display:inline-flex;gap:8px;align-items:center;font-size:14px;color:var(--muted);cursor:pointer}
+.sw input{appearance:none;width:34px;height:20px;border-radius:999px;background:var(--line);position:relative;cursor:pointer;margin:0}
+.sw input::after{content:"";position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:#fff;transition:left .15s}
+.sw input:checked{background:var(--teal-hover)}.sw input:checked::after{left:17px}
+.sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px}
+.sum div{background:var(--panel);border-radius:var(--r-md);padding:14px 16px}
+.sum b{display:block;font:400 30px/1.1 var(--display)}
+.sum span{font-size:13.5px;color:var(--muted)}
+.views{display:flex;gap:6px;flex-wrap:wrap;background:var(--panel);padding:5px;border-radius:999px;width:fit-content;max-width:100%}
+.views button{font:500 14px var(--body);border:0;background:none;color:var(--muted);padding:8px 16px;border-radius:999px;cursor:pointer}
+.views button[aria-selected="true"]{background:var(--text);color:var(--bg)}
+button:focus-visible{outline:2px solid var(--brown);outline-offset:2px}
+.tag{font-size:12px;background:var(--teal);color:var(--text);border-radius:999px;padding:2px 9px;margin-left:6px;font-weight:600}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--r-lg);padding:22px 24px;display:flex;flex-direction:column;gap:16px;box-shadow:0 1px 3px rgba(45,29,26,.06);min-width:0}
+.scroll{overflow-x:auto}
+/* heat for "% vs ISO" */
+.hx{display:inline-block;border-radius:999px;padding:2px 10px;font-weight:600;font-size:13.5px;white-space:nowrap}
+.key{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.key i{display:inline-block;width:12px;height:12px;border-radius:4px;vertical-align:-1px;margin-right:6px}
+/* view 1: filing cards */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:14px}
+.fc{border:1px solid var(--line);border-radius:var(--r-lg);background:var(--bg);padding:16px 18px;display:flex;flex-direction:column;gap:12px;cursor:pointer;text-align:left;font:inherit;color:inherit}
+.fc:hover{background:var(--accent-100)}
+.fc.on{background:var(--card);border-color:var(--text);box-shadow:inset 0 0 0 1px var(--text)}
+.fc .t{font:500 19px/1.25 var(--display)}
+.fc .co{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 10px;align-items:center;font-size:14px}
+.prog{display:flex;gap:3px}.prog i{flex:1;height:6px;border-radius:999px;background:var(--line)}.prog i.d{background:var(--teal-hover)}
+.prog+span{font-size:12.5px;color:var(--muted)}
+.warn{font-size:12.5px;color:#a33c12;background:var(--ox-tint);border-radius:var(--r-sm);padding:3px 8px;width:fit-content}
+/* view 2: companies */
+.cgrid{border-collapse:separate;border-spacing:6px;font-size:14px;min-width:560px}
+.cgrid th{font-weight:600;font-size:13px;color:var(--muted);text-align:left;padding:0 4px;vertical-align:bottom}
+.cgrid td.c{border-radius:var(--r-md);padding:10px 12px;cursor:pointer;min-width:150px;vertical-align:top}
+.cgrid td.c:hover,.cgrid td.c.on{outline:2px solid var(--text);outline-offset:1px}
+.cgrid td.c b{font:400 22px/1.1 var(--display);display:block}
+.cgrid td.c small{font-size:12.5px;color:var(--muted)}
+.cgrid td.iso{background:var(--panel);color:var(--muted);border-radius:var(--r-md);padding:10px 12px;font-size:13px}
+.cgrid td.nm b{font:500 16px var(--display)}.cgrid td.nm small{display:block;color:var(--muted);font-size:12.5px}
+/* view 3: timeline */
+.tl{display:grid;grid-template-columns:200px minmax(0,1fr);gap:12px 16px;align-items:center;min-width:620px;font-size:14px}
+.tl .ax{display:flex;justify-content:space-between;font-size:12.5px;color:var(--muted);border-bottom:1px solid var(--line);padding-bottom:4px}
+.tl .lane{position:relative;height:30px;background:var(--panel);border-radius:999px}
+.tl .lane i{position:absolute;top:5px;height:20px;border-radius:999px}
+.tl .lane i.n{background:var(--teal-mid)}.tl .lane i.r{background:var(--teal-hover)}
+.tl .lane span{position:absolute;top:34px;font-size:12px;color:var(--muted);white-space:nowrap}
+.tl .nm{cursor:pointer}.tl .nm:hover b{text-decoration:underline}
+.tl .nm b{font:500 15px var(--display);display:block}.tl .nm small{color:var(--muted);font-size:12.5px}
+/* the opened filing */
+.fhead{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:flex-start;justify-content:space-between}
+.steps{display:flex;gap:6px;flex-wrap:wrap}
+.steps span{font-size:13px;padding:4px 12px;border-radius:999px;background:var(--panel);color:var(--muted)}
+.steps span.d{background:var(--teal-soft);color:var(--text)}
+.steps span.now{background:var(--text);color:var(--bg);font-weight:600}
+.tabs{display:flex;gap:4px;flex-wrap:wrap;border-bottom:1px solid var(--line)}
+.tabs button{font:500 14.5px var(--body);border:0;background:none;color:var(--muted);padding:9px 14px;border-bottom:2px solid transparent;cursor:pointer;border-radius:var(--r-sm) var(--r-sm) 0 0}
+.tabs button[aria-selected="true"]{color:var(--text);border-bottom-color:var(--text)}
+.short{font-size:16px;line-height:1.6;max-width:72ch;margin:0}
+.big{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.big div{border-radius:var(--r-md);padding:14px 16px;background:var(--panel)}
+.big b{font:400 34px/1.1 var(--display);display:block}
+.big span{font-size:13.5px;color:var(--muted)}
+.ft{width:100%;border-collapse:collapse;font-size:14px}
+.ft th{text-align:left;font-weight:600;font-size:13px;color:var(--muted);padding:6px 10px}
+.ft td{padding:9px 10px;border-top:1px solid var(--line);vertical-align:top}
+.ft td.v{text-align:center}
+.ft tr.grp td{background:var(--panel);font-weight:600;font-size:13.5px;border-top:0}
+.ft tr.grp td:first-child{border-radius:var(--r-sm) 0 0 var(--r-sm)}.ft tr.grp td:last-child{border-radius:0 var(--r-sm) var(--r-sm) 0}
+.ft .fac{display:block;font-size:12px;color:var(--muted);font-weight:400}
+/* effect bars */
+.eff{display:grid;grid-template-columns:170px minmax(0,1fr) 64px;gap:4px 12px;align-items:center;font-size:14px}
+.eff .bar{height:12px;background:var(--panel);border-radius:999px;position:relative;overflow:hidden}
+.eff .bar i{position:absolute;top:0;bottom:0;border-radius:999px}
+.eff .p{text-align:right;font-weight:600}
+.eff .co{grid-column:1/-1;font:500 16px var(--display);margin-top:10px}
+.eff .co:first-child{margin-top:0}
+.trail{display:flex;flex-direction:column;gap:0}
+.trail .it{display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;padding:12px 0;border-top:1px solid var(--line)}
+.trail .it:first-child{border-top:0}
+.trail .ic{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:12.5px;font-weight:600;background:var(--teal-soft)}
+.trail .ic.x{background:var(--ox-tint)}
+.trail a{color:var(--brown)}
+details.more summary{cursor:pointer;color:var(--muted);font-size:13.5px}
+.tech{font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--muted);overflow-wrap:anywhere}
+/* the Test tab */
+.tst{display:flex;flex-direction:column;gap:12px}
+.ck{border:1px solid var(--line);border-radius:var(--r-md);background:var(--bg);padding:14px 16px;display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:6px 12px;align-items:start}
+.ck .ic{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:12.5px;font-weight:600;background:var(--teal-soft)}
+.ck .ic.x{background:var(--ox-tint)}.ck .ic.o{background:var(--panel);color:var(--muted)}
+.ck h4{margin:0;font:500 17px var(--display)}
+.ck .res{font-weight:600;white-space:nowrap;font-size:14px}
+.ck .bd{grid-column:2/-1;display:flex;flex-direction:column;gap:8px;min-width:0}
+.cost{font-size:12.5px;background:var(--teal-soft);border-radius:999px;padding:2px 9px;white-space:nowrap}
+.cost.iso{background:var(--accent-100)}
+input.ex{width:84px;font:inherit;font-size:14px;border:1px solid var(--line);border-radius:8px;padding:4px 8px;text-align:right;background:#fff}
+.chipt{font-size:12.5px;border-radius:999px;padding:2px 10px;background:var(--teal-soft);width:fit-content}
+.chipt.no{background:var(--ox-tint)}
+.tryout{background:var(--card);border-radius:var(--r-md);border:1px solid var(--line);padding:10px 14px;font-size:14px}
+.ref{background:var(--panel);border-radius:var(--r-sm);padding:10px 12px;font-size:14px}
+/* side */
+.side{position:sticky;top:calc(env(safe-area-inset-top,0px) + 16px);background:var(--panel);border:1px solid var(--line);border-radius:var(--r-lg);padding:20px 22px;display:flex;flex-direction:column;gap:14px;max-height:calc(100vh - 32px);overflow-y:auto}
+.side h3{font-size:20px}
+.side .cap{font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--brown)}
+.drop{border:1.5px dashed #c2b893;border-radius:var(--r-md);padding:14px;text-align:center;font-size:14px;color:var(--muted);background:var(--card)}
+.howto{margin:0;padding-left:20px;font-size:14px;display:grid;gap:4px}
+dl.gl{margin:0;font-size:13.5px}dl.gl dt{font-weight:600;margin-top:8px}dl.gl dd{margin:2px 0 0;color:var(--muted)}
+.notes{border:1px dashed #c2b893;border-radius:var(--r-lg);padding:14px 18px;font-size:14px;color:var(--muted)}
+.notes b.t{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--text)}
+.notes ul{margin:8px 0 0;padding-left:18px;display:grid;gap:6px}
+@media (prefers-reduced-motion:reduce){.sw input::after{transition:none}}
+</style>
+
+<div class="wrap"><div class="main">
+  <header class="head">
+    <div><div class="eyebrow">Carrier Filings</div>
+      <h1>How each insurer prices differently from ISO</h1>
+      <p class="lede">Insurers file their own changes to ISO's rates with each state. See at a glance who has filed where and how far each one moves a premium, then open a filing for the detail.</p></div>
+    <div class="row"><select aria-label="Carrier"><option>All carriers</option><option>UFG Insurance</option></select>
+      <label class="sw"><input type="checkbox" id="tech"> Technical details</label></div>
+  </header>
+
+  <div class="sum" id="sum"></div>
+
+  <div class="views" role="tablist" aria-label="View">
+    <button role="tab" aria-selected="true" data-v="filings">Filings<span class="tag">recommended</span></button>
+    <button role="tab" aria-selected="false" data-v="companies">Companies</button>
+    <button role="tab" aria-selected="false" data-v="timeline">Timeline</button>
+  </div>
+
+  <section class="panel" id="v-filings">
+    <div><h2>What has each insurer filed?</h2>
+      <p class="msg" style="margin:4px 0 0">One card per filing. The big number is how much a typical premium moves against ISO for each company. Click a card to open it below.</p></div>
+    <div class="row"><button class="btn primary" id="runall">Run the free checks on every filing</button><span class="msg">About a minute on our engine. No ISO calls.</span></div>
+    <div class="cards" id="cards"></div>
+  </section>
+
+  <section class="panel" id="v-companies" hidden>
+    <div><h2>Which company is dearest, and where?</h2>
+      <p class="msg" style="margin:4px 0 0">Each company against each line and state, shaded by how far its typical premium sits from ISO. "ISO's rates" means that company has no filing there. Click a box to open the filing.</p></div>
+    <div class="key" id="key"></div>
+    <div class="scroll"><table class="cgrid" id="cgrid"></table></div>
+  </section>
+
+  <section class="panel" id="v-timeline" hidden>
+    <div><h2>When does each filing take effect?</h2>
+      <p class="msg" style="margin:4px 0 0">The light bar starts on the date for new policies; the dark bar on the date for renewals. Policies on or after these dates use the insurer's rates.</p></div>
+    <div class="scroll"><div class="tl" id="tl"></div></div>
+  </section>
+
+  <section class="panel" id="detail"></section>
+
+  <div class="notes"><b class="t">What changes from today's page</b>
+    <ul>
+      <li><b>Three high-level views</b> replace the "who has filed where" grid: filings as cards with the headline effect, companies as a shaded grid, and a timeline of effective dates.</li>
+      <li><b>Six tabs become five:</b> In short (with the headline numbers), What changes, Effect on premium, Test it, Paper trail. Our review, History and Documents become one paper trail with the proof at the top.</li>
+      <li><b>Test it</b> is three quick checks, not the full ISO sweep: (1) each filed factor applies as written, (2) the effect on typical premiums is within a point of what we expect (the figure recorded when it went in use, which you can overwrite, plus the carrier's own filed figure where it gives one, as a sense check), (3) an optional ISO spot check of our technical price (ISO never sees the insurer's factors, D21), one request per state, behind a confirmation. "Try one" prices a single typical risk both ways. One button runs the free checks on every filing, and each card shows when it was last tested.</li>
+      <li><b>What changes</b> is one table, companies side by side, current version only. Earlier versions are folded away. Today each version repeats the whole table.</li>
+      <li><b>The effect on premium</b> is shown as bars by type of business, coloured by how far above or below ISO, instead of a table of percentages.</li>
+      <li><b>Uploading</b> moves to the side panel as a drop zone, with the four steps a filing goes through and the glossary.</li>
+      <li><b>Technical details</b> stays one switch: it adds SERFF numbers, versions, multipliers and file fingerprints in place. (In this wireframe, multipliers other than the headline ones quoted in each filing's summary are back-worked from rounded percentages; the build reads the real ones.)</li>
+    </ul></div>
+</div>
+
+<aside class="side" id="side"></aside></div>
+
+<script>
+const CO={UFC:{n:'United Fire & Casualty',naic:'13021'},ADD:{n:'Addison Insurance',naic:'10324'},LAF:{n:'Lafayette Insurance',naic:'18295'}};
+const F=[
+ {id:'DEV-003',serff:'UNFG-134374972',line:'General Liability',st:'Iowa',ab:'IA',newEff:'2025-07-15',renEff:'2025-11-01',step:4,
+  proof:'41 of 41 automatic tests pass',risks:30,
+  short:'UFG filed loss cost multipliers for general liability in Iowa: one factor per company and coverage, applied to ISO’s rates. United Fire sits about 26% above ISO and Addison about 70%, mostly through products coverage. Specialty ("a"-rated) classes stay at ISO’s rate. Since Oct 16, 2026 the minimum premium and the experience rating expected loss ratio are built too.',
+  cos:{UFC:26.4,ADD:70.4},
+  rows:[['Coverage',[['Premises and operations',{UFC:[-6,'0.942'],ADD:[27,'1.272']}],['Products and completed work',{UFC:[79,'1.789'],ADD:[142,'2.415']}],['Specialty ("a"-rated) classes',{UFC:'ISO’s rate',ADD:'ISO’s rate'}]]],
+        ['Policy',[['Minimum premium',{UFC:'$500',ADD:'$625'}],['Experience rating expected loss ratio',{UFC:'68.6% (ISO 100%)',ADD:'68.6% (ISO 100%)'}]]]],
+  eff:{UFC:{Manufacturing:58.9,Construction:41.3,"Lessor's risk":25.0,Apartments:-5.5,Retail:-3.6},ADD:{Manufacturing:113.5,Construction:90.8,"Lessor's risk":63.9,Retail:29.8,Apartments:27.4}},
+  byCov:{UFC:{'Premises':-5.8,'Products':78.9},ADD:{'Premises':27.2,'Products':141.5}},
+  docs:[['UFG_IA_GL_LCM_2025.xlsx','The multipliers typed out, with the exception page quoted'],['UFG_IA_GL_LCM_2025_Explainer.md','Plain explainer: where the factors apply and where they don’t'],['UFG_IA_GL_LCM_2025.zip','The two files above, zipped'],['UNFG-134374972-filing-sheet.md','Our review: what was filed, how we built it, decisions, proof']],
+  hist:'Received and reviewed; built Jul 2026; version 2 added the minimum premium and expected loss ratio on Oct 16, 2026; proven the same day.',versions:2},
+ {id:'DEV-002',serff:'UNFG-134461534',line:'Commercial Property',st:'Alabama',ab:'AL',newEff:'2025-07-15',renEff:'2025-11-01',step:4,
+  proof:null,risks:192,
+  short:'UFG filed loss cost multipliers for commercial property in Alabama, by kind of business (three class groups) and type of loss. For most classes United Fire sits about 119% above ISO and Lafayette about 174%. Every policy pays at least $300, and terrorism costs 2% of the property premium when taken. The filing’s other pages (deductibles, building age) are not built.',
+  cos:{UFC:108.5,LAF:160.7},
+  rows:[['All other classes',[['Fire and lightning',{UFC:[118,'2.185'],LAF:[173,'2.731']}],['Wind and hail, broad and special form',{UFC:[119,'2.192'],LAF:[174,'2.740']}],['Earthquake',{UFC:[53,'1.53'],LAF:[91,'1.91']}]]],
+        ['Class group A',[['Fire and lightning',{UFC:[105,'2.05'],LAF:[156,'2.56']}],['Wind and hail, broad and special form',{UFC:[111,'2.11'],LAF:[164,'2.64']}]]],
+        ['Class group B',[['Fire and lightning',{UFC:[90,'1.90'],LAF:[137,'2.37']}],['Wind and hail, broad and special form',{UFC:[96,'1.96'],LAF:[146,'2.46']}]]],
+        ['Policy',[['Minimum premium',{UFC:'$300',LAF:'$300'}],['Terrorism',{UFC:'2% of property premium',LAF:'2% of property premium'}]]]],
+  eff:{UFC:null,LAF:{Warehouses:173.4,Apartments:173.2,'Restaurants and bars':165.6,Manufacturing:152.3,Mercantile:147.3,Offices:140.9}},
+  mixed:'United Fire’s effect by type of business was worked out for Alabama and Iowa together, so only its Alabama total (+108.5%) is shown here.',
+  docs:[['AL CP UFC LAF 0725-PC Only-Final.pdf','The filed exception pages (43 pages); the multiplier table is page 1'],['UFG_AL_CP_LCMs.csv','The same table typed out; agrees with page 1 on every value'],['UNFG-134461534.zip','SERFF’s filing summary and usage agreement'],['ufg-al-cp-rating-factors.html','The filing’s other rating factors; not used']],
+  hist:'Received and reviewed; built; version 2 added the minimum premium and terrorism charge on Oct 16, 2026.',versions:2},
+ {id:'DEV-001',serff:'UNFG-134289779',line:'Commercial Property',st:'Iowa',ab:'IA',newEff:'2025-06-01',renEff:'2025-10-01',step:4,
+  proof:'57 of 57 automatic tests pass, and proven against ISO’s own system',risks:192,
+  short:'UFG filed loss cost multipliers for commercial property in Iowa, by kind of business (three class groups) and type of loss. For most classes United Fire is 51% above ISO for fire and 228% above for wind and hail; Addison’s factors are about 20% higher than United Fire’s. Overall United Fire sits about 68% above ISO and Addison about 102%.',
+  cos:{UFC:68.2,ADD:102.1},
+  rows:[['All other classes',[['Fire and lightning',{UFC:[51,'1.511'],ADD:[81,'1.81']}],['Wind and hail, broad and special form',{UFC:[228,'3.280'],ADD:[293,'3.93']}],['Earthquake',{UFC:[111,'2.11'],ADD:[164,'2.64']}]]],
+        ['Class group A',[['Fire and lightning',{UFC:[7,'1.07'],ADD:[28,'1.28']}],['Wind and hail, broad and special form',{UFC:[145,'2.45'],ADD:[194,'2.94']}]]],
+        ['Class group B',[['Fire and lightning',{UFC:[-12,'0.88'],ADD:[5,'1.05']}],['Wind and hail, broad and special form',{UFC:[106,'2.06'],ADD:[147,'2.47']}]]]],
+  eff:{UFC:null,ADD:{Mercantile:118.1,Apartments:113.5,Warehouses:110.6,'Restaurants and bars':105.7,Offices:88.7,Manufacturing:82.1}},
+  mixed:'United Fire’s effect by type of business was worked out for Alabama and Iowa together, so only its Iowa total (+68.2%) is shown here.',
+  docs:[['UFG_IA_CP_LCM_Filing_UNFG-134289779.pdf','The filing: memo, the multiplier table (pp 2–3), supporting forms'],['UFG_IA_CP_LCMs.csv','The same table typed out, with the approval and effective dates']],
+  hist:'Received, reviewed and built; proven in full against ISO’s own system.',versions:1}];
+const STEPS=['Received','Reviewed','Effect worked out','In use','Proven'];
+// Test results. DEV-003 is real (its filed factors against the impact run's coverage split, and its suite); the others
+// are illustrative where marked. "exp" is what the filing says; "got" is what our engine produced.
+const T={
+ 'DEV-003':{ran:'Oct 16, 2026',risks:30,
+  factors:[['United Fire','Premises and operations',-5.8,-5.8],['United Fire','Products and completed work',78.9,78.9],['Addison','Premises and operations',27.2,27.2],
+   ['Addison','Products and completed work',141.5,141.5],['United Fire','Minimum premium','$500','$500'],['Addison','Minimum premium','$625','$625'],
+   ['Both','Experience rating expected loss ratio','68.6%','68.6%'],['Both','Specialty ("a"-rated) class','ISO\u2019s rate','ISO\u2019s rate']],
+  expect:{UFC:26.4,ADD:70.4},got:{UFC:26.4,ADD:70.4},
+  carrier:{what:'UFG\u2019s own filed indication',val:'+28.5% combined',parts:'premises +1.0%, products +70.2%',ours:'premises \u22125.8% / +27.2%, products +78.9% / +141.5%'},
+  iso:{calls:2,last:'Both companies agree with ISO, field for field (Oct 16, 2026)'},
+  tryit:{UFC:{Manufacturing:[9681,15380],Apartments:[30154,28492],"Lessor's risk":[4076,5097]},ADD:{Manufacturing:[9681,20666],Apartments:[30154,38409],"Lessor's risk":[4076,6681]}},per:6},
+ 'DEV-002':{ran:null,risks:192,illus:true,
+  factors:[['United Fire','Fire and lightning, all other classes',118.5,118.5],['United Fire','Wind and hail, all other classes',119.2,119.2],['Lafayette','Fire and lightning, all other classes',173.1,173.1],
+   ['Lafayette','Wind and hail, all other classes',174.0,174.0],['Both','Minimum premium','$300','$300'],['Both','Terrorism','2% of property premium','2% of property premium']],more:9,
+  expect:{UFC:108.5,LAF:160.7},got:{UFC:108.5,LAF:160.7},carrier:null,
+  iso:{calls:6,last:null},
+  tryit:{LAF:{Apartments:[451350,1232967],Offices:[221135,532682],Mercantile:[417975,1033602]}},per:{Apartments:36,Offices:24,Mercantile:36}},
+ 'DEV-001':{ran:'Oct 16, 2026',risks:192,illus:true,
+  factors:[['United Fire','Fire and lightning, all other classes',51.1,51.1],['United Fire','Wind and hail, all other classes',228.0,228.0],['Addison','Fire and lightning, all other classes',81.3,81.3],
+   ['Addison','Wind and hail, all other classes',293.0,293.0]],more:22,
+  expect:{UFC:68.2,ADD:102.1},got:{UFC:68.2,ADD:102.1},carrier:null,
+  iso:{calls:6,last:'Proven against ISO\u2019s own system: 57 of 57 checks'},
+  tryit:{ADD:{Apartments:[315099,672831],Offices:[186300,351586],Mercantile:[301298,657205]}},per:{Apartments:36,Offices:24,Mercantile:36}}};
+const TOL=1;   // points either side of the expected effect before a check is flagged
+let S={view:'filings',sel:'DEV-003',tab:'short',tech:false,running:null,tryCo:null,tryType:null,isoAsk:false};
+const pc=v=>(v>0?'+':'')+(Math.round(v*10)/10)+'%';
+const heat=v=>v<0?'var(--teal-soft)':v<50?'var(--h1)':v<100?'var(--h2)':v<150?'var(--h3)':'var(--h4)';
+const hx=v=>'<span class="hx" style="background:'+heat(v)+'">'+pc(v)+'</span>';
+const fmt=d=>new Date(d+'T12:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+const sel=()=>F.find(f=>f.id===S.sel);
+const title=f=>f.line+' · '+f.st;
+
+function drawSum(){const cos=new Set(F.flatMap(f=>Object.keys(f.cos)));const states=new Set(F.map(f=>f.ab));
+  const all=F.flatMap(f=>Object.values(f.cos));
+  document.getElementById('sum').innerHTML=[[F.length,'filings, all in use'],[cos.size,'companies in '+states.size+' states'],
+    [pc(Math.min(...all))+' to '+pc(Math.max(...all)),'typical premium vs ISO'],[F.filter(f=>T[f.id].ran).length+' of '+F.length,(F.every(f=>T[f.id].ran)?'tested':'tested; '+F.filter(f=>!T[f.id].ran).length+' never tested')]]
+    .map(([b,s])=>'<div><b>'+b+'</b><span>'+s+'</span></div>').join('');}
+
+function drawCards(){document.getElementById('cards').innerHTML=F.map(f=>'<button class="fc'+(f.id===S.sel?' on':'')+'" data-f="'+f.id+'">'+
+  '<div><div class="msg">UFG Insurance'+(S.tech?' · SERFF '+f.serff:'')+'</div><div class="t">'+title(f)+'</div></div>'+
+  '<div class="co">'+Object.entries(f.cos).map(([c,v])=>'<span>'+CO[c].n+'</span>'+hx(v)).join('')+'</div>'+
+  '<div><div class="prog">'+STEPS.map((s,i)=>'<i class="'+(i<=f.step?'d':'')+'"></i>').join('')+'</div><span>'+(f.proof?'Proven':'In use')+' · new policies from '+fmt(f.newEff)+'</span></div>'+
+  (T[f.id].ran?'<span class="chipt">\u2713 Tested '+T[f.id].ran+'</span>':'<span class="chipt no">Never tested</span>')+'</button>').join('');}
+
+function drawCompanies(){const cols=F.map(f=>({f,h:f.line+'<br>'+f.st}));
+  document.getElementById('key').innerHTML=[['var(--teal-soft)','Below ISO'],['var(--h1)','Up to 50% above'],['var(--h2)','50–100% above'],['var(--h3)','100–150% above'],['var(--h4)','150% or more above']]
+    .map(([c,l])=>'<span><i style="background:'+c+'"></i>'+l+'</span>').join('');
+  document.getElementById('cgrid').innerHTML='<tr><th></th>'+cols.map(c=>'<th>'+c.h+'</th>').join('')+'</tr>'+
+    Object.entries(CO).map(([k,c])=>'<tr><td class="nm"><b>'+c.n+'</b>'+(S.tech?'<small>NAIC '+c.naic+'</small>':'')+'</td>'+cols.map(({f})=>{const v=f.cos[k];
+      return v==null?'<td class="iso">ISO’s rates</td>':'<td class="c'+(f.id===S.sel?' on':'')+'" data-f="'+f.id+'" style="background:'+heat(v)+'"><b>'+pc(v)+'</b><small>since '+fmt(f.newEff)+'</small></td>';}).join('')+'</tr>').join('');}
+
+function drawTimeline(){const a=new Date('2025-05-01').getTime(),b=new Date('2026-01-01').getTime(),x=d=>(100*(new Date(d).getTime()-a)/(b-a));
+  const months=['May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan 26'];
+  document.getElementById('tl').innerHTML='<div></div><div class="ax">'+months.map(m=>'<span>'+m+'</span>').join('')+'</div>'+
+    F.map(f=>'<div class="nm" data-f="'+f.id+'"><b>'+title(f)+'</b><small>'+Object.keys(f.cos).map(c=>CO[c].n.split(' ')[0]).join(', ')+'</small></div>'+
+      '<div class="lane" style="margin-bottom:18px"><i class="n" style="left:'+x(f.newEff)+'%;right:0"></i><i class="r" style="left:'+x(f.renEff)+'%;right:0"></i>'+
+      '<span style="left:'+x(f.newEff)+'%">new '+fmt(f.newEff)+'</span><span style="left:'+x(f.renEff)+'%">renewals '+fmt(f.renEff)+'</span></div>').join('');}
+
+function cell(v){if(v==null)return '—';if(typeof v==='string')return v;return hx(v[0])+(S.tech?'<span class="fac">× '+v[1]+'</span>':'');}
+
+function drawDetail(){const f=sel(),cs=Object.keys(f.cos),el=document.getElementById('detail');
+  const tabs=[['short','In short'],['rows','What changes'],['eff','Effect on premium'],['test','Test it'],['trail','Paper trail']];
+  let body='';
+  if(S.tab==='short')body='<p class="short">'+f.short+'</p><div class="big">'+cs.map(c=>'<div style="background:'+heat(f.cos[c])+'"><b>'+pc(f.cos[c])+'</b><span>'+CO[c].n+': typical premium against ISO</span></div>').join('')+
+    '<div><b>'+fmt(f.newEff).replace(/, \d+$/,'')+'</b><span>new policies; renewals from '+fmt(f.renEff)+'</span></div></div>'+
+    '<div class="msg">Worked out by pricing '+f.risks+' typical businesses both ways on our own engine. Changes always sit on top of ISO’s rates in force on the policy date.</div>';
+  if(S.tab==='rows')body='<div class="scroll"><table class="ft"><tr><th>What</th>'+cs.map(c=>'<th style="text-align:center">'+CO[c].n+'</th>').join('')+'</tr>'+
+    f.rows.map(([g,rs])=>'<tr class="grp"><td colspan="'+(cs.length+1)+'">'+g+'</td></tr>'+rs.map(([n,v])=>'<tr><td>'+n+'</td>'+cs.map(c=>'<td class="v">'+cell(v[c])+'</td>').join('')+'</tr>').join('')).join('')+'</table></div>'+
+    '<div class="msg">The percentage is how far the company’s rate sits from ISO’s'+(S.tech?'; the × figure is the filed loss cost multiplier':'. Switch on technical details for the filed multipliers')+'.</div>'+
+    (f.versions>1?'<details class="more"><summary>Earlier version (1 of '+f.versions+')</summary><p class="msg">Version 1 had the coverage rows only; version 2 added the policy rows on Oct 16, 2026.</p></details>':'');
+  if(S.tab==='eff'){const mx=Math.max(...cs.flatMap(c=>f.eff[c]?Object.values(f.eff[c]):[]),...Object.values(f.cos));const sc=v=>Math.abs(v)/mx*100;
+    body='<div class="eff">'+cs.map(c=>'<div class="co">'+CO[c].n+' '+hx(f.cos[c])+'</div>'+(f.eff[c]?Object.entries(f.eff[c]).map(([k,v])=>'<span>'+k+'</span><div class="bar"><i style="left:0;width:'+sc(v)+'%;background:'+heat(v)+(v<0?';outline:1.5px solid var(--teal-hover)':'')+'"></i></div><span class="p">'+pc(v)+'</span>').join(''):
+      '<span class="msg" style="grid-column:1/-1">'+f.mixed+'</span>')).join('')+'</div>'+
+      (f.byCov?'<div class="msg">By coverage: '+cs.map(c=>CO[c].n.split(' ')[0]+' '+Object.entries(f.byCov[c]).map(([k,v])=>k.toLowerCase()+' '+pc(v)).join(', ')).join(' · ')+'.</div>':'')+
+      '<div class="msg">'+f.risks+' typical businesses priced both ways on our engine. Not real customers.</div>';}
+  if(S.tab==='test')body=drawTest(f);
+  if(S.tab==='trail')body='<div class="trail">'+
+    '<div class="it"><span class="ic'+(f.proof?'':' x')+'">'+(f.proof?'✓':'!')+'</span><div><b>'+(f.proof?'Proven':'Not proven by automatic tests yet')+'</b><div class="msg">'+(f.proof||'It is in use, but no test run is recorded for it.')+'</div></div></div>'+
+    '<div class="it"><span class="ic">✎</span><div><b>History</b><div class="msg">'+f.hist+'</div><details class="more"><summary>The full log entry</summary><p class="msg">The filings log entry, as today.</p></details></div></div>'+
+    '<div class="it"><span class="ic">✓</span><div><b>Original documents, unchanged since we received them</b>'+f.docs.map(([n,w])=>'<div style="margin-top:6px"><a href="#">'+n+'</a><div class="msg">'+w+'</div>'+(S.tech?'<div class="tech">SHA-256 …</div>':'')+'</div>').join('')+'</div></div>'+
+    '</div>';
+  el.innerHTML='<div class="fhead"><div><div class="msg">UFG Insurance'+(S.tech?' · '+f.id+' · SERFF '+f.serff+' · v'+f.versions:'')+'</div><h2>'+title(f)+'</h2></div>'+
+    '<div class="steps">'+STEPS.map((s,i)=>'<span class="'+(i<f.step?'d':i===f.step?'now':'')+'">'+(i<f.step?'✓ ':'')+(i===4&&!f.proof?'In use, not proven':s)+'</span>').join('')+'</div></div>'+
+    '<div class="tabs" role="tablist">'+tabs.map(([k,n])=>'<button role="tab" data-tab="'+k+'" aria-selected="'+(S.tab===k)+'">'+n+'</button>').join('')+'</div>'+body;}
+
+function drawTest(f){const t=T[f.id],cs=Object.keys(f.cos);
+  if(S.running===f.id)return '<div class="msg">Pricing '+t.risks+' typical businesses with and without the filing on our engine\u2026</div>';
+  const ic=(ok)=>ok==null?'<span class="ic o">\u2013</span>':ok?'<span class="ic">\u2713</span>':'<span class="ic x">\u00d7</span>';
+  const head='<div class="row" style="justify-content:space-between"><div class="msg">'+(t.ran?'Last run '+t.ran+'.':'Never run.')+' The first two checks are free and use our engine only. The ISO spot check is optional.</div>'+
+    '<button class="btn primary" data-run="'+f.id+'">'+(t.ran?'Run again':'Run the free checks')+'</button></div>';
+  if(!t.ran)return '<div class="tst">'+head+'<div class="ref">Nothing has been checked yet. Running the free checks prices '+t.risks+' typical businesses both ways and compares the result with what the filing says. No ISO calls.</div></div>';
+  const fac=t.factors,ok1=fac.every(r=>r[2]===r[3]);
+  const c1='<div class="ck">'+ic(ok1)+'<div><h4>The filed factors apply as written</h4><div class="msg">For each row of the filing, sample risks priced with and without it. The change must equal the filed factor.</div></div>'+
+    '<span class="res">'+fac.length+(t.more?' + '+t.more:'')+' of '+(fac.length+(t.more||0))+' \u2713</span>'+
+    '<div class="bd"><details class="more"><summary>Show each row</summary><div class="scroll"><table class="ft"><tr><th>Company</th><th>Row</th><th style="text-align:right">Filed</th><th style="text-align:right">Our engine</th><th></th></tr>'+
+    fac.map(r=>'<tr><td>'+r[0]+'</td><td>'+r[1]+'</td><td style="text-align:right">'+(typeof r[2]==='number'?pc(r[2]):r[2])+'</td><td style="text-align:right">'+(typeof r[3]==='number'?pc(r[3]):r[3])+'</td><td>'+(r[2]===r[3]?'\u2713':'\u00d7')+'</td></tr>').join('')+
+    (t.more?'<tr><td colspan="5" class="msg">and '+t.more+' more rows, all \u2713</td></tr>':'')+'</table></div></details></div></div>';
+  const rows=cs.map(c=>{const e=t.expect[c],g=t.got[c],d=g-e,ok=Math.abs(d)<=TOL;
+    return '<tr><td>'+CO[c].n+'</td><td style="text-align:right"><input class="ex" data-ex="'+c+'" value="'+pc(e)+'" aria-label="Expected for '+CO[c].n+'"></td><td style="text-align:right">'+hx(g)+'</td><td style="text-align:right">'+(d>=0?'+':'\u2212')+Math.abs(d).toFixed(1)+' pts</td><td>'+(ok?'\u2713':'\u00d7 outside \u00b1'+TOL)+'</td></tr>';}).join('');
+  const ok2=cs.every(c=>Math.abs(t.got[c]-t.expect[c])<=TOL);
+  const c2='<div class="ck">'+ic(ok2)+'<div><h4>The effect on premium is what we expect</h4><div class="msg">The typical businesses priced again and compared with the effect we expect. The expected figure starts as the one recorded when the filing went into use; type your own to test against it.</div></div>'+
+    '<span class="res">'+(ok2?'Within \u00b1'+TOL+' pt':'Outside \u00b1'+TOL+' pt')+'</span><div class="bd"><div class="scroll"><table class="ft"><tr><th>Company</th><th style="text-align:right">Expected</th><th style="text-align:right">Now</th><th style="text-align:right">Difference</th><th></th></tr>'+rows+'</table></div>'+
+    (t.carrier?'<div class="ref"><b>'+t.carrier.what+':</b> '+t.carrier.val+' ('+t.carrier.parts+'). Ours by coverage: '+t.carrier.ours+'.<div class="msg">UFG measured this against its own past losses, not against ISO, so it is a sense check, not pass or fail. Both point the same way: premises close to ISO, products well above it.</div></div>':
+      '<div class="msg">This filing gives no expected figure of the carrier\u2019s own to compare with.</div>')+'</div></div>';
+  const c3='<div class="ck">'+ic(t.iso.last?true:null)+'<div><h4>ISO agrees <span class="msg" style="font:400 13.5px var(--body)">(optional spot check)</span></h4><div class="msg">ISO only ever prices ISO’s own rates (D21). One typical business per state is sent as its plain ISO request: ISO’s price must equal our technical price. With the first check, the insurer’s price is then ISO’s times the filed factors. Not the full ISO sweep.</div></div>'+
+    '<span class="cost iso">'+t.iso.calls+' ISO call'+(t.iso.calls===1?'':'s')+'</span><div class="bd">'+(t.iso.last?'<div class="msg">'+t.iso.last+'</div>':'<div class="msg">Not asked yet.</div>')+
+    (S.isoAsk?'<div class="ref">This sends '+t.iso.calls+' request'+(t.iso.calls===1?'':'s')+' to ISO from today\u2019s allowance. <div class="row" style="margin-top:8px"><button class="btn primary">Send '+t.iso.calls+'</button><button class="btn" data-iso="0">Cancel</button></div></div>':
+      '<div class="row"><button class="btn" data-iso="1">Ask ISO\u2026</button></div>')+'</div></div>';
+  const co=S.tryCo&&t.tryit[S.tryCo]?S.tryCo:Object.keys(t.tryit)[0],types=Object.keys(t.tryit[co]),ty=types.includes(S.tryType)?S.tryType:types[0];
+  const n=typeof t.per==='number'?t.per:t.per[ty],[a,b]=t.tryit[co][ty].map(x=>Math.round(x/n));
+  const c4='<div class="ck"><span class="ic o">?</span><div><h4>Try one</h4><div class="msg">An average '+ty.toLowerCase()+' risk from the typical set, priced both ways.</div></div><span class="cost">free</span>'+
+    '<div class="bd"><div class="try row"><select data-try="co">'+Object.keys(t.tryit).map(c=>'<option value="'+c+'"'+(c===co?' selected':'')+'>'+CO[c].n+'</option>').join('')+'</select>'+
+    '<select data-try="ty">'+types.map(x=>'<option'+(x===ty?' selected':'')+'>'+x+'</option>').join('')+'</select></div>'+
+    '<div class="tryout">ISO\u2019s rates <b>$'+a.toLocaleString()+'</b> \u00b7 with the filing <b>$'+b.toLocaleString()+'</b> \u00b7 '+hx((b-a)/a*100)+'</div>'+
+    '<div class="row"><button class="btn">Open this risk in the Workbench</button></div></div></div>';
+  return '<div class="tst">'+head+c1+c2+c3+c4+(t.illus?'<div class="msg">Wireframe note: the factor rows for this filing are illustrative; its effect figures are real.</div>':'')+'</div>';}
+function drawSide(){const f=sel();
+  document.getElementById('side').innerHTML='<div class="cap">Open filing</div><h3>'+title(f)+'</h3>'+
+    '<div class="msg">'+Object.keys(f.cos).map(c=>CO[c].n+' '+pc(f.cos[c])).join(' · ')+'<br>New policies from '+fmt(f.newEff)+'; renewals from '+fmt(f.renEff)+'.</div>'+
+    '<div class="row"><button class="btn">Price a risk with it</button><button class="btn">Open in Compare</button></div>'+
+    '<div class="cap">Add a filing</div><div class="drop">Drop a filing packet (.zip) here<br><span class="msg">or <a href="#" style="color:var(--brown)">choose a file</a>. Nothing is put in use by an upload.</span></div>'+
+    '<div class="cap">How a filing gets here</div><ol class="howto"><li>Reviewed in a Claude Code session</li><li>Its packet uploaded here</li><li>The effect on premiums worked out</li><li>Put in use, tested against ISO, logged</li></ol>'+
+    '<details class="more"><summary>Words on this page</summary><dl class="gl"><dt>Rate filing</dt><dd>An insurer’s request, approved by the state, to charge differently from ISO.</dd><dt>Loss cost multiplier</dt><dd>The factor applied to ISO’s rates. 1.10 is 10% above ISO; 0.94 is 6% below.</dd><dt>Class group</dt><dd>A set of kinds of business that share one factor.</dd><dt>“a”-rated class</dt><dd>A specialty class ISO publishes no rate for.</dd><dt>Typical businesses</dt><dd>Sample risks we price both ways to estimate the effect. Not real customers.</dd></dl></details>';}
+
+function draw(){drawSum();drawCards();drawCompanies();drawTimeline();drawDetail();drawSide();
+  ['filings','companies','timeline'].forEach(v=>document.getElementById('v-'+v).hidden=v!==S.view);
+  document.querySelectorAll('.views button').forEach(b=>b.setAttribute('aria-selected',b.dataset.v===S.view));}
+document.addEventListener('click',e=>{const v=e.target.closest('.views [data-v]');if(v){S.view=v.dataset.v;draw();return;}
+  const t=e.target.closest('[data-tab]');if(t){S.tab=t.dataset.tab;drawDetail();return;}
+  const f=e.target.closest('[data-f]');if(f){S.sel=f.dataset.f;draw();document.getElementById('detail').scrollIntoView({behavior:'smooth',block:'start'});}});
+document.getElementById('tech').addEventListener('change',e=>{S.tech=e.target.checked;draw();});
+function runOne(id){S.running=id;draw();setTimeout(()=>{S.running=null;T[id].ran='Oct 16, 2026';draw();},900);}
+document.addEventListener('click',e=>{const r=e.target.closest('[data-run]');if(r){runOne(r.dataset.run);return;}
+  const i=e.target.closest('[data-iso]');if(i){S.isoAsk=i.dataset.iso==='1';drawDetail();}});
+document.getElementById('runall').addEventListener('click',()=>{const b=document.getElementById('runall');b.textContent='Checking 3 filings\u2026';
+  setTimeout(()=>{F.forEach(f=>T[f.id].ran='Oct 16, 2026');b.textContent='Run the free checks on every filing';draw();},900);});
+document.addEventListener('change',e=>{const t=e.target;
+  if(t.dataset.try){if(t.dataset.try==='co')S.tryCo=t.value;else S.tryType=t.value;drawDetail();}
+  if(t.dataset.ex){const v=parseFloat(t.value.replace(/[^\d.\-\u2212]/g,'').replace('\u2212','-'));if(!isNaN(v))T[S.sel].expect[t.dataset.ex]=v;drawDetail();}});
+draw();
+</script>

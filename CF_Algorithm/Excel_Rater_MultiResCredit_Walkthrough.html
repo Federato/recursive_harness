@@ -1,0 +1,412 @@
+<title>Configuring MultiResidentialPropSpecialCreditFactor — Step by Step</title>
+<style>
+  :root {
+    --bg: #eef1f4; --paper: #ffffff; --ink: #1c2733; --ink-soft: #55606b; --ink-faint: #8b95a1;
+    --grid-line: #d7dce2; --header-fill: #e4e8ed; --header-fill-strong: #1e3a45; --header-text-strong: #eef4f3;
+    --accent: #1e3a45; --accent-soft: #cfe0e0; --accent-warm: #b96a2c; --accent-warm-soft: #f3e2cf;
+    --good: #2f7d5a; --good-soft: #dcefe4; --warn: #a53d26; --warn-soft: #f7ddd4;
+    --shadow: 0 1px 2px rgba(28,39,51,0.06), 0 8px 24px rgba(28,39,51,0.07);
+    --font-display: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+    --font-body: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+    --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, "Liberation Mono", monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #10151b; --paper: #161d25; --ink: #e7ecf1; --ink-soft: #a3aebb; --ink-faint: #6d7885;
+      --grid-line: #2b3742; --header-fill: #1b242d; --header-fill-strong: #21504f; --header-text-strong: #eaf3f1;
+      --accent: #59a9ac; --accent-soft: #1d3535; --accent-warm: #dd9a5c; --accent-warm-soft: #372a1c;
+      --good: #63c090; --good-soft: #1b3226; --warn: #e0806a; --warn-soft: #3a2019;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 28px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #10151b; --paper: #161d25; --ink: #e7ecf1; --ink-soft: #a3aebb; --ink-faint: #6d7885;
+    --grid-line: #2b3742; --header-fill: #1b242d; --header-fill-strong: #21504f; --header-text-strong: #eaf3f1;
+    --accent: #59a9ac; --accent-soft: #1d3535; --accent-warm: #dd9a5c; --accent-warm-soft: #372a1c;
+    --good: #63c090; --good-soft: #1b3226; --warn: #e0806a; --warn-soft: #3a2019;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 28px rgba(0,0,0,0.35);
+  }
+  :root[data-theme="light"] {
+    --bg: #eef1f4; --paper: #ffffff; --ink: #1c2733; --ink-soft: #55606b; --ink-faint: #8b95a1;
+    --grid-line: #d7dce2; --header-fill: #e4e8ed; --header-fill-strong: #1e3a45; --header-text-strong: #eef4f3;
+    --accent: #1e3a45; --accent-soft: #cfe0e0; --accent-warm: #b96a2c; --accent-warm-soft: #f3e2cf;
+    --good: #2f7d5a; --good-soft: #dcefe4; --warn: #a53d26; --warn-soft: #f7ddd4;
+    --shadow: 0 1px 2px rgba(28,39,51,0.06), 0 8px 24px rgba(28,39,51,0.07);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); line-height: 1.55; overflow-x: hidden; }
+  a { color: var(--accent); }
+  a:focus-visible, button:focus-visible, .jump:focus-visible { outline: 2px solid var(--accent-warm); outline-offset: 2px; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 24px 96px; }
+
+  header.masthead { padding: 56px 24px 28px; max-width: 980px; margin: 0 auto; }
+  .eyebrow { font-family: var(--font-ui); font-size: 12px; letter-spacing: 0.11em; text-transform: uppercase; color: var(--accent-warm); font-weight: 600; margin: 0 0 10px; }
+  h1.title { font-family: var(--font-display); font-size: clamp(28px, 4vw, 40px); font-weight: 400; margin: 0 0 14px; text-wrap: balance; color: var(--ink); }
+  .dek { font-size: 17px; color: var(--ink-soft); max-width: 66ch; margin: 0 0 6px; }
+  .dek + .dek { margin-top: 10px; }
+  .dek code { font-family: var(--font-mono); font-size: 14.5px; background: var(--header-fill); padding: 1px 5px; border-radius: 3px; }
+
+  nav.jumpbar { position: sticky; top: 0; z-index: 20; background: var(--header-fill-strong); border-bottom: 1px solid var(--grid-line); }
+  .jumpbar-inner { max-width: 980px; margin: 0 auto; display: flex; align-items: stretch; overflow-x: auto; scrollbar-width: thin; }
+  .jumpbar-label { font-family: var(--font-ui); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--header-text-strong); opacity: 0.6; align-self: center; padding: 0 12px 0 20px; white-space: nowrap; flex: none; }
+  .jump { font-family: var(--font-ui); font-size: 13px; color: var(--header-text-strong); text-decoration: none; white-space: nowrap; padding: 13px 16px; border-bottom: 3px solid transparent; opacity: 0.72; flex: none; }
+  .jump:hover { opacity: 1; }
+  .jump .step-no { font-family: var(--font-mono); opacity: 0.7; margin-right: 6px; }
+
+  section.step-block { padding-top: 64px; scroll-margin-top: 56px; }
+  .step-heading { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 6px; }
+  .step-index { font-family: var(--font-mono); font-size: 13px; color: var(--accent-warm); font-variant-numeric: tabular-nums; }
+  h2.step-title { font-family: var(--font-display); font-size: 26px; font-weight: 400; margin: 0; color: var(--ink); }
+  .step-role { font-family: var(--font-ui); font-size: 13px; color: var(--ink-soft); margin: 0 0 22px; }
+
+  .xl-window { background: var(--paper); border: 1px solid var(--grid-line); border-radius: 6px; box-shadow: var(--shadow); overflow: hidden; }
+  .xl-titlebar { display: flex; align-items: center; gap: 10px; padding: 9px 14px; background: var(--header-fill-strong); color: var(--header-text-strong); font-family: var(--font-ui); font-size: 12.5px; }
+  .xl-dots { display: flex; gap: 5px; flex: none; }
+  .xl-dots span { width: 8px; height: 8px; border-radius: 50%; background: currentColor; opacity: 0.35; }
+  .xl-filename { opacity: 0.92; }
+  .xl-filename b { font-weight: 600; }
+  .xl-titlebar-spacer { flex: 1; }
+  .xl-mode { font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.55; }
+  .xl-formulabar { display: flex; align-items: center; gap: 10px; padding: 6px 12px; background: var(--header-fill); border-bottom: 1px solid var(--grid-line); font-family: var(--font-mono); font-size: 12px; }
+  .xl-cellref { background: var(--paper); border: 1px solid var(--grid-line); border-radius: 3px; padding: 2px 8px; color: var(--accent); font-weight: 600; flex: none; min-width: 46px; text-align: center; }
+  .xl-fx { color: var(--ink-faint); flex: none; font-style: italic; }
+  .xl-formula { color: var(--ink-soft); overflow-x: auto; white-space: nowrap; padding-right: 4px; }
+  .xl-scroll { overflow-x: auto; }
+  table.xl-grid { border-collapse: collapse; width: 100%; font-family: var(--font-mono); font-size: 12.5px; }
+  table.xl-grid th, table.xl-grid td { border: 1px solid var(--grid-line); padding: 6px 10px; text-align: left; white-space: nowrap; }
+  .colletters th { background: var(--header-fill); color: var(--ink-faint); font-family: var(--font-ui); font-size: 10.5px; text-align: center; padding: 3px 10px; font-weight: 600; position: sticky; top: 0; }
+  .rownum { background: var(--header-fill); color: var(--ink-faint); font-family: var(--font-ui); font-size: 11px; text-align: center !important; font-weight: 600; width: 1%; }
+  .fieldrow th { background: var(--accent); color: var(--header-text-strong); font-family: var(--font-ui); font-size: 11.5px; font-weight: 600; text-align: left; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  td.formula-cell { background: color-mix(in srgb, var(--accent-warm-soft) 100%, transparent); color: var(--accent-warm); font-weight: 600; }
+  td.warn-cell { background: var(--warn-soft); color: var(--warn); font-weight: 600; }
+  td.good-cell { background: var(--good-soft); color: var(--good); }
+  td.total-cell { background: var(--header-fill); font-weight: 700; }
+  .subtle { color: var(--ink-faint); font-style: italic; }
+  .xl-sheettabs { display: flex; align-items: flex-end; gap: 2px; padding: 8px 10px 0; background: var(--header-fill); overflow-x: auto; }
+  .xl-sheettab { font-family: var(--font-ui); font-size: 11px; padding: 6px 12px; color: var(--ink-faint); background: var(--header-fill); border: 1px solid var(--grid-line); border-bottom: none; border-radius: 4px 4px 0 0; white-space: nowrap; }
+  .xl-sheettab.active { background: var(--paper); color: var(--ink); font-weight: 600; border-color: var(--grid-line); }
+
+  .instructions { margin-top: 22px; display: grid; gap: 14px; }
+  .instructions p { margin: 0; font-size: 15.5px; color: var(--ink); max-width: 70ch; }
+  .instructions p.lede { font-size: 16.5px; }
+  .field-notes { margin: 4px 0 0; padding: 0; list-style: none; display: grid; gap: 9px; max-width: 70ch; }
+  .field-notes li { font-size: 14.5px; color: var(--ink-soft); padding-left: 16px; border-left: 2px solid var(--grid-line); }
+  .field-notes b { font-family: var(--font-mono); font-size: 13px; color: var(--ink); background: var(--header-fill); padding: 1px 5px; border-radius: 3px; }
+
+  .callout { display: flex; gap: 10px; padding: 12px 14px; border-radius: 5px; max-width: 70ch; font-size: 14.5px; margin-top: 14px; }
+  .callout.warn { background: var(--warn-soft); color: var(--warn); }
+  .callout.warm { background: var(--accent-warm-soft); color: var(--accent-warm); }
+  .callout.good { background: var(--good-soft); color: var(--good); }
+  .callout b { font-weight: 700; }
+  .callout-mark { flex: none; font-family: var(--font-ui); font-weight: 700; }
+
+  .formula-label { font-family: var(--font-ui); font-size: 11px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--ink-faint); margin: 28px 0 10px; }
+  .formula-label:first-child { margin-top: 0; }
+  .formula-panel { background: var(--header-fill-strong); color: var(--header-text-strong); border-radius: 6px; padding: 16px 18px; font-family: var(--font-mono); font-size: 12px; line-height: 1.75; overflow-x: auto; }
+  .formula-panel pre { margin: 0; white-space: pre; }
+  .formula-panel .kw { color: var(--accent-warm); font-weight: 700; }
+  .formula-panel .fn { color: #a9d6d8; }
+  .formula-panel .cm { opacity: 0.55; font-style: italic; }
+
+  /* progress rail */
+  .progress-rail { display: flex; gap: 6px; margin: 4px 0 26px; }
+  .progress-rail .dot { height: 4px; flex: 1; border-radius: 2px; background: var(--grid-line); }
+  .progress-rail .dot.done { background: var(--accent-warm); }
+
+  hr.divider { border: none; border-top: 1px solid var(--grid-line); margin: 64px 0 0; }
+
+  footer.closing { max-width: 980px; margin: 72px auto 0; padding: 0 24px 64px; }
+  footer.closing h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0 0 12px; }
+  footer.closing ol { padding-left: 20px; display: grid; gap: 8px; max-width: 64ch; }
+  footer.closing li { font-size: 15px; color: var(--ink-soft); }
+  footer.closing p.note { margin-top: 20px; font-size: 13px; color: var(--ink-faint); font-family: var(--font-ui); }
+</style>
+
+<header class="masthead">
+  <p class="eyebrow">CF_Algorithm &middot; Basic Group I &middot; Building</p>
+  <h1 class="title">Configuring <code>MultiResidentialPropSpecialCreditFactor</code></h1>
+  <p class="dek">Nine steps, in the order you'd actually build them into <code>BldgBGIRating</code>: the eligibility gate, the two lookup tables, the two lookup formulas, the combine step, and the two places it plugs into the rate chain. Each step below is a picture of the tab, not the tab itself — every value is a plausible example.</p>
+  <p class="dek">Source: <code>CommercialPropertyStructureRules.Rule.xml</code> — <code>SetMultiResidentialPropSpecialCreditFactor</code> (line 5586), <code>SetMultiResidentialPropSpecialCreditHeatFactor</code> (line 5386), <code>SetMultiResidentialPropSpecialCreditControlFactor</code> (line 5486), and the two <code>Lookup...</code> rules (lines 25121–25152).</p>
+  <div class="callout warm">
+    <span class="callout-mark">&#9888;</span>
+    <span><b>Cell addresses below are placeholders</b> — <code>C42</code>/<code>C43</code> continue the pattern from <code>C2</code> (State), <code>C40</code> (Deductible), <code>C41</code> (Limit) already confirmed on this tab, and the two lookup tables are sketched into <code>BC:BE</code>/<code>BF:BH</code> as free columns after the deductible table's <code>AW:BB</code>. Confirm both before building — this wireframe hasn't been checked against the live tab layout.</span>
+  </div>
+</header>
+
+<nav class="jumpbar" aria-label="Jump to step">
+  <div class="jumpbar-inner">
+    <span class="jumpbar-label">Steps</span>
+    <a class="jump" href="#s1"><span class="step-no">1</span>Inputs</a>
+    <a class="jump" href="#s2"><span class="step-no">2</span>The gate</a>
+    <a class="jump" href="#s3"><span class="step-no">3</span>Heat table</a>
+    <a class="jump" href="#s4"><span class="step-no">4</span>Control table</a>
+    <a class="jump" href="#s5"><span class="step-no">5</span>Heat formula</a>
+    <a class="jump" href="#s6"><span class="step-no">6</span>Control formula</a>
+    <a class="jump" href="#s7"><span class="step-no">7</span>Combine</a>
+    <a class="jump" href="#s8"><span class="step-no">8</span>Wire into FinalRate</a>
+    <a class="jump" href="#s9"><span class="step-no">9</span>Worked example</a>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <!-- STEP 1 -->
+  <section class="step-block" id="s1">
+    <div class="step-heading"><span class="step-index">STEP 1 / 9</span><h2 class="step-title">Two new inputs on <code>BldgBGIRating</code></h2></div>
+    <p class="step-role">Everything downstream reads these two cells plus the row's existing <code>ClassCodeToUse</code>.</p>
+    <div class="progress-rail">
+      <div class="dot done"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+    </div>
+    <div class="xl-window">
+      <div class="xl-titlebar"><div class="xl-dots"><span></span><span></span><span></span></div><div class="xl-filename">CFRater1.01.xlsb &mdash; <b>BldgBGIRating</b></div><div class="xl-titlebar-spacer"></div><div class="xl-mode">Configure</div></div>
+      <div class="xl-formulabar"><div class="xl-cellref">C42</div><div class="xl-fx">fx</div><div class="xl-formula">Yes, under single supervision, maintenance and control</div></div>
+      <div class="xl-scroll">
+        <table class="xl-grid">
+          <tr class="colletters"><th></th><th>B</th><th>C</th></tr>
+          <tr><td class="rownum">2</td><td>State</td><td>GA</td></tr>
+          <tr><td class="rownum">40</td><td>Deductible</td><td>1,000</td></tr>
+          <tr><td class="rownum">41</td><td>Limit of Insurance</td><td class="num">315,000</td></tr>
+          <tr><td class="rownum">42</td><td>MultipleResidentialPropSpecialCredit</td><td class="good-cell">Yes, under single supervision, maintenance and control</td></tr>
+          <tr><td class="rownum">43</td><td>LocOfHeatingPlantIndicator</td><td class="good-cell">Yes</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="instructions">
+      <ul class="field-notes">
+        <li><b>C42</b> &mdash; dropdown on the ERC domain <code>MultiResidentialPropSpecialCredits</code>: <code>No</code> / <code>Yes, not under single supervision, maintenance and control</code> / <code>Yes, under single supervision, maintenance and control</code>. This is the raw <code>MultipleResidentialPropSpecialCredit</code> field the rules read directly &mdash; both the gate test and the Control-factor lookup key.</li>
+        <li><b>C43</b> &mdash; <code>LocOfHeatingPlantIndicator</code>, a <code>Yes</code>/<code>No</code>/<code>Not Applicable</code> dropdown. Only consulted for the Heat factor, and only once the gate passes.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- STEP 2 -->
+  <section class="step-block" id="s2">
+    <div class="step-heading"><span class="step-index">STEP 2 / 9</span><h2 class="step-title">The eligibility gate</h2></div>
+    <p class="step-role">One test, reused three times &mdash; by the Heat rule, the Control rule, and the combine rule.</p>
+    <div class="progress-rail">
+      <div class="dot done"></div><div class="dot done"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+    </div>
+    <div class="instructions">
+      <p class="lede">The credit only ever applies to twelve apartment-building class codes, and only when the insured actually elected it (dropdown &ne; <code>No</code>). Everything else in this walkthrough is downstream of this one test being true.</p>
+    </div>
+    <div class="formula-label">Gate, as Excel (build once, reference from every downstream formula)</div>
+    <div class="formula-panel"><pre><span class="cm">' cell: a helper cell, e.g. C44 -- TRUE/FALSE</span>
+<span class="kw">=AND</span>(
+  C42&lt;&gt;<span class="fn">"No"</span>,
+  <span class="kw">OR</span>(
+    ClassCodeToUse=<span class="fn">"0311"</span>, ClassCodeToUse=<span class="fn">"0312"</span>, ClassCodeToUse=<span class="fn">"0313"</span>,
+    ClassCodeToUse=<span class="fn">"0321"</span>, ClassCodeToUse=<span class="fn">"0322"</span>, ClassCodeToUse=<span class="fn">"0323"</span>,
+    ClassCodeToUse=<span class="fn">"0331"</span>, ClassCodeToUse=<span class="fn">"0332"</span>, ClassCodeToUse=<span class="fn">"0333"</span>,
+    ClassCodeToUse=<span class="fn">"0341"</span>, ClassCodeToUse=<span class="fn">"0342"</span>, ClassCodeToUse=<span class="fn">"0343"</span>
+  )
+)</pre></div>
+    <div class="callout warm"><span class="callout-mark">&#9888;</span><span>The source rule repeats this exact test three times (once per rule) rather than computing it once. Building it as a single helper cell here is a simplification for the spreadsheet &mdash; the rating outcome is identical, since all three copies are byte-identical in the ISO source.</span></div>
+  </section>
+
+  <!-- STEP 3 -->
+  <section class="step-block" id="s3">
+    <div class="step-heading"><span class="step-index">STEP 3 / 9</span><h2 class="step-title">Build the Heat factor table</h2></div>
+    <p class="step-role"><code>MultiResidentialPropSpecialCreditHeatFactor</code> &mdash; three CW rows, plus two states with their own (empty) override.</p>
+    <div class="progress-rail">
+      <div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+    </div>
+    <div class="xl-window">
+      <div class="xl-titlebar"><div class="xl-dots"><span></span><span></span><span></span></div><div class="xl-filename">CFRater1.01.xlsb &mdash; <b>BldgBGIRating</b></div><div class="xl-titlebar-spacer"></div><div class="xl-mode">Table</div></div>
+      <div class="xl-scroll">
+        <table class="xl-grid">
+          <tr class="colletters"><th></th><th>BC</th><th>BD</th><th>BE</th></tr>
+          <tr class="fieldrow"><td class="rownum">1</td><th>StateCode</th><th>LocOfHeatingPlantIndicator</th><th>Factor</th></tr>
+          <tr><td class="rownum">2</td><td>CW</td><td>No</td><td class="num">1.00</td></tr>
+          <tr><td class="rownum">3</td><td>CW</td><td>Not Applicable</td><td class="num">1.00</td></tr>
+          <tr><td class="rownum">4</td><td>CW</td><td>Yes</td><td class="num">0.75</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="instructions">
+      <p>Pasted straight from <code>MultiResidentialPropSpecialCreditHeatFactor.RateTable.csv</code> &mdash; 44 states use these three CW rows. Only three data rows (<code>BC2:BE4</code>).</p>
+    </div>
+    <div class="callout warm"><span class="callout-mark">&#9888;</span><span><b>MA and ME each file their own Heat table, and it's empty</b> &mdash; header row only, zero data rows, no override to add here. Both states also restrict the <code>C42</code> dropdown domain (Step 1) to a single non-elective value (MA: only <code>No</code>; ME: only <code>Not Applicable</code>), so in practice the Step 2 gate never passes in either state and this lookup is never reached. The empty table is a symptom, not the mechanism &mdash; the real disabling happens at the dropdown.</span></div>
+  </section>
+
+  <!-- STEP 4 -->
+  <section class="step-block" id="s4">
+    <div class="step-heading"><span class="step-index">STEP 4 / 9</span><h2 class="step-title">Build the Control factor table</h2></div>
+    <p class="step-role"><code>MultiResidentialPropSpecialCreditControlFactor</code> &mdash; three CW rows, and a genuinely different CT row.</p>
+    <div class="progress-rail">
+      <div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+    </div>
+    <div class="xl-window">
+      <div class="xl-titlebar"><div class="xl-dots"><span></span><span></span><span></span></div><div class="xl-filename">CFRater1.01.xlsb &mdash; <b>BldgBGIRating</b></div><div class="xl-titlebar-spacer"></div><div class="xl-mode">Table</div></div>
+      <div class="xl-scroll">
+        <table class="xl-grid">
+          <tr class="colletters"><th></th><th>BF</th><th>BG</th><th>BH</th></tr>
+          <tr class="fieldrow"><td class="rownum">1</td><th>StateCode</th><th>MultiResidentialPropSpecialCredits</th><th>Factor</th></tr>
+          <tr><td class="rownum">2</td><td>CW</td><td>No</td><td class="num">1.00</td></tr>
+          <tr><td class="rownum">3</td><td>CW</td><td>Yes, not under single supervision, maintenance and control</td><td class="num">1.00</td></tr>
+          <tr><td class="rownum">4</td><td>CW</td><td>Yes, under single supervision, maintenance and control</td><td class="num">0.70</td></tr>
+          <tr><td class="rownum">5</td><td class="good-cell">CT</td><td class="good-cell">Yes, under single supervision, maintenance and control</td><td class="num good-cell">0.50</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="instructions">
+      <p>Pasted from <code>MultiResidentialPropSpecialCreditControlFactor.RateTable.csv</code> &mdash; now two source files, CW's three rows plus CT's one-row override appended (<code>BF5:BH5</code>). Note the middle option (<code>Yes, not under single supervision...</code>) is filed at <b>1.00</b> &mdash; it's a real dropdown choice but a no-op rate-wise. Only the third option actually discounts anything.</p>
+    </div>
+    <div class="callout warn"><span class="callout-mark">&#9888;</span><span><b>CT files its own row for this table</b>, and it's a real deviation, not a copy: <code>CT | Yes, under single supervision, maintenance and control | 0.50</code> &mdash; a deeper discount than CW's 0.70. CT does <em>not</em> override the Heat table (Step 3), so a CT building still uses CW's 0.75/1.00 Heat factors. Add CT's row to this table (Step 6's formula needs the two-pass state-then-CW pattern to pick it up). MA and ME file empty overrides here too, disabled the same way as their Heat tables (Step 3's callout).</span></div>
+  </section>
+
+  <!-- STEP 5 -->
+  <section class="step-block" id="s5">
+    <div class="step-heading"><span class="step-index">STEP 5 / 9</span><h2 class="step-title">Heat factor lookup formula</h2></div>
+    <p class="step-role">Two-pass state-then-CW pattern, same shape as the Deductible Factor walkthrough &mdash; the state pass exists for future state overrides even though none is filed for Heat today.</p>
+    <div class="progress-rail">
+      <div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+    </div>
+    <div class="xl-window">
+      <div class="xl-titlebar"><div class="xl-dots"><span></span><span></span><span></span></div><div class="xl-filename">CFRater1.01.xlsb &mdash; <b>BldgBGIRating</b></div><div class="xl-titlebar-spacer"></div><div class="xl-mode">Configure</div></div>
+      <div class="xl-formulabar">
+        <div class="xl-cellref">C45</div><div class="xl-fx">fx</div>
+        <div class="xl-formula">=IFERROR(XLOOKUP(1,(BD2:BD4=C43)*(BC2:BC4=C2),BE2:BE4),XLOOKUP(C43,BD2:BD4,BE2:BE4))</div>
+      </div>
+      <div class="xl-scroll">
+        <table class="xl-grid">
+          <tr class="colletters"><th></th><th>B</th><th>C</th></tr>
+          <tr><td class="rownum">43</td><td>LocOfHeatingPlantIndicator</td><td>Yes</td></tr>
+          <tr><td class="rownum">45</td><td>Heat factor</td><td class="formula-cell">0.75</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="instructions">
+      <p>Only run this when the Step 2 gate is <code>TRUE</code> <b>and</b> <code>C43</code> isn't blank &mdash; the source rule's Heat branch has that extra condition the Control branch doesn't. If the gate is <code>FALSE</code>, the source sets the Heat factor to a flat <code>1.0</code> instead of running the lookup at all.</p>
+    </div>
+    <div class="formula-label">Full cell, with the gate and blank-guard folded in</div>
+    <div class="formula-panel"><pre><span class="kw">=IF</span>(<span class="kw">AND</span>(C44, C43&lt;&gt;<span class="fn">""</span>),
+   <span class="kw">IFERROR</span>(
+     <span class="kw">XLOOKUP</span>(1, (BD2:BD4=C43)*(BC2:BC4=C2), BE2:BE4),
+     <span class="kw">XLOOKUP</span>(C43, BD2:BD4, BE2:BE4)),
+   1.0)  <span class="cm">' C44 = the Step 2 gate cell; state pass first, CW fallback second</span></pre></div>
+  </section>
+
+  <!-- STEP 6 -->
+  <section class="step-block" id="s6">
+    <div class="step-heading"><span class="step-index">STEP 6 / 9</span><h2 class="step-title">Control factor lookup formula</h2></div>
+    <p class="step-role">Same two-pass shape as Step 5 &mdash; and here the state pass actually matters, because CT's row (Step 4) is real.</p>
+    <div class="progress-rail">
+      <div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div>
+    </div>
+    <div class="xl-window">
+      <div class="xl-titlebar"><div class="xl-dots"><span></span><span></span><span></span></div><div class="xl-filename">CFRater1.01.xlsb &mdash; <b>BldgBGIRating</b></div><div class="xl-titlebar-spacer"></div><div class="xl-mode">Configure</div></div>
+      <div class="xl-formulabar">
+        <div class="xl-cellref">C46</div><div class="xl-fx">fx</div>
+        <div class="xl-formula">=IF(C44,IFERROR(XLOOKUP(1,(BG2:BG5=C42)*(BF2:BF5=C2),BH2:BH5),XLOOKUP(C42,BG2:BG5,BH2:BH5)),1.0)</div>
+      </div>
+      <div class="xl-scroll">
+        <table class="xl-grid">
+          <tr class="colletters"><th></th><th>B</th><th>C</th></tr>
+          <tr><td class="rownum">2</td><td>State</td><td>CT</td></tr>
+          <tr><td class="rownum">42</td><td>MultipleResidentialPropSpecialCredit</td><td>Yes, under single supervision, maintenance and control</td></tr>
+          <tr><td class="rownum">46</td><td>Control factor</td><td class="formula-cell">0.50</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="instructions">
+      <p>With <code>State = CT</code>, the state pass matches row 5 (<code>BF5:BH5</code>) and returns <b>0.50</b> instead of CW's 0.70. Any other state falls through to the CW pass, same as row-for-row in Step 5.</p>
+    </div>
+    <div class="formula-label">Full cell</div>
+    <div class="formula-panel"><pre><span class="kw">=IF</span>(C44,
+   <span class="kw">IFERROR</span>(
+     <span class="kw">XLOOKUP</span>(1, (BG2:BG5=C42)*(BF2:BF5=C2), BH2:BH5),
+     <span class="kw">XLOOKUP</span>(C42, BG2:BG5, BH2:BH5)),
+   1.0)</pre></div>
+  </section>
+
+  <!-- STEP 7 -->
+  <section class="step-block" id="s7">
+    <div class="step-heading"><span class="step-index">STEP 7 / 9</span><h2 class="step-title">Combine into <code>MultiResidentialPropSpecialCreditFactor</code></h2></div>
+    <p class="step-role">Product of the two, rounded to 3 decimals &mdash; or a flat 1.0 if the gate never passed.</p>
+    <div class="progress-rail">
+      <div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot"></div><div class="dot"></div>
+    </div>
+    <div class="xl-window">
+      <div class="xl-titlebar"><div class="xl-dots"><span></span><span></span><span></span></div><div class="xl-filename">CFRater1.01.xlsb &mdash; <b>BldgBGIRating</b></div><div class="xl-titlebar-spacer"></div><div class="xl-mode">Configure</div></div>
+      <div class="xl-formulabar">
+        <div class="xl-cellref">C47</div><div class="xl-fx">fx</div>
+        <div class="xl-formula">=IF(C44,ROUND(C45*C46,3),1.0)</div>
+      </div>
+      <div class="xl-scroll">
+        <table class="xl-grid">
+          <tr class="colletters"><th></th><th>B</th><th>C</th></tr>
+          <tr><td class="rownum">45</td><td>Heat factor</td><td class="num">0.75</td></tr>
+          <tr><td class="rownum">46</td><td>Control factor</td><td class="num">0.70</td></tr>
+          <tr><td class="rownum">47</td><td>MultiResidentialPropSpecialCreditFactor</td><td class="formula-cell total-cell">0.525</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="callout good"><span class="callout-mark">&#10003;</span><span>0.75 &times; 0.70 = 0.525, matching the source rule's <code>Product</code> step exactly (line 5657&ndash;5660). This is the worst-case (most-discounted) combination &mdash; central heat plant plus single supervision/maintenance/control.</span></div>
+  </section>
+
+  <!-- STEP 8 -->
+  <section class="step-block" id="s8">
+    <div class="step-heading"><span class="step-index">STEP 8 / 9</span><h2 class="step-title">Wire it into <code>FinalRate</code></h2></div>
+    <p class="step-role">One multiplication, appended to the existing chain on <code>Calc_Building_BGI</code>.</p>
+    <div class="progress-rail">
+      <div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot"></div>
+    </div>
+    <div class="formula-label">Before (Deductible Factor walkthrough, already built)</div>
+    <div class="formula-panel"><pre>FinalRate = AdjustedRate &times; DeductibleByLocationFactor &times; DeductibleFactor</pre></div>
+    <div class="formula-label">After (this factor appended, matching the source rule's own chain)</div>
+    <div class="formula-panel"><pre>FinalRate = AdjustedRate &times; DeductibleByLocationFactor &times; DeductibleFactor
+            &times; <span class="kw">MultiResidentialPropSpecialCreditFactor</span>  <span class="cm">' new — reads C47</span></pre></div>
+    <div class="instructions">
+      <p>On <code>Calc_Building_BGI</code>, the <code>FinalRate</code> cell's formula gets one more factor tacked onto the end, referencing <code>BldgBGIRating!C47</code> for that row. No other step in the chain changes &mdash; this credit only ever touches the very last multiplication, per <code>Excel_Rater_BasicGroupI.md</code> &sect;8.</p>
+    </div>
+    <div class="callout warm"><span class="callout-mark">&#9888;</span><span>Building-only. Contents (<code>Calc_Contents_BGI</code>) has no equivalent input or factor &mdash; don't wire this into the Contents chain.</span></div>
+  </section>
+
+  <!-- STEP 9 -->
+  <section class="step-block" id="s9">
+    <div class="step-heading"><span class="step-index">STEP 9 / 9</span><h2 class="step-title">Worked example, three scenarios</h2></div>
+    <p class="step-role">Same building, three elections &mdash; watch the gate and the two sub-factors move independently.</p>
+    <div class="progress-rail">
+      <div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div>
+    </div>
+    <div class="xl-scroll">
+      <table class="xl-grid">
+        <tr class="fieldrow">
+          <th>ClassCodeToUse</th><th>C42 (Control election)</th><th>C43 (Heat)</th><th>Gate</th><th>Heat factor</th><th>Control factor</th><th>Combined</th>
+        </tr>
+        <tr>
+          <td>0321</td><td class="warn-cell">No</td><td>Yes</td><td class="warn-cell">FALSE</td><td class="subtle">skipped</td><td class="subtle">skipped</td><td class="total-cell">1.000</td>
+        </tr>
+        <tr>
+          <td>0321</td><td>Yes, not under single supervision, maintenance and control</td><td>No</td><td class="good-cell">TRUE</td><td class="num">1.00</td><td class="num">1.00</td><td class="total-cell">1.000</td>
+        </tr>
+        <tr>
+          <td>0321</td><td class="good-cell">Yes, under single supervision, maintenance and control</td><td>Yes</td><td class="good-cell">TRUE</td><td class="num">0.75</td><td class="num">0.70</td><td class="formula-cell total-cell">0.525</td>
+        </tr>
+        <tr>
+          <td>0850 <span class="subtle">(non-apartment)</span></td><td>Yes, under single supervision, maintenance and control</td><td>Yes</td><td class="warn-cell">FALSE</td><td class="subtle">skipped</td><td class="subtle">skipped</td><td class="total-cell">1.000</td>
+        </tr>
+      </table>
+    </div>
+    <div class="instructions">
+      <p>Row 1 shows the credit declined even though the class code qualifies &mdash; the gate needs both conditions. Row 4 shows the flip side: full election, wrong class code, gate still fails. Only row 3 &mdash; qualifying class code, credit elected under single supervision, and a central heat plant &mdash; reaches the 0.525 floor.</p>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <footer class="closing">
+    <h2>What this walkthrough doesn't cover</h2>
+    <ol>
+      <li>Confirm the real column addresses on <code>BldgBGIRating</code> for <code>C42</code>/<code>C43</code>/<code>BC:BH</code> before building &mdash; everything here is placeholder layout, not verified against the live tab.</li>
+      <li>The gate helper cell (<code>C44</code>) isn't part of the source rule's own structure &mdash; it's a spreadsheet-only simplification to avoid repeating the twelve-way class-code <code>OR</code> three times. Confirm that's acceptable before building, since it's a deviation from a literal rule-by-rule translation.</li>
+      <li>This factor is Basic Group I Building-only. Basic Group II, Broad, and Special all also multiply <code>MultiResidentialPropSpecialCreditFactor</code> into their own <code>FinalRate</code> chains (per <code>CauseOfLoss_Building_RatingAlgorithms.md</code>) &mdash; this walkthrough builds it once for BGI; each other form's calc tab would need the same C42/C43/gate/table block repeated or shared, not yet designed here.</li>
+    </ol>
+    <p class="note">Source: CommercialPropertyStructureRules.Rule.xml lines 5386&ndash;5685, 25121&ndash;25152 &middot; tables MultiResidentialPropSpecialCreditHeatFactor.RateTable.csv, MultiResidentialPropSpecialCreditControlFactor.RateTable.csv &middot; CFCW20260601V01</p>
+  </footer>
+
+</div>

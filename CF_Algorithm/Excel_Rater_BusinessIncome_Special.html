@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Business Income — Special</title>
+<style>
+  body { font-family: Georgia, "Iowan Old Style", serif; max-width: 980px; margin: 0 auto; padding: 40px 24px 80px; color: #1b232e; background: #f5f6f4; line-height: 1.55; }
+  h1 { font-size: 26px; margin-bottom: 4px; }
+  .subtitle { font-family: -apple-system, "Segoe UI", sans-serif; color: #55606e; font-size: 15px; margin-bottom: 28px; }
+  .banner { background: #eef3ee; border: 1px solid #b9cdb9; border-radius: 6px; padding: 14px 16px; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13.5px; margin-bottom: 32px; }
+  .banner b { color: #2f6b4f; }
+  h2 { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 21px; border-bottom: 3px solid #b9a577; padding-bottom: 8px; margin-top: 52px; }
+  h2 .count { font-size: 12px; letter-spacing: .05em; text-transform: uppercase; color: #8a5a1f; background: #f4e7d4; padding: 2px 9px; border-radius: 10px; margin-left: 10px; vertical-align: middle; }
+  h3 { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 16px; margin-top: 28px; }
+  p.section-intro { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13.5px; color: #444; background: #fff; border-left: 3px solid #b9a577; padding: 10px 16px; margin: 14px 0 20px; }
+  p.note { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13.5px; color: #55606e; }
+  table { width: 100%; border-collapse: collapse; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13px; margin: 16px 0 28px; }
+  th, td { border: 1px solid #d5d9d0; padding: 8px 10px; text-align: left; vertical-align: top; }
+  th { background: #e2e6dc; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
+  td.factor { font-weight: 600; }
+  .confirmed { color: #2f6b4f; }
+  .gap { color: #9a5b1f; font-weight: 600; }
+  .missing { color: #999; font-style: italic; }
+  code { font-family: ui-monospace, Consolas, monospace; background: #eceee8; padding: 1px 5px; border-radius: 3px; font-size: .92em; }
+  .algo { background: #101720; color: #dbe6ee; border-radius: 8px; padding: 18px 20px; font-family: ui-monospace, Consolas, monospace; font-size: 13px; line-height: 1.7; overflow-x: auto; margin: 14px 0 24px; white-space: pre; }
+  .algo .kw { color: #e3b873; }
+  .algo .tbl { color: #9fd4c4; }
+  .algo .cm { color: #7f8b98; font-style: italic; }
+  .stepnum { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; background: #8a5a1f; color: #fff; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 12px; font-weight: 700; margin-right: 8px; }
+  blockquote { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13px; background: #fff; border-left: 3px solid #b9a577; padding: 8px 14px; margin: 10px 0; color: #444; }
+
+  .tag { display: inline-block; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; padding: 2px 8px; border-radius: 10px; margin-left: 8px; vertical-align: middle; }
+  .tag.copy { background: #eef3ee; color: #2f6b4f; }
+  .tag.own { background: #e2e6dc; color: #445; }
+  .copybox { border: 1px solid #b9cdb9; background: #f4f9f4; border-radius: 6px; padding: 12px 16px; margin: 10px 0 20px; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13.5px; color: #2f5c40; }
+  .copybox b { color: #234a30; }
+</style>
+</head>
+<body>
+
+<h1>Business Income — Special</h1>
+<p class="subtitle">The one form where Business Income and Building genuinely diverge in shape · CFRater1.01.xlsb build reference</p>
+
+<div class="banner">
+  <b>Source.</b> Traced directly against <code>SetSpecialRatesAndFactors</code> (line 4089),
+  <code>SetSpecialTheftExclusionIndicator</code> (4099), <code>SetSpecialIncludingTheftTypeRisk</code> (4118),
+  <code>SetSpecialTheftExclusionFactor</code> (4167), <code>SetSpecialBaseRate</code> (4221),
+  <code>SetSpecialRate</code> (4361), <code>SetSpecialCOLAdjustment</code> (4408), and
+  <code>SetFinalSpecialRate</code> (8080) in <code>CommercialPropertyBusinessIncomeRules.Rule.xml</code>,
+  2026-09-11. Confirms and closes two gaps the source doc (<code>CauseOfLoss_BusinessIncome_
+  RatingAlgorithms.md</code> §"Special — rate build-up") had flagged as "not fully traced." Same visual
+  format as the Basic Group I / II / Broad references.
+</div>
+
+<h2>1. The headline finding — this is where Business Income stops copying Building's shape</h2>
+<p class="section-intro">
+  Building's own Special <i>building</i> rate is a flat statewide constant with no construction dependency
+  at all. Business Income's Special form is the opposite — it varies by construction type <b>and</b> by a
+  theft/apartment-condominium classification that Building's Special form has no equivalent of whatsoever.
+  This is the most structurally distinct of the five Business Income forms, not a smaller version of
+  something Building already does.
+</p>
+<table>
+<tr><th>Aspect</th><th>Building's Special</th><th>Business Income's Special</th></tr>
+<tr><td>Base rate shape</td><td>flat statewide constant, no construction dependency</td><td>varies by <code>ConstructionTypeToUse</code> <b>and</b> theft/apartment-condo classification</td></tr>
+<tr><td>Theft exclusion</td><td>Building's own indicator/form</td><td>a <b>separate</b> Business-Income-specific theft-exclusion record (<code>CommercialPropertyTheftExclusionBusnIncomeTable</code>) — tracked independently of Building's own</td></tr>
+<tr><td>Roof-surfacing concept</td><td>present (COLAdj multiplies a roof-ACV factor)</td><td><span class="missing">absent entirely — confirmed, Business Income has no roof-surfacing concept anywhere in this coverage</span></td></tr>
+<tr><td><code>Factor</code> (coinsurance/type-of-risk)</td><td>n/a — different mechanism</td><td><span class="missing">not read — same as Broad, <code>FinalSpecialRate</code> is a straight copy</span></td></tr>
+</table>
+
+<div class="copybox">
+  <b>Practical takeaway:</b> don't template this form off Broad's simplicity or off Building's Special.
+  It needs its own base-rate table (4-key lookup: state, construction type, coverage type, theft/apt-condo
+  classification), its own theft-exclusion gate, and its own theft-exclusion <i>factor</i> table — three
+  moving pieces Broad doesn't have and Building's own Special doesn't have in this shape either.
+</div>
+
+<h2>2. Required inputs</h2>
+<table>
+<tr><th>Field</th><th>Feeds</th><th>Note</th></tr>
+<tr><td class="factor"><code>Calc_Building_Special.ConstructionTypeToUse</code></td><td><code>SpecialBaseRate</code> lookup key</td><td><span class="tag copy">copy</span> — same Building-owned field every other form in this coverage reads</td></tr>
+<tr><td class="factor"><code>Calc_Building_Special.ApartmentCondoIndicator</code></td><td><code>SpecialIncludingTheftTypeRisk</code> derivation</td><td><span class="tag copy">copy</span> — confirmed set only in Structure rules (line 3992/3997), Business Income reads it via <code>../../</code>, never computes its own</td></tr>
+<tr><td class="factor">a <code>CommercialPropertyTheftExclusionBusnIncome</code> record</td><td><code>SpecialTheftExclusionIndicator</code></td><td>Existence test — <b>Business-Income-specific</b> endorsement, tracked separately from Building's own theft-exclusion record even though both derive from the same CP 10 33 form family</td></tr>
+<tr><td class="factor"><code>BI_CovType</code></td><td><code>SpecialBaseRate</code> lookup key selection</td><td>Same two-way split as Broad: <code>"Business Income Without Extra Expense"</code> gets its own key, everything else collapses to <code>"All Other"</code></td></tr>
+<tr><td class="factor"><code>ClassCodeToUse</code></td><td><code>SpecialBaseRate</code> Builders Risk branch gate</td><td><span class="tag copy">copy</span> — same Building field the Builders Risk gate reads everywhere else in this coverage (<code>= "1150"</code>)</td></tr>
+</table>
+
+<h2>3. Required tables</h2>
+<table>
+<tr><th>Table</th><th>Keys</th><th>CW data</th></tr>
+<tr>
+  <td class="factor">SpecialFormIncldgTheftTimeElementBaseRate</td>
+  <td>State, ConstructionTypeToUse, CovType ("Business Income Without Extra Expense" / "All Other"), SpecialIncludingTheftTypeRisk</td>
+  <td><span class="confirmed">Confirmed filed — 24 CW rows.</span> Four dimensions collapse to 6 construction types &times; 2 coverage types &times; 2 theft/apt-condo classes. Range: 0.010 (Fire Resistive, apartments) to 0.047 (Frame, All Other, non-apartments).</td>
+</tr>
+<tr>
+  <td class="factor">SpecialFormBldrsRiskTimeElementBaseRate</td>
+  <td>State, constant "Y"</td>
+  <td><span class="confirmed">Confirmed filed — flat 0.018.</span> Same single-value statewide-constant shape as Building's own <code>SpecialBuildersRiskRate</code>. Fires only when <code>ClassCodeToUse = "1150"</code> — takes priority over the theft-classification branch entirely.</td>
+</tr>
+<tr>
+  <td class="factor">SpecialLeaseHoldTimeElementTheftExclusionFactor</td>
+  <td>State, ApartmentCondoIndicator</td>
+  <td><span class="confirmed">Confirmed filed — 2 CW rows.</span> Yes (apartments) = 0.96, No = 0.86. Note the direction: <i>excluding</i> theft coverage costs <i>less</i> for non-apartment risks than apartment risks (0.86 vs 0.96) — theft is a bigger share of the loss cost for non-apartment occupancies, so excluding it saves more there.</td>
+</tr>
+</table>
+
+<h2>4. The algorithm</h2>
+
+<h3><span class="stepnum">1</span>SpecialTheftExclusionIndicator</h3>
+<div class="algo">SpecialTheftExclusionIndicator = 1  <span class="kw">if</span> a CommercialPropertyTheftExclusionBusnIncome record exists
+                          <span class="kw">else</span> 0</div>
+
+<h3><span class="stepnum">2</span>SpecialIncludingTheftTypeRisk</h3>
+<div class="algo"><span class="kw">if</span> CauseOfLossToUse = "Special" <span class="kw">and</span> ApartmentCondoIndicator = "Yes":
+    "Apartments and Condominiums"
+<span class="kw">elif</span> CauseOfLossToUse = "Special" <span class="kw">and</span> ApartmentCondoIndicator = "No":
+    "Other than Apartments and Condominiums"
+<span class="kw">else</span>: "" (blank)</div>
+
+<h3><span class="stepnum">3</span>SpecialTheftExclusionFactor</h3>
+<div class="algo"><span class="kw">if</span> CauseOfLossToUse = "Special" <span class="kw">and</span> SpecialTheftExclusionIndicator = 1
+   <span class="kw">and</span> ApartmentCondoIndicator &lt;&gt; "":
+      <span class="kw">Lookup</span>(<span class="tbl">SpecialLeaseHoldTimeElementTheftExclusionFactor</span>: State, ApartmentCondoIndicator)
+<span class="kw">else</span>: 1.0</div>
+
+<h3><span class="stepnum">4</span>SpecialBaseRate <span class="count">confirmed, the doc's "not fully traced" branch closed</span></h3>
+<div class="algo"><span class="kw">if</span> CauseOfLossToUse = "Special" <span class="kw">and</span> ClassCodeToUse = "1150" (Builders Risk):
+    <span class="kw">Lookup</span>(<span class="tbl">SpecialFormBldrsRiskTimeElementBaseRate</span>: State, <span class="cm">"Y"</span>)
+
+<span class="kw">elif</span> SpecialIncludingTheftTypeRisk &lt;&gt; "":
+    <span class="kw">if</span> BI_CovType = "Business Income Without Extra Expense":
+        <span class="kw">Lookup</span>(<span class="tbl">SpecialFormIncldgTheftTimeElementBaseRate</span>: State,
+          ConstructionTypeToUse, <span class="cm">"Business Income Without Extra Expense"</span>, SpecialIncludingTheftTypeRisk)
+    <span class="kw">elif</span> BI_CovType &lt;&gt; "":
+        <span class="kw">Lookup</span>(<span class="tbl">SpecialFormIncldgTheftTimeElementBaseRate</span>: State,
+          ConstructionTypeToUse, <span class="cm">"All Other"</span>, SpecialIncludingTheftTypeRisk)
+    <span class="kw">else</span>: 0.0  <span class="cm">-- BI_CovType blank</span>
+
+<span class="kw">else</span>: 0.0  <span class="cm">-- SpecialIncludingTheftTypeRisk blank (confirmed: same "All Other"
+-- collapse pattern Broad uses, no separate branch structure beyond this)</span></div>
+<p class="note">Confirms the source doc's inference exactly — the "All Other" continuation it flagged as
+  not-fully-traced is a plain <code>CovType &lt;&gt; ""</code> test, same collapse shape Broad's own
+  base-rate lookup uses, with a final <code>0.0</code> otherwise.</p>
+
+<h3><span class="stepnum">5</span>SpecialRate</h3>
+<div class="algo"><span class="kw">if</span> CauseOfLossToUse = "Special":
+    SpecialBaseRate &times; LossCostMultiplier
+    <span class="cm">-- round to 3dp -- confirmed matches the doc's inferred BaseRate x LCM pattern exactly</span>
+<span class="kw">else</span>: 0.0</div>
+
+<h3><span class="stepnum">6</span>SpecialCauseOfLossAdjustment</h3>
+<div class="algo">SpecialCauseOfLossAdjustment = SpecialRate &times; SpecialTheftExclusionFactor
+<span class="cm">-- round to 3dp, unconditional -- confirmed no gate wraps this at all, simpler
+-- than Building's own Special COLAdj which also multiplies a roof-surfacing ACV factor</span></div>
+
+<h3><span class="stepnum">7</span>FinalSpecialRate</h3>
+<div class="algo">FinalSpecialRate = SpecialCauseOfLossAdjustment   <span class="cm">-- literal Copy, confirmed
+line 8080 -- no Factor multiplication, matching Broad</span></div>
+
+<h2>5. Premium</h2>
+<div class="algo">CoverageOnPolicyIndicator = 1  <span class="kw">if</span> CauseOfLossToUse = "Special"  <span class="cm">-- exact equality, same shape as Broad's gate</span>
+
+<span class="kw">if</span> BI_IncludedInBlkt = "No":
+    <span class="kw">ROUND</span>(<span class="kw">ROUND</span>(IRPMFactor &times; PackageModFactor &times; FinalSpecialRate &times; (BI_Limit / 100), 0), 0)
+      &times; CyberIncidentExclusionFactorSpecial
+      &times; CyberIncidentExclusionCOLExcptnsFactorBusnIncomeSpecialToUse
+
+<span class="kw">elif</span> BI_IncludedInBlkt = "Yes" <span class="kw">and</span> BlktTotalFullValueAmount &gt; 0:
+    <span class="cm">-- blanket branch, out of scope, needs BlktSpecialAvgRate</span>
+
+<span class="kw">else</span>: 0.0</div>
+<p class="note">Structurally identical to Broad's premium file — confirmed line-by-line by the source doc
+  (same <code>CoverageOnPolicyIndicator</code> shape, same two branches, same rounding). This is a genuine
+  departure from Building, where Special's own premium file has real structural differences from the
+  Basic-form pattern; Business Income's Special premium file does not carry that divergence forward.</p>
+
+<h2>6. Inputs → output, the full picture</h2>
+<table>
+<tr><th>Stage</th><th>Reads from</th><th>Produces</th><th>Relationship</th></tr>
+<tr><td>0 — theft exclusion existence</td><td>Business-Income-specific theft-exclusion record</td><td><code>SpecialTheftExclusionIndicator</code></td><td><span class="tag own">own</span> — separate record from Building's</td></tr>
+<tr><td>0.5 — apartment/condo classification, borrowed</td><td><code>Calc_Building_Special.ApartmentCondoIndicator</code></td><td><code>SpecialIncludingTheftTypeRisk</code></td><td><span class="tag copy">copy</span>-derived</td></tr>
+<tr><td>1 — theft exclusion factor</td><td><code>SpecialLeaseHoldTimeElementTheftExclusionFactor</code> table</td><td><code>SpecialTheftExclusionFactor</code></td><td><span class="tag own">own</span></td></tr>
+<tr><td>2 — the loss cost</td><td><code>SpecialFormIncldgTheftTimeElementBaseRate</code> or <code>...BldrsRisk...</code> table</td><td><code>SpecialBaseRate</code></td><td><span class="tag own">own</span> — genuinely independent, not a cross-reference into Building's value</td></tr>
+<tr><td>3 — turn it into a rate</td><td><code>SpecialBaseRate</code>, LCM</td><td><code>SpecialRate</code></td><td><span class="tag own">own</span></td></tr>
+<tr><td>4 — cause-of-loss adjustment</td><td><code>SpecialRate</code>, <code>SpecialTheftExclusionFactor</code></td><td><code>SpecialCauseOfLossAdjustment</code></td><td><span class="tag own">own</span></td></tr>
+<tr><td>5 — final rate</td><td><code>SpecialCauseOfLossAdjustment</code></td><td><code>FinalSpecialRate</code></td><td><span class="tag copy">copy</span> of its own prior step</td></tr>
+<tr><td>6 — turn the rate into a dollar premium</td><td><code>FinalSpecialRate</code>, <code>BI_Limit</code>, IRPM, PackageMod</td><td>premium</td><td>same shape as Broad</td></tr>
+</table>
+
+<h2>7. Deliberately out of scope for the first build</h2>
+<ul style="font-family: -apple-system, 'Segoe UI', sans-serif; font-size: 13.5px; line-height: 1.9;">
+  <li>The blanket premium branch — needs <code>BlktSpecialAvgRate</code>, <code>BlktTotalFullValueAmount</code>, same open item every other Business Income form's blanket branch needs.</li>
+  <li>None of the base-rate or COLAdj logic is out of scope — every branch in §4 is traced and confirmed against the rule XML directly, including the two the source doc had flagged as inferred rather than confirmed.</li>
+</ul>
+
+<blockquote>
+Traced 2026-09-11 directly against the rule XML, closing two gaps
+<code>CauseOfLoss_BusinessIncome_RatingAlgorithms.md</code> had flagged as inferred-not-confirmed. Same
+visual format as the Basic Group I / II / Broad references. This completes all five Business Income forms
+at this level of detail — next is either the all-batch per-state check on the three tables in §3, or your
+call on what comes after. Nothing gets built until you say go.
+</blockquote>
+
+</body>
+</html>

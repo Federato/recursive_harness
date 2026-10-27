@@ -2,7 +2,7 @@ import json, os, re, sys
 from collections import defaultdict, Counter
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-DOCS = r"C:\Projects\Recursive_Harness_2.0\docs\rating-engine"
+DOCS = r"F:\Recursive_Harness_2.0\docs\rating-engine"
 
 docs = json.load(open(os.path.join(HERE, "lc_analysis2.json")))
 mode = json.load(open(os.path.join(HERE, "lc_extractor.json")))

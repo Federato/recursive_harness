@@ -1,0 +1,237 @@
+<title>How Basic Group II Building Rating Works</title>
+<meta charset="utf-8">
+<style>
+  body { font-family: Georgia, "Times New Roman", serif; max-width: 980px; margin: 0 auto; padding: 32px 24px 80px; line-height: 1.55; color: #1c2733; background: #fff; }
+  @media (prefers-color-scheme: dark) {
+    body { background: #14181d; color: #dfe4e9; }
+    a { color: #7fb6b8; }
+    table, th, td { border-color: #3a4048 !important; }
+    thead th { background: #24313a !important; color: #eef4f3 !important; }
+    code { background: #262c33 !important; color: #dfe4e9; }
+    .note { background: #2c2a1c !important; color: #e0c064 !important; }
+    .note.good { background: #1b3226 !important; color: #63c090 !important; }
+    .note.warn2 { background: #2a1f2c !important; color: #d69ad0 !important; }
+  }
+  h1 { font-size: 26px; font-weight: 400; margin-bottom: 4px; }
+  h2 { font-size: 19px; font-weight: 700; margin-top: 42px; border-bottom: 2px solid #1e3a45; padding-bottom: 4px; }
+  h3 { font-size: 15px; font-weight: 700; margin-top: 26px; }
+  .meta { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13px; color: #55606b; margin: 6px 0 4px; }
+  code { font-family: ui-monospace, Consolas, monospace; font-size: 0.92em; background: #eef1f4; padding: 1px 5px; border-radius: 3px; }
+  table { border-collapse: collapse; width: 100%; margin: 14px 0 22px; font-size: 14px; }
+  th, td { border: 1px solid #d7dce2; padding: 8px 10px; text-align: left; vertical-align: top; }
+  thead th { background: #1e3a45; color: #eef4f3; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 12px; text-transform: uppercase; letter-spacing: 0.03em; }
+  table.grid td:nth-child(1) { font-family: ui-monospace, Consolas, monospace; font-size: 12px; text-align: center; }
+  tr.open td:nth-child(3) { color: #8b95a1; font-style: italic; }
+  .note { background: #f7ddd4; color: #a53d26; padding: 12px 16px; border-radius: 6px; margin: 16px 0; font-size: 14px; }
+  .note.warn2 { background: #f2e6c4; color: #a67c1e; }
+  .note.good { background: #dcefe4; color: #2f7d5a; }
+  .note b { font-weight: 700; }
+  pre { background: #eef1f4; border: 1px solid #d7dce2; border-radius: 6px; padding: 14px 16px; overflow-x: auto; font-family: ui-monospace, Consolas, monospace; font-size: 13px; }
+  ol, ul { padding-left: 22px; }
+  hr { border: none; border-top: 1px solid #d7dce2; margin: 40px 0; }
+</style>
+
+<h1>How Basic Group II Building Rating Works</h1>
+<p class="meta"><b>Written:</b> 2026-09-14. <b>Source:</b> <code>Excel_Rater_BasicGroupII.md</code> §4, §7, §8
+(traced 2026-09-08) and <code>CauseOfLoss_Building_RatingAlgorithms.md</code>.</p>
+<div class="note good"><b>Status: documented, marked ✅ built in <code>Excel_Rater_CoreCoverages_RatingGrid.html</code>.</b>
+Basic Group II has no Specific/Tentative rating path — confirmed structurally absent, same standing as Broad and
+Special.</div>
+
+<h2>1. What Basic Group II is, in plain English</h2>
+<p>Basic Group II covers <b>windstorm or hail, riot or civil commotion, vandalism, sprinkler leakage, and sinkhole
+collapse</b>. It's rated by resolving a <b>construction symbol</b> — a single letter or letter-pair code — from the
+building's construction type and number of stories, then pricing off that symbol crossed with a Basic-Group-II-
+specific rating territory. Class code and construction code, the two values that drive most of this workbook's
+other rating chains, only enter this one indirectly, through a handful of named-class overrides.</p>
+
+<h2>2. The rating chain, step by step</h2>
+<table class="grid">
+<thead><tr><th>#</th><th>Step</th><th>What it does</th></tr></thead>
+<tbody>
+<tr><td>&minus;1</td><td><code>ConstructionSymbol</code></td>
+  <td><code>LookupBasicGroupIIConstructionSymbol(State|CW, ConstructionType, NumStories)</code>, then replaced in
+  order by whichever override matches first: a roof-construction override for certain additional classes, a
+  named-class override (0580/0585 and related codes), or an oil-distributing-stations override. Unchanged if none
+  match. This has to resolve before anything else in the chain can run.</td></tr>
+<tr><td>1</td><td><code>BaseRate</code></td>
+  <td><code>LookupBasicGroupIIRate(State|CW, BasicGroupIIRatingTerr, ConstructionSymbol, "Bldg")</code>, requiring
+  both <code>ConstructionSymbol</code> and territory non-blank, else <code>0.0</code>. Territory is baked directly
+  into this lookup key — there's no separate multiplicative territory factor anywhere downstream.</td></tr>
+<tr><td>2</td><td><code>LowestBaseRate</code></td>
+  <td><code>LookupLowestBasicGroupIIRate(State|CW, ConstructionSymbol, "Bldg")</code> — same table family as step 1
+  but keyed on symbol alone, no territory. Only consumed later, in the wind/hail-excluded branch of
+  <code>COLAdj</code>.</td></tr>
+<tr><td>3</td><td><code>NumericValue</code></td>
+  <td>A 4-way branch: <code>1.0</code> if windstorm/hail is excluded on this building; a class-code-specific lookup
+  for four named classes (0580, 0585, 1150, 1300, 1650); an open-sides lookup if <code>OpenSides = Y</code> and
+  <code>ConstructionCode ≠ 0</code>; otherwise <code>1.0</code>.</td></tr>
+<tr><td>4</td><td><code>Rate</code></td>
+  <td><code>BaseRate × LCM × NumericValue × RoofSurfacingACVFactor × RoofSurfacingCosmeticExclFactor × BCEGFactor</code>
+  — round to 3dp. A pure product, no addends of any kind.</td></tr>
+<tr><td>5</td><td><code>COLAdj</code></td>
+  <td>Zero if the selected cause of loss is one of four fire-only combinations. Otherwise, if wind/hail isn't
+  excluded: <code>Rate × StdPropPolGroupIIFactor</code>. If wind/hail <em>is</em> excluded: a full rebuild —
+  <code>LowestBaseRate × LCM × RoofSurfacingACVFactor × RoofSurfacingCosmeticExclFactor × WindstormOrHailExclFactor
+  × StdPropPolGroupIIFactor</code>.</td></tr>
+<tr class="open"><td>&mdash;</td><td>Wind/hail-exclusion eligibility</td>
+  <td><b>Unresolvable in 8 states</b> — <code>AR, DC, FL, KS, NY, PR, RI, TX</code> file zero rows for both
+  <code>LowestBasicGroupIIRate</code> and <code>WindstormOrHailExclFactor</code>, together. Inferred (not confirmed
+  against the manual) to mean these states may not permit excluding wind/hail from a CPP at all — plausible given
+  several are coastal/wind-pool states, but flagged as inference. Full mechanism and worked examples in
+  <code>Excel_Rater_BGII_WindHailExclusionEligibility_Walkthrough.html</code>.</td></tr>
+<tr><td>6</td><td><code>CoinsuranceFactor</code></td>
+  <td>Flat lookup (State|CW, <code>"Y"</code>) when <code>Coinsurance</code> is 50%/60%/70%/None; otherwise this
+  building's own Basic Group I <code>CoinsuranceFactor</code> is copied in directly rather than recomputed.</td></tr>
+<tr><td>7</td><td><code>LOIFactor</code></td>
+  <td>Four-way: a blanket copy when <code>Bldg_IncludedInBlkt = "Yes"</code>; a Builders-Risk-specific lookup
+  (<code>0.0</code> if the Builders Risk limit is absent); a general lookup for other covered coverage types
+  (<code>0.0</code> if absent); flat <code>1.0</code> for Leasehold Interest, Legal Liability, or No Coverage.</td></tr>
+<tr><td>8</td><td><code>AdjustedRate</code></td><td><code>COLAdj × CoinsuranceFactor × LOIFactor</code>.</td></tr>
+<tr><td>9</td><td><code>BGIIDeductibleByLocationFactor</code></td>
+  <td>Its own field, separate from the plain <code>DeductibleByLocationFactor</code> used elsewhere. Only computed
+  (via a lookup, else <code>1.0</code>) when <code>WindstormHailIndicator = 0</code> and a real by-location
+  wind/hail-deductible record exists.</td></tr>
+<tr><td>10</td><td><code>DeductibleFactor</code></td>
+  <td>Outer test: if <code>Bldg_WindstormOrHailDeductible</code> is blank, "Not Applicable", or equal to
+  <code>Deductible</code>, fall through to a <code>Choose</code> on <code>Deductible</code> keyed to the
+  <code>"Basic Group II"</code>-specific slice of the shared <code>DeductibleFactor</code> table. Otherwise branch
+  on <code>Bldg_WindstormOrHailDeductible</code> instead — dollar amounts read the same table; percentage amounts
+  (1%/2%/5%) read an entirely separate <code>WindstormOrHailDeductibleFactor</code> table, gated on
+  <code>WindstormHailIndicator = 1</code>.</td></tr>
+<tr><td>11</td><td><code>FinalRate</code></td>
+  <td><code>AdjustedRate × BGIIDeductibleByLocationFactor × DeductibleFactor × MultiResidentialPropSpecialCreditFactor</code>.</td></tr>
+</tbody>
+</table>
+
+<div class="note warn2"><b>An orphaned factor found while tracing this form:</b>
+<code>OperationalUnitWindstormOrHailExclusionFactor</code> is computed (gated on <code>BldgIncludedInOperationalUnit
+= "Yes"</code> and an ancestor-level count of exclusion forms in the same Operational Unit) but a full trace of
+every reference to it in <code>CommercialPropertyStructureRules.Rule.xml</code> found it's <b>never multiplied into
+<code>Rate</code>, <code>NumericValue</code>, or <code>FinalRate</code> anywhere</b>. Unconfirmed whether some
+premium/summary rule outside this file consumes it, or whether it's genuinely unused. Not built into this workbook
+pending that answer.</div>
+
+<h2>3. Input fields that enable Basic Group II Building rating</h2>
+<table>
+<thead><tr><th>Field</th><th>Feeds</th><th>Notes</th></tr></thead>
+<tbody>
+<tr><td><code>ConstructionType</code></td><td><code>ConstructionSymbol</code> derivation</td><td>Paired with <code>NumStories</code> in the initial symbol lookup.</td></tr>
+<tr><td><code>NumStories</code></td><td><code>ConstructionSymbol</code> derivation</td><td>&mdash;</td></tr>
+<tr><td><code>ClassCode</code>, <code>ConstructionCode</code></td><td><code>ConstructionSymbol</code> overrides, <code>NumericValue</code>'s class-specific branch</td><td>Only certain named classes (0580/0585/oil-distributing-stations and the four in step 3) actually branch on these.</td></tr>
+<tr><td><code>OpenSides</code> (Y/N)</td><td><code>NumericValue</code>'s open-sides branch</td><td>Only relevant when <code>ConstructionCode ≠ 0</code>.</td></tr>
+<tr><td><code>BasicGroupIIRatingTerr</code></td><td><code>BaseRate</code> lookup key</td><td>Territory is a key, not a multiplier, for this form.</td></tr>
+<tr><td><code>WindstormOrHailExclusion</code> (Y/N)</td><td><code>NumericValue</code>, the <code>COLAdj</code> rebuild branch</td><td>The single field that reroutes the largest share of this form's logic.</td></tr>
+<tr><td>Roof surfacing inputs (ACV and cosmetic-exclusion)</td><td><code>RoofSurfacingACVFactor</code>, <code>RoofSurfacingCosmeticExclFactor</code></td><td>Two distinct factors, both feeding <code>Rate</code> directly.</td></tr>
+<tr><td>Building Code Effectiveness Grade inputs</td><td><code>BCEGFactor</code></td><td>&mdash;</td></tr>
+<tr><td><code>CauseOfLoss</code></td><td><code>COLAdj</code>'s fire-only zero-out test</td><td>Only four specific combinations zero this out; everything else proceeds normally.</td></tr>
+<tr><td><code>Coinsurance</code></td><td><code>CoinsuranceFactor</code></td><td>Only 50/60/70/None trigger the flat lookup; every other value copies this building's Basic Group I coinsurance result instead.</td></tr>
+<tr><td><code>Limit</code>, <code>Bldg_CovType</code>, <code>Bldg_IncludedInBlkt</code></td><td><code>LOIFactor</code></td><td>&mdash;</td></tr>
+<tr><td><code>WindstormHailIndicator</code> (0/1)</td><td>gates <code>BGIIDeductibleByLocationFactor</code>, disambiguates dollar vs. percentage deductible tables</td><td>&mdash;</td></tr>
+<tr><td><code>Bldg_WindstormOrHailDeductible</code></td><td><code>DeductibleFactor</code>'s outer branch</td><td>Only consulted when it differs from the plain <code>Deductible</code> field.</td></tr>
+<tr><td><code>Deductible</code></td><td><code>DeductibleFactor</code>'s fallback branch</td><td>&mdash;</td></tr>
+<tr><td><code>Bldg_MultiResIndicator</code></td><td><code>MultiResidentialPropSpecialCreditFactor</code></td><td>&mdash;</td></tr>
+<tr><td><code>BldgIncludedInOperationalUnit</code> (Yes/No)</td><td>the orphaned <code>OperationalUnitWindstormOrHailExclusionFactor</code></td><td>Worth capturing even though nothing downstream reads the output yet — see the callout above.</td></tr>
+<tr><td>State, policy-level LCM/IRPM/PackageMod/MultiPremiumDispersion, Cyber exclusion factors</td><td>throughout</td><td>Same shared values and mechanism as every other coverage in this project.</td></tr>
+</tbody></table>
+
+<h2>4. The full formula, end to end</h2>
+<pre>ConstructionSymbol =
+    LookupBasicGroupIIConstructionSymbol(State|CW, ConstructionType, NumStories)
+    &lt;then, in order, replaced by whichever override matches first:&gt;
+        LookupBGIISymbolAdditionalClassesRoofConstruction(...)
+        LookupBasicGroupIISymbolAdditionalClasses(...)              # class codes 0580/0585 and related
+        LookupBasicGroupIISymbolOilDistributingStations(...)
+    &lt;else unchanged&gt;
+
+BaseRate =
+    LookupBasicGroupIIRate(State|CW, BasicGroupIIRatingTerr, ConstructionSymbol, "Bldg")
+        if ConstructionSymbol and BasicGroupIIRatingTerr are both non-blank
+    else 0.0
+
+LowestBaseRate =
+    LookupLowestBasicGroupIIRate(State|CW, ConstructionSymbol, "Bldg")
+        if ConstructionSymbol is non-blank
+    else 0.0
+
+NumericValue =
+    1.0                                                              if WindstormOrHailExclusion = Y
+    elif ClassCode in (0580,0585,1150,1300,1650):
+        LookupGroupIINumericValue(State|CW, ClassCode, ConstructionCode)
+    elif OpenSides = Y and ConstructionCode &ne; 0:
+        LookupGroupIIOpenSidesNumericValue(State|CW, ConstructionCode)
+    else:
+        1.0
+
+Rate =
+    BaseRate &times; LCM &times; NumericValue &times; RoofSurfacingACVFactor &times; RoofSurfacingCosmeticExclFactor &times; BCEGFactor
+    (round to 3 dp)
+
+COLAdj =
+    0.0    if CauseOfLoss in ("Fire","Fire and Vandalism","Fire and Sprinkler Leakage",
+                               "Fire, Vandalism and Sprinkler Leakage")
+    elif WindstormOrHailExclusion &ne; Y:
+        Rate &times; StdPropPolGroupIIFactor
+    else:
+        LowestBaseRate &times; LCM &times; RoofSurfacingACVFactor &times; RoofSurfacingCosmeticExclFactor
+          &times; WindstormOrHailExclFactor &times; StdPropPolGroupIIFactor
+
+CoinsuranceFactor =
+    LookupBasicGroupIIFlatCoinsuranceFactor(State|CW, "Y")   if Coinsurance in ("50%","60%","70%","None")
+    else CoinsuranceFactor   # this building's own Basic Group I result, copied in
+
+LOIFactor =
+    &lt;blanket copy&gt;                                            if Bldg_IncludedInBlkt = "Yes"
+    elif Bldg_CovType = "Builders Risk":
+        LookupBasicGroupIILOIFactorWithArgs(...) or 0.0 if the Builders Risk limit is absent
+    elif Bldg_CovType not in ("Leasehold Interest","Legal Liability","No Coverage"):
+        LookupBasicGroupIILOIFactorBldg(...) or 0.0 if absent
+    else:
+        1.0
+
+AdjustedRate = COLAdj &times; CoinsuranceFactor &times; LOIFactor
+
+BGIIDeductibleByLocationFactor =
+    LookupDeductibleByLocationFactor(...)
+        if WindstormHailIndicator = 0
+           and a wind/hail-by-location record exists with a non-blank value
+    else 1.0
+
+DeductibleFactor =
+    &lt;Deductible-keyed Choose, reading the "Basic Group II"-keyed slice of DeductibleFactor&gt;
+        if Bldg_WindstormOrHailDeductible is blank, "Not Applicable", or = Deductible
+    else &lt;branch on Bldg_WindstormOrHailDeductible instead — dollar amounts use the same table;
+          percentage amounts (1%/2%/5%) use a separate WindstormOrHailDeductibleFactor table entirely&gt;
+
+FinalRate = AdjustedRate &times; BGIIDeductibleByLocationFactor &times; DeductibleFactor &times; MultiResidentialPropSpecialCreditFactor
+
+Bldg_Premium =
+    if Bldg_CovType in ("Building","Builders Risk","Improvements and Betterments","Condominium Association")
+       and Bldg_IncludedInBlkt = "No":
+        round(IRPMFactor &times; MultiPremiumAndDispersionCreditFactor &times; PackageModFactor &times; FinalRate &times; (Bldg_Limit/100), 0)
+          &times; CyberIncidentExclusionFactorBGII &times; CyberIncidentExclusionCOLExcptnsFactorBGII
+    elif Bldg_CovType = "Legal Liability":
+        [not built this pass]
+    elif Bldg_IncludedInBlkt = "Yes":
+        [blanket branch — truncates the limit ratio, not built this pass]
+    else:
+        0.0</pre>
+
+<div class="note"><b>One validation worth building alongside the formula, per the source doc's own flag:</b> if a
+percentage wind/hail deductible (1%/2%/5%) is ever selected while <code>WindstormHailIndicator ≠ 1</code>, the
+dollar-only branch's <code>Or</code> list won't match any of the eight dollar constants and falls to its
+<code>Otherwise</code> → <code>0.0</code> — silently zeroing the entire <code>FinalRate</code>. Rater-side input
+validation should prevent percentage options from ever being paired with <code>WindstormHailIndicator ≠ 1</code>.</div>
+
+<hr>
+
+<h2>Remaining steps</h2>
+<ol>
+<li>Resolve the 8-state wind/hail-exclusion-eligibility open question against the actual manual language, not just
+the correlated filing pattern — <code>Excel_Rater_BGII_WindHailExclusionEligibility_Walkthrough.html</code> has the
+full mechanism and worked examples already built.</li>
+<li>Resolve the orphaned <code>OperationalUnitWindstormOrHailExclusionFactor</code> — check whether any
+stat/reporting rule outside <code>CommercialPropertyStructureRules.Rule.xml</code> consumes it.</li>
+<li>Contents' own Basic Group II chain isn't covered on this page — same method would apply if it's wanted next.</li>
+<li>Nothing gets built into the live workbook until you say go.</li>
+</ol>

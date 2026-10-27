@@ -1,0 +1,522 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stop Gap Employers Liability Rating Chains</title>
+<style>
+  :root {
+    --ink: #101b24;
+    --paper: #edf0ec;
+    --paper-line: #c7d2ce;
+    --blueprint: #2e6e8e;
+    --blueprint-soft: #e4ebef;
+    --stamp: #c77f32;
+    --caution: #b14b39;
+    --ledger: #3f8f6e;
+    --surface: #f4f6f3;
+    --panel: #ffffff;
+    --sidebar: #e8ede8;
+    --text: var(--ink);
+    --muted: #5b6b72;
+    --border: #cdd6d2;
+    --font-display: Cambria, 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+    --font-body: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+    --font-mono: 'Cascadia Code', 'Cascadia Mono', Consolas, 'SFMono-Regular', ui-monospace, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --surface: #0b141a;
+      --panel: #101b22;
+      --sidebar: #0e1a20;
+      --text: #e7ece9;
+      --muted: #93a3a0;
+      --border: #223138;
+      --blueprint-soft: #16232b;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --surface: #0b141a;
+    --panel: #101b22;
+    --sidebar: #0e1a20;
+    --text: #e7ece9;
+    --muted: #93a3a0;
+    --border: #223138;
+    --blueprint-soft: #16232b;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; background: var(--surface); color: var(--text);
+    font-family: var(--font-body); -webkit-font-smoothing: antialiased;
+  }
+  body { display: flex; flex-direction: column; min-height: 100vh; }
+  a { color: inherit; }
+  code { font-family: var(--font-mono); font-size: 0.92em; }
+  ::selection { background: var(--stamp); color: #101b24; }
+
+  /* header */
+  header.masthead {
+    display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap;
+    padding: 1.1rem 1.6rem; border-bottom: 1px solid var(--border);
+    background: var(--panel);
+  }
+  header.masthead h1 {
+    font-family: var(--font-display); font-weight: 600; font-size: 1.35rem;
+    margin: 0; letter-spacing: 0.01em; text-wrap: balance;
+  }
+  header.masthead .rule { width: 1px; align-self: stretch; background: var(--border); }
+  header.masthead p { margin: 0; font-size: 0.82rem; color: var(--muted); max-width: 52ch; }
+  header.masthead .src {
+    margin-left: auto; font-family: var(--font-mono); font-size: 0.72rem;
+    color: var(--muted); text-align: right; line-height: 1.5;
+  }
+
+  /* shell */
+  .shell { display: flex; flex: 1; min-height: 0; }
+
+  nav.toc {
+    width: 258px; flex: none; background: var(--sidebar);
+    border-right: 1px solid var(--border);
+    padding: 1rem 0 2rem; overflow-y: auto;
+  }
+  nav.toc .group-label {
+    font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--muted); padding: 0.5rem 1.2rem 0.35rem;
+  }
+  nav.toc button.navlink {
+    display: block; width: 100%; text-align: left; background: none; border: none;
+    font-family: var(--font-body); font-size: 0.86rem; color: var(--text);
+    padding: 0.42rem 1.2rem 0.42rem 1.6rem; cursor: pointer;
+    border-left: 3px solid transparent;
+  }
+  nav.toc button.navlink:hover { background: var(--blueprint-soft); }
+  nav.toc button.navlink.active {
+    background: var(--blueprint-soft); border-left-color: var(--blueprint); font-weight: 600;
+  }
+  nav.toc button.navlink .chain-len {
+    display: block; font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); font-weight: 400;
+  }
+  nav.toc hr { border: none; border-top: 1px solid var(--border); margin: 0.6rem 1.2rem; }
+
+  nav.toc .legend {
+    margin: 1rem 1.2rem 0; padding: 0.8rem 0.9rem; border: 1px solid var(--border);
+    border-radius: 3px; background: var(--panel);
+  }
+  nav.toc .legend h4 {
+    margin: 0 0 0.5rem; font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--muted); font-weight: 600;
+  }
+  nav.toc .legend .row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.74rem; margin-bottom: 0.35rem; }
+  nav.toc .legend .swatch { width: 13px; height: 13px; flex: none; border-radius: 2px; border-width: 1.5px; border-style: solid; }
+  .sw-gate { background: #f4e4ce; border-color: #c77f32; }
+  .sw-zero { background: #f3dcd6; border-color: #b14b39; }
+  .sw-final { background: #dceee4; border-color: #3f8f6e; }
+  .sw-step { background: #e4ebef; border-color: #2e6e8e; }
+  .sw-openq { background: #f4e4ce; border-color: #b14b39; border-style: dashed !important; }
+  .sw-engine { background: #e6e1f0; border-color: #5a4c8a; }
+
+  main { flex: 1; min-width: 0; overflow-y: auto; padding: 1.6rem 2rem 4rem; }
+
+  .intro { max-width: 70ch; margin-bottom: 1.4rem; }
+  .intro h2 { font-family: var(--font-display); font-size: 1.25rem; margin: 0 0 0.5rem; text-wrap: balance; }
+  .intro p { font-size: 0.92rem; line-height: 1.6; color: var(--muted); margin: 0 0 0.6rem; }
+
+  /* tables */
+  .tablewrap { overflow-x: auto; margin-bottom: 1.4rem; }
+  table.grid { border-collapse: collapse; width: 100%; max-width: 1100px; background: var(--panel); }
+  table.grid caption {
+    text-align: left; font-family: var(--font-mono); font-size: 0.7rem; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem;
+  }
+  table.grid th, table.grid td {
+    border: 1px solid var(--border); padding: 0.5rem 0.7rem; font-size: 0.82rem;
+    text-align: left; vertical-align: top; line-height: 1.45;
+  }
+  table.grid thead th {
+    font-family: var(--font-mono); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--muted); background: var(--blueprint-soft); font-weight: 600;
+  }
+  table.grid tbody th { font-weight: 600; white-space: nowrap; }
+  table.grid td.num { font-family: var(--font-mono); text-align: right; white-space: nowrap; }
+  table.grid tr.hl td, table.grid tr.hl th { background: var(--blueprint-soft); }
+  table.grid td .tag {
+    font-family: var(--font-mono); font-size: 0.66rem; padding: 0.05rem 0.35rem; border-radius: 2px;
+    border: 1px solid var(--border); color: var(--muted); white-space: nowrap;
+  }
+  table.grid td .tag.a { border-color: var(--blueprint); color: var(--blueprint); }
+  table.grid td .tag.b { border-color: var(--ledger); color: var(--ledger); }
+  table.grid td .tag.bad { border-color: var(--caution); color: var(--caution); }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.9rem; max-width: 1100px; margin-bottom: 1.4rem; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 3px; padding: 0.9rem 1rem; }
+  .card .k { font-family: var(--font-mono); font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
+  .card .v { font-family: var(--font-display); font-size: 1.5rem; margin: 0.2rem 0 0.25rem; font-variant-numeric: tabular-nums; }
+  .card p { margin: 0; font-size: 0.8rem; color: var(--muted); line-height: 1.45; }
+  .card button.go {
+    margin-top: 0.6rem; background: none; border: 1px solid var(--blueprint); color: var(--blueprint);
+    font-family: var(--font-mono); font-size: 0.7rem; padding: 0.3rem 0.6rem; border-radius: 2px; cursor: pointer;
+  }
+  .card button.go:hover { background: var(--blueprint-soft); }
+
+  /* sheet */
+  .sheet-view { display: none; }
+  .sheet-view.active { display: block; }
+
+  .titleblock {
+    display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--border);
+    margin-bottom: 1.1rem; background: var(--panel);
+  }
+  .titleblock .field { padding: 0.6rem 0.9rem; border-right: 1px solid var(--border); }
+  .titleblock .field:last-child { border-right: none; }
+  .titleblock .field .k {
+    font-family: var(--font-mono); font-size: 0.63rem; text-transform: uppercase; letter-spacing: 0.07em;
+    color: var(--muted); display: block; margin-bottom: 0.15rem;
+  }
+  .titleblock .field .v { font-family: var(--font-mono); font-size: 0.82rem; color: var(--text); line-height: 1.35; }
+  .titleblock .field.wide { grid-column: span 4; border-top: 1px solid var(--border); border-right: none; }
+
+  .sheet {
+    background: var(--paper); border: 1px solid var(--paper-line); border-radius: 2px;
+    padding: 1.4rem 1.2rem 1rem; position: relative; overflow-x: auto;
+    background-image:
+      linear-gradient(var(--paper-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--paper-line) 1px, transparent 1px);
+    background-size: 28px 28px; background-position: -1px -1px;
+    background-color: var(--paper);
+  }
+  .sheet .corner { position: absolute; width: 14px; height: 14px; }
+  .sheet .corner.tl { top: 6px; left: 6px; border-top: 1.5px solid #7d8f8a; border-left: 1.5px solid #7d8f8a; }
+  .sheet .corner.tr { top: 6px; right: 6px; border-top: 1.5px solid #7d8f8a; border-right: 1.5px solid #7d8f8a; }
+  .sheet .corner.bl { bottom: 6px; left: 6px; border-bottom: 1.5px solid #7d8f8a; border-left: 1.5px solid #7d8f8a; }
+  .sheet .corner.br { bottom: 6px; right: 6px; border-bottom: 1.5px solid #7d8f8a; border-right: 1.5px solid #7d8f8a; }
+  .sheet pre.mermaid { margin: 0; background: transparent; min-width: 760px; color: #101b24; }
+
+  .notes { margin-top: 1.1rem; display: grid; grid-template-columns: 1.4fr 1fr; gap: 1.2rem; }
+  .notes h3 {
+    font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--muted); margin: 0 0 0.5rem;
+  }
+  .notes ul { margin: 0; padding-left: 1.1rem; font-size: 0.86rem; line-height: 1.55; }
+  .notes ul li { margin-bottom: 0.4rem; }
+  .notes .delta { border: 1px solid var(--border); background: var(--panel); padding: 0.8rem 0.9rem; border-radius: 3px; font-size: 0.86rem; line-height: 1.55; }
+  .notes .delta.openq { border-color: var(--caution); }
+  .notes .delta + .delta { margin-top: 0.8rem; }
+
+  h3.section {
+    font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--muted); margin: 1.6rem 0 0.6rem;
+  }
+
+  footer.doc-footer {
+    padding: 1rem 2rem 2rem; font-size: 0.76rem; color: var(--muted); border-top: 1px solid var(--border);
+  }
+  footer.doc-footer strong { color: var(--text); }
+
+  @media (max-width: 900px) {
+    .notes { grid-template-columns: 1fr; }
+    .titleblock { grid-template-columns: 1fr 1fr; }
+    .titleblock .field.wide { grid-column: span 2; }
+  }
+  @media (max-width: 720px) {
+    .shell { flex-direction: column; }
+    nav.toc { width: 100%; border-right: none; border-bottom: 1px solid var(--border); padding: 0.6rem 0; }
+    nav.toc .legend { display: none; }
+    main { padding: 1.2rem 16px 3rem; }
+    header.masthead { padding: 1rem 16px; }
+    header.masthead .src { margin-left: 0; text-align: left; }
+    header.masthead .rule { display: none; }
+    .titleblock { grid-template-columns: 1fr; }
+    .titleblock .field { border-right: none; border-bottom: 1px solid var(--border); }
+    .titleblock .field.wide { grid-column: span 1; }
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <h1>Stop Gap Employers Liability Rating Chains</h1>
+  <div class="rule"></div>
+  <p>Every gate, branch and terminal in Stop Gap Employers Liability, state-only Additional Rule A2 in the five monopolistic-fund jurisdictions (ND, OH, PR, WA, WY), drawn for pre-2027 and CW 2027 state editions. Every rule and branch is checked against the built engine (<code>gl_engine</code>) and ISO's rule XML as of 2026-10-05.</p>
+  <div class="src">Engine at 62eb125 (GL rating path unchanged since the 630ba2f reconciliation)<br>Rule files: StopGapEmployersLiabilityCoverageEndorsementPolLvl (policy) + 4 rules in each state's GeneralLiabilityClassificationRules ErcRate override<br>Companion: StopGap_RatingAlgorithms.md · docs/gates/GATE-STOPGAP-EMPLOYERS-LIABILITY</div>
+</header>
+
+<div class="shell">
+  <nav class="toc" id="toc">
+    <button class="navlink active" data-target="overview">Overview<span class="chain-len">a factor on Premises' own base rate</span></button>
+    <hr>
+    <div class="group-label">Decision chains</div>
+    <button class="navlink" data-target="cw23">Pre-2027<span class="chain-len">"BI" limit spelling · WA throughout</span></button>
+    <button class="navlink" data-target="cw27">CW 2027<span class="chain-len">ND, OH, PR, WY · bare limits · re-cased types</span></button>
+    <hr>
+    <div class="group-label">Comparison</div>
+    <button class="navlink" data-target="diff">Side by side<span class="chain-len">5 differences, all in data and the host</span></button>
+    <hr>
+    <div class="group-label">Review</div>
+    <button class="navlink" data-target="review">Why the old sheet was replaced<span class="chain-len">8 items · 1 correction</span></button>
+
+    <div class="legend">
+      <h4>Reading the chains</h4>
+      <div class="row"><span class="swatch sw-gate"></span> gate / branch condition</div>
+      <div class="row"><span class="swatch sw-step"></span> computed factor</div>
+      <div class="row"><span class="swatch sw-final"></span> premium resolves</div>
+      <div class="row"><span class="swatch sw-zero"></span> zero, refusal or clamp</div>
+      <div class="row"><span class="swatch sw-openq"></span> silent gap / open question</div>
+      <div class="row"><span class="swatch sw-engine"></span> engine layer, not an ISO rule</div>
+    </div>
+  </nav>
+
+  <main id="main">
+
+    <!-- ============================= OVERVIEW ============================= -->
+    <section class="sheet-view active" id="view-overview">
+      <div class="intro">
+        <h2>Employers liability priced as a small factor on Premises/Operations' own base rate</h2>
+        <p>In five jurisdictions the workers' compensation fund is monopolistic and leaves out employers liability, so GL fills the gap by endorsement. Stop Gap has no ISO subline code and no countrywide rating package. Each state's classification <code>ErcRate</code> override runs the countrywide rate chain first, then four Stop Gap rules. Those rules multiply Premises/Operations' <em>computed</em> base rate by a two-value factor and the Premises ILF at Stop Gap's own limits, and apply it to Premises' computed exposure.</p>
+        <p>The rule file is identical in every edition of all five states. The edition matters through data: the limit domain and classification labels change at 2027, and so does the Premises base rate underneath. ND, OH, PR and WY move to 2027 editions on 2027-04-01. WA has no 2027 package and keeps its pre-2027 one.</p>
+      </div>
+
+      <div class="cards">
+        <div class="card">
+          <div class="k">Stop Gap factor</div>
+          <div class="v">.03 / .02</div>
+          <p>Manufacturing and contracting classes .03, everything else .02. The same in all five states, with no countrywide row to fall back on.</p>
+          <button class="go" data-target="cw23">Open chains →</button>
+        </div>
+        <div class="card">
+          <div class="k">Equal limits required</div>
+          <div class="v">Accident = Employee</div>
+          <p>When the each-accident and disease each-employee limits differ, the manual says refer. ERC prices a supplied ManualPremium, or $0 without one.</p>
+          <button class="go" data-target="cw23">See branch →</button>
+        </div>
+        <div class="card">
+          <div class="k">2027 limit spelling</div>
+          <div class="v">"BI" dropped</div>
+          <p>"500,000 BI" becomes "500,000". The other edition's spelling misses the ILF and Stop Gap prices $0, in either direction.</p>
+          <button class="go" data-target="diff">Side by side →</button>
+        </div>
+      </div>
+
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart LR
+    po(["Premises/Operations rates the classification"]) --> br["Its computed BaseRate and PremOpsExposureCalc"]:::step
+    br --> sg["Stop Gap: BaseRate x factor (.03 / .02) x Premises ILF at Stop Gap limits x 3 policy modifiers"]:::step
+    sg --> cp["Class premium = rate x Premises exposure"]:::step
+    cp --> pol["Policy endorsement premium = sum of class premiums"]:::final
+
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>Stop Gap has no exposure base and no base rate of its own. It reads both from the Premises group after Premises has rated (E18), so it moves whenever the Premises base rate moves.</li>
+            <li>The final rate is rounded to 3 decimals before exposure. Stop Gap rates are only a few thousandths, so that rounding alone can move the premium by several percent.</li>
+            <li>The modifiers are PackageMod, Experience and ModToUse, read from the policy record. There is no Expense modifier.</li>
+          </ul>
+        </div>
+        <div class="delta"><strong>No referral fires.</strong> The engine's register has no entry for Stop Gap. A limit mismatch with no ManualPremium, a wrong limit spelling and a record without <code>StopGap = "Yes"</code> all price $0 silently, in underwriting mode too.</div>
+      </div>
+    </section>
+
+    <!-- ============================= PRE-2027 ============================= -->
+    <section class="sheet-view" id="view-cw23">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Stop Gap Employers Liability, Rule A2 (CG 04 40 ND · 04 41 OH · 04 42 WA · 04 44 WY · 04 51 PR)</span></div>
+        <div class="field"><span class="k">Edition</span><span class="v">Every state edition up to 2026-10-01, and WA at every date (GL_WA_20260101_V02 is its newest)</span></div>
+        <div class="field"><span class="k">Master chain</span><span class="v">State ErcRate override: CW ErcRate, then SetStopGapIncrdLimitFactor → SetStopGapFactor → SetStopGapFinalRate → SetStopGapPremium · policy PolLvl: SetPremium, SetPremiumIndicator, CalculateTotalPremium</span></div>
+        <div class="field"><span class="k">Limit spelling</span><span class="v">"25,000 BI" … "10,000,000 BI" (13 values). ClassificationType "Manufacturing or Processing", "Buildings or Premises - Office or Residential Occupancy or Leased to Others", …</span></div>
+        <div class="field wide"><span class="k">Gate</span><span class="v">StopGap = "Yes" (it drives the form attachment) and a Stop Gap endorsement record. Every class rule reads the limits from the first record, PolLvl[1]. Without "Yes", the record prices $0.</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["ND, OH, PR, WA or WY policy"]) --> gate{"StopGap = Yes and a Stop Gap endorsement record?"}
+    gate -->|"record but StopGap = No"| no["Nothing rates: Stop Gap $0, no message"]:::openq
+    gate -->|"Yes"| host["CW ErcRate runs first: Premises computes BaseRate and PremOpsExposureCalc"]:::step
+    host --> eqQ{"Each-accident limit = disease each-employee limit?"}
+    eqQ -->|"No"| ref0["ILF 0, factor 0, class premium 0"]:::zero
+    eqQ -->|"Yes"| ilf["ILF = ILFPremOps(state, Premises table no., accident limit, disease aggregate), keys like '500,000 BI'"]:::step
+    ilf --> missQ{"ILF row found?"}
+    missQ -->|"No, e.g. a bare '500,000'"| miss["ILF null: rate 0, Stop Gap $0, no refusal"]:::openq
+    missQ -->|"Yes"| fac["Factor = StopGapRate(state, ClassificationType): .03 Manufacturing or Contracting, .02 otherwise. CW has 0 rows"]:::step
+    fac --> fr["FinalRate = round((ILF override if non-zero, else ILF) x factor x Premises BaseRate x PackageMod x ExpMod x ModToUse, 3)"]:::step
+    fr --> cp["StopGapPremium = round(FinalRate x PremOpsExposureCalc, 0) per classification"]:::step
+    cp --> polQ{"Policy: limits equal?"}
+    ref0 --> polQ
+    polQ -->|"Yes"| sum["Premium = sum of StopGapPremium over every classification"]:::final
+    polQ -->|"No"| man["Premium = round(ManualPremium x PackageMod, 0): the manual's refer to company"]:::openq
+    man -.->|"no ManualPremium supplied"| man0["Premium 0, no referral in either mode"]:::openq
+    sum --> tot["CalculateTotalPremium adds it to the policy total when Premium ≠ 0"]:::final
+    man --> tot
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    class gate,eqQ,missQ,polQ gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>The limit-equality test happens three times: in the ILF and factor guards, in the class premium, and again at policy level.</li>
+            <li>The ILF is the Premises table with Stop Gap's own limits standing in for Premises' occurrence and aggregate limits (manual B.1.d, Rule 23.D).</li>
+            <li>An ILF override field on the classification replaces the looked-up ILF when it is non-zero. No rule writes it, so it is a carrier input.</li>
+          </ul>
+        </div>
+        <div>
+          <div class="delta openq"><strong>Silent $0 paths.</strong> A record with <code>StopGap</code> not "Yes", unequal limits with no ManualPremium, and a limit spelled the 2027 way all price Stop Gap at $0. None raises a message or a referral.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================= CW 2027 ============================= -->
+    <section class="sheet-view" id="view-cw27">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Stop Gap Employers Liability, Rule A2</span></div>
+        <div class="field"><span class="k">Edition</span><span class="v">ND, OH, PR, WY 2027-04-01 state editions over CW 20270401. WA is not here: it stays on GL_WA_20260101_V02.</span></div>
+        <div class="field"><span class="k">Master chain</span><span class="v">Unchanged: the state override calls CW 2027 ErcRate by name, then the same four rules. Same policy rule file.</span></div>
+        <div class="field"><span class="k">Limit spelling</span><span class="v">"25,000" … "10,000,000" (no " BI"). ClassificationType "Manufacturing Or Processing", "Buildings Or Premises", …</span></div>
+        <div class="field wide"><span class="k">Changed vs pre-2027</span><span class="v">Only data and the host: bare limits, re-cased ClassificationType (derived by the CW rules, so always consistent), and the CW 2027 Premises base rate. There is no $1 floor on Stop Gap itself.</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["ND, OH, PR or WY policy, 2027 edition"]) --> gate{"StopGap = Yes and a Stop Gap endorsement record?"}
+    gate -->|"No"| no["Stop Gap $0"]:::openq
+    gate -->|"Yes"| host["CW 2027 ErcRate runs first: Premises computes its 2027 BaseRate and exposure"]:::step
+    host --> eqQ{"Accident limit = each-employee limit?"}
+    eqQ -->|"No"| ref0["Class premium 0; policy uses ManualPremium x PackageMod, or 0"]:::openq
+    eqQ -->|"Yes"| ilf["ILF = ILFPremOps(state, table no., '500,000', '500,000'): bare limits"]:::step
+    ilf --> missQ{"ILF row found?"}
+    missQ -->|"No: pre-2027 '500,000 BI'"| miss["ILF null: Stop Gap $0, no message, no referral"]:::openq
+    missQ -->|"Yes"| fac["Factor = StopGapRate(state, 'Manufacturing Or Processing' ...): same .03 / .02"]:::step
+    fac --> fr["FinalRate = round(ILF x factor x Premises BaseRate x PackageMod x ExpMod x ModToUse, 3)"]:::step
+    fr --> cp["StopGapPremium = round(FinalRate x PremOpsExposureCalc, 0)"]:::step
+    cp --> sum["Policy Premium = sum over classifications. No $1 floor"]:::final
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    class gate,eqQ,missQ gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>The limit spelling is the whole edition difference that a submission controls. The engine's variant builder renormalizes Premises and Products limits, but not these three Stop Gap fields.</li>
+            <li>A 2027 submission is not portable to WA, and a WA submission is not portable to the other four. WA expects " BI" at every date.</li>
+            <li>Premium can still move at 2027 with no Stop Gap rule changing, because the Premises base rate and ILF under it are refiled.</li>
+          </ul>
+        </div>
+        <div>
+          <div class="delta openq"><strong>Spelling trap, both ways.</strong> "500,000 BI" on a 2027 ND edition, or "500,000" on WA or a pre-2027 edition, misses the ILF row and prices Stop Gap at $0, silently.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================= SIDE BY SIDE ============================= -->
+    <section class="sheet-view" id="view-diff">
+      <div class="intro">
+        <h2>Five differences, none of them in Stop Gap's own rules</h2>
+        <p>The policy-level rule file is identical in every edition of all five states. The four classification rules are the same in every state override. What differs is data and the Premises host.</p>
+      </div>
+      <div class="tablewrap">
+        <table class="grid">
+          <thead><tr><th>Item</th><th>Pre-2027 (and WA)</th><th>2027 (ND, OH, PR, WY)</th><th>Premium effect</th></tr></thead>
+          <tbody>
+            <tr><th>Limit domain</th><td>"500,000 BI"</td><td>"500,000"</td><td>Other edition's spelling: $0</td></tr>
+            <tr><th>ClassificationType labels</th><td>"Manufacturing or Processing", long Buildings label</td><td>"Manufacturing Or Processing", "Buildings Or Premises"</td><td>None: derived by the CW rules</td></tr>
+            <tr><th>Host chain called</th><td>CW 2023 / 2026 ErcRate</td><td>CW 2027 ErcRate, called by name</td><td>Premises BaseRate and ILF move</td></tr>
+            <tr><th>Premises ILF keys</th><td>Stop Gap limits with " BI"</td><td>Bare limits</td><td>Factor values refiled</td></tr>
+            <tr><th>WA</th><td>GL_WA_20260101_V02</td><td>Still GL_WA_20260101_V02 at 2027-04-01</td><td>WA stays on " BI"</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="intro"><p>Unchanged everywhere: the .03 / .02 factor (25 of 25 state cells), the empty countrywide factor table, the three equality tests, PolLvl[1] as the limit source, the ILF override field, ManualPremium on unequal limits, the 3-decimal final rate, the absence of a floor and of any referral, and stat codes 92400 / 92405.</p></div>
+    </section>
+
+    <!-- ============================= REVIEW ============================= -->
+    <section class="sheet-view" id="view-review">
+      <div class="intro">
+        <h2>What the all-coverage page got wrong or left out for Stop Gap</h2>
+        <p><code>gl-rating-chains.html</code> had one Stop Gap sheet with no edition split. On 2026-10-05 it was removed and now links here.</p>
+      </div>
+      <div class="tablewrap">
+        <table class="grid">
+          <thead><tr><th>#</th><th>All-coverage page said</th><th>Engine / XML shows</th><th>Kind</th></tr></thead>
+          <tbody>
+            <tr><th>1</th><td>One chain, no edition</td><td>One chain per edition. The rules are identical; the data and host differ.</td><td>restructured</td></tr>
+            <tr><th>2</th><td>Coverage on the policy when an endorsement record exists</td><td><strong>Also needs <code>StopGap = "Yes"</code>.</strong> A record with "No" prices $0, silently. The companion doc says the field only drives form attachment; in practice that attachment gates rating.</td><td><span class="tag bad">correction</span></td></tr>
+            <tr><th>3</th><td>ILF and factor steps unconditional</td><td>Both require equal accident / each-employee limits and read PolLvl[1]</td><td>incomplete</td></tr>
+            <tr><th>4</th><td>ILF lookup "0.0 if unresolved"</td><td>A guard that passes but misses writes null, and Stop Gap prices $0 with no refusal</td><td>clarified</td></tr>
+            <tr><th>5</th><td>Override "not resolved"</td><td>A classification input no rule writes: a carrier override of the ILF</td><td>clarified</td></tr>
+            <tr><th>6</th><td>Modifiers "not resolved"</td><td>PackageMod, Experience and ModToUse, read from the policy record; no Expense modifier</td><td>out of date</td></tr>
+            <tr><th>7</th><td>2027 limit spelling in a note</td><td>Drawn per edition, with WA's exception; both directions price $0</td><td>missing</td></tr>
+            <tr><th>8</th><td>Refer-to-company drawn without an outcome</td><td>ManualPremium × PackageMod, or $0 with no referral</td><td>incomplete</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="doc-footer">
+  Sources: the built engine (<strong>gl_engine</strong> at 62eb125), probed on 2026-10-05 with one Stop Gap endorsement record on the ND and WA engine bases at 2026-10-05 and 2027-04-01. OH, PR and WY results are the 2026-10-02 reconciliation's, not re-run. ISO rule XML is under <code>F:\ISO_ERC_Files\General_Liability</code>. Companion docs are <code>GL_Algorithm\StopGap_RatingAlgorithms.md</code> and <code>docs\gates\GATE-STOPGAP-EMPLOYERS-LIABILITY.md</code>.
+</footer>
+
+<script>
+  (function () {
+    var toc = document.getElementById('toc');
+    var main = document.getElementById('main');
+
+    function activate(target) {
+      var views = main.querySelectorAll('.sheet-view');
+      for (var i = 0; i < views.length; i++) views[i].classList.remove('active');
+      var view = document.getElementById('view-' + target);
+      if (view) view.classList.add('active');
+
+      var links = toc.querySelectorAll('.navlink');
+      for (var j = 0; j < links.length; j++) {
+        links[j].classList.toggle('active', links[j].getAttribute('data-target') === target);
+      }
+      main.scrollTop = 0;
+      window.scrollTo(0, 0);
+    }
+
+    document.addEventListener('click', function (e) {
+      var btn = e.target.closest('button[data-target]');
+      if (btn) activate(btn.getAttribute('data-target'));
+    });
+  })();
+</script>
+
+<style>.mermaid-rendering .sheet-view{display:block!important}</style>
+<script type="module">
+  // Render every diagram once, with all sheets briefly visible so hidden tabs get real sizes.
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({ startOnLoad: false, securityLevel: "strict", flowchart: { wrappingWidth: 260 } });
+  document.documentElement.classList.add("mermaid-rendering");
+  try { await mermaid.run({ querySelector: "pre.mermaid" }); }
+  finally { document.documentElement.classList.remove("mermaid-rendering"); }
+</script>
+</body>
+</html>

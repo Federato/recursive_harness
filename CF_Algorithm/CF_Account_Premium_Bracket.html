@@ -1,0 +1,374 @@
+<title>CF account premium bracket &mdash; cause-of-loss form granularity</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+ margin:0;padding:30px 26px 80px;color:#1c2733;background:#fbfbfd;line-height:1.55}
+ @media(prefers-color-scheme:dark){body{background:#14181d;color:#dfe4e9}
+  svg text[fill="#55606b"],svg text[fill="#8b95a1"]{fill:#93a0ad}
+  svg rect{filter:brightness(.34) saturate(1.5)} svg path{stroke:#3a434e}}
+ h1{font-size:21px;font-weight:600;margin:0 0 4px}
+ h2{font-size:16px;margin:28px 0 8px}
+ .sub{font-size:13.5px;color:#55606b;margin:0 0 4px;max-width:940px}
+ @media(prefers-color-scheme:dark){.sub{color:#93a0ad}}
+ .wrap{margin:22px 0 10px}
+ svg{width:100%;height:auto;display:block}
+ code{font-family:ui-monospace,Consolas,monospace;font-size:12.5px;background:#eef1f4;
+ padding:1px 5px;border-radius:3px}
+ @media(prefers-color-scheme:dark){code{background:#222a33}}
+ .key{display:flex;flex-wrap:wrap;gap:15px;margin:14px 0 0;font-size:12.5px}
+ .key i{display:inline-block;width:11px;height:11px;border-radius:2px;margin-right:6px;
+ vertical-align:-1px;border:1.2px solid}
+ table{border-collapse:collapse;margin:16px 0;font-size:13px}
+ th,td{border:1px solid #d7dce2;padding:6px 10px;text-align:left;vertical-align:top}
+ @media(prefers-color-scheme:dark){th,td{border-color:#2f3740}}
+ th{background:#1f3864;color:#fff;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+ .warn{background:#f7ddd4;color:#a53d26;padding:10px 14px;border-radius:6px;font-size:13px;
+ margin:16px 0;max-width:940px}
+ @media(prefers-color-scheme:dark){.warn{background:#2c221c;color:#e09a80}}
+ .good{background:#dcefe4;color:#2f7d5a}
+ @media(prefers-color-scheme:dark){.good{background:#16291f;color:#63c090}}
+</style>
+
+<h1>Commercial Property &mdash; account premium bracket</h1>
+<p class="sub">Two locations, three buildings, four occupancy classes, business income on two,
+TRIA accepted, every item written on the <b>Special</b> cause-of-loss form. Drawn at
+<b>cause-of-loss form granularity</b>: <b>36</b> leaf coverage records, of which <b>9</b> are
+gated off. Every box is a real datadef field from <code>CFCW20260601V01</code>.</p>
+
+<div class="warn"><b>The amounts are placeholders.</b> Structure, field names and the
+arithmetic of the roll-up are real; no premium was computed <i>for this drawing</i>.</div>
+
+<div class="warn good"><b>Reconciled against the built engine on 2026-10-02</b> (commit 630ba2f;
+chunks 1&ndash;27 gated). Confirmed against the gate evidence: the cumulative form gates (chunk 3:
+Basic&rsquo;s $293 + Broad $16 / Special $54 = $309 / $347, ISO-confirmed), Business Income under
+the building (chunk 5), the terrorism roll-up (chunk 13, ISO 587 of 587) and the policy total
+(chunk 14: whole-dollar premiums added, negatives included; <code>157_ --all</code> replays 293 of
+293 ISO policy totals equal). For a <b>real, ISO-confirmed</b> account total see chunk 14&rsquo;s
+golden case (<code>159_chunk14_rc2_total.py</code>): a five-coverage policy with terrorism and
+Debris Removal, <b>$1,193</b>, ISO 9 of 9. ISO applies <b>no minimum premium</b> to the total
+(OI-113: a company input with a refer-to-company outcome, chunk 28, not built).</div>
+
+<div class="key">
+ <span><i style="background:#e8edf5;border-color:#1f3864"></i>Building</span>
+ <span><i style="background:#f7ece0;border-color:#a35a1e"></i>Business Income</span>
+ <span><i style="background:#efeaf7;border-color:#6b4c9a"></i>Contents</span>
+ <span><i style="background:#f5e3ea;border-color:#7a1f3d"></i>TRIA</span>
+ <span><i style="background:#e4f1ea;border-color:#2f7d5a"></i><code>ErcCalculatedTotalPremium</code></span>
+ <span><i style="background:#f2f3f5;border-color:#9aa4ae;border-style:dashed"></i>gated off &mdash; contributes 0</span>
+</div>
+
+<div class="wrap"><svg viewBox="0 0 1498 1258" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMinYMin meet" font-family="ui-monospace,Consolas,monospace">
+<text x="20" y="74" font-size="10" font-weight="700" fill="#8b95a1" font-family="-apple-system,Segoe UI,sans-serif" letter-spacing=".07em">DEPTH 5</text>
+<text x="20" y="90" font-size="10.5" font-weight="700" fill="#55606b" font-family="-apple-system,Segoe UI,sans-serif">Contents coverage</text>
+<text x="262" y="74" font-size="10" font-weight="700" fill="#8b95a1" font-family="-apple-system,Segoe UI,sans-serif" letter-spacing=".07em">DEPTH 4</text>
+<text x="262" y="90" font-size="10.5" font-weight="700" fill="#55606b" font-family="-apple-system,Segoe UI,sans-serif">PersonalProperty / BI coverage</text>
+<text x="504" y="74" font-size="10" font-weight="700" fill="#8b95a1" font-family="-apple-system,Segoe UI,sans-serif" letter-spacing=".07em">DEPTH 3</text>
+<text x="504" y="90" font-size="10.5" font-weight="700" fill="#55606b" font-family="-apple-system,Segoe UI,sans-serif">OccupClass / BI / Building cov</text>
+<text x="746" y="74" font-size="10" font-weight="700" fill="#8b95a1" font-family="-apple-system,Segoe UI,sans-serif" letter-spacing=".07em">DEPTH 2</text>
+<text x="746" y="90" font-size="10.5" font-weight="700" fill="#55606b" font-family="-apple-system,Segoe UI,sans-serif">Structure</text>
+<text x="988" y="74" font-size="10" font-weight="700" fill="#8b95a1" font-family="-apple-system,Segoe UI,sans-serif" letter-spacing=".07em">DEPTH 1</text>
+<text x="988" y="90" font-size="10.5" font-weight="700" fill="#55606b" font-family="-apple-system,Segoe UI,sans-serif">Location / policy leaf</text>
+<text x="1230" y="74" font-size="10" font-weight="700" fill="#8b95a1" font-family="-apple-system,Segoe UI,sans-serif" letter-spacing=".07em">DEPTH 0</text>
+<text x="1230" y="90" font-size="10.5" font-weight="700" fill="#55606b" font-family="-apple-system,Segoe UI,sans-serif">Policy total</text>
+<path d="M476.0 234.0 H490.0 V273.0 H504.0" fill="none" stroke="#c3cad3" stroke-width="1.1"/>
+<path d="M476.0 260.0 H490.0 V273.0 H504.0" fill="none" stroke="#c3cad3" stroke-width="1.1"/>
+<path d="M476.0 286.0 H490.0 V273.0 H504.0" fill="none" stroke="#c3cad3" stroke-width="1.1" stroke-dasharray="2,3"/>
+<path d="M476.0 312.0 H490.0 V273.0 H504.0" fill="none" stroke="#c3cad3" stroke-width="1.1"/>
+<path d="M234.0 338.0 H248.0 V377.0 H262.0" fill="none" stroke="#c3cad3" stroke-width="1.1"/>
+<path d="M234.0 364.0 H248.0 V377.0 H262.0" fill="none" stroke="#c3cad3" stroke-width="1.1"/>
+<path d="M234.0 390.0 H248.0 V377.0 H262.0" fill="none" stroke="#c3cad3" stroke-width="1.1" stroke-dasharray="2,3"/>
+<path d="M234.0 416.0 H248.0 V377.0 H262.0" fill="none" stroke="#c3cad3" stroke-width="1.1"/>
+<path d="M476.0 377.0 H490.0 V377.0 H504.0" fill="none" stroke="#c3cad3" stroke-width="1.1"/>
+<path d="M234.0 442.0 H248.0 V481.0 H262.0" fill="none" stroke="#c3cad3" stroke-width="1.1"/>
+<path d="M234.0 468.0 H248.0 V481.0 H262.0" fill="none" stroke="#c3cad3" stroke-width="1.1"/>
+<path d="M234.0 494.0 H248.0 V481.0 H262.0" fill="none" stroke="#c3cad3" stroke-width="1.1" stroke-dasharray="2,3"/>
+<path d="M234.0 520.0 H248.0 V481.0 H262.0" fill="none" stroke="#c3cad3" stroke-width="1.1"/>
+<path d="M476.0 481.0 H490.0 V481.0 H504.0" fill="none" stroke="#c3cad3" stroke-width="1.1"/>
+<path d="M718.0 130.0 H732.0 V305.5 H746.0" fill="none" stroke="#c3cad3" stroke-width="1.1"/>
+<path d="M718.0 156.0 H732.0 V305.5 H746.0" fill="none" stroke="#c3cad3" stroke-width="1.1"/>
+<path d="M718.0 182.0 H732.0 V305.5 H746.0" fill="none" stroke="#c3cad3" stroke-width="1.1" stroke-dasharray="2,3"/>
+<path d="M718.0 208.0 H732.0 V305.5 H746.0" fill="none" stroke="#c3cad3" stroke-width="1.1"/>
+<path d="M718.0 273.0 H732.0 V305.5 H746.0" fill="none" stroke="#c3cad3" stroke-width="1.1"/>
+<path d="M718.0 377.0 H732.0 V305.5 H746.0" fill="none" stroke="#c3cad3" stroke-width="1.1"/>
+<path d="M718.0 481.0 H732.0 V305.5 H746.0" fill="none" stroke="#c3cad3" stroke-width="1.1"/>
+<path d="M234.0 664.0 H248.0 V703.0 H262.0" fill="none" stroke="#c3cad3" stroke-width="1.1"/>
+<path d="M234.0 690.0 H248.0 V703.0 H262.0" fill="none" stroke="#c3cad3" stroke-width="1.1"/>
+<path d="M234.0 716.0 H248.0 V703.0 H262.0" fill="none" stroke="#c3cad3" stroke-width="1.1" stroke-dasharray="2,3"/>
+<path d="M234.0 742.0 H248.0 V703.0 H262.0" fill="none" stroke="#c3cad3" stroke-width="1.1"/>
+<path d="M476.0 703.0 H490.0 V703.0 H504.0" fill="none" stroke="#c3cad3" stroke-width="1.1"/>
+<path d="M718.0 560.0 H732.0 V631.5 H746.0" fill="none" stroke="#c3cad3" stroke-width="1.1"/>
+<path d="M718.0 586.0 H732.0 V631.5 H746.0" fill="none" stroke="#c3cad3" stroke-width="1.1"/>
+<path d="M718.0 612.0 H732.0 V631.5 H746.0" fill="none" stroke="#c3cad3" stroke-width="1.1" stroke-dasharray="2,3"/>
+<path d="M718.0 638.0 H732.0 V631.5 H746.0" fill="none" stroke="#c3cad3" stroke-width="1.1"/>
+<path d="M718.0 703.0 H732.0 V631.5 H746.0" fill="none" stroke="#c3cad3" stroke-width="1.1"/>
+<path d="M960.0 305.5 H974.0 V468.5 H988.0" fill="none" stroke="#c3cad3" stroke-width="1.1"/>
+<path d="M960.0 631.5 H974.0 V468.5 H988.0" fill="none" stroke="#c3cad3" stroke-width="1.1"/>
+<path d="M476.0 908.0 H490.0 V947.0 H504.0" fill="none" stroke="#c3cad3" stroke-width="1.1"/>
+<path d="M476.0 934.0 H490.0 V947.0 H504.0" fill="none" stroke="#c3cad3" stroke-width="1.1"/>
+<path d="M476.0 960.0 H490.0 V947.0 H504.0" fill="none" stroke="#c3cad3" stroke-width="1.1" stroke-dasharray="2,3"/>
+<path d="M476.0 986.0 H490.0 V947.0 H504.0" fill="none" stroke="#c3cad3" stroke-width="1.1"/>
+<path d="M234.0 1012.0 H248.0 V1051.0 H262.0" fill="none" stroke="#c3cad3" stroke-width="1.1"/>
+<path d="M234.0 1038.0 H248.0 V1051.0 H262.0" fill="none" stroke="#c3cad3" stroke-width="1.1"/>
+<path d="M234.0 1064.0 H248.0 V1051.0 H262.0" fill="none" stroke="#c3cad3" stroke-width="1.1" stroke-dasharray="2,3"/>
+<path d="M234.0 1090.0 H248.0 V1051.0 H262.0" fill="none" stroke="#c3cad3" stroke-width="1.1"/>
+<path d="M476.0 1051.0 H490.0 V1051.0 H504.0" fill="none" stroke="#c3cad3" stroke-width="1.1"/>
+<path d="M718.0 804.0 H732.0 V927.5 H746.0" fill="none" stroke="#c3cad3" stroke-width="1.1"/>
+<path d="M718.0 830.0 H732.0 V927.5 H746.0" fill="none" stroke="#c3cad3" stroke-width="1.1"/>
+<path d="M718.0 856.0 H732.0 V927.5 H746.0" fill="none" stroke="#c3cad3" stroke-width="1.1" stroke-dasharray="2,3"/>
+<path d="M718.0 882.0 H732.0 V927.5 H746.0" fill="none" stroke="#c3cad3" stroke-width="1.1"/>
+<path d="M718.0 947.0 H732.0 V927.5 H746.0" fill="none" stroke="#c3cad3" stroke-width="1.1"/>
+<path d="M718.0 1051.0 H732.0 V927.5 H746.0" fill="none" stroke="#c3cad3" stroke-width="1.1"/>
+<path d="M960.0 927.5 H974.0 V927.5 H988.0" fill="none" stroke="#c3cad3" stroke-width="1.1"/>
+<path d="M1202.0 468.5 H1216.0 V820.2 H1230.0" fill="none" stroke="#c3cad3" stroke-width="1.1"/>
+<path d="M1202.0 927.5 H1216.0 V820.2 H1230.0" fill="none" stroke="#c3cad3" stroke-width="1.1"/>
+<path d="M1202.0 1172.0 H1216.0 V820.2 H1230.0" fill="none" stroke="#c3cad3" stroke-width="1.1"/>
+<rect x="504" y="120.0" width="214" height="20" rx="4" fill="#e8edf5" stroke="#1f3864" stroke-width="1.1"/>
+<text x="511" y="133.5" font-size="9" fill="#1f3864">Bldg BasicGroupI</text>
+<text x="711" y="133.5" font-size="9" font-weight="700" fill="#1f3864" text-anchor="end">3,400</text>
+<rect x="504" y="146.0" width="214" height="20" rx="4" fill="#e8edf5" stroke="#1f3864" stroke-width="1.1"/>
+<text x="511" y="159.5" font-size="9" fill="#1f3864">Bldg BasicGroupII</text>
+<text x="711" y="159.5" font-size="9" font-weight="700" fill="#1f3864" text-anchor="end">2,100</text>
+<rect x="504" y="172.0" width="214" height="20" rx="4" fill="#f2f3f5" stroke="#9aa4ae" stroke-width="1.1" stroke-dasharray="3,2"/>
+<text x="511" y="185.5" font-size="9" fill="#9aa4ae">Bldg Broad</text>
+<text x="711" y="185.5" font-size="9" font-weight="700" fill="#9aa4ae" text-anchor="end">0</text>
+<rect x="504" y="198.0" width="214" height="20" rx="4" fill="#e8edf5" stroke="#1f3864" stroke-width="1.1"/>
+<text x="511" y="211.5" font-size="9" fill="#1f3864">Bldg Special</text>
+<text x="711" y="211.5" font-size="9" font-weight="700" fill="#1f3864" text-anchor="end">700</text>
+<rect x="262" y="224.0" width="214" height="20" rx="4" fill="#f7ece0" stroke="#a35a1e" stroke-width="1.1"/>
+<text x="269" y="237.5" font-size="9" fill="#a35a1e">BI BasicGroupI</text>
+<text x="469" y="237.5" font-size="9" font-weight="700" fill="#a35a1e" text-anchor="end">1,700</text>
+<rect x="262" y="250.0" width="214" height="20" rx="4" fill="#f7ece0" stroke="#a35a1e" stroke-width="1.1"/>
+<text x="269" y="263.5" font-size="9" fill="#a35a1e">BI BasicGroupII</text>
+<text x="469" y="263.5" font-size="9" font-weight="700" fill="#a35a1e" text-anchor="end">1,050</text>
+<rect x="262" y="276.0" width="214" height="20" rx="4" fill="#f2f3f5" stroke="#9aa4ae" stroke-width="1.1" stroke-dasharray="3,2"/>
+<text x="269" y="289.5" font-size="9" fill="#9aa4ae">BI Broad</text>
+<text x="469" y="289.5" font-size="9" font-weight="700" fill="#9aa4ae" text-anchor="end">0</text>
+<rect x="262" y="302.0" width="214" height="20" rx="4" fill="#f7ece0" stroke="#a35a1e" stroke-width="1.1"/>
+<text x="269" y="315.5" font-size="9" fill="#a35a1e">BI Special</text>
+<text x="469" y="315.5" font-size="9" font-weight="700" fill="#a35a1e" text-anchor="end">350</text>
+<rect x="504" y="257.0" width="214" height="32" rx="4" fill="#e4f1ea" stroke="#2f7d5a" stroke-width="1.1"/>
+<text x="511" y="270.5" font-size="9" fill="#2f7d5a">CP·BusinessIncome</text>
+<text x="711" y="270.5" font-size="9" font-weight="700" fill="#2f7d5a" text-anchor="end">3,100</text>
+<text x="511" y="282.0" font-size="8" fill="#2f7d5a" opacity="0.78" font-family="-apple-system,Segoe UI,sans-serif">Business Income</text>
+<rect x="20" y="328.0" width="214" height="20" rx="4" fill="#efeaf7" stroke="#6b4c9a" stroke-width="1.1"/>
+<text x="27" y="341.5" font-size="9" fill="#6b4c9a">Contents BasicGroupI</text>
+<text x="227" y="341.5" font-size="9" font-weight="700" fill="#6b4c9a" text-anchor="end">1,350</text>
+<rect x="20" y="354.0" width="214" height="20" rx="4" fill="#efeaf7" stroke="#6b4c9a" stroke-width="1.1"/>
+<text x="27" y="367.5" font-size="9" fill="#6b4c9a">Contents BasicGroupII</text>
+<text x="227" y="367.5" font-size="9" font-weight="700" fill="#6b4c9a" text-anchor="end">830</text>
+<rect x="20" y="380.0" width="214" height="20" rx="4" fill="#f2f3f5" stroke="#9aa4ae" stroke-width="1.1" stroke-dasharray="3,2"/>
+<text x="27" y="393.5" font-size="9" fill="#9aa4ae">Contents Broad</text>
+<text x="227" y="393.5" font-size="9" font-weight="700" fill="#9aa4ae" text-anchor="end">0</text>
+<rect x="20" y="406.0" width="214" height="20" rx="4" fill="#efeaf7" stroke="#6b4c9a" stroke-width="1.1"/>
+<text x="27" y="419.5" font-size="9" fill="#6b4c9a">Contents Special</text>
+<text x="227" y="419.5" font-size="9" font-weight="700" fill="#6b4c9a" text-anchor="end">270</text>
+<rect x="262" y="367.0" width="214" height="20" rx="4" fill="#e4f1ea" stroke="#2f7d5a" stroke-width="1.1"/>
+<text x="269" y="380.5" font-size="9" fill="#2f7d5a">CP·PersonalProperty</text>
+<text x="469" y="380.5" font-size="9" font-weight="700" fill="#2f7d5a" text-anchor="end">2,450</text>
+<rect x="504" y="361.0" width="214" height="32" rx="4" fill="#e4f1ea" stroke="#2f7d5a" stroke-width="1.1"/>
+<text x="511" y="374.5" font-size="9" fill="#2f7d5a">CP·OccupClass</text>
+<text x="711" y="374.5" font-size="9" font-weight="700" fill="#2f7d5a" text-anchor="end">2,450</text>
+<text x="511" y="386.0" font-size="8" fill="#2f7d5a" opacity="0.78" font-family="-apple-system,Segoe UI,sans-serif">OccupClass 1A · restaurant</text>
+<rect x="20" y="432.0" width="214" height="20" rx="4" fill="#efeaf7" stroke="#6b4c9a" stroke-width="1.1"/>
+<text x="27" y="445.5" font-size="9" fill="#6b4c9a">Contents BasicGroupI</text>
+<text x="227" y="445.5" font-size="9" font-weight="700" fill="#6b4c9a" text-anchor="end">650</text>
+<rect x="20" y="458.0" width="214" height="20" rx="4" fill="#efeaf7" stroke="#6b4c9a" stroke-width="1.1"/>
+<text x="27" y="471.5" font-size="9" fill="#6b4c9a">Contents BasicGroupII</text>
+<text x="227" y="471.5" font-size="9" font-weight="700" fill="#6b4c9a" text-anchor="end">400</text>
+<rect x="20" y="484.0" width="214" height="20" rx="4" fill="#f2f3f5" stroke="#9aa4ae" stroke-width="1.1" stroke-dasharray="3,2"/>
+<text x="27" y="497.5" font-size="9" fill="#9aa4ae">Contents Broad</text>
+<text x="227" y="497.5" font-size="9" font-weight="700" fill="#9aa4ae" text-anchor="end">0</text>
+<rect x="20" y="510.0" width="214" height="20" rx="4" fill="#efeaf7" stroke="#6b4c9a" stroke-width="1.1"/>
+<text x="27" y="523.5" font-size="9" fill="#6b4c9a">Contents Special</text>
+<text x="227" y="523.5" font-size="9" font-weight="700" fill="#6b4c9a" text-anchor="end">130</text>
+<rect x="262" y="471.0" width="214" height="20" rx="4" fill="#e4f1ea" stroke="#2f7d5a" stroke-width="1.1"/>
+<text x="269" y="484.5" font-size="9" fill="#2f7d5a">CP·PersonalProperty</text>
+<text x="469" y="484.5" font-size="9" font-weight="700" fill="#2f7d5a" text-anchor="end">1,180</text>
+<rect x="504" y="465.0" width="214" height="32" rx="4" fill="#e4f1ea" stroke="#2f7d5a" stroke-width="1.1"/>
+<text x="511" y="478.5" font-size="9" fill="#2f7d5a">CP·OccupClass</text>
+<text x="711" y="478.5" font-size="9" font-weight="700" fill="#2f7d5a" text-anchor="end">1,180</text>
+<text x="511" y="490.0" font-size="8" fill="#2f7d5a" opacity="0.78" font-family="-apple-system,Segoe UI,sans-serif">OccupClass 1B · retail</text>
+<rect x="746" y="289.5" width="214" height="32" rx="4" fill="#e4f1ea" stroke="#2f7d5a" stroke-width="1.1"/>
+<text x="753" y="303.0" font-size="9" fill="#2f7d5a">CP·Structure</text>
+<text x="953" y="303.0" font-size="9" font-weight="700" fill="#2f7d5a" text-anchor="end">12,930</text>
+<text x="753" y="314.5" font-size="8" fill="#2f7d5a" opacity="0.78" font-family="-apple-system,Segoe UI,sans-serif">Structure 1 · masonry · CauseOfLoss Spec</text>
+<rect x="504" y="550.0" width="214" height="20" rx="4" fill="#e8edf5" stroke="#1f3864" stroke-width="1.1"/>
+<text x="511" y="563.5" font-size="9" fill="#1f3864">Bldg BasicGroupI</text>
+<text x="711" y="563.5" font-size="9" font-weight="700" fill="#1f3864" text-anchor="end">2,150</text>
+<rect x="504" y="576.0" width="214" height="20" rx="4" fill="#e8edf5" stroke="#1f3864" stroke-width="1.1"/>
+<text x="511" y="589.5" font-size="9" fill="#1f3864">Bldg BasicGroupII</text>
+<text x="711" y="589.5" font-size="9" font-weight="700" fill="#1f3864" text-anchor="end">1,320</text>
+<rect x="504" y="602.0" width="214" height="20" rx="4" fill="#f2f3f5" stroke="#9aa4ae" stroke-width="1.1" stroke-dasharray="3,2"/>
+<text x="511" y="615.5" font-size="9" fill="#9aa4ae">Bldg Broad</text>
+<text x="711" y="615.5" font-size="9" font-weight="700" fill="#9aa4ae" text-anchor="end">0</text>
+<rect x="504" y="628.0" width="214" height="20" rx="4" fill="#e8edf5" stroke="#1f3864" stroke-width="1.1"/>
+<text x="511" y="641.5" font-size="9" fill="#1f3864">Bldg Special</text>
+<text x="711" y="641.5" font-size="9" font-weight="700" fill="#1f3864" text-anchor="end">430</text>
+<rect x="20" y="654.0" width="214" height="20" rx="4" fill="#efeaf7" stroke="#6b4c9a" stroke-width="1.1"/>
+<text x="27" y="667.5" font-size="9" fill="#6b4c9a">Contents BasicGroupI</text>
+<text x="227" y="667.5" font-size="9" font-weight="700" fill="#6b4c9a" text-anchor="end">900</text>
+<rect x="20" y="680.0" width="214" height="20" rx="4" fill="#efeaf7" stroke="#6b4c9a" stroke-width="1.1"/>
+<text x="27" y="693.5" font-size="9" fill="#6b4c9a">Contents BasicGroupII</text>
+<text x="227" y="693.5" font-size="9" font-weight="700" fill="#6b4c9a" text-anchor="end">560</text>
+<rect x="20" y="706.0" width="214" height="20" rx="4" fill="#f2f3f5" stroke="#9aa4ae" stroke-width="1.1" stroke-dasharray="3,2"/>
+<text x="27" y="719.5" font-size="9" fill="#9aa4ae">Contents Broad</text>
+<text x="227" y="719.5" font-size="9" font-weight="700" fill="#9aa4ae" text-anchor="end">0</text>
+<rect x="20" y="732.0" width="214" height="20" rx="4" fill="#efeaf7" stroke="#6b4c9a" stroke-width="1.1"/>
+<text x="27" y="745.5" font-size="9" fill="#6b4c9a">Contents Special</text>
+<text x="227" y="745.5" font-size="9" font-weight="700" fill="#6b4c9a" text-anchor="end">180</text>
+<rect x="262" y="693.0" width="214" height="20" rx="4" fill="#e4f1ea" stroke="#2f7d5a" stroke-width="1.1"/>
+<text x="269" y="706.5" font-size="9" fill="#2f7d5a">CP·PersonalProperty</text>
+<text x="469" y="706.5" font-size="9" font-weight="700" fill="#2f7d5a" text-anchor="end">1,640</text>
+<rect x="504" y="687.0" width="214" height="32" rx="4" fill="#e4f1ea" stroke="#2f7d5a" stroke-width="1.1"/>
+<text x="511" y="700.5" font-size="9" fill="#2f7d5a">CP·OccupClass</text>
+<text x="711" y="700.5" font-size="9" font-weight="700" fill="#2f7d5a" text-anchor="end">1,640</text>
+<text x="511" y="712.0" font-size="8" fill="#2f7d5a" opacity="0.78" font-family="-apple-system,Segoe UI,sans-serif">OccupClass 2A · office</text>
+<rect x="746" y="615.5" width="214" height="32" rx="4" fill="#e4f1ea" stroke="#2f7d5a" stroke-width="1.1"/>
+<text x="753" y="629.0" font-size="9" fill="#2f7d5a">CP·Structure</text>
+<text x="953" y="629.0" font-size="9" font-weight="700" fill="#2f7d5a" text-anchor="end">5,540</text>
+<text x="753" y="640.5" font-size="8" fill="#2f7d5a" opacity="0.78" font-family="-apple-system,Segoe UI,sans-serif">Structure 2 · frame · CauseOfLoss Specia</text>
+<rect x="988" y="452.5" width="214" height="32" rx="4" fill="#e4f1ea" stroke="#2f7d5a" stroke-width="1.1"/>
+<text x="995" y="466.0" font-size="9" fill="#2f7d5a">CP·Location</text>
+<text x="1195" y="466.0" font-size="9" font-weight="700" fill="#2f7d5a" text-anchor="end">18,470</text>
+<text x="995" y="477.5" font-size="8" fill="#2f7d5a" opacity="0.78" font-family="-apple-system,Segoe UI,sans-serif">Location 1 · Main St</text>
+<rect x="504" y="794.0" width="214" height="20" rx="4" fill="#e8edf5" stroke="#1f3864" stroke-width="1.1"/>
+<text x="511" y="807.5" font-size="9" fill="#1f3864">Bldg BasicGroupI</text>
+<text x="711" y="807.5" font-size="9" font-weight="700" fill="#1f3864" text-anchor="end">2,780</text>
+<rect x="504" y="820.0" width="214" height="20" rx="4" fill="#e8edf5" stroke="#1f3864" stroke-width="1.1"/>
+<text x="511" y="833.5" font-size="9" fill="#1f3864">Bldg BasicGroupII</text>
+<text x="711" y="833.5" font-size="9" font-weight="700" fill="#1f3864" text-anchor="end">1,710</text>
+<rect x="504" y="846.0" width="214" height="20" rx="4" fill="#f2f3f5" stroke="#9aa4ae" stroke-width="1.1" stroke-dasharray="3,2"/>
+<text x="511" y="859.5" font-size="9" fill="#9aa4ae">Bldg Broad</text>
+<text x="711" y="859.5" font-size="9" font-weight="700" fill="#9aa4ae" text-anchor="end">0</text>
+<rect x="504" y="872.0" width="214" height="20" rx="4" fill="#e8edf5" stroke="#1f3864" stroke-width="1.1"/>
+<text x="511" y="885.5" font-size="9" fill="#1f3864">Bldg Special</text>
+<text x="711" y="885.5" font-size="9" font-weight="700" fill="#1f3864" text-anchor="end">560</text>
+<rect x="262" y="898.0" width="214" height="20" rx="4" fill="#f7ece0" stroke="#a35a1e" stroke-width="1.1"/>
+<text x="269" y="911.5" font-size="9" fill="#a35a1e">BI BasicGroupI</text>
+<text x="469" y="911.5" font-size="9" font-weight="700" fill="#a35a1e" text-anchor="end">1,270</text>
+<rect x="262" y="924.0" width="214" height="20" rx="4" fill="#f7ece0" stroke="#a35a1e" stroke-width="1.1"/>
+<text x="269" y="937.5" font-size="9" fill="#a35a1e">BI BasicGroupII</text>
+<text x="469" y="937.5" font-size="9" font-weight="700" fill="#a35a1e" text-anchor="end">780</text>
+<rect x="262" y="950.0" width="214" height="20" rx="4" fill="#f2f3f5" stroke="#9aa4ae" stroke-width="1.1" stroke-dasharray="3,2"/>
+<text x="269" y="963.5" font-size="9" fill="#9aa4ae">BI Broad</text>
+<text x="469" y="963.5" font-size="9" font-weight="700" fill="#9aa4ae" text-anchor="end">0</text>
+<rect x="262" y="976.0" width="214" height="20" rx="4" fill="#f7ece0" stroke="#a35a1e" stroke-width="1.1"/>
+<text x="269" y="989.5" font-size="9" fill="#a35a1e">BI Special</text>
+<text x="469" y="989.5" font-size="9" font-weight="700" fill="#a35a1e" text-anchor="end">250</text>
+<rect x="504" y="931.0" width="214" height="32" rx="4" fill="#e4f1ea" stroke="#2f7d5a" stroke-width="1.1"/>
+<text x="511" y="944.5" font-size="9" fill="#2f7d5a">CP·BusinessIncome</text>
+<text x="711" y="944.5" font-size="9" font-weight="700" fill="#2f7d5a" text-anchor="end">2,300</text>
+<text x="511" y="956.0" font-size="8" fill="#2f7d5a" opacity="0.78" font-family="-apple-system,Segoe UI,sans-serif">Business Income</text>
+<rect x="20" y="1002.0" width="214" height="20" rx="4" fill="#efeaf7" stroke="#6b4c9a" stroke-width="1.1"/>
+<text x="27" y="1015.5" font-size="9" fill="#6b4c9a">Contents BasicGroupI</text>
+<text x="227" y="1015.5" font-size="9" font-weight="700" fill="#6b4c9a" text-anchor="end">2,050</text>
+<rect x="20" y="1028.0" width="214" height="20" rx="4" fill="#efeaf7" stroke="#6b4c9a" stroke-width="1.1"/>
+<text x="27" y="1041.5" font-size="9" fill="#6b4c9a">Contents BasicGroupII</text>
+<text x="227" y="1041.5" font-size="9" font-weight="700" fill="#6b4c9a" text-anchor="end">1,260</text>
+<rect x="20" y="1054.0" width="214" height="20" rx="4" fill="#f2f3f5" stroke="#9aa4ae" stroke-width="1.1" stroke-dasharray="3,2"/>
+<text x="27" y="1067.5" font-size="9" fill="#9aa4ae">Contents Broad</text>
+<text x="227" y="1067.5" font-size="9" font-weight="700" fill="#9aa4ae" text-anchor="end">0</text>
+<rect x="20" y="1080.0" width="214" height="20" rx="4" fill="#efeaf7" stroke="#6b4c9a" stroke-width="1.1"/>
+<text x="27" y="1093.5" font-size="9" fill="#6b4c9a">Contents Special</text>
+<text x="227" y="1093.5" font-size="9" font-weight="700" fill="#6b4c9a" text-anchor="end">410</text>
+<rect x="262" y="1041.0" width="214" height="20" rx="4" fill="#e4f1ea" stroke="#2f7d5a" stroke-width="1.1"/>
+<text x="269" y="1054.5" font-size="9" fill="#2f7d5a">CP·PersonalProperty</text>
+<text x="469" y="1054.5" font-size="9" font-weight="700" fill="#2f7d5a" text-anchor="end">3,720</text>
+<rect x="504" y="1035.0" width="214" height="32" rx="4" fill="#e4f1ea" stroke="#2f7d5a" stroke-width="1.1"/>
+<text x="511" y="1048.5" font-size="9" fill="#2f7d5a">CP·OccupClass</text>
+<text x="711" y="1048.5" font-size="9" font-weight="700" fill="#2f7d5a" text-anchor="end">3,720</text>
+<text x="511" y="1060.0" font-size="8" fill="#2f7d5a" opacity="0.78" font-family="-apple-system,Segoe UI,sans-serif">OccupClass 3A · storage</text>
+<rect x="746" y="911.5" width="214" height="32" rx="4" fill="#e4f1ea" stroke="#2f7d5a" stroke-width="1.1"/>
+<text x="753" y="925.0" font-size="9" fill="#2f7d5a">CP·Structure</text>
+<text x="953" y="925.0" font-size="9" font-weight="700" fill="#2f7d5a" text-anchor="end">11,070</text>
+<text x="753" y="936.5" font-size="8" fill="#2f7d5a" opacity="0.78" font-family="-apple-system,Segoe UI,sans-serif">Structure 3 · non-combustible · Special</text>
+<rect x="988" y="911.5" width="214" height="32" rx="4" fill="#e4f1ea" stroke="#2f7d5a" stroke-width="1.1"/>
+<text x="995" y="925.0" font-size="9" fill="#2f7d5a">CP·Location</text>
+<text x="1195" y="925.0" font-size="9" font-weight="700" fill="#2f7d5a" text-anchor="end">11,070</text>
+<text x="995" y="936.5" font-size="8" fill="#2f7d5a" opacity="0.78" font-family="-apple-system,Segoe UI,sans-serif">Location 2 · Warehouse Rd</text>
+<rect x="988" y="1156.0" width="214" height="32" rx="4" fill="#f5e3ea" stroke="#7a1f3d" stroke-width="1.1"/>
+<text x="995" y="1169.5" font-size="9" fill="#7a1f3d">CP·PostTRIACoverage</text>
+<text x="1195" y="1169.5" font-size="9" font-weight="700" fill="#7a1f3d" text-anchor="end">202</text>
+<text x="995" y="1181.0" font-size="8" fill="#7a1f3d" opacity="0.78" font-family="-apple-system,Segoe UI,sans-serif">TRIA accepted · policy-level leaf</text>
+<rect x="1230" y="804.2" width="214" height="32" rx="4" fill="#cfd9e6" stroke="#0f2740" stroke-width="1.1"/>
+<text x="1237" y="817.8" font-size="9" fill="#0f2740">CommercialProperty</text>
+<text x="1437" y="817.8" font-size="9" font-weight="700" fill="#0f2740" text-anchor="end">29,742</text>
+<text x="1237" y="829.2" font-size="8" fill="#0f2740" opacity="0.78" font-family="-apple-system,Segoe UI,sans-serif">POLICY TOTAL</text>
+</svg></div>
+
+<h2>Four coverage records per item &mdash; and they are not mutually exclusive</h2>
+<p class="sub">Building, Business Income and Contents each file <b>four</b> separate coverage
+records &mdash; Basic Group I, Basic Group II, Broad, Special &mdash; each a leaf with its own
+<code>Premium</code>, its own <code>SetPremium</code> and its own gate. The gates are the part
+that surprises:</p>
+<table>
+<thead><tr><th>Record</th><th><code>SetCoverageOnPolicyIndicator</code> condition</th>
+<th>On when cause of loss is&hellip;</th></tr></thead>
+<tbody>
+<tr><td>Basic Group I</td><td><code>CauseOfLossToUse &ne; "Not Applicable" AND &ne; ""</code></td>
+ <td><b>Basic, Broad <i>and</i> Special</b> &mdash; any selection at all</td></tr>
+<tr><td>Basic Group II</td><td><code>CauseOfLossToUse &ne; "Not Applicable" AND &ne; ""</code></td>
+ <td><b>Basic, Broad <i>and</i> Special</b> &mdash; any selection at all</td></tr>
+<tr><td>Broad</td><td><code>CauseOfLossToUse = "Broad"</code></td><td>Broad only</td></tr>
+<tr><td>Special</td><td><code>CauseOfLossToUse = "Special"</code></td><td>Special only</td></tr>
+</tbody>
+</table>
+<div class="warn good"><b>A Special-form building therefore produces three premiums, not one:</b>
+Basic Group I <b>+</b> Basic Group II <b>+</b> Special. Broad is the only record switched off.
+A Basic-form item produces two (BGI + BGII); a Broad-form item produces three
+(BGI + BGII + Broad).</div>
+<p class="sub">The filed rates confirm the forms are <b>incremental, not alternative</b>. Alabama,
+class 0701, <b>frame</b> (construction code 1): Basic Group I base rate <b>0.115</b> (masonry
+non-combustible: 0.074), Basic Group II <b>0.070&ndash;0.135</b> by construction symbol (Inland
+territory), and the Special building rate a flat <b>0.04</b> &mdash; far too small to replace the
+other two, and exactly the shape of a top-up for the extra perils Special adds. <i>(Corrected
+2026-10-02: these are AL&rsquo;s 2026-06-01 V01 rows, the package ISO and the engine rate at
+2026-09-17; the earlier figures, Group II 0.080&ndash;0.156 and Special 0.039, came from AL&rsquo;s
+2027-03-01 package, and 0.115 is the frame row, not masonry.)</i> Chunk 3 proved the layering in
+dollars: ISO returns all three totals.</p>
+
+<h2>The depths</h2>
+<table>
+<thead><tr><th>Coverage</th><th>Leaf group (one per form)</th><th>Depth</th><th>Path to the policy total</th></tr></thead>
+<tbody>
+<tr><td><b>Building</b></td><td><code>CommercialPropertyStructureBuilding&lt;Form&gt;Coverage</code></td>
+ <td>3</td><td>Structure &rarr; Location &rarr; CommercialProperty</td></tr>
+<tr><td><b>Business Income</b></td><td><code>CommercialPropertyBusinessIncome&lt;Form&gt;Coverage</code></td>
+ <td>4</td><td>BusinessIncome &rarr; Structure &rarr; Location &rarr; CommercialProperty</td></tr>
+<tr><td><b>Contents</b></td><td><code>CommercialPropertyPersonalPropertyPrsnlProp&lt;Form&gt;Coverage</code></td>
+ <td>5</td><td>PersonalProperty &rarr; OccupClass &rarr; Structure &rarr; Location &rarr; CommercialProperty</td></tr>
+</tbody>
+</table>
+<p class="sub">Business Income hangs off the <i>building</i>, not the occupancy class &mdash; so a
+building with two occupancy classes has one business-income record and two contents records,
+each still carrying its own four forms.</p>
+
+<h2>TRIA does not roll up like the others</h2>
+<p class="sub"><code>CommercialPropertyPostTRIACoverage</code> is a single policy-level leaf at
+depth 1. Its <code>SetPremium</code> is
+<code>round(TotalStructurePremium + TotalPrsnlPropPremium + TotalBusnIncPremium +
+TotalSpecialPremium + TotalSpClBusnIncPremium)</code>, and each of those five is built on the
+same record by <code>Sum(ForEach Location &rarr; ForEach item &rarr; that item's
+TerrorismPremium)</code>. <i>Build, 2026-10-02 (chunk 13):</i> six states (CA, DC, IL, MD, NY, VA)
+rewrite this rule to cap the total at 25% of the rest of the policy; ISO agrees on every terrorism
+figure (587 of 587 live responses), including California&rsquo;s capped $153 after engine fix
+OI-111.</p>
+<div class="warn"><b>Those five are the only per-coverage account totals CF stores &mdash; and
+they total <i>terrorism</i> premium, not coverage premium.</b> There is still no field holding
+the account's total building premium or total contents premium.</div>
+<table>
+<thead><tr><th>Per-item terrorism</th><th>Accumulator</th><th>Value here</th></tr></thead>
+<tbody>
+<tr><td>3 Structure records</td><td><code>TotalStructurePremium</code></td><td>110</td></tr>
+<tr><td>4 PersonalProperty records</td><td><code>TotalPrsnlPropPremium</code></td><td>54</td></tr>
+<tr><td>2 BusinessIncome records</td><td><code>TotalBusnIncPremium</code></td><td>38</td></tr>
+<tr><td colspan="2"><b><code>PostTRIACoverage.Premium</code></b></td><td><b>202</b></td></tr>
+</tbody>
+</table>
+
+<h2>The gate every leaf passes</h2>
+<p class="sub">A leaf contributes its <code>Premium</code> only when
+<code>PremiumIndicator = 1</code> <b>and</b> <code>Premium &ne; 0</code>. The dashed boxes are
+Broad records that exist and rate but contribute nothing &mdash; indistinguishable in the total
+from a coverage that was never bought.</p>

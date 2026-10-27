@@ -1,0 +1,443 @@
+<title>GL Rating Decision Chains</title>
+<style>
+  @font-face {
+    font-family: 'system-mono';
+    src: local('Cascadia Code'), local('Consolas');
+  }
+  :root {
+    --ink: #101b24;
+    --paper: #edf0ec;
+    --paper-line: #c7d2ce;
+    --blueprint: #2e6e8e;
+    --blueprint-soft: #e4ebef;
+    --stamp: #c77f32;
+    --caution: #b14b39;
+    --ledger: #3f8f6e;
+    --surface: #f4f6f3;
+    --panel: #ffffff;
+    --sidebar: #e8ede8;
+    --text: var(--ink);
+    --muted: #5b6b72;
+    --border: #cdd6d2;
+    --font-display: Cambria, 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+    --font-body: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+    --font-mono: 'Cascadia Code', 'Cascadia Mono', Consolas, 'SFMono-Regular', ui-monospace, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --surface: #0b141a;
+      --panel: #101b22;
+      --sidebar: #0e1a20;
+      --text: #e7ece9;
+      --muted: #93a3a0;
+      --border: #223138;
+      --blueprint-soft: #16232b;
+    }
+  }
+  :root[data-theme="dark"] {
+    --surface: #0b141a;
+    --panel: #101b22;
+    --sidebar: #0e1a20;
+    --text: #e7ece9;
+    --muted: #93a3a0;
+    --border: #223138;
+    --blueprint-soft: #16232b;
+  }
+  :root[data-theme="light"] {
+    --surface: #f4f6f3;
+    --panel: #ffffff;
+    --sidebar: #e8ede8;
+    --text: #101b24;
+    --muted: #5b6b72;
+    --border: #cdd6d2;
+    --blueprint-soft: #e4ebef;
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; background: var(--surface); color: var(--text);
+    font-family: var(--font-body); -webkit-font-smoothing: antialiased;
+  }
+  body { display: flex; flex-direction: column; min-height: 100vh; }
+  a { color: inherit; }
+  ::selection { background: var(--stamp); color: #101b24; }
+
+  /* header */
+  header.masthead {
+    display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap;
+    padding: 1.1rem 1.6rem; border-bottom: 1px solid var(--border);
+    background: var(--panel);
+  }
+  header.masthead h1 {
+    font-family: var(--font-display); font-weight: 600; font-size: 1.35rem;
+    margin: 0; letter-spacing: 0.01em; text-wrap: balance;
+  }
+  header.masthead .rule {
+    width: 1px; align-self: stretch; background: var(--border);
+  }
+  header.masthead p {
+    margin: 0; font-size: 0.82rem; color: var(--muted); max-width: 46ch;
+  }
+  header.masthead .src {
+    margin-left: auto; font-family: var(--font-mono); font-size: 0.72rem;
+    color: var(--muted); text-align: right; line-height: 1.5;
+  }
+
+  /* shell */
+  .shell { display: flex; flex: 1; min-height: 0; }
+
+  nav.toc {
+    width: 258px; flex: none; background: var(--sidebar);
+    border-right: 1px solid var(--border);
+    padding: 1rem 0 2rem; overflow-y: auto;
+  }
+  nav.toc .group { margin-bottom: 0.35rem; }
+  nav.toc .group-label {
+    font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--muted); padding: 0.5rem 1.2rem 0.35rem;
+  }
+  nav.toc button.navlink {
+    display: block; width: 100%; text-align: left; background: none; border: none;
+    font-family: var(--font-body); font-size: 0.86rem; color: var(--text);
+    padding: 0.42rem 1.2rem 0.42rem 1.6rem; cursor: pointer; position: relative;
+    border-left: 3px solid transparent;
+  }
+  nav.toc a.navlink { display: block; text-decoration: none; font-family: var(--font-body); font-size: 0.86rem; color: var(--text); padding: 0.42rem 1.2rem 0.42rem 1.6rem; border-left: 3px solid transparent; }
+  nav.toc a.navlink:hover { background: var(--blueprint-soft); }
+  table.matrix td a.cell { display: block; text-decoration: none; padding: 0.6rem 0.8rem; color: var(--blueprint); }
+  table.matrix td a.cell:hover { background: var(--blueprint-soft); }
+  table.matrix td a.cell .n { font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); display: block; }
+  nav.toc button.navlink:hover { background: var(--blueprint-soft); }
+  nav.toc button.navlink.active {
+    background: var(--blueprint-soft); border-left-color: var(--blueprint);
+    font-weight: 600;
+  }
+  nav.toc button.navlink .chain-len {
+    display: block; font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); font-weight: 400;
+  }
+  nav.toc button.overview-link {
+    display: block; width: 100%; text-align: left; background: none; border: none;
+    font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.05em; text-transform: uppercase;
+    color: var(--blueprint); padding: 0.6rem 1.2rem; cursor: pointer; border-left: 3px solid transparent;
+  }
+  nav.toc button.overview-link.active { border-left-color: var(--blueprint); background: var(--blueprint-soft); }
+  nav.toc hr { border: none; border-top: 1px solid var(--border); margin: 0.6rem 1.2rem; }
+
+  nav.toc .legend {
+    margin: 1rem 1.2rem 0; padding: 0.8rem 0.9rem; border: 1px solid var(--border);
+    border-radius: 3px; background: var(--panel);
+  }
+  nav.toc .legend h4 {
+    margin: 0 0 0.5rem; font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--muted); font-weight: 600;
+  }
+  nav.toc .legend .row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.74rem; margin-bottom: 0.35rem; }
+  nav.toc .legend .swatch { width: 13px; height: 13px; flex: none; border-radius: 2px; border-width: 1.5px; border-style: solid; }
+  nav.toc .legend .sw-gate { background: #f4e4ce; border-color: #c77f32; }
+  nav.toc .legend .sw-zero { background: #f3dcd6; border-color: #b14b39; }
+  nav.toc .legend .sw-final { background: #dceee4; border-color: #3f8f6e; }
+  nav.toc .legend .sw-step { background: #e4ebef; border-color: #2e6e8e; }
+  nav.toc .legend .sw-openq { background: #f4e4ce; border-color: #b14b39; border-style: dashed; }
+
+  main { flex: 1; min-width: 0; overflow-y: auto; padding: 1.6rem 2rem 4rem; }
+
+  /* overview */
+  #view-overview .intro { max-width: 62ch; margin-bottom: 1.6rem; }
+  #view-overview .intro h2 { font-family: var(--font-display); font-size: 1.25rem; margin: 0 0 0.5rem; text-wrap: balance; }
+  #view-overview .intro p { font-size: 0.92rem; line-height: 1.6; color: var(--muted); margin: 0 0 0.6rem; }
+
+  table.matrix { border-collapse: collapse; width: 100%; max-width: 900px; }
+  table.matrix caption { text-align: left; font-family: var(--font-mono); font-size: 0.7rem; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem; }
+  table.matrix th, table.matrix td { border: 1px solid var(--border); padding: 0; }
+  table.matrix thead th {
+    font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em;
+    color: var(--muted); background: var(--panel); padding: 0.6rem 0.8rem; text-align: left;
+  }
+  table.matrix tbody th {
+    font-family: var(--font-body); font-weight: 600; font-size: 0.86rem; text-align: left;
+    padding: 0.6rem 0.8rem; background: var(--panel); white-space: nowrap;
+  }
+  table.matrix td button.cell {
+    display: block; width: 100%; height: 100%; background: var(--panel); border: none; cursor: pointer;
+    padding: 0.6rem 0.8rem; text-align: left; font-family: var(--font-body); color: var(--text);
+  }
+  table.matrix td button.cell:hover { background: var(--blueprint-soft); }
+  table.matrix td button.cell .n { font-family: var(--font-mono); font-size: 0.72rem; color: var(--muted); display: block; }
+
+  /* sheet */
+  .sheet-view { display: none; }
+  .sheet-view.active { display: block; }
+
+  .titleblock {
+    display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--border);
+    margin-bottom: 1.1rem; background: var(--panel);
+  }
+  .titleblock .field { padding: 0.6rem 0.9rem; border-right: 1px solid var(--border); }
+  .titleblock .field:last-child { border-right: none; }
+  .titleblock .field .k {
+    font-family: var(--font-mono); font-size: 0.63rem; text-transform: uppercase; letter-spacing: 0.07em;
+    color: var(--muted); display: block; margin-bottom: 0.15rem;
+  }
+  .titleblock .field .v { font-family: var(--font-mono); font-size: 0.82rem; color: var(--text); line-height: 1.35; }
+  .titleblock .field.wide { grid-column: span 4; border-top: 1px solid var(--border); }
+
+  .sheet {
+    background: var(--paper); border: 1px solid var(--paper-line); border-radius: 2px;
+    padding: 1.4rem 1.2rem 1rem; position: relative; overflow-x: auto;
+    background-image:
+      linear-gradient(var(--paper-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--paper-line) 1px, transparent 1px);
+    background-size: 28px 28px; background-position: -1px -1px;
+    background-color: var(--paper);
+  }
+  .sheet::before, .sheet::after,
+  .sheet .tick-tl, .sheet .tick-br { content: ""; }
+  .sheet .corner { position: absolute; width: 14px; height: 14px; border-color: #7d8f8a; }
+  .sheet .corner.tl { top: 6px; left: 6px; border-top: 1.5px solid #7d8f8a; border-left: 1.5px solid #7d8f8a; }
+  .sheet .corner.tr { top: 6px; right: 6px; border-top: 1.5px solid #7d8f8a; border-right: 1.5px solid #7d8f8a; }
+  .sheet .corner.bl { bottom: 6px; left: 6px; border-bottom: 1.5px solid #7d8f8a; border-left: 1.5px solid #7d8f8a; }
+  .sheet .corner.br { bottom: 6px; right: 6px; border-bottom: 1.5px solid #7d8f8a; border-right: 1.5px solid #7d8f8a; }
+  .sheet pre.mermaid { margin: 0; background: transparent; min-width: 640px; color: #101b24; }
+
+  .notes { margin-top: 1.1rem; display: grid; grid-template-columns: 1.4fr 1fr; gap: 1.2rem; }
+  @media (max-width: 900px) { .notes { grid-template-columns: 1fr; } }
+  .notes h3 {
+    font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--muted); margin: 0 0 0.5rem;
+  }
+  .notes ul { margin: 0; padding-left: 1.1rem; font-size: 0.86rem; line-height: 1.55; }
+  .notes ul li { margin-bottom: 0.4rem; }
+  .notes .delta { border: 1px solid var(--border); background: var(--panel); padding: 0.8rem 0.9rem; border-radius: 3px; }
+  .notes .delta.openq { border-color: var(--caution); }
+
+  footer.doc-footer {
+    padding: 1rem 2rem 2rem; font-size: 0.76rem; color: var(--muted); border-top: 1px solid var(--border);
+  }
+  footer.doc-footer strong { color: var(--text); }
+</style>
+
+<header class="masthead">
+  <h1>GL Rating Decision Chains</h1>
+  <div class="rule"></div>
+  <p>Every gate, branch, and terminal in ISO's Commercial General Liability rate build-up and premium calculation, for the sublines documented so far. Reconciled against the built engine on 2026-10-02 (commit 630ba2f): every chain re-checked against the rule XML of each live countrywide edition and, where a submission could be built, against an offline engine rating; corrections are marked in each chain's notes.</p>
+  <div class="src">Two edition branches: pre-2027 (GL_CW_20231201_V02/V03, 20260101_V01, 20261001_V01 — identical coverage rules) and CW 2027 (20270401_V01/V02 — identical premium rules) · Countrywide<br>At 2027-04-01, 46 jurisdictions move to CW 2027; CA, GA, NJ, NY, WA keep a pre-2027 parent.<br>companion to *_RatingAlgorithms.md, gate docs in docs/gates/</div>
+</header>
+
+<div class="shell">
+  <nav class="toc" id="toc">
+    <button class="overview-link active" data-target="overview">Overview matrix</button>
+    <hr>
+    <div class="group">
+      <div class="group-label">Premises/Operations (334)</div>
+      <a class="navlink" href="gl-premops-chains.html">Pre-2027 and CW 2027 chains<span class="chain-len">moved to their own page ↗</span></a>
+    </div>
+    <hr>
+    <div class="group">
+      <div class="group-label">Products/Completed Operations (336)</div>
+      <a class="navlink" href="gl-prodscompldops-chains.html">Pre-2027 and CW 2027 chains<span class="chain-len">moved to their own page ↗</span></a>
+    </div>
+    <hr>
+    <div class="group">
+      <div class="group-label">Owners &amp; Contractors Protective (335)</div>
+      <a class="navlink" href="gl-ocp-chains.html">Pre-2027 and CW 2027 chains<span class="chain-len">moved to their own page ↗</span></a>
+    </div>
+    <hr>
+    <div class="group">
+      <div class="group-label">Liquor Liability (332)</div>
+      <a class="navlink" href="gl-liquor-chains.html">Pre-2027 and CW 2027 chains<span class="chain-len">moved to their own page ↗</span></a>
+    </div>
+    <hr>
+    <div class="group">
+      <div class="group-label">Railroad Protective (335)</div>
+      <a class="navlink" href="gl-railroad-chains.html">Pre-2027 and CW 2027 chains<span class="chain-len">moved to their own page ↗</span></a>
+    </div>
+    <hr>
+    <div class="group">
+      <div class="group-label">Product Withdrawal / Cyber (365)</div>
+      <a class="navlink" href="gl-pw-cyber-chains.html">Pre-2027 and CW 2027 chains<span class="chain-len">moved to their own page ↗</span></a>
+    </div>
+    <hr>
+    <div class="group">
+      <div class="group-label">Unmanned Aircraft (370)</div>
+      <a class="navlink" href="gl-uav-chains.html">Pre-2027 and CW 2027 chains<span class="chain-len">moved to their own page ↗</span></a>
+    </div>
+    <hr>
+    <div class="group">
+      <div class="group-label">Terrorism (TRIA)</div>
+      <a class="navlink" href="gl-terrorism-chains.html">Pre-2027 and CW 2027 chains<span class="chain-len">moved to their own page ↗</span></a>
+    </div>
+    <hr>
+    <div class="group">
+      <div class="group-label">Stop Gap Employers Liability (state-only)</div>
+      <a class="navlink" href="gl-stopgap-chains.html">Pre-2027 and CW 2027 chains<span class="chain-len">moved to their own page ↗</span></a>
+    </div>
+
+    <div class="legend">
+      <h4>Reading the chains</h4>
+      <div class="row"><span class="swatch sw-gate"></span> gate / branch condition</div>
+      <div class="row"><span class="swatch sw-step"></span> computed factor</div>
+      <div class="row"><span class="swatch sw-final"></span> premium resolves</div>
+      <div class="row"><span class="swatch sw-zero"></span> premium = 0.0</div>
+      <div class="row"><span class="swatch sw-openq"></span> flagged finding / open question</div>
+    </div>
+  </nav>
+
+  <main id="main">
+
+    <section class="sheet-view active" id="view-overview">
+      <div class="intro">
+        <h2>Nineteen chains across eight sublines, none of them a template</h2>
+        <p>Unlike CF's four cause-of-loss forms rated in parallel off one shared shape, GL's eight sublines share almost nothing structurally — Premises/Operations forks by countrywide edition, Products/Completed Operations forks by whether a published loss cost is filed as zero, Owners &amp; Contractors Protective forks by class code and by edition simultaneously, Railroad Protective forks by class code four ways with three "naming trap" rules whose names lie about which class they test, and Product Withdrawal / Cyber reads its host coverage's <em>already-computed</em> values rather than its own tables (escalation E18). Liquor Liability is the plainest of the eight: no loss-cost path exists at all, by rule — Rule 45.E says "for rates, refer to company," so the entire chain is an ELP-driven surrogate. Stop Gap Employers Liability is the only one with no ISO subline code and no countrywide rating package at all — it is filed state-only, in exactly five monopolistic-fund jurisdictions, and its rate build-up reads Premises/Operations' own already-computed <code style="font-family:var(--font-mono)">BaseRate</code> and exposure count directly, the same E18 pattern Product Withdrawal / Cyber uses but at the level of computed values rather than borrowed tables.</p>
+        <p>Dashed amber-and-rust nodes mark a flagged finding — an unresolved formula, a naming trap, a sibling-group dependency, a table that prices legitimately at zero — logged in each subline's own <code style="font-family:var(--font-mono)">RatingAlgorithms.md</code> and its source gate doc rather than guessed at. Where a gate doc did not reconstruct a step's internal branching, the node says so instead of inventing one.</p>
+      <p><strong>Moved 2026-10-05.</strong> Each subline's chains now have their own page, drawn separately for the pre-2027 and CW 2027 editions and re-checked against the built engine. The matrix below links to them; this page keeps only the overview.</p>
+      </div>
+      <table class="matrix">
+        <caption>Click a cell to open its decision chain</caption>
+        <thead>
+          <tr><th>Subline</th><th>Chain 1</th><th>Chain 2</th><th>Chain 3</th><th>Chain 4</th><th>Chain 5</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th>Premises/Operations</th>
+            <td><a class="cell" href="gl-premops-chains.html">Pre-2027 editions<span class="n">own page ↗</span></a></td>
+            <td><a class="cell" href="gl-premops-chains.html">CW 2027 (V01/V02)<span class="n">own page ↗</span></a></td>
+            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
+            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
+            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
+          </tr>
+          <tr>
+            <th>Products/Completed Operations</th>
+            <td><a class="cell" href="gl-prodscompldops-chains.html">Pre-2027 editions<span class="n">own page ↗</span></a></td>
+            <td><a class="cell" href="gl-prodscompldops-chains.html">CW 2027 (V01/V02)<span class="n">own page ↗</span></a></td>
+            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
+            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
+            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
+          </tr>
+          <tr>
+            <th>Owners &amp; Contractors Protective</th>
+            <td><a class="cell" href="gl-ocp-chains.html">Pre-2027 editions<span class="n">own page ↗</span></a></td>
+            <td><a class="cell" href="gl-ocp-chains.html">CW 2027 (V01/V02)<span class="n">own page ↗</span></a></td>
+            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
+            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
+            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
+          </tr>
+          <tr>
+            <th>Liquor Liability</th>
+            <td><a class="cell" href="gl-liquor-chains.html">Pre-2027 editions<span class="n">own page ↗</span></a></td>
+            <td><a class="cell" href="gl-liquor-chains.html">CW 2027 (V01/V02)<span class="n">own page ↗</span></a></td>
+            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
+            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
+            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
+          </tr>
+          <tr>
+            <th>Railroad Protective</th>
+            <td><a class="cell" href="gl-railroad-chains.html">Pre-2027 editions<span class="n">own page ↗</span></a></td>
+            <td><a class="cell" href="gl-railroad-chains.html">CW 2027 (V01/V02)<span class="n">own page ↗</span></a></td>
+            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
+            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
+            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
+          </tr>
+          <tr>
+            <th>Product Withdrawal / Cyber</th>
+            <td><a class="cell" href="gl-pw-cyber-chains.html">Pre-2027 editions<span class="n">own page ↗</span></a></td>
+            <td><a class="cell" href="gl-pw-cyber-chains.html">CW 2027 (V01/V02)<span class="n">own page ↗</span></a></td>
+            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
+            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
+            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
+          </tr>
+          <tr>
+            <th>Unmanned Aircraft</th>
+            <td><a class="cell" href="gl-uav-chains.html">Pre-2027 editions<span class="n">own page ↗</span></a></td>
+            <td><a class="cell" href="gl-uav-chains.html">CW 2027 (V01/V02)<span class="n">own page ↗</span></a></td>
+            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
+            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
+            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
+          </tr>
+          <tr>
+            <th>Terrorism (TRIA)</th>
+            <td><a class="cell" href="gl-terrorism-chains.html">Pre-2027 editions<span class="n">own page ↗</span></a></td>
+            <td><a class="cell" href="gl-terrorism-chains.html">CW 2027 (V01/V02)<span class="n">own page ↗</span></a></td>
+            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
+            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
+            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
+          </tr>
+          <tr>
+            <th>Stop Gap Employers Liability</th>
+            <td><a class="cell" href="gl-stopgap-chains.html">Pre-2027 editions<span class="n">own page ↗</span></a></td>
+            <td><a class="cell" href="gl-stopgap-chains.html">CW 2027 state editions<span class="n">own page ↗</span></a></td>
+            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
+            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
+            <td><span class="n" style="padding:0.6rem 0.8rem; display:block; color:var(--muted);">—</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Premises/Operations (both editions) moved to gl-premops-chains.html on 2026-10-05. -->
+
+    <!-- Products/Completed Operations (both editions) moved to gl-prodscompldops-chains.html on 2026-10-05. -->
+
+    <!-- Owners & Contractors Protective (both editions) moved to gl-ocp-chains.html on 2026-10-05. -->
+
+    <!-- Liquor Liability (both editions) moved to gl-liquor-chains.html on 2026-10-05. -->
+
+    <!-- Railroad Protective (both editions) moved to gl-railroad-chains.html on 2026-10-05. -->
+
+    <!-- Product Withdrawal / LoED / Cyber (both editions) moved to gl-pw-cyber-chains.html on 2026-10-05. -->
+
+    <!-- Unmanned Aircraft (both editions) moved to gl-uav-chains.html on 2026-10-05. -->
+
+    <!-- Terrorism (all five groups, both editions) moved to gl-terrorism-chains.html on 2026-10-05. -->
+
+    <!-- Stop Gap Employers Liability (both editions) moved to gl-stopgap-chains.html on 2026-10-05. -->
+
+  </main>
+</div>
+
+<footer class="doc-footer">
+  Source: <strong>GL_CW_20231201_V03</strong> (golden-case parent), with <strong>GL_CW_20270401_V01</strong> deltas noted per subline where documented. Full citations, formulas, and open-item detail live in the companion markdown docs (<code style="font-family:var(--font-mono)">*_RatingAlgorithms.md</code>) and the source gate docs (<code style="font-family:var(--font-mono)">docs/gates/GATE-33*.md</code>, <code style="font-family:var(--font-mono)">GATE-365-*.md</code>, <code style="font-family:var(--font-mono)">GATE-370-*.md</code>), all in <code style="font-family:var(--font-mono)">F:\Recursive_Harness_2.0\GL_Algorithm</code>.
+</footer>
+
+<script>
+  (function () {
+    var toc = document.getElementById('toc');
+    var main = document.getElementById('main');
+
+    function activate(target) {
+      var views = main.querySelectorAll('.sheet-view');
+      for (var i = 0; i < views.length; i++) views[i].classList.remove('active');
+      var view = document.getElementById('view-' + target);
+      if (view) view.classList.add('active');
+
+      var links = toc.querySelectorAll('.navlink, .overview-link');
+      for (var j = 0; j < links.length; j++) links[j].classList.remove('active');
+      var activeLinks = toc.querySelectorAll('[data-target="' + target + '"]');
+      for (var k = 0; k < activeLinks.length; k++) activeLinks[k].classList.add('active');
+
+      main.scrollTop = 0;
+    }
+
+    toc.addEventListener('click', function (e) {
+      var btn = e.target.closest('[data-target]');
+      if (!btn) return;
+      activate(btn.getAttribute('data-target'));
+    });
+
+    main.addEventListener('click', function (e) {
+      var btn = e.target.closest('button.cell[data-target]');
+      if (!btn) return;
+      activate(btn.getAttribute('data-target'));
+    });
+  })();
+</script>
+
+<style>.mermaid-rendering .sheet-view{display:block!important}</style>
+<script type="module">
+  // Render every mermaid diagram once, with all sheets briefly visible so hidden tabs get real sizes.
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({ startOnLoad: false, securityLevel: "strict" });
+  document.documentElement.classList.add("mermaid-rendering");
+  try { await mermaid.run({ querySelector: "pre.mermaid" }); }
+  finally { document.documentElement.classList.remove("mermaid-rendering"); }
+</script>

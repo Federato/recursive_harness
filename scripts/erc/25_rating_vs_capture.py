@@ -19,7 +19,7 @@ from collections import defaultdict, Counter
 from concurrent.futures import ProcessPoolExecutor
 
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-ROOT = r"C:\Projects\ISO_ERC_Files\General_Liability"
+ROOT = r"F:\ISO_ERC_Files\General_Liability"
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.join(HERE, "out")
 

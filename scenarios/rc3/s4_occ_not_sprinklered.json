@@ -1,0 +1,13 @@
+{
+ "name": "rc3_s4_occ_not_sprinklered",
+ "states": [
+  "FL"
+ ],
+ "edits": [
+  {
+   "sheet": "IN - Schedule",
+   "cell": "J91",
+   "value": "Non-Sprinklered"
+  }
+ ]
+}

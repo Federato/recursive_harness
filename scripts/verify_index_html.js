@@ -1,5 +1,5 @@
 const fs=require('fs');
-const html=fs.readFileSync('C:/Projects/Recursive_Harness_2.0/docs/rating-engine/index.html','utf8');
+const html=fs.readFileSync('F:/Recursive_Harness_2.0/docs/rating-engine/index.html','utf8');
 const js=html.slice(html.lastIndexOf('<script>')+8, html.lastIndexOf('</script>'));
 const ids=new Set([...html.matchAll(/id="([^"]+)"/g)].map(m=>m[1]));
 function node(tag){const n={tagName:tag,className:'',textContent:'',innerHTML:'',children:[],style:{},

@@ -1,0 +1,780 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Builders Risk Rating Chains</title>
+<style>
+  :root {
+    --ink: #101b24;
+    --paper: #edf0ec;
+    --paper-line: #c7d2ce;
+    --blueprint: #2e6e8e;
+    --blueprint-soft: #e4ebef;
+    --stamp: #c77f32;
+    --caution: #b14b39;
+    --ledger: #3f8f6e;
+    --surface: #f4f6f3;
+    --panel: #ffffff;
+    --sidebar: #e8ede8;
+    --text: var(--ink);
+    --muted: #5b6b72;
+    --border: #cdd6d2;
+    --font-display: Cambria, 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
+    --font-body: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+    --font-mono: 'Cascadia Code', 'Cascadia Mono', Consolas, 'SFMono-Regular', ui-monospace, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --surface: #0b141a;
+      --panel: #101b22;
+      --sidebar: #0e1a20;
+      --text: #e7ece9;
+      --muted: #93a3a0;
+      --border: #223138;
+      --blueprint-soft: #16232b;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --surface: #0b141a;
+    --panel: #101b22;
+    --sidebar: #0e1a20;
+    --text: #e7ece9;
+    --muted: #93a3a0;
+    --border: #223138;
+    --blueprint-soft: #16232b;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0; background: var(--surface); color: var(--text);
+    font-family: var(--font-body); -webkit-font-smoothing: antialiased;
+  }
+  body { display: flex; flex-direction: column; min-height: 100vh; }
+  a { color: inherit; }
+  code { font-family: var(--font-mono); font-size: 0.92em; }
+  ::selection { background: var(--stamp); color: #101b24; }
+
+  /* header */
+  header.masthead {
+    display: flex; align-items: baseline; gap: 1rem; flex-wrap: wrap;
+    padding: 1.1rem 1.6rem; border-bottom: 1px solid var(--border);
+    background: var(--panel);
+  }
+  header.masthead h1 {
+    font-family: var(--font-display); font-weight: 600; font-size: 1.35rem;
+    margin: 0; letter-spacing: 0.01em; text-wrap: balance;
+  }
+  header.masthead .rule { width: 1px; align-self: stretch; background: var(--border); }
+  header.masthead p { margin: 0; font-size: 0.82rem; color: var(--muted); max-width: 52ch; }
+  header.masthead .src {
+    margin-left: auto; font-family: var(--font-mono); font-size: 0.72rem;
+    color: var(--muted); text-align: right; line-height: 1.5;
+  }
+
+  /* shell */
+  .shell { display: flex; flex: 1; min-height: 0; }
+
+  nav.toc {
+    width: 258px; flex: none; background: var(--sidebar);
+    border-right: 1px solid var(--border);
+    padding: 1rem 0 2rem; overflow-y: auto;
+  }
+  nav.toc .group-label {
+    font-family: var(--font-mono); font-size: 0.68rem; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--muted); padding: 0.5rem 1.2rem 0.35rem;
+  }
+  nav.toc button.navlink {
+    display: block; width: 100%; text-align: left; background: none; border: none;
+    font-family: var(--font-body); font-size: 0.86rem; color: var(--text);
+    padding: 0.42rem 1.2rem 0.42rem 1.6rem; cursor: pointer;
+    border-left: 3px solid transparent;
+  }
+  nav.toc button.navlink:hover { background: var(--blueprint-soft); }
+  nav.toc button.navlink.active {
+    background: var(--blueprint-soft); border-left-color: var(--blueprint); font-weight: 600;
+  }
+  nav.toc button.navlink .chain-len {
+    display: block; font-family: var(--font-mono); font-size: 0.68rem; color: var(--muted); font-weight: 400;
+  }
+  nav.toc hr { border: none; border-top: 1px solid var(--border); margin: 0.6rem 1.2rem; }
+
+  nav.toc .legend {
+    margin: 1rem 1.2rem 0; padding: 0.8rem 0.9rem; border: 1px solid var(--border);
+    border-radius: 3px; background: var(--panel);
+  }
+  nav.toc .legend h4 {
+    margin: 0 0 0.5rem; font-family: var(--font-mono); font-size: 0.66rem; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--muted); font-weight: 600;
+  }
+  nav.toc .legend .row { display: flex; align-items: center; gap: 0.5rem; font-size: 0.74rem; margin-bottom: 0.35rem; }
+  nav.toc .legend .swatch { width: 13px; height: 13px; flex: none; border-radius: 2px; border-width: 1.5px; border-style: solid; }
+  .sw-gate { background: #f4e4ce; border-color: #c77f32; }
+  .sw-zero { background: #f3dcd6; border-color: #b14b39; }
+  .sw-final { background: #dceee4; border-color: #3f8f6e; }
+  .sw-step { background: #e4ebef; border-color: #2e6e8e; }
+  .sw-openq { background: #f4e4ce; border-color: #b14b39; border-style: dashed !important; }
+  .sw-engine { background: #e6e1f0; border-color: #5a4c8a; }
+
+  main { flex: 1; min-width: 0; overflow-y: auto; padding: 1.6rem 2rem 4rem; }
+
+  .intro { max-width: 70ch; margin-bottom: 1.4rem; }
+  .intro h2 { font-family: var(--font-display); font-size: 1.25rem; margin: 0 0 0.5rem; text-wrap: balance; }
+  .intro p { font-size: 0.92rem; line-height: 1.6; color: var(--muted); margin: 0 0 0.6rem; }
+
+  /* tables */
+  .tablewrap { overflow-x: auto; margin-bottom: 1.4rem; }
+  table.grid { border-collapse: collapse; width: 100%; max-width: 1100px; background: var(--panel); }
+  table.grid caption {
+    text-align: left; font-family: var(--font-mono); font-size: 0.7rem; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.5rem;
+  }
+  table.grid th, table.grid td {
+    border: 1px solid var(--border); padding: 0.5rem 0.7rem; font-size: 0.82rem;
+    text-align: left; vertical-align: top; line-height: 1.45;
+  }
+  table.grid thead th {
+    font-family: var(--font-mono); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.05em;
+    color: var(--muted); background: var(--blueprint-soft); font-weight: 600;
+  }
+  table.grid tbody th { font-weight: 600; white-space: nowrap; }
+  table.grid td.num { font-family: var(--font-mono); text-align: right; white-space: nowrap; }
+  table.grid tr.hl td, table.grid tr.hl th { background: var(--blueprint-soft); }
+  table.grid td .tag {
+    font-family: var(--font-mono); font-size: 0.66rem; padding: 0.05rem 0.35rem; border-radius: 2px;
+    border: 1px solid var(--border); color: var(--muted); white-space: nowrap;
+  }
+  table.grid td .tag.a { border-color: var(--blueprint); color: var(--blueprint); }
+  table.grid td .tag.b { border-color: var(--ledger); color: var(--ledger); }
+  table.grid td .tag.bad { border-color: var(--caution); color: var(--caution); }
+
+  .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0.9rem; max-width: 1100px; margin-bottom: 1.4rem; }
+  .card { background: var(--panel); border: 1px solid var(--border); border-radius: 3px; padding: 0.9rem 1rem; }
+  .card .k { font-family: var(--font-mono); font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); }
+  .card .v { font-family: var(--font-display); font-size: 1.5rem; margin: 0.2rem 0 0.25rem; font-variant-numeric: tabular-nums; }
+  .card p { margin: 0; font-size: 0.8rem; color: var(--muted); line-height: 1.45; }
+  .card button.go {
+    margin-top: 0.6rem; background: none; border: 1px solid var(--blueprint); color: var(--blueprint);
+    font-family: var(--font-mono); font-size: 0.7rem; padding: 0.3rem 0.6rem; border-radius: 2px; cursor: pointer;
+  }
+  .card button.go:hover { background: var(--blueprint-soft); }
+
+  /* sheet */
+  .sheet-view { display: none; }
+  .sheet-view.active { display: block; }
+
+  .titleblock {
+    display: grid; grid-template-columns: repeat(4, 1fr); border: 1px solid var(--border);
+    margin-bottom: 1.1rem; background: var(--panel);
+  }
+  .titleblock .field { padding: 0.6rem 0.9rem; border-right: 1px solid var(--border); }
+  .titleblock .field:last-child { border-right: none; }
+  .titleblock .field .k {
+    font-family: var(--font-mono); font-size: 0.63rem; text-transform: uppercase; letter-spacing: 0.07em;
+    color: var(--muted); display: block; margin-bottom: 0.15rem;
+  }
+  .titleblock .field .v { font-family: var(--font-mono); font-size: 0.82rem; color: var(--text); line-height: 1.35; }
+  .titleblock .field.wide { grid-column: span 4; border-top: 1px solid var(--border); border-right: none; }
+
+  .sheet {
+    background: var(--paper); border: 1px solid var(--paper-line); border-radius: 2px;
+    padding: 1.4rem 1.2rem 1rem; position: relative; overflow-x: auto;
+    background-image:
+      linear-gradient(var(--paper-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--paper-line) 1px, transparent 1px);
+    background-size: 28px 28px; background-position: -1px -1px;
+    background-color: var(--paper);
+  }
+  .sheet .corner { position: absolute; width: 14px; height: 14px; }
+  .sheet .corner.tl { top: 6px; left: 6px; border-top: 1.5px solid #7d8f8a; border-left: 1.5px solid #7d8f8a; }
+  .sheet .corner.tr { top: 6px; right: 6px; border-top: 1.5px solid #7d8f8a; border-right: 1.5px solid #7d8f8a; }
+  .sheet .corner.bl { bottom: 6px; left: 6px; border-bottom: 1.5px solid #7d8f8a; border-left: 1.5px solid #7d8f8a; }
+  .sheet .corner.br { bottom: 6px; right: 6px; border-bottom: 1.5px solid #7d8f8a; border-right: 1.5px solid #7d8f8a; }
+  .sheet pre.mermaid { margin: 0; background: transparent; min-width: 760px; color: #101b24; }
+
+  .notes { margin-top: 1.1rem; display: grid; grid-template-columns: 1.4fr 1fr; gap: 1.2rem; }
+  .notes h3 {
+    font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--muted); margin: 0 0 0.5rem;
+  }
+  .notes ul { margin: 0; padding-left: 1.1rem; font-size: 0.86rem; line-height: 1.55; }
+  .notes ul li { margin-bottom: 0.4rem; }
+  .notes .delta { border: 1px solid var(--border); background: var(--panel); padding: 0.8rem 0.9rem; border-radius: 3px; font-size: 0.86rem; line-height: 1.55; }
+  .notes .delta.openq { border-color: var(--caution); }
+  .notes .delta + .delta { margin-top: 0.8rem; }
+
+  h3.section {
+    font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--muted); margin: 1.6rem 0 0.6rem;
+  }
+
+  footer.doc-footer {
+    padding: 1rem 2rem 2rem; font-size: 0.76rem; color: var(--muted); border-top: 1px solid var(--border);
+  }
+  footer.doc-footer strong { color: var(--text); }
+
+  @media (max-width: 900px) {
+    .notes { grid-template-columns: 1fr; }
+    .titleblock { grid-template-columns: 1fr 1fr; }
+    .titleblock .field.wide { grid-column: span 2; }
+  }
+  @media (max-width: 720px) {
+    .shell { flex-direction: column; }
+    nav.toc { width: 100%; border-right: none; border-bottom: 1px solid var(--border); padding: 0.6rem 0; }
+    nav.toc .legend { display: none; }
+    main { padding: 1.2rem 16px 3rem; }
+    header.masthead { padding: 1rem 16px; }
+    header.masthead .src { margin-left: 0; text-align: left; }
+    header.masthead .rule { display: none; }
+    .titleblock { grid-template-columns: 1fr; }
+    .titleblock .field { border-right: none; border-bottom: 1px solid var(--border); }
+    .titleblock .field.wide { grid-column: span 1; }
+  }
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <h1>Builders Risk Rating Chains</h1>
+  <div class="rule"></div>
+  <p>Every gate, branch and terminal in Commercial Property Builders Risk: the Builders Risk building (class 1150, CP 00 20 / CP 11 99), the reporting form (CP 11 05) and its premium adjustment periods (CP 11 06), Renovations (CP 11 13), and the add-ons: Collapse During Construction, theft of building materials, materials and supplies of others, CP 10 44 and the sub-contractor forms. Checked against the built engine and ISO's rule XML as of 2026-10-06. CW 2023-08 V04 and CW 2026-06 are drawn together because every Builders Risk rule and table is byte-identical.</p>
+  <div class="src">Engine at 542f0e1 (stage2-interpreter; probed at 0ca67cd)<br>Rule files: 31 BuildersRisk* files · CommercialPropertyStructureRules (class 1150 branches, form attach) · TheftOfBuildingMaterialsAndSuppliesOtherThanBuildersRisk<br>Companion: docs/CF-CHUNK24-GATE.md · CF-CHUNK24-TASKS.md · scripts 224_–228_ · the cause-of-loss chain pages</div>
+</header>
+
+<div class="shell">
+  <nav class="toc" id="toc">
+    <button class="navlink active" data-target="overview">Overview<span class="chain-len">the building, the form, the extras</span></button>
+    <hr>
+    <div class="group-label">Chains</div>
+    <button class="navlink" data-target="bldg">Builders Risk building<span class="chain-len">class 1150 · EQ charged twice</span></button>
+    <button class="navlink" data-target="rep">Reporting form (CP 11 05)<span class="chain-len">building rate x 1.82</span></button>
+    <button class="navlink" data-target="adj">Premium adjustment (CP 11 06)<span class="chain-len">charges only the increase · pro-rated</span></button>
+    <button class="navlink" data-target="reno">Renovations (CP 11 13)<span class="chain-len">larger of two rates</span></button>
+    <button class="navlink" data-target="addons">Add-on coverages<span class="chain-len">collapse, theft, materials, CP 10 44</span></button>
+    <hr>
+    <div class="group-label">Reference</div>
+    <button class="navlink" data-target="table">Add-on premiums<span class="chain-len">file, inputs, formula</span></button>
+    <button class="navlink" data-target="states">Editions and states<span class="chain-len">V01 · FL · NY</span></button>
+    <hr>
+    <div class="group-label">Review</div>
+    <button class="navlink" data-target="review">Chunk 24 claims re-checked<span class="chain-len">15 claims · 2 corrections</span></button>
+
+    <div class="legend">
+      <h4>Reading the chains</h4>
+      <div class="row"><span class="swatch sw-gate"></span> gate / branch condition</div>
+      <div class="row"><span class="swatch sw-step"></span> computed factor</div>
+      <div class="row"><span class="swatch sw-final"></span> premium resolves</div>
+      <div class="row"><span class="swatch sw-zero"></span> zero, refusal or clamp</div>
+      <div class="row"><span class="swatch sw-openq"></span> silent gap / open question</div>
+      <div class="row"><span class="swatch sw-engine"></span> engine layer, not an ISO rule</div>
+    </div>
+  </nav>
+
+  <main id="main">
+
+    <!-- ============================= OVERVIEW ============================= -->
+    <section class="sheet-view active" id="view-overview">
+      <div class="intro">
+        <h2>A building under construction, rated on its own or through a reporting form</h2>
+        <p>A Builders Risk building has CovType "Builders Risk" and class 1150. Without a reporting form it rates like any building, with class 1150 picking its own rows (coinsurance 1.0, Broad 0.012, Special 0.015, a Builders Risk earthquake factor). With a reporting form (CP 11 05), the building's limit should be 0: the form carries the limit and five coverage records, each priced at the building's own rate x 1.82, and the building's own Group I / II / Broad / Special records stay on at $0. The premium adjustment form (CP 11 06) then re-prices each reporting period at its new value and charges only the increase, pro-rated by days.</p>
+        <p>Renovations rate an addition to an existing building at the larger of a Builders Risk rate and a completed-building rate. The add-ons are small: two collapse options are a factor on the building's rate, the theft forms are flat rates, materials of others is a manual premium, and the sub-contractor forms carry no premium. Every Builders Risk rule is byte-identical in CW 2023-08 V04 and CW 2026-06. Probes ran in OH (clean), FL, NY, OR and NV.</p>
+      </div>
+
+      <div class="cards">
+        <div class="card">
+          <div class="k">Earthquake</div>
+          <div class="v">Charged twice</div>
+          <p>The building's own earthquake (CP 10 40) has no reporting-form gate. A building limit left beside a form charges earthquake on both (OH $4 + $4, NY $8 + $12).</p>
+          <button class="go" data-target="bldg">See the building →</button>
+        </div>
+        <div class="card">
+          <div class="k">Missing period</div>
+          <div class="v">Whole premium</div>
+          <p>With no unit-1 period, or a blank unit number, the "previous premium" is empty and the whole annual premium is charged ($435, not $67).</p>
+          <button class="go" data-target="adj">See the periods →</button>
+        </div>
+        <div class="card">
+          <div class="k">Materials of others</div>
+          <div class="v">Any building</div>
+          <p>Created on every building with no Builders Risk gate: "Yes" plus a manual premium prices on an ordinary building ($232), with no message.</p>
+          <button class="go" data-target="addons">See the add-ons →</button>
+        </div>
+      </div>
+
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart LR
+    b(["Builders Risk building<br/>CovType BR, class 1150"]) --> nf{"Reporting form<br/>(CP 11 05)?"}
+    nf -->|"No"| own["Building rates itself<br/>(class 1150 rows)"]:::final
+    nf -->|"Yes"| rf["Form: 5 coverages at<br/>building rate x 1.82"]:::final
+    rf --> pa["CP 11 06 periods:<br/>new value, increase only,<br/>pro-rated by days"]:::final
+    b --> reno["Renovations (CP 11 13):<br/>larger of BR rate and<br/>completed-building rate"]:::final
+    b --> add["Add-ons: collapse, theft,<br/>materials of others, CP 10 44"]:::final
+
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>The reporting form copies the building's own adjusted rate; even the building's LOI is looked up at the form's limit.</li>
+            <li>The premium adjustment form is the only place in Commercial Property that pro-rates by a reporting period's dates.</li>
+            <li>Nothing in Builders Risk is ever returned: a period below the form's value prices $0, and only a period after expiry goes negative.</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>No Builders Risk zero refuses for being blank.</strong> C28-17's BCEG and deductible checks skip CovType "Builders Risk". A blank form limit, <code>IncludedInBlkt</code>, deductible, new value, renovation limit or CP 10 44 deductible all price $0 "rated". The one refusal is for the wrong reason: a blank Group II territory on a Builders Risk building with a reporting form, because the building's own Group II is always $0 there.</div>
+      </div>
+    </section>
+
+    <!-- ============================= BUILDING ============================= -->
+    <section class="sheet-view" id="view-bldg">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">The Builders Risk building: CovType "Builders Risk", class 1150</span></div>
+        <div class="field"><span class="k">Editions</span><span class="v">CW 2023-08 V04 = CW 2026-06</span></div>
+        <div class="field"><span class="k">Forms</span><span class="v">CP 00 20 attaches on a Commercial Property Policy when CovType is BR or a renovations record exists (StructureRules :1144); CP 11 99 on a Standard Property Policy (:1083)</span></div>
+        <div class="field"><span class="k">Class 1150 branches</span><span class="v">Group I state 1150 rows (CW none); coinsurance 1.0 (:7717); Broad BldrRisk 0.012; Special 0.015; Builders Risk EQ factor; multi-premium credit forced to 1.0 (:3841); BI under it: BuildersRiskFactor 2</span></div>
+        <div class="field wide"><span class="k">Gate</span><span class="v">Building Group I / II / Broad / Special premium: "no reporting form OR CovType ≠ BR", else $0. With a form, LimitToUse and the LOI key on the form's limit. CP 10 40 earthquake has no reporting-form gate and prices on the building's own limit.</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    inp(["Structure: CovType Builders Risk,<br/>ClassCode 1150"]) --> pol{"PolicyType?"}:::gate
+    pol -->|"Commercial Property Policy"| cp0020["CP 00 20 attached<br/>no premium of its own"]:::step
+    pol -->|"Standard Property Policy"| cp1199["CP 11 99 attached instead<br/>no premium of its own"]:::step
+    cp0020 --> chains["Building rate chains run<br/>as for any building"]:::step
+    cp1199 --> chains
+    chains --> c1150["Class 1150 changes: Group I state row,<br/>Broad BldrRisk 0.012, Special BR 0.015,<br/>Group II class numeric value"]:::step
+    c1150 --> coins["Coinsurance factor 1.0<br/>(1150 skip)"]:::step
+    coins --> eqf["BuildersRiskEQFactor:<br/>BldrsRiskEQFactor by EQClass<br/>A1 0.495, C1 1.0; else 1.0"]:::step
+    eqf --> mpdc["MPDC 1.0 for CovType BR<br/>unless submitted"]:::step
+    mpdc --> rfx{"Reporting form exists?"}:::gate
+    rfx -->|"Yes"| loiRF["LOI looked up on the form's Limit<br/>LimitToUse = form Limit"]:::step
+    rfx -->|"No"| loiB["LOI on the building Limit"]:::step
+    loiRF --> gate{"Reporting form AND<br/>CovType Builders Risk?"}:::gate
+    loiB --> gate
+    gate -->|"Yes"| zero1["Group I / II / Broad / Special = $0<br/>coverage stays on; the form prices"]:::zero
+    gate -->|"No"| prem["rate x Limit / 100<br/>x pkg x MPDC x IRPM x cyber"]:::final
+    loiB --> lim0{"Building Limit 0<br/>and no form?"}:::gate
+    lim0 -->|"Yes"| zero2["$0 + message<br/>Please enter a valid entry<br/>for Building Limit"]:::zero
+    gate --> eq1040["EQ CP 10 40: FinalEQRate x<br/>building Limit / 100<br/>no reporting-form gate"]:::step
+    eq1040 --> dbl["Limit not 0 beside a form:<br/>EQ charged twice<br/>(CP 10 40 + form EQ)"]:::openq
+    zero1 --> eng1["Engine C28-17: building Group II<br/>is always $0 here, so a missing<br/>GII territory refuses"]:::eng
+    zero1 --> eng2["Engine C28-17: BCEG / Deductible<br/>checks skip CovType BR"]:::eng
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>Without a reporting form, a Builders Risk building rates like any other: OH, Special, 400,000: Group I $223 → $227 (2023 → 2026), Group II $114, Special $56, EQ $4.</li>
+            <li>With a reporting form, the building's Group I, II, Broad and Special stay on at $0; the form carries the money.</li>
+            <li>The building's earthquake has no such switch. A building limit left beside a form fires a warning, but earthquake is charged on both the building and the form.</li>
+            <li>A Builders Risk building with limit 0 and no reporting form prices $0 with only a message.</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>A refusal for the wrong reason.</strong> The C28-17 check sees the building's Group II record, which a reporting form always zeroes, so a missing Group II territory is refused even when the form's own Group II prices ($187). The BCEG and deductible checks skip Builders Risk entirely. The class 1150 branches, coinsurance skip and Builders Risk LOI branch match the cause-of-loss pages.</div>
+      </div>
+    </section>
+
+    <!-- ============================= REPORTING ============================= -->
+    <section class="sheet-view" id="view-rep">
+      <div class="titleblock">
+        <div class="field"><span class="k">Form</span><span class="v">CP 11 05 Builders Risk Reporting Form, a record under the building with its own Limit</span></div>
+        <div class="field"><span class="k">Editions</span><span class="v">V04 = 2026 = V02 / V03; V01 has no null guards</span></div>
+        <div class="field"><span class="k">Records</span><span class="v">InitializeRuleSet :5 creates five coverages: Group I / II always on; Broad / Special on the building's cause; EQ unless "No Coverage" / N/A</span></div>
+        <div class="field"><span class="k">Rate</span><span class="v">Group I = r3(r3(building COL adjustment x building LOI at the form's limit) x Factor 1.82) (:203); Group II 0 on the Fire causes; EQ x 1.82 with no LOI; with renovations, each rate is copied from renovations</span></div>
+        <div class="field wide"><span class="k">Premium</span><span class="v">IncludedInBlkt "No": r0 chain of r3(r3(rate x DedByLoc) x Ded) x Limit/100, package, IRPM, two cyber factors. "Yes": blanket average x 1.82. Otherwise $0. Stats: exposure = Truncate(building limit / 1000).</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    rf(["CP 11 05 record under the building:<br/>Limit; building Limit 0"]) --> init["Creates 5 coverage records<br/>and attaches CP 11 06"]:::step
+    init --> fac{"Factor submitted?"}:::gate
+    fac -->|"No"| f182["Factor = BldrsRiskReportingFormFactor<br/>CW 1.82"]:::step
+    fac -->|"Yes"| fkeep["Kept (V02 on);<br/>V01 overwrites it"]:::step
+    f182 --> ren{"Renovations record<br/>on the building?"}:::gate
+    fkeep --> ren
+    ren -->|"Yes"| copy["Copy renovations' five rates"]:::step
+    ren -->|"No"| own["rate = r3(r3(bldg COL adj<br/>x bldg LOI) x Factor)<br/>LOI keyed on the form's Limit"]:::step
+    own --> g2["Group II: Fire causes = 0.0<br/>EQ = r3(EQ COL adj x Factor), no LOI;<br/>N/A or No Coverage = 0"]:::step
+    copy --> on
+    g2 --> on{"Coverage on?"}:::gate
+    on -->|"Group I, II: always<br/>Broad / Special: cause matches<br/>EQ: not N/A, not No Coverage"| blk{"IncludedInBlkt?"}:::gate
+    on -->|"No"| off["$0"]:::zero
+    blk -->|"No"| sched["r0(rate x DedByLoc x Ded<br/>x Limit / 100) x pkg x IRPM<br/>x cyber x cyber-COL"]:::final
+    blk -->|"Yes"| bl["Limit / 100 x blanket avg rate<br/>x Factor x pkg x IRPM x cyber"]:::final
+    blk -->|"blank or other"| z1["$0, no message<br/>(EQ keys on EQCovIndicator instead)"]:::zero
+    sched --> eqn["EQ: no pkg / IRPM;<br/>needs Yes, Not Included in Blanket"]:::step
+    sched --> lim{"Form Limit blank or 0?"}:::gate
+    lim -->|"Yes"| z2["$0 on all five, rated,<br/>no message"]:::zero
+    sched --> eng3["Engine: Deductible blank, so Group I<br/>and Special $0, rated<br/>(C28-17 skips BR)"]:::eng
+    sched --> st["Stats: ExposureStat =<br/>building LimitToUse / 1000;<br/>ClassCode 1150"]:::step
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>The form's rate is the building's own rate x 1.82: OH Group I 0.095 = r3(r3(0.056 x 0.922) x 1.82), $368 on 400,000.</li>
+            <li>Group I and II are always on; Broad or Special follows the building's cause of loss; Group II is zero on the Fire causes.</li>
+            <li>A submitted factor or rate is kept from V02 on; on CW 2023 V01 (NV and UT in early 2026) it is silently replaced by 1.82.</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>Silent $0, "rated":</strong> a blank or 0 form limit (all five), a blank <code>IncludedInBlkt</code> (all but EQ), a blank building deductible (Group I and Special). <strong>State watch-items:</strong> FL rewrites all five coverages (no deductible-by-location, no cyber, Group II adds a sinkhole term); TX prices the form's EQ $0 when the EQ sub-limit form exists.</div>
+      </div>
+    </section>
+
+    <!-- ============================= ADJUSTMENT ============================= -->
+    <section class="sheet-view" id="view-adj">
+      <div class="titleblock">
+        <div class="field"><span class="k">Form</span><span class="v">CP 11 06 Premium Adjustment: detail periods (UnitNumber, NewValue, ComputedFromDate), six coverage records each</span></div>
+        <div class="field"><span class="k">Editions</span><span class="v">V04 = 2026; V01–V03 differ in the preceding-period rule; V01 also has leap days = 0 and no null guards; CW 2027-01 keys on CSPConstructionCode</span></div>
+        <div class="field"><span class="k">Attach</span><span class="v">Attached when a reporting form exists (Structure :1205) and removed otherwise; a submitted CP 11 06 without a form is dropped</span></div>
+        <div class="field"><span class="k">Formula</span><span class="v">FormAnnualPremium = r0 chain of r3(r3(r3(form rate x period LOI) x DedByLoc) x Ded) x NewValue/100, package, IRPM; premium = r0((FAP − previous) x ProRate)</span></div>
+        <div class="field wide"><span class="k">ProRate</span><span class="v">When IncludedInBlkt ≠ "Yes" and ComputedFromDate &gt; EffDate: r2((days from start to expiry − leap days) / (term days − leap days)) (:138); otherwise 1.0. Period 1's "previous" is the reporting form's premium; later periods read the previous unit's FAP.</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    att{"Reporting form exists?"}:::gate -->|"No"| rem["CP 11 06 removed<br/>(even if submitted)"]:::zero
+    att -->|"Yes"| pa["CP 11 06 attached;<br/>form rates set"]:::step
+    pa --> ren{"Renovations record?"}:::gate
+    ren -->|"Yes"| big["Larger of BR rate calc<br/>and completed-building calc"]:::step
+    ren -->|"No"| own["rate = r3(bldg COL adj<br/>x reporting form Factor)<br/>no LOI; GII Fire = 0"]:::step
+    big --> per
+    own --> per(["Each period: UnitNumber,<br/>NewValue, ComputedFromDate"])
+    per --> pr{"IncludedInBlkt not Yes<br/>AND From &gt; EffDate?"}:::gate
+    pr -->|"Yes"| prr["ProRate = r2(days From to Exp<br/>/ days Eff to Exp),<br/>each less GetLeapDays"]:::step
+    pr -->|"No, or From blank"| pr1["ProRate 1.0"]:::step
+    prr --> eng4["Engine: Leap = 0 on a one-year term<br/>(OI-121); ExpDate is always<br/>Eff + 1 year (ISO Default block)"]:::eng
+    prr --> loi
+    pr1 --> loi["Period LOI on NewValue<br/>(0.0 if NewValue not &gt; 0;<br/>Group I also ConstructionCode)"]:::step
+    loi --> on{"Period coverage on?"}:::gate
+    on -->|"GI / GII: IncludedInBlkt No<br/>Broad / Special: + cause<br/>EQ: Yes, Not Included"| fap["FormAnnualPremium =<br/>rate x LOI x DedByLoc x Ded<br/>x NewValue / 100 x pkg x IRPM<br/>(EQ: no LOI, pkg, IRPM)"]:::step
+    on -->|"Blanket: IncludedInBlkt Yes"| blk["r0(r0(ManualPremium x pkg) x IRPM)<br/>not pro-rated"]:::final
+    on -->|"off"| off["$0"]:::zero
+    fap --> prev{"UnitNumber = 1?"}:::gate
+    prev -->|"Yes"| p1["Preceding = the reporting form<br/>coverage's own Premium"]:::step
+    prev -->|"No"| pn["Preceding = FAP of period<br/>UnitNumber - 1; 2026 / V04 keep<br/>the LAST match, V01-V03 the FIRST"]:::step
+    pn --> nul["No such period, or UnitNumber<br/>blank: preceding null,<br/>whole FAP charged"]:::openq
+    p1 --> inc{"FAP - preceding &gt; 0?"}:::gate
+    pn --> inc
+    inc -->|"No"| z0["$0 (no return premium)"]:::zero
+    inc -->|"Yes"| prem["r0(r0(r3(r0(FAP - prev) x ProRate)<br/>x cyber) x cyber-COL)"]:::final
+    prem --> neg["From = expiry: ProRate 0, $0;<br/>after expiry: negative"]:::zero
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>Each period re-prices the building at its new value and charges only the increase; nothing is returned (300,000 below a 400,000 form gives $0).</li>
+            <li>A period that starts after the effective date is pro-rated by days (245 / 365 = 0.67 on a four-month-late start); a blank start date charges the whole increase.</li>
+            <li>A missing unit-1 period or a blank unit number leaves the "previous premium" empty, so the whole annual premium is charged ($435, not $67). This is the null-subtract behaviour (OI-115); not checked at ISO.</li>
+            <li>A period dated at expiry prices $0 (the engine prints "-0"); after expiry it prices negative (−$2 / −$1 / −$1).</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>OI-121's "other term lengths refused" branch can't be reached:</strong> ISO's default block always sets ExpDate = EffDate + 1 year, and the engine ignores a submitted six-month ExpDate. The covered-causes message fires on every period whose covered causes are blank. FL's own rule keeps cents on pro-rated periods (21.44); NY rewrites the form's Group II rate.</div>
+      </div>
+    </section>
+
+    <!-- ============================= RENOVATIONS ============================= -->
+    <section class="sheet-view" id="view-reno">
+      <div class="titleblock">
+        <div class="field"><span class="k">Coverage</span><span class="v">Renovations (CP 11 13): a record under an existing building with Limit, ConstructionType, RatingType, EQClass; five coverages auto-created</span></div>
+        <div class="field"><span class="k">Editions</span><span class="v">V04 = 2026 (7 files and 25 tables identical); V01 has no null guards</span></div>
+        <div class="field"><span class="k">Chain</span><span class="v">RenovationsRules :153 → CompletedValueMultiplier :256 → CoinsuranceModFactor :283 → BR and completed rates per group → pick the larger (BGI :2540)</span></div>
+        <div class="field"><span class="k">Premium</span><span class="v">Group I / II: r0 chain of r3(r3(r3(rate x Std Prop Policy) x DedByLoc) x Ded) x Limit/100, package, IRPM, cyber; Broad / Special without the Std Prop factor; EQ without package or IRPM</span></div>
+        <div class="field wide"><span class="k">Gates</span><span class="v">Group I / II always on; Broad / Special on the building's cause; EQ unless "No Coverage" / N/A. All five $0 beside a reporting form (the form copies renovations' rates). Construction and EQ class are the renovation's own; everything else is the building's.</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["Renovations record (CP 11 13)<br/>under a building<br/>CW 2023-08 V04 = CW 2026-06"]) --> covType{"Building CovType?"}
+    covType -->|"Leasehold / No Coverage"| msg1113["Message: CP 11 13 Not Valid<br/>with Selected Coverage Type"]:::gate
+    covType -->|"other"| attach["CP 00 20 attaches (CPP)<br/>CP 11 99 on a Standard Policy"]:::step
+    attach --> ctype{"Renovation's own<br/>ConstructionType?"}
+    msg1113 --> ctype
+    ctype -->|"blank"| code0["ConstructionCode 0:<br/>Group I, II, Broad rates 0"]:::zero
+    ctype -->|"not filed"| refCT["Refused: SingleResult no row<br/>ConstructionTypeToUse"]:::eng
+    ctype -->|"filed"| twoRates["Two rates per group"]:::step
+    code0 --> twoRates
+    twoRates --> brRate["BR rate = class 1150 base<br/>x bldg LCM x BLDG terr x PC<br/>x CVM 1.36 / 1.82 (with CP 11 05) x LOI"]:::step
+    twoRates --> rt{"RatingType?"}
+    rt -->|"Class"| cpl["Completed rate = bldg class base<br/>x LCM x LOCATION terr x PC x LOI<br/>x Coins 0.9 x CoinsMod 0.75 / 1.0"]:::step
+    rt -->|"Specific / Tentative"| cplT["Completed BGI from<br/>TentativeGroupIRate"]:::step
+    rt -->|"blank / other"| cpl0["Completed BGI = 0:<br/>BR rate wins, prices LOW<br/>OH 642 to 220, no message"]:::openq
+    cpl --> maxr{"BR rate &gt;= completed?"}
+    cplT --> maxr
+    cpl0 --> maxr
+    brRate --> maxr
+    maxr -->|"Yes"| useBR["Rate = BR rate<br/>(MaxRateCalc 1)"]:::step
+    maxr -->|"No"| useC["Rate = completed rate<br/>(MaxRateCalc 2)"]:::step
+    useBR --> fire{"Fire-only cause?"}
+    useC --> fire
+    fire -->|"Yes"| g2zero["Group II rate = 0"]:::zero
+    fire -->|"No"| rf{"Reporting form<br/>on the building?"}
+    g2zero --> rf
+    rf -->|"Yes"| rfZero["All five premiums = 0<br/>(CP 11 05 prices instead)"]:::zero
+    rf -->|"No"| grp{"Group?"}
+    grp -->|"Group I / II"| pI["Premium = Rate x StdPropPol x DedByLoc<br/>x Ded x Limit/100 x Pkg x IRPM x cyber"]:::final
+    grp -->|"Broad: cause Broad<br/>Special: cause Special"| pBS["Premium = Rate x DedByLoc x Ded<br/>x Limit/100 x Pkg x IRPM x cyber"]:::final
+    grp -->|"cause not Broad / Special"| offBS["Broad / Special off = 0"]:::zero
+    grp -->|"EQ: EQCovIndicator on"| eqLim{"EQ endorsement<br/>on the building?"}
+    eqLim -->|"No"| eqZero["LimitToUse 0: EQ = 0"]:::zero
+    eqLim -->|"Yes / sub-limit form"| pEQ["EQ = EQRate x EQDedByLoc x EQDed<br/>x LimitToUse/100 x cyber<br/>(no Pkg / IRPM)"]:::final
+    pI -.- blank["Engine: blank Limit, construction,<br/>EQClass or RatingType rate 'rated'<br/>(no C28-17 check covers them)"]:::eng
+    pBS -.- ny["NY: Group II needs BasicGroupIISymbol<br/>and CompletedBasicGroupIISymbol<br/>ON the renovation, else 0"]:::openq
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class covType,ctype,rt,maxr,fire,rf,grp,eqLim gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>Each group takes the larger of a Builders Risk rate (class 1150 x 1.36, or 1.82 with a form) and a completed-building rate (the building's class x 0.9 x 0.75); ties go to the Builders Risk rate. OR reproduces chunk 24's $454 / $89 / $24.</li>
+            <li>The two halves read different territory factors: the building's for the Builders Risk rate, the location's for the completed rate.</li>
+            <li>A blank rating type is not a zero: the completed Group I rate drops to 0 and Group I prices silently low (OH $642 → $220). A blank construction zeroes Group I, II and Broad, but not Special or EQ.</li>
+            <li>Off the five special classes, Group II always uses the Builders Risk rate; EQ needs the building's EQ endorsement, or it gets limit 0.</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>The building's construction still moves a dollar:</strong> Fire Resistive renovations give $267 on a Frame building and chunk 24's $270 only on a Fire Resistive one. <strong>State watch-items:</strong> renovation rates are rewritten in AK, AL, AR, CA, DC, FL, GA, IL, KS, KY, MT, NJ, NY, RI, TX and VT; NY's Group II is $0 unless the symbols are submitted on the renovation record itself ($276 with U / B).</div>
+      </div>
+    </section>
+
+    <!-- ============================= ADD-ONS ============================= -->
+    <section class="sheet-view" id="view-addons">
+      <div class="titleblock">
+        <div class="field"><span class="k">Records</span><span class="v">CP 11 20 Collapse; CP 11 21 Theft of Building Materials, Fixtures, Machinery, Equipment; Materials and Supplies of Others; CP 10 44 (TheftOfBuildingMaterialsAndSuppliesOtherThanBuildersRisk); CP 11 14 / 11 15 sub-contractor forms; CP 11 99</span></div>
+        <div class="field"><span class="k">Editions</span><span class="v">V04 = 2026, rules and tables; V01 has no null guards</span></div>
+        <div class="field"><span class="k">Tables</span><span class="v">Collapse Option1 5, Option2 5, Option3 0.002 · BR theft 0.009 · CP 10 44 0.009 · Deductible250Factor Special 1.1</span></div>
+        <div class="field"><span class="k">Where</span><span class="v">All under the building; materials of others is auto-created under every Structure (:316)</span></div>
+        <div class="field wide"><span class="k">Gates</span><span class="v">Messages only: CP 11 14 / 15 / 20 / 21 "only valid with Builders Risk"; CP 11 20 / 21 not on a Standard Property Policy; CP 11 20 not with Basic; CP 10 44 Special cause only. None stops rating.</span></div>
+      </div>
+      <div class="sheet">
+        <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+        <pre class="mermaid">
+%%{init: {'theme':'base', 'themeVariables': {'primaryColor':'#e4ebef','primaryBorderColor':'#2e6e8e','primaryTextColor':'#101b24','lineColor':'#2e6e8e','fontFamily':'Cascadia Code, Consolas, monospace','fontSize':'13px','edgeLabelBackground':'#edf0ec'}}}%%
+flowchart TD
+    start(["Builders Risk add-ons<br/>on a building<br/>CW 2023-08 V04 = CW 2026-06"]) --> rec{"Which record?"}
+
+    rec -->|"CP 11 20 collapse"| colCause{"Building<br/>CauseOfLossToUse?"}
+    colCause -->|"Basic / other"| colZero["Premium 0<br/>+ message CP 11 20 not valid"]:::zero
+    colCause -->|"Broad / Special"| colOpt{"CollapseOption<br/>Converted?"}
+    colOpt -->|"Option1 / Option2"| colF["r3(cause rate x (5 - 1))<br/>Broad: BroadRate<br/>Special: SpecialCOLAdj"]:::step
+    colOpt -->|"Option3"| colL["r3(0.002 x LCM)"]:::step
+    colOpt -->|"blank"| colB["Rate 0: Premium 0"]:::zero
+    colOpt -->|"not filed"| colR["Refused: SingleResult no row"]:::eng
+    colF --> colP["x LimitToUse/100 x Pkg<br/>x IRPM x cyber"]:::final
+    colL --> colP
+
+    rec -->|"CP 11 21 BR theft"| thLim{"Limit?"}
+    thLim -->|"blank"| thZero["Premium 0"]:::zero
+    thLim -->|"set"| thP["r3(0.009 x LCM) x Limit/100<br/>x Pkg x IRPM x cyber<br/>Deductible: stat codes only"]:::final
+    thP -.- thFL["FL: BGI rate x 0.25<br/>x Limit/100 x Pkg x IRPM<br/>no cyber"]:::openq
+
+    rec -->|"Materials of others<br/>(on every building)"| moInd{"Indicator = Yes?"}
+    moInd -->|"No / blank"| moOff["Off: Premium 0"]:::zero
+    moInd -->|"Yes"| moP["ManualPremium x Pkg<br/>x MPDC x IRPM<br/>(blank manual = 0)"]:::final
+    moP -.- moNote["No Builders Risk gate:<br/>prices on an ordinary building<br/>FL: always off"]:::openq
+
+    rec -->|"CP 10 44 (not BR)"| cpMsg["Messages only: Special cause,<br/>CovType Bldg / I&amp;B / Condo,<br/>no theft excl, not SPP"]:::gate
+    cpMsg --> cpDed{"SpecialDed?"}
+    cpDed -->|"250"| cp250["Ded250Factor Special 1.1"]:::step
+    cpDed -->|"other filed"| cpDF["DeductibleFactor on Limit<br/>'Other Cause Of Loss'"]:::step
+    cpDed -->|"Not Applicable"| cpNA["Building's<br/>DeductibleFactorSpecial"]:::step
+    cpDed -->|"blank"| cpZero["Factor 0: Premium 0"]:::zero
+    cpDed -->|"not filed"| cpR["Refused: SingleResult no row"]:::eng
+    cp250 --> cpP["r3(0.009 x DedFactor) x Limit/100<br/>x Pkg x MPDC x IRPM x cyber"]:::final
+    cpDF --> cpP
+    cpNA --> cpP
+    cpP -.- cpFL["FL: rules emptied,<br/>no premium written"]:::openq
+
+    rec -->|"CP 11 15 / 11 14<br/>+ Detail rows"| subN["No rating rule:<br/>Premium never set<br/>(message off Builders Risk)"]:::zero
+    rec -->|"CP 11 99 (SPP)"| sppN["Attached by Structure<br/>no premium"]:::zero
+
+    colZero -.- engNote["Engine: every 0 here rates<br/>'rated'; only unfiled keys refuse"]:::eng
+
+    classDef gate fill:#f4e4ce,stroke:#c77f32,stroke-width:1.5px,color:#101b24;
+    classDef zero fill:#f3dcd6,stroke:#b14b39,stroke-width:1.5px,color:#101b24;
+    classDef final fill:#dceee4,stroke:#3f8f6e,stroke-width:1.5px,color:#101b24;
+    classDef step fill:#e4ebef,stroke:#2e6e8e,stroke-width:1px,color:#101b24;
+    classDef openq fill:#f4e4ce,stroke:#b14b39,stroke-width:1.5px,color:#101b24,stroke-dasharray:4 3;
+    classDef eng fill:#e6e1f0,stroke:#5a4c8a,stroke-width:1.5px,color:#101b24;
+    class rec,colCause,colOpt,thLim,moInd,cpDed gate
+        </pre>
+      </div>
+      <div class="notes">
+        <div>
+          <h3>What to notice</h3>
+          <ul>
+            <li>Only collapse options 1 and 2 use the building's rate: its Broad rate or Special cause-of-loss adjustment x (5 − 1). Option 3, theft and CP 10 44 are flat rates; materials of others is a manual premium; CP 11 14, 11 15 and 11 99 carry no premium.</li>
+            <li>Collapse prices on the building's limit to use, which on a Builders Risk building is the reporting form's limit. A blank option prices $0.</li>
+            <li>Materials of others has no Builders Risk gate: "Yes" plus a manual premium prices on any building ($232).</li>
+            <li>CP 10 44's Special deductible picks one of three factors (250 → 1.1, a filed value → the deductible table, N/A → the building's Special factor); blank is $0.</li>
+          </ul>
+        </div>
+        <div class="delta openq"><strong>Florida is the big watch-item:</strong> its only package forces materials of others off, writes no CP 10 44 premium at all, and prices Builders Risk theft as the building's Group I rate x 0.25 ($2 instead of $5). AR, DC, NY and RI rewrite only the theft stat codes; no state rewrites the sub-contractor forms. Chunk 24's OR figures reproduce: collapse $8 / $187 / $235, theft $5, materials $232, CP 10 44 $3.</div>
+      </div>
+    </section>
+
+    <!-- ============================= TABLE ============================= -->
+    <section class="sheet-view" id="view-table">
+      <div class="intro">
+        <h2>Add-on premiums</h2>
+      </div>
+      <div class="tablewrap">
+        <table class="grid">
+          <thead><tr><th>Add-on</th><th>Inputs</th><th>Premium</th><th>Verified</th></tr></thead>
+          <tbody>
+            <tr><th>Collapse During Construction (CP 11 20)</th><td>CollapseOptionConverted Option1 / 2 / 3; the building's cause of loss and limit to use</td><td>Options 1 / 2: the building's Broad rate or Special adjustment x (5 − 1) x limit / 100, then package, IRPM, cyber; option 3: 0.002 x LCM</td><td>$8 / $187 / $235 in OR, OH, FL, NY</td></tr>
+            <tr><th>Theft of Building Materials, Fixtures, Machinery, Equipment (CP 11 21)</th><td>Limit (the deductible sets stat codes only)</td><td>r0(r3(0.009 x LCM) x Limit/100), then package, IRPM, cyber</td><td>$5 on 50,000; FL $2</td></tr>
+            <tr><th>Materials and Supplies of Others</th><td>Indicator "Yes", ManualPremium</td><td>r0(r0(r0(ManualPremium x package) x MPDC) x IRPM); no cyber</td><td>$232 (250 x 0.95); FL always $0</td></tr>
+            <tr><th>CP 10 44 Theft (Other Than Builders Risk)</th><td>Limit, SpecialDed</td><td>r0(r3(0.009 x deductible factor) x Limit/100) chain; blank SpecialDed → $0</td><td>$3 (250 → 1.1; 1,000 → 0.96; N/A → 0.98)</td></tr>
+            <tr><th>Sub-contractor coverage / exclusion (CP 11 15 / 11 14)</th><td>Detail: Contractor, Installation, Building, Premises</td><td>None (a submitted premium passes through only)</td><td>XML</td></tr>
+            <tr><th>CP 11 99 Changes, Standard Property Policy</th><td>Attached by the Structure</td><td>None</td><td>XML</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============================= STATES ============================= -->
+    <section class="sheet-view" id="view-states">
+      <div class="intro">
+        <h2>Editions and states</h2>
+        <p>All 31 Builders Risk rule files and the tables they read are byte-identical in CW 2023-08 V04 and CW 2026-06. CW 2023 V01 (NV and UT at 2026-01-01) is a third shape chunk 24 missed: no null guards (a submitted factor of 2.0 becomes 1.82), leap days a constant 0, and it keeps the first matching preceding period. V02 / V03 (29 states at 2026-01-01; MO, CA, NC at 2026-09-17) differ in the preceding-period rule. CW 2027-01-01 keys the premium adjustment form on <code>CSPConstructionCode</code>.</p>
+      </div>
+      <div class="tablewrap">
+        <table class="grid">
+          <thead><tr><th>State</th><th>Builders Risk change</th></tr></thead>
+          <tbody>
+            <tr><th>FL</th><td>Rewrites all five reporting-form coverages and all five period coverages (sinkhole on Group II, no deductible-by-location, no cyber; pro-rated periods keep cents); renovations likewise; materials of others off; no CP 10 44 premium; theft = Group I rate x 0.25.</td></tr>
+            <tr><th>NY</th><td>Group I / II base rates, EQ limit to use, the premium adjustment form's Group II rate, the CP 11 99 attach; renovation symbols must be on the renovation record; theft stat codes.</td></tr>
+            <tr><th>TX</th><td>Reporting-form and renovation EQ $0 when the EQ sub-limit form exists.</td></tr>
+            <tr><th>CA</th><td>District rates on renovations; renovation EQ limit 0 beside CP 11 05.</td></tr>
+            <tr><th>KS, VT</th><td>CP 11 99 attach; no Standard Property factor on renovations (KS also rewrites the multi-premium credit).</td></tr>
+            <tr><th>AK, AL, AR, DC, GA, IL, KY, MT, NJ, RI</th><td>Renovation (or premium-adjustment) Group I / II rate rules; AL also the 1150 Broad / Special base rates; AR, DC, RI theft stat codes.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============================= REVIEW ============================= -->
+    <section class="sheet-view" id="view-review">
+      <div class="intro">
+        <h2>Chunk 24's claims, re-checked</h2>
+        <p>No Builders Risk chain was ever drawn, so this table re-checks what chunk 24 (gated 2026-10-01) recorded. The engine matched chunk 24's model on every probe, and OR reproduces its ISO figures.</p>
+      </div>
+      <div class="tablewrap">
+        <table class="grid">
+          <thead><tr><th>#</th><th>Chunk 24 said</th><th>Engine / XML now shows</th><th>Kind</th></tr></thead>
+          <tbody>
+            <tr><th>1</th><td>A building limit beside a reporting form fires the message; rates unchanged</td><td><strong>CP 10 40 earthquake then prices on the building limit on top of the form's EQ</strong> (OH $4 + $4, NY $8 + $12)</td><td><span class="tag bad">correction</span></td></tr>
+            <tr><th>2</th><td>The only edition differences are the preceding-period rule in V02 / V03</td><td><strong>V01 also differs</strong>: no null guards, leap days 0, first matching preceding period; in force for NV and UT at 2026-01-01</td><td><span class="tag bad">correction</span></td></tr>
+            <tr><th>3</th><td>FL with EQ class A1: ISO refuses, ours priced (OI-103)</td><td>Ours now refuses too</td><td>out of date</td></tr>
+            <tr><th>4</th><td>"Identical in all four editions" (opening census)</td><td>Superseded by the chunk's own edition read and by V01</td><td>out of date</td></tr>
+            <tr><th>5</th><td>OI-121: other term lengths still refused (unprobed)</td><td>Unreachable: ISO's default block always sets a one-year term; a submitted six-month ExpDate is ignored</td><td>clarified</td></tr>
+            <tr><th>6</th><td>Period 1 reads the form's premium, later periods the previous FAP</td><td>With no unit − 1 match (or a blank unit number) the whole FAP is charged ($435)</td><td>incomplete</td></tr>
+            <tr><th>7</th><td>ProRate 1.0 only when a period starts on or before the effective date</td><td>Also when blanketed, and when the start date is blank (full increase charged)</td><td>clarified</td></tr>
+            <tr><th>8</th><td>Reporting form with no limit → $0</td><td>Confirmed; also blank IncludedInBlkt and a blank deductible, silently</td><td>incomplete</td></tr>
+            <tr><th>9</th><td>A submitted form factor survives</td><td>From V02 on; V01 overwrites it with 1.82</td><td>clarified</td></tr>
+            <tr><th>10</th><td>NewValue 0 → $0</td><td>A blank NewValue is $0 too, with no message</td><td>clarified</td></tr>
+            <tr><th>11</th><td>Covered-causes message fires when causes differ</td><td>Also when they are blank (every probe period)</td><td>clarified</td></tr>
+            <tr><th>12</th><td>Fire Resistive renovations Group I $270</td><td>Only when the building is Fire Resistive too; $267 on a Frame building</td><td>clarified</td></tr>
+            <tr><th>13</th><td>Materials of others needs "Yes"; $232</td><td>Also on an ordinary building (no Builders Risk gate, no message); FL always $0</td><td>incomplete</td></tr>
+            <tr><th>14</th><td>FL's package drops cyber and deductible-by-location</td><td>FL also switches off materials of others and empties CP 10 44</td><td>incomplete</td></tr>
+            <tr><th>15</th><td>NY's symbols are submitted</td><td>For renovations they must be on the renovation record; without them Group II is $0 silently</td><td>incomplete</td></tr>
+            <tr><td colspan="4">Confirmed: BR needs CovType BR and class 1150; CP 00 20 / CP 11 99 attach; CP 11 06 attaches with a form (and is removed without one); five form coverages and their switches; form rate = building adjustment x LOI x 1.82; a submitted form factor flows into the periods; expiry → $0, after expiry negative; renovations take the larger rate (OR $454 / $89 / $24); building vs location territory factors; CompletedValueMultiplier overwritten; collapse $8 / $187 / $235; theft $5; FL theft x 0.25; CP 10 44 $3; sub-contractor forms carry no premium; no blank Builders Risk input refuses after C28-17.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<footer class="doc-footer">
+  Sources: the built engine (<strong>cf_engine</strong> / interpreter at 542f0e1; probed at 0ca67cd), offline on 2026-10-06 with no calls to ISO: OH at a CW 2023 V04 date and a CW 2026-06 date, FL and NY, NV for CW 2023 V01, and OR for chunk 24's ISO figures. Business Income under a class 1150 building and the sub-contractor forms come from the XML only. ISO rule XML is under <code>F:\ISO_ERC_Files\CF</code>. Chunk 24's records are <code>docs/CF-CHUNK24-GATE.md</code> and <code>CF-CHUNK24-TASKS.md</code>.
+</footer>
+
+<script>
+  (function () {
+    var toc = document.getElementById('toc');
+    var main = document.getElementById('main');
+
+    function activate(target) {
+      var views = main.querySelectorAll('.sheet-view');
+      for (var i = 0; i < views.length; i++) views[i].classList.remove('active');
+      var view = document.getElementById('view-' + target);
+      if (view) view.classList.add('active');
+
+      var links = toc.querySelectorAll('.navlink');
+      for (var j = 0; j < links.length; j++) {
+        links[j].classList.toggle('active', links[j].getAttribute('data-target') === target);
+      }
+      main.scrollTop = 0;
+      window.scrollTo(0, 0);
+    }
+
+    document.addEventListener('click', function (e) {
+      var btn = e.target.closest('button[data-target]');
+      if (btn) activate(btn.getAttribute('data-target'));
+    });
+
+    var hash = location.hash.slice(1);
+    if (hash && document.getElementById('view-' + hash)) activate(hash);
+  })();
+</script>
+
+<style>.mermaid-rendering .sheet-view{display:block!important}</style>
+<script type="module">
+  // Render every diagram once, with all sheets briefly visible so hidden tabs get real sizes.
+  import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs";
+  mermaid.initialize({ startOnLoad: false, securityLevel: "strict", flowchart: { wrappingWidth: 260 } });
+  document.documentElement.classList.add("mermaid-rendering");
+  try { await mermaid.run({ querySelector: "pre.mermaid" }); }
+  finally { document.documentElement.classList.remove("mermaid-rendering"); }
+</script>
+</body>
+</html>

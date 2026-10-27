@@ -1,0 +1,107 @@
+{
+ "name": "eq1_mo_1040_bceg",
+ "states": [
+  "MO"
+ ],
+ "edits": [
+  {
+   "sheet": "IN - Schedule",
+   "cell": "C8",
+   "value": "MO"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "D8",
+   "value": 63005
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "G8",
+   "value": "Kansas City"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "I8",
+   "value": "Entire State"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "J8",
+   "value": "Jackson (including entire city of Kansas City)"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "H8",
+   "r1c1": "=IF(RC3=\"NY\",IF(OR(RC17=\"\",RC17=\"Not Applicable\"),\"Select\",IFERROR(VLOOKUP(RC17,'TBL - NYCounty'!R2C1:R63C3,3,FALSE),\"Select\")),IF(RC3=\"AK\",IF(OR(RC15=\"\",RC15=\"Not Applicable\"),\"Select\",IFERROR(VLOOKUP(RC15&\"|\"&IF(RC15=\"Remainder of State\",RC16,\"Not Applicable\"),'TBL - AKRatingArea'!R2C1:R12C5,5,FALSE),\"Select\")),IF(RC3=\"CA\",\"Select\",\"Not Applicable\")))"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "O8",
+   "value": "Not Applicable"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "P8",
+   "value": "Not Applicable"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "Q8",
+   "value": "Not Applicable"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "AO51",
+   "value": "Yes, Not Included in Blanket"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "AP51",
+   "value": "C1"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "AR51",
+   "value": "No"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "AS51",
+   "value": "Masonry Veneer Limitation Applies"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "V137",
+   "value": "Yes, Not Included in Blanket"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "W137",
+   "value": "2",
+   "text": true
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "U8",
+   "value": "Earthquake Form (CP 10 40)"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "V8",
+   "value": "3A",
+   "text": true
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "AQ51",
+   "value": "5%",
+   "text": true
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "L51",
+   "value": "1",
+   "text": true
+  }
+ ]
+}

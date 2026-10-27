@@ -1,0 +1,115 @@
+<!doctype html><html><head><meta charset="utf-8">
+<title>Mockup A -- aggregate as its own card</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+:root{--ink:#1a1d21;--muted:#6b7580;--line:#e3e8ee;--blue:#2b6cb0;
+--red:#c0392b;--amber:#b7791f;--grey:#9aa5b1;--bg:#f7f9fb}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+font:14px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+header{background:#fff;border-bottom:1px solid var(--line);padding:12px 20px;
+display:flex;align-items:baseline;gap:18px;flex-wrap:wrap}
+header h1{font-size:16px;margin:0;font-weight:650}
+header .sub{color:var(--muted);font-size:12.5px}
+nav{margin-left:auto;display:flex;gap:6px;align-items:center}
+nav a{font-size:13px;text-decoration:none;color:var(--blue);padding:5px 10px;
+border:1px solid var(--line);border-radius:6px;background:#fff}
+main{padding:16px 20px;max-width:900px}
+.card{background:#fff;border:1px solid var(--line);border-radius:8px;
+padding:13px 14px;margin-bottom:14px}
+.card h2{font-size:12px;text-transform:uppercase;letter-spacing:.05em;
+color:var(--muted);margin:0 0 9px;font-weight:650}
+select,input{padding:6px 7px;border:1px solid #cbd2d9;
+border-radius:5px;font-size:12.5px;background:#fff;color:var(--ink);width:auto}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:left;font-weight:650;color:var(--muted);font-size:11px;
+text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--line);
+padding:5px 6px}
+td{padding:6px 6px;border-bottom:1px solid #f0f3f6;vertical-align:top}
+td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.det{color:var(--muted);font-size:11.5px}
+.note{font-size:11.5px;color:var(--muted);border-left:2px solid var(--line);
+padding-left:8px;margin-top:6px}
+.tag{display:inline-block;font-size:11px;padding:1px 7px;border-radius:99px;
+background:#eef2f6;color:var(--muted);margin-right:5px}
+th.sortable{cursor:pointer;user-select:none}
+th.sortable:hover{color:var(--ink)}
+/* -- the two things being compared -- */
+.agg-row.match{background:#eef4fb}
+.agg-row td.lbl{font-weight:650}
+.agg-row td.lbl a{color:var(--ink);text-decoration:none;cursor:pointer}
+.agg-row.match td.lbl a{color:var(--blue)}
+.agg-total td{border-top:2px solid var(--line);font-weight:650}
+.callout{position:fixed;top:14px;right:20px;background:#1a1d21;color:#fff;
+font-size:12px;padding:8px 13px;border-radius:6px;max-width:260px;
+box-shadow:0 4px 14px rgba(0,0,0,.18)}
+</style></head><body>
+<div class="callout">Mockup A &middot; the aggregate lives in its own card,
+above Run files. Click a layer name to filter.</div>
+<header>
+  <h1>Layered tests</h1>
+  <div class="sub">One kind of variation per layer &middot; every state, every run</div>
+  <nav><a href="/tests" class="on" style="background:#2b6cb0;color:#fff">Tests</a>
+  <a href="#">Tester</a><a href="#">Run files</a><a href="#">Rate one</a></nav>
+</header>
+<main>
+
+  <div class="card">
+    <h2>Aggregate</h2>
+    <table id="agg">
+      <tr><th class="sortable">Layer</th><th class=n>Runs</th><th class=n>Scenarios</th>
+        <th class=n>Agree</th><th class=n>Differ</th><th class=n>N/A</th><th class=n>Refused</th></tr>
+      <tr class="agg-row match" data-layer="L1 Smoke">
+        <td class=lbl><a>L1 Smoke</a></td><td class=n>6</td><td class=n>18</td>
+        <td class=n>15</td><td class=n>1</td><td class=n>0</td><td class=n>2</td></tr>
+      <tr class="agg-row" data-layer="L2 Classification">
+        <td class=lbl><a>L2 Classification</a></td><td class=n>3</td><td class=n>9</td>
+        <td class=n>8</td><td class=n>0</td><td class=n>1</td><td class=n>0</td></tr>
+      <tr class="agg-row" data-layer="L3 Limits">
+        <td class=lbl><a>L3 Limits</a></td><td class=n>5</td><td class=n>60</td>
+        <td class=n>55</td><td class=n>3</td><td class=n>2</td><td class=n>0</td></tr>
+      <tr class="agg-row" data-layer="L4 Deductibles">
+        <td class=lbl><a>L4 Deductibles</a></td><td class=n>4</td><td class=n>24</td>
+        <td class=n>22</td><td class=n>0</td><td class=n>2</td><td class=n>0</td></tr>
+      <tr class="agg-total">
+        <td class=lbl>All layers</td><td class=n>18</td><td class=n>111</td>
+        <td class=n>100</td><td class=n>4</td><td class=n>5</td><td class=n>2</td></tr>
+    </table>
+    <div class="note">Summed across every stored run of that layer, not just
+      the page showing below. Click a layer, or use the filter in Run files --
+      the two stay in sync.</div>
+  </div>
+
+  <div class="card">
+    <h2>Run files</h2>
+    <div class="row" style="margin-top:0">
+      <select id="histRunFilter"><option value="">All runs</option>
+        <option>L1 Smoke</option><option>L2 Classification</option>
+        <option>L3 Limits</option><option>L4 Deductibles</option></select>
+      <input placeholder="Filter by class" style="width:140px">
+    </div>
+    <table>
+      <tr><th>When</th><th>Run</th><th>Class</th><th class=n>Agree</th><th class=n>Differ</th></tr>
+      <tr><td class=det>08-18 15:12</td><td>L1 Smoke</td><td>--</td><td class=n>3</td><td class=n>0</td></tr>
+      <tr><td class=det>08-18 14:37</td><td>L1 Smoke</td><td>--</td><td class=n>3</td><td class=n>0</td></tr>
+      <tr><td class=det>08-18 12:24</td><td>L4 Deductibles</td><td>--</td><td class=n>6</td><td class=n>0</td></tr>
+    </table>
+    <div class="note">Each run is a standalone file that opens without the app.
+      They are not committed: a run holds ISO's licensed values.</div>
+  </div>
+
+</main>
+<script>
+const rows = document.querySelectorAll('.agg-row');
+const sel = document.getElementById('histRunFilter');
+function apply(layer){
+  rows.forEach(r => r.classList.toggle('match', !layer || r.dataset.layer === layer));
+}
+rows.forEach(r => r.querySelector('a').onclick = () => {
+  sel.value = sel.value === r.dataset.layer ? '' : r.dataset.layer;
+  apply(sel.value);
+});
+sel.onchange = () => apply(sel.value);
+</script>
+</body></html>

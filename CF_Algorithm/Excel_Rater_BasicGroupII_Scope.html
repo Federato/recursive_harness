@@ -1,0 +1,429 @@
+<title>Basic Group II — Full Rating Scope</title>
+<style>
+  :root {
+    --bg: #eef1f4; --paper: #ffffff; --ink: #1c2733; --ink-soft: #55606b; --ink-faint: #8b95a1;
+    --grid-line: #d7dce2; --header-fill: #e4e8ed; --header-fill-strong: #1e3a45; --header-text-strong: #eef4f3;
+    --accent: #1e3a45; --accent-soft: #cfe0e0; --accent-warm: #b96a2c; --accent-warm-soft: #f3e2cf;
+    --good: #2f7d5a; --good-soft: #dcefe4; --warn: #a53d26; --warn-soft: #f7ddd4;
+    --shadow: 0 1px 2px rgba(28,39,51,0.06), 0 8px 24px rgba(28,39,51,0.07);
+    --font-display: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+    --font-body: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+    --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, "Liberation Mono", monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #10151b; --paper: #161d25; --ink: #e7ecf1; --ink-soft: #a3aebb; --ink-faint: #6d7885;
+      --grid-line: #2b3742; --header-fill: #1b242d; --header-fill-strong: #21504f; --header-text-strong: #eaf3f1;
+      --accent: #59a9ac; --accent-soft: #1d3535; --accent-warm: #dd9a5c; --accent-warm-soft: #372a1c;
+      --good: #63c090; --good-soft: #1b3226; --warn: #e0806a; --warn-soft: #3a2019;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 28px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #10151b; --paper: #161d25; --ink: #e7ecf1; --ink-soft: #a3aebb; --ink-faint: #6d7885;
+    --grid-line: #2b3742; --header-fill: #1b242d; --header-fill-strong: #21504f; --header-text-strong: #eaf3f1;
+    --accent: #59a9ac; --accent-soft: #1d3535; --accent-warm: #dd9a5c; --accent-warm-soft: #372a1c;
+    --good: #63c090; --good-soft: #1b3226; --warn: #e0806a; --warn-soft: #3a2019;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 28px rgba(0,0,0,0.35);
+  }
+  :root[data-theme="light"] {
+    --bg: #eef1f4; --paper: #ffffff; --ink: #1c2733; --ink-soft: #55606b; --ink-faint: #8b95a1;
+    --grid-line: #d7dce2; --header-fill: #e4e8ed; --header-fill-strong: #1e3a45; --header-text-strong: #eef4f3;
+    --accent: #1e3a45; --accent-soft: #cfe0e0; --accent-warm: #b96a2c; --accent-warm-soft: #f3e2cf;
+    --good: #2f7d5a; --good-soft: #dcefe4; --warn: #a53d26; --warn-soft: #f7ddd4;
+    --shadow: 0 1px 2px rgba(28,39,51,0.06), 0 8px 24px rgba(28,39,51,0.07);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); line-height: 1.6; overflow-x: hidden; }
+  a { color: var(--accent); }
+  a:focus-visible, button:focus-visible, .jump:focus-visible { outline: 2px solid var(--accent-warm); outline-offset: 2px; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 24px 96px; }
+
+  header.masthead { padding: 56px 24px 28px; max-width: 980px; margin: 0 auto; }
+  .eyebrow { font-family: var(--font-ui); font-size: 12px; letter-spacing: 0.11em; text-transform: uppercase; color: var(--accent-warm); font-weight: 600; margin: 0 0 10px; }
+  h1.title { font-family: var(--font-display); font-size: clamp(28px, 4vw, 40px); font-weight: 400; margin: 0 0 14px; text-wrap: balance; color: var(--ink); }
+  .dek { font-size: 17px; color: var(--ink-soft); max-width: 70ch; margin: 0 0 6px; }
+  .dek + .dek { margin-top: 10px; }
+  .dek code { font-family: var(--font-mono); font-size: 14.5px; background: var(--header-fill); padding: 1px 5px; border-radius: 3px; }
+
+  nav.jumpbar { position: sticky; top: 0; z-index: 20; background: var(--header-fill-strong); border-bottom: 1px solid var(--grid-line); }
+  .jumpbar-inner { max-width: 980px; margin: 0 auto; display: flex; align-items: stretch; overflow-x: auto; scrollbar-width: thin; }
+  .jumpbar-label { font-family: var(--font-ui); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--header-text-strong); opacity: 0.6; align-self: center; padding: 0 12px 0 20px; white-space: nowrap; flex: none; }
+  .jump { font-family: var(--font-ui); font-size: 13px; color: var(--header-text-strong); text-decoration: none; white-space: nowrap; padding: 13px 16px; border-bottom: 3px solid transparent; opacity: 0.72; flex: none; }
+  .jump:hover { opacity: 1; }
+
+  section.sect { padding-top: 56px; scroll-margin-top: 56px; }
+  .sect-heading { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 6px; }
+  .sect-index { font-family: var(--font-mono); font-size: 13px; color: var(--accent-warm); font-variant-numeric: tabular-nums; }
+  h2.sect-title { font-family: var(--font-display); font-size: 25px; font-weight: 400; margin: 0; color: var(--ink); }
+  .sect-role { font-family: var(--font-ui); font-size: 13px; color: var(--ink-soft); margin: 0 0 20px; }
+
+  table.scope-table { border-collapse: collapse; width: 100%; font-size: 14px; margin: 10px 0 4px; }
+  table.scope-table th, table.scope-table td { border: 1px solid var(--grid-line); padding: 8px 11px; text-align: left; vertical-align: top; }
+  table.scope-table th { background: var(--header-fill); font-family: var(--font-ui); font-size: 12px; font-weight: 700; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.02em; }
+  table.scope-table td code { font-family: var(--font-mono); font-size: 12.5px; background: var(--header-fill); padding: 1px 4px; border-radius: 3px; }
+  .status-ok { color: var(--good); font-weight: 700; }
+  .status-partial { color: var(--accent-warm); font-weight: 700; }
+  .status-none { color: var(--warn); font-weight: 700; }
+  .status-na { color: var(--ink-faint); }
+  .tblscroll { overflow-x: auto; }
+
+  ol.step-list, ul.step-list { padding-left: 22px; display: grid; gap: 10px; max-width: 74ch; }
+  ol.step-list li, ul.step-list li { font-size: 15px; }
+  ol.step-list li b, ul.step-list li b { font-family: var(--font-mono); font-size: 13.5px; background: var(--header-fill); padding: 1px 5px; border-radius: 3px; color: var(--ink); }
+
+  .instructions { margin-top: 16px; display: grid; gap: 12px; }
+  .instructions p { margin: 0; font-size: 15.5px; color: var(--ink); max-width: 74ch; }
+  .instructions p.lede { font-size: 16.5px; }
+
+  .callout { display: flex; gap: 10px; padding: 12px 14px; border-radius: 5px; max-width: 74ch; font-size: 14.5px; margin-top: 14px; }
+  .callout.warn { background: var(--warn-soft); color: var(--warn); }
+  .callout.warm { background: var(--accent-warm-soft); color: var(--accent-warm); }
+  .callout.good { background: var(--good-soft); color: var(--good); }
+  .callout b { font-weight: 700; }
+  .callout-mark { flex: none; font-family: var(--font-ui); font-weight: 700; }
+
+  .formula-panel { background: var(--header-fill-strong); color: var(--header-text-strong); border-radius: 6px; padding: 16px 18px; font-family: var(--font-mono); font-size: 12px; line-height: 1.75; overflow-x: auto; margin: 10px 0; }
+  .formula-panel pre { margin: 0; white-space: pre; }
+  .formula-panel .kw { color: var(--accent-warm); font-weight: 700; }
+  .formula-panel .fn { color: #a9d6d8; }
+  .formula-panel .cm { opacity: 0.55; font-style: italic; }
+
+  .filecard { background: var(--paper); border: 1px solid var(--grid-line); border-radius: 6px; padding: 14px 16px; box-shadow: var(--shadow); margin: 10px 0; max-width: 74ch; }
+  .filecard .fname { font-family: var(--font-mono); font-size: 13.5px; font-weight: 700; color: var(--accent); }
+  .filecard .fdesc { font-size: 14px; color: var(--ink-soft); margin-top: 4px; }
+
+  .featureset { background: var(--paper); border: 1px solid var(--grid-line); border-radius: 6px; padding: 16px 18px; box-shadow: var(--shadow); margin: 14px 0; }
+  .featureset .fs-letter { font-family: var(--font-mono); font-size: 13px; color: var(--accent-warm); font-weight: 700; }
+  .featureset .fs-title { font-family: var(--font-ui); font-weight: 700; font-size: 15px; margin: 2px 0 6px; }
+  .featureset .fs-buys { font-size: 14px; color: var(--ink-soft); }
+  .featureset .fs-buys b { color: var(--ink); font-weight: 700; }
+
+  hr.divider { border: none; border-top: 1px solid var(--grid-line); margin: 56px 0 0; }
+
+  footer.closing { max-width: 980px; margin: 64px auto 0; padding: 0 24px 64px; }
+  footer.closing h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0 0 12px; }
+  footer.closing ol { padding-left: 20px; display: grid; gap: 8px; max-width: 66ch; }
+  footer.closing li { font-size: 15px; color: var(--ink-soft); }
+  footer.closing p.note { margin-top: 20px; font-size: 13px; color: var(--ink-faint); font-family: var(--font-ui); }
+</style>
+
+<header class="masthead">
+  <p class="eyebrow">CF_Algorithm &middot; Commercial Property &middot; Countrywide 06-01-2026</p>
+  <h1 class="title">Basic Group II — Full Rating Scope</h1>
+  <p class="dek">Everything traced, everything built, and everything still open for Basic Group II, Building and Contents. Same three-leg framing as <code>Excel_Rater_FullBuildout_Scope.md</code> (ERC-side coverage / circular verification / jurisdiction breadth), narrowed to just this one cause-of-loss form.</p>
+  <p class="dek">Source docs this page consolidates: <code>CauseOfLoss_Building_RatingAlgorithms.md</code> &amp; <code>CauseOfLoss_PersonalProperty_RatingAlgorithms.md</code> (Basic Group II sections), <code>Excel_Rater_BasicGroupII.md</code>, <code>Excel_Rater_RatingPaths_Checklist.md</code>, <code>Excel_Rater_Wireframes.html</code>, and the two dedicated factor walkthroughs built this session.</p>
+</header>
+
+<nav class="jumpbar" aria-label="Jump to section">
+  <div class="jumpbar-inner">
+    <span class="jumpbar-label">Sections</span>
+    <a class="jump" href="#s1">1&nbsp;Vs.&nbsp;BGI</a>
+    <a class="jump" href="#s2">2&nbsp;Building&nbsp;chain</a>
+    <a class="jump" href="#s3">3&nbsp;Contents&nbsp;chain</a>
+    <a class="jump" href="#s4">4&nbsp;Tables</a>
+    <a class="jump" href="#s5">5&nbsp;State&nbsp;variation</a>
+    <a class="jump" href="#s6">6&nbsp;Rating&nbsp;paths</a>
+    <a class="jump" href="#s7">7&nbsp;Built&nbsp;artifacts</a>
+    <a class="jump" href="#s8">8&nbsp;Backlog</a>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <!-- SECTION 1 -->
+  <section class="sect" id="s1">
+    <div class="sect-heading"><span class="sect-index">1</span><h2 class="sect-title">What actually changes, moving from Basic Group I</h2></div>
+    <p class="sect-role">Not a renamed version of the same chain — a structurally different rate key, plus two mechanics BGI never needed.</p>
+    <div class="tblscroll">
+      <table class="scope-table">
+        <tr><th></th><th>Basic Group I (either coverage)</th><th>Basic Group II (either coverage)</th></tr>
+        <tr><td>Rate keys</td><td><code>ClassCode</code> + <code>ConstructionCode</code></td><td><code>RatingTerr</code> + <code>ConstructionSymbol</code></td></tr>
+        <tr><td>Symbol prerequisite</td><td>none</td><td>resolved once, shared by Building &amp; Contents</td></tr>
+        <tr><td>Territory</td><td>Building: multiplier. Contents: n/a.</td><td>lookup key into the base-rate table itself, not a multiplier</td></tr>
+        <tr><td>Second rate path</td><td>none</td><td><code>LowestBasicGroupII*Rate</code> (wind/hail-excluded branch)</td></tr>
+        <tr><td>Peril-specific factor</td><td>Building: protection class. Contents: n/a.</td><td>numeric value (occupancy/open-sides) + BCEG; Building adds two roof-surfacing factors, Contents adds none</td></tr>
+        <tr><td>Deductible-by-location</td><td>shared <code>DeductibleByLocationFactor</code></td><td>its own field (<code>BGIIDeductibleByLocationFactor</code>), keyed on a wind/hail-specific deductible</td></tr>
+        <tr><td>Chain length</td><td>8 steps (Building) / 9 (Contents)</td><td>11 steps per both source docs (13/12 as this workbook numbers every distinct computed value — see §2/§3)</td></tr>
+        <tr><td>Rating type branch</td><td>Class / Specific / Tentative</td><td>Class only — no <code>RatingType</code> branch exists in the source rule at all</td></tr>
+        <tr><td>Blanket rounding</td><td>plain <code>BlktLimit / 100</code></td><td><b><code>Truncate(BlktLimit / 100)</code></b> — new to this form, not present in BGI at all</td></tr>
+      </table>
+    </div>
+    <div class="callout warm"><span class="callout-mark">&#9888;</span><span>Base rates are keyed on a <b>resolved construction symbol</b>, not raw construction type — build the symbol-resolution formula once on <code>Locations_Buildings</code> and let both <code>Calc_Building_BGII</code> and <code>Calc_Contents_BGII</code> read the same column. Duplicating the resolution logic per coverage fights ISO's own rule structure (Contents' ruleset literally <code>Copy</code>s the value down from Building's ancestor context rather than recomputing it).</span></div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- SECTION 2 -->
+  <section class="sect" id="s2">
+    <div class="sect-heading"><span class="sect-index">2</span><h2 class="sect-title">Building — the full 13-value chain</h2></div>
+    <p class="sect-role"><code>Calc_Building_BGII</code>, one row per building. Same if/then formula shape as the flow diagrams in <code>Excel_Rater_Wireframes.html</code>.</p>
+    <div class="formula-panel"><pre><span class="kw">ConstructionSymbol</span> = <span class="fn">Lookup</span>(BasicGroupIIConstructionSymbol: ConstructionType, NumStories)
+    <span class="cm">then replaced, in order, by whichever override matches:</span>
+    <span class="fn">Lookup</span>(...RoofConstruction) &rarr; <span class="fn">Lookup</span>(...AdditionalClasses, e.g. 0580/0585) &rarr; <span class="fn">Lookup</span>(...OilDistributingStations)
+
+<span class="kw">Terr</span> = Locations_Buildings.BasicGroupIIRatingTerr   <span class="cm">(copied down — no local territory-factor rule, unlike Basic Group I)</span>
+
+<span class="kw">BaseRate</span> = <span class="fn">Lookup</span>(BasicGroupIIRate: Terr, Symbol, "Bldg")   <span class="kw">if</span> both non-blank <span class="kw">else</span> 0.0
+<span class="kw">LowestBaseRate</span> = <span class="fn">Lookup</span>(LowestBasicGroupIIRate: Symbol, "Bldg")   <span class="cm">(no territory key)</span>
+
+<span class="kw">NumericValue</span> =
+    1.0                                                    <span class="kw">if</span> WindstormOrHailExclusion = Y
+    <span class="kw">elif</span> ClassCode in (0580,0585,1150,1300,1650): <span class="fn">Lookup</span>(GroupIINumericValue: ClassCode, ConstructionCode)
+    <span class="kw">elif</span> OpenSides = Y and ConstructionCode &lt;&gt; 0:  <span class="fn">Lookup</span>(GroupIIOpenSidesNumericValue: ConstructionCode)
+    <span class="kw">else</span>: 1.0
+
+<span class="kw">Rate</span> = BaseRate &times; LCM &times; NumericValue &times; RoofSurfacingACVFactor &times; RoofSurfacingCosmeticExclFactor &times; BCEGFactor   <span class="cm">(round 3dp)</span>
+
+<span class="kw">COLAdj</span> =
+    0.0   <span class="kw">if</span> CauseOfLoss in ("Fire","Fire and Vandalism","Fire and Sprinkler Leakage","Fire, Vandalism and Sprinkler Leakage")
+    <span class="kw">elif</span> WindstormOrHailExclusion &lt;&gt; Y:
+        Rate &times; StdPropPolGroupIIFactor
+    <span class="kw">else</span>:
+        LowestBaseRate &times; LCM &times; RoofSurfacingACVFactor &times; RoofSurfacingCosmeticExclFactor &times; WindstormOrHailExclFactor &times; StdPropPolGroupIIFactor
+
+<span class="kw">CoinsuranceFactor</span> = <span class="fn">Lookup</span>(flat, "Y") <span class="kw">if</span> Coinsurance in ("50%","60%","70%","None") <span class="kw">else</span> &lt;shared Basic Group I value&gt;
+
+<span class="kw">LOIFactor</span> =
+    &lt;blanket copy&gt;                       <span class="kw">if</span> Bldg_IncludedInBlkt = "Yes"
+    <span class="kw">elif</span> Bldg_CovType = "Builders Risk":  <span class="fn">LookupWithArgs</span>(...) <span class="kw">or</span> 0.0 <span class="kw">if</span> limit absent
+    <span class="kw">elif</span> Bldg_CovType not in ("Leasehold Interest","Legal Liability","No Coverage"): <span class="fn">Lookup</span>(BasicGroupIILOIFactorBldg)
+    <span class="kw">else</span>: 1.0
+
+<span class="kw">AdjustedRate</span> = COLAdj &times; CoinsuranceFactor &times; LOIFactor
+
+<span class="kw">BGIIDeductibleByLocationFactor</span> = <span class="fn">Lookup</span>(...)  <span class="kw">if</span> WindstormHailIndicator = 0 and a wind/hail-by-location record exists  <span class="kw">else</span> 1.0
+
+<span class="kw">DeductibleFactor</span> =
+    &lt;same-shape Choose, but reads DeductibleFactor's "Basic Group II"-keyed slice, NOT BGI's own
+     "Other Cause Of Loss" slice — corrected 2026-09-08, see the callout below&gt;
+        <span class="kw">if</span> Bldg_WindstormOrHailDeductible blank/N-A/= Deductible
+    <span class="kw">else</span> &lt;branch on Bldg_WindstormOrHailDeductible &mdash; dollar amounts use the same
+     "Basic Group II" table; percentage amounts (1%/2%/5%) use a separate WindstormOrHailDeductibleFactor
+     table entirely, gated on WindstormHailIndicator=1&gt;
+
+<span class="kw">FinalRate</span> = AdjustedRate &times; BGIIDeductibleByLocationFactor &times; DeductibleFactor &times; MultiResidentialPropSpecialCreditFactor
+
+<span class="kw">Bldg_Premium</span> =
+    <span class="kw">if</span> Bldg_CovType in ("Building","Builders Risk","Improvements and Betterments","Condominium Association") and Bldg_IncludedInBlkt = "No":
+        <span class="fn">round</span>(IRPMFactor &times; MultiPremiumAndDispersionCreditFactor &times; PackageModFactor &times; FinalRate &times; (Bldg_Limit/100), 0)
+          &times; CyberIncidentExclusionFactorBGII &times; CyberIncidentExclusionCOLExcptnsFactorBGII
+    <span class="kw">elif</span> Bldg_CovType = "Legal Liability": [not built this pass]
+    <span class="kw">elif</span> Bldg_IncludedInBlkt = "Yes": [blanket branch, <span class="fn">Truncate</span>(BlktLimit/100) &mdash; not built this pass]
+    <span class="kw">else</span>: 0.0</pre></div>
+    <div class="callout warn"><span class="callout-mark">&#9888;</span><span><b>Corrected 2026-09-08: <code>DeductibleFactor</code> is NOT the same table Basic Group I reads.</b> The table has a 4th key column, <code>CauseOfLossDeductible</code>, filed with three distinct values (<code>Basic Group I</code> / <code>Basic Group II</code> / <code>Other Cause Of Loss</code>). BGI keys on <code>"Other Cause Of Loss"</code>; BGII keys on <code>"Basic Group II"</code>. Identical at CW (0 diffs, 80 rows) — <b>genuinely different in every state that files its own table</b> (130+ differing rows/state). Do not reuse <code>BldgBGIRating</code>'s existing deductible table for this step. Corrected pull, all 46 non-PR states: <code>BGII_DeductibleFactor.xlsx</code>. One exception: the flat <code>Deductible="250"</code> branch genuinely is shared (keyed on group name <code>"Basic"</code>, not form-specific).</span></div>
+    <div class="callout warn"><span class="callout-mark">&#9888;</span><span><b>Percentage wind/hail deductibles (1%/2%/5%) use a third, separate table</b> &mdash; <code>WindstormOrHailDeductibleFactor</code>, reached via a different rule gated on <code>WindstormHailIndicator=1</code>, checked before the dollar-amount branch. If a percentage value is selected while that indicator isn't 1, the dollar-only branch's 8-way <code>Or</code> won't match and falls to <code>0.0</code> &mdash; silently zeroing the entire <code>FinalRate</code>. Validate this pairing on the input side.</span></div>
+    <div class="callout good"><span class="callout-mark">&#10003;</span><span>The <code>BGIIDeductibleByLocationFactor</code>/<code>DeductibleFactor</code> and <code>MultiResidentialPropSpecialCreditFactor</code> lines already have dedicated, worked-example walkthroughs: <code>Excel_Rater_BGII_DeductibleFactor_Walkthrough.html</code> and <code>Excel_Rater_MultiResCredit_Walkthrough.html</code> + <code>BGI_MultiResidentialPropSpecialCredit.xlsx</code> (shared mechanism with BGI, nothing new to build).</span></div>
+    <div class="callout warn"><span class="callout-mark">&#9888;</span><span><b>"WindstormOrHailExclusion = Y" above is shorthand.</b> Corrected 2026-09-08: it's not a stored boolean — the rule tests whether a <b>scheduled exclusion record exists</b> for this building (<code>NotExist AtInputDataDef="CommercialPropertyWindstormOrHailExclusionTable/..."</code>), nested inside the Building's own datadef with Premises/Building Number fields — confirmed building-level, not policy-level. Manual citation: <b>ISO Rule 74.A.2.a, Building</b>. A plain Yes/No column on <code>Locations_Buildings</code> is still the right shape to build; it just resolves to "does a record exist," not a literal flag read. <code>OpenSides</code>, by contrast, genuinely is a plain stored Yes/No field — no schedule, no derivation.</span></div>
+    <div class="callout warm"><span class="callout-mark">&#9888;</span><span><b>Separate, unresolved finding: <code>OperationalUnitWindstormOrHailExclusionFactor</code></b> — a different mechanism from the per-building exclusion above. Fires only when a building is flagged part of an "Operational Unit" (a schedule of grouped buildings, same concept used in blanket rating/flood/business income elsewhere) <b>and</b> an ancestor-level count shows <i>any</i> building in that unit has an exclusion form scheduled — not just this one. Traced every reference to it in <code>CommercialPropertyStructureRules.Rule.xml</code>: it's set but never multiplied into <code>Rate</code>, <code>NumericValue</code>, or <code>FinalRate</code> anywhere in that file. Unconfirmed whether it's consumed in a premium/summary file not yet checked, or genuinely unused — not built pending that answer.</span></div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- SECTION 3 -->
+  <section class="sect" id="s3">
+    <div class="sect-heading"><span class="sect-index">3</span><h2 class="sect-title">Contents — the full 12-value chain</h2></div>
+    <p class="sect-role"><code>Calc_Contents_BGII</code>, one row per building — same symbol/territory shape as Building, no roof factors anywhere, one fewer LOI branch.</p>
+    <div class="formula-panel"><pre><span class="kw">Symbol</span>, <span class="kw">Terr</span> = Locations_Buildings.ConstructionSymbol / BasicGroupIIRatingTerr   <span class="cm">(same pulled-not-computed columns Building reads)</span>
+
+<span class="kw">BaseRate</span> = <span class="fn">Lookup</span>(BasicGroupIIRate: Terr, Symbol, "PersProp")   <span class="cm">(same table Building reads, different covType)</span>
+<span class="kw">LowestBaseRate</span> = <span class="fn">Lookup</span>(LowestBasicGroupIIRate: Symbol, "PersProp")
+
+<span class="kw">NumericValue</span> = <span class="cm">(same three-way logic as Building, keyed on BldgClassCode)</span>
+
+<span class="kw">Rate</span> = BaseRate &times; LCM &times; NumericValue &times; BCEGFactor   <span class="cm">(no roof factor at any branch)</span>
+
+<span class="kw">COLAdj</span> =
+    0.0   <span class="kw">if</span> fire-only cause of loss <span class="kw">or</span> PP_ValuablePapers = "Y"
+    <span class="kw">elif</span> WindstormOrHailExclusion &lt;&gt; Y:
+        Rate &times; StdPropPolGroupIIFactor
+    <span class="kw">else</span>:
+        LowestBaseRate &times; LCM &times; WindstormOrHailExclFactor &times; StdPropPolGroupIIFactor   <span class="cm">(still no roof factors)</span>
+
+<span class="kw">CoinsuranceFactor</span> = &lt;same flat/shared logic as Building&gt;
+
+<span class="kw">LOIFactor</span> =
+    &lt;blanket copy&gt;   <span class="kw">if</span> PP_IncludedInBlkt = "Yes"
+    <span class="kw">elif</span> PP_CovForm not in ("Legal Liability Coverage Form","Tobacco Sales Warehouse Coverage Form") and OccupTotalLOIToUse &gt; 0:
+        <span class="fn">Lookup</span>(BasicGroupIILOIFactorPersProp: OccupTotalLOIToUse)
+    <span class="kw">else</span>: 1.0                                       <span class="cm">(no separate Builders Risk branch, unlike Building)</span>
+
+<span class="kw">AdjustedRate</span> = LOIFactor &times; COLAdj &times; CoinsuranceFactor
+
+<span class="kw">BGIIDeductibleByLocationFactor</span> = <span class="fn">Lookup</span>(...)  <span class="kw">if</span> PP_WindstormHailIndicator = 0 and a record exists  <span class="kw">else</span> 1.0
+
+<span class="kw">DeductibleFactor</span> = &lt;same local Choose used on the Building tab, "Basic Group II"-keyed slice&gt;   <span class="cm">(&#9733; documented deviation, same as Basic Group I)</span>
+
+<span class="kw">FinalRate</span> = AdjustedRate &times; BGIIDeductibleByLocationFactor &times; DeductibleFactor   <span class="cm">(no multi-res multiplier, any branch)</span>
+
+<span class="kw">PP_Premium</span> =
+    <span class="fn">round</span>(IRPMFactor &times; MultiPremiumAndDispersionCreditFactor &times; PackageModFactor &times; FinalRate &times; (PP_Limit/100), 0)
+      &times; CyberIncidentExclusionFactorBGII &times; CyberIncidentExclusionCOLExcptnsFactorBGII</pre></div>
+    <div class="callout warm"><span class="callout-mark">!</span><span><b>One rounding divergence to remember when the blanket branch gets built:</b> Basic Group I's blanket premium divides the limit ratio plainly (<code>BlktLimit / 100</code>); Basic Group II's <i>truncates</i> it first (<code>Truncate(BlktLimit / 100)</code>) — a naive copy-and-rename from Basic Group I would get this wrong, for both Building and Contents.</span></div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- SECTION 4 -->
+  <section class="sect" id="s4">
+    <div class="sect-heading"><span class="sect-index">4</span><h2 class="sect-title">Rate tables required</h2></div>
+    <p class="sect-role">Shared, Building-only, and Contents-only — with the countrywide filing status for each.</p>
+
+    <p style="font-family: var(--font-ui); font-size: 13px; font-weight: 700; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.03em; margin: 18px 0 4px;">Shared by both coverages</p>
+    <div class="tblscroll">
+      <table class="scope-table">
+        <tr><th>Table</th><th>Building keys</th><th>Contents keys</th><th>CW rows filed?</th></tr>
+        <tr><td><code>BasicGroupIIRatingTerr</code> (the <code>Terr</code> input itself)</td><td colspan="2">Free-text field — no rule derives it from an address</td><td><span class="status-ok">22 of 47 states file a real derivation domain (11 ZIP-keyed, 11 county-keyed); 24 need none — single territory, constant "Entire State"; 1 (PR) moot — see &sect;5</span></td></tr>
+        <tr><td><code>BasicGroupIIRate</code></td><td>State|CW, Terr, Symbol, "Bldg"</td><td>State|CW, Terr, Symbol, "PersProp"</td><td><span class="status-ok">CW: No. But 45 of 47 states file Building data on their own correct edition — see &sect;5, corrected 2026-09-08</span></td></tr>
+        <tr><td><code>LowestBasicGroupIIRate</code></td><td>State|CW, Symbol, "Bldg"</td><td>State|CW, Symbol, "PersProp"</td><td><span class="status-partial">CW: No. 39 of 47 states file Building data — 8 states (AR/DC/FL/KS/NY/PR/RI/TX) genuinely can't, see &sect;5</span></td></tr>
+        <tr><td><code>GroupIINumericValue</code></td><td>State|CW, ClassCode, ConstructionCode</td><td>same</td><td><span class="status-ok">Yes (31 rows)</span></td></tr>
+        <tr><td><code>GroupIIOpenSidesNumericValue</code></td><td>State|CW, ConstructionCode</td><td>same</td><td><span class="status-ok">Yes (7 rows)</span></td></tr>
+        <tr><td><code>BasicGroupIIConstructionSymbol</code></td><td>State|CW, ConstructionType, NumStories</td><td>shared/copied, not re-looked-up</td><td><span class="status-ok">Yes (151 rows)</span></td></tr>
+        <tr><td><code>BCEGFactor</code></td><td>shared</td><td>shared</td><td><span class="status-ok">Yes (13 rows)</span></td></tr>
+        <tr><td><code>WindstormOrHailExclFactor</code></td><td>State|CW, Symbol</td><td>same</td><td><span class="status-ok">Yes (5 rows)</span></td></tr>
+        <tr><td><code>StdPropPolGroupIIFactor</code></td><td>State|CW, "Y"</td><td>same</td><td><span class="status-ok">Yes</span></td></tr>
+        <tr><td><code>BasicGroupIIFlatCoinsuranceFactor</code></td><td>State|CW, "Y"</td><td>same</td><td><span class="status-ok">Yes</span></td></tr>
+        <tr><td><code>DeductibleFactor</code> ("Basic Group II"-keyed slice — NOT shared with BGI, corrected 2026-09-08)</td><td colspan="2">State|Deductible|Limit-band|CauseOfLossDeductible="Basic Group II" — Limit-band key is <code>TotAmtInsurance</code> (Bldg + Contents + Special Class combined, corrected 2026-09-08; live rater still uses Bldg-only limit, backlogged until Contents is built)</td><td><span class="status-ok">Yes — 46 non-PR states, see <code>BGII_DeductibleFactor.xlsx</code></span></td></tr>
+        <tr><td><code>WindstormOrHailDeductibleFactor</code> (percentage deductibles 1%/2%/5% only)</td><td colspan="2">State|Percentage|Limit-band</td><td><span class="status-partial">44 states file their own; CA/NY fall back to CW</span></td></tr>
+        <tr><td><code>MultiResidentialPropSpecialCreditHeatFactor</code> / <code>...ControlFactor</code> (reused from BGI)</td><td colspan="2">Building only, gated on class code + credit election</td><td><span class="status-partial">Yes — CT/MA/ME vary, see &sect;5</span></td></tr>
+      </table>
+    </div>
+
+    <p style="font-family: var(--font-ui); font-size: 13px; font-weight: 700; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.03em; margin: 18px 0 4px;">Building-only</p>
+    <div class="tblscroll">
+      <table class="scope-table">
+        <tr><th>Table</th><th>Notes</th></tr>
+        <tr><td><code>LimitationsOnCovForRoofSurfacingCosmeticExclFactor</code></td><td>Group-II-only roof factor, distinct from the ACV factor BGI also uses</td></tr>
+        <tr><td><code>BasicGroupIILOIFactorBldg</code> (+ <code>...WithArgs</code>)</td><td>Building-specific LOI table for this form</td></tr>
+        <tr><td><code>BGIIDeductibleByLocationFactor</code> source table</td><td>Own wind/hail-keyed deductible-by-location factor, kept separate from the shared table BGI uses</td></tr>
+      </table>
+    </div>
+
+    <p style="font-family: var(--font-ui); font-size: 13px; font-weight: 700; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.03em; margin: 18px 0 4px;">Contents-only</p>
+    <div class="tblscroll">
+      <table class="scope-table">
+        <tr><th>Table</th><th>Notes</th></tr>
+        <tr><td><code>BasicGroupIILOIFactorPersProp</code></td><td>Contents-specific LOI table (55 rows), distinct from Building's</td></tr>
+      </table>
+    </div>
+
+    <div class="callout good">
+      <span class="callout-mark">&#10003;</span>
+      <span><b>Corrected 2026-09-08 — the base-rate gap is far smaller than first documented.</b> <code>BasicGroupIIRate</code> and <code>LowestBasicGroupIIRate</code> are both genuinely header-only at CW, but that finding was never checked against actual state filings — the same trap this project caught once before on <code>BasicGroupIRate</code>. Pulled from each state's own <b>correct in-force edition</b> (several states resolve to an earlier snapshot batch than the current <code>20260601</code> folder — using the wrong one silently reintroduces the CA-edition trap): <b>Building base rate resolves in 45 of 47 states</b> (only FL and PR file zero). <code>LowestBasicGroupIIRate</code> is a real, narrower gap — 39 of 47 states file it; the other 8 can rate normally but can't complete the wind/hail-excluded branch. Full per-state pull: <code>BGII_BaseRate_Building.xlsx</code>.</span>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- SECTION 5 -->
+  <section class="sect" id="s5">
+    <div class="sect-heading"><span class="sect-index">5</span><h2 class="sect-title">State variation — what's checked, what isn't</h2></div>
+    <p class="sect-role">Four table groups now have full 47-state variance findings. What Basic Group II adds beyond base rate and symbol resolution is still unchecked.</p>
+    <div class="tblscroll">
+      <table class="scope-table">
+        <tr><th>Table</th><th>State variation status</th></tr>
+        <tr><td><code>DeductibleFactor</code> ("Basic Group II" slice)</td><td><span class="status-ok">Fully checked (this session), all 46 non-PR states, correct editions</span> — <b>corrects the earlier "reuses BGI's table" claim</b>: same table name, but a distinct <code>CauseOfLossDeductible="Basic Group II"</code> key, genuinely different values in every filing state (identical only at CW). 40 states share BGI's 154-row shape; FL/NV/TX/UT coarser; CA/NY fall back to CW. Full pull in <code>BGII_DeductibleFactor.xlsx</code>.</td></tr>
+        <tr><td><code>WindstormOrHailDeductibleFactor</code> (percentage deductibles)</td><td><span class="status-partial">File-presence checked, all 47 states</span> — 44 states file their own (21-24 rows), CA/NY fall back to CW. Values not yet fully diffed row-by-row. Gated on <code>WindstormHailIndicator=1</code>; if that flag isn't set when a percentage option is chosen, the calc silently zeroes instead of using this table.</td></tr>
+        <tr><td><code>MultiResidentialPropSpecialCreditHeatFactor</code> / <code>...ControlFactor</code></td><td><span class="status-ok">Fully checked (this session)</span> — CT overrides Control (0.50 vs CW 0.70); MA/ME disable the credit via input-domain restriction, not a rate override. Identical mechanism and tables for BGII as BGI — nothing new to trace here, just wire the same lookups into <code>Calc_Building_BGII</code>.</td></tr>
+        <tr><td><code>BasicGroupIIRate</code> / <code>LowestBasicGroupIIRate</code> (Building)</td><td><span class="status-ok">Fully checked (this session), all 47 states, correct editions</span> — <code>BasicGroupIIRate</code> resolves in 45/47 (only FL/PR don't file); <code>LowestBasicGroupIIRate</code> resolves in 39/47 (AR/DC/FL/KS/NY/PR/RI/TX don't). Full data pull in <code>BGII_BaseRate_Building.xlsx</code>.</td></tr>
+        <tr><td><code>BasicGroupIIRatingTerr</code> derivation (the input itself, not a rate table)</td><td><span class="status-ok">Fully checked (this session), all 47 states, correct editions</span> — 11 states ZIP-keyed (CT/DE/MA/MD/ME/NC/NH/NJ/NY/RI/VA), 11 county-keyed (AL/CO/FL/GA/IL/MT/NE/NM/SC/TX/WY), 24 need no derivation at all (single territory, confirmed constant <code>"Entire State"</code> against each state's own <code>BasicGroupIIRate</code> table — not a gap), 1 (PR) moot since it files no base rate. <b>Corrects this project's own prior "county, not ZIP" assumption</b> (<code>Excel_Rater_FullBuildout_Scope.md</code> trap #3) — the real split is nearly even. Full data + ready-to-wire config formulas in <code>BGII_Territory_Derivation.xlsx</code>.</td></tr>
+        <tr><td><code>BasicGroupIIConstructionSymbol</code>, <code>...RoofConstruction</code>, <code>...AdditionalClasses</code>, <code>...OilDistributingStations</code> (symbol resolution)</td><td><span class="status-ok">Fully checked (this session), all 47 states</span> — base symbol table and OilDistributingStations are genuinely CW-only, zero overrides. RoofConstruction: only MT overrides, coarser code universe. AdditionalClasses: FL/GA/KS file value-identical coarser overrides; MT adds 6 genuinely new "All"-classification rows CW doesn't have. Detail in <code>BGII_BaseRate_Building.xlsx</code>'s "ConstructionSymbol Overrides" sheet.</td></tr>
+        <tr><td><code>GroupIINumericValue</code> / <code>GroupIIOpenSidesNumericValue</code></td><td><span class="status-ok">Fully checked (this session), all 47 states</span> — FL/GA/KS file coarser (value-identical, 6-row-short) overrides on <code>GroupIINumericValue</code>; <b>MT genuinely deviates on ConstructionCode=3, both tables, every class code</b>. Full data + live formulas in <code>BGII_NumericValue.xlsx</code>.</td></tr>
+        <tr><td><code>BCEGFactor</code></td><td><span class="status-ok">Fully checked (this session), all 47 states</span> — <b>CW itself is structurally unresolvable</b> (every CW row keys on a placeholder territory value <code>"001"</code>, never a real one). 44 states file their own real territory-keyed table; <b>DC and NY file nothing, and it's confirmed not a gap</b> — the CF Commercial Lines Manual shows BCEG is an optional state exception page (Rule A1) neither state ever adopted, so <code>BCEGFactor = 1.0</code> is correct there. Also: the source rule's own default on a blank grade is <code>0.0</code>, not <code>1.0</code> — a real silent-zero-premium risk if the grade field isn't required. Full data + formula in <code>BGII_BCEGFactor.xlsx</code>.</td></tr>
+        <tr><td><code>WindstormOrHailExclFactor</code></td><td><span class="status-partial">Partially checked</span> — file-presence pass only (not full 39-state value data). Confirmed: the exact same 8 states missing <code>LowestBasicGroupIIRate</code> (AR/DC/FL/KS/NY/PR/RI/TX) also file an explicit <b>empty</b> override of this factor — both halves of the wind-excluded mechanism missing together, a correlated pattern, not independent gaps. Regulatory reason inferred, not manual-confirmed. See <code>Excel_Rater_BGII_WindHailExclusionEligibility_Walkthrough.html</code>.</td></tr>
+        <tr><td><code>StdPropPolGroupIIFactor</code>, <code>BasicGroupIIFlatCoinsuranceFactor</code></td><td><span class="status-none">Not checked</span> — CW row counts confirmed (&sect;4), but no per-state override pass has been run on either.</td></tr>
+        <tr><td><code>BasicGroupIILOIFactorBldg</code>, <code>...WithArgs</code>, <code>BasicGroupIILOIFactorPersProp</code>, <code>LimitationsOnCovForRoofSurfacingCosmeticExclFactor</code>, <code>BGIIDeductibleByLocationFactor</code> source table</td><td><span class="status-none">Not checked</span> — same gap as above, the Building/Contents-only tables.</td></tr>
+      </table>
+    </div>
+    <div class="callout warm"><span class="callout-mark">&#9888;</span><span>Basic Group I's session findings (<code>BasicGroupI_ERC_Tables.md</code>) needed a full state-by-state pass to catch things like NC's separate 12-code ProtectionClass scale and FL's unreachable 70% coinsurance row. Nothing equivalent has been done for Basic Group II's own tables yet — treat every CW value in &sect;4 as unverified against the other 46 states until it's actually checked.</span></div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- SECTION 6 -->
+  <section class="sect" id="s6">
+    <div class="sect-heading"><span class="sect-index">6</span><h2 class="sect-title">Rating paths — what's built vs. formula-only vs. absent</h2></div>
+    <p class="sect-role">Per <code>Excel_Rater_RatingPaths_Checklist.md</code>'s grain: Coverage &times; Rating type &times; Premium branch.</p>
+    <div class="tblscroll">
+      <table class="scope-table">
+        <tr><th>Coverage</th><th>Primary scheduled path</th><th>Specific/Tentative</th><th>Legal Liability</th><th>Blanket-rated</th></tr>
+        <tr><td>Building</td><td><span class="status-ok">&#10003; Built</span> — &sect;2 above</td><td><span class="status-na">Structurally absent — no <code>RatingType</code> branch exists in the source rule at all</span></td><td><span class="status-partial">Formula documented, not built into calc-tab columns</span></td><td><span class="status-partial">Not built — remember the truncation divergence (&sect;1)</span></td></tr>
+        <tr><td>Contents</td><td><span class="status-ok">&#10003; Built</span> — &sect;3 above</td><td><span class="status-na">Confirmed absent</span></td><td><span class="status-partial">Not built</span></td><td><span class="status-partial">Not built — same truncation quirk</span></td></tr>
+      </table>
+    </div>
+    <div class="callout warn"><span class="callout-mark">&#9888;</span><span><b>Specific/Tentative rating for BGII is flagged as unconfirmed, not assumed absent.</b> The source doc doesn't describe a Specific/Tentative branch for this form the way it does for BGI, but that's "not documented as existing" — worth a direct rule-file check before treating it as structurally impossible, same caution as any other absence claim in this project.</span></div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- SECTION 7 -->
+  <section class="sect" id="s7">
+    <div class="sect-heading"><span class="sect-index">7</span><h2 class="sect-title">What's already built for this form</h2></div>
+    <p class="sect-role">Every artifact that exists right now, one card each.</p>
+    <div class="filecard"><div class="fname">Excel_Rater_BasicGroupII.md</div><div class="fdesc">The canonical build guide — full step-by-step chains for both coverages, every table, every column addition to <code>Locations_Buildings</code>, the Premium_Summary formulas, and what's deliberately out of scope (&sect;7 of that doc).</div></div>
+    <div class="filecard"><div class="fname">Excel_Rater_Wireframes.html — Calc_Building_BGII / Calc_Contents_BGII / flow diagram</div><div class="fdesc">Tab mockups and a full inputs&rarr;output diagram for both coverages, including the missing-CW-rate warning cells and the wind/hail branch. Updated this session with callouts on the reused Deductible Factor table and the MultiResidentialPropSpecialCreditFactor state variation.</div></div>
+    <div class="filecard"><div class="fname">Excel_Rater_BGII_DeductibleFactor_Walkthrough.html</div><div class="fdesc">Step-by-step: the <code>BGIIDeductibleByLocationFactor</code> field and the wind/hail-vs-plain-deductible key branch. <b>Note (2026-09-08): its "reuse BGI's table" framing is now known wrong</b> — see <code>BGII_DeductibleFactor.xlsx</code> for the corrected, separately-keyed table.</div></div>
+    <div class="filecard"><div class="fname">BGII_DeductibleFactor.xlsx</div><div class="fdesc">The corrected, separately-keyed <code>DeductibleFactor</code> pull (<code>CauseOfLossDeductible="Basic Group II"</code>), all 46 non-PR states, correct editions — supersedes the earlier assumption that this table was shared with Basic Group I.</div></div>
+    <div class="filecard"><div class="fname">Excel_Rater_MultiResCredit_Walkthrough.html + BGI_MultiResidentialPropSpecialCredit.xlsx</div><div class="fdesc">Built for BGI, directly reusable for BGII — same gate, same two tables, same CT/MA/ME state variation. No BGII-specific version needed; just wire <code>Calc_Building_BGII</code>'s <code>FinalRate</code> to the same lookups.</div></div>
+    <div class="filecard"><div class="fname">Excel_Rater_RatingPaths_Checklist.md</div><div class="fdesc">Tracks BGII's four rating-path cells (Primary/Specific-Tentative/Legal Liability/Blanket) for both coverages at a glance, alongside every other form.</div></div>
+    <div class="filecard"><div class="fname">Excel_Rater_BGII_WindHailExclusionEligibility_Walkthrough.html</div><div class="fdesc">The 8-state (AR/DC/FL/KS/NY/PR/RI/TX) ineligibility gate for the wind/hail-excluded <code>COLAdj</code> branch — named-range list, gate formula, an input-side UI mockup showing the exclusion dropdown disabled with an explanatory message, the <code>COLAdj</code> formula guard, and 4 worked scenarios including a forced-bad-input case.</div></div>
+    <div class="filecard"><div class="fname">BGII_BCEGFactor.xlsx</div><div class="fdesc">All 46 non-PR states, keyed on Territory + BCEG grade — 44 real state filings plus DC/NY confirmed-1.0 rows (manual-verified: BCEG was never adopted in either state). Flags CW as structurally unresolvable and the 0.0-not-1.0 blank-grade default.</div></div>
+    <div class="filecard"><div class="fname">BGII_NumericValue.xlsx</div><div class="fdesc">Both NumericValue tables (class-code override, open-sides override), all 47 states, correct editions — FL/GA/KS coarser filings, MT's genuine ConstructionCode=3 deviation on both tables — plus a live Walkthrough resolving the full four-way branch (wind/hail excluded &rarr; class-code override &rarr; open-sides override &rarr; 1.0 default).</div></div>
+    <div class="filecard"><div class="fname">BGII_Territory_Derivation.xlsx</div><div class="fdesc">Every state's ZIP- or county-keyed territory domain, pulled from each state's own correct edition — 7,870 ZIP rows + 1,015 county rows + 24 single-territory constants — plus a live Walkthrough sheet with ready-to-wire formulas (auto-picks ZIP vs. county vs. constant <code>"Entire State"</code> vs. the one genuine gap, PR) for configuring <code>Terr</code> on <code>BldgBGIIRating</code>.</div></div>
+  </section>
+
+  <hr class="divider" />
+
+  <!-- SECTION 8 -->
+  <section class="sect" id="s8">
+    <div class="sect-heading"><span class="sect-index">8</span><h2 class="sect-title">Feature-set backlog</h2></div>
+    <p class="sect-role">Grouped by what each buys, not a flat queue.</p>
+
+    <div class="featureset">
+      <div class="fs-letter">A</div>
+      <div class="fs-title">Build the actual <code>BldgBGIIRating</code> tab from the two walkthroughs already written</div>
+      <div class="fs-buys"><b>Buys:</b> a working Building deductible + multi-res credit chain for real, not just wireframed — the formulas are already fully specified, this is pure implementation.</div>
+    </div>
+    <div class="featureset">
+      <div class="fs-letter">B</div>
+      <div class="fs-title">Resolve Contents' <code>BasicGroupIIRate</code> / <code>LowestBasicGroupIIRate</code>, and pull a real filing for FL/PR Building</div>
+      <div class="fs-buys"><b>Buys:</b> closes the last of the base-rate gap — Building already resolves in 45/47 states (<code>BGII_BaseRate_Building.xlsx</code>, this session), but Contents' equivalent (<code>"PersProp"</code> rows) was never pulled, and FL/PR still have zero Building data under any edition checked so far. Smaller and cheaper than it looked before this session's correction.</div>
+    </div>
+    <div class="featureset">
+      <div class="fs-letter">C</div>
+      <div class="fs-title">Run a full 47-state variance pass on Basic Group II's own tables</div>
+      <div class="fs-buys"><b>Buys:</b> the same confidence BGI's session findings already have for ProtectionClass/Coinsurance/LOI/Deductible — right now every BGII-specific table in &sect;4 is CW-row-count-only, unchecked against the other 46 states.</div>
+    </div>
+    <div class="featureset">
+      <div class="fs-letter">D</div>
+      <div class="fs-title">Confirm Specific/Tentative rating is genuinely absent for this form</div>
+      <div class="fs-buys"><b>Buys:</b> closes an open question flagged in both the source doc and &sect;6 above — either a confirmed-absent note (cheap) or a whole new rating path to build (not cheap), worth knowing which before building further on the assumption it doesn't exist.</div>
+    </div>
+    <div class="featureset">
+      <div class="fs-letter">E</div>
+      <div class="fs-title">Promote Legal Liability and Blanket from formula-only to built</div>
+      <div class="fs-buys"><b>Buys:</b> complete premium calculation for both coverages — the formulas already exist in <code>Excel_Rater_BasicGroupII.md</code> &sect;6&ndash;7, this is a calc-tab-column exercise, not new tracing. Remember the truncation divergence (&sect;1) when building Blanket — a copy-paste from Basic Group I's version would get that column wrong.</div>
+    </div>
+    <div class="featureset">
+      <div class="fs-letter">F</div>
+      <div class="fs-title">Circular verification for Basic Group II specifically</div>
+      <div class="fs-buys"><b>Buys:</b> legal/regulatory confidence this form's traced formulas match the filed manual — same L2&rarr;L3 gap <code>Excel_Rater_FullBuildout_Scope.md</code> flags project-wide, scoped down to just this form's already-✅ paths.</div>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <footer class="closing">
+    <h2>Remaining steps</h2>
+    <ol>
+      <li>Nothing here recommends an order — B (the base-rate gap) is what blocks pricing anything at all; A is the cheapest since both walkthroughs are already fully specified.</li>
+      <li>Confirm whether you want the <code>BldgBGIIRating</code> tab built as its own sheet or merged into <code>BldgBGIRating</code> (a building can carry both forms' inputs on one row, per <code>Excel_Rater_BasicGroupII.md</code> &sect;1) before starting A.</li>
+      <li>Nothing gets built until you say go.</li>
+    </ol>
+    <p class="note">Consolidated from Excel_Rater_BasicGroupII.md, CauseOfLoss_Building_RatingAlgorithms.md, CauseOfLoss_PersonalProperty_RatingAlgorithms.md, Excel_Rater_RatingPaths_Checklist.md, Excel_Rater_Wireframes.html, BasicGroupI_ERC_Tables.md &middot; CFCW20260601V01</p>
+  </footer>
+
+</div>

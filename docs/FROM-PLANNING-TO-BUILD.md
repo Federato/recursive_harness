@@ -125,10 +125,39 @@ starting from the corpus would have written the fallback, and it would have look
   that must not recurse.
 
 ### Actually used
-*To be written after stage 2.*
+*Written 2026-08-13, after stage 2.*
+
+| Expected | What happened |
+|---|---|
+| 58 types, 54 executable, top 20 = 94.1% | **Right, and it was the one thing that held.** Re-measured from the XML: 58 elements, 4 structural, **54 language nodes**, top 20 = **94.03%**. The architecture decision stands |
+| The 14 rare types will cost more than their frequency suggests | **The count was wrong — it is 9, not 14** — and the prediction was untestable because none of them was reached. `GetList` (2 occurrences) is a `Constant` and a `Break`; nothing unusual, and nothing exercises it |
+| The walkthroughs serve as acceptance tests without modification | **Not used at all.** This was flagged as *"the strongest claim in this document and the one most likely to be wrong"*, and it was not so much wrong as bypassed: acceptance came from the corpus census, the refusal set and **real ISO payloads**. The claim remains untested |
+| The evaluation contract is not inherited | **Right, and it was the largest single piece of new work**, exactly as predicted |
+| N2's parent dispatch will be the hardest mechanism | **Wrong.** It was one boolean on the frame. It took an afternoon and never misbehaved |
+
+**What actually cost the time was not on the list at all:**
+
+1. **The entry point.** Every prior census walked `Rule` elements and so could not see the `Default`
+   block. The analysis had the entry point wrong, and nothing in the *Expected* column suspected it.
+2. **`ForEach` in a value position yields a collection.** Not anticipated; it made `Sum` silently
+   total one iteration of five.
+3. **Positional predicates** — `[1]`, 18,796 occurrences. Not anticipated, and it cost exactly 18 on
+   the golden case with no error anywhere.
+4. **The `Value` nullability clause**, which the contract got wrong from the attribute's name and
+   only a real payload falsified.
 
 ### Verdict
-*To be written after stage 2.*
+**Load-bearing for the decision, not for the semantics.**
+
+The node census chose the architecture and was worth every hour — **without it the interpret-vs-
+transliterate fork would have been decided on taste.** Nothing else the analysis produced told us
+what the language *means*.
+
+**The semantics had to be measured from the XML, and three of the four hardest problems were
+invisible to every prior analysis because each had asked a slightly wrong question** — walk `Rule`
+elements, count direct parents, read attributes by name. **The pattern is consistent enough to be a
+rule for the next line of business: an analysis phase can size a language reliably and cannot
+specify it.** Budget for the specification separately, and write it against the source.
 
 ---
 
@@ -147,10 +176,32 @@ starting from the corpus would have written the fallback, and it would have look
   `tests/verify_golden.py`.
 
 ### Actually used
-*To be written after stage 3.*
+*Written 2026-08-13, after stage 3.*
+
+| Expected | What happened |
+|---|---|
+| The referral register is usable as data, not prose | **True and insufficient.** It loads as JSON and all 28 entries are addressable — but the *conditions* are prose written for a human, and the engine can currently detect **1 of 28**. Emitting it as JSON solved the wrong half of the problem |
+| E18 and the terrorism gate specify evaluation order across coverage groups | **Not needed.** ISO's own rules encode the order, and the architecture executes them. Ordering never became a decision we had to make |
+| D01 propagation and D02 monotonicity need no further thought | **Right.** Implemented straight from the decisions, no re-litigation |
+| The golden case passes early, because 334 and 336 are the most thoroughly derived coverages | **Wrong, and instructively so.** It did not pass early — it passed *last*. It was the instrument that found all three stage-3 defects, and the depth of the prior derivation is exactly why: because 7,839 was known to the penny, a result of **7,821** was a defect rather than a plausible answer |
 
 ### Verdict
-*To be written after stage 3.*
+**Half the inherited analysis was made moot by the architecture, and the half that mattered mattered
+enormously.**
+
+The coverage-order work (E18, terrorism-last) was **genuinely not needed** — a consequence of
+choosing to execute ISO's rules rather than re-implement them, and a real saving to record for the
+next line of business: *if you interpret, you do not need to derive the control flow.*
+
+But **the golden case earned the entire analysis phase back on its own.** Three defects — a silent
+one-of-five sum, an unparsed path predicate, and missing rule inheritance — produced complete,
+plausible premiums. **Two of the three were invisible without an oracle**, and the oracle existed
+only because Steps 27–47 had derived 976 and 6,845 and 7,839 independently, in advance, to the
+penny.
+
+> **That is the strongest argument in this document for doing the analysis at all**, and it is not
+> the argument we expected to be making. The value was not that the analysis told the build what to
+> do. It was that the analysis could tell the build it was **wrong**.
 
 ---
 
@@ -165,10 +216,32 @@ starting from the corpus would have written the fallback, and it would have look
   cases**, and if they are not, that is a stage 2 defect surfacing late.
 
 ### Actually used
-*To be written after stage 4.*
+*Written 2026-08-13, after stage 4.*
+
+| Expected | What happened |
+|---|---|
+| The 53 RAaS payloads give the submission shape; derive rather than design | **Neither.** **ISO *files* the schema** — `Form Fields/Fields.FormField.csv` declares every field per jurisdiction with its control, requiredness, default, bounds, condition and **the domain table naming its legal values**. The payloads were used only as territory sources and as subjects to validate. **The decisive asset was in the corpus the whole time and was not on this list** |
+| The 1,906-field input surface bounds what the schema must express | **A different measurement, both true.** 1,906 counts the *rating* input surface; the form schema is **1,381 countrywide fields over 429 tables**, plus a state delta, giving **1,252–1,321 per jurisdiction**. Neither bounds the other |
+| Four states need a county or place field (E8) | **The count is right and the mechanism was not.** There is no county field anywhere — a first search for one matched `PremiumPlaceHolder`. **Exactly four (CA, FL, NY, TX) declare `TerrorismTerritory` against a state-specific `TerrorismTerritoryCode`**, while **11 others derive it from a ZIP** and NY alone adds a Manhattan flag. E8's *"by county or place"* is better read as *"by a code that cannot be derived"* |
+| Hawaii cannot be rated | **Right.** Not in the corpus; 51 jurisdictions and no HI |
+| State table-shape differences handled by the interpreter without special cases, or it is a late stage-2 defect | **Right, and it is the quiet success of this stage.** All **51 jurisdictions rate the same risk** with no jurisdiction-specific code anywhere — including the four sliced loss-cost states. **No stage-2 defect surfaced late** |
 
 ### Verdict
-*To be written after stage 4.*
+**Partially load-bearing, and the most useful thing was not inherited at all.**
+
+The analysis correctly predicted **what the hard parts would be** — the four special jurisdictions,
+Hawaii's absence, and that the interpreter should absorb state shape differences — and the last of
+those is a real prediction that held under test.
+
+But **the schema itself was never going to come from the payloads**, and the plan assumed it would.
+It is filed content, sitting in a directory no analysis step had opened. **That is the third time
+this project has found the answer already in the corpus** (the `Default` block, the response header
+naming the edition, and now `Form Fields`) — each time in a file that no one had a reason to open
+until something needed it.
+
+> **The lesson for the next line of business is specific: before deriving anything from examples,
+> enumerate the directories in the package and ask what each one is for.** Three of this build's
+> largest shortcuts were sitting in one.
 
 ---
 
@@ -181,10 +254,30 @@ starting from the corpus would have written the fallback, and it would have look
   actually needs — and we expect the 53 real submissions to answer that better than the corpus does.
 
 ### Actually used
-*To be written after stage 5.*
+*Written 2026-08-13, after stage 5.*
+
+| Expected | What happened |
+|---|---|
+| The domain tables supply the legal values directly | **Held.** `DataValue` is the stored value in every domain table, and 1,910 legal values were listed for the countrywide spine without interpretation. The only judgement was where to stop: domains over 60 values are summarised rather than listed, because `ZipCode` at 765 is a lookup, not a choice a human makes |
+| **The hard part is scope, not extraction** — which of 1,906 fields a payload actually needs, and the real submissions answer it better than the corpus does | **Held exactly, and it is the most useful prediction in this document.** ISO declares **1,259 fields countrywide**; the 50 real submissions between them use **77 (6.1%)**, of which **41 are used by all 50**, and a single submission carries **43–54**. The corpus says what is *possible*; only the submissions say what is *sent* |
+
+**What the stage gained that was not expected at all:** Rule #1 had just been adopted, and applying
+it found `DOC/*.xlsx` — ISO's own workbook in every package. It supplied the **data types**
+(`Base RaaS Overrides`, 63,327 rows) that stage 4 had recorded as needing to come from the DataDefs,
+and **2,489 class codes with descriptions**. Neither was in the plan for this stage.
 
 ### Verdict
-*To be written after stage 5.*
+**Load-bearing, and uniquely so: this is the one stage whose `Expected` column named the real
+difficulty in advance.**
+
+Every other stage's surprise was something the analysis had not thought to look for. Here the plan
+said *the hard part is scope* before any of it was built, and it was right — extraction took an
+afternoon and the scope question is the whole value of the deliverable.
+
+**Would we have got there anyway?** The extraction, yes. **The scope answer, no** — not without the
+50 priced submissions, which existed only because the analysis phase went looking for an oracle and
+found them (OI-67). A team building this from the corpus alone would have shipped a 1,259-row
+reference and called it complete.
 
 ---
 
@@ -198,22 +291,102 @@ starting from the corpus would have written the fallback, and it would have look
   change, the engine's interface was wrong.
 
 ### Actually used
-*To be written after stage 6.*
+*Written 2026-08-13, after stage 6.*
+
+| Expected | What happened |
+|---|---|
+| Nothing from the analysis | **Held.** No domain knowledge was consulted. `app.py` is one file, standard library only, no framework and no build step |
+| It should **prove the separation** — if the UI needs the engine to change, the engine's interface was wrong | **The interface held. The implementation did not.** No new engine API was needed: the whole UI is assembled from `premium`, `by_coverage`, `referrals`, `messages`, `trace`, `tree` and `packages`. **But asking for one item on the deliverable list — *premiums per subline* — exposed a real engine defect** |
+
+**The defect, because the distinction matters.** The plan asked for premiums *per subline*. The
+subline is a statistical code (`334`, `336`) that ISO writes on each coverage, and we were writing
+none of them — because `ErcSetStatisticalCodes` is guarded by
+
+```xml
+<rul:Exist AtInputDataDef="ancestor::MasterGLCW/Policy" />
+```
+
+and `interp/tree.py` implemented `..`, `.`, `*`, `name` and `name[n]` but **not the `ancestor::`
+axis**. An unimplemented axis matches nothing, `Exist` returns false, and the entire block was
+skipped **with the premium still exactly right**. Measured before fixing: **942 paths, one axis, 34
+forms, no other axis anywhere**. With it implemented, every statistical code matches ISO's golden
+output exactly — 0 mismatches.
 
 ### Verdict
-*To be written after stage 6.*
+**Load-bearing as a test, not as a build.**
+
+The UI took an afternoon and needed no engine change, which is the result the stage existed to
+produce. **The separation is real**: the engine has never heard of the UI, and
+`Kernel().rate(path).premium` works in a notebook with nothing else imported.
+
+**But the stage still earned its place, and not in the way predicted.** *"Prove the separation"*
+assumed the only failure mode was a missing API. The actual failure was **a missing behaviour that
+nothing had asked for until a UI listed it on a screen.** Four stages of tests, 49 of 49 exact
+premiums, and a whole class of ISO output was absent — because every check so far compared
+**numbers**, and a statistical code is a string.
+
+> **The transferable lesson: a deliverable that renders everything finds things a deliverable that
+> asserts something specific never will.** The UI was the first consumer that wanted *all* of the
+> output rather than the parts we knew to check.
 
 ---
 
 ## For a future line of business
 
-*To be written at the end, from the six verdicts above. The question it must answer:*
+*Written 2026-08-13, from the six verdicts above, with all six stages complete.*
 
 > **Of the twenty-odd analysis steps that preceded this build, which would you repeat for Commercial
 > Property, which would you do differently, and which would you skip?**
 
-Two candidate answers are already visible and are recorded here so they can be tested rather than
-invented later:
+### Repeat, without hesitation
+
+1. **The counting discipline.** *Every count is "n of N", with N enumerated from the source.* It
+   caught defects in four completed walkthroughs within hours of being automated, and every stage
+   since has found at least one figure that was stated more broadly than it was measured.
+2. **Find the oracle first.** The 50 priced examples are why stage 3 could be trusted. They are also
+   what proved three of them unusable (OI-77, OI-78). **A build without an oracle cannot tell a
+   defect from a difference.**
+3. **The doctrine work** — an empty table means *not offered here*, a zero has eight meanings, a
+   sentinel is not a number. **None of this is derivable from the files**, and a team starting cold
+   would write the fallback, ship it, and never see it fail.
+
+### Do differently
+
+4. **Take the instruction-language measurement on day one, not the last day.** It chose the
+   architecture. Taken first, every walkthrough would have been written as an *acceptance test*
+   rather than a *specification*, which is a different document.
+5. **Enumerate the package directories before deriving anything** — now Rule #1. Three of this
+   build's largest shortcuts were filed in directories no analysis step had opened: the entry point,
+   the edition ISO rated with, and the submission schema. **The analysis phase derived from examples
+   what ISO had declared outright.**
+6. **Budget the specification separately from the sizing.** Stage 2's verdict is the sharpest
+   sentence in this document: **an analysis phase can size a language reliably and cannot specify
+   it.** The node census was right about scale and silent about meaning.
+
+### Skip
+
+7. **Deriving control flow.** E18's coverage-ordering work and the terrorism-last analysis were
+   **never used** — the architecture executes ISO's rules, so ISO's own order applies. *If you
+   interpret, you do not need to derive the control flow.* That is a large, direct saving.
+8. **Hand-deriving a referral register from the manuals.** ISO ships **838 declared refer conditions**
+   in a workbook in every package (OI-82). Ours has 28, built by hand. They are not the same
+   population, but the declared one should be read **first** and the derivation scoped to what it
+   does not cover.
+
+### The pattern under all of it
+
+**Every significant defect in this build was the same shape: something measured in one place and
+stated about everything.** One edition, one directory, one element type, one relation, one census
+that walked `Rule` and could not see what was not inside a `Rule`. It appears in the analysis phase,
+in stage 1's assertions, in stage 2's contract, in stage 3's dispatch, and in stage 6's path dialect.
+
+**It is not a knowledge problem and more analysis does not fix it.** What fixes it is enumerating
+the population before making the claim — which is why the counting discipline and Rule #1 are the
+two rules worth carrying to another line of business ahead of any domain finding in this document.
+
+---
+
+*The two candidate answers recorded before the build, kept for comparison:*
 
 1. **The instruction-language measurement should come first, not last.** It was taken on the final
    day of analysis and it chose the architecture. Taken on day one it would have shaped every

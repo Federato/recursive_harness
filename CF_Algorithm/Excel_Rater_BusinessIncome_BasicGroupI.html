@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Business Income — Basic Group I (Class Rated)</title>
+<style>
+  body { font-family: Georgia, "Iowan Old Style", serif; max-width: 980px; margin: 0 auto; padding: 40px 24px 80px; color: #1b232e; background: #f5f6f4; line-height: 1.55; }
+  h1 { font-size: 26px; margin-bottom: 4px; }
+  .subtitle { font-family: -apple-system, "Segoe UI", sans-serif; color: #55606e; font-size: 15px; margin-bottom: 28px; }
+  .banner { background: #eef3ee; border: 1px solid #b9cdb9; border-radius: 6px; padding: 14px 16px; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13.5px; margin-bottom: 32px; }
+  .banner b { color: #2f6b4f; }
+  h2 { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 21px; border-bottom: 3px solid #b9a577; padding-bottom: 8px; margin-top: 52px; }
+  h2 .count { font-size: 12px; letter-spacing: .05em; text-transform: uppercase; color: #8a5a1f; background: #f4e7d4; padding: 2px 9px; border-radius: 10px; margin-left: 10px; vertical-align: middle; }
+  h3 { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 16px; margin-top: 28px; }
+  p.section-intro { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13.5px; color: #444; background: #fff; border-left: 3px solid #b9a577; padding: 10px 16px; margin: 14px 0 20px; }
+  p.note { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13.5px; color: #55606e; }
+  table { width: 100%; border-collapse: collapse; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13px; margin: 16px 0 28px; }
+  th, td { border: 1px solid #d5d9d0; padding: 8px 10px; text-align: left; vertical-align: top; }
+  th { background: #e2e6dc; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
+  td.factor { font-weight: 600; }
+  .confirmed { color: #2f6b4f; }
+  .gap { color: #9a5b1f; font-weight: 600; }
+  .missing { color: #999; font-style: italic; }
+  code { font-family: ui-monospace, Consolas, monospace; background: #eceee8; padding: 1px 5px; border-radius: 3px; font-size: .92em; }
+  .algo { background: #101720; color: #dbe6ee; border-radius: 8px; padding: 18px 20px; font-family: ui-monospace, Consolas, monospace; font-size: 13px; line-height: 1.7; overflow-x: auto; margin: 14px 0 24px; white-space: pre; }
+  .algo .kw { color: #e3b873; }
+  .algo .tbl { color: #9fd4c4; }
+  .algo .cm { color: #7f8b98; font-style: italic; }
+  .stepnum { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; background: #8a5a1f; color: #fff; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 12px; font-weight: 700; margin-right: 8px; }
+  blockquote { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13px; background: #fff; border-left: 3px solid #b9a577; padding: 8px 14px; margin: 10px 0; color: #444; }
+</style>
+</head>
+<body>
+
+<h1>Business Income — Basic Group I</h1>
+<p class="subtitle">Class-rated path · algorithm and required tables · CFRater1.01.xlsb build reference</p>
+
+<div class="banner">
+  <b>Source.</b> Translated from <code>CauseOfLoss_BusinessIncome_RatingAlgorithms.md</code> §"Basic Group I"
+  and <code>BusinessIncome_ERC_Tables.md</code>, cross-checked against <code>CFCW20260601V01</code>.
+  This is the class-rated version specifically — Specific/Tentative rating is noted where it diverges, but
+  the algorithm below is written for <code>RatingType="Class"</code>.
+</div>
+
+<h2>1. The one thing that makes this form different</h2>
+<p class="section-intro">
+  Business Income's Basic Group I <b>does not compute its own base rate.</b> It reads
+  <code>Calc_Building_BGI.BaseRate</code> — the same value Building's own Basic Group I already computed for
+  the same structure. Rate the Building first; this tab is arithmetically downstream of it, not a parallel
+  computation.
+</p>
+
+<table>
+<tr><th></th><th>Building's Basic Group I</th><th>Business Income's Basic Group I</th></tr>
+<tr><td class="factor">Chain length</td><td>8 steps</td><td><b>3 steps</b></td></tr>
+<tr><td class="factor">Base rate</td><td>own class/construction lookup</td><td><b>cross-reference to <code>Calc_Building_BGI.BaseRate</code></b></td></tr>
+<tr><td class="factor">Extra rate multiplier</td><td>none</td><td><code>BGIBaseRateAdjustmentFactor</code> — <span class="gap">header-only CW table</span></td></tr>
+<tr><td class="factor">COL adjustment</td><td>sprinkler / vandalism / <code>StdPropPolGroupIFactor</code></td><td>sprinkler / vandalism / <b><code>BuildersRiskFactor</code></b> — no "standard property policy" concept here</td></tr>
+<tr><td class="factor">Coinsurance / LOI / deductible</td><td>three separate steps</td><td><b>collapsed into one shared <code>Factor</code></b> — no LOI factor, no deductible factor at all</td></tr>
+<tr><td class="factor">Coverage-on-policy gate</td><td>tests <code>CauseOfLossToUse</code></td><td><b>hardcoded <code>1</code></b> — always computed, no gate</td></tr>
+<tr><td class="factor">Premium branches</td><td>scheduled / Legal Liability / blanket / zero (4)</td><td><b>scheduled / blanket only (2)</b></td></tr>
+</table>
+
+<h2>2. Required inputs</h2>
+<p class="section-intro">Nothing new beyond what the shared Business Income shell already defines, plus the
+Basic Group I inputs Building's own tab already reads.</p>
+<table>
+<tr><th>Field</th><th>Feeds</th><th>Note</th></tr>
+<tr><td class="factor"><code>BI_CovType</code></td><td><code>Factor</code> branch selection</td><td>"Business Income Without Extra Expense" / "Business Income With Extra Expense" / "Extra Expense Only"</td></tr>
+<tr><td class="factor"><code>BI_TypeOfRisk</code></td><td><code>BusnIncomeFactor</code> lookup key</td><td>e.g. "Mercantile and Non-manufacturing"; a "Combined..." value triggers a blended branch (out of scope, see §5)</td></tr>
+<tr><td class="factor"><code>BI_MaxPeriod</code> (Y/N)</td><td>first-priority <code>Factor</code> branch</td><td>Y routes through <code>MaxPeriodOfIndemnityFactor</code></td></tr>
+<tr><td class="factor"><code>BI_MonthlyLimitOfIndemnity</code></td><td>second-priority <code>Factor</code> branch</td><td>"Not Applicable" or a real value; a real value routes through <code>MonthlyLimitOfIndemnityFactor</code></td></tr>
+<tr><td class="factor"><code>BI_Coinsurance</code> → <code>CoinsuranceToUse</code></td><td><code>BusnIncomeFactor</code> lookup key</td><td>not a plain copy of <code>Coinsurance</code> — real ISO mechanics scan a blanket-rating table (out of scope, enter resolved value directly)</td></tr>
+<tr><td class="factor"><code>BI_Limit</code></td><td>premium formula</td><td></td></tr>
+<tr><td class="factor"><code>BI_IncludedInBlkt</code> (Y/N)</td><td>premium branch gate</td><td>Business-Income-specific, distinct from <code>Bldg_IncludedInBlkt</code></td></tr>
+<tr><td class="factor"><code>Calc_Building_BGI.BaseRate</code></td><td>this form's own <code>Rate</code></td><td>cross-tab read, not re-derived</td></tr>
+</table>
+
+<h2>3. Required tables</h2>
+<p class="section-intro">One new table specific to this form, plus four already-resolvable tables shared
+with the rest of Business Income.</p>
+<table>
+<tr><th>Table</th><th>Keys</th><th>CW status</th></tr>
+<tr>
+  <td class="factor">BaseRateAdjustmentFactor</td>
+  <td>State|CW, <code>"Basic Group I"</code></td>
+  <td><span class="gap">Header-only, confirmed empty at CW.</span> Combined with <code>BasicGroupIRate</code>
+  itself also being header-only (the table Building's <code>BaseRate</code> depends on), this form is
+  <b>doubly unresolvable at CW level</b> until a state files both.</td>
+</tr>
+<tr>
+  <td class="factor">BusnIncomeFactor</td>
+  <td>State|CW, <code>BI_CovType</code>, <code>BI_TypeOfRisk</code>, <code>CoinsuranceToUse</code></td>
+  <td><span class="confirmed">Yes — 131 CW rows.</span></td>
+</tr>
+<tr>
+  <td class="factor">MaxPeriodOfIndemnityFactor</td>
+  <td>State|CW, …</td>
+  <td><span class="confirmed">Yes — 22 CW rows.</span></td>
+</tr>
+<tr>
+  <td class="factor">MonthlyLimitOfIndemnityFactor</td>
+  <td>State|CW, …</td>
+  <td><span class="confirmed">Yes — 60 CW rows.</span></td>
+</tr>
+<tr>
+  <td class="factor">ExtraExpenseFactor</td>
+  <td>State|CW, <code>ExtraExpnLimitOnLossPymts</code></td>
+  <td><span class="confirmed">Yes — 4 CW rows.</span></td>
+</tr>
+<tr>
+  <td class="factor">SprinklerLeakageExclNonSprinkleredRate / …SprinkleredFactor / VandalismExclFactor</td>
+  <td>State|CW</td>
+  <td><span class="confirmed">Yes.</span> Business Income has its <em>own</em> LCM-scaled non-sprinklered
+  rate, distinct from Structure's <code>...BldgRate</code> naming — don't cross-apply.</td>
+</tr>
+<tr>
+  <td class="factor">SprinklerLeakageNotExcludedFactor <span class="count">Specific/Tentative only</span></td>
+  <td>State|CW</td>
+  <td><span class="confirmed">Same table Building's own Basic Group I reads</span> — no separate Business
+  Income instance, no new table needed.</td>
+</tr>
+</table>
+
+<h2>4. The algorithm</h2>
+
+<h3><span class="stepnum">1</span>BGIBaseRateAdjustmentFactor</h3>
+<div class="algo"><span class="kw">Lookup</span>(<span class="tbl">BaseRateAdjustmentFactor</span>: State|CW, <span class="cm">"Basic Group I"</span>)</div>
+
+<h3><span class="stepnum">2</span>Rate <span class="count">class-rated path</span></h3>
+<div class="algo"><span class="kw">if</span> (BI_MaxPeriod = "Y" <span class="kw">or</span> BI_MonthlyLimitOfIndemnity &lt;&gt; "Not Applicable" <span class="kw">or</span> BI_CovType = "Extra Expense Only")
+   <span class="kw">and</span> BI_BldgIncludedInOperationalUnit = "Y":
+      HighestBusnIncomeBasicGroupIBaseRate × BGIBaseRateAdjustmentFactor   <span class="cm">-- blanket/multi-unit, out of scope</span>
+
+<span class="kw">elif</span> RatingType = "Class":
+      ((<span class="tbl">Calc_Building_BGI.BaseRate</span> × LCM) + SubStdConditionRate + VacantBuildingRate)
+        × BasicGroupIRatingTerrFactor × ProtectionClassFactor × BGIBaseRateAdjustmentFactor
+
+<span class="kw">elif</span> RatingType <span class="kw">in</span> ("Specific", "Tentative"):
+      SpecificGroupIRate × LCM × SprinklerLeakageNotExcludedFactor × BGIBaseRateAdjustmentFactor
+      <span class="cm">-- does NOT read Calc_Building_BGI.BaseRate at all in this branch</span>
+
+<span class="cm">-- round to 3dp</span></div>
+<p class="note">Same addends, same territory/protection-class factors Building's own class-rated formula
+uses — this is Building's Basic Group I rate formula with one extra multiplier
+(<code>BGIBaseRateAdjustmentFactor</code>) tacked on, sourced from columns Building's own tab already
+reads.</p>
+
+<h3><span class="stepnum">3</span>COLAdj</h3>
+<div class="algo"><span class="kw">ROUND</span>(Rate − SprinklerLeakageExclNonSprinkleredRate, 3)
+  × SprinklerLeakageExclSprinkleredFactor
+  × VandalismExclFactor
+  × BuildersRiskFactor
+
+<span class="cm">-- round to 3dp; always recomputes, no null-guard (unlike Building's version)</span></div>
+
+<h3><span class="stepnum">4</span>Factor <span class="count">shared across Basic Group I &amp; II only</span></h3>
+<div class="algo"><span class="kw">if</span> BI_MaxPeriod = "Y":
+      MaxPeriodOfIndemnityFactor
+<span class="kw">elif</span> BI_MonthlyLimitOfIndemnity &lt;&gt; "Not Applicable":
+      MonthlyLimitOfIndemnityFactor
+<span class="kw">elif</span> BI_CovType = "Extra Expense Only":
+      ExtraExpenseFactor
+<span class="kw">else</span>:
+      <span class="kw">Lookup</span>(<span class="tbl">BusnIncomeFactor</span>: CoinsuranceToUse, BI_CovType, BI_TypeOfRisk)</div>
+<p class="note">Business Income's functional replacement for Building's flat <code>CoinsuranceFactor</code> —
+folds coinsurance percentage, type-of-risk, coverage type, and two special-case periods into one number.
+Confirmed by grepping Broad's and Special's rule files for <code>CoinsuranceToUse</code>/
+<code>TypeOfRiskFactor</code>/<code>BusnIncomeFactor</code>: no matches in either — <b>Broad and Special
+never multiply by this factor at all,</b> it's Basic Group I/II only.</p>
+
+<h3><span class="stepnum">5</span>FinalRate</h3>
+<div class="algo">COLAdj × Factor
+
+<span class="cm">-- that's the entire final-rate step. No coinsurance factor, no LOI factor,
+-- no deductible factor of any kind — stage 4 above does the entire job
+-- those three separate Building stages do, for this and one other form.</span></div>
+
+<h2>5. Premium</h2>
+<div class="algo"><span class="kw">if</span> BI_IncludedInBlkt = "No":
+    <span class="kw">ROUND</span>(<span class="kw">ROUND</span>(IRPMFactor × PackageModFactor × FinalRate × (BI_Limit / 100), 0), 0)
+      × CyberIncidentExclusionFactorBGI
+      × CyberIncidentExclusionCOLExcptnsFactorBusnIncomeBGIToUse
+
+<span class="kw">elif</span> BI_IncludedInBlkt = "Yes" <span class="kw">and</span> BlktTotalFullValueAmount &gt; 0:
+    <span class="cm">-- blanket branch, out of scope — needs BlktBasicGroupIAvgRate,
+    -- FullBusnIncomeValue, BlktTotalFullValueAmount</span>
+
+<span class="kw">else</span>: 0.0</div>
+<p class="note">No gate on coverage type or cause of loss the way Building's own Basic Group I premium has
+— this branch always fires as long as the coverage isn't blanketed, since ISO's own
+<code>SetCoverageOnPolicyIndicator</code> is a hardcoded <code>1</code> for Business Income.
+<code>MultiPremiumAndDispersionCreditFactor</code> is populated during shared prep but never actually
+multiplied into this premium formula — don't add it by assumption.</p>
+
+<h2>6. Inputs → output, the full picture</h2>
+<table>
+<tr><th>Stage</th><th>Reads from</th><th>Produces</th></tr>
+<tr><td>0 — the loss cost, borrowed</td><td><code>Calc_Building_BGI.BaseRate</code></td><td><em>not recomputed — cross-referenced</em></td></tr>
+<tr><td>1 — Business-Income-specific adjustment</td><td><code>BaseRateAdjustmentFactor</code></td><td><code>BGIBaseRateAdjustmentFactor</code></td></tr>
+<tr><td>2 — turn it into a rate</td><td>Building's <code>BaseRate</code>, LCM, SubStdConditionRate, VacantBuildingRate, territory/protection-class factors, <code>BGIBaseRateAdjustmentFactor</code></td><td><code>Rate</code></td></tr>
+<tr><td>3 — adjust for sprinkler/vandalism/Builders-Risk</td><td><code>Rate</code>, sprinkler/vandalism factors, <code>BuildersRiskFactor</code></td><td><code>COLAdj</code></td></tr>
+<tr><td>4 — apply the shared <code>Factor</code></td><td><code>COLAdj</code>, <code>Factor</code></td><td><code>FinalRate</code></td></tr>
+<tr><td>5 — turn the rate into a dollar premium</td><td><code>FinalRate</code>, <code>BI_Limit</code>, IRPM, PackageMod</td><td>premium</td></tr>
+</table>
+
+<h2>7. Deliberately out of scope for the first build</h2>
+<ul style="font-family: -apple-system, 'Segoe UI', sans-serif; font-size: 13.5px; line-height: 1.9;">
+  <li>The blanket/max-period/multi-unit base-rate branch — needs <code>HighestBusnIncomeBasicGroupIBaseRate</code>, a multi-unit aggregate not traced yet.</li>
+  <li>The blanket premium branch — needs <code>BlktBasicGroupIAvgRate</code>, <code>FullBusnIncomeValue</code>, <code>BlktTotalFullValueAmount</code>.</li>
+  <li><code>CoinsuranceToUse</code>'s real blanket-rating-table scan — enter the resolved value directly as a simplification for now.</li>
+  <li>The "Combined…" <code>TypeOfRisk</code> blended-factor branch — flagged unsupported.</li>
+  <li><b>Specific/Tentative rating is NOT out of scope</b> — see the algorithm's step 2 above, same
+  <code>RatingType</code> branch as Building's own Basic Group I, with the extra
+  <code>BGIBaseRateAdjustmentFactor</code> multiplier tacked on. Note it does <em>not</em> read
+  <code>Calc_Building_BGI.BaseRate</code> — it substitutes <code>SpecificGroupIRate</code> directly, same
+  open question as Building's own version (no <code>Set</code>/<code>Lookup</code> rule populates it
+  anywhere — likely a user- or schedule-entered value, unconfirmed). Give this its own
+  <code>BI_SpecificGroupIRate</code> input column, separate from Building's and Contents' — no reason to
+  assume all three share a value for the same building.</li>
+</ul>
+
+<blockquote>
+Translated from <code>Excel_Rater_BusinessIncome_BasicGroupI.md</code> (written 2026-09-02) into this
+algorithm-and-tables reference, 2026-09-10. Next: Basic Group II, then Broad and Special.
+</blockquote>
+
+</body>
+</html>

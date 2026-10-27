@@ -15,6 +15,7 @@ package -- and this corpus has several.
 """
 from __future__ import annotations
 
+import os
 import re
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -41,9 +42,28 @@ CATEGORIES = (
 )
 
 
+def long_path(path) -> str:
+    """The path as the OS can open it (OI-136).
+
+    On Windows without long paths enabled, a path of 260 characters or more cannot be opened or even seen by
+    `exists()`. 477 corpus files are that long since the 2026-10-15 regroup put each state package inside its
+    countrywide parent's folder. The `\\\\?\\` form lifts the limit; it needs an absolute path with backslashes.
+    Anywhere else, and for a shorter path, the path is returned unchanged.
+    """
+    s = str(path)
+    if os.name != "nt" or len(s) < 260 or s.startswith("\\\\?\\"):
+        return s
+    return "\\\\?\\" + os.path.abspath(s)
+
+
+def exists(path) -> bool:
+    """`Path.exists()` that also sees a file past the Windows path limit (OI-136)."""
+    return os.path.exists(long_path(path))
+
+
 def read_text(path: Path, limit: int = -1) -> str:
     """BOM-tolerant read. Every ERC file in this corpus is BOM-prefixed UTF-8."""
-    with open(path, encoding="utf-8-sig", errors="replace") as fh:
+    with open(long_path(path), encoding="utf-8-sig", errors="replace") as fh:
         return fh.read() if limit < 0 else fh.read(limit)
 
 

@@ -17,8 +17,8 @@ import xml.etree.ElementTree as ET
 from dataclasses import dataclass, field
 from pathlib import Path
 
-ROOT = Path(r"C:\Projects\ISO_ERC_Files\General_Liability")
-OUT = Path(r"C:\Projects\Recursive_Harness_2.0\scripts\erc\out")
+ROOT = Path(r"F:\ISO_ERC_Files\General_Liability")
+OUT = Path(r"F:\Recursive_Harness_2.0\scripts\erc\out")
 OUT.mkdir(parents=True, exist_ok=True)
 
 # Directory categories observed in packages.

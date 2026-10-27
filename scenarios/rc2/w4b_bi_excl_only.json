@@ -1,0 +1,18 @@
+{
+ "name": "rc2_w4b_bi_excl_only",
+ "states": [
+  "AK"
+ ],
+ "edits": [
+  {
+   "sheet": "IN - Schedule",
+   "cell": "AE50",
+   "value": "No"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "N179",
+   "value": "Yes"
+  }
+ ]
+}

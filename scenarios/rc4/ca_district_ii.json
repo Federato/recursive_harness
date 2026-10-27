@@ -1,0 +1,13 @@
+{
+ "name": "rc4_ca_district2",
+ "states": [
+  "CA"
+ ],
+ "edits": [
+  {
+   "sheet": "IN - Schedule",
+   "cell": "H8",
+   "value": "District II"
+  }
+ ]
+}

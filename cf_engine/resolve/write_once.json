@@ -1,0 +1,7679 @@
+{
+ "counts": {
+  "CF_CW_20221001_V01": 80,
+  "CF_CW_20230801_V02": 1556,
+  "differ": 19,
+  "rules": 1636,
+  "writes": 3813
+ },
+ "parent": "CF_CW_20230801_V01",
+ "references": [
+  "CF_CW_20230801_V02",
+  "CF_CW_20221001_V01"
+ ],
+ "rules": {
+  "CommercialPropertyAdditionalCoveredPropertyDetailRules": {
+   "SetWatercraftExclBuybackRate": [
+    13,
+    16
+   ]
+  },
+  "CommercialPropertyAdditionalCoveredPropertySpecialClassDetailRules": {
+   "SetWatercraftExclBuybackRate": [
+    13,
+    16
+   ]
+  },
+  "CommercialPropertyAdditionalLocationsSpecialCoinsuranceGeneralInformationRules": {
+   "SetAddlLocsSpclCoinsPrsnlPropCounter": [
+    2,
+    17
+   ],
+   "SetBasicGroupIRateIncLocs": [
+    2
+   ],
+   "SetBroadRateIncLocs": [
+    9,
+    14
+   ],
+   "SetCoinsuranceFactor": [
+    9,
+    12
+   ],
+   "SetEQCovCounter": [
+    2,
+    17
+   ],
+   "SetEQRateLocs": [
+    2
+   ],
+   "SetEQSubLimitCounter": [
+    2,
+    17
+   ],
+   "SetFinalBasicGroupIIRateTimesValue": [
+    2
+   ],
+   "SetFinalBasicGroupIRateTimesValue": [
+    2
+   ],
+   "SetFinalBroadRateTimesValue": [
+    2
+   ],
+   "SetFinalEQRateTimesValue": [
+    2
+   ],
+   "SetFinalSpecialRateTimesValue": [
+    2
+   ],
+   "SetSpecialRateLocs": [
+    9,
+    14
+   ],
+   "SetTotalFullValueTimesFinalBasicGroupIIRate": [
+    2,
+    22
+   ],
+   "SetTotalFullValueTimesFinalBasicGroupIRate": [
+    2,
+    22
+   ],
+   "SetTotalFullValueTimesFinalBroadRate": [
+    2,
+    22
+   ],
+   "SetTotalFullValueTimesFinalEQRate": [
+    2,
+    22
+   ],
+   "SetTotalFullValueTimesFinalSpecialRate": [
+    2,
+    22
+   ],
+   "SetTotalIncLocsLimit": [
+    2
+   ]
+  },
+  "CommercialPropertyAdditionalLocationsSpecialCoinsuranceProvisionsBasicGroupICoverageRules": {
+   "SetLimitToUse": [
+    19,
+    29,
+    32
+   ]
+  },
+  "CommercialPropertyAdditionalLocationsSpecialCoinsuranceProvisionsBasicGroupIICoverageRules": {
+   "SetLimitToUse": [
+    19,
+    29,
+    32
+   ]
+  },
+  "CommercialPropertyAdditionalLocationsSpecialCoinsuranceProvisionsBroadCoverageRules": {
+   "SetLimitToUse": [
+    19,
+    29,
+    32
+   ]
+  },
+  "CommercialPropertyAdditionalLocationsSpecialCoinsuranceProvisionsEarthquakeCoverageRules": {
+   "SetLimitToUse": [
+    19,
+    29,
+    32
+   ]
+  },
+  "CommercialPropertyAdditionalLocationsSpecialCoinsuranceProvisionsSpecialCoverageRules": {
+   "SetLimitToUse": [
+    19,
+    29,
+    32
+   ]
+  },
+  "CommercialPropertyBlanketRatingDetailRules": {
+   "SetBasicGroupIAvgRate": [
+    28,
+    36,
+    44,
+    50,
+    68,
+    73,
+    81,
+    86
+   ],
+   "SetBasicGroupIAvgRateAgreedVal": [
+    28,
+    36,
+    44,
+    50,
+    68,
+    73,
+    81,
+    86
+   ],
+   "SetBasicGroupIIAvgRate": [
+    44,
+    52,
+    80,
+    86,
+    89,
+    123,
+    128,
+    156,
+    161,
+    164
+   ],
+   "SetBasicGroupIIAvgRateAgreedVal": [
+    44,
+    52,
+    80,
+    86,
+    89,
+    123,
+    128,
+    156,
+    161,
+    164
+   ],
+   "SetBldrsRiskFactor": [
+    9,
+    12
+   ],
+   "SetBldrsRiskTotReptgFormLimit": [
+    23,
+    54,
+    57
+   ],
+   "SetBroadAvgRate": [
+    32,
+    40,
+    55,
+    61,
+    64,
+    86,
+    91,
+    106,
+    111,
+    114
+   ],
+   "SetBroadAvgRateAgreedVal": [
+    32,
+    40,
+    55,
+    61,
+    64,
+    86,
+    91,
+    106,
+    111,
+    114
+   ],
+   "SetCoinsuranceFactor": [
+    31,
+    34
+   ],
+   "SetCounters": [
+    2,
+    38,
+    76,
+    113,
+    149,
+    186
+   ],
+   "SetEQAvgRate": [
+    28,
+    36,
+    44,
+    50,
+    68,
+    74,
+    82,
+    87
+   ],
+   "SetEQAvgRateAgreedVal": [
+    28,
+    36,
+    44,
+    50,
+    68,
+    74,
+    82,
+    87
+   ],
+   "SetMaxBasicGroupICauseOfLossAdjmtRate": [
+    35,
+    46,
+    48,
+    70,
+    72,
+    75
+   ],
+   "SetMaxBasicGroupICauseOfLossAdjmtRateAgreedVal": [
+    23,
+    47,
+    73,
+    96,
+    99
+   ],
+   "SetMaxBasicGroupIICauseOfLossAdjmtRate": [
+    35,
+    46,
+    48,
+    70,
+    72,
+    75
+   ],
+   "SetMaxBasicGroupIICauseOfLossAdjmtRateAgreedVal": [
+    23,
+    47,
+    73,
+    96,
+    99
+   ],
+   "SetMaxBroadRate": [
+    35,
+    46,
+    48,
+    70,
+    72,
+    75
+   ],
+   "SetMaxBroadRateAgreedVal": [
+    23,
+    47,
+    73,
+    96,
+    99
+   ],
+   "SetMaxEQCauseOfLossAdjmtRate": [
+    35,
+    46,
+    48,
+    70,
+    72,
+    75
+   ],
+   "SetMaxEQCauseOfLossAdjmtRateAgreedVal": [
+    23,
+    53,
+    85,
+    115,
+    118
+   ],
+   "SetMaxRadioactiveContaminationRate": [
+    24,
+    57,
+    92,
+    125,
+    141,
+    174,
+    207,
+    210
+   ],
+   "SetMaxSpclClassBroadRate": [
+    23,
+    48,
+    51
+   ],
+   "SetMaxSpclClassSpecialRate": [
+    23,
+    48,
+    51
+   ],
+   "SetMaxSpecialRate": [
+    35,
+    46,
+    48,
+    70,
+    72,
+    75
+   ],
+   "SetMaxSpecialRateAgreedVal": [
+    23,
+    47,
+    77,
+    100,
+    103
+   ],
+   "SetRadioactiveContaminationAvgRate": [
+    28,
+    36,
+    44,
+    50,
+    68,
+    74,
+    82,
+    87
+   ],
+   "SetSpecialAvgRate": [
+    32,
+    40,
+    55,
+    61,
+    64,
+    86,
+    91,
+    106,
+    111,
+    114
+   ],
+   "SetSpecialAvgRateAgreedVal": [
+    32,
+    40,
+    55,
+    61,
+    64,
+    86,
+    91,
+    106,
+    111,
+    114
+   ],
+   "SetTotFullValueTimesRadioactiveContaminationRate": [
+    24,
+    43,
+    48
+   ],
+   "SetTotalFullValTimesBroadRate": [
+    24,
+    43,
+    48
+   ],
+   "SetTotalFullValTimesBroadRateAgreedVal": [
+    23,
+    29
+   ],
+   "SetTotalFullValTimesSpecialRate": [
+    24,
+    43,
+    48
+   ],
+   "SetTotalFullValTimesSpecialRateAgreedVal": [
+    23,
+    29
+   ]
+  },
+  "CommercialPropertyBrandsAndLabelsRules": {
+   "SetBasicGroupIIRate": [
+    10,
+    13
+   ],
+   "SetBasicGroupIRate": [
+    10,
+    13
+   ],
+   "SetBroadRate": [
+    10,
+    13
+   ],
+   "SetEQRate": [
+    10,
+    13
+   ],
+   "SetFactor": [
+    2
+   ],
+   "SetSpecialRate": [
+    10,
+    13
+   ]
+  },
+  "CommercialPropertyBuildersRiskCollapseDuringConstructionRules": {
+   "SetRate": [
+    9,
+    12
+   ]
+  },
+  "CommercialPropertyBuildersRiskPremiumAdjustmentFormDetailRules": {
+   "SetBasicGroupIILOIFactor": [
+    13,
+    16
+   ],
+   "SetBasicGroupILOIFactor": [
+    16,
+    19
+   ],
+   "SetBroadLOIFactor": [
+    13,
+    16
+   ],
+   "SetSpecialLOIFactor": [
+    13,
+    16
+   ]
+  },
+  "CommercialPropertyBuildersRiskPremiumAdjustmentFormRules": {
+   "SetBasicGroupIIRate": [
+    20,
+    32,
+    34,
+    37
+   ],
+   "SetBasicGroupIRate": [
+    13,
+    15,
+    18
+   ],
+   "SetBroadRate": [
+    13,
+    15,
+    18
+   ],
+   "SetBuildersRiskBGIBaseRate": [
+    11,
+    16
+   ],
+   "SetBuildersRiskBGIIBaseRate": [
+    17,
+    25,
+    30,
+    33
+   ],
+   "SetBuildersRiskBroadBaseRate": [
+    11,
+    16
+   ],
+   "SetBuildersRiskRateCalcBGI": [
+    7,
+    26
+   ],
+   "SetBuildersRiskRateCalcBGII": [
+    7,
+    20
+   ],
+   "SetBuildersRiskRateCalcBroad": [
+    7,
+    14
+   ],
+   "SetBuildersRiskRateCalcEQ": [
+    7,
+    21
+   ],
+   "SetBuildersRiskRateCalcSpecial": [
+    7,
+    16
+   ],
+   "SetBuildersRiskSpecialBaseRate": [
+    2
+   ],
+   "SetCompletedBuildingBGIBaseRate": [
+    11,
+    16
+   ],
+   "SetCompletedBuildingBGIIBaseRate": [
+    17,
+    25,
+    30,
+    33
+   ],
+   "SetCompletedBuildingBroadBaseRate": [
+    11,
+    16
+   ],
+   "SetCompletedBuildingRateCalcBGI": [
+    15,
+    45,
+    61,
+    64
+   ],
+   "SetCompletedBuildingRateCalcBGII": [
+    7,
+    22
+   ],
+   "SetCompletedBuildingRateCalcBroad": [
+    7,
+    16
+   ],
+   "SetCompletedBuildingRateCalcEQ": [
+    7,
+    22
+   ],
+   "SetCompletedBuildingRateCalcSpecial": [
+    7,
+    18
+   ],
+   "SetCompletedBuildingSpecialBaseRate": [
+    2
+   ],
+   "SetEQRate": [
+    13,
+    15,
+    18
+   ],
+   "SetSpecialRate": [
+    13,
+    15,
+    18
+   ]
+  },
+  "CommercialPropertyBuildersRiskRenovationsEarthquakeCoverageRules": {
+   "SetLimitToUse": [
+    7,
+    12,
+    19,
+    22
+   ]
+  },
+  "CommercialPropertyBuildersRiskRenovationsRules": {
+   "SetBCEGFactor": [
+    6,
+    9
+   ],
+   "SetBasicGroupIBaseRate": [
+    8,
+    10
+   ],
+   "SetBasicGroupIIBaseRate": [
+    20,
+    27,
+    29
+   ],
+   "SetBasicGroupIILOIFactor": [
+    11,
+    26,
+    31
+   ],
+   "SetBasicGroupIIRate": [
+    20,
+    27,
+    29
+   ],
+   "SetBasicGroupILOIFactor": [
+    14,
+    32,
+    37
+   ],
+   "SetBasicGroupIRate": [
+    8,
+    10
+   ],
+   "SetBroadBaseRate": [
+    8,
+    10
+   ],
+   "SetBroadLOIFactor": [
+    11,
+    26,
+    31
+   ],
+   "SetBroadRate": [
+    8,
+    10
+   ],
+   "SetBuildersRiskEQFactor": [
+    16,
+    19
+   ],
+   "SetBuildersRiskRateBGIBaseRate": [
+    9,
+    14
+   ],
+   "SetBuildersRiskRateBGIIBaseRate": [
+    14,
+    19,
+    29,
+    34
+   ],
+   "SetBuildersRiskRateBGIINumericValue": [
+    14,
+    19,
+    22
+   ],
+   "SetBuildersRiskRateBGIIRate": [
+    2
+   ],
+   "SetBuildersRiskRateBGIRate": [
+    2
+   ],
+   "SetBuildersRiskRateBroadBaseRate": [
+    9,
+    14
+   ],
+   "SetBuildersRiskRateBroadRate": [
+    2
+   ],
+   "SetBuildersRiskRateEQRate": [
+    2
+   ],
+   "SetBuildersRiskRateSpecialBaseRate": [
+    2
+   ],
+   "SetBuildersRiskRateSpecialRate": [
+    2
+   ],
+   "SetCoinsuranceFactor": [
+    2
+   ],
+   "SetCoinsuranceModFactor": [
+    7,
+    10
+   ],
+   "SetCompldBuildingRateBGIBaseRate": [
+    13,
+    18
+   ],
+   "SetCompldBuildingRateBGIIBaseRate": [
+    14,
+    19,
+    29,
+    34
+   ],
+   "SetCompldBuildingRateBGIINumericValue": [
+    31,
+    36,
+    39
+   ],
+   "SetCompldBuildingRateBGIIRate": [
+    2
+   ],
+   "SetCompldBuildingRateBGIRate": [
+    10,
+    42,
+    60
+   ],
+   "SetCompldBuildingRateBroadBaseRate": [
+    9,
+    14
+   ],
+   "SetCompldBuildingRateBroadRate": [
+    2
+   ],
+   "SetCompldBuildingRateEQRate": [
+    2
+   ],
+   "SetCompldBuildingRateSpecialBaseRate": [
+    9,
+    12
+   ],
+   "SetCompldBuildingRateSpecialRate": [
+    2
+   ],
+   "SetCompletedBldgWindstormOrHailExclFactor": [
+    14,
+    17,
+    20
+   ],
+   "SetEQBaseRate": [
+    13,
+    16
+   ],
+   "SetEQRate": [
+    8,
+    10
+   ],
+   "SetMaxBGIIRateCalc": [
+    20,
+    28,
+    31
+   ],
+   "SetMaxBGIRateCalc": [
+    9,
+    12
+   ],
+   "SetMaxBroadRateCalc": [
+    9,
+    12
+   ],
+   "SetMaxEQRateCalc": [
+    9,
+    12
+   ],
+   "SetMaxSpecialRateCalc": [
+    9,
+    12
+   ],
+   "SetSpecialBaseRate": [
+    8,
+    10
+   ],
+   "SetSpecialLOIFactor": [
+    11,
+    26,
+    31
+   ],
+   "SetSpecialRate": [
+    8,
+    10
+   ],
+   "SetVandalismExclFactorBuildersRiskRateCalculation": [
+    29,
+    34
+   ],
+   "SetVandalismExclFactorCompletedBuildingRateCalculation": [
+    29,
+    34
+   ],
+   "SetWindstormOrHailExclFactor": [
+    14,
+    17,
+    20
+   ]
+  },
+  "CommercialPropertyBuildersRiskReportingFormRules": {
+   "SetBasicGroupIIRate": [
+    6,
+    26,
+    29
+   ],
+   "SetBasicGroupIRate": [
+    6,
+    9
+   ],
+   "SetBroadRate": [
+    6,
+    9
+   ],
+   "SetEQRate": [
+    14,
+    19,
+    22
+   ],
+   "SetFactor": [
+    2
+   ],
+   "SetSpecialRate": [
+    6,
+    9
+   ]
+  },
+  "CommercialPropertyBuildersRiskTheftOfBuildingMaterialsFixturesMachineryEquipmentRules": {
+   "SetAllOtherDeductibleStatCode": [
+    28,
+    31
+   ],
+   "SetBasicGroupIDeductibleStatCode": [
+    9,
+    12
+   ],
+   "SetBuildersRiskTheftRate": [
+    2
+   ],
+   "SetWindstormOrHailDeductibleStatCode": [
+    11,
+    14
+   ]
+  },
+  "CommercialPropertyBurglaryAndRobberyProtectiveSafeguardsRules": {
+   "SetWatchmanCreditFactor": [
+    16,
+    19,
+    22
+   ]
+  },
+  "CommercialPropertyBusinessIncomeAgreedValBasicGroupICoverageRules": {
+   "SetFactor": [
+    2
+   ]
+  },
+  "CommercialPropertyBusinessIncomeAgreedValBasicGroupIICoverageRules": {
+   "SetFactor": [
+    2
+   ]
+  },
+  "CommercialPropertyBusinessIncomeAgreedValBroadCoverageRules": {
+   "SetFactor": [
+    2
+   ]
+  },
+  "CommercialPropertyBusinessIncomeAgreedValEarthquakeCoverageRules": {
+   "SetFactor": [
+    2
+   ]
+  },
+  "CommercialPropertyBusinessIncomeAgreedValSpecialCoverageRules": {
+   "SetFactor": [
+    2
+   ]
+  },
+  "CommercialPropertyBusinessIncomeChangesBeginningOfThePeriodOfRestorationNoWaitingPeriodRules": {
+   "SetBaseFactor": [
+    9,
+    12
+   ],
+   "SetFactor": [
+    2
+   ]
+  },
+  "CommercialPropertyBusinessIncomeChangesBeginningOfThePeriodOfRestorationNoWaitingPeriodSpclClassBusnIncomeRules": {
+   "SetBaseFactor": [
+    9,
+    12
+   ],
+   "SetFactor": [
+    2
+   ]
+  },
+  "CommercialPropertyBusinessIncomeChangesFungusWetRotDryRotBacteriaCoverageBasicGroupICoverageRules": {
+   "SetFactor": [
+    9,
+    12
+   ]
+  },
+  "CommercialPropertyBusinessIncomeChangesFungusWetRotDryRotBacteriaCoverageBasicGroupIICoverageRules": {
+   "SetFactor": [
+    9,
+    12
+   ]
+  },
+  "CommercialPropertyBusinessIncomeChangesFungusWetRotDryRotBacteriaCoverageEarthquakeCoverageRules": {
+   "SetFactor": [
+    9,
+    12
+   ]
+  },
+  "CommercialPropertyBusinessIncomeExtendedPeriodOfIndemnityCoverageBasicGroupICoverageRules": {
+   "SetFactor": [
+    2
+   ]
+  },
+  "CommercialPropertyBusinessIncomeExtendedPeriodOfIndemnityCoverageBasicGroupIICoverageRules": {
+   "SetFactor": [
+    2
+   ]
+  },
+  "CommercialPropertyBusinessIncomeExtendedPeriodOfIndemnityCoverageBroadCoverageRules": {
+   "SetFactor": [
+    2
+   ]
+  },
+  "CommercialPropertyBusinessIncomeExtendedPeriodOfIndemnityCoverageEarthquakeCoverageRules": {
+   "SetFactor": [
+    2
+   ]
+  },
+  "CommercialPropertyBusinessIncomeExtendedPeriodOfIndemnityCoverageSpecialCoverageRules": {
+   "SetFactor": [
+    2
+   ]
+  },
+  "CommercialPropertyBusinessIncomeFromDependentPropertiesBroadFormDetailRules": {
+   "SetAdjustedBasicGroupIIRate": [
+    2
+   ],
+   "SetAdjustedBasicGroupIRate": [
+    2
+   ],
+   "SetAdjustedBroadRate": [
+    9,
+    16
+   ],
+   "SetAdjustedEQRate": [
+    2
+   ],
+   "SetAdjustedSpecialRate": [
+    2
+   ],
+   "SetBroadBaseRateToUse": [
+    16,
+    21,
+    26
+   ],
+   "SetNatureOfDependentPropFactor": [
+    9,
+    12
+   ],
+   "SetSpecialBaseRateToUse": [
+    23,
+    28,
+    33,
+    36
+   ]
+  },
+  "CommercialPropertyBusinessIncomeFromDependentPropertiesBroadFormRules": {
+   "SetBasicGroupIIRate": [
+    10
+   ],
+   "SetBasicGroupIRate": [
+    10
+   ],
+   "SetBroadRate": [
+    10
+   ],
+   "SetEQRate": [
+    10
+   ],
+   "SetSecondaryLocationDependenciesFactor": [
+    2
+   ],
+   "SetSpecialRate": [
+    10
+   ]
+  },
+  "CommercialPropertyBusinessIncomeFromDependentPropertiesBroadFormSpclClassBusnIncomeDetailRules": {
+   "SetAdjustedBasicGroupIIRate": [
+    2
+   ],
+   "SetAdjustedBasicGroupIRate": [
+    2
+   ],
+   "SetAdjustedBroadRate": [
+    9,
+    16
+   ],
+   "SetAdjustedEQRate": [
+    2
+   ],
+   "SetAdjustedSpecialRate": [
+    2
+   ],
+   "SetBroadBaseRateToUse": [
+    16,
+    21,
+    26
+   ],
+   "SetNatureOfDependentPropFactor": [
+    9,
+    12
+   ],
+   "SetSpecialBaseRateToUse": [
+    23,
+    28,
+    33,
+    36
+   ]
+  },
+  "CommercialPropertyBusinessIncomeFromDependentPropertiesBroadFormSpclClassBusnIncomeEarthquakeCoverageRules": {
+   "SetLimitToUse": [
+    9,
+    16,
+    19
+   ]
+  },
+  "CommercialPropertyBusinessIncomeFromDependentPropertiesBroadFormSpclClassBusnIncomeRules": {
+   "SetBasicGroupIIRate": [
+    10
+   ],
+   "SetBasicGroupIRate": [
+    10
+   ],
+   "SetBroadRate": [
+    10
+   ],
+   "SetEQRate": [
+    10
+   ],
+   "SetSecondaryLocationDependenciesFactor": [
+    2
+   ],
+   "SetSpecialRate": [
+    10
+   ]
+  },
+  "CommercialPropertyBusinessIncomeFromDependentPropertiesLimitedFormDetailRules": {
+   "SetAdjustedBasicGroupIIRate": [
+    2
+   ],
+   "SetAdjustedBasicGroupIRate": [
+    2
+   ],
+   "SetAdjustedBroadRate": [
+    9,
+    16
+   ],
+   "SetAdjustedEQRate": [
+    2
+   ],
+   "SetAdjustedSpecialRate": [
+    2
+   ],
+   "SetBroadBaseRateToUse": [
+    16,
+    21,
+    26
+   ],
+   "SetNatureOfDependentPropFactor": [
+    9,
+    12
+   ],
+   "SetSpecialBaseRateToUse": [
+    23,
+    28,
+    33,
+    36
+   ]
+  },
+  "CommercialPropertyBusinessIncomeFromDependentPropertiesLimitedFormRules": {
+   "SetBasicGroupIIRate": [
+    10
+   ],
+   "SetBasicGroupIRate": [
+    10
+   ],
+   "SetBroadRate": [
+    10
+   ],
+   "SetEQRate": [
+    10
+   ],
+   "SetSecondaryLocationDependenciesFactor": [
+    2
+   ],
+   "SetSpecialRate": [
+    10
+   ],
+   "SetTotalLimit": [
+    9
+   ]
+  },
+  "CommercialPropertyBusinessIncomeFromDependentPropertiesLimitedFormSpclClassBusnIncomeDetailRules": {
+   "SetAdjustedBasicGroupIIRate": [
+    2
+   ],
+   "SetAdjustedBasicGroupIRate": [
+    2
+   ],
+   "SetAdjustedBroadRate": [
+    9,
+    16
+   ],
+   "SetAdjustedEQRate": [
+    2
+   ],
+   "SetAdjustedSpecialRate": [
+    2
+   ],
+   "SetBroadBaseRateToUse": [
+    16,
+    21,
+    26
+   ],
+   "SetNatureOfDependentPropFactor": [
+    9,
+    12
+   ],
+   "SetSpecialBaseRateToUse": [
+    23,
+    28,
+    33,
+    36
+   ]
+  },
+  "CommercialPropertyBusinessIncomeFromDependentPropertiesLimitedFormSpclClassBusnIncomeRules": {
+   "SetBasicGroupIIRate": [
+    10
+   ],
+   "SetBasicGroupIRate": [
+    10
+   ],
+   "SetBroadRate": [
+    10
+   ],
+   "SetEQRate": [
+    10
+   ],
+   "SetSecondaryLocationDependenciesFactor": [
+    2
+   ],
+   "SetSpecialRate": [
+    10
+   ],
+   "SetTotalLimit": [
+    9
+   ]
+  },
+  "CommercialPropertyBusinessIncomeLandlordAsAdditionalInsuredRentalValueRules": {
+   "SetBroadBaseRate": [
+    9,
+    12
+   ],
+   "SetSpecialBaseRate": [
+    20,
+    23,
+    26
+   ],
+   "SetTypeOfRiskFactor": [
+    16,
+    21,
+    26
+   ]
+  },
+  "CommercialPropertyBusinessIncomeLandlordAsAdditionalInsuredRentalValueSpclClassBusnIncomeRules": {
+   "SetBroadBaseRate": [
+    2
+   ],
+   "SetSpecialBaseRate": [
+    13,
+    16
+   ],
+   "SetTypeOfRiskFactor": [
+    16,
+    21,
+    26
+   ]
+  },
+  "CommercialPropertyBusinessIncomeRules": {
+   "SetAllOtherDeductibleStatCode": [
+    2
+   ],
+   "SetBCEGEQFactor": [
+    2
+   ],
+   "SetBCEGFactor": [
+    2
+   ],
+   "SetBGIBaseRateAdjustmentFactor": [
+    2
+   ],
+   "SetBGIIBaseRateAdjustmentFactor": [
+    2
+   ],
+   "SetBasicGroupIDeductibleStatCode": [
+    2
+   ],
+   "SetBasicGroupIIBaseRate": [
+    20,
+    32,
+    35
+   ],
+   "SetBasicGroupIIRate": [
+    2
+   ],
+   "SetBasicGroupIRate": [
+    26
+   ],
+   "SetBlanketRated": [
+    2
+   ],
+   "SetBroadBaseRate": [
+    16,
+    21,
+    26
+   ],
+   "SetBroadRate": [
+    9,
+    14
+   ],
+   "SetBuildersRiskFactor": [
+    13,
+    16
+   ],
+   "SetChangesEducationalInstitutionsExtensionOfRecoveryFactor": [
+    13,
+    16
+   ],
+   "SetConditionalTerrorRate": [
+    10,
+    15
+   ],
+   "SetCyberIncidentExclusionCOLExcptnsFactorBusnIncomeBGIIToUse": [
+    8,
+    10
+   ],
+   "SetCyberIncidentExclusionCOLExcptnsFactorBusnIncomeBGIToUse": [
+    8,
+    10
+   ],
+   "SetCyberIncidentExclusionCOLExcptnsFactorBusnIncomeBroadToUse": [
+    8,
+    10
+   ],
+   "SetCyberIncidentExclusionCOLExcptnsFactorBusnIncomeEQToUse": [
+    8,
+    10
+   ],
+   "SetCyberIncidentExclusionCOLExcptnsFactorBusnIncomeEquipmentBreakdownToUse": [
+    8,
+    10
+   ],
+   "SetCyberIncidentExclusionCOLExcptnsFactorBusnIncomeFloodToUse": [
+    8,
+    10
+   ],
+   "SetCyberIncidentExclusionCOLExcptnsFactorBusnIncomeSpecialToUse": [
+    8,
+    10
+   ],
+   "SetEQBlanketRatesAndFactors": [
+    9
+   ],
+   "SetEQBlanketValues": [
+    22,
+    56
+   ],
+   "SetEQDeductibleTier": [
+    2
+   ],
+   "SetEQFactor": [
+    28,
+    39,
+    49,
+    59,
+    64,
+    68
+   ],
+   "SetEQLimitToUse": [
+    7,
+    12,
+    19,
+    34,
+    44,
+    47
+   ],
+   "SetEQRate": [
+    20,
+    31
+   ],
+   "SetEQSprinklerLeakageOnlyBldgFactor": [
+    9,
+    12
+   ],
+   "SetEQSubLimitBlktIndicator": [
+    2
+   ],
+   "SetEQSubLimitCoinsurance": [
+    13,
+    15
+   ],
+   "SetEQSubLimitPercent": [
+    20,
+    25,
+    28,
+    31
+   ],
+   "SetEQSubLimitTypeOfRiskFactor": [
+    17,
+    37,
+    57,
+    77,
+    97,
+    115,
+    139,
+    144,
+    147
+   ],
+   "SetEQSubLimitTypeRiskCombination1Factor": [
+    32,
+    42,
+    52,
+    55,
+    58
+   ],
+   "SetEQSubLimitTypeRiskCombination2Factor": [
+    28,
+    45,
+    50,
+    53
+   ],
+   "SetEarthquakeSubLimitTimeElementFactor": [
+    2
+   ],
+   "SetExtraExpenseFactor": [
+    27,
+    43,
+    67,
+    69,
+    72,
+    75
+   ],
+   "SetFactor": [
+    9,
+    16,
+    23,
+    25
+   ],
+   "SetFinalBasicGroupIIRate": [
+    2
+   ],
+   "SetFinalBasicGroupIRate": [
+    2
+   ],
+   "SetFinalBroadRate": [
+    2
+   ],
+   "SetFinalEQRate": [
+    2
+   ],
+   "SetFinalSpecialRate": [
+    2
+   ],
+   "SetFullValueToTotalAmountRatio": [
+    13,
+    19
+   ],
+   "SetLimitToUse": [
+    9,
+    17,
+    23
+   ],
+   "SetLowestBasicGroupIIBaseRate": [
+    20,
+    28,
+    31
+   ],
+   "SetMaxPeriodOfIndemnityCombination1Factor": [
+    34,
+    44,
+    54,
+    64,
+    69,
+    72,
+    75
+   ],
+   "SetMaxPeriodOfIndemnityCombination2Factor": [
+    34,
+    44,
+    54,
+    64,
+    69,
+    72,
+    75
+   ],
+   "SetMaxPeriodOfIndemnityFactor": [
+    34,
+    54,
+    74,
+    94,
+    114,
+    124,
+    129,
+    132,
+    135
+   ],
+   "SetMonthlyLimitOfIndemnityCombination1Factor": [
+    33,
+    43,
+    53,
+    63,
+    66,
+    69
+   ],
+   "SetMonthlyLimitOfIndemnityCombination2Factor": [
+    33,
+    43,
+    53,
+    63,
+    68,
+    71
+   ],
+   "SetMonthlyLimitOfIndemnityFactor": [
+    33,
+    53,
+    73,
+    93,
+    105,
+    110,
+    113
+   ],
+   "SetMultiPremiumAndDispersionCreditFactor": [
+    2
+   ],
+   "SetNonEQBlanketRatesAndFactors": [
+    9,
+    10,
+    11,
+    12,
+    13
+   ],
+   "SetNonEQBlanketValues": [
+    20,
+    58
+   ],
+   "SetPostTRIAExclFactor": [
+    8,
+    13,
+    18,
+    21
+   ],
+   "SetPostTRIAExclusionRate": [
+    13,
+    18
+   ],
+   "SetSpecialBaseRate": [
+    13,
+    31,
+    41,
+    46,
+    49
+   ],
+   "SetSpecialRate": [
+    9,
+    14
+   ],
+   "SetSpecialTheftExclusionFactor": [
+    16,
+    19
+   ],
+   "SetSprinklerLeakageExclNonSprinkleredBaseRate": [
+    2
+   ],
+   "SetSprinklerLeakageExclNonSprinkleredRate": [
+    36,
+    41,
+    44
+   ],
+   "SetSprinklerLeakageExclSprinkleredFactor": [
+    43,
+    46,
+    49
+   ],
+   "SetStoryModFactor": [
+    9,
+    12
+   ],
+   "SetTRIAExclFactor": [
+    8,
+    14,
+    19,
+    24,
+    27
+   ],
+   "SetTRIAExclusionRate": [
+    11,
+    16
+   ],
+   "SetTerrorismCondExclFactor": [
+    8,
+    13,
+    18,
+    21
+   ],
+   "SetTerrorismSublimitFactor": [
+    2
+   ],
+   "SetTerrorismSublimitPct": [
+    2
+   ],
+   "SetTuitionAndFeesFactor": [
+    26,
+    29
+   ],
+   "SetTypeOfRiskFactor": [
+    37,
+    57,
+    77,
+    97,
+    117,
+    131,
+    136,
+    139,
+    142
+   ],
+   "SetTypeRiskCombination1Factor": [
+    37,
+    47,
+    57,
+    67,
+    70,
+    73,
+    76
+   ],
+   "SetTypeRiskCombination2Factor": [
+    37,
+    47,
+    57,
+    67,
+    72,
+    75,
+    78
+   ],
+   "SetVandalismExclFactor": [
+    37,
+    47,
+    52,
+    55
+   ],
+   "SetWindstormOrHailDeductibleStatCode": [
+    2
+   ],
+   "SetWindstormOrHailExclFactor": [
+    11,
+    14
+   ]
+  },
+  "CommercialPropertyBusinessIncomeWatercraftExclusionBuybackCoverageRules": {
+   "SetFactor": [
+    9,
+    12
+   ]
+  },
+  "CommercialPropertyChangesFungusWetRotDryRotBacteriaRules": {
+   "SetExcessOfSubLimitRate": [
+    2
+   ],
+   "SetIncrementalRate": [
+    2
+   ],
+   "SetTotalLimits": [
+    9,
+    25,
+    26,
+    43,
+    46,
+    47
+   ]
+  },
+  "CommercialPropertyCivilAuthorityIncreasedCoveragePeriodRules": {
+   "SetBaseFactor": [
+    9,
+    12
+   ],
+   "SetFactor": [
+    2
+   ]
+  },
+  "CommercialPropertyCivilAuthorityIncreasedCoveragePeriodSpclClassBusnIncomeRules": {
+   "SetBaseFactor": [
+    9,
+    12
+   ],
+   "SetFactor": [
+    2
+   ]
+  },
+  "CommercialPropertyCondominiumCommercialUnitOwnersOptionalCovLossAssmtCoverageRules": {
+   "SetBaseRate": [
+    9,
+    14
+   ],
+   "SetDeductibleFactor": [
+    14,
+    28,
+    46,
+    56,
+    66,
+    75,
+    80,
+    85
+   ],
+   "SetFrom6000To10000LimitCalculation": [
+    14,
+    26,
+    31
+   ],
+   "SetLimitOver1000FinalCalculation": [
+    13,
+    26
+   ],
+   "SetLossAssesmentRateFor10000Limit": [
+    9,
+    16
+   ],
+   "SetLossAssessmentSubLimitRateForFrom6000To10000Limit": [
+    9,
+    16
+   ],
+   "SetLossAssessmentSubLimitRateForOver10000Limit": [
+    9,
+    16
+   ],
+   "SetLossAssessmentSubLimitRateForUpto5000Limit": [
+    9,
+    16
+   ],
+   "SetOver10000LimitCalculation": [
+    9,
+    16
+   ],
+   "SetRate": [
+    13,
+    20,
+    23
+   ],
+   "SetSubLimitAdditionalThousandsNumber": [
+    13,
+    21
+   ],
+   "SetSubLimitRate": [
+    9,
+    15
+   ],
+   "SetUpto5000LimitCalculation": [
+    9,
+    14
+   ]
+  },
+  "CommercialPropertyCondominiumCommercialUnitOwnersOptionalCovMiscRealPropCoverageRules": {
+   "SetDeductibleFactor": [
+    22,
+    34,
+    37,
+    40
+   ],
+   "SetRate": [
+    8,
+    11
+   ]
+  },
+  "CommercialPropertyCondominiumCommercialUnitOwnersOptionalCoveragesRules": {
+   "SetLossAssessmentLimitConverted": [
+    13,
+    16
+   ],
+   "SetLossAssessmentLimitToUse": [
+    8,
+    10
+   ],
+   "SetPerilExclusionIndicatorStatCode": [
+    9,
+    12
+   ],
+   "SetWindstormOrHailExcludedIndicator": [
+    7,
+    10
+   ]
+  },
+  "CommercialPropertyDebrisRemovalAdditionalInsurancePrsnlPropRules": {
+   "SetBasicGroupIFactor": [
+    2
+   ],
+   "SetBasicGroupIIFactor": [
+    2
+   ],
+   "SetBasicGroupIILOIFactor": [
+    20,
+    25,
+    28
+   ],
+   "SetBasicGroupILOIFactor": [
+    24,
+    29,
+    32
+   ],
+   "SetBroadLOIFactor": [
+    20,
+    25,
+    28
+   ],
+   "SetBroadRate": [
+    2
+   ],
+   "SetEQFactor": [
+    2
+   ],
+   "SetMinimumLimit": [
+    2
+   ],
+   "SetSpecialLOIFactor": [
+    20,
+    25,
+    28
+   ],
+   "SetSpecialRate": [
+    2
+   ]
+  },
+  "CommercialPropertyDebrisRemovalAdditionalInsuranceRules": {
+   "SetBasicGroupIFactor": [
+    2
+   ],
+   "SetBasicGroupIIFactor": [
+    2
+   ],
+   "SetBasicGroupIILOIFactor": [
+    19,
+    24,
+    51,
+    61,
+    66,
+    69
+   ],
+   "SetBasicGroupILOIFactor": [
+    23,
+    28,
+    58,
+    72,
+    77,
+    80
+   ],
+   "SetBroadLOIFactor": [
+    19,
+    24,
+    51,
+    61,
+    66,
+    69
+   ],
+   "SetBroadRate": [
+    2
+   ],
+   "SetEQFactor": [
+    2
+   ],
+   "SetMinimumLimit": [
+    2
+   ],
+   "SetSpecialLOIFactor": [
+    19,
+    24,
+    51,
+    61,
+    66,
+    69
+   ],
+   "SetSpecialRate": [
+    2
+   ]
+  },
+  "CommercialPropertyDebrisRemovalAdditionalInsuranceSpecialClassRules": {
+   "SetBasicGroupIFactor": [
+    2
+   ],
+   "SetBasicGroupIIFactor": [
+    2
+   ],
+   "SetBroadRate": [
+    2
+   ],
+   "SetEQFactor": [
+    2
+   ],
+   "SetMinimumLimit": [
+    2
+   ],
+   "SetSpecialRate": [
+    2
+   ]
+  },
+  "CommercialPropertyDeductiblesByLocationBldgRules": {
+   "SetDeductible": [
+    22,
+    25
+   ],
+   "SetTheftDeductible": [
+    30,
+    33
+   ],
+   "SetWindstormOrHailDeductible": [
+    28,
+    31
+   ]
+  },
+  "CommercialPropertyDeductiblesByLocationSpecialClassRules": {
+   "SetDeductible": [
+    22,
+    25
+   ],
+   "SetTheftDeductible": [
+    25,
+    28
+   ],
+   "SetWindstormOrHailDeductible": [
+    28,
+    31
+   ]
+  },
+  "CommercialPropertyDischargeFromSewerDrainOrSumpNotFloodReltdBusnIncomeRules": {
+   "SetBaseLossCost": [
+    2
+   ],
+   "SetFinalRate": [
+    10,
+    14
+   ],
+   "SetRate": [
+    2
+   ]
+  },
+  "CommercialPropertyDischargeFromSewerDrainOrSumpNotFloodReltdPrsnlPropRules": {
+   "SetBaseLossCost": [
+    2
+   ],
+   "SetRate": [
+    2
+   ]
+  },
+  "CommercialPropertyDischargeFromSewerDrainOrSumpNotFloodReltdRules": {
+   "SetBaseLossCost": [
+    2
+   ],
+   "SetDeductibleFactor": [
+    35,
+    52,
+    55
+   ],
+   "SetRate": [
+    2
+   ]
+  },
+  "CommercialPropertyDischargeFromSewerDrainOrSumpNotFloodReltdSpclClassBusnIncomeRules": {
+   "SetBaseLossCost": [
+    2
+   ],
+   "SetFinalRate": [
+    10,
+    14
+   ],
+   "SetRate": [
+    2
+   ]
+  },
+  "CommercialPropertyDischargeFromSewerDrainOrSumpNotFloodReltdSpclClassRules": {
+   "SetBaseLossCost": [
+    2
+   ],
+   "SetDeductibleFactor": [
+    35,
+    52,
+    55
+   ],
+   "SetRate": [
+    2
+   ]
+  },
+  "CommercialPropertyEarthquakeAndVolcanicEruptionCoverageSubLimitFormWithFlatDollarDeductibleBldgRules": {
+   "SetDeductibleStatCode": [
+    9,
+    12
+   ],
+   "SetEQSubLimitExposureBaseStatCode": [
+    2
+   ],
+   "SetEQSubLimitPercent": [
+    10,
+    20,
+    23
+   ],
+   "SetSubLimitPct": [
+    13,
+    16
+   ]
+  },
+  "CommercialPropertyEarthquakeAndVolcanicEruptionCoverageSubLimitFormWithFlatDollarDeductibleBusnIncomeRules": {
+   "SetEQSubLimitExposureBaseStatCode": [
+    2
+   ],
+   "SetEQSubLimitPercent": [
+    10,
+    20,
+    23
+   ],
+   "SetSubLimitPct": [
+    14,
+    22,
+    25
+   ]
+  },
+  "CommercialPropertyEarthquakeAndVolcanicEruptionCoverageSubLimitFormWithFlatDollarDeductiblePrsnlPropRules": {
+   "SetDeductibleStatCode": [
+    9,
+    12
+   ],
+   "SetEQSubLimitExposureBaseStatCode": [
+    2
+   ],
+   "SetEQSubLimitPercent": [
+    10,
+    20,
+    23
+   ],
+   "SetSubLimitPct": [
+    13,
+    16
+   ]
+  },
+  "CommercialPropertyEarthquakeAndVolcanicEruptionCoverageSubLimitFormWithFlatDollarDeductibleSpclClassBusnIncomeRules": {
+   "SetEQSubLimitExposureBaseStatCode": [
+    2
+   ],
+   "SetEQSubLimitPercent": [
+    10,
+    20,
+    23
+   ],
+   "SetSubLimitPct": [
+    14,
+    22,
+    25
+   ]
+  },
+  "CommercialPropertyEarthquakeAndVolcanicEruptionCoverageSubLimitFormWithFlatDollarDeductibleSpecialClassRules": {
+   "SetDeductibleStatCode": [
+    9,
+    12
+   ],
+   "SetEQSubLimitExposureBaseStatCode": [
+    2
+   ],
+   "SetEQSubLimitPercent": [
+    10,
+    20,
+    23
+   ],
+   "SetSubLimitPct": [
+    13,
+    16
+   ]
+  },
+  "CommercialPropertyEarthquakeAndVolcanicEruptionCoverageWithFlatDollarDeductibleBldgRules": {
+   "SetDeductible": [
+    2
+   ],
+   "SetDeductibleStatCode": [
+    9,
+    12
+   ],
+   "SetLimitOfInsurance": [
+    2
+   ]
+  },
+  "CommercialPropertyEarthquakeAndVolcanicEruptionCoverageWithFlatDollarDeductibleBusnIncomeRules": {
+   "SetDeductible": [
+    2
+   ],
+   "SetLimitOfInsurance": [
+    2
+   ]
+  },
+  "CommercialPropertyEarthquakeAndVolcanicEruptionCoverageWithFlatDollarDeductiblePrsnlPropRules": {
+   "SetDeductible": [
+    2
+   ],
+   "SetDeductibleStatCode": [
+    9,
+    12
+   ],
+   "SetLimitOfInsurance": [
+    2
+   ]
+  },
+  "CommercialPropertyEarthquakeAndVolcanicEruptionCoverageWithFlatDollarDeductibleSpclClassBusnIncomeRules": {
+   "SetDeductible": [
+    2
+   ],
+   "SetLimitOfInsurance": [
+    2
+   ]
+  },
+  "CommercialPropertyEarthquakeAndVolcanicEruptionCoverageWithFlatDollarDeductibleSpecialClassRules": {
+   "SetDeductible": [
+    2
+   ],
+   "SetDeductibleStatCode": [
+    9,
+    12
+   ],
+   "SetLimitOfInsurance": [
+    2
+   ]
+  },
+  "CommercialPropertyEarthquakeAndVolcanicEruptionEndorsementBusnIncomeRules": {
+   "SetDeductibleStatCode": [
+    9,
+    12
+   ],
+   "SetLimitOfInsurance": [
+    2
+   ],
+   "SetPercentageDeductible": [
+    2
+   ]
+  },
+  "CommercialPropertyEarthquakeAndVolcanicEruptionEndorsementPrsnlPropRules": {
+   "SetDeductibleStatCode": [
+    9,
+    12
+   ],
+   "SetLimitOfInsurance": [
+    2
+   ],
+   "SetPercentageDeductible": [
+    2
+   ]
+  },
+  "CommercialPropertyEarthquakeAndVolcanicEruptionEndorsementRules": {
+   "SetDeductibleStatCode": [
+    9,
+    12
+   ],
+   "SetLimitOfInsurance": [
+    2
+   ],
+   "SetPercentageDeductible": [
+    2
+   ]
+  },
+  "CommercialPropertyEarthquakeAndVolcanicEruptionEndorsementSpclClassBusnIncomeRules": {
+   "SetDeductibleStatCode": [
+    9,
+    12
+   ],
+   "SetLimitOfInsurance": [
+    2
+   ],
+   "SetPercentageDeductible": [
+    2
+   ]
+  },
+  "CommercialPropertyEarthquakeAndVolcanicEruptionEndorsementSpecialClassRules": {
+   "SetDeductibleStatCode": [
+    9,
+    12
+   ],
+   "SetLimitOfInsurance": [
+    2
+   ],
+   "SetPercentageDeductible": [
+    2
+   ]
+  },
+  "CommercialPropertyEarthquakeAndVolcanicEruptionEndorsementSubLimitFormBusnIncomeRules": {
+   "SetDeductibleStatCode": [
+    9,
+    12
+   ],
+   "SetEQSubLimitExposureBaseStatCode": [
+    2
+   ],
+   "SetEQSubLimitPercent": [
+    10,
+    20,
+    23
+   ],
+   "SetSubLimitPct": [
+    14,
+    22,
+    25
+   ]
+  },
+  "CommercialPropertyEarthquakeAndVolcanicEruptionEndorsementSubLimitFormPrsnlPropRules": {
+   "SetDeductibleStatCode": [
+    9,
+    12
+   ],
+   "SetEQSubLimitExposureBaseStatCode": [
+    2
+   ],
+   "SetEQSubLimitPercent": [
+    10,
+    20,
+    23
+   ],
+   "SetSubLimitPct": [
+    13,
+    16
+   ]
+  },
+  "CommercialPropertyEarthquakeAndVolcanicEruptionEndorsementSubLimitFormRules": {
+   "SetDeductibleStatCode": [
+    9,
+    12
+   ],
+   "SetEQSubLimitExposureBaseStatCode": [
+    2
+   ],
+   "SetEQSubLimitPercent": [
+    10,
+    20,
+    23
+   ],
+   "SetSubLimitPct": [
+    13,
+    16
+   ]
+  },
+  "CommercialPropertyEarthquakeAndVolcanicEruptionEndorsementSubLimitFormSpclClassBusnIncomeRules": {
+   "SetDeductibleStatCode": [
+    9,
+    12
+   ],
+   "SetEQSubLimitExposureBaseStatCode": [
+    2
+   ],
+   "SetEQSubLimitPercent": [
+    10,
+    20,
+    23
+   ],
+   "SetSubLimitPct": [
+    14,
+    22,
+    25
+   ]
+  },
+  "CommercialPropertyEarthquakeAndVolcanicEruptionEndorsementSubLimitFormSpecialClassRules": {
+   "SetDeductibleStatCode": [
+    9,
+    12
+   ],
+   "SetEQSubLimitExposureBaseStatCode": [
+    2
+   ],
+   "SetEQSubLimitPercent": [
+    10,
+    20,
+    23
+   ],
+   "SetSubLimitPct": [
+    13,
+    16
+   ]
+  },
+  "CommercialPropertyEquipmentBreakdownCauseOfLossBldgAmmoniaContaminationCovRules": {
+   "SetAmmoniaContaminationRate": [
+    2
+   ]
+  },
+  "CommercialPropertyEquipmentBreakdownCauseOfLossBldgRules": {
+   "SetDeductibleFactor": [
+    13,
+    19,
+    22
+   ],
+   "SetLossCost": [
+    12,
+    15
+   ]
+  },
+  "CommercialPropertyEquipmentBreakdownCauseOfLossBusnIncRules": {
+   "SetLossCost": [
+    9,
+    12
+   ]
+  },
+  "CommercialPropertyExpandedLimitsOnLossPaymentRules": {
+   "SetEighth30DayRestorationAdjustedFactor": [
+    9,
+    20
+   ],
+   "SetEighth30DayRestorationFactor": [
+    2
+   ],
+   "SetEleventh30DayRestorationAdjustedFactor": [
+    9,
+    20
+   ],
+   "SetEleventh30DayRestorationFactor": [
+    2
+   ],
+   "SetFifth30DayRestorationAdjustedFactor": [
+    9,
+    20
+   ],
+   "SetFifth30DayRestorationFactor": [
+    2
+   ],
+   "SetFirst30DayRestorationAdjustedFactor": [
+    2
+   ],
+   "SetFirst30DayRestorationFactor": [
+    2
+   ],
+   "SetFourth30DayRestorationAdjustedFactor": [
+    2
+   ],
+   "SetFourth30DayRestorationFactor": [
+    2
+   ],
+   "SetMaxFactor": [
+    2
+   ],
+   "SetNinth30DayRestorationAdjustedFactor": [
+    9,
+    20
+   ],
+   "SetNinth30DayRestorationFactor": [
+    2
+   ],
+   "SetSecond30DayRestorationAdjustedFactor": [
+    2
+   ],
+   "SetSecond30DayRestorationFactor": [
+    2
+   ],
+   "SetSeventh30DayRestorationAdjustedFactor": [
+    9,
+    20
+   ],
+   "SetSeventh30DayRestorationFactor": [
+    2
+   ],
+   "SetSixth30DayRestorationAdjustedFactor": [
+    9,
+    20
+   ],
+   "SetSixth30DayRestorationFactor": [
+    2
+   ],
+   "SetTenth30DayRestorationAdjustedFactor": [
+    9,
+    20
+   ],
+   "SetTenth30DayRestorationFactor": [
+    2
+   ],
+   "SetThird30DayRestorationAdjustedFactor": [
+    2
+   ],
+   "SetThird30DayRestorationFactor": [
+    2
+   ],
+   "SetTotAdjustedFactor": [
+    2
+   ],
+   "SetTwelfth30DayRestorationAdjustedFactor": [
+    9,
+    12
+   ],
+   "SetTwelfth30DayRestorationFactor": [
+    2
+   ]
+  },
+  "CommercialPropertyExpandedLimitsOnLossPaymentSpclClassBusnIncomeRules": {
+   "SetEighth30DayRestorationAdjustedFactor": [
+    9,
+    20
+   ],
+   "SetEighth30DayRestorationFactor": [
+    2
+   ],
+   "SetEleventh30DayRestorationAdjustedFactor": [
+    9,
+    20
+   ],
+   "SetEleventh30DayRestorationFactor": [
+    2
+   ],
+   "SetFifth30DayRestorationAdjustedFactor": [
+    9,
+    20
+   ],
+   "SetFifth30DayRestorationFactor": [
+    2
+   ],
+   "SetFirst30DayRestorationAdjustedFactor": [
+    2
+   ],
+   "SetFirst30DayRestorationFactor": [
+    2
+   ],
+   "SetFourth30DayRestorationAdjustedFactor": [
+    2
+   ],
+   "SetFourth30DayRestorationFactor": [
+    2
+   ],
+   "SetMaxFactor": [
+    2
+   ],
+   "SetNinth30DayRestorationAdjustedFactor": [
+    9,
+    20
+   ],
+   "SetNinth30DayRestorationFactor": [
+    2
+   ],
+   "SetSecond30DayRestorationAdjustedFactor": [
+    2
+   ],
+   "SetSecond30DayRestorationFactor": [
+    2
+   ],
+   "SetSeventh30DayRestorationAdjustedFactor": [
+    9,
+    20
+   ],
+   "SetSeventh30DayRestorationFactor": [
+    2
+   ],
+   "SetSixth30DayRestorationAdjustedFactor": [
+    9,
+    20
+   ],
+   "SetSixth30DayRestorationFactor": [
+    2
+   ],
+   "SetTenth30DayRestorationAdjustedFactor": [
+    9,
+    20
+   ],
+   "SetTenth30DayRestorationFactor": [
+    2
+   ],
+   "SetThird30DayRestorationAdjustedFactor": [
+    2
+   ],
+   "SetThird30DayRestorationFactor": [
+    2
+   ],
+   "SetTotAdjustedFactor": [
+    2
+   ],
+   "SetTwelfth30DayRestorationAdjustedFactor": [
+    9,
+    12
+   ],
+   "SetTwelfth30DayRestorationFactor": [
+    2
+   ]
+  },
+  "CommercialPropertyExtraExpenseFromDependentPropertiesDetailRules": {
+   "SetAdjustedBasicGroupIIRate": [
+    2
+   ],
+   "SetAdjustedBasicGroupIRate": [
+    2
+   ],
+   "SetAdjustedBroadRate": [
+    9,
+    14
+   ],
+   "SetAdjustedEQRate": [
+    2
+   ],
+   "SetAdjustedSpecialRate": [
+    16,
+    19,
+    20,
+    27
+   ],
+   "SetBroadBaseRate": [
+    9,
+    12
+   ],
+   "SetLimit": [
+    9,
+    16,
+    23,
+    30,
+    33
+   ]
+  },
+  "CommercialPropertyExtraExpenseFromDependentPropertiesSpclClassBusnIncomeDetailRules": {
+   "SetAdjustedBasicGroupIIRate": [
+    2
+   ],
+   "SetAdjustedBasicGroupIRate": [
+    2
+   ],
+   "SetAdjustedBroadRate": [
+    9,
+    14
+   ],
+   "SetAdjustedEQRate": [
+    2
+   ],
+   "SetAdjustedSpecialRate": [
+    2
+   ],
+   "SetBroadBaseRate": [
+    9,
+    12
+   ],
+   "SetLimit": [
+    9,
+    16,
+    23,
+    30,
+    33
+   ],
+   "SetSpecialBaseRate": [
+    13,
+    16
+   ]
+  },
+  "CommercialPropertyFloodCovEndtBlanketRatingDetailRules": {
+   "SetBlanketAverageRate": [
+    9,
+    16
+   ]
+  },
+  "CommercialPropertyFloodCovEndtLocationRules": {
+   "SetCommunityRatingSystemFactor": [
+    9,
+    12
+   ],
+   "SetDeductibleInt": [
+    9,
+    12
+   ],
+   "SetFloodDeductibleStatCode": [
+    9,
+    12
+   ]
+  },
+  "CommercialPropertyFloodCoverageEndorsementBusnIncomeRules": {
+   "SetAnnualAggregateFactor": [
+    17,
+    20,
+    88
+   ],
+   "SetBusinessIncomeFactor": [
+    22,
+    25,
+    35,
+    42,
+    49,
+    51
+   ],
+   "SetFloodAdjustedRate": [
+    2
+   ],
+   "SetFloodBaseRate": [
+    19,
+    35,
+    38
+   ],
+   "SetFloodRate": [
+    2
+   ],
+   "SetTypeOfRiskFactor": [
+    36,
+    55,
+    74,
+    93,
+    112,
+    122,
+    138,
+    143,
+    146
+   ],
+   "SetTypeRiskCombination1Factor": [
+    38,
+    52,
+    57,
+    60
+   ],
+   "SetTypeRiskCombination2Factor": [
+    34,
+    51,
+    56,
+    59
+   ]
+  },
+  "CommercialPropertyFloodCoverageEndorsementPrsnlPropRules": {
+   "SetAnnualAggregateFactor": [
+    17,
+    20,
+    67
+   ],
+   "SetDeductible": [
+    11,
+    14
+   ],
+   "SetFloodAdjustedRate": [
+    11,
+    15
+   ],
+   "SetFloodBaseRate": [
+    15,
+    18
+   ],
+   "SetFloodExcessFactor": [
+    27,
+    30,
+    33
+   ],
+   "SetFloodModificationFactor": [
+    31,
+    43,
+    55,
+    67,
+    79,
+    91,
+    99,
+    102,
+    105
+   ],
+   "SetFloodRate": [
+    9,
+    18
+   ]
+  },
+  "CommercialPropertyFloodCoverageEndorsementRules": {
+   "SetAnnualAggregateFactor": [
+    17,
+    20,
+    67
+   ],
+   "SetDeductible": [
+    11,
+    14
+   ],
+   "SetFloodAdjustedRate": [
+    11,
+    15
+   ],
+   "SetFloodBaseRate": [
+    15,
+    18
+   ],
+   "SetFloodExcessFactor": [
+    27,
+    30,
+    33
+   ],
+   "SetFloodModificationFactor": [
+    35,
+    38,
+    64,
+    67,
+    93,
+    96,
+    122,
+    125,
+    151,
+    154,
+    180,
+    183,
+    205,
+    208,
+    211,
+    214
+   ],
+   "SetFloodRate": [
+    9,
+    18
+   ]
+  },
+  "CommercialPropertyFloodCoverageEndorsementSpclClassBusnIncomeRules": {
+   "SetAnnualAggregateFactor": [
+    17,
+    20,
+    88
+   ],
+   "SetBusinessIncomeFactor": [
+    23,
+    25,
+    35,
+    42,
+    49,
+    51
+   ],
+   "SetFloodAdjustedRate": [
+    2
+   ],
+   "SetFloodBaseRate": [
+    15,
+    18
+   ],
+   "SetFloodRate": [
+    2
+   ],
+   "SetTypeOfRiskFactor": [
+    36,
+    55,
+    74,
+    93,
+    112,
+    122,
+    138,
+    143,
+    146
+   ],
+   "SetTypeRiskCombination1Factor": [
+    38,
+    52,
+    57,
+    60
+   ],
+   "SetTypeRiskCombination2Factor": [
+    34,
+    51,
+    56,
+    59
+   ]
+  },
+  "CommercialPropertyFloodCoverageEndorsementSpecialClassRules": {
+   "SetAnnualAggregateFactor": [
+    17,
+    20,
+    67
+   ],
+   "SetDeductible": [
+    11,
+    14
+   ],
+   "SetFloodAdjustedRate": [
+    11,
+    15
+   ],
+   "SetFloodBaseRate": [
+    15,
+    18
+   ],
+   "SetFloodExcessFactor": [
+    27,
+    30,
+    33
+   ],
+   "SetFloodModificationFactor": [
+    31,
+    43,
+    55,
+    67,
+    79,
+    91,
+    99,
+    102,
+    105
+   ],
+   "SetFloodRate": [
+    9,
+    18
+   ]
+  },
+  "CommercialPropertyFoodContaminationBusinessInterruptionAndExtraExpenseAddlAdvCovRules": {
+   "SetAdvertisingRate": [
+    2
+   ]
+  },
+  "CommercialPropertyFoodContaminationBusinessInterruptionAndExtraExpenseFoodOnlyCovRules": {
+   "SetFoodRate": [
+    2
+   ]
+  },
+  "CommercialPropertyFoodContaminationBusinessInterruptionAndExtraExpenseSpclClassBusnIncomeAddlAdvCovRules": {
+   "SetAdvertisingRate": [
+    2
+   ]
+  },
+  "CommercialPropertyFoodContaminationBusinessInterruptionAndExtraExpenseSpclClassBusnIncomeFoodOnlyCovRules": {
+   "SetFoodRate": [
+    2
+   ]
+  },
+  "CommercialPropertyFunctionalBuildingValuationRules": {
+   "SetFactor": [
+    2
+   ],
+   "SetLimit": [
+    2
+   ],
+   "SetPostLossFactor": [
+    9,
+    12
+   ]
+  },
+  "CommercialPropertyFunctionalPersonalPropertyValuationOtherThanStockRules": {
+   "SetBaseFactor": [
+    2
+   ],
+   "SetFactor": [
+    2
+   ]
+  },
+  "CommercialPropertyHigherLimitsLocationRules": {
+   "SetFireDepartmentChargeGeneratedPremium": [
+    8,
+    11
+   ]
+  },
+  "CommercialPropertyHigherLimitsPersonalPropertyRules": {
+   "SetSpecialCOLStampsTicketsAndLettersOfCreditGeneratedPremium": [
+    8,
+    11
+   ]
+  },
+  "CommercialPropertyHouseholdPersonalPropertyCoverageRules": {
+   "SetAdjustedSpecialRate": [
+    2
+   ],
+   "SetFinalSpecialRate": [
+    2
+   ],
+   "SetSpecialBaseRate": [
+    9,
+    12
+   ],
+   "SetSpecialRate": [
+    2
+   ]
+  },
+  "CommercialPropertyIncreaseInRebuildingExpensesFollowingDisasterBasicGroupICovRules": {
+   "SetRebuildingExpensesBGIFactor": [
+    2
+   ]
+  },
+  "CommercialPropertyIncreaseInRebuildingExpensesFollowingDisasterBasicGroupIICovRules": {
+   "SetRebuildingExpensesBGIIFactor": [
+    2
+   ]
+  },
+  "CommercialPropertyIncreaseInRebuildingExpensesFollowingDisasterBroadCovRules": {
+   "SetRebuildingExpensesBroadFactor": [
+    2
+   ]
+  },
+  "CommercialPropertyIncreaseInRebuildingExpensesFollowingDisasterEarthquakeCovRules": {
+   "SetRebuildingExpensesEQFactor": [
+    2
+   ]
+  },
+  "CommercialPropertyIncreaseInRebuildingExpensesFollowingDisasterSpecialClassBasicGroupICovRules": {
+   "SetRebuildingExpensesBGIFactor": [
+    2
+   ]
+  },
+  "CommercialPropertyIncreaseInRebuildingExpensesFollowingDisasterSpecialClassBasicGroupIICovRules": {
+   "SetRebuildingExpensesBGIIFactor": [
+    2
+   ]
+  },
+  "CommercialPropertyIncreaseInRebuildingExpensesFollowingDisasterSpecialClassBroadCovRules": {
+   "SetRebuildingExpensesBroadFactor": [
+    2
+   ]
+  },
+  "CommercialPropertyIncreaseInRebuildingExpensesFollowingDisasterSpecialClassEarthquakeCovRules": {
+   "SetRebuildingExpensesEQFactor": [
+    2
+   ]
+  },
+  "CommercialPropertyIncreaseInRebuildingExpensesFollowingDisasterSpecialClassSpecialCovRules": {
+   "SetRebuildingExpensesSpecialFactor": [
+    2
+   ]
+  },
+  "CommercialPropertyIncreaseInRebuildingExpensesFollowingDisasterSpecialCovRules": {
+   "SetRebuildingExpensesSpecialFactor": [
+    2
+   ]
+  },
+  "CommercialPropertyIncreasedCostOfLossAndRelatedExpensesForGreenUpgradesEndtBldgBasicGroupICovRules": {
+   "SetRelatedExpensesRate": [
+    9,
+    14
+   ]
+  },
+  "CommercialPropertyIncreasedCostOfLossAndRelatedExpensesForGreenUpgradesEndtBldgBasicGroupIICovRules": {
+   "SetRelatedExpensesRate": [
+    9,
+    14
+   ]
+  },
+  "CommercialPropertyIncreasedCostOfLossAndRelatedExpensesForGreenUpgradesEndtBldgBroadCovRules": {
+   "SetRelatedExpensesRate": [
+    9,
+    14
+   ]
+  },
+  "CommercialPropertyIncreasedCostOfLossAndRelatedExpensesForGreenUpgradesEndtBldgEarthquakeCovRules": {
+   "SetRelatedExpensesRate": [
+    9,
+    14
+   ]
+  },
+  "CommercialPropertyIncreasedCostOfLossAndRelatedExpensesForGreenUpgradesEndtBldgRules": {
+   "SetRateModificationFactor": [
+    2
+   ],
+   "SetRatio": [
+    13,
+    22
+   ],
+   "SetRatioToUse": [
+    2
+   ],
+   "SetRelatedExpensesFactor": [
+    2
+   ]
+  },
+  "CommercialPropertyIncreasedCostOfLossAndRelatedExpensesForGreenUpgradesEndtBldgSpecialCovRules": {
+   "SetRelatedExpensesRate": [
+    9,
+    14
+   ]
+  },
+  "CommercialPropertyIncreasedCostOfLossAndRelatedExpensesForGreenUpgradesEndtBusIncRules": {
+   "SetPeriodOfRestorationBaseFactor": [
+    9,
+    12
+   ],
+   "SetPeriodOfRestorationFactor": [
+    2
+   ]
+  },
+  "CommercialPropertyIncreasedCostOfLossAndRelatedExpensesForGreenUpgradesEndtPersPropBasicGroupICovRules": {
+   "SetRelatedExpensesRate": [
+    9,
+    14
+   ]
+  },
+  "CommercialPropertyIncreasedCostOfLossAndRelatedExpensesForGreenUpgradesEndtPersPropBasicGroupIICovRules": {
+   "SetRelatedExpensesRate": [
+    9,
+    14
+   ]
+  },
+  "CommercialPropertyIncreasedCostOfLossAndRelatedExpensesForGreenUpgradesEndtPersPropBroadCovRules": {
+   "SetRelatedExpensesRate": [
+    9,
+    14
+   ]
+  },
+  "CommercialPropertyIncreasedCostOfLossAndRelatedExpensesForGreenUpgradesEndtPersPropEarthquakeCovRules": {
+   "SetRelatedExpensesRate": [
+    9,
+    14
+   ]
+  },
+  "CommercialPropertyIncreasedCostOfLossAndRelatedExpensesForGreenUpgradesEndtPersPropRules": {
+   "SetRateModificationFactor": [
+    2
+   ],
+   "SetRatio": [
+    13,
+    22
+   ],
+   "SetRatioToUse": [
+    2
+   ],
+   "SetRelatedExpensesFactor": [
+    2
+   ]
+  },
+  "CommercialPropertyIncreasedCostOfLossAndRelatedExpensesForGreenUpgradesEndtPersPropSpecialCovRules": {
+   "SetRelatedExpensesRate": [
+    9,
+    14
+   ]
+  },
+  "CommercialPropertyIncreasedCostOfLossAndRelatedExpensesForGreenUpgradesEndtSpclClassBusnIncomeRules": {
+   "SetPeriodOfRestorationBaseFactor": [
+    9,
+    12
+   ],
+   "SetPeriodOfRestorationFactor": [
+    2
+   ]
+  },
+  "CommercialPropertyIncreasedCostOfLossAndRelatedExpensesForGreenUpgradesEndtSpecialClassBasicGroupICovRules": {
+   "SetRelatedExpensesRate": [
+    9,
+    14
+   ]
+  },
+  "CommercialPropertyIncreasedCostOfLossAndRelatedExpensesForGreenUpgradesEndtSpecialClassBasicGroupIICovRules": {
+   "SetRelatedExpensesRate": [
+    9,
+    14
+   ]
+  },
+  "CommercialPropertyIncreasedCostOfLossAndRelatedExpensesForGreenUpgradesEndtSpecialClassBroadCovRules": {
+   "SetRelatedExpensesRate": [
+    9,
+    14
+   ]
+  },
+  "CommercialPropertyIncreasedCostOfLossAndRelatedExpensesForGreenUpgradesEndtSpecialClassEarthquakeCovRules": {
+   "SetRelatedExpensesRate": [
+    9,
+    14
+   ]
+  },
+  "CommercialPropertyIncreasedCostOfLossAndRelatedExpensesForGreenUpgradesEndtSpecialClassRules": {
+   "SetRateModificationFactor": [
+    2
+   ],
+   "SetRatio": [
+    13,
+    22
+   ],
+   "SetRatioToUse": [
+    2
+   ],
+   "SetRelatedExpensesFactor": [
+    2
+   ]
+  },
+  "CommercialPropertyIncreasedCostOfLossAndRelatedExpensesForGreenUpgradesEndtSpecialClassSpecialCovRules": {
+   "SetRelatedExpensesRate": [
+    9,
+    14
+   ]
+  },
+  "CommercialPropertyLeasedPropertyDetailRules": {
+   "SetAgreedValueBaseFactor": [
+    2
+   ],
+   "SetAgreedValueFactor": [
+    2
+   ]
+  },
+  "CommercialPropertyLeaseholdInterestCoverageFormRules": {
+   "SetBroadRate": [
+    9,
+    12
+   ],
+   "SetComplimentOfDiscFactorExpir": [
+    2,
+    6
+   ],
+   "SetComplimentOfDiscFactorIncep": [
+    2,
+    6
+   ],
+   "SetDiscFactor": [
+    9,
+    12
+   ],
+   "SetNetLeaseholdInterestFactorAtExpiration": [
+    2
+   ],
+   "SetNetLeaseholdInterestFactorAtInception": [
+    2
+   ],
+   "SetSpecialRate": [
+    13,
+    16
+   ],
+   "SetSpecialTheftExclusionFactor": [
+    16,
+    19
+   ]
+  },
+  "CommercialPropertyLimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoverageBusnIncomeDetailRules": {
+   "SetBeginningOfThePeriodOfRestorationFactor": [
+    13,
+    16
+   ],
+   "SetEQBaseRate": [
+    13,
+    16
+   ],
+   "SetEQRate": [
+    2
+   ],
+   "SetExtendedPeriodOfIndemnityFactor": [
+    9,
+    12
+   ],
+   "SetUnmannedAircraftBaseRate": [
+    9,
+    12
+   ],
+   "SetWindstormOrHailExclFactor": [
+    7,
+    10
+   ]
+  },
+  "CommercialPropertyLimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoverageDetailRules": {
+   "SetDeductibleFactor": [
+    10,
+    18,
+    28,
+    37
+   ],
+   "SetEQBaseRate": [
+    13,
+    16
+   ],
+   "SetEQDeductibleFactor": [
+    24,
+    43,
+    79,
+    87,
+    95,
+    103,
+    111,
+    119,
+    127,
+    135,
+    143,
+    151,
+    159,
+    167,
+    175,
+    178,
+    223,
+    231,
+    239,
+    242,
+    262,
+    270,
+    278,
+    281,
+    284,
+    287
+   ],
+   "SetEQRate": [
+    2
+   ],
+   "SetLimitToUse": [
+    8,
+    10
+   ],
+   "SetNewlyAcquiredPropertyFactor": [
+    9,
+    12
+   ],
+   "SetUnmannedAircraftBaseRate": [
+    9,
+    12
+   ],
+   "SetWindstormOrHailExclFactor": [
+    7,
+    10
+   ]
+  },
+  "CommercialPropertyLimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoveragePrsnlPropDetailRules": {
+   "SetDeductibleFactor": [
+    10,
+    18,
+    28,
+    37
+   ],
+   "SetEQBaseRate": [
+    13,
+    16
+   ],
+   "SetEQDeductibleFactor": [
+    24,
+    43,
+    79,
+    87,
+    95,
+    103,
+    111,
+    119,
+    127,
+    135,
+    143,
+    151,
+    159,
+    167,
+    175,
+    178,
+    223,
+    231,
+    239,
+    242,
+    262,
+    270,
+    278,
+    281,
+    284,
+    287
+   ],
+   "SetEQRate": [
+    2
+   ],
+   "SetLimitToUse": [
+    8,
+    10
+   ],
+   "SetNewlyAcquiredPropertyFactor": [
+    9,
+    12
+   ],
+   "SetUnmannedAircraftBaseRate": [
+    9,
+    12
+   ],
+   "SetWindstormOrHailExclFactor": [
+    7,
+    10
+   ]
+  },
+  "CommercialPropertyLimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoveragePrsnlPropRules": {
+   "SetTotalScheduleLimit": [
+    2,
+    45
+   ]
+  },
+  "CommercialPropertyLimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoverageRules": {
+   "SetTotalScheduleLimit": [
+    2,
+    45
+   ]
+  },
+  "CommercialPropertyLimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoverageSpclClassBusnIncomeDetailRules": {
+   "SetBeginningOfThePeriodOfRestorationFactor": [
+    13,
+    16
+   ],
+   "SetEQBaseRate": [
+    13,
+    16
+   ],
+   "SetEQRate": [
+    2
+   ],
+   "SetExtendedPeriodOfIndemnityFactor": [
+    9,
+    12
+   ],
+   "SetUnmannedAircraftBaseRate": [
+    9,
+    12
+   ],
+   "SetWindstormOrHailExclFactor": [
+    7,
+    10
+   ]
+  },
+  "CommercialPropertyLimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoverageSpecialClassDetailRules": {
+   "SetAdjustedEQRate": [
+    2
+   ],
+   "SetDeductibleFactor": [
+    10,
+    18,
+    28,
+    37
+   ],
+   "SetEQBaseRate": [
+    13,
+    16
+   ],
+   "SetEQDeductibleFactor": [
+    24,
+    43,
+    79,
+    87,
+    95,
+    103,
+    111,
+    119,
+    127,
+    135,
+    143,
+    151,
+    159,
+    167,
+    175,
+    178,
+    223,
+    231,
+    239,
+    242,
+    262,
+    270,
+    278,
+    281,
+    284,
+    287
+   ],
+   "SetEQRate": [
+    2
+   ],
+   "SetLimitToUse": [
+    8,
+    10
+   ],
+   "SetNewlyAcquiredPropertyFactor": [
+    9,
+    12
+   ],
+   "SetUnmannedAircraftBaseRate": [
+    9,
+    12
+   ],
+   "SetWindstormOrHailExclFactor": [
+    7,
+    10
+   ]
+  },
+  "CommercialPropertyLimitedCoverageForUnmannedAircraftScheduledAndOrBlanketCoverageSpecialClassRules": {
+   "SetTotalScheduleLimit": [
+    2,
+    45
+   ]
+  },
+  "CommercialPropertyLocationFireDepartmentChargeRules": {
+   "SetFactor": [
+    2
+   ],
+   "SetFireDepartmentLimit": [
+    2
+   ],
+   "SetLimitToUse": [
+    13,
+    15
+   ]
+  },
+  "CommercialPropertyLocationRules": {
+   "SetBasicGroupIRatingTerrFactor": [
+    9,
+    12
+   ],
+   "SetEQDeductibleTier": [
+    9,
+    12
+   ],
+   "SetHighestBusnIncomeBasicGroupIBaseRate": [
+    2
+   ],
+   "SetHighestBusnIncomeEQBaseRate": [
+    2
+   ],
+   "SetTerrorismBaseLossCostFull": [
+    9,
+    14
+   ],
+   "SetTerrorismBaseLossCostProgramYear3": [
+    9,
+    14
+   ],
+   "SetTerrorismLossCostFull": [
+    2
+   ],
+   "SetTerrorismLossCostProgramYear3": [
+    2
+   ],
+   "SetTerrorismNBCExclFactor": [
+    9,
+    12
+   ]
+  },
+  "CommercialPropertyManufacturersConsequentialLossAssumptionRules": {
+   "SetBaseFactor": [
+    2
+   ],
+   "SetFactor": [
+    2
+   ]
+  },
+  "CommercialPropertyMiningPropertiesBusinessIncomeRules": {
+   "SetBasicGroupIIRate": [
+    9,
+    14
+   ],
+   "SetBasicGroupIRate": [
+    9,
+    14
+   ],
+   "SetLimitToUse": [
+    9,
+    16,
+    19
+   ]
+  },
+  "CommercialPropertyMiningPropertiesSpclClassBusnIncomeBasicGroupICoverageRules": {
+   "SetLimitToUse": [
+    9,
+    16,
+    19
+   ]
+  },
+  "CommercialPropertyMiningPropertiesSpclClassBusnIncomeBasicGroupIICoverageRules": {
+   "SetLimitToUse": [
+    9,
+    16,
+    19
+   ]
+  },
+  "CommercialPropertyMiningPropertiesSpclClassBusnIncomeRules": {
+   "SetBasicGroupIIRate": [
+    9,
+    14
+   ],
+   "SetBasicGroupIRate": [
+    9,
+    14
+   ]
+  },
+  "CommercialPropertyMoltenMaterialBusnIncomeRules": {
+   "SetFactor": [
+    2
+   ],
+   "SetLimitToUse": [
+    8,
+    10
+   ]
+  },
+  "CommercialPropertyMoltenMaterialPrsnlPropRules": {
+   "SetFactor": [
+    2
+   ]
+  },
+  "CommercialPropertyMoltenMaterialRules": {
+   "SetFactor": [
+    2
+   ]
+  },
+  "CommercialPropertyMortgageholdersErrorsAndOmissionsCoverageFormRules": {
+   "SetFirst500Rate": [
+    2
+   ],
+   "SetNext10000Rate": [
+    9,
+    14
+   ],
+   "SetNext4000Rate": [
+    9,
+    14
+   ],
+   "SetNext500Rate": [
+    9,
+    14
+   ],
+   "SetOver15000Rate": [
+    9,
+    14
+   ]
+  },
+  "CommercialPropertyMultipleDeductibleFormFixedDollarDeductiblesRules": {
+   "SetDeductible": [
+    22,
+    25
+   ],
+   "SetTheftDeductible": [
+    30,
+    33
+   ],
+   "SetWindstormOrHailDeductible": [
+    28,
+    31
+   ]
+  },
+  "CommercialPropertyMultipleDeductibleFormFixedDollarDeductiblesSpecialClassRules": {
+   "SetDeductible": [
+    22,
+    25
+   ],
+   "SetTheftDeductible": [
+    25,
+    28
+   ],
+   "SetWindstormOrHailDeductible": [
+    28,
+    31
+   ]
+  },
+  "CommercialPropertyNonOwnedTrailersBasicGroupICoverageRules": {
+   "SetLimitThreshold": [
+    2
+   ],
+   "SetLimitToUse": [
+    14,
+    21,
+    23
+   ]
+  },
+  "CommercialPropertyNonOwnedTrailersBasicGroupIICoverageRules": {
+   "SetLimitThreshold": [
+    2
+   ],
+   "SetLimitToUse": [
+    14,
+    21,
+    23
+   ]
+  },
+  "CommercialPropertyNonOwnedTrailersBroadCoverageRules": {
+   "SetLimitThreshold": [
+    2
+   ],
+   "SetLimitToUse": [
+    14,
+    21,
+    23
+   ]
+  },
+  "CommercialPropertyNonOwnedTrailersEarthquakeCoverageRules": {
+   "SetLimitThreshold": [
+    2
+   ],
+   "SetLimitToUse": [
+    14,
+    21,
+    23
+   ]
+  },
+  "CommercialPropertyNonOwnedTrailersSpecialCoverageRules": {
+   "SetLimitThreshold": [
+    2
+   ],
+   "SetLimitToUse": [
+    14,
+    26,
+    33,
+    35
+   ]
+  },
+  "CommercialPropertyOccupClassRules": {
+   "SetAddlLocsSpclCoinsCounter": [
+    2,
+    13
+   ],
+   "SetBCEGEQFactor": [
+    2
+   ],
+   "SetBCEGFactor": [
+    2
+   ],
+   "SetBasicGroupIRatingTerrFactor": [
+    2
+   ],
+   "SetEQCovCounter": [
+    2,
+    19
+   ],
+   "SetEQSubLimitCounter": [
+    2,
+    19
+   ],
+   "SetPersonalPropertyCount": [
+    2
+   ],
+   "SetSubStdConditionRate": [
+    2
+   ],
+   "SetTheftDeductible": [
+    2
+   ],
+   "SetTotalPrsnlPropLimit": [
+    2,
+    14
+   ],
+   "SetVacantBuildingRate": [
+    2
+   ],
+   "SetWindstormHailTotAmtInsurance": [
+    2,
+    47
+   ]
+  },
+  "CommercialPropertyOffPremInterruptionOfBusnVehsMobileEquipmtBusnIncDetailRules": {
+   "SetInsToExposureFactor": [
+    14,
+    17
+   ]
+  },
+  "CommercialPropertyOffPremInterruptionOfBusnVehsMobileEquipmtBusnIncRules": {
+   "SetBusnIncCovWaitingPeriodFactor": [
+    12,
+    15
+   ],
+   "SetEQCovFactor": [
+    12,
+    17
+   ],
+   "SetExtendedBICovFactor": [
+    12,
+    15
+   ],
+   "SetFloodCovFactor": [
+    7,
+    12
+   ],
+   "SetLossCostCollision": [
+    18,
+    25
+   ],
+   "SetLossCostOTC": [
+    12,
+    19
+   ],
+   "SetWindHailExclFactor": [
+    7,
+    12
+   ]
+  },
+  "CommercialPropertyOffPremInterruptionOfBusnVehsMobileEquipmtSpclClassBusnIncomeDetailRules": {
+   "SetInsToExposureFactor": [
+    14,
+    17
+   ]
+  },
+  "CommercialPropertyOffPremInterruptionOfBusnVehsMobileEquipmtSpclClassBusnIncomeRules": {
+   "SetBusnIncCovWaitingPeriodFactor": [
+    12,
+    15
+   ],
+   "SetEQCovFactor": [
+    12,
+    17
+   ],
+   "SetExtendedBICovFactor": [
+    12,
+    15
+   ],
+   "SetFloodCovFactor": [
+    7,
+    12
+   ],
+   "SetLossCostCollision": [
+    18,
+    25
+   ],
+   "SetLossCostOTC": [
+    15,
+    22
+   ],
+   "SetWindHailExclFactor": [
+    7,
+    12
+   ]
+  },
+  "CommercialPropertyOrdinanceOrLawCovACoverageBasicGroupICoverageRules": {
+   "SetFactor": [
+    2
+   ]
+  },
+  "CommercialPropertyOrdinanceOrLawCovACoverageBasicGroupIICoverageRules": {
+   "SetFactor": [
+    2
+   ]
+  },
+  "CommercialPropertyOrdinanceOrLawCovACoverageBroadCoverageRules": {
+   "SetFactor": [
+    2
+   ]
+  },
+  "CommercialPropertyOrdinanceOrLawCovACoverageEarthquakeCoverageRules": {
+   "SetEQFactor": [
+    2
+   ]
+  },
+  "CommercialPropertyOrdinanceOrLawCovACoverageRules": {
+   "SetEQFactor": [
+    16,
+    19
+   ],
+   "SetFactor": [
+    9,
+    12
+   ]
+  },
+  "CommercialPropertyOrdinanceOrLawCovACoverageSpecialCoverageRules": {
+   "SetFactor": [
+    2
+   ]
+  },
+  "CommercialPropertyOrdinanceOrLawCoverageForTenantsInterestInImprovementsAndBettermentsRules": {
+   "SetCovAEQFactor": [
+    16,
+    19
+   ],
+   "SetCovAFactor": [
+    10,
+    18,
+    21
+   ],
+   "SetPostLossFactor": [
+    9,
+    12
+   ]
+  },
+  "CommercialPropertyOrdinanceOrLawCoverageRules": {
+   "SetPostLossFactor": [
+    9,
+    12
+   ]
+  },
+  "CommercialPropertyOrdinanceOrLawIncreasedPeriodOfRestorationRules": {
+   "SetEQFactor": [
+    2
+   ],
+   "SetFactor": [
+    2
+   ],
+   "SetPostLossFactor": [
+    9,
+    12
+   ]
+  },
+  "CommercialPropertyOrdinanceOrLawIncreasedPeriodOfRestorationSpclClassBusnIncomeRules": {
+   "SetEQFactor": [
+    2
+   ],
+   "SetFactor": [
+    2
+   ],
+   "SetPostLossFactor": [
+    9,
+    12
+   ]
+  },
+  "CommercialPropertyOrdinaryPayrollLimitationOrExclusionRules": {
+   "SetBaseFactor": [
+    2
+   ],
+   "SetFactor": [
+    2
+   ]
+  },
+  "CommercialPropertyOrdinaryPayrollLimitationOrExclusionSpclClassBusnIncomeRules": {
+   "SetBaseFactor": [
+    2
+   ],
+   "SetFactor": [
+    2
+   ]
+  },
+  "CommercialPropertyOutdoorTreesShrubsAndPlantsRules": {
+   "SetBasicGroupIBaseRate": [
+    2
+   ],
+   "SetBasicGroupIIBaseRate": [
+    8,
+    14,
+    17
+   ],
+   "SetBasicGroupIIRate": [
+    19,
+    22
+   ],
+   "SetBasicGroupIRate": [
+    2
+   ],
+   "SetBroadBaseRate": [
+    2
+   ],
+   "SetBroadRate": [
+    9,
+    14
+   ],
+   "SetSpecialBaseRate": [
+    9,
+    12
+   ],
+   "SetSpecialRate": [
+    2
+   ],
+   "SetVandalismExclFactor": [
+    29,
+    32
+   ],
+   "SetVehExclFactor": [
+    9,
+    12
+   ],
+   "SetWindstormOrHailExclFactor": [
+    7,
+    10
+   ]
+  },
+  "CommercialPropertyOutsideSignsDetailRules": {
+   "SetAdjustedBroadRate": [
+    2
+   ],
+   "SetAdjustedSpecialRate": [
+    2
+   ],
+   "SetBasicGroupIIBaseRate": [
+    7,
+    21,
+    24
+   ],
+   "SetBasicGroupIICoinsuranceFactor": [
+    16,
+    18
+   ],
+   "SetBasicGroupIIRate": [
+    26,
+    34,
+    45,
+    48
+   ],
+   "SetBasicGroupIRate": [
+    17,
+    22,
+    31,
+    34
+   ],
+   "SetBroadBaseRate": [
+    17,
+    29,
+    36,
+    39
+   ],
+   "SetBroadRate": [
+    13,
+    18
+   ],
+   "SetCoinsuranceFactor": [
+    17,
+    35,
+    38
+   ],
+   "SetEQBaseRate": [
+    13,
+    16
+   ],
+   "SetEQCoinsuranceFactor": [
+    8,
+    11
+   ],
+   "SetEQSubLimitDeductibleFactor": [
+    38,
+    46,
+    54,
+    62,
+    70,
+    78,
+    86,
+    94,
+    102,
+    110,
+    118,
+    126,
+    134,
+    137,
+    182,
+    190,
+    198,
+    201,
+    221,
+    229,
+    237,
+    240,
+    243,
+    246
+   ],
+   "SetSpecialBaseRate": [
+    9,
+    12
+   ],
+   "SetSpecialRate": [
+    13,
+    18
+   ],
+   "SetVandalismExclFactor": [
+    29,
+    32
+   ],
+   "SetWindstormOrHailExclFactor": [
+    7,
+    12
+   ]
+  },
+  "CommercialPropertyPeakSeasonGeneralInformationDetailRules": {
+   "SetBasicGroupIAvgRate": [
+    17,
+    24,
+    32,
+    37
+   ],
+   "SetBasicGroupIIAvgRate": [
+    17,
+    24,
+    32,
+    37
+   ],
+   "SetBroadAvgRate": [
+    17,
+    24,
+    32,
+    37
+   ],
+   "SetEQAvgRate": [
+    17,
+    24,
+    32,
+    37
+   ],
+   "SetMaxEQCauseOfLossAdjmtRate": [
+    9,
+    41,
+    76,
+    107,
+    110
+   ],
+   "SetSpecialAvgRate": [
+    17,
+    24,
+    32,
+    37
+   ],
+   "SetTotFullValTimesBroadRate": [
+    9,
+    15
+   ],
+   "SetTotFullValTimesSpecialRate": [
+    9,
+    15
+   ]
+  },
+  "CommercialPropertyPeakSeasonGeneralInformationRules": {
+   "SetCoinsuranceFactor": [
+    2
+   ]
+  },
+  "CommercialPropertyPeakSeasonLimitOfInsuranceDetailBasicGroupICoverageRules": {
+   "SetBaseAndTotalLimitsDifference": [
+    10,
+    14
+   ],
+   "SetProRateIndicator": [
+    2
+   ],
+   "SetRate": [
+    9,
+    19
+   ],
+   "SetTotalLimitPremium": [
+    2
+   ]
+  },
+  "CommercialPropertyPeakSeasonLimitOfInsuranceDetailBasicGroupIICoverageRules": {
+   "SetBaseAndTotalLimitsDifference": [
+    10,
+    14
+   ],
+   "SetProRateIndicator": [
+    2
+   ],
+   "SetRate": [
+    9,
+    19
+   ],
+   "SetTotalLimitPremium": [
+    2
+   ]
+  },
+  "CommercialPropertyPeakSeasonLimitOfInsuranceDetailBroadCoverageRules": {
+   "SetBaseAndTotalLimitsDifference": [
+    10,
+    14
+   ],
+   "SetProRateIndicator": [
+    2
+   ],
+   "SetRate": [
+    9,
+    19
+   ],
+   "SetTotalLimitPremium": [
+    2
+   ]
+  },
+  "CommercialPropertyPeakSeasonLimitOfInsuranceDetailEarthquakeCoverageRules": {
+   "SetBaseAndTotalLimitsDifference": [
+    2
+   ],
+   "SetProRateIndicator": [
+    2
+   ],
+   "SetRate": [
+    8,
+    10
+   ],
+   "SetTotalLimitPremium": [
+    2
+   ]
+  },
+  "CommercialPropertyPeakSeasonLimitOfInsuranceDetailRules": {
+   "SetAdditionalBlktLimit": [
+    2
+   ],
+   "SetBasicGroupIAvgRate": [
+    2
+   ],
+   "SetBasicGroupIIAvgRate": [
+    2
+   ],
+   "SetBasicGroupIILOIFactor": [
+    9,
+    12
+   ],
+   "SetBasicGroupILOIFactor": [
+    9,
+    12
+   ],
+   "SetBlktLimit": [
+    2
+   ],
+   "SetBroadAvgRate": [
+    2
+   ],
+   "SetBroadLOIFactor": [
+    9,
+    12
+   ],
+   "SetEQAvgRate": [
+    2
+   ],
+   "SetLimitToUse": [
+    8,
+    11
+   ],
+   "SetPeakSeasonProRateFactor": [
+    11,
+    46
+   ],
+   "SetSpecialAvgRate": [
+    2
+   ],
+   "SetSpecialLOIFactor": [
+    9,
+    12
+   ]
+  },
+  "CommercialPropertyPeakSeasonLimitOfInsuranceDetailSpecialCoverageRules": {
+   "SetBaseAndTotalLimitsDifference": [
+    10,
+    14
+   ],
+   "SetProRateIndicator": [
+    2
+   ],
+   "SetRate": [
+    9,
+    23
+   ],
+   "SetTotalLimitPremium": [
+    2
+   ]
+  },
+  "CommercialPropertyPersonalPropertyAgreedValBasicGroupICoverageRules": {
+   "SetFactor": [
+    2
+   ]
+  },
+  "CommercialPropertyPersonalPropertyAgreedValBasicGroupIICoverageRules": {
+   "SetFactor": [
+    2
+   ]
+  },
+  "CommercialPropertyPersonalPropertyAgreedValBroadCoverageRules": {
+   "SetFactor": [
+    2
+   ]
+  },
+  "CommercialPropertyPersonalPropertyAgreedValEarthquakeCoverageRules": {
+   "SetFactor": [
+    2
+   ]
+  },
+  "CommercialPropertyPersonalPropertyAgreedValSpecialCoverageRules": {
+   "SetFactor": [
+    2
+   ]
+  },
+  "CommercialPropertyPersonalPropertyInflationGuardBasicGroupICoverageRules": {
+   "SetFactor": [
+    17,
+    37,
+    42
+   ]
+  },
+  "CommercialPropertyPersonalPropertyInflationGuardBasicGroupIICoverageRules": {
+   "SetFactor": [
+    17,
+    37,
+    42
+   ]
+  },
+  "CommercialPropertyPersonalPropertyInflationGuardBroadCoverageRules": {
+   "SetFactor": [
+    17,
+    37,
+    42
+   ]
+  },
+  "CommercialPropertyPersonalPropertyInflationGuardEarthquakeCoverageRules": {
+   "SetFactor": [
+    17,
+    37,
+    42
+   ]
+  },
+  "CommercialPropertyPersonalPropertyInflationGuardSpecialCoverageRules": {
+   "SetFactor": [
+    17,
+    37,
+    42
+   ]
+  },
+  "CommercialPropertyPersonalPropertyPrsnlPropSpecialCoverageRules": {
+   "SetLimit": [
+    2
+   ],
+   "SetLimitToUse": [
+    26,
+    28,
+    31
+   ]
+  },
+  "CommercialPropertyPersonalPropertyRules": {
+   "SetAdjustedBasicGroupIIRate": [
+    2
+   ],
+   "SetAdjustedBasicGroupIRate": [
+    2
+   ],
+   "SetAdjustedBroadRate": [
+    2
+   ],
+   "SetAdjustedEQRate": [
+    10,
+    20,
+    24
+   ],
+   "SetAdjustedSpecialRate": [
+    2
+   ],
+   "SetAllOtherDeductibleStatCode": [
+    25,
+    28,
+    31
+   ],
+   "SetBCEGEQFactor": [
+    9,
+    11
+   ],
+   "SetBCEGFactor": [
+    9,
+    11
+   ],
+   "SetBGIIDeductibleByLocationFactor": [
+    17,
+    20
+   ],
+   "SetBasicGroupIBaseRate": [
+    31,
+    40,
+    58,
+    67,
+    70
+   ],
+   "SetBasicGroupIDeductibleStatCode": [
+    9,
+    14
+   ],
+   "SetBasicGroupIIBaseRate": [
+    13,
+    20
+   ],
+   "SetBasicGroupIICoinsuranceFactor": [
+    19,
+    21
+   ],
+   "SetBasicGroupIILOIFactor": [
+    13,
+    28,
+    33
+   ],
+   "SetBasicGroupIIRate": [
+    2
+   ],
+   "SetBasicGroupILOIFactor": [
+    13,
+    36,
+    41,
+    44
+   ],
+   "SetBasicGroupIRate": [
+    10,
+    26,
+    32
+   ],
+   "SetBasicGroupIRatingTerrFactor": [
+    2
+   ],
+   "SetBldgHeightFactor": [
+    2
+   ],
+   "SetBlktBasicGroupIILOIFactor": [
+    13,
+    18
+   ],
+   "SetBlktBasicGroupILOIFactor": [
+    20,
+    25,
+    28
+   ],
+   "SetBlktBroadLOIFactor": [
+    13,
+    18
+   ],
+   "SetBlktRated": [
+    2
+   ],
+   "SetBlktSpecialLOIFactor": [
+    13,
+    18
+   ],
+   "SetBroadBaseRate": [
+    13,
+    16
+   ],
+   "SetBroadLOIFactor": [
+    13,
+    28,
+    33
+   ],
+   "SetBroadRate": [
+    13,
+    16
+   ],
+   "SetBurglaryAlarmCreditFactor": [
+    22,
+    25,
+    28
+   ],
+   "SetClassRatedClassCode": [
+    2
+   ],
+   "SetCoinsuranceFactor": [
+    32,
+    49,
+    69,
+    72,
+    75
+   ],
+   "SetConditionalTerrorRate": [
+    10,
+    15
+   ],
+   "SetDeductibleAsNumber": [
+    20,
+    23
+   ],
+   "SetDeductibleByLocationFactor": [
+    2
+   ],
+   "SetDeductibleFactorBasicGroupI": [
+    2
+   ],
+   "SetDeductibleFactorBasicGroupII": [
+    2
+   ],
+   "SetDeductibleFactorSpecial": [
+    23,
+    41,
+    51,
+    59,
+    68
+   ],
+   "SetEQBaseRate": [
+    23,
+    26,
+    29
+   ],
+   "SetEQBlanketRatesAndFactors": [
+    9,
+    10
+   ],
+   "SetEQBlanketValues": [
+    23,
+    53
+   ],
+   "SetEQCoinsuranceFactor": [
+    17,
+    35,
+    38
+   ],
+   "SetEQDeductible": [
+    2
+   ],
+   "SetEQDeductibleByLocationFactor": [
+    8,
+    11
+   ],
+   "SetEQDeductibleFactor": [
+    18,
+    32,
+    49,
+    58,
+    77,
+    96,
+    112,
+    128,
+    137,
+    171,
+    190,
+    226,
+    234,
+    242,
+    250,
+    258,
+    266,
+    274,
+    282,
+    290,
+    298,
+    306,
+    314,
+    322,
+    325,
+    370,
+    378,
+    386,
+    389,
+    409,
+    417,
+    425,
+    428,
+    431,
+    434,
+    437
+   ],
+   "SetEQDeductibleTier": [
+    2
+   ],
+   "SetEQLimitToUse": [
+    7,
+    12,
+    25,
+    41,
+    56,
+    59,
+    62,
+    84,
+    103,
+    116,
+    119,
+    193,
+    201,
+    269,
+    283,
+    286,
+    289,
+    292
+   ],
+   "SetEQRate": [
+    9,
+    12
+   ],
+   "SetEQSprinklerLeakageCoinsuranceFactor": [
+    13,
+    16
+   ],
+   "SetEQSprinklerLeakageOnlyFactor": [
+    14,
+    27,
+    30
+   ],
+   "SetEQSprinklerLeakageOnlyPrsnlPropFactor": [
+    18,
+    21
+   ],
+   "SetEQSprinkleredRiskFactor": [
+    2
+   ],
+   "SetEQSubLimitBlktIndicator": [
+    2
+   ],
+   "SetEQSubLimitPercent": [
+    20,
+    25,
+    28,
+    31
+   ],
+   "SetEQsublimitSprinklerLeakageFactor": [
+    13,
+    16
+   ],
+   "SetFinalBasicGroupIIRate": [
+    2
+   ],
+   "SetFinalBasicGroupIRate": [
+    3
+   ],
+   "SetFinalBroadRate": [
+    2
+   ],
+   "SetFinalEQRate": [
+    2
+   ],
+   "SetFinalSpecialRate": [
+    2
+   ],
+   "SetFireSafeVaultFactor": [
+    16,
+    19,
+    22
+   ],
+   "SetLegalLiabAddlInsurableIntFactor": [
+    11,
+    14
+   ],
+   "SetLegalLiabFactor": [
+    2
+   ],
+   "SetLimitToUse": [
+    15,
+    31,
+    46,
+    49,
+    52,
+    74,
+    94,
+    112,
+    115,
+    118,
+    192,
+    200,
+    268,
+    282,
+    285,
+    288,
+    291
+   ],
+   "SetLowestBasicGroupIIBaseRate": [
+    9,
+    16
+   ],
+   "SetManufacturersConsequentialLossAssumptionFactor": [
+    14,
+    17,
+    20
+   ],
+   "SetMultiLocAvgRatesIndicator": [
+    11,
+    21,
+    24
+   ],
+   "SetMultiPremiumAndDispersionCreditFactor": [
+    9,
+    11
+   ],
+   "SetNonEQBlanketRatesAndFactors": [
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17
+   ],
+   "SetNonEQBlanketValues": [
+    21,
+    65
+   ],
+   "SetPostTRIAExclFactor": [
+    8,
+    13,
+    18,
+    21
+   ],
+   "SetPostTRIAExclusionRate": [
+    13,
+    18
+   ],
+   "SetProtectionClassFactor": [
+    34,
+    37,
+    40
+   ],
+   "SetSoftStoryModificationFactor": [
+    9,
+    12
+   ],
+   "SetSpecialBaseRate": [
+    20,
+    23,
+    26
+   ],
+   "SetSpecialDeductibleByLocationFactor": [
+    2
+   ],
+   "SetSpecialLOIFactor": [
+    13,
+    28,
+    33
+   ],
+   "SetSpecialRate": [
+    9,
+    12
+   ],
+   "SetSpecialTheftExclusionFactor": [
+    20,
+    23,
+    26
+   ],
+   "SetSprinklerLeakageExclNonSprinkleredBaseRate": [
+    15,
+    40,
+    43
+   ],
+   "SetSprinklerLeakageExclNonSprinkleredRate": [
+    2
+   ],
+   "SetSprinklerLeakageExclSprinkleredFactor": [
+    26,
+    55,
+    58,
+    61
+   ],
+   "SetSprinklerLeakageNotExcludedFactor": [
+    15,
+    40,
+    43
+   ],
+   "SetStdPropPolGroupIFactor": [
+    2
+   ],
+   "SetStdPropPolGroupIIFactor": [
+    2
+   ],
+   "SetSubStdConditionRate": [
+    2
+   ],
+   "SetTRIAExclFactor": [
+    8,
+    14,
+    19,
+    24,
+    27
+   ],
+   "SetTRIAExclusionRate": [
+    11,
+    16
+   ],
+   "SetTerrorismCondExclFactor": [
+    8,
+    13,
+    18,
+    21
+   ],
+   "SetTerrorismConditionalSublimitPct": [
+    6,
+    9
+   ],
+   "SetTerrorismSublimitFactor": [
+    21,
+    25,
+    28
+   ],
+   "SetTerrorismSublimitPct": [
+    8,
+    11
+   ],
+   "SetTheftLimitationSpecialExclTheftAdjustedRate": [
+    9,
+    18
+   ],
+   "SetTheftLimitationSpecialExclTheftFactor": [
+    9,
+    12
+   ],
+   "SetTheftLimitationSpecialExclTheftFinalRate": [
+    2
+   ],
+   "SetTheftLimitationSpecialFinalRate": [
+    2
+   ],
+   "SetTheftLimitationSpecialInclTheftAdjustedRate": [
+    9,
+    20
+   ],
+   "SetTheftLimitationSpecialInclTheftFinalRate": [
+    2
+   ],
+   "SetVandalismExclFactor": [
+    37,
+    47,
+    52,
+    55
+   ],
+   "SetWatchmanCreditFactor": [
+    22,
+    25,
+    28
+   ],
+   "SetWindstormHailDollarAmt": [
+    25,
+    31,
+    37
+   ],
+   "SetWindstormHailIndicatorPrsnlProp": [
+    2
+   ],
+   "SetWindstormHailLimit": [
+    22,
+    24,
+    35,
+    46,
+    49,
+    62,
+    69,
+    72,
+    75
+   ],
+   "SetWindstormOrHailDeductibleFactor": [
+    2
+   ],
+   "SetWindstormOrHailDeductibleStatCode": [
+    19,
+    43,
+    53,
+    58
+   ],
+   "SetWindstormOrHailExclFactor": [
+    7,
+    10
+   ],
+   "SetWindstormOrHailPercent": [
+    18,
+    21
+   ]
+  },
+  "CommercialPropertyPersonalPropertySpecialCOLFursFurGarmentsAndGarmentsTrimmedWithFurRules": {
+   "SetBaseSpecialLimit": [
+    2
+   ],
+   "SetLimitToUse": [
+    10,
+    12
+   ]
+  },
+  "CommercialPropertyPersonalPropertySpecialCOLJewelryWatchesPearlsBullionGoldSilverPlatinumAndOtherPreciousMetalsRules": {
+   "SetBaseSpecialLimit": [
+    2
+   ],
+   "SetLimitToUse": [
+    13,
+    15
+   ]
+  },
+  "CommercialPropertyPersonalPropertySpecialCOLPatternsDiesMoldsAndFormsRules": {
+   "SetBaseSpecialLimit": [
+    2
+   ],
+   "SetLimitToUse": [
+    10,
+    12
+   ]
+  },
+  "CommercialPropertyPersonalPropertySpecialCOLStampsTicketsAndLettersOfCreditRules": {
+   "SetBaseSpecialLimit": [
+    2
+   ],
+   "SetLimitToUse": [
+    10,
+    12
+   ]
+  },
+  "CommercialPropertyPersonalPropertyTobaccoSalesWarehousesCoverageRules": {
+   "SetTobaccoInSalesWarehousesRate": [
+    9,
+    12
+   ]
+  },
+  "CommercialPropertyPierAndWharfAdditionalCoveredCausesOfLossRules": {
+   "SetFactor": [
+    9,
+    12
+   ]
+  },
+  "CommercialPropertyPierAndWharfAdditionalCoveredCausesOfLossSpclClassBusnIncomeRules": {
+   "SetFactor": [
+    9,
+    12
+   ],
+   "SetLimitToUse": [
+    9,
+    16,
+    19
+   ]
+  },
+  "CommercialPropertyPierAndWharfAdditionalCoveredCausesOfLossSpecialClassRules": {
+   "SetRate": [
+    9,
+    12
+   ]
+  },
+  "CommercialPropertyPierAndWharfAdditionalCoveredCausesOfLossStructRules": {
+   "SetRate": [
+    9,
+    12
+   ]
+  },
+  "CommercialPropertyPollutantCleanUpAndRemovalAdditionalAggregateLimitOfInsuranceLocationRules": {
+   "SetAllOtherDeductibleStatCode": [
+    9,
+    12
+   ],
+   "SetBGIIDeductibleByLocationFactor": [
+    58,
+    61
+   ],
+   "SetBasicGroupIDeductibleStatCode": [
+    9,
+    12
+   ],
+   "SetBasicGroupIFactor": [
+    2
+   ],
+   "SetBasicGroupIIFactor": [
+    2
+   ],
+   "SetBroadRate": [
+    2
+   ],
+   "SetDeductibleByLocationFactor": [
+    34,
+    37
+   ],
+   "SetDeductibleFactor": [
+    9,
+    12
+   ],
+   "SetEQDeductibleByLocationFactor": [
+    41,
+    44
+   ],
+   "SetEQFactor": [
+    2
+   ],
+   "SetHighestBlanketPollutantBGIAvgRate": [
+    2
+   ],
+   "SetHighestBlanketPollutantBGIIAvgRate": [
+    2
+   ],
+   "SetHighestBlanketPollutantEQAvgRate": [
+    2
+   ],
+   "SetHighestBldgPollutantBGIIRate": [
+    2
+   ],
+   "SetHighestBldgPollutantBGIRate": [
+    2
+   ],
+   "SetHighestBldgPollutantEQRate": [
+    2
+   ],
+   "SetHighestBroadLOIFactor": [
+    2,
+    25
+   ],
+   "SetHighestPersPropPollutantBGIIRate": [
+    2
+   ],
+   "SetHighestPersPropPollutantBGIRate": [
+    2
+   ],
+   "SetHighestPersPropPollutantEQRate": [
+    2
+   ],
+   "SetHighestPollutantBGIIRate": [
+    9,
+    16,
+    25,
+    27
+   ],
+   "SetHighestPollutantBGIRate": [
+    9,
+    16,
+    25,
+    27
+   ],
+   "SetHighestPollutantEQRate": [
+    9,
+    16,
+    25,
+    27
+   ],
+   "SetHighestSpecialLOIFactor": [
+    2,
+    25
+   ],
+   "SetHighestSpecialPollutantBGIIRate": [
+    2
+   ],
+   "SetHighestSpecialPollutantBGIRate": [
+    2
+   ],
+   "SetHighestSpecialPollutantEQRate": [
+    2
+   ],
+   "SetSpecialDeductibleByLocationFactor": [
+    34,
+    37
+   ],
+   "SetSpecialRate": [
+    2
+   ],
+   "SetUsePersPropPollutantRateIndicator": [
+    31,
+    34
+   ]
+  },
+  "CommercialPropertyPowerHeatAndRefrigerationDeductionRules": {
+   "SetBaseFactor": [
+    2
+   ],
+   "SetFactor": [
+    2
+   ]
+  },
+  "CommercialPropertyPowerHeatAndRefrigerationDeductionSpclClassBusnIncomeRules": {
+   "SetBaseFactor": [
+    2
+   ],
+   "SetFactor": [
+    2
+   ]
+  },
+  "CommercialPropertyRadioOrTelevisionAntennasBusinessIncomeOrExtraExpenseBasicGroupICoverageRules": {
+   "SetLimit": [
+    8,
+    10
+   ]
+  },
+  "CommercialPropertyRadioOrTelevisionAntennasBusinessIncomeOrExtraExpenseBasicGroupIICoverageRules": {
+   "SetLimit": [
+    8,
+    10
+   ]
+  },
+  "CommercialPropertyRadioOrTelevisionAntennasBusinessIncomeOrExtraExpenseBroadCoverageRules": {
+   "SetLimit": [
+    8,
+    10
+   ]
+  },
+  "CommercialPropertyRadioOrTelevisionAntennasBusinessIncomeOrExtraExpenseRules": {
+   "SetBGIBaseRate": [
+    16,
+    21,
+    26
+   ],
+   "SetBasicGroupIIBaseRate": [
+    14,
+    19,
+    31,
+    36
+   ],
+   "SetBasicGroupIIRate": [
+    2
+   ],
+   "SetBasicGroupIRate": [
+    2
+   ],
+   "SetBroadBaseRate": [
+    9,
+    14
+   ],
+   "SetEQBaseRate": [
+    11,
+    14
+   ],
+   "SetSpecialBaseRate": [
+    14,
+    28,
+    33
+   ],
+   "SetVandalismExclFactor": [
+    7,
+    10
+   ],
+   "SetWindstormOrHailExclFactor": [
+    14,
+    19,
+    24
+   ]
+  },
+  "CommercialPropertyRadioOrTelevisionAntennasBusinessIncomeOrExtraExpenseSpecialCoverageRules": {
+   "SetLimit": [
+    8,
+    10
+   ]
+  },
+  "CommercialPropertyRadioOrTelevisionAntennasDetailRules": {
+   "SetAdjustedBroadRate": [
+    2
+   ],
+   "SetAdjustedSpecialRate": [
+    2
+   ],
+   "SetBasicGroupIIBaseRate": [
+    14,
+    19,
+    31,
+    36
+   ],
+   "SetBasicGroupIICoinsuranceFactor": [
+    16,
+    18
+   ],
+   "SetBasicGroupIIRate": [
+    19,
+    28
+   ],
+   "SetBasicGroupIRate": [
+    9,
+    14
+   ],
+   "SetBroadBaseRate": [
+    2
+   ],
+   "SetBroadRate": [
+    13,
+    18
+   ],
+   "SetCoinsuranceFactor": [
+    17,
+    35,
+    38
+   ],
+   "SetEQBaseRate": [
+    11,
+    16
+   ],
+   "SetEQCoinsuranceFactor": [
+    8,
+    11
+   ],
+   "SetEQDeductibleFactor": [
+    38,
+    46,
+    54,
+    62,
+    70,
+    78,
+    86,
+    94,
+    102,
+    110,
+    118,
+    126,
+    134,
+    137,
+    182,
+    190,
+    198,
+    201,
+    221,
+    229,
+    237,
+    240,
+    243,
+    246
+   ],
+   "SetSpecialBaseRate": [
+    9,
+    12
+   ],
+   "SetSpecialRate": [
+    13,
+    18
+   ],
+   "SetWindstormOrHailExclFactor": [
+    14,
+    19,
+    24
+   ]
+  },
+  "CommercialPropertyRules": {
+   "SetCyberIncidentExclusionCOLExcptnsFactorBGI": [
+    18,
+    27,
+    30
+   ],
+   "SetCyberIncidentExclusionCOLExcptnsFactorBGII": [
+    18,
+    27,
+    30
+   ],
+   "SetCyberIncidentExclusionCOLExcptnsFactorBroad": [
+    18,
+    27,
+    30
+   ],
+   "SetCyberIncidentExclusionCOLExcptnsFactorBusnIncomeBGI": [
+    18,
+    27,
+    30
+   ],
+   "SetCyberIncidentExclusionCOLExcptnsFactorBusnIncomeBGII": [
+    18,
+    27,
+    30
+   ],
+   "SetCyberIncidentExclusionCOLExcptnsFactorBusnIncomeBroad": [
+    18,
+    27,
+    30
+   ],
+   "SetCyberIncidentExclusionCOLExcptnsFactorBusnIncomeEQ": [
+    18,
+    27,
+    30
+   ],
+   "SetCyberIncidentExclusionCOLExcptnsFactorBusnIncomeEquipmentBreakdown": [
+    18,
+    27,
+    30
+   ],
+   "SetCyberIncidentExclusionCOLExcptnsFactorBusnIncomeFlood": [
+    18,
+    27,
+    30
+   ],
+   "SetCyberIncidentExclusionCOLExcptnsFactorBusnIncomeSpecial": [
+    18,
+    27,
+    30
+   ],
+   "SetCyberIncidentExclusionCOLExcptnsFactorEQ": [
+    18,
+    27,
+    30
+   ],
+   "SetCyberIncidentExclusionCOLExcptnsFactorEquipmentBreakdown": [
+    18,
+    27,
+    30
+   ],
+   "SetCyberIncidentExclusionCOLExcptnsFactorExtraExpenseBGI": [
+    18,
+    27,
+    30
+   ],
+   "SetCyberIncidentExclusionCOLExcptnsFactorExtraExpenseBGII": [
+    18,
+    27,
+    30
+   ],
+   "SetCyberIncidentExclusionCOLExcptnsFactorExtraExpenseBroad": [
+    18,
+    27,
+    30
+   ],
+   "SetCyberIncidentExclusionCOLExcptnsFactorExtraExpenseEQ": [
+    18,
+    27,
+    30
+   ],
+   "SetCyberIncidentExclusionCOLExcptnsFactorExtraExpenseEquipmentBreakdown": [
+    18,
+    27,
+    30
+   ],
+   "SetCyberIncidentExclusionCOLExcptnsFactorExtraExpenseFlood": [
+    18,
+    27,
+    30
+   ],
+   "SetCyberIncidentExclusionCOLExcptnsFactorExtraExpenseSpecial": [
+    18,
+    27,
+    30
+   ],
+   "SetCyberIncidentExclusionCOLExcptnsFactorFlood": [
+    18,
+    27,
+    30
+   ],
+   "SetCyberIncidentExclusionCOLExcptnsFactorSpecial": [
+    18,
+    27,
+    30
+   ],
+   "SetCyberIncidentExclusionCOLExcptnsFactorSpoilage": [
+    18,
+    27,
+    30
+   ],
+   "SetCyberIncidentExclusionFactorBGI": [
+    7,
+    12
+   ],
+   "SetCyberIncidentExclusionFactorBGII": [
+    7,
+    12
+   ],
+   "SetCyberIncidentExclusionFactorBroad": [
+    7,
+    12
+   ],
+   "SetCyberIncidentExclusionFactorEQ": [
+    7,
+    12
+   ],
+   "SetCyberIncidentExclusionFactorEquipmentBreakdown": [
+    7,
+    12
+   ],
+   "SetCyberIncidentExclusionFactorFlood": [
+    7,
+    12
+   ],
+   "SetCyberIncidentExclusionFactorMortgageholdersErrorsAndOmissions": [
+    7,
+    10
+   ],
+   "SetCyberIncidentExclusionFactorSpecial": [
+    7,
+    12
+   ],
+   "SetCyberIncidentExclusionFactorSpoilage": [
+    7,
+    12
+   ],
+   "SetCyberIsAggregateLimit": [
+    17,
+    20,
+    23
+   ],
+   "SetCyberTypeOfLimitBusinessIncome": [
+    17,
+    20,
+    23
+   ],
+   "SetCyberTypeOfLimitExtraExpense": [
+    17,
+    20,
+    23
+   ],
+   "SetCyberTypeOfLimitPropertyDamage": [
+    17,
+    20,
+    23
+   ],
+   "SetIRPMFactor": [
+    20,
+    33,
+    41,
+    61,
+    63,
+    66
+   ],
+   "SetIRPMMaximum": [
+    9,
+    12
+   ],
+   "SetIRPMMinimum": [
+    9,
+    12
+   ],
+   "SetMLPDC": [
+    9,
+    11
+   ],
+   "SetMUBlktRated": [
+    9
+   ],
+   "SetMultipleLocationsAvgRate": [
+    7,
+    9
+   ],
+   "SetPackageModFactor": [
+    9
+   ],
+   "SetStdPropPolBasicGroupIFactor": [
+    9,
+    12
+   ],
+   "SetStdPropPolBasicGroupIIFactor": [
+    9,
+    12
+   ],
+   "SetTerrorismProratingFullFactor": [
+    9,
+    12
+   ],
+   "SetTerrorismProratingProgYr3Factor": [
+    10,
+    18,
+    21
+   ],
+   "SetTotalRatingModificationRate": [
+    2
+   ]
+  },
+  "CommercialPropertyScheduledBuildingPropertyTenantsPolicyRules": {
+   "SetBasicGroupIICoinsuranceFactor": [
+    15,
+    18
+   ],
+   "SetBroadBaseRate": [
+    13,
+    16
+   ],
+   "SetBuildingGlassBGIILOIFactor": [
+    9,
+    14
+   ],
+   "SetBuildingGlassBGILOIFactor": [
+    13,
+    18
+   ],
+   "SetBuildingGlassBroadLOIFactor": [
+    9,
+    14
+   ],
+   "SetBuildingGlassSpecialLOIFactor": [
+    9,
+    14
+   ],
+   "SetBuildingPropertyOtherThanGlassBGIILOIFactor": [
+    9,
+    14
+   ],
+   "SetBuildingPropertyOtherThanGlassBGILOIFactor": [
+    13,
+    18
+   ],
+   "SetBuildingPropertyOtherThanGlassBroadLOIFactor": [
+    9,
+    14
+   ],
+   "SetBuildingPropertyOtherThanGlassLimit": [
+    2,
+    18
+   ],
+   "SetBuildingPropertyOtherThanGlassSpecialLOIFactor": [
+    9,
+    14
+   ],
+   "SetCoinsuranceFactor": [
+    17,
+    35,
+    38
+   ],
+   "SetDeductibleOnBldgPropOTGFactorBasicGroupI": [
+    10,
+    27,
+    41,
+    44
+   ],
+   "SetDeductibleOnBldgPropOTGFactorBasicGroupII": [
+    10,
+    27,
+    41,
+    44
+   ],
+   "SetDeductibleOnBldgPropOTGFactorBroad": [
+    10,
+    27,
+    41,
+    44
+   ],
+   "SetDeductibleOnBldgPropOTGFactorEQ": [
+    10,
+    27,
+    41,
+    44
+   ],
+   "SetDeductibleOnBldgPropOTGFactorSpecial": [
+    10,
+    27,
+    41,
+    44
+   ],
+   "SetDeductibleOnBuildingGlassFactorBasicGroupI": [
+    9,
+    22,
+    36,
+    45
+   ],
+   "SetDeductibleOnBuildingGlassFactorBasicGroupII": [
+    9,
+    22,
+    36,
+    45
+   ],
+   "SetDeductibleOnBuildingGlassFactorBroad": [
+    9,
+    22,
+    36,
+    45
+   ],
+   "SetDeductibleOnBuildingGlassFactorEQ": [
+    9,
+    22,
+    36,
+    45
+   ],
+   "SetDeductibleOnBuildingGlassFactorSpecial": [
+    9,
+    22,
+    36,
+    45
+   ],
+   "SetEQCoinsuranceFactor": [
+    9,
+    11
+   ],
+   "SetSpecialBaseRate": [
+    9,
+    12
+   ]
+  },
+  "CommercialPropertySeasonalLeasesMonthlyLimitsOnLossPaymentRules": {
+   "SetLimit": [
+    2
+   ]
+  },
+  "CommercialPropertySeasonalLeasesMonthlyLimitsOnLossPaymentSpclClassBusnIncomeRules": {
+   "SetLimit": [
+    2
+   ]
+  },
+  "CommercialPropertySpecialClassAgreedValBasicGroupICoverageRules": {
+   "SetFactor": [
+    2
+   ]
+  },
+  "CommercialPropertySpecialClassAgreedValBasicGroupIICoverageRules": {
+   "SetFactor": [
+    2
+   ]
+  },
+  "CommercialPropertySpecialClassAgreedValBroadCoverageRules": {
+   "SetFactor": [
+    2
+   ]
+  },
+  "CommercialPropertySpecialClassAgreedValEarthquakeCoverageRules": {
+   "SetFactor": [
+    2
+   ]
+  },
+  "CommercialPropertySpecialClassAgreedValSpecialCoverageRules": {
+   "SetFactor": [
+    2
+   ]
+  },
+  "CommercialPropertySpecialClassBusnIncomeAgreedValBasicGroupICoverageRules": {
+   "SetFactor": [
+    2
+   ]
+  },
+  "CommercialPropertySpecialClassBusnIncomeAgreedValBasicGroupIICoverageRules": {
+   "SetFactor": [
+    2
+   ]
+  },
+  "CommercialPropertySpecialClassBusnIncomeAgreedValBroadCoverageRules": {
+   "SetFactor": [
+    2
+   ]
+  },
+  "CommercialPropertySpecialClassBusnIncomeAgreedValEarthquakeCoverageRules": {
+   "SetFactor": [
+    2
+   ]
+  },
+  "CommercialPropertySpecialClassBusnIncomeAgreedValSpecialCoverageRules": {
+   "SetFactor": [
+    2
+   ]
+  },
+  "CommercialPropertySpecialClassBusnIncomeExtendedPeriodOfIndemnityCoverageBasicGroupICoverageRules": {
+   "SetFactor": [
+    9,
+    12
+   ]
+  },
+  "CommercialPropertySpecialClassBusnIncomeExtendedPeriodOfIndemnityCoverageBasicGroupIICoverageRules": {
+   "SetFactor": [
+    9,
+    12
+   ]
+  },
+  "CommercialPropertySpecialClassBusnIncomeExtendedPeriodOfIndemnityCoverageBroadCoverageRules": {
+   "SetFactor": [
+    2
+   ]
+  },
+  "CommercialPropertySpecialClassBusnIncomeExtendedPeriodOfIndemnityCoverageEarthquakeCoverageRules": {
+   "SetFactor": [
+    9,
+    12
+   ]
+  },
+  "CommercialPropertySpecialClassBusnIncomeExtendedPeriodOfIndemnityCoverageSpecialCoverageRules": {
+   "SetFactor": [
+    2
+   ]
+  },
+  "CommercialPropertySpecialClassBusnIncomeRules": {
+   "SetAllOtherDeductibleStatCode": [
+    2
+   ],
+   "SetBasicGroupIDeductibleStatCode": [
+    2
+   ],
+   "SetBasicGroupIIBaseRate": [
+    13,
+    16
+   ],
+   "SetBasicGroupIIRate": [
+    2
+   ],
+   "SetBasicGroupIRate": [
+    2
+   ],
+   "SetBlanketRated": [
+    2
+   ],
+   "SetBroadBaseRate": [
+    16,
+    21,
+    26
+   ],
+   "SetBroadRate": [
+    9,
+    14
+   ],
+   "SetChangesEducationalInstitutionsExtensionOfRecoveryFactor": [
+    13,
+    16
+   ],
+   "SetConditionalTerrorRate": [
+    10,
+    15
+   ],
+   "SetCyberIncidentExclusionCOLExcptnsFactorBusnIncomeBGIIToUse": [
+    8,
+    10
+   ],
+   "SetCyberIncidentExclusionCOLExcptnsFactorBusnIncomeBGIToUse": [
+    8,
+    10
+   ],
+   "SetCyberIncidentExclusionCOLExcptnsFactorBusnIncomeBroadToUse": [
+    8,
+    10
+   ],
+   "SetCyberIncidentExclusionCOLExcptnsFactorBusnIncomeEQToUse": [
+    8,
+    10
+   ],
+   "SetCyberIncidentExclusionCOLExcptnsFactorBusnIncomeEquipmentBreakdownToUse": [
+    8,
+    10
+   ],
+   "SetCyberIncidentExclusionCOLExcptnsFactorBusnIncomeFloodToUse": [
+    8,
+    10
+   ],
+   "SetCyberIncidentExclusionCOLExcptnsFactorBusnIncomeSpecialToUse": [
+    8,
+    10
+   ],
+   "SetEQBlanketRatesAndFactors": [
+    9
+   ],
+   "SetEQBlanketValues": [
+    22,
+    56
+   ],
+   "SetEQDeductibleTier": [
+    2
+   ],
+   "SetEQFactor": [
+    28,
+    39,
+    49,
+    59,
+    64,
+    68
+   ],
+   "SetEQLimitToUse": [
+    7,
+    12,
+    19,
+    34,
+    44,
+    47
+   ],
+   "SetEQRate": [
+    2
+   ],
+   "SetEQSubLimitBlktIndicator": [
+    2
+   ],
+   "SetEQSubLimitCoinsurance": [
+    13,
+    15
+   ],
+   "SetEQSubLimitPercent": [
+    20,
+    25,
+    28,
+    31
+   ],
+   "SetEQSubLimitTypeOfRiskFactor": [
+    17,
+    37,
+    57,
+    77,
+    97,
+    115,
+    139,
+    144,
+    147
+   ],
+   "SetEQSubLimitTypeRiskCombination1Factor": [
+    32,
+    42,
+    52,
+    55,
+    58
+   ],
+   "SetEQSubLimitTypeRiskCombination2Factor": [
+    28,
+    45,
+    50,
+    53
+   ],
+   "SetEarthquakeSubLimitTimeElementFactor": [
+    2
+   ],
+   "SetExtraExpenseFactor": [
+    27,
+    43,
+    67,
+    69,
+    72,
+    75
+   ],
+   "SetFactor": [
+    9,
+    16,
+    23,
+    25
+   ],
+   "SetFinalBasicGroupIIRate": [
+    2
+   ],
+   "SetFinalBasicGroupIRate": [
+    2
+   ],
+   "SetFinalBroadRate": [
+    2
+   ],
+   "SetFinalEQRate": [
+    2
+   ],
+   "SetFinalSpecialRate": [
+    2
+   ],
+   "SetFullValueTotalAmountRatio": [
+    13,
+    19
+   ],
+   "SetLimitsToUse": [
+    9,
+    17,
+    23
+   ],
+   "SetLowestBasicGroupIIBaseRate": [
+    9,
+    12
+   ],
+   "SetMaxPeriodOfIndemnityCombination1Factor": [
+    30,
+    40,
+    50,
+    60,
+    65,
+    68
+   ],
+   "SetMaxPeriodOfIndemnityCombination2Factor": [
+    30,
+    40,
+    50,
+    60,
+    65,
+    68
+   ],
+   "SetMaxPeriodOfIndemnityFactor": [
+    30,
+    50,
+    70,
+    90,
+    110,
+    120,
+    125,
+    128
+   ],
+   "SetMonthlyLimitOfIndemnityCombination1Factor": [
+    33,
+    43,
+    53,
+    63,
+    66,
+    69
+   ],
+   "SetMonthlyLimitOfIndemnityCombination2Factor": [
+    33,
+    43,
+    53,
+    63,
+    68,
+    71
+   ],
+   "SetMonthlyLimitOfIndemnityFactor": [
+    33,
+    53,
+    73,
+    93,
+    105,
+    110,
+    113
+   ],
+   "SetMultiPremiumAndDispersionCreditFactor": [
+    2
+   ],
+   "SetNonEQBlanketRatesAndFactors": [
+    9,
+    10,
+    11,
+    12,
+    13
+   ],
+   "SetNonEQBlanketValues": [
+    20,
+    58
+   ],
+   "SetPostTRIAExclFactor": [
+    8,
+    13,
+    18,
+    21
+   ],
+   "SetPostTRIAExclusionRate": [
+    13,
+    18
+   ],
+   "SetSpecialBaseRate": [
+    16,
+    21,
+    26
+   ],
+   "SetSpecialRate": [
+    9,
+    14
+   ],
+   "SetSpecialTheftExclusionFactor": [
+    13,
+    16
+   ],
+   "SetTRIAExclFactor": [
+    8,
+    14,
+    19,
+    24,
+    27
+   ],
+   "SetTRIAExclusionRate": [
+    11,
+    16
+   ],
+   "SetTerrorismCondExclFactor": [
+    8,
+    13,
+    18,
+    21
+   ],
+   "SetTerrorismSublimitFactor": [
+    2
+   ],
+   "SetTerrorismSublimitPct": [
+    2
+   ],
+   "SetTuitionAndFeesFactor": [
+    26,
+    29
+   ],
+   "SetTypeOfRiskFactor": [
+    37,
+    57,
+    77,
+    97,
+    117,
+    131,
+    136,
+    139,
+    142
+   ],
+   "SetTypeRiskCombination1Factor": [
+    37,
+    47,
+    57,
+    67,
+    70,
+    73,
+    76
+   ],
+   "SetTypeRiskCombination2Factor": [
+    37,
+    47,
+    57,
+    67,
+    72,
+    75,
+    78
+   ],
+   "SetVandalismExclFactor": [
+    36,
+    39,
+    42
+   ],
+   "SetWindstormOrHailDeductibleStatCode": [
+    2
+   ],
+   "SetWindstormOrHailExclFactor": [
+    11,
+    14
+   ]
+  },
+  "CommercialPropertySpecialClassBusnIncomeWatercraftExclusionBuybackCoverageRules": {
+   "SetFactor": [
+    9,
+    12
+   ]
+  },
+  "CommercialPropertySpecialClassInflationGuardBasicGroupICoverageRules": {
+   "SetFactor": [
+    17,
+    37,
+    42
+   ]
+  },
+  "CommercialPropertySpecialClassInflationGuardBasicGroupIICoverageRules": {
+   "SetFactor": [
+    17,
+    37,
+    42
+   ]
+  },
+  "CommercialPropertySpecialClassInflationGuardBroadCoverageRules": {
+   "SetFactor": [
+    17,
+    37,
+    42
+   ]
+  },
+  "CommercialPropertySpecialClassInflationGuardEarthquakeCoverageRules": {
+   "SetFactor": [
+    17,
+    37,
+    42
+   ]
+  },
+  "CommercialPropertySpecialClassInflationGuardSpecialCoverageRules": {
+   "SetFactor": [
+    17,
+    37,
+    42
+   ]
+  },
+  "CommercialPropertySpecialClassRules": {
+   "SetAdjustedBasicGroupIIRate": [
+    2
+   ],
+   "SetAdjustedBasicGroupIRate": [
+    2
+   ],
+   "SetAdjustedBroadRate": [
+    2
+   ],
+   "SetAdjustedEQRate": [
+    9,
+    13
+   ],
+   "SetAdjustedSpecialRate": [
+    2
+   ],
+   "SetAllOtherDeductibleStatCode": [
+    22,
+    25
+   ],
+   "SetBGIIDeductibleByLocationFactor": [
+    17,
+    20
+   ],
+   "SetBasicGroupIBaseRate": [
+    13,
+    16
+   ],
+   "SetBasicGroupIDeductibleStatCode": [
+    9,
+    12
+   ],
+   "SetBasicGroupIIBaseRate": [
+    13,
+    16
+   ],
+   "SetBasicGroupIICoinsuranceFactor": [
+    19,
+    21
+   ],
+   "SetBasicGroupIIRate": [
+    2
+   ],
+   "SetBasicGroupIRate": [
+    2
+   ],
+   "SetBroadBaseRate": [
+    13,
+    16
+   ],
+   "SetBroadRate": [
+    2
+   ],
+   "SetCoinsuranceFactor": [
+    21,
+    40,
+    70,
+    73
+   ],
+   "SetConditionalTerrorRate": [
+    10,
+    15
+   ],
+   "SetDeductibleAsNumber": [
+    23,
+    26
+   ],
+   "SetDeductibleByLocationFactor": [
+    14,
+    17
+   ],
+   "SetDeductibleFactorBasicGroupI": [
+    10,
+    20,
+    29
+   ],
+   "SetDeductibleFactorBasicGroupII": [
+    25,
+    39,
+    53,
+    56,
+    63,
+    66
+   ],
+   "SetDeductibleFactorBroad": [
+    10,
+    20,
+    29
+   ],
+   "SetDeductibleFactorSpecial": [
+    23,
+    41,
+    55,
+    64
+   ],
+   "SetEQBaseRate": [
+    13,
+    16
+   ],
+   "SetEQBlanketRatesAndFactors": [
+    9,
+    10
+   ],
+   "SetEQBlanketValues": [
+    22,
+    50
+   ],
+   "SetEQCoinsuranceFactor": [
+    17,
+    35,
+    38
+   ],
+   "SetEQDeductibleFactor": [
+    29,
+    35,
+    65,
+    73,
+    81,
+    89,
+    97,
+    105,
+    113,
+    121,
+    129,
+    137,
+    145,
+    153,
+    161,
+    164,
+    190,
+    198,
+    206,
+    209,
+    229,
+    237,
+    245,
+    248,
+    251,
+    254,
+    257,
+    260
+   ],
+   "SetEQDeductibleTier": [
+    2
+   ],
+   "SetEQLimitToUse": [
+    10,
+    18,
+    25,
+    40,
+    50,
+    53
+   ],
+   "SetEQRate": [
+    2
+   ],
+   "SetEQSubLimitBlktIndicator": [
+    2
+   ],
+   "SetEQSubLimitPercent": [
+    20,
+    25,
+    28,
+    31
+   ],
+   "SetFinalBasicGroupIIRate": [
+    2
+   ],
+   "SetFinalBasicGroupIRate": [
+    2
+   ],
+   "SetFinalBroadRate": [
+    2
+   ],
+   "SetFinalEQRate": [
+    2
+   ],
+   "SetFinalSpecialRate": [
+    2
+   ],
+   "SetLimitToUse": [
+    9,
+    24,
+    34,
+    37
+   ],
+   "SetLowestBasicGroupIIBaseRate": [
+    9,
+    12
+   ],
+   "SetMarginClauseFactor": [
+    9,
+    12
+   ],
+   "SetMultiPremiumAndDispersionCreditFactor": [
+    2
+   ],
+   "SetNonEQBlanketRatesAndFactors": [
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17
+   ],
+   "SetNonEQBlanketValues": [
+    20,
+    60
+   ],
+   "SetPostTRIAExclFactor": [
+    8,
+    13,
+    18,
+    21
+   ],
+   "SetPostTRIAExclusionRate": [
+    13,
+    18
+   ],
+   "SetProtectionClassFactor": [
+    9,
+    12
+   ],
+   "SetSpecialBaseRate": [
+    13,
+    16
+   ],
+   "SetSpecialDeductibleByLocationFactor": [
+    14,
+    17
+   ],
+   "SetSpecialRate": [
+    2
+   ],
+   "SetSpecialTheftExclusionFactor": [
+    13,
+    16
+   ],
+   "SetStdPropPolGroupIFactor": [
+    2
+   ],
+   "SetStdPropPolGroupIIFactor": [
+    2
+   ],
+   "SetTRIAExclFactor": [
+    8,
+    14,
+    19,
+    24,
+    27
+   ],
+   "SetTRIAExclusionRate": [
+    11,
+    16
+   ],
+   "SetTerrorismCondExclFactor": [
+    8,
+    13,
+    18,
+    21
+   ],
+   "SetTerrorismConditionalSublimitPct": [
+    6,
+    9
+   ],
+   "SetTerrorismSublimitFactor": [
+    21,
+    24,
+    27
+   ],
+   "SetTerrorismSublimitPct": [
+    8,
+    11
+   ],
+   "SetVandalismExclFactor": [
+    36,
+    39,
+    42
+   ],
+   "SetWindstormHailDollarAmt": [
+    26,
+    37,
+    43,
+    46
+   ],
+   "SetWindstormHailIndicator": [
+    28,
+    31
+   ],
+   "SetWindstormHailLimit": [
+    2
+   ],
+   "SetWindstormOrHailDeductibleFactor": [
+    17,
+    55,
+    69,
+    74,
+    77
+   ],
+   "SetWindstormOrHailDeductibleStatCode": [
+    19,
+    40,
+    52,
+    57
+   ],
+   "SetWindstormOrHailExclFactor": [
+    11,
+    14
+   ],
+   "SetWindstormOrHailPercent": [
+    18,
+    21
+   ],
+   "SetWindstormOrHailTotAmtInsurance": [
+    25,
+    28,
+    31
+   ],
+   "SetWindstormOrHailTotAmtInsuranceToUse": [
+    33
+   ]
+  },
+  "CommercialPropertySpecifiedBusnPrsnlPropTempAwayFromPremisesDetailBasicGroupICovRules": {
+   "SetFactor": [
+    2
+   ]
+  },
+  "CommercialPropertySpecifiedBusnPrsnlPropTempAwayFromPremisesDetailBasicGroupIICovRules": {
+   "SetFactor": [
+    2
+   ]
+  },
+  "CommercialPropertySpecifiedBusnPrsnlPropTempAwayFromPremisesDetailBroadCovRules": {
+   "SetFactor": [
+    2
+   ]
+  },
+  "CommercialPropertySpecifiedBusnPrsnlPropTempAwayFromPremisesDetailEarthquakeCovRules": {
+   "SetFactor": [
+    13,
+    26,
+    31
+   ]
+  },
+  "CommercialPropertySpecifiedBusnPrsnlPropTempAwayFromPremisesDetailSpecialCovRules": {
+   "SetFactor": [
+    13,
+    26,
+    31
+   ]
+  },
+  "CommercialPropertySpoilageCoverageRules": {
+   "SetCyberIncidentExclusionCOLExcptnsFactorSpoilageToUse": [
+    12,
+    15
+   ],
+   "SetCyberIncidentExclusionFactorSpoilageToUse": [
+    12,
+    15
+   ],
+   "SetRate": [
+    16,
+    19
+   ],
+   "SetSellingPriceFactor": [
+    9,
+    12
+   ]
+  },
+  "CommercialPropertyStructureAgreedValBasicGroupICoverageRules": {
+   "SetFactor": [
+    2
+   ]
+  },
+  "CommercialPropertyStructureAgreedValBasicGroupIICoverageRules": {
+   "SetFactor": [
+    2
+   ]
+  },
+  "CommercialPropertyStructureAgreedValBroadCoverageRules": {
+   "SetFactor": [
+    2
+   ]
+  },
+  "CommercialPropertyStructureAgreedValEarthquakeCoverageRules": {
+   "SetFactor": [
+    2
+   ]
+  },
+  "CommercialPropertyStructureAgreedValSpecialCoverageRules": {
+   "SetFactor": [
+    2
+   ]
+  },
+  "CommercialPropertyStructureInflationGuardBasicGroupICoverageRules": {
+   "SetFactor": [
+    17,
+    37,
+    42
+   ]
+  },
+  "CommercialPropertyStructureInflationGuardBasicGroupIICoverageRules": {
+   "SetFactor": [
+    17,
+    37,
+    42
+   ]
+  },
+  "CommercialPropertyStructureInflationGuardBroadCoverageRules": {
+   "SetFactor": [
+    17,
+    37,
+    42
+   ]
+  },
+  "CommercialPropertyStructureInflationGuardEarthquakeCoverageRules": {
+   "SetFactor": [
+    17,
+    37,
+    42
+   ]
+  },
+  "CommercialPropertyStructureInflationGuardSpecialCoverageRules": {
+   "SetFactor": [
+    17,
+    37,
+    42
+   ]
+  },
+  "CommercialPropertyStructureRules": {
+   "SetAdjustedBasicGroupIIRate": [
+    2
+   ],
+   "SetAdjustedBasicGroupIRate": [
+    2
+   ],
+   "SetAdjustedBroadRate": [
+    2
+   ],
+   "SetAdjustedEQRate": [
+    10,
+    20,
+    24
+   ],
+   "SetAdjustedSpecialRate": [
+    2
+   ],
+   "SetAllOtherDeductibleStatCode": [
+    22,
+    25
+   ],
+   "SetBCEGEQFactor": [
+    13,
+    16
+   ],
+   "SetBCEGFactor": [
+    13,
+    16
+   ],
+   "SetBGIIDeductibleByLocationFactor": [
+    17,
+    20
+   ],
+   "SetBasicGroupIBaseRate": [
+    16,
+    19
+   ],
+   "SetBasicGroupIDeductibleStatCode": [
+    10,
+    20,
+    25
+   ],
+   "SetBasicGroupIIBaseRate": [
+    13,
+    16
+   ],
+   "SetBasicGroupIICoinsuranceFactor": [
+    19,
+    21
+   ],
+   "SetBasicGroupIILOIFactor": [
+    13,
+    42,
+    47,
+    69,
+    72,
+    75
+   ],
+   "SetBasicGroupIIRate": [
+    2
+   ],
+   "SetBasicGroupILOIFactor": [
+    13,
+    42,
+    47,
+    73,
+    76,
+    79
+   ],
+   "SetBasicGroupIRate": [
+    10,
+    33,
+    39
+   ],
+   "SetBasicGroupIRatingTerrFactor": [
+    2
+   ],
+   "SetBldgHeightFactor": [
+    25,
+    28
+   ],
+   "SetBlktBasicGroupIILOIFactor": [
+    13,
+    18
+   ],
+   "SetBlktBasicGroupILOIFactor": [
+    16,
+    21
+   ],
+   "SetBlktBroadLOIFactor": [
+    13,
+    18
+   ],
+   "SetBlktEQSubLimitPremium": [
+    33,
+    36
+   ],
+   "SetBlktSpecialLOIFactor": [
+    13,
+    18
+   ],
+   "SetBroadBaseRate": [
+    20,
+    25,
+    30
+   ],
+   "SetBroadLOIFactor": [
+    13,
+    42,
+    47,
+    72,
+    75,
+    78
+   ],
+   "SetBroadRate": [
+    2
+   ],
+   "SetBuildersRiskEQFactor": [
+    13,
+    16
+   ],
+   "SetCoinsuranceFactor": [
+    32,
+    51,
+    81,
+    84,
+    87
+   ],
+   "SetConditionalTerrorRate": [
+    10,
+    15
+   ],
+   "SetDeductibleAsNumber": [
+    23,
+    26
+   ],
+   "SetDeductibleByLocationFactor": [
+    14,
+    17
+   ],
+   "SetDeductibleFactorBasicGroupI": [
+    10,
+    20,
+    28,
+    37
+   ],
+   "SetDeductibleFactorBasicGroupII": [
+    25,
+    39,
+    53,
+    56,
+    63,
+    66
+   ],
+   "SetDeductibleFactorBroad": [
+    10,
+    20,
+    28,
+    37
+   ],
+   "SetDeductibleFactorSpecial": [
+    23,
+    41,
+    51,
+    59,
+    68
+   ],
+   "SetEQBaseRate": [
+    24,
+    27,
+    30
+   ],
+   "SetEQBlanketRatesAndFactors": [
+    9,
+    10
+   ],
+   "SetEQBlanketValues": [
+    22,
+    52
+   ],
+   "SetEQCoinsuranceFactor": [
+    16,
+    19
+   ],
+   "SetEQDeductibleByLocationFactor": [
+    8,
+    11
+   ],
+   "SetEQDeductibleFactor": [
+    18,
+    28,
+    43,
+    52,
+    61,
+    95,
+    114,
+    150,
+    158,
+    166,
+    174,
+    182,
+    190,
+    198,
+    206,
+    214,
+    222,
+    230,
+    238,
+    246,
+    249,
+    294,
+    302,
+    310,
+    313,
+    333,
+    341,
+    349,
+    352,
+    355,
+    358,
+    361
+   ],
+   "SetEQDeductibleTier": [
+    2
+   ],
+   "SetEQLimitToUse": [
+    10,
+    18,
+    25,
+    40,
+    50,
+    53
+   ],
+   "SetEQRate": [
+    2
+   ],
+   "SetEQSprinklerLeakageCoinsuranceFactor": [
+    16,
+    19
+   ],
+   "SetEQSprinklerLeakageOnlyBldgFactor": [
+    14,
+    27,
+    30
+   ],
+   "SetEQSprinklerLeakageOnlyFactor": [
+    2
+   ],
+   "SetEQSprinkleredRiskFactor": [
+    13,
+    16
+   ],
+   "SetEQSubLimitBlktIndicator": [
+    2
+   ],
+   "SetEQSubLimitPercent": [
+    20,
+    25,
+    28,
+    31
+   ],
+   "SetEQSublimitSprinklerLeakageFactor": [
+    13,
+    16
+   ],
+   "SetFinalBasicGroupIIRate": [
+    2
+   ],
+   "SetFinalBasicGroupIRate": [
+    2
+   ],
+   "SetFinalBroadRate": [
+    2
+   ],
+   "SetFinalEQRate": [
+    2
+   ],
+   "SetFinalSpecialRate": [
+    2
+   ],
+   "SetLegalLiabAddlInsurableIntFactor": [
+    14,
+    17
+   ],
+   "SetLegalLiabilityDeductibleValidation": [
+    12,
+    33,
+    36,
+    39
+   ],
+   "SetLegalLiabilityFactor": [
+    9,
+    12
+   ],
+   "SetLimitToUse": [
+    18,
+    23,
+    26,
+    41,
+    51,
+    54
+   ],
+   "SetLimitationsOnCovForRoofSurfacingACVFactor": [
+    21,
+    26,
+    29
+   ],
+   "SetLimitationsOnCovForRoofSurfacingCosmeticExclFactor": [
+    21,
+    26,
+    29
+   ],
+   "SetLowestBasicGroupIIBaseRate": [
+    9,
+    12
+   ],
+   "SetMarginClauseFactor": [
+    9,
+    12
+   ],
+   "SetMultiPremiumAndDispersionCreditFactor": [
+    12,
+    15
+   ],
+   "SetMultiResidentialPropSpecialCreditControlFactor": [
+    50,
+    53
+   ],
+   "SetMultiResidentialPropSpecialCreditFactor": [
+    47,
+    52
+   ],
+   "SetMultiResidentialPropSpecialCreditHeatFactor": [
+    50,
+    53
+   ],
+   "SetMultipleResidentialPropSpecialCredit": [
+    2
+   ],
+   "SetNonEQBlanketRatesAndFactors": [
+    9,
+    10,
+    11,
+    12,
+    13,
+    14,
+    15,
+    16,
+    17
+   ],
+   "SetNonEQBlanketValues": [
+    20,
+    62
+   ],
+   "SetOccupClassCovFormInListAndOccupClassTheftDedConditionsMet": [
+    3
+   ],
+   "SetOccupLegalLiabilityCovCount": [
+    7,
+    20,
+    23
+   ],
+   "SetOccupancyWindHailTotAmtInsuranceSum": [
+    2,
+    14
+   ],
+   "SetOperationalUnitFloodBaseRate": [
+    19
+   ],
+   "SetOperationalUnitWindstormOrHailExclusionFactor": [
+    16,
+    19
+   ],
+   "SetPackageModFactor": [
+    8,
+    11
+   ],
+   "SetPctOfMasonryVeneerEQFactor": [
+    23,
+    35,
+    47,
+    59,
+    64,
+    67
+   ],
+   "SetPostTRIAExclFactor": [
+    8,
+    13,
+    18,
+    21
+   ],
+   "SetPostTRIAExclusionRate": [
+    13,
+    18
+   ],
+   "SetProtectionClassFactor": [
+    25,
+    28
+   ],
+   "SetSoftStoryModificationFactor": [
+    9,
+    12
+   ],
+   "SetSpecialBaseRate": [
+    16,
+    19,
+    22
+   ],
+   "SetSpecialClassRiskWindstormOrHailTotAmtInsurance": [
+    2,
+    28
+   ],
+   "SetSpecialDeductibleByLocationFactor": [
+    14,
+    17
+   ],
+   "SetSpecialLOIFactor": [
+    13,
+    42,
+    47,
+    69,
+    72,
+    75
+   ],
+   "SetSpecialRate": [
+    2
+   ],
+   "SetSpecialTheftExclusionFactor": [
+    13,
+    16
+   ],
+   "SetSprinklerLeakageExclNonSprinkleredBldgRate": [
+    2
+   ],
+   "SetSprinklerLeakageExclNonSprinkleredRate": [
+    15,
+    40,
+    43
+   ],
+   "SetSprinklerLeakageExclSprinkleredFactor": [
+    26,
+    55,
+    58,
+    61
+   ],
+   "SetSprinklerLeakageNotExcludedFactor": [
+    15,
+    40,
+    43
+   ],
+   "SetStdPropPolGroupIFactor": [
+    2
+   ],
+   "SetStdPropPolGroupIIFactor": [
+    2
+   ],
+   "SetStructureLimitToUse": [
+    10,
+    17,
+    19
+   ],
+   "SetSubStdConditionABaseRate": [
+    9,
+    14
+   ],
+   "SetSubStdConditionARate": [
+    2
+   ],
+   "SetSubStdConditionBBaseRate": [
+    9,
+    14
+   ],
+   "SetSubStdConditionBRate": [
+    2
+   ],
+   "SetSubStdConditionCBaseRate": [
+    9,
+    14
+   ],
+   "SetSubStdConditionCRate": [
+    2
+   ],
+   "SetSubStdConditionDBaseRate": [
+    9,
+    14
+   ],
+   "SetSubStdConditionDRate": [
+    2
+   ],
+   "SetSubStdConditionEBaseRate": [
+    9,
+    14
+   ],
+   "SetSubStdConditionERate": [
+    2
+   ],
+   "SetSubStdConditionRate": [
+    2
+   ],
+   "SetTRIAExclFactor": [
+    8,
+    14,
+    19,
+    24,
+    27
+   ],
+   "SetTRIAExclusionRate": [
+    11,
+    16
+   ],
+   "SetTerrorismCondExclFactor": [
+    8,
+    13,
+    18,
+    21
+   ],
+   "SetTerrorismConditionalSublimitPct": [
+    6,
+    9
+   ],
+   "SetTerrorismSublimitFactor": [
+    21,
+    25,
+    28
+   ],
+   "SetTerrorismSublimitPct": [
+    6,
+    9
+   ],
+   "SetVacantBuildingRate": [
+    2
+   ],
+   "SetVandalismExclFactor": [
+    37,
+    47,
+    52,
+    55
+   ],
+   "SetWindstormHailDollarAmt": [
+    26,
+    37,
+    43,
+    46
+   ],
+   "SetWindstormHailIndicator": [
+    28,
+    31
+   ],
+   "SetWindstormHailLimit": [
+    10,
+    21,
+    28,
+    31
+   ],
+   "SetWindstormOrHailDeductibleFactor": [
+    17,
+    33,
+    65,
+    74,
+    77
+   ],
+   "SetWindstormOrHailDeductibleStatCode": [
+    19,
+    40,
+    52,
+    57
+   ],
+   "SetWindstormOrHailExclFactor": [
+    11,
+    14
+   ],
+   "SetWindstormOrHailPercent": [
+    18,
+    21
+   ],
+   "SetWindstormOrHailTotAmtInsurance": [
+    29,
+    35
+   ]
+  },
+  "CommercialPropertyTheftOfBuildingMaterialsAndSuppliesOtherThanBuildersRiskRules": {
+   "SetRate": [
+    2
+   ],
+   "SetSpecialDedAsNumber": [
+    13,
+    18
+   ],
+   "SetStructTheftDedAsNumber": [
+    13,
+    18
+   ],
+   "SetTheftDedFactor": [
+    17,
+    27,
+    36,
+    38
+   ]
+  },
+  "CommercialPropertyUnscheduledBuildingPropertyTenantsPolicyRules": {
+   "SetBasicGroupIICoinsuranceFactor": [
+    15,
+    18
+   ],
+   "SetBroadBaseRate": [
+    13,
+    16
+   ],
+   "SetBuildingGlassBGIILOIFactor": [
+    9,
+    14
+   ],
+   "SetBuildingGlassBGILOIFactor": [
+    13,
+    18
+   ],
+   "SetBuildingGlassBroadLOIFactor": [
+    9,
+    14
+   ],
+   "SetBuildingGlassSpecialLOIFactor": [
+    9,
+    14
+   ],
+   "SetBuildingPropertyOtherThanGlassBGIILOIFactor": [
+    9,
+    14
+   ],
+   "SetBuildingPropertyOtherThanGlassBGILOIFactor": [
+    9,
+    14
+   ],
+   "SetBuildingPropertyOtherThanGlassBroadLOIFactor": [
+    9,
+    14
+   ],
+   "SetBuildingPropertyOtherThanGlassSpecialLOIFactor": [
+    9,
+    14
+   ],
+   "SetCoinsuranceFactor": [
+    17,
+    35,
+    38
+   ],
+   "SetDeductibleOnBldgPropOTGFactorBasicGroupI": [
+    10,
+    24,
+    38,
+    41
+   ],
+   "SetDeductibleOnBldgPropOTGFactorBasicGroupII": [
+    10,
+    24,
+    38,
+    41
+   ],
+   "SetDeductibleOnBldgPropOTGFactorBroad": [
+    10,
+    24,
+    38,
+    41
+   ],
+   "SetDeductibleOnBldgPropOTGFactorEQ": [
+    10,
+    24,
+    38,
+    41
+   ],
+   "SetDeductibleOnBldgPropOTGFactorSpecial": [
+    10,
+    24,
+    38,
+    41
+   ],
+   "SetDeductibleOnBuildingGlassFactorBasicGroupI": [
+    9,
+    22,
+    32,
+    41
+   ],
+   "SetDeductibleOnBuildingGlassFactorBasicGroupII": [
+    9,
+    22,
+    32,
+    41
+   ],
+   "SetDeductibleOnBuildingGlassFactorBroad": [
+    9,
+    22,
+    32,
+    41
+   ],
+   "SetDeductibleOnBuildingGlassFactorEQ": [
+    9,
+    22,
+    32,
+    41
+   ],
+   "SetDeductibleOnBuildingGlassFactorSpecial": [
+    9,
+    22,
+    32,
+    41
+   ],
+   "SetEQCoinsuranceFactor": [
+    9,
+    11
+   ],
+   "SetSpecialBaseRate": [
+    9,
+    12
+   ]
+  },
+  "CommercialPropertyUtilityServicesDirectDamageBldgDetailRules": {
+   "SetBGIIRate": [
+    19,
+    24
+   ],
+   "SetBGIRate": [
+    2
+   ],
+   "SetBasicGroupIINonOverheadBaseRate": [
+    26,
+    31,
+    34
+   ],
+   "SetBasicGroupIINonOverheadRate": [
+    19,
+    24
+   ],
+   "SetBasicGroupIIOverheadBaseRate": [
+    30,
+    35,
+    38
+   ],
+   "SetBasicGroupIIOverheadRate": [
+    19,
+    24
+   ],
+   "SetBasicGroupINonOverheadBaseRate": [
+    9,
+    14
+   ],
+   "SetBasicGroupINonOverheadRate": [
+    2
+   ],
+   "SetBasicGroupIOverheadBaseRate": [
+    13,
+    18
+   ],
+   "SetBasicGroupIOverheadRate": [
+    2
+   ],
+   "SetBroadNonOverheadBaseRate": [
+    9,
+    14
+   ],
+   "SetBroadNonOverheadRate": [
+    2
+   ],
+   "SetBroadOverheadBaseRate": [
+    13,
+    18
+   ],
+   "SetBroadOverheadRate": [
+    2
+   ],
+   "SetBroadRate": [
+    2
+   ],
+   "SetEQLimitToUse": [
+    12,
+    14
+   ],
+   "SetEQNonOverheadBaseRate": [
+    9,
+    14
+   ],
+   "SetEQNonOverheadRate": [
+    2
+   ],
+   "SetEQOverheadBaseRate": [
+    13,
+    18
+   ],
+   "SetEQOverheadRate": [
+    2
+   ],
+   "SetEQRate": [
+    2
+   ],
+   "SetLimitToUse": [
+    8,
+    10
+   ],
+   "SetSpecialNonOverheadBaseRate": [
+    9,
+    14
+   ],
+   "SetSpecialNonOverheadRate": [
+    2
+   ],
+   "SetSpecialOverheadBaseRate": [
+    13,
+    18
+   ],
+   "SetSpecialOverheadRate": [
+    2
+   ],
+   "SetSpecialRate": [
+    2
+   ]
+  },
+  "CommercialPropertyUtilityServicesDirectDamagePrsnlPropDetailRules": {
+   "SetBGIINonOverheadRate": [
+    2
+   ],
+   "SetBGIIOverheadRate": [
+    2
+   ],
+   "SetBGIIRate": [
+    19,
+    24
+   ],
+   "SetBGINonOverheadRate": [
+    2
+   ],
+   "SetBGIOverheadRate": [
+    2
+   ],
+   "SetBGIRate": [
+    2
+   ],
+   "SetBasicGroupIINonOverheadBaseRate": [
+    9,
+    14
+   ],
+   "SetBasicGroupIIOverheadBaseRate": [
+    13,
+    18
+   ],
+   "SetBasicGroupINonOverheadBaseRate": [
+    9,
+    14
+   ],
+   "SetBasicGroupIOverheadBaseRate": [
+    13,
+    18
+   ],
+   "SetBroadNonOverheadBaseRate": [
+    9,
+    14
+   ],
+   "SetBroadNonOverheadRate": [
+    2
+   ],
+   "SetBroadOverheadBaseRate": [
+    13,
+    18
+   ],
+   "SetBroadOverheadRate": [
+    2
+   ],
+   "SetBroadRate": [
+    2
+   ],
+   "SetEQLimitToUse": [
+    12,
+    14
+   ],
+   "SetEQNonOverheadBaseRate": [
+    9,
+    14
+   ],
+   "SetEQNonOverheadRate": [
+    2
+   ],
+   "SetEQOverheadBaseRate": [
+    13,
+    18
+   ],
+   "SetEQOverheadRate": [
+    2
+   ],
+   "SetEQRate": [
+    2
+   ],
+   "SetLimitToUse": [
+    8,
+    10
+   ],
+   "SetSpecialNonOverheadBaseRate": [
+    9,
+    14
+   ],
+   "SetSpecialNonOverheadRate": [
+    2
+   ],
+   "SetSpecialOverheadBaseRate": [
+    13,
+    18
+   ],
+   "SetSpecialOverheadRate": [
+    2
+   ],
+   "SetSpecialRate": [
+    2
+   ]
+  },
+  "CommercialPropertyUtilityServicesDirectDamageSpecialClassDetailRules": {
+   "SetBGIINonOverheadRate": [
+    2
+   ],
+   "SetBGIIOverheadRate": [
+    2
+   ],
+   "SetBGIIRate": [
+    19,
+    24
+   ],
+   "SetBGINonOverheadRate": [
+    2
+   ],
+   "SetBGIOverheadRate": [
+    2
+   ],
+   "SetBGIRate": [
+    2
+   ],
+   "SetBasicGroupIINonOverheadBaseRate": [
+    9,
+    14
+   ],
+   "SetBasicGroupIIOverheadBaseRate": [
+    13,
+    18
+   ],
+   "SetBasicGroupINonOverheadBaseRate": [
+    9,
+    14
+   ],
+   "SetBasicGroupIOverheadBaseRate": [
+    13,
+    18
+   ],
+   "SetBroadNonOverheadBaseRate": [
+    9,
+    14
+   ],
+   "SetBroadNonOverheadRate": [
+    2
+   ],
+   "SetBroadOverheadBaseRate": [
+    13,
+    18
+   ],
+   "SetBroadOverheadRate": [
+    2
+   ],
+   "SetBroadRate": [
+    2
+   ],
+   "SetEQLimitToUse": [
+    12,
+    14
+   ],
+   "SetEQNonOverheadBaseRate": [
+    9,
+    14
+   ],
+   "SetEQNonOverheadRate": [
+    2
+   ],
+   "SetEQOverheadBaseRate": [
+    13,
+    18
+   ],
+   "SetEQOverheadRate": [
+    2
+   ],
+   "SetEQRate": [
+    2
+   ],
+   "SetLimitToUse": [
+    8,
+    10
+   ],
+   "SetSpecialNonOverheadBaseRate": [
+    9,
+    14
+   ],
+   "SetSpecialNonOverheadRate": [
+    2
+   ],
+   "SetSpecialOverheadBaseRate": [
+    13,
+    18
+   ],
+   "SetSpecialOverheadRate": [
+    2
+   ],
+   "SetSpecialRate": [
+    2
+   ]
+  },
+  "CommercialPropertyUtilityServicesTimeElementDetailRules": {
+   "SetBasicGroupIINonOverheadBaseRate": [
+    27,
+    32,
+    62,
+    67,
+    72
+   ],
+   "SetBasicGroupIINonOverheadRate": [
+    2
+   ],
+   "SetBasicGroupIIOverheadBaseRate": [
+    20,
+    25,
+    30
+   ],
+   "SetBasicGroupIIOverheadRate": [
+    2
+   ],
+   "SetBasicGroupIIRate": [
+    2
+   ],
+   "SetBasicGroupINonOverheadBaseRate": [
+    27,
+    32,
+    62,
+    67,
+    72
+   ],
+   "SetBasicGroupINonOverheadRate": [
+    2
+   ],
+   "SetBasicGroupIOverheadBaseRate": [
+    20,
+    25,
+    30
+   ],
+   "SetBasicGroupIOverheadRate": [
+    2
+   ],
+   "SetBasicGroupIRate": [
+    2
+   ],
+   "SetBroadNonOverheadBaseRate": [
+    27,
+    32,
+    62,
+    67,
+    72
+   ],
+   "SetBroadNonOverheadRate": [
+    2
+   ],
+   "SetBroadOverheadBaseRate": [
+    20,
+    25,
+    30
+   ],
+   "SetBroadOverheadRate": [
+    2
+   ],
+   "SetBroadRate": [
+    2
+   ],
+   "SetEQLimitToUse": [
+    12,
+    14
+   ],
+   "SetEQNonOverheadBaseRate": [
+    27,
+    32,
+    62,
+    67,
+    72
+   ],
+   "SetEQNonOverheadRate": [
+    2
+   ],
+   "SetEQOverheadBaseRate": [
+    20,
+    25,
+    30
+   ],
+   "SetEQOverheadRate": [
+    2
+   ],
+   "SetEQRate": [
+    2
+   ],
+   "SetLimitToUse": [
+    8,
+    10
+   ],
+   "SetSpecialNonOverheadBaseRate": [
+    27,
+    32,
+    62,
+    67,
+    72
+   ],
+   "SetSpecialNonOverheadRate": [
+    2
+   ],
+   "SetSpecialOverheadBaseRate": [
+    20,
+    25,
+    30
+   ],
+   "SetSpecialOverheadRate": [
+    2
+   ],
+   "SetSpecialRate": [
+    2
+   ],
+   "SetWaitingPeriodFactor": [
+    9,
+    12
+   ]
+  },
+  "CommercialPropertyUtilityServicesTimeElementSpclClassBusnIncomeDetailRules": {
+   "SetBGIINonOverheadBaseRate": [
+    27,
+    32,
+    62,
+    67,
+    72
+   ],
+   "SetBGIINonOverheadRate": [
+    2
+   ],
+   "SetBGIIOverheadBaseRate": [
+    20,
+    25,
+    30
+   ],
+   "SetBGIIOverheadRate": [
+    2
+   ],
+   "SetBGIIRate": [
+    2
+   ],
+   "SetBGINonOverheadBaseRate": [
+    27,
+    32,
+    62,
+    67,
+    72
+   ],
+   "SetBGINonOverheadRate": [
+    2
+   ],
+   "SetBGIOverheadBaseRate": [
+    20,
+    25,
+    30
+   ],
+   "SetBGIOverheadRate": [
+    2
+   ],
+   "SetBGIRate": [
+    2
+   ],
+   "SetBroadNonOverheadBaseRate": [
+    27,
+    32,
+    62,
+    67,
+    72
+   ],
+   "SetBroadNonOverheadRate": [
+    2
+   ],
+   "SetBroadOverheadBaseRate": [
+    20,
+    25,
+    30
+   ],
+   "SetBroadOverheadRate": [
+    2
+   ],
+   "SetBroadRate": [
+    2
+   ],
+   "SetEQLimitToUse": [
+    12,
+    14
+   ],
+   "SetEQNonOverheadBaseRate": [
+    27,
+    32,
+    62,
+    67,
+    72
+   ],
+   "SetEQNonOverheadRate": [
+    2
+   ],
+   "SetEQOverheadBaseRate": [
+    20,
+    25,
+    30
+   ],
+   "SetEQOverheadRate": [
+    2
+   ],
+   "SetEQRate": [
+    2
+   ],
+   "SetLimitToUse": [
+    8,
+    10
+   ],
+   "SetSpecialNonOverheadBaseRate": [
+    27,
+    32,
+    62,
+    67,
+    72
+   ],
+   "SetSpecialNonOverheadRate": [
+    2
+   ],
+   "SetSpecialOverheadBaseRate": [
+    20,
+    25,
+    30
+   ],
+   "SetSpecialOverheadRate": [
+    2
+   ],
+   "SetSpecialRate": [
+    2
+   ],
+   "SetWaitingPeriodFactor": [
+    9,
+    12
+   ]
+  },
+  "CommercialPropertyVacancyPermitBasicGroupICoverageRules": {
+   "SetProRateIndicator": [
+    2
+   ]
+  },
+  "CommercialPropertyVacancyPermitBasicGroupIICoverageRules": {
+   "SetProRateIndicator": [
+    2
+   ]
+  },
+  "CommercialPropertyVacancyPermitBroadCoverageRules": {
+   "SetProRateIndicator": [
+    2
+   ]
+  },
+  "CommercialPropertyVacancyPermitEarthquakeCoverageRules": {
+   "SetProRateIndicator": [
+    2
+   ]
+  },
+  "CommercialPropertyVacancyPermitMoltenMaterialCoverageRules": {
+   "SetProRateIndicator": [
+    2
+   ]
+  },
+  "CommercialPropertyVacancyPermitPrsnlPropBasicGroupICoverageRules": {
+   "SetProRateIndicator": [
+    2
+   ]
+  },
+  "CommercialPropertyVacancyPermitPrsnlPropBasicGroupIICoverageRules": {
+   "SetProRateIndicator": [
+    2
+   ]
+  },
+  "CommercialPropertyVacancyPermitPrsnlPropBroadCoverageRules": {
+   "SetProRateIndicator": [
+    2
+   ]
+  },
+  "CommercialPropertyVacancyPermitPrsnlPropEarthquakeCoverageRules": {
+   "SetProRateIndicator": [
+    2
+   ]
+  },
+  "CommercialPropertyVacancyPermitPrsnlPropMoltenMaterialCoverageRules": {
+   "SetProRateIndicator": [
+    2
+   ]
+  },
+  "CommercialPropertyVacancyPermitPrsnlPropRadioactiveContaminationCoverageRules": {
+   "SetProRateIndicator": [
+    2
+   ]
+  },
+  "CommercialPropertyVacancyPermitPrsnlPropRules": {
+   "SetAdjustedBasicGroupIRate": [
+    2
+   ],
+   "SetBGIStdPropPolIncVandalismBaseRate": [
+    8,
+    18,
+    23
+   ],
+   "SetBGIStdPropPolIncVandalismRate": [
+    2
+   ],
+   "SetBasicGroupIFactor": [
+    10,
+    22,
+    29
+   ],
+   "SetBasicGroupIIFactor": [
+    10,
+    35,
+    42
+   ],
+   "SetBasicGroupIIRate": [
+    17,
+    20,
+    25
+   ],
+   "SetBasicGroupIRate": [
+    17,
+    20,
+    25
+   ],
+   "SetBroadFactor": [
+    2
+   ],
+   "SetCoinsuranceFactor": [
+    24,
+    44,
+    50,
+    55,
+    58
+   ],
+   "SetEQFactor": [
+    9,
+    16
+   ],
+   "SetMinBasicGroupIBaseRate": [
+    15,
+    25,
+    30,
+    33
+   ],
+   "SetMinBasicGroupIIBaseRate": [
+    2
+   ],
+   "SetMinBasicGroupIIRate": [
+    2
+   ],
+   "SetMinBasicGroupIRate": [
+    2
+   ],
+   "SetMoltenMaterialFactor": [
+    2
+   ],
+   "SetOtherCOLFactor": [
+    2
+   ],
+   "SetSpecialFactor": [
+    2
+   ],
+   "SetSprinklerLeakageExclNonSprinkleredBldgRate": [
+    42,
+    47
+   ],
+   "SetSprinklerLeakageExclNonSprinkleredRate": [
+    2
+   ],
+   "SetSprinklerLeakageExclSprinkleredFactor": [
+    50,
+    53
+   ],
+   "SetVacancyPermitProRateFactor": [
+    11,
+    44,
+    79,
+    80
+   ],
+   "SetVandalismExclFactor": [
+    43,
+    89,
+    94
+   ]
+  },
+  "CommercialPropertyVacancyPermitPrsnlPropSpecialCoverageRules": {
+   "SetProRateIndicator": [
+    2
+   ]
+  },
+  "CommercialPropertyVacancyPermitRadioactiveContaminationCoverageRules": {
+   "SetProRateIndicator": [
+    2
+   ]
+  },
+  "CommercialPropertyVacancyPermitRules": {
+   "SetAdjustedBGIRate": [
+    2
+   ],
+   "SetBGIStdPropPolIncVandalismRate": [
+    2
+   ],
+   "SetBasicGroupIFactor": [
+    10,
+    22,
+    29
+   ],
+   "SetBasicGroupIIFactor": [
+    10,
+    35,
+    42
+   ],
+   "SetBasicGroupIIRate": [
+    17,
+    20,
+    25
+   ],
+   "SetBasicGroupIRate": [
+    17,
+    20,
+    25
+   ],
+   "SetBasicGroupIStdPropPolIncludingVandalismBaseRate": [
+    9,
+    12
+   ],
+   "SetBroadFactor": [
+    2
+   ],
+   "SetCoinsuranceFactor": [
+    28,
+    46,
+    49,
+    52
+   ],
+   "SetEQFactor": [
+    2
+   ],
+   "SetMinBasicGroupIBaseRate": [
+    13,
+    16
+   ],
+   "SetMinBasicGroupIIBaseRate": [
+    2
+   ],
+   "SetMinBasicGroupIIRate": [
+    2
+   ],
+   "SetMinBasicGroupIRate": [
+    2
+   ],
+   "SetMoltenMaterialFactor": [
+    2
+   ],
+   "SetOtherCOLFactor": [
+    2
+   ],
+   "SetSpecialFactor": [
+    2
+   ],
+   "SetSprinklerLeakageExclNonSprinklerBldgRate": [
+    42,
+    47
+   ],
+   "SetSprinklerLeakageExclNonSprinkleredRate": [
+    2
+   ],
+   "SetSprinklerLeakageExclSprinkleredFactor": [
+    50,
+    53
+   ],
+   "SetVacancyPermitProRateFactor": [
+    11,
+    44,
+    79,
+    80
+   ],
+   "SetVandalismExclFactor": [
+    43,
+    89,
+    94
+   ]
+  },
+  "CommercialPropertyVacancyPermitSpecialCoverageRules": {
+   "SetProRateIndicator": [
+    2
+   ]
+  },
+  "CommercialPropertyValueReportingFormGeneralInformationRules": {
+   "SetAcqrdLocsRate": [
+    2
+   ],
+   "SetBasicGroupIRateIncLocs": [
+    2
+   ],
+   "SetBroadRateIncLocs": [
+    9,
+    14
+   ],
+   "SetEQRateLocs": [
+    2
+   ],
+   "SetFinalBasicGroupIIRateTimesValue": [
+    9,
+    14
+   ],
+   "SetFinalBasicGroupIRateTimesValue": [
+    9,
+    16
+   ],
+   "SetFinalBroadRateTimesValue": [
+    9,
+    15
+   ],
+   "SetFinalEQRateTimesValue": [
+    9,
+    15
+   ],
+   "SetFinalSpecialRateTimesValue": [
+    9,
+    15
+   ],
+   "SetMLARLimit": [
+    16,
+    23,
+    26,
+    29
+   ],
+   "SetMaxPrsnlPropLimitForMLARCalc": [
+    45,
+    48
+   ],
+   "SetPerilExclusionIndicatorStatCode": [
+    9,
+    12
+   ],
+   "SetSpecialRateLocs": [
+    9,
+    14
+   ],
+   "SetTotalAcqrdLocsLimit": [
+    2
+   ],
+   "SetTotalIncLocsLimit": [
+    2
+   ],
+   "SetWindstormOrHailExcludedIndicator": [
+    2
+   ]
+  },
+  "CommercialPropertyValueReportingFormRules": {
+   "SetCoinsuranceFactor": [
+    2
+   ],
+   "SetNewBusnFactor": [
+    9,
+    12
+   ],
+   "SetSeasonalRiskFactor": [
+    9,
+    12
+   ]
+  }
+ }
+}

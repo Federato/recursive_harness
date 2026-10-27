@@ -1,0 +1,1433 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CF rating payload — class-rated Building and Personal Property</title>
+<style>
+:root{--bg:#fbfbfd;--fg:#1d1d20;--mut:#63636b;--line:#e3e3e8;--accent:#1f3864;
+--code-bg:#f4f4f7;--tbl-head:#1f3864;--mark:#fff3cd;--del:#a11}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+background:var(--bg);color:var(--fg)}
+header{background:var(--accent);color:#fff;padding:22px 32px 0}
+header h1{margin:0 0 4px;font-size:20px;font-weight:650;letter-spacing:-.01em}
+header .sub{opacity:.72;font-size:13px;margin-bottom:16px}
+nav{display:flex;gap:4px}
+nav button{appearance:none;border:0;background:rgba(255,255,255,.10);color:#fff;cursor:pointer;
+font:inherit;font-size:14px;padding:10px 18px;border-radius:7px 7px 0 0;opacity:.75}
+nav button:hover{opacity:1;background:rgba(255,255,255,.18)}
+nav button[aria-selected="true"]{background:var(--bg);color:var(--accent);font-weight:640;opacity:1}
+.wrap{display:grid;grid-template-columns:250px minmax(0,1fr);gap:34px;
+max-width:1360px;margin:0 auto;padding:30px 32px 90px}
+aside{position:sticky;top:22px;align-self:start;max-height:calc(100vh - 50px);overflow:auto;
+font-size:13.5px;border-left:2px solid var(--line);padding-left:14px}
+aside .lbl{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--mut);
+font-weight:700;margin-bottom:9px}
+aside ul{list-style:none;margin:0;padding:0}
+aside ul ul{padding-left:13px}
+aside a{color:var(--mut);text-decoration:none;display:block;padding:3px 0;line-height:1.4}
+aside a:hover{color:var(--accent)}
+article{min-width:0;background:#fff;border:1px solid var(--line);border-radius:11px;padding:34px 42px 54px}
+article h1{font-size:27px;margin:0 0 8px;letter-spacing:-.02em}
+article h2{font-size:20px;margin:38px 0 12px;padding-bottom:7px;border-bottom:1px solid var(--line);
+letter-spacing:-.01em}
+article h3{font-size:16.5px;margin:26px 0 9px}
+article h4{font-size:15px;margin:20px 0 7px;color:var(--mut)}
+p,li{max-width:74ch}
+code{background:var(--code-bg);padding:.13em .38em;border-radius:4px;
+font:13.5px/1.5 "SF Mono",Consolas,"Liberation Mono",Menlo,monospace}
+pre{background:var(--code-bg);border:1px solid var(--line);border-radius:8px;padding:14px 17px;
+overflow-x:auto}
+pre code{background:none;padding:0;font-size:13px;line-height:1.55}
+table{border-collapse:collapse;width:100%;margin:16px 0;font-size:14.2px;display:block;overflow-x:auto}
+th{background:var(--tbl-head);color:#fff;text-align:left;font-weight:600;padding:9px 12px;
+white-space:nowrap}
+td{border-bottom:1px solid var(--line);padding:9px 12px;vertical-align:top}
+tr:nth-child(even) td{background:#fafafc}
+blockquote{margin:16px 0;padding:12px 18px;background:#f6f8fc;border-left:4px solid var(--accent);
+border-radius:0 7px 7px 0}
+blockquote p{margin:.45em 0}
+del{color:var(--del);text-decoration-thickness:1px}
+hr{border:0;border-top:1px solid var(--line);margin:30px 0}
+a{color:var(--accent)}
+.meta{font-size:12.5px;color:var(--mut);margin:0 0 22px;padding-bottom:14px;border-bottom:1px solid var(--line)}
+.panel[hidden]{display:none}
+@media(max-width:1000px){.wrap{grid-template-columns:1fr;padding:20px}aside{display:none}
+article{padding:24px 20px 40px}}
+@media print{header,aside,nav{display:none}.wrap{display:block;padding:0}
+article{border:0;padding:0}.panel[hidden]{display:block!important}}
+
+.wrap{display:block;max-width:60rem;margin:0 auto;padding:0 1.5rem 5rem}
+article{max-width:none}
+.toc-box{border:1px solid var(--line);border-radius:8px;padding:1rem 1.25rem;
+margin:1.5rem 0 2.5rem;background:#fff}
+.toc-box .lbl{font-weight:600;color:var(--accent);margin-bottom:.4rem}
+.toc-box ul{margin:.2rem 0;padding-left:1.1rem}
+.toc-box>ul>li{margin:.15rem 0}
+h2{margin-top:2.6rem;padding-top:1.4rem;border-top:1px solid var(--line)}
+h1+p+h2,h2:first-of-type{border-top:none}
+table{font-size:.95em}
+@media print{header{position:static}.toc-box{break-inside:avoid}}
+</style></head><body>
+<header><h1>CF rating payload — class-rated Building and Personal Property</h1>
+<div class="sub">Commercial Property · Alabama, generalised across the district states · derived from ISO&#x27;s own STC test payloads</div></header>
+<div class="wrap"><article>
+<p class="meta">Source: <code>CF_Algorithm/CF_Payload_ClassRated_Bldg_PP_Alabama.md</code> &nbsp;·&nbsp; 6,073 words &nbsp;·&nbsp; rendered 2026-09-17</p>
+<div class="toc-box"><div class="lbl">On this page</div><div class="toc">
+<ul>
+<li><a href="#1-the-envelope-confirmed">1. The envelope — confirmed</a></li>
+<li><a href="#2-the-record-spine-confirmed">2. The record spine — confirmed</a></li>
+<li><a href="#3-what-each-level-actually-carries">3. What each level actually carries</a></li>
+<li><a href="#4-alabama-rating-data-unchanged-this-part-held-up">4. Alabama rating data (unchanged — this part held up)</a></li>
+<li><a href="#5-reference-payload">5. Reference payload</a></li>
+<li><a href="#6-derivation-chains-traced">6. Derivation chains — traced</a></li>
+<li><a href="#7-basic-group-ii">7. Basic Group II</a></li>
+<li><a href="#8-broad-and-special">8. Broad and Special</a></li>
+<li><a href="#9-does-alabama-generalise-the-second-state-test">9. Does Alabama generalise? The second-state test</a></li>
+<li><a href="#10-what-is-still-open">10. What is still open</a></li>
+<li><a href="#11-next-steps">11. Next steps</a></li>
+</ul>
+</div>
+</div>
+<h1 id="cf-rating-payload-class-rated-building-and-personal-property-alabama">CF rating payload — class-rated Building and Personal Property, Alabama</h1>
+<p><strong>Status: derived from ISO's own test cases.</strong> This replaces an earlier draft that was
+reasoned from the DataDef schema and the GL payload. That draft got several things wrong;
+everything below is now anchored on ISO-authored STC payloads shipped inside the ERC
+packages, with the schema used only to explain <em>why</em> the shape is what it is.</p>
+<p><strong>Primary sources — ISO STC test cases</strong>
+- <code>CF\20260601\CF AL 20260601 V01\STC\STC_CP000021181.json</code> — the file you pointed me at.
+  Builders Risk, building only, no contents.
+- <code>CF\20230801v2\CF AL 20250201 V01\STC\STC_CP000017321.json</code> — <strong>class-rated Building
+  <em>and</em> Personal Property</strong>, Alabama. This is the case that actually matches the task, and
+  most of the detail below comes from it.</p>
+<p><strong>Supporting</strong>
+- Countrywide package <code>CFCW20260601V01</code>; Alabama package <code>CF AL 20270301 V01</code>
+- <code>CF_Algorithm/CauseOfLoss_Building_RatingAlgorithms.md</code>,
+  <code>CauseOfLoss_PersonalProperty_RatingAlgorithms.md</code>, <code>CF_RatingPath_Switches.md</code></p>
+<p><strong>There are 924 STC payloads across the CF and GL packages, 206 of them containing
+Personal Property.</strong> Seven are Alabama. This corpus was not being used; it is the best
+available specification of the request format, because ISO wrote it and rates against it.</p>
+<p><strong>Written:</strong> 2026-09-17</p>
+<hr />
+<h2 id="1-the-envelope-confirmed">1. The envelope — confirmed</h2>
+<p><strong>A live RAaS request has two parts: a <code>header</code> carrying account identity, and a <code>body</code>
+carrying the rating content.</strong> Confirmed 2026-09-17 against the repo's own real GL RAaS
+inputs (<code>Payloads/&lt;STATE&gt;/1. Input.json</code>), which is where the populated authorization block
+lives:</p>
+<pre><code class="language-json">{
+  &quot;header&quot;: {
+    &quot;quoteback&quot;: &quot;&quot;,
+    &quot;authorization&quot;: {
+      &quot;orgId&quot;: &quot;106169&quot;,
+      &quot;shipId&quot;: &quot;106169&quot;
+    }
+  },
+  &quot;body&quot;: {
+    &quot;SchemeKeys&quot;: {
+      &quot;ProductName&quot;: &quot;Commercial Property AL&quot;,
+      &quot;EffectiveDateTime&quot;: &quot;2027-03-01T00:00:00&quot;
+    },
+    &quot;CommercialProperty&quot;: [ { ... } ]
+  }
+}
+</code></pre>
+<p><strong>An STC file is the <code>body</code> alone.</strong> ISO's shipped test cases start at <code>SchemeKeys</code> with no
+wrapper, because they are the rating content rather than a transport request. Both facts are
+true and it is worth keeping them apart:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Carries</th>
+<th>Where it comes from</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>header</code></td>
+<td><code>quoteback</code>, <code>authorization.orgId</code>, <code>authorization.shipId</code></td>
+<td>the account, not the risk. Same for every request</td>
+</tr>
+<tr>
+<td><code>body</code></td>
+<td><code>SchemeKeys</code> + the <code>CommercialProperty</code> tree</td>
+<td>the risk. This is what an STC file contains</td>
+</tr>
+</tbody>
+</table>
+<p><code>quoteback</code> is an empty string in every observed request. <code>orgId</code> and <code>shipId</code> carry the
+same value (<code>106169</code>) in this account's inputs — they are not necessarily always equal, so
+do not collapse them to one field.</p>
+<p>Corrections against my earlier draft:</p>
+<table>
+<thead>
+<tr>
+<th>Earlier draft</th>
+<th>Truth</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>header</code> + <code>body</code> wrapper around the content</td>
+<td><strong>Half right, and now settled.</strong> The wrapper is real for a live request — see §1. What was wrong was the claim that an STC file has one: it does not, because an STC file <em>is</em> the body.</td>
+</tr>
+<tr>
+<td><code>ProductName: "Commercial Property AL"</code> — guessed</td>
+<td><strong>Confirmed verbatim.</strong></td>
+</tr>
+<tr>
+<td>Policy carries <code>StateCode: "AL"</code></td>
+<td><strong>No <code>StateCode</code> anywhere in the payload.</strong> State comes from <code>ProductName</code>.</td>
+</tr>
+<tr>
+<td>Policy carries <code>LossCostMultiplier</code></td>
+<td><strong>Absent from every STC.</strong> The field exists on three groups in the DataDef, but ISO's cases don't supply it — it comes from the carrier's ratebook, not the request.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="the-array-vs-object-rule-now-verified">The array-vs-object rule, now verified</h3>
+<p>A child is a <strong>JSON array</strong> if the schema declares an <code>XTable</code> element for it, and a
+<strong>JSON object</strong> otherwise. I checked this against the STC and it agrees in every case:</p>
+<table>
+<thead>
+<tr>
+<th>Child</th>
+<th><code>…Table</code> in XSD</th>
+<th>STC form</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CommercialPropertyLocation</code>, <code>…Structure</code>, <code>…OccupClass</code>, <code>…PersonalProperty</code></td>
+<td>yes</td>
+<td><code>[ … ]</code></td>
+</tr>
+<tr>
+<td><code>CommercialPropertyVandalismExclusion</code>, <code>…CyberIncidentExclusion</code>, <code>…MultipleDeductibleFormFixedDollarDeductibles</code></td>
+<td>yes</td>
+<td><code>[ … ]</code></td>
+</tr>
+<tr>
+<td><code>CommercialPropertyStructureBuildingBasicGroupICoverage</code> and all sibling coverage records</td>
+<td><strong>no</strong></td>
+<td><code>{ }</code></td>
+</tr>
+<tr>
+<td><code>CommercialPropertyPostTRIACoverage</code>, <code>…LocationFireDepartmentCharge</code></td>
+<td>no</td>
+<td><code>{ }</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>My earlier skeleton wrote the coverage records as <code>[{}]</code>. That is wrong — they are <code>{}</code>.</strong>
+This is the same singleton-vs-repeating distinction behind the data-dictionary fix earlier
+in this session, now confirmed from ISO's side.</p>
+<hr />
+<h2 id="2-the-record-spine-confirmed">2. The record spine — confirmed</h2>
+<pre><code>CommercialProperty                          policy
+└── CommercialPropertyLocation              premises
+    └── CommercialPropertyStructure         the building      ← Building rates here
+        └── CommercialPropertyOccupClass    occupancy class
+            └── CommercialPropertyPersonalProperty            ← Contents rates here
+</code></pre>
+<p>Confirmed by the STC nesting. Contents genuinely sits two levels under the building — you
+cannot send personal property without a Structure to carry it.</p>
+<hr />
+<h2 id="3-what-each-level-actually-carries">3. What each level actually carries</h2>
+<p>Field lists below are the <strong>exact key sets</strong> from <code>STC_CP000017321.json</code> (class-rated
+Building + PP, Alabama). This is the single most useful correction in the document: far
+fewer fields are supplied than the DataDef would suggest, because most rating drivers are
+<em>derived</em> rather than sent.</p>
+<h3 id="31-commercialproperty-policy-14-scalars">3.1 <code>CommercialProperty</code> — policy (14 scalars)</h3>
+<pre><code>PolicyType            &quot;Commercial Property Policy&quot;   ← the widest-reaching switch
+BlktRated             &quot;No&quot;        MUBlktRated        &quot;No&quot;      MUPolicyType   &quot;No&quot;
+PackageModFactor      1.0         IRPMApplies        &quot;No&quot;      CPPIRPMFactor  0.0
+MultiPremiumAndDispersionCreditFactorUser            0.0
+TerrorismIndicator    &quot;Yes&quot;       CoverageForCertifiedActs     &quot;No&quot;
+TRIAType              &quot;Is in Effect for the Next 12 Months&quot;
+FungusWetRotDryRotBacteriaCov  &quot;15,000 Sub Limit&quot;
+EQSubLimitBlktIndicator  &quot;No&quot;     FloodCovEndtBlktIndicator    &quot;No&quot;
+</code></pre>
+<p>Children: <code>CommercialPropertyPostTRIACoverage {}</code>, <code>CommercialPropertyTotPremiumCoverage {}</code>,
+<code>CommercialPropertyCyberIncidentExclusion [{}]</code>, <code>CommercialPropertyLocation [ … ]</code>.</p>
+<p><strong>Note:</strong> <code>PackageModFactor</code>, <code>CPPIRPMFactor</code> and
+<code>MultiPremiumAndDispersionCreditFactorUser</code> are <em>inputs here</em>. In my earlier draft I listed
+these as untraced factors that stopped me computing a premium. They are not derived — the
+submitter supplies them.</p>
+<h3 id="32-commercialpropertylocation-premises-15-scalars">3.2 <code>CommercialPropertyLocation</code> — premises (15 scalars)</h3>
+<pre><code>UnitNumber       1
+ZipCode          &quot;08003&quot;     City    &quot;Birmingham&quot;     County  &quot;Autauga&quot;
+ProtectClass     &quot;1&quot;                         ← NOT &quot;ProtectionClass&quot;
+BasicGroupIRatingTerr              &quot;Birmingham&quot;
+BasicGroupIIRatingTerr             &quot;Inland Territory&quot;
+SpecialRatingTerr                  &quot;Remainder of State&quot;
+EQTerr           &quot;1&quot;        TerrorismTerritory  &quot;Statewide&quot;
+GeographicWindHazardLevelTerritory &quot;Autauga&quot;
+EQCauseOfLossForm   &quot;Earthquake Form (CP 10 28)&quot;
+FloodCovIndicator &quot;No&quot;   OperationalUnitIndicator &quot;No&quot;
+MultipleResidentialPropSpecialCredit &quot;No&quot;
+</code></pre>
+<p>Two findings here:</p>
+<ol>
+<li><strong><code>ProtectClass</code>, not <code>ProtectionClass</code>.</strong> Both names exist in the DataDef on Location —
+   <code>ProtectClass</code> is what the payload uses. Getting this wrong fails silently.</li>
+<li><strong>Territories are supplied, not derived.</strong> Open item 5 in the earlier draft is closed,
+   and the evidence is unusually clean: ISO's own fixture pairs <code>ZipCode "08003"</code> (a New
+   Jersey ZIP) with <code>City "Birmingham"</code> and <code>County "Autauga"</code> — and the 20260601 case pairs
+   ZIP 35004 (Moody, AL) with Birmingham/Autauga. Birmingham is in Jefferson County. <strong>The
+   geography in these fixtures is internally inconsistent and ISO still rates them</strong>, which
+   is only possible if <code>BasicGroupIRatingTerr</code> and its siblings are taken at face value.
+   Do not expect the engine to derive territory from an address.</li>
+</ol>
+<h3 id="33-commercialpropertystructure-the-building-43-scalars">3.3 <code>CommercialPropertyStructure</code> — the building (43 scalars)</h3>
+<p>The class-rating essentials, as actually sent:</p>
+<pre><code>RatingType        &quot;Class&quot;            ClassCode    &quot;0074&quot;
+ConstructionType  &quot;Frame&quot;            ← a *detailed* type; the code is derived in 2 hops (§6.3)
+CovType           &quot;Building&quot;         CauseOfLoss  &quot;Special&quot;
+CovForm           (absent here — set on OccupClass)
+Limit             450000             FullBldgValue  550000
+Coinsurance       &quot;80%&quot;              Deductible   &quot;1,000&quot;
+ValuationType     &quot;Actual Cash Value&quot;
+IncludedInBlkt    &quot;No&quot;               VacantBuilding &quot;No&quot;
+SprinklerSystem   &quot;None&quot;             RatingTypeBasicGroupII &quot;Class&quot;
+ClassificationDescription  &quot;Boarding and Lodging Houses, … Up to 10 Units&quot;
+NumStories &quot;1-3&quot;  YearOfConstructionCode 2000   OpenSides &quot;No&quot;
+BCEG &quot;Ungraded&quot;   BCEGClass &quot;Not Graded&quot;
+TheftDeductible &quot;2,500&quot;   WindstormOrHailDeductible &quot;Not Applicable&quot;
+RoofLevel / RoofSubDecking / AgeOfTheRoof / CertificateType / CertificateLevel
+SpecificGroupIRate 0.0    (present but zero on a Class risk)
+EQ*: EQDeductible, EQCoinsurance, EQCovIndicator, EQClass, EQSprinklerLeakageOnly
+SoftStory &quot;Yes&quot;   RentalProperty &quot;No&quot;   PublicInstitutionalPlanApply &quot;No&quot;
+InflationGuard / AgreedValueOption / ConformsToCondoActs / TerrorismOverride / TerrorismSubLimit
+InsuredHoldsAnIBHSHurricaneCertificateOrAnIBHSHighWindAndHailCertificate
+UnitNumber 1
+</code></pre>
+<p><strong><code>ConstructionType</code> is the input; <code>ConstructionCode</code> is derived — in two hops, not one.</strong>
+This is easy to get wrong, because the second hop's table has only six rows and looks like
+the whole story:</p>
+<pre><code>ConstructionType        (payload — 25 detailed values)
+   ↓  ConstructionTypeToUse rate table, keyed StateCode + ConstructionTypeBldg
+ConstructionTypeToUse   (6 values)
+   ↓  ConstructionCode rate table, keyed StateCode + ConstructionTypeToUse
+ConstructionCode        (1–6)
+</code></pre>
+<p><code>SetConstructionCode</code> (<code>CommercialPropertyStructureRules.Rule.xml</code>, line 1041) delegates to
+<code>LookupConstructionCode</code>; <code>LookupConstructionTypeToUse</code> performs the first hop. Both are
+state-first with <code>CW</code> fallback, and no state overrides either table.</p>
+<p><strong>Hop 2</strong> — the six-row table everyone finds first:</p>
+<table>
+<thead>
+<tr>
+<th><code>ConstructionTypeToUse</code></th>
+<th>Code</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Frame</td>
+<td><strong>1</strong></td>
+</tr>
+<tr>
+<td>Joisted Masonry</td>
+<td><strong>2</strong></td>
+</tr>
+<tr>
+<td>Non-Combustible</td>
+<td><strong>3</strong></td>
+</tr>
+<tr>
+<td>Masonry Non-Combustible</td>
+<td><strong>4</strong></td>
+</tr>
+<tr>
+<td>Modified Fire Resistive</td>
+<td><strong>5</strong></td>
+</tr>
+<tr>
+<td>Fire Resistive</td>
+<td><strong>6</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Hop 1</strong> is the one that matters for building a payload. <code>ConstructionTypeToUse</code> collapses
+<strong>25 detailed construction types</strong> onto those six. The payload sends the <em>detailed</em> value:</p>
+<table>
+<thead>
+<tr>
+<th>Sent in <code>ConstructionType</code></th>
+<th>Collapses to</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Frame</code></td>
+<td>Frame</td>
+</tr>
+<tr>
+<td><code>Joisted Masonry - Reinforced</code> · <code>- Other Than Reinforced</code> (± <code>- Superior Roofing</code>)</td>
+<td>Joisted Masonry</td>
+</tr>
+<tr>
+<td><code>Non-Combustible - Light Steel</code> · <code>- Other Than Light Steel</code> (± <code>- Superior Roofing</code>)</td>
+<td>Non-Combustible</td>
+</tr>
+<tr>
+<td>four <code>Masonry Non-Combustible - …</code> variants (± <code>- Superior Roofing</code>)</td>
+<td>Masonry Non-Combustible</td>
+</tr>
+<tr>
+<td>four <code>Modified Fire Resistive - …</code> variants</td>
+<td>Modified Fire Resistive</td>
+</tr>
+<tr>
+<td>four <code>Fire Resistive - …</code> variants</td>
+<td>Fire Resistive</td>
+</tr>
+</tbody>
+</table>
+<p><code>Frame</code> is the only value that is legal at <em>both</em> hops, which is why a payload using it
+still works if you assume a single hop — and why the mistake survives testing. The
+<code>- Superior Roofing</code> variants are also what drive <code>SuperiorRoofingIndicator</code> in the Basic
+Group II chain (§7).</p>
+<p>The STC corpus sends 8 distinct values: <code>Frame</code> (345 of 364), then
+<code>Modified Fire Resistive - Other Than Reinforced Masonry - Light Steel</code>,
+<code>Joisted Masonry - Other Than Reinforced</code>, <code>Joisted Masonry - Reinforced</code>,
+<code>Fire Resistive - Other Than Reinforced Masonry - Light Steel</code>,
+<code>Non-Combustible - Light Steel</code>, <code>Fire Resistive</code>, and one <code>Entirely Metal</code> — the last of
+which is <strong>not in the countrywide 25</strong>, so at least one more value exists somewhere.</p>
+<p>This also explains why <code>DomainConstructionCode</code> is empty in every package — the mapping
+lives in <em>rate</em> tables, not a domain list, because it is a derivation and not a pick-list.</p>
+<p>Also note <code>TotAmtInsurance</code> is <strong>not sent</strong> — <code>FullBldgValue</code> and <code>FullPrsnlPropValue</code> are,
+and the total is derived. My earlier draft listed <code>TotAmtInsurance</code> as a payload field.</p>
+<p>All eighteen <code>…Coverage</code> children are sent as empty objects <code>{}</code> — the engine fills them.</p>
+<h3 id="34-commercialpropertyoccupclass-occupancy-class-8-scalars">3.4 <code>CommercialPropertyOccupClass</code> — occupancy class (8 scalars)</h3>
+<pre><code>ClassCode     &quot;0074&quot;
+OccupCategory &quot;Residential Apartments and Condominiums&quot;
+ClassDesc     &quot;Boarding and Lodging Houses, … Up to 10 Units&quot;
+CovForm       &quot;Building and Personal Property Coverage Form&quot;   ← set HERE
+SprinklerSystem &quot;None&quot;    TheftDeductible &quot;2,500&quot;
+PublicInstitutionalPlanApply &quot;No&quot;    ConformsToCondoActs &quot;Not Applicable&quot;
+</code></pre>
+<p><strong><code>Group</code> and <code>BldgClassCode</code> are not sent.</strong> My earlier draft had both as payload fields
+on OccupClass and on Personal Property. They are derived, and <code>SetGroup</code>
+(<code>CommercialPropertyOccupClassRules.Rule.xml</code>, line 640) confirms exactly how — a 17 KB
+<code>Choose</code> that reads <strong>only three values</strong>: <code>RatingType</code>, <code>ClassCodeToUse</code> and <code>ClassCode</code>,
+and assigns one of <code>A</code>, <code>B</code>, <code>C</code> or <code>Not Applicable</code>.</p>
+<p>The logic is the two-key mechanism the AL rate table implies:</p>
+<ul>
+<li><code>RatingType ≠ "Class"</code> → <code>Not Applicable</code>, immediately.</li>
+<li><code>ClassCodeToUse</code> (the <em>building's</em> class code, carried down from Structure) must be one
+  of the ten eligible codes — otherwise <code>Not Applicable</code>.</li>
+<li>The OccupClass's own <code>ClassCode</code> then selects <code>A</code>, <code>B</code> or <code>C</code>.</li>
+</ul>
+<p>So the gate and the selector are two different class codes at two different levels. You
+supply both as <code>ClassCode</code> on Structure and on OccupClass; the engine does the rest.</p>
+<p><code>CovForm</code> is set once here and inherited downward, as <code>CF_RatingPath_Switches.md</code> warned.
+Do <strong>not</strong> also set it on Personal Property — the STC doesn't.</p>
+<h3 id="35-commercialpropertypersonalproperty-contents-16-scalars">3.5 <code>CommercialPropertyPersonalProperty</code> — contents (16 scalars)</h3>
+<pre><code>CovType        &quot;All Personal Property&quot;     ← a value universe I did not have before
+CauseOfLoss    &quot;Special&quot;
+Limit          650000        FullPrsnlPropValue  750000
+Coinsurance    &quot;80%&quot;         ValuationType &quot;Actual Cash Value&quot;
+IncludedInBlkt &quot;No&quot;          UnitNumber 1
+AgreedValueOption &quot;No&quot;       InflationGuard &quot;Not Applicable&quot;
+EQCoinsurance / EQCovIndicator / EQGrade / EQSprinklerLeakageOnly
+TerrorismOverride &quot;No&quot;       TerrorismSubLimit 0
+</code></pre>
+<p>This is the biggest correction in the document. Personal Property <strong>does not carry</strong>
+<code>RatingType</code>, <code>ClassCode</code>, <code>BldgClassCode</code>, <code>Group</code>, <code>ConstructionType</code>, <code>Deductible</code>,
+<code>ProtectClass</code> or <code>SprinklerSystem</code>. Every one of those is inherited from OccupClass,
+Structure or Location. My earlier §4.5 listed them as PP payload drivers; that was wrong.</p>
+<p>Contents carries only: what it is, what it's worth, its limit, its coinsurance, its cause
+of loss, and its valuation.</p>
+<hr />
+<h3 id="36-validated-against-all-7-alabama-stc-cases">3.6 Validated against all 7 Alabama STC cases</h3>
+<p>The field lists above came from 2 cases. Aggregating all 7 AL STC payloads (7 policy
+records, 7 locations, 7 structures, 4 occupancy classes, 4 personal property records)
+confirms a stable mandatory core plus a small conditional set:</p>
+<table>
+<thead>
+<tr>
+<th>Level</th>
+<th>Distinct scalars seen</th>
+<th>Present in <strong>every</strong> record</th>
+<th>Conditional</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CommercialProperty</code></td>
+<td>14</td>
+<td><strong>14</strong></td>
+<td>none</td>
+</tr>
+<tr>
+<td><code>CommercialPropertyLocation</code></td>
+<td>16</td>
+<td>15</td>
+<td>1</td>
+</tr>
+<tr>
+<td><code>CommercialPropertyStructure</code></td>
+<td>49</td>
+<td>38</td>
+<td>11</td>
+</tr>
+<tr>
+<td><code>CommercialPropertyOccupClass</code></td>
+<td>8</td>
+<td><strong>8</strong></td>
+<td>none</td>
+</tr>
+<tr>
+<td><code>CommercialPropertyPersonalProperty</code></td>
+<td>16</td>
+<td>14</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+<p>Policy and OccupClass are fully stable — every field appears in every case. The
+conditional fields, with how often they appear:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Level</th>
+<th>Frequency</th>
+<th>Reading</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ConstructionCode</code></td>
+<td>Structure</td>
+<td><strong>1 / 7</strong></td>
+<td><strong>Can be supplied directly as an override.</strong> <code>SetConstructionCode</code> assigns only when null, so a caller may bypass the <code>ConstructionType</code> lookup.</td>
+</tr>
+<tr>
+<td><code>SubStdConditionA</code>–<code>E</code></td>
+<td>Structure</td>
+<td>2 / 7</td>
+<td>Only on substandard-condition risks</td>
+</tr>
+<tr>
+<td><code>EQClass</code>, <code>EQDeductible</code></td>
+<td>Structure</td>
+<td>3 / 7</td>
+<td>Only when earthquake coverage is elected</td>
+</tr>
+<tr>
+<td><code>SoftStory</code></td>
+<td>Structure</td>
+<td>3 / 7</td>
+<td>Earthquake-related</td>
+</tr>
+<tr>
+<td><code>FullBldgValue</code></td>
+<td>Structure</td>
+<td>5 / 7</td>
+<td>Not universally required</td>
+</tr>
+<tr>
+<td><code>TerrorismSubLimit</code></td>
+<td>Structure</td>
+<td>5 / 7</td>
+<td></td>
+</tr>
+<tr>
+<td><code>FungusWetRotDryRotBacteriaCovLocApply</code></td>
+<td>Location</td>
+<td>3 / 7</td>
+<td></td>
+</tr>
+<tr>
+<td><code>EQGrade</code>, <code>FullPrsnlPropValue</code></td>
+<td>PersonalProperty</td>
+<td>3 / 4</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>The 14 policy-level and 8 OccupClass fields should be treated as <strong>required</strong>; everything
+in the conditional table is coverage-dependent.</p>
+<hr />
+<h3 id="37-the-personal-property-covtype-universe">3.7 The Personal Property <code>CovType</code> universe</h3>
+<p><code>DomainCovTypePrsnlProp</code> offers <strong>16 distinct values</strong>, keyed <code>StateCode + PolicyType +
+CovForm</code> — so the legal list changes with both the policy type and the coverage form:</p>
+<table>
+<thead>
+<tr>
+<th>CovForm</th>
+<th>Values offered</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Building and Personal Property Coverage Form</td>
+<td>All Personal Property · All Other Personal Property · Contents Except Stock · Stock · Furniture · Fixtures · Machinery and Equipment · Property of Others · Non-Owned Trailers · Tenants Improvements and Betterments · Valuable Papers and Records – Other Than Electronic Data · Personal Property in a Vault with an Approved Fire Rating · Property Other than Categories Listed Above</td>
+</tr>
+<tr>
+<td>Condominium Commercial Unit Owners</td>
+<td>as above, but <code>Fixtures, Improvements and Alterations</code> replaces <code>Fixtures</code> / <code>Tenants I&amp;B</code></td>
+</tr>
+<tr>
+<td>Condominium Association</td>
+<td><code>All Personal Property</code> only (CPP) / <code>All Other Personal Property</code> only (SPP)</td>
+</tr>
+<tr>
+<td>Legal Liability</td>
+<td><code>Personal Property of Others</code> · <code>Non-Owned Trailers</code></td>
+</tr>
+<tr>
+<td>Tobacco Sales Warehouse</td>
+<td><code>All Personal Property</code> only</td>
+</tr>
+<tr>
+<td>Class Rated Building Only, No Personal Property</td>
+<td><code>Not Applicable</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Only three of the sixteen change rating.</strong> Every other value reaches nothing but
+<code>DoMessage*</code> validation rules and <code>AttachForm*</code> form-attachment rules:</p>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Valuable Papers and Records - Other Than Electronic Data</code></td>
+<td>Tested 7 times — in <code>SetBasicGroupICauseOfLossAdjustment</code>, <code>SetBasicGroupIICauseOfLossAdjustment</code> and <code>SetBroadRate</code>. The most rating-consequential contents value</td>
+</tr>
+<tr>
+<td><code>Personal Property in a Vault with an Approved Fire Rating</code></td>
+<td>Gates <code>SetFireSafeVaultFactor</code>, itself gated on <code>RatingType = "Class"</code></td>
+</tr>
+<tr>
+<td><code>Tobacco Sales Warehouses</code></td>
+<td>Guards the LOI factors — <strong>but see below</strong></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>A dead test.</strong> <code>SetBasicGroupILOIFactor</code>, <code>SetBasicGroupIILOIFactor</code> and
+<code>SetBroadLOIFactor</code> each guard on <code>CovType &lt;&gt; "Tobacco Sales Warehouses"</code>. That exact
+string is offered by <strong>zero rows</strong> in <code>DomainCovTypePrsnlProp</code> across <strong>all 23 packages
+that file it</strong>, at any of its 16 values — the Tobacco form's contents value is
+<code>All Personal Property</code>. So the guard can never be false and the branch is unreachable
+through this field. Tobacco warehouses are still ratable, via the <code>CovForm</code> and the
+<code>CommercialPropertyPersonalPropertyTobaccoSalesWarehousesCoverage</code> record — just not by
+this route. Treat the constant as legacy, not as a value to support.</p>
+</blockquote>
+<p>The STC corpus uses <strong><code>All Personal Property</code> and nothing else</strong>, across all 364 CF cases.
+Fifteen of the sixteen values have no ISO-authored example anywhere.</p>
+<hr />
+<h2 id="4-alabama-rating-data-unchanged-this-part-held-up">4. Alabama rating data (unchanged — this part held up)</h2>
+<p>AL files its own class base rates: <strong><code>BasicGroupIRate</code>, 1,368 rows</strong>, keyed
+<code>StateCode, ClassCode, ConstructionCode, Group, CovType</code>, shared between Building and
+Contents with <code>CovType</code> separating them (<code>Building</code> 624 rows, <code>PersProp</code> 744).</p>
+<p>Group A/B/C is open to only ten building class codes — <code>0321, 0322, 0323, 0341, 0342,
+0343, 0581, 0582, 0701, 0702</code>. <code>YARD</code> is open to <code>1400, 1650, 1700</code> at construction 1 and 3
+only. Everything else rates at <code>Group = "Not Applicable"</code>. Since <code>Group</code> is derived, this
+is a fact about what the engine will produce, not about what you send.</p>
+<p>Building and Contents <strong>do not share a territory input in Alabama</strong>:</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Table</th>
+<th>Key</th>
+<th>AL values</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Building</td>
+<td><code>RatingTerritoryGroupIFactor</code></td>
+<td><code>BasicGroupIRatingTerr</code> (city)</td>
+<td>Birmingham 2.162, City of Mobile 0.674, Balance of State 1.0</td>
+</tr>
+<tr>
+<td>Contents</td>
+<td><code>PrsnlPropTerrMultiplier</code></td>
+<td><code>SpecialRatingTerr</code> (county)</td>
+<td>Jefferson 1.37, Mobile 1.192, Remainder of State 1.0</td>
+</tr>
+</tbody>
+</table>
+<p>The STC bears this out — it sends <code>BasicGroupIRatingTerr: "Birmingham"</code> and
+<code>SpecialRatingTerr: "Remainder of State"</code> on the same location. Those are not in conflict;
+they are two different axes.</p>
+<p>Also AL-filed and on this path: <code>DeductibleFactor</code> (462 rows), <code>BuildingHeightFactor</code> (216),
+<code>OccupancyType</code> (154), <code>VacantBldgPreviousOrIntendedOccup</code> (106), <code>BCEGFactor</code> (36),
+<code>SubStdConditionRate</code> (30), <code>BasicGroupIILOIFactorBldg</code>/<code>…PersProp</code>,
+<code>BaseRateAdjustmentFactor</code> (BGI 0.8, BGII 0.75). AL does <strong>not</strong> file
+<code>ProtectionClassFactor</code> or <code>BasicGroupILOIFactorBldg</code> — those resolve countrywide, state
+first with CW as fallback.</p>
+<hr />
+<h2 id="5-reference-payload">5. Reference payload</h2>
+<blockquote>
+<p><strong>A ready-to-use file:</strong> <code>CF_Algorithm/sample_payloads/AL_class_rated_bldg_pp_special.json</code>
+— Special form, class-rated Building + Personal Property, Alabama. Every one of its 96
+scalar fields was checked against the data dictionary for existence on its group, every
+child record against the schema's array-vs-object rule, and every enum against Alabama's
+own domain lists. The inline payload below is the Basic-form variant.</p>
+</blockquote>
+<p>Class-rated Building + Personal Property, Alabama — the shape of <code>STC_CP000017321.json</code>,
+trimmed to the fields that matter for the two coverages and with the class changed to
+<code>0701</code> so the Group A/B/C mechanism is live.</p>
+<pre><code class="language-json">{
+  &quot;SchemeKeys&quot;: {
+    &quot;ProductName&quot;: &quot;Commercial Property AL&quot;,
+    &quot;EffectiveDateTime&quot;: &quot;2027-03-01T00:00:00&quot;
+  },
+  &quot;CommercialProperty&quot;: [{
+    &quot;PolicyType&quot;: &quot;Commercial Property Policy&quot;,
+    &quot;BlktRated&quot;: &quot;No&quot;,
+    &quot;MUBlktRated&quot;: &quot;No&quot;,
+    &quot;MUPolicyType&quot;: &quot;No&quot;,
+    &quot;PackageModFactor&quot;: 1.0,
+    &quot;IRPMApplies&quot;: &quot;No&quot;,
+    &quot;CPPIRPMFactor&quot;: 0.0,
+    &quot;MultiPremiumAndDispersionCreditFactorUser&quot;: 0.0,
+    &quot;TerrorismIndicator&quot;: &quot;Yes&quot;,
+    &quot;CoverageForCertifiedActs&quot;: &quot;No&quot;,
+    &quot;TRIAType&quot;: &quot;Is in Effect for the Next 12 Months&quot;,
+    &quot;FungusWetRotDryRotBacteriaCov&quot;: &quot;15,000 Sub Limit&quot;,
+    &quot;EQSubLimitBlktIndicator&quot;: &quot;No&quot;,
+    &quot;FloodCovEndtBlktIndicator&quot;: &quot;No&quot;,
+    &quot;CommercialPropertyPostTRIACoverage&quot;: {},
+    &quot;CommercialPropertyTotPremiumCoverage&quot;: {},
+    &quot;CommercialPropertyCyberIncidentExclusion&quot;: [{}],
+
+    &quot;CommercialPropertyLocation&quot;: [{
+      &quot;UnitNumber&quot;: 1,
+      &quot;City&quot;: &quot;Birmingham&quot;,
+      &quot;County&quot;: &quot;Jefferson&quot;,
+      &quot;ZipCode&quot;: &quot;35203&quot;,
+      &quot;ProtectClass&quot;: &quot;1&quot;,
+      &quot;BasicGroupIRatingTerr&quot;: &quot;Birmingham&quot;,
+      &quot;BasicGroupIIRatingTerr&quot;: &quot;Inland Territory&quot;,
+      &quot;SpecialRatingTerr&quot;: &quot;Jefferson&quot;,
+      &quot;TerrorismTerritory&quot;: &quot;Statewide&quot;,
+      &quot;FloodCovIndicator&quot;: &quot;No&quot;,
+      &quot;OperationalUnitIndicator&quot;: &quot;No&quot;,
+      &quot;MultipleResidentialPropSpecialCredit&quot;: &quot;No&quot;,
+      &quot;CommercialPropertyLocationFireDepartmentCharge&quot;: { &quot;FireIncreaseLimitApplyOnPolicyIndicator&quot;: &quot;No&quot; },
+      &quot;CommercialPropertyLocationNewlyAcquiredLocationTimeElement&quot;: { &quot;Indicator&quot;: &quot;No&quot; },
+
+      &quot;CommercialPropertyStructure&quot;: [{
+        &quot;RatingType&quot;: &quot;Class&quot;,
+        &quot;RatingTypeBasicGroupII&quot;: &quot;Class&quot;,
+        &quot;ClassCode&quot;: &quot;0701&quot;,
+        &quot;ConstructionType&quot;: &quot;Frame&quot;,
+        &quot;CovType&quot;: &quot;Building&quot;,
+        &quot;CauseOfLoss&quot;: &quot;Basic&quot;,
+        &quot;Limit&quot;: 500000,
+        &quot;FullBldgValue&quot;: 550000,
+        &quot;Coinsurance&quot;: &quot;80%&quot;,
+        &quot;Deductible&quot;: &quot;1,000&quot;,
+        &quot;ValuationType&quot;: &quot;Actual Cash Value&quot;,
+        &quot;IncludedInBlkt&quot;: &quot;No&quot;,
+        &quot;VacantBuilding&quot;: &quot;No&quot;,
+        &quot;SprinklerSystem&quot;: &quot;None&quot;,
+        &quot;OpenSides&quot;: &quot;No&quot;,
+        &quot;NumStories&quot;: &quot;1-3&quot;,
+        &quot;YearOfConstructionCode&quot;: 2000,
+        &quot;BCEG&quot;: &quot;Ungraded&quot;,
+        &quot;BCEGClass&quot;: &quot;Not Graded&quot;,
+        &quot;TheftDeductible&quot;: &quot;2,500&quot;,
+        &quot;WindstormOrHailDeductible&quot;: &quot;Not Applicable&quot;,
+        &quot;UnitNumber&quot;: 1,
+        &quot;SpecificGroupIRate&quot;: 0.0,
+
+        &quot;CommercialPropertyStructureBuildingBasicGroupICoverage&quot;: {},
+        &quot;CommercialPropertyStructureBuildingBasicGroupIICoverage&quot;: {},
+        &quot;CommercialPropertyStructureBuildingBroadCoverage&quot;: {},
+        &quot;CommercialPropertyStructureBuildingSpecialCoverage&quot;: {},
+
+        &quot;CommercialPropertyOccupClass&quot;: [{
+          &quot;ClassCode&quot;: &quot;0701&quot;,
+          &quot;CovForm&quot;: &quot;Building and Personal Property Coverage Form&quot;,
+          &quot;OccupCategory&quot;: &quot;Residential Apartments and Condominiums&quot;,
+          &quot;SprinklerSystem&quot;: &quot;None&quot;,
+          &quot;TheftDeductible&quot;: &quot;2,500&quot;,
+
+          &quot;CommercialPropertyPersonalProperty&quot;: [{
+            &quot;CovType&quot;: &quot;All Personal Property&quot;,
+            &quot;CauseOfLoss&quot;: &quot;Basic&quot;,
+            &quot;Limit&quot;: 150000,
+            &quot;FullPrsnlPropValue&quot;: 175000,
+            &quot;Coinsurance&quot;: &quot;80%&quot;,
+            &quot;ValuationType&quot;: &quot;Actual Cash Value&quot;,
+            &quot;IncludedInBlkt&quot;: &quot;No&quot;,
+            &quot;AgreedValueOption&quot;: &quot;No&quot;,
+            &quot;InflationGuard&quot;: &quot;Not Applicable&quot;,
+            &quot;UnitNumber&quot;: 1,
+
+            &quot;CommercialPropertyPersonalPropertyPrsnlPropBasicGroupICoverage&quot;: {},
+            &quot;CommercialPropertyPersonalPropertyPrsnlPropBasicGroupIICoverage&quot;: {},
+            &quot;CommercialPropertyPersonalPropertyPrsnlPropBroadCoverage&quot;: {},
+            &quot;CommercialPropertyPersonalPropertyPrsnlPropSpecialCoverage&quot;: {}
+          }]
+        }]
+      }]
+    }]
+  }]
+}
+</code></pre>
+<p>Filed AL values this resolves to. <code>ConstructionType: "Frame"</code> derives
+<code>ConstructionCode = 1</code>, and <code>ProtectClass: "1"</code> gives protection class 1:</p>
+<table>
+<thead>
+<tr>
+<th>Lookup</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>BasicGroupIRate</code> AL / 0701 / <strong>1</strong> / Not Applicable / Building</td>
+<td><strong>0.115</strong></td>
+</tr>
+<tr>
+<td><code>BasicGroupIRate</code> AL / 0701 / <strong>1</strong> / B / PersProp</td>
+<td><strong>0.187</strong></td>
+</tr>
+<tr>
+<td>(Group A would be 0.126, Group C 0.146 — same class, same construction)</td>
+<td></td>
+</tr>
+<tr>
+<td><code>RatingTerritoryGroupIFactor</code> AL / Birmingham</td>
+<td><strong>2.162</strong></td>
+</tr>
+<tr>
+<td><code>PrsnlPropTerrMultiplier</code> AL / Jefferson</td>
+<td><strong>1.37</strong></td>
+</tr>
+<tr>
+<td><code>ProtectionClassFactor</code> CW / PC 1 / constr 1</td>
+<td><strong>0.88</strong></td>
+</tr>
+<tr>
+<td><code>DeductibleFactor</code> AL / 1,000 / 175k–500k / Basic Group I</td>
+<td><strong>0.99</strong></td>
+</tr>
+<tr>
+<td><code>CoinsuranceFactor</code> CW / 80%</td>
+<td><strong>1.0</strong></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="6-derivation-chains-traced">6. Derivation chains — traced</h2>
+<h3 id="61-class-codes">6.1 Class codes</h3>
+<p>Four class-code datadefs exist across three levels. All are derived from the two
+<code>ClassCode</code> values the payload supplies (one on Structure, one on OccupClass):</p>
+<table>
+<thead>
+<tr>
+<th>Level</th>
+<th>Field</th>
+<th>Rule</th>
+<th>Resolves to</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Structure</td>
+<td><code>ClassCodeToUse</code></td>
+<td><code>SetClassCodeToUse</code> (Structure line 893)</td>
+<td>plain copy of <code>ClassCode</code> — nothing else</td>
+</tr>
+<tr>
+<td>OccupClass</td>
+<td><code>BldgClassCode</code></td>
+<td><code>SetBldgClassCode</code> (OccupClass line 569)</td>
+<td>copy of <code>../../ClassCode</code> — the <strong>building's</strong> code</td>
+</tr>
+<tr>
+<td>OccupClass</td>
+<td><code>ClassCodeToUse</code></td>
+<td><code>SetClassCodeToUse</code> (OccupClass line 622)</td>
+<td><code>RatingType = "Class"</code> → <code>BldgClassCode</code>; else own <code>ClassCode</code></td>
+</tr>
+<tr>
+<td>PersonalProperty</td>
+<td><code>BldgClassCode</code></td>
+<td><code>SetBldgClassCode</code> (PP line 1147)</td>
+<td>copy of <code>../../BldgClassCode</code></td>
+</tr>
+<tr>
+<td>PersonalProperty</td>
+<td><code>ClassCode</code></td>
+<td><code>SetClassCode</code> (PP line 1209)</td>
+<td>copy of <code>../../ClassCodeToUse</code></td>
+</tr>
+<tr>
+<td>PersonalProperty</td>
+<td><code>ClassRatedClassCode</code></td>
+<td><code>SetClassRatedClassCode</code> (PP line 1173)</td>
+<td>copy of <code>../../../../ClassCode</code> (Structure's), <strong>only when null</strong> — preserves an override</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Correction.</strong> I previously wrote that <code>VacantBuilding = "Yes"</code> substitutes class code
+<code>1180</code> into the rating path. It does not. <code>1180</code> appears exactly three times in the
+rules: <code>SetClassCodeForStat</code> assigns it to <strong><code>ClassCodeForStat</code></strong> — a <em>statistical</em>
+reporting code, not a rating key — and it is passed as a hardcoded argument to the
+vandalism-factor lookup. <code>ClassCodeToUse</code> has no vacancy branch at all; vacancy enters
+the Basic Group I rate through the additive <code>VacantBuildingRate</code> term instead.</p>
+</blockquote>
+<h3 id="62-group-two-rules-at-two-levels">6.2 <code>Group</code> — two rules at two levels</h3>
+<p><code>Group</code> is set <strong>twice</strong>, and the second can override the first:</p>
+<ol>
+<li><strong><code>SetGroup</code> on OccupClass</strong> (line 640) — reads <code>RatingType</code>, <code>ClassCodeToUse</code>,
+   <code>ClassCode</code>. Assigns <code>A</code>, <code>B</code>, <code>C</code> or <code>Not Applicable</code>. Never assigns <code>YARD</code>.</li>
+<li><strong><code>SetGroup</code> on PersonalProperty</strong> (line 1640) — reads <code>../../Group</code>, <code>BldgClassCode</code>
+   and <code>YardPropertyIndicator</code>. Assigns <strong><code>YARD</code></strong> when <code>BldgClassCode</code> is one of
+   <code>1400</code>, <code>1650</code>, <code>1700</code> <strong>and</strong> <code>YardPropertyIndicator</code> is
+   <code>Yard Property - Combustible</code> or <code>Yard Property - Non Combustible</code>. Otherwise it
+   inherits the occupancy class's value.</li>
+</ol>
+<p>So <code>YardPropertyIndicator</code> <strong>is a payload input</strong> on the Personal Property record, and it
+is the only way YARD rating is reachable. Combustible forces <code>ConstructionCode = 1</code>,
+non-combustible forces <code>3</code> — which is exactly why AL files YARD rows at construction 1 and
+3 only.</p>
+<hr />
+<h2 id="7-basic-group-ii">7. Basic Group II</h2>
+<p>BGII is a structurally different animal from BGI, and it is where Alabama's state content
+is heaviest.</p>
+<p><strong>BGI rates off class code + construction code. BGII rates off rating territory +
+construction symbol.</strong> Territory is a <em>lookup key into the base rate table</em>, not a
+multiplier — there is no BGII analogue to <code>RatingTerritoryGroupIFactor</code>.</p>
+<h3 id="71-extra-payload-drivers-bgii-needs">7.1 Extra payload drivers BGII needs</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Level</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>BasicGroupIIRatingTerr</code></td>
+<td>Location</td>
+<td><strong>A base-rate key.</strong> AL: <code>Inland Territory</code> / <code>Seacoast Territory</code> / <code>Beach Territory</code>, assigned by county via <code>DomainBasicGroupIIRatingTerrAL</code> (71 rows). Baldwin County can be any of the three.</td>
+</tr>
+<tr>
+<td><code>ConstructionType</code> + <code>NumStories</code></td>
+<td>Structure</td>
+<td>Together resolve <code>BasicGroupIISymbol</code> via <code>LookupBasicGroupIIConstructionSymbol</code>. AL symbols: <code>AA</code>, <code>A</code>, <code>AB</code>, <code>B</code>.</td>
+</tr>
+<tr>
+<td><code>RatingTypeBasicGroupII</code></td>
+<td>Structure</td>
+<td>Separate from <code>RatingType</code>. AL narrows it to <code>Class</code> / <code>Specific</code> — <strong>no <code>Tentative</code></strong>.</td>
+</tr>
+<tr>
+<td><code>OpenSides</code></td>
+<td>Structure</td>
+<td>With <code>ClassCodeToUse</code>, drives <code>BasicGroupIINumericValue</code>.</td>
+</tr>
+<tr>
+<td><code>BCEG</code>, <code>BCEGClass</code></td>
+<td>Structure</td>
+<td>Drive <code>BCEGFactor</code> (36 AL rows). BGII only — absent from the BGI rate.</td>
+</tr>
+<tr>
+<td><code>WindstormOrHailDeductible</code></td>
+<td>Structure</td>
+<td>AL files <code>WindstormOrHailDeductibleFactor</code> (24 rows).</td>
+</tr>
+<tr>
+<td><code>RoofLevel</code>, <code>RoofSubDecking</code>, <code>AgeOfTheRoof</code>, <code>CertificateType</code>, <code>CertificateLevel</code>, <code>InsuredHolds…IBHS…Certificate</code></td>
+<td>Structure</td>
+<td>Roof surfacing and windstorm loss-mitigation credits — AL files three <code>WindstormLossMitigationCredits</code> tables.</td>
+</tr>
+<tr>
+<td><code>CommercialPropertyWindstormOrHailExclusion</code></td>
+<td>Structure child record</td>
+<td>An <strong>election</strong>, not a value. Its presence switches the whole rate onto the <code>LowestBasicGroupIIRate</code> path.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="72-alabama-bgii-base-rates-filed-covtype-splits-bldgpersprop">7.2 Alabama BGII base rates (filed, <code>CovType</code> splits Bldg/PersProp)</h3>
+<table>
+<thead>
+<tr>
+<th>Territory</th>
+<th>AA</th>
+<th>A</th>
+<th>AB</th>
+<th>B</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Inland — Bldg</td>
+<td>0.080</td>
+<td>0.091</td>
+<td>0.115</td>
+<td>0.156</td>
+</tr>
+<tr>
+<td>Inland — PersProp</td>
+<td>0.071</td>
+<td>0.080</td>
+<td>0.098</td>
+<td>0.125</td>
+</tr>
+<tr>
+<td>Seacoast — Bldg</td>
+<td>0.288</td>
+<td>0.321</td>
+<td>0.384</td>
+<td>0.684</td>
+</tr>
+<tr>
+<td>Seacoast — PersProp</td>
+<td>0.212</td>
+<td>0.235</td>
+<td>0.304</td>
+<td>0.534</td>
+</tr>
+<tr>
+<td>Beach — Bldg</td>
+<td>0.492</td>
+<td>0.546</td>
+<td>0.668</td>
+<td>1.145</td>
+</tr>
+<tr>
+<td>Beach — PersProp</td>
+<td>0.337</td>
+<td>0.374</td>
+<td>0.496</td>
+<td>0.875</td>
+</tr>
+</tbody>
+</table>
+<p>Seacoast is roughly 3.5× Inland and Beach roughly 6× — so <code>BasicGroupIIRatingTerr</code> is the
+single most consequential field in an Alabama BGII payload.</p>
+<h3 id="73-a-filed-data-defect-in-the-current-al-edition">7.3 A filed-data defect in the current AL edition</h3>
+<blockquote>
+<p><strong><code>LowestBasicGroupIIRate</code>, symbol <code>A</code>, <code>PersProp</code>, is <code>0.8</code> in <code>CF AL 20270301 V01</code>.
+It was <code>0.08</code> in all seven prior AL editions, and every other symbol in the table still
+matches its Inland Territory rate exactly.</strong></p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>Symbol</th>
+<th>Lowest (20270301)</th>
+<th>Inland PersProp</th>
+<th>Prior editions</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>AA</td>
+<td>0.071</td>
+<td>0.071</td>
+<td>0.071 ✓</td>
+</tr>
+<tr>
+<td><strong>A</strong></td>
+<td><strong>0.8</strong></td>
+<td><strong>0.08</strong></td>
+<td><strong>0.08</strong> ← 10× jump</td>
+</tr>
+<tr>
+<td>AB</td>
+<td>0.098</td>
+<td>0.098</td>
+<td>0.098 ✓</td>
+</tr>
+<tr>
+<td>B</td>
+<td>0.125</td>
+<td>0.125</td>
+<td>0.125 ✓</td>
+</tr>
+</tbody>
+</table>
+<p>This reads as a decimal-place error in ISO's newest Alabama filing. <strong>Impact:</strong> a
+class-rated personal property risk with a windstorm/hail exclusion and construction symbol
+A, in Alabama, at the current edition, rates its BGII contents roughly 10× too high —
+because the exclusion branch rebuilds the rate from <code>LowestBasicGroupIIBaseRate</code> instead of
+the territory rate.</p>
+<p>I swept all 48 states' latest packages for the same shape. Only two other rows sit above
+their cheapest territory rate — Maine's <code>A</code> and <code>AB</code> PersProp (0.03 vs 0.028, 0.033 vs
+0.032). Those are small enough to be a deliberately filed floor rather than an error;
+Alabama's is a 10× jump that also breaks its own edition history. <strong>Do not code around
+this</strong> — it should be raised with ISO. Logged for the simplifications/divergence backlog.</p>
+<hr />
+<h2 id="8-broad-and-special">8. Broad and Special</h2>
+<p>These two are where the ISO fixtures actually live — 357 of 364 CF payloads are Special,
+19 are Broad. They are also the two simplest chains, and they key on things Basic does not.</p>
+<h3 id="81-broad-the-shortest-chain">8.1 Broad — the shortest chain</h3>
+<p>Six steps, and <strong>no cause-of-loss adjustment rule at all</strong> — the only one of the four forms
+without one. No territory, no protection class, no symbol.</p>
+<p><code>BroadFormBaseRate</code> is keyed <code>StateCode + ConstructionTypeToUse + CovType</code>, where <code>CovType</code>
+here is the lookup's own parameter (<code>Bldg</code> / <code>BldrRisk</code> / <code>PersProp</code>), not the record's
+field. <strong>Alabama does not file it — it resolves countrywide:</strong></p>
+<table>
+<thead>
+<tr>
+<th>ConstructionTypeToUse</th>
+<th>Bldg</th>
+<th>BldrRisk</th>
+<th>PersProp</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Frame / Joisted Masonry / Non-Combustible / Masonry Non-Combustible</td>
+<td>0.015</td>
+<td>0.012</td>
+<td>0.021</td>
+</tr>
+<tr>
+<td>Modified Fire Resistive / Fire Resistive</td>
+<td>0.010</td>
+<td>0.012</td>
+<td>0.011</td>
+</tr>
+</tbody>
+</table>
+<p>So Broad is effectively two-tiered on construction, and Builders Risk is flat. Class code
+matters only in one place: <code>ClassCodeToUse = "1150"</code> switches the lookup to the <code>BldrRisk</code>
+row.</p>
+<p><strong>Payload drivers Broad needs beyond the shared set:</strong> nothing new. <code>ConstructionType</code>
+and <code>ClassCode</code> already carry it.</p>
+<h3 id="82-special-building-is-flat-contents-is-not">8.2 Special — Building is flat, Contents is not</h3>
+<p><strong>Building.</strong> <code>SpecialBuildingRate</code> is a <em>flat statewide constant</em> — keyed
+<code>StateCode + Constant</code>, one row per state. Alabama files <strong>0.039</strong>. No class code, no
+construction, no territory, no protection class. The entire Building Special rate is
+<code>0.039 × LCM</code>, then theft / roof / coinsurance / LOI / deductible factors.</p>
+<p><strong>Contents is the odd one out in the whole line.</strong> <code>SpecialPrsnlPropRate</code> is keyed
+<code>StateCode + OccupCategory + OccupCategorySeverity</code> — <strong>an occupancy axis no other form
+uses.</strong> Alabama, 13 rows:</p>
+<table>
+<thead>
+<tr>
+<th>OccupCategory</th>
+<th>Severity</th>
+<th>Rate</th>
+<th>Theft-excl factor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Residential Apartments and Condominiums</td>
+<td>Not Applicable</td>
+<td>0.116</td>
+<td>0.6</td>
+</tr>
+<tr>
+<td>Offices</td>
+<td>Not Applicable</td>
+<td>0.093</td>
+<td>0.4</td>
+</tr>
+<tr>
+<td>Mercantile</td>
+<td>High / Medium / Low</td>
+<td>0.139 / 0.129 / <strong>0.092</strong></td>
+<td>0.4</td>
+</tr>
+<tr>
+<td>Motels and Hotels</td>
+<td>Not Applicable</td>
+<td>0.065</td>
+<td>0.6</td>
+</tr>
+<tr>
+<td>Institutional</td>
+<td>High / Low</td>
+<td>0.065 / 0.038</td>
+<td>0.4</td>
+</tr>
+<tr>
+<td>Industrial and Processing</td>
+<td>High / Low</td>
+<td>0.149 / 0.130</td>
+<td>0.4</td>
+</tr>
+<tr>
+<td>Service</td>
+<td>High / Low</td>
+<td>0.105 / 0.087</td>
+<td>0.4</td>
+</tr>
+<tr>
+<td>Contractors</td>
+<td>Not Applicable</td>
+<td>0.191</td>
+<td>0.2</td>
+</tr>
+</tbody>
+</table>
+<p><code>SpecialPrsnlPropTheftExclusionFactor</code> is keyed on <code>OccupCategory</code> alone — no severity.</p>
+<h3 id="83-two-payload-fields-basic-never-needed">8.3 Two payload fields Basic never needed</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Level</th>
+<th>Note</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>OccupCategory</code></td>
+<td>OccupClass <strong>and</strong> PersonalProperty</td>
+<td>Declared on both. The Special Contents rate key</td>
+</tr>
+<tr>
+<td><code>OccupCategoryRiskSeverity</code></td>
+<td>OccupClass <strong>and</strong> PersonalProperty</td>
+<td><code>High</code> / <code>Medium</code> / <code>Low</code> / <code>Not Applicable</code>. <strong>No domain table constrains it</strong> — the legal values are only discoverable from the rate table</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Naming trap.</strong> The datadef field is <strong><code>OccupCategoryRiskSeverity</code></strong>. The rate-table
+column is <strong><code>OccupCategorySeverity</code></strong>. They are different strings; the lookup binds
+positionally, not by name. Searching the rules for the column name returns nothing —
+which is exactly the wrong conclusion.</p>
+<p><strong>A real gap in ISO's own fixtures.</strong> <code>OccupCategoryRiskSeverity</code> appears in <strong>zero of
+the 364 CF STC payloads</strong> — yet 6 cases use <code>OccupCategory = "Mercantile"</code>, and all 6 are
+in states that file three distinct Mercantile severity rows:</p>
+<table>
+<thead>
+<tr>
+<th>State</th>
+<th>High</th>
+<th>Medium</th>
+<th>Low</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>CO</td>
+<td>0.267</td>
+<td>0.239</td>
+<td>0.135</td>
+</tr>
+<tr>
+<td>ME</td>
+<td>0.156</td>
+<td>0.152</td>
+<td>0.094</td>
+</tr>
+<tr>
+<td>MI</td>
+<td>0.389</td>
+<td>0.366</td>
+<td><strong>0.204</strong></td>
+</tr>
+<tr>
+<td>NM</td>
+<td>0.221</td>
+<td>0.178</td>
+<td>0.141</td>
+</tr>
+</tbody>
+</table>
+<p>Michigan's spread is <strong>~1.9×</strong>. Either the engine applies a default severity that is not
+written down, or ISO's fixtures are underspecified for Special Contents on any
+multi-severity occupancy. Whichever it is, a submission builder must supply this field
+and cannot learn its legal values from a domain list or from an example. Resolve it
+before trusting any Special Contents premium on Mercantile, Institutional, Industrial
+and Processing, or Service.</p>
+</blockquote>
+<hr />
+<h2 id="9-does-alabama-generalise-the-second-state-test">9. Does Alabama generalise? The second-state test</h2>
+<p>Alabama is a "single base-rate table" state, which turns out to be the common case but not
+the only one. Two questions were worth testing: does the <strong>base-rate lookup</strong> keep the same
+shape in other states, and does the <strong>occupancy-severity</strong> axis found in §8 generalise?</p>
+<h3 id="91-three-different-basic-group-i-base-rate-mechanisms">9.1 Three different Basic Group I base-rate mechanisms</h3>
+<p>Counting the latest package of every jurisdiction:</p>
+<table>
+<thead>
+<tr>
+<th>Mechanism</th>
+<th>States</th>
+<th>Tables</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Single table</td>
+<td><strong>43</strong></td>
+<td><code>BasicGroupIRate</code></td>
+</tr>
+<tr>
+<td>District I / II</td>
+<td><strong>2</strong> — AK, CA</td>
+<td><code>BasicGroupIDistrictIRate</code> + <code>BasicGroupIDistrictIIRate</code></td>
+</tr>
+<tr>
+<td>NYC split</td>
+<td><strong>1</strong> — NY</td>
+<td><code>BasicGroupIRate</code> + <code>BasicGroupIRateNYC</code></td>
+</tr>
+<tr>
+<td>None filed</td>
+<td>2 — CW, PR</td>
+<td>—</td>
+</tr>
+</tbody>
+</table>
+<p>Every variant keeps the <strong>same five keys</strong> (<code>StateCode, ClassCode, ConstructionCode, Group,
+CovType</code>) and the same row count shape — AK and CA file 1,368 rows in <em>each</em> district table,
+NY 1,308 in each. So the lookup signature does not change; only <em>which table</em> is read.</p>
+<h3 id="92-the-selector-differs-in-all-three-and-only-california-adds-a-payload-field">9.2 The selector differs in all three — and only California adds a payload field</h3>
+<p>Each state overrides <code>SetBasicGroupIBaseRate</code> with its own selector:</p>
+<table>
+<thead>
+<tr>
+<th>State</th>
+<th>Reads</th>
+<th>Rule</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>CA</strong></td>
+<td><strong><code>../../District</code></strong> — a Location field</td>
+<td><code>District I</code> → District I table, <code>District II</code> → District II table</td>
+</tr>
+<tr>
+<td><strong>AK</strong></td>
+<td><code>BasicGroupIRatingTerr</code></td>
+<td>territory in <code>020, 040, 050, 100</code> → one district, else the other</td>
+</tr>
+<tr>
+<td><strong>NY</strong></td>
+<td><code>BasicGroupIRatingTerr</code></td>
+<td>territory in <code>030, 240, 310, 410, 430</code> → the NYC table, else the plain one</td>
+</tr>
+</tbody>
+</table>
+<p><strong>This is the payload consequence, and it is the whole answer to "does Alabama generalise".</strong>
+California requires one field Alabama never sends — <code>District</code> on
+<code>CommercialPropertyLocation</code>, values <code>District I</code> / <code>District II</code>, from <code>DomainDistrict</code>
+(2 rows, CA only). Alaska and New York require <strong>nothing new</strong>: both derive the split from
+<code>BasicGroupIRatingTerr</code>, which every payload already carries.</p>
+<p>So the answer is: <strong>the record shape holds; one state adds one field.</strong> The three are not
+one mechanism — they are three — and only one of them touches the request.</p>
+<p><strong>What New York's five codes actually are.</strong> <code>030, 240, 310, 410, 430</code> are not arbitrary:
+in NY's <code>RatingTerrGroupICode</code> table (keyed <code>CityTown + County</code>) they map one-to-one to
+<strong>Bronx, Kings, New York, Queens and Richmond</strong> — the five boroughs — each filed with
+<code>CityTown = "Remainder of State"</code>. So the real determinant is <strong>county</strong>, and the territory
+code is the county's proxy.</p>
+<p>This matters for the payload. <code>BasicGroupIRatingTerr</code> is <em>supplied</em>, not derived (§3.2), so
+whoever builds the request has to put the right borough code in it. Deriving that code from
+a Territory dropdown (<code>Buffalo</code> / <code>Rochester</code> / <code>Albany</code> / <code>New York City</code> /
+<code>Remainder of State</code>) is <strong>not</strong> equivalent — the filed table lets <code>New York City</code> pair with
+any NY county. A risk in Brooklyn submitted with a non-borough territory code rates off the
+wrong table entirely, and nothing errors.</p>
+<h3 id="93-two-dead-artefacts-found-while-checking">9.3 Two dead artefacts found while checking</h3>
+<ul>
+<li><strong><code>DomainDistrict</code> in Alaska is header-only — 0 rows — in all 9 AK editions</strong>, keyed on
+  <code>BasicGroupIRatingTerr</code>. It is a dropdown that offers nothing, for a field AK's rules never
+  read. CA files 2 rows in every edition; no other state files the table at all.</li>
+<li><strong><code>BasicGroupIDistrictTerritory</code></strong> is declared on <code>CommercialPropertyLocation</code> countrywide
+  and is read by <strong>no rule in the countrywide ruleset</strong>. A declared field with no consumer.</li>
+</ul>
+<p>Neither should be sent. Both are the kind of thing that looks like a required input if you
+read the DataDef instead of the rules.</p>
+<h3 id="94-the-severity-axis-generalises-completely">9.4 The severity axis generalises completely</h3>
+<p><code>SpecialPrsnlPropRate</code> is filed by <strong>45 of 47 jurisdictions</strong> — countrywide is empty, so
+Special Contents is entirely state-filed. Across all 45, the severity structure is
+<strong>identical</strong>; only the rates differ:</p>
+<table>
+<thead>
+<tr>
+<th>OccupCategory</th>
+<th>Severities — same in all 45 states</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Mercantile</td>
+<td>High · Medium · Low</td>
+</tr>
+<tr>
+<td>Institutional · Industrial and Processing · Service</td>
+<td>High · Low</td>
+</tr>
+<tr>
+<td>Offices · Residential Apartments and Condominiums · Motels and Hotels · Contractors</td>
+<td>Not Applicable</td>
+</tr>
+</tbody>
+</table>
+<p><strong>This strengthens the §8.3 finding rather than softening it.</strong> <code>OccupCategoryRiskSeverity</code>
+is not an Alabama quirk — it is required in 45 states, on four occupancy categories, and it
+is absent from all 364 ISO fixtures and constrained by no domain table anywhere.</p>
+<p>Two jurisdictions differ:</p>
+<ul>
+<li><strong>Florida</strong> splits Special into Residential and NonResidential tables.
+  <code>SpecialPrsnlPropRateResidential</code> is a flat constant (0.125); <code>…NonResidential</code> is the
+  standard <code>OccupCategory + OccupCategorySeverity</code> table, minus the Residential category.
+  So FL still needs severity — just partitioned. Building splits the same way
+  (<code>SpecialBuildingRateResidential</code> 0.030).</li>
+<li><strong>Puerto Rico</strong> files <code>SpecialPrsnlPropExclgTheftBaseRate</code> instead, a different structure
+  again. PR is outside the ISO-comparison scope, so this is noted, not pursued.</li>
+</ul>
+<hr />
+<h2 id="10-what-is-still-open">10. What is still open</h2>
+<ol>
+<li><del><strong><code>LossCostMultiplier</code> sourcing</strong></del> — <strong>decided 2026-09-17: default to <code>1.0</code>.</strong>
+   LCM appears in no STC payload, and at <code>1.0</code> the filed ISO loss cost passes through
+   unchanged, which is the correct baseline for proving the engine against ISO. A carrier
+   LCM will be a <strong>configured input, by line of business</strong>, not a submission field — see
+   Set 6 in the completion tracker. Until that exists, every rate in this document is an
+   ISO loss cost, not a carrier rate.</li>
+</ol>
+<blockquote>
+<p><strong>Read every worked number here as LCM = 1.0.</strong> <code>BasicGroupIRate</code> multiplies the base
+rate by <code>LossCostMultiplier</code> directly, so a carrier at 1.4 scales the whole chain. Note
+also the rounding trap already logged for Building: sub-thousandth rates are rounded to
+3 decimals <em>after</em> the LCM multiply, so the multiplier changes which side of a rounding
+boundary a rate lands on. LCM is not a clean post-hoc scalar.
+2. <del><strong>Live RAaS envelope</strong></del> — <strong>closed 2026-09-17.</strong> A live request wraps the STC content
+   in <code>header</code> + <code>body</code>, with <code>authorization.orgId</code> / <code>authorization.shipId</code> in the header.
+   Confirmed against this account's real GL RAaS inputs. See §1.
+3. <strong>No execution.</strong> <code>cf_engine/</code> still has no interpreter or rating kernel, so none of this
+   has been run. It is a well-evidenced reading, not a tested contract.</p>
+</blockquote>
+<ol start="4">
+<li><strong><code>OccupCategoryRiskSeverity</code> has no stated default.</strong> Required by the Special Contents
+   rate key, absent from all 364 ISO fixtures, constrained by no domain table. See §8.3 —
+   this is the sharpest open question in the document.</li>
+</ol>
+<p>Closed since the first draft: <code>ConstructionType</code>-&gt;<code>ConstructionCode</code> (Set 0),
+<code>Group</code> A/B/C (Set 0), <code>ClassCodeToUse</code> (1a), <code>YARD</code> selection (1b),
+STC validation across all 7 AL cases (1c), Basic Group II (1d),
+STC corpus indexed and its coverage measured (2a-2c),
+Personal Property <code>CovType</code> universe (3a), Broad and Special (3b),
+second-state generalisation across the District states (3c).</p>
+<hr />
+<h2 id="11-next-steps">11. Next steps</h2>
+<ul>
+<li><strong>Use the STC corpus.</strong> 924 payloads, 206 with Personal Property, 7 Alabama. These are
+  ISO's own regression cases and should become the CF engine's test fixtures the moment
+  there is an engine. They also answer format questions faster than the schema does.</li>
+<li>Trace <code>SetConstructionCode</code> and the <code>Group</code> resolution in
+  <code>CommercialPropertyOccupClassRules.Rule.xml</code> / <code>CommercialPropertyStructureRules.Rule.xml</code>
+  to close items 1 and 2.</li>
+<li>Diff the four AL STC editions (20221001 → 20230801 → 20240501 → 20250201) to see which
+  payload fields ISO added over time — a cheap read on where the format is moving.</li>
+</ul>
+</article></div></body></html>

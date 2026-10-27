@@ -112,8 +112,8 @@ and reports its own defects.</p>
 
 <div class="grid">
   <div class="stat"><b>3 weeks</b><span>analysis, complete</span></div>
-  <div class="stat"><b>1 of 6</b><span>build stages working</span></div>
-  <div class="stat"><b>0</b><span>decisions needed today</span></div>
+  <div class="stat"><b>6 of 6</b><span>build stages working</span></div>
+  <div class="stat"><b>50 of 50</b><span>agree with ISO's own service</span></div>
 </div>
 </section>
 
@@ -162,15 +162,28 @@ work has been analysis-first.</p>
 
 <section id="now">
 <h2><span class="n">3</span>Where we are</h2>
-<p class="lede">Analysis finished. Stage 1 of the engine built and tested.</p>
+<p class="lede">Analysis finished. <strong>All six stages built, and checked against ISO's own rating service — fifty jurisdictions agreeing on the premium and on every field ISO publishes.</strong> As of 13 August 2026.</p>
 
 <pre><code>ANALYSIS                                    BUILD
 ├─ Sources collected &amp; converted   ✔ done   ├─ 1. Load &amp; resolve      ✔ DONE
-├─ Two independent specifications  ✔ done   ├─ 2. The interpreter     ▶ next
-├─ 14 coverage walkthroughs        ✔ done   ├─ 3. Produce a premium   ·
-├─ Every count re-measured by date ✔ done   ├─ 4. State input formats ·
-├─ Referral rules + 13 decisions   ✔ done   ├─ 5. Field/value catalog ·
-└─ Architecture decision           ✔ done   └─ 6. Simple interface    ·</code></pre>
+├─ Two independent specifications  ✔ done   ├─ 2. The interpreter     ✔ DONE
+├─ 14 coverage walkthroughs        ✔ done   ├─ 3. Produce a premium   ✔ DONE
+├─ Every count re-measured by date ✔ done   ├─ 4. State input formats ✔ DONE
+├─ Referral rules + 13 decisions   ✔ done   ├─ 5. Field/value catalog ✔ DONE
+└─ Architecture decision           ✔ done   └─ 6. Simple interface    ✔ DONE
+
+                                            PROOF
+                                            ├─ Against ISO's service  ✔ 50 of 50
+                                            ├─ Self-correcting loop   ·  phase 3
+                                            └─ Company deviations     ·  phase 4</code></pre>
+
+<div class="callout note">
+<h4>The caveat belongs next to the number</h4>
+<p>All 51 test submissions are <strong>the same risk shape</strong> — one location, one
+classification, no deductible, no rating plans. That was chosen so differences between states would
+be attributable, and it worked. But <strong>fifty matches on one risk shape is a narrower claim than
+it sounds.</strong> Widening it is the next work, and it is expected to find defects.</p>
+</div>
 
 <table>
 <tr><th>What exists today</th><th>Size</th></tr>
@@ -179,11 +192,12 @@ work has been analysis-first.</p>
 <tr><td>Coverage specifications</td><td><strong>14</strong>, each independently evidenced</td></tr>
 <tr><td>Design rules that cannot be violated</td><td><strong>18</strong>, each measured rather than asserted</td></tr>
 <tr><td>Questions escalated to the business</td><td><strong>20</strong> raised, 13 decided</td></tr>
-<tr><td>Tracked open items</td><td><strong>69</strong></td></tr>
+<tr><td>Tracked open items</td><td><strong>87</strong> — resolved ones kept and marked, not deleted</td></tr>
 <tr><td><strong>Real ISO-priced policies to test against</strong></td><td><strong>54</strong>, covering 50 states</td></tr>
 <tr><td>Automated expert reviewers</td><td><strong>2</strong>, 107 self-checks between them</td></tr>
-<tr><td><strong>Working engine code</strong></td><td><strong>1,814 lines</strong> — stage 1</td></tr>
-<tr><td><strong>Engine tests</strong></td><td>20 acceptance cases, 13 safety checks, green at two dates</td></tr>
+<tr><td><strong>Working engine code</strong></td><td>All six stages — resolve, interpret, rate, plus the interface</td></tr>
+<tr><td><strong>Engine tests</strong></td><td><strong>Twelve suites, all green</strong>, plus 13 load-time safety checks</td></tr>
+<tr><td><strong>Agreement with ISO's live service</strong></td><td><strong>50 of 50 jurisdictions</strong>, on every field ISO publishes</td></tr>
 </table>
 
 <h3>Building it found things reading it could not</h3>
@@ -346,16 +360,22 @@ to calculate with it</li>
 <p><strong>20 of 20 acceptance cases; 13 of 13 safety checks, green at two dates</strong> — today and
 the 2027 cliff.</p>
 
-<h3>Stage 2 — The interpreter <span class="pill prog">next</span></h3>
+<h3>Stage 2 — The interpreter <span class="pill done">built</span></h3>
 <p>The piece that executes ISO's rules. <strong>The only genuinely new engineering in the build</strong>,
 and its largest single deliverable is not code — it is <strong>writing down what each of ISO's 54
 instructions means.</strong> That written specification is the main thing engineering inherits, and it
 is worth more than the code around it.</p>
-<p><strong>How it gets checked:</strong> the fourteen coverage walkthroughs each state a rule order and
-its arithmetic. If the interpreter is right, they should pass <em>with no coverage-specific code at
-all.</em> That is the strongest claim in this project and the one most likely to be wrong.</p>
+<p><strong>How it got checked, and the answer:</strong> the fourteen coverage walkthroughs each state a
+rule order and its arithmetic. If the interpreter is right, they pass <em>with no coverage-specific
+code at all.</em> That was the strongest claim in this project and the one most likely to be wrong —
+<strong>and it held.</strong> 58 of 58 acceptance cases.</p>
+<p><strong>Four of its defects were silent rather than loud</strong>, and the shape recurs: a sum over
+a loop returning only the last iteration; an unparsed path predicate, so terrorism rows were never
+created; a dispatch rule that made every state override unreachable; and a missing path axis, so
+statistical codes were absent. <strong>None raised an error. All four produced a plausible
+number.</strong></p>
 
-<h3>Stages 3 to 6</h3>
+<h3>Stages 3 to 6 <span class="pill done">all built</span></h3>
 <table>
 <tr><th>Stage</th><th>What it delivers</th></tr>
 <tr><td><strong>3 · Premium and referrals</strong></td><td>A submission goes in, a price and every
@@ -378,9 +398,11 @@ diagnostic.</p>
 </section>
 
 <section id="j2">
-<h2><span class="n">B</span>Proof against RAaS <span class="pill prog">phase 2</span></h2>
+<h2><span class="n">B</span>Proof against RAaS <span class="pill done">live</span></h2>
 <p class="lede">ISO's own service is the gold standard. Any difference is our defect until proven
-otherwise.</p>
+otherwise. <strong>Connected on 13 August 2026: fifty jurisdictions agree, on the premium and on
+every field ISO publishes.</strong> Puerto Rico is not on the subscription and is out of the
+comparison — it still rates, but nothing external has ever checked it.</p>
 
 <p>RAaS — Rating as a Service — is ISO executing its own content. Send it a submission, get back a
 premium. <strong>Run the same submission through our engine in strict mode, and compare.</strong></p>
@@ -648,7 +670,7 @@ the next begins: what it does, what it was checked against, and what it cannot y
 <tr><td>Every command, to run any of it yourself</td><td><a href="https://github.com/Federato/recursive_harness/blob/main/TESTING.md"><code>TESTING.md</code></a></td></tr>
 <tr><td>What was built, what broke, what it revealed</td><td><a href="https://github.com/Federato/recursive_harness/blob/main/BUILD-LOG.md"><code>BUILD-LOG.md</code></a></td></tr>
 <tr><td>Did the analysis pay off? <em>(written before each stage)</em></td><td><a href="https://github.com/Federato/recursive_harness/blob/main/docs/FROM-PLANNING-TO-BUILD.md"><code>FROM-PLANNING-TO-BUILD.md</code></a></td></tr>
-<tr><td>Everything unresolved — 69 items</td><td><a href="https://github.com/Federato/recursive_harness/blob/main/docs/OPEN-ITEMS.md"><code>OPEN-ITEMS.md</code></a></td></tr>
+<tr><td>Everything unresolved — OI-1 to OI-87</td><td><a href="https://github.com/Federato/recursive_harness/blob/main/docs/OPEN-ITEMS.md"><code>OPEN-ITEMS.md</code></a></td></tr>
 </table>
 </section>
 

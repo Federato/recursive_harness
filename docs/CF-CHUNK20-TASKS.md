@@ -1,0 +1,150 @@
+# Property chunk 20: task list and status
+
+**Small coverages with their own tables: ten unrelated families, each read on its
+own terms.** Tasks set 2026-09-28, while chunk 18 is open and chunk 19 waits.
+
+Derived from the remaining-build plan on [`CF-BUILD-STATUS.html`](CF-BUILD-STATUS.html#remaining)
+(chunk 20, sized by [`166_remaining_coverage_census.py`](../scripts/cf/166_remaining_coverage_census.py))
+and the opening census ([`901_chunk20_census.py`](../scripts/cf/901_chunk20_census.py), run 2026-09-28,
+28 s, log `results/cf-raas/logs/chunk20_census.log`). It carries the three census checks from
+chunks 15 and 17, plus two added after chunk 19's census:
+- **Form numbers come from the package's own `Form Pages` table.** They used to come from
+  constants in the rule files, which these families lack, or from a hand-typed list.
+- **Sibling names are flagged.** Any `Form Pages` row whose display name carries the family's
+  wording but whose table name the family pattern misses is printed. This is how chunk 19's
+  FL / MT `BuildingGlass…` files were missed.
+
+**Standing rules carried in.** Analysis and gates only: no engine code without the user's go.
+"All states" means the **46**; Puerto Rico is excluded. Live ISO comparisons at **2026-09-17**
+(OI-105). Live payloads set `WindstormOrHailDeductible` (OI-103), use a special-class description
+the state files (C15-16) and the full building construction value (C17-06). Every figure is
+predicted by hand from the family's own filed table and rule **before** it runs (175_'s
+evaluator and method), and each probe is chosen so the competing readings give different dollars.
+Every pass prints `[i/n elapsed]` progress to `results/cf-raas/logs/`; the quick regression tier
+runs after each RC, the full one at the gate.
+
+**Order.** After chunk 19. Nothing in chunk 20 reads chunk 18 or 19's records. It does read
+chunk 9 (blanket averages), chunk 4's Contents Special rate and chunk 17's Watercraft tables.
+
+**Status: CLOSED 2026-09-30. GATED 2026-09-29, 26 of 26, 9 of 9** ([`CF-CHUNK20-GATE.md`](CF-CHUNK20-GATE.md)); its one engine difference, **OI-115, fixed and closed 2026-09-30** (C20-15's Z2 / Z2b now agree live), the stale comment fixed, the census gap carried to C21-16. Was: OPEN, 22 of 26 (RC-1 complete 2026-09-29, `199_chunk20_rc1.py`; RC-2 complete 2026-09-29, `200_chunk20_rc2.py --live`, 20 of 20 agree; RC-3 complete 2026-09-29, `201_` 62 cases and `202_` 16 cases, ISO agrees on all but the two recorded OI-115 cases; RC-4 complete 2026-09-29, `203_chunk20_rc4.py`, all 46 states + 27 probes, ISO 73 of 73). RC-5 complete 2026-09-29.
+
+---
+
+## In plain English first
+
+- **Radioactive Contamination**: damage from radioactive material used on the premises.
+- **Pier and Wharf**: extra causes of loss (ice, collision by a vessel) for piers and wharves.
+- **Fire Department Service Charge**: raises the limit for what the fire department bills for attending.
+- **Tobacco Sales Warehouses**: tobacco held for auction, rated from its own table.
+- **Furs, jewelry, patterns and dies, stamps**: raises the low theft limits on these items.
+- **Additional Covered Property**: brings in property the form normally excludes.
+- **Food Contamination**: lost income and advertising costs after a health-department shutdown.
+- **Mortgageholders Errors and Omissions**: a lender's own cover, priced in layers by number of mortgages.
+- **Fungus, Wet Rot, Dry Rot**: raises the mould sub-limit, priced incrementally.
+- **Equipment Breakdown**: boilers and machinery bursting or breaking down.
+
+**None of the 30 premium records has ever been priced by ISO** (28 countrywide + 2
+NC-only). Four families sit at **$0 on stored policies**, the way chunk 18's did.
+Fire Department is on all 364 buildings. Tobacco and all four furs / jewelry / patterns
+/ stamps records are on 206 contents rows. The Business Income fungus records are on 82.
+RC-1 says why before any golden case.
+
+## What the census found, before any task ran
+
+| Family | Premium records | Stored evidence | Tables read directly (CW rows) | States that rewrite it | Messages (any file) | Editions |
+|---|---|---|---|---|---|---|
+| **Radioactive Contamination** (CP 10 37; Building, Contents, Special Class, BI, SCBI) | 5 | none | subline (1); reads the **blanket average** `BlktRadioactiveContamination…` (chunk 9) | AL FL KS RI (`SetPremium`, 3 each) | **27**: limit required / not, Limited option vs cause of loss, missing rate, needs attaching when in blanket (×5 coverages) | same in all four |
+| **Pier and Wharf** (CP 10 70; structure, Special Class, BI, SCBI) | 4 | none | `PierAndWharfRates` (6), **chunk 17's** `WatercraftExclusionBuybackConstructionOptionsConverted` (7) | AL KS RI (`SetPremium`) | 8 (4 shared with ACP): not valid with cause of loss; ACP required with CP 10 70 (CW, VA) | **1 file differs in CW 2023 V02** (MO) |
+| **Fire Department Service Charge** (location) | 1 | **on all 364 buildings, always $0** | `FireDepartmentIncreasedLimit` / `…Factor` (1 each; AZ files its own) | AZ (switch), FL (limit), VA (limit and lookups) | 3: limit not increasing; higher limit needs selection; required coverage forms (KS NY VT own) | same |
+| **Tobacco Sales Warehouses** (CP 00 80) | 1 | **on 206 contents rows, $0** | `TobaccoInSalesWarehousesRate` (4) | none | 1 (shared with Fire Department) | same |
+| **Furs, jewelry, patterns and dies, stamps** | 4 | **on 206 contents rows, $0** | four base special limits (FL files all four); reads **Contents' `TheftLimitationSpecialFinalRate`** | FL (switches) | **15**: invalid with CP 10 33 or blanket cause of loss; revised amount not increasing; 3 found only by wording | same |
+| **Additional Covered Property** (CP 14 10; NC CP 14 11; VA CP 14 12) | 2 + **2 NC-only** | none | **chunk 17's** Watercraft factor (6) and construction table (7), subline | AL KS RI (`SetPremium`); NC (rate, stat codes); NC's own 6 files; VA by form number only | **22**: required with CP 10 35 / 10 70, valid type, not valid with coverage; CW, NC and VA versions | same |
+| **Food Contamination** (CP 15 05; BI and SCBI; food only, additional advertising) | 4 | none | food rate, advertising rate, code, subline (1 each; FL files all) | FL (switches, stat codes) | **0** | same |
+| **Mortgageholders E&O** (CP 00 70) | 1 | none | `MortgageholdersErrorsAndOmissRate` (85; TX); **five layers**: first 500, next 500, next 4,000, next 10,000, over 15,000 mortgages | AK (limit per mortgage), NY (`SetPremium`), TX (rates) | **17**: a policy-level coverage form: no locations, no blanket, TRIA interplay, CP 10 75 / 76 (NY 77 / 78), Mine Subsidence (IL IN KY OK WV), CT CP 04 61, AK attorney-fee limit | same |
+| **Fungus, Wet Rot, Dry Rot** (CP 04 31; policy) | 1 | BI fungus records **on 82 BI rows, $0** | excess-of-sublimit rate (1), incremental rate (1), increased-period factor (5); AK NY file all three | AK NY (switches + own state-only files, no premium), VA (`SetTotalPremium` on BI) | 5: CP 04 31 required, separate premises option, increased-period days (2 by wording) | same |
+| **Equipment Breakdown** (CP 10 46; building and BI) | 5 | none | property damage premium (**195**), time element loss cost (15), `OccupancyGroupNumber` (**1,090**; FL GA KS NY), ammonia, codes, subline; hazardous substance is a **manual premium** | FL (switches), NY (BI `SetPremium`) | 2: not with cause of loss; CP 10 47 needs CP 10 46 | same |
+
+**Sibling names checked, none priced.** MT `MortgageHoldersForm`, MA / TX
+`LimitationsOnFungus…` and the Equipment Breakdown suspension form (CW, FL) all have rule
+files with no premium. They matter only to the messages task.
+
+No date arithmetic, no `Power`, no unregistered element anywhere in the chunk. **100 message rules**
+listed; five are shared between families (one Fire Department / Tobacco, four Pier and Wharf /
+ACP), so **95 distinct**.
+
+**What shapes the plan:**
+
+1. **Four families are already on stored policies at $0.** Fire Department (364),
+   Tobacco and furs / jewelry / patterns / stamps (206) and the BI fungus records (82).
+   As with chunk 18, RC-1 finds the switch before RC-2 predicts a dollar.
+2. **Mortgageholders E&O is a different kind of thing.** It is a coverage form in its own
+   right, priced by mortgage count in five layers, and it forbids locations, blanket
+   rating and (with conditions) TRIA. Its golden case needs probes at each layer boundary,
+   and its downstream check must include terrorism.
+3. **Fungus is priced in two places.** The Business Income records compute
+   `FinalBusinessIncomeFungusPremium`; the single policy-level file reads it with the
+   excess-of-sublimit and incremental calculations. VA rewrites the BI side's total.
+4. **Borrowed values from four finished chunks.** The blanket radioactive average rate (9),
+   Contents' theft-limitation special rate (4), and chunk 17's Watercraft construction and
+   factor tables (Pier and Wharf, ACP). C20-04 resolves each in its loop context.
+5. **One manual premium.** Equipment Breakdown's hazardous-substance cover (other than
+   ammonia) is company-entered, so it is chunk 15's shape.
+6. **Three form numbers for one coverage.** ACP is CP 14 10 countrywide, CP 14 11 in NC
+   (with NC's own six files) and CP 14 12 in VA. VA uses the countrywide files, so the
+   difference shows up only in messages.
+7. **Editions are nearly quiet.** Only Pier and Wharf's BI file differs, in MO's CW 2023 V02.
+
+---
+
+## Task groups, in priority order
+
+### RC-1 · Evidence and plumbing (5 tasks)
+
+| # | Task | Status | Notes |
+|---|---|---|---|
+| C20-01 | **Opening census**: population, formulas, tables, messages by record **and by form / wording** (forms from `Form Pages`), sibling names, every edition, state layer, stored evidence, attach points, engine readiness | ✅ | **Done 2026-09-28** (`901_chunk20_census.py`, 28 s). Findings above: 30 premium records (28 CW + 2 NC), none priced by ISO; 95 distinct message rules; 1 file differs in CW 2023 V02; siblings carry no premium; no date nodes; no unregistered element |
+| C20-02 | **The $0 records**: why Fire Department (364), Tobacco and the four special-limit records (206) and BI fungus (82) price $0 on stored policies; which input switches each on, flipped one at a time. No ISO calls | ✅ | **Done 2026-09-29** (`199_chunk20_rc1.py`, 11m14s, no ISO calls). **293 stored ISO responses carry these records: ISO $0 and ours $0 on all 293.** Why, read from our rated tree: Fire Department has no indicator or limit entered (293); Tobacco sits on the ordinary contents form (141); the four special-limit records have `Indicator` "No" (138 each) or blank (3); BI fungus has no increased-period indicator (123). Each switch flipped on 175_'s Oregon policy: **Fire Department $85** (indicator Yes, limit 25,000 over the 1,000 base, factor 0.4; $0 with No, $0 at the base); **Tobacco $47** (rate 53; `CovForm` is copied down from the occupancy, so it is set there); **patterns $14** (only the limit above the 2,500 base prices; $0 under it); **BI fungus** factor 0.03 on a 90-day increase |
+| C20-03 | **Attach map and switches**: every record's parent (location, occupancy, contents, BI, SCBI, policy for Mortgageholders and Fungus; ACP's summary / detail records), the conditional forms (Tobacco on its occupancy, EB's BI record), every on-switch shape, every blank-input default that zeroes a premium | ✅ | **Done 2026-09-29** (`199_chunk20_rc1.py`). All 28 records have an attach point: Radioactive and Pier and Wharf on each of building / contents-or-BI / special class / SCBI; Fire Department on the location; Tobacco and the four special-limit items on the contents; ACP detail under its summary record; Food under BI / SCBI; **Mortgageholders and Fungus on the policy**; EB under its building / BI container. On-switches: Radioactive, Pier and Wharf, ACP, Mortgageholders, Fungus have none; **EB ammonia / hazardous switch on only ABOVE 25,000** (25,000 itself is off); **EB waiting period needs BI's no-waiting-period endorsement with a `TimePeriod`**; **jewelry also needs `ValueIndicator`** ("Worth more than $100 per item" etc.). State rewrites: **FL switches off 14** (EB, Food, the four special-limit items); **AZ switches off Fire Department** · gate 2 (with C20-05) |
+| C20-04 | **Borrowed values**: the blanket radioactive average rate, `TheftLimitationSpecialFinalRate`, chunk 17's Watercraft construction / factor tables, `FinalBusinessIncomeFungusPremium`, `LossCostMultiplier` and the modifiers, each resolved on a real tree in its loop context; hand = engine on every record, ordinary and blanket policy | ✅ | **Done 2026-09-29** (`199_chunk20_rc1.py`). Every record placed with its inputs on four Oregon trees (Special, Broad, Basic, Special on the Tobacco form): **hand = engine on 27 / 25 / 25 / 28 switched-on nodes, and all 28 records price > $0 on at least one tree.** Occupancy group for EB keys on the building's class (0951, Institutional / "All other" → group 3). **Blanket** (chunk 9's two-building A3, own rates 0.100 / 0.200): the blanket detail's `RadioactiveContamination` picks the reading: **"Yes" → the blanket average 0.167 × LimitToUse ($159 / $321); "No" → each building's own rate ($94 / $383)**; hand = engine on all four, and the readings differ · gate 6 |
+| C20-05 | **Tables and literals**: every table's rows and key literals (the 195-row EB premium, the 1,090-row occupancy group, the 85-row mortgageholders table and its layers), and every state-filed table under any name (AZ FL AK NY TX, and FL GA KS NY for occupancy group) | ✅ | **Done 2026-09-29** (`199_chunk20_rc1.py`). Every table each family reads, CW rows and each state's own: EB premium 195 rows, occupancy group 1,090 (GA KS NY 1,027 each; FL 0), mortgageholders rate 85 (TX 0), `MortgageholdersLimitOfInsPerMortgAmount` **AK only (17; no CW)**, watercraft factor 6 / construction 7, fungus increased-period factor 5. **24 header-only state tables** a family reads (AK / NY fungus, AZ fire department, FL EB / Food / special limits, TX mortgageholders): the engine falls back to CW (the chunk 19 VT question applies). State tables no family file reads: AK `AttorneyFeesMortgageHoldersFactor`, FL / NY mortgageholders cyber factor. Key literals listed per family · gates 2, 5 |
+
+### RC-2 · Golden cases (9 tasks), single-file families first
+
+| # | Task | Status | Notes |
+|---|---|---|---|
+| C20-06 | **Fire Department Service Charge**: an increased limit that moves a dollar; ISO live | ✅ | **Done 2026-09-29** (`200_chunk20_rc2.py --live`). F1 own limit 25,000: (25,000 - 1,000) / 100 x 0.4 → **$85**; F2 with the location's higher-limits record (indicator Yes, 50,000): LimitToUse **50,000 → $173**. ISO agrees, every premium on both policies · gate 1 |
+| C20-07 | **Tobacco Sales Warehouses**: two rows of the 4-row rate table on a tobacco occupancy; ISO live | ✅ | **Done 2026-09-29** (`200_chunk20_rc2.py --live`). A flat rate by the **contents** limit band: TB1 50,000 → **26 → $23** (a from-inclusive reading gives 40); TB2 100,000 → **53 → $47** (79 if the upper bound were exclusive). ISO agrees |
+| C20-08 | **Mortgageholders E&O**: mortgage counts at and across **each layer boundary** (500, 1,000, 5,000, 15,000), so a wrong layer gives a different dollar; ISO live | ✅ | **Done 2026-09-29** (`200_chunk20_rc2.py --live`). Every layer count and rate checked against the table: MG1 500 at 25,000 **$52**; MG2 1,001 at 50,000 (1 in the next-4,000 layer) **$104**; MG3 15,000 at 100,000 **$405**; MG4 20,000 at 1,000,000 (all five layers) **$606**. ISO agrees. **Submission fact: this record's `Limit` is TEXT ("25,000", the table key)**, not a number like every other `Limit`; sent as a number our engine finds no rate |
+| C20-09 | **Fungus**: policy limit and separate limits, the increased-period factor, with a BI fungus record feeding the policy premium; excess-of-sublimit and incremental both deciding a dollar; ISO live | ✅ | **Done 2026-09-29** (`200_chunk20_rc2.py --live`). FU1 Policy Limit, sub-limit 50,000, BI 90 days (0.03): **$31** (excess + the BI fungus total 3); FU2 Separate Limits, sub-limit 25,000, two buildings applying, BI 120 days (0.04): **$25**. **Found: the incremental charge is 10 × (forms − 1)** (10 × forms only on a CPP governed by another state), so the second building is the one charged. The BI fungus records carry a `TotalPremium` the policy record sums (checked). ISO agrees. `IncreasedPeriodOfRestoration` is text on the policy record, a number on the BI records |
+| C20-10 | **Furs, jewelry, patterns, stamps**: each raised above its base special limit (the precious-metals table has 3 rows); ISO live | ✅ | **Done 2026-09-29** (`200_chunk20_rc2.py --live`). SC1: furs 20,000 **$14**, jewelry 10,000 "Worth $100 or less per item" (base **0**) **$7**, patterns 20,000 **$14**, stamps 5,000 (base **250**) **$3**; SC2: jewelry "Worth more than $100" (base 2,500) **$6**, furs through the contents' higher-limits record (30,000) **$21**. ISO agrees |
+| C20-11 | **Radioactive Contamination**: all five coverages, not blanketed and blanketed (the average-rate reading discriminated); ISO live | ✅ | **Done 2026-09-29** (`200_chunk20_rc2.py --live`). **Found: unblanketed, each record prices on its PARENT's limit, not its own** (RA1: own 40,000 vs parent 100,000 → $91 / $86 / $98 / $85 / $98, all five coverages). Blanketed: detail "Yes" → the blanket average 0.167 × LimitToUse (**$159 / $321**); "No" → own rate × **own** limit (**$94 / $383**). ISO agrees on all three |
+| C20-12 | **Pier and Wharf and Additional Covered Property**: both on chunk 17's construction table, two construction options each; Pier and Wharf on structure, Special Class, BI, SCBI; ISO live | ✅ | **Done 2026-09-29** (`200_chunk20_rc2.py --live`). PW1 option 1 (Pier 0.026, ACP 0.016): $10 / $14 / $9 / $14, ACP $15 / $15; PW2 option 5 (0.04 / 0.024): $15 / $22 / $15 / $22, ACP $22 / $21. Pier on BI / SCBI prices on the parent's limit × its coinsurance factor; ACP on the building's LimitToUse. ISO agrees |
+| C20-13 | **Food Contamination**: food only and additional advertising, on BI and SCBI; ISO live | ✅ | **Done 2026-09-29** (`200_chunk20_rc2.py --live`). Food 10,000 × 0.18 → **$17**, advertising 20,000 × 0.045 → **$9**, on BI and on SCBI. ISO agrees |
+| C20-14 | **Equipment Breakdown**: property damage from the 195-row table by occupancy group, BI loss cost with and without waiting period, ammonia; hazardous substance as a manual premium; ISO live | ✅ | **Done 2026-09-29** (`200_chunk20_rc2.py --live`). EB1 Institutional (group 3: 12.5 / TE 0.006), ammonia 50,000, hazardous 100: $12 / $52 / $93 / $6 / $1; EB2 Industrial (group 7: 42.5 / 0.026), deductible 250 (factor 1.10), ammonia 100,000, hazardous 250: $44 / $153 / $232 / $25 / $3. **Found: the waiting-period record's factor is the no-waiting-period row − 1** (Eliminated 1.15 → 0.15; 24 hours 1.10 → 0.10). ISO agrees |
+
+### RC-3 · Zero cases, messages and names (4 tasks)
+
+| # | Task | Status | Notes |
+|---|---|---|---|
+| C20-15 | **Zero cases**: each limit blank or not increased; mortgage count 0; Radioactive in blanket without the form; Tobacco off its occupancy; EB BI without building EB; each switch off; predict both readings, ISO live | ✅ | **Done 2026-09-29** (`201_chunk20_rc3.py --live`). 12 zero cases, each forced $0 predicted against its competing reading: Fire Department at the base limit; Tobacco on the ordinary form; 0 mortgages; EB BI without the building's EB (group 0); the four items at or under their base; fungus at the 15,000 sub-limit; ammonia at exactly 25,000; pier with no construction; ACP on Broad; Food limits 0. **ISO agrees on 10 of 12. The other 2 are OI-115 (new, recorded, not fixed): a blank Fire Department limit prices $3 at ISO, $0 ours**. ISO skips a blank first operand of `Subtract` (the discriminating probe: ISO $17, blank-as-zero −$17, ours $2). Pinned as "differs as recorded" · gate 4 |
+| C20-16 | **Messages**: all 95 distinct, each triggered and silent, including the NC and VA ACP versions, the Mortgageholders / TRIA pair, and the siblings' messages; ISO live | ✅ | **Done 2026-09-29** (`201_chunk20_rc3.py --live`). **50 message cases; every chunk 20 rule instance (95, CW + NC VA NY CT AK IL KS VT) triggered at its own level, and silent where the rule says so.** Each message is checked as a (level, text) pair: ours from the message call's `TableName` (captured in the test only), ISO's from the node carrying the message's id. **ISO's (level, message) multiset equals ours on every case**, every premium equal. Found: the radioactive messages need a blanket covering all five levels (a combined building-and-contents blanket plus a BI blanket; ISO prices it identically, including a BI blanket average of 8000); **"Location … not valid with CP 00 70" needs a numbered location** (`UnitNumber` > 0); **the BI fungus period field is overwritten from the policy fungus record** · gate 9 |
+| C20-17 | **Shared names**: `Rate`, `Factor`, `LimitToUse`, `LossCostMultiplier`, `IncludedInBlkt`, the Watercraft construction fields shared with chunk 17, `CoverageOnPolicyIndicator`, diffed rather than assumed; who writes each; whether a submitted value survives | ✅ | **Done 2026-09-29** (`202_chunk20_c20-17-18.py --live`). Every field the chunk 20 files write, classified: rates, factors, `LimitToUse`, `LossCost`, `BaseSpecialLimit` are **guarded** (a submitted value is used); the mortgage layer counts, EB occupancy group, EB waiting period, the BI fungus period, pier-on-BI's `IncludedInBlkt`, every on-switch are **overwritten**. 13 probes, each against a value that moves a dollar (e.g. First500Rate 0.2 used while First500Mortgages 100 is reset to 500; pier-on-BI's `IncludedInBlkt` Yes reset to No so it prices on BI's 100,000). Tobacco reads the contents' `LossCostMultiplier` through (× 1.2). **ACP prices $0 when the building carries chunk 17's watercraft exclusion.** ISO agrees on all 13 · gate 6 |
+| C20-18 | **Exclusion records**: the cyber-incident factors in Fire Department, Mortgageholders, ACP and Equipment Breakdown (four different factor names), each at a limit where the factor moves a dollar | ✅ | **Done 2026-09-29** (`202_chunk20_c20-17-18.py --live`). Four factor names at limits where each moves a dollar: CP 10 75 → Fire Department × `CyberIncidentExclusionFactorBGI` 0.995 ($1,756 → $1,747), Mortgageholders × its own 0.999 ($606 → $605), ACP × `…FactorSpecial` 0.995, EB building and BI × `…FactorEquipmentBreakdown` 0.999; CP 10 76 (Sublimit, aggregate Yes) → the `COLExcptns` factors 0.997 / 0.996 / 0.999, **Mortgageholders unmoved** (it reads none). ISO agrees on all three policies · gate 7 |
+
+### RC-4 · States and editions (4 tasks)
+
+| # | Task | Status | Notes |
+|---|---|---|---|
+| C20-19 | **The formula rewrites**: AL FL KS RI Radioactive; AL KS RI Pier and Wharf and ACP; AZ FL VA Fire Department; AK NY TX Mortgageholders; VA fungus total; NY EB BI; FL's switches; each predicted from the state's own rule and tables; ISO live | ✅ | **Done 2026-09-29** (`203_chunk20_rc4.py --live`, run in six batches (memory)). Every rewrite read, then probed where it moves a dollar, each against a contrast: **AL / KS / RI** multiply radioactive, pier and ACP by the Public Institutional Plan factor **0.85** (radioactive $91 → $77); **FL's radioactive drops the deductible-by-location factor, and FL's own package empties the rule that sets it** (FL unmoved at $864, OR $910 → $906 with the factor 0.995); **FL's Fire Department uses its own limit, never the location's higher limit**; **AZ switches Fire Department off**; **VA's volunteer fire department** takes its own base limit ($250) and the record's `VolunteerLimit`; **VA's BI fungus prices $0 with VA's own broad-form Ordinance or Law**; **NY's Mortgageholders and EB BI read no cyber factor** (NY unmoved at $606 / $508 under CP 10 75, OR $605 / $507); **TX's Mortgageholders rating step is empty ($0)**. ISO agrees on all 17 probe runs |
+| C20-20 | **State-only and state-form cases**: NC's six ACP files (CP 14 11), VA's CP 14 12 on countrywide files, AK and NY's own fungus files and tables; ISO live | ✅ | **Done 2026-09-29** (`203_chunk20_rc4.py --live`, run in six batches (memory)). **NC empties the countrywide ACP rating step** (ACP $0 in NC) and its own six CP 14 11 records carry no premium rule: ISO prices nothing on them either; **AK and NY empty the policy fungus record's rating steps and switch the BI fungus records off**, and their own fungus records (`AlaskaChangesFungusWetRotAndDryRot`, `ChangesFungusWetRotAndDryRot`) carry no premium: fungus prices $0 in both; **AK and NY's header-only fungus tables are never read**. VA's CP 14 12 messages were proven in C20-16. ISO agrees |
+| C20-21 | **Editions**: MO (CW 2023 V02) golden probe for Pier and Wharf BI, whose formula differs; one probe each on a V03 and a V04 state | ✅ | **Done 2026-09-29** (`203_chunk20_rc4.py --live`, run in six batches (memory)). **Every rule** of all 40 family files diffed across the four editions: **6 file × edition differences, where the census (SetPremium only) had found 1.** (1) Fire Department in all three 2023 editions sets `LimitToUse` before `FireDepartmentLimit`, so the location's higher limit is compared with a blank; **ISO, like ours, treats "50,000 > blank" as true** and takes 50,000 (MO / NC / MA $173, as OR); the competing reading ($85) is ruled out. (2) **MO's pier on BI computes its limit inline with no guard**: a submitted 60,000 is ignored, BI's 100,000 used (OR / NC / MA use 60,000). (3) **MO's fungus charges the sub-limit excess only on "Policy Limit"** (Separate Limits: excess $0, OR $8). ISO agrees on all 10 edition probes · gate 8 |
+| C20-22 | **All 46 states**: every family on every state's own package, predicted per state; ISO live | ✅ | **Done 2026-09-29** (`203_chunk20_rc4.py --live`, run in six batches (memory)). **All 46 states**, every family on each state's own package, each record predicted from the state's own rule or its countrywide edition's, hand-evaluated: **ISO 46 of 46, and 73 of 73 runs with the probes: 2,050 predicted records, 11,003 premiums, every message equal**. Puerto Rico excluded by standing rule; FL on chunks 15-19's FL special class, no earthquake keys · gate 3 |
+
+### RC-5 · Confirmation and close-out (4 tasks)
+
+| # | Task | Status | Notes |
+|---|---|---|---|
+| C20-23 | **Downstream**: the policy total moves by exactly the families' premiums, with a clean test predicted before its ISO call; terrorism (and Mortgageholders' TRIA rule); stat codes and sublines; the blanket roll-up unmoved except by Radioactive; ISO live | ✅ | **Done 2026-09-29** (`204_chunk20_c20-23_downstream.py --live`, stat codes in nine batches). T0 (every parent input) / T1 (+ every chunk 20 record) / T2 (× 10): **total +$977 and clean test +$5,110, both predicted before the call and equal at ISO**; every other premium identical; **terrorism: 72 of 72 fields identical, none on a chunk 20 record** (no SetTerrorismPremium reads one); Mortgageholders fires the TRIA message at ISO too; **the blanket roll-up moves only on radioactive** (3 fields, ISO too); **1,251 stat values on chunk 20 records equal on 168 stored ISO responses**. Found: **Tobacco attaches itself** on the Tobacco form (T0's $47) |
+| C20-24 | **Regression**: add the chunk 20 scripts and pin the golden figures; full run CLEAN for chunks 0–20 (`--jobs 4`); `157_ --all` | ✅ | **Done 2026-09-29**. **Regression CLEAN**, 2026-09-29, scoped as for chunks 18 and 19: **6 of 6, 0 failures** (`104_ --only 199_ 200_ 201_ 202_ 203_ 204_ --no-gl --jobs 2`, 5m46s, `chunk20_c20-24_regression_scoped.log`): `200_` pinned to $85 / $173 / $23 / $606 / $25 / $159 / $321 / $44; `199_`, `201_`-`204_` added (MACHINERY entries may now carry arguments). The full run is carried from 2026-09-28 (115 of 115): **no engine code has changed since** (`ae81ac7`), and no shared test helper changed in chunk 20 except the regression runner itself, which this run exercises |
+| C20-25 | **Census close**: count the ten families as built in `166_` (469 → 497 of 546, 91%) | ✅ | **Done 2026-09-29**. `166_` counts the ten families as built: **497 of 546 countrywide premium files (91%)**, 49 left in 6 families |
+| C20-26 | **File `CF-CHUNK20-GATE.md`** | ✅ | **Done 2026-09-29**. [`CF-CHUNK20-GATE.md`](CF-CHUNK20-GATE.md): 9 of 9, 28 countrywide premium files (+ NC's own ACP records, premium-less) |

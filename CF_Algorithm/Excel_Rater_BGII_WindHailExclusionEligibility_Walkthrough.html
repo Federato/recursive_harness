@@ -1,0 +1,302 @@
+<title>Configuring Wind/Hail Exclusion State Eligibility — Step by Step</title>
+<style>
+  :root {
+    --bg: #eef1f4; --paper: #ffffff; --ink: #1c2733; --ink-soft: #55606b; --ink-faint: #8b95a1;
+    --grid-line: #d7dce2; --header-fill: #e4e8ed; --header-fill-strong: #1e3a45; --header-text-strong: #eef4f3;
+    --accent: #1e3a45; --accent-soft: #cfe0e0; --accent-warm: #b96a2c; --accent-warm-soft: #f3e2cf;
+    --good: #2f7d5a; --good-soft: #dcefe4; --warn: #a53d26; --warn-soft: #f7ddd4;
+    --shadow: 0 1px 2px rgba(28,39,51,0.06), 0 8px 24px rgba(28,39,51,0.07);
+    --font-display: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+    --font-body: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+    --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Consolas, "Liberation Mono", monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #10151b; --paper: #161d25; --ink: #e7ecf1; --ink-soft: #a3aebb; --ink-faint: #6d7885;
+      --grid-line: #2b3742; --header-fill: #1b242d; --header-fill-strong: #21504f; --header-text-strong: #eaf3f1;
+      --accent: #59a9ac; --accent-soft: #1d3535; --accent-warm: #dd9a5c; --accent-warm-soft: #372a1c;
+      --good: #63c090; --good-soft: #1b3226; --warn: #e0806a; --warn-soft: #3a2019;
+      --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 28px rgba(0,0,0,0.35);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #10151b; --paper: #161d25; --ink: #e7ecf1; --ink-soft: #a3aebb; --ink-faint: #6d7885;
+    --grid-line: #2b3742; --header-fill: #1b242d; --header-fill-strong: #21504f; --header-text-strong: #eaf3f1;
+    --accent: #59a9ac; --accent-soft: #1d3535; --accent-warm: #dd9a5c; --accent-warm-soft: #372a1c;
+    --good: #63c090; --good-soft: #1b3226; --warn: #e0806a; --warn-soft: #3a2019;
+    --shadow: 0 1px 2px rgba(0,0,0,0.3), 0 12px 28px rgba(0,0,0,0.35);
+  }
+  :root[data-theme="light"] {
+    --bg: #eef1f4; --paper: #ffffff; --ink: #1c2733; --ink-soft: #55606b; --ink-faint: #8b95a1;
+    --grid-line: #d7dce2; --header-fill: #e4e8ed; --header-fill-strong: #1e3a45; --header-text-strong: #eef4f3;
+    --accent: #1e3a45; --accent-soft: #cfe0e0; --accent-warm: #b96a2c; --accent-warm-soft: #f3e2cf;
+    --good: #2f7d5a; --good-soft: #dcefe4; --warn: #a53d26; --warn-soft: #f7ddd4;
+    --shadow: 0 1px 2px rgba(28,39,51,0.06), 0 8px 24px rgba(28,39,51,0.07);
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+  body { margin: 0; background: var(--bg); color: var(--ink); font-family: var(--font-body); line-height: 1.55; overflow-x: hidden; }
+  a { color: var(--accent); }
+  a:focus-visible, button:focus-visible, .jump:focus-visible { outline: 2px solid var(--accent-warm); outline-offset: 2px; }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 0 24px 96px; }
+
+  header.masthead { padding: 56px 24px 28px; max-width: 980px; margin: 0 auto; }
+  .eyebrow { font-family: var(--font-ui); font-size: 12px; letter-spacing: 0.11em; text-transform: uppercase; color: var(--accent-warm); font-weight: 600; margin: 0 0 10px; }
+  h1.title { font-family: var(--font-display); font-size: clamp(28px, 4vw, 40px); font-weight: 400; margin: 0 0 14px; text-wrap: balance; color: var(--ink); }
+  .dek { font-size: 17px; color: var(--ink-soft); max-width: 68ch; margin: 0 0 6px; }
+  .dek + .dek { margin-top: 10px; }
+  .dek code { font-family: var(--font-mono); font-size: 14.5px; background: var(--header-fill); padding: 1px 5px; border-radius: 3px; }
+
+  nav.jumpbar { position: sticky; top: 0; z-index: 20; background: var(--header-fill-strong); border-bottom: 1px solid var(--grid-line); }
+  .jumpbar-inner { max-width: 980px; margin: 0 auto; display: flex; align-items: stretch; overflow-x: auto; scrollbar-width: thin; }
+  .jumpbar-label { font-family: var(--font-ui); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--header-text-strong); opacity: 0.6; align-self: center; padding: 0 12px 0 20px; white-space: nowrap; flex: none; }
+  .jump { font-family: var(--font-ui); font-size: 13px; color: var(--header-text-strong); text-decoration: none; white-space: nowrap; padding: 13px 16px; border-bottom: 3px solid transparent; opacity: 0.72; flex: none; }
+  .jump:hover { opacity: 1; }
+  .jump .step-no { font-family: var(--font-mono); opacity: 0.7; margin-right: 6px; }
+
+  section.step-block { padding-top: 64px; scroll-margin-top: 56px; }
+  .step-heading { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 6px; }
+  .step-index { font-family: var(--font-mono); font-size: 13px; color: var(--accent-warm); font-variant-numeric: tabular-nums; }
+  h2.step-title { font-family: var(--font-display); font-size: 26px; font-weight: 400; margin: 0; color: var(--ink); }
+  .step-role { font-family: var(--font-ui); font-size: 13px; color: var(--ink-soft); margin: 0 0 22px; }
+
+  .xl-window { background: var(--paper); border: 1px solid var(--grid-line); border-radius: 6px; box-shadow: var(--shadow); overflow: hidden; }
+  .xl-titlebar { display: flex; align-items: center; gap: 10px; padding: 9px 14px; background: var(--header-fill-strong); color: var(--header-text-strong); font-family: var(--font-ui); font-size: 12.5px; }
+  .xl-dots { display: flex; gap: 5px; flex: none; }
+  .xl-dots span { width: 8px; height: 8px; border-radius: 50%; background: currentColor; opacity: 0.35; }
+  .xl-filename { opacity: 0.92; }
+  .xl-filename b { font-weight: 600; }
+  .xl-titlebar-spacer { flex: 1; }
+  .xl-mode { font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; opacity: 0.55; }
+  .xl-formulabar { display: flex; align-items: center; gap: 10px; padding: 6px 12px; background: var(--header-fill); border-bottom: 1px solid var(--grid-line); font-family: var(--font-mono); font-size: 12px; }
+  .xl-cellref { background: var(--paper); border: 1px solid var(--grid-line); border-radius: 3px; padding: 2px 8px; color: var(--accent); font-weight: 600; flex: none; min-width: 46px; text-align: center; }
+  .xl-fx { color: var(--ink-faint); flex: none; font-style: italic; }
+  .xl-formula { color: var(--ink-soft); overflow-x: auto; white-space: nowrap; padding-right: 4px; }
+  .xl-scroll { overflow-x: auto; }
+  table.xl-grid { border-collapse: collapse; width: 100%; font-family: var(--font-mono); font-size: 12.5px; }
+  table.xl-grid th, table.xl-grid td { border: 1px solid var(--grid-line); padding: 6px 10px; text-align: left; white-space: nowrap; }
+  .colletters th { background: var(--header-fill); color: var(--ink-faint); font-family: var(--font-ui); font-size: 10.5px; text-align: center; padding: 3px 10px; font-weight: 600; position: sticky; top: 0; }
+  .rownum { background: var(--header-fill); color: var(--ink-faint); font-family: var(--font-ui); font-size: 11px; text-align: center !important; font-weight: 600; width: 1%; }
+  .fieldrow th { background: var(--accent); color: var(--header-text-strong); font-family: var(--font-ui); font-size: 11.5px; font-weight: 600; text-align: left; }
+  td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  td.formula-cell { background: color-mix(in srgb, var(--accent-warm-soft) 100%, transparent); color: var(--accent-warm); font-weight: 600; }
+  td.warn-cell { background: var(--warn-soft); color: var(--warn); font-weight: 600; }
+  td.good-cell { background: var(--good-soft); color: var(--good); }
+  td.total-cell { background: var(--header-fill); font-weight: 700; }
+  .subtle { color: var(--ink-faint); font-style: italic; }
+
+  .instructions { margin-top: 22px; display: grid; gap: 14px; }
+  .instructions p { margin: 0; font-size: 15.5px; color: var(--ink); max-width: 70ch; }
+  .instructions p.lede { font-size: 16.5px; }
+  .field-notes { margin: 4px 0 0; padding: 0; list-style: none; display: grid; gap: 9px; max-width: 70ch; }
+  .field-notes li { font-size: 14.5px; color: var(--ink-soft); padding-left: 16px; border-left: 2px solid var(--grid-line); }
+  .field-notes b { font-family: var(--font-mono); font-size: 13px; color: var(--ink); background: var(--header-fill); padding: 1px 5px; border-radius: 3px; }
+
+  .callout { display: flex; gap: 10px; padding: 12px 14px; border-radius: 5px; max-width: 70ch; font-size: 14.5px; margin-top: 14px; }
+  .callout.warn { background: var(--warn-soft); color: var(--warn); }
+  .callout.warm { background: var(--accent-warm-soft); color: var(--accent-warm); }
+  .callout.good { background: var(--good-soft); color: var(--good); }
+  .callout b { font-weight: 700; }
+  .callout-mark { flex: none; font-family: var(--font-ui); font-weight: 700; }
+
+  .formula-label { font-family: var(--font-ui); font-size: 11px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--ink-faint); margin: 28px 0 10px; }
+  .formula-label:first-child { margin-top: 0; }
+  .formula-panel { background: var(--header-fill-strong); color: var(--header-text-strong); border-radius: 6px; padding: 16px 18px; font-family: var(--font-mono); font-size: 12px; line-height: 1.75; overflow-x: auto; }
+  .formula-panel pre { margin: 0; white-space: pre; }
+  .formula-panel .kw { color: var(--accent-warm); font-weight: 700; }
+  .formula-panel .fn { color: #a9d6d8; }
+  .formula-panel .cm { opacity: 0.55; font-style: italic; }
+
+  .progress-rail { display: flex; gap: 6px; margin: 4px 0 26px; }
+  .progress-rail .dot { height: 4px; flex: 1; border-radius: 2px; background: var(--grid-line); }
+  .progress-rail .dot.done { background: var(--accent-warm); }
+
+  /* UI mockup for the input-side warning */
+  .ui-mock { background: var(--paper); border: 1px solid var(--grid-line); border-radius: 8px; box-shadow: var(--shadow); padding: 18px 20px; max-width: 520px; }
+  .ui-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+  .ui-field label { font-family: var(--font-ui); font-size: 12.5px; font-weight: 600; color: var(--ink-soft); }
+  .ui-field select, .ui-field input { font-family: var(--font-ui); font-size: 14px; padding: 8px 10px; border-radius: 5px; border: 1px solid var(--grid-line); background: var(--bg); color: var(--ink); }
+  .ui-field select.disabled, .ui-field input.disabled { opacity: 0.5; background: var(--header-fill); cursor: not-allowed; }
+  .ui-msg { font-family: var(--font-ui); font-size: 13px; padding: 8px 10px; border-radius: 5px; margin-top: -6px; }
+  .ui-msg.warn { background: var(--warn-soft); color: var(--warn); }
+  .ui-msg.good { background: var(--good-soft); color: var(--good); }
+
+  hr.divider { border: none; border-top: 1px solid var(--grid-line); margin: 64px 0 0; }
+
+  footer.closing { max-width: 980px; margin: 72px auto 0; padding: 0 24px 64px; }
+  footer.closing h2 { font-family: var(--font-display); font-weight: 400; font-size: 22px; margin: 0 0 12px; }
+  footer.closing ol { padding-left: 20px; display: grid; gap: 8px; max-width: 62ch; }
+  footer.closing li { font-size: 15px; color: var(--ink-soft); }
+  footer.closing p.note { margin-top: 20px; font-size: 13px; color: var(--ink-faint); font-family: var(--font-ui); }
+</style>
+
+<header class="masthead">
+  <p class="eyebrow">CF_Algorithm &middot; Basic Group II &middot; Building</p>
+  <h1 class="title">Configuring wind/hail exclusion state eligibility for <code>COLAdj</code></h1>
+  <p class="dek">Eight states — <code>AR, DC, FL, KS, NY, PR, RI, TX</code> — file zero rows for both <code>LowestBasicGroupIIRate</code> <em>and</em> <code>WindstormOrHailExclFactor</code>. The wind/hail-excluded branch of <code>COLAdj</code> has nothing to compute with in those states. This walkthrough adds the one thing missing from the plain three-branch <code>COLAdj</code> already documented: a state-eligibility gate, so the UI stops a user from configuring an exclusion the data can't actually price, instead of silently producing a broken or null rate.</p>
+  <p class="dek">Per this project's standing decision, PR is out of scope — it's included below only because it's part of the same 8-state filing pattern in the ERC data; nothing here should be built or tested for PR specifically.</p>
+  <div class="callout warm">
+    <span class="callout-mark">&#9888;</span>
+    <span><b>The regulatory "why" behind these 8 states is inferred, not manual-confirmed.</b> The correlation (both tables empty, together, in exactly these states) is solid structural evidence; the general belief that coastal/wind-pool states restrict excluding wind/hail coverage is background insurance knowledge, not sourced from this project's circular corpus for these specific 8 states. Treat the mechanism below as confirmed, the regulatory reason as plausible but unverified.</span>
+  </div>
+</header>
+
+<nav class="jumpbar" aria-label="Jump to step">
+  <div class="jumpbar-inner">
+    <span class="jumpbar-label">Steps</span>
+    <a class="jump" href="#s1"><span class="step-no">1</span>The list</a>
+    <a class="jump" href="#s2"><span class="step-no">2</span>Eligibility gate</a>
+    <a class="jump" href="#s3"><span class="step-no">3</span>Input-side UI</a>
+    <a class="jump" href="#s4"><span class="step-no">4</span>Wire into COLAdj</a>
+    <a class="jump" href="#s5"><span class="step-no">5</span>Worked examples</a>
+  </div>
+</nav>
+
+<div class="wrap">
+
+  <!-- STEP 1 -->
+  <section class="step-block" id="s1">
+    <div class="step-heading"><span class="step-index">STEP 1 / 5</span><h2 class="step-title">Build the ineligible-state list</h2></div>
+    <p class="step-role">One small named list, referenced everywhere this complexity needs to be checked.</p>
+    <div class="progress-rail"><div class="dot done"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+    <div class="xl-window">
+      <div class="xl-titlebar"><div class="xl-dots"><span></span><span></span><span></span></div><div class="xl-filename">CFRater1.01.xlsb &mdash; <b>BldgBGIIRating</b></div><div class="xl-titlebar-spacer"></div><div class="xl-mode">Table</div></div>
+      <div class="xl-scroll">
+        <table class="xl-grid">
+          <tr class="colletters"><th></th><th>BJ</th></tr>
+          <tr class="fieldrow"><td class="rownum">1</td><th>WindHailExclIneligibleStates</th></tr>
+          <tr><td class="rownum">2</td><td>AR</td></tr>
+          <tr><td class="rownum">3</td><td>DC</td></tr>
+          <tr><td class="rownum">4</td><td>FL</td></tr>
+          <tr><td class="rownum">5</td><td>KS</td></tr>
+          <tr><td class="rownum">6</td><td>NY</td></tr>
+          <tr><td class="rownum">7</td><td class="warn-cell">PR &#9733;</td></tr>
+          <tr><td class="rownum">8</td><td>RI</td></tr>
+          <tr><td class="rownum">9</td><td>TX</td></tr>
+        </table>
+      </div>
+    </div>
+    <div class="instructions">
+      <p>Eight rows, one column, named range <code>WindHailExclIneligibleStates</code> (<code>BJ2:BJ9</code>) &mdash; same naming convention as the <code>&lt;STATE&gt;_bgiiterr</code> ranges already in this workbook. <b>&#9733; PR</b> is listed for completeness against the actual ERC filing pattern, but per standing project scope this row should never be reached in practice &mdash; PR-specific testing or UI is out of scope.</p>
+    </div>
+  </section>
+
+  <!-- STEP 2 -->
+  <section class="step-block" id="s2">
+    <div class="step-heading"><span class="step-index">STEP 2 / 5</span><h2 class="step-title">The eligibility gate</h2></div>
+    <p class="step-role">One test, checked before the exclusion is ever allowed to apply.</p>
+    <div class="progress-rail"><div class="dot done"></div><div class="dot done"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+    <div class="formula-label">Gate, as Excel (helper cell)</div>
+    <div class="formula-panel"><pre><span class="cm">' cell BldgBGIIRating!C60 -- TRUE means this state CAN'T exclude wind/hail</span>
+<span class="kw">=ISNUMBER</span>(<span class="kw">MATCH</span>($C$2, WindHailExclIneligibleStates, 0))</pre></div>
+    <div class="instructions">
+      <p><code>$C$2</code> is the same State cell every other walkthrough on this tab already reads. This one cell now needs to gate two separate things downstream: whether the exclusion checkbox/dropdown is even usable (Step 3), and which branch <code>COLAdj</code> actually takes (Step 4) &mdash; both read this same cell so they can never disagree with each other.</p>
+    </div>
+  </section>
+
+  <!-- STEP 3 -->
+  <section class="step-block" id="s3">
+    <div class="step-heading"><span class="step-index">STEP 3 / 5</span><h2 class="step-title">Input-side UI &mdash; stop the bad configuration before it's entered</h2></div>
+    <p class="step-role">The cheapest place to catch this is at data entry, not three formulas downstream.</p>
+    <div class="progress-rail"><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot"></div><div class="dot"></div></div>
+    <div class="instructions">
+      <p class="lede">Two states of the same input, side by side &mdash; not a real control, a picture of what the behavior should look like.</p>
+    </div>
+    <div style="display:flex; gap:24px; flex-wrap:wrap; margin-top:16px;">
+      <div class="ui-mock">
+        <div style="font-family:var(--font-ui); font-size:12px; font-weight:700; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.04em; margin-bottom:10px;">State = MA (eligible)</div>
+        <div class="ui-field">
+          <label>State</label>
+          <input value="MA" disabled>
+        </div>
+        <div class="ui-field">
+          <label>Wind/Hail Exclusion Scheduled?</label>
+          <select><option>No</option><option selected>Yes</option></select>
+        </div>
+        <div class="ui-msg good">Recognized &mdash; COLAdj will use the wind-excluded rate path.</div>
+      </div>
+      <div class="ui-mock">
+        <div style="font-family:var(--font-ui); font-size:12px; font-weight:700; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.04em; margin-bottom:10px;">State = TX (ineligible)</div>
+        <div class="ui-field">
+          <label>State</label>
+          <input value="TX" disabled>
+        </div>
+        <div class="ui-field">
+          <label>Wind/Hail Exclusion Scheduled?</label>
+          <select class="disabled" disabled><option>No</option></select>
+        </div>
+        <div class="ui-msg warn">Not available in TX &mdash; ISO files no wind/hail-exclusion rate data for this state. Leave unchecked.</div>
+      </div>
+    </div>
+    <div class="instructions">
+      <p>Implementation: data-validation on the exclusion input cell, formula-driven off Step 2's gate &mdash; something like <code>=IF($C$60,"No",IF(...normal Yes/No list...))</code> restricting the list to a single forced value when the gate is <code>TRUE</code>, plus conditional formatting (grey fill, locked cell, or a comment) so the restriction is visible, not just silently enforced. The warning message cell reads the same <code>$C$60</code> gate.</p>
+    </div>
+  </section>
+
+  <!-- STEP 4 -->
+  <section class="step-block" id="s4">
+    <div class="step-heading"><span class="step-index">STEP 4 / 5</span><h2 class="step-title">Wire into <code>COLAdj</code> &mdash; the gate becomes a third condition</h2></div>
+    <p class="step-role">Same three branches as before, with one guard added to the middle one.</p>
+    <div class="progress-rail"><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot"></div></div>
+    <div class="formula-label">Before (plain three-branch COLAdj, already documented)</div>
+    <div class="formula-panel"><pre>COLAdj =
+    0.0                                              <span class="kw">if</span> fire-only cause of loss
+    <span class="kw">elif</span> wind/hail exclusion NOT scheduled:
+        Rate &times; StdPropPolGroupIIFactor
+    <span class="kw">else</span>:
+        LowestBaseRate &times; LCM &times; RoofSurfacingACVFactor &times; RoofSurfacingCosmeticExclFactor
+          &times; WindstormOrHailExclFactor &times; StdPropPolGroupIIFactor</pre></div>
+    <div class="formula-label">After (state-gated &mdash; the exclusion branch can only ever be reached in an eligible state)</div>
+    <div class="formula-panel"><pre>COLAdj =
+    0.0                                              <span class="kw">if</span> fire-only cause of loss
+    <span class="kw">elif</span> wind/hail exclusion NOT scheduled <span class="kw">OR</span> <span class="kw">C60</span> (state ineligible):
+        Rate &times; StdPropPolGroupIIFactor
+    <span class="kw">else</span>:
+        LowestBaseRate &times; LCM &times; RoofSurfacingACVFactor &times; RoofSurfacingCosmeticExclFactor
+          &times; WindstormOrHailExclFactor &times; StdPropPolGroupIIFactor</pre></div>
+    <div class="callout good"><span class="callout-mark">&#10003;</span><span>Because Step 3 already prevents the exclusion input from being set to "Yes" in an ineligible state, this <code>OR C60</code> guard should never actually change the outcome in normal use &mdash; it's a second, independent line of defense in the calc itself, so a formula that reads the exclusion flag directly (bypassing the input-side restriction, e.g. a copy-pasted value or a future tab that doesn't go through the same data validation) still can't reach a branch with unresolvable data.</span></div>
+  </section>
+
+  <!-- STEP 5 -->
+  <section class="step-block" id="s5">
+    <div class="step-heading"><span class="step-index">STEP 5 / 5</span><h2 class="step-title">Worked examples, four scenarios</h2></div>
+    <p class="step-role">Same building, different states and elections.</p>
+    <div class="progress-rail"><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div><div class="dot done"></div></div>
+    <div class="xl-scroll">
+      <table class="xl-grid">
+        <tr class="fieldrow"><th>State</th><th>Exclusion Scheduled?</th><th>Gate (C60)</th><th>COLAdj branch taken</th><th>Resolvable?</th></tr>
+        <tr>
+          <td>MA</td><td>No</td><td class="num">FALSE</td><td>Normal &mdash; <code>Rate &times; StdPropPolGroupIIFactor</code></td><td class="good-cell">Yes</td>
+        </tr>
+        <tr>
+          <td class="good-cell">MA</td><td class="good-cell">Yes</td><td class="num">FALSE</td><td class="formula-cell">Wind-excluded &mdash; <code>LowestBaseRate &times; ...</code></td><td class="good-cell">Yes &mdash; MA files both tables</td>
+        </tr>
+        <tr>
+          <td class="warn-cell">TX</td><td class="warn-cell">"Yes" typed in anyway</td><td class="num warn-cell">TRUE</td><td>Normal &mdash; <code>Rate &times; StdPropPolGroupIIFactor</code></td><td class="good-cell">Yes &mdash; gate forces the safe branch</td>
+        </tr>
+        <tr>
+          <td>TX</td><td>No</td><td class="num warn-cell">TRUE</td><td>Normal &mdash; <code>Rate &times; StdPropPolGroupIIFactor</code></td><td class="good-cell">Yes</td>
+        </tr>
+      </table>
+    </div>
+    <div class="instructions">
+      <p>Row 3 is the case this whole walkthrough exists for: even if a user (or a copy-pasted value, or a bug) manages to set the exclusion flag to "Yes" in Texas, the <code>OR C60</code> guard in Step 4 routes the formula to the normal branch anyway &mdash; it never reaches <code>LowestBaseRate</code>, which doesn't resolve in TX in the first place. No error, no blank cell, no silently wrong premium &mdash; just the same safe branch as if the exclusion had never been requested.</p>
+    </div>
+  </section>
+
+  <hr class="divider" />
+
+  <footer class="closing">
+    <h2>What this walkthrough doesn't cover</h2>
+    <ol>
+      <li>Cell addresses (<code>BJ2:BJ9</code>, <code>C60</code>) are placeholders continuing this workbook's numbering pattern &mdash; confirm against the real <code>BldgBGIIRating</code> layout before building.</li>
+      <li>The regulatory reason these 8 states can't exclude wind/hail is inferred from the ERC filing pattern, not confirmed against the manual/circular text for these specific states &mdash; the mechanism (gate + UI restriction) is sound regardless of the underlying reason, but if you want the warning message to cite an actual rule number, that still needs to be tracked down.</li>
+      <li>This only covers Building's <code>COLAdj</code>. Contents' Basic Group II <code>COLAdj</code> has the identical wind-excluded branch shape (per <code>Excel_Rater_BasicGroupII.md</code> &sect;5 step 6) and would need the same gate wired in separately &mdash; not built here.</li>
+      <li>PR is included in the ineligible-state list only because it matches the same empty-filing pattern in the ERC data. No PR-specific behavior, testing, or UI copy should be built beyond that one list entry, per standing project scope.</li>
+    </ol>
+    <p class="note">Source: BGII_BaseRate_Building.xlsx (LowestBasicGroupIIRate state coverage) &middot; WindstormOrHailExclFactor.RateTable.csv per-state file presence, all 47 states, correct editions &middot; CFCW20260601V01</p>
+  </footer>
+
+</div>

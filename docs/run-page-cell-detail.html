@@ -1,0 +1,462 @@
+<!doctype html><html><head><meta charset="utf-8">
+<title>Run page — cell detail options</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+:root{--ink:#1a1d21;--muted:#6b7580;--line:#e3e8ee;--blue:#2b6cb0;
+--red:#c0392b;--amber:#b7791f;--grey:#9aa5b1;--green:#2f855a;--bg:#f7f9fb}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+font:14px/1.55 ui-sans-serif,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+header{background:#1f2933;color:#fff;padding:18px 24px}
+header h1{margin:0 0 4px;font-size:18px;font-weight:650}
+header p{margin:0;opacity:.75;font-size:13px;max-width:76ch}
+.warn{background:#fff8e6;border-bottom:1px solid #f0e0b8;padding:10px 24px;
+font-size:12.5px;color:#7a5c12}
+.try{background:#eef6ff;border-bottom:1px solid #cfe2f5;padding:10px 24px;
+font-size:12.5px;color:#1f4f7a}
+nav{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--line);
+padding:10px 24px;display:flex;gap:7px;flex-wrap:wrap;z-index:20}
+nav button{background:#fff;color:var(--ink);border:1px solid #cbd2d9;
+border-radius:6px;padding:6px 12px;font-size:13px;cursor:pointer}
+nav button.on{background:var(--blue);color:#fff;border-color:var(--blue);
+font-weight:650}
+main{padding:20px 24px;max-width:1120px}
+section{display:none}
+section.on{display:block}
+.lede{background:#fff;border:1px solid var(--line);border-left:3px solid var(--blue);
+border-radius:6px;padding:12px 15px;margin-bottom:16px;font-size:13px}
+.lede b{display:block;margin-bottom:3px}
+.lede .cost{color:var(--muted);font-size:12.5px;margin-top:6px}
+.card{background:#fff;border:1px solid var(--line);border-radius:8px;
+padding:14px 16px;margin-bottom:12px}
+.card h2{font-size:11px;text-transform:uppercase;letter-spacing:.05em;
+color:var(--muted);margin:0 0 10px;font-weight:650}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th{text-align:left;font-weight:650;color:var(--muted);font-size:10.5px;
+text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--line);
+padding:6px 7px}
+td{padding:5px 7px;border-bottom:1px solid #f0f3f6;vertical-align:top}
+td.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.st{font-weight:650;font-size:11.5px;white-space:nowrap}
+.st.MATCH{color:var(--blue)} .st.DIFF{color:var(--red)}
+.st.PREMIUM{color:var(--amber)} .st.NA{color:var(--grey)}
+.det{color:var(--muted);font-size:11.5px}
+.note{font-size:11.5px;color:var(--muted);border-left:2px solid var(--line);
+padding-left:9px;margin-top:8px}
+.matrix{font-size:11.5px}
+.matrix th{font-size:10px;padding:4px 2px;text-align:center}
+.matrix td{text-align:center;padding:2px;border-bottom:1px solid #f6f8fa}
+.matrix td.rowhead,.matrix th.rowhead{text-align:left;white-space:nowrap;
+color:var(--ink);font-weight:600;padding-right:10px}
+.cell{display:inline-block;width:16px;height:16px;border-radius:3px}
+.c-ok{background:#bcd7ef} .c-bad{background:var(--red)}
+.c-amb{background:var(--amber)} .c-na{background:#e3e8ee}
+a.cell{cursor:pointer}
+a.cell:hover{outline:2px solid var(--ink);outline-offset:1px}
+.js-cell{cursor:pointer;border:0;padding:0}
+.js-cell:hover{outline:2px solid var(--ink);outline-offset:1px}
+.legend{font-size:11.5px;color:var(--muted);margin-top:8px;display:flex;
+gap:14px;flex-wrap:wrap;align-items:center}
+.legend span{display:flex;gap:5px;align-items:center}
+tr:target td, tr.flash td{background:#fff3cd;transition:background .4s}
+.panel{position:fixed;pointer-events:none;background:#1f2933;color:#fff;
+border-radius:6px;padding:8px 11px;font-size:12px;line-height:1.5;z-index:50;
+box-shadow:0 6px 20px rgba(0,0,0,.25);display:none;max-width:300px}
+.panel b{color:#fff} .panel .k{color:#9aa5b1}
+.filterbar{font-size:12px;margin-bottom:8px;display:none;
+background:#eef6ff;border:1px solid #cfe2f5;border-radius:6px;padding:7px 10px}
+.filterbar button{margin-left:8px;font-size:11.5px;background:#fff;
+border:1px solid #cbd2d9;border-radius:5px;padding:2px 8px;cursor:pointer}
+.sortlink{font-size:11.5px;color:var(--blue);cursor:pointer;
+text-decoration:underline;margin-left:10px}
+.verdict{font-size:15px;font-weight:650;margin:0 0 8px}
+h3.sub{font-size:13px;margin:18px 0 8px;font-weight:650}
+</style></head><body>
+
+<header>
+  <h1>The configuration × jurisdiction matrix — three ways a cell can answer you</h1>
+  <p>Agreed so far: verdict, then a lead visual chosen by layer, then this
+     matrix, then the state table. The open question is what a cell does when
+     you point at it — and it matters because a run file has to open from disk
+     with no server behind it.</p>
+</header>
+<div class="warn"><b>Mockup.</b> Invented numbers. The matrix is trimmed to 4
+  configurations × 20 states so it fits; a real L3 run is 4 × 51.</div>
+<div class="try"><b>These are live — try them.</b> Hover the cells. Click the red
+  ones. Each tab behaves the way that option really would.</div>
+
+<nav>
+  <button class="on" data-t="a">1 · Links + browser tooltip (no script)</button>
+  <button data-t="b">2 · Inline JavaScript</button>
+  <button data-t="c">3 · Colour only</button>
+</nav>
+
+<main>
+
+<!-- =========================================================== option 1 -->
+<section id="a" class="on">
+<div class="lede"><b>1 · Every cell is a plain link, with a browser tooltip</b>
+  Hover and the browser shows its own tooltip after a moment. Click and you jump
+  to that state's row in the table below, which highlights. Pure HTML — no
+  <code>&lt;script&gt;</code> anywhere in the file.
+  <div class="cost">The file stays provably inert: nothing in it can execute.
+    The tooltip is the browser's, so it looks plain and takes about a second to
+    appear — you cannot style it or make it instant.</div>
+</div>
+
+<div class="card">
+  <h2>Configuration × jurisdiction</h2>
+  <div style="overflow-x:auto">
+  <table class="matrix">
+    <tr><th class="rowhead">Configuration</th>
+      <th>AL</th><th>AK</th><th>AZ</th><th>AR</th><th>CA</th><th>CO</th><th>CT</th>
+      <th>DE</th><th>FL</th><th>GA</th><th>IA</th><th>IL</th><th>LA</th><th>MT</th>
+      <th>NY</th><th>OH</th><th>OK</th><th>RI</th><th>TX</th><th>WA</th></tr>
+    <tr><td class="rowhead">500,000 × lowest</td>
+      <td><a class="cell c-ok" href="#a-AL" title="AL · 500,000 × lowest&#10;ours 1,980 · ISO 1,980 · agrees"></a></td>
+      <td><a class="cell c-ok" href="#a-AK" title="AK · 500,000 × lowest&#10;ours 2,240 · ISO 2,240 · agrees"></a></td>
+      <td><a class="cell c-ok" href="#a-AZ" title="AZ · 500,000 × lowest&#10;ours 2,010 · ISO 2,010 · agrees"></a></td>
+      <td><a class="cell c-ok" href="#a-AR" title="AR · 500,000 × lowest&#10;agrees"></a></td>
+      <td><a class="cell c-ok" href="#a-CA" title="CA · 500,000 × lowest&#10;agrees"></a></td>
+      <td><a class="cell c-ok" href="#a-CO" title="CO · 500,000 × lowest&#10;agrees"></a></td>
+      <td><a class="cell c-ok" href="#a-CT" title="CT · 500,000 × lowest&#10;agrees"></a></td>
+      <td><a class="cell c-ok" href="#a-DE" title="DE · 500,000 × lowest&#10;agrees"></a></td>
+      <td><a class="cell c-ok" href="#a-FL" title="FL · 500,000 × lowest&#10;agrees"></a></td>
+      <td><a class="cell c-ok" href="#a-GA" title="GA · 500,000 × lowest&#10;agrees"></a></td>
+      <td><a class="cell c-ok" href="#a-IA" title="IA · 500,000 × lowest&#10;agrees"></a></td>
+      <td><a class="cell c-ok" href="#a-IL" title="IL · 500,000 × lowest&#10;agrees"></a></td>
+      <td><a class="cell c-ok" href="#a-LA" title="LA · 500,000 × lowest&#10;agrees"></a></td>
+      <td><a class="cell c-ok" href="#a-MT" title="MT · 500,000 × lowest&#10;agrees"></a></td>
+      <td><a class="cell c-ok" href="#a-NY" title="NY · 500,000 × lowest&#10;agrees"></a></td>
+      <td><a class="cell c-ok" href="#a-OH" title="OH · 500,000 × lowest&#10;agrees"></a></td>
+      <td><a class="cell c-ok" href="#a-OK" title="OK · 500,000 × lowest&#10;agrees"></a></td>
+      <td><a class="cell c-ok" href="#a-RI" title="RI · 500,000 × lowest&#10;agrees"></a></td>
+      <td><a class="cell c-ok" href="#a-TX" title="TX · 500,000 × lowest&#10;agrees"></a></td>
+      <td><a class="cell c-ok" href="#a-WA" title="WA · 500,000 × lowest&#10;agrees"></a></td></tr>
+    <tr><td class="rowhead">1,000,000 × middle</td>
+      <td><a class="cell c-ok" href="#a-AL" title="AL · 1,000,000 × middle&#10;agrees"></a></td>
+      <td><a class="cell c-ok" href="#a-AK" title="AK · 1,000,000 × middle&#10;agrees"></a></td>
+      <td><a class="cell c-ok" href="#a-AZ" title="AZ · 1,000,000 × middle&#10;agrees"></a></td>
+      <td><a class="cell c-ok" href="#a-AR" title="AR · agrees"></a></td>
+      <td><a class="cell c-ok" href="#a-CA" title="CA · agrees"></a></td>
+      <td><a class="cell c-ok" href="#a-CO" title="CO · agrees"></a></td>
+      <td><a class="cell c-ok" href="#a-CT" title="CT · agrees"></a></td>
+      <td><a class="cell c-ok" href="#a-DE" title="DE · agrees"></a></td>
+      <td><a class="cell c-ok" href="#a-FL" title="FL · agrees"></a></td>
+      <td><a class="cell c-ok" href="#a-GA" title="GA · agrees"></a></td>
+      <td><a class="cell c-ok" href="#a-IA" title="IA · agrees"></a></td>
+      <td><a class="cell c-ok" href="#a-IL" title="IL · agrees"></a></td>
+      <td><a class="cell c-ok" href="#a-LA" title="LA · agrees"></a></td>
+      <td><a class="cell c-ok" href="#a-MT" title="MT · agrees"></a></td>
+      <td><a class="cell c-amb" href="#a-NY" title="NY · 1,000,000 × middle&#10;PREMIUM ONLY — premium agrees, 1 field differs&#10;ProdsCompldOpsCovILF: ours 1.40 · ISO 1.38"></a></td>
+      <td><a class="cell c-ok" href="#a-OH" title="OH · agrees"></a></td>
+      <td><a class="cell c-ok" href="#a-OK" title="OK · agrees"></a></td>
+      <td><a class="cell c-ok" href="#a-RI" title="RI · agrees"></a></td>
+      <td><a class="cell c-ok" href="#a-TX" title="TX · agrees"></a></td>
+      <td><a class="cell c-ok" href="#a-WA" title="WA · agrees"></a></td></tr>
+    <tr><td class="rowhead">2,000,000 × middle</td>
+      <td><a class="cell c-ok" href="#a-AL" title="AL · agrees"></a></td>
+      <td><a class="cell c-ok" href="#a-AK" title="AK · agrees"></a></td>
+      <td><a class="cell c-ok" href="#a-AZ" title="AZ · agrees"></a></td>
+      <td><a class="cell c-ok" href="#a-AR" title="AR · agrees"></a></td>
+      <td><a class="cell c-ok" href="#a-CA" title="CA · agrees"></a></td>
+      <td><a class="cell c-ok" href="#a-CO" title="CO · agrees"></a></td>
+      <td><a class="cell c-ok" href="#a-CT" title="CT · agrees"></a></td>
+      <td><a class="cell c-ok" href="#a-DE" title="DE · agrees"></a></td>
+      <td><a class="cell c-ok" href="#a-FL" title="FL · agrees"></a></td>
+      <td><a class="cell c-ok" href="#a-GA" title="GA · agrees"></a></td>
+      <td><a class="cell c-ok" href="#a-IA" title="IA · agrees"></a></td>
+      <td><a class="cell c-ok" href="#a-IL" title="IL · agrees"></a></td>
+      <td><a class="cell c-ok" href="#a-LA" title="LA · agrees"></a></td>
+      <td><a class="cell c-ok" href="#a-MT" title="MT · agrees"></a></td>
+      <td><a class="cell c-ok" href="#a-NY" title="NY · agrees"></a></td>
+      <td><a class="cell c-ok" href="#a-OH" title="OH · agrees"></a></td>
+      <td><a class="cell c-bad" href="#a-OK" title="OK · 2,000,000 × middle&#10;DIFF — ours 4,180 · ISO 4,020 · +160&#10;2 fields differ"></a></td>
+      <td><a class="cell c-ok" href="#a-RI" title="RI · agrees"></a></td>
+      <td><a class="cell c-ok" href="#a-TX" title="TX · agrees"></a></td>
+      <td><a class="cell c-ok" href="#a-WA" title="WA · agrees"></a></td></tr>
+    <tr><td class="rowhead">5,000,000 × highest</td>
+      <td><a class="cell c-ok" href="#a-AL" title="AL · agrees"></a></td>
+      <td><a class="cell c-bad" href="#a-AK" title="AK · 5,000,000 × highest&#10;DIFF — ours 8,410 · ISO 2,980 · +5,430&#10;3 fields differ"></a></td>
+      <td><a class="cell c-ok" href="#a-AZ" title="AZ · agrees"></a></td>
+      <td><a class="cell c-ok" href="#a-AR" title="AR · agrees"></a></td>
+      <td><a class="cell c-ok" href="#a-CA" title="CA · agrees"></a></td>
+      <td><a class="cell c-bad" href="#a-CO" title="CO · 5,000,000 × highest&#10;DIFF — ours 5,120 · ISO 2,240 · +2,880"></a></td>
+      <td><a class="cell c-ok" href="#a-CT" title="CT · agrees"></a></td>
+      <td><a class="cell c-ok" href="#a-DE" title="DE · agrees"></a></td>
+      <td><a class="cell c-bad" href="#a-FL" title="FL · 5,000,000 × highest&#10;DIFF — ours 6,700 · ISO 3,010 · +3,690"></a></td>
+      <td><a class="cell c-ok" href="#a-GA" title="GA · agrees"></a></td>
+      <td><a class="cell c-ok" href="#a-IA" title="IA · agrees"></a></td>
+      <td><a class="cell c-bad" href="#a-IL" title="IL · 5,000,000 × highest&#10;DIFF — ours 5,880 · ISO 2,610 · +3,270"></a></td>
+      <td><a class="cell c-bad" href="#a-LA" title="LA · 5,000,000 × highest&#10;DIFF — ours 9,870 · ISO 3,140 · +6,730&#10;PremOpsCovILF: ours 3.14 · ISO 1.00"></a></td>
+      <td><a class="cell c-na" href="#a-MT" title="MT · 5,000,000 × highest&#10;NOT APPLICABLE — MT declares no aggregate legal with a 5,000,000 each-occurrence limit"></a></td>
+      <td><a class="cell c-bad" href="#a-NY" title="NY · 5,000,000 × highest&#10;DIFF — ours 7,020 · ISO 3,470 · +3,550"></a></td>
+      <td><a class="cell c-ok" href="#a-OH" title="OH · agrees"></a></td>
+      <td><a class="cell c-bad" href="#a-OK" title="OK · 5,000,000 × highest&#10;DIFF — ours 6,240 · ISO 2,900 · +3,340"></a></td>
+      <td><a class="cell c-ok" href="#a-RI" title="RI · agrees"></a></td>
+      <td><a class="cell c-bad" href="#a-TX" title="TX · 5,000,000 × highest&#10;DIFF — ours 5,560 · ISO 2,731 · +2,829"></a></td>
+      <td><a class="cell c-bad" href="#a-WA" title="WA · 5,000,000 × highest&#10;DIFF — ours 5,940 · ISO 2,780 · +3,160"></a></td></tr>
+  </table>
+  </div>
+  <div class="legend">
+    <span><i class="cell c-ok"></i> agrees</span>
+    <span><i class="cell c-amb"></i> premium only</span>
+    <span><i class="cell c-bad"></i> differs</span>
+    <span><i class="cell c-na"></i> not applicable</span>
+    <span class="det">— hover for detail, click to jump to the row</span>
+  </div>
+  <div class="note"><b>The finding is the row.</b> Nine of the ten
+    disagreements sit in one configuration and are scattered across the country.</div>
+</div>
+
+<div class="card">
+  <h2>Every state, worst first</h2>
+  <table>
+    <tr><th>State<th>Configuration<th>Status<th class="n">Ours<th class="n">ISO<th class="n">Difference</tr>
+    <tr id="a-LA"><td><b>LA</b><td class="det">5M × highest<td class="st DIFF">DIFF<td class="n">9,870<td class="n">3,140<td class="n">+6,730
+    <tr id="a-AK"><td><b>AK</b><td class="det">5M × highest<td class="st DIFF">DIFF<td class="n">8,410<td class="n">2,980<td class="n">+5,430
+    <tr id="a-FL"><td><b>FL</b><td class="det">5M × highest<td class="st DIFF">DIFF<td class="n">6,700<td class="n">3,010<td class="n">+3,690
+    <tr id="a-NY"><td><b>NY</b><td class="det">5M × highest<td class="st DIFF">DIFF<td class="n">7,020<td class="n">3,470<td class="n">+3,550
+    <tr id="a-OK"><td><b>OK</b><td class="det">5M × highest<td class="st DIFF">DIFF<td class="n">6,240<td class="n">2,900<td class="n">+3,340
+    <tr id="a-IL"><td><b>IL</b><td class="det">5M × highest<td class="st DIFF">DIFF<td class="n">5,880<td class="n">2,610<td class="n">+3,270
+    <tr id="a-WA"><td><b>WA</b><td class="det">5M × highest<td class="st DIFF">DIFF<td class="n">5,940<td class="n">2,780<td class="n">+3,160
+    <tr id="a-TX"><td><b>TX</b><td class="det">5M × highest<td class="st DIFF">DIFF<td class="n">5,560<td class="n">2,731<td class="n">+2,829
+    <tr id="a-CO"><td><b>CO</b><td class="det">5M × highest<td class="st DIFF">DIFF<td class="n">5,120<td class="n">2,240<td class="n">+2,880
+    <tr id="a-CA"><td><b>CA</b><td class="det">1M × middle<td class="st MATCH">MATCH<td class="n">3,340<td class="n">3,340<td class="n">—
+    <tr id="a-AL"><td><b>AL</b><td class="det">1M × middle<td class="st MATCH">MATCH<td class="n">1,980<td class="n">1,980<td class="n">—
+    <tr id="a-AZ"><td><b>AZ</b><td class="det">1M × middle<td class="st MATCH">MATCH<td class="n">2,010<td class="n">2,010<td class="n">—
+    <tr id="a-AR"><td><b>AR</b><td class="det">1M × middle<td class="st MATCH">MATCH<td class="n">2,150<td class="n">2,150<td class="n">—
+    <tr id="a-CT"><td><b>CT</b><td class="det">1M × middle<td class="st MATCH">MATCH<td class="n">2,890<td class="n">2,890<td class="n">—
+    <tr id="a-DE"><td><b>DE</b><td class="det">1M × middle<td class="st MATCH">MATCH<td class="n">2,340<td class="n">2,340<td class="n">—
+    <tr id="a-GA"><td><b>GA</b><td class="det">1M × middle<td class="st MATCH">MATCH<td class="n">2,480<td class="n">2,480<td class="n">—
+    <tr id="a-IA"><td><b>IA</b><td class="det">1M × middle<td class="st MATCH">MATCH<td class="n">2,110<td class="n">2,110<td class="n">—
+    <tr id="a-OH"><td><b>OH</b><td class="det">1M × middle<td class="st MATCH">MATCH<td class="n">2,660<td class="n">2,660<td class="n">—
+    <tr id="a-RI"><td><b>RI</b><td class="det">1M × middle<td class="st MATCH">MATCH<td class="n">3,020<td class="n">3,020<td class="n">—
+    <tr id="a-MT"><td><b>MT</b><td class="det">5M × highest<td class="st NA">NOT APPLICABLE<td class="n">—<td class="n">—<td class="n">—
+  </table>
+</div>
+</section>
+
+<!-- =========================================================== option 2 -->
+<section id="b">
+<div class="lede"><b>2 · Inline JavaScript</b>
+  Hover shows a styled panel immediately. Click a cell and the table below
+  filters to that configuration. The matrix can also re-sort states by problem
+  count, which pulls the trouble to one side.
+  <div class="cost">A run file would contain executable code. The check that
+    currently asserts run files carry no <code>&lt;script&gt;</code> would have
+    to be split into two — one for "loads nothing from the network", one for
+    "carries no script" — and only the first would still hold.</div>
+</div>
+
+<div class="card">
+  <h2>Configuration × jurisdiction
+    <span class="sortlink" id="sorter">sort states by problems ▸</span></h2>
+  <div style="overflow-x:auto"><table class="matrix" id="jsmatrix"></table></div>
+  <div class="legend">
+    <span><i class="cell c-ok"></i> agrees</span>
+    <span><i class="cell c-amb"></i> premium only</span>
+    <span><i class="cell c-bad"></i> differs</span>
+    <span><i class="cell c-na"></i> not applicable</span>
+    <span class="det">— hover for detail, click to filter the table below</span>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Every state, worst first</h2>
+  <div class="filterbar" id="fbar"></div>
+  <table id="jstable"></table>
+</div>
+<div class="panel" id="panel"></div>
+</section>
+
+<!-- =========================================================== option 3 -->
+<section id="c">
+<div class="lede"><b>3 · Colour only</b>
+  The matrix is a picture of where the trouble is and nothing else. No links, no
+  tooltips, no script. Every detail lives in the table underneath.
+  <div class="cost">Simplest to build and to trust. Finding the row is easy;
+    getting from a cell to its numbers means scrolling and reading.</div>
+</div>
+
+<div class="card">
+  <h2>Configuration × jurisdiction</h2>
+  <div style="overflow-x:auto">
+  <table class="matrix">
+    <tr><th class="rowhead">Configuration</th>
+      <th>AL</th><th>AK</th><th>AZ</th><th>AR</th><th>CA</th><th>CO</th><th>CT</th>
+      <th>DE</th><th>FL</th><th>GA</th><th>IA</th><th>IL</th><th>LA</th><th>MT</th>
+      <th>NY</th><th>OH</th><th>OK</th><th>RI</th><th>TX</th><th>WA</th></tr>
+    <tr><td class="rowhead">500,000 × lowest</td>
+      <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td>
+      <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td>
+      <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td>
+      <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td>
+      <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td>
+      <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td>
+      <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td></tr>
+    <tr><td class="rowhead">1,000,000 × middle</td>
+      <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td>
+      <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td>
+      <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td>
+      <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td>
+      <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-amb"></i></td>
+      <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td>
+      <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td></tr>
+    <tr><td class="rowhead">2,000,000 × middle</td>
+      <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td>
+      <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td>
+      <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td>
+      <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td>
+      <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td>
+      <td><i class="cell c-ok"></i></td><td><i class="cell c-bad"></i></td><td><i class="cell c-ok"></i></td>
+      <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td></tr>
+    <tr><td class="rowhead">5,000,000 × highest</td>
+      <td><i class="cell c-ok"></i></td><td><i class="cell c-bad"></i></td><td><i class="cell c-ok"></i></td>
+      <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-bad"></i></td>
+      <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-bad"></i></td>
+      <td><i class="cell c-ok"></i></td><td><i class="cell c-ok"></i></td><td><i class="cell c-bad"></i></td>
+      <td><i class="cell c-bad"></i></td><td><i class="cell c-na"></i></td><td><i class="cell c-bad"></i></td>
+      <td><i class="cell c-ok"></i></td><td><i class="cell c-bad"></i></td><td><i class="cell c-ok"></i></td>
+      <td><i class="cell c-bad"></i></td><td><i class="cell c-bad"></i></td></tr>
+  </table>
+  </div>
+  <div class="legend">
+    <span><i class="cell c-ok"></i> agrees</span>
+    <span><i class="cell c-amb"></i> premium only</span>
+    <span><i class="cell c-bad"></i> differs</span>
+    <span><i class="cell c-na"></i> not applicable</span>
+  </div>
+  <div class="note">Nothing responds to the pointer. The row is still obvious;
+    the numbers are below.</div>
+</div>
+
+<div class="card">
+  <h2>Every state, worst first</h2>
+  <table>
+    <tr><th>State<th>Configuration<th>Status<th class="n">Ours<th class="n">ISO<th class="n">Difference</tr>
+    <tr><td><b>LA</b><td class="det">5M × highest<td class="st DIFF">DIFF<td class="n">9,870<td class="n">3,140<td class="n">+6,730
+    <tr><td><b>AK</b><td class="det">5M × highest<td class="st DIFF">DIFF<td class="n">8,410<td class="n">2,980<td class="n">+5,430
+    <tr><td><b>NY</b><td class="det">5M × highest<td class="st DIFF">DIFF<td class="n">7,020<td class="n">3,470<td class="n">+3,550
+    <tr><td colspan="6" class="det">… 17 more</tr>
+  </table>
+</div>
+</section>
+
+</main>
+
+<script>
+// ---- tabs
+document.querySelectorAll('nav button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('nav button').forEach(x => x.classList.remove('on'));
+  document.querySelectorAll('section').forEach(x => x.classList.remove('on'));
+  b.classList.add('on');
+  document.getElementById(b.dataset.t).classList.add('on');
+  scrollTo(0, 0);
+});
+
+// ---- option 2 data (the same run, as data rather than as markup)
+const STATES = ['AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','IA','IL',
+                'LA','MT','NY','OH','OK','RI','TX','WA'];
+const CONFIGS = ['500,000 × lowest','1,000,000 × middle',
+                 '2,000,000 × middle','5,000,000 × highest'];
+const BASE = {AL:1980,AK:2240,AZ:2010,AR:2150,CA:3340,CO:2240,CT:2890,DE:2340,
+              FL:3010,GA:2480,IA:2110,IL:2610,LA:3140,MT:2300,NY:3470,OH:2660,
+              OK:2900,RI:3020,TX:2731,WA:2780};
+const BAD5 = ['AK','CO','FL','IL','LA','NY','OK','TX','WA'];
+const CELLS = [];
+CONFIGS.forEach((cfg, ci) => STATES.forEach(st => {
+  let status = 'MATCH', ours = BASE[st], iso = BASE[st];
+  if (ci === 3 && st === 'MT') status = 'NOT APPLICABLE';
+  else if (ci === 3 && BAD5.includes(st)) { status = 'DIFF'; ours = Math.round(BASE[st] * 2.1); }
+  else if (ci === 2 && st === 'OK') { status = 'DIFF'; ours = BASE[st] + 160; }
+  else if (ci === 1 && st === 'NY') status = 'PREMIUM ONLY';
+  CELLS.push({cfg, ci, st, status, ours, iso});
+}));
+const KLASS = {'MATCH':'c-ok','DIFF':'c-bad','PREMIUM ONLY':'c-amb','NOT APPLICABLE':'c-na'};
+let ORDER = STATES.slice(), FILTER = null;
+
+function problems(st){
+  return CELLS.filter(c => c.st === st && (c.status === 'DIFF' || c.status === 'PREMIUM ONLY')).length;
+}
+function drawMatrix(){
+  let h = '<tr><th class="rowhead">Configuration</th>'
+        + ORDER.map(s => `<th>${s}</th>`).join('') + '</tr>';
+  CONFIGS.forEach((cfg, ci) => {
+    h += `<tr><td class="rowhead">${cfg}</td>`;
+    ORDER.forEach(st => {
+      const c = CELLS.find(x => x.ci === ci && x.st === st);
+      h += `<td><button class="cell js-cell ${KLASS[c.status]}" data-ci="${ci}" `
+         + `data-st="${st}"></button></td>`;
+    });
+    h += '</tr>';
+  });
+  document.getElementById('jsmatrix').innerHTML = h;
+  document.querySelectorAll('#jsmatrix .js-cell').forEach(el => {
+    el.onmouseenter = ev => showPanel(ev, el);
+    el.onmousemove  = ev => movePanel(ev);
+    el.onmouseleave = hidePanel;
+    el.onclick = () => { FILTER = +el.dataset.ci; drawTable(); };
+  });
+}
+function cellOf(el){
+  return CELLS.find(x => x.ci === +el.dataset.ci && x.st === el.dataset.st);
+}
+function showPanel(ev, el){
+  const c = cellOf(el), p = document.getElementById('panel');
+  const delta = c.ours - c.iso;
+  p.innerHTML = `<b>${c.st} · ${c.cfg}</b><br>`
+    + `<span class="k">status</span> ${c.status}<br>`
+    + (c.status === 'NOT APPLICABLE'
+        ? `<span class="k">MT declares no aggregate legal with a 5,000,000 each-occurrence limit</span>`
+        : `<span class="k">ours</span> ${c.ours.toLocaleString()} · `
+          + `<span class="k">ISO</span> ${c.iso.toLocaleString()}`
+          + (delta ? ` · <b>${delta > 0 ? '+' : ''}${delta.toLocaleString()}</b>` : ''));
+  p.style.display = 'block';
+  movePanel(ev);
+}
+function movePanel(ev){
+  const p = document.getElementById('panel');
+  p.style.left = Math.min(ev.clientX + 14, innerWidth - 320) + 'px';
+  p.style.top  = (ev.clientY + 16) + 'px';
+}
+function hidePanel(){ document.getElementById('panel').style.display = 'none'; }
+
+function drawTable(){
+  const rows = CELLS
+    .filter(c => FILTER === null || c.ci === FILTER)
+    .filter(c => c.status !== 'MATCH' || FILTER !== null)
+    .sort((a, b) => Math.abs(b.ours - b.iso) - Math.abs(a.ours - a.iso));
+  const fb = document.getElementById('fbar');
+  if (FILTER === null) fb.style.display = 'none';
+  else {
+    fb.style.display = 'block';
+    fb.innerHTML = `Showing <b>${CONFIGS[FILTER]}</b> only — ${rows.length} rows`
+      + `<button id="clearf">show everything</button>`;
+    fb.querySelector('#clearf').onclick = () => { FILTER = null; drawTable(); };
+  }
+  let h = '<tr><th>State<th>Configuration<th>Status<th class="n">Ours'
+        + '<th class="n">ISO<th class="n">Difference</tr>';
+  rows.slice(0, 24).forEach(c => {
+    const d = c.ours - c.iso;
+    const k = c.status === 'NOT APPLICABLE' ? 'NA' : c.status.split(' ')[0];
+    h += `<tr><td><b>${c.st}</b><td class="det">${c.cfg}`
+       + `<td class="st ${k}">${c.status}`
+       + `<td class="n">${c.status === 'NOT APPLICABLE' ? '—' : c.ours.toLocaleString()}`
+       + `<td class="n">${c.status === 'NOT APPLICABLE' ? '—' : c.iso.toLocaleString()}`
+       + `<td class="n">${d ? (d > 0 ? '+' : '') + d.toLocaleString() : '—'}</tr>`;
+  });
+  if (rows.length > 24) h += `<tr><td colspan="6" class="det">… ${rows.length - 24} more</tr>`;
+  document.getElementById('jstable').innerHTML = h;
+}
+document.getElementById('sorter').onclick = () => {
+  const byProblem = STATES.slice().sort((a, b) => problems(b) - problems(a) || a.localeCompare(b));
+  ORDER = (ORDER[0] === byProblem[0] && ORDER[1] === byProblem[1])
+        ? STATES.slice() : byProblem;
+  document.getElementById('sorter').textContent =
+    ORDER[0] === STATES[0] ? 'sort states by problems ▸' : 'back to alphabetical ▸';
+  drawMatrix();
+};
+drawMatrix(); drawTable();
+</script>
+</body></html>

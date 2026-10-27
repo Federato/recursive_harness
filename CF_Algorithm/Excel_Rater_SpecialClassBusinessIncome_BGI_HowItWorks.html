@@ -1,0 +1,191 @@
+
+<!-- RC-1 stale-name notice -->
+<div style="border:2px solid #b45309;background:#fef3c7;color:#1f2937;padding:10px 14px;margin:12px;border-radius:6px;font:14px/1.45 system-ui,sans-serif"><b>Notice (2026-09-23):</b> Written before the 2026-09-22 restructure. Sheet names have changed: Policy Inputs → IN - Policy; Bldg / Contents / BI Rating Worksheet → CALC - Bldg / Contents / BI Rating; Special Class Worksheet → CALC - Special Class; CoreScratchpad → CALC - CoreScratchpad. <b>Location Inputs / IN - Location and Special Class Inputs / IN - Special Class no longer exist</b>: every record is entered on <b>IN - Schedule</b> (one row per record, 40 per block), so input-sheet cell addresses here are out of date, and calc-sheet column C is record 1 of 40. Current state: CF_Algorithm/CF_Rater_RESUME.md.</div>
+<title>How Special Class Business Income Basic Group I Rating Works</title>
+<meta charset="utf-8">
+<style>
+  body { font-family: Georgia, "Times New Roman", serif; max-width: 980px; margin: 0 auto; padding: 32px 24px 80px; line-height: 1.55; color: #1c2733; background: #fff; }
+  @media (prefers-color-scheme: dark) {
+    body { background: #14181d; color: #dfe4e9; }
+    a { color: #7fb6b8; }
+    table, th, td { border-color: #3a4048 !important; }
+    thead th { background: #24313a !important; color: #eef4f3 !important; }
+    code { background: #262c33 !important; color: #dfe4e9; }
+    pre { background: #262c33 !important; border-color: #3a4048 !important; color: #dfe4e9; }
+    .note { background: #2c2a1c !important; color: #e0c064 !important; }
+    .note.good { background: #1b3226 !important; color: #63c090 !important; }
+    .note.warn2 { background: #2a1f2c !important; color: #d69ad0 !important; }
+  }
+  h1 { font-size: 26px; font-weight: 400; margin-bottom: 4px; }
+  h2 { font-size: 19px; font-weight: 700; margin-top: 42px; border-bottom: 2px solid #1e3a45; padding-bottom: 4px; }
+  h3 { font-size: 15px; font-weight: 700; margin-top: 26px; }
+  .meta { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13px; color: #55606b; margin: 6px 0 4px; }
+  code { font-family: ui-monospace, Consolas, monospace; font-size: 0.92em; background: #eef1f4; padding: 1px 5px; border-radius: 3px; }
+  table { border-collapse: collapse; width: 100%; margin: 14px 0 22px; font-size: 14px; }
+  th, td { border: 1px solid #d7dce2; padding: 8px 10px; text-align: left; vertical-align: top; }
+  thead th { background: #1e3a45; color: #eef4f3; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 12px; text-transform: uppercase; letter-spacing: 0.03em; }
+  table.grid td:nth-child(1) { font-family: ui-monospace, Consolas, monospace; font-size: 12px; text-align: center; }
+  .note { background: #f7ddd4; color: #a53d26; padding: 12px 16px; border-radius: 6px; margin: 16px 0; font-size: 14px; }
+  .note.warn2 { background: #f2e6c4; color: #a67c1e; }
+  .note.good { background: #dcefe4; color: #2f7d5a; }
+  .note b { font-weight: 700; }
+  pre { background: #eef1f4; border: 1px solid #d7dce2; border-radius: 6px; padding: 14px 16px; overflow-x: auto; font-family: ui-monospace, Consolas, monospace; font-size: 13px; }
+  ol, ul { padding-left: 22px; }
+  hr { border: none; border-top: 1px solid #d7dce2; margin: 40px 0; }
+</style>
+
+<h1>How Special Class Business Income Basic Group I Rating Works</h1>
+<p class="meta"><b>Written:</b> 2026-09-15. <b>Source:</b>
+<code>CommercialPropertySpecialClassBusnIncomeRules.Rule.xml</code> and
+<code>CommercialPropertySpecialClassBusnIncomeBasicGroupICoverageRules.Rule.xml</code>, read directly this
+session, plus a 46-state sweep of the rate tables <b>and</b> the state rule files. Companion to the four
+building-side pages &mdash; this is the first page on the <b>Business Income</b> datadef group, which is a
+separate group from the Special Class item itself.</p>
+<div class="note good"><b>Status: traced, not built.</b> No Business Income rows exist on
+<code>Special Class Worksheet</code>.</div>
+
+<h2>1. What's different about this chain, in plain English</h2>
+<p><b>It does not compute a rate of its own.</b> Step 1 is a straight <code>Copy</code> &mdash;
+<code>BasicGroupIRate</code> is lifted from the parent Special Class item (<code>../../BasicGroupIRate</code>),
+the building-side rate you have already built. Everything the class description, protection class and
+converted option contributed on the building side flows into Business Income untouched.</p>
+<p><b>What Business Income adds is a single factor.</b> Not a rate, not a territory, not a construction
+dimension &mdash; one number representing the time-element characteristics of the risk. The chain is
+three steps long.</p>
+<div class="note warn2"><b>The thing most likely to be built wrong:</b> <code>SetFactor</code> looks like it
+should multiply four factors together &mdash; Type of Risk, Maximum Period of Indemnity, Monthly Limit of
+Indemnity, Extra Expense. It does not. It is a <b>four-way <code>Choose</code> that picks exactly one</b>,
+first match wins. The other three are computed during prep and discarded. Multiplying them would overstate
+the premium by a large multiple &mdash; Manufacturing's Maximum Period factor alone is 1.93.</div>
+
+<h2>2. The rating chain, step by step</h2>
+<table class="grid">
+<thead><tr><th>#</th><th>Step</th><th>What it does</th></tr></thead>
+<tbody>
+<tr><td>1</td><td><code>BasicGroupIRate</code></td>
+  <td><code>Copy</code> from <code>../../BasicGroupIRate</code> &mdash; the parent Special Class item's Basic
+  Group I rate, after its own base rate &times; loss cost multiplier. <b>No lookup, no table, no keys.</b></td></tr>
+<tr><td>2</td><td><code>BasicGroupICauseOfLossAdjustment</code></td>
+  <td><code>BasicGroupIRate &times; VandalismExclFactor</code>. The vandalism exclusion factor is computed in
+  shared prep on the Business Income group's own <code>SetVandalismExclFactor</code>. No cause-of-loss gate,
+  no zeroing branch.</td></tr>
+<tr><td>3</td><td><code>Factor</code></td>
+  <td>Set in shared prep, <b>before</b> the form chains run. A four-way <code>Choose</code> &mdash; see §3.
+  This is the only place Business Income characteristics enter the rate.</td></tr>
+<tr><td>4</td><td><code>FinalBasicGroupIRate</code></td>
+  <td><code>BasicGroupICauseOfLossAdjustment &times; Factor</code>, rounded to 3 dp. Called from
+  <code>SetFinalRates</code>, which fires all five forms' final-rate rules together.</td></tr>
+</tbody>
+</table>
+<p>Note what is <b>absent</b> compared with the building-side Basic Group I: no coinsurance factor in the rate
+(coinsurance enters as a <i>key</i> to the factor lookup instead), no deductible factor of any kind, no
+by-location factor, no LOI factor.</p>
+
+<h2>3. <code>SetFactor</code> &mdash; the four-way pick</h2>
+<pre>Factor =
+    MaxPeriodOfIndemnityFactor        if MaxPeriod = "Yes"
+    elif MonthlyLimitOfIndemnity &lt;&gt; "Not Applicable":
+        MonthlyLimitOfIndemnityFactor
+    elif CovType = "Extra Expense Only":
+        ExtraExpenseFactor
+    else:
+        TypeOfRiskFactor              &lt;-- the ordinary path</pre>
+<p>First match wins, and only one factor ever reaches the rate. The ordering matters: a risk written with
+Maximum Period of Indemnity <b>and</b> a monthly limit takes the Maximum Period factor and ignores the
+monthly limit entirely.</p>
+<table>
+<thead><tr><th>Branch</th><th>Table</th><th>Keys</th><th>CW shape</th></tr></thead>
+<tbody>
+<tr><td>Type of Risk <i>(default)</i></td><td><code>BusnIncomeFactor</code></td><td>State, <code>CovType</code>, <code>TypeOfRisk</code>, <code>CoinsuranceToUse</code></td><td>131 rows. This is where coinsurance enters &mdash; e.g. Mercantile &amp; Non-manufacturing, BI With Extra Expense: 50% &rarr; 0.76, 80% &rarr; 0.59, 100% &rarr; 0.50.</td></tr>
+<tr><td>Maximum Period of Indemnity</td><td><code>MaxPeriodOfIndemnityFactor</code></td><td>State, <code>CovType</code>, <code>TypeOfRisk</code></td><td>22 rows. Mercantile 1.15, Manufacturing <b>1.93</b>, Mining 1.00, Rental 0.88. <b>No coinsurance key</b>.</td></tr>
+<tr><td>Monthly Limit of Indemnity</td><td><code>MonthlyLimitOfIndemnityFactor</code></td><td>State, <code>CovType</code>, <code>TypeOfRisk</code>, <code>MonthlyLimitOfIndemnity</code></td><td>60 rows. Mercantile: 1/3 &rarr; 1.08, 1/4 &rarr; 0.96, 1/6 &rarr; 0.81.</td></tr>
+<tr><td>Extra Expense Only</td><td><code>ExtraExpenseFactor</code></td><td>State, <code>ExtraExpnLimitOnLossPymts</code></td><td>4 rows. 100%,100%,100% &rarr; <b>3.40</b>; 40%,80%,100% &rarr; 1.70; 35%,70%,100% &rarr; 1.62; Expanded Limits &rarr; <b>0</b> (routed to a separate lookup).</td></tr>
+</tbody></table>
+<p>Each of the first three also has a <b>combination</b> path &mdash;
+<code>TypeRiskCombination1Factor</code>/<code>2</code>, and the same for the other two &mdash; used when the
+risk splits across type-of-risk categories by percentage
+(<code>CombinedTypeOfRiskMercantilePct</code>, <code>...ManufacturingPct</code>, <code>...RentalPct</code>,
+<code>...EducationalPct</code>). Those percentage splits, plus
+<code>TuitionAndFeesFactor</code> and
+<code>ChangesEducationalInstitutionsExtensionOfRecoveryFactor</code>, feed
+<code>SetTypeOfRiskFactor</code> &mdash; at 14,000 characters it is by far the largest rule in this chain and
+has <b>not</b> been traced branch by branch in this pass.</p>
+
+<h2>4. The full formula, end to end</h2>
+<pre>BasicGroupIRate =
+    Copy of ../../BasicGroupIRate           # the parent Special Class item's BGI rate
+
+BasicGroupICauseOfLossAdjustment =
+    BasicGroupIRate &times; VandalismExclFactor
+
+Factor =
+    &lt;the four-way Choose from &sect;3&gt;
+
+FinalBasicGroupIRate =
+    BasicGroupICauseOfLossAdjustment &times; Factor        (round to 3 dp)
+
+Premium (scheduled, IncludedInBlkt = "No") =
+    round((Limit/100) &times; FinalBasicGroupIRate &times; PackageModFactor &times; IRPMFactor, 0)
+      &times; CyberIncidentExclusionFactorBGI
+      &times; CyberIncidentExclusionCOLExcptnsFactorBusnIncomeBGIToUse
+
+Premium (blanket) =
+    round((BlktLimit/100) &times; (FullBusnIncomeValue/BlktTotalFullValueAmount)
+          &times; BlktBasicGroupIAvgRate &times; PackageModFactor &times; IRPMFactor, 0)
+      &times; CyberIncidentExclusionFactorBGI
+      &times; CyberIncidentExclusionCOLExcptnsFactorBusnIncomeBGIToUse</pre>
+
+<h2>5. Premium &mdash; two departures from the building side</h2>
+<p><b>No <code>MultiPremiumAndDispersionCreditFactor</code>.</b> Every building-side Special Class premium
+formula carries it. This one does not &mdash; confirmed by direct read of the <code>SetPremium</code>
+datadef list. A multi-location dispersion credit does not reach Business Income.</p>
+<p><b>The cyber pair is asymmetric.</b> The first factor,
+<code>CyberIncidentExclusionFactorBGI</code>, is read from the policy level (seven levels up) and is the
+<b>same value the building side uses</b> &mdash; 0.995 when CP 10 75 is attached. The second is
+<code>CyberIncidentExclusionCOLExcptnsFactorBusnIncomeBGI<u>ToUse</u></code>, read from the Business Income
+item's own parent (<code>../</code>) &mdash; a Business-Income-specific datadef with its own
+<code>ToUse</code> resolution, <b>not</b> the building-side
+<code>CyberIncidentExclusionCOLExcptnsFactorBGI</code>. Do not point these two cells at the same place.</p>
+<p><b>No state overrides the premium rule.</b></p>
+
+<h2>6. State deviations &mdash; swept, not assumed</h2>
+<p>All 46 state rule files and the rate tables compared against countrywide. This chain is unusually clean.</p>
+<table>
+<thead><tr><th>State</th><th>What deviates</th><th>Effect</th></tr></thead>
+<tbody>
+<tr><td><b>FL</b></td><td><code>SetBasicGroupICauseOfLossAdjustment</code> rule</td><td><b>Subtraction, not multiplication.</b> Florida files
+<code>BasicGroupICauseOfLossAdjustment = round(BasicGroupIRate &minus; VandalismExclRate, 3)</code> &mdash;
+reading a <code>VandalismExcl<u>Rate</u></code> rather than a <code>Factor</code>. Structurally a different
+operation, not a different number. Building this as a multiplication in Florida is wrong in kind, not
+just in degree.</td></tr>
+<tr><td><b>FL</b></td><td><code>BusnIncomeFactor</code> table</td><td>The only state that files its own. Same 131 keys, <b>64 of them at different values</b> &mdash; consistently higher, e.g. Mercantile &amp; Non-manufacturing / BI With Extra Expense: 50% is 0.89 against CW's 0.76, 100% is 0.59 against CW's 0.50.</td></tr>
+<tr><td>All other 45</td><td>&mdash;</td><td>Countrywide rules and countrywide tables throughout. No state overrides <code>SetFactor</code>, <code>SetFinalBasicGroupIRate</code>, <code>SetTypeOfRiskFactor</code>, <code>SetCoinsuranceToUse</code> or <code>LookupBusnIncomeFactor</code>.</td></tr>
+</tbody></table>
+<div class="note good"><b>Compared with the building side, this is easy.</b> Basic Group II had six distinct
+state rule shapes for coinsurance alone and 46 states filing their own deductible tables. Business Income
+Basic Group I has <b>one</b> deviating state and <b>one</b> deviating table.</div>
+
+<h2>7. What a build would need</h2>
+<ul>
+<li><b>Four tables:</b> <code>BusnIncomeFactor</code> (131 rows &times; 2 &mdash; CW and FL),
+<code>MaxPeriodOfIndemnityFactor</code> (22), <code>MonthlyLimitOfIndemnityFactor</code> (60),
+<code>ExtraExpenseFactor</code> (4). Small by this project's standards.</li>
+<li><b>New inputs:</b> Type of Risk, Coverage Type (BI With / Without Extra Expense / Extra Expense Only),
+Coinsurance, Maximum Period of Indemnity yes/no, Monthly Limit of Indemnity (1/3, 1/4, 1/6, Not Applicable),
+Extra Expense limits on loss payment.</li>
+<li><b>Reuse as-is:</b> the parent item's <code>BasicGroupIRate</code> &mdash; already built.</li>
+<li><b>One Florida branch</b> at the cause-of-loss adjustment: subtract rather than multiply.</li>
+<li><b>Two premium cells</b>, one of which is Business-Income-specific.</li>
+</ul>
+
+<hr>
+
+<h2>Remaining steps</h2>
+<ol>
+<li>Trace <code>SetTypeOfRiskFactor</code> branch by branch &mdash; the combination paths, the tuition and
+fees factor, and the educational-institutions extension were not opened in this pass.</li>
+<li>Resolve what <code>CyberIncidentExclusionCOLExcptnsFactorBusnIncomeBGIToUse</code> actually resolves to,
+and how its <code>ToUse</code> rule differs from the building-side factor.</li>
+<li>Build the four factor tables for all 46 states.</li>
+<li>Nothing gets built into the live workbook until you say go.</li>
+</ol>

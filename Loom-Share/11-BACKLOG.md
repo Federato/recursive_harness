@@ -6,7 +6,84 @@ compared against ISO's live service.**
 Ordered by what I would do first and why. Every item names the open item it closes, so nothing here
 is a new idea invented overnight — each is something today's work surfaced and recorded.
 
+**Two sections.** *Defects* — three things known to be wrong, added 2026-08-14 — come first. *The
+numbered work* follows, unrenumbered so references elsewhere still resolve.
+
 ---
+
+# Defects — ahead of the numbered work
+
+**Added 2026-08-14.** Three things breadth and the variable tester found. They sit above the
+numbered items because these are *known wrong*, where everything below is *not yet known*. The
+numbered items keep their numbers so references elsewhere still resolve.
+
+## D1 · A state that has no value never falls back to the national one — **OI-88** `HIGH`
+
+**In English.** ISO's rules constantly say *"use the state's number, and if the state hasn't filed
+one, use the national number."* We handle that fine most of the time. But when the answer has to be
+worked out through a calculation first, the engine treats *"the state has nothing"* as an error and
+stops, instead of shrugging and going to look for the national number. A whole class of ordinary
+fallbacks therefore never happens.
+
+**Why it is first.** Falling back from state to national is how most of ISO's content actually
+works — Georgia, for one, files **no deductible factors of its own** and takes all fourteen tables
+from countrywide. A defect in the fallback path is a defect in the mechanism the layering depends
+on, and it is not visible on any risk simple enough to avoid the arithmetic.
+
+**Evidence.** The first defect an external oracle has found. Turning `SizeOfRiskRatingApplies` to
+`Yes` in Oklahoma makes our engine refuse; **ISO rates it at 8816**. A null inside a `FirstNonNull`
+branch refuses instead of yielding null, so every countrywide fallback arriving through arithmetic
+is unreachable.
+
+**To close:** fix the null-through-arithmetic behaviour, then re-run the size-of-risk variants in OK
+and NY against the live service. Expect it to unblock more than the one case that exposed it.
+
+## D2 · Two counts of how a jurisdiction locates a risk, and they do not reconcile — **OI-91** `HIGH`
+
+**In English.** For terrorism, the engine has to tell ISO where the risk is — but states don't agree
+on how to say it. Some want a terrorism territory code, some want a ZIP code. We have two counts of
+which states want which, taken two different ways, and they don't line up. Nobody has written down
+which count a caller should trust, so anything filling in a submission is guessing.
+
+**The two measurements.** By *which domain table the field names*: **4** jurisdictions declare
+`TerrorismTerritory` (CA, FL, NY, TX) and **11** use `TerritoryCodeByZipCode`. By *does the
+jurisdiction resolve any legal value for the field as of 2026-08-01*: **15** with an explicit
+`TerrorismTerritory`, **16** with a ZIP domain, **20** with neither.
+
+**They may both be right.** Naming a domain table and that table resolving to a non-empty set for a
+date are different questions, and the 20 may simply not offer the coverage. That is exactly why it
+needs settling rather than picking.
+
+**Why it is high.** A tester that guesses sends the wrong field to **20 jurisdictions**, and the
+figures are quoted in three places — `validate.PLACE_CODED`, the E8 escalation and R22 — so
+whichever reading wins, more than one document moves. Today `variants.Declared.terrorism_place`
+returns `None` rather than guessing, and the tester reports terrorism `NOT APPLICABLE` there with
+the reason attached. Correct, and it means terrorism breadth is blocked in those 20.
+
+**To close:** run the two measurements side by side over the same packages and dates.
+
+## D3 · Schedule rating is gated on something no field declaration can show — **OI-89** `MEDIUM`
+
+**In English.** Schedule rating is where an underwriter moves the premium up or down for features of
+the risk. We sent a submission turning it on with a legal credit, and the premium didn't move —
+nothing failed, it simply did nothing. ISO only applies it when a separate experience-rating measure
+is credible enough, and that condition lives inside a rule where no field declaration can reveal it.
+
+**How it was found.** By a variant that *did nothing* rather than one that failed —
+`ScheduleRatingModificationApplies=Yes` with `SRPClassificationPct=10%`, both values from ISO's own
+declared domains.
+
+**Why medium, not high.** Nothing is wrong with the engine here — it is doing what ISO filed. What
+is missing is that the condition is invisible to anyone constructing a submission, so a rating plan
+can be requested and silently not applied. That is a documentation and validation gap, not a wrong
+number.
+
+**To close:** characterise the gate, then decide whether the engine should say *"requested, not
+applied, because…"* rather than staying silent.
+
+---
+
+# The numbered work
 
 ## 1. Breadth against the live service — **OI-87**
 

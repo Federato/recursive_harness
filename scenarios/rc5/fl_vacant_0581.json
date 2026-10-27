@@ -1,0 +1,23 @@
+{
+ "name": "rc5_fl_vacant_0581",
+ "states": [
+  "FL"
+ ],
+ "edits": [
+  {
+   "sheet": "IN - Schedule",
+   "cell": "E48",
+   "value": "'0581"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "X48",
+   "value": "Yes"
+  },
+  {
+   "sheet": "IN - Schedule",
+   "cell": "G48",
+   "value": "Class"
+  }
+ ]
+}

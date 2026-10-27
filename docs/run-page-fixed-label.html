@@ -1,0 +1,209 @@
+<!doctype html><html><head><meta charset="utf-8">
+<title>Run page — what to call the count</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+:root{--ink:#1a1d21;--muted:#6b7580;--line:#e3e8ee;--blue:#2b6cb0;
+--red:#c0392b;--amber:#b7791f;--grey:#9aa5b1;--green:#2f855a;--bg:#f7f9fb}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+font:14px/1.55 ui-sans-serif,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+header{background:#1f2933;color:#fff;padding:18px 24px}
+header h1{margin:0 0 4px;font-size:18px;font-weight:650}
+header p{margin:0;opacity:.75;font-size:13px;max-width:80ch}
+.warn{background:#fff8e6;border-bottom:1px solid #f0e0b8;padding:10px 24px;
+font-size:12.5px;color:#7a5c12}
+.setup{background:#fff;border-bottom:1px solid var(--line);padding:12px 24px;
+font-size:12.5px;color:var(--muted)}
+.setup b{color:var(--ink)}
+nav{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--line);
+padding:10px 24px;display:flex;gap:7px;flex-wrap:wrap;z-index:20}
+nav button{background:#fff;color:var(--ink);border:1px solid #cbd2d9;
+border-radius:6px;padding:6px 12px;font-size:13px;cursor:pointer}
+nav button.on{background:var(--blue);color:#fff;border-color:var(--blue);font-weight:650}
+main{padding:20px 24px;max-width:980px}
+section{display:none} section.on{display:block}
+.lede{background:#fff;border:1px solid var(--line);border-left:3px solid var(--blue);
+border-radius:6px;padding:12px 15px;margin-bottom:16px;font-size:13px}
+.lede b{display:block;margin-bottom:3px}
+.lede .cost{color:var(--muted);font-size:12.5px;margin-top:6px}
+.page{background:#eef1f5;border:1px solid var(--line);border-radius:10px;padding:14px}
+.card{background:#fff;border:1px solid var(--line);border-radius:8px;
+padding:14px 16px;margin-bottom:12px}
+.card h2{font-size:11px;text-transform:uppercase;letter-spacing:.05em;
+color:var(--muted);margin:0 0 10px;font-weight:650}
+.big{font-size:15px;font-weight:650;margin:0 0 6px}
+.counts{display:flex;gap:24px;flex-wrap:wrap}
+.counts div{font-size:12px;color:var(--muted)}
+.counts b{display:block;font-size:21px;color:var(--ink);
+font-variant-numeric:tabular-nums;font-weight:650}
+.counts b.bad{color:var(--red)} .counts b.ok{color:var(--green)}
+.chg{display:grid;grid-template-columns:repeat(auto-fit,minmax(178px,1fr));gap:10px}
+.chg > div{border:1px solid var(--line);border-radius:7px;padding:10px 12px}
+.chg .k{font-size:11.5px;color:var(--muted)}
+.chg .v{font-size:26px;font-weight:650;font-variant-numeric:tabular-nums;line-height:1.15}
+.chg .w{font-size:11.5px;color:var(--muted);margin-top:3px}
+.chg .v.bad{color:var(--red)} .chg .v.ok{color:var(--green)}
+.chg .v.new{color:var(--blue)}
+.chg .split{font-size:11.5px;margin-top:5px;display:flex;gap:6px;flex-wrap:wrap}
+.tagx{display:inline-block;font-size:10px;font-weight:650;padding:1px 6px;border-radius:99px}
+.t-ok{background:#e6f4ec;color:#1f6b45}
+.t-inf{background:#f0f3f6;color:#6b7580}
+.prev{font-size:11.5px;color:var(--muted);margin-top:8px}
+.note{font-size:11.5px;color:var(--muted);border-left:2px solid var(--line);
+padding-left:9px;margin-top:8px}
+.bad-note{border-left-color:var(--red);color:#8a2f27}
+.ok-note{border-left-color:var(--green);color:#1f6b45}
+table.cmp{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:8px}
+table.cmp th{text-align:left;font-size:10.5px;text-transform:uppercase;
+letter-spacing:.04em;color:var(--muted);border-bottom:1px solid var(--line);padding:6px 7px}
+table.cmp td{padding:5px 7px;border-bottom:1px solid #f0f3f6}
+</style></head><body>
+
+<header>
+  <h1>The comparison is by state — so what should the count be called?</h1>
+  <p>The rule is settled: a state that was failing last run and is not failing
+     now counts. The only open thing is the label, because “fixed” claims a
+     measurement the loose rule does not make.</p>
+</header>
+<div class="warn"><b>Mockup.</b> Invented numbers, real awkward case.</div>
+<div class="setup">Four states qualify: <b>CA</b> failed at 1M × middle and
+  passed at 1M × middle this run — measured. <b>GA</b> and <b>OH</b> failed at
+  1M × highest, a configuration this run did not include. <b>RI</b> failed on
+  15 August in a run that was stopped before reaching it again.</div>
+
+<nav>
+  <button class="on" data-t="a">1 · “No longer failing”</button>
+  <button data-t="b">2 · “Fixed”, split into confirmed and inferred</button>
+  <button data-t="c">3 · “Problems fixed”, as it was</button>
+</nav>
+
+<main>
+
+<!-- ============================================================== 1 -->
+<section id="a" class="on">
+<div class="lede"><b>1 · Call it “no longer failing”</b>
+  One word changed. Under the by-state rule that sentence is exactly true of all
+  four, with no caveat and no second number.
+  <div class="cost">Slightly cooler than “fixed”, and a reader in a hurry may
+    read it as the same thing anyway — which is fine, because it does not assert
+    anything false when they do.</div>
+</div>
+<div class="page">
+  <div class="card">
+    <p class="big">186 agree · 11 differ · 3 not applicable</p>
+    <div class="counts"><div><b class="ok">93.0%</b>agree</div>
+      <div><b class="bad">11</b>differ</div><div><b>200</b>ISO calls</div></div>
+  </div>
+  <div class="card">
+    <h2>What changed since 15 August</h2>
+    <div class="chg">
+      <div><div class="k">New problems</div><div class="v bad">1</div>
+        <div class="w">NY</div></div>
+      <div><div class="k">No longer failing</div><div class="v ok">4</div>
+        <div class="w">CA, GA, OH, RI</div></div>
+      <div><div class="k">Still failing</div><div class="v">8</div>
+        <div class="w">oldest first seen 12 Aug</div></div>
+      <div><div class="k">Newly covered</div><div class="v new">+51</div>
+        <div class="w">5,000,000 × highest</div></div>
+    </div>
+    <div class="prev">Compared by jurisdiction against
+      <b>L3-91340-20260815T0910.html</b>.</div>
+    <div class="note ok-note">Every number is literally true. A state that is no
+      longer failing may or may not have been fixed, and the label does not
+      decide that for you.</div>
+  </div>
+</div>
+</section>
+
+<!-- ============================================================== 2 -->
+<section id="b">
+<div class="lede"><b>2 · Keep “fixed”, and split it</b>
+  The headline number stays 4. Underneath, a one-line split: how many were
+  re-tested on the same configuration, and how many are inferred from the state
+  passing elsewhere.
+  <div class="cost">The most information, and the only version that lets you
+    tell at a glance whether a fix was actually demonstrated. One more number to
+    compute and one more thing on the card.</div>
+</div>
+<div class="page">
+  <div class="card">
+    <p class="big">186 agree · 11 differ · 3 not applicable</p>
+    <div class="counts"><div><b class="ok">93.0%</b>agree</div>
+      <div><b class="bad">11</b>differ</div><div><b>200</b>ISO calls</div></div>
+  </div>
+  <div class="card">
+    <h2>What changed since 15 August</h2>
+    <div class="chg">
+      <div><div class="k">New problems</div><div class="v bad">1</div>
+        <div class="w">NY</div></div>
+      <div><div class="k">Problems fixed</div><div class="v ok">4</div>
+        <div class="split"><span class="tagx t-ok">1 confirmed</span>
+          <span class="tagx t-inf">3 inferred</span></div></div>
+      <div><div class="k">Still failing</div><div class="v">8</div>
+        <div class="w">oldest first seen 12 Aug</div></div>
+      <div><div class="k">Newly covered</div><div class="v new">+51</div>
+        <div class="w">5,000,000 × highest</div></div>
+    </div>
+    <table class="cmp">
+      <tr><th>State<th>Basis</tr>
+      <tr><td><b>CA</b><td><span class="tagx t-ok">confirmed</span>
+          re-tested at 1M × middle, the configuration it failed on</tr>
+      <tr><td><b>GA</b><td><span class="tagx t-inf">inferred</span>
+          failed at 1M × highest; that configuration did not run this time</tr>
+      <tr><td><b>OH</b><td><span class="tagx t-inf">inferred</span>
+          failed at 1M × highest; that configuration did not run this time</tr>
+      <tr><td><b>RI</b><td><span class="tagx t-inf">inferred</span>
+          the 15 Aug run stopped before reaching RI again</tr>
+    </table>
+    <div class="note ok-note">Confirmed means the same configuration was run in
+      the same state and passed. Inferred means the state stopped failing and
+      nobody re-ran the thing that broke it.</div>
+  </div>
+</div>
+</section>
+
+<!-- ============================================================== 3 -->
+<section id="c">
+<div class="lede"><b>3 · Leave it as “problems fixed”</b>
+  Four numbers, the warmest reading, nothing extra to build or maintain.
+  <div class="cost">The page states that four problems were fixed. One was
+    demonstrated. If GA turns out still to be broken at 1M × highest, this file
+    said otherwise and will keep saying it.</div>
+</div>
+<div class="page">
+  <div class="card">
+    <p class="big">186 agree · 11 differ · 3 not applicable</p>
+    <div class="counts"><div><b class="ok">93.0%</b>agree</div>
+      <div><b class="bad">11</b>differ</div><div><b>200</b>ISO calls</div></div>
+  </div>
+  <div class="card">
+    <h2>What changed since 15 August</h2>
+    <div class="chg">
+      <div><div class="k">New problems</div><div class="v bad">1</div>
+        <div class="w">NY</div></div>
+      <div><div class="k">Problems fixed</div><div class="v ok">4</div>
+        <div class="w">CA, GA, OH, RI</div></div>
+      <div><div class="k">Still open</div><div class="v">8</div>
+        <div class="w">oldest first seen 12 Aug</div></div>
+      <div><div class="k">Newly covered</div><div class="v new">+51</div>
+        <div class="w">5,000,000 × highest</div></div>
+    </div>
+    <div class="prev">Compared by jurisdiction.</div>
+    <div class="note bad-note">Three of these four were not re-tested on the
+      configuration that broke them. The file is a permanent record, so it will
+      keep reporting four fixes for as long as it exists.</div>
+  </div>
+</div>
+</section>
+
+</main>
+<script>
+document.querySelectorAll('nav button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('nav button').forEach(x => x.classList.remove('on'));
+  document.querySelectorAll('section').forEach(x => x.classList.remove('on'));
+  b.classList.add('on');
+  document.getElementById(b.dataset.t).classList.add('on');
+  scrollTo(0,0);
+});
+</script>
+</body></html>

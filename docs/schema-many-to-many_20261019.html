@@ -1,0 +1,414 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GL &amp; Property Relationships</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&family=Instrument+Sans:wght@400;500;600&display=swap">
+<style>
+  /* Federato palette (federato.ai stylesheet); see docs/compare-wireframe_20261016.html */
+  :root {
+    --bg: #f7f7e3; --surface: #fcfcf3; --ink: #2d1d1a; --muted: #7a6f57;
+    --line: #d0c5a2; --accent: #8a5634; --accent-soft: #eee9cf;
+    --gl: #8a5634; --gl-soft: #f3ecc6; --cf: #b23a10; --cf-soft: #fde4d9;
+    --code-bg: #eee9cf; --teal: #47fac4; --teal-hover: #06d899; --on-teal: #2d1d1a;
+    --shadow: 0 2px 10px rgba(45, 29, 26, .06);
+    --font-heading: "Newsreader", "Reckless Standard M", Georgia, serif;
+    --font-body: "Instrument Sans", Case, Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #1f1512; --surface: #2d1d1a; --ink: #f7f7e3; --muted: #c2b893;
+      --line: #4e4432; --accent: #e9d491; --accent-soft: #3a2a22;
+      --gl: #e9d491; --gl-soft: #4e4432; --cf: #f88a63; --cf-soft: #4a2416;
+      --code-bg: #3a2a22; --shadow: none;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #1f1512; --surface: #2d1d1a; --ink: #f7f7e3; --muted: #c2b893;
+    --line: #4e4432; --accent: #e9d491; --accent-soft: #3a2a22;
+    --gl: #e9d491; --gl-soft: #4e4432; --cf: #f88a63; --cf-soft: #4a2416;
+    --code-bg: #3a2a22; --shadow: none;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font: 15px/1.55 var(--font-body);
+  }
+  main { max-width: 1100px; margin: 0 auto; padding: 32px 16px 64px; }
+  h1, h2, h3 { font-family: var(--font-heading); font-weight: 500; }
+  h1 { font-size: 30px; margin: 0 0 4px; }
+  h2 { font-size: 22px; margin: 40px 0 12px; }
+  h3 { font-size: 17px; margin: 0 0 8px; }
+  p { margin: 0 0 12px; }
+  .sub { color: var(--muted); margin-bottom: 24px; }
+  code { font: 12.5px/1.4 ui-monospace, Consolas, monospace; background: var(--code-bg);
+         padding: 1px 5px; border-radius: 5px; overflow-wrap: anywhere; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px;
+          padding: 18px 20px; margin-bottom: 16px; box-shadow: var(--shadow); }
+  .callout { background: var(--accent-soft); }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 760px) { .grid2 { grid-template-columns: 1fr; } }
+  .tag { display: inline-block; font-size: 11.5px; font-weight: 600; padding: 2px 8px;
+         border-radius: 999px; letter-spacing: .02em; }
+  .tag.gl { background: var(--gl-soft); color: var(--gl); }
+  .tag.cf { background: var(--cf-soft); color: var(--cf); }
+  .tag.k { background: var(--code-bg); color: var(--muted); }
+  ul.tree, ul.tree ul { list-style: none; margin: 0; padding-left: 18px; }
+  ul.tree { padding-left: 0; font: 13px/1.7 ui-monospace, Consolas, monospace; }
+  ul.tree li { position: relative; }
+  ul.tree ul li::before { content: "└ "; color: var(--muted); }
+  ul.tree .note { color: var(--muted); font-family: system-ui, sans-serif; font-size: 12px; }
+  .table-wrap { overflow-x: auto; background: var(--surface); border: 1px solid var(--line);
+                border-radius: 16px; box-shadow: var(--shadow); }
+  table { border-collapse: collapse; width: 100%; min-width: 720px; }
+  th, td { text-align: left; vertical-align: top; padding: 10px 12px;
+           border-bottom: 1px solid var(--line); }
+  th { font-size: 12px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted);
+       background: var(--code-bg); }
+  tr:last-child td { border-bottom: none; }
+  td.n { font-weight: 700; color: var(--accent); width: 32px; }
+  .filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+  .filters button { font: inherit; font-size: 13px; padding: 5px 14px; border-radius: 999px;
+                    border: 1px solid var(--line); background: var(--surface); color: var(--ink);
+                    cursor: pointer; }
+  .filters button:hover { border-color: var(--accent); }
+  .filters button.on { background: var(--teal); border-color: var(--teal); color: var(--on-teal); font-weight: 600; }
+  .filters button.on:hover { background: var(--teal-hover); border-color: var(--teal-hover); }
+  .rel { border-left: 4px solid var(--line); }
+  .rel.gl { border-left-color: var(--gl); }
+  .rel.cf { border-left-color: var(--cf); }
+  .rel .head { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
+  .rel .head h3 { margin: 0; }
+  .ex { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 10px; }
+  @media (max-width: 760px) { .ex { grid-template-columns: 1fr; } }
+  .ex div { background: var(--code-bg); border-radius: 10px; padding: 10px 12px; font-size: 13px; }
+  .ex b { display: block; font-size: 11.5px; color: var(--muted); text-transform: uppercase;
+          letter-spacing: .04em; margin-bottom: 4px; }
+  .risk { color: var(--muted); font-size: 13px; margin-top: 10px; }
+  .risk strong { color: var(--ink); }
+  footer { color: var(--muted); font-size: 12.5px; margin-top: 40px; }
+  .plain { background: var(--gl-soft); border-radius: 10px; padding: 10px 14px; }
+  .rel.cf .plain { background: var(--cf-soft); }
+  .plain b { display: block; font-family: var(--font-heading); font-weight: 500; font-size: 14px;
+             color: var(--accent); margin-bottom: 2px; }
+  .rel.cf .plain b { color: var(--cf); }
+</style>
+</head>
+<body>
+<main>
+  <h1>GL &amp; Property schema: many-to-many relationships</h1>
+  <p class="sub">Taken from ISO ERC data definitions:
+    <code>MasterGLCW.DataDef.xsd</code> (GL CW 2027-04-01 V02) and
+    <code>MasterCFCW.DataDef.xsd</code> (CF CW 2027-01-01 V01). Reviewed 2026-10-19.</p>
+
+  <div class="card callout">
+    <h3>In short</h3>
+    <p>Think of ISO's data as a family tree: every record has exactly one parent (a building belongs to one site,
+      a site to one policy). Real insurance doesn't work that neatly. One bank lends on many buildings, and one building
+      can be in several shared limits. ISO squeezes these "many-to-many" links into the tree in five ways:</p>
+    <p>
+      <span class="tag k">Bridge record</span> a child line that links two things &nbsp;·&nbsp;
+      <span class="tag k">Number pointer</span> a number that points to a record elsewhere &nbsp;·&nbsp;
+      <span class="tag k">Schedule text</span> a name or address typed into an add-on &nbsp;·&nbsp;
+      <span class="tag k">Duplicate types</span> the same add-on copied for each place it can attach &nbsp;·&nbsp;
+      <span class="tag k">Repeated columns / flags</span> extra boxes on one line instead of extra lines
+    </p>
+    <p style="margin:0"><b>Is this every example?</b> It covers every pattern in both schemas. Both files were scanned field by field
+      for links between records. The 106 GL and 59 Property schedule tables, and the 63 Property add-ons copied across
+      item types, repeat these patterns, so each pattern is shown once with its count rather than listing every table.</p>
+  </div>
+
+  <h2>The trees</h2>
+  <div class="grid2">
+    <div class="card">
+      <h3><span class="tag gl">GL</span> General Liability</h3>
+      <ul class="tree">
+        <li>MasterGLCW <span class="note">policy record</span>
+          <ul><li>GeneralLiability <span class="note">LOB, 419 child types</span>
+            <ul>
+              <li>…Detail endorsement schedules <span class="note">policy level, free-text Location</span></li>
+              <li>Location <span class="note">territory, ZIP, 18 child types</span>
+                <ul>
+                  <li>Location-level endorsements <span class="note">e.g. AddlInsdMgrsLessorsPrem</span></li>
+                  <li>Classification <span class="note">bridge: class code + exposures per subline</span>
+                    <ul>
+                      <li>ClassificationLiquorCoverage</li>
+                      <li>ClassificationPollutionCoverage</li>
+                      <li>ClassificationOwnersContractorsCoverage</li>
+                      <li>Terrorism</li>
+                      <li>UnmannedAircraft</li>
+                    </ul>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </li></ul>
+        </li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3><span class="tag cf">CF</span> Commercial Property</h3>
+      <ul class="tree">
+        <li>MasterCFCW <span class="note">policy record</span>
+          <ul><li>CommercialProperty <span class="note">LOB, 46 child types</span>
+            <ul>
+              <li>BlanketRating / EQSubLimitBlanketRating / FloodCovEndtBlanketRating <span class="note">policy level, UnitNumber</span></li>
+              <li>AdditionalLocationsSpecialCoinsurance… <span class="note">pooled locations</span></li>
+              <li>Location
+                <ul>
+                  <li>Structure <span class="note">building, BlanketUnitNumber</span>
+                    <ul>
+                      <li>OccupClass <span class="note">bridge: occupancy per building</span>
+                        <ul><li>PersonalProperty</li></ul>
+                      </li>
+                      <li>BusinessIncome <span class="note">LocNumber, BldgNumber, BlanketRated</span></li>
+                    </ul>
+                  </li>
+                  <li>SpecialClass <span class="note">LocNumber, BuildingIDNumber</span>
+                    <ul><li>SpecialClassBusnIncome</li></ul>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </li></ul>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>Summary</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>#</th><th>Line</th><th>Many-to-many</th><th>In plain words</th><th>Mechanism</th></tr></thead>
+      <tbody>
+        <tr><td class="n">1</td><td><span class="tag gl">GL</span></td><td>Location ↔ Class code</td><td>Each site does several kinds of work; each kind of work happens at many sites</td><td>Bridge record</td></tr>
+        <tr><td class="n">2</td><td><span class="tag gl">GL</span></td><td>Classification ↔ Subline</td><td>One kind of work can need several types of liability cover</td><td>Repeated columns</td></tr>
+        <tr><td class="n">3</td><td><span class="tag gl">GL</span></td><td>Class ↔ Endorsement</td><td>Each kind of work allows a menu of add-ons</td><td>List in one field</td></tr>
+        <tr><td class="n">4</td><td><span class="tag gl">GL</span></td><td>Endorsement ↔ Location</td><td>An add-on can name many sites; a site can be named on many add-ons</td><td>Schedule text</td></tr>
+        <tr><td class="n">5</td><td><span class="tag gl">GL</span></td><td>Additional insured ↔ Endorsement</td><td>The same outside party can be added on several add-ons</td><td>Schedule text</td></tr>
+        <tr><td class="n">6</td><td><span class="tag gl">GL</span></td><td>Vendor ↔ Product</td><td>A store can sell many of your products; a product goes to many stores</td><td>Schedule text</td></tr>
+        <tr><td class="n">7</td><td><span class="tag gl">GL</span></td><td>Construction project ↔ Aggregate / exclusion</td><td>A job site can have its own limit and also be carved out elsewhere</td><td>Schedule text</td></tr>
+        <tr><td class="n">8</td><td><span class="tag gl">GL</span></td><td>Endorsement ↔ Attachment level</td><td>The same add-on can apply to a whole site or to one kind of work</td><td>Duplicate types</td></tr>
+        <tr><td class="n">9</td><td><span class="tag cf">CF</span></td><td>Blanket ↔ Building</td><td>One pooled limit covers many buildings</td><td>Number pointer</td></tr>
+        <tr><td class="n">10</td><td><span class="tag cf">CF</span></td><td>Building ↔ Blanket types</td><td>One building can sit in a property, an earthquake and a flood pool</td><td>Number pointer ×3</td></tr>
+        <tr><td class="n">11</td><td><span class="tag cf">CF</span></td><td>Building ↔ Occupancy class</td><td>One building has several tenants; each tenant type is in many buildings</td><td>Bridge record</td></tr>
+        <tr><td class="n">12</td><td><span class="tag cf">CF</span></td><td>Business income ↔ Building / Location</td><td>Lost-income cover can span buildings; a building can have several kinds</td><td>Number pointer</td></tr>
+        <tr><td class="n">13</td><td><span class="tag cf">CF</span></td><td>Location set ↔ Coverage group</td><td>Small sites are pooled, but only counted, not named</td><td>Count only</td></tr>
+        <tr><td class="n">14</td><td><span class="tag cf">CF</span></td><td>Endorsement ↔ Insured item</td><td>The same add-on (e.g. flood) can attach to buildings, contents or income</td><td>Duplicate types (63)</td></tr>
+        <tr><td class="n">15</td><td><span class="tag cf">CF</span></td><td>Loss payee ↔ Building</td><td>One bank can hold loans on many buildings; one building can have several lenders</td><td>Number pointer</td></tr>
+        <tr><td class="n">16</td><td><span class="tag cf">CF</span></td><td>Dependent property ↔ Insured location</td><td>A key supplier can feed many of your sites; a site can rely on many suppliers</td><td>Schedule text</td></tr>
+        <tr><td class="n">17</td><td><span class="tag cf">CF</span></td><td>Form / deductible ↔ Building</td><td>Some forms and deductibles are switched on building by building</td><td>Flags per building</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Each relationship</h2>
+  <div class="filters" role="group" aria-label="Filter by line">
+    <button class="on" data-f="all">All</button>
+    <button data-f="gl">GL</button>
+    <button data-f="cf">Property</button>
+  </div>
+
+  <!-- ===================== GL ===================== -->
+
+  <div class="card rel gl">
+    <div class="head"><span class="tag gl">GL</span><span class="tag k">Bridge record</span><h3>1 · Location ↔ Class code</h3></div>
+    <p class="plain"><b>In plain words</b>A contractor's main yard might do roofing and office work, and roofing also happens at their second yard. ISO records each kind of work as its own line under the site where it happens.</p>
+    <p>A location has many classes, and one class code appears at many locations. <code>Classification</code> is the bridge:
+      it sits under one <code>Location</code> and names one class code with its exposure.</p>
+    <div class="ex">
+      <div><b>Parent → children</b>Location 1 (Newark) → 91342 Contractors, 41650 Offices<br>Location 2 (Trenton) → 91342 Contractors</div>
+      <div><b>Fields</b><code>Classification.LocationNumber</code>, <code>ClassCode</code>, <code>ClassDescription</code>, <code>PremOpsExposure</code>, <code>PremOpsPremiumBasis</code></div>
+    </div>
+    <p class="risk"><strong>Watch:</strong> the class itself is not a record, so "all exposure for 91342" means scanning every location.</p>
+  </div>
+
+  <div class="card rel gl">
+    <div class="head"><span class="tag gl">GL</span><span class="tag k">Repeated columns</span><h3>2 · Classification ↔ Subline</h3></div>
+    <p class="plain"><b>In plain words</b>A bar needs regular liability cover and also liquor liability. Instead of two lines, ISO puts both on one wide line, with a separate set of boxes for each type of cover.</p>
+    <p>One classification row carries exposures for several sublines at once, and each subline covers many classifications.</p>
+    <div class="ex">
+      <div><b>Sublines on one row</b>Premises/operations, products/completed ops, liquor, pollution, owners and contractors (OCP), railroad, underground storage tank (UST), electronic data liability (EDL), special protective highway</div>
+      <div><b>Fields</b><code>Subline</code>, <code>PremOpsProdsClassCode</code>, <code>LiquorClassCode</code>, <code>PollutionExposure</code>, <code>OwnersContractorsClassCode</code>, <code>EDLExposure</code>; child rows <code>ClassificationLiquorCoverage</code>, <code>ClassificationPollutionCoverage</code></div>
+    </div>
+    <p class="risk"><strong>Watch:</strong> Classification has 555 fields because of this. One row per subline is the cleaner model.</p>
+  </div>
+
+  <div class="card rel gl">
+    <div class="head"><span class="tag gl">GL</span><span class="tag k">List in one field</span><h3>3 · Class ↔ Endorsement</h3></div>
+    <p class="plain"><b>In plain words</b>Each kind of business comes with a menu of add-ons it's allowed to buy, and the same add-on appears on many menus. ISO stores the whole menu as one long text value.</p>
+    <div class="ex">
+      <div><b>Example</b>Class 91342 → may use CG 20 10, CG 20 37, CG 22 79 …</div>
+      <div><b>Fields</b><code>Classification.EndtsThatMayBeUsedWithThisClass</code></div>
+    </div>
+    <p class="risk"><strong>Watch:</strong> a packed list; it has to be split into a proper class–endorsement table.</p>
+  </div>
+
+  <div class="card rel gl">
+    <div class="head"><span class="tag gl">GL</span><span class="tag k">Schedule text</span><h3>4 · Endorsement ↔ Location</h3></div>
+    <p class="plain"><b>In plain words</b>An exclusion might say "this policy doesn't cover 12 Main St or Lot 4," and 12 Main St might also be named on another add-on. The address is typed in, not linked to the location on the policy.</p>
+    <p>At policy level the location is free text on <code>…Detail</code> rows. There are 106 Detail schedules in GL, and 13 types carry a plain <code>Location</code> field.</p>
+    <div class="ex">
+      <div><b>Example</b>Exclusion of specific accidents, products, work or location → "12 Main St", "Lot 4"</div>
+      <div><b>Fields</b><code>ExclSpecificAccidentsProdsWorkOrLocationDetail.Location</code>, <code>AccidentLocation</code>, <code>LocationAddress</code>, <code>DesignatedLocation</code>, <code>DescriptionOfPremises</code></div>
+    </div>
+    <p class="risk"><strong>Watch:</strong> free text, not a key. The engine must match it to a real location itself.</p>
+  </div>
+
+  <div class="card rel gl">
+    <div class="head"><span class="tag gl">GL</span><span class="tag k">Schedule text</span><h3>5 · Additional insured ↔ Endorsement</h3></div>
+    <p class="plain"><b>In plain words</b>A landlord or general contractor asks to be covered under your policy. The same company can be added on several add-ons, and each add-on can list several companies. Each time, the name is typed in again.</p>
+    <div class="ex">
+      <div><b>Example</b>"ABC Property Mgmt" on Designated Person or Org (CG 20 26) and on Managers or Lessors of Premises (CG 20 11)</div>
+      <div><b>Fields</b><code>NameOfPersonOrOrganization</code> (9 types), <code>NameOfAdditionaInsuredPersonOrOrganization</code> (3 types), <code>AddressText</code></div>
+    </div>
+    <p class="risk"><strong>Watch:</strong> no party record, so spelling differences make the same company look like two.</p>
+  </div>
+
+  <div class="card rel gl">
+    <div class="head"><span class="tag gl">GL</span><span class="tag k">Schedule text</span><h3>6 · Vendor ↔ Product</h3></div>
+    <p class="plain"><b>In plain words</b>A manufacturer covers the stores that sell its goods. One store sells several products, and one product goes to many stores. Each schedule line pairs store names with product names in text.</p>
+    <div class="ex">
+      <div><b>Example</b>Vendor "Home Depot" → ladders, scaffolding<br>Vendor "Lowe's" → ladders</div>
+      <div><b>Fields</b><code>AddlInsdVendorsDetail.AdditionalInsured</code>, <code>Products</code>, <code>AddressName</code></div>
+    </div>
+    <p class="risk"><strong>Watch:</strong> products are text too, so "ladders" here won't link to the products named on an exclusion.</p>
+  </div>
+
+  <div class="card rel gl">
+    <div class="head"><span class="tag gl">GL</span><span class="tag k">Schedule text</span><h3>7 · Construction project ↔ Aggregate / exclusion</h3></div>
+    <p class="plain"><b>In plain words</b>A contractor can give each job site its own limit so one bad job doesn't use up the whole policy. The same site might also be excluded because it's under a wrap-up program. The site is named separately on each add-on.</p>
+    <div class="ex">
+      <div><b>Example</b>"Route 9 bridge" → own general aggregate (CG 25 03) and own products aggregate; also named on the wrap-up exclusion</div>
+      <div><b>Fields</b><code>DesignatedConstrctnProjGeneralAggregateLimitDetail.DesignatedConstructionProject</code>, <code>DesignatedJobSite</code> (3 types), <code>DescriptionOfProject</code></div>
+    </div>
+    <p class="risk"><strong>Watch:</strong> projects aren't records, so the engine can't tell which limits share a site.</p>
+  </div>
+
+  <div class="card rel gl">
+    <div class="head"><span class="tag gl">GL</span><span class="tag k">Duplicate types</span><h3>8 · Endorsement ↔ Attachment level</h3></div>
+    <p class="plain"><b>In plain words</b>Some add-ons can apply to the whole policy, one site or one kind of work. ISO doesn't use one add-on with a "level" setting. It makes a separate copy for each level.</p>
+    <div class="ex">
+      <div><b>Example</b>Medical payments exclusion exists under <code>Location</code> and under <code>Classification</code>; additional-insured and aggregate add-ons exist at policy and location level</div>
+      <div><b>Fields</b><code>ExclusionCoverageCMedicalPaymentsLocation</code>, <code>…Classification</code>; <code>AddlInsdOwnersLesseesContrctrsCompldOpsLocLvl</code> vs policy-level forms</div>
+    </div>
+    <p class="risk"><strong>Watch:</strong> one form can show up under several record names, so form lists need de-duplicating.</p>
+  </div>
+
+  <!-- ===================== CF ===================== -->
+
+  <div class="card rel cf">
+    <div class="head"><span class="tag cf">CF</span><span class="tag k">Number pointer</span><h3>9 · Blanket ↔ Building</h3></div>
+    <p class="plain"><b>In plain words</b>Instead of a separate limit per building, a business buys one big limit shared by all of them. Each building says "I'm in blanket #1" by number.</p>
+    <div class="ex">
+      <div><b>Example</b>Blanket 1 ($10M building) ← Loc 1 Bldg 1, Loc 1 Bldg 2, Loc 3 Bldg 1</div>
+      <div><b>Fields</b><code>Structure.BlanketUnitNumber</code> → <code>BlanketRating.UnitNumber</code>; <code>Structure.LocUnitNumber</code>, <code>PersPropertyIncludedInBlanket</code></div>
+    </div>
+    <p class="risk"><strong>Watch:</strong> no check. A wrong number silently drops a building from the blanket.</p>
+  </div>
+
+  <div class="card rel cf">
+    <div class="head"><span class="tag cf">CF</span><span class="tag k">Number pointer ×3</span><h3>10 · Building ↔ Blanket types</h3></div>
+    <p class="plain"><b>In plain words</b>The same building can be in the main shared limit, a separate shared earthquake limit and a separate shared flood limit, all at once.</p>
+    <div class="ex">
+      <div><b>Example</b>Loc 1 Bldg 1 → property Blanket 1, EQ sublimit blanket, flood blanket</div>
+      <div><b>Fields</b><code>BlktTypeOfBlanketRating</code>, <code>BlktEQTypeOfBlanketRating</code>; tables <code>BlanketRating</code>, <code>EQSubLimitBlanketRating</code>, <code>FloodCovEndtBlanketRating</code></div>
+    </div>
+    <p class="risk"><strong>Watch:</strong> the building's value feeds three totals. Count it once per blanket.</p>
+  </div>
+
+  <div class="card rel cf">
+    <div class="head"><span class="tag cf">CF</span><span class="tag k">Bridge record</span><h3>11 · Building ↔ Occupancy class</h3></div>
+    <p class="plain"><b>In plain words</b>A strip mall has a shop, a restaurant and offices. Restaurants also show up in other buildings. Each tenant type gets its own line under the building, and contents insurance hangs off that line.</p>
+    <div class="ex">
+      <div><b>Example</b>Loc 1 Bldg 1 → retail, restaurant, offices<br>Restaurant also in Loc 2 Bldg 1</div>
+      <div><b>Fields</b><code>OccupClass.BldgNumber</code>, <code>LocNumber</code>, <code>BlanketUnitNumber</code>; child <code>PersonalProperty</code></div>
+    </div>
+    <p class="risk"><strong>Watch:</strong> a tenant's contents can be in a different blanket from the building.</p>
+  </div>
+
+  <div class="card rel cf">
+    <div class="head"><span class="tag cf">CF</span><span class="tag k">Number pointer</span><h3>12 · Business income ↔ Building / Location</h3></div>
+    <p class="plain"><b>In plain words</b>Business income cover pays lost profits while a damaged building is repaired. It can be shared across buildings, and one building can have several kinds. The link is by site and building number.</p>
+    <div class="ex">
+      <div><b>Example</b>BI blanket → Loc 1 Bldg 1 and Loc 2 Bldg 1<br>Loc 1 Bldg 1 → BI with extra expense, and BI from dependent properties</div>
+      <div><b>Fields</b><code>BusinessIncome.LocNumber</code>, <code>BldgNumber</code>, <code>BlanketRated</code>; <code>SpecialClassBusnIncome</code> same pattern</div>
+    </div>
+    <p class="risk"><strong>Watch:</strong> the numbers can disagree with where the row actually sits.</p>
+  </div>
+
+  <div class="card rel cf">
+    <div class="head"><span class="tag cf">CF</span><span class="tag k">Count only</span><h3>13 · Location set ↔ Coverage group</h3></div>
+    <p class="plain"><b>In plain words</b>Many small extra sites can be lumped together under one coinsurance setup. The record says how many sites are in the group, but not which ones.</p>
+    <div class="ex">
+      <div><b>Example</b>Additional locations, special coinsurance → broad, special and earthquake groups, each pooling "6 locations"</div>
+      <div><b>Fields</b><code>AdditionalLocationsSpecialCoinsuranceGeneralInformation.MiscLocsCounter</code>, <code>TotalIncLocsLimit</code>; children <code>…BroadCoverage</code>, <code>…SpecialCoverage</code>, <code>…EarthquakeCoverage</code></div>
+    </div>
+    <p class="risk"><strong>Watch:</strong> with only a count, nobody can say which sites are pooled.</p>
+  </div>
+
+  <div class="card rel cf">
+    <div class="head"><span class="tag cf">CF</span><span class="tag k">Duplicate types (63)</span><h3>14 · Endorsement ↔ Insured item</h3></div>
+    <p class="plain"><b>In plain words</b>Add-ons like flood, earthquake or sewer backup can apply to a building, its contents or its lost income, and each of those can carry many add-ons. ISO makes a separate copy of each add-on for every kind of item it can attach to.</p>
+    <div class="ex">
+      <div><b>Example</b>Flood Coverage Endorsement appears under <code>Structure</code>, <code>BusinessIncome</code>, <code>SpecialClass</code> and <code>SpecialClassBusnIncome</code></div>
+      <div><b>Fields</b>63 coverages copied this way, incl. Causes of Loss Basic/Broad/Special, all EQ forms, Flood, Sewer Backup, Green Upgrades, Molten Material, Unmanned Aircraft</div>
+    </div>
+    <p class="risk"><strong>Watch:</strong> "is flood on this policy?" means checking four places per building.</p>
+  </div>
+
+  <div class="card rel cf">
+    <div class="head"><span class="tag cf">CF</span><span class="tag k">Number pointer</span><h3>15 · Loss payee ↔ Building</h3></div>
+    <p class="plain"><b>In plain words</b>When a bank lends money on a building, it gets paid if the building burns. One bank can lend on many buildings, and one building can have a first and second lender. Each schedule line gives the bank's name plus the site and building numbers.</p>
+    <div class="ex">
+      <div><b>Example</b>"First National Bank" → Loc 1 Bldg 1, Loc 2 Bldg 1<br>Loc 1 Bldg 1 → First National (lender), Acme Leasing (contract of sale)</div>
+      <div><b>Fields</b><code>LossPayableProvisionsDetail.LossPayeeName</code>, <code>Location</code> (int), <code>Building</code> (int), <code>TypeOfLossPayee</code>; Special Class version too</div>
+    </div>
+    <p class="risk"><strong>Watch:</strong> the bank is typed in each time, and the building numbers aren't checked.</p>
+  </div>
+
+  <div class="card rel cf">
+    <div class="head"><span class="tag cf">CF</span><span class="tag k">Schedule text</span><h3>16 · Dependent property ↔ Insured location</h3></div>
+    <p class="plain"><b>In plain words</b>If your one key supplier's factory burns, you lose income even though your building is fine. One supplier can feed several of your sites, and one site can rely on several suppliers or customers.</p>
+    <div class="ex">
+      <div><b>Example</b>Supplier "Chip Fab, Austin" → contributes to Loc 1 and Loc 3<br>Loc 1 → also relies on customer "Big Box DC" (recipient)</div>
+      <div><b>Fields</b><code>…DependentProperties…Detail.SecondaryContributingLocation</code>, <code>SecondaryRecipientLocation</code>, <code>TypeOfDependentProp</code></div>
+    </div>
+    <p class="risk"><strong>Watch:</strong> outside properties are text, so the same supplier on two forms isn't linked.</p>
+  </div>
+
+  <div class="card rel cf">
+    <div class="head"><span class="tag cf">CF</span><span class="tag k">Flags per building</span><h3>17 · Form / deductible ↔ Building</h3></div>
+    <p class="plain"><b>In plain words</b>Some forms and deductibles are switched on building by building. A form can be on many buildings, and a building can have many forms. ISO stores this as yes/no switches on each building.</p>
+    <div class="ex">
+      <div><b>Example</b>CP 10 68 attached at Bldg 1 and Bldg 3; Bldg 1 also has a windstorm deductible by location</div>
+      <div><b>Fields</b><code>FormCP1068AttachedAtBldg</code>, <code>FormCP1065AttachedAtBldg</code>, <code>FormCP0414AttachedAtBuilding</code>; <code>DeductiblesByLocationBldg</code>, <code>WindstormOrHailDeductibleByLocation</code>, <code>TheftDeductibleByLocation</code></div>
+    </div>
+    <p class="risk"><strong>Watch:</strong> a new building-level form means a new switch field, not a new row.</p>
+  </div>
+
+  <h2>What this means for the engine</h2>
+  <div class="card">
+    <p class="plain"><b>In plain words</b>ISO's data never checks that these links line up. If a building says "blanket 2" and there is no blanket 2, or a lender's building number is wrong, nothing complains. We have to check it ourselves.</p>
+    <p style="margin:0">Guard the number pointers first (9, 10, 12, 15): match <code>BlanketUnitNumber</code>, <code>LocNumber</code>/<code>BldgNumber</code> and
+      loss-payee <code>Location</code>/<code>Building</code> to real records. Next, normalise the typed-in parties, sites and projects (4–7, 16) so
+      the same name is recognised as one thing. Finally, collapse the duplicate endorsement types (8, 14) into one form with an attachment level.</p>
+  </div>
+
+  <footer>Sources: ISO_ERC_Files\General_Liability\GL_CW_20270401_V02\…\DataDefs\MasterGLCW.DataDef.xsd ·
+    ISO_ERC_Files\CF\20270101\CF CW 20270101 V01\DataDefs\MasterCFCW.DataDef.xsd. Example values are illustrative.</footer>
+</main>
+<script>
+  document.querySelectorAll('.filters button').forEach(function (b) {
+    b.addEventListener('click', function () {
+      document.querySelectorAll('.filters button').forEach(function (x) { x.classList.toggle('on', x === b); });
+      var f = b.dataset.f;
+      document.querySelectorAll('.rel').forEach(function (c) {
+        c.style.display = (f === 'all' || c.classList.contains(f)) ? '' : 'none';
+      });
+    });
+  });
+</script>
+</body>
+</html>

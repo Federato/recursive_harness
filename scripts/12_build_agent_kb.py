@@ -4,7 +4,7 @@ from collections import defaultdict, Counter
 sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-ROOT = r"C:\Projects\Recursive_Harness_2.0"
+ROOT = r"F:\Recursive_Harness_2.0"
 KB = os.path.join(ROOT, "Agentic", "iso-circular-expert", "knowledge")
 os.makedirs(KB, exist_ok=True)
 

@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Business Income Basic Group I — Factor Decision Tree</title>
+<style>
+  body { font-family: Georgia, "Iowan Old Style", serif; max-width: 980px; margin: 0 auto; padding: 40px 24px 80px; color: #1b232e; background: #f5f6f4; line-height: 1.55; }
+  h1 { font-size: 26px; margin-bottom: 4px; }
+  .subtitle { font-family: -apple-system, "Segoe UI", sans-serif; color: #55606e; font-size: 15px; margin-bottom: 28px; }
+  .banner { background: #eef3ee; border: 1px solid #b9cdb9; border-radius: 6px; padding: 14px 16px; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13.5px; margin-bottom: 32px; }
+  .banner b { color: #2f6b4f; }
+  h2 { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 21px; border-bottom: 3px solid #b9a577; padding-bottom: 8px; margin-top: 52px; }
+  h2 .count { font-size: 12px; letter-spacing: .05em; text-transform: uppercase; color: #8a5a1f; background: #f4e7d4; padding: 2px 9px; border-radius: 10px; margin-left: 10px; vertical-align: middle; }
+  h3 { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 16px; margin-top: 28px; }
+  p.section-intro { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13.5px; color: #444; background: #fff; border-left: 3px solid #b9a577; padding: 10px 16px; margin: 14px 0 20px; }
+  p.note { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13.5px; color: #55606e; }
+  table { width: 100%; border-collapse: collapse; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13px; margin: 16px 0 28px; }
+  th, td { border: 1px solid #d5d9d0; padding: 8px 10px; text-align: left; vertical-align: top; }
+  th { background: #e2e6dc; font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
+  td.factor { font-weight: 600; }
+  .confirmed { color: #2f6b4f; }
+  .gap { color: #9a5b1f; font-weight: 600; }
+  .missing { color: #999; font-style: italic; }
+  code { font-family: ui-monospace, Consolas, monospace; background: #eceee8; padding: 1px 5px; border-radius: 3px; font-size: .92em; }
+  .algo { background: #101720; color: #dbe6ee; border-radius: 8px; padding: 18px 20px; font-family: ui-monospace, Consolas, monospace; font-size: 13px; line-height: 1.7; overflow-x: auto; margin: 14px 0 24px; white-space: pre; }
+  .algo .kw { color: #e3b873; }
+  .algo .tbl { color: #9fd4c4; }
+  .algo .cm { color: #7f8b98; font-style: italic; }
+  .stepnum { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 50%; background: #8a5a1f; color: #fff; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 12px; font-weight: 700; margin-right: 8px; flex: none; }
+  .branch { display: flex; align-items: flex-start; gap: 4px; margin-top: 30px; }
+  .branch-body { flex: 1; min-width: 0; }
+  .branch-title { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 16px; font-weight: 700; margin: 0 0 4px; }
+  .branch-cond { font-family: ui-monospace, Consolas, monospace; font-size: 13px; background: #eceee8; padding: 6px 10px; border-radius: 4px; display: inline-block; margin-bottom: 8px; }
+  .tag { display: inline-block; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; padding: 2px 8px; border-radius: 10px; margin-left: 8px; vertical-align: middle; }
+  .tag.simple { background: #e2e6dc; color: #445; }
+  .tag.blend { background: #f4e7d4; color: #8a5a1f; }
+  .tag.own { background: #eef3ee; color: #2f6b4f; }
+  blockquote { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13px; background: #fff; border-left: 3px solid #b9a577; padding: 8px 14px; margin: 10px 0; color: #444; }
+  .flow { font-family: ui-monospace, Consolas, monospace; font-size: 12.5px; background: #fff; border: 1px dashed #b9a577; border-radius: 6px; padding: 12px 14px; margin: 10px 0 22px; color: #444; }
+</style>
+</head>
+<body>
+
+<h1>Business Income Basic Group I — <code>Factor</code> decision tree</h1>
+<p class="subtitle">Every branch of the step-4 lookup, in order · traced against the rule XML, not just the source doc's prose</p>
+
+<div class="banner">
+  <b>Source.</b> <code>SetTypeOfRisk*</code> chain in <code>CommercialPropertyBusinessIncomeRules.Rule.xml</code>
+  (<code>SetBGIRatesAndFactors</code> step 4, <code>SetTypeOfRiskFactor</code> line 5000,
+  <code>SetTypeRiskCombination1Factor</code>/<code>2Factor</code> lines 4588+), cross-checked against
+  <code>Excel_Rater_BusinessIncome_BasicGroupI.md</code> §4/§6.2/§9 (added 2026-09-11). Reflects the full
+  six-branch version, not the four-branch version originally documented — two branches (Combined Type of
+  Risk, plain Educational Institutions) were traced and confirmed filed, not left unsupported.
+</div>
+
+<p class="section-intro">
+  <b>First match wins.</b> The six branches below are checked top to bottom in exactly this order — a risk
+  that satisfies more than one condition (e.g. <code>BI_MaxPeriod="Y"</code> <i>and</i>
+  <code>BI_TypeOfRisk="Educational Institutions"</code>) always takes the higher branch. Don't reorder these
+  when building the workbook column.
+</p>
+
+<div class="flow">
+if BI_MaxPeriod = "Y":                                              &rarr; branch 1
+elif BI_MonthlyLimitOfIndemnity &lt;&gt; "Not Applicable":                 &rarr; branch 2
+elif BI_CovType = "Extra Expense Only":                              &rarr; branch 3
+elif BI_TypeOfRisk is one of the four "Combined..." values:          &rarr; branch 4
+elif BI_TypeOfRisk = "Educational Institutions":                     &rarr; branch 5
+else:                                                                &rarr; branch 6
+</div>
+
+<div class="branch">
+  <span class="stepnum">1</span>
+  <div class="branch-body">
+    <p class="branch-title">Maximum Period of Indemnity elected <span class="tag simple">Simple lookup</span></p>
+    <p class="branch-cond">BI_MaxPeriod = "Y"</p>
+    <p class="note">The insured chose to be covered for as long as rebuilding takes, up to a fixed number
+      of months, instead of picking a dollar limit. Skip every other test — this always wins if elected.</p>
+    <div class="algo"><span class="kw">Factor</span> = <span class="kw">Lookup</span>(<span class="tbl">MaxPeriodOfIndemnityFactor</span>: State, CovType, TypeOfRisk)</div>
+  </div>
+</div>
+
+<div class="branch">
+  <span class="stepnum">2</span>
+  <div class="branch-body">
+    <p class="branch-title">Monthly Limit of Indemnity elected <span class="tag simple">Simple lookup</span></p>
+    <p class="branch-cond">BI_MonthlyLimitOfIndemnity &lt;&gt; "Not Applicable"</p>
+    <p class="note">A different alternate-limit structure — payout capped at a fraction of the total limit
+      per month (1/3, 1/4, or 1/6), rather than one lump coverage amount.</p>
+    <div class="algo"><span class="kw">Factor</span> = <span class="kw">Lookup</span>(<span class="tbl">MonthlyLimitOfIndemnityFactor</span>: State, CovType, TypeOfRisk, MonthlyLimitOfIndemnity)</div>
+  </div>
+</div>
+
+<div class="branch">
+  <span class="stepnum">3</span>
+  <div class="branch-body">
+    <p class="branch-title">Extra Expense Only coverage <span class="tag simple">Simple lookup</span></p>
+    <p class="branch-cond">BI_CovType = "Extra Expense Only"</p>
+    <p class="note">Coverage for the cost of staying open, not lost income — priced off its own table, keyed
+      on the loss-payment limit schedule the insured elected.</p>
+    <div class="algo"><span class="kw">Factor</span> = <span class="kw">Lookup</span>(<span class="tbl">ExtraExpenseFactor</span>: State, ExtraExpenseLimitOnLossPayment)</div>
+  </div>
+</div>
+
+<div class="branch">
+  <span class="stepnum">4</span>
+  <div class="branch-body">
+    <p class="branch-title">Combined Type of Risk <span class="tag blend">Blended — two lookups</span></p>
+    <p class="branch-cond">BI_TypeOfRisk in ("Combined Manufacturing and Mercantile Operations", "Combined Manufacturing and Rental Operations", "Combined Mercantile and Rental Operations", "Combined Educational Institutes and Rental Operations")</p>
+    <p class="note">Confirmed filed 2026-09-11 — not a missing table, just a second branch on top of the plain
+      lookup. The underwriter enters a percentage split across two component risk types; the engine looks up
+      <code>BusnIncomeFactor</code> for each component separately and blends by the entered percentages. No
+      separate "combined" rate table exists — it's the same <code>BusnIncomeFactor</code> table branch 6
+      reads, just called twice.</p>
+    <table>
+      <tr><th>BI_TypeOfRisk value</th><th>Component 1</th><th>Component 2</th></tr>
+      <tr><td>Combined Manufacturing and Mercantile Operations</td><td>Manufacturing</td><td>Mercantile and Non-manufacturing</td></tr>
+      <tr><td>Combined Manufacturing and Rental Operations</td><td>Manufacturing</td><td>Rental Properties</td></tr>
+      <tr><td>Combined Mercantile and Rental Operations</td><td>Mercantile and Non-manufacturing</td><td>Rental Properties</td></tr>
+      <tr><td>Combined Educational Institutes and Rental Operations</td><td>Educational Institutions <span class="gap">(via TuitionAndFeesFactor, not BusnIncomeFactor — see branch 5)</span></td><td>Rental Properties</td></tr>
+    </table>
+    <div class="algo">Comp1 = <span class="kw">Lookup</span>(<span class="tbl">BusnIncomeFactor</span>: State, CovType, &lt;Component 1&gt;, CoinsuranceToUse)
+   <span class="cm">[Educational component: Lookup(TuitionAndFeesFactor: State, ...) instead]</span>
+Comp2 = <span class="kw">Lookup</span>(<span class="tbl">BusnIncomeFactor</span>: State, CovType, &lt;Component 2&gt;, CoinsuranceToUse)
+
+<span class="kw">Factor</span> = <span class="kw">ROUND</span>(
+    <span class="kw">ROUND</span>(Pct1/100 &times; Comp1, 3) + (Pct2/100 &times; Comp2)
+  , 3)
+
+<span class="cm">-- Pct1/Pct2 are user-entered, range-validated 1-99%, NOT required to sum to 100
+-- (no such check exists in the rule) -- add a soft warning when building this</span></div>
+  </div>
+</div>
+
+<div class="branch">
+  <span class="stepnum">5</span>
+  <div class="branch-body">
+    <p class="branch-title">Plain "Educational Institutions" <span class="tag own">Own formula — no BusnIncomeFactor</span></p>
+    <p class="branch-cond">BI_TypeOfRisk = "Educational Institutions"</p>
+    <p class="note">A correction to how this was originally documented: this is <b>not</b> just another row
+      in the <code>BusnIncomeFactor</code> table reached via branch 6 — it's an entirely separate two-factor
+      product. Confirmed by reading <code>SetTypeOfRiskFactor</code>'s own branch directly.</p>
+    <div class="algo"><span class="kw">Factor</span> = <span class="kw">Lookup</span>(<span class="tbl">TuitionAndFeesFactor</span>: State, ...)
+       &times; <span class="kw">Lookup</span>(<span class="tbl">BusnIncomeEducationalInstitutionsExtOfRecoveryFactor</span>: State, ...)</div>
+    <p class="note"><b>Note the asymmetry with branch 4's Educational component:</b> the Combined-Educational
+      blend uses <i>only</i> <code>TuitionAndFeesFactor</code> for its Educational half — it does not also
+      multiply by the extension-of-recovery factor. Confirmed intentional, not an oversight to fix.</p>
+  </div>
+</div>
+
+<div class="branch">
+  <span class="stepnum">6</span>
+  <div class="branch-body">
+    <p class="branch-title">Everything else <span class="tag simple">Simple lookup — the default</span></p>
+    <p class="branch-cond">otherwise (Mercantile, Manufacturing, Mining, Rental Properties, Seasonal Leases with Monthly Limit)</p>
+    <p class="note">The everyday case — no special limit structure, no special coverage type, no blended or
+      Educational-specific handling. One straight lookup keyed on coinsurance percentage, coverage type, and
+      business type.</p>
+    <div class="algo"><span class="kw">Factor</span> = <span class="kw">Lookup</span>(<span class="tbl">BusnIncomeFactor</span>: State, CovType, TypeOfRisk, CoinsuranceToUse)</div>
+  </div>
+</div>
+
+<h2>Inputs feeding this decision <span class="count">6 fields</span></h2>
+<table>
+<tr><th>Field</th><th>Drives</th><th>Enum size</th></tr>
+<tr><td class="factor"><code>BI_MaxPeriod</code></td><td>Branch 1 gate</td><td>Yes / No</td></tr>
+<tr><td class="factor"><code>BI_MonthlyLimitOfIndemnity</code></td><td>Branch 2 gate + key</td><td>Not Applicable, 1/3, 1/4, 1/6</td></tr>
+<tr><td class="factor"><code>BI_CovType</code></td><td>Branch 3 gate + key on branches 1/4/6</td><td>4 values — see <code>BusinessIncome_CoverageTypes_Tables.xlsx</code></td></tr>
+<tr><td class="factor"><code>BI_TypeOfRisk</code></td><td>Branch 4/5 gate + key on branches 1/4/6</td><td>11 values, plain dropdown — no lookup of its own</td></tr>
+<tr><td class="factor"><code>CoinsuranceToUse</code></td><td>Key on branches 4/6</td><td>10 values (50%–125%, No Coinsurance, Blanket, Not Applicable)</td></tr>
+<tr><td class="factor"><code>ExtraExpenseLimitOnLossPayment</code></td><td>Key on branch 3</td><td>5 values (3 loss-payment schedules + Expanded Limits + Not Applicable)</td></tr>
+</table>
+<p class="note">Full enum lists and every rate table referenced above are published in
+  <code>BusinessIncome_FactorAndEnums_Tables.xlsx</code> and <code>BusinessIncome_CoverageTypes_Tables.xlsx</code>
+  — one row per state, no CW placeholder rows.</p>
+
+<blockquote>
+  Traced from the rule XML 2026-09-11, folded into <code>Excel_Rater_BusinessIncome_BasicGroupI.md</code> §9.
+  Read-only reference — nothing here changes what's documented there, it re-presents the same six branches
+  as a visual decision tree. Nothing gets built until you say go.
+</blockquote>
+
+</body>
+</html>

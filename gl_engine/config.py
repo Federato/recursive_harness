@@ -11,7 +11,7 @@ from pathlib import Path
 
 #: Root of the ISO ERC General Liability corpus.
 CORPUS_ROOT = Path(os.environ.get(
-    "GL_ERC_ROOT", r"C:\Projects\ISO_ERC_Files\General_Liability"))
+    "GL_ERC_ROOT", r"F:\ISO_ERC_Files\General_Liability"))
 
 #: Directories under the root that are not jurisdictions.
 #: `_quarantine_misfiled` holds a stray package deliberately set aside during

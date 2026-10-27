@@ -7,7 +7,7 @@ that branches on `LossCost == 0` alone mis-rates silently.
 import os, csv, sys
 from collections import Counter, defaultdict
 
-ROOT = r"C:\Projects\ISO_ERC_Files\General_Liability"
+ROOT = r"F:\ISO_ERC_Files\General_Liability"
 
 TEXT_TABLES = ["PremOpsELPText", "ProdsCompldOpsELPText", "LiquorELPText",
                "OwnersContractorsELPText"]

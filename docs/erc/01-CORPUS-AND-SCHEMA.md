@@ -103,6 +103,16 @@ deeper: `GL_NJ 20250301 V01_MachineReadableContent/GL NJ 20250301 V01/…`.
 The other 19 place the categories directly under the package directory.
 `00_common.py` detects and normalises both.
 
+**Grouped by countrywide parent (2026-10-15).** The corpus root no longer has
+per-state folders (`OK/`, `countrywide/`): every package directory (and its
+ZIP) sits in a folder named for the countrywide package its XSD imports,
+`GL_CW_20261001_V01/GL_DE 20261101 V03_MachineReadableContent/…`, and each
+countrywide package sits in its own folder. Engine discovery reads identity
+from the XSDs and is unaffected; paths in this document that start
+`countrywide/` or `<ST>/` predate the change. The `00_common.py` pipeline
+scripts compare `juris_dir` with the package's jurisdiction and will now flag
+every package; they read the stale F: copy and were not updated.
+
 **Two naming conventions.** The outer directory is either
 `GL_<XX> <YYYYMMDD> V<nn>_MachineReadableContent` or
 `GL <XX> <YYYYMMDD> V<nn>` (underscore vs. space after `GL`; suffix present

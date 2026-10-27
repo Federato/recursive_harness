@@ -1,0 +1,731 @@
+Sheet,Row,Col,Label,IsFormula,Formula,Value
+Bldg Rating Worksheet,4,3,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!C2,LCM!$A$2:$A$47,0)),0)",1.0
+Bldg Rating Worksheet,4,4,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!D2,LCM!$A$2:$A$47,0)),0)",1.0
+Bldg Rating Worksheet,4,5,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!E2,LCM!$A$2:$A$47,0)),0)",1.0
+Bldg Rating Worksheet,4,6,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!F2,LCM!$A$2:$A$47,0)),0)",1.0
+Bldg Rating Worksheet,4,7,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!G2,LCM!$A$2:$A$47,0)),0)",0.0
+Bldg Rating Worksheet,4,8,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!H2,LCM!$A$2:$A$47,0)),0)",0.0
+Bldg Rating Worksheet,4,9,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!I2,LCM!$A$2:$A$47,0)),0)",0.0
+Bldg Rating Worksheet,4,10,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!J2,LCM!$A$2:$A$47,0)),0)",0.0
+Bldg Rating Worksheet,4,11,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!K2,LCM!$A$2:$A$47,0)),0)",0.0
+Bldg Rating Worksheet,4,12,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!L2,LCM!$A$2:$A$47,0)),0)",0.0
+Bldg Rating Worksheet,23,3,IRPM,no,1,1.0
+Bldg Rating Worksheet,23,4,IRPM,no,1,1.0
+Bldg Rating Worksheet,23,5,IRPM,no,1,1.0
+Bldg Rating Worksheet,23,6,IRPM,no,1,1.0
+Bldg Rating Worksheet,23,7,IRPM,no,1,1.0
+Bldg Rating Worksheet,23,8,IRPM,no,1,1.0
+Bldg Rating Worksheet,23,9,IRPM,no,1,1.0
+Bldg Rating Worksheet,23,10,IRPM,no,1,1.0
+Bldg Rating Worksheet,23,11,IRPM,no,1,1.0
+Bldg Rating Worksheet,23,12,IRPM,no,1,1.0
+Bldg Rating Worksheet,27,3,MultiPremiumDispersion,no,1,1.0
+Bldg Rating Worksheet,27,4,MultiPremiumDispersion,no,1,1.0
+Bldg Rating Worksheet,27,5,MultiPremiumDispersion,no,1,1.0
+Bldg Rating Worksheet,27,6,MultiPremiumDispersion,no,1,1.0
+Bldg Rating Worksheet,27,7,MultiPremiumDispersion,no,1,1.0
+Bldg Rating Worksheet,27,8,MultiPremiumDispersion,no,1,1.0
+Bldg Rating Worksheet,27,9,MultiPremiumDispersion,no,1,1.0
+Bldg Rating Worksheet,27,10,MultiPremiumDispersion,no,1,1.0
+Bldg Rating Worksheet,27,11,MultiPremiumDispersion,no,1,1.0
+Bldg Rating Worksheet,27,12,MultiPremiumDispersion,no,1,1.0
+Bldg Rating Worksheet,28,3,PackageMod,no,1,1.0
+Bldg Rating Worksheet,28,4,PackageMod,no,1,1.0
+Bldg Rating Worksheet,28,5,PackageMod,no,1,1.0
+Bldg Rating Worksheet,28,6,PackageMod,no,1,1.0
+Bldg Rating Worksheet,28,7,PackageMod,no,1,1.0
+Bldg Rating Worksheet,28,8,PackageMod,no,1,1.0
+Bldg Rating Worksheet,28,9,PackageMod,no,1,1.0
+Bldg Rating Worksheet,28,10,PackageMod,no,1,1.0
+Bldg Rating Worksheet,28,11,PackageMod,no,1,1.0
+Bldg Rating Worksheet,28,12,PackageMod,no,1,1.0
+Bldg Rating Worksheet,30,3,CyberExclFactorBGI,YES,"=IF('Policy Inputs'!$F$3=""Yes"",0.995,1)",0.995
+Bldg Rating Worksheet,30,4,CyberExclFactorBGI,YES,"=IF('Policy Inputs'!$F$3=""Yes"",0.995,1)",0.995
+Bldg Rating Worksheet,30,5,CyberExclFactorBGI,YES,"=IF('Policy Inputs'!$F$3=""Yes"",0.995,1)",0.995
+Bldg Rating Worksheet,30,6,CyberExclFactorBGI,YES,"=IF('Policy Inputs'!$F$3=""Yes"",0.995,1)",0.995
+Bldg Rating Worksheet,30,7,CyberExclFactorBGI,YES,"=IF('Policy Inputs'!$F$3=""Yes"",0.995,1)",0.995
+Bldg Rating Worksheet,30,8,CyberExclFactorBGI,YES,"=IF('Policy Inputs'!$F$3=""Yes"",0.995,1)",0.995
+Bldg Rating Worksheet,30,9,CyberExclFactorBGI,YES,"=IF('Policy Inputs'!$F$3=""Yes"",0.995,1)",0.995
+Bldg Rating Worksheet,30,10,CyberExclFactorBGI,YES,"=IF('Policy Inputs'!$F$3=""Yes"",0.995,1)",0.995
+Bldg Rating Worksheet,30,11,CyberExclFactorBGI,YES,"=IF('Policy Inputs'!$F$3=""Yes"",0.995,1)",0.995
+Bldg Rating Worksheet,30,12,CyberExclFactorBGI,YES,"=IF('Policy Inputs'!$F$3=""Yes"",0.995,1)",0.995
+Bldg Rating Worksheet,31,3,CyberExclCOLExcpnsFactorBGI,YES,"=IF('Policy Inputs'!$F$4<>""Yes"",1,IF('Policy Inputs'!$F$5>0,IF('Policy Inputs'!$F$6>0,0.997,0.998),1))",0.997
+Bldg Rating Worksheet,31,4,CyberExclCOLExcpnsFactorBGI,YES,"=IF('Policy Inputs'!$F$4<>""Yes"",1,IF('Policy Inputs'!$F$5>0,IF('Policy Inputs'!$F$6>0,0.997,0.998),1))",0.997
+Bldg Rating Worksheet,31,5,CyberExclCOLExcpnsFactorBGI,YES,"=IF('Policy Inputs'!$F$4<>""Yes"",1,IF('Policy Inputs'!$F$5>0,IF('Policy Inputs'!$F$6>0,0.997,0.998),1))",0.997
+Bldg Rating Worksheet,31,6,CyberExclCOLExcpnsFactorBGI,YES,"=IF('Policy Inputs'!$F$4<>""Yes"",1,IF('Policy Inputs'!$F$5>0,IF('Policy Inputs'!$F$6>0,0.997,0.998),1))",0.997
+Bldg Rating Worksheet,31,7,CyberExclCOLExcpnsFactorBGI,YES,"=IF('Policy Inputs'!$F$4<>""Yes"",1,IF('Policy Inputs'!$F$5>0,IF('Policy Inputs'!$F$6>0,0.997,0.998),1))",0.997
+Bldg Rating Worksheet,31,8,CyberExclCOLExcpnsFactorBGI,YES,"=IF('Policy Inputs'!$F$4<>""Yes"",1,IF('Policy Inputs'!$F$5>0,IF('Policy Inputs'!$F$6>0,0.997,0.998),1))",0.997
+Bldg Rating Worksheet,31,9,CyberExclCOLExcpnsFactorBGI,YES,"=IF('Policy Inputs'!$F$4<>""Yes"",1,IF('Policy Inputs'!$F$5>0,IF('Policy Inputs'!$F$6>0,0.997,0.998),1))",0.997
+Bldg Rating Worksheet,31,10,CyberExclCOLExcpnsFactorBGI,YES,"=IF('Policy Inputs'!$F$4<>""Yes"",1,IF('Policy Inputs'!$F$5>0,IF('Policy Inputs'!$F$6>0,0.997,0.998),1))",0.997
+Bldg Rating Worksheet,31,11,CyberExclCOLExcpnsFactorBGI,YES,"=IF('Policy Inputs'!$F$4<>""Yes"",1,IF('Policy Inputs'!$F$5>0,IF('Policy Inputs'!$F$6>0,0.997,0.998),1))",0.997
+Bldg Rating Worksheet,31,12,CyberExclCOLExcpnsFactorBGI,YES,"=IF('Policy Inputs'!$F$4<>""Yes"",1,IF('Policy Inputs'!$F$5>0,IF('Policy Inputs'!$F$6>0,0.997,0.998),1))",0.997
+Bldg Rating Worksheet,38,3,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!C2,LCM!$A$2:$A$47,0)),0)",1.0
+Bldg Rating Worksheet,38,4,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!D2,LCM!$A$2:$A$47,0)),0)",1.0
+Bldg Rating Worksheet,38,5,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!E2,LCM!$A$2:$A$47,0)),0)",1.0
+Bldg Rating Worksheet,38,6,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!F2,LCM!$A$2:$A$47,0)),0)",1.0
+Bldg Rating Worksheet,38,7,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!G2,LCM!$A$2:$A$47,0)),0)",0.0
+Bldg Rating Worksheet,38,8,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!H2,LCM!$A$2:$A$47,0)),0)",0.0
+Bldg Rating Worksheet,38,9,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!I2,LCM!$A$2:$A$47,0)),0)",0.0
+Bldg Rating Worksheet,38,10,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!J2,LCM!$A$2:$A$47,0)),0)",0.0
+Bldg Rating Worksheet,38,11,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!K2,LCM!$A$2:$A$47,0)),0)",0.0
+Bldg Rating Worksheet,38,12,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!L2,LCM!$A$2:$A$47,0)),0)",0.0
+Bldg Rating Worksheet,53,3,IRPM,no,1,1.0
+Bldg Rating Worksheet,53,4,IRPM,no,1,1.0
+Bldg Rating Worksheet,53,5,IRPM,no,1,1.0
+Bldg Rating Worksheet,53,6,IRPM,no,1,1.0
+Bldg Rating Worksheet,53,7,IRPM,no,1,1.0
+Bldg Rating Worksheet,53,8,IRPM,no,1,1.0
+Bldg Rating Worksheet,53,9,IRPM,no,1,1.0
+Bldg Rating Worksheet,53,10,IRPM,no,1,1.0
+Bldg Rating Worksheet,53,11,IRPM,no,1,1.0
+Bldg Rating Worksheet,53,12,IRPM,no,1,1.0
+Bldg Rating Worksheet,57,3,MultiPremiumDispersion,no,1,1.0
+Bldg Rating Worksheet,57,4,MultiPremiumDispersion,no,1,1.0
+Bldg Rating Worksheet,57,5,MultiPremiumDispersion,no,1,1.0
+Bldg Rating Worksheet,57,6,MultiPremiumDispersion,no,1,1.0
+Bldg Rating Worksheet,57,7,MultiPremiumDispersion,no,1,1.0
+Bldg Rating Worksheet,57,8,MultiPremiumDispersion,no,1,1.0
+Bldg Rating Worksheet,57,9,MultiPremiumDispersion,no,1,1.0
+Bldg Rating Worksheet,57,10,MultiPremiumDispersion,no,1,1.0
+Bldg Rating Worksheet,57,11,MultiPremiumDispersion,no,1,1.0
+Bldg Rating Worksheet,57,12,MultiPremiumDispersion,no,1,1.0
+Bldg Rating Worksheet,58,3,PackageMod,no,1,1.0
+Bldg Rating Worksheet,58,4,PackageMod,no,1,1.0
+Bldg Rating Worksheet,58,5,PackageMod,no,1,1.0
+Bldg Rating Worksheet,58,6,PackageMod,no,1,1.0
+Bldg Rating Worksheet,58,7,PackageMod,no,1,1.0
+Bldg Rating Worksheet,58,8,PackageMod,no,1,1.0
+Bldg Rating Worksheet,58,9,PackageMod,no,1,1.0
+Bldg Rating Worksheet,58,10,PackageMod,no,1,1.0
+Bldg Rating Worksheet,58,11,PackageMod,no,1,1.0
+Bldg Rating Worksheet,58,12,PackageMod,no,1,1.0
+Bldg Rating Worksheet,60,3,CyberExclFactorBGII,YES,=C30,0.995
+Bldg Rating Worksheet,60,4,CyberExclFactorBGII,YES,=D30,0.995
+Bldg Rating Worksheet,60,5,CyberExclFactorBGII,YES,=E30,0.995
+Bldg Rating Worksheet,60,6,CyberExclFactorBGII,YES,=F30,0.995
+Bldg Rating Worksheet,60,7,CyberExclFactorBGII,YES,=G30,0.995
+Bldg Rating Worksheet,60,8,CyberExclFactorBGII,YES,=H30,0.995
+Bldg Rating Worksheet,60,9,CyberExclFactorBGII,YES,=I30,0.995
+Bldg Rating Worksheet,60,10,CyberExclFactorBGII,YES,=J30,0.995
+Bldg Rating Worksheet,60,11,CyberExclFactorBGII,YES,=K30,0.995
+Bldg Rating Worksheet,60,12,CyberExclFactorBGII,YES,=L30,0.995
+Bldg Rating Worksheet,61,3,CyberExclCOLExcpnsFactorBGII,YES,=C31,0.997
+Bldg Rating Worksheet,61,4,CyberExclCOLExcpnsFactorBGII,YES,=D31,0.997
+Bldg Rating Worksheet,61,5,CyberExclCOLExcpnsFactorBGII,YES,=E31,0.997
+Bldg Rating Worksheet,61,6,CyberExclCOLExcpnsFactorBGII,YES,=F31,0.997
+Bldg Rating Worksheet,61,7,CyberExclCOLExcpnsFactorBGII,YES,=G31,0.997
+Bldg Rating Worksheet,61,8,CyberExclCOLExcpnsFactorBGII,YES,=H31,0.997
+Bldg Rating Worksheet,61,9,CyberExclCOLExcpnsFactorBGII,YES,=I31,0.997
+Bldg Rating Worksheet,61,10,CyberExclCOLExcpnsFactorBGII,YES,=J31,0.997
+Bldg Rating Worksheet,61,11,CyberExclCOLExcpnsFactorBGII,YES,=K31,0.997
+Bldg Rating Worksheet,61,12,CyberExclCOLExcpnsFactorBGII,YES,=L31,0.997
+Bldg Rating Worksheet,67,3,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!C2,LCM!$A$2:$A$47,0)),0)",1.0
+Bldg Rating Worksheet,67,4,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!D2,LCM!$A$2:$A$47,0)),0)",1.0
+Bldg Rating Worksheet,67,5,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!E2,LCM!$A$2:$A$47,0)),0)",1.0
+Bldg Rating Worksheet,67,6,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!F2,LCM!$A$2:$A$47,0)),0)",1.0
+Bldg Rating Worksheet,67,7,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!G2,LCM!$A$2:$A$47,0)),0)",0.0
+Bldg Rating Worksheet,67,8,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!H2,LCM!$A$2:$A$47,0)),0)",0.0
+Bldg Rating Worksheet,67,9,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!I2,LCM!$A$2:$A$47,0)),0)",0.0
+Bldg Rating Worksheet,67,10,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!J2,LCM!$A$2:$A$47,0)),0)",0.0
+Bldg Rating Worksheet,67,11,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!K2,LCM!$A$2:$A$47,0)),0)",0.0
+Bldg Rating Worksheet,67,12,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!L2,LCM!$A$2:$A$47,0)),0)",0.0
+Bldg Rating Worksheet,77,3,IRPM,no,1,1.0
+Bldg Rating Worksheet,77,4,IRPM,no,1,1.0
+Bldg Rating Worksheet,77,5,IRPM,no,1,1.0
+Bldg Rating Worksheet,77,6,IRPM,no,1,1.0
+Bldg Rating Worksheet,77,7,IRPM,no,1,1.0
+Bldg Rating Worksheet,77,8,IRPM,no,1,1.0
+Bldg Rating Worksheet,77,9,IRPM,no,1,1.0
+Bldg Rating Worksheet,77,10,IRPM,no,1,1.0
+Bldg Rating Worksheet,77,11,IRPM,no,1,1.0
+Bldg Rating Worksheet,77,12,IRPM,no,1,1.0
+Bldg Rating Worksheet,81,3,MultiPremiumDispersion,no,1,1.0
+Bldg Rating Worksheet,81,4,MultiPremiumDispersion,no,1,1.0
+Bldg Rating Worksheet,81,5,MultiPremiumDispersion,no,1,1.0
+Bldg Rating Worksheet,81,6,MultiPremiumDispersion,no,1,1.0
+Bldg Rating Worksheet,81,7,MultiPremiumDispersion,no,1,1.0
+Bldg Rating Worksheet,81,8,MultiPremiumDispersion,no,1,1.0
+Bldg Rating Worksheet,81,9,MultiPremiumDispersion,no,1,1.0
+Bldg Rating Worksheet,81,10,MultiPremiumDispersion,no,1,1.0
+Bldg Rating Worksheet,81,11,MultiPremiumDispersion,no,1,1.0
+Bldg Rating Worksheet,81,12,MultiPremiumDispersion,no,1,1.0
+Bldg Rating Worksheet,82,3,PackageMod,no,1,1.0
+Bldg Rating Worksheet,82,4,PackageMod,no,1,1.0
+Bldg Rating Worksheet,82,5,PackageMod,no,1,1.0
+Bldg Rating Worksheet,82,6,PackageMod,no,1,1.0
+Bldg Rating Worksheet,82,7,PackageMod,no,1,1.0
+Bldg Rating Worksheet,82,8,PackageMod,no,1,1.0
+Bldg Rating Worksheet,82,9,PackageMod,no,1,1.0
+Bldg Rating Worksheet,82,10,PackageMod,no,1,1.0
+Bldg Rating Worksheet,82,11,PackageMod,no,1,1.0
+Bldg Rating Worksheet,82,12,PackageMod,no,1,1.0
+Bldg Rating Worksheet,84,3,CyberExclFactorBroad,YES,=C60,0.995
+Bldg Rating Worksheet,84,4,CyberExclFactorBroad,YES,=D60,0.995
+Bldg Rating Worksheet,84,5,CyberExclFactorBroad,YES,=E60,0.995
+Bldg Rating Worksheet,84,6,CyberExclFactorBroad,YES,=F60,0.995
+Bldg Rating Worksheet,84,7,CyberExclFactorBroad,YES,=G60,0.995
+Bldg Rating Worksheet,84,8,CyberExclFactorBroad,YES,=H60,0.995
+Bldg Rating Worksheet,84,9,CyberExclFactorBroad,YES,=I60,0.995
+Bldg Rating Worksheet,84,10,CyberExclFactorBroad,YES,=J60,0.995
+Bldg Rating Worksheet,84,11,CyberExclFactorBroad,YES,=K60,0.995
+Bldg Rating Worksheet,84,12,CyberExclFactorBroad,YES,=L60,0.995
+Bldg Rating Worksheet,85,3,CyberExclCOLExcpnsFactorBroad,YES,=C61,0.997
+Bldg Rating Worksheet,85,4,CyberExclCOLExcpnsFactorBroad,YES,=D61,0.997
+Bldg Rating Worksheet,85,5,CyberExclCOLExcpnsFactorBroad,YES,=E61,0.997
+Bldg Rating Worksheet,85,6,CyberExclCOLExcpnsFactorBroad,YES,=F61,0.997
+Bldg Rating Worksheet,85,7,CyberExclCOLExcpnsFactorBroad,YES,=G61,0.997
+Bldg Rating Worksheet,85,8,CyberExclCOLExcpnsFactorBroad,YES,=H61,0.997
+Bldg Rating Worksheet,85,9,CyberExclCOLExcpnsFactorBroad,YES,=I61,0.997
+Bldg Rating Worksheet,85,10,CyberExclCOLExcpnsFactorBroad,YES,=J61,0.997
+Bldg Rating Worksheet,85,11,CyberExclCOLExcpnsFactorBroad,YES,=K61,0.997
+Bldg Rating Worksheet,85,12,CyberExclCOLExcpnsFactorBroad,YES,=L61,0.997
+Bldg Rating Worksheet,91,3,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!C2,LCM!$A$2:$A$47,0)),0)",1.0
+Bldg Rating Worksheet,91,4,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!D2,LCM!$A$2:$A$47,0)),0)",1.0
+Bldg Rating Worksheet,91,5,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!E2,LCM!$A$2:$A$47,0)),0)",1.0
+Bldg Rating Worksheet,91,6,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!F2,LCM!$A$2:$A$47,0)),0)",1.0
+Bldg Rating Worksheet,91,7,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!G2,LCM!$A$2:$A$47,0)),0)",0.0
+Bldg Rating Worksheet,91,8,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!H2,LCM!$A$2:$A$47,0)),0)",0.0
+Bldg Rating Worksheet,91,9,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!I2,LCM!$A$2:$A$47,0)),0)",0.0
+Bldg Rating Worksheet,91,10,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!J2,LCM!$A$2:$A$47,0)),0)",0.0
+Bldg Rating Worksheet,91,11,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!K2,LCM!$A$2:$A$47,0)),0)",0.0
+Bldg Rating Worksheet,91,12,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!L2,LCM!$A$2:$A$47,0)),0)",0.0
+Bldg Rating Worksheet,103,3,IRPM,no,1,1.0
+Bldg Rating Worksheet,103,4,IRPM,no,1,1.0
+Bldg Rating Worksheet,103,5,IRPM,no,1,1.0
+Bldg Rating Worksheet,103,6,IRPM,no,1,1.0
+Bldg Rating Worksheet,103,7,IRPM,no,1,1.0
+Bldg Rating Worksheet,103,8,IRPM,no,1,1.0
+Bldg Rating Worksheet,103,9,IRPM,no,1,1.0
+Bldg Rating Worksheet,103,10,IRPM,no,1,1.0
+Bldg Rating Worksheet,103,11,IRPM,no,1,1.0
+Bldg Rating Worksheet,103,12,IRPM,no,1,1.0
+Bldg Rating Worksheet,107,3,MultiPremiumDispersion,no,1,1.0
+Bldg Rating Worksheet,107,4,MultiPremiumDispersion,no,1,1.0
+Bldg Rating Worksheet,107,5,MultiPremiumDispersion,no,1,1.0
+Bldg Rating Worksheet,107,6,MultiPremiumDispersion,no,1,1.0
+Bldg Rating Worksheet,107,7,MultiPremiumDispersion,no,1,1.0
+Bldg Rating Worksheet,107,8,MultiPremiumDispersion,no,1,1.0
+Bldg Rating Worksheet,107,9,MultiPremiumDispersion,no,1,1.0
+Bldg Rating Worksheet,107,10,MultiPremiumDispersion,no,1,1.0
+Bldg Rating Worksheet,107,11,MultiPremiumDispersion,no,1,1.0
+Bldg Rating Worksheet,107,12,MultiPremiumDispersion,no,1,1.0
+Bldg Rating Worksheet,108,3,PackageMod,no,1,1.0
+Bldg Rating Worksheet,108,4,PackageMod,no,1,1.0
+Bldg Rating Worksheet,108,5,PackageMod,no,1,1.0
+Bldg Rating Worksheet,108,6,PackageMod,no,1,1.0
+Bldg Rating Worksheet,108,7,PackageMod,no,1,1.0
+Bldg Rating Worksheet,108,8,PackageMod,no,1,1.0
+Bldg Rating Worksheet,108,9,PackageMod,no,1,1.0
+Bldg Rating Worksheet,108,10,PackageMod,no,1,1.0
+Bldg Rating Worksheet,108,11,PackageMod,no,1,1.0
+Bldg Rating Worksheet,108,12,PackageMod,no,1,1.0
+Bldg Rating Worksheet,110,3,CyberExclFactorSpecial,YES,=C84,0.995
+Bldg Rating Worksheet,110,4,CyberExclFactorSpecial,YES,=D84,0.995
+Bldg Rating Worksheet,110,5,CyberExclFactorSpecial,YES,=E84,0.995
+Bldg Rating Worksheet,110,6,CyberExclFactorSpecial,YES,=F84,0.995
+Bldg Rating Worksheet,110,7,CyberExclFactorSpecial,YES,=G84,0.995
+Bldg Rating Worksheet,110,8,CyberExclFactorSpecial,YES,=H84,0.995
+Bldg Rating Worksheet,110,9,CyberExclFactorSpecial,YES,=I84,0.995
+Bldg Rating Worksheet,110,10,CyberExclFactorSpecial,YES,=J84,0.995
+Bldg Rating Worksheet,110,11,CyberExclFactorSpecial,YES,=K84,0.995
+Bldg Rating Worksheet,110,12,CyberExclFactorSpecial,YES,=L84,0.995
+Bldg Rating Worksheet,111,3,CyberExclCOLExcpnsFactorSpecial,YES,"=IF('Policy Inputs'!$F$4<>""Yes"", 1,IF('Policy Inputs'!$F$5>0,0.996,IF('Policy Inputs'!$F$6>0, 0.997, 0.998)))",0.996
+Bldg Rating Worksheet,111,4,CyberExclCOLExcpnsFactorSpecial,YES,"=IF('Policy Inputs'!$F$4<>""Yes"", 1,IF('Policy Inputs'!$F$5>0,0.996,IF('Policy Inputs'!$F$6>0, 0.997, 0.998)))",0.996
+Bldg Rating Worksheet,111,5,CyberExclCOLExcpnsFactorSpecial,YES,"=IF('Policy Inputs'!$F$4<>""Yes"", 1,IF('Policy Inputs'!$F$5>0,0.996,IF('Policy Inputs'!$F$6>0, 0.997, 0.998)))",0.996
+Bldg Rating Worksheet,111,6,CyberExclCOLExcpnsFactorSpecial,YES,"=IF('Policy Inputs'!$F$4<>""Yes"", 1,IF('Policy Inputs'!$F$5>0,0.996,IF('Policy Inputs'!$F$6>0, 0.997, 0.998)))",0.996
+Bldg Rating Worksheet,111,7,CyberExclCOLExcpnsFactorSpecial,YES,"=IF('Policy Inputs'!$F$4<>""Yes"", 1,IF('Policy Inputs'!$F$5>0,0.996,IF('Policy Inputs'!$F$6>0, 0.997, 0.998)))",0.996
+Bldg Rating Worksheet,111,8,CyberExclCOLExcpnsFactorSpecial,YES,"=IF('Policy Inputs'!$F$4<>""Yes"", 1,IF('Policy Inputs'!$F$5>0,0.996,IF('Policy Inputs'!$F$6>0, 0.997, 0.998)))",0.996
+Bldg Rating Worksheet,111,9,CyberExclCOLExcpnsFactorSpecial,YES,"=IF('Policy Inputs'!$F$4<>""Yes"", 1,IF('Policy Inputs'!$F$5>0,0.996,IF('Policy Inputs'!$F$6>0, 0.997, 0.998)))",0.996
+Bldg Rating Worksheet,111,10,CyberExclCOLExcpnsFactorSpecial,YES,"=IF('Policy Inputs'!$F$4<>""Yes"", 1,IF('Policy Inputs'!$F$5>0,0.996,IF('Policy Inputs'!$F$6>0, 0.997, 0.998)))",0.996
+Bldg Rating Worksheet,111,11,CyberExclCOLExcpnsFactorSpecial,YES,"=IF('Policy Inputs'!$F$4<>""Yes"", 1,IF('Policy Inputs'!$F$5>0,0.996,IF('Policy Inputs'!$F$6>0, 0.997, 0.998)))",0.996
+Bldg Rating Worksheet,111,12,CyberExclCOLExcpnsFactorSpecial,YES,"=IF('Policy Inputs'!$F$4<>""Yes"", 1,IF('Policy Inputs'!$F$5>0,0.996,IF('Policy Inputs'!$F$6>0, 0.997, 0.998)))",0.996
+Contents Rating Worksheet,4,3,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!C2,LCM!$A$2:$A$47,0)),0)",1.0
+Contents Rating Worksheet,4,4,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!D2,LCM!$A$2:$A$47,0)),0)",1.0
+Contents Rating Worksheet,4,5,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!E2,LCM!$A$2:$A$47,0)),0)",1.0
+Contents Rating Worksheet,4,6,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!F2,LCM!$A$2:$A$47,0)),0)",1.0
+Contents Rating Worksheet,4,7,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!G2,LCM!$A$2:$A$47,0)),0)",0.0
+Contents Rating Worksheet,4,8,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!H2,LCM!$A$2:$A$47,0)),0)",0.0
+Contents Rating Worksheet,4,9,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!I2,LCM!$A$2:$A$47,0)),0)",0.0
+Contents Rating Worksheet,4,10,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!J2,LCM!$A$2:$A$47,0)),0)",0.0
+Contents Rating Worksheet,4,11,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!K2,LCM!$A$2:$A$47,0)),0)",0.0
+Contents Rating Worksheet,4,12,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!L2,LCM!$A$2:$A$47,0)),0)",0.0
+Contents Rating Worksheet,21,3,IRPM,YES,='Bldg Rating Worksheet'!C23,1.0
+Contents Rating Worksheet,21,4,IRPM,YES,='Bldg Rating Worksheet'!D23,1.0
+Contents Rating Worksheet,21,5,IRPM,YES,='Bldg Rating Worksheet'!E23,1.0
+Contents Rating Worksheet,21,6,IRPM,YES,='Bldg Rating Worksheet'!F23,1.0
+Contents Rating Worksheet,21,7,IRPM,YES,='Bldg Rating Worksheet'!G23,1.0
+Contents Rating Worksheet,21,8,IRPM,YES,='Bldg Rating Worksheet'!H23,1.0
+Contents Rating Worksheet,21,9,IRPM,YES,='Bldg Rating Worksheet'!I23,1.0
+Contents Rating Worksheet,21,10,IRPM,YES,='Bldg Rating Worksheet'!J23,1.0
+Contents Rating Worksheet,21,11,IRPM,YES,='Bldg Rating Worksheet'!K23,1.0
+Contents Rating Worksheet,21,12,IRPM,YES,='Bldg Rating Worksheet'!L23,1.0
+Contents Rating Worksheet,22,3,MultiPremiumDispersion,YES,='Bldg Rating Worksheet'!C27,1.0
+Contents Rating Worksheet,22,4,MultiPremiumDispersion,YES,='Bldg Rating Worksheet'!D27,1.0
+Contents Rating Worksheet,22,5,MultiPremiumDispersion,YES,='Bldg Rating Worksheet'!E27,1.0
+Contents Rating Worksheet,22,6,MultiPremiumDispersion,YES,='Bldg Rating Worksheet'!F27,1.0
+Contents Rating Worksheet,22,7,MultiPremiumDispersion,YES,='Bldg Rating Worksheet'!G27,1.0
+Contents Rating Worksheet,22,8,MultiPremiumDispersion,YES,='Bldg Rating Worksheet'!H27,1.0
+Contents Rating Worksheet,22,9,MultiPremiumDispersion,YES,='Bldg Rating Worksheet'!I27,1.0
+Contents Rating Worksheet,22,10,MultiPremiumDispersion,YES,='Bldg Rating Worksheet'!J27,1.0
+Contents Rating Worksheet,22,11,MultiPremiumDispersion,YES,='Bldg Rating Worksheet'!K27,1.0
+Contents Rating Worksheet,22,12,MultiPremiumDispersion,YES,='Bldg Rating Worksheet'!L27,1.0
+Contents Rating Worksheet,26,3,PackageMod,YES,='Bldg Rating Worksheet'!C28,1.0
+Contents Rating Worksheet,26,4,PackageMod,YES,='Bldg Rating Worksheet'!D28,1.0
+Contents Rating Worksheet,26,5,PackageMod,YES,='Bldg Rating Worksheet'!E28,1.0
+Contents Rating Worksheet,26,6,PackageMod,YES,='Bldg Rating Worksheet'!F28,1.0
+Contents Rating Worksheet,26,7,PackageMod,YES,='Bldg Rating Worksheet'!G28,1.0
+Contents Rating Worksheet,26,8,PackageMod,YES,='Bldg Rating Worksheet'!H28,1.0
+Contents Rating Worksheet,26,9,PackageMod,YES,='Bldg Rating Worksheet'!I28,1.0
+Contents Rating Worksheet,26,10,PackageMod,YES,='Bldg Rating Worksheet'!J28,1.0
+Contents Rating Worksheet,26,11,PackageMod,YES,='Bldg Rating Worksheet'!K28,1.0
+Contents Rating Worksheet,26,12,PackageMod,YES,='Bldg Rating Worksheet'!L28,1.0
+Contents Rating Worksheet,28,3,CyberExclFactorBGI,YES,='Bldg Rating Worksheet'!C30,0.995
+Contents Rating Worksheet,28,4,CyberExclFactorBGI,YES,='Bldg Rating Worksheet'!D30,0.995
+Contents Rating Worksheet,28,5,CyberExclFactorBGI,YES,='Bldg Rating Worksheet'!E30,0.995
+Contents Rating Worksheet,28,6,CyberExclFactorBGI,YES,='Bldg Rating Worksheet'!F30,0.995
+Contents Rating Worksheet,28,7,CyberExclFactorBGI,YES,='Bldg Rating Worksheet'!G30,0.995
+Contents Rating Worksheet,28,8,CyberExclFactorBGI,YES,='Bldg Rating Worksheet'!H30,0.995
+Contents Rating Worksheet,28,9,CyberExclFactorBGI,YES,='Bldg Rating Worksheet'!I30,0.995
+Contents Rating Worksheet,28,10,CyberExclFactorBGI,YES,='Bldg Rating Worksheet'!J30,0.995
+Contents Rating Worksheet,28,11,CyberExclFactorBGI,YES,='Bldg Rating Worksheet'!K30,0.995
+Contents Rating Worksheet,28,12,CyberExclFactorBGI,YES,='Bldg Rating Worksheet'!L30,0.995
+Contents Rating Worksheet,29,3,CyberExclCOLExcpnsFactorBGI,YES,='Bldg Rating Worksheet'!C31,0.997
+Contents Rating Worksheet,29,4,CyberExclCOLExcpnsFactorBGI,YES,='Bldg Rating Worksheet'!D31,0.997
+Contents Rating Worksheet,29,5,CyberExclCOLExcpnsFactorBGI,YES,='Bldg Rating Worksheet'!E31,0.997
+Contents Rating Worksheet,29,6,CyberExclCOLExcpnsFactorBGI,YES,='Bldg Rating Worksheet'!F31,0.997
+Contents Rating Worksheet,29,7,CyberExclCOLExcpnsFactorBGI,YES,='Bldg Rating Worksheet'!G31,0.997
+Contents Rating Worksheet,29,8,CyberExclCOLExcpnsFactorBGI,YES,='Bldg Rating Worksheet'!H31,0.997
+Contents Rating Worksheet,29,9,CyberExclCOLExcpnsFactorBGI,YES,='Bldg Rating Worksheet'!I31,0.997
+Contents Rating Worksheet,29,10,CyberExclCOLExcpnsFactorBGI,YES,='Bldg Rating Worksheet'!J31,0.997
+Contents Rating Worksheet,29,11,CyberExclCOLExcpnsFactorBGI,YES,='Bldg Rating Worksheet'!K31,0.997
+Contents Rating Worksheet,29,12,CyberExclCOLExcpnsFactorBGI,YES,='Bldg Rating Worksheet'!L31,0.997
+Contents Rating Worksheet,36,3,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!C2,LCM!$A$2:$A$47,0)),0)",1.0
+Contents Rating Worksheet,36,4,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!D2,LCM!$A$2:$A$47,0)),0)",1.0
+Contents Rating Worksheet,36,5,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!E2,LCM!$A$2:$A$47,0)),0)",1.0
+Contents Rating Worksheet,36,6,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!F2,LCM!$A$2:$A$47,0)),0)",1.0
+Contents Rating Worksheet,36,7,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!G2,LCM!$A$2:$A$47,0)),0)",0.0
+Contents Rating Worksheet,36,8,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!H2,LCM!$A$2:$A$47,0)),0)",0.0
+Contents Rating Worksheet,36,9,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!I2,LCM!$A$2:$A$47,0)),0)",0.0
+Contents Rating Worksheet,36,10,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!J2,LCM!$A$2:$A$47,0)),0)",0.0
+Contents Rating Worksheet,36,11,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!K2,LCM!$A$2:$A$47,0)),0)",0.0
+Contents Rating Worksheet,36,12,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!L2,LCM!$A$2:$A$47,0)),0)",0.0
+Contents Rating Worksheet,49,3,IRPM,YES,=C21,1.0
+Contents Rating Worksheet,49,4,IRPM,YES,=D21,1.0
+Contents Rating Worksheet,49,5,IRPM,YES,=E21,1.0
+Contents Rating Worksheet,49,6,IRPM,YES,=F21,1.0
+Contents Rating Worksheet,49,7,IRPM,YES,=G21,1.0
+Contents Rating Worksheet,49,8,IRPM,YES,=H21,1.0
+Contents Rating Worksheet,49,9,IRPM,YES,=I21,1.0
+Contents Rating Worksheet,49,10,IRPM,YES,=J21,1.0
+Contents Rating Worksheet,49,11,IRPM,YES,=K21,1.0
+Contents Rating Worksheet,49,12,IRPM,YES,=L21,1.0
+Contents Rating Worksheet,50,3,MultiPremiumDispersion,YES,=C22,1.0
+Contents Rating Worksheet,50,4,MultiPremiumDispersion,YES,=D22,1.0
+Contents Rating Worksheet,50,5,MultiPremiumDispersion,YES,=E22,1.0
+Contents Rating Worksheet,50,6,MultiPremiumDispersion,YES,=F22,1.0
+Contents Rating Worksheet,50,7,MultiPremiumDispersion,YES,=G22,1.0
+Contents Rating Worksheet,50,8,MultiPremiumDispersion,YES,=H22,1.0
+Contents Rating Worksheet,50,9,MultiPremiumDispersion,YES,=I22,1.0
+Contents Rating Worksheet,50,10,MultiPremiumDispersion,YES,=J22,1.0
+Contents Rating Worksheet,50,11,MultiPremiumDispersion,YES,=K22,1.0
+Contents Rating Worksheet,50,12,MultiPremiumDispersion,YES,=L22,1.0
+Contents Rating Worksheet,54,3,PackageMod,YES,=C26,1.0
+Contents Rating Worksheet,54,4,PackageMod,YES,=D26,1.0
+Contents Rating Worksheet,54,5,PackageMod,YES,=E26,1.0
+Contents Rating Worksheet,54,6,PackageMod,YES,=F26,1.0
+Contents Rating Worksheet,54,7,PackageMod,YES,=G26,1.0
+Contents Rating Worksheet,54,8,PackageMod,YES,=H26,1.0
+Contents Rating Worksheet,54,9,PackageMod,YES,=I26,1.0
+Contents Rating Worksheet,54,10,PackageMod,YES,=J26,1.0
+Contents Rating Worksheet,54,11,PackageMod,YES,=K26,1.0
+Contents Rating Worksheet,54,12,PackageMod,YES,=L26,1.0
+Contents Rating Worksheet,56,3,CyberExclFactorBGII,YES,=C28,0.995
+Contents Rating Worksheet,56,4,CyberExclFactorBGII,YES,=D28,0.995
+Contents Rating Worksheet,56,5,CyberExclFactorBGII,YES,=E28,0.995
+Contents Rating Worksheet,56,6,CyberExclFactorBGII,YES,=F28,0.995
+Contents Rating Worksheet,56,7,CyberExclFactorBGII,YES,=G28,0.995
+Contents Rating Worksheet,56,8,CyberExclFactorBGII,YES,=H28,0.995
+Contents Rating Worksheet,56,9,CyberExclFactorBGII,YES,=I28,0.995
+Contents Rating Worksheet,56,10,CyberExclFactorBGII,YES,=J28,0.995
+Contents Rating Worksheet,56,11,CyberExclFactorBGII,YES,=K28,0.995
+Contents Rating Worksheet,56,12,CyberExclFactorBGII,YES,=L28,0.995
+Contents Rating Worksheet,57,3,CyberExclCOLExcpnsFactorBGII,YES,=C29,0.997
+Contents Rating Worksheet,57,4,CyberExclCOLExcpnsFactorBGII,YES,=D29,0.997
+Contents Rating Worksheet,57,5,CyberExclCOLExcpnsFactorBGII,YES,=E29,0.997
+Contents Rating Worksheet,57,6,CyberExclCOLExcpnsFactorBGII,YES,=F29,0.997
+Contents Rating Worksheet,57,7,CyberExclCOLExcpnsFactorBGII,YES,=G29,0.997
+Contents Rating Worksheet,57,8,CyberExclCOLExcpnsFactorBGII,YES,=H29,0.997
+Contents Rating Worksheet,57,9,CyberExclCOLExcpnsFactorBGII,YES,=I29,0.997
+Contents Rating Worksheet,57,10,CyberExclCOLExcpnsFactorBGII,YES,=J29,0.997
+Contents Rating Worksheet,57,11,CyberExclCOLExcpnsFactorBGII,YES,=K29,0.997
+Contents Rating Worksheet,57,12,CyberExclCOLExcpnsFactorBGII,YES,=L29,0.997
+Contents Rating Worksheet,63,3,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!C2,LCM!$A$2:$A$47,0)),0)",1.0
+Contents Rating Worksheet,63,4,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!D2,LCM!$A$2:$A$47,0)),0)",1.0
+Contents Rating Worksheet,63,5,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!E2,LCM!$A$2:$A$47,0)),0)",1.0
+Contents Rating Worksheet,63,6,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!F2,LCM!$A$2:$A$47,0)),0)",1.0
+Contents Rating Worksheet,63,7,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!G2,LCM!$A$2:$A$47,0)),0)",0.0
+Contents Rating Worksheet,63,8,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!H2,LCM!$A$2:$A$47,0)),0)",0.0
+Contents Rating Worksheet,63,9,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!I2,LCM!$A$2:$A$47,0)),0)",0.0
+Contents Rating Worksheet,63,10,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!J2,LCM!$A$2:$A$47,0)),0)",0.0
+Contents Rating Worksheet,63,11,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!K2,LCM!$A$2:$A$47,0)),0)",0.0
+Contents Rating Worksheet,63,12,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!L2,LCM!$A$2:$A$47,0)),0)",0.0
+Contents Rating Worksheet,72,3,IRPM,YES,=C49,1.0
+Contents Rating Worksheet,72,4,IRPM,YES,=D49,1.0
+Contents Rating Worksheet,72,5,IRPM,YES,=E49,1.0
+Contents Rating Worksheet,72,6,IRPM,YES,=F49,1.0
+Contents Rating Worksheet,72,7,IRPM,YES,=G49,1.0
+Contents Rating Worksheet,72,8,IRPM,YES,=H49,1.0
+Contents Rating Worksheet,72,9,IRPM,YES,=I49,1.0
+Contents Rating Worksheet,72,10,IRPM,YES,=J49,1.0
+Contents Rating Worksheet,72,11,IRPM,YES,=K49,1.0
+Contents Rating Worksheet,72,12,IRPM,YES,=L49,1.0
+Contents Rating Worksheet,73,3,MultiPremiumDispersion,YES,=C50,1.0
+Contents Rating Worksheet,73,4,MultiPremiumDispersion,YES,=D50,1.0
+Contents Rating Worksheet,73,5,MultiPremiumDispersion,YES,=E50,1.0
+Contents Rating Worksheet,73,6,MultiPremiumDispersion,YES,=F50,1.0
+Contents Rating Worksheet,73,7,MultiPremiumDispersion,YES,=G50,1.0
+Contents Rating Worksheet,73,8,MultiPremiumDispersion,YES,=H50,1.0
+Contents Rating Worksheet,73,9,MultiPremiumDispersion,YES,=I50,1.0
+Contents Rating Worksheet,73,10,MultiPremiumDispersion,YES,=J50,1.0
+Contents Rating Worksheet,73,11,MultiPremiumDispersion,YES,=K50,1.0
+Contents Rating Worksheet,73,12,MultiPremiumDispersion,YES,=L50,1.0
+Contents Rating Worksheet,77,3,PackageMod,YES,=C54,1.0
+Contents Rating Worksheet,77,4,PackageMod,YES,=D54,1.0
+Contents Rating Worksheet,77,5,PackageMod,YES,=E54,1.0
+Contents Rating Worksheet,77,6,PackageMod,YES,=F54,1.0
+Contents Rating Worksheet,77,7,PackageMod,YES,=G54,1.0
+Contents Rating Worksheet,77,8,PackageMod,YES,=H54,1.0
+Contents Rating Worksheet,77,9,PackageMod,YES,=I54,1.0
+Contents Rating Worksheet,77,10,PackageMod,YES,=J54,1.0
+Contents Rating Worksheet,77,11,PackageMod,YES,=K54,1.0
+Contents Rating Worksheet,77,12,PackageMod,YES,=L54,1.0
+Contents Rating Worksheet,79,3,CyberExclFactorBroad,YES,=C56,0.995
+Contents Rating Worksheet,79,4,CyberExclFactorBroad,YES,=D56,0.995
+Contents Rating Worksheet,79,5,CyberExclFactorBroad,YES,=E56,0.995
+Contents Rating Worksheet,79,6,CyberExclFactorBroad,YES,=F56,0.995
+Contents Rating Worksheet,79,7,CyberExclFactorBroad,YES,=G56,0.995
+Contents Rating Worksheet,79,8,CyberExclFactorBroad,YES,=H56,0.995
+Contents Rating Worksheet,79,9,CyberExclFactorBroad,YES,=I56,0.995
+Contents Rating Worksheet,79,10,CyberExclFactorBroad,YES,=J56,0.995
+Contents Rating Worksheet,79,11,CyberExclFactorBroad,YES,=K56,0.995
+Contents Rating Worksheet,79,12,CyberExclFactorBroad,YES,=L56,0.995
+Contents Rating Worksheet,80,3,CyberExclCOLExcpnsFactorBroad,YES,=C57,0.997
+Contents Rating Worksheet,80,4,CyberExclCOLExcpnsFactorBroad,YES,=D57,0.997
+Contents Rating Worksheet,80,5,CyberExclCOLExcpnsFactorBroad,YES,=E57,0.997
+Contents Rating Worksheet,80,6,CyberExclCOLExcpnsFactorBroad,YES,=F57,0.997
+Contents Rating Worksheet,80,7,CyberExclCOLExcpnsFactorBroad,YES,=G57,0.997
+Contents Rating Worksheet,80,8,CyberExclCOLExcpnsFactorBroad,YES,=H57,0.997
+Contents Rating Worksheet,80,9,CyberExclCOLExcpnsFactorBroad,YES,=I57,0.997
+Contents Rating Worksheet,80,10,CyberExclCOLExcpnsFactorBroad,YES,=J57,0.997
+Contents Rating Worksheet,80,11,CyberExclCOLExcpnsFactorBroad,YES,=K57,0.997
+Contents Rating Worksheet,80,12,CyberExclCOLExcpnsFactorBroad,YES,=L57,0.997
+Contents Rating Worksheet,86,3,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!C2,LCM!$A$2:$A$47,0)),0)",1.0
+Contents Rating Worksheet,86,4,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!D2,LCM!$A$2:$A$47,0)),0)",1.0
+Contents Rating Worksheet,86,5,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!E2,LCM!$A$2:$A$47,0)),0)",1.0
+Contents Rating Worksheet,86,6,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!F2,LCM!$A$2:$A$47,0)),0)",1.0
+Contents Rating Worksheet,86,7,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!G2,LCM!$A$2:$A$47,0)),0)",0.0
+Contents Rating Worksheet,86,8,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!H2,LCM!$A$2:$A$47,0)),0)",0.0
+Contents Rating Worksheet,86,9,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!I2,LCM!$A$2:$A$47,0)),0)",0.0
+Contents Rating Worksheet,86,10,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!J2,LCM!$A$2:$A$47,0)),0)",0.0
+Contents Rating Worksheet,86,11,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!K2,LCM!$A$2:$A$47,0)),0)",0.0
+Contents Rating Worksheet,86,12,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!L2,LCM!$A$2:$A$47,0)),0)",0.0
+Contents Rating Worksheet,100,3,IRPM,YES,=C72,1.0
+Contents Rating Worksheet,100,4,IRPM,YES,=D72,1.0
+Contents Rating Worksheet,100,5,IRPM,YES,=E72,1.0
+Contents Rating Worksheet,100,6,IRPM,YES,=F72,1.0
+Contents Rating Worksheet,100,7,IRPM,YES,=G72,1.0
+Contents Rating Worksheet,100,8,IRPM,YES,=H72,1.0
+Contents Rating Worksheet,100,9,IRPM,YES,=I72,1.0
+Contents Rating Worksheet,100,10,IRPM,YES,=J72,1.0
+Contents Rating Worksheet,100,11,IRPM,YES,=K72,1.0
+Contents Rating Worksheet,100,12,IRPM,YES,=L72,1.0
+Contents Rating Worksheet,101,3,MultiPremiumDispersion,YES,=C73,1.0
+Contents Rating Worksheet,101,4,MultiPremiumDispersion,YES,=D73,1.0
+Contents Rating Worksheet,101,5,MultiPremiumDispersion,YES,=E73,1.0
+Contents Rating Worksheet,101,6,MultiPremiumDispersion,YES,=F73,1.0
+Contents Rating Worksheet,101,7,MultiPremiumDispersion,YES,=G73,1.0
+Contents Rating Worksheet,101,8,MultiPremiumDispersion,YES,=H73,1.0
+Contents Rating Worksheet,101,9,MultiPremiumDispersion,YES,=I73,1.0
+Contents Rating Worksheet,101,10,MultiPremiumDispersion,YES,=J73,1.0
+Contents Rating Worksheet,101,11,MultiPremiumDispersion,YES,=K73,1.0
+Contents Rating Worksheet,101,12,MultiPremiumDispersion,YES,=L73,1.0
+Contents Rating Worksheet,105,3,PackageMod,YES,=C77,1.0
+Contents Rating Worksheet,105,4,PackageMod,YES,=D77,1.0
+Contents Rating Worksheet,105,5,PackageMod,YES,=E77,1.0
+Contents Rating Worksheet,105,6,PackageMod,YES,=F77,1.0
+Contents Rating Worksheet,105,7,PackageMod,YES,=G77,1.0
+Contents Rating Worksheet,105,8,PackageMod,YES,=H77,1.0
+Contents Rating Worksheet,105,9,PackageMod,YES,=I77,1.0
+Contents Rating Worksheet,105,10,PackageMod,YES,=J77,1.0
+Contents Rating Worksheet,105,11,PackageMod,YES,=K77,1.0
+Contents Rating Worksheet,105,12,PackageMod,YES,=L77,1.0
+Contents Rating Worksheet,107,3,CyberExclFactorSpecial,YES,=C79,0.995
+Contents Rating Worksheet,107,4,CyberExclFactorSpecial,YES,=D79,0.995
+Contents Rating Worksheet,107,5,CyberExclFactorSpecial,YES,=E79,0.995
+Contents Rating Worksheet,107,6,CyberExclFactorSpecial,YES,=F79,0.995
+Contents Rating Worksheet,107,7,CyberExclFactorSpecial,YES,=G79,0.995
+Contents Rating Worksheet,107,8,CyberExclFactorSpecial,YES,=H79,0.995
+Contents Rating Worksheet,107,9,CyberExclFactorSpecial,YES,=I79,0.995
+Contents Rating Worksheet,107,10,CyberExclFactorSpecial,YES,=J79,0.995
+Contents Rating Worksheet,107,11,CyberExclFactorSpecial,YES,=K79,0.995
+Contents Rating Worksheet,107,12,CyberExclFactorSpecial,YES,=L79,0.995
+Contents Rating Worksheet,108,3,CyberExclCOLExcpnsFactorSpecial,YES,='Bldg Rating Worksheet'!C111,0.996
+Contents Rating Worksheet,108,4,CyberExclCOLExcpnsFactorSpecial,YES,='Bldg Rating Worksheet'!D111,0.996
+Contents Rating Worksheet,108,5,CyberExclCOLExcpnsFactorSpecial,YES,='Bldg Rating Worksheet'!E111,0.996
+Contents Rating Worksheet,108,6,CyberExclCOLExcpnsFactorSpecial,YES,='Bldg Rating Worksheet'!F111,0.996
+Contents Rating Worksheet,108,7,CyberExclCOLExcpnsFactorSpecial,YES,='Bldg Rating Worksheet'!G111,0.996
+Contents Rating Worksheet,108,8,CyberExclCOLExcpnsFactorSpecial,YES,='Bldg Rating Worksheet'!H111,0.996
+Contents Rating Worksheet,108,9,CyberExclCOLExcpnsFactorSpecial,YES,='Bldg Rating Worksheet'!I111,0.996
+Contents Rating Worksheet,108,10,CyberExclCOLExcpnsFactorSpecial,YES,='Bldg Rating Worksheet'!J111,0.996
+Contents Rating Worksheet,108,11,CyberExclCOLExcpnsFactorSpecial,YES,='Bldg Rating Worksheet'!K111,0.996
+Contents Rating Worksheet,108,12,CyberExclCOLExcpnsFactorSpecial,YES,='Bldg Rating Worksheet'!L111,0.996
+BI Rating Worksheet,4,3,LCM,YES,='Bldg Rating Worksheet'!C4,1.0
+BI Rating Worksheet,4,4,LCM,YES,='Bldg Rating Worksheet'!D4,1.0
+BI Rating Worksheet,4,5,LCM,YES,='Bldg Rating Worksheet'!E4,1.0
+BI Rating Worksheet,4,6,LCM,YES,='Bldg Rating Worksheet'!F4,1.0
+BI Rating Worksheet,4,7,LCM,YES,='Bldg Rating Worksheet'!G4,0.0
+BI Rating Worksheet,4,8,LCM,YES,='Bldg Rating Worksheet'!H4,0.0
+BI Rating Worksheet,4,9,LCM,YES,='Bldg Rating Worksheet'!I4,0.0
+BI Rating Worksheet,4,10,LCM,YES,='Bldg Rating Worksheet'!J4,0.0
+BI Rating Worksheet,4,11,LCM,YES,='Bldg Rating Worksheet'!K4,0.0
+BI Rating Worksheet,4,12,LCM,YES,='Bldg Rating Worksheet'!L4,0.0
+BI Rating Worksheet,19,3,IRPM,YES,=1,1.0
+BI Rating Worksheet,19,4,IRPM,YES,=1,1.0
+BI Rating Worksheet,19,5,IRPM,YES,=1,1.0
+BI Rating Worksheet,19,6,IRPM,YES,=1,1.0
+BI Rating Worksheet,19,7,IRPM,YES,=1,1.0
+BI Rating Worksheet,19,8,IRPM,YES,=1,1.0
+BI Rating Worksheet,19,9,IRPM,YES,=1,1.0
+BI Rating Worksheet,19,10,IRPM,YES,=1,1.0
+BI Rating Worksheet,19,11,IRPM,YES,=1,1.0
+BI Rating Worksheet,19,12,IRPM,YES,=1,1.0
+BI Rating Worksheet,20,3,MultiPremiumDispersion,YES,=1,1.0
+BI Rating Worksheet,20,4,MultiPremiumDispersion,YES,=1,1.0
+BI Rating Worksheet,20,5,MultiPremiumDispersion,YES,=1,1.0
+BI Rating Worksheet,20,6,MultiPremiumDispersion,YES,=1,1.0
+BI Rating Worksheet,20,7,MultiPremiumDispersion,YES,=1,1.0
+BI Rating Worksheet,20,8,MultiPremiumDispersion,YES,=1,1.0
+BI Rating Worksheet,20,9,MultiPremiumDispersion,YES,=1,1.0
+BI Rating Worksheet,20,10,MultiPremiumDispersion,YES,=1,1.0
+BI Rating Worksheet,20,11,MultiPremiumDispersion,YES,=1,1.0
+BI Rating Worksheet,20,12,MultiPremiumDispersion,YES,=1,1.0
+BI Rating Worksheet,21,3,PackageMod,YES,=1,1.0
+BI Rating Worksheet,21,4,PackageMod,YES,=1,1.0
+BI Rating Worksheet,21,5,PackageMod,YES,=1,1.0
+BI Rating Worksheet,21,6,PackageMod,YES,=1,1.0
+BI Rating Worksheet,21,7,PackageMod,YES,=1,1.0
+BI Rating Worksheet,21,8,PackageMod,YES,=1,1.0
+BI Rating Worksheet,21,9,PackageMod,YES,=1,1.0
+BI Rating Worksheet,21,10,PackageMod,YES,=1,1.0
+BI Rating Worksheet,21,11,PackageMod,YES,=1,1.0
+BI Rating Worksheet,21,12,PackageMod,YES,=1,1.0
+BI Rating Worksheet,23,3,CyberExclFactorBGI,YES,='Bldg Rating Worksheet'!C30,0.995
+BI Rating Worksheet,23,4,CyberExclFactorBGI,YES,='Bldg Rating Worksheet'!D30,0.995
+BI Rating Worksheet,23,5,CyberExclFactorBGI,YES,='Bldg Rating Worksheet'!E30,0.995
+BI Rating Worksheet,23,6,CyberExclFactorBGI,YES,='Bldg Rating Worksheet'!F30,0.995
+BI Rating Worksheet,23,7,CyberExclFactorBGI,YES,='Bldg Rating Worksheet'!G30,0.995
+BI Rating Worksheet,23,8,CyberExclFactorBGI,YES,='Bldg Rating Worksheet'!H30,0.995
+BI Rating Worksheet,23,9,CyberExclFactorBGI,YES,='Bldg Rating Worksheet'!I30,0.995
+BI Rating Worksheet,23,10,CyberExclFactorBGI,YES,='Bldg Rating Worksheet'!J30,0.995
+BI Rating Worksheet,23,11,CyberExclFactorBGI,YES,='Bldg Rating Worksheet'!K30,0.995
+BI Rating Worksheet,23,12,CyberExclFactorBGI,YES,='Bldg Rating Worksheet'!L30,0.995
+BI Rating Worksheet,24,3,CyberExclCOLExcpnsFactorBGI,YES,='Bldg Rating Worksheet'!C31,0.997
+BI Rating Worksheet,24,4,CyberExclCOLExcpnsFactorBGI,YES,='Bldg Rating Worksheet'!D31,0.997
+BI Rating Worksheet,24,5,CyberExclCOLExcpnsFactorBGI,YES,='Bldg Rating Worksheet'!E31,0.997
+BI Rating Worksheet,24,6,CyberExclCOLExcpnsFactorBGI,YES,='Bldg Rating Worksheet'!F31,0.997
+BI Rating Worksheet,24,7,CyberExclCOLExcpnsFactorBGI,YES,='Bldg Rating Worksheet'!G31,0.997
+BI Rating Worksheet,24,8,CyberExclCOLExcpnsFactorBGI,YES,='Bldg Rating Worksheet'!H31,0.997
+BI Rating Worksheet,24,9,CyberExclCOLExcpnsFactorBGI,YES,='Bldg Rating Worksheet'!I31,0.997
+BI Rating Worksheet,24,10,CyberExclCOLExcpnsFactorBGI,YES,='Bldg Rating Worksheet'!J31,0.997
+BI Rating Worksheet,24,11,CyberExclCOLExcpnsFactorBGI,YES,='Bldg Rating Worksheet'!K31,0.997
+BI Rating Worksheet,24,12,CyberExclCOLExcpnsFactorBGI,YES,='Bldg Rating Worksheet'!L31,0.997
+BI Rating Worksheet,30,3,LCM,YES,='Bldg Rating Worksheet'!C38,1.0
+BI Rating Worksheet,30,4,LCM,YES,='Bldg Rating Worksheet'!D38,1.0
+BI Rating Worksheet,30,5,LCM,YES,='Bldg Rating Worksheet'!E38,1.0
+BI Rating Worksheet,30,6,LCM,YES,='Bldg Rating Worksheet'!F38,1.0
+BI Rating Worksheet,30,7,LCM,YES,='Bldg Rating Worksheet'!G38,0.0
+BI Rating Worksheet,30,8,LCM,YES,='Bldg Rating Worksheet'!H38,0.0
+BI Rating Worksheet,30,9,LCM,YES,='Bldg Rating Worksheet'!I38,0.0
+BI Rating Worksheet,30,10,LCM,YES,='Bldg Rating Worksheet'!J38,0.0
+BI Rating Worksheet,30,11,LCM,YES,='Bldg Rating Worksheet'!K38,0.0
+BI Rating Worksheet,30,12,LCM,YES,='Bldg Rating Worksheet'!L38,0.0
+BI Rating Worksheet,39,3,IRPM,YES,=C19,1.0
+BI Rating Worksheet,39,4,IRPM,YES,=D19,1.0
+BI Rating Worksheet,39,5,IRPM,YES,=E19,1.0
+BI Rating Worksheet,39,6,IRPM,YES,=F19,1.0
+BI Rating Worksheet,39,7,IRPM,YES,=G19,1.0
+BI Rating Worksheet,39,8,IRPM,YES,=H19,1.0
+BI Rating Worksheet,39,9,IRPM,YES,=I19,1.0
+BI Rating Worksheet,39,10,IRPM,YES,=J19,1.0
+BI Rating Worksheet,39,11,IRPM,YES,=K19,1.0
+BI Rating Worksheet,39,12,IRPM,YES,=L19,1.0
+BI Rating Worksheet,40,3,MultiPremiumDispersion,YES,=C20,1.0
+BI Rating Worksheet,40,4,MultiPremiumDispersion,YES,=D20,1.0
+BI Rating Worksheet,40,5,MultiPremiumDispersion,YES,=E20,1.0
+BI Rating Worksheet,40,6,MultiPremiumDispersion,YES,=F20,1.0
+BI Rating Worksheet,40,7,MultiPremiumDispersion,YES,=G20,1.0
+BI Rating Worksheet,40,8,MultiPremiumDispersion,YES,=H20,1.0
+BI Rating Worksheet,40,9,MultiPremiumDispersion,YES,=I20,1.0
+BI Rating Worksheet,40,10,MultiPremiumDispersion,YES,=J20,1.0
+BI Rating Worksheet,40,11,MultiPremiumDispersion,YES,=K20,1.0
+BI Rating Worksheet,40,12,MultiPremiumDispersion,YES,=L20,1.0
+BI Rating Worksheet,41,3,PackageMod,YES,=C21,1.0
+BI Rating Worksheet,41,4,PackageMod,YES,=D21,1.0
+BI Rating Worksheet,41,5,PackageMod,YES,=E21,1.0
+BI Rating Worksheet,41,6,PackageMod,YES,=F21,1.0
+BI Rating Worksheet,41,7,PackageMod,YES,=G21,1.0
+BI Rating Worksheet,41,8,PackageMod,YES,=H21,1.0
+BI Rating Worksheet,41,9,PackageMod,YES,=I21,1.0
+BI Rating Worksheet,41,10,PackageMod,YES,=J21,1.0
+BI Rating Worksheet,41,11,PackageMod,YES,=K21,1.0
+BI Rating Worksheet,41,12,PackageMod,YES,=L21,1.0
+BI Rating Worksheet,43,3,CyberExclFactorBGI,YES,=C23,0.995
+BI Rating Worksheet,43,4,CyberExclFactorBGI,YES,=D23,0.995
+BI Rating Worksheet,43,5,CyberExclFactorBGI,YES,=E23,0.995
+BI Rating Worksheet,43,6,CyberExclFactorBGI,YES,=F23,0.995
+BI Rating Worksheet,43,7,CyberExclFactorBGI,YES,=G23,0.995
+BI Rating Worksheet,43,8,CyberExclFactorBGI,YES,=H23,0.995
+BI Rating Worksheet,43,9,CyberExclFactorBGI,YES,=I23,0.995
+BI Rating Worksheet,43,10,CyberExclFactorBGI,YES,=J23,0.995
+BI Rating Worksheet,43,11,CyberExclFactorBGI,YES,=K23,0.995
+BI Rating Worksheet,43,12,CyberExclFactorBGI,YES,=L23,0.995
+BI Rating Worksheet,44,3,CyberExclCOLExcpnsFactorBGI,YES,=C24,0.997
+BI Rating Worksheet,44,4,CyberExclCOLExcpnsFactorBGI,YES,=D24,0.997
+BI Rating Worksheet,44,5,CyberExclCOLExcpnsFactorBGI,YES,=E24,0.997
+BI Rating Worksheet,44,6,CyberExclCOLExcpnsFactorBGI,YES,=F24,0.997
+BI Rating Worksheet,44,7,CyberExclCOLExcpnsFactorBGI,YES,=G24,0.997
+BI Rating Worksheet,44,8,CyberExclCOLExcpnsFactorBGI,YES,=H24,0.997
+BI Rating Worksheet,44,9,CyberExclCOLExcpnsFactorBGI,YES,=I24,0.997
+BI Rating Worksheet,44,10,CyberExclCOLExcpnsFactorBGI,YES,=J24,0.997
+BI Rating Worksheet,44,11,CyberExclCOLExcpnsFactorBGI,YES,=K24,0.997
+BI Rating Worksheet,44,12,CyberExclCOLExcpnsFactorBGI,YES,=L24,0.997
+BI Rating Worksheet,50,3,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!C2,LCM!$A$2:$A$47,0)),0)",1.0
+BI Rating Worksheet,50,4,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!D2,LCM!$A$2:$A$47,0)),0)",1.0
+BI Rating Worksheet,50,5,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!E2,LCM!$A$2:$A$47,0)),0)",1.0
+BI Rating Worksheet,50,6,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!F2,LCM!$A$2:$A$47,0)),0)",1.0
+BI Rating Worksheet,50,7,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!G2,LCM!$A$2:$A$47,0)),0)",0.0
+BI Rating Worksheet,50,8,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!H2,LCM!$A$2:$A$47,0)),0)",0.0
+BI Rating Worksheet,50,9,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!I2,LCM!$A$2:$A$47,0)),0)",0.0
+BI Rating Worksheet,50,10,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!J2,LCM!$A$2:$A$47,0)),0)",0.0
+BI Rating Worksheet,50,11,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!K2,LCM!$A$2:$A$47,0)),0)",0.0
+BI Rating Worksheet,50,12,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!L2,LCM!$A$2:$A$47,0)),0)",0.0
+BI Rating Worksheet,53,3,IRPM,YES,=C39,1.0
+BI Rating Worksheet,53,4,IRPM,YES,=D39,1.0
+BI Rating Worksheet,53,5,IRPM,YES,=E39,1.0
+BI Rating Worksheet,53,6,IRPM,YES,=F39,1.0
+BI Rating Worksheet,53,7,IRPM,YES,=G39,1.0
+BI Rating Worksheet,53,8,IRPM,YES,=H39,1.0
+BI Rating Worksheet,53,9,IRPM,YES,=I39,1.0
+BI Rating Worksheet,53,10,IRPM,YES,=J39,1.0
+BI Rating Worksheet,53,11,IRPM,YES,=K39,1.0
+BI Rating Worksheet,53,12,IRPM,YES,=L39,1.0
+BI Rating Worksheet,54,3,MultiPremiumDispersion,YES,=C40,1.0
+BI Rating Worksheet,54,4,MultiPremiumDispersion,YES,=D40,1.0
+BI Rating Worksheet,54,5,MultiPremiumDispersion,YES,=E40,1.0
+BI Rating Worksheet,54,6,MultiPremiumDispersion,YES,=F40,1.0
+BI Rating Worksheet,54,7,MultiPremiumDispersion,YES,=G40,1.0
+BI Rating Worksheet,54,8,MultiPremiumDispersion,YES,=H40,1.0
+BI Rating Worksheet,54,9,MultiPremiumDispersion,YES,=I40,1.0
+BI Rating Worksheet,54,10,MultiPremiumDispersion,YES,=J40,1.0
+BI Rating Worksheet,54,11,MultiPremiumDispersion,YES,=K40,1.0
+BI Rating Worksheet,54,12,MultiPremiumDispersion,YES,=L40,1.0
+BI Rating Worksheet,55,3,PackageMod,YES,=C41,1.0
+BI Rating Worksheet,55,4,PackageMod,YES,=D41,1.0
+BI Rating Worksheet,55,5,PackageMod,YES,=E41,1.0
+BI Rating Worksheet,55,6,PackageMod,YES,=F41,1.0
+BI Rating Worksheet,55,7,PackageMod,YES,=G41,1.0
+BI Rating Worksheet,55,8,PackageMod,YES,=H41,1.0
+BI Rating Worksheet,55,9,PackageMod,YES,=I41,1.0
+BI Rating Worksheet,55,10,PackageMod,YES,=J41,1.0
+BI Rating Worksheet,55,11,PackageMod,YES,=K41,1.0
+BI Rating Worksheet,55,12,PackageMod,YES,=L41,1.0
+BI Rating Worksheet,57,3,CyberExclFactorBroad,YES,=C43,0.995
+BI Rating Worksheet,57,4,CyberExclFactorBroad,YES,=D43,0.995
+BI Rating Worksheet,57,5,CyberExclFactorBroad,YES,=E43,0.995
+BI Rating Worksheet,57,6,CyberExclFactorBroad,YES,=F43,0.995
+BI Rating Worksheet,57,7,CyberExclFactorBroad,YES,=G43,0.995
+BI Rating Worksheet,57,8,CyberExclFactorBroad,YES,=H43,0.995
+BI Rating Worksheet,57,9,CyberExclFactorBroad,YES,=I43,0.995
+BI Rating Worksheet,57,10,CyberExclFactorBroad,YES,=J43,0.995
+BI Rating Worksheet,57,11,CyberExclFactorBroad,YES,=K43,0.995
+BI Rating Worksheet,57,12,CyberExclFactorBroad,YES,=L43,0.995
+BI Rating Worksheet,58,3,CyberExclCOLExcpnsFactorBroad,YES,=C44,0.997
+BI Rating Worksheet,58,4,CyberExclCOLExcpnsFactorBroad,YES,=D44,0.997
+BI Rating Worksheet,58,5,CyberExclCOLExcpnsFactorBroad,YES,=E44,0.997
+BI Rating Worksheet,58,6,CyberExclCOLExcpnsFactorBroad,YES,=F44,0.997
+BI Rating Worksheet,58,7,CyberExclCOLExcpnsFactorBroad,YES,=G44,0.997
+BI Rating Worksheet,58,8,CyberExclCOLExcpnsFactorBroad,YES,=H44,0.997
+BI Rating Worksheet,58,9,CyberExclCOLExcpnsFactorBroad,YES,=I44,0.997
+BI Rating Worksheet,58,10,CyberExclCOLExcpnsFactorBroad,YES,=J44,0.997
+BI Rating Worksheet,58,11,CyberExclCOLExcpnsFactorBroad,YES,=K44,0.997
+BI Rating Worksheet,58,12,CyberExclCOLExcpnsFactorBroad,YES,=L44,0.997
+BI Rating Worksheet,64,3,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!C2,LCM!$A$2:$A$47,0)),0)",1.0
+BI Rating Worksheet,64,4,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!D2,LCM!$A$2:$A$47,0)),0)",1.0
+BI Rating Worksheet,64,5,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!E2,LCM!$A$2:$A$47,0)),0)",1.0
+BI Rating Worksheet,64,6,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!F2,LCM!$A$2:$A$47,0)),0)",1.0
+BI Rating Worksheet,64,7,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!G2,LCM!$A$2:$A$47,0)),0)",0.0
+BI Rating Worksheet,64,8,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!H2,LCM!$A$2:$A$47,0)),0)",0.0
+BI Rating Worksheet,64,9,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!I2,LCM!$A$2:$A$47,0)),0)",0.0
+BI Rating Worksheet,64,10,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!J2,LCM!$A$2:$A$47,0)),0)",0.0
+BI Rating Worksheet,64,11,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!K2,LCM!$A$2:$A$47,0)),0)",0.0
+BI Rating Worksheet,64,12,LCM,YES,"=IFERROR(INDEX(LCM!$B$2:$B$47,MATCH(CoreScratchpad!L2,LCM!$A$2:$A$47,0)),0)",0.0
+BI Rating Worksheet,69,3,IRPM,YES,=C53,1.0
+BI Rating Worksheet,69,4,IRPM,YES,=D53,1.0
+BI Rating Worksheet,69,5,IRPM,YES,=E53,1.0
+BI Rating Worksheet,69,6,IRPM,YES,=F53,1.0
+BI Rating Worksheet,69,7,IRPM,YES,=G53,1.0
+BI Rating Worksheet,69,8,IRPM,YES,=H53,1.0
+BI Rating Worksheet,69,9,IRPM,YES,=I53,1.0
+BI Rating Worksheet,69,10,IRPM,YES,=J53,1.0
+BI Rating Worksheet,69,11,IRPM,YES,=K53,1.0
+BI Rating Worksheet,69,12,IRPM,YES,=L53,1.0
+BI Rating Worksheet,70,3,MultiPremiumDispersion,YES,=C54,1.0
+BI Rating Worksheet,70,4,MultiPremiumDispersion,YES,=D54,1.0
+BI Rating Worksheet,70,5,MultiPremiumDispersion,YES,=E54,1.0
+BI Rating Worksheet,70,6,MultiPremiumDispersion,YES,=F54,1.0
+BI Rating Worksheet,70,7,MultiPremiumDispersion,YES,=G54,1.0
+BI Rating Worksheet,70,8,MultiPremiumDispersion,YES,=H54,1.0
+BI Rating Worksheet,70,9,MultiPremiumDispersion,YES,=I54,1.0
+BI Rating Worksheet,70,10,MultiPremiumDispersion,YES,=J54,1.0
+BI Rating Worksheet,70,11,MultiPremiumDispersion,YES,=K54,1.0
+BI Rating Worksheet,70,12,MultiPremiumDispersion,YES,=L54,1.0
+BI Rating Worksheet,71,3,PackageMod,YES,=C55,1.0
+BI Rating Worksheet,71,4,PackageMod,YES,=D55,1.0
+BI Rating Worksheet,71,5,PackageMod,YES,=E55,1.0
+BI Rating Worksheet,71,6,PackageMod,YES,=F55,1.0
+BI Rating Worksheet,71,7,PackageMod,YES,=G55,1.0
+BI Rating Worksheet,71,8,PackageMod,YES,=H55,1.0
+BI Rating Worksheet,71,9,PackageMod,YES,=I55,1.0
+BI Rating Worksheet,71,10,PackageMod,YES,=J55,1.0
+BI Rating Worksheet,71,11,PackageMod,YES,=K55,1.0
+BI Rating Worksheet,71,12,PackageMod,YES,=L55,1.0
+BI Rating Worksheet,73,3,CyberExclFactorSpecial,YES,=C57,0.995
+BI Rating Worksheet,73,4,CyberExclFactorSpecial,YES,=D57,0.995
+BI Rating Worksheet,73,5,CyberExclFactorSpecial,YES,=E57,0.995
+BI Rating Worksheet,73,6,CyberExclFactorSpecial,YES,=F57,0.995
+BI Rating Worksheet,73,7,CyberExclFactorSpecial,YES,=G57,0.995
+BI Rating Worksheet,73,8,CyberExclFactorSpecial,YES,=H57,0.995
+BI Rating Worksheet,73,9,CyberExclFactorSpecial,YES,=I57,0.995
+BI Rating Worksheet,73,10,CyberExclFactorSpecial,YES,=J57,0.995
+BI Rating Worksheet,73,11,CyberExclFactorSpecial,YES,=K57,0.995
+BI Rating Worksheet,73,12,CyberExclFactorSpecial,YES,=L57,0.995
+BI Rating Worksheet,74,3,CyberExclCOLExcpnsFactorSpecial,YES,='Contents Rating Worksheet'!C108,0.996
+BI Rating Worksheet,74,4,CyberExclCOLExcpnsFactorSpecial,YES,='Contents Rating Worksheet'!D108,0.996
+BI Rating Worksheet,74,5,CyberExclCOLExcpnsFactorSpecial,YES,='Contents Rating Worksheet'!E108,0.996
+BI Rating Worksheet,74,6,CyberExclCOLExcpnsFactorSpecial,YES,='Contents Rating Worksheet'!F108,0.996
+BI Rating Worksheet,74,7,CyberExclCOLExcpnsFactorSpecial,YES,='Contents Rating Worksheet'!G108,0.996
+BI Rating Worksheet,74,8,CyberExclCOLExcpnsFactorSpecial,YES,='Contents Rating Worksheet'!H108,0.996
+BI Rating Worksheet,74,9,CyberExclCOLExcpnsFactorSpecial,YES,='Contents Rating Worksheet'!I108,0.996
+BI Rating Worksheet,74,10,CyberExclCOLExcpnsFactorSpecial,YES,='Contents Rating Worksheet'!J108,0.996
+BI Rating Worksheet,74,11,CyberExclCOLExcpnsFactorSpecial,YES,='Contents Rating Worksheet'!K108,0.996
+BI Rating Worksheet,74,12,CyberExclCOLExcpnsFactorSpecial,YES,='Contents Rating Worksheet'!L108,0.996
+Special Class Worksheet,28,3,LCM,YES,=C5,1.0
+Special Class Worksheet,28,4,LCM,YES,=D5,1.0
+Special Class Worksheet,28,5,LCM,YES,=E5,1.0
+Special Class Worksheet,28,6,LCM,YES,=F5,1.0
+Special Class Worksheet,28,7,LCM,YES,=G5,0.0
+Special Class Worksheet,28,8,LCM,YES,=H5,0.0
+Special Class Worksheet,28,9,LCM,YES,=I5,0.0
+Special Class Worksheet,28,10,LCM,YES,=J5,0.0
+Special Class Worksheet,28,11,LCM,YES,=K5,0.0
+Special Class Worksheet,28,12,LCM,YES,=L5,0.0
