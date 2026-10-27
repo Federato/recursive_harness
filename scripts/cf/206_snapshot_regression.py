@@ -82,6 +82,7 @@ def to_engine(node):
 def rate_one(path_str):
     """Worker: rate one stored request, return (name, snapshot)."""
     from cf_engine.config import NULL_ARITHMETIC, ROUNDING
+    from cf_engine.iso_reader import as_iso_reads
     from cf_engine.resolve import book_for
     from gl_engine.interp.interpreter import Interpreter
     from gl_engine.interp.tree import Node
@@ -92,11 +93,13 @@ def rate_one(path_str):
     juris = sk["ProductName"].split()[-1]
     eff = str(sk.get("EffectiveDateTime", "2026-09-17"))[:10]
     asof = eff.replace("-", "")
-    sub = {"EffDate": f"{eff[5:7]}/{eff[8:10]}/{eff[0:4]}",
-           "CommercialPropertyTable": {"CommercialProperty": [to_engine(x) for x in body["CommercialProperty"]]}}
     snap = {"juris": juris, "asof": asof, "fields": {}, "messages": [], "raised": None}
     try:
-        ip = Interpreter(book_for(juris, asof), rounding=ROUNDING, null_arithmetic=NULL_ARITHMETIC)
+        book = book_for(juris, asof)
+        as_iso_reads(body["CommercialProperty"], book)   # a once-only record sent as a list (OI-145, OI-150)
+        sub = {"EffDate": f"{eff[5:7]}/{eff[8:10]}/{eff[0:4]}",
+               "CommercialPropertyTable": {"CommercialProperty": [to_engine(x) for x in body["CommercialProperty"]]}}
+        ip = Interpreter(book, rounding=ROUNDING, null_arithmetic=NULL_ARITHMETIC)
         tree = Node.from_dict(f"MasterCF{juris}", sub)
         ip.run(tree)
     except Exception as exc:                                   # a refusal is a result too

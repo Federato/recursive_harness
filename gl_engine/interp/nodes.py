@@ -681,7 +681,10 @@ def _for_each(ip, el, fr):
     """
     at_path = el.attrib.get("AtDataDef")
     path = at_path if at_path is not None else el.attrib.get("AtInputDataDef")
+    kids = _kids(el)
     if path is None:
+        if kids and ip.tag(kids[0]) == "FromList":
+            return _for_each_value(ip, el, fr, kids)
         raise InterpretError(
             "ForEach without @AtDataDef or @AtInputDataDef", "§9",
             ip.where(el))
@@ -689,7 +692,6 @@ def _for_each(ip, el, fr):
     # `ToDataDef` in the body still means the enclosing record (contract §9).
     # Only `AtDataDef` rebinds writes along with reads.
     keep_write_root = at_path is None
-    kids = _kids(el)
     # OI-127: a body with two or more value children (12 rule sites, e.g. the
     # drone total's Cov A and Cov B `If`s) yields each one's value, not only the
     # last. Every other body is unchanged.
@@ -716,6 +718,43 @@ def _for_each(ip, el, fr):
             yielded.append(out)
     # A collection, not the last value: `Sum` over a `ForEach` must total every
     # iteration. Statement contexts discard it, so this is free there.
+    return Multi(yielded)
+
+
+def _for_each_value(ip, el, fr, kids):
+    """A bare `ForEach` led by `FromList` (OI-147): once per value of a parameter list, the value bound as a parameter.
+
+    `<ForEach><FromList Param="P"><GetList FromParam="L"/></FromList> body </ForEach>` runs the body once per value
+    of `L`, with `P` bound to it, in the frame the loop sits in. Filed only in Blanket rating's public and
+    institutional plan check (AL 2021-03 to 2025-02, KS 2021-03, RI 2020-12 to 2026-04; none in GL). ISO rated the
+    Alabama 2021-03 request ours refused (`008865a9626d`) at 1,174, and this reading rates it 1,174 with the same
+    (no) messages (ISOComputeGraph C-73, 2026-10-27).
+    """
+    fl = kids[0]
+    name = fl.attrib.get("Param")
+    if not name:
+        raise InterpretError("FromList without @Param", "§9", ip.where(fl))
+    src = _kids(fl)
+    if len(src) != 1 or ip.tag(src[0]) != "GetList":
+        raise InterpretError("FromList holds something other than one GetList", "§9", ip.where(fl))
+    gl = src[0]
+    if "FromParam" in gl.attrib:
+        if not fr.has_param(gl.attrib["FromParam"]):
+            raise InterpretError(f"parameter {gl.attrib['FromParam']!r} is not bound here", "§8", ip.where(gl))
+        values = flatten(fr.param(gl.attrib["FromParam"]))
+    else:
+        values = flatten(ip.eval(gl, fr))
+    yielded = []
+    for v in values:
+        inner = fr.with_params({name: v})
+        out = None
+        try:
+            for ch in kids[1:]:
+                out = ip.eval(ch, inner)
+        except BreakLoop as brk:
+            yielded.append(brk.value if brk.has_value else out)
+            break
+        yielded.append(out)
     return Multi(yielded)
 
 
@@ -1262,7 +1301,7 @@ def _custom(ip, el, fr):
 
 @node("FromList")
 def _from_list(ip, el, fr):
-    """A loop-variable binder for a bare `ForEach`. Refused, with the reason.
+    """A loop-variable binder for a bare `ForEach`, read there (`_for_each_value`, OI-147); anywhere else, refused.
 
     The shape is always the same: a `ForEach` carrying NO `@AtDataDef`, whose
     first child is this element, which names a `@Param` and holds a `GetList`

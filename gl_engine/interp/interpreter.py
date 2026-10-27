@@ -530,6 +530,17 @@ class Interpreter:
                     f"upstream resolved to nothing -- most often a rate table "
                     f"that missed -- and the trace above names it",
                     "§12.3", name)
+            write_once = getattr(self.book, "write_once", None)
+            if write_once is not None and not getattr(self, "_lookahead", False) \
+                    and id(el) in write_once(frame.program, frame.rule_file):
+                # A write ISO makes only while its field is empty (Property, `cf_engine.write_once`; GL books have
+                # none): a field already holding a value keeps it. Not in OI-125's look-ahead: a submitted value a
+                # rule writes is still not read (ISO overwrites a submitted IRPM factor on these rules, 1.15 -> 1.0).
+                held = tree.select_one(to, frame.write_target)
+                if held is not None and held.text not in (None, ""):
+                    self.note("write-once-kept", f"{to} = {held.text!r} kept; {value!r} not written",
+                              name, rule_file=frame.rule_file)
+                    return value
             written = tree.write(to, frame.write_target, value)
             if self.deps is not None:
                 self.deps.wrote(written, value, name, el, frame.rule_file)

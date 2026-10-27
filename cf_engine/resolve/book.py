@@ -30,6 +30,7 @@ from gl_engine.erc.tables import Table
 from gl_engine.resolve.book import Layer, ResolvedBook
 
 from ..run_checks import PropertyRunChecks
+from ..write_once import ids_for as _write_once_ids
 
 from .resolver import CFEditionResolver, Resolution
 
@@ -76,6 +77,10 @@ class CFResolvedBook(ResolvedBook):
     #: C28-08), refuse an input whose absence prices an attached coverage at $0 (C28-17), refer below a company minimum
     #: (OI-113).
     run_hooks = PropertyRunChecks()
+
+    #: Writes ISO makes only while the field is empty, on the countrywide 2023-08 V01 rules our corpus holds without
+    #: their guards (`cf_engine.write_once`: OI-144, OI-146, OI-148, OI-149). Read by the interpreter at each write.
+    write_once = staticmethod(_write_once_ids)
 
     def older_than_iso(self) -> tuple[str, str] | None:
         """(ours, ISO's) when this book's state package is older than one ISO is known to rate on for this date.

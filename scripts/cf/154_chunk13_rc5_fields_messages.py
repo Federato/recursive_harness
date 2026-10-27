@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import argparse
 import collections
+import copy
 import json
 import re
 import sys
@@ -30,6 +31,7 @@ sys.path.insert(0, str(ROOT / "scripts" / "cf"))
 sys.path.insert(0, str(ROOT / "scripts"))
 
 from cf_engine.config import NULL_ARITHMETIC, ROUNDING
+from cf_engine.iso_reader import as_iso_reads
 from cf_engine.resolve import book_for
 from gl_engine.interp.interpreter import Interpreter
 from gl_engine.interp.tree import Node
@@ -90,7 +92,9 @@ def rate(req):
     eff = date.fromisoformat(sk["EffectiveDateTime"][:10])
     bk = book_for(st, eff.strftime("%Y%m%d"))
     sub = {"EffDate": eff.strftime("%m/%d/%Y"), "ExpDate": eff.replace(year=eff.year + 1).strftime("%m/%d/%Y")}
-    sub.update(rp.unwrap(rp.to_engine({"CommercialProperty": req["body"]["CommercialProperty"]}), rp.singletons(bk)))
+    body = copy.deepcopy(req["body"]["CommercialProperty"])
+    as_iso_reads(body, bk)                     # a once-only record sent as a list: ISO reads none of its fields (OI-145)
+    sub.update(rp.unwrap(rp.to_engine({"CommercialProperty": body}), rp.singletons(bk)))
     ip = Interpreter(bk, rounding=ROUNDING, null_arithmetic=NULL_ARITHMETIC)
     data = Node.from_dict(f"MasterCF{st}", sub)
     ip.run(data)

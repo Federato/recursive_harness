@@ -36,6 +36,7 @@ from gl_engine.interp.tree import Node
 from gl_engine.interp.values import InterpretError
 
 from .config import NULL_ARITHMETIC, ROUNDING
+from .iso_reader import as_iso_reads
 from .resolve import book_for
 
 _CF_SCRIPTS = Path(__file__).resolve().parent.parent / "scripts" / "cf"
@@ -85,11 +86,15 @@ def _run(request: dict, book, trace: bool = True, graph: bool = False) -> Proper
     st, eff = _scheme(request)
     d = date.fromisoformat(eff)
     sub = {"EffDate": d.strftime("%m/%d/%Y"), "ExpDate": d.replace(year=d.year + 1).strftime("%m/%d/%Y")}
-    sub.update(rp.unwrap(rp.to_engine({"CommercialProperty": request["body"]["CommercialProperty"]}),
-                         rp.singletons(book)))
+    body = copy.deepcopy(request["body"]["CommercialProperty"])
+    emptied = as_iso_reads(body, book)                  # a once-only record sent as a list (OI-145, OI-150)
+    sub.update(rp.unwrap(rp.to_engine({"CommercialProperty": body}), rp.singletons(book)))
     res = book.resolution
     out = PropertyRating(st, eff, [res.state.pkg_id] + ([res.parent.pkg_id] if res.parent else []))
     ip = Interpreter(book, rounding=ROUNDING, null_arithmetic=NULL_ARITHMETIC, trace=trace)
+    for p in emptied:
+        ip.note("submitted-list-emptied", f"{p} sent as a list where ISO declares one record; ISO reads none of its "
+                                          f"fields", "OI-145")
     data = Node.from_dict(f"MasterCF{st}", sub)
     out.ip = ip
     if graph:
