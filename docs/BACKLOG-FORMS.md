@@ -38,7 +38,7 @@ form comparison starts from requests ISO considers well-formed.
 
 | # | Task | Size | Needs |
 |---|---|---|---|
-| F-06 | **Cannabis exclusion forms**: 10 stored answers *"Only one Exclusion Form for Cannabis can apply to the risk"*. Which requests attach two, and should a request with two refuse or warn (like B-07's form messages, which stay as ISO prices them) | Small | your decision |
+| F-06 | **Cannabis exclusion forms**: 10 stored answers *"Only one Exclusion Form for Cannabis can apply to the risk"*. Which requests attach two, and should a request with two refuse or warn (like B-07's form messages, which stay as ISO prices them). **Decided 2026-10-27 (you): warn with ISO's message, price as ISO does** | Small | your go (in the forms free pass) |
 | F-07 | **The remaining unread package directories** (OI-83, partial): `Metadata` (circular provenance per rule and table), `Ratebook Tables` / `Ratebook Columns`, and GL `STC`. Read them where a form task needs them; record the rest as decided-not-needed | Small | — |
 
 ---

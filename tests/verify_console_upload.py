@@ -222,6 +222,33 @@ def part_d():
                                                  ("up-drop", "up-file", "up-text", "up-send", "up-out", "up-side")))
     check("D6 the generator and the row actions are on the page",
           all(s in html for s in ('id="up-lob"', 'id="up-state"', 'id="up-gen"', "data-dl=", "data-ed=")))
+    sec_live = re.search(r'<section class="screen" id="s-compare".*?</div></section>', html, re.S).group(0)
+    gen = sec_live.split('id="up-h2"')[0]
+    check("D7 Compare with ISO sits in Generate a request, and every Compare button is always clickable",
+          'id="up-gen-cmp"' in gen and 'id="up-add-cmp"' in gen and "up-fresh" not in html
+          and ".disabled" not in CP.UP_JS)
+    check("D8 the Coverage Board opens on summary views (by way of pricing, by state, map) with the full grid one click away",
+          all(f'data-v="{v}"' in html for v in ("path", "state", "map", "grid")) and 'id="bd-alt"' in html
+          and 'id="bd-gridwrap"' in html and "function bdPathView" in html and "bdCell(BD.sel)" in CP.BOARD_JS)
+    check("D9 the Readiness Matrix opens on summary views (by coverage, by state, what's left) with the full matrix one click away",
+          all(f'data-v="{v}"' in CP.MATRIX_HTML for v in ("cov", "state", "todo", "grid")) and 'id="mx-alt"' in html
+          and 'id="mx-gridwrap"' in html and "function mxCovView" in html and "mxSide(c)" in CP.MATRIX_JS)
+    check("D10 the Test Plan Builder is risk first: five steps, one submission with Vary switches, states on a map",
+          all(f'data-step="{i}"' in CP.PLAN_HTML for i in range(5)) and all(f'id="{i}"' in html for i in ("pl-dims", "pl-states", "pl-preset", "pl-commit"))
+          and "function plSpec" in html and "base," in CP.PLAN_JS and "method:PL.method" in CP.PLAN_JS)
+    from console import plans as P
+    sp = {"line": "GL", "states": ["OH"], "base": {"terrorism": "Yes"}, "dims": {"occurrence_limit": ["25,000 CSL", "10,000,000 CSL"]}}
+    rows = P.scenarios(sp)
+    check("D11 a plan's base risk rides in every scenario; its method changes only the varied part",
+          rows and all(r["config"].get("terrorism") == "Yes" for r in rows)
+          and [r["kind"] for r in P.scenarios({**sp, "method": "edges"})][0] == "base"
+          and P.scenarios({"line": "GL", "states": ["OH"], "dims": {"occurrence_limit": ["25,000 CSL"]}})
+          == [{"state": "OH", "config": {"occurrence_limit": "25,000 CSL"}, "kind": "pairwise"}])
+    check("D12 the Workbench is one live price: submission screens, the price beside ISO's, one across-every-state panel",
+          all(f'id="{i}"' in CP.WB_HTML for i in ("wb-nav", "wb-inputs", "wb-every", "wb-tabs", "wb-across", "wb-side"))
+          and "wb-rate" not in CP.WB_HTML and "wb-where" not in CP.WB_HTML and "function wbRate" in html and 'data-t="curve"' in CP.WB_HTML)
+    from console import workbench as WBK
+    check("D13 a Property risk builds from the form's fields", WBK.build("CP", "OH", {"bldg_limit": "10000000"}) != WBK.build("CP", "OH"))
     snap = CP.page(app_only=frozenset({"compare", "plan", "workbench"}))
     sec = re.search(r'<section class="screen" id="s-compare".*?</section>', snap, re.S).group(0)
     check("D4 in the read-only snapshot it says it needs the running app", "needs the running app" in sec and "up-drop" not in sec)

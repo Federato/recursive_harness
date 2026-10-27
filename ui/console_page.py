@@ -205,6 +205,10 @@ def workbench(method: str, op: str, query: dict, b: dict):
             import variants as V
             cfg = V.clean(b.get("config") or {})
             return js(200, {**variables.legality(cfg), "describes": V.describe(cfg)})
+        if op == "every" and method == "POST" and line == "CP":
+            import property_rating as pr
+            return js(200, {**WB.every_state(b.get("config") or {}, pr.states(), line="CP"), "notApplicable": {},
+                            "describes": ""})
         if op == "every" and method == "POST":
             import variants as V
             cfg = V.clean(b.get("config") or {})
@@ -573,6 +577,35 @@ def dispatch(method: str, path: str, query: dict, body):
     if method == "GET" and path == "/api/console/filings/jobs":
         from console import filings
         return 200, json.dumps(filings.jobs()), "json"
+    if path == "/api/console/filings/test":
+        # the Test tab: quick checks on our engine (factors as filed, effect as expected), queued one at a time
+        from console import filing_tests as FT
+        if method == "POST":
+            b = body or {}
+            serffs = [x["serff"] for x in __import__("console.filings", fromlist=["x"]).filings()["filings"]
+                      if x.get("versions")] if b.get("all") else [str(b.get("serff") or "")]
+            return 200, json.dumps({"status": FT.start([x for x in serffs if x], bool(b.get("full")))}), "json"
+        got = FT.result(query.get("serff", "")) if query.get("serff") else None
+        return 200, json.dumps({"result": got, "status": FT.status(), "summaries": FT.summaries()}), "json"
+    if method == "POST" and path == "/api/console/filings/expected":
+        from console import filing_tests as FT
+        b = body or {}
+        try:
+            FT.set_expected(str(b.get("serff") or ""), str(b.get("company") or ""), str(b.get("state") or ""),
+                            b.get("value"))
+        except (TypeError, ValueError):
+            return 400, json.dumps({"error": "the expected effect must be a number"}), "json"
+        return 200, json.dumps({"result": FT.rejudge(str(b.get("serff") or ""))}), "json"
+    if path == "/api/console/filings/iso":
+        # D21: the spot check sends TECHNICAL requests only; a request ISO already answered costs nothing
+        from console import filing_tests as FT
+        b = body or {}
+        try:
+            if method == "POST":
+                return 200, json.dumps(FT.iso_send(str(b.get("serff") or ""), b.get("override") or None)), "json"
+            return 200, json.dumps(FT.iso_plan(query.get("serff", ""))), "json"
+        except KeyError as exc:
+            return 404, json.dumps({"error": str(exc)}), "json"
     if method == "GET" and path == "/api/console/filings/board":
         from console import filings
         return 200, json.dumps(filings.board()), "json"
@@ -640,92 +673,118 @@ def page(app_only: frozenset = frozenset()) -> str:
 MATRIX_HTML = """<section class="screen" id="s-matrix" hidden><div class="mx-wrap"><div class="mx-main">
   <div class="mx-head"><div><div class="eyebrow">Readiness Matrix</div><h1>Which states are ready to rely on?</h1></div>
     <p>A coverage is ready when every way of pricing it has been checked against ISO, we agree on all of them, and
-    nothing has gone out of date. Click a cell to see what's still missing; double-click to open it on the Coverage Board.</p></div>
+    nothing has gone out of date. Start from a summary, then click a coverage, a state or a step to look inside it,
+    and a cell to see what it still needs.</p></div>
   <div class="mx-stats" id="mx-stats"></div>
   <div class="mx-trend"><div class="mx-trend-hd"><span>Agreement with ISO over time</span><span class="mx-key" id="mx-key"></span></div>
     <div id="mx-chart"></div></div>
-  <div class="mx-scroll"><div id="mx-grid" class="mx-grid" role="grid" aria-label="Readiness by state and coverage">
-    <div class="mx-loading">Loading the matrix… (the first build after a change takes about half a minute)</div></div></div>
+  <div class="bd-views" id="mx-views" role="tablist" aria-label="View">
+    <button role="tab" data-v="cov">By coverage</button><button role="tab" data-v="state">By state</button>
+    <button role="tab" data-v="todo">What's left</button><button role="tab" data-v="grid">Full matrix</button></div>
+  <div class="bd-alt" id="mx-alt"><div class="mx-loading">Loading the matrix… (the first build after a change takes about half a minute)</div></div>
+  <div class="mx-scroll" id="mx-gridwrap" hidden><div id="mx-grid" class="mx-grid" role="grid" aria-label="Readiness by state and coverage">
+    <div class="mx-loading">Loading the matrix…</div></div></div>
 </div><aside class="mx-side" id="mx-side" aria-live="polite"></aside></div></section>"""
 
 BUILT = {"matrix": MATRIX_HTML}
 
 MATRIX_CSS = """
-.mx-wrap{display:flex;gap:0;margin:0 -28px -32px;min-height:calc(100vh - 140px)}
-.mx-main{flex:1;min-width:0;padding:0 28px 32px;display:flex;flex-direction:column;gap:16px}
+.mx-wrap{display:flex;gap:0;margin:0 -32px -40px;min-height:calc(100vh - 140px)}
+.mx-main{flex:1;min-width:0;padding:0 32px 40px;display:flex;flex-direction:column;gap:22px}
 .mx-head{display:flex;align-items:flex-end;gap:24px;flex-wrap:wrap}
-.mx-head p{margin:0;padding-bottom:6px;font-size:13px;color:var(--color-neutral-700);max-width:560px}
+.mx-head p{margin:0;padding-bottom:6px;font-size:15px;line-height:1.6;color:var(--color-neutral-700);max-width:62ch}
 .mx-stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));border-top:1px solid var(--color-text);
   border-bottom:1px solid var(--color-divider)}
 .mx-stats div{padding:12px 18px 12px 0;border-right:1px solid var(--color-divider);margin-right:18px}
 .mx-stats div:last-child{border-right:0}
-.mx-stats span{display:block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-neutral-700)}
+.mx-stats span{display:block;font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-neutral-700)}
 .mx-stats b{font:400 32px/1.1 var(--font-heading)}
-.mx-stats small{font-size:12px;color:var(--color-neutral-700);margin-left:6px}
-.mx-trend-hd{display:flex;justify-content:space-between;align-items:baseline;font-size:11px;letter-spacing:.08em;
+.mx-stats small{font-size:13.5px;color:var(--color-neutral-700);margin-left:6px}
+.mx-trend-hd{display:flex;justify-content:space-between;align-items:baseline;font-size:12.5px;letter-spacing:.08em;
   text-transform:uppercase;color:var(--color-neutral-700);margin-bottom:4px}
-.mx-key{display:flex;gap:14px;text-transform:none;letter-spacing:0;font-size:12px;color:var(--color-text)}
+.mx-key{display:flex;gap:14px;text-transform:none;letter-spacing:0;font-size:13.5px;color:var(--color-text)}
 .mx-key i{display:inline-block;width:14px;height:2px;vertical-align:middle;margin-right:5px;border-radius:1px}
 #mx-chart{position:relative;height:120px}
 #mx-chart svg{display:block;width:100%;height:100%;overflow:visible}
 .mx-empty{height:100%;display:flex;align-items:center;justify-content:center;border:1px dashed var(--color-neutral-400);
-  border-radius:var(--radius-md);color:var(--color-neutral-700);font-size:12.5px}
-.mx-tip{position:absolute;pointer-events:none;background:#fff;border:1px solid var(--color-divider);border-radius:4px;
-  box-shadow:0 3px 10px color-mix(in srgb,#2d2b2b 16%,transparent);padding:6px 9px;font-size:12px;white-space:nowrap;z-index:5}
+  border-radius:var(--radius-md);color:var(--color-neutral-700);font-size:14px}
+.mx-tip{position:absolute;pointer-events:none;background:var(--color-card);border:1px solid var(--color-divider);border-radius:var(--radius-md);
+  box-shadow:0 3px 10px color-mix(in srgb,#2d1d1a 16%,transparent);padding:6px 9px;font-size:13.5px;white-space:nowrap;z-index:5}
 .mx-scroll{overflow-x:auto}
 .mx-grid{display:grid;gap:4px;min-width:1040px}
 .mx-loading{grid-column:1/-1;padding:24px;color:var(--color-neutral-700)}
 .mx-lob{font:600 18px var(--font-heading);border-bottom:1px solid var(--color-text);padding-bottom:3px}
-.mx-col{font-size:12px;line-height:1.2;padding:0 2px 4px;align-self:end}
-.mx-colr{font-size:10.5px;color:var(--color-neutral-700);text-align:right;padding-bottom:4px;align-self:end}
+.mx-col{font-size:13.5px;line-height:1.2;padding:0 2px 4px;align-self:end}
+.mx-colr{font-size:12px;color:var(--color-neutral-700);text-align:right;padding-bottom:4px;align-self:end}
 .mx-st{display:flex;align-items:center;gap:8px;min-width:0}
 .mx-st b{font:600 18px var(--font-heading);width:28px;flex:none}
-.mx-st span{font-size:12px;color:var(--color-neutral-700);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mx-st span{font-size:13.5px;color:var(--color-neutral-700);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mx-sum{display:flex;align-items:center;justify-content:flex-end;font-weight:600}
-.mx-cell{width:auto;overflow:hidden;height:40px;border-radius:2px;cursor:pointer;display:flex;flex-direction:column;align-items:flex-start;
+.mx-cell{width:auto;overflow:hidden;height:48px;border-radius:var(--radius-sm);cursor:pointer;display:flex;flex-direction:column;align-items:flex-start;
   justify-content:center;padding:0 6px;line-height:1.2;text-align:left;font:inherit;min-width:0;position:relative}
 .mx-cell:hover{filter:brightness(.95)}
+.mx-cell.verified,.bd-c.verified{background:var(--teal-soft);border-color:#9fe8cf}
 .mx-cell:focus-visible,.mx-cell.sel{outline:2px solid var(--color-text);outline-offset:2px}
 .mx-cell .l1,.mx-cell .l2{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
-.mx-cell .l1{font-size:11.5px;font-weight:600;letter-spacing:-.01em}
-.mx-cell .l2{font-size:10.5px}
-.mx-cell .so{position:absolute;top:3px;right:5px;font-size:10px}
-.mx-side{width:380px;flex:none;position:sticky;top:var(--hdr,66px);align-self:flex-start;max-height:calc(100vh - var(--hdr,66px));overflow-y:auto;border-left:1px solid var(--color-divider);padding:24px;background:#f8f4f4;
-  display:flex;flex-direction:column;gap:14px}
-.mx-back{font-size:12px;text-decoration:none}
+.mx-cell .l1{font-size:13px;font-weight:600;letter-spacing:-.01em}
+.mx-cell .l2{font-size:12px}
+.mx-cell .so{position:absolute;top:3px;right:5px;font-size:11.5px}
+.mx-side{width:380px;flex:none;position:sticky;top:var(--hdr,66px);align-self:flex-start;max-height:calc(100vh - var(--hdr,66px));overflow-y:auto;border-left:1px solid var(--color-divider);padding:28px;background:var(--color-panel);
+  display:flex;flex-direction:column;gap:18px}
+.mx-back{font-size:13.5px;text-decoration:none}
 .mx-list{display:flex;flex-direction:column}
 .mx-lh,.mx-li{display:grid;grid-template-columns:22px 30px 28px minmax(0,1fr) 56px;gap:8px;align-items:center}
-.mx-lh{padding-bottom:5px;border-bottom:1px solid var(--color-text);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-neutral-700)}
+.mx-lh{padding-bottom:5px;border-bottom:1px solid var(--color-text);font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-neutral-700)}
 .mx-lh span:last-child,.mx-ln{text-align:right}
-.mx-li{padding:7px 0;border:0;border-bottom:1px solid var(--color-divider);background:transparent;font:inherit;font-size:12.5px;
+.mx-li{padding:10px 0;border:0;border-bottom:1px solid var(--color-divider);background:transparent;font:inherit;font-size:14px;
   color:var(--color-text);text-align:left;cursor:pointer}
 .mx-li:hover{background:var(--color-accent-100)}
-.mx-li .chip{width:20px;height:16px;font-size:10px}
+.mx-li .chip{width:20px;height:20px;font-size:11.5px}
 .mx-lc{display:flex;flex-direction:column;line-height:1.25;min-width:0}
-.mx-lc small,.mx-ln small{font-size:11.5px;color:var(--color-neutral-700)}
-.mx-ln small{display:block;font-size:10px}
-.mx-more{align-self:flex-start;border:0;background:transparent;color:var(--color-accent-700);cursor:pointer;font:inherit;font-size:12.5px;padding:0;text-decoration:underline}
+.mx-lc small,.mx-ln small{font-size:13px;color:var(--color-neutral-700)}
+.mx-ln small{display:block;font-size:11.5px}
+.mx-more{align-self:flex-start;border:0;background:transparent;color:var(--color-accent-700);cursor:pointer;font:inherit;font-size:14px;padding:0;text-decoration:underline}
 .mx-side h2{margin:0;font:600 24px/1.15 var(--font-heading)}
-.mx-side .cap2{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-neutral-700)}
-.mx-side table{width:100%;border-collapse:collapse;font-size:12.5px}
-.mx-side td{padding:6px 0;border-bottom:1px solid var(--color-divider);vertical-align:top}
+.cap2{font-size:13.5px;font-weight:600;color:var(--color-neutral-700)}
+.up-gl{margin:0;display:grid;gap:8px;font-size:14px}.up-gl dt{font-weight:600}.up-gl dd{margin:0;color:var(--color-neutral-700)}
+.mx-side table{width:100%;border-collapse:collapse;font-size:14px}
+.mx-side td{padding:9px 0;border-bottom:1px solid var(--color-divider);vertical-align:top}
 .mx-side td:last-child{text-align:right;white-space:nowrap;padding-left:10px}
-.mx-need{display:flex;gap:10px;align-items:center;padding:10px 12px;border:1px solid var(--color-divider);border-radius:4px;background:var(--color-bg)}
+.mx-need{display:flex;gap:12px;align-items:center;padding:14px 16px;border:1px solid var(--color-divider);border-radius:var(--radius-lg);background:var(--color-card)}
 .mx-need b{font:600 16px var(--font-heading)}
 .mx-so{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
-.mx-so input{font:inherit;padding:6px 8px;border:1px solid var(--color-divider);border-radius:4px;background:#fff;flex:1;min-width:120px}
-.btn{border:1px solid var(--color-accent);color:var(--color-accent-700);background:transparent;border-radius:4px;
-  padding:7px 12px;cursor:pointer;font:600 14px var(--font-heading)}
+.mx-so input{font:inherit;padding:8px 12px;border:1px solid var(--color-divider);border-radius:var(--radius-md);background:var(--color-card);flex:1;min-width:120px}
+.btn{border:1px solid var(--color-accent);color:var(--color-accent);background:transparent;border-radius:var(--radius-pill);
+  padding:8px 18px;cursor:pointer;font:500 14px var(--font-body)}
 .btn:hover{background:var(--color-accent-100)}
+.btn.primary{background:var(--teal);border-color:var(--teal);color:var(--color-text);font-weight:600}
+.btn.primary:hover{background:var(--teal-hover);border-color:var(--teal-hover)}
+.btn:focus-visible,.tab:focus-visible,a:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible,summary:focus-visible{outline:2px solid var(--color-accent-500);outline-offset:2px}
+select,input,textarea{border-radius:var(--radius-md)}
 .btn[disabled]{opacity:.5;cursor:default}
-.mx-msg{font-size:12px;color:var(--color-neutral-700)}
+.mx-msg{font-size:13.5px;color:var(--color-neutral-700)}
+.mx-lobh{font:400 21px var(--font-heading);margin-top:6px}
+.mx-sg{display:grid;grid-template-columns:190px minmax(200px,1fr) minmax(240px,1.2fr) 70px;gap:8px 14px;align-items:center;font-size:14px;min-width:760px}
+.mx-sg .h{font-size:13px;color:var(--color-neutral-700)}
+.mx-sg .st{cursor:pointer;border:0;background:none;font:inherit;color:var(--color-text);text-align:left;border-radius:var(--radius-sm);padding:2px 6px}
+.mx-sg .st:hover,.mx-sg .st.open{background:var(--color-accent-100)}
+.mx-sg .st b{font:500 16px var(--font-heading);margin-right:6px}.mx-sg .st span{color:var(--color-neutral-700);font-size:13px}
+.mx-segs{display:flex;gap:3px}.mx-segs i{flex:1;height:14px;border-radius:4px}
+.mx-sg .pct{text-align:right;font-weight:600}
+.mx-sx{grid-column:1/-1;background:var(--color-bg);border:1px solid var(--color-divider);border-radius:var(--radius-md);padding:12px 14px;display:grid;gap:8px}
+.mx-todo{display:grid;gap:12px}
+.mx-tc{border:1px solid var(--color-divider);border-radius:var(--radius-md);padding:14px 16px;display:grid;gap:6px;background:var(--color-card);cursor:pointer;text-align:left;font:inherit;color:var(--color-text)}
+.mx-tc:hover,.mx-tc.sel{background:var(--color-accent-100)}
+.mx-tc .hd{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.mx-tc .hd b{font:500 18px var(--font-heading)}.mx-tc .calls{margin-left:auto;font-weight:600}
+.mx-pill{display:inline-flex;border-radius:var(--radius-pill);padding:2px 11px;font-size:13px;font-weight:600}
 @media (max-width:1100px){.mx-wrap{flex-direction:column}.mx-side{width:auto;border-left:0;border-top:1px solid var(--color-divider)}
   .mx-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
 """
 
 MATRIX_JS = r"""
-const MX={data:null,sel:null,all:false};
-const SERIES={GL:{name:'General Liability',color:'#2f72a8'},CP:{name:'Commercial Property',color:'#9a6214'}};
+const MX={data:null,sel:null,all:false,view:'cov',openC:new Set(),openS:new Set(),todo:null,from:null};
+try{const v=localStorage.getItem('mx-view');if(['cov','state','todo','grid'].includes(v))MX.view=v;}catch(e){}
+const SERIES={GL:{name:'General Liability',color:'#1f8f72'},CP:{name:'Commercial Property',color:'#a66b42'}};
 const LG=Object.fromEntries(BOOT.legend.map(s=>[s.key,s]));
 const SHORT={internal:'Internal',na:'n/a'};   // the cell's own label; the full one is in the title and side panel
 function mxCols(r){const g=r.columns.GL||[],c=r.columns.CP||[];  // GL first, as the prototype
@@ -766,8 +825,8 @@ function mxDraw(){
       h+='<span class="mx-sum" style="color:'+(counted.length&&pass===counted.length?'var(--color-accent-700)':'var(--color-text)')+'">'+pass+'/'+counted.length+'</span>';
     });
   });
-  g.innerHTML=h;
-  if(MX.sel&&by[MX.sel])mxSide(by[MX.sel]);else{MX.sel=null;mxList();}
+  g.innerHTML=h;mxAlt();
+  if(MX.sel&&by[MX.sel])mxSide(by[MX.sel]);else{MX.sel=null;mxHome();}
 }
 function mxTrend(A){
   const el=document.getElementById('mx-chart'),key=document.getElementById('mx-key');
@@ -798,9 +857,82 @@ function mxTrend(A){
     tip.hidden=false;tip.style.left=Math.min(x(best)*bx.width/W+12,bx.width-220)+'px';tip.style.top='4px';});
   svg.addEventListener('mouseleave',()=>{tip.hidden=true;xl.setAttribute('visibility','hidden');});
 }
+
+// ---- the matrix's summary views: by coverage, by state, what's left; each drills into the cell panel (mxSide)
+const MXK=['mismatch','stale','internal','verified','untested','na'];
+const MXN={verified:'Passed',internal:'Checked by us only',stale:'Out of date',mismatch:'Mismatch',untested:'Not tested',na:"Doesn't apply"};
+const MXSTEP={mismatch:['Sort out a mismatch','Find where ours and ISO’s calculations split, decide the cause, then check again.'],
+  stale:['Refresh out-of-date answers','ISO answered on an older edition. Asking again refreshes the evidence.'],
+  internal:['Compare with ISO','Our engine has checked these; ISO has not. Comparing turns them into passes or mismatches.'],
+  untested:['Start testing','Nothing has been priced here yet. A test plan makes the requests.']};
+function mxCellsOf(l,cov){return MX.data.cells.filter(c=>c.lob===l&&c.coverage===cov);}
+function mxCount(cs){const n={};cs.forEach(c=>n[c.status]=(n[c.status]||0)+1);return n;}
+function mxBar(n,t){return '<div class="bd-bar">'+['verified','internal','stale','mismatch','untested','na'].filter(k=>n[k]).map(k=>'<i class="k-'+k+'" style="width:'+(100*n[k]/t)+'%" title="'+MXN[k]+': '+n[k]+'"></i>').join('')+'</div>';}
+function mxExc(cs,n){const major=Object.entries(n).sort((a,b)=>b[1]-a[1])[0][0],by={};cs.forEach(c=>{if(c.status!==major)(by[c.status]=by[c.status]||[]).push(c.state);});
+  const ks=MXK.filter(k=>by[k]);return ks.length?'Mostly '+MXN[major].toLowerCase()+'. '+ks.map(k=>'<b>'+MXN[k]+':</b> '+(by[k].length>6?by[k].length+' states':by[k].sort().join(', '))).join(' · '):'Same in every state';}
+function mxCovView(){const r=MX.data;
+  return '<div><h3>Which coverages are ready, and where not?</h3><div class="mx-msg">One line per coverage; the bar is its states, and the states that differ are named. Click a line for its states, then a state for what it needs.</div></div>'+
+    '<div class="bd-key">'+MXK.map(k=>'<span><i class="k-'+k+'"></i>'+MXN[k]+'</span>').join('')+'</div>'+
+    ['GL','CP'].filter(l=>r.columns[l]).map(l=>'<div class="mx-lobh">'+SERIES[l].name+'</div>'+r.columns[l].map(cov=>{const cs=mxCellsOf(l,cov),n=mxCount(cs),id=l+'|'+cov,open=MX.openC.has(id);
+      return '<div class="bd-pr'+(open?' open':'')+'" data-cov="'+esc(id)+'" tabindex="0" role="button" aria-expanded="'+open+'"><div>'+esc(cov)+'</div>'+mxBar(n,cs.length)+
+        '<div class="n">'+(n.verified||0)+' of '+(cs.length-(n.na||0))+' ready</div><div class="x">'+mxExc(cs,n)+'</div></div>'+
+        (open?'<div class="bd-chips">'+MXK.filter(k=>n[k]).map(k=>'<div class="lbl">'+MXN[k]+' · '+n[k]+'</div>'+cs.filter(c=>c.status===k).sort((a,b)=>a.state.localeCompare(b.state)).map(c=>
+          '<button class="bd-sc k-'+k+(MX.sel===mxKey(c)?' sel':'')+'" data-k="'+esc(mxKey(c))+'" data-from="c:'+esc(id)+'" title="'+esc((BOOT.names[c.state]||c.state)+': '+MXN[k])+'">'+c.state+'</button>').join('')).join('')+'</div>':'');}).join('')).join('');}
+function mxStateView(){const r=MX.data,lobs=['GL','CP'].filter(l=>r.columns[l]),states=[...new Set(r.cells.map(c=>c.state))];
+  const rows=states.map(s=>{const cs=r.cells.filter(c=>c.state===s),app=cs.filter(c=>c.status!=='na');return {s,cs,p:app.length?app.filter(c=>c.status==='verified').length/app.length:0};}).sort((a,b)=>a.p-b.p||a.s.localeCompare(b.s));
+  const segs=(cs,l)=>'<div class="mx-segs">'+r.columns[l].map(cov=>{const c=cs.find(x=>x.lob===l&&x.coverage===cov);return '<i class="k-'+(c?c.status:'na')+'" title="'+esc(cov+': '+(c?MXN[c.status]:'not offered'))+'"></i>';}).join('')+'</div>';
+  return '<div><h3>How ready is each state?</h3><div class="mx-msg">One small block per coverage, colored by its status. Least ready first. Click a state for its coverages, then a coverage for what it needs.</div></div>'+
+    '<div class="mx-scroll"><div class="mx-sg"><div class="h">State</div>'+lobs.map(l=>'<div class="h">'+SERIES[l].name+' · '+r.columns[l].length+'</div>').join('')+'<div class="h" style="text-align:right">Ready</div>'+
+    rows.map(x=>{const open=MX.openS.has(x.s);return '<button class="st'+(open?' open':'')+'" data-st="'+x.s+'" aria-expanded="'+open+'"><b>'+x.s+'</b><span>'+esc(BOOT.names[x.s]||'')+'</span></button>'+
+      lobs.map(l=>segs(x.cs,l)).join('')+'<div class="pct">'+Math.round(100*x.p)+'%</div>'+
+      (open?'<div class="mx-sx">'+lobs.map(l=>'<div><b>'+SERIES[l].name+'</b><div>'+r.columns[l].map(cov=>{const c=x.cs.find(y=>y.lob===l&&y.coverage===cov);if(!c)return '';
+        return '<button class="bd-pc'+(MX.sel===mxKey(c)?' sel':'')+'" data-k="'+esc(mxKey(c))+'" data-from="s:'+x.s+'" title="'+esc(MXN[c.status])+'"><i class="k-'+c.status+'"></i>'+esc(cov)+'</button>';}).join('')+'</div></div>').join('')+'</div>':'');}).join('')+'</div></div>';}
+function mxTodoView(){const L=MX.data.stillToTest||[],g={};L.forEach(x=>(g[x.status]=g[x.status]||[]).push(x));
+  if(!L.length)return '<div class="mx-need"><span class="chip verified">✓</span><div><b>Nothing left</b><div class="mx-msg">Every applicable cell has Passed.</div></div></div>';
+  return '<div><h3>What’s left to do, and what it costs</h3><div class="mx-msg">Every cell that is not ready yet, grouped by the next step, with the ISO calls it takes. Click a card for its cells.</div></div><div class="mx-todo">'+
+    ['mismatch','stale','internal','untested'].filter(k=>g[k]).map(k=>{const xs=g[k],calls=xs.reduce((s,x)=>s+(x.calls||0),0),by={};xs.forEach(x=>{const t=SERIES[x.lob].name+' · '+x.coverage;by[t]=(by[t]||0)+1;});
+      return '<button class="mx-tc'+(MX.todo===k?' sel':'')+'" data-todo="'+k+'"><span class="hd"><span class="mx-pill k-'+k+'">'+MXN[k]+'</span><b>'+MXSTEP[k][0]+'</b><span class="mx-msg">'+xs.length+' state-coverage'+(xs.length>1?'s':'')+'</span>'+
+        '<span class="calls">'+calls.toLocaleString()+' ISO call'+(calls===1?'':'s')+'</span></span><span class="mx-msg">'+MXSTEP[k][1]+'</span>'+
+        '<span class="mx-msg">'+Object.entries(by).sort((a,b)=>b[1]-a[1]).slice(0,4).map(([t,n])=>esc(t)+' '+n).join(' · ')+(Object.keys(by).length>4?' · …':'')+'</span></button>';}).join('')+'</div>';}
+function mxCovSide(id){const[l,cov]=id.split('|'),cs=mxCellsOf(l,cov),n=mxCount(cs),calls=cs.reduce((s,c)=>s+(c.estRemainingCalls||0),0);
+  document.getElementById('mx-side').innerHTML='<a href="#matrix" class="mx-back" id="mx-back">← Still to test</a><div class="cap2">'+SERIES[l].name+'</div><h2>'+esc(cov)+'</h2>'+
+    '<div class="mx-msg">Ready in '+(n.verified||0)+' of '+(cs.length-(n.na||0))+' states · about '+calls+' ISO call'+(calls===1?'':'s')+' to finish</div>'+mxBar(n,cs.length)+
+    '<table>'+MXK.filter(k=>n[k]).map(k=>'<tr><td>'+MXN[k]+'</td><td>'+n[k]+'</td></tr>').join('')+'</table><div class="mx-msg">Pick a state in the list for what it needs.</div>';
+  document.getElementById('mx-back').onclick=ev=>{ev.preventDefault();MX.openC.delete(id);mxAlt();mxHome();};}
+function mxStateSide(st){const cs=MX.data.cells.filter(c=>c.state===st),calls=cs.reduce((s,c)=>s+(c.estRemainingCalls||0),0);
+  document.getElementById('mx-side').innerHTML='<a href="#matrix" class="mx-back" id="mx-back">← Still to test</a><div class="cap2">Readiness</div><h2>'+esc(BOOT.names[st]||st)+'</h2>'+
+    '<div class="mx-msg">'+cs.filter(c=>c.status==='verified').length+' of '+cs.filter(c=>c.status!=='na').length+' coverages ready · about '+calls+' ISO call'+(calls===1?'':'s')+' to finish</div>'+
+    ['GL','CP'].filter(l=>MX.data.columns[l]).map(l=>{const rs=cs.filter(c=>c.lob===l);return rs.length?'<div class="cap2">'+SERIES[l].name+'</div><table>'+rs.map(c=>'<tr><td>'+esc(c.coverage)+'</td><td><span class="mx-pill k-'+c.status+'">'+MXN[c.status]+'</span></td></tr>').join('')+'</table>':'';}).join('')+
+    '<button class="btn" id="mx-tobd" style="margin-top:auto">See '+st+' on the Coverage Board</button>';
+  document.getElementById('mx-back').onclick=ev=>{ev.preventDefault();MX.openS.delete(st);mxAlt();mxHome();};
+  document.getElementById('mx-tobd').onclick=()=>{location.hash='#board?lob=GL&state='+encodeURIComponent(st);};}
+function mxTodoSide(k){const xs=(MX.data.stillToTest||[]).filter(x=>x.status===k);
+  document.getElementById('mx-side').innerHTML='<a href="#matrix" class="mx-back" id="mx-back">← Still to test</a><div class="cap2">What’s left</div><h2>'+MXSTEP[k][0]+'</h2>'+
+    '<div class="mx-msg">'+MXSTEP[k][1]+'</div><div class="mx-list">'+xs.map(g=>'<button class="mx-li" data-k="'+esc(g.lob+'|'+g.state+'|'+g.coverage)+'" data-from="t:'+k+'"><span class="chip '+g.status+'">'+esc(LG[g.status].glyph)+'</span>'+
+      '<b>'+esc(g.state)+'</b><span>'+esc(g.lob)+'</span><span class="mx-lc"><span>'+esc(g.coverage)+'</span><small>'+esc(g.needs)+'</small></span><span class="mx-ln">'+g.calls+'</span></button>').join('')+'</div>';
+  document.getElementById('mx-back').onclick=ev=>{ev.preventDefault();MX.todo=null;mxAlt();mxHome();};}
+function mxBackLabel(){const f=MX.from||'';if(f.startsWith('c:'))return f.slice(2).split('|')[1];if(f.startsWith('s:'))return BOOT.names[f.slice(2)]||f.slice(2);if(f.startsWith('t:'))return MXSTEP[f.slice(2)][0];return 'Still to test';}
+function mxBack(){const f=MX.from||'';MX.from=null;if(f.startsWith('c:'))mxCovSide(f.slice(2));else if(f.startsWith('s:'))mxStateSide(f.slice(2));else if(f.startsWith('t:'))mxTodoSide(f.slice(2));else mxList();}
+function mxHome(){if(MX.view==='todo'&&MX.todo)mxTodoSide(MX.todo);else if(MX.view==='cov'&&MX.openC.size)mxCovSide([...MX.openC].pop());else if(MX.view==='state'&&MX.openS.size)mxStateSide([...MX.openS].pop());else mxList();}
+function mxAlt(){const v=MX.view,alt=document.getElementById('mx-alt');
+  document.querySelectorAll('#mx-views button').forEach(b=>b.setAttribute('aria-selected',b.dataset.v===v));
+  document.getElementById('mx-gridwrap').hidden=v!=='grid';alt.hidden=v==='grid';
+  if(v==='grid'||!MX.data)return;alt.innerHTML=v==='cov'?mxCovView():v==='state'?mxStateView():mxTodoView();}
+function mxPick(k,from){const c=MX.data.cells.find(x=>mxKey(x)===k);if(!c)return;MX.sel=k;MX.from=from||null;
+  document.querySelectorAll('.bd-sc.sel,.bd-pc.sel,.mx-cell.sel').forEach(x=>x.classList.remove('sel'));
+  document.querySelectorAll('[data-k="'+CSS.escape(k)+'"]').forEach(x=>{if(!x.classList.contains('mx-li'))x.classList.add('sel');});mxSide(c);}
+document.getElementById('mx-views').addEventListener('click',ev=>{const b=ev.target.closest('button');if(!b)return;
+  MX.view=b.dataset.v;try{localStorage.setItem('mx-view',MX.view);}catch(e){}mxAlt();if(!MX.sel)mxHome();});
+document.getElementById('mx-alt').addEventListener('click',ev=>{
+  const k=ev.target.closest('[data-k]');if(k){mxPick(k.dataset.k,k.dataset.from);return;}
+  const pr=ev.target.closest('.bd-pr[data-cov]');if(pr){const id=pr.dataset.cov;MX.sel=null;if(MX.openC.has(id)){MX.openC.delete(id);mxAlt();mxHome();}else{MX.openC.add(id);mxAlt();mxCovSide(id);}return;}
+  const st=ev.target.closest('.mx-sg .st');if(st){const s=st.dataset.st;MX.sel=null;if(MX.openS.has(s)){MX.openS.delete(s);mxAlt();mxHome();}else{MX.openS.add(s);mxAlt();mxStateSide(s);}return;}
+  const td=ev.target.closest('[data-todo]');if(td){MX.todo=td.dataset.todo;MX.sel=null;mxAlt();mxTodoSide(MX.todo);}});
+document.getElementById('mx-alt').addEventListener('keydown',ev=>{if((ev.key==='Enter'||ev.key===' ')&&ev.target.matches('.bd-pr')){ev.preventDefault();ev.target.click();}});
+document.getElementById('mx-side').addEventListener('click',ev=>{const b=ev.target.closest('.mx-li[data-from]');if(b){ev.stopPropagation();mxPick(b.dataset.k,b.dataset.from);}},true);
 function mxSide(c){
   const s=LG[c.status],p=c.paths,labels=(MX.data.pathLabels||{})[c.lob]||{};
-  let h='<a href="#matrix" class="mx-back" id="mx-back">← Still to test</a><div class="cap2">'+esc(c.lob+' · '+(BOOT.names[c.state]||c.state))+'</div><h2>'+esc(c.coverage)+'</h2>';
+  let h='<a href="#matrix" class="mx-back" id="mx-back">← '+esc(mxBackLabel())+'</a><div class="cap2">'+esc(c.lob+' · '+(BOOT.names[c.state]||c.state))+'</div><h2>'+esc(c.coverage)+'</h2>';
   h+='<div class="mx-need"><span class="chip '+c.status+'">'+esc(s.glyph)+'</span><div><b>'+esc(s.matrix)+'</b><div class="mx-msg">'+
     esc(c.status==='na'?'The state files no such path; never counted as a gap (D5).':c.status==='verified'?'Nothing needed.':
       s.needs+' · about '+c.estRemainingCalls+' call'+(c.estRemainingCalls===1?'':'s'))+'</div></div></div>';
@@ -824,7 +956,7 @@ function mxSide(c){
   const ub=document.getElementById('mx-unsign');if(ub)ub.onclick=()=>{ub.disabled=true;send('');};
   document.getElementById('mx-open').onclick=()=>mxOpen(c);
   document.getElementById('mx-back').onclick=ev=>{ev.preventDefault();MX.sel=null;
-    document.querySelectorAll('.mx-cell.sel').forEach(x=>x.classList.remove('sel'));mxList();};
+    document.querySelectorAll('.mx-cell.sel,.bd-sc.sel,.bd-pc.sel').forEach(x=>x.classList.remove('sel'));mxBack();};
 }
 // TC-17: "Still to test" (§6 without waves, D3): mismatch, stale, internal-only, untested; then most calls first.
 function mxList(){
@@ -846,7 +978,7 @@ function mxList(){
   if(L.length)h+='<button class="btn" id="mx-plan" style="margin-top:auto">Build a test plan from these gaps</button><div class="mx-msg">No calls are spent until a plan is committed.</div>';
   const side=document.getElementById('mx-side');side.innerHTML=h;
   side.querySelectorAll('.mx-li').forEach(b=>b.onclick=()=>{const c=MX.data.cells.find(x=>mxKey(x)===b.dataset.k);if(!c)return;
-    MX.sel=b.dataset.k;document.querySelectorAll('.mx-cell.sel').forEach(x=>x.classList.remove('sel'));
+    MX.sel=b.dataset.k;MX.from=null;document.querySelectorAll('.mx-cell.sel').forEach(x=>x.classList.remove('sel'));
     const el=document.querySelector('.mx-cell[data-k="'+CSS.escape(MX.sel)+'"]');if(el){el.classList.add('sel');el.scrollIntoView({block:'center',behavior:'smooth'});}
     mxSide(c);});
   const more=document.getElementById('mx-more');if(more)more.onclick=()=>{MX.all=!MX.all;mxList();};
@@ -856,7 +988,7 @@ function mxList(){
 }
 function mxOpen(c){location.hash='#board?lob='+encodeURIComponent(c.lob)+'&state='+encodeURIComponent(c.state)+'&coverage='+encodeURIComponent(c.coverage);}
 document.getElementById('mx-grid').addEventListener('click',ev=>{const b=ev.target.closest('.mx-cell');if(!b)return;
-  MX.sel=b.dataset.k;document.querySelectorAll('.mx-cell.sel').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');
+  MX.sel=b.dataset.k;MX.from=null;document.querySelectorAll('.mx-cell.sel').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');
   const c=MX.data.cells.find(x=>mxKey(x)===MX.sel);if(c)mxSide(c);});
 document.getElementById('mx-grid').addEventListener('dblclick',ev=>{const b=ev.target.closest('.mx-cell');if(!b)return;
   const c=MX.data.cells.find(x=>mxKey(x)===b.dataset.k);if(c)mxOpen(c);});
@@ -874,65 +1006,69 @@ PAGE = """<!doctype html>
 <title>ISO Rating Test Console</title>
 <style>
 :root{
-  --color-bg:#f3f2f2;--color-surface:#eae9e9;--color-text:#201f1d;
-  --color-divider:color-mix(in srgb,#201f1d 16%,transparent);
-  --color-accent:#b68235;--color-accent-100:#fff3e4;--color-accent-300:#facb8d;--color-accent-400:#e1ad66;
-  --color-accent-500:#c28d41;--color-accent-700:#7d5411;--color-accent-800:#5a3b0a;
-  --color-neutral-300:#d7d3d3;--color-neutral-400:#bab6b6;--color-neutral-500:#9b9797;--color-neutral-600:#7d7979;
-  --color-neutral-700:#605d5d;--color-neutral-900:#2d2b2b;
-  --ox:oklch(0.50 0.14 28);--ox-tint:oklch(0.96 0.025 28);--ox-deep:oklch(0.42 0.13 28);
-  --font-heading:"Cormorant Garamond",Garamond,"Iowan Old Style",Georgia,serif;
-  --font-body:"Lora",Georgia,"Times New Roman",serif;
-  --radius-sm:2px;--radius-md:4px;--radius-lg:7px;
+  /* Federato's palette (federato.ai): cream ground, Meridian maroon text, Beacon teal for the one action that matters,
+     Grounded brown for links, Signal orange for a mismatch (docs/compare-wireframe_20261016.html) */
+  --color-bg:#f7f7e3;--color-surface:#eee9cf;--color-panel:#f1edd6;--color-card:#fcfcf3;--color-text:#2d1d1a;
+  --color-divider:#d9d0b0;
+  --color-accent:#4e4432;--color-accent-100:#f3ecc6;--color-accent-300:#e9d491;--color-accent-400:#d0c5a2;
+  --color-accent-500:#a66b42;--color-accent-700:#8a5634;--color-accent-800:#2d1d1a;
+  --teal:#47fac4;--teal-hover:#06d899;--teal-soft:#d4f6e8;
+  --color-neutral-300:#e3dcc0;--color-neutral-400:#c2b893;--color-neutral-500:#a79e7f;--color-neutral-600:#7a6f57;
+  --color-neutral-700:#5c5240;--color-neutral-900:#2d1d1a;
+  --ox:#f55a26;--ox-tint:#fde4d9;--ox-deep:#b23a10;
+  /* Federato's own faces where installed; nothing is fetched (D7) */
+  --font-heading:"Reckless Standard M","Reckless",Georgia,"Times New Roman",serif;
+  --font-body:Case,"Case Text",Arial,"Helvetica Neue",sans-serif;
+  --radius-sm:6px;--radius-md:10px;--radius-lg:16px;--radius-pill:999px;
 }
 *{box-sizing:border-box}
-body{margin:0;background:var(--color-bg);color:var(--color-text);font:13px/1.45 var(--font-body);
+body{margin:0;background:var(--color-bg);color:var(--color-text);font:15px/1.55 var(--font-body);
   font-variant-numeric:tabular-nums}
 a{color:var(--color-accent-700)}
 header{position:sticky;top:0;z-index:30;display:flex;align-items:stretch;gap:20px;padding:0 24px;min-height:66px;
   background:var(--color-bg);border-bottom:1px solid var(--color-divider);flex-wrap:wrap}
 .brand{display:flex;flex-direction:column;justify-content:center;gap:1px;min-width:200px}
 .brand b{font:600 21px/1.1 var(--font-heading);letter-spacing:-.01em}
-.brand span{font-size:11px;color:var(--color-neutral-700)}
+.brand span{font-size:12.5px;color:var(--color-neutral-700)}
 nav{display:flex;align-items:stretch;gap:4px;flex-wrap:wrap}
-.tab{display:flex;align-items:center;padding:0 8px;border-bottom:2px solid transparent;color:var(--color-text);
-  text-decoration:none;font:600 14.5px var(--font-heading);white-space:nowrap}
-.tab:hover{color:var(--color-accent-700)}
-.tab[aria-current="page"]{color:var(--color-accent-700);border-bottom-color:var(--color-accent)}
+.tab{display:flex;align-items:center;align-self:center;padding:6px 12px;border-radius:var(--radius-pill);color:var(--color-text);
+  text-decoration:none;font:500 14px var(--font-body);white-space:nowrap}
+.tab:hover{background:var(--color-accent-100)}
+.tab[aria-current="page"]{background:var(--color-text);color:var(--color-bg)}
 .cap{margin-left:auto;display:flex;align-items:center;gap:16px;padding:8px 0}
-.lanes{display:flex;flex-direction:column;gap:5px;width:370px;max-width:100%}
-.lanes .hd{display:flex;justify-content:space-between;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;
+.lanes{display:flex;flex-direction:column;gap:5px;width:440px;max-width:100%}
+.lanes .hd{display:flex;justify-content:space-between;font-size:12px;letter-spacing:.08em;text-transform:uppercase;
   color:var(--color-neutral-700)}
 .lanes .bars,.lanes .lbl{display:flex;gap:3px}
 .lanes .bars{height:10px}
-.lanes .bars div{border:1px solid var(--color-accent-400);border-radius:2px;overflow:hidden;display:flex}
+.lanes .bars div{border:1px solid var(--color-accent-400);border-radius:var(--radius-sm);overflow:hidden;display:flex}
 .lanes .bars i{display:block;height:100%}
-.lanes .lbl div{font-size:10px;color:var(--color-neutral-700);white-space:nowrap;min-width:0}
+.lanes .lbl div{font-size:11px;overflow:hidden;text-overflow:ellipsis;color:var(--color-neutral-700);white-space:nowrap;min-width:0}
 .lanes .full{border-color:var(--ox)!important}
 .nums{display:flex;gap:14px;align-items:baseline}
 .nums div{display:flex;flex-direction:column}
-.nums span{font-size:10.5px;color:var(--color-neutral-700);letter-spacing:.06em;text-transform:uppercase}
+.nums span{font-size:12px;color:var(--color-neutral-700);letter-spacing:.06em;text-transform:uppercase}
 .nums b{font:600 22px/1 var(--font-heading)}
 .nums b.left{color:var(--color-accent-700)}
-.nums small{font-size:12.5px;line-height:1.3}
-main{padding:24px 28px 32px}
-.eyebrow{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent-700)}
-h1{margin:2px 0 0;font:400 38px/1.15 var(--font-heading)}
+.nums small{font-size:14px;line-height:1.3}
+main{padding:28px 32px 40px}
+.eyebrow{font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent-700)}
+h1{margin:4px 0 0;font:400 36px/1.15 var(--font-heading);text-wrap:balance}
 .pending{margin-top:18px;padding:18px;border:1px dashed var(--color-neutral-400);border-radius:var(--radius-lg);
   color:var(--color-neutral-700);max-width:640px}
-.legend{display:flex;align-items:center;gap:22px;flex-wrap:wrap;font-size:12px;margin:0 0 18px;padding:10px 0;
-  border-bottom:1px solid var(--color-divider)}
-.legend>span:first-child{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-neutral-700)}
+.legend{display:flex;align-items:center;gap:22px;flex-wrap:wrap;font-size:13.5px;margin:0 0 24px;padding:12px 18px;
+  background:var(--color-card);border:1px solid var(--color-divider);border-radius:var(--radius-pill)}
+.legend>span:first-child{font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-neutral-700)}
 .legend .k{display:flex;align-items:center;gap:7px}
-.chip{width:26px;height:18px;display:inline-flex;align-items:center;justify-content:center;border-radius:2px;font-size:11px}
-.chip.verified{background:var(--color-accent-700);color:var(--color-accent-100);border:1px solid var(--color-accent-700)}
+.chip{width:24px;height:24px;flex:none;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;font-size:12.5px}
+.chip.verified{background:var(--teal);color:var(--color-text);border:1px solid var(--teal-hover)}
 .chip.internal{background:var(--color-accent-100);color:var(--color-accent-800);border:1px solid var(--color-accent-300)}
 .chip.mismatch{background:var(--ox-tint);color:var(--ox-deep);border:1.5px solid var(--ox)}
 .chip.stale{background:repeating-linear-gradient(135deg,var(--color-neutral-300) 0 1.5px,transparent 1.5px 6px);
   color:var(--color-neutral-900);border:1px solid var(--color-neutral-500)}
 .chip.untested{background:transparent;color:var(--color-neutral-600);border:1px dashed var(--color-neutral-400)}
 .chip.na{background:var(--color-surface);color:var(--color-neutral-500);border:1px solid var(--color-surface)}
-@media (max-width:900px){header{padding:0 16px}main{padding:16px}.cap{margin-left:0;flex-wrap:wrap}}
+@media (max-width:900px){header{padding:0 16px}main{padding:20px 16px}.cap{margin-left:0;flex-wrap:wrap}}
 /*{{CSS}}*/
 </style></head><body>
 <header>
@@ -999,12 +1135,16 @@ setInterval(()=>fetch('/api/console/cap').then(r=>r.json()).then(drawCap).catch(
 
 BOARD_HTML = """<section class="screen" id="s-board" hidden><div class="mx-wrap"><div class="mx-main">
   <div class="mx-head"><div><div class="eyebrow">Coverage Board</div><h1>Where have we checked our work?</h1></div>
-    <p>Each row is a state and each column a way of pricing a coverage. A passed cell means ISO has priced it and we
-    agree; anything else is a gap worth a look. The number is how many requests sit in the cell. Click a cell to see
-    them, or a state to see how ready it is.</p>
+    <p>Where ISO has priced a request and we agree, the check has passed; anything else is a gap worth a look. Start
+    from a summary, then click a line, a state or a tile to look inside it, and a state or coverage to see the
+    requests behind it.</p>
     <div class="bd-lines" id="bd-lines" role="group" aria-label="Line"><button data-l="GL">General Liability</button><button data-l="CP">Commercial Property</button></div></div>
   <div class="mx-stats bd-stats" id="bd-stats"></div>
-  <div class="mx-scroll bd-scroll"><div id="bd-grid" class="bd-grid"><div class="mx-loading">Loading the board…</div></div></div>
+  <div class="bd-views" id="bd-views" role="tablist" aria-label="View">
+    <button role="tab" data-v="path">By way of pricing</button><button role="tab" data-v="state">By state</button>
+    <button role="tab" data-v="map">Map</button><button role="tab" data-v="grid">Full grid</button></div>
+  <div class="bd-alt" id="bd-alt"><div class="mx-loading">Loading the board…</div></div>
+  <div class="mx-scroll bd-scroll" id="bd-gridwrap" hidden><div id="bd-grid" class="bd-grid"><div class="mx-loading">Loading the board…</div></div></div>
   <div class="bd-ctl"><div class="mx-trend-hd"><span>Controls × states · which inputs have been rated where</span>
     <span class="mx-key"><span><b class="bd-dot r"></b>rated there</span><span><b class="bd-dot d"></b>asked, not declarable there</span><span><b class="bd-dot"></b>never run</span></span></div>
     <div class="mx-scroll"><div id="bd-ctl"></div></div></div>
@@ -1013,62 +1153,106 @@ BOARD_HTML = """<section class="screen" id="s-board" hidden><div class="mx-wrap"
 BUILT["board"] = BOARD_HTML
 
 BOARD_CSS = """
-.bd-lines{margin-left:auto;display:flex;border:1px solid var(--color-divider);border-radius:4px;overflow:hidden}
+.bd-lines{margin-left:auto;display:flex;border:1px solid var(--color-divider);border-radius:var(--radius-pill);overflow:hidden}
 .bd-lines button{border:0;border-right:1px solid var(--color-divider);background:transparent;padding:7px 16px;cursor:pointer;
-  font:inherit;font-size:13px;color:var(--color-text)}
+  font:inherit;font-size:14.5px;color:var(--color-text)}
 .bd-lines button:last-child{border-right:0}
 .bd-lines button[aria-pressed="true"]{background:var(--color-accent-100);color:var(--color-accent-800);box-shadow:inset 0 -2px 0 var(--color-accent)}
 .bd-stats{grid-template-columns:1fr 1fr 1.6fr 1fr 1fr 1fr}
-.bd-cats{display:grid;grid-template-columns:1fr auto;gap:1px 10px;font-size:11.5px;margin-top:4px}
+.bd-cats{display:grid;grid-template-columns:1fr auto;gap:1px 10px;font-size:13px;margin-top:4px}
 .bd-cats .def{color:var(--ox-deep)}
 .bd-grid{display:grid;gap:3px;align-items:stretch}
-.bd-grp{font-size:10.5px;letter-spacing:.03em;color:var(--color-neutral-700);border-bottom:1px solid var(--color-text);
+.bd-grp{font-size:12px;letter-spacing:.03em;color:var(--color-neutral-700);border-bottom:1px solid var(--color-text);
   padding-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.bd-ph{writing-mode:vertical-rl;transform:rotate(180deg);font-size:10.5px;line-height:1.1;height:132px;overflow:hidden;
+.bd-ph{writing-mode:vertical-rl;transform:rotate(180deg);font-size:12px;line-height:1.1;height:132px;overflow:hidden;
   text-overflow:ellipsis;white-space:nowrap;padding:2px 0;justify-self:center;color:var(--color-text)}
 .bd-ph.hl{font-weight:700;color:var(--color-accent-800)}
-.bd-colhl{height:3px;border-radius:2px}
+.bd-colhl{height:3px;border-radius:var(--radius-sm)}
 .bd-colhl.hl{background:var(--color-accent)}
 .bd-st{position:sticky;left:0;z-index:2;background:var(--color-bg);display:flex;align-items:center;gap:6px;border:0;padding:0;
   cursor:pointer;font:inherit;color:var(--color-text);text-align:left;min-width:0}
 .bd-st b{font:600 16px var(--font-heading);width:26px;flex:none}
-.bd-st span{font-size:11.5px;color:var(--color-neutral-700);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bd-st span{font-size:13px;color:var(--color-neutral-700);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bd-st.sel b{color:var(--color-accent-700);text-decoration:underline}
 .bd-c{width:auto;height:30px;padding:0;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;
-  cursor:pointer;font:inherit;gap:1px}
-.bd-c i{font-style:normal;font-size:10px}
-.bd-c small{font-size:9.5px}
+  cursor:pointer;font:inherit;gap:1px;border-radius:var(--radius-sm)}
+.bd-c i{font-style:normal;font-size:11.5px}
+.bd-c small{font-size:11px}
 .bd-c.na{cursor:default}
 .bd-c.sel{outline:2px solid var(--color-text);outline-offset:1px}
 .bd-c.descoped{background:var(--color-surface);color:var(--color-neutral-600);border:1px dotted var(--color-neutral-500)}
 .bd-v{display:flex;align-items:center;gap:8px;padding:0 8px 0 2px;min-width:0}
 .bd-stk{position:sticky;left:130px;z-index:2;background:var(--color-bg);border-right:1px solid var(--color-divider)}
-.bd-badge{border:1px solid var(--color-neutral-400);color:var(--color-neutral-700);padding:2px 8px;border-radius:3px;font-size:11.5px;
+.bd-badge{border:1px solid var(--color-neutral-400);color:var(--color-neutral-700);padding:2px 10px;border-radius:var(--radius-pill);font-size:13px;
   font-weight:600;white-space:nowrap}
 .bd-badge.Go{border-color:var(--color-accent-700);color:var(--color-accent-800);background:var(--color-accent-100)}
 .bd-badge.Hold{border-color:var(--color-accent-400);color:var(--color-accent-800)}
 .bd-badge.Hold.mm{border-color:var(--ox);color:var(--ox-deep)}
-.bd-v span:last-child{font-size:11px;color:var(--color-neutral-700);line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bd-v span:last-child{font-size:12.5px;color:var(--color-neutral-700);line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bd-counts{display:flex;gap:6px}
-.bd-counts span{flex:1;display:flex;flex-direction:column;align-items:center;padding:5px 0;border-radius:2px;width:auto;height:auto}
+.bd-counts span{flex:1;display:flex;flex-direction:column;align-items:center;padding:5px 0;border-radius:var(--radius-sm);width:auto;height:auto}
 .bd-counts b{font-size:15px}
-.bd-counts small{font-size:10px}
+.bd-counts small{font-size:11.5px}
 .bd-ctl{margin-top:8px}
 .bd-dot{display:inline-block;width:10px;height:10px;border-radius:50%;border:1px dashed var(--color-neutral-400);vertical-align:middle;margin-right:5px}
 .bd-dot.r{background:var(--color-accent-700);border:1px solid var(--color-accent-700)}
 .bd-dot.d{background:transparent;border:1.5px solid var(--color-accent-700)}
-.bd-cg{display:grid;gap:2px;align-items:center;font-size:11.5px}
-.bd-cg .h{font-size:9.5px;color:var(--color-neutral-700);writing-mode:vertical-rl;transform:rotate(180deg);justify-self:center;height:22px}
+.bd-cg{display:grid;gap:2px;align-items:center;font-size:13px}
+.bd-cg .h{font-size:11px;color:var(--color-neutral-700);writing-mode:vertical-rl;transform:rotate(180deg);justify-self:center;height:22px}
 .bd-cg .lab{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:6px;position:sticky;left:0;background:var(--color-bg)}
-.bd-cg .grp{grid-column:1/-1;font:600 13px var(--font-heading);padding-top:6px;border-bottom:1px solid var(--color-divider)}
+.bd-cg .grp{grid-column:1/-1;font:600 14.5px var(--font-heading);padding-top:6px;border-bottom:1px solid var(--color-divider)}
 .bd-cg .dot{justify-self:center}
 .bd-cg .dot .bd-dot{margin-right:0}
-.bd-cg .n{font-size:10.5px;color:var(--color-neutral-700);text-align:right}
+.bd-cg .n{font-size:12px;color:var(--color-neutral-700);text-align:right}
 .bd-tbl td.st{white-space:nowrap}
+.bd-views{display:flex;gap:6px;flex-wrap:wrap;background:var(--color-surface);padding:5px;border-radius:var(--radius-pill);width:fit-content;max-width:100%}
+.bd-views button{font:500 14px var(--font-body);border:0;background:none;color:var(--color-neutral-700);padding:8px 16px;border-radius:var(--radius-pill);cursor:pointer}
+.bd-views button[aria-selected="true"]{background:var(--color-text);color:var(--color-bg)}
+.bd-alt{background:var(--color-card);border:1px solid var(--color-divider);border-radius:var(--radius-lg);padding:20px 22px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.bd-alt h3{margin:0;font:400 20px/1.25 var(--font-heading)}
+.bd-key{display:flex;gap:16px;flex-wrap:wrap;font-size:13.5px;color:var(--color-neutral-700)}
+.bd-key i{display:inline-block;width:12px;height:12px;border-radius:4px;vertical-align:-1px;margin-right:6px}
+.k-verified{background:var(--teal-hover)}.k-internal{background:var(--color-accent-300)}.k-stale{background:#f6b48f}.k-mismatch{background:var(--ox)}
+.k-untested{background:var(--color-neutral-300)}.k-na,.k-descoped{background:var(--color-panel);box-shadow:inset 0 0 0 1px var(--color-divider)}
+.bd-bk summary{cursor:pointer;list-style:none;display:flex;align-items:baseline;gap:10px;padding:6px 0}
+.bd-bk summary::-webkit-details-marker{display:none}
+.bd-bk summary::before{content:"▸";color:var(--color-accent-700);font-size:13px}.bd-bk[open] summary::before{content:"▾"}
+.bd-pr{display:grid;grid-template-columns:minmax(150px,1.1fr) minmax(160px,2fr) 74px minmax(150px,1.4fr);gap:14px;align-items:center;
+  padding:9px 8px;border-top:1px solid var(--color-divider);font-size:14px;cursor:pointer;border-radius:var(--radius-sm)}
+.bd-pr:hover,.bd-pr.open{background:var(--color-accent-100)}
+.bd-pr .g{display:block;font-size:12.5px;color:var(--color-neutral-700)}
+.bd-pr .n{text-align:right;font-size:13.5px}.bd-pr .x{font-size:13px;color:var(--color-neutral-700)}.bd-pr .x b{color:var(--color-text);font-weight:600}
+.bd-bar{display:flex;height:12px;border-radius:var(--radius-pill);overflow:hidden;background:var(--color-neutral-300)}
+.bd-bar i{display:block;height:100%}
+.bd-chips{display:flex;flex-wrap:wrap;gap:5px;padding:4px 8px 14px}
+.bd-chips .lbl{width:100%;font-size:12.5px;color:var(--color-neutral-700);margin-top:4px}
+.bd-sc{border:0;border-radius:8px;padding:4px 0;width:44px;font:600 12.5px var(--font-body);cursor:pointer;color:var(--color-text)}
+.bd-sc:hover,.bd-sc.sel,.bd-pc:hover,.bd-pc.sel{outline:2px solid var(--color-text);outline-offset:1px}
+.bd-sg{display:grid;gap:6px 12px;align-items:center;font-size:14px;min-width:720px}
+.bd-sg .h{font-size:13px;color:var(--color-neutral-700);align-self:end}
+.bd-sg .st{cursor:pointer;border-radius:var(--radius-sm);padding:2px 6px;border:0;background:none;font:inherit;color:var(--color-text);text-align:left}
+.bd-sg .st:hover,.bd-sg .st.open{background:var(--color-accent-100)}
+.bd-sg .st b{font:500 16px var(--font-heading);margin-right:6px}.bd-sg .st span{color:var(--color-neutral-700);font-size:13px}
+.bd-mini{height:10px;border-radius:var(--radius-pill);background:var(--color-neutral-300);overflow:hidden;position:relative}
+.bd-mini i{position:absolute;inset:0 auto 0 0;background:var(--teal-hover);opacity:.6;border-radius:var(--radius-pill)}
+.bd-mini.warn{box-shadow:0 0 0 1.5px #f6b48f}
+.bd-sg .pct{text-align:right;font-weight:600}
+.bd-sx{grid-column:1/-1;background:var(--color-bg);border:1px solid var(--color-divider);border-radius:var(--radius-md);padding:12px 14px;display:grid;gap:10px}
+.bd-sx b.g{font:500 15px var(--font-heading)}
+.bd-pc{display:inline-flex;align-items:center;gap:6px;border-radius:var(--radius-pill);padding:3px 10px;font:inherit;font-size:12.5px;margin:4px 4px 0 0;cursor:pointer;border:1px solid var(--color-divider);background:var(--color-card);color:var(--color-text)}
+.bd-pc i{width:9px;height:9px;border-radius:50%;display:inline-block}
+.bd-map{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:6px;max-width:760px}
+.bd-tile{aspect-ratio:1;border-radius:var(--radius-sm);display:flex;flex-direction:column;align-items:center;justify-content:center;font:600 13px var(--font-body);border:0;cursor:pointer;color:var(--color-text);padding:0}
+.bd-tile small{font-weight:400;font-size:11px}.bd-tile.sel{outline:2px solid var(--color-text);outline-offset:2px}.bd-tile.none{cursor:default;opacity:.5}
+.bd-ramp{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--color-neutral-700)}
+.bd-ramp span{display:inline-block;width:160px;height:10px;border-radius:var(--radius-pill);background:linear-gradient(90deg,var(--color-neutral-300),var(--teal-soft),var(--teal-hover))}
+#bd-mapp{font:inherit;padding:8px 12px;border:1px solid var(--color-divider);background:var(--color-card);max-width:100%}
+@media (max-width:760px){.bd-pr{grid-template-columns:1fr 74px}.bd-pr .bd-bar,.bd-pr .x{grid-column:1/-1}}
 """
 
 BOARD_JS = r"""
-const BD={line:'GL',data:null,ctl:{},sel:null,state:null,hl:null,cell:null};
+const BD={line:'GL',data:null,ctl:{},sel:null,state:null,hl:null,cell:null,view:'path',openP:new Set(),openS:new Set(),mapPath:''};
+try{const v=localStorage.getItem('bd-view');if(['path','state','map','grid'].includes(v))BD.view=v;}catch(e){}
 function bdLoad(){
   const line=BD.line;
   document.querySelectorAll('#bd-lines button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.l===line));
@@ -1096,8 +1280,8 @@ function bdDraw(){
   const hl=p=>BD.hl&&BD.hl.lob===d.line&&p.coverages.includes(BD.hl.coverage);
   let h='<span class="bd-st" style="cursor:default"></span><span class="bd-v bd-stk"></span>';
   d.columns.forEach(gr=>h+='<span class="bd-grp" style="grid-column:span '+gr.paths.length+'" title="'+esc(gr.coverage)+'">'+esc(gr.coverage)+'</span>');
-  h+='<span class="bd-st" style="cursor:default;align-self:end"><span style="letter-spacing:.08em;text-transform:uppercase;font-size:10.5px">State</span></span>'+
-    '<span class="bd-v bd-stk" style="align-self:stretch;align-items:flex-end;padding-bottom:4px"><span style="font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-neutral-700)">Readiness</span></span>';
+  h+='<span class="bd-st" style="cursor:default;align-self:end"><span style="letter-spacing:.08em;text-transform:uppercase;font-size:12px">State</span></span>'+
+    '<span class="bd-v bd-stk" style="align-self:stretch;align-items:flex-end;padding-bottom:4px"><span style="font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-neutral-700)">Readiness</span></span>';
   cols.forEach(p=>h+='<span class="bd-ph'+(hl(p)?' hl':'')+'" title="'+esc(p.label)+'">'+esc(p.label)+'</span>');
   h+='<span class="bd-st" style="cursor:default"></span><span class="bd-v bd-stk"></span>'+cols.map(p=>'<span class="bd-colhl'+(hl(p)?' hl':'')+'"></span>').join('');
   d.rows.forEach(r=>{
@@ -1107,10 +1291,86 @@ function bdDraw(){
     cols.forEach(p=>{const v=r.cells[p.id]||['untested',0,0],t=bdCellTxt(v),k=r.state+'|'+p.id;
       h+='<button class="bd-c chip '+v[0]+(aw[p.id]?' aw':'')+(BD.sel===k?' sel':'')+'" data-k="'+esc(k)+'" title="'+esc(r.state+' · '+p.label+' · '+(v[0]==='descoped'?'descoped':LG[v[0]].board)+(v[1]?' · '+v[1]+' scenario'+(v[1]>1?'s':''):''))+'"><i>'+esc(t[0])+'</i>'+(t[1]?'<small>'+t[1]+'</small>':'')+'</button>';});
   });
-  g.innerHTML=h;
+  g.innerHTML=h;bdAlt();
   const awb=document.getElementById('bd-aw');if(awb)awb.onclick=()=>{location.hash='#queue';};
-  if(BD.sel)bdCell(BD.sel,false);else if(BD.state)bdState(BD.state);else bdOverview();
+  if(BD.sel)bdCell(BD.sel,false);else if(BD.state)bdState(BD.state);else if(BD.view==='path'&&BD.openP.size)bdPathSide([...BD.openP].pop());else bdOverview();
 }
+
+// ---- the board's summary views: the same cells read by way of pricing, by state, or on a map; each drills into the
+// side panel the full grid already uses (a state: bdState; a cell: bdCell with its scenarios and Find scenarios)
+const BDK=['mismatch','stale','internal','verified','untested','descoped','na'];
+const BDN={verified:'Passed',internal:'Checked by us only',stale:'Out of date',mismatch:'Mismatch',untested:'Not tested',descoped:'Set aside',na:"Doesn't apply"};
+// a path's plain name: no coverage prefix, no decision code ("(D8: ...)"); the full label stays in the title
+function bdPlain(l){return l.replace(/^[^·]*·\s*/,'').replace(/\s*\(D\d+\b[^)]*\)/,'');}
+function bdPaths(){const d=BD.data;return d.columns.flatMap(g=>g.paths.map(p=>({id:p.id,g:g.coverage,l:bdPlain(p.label),label:p.label})));}
+function bdSt(r,pid){return (r.cells[pid]||['untested'])[0];}
+function bdCount(pid){const n={};BD.data.rows.forEach(r=>{const k=bdSt(r,pid);n[k]=(n[k]||0)+1;});return n;}
+function bdBar(n,total){return '<div class="bd-bar" role="img" aria-label="'+esc(BDK.filter(k=>n[k]).map(k=>n[k]+' '+BDN[k]).join(', '))+'">'+
+  ['verified','internal','stale','mismatch','untested','descoped','na'].filter(k=>n[k]).map(k=>'<i class="k-'+k+'" style="width:'+(100*n[k]/total)+'%" title="'+BDN[k]+': '+n[k]+'"></i>').join('')+'</div>';}
+function bdKey(){return '<div class="bd-key">'+['verified','internal','stale','mismatch','untested','na'].map(k=>'<span><i class="k-'+k+'"></i>'+BDN[k]+'</span>').join('')+'</div>';}
+function bdApp(n){return BD.data.rows.length-(n.na||0)-(n.descoped||0);}
+function bdExc(pid,n){const major=Object.entries(n).sort((a,b)=>b[1]-a[1])[0][0],by={};
+  BD.data.rows.forEach(r=>{const k=bdSt(r,pid);if(k!==major)(by[k]=by[k]||[]).push(r.state);});
+  const ks=BDK.filter(k=>by[k]);if(!ks.length)return 'Same in every state';
+  return ks.map(k=>'<b>'+BDN[k]+':</b> '+(by[k].length>6?by[k].length+' states':by[k].join(', '))).join(' · ');}
+function bdChips(pid){const by={};BD.data.rows.forEach(r=>{const k=bdSt(r,pid);(by[k]=by[k]||[]).push(r.state);});
+  return BDK.filter(k=>by[k]).map(k=>'<div class="lbl">'+BDN[k]+' · '+by[k].length+'</div>'+by[k].map(s=>{const key=s+'|'+pid;
+    return '<button class="bd-sc k-'+k+(BD.sel===key?' sel':'')+'"'+(k==='na'?' disabled':'')+' data-k="'+esc(key)+'" title="'+esc((BOOT.names[s]||s)+': '+BDN[k])+'">'+s+'</button>';}).join('')).join('');}
+function bdPathView(){const P=bdPaths(),done=[],part=[],none=[];
+  P.forEach(p=>{p.n=bdCount(p.id);const a=bdApp(p.n),v=p.n.verified||0;(a&&v>=a*0.9?done:v>0||p.n.mismatch||p.n.stale||p.n.internal?part:none).push(p);});
+  const row=p=>{const open=BD.openP.has(p.id);return '<div class="bd-pr'+(open?' open':'')+'" data-p="'+esc(p.id)+'" title="'+esc(p.label)+'" tabindex="0" role="button" aria-expanded="'+open+'"><div>'+esc(p.l)+'<span class="g">'+esc(p.g)+'</span></div>'+
+    bdBar(p.n,BD.data.rows.length)+'<div class="n">'+(p.n.verified||0)+' of '+bdApp(p.n)+'</div><div class="x">'+bdExc(p.id,p.n)+'</div></div>'+
+    (open?'<div class="bd-chips">'+bdChips(p.id)+'</div>':'');};
+  const bk=(t,sub,list,open)=>list.length?'<details class="bd-bk"'+(open?' open':'')+'><summary><h3>'+t+' · '+list.length+'</h3><span class="mx-msg">'+sub+'</span></summary>'+list.map(row).join('')+'</details>':'';
+  part.sort((a,b)=>((b.n.mismatch||0)+(b.n.stale||0))-((a.n.mismatch||0)+(a.n.stale||0))||(b.n.verified||0)-(a.n.verified||0));
+  return '<div><h3>Which ways of pricing have we checked?</h3><div class="mx-msg">One line per way of pricing; the bar is its '+BD.data.rows.length+' states, and the states that differ are named. Click a line to see its states, then a state to see the requests behind it.</div></div>'+bdKey()+
+    bk('Partly checked','Started, with states still to do. Usually the next calls to spend.',part,true)+
+    bk('Passed nearly everywhere','90% or more of the states where it applies.',done,true)+
+    bk('Not started anywhere','No state has a passed check yet.',none,false);}
+function bdGroups(r){return BD.data.columns.map(g=>{let v=0,a=0,w=0;g.paths.forEach(p=>{const k=bdSt(r,p.id);if(k==='na'||k==='descoped')return;a++;if(k==='verified')v++;if(k==='stale'||k==='mismatch')w++;});return {g:g.coverage,v,a,w};});}
+function bdStateView(){const G=BD.data.columns.map(g=>g.coverage);
+  const rows=BD.data.rows.map(r=>{const gs=bdGroups(r),v=gs.reduce((s,x)=>s+x.v,0),a=gs.reduce((s,x)=>s+x.a,0);return {r,gs,p:a?v/a:0};}).sort((x,y)=>x.p-y.p||x.r.state.localeCompare(y.r.state));
+  return '<div><h3>How ready is each state?</h3><div class="mx-msg">One bar per coverage: how much of it ISO has confirmed. Least ready first; an orange ring means something there is out of date or mismatched. Click a state to see every way of pricing in it.</div></div>'+
+    '<div class="mx-scroll"><div class="bd-sg" style="grid-template-columns:190px repeat('+G.length+',minmax(80px,1fr)) 64px"><div class="h">State</div>'+G.map(g=>'<div class="h">'+esc(g)+'</div>').join('')+'<div class="h" style="text-align:right">Overall</div>'+
+    rows.map(x=>{const s=x.r.state,open=BD.openS.has(s);return '<button class="st'+(open?' open':'')+'" data-s="'+s+'" aria-expanded="'+open+'"><b>'+s+'</b><span>'+esc(BOOT.names[s]||'')+'</span></button>'+
+      x.gs.map(g=>g.a?'<div class="bd-mini'+(g.w?' warn':'')+'" title="'+esc(g.g+': '+g.v+' of '+g.a+' passed'+(g.w?', '+g.w+' out of date or mismatched':''))+'"><i style="width:'+(100*g.v/g.a)+'%"></i></div>':'<div class="mx-msg">n/a</div>').join('')+
+      '<div class="pct">'+Math.round(100*x.p)+'%</div>'+(open?'<div class="bd-sx">'+bdStateChips(x.r)+'</div>':'');}).join('')+'</div></div>';}
+function bdStateChips(r){return BD.data.columns.map(g=>'<div><b class="g">'+esc(g.coverage)+'</b><div>'+g.paths.map(p=>{const k=bdSt(r,p.id),key=r.state+'|'+p.id;
+  return '<button class="bd-pc'+(BD.sel===key?' sel':'')+'" data-k="'+esc(key)+'"'+(k==='na'?' disabled':'')+' title="'+esc(p.label+': '+BDN[k])+'"><i class="k-'+k+'"></i>'+esc(bdPlain(p.label))+'</button>';}).join('')+'</div></div>').join('');}
+const BD_TILES=[['AK',0,0],['ME',0,11],['VT',1,10],['NH',1,11],['WA',2,1],['ID',2,2],['MT',2,3],['ND',2,4],['MN',2,5],['IL',2,6],['WI',2,7],['MI',2,8],['NY',2,9],['RI',2,10],['MA',2,11],
+ ['OR',3,1],['NV',3,2],['WY',3,3],['SD',3,4],['IA',3,5],['IN',3,6],['OH',3,7],['PA',3,8],['NJ',3,9],['CT',3,10],['CA',4,1],['UT',4,2],['CO',4,3],['NE',4,4],['MO',4,5],['KY',4,6],['WV',4,7],['VA',4,8],['MD',4,9],['DE',4,10],
+ ['AZ',5,2],['NM',5,3],['KS',5,4],['AR',5,5],['TN',5,6],['NC',5,7],['SC',5,8],['DC',5,9],['OK',6,4],['LA',6,5],['MS',6,6],['AL',6,7],['GA',6,8],['HI',7,0],['TX',7,4],['FL',7,9],['PR',7,11]];
+function bdShade(p){if(p===null)return 'var(--color-panel)';
+  return p<.5?'color-mix(in srgb,var(--teal-soft) '+Math.round(p*200)+'%,var(--color-neutral-300))':'color-mix(in srgb,var(--teal-hover) '+Math.round((p-.5)*200)+'%,var(--teal-soft))';}
+function bdMapView(){const R=Object.fromEntries(BD.data.rows.map(r=>[r.state,r])),pid=BD.mapPath;
+  const pct=r=>{if(!r)return null;if(pid){const k=bdSt(r,pid);return k==='na'||k==='descoped'?null:k==='verified'?1:k==='internal'?.35:0;}
+    const gs=bdGroups(r),a=gs.reduce((s,x)=>s+x.a,0);return a?gs.reduce((s,x)=>s+x.v,0)/a:null;};
+  return '<div><h3>Where in the country are the gaps?</h3><div class="mx-msg">Each tile is a state, shaded by how much ISO has confirmed. Pick one way of pricing to see only it; click a state for its detail.</div></div>'+
+    '<div class="td-tools"><select id="bd-mapp" aria-label="Way of pricing"><option value="">Every way of pricing</option>'+bdPaths().map(p=>'<option value="'+esc(p.id)+'"'+(p.id===pid?' selected':'')+'>'+esc(p.g+' · '+p.l)+'</option>').join('')+'</select>'+
+    '<span class="bd-ramp">0%<span></span>100%</span></div><div class="bd-map">'+BD_TILES.map(([s,y,x])=>{const r=R[s],p=pct(r),t=p===null?'n/a':Math.round(100*p)+'%';
+      return '<button class="bd-tile'+(r?'':' none')+(BD.state===s?' sel':'')+'" data-s="'+s+'"'+(r?'':' disabled')+' style="grid-row:'+(y+1)+';grid-column:'+(x+1)+';background:'+bdShade(p)+'" title="'+esc((BOOT.names[s]||s)+': '+(r?t:'not on this board'))+'">'+s+'<small>'+(r?t:'')+'</small></button>';}).join('')+'</div>';}
+function bdPathSide(pid){const p=bdPaths().find(x=>x.id===pid);if(!p)return bdOverview();const n=bdCount(pid);
+  document.getElementById('bd-side').innerHTML='<a href="#" class="mx-back" id="bd-back">← Overview</a><div class="cap2">Way of pricing · '+esc(p.g)+'</div><h2>'+esc(p.l)+'</h2>'+
+    '<div class="mx-msg">Passed in '+(n.verified||0)+' of '+bdApp(n)+' states where it applies.</div>'+bdBar(n,BD.data.rows.length)+
+    '<table>'+BDK.filter(k=>n[k]).map(k=>'<tr><td>'+BDN[k]+'</td><td>'+n[k]+'</td></tr>').join('')+'</table><div class="mx-msg">Pick a state in the list for the requests behind it, and to find or send new ones.</div>';
+  document.getElementById('bd-back').onclick=ev=>{ev.preventDefault();BD.openP.delete(pid);BD.sel=null;BD.state=null;bdDraw();};}
+function bdAlt(){
+  const v=BD.view,alt=document.getElementById('bd-alt');
+  document.querySelectorAll('#bd-views button').forEach(b=>b.setAttribute('aria-selected',b.dataset.v===v));
+  document.getElementById('bd-gridwrap').hidden=v!=='grid';alt.hidden=v==='grid';
+  if(v==='grid'||!BD.data)return;
+  alt.innerHTML=v==='path'?bdPathView():v==='state'?bdStateView():bdMapView();
+  const m=document.getElementById('bd-mapp');if(m)m.onchange=()=>{BD.mapPath=m.value;bdAlt();};}
+document.getElementById('bd-views').addEventListener('click',ev=>{const b=ev.target.closest('button');if(!b)return;
+  BD.view=b.dataset.v;try{localStorage.setItem('bd-view',BD.view);}catch(e){}bdAlt();});
+document.getElementById('bd-alt').addEventListener('click',ev=>{
+  const c=ev.target.closest('[data-k]');if(c){BD.sel=c.dataset.k;BD.state=BD.sel.split('|')[0];
+    document.querySelectorAll('.bd-sc.sel,.bd-pc.sel').forEach(x=>x.classList.remove('sel'));c.classList.add('sel');bdCell(BD.sel);return;}
+  const pr=ev.target.closest('.bd-pr');if(pr){const id=pr.dataset.p;if(BD.openP.has(id)){BD.openP.delete(id);bdAlt();bdOverview();}else{BD.openP.add(id);bdAlt();bdPathSide(id);}return;}
+  const st=ev.target.closest('.bd-sg .st');if(st){const s=st.dataset.s;BD.sel=null;
+    if(BD.openS.has(s)){BD.openS.delete(s);BD.state=null;bdAlt();bdOverview();}else{BD.openS.add(s);BD.state=s;bdAlt();bdState(s);}return;}
+  const t=ev.target.closest('.bd-tile');if(t&&!t.disabled){BD.state=t.dataset.s;BD.sel=null;bdAlt();bdState(BD.state);}});
+document.getElementById('bd-alt').addEventListener('keydown',ev=>{if((ev.key==='Enter'||ev.key===' ')&&ev.target.matches('.bd-pr')){ev.preventDefault();ev.target.click();}});
 function bdOverview(){
   const S=BD.data.summary;
   document.getElementById('bd-side').innerHTML='<div class="cap2">Readiness · '+(BD.line==='GL'?'General Liability':'Commercial Property')+'</div>'+
@@ -1144,7 +1404,7 @@ function bdCell(k,fetchIt){
 }
 function bdCellDraw(c){
   const s=c.status==='descoped'?{glyph:'⊘',board:'Descoped',meaning:'taken out of scope with a reason'}:LG[c.status];
-  let h='<a href="#" class="mx-back" id="bd-back">← '+esc(BOOT.names[c.state]||c.state)+'</a><div class="cap2">Selected cell · '+esc(c.line+' · '+c.state)+'</div>'+
+  let h='<a href="#" class="mx-back" id="bd-back">← '+esc(BD.view==='path'&&BD.openP.has(c.key.split('|')[1])?c.label:(BOOT.names[c.state]||c.state))+'</a><div class="cap2">Selected cell · '+esc(c.line+' · '+c.state)+'</div>'+
     '<div style="display:flex;gap:10px;align-items:center"><span class="chip '+c.status+'">'+esc(s.glyph)+'</span><h2 style="font-size:19px">'+esc(c.label)+'</h2></div>'+
     '<div class="mx-msg">'+esc(s.board+' — '+s.meaning)+'</div>';
   if(!c.applies)h+='<div class="mx-msg">Not filed in '+esc(c.state)+': '+esc(c.why||'the state files no such path')+' (D5).</div>';
@@ -1158,7 +1418,8 @@ function bdCellDraw(c){
     '<div class="mx-msg">Find risks that walk this path in '+esc(c.state)+': each candidate is rated on our engine (free) and kept only if its trace walks the path. Then send the ones you choose to ISO.</div>'+
     '<div class="td-tools"><button class="btn" id="bd-find">Find scenarios (free)</button></div><div id="bd-found"></div>';
   document.getElementById('bd-side').innerHTML=h;
-  document.getElementById('bd-back').onclick=ev=>{ev.preventDefault();BD.sel=null;BD.state=c.state;bdDraw();};
+  document.getElementById('bd-back').onclick=ev=>{ev.preventDefault();BD.sel=null;const pid=c.key.split('|')[1];
+    if(BD.view==='path'&&BD.openP.has(pid)){BD.state=null;bdAlt();bdPathSide(pid);}else{BD.state=c.state;bdDraw();}};
   const f=document.getElementById('bd-find');if(f)f.onclick=()=>bdFind(c);
 }
 function bdFind(c){
@@ -1212,11 +1473,11 @@ function bdRoute(){
   const parts=(location.hash||'').slice(1).split('?');if(parts[0]!=='board')return;
   const p=new URLSearchParams(parts[1]||'');
   if(p.get('lob')){BD.line=p.get('lob')==='CP'?'CP':'GL';BD.hl=p.get('coverage')?{lob:BD.line,coverage:p.get('coverage')}:null;
-    BD.state=p.get('state')||null;BD.sel=null;}
-  bdLoad().then(()=>{if(BD.state){const b=document.querySelector('.bd-st[data-s="'+BD.state+'"]');if(b)b.scrollIntoView({block:'center'});}});
+    BD.state=p.get('state')||null;BD.sel=null;if(BD.state&&BD.view!=='grid'){BD.view='state';BD.openS.add(BD.state);}}
+  bdLoad().then(()=>{if(BD.state){const b=document.querySelector(BD.view==='grid'?'.bd-st[data-s="'+BD.state+'"]':'.bd-sg .st[data-s="'+BD.state+'"]');if(b)b.scrollIntoView({block:'center'});}});
 }
 document.getElementById('bd-lines').addEventListener('click',ev=>{const b=ev.target.closest('button');if(!b||b.dataset.l===BD.line)return;
-  BD.line=b.dataset.l;BD.sel=null;BD.state=null;BD.hl=null;bdLoad();});
+  BD.line=b.dataset.l;BD.sel=null;BD.state=null;BD.hl=null;BD.openP.clear();BD.openS.clear();BD.mapPath='';bdLoad();});
 document.getElementById('bd-grid').addEventListener('click',ev=>{
   const c=ev.target.closest('.bd-c');if(c&&!c.classList.contains('na')){BD.sel=c.dataset.k;BD.state=c.dataset.k.split('|')[0];
     document.querySelectorAll('.bd-c.sel').forEach(x=>x.classList.remove('sel'));c.classList.add('sel');bdCell(BD.sel);return;}
@@ -1251,35 +1512,35 @@ BUILT["trace"] = TRACE_HTML
 TRACE_CSS = """
 .td-pick{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .td-pick .bd-lines{margin-left:0}
-.td-pick input#td-state{width:64px;font:inherit;padding:6px 8px;border:1px solid var(--color-divider);border-radius:4px;background:#fff;text-transform:uppercase}
-.td-pick select{font:inherit;padding:6px 8px;border:1px solid var(--color-divider);border-radius:4px;background:#fff;max-width:420px}
-.td-chk{font-size:12.5px;display:flex;gap:5px;align-items:center}
+.td-pick input#td-state{width:64px;font:inherit;padding:8px 12px;border:1px solid var(--color-divider);border-radius:var(--radius-md);background:var(--color-card);text-transform:uppercase}
+.td-pick select{font:inherit;padding:8px 12px;border:1px solid var(--color-divider);border-radius:var(--radius-md);background:var(--color-card);max-width:420px}
+.td-chk{font-size:14px;display:flex;gap:5px;align-items:center}
 .td-head{display:flex;gap:18px;align-items:baseline;flex-wrap:wrap}
 .td-head h2{margin:0;font:600 22px var(--font-heading)}
-.td-root{border:1.5px solid var(--ox);background:var(--ox-tint);border-radius:4px;padding:10px 12px;margin:6px 0}
+.td-root{border:1.5px solid var(--ox);background:var(--ox-tint);border-radius:var(--radius-md);padding:10px 12px;margin:6px 0}
 .td-root.ok{border-color:var(--color-accent-700);background:var(--color-accent-100)}
 .td-root b{font:600 15px var(--font-heading)}
-.td-root code,.td-row code{font-size:11px;word-break:break-all}
+.td-root code,.td-row code{font-size:12.5px;word-break:break-all}
 .td-tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .td-recs{display:flex;flex-direction:column;gap:4px}
-.td-rec{border:1px solid var(--color-divider);border-radius:4px;background:var(--color-bg)}
+.td-rec{border:1px solid var(--color-divider);border-radius:var(--radius-md);background:var(--color-bg)}
 .td-rec>button{width:100%;display:flex;gap:10px;align-items:center;padding:6px 10px;border:0;background:transparent;cursor:pointer;font:inherit;
   text-align:left;color:var(--color-text)}
-.td-rec>button span:first-child{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px}
+.td-rec>button span:first-child{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13.5px}
 .td-rec.bad{border-color:var(--ox)}
-.td-rows{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}
+.td-rows{width:100%;border-collapse:collapse;font-size:13.5px;table-layout:fixed}
 .td-rows td:nth-child(1){width:38%}.td-rows td:nth-child(2),.td-rows td:nth-child(3){width:20%}
 .td-rows td{overflow-wrap:anywhere}
 #td-body{min-width:0;overflow-x:hidden}
-.td-rows td{padding:4px 8px;border-top:1px solid var(--color-divider);vertical-align:top}
+.td-rows td{padding:8px 10px;border-top:1px solid var(--color-divider);vertical-align:top}
 .td-rows td.v{text-align:right;font-variant-numeric:tabular-nums}
 .td-rows tr.first td{background:var(--ox-tint)}
 .td-rows tr.flows td{background:color-mix(in srgb,var(--ox-tint) 50%,transparent)}
-.td-tag{font-size:10.5px;padding:1px 6px;border-radius:3px;border:1px solid var(--color-neutral-400);white-space:nowrap}
+.td-tag{font-size:12px;padding:1px 6px;border-radius:var(--radius-sm);border:1px solid var(--color-neutral-400);white-space:nowrap}
 .td-tag.first{border-color:var(--ox);color:var(--ox-deep);font-weight:600}
 .td-tag.flows{color:var(--ox-deep)}
-.td-src{font-size:10.5px;color:var(--color-neutral-700)}
-.td-cls select,.td-cls input,.td-cls textarea{font:inherit;padding:6px 8px;border:1px solid var(--color-divider);border-radius:4px;background:#fff;width:100%}
+.td-src{font-size:12px;color:var(--color-neutral-700)}
+.td-cls select,.td-cls input,.td-cls textarea{font:inherit;padding:8px 12px;border:1px solid var(--color-divider);border-radius:var(--radius-md);background:var(--color-card);width:100%}
 .td-cls textarea{min-height:60px;resize:vertical}
 """
 
@@ -1334,7 +1595,7 @@ function tdDraw0(){
       (R.differ?R.differ+' differ · ':'')+R.compared+' compared'+(R.isoOnly?' · '+R.isoOnly+' ISO-only':'')+'</span></button>';
     if(open)s+='<table class="td-rows">'+byRec[R.record].map(r=>{const st=r.match===true?'verified':r.match===false?'mismatch':'untested';
       return '<tr class="'+(r.role||'')+'"><td>'+esc(r.field)+(r.rule_file?'<div class="td-src">'+esc(r.rule_file)+'</div>':'')+'</td><td class="v">'+tdVal(r.ours)+'</td><td class="v">'+tdVal(r.iso)+'</td>'+
-        '<td><span class="chip '+st+'" style="width:18px;height:15px;font-size:9.5px">'+(r.match===true?'✓':r.match===false?'×':'·')+'</span> '+
+        '<td><span class="chip '+st+'" style="width:18px;height:15px;font-size:11px">'+(r.match===true?'✓':r.match===false?'×':'·')+'</span> '+
         (r.role==='first'?'<span class="td-tag first">first divergence</span>':r.role==='divergence'?'<span class="td-tag first">divergence</span>':r.role==='flows'?'<span class="td-tag flows">flows from '+esc(r.flowsFrom.split('/').slice(-2).join('/'))+'</span>':r.role==='other'?'<span class="td-tag">'+esc(r.kind)+'</span>':(!r.in_iso?'<span class="td-tag">ours only</span>':!r.in_ours?'<span class="td-tag">ISO only</span>':''))+'</td></tr>';}).join('')+'</table>';
     return s+'</div>';}).join('')+'</div>';
   b.innerHTML=h;
@@ -1389,157 +1650,196 @@ if((location.hash||'').startsWith('#trace'))tdRoute();else tdList();
 
 WB_HTML = """<section class="screen" id="s-workbench" hidden><div class="mx-wrap"><div class="mx-main">
   <div class="mx-head"><div><div class="eyebrow">Scenario Workbench</div><h1>Build a risk and see what it costs</h1></div>
-    <p>Describe a business with ISO's own choices and we'll price it instantly on our engine, free. When you want ISO's
-    view too, send it; we only ask if ISO hasn't already priced the same thing, and never without your go.</p>
+    <p>Change any field and our price updates straight away, free. ISO's price sits beside it when ISO has already
+    answered this exact risk; otherwise one click asks, never without your go.</p>
     <div class="bd-lines" id="wb-lines" role="group" aria-label="Line"><button data-l="GL">General Liability</button><button data-l="CP">Commercial Property</button></div></div>
   <div class="wb-top"><label>State <select id="wb-state"></select></label>
-    <label id="wb-model">Mode <select id="wb-mode"></select></label><label id="wb-roundl">Rounding <select id="wb-round"></select></label></div>
-  <div id="wb-inputs"></div>
-  <div class="td-tools"><button class="btn" id="wb-rate">Price it on our engine · free</button><button class="btn" id="wb-send">Ask ISO too · 1 call…</button>
-    <button class="btn" id="wb-where">Which states can take it? · free</button><button class="btn" id="wb-every">Price it in every state…</button></div>
-  <div id="wb-confirm"></div>
-  <div id="wb-out"></div>
-  <div class="mx-trend"><div class="mx-trend-hd"><span>Response curve · premium by value, from the runs that varied one control</span>
-    <span class="mx-key"><span><i style="background:#9a6214"></i>ours</span><span><b class="bd-dot r" style="background:#2f72a8;border-color:#2f72a8"></b>ISO</span></span></div>
-    <div class="td-tools"><select id="wb-curve"></select><span class="mx-msg" id="wb-curvemsg"></span></div><div id="wb-chart" style="position:relative;height:180px"></div></div>
-</div><aside class="mx-side" id="wb-side" aria-live="polite"><div class="mx-msg">Rate a scenario to see what it walked, and whether ISO already answered it.</div></aside></div></section>"""
+    <details class="wb-eng"><summary>Engine settings</summary><span class="wb-engin"><label id="wb-model">Mode <select id="wb-mode"></select></label><label id="wb-roundl">Rounding <select id="wb-round"></select></label></span></details></div>
+  <div class="pl-shell">
+    <nav class="wb-nav" id="wb-nav" aria-label="Screens"></nav>
+    <div class="wb-col">
+      <section class="wb-panel"><div><h2 id="wb-scrh"></h2><span class="mx-msg">Fields left on Standard keep the base risk.</span></div>
+        <div class="pl-form" id="wb-inputs"></div>
+        <details class="wb-raw" id="wb-rawd"><summary>Edit the request directly (specialists)</summary>
+          <div class="mx-msg">The request as sent to the engine. Edits here replace the form until you reset them.</div>
+          <textarea id="wb-req" spellcheck="false"></textarea><div class="td-tools"><button class="btn" id="wb-rawgo">Price this request</button><button class="btn" id="wb-rawreset">Back to the form</button></div></details></section>
+      <section class="wb-panel"><div><h2>Across every state</h2><p class="mx-msg">The same risk priced in each state on our engine, free.</p></div>
+        <div class="td-tools"><button class="btn primary" id="wb-every">Price it in every state · free</button><span class="mx-msg" id="wb-everymsg"></span></div>
+        <div class="mx-stats wb-stats" id="wb-stats" hidden></div>
+        <div class="bd-views" id="wb-tabs" role="tablist" aria-label="View"><button role="tab" data-t="map">Map</button><button role="tab" data-t="table">Table</button><button role="tab" data-t="curve">How one field moves the price</button></div>
+        <div id="wb-across"></div>
+        <div id="wb-curvebox" hidden><div class="td-tools"><select id="wb-curve"></select><span class="mx-msg" id="wb-curvemsg"></span></div>
+          <div class="mx-key" style="margin:6px 0"><span><i style="background:#a66b42"></i>ours</span><span><b class="bd-dot r" style="background:#1f8f72;border-color:#1f8f72"></b>ISO</span></div>
+          <div id="wb-chart" style="position:relative;height:200px"></div></div>
+      </section>
+    </div>
+  </div>
+</div><aside class="mx-side" id="wb-side" aria-live="polite"><div class="mx-msg">Pricing the base risk…</div></aside></div></section>"""
 
 BUILT["workbench"] = WB_HTML
 
 WB_CSS = """
-.wb-top{display:flex;gap:16px;flex-wrap:wrap;align-items:center;font-size:12.5px}
-.wb-top select,.wb-in select,.wb-in input,#wb-req,.wb-conf input{font:inherit;padding:5px 7px;border:1px solid var(--color-divider);border-radius:4px;background:#fff;max-width:100%}
-.wb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px 14px}
-.wb-in{display:flex;flex-direction:column;gap:3px;font-size:12px}
-.wb-in select,.wb-in input{width:100%}
-.wb-grp{grid-column:1/-1;font:600 14px var(--font-heading);border-bottom:1px solid var(--color-divider);margin-top:6px}
-#wb-req{width:100%;min-height:220px;font-family:ui-monospace,Menlo,monospace;font-size:11.5px}
-.wb-conf{border:1.5px solid var(--color-accent);background:var(--color-accent-100);border-radius:4px;padding:12px;display:flex;flex-direction:column;gap:8px}
+.wb-top{display:flex;gap:16px;flex-wrap:wrap;align-items:center;font-size:14px}
+.wb-top select,.wb-in select,.wb-in input,#wb-req,.wb-conf input{font:inherit;padding:8px 12px;border:1px solid var(--color-divider);border-radius:var(--radius-md);background:var(--color-card);max-width:100%}
+.wb-eng summary{cursor:pointer;color:var(--color-accent-700)}.wb-engin{display:inline-flex;gap:12px;margin-left:10px}
+.wb-nav{position:sticky;top:calc(var(--hdr,66px) + 12px);display:flex;flex-direction:column;gap:4px}
+@media (max-width:1300px){.wb-nav{flex-direction:row;flex-wrap:wrap;position:static}}
+.wb-nav button{display:flex;justify-content:space-between;gap:8px;align-items:center;text-align:left;border:0;background:none;padding:9px 12px;border-radius:var(--radius-md);font:500 14.5px var(--font-body);color:var(--color-neutral-700);cursor:pointer}
+.wb-nav button[aria-current="true"]{background:var(--color-card);color:var(--color-text);box-shadow:0 1px 3px color-mix(in srgb,#2d1d1a 8%,transparent)}
+.wb-nav .c{font-size:11.5px;background:var(--color-accent-300);color:var(--color-text);border-radius:var(--radius-pill);padding:0 7px;white-space:nowrap}
+.wb-col{display:flex;flex-direction:column;gap:22px;min-width:0}
+.wb-panel{background:var(--color-card);border:1px solid var(--color-divider);border-radius:var(--radius-lg);padding:22px 24px;display:flex;flex-direction:column;gap:16px;min-width:0}
+.wb-panel h2{margin:0;font:400 23px/1.2 var(--font-heading)}
+.pl-f.chg{border-color:var(--color-accent-300);background:var(--color-accent-100)}
+.pl-f .hd a{margin-left:auto;font-size:12.5px;cursor:pointer}
+.wb-raw summary{cursor:pointer;color:var(--color-accent-700);font-size:14px}
+.wb-raw[open]{display:flex;flex-direction:column;gap:8px}
+#wb-req{width:100%;min-height:220px;font-family:ui-monospace,Menlo,monospace;font-size:13px}
+.wb-conf{border:1.5px solid var(--color-accent);background:var(--color-accent-100);border-radius:var(--radius-md);padding:12px;display:flex;flex-direction:column;gap:8px}
 .wb-conf.full{border-color:var(--ox);background:var(--ox-tint)}
-.wb-res{border:1px solid var(--color-divider);border-radius:4px;padding:12px;background:var(--color-bg)}
-.wb-res b.big{font:400 30px var(--font-heading)}
-.wb-tbl{width:100%;border-collapse:collapse;font-size:12px}
-.wb-tbl td{padding:3px 6px;border-top:1px solid var(--color-divider)}
+.wb-cmp{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.wb-cmp div{background:var(--color-card);border:1px solid var(--color-divider);border-radius:var(--radius-md);padding:10px 12px}
+.wb-cmp span{display:block;font-size:12.5px;color:var(--color-neutral-700)}.wb-cmp b{font:400 26px var(--font-heading)}
+.wb-acts{display:flex;flex-direction:column;gap:8px}.wb-acts .btn{text-align:left}
+.wb-stats{grid-template-columns:repeat(5,minmax(0,1fr))}
+.wb-map .bd-tile small{font-size:10.5px}
+.wb-tbl{width:100%;border-collapse:collapse;font-size:14px}
+.wb-tbl th{text-align:left;font-weight:600;font-size:13px;color:var(--color-neutral-700);padding:6px 10px}
+.wb-tbl td{padding:8px 10px;border-top:1px solid var(--color-divider)}
 .wb-tbl td.v{text-align:right;font-variant-numeric:tabular-nums}
+.wb-scroll{max-height:440px;overflow:auto}
+.wb-res b.big{font:400 30px var(--font-heading)}
 """
 
 WB_JS = r"""
-const WB={line:'GL',spec:{},opts:null,config:{},last:null};
+// ---- TC-23, consolidated: the risk as submission screens (the plan builder's), one live price beside ISO's, and one
+// across-every-state panel (map, table, response curve). Every price is our engine, free; only Ask ISO spends a call.
+const WB={line:'GL',spec:{},opts:null,cat:null,config:{},last:null,screen:null,raw:null,every:null,tab:'map',timer:null,seq:0};
 function wbJSON(url,body){return fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json());}
+function wbState(){return document.getElementById('wb-state').value;}
 function wbLoad(){
   document.querySelectorAll('#wb-lines button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.l===WB.line));
   const go=s=>{WB.spec[WB.line]=s;const sel=document.getElementById('wb-state'),cur=sel.value;
-    sel.innerHTML=s.states.map(x=>'<option'+(x===cur?' selected':'')+'>'+x+'</option>').join('');if(!cur&&s.states.includes('OH'))sel.value='OH';
-    document.getElementById('wb-mode').innerHTML=s.modes.map(m=>'<option>'+m+'</option>').join('');
-    document.getElementById('wb-round').innerHTML=s.roundings.map(m=>'<option>'+m+'</option>').join('');
-    document.getElementById('wb-model').hidden=document.getElementById('wb-roundl').hidden=WB.line!=='GL';
-    document.getElementById('wb-where').hidden=document.getElementById('wb-every').hidden=WB.line!=='GL';
-    document.getElementById('wb-curve').innerHTML=WB.line==='GL'?'<option value="">Control…</option>'+s.controls.map(c=>'<option value="'+c.id+'">'+esc(c.label)+'</option>').join(''):'<option value="">CP curves arrive with its control catalog (TC-26)</option>';
-    wbInputs();};
-  return WB.spec[WB.line]?Promise.resolve(go(WB.spec[WB.line])):fetch('/api/console/workbench/spec?lob='+WB.line).then(r=>r.json()).then(go);
-}
-function wbState(){return document.getElementById('wb-state').value;}
-function wbInputs(){
-  const el=document.getElementById('wb-inputs');
-  if(WB.line==='CP'){el.innerHTML='<div class="mx-msg">The CP request itself, starting from '+esc(wbState())+'’s sample risk. Edit any field; CP’s dimension catalog (TC-26) brings dropdowns.</div><textarea id="wb-req" spellcheck="false"></textarea>';
-    fetch('/api/console/workbench/request?lob=CP&state='+wbState()).then(r=>r.json()).then(j=>document.getElementById('wb-req').value=JSON.stringify(j,null,1));return;}
-  wbJSON('/api/console/workbench/options',{state:wbState(),config:WB.config}).then(o=>{WB.opts=o;
-    let h='<div class="wb-grid">',grp=null;
-    WB.spec.GL.controls.forEach(c=>{const oc=o.controls[c.id]||{};if(c.group!==grp){grp=c.group;h+='<div class="wb-grp">'+esc(grp)+'</div>';}
-      const v=WB.config[c.id]??'';
-      h+='<label class="wb-in" title="'+esc(c.note||'')+'">'+esc(c.label)+(oc.values?'<select data-c="'+c.id+'"><option value="">(base)</option>'+oc.values.map(x=>'<option'+(String(x)===String(v)?' selected':'')+'>'+esc(String(x))+'</option>').join('')+'</select>':
-        '<input data-c="'+c.id+'" value="'+esc(String(v))+'" placeholder="(base)">')+'</label>';});
-    el.innerHTML=h+'</div>';
-    el.querySelectorAll('[data-c]').forEach(x=>x.onchange=()=>{const k=x.dataset.c;if(x.value==='')delete WB.config[k];else WB.config[k]=x.value;wbInputs();});});
-}
+    sel.innerHTML=s.states.map(x=>'<option'+(x===cur?' selected':'')+'>'+x+'</option>').join('');if(!s.states.includes(cur))sel.value=s.states.includes('OH')?'OH':s.states[0];
+    document.getElementById('wb-mode').innerHTML=(s.modes||[]).map(m=>'<option>'+m+'</option>').join('');
+    document.getElementById('wb-round').innerHTML=(s.roundings||[]).map(m=>'<option>'+m+'</option>').join('');
+    document.querySelector('#s-workbench .wb-eng').hidden=WB.line!=='GL';
+    document.getElementById('wb-curve').innerHTML=WB.line==='GL'?'<option value="">Choose a field…</option>'+s.controls.map(c=>'<option value="'+c.id+'">'+esc(c.label)+'</option>').join(''):'<option value="">Property curves arrive with its run store</option>';
+    return wbFields();};
+  return WB.spec[WB.line]?go(WB.spec[WB.line]):fetch('/api/console/workbench/spec?lob='+WB.line).then(r=>r.json()).then(go);}
+// the field list: GL from the Workbench's controls with the values legal for this state and risk; Property from the
+// plan builder's catalog. Both carry the same ids the plan builder uses, so a risk opens there unchanged.
+function wbFields(){
+  if(WB.line==='GL')return wbJSON('/api/console/workbench/options',{state:wbState(),config:WB.config}).then(o=>{WB.opts=o;
+    WB.cat=WB.spec.GL.controls.map(c=>{const oc=o.controls[c.id]||{};return {id:c.id,label:c.label,group:c.group,kind:oc.values?'select':'number',values:oc.values||[],exercises:c.note||''};});wbDraw();});
+  return fetch('/api/console/catalog?lob=CP&state='+wbState()).then(r=>r.json()).then(j=>{WB.cat=j.dimensions;wbDraw();});}
+function wbDim(id){return (WB.cat||[]).find(d=>d.id===id);}
+function wbScreens(){if(WB.line==='GL'){const known=new Set(PL_SCREENS_GL.flatMap(x=>x[3])),rest=(WB.cat||[]).map(d=>d.id).filter(id=>!known.has(id));
+    return PL_SCREENS_GL.map((x,i)=>i===PL_SCREENS_GL.length-1?[x[0],x[1],x[2],x[3].concat(rest)]:x);}
+  const gs=[];(WB.cat||[]).forEach(d=>{let g=gs.find(x=>x[1]===d.group);if(!g){g=[d.group,d.group,'',[]];gs.push(g);}g[3].push(d.id);});return gs;}
+function wbShown(id){const dep=PL_DEPENDS[id];return WB.line!=='GL'||!dep||String(WB.config[dep[0]]??'')===dep[1];}
+function wbField(id){const d=wbDim(id);if(!d||!wbShown(id))return '';const v=WB.config[id]??'',chg=v!=='';let inp;
+  if(d.perState||(d.kind==='select'&&d.values.length>80))inp='<input list="wb-dl-'+id+'" data-c="'+id+'" value="'+esc(String(v))+'" placeholder="Standard · type to search '+d.values.length+'" aria-label="'+esc(d.label)+'"><datalist id="wb-dl-'+id+'">'+d.values.map(x=>'<option value="'+esc(String(x))+'">').join('')+'</datalist>';
+  else if(d.kind==='select')inp='<select data-c="'+id+'" aria-label="'+esc(d.label)+'"><option value="">Standard</option>'+d.values.map(x=>'<option'+(String(x)===String(v)?' selected':'')+'>'+esc(String(x))+'</option>').join('')+'</select>';
+  else inp='<input type="number" data-c="'+id+'" value="'+esc(String(v))+'" placeholder="Standard" aria-label="'+esc(d.label)+'">';
+  return '<div class="pl-f'+(chg?' chg':'')+'"><div class="hd"><span>'+esc(d.label)+'</span>'+(chg?'<a data-reset="'+id+'">Reset</a>':'')+'</div>'+inp+
+    (d.exercises?'<span class="why">'+esc(d.exercises.charAt(0).toUpperCase()+d.exercises.slice(1))+'</span>':'')+'</div>';}
+function wbDraw(){const scs=wbScreens();if(!WB.screen||!scs.some(x=>x[0]===WB.screen))WB.screen=scs[0][0];const sc=scs.find(x=>x[0]===WB.screen);
+  document.getElementById('wb-nav').innerHTML=scs.map(x=>{const n=x[3].filter(id=>(WB.config[id]??'')!=='').length;return '<button data-scr="'+esc(x[0])+'" aria-current="'+(x[0]===sc[0])+'"><span>'+esc(x[1])+'</span>'+(n?'<span class="c">'+n+' changed</span>':'')+'</button>';}).join('');
+  document.getElementById('wb-scrh').textContent=sc[1];
+  document.getElementById('wb-inputs').innerHTML=WB.raw?'<div class="mx-msg">Priced from the request you edited below. "Back to the form" returns to these fields.</div>':sc[3].map(wbField).join('');}
 function wbBody(extra){const b={line:WB.line,state:wbState(),mode:document.getElementById('wb-mode').value,rounding:document.getElementById('wb-round').value,...(extra||{})};
-  if(WB.line==='GL')b.config=WB.config;else{try{b.request=JSON.parse(document.getElementById('wb-req').value);}catch(e){throw new Error('The CP request is not valid JSON: '+e.message);}}return b;}
-function wbStoredBox(s,ours){if(!s)return '<div class="mx-msg">No stored ISO answer for this exact request.</div>';
-  const agree=s.iso&&ours&&(+s.iso===+ours);
-  return '<div class="mx-need"><span class="chip '+(s.outcome!=='rated'?'untested':agree?'verified':'mismatch')+'">'+(s.outcome!=='rated'?'·':agree?'✓':'×')+'</span><div><b>ISO already answered this exact request</b><div class="mx-msg">'+
-    esc(s.outcome==='rated'?'ISO '+s.iso+(ours?' · ours '+ours+(agree?' · agree':' · differ'):''):'ISO refused: '+s.message)+' · stored '+esc((s.stored_at||'').slice(0,10))+(s.freshness==='stale'?' · stale':'')+'</div>'+
-    (s.outcome==='rated'?'<a href="#trace?lob='+WB.line+'&scenario='+encodeURIComponent(s.scenario)+'">Open in Trace Diff</a>':'')+'</div></div>';}
-function wbRate(){
-  let body;try{body=wbBody();}catch(e){document.getElementById('wb-out').innerHTML='<div class="td-root">'+esc(e.message)+'</div>';return;}
-  document.getElementById('wb-out').innerHTML='<div class="mx-msg">Rating on our engine…</div>';
-  wbJSON('/api/console/workbench/rate',body).then(r=>{WB.last={...r,body};
-    const o=document.getElementById('wb-out');
-    if(r.error){o.innerHTML='<div class="td-root">'+esc(r.error)+'</div>';return;}
-    o.innerHTML='<div class="wb-res">'+(r.outcome==='rated'?'<span class="cap2">Our premium</span><div><b class="big">'+esc(r.premium)+'</b> <span class="mx-msg">'+esc((r.packages||[]).join(' over '))+(r.mode?' · '+r.mode+' · '+r.rounding:'')+'</span></div>'+
-      (r.classification?'<div>Class '+esc(r.classification.code+' '+r.classification.description)+' · <b>'+esc(r.classification.basis)+'</b>: '+esc(r.classification.label)+'</div>':''):
-      '<b>Our engine '+(r.outcome==='stopped'?'stopped':'refused')+'</b><div class="mx-msg">'+esc(r.detail||'')+'</div>')+wbStoredBox(r.stored,r.premium)+'</div>';
-    wbSide(r);});
-}
+  if(WB.raw)b.request=WB.raw;else b.config=WB.config;return b;}
+function wbRate(){clearTimeout(WB.timer);WB.timer=setTimeout(()=>{const seq=++WB.seq,body=wbBody();
+  document.getElementById('wb-side').querySelectorAll('.wb-cmp b').forEach(x=>x.style.opacity=.4);
+  wbJSON('/api/console/workbench/rate',body).then(r=>{if(seq!==WB.seq)return;WB.last={...r,body};wbSide(WB.last);
+    if(!WB.raw&&document.getElementById('wb-rawd').open)document.getElementById('wb-req').value=JSON.stringify(r.request,null,1);})
+    .catch(e=>{document.getElementById('wb-side').innerHTML='<div class="mx-msg">'+esc(String(e))+'</div>';});},250);}
 function wbSide(r){
-  const labels=(MX.data&&MX.data.pathLabels&&MX.data.pathLabels[r.line])||{};
-  let h='<div class="cap2">Paths this scenario walked · '+(r.paths||[]).length+'</div>'+((r.paths||[]).length?'<table>'+r.paths.map(p=>'<tr><td>'+esc(labels[p]||p)+'</td></tr>').join('')+'</table>':'<div class="mx-msg">None.</div>');
-  h+='<div class="cap2">Request</div><div class="mx-msg">hash '+esc(r.hash)+'</div>';
-  h+='<button class="btn" id="wb-promote" style="margin-top:auto">Promote to Regression Library</button><div class="mx-msg" id="wb-pmsg">'+(r.stored&&r.stored.outcome==='rated'?'Kept with ISO’s stored answer as its reference.':'No ISO answer yet: kept with our premium as its reference (regression, not verification).')+'</div>';
+  const labels=(MX.data&&MX.data.pathLabels&&MX.data.pathLabels[r.line])||{},s=r.stored,rated=r.outcome==='rated',iso=s&&s.outcome==='rated'?s.iso:null;
+  const same=iso!=null&&rated&&+iso===+r.premium,chg=Object.entries(WB.config).filter(([k,v])=>v!==''),num=v=>v==null||v===''?'—':Number(v).toLocaleString(undefined,{maximumFractionDigits:2});
+  let h='<div class="cap2">'+esc(r.body.state+' · '+(r.line==='GL'?'General Liability':'Commercial Property'))+(r.classification?' · class '+esc(r.classification.code):'')+'</div>';
+  h+=rated?'<div class="wb-cmp"><div><span>Our price</span><b>'+num(r.premium)+'</b></div><div><span>ISO’s price</span><b>'+(iso!=null?num(iso):'—')+'</b></div></div>':
+    '<div class="mx-need"><span class="chip mismatch">!</span><div><b>Our engine '+(r.outcome==='stopped'?'stopped':'could not price it')+'</b><div class="mx-msg">'+esc(r.detail||'')+'</div></div></div>';
+  if(r.classification)h+='<div class="mx-msg">'+esc(r.classification.description||'')+' · '+esc(r.classification.basis||'')+': '+esc(r.classification.label||'')+'</div>';
+  h+=s?(s.outcome==='rated'?'<span class="mx-pill '+(same?'k-verified':'k-mismatch')+'">'+(same?'✓ Same price':'× Different by '+num(Math.abs(+r.premium-+iso)))+'</span><div class="mx-msg">ISO answered this exact risk on '+esc((s.stored_at||'').slice(0,10))+(s.freshness==='stale'?' (out of date)':'')+'. Reusing it is free.</div>':
+      '<span class="mx-pill k-untested">ISO would not price it</span><div class="mx-msg">'+esc(s.message||'')+'</div>'):'<span class="mx-pill k-internal">ISO not asked yet</span>';
+  h+='<div id="wb-confirm"></div><div class="wb-acts"><button class="btn'+(s?'':' primary')+'" id="wb-send">'+(s?'Ask ISO again · 1 call':'Ask ISO · 1 call')+'</button>'+
+    (s&&s.outcome==='rated'?'<a class="btn" href="#trace?lob='+r.line+'&scenario='+encodeURIComponent(s.scenario)+'">Find where they split</a>':'')+
+    '<button class="btn" id="wb-ws">Open the worksheet</button><button class="btn" id="wb-toplan">Plan tests from this risk</button><button class="btn" id="wb-promote">Save to the Regression Library</button></div><div class="mx-msg" id="wb-pmsg"></div>';
+  h+='<div class="cap2">Changed from the base risk</div><div class="pl-chiplist">'+(WB.raw?'<span>the request edited by hand</span>':chg.length?chg.map(([k,v])=>'<span>'+esc((wbDim(k)||{}).label||k)+': '+esc(String(v))+'</span>').join(''):'<span>nothing</span>')+'</div>';
+  h+='<details><summary class="mx-msg">Ways of pricing it walked · '+(r.paths||[]).length+'</summary><table>'+(r.paths||[]).map(p=>'<tr><td>'+esc(labels[p]||p)+'</td></tr>').join('')+'</table><div class="mx-msg">Request hash '+esc(r.hash||'')+'</div></details>';
   document.getElementById('wb-side').innerHTML=h;
-  document.getElementById('wb-promote').onclick=()=>{const s=r.stored&&r.stored.outcome==='rated'?r.stored:null;
-    wbJSON('/api/console/promote',{scenario:s?s.scenario:(r.line+'-'+r.body.state+'-wb-'+r.hash.slice(0,10)),line:r.line,state:r.body.state,origin:'workbench',
-      hash:s?s.hash:'',request:s?null:r.request,ours:r.premium}).then(j=>document.getElementById('wb-pmsg').textContent=j.error?j.error:j.already?'Already in the library.':'Promoted.');};
-}
-function wbSendDialog(){
-  let body;try{body=wbBody();}catch(e){document.getElementById('wb-confirm').innerHTML='<div class="td-root">'+esc(e.message)+'</div>';return;}
-  fetch('/api/console/cap').then(r=>r.json()).then(c=>{
-    const ad=c.lanes.find(l=>l.key==='adhoc'),full=ad.used>=ad.cap||c.used>=c.cap;
-    wbJSON('/api/console/workbench/rate',body).then(r=>{
-      const el=document.getElementById('wb-confirm');
-      let h='<div class="wb-conf'+(full?' full':'')+'"><b>Send this scenario to ISO?</b><div>'+(r.stored?'<b>A stored answer covers this exact request.</b> Reusing it costs nothing.':'No stored answer covers it: this spends <b>1 call</b> from the ad hoc lane.')+'</div>'+
-        '<div class="mx-msg">One-offs: '+ad.used+' of '+ad.cap+' used today · '+c.left+' of '+c.cap+' left in all'+(full?' · <b>full</b>: a call needs a reason, logged with it.':'')+'</div>';
-      if(r.stored)h+='<div class="td-tools"><button class="btn" id="wb-reuse">Use the stored answer · free</button>'+(full?'<input id="wb-reason" placeholder="Reason, to spend past the cap" style="flex:1">':'')+'<button class="btn" id="wb-spend">Spend a call anyway</button><button class="btn" id="wb-cancel">Cancel</button></div>';
-      else h+='<div class="td-tools">'+(full?'<input id="wb-reason" placeholder="Reason for going past the cap" style="flex:1">':'')+'<button class="btn" id="wb-spend">Send · 1 call</button><button class="btn" id="wb-cancel">Cancel</button></div>';
-      el.innerHTML=h+'<div class="mx-msg" id="wb-sendmsg"></div></div>';
-      const done=j=>{const m=document.getElementById('wb-sendmsg');if(j.error){m.textContent=j.error;return;}el.innerHTML='';
-        document.getElementById('wb-out').insertAdjacentHTML('afterbegin','<div class="mx-msg">'+(j.reused?'Used the stored answer; no call spent.':'Sent: 1 call, logged in the ledger; ISO’s answer is in the store.')+'</div>');
-        fetch('/api/console/cap').then(r=>r.json()).then(drawCap);wbRate();};
-      const reuse=document.getElementById('wb-reuse');if(reuse)reuse.onclick=()=>wbJSON('/api/console/workbench/send',{...body,reuse:true}).then(done);
-      document.getElementById('wb-spend').onclick=()=>{const rs=document.getElementById('wb-reason');if(full&&rs&&!rs.value.trim()){document.getElementById('wb-sendmsg').textContent='A reason is needed past the cap.';return;}
-        wbJSON('/api/console/workbench/send',{...body,reuse:false,override:rs?rs.value.trim():''}).then(done);};
-      document.getElementById('wb-cancel').onclick=()=>{el.innerHTML='';};
-    });});
-}
-function wbWhere(){
-  document.getElementById('wb-out').innerHTML='<div class="mx-msg">Checking every state against ISO’s declared domains…</div>';
-  wbJSON('/api/console/workbench/where',{config:WB.config}).then(j=>{const na=Object.entries(j.not_applicable||{});
-    document.getElementById('wb-out').innerHTML='<div class="wb-res"><span class="cap2">'+esc(j.describes||'the base risk')+'</span><div><b class="big">'+j.applicable.length+'</b> states it applies in · '+na.length+' it does not</div>'+
-      (na.length?'<table class="wb-tbl">'+na.slice(0,60).map(([s,w])=>'<tr><td>'+s+'</td><td>'+esc(w)+'</td></tr>').join('')+'</table>':'')+'</div>';});
-}
-function wbEvery(){
-  document.getElementById('wb-out').innerHTML='<div class="mx-msg">Rating this config in every state where it applies, on our engine (free)…</div>';
-  wbJSON('/api/console/workbench/every',{config:WB.config,mode:document.getElementById('wb-mode').value,rounding:document.getElementById('wb-round').value}).then(j=>{
-    if(j.error){document.getElementById('wb-out').innerHTML='<div class="td-root">'+esc(j.error)+'</div>';return;}
-    document.getElementById('wb-out').innerHTML='<div class="wb-res"><span class="cap2">'+esc(j.describes||'the base risk')+' · every state</span><div><b class="big">'+j.applicable+'</b> states rated free · <b>'+j.callsToSend+'</b> would need a call (no stored answer) · '+j.storedAgree+' already verified against a stored answer</div>'+
-      '<div class="td-tools"><button class="btn" id="wb-toplan">Build a plan from this…</button><span class="mx-msg">Sending these is a one-config test plan; nothing is spent here.</span></div>'+
-      '<table class="wb-tbl">'+j.rows.map(x=>'<tr><td>'+x.state+'</td><td class="v">'+esc(x.premium||'')+'</td><td>'+esc(x.outcome)+'</td><td>'+(x.stored?'ISO '+esc(x.stored.iso||x.stored.outcome):x.needsCall?'<span class="mx-msg">needs a call</span>':'')+'</td></tr>').join('')+'</table></div>';
-    const tp=document.getElementById('wb-toplan');if(tp)tp.onclick=()=>{const sts=j.rows.filter(x=>x.outcome!=='not applicable').map(x=>x.state);
-      location.hash='#plan?lob=GL&states='+encodeURIComponent(sts.join(','))+'&config='+encodeURIComponent(JSON.stringify(WB.config));};});
-}
+  document.getElementById('wb-send').onclick=wbSendDialog;
+  document.getElementById('wb-toplan').onclick=()=>{location.hash='#plan?lob='+r.line+'&states='+encodeURIComponent(r.body.state)+'&config='+encodeURIComponent(JSON.stringify(WB.config));};
+  document.getElementById('wb-ws').onclick=()=>{const text=JSON.stringify(r.request);location.hash='#compare';
+    const rows=upAdd('Workbench: '+(r.line==='GL'?'General Liability':'Property')+', '+(BOOT.names[r.body.state]||r.body.state),text);if(rows[0])UP.q.then(()=>wsOpen(rows[0]));};
+  document.getElementById('wb-promote').onclick=()=>{const st=s&&s.outcome==='rated'?s:null;
+    wbJSON('/api/console/promote',{scenario:st?st.scenario:(r.line+'-'+r.body.state+'-wb-'+r.hash.slice(0,10)),line:r.line,state:r.body.state,origin:'workbench',
+      hash:st?st.hash:'',request:st?null:r.request,ours:r.premium}).then(j=>document.getElementById('wb-pmsg').textContent=j.error?j.error:j.already?'Already in the library.':'Saved to the Regression Library.');};}
+function wbSendDialog(){const body=wbBody(),el=document.getElementById('wb-confirm');
+  fetch('/api/console/cap').then(r=>r.json()).then(c=>{const ad=c.lanes.find(l=>l.key==='adhoc'),full=ad.used>=ad.cap||c.used>=c.cap,st=WB.last&&WB.last.stored;
+    let h='<div class="wb-conf'+(full?' full':'')+'"><b>'+(st?'Ask ISO again?':'Ask ISO about this risk?')+'</b><div>'+(st?'ISO already answered it. Reusing that answer is free; asking again uses <b>1 call</b> and keeps the old answer in history.':'This uses <b>1 ISO call</b>, recorded.')+'</div>'+
+      '<div class="mx-msg">One-off calls today: '+ad.used+' of '+ad.cap+' used · '+c.left+' of '+c.cap+' left in all'+(full?' · <b>today’s limit is reached</b>, so a call needs a reason.':'')+'</div><div class="td-tools">'+
+      (full?'<input id="wb-reason" placeholder="Reason for going past today’s limit" style="flex:1">':'')+'<button class="btn primary" id="wb-spend">Yes, ask ISO · 1 call</button><button class="btn" id="wb-cancel">Not now</button></div><div class="mx-msg" id="wb-sendmsg"></div></div>';
+    el.innerHTML=h;
+    document.getElementById('wb-cancel').onclick=()=>{el.innerHTML='';};
+    document.getElementById('wb-spend').onclick=()=>{const rs=document.getElementById('wb-reason');if(full&&rs&&!rs.value.trim()){document.getElementById('wb-sendmsg').textContent='Add a reason to go past the daily limit.';return;}
+      document.getElementById('wb-sendmsg').textContent='Asking ISO…';
+      wbJSON('/api/console/workbench/send',{...body,reuse:false,override:rs?rs.value.trim():''}).then(j=>{if(j.error){document.getElementById('wb-sendmsg').textContent=j.error;return;}
+        el.innerHTML='';fetch('/api/console/cap').then(r=>r.json()).then(drawCap);wbRate();});};});}
+function wbEvery(){const msg=document.getElementById('wb-everymsg');msg.textContent='Pricing in every state on our engine… (about a minute)';
+  wbJSON('/api/console/workbench/every',{line:WB.line,config:WB.config,mode:document.getElementById('wb-mode').value,rounding:document.getElementById('wb-round').value}).then(j=>{
+    if(j.error){msg.textContent=j.error;return;}WB.every={...j,config:JSON.stringify(WB.config),line:WB.line};msg.textContent='';wbAcross();}).catch(e=>{msg.textContent=String(e);});}
+function wbAcross(){document.querySelectorAll('#wb-tabs button').forEach(b=>b.setAttribute('aria-selected',b.dataset.t===WB.tab));
+  const el=document.getElementById('wb-across'),cb=document.getElementById('wb-curvebox'),st=document.getElementById('wb-stats');cb.hidden=WB.tab!=='curve';
+  if(WB.tab==='curve'){el.innerHTML='';st.hidden=true;wbCurve();return;}
+  const j=WB.every;if(!j||j.line!==WB.line){el.innerHTML='<div class="mx-empty" style="height:80px">Price it in every state to fill the map and the table.</div>';st.hidden=true;return;}
+  const stale=j.config!==JSON.stringify(WB.config),na=j.notApplicable||{},rows=j.rows.concat(Object.keys(na).filter(s=>!j.rows.some(r=>r.state===s)).map(s=>({state:s,outcome:'not applicable',detail:na[s]})));
+  const R=Object.fromEntries(rows.map(r=>[r.state,r])),ps=rows.filter(r=>r.outcome==='rated').map(r=>+r.premium),lo=Math.min(...ps),hi=Math.max(...ps);
+  const med=ps.slice().sort((a,b)=>a-b)[Math.floor(ps.length/2)],n=v=>Number(v).toLocaleString();
+  st.hidden=false;st.innerHTML='<div><span>States where it is legal</span><b>'+j.applicable+'</b><small>of '+rows.length+'</small></div><div><span>Our price</span><b>'+(ps.length?n(lo)+' – '+n(hi):'—')+'</b><small>lowest to highest</small></div>'+
+    '<div><span>Middle state</span><b>'+(ps.length?n(med):'—')+'</b></div><div><span>ISO already agrees</span><b>'+(j.storedAgree||0)+'</b><small>states</small></div><div><span>Calls to check the rest</span><b>'+j.callsToSend+'</b></div>';
+  const note=stale?'<div class="mx-msg"><b>The risk has changed since.</b> Price it in every state again to update.</div>':'';
+  if(WB.tab==='map'){const shade=p=>{const t=(p-lo)/(hi-lo||1);return t<.5?'color-mix(in srgb,var(--color-accent-300) '+Math.round(t*200)+'%,var(--color-card))':'color-mix(in srgb,var(--color-accent-500) '+Math.round((t-.5)*200)+'%,var(--color-accent-300))';};
+    el.innerHTML=note+'<span class="bd-ramp">'+(ps.length?n(lo):'')+'<span style="background:linear-gradient(90deg,var(--color-card),var(--color-accent-300),var(--color-accent-500))"></span>'+(ps.length?n(hi):'')+'</span><div class="bd-map wb-map">'+BD_TILES.map(([s,y,x])=>{const r=R[s],pos='grid-row:'+(y+1)+';grid-column:'+(x+1);
+      if(!r||r.outcome!=='rated')return '<button class="bd-tile none" disabled style="'+pos+'" title="'+esc(s+': '+(r?(r.detail||r.outcome):'not offered'))+'">'+s+'</button>';
+      const t=(+r.premium-lo)/(hi-lo||1);return '<button class="bd-tile'+(s===wbState()?' sel':'')+'" data-st="'+s+'" style="'+pos+';background:'+shade(+r.premium)+';color:'+(t>.75?'var(--color-card)':'var(--color-text)')+'" title="'+esc(s+': ours '+r.premium+(r.stored&&r.stored.iso?' · ISO '+r.stored.iso:''))+'">'+s+'<small>'+n(r.premium)+'</small></button>';}).join('')+'</div><div class="mx-msg">Click a state to work in it.</div>';}
+  else el.innerHTML=note+'<div class="wb-scroll"><table class="wb-tbl"><tr><th>State</th><th class="v">Our price</th><th class="v">ISO’s price</th><th>Result</th></tr>'+rows.sort((a,b)=>a.state.localeCompare(b.state)).map(r=>{const iso=r.stored&&r.stored.iso;
+      return '<tr><td><b>'+r.state+'</b> <span class="mx-msg">'+esc(BOOT.names[r.state]||'')+'</span></td><td class="v">'+(r.premium?n(r.premium):'—')+'</td><td class="v">'+(iso?n(iso):'—')+'</td><td>'+(r.outcome!=='rated'?'<span class="mx-msg">'+esc(r.detail||r.outcome)+'</span>':iso?(+iso===+r.premium?'✓ Same price':'× Different'):'Not asked yet')+'</td></tr>';}).join('')+'</table></div>'+
+    '<div class="td-tools"><button class="btn primary" id="wb-toplan2">Plan tests from this risk</button><span class="mx-msg">Sending these is a one-risk test plan; nothing is spent here.</span></div>';
+  const tp=document.getElementById('wb-toplan2');if(tp)tp.onclick=()=>{const sts=rows.filter(x=>x.outcome==='rated').map(x=>x.state);location.hash='#plan?lob='+WB.line+'&states='+encodeURIComponent(sts.join(','))+'&config='+encodeURIComponent(JSON.stringify(WB.config));};}
 function wbCurve(){
-  const cid=document.getElementById('wb-curve').value,el=document.getElementById('wb-chart'),msg=document.getElementById('wb-curvemsg');if(!cid){el.innerHTML='';msg.textContent='';return;}
+  const cid=document.getElementById('wb-curve').value,el=document.getElementById('wb-chart'),msg=document.getElementById('wb-curvemsg');if(!cid){el.innerHTML='<div class="mx-empty">Choose a field to see how our price (and ISO’s, where answered) moves across its values.</div>';msg.textContent='';return;}
   fetch('/api/console/workbench/curve?control='+cid).then(r=>r.json()).then(j=>{const st=wbState(),pts=(j.series||{})[st]||[],n=Object.values(j.series||{}).filter(v=>v.length>=2).length;
-    msg.textContent=pts.length>=2?st+': '+pts.length+' values run · '+n+' states have a curve':pts.length?st+': only one value run so far · '+n+' states have a curve':'no runs varied this control in '+st+' · '+n+' states have a curve';
-    if(pts.length<2){el.innerHTML='<div class="mx-empty">Run two or more values of this control in '+esc(st)+' (Run in every state, or the Test Plan Builder) to draw its curve.</div>';return;}
+    msg.textContent=pts.length>=2?st+': '+pts.length+' values run · '+n+' states have a curve':pts.length?st+': only one value run so far · '+n+' states have a curve':'no runs varied this field in '+st+' · '+n+' states have a curve';
+    if(pts.length<2){el.innerHTML='<div class="mx-empty">Run two or more values of this field in '+esc(st)+' (Plan tests from this risk, with the field set to Vary) to draw its curve.</div>';return;}
     const num=v=>parseFloat(String(v).replace(/[^0-9.\-]/g,''))||0;pts.sort((a,b)=>num(a.value)-num(b.value));
-    const W=el.clientWidth||700,H=180,L=56,R=16,T=10,B=34,ys=pts.flatMap(p=>[+p.ours,p.iso?+p.iso:null]).filter(v=>v!=null&&!isNaN(v)),lo=Math.min(...ys),hi=Math.max(...ys);
+    const W=el.clientWidth||700,H=200,L=56,R=16,T=10,B=34,ys=pts.flatMap(p=>[+p.ours,p.iso?+p.iso:null]).filter(v=>v!=null&&!isNaN(v)),lo=Math.min(...ys),hi=Math.max(...ys);
     const x=i=>L+(W-L-R)*(pts.length<2?0.5:i/(pts.length-1)),y=v=>T+(H-T-B)*(1-(hi===lo?0.5:(v-lo)/(hi-lo)));
     let s='<svg viewBox="0 0 '+W+' '+H+'" width="100%" height="100%" role="img" aria-label="Premium by value of '+esc(cid)+' in '+st+'">';
-    [lo,hi].forEach(v=>s+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+y(v)+'" y2="'+y(v)+'" stroke="var(--color-divider)"/><text x="'+(L-6)+'" y="'+(y(v)+4)+'" text-anchor="end" font-size="10.5" fill="var(--color-neutral-700)">'+Math.round(v).toLocaleString()+'</text>');
-    s+='<polyline fill="none" stroke="#9a6214" stroke-width="2" points="'+pts.map((p,i)=>x(i)+','+y(+p.ours)).join(' ')+'"/>';
-    pts.forEach((p,i)=>{s+='<circle cx="'+x(i)+'" cy="'+y(+p.ours)+'" r="4" fill="#9a6214" stroke="var(--color-bg)" stroke-width="2"><title>'+esc(p.value+': ours '+p.ours+(p.iso?' · ISO '+p.iso:''))+'</title></circle>';
-      if(p.iso)s+='<circle cx="'+x(i)+'" cy="'+y(+p.iso)+'" r="6" fill="none" stroke="#2f72a8" stroke-width="2"><title>'+esc(p.value+': ISO '+p.iso)+'</title></circle>';
-      s+='<text x="'+x(i)+'" y="'+(H-12)+'" text-anchor="middle" font-size="10" fill="var(--color-neutral-700)">'+esc(String(p.value).slice(0,14))+'</text>';});
-    el.innerHTML=s+'</svg>';});
-}
-document.getElementById('wb-lines').addEventListener('click',ev=>{const b=ev.target.closest('button');if(!b||b.dataset.l===WB.line)return;WB.line=b.dataset.l;WB.config={};wbLoad();});
-document.getElementById('wb-state').addEventListener('change',()=>{wbInputs();wbCurve();});
-document.getElementById('wb-rate').onclick=wbRate;
-document.getElementById('wb-send').onclick=wbSendDialog;
-document.getElementById('wb-where').onclick=wbWhere;
+    [lo,hi].forEach(v=>s+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+y(v)+'" y2="'+y(v)+'" stroke="var(--color-divider)"/><text x="'+(L-6)+'" y="'+(y(v)+4)+'" text-anchor="end" font-size="11" fill="var(--color-neutral-700)">'+Math.round(v).toLocaleString()+'</text>');
+    s+='<polyline fill="none" stroke="#a66b42" stroke-width="2" points="'+pts.map((p,i)=>x(i)+','+y(+p.ours)).join(' ')+'"/>';
+    pts.forEach((p,i)=>{s+='<circle cx="'+x(i)+'" cy="'+y(+p.ours)+'" r="4" fill="#a66b42" stroke="var(--color-bg)" stroke-width="2"><title>'+esc(p.value+': ours '+p.ours+(p.iso?' · ISO '+p.iso:''))+'</title></circle>';
+      if(p.iso)s+='<circle cx="'+x(i)+'" cy="'+y(+p.iso)+'" r="6" fill="none" stroke="#1f8f72" stroke-width="2"><title>'+esc(p.value+': ISO '+p.iso)+'</title></circle>';
+      s+='<text x="'+x(i)+'" y="'+(H-12)+'" text-anchor="middle" font-size="10.5" fill="var(--color-neutral-700)">'+esc(String(p.value).slice(0,14))+'</text>';});
+    el.innerHTML=s+'</svg>';});}
+document.getElementById('wb-lines').addEventListener('click',ev=>{const b=ev.target.closest('button');if(!b||b.dataset.l===WB.line)return;WB.line=b.dataset.l;WB.config={};WB.raw=null;WB.screen=null;WB.every=null;wbLoad().then(()=>{wbRate();wbAcross();});});
+document.getElementById('wb-state').addEventListener('change',()=>{wbFields().then(wbRate);if(WB.tab==='curve')wbCurve();else wbAcross();});
+document.getElementById('s-workbench').addEventListener('click',ev=>{const t=ev.target;
+  const sc=t.closest('#wb-nav [data-scr]');if(sc){WB.screen=sc.dataset.scr;wbDraw();return;}
+  const rs=t.closest('[data-reset]');if(rs){delete WB.config[rs.dataset.reset];wbFields().then(wbRate);return;}
+  const tb=t.closest('#wb-tabs [data-t]');if(tb){WB.tab=tb.dataset.t;wbAcross();return;}
+  const st=t.closest('.wb-map [data-st]');if(st){document.getElementById('wb-state').value=st.dataset.st;document.getElementById('wb-state').dispatchEvent(new Event('change'));}});
+document.getElementById('wb-inputs').addEventListener('change',ev=>{const x=ev.target.closest('[data-c]');if(!x)return;const k=x.dataset.c,d=wbDim(k);
+  if(x.value!==''&&d&&d.kind==='select'&&!d.values.map(String).includes(x.value)){x.value='';x.placeholder='Not one of ISO’s values here';return;}
+  if(x.value==='')delete WB.config[k];else WB.config[k]=x.value;wbFields().then(wbRate);});
+document.getElementById('wb-rawd').addEventListener('toggle',()=>{if(document.getElementById('wb-rawd').open&&WB.last&&!WB.raw)document.getElementById('wb-req').value=JSON.stringify(WB.last.request,null,1);});
+document.getElementById('wb-rawgo').onclick=()=>{try{WB.raw=JSON.parse(document.getElementById('wb-req').value);}catch(e){document.querySelector('#wb-rawd .mx-msg').textContent='Not valid JSON: '+e.message;return;}wbDraw();wbRate();};
+document.getElementById('wb-rawreset').onclick=()=>{WB.raw=null;wbDraw();wbRate();};
 document.getElementById('wb-every').onclick=wbEvery;
 document.getElementById('wb-curve').onchange=wbCurve;
-let wbStarted=false;function wbRoute(){if((location.hash||'').startsWith('#workbench')&&!wbStarted){wbStarted=true;wbLoad();}}
+let wbStarted=false;function wbRoute(){if((location.hash||'').startsWith('#workbench')&&!wbStarted){wbStarted=true;wbLoad().then(()=>{wbRate();wbAcross();});}}
 addEventListener('hashchange',wbRoute);wbRoute();
 """
 
@@ -1550,87 +1850,111 @@ addEventListener('hashchange',wbRoute);wbRoute();
 # one; the rest sent to ISO only after a confirmation that says what it spends (ad hoc lane, through the ledger).
 
 UP_HTML = """<section class="screen" id="s-compare" hidden><div class="mx-wrap"><div class="mx-main">
-  <div class="mx-head"><div><div class="eyebrow">Upload &amp; Compare</div><h1>Does our price match ISO's?</h1></div>
-    <p>Drop in a rating request and we'll price it on our own engine straight away, free. If ISO has already answered
-    that exact request, you'll see both prices side by side. No file to hand? Make a sample for any state. Anything ISO
-    hasn't seen yet waits for you to say go.</p></div>
-  <div class="up-gen"><b>Generate a request</b>
-    <label>Line <select id="up-lob"><option value="GL">General Liability</option><option value="CP">Commercial Property</option></select></label>
-    <label>State <select id="up-state"></select></label><button class="btn" id="up-gen">Make one and price it · free</button>
-    <span class="mx-msg">a working request for the state: GL from ISO's own options, Property the state's sample risk</span></div>
-  <div class="up-gen up-co"><b>Writing company</b>
-    <label><select id="up-company"><option value="">None: ISO only</option></select></label>
-    <label>Business <select id="up-pt"><option>New</option><option>Renewal</option></select></label>
-    <span class="mx-msg" id="up-comsg">With a company, each request is rated twice: <b>technical</b> (pure ISO, the request ISO is asked about)
-    and <b>carrier</b> (through the company's filing, never sent to ISO). Click a carrier figure to see what the deviations did.</span></div>
-  <label class="up-drop" id="up-drop"><input type="file" id="up-file" accept=".json,application/json" multiple hidden>
-    <b>Drop request files here, or choose files</b><span class="mx-msg">.json · one request per file, or a list of them · GL and Property can be mixed</span></label>
-  <details class="up-paste"><summary>Or paste a request</summary><textarea id="up-text" spellcheck="false" placeholder='{"header": {...}, "body": {"SchemeKeys": {"ProductName": "General Liability OH", ...}, ...}}'></textarea>
-    <div class="td-tools"><button class="btn" id="up-add">Add and price · free</button></div></details>
-  <div class="td-tools"><button class="btn" id="up-send" disabled>Compare with ISO…</button><label class="mx-msg" title="Ask ISO even where an answer is stored; the newest answer is the one in force, earlier ones are kept in history"><input type="checkbox" id="up-fresh"> Ask again where stored</label><button class="btn" id="up-clear">Clear</button><span class="mx-msg" id="up-msg"></span></div>
+  <div class="mx-head"><div><div class="eyebrow">Compare</div><h1>Does our price match ISO's?</h1></div>
+    <p>Pick a policy to price. Our engine works it out straight away, free, and ISO's answer appears beside it once you
+    ask. Nothing goes to ISO until you confirm.</p></div>
+  <section class="up-panel" aria-labelledby="up-h1">
+    <div class="up-phd"><span class="up-n">1</span><h2 id="up-h1">Generate a request</h2>
+      <span class="mx-msg">We fill in a working sample for the state you pick.</span></div>
+    <div class="up-fields">
+      <label for="up-lob">Line<select id="up-lob"><option value="GL">General Liability</option><option value="CP">Commercial Property</option></select></label>
+      <label for="up-state">State<select id="up-state"></select></label>
+      <label for="up-company">Writing company (optional)<select id="up-company"><option value="">None, ISO only</option></select></label>
+      <label for="up-pt">Business<select id="up-pt"><option>New</option><option>Renewal</option></select></label>
+    </div>
+    <div class="td-tools"><button class="btn primary" id="up-gen-cmp">Compare with ISO</button>
+      <button class="btn" id="up-gen">Just price it <span class="up-free">· free</span></button></div>
+    <div class="mx-msg" id="up-comsg">With a writing company, each request is priced twice: once as ISO's rules stand (the version ISO is
+      asked about) and once with the company's filed changes, which never goes to ISO. Click the company's price to see each change.</div>
+    <details class="up-paste"><summary>Have your own request? Upload or paste it</summary>
+      <label class="up-drop" id="up-drop"><input type="file" id="up-file" accept=".json,application/json" multiple hidden>
+        <b>Drop request files here, or choose files</b><span class="mx-msg">.json, one request per file or a list of them. General Liability and Property can be mixed.</span></label>
+      <textarea id="up-text" spellcheck="false" placeholder='{"header": {...}, "body": {"SchemeKeys": {"ProductName": "General Liability OH", ...}, ...}}'></textarea>
+      <div class="td-tools"><button class="btn primary" id="up-add-cmp">Compare with ISO</button><button class="btn" id="up-add">Just price it <span class="up-free">· free</span></button></div></details>
+  </section>
   <div id="up-confirm"></div>
-  <div id="up-out"><div class="mx-empty">No requests yet.</div></div>
+  <section class="up-panel" aria-labelledby="up-h2">
+    <div class="up-phd"><span class="up-n">2</span><h2 id="up-h2">How they compare</h2><span class="mx-msg" id="up-msg"></span></div>
+    <div id="up-out"><div class="mx-empty">No requests yet. Generate one above, or upload your own.</div></div>
+    <div class="td-tools"><button class="btn primary" id="up-send">Compare with ISO</button><button class="btn" id="up-clear">Clear the list</button></div>
+  </section>
   <div id="up-ws"></div>
 </div><aside class="mx-side" id="up-side" aria-live="polite"></aside></div></section>"""
 
 BUILT["compare"] = UP_HTML
 
 UP_CSS = """
-.up-drop{display:flex;flex-direction:column;gap:4px;align-items:center;justify-content:center;text-align:center;min-height:110px;margin:14px 0 10px;
-  border:1.5px dashed var(--color-neutral-400);border-radius:var(--radius-lg);background:var(--color-bg);cursor:pointer;padding:16px}
+.up-drop{display:flex;flex-direction:column;gap:4px;align-items:center;justify-content:center;text-align:center;min-height:110px;margin:0;
+  border:1.5px dashed var(--color-neutral-400);border-radius:var(--radius-lg);background:var(--color-bg);cursor:pointer;padding:20px}
 .up-drop.over{border-color:var(--color-accent-700);background:var(--color-accent-100)}
-.up-paste summary{cursor:pointer;font-size:12.5px;margin-bottom:6px}
-#up-text{width:100%;min-height:160px;font:11.5px ui-monospace,Menlo,monospace;padding:6px;border:1px solid var(--color-divider);border-radius:4px}
-.up-tbl{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:10px}
-.up-tbl th{text-align:left;font-weight:600;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-neutral-700);padding:4px 6px}
-.up-tbl td{padding:6px;border-top:1px solid var(--color-divider);vertical-align:top}
+.up-paste summary{cursor:pointer;font-size:14.5px}
+#up-text{width:100%;min-height:140px;font:13px ui-monospace,Menlo,monospace;padding:10px 12px;border:1px solid var(--color-divider);border-radius:var(--radius-md)}
+.up-tbl{width:100%;border-collapse:collapse;font-size:14px;margin-top:10px}
+.up-tbl th{text-align:left;font-weight:600;font-size:12.5px;color:var(--color-neutral-700);padding:6px 10px}
+.up-tbl td{padding:12px 10px;border-top:1px solid var(--color-divider);vertical-align:top}
 .up-tbl .v{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
 .up-tbl .file{max-width:240px;overflow-wrap:anywhere}
 .up-tbl .x{border:0;background:none;cursor:pointer;color:var(--color-neutral-600);font-size:15px}
 .up-res{display:flex;gap:6px;align-items:flex-start}
-.up-tbl .w{font-size:11.5px;color:var(--color-warning-700,#8a5a00);background:var(--color-warning-50,#fdf4e3);border-radius:4px;padding:3px 6px;max-width:420px}
-.up-gen{display:flex;gap:12px;flex-wrap:wrap;align-items:center;font-size:12.5px;margin-top:14px;padding:10px 12px;border:1px solid var(--color-divider);border-radius:var(--radius-lg)}
-.up-gen select{font:inherit;padding:5px 7px;border:1px solid var(--color-divider);border-radius:4px;background:#fff}
+.up-tbl .w{font-size:13px;color:var(--color-accent-700);background:var(--color-accent-100);border-radius:var(--radius-md);padding:3px 6px;max-width:420px}
+.up-panel{background:var(--color-card);border:1px solid var(--color-divider);border-radius:var(--radius-lg);padding:22px 24px;
+  display:flex;flex-direction:column;gap:16px;box-shadow:0 1px 3px color-mix(in srgb,#2d1d1a 6%,transparent)}
+.up-phd{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.up-phd h2{margin:0;font:400 23px/1.2 var(--font-heading)}
+.up-n{font:400 23px/1 var(--font-heading);color:var(--color-accent-700)}
+.up-fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px}
+.up-fields label{display:flex;flex-direction:column;gap:5px;font-size:13.5px;color:var(--color-neutral-700)}
+.up-fields select{font:inherit;font-size:15px;color:var(--color-text);padding:9px 12px;border:1px solid var(--color-divider);border-radius:var(--radius-md);background:#fff}
+.up-free{font-weight:400;opacity:.8}
+.up-paste{border-top:1px solid var(--color-divider);padding-top:14px}
+.up-paste[open]{display:flex;flex-direction:column;gap:12px}
+.up-paste summary{color:var(--color-accent-700)}
+.up-res .chip{margin-top:-1px}
+.up-cf{background:var(--color-accent-100);border:1px solid var(--color-accent-300);border-radius:var(--radius-lg);padding:18px 22px;display:flex;flex-direction:column;gap:10px}
+.up-cf.full{border-color:var(--ox);background:var(--ox-tint)}
+.up-cf h3{margin:0;font:400 21px/1.2 var(--font-heading)}
+.up-cf ul{margin:0;padding-left:20px;display:grid;gap:4px}
+.up-cf input{font:inherit;padding:8px 12px;border:1px solid var(--color-divider);background:#fff;flex:1;min-width:200px}
 .up-tbl .acts{white-space:nowrap}.up-tbl .acts a{margin-right:8px;cursor:pointer}
 .ws{margin-top:18px;border-top:2px solid var(--color-neutral-700);padding-top:10px}
 .ws-hd{display:flex;gap:18px;flex-wrap:wrap;align-items:baseline}.ws-hd h2{margin:0;font-size:18px}
-.ws-prem{display:flex;gap:22px;margin:8px 0}.ws-prem div{font-size:12px}.ws-prem b{display:block;font-size:20px;font-variant-numeric:tabular-nums}
-.ws-tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:6px 0 4px;font-size:12.5px}
+.ws-prem{display:flex;gap:22px;margin:8px 0}.ws-prem div{font-size:13.5px}.ws-prem b{display:block;font-size:20px;font-variant-numeric:tabular-nums}
+.ws-tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:6px 0 4px;font-size:14px}
 .ws-tools button.on{background:var(--color-accent-100);border-color:var(--color-accent-700)}
-.ws-tbl{width:100%;border-collapse:collapse;font-size:12px}
-.ws-tbl th{text-align:left;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-neutral-700);padding:4px 6px;position:sticky;top:0;background:var(--color-bg)}
-.ws-tbl td{padding:3px 6px;border-top:1px solid var(--color-divider);vertical-align:top}
+.ws-tbl{width:100%;border-collapse:collapse;font-size:13.5px}
+.ws-tbl th{text-align:left;font-size:12.5px;color:var(--color-neutral-700);padding:8px 10px;position:sticky;top:0;background:var(--color-bg)}
+.ws-tbl td{padding:7px 10px;border-top:1px solid var(--color-divider);vertical-align:top}
 .ws-tbl .v{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
-.ws-tbl tr.rec td{background:var(--color-neutral-100,#eee);font-weight:600;cursor:pointer;overflow-wrap:anywhere}
-.ws-tbl td.bad{color:#9b1c1c;font-weight:600}.ws-tbl td.chg{background:var(--color-accent-100);font-weight:600}
-.fx-wrap{margin-top:8px;font-size:12.5px}
+.ws-tbl tr.rec td{background:var(--color-surface);font-weight:600;cursor:pointer;overflow-wrap:anywhere}
+.ws-tbl td.bad{color:var(--ox-deep);font-weight:600}.ws-tbl td.chg{background:var(--color-accent-100);font-weight:600}
+.fx-wrap{margin-top:8px;font-size:14px}
 details.fx{border-left:2px solid var(--color-divider);margin:4px 0 4px 6px;padding:2px 0 2px 10px}
 details.fx>summary{cursor:pointer;padding:2px 0}
 .fx-n{font-weight:600}.fx-v{font-variant-numeric:tabular-nums;margin-left:4px}
 .fx-eq{margin:3px 0 2px 14px;line-height:1.9;overflow-wrap:anywhere}
-.fx-t{display:inline-block;border:1px solid var(--color-divider);border-radius:4px;padding:0 5px;background:var(--color-surface,#fff);white-space:nowrap}
+.fx-t{display:inline-block;border:1px solid var(--color-divider);border-radius:var(--radius-md);padding:0 5px;background:var(--color-card);white-space:nowrap}
 .fx-t b{font-variant-numeric:tabular-nums}
 .fx-op{color:var(--color-neutral-700);font-weight:600;padding:0 3px}
 .fx-aff,.fx-t.fx-aff{background:var(--color-accent-100)}
 .fx-no{color:var(--color-neutral-700)}
 .fx-3{display:inline-block;margin-left:10px;font-variant-numeric:tabular-nums;font-weight:600}
-.fx-3 i{font-style:normal;font-weight:400;font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;color:var(--color-neutral-700)}
+.fx-3 i{font-style:normal;font-weight:400;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:var(--color-neutral-700)}
 .fx-was{color:var(--color-neutral-700);font-weight:400}
-.fx-tech{color:var(--color-neutral-700)}.fx-tech i{font-style:normal;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em}
-.fx-src{margin:2px 0 4px 14px;padding-left:16px;font-size:11.5px}
+.fx-tech{color:var(--color-neutral-700)}.fx-tech i{font-style:normal;font-size:12px;text-transform:uppercase;letter-spacing:.05em}
+.fx-src{margin:2px 0 4px 14px;padding-left:16px;font-size:13px}
 .fx-leaf{margin:4px 0 4px 18px}
 .ws-tbl a.ws-why{cursor:pointer;color:inherit;text-decoration:underline dotted;text-underline-offset:2px}
 .wy ul{list-style:none;margin:0;padding-left:14px;border-left:1px solid var(--color-divider)}.wy ul.wy-root{padding-left:0;border:0}
-.wy li{margin:3px 0;font-size:12px;overflow-wrap:anywhere}.wy-v{font-weight:600;font-variant-numeric:tabular-nums}
-.wy-k{color:var(--color-neutral-700);font-size:10.5px;text-transform:uppercase;letter-spacing:.04em}
+.wy li{margin:3px 0;font-size:13.5px;overflow-wrap:anywhere}.wy-v{font-weight:600;font-variant-numeric:tabular-nums}
+.wy-k{color:var(--color-neutral-700);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
 .wy li.wy-aff>.wy-v,.wy li.wy-aff>.wy-name{background:var(--color-accent-100)}.wy li.wy-ctl>.wy-name{font-style:italic}
-.wy-more{cursor:pointer;font-size:11px;margin-left:4px}.wy-src li{border:0}
+.wy-more{cursor:pointer;font-size:12.5px;margin-left:4px}.wy-src li{border:0}
 .ws-tbl tr.ws-app td{border-top:1px dashed var(--color-accent-700)}.ws-tbl tr.ws-app td:first-child{font-weight:600}
-.ws-tbl .src{color:var(--color-neutral-700);font-size:11px;overflow-wrap:anywhere;max-width:340px}
-.ws-scroll{max-height:70vh;overflow:auto;border:1px solid var(--color-divider);border-radius:4px}
+.ws-tbl .src{color:var(--color-neutral-700);font-size:12.5px;overflow-wrap:anywhere;max-width:340px}
+.ws-scroll{max-height:70vh;overflow:auto;border:1px solid var(--color-divider);border-radius:var(--radius-md)}
 .up-co{margin-top:8px}.up-tbl a.car{cursor:pointer;font-weight:600}.up-tbl tr.sel td{background:var(--color-accent-100)}
-.up-dv table{width:100%;font-size:12px;table-layout:fixed}.up-dv td{padding:2px 0;overflow-wrap:anywhere;vertical-align:top}
-.up-dv td:first-child{width:42%;padding-right:6px}.up-dv td+td{text-align:right}.up-dv .w{color:var(--color-neutral-700);font-size:11.5px;margin-top:6px}
+.up-dv table{width:100%;font-size:13.5px;table-layout:fixed}.up-dv td{padding:5px 0;overflow-wrap:anywhere;vertical-align:top}
+.up-dv td:first-child{width:42%;padding-right:6px}.up-dv td+td{text-align:right}.up-dv .w{color:var(--color-neutral-700);font-size:13px;margin-top:6px}
 """
 
 UP_JS = r"""
@@ -1638,39 +1962,49 @@ const UP={rows:[],seq:0,busy:false,q:Promise.resolve(),spec:{}};
 function money(v){if(v===null||v===undefined||v==='')return v;const n=Number(v);return isFinite(n)?n.toFixed(2):String(v);}
 function signed(v){const n=Number(v);return isFinite(n)?(n>=0?'+':'')+n.toFixed(2):String(v);}
 function isPrem(r){return /Premium(Sum)?$/i.test(r.field||'');}   // a premium, not PremiumIndicator or a ...PremiumAnd...Factor
-function upAdd(name,text){
-  let v;try{v=JSON.parse(text);}catch(e){UP.rows.push({id:++UP.seq,name,err:'Not valid JSON: '+e.message});upDraw();return;}
-  const list=Array.isArray(v)?v:[v];
-  list.forEach((_,i)=>{const row={id:++UP.seq,name:list.length>1?name+' #'+(i+1):name,text,index:i,list:Array.isArray(v),busy:'rating'};UP.rows.push(row);upRate(row);});
-  upDraw();
+function upAdd(name,text){   // the rows it added (none when the text is not JSON)
+  let v;try{v=JSON.parse(text);}catch(e){UP.rows.push({id:++UP.seq,name,err:'We could not read this request (not valid JSON): '+e.message});upDraw();return [];}
+  const list=Array.isArray(v)?v:[v],added=[];
+  list.forEach((_,i)=>{const row={id:++UP.seq,name:list.length>1?name+' #'+(i+1):name,text,index:i,list:Array.isArray(v),busy:'rating'};UP.rows.push(row);added.push(row);upRate(row);});
+  upDraw();return added;
 }
 function upRate(row){row.busy='rating';
   const co=UP.company||'',pt=UP.pt||'New';
   return UP.q=UP.q.then(()=>wbJSON('/api/console/workbench/upload',{text:row.text,index:row.index,company:co,policyType:pt}).then(r=>{row.busy='';if(r.error)row.err=r.error;else{row.err='';row.r=r;}upDraw();})
     .catch(e=>{row.busy='';row.err=String(e);upDraw();}));}
-// the rows a Compare sends: those ISO has not answered, or every rated row with "Ask again where stored" ticked
-function upNeeds(){const f=UP.fresh;return UP.rows.filter(x=>x.r&&!x.busy&&(f||!x.r.stored));}
+// the rows ISO has not answered yet
+function upNeeds(){return UP.rows.filter(x=>x.r&&!x.busy&&!x.r.stored);}
+// Compare with ISO is never disabled. It confirms the rows given, else the ones not asked yet, else (all answered)
+// asks again for every priced row; with nothing priced it makes a request from the generator first.
+function upCompare(rows){const msg=document.getElementById('up-msg');
+  if(UP.busy){msg.textContent='ISO is still answering the last batch. Compare again once it finishes.';return;}
+  const go=()=>{const ok=x=>x.r&&!x.busy&&x.r.outcome==='rated';
+    let need=(rows||[]).filter(ok);if(!rows){need=upNeeds().filter(ok);if(!need.length)need=UP.rows.filter(ok);}
+    if(need.length){upSendDialog(need);return;}
+    msg.textContent=rows&&rows.length?'Our engine could not price this request, so there is nothing to ask ISO about. The reason is in the list.':'Nothing to compare yet.';};
+  if(rows||UP.rows.some(x=>!x.err)){UP.q.then(go);return;}
+  upGen().then(added=>{rows=added;UP.q.then(go);});}
 function upVerdict(r){const s=r.stored;
-  if(!s)return '<span class="mx-msg">not asked yet</span>';
-  if(s.outcome!=='rated')return '<span class="up-res"><span class="chip untested">·</span><span>ISO refused<div class="mx-msg">'+esc((s.message||'').slice(0,160))+'</div></span></span>';
-  if(r.outcome!=='rated')return '<span class="up-res"><span class="chip mismatch">×</span><span>ISO rated it; ours '+esc(r.outcome)+'</span></span>';
+  if(!s)return '<span class="up-res"><span class="chip untested">·</span><span>Not asked yet</span></span>';
+  if(s.outcome!=='rated')return '<span class="up-res"><span class="chip untested">·</span><span>ISO would not price it<div class="mx-msg">'+esc((s.message||'').slice(0,160))+'</div></span></span>';
+  if(r.outcome!=='rated')return '<span class="up-res"><span class="chip mismatch">×</span><span>ISO priced it; ours could not ('+esc(r.outcome)+')</span></span>';
   const d=Number(r.premium)-Number(s.iso);
-  return d===0?'<span class="up-res"><span class="chip verified">✓</span><span>Agree</span></span>':
-    '<span class="up-res"><span class="chip mismatch">×</span><span>Differ by '+esc((d>0?'+':'')+d.toFixed(2))+'</span></span>';}
+  return d===0?'<span class="up-res"><span class="chip verified">✓</span><span>Same price</span></span>':
+    '<span class="up-res"><span class="chip mismatch">×</span><span>Ours is '+esc(Math.abs(d).toFixed(2))+(d>0?' higher':' lower')+'</span></span>';}
 function upDraw(){
   const out=document.getElementById('up-out');
-  if(!UP.rows.length)out.innerHTML='<div class="mx-empty">No requests yet.</div>';
-  else out.innerHTML='<table class="up-tbl"><tr><th>Request</th><th>Line · state</th><th>Effective</th><th class="v">Technical</th><th class="v">ISO</th><th class="v">Carrier</th><th>ISO test</th><th></th></tr>'+
+  if(!UP.rows.length)out.innerHTML='<div class="mx-empty">No requests yet. Generate one above, or upload your own.</div>';
+  else out.innerHTML='<table class="up-tbl"><tr><th>Request</th><th>Line · state</th><th>Effective</th><th class="v" title="Our engine, ISO&#39;s rules as filed">Our price</th><th class="v">ISO&#39;s price</th><th class="v" title="Our price after the writing company&#39;s filed changes">With company</th><th>Result</th><th></th></tr>'+
     UP.rows.map(x=>{const r=x.r,s=r&&r.stored,rm='<button class="x" data-x="'+x.id+'" title="Remove">×</button>';
       if(x.err)return '<tr><td class="file">'+esc(x.name)+'</td><td colspan="6"><span class="up-res"><span class="chip mismatch">!</span><span>'+esc(x.err)+'</span></span></td><td>'+rm+'</td></tr>';
-      if(!r)return '<tr><td class="file">'+esc(x.name)+'</td><td colspan="6" class="mx-msg">Rating on our engine…</td><td></td></tr>';
+      if(!r)return '<tr><td class="file">'+esc(x.name)+'</td><td colspan="6" class="mx-msg">Pricing on our engine…</td><td></td></tr>';
       const ours=r.outcome==='rated'?esc(money(r.premium)):esc(r.outcome);
-      const iso=x.busy==='sending'?'<span class="mx-msg">asking ISO…</span>':!s?'<span class="mx-msg">—</span>':s.outcome==='rated'?esc(money(s.iso))+'<div class="mx-msg">stored '+esc((s.stored_at||s.date||'').slice(0,10))+(s.freshness==='stale'?' · stale':'')+'</div>':'refused';
+      const iso=x.busy==='sending'?'<span class="mx-msg">asking ISO…</span>':!s?'<span class="mx-msg">not asked</span>':s.outcome==='rated'?esc(money(s.iso))+'<div class="mx-msg">'+esc((s.stored_at||s.date||'').slice(0,10))+(s.freshness==='stale'?' · out of date':'')+'</div>':'<span class="mx-msg">would not price</span>';
       return '<tr'+(UP.sel===x.id?' class="sel"':'')+'><td class="file">'+esc(x.name)+(r.outcome!=='rated'?'<div class="mx-msg">'+esc((r.detail||'').slice(0,200))+'</div>':'')+upNotes(r)+'</td><td>'+(r.line==='GL'?'General Liability':'Property')+' · '+esc(r.state)+'</td><td>'+esc(r.effective)+
         '</td><td class="v">'+ours+'</td><td class="v">'+iso+'</td><td class="v">'+upCarrier(x)+'</td><td>'+upVerdict(r)+'</td><td>'+
-        '<span class="acts">'+(s&&s.outcome==='rated'?'<a href="#trace?lob='+r.line+'&scenario='+encodeURIComponent(s.scenario)+'">Trace Diff</a>':'')+'<a data-ws="'+x.id+'" title="Every field, Technical | ISO | Deviated">Worksheet</a><a data-dl="'+x.id+'" title="Save input and output JSON for our engine, RaaS and deviated as one .zip">Download</a>'+(s&&!x.busy&&!UP.busy?'<a data-again="'+x.id+'" title="Spend one call to ask ISO again, though an answer is stored">Ask ISO again</a>':'')+'<a data-ed="'+x.id+'" title="Copy into the paste box to change it">Edit</a></span>'+rm+'</td></tr>';}).join('')+'</table>';
+        '<span class="acts">'+(s&&s.outcome==='rated'?'<a href="#trace?lob='+r.line+'&scenario='+encodeURIComponent(s.scenario)+'" title="Trace Diff: the first step where the two calculations part">Find where they split</a>':'')+'<a data-ws="'+x.id+'" title="Every field, ours beside ISO\'s">Worksheet</a><a data-dl="'+x.id+'" title="Save input and output JSON for our engine, RaaS and deviated as one .zip">Download</a>'+(s&&!x.busy&&!UP.busy?'<a data-again="'+x.id+'" title="Uses one ISO call, though an answer is stored">Ask ISO again</a>':'')+'<a data-ed="'+x.id+'" title="Copy into the paste box to change it">Edit</a></span>'+rm+'</td></tr>';}).join('')+'</table>';
   const n=upNeeds().length,b=document.getElementById('up-send');
-  b.disabled=!n||UP.busy;b.textContent=n?(UP.fresh?'Ask ISO again':'Compare with ISO')+' · '+n+' call'+(n>1?'s':'')+'…':'Compare with ISO…';
+  b.textContent=n?'Compare with ISO · '+n+' not asked yet':UP.rows.some(x=>x.r)?'Ask ISO again':'Compare with ISO';
   upSide();
 }
 // B-07 part 4/5: our notices (not offered; R30 a coverage priced $0 or $1 silently; R31) and ISO's own messages
@@ -1826,23 +2160,30 @@ function upSide(){
   const R=UP.rows.filter(x=>x.r).map(x=>x.r),both=R.filter(r=>r.stored&&r.stored.outcome==='rated'&&r.outcome==='rated');
   const agree=both.filter(r=>Number(r.premium)===Number(r.stored.iso)).length;
   const k=(t,v)=>'<tr><td>'+t+'</td><td style="text-align:right">'+v+'</td></tr>';
-  document.getElementById('up-side').innerHTML='<div class="cap2">This upload</div><table>'+k('Requests',UP.rows.length)+k('Rated by our engine',R.filter(r=>r.outcome==='rated').length)+
-    k('ISO answered',R.filter(r=>r.stored).length)+k('Agree with ISO',agree)+k('Differ from ISO',both.length-agree)+k('Not asked yet',upNeeds().length)+
-    k('Could not be read',UP.rows.filter(x=>x.err).length)+'</table><div class="mx-msg">Rated with strict ERC and ROUND_HALF_UP, as the Workbench does; for another mode use <a href="/">the rating page</a>. '+
-    'A request ISO already answered is never sent again: its stored answer is used, free. Each answer ISO gives is stored, so it shows in Trace Diff and counts as evidence.</div>';
+  document.getElementById('up-side').innerHTML='<div class="cap2">This list</div><table>'+k('Requests',UP.rows.length)+k('Priced by our engine',R.filter(r=>r.outcome==='rated').length)+
+    k('ISO answered',R.filter(r=>r.stored).length)+k('Same price as ISO',agree)+k('Different from ISO',both.length-agree)+k('Not asked yet',upNeeds().length)+
+    k('Could not be read',UP.rows.filter(x=>x.err).length)+'</table>'+
+    '<div class="cap2">What the words mean</div><dl class="up-gl"><dt>Our price</dt><dd>Our engine, using ISO&#39;s rules as filed. Always free.</dd>'+
+    '<dt>ISO&#39;s price</dt><dd>ISO&#39;s own answer to exactly the same request. Each answer is kept, so it counts as evidence and shows in Trace Diff.</dd>'+
+    '<dt>With company</dt><dd>Our price after the writing company&#39;s filed changes (its deviations). Click it to see each change. Never sent to ISO.</dd>'+
+    '<dt>What costs a call</dt><dd>Only &ldquo;Yes, ask ISO&rdquo;, one call per request.</dd></dl>'+
+    '<div class="mx-msg">For specialists: priced with strict ERC and ROUND_HALF_UP, as the Workbench does. For another mode use <a href="/">the rating page</a>.</div>';
 }
-function upSendDialog(only){
-  const need=only?[only]:upNeeds(),el=document.getElementById('up-confirm');if(!need.length)return;
+function upSendDialog(rows){
+  const need=rows,el=document.getElementById('up-confirm');if(!need.length)return;
   const again=need.filter(x=>x.r.stored).length;
   fetch('/api/console/cap').then(r=>r.json()).then(c=>{
     const ad=c.lanes.find(l=>l.key==='adhoc'),room=Math.max(0,Math.min(ad.cap-ad.used,c.left)),over=need.length>room,n=need.length,pl=n>1?'s':'';
-    el.innerHTML='<div class="wb-conf'+(over?' full':'')+'"><b>Ask ISO about '+n+' request'+pl+'?</b>'+
-      '<div>'+(again?(again===n?(n>1?'All have':'It has')+' a stored answer; ISO is asked again':again+' of '+n+' have a stored answer; ISO is asked again for those too')+'. The new answer is the one in force; the earlier one is kept in history. ':'No stored answer covers '+(n>1?'them':'it')+': ')+'this spends <b>'+n+' call'+pl+'</b> from the ad hoc lane, one at a time, each logged in the ledger.</div>'+
-      '<div class="mx-msg">One-offs: '+ad.used+' of '+ad.cap+' used today · '+c.left+' of '+c.cap+' left in all'+(over?' · <b>'+(n-room)+' would go past the cap</b>: they need a reason, logged with each.':'')+'</div>'+
-      '<div class="td-tools">'+(over?'<input id="up-reason" placeholder="Reason for going past the cap" style="flex:1">':'')+'<button class="btn" id="up-go">Send · '+n+' call'+pl+'</button><button class="btn" id="up-cancel">Cancel</button></div><div class="mx-msg" id="up-cmsg"></div></div>';
+    const li=x=>'<li><b>'+esc(x.name)+'</b>: '+(x.r.stored?'ISO answered on '+esc((x.r.stored.stored_at||x.r.stored.date||'').slice(0,10))+'. The new answer replaces it; the old one stays in history.':'not asked yet.')+'</li>';
+    el.innerHTML='<div class="up-cf'+(over?' full':'')+'"><h3>Ask ISO about '+n+' request'+pl+'?</h3>'+
+      '<ul>'+need.slice(0,8).map(li).join('')+(n>8?'<li>and '+(n-8)+' more</li>':'')+'</ul>'+
+      '<div>This uses <b>'+n+' ISO call'+pl+'</b>, one at a time, each recorded. Only the plain ISO version is sent; a writing company&#39;s version never leaves our engine.</div>'+
+      '<div class="mx-msg">One-off calls today: '+ad.used+' of '+ad.cap+' used · '+c.left+' of '+c.cap+' left in all'+(over?' · <b>'+(n-room)+' would go past today&#39;s limit</b>, so they need a reason, recorded with each.':'')+'</div>'+
+      '<div class="td-tools">'+(over?'<input id="up-reason" placeholder="Reason for going past today&#39;s limit">':'')+'<button class="btn primary" id="up-go">Yes, ask ISO · '+n+' call'+pl+'</button><button class="btn" id="up-cancel">Not now</button></div><div class="mx-msg" id="up-cmsg"></div></div>';
+    el.scrollIntoView({block:'nearest'});
     document.getElementById('up-cancel').onclick=()=>{el.innerHTML='';};
     document.getElementById('up-go').onclick=()=>{const rs=document.getElementById('up-reason'),why=rs?rs.value.trim():'';
-      if(over&&!why){document.getElementById('up-cmsg').textContent='A reason is needed past the cap.';return;}
+      if(over&&!why){document.getElementById('up-cmsg').textContent='Add a reason to go past the daily limit.';return;}
       el.innerHTML='';upSend(need,why,!!again);};});
 }
 async function upSend(rows,why,fresh){
@@ -1872,19 +2213,21 @@ function upEdit(x){const d=document.querySelector('.up-paste'),t=document.getEle
 function upGenStates(){const lob=document.getElementById('up-lob').value,sel=document.getElementById('up-state');
   const go=s=>{UP.spec[lob]=s;sel.innerHTML='<option value="*">All states ('+s.states.length+')</option>'+s.states.map(x=>'<option'+(x==='OH'?' selected':'')+'>'+x+'</option>').join('');};
   UP.spec[lob]?go(UP.spec[lob]):fetch('/api/console/workbench/spec?lob='+lob).then(r=>r.json()).then(go);}
-function upGen(){const lob=document.getElementById('up-lob').value,st=document.getElementById('up-state').value,spec=UP.spec[lob];if(!spec)return;
-  (st==='*'?spec.states:[st]).reduce((q,s)=>q.then(()=>fetch('/api/console/workbench/generate?lob='+lob+'&state='+s).then(r=>r.json()).then(j=>{
+function upGen(){const lob=document.getElementById('up-lob').value,st=document.getElementById('up-state').value,spec=UP.spec[lob],added=[];if(!spec)return Promise.resolve(added);
+  return (st==='*'?spec.states:[st]).reduce((q,s)=>q.then(()=>fetch('/api/console/workbench/generate?lob='+lob+'&state='+s).then(r=>r.json()).then(j=>{
     if(j.error){UP.rows.push({id:++UP.seq,name:'Generated '+lob+' '+s,err:j.error});upDraw();return;}
-    const n=UP.rows.length;upAdd('Generated '+(lob==='GL'?'GL':'Property')+' '+s,j.text);UP.rows.slice(n).forEach(x=>x.gen=true);})),Promise.resolve());}
+    upAdd('Sample: '+(lob==='GL'?'General Liability':'Property')+', '+(BOOT.names[s]||s),j.text).forEach(x=>{x.gen=true;added.push(x);});})),Promise.resolve()).then(()=>added);}
 function upFiles(files){[...files].forEach(f=>f.text().then(t=>upAdd(f.name,t)));}
 (function(){const d=document.getElementById('up-drop'),f=document.getElementById('up-file');
   f.onchange=()=>{upFiles(f.files);f.value='';};
   ['dragenter','dragover'].forEach(e=>d.addEventListener(e,ev=>{ev.preventDefault();d.classList.add('over');}));
   ['dragleave','drop'].forEach(e=>d.addEventListener(e,ev=>{ev.preventDefault();d.classList.remove('over');}));
   d.addEventListener('drop',ev=>upFiles(ev.dataTransfer.files));
-  document.getElementById('up-add').onclick=()=>{const t=document.getElementById('up-text');if(!t.value.trim())return;upAdd(UP.editName||'Pasted request',t.value);t.value='';UP.editName='';};
-  document.getElementById('up-send').onclick=()=>upSendDialog();
-  document.getElementById('up-fresh').onchange=e=>{UP.fresh=e.target.checked;upDraw();};
+  const paste=()=>{const t=document.getElementById('up-text');if(!t.value.trim()){t.focus();return null;}const rs=upAdd(UP.editName||'Pasted request',t.value);t.value='';UP.editName='';return rs;};
+  document.getElementById('up-add').onclick=paste;
+  document.getElementById('up-add-cmp').onclick=()=>{const rs=paste();upCompare(rs||undefined);};
+  document.getElementById('up-send').onclick=()=>upCompare();
+  document.getElementById('up-gen-cmp').onclick=()=>{if(UP.busy){upCompare();return;}upGen().then(rs=>upCompare(rs));};
   document.getElementById('up-clear').onclick=()=>{if(UP.busy)return;UP.rows=[];document.getElementById('up-msg').textContent='';document.getElementById('up-confirm').innerHTML='';upDraw();};
   document.getElementById('up-out').addEventListener('click',ev=>{const dv=ev.target.closest('[data-dv]');
     if(dv){UP.sel=Number(dv.dataset.dv);upDraw();return;}
@@ -1892,13 +2235,13 @@ function upFiles(files){[...files].forEach(f=>f.text().then(t=>upAdd(f.name,t)))
     const dl=ev.target.closest('[data-dl]'),ed=ev.target.closest('[data-ed]');
     if(dl||ed){const x=UP.rows.find(r=>String(r.id)===(dl||ed).dataset[dl?'dl':'ed']);if(x)(dl?upDownload:upEdit)(x);return;}
     const ag=ev.target.closest('[data-again]');
-    if(ag){const x=UP.rows.find(r=>String(r.id)===ag.dataset.again);if(x)upSendDialog(x);return;}
+    if(ag){const x=UP.rows.find(r=>String(r.id)===ag.dataset.again);if(x)upCompare([x]);return;}
     const b=ev.target.closest('[data-x]');if(!b||UP.busy)return;UP.rows=UP.rows.filter(x=>String(x.id)!==b.dataset.x);upDraw();});
   document.getElementById('up-lob').onchange=upGenStates;
   document.getElementById('up-company').onchange=upRerate;document.getElementById('up-pt').onchange=upRerate;
   document.getElementById('up-side').addEventListener('click',ev=>{if(ev.target.closest('[data-unsel]')){UP.sel=null;upDraw();}});
   upCompanies();
-  document.getElementById('up-gen').onclick=upGen;
+  document.getElementById('up-gen').onclick=()=>{upGen();};
   upGenStates();upSide();})();
 """
 
@@ -1918,12 +2261,12 @@ PROOF_HTML = """<section class="screen" id="s-proof" hidden><div class="mx-wrap"
 BUILT["proof"] = PROOF_HTML
 
 PROOF_CSS = """
-.pf-tbl{width:100%;border-collapse:collapse;font-size:12.5px;margin-top:10px}
-.pf-tbl th{text-align:left;font-weight:600;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-neutral-700);padding:4px 6px}
-.pf-tbl td{padding:7px 6px;border-top:1px solid var(--color-divider);vertical-align:top}
+.pf-tbl{width:100%;border-collapse:collapse;font-size:14px;margin-top:10px}
+.pf-tbl th{text-align:left;font-weight:600;font-size:12.5px;color:var(--color-neutral-700);padding:6px 10px}
+.pf-tbl td{padding:11px 10px;border-top:1px solid var(--color-divider);vertical-align:top}
 .pf-tbl tr{cursor:pointer}.pf-tbl tr.sel td{background:var(--color-accent-100)}
 .pf-tbl .v{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
-.pf-cases td,.pf-checks td{padding:2px 4px;font-size:11.5px;border-top:1px solid var(--color-divider)}
+.pf-cases td,.pf-checks td{padding:6px 8px;font-size:13px;border-top:1px solid var(--color-divider)}
 """
 
 PROOF_JS = r"""
@@ -1959,57 +2302,122 @@ if((location.hash||'').startsWith('#proof'))pfLoad();
 
 FILINGS_HTML = """<section class="screen" id="s-filings" hidden><div class="mx-wrap"><div class="mx-main">
   <div class="mx-head"><div><div class="eyebrow">Carrier Filings</div><h1>How each insurer prices differently from ISO</h1></div>
-    <p>Insurers file their own changes to ISO's rates with each state. Here's what each one changed, when it starts, and
-    what it does to a typical premium. Changes always sit on top of ISO's rates in force on the policy date.</p>
+    <p>Insurers file their own changes to ISO's rates with each state. See at a glance who has filed where and how far
+    each one moves a premium, test that it works as filed, then open a filing for the detail. Changes always sit on top
+    of ISO's rates in force on the policy date.</p>
     <div class="td-tools"><label class="td-chk" for="fl-carrier">Carrier <select id="fl-carrier"><option value="">All carriers</option></select></label>
-      <label class="btn" for="fl-file">Upload a filing packet…</label><input type="file" id="fl-file" accept=".zip" hidden>
-      <label class="td-chk"><input type="checkbox" id="fl-tech"> Show technical details</label></div></div>
+      <label class="td-chk fl-swl"><input type="checkbox" class="pl-sw" id="fl-tech"> Technical details</label></div></div>
   <div id="fl-up"></div>
-  <div class="cap2" style="margin-top:6px">Who has filed where</div>
-  <div id="fl-board"><div class="mx-loading">Loading…</div></div>
-  <div id="fl-out"></div>
-  <div id="fl-entry"></div>
-</div><aside class="mx-side" id="fl-side" aria-live="polite"></aside></div></section>"""
+  <div class="fl-sum" id="fl-sum"></div>
+  <div class="fl-bar"><div class="bd-views" id="fl-views" role="tablist" aria-label="View">
+      <button role="tab" data-v="filings">Filings</button><button role="tab" data-v="companies">Companies</button><button role="tab" data-v="timeline">Timeline</button></div>
+    <div class="fl-runall"><button class="btn" id="fl-runall">Run the quick checks on every filing</button><span class="mx-msg" id="fl-runmsg">On our engine. No ISO calls.</span></div></div>
+  <div class="fl-panel" id="fl-board"><div class="mx-loading">Loading…</div></div>
+  <div class="fl-panel" id="fl-entry" hidden></div>
+</div><aside class="mx-side" id="fl-side" aria-live="polite"></aside></div>
+<input type="file" id="fl-file" accept=".zip" hidden></section>"""
 
 BUILT["filings"] = FILINGS_HTML
 
 FILINGS_CSS = """
-.fl-bd{border-collapse:collapse;font-size:12.5px;margin-top:4px}
-.fl-bd th{font-weight:600;font-size:11.5px;color:var(--color-neutral-700);padding:4px 12px;text-align:left}
-.fl-bd td{border-top:1px solid var(--color-divider);padding:8px 12px;vertical-align:top}
-.fl-bd td[data-f]{cursor:pointer}.fl-bd td[data-f]:hover,.fl-bd td.sel{background:var(--color-accent-100)}
-.fl-bd .fl-tech{color:var(--color-neutral-700)}
-.fl-tag{font-size:10.5px;color:var(--color-neutral-700);border:1px solid var(--color-divider);border-radius:8px;padding:0 6px;margin-left:4px;white-space:nowrap}
-.fl-list{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0 4px}
-.fl-list button{font:inherit;font-size:12.5px;padding:5px 12px;border-radius:14px;border:1px solid var(--color-divider);background:#fff;cursor:pointer;color:var(--color-text)}
-.fl-list button[aria-pressed="true"]{background:var(--color-accent-700);border-color:var(--color-accent-700);color:var(--color-accent-100)}
-.fl-card{margin-top:12px;border-top:1px solid var(--color-divider);padding-top:12px;max-width:980px;font-size:13px}
-.fl-card h2{font:600 18px var(--font-heading);margin:0 0 4px}
-.fl-steps{display:flex;gap:4px;margin:8px 0;flex-wrap:wrap}
-.fl-steps span{font-size:11.5px;padding:3px 10px;border-radius:12px;border:1px solid var(--color-divider);color:var(--color-neutral-700)}
-.fl-steps span.done{background:var(--color-accent-100);color:var(--color-text)}
-.fl-steps span.now{background:var(--color-accent-700);border-color:var(--color-accent-700);color:var(--color-accent-100);font-weight:600}
-.fl-short{font-size:13.5px;line-height:1.5;margin:10px 0;max-width:860px}
-.fl-tabs{display:flex;gap:2px;margin:12px 0 8px;border-bottom:1px solid var(--color-divider);flex-wrap:wrap}
-.fl-tabs button{font:inherit;font-size:12.5px;padding:6px 12px;border:0;background:none;cursor:pointer;color:var(--color-neutral-700);border-bottom:2px solid transparent}
-.fl-tabs button[aria-selected="true"]{color:var(--color-text);border-bottom-color:var(--color-accent-700);font-weight:600}
-.fl-doc{border-top:1px solid var(--color-divider);padding:7px 0;font-size:12.5px;overflow-wrap:anywhere}
-.fl-entry h4{margin:14px 0 4px;font-size:12.5px}.fl-entry p{margin:6px 0}.fl-entry ul{margin:4px 0;padding-left:18px}
-.fl-entry code{overflow-wrap:anywhere}.fl-mdw{overflow-x:auto}
-.fl-md{width:100%;border-collapse:collapse;font-size:12.5px;margin:6px 0}
-.fl-md th{text-align:left;font-weight:600;font-size:11.5px;color:var(--color-neutral-700)}
-.fl-md th,.fl-md td{padding:5px 8px;border-top:1px solid var(--color-divider);text-align:left;vertical-align:top}
+#s-filings [hidden]{display:none!important}
+.fl-swl{display:inline-flex;gap:8px;align-items:center}
+.fl-sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px}
+.fl-sum div{background:var(--color-panel);border-radius:var(--radius-md);padding:14px 16px}
+.fl-sum b{display:block;font:400 28px/1.15 var(--font-heading)}
+.fl-sum span{font-size:13.5px;color:var(--color-neutral-700)}
+.fl-bar{display:flex;gap:12px 20px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.fl-runall{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.fl-panel{background:var(--color-card);border:1px solid var(--color-divider);border-radius:var(--radius-lg);padding:22px 24px;display:flex;flex-direction:column;gap:16px;min-width:0}
+.fl-panel h2{margin:0;font:400 23px/1.2 var(--font-heading)}
+.fl-panel h3{margin:0;font:500 17px var(--font-heading)}
+.fl-x{display:inline-block;border-radius:var(--radius-pill);padding:2px 10px;font-weight:600;font-size:13.5px;white-space:nowrap}
+.fl-h0{background:var(--teal-soft)}.fl-h1{background:#efe3b4}.fl-h2{background:#e9d491}.fl-h3{background:#f6b48f}.fl-h4{background:#f58a63}
+.fl-key{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--color-neutral-700)}
+.fl-key i{display:inline-block;width:12px;height:12px;border-radius:4px;vertical-align:-1px;margin-right:6px}
+.fl-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.fl-fc{border:1px solid var(--color-divider);border-radius:var(--radius-lg);background:var(--color-bg);padding:16px 18px;display:flex;flex-direction:column;gap:12px;cursor:pointer;text-align:left;font:inherit;color:inherit}
+.fl-fc:hover{background:var(--color-accent-100)}
+.fl-fc.on{background:var(--color-card);border-color:var(--color-text);box-shadow:inset 0 0 0 1px var(--color-text)}
+.fl-fc .t{font:500 19px/1.25 var(--font-heading)}
+.fl-fc .co{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 10px;align-items:center;font-size:14px}
+.fl-prog{display:flex;gap:3px}.fl-prog i{flex:1;height:6px;border-radius:var(--radius-pill);background:var(--color-divider)}.fl-prog i.d{background:var(--teal-hover)}
+.fl-tchip{font-size:12.5px;border-radius:var(--radius-pill);padding:2px 10px;background:var(--teal-soft);width:fit-content}
+.fl-tchip.no{background:var(--ox-tint)}.fl-tchip.wait{background:var(--color-panel)}
+.fl-tag{font-size:12px;color:var(--color-neutral-700);border:1px solid var(--color-divider);border-radius:var(--radius-pill);padding:0 8px;margin-left:4px;white-space:nowrap}
+.fl-cg{border-collapse:separate;border-spacing:6px;font-size:14px;min-width:560px}
+.fl-cg th{font-weight:600;font-size:13px;color:var(--color-neutral-700);text-align:left;padding:0 4px;vertical-align:bottom}
+.fl-cg td.c{border-radius:var(--radius-md);padding:10px 12px;cursor:pointer;min-width:150px;vertical-align:top}
+.fl-cg td.c:hover,.fl-cg td.c.on{outline:2px solid var(--color-text);outline-offset:1px}
+.fl-cg td.c b{font:400 22px/1.1 var(--font-heading);display:block}
+.fl-cg td.c small,.fl-cg td.nm small{display:block;font-size:12.5px;color:var(--color-neutral-700)}
+.fl-cg td.iso{background:var(--color-panel);color:var(--color-neutral-700);border-radius:var(--radius-md);padding:10px 12px;font-size:13px}
+.fl-cg td.nm b{font:500 16px var(--font-heading)}
+.fl-tl{display:grid;grid-template-columns:210px minmax(0,1fr);gap:12px 16px;align-items:center;min-width:620px;font-size:14px;padding-bottom:22px}
+.fl-tl .ax{display:flex;justify-content:space-between;font-size:12.5px;color:var(--color-neutral-700);border-bottom:1px solid var(--color-divider);padding-bottom:4px}
+.fl-tl .lane{position:relative;height:30px;background:var(--color-panel);border-radius:var(--radius-pill);margin-bottom:18px}
+.fl-tl .lane i{position:absolute;top:5px;height:20px;border-radius:var(--radius-pill)}
+.fl-tl .lane i.n{background:var(--teal-mid,#8ee9c8)}.fl-tl .lane i.r{background:var(--teal-hover)}
+.fl-tl .lane span{position:absolute;top:34px;font-size:12px;color:var(--color-neutral-700);white-space:nowrap}
+.fl-tl .nm{cursor:pointer}.fl-tl .nm:hover b{text-decoration:underline}
+.fl-tl .nm b{font:500 15px var(--font-heading);display:block}.fl-tl .nm small{color:var(--color-neutral-700);font-size:12.5px}
+.fl-fhead{display:flex;flex-wrap:wrap;gap:12px 20px;align-items:flex-start;justify-content:space-between}
+.fl-steps{display:flex;gap:6px;flex-wrap:wrap}
+.fl-steps span{font-size:13px;padding:4px 12px;border-radius:var(--radius-pill);background:var(--color-panel);color:var(--color-neutral-700)}
+.fl-steps span.done{background:var(--teal-soft);color:var(--color-text)}
+.fl-steps span.now{background:var(--color-text);color:var(--color-bg);font-weight:600}
+.fl-tabs{display:flex;gap:4px;flex-wrap:wrap;border-bottom:1px solid var(--color-divider)}
+.fl-tabs button{font:500 14.5px var(--font-body);border:0;background:none;color:var(--color-neutral-700);padding:9px 14px;border-bottom:2px solid transparent;cursor:pointer}
+.fl-tabs button[aria-selected="true"]{color:var(--color-text);border-bottom-color:var(--color-text)}
+.fl-short{font-size:16px;line-height:1.6;max-width:76ch;margin:0}
+.fl-big{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px}
+.fl-big div{border-radius:var(--radius-md);padding:14px 16px;background:var(--color-panel)}
+.fl-big b{font:400 32px/1.1 var(--font-heading);display:block}
+.fl-big span{font-size:13.5px;color:var(--color-neutral-700)}
+.fl-mdw{overflow-x:auto}
+.fl-md{width:100%;border-collapse:collapse;font-size:14px;margin:4px 0}
+.fl-md th{text-align:left;font-weight:600;font-size:13px;color:var(--color-neutral-700);padding:6px 10px}
+.fl-md td{padding:9px 10px;border-top:1px solid var(--color-divider);text-align:left;vertical-align:top}
+.fl-md td.v,.fl-md th.v{text-align:center}.fl-md .r{text-align:right;white-space:nowrap}
+.fl-md tr.grp td{background:var(--color-panel);font-weight:600;font-size:13.5px;border-top:0}
 .fl-md .nw{white-space:nowrap}
-.fl-pct{font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap}
-.fl-big{font:600 15px var(--font-heading)}
-.fl-gl dt{font-weight:600;font-size:12px;margin-top:8px}.fl-gl dd{margin:2px 0 0;font-size:12px;color:var(--color-neutral-700)}
-details.fl-more{margin-top:8px;font-size:12px}details.fl-more summary{cursor:pointer;color:var(--color-neutral-700)}
+.fl-md small{display:block;font-size:12px;color:var(--color-neutral-700);font-weight:400}
+.fl-eff{display:grid;grid-template-columns:minmax(120px,190px) minmax(0,1fr) 70px;gap:5px 12px;align-items:center;font-size:14px}
+.fl-eff .bar{height:12px;background:var(--color-panel);border-radius:var(--radius-pill);position:relative;overflow:hidden}
+.fl-eff .bar i{position:absolute;top:0;bottom:0;left:0;border-radius:var(--radius-pill)}
+.fl-eff .p{text-align:right;font-weight:600}
+.fl-eff .co{grid-column:1/-1;font:500 16px var(--font-heading);margin-top:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.fl-eff .co:first-child{margin-top:0}
+.fl-ck{border:1px solid var(--color-divider);border-radius:var(--radius-md);background:var(--color-bg);padding:14px 16px;display:grid;grid-template-columns:28px minmax(0,1fr) auto;gap:6px 12px;align-items:start}
+.fl-ic{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:12.5px;font-weight:600;background:var(--teal-soft)}
+.fl-ic.x{background:var(--ox-tint)}.fl-ic.o{background:var(--color-panel);color:var(--color-neutral-700)}
+.fl-ck h4{margin:0;font:500 17px var(--font-heading)}
+.fl-ck .res{font-weight:600;white-space:nowrap;font-size:14px}
+.fl-ck .bd{grid-column:2/-1;display:flex;flex-direction:column;gap:8px;min-width:0}
+.fl-cost{font-size:12.5px;background:var(--teal-soft);border-radius:var(--radius-pill);padding:2px 9px;white-space:nowrap}
+.fl-cost.iso{background:var(--color-accent-100)}
+input.fl-ex{width:88px;font:inherit;font-size:14px;border:1px solid var(--color-divider);border-radius:8px;padding:4px 8px;text-align:right;background:var(--color-card)}
+.fl-ref{background:var(--color-panel);border-radius:var(--radius-sm);padding:10px 12px;font-size:14px}
+.fl-out{background:var(--color-card);border-radius:var(--radius-md);border:1px solid var(--color-divider);padding:10px 14px;font-size:14px}
+.fl-trail{display:flex;flex-direction:column}
+.fl-trail .it{display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;padding:12px 0;border-top:1px solid var(--color-divider)}
+.fl-trail .it:first-child{border-top:0}
+.fl-doc{padding:6px 0;font-size:14px;overflow-wrap:anywhere}
+.fl-entry h4{margin:14px 0 4px;font-size:14px}.fl-entry p{margin:6px 0}.fl-entry ul{margin:4px 0;padding-left:18px}
+.fl-entry code,.fl-tech{overflow-wrap:anywhere}
+.fl-tech{font-family:ui-monospace,Menlo,monospace;font-size:12px;color:var(--color-neutral-700)}
+details.fl-more summary{cursor:pointer;color:var(--color-neutral-700);font-size:13.5px}
+.fl-drop{border:1.5px dashed var(--color-accent-300,#c2b893);border-radius:var(--radius-md);padding:14px;text-align:center;font-size:14px;color:var(--color-neutral-700);background:var(--color-card);cursor:pointer}
+.fl-drop.over{background:var(--teal-soft)}
+.fl-howto{margin:0;padding-left:20px;font-size:14px;display:grid;gap:4px}
+.fl-gl dt{font-weight:600;font-size:13.5px;margin-top:8px}.fl-gl dd{margin:2px 0 0;font-size:13.5px;color:var(--color-neutral-700)}
+.fl-card{border:1px solid var(--color-divider);border-radius:var(--radius-md);padding:12px 14px;background:var(--color-card)}
 """
 
 FILINGS_JS = r"""
-const FL={d:null,b:null,sel:null,tab:'overview',tech:false,up:null,carrier:''};
-// the carrier picker: '' is every carrier; remembered per viewer, quietly, where the browser allows it
-try{FL.carrier=localStorage.getItem('fl-carrier')||'';}catch(e){}
+const FL={d:null,b:null,sel:null,tab:'short',tech:false,up:null,carrier:'',view:'filings',t:{},st:null,poll:null,iso:{},isoAsk:false,tryK:null,full:false};
+// the carrier picker and the view: '' is every carrier; remembered per viewer, quietly, where the browser allows it
+try{FL.carrier=localStorage.getItem('fl-carrier')||'';FL.view=localStorage.getItem('fl-view')||'filings';}catch(e){}
 function flMine(x){return !FL.carrier||x.carrier===FL.carrier;}
 function flFilings(){return FL.d?FL.d.filings.filter(flMine):[];}
 const FL_COV={'Premises/Operations':'Premises','Products/Completed Ops':'Products','Group I':'Fire & lightning','Group II':'Wind & hail',
@@ -2018,85 +2426,216 @@ const FL_GLOSS=[['ISO','Insurance Services Office: publishes the standard rates,
   ['Rate filing','An insurer\u2019s request, approved by the state, to charge differently from ISO.'],
   ['Loss cost multiplier','The factor an insurer applies to ISO\u2019s rates. 1.10 means 10% above ISO; 0.94 means 6% below.'],
   ['Class','ISO\u2019s code for the kind of business, such as a retail store or a contractor.'],
+  ['Class group','A set of kinds of business that share one factor in a filing.'],
   ['\u201ca\u201d-rated class','A specialty class ISO publishes no rate for; the insurer sets the rate itself.'],
   ['Effective dates','When a filing starts: one date for new policies, often a later one for renewals.'],
-  ['ISO edition','ISO revises its rates; a filing can name an older edition and keep using it.'],
-  ['Typical businesses','A set of sample risks we price both ways to estimate the effect. Not real customers.']];
+  ['Typical businesses','A set of sample risks we price both ways to estimate the effect. Not real customers.'],
+  ['Technical price','Our price at ISO\u2019s own rates, with no insurer\u2019s changes. ISO is only ever asked about this one.']];
+const FL_STEPS=['Received','Reviewed','Impact checked','In use','Proven'];
 function flKey(f){return f.id||f.serff;}
 function flChip(ok){return ok?'<span class="chip verified">✓</span> ':'<span class="chip mismatch">×</span> ';}
-function flPct(v){return v==null?'—':(Number(v)>0?'+':'')+esc(String(v))+'%';}
+function flPct(v){return v==null||v===''?'—':(Number(v)>0?'+':Number(v)<0?'\u2212':'')+esc(String(Math.abs(Number(v))))+'%';}
+function flHeat(v){v=Number(v);return v<0?'fl-h0':v<50?'fl-h1':v<100?'fl-h2':v<150?'fl-h3':'fl-h4';}
+function flX(v){return v==null||v===''||isNaN(Number(v))?'<span class="mx-msg">—</span>':'<span class="fl-x '+flHeat(v)+'">'+flPct(v)+'</span>';}
 function flCov(g){return esc(FL_COV[g]||g);}
 function flSel(){return flFilings().find(x=>flKey(x)===FL.sel||x.serff===FL.sel);}
-function flBoard(){const b=FL.b,el=document.getElementById('fl-board');if(!b)return;
-  const key=c=>c.line+'|'+c.state,sel=flSel(),cells=b.cells.filter(flMine);
-  if(!cells.length){el.innerHTML='<div class="mx-empty">'+(FL.carrier?'No filings yet for this carrier.':'No filings yet. Upload a filing packet to start.')+'</div>';return;}
-  const cols=b.columns.filter(c=>cells.some(x=>key(x)===key(c))),cos=b.companies.filter(flMine);
-  el.innerHTML='<div class="fl-mdw"><table class="fl-bd"><tr><th></th>'+cols.map(c=>'<th>'+esc(c.plain||c.line+' · '+c.state)+'</th>').join('')+'</tr>'+
-    cos.map(co=>'<tr><td title="'+esc(co.code+(co.naic?' · NAIC '+co.naic:''))+'"><b>'+esc(co.name||co.code)+'</b></td>'+
-      cols.map(col=>{const c=cells.find(x=>x.company===co.code&&key(x)===key(col));
-        if(!c)return '<td class="fl-tech">ISO\u2019s rates</td>';
-        const f=FL.d&&FL.d.filings.find(x=>x.versions.some(v=>v.company===c.company&&v.filing===c.filing));
-        const p=c.plain||{},draft=c.status==='draft';
-        const tip=FL.tech?(c.filing||'')+' v'+(c.version||'')+' · '+c.status:'';
-        return '<td'+(f?' data-f="'+esc(flKey(f))+'"':'')+(f&&sel===f?' class="sel"':'')+(tip?' title="'+esc(tip)+'"':'')+'>'+(draft?'':flChip(c.status==='approved'))+
-          '<b>'+esc(p.status||c.status)+'</b>'+(p.since&&!draft?' <span class="mx-msg">since '+esc(p.since)+'</span>':'')+
-          ((c.drafts||[]).length?'<span class="fl-tag">proposal pending</span>':'')+'</td>';}).join('')+'</tr>').join('')+'</table></div>';}
-function flSummary(f){const imp=v=>{const i=(f.impacts||[]).filter(x=>x.company===v.company&&(v.status==='approved'?!x.draft:x.draft===v.filing+'.v'+v.version)).pop();
-      if(!i)return '<span class="mx-msg">not worked out yet</span>';const p=i.plain||{};
-      return '<span class="fl-big">'+esc(p.vsIso||'')+'</span>'+(p.vsNow?'<div class="mx-msg">'+esc(p.vsNow)+'</div>':'');};
-  const n=(f.impacts||[]).map(i=>(i.plain||{}).risks).find(Boolean);
-  return '<div class="fl-mdw"><table class="fl-md"><tr><th>Insurer</th><th>What changes</th><th>Effect on premium</th></tr>'+
-    f.versions.map(v=>{const p=v.plain||{};return '<tr><td><b>'+esc(p.company||v.company)+'</b><div class="mx-msg">'+esc(p.status||v.status)+'</div></td><td>'+esc(p.changes||'')+(p.starts?'<div class="mx-msg">'+esc(p.starts)+'</div>':'')+
-      '</td><td>'+imp(v)+'</td></tr>';}).join('')+'</table></div>'+
-    '<div class="mx-msg" style="margin-top:6px">Effect: estimated by pricing '+(n?n+' ':'')+'typical businesses both ways, the insurer\u2019s rates against ISO\u2019s, on our own engine. '+
-    (f.plain&&f.plain.proof?flChip(true)+esc(f.plain.proof)+'.':'')+'</div>';}
+function flStates(f){return String(f.state||'').split(',').map(s=>s.trim()).filter(Boolean);}
+function flDate(d){if(!d)return '';const x=new Date(String(d).slice(0,10)+'T12:00');return isNaN(x)?esc(d):x.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});}
+function flCoName(f,c){const v=f.versions.find(x=>x.company===c);return (v&&v.plain&&v.plain.company)||((FL.b&&FL.b.companies.find(x=>x.code===c))||{}).name||c;}
+function flShort(n){return String(n).replace(/ (Insurance )?(Company|& Casualty Company)$/,'').replace(/ Insurance$/,'');}
+// the version of each company in use (its newest approved), else its newest proposal
+function flLive(f){const out={};f.versions.forEach(v=>{const o=out[v.company],ap=v.status==='approved';
+  if(!o||(ap&&(o.status!=='approved'||v.version>o.version))||(!ap&&o.status!=='approved'&&v.version>o.version))out[v.company]=v;});return out;}
+// each company's headline: its effect in this filing's own state, against ISO
+function flHead(f){const st=flStates(f),out={};(f.impacts||[]).filter(i=>!i.draft).forEach(i=>{const own=st.map(s=>(i.byState||{})[s]).filter(Boolean);
+  const a=own.length===1?own[0]:i.all;if(a&&a.change!=null)out[i.company]=Number(a.change);});return out;}
+function flDates(f){const n=f.versions.map(v=>v.new_eff).filter(Boolean).sort(),r=f.versions.map(v=>v.renewal_eff).filter(Boolean).sort();return {n:n[n.length-1]||'',r:r[r.length-1]||''};}
+function flTested(f){const t=f.test;if(!t||!t.ranAt)return '<span class="fl-tchip no">Never tested here</span>';
+  if(t.error)return '<span class="fl-tchip no">Last test stopped</span>';
+  const ok=t.ok||{},bad=ok.factors===false||ok.effect===false;
+  return '<span class="fl-tchip'+(bad?' no':'')+'">'+(bad?'× Last test found a problem':'✓ Tested')+' · '+flDate(t.ranAt)+'</span>';}
+function flRunning(serff){const s=FL.st||{};return s.running&&s.running.serff===serff?s.running:(s.waiting||[]).includes(serff)?{state:'waiting'}:null;}
+// ---- the high level
+function flSumDraw(){const fs=flFilings(),el=document.getElementById('fl-sum');if(!fs.length){el.innerHTML='';return;}
+  const cos=new Set(fs.flatMap(f=>Object.keys(flLive(f)))),sts=new Set(fs.flatMap(flStates)),all=fs.flatMap(f=>Object.values(flHead(f)));
+  const inuse=fs.filter(f=>f.versions.some(v=>v.status==='approved')).length,tested=fs.filter(f=>f.test&&f.test.ranAt&&!f.test.error).length;
+  const box=(b,t)=>'<div><b>'+b+'</b><span>'+t+'</span></div>';
+  el.innerHTML=box(fs.length,'filing'+(fs.length===1?'':'s')+', '+inuse+' in use')+box(cos.size,'compan'+(cos.size===1?'y':'ies')+' in '+sts.size+' state'+(sts.size===1?'':'s'))+
+    (all.length?box(flPct(Math.min(...all))+' to '+flPct(Math.max(...all)),'typical premium against ISO'):'')+
+    box(tested+' of '+fs.length,tested===fs.length?'tested':'tested; '+(fs.length-tested)+' never tested');}
+function flCardsDraw(){const fs=flFilings();
+  return '<div><h2>What has each insurer filed?</h2><p class="mx-msg">One card per filing. The number is how far a typical premium moves against ISO for each company. Click a card to open it below.</p></div>'+
+    '<div class="fl-cards">'+fs.map(f=>{const p=f.plain||{},h=flHead(f),lv=flLive(f),at=FL_STEPS.indexOf(p.step),d=flDates(f),run=flRunning(f.serff);
+      return '<button class="fl-fc'+(flSel()===f?' on':'')+'" data-f="'+esc(flKey(f))+'"><div><div class="mx-msg">'+esc(p.carrier||f.carrier)+(FL.tech?' · SERFF '+esc(f.serff):'')+'</div><div class="t">'+esc((p.line||f.line)+' · '+(p.state||f.state))+'</div></div>'+
+        '<div class="co">'+Object.keys(lv).map(c=>'<span>'+esc(flShort(flCoName(f,c)))+(lv[c].status!=='approved'?'<span class="fl-tag">proposal</span>':'')+'</span>'+flX(h[c])).join('')+'</div>'+
+        '<div><div class="fl-prog">'+FL_STEPS.map((s,i)=>'<i class="'+(i<=at?'d':'')+'"></i>').join('')+'</div><span class="mx-msg">'+esc(p.step||'')+(d.n?' · new policies from '+flDate(d.n):'')+'</span></div>'+
+        (run?'<span class="fl-tchip wait">'+(run.state==='waiting'?'Waiting to test':'Testing… '+(run.done||0)+' of '+(run.total||'…'))+'</span>':flTested(f))+'</button>';}).join('')+'</div>';}
+// the companies view (B-20's filings board): each company against each line and state, shaded by its effect
+function flBoard(){const el=document.getElementById('fl-board'),b=FL.b;if(!b||!FL.d)return;
+  document.querySelectorAll('#fl-views button').forEach(x=>x.setAttribute('aria-selected',x.dataset.v===FL.view));
+  const fs=flFilings();
+  if(!fs.length){el.innerHTML='<div class="mx-empty">'+(FL.carrier?'No filings yet for this carrier.':'No filings yet. Upload a filing packet to start.')+'</div>';return;}
+  if(FL.view==='timeline'){el.innerHTML=flTimeline(fs);return;}
+  if(FL.view!=='companies'){el.innerHTML=flCardsDraw();return;}
+  const cells=b.cells.filter(flMine),key=c=>c.line+'|'+c.state,cols=b.columns.filter(c=>cells.some(x=>key(x)===key(c))),cos=b.companies.filter(flMine),sel=flSel();
+  const fOf=(co,col)=>fs.find(f=>f.line===col.line&&flStates(f).includes(col.state)&&f.versions.some(v=>v.company===co));
+  el.innerHTML='<div><h2>Which company is dearest, and where?</h2><p class="mx-msg">Each company against each line and state, shaded by how far its typical premium sits from ISO. \u201cISO\u2019s rates\u201d means the company has no filing there. Click a box to open the filing.</p></div>'+
+    '<div class="fl-key">'+[['fl-h0','Below ISO'],['fl-h1','Up to 50% above'],['fl-h2','50\u2013100% above'],['fl-h3','100\u2013150% above'],['fl-h4','150% or more above']].map(([c,l])=>'<span><i class="'+c+'"></i>'+l+'</span>').join('')+'</div>'+
+    '<div class="fl-mdw"><table class="fl-cg"><tr><th></th>'+cols.map(c=>'<th>'+esc(c.plain||c.line+' · '+c.state)+'</th>').join('')+'</tr>'+
+    cos.map(co=>'<tr><td class="nm"><b>'+esc(co.name||co.code)+'</b>'+(FL.tech?'<small>'+esc(co.code+(co.naic?' · NAIC '+co.naic:''))+'</small>':'')+'</td>'+cols.map(col=>{
+      const c=cells.filter(x=>x.company===co.code&&key(x)===key(col)),f=fOf(co.code,col);
+      if(!c.length)return '<td class="iso">ISO\u2019s rates</td>';
+      const live=c.find(x=>x.status!=='draft'),v=f?flHead(f)[co.code]:null,draft=!live;
+      const tip=FL.tech?c.map(x=>(x.filing||'')+' v'+(x.version||'')+' · '+x.status).join('\n'):'';
+      return '<td class="c '+(v!=null?flHeat(v):'')+(f&&sel===f?' on':'')+'"'+(f?' data-f="'+esc(flKey(f))+'"':'')+(tip?' title="'+esc(tip)+'"':'')+'><b>'+(v!=null?flPct(v):draft?'Proposal':'In use')+'</b>'+
+        '<small>'+(draft?'not in use yet':(live.plain&&live.plain.since?'since '+esc(live.plain.since):''))+'</small>'+(c.some(x=>(x.drafts||[]).length)?'<span class="fl-tag">proposal pending</span>':'')+'</td>';}).join('')+'</tr>').join('')+'</table></div>';}
+function flTimeline(fs){const ds=fs.map(f=>({f,d:flDates(f)})).filter(x=>x.d.n);
+  if(!ds.length)return '<div class="mx-empty">No effective dates yet.</div>';
+  const t=s=>new Date(s+'T12:00').getTime(),lo=new Date(Math.min(...ds.map(x=>t(x.d.n))));lo.setDate(1);lo.setMonth(lo.getMonth()-1);
+  const hi=new Date(Math.max(...ds.map(x=>t(x.d.r||x.d.n))));hi.setDate(1);hi.setMonth(hi.getMonth()+2);
+  const x=s=>Math.max(0,Math.min(100,100*(t(s)-lo.getTime())/(hi.getTime()-lo.getTime())));const ms=[];
+  for(const m=new Date(lo);m<=hi;m.setMonth(m.getMonth()+1))ms.push(m.toLocaleDateString('en-US',{month:'short'})+(m.getMonth()===0?' '+String(m.getFullYear()).slice(2):''));
+  return '<div><h2>When does each filing take effect?</h2><p class="mx-msg">The light bar starts on the date for new policies, the dark bar on the date for renewals. Policies on or after these dates use the insurer\u2019s rates.</p></div>'+
+    '<div class="fl-mdw"><div class="fl-tl"><div></div><div class="ax">'+ms.map(m=>'<span>'+m+'</span>').join('')+'</div>'+
+    ds.map(({f,d})=>{const p=f.plain||{};return '<div class="nm" data-f="'+esc(flKey(f))+'"><b>'+esc((p.line||f.line)+' · '+(p.state||f.state))+'</b><small>'+esc(Object.keys(flLive(f)).map(c=>flShort(flCoName(f,c))).join(', '))+'</small></div>'+
+      '<div class="lane"><i class="n" style="left:'+x(d.n)+'%;right:0"></i>'+(d.r?'<i class="r" style="left:'+x(d.r)+'%;right:0"></i>':'')+
+      '<span style="left:'+x(d.n)+'%">new '+flDate(d.n)+'</span>'+(d.r?'<span style="left:'+Math.min(x(d.r),80)+'%">renewals '+flDate(d.r)+'</span>':'')+'</div>';}).join('')+'</div></div>';}
+// ---- one filing: what changes, companies side by side (the version in use), each version in full folded below
+function flRowNum(t){const m=/([\d.]+)% (above|below)/.exec(t||'');return m?(m[2]==='below'?-1:1)*Number(m[1]):null;}
 function flRows(f){if(!f.versions.length)return '<div class="mx-msg">Nothing proposed yet.</div>';
-  return f.versions.map(v=>{const p=v.plain||{};return '<div class="fl-doc"><b>'+esc(p.company||v.company)+'</b> <span class="mx-msg">'+esc(p.status||'')+'</span>'+
-    '<div class="fl-mdw"><table class="fl-md"><tr><th>Coverage</th><th>Applies to</th><th>Change</th><th>Starts</th><th>Why</th></tr>'+
-    (p.rows||[]).map(r=>'<tr><td class="nw">'+esc(r.what)+'</td><td>'+esc(r.where)+'</td><td class="nw"><b>'+esc(r.change)+'</b></td><td class="mx-msg">'+esc(r.starts||'')+'</td><td class="mx-msg">'+esc(r.note||'')+'</td></tr>').join('')+'</table></div>'+
-    (FL.tech?'<div class="mx-msg">'+esc(v.filing+' v'+v.version+' · '+v.compiledKeys+' compiled keys')+'</div>'+
-      '<div class="fl-mdw"><table class="fl-md"><tr><th>Target</th><th>Scope</th><th class="fl-pct">Value</th><th>Mode</th><th>Cite</th></tr>'+
-      (v.detail||[]).map(r=>'<tr><td><code>'+esc(r.target)+'</code></td><td><code>'+esc(JSON.stringify(r.scope||{}))+'</code></td><td class="fl-pct">'+esc(r.value)+'</td><td>'+esc(r.mode)+'</td><td>'+esc(r.cite)+'</td></tr>').join('')+'</table></div>':'')+'</div>';}).join('');}
+  const lv=flLive(f),cs=Object.keys(lv),grid=new Map();
+  cs.forEach(c=>{const v=lv[c];((v.plain||{}).rows||[]).forEach((r,i)=>{const k=r.where+'\u0001'+r.what;if(!grid.has(k))grid.set(k,{where:r.where,what:r.what,by:{}});grid.get(k).by[c]={r,d:(v.detail||[])[i]};});});
+  const groups=[...new Set([...grid.values()].map(x=>x.where))],cg=groups.some(g=>/class group/i.test(g));
+  const gname=g=>cg&&/^every class$/i.test(g)?'All other classes':g.charAt(0).toUpperCase()+g.slice(1);
+  const cell=x=>{if(!x)return '<span class="mx-msg">—</span>';const n=flRowNum(x.r.change);
+    return (n!=null?'<span class="fl-x '+flHeat(n)+'">'+esc(x.r.change)+'</span>':esc(x.r.change))+(FL.tech&&x.d?'<small>'+esc(x.d.mode+' '+x.d.value)+'</small>':'');};
+  return '<div class="fl-mdw"><table class="fl-md"><tr><th>What</th>'+cs.map(c=>'<th class="v">'+esc(flCoName(f,c))+(lv[c].status!=='approved'?' <span class="fl-tag">proposal</span>':'')+'</th>').join('')+'</tr>'+
+    groups.map(g=>'<tr class="grp"><td colspan="'+(cs.length+1)+'">'+esc(gname(g))+'</td></tr>'+[...grid.values()].filter(x=>x.where===g).map(x=>'<tr><td>'+esc(x.what)+'</td>'+cs.map(c=>'<td class="v">'+cell(x.by[c])+'</td>').join('')+'</tr>').join('')).join('')+'</table></div>'+
+    '<div class="mx-msg">'+esc(Object.values(lv)[0]&&Object.values(lv)[0].plain&&Object.values(lv)[0].plain.starts||'')+'. '+(FL.tech?'Under each change: how it is applied and the filed value.':'Switch on technical details for the filed values.')+'</div>'+
+    '<details class="fl-more"><summary>Each version in full ('+f.versions.length+')</summary>'+f.versions.map(v=>{const p=v.plain||{};return '<div class="fl-doc"><b>'+esc(p.company||v.company)+' · version '+esc(v.version)+'</b> <span class="mx-msg">'+esc(p.status||'')+'</span>'+
+      '<div class="fl-mdw"><table class="fl-md"><tr><th>Coverage</th><th>Applies to</th><th>Change</th><th>Starts</th><th>Why</th></tr>'+
+      (p.rows||[]).map(r=>'<tr><td class="nw">'+esc(r.what)+'</td><td>'+esc(r.where)+'</td><td class="nw"><b>'+esc(r.change)+'</b></td><td class="mx-msg">'+esc(r.starts||'')+'</td><td class="mx-msg">'+esc(r.note||'')+'</td></tr>').join('')+'</table></div>'+
+      (FL.tech?'<div class="fl-tech">'+esc(v.filing+' v'+v.version+' · '+v.compiledKeys+' compiled keys')+'</div><div class="fl-mdw"><table class="fl-md"><tr><th>Target</th><th>Scope</th><th class="r">Value</th><th>Mode</th><th>Cite</th></tr>'+
+        (v.detail||[]).map(r=>'<tr><td><code>'+esc(r.target)+'</code></td><td><code>'+esc(JSON.stringify(r.scope||{}))+'</code></td><td class="r">'+esc(r.value)+'</td><td>'+esc(r.mode)+'</td><td>'+esc(r.cite)+'</td></tr>').join('')+'</table></div>':'')+'</div>';}).join('')+'</details>';}
 function flDraftImpact(f,v){return (f.impacts||[]).filter(x=>x.company===v.company&&x.draft===v.filing+'.v'+v.version).pop()||null;}
-function flImpact(f){const st=String(f.state||'').split(',').map(s=>s.trim());
+// the effect on premium: bars by type of business in this filing's own state, coloured by how far from ISO
+function flImpact(f){const st=flStates(f);
   if(!f.impacts||!f.impacts.length)return '<div class="mx-msg">Not worked out yet. It runs on our own engine when a filing is uploaded or built.</div>';
-  return f.impacts.map(i=>{const own=st.map(s=>i.byState&&i.byState[s]).filter(Boolean),a=own.length===1?own[0]:i.all,vc=i.vsCurrent,p=i.plain||{};
-    const now=p.vsNow,groups=Object.keys((i.byCoverage||{}).All||{});
-    return '<div class="fl-doc"><b>'+esc(p.company||i.company)+'</b> '+(i.draft?'<span class="fl-tag">proposal</span> ':'')+'<span class="fl-big">'+esc(p.vsIso||'')+'</span>'+
-      (now?' <span class="mx-msg">· '+esc(now)+'</span>':'')+
-      '<div class="fl-mdw"><table class="fl-md"><tr><th>Type of business</th><th class="fl-pct">vs ISO</th>'+(now?'<th class="fl-pct">vs today</th>':'')+groups.map(g=>'<th class="fl-pct">'+flCov(g)+'</th>').join('')+'</tr>'+
-      Object.entries(i.byRiskType||{}).map(([k,v])=>'<tr><td>'+esc(k)+'</td><td class="fl-pct"><b>'+flPct(v.change)+'</b></td>'+(now?'<td class="fl-pct"><b>'+flPct((vc.by_risk_type||{})[k])+'</b></td>':'')+
-        groups.map(g=>{const c=((i.byCoverage||{})[k]||{})[g];return '<td class="fl-pct">'+(c?flPct(c.change):'—')+'</td>';}).join('')+'</tr>').join('')+'</table></div>'+
-      '<div class="mx-msg">Coverage columns: how much each part of the premium moves against ISO.'+(FL.tech?' · '+a.rated+' risks, '+flPct(a.min)+' to '+flPct(a.max)+' per risk · '+esc(i.file)+' · '+esc(i.generated||''):'')+'</div></div>';}).join('');}
+  const one=st.length===1?st[0]:null,rows=[];let mx=1;
+  const sets=f.impacts.map(i=>{const p=i.plain||{},own=one&&(i.byState||{})[one],a=own||i.all;
+    let types=Object.entries(i.byRiskType||{}).map(([k,v])=>[k,Number(v.change)]);
+    if(one&&Object.keys(i.byStateRiskType||{}).length)types=Object.entries(i.byStateRiskType).filter(([k])=>k.startsWith(one+' | ')).map(([k,v])=>[k.split(' | ')[1],Number(v.change)]);
+    types.sort((x,y)=>y[1]-x[1]);types.forEach(([,v])=>mx=Math.max(mx,Math.abs(v)));if(a&&a.change!=null)mx=Math.max(mx,Math.abs(Number(a.change)));return {i,p,a,types};});
+  return '<div class="fl-eff">'+sets.map(({i,p,a,types})=>'<div class="co">'+esc(p.company||i.company)+(i.draft?' <span class="fl-tag">proposal</span>':'')+' '+flX(a&&a.change)+
+      (p.vsNow?' <span class="mx-msg">'+esc(p.vsNow)+' (vs today)</span>':'')+'</div>'+
+      types.map(([k,v])=>'<span>'+esc(k)+'</span><div class="bar"><i class="'+flHeat(v)+'" style="width:'+(Math.abs(v)/mx*100).toFixed(1)+'%"></i></div><span class="p">'+flPct(v)+'</span>').join('')+
+      (Object.keys((i.byCoverage||{}).All||{}).length?'<span class="mx-msg" style="grid-column:1/-1">By coverage'+(one&&Object.keys(i.states||{}).length>1?' (all its states together)':'')+': '+Object.entries(i.byCoverage.All).map(([g,c])=>flCov(g)+' '+flPct(c.change)).join(' · ')+'</span>':'')+
+      (FL.tech?'<span class="fl-tech" style="grid-column:1/-1">'+esc((a?a.rated+' risks, '+flPct(a.min)+' to '+flPct(a.max)+' per risk · ':'')+i.file+' · '+(i.generated||''))+'</span>':'')).join('')+'</div>'+
+    '<div class="mx-msg">Estimated by pricing typical businesses both ways, the insurer\u2019s rates against ISO\u2019s, on our own engine. Not real customers.</div>';}
 function flProof(f){const p=f.proof;if(!p)return '';return p.ran?flChip(p.passed)+p.ok+' of '+p.checks+' checks':esc(p.suite)+' has not been run';}
 function flSources(f){if(!f.sources.length)return '<div class="mx-msg">No documents saved.</div>';
   const all=f.sources.every(x=>x.intact);
-  return '<div class="mx-msg">'+flChip(all)+(all?'Original documents, unchanged since we received them.':'<b>Some documents are missing or have changed since we received them.</b>')+'</div>'+
+  return '<b>'+(all?'Original documents, unchanged since we received them':'Some documents are missing or have changed since we received them')+'</b>'+
     f.sources.map(x=>'<div class="fl-doc">'+(x.present?'<a href="'+esc(x.url)+'" target="_blank" rel="noopener">'+esc(x.name)+'</a>':esc(x.name)+' <b>(missing)</b>')+
-      (x.present&&!x.intact?' <b>(changed)</b>':'')+'<div class="mx-msg">'+esc(x.what)+'</div>'+(FL.tech?'<div class="mx-msg">SHA-256 <code>'+esc(x.sha256||'')+'</code></div>':'')+'</div>').join('');}
+      (x.present&&!x.intact?' <b>(changed)</b>':'')+'<div class="mx-msg">'+esc(x.what)+'</div>'+(FL.tech?'<div class="fl-tech">SHA-256 '+esc(x.sha256||'')+'</div>':'')+'</div>').join('');}
 function flHistory(f){const s=f.plain&&f.plain.historyShort;
   if(!f.entry)return '<div class="mx-msg">Not in the filings log yet.</div>';
-  return (s?'<p class="fl-short">'+esc(s)+'</p>':'')+'<details class="fl-more"'+(s?'':' open')+'><summary>The full log entry</summary><div class="fl-entry">'+f.entry+'</div></details>';}
-function flSide(){const el=document.getElementById('fl-side');
-  el.innerHTML='<div class="cap2">How a filing gets here</div><div class="mx-msg">1. The filing is passed in the Claude Code session, which writes our review and the proposals.<br>'+
-    '2. Its packet is uploaded here. Nothing is put in use by an upload.<br>3. The effect on premiums is worked out.<br>4. It is put in use, tested against ISO and logged.</div>'+
-    '<div class="cap2" style="margin-top:12px">Words on this page</div><dl class="fl-gl">'+FL_GLOSS.map(([k,v])=>'<dt>'+esc(k)+'</dt><dd>'+esc(v)+'</dd>').join('')+'</dl>';}
+  return (s?'<div class="mx-msg">'+esc(s)+'</div>':'')+'<details class="fl-more"'+(s?'':' open')+'><summary>The full log entry</summary><div class="fl-entry">'+f.entry+'</div></details>';}
+function flTrail(f){const ic=(ok,c)=>'<span class="fl-ic'+(ok===false?' x':ok==null?' o':'')+'">'+c+'</span>',p=f.proof,t=f.test||{};
+  return '<div class="fl-trail">'+
+    '<div class="it">'+ic(p&&p.ran?p.passed:null,p&&p.ran?(p.passed?'✓':'×'):'–')+'<div><b>'+(p&&p.ran?'The proving suite: '+p.ok+' of '+p.checks+' automatic tests pass':'No proving suite recorded for this filing')+'</b>'+
+      (p&&p.ran?'<div class="mx-msg">Last run '+flDate(p.ranAt)+(FL.tech?' · '+esc(p.suite)+' · '+esc(p.commit||''):'')+'</div>':'<div class="mx-msg">The quick checks on the Test it tab still work for it.</div>')+'</div></div>'+
+    '<div class="it">'+ic(t.ranAt&&!t.error?!((t.ok||{}).factors===false||(t.ok||{}).effect===false):null,'⚑')+'<div><b>Quick checks</b><div class="mx-msg">'+(t.ranAt?'Last run '+flDate(t.ranAt)+' ('+esc(t.mode||'quick')+').':'Never run.')+' <a href="#" data-tab="test">Open Test it</a></div></div></div>'+
+    (f.sheet?'<div class="it">'+ic(true,'✎')+'<div><b>Our review</b><div class="mx-msg">What was filed, how we built it, decisions and proof.</div><details class="fl-more"><summary>Read our review</summary><div class="fl-entry">'+f.sheet+'</div></details></div></div>':'')+
+    '<div class="it">'+ic(true,'⌚')+'<div><b>History</b>'+flHistory(f)+'</div></div>'+
+    '<div class="it">'+ic(f.sources.every(x=>x.intact),'▤')+'<div>'+flSources(f)+'</div></div></div>';}
+// ---- Test it: quick checks on our engine, and an ISO spot check of the technical price (D21)
+function flTest(f){const R=FL.t[f.serff],run=flRunning(f.serff),cos=Object.keys(flLive(f)),one=flStates(f).length===1;
+  const ic=ok=>ok==null?'<span class="fl-ic o">–</span>':ok?'<span class="fl-ic">✓</span>':'<span class="fl-ic x">×</span>';
+  const co=(c,st)=>esc(flCoName(f,c))+(one?'':' · '+esc(st));
+  let h='<div class="td-tools" style="justify-content:space-between"><span class="mx-msg">'+(R&&R.ranAt?'Last run '+flDate(R.ranAt)+' on '+R.priced+' risk'+(R.priced===1?'':'s')+' ('+(R.mode==='full'?'the whole typical set':'one per class')+').':'Never run.')+
+    ' The first two checks are free and use our engine only.</span><span class="td-tools"><label class="td-chk"><input type="checkbox" id="fl-full"'+(FL.full?' checked':'')+'> whole typical set (slower)</label>'+
+    '<button class="btn primary" data-run="'+esc(f.serff)+'"'+(run?' disabled':'')+'>'+(run?'Testing…':R&&R.ranAt?'Run again':'Run the quick checks')+'</button></span></div>';
+  if(run)h+='<div class="fl-out">'+(run.state==='waiting'?'Waiting for the test before it to finish.':'Pricing typical businesses with and without the filing on our engine… '+(run.done||0)+' of '+(run.total||'…'))+'</div>';
+  if(R&&R.error)h+='<div class="fl-ref"><b>The last test stopped:</b> '+esc(R.error)+'</div>';
+  if(!R||!R.factors){if(!run)h+='<div class="fl-ref">Nothing checked yet. The quick checks price one typical business per class with and without the filing, about a minute, and compare the result with what the filing says. No ISO calls.</div>';
+    return h+flTestIso(f,R);}
+  const fac=R.factors,pol=R.policy||[],ok1=R.ok&&R.ok.factors,nOk=fac.filter(x=>x.ok).length+pol.filter(x=>x.ok).length,nAll=fac.length+pol.length;
+  h+='<div class="fl-ck">'+ic(ok1)+'<div><h4>The filed factors apply as written</h4><div class="mx-msg">Each row of the filing: the coverage\u2019s premium with the filing, against ISO\u2019s, must match the filed change (within '+R.tolerance.factor+'% over the risks it reaches). Single risks stray a little on small premiums because ISO rounds the rate.</div></div>'+
+    '<span class="res">'+nOk+' of '+nAll+(ok1?' ✓':' ×')+'</span><div class="bd"><details class="fl-more"'+(ok1?'':' open')+'><summary>Show each row</summary><div class="fl-mdw"><table class="fl-md"><tr><th>Company</th><th>Coverage</th><th>Applies to</th><th class="r">Filed</th><th class="r">Our engine</th><th class="r">Per risk</th><th></th></tr>'+
+    fac.map(x=>'<tr><td>'+co(x.company,x.state)+'</td><td>'+esc(x.coverage)+'</td><td>'+esc(x.appliesTo)+'<small>'+x.risks+' risk'+(x.risks===1?'':'s')+(FL.tech?' · '+esc(x.cite):'')+'</small></td><td class="r">'+flPct(x.filed)+'</td><td class="r"><b>'+flPct(x.got)+'</b></td><td class="r mx-msg">'+flPct(x.lo)+' to '+flPct(x.hi)+'</td><td>'+(x.ok?'✓':'×')+'</td></tr>').join('')+
+    pol.map(x=>'<tr><td>'+co(x.company,x.state)+'</td><td colspan="2">'+esc(x.item)+'<small>every risk</small></td><td class="r">'+esc(x.filed)+'</td><td class="r" colspan="2">'+esc(x.got)+'</td><td>'+(x.ok?'✓':'×')+'</td></tr>').join('')+'</table></div></details>'+
+    ((R.unreached||[]).length?'<div class="mx-msg">Not reached by the typical businesses: '+esc(R.unreached.join('; '))+'.</div>':'')+'</div></div>';
+  const ok2=R.ok&&R.ok.effect,tol=R.tolerance.effect;
+  h+='<div class="fl-ck">'+ic(ok2)+'<div><h4>The effect on premium is what we expect</h4><div class="mx-msg">'+(R.mode==='full'?'The whole typical set priced again':'The same risks priced again and set against the effect recorded for them, scaled to the whole typical set')+
+    '. Expected starts as the effect recorded when the filing went into use; type your own to test against it.</div></div>'+
+    '<span class="res">'+(ok2==null?'—':ok2?'Within \u00b1'+tol+' pt':'Outside \u00b1'+tol+' pt')+'</span><div class="bd"><div class="fl-mdw"><table class="fl-md"><tr><th>Company</th><th class="r">Expected</th><th class="r">Now</th><th class="r">Difference</th><th></th></tr>'+
+    R.effects.map(e=>{const d=e.now!=null&&e.expected!=null?e.now-e.expected:null;return '<tr><td>'+co(e.company,e.state)+(e.movedCount?'<small>'+e.movedCount+' of '+e.matched+' risks priced differently from when it was recorded</small>':'')+(e.basis==='sample'?'<small>from the '+e.risks+' risks just priced (none recorded to compare)</small>':'')+'</td>'+
+      '<td class="r"><input class="fl-ex" data-ex="'+esc(e.company+'|'+e.state)+'" value="'+(e.expected==null?'':flPct(e.expected).replace('\u2212','-'))+'" placeholder="none" aria-label="Expected effect for '+esc(flCoName(f,e.company))+'">'+
+      (e.expectedFrom==='yours'?'<small><a href="#" data-exclear="'+esc(e.company+'|'+e.state)+'">use the recorded '+flPct(e.recorded)+'</a></small>':'<small>recorded</small>')+'</td>'+
+      '<td class="r">'+flX(e.now)+'</td><td class="r">'+(d==null?'—':(d>=0?'+':'\u2212')+Math.abs(d).toFixed(1)+' pts')+'</td><td>'+(e.ok==null?'–':e.ok?'✓':'× outside \u00b1'+tol)+'</td></tr>';}).join('')+'</table></div>'+
+    (R.effects.some(e=>e.movedCount)?'<details class="fl-more"><summary>Risks priced differently from when the effect was recorded</summary><table class="fl-md">'+R.effects.flatMap(e=>e.moved.map(m=>'<tr><td>'+esc(flShort(flCoName(f,e.company)))+'</td><td>'+esc(m.riskType+' · '+m.class+' · '+m.size+(m.construction?' · '+m.construction:''))+'</td><td class="r">'+esc(m.was)+' \u2192 <b>'+esc(m.now)+'</b></td></tr>')).join('')+'</table></details>':'')+
+    (f.carrierExpected?'<div class="fl-ref"><b>'+esc(f.carrierExpected.what)+':</b> '+esc(f.carrierExpected.value)+' ('+esc(f.carrierExpected.parts)+').<div class="mx-msg">'+esc(f.carrierExpected.basis)+(FL.tech?' Source: '+esc(f.carrierExpected.cite||''):'')+'</div></div>':
+      '<div class="mx-msg">This filing gives no expected figure of the insurer\u2019s own to compare with.</div>')+'</div></div>';
+  return h+flTestIso(f,R)+flTry(f,R);}
+function flTestIso(f,R){const P=FL.iso[f.serff],last=(R&&R.iso)||(P&&P.last);
+  const ic=last&&last.ok!=null?(last.ok?'<span class="fl-ic">✓</span>':'<span class="fl-ic x">×</span>'):'<span class="fl-ic o">–</span>';
+  const n=P?P.calls:null;
+  let h='<div class="fl-ck">'+ic+'<div><h4>ISO agrees <span class="mx-msg" style="font:400 13.5px var(--font-body)">(optional spot check)</span></h4><div class="mx-msg">ISO only ever prices ISO\u2019s own rates, never an insurer\u2019s. One typical business per state is sent as its plain ISO request: ISO\u2019s price must equal our technical price. With the first check, the insurer\u2019s price is then ISO\u2019s times the filed factors.</div></div>'+
+    '<span class="fl-cost iso">'+(n==null?'counting…':n?n+' ISO call'+(n===1?'':'s'):'free: already answered')+'</span><div class="bd">';
+  if(last&&last.rows)h+='<div class="fl-mdw"><table class="fl-md"><tr><th>State</th><th>Business</th><th class="r">Our technical</th><th class="r">ISO</th><th></th></tr>'+last.rows.map(x=>'<tr><td>'+esc(x.state)+'</td><td>'+esc(x.riskType+' · '+x['class']+' · '+x.size+(x.construction?' · '+x.construction:''))+(x.detail?'<small>'+esc(x.detail)+'</small>':'')+'</td><td class="r">'+esc(x.ours||'—')+'</td><td class="r">'+esc(x.iso||'—')+'</td><td>'+(x.ok==null?'–':x.ok?'✓':'×')+(x.scenario?' <a href="#trace?scenario='+encodeURIComponent(x.scenario)+'">Trace</a>':'')+'</td></tr>').join('')+'</table></div><div class="mx-msg">Asked '+flDate(last.ranAt)+(last.sent?' · '+last.sent+' sent':' · ISO\u2019s stored answers, no call spent')+'.</div>';
+  else h+='<div class="mx-msg">Not asked yet.</div>';
+  if(FL.isoAsk===f.serff)h+='<div class="fl-ref">'+(n?'This sends '+n+' request'+(n===1?'':'s')+' to ISO from today\u2019s allowance.':'ISO has already answered '+(P&&P.requests.length===1?'this request':'these requests')+'; this reads its stored answer'+(P&&P.requests.length===1?'':'s')+' and spends nothing.')+
+    '<div class="td-tools" style="margin-top:8px"><button class="btn primary" id="fl-isogo">'+(n?'Send '+n:'Compare')+'</button><button class="btn" data-iso="0">Cancel</button><span class="mx-msg" id="fl-isomsg"></span></div></div>';
+  else h+='<div class="td-tools"><button class="btn" data-iso="1"'+(P?'':' disabled')+'>Ask ISO\u2026</button></div>';
+  return h+'</div></div>';}
+function flTry(f,R){const rs=(R&&R.risks)||[];if(!rs.length)return '';
+  const k=FL.tryK!=null&&rs[FL.tryK]?FL.tryK:0,r=rs[k],t=Number(r.technical),c=Number(r.carrier),one=flStates(f).length===1;
+  const lbl=x=>flShort(flCoName(f,x.company))+(one?'':' · '+x.state)+' · '+x.riskType+' · class '+x['class']+(x.construction?' · '+x.construction:'')+(R.mode==='full'?' · '+x.size:'');
+  return '<div class="fl-ck"><span class="fl-ic o">?</span><div><h4>Try one</h4><div class="mx-msg">One of the typical businesses just priced, both ways.</div></div><span class="fl-cost">free</span>'+
+    '<div class="bd"><select id="fl-try" aria-label="Business">'+rs.map((x,i)=>'<option value="'+i+'"'+(i===k?' selected':'')+'>'+esc(lbl(x))+'</option>').join('')+'</select>'+
+    '<div class="fl-out">At ISO\u2019s rates <b>$'+t.toLocaleString()+'</b> · with the filing <b>$'+c.toLocaleString()+'</b> · '+flX(t?((c/t-1)*100).toFixed(1):null)+
+    '<div class="mx-msg">'+esc(FL.tech?r.driver:String(r.driver||'').split(':')[0])+'</div></div>'+
+    '<div class="td-tools"><a class="btn" href="#workbench">Price your own risk in the Workbench</a></div></div></div>';}
+function flShortTab(f){const p=f.plain||{},h=flHead(f),lv=flLive(f),d=flDates(f);
+  return (p.inShort?'<p class="fl-short">'+esc(p.inShort)+'</p>':'')+
+    '<div class="fl-big">'+Object.keys(lv).map(c=>'<div class="'+(h[c]!=null?flHeat(h[c]):'')+'"><b>'+(h[c]!=null?flPct(h[c]):'—')+'</b><span>'+esc(flCoName(f,c))+': typical premium against ISO'+(lv[c].status!=='approved'?' (proposal)':'')+'</span></div>').join('')+
+    (d.n?'<div><b>'+flDate(d.n).replace(/, \d+$/,'')+'</b><span>new policies'+(d.r?'; renewals from '+flDate(d.r):'')+'</span></div>':'')+'</div>'+
+    (f.versions.some(v=>v.status==='draft')?'<div class="fl-ref">A proposal is pending: it is not in use until it is approved. Its effect is on the Effect on premium tab.</div>':'')+
+    '<div class="mx-msg">The effect is estimated by pricing typical businesses both ways on our own engine. Changes always sit on top of ISO\u2019s rates in force on the policy date.</div>';}
+function flSide(){const el=document.getElementById('fl-side'),f=flSel();let h='';
+  if(f){const p=f.plain||{},hd=flHead(f),d=flDates(f);
+    h+='<div class="cap2">Open filing</div><h3 style="margin:0;font:400 20px var(--font-heading)">'+esc((p.line||f.line)+' · '+(p.state||f.state))+'</h3>'+
+      '<div class="mx-msg">'+Object.keys(flLive(f)).map(c=>esc(flShort(flCoName(f,c)))+' '+flPct(hd[c])).join(' · ')+(d.n?'<br>New policies from '+flDate(d.n)+(d.r?'; renewals from '+flDate(d.r):'')+'.':'')+'</div>'+
+      '<div class="td-tools"><button class="btn primary" data-tab="test">Test it</button><a class="btn" href="#workbench">Price a risk</a></div>';}
+  h+='<div class="cap2">Add a filing</div><div class="fl-drop" id="fl-drop" role="button" tabindex="0">Drop a filing packet (.zip) here<br><span class="mx-msg">or click to choose one. Nothing is put in use by an upload.</span></div>'+
+    '<div class="cap2">How a filing gets here</div><ol class="fl-howto"><li>Reviewed in a Claude Code session, which writes our review and the proposals</li><li>Its packet uploaded here</li><li>The effect on premiums worked out</li><li>Put in use, tested against ISO and logged</li></ol>'+
+    '<details class="fl-more"><summary>Words on this page</summary><dl class="fl-gl">'+FL_GLOSS.map(([k,v])=>'<dt>'+esc(k)+'</dt><dd>'+esc(v)+'</dd>').join('')+'</dl></details>';
+  el.innerHTML=h;}
 function flDraw(){const d=FL.d;if(!d)return;const fs=flFilings();
   if(!flSel()&&fs.length)FL.sel=flKey(fs[0]);
-  document.getElementById('fl-out').innerHTML=fs.length?'<div class="fl-list">'+fs.map(f=>{const p=f.plain||{};
-    return '<button data-f="'+esc(flKey(f))+'" aria-pressed="'+(FL.sel===flKey(f))+'">'+esc(p.title||f.carrier+' '+f.line+' '+f.state)+(p.step&&p.step!=='Proven'?' · '+esc(p.step.toLowerCase()):'')+'</button>';}).join('')+'</div>'
-    :'<div class="mx-empty">No filings yet'+(FL.carrier?' for this carrier':'')+'.</div>';
-  const f=flSel(),el=document.getElementById('fl-entry');flBoard();flSide();
-  if(!f){el.innerHTML='';return;}
-  const p=f.plain||{},steps=p.steps||[],at=steps.indexOf(p.step);
-  const tabs=[['overview','Overview'],['rows','What changes'],['impact','Effect on premium'],['sheet','Our review'],['log','History'],['sources','Documents']].filter(([k])=>k!=='sheet'||f.sheet);
-  if(!tabs.some(([k])=>k===FL.tab))FL.tab='overview';
-  const body={overview:()=>flSummary(f),rows:()=>flRows(f),impact:()=>flImpact(f),sheet:()=>'<div class="fl-entry">'+f.sheet+'</div>',log:()=>flHistory(f),sources:()=>flSources(f)}[FL.tab]();
-  el.innerHTML='<div class="fl-card"><h2>'+esc(p.title||'')+'</h2>'+
-    '<div class="fl-steps">'+steps.map((s,i)=>'<span class="'+(i<at?'done':i===at?'now':'')+'">'+(i<at?'✓ ':'')+esc(s)+'</span>').join('')+'</div>'+
-    (p.effective?'<div class="mx-msg">'+esc(p.effective)+'</div>':'')+(p.inShort?'<p class="fl-short">'+esc(p.inShort)+'</p>':'')+
-    (FL.tech?'<div class="mx-msg">'+esc((f.id?f.id+' · ':'')+'SERFF '+f.serff+' · '+f.status+' · stage '+f.stage)+(f.proof?' · '+flProof(f):'')+'</div>':'')+
-    '<div class="fl-tabs" role="tablist">'+tabs.map(([k,n])=>'<button role="tab" data-tab="'+k+'" aria-selected="'+(FL.tab===k)+'">'+n+'</button>').join('')+'</div>'+body+'</div>';}
+  flSumDraw();flBoard();flSide();
+  const f=flSel(),el=document.getElementById('fl-entry');
+  if(!f){el.hidden=true;el.innerHTML='';return;}el.hidden=false;
+  const p=f.plain||{},steps=p.steps||FL_STEPS,at=steps.indexOf(p.step);
+  const tabs=[['short','In short'],['rows','What changes'],['impact','Effect on premium'],['test','Test it'],['trail','Paper trail']];
+  if(!tabs.some(([k])=>k===FL.tab))FL.tab='short';
+  if(FL.tab==='test')flTestLoad(f);
+  const body={short:()=>flShortTab(f),rows:()=>flRows(f),impact:()=>flImpact(f),test:()=>flTest(f),trail:()=>flTrail(f)}[FL.tab]();
+  el.innerHTML='<div class="fl-fhead"><div><div class="mx-msg">'+esc(p.carrier||f.carrier)+(FL.tech?' · '+esc((f.id?f.id+' · ':'')+'SERFF '+f.serff+' · '+f.status+' · stage '+f.stage)+(f.proof?' · '+flProof(f):''):'')+'</div><h2>'+esc((p.line||f.line)+' · '+(p.state||f.state))+'</h2></div>'+
+    '<div class="fl-steps">'+steps.map((s,i)=>'<span class="'+(i<at?'done':i===at?'now':'')+'">'+(i<at?'✓ ':'')+esc(s)+'</span>').join('')+'</div></div>'+
+    '<div class="fl-tabs" role="tablist">'+tabs.map(([k,n])=>'<button role="tab" data-tab="'+k+'" aria-selected="'+(FL.tab===k)+'">'+n+'</button>').join('')+'</div>'+body;}
+// ---- the test's data: one filing's result, the ISO plan, and the queue while anything runs
+function flTestLoad(f){if(FL.t[f.serff]===undefined){FL.t[f.serff]=null;fetch('/api/console/filings/test?serff='+encodeURIComponent(f.serff)).then(r=>r.json()).then(j=>{FL.t[f.serff]=j.result;FL.st=j.status;if(FL.tab==='test')flDraw();flWatch();}).catch(()=>{});}
+  if(FL.iso[f.serff]===undefined){FL.iso[f.serff]=null;fetch('/api/console/filings/iso?serff='+encodeURIComponent(f.serff)).then(r=>r.json()).then(j=>{FL.iso[f.serff]=j.error?null:j;if(FL.tab==='test')flDraw();}).catch(()=>{});}}
+function flWatch(){const busy=FL.st&&(FL.st.running||(FL.st.waiting||[]).length);clearInterval(FL.poll);FL.poll=null;
+  document.getElementById('fl-runall').disabled=!!busy;
+  document.getElementById('fl-runmsg').textContent=busy?'Testing'+(FL.st.running?' '+(FL.st.running.done||0)+' of '+(FL.st.running.total||'…')+' risks':'')+((FL.st.waiting||[]).length?' · '+FL.st.waiting.length+' waiting':'')+'…':'On our engine. No ISO calls.';
+  if(!busy)return;
+  FL.poll=setInterval(()=>{if(document.getElementById('s-filings').hidden)return;fetch('/api/console/filings/test').then(r=>r.json()).then(j=>{const was=FL.st;FL.st=j.status;
+    const doneNow=was&&was.running&&(!j.status.running||j.status.running.serff!==was.running.serff)?was.running.serff:null;
+    if(doneNow)delete FL.t[doneNow];
+    if(!j.status.running&&!(j.status.waiting||[]).length){flLoad();}else{flDraw();flWatch();}});},2000);}
 function flUpShow(r){const el=document.getElementById('fl-up');if(!r){el.innerHTML='';return;}
   if(r.error){el.innerHTML='<div class="fl-card"><b>This file couldn\u2019t be read as a filing packet.</b><div class="mx-msg">'+esc(r.error)+'</div></div>';return;}
   const p=r.plain||{},j=r.impact,li=xs=>xs.map(x=>'<div class="mx-msg">'+esc(x)+'</div>').join('');
@@ -2108,13 +2647,30 @@ function flUpShow(r){const el=document.getElementById('fl-up');if(!r){el.innerHT
       li((r.problems||[]))+(r.validation||[]).map(v=>'<div class="mx-msg">'+flChip(v.ok)+'checked '+esc(v.draft)+(v.ok?'':': '+esc(v.errors.join('; ')))+'</div>').join('')+'</details></div>';}
 function flPoll(serff){fetch('/api/console/filings/jobs').then(r=>r.json()).then(d=>{const j=d.jobs.find(x=>x.serff===serff);if(!j||!FL.up)return;
   FL.up.impact=j;flUpShow(FL.up);if(j.state==='running')setTimeout(()=>flPoll(serff),3000);else flLoad();}).catch(()=>{});}
-function flLoad(){Promise.all([fetch('/api/console/filings/board').then(r=>r.json()),fetch('/api/console/filings').then(r=>r.json())])
-  .then(([b,d])=>{FL.b=b;FL.d=d;flCarriers();flDraw();})
+function flLoad(){Promise.all([fetch('/api/console/filings/board').then(r=>r.json()),fetch('/api/console/filings').then(r=>r.json()),fetch('/api/console/filings/test').then(r=>r.json())])
+  .then(([b,d,t])=>{FL.b=b;FL.d=d;FL.st=t.status;FL.t={};FL.iso={};flCarriers();flDraw();flWatch();})
   .catch(e=>{document.getElementById('fl-board').innerHTML='<div class="mx-empty">Could not load the filings: '+esc(String(e))+'</div>';});}
-function flPick(ev){const x=ev.target.closest('[data-f]');if(!x)return;FL.sel=x.dataset.f;flDraw();}
-document.getElementById('fl-out').addEventListener('click',flPick);
+function flPick(ev){const x=ev.target.closest('[data-f]');if(!x)return;FL.sel=x.dataset.f;FL.isoAsk=false;FL.tryK=null;flDraw();
+  const e=document.getElementById('fl-entry');if(e.getBoundingClientRect().top>innerHeight*0.6)e.scrollIntoView({behavior:'smooth',block:'start'});}
 document.getElementById('fl-board').addEventListener('click',flPick);
-document.getElementById('fl-entry').addEventListener('click',ev=>{const x=ev.target.closest('[data-tab]');if(!x)return;FL.tab=x.dataset.tab;flDraw();});
+document.getElementById('fl-views').addEventListener('click',ev=>{const b=ev.target.closest('[data-v]');if(!b)return;FL.view=b.dataset.v;try{localStorage.setItem('fl-view',FL.view);}catch(e){}flBoard();});
+function flSend(u,b){return fetch(u,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(b)}).then(r=>r.json());}
+document.getElementById('s-filings').addEventListener('click',ev=>{const t=ev.target;
+  const tb=t.closest('[data-tab]');if(tb){ev.preventDefault();FL.tab=tb.dataset.tab;flDraw();if(tb.closest('#fl-side'))document.getElementById('fl-entry').scrollIntoView({behavior:'smooth',block:'start'});return;}
+  const rn=t.closest('[data-run]');if(rn){const fu=document.getElementById('fl-full');FL.full=!!(fu&&fu.checked);
+    flSend('/api/console/filings/test',{serff:rn.dataset.run,full:FL.full}).then(j=>{FL.st=j.status;flDraw();flWatch();});return;}
+  const is=t.closest('[data-iso]');if(is){FL.isoAsk=is.dataset.iso==='1'?(flSel()||{}).serff:false;flDraw();return;}
+  if(t.id==='fl-isogo'){const f=flSel(),m=document.getElementById('fl-isomsg');t.disabled=true;m.textContent='Asking ISO…';
+    flSend('/api/console/filings/iso',{serff:f.serff}).then(j=>{FL.isoAsk=false;if(FL.t[f.serff])FL.t[f.serff].iso=j;else FL.t[f.serff]={iso:j};delete FL.iso[f.serff];flDraw();}).catch(e=>{m.textContent=String(e);t.disabled=false;});return;}
+  const xc=t.closest('[data-exclear]');if(xc){ev.preventDefault();const [c,s]=xc.dataset.exclear.split('|'),f=flSel();
+    flSend('/api/console/filings/expected',{serff:f.serff,company:c,state:s,value:null}).then(j=>{FL.t[f.serff]=j.result;flDraw();});return;}
+  if(t.closest('#fl-drop'))document.getElementById('fl-file').click();});
+document.getElementById('s-filings').addEventListener('change',ev=>{const t=ev.target;
+  if(t.id==='fl-full'){FL.full=t.checked;return;}
+  if(t.id==='fl-try'){FL.tryK=+t.value;flDraw();return;}
+  if(t.dataset.ex){const [c,s]=t.dataset.ex.split('|'),f=flSel(),v=parseFloat(t.value.replace('\u2212','-').replace(/[^\d.\-]/g,''));
+    flSend('/api/console/filings/expected',{serff:f.serff,company:c,state:s,value:t.value.trim()===''||isNaN(v)?null:v}).then(j=>{if(j.result)FL.t[f.serff]=j.result;flDraw();});}});
+document.getElementById('fl-runall').addEventListener('click',()=>flSend('/api/console/filings/test',{all:true}).then(j=>{FL.st=j.status;flDraw();flWatch();}));
 document.getElementById('fl-tech').addEventListener('change',ev=>{FL.tech=ev.target.checked;flDraw();});
 // the carrier picker: every carrier in the store; a remembered carrier that has gone falls back to all
 function flCarriers(){const sel=document.getElementById('fl-carrier'),cs=(FL.b&&FL.b.carriers)||[];
@@ -2123,13 +2679,17 @@ function flCarriers(){const sel=document.getElementById('fl-carrier'),cs=(FL.b&&
   sel.value=FL.carrier;}
 document.getElementById('fl-carrier').addEventListener('change',ev=>{FL.carrier=ev.target.value;FL.sel=null;
   try{localStorage.setItem('fl-carrier',FL.carrier);}catch(e){}flDraw();});
-document.getElementById('fl-file').addEventListener('change',ev=>{const f=ev.target.files[0];if(!f)return;const rd=new FileReader();
+function flUpload(f){if(!f)return;const rd=new FileReader();
   document.getElementById('fl-up').innerHTML='<div class="fl-card mx-msg">Reading '+esc(f.name)+'…</div>';
   rd.onload=()=>{const data=String(rd.result).split(',')[1]||'';
-    fetch('/api/console/filings/packet',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:f.name,data})})
-      .then(r=>r.json()).then(r=>{FL.up=r;flUpShow(r);if(r.ok){FL.sel=r.serff;flLoad();if(r.impact)flPoll(r.serff);}})
-      .catch(e=>flUpShow({error:String(e)}));ev.target.value='';};
-  rd.readAsDataURL(f);});
+    flSend('/api/console/filings/packet',{name:f.name,data}).then(r=>{FL.up=r;flUpShow(r);if(r.ok){FL.sel=r.serff;flLoad();if(r.impact)flPoll(r.serff);}})
+      .catch(e=>flUpShow({error:String(e)}));};
+  rd.readAsDataURL(f);}
+document.getElementById('fl-file').addEventListener('change',ev=>{flUpload(ev.target.files[0]);ev.target.value='';});
+document.getElementById('fl-side').addEventListener('dragover',ev=>{const d=ev.target.closest('#fl-drop');if(!d)return;ev.preventDefault();d.classList.add('over');});
+document.getElementById('fl-side').addEventListener('dragleave',ev=>{const d=ev.target.closest('#fl-drop');if(d)d.classList.remove('over');});
+document.getElementById('fl-side').addEventListener('drop',ev=>{const d=ev.target.closest('#fl-drop');if(!d)return;ev.preventDefault();d.classList.remove('over');flUpload(ev.dataTransfer.files[0]);});
+document.getElementById('fl-side').addEventListener('keydown',ev=>{if(ev.target.id==='fl-drop'&&(ev.key==='Enter'||ev.key===' ')){ev.preventDefault();document.getElementById('fl-file').click();}});
 addEventListener('hashchange',()=>{if((location.hash||'').startsWith('#filings'))flLoad();});
 if((location.hash||'').startsWith('#filings'))flLoad();
 """
@@ -2142,141 +2702,268 @@ if((location.hash||'').startsWith('#filings'))flLoad();
 
 PLAN_HTML = """<section class="screen" id="s-plan" hidden><div class="mx-wrap"><div class="mx-main">
   <div class="mx-head"><div><div class="eyebrow">Test Plan Builder</div><h1>Plan a round of checks</h1></div>
-    <p>Tell us which states and which kinds of risk you care about. We build the smallest set of requests that covers
-    them ("pairwise" tries every pair of choices once; "edges" tries each choice at its extremes), reuse every answer ISO
-    has already given, and show the cost before anything is sent.</p>
-    <div class="bd-lines" id="pl-lines" role="group" aria-label="Line"><button data-l="CP">Commercial Property</button><button data-l="GL">General Liability</button></div></div>
-  <div class="pl-sec"><div class="cap2">States · <span id="pl-stc"></span></div>
-    <div class="td-tools"><button class="btn" data-st="all">All</button><button class="btn" data-st="none">None</button><button class="btn" data-st="gaps">Still to test</button><span class="mx-msg" id="pl-prefill"></span></div>
-    <div class="pl-chips" id="pl-states"></div></div>
-  <div class="pl-sec"><div class="cap2">Start from (optional)</div><div class="td-tools"><select id="pl-preset"><option value="">a quick smoke, a QA tier or a layer…</option></select>
-    <span class="mx-msg" id="pl-presetmsg"></span></div></div>
-  <div class="pl-sec"><div class="cap2">Dimensions · values from <span id="pl-ref"></span>'s domains</div><div id="pl-dims"></div></div>
-  <div class="pl-sec td-tools"><label class="td-chk"><input type="checkbox" id="pl-reduced"> reduced grid (edges only)</label>
-    <label class="td-chk"><input type="checkbox" id="pl-edges" checked> edge cases</label>
-    <label class="td-chk">allowance <input type="number" id="pl-allow" min="1" placeholder="no limit" style="width:90px"> calls</label>
-    <label class="td-chk">name <input id="pl-name" placeholder="plan name" style="width:220px"></label></div>
-</div><aside class="mx-side" id="pl-side"></aside></div></section>"""
+    <p>Describe one risk the way you would fill in a submission, mark the fields you want tried several ways, then
+    apply it to as many states as you like. We build the smallest set of requests that covers it, reuse every answer
+    ISO has already given, and show the cost before anything is sent.</p>
+    <div class="bd-lines" id="pl-lines" role="group" aria-label="Line"><button data-l="GL">General Liability</button><button data-l="CP">Commercial Property</button></div></div>
+  <div class="pl-shell">
+    <nav class="pl-steps" id="pl-steps" aria-label="Steps"></nav>
+    <div class="pl-screen">
+      <section class="pl-step" data-step="0">
+        <div><h2>How do you want to start?</h2><p class="mx-msg">All four lead to the same screens; they only change what is filled in for you.</p></div>
+        <div class="pl-start" id="pl-start"></div>
+        <div class="pl-presetrow" id="pl-presetrow" hidden><select id="pl-preset"><option value="">Choose a quick smoke, a QA tier or a layer…</option></select><span class="mx-msg" id="pl-presetmsg"></span></div>
+        <div class="td-tools"><span class="mx-msg" id="pl-prefill"></span></div>
+      </section>
+      <section class="pl-step" data-step="1" hidden>
+        <div><h2>Build the risk</h2><p class="mx-msg">Fill in one submission; anything left on Standard keeps the base risk. Switch on <b>Vary</b> for a field you want tried several ways.</p></div>
+        <div class="bd-views" id="pl-tabs" role="tablist" aria-label="Screens"></div>
+        <div id="pl-scrhd"></div>
+        <div class="pl-form" id="pl-dims"></div>
+        <div class="td-tools" id="pl-scrnav"></div>
+      </section>
+      <section class="pl-step" data-step="2" hidden>
+        <div><h2>What to vary, and how</h2><p class="mx-msg">Everything else stays as the risk you built.</p></div>
+        <div id="pl-varied"></div>
+        <div class="td-tools"><select id="pl-addf" aria-label="Add a field to vary"></select></div>
+        <h3>Method</h3>
+        <div class="pl-method" id="pl-method"></div>
+        <div class="td-tools"><label class="td-chk">Spend at most <input type="number" id="pl-allow" min="1" placeholder="no limit" style="width:110px"> calls (states are never dropped)</label></div>
+        <div class="td-tools"><button class="btn primary" data-go="3">Next: choose states</button></div>
+      </section>
+      <section class="pl-step" data-step="3" hidden>
+        <div><h2>Which states?</h2><p class="mx-msg">Click states on the map, or use a quick pick. "Not all" marks a state that does not offer a field you vary.</p></div>
+        <div class="td-tools" id="pl-picks"></div>
+        <div class="bd-map pl-map" id="pl-states"></div>
+        <div class="td-tools"><span class="mx-msg" id="pl-stc"></span><button class="btn primary" data-go="4">Next: review</button></div>
+      </section>
+      <section class="pl-step" data-step="4" hidden>
+        <div><h2>Review and commit</h2><p class="mx-msg">Nothing is sent until you commit. The free checks run on our engine only.</p></div>
+        <div id="pl-review"></div>
+        <div class="td-tools"><button class="btn" id="pl-t0">Run the free checks first</button><input id="pl-name" placeholder="Plan name" style="width:240px"><input id="pl-by" placeholder="Your name" style="width:180px">
+          <label class="td-chk"><input type="checkbox" id="pl-startnow" checked> start sending now</label></div>
+        <div id="pl-t0out"></div>
+        <div class="td-tools"><button class="btn primary" id="pl-commit">Commit plan</button><span class="mx-msg" id="pl-msg"></span></div>
+      </section>
+    </div>
+  </div>
+</div><aside class="mx-side" id="pl-side" aria-live="polite"></aside></div></section>"""
 
 BUILT["plan"] = PLAN_HTML
 
 PLAN_CSS = """
-.pl-sec{display:flex;flex-direction:column;gap:6px}
-.pl-chips{display:flex;flex-wrap:wrap;gap:4px}
-.pl-chip{font:inherit;font-size:11.5px;padding:3px 7px;border-radius:12px;border:1px solid var(--color-divider);background:#fff;cursor:pointer;color:var(--color-text)}
-.pl-chip[aria-pressed="true"]{background:var(--color-accent-700);border-color:var(--color-accent-700);color:var(--color-accent-100)}
-.pl-dim{border:1px solid var(--color-divider);border-radius:4px;padding:6px 8px;margin-bottom:4px;background:var(--color-bg)}
-.pl-dim>label{display:flex;gap:8px;align-items:center;font-size:12.5px;cursor:pointer}
-.pl-dim .pl-chips{margin:6px 0 0 22px}
-.pl-grp{font:600 14px var(--font-heading);margin:8px 0 4px;border-bottom:1px solid var(--color-divider)}
-.pl-count{display:grid;grid-template-columns:1fr auto;gap:2px 10px;font-size:12.5px}
+#s-plan [hidden]{display:none!important}
+.pl-shell{display:grid;grid-template-columns:210px minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:1300px){.pl-shell{grid-template-columns:minmax(0,1fr)}.pl-steps{flex-direction:row;flex-wrap:wrap;position:static}}
+.pl-steps{position:sticky;top:calc(var(--hdr,66px) + 12px);display:flex;flex-direction:column;gap:4px}
+.pl-steps button{display:flex;gap:10px;align-items:center;text-align:left;border:0;background:none;padding:9px 12px;border-radius:var(--radius-md);font:500 14.5px var(--font-body);color:var(--color-neutral-700);cursor:pointer}
+.pl-steps .n{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:var(--color-surface);font-size:12.5px;font-weight:600;flex:none}
+.pl-steps button[aria-current="step"]{background:var(--color-card);color:var(--color-text);box-shadow:0 1px 3px color-mix(in srgb,#2d1d1a 8%,transparent)}
+.pl-steps button[aria-current="step"] .n{background:var(--color-text);color:var(--color-bg)}
+.pl-steps button.done .n{background:var(--teal);color:var(--color-text)}
+.pl-steps small{display:block;font-weight:400;font-size:12.5px}
+.pl-screen{background:var(--color-card);border:1px solid var(--color-divider);border-radius:var(--radius-lg);padding:22px 24px;min-width:0}
+.pl-step{display:flex;flex-direction:column;gap:16px}
+.pl-step h2{margin:0;font:400 24px/1.2 var(--font-heading)}.pl-step h3{margin:0;font:500 17px var(--font-heading)}
+.pl-step p.mx-msg{margin:6px 0 0}
+.pl-start{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.pl-choice{border:1px solid var(--color-divider);border-radius:var(--radius-lg);padding:16px 18px;background:var(--color-bg);text-align:left;cursor:pointer;font:inherit;color:var(--color-text);display:flex;flex-direction:column;gap:6px}
+.pl-choice:hover{background:var(--color-accent-100)}.pl-choice.on{border-color:var(--color-text);box-shadow:inset 0 0 0 1px var(--color-text);background:var(--color-card)}
+.pl-choice b{font:500 18px var(--font-heading)}
+.pl-presetrow{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+#pl-preset,#pl-addf{font:inherit;padding:8px 12px;border:1px solid var(--color-divider);background:var(--color-card);max-width:100%}
+.bd-views button .c{font-size:11.5px;background:var(--teal);color:var(--color-text);border-radius:var(--radius-pill);padding:0 6px;margin-left:6px}
+.pl-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:14px 18px}
+.pl-f{display:flex;flex-direction:column;gap:6px;border:1px solid transparent;border-radius:var(--radius-md);padding:10px 12px;background:var(--color-bg);min-width:0}
+.pl-f.vary{border-color:var(--teal-hover);background:var(--color-card)}
+.pl-f .hd{display:flex;align-items:center;gap:8px}.pl-f .hd>span{font-weight:600;font-size:14px}
+.pl-f .tog{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:13px;color:var(--color-neutral-700);cursor:pointer}
+.pl-f .why{font-size:12.5px;color:var(--color-neutral-700)}.pl-f .gap{font-size:12px;color:var(--color-accent-700)}
+.pl-f select,.pl-f input[type=text],.pl-f input[type=number],.pl-f input[list]{font:inherit;font-size:15px;color:var(--color-text);background:#fff;border:1px solid var(--color-divider);padding:8px 11px;width:100%;min-width:0}
+.pl-vals{display:flex;flex-wrap:wrap;gap:5px}
+.pl-v{font:inherit;font-size:13px;border:1px solid var(--color-divider);background:#fff;color:var(--color-text);border-radius:var(--radius-pill);padding:3px 10px;cursor:pointer}
+.pl-v[aria-pressed="true"]{background:var(--teal-soft);border-color:var(--teal-hover);font-weight:600}
+.pl-v.edge::after{content:" · edge";font-weight:400;color:var(--color-neutral-700);font-size:11.5px}
+.pl-sw{appearance:none;width:34px;height:20px;border-radius:var(--radius-pill);background:var(--color-divider);position:relative;cursor:pointer;margin:0;flex:none}
+.pl-sw::after{content:"";position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:#fff;transition:left .15s}
+.pl-sw:checked{background:var(--teal-hover)}.pl-sw:checked::after{left:17px}
+@media (prefers-reduced-motion:reduce){.pl-sw::after{transition:none}}
+.pl-vt{width:100%;border-collapse:collapse;font-size:14px}
+.pl-vt th{text-align:left;font-weight:600;font-size:13px;color:var(--color-neutral-700);padding:6px 10px}
+.pl-vt td{padding:10px;border-top:1px solid var(--color-divider);vertical-align:top}
+.pl-method{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.pl-map .bd-tile{background:#fff;border:1px solid var(--color-divider)}
+.pl-map .bd-tile[aria-pressed="true"]{background:var(--teal-soft);border-color:var(--teal-hover)}
+.pl-map .bd-tile small{color:var(--color-accent-700);font-size:10.5px}
+.pl-note{background:var(--color-accent-100);border:1px solid var(--color-accent-300);border-radius:var(--radius-md);padding:12px 14px;font-size:14px}
+.pl-count{display:grid;grid-template-columns:1fr auto;gap:2px 10px;font-size:14px}
 .pl-count b{font:600 16px var(--font-heading);text-align:right}
-.pl-big{font:400 34px var(--font-heading)}
+.pl-big{font:400 40px/1 var(--font-heading)}
+.pl-chiplist{display:flex;flex-wrap:wrap;gap:5px}
+.pl-chiplist span{font-size:12.5px;background:var(--color-card);border:1px solid var(--color-divider);border-radius:var(--radius-pill);padding:2px 9px}
 """
 
 PLAN_JS = r"""
-const PL={line:'CP',states:new Set(),dims:{},cat:null,allStates:[],timer:null,prev:null};
+// ---- TC-27, reworked: risk first. One submission (fixed fields = the plan's base risk), the fields marked Vary (its
+// dimensions), a method, then states. The counters and the commit are the server's (console.plans), unchanged.
+const PL={line:'GL',step:0,mode:'risk',screen:null,base:{},vary:{},states:new Set(),cat:null,ctl:null,allStates:[],configs:[],presetName:'',
+  method:'pairwise',timer:null,prev:null,presets:null};
+const PL_SCREENS_GL=[['business','The business','What it does and how big it is',['class_code','premium_basis','exposure','subline']],
+  ['locations','Locations','Where it operates',['locations','classifications','territory']],
+  ['coverage','Coverage','Form and add-ons',['coverage_form','claims_made_year','retro_years','terrorism','exclusion_endorsement_premium']],
+  ['limits','Limits and deductibles','How much, and what is retained',['occurrence_limit','general_aggregate','premops_bi_deductible','premops_pd_deductible','premops_bipd_deductible','prods_bi_deductible','prods_pd_deductible','prods_bipd_deductible']],
+  ['plans','Rating plans','Experience, schedule, composite',['size_of_risk','experience_rating','erp_years','erp_annual_loss','schedule_rating','schedule_pct','schedule_extreme','package_mod','composite_rating','composite_basis','composite_exposure','composite_audited']],
+  ['special','Dates and specialist settings','Edition, version, overrides',['effective_date','package_version','elp_override_premops','elp_override_prods','ilf_table_premops','ilf_table_prods']]];
+const PL_DEPENDS={claims_made_year:['coverage_form','Claims Made'],retro_years:['coverage_form','Claims Made'],erp_years:['experience_rating','Yes'],erp_annual_loss:['experience_rating','Yes'],
+  schedule_pct:['schedule_rating','Yes'],schedule_extreme:['schedule_rating','Yes'],composite_basis:['composite_rating','Yes'],composite_exposure:['composite_rating','Yes'],composite_audited:['composite_rating','Yes']};
 const PL_COV_GL={'Prem/Ops':['Limits','Classification'],'Prod/CO':['Limits','Classification'],'Deductibles':['Deductibles'],'Cov B · P&AI':['Coverage form'],'Cov C · Med pay':['Coverage form']};
-function plRef(){return [...PL.states].sort()[0]||PL.allStates[0]||'OH';}
-function plLoad(prefill){
+const PL_REG={Northeast:['ME','NH','VT','MA','RI','CT','NY','NJ','PA'],Midwest:['OH','MI','IN','IL','WI','MN','IA','MO','ND','SD','NE','KS'],
+  South:['DE','MD','DC','VA','WV','NC','SC','GA','FL','KY','TN','AL','MS','AR','LA','OK','TX'],West:['MT','ID','WY','CO','NM','AZ','UT','NV','CA','OR','WA','AK','HI']};
+const PL_STEPS=[['Start','How to begin'],['Build the risk','One submission'],['What to vary','Fields and method'],['States','Where to send it'],['Review','Cost and commit']];
+function plDim(id){return (PL.cat||[]).find(d=>d.id===id);}
+function plScreens(){if(PL.line==='GL'){const known=new Set(PL_SCREENS_GL.flatMap(x=>x[3])),rest=(PL.cat||[]).map(d=>d.id).filter(id=>!known.has(id));
+    return PL_SCREENS_GL.map((x,i)=>i===PL_SCREENS_GL.length-1?[x[0],x[1],x[2],x[3].concat(rest)]:x);}
+  const gs=[];(PL.cat||[]).forEach(d=>{let g=gs.find(x=>x[1]===d.group);if(!g){g=[d.group,d.group,'',[]];gs.push(g);}g[3].push(d.id);});return gs;}
+function plRef(){return [...PL.states].sort()[0]||(PL.allStates.includes('OH')?'OH':PL.allStates[0])||'OH';}
+function plLoad(){
   document.querySelectorAll('#pl-lines button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.l===PL.line));
-  return fetch('/api/console/catalog?lob='+PL.line).then(r=>r.json()).then(j=>{PL.allStates=j.states;
-    if(prefill&&prefill.states)PL.states=new Set(prefill.states.filter(s=>j.states.includes(s)));
-    plStates();return plDims(prefill);});
-}
-function plStates(){
-  document.getElementById('pl-states').innerHTML=PL.allStates.map(s=>'<button class="pl-chip" data-s="'+s+'" aria-pressed="'+PL.states.has(s)+'" title="'+esc(BOOT.names[s]||s)+'">'+s+'</button>').join('');
-  document.getElementById('pl-stc').textContent=PL.states.size+' of '+PL.allStates.length;
-}
-function plDims(prefill){
-  const ref=plRef();document.getElementById('pl-ref').textContent=ref;
-  return fetch('/api/console/catalog?lob='+PL.line+'&state='+ref).then(r=>r.json()).then(j=>{PL.cat=j.dimensions;
-    if(prefill&&prefill.coverages){PL.dims={};const cov=prefill.coverages;
-      j.dimensions.forEach(d=>{const hit=PL.line==='CP'?cov.includes(d.coverage):cov.some(c=>(PL_COV_GL[c]||[]).includes(d.group));
-        if(hit&&d.values.length>1&&d.id!=='class_code'&&d.id!=='effective_date')PL.dims[d.id]=d.edges.slice();});}
-    plDimsDraw();plPreview();});
-}
-function plDimsDraw(){
-  let h='',grp=null;
-  PL.cat.forEach(d=>{if(d.group!==grp){grp=d.group;h+='<div class="pl-grp">'+esc(grp)+'</div>';}
-    const on=d.id in PL.dims,sel=new Set(PL.dims[d.id]||[]),vals=d.values,many=vals.length>16;
-    h+='<div class="pl-dim"><label><input type="checkbox" data-d="'+d.id+'"'+(on?' checked':'')+(vals.length<2?' disabled':'')+'> '+esc(d.label)+' <span class="mx-msg">'+vals.length+' value'+(vals.length===1?'':'s')+(d.coverage?' · '+esc(d.coverage):'')+'</span></label>';
-    if(on&&d.perState)h+='<div class="mx-msg" style="margin-left:22px">Each state uses its own edge values (its territories are its own).</div>';
-    else if(on&&d.suggested){   // GL class codes: the chosen mix (with ISO's descriptions), then any other code by number
-      const shown=d.suggested.concat([...sel].filter(v=>!d.suggested.includes(v)));
-      h+='<div class="pl-chips">'+shown.map(v=>'<button class="pl-chip" data-d="'+d.id+'" data-v="'+esc(v)+'" aria-pressed="'+sel.has(v)+'" title="'+esc((d.labels||{})[v]||v)+'">'+esc((d.labels||{})[v]||v)+'</button>').join('')+'</div>'+
-        '<div class="td-tools" style="margin:4px 0 0 22px"><span class="mx-msg">A mix of ten: manufacturing, apartments, lessor’s risk, retail, construction. Add another of the '+vals.length+' codes:</span>'+
-        '<input class="pl-addcode" data-d="'+d.id+'" placeholder="class code" maxlength="5" style="width:90px"></div>';}
-    else if(on)h+='<div class="pl-chips">'+(many?vals.filter(v=>sel.has(v)||d.edges.includes(v)).concat(vals.filter(v=>!sel.has(v)&&!d.edges.includes(v)).slice(0,12)):vals).map(v=>'<button class="pl-chip" data-d="'+d.id+'" data-v="'+esc(v)+'" aria-pressed="'+sel.has(v)+'">'+esc(v)+'</button>').join('')+
-      (many?'<span class="mx-msg"> +'+(vals.length-12)+' more in ISO’s domain</span>':'')+'</div>';
-    h+='</div>';});
-  document.getElementById('pl-dims').innerHTML=h;
-}
-function plSpec(){const a=parseInt(document.getElementById('pl-allow').value,10);
-  return {line:PL.line,states:[...PL.states].sort(),dims:PL.dims,configs:PL.configs||[],reduced:document.getElementById('pl-reduced').checked,edges:document.getElementById('pl-edges').checked,allowance:isNaN(a)?null:a};}
-function plPresetNote(label){const m=document.getElementById('pl-presetmsg');const n=(PL.configs||[]).length;
-  m.innerHTML=n?esc(label)+': '+n+' scenario'+(n===1?'':'s')+' per state, added to the dimensions below · <a href="#" id="pl-clearp">clear</a>':'';
-  const c=document.getElementById('pl-clearp');if(c)c.onclick=e=>{e.preventDefault();PL.configs=[];document.getElementById('pl-preset').value='';plPresetNote('');plPreview();};}
-fetch('/api/console/presets').then(r=>r.json()).then(j=>{PL.presets=j.presets;document.getElementById('pl-preset').innerHTML='<option value="">a quick smoke, a QA tier or a layer…</option>'+
-  j.presets.map(p=>'<option value="'+p.id+'" title="'+esc(p.what)+'">'+esc(p.name)+' ('+p.line+')</option>').join('');}).catch(()=>{});
+  const ctl=PL.line==='GL'?fetch('/api/console/controls?lob=GL').then(r=>r.json()).then(c=>{PL.ctl=c.available?Object.fromEntries(c.controls.map(x=>[x.id,x])):null;if(PL.ctl)PL.ctl.__n=c.states.length;}).catch(()=>{PL.ctl=null;}):Promise.resolve(PL.ctl=null);
+  return Promise.all([fetch('/api/console/catalog?lob='+PL.line).then(r=>r.json()).then(j=>{PL.allStates=j.states;}),ctl]).then(plCat);}
+function plCat(){return fetch('/api/console/catalog?lob='+PL.line+'&state='+plRef()).then(r=>r.json()).then(j=>{PL.cat=j.dimensions;
+  if(!PL.screen||!plScreens().some(x=>x[0]===PL.screen))PL.screen=plScreens()[0][0];plDraw();});}
+// a value as the request wants it: numbers typed into a number field become numbers
+function plNum(d,v){return d&&d.kind==='number'&&v!==''&&!isNaN(+v)?+v:v;}
+function plSpec(){const a=parseInt(document.getElementById('pl-allow').value,10),base={};
+  Object.entries(PL.base).forEach(([k,v])=>{if(v!==''&&v!=null&&!(k in PL.vary))base[k]=plNum(plDim(k),v);});
+  const dims={};Object.entries(PL.vary).forEach(([k,v])=>{if(v.length)dims[k]=v.map(x=>plNum(plDim(k),x));});
+  return {line:PL.line,states:[...PL.states].sort(),base,dims,configs:PL.configs||[],method:PL.method,reduced:false,edges:PL.method!=='all',allowance:isNaN(a)?null:a};}
+function plShown(id){const dep=PL_DEPENDS[id];return PL.line!=='GL'||!dep||PL.base[dep[0]]===dep[1]||(PL.vary[dep[0]]||[]).includes(dep[1]);}
+function plGap(id){const c=PL.ctl&&PL.ctl[id];if(!c)return '';const r=c.rated.length,dec=c.declined||[];
+  return '<span class="gap">'+(r?'Rated in '+r+' of '+PL.ctl.__n+' states':'Never rated in any state yet')+(dec.length?' · not offered in '+esc(dec.join(', ')):'')+'</span>';}
+function plLabel(d,v){return (d.labels||{})[v]||v;}
+function plField(id){const d=plDim(id);if(!d||!plShown(id))return '';const vary=PL.vary[id],cur=PL.base[id]??'';
+  const canVary=d.kind==='number'||d.values.length>1||d.perState;let input;
+  if(d.perState)input='<div class="mx-msg">Each state has its own; the base risk uses each state’s standard. Vary it to try every state’s own extremes.</div>';
+  else if(d.kind==='number')input='<input type="number" data-f="'+id+'" value="'+esc(cur)+'" placeholder="Standard" aria-label="'+esc(d.label)+'">';
+  else if(d.values.length>80)input='<input list="pl-dl-'+id+'" data-f="'+id+'" value="'+esc(cur)+'" placeholder="Standard · type to search '+d.values.length+'" aria-label="'+esc(d.label)+'">'+
+    '<datalist id="pl-dl-'+id+'">'+(d.suggested||[]).concat(d.values.filter(v=>!(d.suggested||[]).includes(v))).map(v=>'<option value="'+esc(v)+'">'+esc(plLabel(d,v))+'</option>').join('')+'</datalist>';
+  else input='<select data-f="'+id+'" aria-label="'+esc(d.label)+'"><option value="">Standard</option>'+d.values.map(v=>'<option value="'+esc(v)+'"'+(v===cur?' selected':'')+'>'+esc(plLabel(d,v))+'</option>').join('')+'</select>';
+  let vs='';
+  if(vary&&d.perState)vs='<div class="mx-msg">Each state’s own first and last value.</div>';
+  else if(vary&&d.kind==='number')vs='<input type="text" data-vn="'+id+'" value="'+esc(vary.join(', '))+'" placeholder="values to try, e.g. 0, 1, 5" aria-label="Values to try">';
+  else if(vary){const sel=new Set(vary),pool=(d.suggested&&d.suggested.length?d.suggested:d.values.slice(0,24)),shown=pool.concat(vary.filter(v=>!pool.includes(v)));
+    vs='<div class="pl-vals">'+shown.map(v=>'<button class="pl-v'+((d.edges||[]).includes(v)?' edge':'')+'" data-of="'+id+'" data-v="'+esc(v)+'" aria-pressed="'+sel.has(v)+'" title="'+esc(plLabel(d,v))+'">'+esc(d.suggested?v:plLabel(d,v))+'</button>').join('')+'</div>'+
+      (d.values.length>pool.length?'<input list="pl-dl2-'+id+'" class="pl-addv" data-add="'+id+'" placeholder="Add another of the '+d.values.length+'" aria-label="Add a value"><datalist id="pl-dl2-'+id+'">'+d.values.map(v=>'<option value="'+esc(v)+'">'+esc(plLabel(d,v))+'</option>').join('')+'</datalist>':'');}
+  return '<div class="pl-f'+(vary?' vary':'')+'"><div class="hd"><span>'+esc(d.label)+'</span>'+(canVary?'<label class="tog">Vary <input type="checkbox" class="pl-sw" data-vary="'+id+'"'+(vary?' checked':'')+'></label>':'')+'</div>'+input+vs+
+    (d.exercises?'<span class="why">'+esc(d.exercises.charAt(0).toUpperCase()+d.exercises.slice(1))+'</span>':'')+plGap(id)+'</div>';}
+function plStartDraw(){const ch=(id,t,dd)=>'<button class="pl-choice'+(PL.mode===id?' on':'')+'" data-mode="'+id+'"><b>'+t+'</b><span class="mx-msg">'+dd+'</span></button>';
+  document.getElementById('pl-start').innerHTML=ch('risk','Build one risk','Fill in a submission, mark what to vary, then send it to many states. Best for a specific question.')+
+    ch('gaps','Fill gaps','Fields never rated anywhere arrive marked to vary, and the states still to test are picked.')+
+    ch('preset','From a preset','A quick smoke, a QA tier or a layer, then adjust it.')+
+    ch('sweep','Sweep','Pick fields from one list and try every pair of their values (the earlier way).');
+  document.getElementById('pl-presetrow').hidden=PL.mode!=='preset';}
+function plRiskDraw(){const scs=plScreens(),sc=scs.find(x=>x[0]===PL.screen)||scs[0],i=scs.indexOf(sc),nv=x=>x[3].filter(id=>PL.vary[id]).length;
+  document.getElementById('pl-tabs').innerHTML=scs.map(x=>'<button role="tab" data-scr="'+esc(x[0])+'" aria-selected="'+(x[0]===sc[0])+'">'+esc(x[1])+(nv(x)?'<span class="c">'+nv(x)+'</span>':'')+'</button>').join('');
+  document.getElementById('pl-scrhd').innerHTML='<h3>'+esc(sc[1])+'</h3>'+(sc[2]?'<span class="mx-msg">'+esc(sc[2])+'</span>':'');
+  document.getElementById('pl-dims').innerHTML=sc[3].map(plField).join('');
+  document.getElementById('pl-scrnav').innerHTML=(i<scs.length-1?'<button class="btn" data-scr="'+esc(scs[i+1][0])+'">Next screen: '+esc(scs[i+1][1])+'</button>':'')+'<button class="btn primary" data-go="2">Next: what to vary</button>';}
+function plVaryDraw(){const ks=Object.keys(PL.vary);
+  document.getElementById('pl-varied').innerHTML=ks.length?'<table class="pl-vt"><tr><th>Field</th><th>Values to try</th><th>Coverage today</th><th></th></tr>'+ks.map(k=>{const d=plDim(k);if(!d)return '';
+      return '<tr><td><b>'+esc(d.label)+'</b></td><td>'+(d.perState?'each state’s own extremes':esc(PL.vary[k].map(v=>plLabel(d,v)).join(' · ')||'none chosen yet'))+'</td><td>'+(plGap(k)||'<span class="mx-msg">—</span>')+'</td><td><button class="btn" data-unvary="'+k+'">Stop varying</button></td></tr>';}).join('')+'</table>':
+    '<div class="pl-note">Nothing is varied yet, so each state gets the one risk you built'+(PL.configs.length?' plus the preset’s '+PL.configs.length+' scenario'+(PL.configs.length===1?'':'s'):'')+'. Add a field below, or carry on.</div>';
+  document.getElementById('pl-addf').innerHTML='<option value="">Add a field to vary…</option>'+plScreens().map(x=>'<optgroup label="'+esc(x[1])+'">'+x[3].map(plDim).filter(d=>d&&!(d.id in PL.vary)&&(d.kind==='number'||d.values.length>1||d.perState)).map(d=>'<option value="'+d.id+'">'+esc(d.label)+'</option>').join('')+'</optgroup>').join('');
+  const m=(id,t,dd)=>'<button class="pl-choice'+(PL.method===id?' on':'')+'" data-method="'+id+'"><b>'+t+'</b><span class="mx-msg">'+dd+'</span></button>';
+  document.getElementById('pl-method').innerHTML=m('pairwise','Pairwise + edges','Every pair of values appears together once, plus each value at its extremes. The usual choice.')+
+    m('edges','Edges only','Each varied field at its extremes, one at a time, beside the base risk. Cheapest.')+m('all','Every combination','Thorough but costly; the count is on the right.');}
+function plVaryInit(d){return d.kind==='number'?[]:d.perState?[]:(d.edges||[]).length?d.edges.slice():d.values.slice(0,2);}
+function plStatesDraw(){const dec=new Set(Object.keys(PL.vary).flatMap(k=>(PL.ctl&&PL.ctl[k]&&PL.ctl[k].declined)||[]));
+  document.getElementById('pl-picks').innerHTML='<button class="btn" data-pick="all">All '+PL.allStates.length+'</button><button class="btn" data-pick="none">None</button>'+
+    Object.keys(PL_REG).map(r=>'<button class="btn" data-pick="'+r+'">'+r+'</button>').join('')+'<button class="btn" data-pick="gaps">Still to test</button>'+(PL.ctl?'<button class="btn" data-pick="never">Never rated for what I vary</button>':'');
+  document.getElementById('pl-states').innerHTML=BD_TILES.map(([s,y,x])=>{const ok=PL.allStates.includes(s);return '<button class="bd-tile'+(ok?'':' none')+'" data-tile="'+s+'"'+(ok?'':' disabled')+' aria-pressed="'+PL.states.has(s)+'" style="grid-row:'+(y+1)+';grid-column:'+(x+1)+'" title="'+esc(BOOT.names[s]||s)+'">'+s+(dec.has(s)?'<small>not all</small>':'')+'</button>';}).join('');
+  document.getElementById('pl-stc').textContent=PL.states.size+' of '+PL.allStates.length+' states selected';}
+function plReviewDraw(){const p=PL.prev,el=document.getElementById('pl-review');
+  if(!PL.states.size){el.innerHTML='<div class="pl-note">Choose at least one state.</div>';return;}
+  if(!p||p.error){el.innerHTML='<div class="mx-msg">'+esc(p&&p.error||'Counting…')+'</div>';return;}
+  const bs=p.byState||{};
+  el.innerHTML='<table class="pl-vt"><tr><th>State</th><th>Requests</th><th>Already answered</th><th>Not expressible</th><th>ISO calls</th></tr>'+Object.keys(bs).sort().map(s=>{const b=bs[s];
+    return '<tr><td><b>'+s+'</b> <span class="mx-msg">'+esc(BOOT.names[s]||'')+'</span></td><td>'+b.scenarios+'</td><td>'+b.reused+'</td><td>'+(b.notApplicable||'—')+'</td><td><b>'+b.calls+'</b></td></tr>';}).join('')+'</table>'+
+    ((p.notApplicableWhy||[]).length?'<details><summary class="mx-msg">Why some requests are not expressible</summary><table class="pl-vt">'+p.notApplicableWhy.map(x=>'<tr><td>'+x.state+'</td><td>'+esc(JSON.stringify(x.config))+'</td><td class="mx-msg">'+esc(x.detail)+'</td></tr>').join('')+'</table></details>':'');
+  const c=document.getElementById('pl-commit');c.disabled=!p.scenarios;c.textContent='Commit plan · '+p.calls+' call'+(p.calls===1?'':'s');}
+function plSide(){const p=PL.prev,el=document.getElementById('pl-side'),varied=Object.keys(PL.vary);
+  let h='<div class="cap2">The plan so far</div>';
+  if(!PL.states.size)h+='<div class="mx-msg">Choose states to see the cost.</div>';
+  else if(!p)h+='<div class="mx-msg">Counting… (each request is built and checked against ISO’s stored answers)</div>';
+  else if(p.error)h+='<div class="mx-msg">'+esc(p.error)+'</div>';
+  else h+='<div><span class="pl-big">'+p.calls+'</span> ISO call'+(p.calls===1?'':'s')+'</div><div class="mx-msg">'+p.scenarios+' request'+(p.scenarios===1?'':'s')+' in '+p.statesKept+' of '+p.states+' state'+(p.states===1?'':'s')+' · about '+p.days+' day'+(p.days===1?'':'s')+' at 150 a day</div>'+
+    '<div class="pl-count"><span>Base risk and pairwise</span><b>'+p.pairwise+'</b><span>Edge cases</span><b>'+p.edges+'</b>'+(p.presets?'<span>From the preset</span><b>'+p.presets+'</b>':'')+
+    '<span>Already answered by ISO (reused, free)</span><b>'+p.alreadyAnswered+'</b><span>Not expressible in a state</span><b>'+p.notApplicable+'</b>'+(p.thinned?'<span>Left out by your call limit</span><b>'+p.thinned+'</b>':'')+
+    '<span>Every combination (for scale)</span><b>'+p.cartesian.toLocaleString()+'</b><span>Calls left today</span><b>'+p.activeLeftToday+'</b></div>';
+  const fixed=Object.entries(PL.base).filter(([k,v])=>v!==''&&v!=null&&!(k in PL.vary));
+  h+='<div class="cap2">Fixed in the risk</div><div class="pl-chiplist">'+(fixed.length?fixed.map(([k,v])=>'<span>'+esc((plDim(k)||{}).label||k)+': '+esc(v)+'</span>').join(''):'<span>the standard base risk</span>')+'</div>'+
+    '<div class="cap2">Varying</div><div class="pl-chiplist">'+(varied.length?varied.map(k=>'<span>'+esc((plDim(k)||{}).label||k)+(PL.vary[k].length?' · '+PL.vary[k].length:'')+'</span>').join(''):'<span>nothing</span>')+'</div>'+
+    (PL.configs.length?'<div class="cap2">Preset</div><div class="mx-msg">'+esc(PL.presetName||'Prefilled')+': '+PL.configs.length+' scenario'+(PL.configs.length===1?'':'s')+' per state · <a href="#" id="pl-clearp">clear</a></div>':'')+
+    '<div class="cap2">States</div><div class="pl-chiplist">'+([...PL.states].sort().map(s=>'<span>'+s+'</span>').join('')||'<span>none yet</span>')+'</div>';
+  el.innerHTML=h;const c=document.getElementById('pl-clearp');if(c)c.onclick=e=>{e.preventDefault();PL.configs=[];PL.presetName='';plDraw();};}
+function plPreview(){clearTimeout(PL.timer);PL.prev=null;plSide();if(!PL.states.size){if(PL.step===4)plReviewDraw();return;}
+  PL.timer=setTimeout(()=>{const spec=plSpec();fetch('/api/console/plan/preview',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({spec})}).then(r=>r.json())
+    .then(p=>{PL.prev=p;plSide();if(PL.step===4)plReviewDraw();}).catch(e=>{PL.prev={error:String(e)};plSide();});},350);}
+function plDraw(){
+  document.getElementById('pl-steps').innerHTML=PL_STEPS.map((x,i)=>'<button data-go="'+i+'"'+(i===PL.step?' aria-current="step"':'')+(i<PL.step?' class="done"':'')+'><span class="n">'+(i<PL.step?'✓':i+1)+'</span><span>'+x[0]+'<small>'+x[1]+'</small></span></button>').join('');
+  document.querySelectorAll('#s-plan .pl-step').forEach(s=>s.hidden=+s.dataset.step!==PL.step);
+  [plStartDraw,plRiskDraw,plVaryDraw,plStatesDraw,plReviewDraw][PL.step]();plPreview();}
+function plGo(n){PL.step=n;plDraw();const s=document.querySelector('#s-plan .pl-screen');if(s&&s.getBoundingClientRect().top<0)s.scrollIntoView({block:'start'});}
+function plReset(){PL.base={};PL.vary={};PL.configs=[];PL.presetName='';PL.screen=null;PL.prev=null;}
+function plGaps(){PL.vary={};if(PL.ctl)(PL.cat||[]).filter(d=>PL.ctl[d.id]&&!PL.ctl[d.id].rated.length&&d.kind==='select'&&d.values.length>1&&d.id!=='premium_basis').slice(0,4).forEach(d=>PL.vary[d.id]=plVaryInit(d));
+  else (PL.cat||[]).filter(d=>d.kind==='select'&&d.values.length>1).slice(0,3).forEach(d=>PL.vary[d.id]=plVaryInit(d));
+  if(MX.data)PL.states=new Set((MX.data.stillToTest||[]).filter(g=>g.lob===PL.line).map(g=>g.state).filter(s=>PL.allStates.includes(s)));}
+fetch('/api/console/presets').then(r=>r.json()).then(j=>{PL.presets=j.presets;document.getElementById('pl-preset').innerHTML='<option value="">Choose a quick smoke, a QA tier or a layer…</option>'+
+  j.presets.map(p=>'<option value="'+p.id+'" title="'+esc(p.what)+'">'+esc(p.name)+' ('+(p.line==='GL'?'General Liability':'Property')+')</option>').join('');}).catch(()=>{});
 document.getElementById('pl-preset').addEventListener('change',ev=>{const p=(PL.presets||[]).find(x=>x.id===ev.target.value);if(!p)return;
-  PL.line=p.line;PL.configs=p.spec.configs;PL.dims={};plLoad({states:p.spec.states}).then(()=>{plPresetNote(p.name);});});
-function plPreview(){clearTimeout(PL.timer);PL.timer=setTimeout(()=>{
-  const side=document.getElementById('pl-side');if(!PL.states.size){side.innerHTML='<div class="mx-msg">Choose at least one state.</div>';return;}
-  side.innerHTML='<div class="mx-msg">Counting… (each scenario is built and checked against the stored answers)</div>';
-  fetch('/api/console/plan/preview',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({spec:plSpec()})}).then(r=>r.json()).then(p=>{PL.prev=p;plSide();});},350);}
-function plSide(){
-  const p=PL.prev;if(!p||p.error){document.getElementById('pl-side').innerHTML='<div class="td-root">'+esc(p&&p.error||'')+'</div>';return;}
-  let h='<div class="cap2">This plan</div><div><span class="pl-big">'+p.calls+'</span> call'+(p.calls===1?'':'s')+' · '+p.days+' day'+(p.days===1?'':'s')+' at 150/day</div>'+
-    '<div class="pl-count"><span>Cartesian (every combination)</span><b>'+p.cartesian.toLocaleString()+'</b><span>Tier 0 checks (free)</span><b>'+p.tier0+'</b>'+
-    '<span>Pairwise</span><b>'+p.pairwise+'</b><span>Edge cases</span><b>'+p.edges+'</b>'+(p.presets?'<span>From the tier / layer / Workbench</span><b>'+p.presets+'</b>':'')+'<span>Already answered by ISO (reused)</span><b>'+p.alreadyAnswered+'</b>'+
-    '<span>Not expressible in a state</span><b>'+p.notApplicable+'</b>'+(p.thinned?'<span>Thinned by the allowance</span><b>'+p.thinned+'</b>':'')+
-    '<span>States kept</span><b>'+p.statesKept+' of '+p.states+'</b><span>Active lane left today</span><b>'+p.activeLeftToday+'</b></div>'+
-    '<button class="btn" id="pl-t0">Run Tier 0 now · free</button><div id="pl-t0out"></div>'+
-    '<div id="pl-conf"></div><button class="btn" id="pl-commit" style="margin-top:auto"'+(p.scenarios?'':' disabled')+'>Commit plan…</button>';
-  document.getElementById('pl-side').innerHTML=h;
-  document.getElementById('pl-t0').onclick=()=>{const o=document.getElementById('pl-t0out');o.innerHTML='<div class="mx-msg">Rating the invariants on our engine…</div>';
-    fetch('/api/console/plan/tier0',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({line:PL.line,states:[...PL.states].sort()})}).then(r=>r.json()).then(j=>{
-      o.innerHTML='<div class="mx-need"><span class="chip '+(j.failed.length?'mismatch':'verified')+'">'+(j.failed.length?'×':'✓')+'</span><div><b>'+j.passed+' of '+j.checks+' Tier 0 checks pass</b><div class="mx-msg">'+esc(j.note||'')+'</div></div></div>'+
-        (j.failed.length?'<table>'+j.failed.map(f=>'<tr><td>'+f.state+' · '+esc(f.check)+'</td><td>'+esc(f.detail)+'</td></tr>').join('')+'</table>':'');});};
-  document.getElementById('pl-commit').onclick=plConfirm;
-}
-function plConfirm(){
-  const p=PL.prev,el=document.getElementById('pl-conf');
-  el.innerHTML='<div class="wb-conf"><b>Commit this plan?</b><div>'+p.scenarios+' scenarios in '+p.statesKept+' state'+(p.statesKept===1?'':'s')+': <b>'+p.calls+' call'+(p.calls===1?'':'s')+'</b> from the <b>active lane</b> ('+p.activeLeftToday+' left today); '+p.alreadyAnswered+' answered already, reused at no cost.</div>'+
-    '<div class="mx-msg">At 150 a day: about '+p.days+' day'+(p.days===1?'':'s')+'. Each scenario is rated on our engine now (free) to order the queue by what it would teach. The dispatcher checks the store again before every call.</div>'+
-    '<div class="td-tools"><input id="pl-by" placeholder="Your name"><label class="td-chk"><input type="checkbox" id="pl-start" checked> start dispatching now</label></div>'+
-    '<div class="td-tools"><button class="btn" id="pl-go">Commit</button><button class="btn" id="pl-cancel">Cancel</button></div><div class="mx-msg" id="pl-msg"></div></div>';
-  document.getElementById('pl-cancel').onclick=()=>el.innerHTML='';
-  document.getElementById('pl-go').onclick=()=>{document.getElementById('pl-msg').textContent='Rating each scenario on our engine and writing the plan…';
-    fetch('/api/console/plan/commit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({spec:plSpec(),name:document.getElementById('pl-name').value,
-      by:document.getElementById('pl-by').value,start:document.getElementById('pl-start').checked})}).then(r=>r.json()).then(j=>{
-      if(j.error){document.getElementById('pl-msg').textContent=j.error;return;}location.hash='#queue?plan='+encodeURIComponent(j.id);});};
-}
-document.getElementById('pl-lines').addEventListener('click',ev=>{const b=ev.target.closest('button');if(!b||b.dataset.l===PL.line)return;PL.line=b.dataset.l;PL.states=new Set();PL.dims={};plLoad();});
-document.getElementById('s-plan').addEventListener('click',ev=>{
-  const s=ev.target.closest('#pl-states .pl-chip');if(s){const k=s.dataset.s;PL.states.has(k)?PL.states.delete(k):PL.states.add(k);s.setAttribute('aria-pressed',PL.states.has(k));
-    document.getElementById('pl-stc').textContent=PL.states.size+' of '+PL.allStates.length;if(plRef()!==document.getElementById('pl-ref').textContent)plDims();else plPreview();return;}
-  const q=ev.target.closest('[data-st]');if(q){const k=q.dataset.st;
+  plReset();PL.line=p.line;PL.configs=p.spec.configs||[];PL.presetName=p.name;PL.states=new Set(p.spec.states||[]);PL.mode='preset';
+  document.getElementById('pl-presetmsg').textContent=p.what||'';plLoad().then(()=>plGo(2));});
+document.getElementById('pl-lines').addEventListener('click',ev=>{const b=ev.target.closest('button');if(!b||b.dataset.l===PL.line)return;PL.line=b.dataset.l;plReset();PL.states=new Set();plLoad();});
+document.getElementById('s-plan').addEventListener('click',ev=>{const t=ev.target;
+  const g=t.closest('[data-go]');if(g){plGo(+g.dataset.go);return;}
+  const m=t.closest('[data-mode]');if(m){PL.mode=m.dataset.mode;
+    if(PL.mode==='gaps'){plGaps();plGo(2);}else if(PL.mode==='sweep')plGo(2);else if(PL.mode==='risk')plGo(1);else plStartDraw();return;}
+  const sc=t.closest('[data-scr]');if(sc){PL.screen=sc.dataset.scr;plRiskDraw();return;}
+  const v=t.closest('[data-of]');if(v){const k=v.dataset.of,a=PL.vary[k]||[],x=v.dataset.v;PL.vary[k]=a.includes(x)?a.filter(y=>y!==x):a.concat(x);plRiskDraw();plPreview();return;}
+  const u=t.closest('[data-unvary]');if(u){delete PL.vary[u.dataset.unvary];plVaryDraw();plPreview();return;}
+  const me=t.closest('[data-method]');if(me){PL.method=me.dataset.method;plVaryDraw();plPreview();return;}
+  const tl=t.closest('#pl-states [data-tile]');if(tl&&!tl.disabled){const s=tl.dataset.tile;PL.states.has(s)?PL.states.delete(s):PL.states.add(s);plStatesDraw();plPreview();return;}
+  const pk=t.closest('[data-pick]');if(pk){const k=pk.dataset.pick;
     if(k==='all')PL.states=new Set(PL.allStates);else if(k==='none')PL.states=new Set();
-    else if(MX.data)PL.states=new Set((MX.data.stillToTest||[]).filter(g=>g.lob===PL.line).map(g=>g.state).filter(s=>PL.allStates.includes(s)));
-    plStates();plDims();return;}
-  const v=ev.target.closest('#pl-dims .pl-chip');if(v){const d=v.dataset.d,val=v.dataset.v,cur=new Set(PL.dims[d]||[]);cur.has(val)?cur.delete(val):cur.add(val);
-    PL.dims[d]=PL.cat.find(x=>x.id===d).values.filter(x=>cur.has(x));v.setAttribute('aria-pressed',cur.has(val));plPreview();}
-});
-document.getElementById('pl-dims').addEventListener('change',ev=>{const c=ev.target.closest('input[data-d]');if(!c)return;const d=PL.cat.find(x=>x.id===c.dataset.d);
-  if(c.checked)PL.dims[d.id]=(d.suggested&&d.suggested.length?d.suggested:d.edges).slice();else delete PL.dims[d.id];plDimsDraw();plPreview();});
-document.getElementById('pl-dims').addEventListener('keydown',ev=>{const t=ev.target.closest('.pl-addcode');if(!t||ev.key!=='Enter')return;
-  const d=PL.cat.find(x=>x.id===t.dataset.d),v=t.value.trim();if(!d.values.includes(v)){t.value='';t.placeholder='not legal here';return;}
-  PL.dims[d.id]=[...new Set((PL.dims[d.id]||[]).concat(v))];plDimsDraw();plPreview();});
-['pl-reduced','pl-edges','pl-allow'].forEach(i=>document.getElementById(i).addEventListener('change',plPreview));
+    else if(k==='gaps')PL.states=new Set(((MX.data&&MX.data.stillToTest)||[]).filter(x=>x.lob===PL.line).map(x=>x.state).filter(s=>PL.allStates.includes(s)));
+    else if(k==='never'){const ks=Object.keys(PL.vary).filter(x=>PL.ctl&&PL.ctl[x]);PL.states=new Set(PL.allStates.filter(s=>ks.length&&ks.every(x=>!PL.ctl[x].rated.includes(s))));}
+    else PL_REG[k].filter(s=>PL.allStates.includes(s)).forEach(s=>PL.states.add(s));
+    plStatesDraw();plPreview();}});
+document.getElementById('s-plan').addEventListener('change',ev=>{const t=ev.target;
+  if(t.dataset.vary){const d=plDim(t.dataset.vary);if(t.checked)PL.vary[d.id]=plVaryInit(d);else delete PL.vary[d.id];plRiskDraw();plPreview();return;}
+  if(t.dataset.f){const d=plDim(t.dataset.f);if(t.value&&d.kind!=='number'&&!d.values.includes(t.value)){t.value='';t.placeholder='Not one of ISO’s values here';return;}
+    PL.base[t.dataset.f]=t.value;plRiskDraw();plPreview();return;}
+  if(t.dataset.vn){PL.vary[t.dataset.vn]=t.value.split(',').map(x=>x.trim()).filter(Boolean);plPreview();return;}
+  if(t.dataset.add){const d=plDim(t.dataset.add),v=t.value.trim();if(d.values.includes(v))PL.vary[d.id]=[...new Set((PL.vary[d.id]||[]).concat(v))];plRiskDraw();plPreview();return;}
+  if(t.id==='pl-addf'&&t.value){const d=plDim(t.value);PL.vary[d.id]=plVaryInit(d);plVaryDraw();plPreview();return;}
+  if(t.id==='pl-allow')plPreview();});
+document.getElementById('pl-t0').onclick=()=>{const o=document.getElementById('pl-t0out');if(!PL.states.size)return;o.innerHTML='<div class="mx-msg">Rating the free checks on our engine…</div>';
+  fetch('/api/console/plan/tier0',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({line:PL.line,states:[...PL.states].sort()})}).then(r=>r.json()).then(j=>{
+    o.innerHTML='<div class="mx-need"><span class="chip '+(j.failed.length?'mismatch':'verified')+'">'+(j.failed.length?'×':'✓')+'</span><div><b>'+j.passed+' of '+j.checks+' free checks pass</b><div class="mx-msg">'+esc(j.note||'')+'</div></div></div>'+
+      (j.failed.length?'<table class="pl-vt">'+j.failed.map(f=>'<tr><td>'+f.state+' · '+esc(f.check)+'</td><td>'+esc(f.detail)+'</td></tr>').join('')+'</table>':'');});};
+document.getElementById('pl-commit').onclick=()=>{const m=document.getElementById('pl-msg'),p=PL.prev;if(!p||!p.scenarios){m.textContent='Nothing to commit yet.';return;}
+  m.textContent='Rating each request on our engine and writing the plan…';
+  fetch('/api/console/plan/commit',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({spec:plSpec(),name:document.getElementById('pl-name').value,
+    by:document.getElementById('pl-by').value,start:document.getElementById('pl-startnow').checked})}).then(r=>r.json()).then(j=>{
+    if(j.error){m.textContent=j.error;return;}location.hash='#queue?plan='+encodeURIComponent(j.id);}).catch(e=>{m.textContent=String(e);});};
 let plStarted=false;
 function plRoute(){const p=(location.hash||'').slice(1).split('?');if(p[0]!=='plan')return;const q=new URLSearchParams(p[1]||'');
-  const pre=q.get('states')?{states:q.get('states').split(','),coverages:(q.get('coverages')||'').split('|').filter(Boolean)}:null;
+  const sts=q.get('states')?q.get('states').split(','):null;
   if(q.get('lob'))PL.line=q.get('lob')==='GL'?'GL':'CP';
-  if(pre&&q.get('config')){PL.configs=[JSON.parse(q.get('config'))];plStarted=true;
-    document.getElementById('pl-prefill').textContent='From the Workbench: one config in '+pre.states.length+' state(s).';plLoad({states:pre.states}).then(()=>plPresetNote('The Workbench config'));}
-  else if(pre){document.getElementById('pl-prefill').textContent='Prefilled from the Readiness Matrix: '+pre.states.length+' state(s), '+pre.coverages.length+' coverage(s).';plStarted=true;plLoad(pre);}
+  if(sts&&q.get('config')){plReset();plStarted=true;PL.base=JSON.parse(q.get('config'));PL.states=new Set(sts);PL.mode='risk';
+    document.getElementById('pl-prefill').textContent='From the Workbench: its risk, in '+sts.length+' state'+(sts.length===1?'':'s')+'.';plLoad().then(()=>plGo(1));}
+  else if(sts){plReset();plStarted=true;const cov=(q.get('coverages')||'').split('|').filter(Boolean);PL.states=new Set(sts);PL.mode='gaps';
+    document.getElementById('pl-prefill').textContent='From the Readiness Matrix: '+sts.length+' state'+(sts.length===1?'':'s')+', '+cov.length+' coverage'+(cov.length===1?'':'s')+'.';
+    plLoad().then(()=>{(PL.cat||[]).forEach(d=>{const hit=PL.line==='CP'?cov.includes(d.coverage):cov.some(c=>(PL_COV_GL[c]||[]).includes(d.group));
+      if(hit&&d.values.length>1&&d.id!=='class_code'&&d.id!=='effective_date')PL.vary[d.id]=plVaryInit(d);});plGo(2);});}
   else if(!plStarted){plStarted=true;plLoad();}}
 addEventListener('hashchange',plRoute);plRoute();
 """
@@ -2297,17 +2984,17 @@ QUEUE_HTML = """<section class="screen" id="s-queue" hidden><div class="mx-wrap"
 BUILT["queue"] = QUEUE_HTML
 
 QUEUE_CSS = """
-.qu-plan{border:1px solid var(--color-divider);border-radius:4px;padding:8px 10px;margin-bottom:6px;background:var(--color-bg);display:flex;flex-direction:column;gap:6px}
+.qu-plan{border:1px solid var(--color-divider);border-radius:var(--radius-md);padding:8px 10px;margin-bottom:6px;background:var(--color-bg);display:flex;flex-direction:column;gap:6px}
 .qu-plan .hd{display:flex;gap:10px;align-items:baseline;flex-wrap:wrap}
 .qu-plan .hd b{font:600 16px var(--font-heading)}
-.qu-bar{display:flex;height:10px;border-radius:2px;overflow:hidden;background:var(--color-surface)}
+.qu-bar{display:flex;height:10px;border-radius:var(--radius-sm);overflow:hidden;background:var(--color-surface)}
 .qu-bar i{display:block;height:100%}
-.qu-st{font-size:11px;padding:1px 7px;border-radius:3px;border:1px solid var(--color-neutral-400)}
+.qu-st{font-size:12.5px;padding:1px 7px;border-radius:var(--radius-sm);border:1px solid var(--color-neutral-400)}
 .qu-st.running{border-color:var(--color-accent);color:var(--color-accent-800);background:var(--color-accent-100)}
 .qu-st.done{border-color:var(--color-accent-700);color:var(--color-accent-800)}
-.qu-tbl{width:100%;border-collapse:collapse;font-size:12px}
-.qu-tbl td{padding:4px 6px;border-top:1px solid var(--color-divider);vertical-align:top}
-.qu-ev{font-size:11px;padding:1px 6px;border-radius:3px;border:1px solid var(--color-neutral-400);white-space:nowrap}
+.qu-tbl{width:100%;border-collapse:collapse;font-size:13.5px}
+.qu-tbl td{padding:9px 10px;border-top:1px solid var(--color-divider);vertical-align:top}
+.qu-ev{font-size:12.5px;padding:1px 6px;border-radius:var(--radius-sm);border:1px solid var(--color-neutral-400);white-space:nowrap}
 .qu-ev.match{border-color:var(--color-accent-700);color:var(--color-accent-800)}
 .qu-ev.mismatch,.qu-ev.error,.qu-ev.capped{border-color:var(--ox);color:var(--ox-deep)}
 .qu-ev.override{border-color:var(--ox);background:var(--ox-tint);color:var(--ox-deep)}
@@ -2444,9 +3131,9 @@ LIB_HTML = """<section class="screen" id="s-library" hidden><div class="mx-wrap"
 BUILT["library"] = LIB_HTML
 
 LIB_CSS = """
-.lb-filters select,.lb-filters input{font:inherit;padding:5px 7px;border:1px solid var(--color-divider);border-radius:4px;background:#fff}
-#lb-table th{font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--color-neutral-700);text-align:left;padding:4px 6px;border-bottom:1px solid var(--color-text)}
-.lb-r{font-size:11px;padding:1px 6px;border-radius:3px;border:1px solid var(--color-neutral-400);white-space:nowrap}
+.lb-filters select,.lb-filters input{font:inherit;padding:8px 12px;border:1px solid var(--color-divider);border-radius:var(--radius-md);background:var(--color-card)}
+#lb-table th{font-size:13px;color:var(--color-neutral-700);text-align:left;padding:8px 10px;border-bottom:1px solid var(--color-text)}
+.lb-r{font-size:12.5px;padding:2px 10px;border-radius:var(--radius-pill);border:1px solid var(--color-neutral-400);white-space:nowrap}
 .lb-r.pass{border-color:var(--color-accent-700);color:var(--color-accent-800);background:var(--color-accent-100)}
 .lb-r.fields{border-color:var(--color-accent-400);color:var(--color-accent-800)}
 .lb-r.diverged,.lb-r.error{border-color:var(--ox);color:var(--ox-deep);background:var(--ox-tint)}
@@ -2515,21 +3202,21 @@ addEventListener('hashchange',lbRoute);lbRoute();
 INSP_CSS = """
 .iv{display:inline-flex;gap:4px;align-items:center;flex-wrap:nowrap;white-space:nowrap}
 .in-tbl td:nth-child(6),.in-tbl td:nth-child(7){white-space:nowrap}
-.iv .btn{padding:2px 8px;font-size:12px}
+.iv .btn{padding:2px 8px;font-size:13.5px}
 .iv .btn.iv-pass{border-color:var(--color-accent-700);color:var(--color-accent-800)}
 .iv .btn.iv-fail{border-color:var(--ox);color:var(--ox-deep)}
 .iv .btn.iv-exc{border-color:var(--color-neutral-500);color:var(--color-neutral-800)}
-.iv-done{font-size:12px;white-space:nowrap}
+.iv-done{font-size:13.5px;white-space:nowrap}
 .iv-done.pass{color:var(--color-accent-800)}.iv-done.fail{color:var(--ox-deep)}.iv-done.excuse{color:var(--color-neutral-700)}
 .iv-done a{margin-left:6px}
-.iv-form{display:flex;flex-direction:column;gap:6px;border:1px dashed var(--ox);border-radius:4px;padding:8px;margin-top:6px;max-width:460px;background:var(--color-bg)}
+.iv-form{display:flex;flex-direction:column;gap:6px;border:1px dashed var(--ox);border-radius:var(--radius-md);padding:8px;margin-top:6px;max-width:460px;background:var(--color-bg)}
 .iv-form input,.iv-form select{font:inherit;padding:4px 6px}
 .td-head .insp-slot{margin-left:auto}
 .in-hd{display:flex;gap:12px;align-items:baseline;flex-wrap:wrap}
 .in-hd b{font:600 18px var(--font-heading)}
-.in-bar{display:flex;height:12px;border-radius:2px;overflow:hidden;background:var(--color-surface);max-width:420px;flex:1 1 220px}
+.in-bar{display:flex;height:12px;border-radius:var(--radius-sm);overflow:hidden;background:var(--color-surface);max-width:420px;flex:1 1 220px}
 .in-bar i{display:block;height:100%}
-.in-flt .pl-chip{font-size:12px}
+.in-flt .pl-chip{font-size:13.5px}
 .qu-tbl td.n{text-align:right;font-variant-numeric:tabular-nums}
 .bd-c.aw{position:relative}
 .bd-c.aw::after{content:"";position:absolute;top:2px;right:2px;width:6px;height:6px;border-radius:50%;background:var(--ox)}

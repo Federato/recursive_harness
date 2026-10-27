@@ -48,6 +48,9 @@ def build(line: str, state: str, config: dict | None = None, request: dict | Non
         return catalog.build("GL", state, config or {})
     if request:
         return copy.deepcopy(request)
+    if config:                                             # the Workbench's Property form: the catalog's fields
+        from . import catalog
+        return catalog.build("CP", state, config)
     import property_rating as pr
     return pr.sample(state)
 
@@ -132,17 +135,19 @@ def identify(payload) -> dict:
                      "not an ISO rating request: it has no body.SchemeKeys.ProductName")
 
 
-def every_state(config: dict, states: list, mode: str = "strict-erc", rounding: str = "ROUND_HALF_UP") -> dict:
-    """D19 for GL: the config rated in each state where it is legal (free), and what sending it would cost."""
+def every_state(config: dict, states: list, mode: str = "strict-erc", rounding: str = "ROUND_HALF_UP",
+                line: str = "GL") -> dict:
+    """D19: the config rated in each state where it is legal (free), and what sending it would cost. GL by default;
+    Property builds each state's sample risk with the same fields."""
     import variants as V
     rows, calls = [], 0
     for st in states:
         try:
-            p = build("GL", st, config)
-        except V.VariantError as exc:
+            p = build(line, st, config)
+        except (V.VariantError, ValueError, KeyError) as exc:
             rows.append({"state": st, "outcome": "not applicable", "detail": str(exc)[:200]})
             continue
-        r = rate("GL", p, mode, rounding)
+        r = rate(line, p, mode, rounding)
         need = r.get("stored") is None
         calls += need
         rows.append({"state": st, "outcome": r["outcome"], "premium": r.get("premium"), "detail": r.get("detail", ""),

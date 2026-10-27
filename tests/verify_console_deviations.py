@@ -146,9 +146,8 @@ def part_d():
     check("D1 ten tabs, Deviations Proof then Carrier Filings last", html.count('class="tab"') == 10
           and [k for k, _, _ in CP.SCREENS][-2:] == ["proof", "filings"])
     check("D2 the writing-company picker and New / Renewal", 'id="up-company"' in html and 'id="up-pt"' in html)
-    check("D3 the table reads Technical, ISO, Carrier, and the ISO test",
-          all(s in html for s in ("<th class=\"v\">Technical</th>", "<th class=\"v\">ISO</th>",
-                                  "<th class=\"v\">Carrier</th>", "<th>ISO test</th>")))
+    check("D3 the table reads Our price, ISO's price, With company, and the Result",
+          all(s in html for s in (">Our price</th>", ">ISO&#39;s price</th>", ">With company</th>", "<th>Result</th>")))
     check("D4 the read-only snapshot marks the proof board as needing the app",
           "proof" in re.search(r'app_only=frozenset\(\{([^}]*)\}', Path(CP.__file__).read_text(encoding="utf-8")).group(1))
     js = "\n".join(re.findall(r"<script>(.*?)</script>", html, re.S))
@@ -510,9 +509,67 @@ def part_j():
           and "<th>Starts</th>" in html, (ufc["plain"].get("starts"), [r.get("starts") for r in ufc["plain"]["rows"]][:2]))
 
 
+def part_k():
+    print("K. Test it: the quick checks (factors as filed, effect as expected) and the ISO spot check (technical only)")
+    import time as _t
+    from console import filing_tests as FT
+    os.environ["FILING_TESTS_DIR"] = str(TMP / "filing_tests")
+    serff = "UNFG-134374972"
+    r = FT.run(serff)
+    fac = {(x["company"], x["coverage"]): x for x in r["factors"]}
+    pre, prod = fac.get(("UFC", "Premises and operations")), fac.get(("UFC", "Products and completed work"))
+    check("K1 the filed factors apply as written: UFC premises -5.8% and products +78.9%, each within 1%",
+          r["companies"] == ["UFC"] and pre and prod and pre["filed"] == -5.8 and prod["filed"] == 78.9
+          and pre["ok"] and prod["ok"] and r["ok"]["factors"] and r["priced"] == 10, r.get("factors"))
+    e = r["effects"][0]
+    check("K2 the effect: the recorded 28.7% is expected; the impact kept no risks, so the sample's own effect is now",
+          e["expected"] == 28.7 and e["expectedFrom"] == "recorded" and e["basis"] == "sample" and e["now"] is not None, e)
+    now = e["now"]
+    code, out, _ = CP.dispatch("POST", "/api/console/filings/expected", {}, {"serff": serff, "company": "UFC", "state": "IA",
+                                                                            "value": now})
+    e1 = json.loads(out)["result"]["effects"][0]
+    code, out, _ = CP.dispatch("POST", "/api/console/filings/expected", {}, {"serff": serff, "company": "UFC", "state": "IA",
+                                                                            "value": now + 5})
+    e2 = json.loads(out)["result"]["effects"][0]
+    code, out, _ = CP.dispatch("POST", "/api/console/filings/expected", {}, {"serff": serff, "company": "UFC", "state": "IA",
+                                                                            "value": None})
+    e3 = json.loads(out)["result"]["effects"][0]
+    check("K3 a typed expected effect is judged without pricing again: equal passes, 5 points off fails, cleared is recorded",
+          e1["ok"] is True and e1["expectedFrom"] == "yours" and e2["ok"] is False and e3["expected"] == 28.7
+          and e3["expectedFrom"] == "recorded", (e1.get("ok"), e2.get("ok"), e3.get("expected")))
+    code, d = get("/api/console/filings")
+    f = next(x for x in d["filings"] if x["serff"] == serff)
+    t = json.loads(CP.dispatch("GET", "/api/console/filings/test", {"serff": serff}, None)[1])
+    check("K4 the filing and the test route carry the last run",
+          (f.get("test") or {}).get("ranAt") and t["result"]["serff"] == serff and serff in t["summaries"], f.get("test"))
+    reqs = FT._spot_requests(serff)
+    body = json.dumps([x["request"] for x in reqs])
+    check("K5 D21: the ISO spot check sends technical requests only (no writing company, no filed factors)",
+          len(reqs) == 1 and reqs[0]["state"] == "IA" and "UFC" not in body and "0.942" not in body, body[:300])
+
+    class Capped:
+        def rate(self, payload):
+            from raas import RaaSError
+            raise RaaSError("call not sent: the adhoc lane is full")
+    rep = FT.iso_send(serff, client=Capped())
+    check("K6 a capped spot check spends nothing and says why", rep["sent"] == 0 and rep["rows"]
+          and rep["rows"][0]["ok"] is None and "not sent" in rep["rows"][0]["detail"], rep)
+    FT.start([serff])
+    for _ in range(240):
+        if not FT.status()["running"]:
+            break
+        _t.sleep(0.5)
+    check("K7 the queue runs a test in the background, one at a time, and keeps the spot check's result",
+          not FT.status()["running"] and (FT.result(serff) or {}).get("iso", {}).get("sent") == 0, FT.status())
+    code, html, _ = CP.dispatch("GET", "/console", {}, None)
+    check("K8 the page has the views, the Test it tab and run-everything",
+          all(k in html for k in ('id="fl-views"', "Test it", "Run the quick checks on every filing", "function flTest",
+                                  "/api/console/filings/iso", "Timeline", "Companies")))
+
+
 def main() -> int:
     setup()
-    for part in (part_a, part_b, part_c, part_d, part_e, part_f, part_g, part_h, part_i, part_j):
+    for part in (part_a, part_b, part_c, part_d, part_e, part_f, part_g, part_h, part_i, part_j, part_k):
         part()
     bad = [n for n, ok in RESULTS if not ok]
     print(f"\n{len(RESULTS) - len(bad)}/{len(RESULTS)} passed" + (f"; FAILED: {', '.join(bad)}" if bad else ""))

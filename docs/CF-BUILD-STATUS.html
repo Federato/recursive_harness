@@ -1,94 +1,64 @@
 <title>Property build &mdash; every chunk, every task, status</title>
 <meta charset="utf-8">
 <style>
-  body { font-family: Georgia, "Times New Roman", serif; max-width: 1060px; margin: 0 auto; padding: 32px 24px 80px; line-height: 1.55; color: #1c2733; background: #fff; }
-  @media (prefers-color-scheme: dark) {
-    body { background: #14181d; color: #dfe4e9; }
-    table, th, td { border-color: #3a4048 !important; }
-    thead th { background: #24313a !important; color: #eef4f3 !important; }
-    code { background: #262c33 !important; color: #dfe4e9; }
-    .note { background: #2c2a1c !important; color: #e0c064 !important; }
-    .note.good { background: #1b3226 !important; color: #63c090 !important; }
-    .note.shared { background: #1d2b33 !important; color: #9fd4dc !important; }
-    .chunk { border-color: #2b3742 !important; background: #171d24 !important; }
-    .chunk.done { border-left-color: #3f8f66 !important; }
-    .chunk.now { border-left-color: #dd9a5c !important; }
-    .chunk.todo { border-left-color: #3a4048 !important; }
-    .chunk.todo { opacity: .82; }
-    .n { background: #1d3535 !important; color: #7fd3d0 !important; }
-    .tag { background: #222a32 !important; color: #a3aebb !important; }
-    .tag.done { background: #1b3226 !important; color: #63c090 !important; }
-    .tag.warn { background: #3a3319 !important; color: #e0c064 !important; }
-    .tag.open { background: #2a2f36 !important; color: #9aa5b1 !important; }
-    tr.d td:first-child { color: #63c090; }
-    .bar { background: #262c33 !important; }
-  }
+  :root { color-scheme: dark; }
+  body { font-family: Georgia, "Times New Roman", serif; max-width: 1060px; margin: 0 auto; padding: 32px 24px 80px; line-height: 1.55; color: #F2EDDC; background: #2B1E1C; }
+  a { color: #F06A3F; }
+  a:hover { color: #F7A07F; }
   h1 { font-size: 26px; font-weight: 400; margin-bottom: 4px; }
-  h2 { font-size: 19px; font-weight: 700; margin-top: 40px; border-bottom: 2px solid #1e3a45; padding-bottom: 4px; }
-  .meta { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13px; color: #55606b; margin: 6px 0 4px; }
-  code { font-family: ui-monospace, Consolas, monospace; font-size: 0.88em; background: #eef1f4; padding: 1px 5px; border-radius: 3px; }
-  table { border-collapse: collapse; width: 100%; margin: 12px 0 8px; font-size: 13.5px; }
-  th, td { border: 1px solid #d7dce2; padding: 6px 9px; text-align: left; vertical-align: top; }
-  thead th { background: #1e3a45; color: #eef4f3; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 11.5px; text-transform: uppercase; letter-spacing: .03em; }
+  h2 { font-size: 19px; font-weight: 700; margin-top: 40px; border-bottom: 2px solid #E04E21; padding-bottom: 4px; }
+  .meta { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 13px; color: #C9BFAE; margin: 6px 0 4px; }
+  code { font-family: ui-monospace, Consolas, monospace; font-size: 0.88em; background: #3F2E2A; color: #F2EDDC; padding: 1px 5px; border-radius: 3px; }
+  table { border-collapse: collapse; width: 100%; margin: 12px 0 8px; font-size: 13.5px; background: #352623; }
+  th, td { border: 1px solid #54413C; padding: 6px 9px; text-align: left; vertical-align: top; }
+  thead th { background: #3F2E2A; color: #F2EDDC; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 11.5px; text-transform: uppercase; letter-spacing: .03em; }
   td.st { text-align: center; width: 46px; font-size: 15px; }
-  td.num { text-align: center; width: 34px; color: #8b95a1; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 12px; }
-  .note { background: #f7ddd4; color: #a53d26; padding: 12px 16px; border-radius: 6px; margin: 16px 0; font-size: 14px; }
-  .note.good { background: #dcefe4; color: #2f7d5a; }
-  .note.shared { background: #dde9ee; color: #1e5567; }
-  .chunk { border: 1px solid #d7dce2; border-left: 5px solid #1e3a45; border-radius: 8px; padding: 14px 18px; margin: 16px 0; background: #fcfcfd; }
-  .chunk.done { border-left-color: #2f7d5a; }
-  .chunk.now { border-left-color: #b96a2c; }
-  .chunk.todo { border-left-color: #b8c0c9; background: #fbfbfc; }
+  td.num { text-align: center; width: 34px; color: #A99D8B; font-family: -apple-system, "Segoe UI", sans-serif; font-size: 12px; }
+  tr.d td:first-child { color: #8FD3A8; }
+  .note { background: #4A2A20; color: #F7A07F; padding: 12px 16px; border-radius: 6px; margin: 16px 0; font-size: 14px; }
+  .note.good { background: #24382B; color: #8FD3A8; }
+  .note.shared { background: #22323A; color: #9CC3D9; }
+  .chunk { border: 1px solid #54413C; border-left: 5px solid #6B5650; border-radius: 8px; padding: 14px 18px; margin: 16px 0; background: #352623; }
+  .chunk.done { border-left-color: #8FD3A8; }
+  .chunk.now { border-left-color: #F06A3F; }
+  .chunk.todo { border-left-color: #6B5650; background: #352623; opacity: .82; }
   .chunk h3 { margin: 0 0 6px; font-size: 16px; font-weight: 700; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
-  .n { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 12px; font-weight: 700; background: #cfe0e0; color: #14484a; padding: 2px 9px; border-radius: 99px; }
-  .tag { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; background: #eef1f4; color: #55606b; padding: 2px 7px; border-radius: 4px; }
-  .tag.done { background: #dcefe4; color: #2f7d5a; }
-  .tag.warn { background: #f2e6c4; color: #a67c1e; }
-  .tag.open { background: #eef1f4; color: #7d8792; }
+  .n { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 12px; font-weight: 700; background: #F2EDDC; color: #2B1E1C; padding: 2px 9px; border-radius: 99px; }
+  .tag { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; background: #4A3530; color: #C9BFAE; padding: 2px 7px; border-radius: 4px; }
+  .tag.done { background: #24382B; color: #8FD3A8; }
+  .tag.warn { background: #3D3020; color: #F2C46B; }
+  .tag.open { background: #4A3530; color: #C9BFAE; }
   .chunk p { margin: 8px 0; font-size: 14px; }
-  .lab { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; color: #8b95a1; }
-  .bar { height: 8px; background: #e7eaee; border-radius: 99px; overflow: hidden; margin: 10px 0 2px; }
-  .bar span { display: block; height: 100%; background: #2f7d5a; }
-  .sub { font-size: 12.5px; color: #8b95a1; font-family: -apple-system, "Segoe UI", sans-serif; }
+  .lab { font-family: -apple-system, "Segoe UI", sans-serif; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; color: #A99D8B; }
+  .bar { height: 8px; background: #3F2E2A; border-radius: 99px; overflow: hidden; margin: 10px 0 2px; }
+  .bar span { display: block; height: 100%; background: #8FD3A8; }
+  .sub { font-size: 12.5px; color: #A99D8B; font-family: -apple-system, "Segoe UI", sans-serif; }
   /* chunk cards: expand / collapse (collapsed by default) */
   .chunk > h3.chunk-toggle { cursor: pointer; user-select: none; margin: 0; }
-  .chunk > h3.chunk-toggle::before { content: "\25B8"; font-size: 12px; color: #8b95a1; width: 12px; display: inline-block; transition: transform .15s; }
+  .chunk > h3.chunk-toggle::before { content: "\25B8"; font-size: 12px; color: #A99D8B; width: 12px; display: inline-block; transition: transform .15s; }
   .chunk.open > h3.chunk-toggle::before { transform: rotate(90deg); }
-  .chunk > h3.chunk-toggle:focus-visible { outline: 2px solid #5b8fa3; outline-offset: 3px; border-radius: 4px; }
+  .chunk > h3.chunk-toggle:focus-visible { outline: 2px solid #F06A3F; outline-offset: 3px; border-radius: 4px; }
   .chunk > .chunk-body { margin-top: 6px; }
   .chunk:not(.open) > .chunk-body { display: none; }
   .chunk-controls { display: flex; gap: 8px; margin: 10px 0 -4px; }
-  .chunk-controls button { font: 600 12px -apple-system, "Segoe UI", sans-serif; padding: 4px 10px; border-radius: 6px; border: 1px solid #c9d0d7; background: #f4f6f8; color: #3b4652; cursor: pointer; }
-  .chunk-controls button:hover { background: #e9edf1; }
-  @media (prefers-color-scheme: dark) {
-    .chunk-controls button { background: #202831; border-color: #3a4652; color: #c9d2db; }
-    .chunk-controls button:hover { background: #28323c; }
-  }
+  .chunk-controls button { font: 600 12px -apple-system, "Segoe UI", sans-serif; padding: 4px 10px; border-radius: 6px; border: 1px solid #54413C; background: #352623; color: #C9BFAE; cursor: pointer; }
+  .chunk-controls button:hover { background: #4A3530; }
   /* percent-complete panel at the top (figures computed from this page by the script at the end) */
-  .progress { border: 1px solid #d7dce2; border-radius: 10px; padding: 16px 20px 14px; margin: 14px 0 18px; background: #fcfcfd; font-family: -apple-system, "Segoe UI", sans-serif; }
+  .progress { border: 1px solid #54413C; border-radius: 10px; padding: 16px 20px 14px; margin: 14px 0 18px; background: #352623; font-family: -apple-system, "Segoe UI", sans-serif; }
   .progress .big { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
-  .progress .pct { font-size: 40px; font-weight: 700; color: #2f7d5a; line-height: 1; }
-  .progress .what { font-size: 14px; color: #3b4652; }
-  .progress .segs { display: flex; height: 16px; border-radius: 99px; overflow: hidden; margin: 12px 0 4px; background: #e7eaee; gap: 2px; }
-  .progress .segs span { display: block; height: 100%; background: #c9d0d7; min-width: 3px; }
-  .progress .segs span.done { background: #2f7d5a; }
-  .progress .segs span.now { background: #dd9a5c; }
-  .progress .keys { display: flex; justify-content: space-between; font-size: 11px; color: #8b95a1; }
-  .progress .row { display: grid; grid-template-columns: 150px 1fr 120px; gap: 10px; align-items: center; margin-top: 10px; font-size: 12.5px; color: #55606b; }
+  .progress .pct { font-size: 40px; font-weight: 700; color: #8FD3A8; line-height: 1; }
+  .progress .what { font-size: 14px; color: #C9BFAE; }
+  .progress .segs { display: flex; height: 16px; border-radius: 99px; overflow: hidden; margin: 12px 0 4px; background: #3F2E2A; gap: 2px; }
+  .progress .segs span { display: block; height: 100%; background: #6B5650; min-width: 3px; }
+  .progress .segs span.done { background: #8FD3A8; }
+  .progress .segs span.now { background: #F06A3F; }
+  .progress .keys { display: flex; justify-content: space-between; font-size: 11px; color: #A99D8B; }
+  .progress .row { display: grid; grid-template-columns: 150px 1fr 120px; gap: 10px; align-items: center; margin-top: 10px; font-size: 12.5px; color: #C9BFAE; }
   .progress .row .bar { margin: 0; }
-  .progress .row b { color: #1c2733; }
-  .progress .legend { margin-top: 10px; font-size: 11.5px; color: #8b95a1; }
+  .progress .row b { color: #F2EDDC; }
+  .progress .legend { margin-top: 10px; font-size: 11.5px; color: #A99D8B; }
   .progress .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; vertical-align: -1px; margin: 0 4px 0 10px; }
   @media (max-width: 560px) { .progress .row { grid-template-columns: 1fr; gap: 3px; } }
-  @media (prefers-color-scheme: dark) {
-    .progress { background: #171d24; border-color: #2b3742; }
-    .progress .pct { color: #63c090; }
-    .progress .what, .progress .row { color: #a3aebb; }
-    .progress .row b { color: #eef4f3; }
-    .progress .segs { background: #262c33; }
-    .progress .segs span { background: #3a4048; }
-    .progress .segs span.done { background: #3f8f66; }
-  }
 </style>
 
 <h1>Property build &mdash; every chunk, every task, status</h1>
@@ -98,7 +68,7 @@
   <div class="keys"><span>chunks 0&ndash;14</span><span id="pg-keys-end">chunk 25 (flood)</span></div>
   <div class="row"><span>Tasks done</span><div class="bar"><span id="pg-task-bar"></span></div><span id="pg-tasks"></span></div>
   <div class="row"><span>Chunks gated</span><div class="bar"><span id="pg-chunk-bar"></span></div><span id="pg-chunks"></span></div>
-  <div class="legend"><i style="background:#2f7d5a"></i>built and gated<i style="background:#dd9a5c"></i>open now<i style="background:#c9d0d7"></i>not started &middot; hover a segment for its chunk &middot; counted live from this page&rsquo;s tables</div>
+  <div class="legend"><i style="background:#8FD3A8"></i>built and gated<i style="background:#F06A3F"></i>open now<i style="background:#6B5650"></i>not started &middot; hover a segment for its chunk &middot; counted live from this page&rsquo;s tables</div>
 </div>
 <p class="meta"><b>As of 2026-10-07</b> (the ISO Rating Test Console, <a href="#test-console">below</a>).  One page for the whole Property (CF) build: chunks 0&ndash;28, every task, every gate. <b>Chunks 1&ndash;28 are gated</b> (chunk 0, the foundation, is proved by their gates), the last one (28, engine behaviour decisions) on 2026-10-06, 22 of 22: Sets A to G, each engine change with your go; all 34 newer ISO packages imported (<a href="#packages-to-add">ERC packages added</a>); OI-116 closed and OI-117 in the parking lot by your decision.<br>
 <b>What &ldquo;546 of 546 built&rdquo; means:</b> the engine rates every one of ISO&rsquo;s 546 countrywide Property premium files, and each chunk&rsquo;s premiums were checked against ISO&rsquo;s own answers (gated 9 of 9). <b>It does not mean Property is a finished product:</b> 

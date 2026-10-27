@@ -1,0 +1,176 @@
+<title>Compare With ISO, Softer</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&family=Instrument+Sans:wght@400;500;600&display=swap">
+<style>
+/* Palette: federato.ai swatches (Meridian maroon text, cream ground, Beacon teal action, Grounded brown links, Signal orange for a miss). Faces: Reckless and Case are the site's own (not hostable), Newsreader and Instrument Sans stand in. Layout: one main column (generate, confirm, results) and the console's side panel for help and wireframe notes. Light only, like the console. */
+:root{
+  --color-bg:#f7f7e3;--color-panel:#eee9cf;--color-card:#fcfcf3;--color-text:#2d1d1a;
+  --color-divider:#d0c5a2;
+  --color-accent:#4e4432;--color-accent-100:#f3ecc6;--color-accent-300:#e9d491;--color-accent-700:#8a5634;--color-accent-800:#2d1d1a;
+  --teal:#47fac4;--teal-hover:#06d899;
+  --color-neutral-400:#a79e7f;--color-neutral-600:#7a6f57;--color-neutral-700:#4e4432;
+  --ox:#f55a26;--ox-tint:#fde4d9;--ox-deep:#b23a10;
+  --font-heading:"Newsreader","Reckless Standard M",Georgia,serif;
+  --font-body:"Instrument Sans",Case,Arial,sans-serif;
+  --radius-sm:6px;--radius-md:10px;--radius-lg:16px;--radius-pill:999px;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{background:var(--color-bg);color:var(--color-text);font:14px/1.5 var(--font-body);font-variant-numeric:tabular-nums;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px 40px}
+a{color:var(--color-accent-700)}
+.wrap{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:28px;align-items:start}
+@media (max-width:960px){.wrap{grid-template-columns:minmax(0,1fr)}}
+main{display:flex;flex-direction:column;gap:22px;min-width:0}
+
+.eyebrow{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--color-accent-700)}
+h1{margin:2px 0 6px;font:400 38px/1.15 var(--font-heading);text-wrap:balance}
+h2{margin:0;font:500 21px/1.2 var(--font-heading)}
+.lede{margin:0;color:var(--color-neutral-700);max-width:62ch}
+.msg{font-size:12.5px;color:var(--color-neutral-700)}
+
+/* one consistent panel style for every section */
+.panel{background:var(--color-card);border:1px solid var(--color-divider);border-radius:var(--radius-lg);box-shadow:0 1px 3px color-mix(in srgb,#201f1d 6%,transparent);padding:20px 22px;display:flex;flex-direction:column;gap:14px}
+.panel-hd{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.panel-hd .n{font:500 22px/1 var(--font-heading);color:var(--color-accent-700)}
+
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--color-neutral-700)}
+select,textarea{font:14px var(--font-body);color:var(--color-text);background:#fff;border:1px solid var(--color-divider);border-radius:var(--radius-md);padding:7px 9px}
+textarea{width:100%;min-height:90px;font:12px ui-monospace,Menlo,monospace}
+
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.btn{border:1px solid var(--color-accent);color:var(--color-accent-700);background:transparent;border-radius:var(--radius-pill);padding:7px 18px;cursor:pointer;font:500 14px var(--font-body)}
+.btn:hover{background:var(--color-accent-100)}
+.btn.primary{background:var(--teal);border-color:var(--teal);color:var(--color-text)}
+.btn.primary:hover{background:var(--teal-hover);border-color:var(--teal-hover)}
+.btn:focus-visible,select:focus-visible,a:focus-visible,summary:focus-visible{outline:2px solid var(--color-accent);outline-offset:2px;border-radius:var(--radius-sm)}
+.btn:focus-visible{border-radius:var(--radius-pill)}
+.free{font-weight:400;font-size:12.5px;opacity:.8}
+
+.other{border-top:1px solid var(--color-divider);padding-top:12px}
+.other summary{cursor:pointer;font-size:13px;color:var(--color-accent-700)}
+.other .body{display:flex;flex-direction:column;gap:10px;margin-top:10px}
+.drop{border:1.5px dashed var(--color-neutral-400);border-radius:var(--radius-lg);padding:16px;text-align:center;color:var(--color-neutral-700);font-size:13px}
+.drop b{display:block;color:var(--color-text)}
+
+.confirm{background:var(--color-accent-100);border:1px solid var(--color-accent-300);border-radius:var(--radius-lg);padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+.confirm b.t{font:500 18px var(--font-heading)}
+.confirm ul{margin:0;padding-left:18px}
+
+/* results: one aligned table, plain column names */
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th{text-align:left;font-weight:400;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-neutral-700);padding:0 10px 6px}
+td{padding:10px;border-top:1px solid var(--color-divider);vertical-align:top}
+tr:hover td{background:var(--color-accent-100)}
+tr:hover td:first-child{border-radius:var(--radius-md) 0 0 var(--radius-md)}tr:hover td:last-child{border-radius:0 var(--radius-md) var(--radius-md) 0}
+th.v,td.v{text-align:right;white-space:nowrap}
+td .msg{display:block}
+.chip{width:20px;height:20px;display:inline-flex;align-items:center;justify-content:center;border-radius:50%;font-size:11px;flex:none}
+.chip.verified{background:var(--teal);color:var(--color-text)}
+.chip.mismatch{background:var(--ox-tint);color:var(--ox-deep);border:1.5px solid var(--ox)}
+.chip.untested{color:var(--color-neutral-600);border:1px dashed var(--color-neutral-400)}
+.verdict{display:flex;gap:7px;align-items:flex-start;white-space:nowrap}
+.acts{display:flex;gap:12px;flex-wrap:wrap;font-size:13px}
+.acts a{cursor:pointer}
+.acts a.q{color:var(--color-neutral-700)}
+
+aside{background:var(--color-panel);border:1px solid var(--color-divider);border-radius:var(--radius-lg);padding:20px;display:flex;flex-direction:column;gap:18px;position:sticky;top:calc(env(safe-area-inset-top,0px) + 16px)}
+aside dl{margin:0;display:grid;gap:8px;font-size:13px}
+aside dt{font-weight:600}aside dd{margin:0;color:var(--color-neutral-700)}
+.notes{border:1px dashed var(--color-neutral-400);border-radius:var(--radius-lg);padding:12px 14px;font-size:12.5px;color:var(--color-neutral-700)}
+.notes b{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--color-text)}
+.notes ul{margin:6px 0 0;padding-left:16px;display:grid;gap:5px}
+</style>
+
+<div class="wrap">
+<main>
+  <header>
+    <div class="eyebrow">Compare</div>
+    <h1>Does our price match ISO's?</h1>
+    <p class="lede">Pick a policy to price. Our engine works it out for free, and ISO's answer appears beside it once you ask.</p>
+  </header>
+
+  <section class="panel" aria-labelledby="s1">
+    <div class="panel-hd"><span class="n">1</span><h2 id="s1">Generate a request</h2><span class="msg">We fill in a realistic sample for the state you pick.</span></div>
+    <div class="fields">
+      <label for="gen-line">Line<select id="gen-line"><option>General Liability</option><option>Commercial Property</option></select></label>
+      <label for="gen-state">State<select id="gen-state"><option>Ohio</option><option>Texas</option><option>New York</option></select></label>
+      <label for="gen-co">Writing company (optional)<select id="gen-co"><option>None, ISO only</option><option>ACME · Acme Mutual</option></select></label>
+      <label for="gen-pt">Business<select id="gen-pt"><option>New</option><option>Renewal</option></select></label>
+    </div>
+    <div class="row">
+      <button class="btn primary" id="gen-compare">Compare with ISO</button>
+      <button class="btn" id="gen-price">Just price it <span class="free">· free</span></button>
+    </div>
+    <details class="other">
+      <summary>Have your own request? Upload or paste it</summary>
+      <div class="body">
+        <div class="drop"><b>Drop request files here, or choose files</b>.json, one request per file or a list</div>
+        <textarea id="paste" spellcheck="false" placeholder='{"header": {...}, "body": {"SchemeKeys": {"ProductName": "General Liability OH"}}}'></textarea>
+        <div class="row"><button class="btn primary">Compare with ISO</button><button class="btn">Just price it <span class="free">· free</span></button></div>
+      </div>
+    </details>
+  </section>
+
+  <section class="panel" aria-labelledby="s2">
+    <div class="panel-hd"><span class="n">2</span><h2 id="s2">Confirm before asking ISO</h2><span class="msg">Each request uses one ISO call.</span></div>
+    <div class="confirm">
+      <b class="t">Ask ISO about 2 requests?</b>
+      <ul>
+        <li>General Liability, Ohio: not asked yet.</li>
+        <li>Commercial Property, Texas: ISO answered Oct 3. The old answer stays in history.</li>
+      </ul>
+      <span class="msg">Only the plain ISO version is sent. A writing company's version never leaves our engine.</span>
+      <div class="row"><button class="btn primary">Yes, ask ISO · 2 calls</button><button class="btn">Not now</button></div>
+    </div>
+  </section>
+
+  <section class="panel" aria-labelledby="s3">
+    <div class="panel-hd"><span class="n">3</span><h2 id="s3">How they compare</h2></div>
+    <div class="tbl-wrap">
+      <table>
+        <tr><th>Request</th><th class="v">Our price</th><th class="v">ISO's price</th><th class="v">With company</th><th>Result</th><th></th></tr>
+        <tr>
+          <td>Sample: General Liability, Ohio<span class="msg">New · effective Jan 1, 2027</span></td>
+          <td class="v">4,812.00</td><td class="v">4,812.00<span class="msg">today</span></td><td class="v"><span class="msg">—</span></td>
+          <td><span class="verdict"><span class="chip verified">✓</span>Same price</span></td>
+          <td><span class="acts"><a>Worksheet</a><a class="q">Download</a><a class="q">Edit</a><a class="q">Remove</a></span></td>
+        </tr>
+        <tr>
+          <td>contractor_tx.json<span class="msg">Commercial Property, Texas · Renewal</span></td>
+          <td class="v">12,406.50</td><td class="v">12,394.10<span class="msg">Oct 3</span></td><td class="v"><span class="msg">—</span></td>
+          <td><span class="verdict"><span class="chip mismatch">×</span>Ours is 12.40 higher</span></td>
+          <td><span class="acts"><a>Find where they split</a><a>Worksheet</a><a class="q">Download</a><a class="q">Ask ISO again</a></span></td>
+        </tr>
+        <tr>
+          <td>Sample: General Liability, New York<span class="msg">Acme Mutual · New</span></td>
+          <td class="v">6,150.00</td><td class="v"><span class="msg">not asked</span></td><td class="v"><a>5,842.50</a><span class="msg">−307.50</span></td>
+          <td><span class="verdict"><span class="chip untested">·</span>Waiting on you</span></td>
+          <td><span class="acts"><a>Compare with ISO</a><a>Worksheet</a><a class="q">Download</a></span></td>
+        </tr>
+      </table>
+    </div>
+  </section>
+</main>
+
+<aside>
+  <h2>What the words mean</h2>
+  <dl>
+    <dt>Our price</dt><dd>Our engine, using ISO's rules as filed.</dd>
+    <dt>ISO's price</dt><dd>ISO's own answer to the same request.</dd>
+    <dt>With company</dt><dd>Our price after the writing company's filed changes. Click it to see each change. Never sent to ISO.</dd>
+    <dt>What costs a call</dt><dd>Pricing on our engine is free. Only "Yes, ask ISO" uses a call.</dd>
+  </dl>
+  <div class="notes"><b>Wireframe notes</b>
+    <ul>
+      <li>Compare with ISO is never disabled. With nothing priced it makes the request first, then shows step 2.</li>
+      <li>When ISO already answered, step 2 says so. This replaces the "Ask again where stored" checkbox.</li>
+      <li>Upload and paste fold under the generator, with the same two buttons.</li>
+      <li>"Find where they split" opens Trace Diff. Notes and ISO messages fold under the request name.</li>
+      <li>Step 2 shows only after a click. Shown open here for review.</li>
+    </ul>
+  </div>
+</aside>
+</div>

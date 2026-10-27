@@ -5,7 +5,11 @@ A plan is a line, a set of states (no waves, D3) and, per dimension, the values 
   * **pairwise** over the chosen values (`qa._allpairs`: every pair of values appears together at least once);
   * **edges**: each dimension at each of its edge values, the rest at the base risk (one factor at a time);
 
-and the plan says, before anything is spent: the full cartesian product, how many Tier 0 checks run free, how many
+Two optional parts (the builder's risk-first flow): a **base** risk, the fields held fixed, merged into every scenario
+(a scenario's own values win); and a **method**: "pairwise" (the default), "edges" (no pairwise, only the base risk and
+the edges) or "all" (every combination of the chosen values). A spec without them reads exactly as before.
+
+The plan says, before anything is spent: the full cartesian product, how many Tier 0 checks run free, how many
 scenarios ISO already answered (the dedupe: their answers are reused, not re-asked), what is not expressible in a
 state, and so the calls it would spend and the days at the active lane (150 a day, D2). Two of D20's options shrink it:
 a **reduced grid** (each dimension to its edges) and an **allowance** (thin the scenarios to at most N calls, taking
@@ -46,6 +50,8 @@ def scenarios(spec: dict) -> list:
     """(state, config, kind) for every scenario the spec asks for, deduplicated per state."""
     line, states = spec["line"], spec.get("states") or []
     dims = {k: list(v) for k, v in (spec.get("dims") or {}).items() if v}
+    base = {k: v for k, v in (spec.get("base") or {}).items() if v not in (None, "") and k not in dims}
+    method = spec.get("method") or "pairwise"
     if spec.get("reduced"):
         dims = {k: list(C.edges(v)) for k, v in dims.items()}
     out = []
@@ -56,12 +62,20 @@ def scenarios(spec: dict) -> list:
         own = {k: (list(C.edges(C.cp_values(k, st))) if line == "CP" and k in C.STATE_SPECIFIC else v)
                for k, v in dims.items()}
         own = {k: v for k, v in own.items() if v}
-        rows = [(cfg, "pairwise") for cfg in _pairs(own)] if own else ([] if spec.get("configs") else [({}, "base")])
+        if not own:
+            rows = [] if spec.get("configs") else [({}, "base")]
+        elif method == "all":
+            rows = [(dict(zip(own, combo)), "pairwise") for combo in itertools.product(*own.values())]
+        elif method == "edges":
+            rows = [({}, "base")]
+        else:
+            rows = [(cfg, "pairwise") for cfg in _pairs(own)]
         if spec.get("edges", True):
             rows += [({k: v}, "edge") for k, vs in own.items() for v in C.edges(vs)]
         # explicit scenarios: a QA tier's or a layer's (presets), or one config across every state (D19)
         rows += [(dict(c), "preset") for c in spec.get("configs") or []]
         for cfg, kind in rows:
+            cfg = {**base, **cfg}
             key = json.dumps(cfg, sort_keys=True)
             if key in seen:
                 continue
@@ -137,6 +151,13 @@ def preview(spec: dict) -> dict:
     rows, thinned = _thin(ex["rows"], spec.get("allowance"))
     calls = sum(1 for r in rows if not r.get("stored"))
     left_today = max(0, ledger.LANES["active"] - ledger.used()["active"])
+    by_state: dict = {st: {"scenarios": 0, "calls": 0, "reused": 0, "notApplicable": 0} for st in states}
+    for r in rows:
+        b = by_state.setdefault(r["state"], {"scenarios": 0, "calls": 0, "reused": 0, "notApplicable": 0})
+        b["scenarios"] += 1
+        b["reused" if r.get("stored") else "calls"] += 1
+    for r in ex["notApplicable"]:
+        by_state.setdefault(r["state"], {"scenarios": 0, "calls": 0, "reused": 0, "notApplicable": 0})["notApplicable"] += 1
     return {"line": line, "states": len(states), "cartesian": cart * len(states),
             "tier0": invariants.CHECKS_PER_STATE * len(states),
             "pairwise": sum(1 for r in ex["rows"] if r["kind"] in ("pairwise", "base")),
@@ -145,7 +166,9 @@ def preview(spec: dict) -> dict:
             "scenarios": len(rows), "alreadyAnswered": sum(1 for r in rows if r.get("stored")),
             "notApplicable": len(ex["notApplicable"]), "thinned": thinned, "calls": calls,
             "days": round(calls / ledger.LANES["active"], 1), "activeLeftToday": left_today,
-            "statesKept": len({r["state"] for r in rows})}
+            "statesKept": len({r["state"] for r in rows}), "byState": by_state,
+            "notApplicableWhy": [{"state": r["state"], "config": r["config"], "detail": r.get("detail", "")}
+                                 for r in ex["notApplicable"][:20]]}
 
 
 # ---- commit and controls ----------------------------------------------------------------------------------------

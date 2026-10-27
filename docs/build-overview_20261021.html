@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>How the Rating Engine Was Built</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500&family=Instrument+Sans:wght@400;500;600&display=swap">
+<style>
+  :root {
+    --bg: #2d1d1a;
+    --panel: #3a2a24;
+    --card: #43322b;
+    --divider: #5c4a3c;
+    --text: #f7f7e3;
+    --muted: #c9bc98;
+    --cream: #e9d491;
+    --teal: #47fac4;
+    --ox: #f55a26;
+    --font-heading: "Newsreader", Georgia, serif;
+    --font-body: "Instrument Sans", Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font-family: var(--font-body); font-size: 16px; line-height: 1.6; }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 0 16px 60px; }
+
+  header { border-bottom: 1px solid var(--divider); padding: 48px 0 28px; margin-bottom: 28px; }
+  .eyebrow { color: var(--teal); font-size: 13px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; margin: 0 0 8px; }
+  h1 { font-family: var(--font-heading); font-weight: 500; font-size: 40px; line-height: 1.15; margin: 0 0 10px; }
+  .sub { color: var(--muted); margin: 0; }
+
+
+  section { background: var(--card); border: 1px solid var(--divider); border-radius: 16px; padding: 22px 24px; margin-bottom: 16px; }
+  section.key { border-left: 4px solid var(--teal); }
+  h2 { display: flex; align-items: center; gap: 12px; font-family: var(--font-heading); font-weight: 500; font-size: 23px; margin: 0 0 10px; }
+  .num { flex: none; width: 30px; height: 30px; border-radius: 999px; background: var(--cream); color: var(--bg); font-family: var(--font-body); font-size: 14px; font-weight: 600; display: flex; align-items: center; justify-content: center; }
+  p { margin: 0 0 10px; }
+  p:last-child { margin-bottom: 0; }
+  ol, ul { margin: 0 0 10px; padding-left: 22px; }
+  li { margin-bottom: 4px; }
+  li::marker { color: var(--cream); }
+  b { color: var(--cream); font-weight: 600; }
+  .tag { display: inline-block; font-size: 12px; font-weight: 600; color: var(--bg); background: var(--teal); border-radius: 999px; padding: 1px 10px; margin-left: 4px; vertical-align: middle; }
+  .open { background: var(--ox); color: #fff; }
+  code { font-size: 14px; background: var(--panel); border-radius: 4px; padding: 1px 5px; }
+
+  footer { color: var(--muted); font-size: 13px; margin-top: 28px; }
+
+  @media (max-width: 640px) {
+    h1 { font-size: 30px; }
+    section { padding: 18px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">Recursive Harness &middot; GL Rating Engine</p>
+  <h1>How the Rating Engine Was Built</h1>
+  <p class="sub">From a shelf of ISO manuals to an engine checked against ISO's own rating service. October 21, 2026.</p>
+</header>
+
+<section>
+  <h2><span class="num">1</span>Gathered ISO's rulebooks</h2>
+  <p>We downloaded 975 ISO Commercial Lines manual PDFs for General Liability. <b>503</b> are rules manuals (how to rate) and <b>472</b> are loss cost manuals (the rates themselves). They cover 51 jurisdictions from 2020 to 2027.</p>
+  <p>We read them first and wrote a plain-English build plan. Reading them showed the national manual can't produce a price by itself: the real numbers sit in each state's pages, and rule numbers get reused between editions.</p>
+</section>
+
+<section>
+  <h2><span class="num">2</span>Added ISO's electronic content (ERC)</h2>
+  <p>Next came ISO's machine-readable rating files, the ERC packages, starting with 570 of them. We built spreadsheets linking these files to the manuals: which edition replaces which, and which loss costs feed which ERC files.</p>
+  <p>ERC became the engine's <b>source of truth</b>, and the PDFs became the check against it.</p>
+  <p><b>What's in an ERC package:</b> each one is a ZIP for one state and edition. It holds the rules (step-by-step premium calculations), rate tables (loss costs, factors, limits), the layout of a submission, lists of allowed values, form and ratebook listings, and metadata. Alaska's October 2026 GL package has 41 rules and 82 rate tables.</p>
+</section>
+
+<section>
+  <h2><span class="num">3</span>Built the Excel raters</h2>
+  <p>Alongside the engine, we built two spreadsheet raters from the same ERC content:</p>
+  <ul>
+    <li><b>General Liability 1.03:</b> Premises/Operations and Products/Completed Ops, with Med Pay, Product Withdrawal, OCP, TRIA, deductibles and Additional Insureds. 52 jurisdictions.</li>
+    <li><b>CFRater 1.01.08 (Commercial Property):</b> Building, Contents, Business Income and Special Class, the cause-of-loss forms, coinsurance and deductibles. 46 states plus Puerto Rico.</li>
+  </ul>
+  <p>The harness reads the Property rater directly. It turns a risk entered in the spreadsheet into an ISO request, then prices it three ways. Excel, ISO and the engine agreed on <b>42 of 42</b>.</p>
+</section>
+
+<section>
+  <h2><span class="num">4</span>Built the engine in six stages</h2>
+  <ol>
+    <li>Measured exactly how ISO's files are meant to be read.</li>
+    <li>Built an interpreter that reads ISO's formulas.</li>
+    <li>Built the kernel, the core that turns them into a premium.</li>
+    <li>Used ISO's own field layout instead of designing our own.</li>
+    <li>Built a spreadsheet of allowed values for each field (<code>GL-Submission-Fields.xlsx</code>).</li>
+    <li>Built the screen where you enter a risk and see the premium.</li>
+  </ol>
+  <p>All six were done in two days. Before any live connection, <b>49 of 49</b> usable sample answers from ISO's files matched to the penny.</p>
+</section>
+
+<section class="key">
+  <h2><span class="num">5</span>Connected to ISO's rating service (RaaS) <span class="tag">Aug 13</span></h2>
+  <p>We copied the connection approach from an earlier project and wrote a small client. It logs in with a client ID and secret, sends the risk to ISO, and gets ISO's premium back. The login details come from environment variables, not the code.</p>
+  <p>On the first run, ISO answered for 50 jurisdictions, and <b>all 50 matched us</b> on the premium and every line. ISO also confirmed it used the same edition we did. Puerto Rico didn't answer because it isn't on the subscription.</p>
+</section>
+
+<section class="key">
+  <h2><span class="num">6</span>Used ISO as the referee</h2>
+  <p>After go-live, every engine change was checked against ISO's answer before and after, usually with 2 to 10 calls. Varying the business (size, limits, class, experience and schedule rating) turned up real defects, and each got a tracking number and a fix.</p>
+  <p>ISO's answers also showed we were missing <b>16 newer state filings</b>, which we then added. Calls are capped at 250 a day and logged, and ISO's answers are stored and reused.</p>
+</section>
+
+<section class="key">
+  <h2><span class="num">7</span>How Claude learned from ISO and began correcting itself</h2>
+  <p>Every disagreement with ISO became a lesson, not just a fix. Claude works in a simple loop:</p>
+  <ol>
+    <li><b>Ask:</b> send the same risk to ISO and to our engine.</li>
+    <li><b>Compare:</b> every line, not just the total.</li>
+    <li><b>Trace:</b> find the exact rule, table or step that differs.</li>
+    <li><b>Fix and re-check:</b> propose the fix, get a go, then confirm it with ISO.</li>
+    <li><b>Generalize:</b> write a rule that prevents the whole kind of mistake.</li>
+  </ol>
+  <p>For example, ISO showed it rounds halves up (4 of 4). And a New York terrorism test that "passed" turned out to be testing nothing: the harness caught its own mistake. Two specialist reviewers check every finding, because not every difference is our error.</p>
+</section>
+
+<section>
+  <h2><span class="num">8</span>Expanded the scope</h2>
+  <ul>
+    <li><b>Commercial Property:</b> built in 28 numbered pieces, each with its own pass/fail check.</li>
+    <li><b>Carrier deviations:</b> a carrier's own filed changes layered on top of ISO's rates, starting with UFGAL. They're priced by ISO too, and 3 of 3 matched.</li>
+    <li><b>Filings intake:</b> carrier filings are stored by their filing number (SERFF) and logged.</li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="num">9</span>Made it usable and explainable</h2>
+  <ul>
+    <li>A test console that runs planned batches of ISO calls, plus an Upload &amp; Compare page.</li>
+    <li>Runnable notebooks that explain the engine file by file, and visual maps of how each rating is calculated.</li>
+    <li>Specialist helpers that answer questions from the code or the manuals.</li>
+    <li>Plain-language guides, a running build log, a backlog grouped into work batches, and mockups for the next redesign.</li>
+  </ul>
+</section>
+
+<section>
+  <h2><span class="num">10</span>Where it is now <span class="tag open">In progress</span></h2>
+  <p>We're mapping the full chain of ISO's calculations as a "compute graph" in a separate test project, ISOComputeGraph, and simplifying the main app. Commercial Property chunk 28 and the forms backlog are still open.</p>
+</section>
+
+<footer>Sources: BUILD-LOG.md, docs/BACKLOG-2026-10-13.md, console/ledger.py, and the project's commit history.</footer>
+
+</div>
+</body>
+</html>

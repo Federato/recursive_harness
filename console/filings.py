@@ -198,6 +198,7 @@ def impacts(companies: list, line: str, states: list, serff: str = "") -> list:
         out.append({"file": p.name, "company": d["company"], "draft": d.get("draft"), "generated": d.get("generated"),
                     "states": d["states"], "all": d.get("all"), "byRiskType": d.get("by_risk_type", {}),
                     "byCoverage": d.get("by_coverage", {}), "byState": d.get("by_state", {}),
+                    "byStateRiskType": d.get("by_state_risk_type", {}),
                     "drivers": d.get("drivers", []), "refused": len(d.get("refused", [])),
                     "current": d.get("current"), "vsCurrent": d.get("vs_current")})
     return sorted(out, key=lambda x: (x["company"], bool(x["draft"]), x.get("generated") or ""))
@@ -279,7 +280,7 @@ def _extras(s: dict, carrier: str, companies: list, line: str, states) -> dict:
             raw = p.read_text(encoding="utf-8-sig")
             sheet = render(raw)
     return {"sheet": sheet, "_sheetRaw": raw, "proof": _proof(s.get("suite")), "impacts": impacts(companies, line, states, s.get("serff", "")),
-            "stageDeclared": s.get("stage")}
+            "stageDeclared": s.get("stage"), "carrierExpected": s.get("carrier_expected")}
 
 
 STAGES = ("Received", "Mapped", "Draft impact", "Built", "Proved")
@@ -374,6 +375,10 @@ def filings() -> dict:
         if r["stage"] not in ("Built", "Proved"):
             r["proof"] = None                  # a suite's last run proves a built filing, not a draft
         r["plain"] = _plain(r, r.pop("_sheetRaw", ""), r.pop("_logRaw", ""))
+    from console import filing_tests
+    tests = filing_tests.summaries()
+    for r in rows:
+        r["test"] = tests.get(r["serff"])
     return {"filings": rows, "log": "docs/deviations/FILINGS-LOG.md", "store": str(_carriers()), "stages": list(STAGES)}
 
 
